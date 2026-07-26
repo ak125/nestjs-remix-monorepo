@@ -14,10 +14,19 @@ Compared: `typescript@6.0.3` (repo pin) vs `typescript@7.0.2` (npm `latest`).
 Cold both sides, buildinfo redirected to scratch, sequential, median of 3 after
 discarding one warm-up run. 12 tsconfig projects.
 
+TS7 is installed into `node_modules/.cache/ts7-shadow/<version>/` — a **gitignored
+cache, outside the project's versioned state**. Nothing is added to `package.json` or
+`package-lock.json`, so no determinism gate is involved and `overrides.typescript`
+is not perturbed.
+
 ## Results
 
-**PARITY 4 · BLOCKED_CONFIG 8 · DIVERGENT 0.** All 12 projects emit **0 diagnostics
-under both compilers** — there is no diagnostic divergence anywhere in the repo today.
+**PARITY 4 · BLOCKED_CONFIG 8 · DIVERGENT 0.**
+
+Stated precisely: **0 source-level diagnostics on both compilers, and 8 config-level
+`TS5108` diagnostics under TS7.** These two counts are reported separately in the
+artifact (`ts6SourceDiagnostics`, `ts7SourceDiagnostics`, `ts7ConfigDiagnostics`) and
+must not be collapsed into a single "zero diagnostics" claim.
 
 | Project | Verdict | TS6 | TS7 | |
 |---|---|---:|---:|---|
@@ -41,16 +50,13 @@ under both compilers** — there is no diagnostic divergence anywhere in the rep
 error TS5108: Option 'moduleResolution=node10' has been removed.
 ```
 
-The timings for blocked projects are still valid — TS7 type-checks the code and
-reports the config error alongside it — but no parity claim is made for them.
-
 **Do not read the 45 s aggregate saving as a CI or dev saving.** `turbo typecheck`
 runs these in parallel with content caching, and `ci.yml` additionally restores
 `.tsbuildinfo` across runs and narrows to `--affected` on PRs. The honest reading is
-per-project cold latency, where the two that dominate are `frontend` (24.0 s → 2.2 s)
-and `backend` (19.8 s → 2.0 s).
+per-project cold latency, dominated by `frontend` (24.0 s → 2.2 s) and `backend`
+(19.8 s → 2.0 s).
 
-## Finding 1 — the node10 block is 2 deleted lines, not a nodenext migration
+## Finding 1 — removing the node10 line is a compatibility fix, not a migration
 
 `packages/typescript-config/node-cjs-legacy.json` is inherited by all 8 blocked
 projects and is the sole cause:
@@ -61,94 +67,127 @@ projects and is the sole cause:
 ```
 
 `moduleResolution: "Node"` is node10, removed in TS7 and already deprecated in TS6 —
-`ignoreDeprecations: "6.0"` exists only to silence that. **This debt is owed
-regardless of TS7.**
+`ignoreDeprecations: "6.0"` exists only to silence that. **This debt is owed regardless
+of TS7.**
 
-The expected fix was a migration to `node16`/`nodenext`, estimated at 4–7 engineer-days:
-`module: "commonjs"` + `moduleResolution: "node16"` is illegal (TS5110, `module` must
-be node16/nodenext), `nodenext` on the backend changes the emit of 29 dynamic
-`import()` sites, and `bundler` would drop the `node` condition of every exports map
-while still emitting `require()`.
+Measured: **omitting `moduleResolution` — keeping `module: "CommonJS"` — makes all 8
+blocked projects type-check clean under TS7 (0 source diagnostics), and is a no-op
+under TS6 (0 source diagnostics).** Verified against probe configs for all 8, including
+`packages/registry` (js-yaml/jose/micromatch) and `backend` (1389 files, 74 external
+specifiers). `services/remotion-renderer` corroborates independently: `module: commonjs`
+with no explicit `moduleResolution`, already PARITY.
 
-Measured instead: **simply omitting `moduleResolution` — keeping `module: "CommonJS"` —
-makes all 8 blocked projects type-check clean under TS7 (0 diagnostics), and is a
-no-op under TS6 (0 diagnostics).** Verified against probe configs for all 8,
-including `packages/registry` (js-yaml/jose/micromatch, the highest-risk consumer)
-and `backend` (1389 files, 74 external specifiers). `services/remotion-renderer`
-independently corroborates this: it sets `module: commonjs` with no explicit
-`moduleResolution` and is already PARITY.
+**This is explicitly not a modernisation.** With `module: "CommonJS"`, omitting
+`moduleResolution` most likely just re-derives a Node10-compatible resolution
+implicitly under TS6. It removes the TS7 error; it does not move the repo to
+`nodenext`, which remains the recommended target for a modern Node application. It is
+acceptable only as a **minimal compatibility fix, and only if proven inert.** Note also
+that once the option is implicit, TS6 and TS7 each derive their own default — the
+measurement above shows both land on a working resolution for these 12 projects, it
+does **not** prove the two derived resolutions are identical. `--traceResolution` is
+the instrument that settles that.
 
-### Not yet cleared — declaration emit changes
+### Not cleared — required before any GO
 
-The backend *emits* (`tsc --build && tsc-alias`). Comparing emit under both configs:
-file count is identical (4161), but some `.d.ts` files differ in the module
-specifiers TS writes inside inferred type positions — it picks a shorter specifier
-that resolves to the same module, e.g.
+Comparing backend emit under both configs: identical file count (4161), but some
+`.d.ts` differ in the module specifiers TS writes inside inferred type positions —
+it picks a shorter specifier resolving to the same module, e.g.
 
 ```
 - import("../../gamme-rest/services/buying-guide-data.service").GammeBuyingGuideV1
 + import("../../gamme-rest/services").GammeBuyingGuideV1
 ```
 
-**Whether any `.js` file differs was not measured.** Until it is, this is a lead, not
-a green light. Required evidence before adopting: differing-file counts split by
-extension, `npm run build` + `tsc-alias`, `node dist/main` boot, and the jest suite —
-the repo carries a recorded scar on transform changes breaking NestJS DI
-(`reference_backend_ts_jest_isolatedmodules_breaks_di_tests`).
+**Whether any `.js` differs was not measured.** Until the matrix below is run, this is
+a lead, not a green light.
 
-Note also that removing the line makes TS6 and TS7 *derive* the default
-independently. The measurement above shows both land on a working resolution for
-these 12 projects; it does not prove the two defaults are identical.
+#### Validation matrix
 
-## Finding 2 — `npx` silently breaks this benchmark
+Both lines (`moduleResolution` **and** `ignoreDeprecations`) must be removed together.
+
+| Comparison | Purpose |
+|---|---|
+| TS6 + current config ↔ TS6 without the two lines | prove today's shipped build does not change |
+| TS6 without the lines ↔ TS7 without the lines | measure the future TS7 migration |
+
+Evidence to collect for each:
+
+- count **and SHA-256** of `.js`, `.d.ts`, `.js.map`, `.d.ts.map`
+- normalised `--traceResolution` output for `backend` and `packages/registry`
+- full build including `tsc-alias`
+- `node dist/main` boot + `/health`
+- backend Jest suite, specifically the Nest DI tests
+  (scar: `reference_backend_ts_jest_isolatedmodules_breaks_di_tests`)
+- the 29 dynamic `import()` sites
+- Docker build + PREPROD smoke
+
+#### Decision rule
+
+- **GO** (separate PR removing the two lines): TS6 before/after byte-identical for `.js`, tests and boot green.
+- Differences confined to `.d.ts` **between TS6 and TS7**: blocks future TS7 adoption, not necessarily the TS6 cleanup.
+- **NO-GO** for the simple removal: any `.js` difference between TS6 before/after, any resolution difference, or any DI failure.
+
+## Finding 2 — `npx` shorthand misparses; the explicit form is fine
 
 ```
-npx -y typescript@7.0.2 tsc --noEmit -p backend/tsconfig.json
+npx -y typescript@7.0.2 tsc --noEmit -p <p>
 → error TS5042: Option 'project' cannot be mixed with source files on a command line.
 ```
 
-npx forwards the `tsc` token as a positional argument, so tsc sees a phantom source
-file. `npx … tsc --version` still prints `7.0.2`, which makes this easy to mistake for
-a config problem. The harness therefore installs the pinned version into a scratch
-prefix **outside the repo** and invokes the binary by absolute path — which also keeps
-`package.json` / `package-lock.json` untouched, so no determinism gate is involved.
+npx resolves the package's single bin and leaves the `tsc` token as a positional source
+file. `--version` still prints `7.0.2`, so the shorthand looks healthy — that is what
+makes it worth recording.
+
+**The correct form works, including real type-checks** (verified on both a blocked and
+a passing project):
+
+```
+npx --package=typescript@7.0.2 -- tsc --noEmit -p <p>
+```
+
+So the pinned cache install is used for **isolation and to avoid re-downloading the
+compiler on every run** — not because npx is incapable of executing it.
 
 ## Finding 3 — `typescript` itself still cannot move
 
 `typescript-eslint@8.65.0` (latest) declares peer `typescript: ">=4.8.4 <6.1.0"`.
 `typescript` is a member of the `tooling-typescript-eslint` `peer_dependency_cluster`,
-where central rule #6 forbids partial cluster upgrades. So TS7 can only ever be
-out-of-band tooling here until that peer range opens — independent of the node10 block.
+where central rule #6 forbids partial cluster upgrades. TS7 can only be out-of-band
+tooling here until that peer range opens — independent of the node10 block.
 
 ## Finding 4 — the `tooling-typescript-go` overlay premise is stale
 
 The family declares `members: ["@typescript/native-preview"]`,
 `target_major: "tsc-go-preview"`, `migration_blockers: [NotProductionReady]`. As of
 2026-07-26 TS7 has shipped stable as `typescript@7.0.2`, while
-`@typescript/native-preview` is frozen at `7.0.0-dev.20260707.2`. The stated premise
-no longer matches reality.
+`@typescript/native-preview` is frozen at `7.0.0-dev.20260707.2`.
 
-This does **not** contest `production_approved: false` — Finding 3 is an independent
-and still-binding blocker. Recording only; `family-overlay.yaml` is a humans-only L2
-surface and updating it is an owner decision.
+This does **not** contest `production_approved: false` — Finding 3 is independent and
+still binding. Recording only; `family-overlay.yaml` is a humans-only L2 surface.
 
-## Why the harness has a preflight
+## Two guards worth knowing
 
-Run from a checkout whose workspace-nested `node_modules` are absent and both
-compilers report the *same* phantom `TS2307`s, so the comparison still reads PARITY
-while the numbers describe a tree nobody ships. The harness now refuses to publish
-in that state rather than degrading silently. First measured run of this harness hit
-exactly that on `frontend` (14 phantom `@playwright/test` errors) and had to be discarded.
+**Preflight.** Run from a checkout whose workspace-nested `node_modules` are absent and
+both compilers report the *same* phantom `TS2307`s, so the comparison reads PARITY while
+the numbers describe a tree nobody ships. The harness refuses to publish in that state.
+The first run of this harness hit exactly that on `frontend` (14 phantom
+`@playwright/test` errors) and was discarded.
+
+**TS6059 / TS6307 participate in the comparison.** They were briefly suppressed as
+"status noise". They are not: TS6059 is *file not under `rootDir`* and TS6307 is *file
+not listed in a composite project's file list* — both describe the project file graph,
+and both are exactly what a resolution-mode change can flip. Suppressing them could
+turn a real difference into a false PARITY. Neither occurs in this repo today (verified
+across all 12 projects on both compilers), so including them costs nothing.
 
 ## Next actions (owner-gated)
 
-1. Complete the emit evidence for Finding 1 (`.js` diff by extension, build, boot, jest).
-   If `.js` is unchanged, the node10 removal becomes a small scoped PR that
-   unblocks 8 projects and pays a TS6 deprecation — worth doing on its own merits.
-2. Re-run `npm run audit:ts7-shadow` after that change; expect the 8 to move
-   `BLOCKED_CONFIG` → `PARITY`.
-3. Leave TS7 out-of-band until `typescript-eslint` opens its peer range.
+1. Run the validation matrix above in a **separate PR**. This one stays observational.
+2. If the decision rule says GO, remove both lines there — it unblocks 8 projects and
+   pays a TS6 deprecation.
+3. Re-run `npm run audit:ts7-shadow`; expect the 8 to move `BLOCKED_CONFIG` → `PARITY`.
+4. Leave TS7 out-of-band until `typescript-eslint` opens its peer range.
 
-Editing `packages/typescript-config/node-cjs-legacy.json` invalidates every turbo
-cache entry (it is in `turbo.json` `globalDependencies`) and the CI `.tsbuildinfo`
-cache key — one deliberate cold run, so it belongs in its own PR.
+Editing `packages/typescript-config/node-cjs-legacy.json` invalidates every turbo cache
+entry (it is in `turbo.json` `globalDependencies`) and the CI `.tsbuildinfo` cache key —
+one deliberate cold run, so it belongs in its own PR.

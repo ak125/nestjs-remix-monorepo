@@ -57,7 +57,7 @@ test("parses a file-less diagnostic", () => {
   assert.equal(d[0].code, 5042);
 });
 
-test("drops ignored status codes and indented continuation lines", () => {
+test("drops watch-mode status lines and indented continuation lines", () => {
   const raw = [
     "error TS6031: Starting compilation in watch mode...",
     "src/a.ts(1,1): error TS2304: Cannot find name 'x'.",
@@ -66,7 +66,40 @@ test("drops ignored status codes and indented continuation lines", () => {
   const d = parseDiagnostics(raw);
   assert.equal(d.length, 1);
   assert.equal(d[0].code, 2304);
-  for (const code of IGNORED_CODES) assert.ok(code > 6000, `${code} should be a status code`);
+});
+
+test("IGNORED_CODES contains ONLY watch-mode status codes", () => {
+  assert.deepEqual([...IGNORED_CODES].sort((a, b) => a - b), [6031, 6032, 6194]);
+});
+
+test("TS6059 (outside rootDir) is NOT ignored — it is a real file-graph diagnostic", () => {
+  const d = parseDiagnostics(
+    "src/a.ts(1,1): error TS6059: File 'x.ts' is not under 'rootDir' 'src'.",
+  );
+  assert.equal(d.length, 1, "TS6059 must survive parsing");
+  assert.equal(d[0].code, 6059);
+  assert.ok(!IGNORED_CODES.has(6059));
+});
+
+test("TS6307 (missing from composite file list) is NOT ignored", () => {
+  const d = parseDiagnostics(
+    "src/a.ts(1,1): error TS6307: File 'x.ts' is not listed within the file list of project.",
+  );
+  assert.equal(d.length, 1, "TS6307 must survive parsing");
+  assert.equal(d[0].code, 6307);
+  assert.ok(!IGNORED_CODES.has(6307));
+});
+
+test("a TS6059 present only under TS7 yields DIVERGENT, not a false PARITY", () => {
+  // Regression guard: these two codes were briefly in IGNORED_CODES, which would
+  // have suppressed exactly this signal — a resolution-mode change altering the
+  // project file graph — and reported PARITY.
+  const ts7 = parseDiagnostics(
+    "src/a.ts(1,1): error TS6059: File 'x.ts' is not under 'rootDir' 'src'.",
+  );
+  const r = classify("packages/registry", [], ts7, 1);
+  assert.equal(r.classification, "DIVERGENT");
+  assert.deepEqual(r.onlyInTs7, ["src/a.ts|1|TS6059"]);
 });
 
 test("normalizes separators to POSIX so TS6/TS7 paths compare", () => {

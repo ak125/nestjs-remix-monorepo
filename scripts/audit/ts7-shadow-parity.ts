@@ -8,18 +8,22 @@
 //   runtime_capabilities: [supports-shadow] · production_approved: false  <- HARD VETO
 //
 // This script NEVER mutates package.json, package-lock.json, or any tsconfig.
-// TS7 is installed into a scratch prefix OUTSIDE the repo and invoked by
-// absolute path. It is not, and must not become, a repo dependency: `typescript`
-// belongs to the `tooling-typescript-eslint` peer_dependency_cluster, and
-// typescript-eslint still caps its peer range at `typescript <6.1.0`.
+// TS7 is installed into a gitignored cache (node_modules/.cache), i.e. outside
+// the project's versioned state, and invoked by absolute path. It is not, and
+// must not become, a repo dependency: `typescript` belongs to the
+// `tooling-typescript-eslint` peer_dependency_cluster, and typescript-eslint
+// still caps its peer range at `typescript <6.1.0`.
 //
-// WHY A SCRATCH INSTALL AND NOT `npx`
-//   `npx -y typescript@7.0.2 tsc --noEmit -p <p>` does NOT work: npx forwards the
-//   `tsc` token as a positional argument, so tsc sees a phantom source file and
-//   dies with `TS5042: Option 'project' cannot be mixed with source files`.
-//   `--version` still prints 7.0.2, which makes the breakage easy to miss.
-//   Verified 2026-07-26. A pinned local install + absolute-path invocation is the
-//   only reliable mechanism.
+// WHY A PINNED CACHE INSTALL RATHER THAN `npx` PER RUN
+//   For isolation and to avoid re-downloading the compiler on every run — NOT
+//   because npx cannot execute it. The correct npx form works fine:
+//     npx --package=typescript@7.0.2 -- tsc --noEmit -p <p>      # works
+//   What does NOT work is the shorthand, and the failure is easy to misread:
+//     npx -y typescript@7.0.2 tsc --noEmit -p <p>
+//       → error TS5042: Option 'project' cannot be mixed with source files
+//   because npx resolves the package's single bin and leaves the `tsc` token as
+//   a positional source file. `--version` still prints 7.0.2, so the shorthand
+//   looks healthy. Verified 2026-07-26 (both forms).
 //
 // Outputs:
 //   - audit/dependencies/ts7-shadow-parity.json   committed, TIMINGS-FREE, deterministic
@@ -87,11 +91,22 @@ export const EXPECTED_PROJECTS = [
 export const BLOCKING_CONFIG_CODES = new Set([5023, 5024, 5069, 5101, 5107, 5108, 5109, 5110]);
 
 /**
- * Status/among-files noise that carries no type information. Kept as an explicit
- * auditable constant rather than buried in a regex.
- *   6031/6032/6194 watch-mode status · 6059/6307 rootDir & composite file-list
+ * Watch-mode status lines only. These carry no type information and are never
+ * emitted by a one-shot `--noEmit` run anyway.
+ *   6031 "Starting compilation in watch mode"
+ *   6032 "File change detected"
+ *   6194 "Found N errors. Watching for file changes"
+ *
+ * Deliberately NOT ignored (they were, briefly, and that was a defect):
+ *   TS6059 "File is not under 'rootDir'"
+ *   TS6307 "File is not listed within the file list of project"
+ * Both are real diagnostics about the project's file graph, and both are
+ * exactly the kind of thing a resolution-mode change can flip. Suppressing them
+ * would let a genuine difference read as PARITY. Neither occurs in this repo
+ * today (verified across all 12 projects on both compilers), so including them
+ * costs nothing and closes the hole.
  */
-export const IGNORED_CODES = new Set([6031, 6032, 6194, 6059, 6307]);
+export const IGNORED_CODES = new Set([6031, 6032, 6194]);
 
 export interface Diagnostic {
   file: string | null;
@@ -284,9 +299,10 @@ export function discoverProjects(root: string): string[] {
 }
 
 /**
- * Install the pinned TS7 into a scratch prefix outside the repo and return the
- * absolute path to its `tsc`. Outside the repo so there is no lockfile, no
- * .gitignore entry, and nothing for a determinism gate to notice.
+ * Install the pinned TS7 into a gitignored cache and return the absolute path to
+ * its `tsc`. It lives inside the repo directory tree but outside the project's
+ * versioned state: nothing is added to package.json / package-lock.json, so no
+ * determinism gate is involved and `overrides.typescript` is not perturbed.
  */
 export function ensureTs7(): string {
   // Deliberately NOT the OS temp dir: a predictable path under a world-writable
@@ -514,10 +530,16 @@ function main(): void {
     fs.rmSync(scratch, { recursive: true, force: true });
   }
 
+  // Source-level and config-level counts are reported separately and must never
+  // be collapsed into one "0 diagnostics" claim: today every project is clean at
+  // source level while 8 carry a TS5108 config diagnostic under TS7.
   const summary = {
     parity: results.filter((r) => r.classification === "PARITY").length,
     blockedConfig: results.filter((r) => r.classification === "BLOCKED_CONFIG").length,
     divergent: results.filter((r) => r.classification === "DIVERGENT").length,
+    ts6SourceDiagnostics: results.reduce((n, r) => n + r.ts6DiagnosticCount, 0),
+    ts7SourceDiagnostics: results.reduce((n, r) => n + r.ts7DiagnosticCount, 0),
+    ts7ConfigDiagnostics: results.reduce((n, r) => n + r.configDiagnostics.length, 0),
   };
 
   // Committed half: deterministic for a fixed (repo state x compiler versions).

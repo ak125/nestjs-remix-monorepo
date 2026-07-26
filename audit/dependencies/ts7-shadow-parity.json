@@ -5,7 +5,10 @@
   "summary": {
     "parity": 4,
     "blockedConfig": 8,
-    "divergent": 0
+    "divergent": 0,
+    "ts6SourceDiagnostics": 0,
+    "ts7SourceDiagnostics": 0,
+    "ts7ConfigDiagnostics": 8
   },
   "projects": [
     {
