@@ -591,3 +591,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `chore/ts7-shadow-parity`
 - **Décision** : chore(audit): ts6/ts7 shadow parity harness, observation-only, 0 lockfile mutation
 - **Sortie** : PR #1318 | commits 23a3e4e94
+
+## 2026-07-27 — chore/ts7-shadow-parity (auto)
+
+- **Branche** : `chore/ts7-shadow-parity`
+- **Décision** : docs(audit): matrix returns NO-GO for the node10 line removal (+4 other commits)
+- **Sortie** : PR #1318 | commits 03a7834fa 39330f86e 864633cc6 30381040c 23a3e4e94
