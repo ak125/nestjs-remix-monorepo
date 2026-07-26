@@ -585,3 +585,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/runtime-verification-contract`
 - **Décision** : docs(agent-method): add thin runtime-verification proof contract (§9 + PR template)
 - **Sortie** : PR #1293 | commits b06e869a9
+
+## 2026-07-26 — chore/ts7-shadow-parity (auto)
+
+- **Branche** : `chore/ts7-shadow-parity`
+- **Décision** : chore(audit): ts6/ts7 shadow parity harness, observation-only, 0 lockfile mutation
+- **Sortie** : PR #1318 | commits 23a3e4e94
