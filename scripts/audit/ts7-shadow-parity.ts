@@ -289,10 +289,11 @@ export function discoverProjects(root: string): string[] {
  * .gitignore entry, and nothing for a determinism gate to notice.
  */
 export function ensureTs7(): string {
-  const home = path.join(
-    process.env.RUNNER_TEMP ?? os.tmpdir(),
-    `ts7-shadow-${TS7_VERSION}`,
-  );
+  // Deliberately NOT the OS temp dir: a predictable path under a world-writable
+  // directory is a symlink/TOCTOU hazard (CodeQL js/insecure-temporary-file).
+  // node_modules/.cache is gitignored, not world-writable, and persists, so the
+  // pinned install is reused across runs instead of re-downloaded.
+  const home = path.join(REPO_ROOT, "node_modules", ".cache", "ts7-shadow", TS7_VERSION);
   const bin = path.join(home, "node_modules", ".bin", "tsc");
 
   if (!fs.existsSync(bin)) {
