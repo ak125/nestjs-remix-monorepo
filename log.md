@@ -591,3 +591,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/size-limit-initial-load-globs`
 - **Décision** : fix(perf): make the initial-load budget measure the real initial load
 - **Sortie** : PR #1319 | commits 056e886a6
+
+## 2026-07-27 — fix/size-limit-initial-load-globs (auto)
+
+- **Branche** : `fix/size-limit-initial-load-globs`
+- **Décision** : fix(perf): tolerate sub-KB initial-load chunk churn, keep the blind-spot check strict (+2 other commits)
+- **Sortie** : PR #1319 | commits a40f91283 17c644a5a 056e886a6
