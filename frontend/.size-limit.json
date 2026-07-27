@@ -11,7 +11,6 @@
       "build/client/assets/lucide-vendor-*.js",
       "build/client/assets/rolldown-runtime-*.js",
       "build/client/assets/site-*.js",
-      "build/client/assets/errors-*.js",
       "build/client/assets/ErrorGeneric-*.js",
       "build/client/assets/LazyFooter-*.js"
     ],

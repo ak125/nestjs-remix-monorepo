@@ -21,13 +21,15 @@ const SCRIPT = fileURLToPath(new URL("./verify-size-limit-initial-load.mjs", imp
  * Build a fake assets dir. `graph` maps chunk name -> array of statically imported
  * chunk names, mirroring what Rolldown emits.
  */
-function fixture(graph, configEntries) {
+function fixture(graph, configEntries, { pad = 2048 } = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "size-limit-fixture-"));
   const assets = path.join(dir, "assets");
   fs.mkdirSync(assets);
   for (const [name, imports] of Object.entries(graph)) {
     const body = imports.map((i) => `import"./${i}";`).join("") || "export{};";
-    fs.writeFileSync(path.join(assets, name), body);
+    // Pad past COVERAGE_REQUIRED_BYTES so coverage gaps are fatal by default; the
+    // tolerance case below deliberately opts out with pad: 0.
+    fs.writeFileSync(path.join(assets, name), body + "//" + "x".repeat(pad));
   }
   const cfg = path.join(dir, ".size-limit.json");
   fs.writeFileSync(cfg, JSON.stringify(configEntries, null, 2));
@@ -97,6 +99,30 @@ test("FAILS when a chunk in the initial graph is not counted", () => {
   assert.match(r.out, /graph drift/);
   assert.match(r.out, /NOT COUNTED/);
   assert.match(r.out, /app-ui-primitives-ddd\.js/);
+  fs.rmSync(f.dir, { recursive: true, force: true });
+});
+
+test("an uncovered chunk under 1 KB is tolerated and reported, not fatal", () => {
+  // Same commit emits a 30-byte `errors-*.js` locally and no such chunk on the CI
+  // runner. Pinning that name makes the gate flap; the byte risk is negligible.
+  const cfg = structuredClone(OK_ENTRY);
+  cfg[0].path = cfg[0].path.filter((p) => !p.includes("app-ui-primitives"));
+  const f = fixture(GRAPH, cfg, { pad: 0 });
+  const r = run(f);
+  assert.equal(r.code, 0, `sub-KB gap must not fail:\n${r.out}`);
+  assert.match(r.out, /under 1024 B are not covered/);
+  assert.match(r.out, /app-ui-primitives-ddd\.js/);
+  fs.rmSync(f.dir, { recursive: true, force: true });
+});
+
+test("failure output suggests the corrected path list", () => {
+  const cfg = structuredClone(OK_ENTRY);
+  cfg[0].path = cfg[0].path.filter((p) => !p.includes("app-ui-primitives"));
+  const f = fixture(GRAPH, cfg);
+  const r = run(f);
+  assert.equal(r.code, 1);
+  assert.match(r.out, /Suggested "path" list/);
+  assert.match(r.out, /build\/client\/assets\/app-ui-primitives-\*\.js/);
   fs.rmSync(f.dir, { recursive: true, force: true });
 });
 

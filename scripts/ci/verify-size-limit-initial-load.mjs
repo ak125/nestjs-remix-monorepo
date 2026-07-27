@@ -37,6 +37,19 @@ const ASSETS =
 /** The entry points a browser is guaranteed to fetch on any first paint. */
 const ROOT_CHUNK_PATTERN = /^(entry\.client|root)-/;
 
+/**
+ * An initial-load chunk this size or larger MUST be covered by the config; anything
+ * smaller is reported but tolerated.
+ *
+ * Why a threshold at all: chunk emission is not identical across environments. The
+ * same commit produces a 30-byte `errors-*.js` chunk locally and no such chunk on the
+ * CI runner. Pinning that name makes the gate flap; ignoring sub-KB chunks entirely
+ * would be a blind spot of at most a few hundred bytes. The defect this gate exists to
+ * stop was 101 KiB, so 1 KiB is a safe floor — and uncovered chunks are still printed,
+ * never hidden.
+ */
+const COVERAGE_REQUIRED_BYTES = 1024;
+
 /** `build/client/assets/react-vendor-*.js` -> /^react-vendor-.*\.js$/ */
 function globToRegExp(glob) {
   const base = path.basename(glob);
@@ -112,8 +125,19 @@ if (!initialEntry) {
       for (const f of assetFiles) if (re.test(f)) configured.add(f);
     }
 
-    const missing = [...closure].filter((f) => !configured.has(f)).sort();
+    const sizeOf = (f) => fs.statSync(path.join(ASSETS, f)).size;
+    const uncovered = [...closure].filter((f) => !configured.has(f)).sort();
+    const missing = uncovered.filter((f) => sizeOf(f) >= COVERAGE_REQUIRED_BYTES);
+    const tolerated = uncovered.filter((f) => sizeOf(f) < COVERAGE_REQUIRED_BYTES);
     const extra = [...configured].filter((f) => !closure.has(f)).sort();
+
+    if (tolerated.length) {
+      console.log(
+        `note: ${tolerated.length} initial-load chunk(s) under ${COVERAGE_REQUIRED_BYTES} B are not ` +
+          `covered by the budget (tolerated, see COVERAGE_REQUIRED_BYTES): ` +
+          tolerated.map((f) => `${f} (${sizeOf(f)} B)`).join(", "),
+      );
+    }
 
     if (missing.length || extra.length) {
       const lines = [
@@ -124,7 +148,7 @@ if (!initialEntry) {
       if (missing.length) {
         lines.push(
           `      NOT COUNTED but in the initial graph (${missing.length}):`,
-          ...missing.map((f) => `        + ${f}`),
+          ...missing.map((f) => `        + ${f} (${sizeOf(f)} B)`),
         );
       }
       if (extra.length) {
@@ -133,8 +157,13 @@ if (!initialEntry) {
           ...extra.map((f) => `        - ${f}`),
         );
       }
+      // Actionable: the exact list to paste back, so fixing is mechanical.
+      const suggested = [...closure]
+        .filter((f) => sizeOf(f) >= COVERAGE_REQUIRED_BYTES)
+        .map((f) => `build/client/assets/${f.replace(/-[^-]+\.js$/, "-*.js")}`);
       lines.push(
-        `      Update the "path" list in frontend/.size-limit.json to cover exactly the closure.`,
+        `      Suggested "path" list (deduplicated globs for chunks >= ${COVERAGE_REQUIRED_BYTES} B):`,
+        ...[...new Set(suggested)].sort().map((g) => `        "${g}",`),
       );
       problems.push(lines.join("\n"));
     }

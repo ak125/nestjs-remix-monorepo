@@ -57,7 +57,17 @@ Un `import()` dynamique est une requête réseau distincte : il reste volontaire
 **hors** du budget initial.
 
 Conséquence pratique : re-chunker (nouveau vendor, split, fusion) fait échouer le gate
-avec la liste exacte à corriger, au lieu de laisser le budget dériver.
+en **imprimant la liste de globs corrigée** à recopier — la correction est mécanique.
+
+### Seuil `COVERAGE_REQUIRED_BYTES` (1 KiB)
+
+Un chunk du graphe initial **≥ 1 KiB doit** être couvert (échec sinon) ; en dessous il
+est **signalé mais toléré**. Raison mesurée, pas théorique : à commit identique, le
+build émet localement un chunk `errors-*.js` de ~30 octets que **le runner CI n'émet
+pas**. Épingler ce nom rend le gate instable ; l'ignorer coûte quelques centaines
+d'octets au pire. Le défaut que ce gate existe pour empêcher pesait **101 KiB** — 1 KiB
+est donc un plancher sûr, et les chunks non couverts restent **imprimés**, jamais
+masqués.
 
 ## Usage
 
