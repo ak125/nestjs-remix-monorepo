@@ -585,3 +585,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/runtime-verification-contract`
 - **Décision** : docs(agent-method): add thin runtime-verification proof contract (§9 + PR template)
 - **Sortie** : PR #1293 | commits b06e869a9
+
+## 2026-07-27 — fix/size-limit-initial-load-globs (auto)
+
+- **Branche** : `fix/size-limit-initial-load-globs`
+- **Décision** : fix(perf): make the initial-load budget measure the real initial load
+- **Sortie** : PR #1319 | commits 056e886a6
