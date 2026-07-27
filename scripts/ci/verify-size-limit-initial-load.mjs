@@ -15,7 +15,9 @@
 //       actually downloads first. So we do not trust the list: we recompute the
 //       initial-load set from the built artifacts — the transitive closure of static
 //       imports from `entry.client-*` and `root-*` — and require the configured
-//       globs to match exactly that set.
+//       globs to cover every chunk >= MAX_UNCOVERED_CHUNK_BYTES, and caps the total
+//       uncovered bytes at MAX_TOTAL_UNCOVERED_BYTES. It is a bounded tolerance, not
+//       an exact-match rule: chunk emission differs slightly between environments.
 //
 // Runs before size-limit in `frontend/package.json` -> "size", so both CI call sites
 // (ci.yml "Bundle size gate" and perf-gates.yml) are covered without touching either
@@ -38,17 +40,24 @@ const ASSETS =
 const ROOT_CHUNK_PATTERN = /^(entry\.client|root)-/;
 
 /**
- * An initial-load chunk this size or larger MUST be covered by the config; anything
- * smaller is reported but tolerated.
+ * An initial-load chunk this size or larger MUST be covered by the config.
  *
  * Why a threshold at all: chunk emission is not identical across environments. The
- * same commit produces a 30-byte `errors-*.js` chunk locally and no such chunk on the
- * CI runner. Pinning that name makes the gate flap; ignoring sub-KB chunks entirely
- * would be a blind spot of at most a few hundred bytes. The defect this gate exists to
- * stop was 101 KiB, so 1 KiB is a safe floor — and uncovered chunks are still printed,
- * never hidden.
+ * same commit produces a ~30-byte `errors-*.js` chunk locally and no such chunk on the
+ * CI runner. Pinning that name makes the gate flap.
  */
-const COVERAGE_REQUIRED_BYTES = 1024;
+const MAX_UNCOVERED_CHUNK_BYTES = 1024;
+
+/**
+ * …and the tolerated chunks are also capped IN AGGREGATE.
+ *
+ * A per-file threshold alone is not a budget: 100 uncovered chunks of 900 B each would
+ * every one of them pass the per-file test while hiding ~90 KB — the same class of
+ * blind spot this gate exists to stop, just spread thin. The cumulative cap makes the
+ * tolerance genuinely bounded: at most 1 KiB can ever go uncounted, however it is
+ * distributed.
+ */
+const MAX_TOTAL_UNCOVERED_BYTES = 1024;
 
 /** `build/client/assets/react-vendor-*.js` -> /^react-vendor-.*\.js$/ */
 function globToRegExp(glob) {
@@ -91,7 +100,8 @@ for (const entry of config) {
   }
 }
 
-// --- (B) the initial-load entry must equal the real static-import closure -------
+// --- (B) the initial-load entry must cover the real static-import closure -------
+//         (every chunk >= MAX_UNCOVERED_CHUNK_BYTES, total gap < MAX_TOTAL_UNCOVERED_BYTES)
 
 const initialEntry = config.find((e) => /^Initial load/i.test(e.name));
 if (!initialEntry) {
@@ -127,15 +137,29 @@ if (!initialEntry) {
 
     const sizeOf = (f) => fs.statSync(path.join(ASSETS, f)).size;
     const uncovered = [...closure].filter((f) => !configured.has(f)).sort();
-    const missing = uncovered.filter((f) => sizeOf(f) >= COVERAGE_REQUIRED_BYTES);
-    const tolerated = uncovered.filter((f) => sizeOf(f) < COVERAGE_REQUIRED_BYTES);
+    const missing = uncovered.filter((f) => sizeOf(f) >= MAX_UNCOVERED_CHUNK_BYTES);
+    const tolerated = uncovered.filter((f) => sizeOf(f) < MAX_UNCOVERED_CHUNK_BYTES);
+    const toleratedBytes = tolerated.reduce((total, f) => total + sizeOf(f), 0);
     const extra = [...configured].filter((f) => !closure.has(f)).sort();
 
     if (tolerated.length) {
       console.log(
-        `note: ${tolerated.length} initial-load chunk(s) under ${COVERAGE_REQUIRED_BYTES} B are not ` +
-          `covered by the budget (tolerated, see COVERAGE_REQUIRED_BYTES): ` +
+        `note: ${tolerated.length} initial-load chunk(s) under ${MAX_UNCOVERED_CHUNK_BYTES} B not ` +
+          `covered by the budget, ${toleratedBytes} B total (cap ${MAX_TOTAL_UNCOVERED_BYTES} B): ` +
           tolerated.map((f) => `${f} (${sizeOf(f)} B)`).join(", "),
+      );
+    }
+
+    if (toleratedBytes >= MAX_TOTAL_UNCOVERED_BYTES) {
+      problems.push(
+        [
+          `  [cumulative gap] "${initialEntry.name}"`,
+          `      ${tolerated.length} uncovered chunk(s) are each under ${MAX_UNCOVERED_CHUNK_BYTES} B,`,
+          `      but together they hide ${toleratedBytes} B (cap ${MAX_TOTAL_UNCOVERED_BYTES} B).`,
+          `      Per-file tolerance is not a budget — many small gaps add up to a large one.`,
+          `      Cover them explicitly in frontend/.size-limit.json:`,
+          ...tolerated.map((f) => `        + ${f} (${sizeOf(f)} B)`),
+        ].join("\n"),
       );
     }
 
@@ -159,10 +183,10 @@ if (!initialEntry) {
       }
       // Actionable: the exact list to paste back, so fixing is mechanical.
       const suggested = [...closure]
-        .filter((f) => sizeOf(f) >= COVERAGE_REQUIRED_BYTES)
+        .filter((f) => sizeOf(f) >= MAX_UNCOVERED_CHUNK_BYTES)
         .map((f) => `build/client/assets/${f.replace(/-[^-]+\.js$/, "-*.js")}`);
       lines.push(
-        `      Suggested "path" list (deduplicated globs for chunks >= ${COVERAGE_REQUIRED_BYTES} B):`,
+        `      Suggested "path" list (deduplicated globs for chunks >= ${MAX_UNCOVERED_CHUNK_BYTES} B):`,
         ...[...new Set(suggested)].sort().map((g) => `        "${g}",`),
       );
       problems.push(lines.join("\n"));
@@ -173,6 +197,7 @@ if (!initialEntry) {
 if (problems.length) fail(problems);
 
 console.log(
-  `size-limit paths verified: every pattern matches ≥1 file, and the initial-load entry ` +
-    `matches the real static-import closure.`,
+  `size-limit paths verified: every pattern matches ≥1 file; the initial-load entry covers ` +
+    `every chunk >= ${MAX_UNCOVERED_CHUNK_BYTES} B of the real static-import closure, with ` +
+    `total uncovered bytes under ${MAX_TOTAL_UNCOVERED_BYTES} B.`,
 );

@@ -50,8 +50,8 @@ gate peut être vert en mesurant la mauvaise chose :
 2. **Dérive vis-à-vis du graphe réel.** La liste « Initial load » n'est pas crue sur
    parole : le script recalcule la **closure des imports statiques** depuis
    `entry.client-*` et `root-*` dans `build/client/assets/`, et exige que les globs
-   configurés couvrent **exactement** cette closure (il rapporte les manquants et les
-   surnuméraires).
+   configurés **couvrent tout chunk ≥ 1 KiB** de cette closure, l'écart cumulé restant
+   **< 1 KiB** (il rapporte les manquants et les surnuméraires).
 
 Un `import()` dynamique est une requête réseau distincte : il reste volontairement
 **hors** du budget initial.
@@ -59,28 +59,43 @@ Un `import()` dynamique est une requête réseau distincte : il reste volontaire
 Conséquence pratique : re-chunker (nouveau vendor, split, fusion) fait échouer le gate
 en **imprimant la liste de globs corrigée** à recopier — la correction est mécanique.
 
-### Seuil `COVERAGE_REQUIRED_BYTES` (1 KiB)
+### Tolérance bornée : `MAX_UNCOVERED_CHUNK_BYTES` + `MAX_TOTAL_UNCOVERED_BYTES` (1 KiB chacun)
 
-Un chunk du graphe initial **≥ 1 KiB doit** être couvert (échec sinon) ; en dessous il
-est **signalé mais toléré**. Raison mesurée, pas théorique : à commit identique, le
+Deux plafonds, pas un :
+
+- **par fichier** — un chunk du graphe initial **≥ 1 KiB doit** être couvert (échec sinon) ;
+- **cumulé** — la somme des chunks tolérés doit rester **< 1 KiB**, sinon échec.
+
+Le second n'est pas décoratif : un seuil par fichier **n'est pas un budget**. 100 chunks
+non couverts de 900 o passeraient chacun le test unitaire tout en masquant ~90 KB —
+exactement la classe de défaut que ce gate existe pour empêcher, simplement étalée. Le
+plafond cumulé rend la tolérance réellement bornée : **au plus 1 KiB** peut échapper au
+comptage, quelle que soit sa répartition.
+
+Raison d'avoir une tolérance du tout, mesurée et non théorique : à commit identique, le
 build émet localement un chunk `errors-*.js` de ~30 octets que **le runner CI n'émet
-pas**. Épingler ce nom rend le gate instable ; l'ignorer coûte quelques centaines
-d'octets au pire. Le défaut que ce gate existe pour empêcher pesait **101 KiB** — 1 KiB
-est donc un plancher sûr, et les chunks non couverts restent **imprimés**, jamais
-masqués.
+pas**. Épingler ce nom rend le gate instable. Les chunks non couverts restent
+**imprimés**, jamais masqués.
 
 ## Usage
 
 ```bash
-# Build + check
-npm run build && npm run size
+# EN LOCAL — rebuild PUIS mesure. À utiliser par défaut.
+npm run size:fresh
 
-# Depuis le workspace frontend
-npm run -w @fafa/frontend size
+# CI uniquement — mesure l'artefact déjà construit par l'étape précédente du job
+npm run size
 
 # Détail / debug
 npx size-limit --json   # JSON output
 ```
+
+> **Pourquoi `size:fresh` existe.** `npm run size` mesure ce qui se trouve dans
+> `frontend/build/`, **sans vérifier sa fraîcheur**. En CI c'est correct : le job vient
+> de builder. En local, c'est le piège — un rapport peut être produit involontairement
+> depuis un artefact ancien, et paraître crédible. C'est arrivé pendant la PR de
+> recalibration : la liste de chunks avait été dérivée d'un build périmé, et seule la CI
+> l'a rattrapée. `size:fresh` = `npm run build && npm run size`.
 
 ## Comment évoluer
 
@@ -120,7 +135,8 @@ size-limit ne supporte que `error` (exit code) — pas de niveau `warn`. C'est i
   `radix-vendor-*.js` ne matchait **plus aucun fichier** (Rolldown replie ce chunk dans
   `app-ui-primitives`), et 8 chunks du graphe initial n'étaient **jamais comptés** :
   `app-shell`, `app-ui-primitives`, `lucide-vendor`, `rolldown-runtime`, `site`,
-  `errors`, `ErrorGeneric`, `LazyFooter`. Mesuré : **209,6 KiB comptés contre 311 KiB
+  `errors`, `ErrorGeneric`, `LazyFooter`. Sept sont désormais **couverts** ; `errors`
+  (~30 o, non émis par le runner CI) reste **toléré sous plafond**, pas épinglé. Mesuré : **209,6 KiB comptés contre 311 KiB
   réels — 101 KiB d'angle mort**, sous une limite de 216 KB qui passait donc toujours.
   **Ce n'est pas une régression** : ces octets étaient déjà livrés, seule la mesure était
   fausse. La liste est désormais dérivée du graphe réel et la limite recalée sur la

@@ -110,8 +110,35 @@ test("an uncovered chunk under 1 KB is tolerated and reported, not fatal", () =>
   const f = fixture(GRAPH, cfg, { pad: 0 });
   const r = run(f);
   assert.equal(r.code, 0, `sub-KB gap must not fail:\n${r.out}`);
-  assert.match(r.out, /under 1024 B are not covered/);
+  assert.match(r.out, /under 1024 B not covered by the budget/);
+  assert.match(r.out, /cap 1024 B/);
   assert.match(r.out, /app-ui-primitives-ddd\.js/);
+  fs.rmSync(f.dir, { recursive: true, force: true });
+});
+
+test("FAILS when many sub-threshold gaps add up past the cumulative cap", () => {
+  // Per-file tolerance is not a budget: each of these is under 1 KiB and would pass
+  // the per-file test, but together they hide more than MAX_TOTAL_UNCOVERED_BYTES.
+  const graph = {
+    "entry.client-aaa.js": ["root-bbb.js"],
+    "root-bbb.js": ["small-one.js", "small-two.js"],
+    "small-one.js": [],
+    "small-two.js": [],
+  };
+  const cfg = [
+    {
+      name: "Initial load JS, gzip",
+      path: ["build/client/assets/entry.client-*.js", "build/client/assets/root-*.js"],
+      limit: "100 KB",
+      gzip: true,
+    },
+  ];
+  const f = fixture(graph, cfg, { pad: 600 }); // two ~600 B uncovered chunks
+  const r = run(f);
+  assert.equal(r.code, 1, `two 600 B gaps must fail the cumulative cap:\n${r.out}`);
+  assert.match(r.out, /cumulative gap/);
+  assert.match(r.out, /small-one\.js/);
+  assert.match(r.out, /small-two\.js/);
   fs.rmSync(f.dir, { recursive: true, force: true });
 });
 

@@ -10,6 +10,7 @@
     "lint": "turbo lint",
     "build": "turbo build",
     "size": "npm run -w @fafa/frontend size",
+    "size:fresh": "npm run -w @fafa/frontend size:fresh",
     "size:verify-paths:test": "node --test scripts/ci/verify-size-limit-initial-load.test.mjs",
     "typecheck": "turbo typecheck",
     "start": "cd backend && npm run start",
