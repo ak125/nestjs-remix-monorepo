@@ -15,9 +15,10 @@ Cold both sides, buildinfo redirected to scratch, sequential, median of 3 after
 discarding one warm-up run. 12 tsconfig projects.
 
 TS7 is installed into `node_modules/.cache/ts7-shadow/<version>/` — a **gitignored
-cache, outside the project's versioned state**. Nothing is added to `package.json` or
-`package-lock.json`, so no determinism gate is involved and `overrides.typescript`
-is not perturbed.
+cache, outside the project's versioned state**. **No dependency is added and the
+lockfile does not change; `package.json` gains only the audit entry points**
+(`audit:ts7-shadow*` scripts). So no determinism gate keyed on dependencies is
+involved and `overrides.typescript` is not perturbed.
 
 ## Results
 

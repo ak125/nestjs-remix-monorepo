@@ -7,7 +7,9 @@
 //   upgrade_strategy: benchmark-only · runtime_entrypoints: [build-only]
 //   runtime_capabilities: [supports-shadow] · production_approved: false  <- HARD VETO
 //
-// This script NEVER mutates package.json, package-lock.json, or any tsconfig.
+// At runtime this script mutates nothing: not package.json, not package-lock.json,
+// not any tsconfig. (The PR that introduced it does add four `audit:ts7-shadow*`
+// entry points to package.json — no dependency, no lockfile change.)
 // TS7 is installed into a gitignored cache (node_modules/.cache), i.e. outside
 // the project's versioned state, and invoked by absolute path. It is not, and
 // must not become, a repo dependency: `typescript` belongs to the
