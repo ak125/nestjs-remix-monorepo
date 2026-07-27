@@ -1,14 +1,21 @@
 [
   {
-    "name": "Initial load JS (shared vendors + entry + app-core), gzip",
+    "name": "Initial load JS (static-import closure of entry.client + root), gzip",
     "path": [
-      "build/client/assets/react-vendor-*.js",
-      "build/client/assets/radix-vendor-*.js",
-      "build/client/assets/root-*.js",
       "build/client/assets/entry.client-*.js",
-      "build/client/assets/app-core-*.js"
+      "build/client/assets/root-*.js",
+      "build/client/assets/app-core-*.js",
+      "build/client/assets/app-shell-*.js",
+      "build/client/assets/app-ui-primitives-*.js",
+      "build/client/assets/react-vendor-*.js",
+      "build/client/assets/lucide-vendor-*.js",
+      "build/client/assets/rolldown-runtime-*.js",
+      "build/client/assets/site-*.js",
+      "build/client/assets/errors-*.js",
+      "build/client/assets/ErrorGeneric-*.js",
+      "build/client/assets/LazyFooter-*.js"
     ],
-    "limit": "216 KB",
+    "limit": "322 KB",
     "gzip": true
   },
   {
@@ -36,7 +43,7 @@
     "gzip": true
   },
   {
-    "name": "Route R2 produit-véhicule (pieces/.../$type.html) chunk, gzip",
+    "name": "Route R2 produit-v\u00e9hicule (pieces/.../$type.html) chunk, gzip",
     "path": "build/client/assets/pieces._gamme._marque._modele._type_*.js",
     "limit": "34 KB",
     "gzip": true

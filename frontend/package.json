@@ -7,7 +7,7 @@
   "types": "./index.d.cts",
   "scripts": {
     "build": "react-router build",
-    "size": "size-limit",
+    "size": "node ../scripts/ci/verify-size-limit-initial-load.mjs && size-limit",
     "dev": "echo 'Frontend dev handled by backend startDevServer on :3000'",
     "old-dev": "remix vite:dev",
     "lint": "ESLINT_USE_FLAT_CONFIG=true eslint --cache --cache-location ./node_modules/.cache/eslint .",
