@@ -12,12 +12,13 @@
 //
 //   (B) CONFIG DRIFT FROM THE REAL GRAPH. The "Initial load" entry is a hand-written
 //       list. When the bundler re-chunks, the list stops describing what a browser
-//       actually downloads first. So we do not trust the list: we recompute the
-//       initial-load set from the built artifacts — the transitive closure of static
-//       imports from `entry.client-*` and `root-*` — and require the configured
-//       globs to cover every chunk >= MAX_UNCOVERED_CHUNK_BYTES, and caps the total
-//       uncovered bytes at MAX_TOTAL_UNCOVERED_BYTES. It is a bounded tolerance, not
-//       an exact-match rule: chunk emission differs slightly between environments.
+//       actually needs to boot. So we do not trust the list: we recompute the
+//       initial-load set from the built artifacts — the synchronous closure of static
+//       imports from `entry.client-*` and `root-*`, i.e. what client startup requires
+//       — then require the configured globs to cover every chunk of it that is
+//       >= MAX_UNCOVERED_CHUNK_BYTES, with total uncovered bytes kept under
+//       MAX_TOTAL_UNCOVERED_BYTES. A bounded tolerance, not an exact-match rule:
+//       chunk emission differs slightly between environments.
 //
 // Runs before size-limit in `frontend/package.json` -> "size", so both CI call sites
 // (ci.yml "Bundle size gate" and perf-gates.yml) are covered without touching either
@@ -36,7 +37,7 @@ const CONFIG = process.env.SIZE_LIMIT_CONFIG ?? path.join(FRONTEND, ".size-limit
 const ASSETS =
   process.env.SIZE_LIMIT_ASSETS ?? path.join(FRONTEND, "build", "client", "assets");
 
-/** The entry points a browser is guaranteed to fetch on any first paint. */
+/** The entry points client startup always needs. */
 const ROOT_CHUNK_PATTERN = /^(entry\.client|root)-/;
 
 /**
@@ -54,8 +55,8 @@ const MAX_UNCOVERED_CHUNK_BYTES = 1024;
  * A per-file threshold alone is not a budget: 100 uncovered chunks of 900 B each would
  * every one of them pass the per-file test while hiding ~90 KB — the same class of
  * blind spot this gate exists to stop, just spread thin. The cumulative cap makes the
- * tolerance genuinely bounded: at most 1 KiB can ever go uncounted, however it is
- * distributed.
+ * tolerance genuinely bounded: the check fails at >= MAX_TOTAL_UNCOVERED_BYTES, so at
+ * most 1023 B can ever go uncounted, however it is distributed.
  */
 const MAX_TOTAL_UNCOVERED_BYTES = 1024;
 
@@ -111,8 +112,10 @@ if (!initialEntry) {
   if (roots.length === 0) {
     problems.push("  No entry.client-*/root-* chunk found; cannot compute the initial-load closure.");
   } else {
-    // Static imports only. A dynamic import() is a separate network request and is
-    // deliberately out of the initial-load budget.
+    // Static imports only — this measures the synchronous startup closure. A dynamic
+    // import() is a separate request and is out of scope here; note it may still fire
+    // during initial load, so this budget is a floor on startup cost, not a ceiling on
+    // everything the page fetches early.
     const STATIC_IMPORT = /(?:^|[;\s}])import\s*(?:[^"';]*?\s*from\s*)?["'](\.\/[^"']+)["']/g;
     const closure = new Set();
     const stack = [...roots];
@@ -166,7 +169,8 @@ if (!initialEntry) {
     if (missing.length || extra.length) {
       const lines = [
         `  [graph drift] "${initialEntry.name}"`,
-        `      The configured patterns no longer describe what the browser fetches first.`,
+        `      The configured patterns no longer describe the synchronous static-import`,
+        `      closure required for client startup.`,
         `      Real initial-load closure: ${closure.size} chunks (static imports of ${roots.join(", ")}).`,
       ];
       if (missing.length) {

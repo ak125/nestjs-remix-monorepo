@@ -29,7 +29,7 @@ size-limit gagne sur tous les axes pour notre cas (gate PR sur build statique).
 
 | Budget | Mesuré (`9797b488`) | Limite | Headroom | Rôle |
 |--|--:|--:|--:|--|
-| Initial load JS (closure d'imports statiques `entry.client` + `root`), gzip | 319 kB | **322 KB** | ~1 % | **Critique** : blocage first paint. Liste **dérivée du graphe réel**, pas écrite à la main — vérifiée par `scripts/ci/verify-size-limit-initial-load.mjs`. |
+| Initial load JS (closure d'imports statiques `entry.client` + `root`), gzip | 319 kB | **322 KB** | ~1 % | **Critique** : bloque le démarrage client. Liste **dérivée du graphe réel**, pas écrite à la main — vérifiée par `scripts/ci/verify-size-limit-initial-load.mjs`. |
 | Total JS (all chunks), gzip | 884 KB | **1000 KB** | 12 % | Hygiène globale — catch toute injection massive |
 | Total CSS, gzip | 49 KB | **60 KB** | 18 % | CSS bloat |
 | sentry-vendor chunk, gzip | 159 KB | **180 KB** | 12 % | Vendor le plus lourd (chargé async normalement) |
@@ -53,8 +53,11 @@ gate peut être vert en mesurant la mauvaise chose :
    configurés **couvrent tout chunk ≥ 1 KiB** de cette closure, l'écart cumulé restant
    **< 1 KiB** (il rapporte les manquants et les surnuméraires).
 
-Un `import()` dynamique est une requête réseau distincte : il reste volontairement
-**hors** du budget initial.
+Ce budget mesure la **closure synchrone des imports statiques nécessaire au démarrage
+client**. Un `import()` dynamique est une requête distincte et reste volontairement hors
+périmètre — mais il **peut malgré tout être déclenché pendant le chargement initial**.
+Ce budget est donc un **plancher** du coût de démarrage, pas un plafond de tout ce que
+la page va chercher tôt.
 
 Conséquence pratique : re-chunker (nouveau vendor, split, fusion) fait échouer le gate
 en **imprimant la liste de globs corrigée** à recopier — la correction est mécanique.
@@ -64,13 +67,14 @@ en **imprimant la liste de globs corrigée** à recopier — la correction est m
 Deux plafonds, pas un :
 
 - **par fichier** — un chunk du graphe initial **≥ 1 KiB doit** être couvert (échec sinon) ;
-- **cumulé** — la somme des chunks tolérés doit rester **< 1 KiB**, sinon échec.
+- **cumulé** — la somme des chunks tolérés doit rester **< 1 KiB** (soit ≤ 1 023 o), sinon échec.
 
 Le second n'est pas décoratif : un seuil par fichier **n'est pas un budget**. 100 chunks
 non couverts de 900 o passeraient chacun le test unitaire tout en masquant ~90 KB —
 exactement la classe de défaut que ce gate existe pour empêcher, simplement étalée. Le
-plafond cumulé rend la tolérance réellement bornée : **au plus 1 KiB** peut échapper au
-comptage, quelle que soit sa répartition.
+plafond cumulé rend la tolérance réellement bornée : l'échec se déclenche à
+`>= MAX_TOTAL_UNCOVERED_BYTES`, donc **au maximum 1 023 octets** peuvent échapper au
+comptage, quelle que soit leur répartition.
 
 Raison d'avoir une tolérance du tout, mesurée et non théorique : à commit identique, le
 build émet localement un chunk `errors-*.js` de ~30 octets que **le runner CI n'émet
