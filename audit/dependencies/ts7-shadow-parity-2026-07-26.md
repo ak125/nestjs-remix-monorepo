@@ -53,9 +53,16 @@ error TS5108: Option 'moduleResolution=node10' has been removed.
 
 **Do not read the 45 s aggregate saving as a CI or dev saving.** `turbo typecheck`
 runs these in parallel with content caching, and `ci.yml` additionally restores
-`.tsbuildinfo` across runs and narrows to `--affected` on PRs. The honest reading is
-per-project cold latency, dominated by `frontend` (24.0 s → 2.2 s) and `backend`
-(19.8 s → 2.0 s).
+`.tsbuildinfo` across runs.
+
+Be precise about `--affected`: it is appended **only on `pull_request` events**. Pushes
+to `main` and `dev` run a **full** typecheck — [`ci.yml:157-167`](../../.github/workflows/ci.yml)
+narrows on PRs deliberately and never on the pre-deploy gate. So `--affected` is not what
+makes the aggregate misleading on the push path; Turbo parallelism, content caching and
+the restored `.tsbuildinfo` are. The conclusion is unchanged either way.
+
+The honest reading is per-project cold latency, dominated by `frontend` (24.0 s → 2.2 s)
+and `backend` (19.8 s → 2.0 s).
 
 ## Finding 1 — removing the node10 line is a compatibility fix, not a migration
 
@@ -131,8 +138,9 @@ That is not "inert", so it fails the bar this removal was allowed under.
 
 **Consequence.** Deleting the line trades a loud, correct TS7 error for a silent
 resolution change. The right fix is an explicit, supported `moduleResolution` — i.e.
-the real `nodenext` migration — not omission. The 4–7 day estimate stands; the shortcut
-does not exist.
+the real `nodenext` migration — not omission. The shortcut does not exist. The 4–7 day
+figure is a **planning estimate, not a measured duration** — no pilot has been run, so
+it must not be cited as an observed number.
 
 Remaining matrix items (`tsc-alias`, `node dist/main` boot, Jest DI, the 29 dynamic
 `import()` sites, Docker + PREPROD smoke) were **not run**: the decision rule already
@@ -217,19 +225,40 @@ and both are exactly what a resolution-mode change can flip. Suppressing them co
 turn a real difference into a false PARITY. Neither occurs in this repo today (verified
 across all 12 projects on both compilers), so including them costs nothing.
 
-## Next actions (owner-gated)
+## Decision — PARKED (owner, 2026-07-27)
 
-1. **Do not remove the two lines.** The matrix returned NO-GO (see Finding 1): `.js` is
-   byte-identical but backend module resolution changes on 27 specifiers, with 6 new
-   ESM declaration surfaces on a CommonJS backend.
-2. The unblock is the real migration to an explicit supported `moduleResolution`
-   (`nodenext`, with `module: nodenext`), scoped per project, smallest blast radius
-   first (`seo-url-contract` 3 files → `domain-commerce` 6 → … → `backend` 1389).
-   `packages/registry` is already clean at the resolution level, which de-risks the
-   consumer previously assumed hardest.
-3. Re-run `npm run audit:ts7-shadow` after each step; expect projects to move
-   `BLOCKED_CONFIG` → `PARITY`.
-4. Leave TS7 out-of-band until `typescript-eslint` opens its peer range.
+**TS7 is parked. No action is open.** Recommendation accepted on the reasoning that the
+blocker is external (Finding 3), the measured gain is a cold sequential benchmark rather
+than a CI saving, and TS7 appears in none of the five canonical priorities.
+
+Operationally, and until the reopening trigger below fires:
+
+- **Do not** modify `packages/typescript-config/node-cjs-legacy.json`.
+- **Do not** start the `nodenext` pilot on `packages/seo-url-contract`.
+- **Do not** add TS7 to the repository (no dependency, no lockfile entry).
+- Keep **only** the observation harness (`npm run audit:ts7-shadow`).
+
+### Reopening trigger — state it exactly
+
+> A **stable** `typescript-eslint` release whose peer range **explicitly includes
+> `typescript@7.x`**, permitting a full upgrade of the TypeScript/ESLint cluster.
+
+**A range that merely opens to TypeScript 6.x unblocks nothing.** Do not settle for
+"the peer moved past `<6.1.0`" — that is the trap. Verified 2026-07-27:
+`typescript-eslint@8.65.0` (latest stable) still declares
+`typescript: ">=4.8.4 <6.1.0"`, and central rule #6 of the `peer_dependency_cluster`
+forbids upgrading the cluster partially.
+
+### Sequence at reopening, in this order
+
+Grouped cluster upgrade → `npm ci` → typed lint → harness → `nodenext` migration **per
+project** (smallest blast radius first: `seo-url-contract` 3 files → `domain-commerce` 6
+→ … → `backend` 1389; `packages/registry` is already clean at the resolution level) →
+resolution traces → emit → consumer tests → PREPROD. Expect projects to move
+`BLOCKED_CONFIG` → `PARITY` as each step lands.
+
+The node10 debt stays on the books, unpaid: it does not justify diverting time now from
+commerce-loop-v1, the runtime truths, Web Vitals, and the content pipeline.
 
 Editing `packages/typescript-config/node-cjs-legacy.json` invalidates every turbo cache
 entry (it is in `turbo.json` `globalDependencies`) and the CI `.tsbuildinfo` cache key —
