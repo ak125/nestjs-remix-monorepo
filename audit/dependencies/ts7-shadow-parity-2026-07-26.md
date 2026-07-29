@@ -56,8 +56,9 @@ runs these in parallel with content caching, and `ci.yml` additionally restores
 `.tsbuildinfo` across runs.
 
 Be precise about `--affected`: it is appended **only on `pull_request` events**. Pushes
-to `main` and `dev` run a **full** typecheck — [`ci.yml:157-167`](../../.github/workflows/ci.yml)
-narrows on PRs deliberately and never on the pre-deploy gate. So `--affected` is not what
+to `main` and `dev` run a **full** typecheck — see the `🔎 Type check` step of
+[`ci.yml`](../../.github/workflows/ci.yml) (referenced by step name, not line number, which
+will drift): it narrows on PRs deliberately and never on the pre-deploy gate. So `--affected` is not what
 makes the aggregate misleading on the push path; Turbo parallelism, content caching and
 the restored `.tsbuildinfo` are. The conclusion is unchanged either way.
 
@@ -244,18 +245,33 @@ Operationally, and until the reopening trigger below fires:
 > `typescript@7.x`**, permitting a full upgrade of the TypeScript/ESLint cluster.
 
 **A range that merely opens to TypeScript 6.x unblocks nothing.** Do not settle for
-"the peer moved past `<6.1.0`" — that is the trap. Verified 2026-07-27:
+"the peer moved past `<6.1.0`" — that is the trap. Verified 2026-07-29:
 `typescript-eslint@8.65.0` (latest stable) still declares
 `typescript: ">=4.8.4 <6.1.0"`, and central rule #6 of the `peer_dependency_cluster`
 forbids upgrading the cluster partially.
 
-### Sequence at reopening, in this order
+### Sequence at reopening — `nodenext` FIRST, cluster upgrade LAST
 
-Grouped cluster upgrade → `npm ci` → typed lint → harness → `nodenext` migration **per
-project** (smallest blast radius first: `seo-url-contract` 3 files → `domain-commerce` 6
-→ … → `backend` 1389; `packages/registry` is already clean at the resolution level) →
-resolution traces → emit → consumer tests → PREPROD. Expect projects to move
-`BLOCKED_CONFIG` → `PARITY` as each step lands.
+**The order matters and the intuitive one is wrong.** Upgrading the cluster first — i.e.
+letting TS7 become the repo compiler before the migration — would immediately produce the
+**8 `TS5108` errors** documented above. The repository could not stay green between steps.
+So TS7 enters the lockfile only once its configuration blockers are already gone:
+
+1. Verify a **stable** `typescript-eslint` explicitly supports `typescript@7.x` (see the
+   trigger above — a 6.x-only opening does not qualify).
+2. Re-run the harness to refresh the baseline.
+3. **Keeping TS6 as the repo compiler**, migrate to `nodenext` **project by project**,
+   smallest blast radius first (`seo-url-contract` 3 files → `domain-commerce` 6 → … →
+   `backend` 1389; `packages/registry` is already clean at the resolution level).
+   **Do not flip the shared `node-cjs-legacy.json`** — migrate each project on its own.
+4. After **each** project: TS7 harness, resolution traces, emit, consumer tests.
+5. Once every `BLOCKED_CONFIG` is eliminated, upgrade the **whole** TypeScript/ESLint
+   cluster in a **single atomic PR** → `npm ci` → typed lint → full typecheck / build /
+   tests → PREPROD.
+
+What this buys: the `nodenext` migrations stay green under TS6; the harness proves
+`BLOCKED_CONFIG` → `PARITY` incrementally; TS7 lands only after its blockers are cleared;
+and central rule #6 (no partial cluster upgrade) is respected throughout.
 
 The node10 debt stays on the books, unpaid: it does not justify diverting time now from
 commerce-loop-v1, the runtime truths, Web Vitals, and the content pipeline.
