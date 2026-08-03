@@ -351,6 +351,26 @@ export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
     [startTransition],
   );
 
+  // ⚡ Wrap setSortBy/setViewMode in startTransition (INP fix — these two setters
+  // were the only ones in this hook not deferred, unlike setActiveFilters above)
+  const setSortByTransitioned = useCallback(
+    (value: SortBy | ((prev: SortBy) => SortBy)) => {
+      startTransition(() => {
+        setSortBy(value);
+      });
+    },
+    [startTransition],
+  );
+
+  const setViewModeTransitioned = useCallback(
+    (value: ViewMode | ((prev: ViewMode) => ViewMode)) => {
+      startTransition(() => {
+        setViewMode(value);
+      });
+    },
+    [startTransition],
+  );
+
   return {
     // État
     activeFilters,
@@ -371,8 +391,8 @@ export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
 
     // Actions
     setActiveFilters: setActiveFiltersTransitioned,
-    setSortBy,
-    setViewMode,
+    setSortBy: setSortByTransitioned,
+    setViewMode: setViewModeTransitioned,
     setShowRecommendations,
     resetAllFilters,
     togglePieceSelection,
