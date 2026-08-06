@@ -56,7 +56,10 @@ const touchSession = (store: Store, sid: string, data: object): Promise<void> =>
 const makeFixture = () => ({
   cookie: {
     originalMaxAge: TTL_SECONDS * 1000,
-    expires: new Date('2026-08-01T00:00:00.000Z'),
+    // Relative to run time, not a fixed calendar date — a hardcoded date
+    // eventually lands in the past, making (expires - now) go negative and
+    // silently skip the Redis write (session treated as already-expired).
+    expires: new Date(Date.now() + TTL_SECONDS * 1000),
     httpOnly: true,
     path: '/',
     sameSite: 'lax' as const,
