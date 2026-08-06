@@ -9,7 +9,7 @@
  * /pieces/kit-d-embrayage-479.html
  */
 
-import { useEffect, useMemo, useState, Suspense } from "react";
+import { useEffect, useMemo, useState, useTransition, Suspense } from "react";
 import {
   redirect,
   type LoaderFunctionArgs,
@@ -606,6 +606,9 @@ export default function PiecesDetailPage() {
   >() as unknown as PiecesPageLoaderData;
   const navigation = useNavigation();
   const navigate = useNavigate();
+  // ⚡ Defer the vehicle-select navigation so the browser can paint the tap
+  // feedback before React reconciles this page's full tree (INP fix)
+  const [, startVehicleSelectTransition] = useTransition();
 
   // Nom de la gamme en minuscule pour les titres
   const n = (data.content?.pg_name || "pièce").toLowerCase();
@@ -770,9 +773,11 @@ export default function PiecesDetailPage() {
             type_alias:
               vehicle.type.type_alias || normalizeAlias(vehicle.type.type_name),
           });
-          navigate(
-            `/pieces/${gammeSlug}/${brandSlug}/${modelSlug}/${typeSlug}.html`,
-          );
+          startVehicleSelectTransition(() => {
+            navigate(
+              `/pieces/${gammeSlug}/${brandSlug}/${modelSlug}/${typeSlug}.html`,
+            );
+          });
         }}
         selectedVehicle={selectedVehicle}
       />

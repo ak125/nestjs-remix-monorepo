@@ -11,7 +11,7 @@
  */
 
 import { ChevronDown } from "lucide-react";
-import { useState, useCallback, memo } from "react";
+import { useState, useCallback, useMemo, memo } from "react";
 import {
   type PieceData,
   type PiecesFilters,
@@ -140,22 +140,27 @@ export const PiecesGroupedDisplay = memo(function PiecesGroupedDisplay({
     setVisibleCounts((prev) => ({ ...prev, [groupKey]: totalCount }));
   }, []);
 
-  // Filtrer les groupes par position si un filtre est actif
-  const filteredGroups = groupedPieces.filter((group) => {
-    if (!activeFilters.position || activeFilters.position === "all") {
-      return true;
-    }
-    return group.filtre_side === activeFilters.position;
-  });
+  // ⚡ Mémoïser le filtrage/tri par groupe : ne recalculer que si groupedPieces
+  // ou activeFilters changent, pas à chaque re-render déclenché par la pagination
+  // (handleLoadMore), la sélection (selectedPieces) ou le changement de vue (INP fix)
+  const filteredGroups = useMemo(() => {
+    return groupedPieces
+      .filter((group) => {
+        if (!activeFilters.position || activeFilters.position === "all") {
+          return true;
+        }
+        return group.filtre_side === activeFilters.position;
+      })
+      .map((group) => ({
+        group,
+        groupPieces: applyFilters(group.pieces || [], activeFilters),
+      }))
+      .filter(({ groupPieces }) => groupPieces.length > 0);
+  }, [groupedPieces, activeFilters]);
 
   return (
     <div className="space-y-8">
-      {filteredGroups.map((group, idx) => {
-        // Appliquer les filtres sur les pièces du groupe
-        const groupPieces = applyFilters(group.pieces || [], activeFilters);
-
-        if (groupPieces.length === 0) return null;
-
+      {filteredGroups.map(({ group, groupPieces }, idx) => {
         // Clé unique pour ce groupe
         const groupKey = `${group.filtre_gamme}-${group.filtre_side}-${idx}`;
 
