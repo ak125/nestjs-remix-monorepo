@@ -59,15 +59,23 @@ if [ "${status:-}" != "200" ]; then
   echo "  ❌ [$LABEL] GET / -> ${status:-no response} (expected 200)"
   exit 1
 fi
-if ! echo "$ctype" | grep -qi 'text/html'; then
+if ! grep -qi 'text/html' <<< "$ctype"; then
   echo "  ❌ [$LABEL] GET / Content-Type is not text/html"
   exit 1
 fi
-if ! printf '%s' "$body" | grep -qF "$MARKER"; then
+# grep -q (and -qF/-qi) exits as soon as it finds a match, WITHOUT reading the
+# rest of stdin. Piped into `printf`/`echo`, that early exit can SIGPIPE the
+# writer before it finishes — and under `set -o pipefail` (above) that failed
+# write, not grep's actual (matching) exit code, decides the pipeline's status.
+# On a large body (real pages run 200KB+) this false-failed even when the
+# marker WAS present (PROD deploy incident 2026-08-07, tag v4.7.8 — rejected a
+# healthy build, then rejected its own rollback the same way). A herestring
+# has bash write directly into grep's stdin — one process, no pipe, no race.
+if ! grep -qF "$MARKER" <<< "$body"; then
   echo "  ❌ [$LABEL] GET / lacks the stable SSR marker $MARKER — document was not server-rendered"
   exit 1
 fi
-if echo "$robots" | grep -qi 'noindex'; then
+if grep -qi 'noindex' <<< "$robots"; then
   echo "  ❌ [$LABEL] GET / served X-Robots-Tag: noindex — homepage is in DEGRADED FALLBACK (families empty)"
   exit 1
 fi
