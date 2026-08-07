@@ -156,3 +156,39 @@ describe("prod-ssr-probe.sh — must not write a temp file in the container (202
     assert.match(code, /-O\s+\/dev\/null/, "headers must discard body to /dev/null");
   });
 });
+
+describe("prod-ssr-probe.sh — must not pipe a captured var into an early-exiting grep (2026-08-07 regression)", () => {
+  const src = readFileSync(PROBE_SH, "utf8");
+  const code = src
+    .split("\n")
+    .filter((l) => !l.trim().startsWith("#"))
+    .join("\n");
+
+  // `grep -q`/`-qF`/`-qi` exits the instant it finds a match, without draining
+  // the rest of stdin. Piped from `printf`/`echo`, that early exit can SIGPIPE
+  // the writer before it finishes — and under `set -o pipefail` (this script
+  // sets it), that failed WRITE, not grep's actual (matching) exit code,
+  // decides the pipeline's status. On a large body (real pages run 200KB+)
+  // this false-failed a healthy homepage AND its own rollback verification
+  // (PROD deploy incident 2026-08-07, tag v4.7.8). A herestring has bash write
+  // directly into grep's stdin: one process, no pipe, no race — this is a
+  // *static*, deterministic check because the underlying bug is a timing race
+  // that a dynamic large-body test can only reproduce flakily.
+  test("never pipes a captured variable into grep -q", () => {
+    const riskyPipes =
+      code.match(/\b(printf|echo)\b[^|\n]*\|\s*grep\s+-[a-zA-Z]*q/g) || [];
+    assert.deepEqual(
+      riskyPipes,
+      [],
+      `probe must not pipe printf/echo into an early-exiting grep -q (SIGPIPE + pipefail false-negative on large bodies). Found: ${riskyPipes.join(", ")}`,
+    );
+  });
+
+  test("uses herestrings (<<<) for the grep -q checks against captured vars", () => {
+    const grepQChecks = code.match(/grep\s+-[a-zA-Z]*q\S*[^\n]*/g) || [];
+    assert.ok(grepQChecks.length >= 3, "expected at least 3 grep -q checks (Content-Type, marker, noindex)");
+    for (const line of grepQChecks) {
+      assert.match(line, /<<</, `grep -q check must read via herestring, not a pipe: "${line.trim()}"`);
+    }
+  });
+});
