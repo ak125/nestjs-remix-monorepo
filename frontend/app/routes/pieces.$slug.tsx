@@ -52,6 +52,7 @@ import { buildCacheHeaders } from "~/utils/cache-control";
 import {
   extractEditorialBlocks,
   mergeFaqBlocks,
+  type EditorialBlocks,
 } from "~/utils/editorial-parser";
 import { parseGammePageData } from "~/utils/gamme-page-contract.utils";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
@@ -391,6 +392,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         status: pageData.status,
         meta: pageData.meta,
         content: pageData.content,
+        editorialBlocks: extractEditorialBlocks(
+          pageData.content?.content || "",
+        ),
         breadcrumbs: pageData.breadcrumbs,
         famille: pageData.famille,
         performance: pageData.performance,
@@ -589,6 +593,10 @@ type PiecesPageSyncData = Omit<
     title?: string;
     items?: Array<{ title: string; description?: string; image?: string }>;
   } | null;
+  // ⚡ Precomputed server-side (loader) instead of client useMemo — the DOMPurify
+  // sanitize + regex classification only needs to run once (SSR), not a second
+  // time during client hydration (INP fix — see extractEditorialBlocks call site)
+  editorialBlocks: EditorialBlocks;
 };
 
 // Loader payload complet: sync + deferred Promises
@@ -613,14 +621,11 @@ export default function PiecesDetailPage() {
   // Nom de la gamme en minuscule pour les titres
   const n = (data.content?.pg_name || "pièce").toLowerCase();
 
-  // Extraire les blocs éditoriaux par section narrative (6 H2).
-  // useMemo : extractEditorialBlocks = DOMPurify.sanitize (~9,5KB) + regex —
-  // sans mémo, ré-exécuté à CHAQUE re-render (dont les 2 transitions
-  // useNavigation de chaque clic) → coût INP mobile récurrent.
-  const editorialBlocks = useMemo(
-    () => extractEditorialBlocks(data.content?.content || ""),
-    [data.content?.content],
-  );
+  // Blocs éditoriaux par section narrative (6 H2), précalculés dans le loader
+  // (SSR). DOMPurify.sanitize (~9,5KB) + regex ne s'exécutent donc plus une
+  // seconde fois côté client à l'hydratation (INP fix — l'ancien useMemo
+  // protégeait les re-renders suivants, mais pas ce premier passage client).
+  const editorialBlocks = data.editorialBlocks;
 
   // FAQ unique fusionnée (éditorial + fallback statique)
   const mergedFaq = useMemo(
@@ -714,14 +719,9 @@ export default function PiecesDetailPage() {
       >
         Aller au contenu principal
       </a>
-      {/* ⏳ Indicateur de chargement */}
-      {isLoading && (
-        <div
-          role="status"
-          aria-label="Chargement en cours"
-          className="fixed top-0 left-0 right-0 z-[60] h-1 bg-blue-500 animate-pulse"
-        />
-      )}
+      {/* Indicateur de chargement désormais géré globalement dans root.tsx
+          (AppShell, navigation.state !== "idle") — évite un doublon de barre
+          identique empilée sur cette route. */}
       <GammeHero
         gammeName={
           data.sectionPack?.sections.hero.data.h1Override?.replace(

@@ -329,6 +329,18 @@ function AppShell({ children }: { children: React.ReactNode }) {
       className="min-h-screen flex flex-col max-w-[100vw]"
       {...pageRoleAttrs}
     >
+      {/* ⏳ Indicateur de navigation global (INP fix) — sans lui, un clic sur un
+          <Link> ne peint RIEN avant la fin du chargement de la page cible, donc
+          toute cette fenêtre (réseau + rendu) est comptée dans l'INP du clic.
+          Même pattern déjà utilisé localement dans pieces.$slug.tsx, généralisé
+          ici à toutes les routes (ex: reference-auto/*, qui n'en avait aucun). */}
+      {navigation.state !== "idle" && (
+        <div
+          role="status"
+          aria-label="Chargement en cours"
+          className="fixed top-0 left-0 right-0 z-[60] h-1 bg-blue-500 animate-pulse"
+        />
+      )}
       {!hideGlobalNavbar && <Navbar />}
       <main className="grow flex flex-col">
         <div className="grow">{children}</div>
