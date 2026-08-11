@@ -360,11 +360,26 @@ export async function loader({ params }: LoaderFunctionArgs) {
   // ========================================
   // 🔄 TRANSFORMATION RPC → LoaderData
   // ========================================
-  const loaderData = transformRpcToLoaderData(rpcResult.data, {
-    brand,
-    model,
-    type,
-  });
+  let loaderData: ReturnType<typeof transformRpcToLoaderData>;
+  try {
+    loaderData = transformRpcToLoaderData(rpcResult.data, {
+      brand,
+      model,
+      type,
+    });
+  } catch (transformErr) {
+    logger.error(
+      `💥 [LOADER] transformRpcToLoaderData failed for type_id=${type_id}:`,
+      transformErr instanceof Error ? transformErr.message : transformErr,
+    );
+    await notify503ToErrorLog(
+      `/constructeurs/${brand}/${model}/${type}`,
+      "LOADER_503_TRANSFORM_CRASH",
+      `transformRpcToLoaderData threw for type_id=${type_id}: ${transformErr instanceof Error ? transformErr.message : String(transformErr)}`,
+      { type_id },
+    );
+    throw seoError(503, "Service temporairement indisponible");
+  }
 
   // Mettre en cache mémoire
   loaderCache.set(cacheKey, {

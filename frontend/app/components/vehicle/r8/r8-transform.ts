@@ -161,8 +161,10 @@ export function transformRpcToLoaderData(
     (f: any) => ({
       mf_id: parseInt(f.mf_id),
       mf_name: f.mf_name,
-      mf_description: f.mf_description || `Système ${f.mf_name.toLowerCase()}`,
-      mf_pic: f.mf_pic || `${f.mf_name.toLowerCase()}.webp`,
+      mf_description:
+        f.mf_description ||
+        (f.mf_name ? `Système ${f.mf_name.toLowerCase()}` : "Système"),
+      mf_pic: f.mf_pic || (f.mf_name ? `${f.mf_name.toLowerCase()}.webp` : ""),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       gammes: (f.gammes || []).map((g: any) => ({
         pg_id: g.pg_id,
@@ -189,7 +191,8 @@ export function transformRpcToLoaderData(
       cgc_pg_id: p.pg_id,
       pg_alias: p.pg_alias,
       pg_name: p.pg_name,
-      pg_name_meta: p.pg_name_meta || p.pg_name.toLowerCase(),
+      pg_name_meta:
+        p.pg_name_meta || (p.pg_name ? p.pg_name.toLowerCase() : ""),
       pg_img: p.pg_img || null,
       addon_content: generateSeoContent(p.pg_name, vehicleData, type_id + idx),
     }),
