@@ -17,7 +17,7 @@ name: canon-sync
 #    fetches the raw canon file, applies the canonical strip-frontmatter
 #    transform, verifies sha256 against `distribution_sha256` (fail-closed),
 #    and writes each declared mirror path.
-# 2. If any file changed, peter-evans/create-pull-request@v6 opens (or updates)
+# 2. If any file changed, peter-evans/create-pull-request@v8 opens (or updates)
 #    a PR with the resync.
 # 3. The PR's own CI (marketing-voice-hash.yml, agent-exit-contract-hash.yml)
 #    verifies the bytes match the vault on every push to the mirror paths.
@@ -52,7 +52,7 @@ jobs:
         run: bash scripts/ci/sync-canon-from-vault.sh
 
       - name: Open (or update) auto-PR if mirrors changed
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v8
         with:
           branch: canon-sync/auto
           commit-message: "chore(canon): resync mirrors from governance-vault"

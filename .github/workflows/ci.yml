@@ -541,12 +541,12 @@ jobs:
           fetch-depth: 0
 
       - name: 🔐 Run gitleaks (incremental scan, blocking)
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🐷 Run TruffleHog (verified secrets, blocking)
-        uses: trufflesecurity/trufflehog@v3.83.7
+        uses: trufflesecurity/trufflehog@v3.96.0
         with:
           path: ./
           base: ${{ github.event.pull_request.base.sha || github.event.before }}

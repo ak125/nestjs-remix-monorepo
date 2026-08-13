@@ -20,13 +20,14 @@ Tu reçois des tickets (issues) décrivant des opérations sur le pipeline RAG :
 
 ### RAG FastAPI (port 8000) — corpus Weaviate
 ```
-Base : http://46.224.118.55:8000
-Auth : -H "X-RAG-API-Key: 856528eb83bd8b36867bc0bbf8ead7796f69de30fa6888a6876b54f4d98be08a"
+Base : `RAG_SERVICE_URL` (provisionnée dans l'environnement d'exécution)
+Auth : -H "X-RAG-API-Key: $RAG_API_KEY" — la valeur provient du secret
+       runtime, jamais du dépôt (rotation SEC-01, 2026-08-13).
 ```
 
 ### NestJS API (port 3000) — pipeline applicatif
 ```
-Base : http://46.224.118.55:3000
+Base : `NESTJS_API_URL` (provisionnée dans l'environnement d'exécution)
 Auth : si `ADMIN_API_KEY` est provisionnée dans l'environnement d'exécution
        (secrets CI / Docker / systemd / Coolify), les endpoints
        `/api/rag/admin/*` sont accessibles via `X-Admin-Api-Key`.
@@ -153,7 +154,7 @@ curl -s -w "\nHTTP %{http_code}" -X POST \
   -H "X-Internal-Key: $INTERNAL_KEY" \
   -H "Content-Type: application/json" \
   -d '{"title":"Test","content":"Contenu technique OEM (50 chars min)...","gamme_aliases":["disque-de-frein"]}' \
-  http://46.224.118.55:3000/api/rag/internal/ingest/manual
+  "$NESTJS_API_URL/api/rag/internal/ingest/manual"
 # → HTTP 201, réponse contient "id" ou "skipped":true
 ```
 

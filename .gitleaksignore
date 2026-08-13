@@ -1,0 +1,35 @@
+# gitleaks — exceptions par FINGERPRINT (commit:file:rule-id:line)
+#
+# POURQUOI CE FICHIER EXISTE, ET POURQUOI PAS UNE ALLOWLIST DE VALEUR
+# -------------------------------------------------------------------
+# Jusqu'au 2026-08-13, la clé RAG de production était exceptée dans
+# `.gitleaks.toml` sous `[allowlist].regexes`, c'est-à-dire **par sa valeur**.
+# Une allowlist par valeur matche PARTOUT et POUR TOUJOURS : elle a été ajoutée
+# dans le commit même qui introduisait la fuite (b29d97671, 2026-02-22), puis la
+# clé a été recopiée dans 3 autres fichiers sans qu'aucun scan ne la signale.
+# Six mois d'exposition sur un dépôt PUBLIC, service bindé 0.0.0.0:8000.
+#
+# Un fingerprint ne couvre qu'UNE occurrence précise. Une réintroduction du même
+# secret ailleurs produit un fingerprint différent → gitleaks ÉCHOUE. C'est la
+# seule forme d'exception qui ne se transforme pas en angle mort permanent.
+#
+# RÈGLES
+#   - fingerprints COMMIT-SPÉCIFIQUES uniquement (4 segments).
+#     Le format global `file:rule-id:line` est INTERDIT : il couvrirait toutes
+#     les occurrences présentes et futures du fichier — on recréerait le défaut.
+#   - copiés EXACTEMENT depuis `finding.Fingerprint` d'un rapport gitleaks,
+#     jamais retapés ni reconstruits à la main.
+#   - toute entrée ici DOIT avoir une entrée correspondante avec `revoked_at`
+#     et une preuve de rotation dans `audit/baselines/revoked-secrets-baseline.json`.
+#     `scripts/audit/check-revoked-secrets-ratchet.ts` échoue sinon.
+#   - JAMAIS la valeur d'un secret dans ce fichier.
+#
+# Produit par : gitleaks 8.21.2 — `gitleaks git --report-format json`
+# exécuté APRÈS la rotation SEC-01 du 2026-08-13.
+
+# SEC-01 — clé RAG de production, révoquée le 2026-08-13.
+# Preuve de révocation : ancienne clé → HTTP 401 sur /search et /chat ;
+# nouvelle clé → 200. Détail dans revoked-secrets-baseline.json.
+442b67b36813cdd73a1a33c994b403173ff32230:agents/rag-lead/AGENTS.md:generic-api-key:21
+04765b8c0dea3fbb04d4aee34230307cc28fa400:docker-compose.ci-deploy.yml:generic-api-key:39
+a96e9c23e578145a7481da7e4d0d23fc87a6fde4:docker-compose.prod.yml:generic-api-key:33

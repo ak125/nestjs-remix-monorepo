@@ -46,9 +46,30 @@ name: ♻️ Registry deps self-heal (main)
 #        SELF_HEAL_APP_PRIVATE_KEY = the generated .pem contents
 #   3. Ensure "Allow auto-merge" is enabled in repo settings (already used here).
 #
-# SCOPE: only the two projections (NOT canonical.json — separate blast radius).
-# SUPPLY-CHAIN: npm ci --ignore-scripts; builders are pure fs/crypto, never run
-# the bumped dependency's code. Runs on main after human review of the merge.
+# SCOPE: the two L1 projections + the L3 reprojection they invalidate (4 files).
+#
+# WHY canonical.json IS NOW IN SCOPE (was excluded until 2026-08-13)
+# ------------------------------------------------------------------
+# `audit/registry/deps.json` is an INPUT of `audit/registry/canonical.json` — it
+# is listed in `canonical.meta.inputHashes`. Healing deps.json therefore makes
+# canonical.json inconsistent BY CONSTRUCTION: this workflow was trading one
+# drift for another, and closing the loop it claimed to close only halfway.
+# Measured on 2026-08-13: canonical.meta.inputHashes declared deps.json at
+# 9b722879… while the file on disk was 6f667991… — a divergence produced by this
+# very workflow's healing runs (#1242-era, then 110ba90b3 / 2cd7e1785).
+# `.claude/knowledge/REPO_MAP.md` is a projection OF canonical, so it follows.
+#
+# BOUNDARY — what this reprojection does NOT claim
+# ------------------------------------------------
+# Rebuilding canonical here makes it consistent with its inputs AS THEY ARE ON
+# MAIN. It does NOT assert that files.json/runtime.json themselves match the live
+# source tree — that is a different gate (registry-fresh.yml, whose `paths:` now
+# include backend/src/** and frontend/app/**). Do not read a green self-heal as
+# "the registry is fresh"; read it as "the projection matches its inputs".
+#
+# SUPPLY-CHAIN: npm ci --ignore-scripts; builders are pure fs/crypto (plain node,
+# no tsx), never run the bumped dependency's code. Runs on main after human
+# review of the merge.
 # WHERE: runs-on ubuntu-latest = GitHub cloud runner (works with DEV off).
 
 on:
@@ -107,22 +128,29 @@ jobs:
       - name: Regenerate PR-9 modernization inventory
         run: npm run audit:pr-9-modernization-inventory
 
+      # deps.json is an input of canonical.json (meta.inputHashes). Healing the
+      # input without reprojecting leaves L3 stale — see header §WHY.
+      - name: Reproject L3 canonical + LLM repo map (deps.json is one of its inputs)
+        run: npm run registry:build:canonical && npm run registry:build:llm-map
+
       - name: Scope-guard + detect drift
         id: stage
         run: |
           set -euo pipefail
           DEPS="audit/registry/deps.json"
           INV="audit/dependencies/dependency-modernization-inventory.json"
+          CANON="audit/registry/canonical.json"
+          MAP=".claude/knowledge/REPO_MAP.md"
 
           CHANGED="$(git diff --name-only HEAD -- . | sort -u)"
           UNEXPECTED="$(printf '%s\n' "$CHANGED" \
-            | grep -vE '^(audit/registry/deps\.json|audit/dependencies/dependency-modernization-inventory\.json)$' \
+            | grep -vE '^(audit/registry/deps\.json|audit/dependencies/dependency-modernization-inventory\.json|audit/registry/canonical\.json|\.claude/knowledge/REPO_MAP\.md)$' \
             || true)"
           if [ -n "$UNEXPECTED" ]; then
             {
               echo "## ❌ Registry self-heal touched unexpected files"
               echo ""
-              echo "Regeneration must change ONLY the two projections. Unexpected:"
+              echo "Regeneration must change ONLY the four allowlisted projections. Unexpected:"
               echo '```'
               printf '%s\n' "$UNEXPECTED"
               echo '```'
@@ -131,12 +159,12 @@ jobs:
             exit 1
           fi
 
-          if git diff --quiet -- "$DEPS" "$INV"; then
+          if git diff --quiet -- "$DEPS" "$INV" "$CANON" "$MAP"; then
             echo "status=identical" >> "$GITHUB_OUTPUT"
-            echo "✓ deps.json + inventory already fresh — idempotent no-op."
+            echo "✓ deps.json + inventory + canonical + repo map already fresh — idempotent no-op."
           else
             echo "status=changed" >> "$GITHUB_OUTPUT"
-            git --no-pager diff --stat -- "$DEPS" "$INV"
+            git --no-pager diff --stat -- "$DEPS" "$INV" "$CANON" "$MAP"
           fi
 
       - name: Resolve bot identity (App preferred, user token fallback)
@@ -165,7 +193,7 @@ jobs:
       - name: Open/update self-heal PR
         id: cpr
         if: steps.stage.outputs.status == 'changed' && steps.identity.outputs.mode != 'none'
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v8
         with:
           # App installation token when mode=app (step ran), else the user token.
           token: ${{ steps.app-token.outputs.token || secrets.SELF_HEAL_TOKEN }}
@@ -174,17 +202,28 @@ jobs:
           add-paths: |
             audit/registry/deps.json
             audit/dependencies/dependency-modernization-inventory.json
-          commit-message: "chore(registry): self-heal deps.json + modernization inventory"
-          title: "chore(registry): self-heal deps.json + modernization inventory"
+            audit/registry/canonical.json
+            .claude/knowledge/REPO_MAP.md
+          commit-message: "chore(registry): self-heal deps.json + modernization inventory + L3 reprojection"
+          title: "chore(registry): self-heal deps.json + modernization inventory + L3 reprojection"
           labels: dependencies
           body: |
             Auto-generated by `.github/workflows/registry-deps-self-heal.yml`.
 
-            Regenerates the two deterministic registry projections from the live
-            workspace manifests (`npm run registry:build:deps` +
+            Regenerates the two deterministic L1 projections from the live workspace
+            manifests (`npm run registry:build:deps` +
             `npm run audit:pr-9-modernization-inventory`) after a dependency bump
-            landed on main without them. Deterministic, scope-guarded (2 files),
-            derived from `package.json` (ADR-058/062) — safe to auto-merge.
+            landed on main without them — **then reprojects L3**
+            (`registry:build:canonical` + `registry:build:llm-map`), because
+            `deps.json` is one of `canonical.meta.inputHashes` and healing it
+            without reprojecting leaves canonical stale by construction.
+
+            Deterministic, scope-guarded (4 files), derived from `package.json`
+            (ADR-058/062) — safe to auto-merge.
+
+            Scope note: a green run means "the projection matches its inputs on
+            main", NOT "the registry matches the live source tree" — that is
+            `registry-fresh.yml`'s job.
 
             DO NOT EDIT manually.
 
@@ -208,9 +247,10 @@ jobs:
             echo ""
             echo "**Manual heal:** run"
             echo '```'
-            echo "npm run registry:build:deps && npm run audit:pr-9-modernization-inventory"
+            echo "npm run registry:build:deps && npm run audit:pr-9-modernization-inventory \\"
+            echo "  && npm run registry:build:canonical && npm run registry:build:llm-map"
             echo '```'
-            echo "then open a PR with the two changed files (e.g. as in #1242)."
+            echo "then open a PR with the four changed files (e.g. as in #1242)."
           } >> "$GITHUB_STEP_SUMMARY"
           echo "::warning::registry drift on main; no self-heal identity configured — manual heal required."
 
