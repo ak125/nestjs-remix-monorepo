@@ -2809,6 +2809,7 @@
       ".squawk.toml",
       "audit-reports/seo-agent-matrix.json",
       "package-lock.json",
+      "scripts/audit/__tests__/deep-inventory-determinism.test.ts",
       "scripts/audit/build-automation-inventory.js",
       "scripts/audit/build-cleanup-candidates.test.ts",
       "scripts/audit/build-cleanup-candidates.ts",
@@ -2872,7 +2873,7 @@
       "tests/registry/rpc-parser.test.ts"
     ]
   },
-  "runtime_files_count": 1484,
+  "runtime_files_count": 1485,
   "runtime_files": [
     ".dependency-cruiser.cjs",
     ".github/workflows/agent-exit-contract-hash.yml",
@@ -4296,6 +4297,7 @@
     "frontend/app/routes/unauthorized.tsx",
     "frontend/app/routes/vehicles.tsx",
     "package-lock.json",
+    "scripts/audit/__tests__/deep-inventory-determinism.test.ts",
     "scripts/audit/build-automation-inventory.js",
     "scripts/audit/build-cleanup-candidates.test.ts",
     "scripts/audit/build-cleanup-candidates.ts",

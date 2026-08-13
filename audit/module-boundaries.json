@@ -699,8 +699,8 @@
         "scripts/wiki-generators",
         "scripts/wiki-generators/__tests__"
       ],
-      "files_count": 165,
-      "loc_total": 33469,
+      "files_count": 166,
+      "loc_total": 33544,
       "has_barrel": true
     },
     "search": {
