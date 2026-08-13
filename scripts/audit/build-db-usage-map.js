@@ -31,6 +31,13 @@ const GENERATED_BY = 'scripts/audit/build-db-usage-map.js';
 function log(...a) { if (!QUIET) process.stderr.write(a.join(' ') + '\n'); }
 function die(msg) { process.stderr.write(`[build-db-usage-map] ERROR: ${msg}\n`); process.exit(1); }
 
+// Comparateur CODEPOINT — jamais `localeCompare()`, qui résout l'ICU du process
+// (`fr-FR` sur un poste opérateur, `en-US`/`C` sur un runner CI) et rendrait
+// l'ordre de cette projection dépendant de la machine. Même règle et même
+// justification que dans build-deep-inventory.js — les deux écrivent des
+// artefacts comparés octet près par le step « Deep-inventory freshness ».
+const cmpStr = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+
 const ORPHAN_TABLE_CAVEATS = [
   'may be read/written by Supabase internals (auth, storage, realtime)',
   'may be used by ad-hoc SQL / psql / dashboard',
@@ -209,11 +216,11 @@ function main() {
     },
     tables,
     rpc,
-    trigger_functions: triggerFunctions.sort((a, b) => a.name.localeCompare(b.name)),
+    trigger_functions: triggerFunctions.sort((a, b) => cmpStr(a.name, b.name)),
     candidate_orphan_tables: candidateOrphanTables,
     candidate_orphan_rpc: candidateOrphanRpc,
-    dynamic_from_callsites: cs.dynamicFrom.slice().sort((a, b) => a.file.localeCompare(b.file) || a.line - b.line),
-    dynamic_rpc_callsites: cs.dynamicRpc.slice().sort((a, b) => a.file.localeCompare(b.file) || a.line - b.line),
+    dynamic_from_callsites: cs.dynamicFrom.slice().sort((a, b) => cmpStr(a.file, b.file) || a.line - b.line),
+    dynamic_rpc_callsites: cs.dynamicRpc.slice().sort((a, b) => cmpStr(a.file, b.file) || a.line - b.line),
   };
   const dest = path.join(REPO_ROOT, 'audit', 'db-usage-map.json');
   fs.mkdirSync(path.dirname(dest), { recursive: true });

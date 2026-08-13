@@ -12,9 +12,22 @@ npm run audit:inventory:check    # rebuild + `git diff --exit-code -- audit/*.js
 ```
 
 The generator is [`scripts/audit/build-deep-inventory.js`](../scripts/audit/build-deep-inventory.js)
-(plain Node — no `tsx`/`ts-morph` runtime dep). It is **deterministic**: no
-timestamps in the output, every array sorted by a stable key, so re-running on
-the same checkout produces byte-identical files.
+(plain Node — no `tsx`/`ts-morph` runtime dep). It is **deterministic across
+machines**, not merely across runs: no timestamps in the output, every array
+sorted by **codepoint** (never `localeCompare()`, which resolves the process ICU
+locale — `fr-FR` on an operator box, `en-US`/`C` on a CI runner), paths normalised
+`path.sep → '/'`, and dead-code candidates filtered on `git ls-files` so a dirty
+working tree cannot leak uncommitted files into a committed projection.
+
+Two runs on the same checkout produce byte-identical files — and so do two runs on
+*different machines* at the same commit. That second property is what makes the
+freshness gate meaningful. Before 2026-08-13 neither held: the arrays were sorted
+by locale, and `dead-code-candidates.json` had captured 2 untracked files from a
+loaded working tree, which then flowed into the PR-8 inventory fingerprint.
+
+Locked by [`scripts/audit/__tests__/deep-inventory-determinism.test.ts`](../scripts/audit/__tests__/deep-inventory-determinism.test.ts)
+(`npm run audit:inventory:test`), wired in `registry-fresh.yml` **before** the
+rebuild — run after it, the test would only inspect what the generator just wrote.
 
 ## Data sources (no naive grep for structural analysis)
 

@@ -185,6 +185,25 @@ function lastModifiedMap() {
   return map;
 }
 
+// Cross-platform npm launcher — two distinct Windows obstacles, both required.
+//
+//  1. `execFileSync` without a shell resolves a LITERAL filename, and on Windows
+//     `npx` only exists as `npx.cmd` / `npx.ps1`, never extension-less
+//     → `spawnSync npx ENOENT`.
+//  2. Since the CVE-2024-27980 mitigation (Node ≥ 18.20.2 / 20.12.2 / 21.7.3),
+//     Node REFUSES to spawn a `.cmd`/`.bat` without `shell: true`
+//     → `spawnSync npx.cmd EINVAL`.
+//
+// Without both, the deep inventory — and therefore the registry build, which
+// consumes its cache — cannot run on any Windows checkout at all.
+//
+// `shell` is enabled on win32 ONLY. Every argument passed to runJson() below is
+// a static literal (no user input, no spaces, no shell metacharacters), so the
+// usual shell-injection concern does not apply here. No behaviour change on
+// POSIX: `NPX === 'npx'` and `SHELL === false`.
+const IS_WIN = process.platform === 'win32';
+const NPX = IS_WIN ? 'npx.cmd' : 'npx';
+
 function runJson(cmd, args, label) {
   log(`[build-deep-inventory] running ${label}…`);
   // stderr is *evidence*, not noise: capture it, tee it to audit/cache/tool-<label>.stderr.log
@@ -196,7 +215,7 @@ function runJson(cmd, args, label) {
   let stderr = '';
   let failure = null;
   try {
-    stdout = execFileSync(cmd, args, { cwd: REPO_ROOT, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] });
+    stdout = execFileSync(cmd, args, { cwd: REPO_ROOT, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'], shell: IS_WIN });
   } catch (e) {
     // many of these tools exit non-zero when they find issues — keep stdout/stderr
     stdout = (e.stdout || '').toString();
@@ -217,7 +236,7 @@ function runJson(cmd, args, label) {
 
 function loadDepcruise() {
   const j = runJson(
-    'npx',
+    NPX,
     ['--no-install', 'depcruise', '--config', '.dependency-cruiser.cjs', '--output-type', 'json', 'backend/src', 'frontend/app'],
     'dependency-cruiser',
   );
@@ -273,7 +292,7 @@ async function loadCycles() {
 // ---------------------------------------------------------------------------
 
 function loadKnip() {
-  const j = runJson('npx', ['--no-install', 'knip', '--reporter', 'json', '--no-exit-code'], 'knip');
+  const j = runJson(NPX, ['--no-install', 'knip', '--reporter', 'json', '--no-exit-code'], 'knip');
   const unusedFiles = new Set();
   const duplicates = [];
   const unusedExports = [];
@@ -454,7 +473,25 @@ function writeJson(absPath, obj) {
   log(`[build-deep-inventory] wrote ${rel(absPath)}`);
 }
 
-function sortByPath(arr, key = 'path') { return arr.slice().sort((a, b) => String(a[key]).localeCompare(String(b[key]))); }
+// Comparateur CODEPOINT — jamais `localeCompare()`.
+//
+// Ces 7 projections sont comparées octet près par le step « Deep-inventory
+// freshness » (registry-fresh.yml), et `dead-code-candidates.json` alimente
+// l'inventaire PR-8, lui aussi comparé octet près. `localeCompare()` sans locale
+// explicite résout l'ICU du process — `fr-FR` sur un poste opérateur, `en-US`/`C`
+// sur un runner CI — donc l'ordre des artefacts dépendait de la machine qui les
+// générait, et non du contenu du repo.
+//
+// Mesuré le 2026-08-13 : sur les artefacts commités, seul
+// `dead-code-candidates.json` (274 entrées) changeait réellement d'ordre entre les
+// deux comparateurs ; `module-boundaries`, `duplicate-map`, `cycle-map`,
+// `dynamic-import-edges` et `db-usage-map` étaient déjà identiques dans les deux.
+// Le comparateur est uniformisé partout pour que ça le reste quand les données
+// changeront — l'exposition était latente, pas théorique.
+//
+// Verrouillé par scripts/audit/__tests__/deep-inventory-determinism.test.ts.
+const cmpStr = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+function sortByPath(arr, key = 'path') { return arr.slice().sort((a, b) => cmpStr(String(a[key]), String(b[key]))); }
 
 async function main() {
   if (!fs.existsSync(path.join(REPO_ROOT, '.dependency-cruiser.cjs'))) die('must run from repo root (.dependency-cruiser.cjs not found)');
@@ -568,14 +605,14 @@ async function main() {
   writeJson(path.join(AUDIT_DIR, 'module-boundaries.json'), {
     _generated_by: GENERATED_BY,
     domains: Object.fromEntries([...byDomain.entries()].sort().map(([k, v]) => [k, { dirs: [...v.dirs].sort(), files_count: v.files_count, loc_total: v.loc_total, has_barrel: v.has_barrel }])),
-    cross_domain_edges: [...crossEdges.entries()].map(([k, count]) => { const [from, to] = k.split(' -> '); return { from, to, count }; }).sort((a, b) => a.from.localeCompare(b.from) || a.to.localeCompare(b.to)),
-    deep_access_violations: dc.deepAccess.slice().sort((a, b) => String(a.from).localeCompare(b.from) || String(a.to).localeCompare(b.to)),
+    cross_domain_edges: [...crossEdges.entries()].map(([k, count]) => { const [from, to] = k.split(' -> '); return { from, to, count }; }).sort((a, b) => cmpStr(a.from, b.from) || cmpStr(a.to, b.to)),
+    deep_access_violations: dc.deepAccess.slice().sort((a, b) => cmpStr(String(a.from), String(b.from)) || cmpStr(String(a.to), String(b.to))),
   });
 
   // ---- dynamic-import-edges.json -----------------------------------------
   const dynEdges = [];
   for (const [from, tos] of dc.dynImports) for (const to of tos) dynEdges.push({ from, to, kind: 'import()' });
-  dynEdges.sort((a, b) => a.from.localeCompare(b.from) || String(a.to).localeCompare(String(b.to)));
+  dynEdges.sort((a, b) => cmpStr(a.from, b.from) || cmpStr(String(a.to), String(b.to)));
   writeJson(path.join(AUDIT_DIR, 'dynamic-import-edges.json'), { _generated_by: GENERATED_BY, count: dynEdges.length, note: dynEdges.length === 0 ? '0 dynamic imports found' : undefined, edges: dynEdges });
   if (dynEdges.length === 0) log('[build-deep-inventory] 0 dynamic imports found');
 
@@ -583,7 +620,7 @@ async function main() {
   const cycleEntries = cycles.map((members) => {
     const doms = [...new Set(members.map((m) => routeDomain(m)))];
     return { members: members.slice(), domain: doms.length === 1 ? doms[0] : doms.sort(), suggested_fix: doms.length === 1 ? 'invert-dep' : 'extract-shared-types', priority: members.length };
-  }).sort((a, b) => a.members[0].localeCompare(b.members[0]));
+  }).sort((a, b) => cmpStr(a.members[0], b.members[0]));
   writeJson(path.join(AUDIT_DIR, 'cycle-map.json'), { _generated_by: GENERATED_BY, count: cycleEntries.length, cycles: cycleEntries });
 
   // ---- duplicate-map.json ------------------------------------------------
@@ -591,8 +628,22 @@ async function main() {
   writeJson(path.join(AUDIT_DIR, 'duplicate-map.json'), { _generated_by: GENERATED_BY, count: dupEntries.length, duplicates: sortByPath(dupEntries) });
 
   // ---- dead-code-candidates.json -----------------------------------------
+  // Un candidat DOIT être versionné. knip et dependency-cruiser scannent le
+  // système de fichiers, pas l'index git : sans ce filtre, tout fichier présent
+  // dans le working tree mais non commité (branche en cours, dossier jamais
+  // `git add`-é, scratch d'agent) devient un « candidat à la suppression » —
+  // alors que `git rm` échouerait dessus et qu'il n'existe pas dans `main`.
+  //
+  // Constaté le 2026-08-13 : régénérer depuis un working tree chargé injectait
+  // 2 fichiers untracked (`backend/src/modules/rag-pipeline/*`) dans l'artefact,
+  // et donc dans le fingerprint de l'inventaire PR-8 qui le consomme. Une
+  // projection doit être fonction du CONTENU VERSIONNÉ, jamais de l'état du poste
+  // qui la génère — sinon deux machines produisent deux artefacts différents pour
+  // le même commit, ce que le gate de fraîcheur lirait comme une dérive.
+  const trackedSet = new Set(allTracked);
   const candidates = [];
   for (const f of [...knip.unusedFiles].sort()) {
+    if (!trackedSet.has(f)) continue;             // non versionné → jamais un candidat
     if (runtimeFiles.has(f)) continue;            // condition #3
     if (isNeverAutoDelete(f)) continue;           // condition #0
     if (di.diLiveFiles.has(f)) continue;          // DI-live

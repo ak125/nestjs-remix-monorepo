@@ -46,15 +46,32 @@ At PR-8b creation time, for each file in the batch:
 
 | Mode | Command | Tolerates global drift? | Used by |
 |------|---------|------------------------|---------|
-| **Global strict** | `npm run audit:cleanup-candidates:check` | No — exits 1 on ANY input fingerprint or toolchain change | PR-8c-N inventory regen ritual; future CI ratchet (warn-only → blocking) |
+| **Global strict** | `npm run audit:cleanup-candidates:check` | No — exits 1 on ANY input fingerprint change. **Toolchain excluded** (see below) | PR-8c-N inventory regen ritual; CI step in `registry-fresh.yml` (warn-only → blocking) |
 | **Target-scoped** | `npm run audit:cleanup-candidates:check -- --target <path>` | Yes — only checks the target's per-field proof invariance | PR-8b-N deletion batches (each file in the batch authorizes itself) |
 
 **Canonical rule**: *"Global inventory drift may exist. Deletion is allowed only if target-scoped proof remains invariant."*
 
-## CI ratchet (future PR-8e+)
+## CI ratchet
 
-`npm run audit:cleanup-candidates:check` will be wired as a warn-only step in `.github/workflows/registry-build.yml`. It fails if the committed JSON drifts from a fresh generator run. Once 2-3 batches have shipped clean, promote to blocking.
+Wired in [`.github/workflows/registry-fresh.yml`](../../.github/workflows/registry-fresh.yml) as two steps, both **before** `audit:inventory` and `npm run registry`:
+
+| Step | Runs | Proves |
+|------|------|--------|
+| `PR-8 cleanup guard — unit tests` | `npm run audit:cleanup-candidates:test` | the generator's own design decisions still hold (19 tests on fixtures) |
+| `PR-8 inventory freshness` | `npm run audit:cleanup-candidates:check` | the **committed** inventory matches the **committed** inputs |
+
+Order matters. Placed after the rebuilds, the freshness step would compare against freshly regenerated inputs and report a PR-8 drift *caused by* an upstream drift — conflating two signals the `Deep-inventory freshness` step deliberately keeps apart. Non-blocking today via the job's `continue-on-error` (Phase 1); promote alongside the Deep-inventory step.
+
+Until 2026-08-13 neither existed: the 19 tests were referenced by no npm script, no workflow and no hook, and the check could not be wired at all (see below).
 
 ## Input fingerprint contract
 
-Every record carries the sha256 of all inputs (`dead-code-candidates.json`, `canonical.json`, `ownership.yaml`, `contract-health.json`, `validate-before-delete.sh`, `unreachable-modules/`) PLUS the toolchain (`node`, `platform`, `arch`). A deletion PR **must** prove its inventory fingerprint still matches `main` — otherwise the inventory is stale and must be rebuilt.
+Every record carries the sha256 of all inputs (`dead-code-candidates.json`, `canonical.json`, `ownership.yaml`, `contract-health.json`, `validate-before-delete.sh`, `unreachable-modules/`). A deletion PR **must** prove its inventory fingerprint still matches `main` — otherwise the inventory is stale and must be rebuilt.
+
+`meta.toolchain` (`node`, `platform`, `arch`) is **recorded but not compared** — by both check modes.
+
+- **Why recorded**: replay safety — knowing what produced an artifact. Locked by the test `toolchain captured in meta`.
+- **Why not compared**: it made the artifact incomparable across machines. The committed artifact carried `linux / v20.19.6`, CI runs `ubuntu / node 24`, an operator box `win32 / v24.x` — so the global check failed *everywhere except its machine of origin*, for a purely declarative reason. That is why it was never wired, and why the inventory drifted 508 commits unnoticed. Note the repo pins node at the **major** (`.nvmrc: 24`); fingerprinting the **patch** meant any runner bump turned the guard red.
+- **Why this is not a loophole**: the generator's output was measured platform-independent before the exclusion was made. `.gitattributes` enforces `* text=auto eol=lf` so input sha256s are identical; the builders normalise `path.sep → '/'`; `sha256OfDirSorted` sorts by codepoint; and `candidates` are now sorted by **codepoint instead of `localeCompare()`**, which had resolved the process ICU locale (`fr-FR` on an operator box, `en-US`/`C` on CI). The real variance was removed at the source, not masked. Locked by `sort order is locale-independent` and `global --check ignores meta.toolchain but NOT a real input drift`.
+
+**Regeneration is therefore machine-independent** — but do not run `npm run audit:drift-dashboard` before regenerating: `audit-reports/` is gitignored, so `contractHealth` is `null` in CI and must stay `null` in the committed artifact.
