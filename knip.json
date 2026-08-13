@@ -29,7 +29,6 @@
       "ignore": [
         "dist/**",
         "rm/**",
-        "scripts/**",
         "**/*.spec.ts",
         "**/*.e2e-spec.ts"
       ],

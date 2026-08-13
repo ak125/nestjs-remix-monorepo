@@ -13,6 +13,7 @@ on:
   pull_request:
     branches: [main]
     paths:
+      # --- Builder + overlay : la CONFIG du registre ---
       - "scripts/registry/**"
       - "scripts/audit/build-deep-inventory.js"
       - "scripts/audit/build-db-usage-map.js"
@@ -22,12 +23,22 @@ on:
       - "backend/supabase/migrations/**"
       - ".github/workflows/registry-fresh.yml"
       - "package.json"
+      # --- Arbres INDEXÉS par files.json (2728 entrées) ---
+      # Sans eux, une PR qui ajoute/supprime 50 fichiers TS ne déclenchait jamais
+      # le gate de fraîcheur du registre qui les recense. C'est la cause directe
+      # de la dérive de 164 commits constatée le 2026-08-13 (canonical buildé au
+      # 217d47912 / 2026-06-23 alors que HEAD était à 172f07c24 / 2026-08-09).
+      - "backend/src/**"
+      - "frontend/app/**"
+      - "packages/**"
   push:
     branches: [main]
     paths:
       - "scripts/registry/**"
-      - "packages/registry/**"
+      - "packages/**"
       - ".spec/00-canon/repository-registry/**"
+      - "backend/src/**"
+      - "frontend/app/**"
 
 jobs:
   registry-fresh:
@@ -48,8 +59,90 @@ jobs:
       - name: Install
         run: npm ci
 
+      # ⚠️ CE STEP DOIT RESTER AVANT TOUT REBUILD — c'est le seul endroit où I6
+      # peut dire quelque chose.
+      #
+      # I6 (`checkCanonicalFresh`, scripts/registry/validate-invariants.ts)
+      # compare `canonical.meta.inputHashes` aux sha256 réels des sources. Il est
+      # complet, `severity: error`, et sort 1. Mais il n'était invoqué qu'APRÈS
+      # le step « Build Layer 1 + Layer 3 canonical » : à ce moment-là canonical
+      # vient d'être régénéré depuis les sources courantes, donc ses inputHashes
+      # correspondent forcément. **I6 était vacant par construction de l'ordre
+      # des steps** — pas cassé, jamais consulté sur l'état commité.
+      #
+      # Constaté le 2026-08-13 : canonical.json commité affichait 3 inputHashes
+      # divergents sur 10 (automation-reality.yaml, ownership.yaml, deps.json)
+      # sans qu'aucun gate ne le signale, pour une dérive de 164 commits.
+      #
+      # Le step post-rebuild plus bas reste utile pour I1..I5 (structure du
+      # canonical reconstruit) — mais il ne prouve RIEN sur la fraîcheur.
+      - name: I6 — freshness of the COMMITTED canonical (must precede any rebuild)
+        run: npm run registry:validate-invariants
+
       - name: Run upstream audit producers
         run: npm run audit:inventory
+
+      # `audit:inventory:check` existait dans package.json mais n'était appelé
+      # par AUCUN workflow ni hook (0 occurrence). Résultat : les 7 projections
+      # deep-inventory (dont dead-code-candidates.json, l'input du ratchet
+      # d'orphelins) étaient figées au 217d47912 / 2026-06-23 sans que rien ne
+      # le signale. On le câble ici — même workflow, même nature de signal
+      # (fraîcheur d'une projection générée), et les `paths:` corrigés ci-dessus
+      # font qu'il se déclenche enfin sur les arbres qu'il indexe.
+      #
+      # PÉRIMÈTRE : `audit/*.json` uniquement — c'est exactement ce que
+      # build-deep-inventory.js + build-db-usage-map.js écrivent (AUDIT_DIR).
+      # NE PAS étendre à `audit/registry/*.json` : ces fichiers sont produits par
+      # les builders `registry:build:*`, pas par `audit:inventory`. Le gate
+      # rapporterait « deep inventory périmé » pour une dérive du registre —
+      # deux signaux distincts conflatés. La fraîcheur de `audit/registry/**` est
+      # couverte par le step « Freshness diff » plus bas + le finding
+      # `canonical_stale` (build-drift-dashboard.ts, inputHashes).
+      #
+      # ⚠️ LISTE EXPLICITE, PAS DE GLOB — 7 attendus = 7 contrôlés.
+      #
+      # Historique de ce choix, en deux temps :
+      #   1. `audit/*.json` SANS magic pathspec sélectionnait 296 fichiers : en
+      #      pathspec git, `*` matche aussi `/` (wildmatch sans WM_PATHNAME). Le
+      #      gate couvrait donc `audit/registry/*.json` — que le paragraphe
+      #      ci-dessus interdit explicitement — plus les 5 ratchets
+      #      `audit/baselines/**`, `audit/cleanup/pr-8-*.json` et les ~280
+      #      `audit/content/raw-evidence/**`.
+      #   2. `:(glob)audit/*.json` ramenait à 12, mais 5 d'entre eux sont des
+      #      snapshots one-off que `audit:inventory` ne produit PAS
+      #      (`compatibility-*`, `pilot-*.verdict.json`, `seo-v9-inventaire-*` —
+      #      ce dernier explicitement documenté comme tel dans audit/README.md).
+      #
+      # Dans les deux cas le périmètre DÉCLARÉ n'était pas le périmètre APPLIQUÉ.
+      # La liste ci-dessous est exactement ce que `build-deep-inventory.js` (6) et
+      # `build-db-usage-map.js` (1) écrivent sous AUDIT_DIR. Un 8e artefact
+      # contractuel devra être ajouté ICI, intentionnellement et visiblement
+      # dans le diff — jamais capté par élargissement silencieux d'un motif.
+      #
+      # PROMOTION : `continue-on-error` au niveau du job le rend non-bloquant
+      # aujourd'hui. Le retirer quand les 7 artefacts sont régénérés et stables.
+      - name: Deep-inventory freshness (les 7 artefacts contractuels)
+        run: |
+          set -euo pipefail
+          ARTEFACTS="
+            audit/runtime-entrypoints.json
+            audit/module-boundaries.json
+            audit/dynamic-import-edges.json
+            audit/cycle-map.json
+            audit/duplicate-map.json
+            audit/dead-code-candidates.json
+            audit/db-usage-map.json
+          "
+          # Fail-closed : un artefact contractuel disparu est une dérive, pas un no-op.
+          for f in $ARTEFACTS; do
+            [ -f "$f" ] || { echo "::error::artefact contractuel absent : $f"; exit 1; }
+          done
+          git diff --stat -- $ARTEFACTS || true
+          if ! git diff --exit-code --quiet -- $ARTEFACTS; then
+            echo "::error::deep-inventory drifted vs sources — run \`npm run audit:inventory\` and commit the 7 projections"
+            exit 1
+          fi
+          echo "✓ deep-inventory projections in sync (7/7)"
 
       - name: Build Layer 1 + Layer 3 canonical
         run: npm run registry
@@ -57,7 +150,12 @@ jobs:
       - name: Validate overlay (Layer 2)
         run: npm run registry:validate
 
-      - name: Validate canonical invariants (V1-4 minimal)
+      # Structure du canonical RECONSTRUIT (I1..I5). I6 est vacant ici par
+      # construction — le rebuild vient de réaligner les inputHashes. La preuve
+      # de fraîcheur est le step « I6 — freshness of the COMMITTED canonical »
+      # exécuté avant le rebuild. Ne pas déplacer ce step vers le haut ni
+      # supprimer celui du haut : ils ne testent pas la même chose.
+      - name: Validate rebuilt canonical invariants (I1..I5 structural)
         run: npm run registry:validate-invariants
 
       - name: Determinism check (V1-2 — canonical hash stable across 2 runs)
@@ -75,16 +173,25 @@ jobs:
           fi
 
       - name: Freshness diff (canonical.json committed = canonical.json rebuilt)
-        # Phase 1 warn-only : do not exit 1 on drift. Drift may be transient
-        # (main moved between commit and CI run). Promotion to ERROR happens
-        # in PR-G strict gate + V1.5 baseline ratchet.
+        # Le step SORT EN ERREUR sur dérive. Le job reste non-bloquant via le
+        # `continue-on-error: true` du job (Phase 1) — mais le signal est désormais
+        # RÉEL : un job rouge non-bloquant, pas une annotation noyée.
+        #
+        # POURQUOI ce changement : l'ancien `if git diff --exit-code …; then … else
+        # echo "::warning::" ; fi` neutralisait `--exit-code` par construction.
+        # Le step sortait 0 même en dérive, y compris si `continue-on-error` était
+        # retiré. Deux défenses empilées contre le blocage, dont une invisible.
+        #
+        # PROMOTION : retirer `continue-on-error` du job après N runs verts
+        # consécutifs, avec le décompte inscrit ici (modèle audit.yml §Trigger
+        # satisfied). Ne pas promouvoir sur une intuition.
         run: |
-          if git diff --exit-code audit/registry/canonical.json; then
-            echo "✓ canonical.json in sync with sources"
-          else
-            echo "::warning::audit/registry/canonical.json drifted vs Layer 1+2 sources (run \`npm run registry\` locally to refresh)"
-            git diff --stat audit/registry/canonical.json || true
+          git diff --stat audit/registry/canonical.json || true
+          if ! git diff --exit-code --quiet audit/registry/canonical.json; then
+            echo "::error::audit/registry/canonical.json drifted vs Layer 1+2 sources — run \`npm run registry\` and commit the projection"
+            exit 1
           fi
+          echo "✓ canonical.json in sync with sources"
 
       - name: Run RPC parser fixture tests
         run: npm run registry:test:rpc-parser
