@@ -76,11 +76,6 @@ frontend/.env*
 # Secrets and credentials
 *.pem
 *.key
-
-# SOPS — fichiers déchiffrés jamais committés, chiffrés (.enc.env) autorisés
-secrets/*.env
-!secrets/*.enc.env
-!secrets/*.template
 *.cert
 *.p12
 *-credentials.json

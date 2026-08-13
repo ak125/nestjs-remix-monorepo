@@ -34,12 +34,6 @@ services:
 
       # Configuration générée pour redirections (optionnel)
       - ./config/caddy/caddy-pieces-redirects.conf:/etc/caddy/redirects.conf:ro
-
-      # 🔐 Certificat Origin Cloudflare (cert + clé privée) — posés manuellement
-      # sur le serveur hors git (/etc/automecanik/caddy/), montés en lecture seule.
-      # Permet à Cloudflare de rester en « Full (Strict) ». Validité 15 ans.
-      - /etc/automecanik/caddy/cf-origin.crt:/etc/caddy/cf-origin.crt:ro
-      - /etc/automecanik/caddy/cf-origin.key:/etc/caddy/cf-origin.key:ro
     
     environment:
       - CADDY_ADMIN=off

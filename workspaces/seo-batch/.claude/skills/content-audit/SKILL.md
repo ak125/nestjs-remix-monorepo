@@ -8,14 +8,6 @@ version: "1.2"
 
 # Content Audit R2D2 — v1.1
 
-## Position dans le pipeline
-
-- **Quand** : APRÈS `content-gen` (vérification post-production)
-- **Entrée** : URL, fichier .md, ou rôle de page (R1-R6)
-- **Sortie** : score qualité /6 + rapport structuré R2D2
-- **Chaîne** : `seo-content-architect` (plan) → `content-gen` (écriture) → **`content-audit`** (vérification)
-- **Ne fait PAS** : génération de contenu, écriture en DB, détection de pollution (→ `pollution-scanner`)
-
 Audit de contenu base sur le framework **R2D2** (Reponse → Decision → Details → Deploiement).
 
 **Principes fondamentaux :**
