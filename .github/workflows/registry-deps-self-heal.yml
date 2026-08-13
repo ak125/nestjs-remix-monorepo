@@ -193,7 +193,7 @@ jobs:
       - name: Open/update self-heal PR
         id: cpr
         if: steps.stage.outputs.status == 'changed' && steps.identity.outputs.mode != 'none'
-        uses: peter-evans/create-pull-request@v8
+        uses: peter-evans/create-pull-request@v6
         with:
           # App installation token when mode=app (step ran), else the user token.
           token: ${{ steps.app-token.outputs.token || secrets.SELF_HEAL_TOKEN }}

@@ -6,6 +6,14 @@ argument-hint: "<pg_alias ou vehicle_slug> [--batch top20|worst|ready] [--histor
 
 # SEO Audit — Skill v4.0 (gamme + véhicule unifié)
 
+## Position dans le pipeline
+
+- **Quand** : audit SEO global d'une gamme/véhicule — indépendant du pipeline de génération
+- **Entrée** : pg_alias, vehicle_slug, ou pg_id
+- **Sortie** : score composite, couverture R1-R8, actions recommandées
+- **Chaîne** : peut déclencher `content-gen` (via `--fix`) pour combler les gaps détectés
+- **Ne fait PAS** : rédaction éditoriale (→ `seo-content-architect`), détection de pollution (→ `pollution-scanner`)
+
 ## Usage
 - `/seo-gamme-audit filtre-a-huile` — audit complet d'une gamme (R1/R3/R4/R5/R6)
 - `/seo-gamme-audit renault-clio-3` — audit complet d'un véhicule (R8)
