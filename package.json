@@ -59,6 +59,7 @@
     "audit:drift-dashboard:check": "tsx --test scripts/audit/build-drift-dashboard.test.ts",
     "audit:cleanup-candidates": "tsx scripts/audit/build-cleanup-candidates.ts",
     "audit:cleanup-candidates:check": "tsx scripts/audit/build-cleanup-candidates.ts --check",
+    "audit:cleanup-candidates:test": "tsx --test scripts/audit/build-cleanup-candidates.test.ts",
     "audit:contract-drift-ratchet": "tsx scripts/audit/check-contract-drift-ratchet.ts",
     "audit:contract-drift-ratchet:json": "tsx scripts/audit/check-contract-drift-ratchet.ts --json",
     "audit:contract-drift-ratchet:refresh": "tsx scripts/audit/check-contract-drift-ratchet.ts --refresh",

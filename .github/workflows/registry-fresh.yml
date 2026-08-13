@@ -79,6 +79,51 @@ jobs:
       - name: I6 — freshness of the COMMITTED canonical (must precede any rebuild)
         run: npm run registry:validate-invariants
 
+      # 17 tests de la garde PR-8 existaient sur main mais n'étaient lancés par
+      # AUCUN script npm, AUCUN workflow et AUCUN hook (0 occurrence au
+      # 2026-08-13) : non exécutés, ils ne protègent rien. Ce lot en ajoute 2,
+      # qui verrouillent ses propres changements (indépendance à la locale du
+      # tri, et exclusion de meta.toolchain SANS relâcher inputFingerprint) —
+      # soit 19 au total, tous câblés ici.
+      #
+      # Les 17 préexistants encodent des décisions de conception : C8
+      # snapshot-only, parité NEVER_AUTO_DELETE bash↔TS, tolérance
+      # target-scoped.
+      #
+      # Ce step tourne AVANT le check ci-dessous : un générateur cassé doit se
+      # voir sur ses fixtures, pas sur l'inventaire réel.
+      - name: PR-8 cleanup guard — unit tests (fixtures)
+        run: npm run audit:cleanup-candidates:test
+
+      # ⚠️ CE STEP DOIT RESTER AVANT `audit:inventory` ET AVANT `npm run registry`.
+      #
+      # Il compare l'inventaire PR-8 COMMITÉ aux inputs COMMITÉS. Placé après les
+      # rebuilds, il comparerait au code fraîchement régénéré et remonterait une
+      # dérive PR-8 *causée par* une dérive amont — les deux signaux conflatés,
+      # exactement ce que le périmètre du step « Deep-inventory freshness »
+      # interdit. Ici les deux restent lisibles séparément :
+      #   - ce step            → l'inventaire PR-8 est-il cohérent avec son snapshot d'inputs ?
+      #   - Deep-inventory     → ce snapshot d'inputs reflète-t-il le code réel ?
+      #
+      # POURQUOI CE STEP N'EXISTAIT PAS : le mode global `--check` comparait
+      # l'artefact octet près, `meta.toolchain` inclus. L'artefact commité porte
+      # `linux / v20.19.6`, ce runner est `ubuntu / node 24` → le step aurait été
+      # rouge en permanence, pour une raison purement déclarative. Le générateur
+      # trie désormais par codepoint (plus de dépendance à la locale ICU) et
+      # `comparablePayload` exclut `meta.toolchain` de la comparaison tout en le
+      # conservant dans l'artefact. L'inventaire est donc reproductible depuis
+      # n'importe quelle machine, et cette garde enfin câblable.
+      #
+      # `audit-reports/` est gitignoré : `contract-health.json` est absent ici
+      # comme au checkout local → `contractHealth: null` des deux côtés. Ne pas
+      # ajouter `npm run audit:drift-dashboard` avant ce step, cela rendrait
+      # l'artefact CI incomparable à l'artefact commité.
+      #
+      # PROMOTION : non-bloquant via le `continue-on-error` du job (Phase 1).
+      # Le retirer en même temps que celui du step Deep-inventory.
+      - name: PR-8 inventory freshness (committed inventory vs committed inputs)
+        run: npm run audit:cleanup-candidates:check
+
       - name: Run upstream audit producers
         run: npm run audit:inventory
 

@@ -7,11 +7,10 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import stableStringify from "fast-json-stable-stringify";
 
-import { buildInventory, checkTarget, NEVER_AUTO_DELETE_GLOBS } from "./build-cleanup-candidates.ts";
+import { buildInventory, checkTarget, comparablePayload, NEVER_AUTO_DELETE_GLOBS } from "./build-cleanup-candidates.ts";
 import { CleanupInventorySchema, type CleanupInventory } from "./cleanup-candidates.schema.ts";
 import { mkdtempSync, writeFileSync as fsWriteSync } from "node:fs";
 import { tmpdir } from "node:os";
-import stableStringify from "fast-json-stable-stringify";
 
 const HERE = fileURLToPath(new URL(".", import.meta.url));
 const FIX = (name: string) => join(HERE, "__fixtures__/cleanup-candidates", name);
@@ -91,6 +90,75 @@ test("toolchain captured in meta (replay safety)", async () => {
   assert.equal(inv.meta.toolchain.node, process.version);
   assert.equal(inv.meta.toolchain.platform, process.platform);
   assert.equal(inv.meta.toolchain.arch, process.arch);
+});
+
+// ---------------------------------------------------------------------------
+// Reproductibilité cross-machine.
+//
+// Le test « byte-for-byte deterministic across two runs » ci-dessus ne prouve
+// que le déterminisme INTRA-plateforme : deux runs sur la même machine. C'était
+// le trou — l'artefact pouvait varier d'une machine à l'autre sans qu'aucun test
+// ne le voie, et `meta.toolchain` transformait cette variance en interdiction de
+// comparer, donc en impossibilité de câbler le check global en CI.
+// ---------------------------------------------------------------------------
+
+test("sort order is locale-independent (codepoint, never localeCompare)", async () => {
+  const inv = await buildInventory(inputs);
+  const paths = inv.candidates.map(c => c.path);
+  const byCodepoint = [...paths].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+  assert.deepEqual(
+    paths,
+    byCodepoint,
+    "artifact order must be codepoint order — localeCompare() resolves the process ICU locale (fr-FR on an operator box, en-US/C on a CI runner)",
+  );
+
+  // Anti-régression : le choix codepoint n'est pas cosmétique. Sur des chemins
+  // réalistes, les deux ordres DIVERGENT — donc un retour à localeCompare
+  // réintroduirait la dépendance à la locale au lieu de la supprimer.
+  const sample = ["a-b/z.ts", "a/b.ts", "a_b/c.ts", "A/b.ts", "api.v2.ts", "api-v2.ts"];
+  assert.notDeepEqual(
+    [...sample].sort((a, b) => a.localeCompare(b)),
+    [...sample].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)),
+    "localeCompare and codepoint must still diverge — otherwise this guard proves nothing",
+  );
+});
+
+test("global --check ignores meta.toolchain but NOT a real input drift", async () => {
+  const inv = await buildInventory(inputs);
+  const base = stableStringify(inv) + "\n";
+
+  // 1. Une toolchain différente ne doit PAS se lire comme une dérive : c'est ce
+  //    qui rend l'artefact comparable entre poste opérateur, DEV et CI.
+  const otherToolchain: CleanupInventory = JSON.parse(JSON.stringify(inv));
+  otherToolchain.meta.toolchain = { node: "v20.19.6", platform: "linux", arch: "arm64" };
+  assert.equal(
+    comparablePayload(base),
+    comparablePayload(stableStringify(otherToolchain)),
+    "a different node/platform/arch must not read as inventory drift",
+  );
+
+  // 2. ANTI-OVERCLAIM — la garde ne doit pas être devenue aveugle. Une vraie
+  //    dérive d'input reste détectée.
+  const driftedInput: CleanupInventory = JSON.parse(JSON.stringify(inv));
+  driftedInput.meta.inputFingerprint.canonical = "0".repeat(64);
+  assert.notEqual(
+    comparablePayload(base),
+    comparablePayload(stableStringify(driftedInput)),
+    "an input fingerprint change MUST still read as drift — inputFingerprint is the freshness signal",
+  );
+
+  // 3. Une mutation de contenu métier reste détectée.
+  const driftedRecord: CleanupInventory = JSON.parse(JSON.stringify(inv));
+  driftedRecord.candidates[0]!.decision = driftedRecord.candidates[0]!.decision === "blocked" ? "candidate" : "blocked";
+  assert.notEqual(
+    comparablePayload(base),
+    comparablePayload(stableStringify(driftedRecord)),
+    "a decision flip MUST still read as drift",
+  );
+
+  // 4. `meta.toolchain` reste PRÉSENT dans l'artefact écrit (replay safety) —
+  //    il est exclu du comparateur, pas supprimé de la projection.
+  assert.ok(JSON.parse(base).meta.toolchain, "toolchain must remain in the serialized artifact");
 });
 
 test("renderMarkdown emits a projection with the three top-level decision sections", async () => {
