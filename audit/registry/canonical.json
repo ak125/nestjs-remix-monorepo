@@ -12211,8 +12211,7 @@
         "sourceConfidence": "low",
         "status": "LIVE",
         "usedBy": [
-          "backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts",
-          "backend/src/modules/rag-proxy/services/rag-web-ingest-db.service.ts"
+          "backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts"
         ]
       },
       {
@@ -32118,12 +32117,10 @@
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
         "backend/src/modules/admin/services/rag-gamme-reader.service.ts",
         "backend/src/modules/admin/services/vehicle-rag-generator.service.ts",
-        "backend/src/modules/rag-proxy/rag-pipeline.service.ts",
         "backend/src/modules/rag-proxy/rag-proxy.controller.ts",
         "backend/src/modules/rag-proxy/services/pdf-rag-classifier.service.ts",
         "backend/src/modules/rag-proxy/services/rag-gamme-detection.service.ts",
         "backend/src/modules/rag-proxy/services/rag-image-management.service.ts",
-        "backend/src/modules/rag-proxy/services/rag-ingestion.service.ts",
         "backend/src/modules/rag-proxy/services/rag-knowledge.service.ts",
         "backend/src/modules/rag-proxy/services/rag-md-merger.service.ts",
         "backend/src/modules/rag-proxy/services/rag-normalization.service.ts",
@@ -32198,7 +32195,6 @@
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
         "backend/src/modules/rag-proxy/services/rag-admissibility-gate.service.ts",
         "backend/src/modules/rag-proxy/services/rag-phase2a-shadow-audit.service.ts",
-        "backend/src/modules/rag-proxy/types/rag-exploitation.types.ts",
         "backend/src/modules/rag-proxy/types/rag-phase2a.types.ts",
         "backend/src/modules/rag-proxy/types/rag-readiness.types.ts",
         "backend/src/modules/seo/types/page-role.types.ts",
@@ -49293,7 +49289,6 @@
       "domain": "D6",
       "id": "backend/src/modules/rag-proxy/dto/chat.dto.ts",
       "importedBy": [
-        "backend/src/modules/rag-proxy/index.ts",
         "backend/src/modules/rag-proxy/rag-proxy.controller.ts",
         "backend/src/modules/rag-proxy/rag-proxy.service.ts",
         "backend/src/modules/rag-proxy/services/rag-chat.service.ts"
@@ -49313,77 +49308,12 @@
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
-        "manual"
-      ],
-      "domain": "D6",
-      "id": "backend/src/modules/rag-proxy/dto/manual-ingest.dto.ts",
-      "importedBy": [],
-      "imports": [],
-      "kind": "service",
-      "loc": 27,
-      "owner": "@ak125/rag-team",
-      "path": "backend/src/modules/rag-proxy/dto/manual-ingest.dto.ts",
-      "risk": "high",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D6",
-      "id": "backend/src/modules/rag-proxy/dto/pdf-ingest.dto.ts",
-      "importedBy": [
-        "backend/src/modules/rag-proxy/services/rag-ingestion.service.ts"
-      ],
-      "imports": [],
-      "kind": "service",
-      "loc": 39,
-      "owner": "@ak125/rag-team",
-      "path": "backend/src/modules/rag-proxy/dto/pdf-ingest.dto.ts",
-      "risk": "high",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D6",
-      "id": "backend/src/modules/rag-proxy/dto/pipeline.dto.ts",
-      "importedBy": [
-        "backend/src/modules/rag-proxy/rag-pipeline.service.ts"
-      ],
-      "imports": [],
-      "kind": "service",
-      "loc": 100,
-      "owner": "@ak125/rag-team",
-      "path": "backend/src/modules/rag-proxy/dto/pipeline.dto.ts",
-      "risk": "high",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
         "manual",
         "reachability"
       ],
       "domain": "D6",
       "id": "backend/src/modules/rag-proxy/dto/search.dto.ts",
       "importedBy": [
-        "backend/src/modules/rag-proxy/index.ts",
         "backend/src/modules/rag-proxy/rag-proxy.controller.ts",
         "backend/src/modules/rag-proxy/rag-proxy.service.ts",
         "backend/src/modules/rag-proxy/services/rag-knowledge.service.ts"
@@ -49398,26 +49328,6 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D6",
-      "id": "backend/src/modules/rag-proxy/dto/web-ingest.dto.ts",
-      "importedBy": [],
-      "imports": [],
-      "kind": "service",
-      "loc": 10,
-      "owner": "@ak125/rag-team",
-      "path": "backend/src/modules/rag-proxy/dto/web-ingest.dto.ts",
-      "risk": "high",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -49473,64 +49383,8 @@
         "manual"
       ],
       "domain": "D6",
-      "id": "backend/src/modules/rag-proxy/index.ts",
-      "importedBy": [],
-      "imports": [
-        "backend/src/modules/rag-proxy/dto/chat.dto.ts",
-        "backend/src/modules/rag-proxy/dto/search.dto.ts",
-        "backend/src/modules/rag-proxy/rag-proxy.controller.ts",
-        "backend/src/modules/rag-proxy/rag-proxy.module.ts",
-        "backend/src/modules/rag-proxy/rag-proxy.service.ts"
-      ],
-      "kind": "service",
-      "loc": 6,
-      "owner": "@ak125/rag-team",
-      "path": "backend/src/modules/rag-proxy/index.ts",
-      "risk": "high",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D6",
-      "id": "backend/src/modules/rag-proxy/rag-pipeline.service.ts",
-      "importedBy": [],
-      "imports": [
-        "@cache/cache.service",
-        "@common/utils/error.utils",
-        "backend/src/config/rag.config.ts",
-        "backend/src/modules/rag-proxy/dto/pipeline.dto.ts",
-        "child_process",
-        "crypto",
-        "fs",
-        "path"
-      ],
-      "kind": "service",
-      "loc": 1216,
-      "owner": "@ak125/rag-team",
-      "path": "backend/src/modules/rag-proxy/rag-pipeline.service.ts",
-      "risk": "high",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D6",
       "id": "backend/src/modules/rag-proxy/rag-proxy.controller.ts",
       "importedBy": [
-        "backend/src/modules/rag-proxy/index.ts",
         "backend/src/modules/rag-proxy/rag-proxy.module.ts"
       ],
       "imports": [
@@ -49576,7 +49430,6 @@
         "backend/src/app.module.ts",
         "backend/src/modules/admin/admin.module.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
-        "backend/src/modules/rag-proxy/index.ts",
         "backend/src/workers/worker.module.ts"
       ],
       "imports": [
@@ -49625,7 +49478,6 @@
       "importedBy": [
         "backend/src/modules/admin/services/buying-guide/buying-guide-rag-fetcher.service.ts",
         "backend/src/modules/diagnostic-engine/engines/rag-enrichment.engine.ts",
-        "backend/src/modules/rag-proxy/index.ts",
         "backend/src/modules/rag-proxy/rag-proxy.controller.ts",
         "backend/src/modules/rag-proxy/rag-proxy.module.ts",
         "backend/src/modules/rag-proxy/services/rag-redis-job.service.ts",
@@ -49661,7 +49513,6 @@
         "backend/src/modules/rag-proxy/rag-proxy.module.ts",
         "backend/src/modules/rag-proxy/services/rag-cleanup.service.ts",
         "backend/src/modules/rag-proxy/services/rag-gamme-detection.service.ts",
-        "backend/src/modules/rag-proxy/services/rag-ingestion.service.ts",
         "backend/src/modules/rag-proxy/services/rag-normalization.service.ts"
       ],
       "imports": [
@@ -49830,7 +49681,6 @@
         "backend/src/modules/admin/controllers/admin-rag-ingest.controller.ts",
         "backend/src/modules/rag-proxy/rag-proxy.controller.ts",
         "backend/src/modules/rag-proxy/rag-proxy.module.ts",
-        "backend/src/modules/rag-proxy/services/rag-ingestion.service.ts",
         "backend/src/modules/rag-proxy/services/rag-knowledge.service.ts",
         "backend/src/modules/rag-proxy/services/rag-webhook-completion.service.ts"
       ],
@@ -49928,7 +49778,6 @@
         "backend/src/modules/rag-proxy/rag-proxy.controller.ts",
         "backend/src/modules/rag-proxy/rag-proxy.module.ts",
         "backend/src/modules/rag-proxy/services/rag-cleanup.service.ts",
-        "backend/src/modules/rag-proxy/services/rag-ingestion.service.ts",
         "backend/src/modules/rag-proxy/services/rag-normalization.service.ts",
         "backend/src/modules/rag-proxy/services/rag-webhook-completion.service.ts"
       ],
@@ -49961,8 +49810,7 @@
       "importedBy": [
         "backend/src/modules/rag-proxy/rag-proxy.controller.ts",
         "backend/src/modules/rag-proxy/rag-proxy.module.ts",
-        "backend/src/modules/rag-proxy/rag-proxy.service.ts",
-        "backend/src/modules/rag-proxy/services/rag-ingestion.service.ts"
+        "backend/src/modules/rag-proxy/rag-proxy.service.ts"
       ],
       "imports": [
         "@database/services/supabase-base.service",
@@ -49980,40 +49828,6 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D6",
-      "id": "backend/src/modules/rag-proxy/services/rag-ingestion.service.ts",
-      "importedBy": [],
-      "imports": [
-        "@common/exceptions",
-        "@common/utils/error.utils",
-        "backend/src/config/rag.config.ts",
-        "backend/src/modules/rag-proxy/dto/pdf-ingest.dto.ts",
-        "backend/src/modules/rag-proxy/services/frontmatter-validator.service.ts",
-        "backend/src/modules/rag-proxy/services/rag-cleanup.service.ts",
-        "backend/src/modules/rag-proxy/services/rag-gamme-detection.service.ts",
-        "backend/src/modules/rag-proxy/services/rag-image-management.service.ts",
-        "backend/src/modules/rag-proxy/services/rag-redis-job.service.ts",
-        "backend/src/modules/rag-proxy/services/rag-web-ingest-db.service.ts",
-        "backend/src/modules/rag-proxy/types/web-ingest-errors.ts",
-        "fs",
-        "path"
-      ],
-      "kind": "service",
-      "loc": 1104,
-      "owner": "@ak125/rag-team",
-      "path": "backend/src/modules/rag-proxy/services/rag-ingestion.service.ts",
-      "risk": "high",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -50151,8 +49965,6 @@
       "id": "backend/src/modules/rag-proxy/services/rag-redis-job.service.ts",
       "importedBy": [
         "backend/src/modules/rag-proxy/rag-proxy.module.ts",
-        "backend/src/modules/rag-proxy/services/rag-ingestion.service.ts",
-        "backend/src/modules/rag-proxy/services/rag-web-ingest-db.service.ts",
         "backend/src/modules/rag-proxy/services/rag-webhook-completion.service.ts"
       ],
       "imports": [
@@ -50223,31 +50035,6 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D6",
-      "id": "backend/src/modules/rag-proxy/services/rag-web-ingest-db.service.ts",
-      "importedBy": [
-        "backend/src/modules/rag-proxy/services/rag-ingestion.service.ts"
-      ],
-      "imports": [
-        "@database/services/supabase-base.service",
-        "backend/src/modules/rag-proxy/services/rag-redis-job.service.ts"
-      ],
-      "kind": "service",
-      "loc": 159,
-      "owner": "@ak125/rag-team",
-      "path": "backend/src/modules/rag-proxy/services/rag-web-ingest-db.service.ts",
-      "risk": "high",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -50387,30 +50174,6 @@
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
-        "manual"
-      ],
-      "domain": "D6",
-      "id": "backend/src/modules/rag-proxy/types/rag-exploitation.types.ts",
-      "importedBy": [],
-      "imports": [
-        "backend/src/config/role-ids.ts",
-        "backend/src/modules/rag-proxy/types/rag-readiness.types.ts",
-        "backend/src/modules/rag-proxy/types/rag-state.types.ts"
-      ],
-      "kind": "config",
-      "loc": 96,
-      "owner": "@ak125/rag-team",
-      "path": "backend/src/modules/rag-proxy/types/rag-exploitation.types.ts",
-      "risk": "high",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
         "manual",
         "reachability"
       ],
@@ -50473,8 +50236,7 @@
       "id": "backend/src/modules/rag-proxy/types/rag-readiness.types.ts",
       "importedBy": [
         "backend/src/config/admissibility-gate.constants.ts",
-        "backend/src/modules/rag-proxy/services/rag-admissibility-gate.service.ts",
-        "backend/src/modules/rag-proxy/types/rag-exploitation.types.ts"
+        "backend/src/modules/rag-proxy/services/rag-admissibility-gate.service.ts"
       ],
       "imports": [
         "backend/src/config/role-ids.ts"
@@ -50501,7 +50263,6 @@
       "importedBy": [
         "backend/src/modules/rag-proxy/services/rag-cleanup.service.ts",
         "backend/src/modules/rag-proxy/services/rag-normalization.service.ts",
-        "backend/src/modules/rag-proxy/types/rag-exploitation.types.ts",
         "backend/src/modules/rag-proxy/types/rag-ingest.types.ts"
       ],
       "imports": [],
@@ -50514,28 +50275,6 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D6",
-      "id": "backend/src/modules/rag-proxy/types/web-ingest-errors.ts",
-      "importedBy": [
-        "backend/src/modules/rag-proxy/services/rag-ingestion.service.ts"
-      ],
-      "imports": [],
-      "kind": "service",
-      "loc": 82,
-      "owner": "@ak125/rag-team",
-      "path": "backend/src/modules/rag-proxy/types/web-ingest-errors.ts",
-      "risk": "high",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -65994,7 +65733,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 443,
+      "loc": 439,
       "owner": "@ak125",
       "path": "backend/tests/unit/rag-proxy.service.test.ts",
       "risk": "medium",
@@ -66054,7 +65793,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 266,
+      "loc": 230,
       "owner": "@ak125",
       "path": "backend/tests/unit/readonly-guards.test.ts",
       "risk": "medium",
@@ -94769,6 +94508,46 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "scripts/audit/check-orphan-files-ratchet.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 234,
+      "owner": "@ak125",
+      "path": "scripts/audit/check-orphan-files-ratchet.test.ts",
+      "risk": "medium",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "scripts/audit/check-orphan-files-ratchet.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 389,
+      "owner": "@ak125",
+      "path": "scripts/audit/check-orphan-files-ratchet.ts",
+      "risk": "medium",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "scripts/audit/check-rag-authority-read-ratchet.test.ts",
       "importedBy": [],
       "imports": [],
@@ -98312,13 +98091,13 @@
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
       ".spec/00-canon/repository-registry/ownership.yaml": "5e4880570c745f145f5bf96a1e544016cf6bbb942f84031cfc35e60f963e2719",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
-      "audit/registry/db.json": "8dc9ea9ebd9abf1ffd2195f401bcb4e63bdb56fd6c5ebe9f99f85f5f86a97376",
+      "audit/registry/db.json": "5615f6c8f657b5ebdf48b6add1216f66c227b805ae687b1f401c95e8d393fbf9",
       "audit/registry/deps.json": "6f667991be593e37b2798c4ca0f0689d89c412731aa2bdf50000248da9f2c5bd",
-      "audit/registry/files.json": "35bc5543ccc608806fcad87089ce30d06c2036a655772f71066e39c82b39c898",
+      "audit/registry/files.json": "48123b133499953c57e0895ebfd9f32aa2603c61f39f2a341d0c88b837e90fcf",
       "audit/registry/rpc.json": "e7d09287e11bb447da93a48d1a18e4c5ee13ad6667a6e10356a3af95d7463cbd",
       "audit/registry/runtime.json": "314a3bda98e2b9bb87a4b6a88a1efa131a3c12505d9e56b5f60eeebd23e5f70f"
     },
-    "sotFingerprint": "e0edd7bfac7b"
+    "sotFingerprint": "9e5044fa75b2"
   },
   "runtime": [
     {

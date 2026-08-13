@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 62eb3ecf6059e221956ed8fcfef4fa56915da8ffb0514572a64c4bf15173396f
+source_sha256: 4e60124336b239ae693c380add2c22c7af720a448c8688c6c39adb16eb4620dc
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 2841 |
+| Files (Layer 1) | 2833 |
 | DB tables (Layer 1) | 307 |
 | DB RPC (Layer 1) | 258 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 515 |
 
-Source sotFingerprint: `e0edd7bfac7b`.
+Source sotFingerprint: `9e5044fa75b2`.
 
 ## Comment l'utiliser
 
@@ -77,11 +77,11 @@ Source sotFingerprint: `e0edd7bfac7b`.
 
 ### D6 — RAG & AI Engine
 
-- **Files**: 82 (service=65, config=12, controller=5)
+- **Files**: 72 (service=56, config=11, controller=5)
 - **Runtime entrypoints**: 8
-- **Top owners**: @ak125/rag-team (82)
+- **Top owners**: @ak125/rag-team (72)
 - **Knowledge prose**: [`agentic-engine`](modules/agentic-engine.md), [`ai-content`](modules/ai-content.md), [`rag-knowledge-bootstrap`](modules/rag-knowledge-bootstrap.md), [`rag-proxy`](modules/rag-proxy.md), [`upload`](modules/upload.md)
-- **Status**: LIVE=71, UNKNOWN=11
+- **Status**: LIVE=71, UNKNOWN=1
 
 ### D7 — Knowledge Graph & Diagnostic
 
@@ -147,11 +147,11 @@ Source sotFingerprint: `e0edd7bfac7b`.
 
 ### D15 — Security & Governance
 
-- **Files**: 241 (test=135, script=59, service=44, config=2, controller=1)
+- **Files**: 243 (test=136, script=60, service=44, config=2, controller=1)
 - **Runtime entrypoints**: 3
-- **Top owners**: @ak125 (241)
+- **Top owners**: @ak125 (243)
 - **Knowledge prose**: [`bot-guard`](modules/bot-guard.md)
-- **Status**: LIVE=47, UNKNOWN=194
+- **Status**: LIVE=49, UNKNOWN=194
 
 ### UNKNOWN — Unknown (overlay non résolu)
 

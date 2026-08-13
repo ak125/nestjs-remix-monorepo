@@ -2822,6 +2822,8 @@
       "scripts/audit/check-contract-drift-ratchet.ts",
       "scripts/audit/check-dependency-graph-ratchet.test.ts",
       "scripts/audit/check-dependency-graph-ratchet.ts",
+      "scripts/audit/check-orphan-files-ratchet.test.ts",
+      "scripts/audit/check-orphan-files-ratchet.ts",
       "scripts/audit/check-rag-authority-read-ratchet.test.ts",
       "scripts/audit/check-rag-authority-read-ratchet.ts",
       "scripts/audit/check-served-content-write-sinks-ratchet.test.ts",
@@ -2872,7 +2874,7 @@
       "tests/registry/rpc-parser.test.ts"
     ]
   },
-  "runtime_files_count": 1484,
+  "runtime_files_count": 1486,
   "runtime_files": [
     ".dependency-cruiser.cjs",
     ".github/workflows/agent-exit-contract-hash.yml",
@@ -4309,6 +4311,8 @@
     "scripts/audit/check-contract-drift-ratchet.ts",
     "scripts/audit/check-dependency-graph-ratchet.test.ts",
     "scripts/audit/check-dependency-graph-ratchet.ts",
+    "scripts/audit/check-orphan-files-ratchet.test.ts",
+    "scripts/audit/check-orphan-files-ratchet.ts",
     "scripts/audit/check-rag-authority-read-ratchet.test.ts",
     "scripts/audit/check-rag-authority-read-ratchet.ts",
     "scripts/audit/check-served-content-write-sinks-ratchet.test.ts",

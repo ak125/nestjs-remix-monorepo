@@ -3219,8 +3219,7 @@
       "sourceConfidence": "low",
       "status": "LIVE",
       "usedBy": [
-        "backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts",
-        "backend/src/modules/rag-proxy/services/rag-web-ingest-db.service.ts"
+        "backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts"
       ]
     },
     {

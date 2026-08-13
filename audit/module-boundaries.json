@@ -662,9 +662,9 @@
         "backend/src/modules/rag-proxy/services",
         "backend/src/modules/rag-proxy/types"
       ],
-      "files_count": 44,
-      "loc_total": 14861,
-      "has_barrel": true
+      "files_count": 34,
+      "loc_total": 12022,
+      "has_barrel": false
     },
     "scripts": {
       "dirs": [
@@ -699,8 +699,8 @@
         "scripts/wiki-generators",
         "scripts/wiki-generators/__tests__"
       ],
-      "files_count": 165,
-      "loc_total": 33430,
+      "files_count": 167,
+      "loc_total": 34053,
       "has_barrel": true
     },
     "search": {
@@ -956,7 +956,7 @@
         "tests/registry"
       ],
       "files_count": 220,
-      "loc_total": 38722,
+      "loc_total": 38682,
       "has_barrel": true
     },
     "upload": {
@@ -1876,7 +1876,7 @@
     {
       "from": "rag-proxy",
       "to": "config",
-      "count": 21
+      "count": 18
     },
     {
       "from": "rag-proxy",

@@ -8,13 +8,13 @@
 - Schema version: `1.0.0`
 - Cleanup policy version: `pr8-v1`
 - Validation mode: `snapshot-only` (active runtime check deferred to PR-8b)
-- Generated at: `2026-08-13T20:47:43.765Z`
+- Generated at: `2026-08-13T22:26:04.592Z`
 - Toolchain: `v24.17.0` on `linux/x64`
 
 ## Input Fingerprint (sha256)
 
-- `deadCodeCandidates`: `58a3d3ee0e60216bb711ae2bf5bb9b94afe40b018c19ec433cfba67193b7f8d6`
-- `canonical`: `62eb3ecf6059e221956ed8fcfef4fa56915da8ffb0514572a64c4bf15173396f`
+- `deadCodeCandidates`: `172cbfb81b4e69cd75dc49a1d311216fd5f1640356e9d2be446e5321dca8a0b3`
+- `canonical`: `4e60124336b239ae693c380add2c22c7af720a448c8688c6c39adb16eb4620dc`
 - `ownershipYaml`: `5e4880570c745f145f5bf96a1e544016cf6bbb942f84031cfc35e60f963e2719`
 - `contractHealth`: `<none>`
 - `validateScript`: `0f5224c9823ce6de8d3bf9686c9eb445b0adc343296c68cf5b0e91f4aaac7f21`
@@ -22,11 +22,11 @@
 
 ## Counts
 
-- Total: **273**
-- By confidence: high=12 · medium=176 · low=85
-- By decision: candidate=188 · blocked=85 · excluded=0
+- Total: **267**
+- By confidence: high=12 · medium=171 · low=84
+- By decision: candidate=183 · blocked=84 · excluded=0
 
-## candidate (188)
+## candidate (183)
 
 ### candidate · high (12)
 
@@ -45,7 +45,7 @@
 | `frontend/app/utils/storage.ts` | frontend-shared | other | high | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `frontend/app/utils/supabase-storage.ts` | frontend-shared | other | high | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 
-### candidate · medium (176)
+### candidate · medium (171)
 
 | Path | Domain | Kind | Confidence | Status | importedBy | Rationale |
 |---|---|---|---|---|---:|---|
@@ -92,11 +92,6 @@
 | `backend/src/modules/payments/dto/payment-request.dto.ts` | payments | dto | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `backend/src/modules/payments/dto/refund-payment.dto.ts` | payments | dto | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `backend/src/modules/payments/index.ts` | payments | other | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
-| `backend/src/modules/rag-proxy/dto/manual-ingest.dto.ts` | rag-proxy | dto | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
-| `backend/src/modules/rag-proxy/dto/web-ingest.dto.ts` | rag-proxy | dto | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
-| `backend/src/modules/rag-proxy/index.ts` | rag-proxy | other | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
-| `backend/src/modules/rag-proxy/rag-pipeline.service.ts` | rag-proxy | service | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
-| `backend/src/modules/rag-proxy/types/rag-exploitation.types.ts` | rag-proxy | type | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `backend/src/modules/seo-logs/services/crawl-budget-experiment.service.ts` | seo-logs | service | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `backend/src/modules/seo-logs/services/url-audit.service.ts` | seo-logs | service | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `backend/src/modules/seo/config/sitemap.config.ts` | seo | config | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
@@ -230,7 +225,7 @@
 
 _(empty)_
 
-## blocked (85)
+## blocked (84)
 
 ### blocked · high (0)
 
@@ -240,7 +235,7 @@ _(empty)_
 
 _(empty)_
 
-### blocked · low (85)
+### blocked · low (84)
 
 | Path | Domain | Kind | Confidence | Status | importedBy | Rationale |
 |---|---|---|---|---|---:|---|
@@ -279,7 +274,6 @@ _(empty)_
 | `backend/src/modules/mcp-validation/types/mcp-verify.types.ts` | mcp-validation | type | low | LIVE | 5 | snapshot c1 failed (static import); canonical.importedBy=5 |
 | `backend/src/modules/messages/dto/message.schemas.ts` | messages | other | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/modules/payments/dto/payment-response.dto.ts` | payments | dto | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
-| `backend/src/modules/rag-proxy/dto/pipeline.dto.ts` | rag-proxy | dto | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/modules/seo/dto/r2-page-response.dto.ts` | seo | dto | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/modules/seo/services/r2-page-plan.service.ts` | seo | service | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/modules/seo/validation/r2-validator.service.ts` | seo | service | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
