@@ -156,7 +156,7 @@ jobs:
           # (caught on cycle 1, gh run #26366771736). The bot commit doesn't
           # need lint-staged (deps-only diff, scope-gate + turbo already ran).
           HUSKY: '0'
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v8
         with:
           branch: deps/auto/${{ inputs.family }}
           commit-message: "chore(deps): bump ${{ inputs.family }} → ${{ inputs.target }}"
