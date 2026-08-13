@@ -46,6 +46,24 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     continue-on-error: true # Phase 1 = warning-only per ADR-058 §Acceptance V1
+    # ⚠️ Chaque garde porte `if: ${{ !cancelled() }}` — NE PAS RETIRER.
+    #
+    # `continue-on-error` agit au niveau du JOB : il empêche le job de bloquer la
+    # PR. Il n'empêche PAS un step en échec d'interrompre la séquence. Sans
+    # condition explicite, le premier step rouge fait passer TOUS les suivants en
+    # `skipped`, et le job est malgré tout rapporté `success` — un vert qui ne
+    # prouve rien.
+    #
+    # Constaté le 2026-08-13 sur `main` (run 31741521477, commit 8a62ee5d2) : I6
+    # échouait sur une dérive réelle de `canonical.json` (3 inputHashes divergents),
+    # et les 8 steps suivants — deep-inventory freshness, overlay L2, invariants
+    # I1..I5, déterminisme, freshness diff, RPC parser — étaient tous `skipped`.
+    # Le workflow ne validait donc plus RIEN depuis cet échec, tout en affichant
+    # un run vert. C'est le même schéma que I6 vacant, un cran plus haut : une
+    # garde correcte que l'ordonnancement empêche de parler.
+    #
+    # Avec `!cancelled()`, chaque garde s'exécute et rend son verdict
+    # indépendamment des précédentes ; un échec reste visible step par step.
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -77,6 +95,7 @@ jobs:
       # Le step post-rebuild plus bas reste utile pour I1..I5 (structure du
       # canonical reconstruit) — mais il ne prouve RIEN sur la fraîcheur.
       - name: I6 — freshness of the COMMITTED canonical (must precede any rebuild)
+        if: ${{ !cancelled() }}
         run: npm run registry:validate-invariants
 
       # Les 19 tests de la garde PR-8 existaient mais n'étaient lancés par AUCUN
@@ -87,6 +106,7 @@ jobs:
       # ci-dessous : un générateur cassé doit se voir sur ses fixtures, pas sur
       # l'inventaire réel.
       - name: PR-8 cleanup guard — unit tests (fixtures)
+        if: ${{ !cancelled() }}
         run: npm run audit:cleanup-candidates:test
 
       # ⚠️ CE STEP DOIT RESTER AVANT `audit:inventory` ET AVANT `npm run registry`.
@@ -116,6 +136,7 @@ jobs:
       # PROMOTION : non-bloquant via le `continue-on-error` du job (Phase 1).
       # Le retirer en même temps que celui du step Deep-inventory.
       - name: PR-8 inventory freshness (committed inventory vs committed inputs)
+        if: ${{ !cancelled() }}
         run: npm run audit:cleanup-candidates:check
 
       # ⚠️ DOIT RESTER AVANT `audit:inventory` — c'est un test de PROJECTION : il
@@ -133,9 +154,11 @@ jobs:
       # Constaté le 2026-08-13 : 2 fichiers untracked s'étaient glissés dans
       # dead-code-candidates.json, et donc dans le fingerprint PR-8 en aval.
       - name: Deep-inventory determinism (committed projections, cross-machine)
+        if: ${{ !cancelled() }}
         run: npm run audit:inventory:test
 
       - name: Run upstream audit producers
+        if: ${{ !cancelled() }}
         run: npm run audit:inventory
 
       # `audit:inventory:check` existait dans package.json mais n'était appelé
@@ -178,6 +201,7 @@ jobs:
       # PROMOTION : `continue-on-error` au niveau du job le rend non-bloquant
       # aujourd'hui. Le retirer quand les 7 artefacts sont régénérés et stables.
       - name: Deep-inventory freshness (les 7 artefacts contractuels)
+        if: ${{ !cancelled() }}
         run: |
           set -euo pipefail
           ARTEFACTS="
@@ -201,9 +225,11 @@ jobs:
           echo "✓ deep-inventory projections in sync (7/7)"
 
       - name: Build Layer 1 + Layer 3 canonical
+        if: ${{ !cancelled() }}
         run: npm run registry
 
       - name: Validate overlay (Layer 2)
+        if: ${{ !cancelled() }}
         run: npm run registry:validate
 
       # Structure du canonical RECONSTRUIT (I1..I5). I6 est vacant ici par
@@ -212,9 +238,11 @@ jobs:
       # exécuté avant le rebuild. Ne pas déplacer ce step vers le haut ni
       # supprimer celui du haut : ils ne testent pas la même chose.
       - name: Validate rebuilt canonical invariants (I1..I5 structural)
+        if: ${{ !cancelled() }}
         run: npm run registry:validate-invariants
 
       - name: Determinism check (V1-2 — canonical hash stable across 2 runs)
+        if: ${{ !cancelled() }}
         # Phase 1 warn-only : never exit 1 ; surface drift as GitHub annotation only.
         # Promotion to ERROR happens in V1.5 (signal-proven 14j of clean determinism).
         run: |
@@ -229,6 +257,7 @@ jobs:
           fi
 
       - name: Freshness diff (canonical.json committed = canonical.json rebuilt)
+        if: ${{ !cancelled() }}
         # Le step SORT EN ERREUR sur dérive. Le job reste non-bloquant via le
         # `continue-on-error: true` du job (Phase 1) — mais le signal est désormais
         # RÉEL : un job rouge non-bloquant, pas une annotation noyée.
@@ -250,6 +279,7 @@ jobs:
           echo "✓ canonical.json in sync with sources"
 
       - name: Run RPC parser fixture tests
+        if: ${{ !cancelled() }}
         run: npm run registry:test:rpc-parser
 
       - name: Summary
