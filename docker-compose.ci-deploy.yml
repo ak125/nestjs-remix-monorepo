@@ -36,7 +36,7 @@ services:
       - BRIEF_GATES_OBSERVE_ONLY=true
       - KEYWORD_DENSITY_GATE_ENABLED=true
       - RAG_SERVICE_URL=http://rag-api:8000
-      - RAG_API_KEY=856528eb83bd8b36867bc0bbf8ead7796f69de30fa6888a6876b54f4d98be08a
+      - RAG_API_KEY=${RAG_API_KEY}
       - INTERNAL_API_KEY=${INTERNAL_API_KEY}
       # Sitemap regen legacy kill-switch (Phase 5 = true → Phase 10 = remove).
       # All other OIDC validation invariants hardcoded in GithubOidcService

@@ -183,6 +183,16 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: high
+  # SEC-01 (2026-08-13) : exceptions gitleaks par FINGERPRINT commit-specifique.
+  # Remplace l'allowlist par VALEUR de .gitleaks.toml, qui matchait partout et
+  # pour toujours — elle a masque une cle de production reelle pendant 6 mois.
+  # Chaque entree doit avoir une preuve de revocation dans
+  # audit/baselines/revoked-secrets-baseline.json.
+  - glob: .gitleaksignore
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
   - glob: .spec/00-canon/repository-registry/**
     domain: D15
     owner: '@ak125'
