@@ -5,8 +5,8 @@
   "scripts": {
     "test": "turbo test",
     "dev": "turbo dev",
-    "dev:core": "echo '\ud83d\ude80 DEV CORE - Modules essentiels uniquement' && turbo dev --filter=@fafa/backend --filter=@fafa/frontend",
-    "dev:full:all": "echo '\ud83d\udd27 DEV FULL - Cockpit complet + workers' && turbo dev",
+    "dev:core": "echo '🚀 DEV CORE - Modules essentiels uniquement' && turbo dev --filter=@fafa/backend --filter=@fafa/frontend",
+    "dev:full:all": "echo '🔧 DEV FULL - Cockpit complet + workers' && turbo dev",
     "lint": "turbo lint",
     "build": "turbo build",
     "size": "npm run -w @fafa/frontend size",
@@ -31,7 +31,7 @@
     "docs:install": "cd .spec/docs && npm install",
     "docs:dev": "cd .spec/docs && npm start",
     "docs:build": "cd .spec/docs && npm run build",
-    "dev:full": "echo '\u26a0\ufe0f Lancer dans 2 terminaux: 1) npm run dev (backend+frontend port 3000), 2) npm run docs:dev (portail port 3002)'",
+    "dev:full": "echo '⚠️ Lancer dans 2 terminaux: 1) npm run dev (backend+frontend port 3000), 2) npm run docs:dev (portail port 3002)'",
     "prepare": "husky",
     "check:no-client-localhost": "bash scripts/check-no-client-localhost.sh",
     "audit:knip": "knip --no-exit-code --reporter compact",
@@ -127,7 +127,11 @@
     "db-contract:build": "npm -w @repo/registry run build:db-contract",
     "runtime-contract:build": "npm -w @repo/registry run build:runtime-contract",
     "dep-governance:build": "npm -w @repo/registry run build:dep-governance",
-    "rpc-contract:build": "npm -w @repo/registry run build:rpc-contract"
+    "rpc-contract:build": "npm -w @repo/registry run build:rpc-contract",
+    "audit:orphan-ratchet": "tsx scripts/audit/check-orphan-files-ratchet.ts",
+    "audit:orphan-ratchet:json": "tsx scripts/audit/check-orphan-files-ratchet.ts --json",
+    "audit:orphan-ratchet:refresh": "tsx scripts/audit/check-orphan-files-ratchet.ts --refresh",
+    "audit:orphan-ratchet:test": "tsx --test scripts/audit/check-orphan-files-ratchet.test.ts"
   },
   "keywords": [],
   "author": "",
