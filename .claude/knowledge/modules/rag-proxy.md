@@ -2,16 +2,16 @@
 module: rag-proxy
 sources:
 - backend/src/modules/rag-proxy
-last_scan: '2026-07-02'
+last_scan: '2026-08-14'
 primary_files:
 - backend/src/modules/rag-proxy/dto/chat.dto.ts
-- backend/src/modules/rag-proxy/dto/manual-ingest.dto.ts
-- backend/src/modules/rag-proxy/dto/pdf-ingest.dto.ts
-- backend/src/modules/rag-proxy/dto/pipeline.dto.ts
 - backend/src/modules/rag-proxy/dto/search.dto.ts
-- backend/src/modules/rag-proxy/dto/web-ingest.dto.ts
 - backend/src/modules/rag-proxy/dto/webhook-ingest.dto.ts
 - backend/src/modules/rag-proxy/events/rag-ingestion.events.ts
+- backend/src/modules/rag-proxy/rag-proxy.controller.ts
+- backend/src/modules/rag-proxy/rag-proxy.module.ts
+- backend/src/modules/rag-proxy/rag-proxy.service.ts
+- backend/src/modules/rag-proxy/services/frontmatter-validator.service.ts
 depends_on:
 - ConfigModule
 ---
