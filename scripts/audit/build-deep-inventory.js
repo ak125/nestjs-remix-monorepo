@@ -185,6 +185,25 @@ function lastModifiedMap() {
   return map;
 }
 
+// Cross-platform npm launcher — two distinct Windows obstacles, both required.
+//
+//  1. `execFileSync` without a shell resolves a LITERAL filename, and on Windows
+//     `npx` only exists as `npx.cmd` / `npx.ps1`, never extension-less
+//     → `spawnSync npx ENOENT`.
+//  2. Since the CVE-2024-27980 mitigation (Node ≥ 18.20.2 / 20.12.2 / 21.7.3),
+//     Node REFUSES to spawn a `.cmd`/`.bat` without `shell: true`
+//     → `spawnSync npx.cmd EINVAL`.
+//
+// Without both, the deep inventory — and therefore the registry build, which
+// consumes its cache — cannot run on any Windows checkout at all.
+//
+// `shell` is enabled on win32 ONLY. Every argument passed to runJson() below is
+// a static literal (no user input, no spaces, no shell metacharacters), so the
+// usual shell-injection concern does not apply here. No behaviour change on
+// POSIX: `NPX === 'npx'` and `SHELL === false`.
+const IS_WIN = process.platform === 'win32';
+const NPX = IS_WIN ? 'npx.cmd' : 'npx';
+
 function runJson(cmd, args, label) {
   log(`[build-deep-inventory] running ${label}…`);
   // stderr is *evidence*, not noise: capture it, tee it to audit/cache/tool-<label>.stderr.log
@@ -196,7 +215,7 @@ function runJson(cmd, args, label) {
   let stderr = '';
   let failure = null;
   try {
-    stdout = execFileSync(cmd, args, { cwd: REPO_ROOT, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] });
+    stdout = execFileSync(cmd, args, { cwd: REPO_ROOT, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'], shell: IS_WIN });
   } catch (e) {
     // many of these tools exit non-zero when they find issues — keep stdout/stderr
     stdout = (e.stdout || '').toString();
@@ -217,7 +236,7 @@ function runJson(cmd, args, label) {
 
 function loadDepcruise() {
   const j = runJson(
-    'npx',
+    NPX,
     ['--no-install', 'depcruise', '--config', '.dependency-cruiser.cjs', '--output-type', 'json', 'backend/src', 'frontend/app'],
     'dependency-cruiser',
   );
@@ -273,7 +292,7 @@ async function loadCycles() {
 // ---------------------------------------------------------------------------
 
 function loadKnip() {
-  const j = runJson('npx', ['--no-install', 'knip', '--reporter', 'json', '--no-exit-code'], 'knip');
+  const j = runJson(NPX, ['--no-install', 'knip', '--reporter', 'json', '--no-exit-code'], 'knip');
   const unusedFiles = new Set();
   const duplicates = [];
   const unusedExports = [];
