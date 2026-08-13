@@ -1,11 +1,11 @@
 {
   "_generated_by": "scripts/audit/build-deep-inventory.js",
   "note": "Candidates only. Deletion requires the full conditions (#0–#8) incl. validate-before-delete.sh + build/tests + human review.",
-  "count": 274,
+  "count": 268,
   "by_confidence": {
-    "high": 13,
-    "medium": 174,
-    "low": 87
+    "high": 12,
+    "medium": 171,
+    "low": 85
   },
   "candidates": [
     {
@@ -93,58 +93,9 @@
       "reason": "knip unused"
     },
     {
-      "path": "backend/src/common/decorators/index.ts",
-      "domain": "common",
-      "kind": "other",
-      "confidence": "low",
-      "derived_from": [
-        "knip"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": false,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "backend/src/common/decorators/roles.decorator.ts",
-      "domain": "common",
-      "kind": "other",
-      "confidence": "low",
-      "derived_from": [
-        "knip"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": false,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
       "path": "backend/src/common/index.ts",
       "domain": "common",
       "kind": "other",
-      "confidence": "medium",
-      "derived_from": [
-        "knip",
-        "depcruise-no-dependents"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": true,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "backend/src/common/interceptors/rate-limit-headers.interceptor.ts",
-      "domain": "common",
-      "kind": "interceptor",
       "confidence": "medium",
       "derived_from": [
         "knip",
@@ -195,6 +146,23 @@
       "path": "backend/src/config/index.ts",
       "domain": "config",
       "kind": "other",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "backend/src/config/media-slots.constants.ts",
+      "domain": "config",
+      "kind": "config",
       "confidence": "medium",
       "derived_from": [
         "knip",
@@ -476,24 +444,6 @@
         "c3_zero_runtime_use": true
       },
       "reason": "knip unused"
-    },
-    {
-      "path": "backend/src/modules/admin/events/keyword-plan.events.ts",
-      "domain": "admin",
-      "kind": "other",
-      "confidence": "high",
-      "derived_from": [
-        "knip",
-        "depcruise-orphan",
-        "depcruise-no-dependents"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": true,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused + depcruise orphan"
     },
     {
       "path": "backend/src/modules/admin/schemas/admin.schemas.ts",
@@ -2241,40 +2191,6 @@
       "reason": "knip unused + depcruise orphan"
     },
     {
-      "path": "backend/src/utils/fetch-with-retry.ts",
-      "domain": "backend-core",
-      "kind": "other",
-      "confidence": "medium",
-      "derived_from": [
-        "knip",
-        "depcruise-no-dependents"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": true,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "frontend/app/components/admin/gamme-seo/EnrichedVehicleItem.tsx",
-      "domain": "frontend-shared",
-      "kind": "component",
-      "confidence": "medium",
-      "derived_from": [
-        "knip",
-        "depcruise-no-dependents"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": true,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
       "path": "frontend/app/components/admin/OrdersManagement.tsx",
       "domain": "frontend-shared",
       "kind": "component",
@@ -2293,40 +2209,6 @@
     },
     {
       "path": "frontend/app/components/admin/OrdersOverview.tsx",
-      "domain": "frontend-shared",
-      "kind": "component",
-      "confidence": "medium",
-      "derived_from": [
-        "knip",
-        "depcruise-no-dependents"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": true,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "frontend/app/components/admin/patterns/contracts.ts",
-      "domain": "frontend-shared",
-      "kind": "component",
-      "confidence": "medium",
-      "derived_from": [
-        "knip",
-        "depcruise-no-dependents"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": true,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "frontend/app/components/admin/patterns/FeatureFlagsPanel.tsx",
       "domain": "frontend-shared",
       "kind": "component",
       "confidence": "medium",
@@ -2377,7 +2259,7 @@
       "reason": "knip unused"
     },
     {
-      "path": "frontend/app/components/admin/seo/PreviewPanel.tsx",
+      "path": "frontend/app/components/admin/UserList.tsx",
       "domain": "frontend-shared",
       "kind": "component",
       "confidence": "medium",
@@ -2394,7 +2276,58 @@
       "reason": "knip unused"
     },
     {
-      "path": "frontend/app/components/admin/UserList.tsx",
+      "path": "frontend/app/components/admin/gamme-seo/EnrichedVehicleItem.tsx",
+      "domain": "frontend-shared",
+      "kind": "component",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "frontend/app/components/admin/patterns/FeatureFlagsPanel.tsx",
+      "domain": "frontend-shared",
+      "kind": "component",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "frontend/app/components/admin/patterns/contracts.ts",
+      "domain": "frontend-shared",
+      "kind": "component",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "frontend/app/components/admin/seo/PreviewPanel.tsx",
       "domain": "frontend-shared",
       "kind": "component",
       "confidence": "medium",
@@ -2780,6 +2713,38 @@
       "reason": "knip unused"
     },
     {
+      "path": "frontend/app/components/expert/ProductStickyCTAV2.tsx",
+      "domain": "frontend-shared",
+      "kind": "component",
+      "confidence": "low",
+      "derived_from": [
+        "knip"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": false,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "frontend/app/components/expert/TrustRowV2.tsx",
+      "domain": "frontend-shared",
+      "kind": "component",
+      "confidence": "low",
+      "derived_from": [
+        "knip"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": false,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
       "path": "frontend/app/components/expert/design-system.ts",
       "domain": "frontend-shared",
       "kind": "component",
@@ -2807,38 +2772,6 @@
       "precheck_verdict": {
         "c0_not_never_auto_delete": true,
         "c1_zero_static_import": true,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "frontend/app/components/expert/ProductStickyCTAV2.tsx",
-      "domain": "frontend-shared",
-      "kind": "component",
-      "confidence": "low",
-      "derived_from": [
-        "knip"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": false,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "frontend/app/components/expert/TrustRowV2.tsx",
-      "domain": "frontend-shared",
-      "kind": "component",
-      "confidence": "low",
-      "derived_from": [
-        "knip"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": false,
         "c2_zero_dynamic_import": true,
         "c3_zero_runtime_use": true
       },
@@ -2964,6 +2897,23 @@
       "reason": "knip unused"
     },
     {
+      "path": "frontend/app/components/layout/UserMenu.tsx",
+      "domain": "frontend-shared",
+      "kind": "component",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
       "path": "frontend/app/components/layout/templates/Gallery.tsx",
       "domain": "frontend-shared",
       "kind": "component",
@@ -2982,23 +2932,6 @@
     },
     {
       "path": "frontend/app/components/layout/templates/Testimonials.tsx",
-      "domain": "frontend-shared",
-      "kind": "component",
-      "confidence": "medium",
-      "derived_from": [
-        "knip",
-        "depcruise-no-dependents"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": true,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "frontend/app/components/layout/UserMenu.tsx",
       "domain": "frontend-shared",
       "kind": "component",
       "confidence": "medium",
@@ -3077,22 +3010,6 @@
       "precheck_verdict": {
         "c0_not_never_auto_delete": true,
         "c1_zero_static_import": true,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "frontend/app/components/pieces/ai-predictions/AIPredictionsPanel.tsx",
-      "domain": "frontend-shared",
-      "kind": "component",
-      "confidence": "low",
-      "derived_from": [
-        "knip"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": false,
         "c2_zero_dynamic_import": true,
         "c3_zero_runtime_use": true
       },
@@ -3242,23 +3159,6 @@
       "precheck_verdict": {
         "c0_not_never_auto_delete": true,
         "c1_zero_static_import": false,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "frontend/app/components/pieces/index.ts",
-      "domain": "frontend-shared",
-      "kind": "component",
-      "confidence": "medium",
-      "derived_from": [
-        "knip",
-        "depcruise-no-dependents"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": true,
         "c2_zero_dynamic_import": true,
         "c3_zero_runtime_use": true
       },
@@ -3567,7 +3467,7 @@
       "reason": "knip unused"
     },
     {
-      "path": "frontend/app/components/pieces/types.ts",
+      "path": "frontend/app/components/pieces/VehicleHeader.tsx",
       "domain": "frontend-shared",
       "kind": "component",
       "confidence": "low",
@@ -3583,7 +3483,40 @@
       "reason": "knip unused"
     },
     {
-      "path": "frontend/app/components/pieces/VehicleHeader.tsx",
+      "path": "frontend/app/components/pieces/ai-predictions/AIPredictionsPanel.tsx",
+      "domain": "frontend-shared",
+      "kind": "component",
+      "confidence": "low",
+      "derived_from": [
+        "knip"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": false,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "frontend/app/components/pieces/index.ts",
+      "domain": "frontend-shared",
+      "kind": "component",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "frontend/app/components/pieces/types.ts",
       "domain": "frontend-shared",
       "kind": "component",
       "confidence": "low",
@@ -3769,23 +3702,6 @@
       "reason": "knip unused"
     },
     {
-      "path": "frontend/app/components/ui/command.tsx",
-      "domain": "frontend-shared",
-      "kind": "component",
-      "confidence": "medium",
-      "derived_from": [
-        "knip",
-        "depcruise-no-dependents"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": true,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
       "path": "frontend/app/components/ui/DynamicMenu.tsx",
       "domain": "frontend-shared",
       "kind": "component",
@@ -3812,6 +3728,87 @@
       "precheck_verdict": {
         "c0_not_never_auto_delete": true,
         "c1_zero_static_import": false,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "frontend/app/components/ui/MultiCarousel.tsx",
+      "domain": "frontend-shared",
+      "kind": "component",
+      "confidence": "low",
+      "derived_from": [
+        "knip"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": false,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "frontend/app/components/ui/OptimizedSearchBar.tsx",
+      "domain": "frontend-shared",
+      "kind": "component",
+      "confidence": "low",
+      "derived_from": [
+        "knip"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": false,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "frontend/app/components/ui/PerformanceMetrics.tsx",
+      "domain": "frontend-shared",
+      "kind": "component",
+      "confidence": "low",
+      "derived_from": [
+        "knip"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": false,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "frontend/app/components/ui/SEOHelmet.tsx",
+      "domain": "frontend-shared",
+      "kind": "component",
+      "confidence": "low",
+      "derived_from": [
+        "knip"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": false,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "frontend/app/components/ui/command.tsx",
+      "domain": "frontend-shared",
+      "kind": "component",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
         "c2_zero_dynamic_import": true,
         "c3_zero_runtime_use": true
       },
@@ -3851,55 +3848,6 @@
       "reason": "knip unused"
     },
     {
-      "path": "frontend/app/components/ui/MultiCarousel.tsx",
-      "domain": "frontend-shared",
-      "kind": "component",
-      "confidence": "low",
-      "derived_from": [
-        "knip"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": false,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "frontend/app/components/ui/navigation-menu.tsx",
-      "domain": "frontend-shared",
-      "kind": "component",
-      "confidence": "medium",
-      "derived_from": [
-        "knip",
-        "depcruise-no-dependents"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": true,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "frontend/app/components/ui/OptimizedSearchBar.tsx",
-      "domain": "frontend-shared",
-      "kind": "component",
-      "confidence": "low",
-      "derived_from": [
-        "knip"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": false,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
       "path": "frontend/app/components/ui/pagination.tsx",
       "domain": "frontend-shared",
       "kind": "component",
@@ -3916,39 +3864,7 @@
       "reason": "knip unused"
     },
     {
-      "path": "frontend/app/components/ui/PerformanceMetrics.tsx",
-      "domain": "frontend-shared",
-      "kind": "component",
-      "confidence": "low",
-      "derived_from": [
-        "knip"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": false,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
       "path": "frontend/app/components/ui/popover.tsx",
-      "domain": "frontend-shared",
-      "kind": "component",
-      "confidence": "low",
-      "derived_from": [
-        "knip"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": false,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "frontend/app/components/ui/SEOHelmet.tsx",
       "domain": "frontend-shared",
       "kind": "component",
       "confidence": "low",
@@ -4188,23 +4104,6 @@
       "path": "frontend/app/lib/schemas/validation.ts",
       "domain": "frontend-shared",
       "kind": "other",
-      "confidence": "medium",
-      "derived_from": [
-        "knip",
-        "depcruise-no-dependents"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": true,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "frontend/app/services/admin-api.server.ts",
-      "domain": "frontend-shared",
-      "kind": "frontend-service",
       "confidence": "medium",
       "derived_from": [
         "knip",
