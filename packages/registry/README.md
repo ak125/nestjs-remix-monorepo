@@ -147,6 +147,20 @@ rebuild et compare, et rejette tout contenu non reproductible depuis les sources
 courantes. C'est d'ailleurs elle que le script lui-même désigne comme *« the substantive
 defense »*.
 
+> ⚠️ **À exécuter depuis Linux (serveur DEV), jamais depuis un poste Windows.**
+> Les builders `scripts/registry/*` sont déterministes sur une même machine (le step
+> *Determinism check* le vérifie sur 2 rebuilds), mais **pas encore cross-plateforme** :
+> une resync produite sous Windows le 2026-08-14 a donné un `canonical.json` que le runner
+> Linux ne reproduisait pas — 573 lignes divergentes, `Freshness diff` rouge. Elle a été
+> revertée.
+>
+> Contrairement aux projections `audit/**` (rendues cross-machine : tri codepoint, chemins
+> normalisés, filtre `git ls-files`), la source exacte de divergence des builders registry
+> **n'est pas identifiée** — ni `localeCompare`, ni `readdirSync` non trié, ni ordre de
+> `deps` (tous vérifiés le 2026-08-14). Tant qu'elle ne l'est pas, la contrainte
+> « générer depuis Linux » tient lieu de garde-fou. Les resyncs historiques (#990, #1078,
+> #1116) respectaient déjà cette contrainte de fait.
+
 **Périmètre.** `registry:heal` couvre les **6** projections. Le bot
 [`registry-deps-self-heal.yml`](../../.github/workflows/registry-deps-self-heal.yml) n'en
 couvre que **4** (`deps`, `pr-9-inventory`, `canonical`, `llm-map`) et *abort* si autre chose
