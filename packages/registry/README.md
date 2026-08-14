@@ -123,6 +123,70 @@ npm run -w @repo/registry test        # tsx --test src/**/*.test.ts
 npm run -w @repo/registry build       # tsc
 ```
 
+### Resynchroniser les projections L1+L3 — `npm run registry:heal`
+
+```bash
+npm run registry:heal   # rebuild + git add + git commit des 6 audit/registry/*.json
+```
+
+**Pourquoi un script dédié plutôt qu'un `git add` manuel.** Le pre-commit
+[`check-no-manual-edit-generated.sh`](../../scripts/registry/check-no-manual-edit-generated.sh)
+refuse tout staging de `audit/registry/*.json` qui ne satisfait pas **deux** conditions :
+`npm_lifecycle_event` matchant `^registry:` **et** la reproductibilité (il relance
+`npm run registry` et compare les sha256).
+
+Or `npm_lifecycle_event` n'existe que dans les processus **enfants** d'un script npm : après
+un `npm run registry` terminé, un `git commit` lancé depuis le shell ne la porte plus. La
+procédure suggérée par le message du guard — « run `npm run registry` to regenerate, then
+git add » — était donc inapplicable telle quelle, et aucun script npm ne faisait le staging.
+`registry:heal` fournit ce chaînon : le `git commit` s'exécute **dans** le script, hérite de
+`npm_lifecycle_event=registry:heal`, et la garde valide légitimement les deux conditions.
+
+Ce n'est pas un contournement : la condition (b) reste intégralement appliquée — le guard
+rebuild et compare, et rejette tout contenu non reproductible depuis les sources L1+L2
+courantes. C'est d'ailleurs elle que le script lui-même désigne comme *« the substantive
+defense »*.
+
+> ⚠️ **À exécuter depuis Linux (serveur DEV), jamais depuis un poste Windows** — tant que
+> `files.json` n'est pas traité (voir ci-dessous).
+
+#### État de la reproductibilité cross-plateforme (2026-08-14)
+
+Mesuré en confrontant un build Windows au runner Linux **au même commit**, via les `sha256`
+que le step *Freshness diff* imprime désormais par artefact :
+
+| Projection | Cross-plateforme | Note |
+|---|---|---|
+| `runtime.json` | ✅ identique | |
+| `db.json` | ✅ identique | |
+| `rpc.json` | ✅ identique | |
+| `deps.json` | ✅ identique | **corrigé** — `path.join()` injectait `backend\package.json` dans 216 `declaredIn` |
+| `files.json` | ❌ **diverge** | cause non isolée |
+| `canonical.json` | ❌ diverge | par ricochet : il agrège `files.json` |
+
+**`files.json` — ce qui a été éliminé** (chaque piste vérifiée puis infirmée) : `localeCompare`
+(absent de `scripts/registry/`), `readdirSync` non trié, `sortById` (déjà codepoint),
+`Date.now`/`random` dans le builder canonical, ordre des steps CI (reproduit en local à
+l'identique), input gitignoré parmi les 10 `inputHashes` (tous versionnés), casse des imports
+(0 divergence vs `git ls-files`), séparateurs Windows (0 backslash), fichiers untracked
+capturés (0 dans le cache comme dans la projection).
+
+**Ce qui reste** : `files.json` dérive de `audit/cache/codebase-inventory.json` — un cache
+**gitignoré**, absent des `inputHashes`, comparé par aucun gate. Les 2837 entrées sont
+identiques des deux côtés ; ce sont les **valeurs** qui diffèrent, et le diff (576 lignes)
+correspond aux champs `runtime`/`status` de ~288 entrées — soit la reachability transitive
+calculée sur les `imports` de ce cache, produits par `dependency-cruiser`. La divergence est
+donc vraisemblablement dans la résolution d'imports de cet outil tiers selon l'OS.
+
+Trancher demande de comparer deux caches générés sur les deux OS au même commit — le cache
+étant gitignoré, cela suppose un accès simultané aux deux machines.
+
+**Périmètre.** `registry:heal` couvre les **6** projections. Le bot
+[`registry-deps-self-heal.yml`](../../.github/workflows/registry-deps-self-heal.yml) n'en
+couvre que **4** (`deps`, `pr-9-inventory`, `canonical`, `llm-map`) et *abort* si autre chose
+bouge : `files.json`, `runtime.json`, `db.json` et `rpc.json` n'ont aucun chemin de resync
+automatique et relèvent de ce script (cf. les resyncs manuelles #990, #1078, #1116).
+
 ## Voir aussi
 
 - ADR-058 : `governance-vault/ledger/decisions/adr/ADR-058-repository-control-plane.md`

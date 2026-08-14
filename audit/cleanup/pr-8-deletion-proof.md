@@ -8,13 +8,13 @@
 - Schema version: `1.0.0`
 - Cleanup policy version: `pr8-v1`
 - Validation mode: `snapshot-only` (active runtime check deferred to PR-8b)
-- Generated at: `2026-08-14T08:52:48.193Z`
-- Toolchain: `v24.17.0` on `linux/x64`
+- Generated at: `2026-08-14T15:59:52.074Z`
+- Toolchain: `v24.11.1` on `win32/x64`
 
 ## Input Fingerprint (sha256)
 
-- `deadCodeCandidates`: `172cbfb81b4e69cd75dc49a1d311216fd5f1640356e9d2be446e5321dca8a0b3`
-- `canonical`: `340ef52957ce0f6d5d236dae7682ed365e263c6b1c059bfa89c403634a10902b`
+- `deadCodeCandidates`: `9f844bd461169ca70bd4b5496838d3819d824df399f51ef512003bdfd63848e2`
+- `canonical`: `9d9262a3ed7fc70333a390ffbcdecf1676c5a527665c9ebd054c2faca6f05b35`
 - `ownershipYaml`: `f6d7717a16309ad0fa9c995ff72f32241d63b9f06ab0d09213f4f305e24a9997`
 - `contractHealth`: `<none>`
 - `validateScript`: `0f5224c9823ce6de8d3bf9686c9eb445b0adc343296c68cf5b0e91f4aaac7f21`
@@ -22,11 +22,11 @@
 
 ## Counts
 
-- Total: **267**
-- By confidence: high=12 · medium=171 · low=84
-- By decision: candidate=183 · blocked=84 · excluded=0
+- Total: **262**
+- By confidence: high=12 · medium=166 · low=84
+- By decision: candidate=178 · blocked=84 · excluded=0
 
-## candidate (183)
+## candidate (178)
 
 ### candidate · high (12)
 
@@ -45,7 +45,7 @@
 | `frontend/app/utils/storage.ts` | frontend-shared | other | high | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `frontend/app/utils/supabase-storage.ts` | frontend-shared | other | high | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 
-### candidate · medium (171)
+### candidate · medium (166)
 
 | Path | Domain | Kind | Confidence | Status | importedBy | Rationale |
 |---|---|---|---|---|---:|---|
@@ -54,7 +54,6 @@
 | `backend/src/auth/dto/index.ts` | auth | other | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `backend/src/auth/exception.filter.ts` | auth | other | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `backend/src/common/index.ts` | common | other | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
-| `backend/src/common/interceptors/rate-limit-headers.interceptor.ts` | common | interceptor | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `backend/src/config/execution-plan-resolver.service.ts` | config | service | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `backend/src/config/index.ts` | config | other | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `backend/src/config/media-slots.constants.ts` | config | config | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
@@ -115,7 +114,6 @@
 | `backend/src/modules/vehicles/pipes/vehicle-validation.pipe.ts` | vehicles | pipe | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `backend/src/security/rpc-gate/index.ts` | backend-core | other | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `backend/src/shared/crypto/index.ts` | shared | other | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
-| `backend/src/utils/fetch-with-retry.ts` | backend-core | other | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `frontend/app/components/admin/OrdersManagement.tsx` | frontend-shared | component | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `frontend/app/components/admin/OrdersOverview.tsx` | frontend-shared | component | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `frontend/app/components/admin/QuickNoteDialog.tsx` | frontend-shared | component | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
@@ -189,7 +187,6 @@
 | `frontend/app/components/trust/PricingDisplay.tsx` | frontend-shared | component | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `frontend/app/components/ui/command.tsx` | frontend-shared | component | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `frontend/app/components/ui/index.ts` | frontend-shared | component | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
-| `frontend/app/components/ui/navigation-menu.tsx` | frontend-shared | component | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `frontend/app/components/users/UserHoverCard.tsx` | frontend-shared | component | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `frontend/app/components/vehicle/index.ts` | frontend-shared | component | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `frontend/app/hooks/use-orders-filters.ts` | frontend-shared | hook | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
@@ -202,8 +199,6 @@
 | `frontend/app/hooks/useProductCompatibility.ts` | frontend-shared | hook | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `frontend/app/hooks/useSearchState.ts` | frontend-shared | hook | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `frontend/app/lib/schemas/validation.ts` | frontend-shared | other | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
-| `frontend/app/server/remix-integration.server.ts` | frontend-shared | frontend-service | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
-| `frontend/app/services/admin-api.server.ts` | frontend-shared | frontend-service | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `frontend/app/services/admin-orders.server.ts` | frontend-shared | frontend-service | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `frontend/app/services/admin.server.ts` | frontend-shared | frontend-service | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `frontend/app/services/api.ts` | frontend-shared | frontend-service | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |

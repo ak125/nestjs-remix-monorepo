@@ -405,6 +405,46 @@ export async function checkTarget(
  * de fraîcheur du mode global. Seul le mode target-scoped les tolère, et seulement
  * par path (canon §PR-8d).
  */
+/**
+ * Premier écart entre deux payloads, exprimé en chemin JSON lisible.
+ *
+ * Le mode global `--check` disait seulement « does not match a fresh generator run » :
+ * sur un artefact de 268 candidats × ~20 champs, cela n'oriente vers rien. Diagnostiquer
+ * imposait de rejouer le générateur à la main sur les deux machines — impossible quand
+ * l'écart n'apparaît qu'en CI (constaté le 2026-08-14).
+ *
+ * Renvoie `null` si les deux payloads sont identiques.
+ */
+export function firstDifference(a: unknown, b: unknown, path = ""): string | null {
+  if (a === b) return null;
+  const ta = Array.isArray(a) ? "array" : a === null ? "null" : typeof a;
+  const tb = Array.isArray(b) ? "array" : b === null ? "null" : typeof b;
+  if (ta !== tb) return `${path || "<root>"}: type ${ta} → ${tb}`;
+
+  if (ta === "array") {
+    const xa = a as unknown[], xb = b as unknown[];
+    if (xa.length !== xb.length) return `${path}: length ${xa.length} → ${xb.length}`;
+    for (let i = 0; i < xa.length; i++) {
+      const d = firstDifference(xa[i], xb[i], `${path}[${i}]`);
+      if (d) return d;
+    }
+    return null;
+  }
+  if (ta === "object") {
+    const oa = a as Record<string, unknown>, ob = b as Record<string, unknown>;
+    const keys = [...new Set([...Object.keys(oa), ...Object.keys(ob)])].sort();
+    for (const k of keys) {
+      if (!(k in oa)) return `${path}.${k}: absent → present`;
+      if (!(k in ob)) return `${path}.${k}: present → absent`;
+      const d = firstDifference(oa[k], ob[k], `${path}.${k}`);
+      if (d) return d;
+    }
+    return null;
+  }
+  const show = (v: unknown) => { const s = JSON.stringify(v); return s && s.length > 80 ? s.slice(0, 80) + "…" : s; };
+  return `${path || "<root>"}: ${show(a)} → ${show(b)}`;
+}
+
 export function comparablePayload(rawJson: string): string {
   const parsed = JSON.parse(rawJson);
   if (parsed?.meta && typeof parsed.meta === "object") delete parsed.meta.toolchain;
@@ -460,6 +500,13 @@ async function main() {
     // depuis n'importe quelle machine (voir `comparablePayload`).
     if (comparablePayload(committed) === comparablePayload(json)) { process.exit(0); }
     console.error(`Inventory drift: ${jsonOut} does not match a fresh generator run.`);
+    // Sans ce détail, le message n'oriente vers rien sur un artefact de plusieurs
+    // centaines de candidats — et l'écart peut n'apparaître qu'en CI.
+    try {
+      const strip = (raw: string) => { const o = JSON.parse(raw); if (o?.meta) delete o.meta.toolchain; return o; };
+      const diff = firstDifference(strip(committed), strip(json));
+      if (diff) console.error(`First divergence (committed → rebuilt): ${diff}`);
+    } catch { /* diagnostic best-effort — ne doit jamais masquer l'échec réel */ }
     console.error("Cause: an input changed without regeneration (meta.toolchain is NOT compared — a different node/platform/arch is not a drift).");
     console.error("To regenerate locally: `npm run audit:cleanup-candidates` (sets a fresh generatedAt; commit the result).");
     console.error("To authorize a single-file deletion despite drift: `npm run audit:cleanup-candidates:check -- --target <path>` (PR-8d target-scoped mode).");

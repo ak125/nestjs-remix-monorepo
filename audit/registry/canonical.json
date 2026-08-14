@@ -29252,7 +29252,6 @@
       "importedBy": [
         "backend/src/auth/controllers/auth-login.controller.ts",
         "backend/src/common/decorators/index.ts",
-        "backend/src/common/interceptors/rate-limit-headers.interceptor.ts",
         "backend/src/modules/admin/controllers/admin-pipeline.controller.ts",
         "backend/src/modules/ai-content/ai-content.controller.ts",
         "backend/src/modules/catalog/controllers/compatibility.controller.ts",
@@ -29738,27 +29737,6 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise"
-      ],
-      "domain": "UNKNOWN",
-      "id": "backend/src/common/interceptors/rate-limit-headers.interceptor.ts",
-      "importedBy": [],
-      "imports": [
-        "backend/src/common/decorators/rate-limit.decorator.ts"
-      ],
-      "kind": "service",
-      "loc": 65,
-      "owner": "__unassigned__",
-      "path": "backend/src/common/interceptors/rate-limit-headers.interceptor.ts",
-      "risk": "low",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -64426,28 +64404,6 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
-      ],
-      "domain": "UNKNOWN",
-      "id": "backend/src/utils/fetch-with-retry.ts",
-      "importedBy": [],
-      "imports": [
-        "@common/exceptions",
-        "backend/src/utils/promise-helpers.ts"
-      ],
-      "kind": "service",
-      "loc": 157,
-      "owner": "__unassigned__",
-      "path": "backend/src/utils/fetch-with-retry.ts",
-      "risk": "low",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
         "depcruise",
         "reachability"
       ],
@@ -64489,8 +64445,7 @@
         "backend/src/modules/mcp-validation/services/chrome-devtools-client.service.ts",
         "backend/src/modules/mcp-validation/services/external-compatibility.types.ts",
         "backend/src/modules/orders/controllers/orders.controller.ts",
-        "backend/src/modules/seo/services/sitemap-streaming.service.ts",
-        "backend/src/utils/fetch-with-retry.ts"
+        "backend/src/modules/seo/services/sitemap-streaming.service.ts"
       ],
       "imports": [
         "util",
@@ -76701,28 +76656,6 @@
         "manual"
       ],
       "domain": "D8",
-      "id": "frontend/app/components/ui/navigation-menu.tsx",
-      "importedBy": [],
-      "imports": [
-        "~/lib/utils"
-      ],
-      "kind": "config",
-      "loc": 129,
-      "owner": "@ak125/frontend-team",
-      "path": "frontend/app/components/ui/navigation-menu.tsx",
-      "risk": "low",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D8",
       "id": "frontend/app/components/ui/pagination.tsx",
       "importedBy": [
         "frontend/app/components/ui/index.ts"
@@ -85512,27 +85445,6 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
-      ],
-      "domain": "UNKNOWN",
-      "id": "frontend/app/server/remix-integration.server.ts",
-      "importedBy": [],
-      "imports": [
-        "~/utils/load-context"
-      ],
-      "kind": "config",
-      "loc": 28,
-      "owner": "__unassigned__",
-      "path": "frontend/app/server/remix-integration.server.ts",
-      "risk": "low",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
         "depcruise",
         "reachability"
       ],
@@ -85572,28 +85484,6 @@
       "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise"
-      ],
-      "domain": "UNKNOWN",
-      "id": "frontend/app/services/admin-api.server.ts",
-      "importedBy": [],
-      "imports": [
-        "~/utils/internal-api.server",
-        "~/utils/proxy-headers.server"
-      ],
-      "kind": "config",
-      "loc": 120,
-      "owner": "__unassigned__",
-      "path": "frontend/app/services/admin-api.server.ts",
-      "risk": "low",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
       "status": "UNKNOWN"
     },
     {
@@ -94125,6 +94015,26 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "scripts/audit/__tests__/deep-inventory-determinism.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 75,
+      "owner": "@ak125",
+      "path": "scripts/audit/__tests__/deep-inventory-determinism.test.ts",
+      "risk": "medium",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "scripts/audit/__tests__/dependency-modernization.schema.test.ts",
       "importedBy": [],
       "imports": [],
@@ -94209,7 +94119,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 275,
+      "loc": 291,
       "owner": "@ak125",
       "path": "scripts/audit/build-cleanup-candidates.test.ts",
       "risk": "medium",
@@ -94229,7 +94139,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 485,
+      "loc": 532,
       "owner": "@ak125",
       "path": "scripts/audit/build-cleanup-candidates.ts",
       "risk": "medium",
@@ -94249,7 +94159,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 229,
+      "loc": 236,
       "owner": "@ak125",
       "path": "scripts/audit/build-db-usage-map.js",
       "risk": "medium",
@@ -94269,7 +94179,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 671,
+      "loc": 703,
       "owner": "@ak125",
       "path": "scripts/audit/build-deep-inventory.js",
       "risk": "medium",
@@ -96089,7 +95999,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 149,
+      "loc": 168,
       "owner": "@ak125",
       "path": "scripts/registry/build-deps-registry.js",
       "risk": "high",
@@ -98130,11 +98040,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "5615f6c8f657b5ebdf48b6add1216f66c227b805ae687b1f401c95e8d393fbf9",
       "audit/registry/deps.json": "6f667991be593e37b2798c4ca0f0689d89c412731aa2bdf50000248da9f2c5bd",
-      "audit/registry/files.json": "0387295e9726d02cd1c5aa34d4adb0e216987653c79911fc2118e81102af2303",
+      "audit/registry/files.json": "af476ef3b420b209347e626df42fdcdbe6051327fd73a9bfc0ede839330eefc0",
       "audit/registry/rpc.json": "e7d09287e11bb447da93a48d1a18e4c5ee13ad6667a6e10356a3af95d7463cbd",
       "audit/registry/runtime.json": "314a3bda98e2b9bb87a4b6a88a1efa131a3c12505d9e56b5f60eeebd23e5f70f"
     },
-    "sotFingerprint": "18796d0e8883"
+    "sotFingerprint": "9575abc78d8e"
   },
   "runtime": [
     {

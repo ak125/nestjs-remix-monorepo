@@ -5,11 +5,11 @@ sources:
   - audit/cleanup-plan-by-domain.md   # Phase 2 driver — séquence canon PR-2…PR-6 (PR-0b)
   - audit/risk-register.md            # par domaine : surface / candidats / cycles / couverture / risque (PR-0b)
   - audit/runtime-entrypoints.json    # zone never-auto-delete + nestjs_unreachable_modules (PR-0a)
-  - audit/dead-code-candidates.json   # 339 candidats high/med/low (PR-0a)
+  - audit/dead-code-candidates.json   # 273 candidats high/med/low (regen 2026-08-13)
   - audit/cycle-map.json              # 15 cycles (PR-0a)
   - audit/db-usage-map.json           # 60 candidate-orphan tables / 141 candidate-orphan RPC (PR-0b)
   - audit-reports/phase0-baseline.json # ratchet baseline (PR-1 audit-baseline = #267 en cours)
-last_scan: 2026-05-13
+last_scan: 2026-08-13
 ---
 
 # Cleanup Targets — Backlog structuré
@@ -57,6 +57,65 @@ Source d'évidence : [`audit/runtime-entrypoints.json#nestjs_unreachable_modules
 - `type-schema-template.ts`, `cart.schema.ts`, `payment.schema.ts` sous `.spec/types/` et `.spec/templates/`
 - Tous flaggés unused
 - Status : `backlog — vérifier si référencés par un générateur (scripts/generate-specs.sh)`
+
+### Batch 2026-08-13 — 5 fichiers `clearly dead` — `in-progress` (supprimés localement, PR à ouvrir)
+
+> **Voie #1054 (« Phase 2 dégrippage »), pas PR-8b strict.** Les 5 sont `confidence: medium` ;
+> PR-8b exige `confidence === "high"` (`audit/cleanup/README.md` §Downstream consumption). Or les
+> 8 `high` du périmètre sortent tous BLOCKED par faux positif (voir sous-section suivante), donc
+> **PR-8b strict ne peut livrer aucun batch aujourd'hui**. La voie #1054 — gate SAFE + 4 filtres —
+> est le précédent applicable, utilisé par #1051/#1054 sur exactement ce type d'orphelins.
+
+Entonnoir appliqué (procédure #1054, 4 filtres) sur les **127 candidats `decision=candidate`
+hors `backend/src/modules/**` et `frontend/app/routes/**`** :
+
+| Étape | Retenus |
+|---|---|
+| filtre 1 — `validate-before-delete.sh` SAFE | 81 / 127 (46 BLOCKED) |
+| filtres 2-4 — WIP · surfaces sensibles · re-vérif résiduelle | 5 |
+
+Les 5, chacun revérifié symbole par symbole (`git grep -w`), puis `git rm` + condition #7 vérifiée
+(`@fafa/frontend:build` ✓ 7.36s · `tsc --noEmit -p backend/tsconfig.json` ✓ exit 0) :
+
+| Fichier | Preuve |
+|---|---|
+| `backend/src/common/interceptors/rate-limit-headers.interceptor.ts` | `RateLimitHeadersInterceptor` → 0 réf ; aucun `APP_INTERCEPTOR` ne l'enregistre |
+| `backend/src/utils/fetch-with-retry.ts` | 3 **homonymes** (`frontend/app/lib/sitemap-fetch.ts`, méthode privée de `crux-api-client.service.ts`, `.archive/docs/**`) ; `robots[.]txt.tsx` importe depuis `~/lib/sitemap-fetch` |
+| `frontend/app/components/ui/navigation-menu.tsx` | 0 usage code, **absent du barrel** `ui/index.ts` ; seule mention = `.claude/skills/responsive-audit/SKILL.md`. Primitive shadcn réinstallable — même nature que `ui/carousel` droppé en #822 |
+| `frontend/app/server/remix-integration.server.ts` | `getRemixIntegrationService` → 0 réf |
+| `frontend/app/services/admin-api.server.ts` | `adminFetch` / `adminFetchOptional` / `adminFetchAll` / `AdminFetchOptions` → 0 réf |
+
+Aucun n'est touché par les 3 branches actives (63 fichiers WIP écartés). Le ratchet
+`contract-drift` ne bloque pas : `removed = baseline − current` y est *informational, exit 0*
+(`check-contract-drift-ratchet.ts:8`). Après le `git rm` : `npm run audit:inventory &&
+npm run audit:cleanup-candidates` (sinon les inventaires citent des fichiers absents), puis
+`npm run typecheck` (condition #7).
+
+### Faux positifs connus du garde-fou — homonymes (ne pas refaire l'analyse)
+
+Les 8 candidats `high` du périmètre PR-8b sortent tous `BLOCKED`, **par faux positif**. Le gate
+grep le *stem* du fichier sans résoudre les chemins relatifs : il ne distingue pas deux fichiers
+homonymes, ni un stem générique d'un schéma Supabase. Vérifié le 2026-08-13, **0 importeur réel**
+après résolution des chemins pour les 7 non-STOP :
+
+| Candidat | Hits | Origine du blocage |
+|---|---|---|
+| `database/services/invoices.service.ts` | 2 IMPORT · 1 DI | homonyme `modules/invoices/invoices.service.ts`, même nom de classe `InvoicesService` |
+| `database/types/database.types.ts` | 112 IMPORT | stem `database.types` très répandu |
+| `types/order.types.ts` | 1 IMPORT | homonyme `modules/orders/types/order.types.ts` (porte `OrderRecord`/`CustomerRecord`, absents du candidat) |
+| `frontend/app/lib/auth.ts` | 15 IMPORT · 86 SQL | stem `auth` = schéma Supabase `auth` + `backend/src/auth/**` |
+| `frontend/app/types/layout.ts` | 21 IMPORT | stem `layout` générique |
+| `frontend/app/utils/storage.ts` | 0 IMPORT · 10 SQL | stem `storage` = schéma Supabase `storage` |
+| `frontend/app/utils/supabase-storage.ts` | 4 IMPORT | homonyme `modules/upload/services/supabase-storage.service.ts` |
+
+**Ne pas « corriger » le gate pour ça** : sa grossièreté est le prix de son indépendance vis-à-vis
+de dependency-cruiser (cf. `audit/README.md` — « pas une re-exécution de l'audit »), et elle a déjà
+évité un incident réel (#466, drop de `modules/substitution/` qui aurait cassé `/pieces/:slug`).
+Statut de ces 7 : `backlog — decision pending owner` (drop malgré BLOCKED = dérogation sans
+précédent ; les 5 batches livrés exigent tous SAFE au filtre 1).
+
+`backend/src/database/services/payment.service.ts` : **STOP owner** (zone paiement), exclu de
+toute analyse de drop sans accord nominatif.
 
 ## Section 2 — Dead frontend components — voir PR-4 du plan canon
 

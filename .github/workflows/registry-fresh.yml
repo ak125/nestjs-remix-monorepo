@@ -17,6 +17,18 @@ on:
       - "scripts/registry/**"
       - "scripts/audit/build-deep-inventory.js"
       - "scripts/audit/build-db-usage-map.js"
+      # --- Générateurs que CE workflow exécute (PR-8 + déterminisme) ---
+      # Oubliés jusqu'au 2026-08-14 : le job lance `audit:cleanup-candidates:check`,
+      # `audit:cleanup-candidates:test` et `audit:inventory:test`, mais aucun `paths:`
+      # ne couvrait leurs sources. Une PR modifiant le générateur PR-8 ne déclenchait
+      # donc jamais les gardes qui le valident — même angle mort que les arbres
+      # indexés ci-dessous, un cran plus haut.
+      - "scripts/audit/build-cleanup-candidates.ts"
+      - "scripts/audit/build-cleanup-candidates.test.ts"
+      - "scripts/audit/cleanup-candidates.schema.ts"
+      - "scripts/audit/__tests__/**"
+      - "audit/cleanup/**"
+      - "scripts/cleanup/validate-before-delete.sh"
       - "packages/registry/**"
       - "audit/registry/**"
       - ".spec/00-canon/repository-registry/**"
@@ -39,6 +51,12 @@ on:
       - ".spec/00-canon/repository-registry/**"
       - "backend/src/**"
       - "frontend/app/**"
+  # Déclenchement manuel : un gate de fraîcheur filtré par `paths:` peut rester muet
+  # exactement quand on a besoin de son verdict — par exemple pour rejouer le
+  # diagnostic après un correctif de builder, ou confronter deux plateformes au même
+  # commit via les sha256 que le step « Freshness diff » imprime. `registry-deps-self-heal`
+  # en dispose déjà ; ce workflow-ci, non (constaté le 2026-08-14).
+  workflow_dispatch:
 
 jobs:
   registry-fresh:
@@ -46,6 +64,24 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     continue-on-error: true # Phase 1 = warning-only per ADR-058 §Acceptance V1
+    # ⚠️ Chaque garde porte `if: ${{ !cancelled() }}` — NE PAS RETIRER.
+    #
+    # `continue-on-error` agit au niveau du JOB : il empêche le job de bloquer la
+    # PR. Il n'empêche PAS un step en échec d'interrompre la séquence. Sans
+    # condition explicite, le premier step rouge fait passer TOUS les suivants en
+    # `skipped`, et le job est malgré tout rapporté `success` — un vert qui ne
+    # prouve rien.
+    #
+    # Constaté le 2026-08-13 sur `main` (run 31741521477, commit 8a62ee5d2) : I6
+    # échouait sur une dérive réelle de `canonical.json` (3 inputHashes divergents),
+    # et les 8 steps suivants — deep-inventory freshness, overlay L2, invariants
+    # I1..I5, déterminisme, freshness diff, RPC parser — étaient tous `skipped`.
+    # Le workflow ne validait donc plus RIEN depuis cet échec, tout en affichant
+    # un run vert. C'est le même schéma que I6 vacant, un cran plus haut : une
+    # garde correcte que l'ordonnancement empêche de parler.
+    #
+    # Avec `!cancelled()`, chaque garde s'exécute et rend son verdict
+    # indépendamment des précédentes ; un échec reste visible step par step.
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -77,6 +113,7 @@ jobs:
       # Le step post-rebuild plus bas reste utile pour I1..I5 (structure du
       # canonical reconstruit) — mais il ne prouve RIEN sur la fraîcheur.
       - name: I6 — freshness of the COMMITTED canonical (must precede any rebuild)
+        if: ${{ !cancelled() }}
         run: npm run registry:validate-invariants
 
       # 17 tests de la garde PR-8 existaient sur main mais n'étaient lancés par
@@ -93,6 +130,7 @@ jobs:
       # Ce step tourne AVANT le check ci-dessous : un générateur cassé doit se
       # voir sur ses fixtures, pas sur l'inventaire réel.
       - name: PR-8 cleanup guard — unit tests (fixtures)
+        if: ${{ !cancelled() }}
         run: npm run audit:cleanup-candidates:test
 
       # ⚠️ CE STEP DOIT RESTER AVANT `audit:inventory` ET AVANT `npm run registry`.
@@ -122,9 +160,29 @@ jobs:
       # PROMOTION : non-bloquant via le `continue-on-error` du job (Phase 1).
       # Le retirer en même temps que celui du step Deep-inventory.
       - name: PR-8 inventory freshness (committed inventory vs committed inputs)
+        if: ${{ !cancelled() }}
         run: npm run audit:cleanup-candidates:check
 
+      # ⚠️ DOIT RESTER AVANT `audit:inventory` — c'est un test de PROJECTION : il
+      # inspecte les 7 artefacts COMMITÉS. Placé après le rebuild, il validerait
+      # ce que le générateur vient d'écrire, donc trivialement conforme : vacant
+      # par construction de l'ordre des steps, exactement comme I6 l'était.
+      #
+      # Il couvre deux régressions que « Deep-inventory freshness » ne peut PAS
+      # voir, parce que celui-ci compare commité vs régénéré sur LA MÊME machine :
+      #   - un tri `localeCompare()` (ordre dépendant de l'ICU du process) — les
+      #     deux côtés seraient triés pareil, donc vert ;
+      #   - un artefact régénéré depuis un working tree sale (fichiers non commités
+      #     capturés par knip/dependency-cruiser, qui scannent le FS et pas l'index
+      #     git) — les deux côtés captureraient la même saleté, donc vert.
+      # Constaté le 2026-08-13 : 2 fichiers untracked s'étaient glissés dans
+      # dead-code-candidates.json, et donc dans le fingerprint PR-8 en aval.
+      - name: Deep-inventory determinism (committed projections, cross-machine)
+        if: ${{ !cancelled() }}
+        run: npm run audit:inventory:test
+
       - name: Run upstream audit producers
+        if: ${{ !cancelled() }}
         run: npm run audit:inventory
 
       # `audit:inventory:check` existait dans package.json mais n'était appelé
@@ -167,6 +225,7 @@ jobs:
       # PROMOTION : `continue-on-error` au niveau du job le rend non-bloquant
       # aujourd'hui. Le retirer quand les 7 artefacts sont régénérés et stables.
       - name: Deep-inventory freshness (les 7 artefacts contractuels)
+        if: ${{ !cancelled() }}
         run: |
           set -euo pipefail
           ARTEFACTS="
@@ -190,9 +249,11 @@ jobs:
           echo "✓ deep-inventory projections in sync (7/7)"
 
       - name: Build Layer 1 + Layer 3 canonical
+        if: ${{ !cancelled() }}
         run: npm run registry
 
       - name: Validate overlay (Layer 2)
+        if: ${{ !cancelled() }}
         run: npm run registry:validate
 
       # Structure du canonical RECONSTRUIT (I1..I5). I6 est vacant ici par
@@ -201,9 +262,11 @@ jobs:
       # exécuté avant le rebuild. Ne pas déplacer ce step vers le haut ni
       # supprimer celui du haut : ils ne testent pas la même chose.
       - name: Validate rebuilt canonical invariants (I1..I5 structural)
+        if: ${{ !cancelled() }}
         run: npm run registry:validate-invariants
 
       - name: Determinism check (V1-2 — canonical hash stable across 2 runs)
+        if: ${{ !cancelled() }}
         # Phase 1 warn-only : never exit 1 ; surface drift as GitHub annotation only.
         # Promotion to ERROR happens in V1.5 (signal-proven 14j of clean determinism).
         run: |
@@ -217,7 +280,8 @@ jobs:
             echo "✓ canonical.json deterministic"
           fi
 
-      - name: Freshness diff (canonical.json committed = canonical.json rebuilt)
+      - name: Freshness diff (les 6 projections registry committed = rebuilt)
+        if: ${{ !cancelled() }}
         # Le step SORT EN ERREUR sur dérive. Le job reste non-bloquant via le
         # `continue-on-error: true` du job (Phase 1) — mais le signal est désormais
         # RÉEL : un job rouge non-bloquant, pas une annotation noyée.
@@ -230,15 +294,47 @@ jobs:
         # PROMOTION : retirer `continue-on-error` du job après N runs verts
         # consécutifs, avec le décompte inscrit ici (modèle audit.yml §Trigger
         # satisfied). Ne pas promouvoir sur une intuition.
+        #
+        # PÉRIMÈTRE ÉLARGI (2026-08-14) : les 5 projections Layer 1 sont comparées
+        # ici, pas seulement le canonical Layer 3.
+        #
+        # Trou constaté : `Deep-inventory freshness` couvre les 7 projections
+        # `audit/*.json`, mais RIEN ne comparait `audit/registry/{files,runtime,
+        # deps,db,rpc}.json` entre l'état commité et un rebuild. Seul canonical
+        # l'était — or il les AGRÈGE, donc une dérive L1 s'y manifestait de façon
+        # illisible : « canonical a dérivé » sans dire lequel de ses 5 inputs.
+        #
+        # Cas réel : un canonical généré sous Windows ressortait à 573 lignes de
+        # `canonical.json` du rebuild Linux, alors que les 10 `inputHashes` sont
+        # tous versionnés et que le builder canonical trie ses 5 sections
+        # (`sortById`, comparateur codepoint) sans `Date.now()` ni `random`. La
+        # divergence vient donc d'un builder L1 — invisible faute de comparaison.
+        #
+        # Le `sha256sum` par artefact est imprimé même au vert : c'est ce qui
+        # permet de confronter deux machines au même commit sans instrumenter le
+        # workflow après coup.
         run: |
-          git diff --stat audit/registry/canonical.json || true
-          if ! git diff --exit-code --quiet audit/registry/canonical.json; then
-            echo "::error::audit/registry/canonical.json drifted vs Layer 1+2 sources — run \`npm run registry\` and commit the projection"
+          ARTEFACTS="
+            audit/registry/files.json
+            audit/registry/runtime.json
+            audit/registry/deps.json
+            audit/registry/db.json
+            audit/registry/rpc.json
+            audit/registry/canonical.json
+          "
+          echo "sha256 des artefacts rebuildés sur CE runner ($(uname -s), node $(node -v)) :"
+          sha256sum $ARTEFACTS | sed 's/^/  /'
+          echo ""
+          git diff --stat -- $ARTEFACTS || true
+          if ! git diff --exit-code --quiet -- $ARTEFACTS; then
+            DRIFTED=$(git diff --name-only -- $ARTEFACTS | tr '\n' ' ')
+            echo "::error::registry projections drifted vs Layer 1+2 sources : ${DRIFTED}— run \`npm run registry:heal\` (depuis Linux) and commit"
             exit 1
           fi
-          echo "✓ canonical.json in sync with sources"
+          echo "✓ les 6 projections registry sont en phase avec les sources"
 
       - name: Run RPC parser fixture tests
+        if: ${{ !cancelled() }}
         run: npm run registry:test:rpc-parser
 
       - name: Summary

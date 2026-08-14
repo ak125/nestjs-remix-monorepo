@@ -7,7 +7,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import stableStringify from "fast-json-stable-stringify";
 
-import { buildInventory, checkTarget, comparablePayload, NEVER_AUTO_DELETE_GLOBS } from "./build-cleanup-candidates.ts";
+import { buildInventory, checkTarget, comparablePayload, firstDifference, NEVER_AUTO_DELETE_GLOBS } from "./build-cleanup-candidates.ts";
 import { CleanupInventorySchema, type CleanupInventory } from "./cleanup-candidates.schema.ts";
 import { mkdtempSync, writeFileSync as fsWriteSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -101,6 +101,22 @@ test("toolchain captured in meta (replay safety)", async () => {
 // ne le voie, et `meta.toolchain` transformait cette variance en interdiction de
 // comparer, donc en impossibilité de câbler le check global en CI.
 // ---------------------------------------------------------------------------
+
+test("firstDifference pinpoints the divergence, and stays silent when equal", () => {
+  // Sans ce détail, `--check` dit seulement « does not match a fresh generator run »
+  // sur un artefact de plusieurs centaines de candidats : aucune piste, et l'écart
+  // peut n'apparaître qu'en CI.
+  assert.equal(firstDifference({ a: 1 }, { a: 1 }), null);
+  assert.equal(
+    firstDifference({ candidates: [{ confidence: "high" }] }, { candidates: [{ confidence: "low" }] }),
+    '.candidates[0].confidence: "high" → "low"',
+  );
+  assert.match(firstDifference({ x: [1, 2] }, { x: [1] }) ?? "", /length 2 → 1/);
+  assert.match(firstDifference({ x: 1 }, {}) ?? "", /\.x: present → absent/);
+  assert.match(firstDifference({ x: 1 }, { x: "1" }) ?? "", /type number → string/);
+  // Ne doit jamais confondre une valeur absente avec une valeur nulle.
+  assert.match(firstDifference({ x: null }, {}) ?? "", /present → absent/);
+});
 
 test("sort order is locale-independent (codepoint, never localeCompare)", async () => {
   const inv = await buildInventory(inputs);

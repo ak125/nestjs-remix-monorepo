@@ -1,6 +1,6 @@
 {
   "_generated_by": "scripts/audit/build-deep-inventory.js",
-  "count": 18,
+  "count": 17,
   "edges": [
     {
       "from": "backend/src/modules/admin/services/execution-router.service.ts",
@@ -85,11 +85,6 @@
     {
       "from": "frontend/app/routes/pieces.$slug.tsx",
       "to": "~/utils/analytics",
-      "kind": "import()"
-    },
-    {
-      "from": "frontend/app/server/remix-integration.server.ts",
-      "to": "frontend/app/server/remix-api.server.ts",
       "kind": "import()"
     }
   ]
