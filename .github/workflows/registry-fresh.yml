@@ -256,7 +256,7 @@ jobs:
             echo "✓ canonical.json deterministic"
           fi
 
-      - name: Freshness diff (canonical.json committed = canonical.json rebuilt)
+      - name: Freshness diff (les 6 projections registry committed = rebuilt)
         if: ${{ !cancelled() }}
         # Le step SORT EN ERREUR sur dérive. Le job reste non-bloquant via le
         # `continue-on-error: true` du job (Phase 1) — mais le signal est désormais
