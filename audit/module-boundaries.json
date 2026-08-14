@@ -90,8 +90,8 @@
         "backend/src/types",
         "backend/src/utils"
       ],
-      "files_count": 36,
-      "loc_total": 6313,
+      "files_count": 35,
+      "loc_total": 6156,
       "has_barrel": true
     },
     "blog": {
@@ -170,8 +170,8 @@
         "backend/src/common/schemas",
         "backend/src/common/utils"
       ],
-      "files_count": 39,
-      "loc_total": 1650,
+      "files_count": 38,
+      "loc_total": 1585,
       "has_barrel": true
     },
     "config": {
@@ -341,8 +341,8 @@
         "frontend/app/utils",
         "frontend/app/utils/seo"
       ],
-      "files_count": 600,
-      "loc_total": 113660,
+      "files_count": 597,
+      "loc_total": 113383,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -699,8 +699,8 @@
         "scripts/wiki-generators",
         "scripts/wiki-generators/__tests__"
       ],
-      "files_count": 167,
-      "loc_total": 34053,
+      "files_count": 168,
+      "loc_total": 34249,
       "has_barrel": true
     },
     "search": {
