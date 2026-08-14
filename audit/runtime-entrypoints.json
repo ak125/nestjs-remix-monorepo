@@ -2758,6 +2758,7 @@
       ".github/workflows/marketing-voice-hash.yml",
       ".github/workflows/monorepo-invariants.yml",
       ".github/workflows/morning-health-digest.yml",
+      ".github/workflows/orphan-files-ratchet.yml",
       ".github/workflows/perf-gates.yml",
       ".github/workflows/pr-2e-readiness-gate.yml",
       ".github/workflows/pr-dod-gate.yml",
@@ -2874,7 +2875,7 @@
       "tests/registry/rpc-parser.test.ts"
     ]
   },
-  "runtime_files_count": 1486,
+  "runtime_files_count": 1487,
   "runtime_files": [
     ".dependency-cruiser.cjs",
     ".github/workflows/agent-exit-contract-hash.yml",
@@ -2911,6 +2912,7 @@
     ".github/workflows/marketing-voice-hash.yml",
     ".github/workflows/monorepo-invariants.yml",
     ".github/workflows/morning-health-digest.yml",
+    ".github/workflows/orphan-files-ratchet.yml",
     ".github/workflows/perf-gates.yml",
     ".github/workflows/pr-2e-readiness-gate.yml",
     ".github/workflows/pr-dod-gate.yml",

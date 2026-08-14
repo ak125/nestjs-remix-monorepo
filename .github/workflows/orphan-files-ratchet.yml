@@ -1,0 +1,112 @@
+name: 🛡️ Orphan files ratchet (G3, identity block-new)
+
+# Block-new gate — la garde qui manquait quand rag-purge B8/B9 a débranché un
+# cluster en juin sans le supprimer : personne ne l'a vu pendant deux mois.
+#
+# Échoue si et seulement si :
+#   - un NOUVEL orphelin strict apparaît dans le périmètre sans entrée de
+#     baseline (UNDECLARED_NEW)
+#   - un orphelin déclaré dépasse maxOrphanAgeDays (STALE_ORPHAN) — débrancher
+#     ouvre un compte à rebours au lieu d'incrémenter un compteur toléré
+#   - un chemin de baseline sort de l'inventaire alors que git le suit encore
+#     (DETECTOR_BLIND) — un détecteur devenu aveugle ne peut pas se faire passer
+#     pour un nettoyage
+#   - le périmètre est rétréci vs la base (SCOPE_NARROWING)
+#
+# Les orphelins hors périmètre sont comptés et affichés, jamais bloquants : un
+# G3 vert ne signifie PAS que le dépôt entier est exempt d'orphelins.
+#
+# La CI ne doit JAMAIS appeler --refresh (le script le refuse sous CI de toute façon).
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "backend/src/**"
+      - "frontend/app/**"
+      - "packages/**"
+      - "audit/dead-code-candidates.json"
+      - "audit/baselines/orphan-files-baseline.json"
+      - "scripts/audit/check-orphan-files-ratchet.ts"
+      - "scripts/audit/check-orphan-files-ratchet.test.ts"
+      - ".github/workflows/orphan-files-ratchet.yml"
+  push:
+    branches: [main]
+    paths:
+      - "backend/src/**"
+      - "frontend/app/**"
+      - "packages/**"
+      - "audit/dead-code-candidates.json"
+      - "audit/baselines/orphan-files-baseline.json"
+      - "scripts/audit/check-orphan-files-ratchet.ts"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: orphan-files-ratchet-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ratchet:
+    name: Block new / stale orphan files (G3)
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install deps
+        run: npm ci
+
+      # ⚠️ CE STEP EST UNE CONDITION DE VALIDITÉ DE LA GARDE SCOPE_NARROWING.
+      #
+      # Le comparateur lit la baseline de la BASE via
+      #   git show origin/main:audit/baselines/orphan-files-baseline.json
+      # (scripts/audit/check-orphan-files-ratchet.ts:311). Or actions/checkout@v4
+      # ne crée PAS refs/remotes/origin/main sur un événement pull_request : sans
+      # ce fetch, le comparateur retomberait sur NO_BASE et la garde
+      # SCOPE_NARROWING serait vacante PAR CONSTRUCTION, sans rien signaler.
+      #
+      # C'est le défaut exact documenté par .claude/rules/guardrails.md : « une
+      # garde correcte exécutée au mauvais moment produit exactement les mêmes
+      # symptômes qu'une garde défectueuse ». Fail-closed volontaire : un fetch
+      # impossible arrête le job au lieu de dégrader silencieusement en NO_BASE.
+      #
+      # Après ce step, NO_BASE ne peut plus signifier qu'une seule chose : la
+      # baseline est réellement absente de main (cas de sa première introduction).
+      - name: Fetch base ref (required for the scope-narrowing guard)
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 origin main:refs/remotes/origin/main
+          git rev-parse --verify refs/remotes/origin/main >/dev/null
+          echo "✓ origin/main resolvable — NO_BASE ne peut plus masquer un fetch manquant"
+
+      # P4 — le garde est gardé. Les 29 tests du comparateur tournent AVANT le
+      # ratchet : un comparateur cassé doit se voir sur ses fixtures, pas sur
+      # l'inventaire réel. Même ordonnancement que served-content-write-ratchet.yml.
+      - name: Comparator unit tests (must pass)
+        run: npm run audit:orphan-ratchet:test
+
+      - name: Run ratchet (BLOCKING — exit 1 on any finding)
+        run: npm run audit:orphan-ratchet
+
+      - name: Append summary
+        if: always()
+        run: |
+          {
+            echo "# 🛡️ Orphan files ratchet (G3)"
+            echo ""
+            echo "_Ratchet d'identité : block-new + âge maximum. Les orphelins hors périmètre sont rapportés, jamais bloquants._"
+            echo ""
+            echo '```json'
+            ./node_modules/.bin/tsx scripts/audit/check-orphan-files-ratchet.ts --json || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
