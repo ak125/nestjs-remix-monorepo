@@ -2,22 +2,22 @@
   "_generated_by": "scripts/audit/build-db-usage-map.js",
   "note": "Candidates only — never a \"dead\" verdict. A real DROP table/function goes through the RPC Gate + a vault ADR, never from this map.",
   "important_caveats": [
-    "892 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
+    "896 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
     "Migration parsing is regex-based and tracks last CREATE vs last DROP per object (date-prefixed filenames ≈ chronological); re-create-after-drop edge cases may slip through.",
     "RLS-only / dashboard / external-cron / RPC-internal usage is invisible here — see per-candidate caveats."
   ],
   "summary": {
-    "tables_seen": 308,
-    "tables_with_callsites": 201,
+    "tables_seen": 307,
+    "tables_with_callsites": 200,
     "candidate_orphan_tables": 107,
-    "rpc_seen": 241,
-    "rpc_with_callsites": 16,
+    "rpc_seen": 242,
+    "rpc_with_callsites": 14,
     "trigger_functions": 30,
-    "candidate_orphan_rpc": 195,
-    "dynamic_from_callsites": 892,
-    "dynamic_rpc_callsites": 3,
-    "migrations_scanned": 322,
-    "backend_files_scanned": 1346
+    "candidate_orphan_rpc": 198,
+    "dynamic_from_callsites": 896,
+    "dynamic_rpc_callsites": 2,
+    "migrations_scanned": 340,
+    "backend_files_scanned": 1374
   },
   "tables": {
     "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7": {
@@ -38,15 +38,6 @@
       "rls_present": true,
       "in_knowledge_db": false
     },
-    "___customer": {
-      "used_by": [
-        "backend/src/modules/orders/controllers/orders.controller.ts"
-      ],
-      "used_by_count": 1,
-      "in_migrations": [],
-      "rls_present": false,
-      "in_knowledge_db": false
-    },
     "___legal_pages": {
       "used_by": [
         "backend/src/modules/support/services/legal-page.service.ts"
@@ -58,9 +49,10 @@
     },
     "___xtr_customer": {
       "used_by": [
-        "backend/src/modules/cart/services/abandoned-cart-data.service.ts"
+        "backend/src/modules/cart/services/abandoned-cart-data.service.ts",
+        "backend/src/modules/orders/controllers/orders.controller.ts"
       ],
-      "used_by_count": 1,
+      "used_by_count": 2,
       "in_migrations": [],
       "rls_present": false,
       "in_knowledge_db": false
@@ -70,9 +62,10 @@
         "backend/src/modules/orders/controllers/orders.controller.ts",
         "backend/src/modules/payments/controllers/paybox-callback.controller.ts",
         "backend/src/modules/payments/controllers/payment-core.controller.ts",
-        "backend/src/modules/payments/services/paybox-callback-gate.service.ts"
+        "backend/src/modules/payments/services/paybox-callback-gate.service.ts",
+        "backend/src/modules/seo-monitoring/listeners/order-funnel.listener.ts"
       ],
-      "used_by_count": 4,
+      "used_by_count": 5,
       "in_migrations": [],
       "rls_present": false,
       "in_knowledge_db": false
@@ -89,9 +82,10 @@
     "___xtr_order_line": {
       "used_by": [
         "backend/src/modules/payments/controllers/paybox-callback.controller.ts",
+        "backend/src/modules/seo-monitoring/listeners/order-funnel.listener.ts",
         "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
       ],
-      "used_by_count": 2,
+      "used_by_count": 3,
       "in_migrations": [],
       "rls_present": false,
       "in_knowledge_db": false
@@ -618,10 +612,9 @@
       "used_by": [
         "backend/src/modules/admin/services/brief-gates.service.ts",
         "backend/src/modules/admin/services/brief-template.service.ts",
-        "backend/src/modules/admin/services/conseil-enricher.service.ts",
         "backend/src/modules/marketing/services/marketing-data.service.ts"
       ],
-      "used_by_count": 4,
+      "used_by_count": 3,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false
@@ -663,10 +656,9 @@
     },
     "__rag_web_ingest_jobs": {
       "used_by": [
-        "backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts",
-        "backend/src/modules/rag-proxy/services/rag-web-ingest-db.service.ts"
+        "backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts"
       ],
-      "used_by_count": 2,
+      "used_by_count": 1,
       "in_migrations": [],
       "rls_present": false,
       "in_knowledge_db": false
@@ -984,9 +976,10 @@
         "backend/src/modules/seo-monitoring/services/funnel-events.service.ts",
         "backend/src/modules/seo-monitoring/services/runtime-events.service.ts",
         "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts",
+        "backend/src/modules/seo/services/seo-placeholder-events.service.ts",
         "backend/src/modules/seo/services/sitemap-event-log.service.ts"
       ],
-      "used_by_count": 8,
+      "used_by_count": 9,
       "in_migrations": [
         "20260425_seo_event_log.sql"
       ],
@@ -1046,7 +1039,6 @@
     "__seo_gamme": {
       "used_by": [
         "backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts",
-        "backend/src/modules/admin/services/conseil-enricher.service.ts",
         "backend/src/modules/admin/services/gamme-detail-enricher.service.ts",
         "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts",
         "backend/src/modules/dashboard/dashboard.service.ts",
@@ -1054,7 +1046,7 @@
         "backend/src/modules/marketing/services/marketing-hub-data.service.ts",
         "backend/src/modules/media-factory/services/script-generator.service.ts"
       ],
-      "used_by_count": 8,
+      "used_by_count": 7,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false
@@ -1071,7 +1063,6 @@
     "__seo_gamme_conseil": {
       "used_by": [
         "backend/src/modules/admin/controllers/internal-seo-audit.controller.ts",
-        "backend/src/modules/admin/services/conseil-enricher.service.ts",
         "backend/src/modules/admin/services/conseil-quality-scorer.service.ts",
         "backend/src/modules/admin/services/gamme-detail-enricher.service.ts",
         "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts",
@@ -1083,7 +1074,7 @@
         "backend/src/modules/seo/r2/services/r1-gamme-completeness-audit.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts"
       ],
-      "used_by_count": 12,
+      "used_by_count": 11,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": true
@@ -1431,11 +1422,10 @@
     },
     "__seo_r1_gamme_slots": {
       "used_by": [
-        "backend/src/modules/admin/services/r1-enricher.service.ts",
         "backend/src/modules/gamme-rest/services/purchase-guide-data.service.ts",
         "backend/src/modules/seo-monitoring/services/quality-history-snapshot.service.ts"
       ],
-      "used_by_count": 3,
+      "used_by_count": 2,
       "in_migrations": [
         "20260322_create_r1_gamme_slots.sql"
       ],
@@ -1454,12 +1444,11 @@
     },
     "__seo_r1_keyword_plan": {
       "used_by": [
-        "backend/src/modules/admin/services/r1-enricher.service.ts",
         "backend/src/modules/admin/services/r1-image-prompt.service.ts",
         "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
         "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts"
       ],
-      "used_by_count": 4,
+      "used_by_count": 3,
       "in_migrations": [],
       "rls_present": false,
       "in_knowledge_db": false
@@ -1599,12 +1588,11 @@
     "__seo_r3_keyword_plan": {
       "used_by": [
         "backend/src/modules/admin/controllers/internal-seo-audit.controller.ts",
-        "backend/src/modules/admin/services/conseil-enricher.service.ts",
         "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
         "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts",
         "backend/src/modules/blog/services/blog-seo.service.ts"
       ],
-      "used_by_count": 5,
+      "used_by_count": 4,
       "in_migrations": [],
       "rls_present": false,
       "in_knowledge_db": false
@@ -1673,6 +1661,7 @@
       ],
       "used_by_count": 1,
       "in_migrations": [
+        "20260311142250_r8_diversity_system.sql",
         "20260516_seo_r2_v2_cqrs_snapshot.sql"
       ],
       "rls_present": true,
@@ -2560,11 +2549,9 @@
         "backend/src/modules/admin/services/gamme-vlevel.service.ts",
         "backend/src/modules/admin/services/image-gates.service.ts",
         "backend/src/modules/admin/services/page-brief.service.ts",
-        "backend/src/modules/admin/services/r1-enricher.service.ts",
         "backend/src/modules/admin/services/r1-image-prompt.service.ts",
         "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
         "backend/src/modules/admin/services/r2-enricher.service.ts",
-        "backend/src/modules/admin/services/r3-image-prompt.service.ts",
         "backend/src/modules/admin/services/seo-cockpit.service.ts",
         "backend/src/modules/admin/services/vehicle-rag-generator.service.ts",
         "backend/src/modules/blog/controllers/advice-hierarchy.controller.ts",
@@ -2587,7 +2574,7 @@
         "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-static.service.ts"
       ],
-      "used_by_count": 40,
+      "used_by_count": 38,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false
@@ -2623,10 +2610,11 @@
       "used_by": [
         "backend/src/modules/catalog/controllers/pieces-diagnostic.controller.ts",
         "backend/src/modules/catalog/services/homepage-rpc.service.ts",
+        "backend/src/modules/gamme-rest/services/gamme-rpc.service.ts",
         "backend/src/modules/search/controllers/search-debug.controller.ts",
         "backend/src/modules/search/controllers/search-enhanced-existing.controller.ts"
       ],
-      "used_by_count": 4,
+      "used_by_count": 5,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false
@@ -3372,20 +3360,16 @@
       "is_trigger_function": false
     },
     "aggregate_cwv_daily_rum": {
-      "called_by": [
-        "backend/src/modules/seo-monitoring/services/cwv-aggregation.service.ts"
-      ],
-      "called_by_count": 1,
+      "called_by": [],
+      "called_by_count": 0,
       "defined_in_migrations": [
         "20260527_seo_cwv_aggregation.sql"
       ],
       "is_trigger_function": false
     },
     "aggregate_cwv_hourly": {
-      "called_by": [
-        "backend/src/modules/seo-monitoring/services/cwv-aggregation.service.ts"
-      ],
-      "called_by_count": 1,
+      "called_by": [],
+      "called_by_count": 0,
       "defined_in_migrations": [
         "20260527_seo_cwv_aggregation.sql"
       ],
@@ -3619,7 +3603,9 @@
       "called_by": [],
       "called_by_count": 0,
       "defined_in_migrations": [
-        "20260601_seo_cwv_aggregation_coverage_alert.sql"
+        "20260601_seo_cwv_aggregation_coverage_alert.sql",
+        "20260626_seo_cwv_aggregation_coverage_alert_tune.down.sql",
+        "20260626_seo_cwv_aggregation_coverage_alert_tune.sql"
       ],
       "is_trigger_function": false
     },
@@ -4013,6 +3999,18 @@
       ],
       "is_trigger_function": false
     },
+    "get_substitution_data": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260113_substitution_vehicle_details.sql",
+        "20260213_fix_get_substitution_data_effective_limits.sql",
+        "20260213_fix_get_substitution_data_group_by.sql",
+        "20260315_unify_cross_gamme_car_new.sql",
+        "20260625_fix_get_substitution_data_group_by_unknown_slug.sql"
+      ],
+      "is_trigger_function": false
+    },
     "get_table_names": {
       "called_by": [
         "backend/src/modules/products/services/products-catalog.service.ts"
@@ -4101,7 +4099,9 @@
         "backend/src/modules/blog/services/advice.service.ts"
       ],
       "called_by_count": 1,
-      "defined_in_migrations": [],
+      "defined_in_migrations": [
+        "20260703_blog_advice_increment_views_rpc.sql"
+      ],
       "is_trigger_function": false
     },
     "kg_apply_learning": {
@@ -7801,6 +7801,38 @@
       ]
     },
     {
+      "name": "aggregate_cwv_daily_rum",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260527_seo_cwv_aggregation.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "aggregate_cwv_hourly",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260527_seo_cwv_aggregation.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
       "name": "allocate_massdoc_type_id",
       "confidence": "medium",
       "derived_from": [
@@ -8216,7 +8248,9 @@
         "no-rpc-callsite"
       ],
       "defined_in_migrations": [
-        "20260601_seo_cwv_aggregation_coverage_alert.sql"
+        "20260601_seo_cwv_aggregation_coverage_alert.sql",
+        "20260626_seo_cwv_aggregation_coverage_alert_tune.down.sql",
+        "20260626_seo_cwv_aggregation_coverage_alert_tune.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
@@ -8799,6 +8833,26 @@
       ],
       "defined_in_migrations": [
         "20260125_hub_stabilize_rpc.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "get_substitution_data",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260113_substitution_vehicle_details.sql",
+        "20260213_fix_get_substitution_data_effective_limits.sql",
+        "20260213_fix_get_substitution_data_group_by.sql",
+        "20260315_unify_cross_gamme_car_new.sql",
+        "20260625_fix_get_substitution_data_group_by_unknown_slug.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
@@ -10883,7 +10937,7 @@
     },
     {
       "file": "backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts",
-      "line": 200
+      "line": 198
     },
     {
       "file": "backend/src/modules/admin/services/brand-editorial.service.ts",
@@ -10895,7 +10949,7 @@
     },
     {
       "file": "backend/src/modules/admin/services/buying-guide/buying-guide-quality-gates.service.ts",
-      "line": 304
+      "line": 305
     },
     {
       "file": "backend/src/modules/admin/services/gamme-seo-audit.service.ts",
@@ -10999,19 +11053,23 @@
     },
     {
       "file": "backend/src/modules/admin/services/seo-brief.service.test.ts",
-      "line": 89
+      "line": 91
     },
     {
       "file": "backend/src/modules/admin/services/seo-brief.service.test.ts",
-      "line": 113
+      "line": 115
     },
     {
       "file": "backend/src/modules/admin/services/seo-brief.service.test.ts",
-      "line": 135
+      "line": 137
     },
     {
       "file": "backend/src/modules/admin/services/seo-brief.service.test.ts",
-      "line": 149
+      "line": 151
+    },
+    {
+      "file": "backend/src/modules/admin/services/seo-brief.service.test.ts",
+      "line": 220
     },
     {
       "file": "backend/src/modules/admin/services/stock-management.service.ts",
@@ -11139,15 +11197,15 @@
     },
     {
       "file": "backend/src/modules/blog/services/advice.service.ts",
-      "line": 518
+      "line": 542
     },
     {
       "file": "backend/src/modules/blog/services/advice.service.ts",
-      "line": 525
+      "line": 549
     },
     {
       "file": "backend/src/modules/blog/services/advice.service.ts",
-      "line": 680
+      "line": 708
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
@@ -11531,7 +11589,7 @@
     },
     {
       "file": "backend/src/modules/blog/services/r3-guide.service.test.ts",
-      "line": 215
+      "line": 233
     },
     {
       "file": "backend/src/modules/cart/services/abandoned-cart-data.service.ts",
@@ -12671,11 +12729,11 @@
     },
     {
       "file": "backend/src/modules/products/services/products-catalog.service.ts",
-      "line": 301
+      "line": 306
     },
     {
       "file": "backend/src/modules/products/services/products-catalog.service.ts",
-      "line": 320
+      "line": 325
     },
     {
       "file": "backend/src/modules/products/services/products-technical.service.ts",
@@ -12732,10 +12790,6 @@
     {
       "file": "backend/src/modules/rag-proxy/services/rag-gamme-detection.service.ts",
       "line": 1326
-    },
-    {
-      "file": "backend/src/modules/rag-proxy/services/rag-ingestion.service.ts",
-      "line": 591
     },
     {
       "file": "backend/src/modules/rag-proxy/services/rag-phase2a-shadow-audit.service.ts",
@@ -13011,7 +13065,15 @@
     },
     {
       "file": "backend/src/modules/seo-control-plane/collectors/synthetic-crawler/synthetic-crawler.service.ts",
-      "line": 237
+      "line": 356
+    },
+    {
+      "file": "backend/src/modules/seo-control-plane/synthetic-probe-credential.service.ts",
+      "line": 210
+    },
+    {
+      "file": "backend/src/modules/seo-control-plane/synthetic-probe-credential.service.ts",
+      "line": 211
     },
     {
       "file": "backend/src/modules/seo-logs/services/url-audit.service.ts",
@@ -13024,6 +13086,14 @@
     {
       "file": "backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.ts",
       "line": 438
+    },
+    {
+      "file": "backend/src/modules/seo-projection/seo-projection-snapshot.test.ts",
+      "line": 21
+    },
+    {
+      "file": "backend/src/modules/seo-projection/seo-projection-snapshot.ts",
+      "line": 240
     },
     {
       "file": "backend/src/modules/seo-shadow-observatory/seo-shadow-event-sink.service.ts",
@@ -13247,39 +13317,39 @@
     },
     {
       "file": "backend/src/modules/staff/services/staff-data.service.ts",
-      "line": 37
+      "line": 53
     },
     {
       "file": "backend/src/modules/staff/services/staff-data.service.ts",
-      "line": 91
+      "line": 107
     },
     {
       "file": "backend/src/modules/staff/services/staff-data.service.ts",
-      "line": 113
+      "line": 129
     },
     {
       "file": "backend/src/modules/staff/services/staff-data.service.ts",
-      "line": 138
+      "line": 154
     },
     {
       "file": "backend/src/modules/staff/services/staff-data.service.ts",
-      "line": 179
+      "line": 195
     },
     {
       "file": "backend/src/modules/staff/services/staff-data.service.ts",
-      "line": 202
+      "line": 218
     },
     {
       "file": "backend/src/modules/staff/services/staff-data.service.ts",
-      "line": 241
+      "line": 263
     },
     {
       "file": "backend/src/modules/staff/services/staff-data.service.ts",
-      "line": 245
+      "line": 266
     },
     {
       "file": "backend/src/modules/staff/services/staff-data.service.ts",
-      "line": 250
+      "line": 270
     },
     {
       "file": "backend/src/modules/substitution/services/substitution-logger.service.ts",
@@ -14233,11 +14303,7 @@
     },
     {
       "file": "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
-      "line": 71
-    },
-    {
-      "file": "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
-      "line": 234
+      "line": 218
     }
   ]
 }

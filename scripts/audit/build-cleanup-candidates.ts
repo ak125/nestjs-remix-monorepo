@@ -213,7 +213,23 @@ export async function buildInventory(input: BuildInputs): Promise<CleanupInvento
     });
   }
 
-  candidates.sort((a, b) => a.path.localeCompare(b.path));
+  // Tri par CODEPOINT, jamais `localeCompare` — cet artefact est comparé octet
+  // près par le mode global `--check`, donc son ordre doit être une propriété du
+  // générateur, pas de la machine qui l'exécute.
+  //
+  // `localeCompare()` sans locale explicite résout la locale par défaut de l'ICU
+  // du process : `fr-FR` sur un poste opérateur, typiquement `en-US`/`C` sur un
+  // runner CI. Les deux traitent `-`, `_` et `.` différemment de l'ordre
+  // codepoint — mesuré le 2026-08-13 sur les 322 chemins de l'inventaire :
+  // `localeCompare(défaut) !== tri codepoint`. L'ordre de l'artefact dépendait
+  // donc de l'environnement, et c'est précisément ce que `meta.toolchain`
+  // compensait en interdisant toute comparaison croisée.
+  //
+  // Le tri codepoint est total, stable et identique partout : il supprime la
+  // dépendance au lieu de la déclarer. C'est ce qui rend légitime l'exclusion de
+  // `meta.toolchain` du comparateur global (voir `comparablePayload`).
+  // Verrouillé par le test « sort order is locale-independent ».
+  candidates.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
 
   const inventory: CleanupInventory = {
     meta: {
@@ -359,6 +375,42 @@ export async function checkTarget(
   return { ok: drifts.length === 0, drifts };
 }
 
+/**
+ * Payload comparé par le mode global `--check`.
+ *
+ * `meta.toolchain` est CONSERVÉ dans l'artefact (traçabilité de replay — verrouillé
+ * par le test « toolchain captured in meta ») mais EXCLU de la comparaison, comme
+ * `checkTarget` le fait déjà pour le mode target-scoped (PR-8d). Le mode global
+ * s'aligne ici sur une décision déjà prise dans ce fichier ; ce n'est pas une
+ * tolérance nouvelle.
+ *
+ * Ce que cela corrige : `toolchain = { node: process.version, platform, arch }`
+ * rendait l'artefact incomparable entre deux machines — l'artefact commité porte
+ * `linux / v20.19.6`, la CI tourne `ubuntu / node 24`, un poste opérateur
+ * `win32 / v24.x`. Le check global échouait donc TOUJOURS hors de la machine
+ * d'origine, pour une raison purement déclarative. C'est la raison pour laquelle
+ * il n'a jamais pu être câblé en CI, et donc pour laquelle l'inventaire a dérivé
+ * de 508 commits sans que rien ne le signale.
+ *
+ * Pourquoi ce n'est pas un contournement : la sortie du générateur a été mesurée
+ * indépendante de la plateforme (2026-08-13) — `.gitattributes` impose
+ * `* text=auto eol=lf` donc les sha256 des inputs sont identiques, les builders
+ * normalisent `path.sep → '/'`, et le tri est désormais codepoint. La seule
+ * variance réelle restante a été supprimée à la source, pas masquée ici.
+ * `process.version` est d'ailleurs capturé au PATCH alors que le repo ne pin que
+ * le MAJOR (`.nvmrc: 24`, workflows `node-version: "24"`) : un bump patch des
+ * runners GitHub aurait suffi à repasser la garde au rouge.
+ *
+ * NE PAS étendre cette exclusion à `inputFingerprint` : ces hashes SONT le signal
+ * de fraîcheur du mode global. Seul le mode target-scoped les tolère, et seulement
+ * par path (canon §PR-8d).
+ */
+export function comparablePayload(rawJson: string): string {
+  const parsed = JSON.parse(rawJson);
+  if (parsed?.meta && typeof parsed.meta === "object") delete parsed.meta.toolchain;
+  return stableStringify(parsed);
+}
+
 // CLI entrypoint
 async function main() {
   const argv = process.argv.slice(2);
@@ -404,9 +456,11 @@ async function main() {
 
   if (checkMode) {
     const committed = readFileSync(jsonOut, "utf8");
-    if (committed === json) { process.exit(0); }
+    // Comparaison hors `meta.toolchain` : l'artefact doit être reproductible
+    // depuis n'importe quelle machine (voir `comparablePayload`).
+    if (comparablePayload(committed) === comparablePayload(json)) { process.exit(0); }
     console.error(`Inventory drift: ${jsonOut} does not match a fresh generator run.`);
-    console.error("Possible causes: inputs changed without regeneration, or toolchain (node/platform/arch) differs from the run that produced the committed artifact.");
+    console.error("Cause: an input changed without regeneration (meta.toolchain is NOT compared — a different node/platform/arch is not a drift).");
     console.error("To regenerate locally: `npm run audit:cleanup-candidates` (sets a fresh generatedAt; commit the result).");
     console.error("To authorize a single-file deletion despite drift: `npm run audit:cleanup-candidates:check -- --target <path>` (PR-8d target-scoped mode).");
     process.exit(1);

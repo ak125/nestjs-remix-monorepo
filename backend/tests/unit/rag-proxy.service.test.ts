@@ -23,9 +23,7 @@ import { RagRedisJobService } from '../../src/modules/rag-proxy/services/rag-red
 import { RagKnowledgeService } from '../../src/modules/rag-proxy/services/rag-knowledge.service';
 import { RagChatService } from '../../src/modules/rag-proxy/services/rag-chat.service';
 import { RagGammeDetectionService } from '../../src/modules/rag-proxy/services/rag-gamme-detection.service';
-import { RagIngestionService } from '../../src/modules/rag-proxy/services/rag-ingestion.service';
 import { RagWebhookCompletionService } from '../../src/modules/rag-proxy/services/rag-webhook-completion.service';
-import { RagWebIngestDbService } from '../../src/modules/rag-proxy/services/rag-web-ingest-db.service';
 import { RagImageManagementService } from '../../src/modules/rag-proxy/services/rag-image-management.service';
 import { CacheService } from '@cache/cache.service';
 
@@ -87,7 +85,6 @@ describe('RagProxyService', () => {
           },
         },
         { provide: RagCleanupService, useValue: { client: { from: jest.fn() } } },
-        { provide: RagWebIngestDbService, useValue: { persistDoc: jest.fn(), findByHash: jest.fn() } },
         { provide: RagImageManagementService, useValue: { describeImage: jest.fn(), deleteImage: jest.fn(), listImages: jest.fn() } },
         { provide: WebhookAuditService, useValue: { recordEvent: jest.fn(), recordWebhook: jest.fn().mockResolvedValue(undefined), getAuditTrail: jest.fn().mockResolvedValue([]) } },
         // Real sub-services (use mocked infra deps)
@@ -96,7 +93,6 @@ describe('RagProxyService', () => {
         RagKnowledgeService,
         RagChatService,
         RagGammeDetectionService,
-        RagIngestionService,
         RagWebhookCompletionService,
         // Facade
         RagProxyService,
