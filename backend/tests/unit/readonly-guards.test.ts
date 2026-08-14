@@ -13,7 +13,6 @@
  *   2. SeoMonitorProcessor.handleMonitoring (skipped)
  *   3. ShippingCalculatorService.loadAllZoneTiers (env fallback distinct)
  *   4. AdminJobHealthService.recordSuccess + recordFailure (skipped)
- *   5. RagWebIngestDbService.upsertJob + failOrphanedRunningJobs (skipped)
  *
  * Différé en PR consolidation : seo-audit-scheduler.processJob, intégration
  * BullMQ E2E, regressions services hérités non-modifiés.
@@ -23,7 +22,6 @@ import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../src/database/services/supabase-base.service';
 import { ShippingCalculatorService } from '../../src/modules/cart/services/shipping-calculator.service';
 import { AdminJobHealthService } from '../../src/modules/admin/services/admin-job-health.service';
-import { RagWebIngestDbService } from '../../src/modules/rag-proxy/services/rag-web-ingest-db.service';
 
 const ORIGINAL_ENV = process.env;
 
@@ -225,40 +223,6 @@ describe('ADR-028 Option D — READ_ONLY guards (PR-A)', () => {
       await expect(
         svc.recordFailure('test-queue', 'err'),
       ).resolves.toBeUndefined();
-      expect((svc as any).supabase.from).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('5. RagWebIngestDbService — upsertJob + failOrphanedRunningJobs skipped', () => {
-    const fakeJob = {
-      jobId: 'job-1',
-      url: 'https://example.com',
-      truthLevel: 'verified',
-      status: 'done',
-      returnCode: 0,
-      logLines: [],
-      startedAt: 1700000000,
-      finishedAt: 1700000100,
-    };
-
-    it('upsertJob does not call supabase when READ_ONLY=true', async () => {
-      setReadOnlyEnv(true);
-      const svc = new RagWebIngestDbService(mockConfigService(true));
-      (svc as any).supabase = failingSupabase();
-      jest.spyOn((svc as any).logger, 'warn').mockImplementation();
-
-      await expect(svc.upsertJob(fakeJob as any)).resolves.toBeUndefined();
-      expect((svc as any).supabase.from).not.toHaveBeenCalled();
-    });
-
-    it('failOrphanedRunningJobs returns 0 without DB call when READ_ONLY=true', async () => {
-      setReadOnlyEnv(true);
-      const svc = new RagWebIngestDbService(mockConfigService(true));
-      (svc as any).supabase = failingSupabase();
-      jest.spyOn((svc as any).logger, 'warn').mockImplementation();
-
-      const result = await svc.failOrphanedRunningJobs();
-      expect(result).toBe(0);
       expect((svc as any).supabase.from).not.toHaveBeenCalled();
     });
   });

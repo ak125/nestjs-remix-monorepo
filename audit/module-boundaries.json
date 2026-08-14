@@ -90,8 +90,8 @@
         "backend/src/types",
         "backend/src/utils"
       ],
-      "files_count": 35,
-      "loc_total": 6156,
+      "files_count": 36,
+      "loc_total": 6313,
       "has_barrel": true
     },
     "blog": {
@@ -170,8 +170,8 @@
         "backend/src/common/schemas",
         "backend/src/common/utils"
       ],
-      "files_count": 38,
-      "loc_total": 1585,
+      "files_count": 39,
+      "loc_total": 1650,
       "has_barrel": true
     },
     "config": {
@@ -341,8 +341,8 @@
         "frontend/app/utils",
         "frontend/app/utils/seo"
       ],
-      "files_count": 597,
-      "loc_total": 113383,
+      "files_count": 600,
+      "loc_total": 113660,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -662,9 +662,9 @@
         "backend/src/modules/rag-proxy/services",
         "backend/src/modules/rag-proxy/types"
       ],
-      "files_count": 44,
-      "loc_total": 14861,
-      "has_barrel": true
+      "files_count": 34,
+      "loc_total": 12022,
+      "has_barrel": false
     },
     "scripts": {
       "dirs": [
@@ -699,8 +699,8 @@
         "scripts/wiki-generators",
         "scripts/wiki-generators/__tests__"
       ],
-      "files_count": 166,
-      "loc_total": 33626,
+      "files_count": 167,
+      "loc_total": 34053,
       "has_barrel": true
     },
     "search": {
@@ -956,7 +956,7 @@
         "tests/registry"
       ],
       "files_count": 220,
-      "loc_total": 38722,
+      "loc_total": 38682,
       "has_barrel": true
     },
     "upload": {
@@ -1881,7 +1881,7 @@
     {
       "from": "rag-proxy",
       "to": "config",
-      "count": 21
+      "count": 18
     },
     {
       "from": "rag-proxy",

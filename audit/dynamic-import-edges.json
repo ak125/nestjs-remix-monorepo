@@ -13,11 +13,6 @@
       "kind": "import()"
     },
     {
-      "from": "backend/src/modules/rag-proxy/services/rag-ingestion.service.ts",
-      "to": "child_process",
-      "kind": "import()"
-    },
-    {
       "from": "backend/src/modules/rag-proxy/services/rag-knowledge.service.ts",
       "to": "fs",
       "kind": "import()"

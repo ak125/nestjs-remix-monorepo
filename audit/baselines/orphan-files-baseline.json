@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "1.0.0",
+  "_contract": "Ratchet d'identite des orphelins (G3). Le predicat orphan est c1_zero_static_import && c2_zero_dynamic_import sur audit/dead-code-candidates.json, PAS l'ensemble des candidats de nettoyage : 188 sur 273 au 2026-08-13. Toute date first_seen porte obligatoirement sa methode de provenance, pour qu'une estimation ne soit jamais presentee comme une mesure.",
+  "scope": {
+    "roots": [
+      "backend/src/modules/rag-proxy/"
+    ],
+    "fingerprint": "sha256:3830f1f175342f458a32b68d2e4276361fcdb7544bb31b2cc63e8bd2f8dc49b2",
+    "_note": "Racines de chemins, pas des globs : l'inclusion doit etre mecanique (oldRoot.startsWith(newRoot)), pas semantique. Le perimetre initial est volontairement restreint a la zone traitee par P2. 183 orphelins hors scope sont comptes et affiches dans le resume, jamais silencieusement conformes — un G3 vert ne signifie pas que le depot entier est protege. L'elargir est autorise ; le retrecir echoue (SCOPE_NARROWING), y compris avec --refresh et la variable mainteneur."
+  },
+  "maxOrphanAgeDays": 30,
+  "orphans": [
+    {
+      "path": "backend/src/modules/rag-proxy/rag-pipeline.service.ts",
+      "first_seen": "2026-06-19",
+      "first_seen_method": "graph_transition",
+      "evidence_commit": "604d0fdc5",
+      "evidence_date": "2026-06-19",
+      "loc": 1216,
+      "reasoning": "rag-purge B8 retire la ligne `import { RagPipelineService } from './rag-pipeline.service'` de rag-proxy.module.ts en meme temps que le provider. Verifie : avant B8, 3 fichiers importent le module (controller, module, test) ; apres B8, plus aucun import statique ni dynamique — les 3 occurrences restantes dans rag-proxy.controller.ts (l. 846, 849, 850) sont des commentaires. Le predicat G3 c1 && c2 est donc satisfait A CE COMMIT, et pas seulement l'atteignabilite NestJS. Retenue contre l'inventaire du 2026-06-21 car causale, precise et anterieure — donc plus conservatrice pour le ratchet."
+    },
+    {
+      "path": "backend/src/modules/rag-proxy/types/rag-exploitation.types.ts",
+      "first_seen": "2026-05-11",
+      "first_seen_method": "historical_inventory",
+      "evidence_commit": "7b48ddea7",
+      "evidence_date": "2026-05-11",
+      "loc": 95,
+      "reasoning": "Plus ancien inventaire historique FIABLE contenant ce chemin comme orphelin. 7b48ddea7 est le commit « PR-0a deep-inventory map » qui regenere 6 artefacts audit/*.json : l'inventaire etait donc frais a sa date. Aucune transition de graphe identifiable — le fichier n'apparait dans aucun diff de rag-proxy.module.ts. Preuve directe d'orphelinat A CETTE DATE ; il pouvait l'etre avant, l'inventaire ne remonte pas plus loin."
+    },
+    {
+      "path": "backend/src/modules/rag-proxy/dto/web-ingest.dto.ts",
+      "first_seen": "2026-06-21",
+      "first_seen_method": "historical_inventory",
+      "evidence_commit": "be816f619",
+      "evidence_date": "2026-06-21",
+      "loc": 10,
+      "reasoning": "Plus ancien inventaire historique FIABLE contenant ce chemin comme orphelin. be816f619 est un « periodic resync (Node 24, deterministic) » regenerant 11 artefacts audit/*.json. Non touche par B8/B9 : aucune transition de graphe ne lui est attribuable, et en inventer une serait une date fabriquee."
+    },
+    {
+      "path": "backend/src/modules/rag-proxy/dto/manual-ingest.dto.ts",
+      "first_seen": "2026-06-21",
+      "first_seen_method": "historical_inventory",
+      "evidence_commit": "be816f619",
+      "evidence_date": "2026-06-21",
+      "loc": 27,
+      "reasoning": "Identique a web-ingest.dto.ts : plus ancien inventaire fiable le contenant, aucune transition de graphe attribuable a B8/B9."
+    },
+    {
+      "path": "backend/src/modules/rag-proxy/index.ts",
+      "first_seen": "2026-05-11",
+      "first_seen_method": "historical_inventory",
+      "evidence_commit": "7b48ddea7",
+      "evidence_date": "2026-05-11",
+      "loc": 6,
+      "reasoning": "Barrel `export *`. Plus ancien inventaire historique fiable le contenant comme orphelin. Son introduction git remonte au 2026-01-07, mais elle est REJETEE comme first_seen : rien ne prouve qu'il etait orphelin des son introduction, et git_introduction n'est qu'une borne conservatrice sur l'age maximal."
+    }
+  ]
+}

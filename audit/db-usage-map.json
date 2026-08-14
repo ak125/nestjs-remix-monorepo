@@ -2,7 +2,7 @@
   "_generated_by": "scripts/audit/build-db-usage-map.js",
   "note": "Candidates only — never a \"dead\" verdict. A real DROP table/function goes through the RPC Gate + a vault ADR, never from this map.",
   "important_caveats": [
-    "897 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
+    "896 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
     "Migration parsing is regex-based and tracks last CREATE vs last DROP per object (date-prefixed filenames ≈ chronological); re-create-after-drop edge cases may slip through.",
     "RLS-only / dashboard / external-cron / RPC-internal usage is invisible here — see per-candidate caveats."
   ],
@@ -14,10 +14,10 @@
     "rpc_with_callsites": 14,
     "trigger_functions": 30,
     "candidate_orphan_rpc": 198,
-    "dynamic_from_callsites": 897,
+    "dynamic_from_callsites": 896,
     "dynamic_rpc_callsites": 2,
     "migrations_scanned": 340,
-    "backend_files_scanned": 1382
+    "backend_files_scanned": 1374
   },
   "tables": {
     "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7": {
@@ -656,10 +656,9 @@
     },
     "__rag_web_ingest_jobs": {
       "used_by": [
-        "backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts",
-        "backend/src/modules/rag-proxy/services/rag-web-ingest-db.service.ts"
+        "backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts"
       ],
-      "used_by_count": 2,
+      "used_by_count": 1,
       "in_migrations": [],
       "rls_present": false,
       "in_knowledge_db": false
@@ -12791,10 +12790,6 @@
     {
       "file": "backend/src/modules/rag-proxy/services/rag-gamme-detection.service.ts",
       "line": 1326
-    },
-    {
-      "file": "backend/src/modules/rag-proxy/services/rag-ingestion.service.ts",
-      "line": 591
     },
     {
       "file": "backend/src/modules/rag-proxy/services/rag-phase2a-shadow-audit.service.ts",

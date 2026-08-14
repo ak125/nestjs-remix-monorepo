@@ -116,13 +116,19 @@ jobs:
         if: ${{ !cancelled() }}
         run: npm run registry:validate-invariants
 
-      # Les 19 tests de la garde PR-8 existaient mais n'étaient lancés par AUCUN
-      # script npm, AUCUN workflow et AUCUN hook (0 occurrence au 2026-08-13).
-      # Ils encodent des décisions de conception (C8 snapshot-only, parité
-      # NEVER_AUTO_DELETE bash↔TS, tolérance target-scoped, indépendance à la
-      # locale) — non exécutés, ils ne protègent rien. Ils tournent avant le check
-      # ci-dessous : un générateur cassé doit se voir sur ses fixtures, pas sur
-      # l'inventaire réel.
+      # 17 tests de la garde PR-8 existaient sur main mais n'étaient lancés par
+      # AUCUN script npm, AUCUN workflow et AUCUN hook (0 occurrence au
+      # 2026-08-13) : non exécutés, ils ne protègent rien. Ce lot en ajoute 2,
+      # qui verrouillent ses propres changements (indépendance à la locale du
+      # tri, et exclusion de meta.toolchain SANS relâcher inputFingerprint) —
+      # soit 19 au total, tous câblés ici.
+      #
+      # Les 17 préexistants encodent des décisions de conception : C8
+      # snapshot-only, parité NEVER_AUTO_DELETE bash↔TS, tolérance
+      # target-scoped.
+      #
+      # Ce step tourne AVANT le check ci-dessous : un générateur cassé doit se
+      # voir sur ses fixtures, pas sur l'inventaire réel.
       - name: PR-8 cleanup guard — unit tests (fixtures)
         if: ${{ !cancelled() }}
         run: npm run audit:cleanup-candidates:test
