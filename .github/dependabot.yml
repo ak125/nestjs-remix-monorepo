@@ -32,6 +32,20 @@ updates:
       # ecosystem version-bumped en minor matchait dev-dependencies en premier
       # et bypassait son groupe ecosystem (cas #280 storybook 9 vs
       # addon-onboarding@10 le 2026-05-04, re-fire sur PR #605 le 2026-05-18).
+      #
+      # react-router-ecosystem : variante cross-dependency-type du même incident.
+      # La famille est scindée entre devDeps (@react-router/dev,
+      # @react-router/remix-routes-option-adapter) et deps runtime (react-router,
+      # @react-router/express|node|serve), toutes épinglées exactes. Le groupe
+      # dev-dependencies (dependency-type: development) n'a pris QUE la moitié dev
+      # → peer react-router@^8.3.0 de @react-router/dev@8.3.0 vs react-router@8.0.1
+      # runtime → ERESOLVE sur npm ci → 21 checks rouges (PR #1353, 2026-08-14).
+      # Donc PAS de dependency-type ici (il faut les deux moitiés) et PAS de
+      # update-types (un major scindé rejouerait exactement le même ERESOLVE).
+      react-router-ecosystem:
+        patterns:
+          - "react-router"
+          - "@react-router/*"
       storybook-ecosystem:
         patterns:
           - "storybook"
@@ -54,6 +68,8 @@ updates:
         dependency-type: "development"
         update-types: ["minor", "patch"]
         exclude-patterns:
+          - "react-router"
+          - "@react-router/*"
           - "storybook"
           - "@storybook/*"
           - "@chromatic-com/storybook"
