@@ -51,6 +51,12 @@ on:
       - ".spec/00-canon/repository-registry/**"
       - "backend/src/**"
       - "frontend/app/**"
+  # Déclenchement manuel : un gate de fraîcheur filtré par `paths:` peut rester muet
+  # exactement quand on a besoin de son verdict — par exemple pour rejouer le
+  # diagnostic après un correctif de builder, ou confronter deux plateformes au même
+  # commit via les sha256 que le step « Freshness diff » imprime. `registry-deps-self-heal`
+  # en dispose déjà ; ce workflow-ci, non (constaté le 2026-08-14).
+  workflow_dispatch:
 
 jobs:
   registry-fresh:
