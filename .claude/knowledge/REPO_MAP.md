@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 4e60124336b239ae693c380add2c22c7af720a448c8688c6c39adb16eb4620dc
+source_sha256: 340ef52957ce0f6d5d236dae7682ed365e263c6b1c059bfa89c403634a10902b
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -24,7 +24,7 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 515 |
 
-Source sotFingerprint: `9e5044fa75b2`.
+Source sotFingerprint: `18796d0e8883`.
 
 ## Comment l'utiliser
 
@@ -93,11 +93,11 @@ Source sotFingerprint: `9e5044fa75b2`.
 
 ### D8 — Read Model / Serving (RM)
 
-- **Files**: 929 (config=467, route=246, service=169, controller=36, test=11)
-- **Runtime entrypoints**: 282
-- **Top owners**: @ak125/frontend-team (680), @ak125/admin-team (249)
-- **Knowledge prose**: [`admin`](modules/admin.md)
-- **Status**: LIVE=489, UNKNOWN=440
+- **Files**: 942 (config=467, route=246, service=176, controller=38, test=15)
+- **Runtime entrypoints**: 286
+- **Top owners**: @ak125/frontend-team (687), @ak125/admin-team (255)
+- **Knowledge prose**: [`admin`](modules/admin.md), [`staff`](modules/staff.md)
+- **Status**: LIVE=498, UNKNOWN=444
 
 ### D9 — Import / ETL / Normalisation
 
@@ -108,11 +108,11 @@ Source sotFingerprint: `9e5044fa75b2`.
 
 ### D10 — Quality, Monitoring & Observabilité
 
-- **Files**: 23 (service=14, test=5, controller=4)
-- **Runtime entrypoints**: 10
-- **Top owners**: @ak125 (23)
-- **Knowledge prose**: [`analytics`](modules/analytics.md), [`dashboard`](modules/dashboard.md), [`health`](modules/health.md), [`observability`](modules/observability.md)
-- **Status**: LIVE=19, UNKNOWN=4
+- **Files**: 32 (service=20, test=6, controller=6)
+- **Runtime entrypoints**: 13
+- **Top owners**: @ak125 (32)
+- **Knowledge prose**: [`analytics`](modules/analytics.md), [`dashboard`](modules/dashboard.md), [`errors`](modules/errors.md), [`health`](modules/health.md), [`observability`](modules/observability.md)
+- **Status**: LIVE=27, UNKNOWN=5
 
 ### D11 — Commerce & Users
 
@@ -139,11 +139,11 @@ Source sotFingerprint: `9e5044fa75b2`.
 
 ### D14 — Gamme Aggregates & V-Level
 
-- **Files**: 24 (service=13, test=7, controller=3, config=1)
-- **Runtime entrypoints**: 5
-- **Top owners**: @ak125/seo-team (24)
-- **Knowledge prose**: [`admin`](modules/admin.md)
-- **Status**: LIVE=16, UNKNOWN=8
+- **Files**: 31 (service=17, test=8, controller=4, config=2)
+- **Runtime entrypoints**: 7
+- **Top owners**: @ak125/seo-team (31)
+- **Knowledge prose**: [`admin`](modules/admin.md), [`substitution`](modules/substitution.md)
+- **Status**: LIVE=22, UNKNOWN=9
 
 ### D15 — Security & Governance
 
@@ -155,13 +155,13 @@ Source sotFingerprint: `9e5044fa75b2`.
 
 ### UNKNOWN — Unknown (overlay non résolu)
 
-- **Files**: 278 (service=169, config=60, controller=26, script=14, test=9)
+- **Files**: 249 (service=152, config=59, controller=21, script=14, test=3)
 - **DB tables**: 307
 - **DB RPC**: 258
-- **Runtime entrypoints**: 50
-- **Top owners**: __unassigned__ (278)
-- **Knowledge prose**: [`config`](modules/config.md), [`errors`](modules/errors.md), [`layout`](modules/layout.md), [`mcp-validation`](modules/mcp-validation.md), [`metadata`](modules/metadata.md), [`navigation`](modules/navigation.md), [`search`](modules/search.md), [`shipping`](modules/shipping.md), [`staff`](modules/staff.md), [`substitution`](modules/substitution.md), [`suppliers`](modules/suppliers.md), [`system`](modules/system.md)
-- **Status**: LIVE=163, UNKNOWN=115
+- **Runtime entrypoints**: 41
+- **Top owners**: __unassigned__ (249)
+- **Knowledge prose**: [`config`](modules/config.md), [`layout`](modules/layout.md), [`mcp-validation`](modules/mcp-validation.md), [`metadata`](modules/metadata.md), [`navigation`](modules/navigation.md), [`search`](modules/search.md), [`shipping`](modules/shipping.md), [`suppliers`](modules/suppliers.md), [`system`](modules/system.md)
+- **Status**: LIVE=141, UNKNOWN=108
 
 ## Voir aussi
 

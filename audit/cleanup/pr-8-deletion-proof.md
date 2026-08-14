@@ -8,14 +8,14 @@
 - Schema version: `1.0.0`
 - Cleanup policy version: `pr8-v1`
 - Validation mode: `snapshot-only` (active runtime check deferred to PR-8b)
-- Generated at: `2026-08-13T22:26:04.592Z`
+- Generated at: `2026-08-14T08:52:48.193Z`
 - Toolchain: `v24.17.0` on `linux/x64`
 
 ## Input Fingerprint (sha256)
 
 - `deadCodeCandidates`: `172cbfb81b4e69cd75dc49a1d311216fd5f1640356e9d2be446e5321dca8a0b3`
-- `canonical`: `4e60124336b239ae693c380add2c22c7af720a448c8688c6c39adb16eb4620dc`
-- `ownershipYaml`: `5e4880570c745f145f5bf96a1e544016cf6bbb942f84031cfc35e60f963e2719`
+- `canonical`: `340ef52957ce0f6d5d236dae7682ed365e263c6b1c059bfa89c403634a10902b`
+- `ownershipYaml`: `f6d7717a16309ad0fa9c995ff72f32241d63b9f06ab0d09213f4f305e24a9997`
 - `contractHealth`: `<none>`
 - `validateScript`: `0f5224c9823ce6de8d3bf9686c9eb445b0adc343296c68cf5b0e91f4aaac7f21`
 - `unreachableModules`: `75f4f5946d480ab8244e853aa25ffedb5d198bb4e7aee837cdb80e04e9e75e94`
