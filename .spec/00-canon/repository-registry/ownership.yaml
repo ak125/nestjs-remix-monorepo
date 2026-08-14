@@ -493,6 +493,27 @@ entries:
     owner: '@ak125/admin-team'
     sourceConfidence: medium
     risk: medium
+  # D8 serving layer — two backend subtrees that serve the Read Model alongside
+  # backend/src/modules/admin/** above. staff/ holds back-office accounts (table
+  # ___config_admin only — never customer data), remix/ is the NestJS <-> React
+  # Router SSR bridge. Both were absent from this overlay, so every file in them
+  # resolved to UNKNOWN. Revealed when Layer 1 was regenerated (files.json
+  # 2728 -> 2833) after 164 commits of freeze; same shape as the D9 workers hole
+  # documented below.
+  - glob: backend/src/modules/staff/**
+    domain: D8
+    owner: '@ak125/admin-team'
+    sourceConfidence: medium
+    risk: medium
+  # remix/ carries the sessioned-data cache-privacy invariant
+  # (remix.controller.ts: SESSIONED_DATA_CACHE_HEADERS,
+  # enforceSessionedDataCachePrivacy) -> risk: high. Owner is the one domains.yaml
+  # declares for D8; D8 already spans backend via backend/src/modules/admin/**.
+  - glob: backend/src/remix/**
+    domain: D8
+    owner: '@ak125/frontend-team'
+    sourceConfidence: medium
+    risk: high
   # D14 Gamme Aggregates & V-Level — the aggregate/V-Level services & controllers
   # live physically under admin/ (D8) but are SEO-critical (V-Level scoring powers
   # R1/R2/R8 indexability). These globs are more specific than admin/** so
@@ -507,6 +528,15 @@ entries:
     domain: D14
     owner: '@ak125/seo-team'
     sourceConfidence: high
+    risk: high
+  # substitution/ calls the get_substitution_data RPC and decides the httpStatus of
+  # R1 gamme hubs. The exact entry for that RPC migration
+  # (20260625_fix_get_substitution_data_group_by_unknown_slug.sql, near the top of
+  # this file) is already D14/seo-team — same concern, same domain, same risk.
+  - glob: backend/src/modules/substitution/**
+    domain: D14
+    owner: '@ak125/seo-team'
+    sourceConfidence: medium
     risk: high
   # D9 Import / ETL / Normalisation — ETL workers. The glob is declared in
   # domains.yaml but was missing here, leaving the 11 worker files UNKNOWN.
@@ -1155,6 +1185,13 @@ entries:
     domain: D10
     owner: '@ak125'
     sourceConfidence: high
+    risk: medium
+  # errors/ is error journalling (__error_logs, global-error.filter,
+  # error-log.service) — the same concern as observability/** above, so D10.
+  - glob: backend/src/modules/errors/**
+    domain: D10
+    owner: '@ak125'
+    sourceConfidence: medium
     risk: medium
   # AI additive layer (PR #714) — "AI Visibility = couche additive du Search
   # Control Plane" doctrine. 6 livrables petits extending existing services.
