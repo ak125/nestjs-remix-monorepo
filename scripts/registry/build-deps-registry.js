@@ -33,6 +33,25 @@ const {
 
 const log = makeLogger("deps");
 
+/**
+ * Chemin repo-relatif TOUJOURS en `/`, jamais `path.sep`.
+ *
+ * `path.join()` produit `backend\package.json` sous Windows et
+ * `backend/package.json` sous Linux. Ces chemins finissent tels quels dans
+ * `entries[].declaredIn`, donc dans `deps.json`, donc dans `canonical.json` :
+ * l'artefact devenait dépendant de l'OS qui l'avait généré.
+ *
+ * Mesuré le 2026-08-14 — une resync produite sous Windows portait **216** entrées
+ * `declaredIn: ["backend\\package.json"]`, et `deps.json` sortait à
+ * `0f3706d7d111b520` contre `6f667991be593e37` sur le runner Linux au même commit.
+ * `canonical.json` divergeait par ricochet (il agrège `deps`).
+ *
+ * Même normalisation que `rel()` dans scripts/audit/build-deep-inventory.js.
+ * Le tri de `readdirSync` est ajouté au passage : NTFS renvoie déjà l'ordre
+ * alphabétique, ext4 non — l'ordre de découverte ne doit pas décider du contenu.
+ */
+const toPosix = (p) => p.split(path.sep).join("/");
+
 function workspacePackageJsons() {
   const root = readJsonSafe(path.join(MONOREPO_ROOT, "package.json"));
   if (!root) return [];
@@ -44,8 +63,8 @@ function workspacePackageJsons() {
       const dir = pat.slice(0, -2);
       const fullDir = path.join(MONOREPO_ROOT, dir);
       try {
-        for (const entry of fs.readdirSync(fullDir)) {
-          const pkgPath = path.join(dir, entry, "package.json");
+        for (const entry of fs.readdirSync(fullDir).sort()) {
+          const pkgPath = toPosix(path.join(dir, entry, "package.json"));
           if (fs.existsSync(path.join(MONOREPO_ROOT, pkgPath))) {
             paths.push(pkgPath);
           }
@@ -54,7 +73,7 @@ function workspacePackageJsons() {
         // ignore missing dirs
       }
     } else {
-      const pkgPath = path.join(pat, "package.json");
+      const pkgPath = toPosix(path.join(pat, "package.json"));
       if (fs.existsSync(path.join(MONOREPO_ROOT, pkgPath))) {
         paths.push(pkgPath);
       }
