@@ -2,7 +2,7 @@
   "entries": [
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@anthropic-ai/sdk@^0.71.0",
       "name": "@anthropic-ai/sdk",
@@ -34,7 +34,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@axe-core/playwright@^4.11.3",
       "name": "@axe-core/playwright",
@@ -98,7 +98,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@fafa/design-tokens@^1.0.0",
       "name": "@fafa/design-tokens",
@@ -114,7 +114,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@google-analytics/data@^5.2.1",
       "name": "@google-analytics/data",
@@ -130,7 +130,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@hookform/resolvers@^5.2.2",
       "name": "@hookform/resolvers",
@@ -146,7 +146,7 @@
     },
     {
       "declaredIn": [
-        "packages/design-tokens/package.json"
+        "packages\\design-tokens\\package.json"
       ],
       "id": "npm:@jridgewell/sourcemap-codec@^1.5.5",
       "name": "@jridgewell/sourcemap-codec",
@@ -162,7 +162,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@nestjs-modules/ioredis@^2.0.2",
       "name": "@nestjs-modules/ioredis",
@@ -178,7 +178,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@nestjs/bull@^11.0.4",
       "name": "@nestjs/bull",
@@ -194,7 +194,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@nestjs/bullmq@^11.0.4",
       "name": "@nestjs/bullmq",
@@ -210,7 +210,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@nestjs/cache-manager@^3.1.3",
       "name": "@nestjs/cache-manager",
@@ -226,7 +226,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@nestjs/cli@^11.0.23",
       "name": "@nestjs/cli",
@@ -242,7 +242,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json",
+        "backend\\package.json",
         "package.json"
       ],
       "id": "npm:@nestjs/common@^11.1.27",
@@ -260,7 +260,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@nestjs/config@^4.0.4",
       "name": "@nestjs/config",
@@ -276,7 +276,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json",
+        "backend\\package.json",
         "package.json"
       ],
       "id": "npm:@nestjs/core@^11.1.27",
@@ -294,7 +294,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@nestjs/event-emitter@^3.1.0",
       "name": "@nestjs/event-emitter",
@@ -310,7 +310,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@nestjs/jwt@^11.0.1",
       "name": "@nestjs/jwt",
@@ -326,7 +326,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@nestjs/passport@^11.0.5",
       "name": "@nestjs/passport",
@@ -342,7 +342,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@nestjs/platform-express@^11.1.27",
       "name": "@nestjs/platform-express",
@@ -358,7 +358,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@nestjs/platform-socket.io@^11.1.27",
       "name": "@nestjs/platform-socket.io",
@@ -374,7 +374,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@nestjs/schedule@^6.1.3",
       "name": "@nestjs/schedule",
@@ -390,7 +390,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@nestjs/schematics@^11.1.0",
       "name": "@nestjs/schematics",
@@ -406,7 +406,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@nestjs/swagger@11.4.4",
       "name": "@nestjs/swagger",
@@ -422,7 +422,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@nestjs/testing@^11.1.27",
       "name": "@nestjs/testing",
@@ -438,7 +438,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@nestjs/throttler@^6.5.0",
       "name": "@nestjs/throttler",
@@ -454,7 +454,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@nestjs/websockets@^11.1.27",
       "name": "@nestjs/websockets",
@@ -470,7 +470,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@paralleldrive/cuid2@^2.2.2",
       "name": "@paralleldrive/cuid2",
@@ -486,7 +486,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@playwright/test@1.61.0",
       "name": "@playwright/test",
@@ -502,7 +502,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@radix-ui/react-accordion@^1.2.12",
       "name": "@radix-ui/react-accordion",
@@ -518,7 +518,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@radix-ui/react-avatar@^1.1.11",
       "name": "@radix-ui/react-avatar",
@@ -534,7 +534,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@radix-ui/react-collapsible@^1.1.12",
       "name": "@radix-ui/react-collapsible",
@@ -550,7 +550,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@radix-ui/react-dialog@^1.1.15",
       "name": "@radix-ui/react-dialog",
@@ -566,7 +566,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@radix-ui/react-dropdown-menu@^2.1.16",
       "name": "@radix-ui/react-dropdown-menu",
@@ -582,7 +582,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@radix-ui/react-hover-card@^1.1.15",
       "name": "@radix-ui/react-hover-card",
@@ -598,7 +598,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@radix-ui/react-navigation-menu@^1.2.14",
       "name": "@radix-ui/react-navigation-menu",
@@ -614,7 +614,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@radix-ui/react-popover@^1.1.15",
       "name": "@radix-ui/react-popover",
@@ -630,7 +630,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@radix-ui/react-scroll-area@^1.2.10",
       "name": "@radix-ui/react-scroll-area",
@@ -646,7 +646,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@radix-ui/react-separator@^1.1.8",
       "name": "@radix-ui/react-separator",
@@ -662,7 +662,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@radix-ui/react-slider@^1.3.6",
       "name": "@radix-ui/react-slider",
@@ -678,7 +678,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@radix-ui/react-slot@^1.2.4",
       "name": "@radix-ui/react-slot",
@@ -694,7 +694,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@radix-ui/react-switch@^1.2.6",
       "name": "@radix-ui/react-switch",
@@ -710,7 +710,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@radix-ui/react-tabs@^1.1.13",
       "name": "@radix-ui/react-tabs",
@@ -726,7 +726,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@radix-ui/react-tooltip@^1.2.8",
       "name": "@radix-ui/react-tooltip",
@@ -742,7 +742,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json",
+        "frontend\\package.json",
         "package.json"
       ],
       "id": "npm:@react-router/dev@8.0.1",
@@ -760,8 +760,8 @@
     },
     {
       "declaredIn": [
-        "backend/package.json",
-        "frontend/package.json",
+        "backend\\package.json",
+        "frontend\\package.json",
         "package.json"
       ],
       "id": "npm:@react-router/express@8.0.1",
@@ -780,7 +780,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json",
+        "frontend\\package.json",
         "package.json"
       ],
       "id": "npm:@react-router/node@8.0.1",
@@ -798,7 +798,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@react-router/remix-routes-option-adapter@8.0.1",
       "name": "@react-router/remix-routes-option-adapter",
@@ -814,7 +814,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json",
+        "frontend\\package.json",
         "package.json"
       ],
       "id": "npm:@react-router/serve@8.0.1",
@@ -832,7 +832,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@sentry/nestjs@10.59.0",
       "name": "@sentry/nestjs",
@@ -848,7 +848,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@sentry/react@10.59.0",
       "name": "@sentry/react",
@@ -864,7 +864,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@size-limit/file@^12.1.0",
       "name": "@size-limit/file",
@@ -880,7 +880,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json",
+        "backend\\package.json",
         "package.json"
       ],
       "id": "npm:@supabase/supabase-js@^2.95.0",
@@ -898,7 +898,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@tailwindcss/vite@^4.3.1",
       "name": "@tailwindcss/vite",
@@ -914,7 +914,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@tanstack/react-query@^5.87.1",
       "name": "@tanstack/react-query",
@@ -930,7 +930,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@testcontainers/redis@^12.0.3",
       "name": "@testcontainers/redis",
@@ -946,7 +946,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@testing-library/jest-dom@^6.6.3",
       "name": "@testing-library/jest-dom",
@@ -962,7 +962,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@testing-library/react@^16.3.0",
       "name": "@testing-library/react",
@@ -978,7 +978,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@tiptap/extension-bold@^3.27.3",
       "name": "@tiptap/extension-bold",
@@ -994,7 +994,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@tiptap/extension-italic@^3.27.3",
       "name": "@tiptap/extension-italic",
@@ -1010,7 +1010,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@tiptap/pm@^3.26.1",
       "name": "@tiptap/pm",
@@ -1026,7 +1026,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@tiptap/react@^3.27.3",
       "name": "@tiptap/react",
@@ -1042,7 +1042,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@tiptap/starter-kit@^3.27.3",
       "name": "@tiptap/starter-kit",
@@ -1074,7 +1074,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@types/bcryptjs@^2.4.6",
       "name": "@types/bcryptjs",
@@ -1090,7 +1090,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@types/body-parser@^1.19.5",
       "name": "@types/body-parser",
@@ -1106,7 +1106,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@types/bull@^4.10.4",
       "name": "@types/bull",
@@ -1122,7 +1122,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@types/compression@^1.8.1",
       "name": "@types/compression",
@@ -1138,7 +1138,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@types/cors@^2.8.19",
       "name": "@types/cors",
@@ -1154,7 +1154,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@types/dompurify@^3.2.0",
       "name": "@types/dompurify",
@@ -1170,7 +1170,7 @@
     },
     {
       "declaredIn": [
-        "packages/eslint-config/package.json"
+        "packages\\eslint-config\\package.json"
       ],
       "id": "npm:@types/eslint@^8.56.5",
       "name": "@types/eslint",
@@ -1186,7 +1186,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@types/express-session@^1.19.0",
       "name": "@types/express-session",
@@ -1202,7 +1202,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@types/express@^5.0.0",
       "name": "@types/express",
@@ -1234,7 +1234,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@types/ioredis@^5.0.0",
       "name": "@types/ioredis",
@@ -1250,7 +1250,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@types/jest@^29.5.2",
       "name": "@types/jest",
@@ -1266,7 +1266,7 @@
     },
     {
       "declaredIn": [
-        "packages/registry/package.json"
+        "packages\\registry\\package.json"
       ],
       "id": "npm:@types/js-yaml@4.0.9",
       "name": "@types/js-yaml",
@@ -1282,7 +1282,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json",
+        "backend\\package.json",
         "package.json"
       ],
       "id": "npm:@types/js-yaml@^4.0.9",
@@ -1316,7 +1316,7 @@
     },
     {
       "declaredIn": [
-        "packages/registry/package.json"
+        "packages\\registry\\package.json"
       ],
       "id": "npm:@types/micromatch@^4.0.9",
       "name": "@types/micromatch",
@@ -1348,16 +1348,16 @@
     },
     {
       "declaredIn": [
-        "backend/package.json",
-        "packages/cwv-taxonomy/package.json",
-        "packages/database-types/package.json",
-        "packages/design-tokens/package.json",
-        "packages/domain-commerce/package.json",
-        "packages/registry/package.json",
-        "packages/seo-role-contracts/package.json",
-        "packages/seo-roles/package.json",
-        "packages/seo-types/package.json",
-        "packages/seo-url-contract/package.json"
+        "backend\\package.json",
+        "packages\\cwv-taxonomy\\package.json",
+        "packages\\database-types\\package.json",
+        "packages\\design-tokens\\package.json",
+        "packages\\domain-commerce\\package.json",
+        "packages\\registry\\package.json",
+        "packages\\seo-role-contracts\\package.json",
+        "packages\\seo-roles\\package.json",
+        "packages\\seo-types\\package.json",
+        "packages\\seo-url-contract\\package.json"
       ],
       "id": "npm:@types/node@^24",
       "name": "@types/node",
@@ -1382,7 +1382,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@types/nodemailer@^7.0.9",
       "name": "@types/nodemailer",
@@ -1398,7 +1398,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@types/passport-jwt@^4.0.1",
       "name": "@types/passport-jwt",
@@ -1414,7 +1414,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@types/passport-local@^1.0.38",
       "name": "@types/passport-local",
@@ -1430,7 +1430,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@types/passport@^1.0.17",
       "name": "@types/passport",
@@ -1446,7 +1446,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@types/react-dom@19.2.3",
       "name": "@types/react-dom",
@@ -1462,7 +1462,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@types/react@19.2.17",
       "name": "@types/react",
@@ -1478,7 +1478,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@types/sharp@^0.32.0",
       "name": "@types/sharp",
@@ -1494,7 +1494,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@types/socket.io@^3.0.2",
       "name": "@types/socket.io",
@@ -1510,7 +1510,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@types/supertest@^6.0.0",
       "name": "@types/supertest",
@@ -1526,7 +1526,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:@types/uuid@^10.0.0",
       "name": "@types/uuid",
@@ -1542,9 +1542,9 @@
     },
     {
       "declaredIn": [
-        "backend/package.json",
-        "frontend/package.json",
-        "packages/eslint-config/package.json"
+        "backend\\package.json",
+        "frontend\\package.json",
+        "packages\\eslint-config\\package.json"
       ],
       "id": "npm:@typescript-eslint/eslint-plugin@^8.60.1",
       "name": "@typescript-eslint/eslint-plugin",
@@ -1562,10 +1562,10 @@
     },
     {
       "declaredIn": [
-        "backend/package.json",
-        "frontend/package.json",
-        "packages/eslint-config/package.json",
-        "packages/eslint-plugin-fafa-ports/package.json"
+        "backend\\package.json",
+        "frontend\\package.json",
+        "packages\\eslint-config\\package.json",
+        "packages\\eslint-plugin-fafa-ports\\package.json"
       ],
       "id": "npm:@typescript-eslint/parser@^8.60.1",
       "name": "@typescript-eslint/parser",
@@ -1584,7 +1584,7 @@
     },
     {
       "declaredIn": [
-        "packages/eslint-plugin-fafa-ports/package.json"
+        "packages\\eslint-plugin-fafa-ports\\package.json"
       ],
       "id": "npm:@typescript-eslint/rule-tester@^8.60.1",
       "name": "@typescript-eslint/rule-tester",
@@ -1600,7 +1600,7 @@
     },
     {
       "declaredIn": [
-        "packages/eslint-plugin-fafa-ports/package.json"
+        "packages\\eslint-plugin-fafa-ports\\package.json"
       ],
       "id": "npm:@typescript-eslint/utils@^8.60.1",
       "name": "@typescript-eslint/utils",
@@ -1616,7 +1616,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@vitest/browser@^4.1.8",
       "name": "@vitest/browser",
@@ -1632,7 +1632,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:@vitest/coverage-v8@^4.0.2",
       "name": "@vitest/coverage-v8",
@@ -1680,7 +1680,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:axe-core@^4.12.0",
       "name": "axe-core",
@@ -1696,7 +1696,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json",
+        "backend\\package.json",
         "package.json"
       ],
       "id": "npm:bcrypt@^6.0.0",
@@ -1714,7 +1714,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:body-parser@^2.3.0",
       "name": "body-parser",
@@ -1730,7 +1730,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:bull@^4.16.5",
       "name": "bull",
@@ -1746,7 +1746,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:bullmq@^5.63.0",
       "name": "bullmq",
@@ -1762,7 +1762,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:cache-manager@^6.0.0",
       "name": "cache-manager",
@@ -1778,7 +1778,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:cacheable@^2.3.0",
       "name": "cacheable",
@@ -1794,7 +1794,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:class-variance-authority@^0.7.1",
       "name": "class-variance-authority",
@@ -1810,7 +1810,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json",
+        "frontend\\package.json",
         "package.json"
       ],
       "id": "npm:clsx@^2.1.1",
@@ -1828,7 +1828,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:cmdk@^1.1.1",
       "name": "cmdk",
@@ -1844,7 +1844,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:compression@^1.8.1",
       "name": "compression",
@@ -1860,7 +1860,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:connect-redis-v5@npm:connect-redis@^5.2.0",
       "name": "connect-redis-v5",
@@ -1876,7 +1876,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:connect-redis@^9.0.0",
       "name": "connect-redis",
@@ -1892,7 +1892,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:cookie@^0.7.2",
       "name": "cookie",
@@ -1908,7 +1908,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:cors@^2.8.5",
       "name": "cors",
@@ -1924,7 +1924,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:cron-parser@^4.9.0",
       "name": "cron-parser",
@@ -1956,7 +1956,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:dotenv@^17.2.1",
       "name": "dotenv",
@@ -1988,7 +1988,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:embla-carousel-react@^8.6.0",
       "name": "embla-carousel-react",
@@ -2004,7 +2004,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:esbuild@^0.27.0",
       "name": "esbuild",
@@ -2020,10 +2020,10 @@
     },
     {
       "declaredIn": [
-        "backend/package.json",
-        "frontend/package.json",
+        "backend\\package.json",
+        "frontend\\package.json",
         "package.json",
-        "packages/eslint-config/package.json"
+        "packages\\eslint-config\\package.json"
       ],
       "id": "npm:eslint-config-prettier@^10.1.8",
       "name": "eslint-config-prettier",
@@ -2042,7 +2042,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:eslint-import-resolver-typescript@^3.6.1",
       "name": "eslint-import-resolver-typescript",
@@ -2058,8 +2058,8 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json",
-        "packages/eslint-config/package.json"
+        "frontend\\package.json",
+        "packages\\eslint-config\\package.json"
       ],
       "id": "npm:eslint-plugin-import@^2.32.0",
       "name": "eslint-plugin-import",
@@ -2076,7 +2076,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:eslint-plugin-jest-dom@^5.5.0",
       "name": "eslint-plugin-jest-dom",
@@ -2092,7 +2092,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:eslint-plugin-jest@^29.15.4",
       "name": "eslint-plugin-jest",
@@ -2108,8 +2108,8 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json",
-        "packages/eslint-config/package.json"
+        "frontend\\package.json",
+        "packages\\eslint-config\\package.json"
       ],
       "id": "npm:eslint-plugin-jsx-a11y@^6.10.2",
       "name": "eslint-plugin-jsx-a11y",
@@ -2127,7 +2127,7 @@
     {
       "declaredIn": [
         "package.json",
-        "packages/eslint-config/package.json"
+        "packages\\eslint-config\\package.json"
       ],
       "id": "npm:eslint-plugin-prettier@^5.5.6",
       "name": "eslint-plugin-prettier",
@@ -2144,8 +2144,8 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json",
-        "packages/eslint-config/package.json"
+        "frontend\\package.json",
+        "packages\\eslint-config\\package.json"
       ],
       "id": "npm:eslint-plugin-react-hooks@^4.6.2",
       "name": "eslint-plugin-react-hooks",
@@ -2162,8 +2162,8 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json",
-        "packages/eslint-config/package.json"
+        "frontend\\package.json",
+        "packages\\eslint-config\\package.json"
       ],
       "id": "npm:eslint-plugin-react@^7.37.5",
       "name": "eslint-plugin-react",
@@ -2180,7 +2180,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:eslint-plugin-testing-library@^7.16.2",
       "name": "eslint-plugin-testing-library",
@@ -2196,7 +2196,7 @@
     },
     {
       "declaredIn": [
-        "packages/eslint-plugin-fafa-ports/package.json"
+        "packages\\eslint-plugin-fafa-ports\\package.json"
       ],
       "id": "npm:eslint@^8.57.0 || ^9.0.0",
       "name": "eslint",
@@ -2212,12 +2212,12 @@
     },
     {
       "declaredIn": [
-        "backend/package.json",
-        "frontend/package.json",
+        "backend\\package.json",
+        "frontend\\package.json",
         "package.json",
-        "packages/design-tokens/package.json",
-        "packages/eslint-config/package.json",
-        "packages/eslint-plugin-fafa-ports/package.json"
+        "packages\\design-tokens\\package.json",
+        "packages\\eslint-config\\package.json",
+        "packages\\eslint-plugin-fafa-ports\\package.json"
       ],
       "id": "npm:eslint@^8.57.1",
       "name": "eslint",
@@ -2238,7 +2238,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:eventemitter2@^6.4.9",
       "name": "eventemitter2",
@@ -2254,7 +2254,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:express-session@^1.19.0",
       "name": "express-session",
@@ -2270,7 +2270,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json",
+        "backend\\package.json",
         "package.json"
       ],
       "id": "npm:fast-json-stable-stringify@^2.1.0",
@@ -2288,7 +2288,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:file-type@^20.4.1",
       "name": "file-type",
@@ -2304,8 +2304,8 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json",
-        "packages/eslint-config/package.json"
+        "frontend\\package.json",
+        "packages\\eslint-config\\package.json"
       ],
       "id": "npm:globals@^14.0.0",
       "name": "globals",
@@ -2322,7 +2322,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:google-auth-library@^10.6.1",
       "name": "google-auth-library",
@@ -2338,7 +2338,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:googleapis@^164.1.0",
       "name": "googleapis",
@@ -2354,7 +2354,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:gray-matter@^4.0.3",
       "name": "gray-matter",
@@ -2370,7 +2370,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:helmet@^8.1.0",
       "name": "helmet",
@@ -2386,7 +2386,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:html-react-parser@^5.2.10",
       "name": "html-react-parser",
@@ -2402,7 +2402,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:husky@^9.1.7",
       "name": "husky",
@@ -2418,7 +2418,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:impeccable@2.3.2",
       "name": "impeccable",
@@ -2434,7 +2434,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:ioredis-mock@^8.13.1",
       "name": "ioredis-mock",
@@ -2450,7 +2450,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:ioredis@^5.8.2",
       "name": "ioredis",
@@ -2466,7 +2466,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:isbot@^4.1.0",
       "name": "isbot",
@@ -2482,7 +2482,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:isomorphic-dompurify@^2.35.0",
       "name": "isomorphic-dompurify",
@@ -2498,7 +2498,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:jest@^29.5.0",
       "name": "jest",
@@ -2514,8 +2514,8 @@
     },
     {
       "declaredIn": [
-        "backend/package.json",
-        "packages/registry/package.json"
+        "backend\\package.json",
+        "packages\\registry\\package.json"
       ],
       "id": "npm:jose@^5.10.0",
       "name": "jose",
@@ -2532,7 +2532,7 @@
     },
     {
       "declaredIn": [
-        "packages/registry/package.json"
+        "packages\\registry\\package.json"
       ],
       "id": "npm:js-yaml@4.1.1",
       "name": "js-yaml",
@@ -2548,7 +2548,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json",
+        "backend\\package.json",
         "package.json"
       ],
       "id": "npm:js-yaml@^4.1.1",
@@ -2566,7 +2566,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json",
+        "backend\\package.json",
         "package.json"
       ],
       "id": "npm:keyv@^5.6.0",
@@ -2600,7 +2600,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json",
+        "frontend\\package.json",
         "package.json"
       ],
       "id": "npm:lint-staged@^16.4.0",
@@ -2618,7 +2618,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:lucide-react@^0.462.0",
       "name": "lucide-react",
@@ -2650,7 +2650,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:meilisearch@^0.52.0",
       "name": "meilisearch",
@@ -2667,7 +2667,7 @@
     {
       "declaredIn": [
         "package.json",
-        "packages/registry/package.json"
+        "packages\\registry\\package.json"
       ],
       "id": "npm:micromatch@^4.0.8",
       "name": "micromatch",
@@ -2684,7 +2684,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:nestjs-pino@^4.5.0",
       "name": "nestjs-pino",
@@ -2700,7 +2700,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json",
+        "backend\\package.json",
         "package.json"
       ],
       "id": "npm:nestjs-zod@^4.3.1",
@@ -2734,7 +2734,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:nodemailer@^8.0.0",
       "name": "nodemailer",
@@ -2750,7 +2750,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:nodemon@^3.1.14",
       "name": "nodemon",
@@ -2766,7 +2766,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:npm-run-all@^4.1.5",
       "name": "npm-run-all",
@@ -2782,7 +2782,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:openai@^4.104.0",
       "name": "openai",
@@ -2798,7 +2798,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:passport-jwt@^4.0.1",
       "name": "passport-jwt",
@@ -2814,7 +2814,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:passport-local@^1.0.0",
       "name": "passport-local",
@@ -2830,7 +2830,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:passport@^0.7.0",
       "name": "passport",
@@ -2846,7 +2846,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:pdf-parse@^1.1.1",
       "name": "pdf-parse",
@@ -2862,7 +2862,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:pino-pretty@^13.1.3",
       "name": "pino-pretty",
@@ -2878,7 +2878,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:pino@^10.3.0",
       "name": "pino",
@@ -2894,7 +2894,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:playwright@1.61.0",
       "name": "playwright",
@@ -2910,7 +2910,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:playwright@^1.48.2",
       "name": "playwright",
@@ -2942,7 +2942,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:postcss@^8.4.49",
       "name": "postcss",
@@ -2958,7 +2958,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:prettier-linter-helpers@^1.0.0",
       "name": "prettier-linter-helpers",
@@ -2974,7 +2974,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json",
+        "backend\\package.json",
         "package.json"
       ],
       "id": "npm:prettier@^3.8.3",
@@ -2992,7 +2992,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:prom-client@^15.1.3",
       "name": "prom-client",
@@ -3008,7 +3008,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json",
+        "frontend\\package.json",
         "package.json"
       ],
       "id": "npm:react-dom@19.2.7",
@@ -3026,7 +3026,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:react-hook-form@^7.62.0",
       "name": "react-hook-form",
@@ -3042,8 +3042,8 @@
     },
     {
       "declaredIn": [
-        "backend/package.json",
-        "frontend/package.json",
+        "backend\\package.json",
+        "frontend\\package.json",
         "package.json"
       ],
       "id": "npm:react-router@8.0.1",
@@ -3062,7 +3062,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json",
+        "frontend\\package.json",
         "package.json"
       ],
       "id": "npm:react@19.2.7",
@@ -3080,7 +3080,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:recharts@^2.15.4",
       "name": "recharts",
@@ -3096,7 +3096,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:redis@~5.12.0",
       "name": "redis",
@@ -3112,7 +3112,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json",
+        "backend\\package.json",
         "package.json"
       ],
       "id": "npm:reflect-metadata@^0.2.2",
@@ -3130,7 +3130,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json",
+        "frontend\\package.json",
         "package.json"
       ],
       "id": "npm:remix-flat-routes@^0.8.5",
@@ -3148,7 +3148,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:rollup-plugin-visualizer@^6.0.5",
       "name": "rollup-plugin-visualizer",
@@ -3164,7 +3164,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json",
+        "backend\\package.json",
         "package.json"
       ],
       "id": "npm:rxjs@^7.8.2",
@@ -3182,7 +3182,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json",
+        "backend\\package.json",
         "package.json"
       ],
       "id": "npm:sharp@^0.34.3",
@@ -3200,7 +3200,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:simple-update-notifier@^2.0.0",
       "name": "simple-update-notifier",
@@ -3216,7 +3216,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:size-limit@^12.1.0",
       "name": "size-limit",
@@ -3232,7 +3232,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:socket.io@^4.8.1",
       "name": "socket.io",
@@ -3248,7 +3248,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:sonner@^2.0.7",
       "name": "sonner",
@@ -3264,7 +3264,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:source-map-support@^0.5.21",
       "name": "source-map-support",
@@ -3296,7 +3296,7 @@
     },
     {
       "declaredIn": [
-        "packages/design-tokens/package.json"
+        "packages\\design-tokens\\package.json"
       ],
       "id": "npm:style-dictionary@5.5.0",
       "name": "style-dictionary",
@@ -3312,7 +3312,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:supertest@^7.0.0",
       "name": "supertest",
@@ -3344,7 +3344,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:tailwind-merge@^3.4.0",
       "name": "tailwind-merge",
@@ -3360,7 +3360,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:tailwindcss-animate@^1.0.7",
       "name": "tailwindcss-animate",
@@ -3376,7 +3376,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json",
+        "frontend\\package.json",
         "package.json"
       ],
       "id": "npm:tailwindcss@^4.3.1",
@@ -3394,7 +3394,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:ts-jest@^29.4.10",
       "name": "ts-jest",
@@ -3410,7 +3410,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:ts-loader@^9.6.2",
       "name": "ts-loader",
@@ -3426,7 +3426,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:ts-node@^10.9.1",
       "name": "ts-node",
@@ -3442,7 +3442,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:tsc-alias@^1.8.17",
       "name": "tsc-alias",
@@ -3458,7 +3458,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:tsconfig-paths@^4.2.0",
       "name": "tsconfig-paths",
@@ -3474,7 +3474,7 @@
     },
     {
       "declaredIn": [
-        "packages/design-tokens/package.json"
+        "packages\\design-tokens\\package.json"
       ],
       "id": "npm:tsup@^8.3.5",
       "name": "tsup",
@@ -3490,15 +3490,15 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json",
-        "packages/cwv-taxonomy/package.json",
-        "packages/database-types/package.json",
-        "packages/domain-commerce/package.json",
-        "packages/registry/package.json",
-        "packages/seo-role-contracts/package.json",
-        "packages/seo-roles/package.json",
-        "packages/seo-types/package.json",
-        "packages/seo-url-contract/package.json"
+        "frontend\\package.json",
+        "packages\\cwv-taxonomy\\package.json",
+        "packages\\database-types\\package.json",
+        "packages\\domain-commerce\\package.json",
+        "packages\\registry\\package.json",
+        "packages\\seo-role-contracts\\package.json",
+        "packages\\seo-roles\\package.json",
+        "packages\\seo-types\\package.json",
+        "packages\\seo-url-contract\\package.json"
       ],
       "id": "npm:tsx@^4.22.4",
       "name": "tsx",
@@ -3538,7 +3538,7 @@
     },
     {
       "declaredIn": [
-        "packages/eslint-config/package.json"
+        "packages\\eslint-config\\package.json"
       ],
       "id": "npm:typescript-eslint@^8.61.1",
       "name": "typescript-eslint",
@@ -3570,18 +3570,18 @@
     },
     {
       "declaredIn": [
-        "backend/package.json",
-        "frontend/package.json",
-        "packages/cwv-taxonomy/package.json",
-        "packages/database-types/package.json",
-        "packages/design-tokens/package.json",
-        "packages/domain-commerce/package.json",
-        "packages/eslint-config/package.json",
-        "packages/registry/package.json",
-        "packages/seo-role-contracts/package.json",
-        "packages/seo-roles/package.json",
-        "packages/seo-types/package.json",
-        "packages/seo-url-contract/package.json"
+        "backend\\package.json",
+        "frontend\\package.json",
+        "packages\\cwv-taxonomy\\package.json",
+        "packages\\database-types\\package.json",
+        "packages\\design-tokens\\package.json",
+        "packages\\domain-commerce\\package.json",
+        "packages\\eslint-config\\package.json",
+        "packages\\registry\\package.json",
+        "packages\\seo-role-contracts\\package.json",
+        "packages\\seo-roles\\package.json",
+        "packages\\seo-types\\package.json",
+        "packages\\seo-url-contract\\package.json"
       ],
       "id": "npm:typescript@~6.0.3",
       "name": "typescript",
@@ -3624,7 +3624,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:undici@^7.13.0",
       "name": "undici",
@@ -3640,7 +3640,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "npm:unix-crypt-td-js@^1.1.4",
       "name": "unix-crypt-td-js",
@@ -3656,7 +3656,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:vite-tsconfig-paths@^4.2.1",
       "name": "vite-tsconfig-paths",
@@ -3672,7 +3672,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json",
+        "frontend\\package.json",
         "package.json"
       ],
       "id": "npm:vite@8.1.0",
@@ -3690,7 +3690,7 @@
     },
     {
       "declaredIn": [
-        "packages/design-tokens/package.json"
+        "packages\\design-tokens\\package.json"
       ],
       "id": "npm:vitest@^2.1.8",
       "name": "vitest",
@@ -3706,7 +3706,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:vitest@^4.0.2",
       "name": "vitest",
@@ -3722,7 +3722,7 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend\\package.json"
       ],
       "id": "npm:web-vitals@^5.2.0",
       "name": "web-vitals",
@@ -3738,16 +3738,16 @@
     },
     {
       "declaredIn": [
-        "backend/package.json",
-        "frontend/package.json",
+        "backend\\package.json",
+        "frontend\\package.json",
         "package.json",
-        "packages/cwv-taxonomy/package.json",
-        "packages/database-types/package.json",
-        "packages/design-tokens/package.json",
-        "packages/registry/package.json",
-        "packages/seo-role-contracts/package.json",
-        "packages/seo-roles/package.json",
-        "packages/seo-types/package.json"
+        "packages\\cwv-taxonomy\\package.json",
+        "packages\\database-types\\package.json",
+        "packages\\design-tokens\\package.json",
+        "packages\\registry\\package.json",
+        "packages\\seo-role-contracts\\package.json",
+        "packages\\seo-roles\\package.json",
+        "packages\\seo-types\\package.json"
       ],
       "id": "npm:zod@^4.4.3",
       "name": "zod",
@@ -3772,9 +3772,9 @@
     },
     {
       "declaredIn": [
-        "backend/package.json",
-        "frontend/package.json",
-        "packages/design-tokens/package.json"
+        "backend\\package.json",
+        "frontend\\package.json",
+        "packages\\design-tokens\\package.json"
       ],
       "id": "workspace:@fafa/eslint-config@*",
       "name": "@fafa/eslint-config",
@@ -3792,7 +3792,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "workspace:@fafa/frontend@*",
       "name": "@fafa/frontend",
@@ -3808,9 +3808,9 @@
     },
     {
       "declaredIn": [
-        "backend/package.json",
-        "frontend/package.json",
-        "packages/design-tokens/package.json"
+        "backend\\package.json",
+        "frontend\\package.json",
+        "packages\\design-tokens\\package.json"
       ],
       "id": "workspace:@fafa/typescript-config@*",
       "name": "@fafa/typescript-config",
@@ -3828,8 +3828,8 @@
     },
     {
       "declaredIn": [
-        "backend/package.json",
-        "frontend/package.json"
+        "backend\\package.json",
+        "frontend\\package.json"
       ],
       "id": "workspace:@repo/cwv-taxonomy@*",
       "name": "@repo/cwv-taxonomy",
@@ -3846,8 +3846,8 @@
     },
     {
       "declaredIn": [
-        "backend/package.json",
-        "frontend/package.json"
+        "backend\\package.json",
+        "frontend\\package.json"
       ],
       "id": "workspace:@repo/database-types@*",
       "name": "@repo/database-types",
@@ -3864,7 +3864,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "workspace:@repo/domain-commerce@*",
       "name": "@repo/domain-commerce",
@@ -3880,8 +3880,8 @@
     },
     {
       "declaredIn": [
-        "backend/package.json",
-        "frontend/package.json"
+        "backend\\package.json",
+        "frontend\\package.json"
       ],
       "id": "workspace:@repo/registry@*",
       "name": "@repo/registry",
@@ -3898,7 +3898,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "workspace:@repo/seo-role-contracts@*",
       "name": "@repo/seo-role-contracts",
@@ -3914,10 +3914,10 @@
     },
     {
       "declaredIn": [
-        "backend/package.json",
-        "frontend/package.json",
+        "backend\\package.json",
+        "frontend\\package.json",
         "package.json",
-        "packages/seo-role-contracts/package.json"
+        "packages\\seo-role-contracts\\package.json"
       ],
       "id": "workspace:@repo/seo-roles@*",
       "name": "@repo/seo-roles",
@@ -3936,8 +3936,8 @@
     },
     {
       "declaredIn": [
-        "backend/package.json",
-        "frontend/package.json"
+        "backend\\package.json",
+        "frontend\\package.json"
       ],
       "id": "workspace:@repo/seo-types@*",
       "name": "@repo/seo-types",
@@ -3954,8 +3954,8 @@
     },
     {
       "declaredIn": [
-        "backend/package.json",
-        "frontend/package.json"
+        "backend\\package.json",
+        "frontend\\package.json"
       ],
       "id": "workspace:@repo/seo-url-contract@*",
       "name": "@repo/seo-url-contract",
@@ -3972,7 +3972,7 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend\\package.json"
       ],
       "id": "workspace:eslint-plugin-fafa-ports@*",
       "name": "eslint-plugin-fafa-ports",

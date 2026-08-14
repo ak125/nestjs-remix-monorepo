@@ -69,8 +69,11 @@
         "runtime:backend/src/modules/rag-proxy/rag-proxy.module.ts",
         "runtime:backend/src/modules/search/search.module.ts",
         "runtime:backend/src/modules/seo-control-plane/seo-control-plane.module.ts",
+        "runtime:backend/src/modules/seo-control-plane/synthetic-probe-credential.module.ts",
         "runtime:backend/src/modules/seo-monitoring/seo-monitoring.module.ts",
+        "runtime:backend/src/modules/seo-projection/seo-projection.module.ts",
         "runtime:backend/src/modules/seo/seo.module.ts",
+        "runtime:backend/src/modules/session/session-infrastructure.module.ts",
         "runtime:backend/src/modules/staff/staff.module.ts",
         "runtime:backend/src/modules/substitution/substitution.module.ts",
         "runtime:backend/src/modules/supplier-truth/supplier-truth.module.ts",
@@ -304,7 +307,8 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/app.module.ts"
+        "runtime:backend/src/app.module.ts",
+        "runtime:backend/src/modules/session/session-store.service.ts"
       ],
       "id": "runtime:backend/src/main.ts",
       "kind": "other",
@@ -369,7 +373,6 @@
         "runtime:backend/src/modules/admin/services/command-center-orchestrator/regen-artifact.planner.ts",
         "runtime:backend/src/modules/admin/services/command-center-reader.service.ts",
         "runtime:backend/src/modules/admin/services/configuration.service.ts",
-        "runtime:backend/src/modules/admin/services/conseil-enricher.service.ts",
         "runtime:backend/src/modules/admin/services/conseil-priority.service.ts",
         "runtime:backend/src/modules/admin/services/conseil-quality-scorer.service.ts",
         "runtime:backend/src/modules/admin/services/enricher-text-utils.service.ts",
@@ -387,8 +390,6 @@
         "runtime:backend/src/modules/admin/services/keyword-plan-gates.service.ts",
         "runtime:backend/src/modules/admin/services/page-brief.service.ts",
         "runtime:backend/src/modules/admin/services/quality-scoring-engine.service.ts",
-        "runtime:backend/src/modules/admin/services/r1-content-from-rag.service.ts",
-        "runtime:backend/src/modules/admin/services/r1-enricher.service.ts",
         "runtime:backend/src/modules/admin/services/r1-image-prompt.service.ts",
         "runtime:backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
         "runtime:backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts",
@@ -416,6 +417,7 @@
         "runtime:backend/src/modules/orders/orders.module.ts",
         "runtime:backend/src/modules/products/products.module.ts",
         "runtime:backend/src/modules/rag-proxy/rag-proxy.module.ts",
+        "runtime:backend/src/modules/seo-projection/seo-projection-read.module.ts",
         "runtime:backend/src/modules/seo/seo.module.ts",
         "runtime:backend/src/modules/staff/staff.module.ts",
         "runtime:backend/src/modules/system/system.module.ts",
@@ -555,7 +557,6 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/modules/admin/services/r1-content-from-rag.service.ts",
         "runtime:backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts"
       ],
       "id": "runtime:backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts",
@@ -896,6 +897,7 @@
     {
       "dependsOn": [
         "runtime:backend/src/database/database.module.ts",
+        "runtime:backend/src/modules/analytics/controllers/landing-attribution.controller.ts",
         "runtime:backend/src/modules/analytics/controllers/simple-analytics.controller.ts",
         "runtime:backend/src/modules/analytics/services/simple-analytics.service.ts"
       ],
@@ -907,12 +909,32 @@
       "status": "LIVE"
     },
     {
+      "dependsOn": [],
+      "id": "runtime:backend/src/modules/analytics/controllers/landing-attribution.controller.ts",
+      "kind": "nestjs-controller",
+      "path": "backend/src/modules/analytics/controllers/landing-attribution.controller.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
       "dependsOn": [
         "runtime:backend/src/modules/analytics/services/simple-analytics.service.ts"
       ],
       "id": "runtime:backend/src/modules/analytics/controllers/simple-analytics.controller.ts",
       "kind": "nestjs-controller",
       "path": "backend/src/modules/analytics/controllers/simple-analytics.controller.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/modules/analytics/controllers/landing-attribution.controller.ts"
+      ],
+      "id": "runtime:backend/src/modules/analytics/landing-attribution-cutover.nest.test.ts",
+      "kind": "nestjs-module",
+      "path": "backend/src/modules/analytics/landing-attribution-cutover.nest.test.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
@@ -959,8 +981,10 @@
         "runtime:backend/src/modules/blog/services/guide.service.ts",
         "runtime:backend/src/modules/blog/services/html-content-sanitizer.service.ts",
         "runtime:backend/src/modules/blog/services/r3-guide.service.ts",
+        "runtime:backend/src/modules/blog/services/r3-projection-decision.service.ts",
         "runtime:backend/src/modules/blog/services/r6-guide.service.ts",
         "runtime:backend/src/modules/search/search.module.ts",
+        "runtime:backend/src/modules/seo-projection/seo-projection-read.module.ts",
         "runtime:backend/src/modules/seo/seo.module.ts"
       ],
       "id": "runtime:backend/src/modules/blog/blog.module.ts",
@@ -1549,7 +1573,10 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [],
+      "dependsOn": [
+        "runtime:backend/src/modules/session/session-infrastructure.module.ts",
+        "runtime:backend/src/modules/session/session-store.service.ts"
+      ],
       "id": "runtime:backend/src/modules/health/health.module.ts",
       "kind": "nestjs-module",
       "path": "backend/src/modules/health/health.module.ts",
@@ -2514,6 +2541,17 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/modules/seo-control-plane/synthetic-probe-credential.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/seo-control-plane/synthetic-probe-credential.module.ts",
+      "kind": "nestjs-module",
+      "path": "backend/src/modules/seo-control-plane/synthetic-probe-credential.module.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
         "runtime:backend/src/modules/seo-logs/services/crawl-budget-audit.service.ts"
       ],
       "id": "runtime:backend/src/modules/seo-logs/controllers/crawl-budget-audit.controller.ts",
@@ -2637,11 +2675,11 @@
         "runtime:backend/src/modules/seo-monitoring/controllers/funnel-events.controller.ts",
         "runtime:backend/src/modules/seo-monitoring/controllers/quality-history.controller.ts",
         "runtime:backend/src/modules/seo-monitoring/controllers/runtime-events.controller.ts",
+        "runtime:backend/src/modules/seo-monitoring/listeners/order-funnel.listener.ts",
         "runtime:backend/src/modules/seo-monitoring/services/audit-findings.service.ts",
         "runtime:backend/src/modules/seo-monitoring/services/crux-alerter.service.ts",
         "runtime:backend/src/modules/seo-monitoring/services/crux-api-client.service.ts",
         "runtime:backend/src/modules/seo-monitoring/services/crux-field-fetcher.service.ts",
-        "runtime:backend/src/modules/seo-monitoring/services/cwv-aggregation.service.ts",
         "runtime:backend/src/modules/seo-monitoring/services/cwv-beacon.service.ts",
         "runtime:backend/src/modules/seo-monitoring/services/cwv-dashboard.service.ts",
         "runtime:backend/src/modules/seo-monitoring/services/cwv-fetcher.service.ts",
@@ -2666,9 +2704,36 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/modules/seo-projection/seo-projection-feeder.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/seo-projection/seo-projection-admin.controller.ts",
+      "kind": "nestjs-controller",
+      "path": "backend/src/modules/seo-projection/seo-projection-admin.controller.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/modules/seo-projection/seo-projection-reader.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/seo-projection/seo-projection-read.module.ts",
+      "kind": "nestjs-module",
+      "path": "backend/src/modules/seo-projection/seo-projection-read.module.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
         "runtime:backend/src/database/database.module.ts",
+        "runtime:backend/src/modules/seo-projection/seo-projection-admin.controller.ts",
+        "runtime:backend/src/modules/seo-projection/seo-projection-feed.processor.ts",
+        "runtime:backend/src/modules/seo-projection/seo-projection-feeder.service.ts",
+        "runtime:backend/src/modules/seo-projection/seo-projection-gate.service.ts",
         "runtime:backend/src/modules/seo-projection/seo-projection-refresh.processor.ts",
-        "runtime:backend/src/modules/seo-projection/seo-projection-write.processor.ts"
+        "runtime:backend/src/modules/seo-projection/seo-projection-write.processor.ts",
+        "runtime:backend/src/modules/seo-projection/seo-projection-writer.service.ts"
       ],
       "id": "runtime:backend/src/modules/seo-projection/seo-projection.module.ts",
       "kind": "nestjs-module",
@@ -3034,6 +3099,7 @@
         "runtime:backend/src/modules/seo/services/seo-kpis.service.ts",
         "runtime:backend/src/modules/seo/services/seo-monitoring.service.ts",
         "runtime:backend/src/modules/seo/services/seo-pilotage.service.ts",
+        "runtime:backend/src/modules/seo/services/seo-placeholder-events.service.ts",
         "runtime:backend/src/modules/seo/services/seo-title-engine.service.ts",
         "runtime:backend/src/modules/seo/services/seo-v4-monitoring.service.ts",
         "runtime:backend/src/modules/seo/services/sitemap-delta.service.ts",
@@ -3062,6 +3128,17 @@
       "id": "runtime:backend/src/modules/seo/seo.module.ts",
       "kind": "nestjs-module",
       "path": "backend/src/modules/seo/seo.module.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/modules/session/session-store.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/session/session-infrastructure.module.ts",
+      "kind": "nestjs-module",
+      "path": "backend/src/modules/session/session-infrastructure.module.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
@@ -3617,6 +3694,7 @@
         "runtime:backend/src/modules/catalog/catalog.module.ts",
         "runtime:backend/src/modules/messages/messages.module.ts",
         "runtime:backend/src/modules/orders/orders.module.ts",
+        "runtime:backend/src/modules/staff/staff.module.ts",
         "runtime:backend/src/modules/users/users.module.ts",
         "runtime:backend/src/remix/remix-api.service.ts",
         "runtime:backend/src/remix/remix.controller.ts",
@@ -3686,10 +3764,8 @@
         "runtime:backend/src/modules/media-factory/services/video-data.service.ts",
         "runtime:backend/src/modules/media-factory/services/video-gates.service.ts",
         "runtime:backend/src/modules/rag-proxy/rag-proxy.module.ts",
-        "runtime:backend/src/modules/seo-monitoring/processors/cwv-aggregation.processor.ts",
         "runtime:backend/src/modules/seo-monitoring/processors/seo-daily-fetch.processor.ts",
         "runtime:backend/src/modules/seo-monitoring/seo-monitoring.module.ts",
-        "runtime:backend/src/modules/seo-monitoring/services/cwv-aggregation.scheduler.service.ts",
         "runtime:backend/src/modules/supplier-truth/supplier-sync.job.processor.ts",
         "runtime:backend/src/modules/supplier-truth/supplier-sync.scheduler.ts",
         "runtime:backend/src/modules/supplier-truth/supplier-truth-event-sink.ts",
@@ -3707,6 +3783,15 @@
       "path": "backend/src/workers/worker.module.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
+      "id": "runtime:backend/tests/unit/route-wildcard-middleware.test.ts",
+      "kind": "nestjs-module",
+      "path": "backend/tests/unit/route-wildcard-middleware.test.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
       "status": "LIVE"
     },
     {
