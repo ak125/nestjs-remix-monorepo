@@ -17,6 +17,18 @@ on:
       - "scripts/registry/**"
       - "scripts/audit/build-deep-inventory.js"
       - "scripts/audit/build-db-usage-map.js"
+      # --- Générateurs que CE workflow exécute (PR-8 + déterminisme) ---
+      # Oubliés jusqu'au 2026-08-14 : le job lance `audit:cleanup-candidates:check`,
+      # `audit:cleanup-candidates:test` et `audit:inventory:test`, mais aucun `paths:`
+      # ne couvrait leurs sources. Une PR modifiant le générateur PR-8 ne déclenchait
+      # donc jamais les gardes qui le valident — même angle mort que les arbres
+      # indexés ci-dessous, un cran plus haut.
+      - "scripts/audit/build-cleanup-candidates.ts"
+      - "scripts/audit/build-cleanup-candidates.test.ts"
+      - "scripts/audit/cleanup-candidates.schema.ts"
+      - "scripts/audit/__tests__/**"
+      - "audit/cleanup/**"
+      - "scripts/cleanup/validate-before-delete.sh"
       - "packages/registry/**"
       - "audit/registry/**"
       - ".spec/00-canon/repository-registry/**"
