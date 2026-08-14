@@ -147,19 +147,39 @@ rebuild et compare, et rejette tout contenu non reproductible depuis les sources
 courantes. C'est d'ailleurs elle que le script lui-même désigne comme *« the substantive
 defense »*.
 
-> ⚠️ **À exécuter depuis Linux (serveur DEV), jamais depuis un poste Windows.**
-> Les builders `scripts/registry/*` sont déterministes sur une même machine (le step
-> *Determinism check* le vérifie sur 2 rebuilds), mais **pas encore cross-plateforme** :
-> une resync produite sous Windows le 2026-08-14 a donné un `canonical.json` que le runner
-> Linux ne reproduisait pas — 573 lignes divergentes, `Freshness diff` rouge. Elle a été
-> revertée.
->
-> Contrairement aux projections `audit/**` (rendues cross-machine : tri codepoint, chemins
-> normalisés, filtre `git ls-files`), la source exacte de divergence des builders registry
-> **n'est pas identifiée** — ni `localeCompare`, ni `readdirSync` non trié, ni ordre de
-> `deps` (tous vérifiés le 2026-08-14). Tant qu'elle ne l'est pas, la contrainte
-> « générer depuis Linux » tient lieu de garde-fou. Les resyncs historiques (#990, #1078,
-> #1116) respectaient déjà cette contrainte de fait.
+> ⚠️ **À exécuter depuis Linux (serveur DEV), jamais depuis un poste Windows** — tant que
+> `files.json` n'est pas traité (voir ci-dessous).
+
+#### État de la reproductibilité cross-plateforme (2026-08-14)
+
+Mesuré en confrontant un build Windows au runner Linux **au même commit**, via les `sha256`
+que le step *Freshness diff* imprime désormais par artefact :
+
+| Projection | Cross-plateforme | Note |
+|---|---|---|
+| `runtime.json` | ✅ identique | |
+| `db.json` | ✅ identique | |
+| `rpc.json` | ✅ identique | |
+| `deps.json` | ✅ identique | **corrigé** — `path.join()` injectait `backend\package.json` dans 216 `declaredIn` |
+| `files.json` | ❌ **diverge** | cause non isolée |
+| `canonical.json` | ❌ diverge | par ricochet : il agrège `files.json` |
+
+**`files.json` — ce qui a été éliminé** (chaque piste vérifiée puis infirmée) : `localeCompare`
+(absent de `scripts/registry/`), `readdirSync` non trié, `sortById` (déjà codepoint),
+`Date.now`/`random` dans le builder canonical, ordre des steps CI (reproduit en local à
+l'identique), input gitignoré parmi les 10 `inputHashes` (tous versionnés), casse des imports
+(0 divergence vs `git ls-files`), séparateurs Windows (0 backslash), fichiers untracked
+capturés (0 dans le cache comme dans la projection).
+
+**Ce qui reste** : `files.json` dérive de `audit/cache/codebase-inventory.json` — un cache
+**gitignoré**, absent des `inputHashes`, comparé par aucun gate. Les 2837 entrées sont
+identiques des deux côtés ; ce sont les **valeurs** qui diffèrent, et le diff (576 lignes)
+correspond aux champs `runtime`/`status` de ~288 entrées — soit la reachability transitive
+calculée sur les `imports` de ce cache, produits par `dependency-cruiser`. La divergence est
+donc vraisemblablement dans la résolution d'imports de cet outil tiers selon l'OS.
+
+Trancher demande de comparer deux caches générés sur les deux OS au même commit — le cache
+étant gitignoré, cela suppose un accès simultané aux deux machines.
 
 **Périmètre.** `registry:heal` couvre les **6** projections. Le bot
 [`registry-deps-self-heal.yml`](../../.github/workflows/registry-deps-self-heal.yml) n'en
