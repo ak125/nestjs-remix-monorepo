@@ -270,13 +270,44 @@ jobs:
         # PROMOTION : retirer `continue-on-error` du job après N runs verts
         # consécutifs, avec le décompte inscrit ici (modèle audit.yml §Trigger
         # satisfied). Ne pas promouvoir sur une intuition.
+        #
+        # PÉRIMÈTRE ÉLARGI (2026-08-14) : les 5 projections Layer 1 sont comparées
+        # ici, pas seulement le canonical Layer 3.
+        #
+        # Trou constaté : `Deep-inventory freshness` couvre les 7 projections
+        # `audit/*.json`, mais RIEN ne comparait `audit/registry/{files,runtime,
+        # deps,db,rpc}.json` entre l'état commité et un rebuild. Seul canonical
+        # l'était — or il les AGRÈGE, donc une dérive L1 s'y manifestait de façon
+        # illisible : « canonical a dérivé » sans dire lequel de ses 5 inputs.
+        #
+        # Cas réel : un canonical généré sous Windows ressortait à 573 lignes de
+        # `canonical.json` du rebuild Linux, alors que les 10 `inputHashes` sont
+        # tous versionnés et que le builder canonical trie ses 5 sections
+        # (`sortById`, comparateur codepoint) sans `Date.now()` ni `random`. La
+        # divergence vient donc d'un builder L1 — invisible faute de comparaison.
+        #
+        # Le `sha256sum` par artefact est imprimé même au vert : c'est ce qui
+        # permet de confronter deux machines au même commit sans instrumenter le
+        # workflow après coup.
         run: |
-          git diff --stat audit/registry/canonical.json || true
-          if ! git diff --exit-code --quiet audit/registry/canonical.json; then
-            echo "::error::audit/registry/canonical.json drifted vs Layer 1+2 sources — run \`npm run registry\` and commit the projection"
+          ARTEFACTS="
+            audit/registry/files.json
+            audit/registry/runtime.json
+            audit/registry/deps.json
+            audit/registry/db.json
+            audit/registry/rpc.json
+            audit/registry/canonical.json
+          "
+          echo "sha256 des artefacts rebuildés sur CE runner ($(uname -s), node $(node -v)) :"
+          sha256sum $ARTEFACTS | sed 's/^/  /'
+          echo ""
+          git diff --stat -- $ARTEFACTS || true
+          if ! git diff --exit-code --quiet -- $ARTEFACTS; then
+            DRIFTED=$(git diff --name-only -- $ARTEFACTS | tr '\n' ' ')
+            echo "::error::registry projections drifted vs Layer 1+2 sources : ${DRIFTED}— run \`npm run registry:heal\` (depuis Linux) and commit"
             exit 1
           fi
-          echo "✓ canonical.json in sync with sources"
+          echo "✓ les 6 projections registry sont en phase avec les sources"
 
       - name: Run RPC parser fixture tests
         if: ${{ !cancelled() }}
