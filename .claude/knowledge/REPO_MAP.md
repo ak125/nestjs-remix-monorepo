@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 340ef52957ce0f6d5d236dae7682ed365e263c6b1c059bfa89c403634a10902b
+source_sha256: 9d9262a3ed7fc70333a390ffbcdecf1676c5a527665c9ebd054c2faca6f05b35
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 2833 |
+| Files (Layer 1) | 2829 |
 | DB tables (Layer 1) | 307 |
 | DB RPC (Layer 1) | 258 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 515 |
 
-Source sotFingerprint: `18796d0e8883`.
+Source sotFingerprint: `9575abc78d8e`.
 
 ## Comment l'utiliser
 
@@ -93,11 +93,11 @@ Source sotFingerprint: `18796d0e8883`.
 
 ### D8 — Read Model / Serving (RM)
 
-- **Files**: 942 (config=467, route=246, service=176, controller=38, test=15)
+- **Files**: 941 (config=466, route=246, service=176, controller=38, test=15)
 - **Runtime entrypoints**: 286
-- **Top owners**: @ak125/frontend-team (687), @ak125/admin-team (255)
+- **Top owners**: @ak125/frontend-team (686), @ak125/admin-team (255)
 - **Knowledge prose**: [`admin`](modules/admin.md), [`staff`](modules/staff.md)
-- **Status**: LIVE=498, UNKNOWN=444
+- **Status**: LIVE=498, UNKNOWN=443
 
 ### D9 — Import / ETL / Normalisation
 
@@ -147,21 +147,21 @@ Source sotFingerprint: `18796d0e8883`.
 
 ### D15 — Security & Governance
 
-- **Files**: 243 (test=136, script=60, service=44, config=2, controller=1)
+- **Files**: 244 (test=137, script=60, service=44, config=2, controller=1)
 - **Runtime entrypoints**: 3
-- **Top owners**: @ak125 (243)
+- **Top owners**: @ak125 (244)
 - **Knowledge prose**: [`bot-guard`](modules/bot-guard.md)
-- **Status**: LIVE=49, UNKNOWN=194
+- **Status**: LIVE=50, UNKNOWN=194
 
 ### UNKNOWN — Unknown (overlay non résolu)
 
-- **Files**: 249 (service=152, config=59, controller=21, script=14, test=3)
+- **Files**: 245 (service=150, config=57, controller=21, script=14, test=3)
 - **DB tables**: 307
 - **DB RPC**: 258
 - **Runtime entrypoints**: 41
-- **Top owners**: __unassigned__ (249)
+- **Top owners**: __unassigned__ (245)
 - **Knowledge prose**: [`config`](modules/config.md), [`layout`](modules/layout.md), [`mcp-validation`](modules/mcp-validation.md), [`metadata`](modules/metadata.md), [`navigation`](modules/navigation.md), [`search`](modules/search.md), [`shipping`](modules/shipping.md), [`suppliers`](modules/suppliers.md), [`system`](modules/system.md)
-- **Status**: LIVE=141, UNKNOWN=108
+- **Status**: LIVE=141, UNKNOWN=104
 
 ## Voir aussi
 
