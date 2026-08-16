@@ -138,6 +138,16 @@ function buildHeroBadges(page: R3GuidePage): HeroBadge[] {
 
 // ── Loader ───────────────────────────────────────────────
 
+/**
+ * Marks a genuine "this guide does not exist" outcome. Everything else that can
+ * go wrong on the way to the payload (429 from the app's own rate limiter, 5xx,
+ * abort/timeout, socket error) is TRANSIENT and must NOT be reported as 404:
+ * these URLs are indexed, and answering 404 on a transient fault invites
+ * deindexing. Transient faults answer 503 + Retry-After instead, which Google
+ * treats as "come back later" and which is never cached.
+ */
+class R3GuideNotFoundError extends Error {}
+
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const { pg_alias } = params;
 
@@ -161,10 +171,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
     if (!response.ok) {
       if (response.status === 404) {
-        throw data(
-          { message: `Guide R3 introuvable: ${pg_alias}` },
-          { status: 404 },
-        );
+        throw new R3GuideNotFoundError(`Guide R3 introuvable: ${pg_alias}`);
       }
       throw new Error(`R3 guide endpoint returned ${response.status}`);
     }
@@ -173,10 +180,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const guide = result?.data as R3GuidePayload | null;
 
     if (!guide) {
-      throw data(
-        { message: `Pas de donnees R3 pour: ${pg_alias}` },
-        { status: 404 },
-      );
+      throw new R3GuideNotFoundError(`Pas de donnees R3 pour: ${pg_alias}`);
     }
 
     // Fetch R4 reference as a deferred promise (non-blocking for TTFB)
@@ -259,10 +263,21 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   } catch (error) {
     clearTimeout(timeoutId);
     if (error instanceof Response) throw error;
+
+    // Genuine absence — the only case that legitimately answers 404.
+    if (error instanceof R3GuideNotFoundError) {
+      throw data({ message: error.message }, { status: 404 });
+    }
+
+    // Transient fault (429 / 5xx / abort / socket). Answer 503 so the URL stays
+    // indexable. Cache-Control is deliberately NOT set here: `headers` below
+    // (buildCacheHeaders) is this route's single owner and already stamps the
+    // canonical no-store on a thrown error — setting it here would override
+    // that with a weaker value.
     logger.error(`[R3 Guide] Error loading guide for: ${pg_alias}`, error);
     throw data(
       { message: `Erreur chargement guide R3: ${pg_alias}` },
-      { status: 404 },
+      { status: 503, headers: { "Retry-After": "60" } },
     );
   }
 }
