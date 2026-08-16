@@ -347,7 +347,13 @@ export async function loader({ params }: LoaderFunctionArgs) {
     const res = await referencePromise;
 
     if (!res.ok) {
-      throw new Response("Référence non trouvée", { status: 404 });
+      // Only a genuine 404 from the backend means "this reference does not
+      // exist". Anything else (429 from the app's own rate limiter, 5xx,
+      // gateway fault) is TRANSIENT and must not be reported as 404 on an
+      // indexed URL — that invites deindexing.
+      throw res.status === 404
+        ? new Response("Référence non trouvée", { status: 404 })
+        : transientlyUnavailable();
     }
 
     const reference = await res.json();
@@ -368,9 +374,25 @@ export async function loader({ params }: LoaderFunctionArgs) {
       },
     );
   } catch (error) {
+    // Deliberate throws above (404 / 503) travel untouched — without this the
+    // catch swallowed them and re-threw a 404, logging a spurious error and
+    // flattening every outcome to "not found".
+    if (error instanceof Response) throw error;
     logger.error("Erreur chargement référence:", error);
-    throw new Response("Référence non trouvée", { status: 404 });
+    throw transientlyUnavailable();
   }
+}
+
+/**
+ * Transient fault → 503: retryable, and the URL stays indexable.
+ * Cache-Control is intentionally omitted — `headers` (buildCacheHeaders) is the
+ * single owner and stamps the canonical no-store on a thrown error.
+ */
+function transientlyUnavailable(): Response {
+  return new Response("Référence temporairement indisponible", {
+    status: 503,
+    headers: { "Retry-After": "60" },
+  });
 }
 
 // Single owner of this route's Cache-Control at the edge (Caddy no longer

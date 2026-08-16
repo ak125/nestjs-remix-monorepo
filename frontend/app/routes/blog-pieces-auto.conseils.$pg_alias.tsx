@@ -270,15 +270,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     }
 
     // Transient fault (429 / 5xx / abort / socket). Answer 503 so the URL stays
-    // indexable, and pin no-store so neither Cloudflare nor the browser can
-    // retain the failure under the route's public `max-age=300` policy.
+    // indexable. Cache-Control is deliberately NOT set here: `headers` below
+    // (buildCacheHeaders) is this route's single owner and already stamps the
+    // canonical no-store on a thrown error — setting it here would override
+    // that with a weaker value.
     logger.error(`[R3 Guide] Error loading guide for: ${pg_alias}`, error);
     throw data(
       { message: `Erreur chargement guide R3: ${pg_alias}` },
-      {
-        status: 503,
-        headers: { "Cache-Control": "no-store", "Retry-After": "60" },
-      },
+      { status: 503, headers: { "Retry-After": "60" } },
     );
   }
 }
