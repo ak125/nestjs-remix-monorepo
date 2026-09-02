@@ -25,6 +25,7 @@ CLI
 
     python3 apply-supabase-migration.py --self-test
     python3 apply-supabase-migration.py --status
+    python3 apply-supabase-migration.py --status --max-pending-age-days 30
     python3 apply-supabase-migration.py --dry-run
     python3 apply-supabase-migration.py [--limit N]
 
@@ -39,6 +40,7 @@ Env vars consumed
 from __future__ import annotations
 
 import argparse
+import datetime
 import hashlib
 import os
 import re
@@ -535,6 +537,100 @@ def print_status(rows, summary) -> int:
     return 1 if blocker > 0 else 0
 
 
+# ── Ledger freshness ─────────────────────────────────────────────────────────
+#
+# `pending` is deliberately NOT a blocker: between a merge and the apply run a
+# file is legitimately pending for a few days. What is not legitimate is a file
+# that stays pending for months — it means either the apply never happened, or
+# it happened out-of-band and this ledger no longer describes the database.
+# Both are the same operational defect: the ledger stopped being true, and
+# nothing said so. Blockers alone cannot catch it (they stay at zero), which is
+# why a scheduled `--status` without this check would be green-but-wrong.
+#
+# Why 30 days, and not a number picked out of the air:
+#   - the observed cadence of this runner, baseline rows excluded, is
+#     p50 = 1 day, p95 = 3 days, max = 4 days over its genuine applies;
+#   - 30 days is the freshness horizon already governed by
+#     `.spec/00-canon/repository-registry/automation-reality.yaml`, which
+#     requires runtime_evidence ≤30j before an automation may be called ACTIVE.
+# 30 is therefore ~10x the observed p95 *and* this repo's existing definition of
+# "recent enough to still be true". The threshold is passed in by the caller;
+# 0 disables the check, so every pre-existing caller keeps its behaviour.
+
+
+def migration_date(migration_id: str) -> "datetime.date | None":
+    """Calendar date encoded in a migration id, or None if it is not a real day.
+
+    MIGRATION_FILE_RE guarantees the leading digits (`YYYYMMDD` or
+    `YYYYMMDDHHMMSS`); it does not guarantee they form a date that exists.
+    """
+    try:
+        return datetime.date(
+            int(migration_id[0:4]), int(migration_id[4:6]), int(migration_id[6:8])
+        )
+    except ValueError:
+        return None
+
+
+def stale_pending(
+    local_ids, remote_ids, max_age_days: int, today: "datetime.date"
+) -> "list[tuple[str, int | None]]":
+    """Pending ids older than `max_age_days`, oldest first.
+
+    Pure: no database, no wall clock — `today` is injected so the self-tests are
+    deterministic. An id whose date is impossible is reported with age None
+    rather than raising: a malformed filename is a genuine defect, but it must
+    not take the freshness probe down with it and mask the backlog.
+    """
+    if max_age_days <= 0:
+        return []
+    out: "list[tuple[str, int | None]]" = []
+    for mid in local_ids:
+        if mid in remote_ids:
+            continue
+        day = migration_date(mid)
+        if day is None:
+            out.append((mid, None))
+            continue
+        age = (today - day).days
+        if age > max_age_days:
+            out.append((mid, age))
+    # Malformed dates first, then genuinely oldest first.
+    out.sort(key=lambda t: (t[1] is not None, -(t[1] or 0)))
+    return out
+
+
+def report_stale_pending(stale, max_age_days: int) -> int:
+    """Print the stale backlog and mirror it to the step summary. 1 if any."""
+    if not stale:
+        print(
+            f"Ledger freshness : OK — nothing pending for more than "
+            f"{max_age_days} days."
+        )
+        return 0
+    print()
+    print(
+        f"Ledger freshness : {len(stale)} migration(s) pending for more than "
+        f"{max_age_days} days — the ledger no longer describes the database."
+    )
+    lines = [
+        "## Ledger freshness",
+        "",
+        f"{len(stale)} migration(s) pending longer than {max_age_days} days. "
+        "Either the apply never happened, or it happened out-of-band and "
+        "`infra.schema_migrations` is now fiction.",
+        "",
+        "| ID | Pending since |",
+        "| --- | --- |",
+    ]
+    for mid, age in stale:
+        age_txt = f"{age} days" if age is not None else "unparsable date in filename"
+        print(f"  {mid}  {age_txt}")
+        lines.append(f"| `{mid}` | {age_txt} |")
+    write_step_summary(lines)
+    return 1
+
+
 def write_step_summary(lines) -> "None":
     path = os.environ.get("GITHUB_STEP_SUMMARY")
     if not path:
@@ -712,6 +808,41 @@ def run_self_test() -> int:
     assert split_sql_statements("  ;  ;\n") == []
     assert split_sql_statements("") == []
 
+    # 5. Ledger freshness ------------------------------------------------
+    assert migration_date("20260429_x") == datetime.date(2026, 4, 29)
+    assert migration_date("20260429120000_x") == datetime.date(2026, 4, 29)
+    assert migration_date("20261332_impossible_day") is None
+
+    today = datetime.date(2026, 9, 3)
+    ids = ["20260429_old", "20260801_borderline", "20260901_recent"]
+
+    # Applied files are never reported, however old they are.
+    assert stale_pending(ids, set(ids), 30, today) == []
+    # All pending: only those past the threshold, oldest first.
+    assert stale_pending(ids, set(), 30, today) == [
+        ("20260429_old", 127),
+        ("20260801_borderline", 33),
+    ], stale_pending(ids, set(), 30, today)
+    # A single applied id drops out; the rest still reports.
+    assert stale_pending(ids, {"20260429_old"}, 30, today) == [
+        ("20260801_borderline", 33)
+    ]
+    # Threshold is exclusive — exactly 30 days old is not yet stale.
+    assert stale_pending(["20260804_exact"], set(), 30, today) == []
+    assert stale_pending(["20260803_one_over"], set(), 30, today) == [
+        ("20260803_one_over", 31)
+    ]
+    # 0 disables the check outright, so existing callers are unaffected.
+    assert stale_pending(ids, set(), 0, today) == []
+    # A malformed date surfaces as a finding, first, instead of crashing.
+    assert stale_pending(["20260429_old", "20261332_bad"], set(), 30, today) == [
+        ("20261332_bad", None),
+        ("20260429_old", 127),
+    ]
+    # Reporting contract: empty backlog is success, any backlog is failure.
+    assert report_stale_pending([], 30) == 0
+    assert report_stale_pending([("20260429_old", 127)], 30) == 1
+
     print("OK — all self-tests passed.")
     return 0
 
@@ -828,6 +959,15 @@ def main(argv: list[str]) -> int:
         help="Print the migration state table and exit. Read-only on the data.",
     )
     parser.add_argument(
+        "--max-pending-age-days", type=int, default=0, metavar="N",
+        help=(
+            "With --status: exit non-zero when a migration has been pending "
+            "for more than N days. 0 (default) disables the check and keeps "
+            "the historical behaviour. See the 'Ledger freshness' section in "
+            "this file for why the scheduled probe uses 30."
+        ),
+    )
+    parser.add_argument(
         "--dry-run", action="store_true",
         help="Show the apply plan without writing.",
     )
@@ -877,7 +1017,18 @@ def main(argv: list[str]) -> int:
             return run_baseline(conn, local, remote, args.exclude)
 
         if args.status:
-            return print_status(rows, summary)
+            rc = print_status(rows, summary)
+            if args.max_pending_age_days > 0:
+                rc = max(rc, report_stale_pending(
+                    stale_pending(
+                        [m.id for m in local],
+                        remote,
+                        args.max_pending_age_days,
+                        datetime.date.today(),
+                    ),
+                    args.max_pending_age_days,
+                ))
+            return rc
 
         # Refuse to proceed when blockers exist.
         if summary["drift"] or summary["applying"] or summary["failed"]:
