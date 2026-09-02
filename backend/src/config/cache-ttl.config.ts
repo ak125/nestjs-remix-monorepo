@@ -353,6 +353,18 @@ export const CACHE_STRATEGIES = {
       description: 'Promotional data',
     },
   },
+
+  // ═══════════════════════════════════════════════════════════════
+  // KEYWORD PLAN (admin batch R1, 0-LLM)
+  // ═══════════════════════════════════════════════════════════════
+  KEYWORD_PLAN: {
+    R1_TOP_VEHICLES: {
+      ttl: CacheTTL.ONE_DAY,
+      prefix: 'r1kp:top-vehicles:',
+      description:
+        'Top véhicules par gamme (RPC get_alternative_vehicles_for_gamme, clé = pgId seul) — compatibilité TecDoc, stable entre imports',
+    },
+  },
 } as const;
 
 /**
