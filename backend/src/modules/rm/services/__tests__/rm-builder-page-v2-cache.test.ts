@@ -20,9 +20,11 @@ import { CACHE_STRATEGIES } from '../../../../config/cache-ttl.config';
  * couple gamme×véhicule sans produit (la population soft-404) rejouait la
  * RPC `rm_get_page_complete_v2` (~280 ms) à chaque requête, pour toujours.
  *
- * Nouveau contrat, aligné sur `classifyPageV2Result` :
- *   - 'ok'        → cache, TTL RM.PAGE_V2 (1 h)
- *   - 'empty'     → cache, TTL RM.PAGE_V2_EMPTY (15 min)
+ * Nouveau contrat, aligné sur `classifyPageV2Result` × `count` :
+ *   - 'ok' et count > 0 → cache, TTL RM.PAGE_V2 (1 h)
+ *   - 'ok' et count = 0 → cache, TTL RM.PAGE_V2_EMPTY (15 min) — forme réelle
+ *                         d'un couple existant sans produit (RPC success:true)
+ *   - 'empty'           → cache, TTL RM.PAGE_V2_EMPTY (15 min)
  *   - 'not_found' → jamais mis en cache
  *   - 'error'     → jamais mis en cache (mettre une erreur RPC en cache
  *                   comme « vide » = incident 2026-05-19)
@@ -99,6 +101,27 @@ describe('RmBuilderService.getPageCompleteV2 — contrat de cache', () => {
       CACHE_STRATEGIES.RM.PAGE_V2_EMPTY.ttl,
     );
     expect(CACHE_STRATEGIES.RM.PAGE_V2_EMPTY.ttl).toBe(900);
+  });
+
+  it('un couple vide RÉEL (RPC: success true, count 0) prend le TTL court, pas 1 h', async () => {
+    // Forme observée sur DEV:3000 pour 3859×11836 (soft-404 fixture #1) :
+    // rm_get_page_complete_v2 ne rend `success:false` que sur INVALID_PARAMS /
+    // *_NOT_FOUND / INTERNAL_ERROR (toujours avec `error`). Un couple existant
+    // sans produit est donc `success:true, count:0` → classifyPageV2Result dit
+    // 'ok'. Le TTL doit suivre le COUNT, pas le seul drapeau success.
+    const { service, callRpc } = buildService(cache);
+    callRpc.mockResolvedValue({
+      data: { ...okResult, products: [], count: 0 },
+      error: null,
+    });
+
+    await service.getPageCompleteV2({ gamme_id: 3859, vehicle_id: 11836 });
+
+    expect(cache.set).toHaveBeenCalledWith(
+      'rm:page-v2:3859:11836',
+      expect.objectContaining({ success: true, count: 0 }),
+      CACHE_STRATEGIES.RM.PAGE_V2_EMPTY.ttl,
+    );
   });
 
   it("ne met JAMAIS en cache un résultat 'error' (échec RPC)", async () => {

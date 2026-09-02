@@ -39,23 +39,31 @@ const CACHE_TTL = 3600;
 export const PAGE_V2_CANONICAL_LIMIT = 200;
 
 /**
- * TTL de cache de `getPageCompleteV2` par classification, ou `null` = jamais
- * mis en cache. Unique source de vérité « cette entrée est-elle cacheable /
- * servable » — utilisée à l'écriture ET à la lecture.
+ * TTL de cache de `getPageCompleteV2`, ou `null` = jamais mis en cache.
+ * Unique source de vérité « cette entrée est-elle cacheable / servable » —
+ * utilisée à l'écriture ET à la lecture.
  *
- *   'ok'        → RM.PAGE_V2 (1 h)
- *   'empty'     → RM.PAGE_V2_EMPTY (15 min) — population soft-404, avant A2
- *                 elle rejouait la RPC (~280 ms) à chaque requête, pour toujours
- *   'not_found' → null
- *   'error'     → null (mettre une erreur RPC en cache comme « vide » =
- *                 incident 2026-05-19)
+ * Décision = classification (`classifyPageV2Result`) × `count` :
+ *   'ok'    et count > 0 → RM.PAGE_V2 (1 h)
+ *   'ok'    et count = 0 → RM.PAGE_V2_EMPTY (15 min) — forme RÉELLE d'un couple
+ *                          existant sans produit : rm_get_page_complete_v2 ne
+ *                          rend `success:false` que sur INVALID_PARAMS /
+ *                          *_NOT_FOUND / INTERNAL_ERROR (toujours avec `error`)
+ *   'empty'              → RM.PAGE_V2_EMPTY (15 min) — population soft-404,
+ *                          avant A2 elle rejouait la RPC (~280 ms) à chaque
+ *                          requête, pour toujours
+ *   'not_found'          → null
+ *   'error'              → null (mettre une erreur RPC en cache comme « vide »
+ *                          = incident 2026-05-19)
  */
 function pageV2CacheTtl(
-  classification: ReturnType<typeof classifyPageV2Result>,
+  result: Pick<RmPageCompleteV2Response, 'success' | 'error' | 'count'>,
 ): number | null {
-  switch (classification) {
+  switch (classifyPageV2Result(result)) {
     case 'ok':
-      return CACHE_STRATEGIES.RM.PAGE_V2.ttl;
+      return (result.count ?? 0) > 0
+        ? CACHE_STRATEGIES.RM.PAGE_V2.ttl
+        : CACHE_STRATEGIES.RM.PAGE_V2_EMPTY.ttl;
     case 'empty':
       return CACHE_STRATEGIES.RM.PAGE_V2_EMPTY.ttl;
     default:
@@ -557,7 +565,7 @@ export class RmBuilderService extends SupabaseBaseService {
       try {
         const cached =
           await this.cacheService.get<RmPageCompleteV2Response>(cacheKey);
-        if (cached && pageV2CacheTtl(classifyPageV2Result(cached)) !== null) {
+        if (cached && pageV2CacheTtl(cached) !== null) {
           const cacheDuration = Math.max(
             1,
             Math.round(performance.now() - startTime),
@@ -715,7 +723,7 @@ export class RmBuilderService extends SupabaseBaseService {
       // 2. Store in cache — sur la classification, jamais sur `count > 0`
       //    (voir pageV2CacheTtl). Le limit non canonique n'écrit jamais.
       if (useCache) {
-        const ttl = pageV2CacheTtl(classifyPageV2Result(result));
+        const ttl = pageV2CacheTtl(result);
         if (ttl !== null) {
           try {
             await this.cacheService.set(cacheKey, result, ttl);
