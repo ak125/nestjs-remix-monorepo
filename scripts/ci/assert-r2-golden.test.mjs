@@ -542,6 +542,65 @@ describe("assert-r2-golden.mjs — R2 relations + criteria golden gate", () => {
     assert.match(res.stdout, /no expected/i);
   });
 
+  // Barrière d'identifiants : aucune valeur du fichier golden n'atteint une requête
+  // sortante sans avoir été validée comme entier positif sûr. Le refus est bruyant
+  // et se produit AVANT tout appel réseau (--base pointe sur un port fermé : si une
+  // requête partait malgré tout, l'erreur serait « transport », pas « safe integer »).
+  for (const [label, bad] of [
+    ["chaîne", "402"],
+    ["décimal", 402.5],
+    ["négatif", -402],
+    ["zéro", 0],
+    ["hors safe-integer", 1e21],
+    ["absent", undefined],
+    ["objet", { toString: () => "402" }],
+  ]) {
+    test(`un identifiant ${label} dans le golden échoue avant toute requête`, async () => {
+      const dir = mkdtempSync(join(tmpdir(), "r2-golden-"));
+      const path = join(dir, "r2-golden.json");
+      writeFileSync(
+        path,
+        JSON.stringify({
+          schema: "r2-golden/v1",
+          fixtures: [
+            { id: "bad", kind: "page-v2", gamme_id: bad, vehicle_id: 57414 },
+          ],
+        }),
+      );
+      const res = await run(["--base", "http://127.0.0.1:1", "--golden", path]);
+      assert.equal(res.code, 1, res.stdout + res.stderr);
+      assert.match(
+        res.stdout + res.stderr,
+        /gamme_id must be a positive safe integer/i,
+      );
+    });
+  }
+
+  test("un identifiant qui tenterait d'injecter des paramètres est rejeté, pas encodé", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "r2-golden-"));
+    const path = join(dir, "r2-golden.json");
+    writeFileSync(
+      path,
+      JSON.stringify({
+        schema: "r2-golden/v1",
+        fixtures: [
+          {
+            id: "inject",
+            kind: "alternatives",
+            gamme_id: "1&limit=999",
+            type_id: 11836,
+          },
+        ],
+      }),
+    );
+    const res = await run(["--base", "http://127.0.0.1:1", "--golden", path]);
+    assert.equal(res.code, 1, res.stdout + res.stderr);
+    assert.match(
+      res.stdout + res.stderr,
+      /gamme_id must be a positive safe integer/i,
+    );
+  });
+
   test("a golden file with zero fixtures fails (vacuous green forbidden)", async () => {
     const dir = mkdtempSync(join(tmpdir(), "r2-golden-"));
     const path = join(dir, "r2-golden.json");

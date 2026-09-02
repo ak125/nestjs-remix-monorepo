@@ -111,12 +111,41 @@ function parseArgs(argv) {
 // ---------------------------------------------------------------------------
 // Fixtures → URLs
 // ---------------------------------------------------------------------------
+// Identifiants du golden : entiers positifs sûrs, sinon échec bruyant.
+// Barrière unique — pas de coercition silencieuse ('7' ≠ 7, 7.5 et 1e21 rejetés).
+const ID_FIELDS = {
+  "page-v2": ["gamme_id", "vehicle_id"],
+  alternatives: ["gamme_id", "type_id"],
+};
+
+function assertId(fixture, field) {
+  const v = fixture[field];
+  if (typeof v !== "number" || !Number.isSafeInteger(v) || v <= 0) {
+    throw new Error(
+      `fixture ${fixture.id}: ${field} must be a positive safe integer, got ${JSON.stringify(v)}`,
+    );
+  }
+  return v;
+}
+
 function urlFor(fixture, base) {
+  // Les identifiants viennent du golden (fichier). loadGolden() les a déjà validés
+  // comme entiers positifs sûrs (fail-loud) ; URLSearchParams les encode ensuite —
+  // aucune valeur de fichier n'atteint l'URL sans être passée par ces deux barrières.
+  const qs = (params) => new URLSearchParams(params).toString();
   switch (fixture.kind) {
     case "page-v2":
-      return `${base}/api/rm/page-v2?gamme_id=${fixture.gamme_id}&vehicle_id=${fixture.vehicle_id}&limit=${PAGE_V2_LIMIT}`;
+      return `${base}/api/rm/page-v2?${qs({
+        gamme_id: String(assertId(fixture, "gamme_id")),
+        vehicle_id: String(assertId(fixture, "vehicle_id")),
+        limit: String(PAGE_V2_LIMIT),
+      })}`;
     case "alternatives":
-      return `${base}/api/rm/alternatives?gamme_id=${fixture.gamme_id}&type_id=${fixture.type_id}&limit=${ALTERNATIVES_LIMIT}`;
+      return `${base}/api/rm/alternatives?${qs({
+        gamme_id: String(assertId(fixture, "gamme_id")),
+        type_id: String(assertId(fixture, "type_id")),
+        limit: String(ALTERNATIVES_LIMIT),
+      })}`;
     default:
       throw new Error(`fixture ${fixture.id}: unknown kind ${fixture.kind}`);
   }
@@ -333,6 +362,12 @@ function loadGolden(path) {
     if (ids.has(f.id))
       throw new Error(`golden ${path}: duplicate fixture id ${f.id}`);
     ids.add(f.id);
+    const fields = ID_FIELDS[f.kind];
+    if (!fields)
+      throw new Error(
+        `golden ${path}: fixture ${f.id}: unknown kind ${f.kind}`,
+      );
+    for (const field of fields) assertId(f, field);
   }
   return golden;
 }
