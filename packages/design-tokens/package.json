@@ -41,7 +41,7 @@
     "@fafa/typescript-config": "*",
     "@types/node": "^24",
     "eslint": "^8.57.1",
-    "style-dictionary": "5.5.0",
+    "style-dictionary": "5.5.2",
     "tsup": "^8.3.5",
     "typescript": "~6.0.3",
     "vitest": "^2.1.8",
