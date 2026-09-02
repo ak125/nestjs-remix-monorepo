@@ -18,14 +18,19 @@ import { CACHE_STRATEGIES } from '../../../../config/cache-ttl.config';
  * ranking vit dans Postgres SECURITY DEFINER (bypass RLS, ADR-076).
  *
  * Contrat de cache (A2, 2026-09-02) :
- *   - clé `alt:{type_id}:{pg_id}:v4` — SANS `limit` (cardinalité = type×pg)
+ *   - clé `alt:v4:g{génération}:{type_id}:{pg_id}` — SANS `limit`
+ *     (cardinalité = type×pg) ; génération = jeton Redis `cache:gen:catalog`
+ *     (A3), bumpé à l'activation pricing → invalidation O(1)
  *   - la RPC est toujours appelée au `limit` canonique maximal (24) ; la
  *     réponse est tranchée côté application au `limit` demandé
  *   - le cache stocke le payload RPC brut ; etag recalculé sur la tranche
  *   - TTL succès = CACHE_STRATEGIES.RM.ALTERNATIVES (24 h), erreur = 30 s
  */
-const KEY = 'alt:11836:3859:v4';
+const GENERATION = 7;
+const KEY = `alt:v4:g${GENERATION}:11836:3859`;
 const CANONICAL_LIMIT = 24;
+
+type CacheMock = { get: jest.Mock; set: jest.Mock; getGeneration: jest.Mock };
 
 const vehicle = (id: number) => ({
   type_id: String(id),
@@ -52,18 +57,43 @@ const fullPayload = {
 
 describe('RmAlternativesService (RPC canon)', () => {
   let service: RmAlternativesService;
-  let cacheMock: jest.Mocked<Partial<CacheService>>;
+  let cacheMock: CacheMock;
   let callRpcMock: jest.Mock;
 
   beforeEach(() => {
     cacheMock = {
       get: jest.fn(),
       set: jest.fn(),
+      getGeneration: jest.fn().mockResolvedValue(GENERATION),
     };
     service = new RmAlternativesService(cacheMock as unknown as CacheService);
     callRpcMock = jest.fn();
     // Mock la méthode héritée callRpc
     (service as any).callRpc = callRpcMock;
+  });
+
+  describe('génération de cache (A3)', () => {
+    it('lit la génération du périmètre catalog avant de composer la clé', async () => {
+      cacheMock.get.mockResolvedValue(null);
+      callRpcMock.mockResolvedValue({ data: fullPayload, error: null });
+
+      await service.compute(11836, 3859, 12);
+
+      expect(cacheMock.getGeneration).toHaveBeenCalledWith('catalog');
+      expect(cacheMock.get).toHaveBeenCalledWith(KEY);
+    });
+
+    it('un bump (7 → 8) change la clé : les entrées g7 deviennent inatteignables sans KEYS', async () => {
+      cacheMock.get.mockResolvedValue(null);
+      callRpcMock.mockResolvedValue({ data: fullPayload, error: null });
+
+      await service.compute(11836, 3859, 12);
+      cacheMock.getGeneration.mockResolvedValue(GENERATION + 1);
+      await service.compute(11836, 3859, 12);
+
+      expect(cacheMock.get).toHaveBeenNthCalledWith(1, 'alt:v4:g7:11836:3859');
+      expect(cacheMock.get).toHaveBeenNthCalledWith(2, 'alt:v4:g8:11836:3859');
+    });
   });
 
   describe('compute() — clé et limit canonique', () => {

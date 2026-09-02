@@ -9,7 +9,10 @@ import {
 } from '../../catalog/services/seo-template.service';
 import { pickGammeKeywordModifier } from '../../catalog/services/vehicle-aware-description.composer';
 import { SeoShadowObservatory } from '../../seo-shadow-observatory/seo-shadow-observatory.service';
-import { CACHE_STRATEGIES } from '../../../config/cache-ttl.config';
+import {
+  CACHE_STRATEGIES,
+  getCacheKey,
+} from '../../../config/cache-ttl.config';
 import { classifyPageV2Result } from '../utils/page-v2-response';
 import {
   RmProduct,
@@ -28,7 +31,8 @@ const CACHE_TTL = 3600;
 /**
  * Limit canonique de `getPageCompleteV2` (A2, 2026-09-02).
  *
- * Le cache `rm:page-v2:{gamme}:{vehicle}` ne porte pas le limit dans sa clé
+ * Le cache `rm:page-v2:v1:g{génération}:{gamme}:{vehicle}` (A3 : version
+ * statique + génération Redis `cache:gen:catalog`) ne porte pas le limit
  * et ne tranche pas : `count`, `filters` et `minPrice` sont calculés par la
  * RPC sur les N premières lignes. Seules les requêtes à ce limit lisent et
  * écrivent le cache ; tout autre limit contourne le cache (lecture + écriture).
@@ -554,11 +558,21 @@ export class RmBuilderService extends SupabaseBaseService {
   ): Promise<RmPageCompleteV2Response> {
     const startTime = performance.now();
     const { gamme_id, vehicle_id, limit = PAGE_V2_CANONICAL_LIMIT } = params;
-    const cacheKey = `rm:page-v2:${gamme_id}:${vehicle_id}`;
     // La clé ne porte pas le limit et l'entrée n'est pas tranchable
     // (count/filters/minPrice dépendent du limit) : seul le limit canonique
     // lit et écrit le cache. Voir PAGE_V2_CANONICAL_LIMIT.
     const useCache = limit === PAGE_V2_CANONICAL_LIMIT;
+    // Clé `rm:page-v2:v1:g{génération}:{gamme}:{véhicule}` (A3) — la
+    // génération (Redis `cache:gen:catalog`) n'est lue que si le cache sert.
+    const cacheKey = getCacheKey(
+      CACHE_STRATEGIES.RM.PAGE_V2,
+      `${gamme_id}:${vehicle_id}`,
+      useCache
+        ? await this.cacheService.getGeneration(
+            CACHE_STRATEGIES.RM.PAGE_V2.generation,
+          )
+        : undefined,
+    );
 
     // 1. Try cache first
     if (useCache) {

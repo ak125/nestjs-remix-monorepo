@@ -31,9 +31,14 @@ import { CACHE_STRATEGIES } from '../../../../config/cache-ttl.config';
  *   - limit ≠ canonique (200) → contourne le cache (lecture ET écriture) :
  *     `count`/`filters`/`minPrice` dépendent du limit, on ne tranche pas.
  */
-const KEY = 'rm:page-v2:402:100413';
+const GENERATION = 7;
+// Clé A3 : `{prefix}{keyVersion}:g{génération}:{gamme}:{véhicule}` — la
+// génération vient de Redis `cache:gen:catalog` (bump à l'activation pricing).
+const KEY = `rm:page-v2:v1:g${GENERATION}:402:100413`;
 
-function buildService(cache: jest.Mocked<Partial<CacheService>>) {
+type CacheMock = { get: jest.Mock; set: jest.Mock; getGeneration: jest.Mock };
+
+function buildService(cache: CacheMock) {
   const dummy = {} as never;
   const service = new RmBuilderService(
     cache as unknown as CacheService,
@@ -65,14 +70,60 @@ const okResult = {
 const emptyResult = { ...okResult, success: false, products: [], count: 0 };
 
 describe('RmBuilderService.getPageCompleteV2 — contrat de cache', () => {
-  let cache: jest.Mocked<Partial<CacheService>>;
+  let cache: CacheMock;
 
   beforeEach(() => {
-    cache = { get: jest.fn().mockResolvedValue(null), set: jest.fn() };
+    cache = {
+      get: jest.fn().mockResolvedValue(null),
+      set: jest.fn(),
+      getGeneration: jest.fn().mockResolvedValue(GENERATION),
+    };
   });
 
   it('exporte le limit canonique = 200 (défaut du contrôleur et du loader R2)', () => {
     expect(PAGE_V2_CANONICAL_LIMIT).toBe(200);
+  });
+
+  it('lit la génération du périmètre catalog et compose la clé versionnée (A3)', async () => {
+    const { service, callRpc } = buildService(cache);
+    callRpc.mockResolvedValue({ data: okResult, error: null });
+
+    await service.getPageCompleteV2({ gamme_id: 402, vehicle_id: 100413 });
+
+    expect(cache.getGeneration).toHaveBeenCalledWith('catalog');
+    expect(cache.get).toHaveBeenCalledWith(KEY);
+    expect(cache.set).toHaveBeenCalledWith(
+      KEY,
+      expect.objectContaining({ count: 1 }),
+      CACHE_STRATEGIES.RM.PAGE_V2.ttl,
+    );
+  });
+
+  it('un bump de génération (7 → 8) change la clé lue et écrite (A3)', async () => {
+    const { service, callRpc } = buildService(cache);
+    callRpc.mockResolvedValue({ data: okResult, error: null });
+
+    await service.getPageCompleteV2({ gamme_id: 402, vehicle_id: 100413 });
+    cache.getGeneration.mockResolvedValue(GENERATION + 1);
+    await service.getPageCompleteV2({ gamme_id: 402, vehicle_id: 100413 });
+
+    expect(cache.get).toHaveBeenNthCalledWith(1, 'rm:page-v2:v1:g7:402:100413');
+    expect(cache.get).toHaveBeenNthCalledWith(2, 'rm:page-v2:v1:g8:402:100413');
+  });
+
+  it('limit non canonique : ni lecture de génération ni accès Redis (A3)', async () => {
+    const { service, callRpc } = buildService(cache);
+    callRpc.mockResolvedValue({ data: okResult, error: null });
+
+    await service.getPageCompleteV2({
+      gamme_id: 402,
+      vehicle_id: 100413,
+      limit: 50,
+    });
+
+    expect(cache.getGeneration).not.toHaveBeenCalled();
+    expect(cache.get).not.toHaveBeenCalled();
+    expect(cache.set).not.toHaveBeenCalled();
   });
 
   it("met en cache un résultat 'ok' avec le TTL RM.PAGE_V2", async () => {
@@ -118,7 +169,7 @@ describe('RmBuilderService.getPageCompleteV2 — contrat de cache', () => {
     await service.getPageCompleteV2({ gamme_id: 3859, vehicle_id: 11836 });
 
     expect(cache.set).toHaveBeenCalledWith(
-      'rm:page-v2:3859:11836',
+      'rm:page-v2:v1:g7:3859:11836',
       expect.objectContaining({ success: true, count: 0 }),
       CACHE_STRATEGIES.RM.PAGE_V2_EMPTY.ttl,
     );
