@@ -613,6 +613,17 @@ jobs:
         if: steps.changed-sql.outputs.files != ''
         run: squawk --config .squawk.toml ${{ steps.changed-sql.outputs.files }}
 
+      # Reconciles the two existing guards instead of adding a third detector
+      # (guardrails.md) : squawk's `ban-concurrent-index-creation-in-transaction`
+      # is silenced per file, and the engine honours `-- @non_transactional` —
+      # nothing checked that the marker and the statements agree. The engine's
+      # own lexical splitter does the check (no DB, no psycopg). Incident :
+      # `20260529_xtr_msg_crm_indexes` carried the Supabase CLI marker instead,
+      # was applied outside the runner and left an invalid index in PROD.
+      - name: Reconcile @non_transactional marker with statements
+        if: steps.changed-sql.outputs.files != ''
+        run: python3 scripts/ci/apply-supabase-migration.py --lint-markers ${{ steps.changed-sql.outputs.files }}
+
   build:
     name: 🐳 build
     uses: ./.github/workflows/build.yml
