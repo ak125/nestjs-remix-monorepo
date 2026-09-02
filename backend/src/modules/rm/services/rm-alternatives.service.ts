@@ -3,28 +3,26 @@ import { Injectable, Logger } from '@nestjs/common';
 import { createHash } from 'node:crypto';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { CacheService } from '@cache/cache.service';
-import { CACHE_STRATEGIES } from '../../../config/cache-ttl.config';
+import {
+  CACHE_STRATEGIES,
+  getCacheKey,
+} from '../../../config/cache-ttl.config';
 import type { AlternativesV2Response } from '../dto/alternatives-v2.dto';
 
-// TTLs déclarés dans CACHE_STRATEGIES.RM (A2, 2026-09-02) — plus de littéral local.
+// TTLs, jeton de version (v4) et périmètre de génération déclarés dans
+// CACHE_STRATEGIES.RM.ALTERNATIVES (A2 + A3, 2026-09-02) — plus de littéral local.
 // Succès = 24 h : les alternatives dérivent de la compatibilité TecDoc, qui ne
 // bouge qu'à l'import catalogue. À 300 s sur une cardinalité 54 k × 9 k, le
 // taux de hit était structurellement ~0 (498 k appels RPC, 2 795 blocs/appel).
-const CACHE_TTL_SECONDS = CACHE_STRATEGIES.RM.ALTERNATIVES.ttl;
+// L'invalidation ne vient pas de l'expiration mais du bump de génération
+// (`cache:gen:catalog`) à l'activation pricing : clé `alt:v4:g{gen}:{type}:{pg}`.
+const STRATEGY = CACHE_STRATEGIES.RM.ALTERNATIVES;
+const CACHE_TTL_SECONDS = STRATEGY.ttl;
 // Error-path TTL kept low so a transient RPC failure does not poison the cache.
 // Long-TTL caching of empty responses was the amplifier behind the soft-404 R2
 // smoke regression detected 2026-05-19 (stale anon publishable key → 'Invalid
 // API key' on every RPC → 300s cache of [] → 5min false-empty).
 const CACHE_TTL_ERROR_SECONDS = CACHE_STRATEGIES.RM.ALTERNATIVES_ERROR.ttl;
-const CACHE_KEY_PREFIX = 'alt';
-// v1 → v2 (PR #633) : reset stale empty entries from the .from() RLS-bypass era.
-// v2 → v3 (2026-05-19) : reset stale empty entries from the rotated-publishable-key
-// era (preprod ANON_KEY rotated by Supabase but GitHub secret not synced — every RPC
-// returned 'Invalid API key', cached as empty for 5min). Pair with the short
-// CACHE_TTL_ERROR_SECONDS above to prevent the next rotation from repeating this.
-// v3 → v4 (2026-09-02, A2) : la valeur cachée change de forme — payload RPC brut
-// au limit canonique (tranché à la lecture) au lieu de la réponse construite.
-const CACHE_KEY_VERSION = 'v4';
 // Limit canonique = borne haute du contrôleur (clamp 1..24). La RPC borne
 // elle-même à LEAST(6, p_limit) véhicules / LEAST(8, p_limit) gammes / 4 modèles :
 // une seule entrée de cache par (type_id, pg_id) sert donc tous les limits par
@@ -82,7 +80,8 @@ export class RmAlternativesService extends SupabaseBaseService {
     pg_id: number,
     limit: number,
   ): Promise<AlternativesV2Response> {
-    const cacheKey = `${CACHE_KEY_PREFIX}:${type_id}:${pg_id}:${CACHE_KEY_VERSION}`;
+    const generation = await this.cache.getGeneration(STRATEGY.generation);
+    const cacheKey = getCacheKey(STRATEGY, `${type_id}:${pg_id}`, generation);
 
     const cached = await this.cache.get(cacheKey);
     if (cached) {
