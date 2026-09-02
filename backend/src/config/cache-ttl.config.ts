@@ -436,6 +436,18 @@ export const CACHE_STRATEGIES = {
         'get_soft_404_alternatives — échec RPC : réponse vide à TTL court, anti-poisoning (incident 2026-05-19)',
     },
   },
+
+  // ═══════════════════════════════════════════════════════════════
+  // KEYWORD PLAN (admin batch R1, 0-LLM)
+  // ═══════════════════════════════════════════════════════════════
+  KEYWORD_PLAN: {
+    R1_TOP_VEHICLES: {
+      ttl: CacheTTL.ONE_DAY,
+      prefix: 'r1kp:top-vehicles:',
+      description:
+        'Top véhicules par gamme (RPC get_alternative_vehicles_for_gamme, clé = pgId seul) — compatibilité TecDoc, stable entre imports',
+    },
+  },
 } as const;
 
 /**

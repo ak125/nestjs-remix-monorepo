@@ -4,7 +4,8 @@
  * Generates deterministic keyword plans from RAG YAML + DB data:
  * - RAG gamme frontmatter (domain.role, selection, brands, faq)
  * - R3 anti-cannibalization (forbidden terms from validated R3 plan)
- * - Top vehicles from __cross_gamme_car_new
+ * - Top vehicles via RPC get_alternative_vehicles_for_gamme (governed callRpc,
+ *   cached per pgId — A4, plan massdoc 2026-09-02)
  * - Equipementiers from gamme_aggregates
  *
  * Writes to __seo_r1_keyword_plan via R1KeywordPlanGatesService.upsertR1KeywordPlan().
@@ -13,6 +14,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { CacheService } from '@cache/cache.service';
+import {
+  CACHE_STRATEGIES,
+  getCacheKey,
+} from '../../../config/cache-ttl.config';
 import { EnricherYamlParser } from './enricher-yaml-parser.service';
 import {
   R1KeywordPlanGatesService,
@@ -40,6 +46,15 @@ interface TopVehicle {
   cnt: number;
 }
 
+/** Colonnes consommées de la RPC `get_alternative_vehicles_for_gamme`. */
+interface AlternativeVehicleRow {
+  marque_name: string;
+  modele_name: string;
+}
+
+const TOP_VEHICLES_STRATEGY = CACHE_STRATEGIES.KEYWORD_PLAN.R1_TOP_VEHICLES;
+const TOP_VEHICLES_LIMIT = 6;
+
 @Injectable()
 export class R1KeywordPlanBatchService extends SupabaseBaseService {
   protected override readonly logger = new Logger(
@@ -52,6 +67,7 @@ export class R1KeywordPlanBatchService extends SupabaseBaseService {
     configService: ConfigService,
     private readonly yamlParser: EnricherYamlParser,
     private readonly gatesService: R1KeywordPlanGatesService,
+    private readonly cacheService: CacheService,
   ) {
     super(configService);
   }
@@ -214,35 +230,8 @@ export class R1KeywordPlanBatchService extends SupabaseBaseService {
       r3ForbiddenTerms.add(term.toLowerCase());
     }
 
-    // ── P0.4: Top vehicles ──
-    const { data: vehicles } = await this.client.rpc(
-      'get_alternative_vehicles_for_gamme' as never,
-      { p_gamme_id: pgId, p_exclude_type_id: 0, p_limit: 6 } as never,
-    );
-
-    let topVehicles: TopVehicle[] = [];
-    if (vehicles && Array.isArray(vehicles) && vehicles.length > 0) {
-      topVehicles = vehicles.map(
-        (v: { marque_name: string; modele_name: string }) => ({
-          marque_name: v.marque_name,
-          modele_name: v.modele_name,
-          cnt: 1,
-        }),
-      );
-    } else {
-      // Direct query fallback
-      const { data: cgcData } = await this.client
-        .from('__cross_gamme_car_new')
-        .select('cgc_marque_id')
-        .eq('cgc_pg_id', String(pgId))
-        .limit(1);
-
-      if (cgcData && cgcData.length > 0) {
-        // Has cross-gamme data, query with joins via raw SQL
-        // (Supabase SDK can't do GROUP BY + JOIN easily)
-        topVehicles = []; // Will use generic fallback
-      }
-    }
+    // ── P0.4: Top vehicles (RPC gouvernée + cache par pgId, A4) ──
+    const topVehicles = await this.getTopVehicles(pgId);
 
     // ── P0.5: Equipementiers from gamme_aggregates ──
     const { data: aggRow } = await this.client
@@ -387,6 +376,49 @@ export class R1KeywordPlanBatchService extends SupabaseBaseService {
       qualityScore: gateReport.qualityScore,
       r3RiskScore: gateReport.r3RiskScore,
     };
+  }
+
+  /**
+   * Top véhicules d'une gamme (section S5 compat). Le résultat ne dépend que
+   * de `pgId` : cache Redis `r1kp:top-vehicles:{pgId}` (TTL déclaré dans
+   * CACHE_STRATEGIES) — un batch de 200 gammes rejoué (dry-run puis réel)
+   * ne paie la RPC qu'une fois par gamme.
+   *
+   * RPC via `callRpc()` (gate + allowlist, nom littéral pour le parseur de
+   * `scripts/ci/check-rpc-allowlist-coverage.sh`). Erreur RPC : warn
+   * observable, `[]` renvoyé et JAMAIS mis en cache (anti-poisoning).
+   * Résultat vide (0 ligne) : état réel, mis en cache.
+   */
+  private async getTopVehicles(pgId: number): Promise<TopVehicle[]> {
+    const cacheKey = getCacheKey(TOP_VEHICLES_STRATEGY, String(pgId));
+    const cached = await this.cacheService.get<TopVehicle[]>(cacheKey);
+    if (cached) return cached;
+
+    const { data, error } = await this.callRpc<AlternativeVehicleRow[]>(
+      'get_alternative_vehicles_for_gamme',
+      { p_gamme_id: pgId, p_exclude_type_id: 0, p_limit: TOP_VEHICLES_LIMIT },
+      { source: 'admin' },
+    );
+    if (error) {
+      this.logger.warn(
+        `[R1_KP_BATCH pgId=${pgId}] top vehicles RPC failed (not cached): ${error.message}`,
+      );
+      return [];
+    }
+
+    const topVehicles: TopVehicle[] = (Array.isArray(data) ? data : []).map(
+      (v) => ({
+        marque_name: v.marque_name,
+        modele_name: v.modele_name,
+        cnt: 1,
+      }),
+    );
+    await this.cacheService.set(
+      cacheKey,
+      topVehicles,
+      TOP_VEHICLES_STRATEGY.ttl,
+    );
+    return topVehicles;
   }
 
   // ── Term generation (deterministic, 0-LLM) ──
