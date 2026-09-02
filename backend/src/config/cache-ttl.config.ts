@@ -353,6 +353,37 @@ export const CACHE_STRATEGIES = {
       description: 'Promotional data',
     },
   },
+
+  // ═══════════════════════════════════════════════════════════════
+  // RM (page R2 gamme × véhicule) — A2 2026-09-02
+  // Toute entrée est stockée au `limit` canonique, jamais par limit.
+  // ═══════════════════════════════════════════════════════════════
+  RM: {
+    PAGE_V2: {
+      ttl: CacheTTL.ONE_HOUR,
+      prefix: 'rm:page-v2:',
+      description:
+        'rm_get_page_complete_v2 — résultat plein (classification ok)',
+    },
+    PAGE_V2_EMPTY: {
+      ttl: CacheTTL.FIFTEEN_MINUTES,
+      prefix: 'rm:page-v2:',
+      description:
+        'rm_get_page_complete_v2 — 0 produit (classification empty) : population soft-404, TTL court',
+    },
+    ALTERNATIVES: {
+      ttl: CacheTTL.ONE_DAY,
+      prefix: 'alt:',
+      description:
+        'get_soft_404_alternatives — dérivé de compatibilité TecDoc, stable entre imports catalogue',
+    },
+    ALTERNATIVES_ERROR: {
+      ttl: 30,
+      prefix: 'alt:',
+      description:
+        'get_soft_404_alternatives — échec RPC : réponse vide à TTL court, anti-poisoning (incident 2026-05-19)',
+    },
+  },
 } as const;
 
 /**
