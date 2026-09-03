@@ -409,6 +409,69 @@ def mark_failed(cur, migration_id: str, error: str) -> "None":
     )
 
 
+# ── Session hygiene between migrations ──────────────────────────────────────
+#
+# The engine reuses ONE connection for the whole run. A migration that issues a
+# plain `SET x = y` (as opposed to `SET LOCAL`) changes the SESSION, and a plain
+# SET survives COMMIT — so the setting leaks into every migration applied after
+# it, in file order.
+#
+# This is not hypothetical. `20260513_default_privileges_data_api_post_oct30.sql`
+# sets `lock_timeout = '1s'` and `statement_timeout = '5s'`. The next migrations
+# in lexicographic order include `20260529_xtr_msg_crm_indexes.sql`, whose
+# CREATE INDEX CONCURRENTLY is documented at 5-20 minutes per index. Under a
+# leaked 5s timeout it would be killed, leave the index INVALID — which
+# `CREATE INDEX CONCURRENTLY IF NOT EXISTS` then silently treats as a no-op on
+# every later attempt — and write a `failed` ledger row that blocks all runs.
+
+# split_sql_statements keeps the comments that precede a statement attached to
+# it, so a bare `^\s*SET` match silently misses any SET introduced by a comment
+# line — which is how the real 20260513 file is written. Strip that lead-in
+# first; the self-test below pins this exact case.
+LEADING_NOISE_RE = re.compile(r"\A(?:\s+|--[^\n]*(?:\n|\Z)|/\*.*?\*/)+", re.DOTALL)
+
+SESSION_SET_RE = re.compile(
+    r"^\s*SET\s+(?:SESSION\s+)?"
+    r"(?!LOCAL\b|TRANSACTION\b|CONSTRAINTS\b)"
+    r"([A-Za-z_][\w.]*)",
+    re.IGNORECASE,
+)
+
+
+def bare_session_sets(sql: str) -> "list[str]":
+    """Names of settings a migration changes for the SESSION, not the transaction.
+
+    Uses the engine's own statement lexer, so semicolons inside strings, dollar
+    quotes and comments do not produce false hits. `SET LOCAL` is transaction
+    scoped and therefore harmless; `SET TRANSACTION` / `SET CONSTRAINTS` are not
+    settings at all.
+    """
+    names = []
+    for stmt in split_sql_statements(sql):
+        m = SESSION_SET_RE.match(LEADING_NOISE_RE.sub("", stmt))
+        if m and m.group(1).lower() not in names:
+            names.append(m.group(1).lower())
+    return names
+
+
+def reset_session(conn) -> "None":
+    """Restore session settings to their startup defaults.
+
+    RESET ALL restores what each parameter would have been with no SET issued:
+    compiled-in default, postgresql.conf, connection options, per-role and
+    per-database settings — so libpq `options=` in DATABASE_URL are preserved.
+    Advisory locks are not settings, so the engine's own
+    pg_try_advisory_lock(88442211) survives untouched.
+    """
+    prev = conn.autocommit
+    conn.autocommit = True
+    try:
+        with conn.cursor() as cur:
+            cur.execute("RESET ALL")
+    finally:
+        conn.autocommit = prev
+
+
 def apply_migration(
     conn, mig: LocalMigration, runner: str, git_sha: str
 ) -> int:
@@ -891,6 +954,34 @@ def run_self_test() -> int:
         {"applied": 1, "pending": 0, "drift": 0,
          "orphan": 0, "applying": 0, "failed": 0}))
     assert "| 1 | 0 | 0 | 0 | 0 | 0 |" in _clean and "Blockers" not in _clean, _clean
+    # 6. Session-level SET detection --------------------------------------
+    assert bare_session_sets("SET statement_timeout = '5s';") == ["statement_timeout"]
+    assert bare_session_sets("SET SESSION lock_timeout = '1s';") == ["lock_timeout"]
+    # SET LOCAL is transaction-scoped: never reported.
+    assert bare_session_sets("SET LOCAL statement_timeout = '5s';") == []
+    # Not settings at all.
+    assert bare_session_sets("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;") == []
+    assert bare_session_sets("SET CONSTRAINTS ALL DEFERRED;") == []
+    # Case-insensitive, de-duplicated, order preserved.
+    assert bare_session_sets(
+        "set lock_timeout='1s'; SET statement_timeout='5s'; SET lock_timeout='2s';"
+    ) == ["lock_timeout", "statement_timeout"]
+    # A SET introduced by a comment line IS still a session SET (regression:
+    # split_sql_statements keeps the lead-in comment attached to the statement).
+    assert bare_session_sets("-- pin timeouts\nSET lock_timeout = '1s';") == [
+        "lock_timeout"
+    ]
+    assert bare_session_sets("/* block */ SET statement_timeout = '5s';") == [
+        "statement_timeout"
+    ]
+    # A SET inside a string or a comment must NOT count (lexer-backed).
+    assert bare_session_sets("SELECT 'SET statement_timeout = 1';") == []
+    assert bare_session_sets("-- SET statement_timeout = 1\nSELECT 1;") == []
+    # The real file that motivated this guard, if present in the checkout.
+    _leaky = MIGRATIONS_DIR / "20260513_default_privileges_data_api_post_oct30.sql"
+    if _leaky.exists():
+        _found = bare_session_sets(_leaky.read_text(encoding="utf-8"))
+        assert "statement_timeout" in _found and "lock_timeout" in _found, _found
 
     # Reporting contract: empty backlog is success, any backlog is failure.
     assert report_stale_pending([], 30) == 0
@@ -1167,8 +1258,18 @@ def main(argv: list[str]) -> int:
                 end="",
                 flush=True,
             )
+            # Start every migration from a clean session, whatever the previous
+            # one left behind. Before, not after : this also protects the first
+            # migration from anything bootstrap() or the connection left set.
+            reset_session(conn)
+            leaked = bare_session_sets(m.path.read_text(encoding="utf-8"))
             ms = apply_migration(conn, m, runner, git_sha)
             print(f"OK in {ms}ms")
+            if leaked:
+                print(
+                    f"  note: {m.id} sets session-level {', '.join(leaked)} — "
+                    "reset before the next migration"
+                )
             applied.append((m.id, ms))
 
         write_step_summary(
