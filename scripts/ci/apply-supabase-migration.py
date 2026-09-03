@@ -25,7 +25,8 @@ CLI
 
     python3 apply-supabase-migration.py --self-test
     python3 apply-supabase-migration.py --status
-    python3 apply-supabase-migration.py --status --max-pending-age-days 30
+    python3 apply-supabase-migration.py --status --max-pending-age-days 30 \
+                                        --no-bootstrap
     python3 apply-supabase-migration.py --dry-run
     python3 apply-supabase-migration.py [--limit N]
 
@@ -663,6 +664,39 @@ def stale_pending(
     return out
 
 
+def status_step_summary(rows, summary) -> "list[str]":
+    """Markdown block for $GITHUB_STEP_SUMMARY under --status.
+
+    print_status() writes to stdout only. The morning digest's Signal 7 sends the
+    reader straight to this job summary, so it has to carry the counters and name
+    the blocking rows — a summary holding only the freshness table is silent about
+    the very drift that turned the run red, and empty when the run is green.
+    """
+    lines = [
+        "## Migration ledger status",
+        "",
+        "| applied | pending | drift | orphan | applying | failed |",
+        "| ---: | ---: | ---: | ---: | ---: | ---: |",
+        "| {applied} | {pending} | {drift} | {orphan} | {applying} | {failed} |".format(
+            **summary
+        ),
+        "",
+    ]
+    blockers = [(i, st) for i, st, _, _ in rows if st in ("drift", "applying", "failed")]
+    if blockers:
+        lines += [
+            f"### Blockers ({len(blockers)})",
+            "",
+            "These stop every apply **and every dry-run** (exit 5) until resolved.",
+            "",
+            "| ID | State |",
+            "| --- | --- |",
+        ]
+        lines += [f"| `{i}` | {st} |" for i, st in blockers]
+        lines.append("")
+    return lines
+
+
 def report_stale_pending(stale, max_age_days: int) -> int:
     """Print the stale backlog and mirror it to the step summary. 1 if any."""
     if not stale:
@@ -902,6 +936,24 @@ def run_self_test() -> int:
         ("20261332_bad", None),
         ("20260429_old", 127),
     ]
+    # Status summary always carries the counters, and names blockers when present.
+    _sum = {"applied": 243, "pending": 57, "drift": 1,
+            "orphan": 0, "applying": 0, "failed": 0}
+    _rows = [
+        ("20260429_diag", "drift", "2026-05-16", "baseline"),
+        ("20260901_ok", "applied", "2026-09-01", "gh-actions:1"),
+        ("20260902_new", "pending", "—", "—"),
+    ]
+    _md = "\n".join(status_step_summary(_rows, _sum))
+    assert "| 243 | 57 | 1 | 0 | 0 | 0 |" in _md, _md
+    assert "### Blockers (1)" in _md and "`20260429_diag` | drift" in _md, _md
+    assert "20260901_ok" not in _md and "20260902_new" not in _md, _md
+    # No blocker -> counters still emitted, no Blockers section.
+    _clean = "\n".join(status_step_summary(
+        [("20260901_ok", "applied", "2026-09-01", "gh-actions:1")],
+        {"applied": 1, "pending": 0, "drift": 0,
+         "orphan": 0, "applying": 0, "failed": 0}))
+    assert "| 1 | 0 | 0 | 0 | 0 | 0 |" in _clean and "Blockers" not in _clean, _clean
     # 6. Session-level SET detection --------------------------------------
     assert bare_session_sets("SET statement_timeout = '5s';") == ["statement_timeout"]
     assert bare_session_sets("SET SESSION lock_timeout = '1s';") == ["lock_timeout"]
@@ -1051,6 +1103,15 @@ def main(argv: list[str]) -> int:
         help="Print the migration state table and exit. Read-only on the data.",
     )
     parser.add_argument(
+        "--no-bootstrap", action="store_true",
+        help=(
+            "Skip the ledger DDL/GRANT bootstrap. Only valid with --status : it "
+            "makes the run genuinely read-only, so a scheduled probe cannot "
+            "silently re-apply GRANTs over a deliberate REVOKE. A missing ledger "
+            "then fails loudly instead of being created by a status check."
+        ),
+    )
+    parser.add_argument(
         "--max-pending-age-days", type=int, default=0, metavar="N",
         help=(
             "With --status: exit non-zero when a migration has been pending "
@@ -1091,6 +1152,13 @@ def main(argv: list[str]) -> int:
     if args.self_test:
         return run_self_test()
 
+    if args.no_bootstrap and not args.status:
+        fail(
+            2,
+            "--no-bootstrap is only valid with --status : every write path needs "
+            "the ledger DDL to exist.",
+        )
+
     local = parse_local_migrations()
     enforce_ordering(local)
     if not local:
@@ -1100,8 +1168,24 @@ def main(argv: list[str]) -> int:
     conn = connect()
     try:
         acquire_lock(conn)
-        bootstrap(conn)
-        remote = fetch_remote(conn)
+        if args.no_bootstrap:
+            # Genuinely read-only path. bootstrap() is idempotent DDL, but it also
+            # re-runs GRANT on infra.schema_migrations : a nightly cron calling it
+            # would quietly undo a deliberate REVOKE. And a status probe has no
+            # business creating the ledger it is meant to observe.
+            try:
+                remote = fetch_remote(conn)
+            except Exception as exc:  # noqa: BLE001 — re-raised unless it is 42P01
+                if getattr(exc, "sqlstate", None) == "42P01":
+                    fail(
+                        6,
+                        "infra.schema_migrations is absent. Run the engine once "
+                        "WITHOUT --no-bootstrap to create it.",
+                    )
+                raise
+        else:
+            bootstrap(conn)
+            remote = fetch_remote(conn)
 
         rows, summary = classify(local, remote)
 
@@ -1110,6 +1194,7 @@ def main(argv: list[str]) -> int:
 
         if args.status:
             rc = print_status(rows, summary)
+            write_step_summary(status_step_summary(rows, summary))
             if args.max_pending_age_days > 0:
                 rc = max(rc, report_stale_pending(
                     stale_pending(

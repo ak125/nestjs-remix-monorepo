@@ -25,6 +25,13 @@ name: 🧾 Migration ledger freshness
 # It must never be given --dry-run, --limit, --baseline or a bare invocation.
 # Applying migrations is a deliberate, owner-confirmed act and stays in
 # apply-supabase-migrations.yml behind its `confirm=APPLY` token.
+#
+# `--no-bootstrap` is what makes "read-only" true rather than aspirational.
+# The engine normally calls bootstrap() before every command — idempotent DDL,
+# but it also re-runs GRANT on infra.schema_migrations, so this nightly cron
+# would quietly re-grant privileges over a deliberate REVOKE. It also has no
+# business creating the ledger it exists to observe: without bootstrap, a
+# missing ledger fails loudly (exit 6) instead of being silently repaired.
 
 on:
   schedule:
@@ -69,4 +76,5 @@ jobs:
           set -euo pipefail
           python3 scripts/ci/apply-supabase-migration.py \
             --status \
+            --no-bootstrap \
             --max-pending-age-days 30
