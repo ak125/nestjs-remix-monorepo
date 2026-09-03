@@ -24,6 +24,7 @@ CLI
 ===
 
     python3 apply-supabase-migration.py --self-test
+    python3 apply-supabase-migration.py --lint-markers FILE.sql [FILE.sql ...]
     python3 apply-supabase-migration.py --status
     python3 apply-supabase-migration.py --status --max-pending-age-days 30 \
                                         --no-bootstrap
@@ -62,6 +63,35 @@ MIGRATIONS_DIR = Path("backend/supabase/migrations")
 MIGRATION_FILE_RE = re.compile(r"^(\d{8}|\d{14})_([a-z0-9_]+)\.sql$")
 NON_TX_MARKER_RE = re.compile(r"^\s*--\s*@non_transactional\s*$", re.MULTILINE)
 NON_TX_MARKER_HEADER_LINES = 20
+
+# A5 (plan massdoc 2026-09-02) — reconciliation marker <-> statements.
+# Supabase CLI marker : NOT understood by this engine (the file would be
+# wrapped in BEGIN/COMMIT). Rejected explicitly so the mistake is loud.
+LEGACY_SUPABASE_NO_TX_RE = re.compile(
+    r"^\s*--\s*supabase:\s*no-transaction\b", re.MULTILINE
+)
+# Per-file squawk silence of the rule that exists precisely for this case
+# (`assume_in_transaction = true` in .squawk.toml). Silencing it without the
+# marker means the squawk rule was right and the engine will hit 25001.
+SQUAWK_IGNORE_CONCURRENT_RE = re.compile(
+    r"^\s*--\s*squawk-ignore-file\s+ban-concurrent-index-creation-in-transaction\b",
+    re.MULTILINE,
+)
+# Commands that refuse to run inside a transaction block — the README list.
+# Matched at the START of a comment-stripped statement produced by
+# split_sql_statements(), so comments, strings and dollar-quoted bodies can
+# never produce a hit (the exact reason a regex over the raw file is banned).
+NON_TX_STATEMENT_RE = re.compile(
+    r"^(?:"
+    r"CREATE\s+(?:UNIQUE\s+)?INDEX\s+CONCURRENTLY\b"
+    r"|DROP\s+INDEX\s+CONCURRENTLY\b"
+    r"|REINDEX\b.*?\bCONCURRENTLY\b"
+    r"|VACUUM\b"
+    r"|REFRESH\s+MATERIALIZED\s+VIEW\s+CONCURRENTLY\b"
+    r"|ALTER\s+SYSTEM\b"
+    r")",
+    re.IGNORECASE | re.DOTALL,
+)
 
 BOOTSTRAP_SQL = """
 CREATE SCHEMA IF NOT EXISTS infra;
@@ -250,6 +280,73 @@ def split_sql_statements(sql: str) -> list[str]:
         return bool(stripped.strip())
 
     return [s for s in statements if _has_executable_sql(s)]
+
+
+def _executable_text(stmt: str) -> str:
+    """Statement text without comments (the splitter keeps leading comments
+    attached to the statement that follows them)."""
+    text = re.sub(r"/\*.*?\*/", "", stmt, flags=re.DOTALL)
+    text = re.sub(r"--[^\n]*", "", text)
+    return text.strip()
+
+
+def non_transactional_statements(sql: str) -> list[str]:
+    """Return a short preview of every statement that refuses BEGIN/COMMIT."""
+    hits: list[str] = []
+    for stmt in split_sql_statements(sql):
+        text = _executable_text(stmt)
+        if NON_TX_STATEMENT_RE.match(text):
+            hits.append(" ".join(text.split())[:80])
+    return hits
+
+
+def reconcile_non_transactional(sql: str) -> list[str]:
+    """A5 gate — reconcile the ``-- @non_transactional`` header marker with
+    the statements of a migration, in BOTH directions.
+
+    Returns a list of human-readable violations (empty = consistent) :
+
+    * a non-transactional statement without the marker — the engine would
+      wrap the file in BEGIN/COMMIT and Postgres rejects it (SQLSTATE 25001) ;
+    * the marker without any such statement — every statement would run in
+      autocommit, losing atomicity for nothing ;
+    * the Supabase CLI marker ``-- supabase: no-transaction`` — silently
+      ignored by this engine (incident 20260529_xtr_msg_crm_indexes) ;
+    * ``squawk-ignore-file ban-concurrent-index-creation-in-transaction``
+      without the marker — the squawk rule was right.
+
+    squawk keeps its own responsibility ; this reconciles the two existing
+    guards instead of adding a third detector (guardrails.md, passes 2-4).
+    """
+    has_marker = is_non_transactional_header(sql)
+    needs = non_transactional_statements(sql)
+    violations: list[str] = []
+    if LEGACY_SUPABASE_NO_TX_RE.search(sql):
+        violations.append(
+            "uses `-- supabase: no-transaction` (Supabase CLI marker) — not "
+            "understood by this engine; put `-- @non_transactional` in the "
+            f"first {NON_TX_MARKER_HEADER_LINES} lines instead"
+        )
+    if needs and not has_marker:
+        violations.append(
+            f"{len(needs)} non-transactional statement(s) (first: "
+            f"`{needs[0]}`) without the `-- @non_transactional` header "
+            "marker — the engine would wrap the file in BEGIN/COMMIT and "
+            "Postgres would reject it (SQLSTATE 25001)"
+        )
+    if has_marker and not needs:
+        violations.append(
+            "`-- @non_transactional` marker but no statement needs it — "
+            "every statement would run in autocommit, losing atomicity for "
+            "nothing; drop the marker"
+        )
+    if SQUAWK_IGNORE_CONCURRENT_RE.search(sql) and not has_marker:
+        violations.append(
+            "silences squawk `ban-concurrent-index-creation-in-transaction` "
+            "without `-- @non_transactional` — the squawk rule was right: add "
+            "the marker (and keep the ignore) or drop the ignore"
+        )
+    return violations
 
 
 def parse_local_migrations() -> list[LocalMigration]:
@@ -791,6 +888,73 @@ def run_self_test() -> int:
 
     no_string = "INSERT INTO t VALUES ('-- @non_transactional');\n"
     assert not is_non_transactional_header(no_string)
+
+    # 2b. Reconciliation marker <-> non-transactional statements (A5) ----
+    # Both directions : a statement that refuses BEGIN/COMMIT requires the
+    # marker (else SQLSTATE 25001 at apply time) ; the marker requires such a
+    # statement (else every statement runs in autocommit, losing atomicity
+    # for nothing). Legacy `-- supabase: no-transaction` (Supabase CLI) is
+    # NOT understood by this engine and must be rejected explicitly.
+    ok_pair = (
+        "-- @non_transactional\n"
+        "SET lock_timeout = '5s';\n"
+        "CREATE INDEX CONCURRENTLY IF NOT EXISTS i ON t (c);\n"
+    )
+    assert reconcile_non_transactional(ok_pair) == []
+
+    plain = (
+        "ALTER TABLE t ADD COLUMN IF NOT EXISTS c int;\n"
+        "CREATE INDEX IF NOT EXISTS i ON t (c);\n"
+    )
+    assert reconcile_non_transactional(plain) == []
+
+    missing = "-- header\nCREATE INDEX CONCURRENTLY i ON t (c);\n"
+    v = reconcile_non_transactional(missing)
+    assert len(v) == 1 and "25001" in v[0], v
+
+    useless = "-- @non_transactional\nCREATE INDEX i ON t (c);\n"
+    v = reconcile_non_transactional(useless)
+    assert len(v) == 1 and "atomicity" in v[0], v
+
+    legacy = (
+        "-- supabase: no-transaction\n"
+        "CREATE INDEX CONCURRENTLY i ON t (c);\n"
+    )
+    v = reconcile_non_transactional(legacy)
+    assert any("supabase: no-transaction" in m for m in v), v
+    assert any("25001" in m for m in v), v
+
+    silenced = (
+        "-- squawk-ignore-file ban-concurrent-index-creation-in-transaction\n"
+        "CREATE INDEX i ON t (c);\n"
+    )
+    v = reconcile_non_transactional(silenced)
+    assert len(v) == 1 and "squawk" in v[0], v
+
+    # CONCURRENTLY inside a comment or a dollar-quoted body does NOT need
+    # the marker — this is the exact case where regex-on-file lies.
+    fooled = (
+        "-- CREATE INDEX CONCURRENTLY mentioned in a comment\n"
+        "CREATE FUNCTION f() RETURNS void AS $$\n"
+        "BEGIN\n"
+        "  EXECUTE 'CREATE INDEX CONCURRENTLY i ON t (c)';\n"
+        "END;\n"
+        "$$ LANGUAGE plpgsql;\n"
+    )
+    assert reconcile_non_transactional(fooled) == [], (
+        reconcile_non_transactional(fooled)
+    )
+
+    # Every command of the README list is recognised, in both directions.
+    for stmt in (
+        "DROP INDEX CONCURRENTLY IF EXISTS i;",
+        "REINDEX INDEX CONCURRENTLY i;",
+        "VACUUM ANALYZE t;",
+        "REFRESH MATERIALIZED VIEW CONCURRENTLY mv;",
+        "ALTER SYSTEM SET work_mem = '16MB';",
+    ):
+        assert reconcile_non_transactional(stmt) != [], stmt
+        assert reconcile_non_transactional("-- @non_transactional\n" + stmt) == [], stmt
 
     # 3. Ordering (id = filename stem, lexicographic) -------------------
     good = [
@@ -1486,11 +1650,47 @@ def run_baseline(
 # ── Main ─────────────────────────────────────────────────────────────────────
 
 
+def run_lint_markers(paths: list[str]) -> int:
+    """A5 gate on explicit files (CI *Migration Safety*, changed files only ;
+    no DB connection). ``.down.sql`` files are skipped : forward-only engine,
+    excluded from squawk as well — same scope contract."""
+    problems = 0
+    checked = 0
+    for raw in paths:
+        p = Path(raw)
+        if p.name.endswith(".down.sql"):
+            print(f"  skip {p} (.down.sql: forward-only engine, squawk-excluded)")
+            continue
+        if not p.is_file():
+            fail(2, f"--lint-markers: file not found: {p}")
+        checked += 1
+        for msg in reconcile_non_transactional(p.read_text(encoding="utf-8")):
+            problems += 1
+            print(f"::error file={p}::{msg}")
+    if problems:
+        print(
+            f"FAIL — {problems} @non_transactional mismatch(es) in "
+            f"{checked} file(s)."
+        )
+        return 1
+    print(f"OK — @non_transactional reconciled on {checked} file(s).")
+    return 0
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--self-test", action="store_true",
         help="Run in-process unit tests and exit (no DB connection).",
+    )
+    parser.add_argument(
+        "--lint-markers", nargs="+", metavar="SQL_FILE", default=None,
+        help=(
+            "Reconcile the `-- @non_transactional` header marker with the "
+            "statements of the given migration files, both directions, and "
+            "exit non-zero on any mismatch. No DB connection. `.down.sql` "
+            "files are skipped."
+        ),
     )
     parser.add_argument(
         "--status", action="store_true",
@@ -1563,6 +1763,10 @@ def main(argv: list[str]) -> int:
 
     if args.self_test:
         return run_self_test()
+
+    # Mode autonome, comme --self-test : sort avant toute connexion.
+    if args.lint_markers:
+        return run_lint_markers(args.lint_markers)
 
     if args.only and (args.limit is not None or args.baseline or args.status
                       or args.reapply):
@@ -1658,6 +1862,31 @@ def main(argv: list[str]) -> int:
                 fail(10, "--only refused — nothing was applied.")
         elif args.limit is not None:
             pending = pending[: max(0, args.limit)]
+
+        # A5 gate — refuse to apply (or dry-run) a pending migration whose
+        # header marker contradicts its statements, BEFORE touching anything.
+        # Pending = not yet at the ledger = bytes still editable : the fix is
+        # in the file, never a checksum override.
+        #
+        # Portée volontaire : `pending` — donc ce que --only a sélectionné, pas
+        # la file entière. Nommer une migration ne dispense pas de la garde,
+        # mais enjamber un fichier fautif ne bloque pas non plus un run qui ne
+        # l'exécute pas.
+        mismatches = [
+            (m.id, msg)
+            for m in pending
+            for msg in reconcile_non_transactional(
+                m.path.read_text(encoding="utf-8")
+            )
+        ]
+        if mismatches:
+            for mid, msg in mismatches:
+                print(f"::error::{mid}: {msg}")
+            fail(
+                7,
+                f"{len(mismatches)} @non_transactional mismatch(es) in pending "
+                "migrations — fix the file(s) (see --lint-markers).",
+            )
 
         # GitHub Step Summary — built once, written once.
         plan_lines = ["## Migration plan", ""]

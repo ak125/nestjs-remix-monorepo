@@ -17,6 +17,9 @@ name: 🗄️ Apply Supabase migrations (manual)
 #   8. 3-state machine in `infra.schema_migrations` (applying / applied / failed)
 #   9. Checksum drift = HARD FAIL
 #  10. `infra.schema_migrations` append-only (column-scoped UPDATE, no DELETE)
+#  11. Pending migrations whose `-- @non_transactional` marker contradicts
+#      their statements are refused BEFORE any apply / dry-run (exit 7) —
+#      same check as CI `--lint-markers` on changed files (A5, 2026-09-02)
 #
 # Secrets :
 #   DATABASE_URL  — reused from existing repo secrets (libpq URI).

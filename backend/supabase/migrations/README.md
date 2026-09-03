@@ -79,6 +79,32 @@ Why a marker and not a regex SQL parser : comment / dollar-quote /
 PL/pgSQL bodies fool regex-based detection of `CONCURRENTLY`. The
 marker is deterministic, reviewable, and dialect-agnostic.
 
+### Marker ↔ statement reconciliation (CI gate)
+
+The marker and the statements that need it are reconciled by the engine
+itself — `--lint-markers <files…>` (no DB connection) in the CI job
+*Migration Safety* on every changed forward migration, and again on every
+**pending** migration before an apply / dry-run. It splits the file with
+the engine's own lexical splitter (comments, strings and dollar-quoted
+bodies are never mistaken for statements) and fails on :
+
+- a non-transactional statement (`CREATE / DROP INDEX CONCURRENTLY`,
+  `REINDEX … CONCURRENTLY`, `VACUUM`, `REFRESH MATERIALIZED VIEW
+  CONCURRENTLY`, `ALTER SYSTEM`) **without** the marker — the engine would
+  wrap it in `BEGIN/COMMIT` and Postgres rejects it (SQLSTATE 25001) ;
+- the marker **without** any such statement — every statement would run in
+  autocommit, losing atomicity for nothing ;
+- the Supabase CLI marker `-- supabase: no-transaction` — not understood by
+  this engine (incident : `20260529_xtr_msg_crm_indexes`, applied outside the
+  runner and left with an invalid index) ;
+- `-- squawk-ignore-file ban-concurrent-index-creation-in-transaction`
+  without the marker — the squawk rule was right.
+
+squawk keeps its own responsibility (`ban-concurrent-index-creation-in-
+transaction` under `assume_in_transaction = true`, silenced **per file** with
+the marker as the documented counterpart). Files already at the ledger are
+immutable (checksum) and out of scope by construction.
+
 ## CLI cheatsheet
 
 ```bash
@@ -103,6 +129,10 @@ python3 scripts/ci/apply-supabase-migration.py --baseline \
 
 # Self-tests (no DB connection)
 python3 scripts/ci/apply-supabase-migration.py --self-test
+
+# Reconcile `-- @non_transactional` with the statements of given files (no DB)
+python3 scripts/ci/apply-supabase-migration.py --lint-markers \
+  backend/supabase/migrations/20260529_xtr_msg_crm_indexes.sql
 ```
 
 `DATABASE_URL` must be set in env for the non-`--self-test` modes.
