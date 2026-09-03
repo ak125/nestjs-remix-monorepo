@@ -43,6 +43,7 @@ SET statement_timeout = '60s';
 CREATE OR REPLACE FUNCTION public.propagate_vlevel_per_typeid(p_pg_id bigint)
  RETURNS TABLE(updated bigint)
  LANGUAGE plpgsql
+ SET search_path = public
 AS $function$
 BEGIN
   RETURN QUERY
@@ -88,6 +89,7 @@ $function$;
 CREATE OR REPLACE FUNCTION public.validate_vlevel_integrity()
  RETURNS trigger
  LANGUAGE plpgsql
+ SET search_path = public
 AS $function$
 DECLARE
   v_existing_level TEXT;

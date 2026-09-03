@@ -41,6 +41,7 @@ CREATE OR REPLACE FUNCTION public.safe_jsonb_array_length(x jsonb)
 RETURNS integer
 LANGUAGE sql
 IMMUTABLE
+SET search_path = public
 AS $fn$
   SELECT CASE WHEN jsonb_typeof(x) = 'array' THEN jsonb_array_length(x) ELSE 0 END;
 $fn$;
@@ -121,6 +122,7 @@ RETURNS TABLE(
 )
 LANGUAGE sql
 STABLE
+SET search_path = public
 AS $function$
 WITH
 gamme_base AS (
@@ -368,6 +370,26 @@ LEFT JOIN blog_advice ba ON ba.pg_id = g.pg_id
 LEFT JOIN guide_semantics gs ON gs.pg_id = g.pg_id
 ORDER BY g.pg_alias;
 $function$;
+
+-- ----------------------------------------------------------------------------
+-- Restauration de l'ACL vivante après le DROP + CREATE.
+--
+-- POURQUOI CE BLOC EST NÉCESSAIRE
+-- `DROP FUNCTION` (l.49) détruit l'ACL avec la fonction. Le `CREATE` qui suit
+-- reçoit alors :
+--   * l'EXECUTE que PostgreSQL accorde à PUBLIC par défaut sur toute fonction, et
+--   * les default privileges Supabase du rôle postgres sur le schéma public
+--     ({postgres=X, anon=X, authenticated=X, service_role=X}).
+-- Autrement dit `anon` et `PUBLIC` récupéreraient EXECUTE alors que l'ACL LIVE
+-- mesurée le 2026-09-04 ne l'accorde qu'à postgres / authenticated / service_role :
+--   {postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}
+-- Sans ce bloc, la migration serait une RÉGRESSION de privilège silencieuse.
+-- Réf mémoire : reference_supabase_default_privileges_grant_anon_execute_on_new_functions.
+-- ----------------------------------------------------------------------------
+REVOKE ALL ON FUNCTION public.get_page_quality_features() FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.get_page_quality_features() FROM anon;
+GRANT EXECUTE ON FUNCTION public.get_page_quality_features() TO authenticated;
+GRANT EXECUTE ON FUNCTION public.get_page_quality_features() TO service_role;
 
 COMMENT ON FUNCTION public.get_page_quality_features() IS
   'Features qualité par gamme pour QualityScoringEngineService (v2.2). 2026-06-11 : +7 colonnes sémantiques R3_guide (guide_criteria_count, guide_guidance_copies_label_count, guide_positive_starter_count, guide_use_cases_count, guide_profile_marker_count, guide_generic_phrase_count, guide_action_marker_count) — portage D1/D2/D3 + GENERIC_WITHOUT_ACTION du quality-gates legacy buying-guide, salvage pré-purge RAG. Additive : colonnes existantes inchangées.';
