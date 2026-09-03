@@ -1017,6 +1017,23 @@ jobs:
             echo '```'
           } | tee -a "$GITHUB_STEP_SUMMARY"
 
+      - name: 🧬 R2 golden — relations pièces + critères (BLOCKING)
+        # Owner guarantee (plan massdoc, R2-GOLDEN, 2026-09-02): the pieces relations
+        # and criteria served on the R2 page must keep working across the DB slices
+        # that touch pieces_relation_type / pieces_criteria STRUCTURE (index study
+        # B4, hash-partitioning B7) — neither may start before this is green, and both
+        # must leave it green (plan NO-GO 17). Compares a frozen projection of
+        # /api/rm/page-v2 (limit 200 = loader) + /api/rm/alternatives (limit 12) with
+        # scripts/ci/r2-golden.json: relations + criteria ONLY (piece ids, brands,
+        # sides/positions, groups, OEM refs, alternatives sets) — prices, stock,
+        # ranking, images, SEO text are out, so a price import never trips it.
+        # Verdict: divergence / 404 = exit 1, never retried; transport (5xx, refused,
+        # timeout — cold RPC on a fresh container) retried once, then exit 2.
+        # Re-baseline = `node scripts/ci/assert-r2-golden.mjs --base <url> --update`,
+        # reviewed in a PR diff — a catalog import that legitimately changes relations
+        # is re-baselined explicitly, never absorbed. Unit-tested: npm run test:r2-golden.
+        run: node scripts/ci/assert-r2-golden.mjs --base http://localhost:3200
+
       - name: ⏱️ Response Time Baseline (status-asserting, BLOCKING on wrong status)
         # The inline check_timing this replaces measured `%{time_total}` and asserted
         # NOTHING: a page answering 500 in 20ms scored a green ✅ row. Found while

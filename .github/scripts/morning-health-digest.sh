@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Morning health digest — collect 6 signals, classify, write digest body file,
+# Morning health digest — collect 7 signals, classify, write digest body file,
 # emit GitHub Actions outputs.
 #
 # Called by .github/workflows/morning-health-digest.yml. Requires gh CLI with
@@ -104,6 +104,29 @@ if [ -z "$MERGED" ]; then
   echo "_None._" >> "$OUT"
 else
   echo "$MERGED" >> "$OUT"
+fi
+echo "" >> "$OUT"
+
+# ---- Signal 7 — Migration ledger freshness ----
+# Reads only the CONCLUSION of migration-ledger-freshness.yml (04:30 UTC, i.e.
+# before this digest). That workflow is the only holder of DATABASE_URL: this
+# repo is public and this body is pasted verbatim into a GitHub issue, so no
+# database credential and no database content belongs in here.
+echo "## Signal 7 — Migration ledger freshness" >> "$OUT"
+LEDGER=$(gh run list --workflow=migration-ledger-freshness.yml --limit 2 --repo "$REPO" \
+  --json conclusion,createdAt \
+  --jq '.[] | "\(.createdAt[:19]) \(.conclusion // "running")"' 2>/dev/null || echo "")
+if [ -z "$LEDGER" ]; then
+  echo "⚠️ No runs yet" >> "$OUT"
+  [ "$STATUS_OVERALL" = "✅" ] && STATUS_OVERALL="⚠️"
+else
+  echo '```' >> "$OUT"
+  echo "$LEDGER" >> "$OUT"
+  echo '```' >> "$OUT"
+  if echo "$LEDGER" | grep -q failure; then
+    echo "⛔ \`infra.schema_migrations\` no longer describes the database — drift, a stuck apply, or a migration pending past 30 days. The run's job summary lists which." >> "$OUT"
+    STATUS_OVERALL="⛔"
+  fi
 fi
 echo "" >> "$OUT"
 

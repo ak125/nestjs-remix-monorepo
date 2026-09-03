@@ -1,0 +1,80 @@
+name: 🧾 Migration ledger freshness
+
+# Read-only daily probe over `infra.schema_migrations`.
+#
+# WHY THIS EXISTS
+# ---------------
+# The mini migration engine (scripts/ci/apply-supabase-migration.py) already
+# detects everything that matters — drift, stuck `applying`, `failed`, and a
+# stale pending backlog. It was simply never executed on a schedule: its only
+# workflow (apply-supabase-migrations.yml) is `workflow_dispatch` alone. The
+# result, observed 2026-09-02: the ledger stopped describing the database on
+# 2026-05-24 and nothing said so for three months.
+#
+# So this workflow adds NO new detector and NO second source of truth. It runs
+# the existing engine in its existing read-only `--status` mode, on a cron.
+#
+# WHY 04:30 UTC
+# -------------
+# The morning digest (Signal 7) reports this workflow's conclusion and runs at
+# 05:00 UTC. A probe whose result is read must complete before its reader — a
+# guard executed at the wrong moment produces the same symptoms as a broken one
+# (.claude/rules/guardrails.md).
+#
+# SCOPE CONTRACT — this workflow is read-only, permanently.
+# It must never be given --dry-run, --limit, --baseline or a bare invocation.
+# Applying migrations is a deliberate, owner-confirmed act and stays in
+# apply-supabase-migrations.yml behind its `confirm=APPLY` token.
+#
+# `--no-bootstrap` is what makes "read-only" true rather than aspirational.
+# The engine normally calls bootstrap() before every command — idempotent DDL,
+# but it also re-runs GRANT on infra.schema_migrations, so this nightly cron
+# would quietly re-grant privileges over a deliberate REVOKE. It also has no
+# business creating the ledger it exists to observe: without bootstrap, a
+# missing ledger fails loudly (exit 6) instead of being silently repaired.
+
+on:
+  schedule:
+    - cron: "30 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: migration-ledger-freshness
+  cancel-in-progress: false
+
+jobs:
+  status:
+    name: 🗄️ Ledger status (read-only)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 📦 Install psycopg
+        run: pip install --quiet --no-cache-dir 'psycopg[binary]==3.2.*'
+
+      - name: 🧪 Self-test the migration engine
+        run: python3 scripts/ci/apply-supabase-migration.py --self-test
+
+      # Exits non-zero on: drift / applying / failed (engine's existing
+      # blockers), or any migration pending for more than 30 days. See the
+      # "Ledger freshness" section of the engine for why 30 and not a number
+      # picked out of the air.
+      - name: 🚦 Ledger status + freshness
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          set -euo pipefail
+          python3 scripts/ci/apply-supabase-migration.py \
+            --status \
+            --no-bootstrap \
+            --max-pending-age-days 30

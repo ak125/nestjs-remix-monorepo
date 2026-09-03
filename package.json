@@ -76,6 +76,7 @@
     "test:prod-ssr-probe": "node --test scripts/ci/prod-ssr-probe.test.mjs",
     "test:preprod-response-probe": "node --test scripts/ci/preprod-response-probe.test.mjs",
     "test:preprod-response-suite": "node --test scripts/ci/preprod-response-suite.test.mjs",
+    "test:r2-golden": "node --test scripts/ci/assert-r2-golden.test.mjs",
     "audit:rag-authority-rule:test": "ast-grep test --test-dir scripts/audit/__fixtures__/rag-authority --skip-snapshot-tests",
     "audit:rag-authority-read-ratchet": "tsx scripts/audit/check-rag-authority-read-ratchet.ts",
     "audit:rag-authority-read-ratchet:json": "tsx scripts/audit/check-rag-authority-read-ratchet.ts --json",

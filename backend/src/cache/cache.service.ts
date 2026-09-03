@@ -3,7 +3,12 @@ import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 import { once } from 'events';
 import { getAppConfig } from '../config/app.config';
-import { CACHE_STRATEGIES, CacheStrategy } from '../config/cache-ttl.config';
+import {
+  CACHE_GENERATIONS,
+  CACHE_STRATEGIES,
+  CacheGenerationScope,
+  CacheStrategy,
+} from '../config/cache-ttl.config';
 
 @Injectable()
 export class CacheService implements OnModuleInit {
@@ -283,6 +288,62 @@ export class CacheService implements OnModuleInit {
   async clearLoginAttempts(email: string): Promise<void> {
     const key = `login_attempts:${email}`;
     await this.del(key);
+  }
+
+  /**
+   * Génération courante d'un périmètre (A3). Composée dans les clés via
+   * `getCacheKey(strategy, id, generation)`. Redis indisponible / clé absente
+   * → 0 (observable : warn quand Redis n'est pas prêt).
+   */
+  async getGeneration(scope: CacheGenerationScope): Promise<number> {
+    const key = CACHE_GENERATIONS[scope].key;
+    if (!this.redisClient || !this.redisReady) {
+      this.logger.warn(
+        `[CACHE_GEN] Redis not ready — scope=${scope} generation=0 (entries unreachable anyway)`,
+      );
+      return 0;
+    }
+    try {
+      const raw = await this.redisClient.get(key);
+      const parsed = raw === null ? 0 : Number.parseInt(raw, 10);
+      return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
+    } catch (error) {
+      this.logger.warn(`[CACHE_GEN] GET ${key} error: ${error} — generation=0`);
+      return 0;
+    }
+  }
+
+  /**
+   * Levier d'invalidation gouverné (A3) : INCR atomique, SANS expiration (la
+   * génération doit survivre à tout TTL d'entrée). Toutes les entrées de la
+   * génération précédente deviennent inatteignables en O(1) — NO-GO
+   * `clearByPattern()`. Appelé depuis le chemin d'activation pricing avec une
+   * raison journalisée. Redis indisponible → -1 + error : le bump manqué est
+   * visible, jamais silencieux.
+   */
+  async bumpGeneration(
+    scope: CacheGenerationScope,
+    reason: string,
+  ): Promise<number> {
+    const key = CACHE_GENERATIONS[scope].key;
+    if (!this.redisClient || !this.redisReady) {
+      this.logger.error(
+        `[CACHE_GEN] Redis not ready — bump NOT applied scope=${scope} reason=${reason}`,
+      );
+      return -1;
+    }
+    try {
+      const generation = await this.redisClient.incr(key);
+      this.logger.log(
+        `[CACHE_GEN] scope=${scope} generation=${generation} reason=${reason}`,
+      );
+      return generation;
+    } catch (error) {
+      this.logger.error(
+        `[CACHE_GEN] INCR ${key} error: ${error} — bump NOT applied reason=${reason}`,
+      );
+      return -1;
+    }
   }
 
   /**

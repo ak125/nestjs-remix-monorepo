@@ -26,8 +26,11 @@ CLI
     python3 apply-supabase-migration.py --self-test
     python3 apply-supabase-migration.py --lint-markers FILE.sql [FILE.sql ...]
     python3 apply-supabase-migration.py --status
+    python3 apply-supabase-migration.py --status --max-pending-age-days 30 \
+                                        --no-bootstrap
     python3 apply-supabase-migration.py --dry-run
     python3 apply-supabase-migration.py [--limit N]
+    python3 apply-supabase-migration.py --only 20260529_xtr_msg_crm_indexes
 
 Env vars consumed
 =================
@@ -40,6 +43,7 @@ Env vars consumed
 from __future__ import annotations
 
 import argparse
+import datetime
 import hashlib
 import os
 import re
@@ -109,8 +113,12 @@ CREATE INDEX IF NOT EXISTS idx_schema_migrations_status
   ON infra.schema_migrations (status)
   WHERE status IN ('applying', 'failed');
 
+-- Audit trail for --reapply : why a row was rewritten. Additive and idempotent,
+-- so it lands on ledgers created before this column existed.
+ALTER TABLE infra.schema_migrations ADD COLUMN IF NOT EXISTS note TEXT;
+
 GRANT SELECT, INSERT ON infra.schema_migrations TO service_role;
-GRANT UPDATE (status, applied_at, execution_ms, error_message)
+GRANT UPDATE (status, applied_at, execution_ms, error_message, note)
   ON infra.schema_migrations TO service_role;
 """
 
@@ -503,6 +511,69 @@ def mark_failed(cur, migration_id: str, error: str) -> "None":
     )
 
 
+# ── Session hygiene between migrations ──────────────────────────────────────
+#
+# The engine reuses ONE connection for the whole run. A migration that issues a
+# plain `SET x = y` (as opposed to `SET LOCAL`) changes the SESSION, and a plain
+# SET survives COMMIT — so the setting leaks into every migration applied after
+# it, in file order.
+#
+# This is not hypothetical. `20260513_default_privileges_data_api_post_oct30.sql`
+# sets `lock_timeout = '1s'` and `statement_timeout = '5s'`. The next migrations
+# in lexicographic order include `20260529_xtr_msg_crm_indexes.sql`, whose
+# CREATE INDEX CONCURRENTLY is documented at 5-20 minutes per index. Under a
+# leaked 5s timeout it would be killed, leave the index INVALID — which
+# `CREATE INDEX CONCURRENTLY IF NOT EXISTS` then silently treats as a no-op on
+# every later attempt — and write a `failed` ledger row that blocks all runs.
+
+# split_sql_statements keeps the comments that precede a statement attached to
+# it, so a bare `^\s*SET` match silently misses any SET introduced by a comment
+# line — which is how the real 20260513 file is written. Strip that lead-in
+# first; the self-test below pins this exact case.
+LEADING_NOISE_RE = re.compile(r"\A(?:\s+|--[^\n]*(?:\n|\Z)|/\*.*?\*/)+", re.DOTALL)
+
+SESSION_SET_RE = re.compile(
+    r"^\s*SET\s+(?:SESSION\s+)?"
+    r"(?!LOCAL\b|TRANSACTION\b|CONSTRAINTS\b)"
+    r"([A-Za-z_][\w.]*)",
+    re.IGNORECASE,
+)
+
+
+def bare_session_sets(sql: str) -> "list[str]":
+    """Names of settings a migration changes for the SESSION, not the transaction.
+
+    Uses the engine's own statement lexer, so semicolons inside strings, dollar
+    quotes and comments do not produce false hits. `SET LOCAL` is transaction
+    scoped and therefore harmless; `SET TRANSACTION` / `SET CONSTRAINTS` are not
+    settings at all.
+    """
+    names = []
+    for stmt in split_sql_statements(sql):
+        m = SESSION_SET_RE.match(LEADING_NOISE_RE.sub("", stmt))
+        if m and m.group(1).lower() not in names:
+            names.append(m.group(1).lower())
+    return names
+
+
+def reset_session(conn) -> "None":
+    """Restore session settings to their startup defaults.
+
+    RESET ALL restores what each parameter would have been with no SET issued:
+    compiled-in default, postgresql.conf, connection options, per-role and
+    per-database settings — so libpq `options=` in DATABASE_URL are preserved.
+    Advisory locks are not settings, so the engine's own
+    pg_try_advisory_lock(88442211) survives untouched.
+    """
+    prev = conn.autocommit
+    conn.autocommit = True
+    try:
+        with conn.cursor() as cur:
+            cur.execute("RESET ALL")
+    finally:
+        conn.autocommit = prev
+
+
 def apply_migration(
     conn, mig: LocalMigration, runner: str, git_sha: str
 ) -> int:
@@ -630,6 +701,133 @@ def print_status(rows, summary) -> int:
     # Exit non-zero on drift / applying / failed; orphans are warnings only.
     blocker = summary["drift"] + summary["applying"] + summary["failed"]
     return 1 if blocker > 0 else 0
+
+
+# ── Ledger freshness ─────────────────────────────────────────────────────────
+#
+# `pending` is deliberately NOT a blocker: between a merge and the apply run a
+# file is legitimately pending for a few days. What is not legitimate is a file
+# that stays pending for months — it means either the apply never happened, or
+# it happened out-of-band and this ledger no longer describes the database.
+# Both are the same operational defect: the ledger stopped being true, and
+# nothing said so. Blockers alone cannot catch it (they stay at zero), which is
+# why a scheduled `--status` without this check would be green-but-wrong.
+#
+# Why 30 days, and not a number picked out of the air:
+#   - the observed cadence of this runner, baseline rows excluded, is
+#     p50 = 1 day, p95 = 3 days, max = 4 days over its genuine applies;
+#   - 30 days is the freshness horizon already governed by
+#     `.spec/00-canon/repository-registry/automation-reality.yaml`, which
+#     requires runtime_evidence ≤30j before an automation may be called ACTIVE.
+# 30 is therefore ~10x the observed p95 *and* this repo's existing definition of
+# "recent enough to still be true". The threshold is passed in by the caller;
+# 0 disables the check, so every pre-existing caller keeps its behaviour.
+
+
+def migration_date(migration_id: str) -> "datetime.date | None":
+    """Calendar date encoded in a migration id, or None if it is not a real day.
+
+    MIGRATION_FILE_RE guarantees the leading digits (`YYYYMMDD` or
+    `YYYYMMDDHHMMSS`); it does not guarantee they form a date that exists.
+    """
+    try:
+        return datetime.date(
+            int(migration_id[0:4]), int(migration_id[4:6]), int(migration_id[6:8])
+        )
+    except ValueError:
+        return None
+
+
+def stale_pending(
+    local_ids, remote_ids, max_age_days: int, today: "datetime.date"
+) -> "list[tuple[str, int | None]]":
+    """Pending ids older than `max_age_days`, oldest first.
+
+    Pure: no database, no wall clock — `today` is injected so the self-tests are
+    deterministic. An id whose date is impossible is reported with age None
+    rather than raising: a malformed filename is a genuine defect, but it must
+    not take the freshness probe down with it and mask the backlog.
+    """
+    if max_age_days <= 0:
+        return []
+    out: "list[tuple[str, int | None]]" = []
+    for mid in local_ids:
+        if mid in remote_ids:
+            continue
+        day = migration_date(mid)
+        if day is None:
+            out.append((mid, None))
+            continue
+        age = (today - day).days
+        if age > max_age_days:
+            out.append((mid, age))
+    # Malformed dates first, then genuinely oldest first.
+    out.sort(key=lambda t: (t[1] is not None, -(t[1] or 0)))
+    return out
+
+
+def status_step_summary(rows, summary) -> "list[str]":
+    """Markdown block for $GITHUB_STEP_SUMMARY under --status.
+
+    print_status() writes to stdout only. The morning digest's Signal 7 sends the
+    reader straight to this job summary, so it has to carry the counters and name
+    the blocking rows — a summary holding only the freshness table is silent about
+    the very drift that turned the run red, and empty when the run is green.
+    """
+    lines = [
+        "## Migration ledger status",
+        "",
+        "| applied | pending | drift | orphan | applying | failed |",
+        "| ---: | ---: | ---: | ---: | ---: | ---: |",
+        "| {applied} | {pending} | {drift} | {orphan} | {applying} | {failed} |".format(
+            **summary
+        ),
+        "",
+    ]
+    blockers = [(i, st) for i, st, _, _ in rows if st in ("drift", "applying", "failed")]
+    if blockers:
+        lines += [
+            f"### Blockers ({len(blockers)})",
+            "",
+            "These stop every apply **and every dry-run** (exit 5) until resolved.",
+            "",
+            "| ID | State |",
+            "| --- | --- |",
+        ]
+        lines += [f"| `{i}` | {st} |" for i, st in blockers]
+        lines.append("")
+    return lines
+
+
+def report_stale_pending(stale, max_age_days: int) -> int:
+    """Print the stale backlog and mirror it to the step summary. 1 if any."""
+    if not stale:
+        print(
+            f"Ledger freshness : OK — nothing pending for more than "
+            f"{max_age_days} days."
+        )
+        return 0
+    print()
+    print(
+        f"Ledger freshness : {len(stale)} migration(s) pending for more than "
+        f"{max_age_days} days — the ledger no longer describes the database."
+    )
+    lines = [
+        "## Ledger freshness",
+        "",
+        f"{len(stale)} migration(s) pending longer than {max_age_days} days. "
+        "Either the apply never happened, or it happened out-of-band and "
+        "`infra.schema_migrations` is now fiction.",
+        "",
+        "| ID | Pending since |",
+        "| --- | --- |",
+    ]
+    for mid, age in stale:
+        age_txt = f"{age} days" if age is not None else "unparsable date in filename"
+        print(f"  {mid}  {age_txt}")
+        lines.append(f"| `{mid}` | {age_txt} |")
+    write_step_summary(lines)
+    return 1
 
 
 def write_step_summary(lines) -> "None":
@@ -876,7 +1074,478 @@ def run_self_test() -> int:
     assert split_sql_statements("  ;  ;\n") == []
     assert split_sql_statements("") == []
 
+    # 5. Ledger freshness ------------------------------------------------
+    assert migration_date("20260429_x") == datetime.date(2026, 4, 29)
+    assert migration_date("20260429120000_x") == datetime.date(2026, 4, 29)
+    assert migration_date("20261332_impossible_day") is None
+
+    today = datetime.date(2026, 9, 3)
+    ids = ["20260429_old", "20260801_borderline", "20260901_recent"]
+
+    # Applied files are never reported, however old they are.
+    assert stale_pending(ids, set(ids), 30, today) == []
+    # All pending: only those past the threshold, oldest first.
+    assert stale_pending(ids, set(), 30, today) == [
+        ("20260429_old", 127),
+        ("20260801_borderline", 33),
+    ], stale_pending(ids, set(), 30, today)
+    # A single applied id drops out; the rest still reports.
+    assert stale_pending(ids, {"20260429_old"}, 30, today) == [
+        ("20260801_borderline", 33)
+    ]
+    # Threshold is exclusive — exactly 30 days old is not yet stale.
+    assert stale_pending(["20260804_exact"], set(), 30, today) == []
+    assert stale_pending(["20260803_one_over"], set(), 30, today) == [
+        ("20260803_one_over", 31)
+    ]
+    # 0 disables the check outright, so existing callers are unaffected.
+    assert stale_pending(ids, set(), 0, today) == []
+    # A malformed date surfaces as a finding, first, instead of crashing.
+    assert stale_pending(["20260429_old", "20261332_bad"], set(), 30, today) == [
+        ("20261332_bad", None),
+        ("20260429_old", 127),
+    ]
+    # Status summary always carries the counters, and names blockers when present.
+    _sum = {"applied": 243, "pending": 57, "drift": 1,
+            "orphan": 0, "applying": 0, "failed": 0}
+    _rows = [
+        ("20260429_diag", "drift", "2026-05-16", "baseline"),
+        ("20260901_ok", "applied", "2026-09-01", "gh-actions:1"),
+        ("20260902_new", "pending", "—", "—"),
+    ]
+    _md = "\n".join(status_step_summary(_rows, _sum))
+    assert "| 243 | 57 | 1 | 0 | 0 | 0 |" in _md, _md
+    assert "### Blockers (1)" in _md and "`20260429_diag` | drift" in _md, _md
+    assert "20260901_ok" not in _md and "20260902_new" not in _md, _md
+    # No blocker -> counters still emitted, no Blockers section.
+    _clean = "\n".join(status_step_summary(
+        [("20260901_ok", "applied", "2026-09-01", "gh-actions:1")],
+        {"applied": 1, "pending": 0, "drift": 0,
+         "orphan": 0, "applying": 0, "failed": 0}))
+    assert "| 1 | 0 | 0 | 0 | 0 | 0 |" in _clean and "Blockers" not in _clean, _clean
+    # 6. Session-level SET detection --------------------------------------
+    assert bare_session_sets("SET statement_timeout = '5s';") == ["statement_timeout"]
+    assert bare_session_sets("SET SESSION lock_timeout = '1s';") == ["lock_timeout"]
+    # SET LOCAL is transaction-scoped: never reported.
+    assert bare_session_sets("SET LOCAL statement_timeout = '5s';") == []
+    # Not settings at all.
+    assert bare_session_sets("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;") == []
+    assert bare_session_sets("SET CONSTRAINTS ALL DEFERRED;") == []
+    # Case-insensitive, de-duplicated, order preserved.
+    assert bare_session_sets(
+        "set lock_timeout='1s'; SET statement_timeout='5s'; SET lock_timeout='2s';"
+    ) == ["lock_timeout", "statement_timeout"]
+    # A SET introduced by a comment line IS still a session SET (regression:
+    # split_sql_statements keeps the lead-in comment attached to the statement).
+    assert bare_session_sets("-- pin timeouts\nSET lock_timeout = '1s';") == [
+        "lock_timeout"
+    ]
+    assert bare_session_sets("/* block */ SET statement_timeout = '5s';") == [
+        "statement_timeout"
+    ]
+    # A SET inside a string or a comment must NOT count (lexer-backed).
+    assert bare_session_sets("SELECT 'SET statement_timeout = 1';") == []
+    assert bare_session_sets("-- SET statement_timeout = 1\nSELECT 1;") == []
+    # The real file that motivated this guard, if present in the checkout.
+    _leaky = MIGRATIONS_DIR / "20260513_default_privileges_data_api_post_oct30.sql"
+    if _leaky.exists():
+        _found = bare_session_sets(_leaky.read_text(encoding="utf-8"))
+        assert "statement_timeout" in _found and "lock_timeout" in _found, _found
+
+    # Reporting contract: empty backlog is success, any backlog is failure.
+    assert report_stale_pending([], 30) == 0
+    assert report_stale_pending([("20260429_old", 127)], 30) == 1
+
+    # 7. Re-apply safety — ALLOW-LIST, not deny-list ----------------------
+    # Proven-idempotent forms pass.
+    assert not_replayable("SET lock_timeout = '5s';") == []
+    assert not_replayable("CREATE TABLE IF NOT EXISTS t (a int);") == []
+    assert not_replayable("CREATE UNIQUE INDEX IF NOT EXISTS i ON t(a);") == []
+    assert not_replayable("CREATE OR REPLACE VIEW v AS SELECT 1;") == []
+    assert not_replayable("COMMENT ON VIEW v IS 'x';") == []
+    assert not_replayable("GRANT SELECT ON t TO r;") == []
+    assert not_replayable("INSERT INTO t (a) VALUES (1) ON CONFLICT DO NOTHING;") == []
+    # Everything else is refused BY NAME, including the forms a deny-list missed.
+    assert not_replayable("INSERT INTO t (a) VALUES (1);") != []
+    assert not_replayable("TRUNCATE t;") != []
+    assert not_replayable("UPDATE t SET a = 1;") != []
+    assert not_replayable("CREATE TABLE t (a int);") != []
+    assert not_replayable("ALTER TABLE t ADD COLUMN b int;") != []
+    # The inverted-polarity bug this replaced: IF EXISTS protects the FIRST run,
+    # not the replay. On a replay the table exists and is full.
+    assert not_replayable("DROP TABLE IF EXISTS t;") != []
+    assert not_replayable("DROP TABLE t;") != []
+    # Transaction control ends our transaction — refused, which also closes the
+    # "the SQL committed but the ledger did not" hole.
+    assert not_replayable("BEGIN; SELECT 1; COMMIT;") != []
+    assert not_replayable("SAVEPOINT s;") != []
+    # DO blocks: assertions replay, writers do not.
+    assert not_replayable(
+        "DO $$ DECLARE n INT; BEGIN SELECT count(*) INTO n FROM t; "
+        "IF n < 1 THEN RAISE EXCEPTION 'empty'; END IF; END $$;"
+    ) == []
+    assert not_replayable("DO $$ BEGIN INSERT INTO t VALUES (1); END $$;") != []
+    # Lexer-backed: dead text in a block comment or a string is not a statement.
+    assert not_replayable("/* disabled\nDROP TABLE t;\n*/\nSELECT 1;") == []
+    assert not_replayable("SELECT 'DROP TABLE t';") == []
+
+    _lm = LocalMigration(id="x", path=Path("x.sql"), checksum="bbb",
+                         non_transactional=False)
+    _rm = RemoteMigration(id="x", checksum="aaa", status="applied",
+                          applied_at="2026-05-16", runner="baseline")
+    _ok_sql = "CREATE OR REPLACE VIEW v AS SELECT 1;"
+    assert reapply_precheck(_lm, _rm, _ok_sql) is None
+    assert "not recorded" in reapply_precheck(_lm, None, _ok_sql)
+    assert "not 'applied'" in reapply_precheck(
+        _lm, RemoteMigration("x", "aaa", "failed", None, None), _ok_sql)
+    assert "not in drift" in reapply_precheck(
+        _lm, RemoteMigration("x", "bbb", "applied", None, None), _ok_sql)
+    assert "non_transactional" in reapply_precheck(
+        LocalMigration("x", Path("x.sql"), "bbb", True), _rm, _ok_sql)
+    assert "not replayable" in reapply_precheck(_lm, _rm, "DROP TABLE IF EXISTS t;")
+
+    # The two real files that pin both directions of this gate.
+    _target = MIGRATIONS_DIR / "20260429_diag_maintenance_via_kg.sql"
+    if _target.exists():
+        _r = not_replayable(_target.read_text(encoding="utf-8"))
+        assert _r == [], _r          # must stay repairable
+    _destructive = (MIGRATIONS_DIR
+                    / "20260104_purchase_guide_v2_client_content.sql")
+    if _destructive.exists():
+        _r = not_replayable(_destructive.read_text(encoding="utf-8"))
+        assert any("DROP TABLE IF EXISTS" in x for x in _r), _r
+
+    # 8. --only selection --------------------------------------------------
+    _mk = lambda i, c="c": LocalMigration(id=i, path=Path(i + ".sql"),
+                                          checksum=c, non_transactional=False)
+    _local = [_mk("20260101_a"), _mk("20260202_b"), _mk("20260303_c"),
+              _mk("20260404_d")]
+    _remote = {"20260202_b": RemoteMigration("20260202_b", "c", "applied",
+                                             "2026-02-02", "gh-actions:1")}
+
+    # Names exactly one file; steps over the pending ones that sort earlier.
+    _sel, _skip, _err = select_only(_local, _remote, "20260404_d")
+    assert _err == [] and [m.id for m in _sel] == ["20260404_d"], (_sel, _err)
+    assert _skip == ["20260101_a", "20260303_c"], _skip   # 20260202_b is applied
+
+    # Typed order does not matter : the engine's file order wins.
+    _sel, _skip, _err = select_only(_local, _remote, "20260404_d,20260101_a")
+    assert [m.id for m in _sel] == ["20260101_a", "20260404_d"], _sel
+    assert _skip == ["20260303_c"], _skip
+
+    # Duplicates and whitespace are tolerated.
+    _sel, _, _err = select_only(_local, _remote, " 20260101_a , 20260101_a ")
+    assert _err == [] and [m.id for m in _sel] == ["20260101_a"]
+
+    # Nothing selected earlier than the last one -> nothing stepped over.
+    _sel, _skip, _err = select_only(_local, _remote, "20260101_a")
+    assert _skip == [], _skip
+
+    # Refusals name the offender, and select nothing at all.
+    _sel, _, _err = select_only(_local, _remote, "20260101_a,20260909_ghost")
+    assert _sel == [] and any("20260909_ghost" in e and "no such file" in e
+                              for e in _err), _err
+    _sel, _, _err = select_only(_local, _remote, "20260202_b")
+    assert _sel == [] and any("not pending" in e and "applied" in e
+                              for e in _err), _err
+    assert select_only(_local, _remote, "")[2] != []
+    assert select_only(_local, _remote, " , ")[2] != []
+
     print("OK — all self-tests passed.")
+    return 0
+
+
+# ── Selecting WHAT to apply ─────────────────────────────────────────────────
+#
+# `--limit N` applies the first N pending migrations in file order. That is a
+# positional hack, not a selection : to reach one file you must accept every file
+# before it. Measured on this repo today — applying `20260529_xtr_msg_crm_indexes`
+# needs `--limit 13`, which also applies twelve migrations nobody asked for,
+# including one that creates three tables and one that leaves a 5s
+# statement_timeout on the session.
+#
+# `--only ID[,ID...]` names what runs. Nothing else runs. This is the primitive
+# every mature migration tool has (Flyway `target`, Sqitch `deploy --to`), and
+# its absence is what made the apply queue head-blocked : an undecided migration
+# at the front held back every migration behind it.
+#
+# Stepping over earlier pending migrations is a real risk the engine cannot
+# evaluate — it does not know dependencies. So it never does it silently : the
+# skipped ids are printed and written to the job summary, and `--dry-run` shows
+# them before anything runs.
+
+
+def select_only(local, remote, only_csv: str):
+    """(selected, skipped_earlier, errors) for --only. Pure : no database.
+
+    `selected` comes back in the engine's canonical file order, whatever order
+    the operator typed. `skipped_earlier` lists pending migrations that sort
+    before the last selected one and are NOT selected — what this run steps over.
+    """
+    wanted, seen = [], set()
+    for raw in only_csv.split(","):
+        mid = raw.strip()
+        if mid and mid not in seen:
+            seen.add(mid)
+            wanted.append(mid)
+
+    if not wanted:
+        return [], [], ["--only was given no migration id"]
+
+    by_id = {m.id: m for m in local}
+    errors = []
+    for mid in wanted:
+        if mid not in by_id:
+            errors.append(f"{mid}: no such file under {MIGRATIONS_DIR}/")
+        elif mid in remote:
+            errors.append(
+                f"{mid}: already recorded in the ledger "
+                f"(status={remote[mid].status}) — not pending"
+            )
+    if errors:
+        return [], [], errors
+
+    selected = [m for m in local if m.id in seen]
+    last_idx = local.index(selected[-1])
+    skipped = [
+        m.id
+        for idx, m in enumerate(local)
+        if idx < last_idx and m.id not in seen and m.id not in remote
+    ]
+    return selected, skipped, []
+
+
+# ── Re-apply a drifted migration ────────────────────────────────────────────
+#
+# A `drift` row means the ledger records checksum A while the file now holds
+# checksum B. The engine refuses every apply and dry-run until that is resolved,
+# and it has no way out : `checksum` is not in the column-scoped UPDATE grant,
+# and there is no DELETE grant (append-only ledger).
+#
+# The tempting fix — rewrite the checksum — makes the row *claim* the new bytes
+# were applied. That is an assertion, not a fact, and it silently ratifies a row
+# that may never have been true. Real case: 20260429_diag_maintenance_via_kg was
+# swept into `applied` by the 2026-05-16 bulk baseline, while PR #1084 states the
+# original migration "was never applied".
+#
+# So instead of asserting, re-execute. After a --reapply the row is true because
+# the bytes just ran, not because someone said so. That is only safe for a file
+# that can run twice, which is checked mechanically below rather than promised in
+# a header comment.
+
+# The gate is an ALLOW-LIST, not a deny-list. A deny-list of a few dangerous
+# forms approved 301 of this repo's 303 migrations — including
+# `20260104_purchase_guide_v2_client_content.sql`, whose line 9 is
+# `DROP TABLE IF EXISTS __seo_gamme_purchase_guide` (241 live rows, 3.7 MB today).
+# `IF EXISTS` protects the FIRST run against a missing table; on a replay months
+# later the table exists and is full, and the DROP would commit inside the very
+# transaction that stamps the ledger row `applied`.
+#
+# So: every top-level statement must be a form that is *proven* to survive a
+# second execution. Anything else is refused by name. Widening this list is a
+# deliberate act, not an oversight.
+
+_ALLOWED = (
+    re.compile(r"^(SET|RESET)\s", re.I),
+    re.compile(r"^SELECT\s", re.I),
+    re.compile(r"^CREATE\b[\s\S]{0,80}?\bIF\s+NOT\s+EXISTS\b", re.I),
+    re.compile(r"^CREATE\s+OR\s+REPLACE\s+(FUNCTION|VIEW|PROCEDURE|TRIGGER|RULE)\b", re.I),
+    re.compile(r"^COMMENT\s+ON\s", re.I),
+    re.compile(r"^(GRANT|REVOKE)\s", re.I),
+)
+_INSERT_RE = re.compile(r"^INSERT\s+INTO\s+([A-Za-z_][\w.\"]*)", re.I)
+_INSERT_GUARD_RE = re.compile(r"ON\s+CONFLICT|WHERE\s+NOT\s+EXISTS", re.I)
+_DO_RE = re.compile(r"^DO\s", re.I)
+_DOLLAR_BODY_RE = re.compile(r"\$([A-Za-z_]*)\$(.*?)\$\1\$", re.S)
+# Verbs that write. `BEGIN`/`END` are PL/pgSQL block delimiters inside a DO and
+# are deliberately absent — only writes disqualify an assertion block.
+_WRITE_VERB_RE = re.compile(
+    r"\b(INSERT|UPDATE|DELETE|DROP|TRUNCATE|ALTER|CREATE|GRANT|REVOKE|CALL|COPY|MERGE)\b",
+    re.I,
+)
+
+
+def _do_block_is_read_only(stmt: str) -> bool:
+    """True when a DO block only reads and raises.
+
+    20260429 uses two of them as post-conditions (`SELECT COUNT(*) INTO ...`
+    then `RAISE EXCEPTION` when the invariant fails). Those replay safely; a DO
+    that writes does not, and this cannot tell the difference by intent — only
+    by looking for write verbs in the body.
+    """
+    bodies = _DOLLAR_BODY_RE.findall(stmt)
+    if not bodies:
+        return False
+    return not any(_WRITE_VERB_RE.search(body) for _, body in bodies)
+
+
+def not_replayable(sql: str) -> "list[str]":
+    """Statements that are not proven safe to execute a second time.
+
+    Empty list = every statement is on the allow-list. Lexer-backed, so a
+    statement quoted inside a string, a dollar-quoted body or a block comment is
+    not counted — 20260429 keeps a whole disabled INSERT inside a /* ... */ block
+    for traceability, and a grep-based check calls that a duplication hazard when
+    it is dead text.
+    """
+    reasons = []
+    for stmt in split_sql_statements(sql):
+        clean = LEADING_NOISE_RE.sub("", stmt).strip()
+        if not clean:
+            continue
+        if any(rx.match(clean) for rx in _ALLOWED):
+            continue
+        ins = _INSERT_RE.match(clean)
+        if ins:
+            if _INSERT_GUARD_RE.search(clean):
+                continue
+            reasons.append(
+                f"INSERT INTO {ins.group(1)} without ON CONFLICT / WHERE NOT "
+                "EXISTS — a second run would duplicate rows"
+            )
+            continue
+        if _DO_RE.match(clean):
+            if _do_block_is_read_only(clean):
+                continue
+            reasons.append("DO block that writes — not provably replayable")
+            continue
+        head = " ".join(clean.split()[:6])[:72]
+        reasons.append(f"not on the replay allow-list: `{head}`")
+    return reasons
+
+
+def reapply_precheck(mig, row, sql) -> "str | None":
+    """Why `mig` cannot be re-applied, or None when it can.
+
+    Pure : no database. `row` is the RemoteMigration or None.
+    """
+    if row is None:
+        return "not recorded in the ledger — a normal apply covers this"
+    if row.status != "applied":
+        return f"ledger status is '{row.status}', not 'applied' — resolve that first"
+    if row.checksum == mig.checksum:
+        return "not in drift — the ledger already matches the file"
+    if mig.non_transactional:
+        return (
+            "marked @non_transactional — re-apply only supports the "
+            "transactional path, where the SQL and the ledger row commit together"
+        )
+    blockers = not_replayable(sql)
+    if blockers:
+        shown = " ; ".join(blockers[:4])
+        more = f" (+{len(blockers) - 4} more)" if len(blockers) > 4 else ""
+        return "not replayable: " + shown + more
+    return None
+
+
+def _assert_in_transaction(conn, when: str) -> "None":
+    """Fail loudly if our transaction is no longer open.
+
+    A migration containing a top-level COMMIT would end the transaction psycopg
+    opened, so the SQL would already be durable while the ledger row is not —
+    and the rollback path would then print "rolled back" over work that is not
+    coming back. The allow-list refuses such files, but this is the cheap
+    verification that the promise held.
+    """
+    from psycopg.pq import TransactionStatus
+
+    st = conn.info.transaction_status
+    if st != TransactionStatus.INTRANS:
+        raise RuntimeError(
+            f"transaction is no longer open {when} (status={st!r}). The migration "
+            "SQL closed it — its effects may already be durable. The ledger row "
+            "was NOT written; inspect the database before retrying."
+        )
+
+
+def run_reapply(conn, local, remote, target_id: str, runner: str, git_sha: str) -> int:
+    mig = next((m for m in local if m.id == target_id), None)
+    if mig is None:
+        fail(8, f"{target_id}: no such file under {MIGRATIONS_DIR}/.")
+
+    sql = mig.path.read_text(encoding="utf-8")
+    row = remote.get(target_id)
+    why = reapply_precheck(mig, row, sql)
+    if why:
+        fail(8, f"{target_id}: {why}.")
+
+    # The columns this rewrites are NOT in the service_role grant : only the table
+    # owner can. Say so plainly instead of surfacing a bare 42501 mid-transaction.
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT current_user,
+                   has_column_privilege('infra.schema_migrations', 'checksum', 'UPDATE'),
+                   has_column_privilege('infra.schema_migrations', 'runner', 'UPDATE'),
+                   has_column_privilege('infra.schema_migrations', 'git_sha', 'UPDATE')
+            """
+        )
+        who, c_ok, r_ok, g_ok = cur.fetchone()
+    if not (c_ok and r_ok and g_ok):
+        fail(
+            9,
+            f"role '{who}' cannot UPDATE checksum/runner/git_sha on "
+            "infra.schema_migrations (column-scoped grant). Re-apply needs the "
+            "table owner — the DATABASE_URL the engine bootstraps with.",
+        )
+
+    print(f"Re-applying {target_id}")
+    print(f"  ledger checksum : {row.checksum}")
+    print(f"  file checksum   : {mig.checksum}")
+    print(f"  recorded by     : {row.runner or '—'} at {row.applied_at or '—'}")
+    print(f"  statements      : {len(split_sql_statements(sql))}")
+
+    note = (
+        f"reapplied over a stale record: was checksum={row.checksum} "
+        f"runner={row.runner or '—'} applied_at={row.applied_at or '—'}"
+    )
+    reset_session(conn)
+    start = time.monotonic()
+    conn.autocommit = False
+    try:
+        with conn.cursor() as cur:
+            cur.execute(sql)
+            elapsed_ms = int((time.monotonic() - start) * 1000)
+            # Belt and braces on top of the allow-list : if the file managed to
+            # close our transaction anyway, the ledger row must NOT be written
+            # and we must not print "rolled back" over work that already
+            # committed. Checked before touching the ledger, and again before
+            # committing.
+            _assert_in_transaction(conn, "after running the migration SQL")
+            # Guarded on the OLD checksum : if anything moved under us, 0 rows
+            # match and we abort instead of reporting a silent success.
+            cur.execute(
+                """
+                UPDATE infra.schema_migrations
+                   SET checksum = %s, status = 'applied', applied_at = NOW(),
+                       execution_ms = %s, runner = %s, git_sha = %s, note = %s
+                 WHERE id = %s AND checksum = %s
+                """,
+                (mig.checksum, elapsed_ms, runner, git_sha, note,
+                 target_id, row.checksum),
+            )
+            if cur.rowcount != 1:
+                raise RuntimeError(
+                    f"ledger row for {target_id} changed during re-apply "
+                    f"({cur.rowcount} rows matched, expected 1) — rolled back"
+                )
+        _assert_in_transaction(conn, "before committing the ledger row")
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.autocommit = True
+
+    print(f"OK in {elapsed_ms}ms — ledger now records {mig.checksum}")
+    write_step_summary(
+        ["## Re-applied", "",
+         f"`{target_id}` re-executed and re-recorded in {elapsed_ms}ms.", "",
+         f"- previous checksum : `{row.checksum}`",
+         f"- new checksum      : `{mig.checksum}`",
+         f"- previous record   : {row.runner or '—'} at {row.applied_at or '—'}",
+         ""]
+    )
     return 0
 
 
@@ -1028,8 +1697,44 @@ def main(argv: list[str]) -> int:
         help="Print the migration state table and exit. Read-only on the data.",
     )
     parser.add_argument(
+        "--reapply", type=str, default="", metavar="ID",
+        help=(
+            "Re-execute ONE migration whose ledger row is in drift, then rewrite "
+            "that row from the run. Refuses unless the row is a drifted "
+            "'applied', the file is transactional, and it contains no statement "
+            "that would misbehave on a second run. Needs the table owner."
+        ),
+    )
+    parser.add_argument(
+        "--no-bootstrap", action="store_true",
+        help=(
+            "Skip the ledger DDL/GRANT bootstrap. Only valid with --status : it "
+            "makes the run genuinely read-only, so a scheduled probe cannot "
+            "silently re-apply GRANTs over a deliberate REVOKE. A missing ledger "
+            "then fails loudly instead of being created by a status check."
+        ),
+    )
+    parser.add_argument(
+        "--max-pending-age-days", type=int, default=0, metavar="N",
+        help=(
+            "With --status: exit non-zero when a migration has been pending "
+            "for more than N days. 0 (default) disables the check and keeps "
+            "the historical behaviour. See the 'Ledger freshness' section in "
+            "this file for why the scheduled probe uses 30."
+        ),
+    )
+    parser.add_argument(
         "--dry-run", action="store_true",
         help="Show the apply plan without writing.",
+    )
+    parser.add_argument(
+        "--only", type=str, default="", metavar="ID[,ID...]",
+        help=(
+            "Apply exactly these pending migrations and nothing else, in file "
+            "order. Refuses an unknown id or one already in the ledger. Prints "
+            "the earlier pending migrations it steps over — the engine does not "
+            "know dependencies, so that judgement stays with you."
+        ),
     )
     parser.add_argument(
         "--limit", type=int, default=None,
@@ -1059,8 +1764,24 @@ def main(argv: list[str]) -> int:
     if args.self_test:
         return run_self_test()
 
+    # Mode autonome, comme --self-test : sort avant toute connexion.
     if args.lint_markers:
         return run_lint_markers(args.lint_markers)
+
+    if args.only and (args.limit is not None or args.baseline or args.status
+                      or args.reapply):
+        fail(
+            2,
+            "--only is exclusive : it cannot be combined with --limit, "
+            "--baseline, --status or --reapply.",
+        )
+
+    if args.no_bootstrap and (not args.status or args.reapply or args.baseline):
+        fail(
+            2,
+            "--no-bootstrap is only valid with a bare --status : every write path "
+            "needs the ledger DDL to exist.",
+        )
 
     local = parse_local_migrations()
     enforce_ordering(local)
@@ -1071,16 +1792,53 @@ def main(argv: list[str]) -> int:
     conn = connect()
     try:
         acquire_lock(conn)
-        bootstrap(conn)
-        remote = fetch_remote(conn)
+        if args.no_bootstrap:
+            # Genuinely read-only path. bootstrap() is idempotent DDL, but it also
+            # re-runs GRANT on infra.schema_migrations : a nightly cron calling it
+            # would quietly undo a deliberate REVOKE. And a status probe has no
+            # business creating the ledger it is meant to observe.
+            try:
+                remote = fetch_remote(conn)
+            except Exception as exc:  # noqa: BLE001 — re-raised unless it is 42P01
+                if getattr(exc, "sqlstate", None) == "42P01":
+                    fail(
+                        6,
+                        "infra.schema_migrations is absent. Run the engine once "
+                        "WITHOUT --no-bootstrap to create it.",
+                    )
+                raise
+        else:
+            bootstrap(conn)
+            remote = fetch_remote(conn)
 
         rows, summary = classify(local, remote)
+
+        # Identity of THIS run, needed by every write mode below.
+        runner = f"gh-actions:{os.environ.get('GITHUB_RUN_ID', 'local')}"
+        git_sha = os.environ.get("GITHUB_SHA", "")
+
+        if args.reapply:
+            return run_reapply(
+                conn, local, remote, args.reapply, runner, git_sha
+            )
 
         if args.baseline:
             return run_baseline(conn, local, remote, args.exclude)
 
         if args.status:
-            return print_status(rows, summary)
+            rc = print_status(rows, summary)
+            write_step_summary(status_step_summary(rows, summary))
+            if args.max_pending_age_days > 0:
+                rc = max(rc, report_stale_pending(
+                    stale_pending(
+                        [m.id for m in local],
+                        remote,
+                        args.max_pending_age_days,
+                        datetime.date.today(),
+                    ),
+                    args.max_pending_age_days,
+                ))
+            return rc
 
         # Refuse to proceed when blockers exist.
         if summary["drift"] or summary["applying"] or summary["failed"]:
@@ -1093,13 +1851,27 @@ def main(argv: list[str]) -> int:
             )
 
         pending = [m for m in local if m.id not in remote]
-        if args.limit is not None:
+        skipped_earlier: list[str] = []
+        if args.only:
+            pending, skipped_earlier, errors = select_only(
+                local, remote, args.only
+            )
+            if errors:
+                for e in errors:
+                    sys.stderr.write(f"[apply-supabase-migration] {e}\n")
+                fail(10, "--only refused — nothing was applied.")
+        elif args.limit is not None:
             pending = pending[: max(0, args.limit)]
 
         # A5 gate — refuse to apply (or dry-run) a pending migration whose
         # header marker contradicts its statements, BEFORE touching anything.
         # Pending = not yet at the ledger = bytes still editable : the fix is
         # in the file, never a checksum override.
+        #
+        # Portée volontaire : `pending` — donc ce que --only a sélectionné, pas
+        # la file entière. Nommer une migration ne dispense pas de la garde,
+        # mais enjamber un fichier fautif ne bloque pas non plus un run qui ne
+        # l'exécute pas.
         mismatches = [
             (m.id, msg)
             for m in pending
@@ -1116,7 +1888,7 @@ def main(argv: list[str]) -> int:
                 "migrations — fix the file(s) (see --lint-markers).",
             )
 
-        # GitHub Step Summary (always)
+        # GitHub Step Summary — built once, written once.
         plan_lines = ["## Migration plan", ""]
         plan_lines.append("| Status | ID | Mode |")
         plan_lines.append("| --- | --- | --- |")
@@ -1125,10 +1897,32 @@ def main(argv: list[str]) -> int:
                 state = "✅ applied"
             elif m in pending:
                 state = "⏳ pending"
+            elif args.only:
+                state = "⏸️ not selected (--only)"
             else:
                 state = "⏸️ deferred (limit)"
             mode = "non-transactional" if m.non_transactional else "transactional"
             plan_lines.append(f"| {state} | `{m.id}` | {mode} |")
+
+        if skipped_earlier:
+            print()
+            print(
+                f"NOTE — this run steps over {len(skipped_earlier)} pending "
+                "migration(s) that sort earlier. The engine cannot check "
+                "dependencies; that judgement is yours:"
+            )
+            for mid in skipped_earlier:
+                print(f"  skipped  {mid}")
+            plan_lines += [
+                "",
+                f"### Stepped over ({len(skipped_earlier)})",
+                "",
+                "Pending migrations that sort earlier and are NOT part of this run.",
+                "",
+                "| ID |",
+                "| --- |",
+            ] + [f"| `{mid}` |" for mid in skipped_earlier] + [""]
+
         write_step_summary(plan_lines)
 
         if not pending:
@@ -1142,9 +1936,6 @@ def main(argv: list[str]) -> int:
                 print(f"  would apply {m.id} ({mode})")
             return 0
 
-        runner = f"gh-actions:{os.environ.get('GITHUB_RUN_ID', 'local')}"
-        git_sha = os.environ.get("GITHUB_SHA", "")
-
         applied: list[tuple[str, int]] = []
         for m in pending:
             mode = "non-tx" if m.non_transactional else "tx"
@@ -1153,8 +1944,18 @@ def main(argv: list[str]) -> int:
                 end="",
                 flush=True,
             )
+            # Start every migration from a clean session, whatever the previous
+            # one left behind. Before, not after : this also protects the first
+            # migration from anything bootstrap() or the connection left set.
+            reset_session(conn)
+            leaked = bare_session_sets(m.path.read_text(encoding="utf-8"))
             ms = apply_migration(conn, m, runner, git_sha)
             print(f"OK in {ms}ms")
+            if leaked:
+                print(
+                    f"  note: {m.id} sets session-level {', '.join(leaked)} — "
+                    "reset before the next migration"
+                )
             applied.append((m.id, ms))
 
         write_step_summary(

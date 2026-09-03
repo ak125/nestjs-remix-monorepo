@@ -143,6 +143,14 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: low
+  # B0 massdoc — volatilité STABLE des wrappers de rendu R2/R1 (hygiène, 0 gain annoncé).
+  # Glob exact volontaire — les migrations ne sont PAS auto-couvertes.
+  # D15 par précédent 20260614_gov_m7_stable_function_volatility_rpc*.sql (même famille).
+  - glob: backend/supabase/migrations/20260902_b0_rm_rpc_volatility_stable*.sql
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
   - glob: scripts/governance/validate-authority-graph.js
     domain: D15
     owner: '@ak125'
@@ -325,6 +333,18 @@ entries:
   # Audits de bundle de release PROD (read-only, ancrés au SHA candidat) — même
   # famille D13 que la surface deploy (.github/workflows/** + scripts/ci/**).
   # Owner GO nominatif 2026-07-16. cf. audit/2026-07-16-prod-bundle-da90deabd-a931205c.md
+  # Audits massdoc (pg_stat_statements PROD, staging TecDoc, disque/Compute) — read-only,
+  # ancrés à la date de capture. Même famille que audit/*-prod-bundle-*.md ci-dessous.
+  - glob: audit/massdoc-*.md
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  - glob: audit/massdoc-*.json
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
   - glob: audit/*-prod-bundle-*.md
     domain: D13
     owner: '@ak125'

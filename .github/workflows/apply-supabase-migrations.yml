@@ -47,6 +47,14 @@ on:
         description: 'Apply at most N migrations this run (blank = no limit).'
         required: false
         default: ''
+      only_ids:
+        description: |
+          Apply EXACTLY these pending migrations (comma-separated ids) and nothing
+          else. Refuses an unknown id or one already in the ledger, and prints the
+          earlier pending migrations it steps over. Combine with dry_run=true to
+          preview. Blank = normal queue order.
+        required: false
+        default: ''
       baseline_only:
         description: |
           Mark every local migration as already-applied without running its SQL.
@@ -58,6 +66,14 @@ on:
         default: false
       exclude_ids:
         description: 'Comma-separated migration ids to keep pending during --baseline (e.g. "20260518_seo_admin_job_table").'
+        required: false
+        default: ''
+      reapply_id:
+        description: |
+          Re-execute ONE drifted migration and rewrite its ledger row from the run.
+          The engine refuses unless the row is a drifted `applied`, the file is
+          transactional, and nothing in it misbehaves on a second run. Needs
+          confirm=APPLY and dry_run=false. Blank = not this mode.
         required: false
         default: ''
 
@@ -76,14 +92,34 @@ jobs:
     steps:
       - name: 🛑 Confirm token
         if: ${{ !inputs.status_only && !inputs.dry_run && inputs.confirm != 'APPLY' }}
+        env:
+          CONFIRM: ${{ inputs.confirm }}
         run: |
-          echo "::error::Mutating step requires confirm=APPLY (got '${{ inputs.confirm }}'). Re-run with confirm=APPLY, dry_run=true, or status_only=true."
+          echo "::error::Mutating step requires confirm=APPLY (got '${CONFIRM}'). Re-run with confirm=APPLY, dry_run=true, or status_only=true."
           exit 1
 
       - name: 🛑 Reject mutually-exclusive modes
         if: ${{ inputs.baseline_only && (inputs.status_only || inputs.dry_run || inputs.limit != '') }}
         run: |
           echo "::error::baseline_only cannot be combined with status_only / dry_run / limit. Pick one mode per run."
+          exit 1
+
+      - name: 🛑 Reject only_ids combined with another mode
+        if: ${{ inputs.only_ids != '' && (inputs.baseline_only || inputs.status_only || inputs.limit != '' || inputs.reapply_id != '') }}
+        run: |
+          echo "::error::only_ids cannot be combined with baseline_only / status_only / limit / reapply_id. Pick one mode per run."
+          exit 1
+
+      - name: 🛑 Reject reapply combined with another mode
+        if: ${{ inputs.reapply_id != '' && (inputs.baseline_only || inputs.status_only || inputs.limit != '') }}
+        run: |
+          echo "::error::reapply_id cannot be combined with baseline_only / status_only / limit. Pick one mode per run."
+          exit 1
+
+      - name: 🛑 Reject reapply under dry_run
+        if: ${{ inputs.reapply_id != '' && inputs.dry_run }}
+        run: |
+          echo "::error::reapply_id executes SQL — there is no dry-run for it. Re-run with dry_run=false and confirm=APPLY."
           exit 1
 
       - name: ⬇️ Checkout repo
@@ -105,13 +141,21 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           GITHUB_RUN_ID: ${{ github.run_id }}
           GITHUB_SHA: ${{ github.sha }}
+          # Operator-supplied strings reach the shell as env vars, never as `${{ }}`
+          # interpolation inside `run:` — this runner holds DATABASE_URL.
+          REAPPLY_ID: ${{ inputs.reapply_id }}
+          ONLY_IDS: ${{ inputs.only_ids }}
+          EXCLUDE_IDS: ${{ inputs.exclude_ids }}
+          LIMIT: ${{ inputs.limit }}
         run: |
           set -euo pipefail
           ARGS=()
-          if [ "${{ inputs.baseline_only }}" = "true" ]; then
+          if [ -n "$REAPPLY_ID" ]; then
+            ARGS+=("--reapply" "$REAPPLY_ID")
+          elif [ "${{ inputs.baseline_only }}" = "true" ]; then
             ARGS+=("--baseline")
-            if [ -n "${{ inputs.exclude_ids }}" ]; then
-              ARGS+=("--exclude" "${{ inputs.exclude_ids }}")
+            if [ -n "$EXCLUDE_IDS" ]; then
+              ARGS+=("--exclude" "$EXCLUDE_IDS")
             fi
           elif [ "${{ inputs.status_only }}" = "true" ]; then
             ARGS+=("--status")
@@ -119,8 +163,11 @@ jobs:
             if [ "${{ inputs.dry_run }}" = "true" ]; then
               ARGS+=("--dry-run")
             fi
-            if [ -n "${{ inputs.limit }}" ]; then
-              ARGS+=("--limit" "${{ inputs.limit }}")
+            if [ -n "$ONLY_IDS" ]; then
+              ARGS+=("--only" "$ONLY_IDS")
+            fi
+            if [ -n "$LIMIT" ]; then
+              ARGS+=("--limit" "$LIMIT")
             fi
           fi
           python3 scripts/ci/apply-supabase-migration.py "${ARGS[@]}"
