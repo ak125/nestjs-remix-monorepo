@@ -44,6 +44,14 @@ on:
         description: 'Apply at most N migrations this run (blank = no limit).'
         required: false
         default: ''
+      only_ids:
+        description: |
+          Apply EXACTLY these pending migrations (comma-separated ids) and nothing
+          else. Refuses an unknown id or one already in the ledger, and prints the
+          earlier pending migrations it steps over. Combine with dry_run=true to
+          preview. Blank = normal queue order.
+        required: false
+        default: ''
       baseline_only:
         description: |
           Mark every local migration as already-applied without running its SQL.
@@ -93,6 +101,12 @@ jobs:
           echo "::error::baseline_only cannot be combined with status_only / dry_run / limit. Pick one mode per run."
           exit 1
 
+      - name: 🛑 Reject only_ids combined with another mode
+        if: ${{ inputs.only_ids != '' && (inputs.baseline_only || inputs.status_only || inputs.limit != '' || inputs.reapply_id != '') }}
+        run: |
+          echo "::error::only_ids cannot be combined with baseline_only / status_only / limit / reapply_id. Pick one mode per run."
+          exit 1
+
       - name: 🛑 Reject reapply combined with another mode
         if: ${{ inputs.reapply_id != '' && (inputs.baseline_only || inputs.status_only || inputs.limit != '') }}
         run: |
@@ -127,6 +141,7 @@ jobs:
           # Operator-supplied strings reach the shell as env vars, never as `${{ }}`
           # interpolation inside `run:` — this runner holds DATABASE_URL.
           REAPPLY_ID: ${{ inputs.reapply_id }}
+          ONLY_IDS: ${{ inputs.only_ids }}
           EXCLUDE_IDS: ${{ inputs.exclude_ids }}
           LIMIT: ${{ inputs.limit }}
         run: |
@@ -144,6 +159,9 @@ jobs:
           else
             if [ "${{ inputs.dry_run }}" = "true" ]; then
               ARGS+=("--dry-run")
+            fi
+            if [ -n "$ONLY_IDS" ]; then
+              ARGS+=("--only" "$ONLY_IDS")
             fi
             if [ -n "$LIMIT" ]; then
               ARGS+=("--limit" "$LIMIT")
