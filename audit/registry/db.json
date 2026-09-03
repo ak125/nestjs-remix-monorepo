@@ -1118,7 +1118,6 @@
       "status": "LIVE",
       "usedBy": [
         "backend/src/modules/admin/services/gamme-detail-enricher.service.ts",
-        "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
         "backend/src/modules/blog/services/blog-article-relation.service.ts"
       ]
     },
