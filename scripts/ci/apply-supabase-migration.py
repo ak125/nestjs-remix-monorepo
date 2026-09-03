@@ -991,21 +991,38 @@ def run_self_test() -> int:
     assert report_stale_pending([], 30) == 0
     assert report_stale_pending([("20260429_old", 127)], 30) == 1
 
-    # 7. Re-apply safety ---------------------------------------------------
-    assert unsafe_to_rerun("INSERT INTO t (a) VALUES (1);") != []
-    assert unsafe_to_rerun("INSERT INTO t (a) VALUES (1) ON CONFLICT DO NOTHING;") == []
-    assert unsafe_to_rerun(
-        "INSERT INTO t (a) SELECT 1 WHERE NOT EXISTS (SELECT 1 FROM t);"
+    # 7. Re-apply safety — ALLOW-LIST, not deny-list ----------------------
+    # Proven-idempotent forms pass.
+    assert not_replayable("SET lock_timeout = '5s';") == []
+    assert not_replayable("CREATE TABLE IF NOT EXISTS t (a int);") == []
+    assert not_replayable("CREATE UNIQUE INDEX IF NOT EXISTS i ON t(a);") == []
+    assert not_replayable("CREATE OR REPLACE VIEW v AS SELECT 1;") == []
+    assert not_replayable("COMMENT ON VIEW v IS 'x';") == []
+    assert not_replayable("GRANT SELECT ON t TO r;") == []
+    assert not_replayable("INSERT INTO t (a) VALUES (1) ON CONFLICT DO NOTHING;") == []
+    # Everything else is refused BY NAME, including the forms a deny-list missed.
+    assert not_replayable("INSERT INTO t (a) VALUES (1);") != []
+    assert not_replayable("TRUNCATE t;") != []
+    assert not_replayable("UPDATE t SET a = 1;") != []
+    assert not_replayable("CREATE TABLE t (a int);") != []
+    assert not_replayable("ALTER TABLE t ADD COLUMN b int;") != []
+    # The inverted-polarity bug this replaced: IF EXISTS protects the FIRST run,
+    # not the replay. On a replay the table exists and is full.
+    assert not_replayable("DROP TABLE IF EXISTS t;") != []
+    assert not_replayable("DROP TABLE t;") != []
+    # Transaction control ends our transaction — refused, which also closes the
+    # "the SQL committed but the ledger did not" hole.
+    assert not_replayable("BEGIN; SELECT 1; COMMIT;") != []
+    assert not_replayable("SAVEPOINT s;") != []
+    # DO blocks: assertions replay, writers do not.
+    assert not_replayable(
+        "DO $$ DECLARE n INT; BEGIN SELECT count(*) INTO n FROM t; "
+        "IF n < 1 THEN RAISE EXCEPTION 'empty'; END IF; END $$;"
     ) == []
-    assert unsafe_to_rerun("TRUNCATE t;") != []
-    assert unsafe_to_rerun("DROP TABLE t;") != []
-    assert unsafe_to_rerun("DROP TABLE IF EXISTS t;") == []
-    assert unsafe_to_rerun("DELETE FROM t;") != []
-    assert unsafe_to_rerun("DELETE FROM t WHERE a = 1;") == []
-    # An INSERT parked inside a block comment is dead text, not a hazard. This is
-    # the case a grep-based check gets wrong on 20260429.
-    assert unsafe_to_rerun("/* disabled\nINSERT INTO t (a) VALUES (1);\n*/\nSELECT 1;") == []
-    assert unsafe_to_rerun("SELECT 'INSERT INTO t VALUES (1)';") == []
+    assert not_replayable("DO $$ BEGIN INSERT INTO t VALUES (1); END $$;") != []
+    # Lexer-backed: dead text in a block comment or a string is not a statement.
+    assert not_replayable("/* disabled\nDROP TABLE t;\n*/\nSELECT 1;") == []
+    assert not_replayable("SELECT 'DROP TABLE t';") == []
 
     _lm = LocalMigration(id="x", path=Path("x.sql"), checksum="bbb",
                          non_transactional=False)
@@ -1013,25 +1030,25 @@ def run_self_test() -> int:
                           applied_at="2026-05-16", runner="baseline")
     _ok_sql = "CREATE OR REPLACE VIEW v AS SELECT 1;"
     assert reapply_precheck(_lm, _rm, _ok_sql) is None
-    # Not recorded at all.
     assert "not recorded" in reapply_precheck(_lm, None, _ok_sql)
-    # Wrong status.
     assert "not 'applied'" in reapply_precheck(
         _lm, RemoteMigration("x", "aaa", "failed", None, None), _ok_sql)
-    # No drift.
     assert "not in drift" in reapply_precheck(
         _lm, RemoteMigration("x", "bbb", "applied", None, None), _ok_sql)
-    # Non-transactional is out of scope.
     assert "non_transactional" in reapply_precheck(
         LocalMigration("x", Path("x.sql"), "bbb", True), _rm, _ok_sql)
-    # Non-replayable SQL.
-    assert "not re-runnable" in reapply_precheck(
-        _lm, _rm, "INSERT INTO t (a) VALUES (1);")
-    # The real drifted file, when the checkout has it : must be re-runnable.
-    _real = MIGRATIONS_DIR / "20260429_diag_maintenance_via_kg.sql"
-    if _real.exists():
-        _r = unsafe_to_rerun(_real.read_text(encoding="utf-8"))
-        assert _r == [], _r
+    assert "not replayable" in reapply_precheck(_lm, _rm, "DROP TABLE IF EXISTS t;")
+
+    # The two real files that pin both directions of this gate.
+    _target = MIGRATIONS_DIR / "20260429_diag_maintenance_via_kg.sql"
+    if _target.exists():
+        _r = not_replayable(_target.read_text(encoding="utf-8"))
+        assert _r == [], _r          # must stay repairable
+    _destructive = (MIGRATIONS_DIR
+                    / "20260104_purchase_guide_v2_client_content.sql")
+    if _destructive.exists():
+        _r = not_replayable(_destructive.read_text(encoding="utf-8"))
+        assert any("DROP TABLE IF EXISTS" in x for x in _r), _r
 
     print("OK — all self-tests passed.")
     return 0
@@ -1055,37 +1072,84 @@ def run_self_test() -> int:
 # that can run twice, which is checked mechanically below rather than promised in
 # a header comment.
 
-UNGUARDED_INSERT_RE = re.compile(r"^\s*INSERT\s+INTO\s+([A-Za-z_][\w.\"]*)", re.IGNORECASE)
-INSERT_GUARD_RE = re.compile(r"ON\s+CONFLICT|WHERE\s+NOT\s+EXISTS", re.IGNORECASE)
-DESTRUCTIVE_RE = re.compile(
-    r"^\s*(DROP\s+TABLE(?!\s+IF\s+EXISTS)|TRUNCATE|DELETE\s+FROM(?![\s\S]*\bWHERE\b))",
-    re.IGNORECASE,
+# The gate is an ALLOW-LIST, not a deny-list. A deny-list of a few dangerous
+# forms approved 301 of this repo's 303 migrations — including
+# `20260104_purchase_guide_v2_client_content.sql`, whose line 9 is
+# `DROP TABLE IF EXISTS __seo_gamme_purchase_guide` (241 live rows, 3.7 MB today).
+# `IF EXISTS` protects the FIRST run against a missing table; on a replay months
+# later the table exists and is full, and the DROP would commit inside the very
+# transaction that stamps the ledger row `applied`.
+#
+# So: every top-level statement must be a form that is *proven* to survive a
+# second execution. Anything else is refused by name. Widening this list is a
+# deliberate act, not an oversight.
+
+_ALLOWED = (
+    re.compile(r"^(SET|RESET)\s", re.I),
+    re.compile(r"^SELECT\s", re.I),
+    re.compile(r"^CREATE\b[\s\S]{0,80}?\bIF\s+NOT\s+EXISTS\b", re.I),
+    re.compile(r"^CREATE\s+OR\s+REPLACE\s+(FUNCTION|VIEW|PROCEDURE|TRIGGER|RULE)\b", re.I),
+    re.compile(r"^COMMENT\s+ON\s", re.I),
+    re.compile(r"^(GRANT|REVOKE)\s", re.I),
+)
+_INSERT_RE = re.compile(r"^INSERT\s+INTO\s+([A-Za-z_][\w.\"]*)", re.I)
+_INSERT_GUARD_RE = re.compile(r"ON\s+CONFLICT|WHERE\s+NOT\s+EXISTS", re.I)
+_DO_RE = re.compile(r"^DO\s", re.I)
+_DOLLAR_BODY_RE = re.compile(r"\$([A-Za-z_]*)\$(.*?)\$\1\$", re.S)
+# Verbs that write. `BEGIN`/`END` are PL/pgSQL block delimiters inside a DO and
+# are deliberately absent — only writes disqualify an assertion block.
+_WRITE_VERB_RE = re.compile(
+    r"\b(INSERT|UPDATE|DELETE|DROP|TRUNCATE|ALTER|CREATE|GRANT|REVOKE|CALL|COPY|MERGE)\b",
+    re.I,
 )
 
 
-def unsafe_to_rerun(sql: str) -> "list[str]":
-    """Reasons this SQL must not be executed a second time. Empty = re-runnable.
+def _do_block_is_read_only(stmt: str) -> bool:
+    """True when a DO block only reads and raises.
 
-    Lexer-backed, so a statement quoted inside a string, a dollar-quoted body or
-    a block comment does not produce a hit. That matters : 20260429 keeps a whole
-    disabled INSERT inside a /* ... */ block for traceability, and a grep-based
-    check reports it as a duplication hazard when it is dead text.
+    20260429 uses two of them as post-conditions (`SELECT COUNT(*) INTO ...`
+    then `RAISE EXCEPTION` when the invariant fails). Those replay safely; a DO
+    that writes does not, and this cannot tell the difference by intent — only
+    by looking for write verbs in the body.
+    """
+    bodies = _DOLLAR_BODY_RE.findall(stmt)
+    if not bodies:
+        return False
+    return not any(_WRITE_VERB_RE.search(body) for _, body in bodies)
+
+
+def not_replayable(sql: str) -> "list[str]":
+    """Statements that are not proven safe to execute a second time.
+
+    Empty list = every statement is on the allow-list. Lexer-backed, so a
+    statement quoted inside a string, a dollar-quoted body or a block comment is
+    not counted — 20260429 keeps a whole disabled INSERT inside a /* ... */ block
+    for traceability, and a grep-based check calls that a duplication hazard when
+    it is dead text.
     """
     reasons = []
     for stmt in split_sql_statements(sql):
-        clean = LEADING_NOISE_RE.sub("", stmt)
-        hit = UNGUARDED_INSERT_RE.match(clean)
-        if hit and not INSERT_GUARD_RE.search(clean):
+        clean = LEADING_NOISE_RE.sub("", stmt).strip()
+        if not clean:
+            continue
+        if any(rx.match(clean) for rx in _ALLOWED):
+            continue
+        ins = _INSERT_RE.match(clean)
+        if ins:
+            if _INSERT_GUARD_RE.search(clean):
+                continue
             reasons.append(
-                f"INSERT INTO {hit.group(1)} without ON CONFLICT / WHERE NOT "
+                f"INSERT INTO {ins.group(1)} without ON CONFLICT / WHERE NOT "
                 "EXISTS — a second run would duplicate rows"
             )
-        d = DESTRUCTIVE_RE.match(clean)
-        if d:
-            reasons.append(
-                f"destructive statement `{d.group(1).split()[0].upper()}` — "
-                "not replayable"
-            )
+            continue
+        if _DO_RE.match(clean):
+            if _do_block_is_read_only(clean):
+                continue
+            reasons.append("DO block that writes — not provably replayable")
+            continue
+        head = " ".join(clean.split()[:6])[:72]
+        reasons.append(f"not on the replay allow-list: `{head}`")
     return reasons
 
 
@@ -1105,10 +1169,32 @@ def reapply_precheck(mig, row, sql) -> "str | None":
             "marked @non_transactional — re-apply only supports the "
             "transactional path, where the SQL and the ledger row commit together"
         )
-    unsafe = unsafe_to_rerun(sql)
-    if unsafe:
-        return "not re-runnable: " + " ; ".join(unsafe)
+    blockers = not_replayable(sql)
+    if blockers:
+        shown = " ; ".join(blockers[:4])
+        more = f" (+{len(blockers) - 4} more)" if len(blockers) > 4 else ""
+        return "not replayable: " + shown + more
     return None
+
+
+def _assert_in_transaction(conn, when: str) -> "None":
+    """Fail loudly if our transaction is no longer open.
+
+    A migration containing a top-level COMMIT would end the transaction psycopg
+    opened, so the SQL would already be durable while the ledger row is not —
+    and the rollback path would then print "rolled back" over work that is not
+    coming back. The allow-list refuses such files, but this is the cheap
+    verification that the promise held.
+    """
+    from psycopg.pq import TransactionStatus
+
+    st = conn.info.transaction_status
+    if st != TransactionStatus.INTRANS:
+        raise RuntimeError(
+            f"transaction is no longer open {when} (status={st!r}). The migration "
+            "SQL closed it — its effects may already be durable. The ledger row "
+            "was NOT written; inspect the database before retrying."
+        )
 
 
 def run_reapply(conn, local, remote, target_id: str, runner: str, git_sha: str) -> int:
@@ -1159,6 +1245,12 @@ def run_reapply(conn, local, remote, target_id: str, runner: str, git_sha: str) 
         with conn.cursor() as cur:
             cur.execute(sql)
             elapsed_ms = int((time.monotonic() - start) * 1000)
+            # Belt and braces on top of the allow-list : if the file managed to
+            # close our transaction anyway, the ledger row must NOT be written
+            # and we must not print "rolled back" over work that already
+            # committed. Checked before touching the ledger, and again before
+            # committing.
+            _assert_in_transaction(conn, "after running the migration SQL")
             # Guarded on the OLD checksum : if anything moved under us, 0 rows
             # match and we abort instead of reporting a silent success.
             cur.execute(
@@ -1176,6 +1268,7 @@ def run_reapply(conn, local, remote, target_id: str, runner: str, git_sha: str) 
                     f"ledger row for {target_id} changed during re-apply "
                     f"({cur.rowcount} rows matched, expected 1) — rolled back"
                 )
+        _assert_in_transaction(conn, "before committing the ledger row")
         conn.commit()
     except Exception:
         conn.rollback()
