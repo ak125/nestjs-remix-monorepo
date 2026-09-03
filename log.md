@@ -404,3 +404,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat+engine-reapply-drifted-migration`
 - **Décision** : feat(migrations): --reapply — réparer une ligne en drift par exécution, pas par affirmation
 - **Sortie** : PR #1389 | commits 9601898bf
+
+## 2026-09-04 — fix+migrations-preserve-search-path-and-acl (auto)
+
+- **Branche** : `fix+migrations-preserve-search-path-and-acl`
+- **Décision** : fix(migrations): désigner l'instruction par son nom, pas par son numéro de ligne (+2 other commits)
+- **Sortie** : PR #1391 | commits 04c4d72f1 e70ad7c79 6720119db
