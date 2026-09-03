@@ -29,6 +29,7 @@ CLI
                                         --no-bootstrap
     python3 apply-supabase-migration.py --dry-run
     python3 apply-supabase-migration.py [--limit N]
+    python3 apply-supabase-migration.py --only 20260529_xtr_msg_crm_indexes
 
 Env vars consumed
 =================
@@ -1050,8 +1051,104 @@ def run_self_test() -> int:
         _r = not_replayable(_destructive.read_text(encoding="utf-8"))
         assert any("DROP TABLE IF EXISTS" in x for x in _r), _r
 
+    # 8. --only selection --------------------------------------------------
+    _mk = lambda i, c="c": LocalMigration(id=i, path=Path(i + ".sql"),
+                                          checksum=c, non_transactional=False)
+    _local = [_mk("20260101_a"), _mk("20260202_b"), _mk("20260303_c"),
+              _mk("20260404_d")]
+    _remote = {"20260202_b": RemoteMigration("20260202_b", "c", "applied",
+                                             "2026-02-02", "gh-actions:1")}
+
+    # Names exactly one file; steps over the pending ones that sort earlier.
+    _sel, _skip, _err = select_only(_local, _remote, "20260404_d")
+    assert _err == [] and [m.id for m in _sel] == ["20260404_d"], (_sel, _err)
+    assert _skip == ["20260101_a", "20260303_c"], _skip   # 20260202_b is applied
+
+    # Typed order does not matter : the engine's file order wins.
+    _sel, _skip, _err = select_only(_local, _remote, "20260404_d,20260101_a")
+    assert [m.id for m in _sel] == ["20260101_a", "20260404_d"], _sel
+    assert _skip == ["20260303_c"], _skip
+
+    # Duplicates and whitespace are tolerated.
+    _sel, _, _err = select_only(_local, _remote, " 20260101_a , 20260101_a ")
+    assert _err == [] and [m.id for m in _sel] == ["20260101_a"]
+
+    # Nothing selected earlier than the last one -> nothing stepped over.
+    _sel, _skip, _err = select_only(_local, _remote, "20260101_a")
+    assert _skip == [], _skip
+
+    # Refusals name the offender, and select nothing at all.
+    _sel, _, _err = select_only(_local, _remote, "20260101_a,20260909_ghost")
+    assert _sel == [] and any("20260909_ghost" in e and "no such file" in e
+                              for e in _err), _err
+    _sel, _, _err = select_only(_local, _remote, "20260202_b")
+    assert _sel == [] and any("not pending" in e and "applied" in e
+                              for e in _err), _err
+    assert select_only(_local, _remote, "")[2] != []
+    assert select_only(_local, _remote, " , ")[2] != []
+
     print("OK — all self-tests passed.")
     return 0
+
+
+# ── Selecting WHAT to apply ─────────────────────────────────────────────────
+#
+# `--limit N` applies the first N pending migrations in file order. That is a
+# positional hack, not a selection : to reach one file you must accept every file
+# before it. Measured on this repo today — applying `20260529_xtr_msg_crm_indexes`
+# needs `--limit 13`, which also applies twelve migrations nobody asked for,
+# including one that creates three tables and one that leaves a 5s
+# statement_timeout on the session.
+#
+# `--only ID[,ID...]` names what runs. Nothing else runs. This is the primitive
+# every mature migration tool has (Flyway `target`, Sqitch `deploy --to`), and
+# its absence is what made the apply queue head-blocked : an undecided migration
+# at the front held back every migration behind it.
+#
+# Stepping over earlier pending migrations is a real risk the engine cannot
+# evaluate — it does not know dependencies. So it never does it silently : the
+# skipped ids are printed and written to the job summary, and `--dry-run` shows
+# them before anything runs.
+
+
+def select_only(local, remote, only_csv: str):
+    """(selected, skipped_earlier, errors) for --only. Pure : no database.
+
+    `selected` comes back in the engine's canonical file order, whatever order
+    the operator typed. `skipped_earlier` lists pending migrations that sort
+    before the last selected one and are NOT selected — what this run steps over.
+    """
+    wanted, seen = [], set()
+    for raw in only_csv.split(","):
+        mid = raw.strip()
+        if mid and mid not in seen:
+            seen.add(mid)
+            wanted.append(mid)
+
+    if not wanted:
+        return [], [], ["--only was given no migration id"]
+
+    by_id = {m.id: m for m in local}
+    errors = []
+    for mid in wanted:
+        if mid not in by_id:
+            errors.append(f"{mid}: no such file under {MIGRATIONS_DIR}/")
+        elif mid in remote:
+            errors.append(
+                f"{mid}: already recorded in the ledger "
+                f"(status={remote[mid].status}) — not pending"
+            )
+    if errors:
+        return [], [], errors
+
+    selected = [m for m in local if m.id in seen]
+    last_idx = local.index(selected[-1])
+    skipped = [
+        m.id
+        for idx, m in enumerate(local)
+        if idx < last_idx and m.id not in seen and m.id not in remote
+    ]
+    return selected, skipped, []
 
 
 # ── Re-apply a drifted migration ────────────────────────────────────────────
@@ -1431,6 +1528,15 @@ def main(argv: list[str]) -> int:
         help="Show the apply plan without writing.",
     )
     parser.add_argument(
+        "--only", type=str, default="", metavar="ID[,ID...]",
+        help=(
+            "Apply exactly these pending migrations and nothing else, in file "
+            "order. Refuses an unknown id or one already in the ledger. Prints "
+            "the earlier pending migrations it steps over — the engine does not "
+            "know dependencies, so that judgement stays with you."
+        ),
+    )
+    parser.add_argument(
         "--limit", type=int, default=None,
         help="Apply at most N migrations this run (staged rollouts).",
     )
@@ -1457,6 +1563,14 @@ def main(argv: list[str]) -> int:
 
     if args.self_test:
         return run_self_test()
+
+    if args.only and (args.limit is not None or args.baseline or args.status
+                      or args.reapply):
+        fail(
+            2,
+            "--only is exclusive : it cannot be combined with --limit, "
+            "--baseline, --status or --reapply.",
+        )
 
     if args.no_bootstrap and (not args.status or args.reapply or args.baseline):
         fail(
@@ -1533,10 +1647,19 @@ def main(argv: list[str]) -> int:
             )
 
         pending = [m for m in local if m.id not in remote]
-        if args.limit is not None:
+        skipped_earlier: list[str] = []
+        if args.only:
+            pending, skipped_earlier, errors = select_only(
+                local, remote, args.only
+            )
+            if errors:
+                for e in errors:
+                    sys.stderr.write(f"[apply-supabase-migration] {e}\n")
+                fail(10, "--only refused — nothing was applied.")
+        elif args.limit is not None:
             pending = pending[: max(0, args.limit)]
 
-        # GitHub Step Summary (always)
+        # GitHub Step Summary — built once, written once.
         plan_lines = ["## Migration plan", ""]
         plan_lines.append("| Status | ID | Mode |")
         plan_lines.append("| --- | --- | --- |")
@@ -1545,10 +1668,32 @@ def main(argv: list[str]) -> int:
                 state = "✅ applied"
             elif m in pending:
                 state = "⏳ pending"
+            elif args.only:
+                state = "⏸️ not selected (--only)"
             else:
                 state = "⏸️ deferred (limit)"
             mode = "non-transactional" if m.non_transactional else "transactional"
             plan_lines.append(f"| {state} | `{m.id}` | {mode} |")
+
+        if skipped_earlier:
+            print()
+            print(
+                f"NOTE — this run steps over {len(skipped_earlier)} pending "
+                "migration(s) that sort earlier. The engine cannot check "
+                "dependencies; that judgement is yours:"
+            )
+            for mid in skipped_earlier:
+                print(f"  skipped  {mid}")
+            plan_lines += [
+                "",
+                f"### Stepped over ({len(skipped_earlier)})",
+                "",
+                "Pending migrations that sort earlier and are NOT part of this run.",
+                "",
+                "| ID |",
+                "| --- |",
+            ] + [f"| `{mid}` |" for mid in skipped_earlier] + [""]
+
         write_step_summary(plan_lines)
 
         if not pending:
