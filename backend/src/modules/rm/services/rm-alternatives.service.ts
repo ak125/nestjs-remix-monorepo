@@ -3,26 +3,52 @@ import { Injectable, Logger } from '@nestjs/common';
 import { createHash } from 'node:crypto';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { CacheService } from '@cache/cache.service';
+import {
+  CACHE_STRATEGIES,
+  getCacheKey,
+} from '../../../config/cache-ttl.config';
 import type { AlternativesV2Response } from '../dto/alternatives-v2.dto';
 
-const CACHE_TTL_SECONDS = 300;
-// Error-path TTL kept low so a transient RPC failure does not poison the cache
-// for 5 minutes. Long-TTL caching of empty responses was the amplifier behind
-// the soft-404 R2 smoke regression detected 2026-05-19 (stale anon publishable
-// key → 'Invalid API key' on every RPC → 300s cache of [] → 5min false-empty).
-const CACHE_TTL_ERROR_SECONDS = 30;
-const CACHE_KEY_PREFIX = 'alt';
-// v1 → v2 (PR #633) : reset stale empty entries from the .from() RLS-bypass era.
-// v2 → v3 (2026-05-19) : reset stale empty entries from the rotated-publishable-key
-// era (preprod ANON_KEY rotated by Supabase but GitHub secret not synced — every RPC
-// returned 'Invalid API key', cached as empty for 5min). Pair with the short
-// CACHE_TTL_ERROR_SECONDS above to prevent the next rotation from repeating this.
-const CACHE_KEY_VERSION = 'v3';
+// TTLs, jeton de version (v4) et périmètre de génération déclarés dans
+// CACHE_STRATEGIES.RM.ALTERNATIVES (A2 + A3, 2026-09-02) — plus de littéral local.
+// Succès = 24 h : les alternatives dérivent de la compatibilité TecDoc, qui ne
+// bouge qu'à l'import catalogue. À 300 s sur une cardinalité 54 k × 9 k, le
+// taux de hit était structurellement ~0 (498 k appels RPC, 2 795 blocs/appel).
+// L'invalidation ne vient pas de l'expiration mais du bump de génération
+// (`cache:gen:catalog`) à l'activation pricing : clé `alt:v4:g{gen}:{type}:{pg}`.
+const STRATEGY = CACHE_STRATEGIES.RM.ALTERNATIVES;
+const CACHE_TTL_SECONDS = STRATEGY.ttl;
+// Error-path TTL kept low so a transient RPC failure does not poison the cache.
+// Long-TTL caching of empty responses was the amplifier behind the soft-404 R2
+// smoke regression detected 2026-05-19 (stale anon publishable key → 'Invalid
+// API key' on every RPC → 300s cache of [] → 5min false-empty).
+const CACHE_TTL_ERROR_SECONDS = CACHE_STRATEGIES.RM.ALTERNATIVES_ERROR.ttl;
+// Limit canonique = borne haute du contrôleur (clamp 1..24). La RPC borne
+// elle-même à LEAST(6, p_limit) véhicules / LEAST(8, p_limit) gammes / 4 modèles :
+// une seule entrée de cache par (type_id, pg_id) sert donc tous les limits par
+// tranche préfixe, sans multiplier la cardinalité (NO-GO 6c du plan massdoc).
+const RPC_CANONICAL_LIMIT = 24;
 
 interface RpcPayload {
   alternativeVehicles: unknown[];
   alternativeGammes: unknown[];
   relatedModels: unknown[];
+}
+
+const EMPTY_PAYLOAD: RpcPayload = {
+  alternativeVehicles: [],
+  alternativeGammes: [],
+  relatedModels: [],
+};
+
+function isRpcPayload(value: unknown): value is RpcPayload {
+  if (!value || typeof value !== 'object') return false;
+  const v = value as Record<string, unknown>;
+  return (
+    Array.isArray(v.alternativeVehicles) &&
+    Array.isArray(v.alternativeGammes) &&
+    Array.isArray(v.relatedModels)
+  );
 }
 
 /**
@@ -37,9 +63,9 @@ interface RpcPayload {
  * bypass RLS — ADR-021 hardening + ADR-028 Option D preprod READ_ONLY).
  *
  * Ce service est un thin wrapper :
- *   1. Cache-aside Redis 5 min
- *   2. Appel RPC unique (1 round-trip)
- *   3. Calcul etag sha256 canonical JSON (replay-safe)
+ *   1. Cache-aside Redis (TTL CACHE_STRATEGIES.RM.ALTERNATIVES), clé sans limit
+ *   2. Appel RPC unique (1 round-trip) au limit canonique
+ *   3. Tranche préfixe au limit demandé + etag sha256 canonical JSON (replay-safe)
  */
 @Injectable()
 export class RmAlternativesService extends SupabaseBaseService {
@@ -54,16 +80,14 @@ export class RmAlternativesService extends SupabaseBaseService {
     pg_id: number,
     limit: number,
   ): Promise<AlternativesV2Response> {
-    const cacheKey = `${CACHE_KEY_PREFIX}:${type_id}:${pg_id}:${CACHE_KEY_VERSION}`;
+    const generation = await this.cache.getGeneration(STRATEGY.generation);
+    const cacheKey = getCacheKey(STRATEGY, `${type_id}:${pg_id}`, generation);
 
     const cached = await this.cache.get(cacheKey);
     if (cached) {
-      try {
-        return typeof cached === 'string'
-          ? (JSON.parse(cached) as AlternativesV2Response)
-          : (cached as AlternativesV2Response);
-      } catch {
-        this.logger.warn(`Cache parse error for ${cacheKey}, recomputing`);
+      const payload = this.parseCachedPayload(cached, cacheKey);
+      if (payload) {
+        return this.buildResponse(this.sliceToLimit(payload, limit));
       }
     }
 
@@ -72,7 +96,7 @@ export class RmAlternativesService extends SupabaseBaseService {
     // only fail at runtime (incident root cause for run 26101726823).
     const { data, error } = await this.callRpc<RpcPayload>(
       'get_soft_404_alternatives',
-      { p_type_id: type_id, p_pg_id: pg_id, p_limit: limit },
+      { p_type_id: type_id, p_pg_id: pg_id, p_limit: RPC_CANONICAL_LIMIT },
       { source: 'api' as const },
     );
 
@@ -90,25 +114,19 @@ export class RmAlternativesService extends SupabaseBaseService {
           error?.message ?? 'no data'
         }`,
       );
-      const empty = this.buildResponse({
-        alternativeVehicles: [],
-        alternativeGammes: [],
-        relatedModels: [],
-      });
       // Short TTL on error path: thundering-herd protection without long-window
       // cache poisoning. If the underlying issue clears (key re-synced, RLS
       // policy fixed, transient timeout), recovery is bounded to 30s.
       await this.cache.set(
         cacheKey,
-        JSON.stringify(empty),
+        JSON.stringify(EMPTY_PAYLOAD),
         CACHE_TTL_ERROR_SECONDS,
       );
-      return empty;
+      return this.buildResponse(EMPTY_PAYLOAD);
     }
 
-    const response = this.buildResponse(data);
-    await this.cache.set(cacheKey, JSON.stringify(response), CACHE_TTL_SECONDS);
-    return response;
+    await this.cache.set(cacheKey, JSON.stringify(data), CACHE_TTL_SECONDS);
+    return this.buildResponse(this.sliceToLimit(data, limit));
   }
 
   /**
@@ -132,6 +150,34 @@ export class RmAlternativesService extends SupabaseBaseService {
         .join(',') +
       '}'
     );
+  }
+
+  /**
+   * Tranche préfixe : reproduit exactement `LEAST(n, p_limit)` de la RPC sur
+   * le payload calculé au limit canonique. `relatedModels` est borné à 4 par
+   * la RPC indépendamment de `p_limit` — jamais tranché.
+   */
+  private sliceToLimit(payload: RpcPayload, limit: number): RpcPayload {
+    return {
+      alternativeVehicles: payload.alternativeVehicles.slice(0, limit),
+      alternativeGammes: payload.alternativeGammes.slice(0, limit),
+      relatedModels: payload.relatedModels,
+    };
+  }
+
+  private parseCachedPayload(
+    cached: unknown,
+    cacheKey: string,
+  ): RpcPayload | null {
+    try {
+      const parsed: unknown =
+        typeof cached === 'string' ? JSON.parse(cached) : cached;
+      if (isRpcPayload(parsed)) return parsed;
+      this.logger.warn(`Cache shape mismatch for ${cacheKey}, recomputing`);
+    } catch {
+      this.logger.warn(`Cache parse error for ${cacheKey}, recomputing`);
+    }
+    return null;
   }
 
   private buildResponse(payload: RpcPayload): AlternativesV2Response {

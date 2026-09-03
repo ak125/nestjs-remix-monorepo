@@ -18,7 +18,10 @@ import {
   OperationFailedException,
   DomainNotFoundException,
 } from '@common/exceptions';
-import { RmBuilderService } from '../services/rm-builder.service';
+import {
+  RmBuilderService,
+  PAGE_V2_CANONICAL_LIMIT,
+} from '../services/rm-builder.service';
 import { RmAlternativesService } from '../services/rm-alternatives.service';
 import { RmSoft404TrackerService } from '../services/rm-soft404-tracker.service';
 import { TrackSoft404BodySchema } from '../dto/alternatives-v2.dto';
@@ -147,7 +150,10 @@ export class RmController {
   async getPageV2(
     @Query('gamme_id', ParseIntPipe) gamme_id: number,
     @Query('vehicle_id', ParseIntPipe) vehicle_id: number,
-    @Query('limit', new DefaultValuePipe(200), ParseIntPipe) limit: number,
+    // Défaut = limit canonique du cache rm:page-v2 (tout autre limit contourne
+    // le cache). Partagé avec RmBuilderService pour ne pas dériver.
+    @Query('limit', new DefaultValuePipe(PAGE_V2_CANONICAL_LIMIT), ParseIntPipe)
+    limit: number,
   ) {
     const startTime = performance.now();
     const clampedLimit = Math.min(Math.max(limit, 1), 500);

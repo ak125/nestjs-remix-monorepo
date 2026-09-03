@@ -1,0 +1,1755 @@
+{
+  "schema": "r2-golden/v1",
+  "captured_at": "2026-09-02T00:50:13.509Z",
+  "captured_from": "http://localhost:3000",
+  "git_sha": "b9bffc494f7816b165e39ab2d903f55124142d72",
+  "fixtures": [
+    {
+      "id": "plaquettes-402-x-57414",
+      "kind": "page-v2",
+      "gamme_id": 402,
+      "vehicle_id": 57414,
+      "why": "gamme populaire peuplée (plaquettes) : 2 côtés (critères Avant/Arrière), 5 groupes, 16 marques, 21 OEM ; contient des pièces sans image et des piece_position null",
+      "expected": {
+        "classification": "ok",
+        "success": true,
+        "count": 56,
+        "relationsCount": 56,
+        "products": [
+          {
+            "piece_id": 70707,
+            "pm_id": 730,
+            "quality": "OE",
+            "piece_position": "Avant",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 70892,
+            "pm_id": 730,
+            "quality": "OE",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 70902,
+            "pm_id": 730,
+            "quality": "OE",
+            "piece_position": "Avant",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 70915,
+            "pm_id": 730,
+            "quality": "OE",
+            "piece_position": "Avant",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 618990,
+            "pm_id": 730,
+            "quality": "OE",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Accessoires de plaquette",
+            "is_accessory": true
+          },
+          {
+            "piece_id": 1091574,
+            "pm_id": 380,
+            "quality": "OE",
+            "piece_position": "Avant",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 1091575,
+            "pm_id": 380,
+            "quality": "OE",
+            "piece_position": "Avant",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 1091576,
+            "pm_id": 380,
+            "quality": "OE",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 1349864,
+            "pm_id": 1780,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 1356255,
+            "pm_id": 1780,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 1821091,
+            "pm_id": 3410,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 1821096,
+            "pm_id": 3410,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 1821098,
+            "pm_id": 3410,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 1957088,
+            "pm_id": 2590,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 1960005,
+            "pm_id": 2590,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 1960834,
+            "pm_id": 2590,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 2006174,
+            "pm_id": 4540,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 2006352,
+            "pm_id": 4540,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 2006896,
+            "pm_id": 4540,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 2007140,
+            "pm_id": 4540,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 2012668,
+            "pm_id": 4540,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 2012675,
+            "pm_id": 4540,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 3747891,
+            "pm_id": 4120,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 3747952,
+            "pm_id": 4120,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 4383187,
+            "pm_id": 4540,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Accessoires de plaquette",
+            "is_accessory": true
+          },
+          {
+            "piece_id": 4383592,
+            "pm_id": 4540,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Accessoires de plaquette",
+            "is_accessory": true
+          },
+          {
+            "piece_id": 5086265,
+            "pm_id": 3130,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Accessoires de plaquette",
+            "is_accessory": true
+          },
+          {
+            "piece_id": 5088843,
+            "pm_id": 3130,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Accessoires de plaquette",
+            "is_accessory": true
+          },
+          {
+            "piece_id": 5192414,
+            "pm_id": 670,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 5192415,
+            "pm_id": 670,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 5979533,
+            "pm_id": 3420,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 5979597,
+            "pm_id": 3420,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 6476530,
+            "pm_id": 1810,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 6476534,
+            "pm_id": 1810,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 6672973,
+            "pm_id": 4670,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 6672974,
+            "pm_id": 4670,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 6672975,
+            "pm_id": 4670,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 7305602,
+            "pm_id": 1270,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 7305628,
+            "pm_id": 1270,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 7305631,
+            "pm_id": 1270,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 7305632,
+            "pm_id": 1270,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 7357890,
+            "pm_id": 1270,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Accessoires de plaquette",
+            "is_accessory": true
+          },
+          {
+            "piece_id": 7357897,
+            "pm_id": 1270,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Accessoires de plaquette",
+            "is_accessory": true
+          },
+          {
+            "piece_id": 7481987,
+            "pm_id": 3140,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 7481988,
+            "pm_id": 3140,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 7482064,
+            "pm_id": 3140,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 7736200,
+            "pm_id": 810,
+            "quality": "OE",
+            "piece_position": "Avant",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 7736201,
+            "pm_id": 810,
+            "quality": "OE",
+            "piece_position": "Avant",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 7736202,
+            "pm_id": 810,
+            "quality": "OE",
+            "piece_position": "Avant",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 7736203,
+            "pm_id": 810,
+            "quality": "OE",
+            "piece_position": "Avant",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 7736206,
+            "pm_id": 810,
+            "quality": "OE",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Plaquettes de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 7877469,
+            "pm_id": 4670,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Accessoires de plaquette",
+            "is_accessory": true
+          },
+          {
+            "piece_id": 7877473,
+            "pm_id": 4670,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Accessoires de plaquette",
+            "is_accessory": true
+          },
+          {
+            "piece_id": 12176990,
+            "pm_id": 2910,
+            "quality": "EQUIV",
+            "piece_position": null,
+            "filtre_gamme": null,
+            "is_accessory": true
+          },
+          {
+            "piece_id": 12483085,
+            "pm_id": 4540,
+            "quality": "EQUIV",
+            "piece_position": null,
+            "filtre_gamme": null,
+            "is_accessory": true
+          },
+          {
+            "piece_id": 12483090,
+            "pm_id": 4540,
+            "quality": "EQUIV",
+            "piece_position": null,
+            "filtre_gamme": null,
+            "is_accessory": true
+          }
+        ],
+        "groups": [
+          {
+            "filtre_gamme": "Accessoires de plaquette",
+            "filtre_side": "Arrière",
+            "piece_ids": [
+              618990,
+              4383592,
+              5088843,
+              7357897,
+              7877473
+            ],
+            "oemRefs": []
+          },
+          {
+            "filtre_gamme": "Accessoires de plaquette",
+            "filtre_side": "Avant",
+            "piece_ids": [
+              4383187,
+              5086265,
+              7357890,
+              7877469
+            ],
+            "oemRefs": []
+          },
+          {
+            "filtre_gamme": null,
+            "filtre_side": null,
+            "piece_ids": [
+              12176990,
+              12483085,
+              12483090
+            ],
+            "oemRefs": []
+          },
+          {
+            "filtre_gamme": "Plaquettes de frein",
+            "filtre_side": "Arrière",
+            "piece_ids": [
+              70892,
+              1091576,
+              1356255,
+              1821098,
+              1960005,
+              2012668,
+              2012675,
+              3747891,
+              5192415,
+              5979597,
+              6476534,
+              6672974,
+              7305628,
+              7482064,
+              7736206
+            ],
+            "oemRefs": [
+              "13300867",
+              "13300868",
+              "133192294",
+              "13319293",
+              "13404405",
+              "13411380",
+              "13473427",
+              "1680880080",
+              "42793718",
+              "95516192"
+            ]
+          },
+          {
+            "filtre_gamme": "Plaquettes de frein",
+            "filtre_side": "Avant",
+            "piece_ids": [
+              70707,
+              70902,
+              70915,
+              1091574,
+              1091575,
+              1349864,
+              1821091,
+              1821096,
+              1957088,
+              1960834,
+              2006174,
+              2006352,
+              2006896,
+              2007140,
+              3747952,
+              5192414,
+              5979533,
+              6476530,
+              6672973,
+              6672975,
+              7305602,
+              7305631,
+              7305632,
+              7481987,
+              7481988,
+              7736200,
+              7736201,
+              7736202,
+              7736203
+            ],
+            "oemRefs": [
+              "13301234",
+              "13356286",
+              "13374966",
+              "13412807",
+              "22799077",
+              "23242201",
+              "39126138",
+              "42570931",
+              "42589333",
+              "95516193",
+              "D13301207"
+            ]
+          }
+        ],
+        "filters": {
+          "sides": [
+            {
+              "value": "Arrière",
+              "count": 20
+            },
+            {
+              "value": "Avant",
+              "count": 33
+            }
+          ],
+          "brands": [
+            {
+              "pm_id": 380,
+              "count": 3
+            },
+            {
+              "pm_id": 670,
+              "count": 2
+            },
+            {
+              "pm_id": 730,
+              "count": 5
+            },
+            {
+              "pm_id": 810,
+              "count": 5
+            },
+            {
+              "pm_id": 1270,
+              "count": 6
+            },
+            {
+              "pm_id": 1780,
+              "count": 2
+            },
+            {
+              "pm_id": 1810,
+              "count": 2
+            },
+            {
+              "pm_id": 2590,
+              "count": 3
+            },
+            {
+              "pm_id": 2910,
+              "count": 1
+            },
+            {
+              "pm_id": 3130,
+              "count": 2
+            },
+            {
+              "pm_id": 3140,
+              "count": 3
+            },
+            {
+              "pm_id": 3410,
+              "count": 3
+            },
+            {
+              "pm_id": 3420,
+              "count": 2
+            },
+            {
+              "pm_id": 4120,
+              "count": 2
+            },
+            {
+              "pm_id": 4540,
+              "count": 10
+            },
+            {
+              "pm_id": 4670,
+              "count": 5
+            }
+          ],
+          "qualities": [
+            {
+              "value": "EQUIV",
+              "count": 43
+            },
+            {
+              "value": "OE",
+              "count": 13
+            }
+          ]
+        },
+        "oemRefs": [
+          "13300867",
+          "13300868",
+          "13301234",
+          "133192294",
+          "13319293",
+          "13356286",
+          "13374966",
+          "13404405",
+          "13411380",
+          "13412807",
+          "13473427",
+          "1680880080",
+          "22799077",
+          "23242201",
+          "39126138",
+          "42570931",
+          "42589333",
+          "42793718",
+          "95516192",
+          "95516193",
+          "D13301207"
+        ],
+        "crossSelling": []
+      }
+    },
+    {
+      "id": "disques-82-x-57414",
+      "kind": "page-v2",
+      "gamme_id": 82,
+      "vehicle_id": 57414,
+      "why": "seconde gamme freinage peuplée sur le même véhicule : 2 côtés, 3 groupes, 17 marques, 18 OEM",
+      "expected": {
+        "classification": "ok",
+        "success": true,
+        "count": 61,
+        "relationsCount": 61,
+        "products": [
+          {
+            "piece_id": 67153,
+            "pm_id": 730,
+            "quality": "OE",
+            "piece_position": "Avant",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 67154,
+            "pm_id": 730,
+            "quality": "OE",
+            "piece_position": "Avant",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 67155,
+            "pm_id": 730,
+            "quality": "OE",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 67156,
+            "pm_id": 730,
+            "quality": "OE",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 516335,
+            "pm_id": 810,
+            "quality": "OE",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 516338,
+            "pm_id": 810,
+            "quality": "OE",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 552189,
+            "pm_id": 810,
+            "quality": "OE",
+            "piece_position": "Avant",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 552191,
+            "pm_id": 810,
+            "quality": "OE",
+            "piece_position": "Avant",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 552192,
+            "pm_id": 810,
+            "quality": "OE",
+            "piece_position": "Avant",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 552194,
+            "pm_id": 810,
+            "quality": "OE",
+            "piece_position": "Avant",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 552196,
+            "pm_id": 810,
+            "quality": "OE",
+            "piece_position": "Avant",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 1641751,
+            "pm_id": 3410,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 1641769,
+            "pm_id": 3410,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 1641789,
+            "pm_id": 3410,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 1641807,
+            "pm_id": 3410,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 1940812,
+            "pm_id": 380,
+            "quality": "OE",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 1940813,
+            "pm_id": 380,
+            "quality": "OE",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 1941647,
+            "pm_id": 380,
+            "quality": "OE",
+            "piece_position": "Avant",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 1941648,
+            "pm_id": 380,
+            "quality": "OE",
+            "piece_position": "Avant",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 2016691,
+            "pm_id": 2590,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 2029807,
+            "pm_id": 2590,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 2029850,
+            "pm_id": 2590,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 2029906,
+            "pm_id": 2590,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 2726140,
+            "pm_id": 1780,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 2726178,
+            "pm_id": 1780,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 2726292,
+            "pm_id": 1780,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 2726573,
+            "pm_id": 1780,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 3688313,
+            "pm_id": 4120,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 3688314,
+            "pm_id": 4120,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 3688383,
+            "pm_id": 4120,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 4828696,
+            "pm_id": 4540,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 4829125,
+            "pm_id": 4540,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 4829130,
+            "pm_id": 4540,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 4829134,
+            "pm_id": 4540,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 5192628,
+            "pm_id": 670,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 5192629,
+            "pm_id": 670,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 5192631,
+            "pm_id": 670,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 5216316,
+            "pm_id": 670,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 5504660,
+            "pm_id": 1270,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 5504768,
+            "pm_id": 1270,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 5979012,
+            "pm_id": 3420,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 5979048,
+            "pm_id": 3420,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 6059574,
+            "pm_id": 1810,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 6059575,
+            "pm_id": 1810,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 6059578,
+            "pm_id": 1810,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 6059582,
+            "pm_id": 1810,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 6059585,
+            "pm_id": 1810,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 6069905,
+            "pm_id": 4670,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 6069919,
+            "pm_id": 4670,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 6070749,
+            "pm_id": 4670,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 6071045,
+            "pm_id": 4670,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 7484113,
+            "pm_id": 3140,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 7484114,
+            "pm_id": 3140,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 7484115,
+            "pm_id": 3140,
+            "quality": "EQUIV",
+            "piece_position": "Avant",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 7484117,
+            "pm_id": 3140,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 8559944,
+            "pm_id": 3420,
+            "quality": "EQUIV",
+            "piece_position": "Arrière",
+            "filtre_gamme": "Disque de frein",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 12172050,
+            "pm_id": 2910,
+            "quality": "EQUIV",
+            "piece_position": null,
+            "filtre_gamme": null,
+            "is_accessory": true
+          },
+          {
+            "piece_id": 12185557,
+            "pm_id": 4820,
+            "quality": "EQUIV",
+            "piece_position": null,
+            "filtre_gamme": null,
+            "is_accessory": true
+          },
+          {
+            "piece_id": 12185723,
+            "pm_id": 4820,
+            "quality": "EQUIV",
+            "piece_position": null,
+            "filtre_gamme": null,
+            "is_accessory": true
+          },
+          {
+            "piece_id": 12218327,
+            "pm_id": 810,
+            "quality": "OE",
+            "piece_position": null,
+            "filtre_gamme": null,
+            "is_accessory": true
+          },
+          {
+            "piece_id": 12489145,
+            "pm_id": 4290,
+            "quality": "EQUIV",
+            "piece_position": null,
+            "filtre_gamme": null,
+            "is_accessory": true
+          }
+        ],
+        "groups": [
+          {
+            "filtre_gamme": "Disque de frein",
+            "filtre_side": "Arrière",
+            "piece_ids": [
+              67155,
+              67156,
+              516335,
+              516338,
+              1641769,
+              1641807,
+              1940812,
+              1940813,
+              2029850,
+              2029906,
+              2726140,
+              2726292,
+              3688313,
+              3688383,
+              4829125,
+              4829134,
+              5192628,
+              5216316,
+              5504660,
+              5504768,
+              5979048,
+              6059582,
+              6059585,
+              6069905,
+              6069919,
+              7484114,
+              7484117,
+              8559944
+            ],
+            "oemRefs": [
+              "13 502 136",
+              "13 502 139",
+              "13 502 864",
+              "13502134",
+              "13502135",
+              "13505759",
+              "23118282",
+              "23118283"
+            ]
+          },
+          {
+            "filtre_gamme": "Disque de frein",
+            "filtre_side": "Avant",
+            "piece_ids": [
+              67153,
+              67154,
+              552189,
+              552191,
+              552192,
+              552194,
+              552196,
+              1641751,
+              1641789,
+              1941647,
+              1941648,
+              2016691,
+              2029807,
+              2726178,
+              2726573,
+              3688314,
+              4828696,
+              4829130,
+              5192629,
+              5192631,
+              5979012,
+              6059574,
+              6059575,
+              6059578,
+              6070749,
+              6071045,
+              7484113,
+              7484115
+            ],
+            "oemRefs": [
+              "13 502 824",
+              "13502044",
+              "13502045",
+              "13502051",
+              "13502052",
+              "13502053",
+              "13503988",
+              "23118060",
+              "23118274",
+              "23118275"
+            ]
+          },
+          {
+            "filtre_gamme": null,
+            "filtre_side": null,
+            "piece_ids": [
+              12172050,
+              12185557,
+              12185723,
+              12218327,
+              12489145
+            ],
+            "oemRefs": []
+          }
+        ],
+        "filters": {
+          "sides": [
+            {
+              "value": "Arrière",
+              "count": 28
+            },
+            {
+              "value": "Avant",
+              "count": 28
+            }
+          ],
+          "brands": [
+            {
+              "pm_id": 380,
+              "count": 4
+            },
+            {
+              "pm_id": 670,
+              "count": 4
+            },
+            {
+              "pm_id": 730,
+              "count": 4
+            },
+            {
+              "pm_id": 810,
+              "count": 8
+            },
+            {
+              "pm_id": 1270,
+              "count": 2
+            },
+            {
+              "pm_id": 1780,
+              "count": 4
+            },
+            {
+              "pm_id": 1810,
+              "count": 5
+            },
+            {
+              "pm_id": 2590,
+              "count": 4
+            },
+            {
+              "pm_id": 2910,
+              "count": 1
+            },
+            {
+              "pm_id": 3140,
+              "count": 4
+            },
+            {
+              "pm_id": 3410,
+              "count": 4
+            },
+            {
+              "pm_id": 3420,
+              "count": 3
+            },
+            {
+              "pm_id": 4120,
+              "count": 3
+            },
+            {
+              "pm_id": 4290,
+              "count": 1
+            },
+            {
+              "pm_id": 4540,
+              "count": 4
+            },
+            {
+              "pm_id": 4670,
+              "count": 4
+            },
+            {
+              "pm_id": 4820,
+              "count": 2
+            }
+          ],
+          "qualities": [
+            {
+              "value": "EQUIV",
+              "count": 45
+            },
+            {
+              "value": "OE",
+              "count": 16
+            }
+          ]
+        },
+        "oemRefs": [
+          "13 502 136",
+          "13 502 139",
+          "13 502 824",
+          "13 502 864",
+          "13502044",
+          "13502045",
+          "13502051",
+          "13502052",
+          "13502053",
+          "13502134",
+          "13502135",
+          "13503988",
+          "13505759",
+          "23118060",
+          "23118274",
+          "23118275",
+          "23118282",
+          "23118283"
+        ],
+        "crossSelling": []
+      }
+    },
+    {
+      "id": "filtre-huile-7-x-57414",
+      "kind": "page-v2",
+      "gamme_id": 7,
+      "vehicle_id": 57414,
+      "why": "gamme peuplée sans critère de côté (13 pièces, 2 groupes, 0 side) — couvre le chemin criteria-less",
+      "expected": {
+        "classification": "ok",
+        "success": true,
+        "count": 13,
+        "relationsCount": 13,
+        "products": [
+          {
+            "piece_id": 830645,
+            "pm_id": 1780,
+            "quality": "EQUIV",
+            "piece_position": null,
+            "filtre_gamme": "Filtre à huile",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 2674168,
+            "pm_id": 1780,
+            "quality": "EQUIV",
+            "piece_position": null,
+            "filtre_gamme": "Filtre à huile",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 5191397,
+            "pm_id": 670,
+            "quality": "EQUIV",
+            "piece_position": null,
+            "filtre_gamme": "Filtre à huile",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 5191419,
+            "pm_id": 670,
+            "quality": "EQUIV",
+            "piece_position": null,
+            "filtre_gamme": "Filtre à huile",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 5858769,
+            "pm_id": 1090,
+            "quality": "EQUIV",
+            "piece_position": null,
+            "filtre_gamme": "Filtre à huile",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 5969831,
+            "pm_id": 3420,
+            "quality": "EQUIV",
+            "piece_position": null,
+            "filtre_gamme": "Filtre à huile",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 6381971,
+            "pm_id": 730,
+            "quality": "OE",
+            "piece_position": null,
+            "filtre_gamme": "Filtre à huile",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 6382215,
+            "pm_id": 730,
+            "quality": "OE",
+            "piece_position": null,
+            "filtre_gamme": "Filtre à huile",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 6442773,
+            "pm_id": 1180,
+            "quality": "EQUIV",
+            "piece_position": null,
+            "filtre_gamme": "Filtre à huile",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 6494376,
+            "pm_id": 2590,
+            "quality": "EQUIV",
+            "piece_position": null,
+            "filtre_gamme": "Filtre à huile",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 6494560,
+            "pm_id": 3130,
+            "quality": "EQUIV",
+            "piece_position": null,
+            "filtre_gamme": "Filtre à huile",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 7256504,
+            "pm_id": 3820,
+            "quality": "EQUIV",
+            "piece_position": null,
+            "filtre_gamme": "Filtre à huile",
+            "is_accessory": false
+          },
+          {
+            "piece_id": 12475034,
+            "pm_id": 700,
+            "quality": "ECO",
+            "piece_position": null,
+            "filtre_gamme": null,
+            "is_accessory": true
+          }
+        ],
+        "groups": [
+          {
+            "filtre_gamme": "Filtre à huile",
+            "filtre_side": null,
+            "piece_ids": [
+              830645,
+              2674168,
+              5191397,
+              5191419,
+              5858769,
+              5969831,
+              6381971,
+              6382215,
+              6442773,
+              6494376,
+              6494560,
+              7256504
+            ],
+            "oemRefs": [
+              "25 195 775",
+              "55560748",
+              "93190129"
+            ]
+          },
+          {
+            "filtre_gamme": null,
+            "filtre_side": null,
+            "piece_ids": [
+              12475034
+            ],
+            "oemRefs": []
+          }
+        ],
+        "filters": {
+          "sides": [],
+          "brands": [
+            {
+              "pm_id": 670,
+              "count": 2
+            },
+            {
+              "pm_id": 700,
+              "count": 1
+            },
+            {
+              "pm_id": 730,
+              "count": 2
+            },
+            {
+              "pm_id": 1090,
+              "count": 1
+            },
+            {
+              "pm_id": 1180,
+              "count": 1
+            },
+            {
+              "pm_id": 1780,
+              "count": 2
+            },
+            {
+              "pm_id": 2590,
+              "count": 1
+            },
+            {
+              "pm_id": 3130,
+              "count": 1
+            },
+            {
+              "pm_id": 3420,
+              "count": 1
+            },
+            {
+              "pm_id": 3820,
+              "count": 1
+            }
+          ],
+          "qualities": [
+            {
+              "value": "ECO",
+              "count": 1
+            },
+            {
+              "value": "EQUIV",
+              "count": 10
+            },
+            {
+              "value": "OE",
+              "count": 2
+            }
+          ]
+        },
+        "oemRefs": [
+          "25 195 775",
+          "55560748",
+          "93190129"
+        ],
+        "crossSelling": []
+      }
+    },
+    {
+      "id": "kit-freins-3859-x-11836",
+      "kind": "page-v2",
+      "gamme_id": 3859,
+      "vehicle_id": 11836,
+      "why": "couple vide (soft-404 fixture #1, BMW 525d F10) : classification empty, 0 relation",
+      "expected": {
+        "classification": "empty",
+        "success": true,
+        "count": 0,
+        "relationsCount": 0,
+        "products": [],
+        "groups": [],
+        "filters": {
+          "sides": [],
+          "brands": [],
+          "qualities": []
+        },
+        "oemRefs": [],
+        "crossSelling": []
+      }
+    },
+    {
+      "id": "alt-3859-x-11836",
+      "kind": "alternatives",
+      "gamme_id": 3859,
+      "type_id": 11836,
+      "why": "alternatives soft-404 dérivées de pieces_relation_type (rtp_pg_id ×5 dans la RPC) — chemin mené par pg_id, dégradé par B7",
+      "expected": {
+        "vehicles": [
+          "3726",
+          "3825",
+          "4650",
+          "32177"
+        ],
+        "gammes": [
+          2,
+          4,
+          82,
+          273,
+          402,
+          470,
+          479,
+          2234
+        ],
+        "models": [
+          33021,
+          33026,
+          33030,
+          33032
+        ]
+      }
+    },
+    {
+      "id": "alt-4-x-16023",
+      "kind": "alternatives",
+      "gamme_id": 4,
+      "type_id": 16023,
+      "why": "véhicule à forte fratrie (BMW E60 alternateur, 800+ siblings) — fixture la plus lourde du smoke soft-404",
+      "expected": {
+        "vehicles": [
+          "14802",
+          "14924",
+          "15271",
+          "16828",
+          "17176",
+          "17291"
+        ],
+        "gammes": [
+          8,
+          82,
+          107,
+          188,
+          273,
+          402,
+          424,
+          854
+        ],
+        "models": [
+          33017,
+          33018,
+          33019,
+          33020
+        ]
+      }
+    },
+    {
+      "id": "alt-7-x-11688",
+      "kind": "alternatives",
+      "gamme_id": 7,
+      "type_id": 11688,
+      "why": "alternatives sur un couple vide hors freinage (filtre à huile, Sandero Stepway)",
+      "expected": {
+        "vehicles": [
+          "2049",
+          "2114",
+          "12523",
+          "14048",
+          "23487",
+          "32992"
+        ],
+        "gammes": [
+          70,
+          82,
+          107,
+          298,
+          318,
+          402,
+          560,
+          2462
+        ],
+        "models": [
+          140000,
+          140001,
+          140002,
+          140003
+        ]
+      }
+    }
+  ]
+}
