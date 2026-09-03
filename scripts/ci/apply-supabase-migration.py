@@ -82,8 +82,12 @@ CREATE INDEX IF NOT EXISTS idx_schema_migrations_status
   ON infra.schema_migrations (status)
   WHERE status IN ('applying', 'failed');
 
+-- Audit trail for --reapply : why a row was rewritten. Additive and idempotent,
+-- so it lands on ledgers created before this column existed.
+ALTER TABLE infra.schema_migrations ADD COLUMN IF NOT EXISTS note TEXT;
+
 GRANT SELECT, INSERT ON infra.schema_migrations TO service_role;
-GRANT UPDATE (status, applied_at, execution_ms, error_message)
+GRANT UPDATE (status, applied_at, execution_ms, error_message, note)
   ON infra.schema_migrations TO service_role;
 """
 
@@ -987,7 +991,207 @@ def run_self_test() -> int:
     assert report_stale_pending([], 30) == 0
     assert report_stale_pending([("20260429_old", 127)], 30) == 1
 
+    # 7. Re-apply safety ---------------------------------------------------
+    assert unsafe_to_rerun("INSERT INTO t (a) VALUES (1);") != []
+    assert unsafe_to_rerun("INSERT INTO t (a) VALUES (1) ON CONFLICT DO NOTHING;") == []
+    assert unsafe_to_rerun(
+        "INSERT INTO t (a) SELECT 1 WHERE NOT EXISTS (SELECT 1 FROM t);"
+    ) == []
+    assert unsafe_to_rerun("TRUNCATE t;") != []
+    assert unsafe_to_rerun("DROP TABLE t;") != []
+    assert unsafe_to_rerun("DROP TABLE IF EXISTS t;") == []
+    assert unsafe_to_rerun("DELETE FROM t;") != []
+    assert unsafe_to_rerun("DELETE FROM t WHERE a = 1;") == []
+    # An INSERT parked inside a block comment is dead text, not a hazard. This is
+    # the case a grep-based check gets wrong on 20260429.
+    assert unsafe_to_rerun("/* disabled\nINSERT INTO t (a) VALUES (1);\n*/\nSELECT 1;") == []
+    assert unsafe_to_rerun("SELECT 'INSERT INTO t VALUES (1)';") == []
+
+    _lm = LocalMigration(id="x", path=Path("x.sql"), checksum="bbb",
+                         non_transactional=False)
+    _rm = RemoteMigration(id="x", checksum="aaa", status="applied",
+                          applied_at="2026-05-16", runner="baseline")
+    _ok_sql = "CREATE OR REPLACE VIEW v AS SELECT 1;"
+    assert reapply_precheck(_lm, _rm, _ok_sql) is None
+    # Not recorded at all.
+    assert "not recorded" in reapply_precheck(_lm, None, _ok_sql)
+    # Wrong status.
+    assert "not 'applied'" in reapply_precheck(
+        _lm, RemoteMigration("x", "aaa", "failed", None, None), _ok_sql)
+    # No drift.
+    assert "not in drift" in reapply_precheck(
+        _lm, RemoteMigration("x", "bbb", "applied", None, None), _ok_sql)
+    # Non-transactional is out of scope.
+    assert "non_transactional" in reapply_precheck(
+        LocalMigration("x", Path("x.sql"), "bbb", True), _rm, _ok_sql)
+    # Non-replayable SQL.
+    assert "not re-runnable" in reapply_precheck(
+        _lm, _rm, "INSERT INTO t (a) VALUES (1);")
+    # The real drifted file, when the checkout has it : must be re-runnable.
+    _real = MIGRATIONS_DIR / "20260429_diag_maintenance_via_kg.sql"
+    if _real.exists():
+        _r = unsafe_to_rerun(_real.read_text(encoding="utf-8"))
+        assert _r == [], _r
+
     print("OK — all self-tests passed.")
+    return 0
+
+
+# ── Re-apply a drifted migration ────────────────────────────────────────────
+#
+# A `drift` row means the ledger records checksum A while the file now holds
+# checksum B. The engine refuses every apply and dry-run until that is resolved,
+# and it has no way out : `checksum` is not in the column-scoped UPDATE grant,
+# and there is no DELETE grant (append-only ledger).
+#
+# The tempting fix — rewrite the checksum — makes the row *claim* the new bytes
+# were applied. That is an assertion, not a fact, and it silently ratifies a row
+# that may never have been true. Real case: 20260429_diag_maintenance_via_kg was
+# swept into `applied` by the 2026-05-16 bulk baseline, while PR #1084 states the
+# original migration "was never applied".
+#
+# So instead of asserting, re-execute. After a --reapply the row is true because
+# the bytes just ran, not because someone said so. That is only safe for a file
+# that can run twice, which is checked mechanically below rather than promised in
+# a header comment.
+
+UNGUARDED_INSERT_RE = re.compile(r"^\s*INSERT\s+INTO\s+([A-Za-z_][\w.\"]*)", re.IGNORECASE)
+INSERT_GUARD_RE = re.compile(r"ON\s+CONFLICT|WHERE\s+NOT\s+EXISTS", re.IGNORECASE)
+DESTRUCTIVE_RE = re.compile(
+    r"^\s*(DROP\s+TABLE(?!\s+IF\s+EXISTS)|TRUNCATE|DELETE\s+FROM(?![\s\S]*\bWHERE\b))",
+    re.IGNORECASE,
+)
+
+
+def unsafe_to_rerun(sql: str) -> "list[str]":
+    """Reasons this SQL must not be executed a second time. Empty = re-runnable.
+
+    Lexer-backed, so a statement quoted inside a string, a dollar-quoted body or
+    a block comment does not produce a hit. That matters : 20260429 keeps a whole
+    disabled INSERT inside a /* ... */ block for traceability, and a grep-based
+    check reports it as a duplication hazard when it is dead text.
+    """
+    reasons = []
+    for stmt in split_sql_statements(sql):
+        clean = LEADING_NOISE_RE.sub("", stmt)
+        hit = UNGUARDED_INSERT_RE.match(clean)
+        if hit and not INSERT_GUARD_RE.search(clean):
+            reasons.append(
+                f"INSERT INTO {hit.group(1)} without ON CONFLICT / WHERE NOT "
+                "EXISTS — a second run would duplicate rows"
+            )
+        d = DESTRUCTIVE_RE.match(clean)
+        if d:
+            reasons.append(
+                f"destructive statement `{d.group(1).split()[0].upper()}` — "
+                "not replayable"
+            )
+    return reasons
+
+
+def reapply_precheck(mig, row, sql) -> "str | None":
+    """Why `mig` cannot be re-applied, or None when it can.
+
+    Pure : no database. `row` is the RemoteMigration or None.
+    """
+    if row is None:
+        return "not recorded in the ledger — a normal apply covers this"
+    if row.status != "applied":
+        return f"ledger status is '{row.status}', not 'applied' — resolve that first"
+    if row.checksum == mig.checksum:
+        return "not in drift — the ledger already matches the file"
+    if mig.non_transactional:
+        return (
+            "marked @non_transactional — re-apply only supports the "
+            "transactional path, where the SQL and the ledger row commit together"
+        )
+    unsafe = unsafe_to_rerun(sql)
+    if unsafe:
+        return "not re-runnable: " + " ; ".join(unsafe)
+    return None
+
+
+def run_reapply(conn, local, remote, target_id: str, runner: str, git_sha: str) -> int:
+    mig = next((m for m in local if m.id == target_id), None)
+    if mig is None:
+        fail(8, f"{target_id}: no such file under {MIGRATIONS_DIR}/.")
+
+    sql = mig.path.read_text(encoding="utf-8")
+    row = remote.get(target_id)
+    why = reapply_precheck(mig, row, sql)
+    if why:
+        fail(8, f"{target_id}: {why}.")
+
+    # The columns this rewrites are NOT in the service_role grant : only the table
+    # owner can. Say so plainly instead of surfacing a bare 42501 mid-transaction.
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT current_user,
+                   has_column_privilege('infra.schema_migrations', 'checksum', 'UPDATE'),
+                   has_column_privilege('infra.schema_migrations', 'runner', 'UPDATE'),
+                   has_column_privilege('infra.schema_migrations', 'git_sha', 'UPDATE')
+            """
+        )
+        who, c_ok, r_ok, g_ok = cur.fetchone()
+    if not (c_ok and r_ok and g_ok):
+        fail(
+            9,
+            f"role '{who}' cannot UPDATE checksum/runner/git_sha on "
+            "infra.schema_migrations (column-scoped grant). Re-apply needs the "
+            "table owner — the DATABASE_URL the engine bootstraps with.",
+        )
+
+    print(f"Re-applying {target_id}")
+    print(f"  ledger checksum : {row.checksum}")
+    print(f"  file checksum   : {mig.checksum}")
+    print(f"  recorded by     : {row.runner or '—'} at {row.applied_at or '—'}")
+    print(f"  statements      : {len(split_sql_statements(sql))}")
+
+    note = (
+        f"reapplied over a stale record: was checksum={row.checksum} "
+        f"runner={row.runner or '—'} applied_at={row.applied_at or '—'}"
+    )
+    reset_session(conn)
+    start = time.monotonic()
+    conn.autocommit = False
+    try:
+        with conn.cursor() as cur:
+            cur.execute(sql)
+            elapsed_ms = int((time.monotonic() - start) * 1000)
+            # Guarded on the OLD checksum : if anything moved under us, 0 rows
+            # match and we abort instead of reporting a silent success.
+            cur.execute(
+                """
+                UPDATE infra.schema_migrations
+                   SET checksum = %s, status = 'applied', applied_at = NOW(),
+                       execution_ms = %s, runner = %s, git_sha = %s, note = %s
+                 WHERE id = %s AND checksum = %s
+                """,
+                (mig.checksum, elapsed_ms, runner, git_sha, note,
+                 target_id, row.checksum),
+            )
+            if cur.rowcount != 1:
+                raise RuntimeError(
+                    f"ledger row for {target_id} changed during re-apply "
+                    f"({cur.rowcount} rows matched, expected 1) — rolled back"
+                )
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.autocommit = True
+
+    print(f"OK in {elapsed_ms}ms — ledger now records {mig.checksum}")
+    write_step_summary(
+        ["## Re-applied", "",
+         f"`{target_id}` re-executed and re-recorded in {elapsed_ms}ms.", "",
+         f"- previous checksum : `{row.checksum}`",
+         f"- new checksum      : `{mig.checksum}`",
+         f"- previous record   : {row.runner or '—'} at {row.applied_at or '—'}",
+         ""]
+    )
     return 0
 
 
@@ -1103,6 +1307,15 @@ def main(argv: list[str]) -> int:
         help="Print the migration state table and exit. Read-only on the data.",
     )
     parser.add_argument(
+        "--reapply", type=str, default="", metavar="ID",
+        help=(
+            "Re-execute ONE migration whose ledger row is in drift, then rewrite "
+            "that row from the run. Refuses unless the row is a drifted "
+            "'applied', the file is transactional, and it contains no statement "
+            "that would misbehave on a second run. Needs the table owner."
+        ),
+    )
+    parser.add_argument(
         "--no-bootstrap", action="store_true",
         help=(
             "Skip the ledger DDL/GRANT bootstrap. Only valid with --status : it "
@@ -1152,11 +1365,11 @@ def main(argv: list[str]) -> int:
     if args.self_test:
         return run_self_test()
 
-    if args.no_bootstrap and not args.status:
+    if args.no_bootstrap and (not args.status or args.reapply or args.baseline):
         fail(
             2,
-            "--no-bootstrap is only valid with --status : every write path needs "
-            "the ledger DDL to exist.",
+            "--no-bootstrap is only valid with a bare --status : every write path "
+            "needs the ledger DDL to exist.",
         )
 
     local = parse_local_migrations()
@@ -1188,6 +1401,15 @@ def main(argv: list[str]) -> int:
             remote = fetch_remote(conn)
 
         rows, summary = classify(local, remote)
+
+        # Identity of THIS run, needed by every write mode below.
+        runner = f"gh-actions:{os.environ.get('GITHUB_RUN_ID', 'local')}"
+        git_sha = os.environ.get("GITHUB_SHA", "")
+
+        if args.reapply:
+            return run_reapply(
+                conn, local, remote, args.reapply, runner, git_sha
+            )
 
         if args.baseline:
             return run_baseline(conn, local, remote, args.exclude)
@@ -1246,9 +1468,6 @@ def main(argv: list[str]) -> int:
                 mode = "non-tx" if m.non_transactional else "tx"
                 print(f"  would apply {m.id} ({mode})")
             return 0
-
-        runner = f"gh-actions:{os.environ.get('GITHUB_RUN_ID', 'local')}"
-        git_sha = os.environ.get("GITHUB_SHA", "")
 
         applied: list[tuple[str, int]] = []
         for m in pending:
