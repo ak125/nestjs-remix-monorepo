@@ -375,8 +375,8 @@ $function$;
 -- Restauration de l'ACL vivante après le DROP + CREATE.
 --
 -- POURQUOI CE BLOC EST NÉCESSAIRE
--- `DROP FUNCTION` (l.49) détruit l'ACL avec la fonction. Le `CREATE` qui suit
--- reçoit alors :
+-- Le `DROP FUNCTION IF EXISTS public.get_page_quality_features()` plus haut détruit
+-- l'ACL en même temps que la fonction. Le `CREATE` qui suit reçoit alors :
 --   * l'EXECUTE que PostgreSQL accorde à PUBLIC par défaut sur toute fonction, et
 --   * les default privileges Supabase du rôle postgres sur le schéma public
 --     ({postgres=X, anon=X, authenticated=X, service_role=X}).
@@ -384,6 +384,9 @@ $function$;
 -- mesurée le 2026-09-04 ne l'accorde qu'à postgres / authenticated / service_role :
 --   {postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}
 -- Sans ce bloc, la migration serait une RÉGRESSION de privilège silencieuse.
+--
+-- Les instructions sont désignées par leur nom, jamais par un numéro de ligne :
+-- une référence positionnelle pourrit au premier décalage du fichier.
 -- Réf mémoire : reference_supabase_default_privileges_grant_anon_execute_on_new_functions.
 -- ----------------------------------------------------------------------------
 REVOKE ALL ON FUNCTION public.get_page_quality_features() FROM PUBLIC;
