@@ -398,3 +398,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix+ledger-probe-truly-readonly`
 - **Décision** : fix(migrations): rendre la sonde de fraîcheur réellement en lecture seule + résumé exploitable
 - **Sortie** : PR #1387 | commits ac9227a4e
+
+## 2026-09-03 — feat+engine-reapply-drifted-migration (auto)
+
+- **Branche** : `feat+engine-reapply-drifted-migration`
+- **Décision** : feat(migrations): --reapply — réparer une ligne en drift par exécution, pas par affirmation
+- **Sortie** : PR #1389 | commits 9601898bf
