@@ -10110,7 +10110,6 @@
         "status": "LIVE",
         "usedBy": [
           "backend/src/modules/admin/services/gamme-detail-enricher.service.ts",
-          "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
           "backend/src/modules/blog/services/blog-article-relation.service.ts"
         ]
       },
@@ -29188,9 +29187,32 @@
         "manual"
       ],
       "domain": "D10",
+      "id": "backend/src/cache/cache.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/cache/cache.service.ts"
+      ],
+      "kind": "test",
+      "loc": 93,
+      "owner": "@ak125",
+      "path": "backend/src/cache/cache.service.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D10",
       "id": "backend/src/cache/cache.service.ts",
       "importedBy": [
         "backend/src/cache/cache.module.ts",
+        "backend/src/cache/cache.service.test.ts",
         "backend/src/modules/admin/services/command-center-reader.service.ts",
         "backend/src/modules/admin/services/registry-reader.service.ts",
         "backend/src/modules/admin/services/seo-control.service.ts",
@@ -29204,7 +29226,7 @@
         "events"
       ],
       "kind": "service",
-      "loc": 454,
+      "loc": 515,
       "owner": "@ak125",
       "path": "backend/src/cache/cache.service.ts",
       "risk": "medium",
@@ -30411,6 +30433,28 @@
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
+      "id": "backend/src/config/cache-ttl.config.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/config/cache-ttl.config.ts"
+      ],
+      "kind": "test",
+      "loc": 53,
+      "owner": "@ak125",
+      "path": "backend/src/config/cache-ttl.config.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
         "manual",
         "reachability"
       ],
@@ -30419,14 +30463,17 @@
       "importedBy": [
         "backend/src/cache/cache.service.ts",
         "backend/src/config/cache-store.factory.test.ts",
+        "backend/src/config/cache-ttl.config.test.ts",
         "backend/src/config/index.ts",
+        "backend/src/modules/admin/services/r1-keyword-plan-batch.service.test.ts",
+        "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
         "backend/src/modules/vehicles/services/brand-bestsellers.service.ts",
         "backend/src/modules/vehicles/services/vehicle-motor-codes.service.ts",
         "backend/src/modules/vehicles/services/vehicle-profile.service.ts"
       ],
       "imports": [],
       "kind": "config",
-      "loc": 409,
+      "loc": 510,
       "owner": "@ak125",
       "path": "backend/src/config/cache-ttl.config.ts",
       "risk": "medium",
@@ -36270,13 +36317,39 @@
         "manual"
       ],
       "domain": "D8",
+      "id": "backend/src/modules/admin/services/r1-keyword-plan-batch.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/config/cache-ttl.config.ts",
+        "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts"
+      ],
+      "kind": "test",
+      "loc": 176,
+      "owner": "@ak125/admin-team",
+      "path": "backend/src/modules/admin/services/r1-keyword-plan-batch.service.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
       "id": "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
-        "backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts"
+        "backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts",
+        "backend/src/modules/admin/services/r1-keyword-plan-batch.service.test.ts"
       ],
       "imports": [
+        "@cache/cache.service",
         "@database/services/supabase-base.service",
+        "backend/src/config/cache-ttl.config.ts",
         "backend/src/config/r1-keyword-plan.constants.ts",
         "backend/src/config/rag.config.ts",
         "backend/src/modules/admin/services/enricher-yaml-parser.service.ts",
@@ -36285,7 +36358,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 524,
+      "loc": 556,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
       "risk": "medium",
@@ -50274,7 +50347,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "controller",
-      "loc": 381,
+      "loc": 387,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/controllers/rm.controller.ts",
       "risk": "medium",
@@ -50354,9 +50427,29 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 187,
+      "loc": 305,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/services/__tests__/rm-alternatives.service.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LEGACY"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "backend/src/modules/rm/services/__tests__/rm-builder-page-v2-cache.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 274,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/rm/services/__tests__/rm-builder-page-v2-cache.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -50434,7 +50527,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 151,
+      "loc": 197,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/services/rm-alternatives.service.ts",
       "risk": "medium",
@@ -50454,7 +50547,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 919,
+      "loc": 991,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/services/rm-builder.service.ts",
       "risk": "medium",
@@ -64490,6 +64583,28 @@
         "manual"
       ],
       "domain": "D9",
+      "id": "backend/src/workers/processors/__tests__/seo-monitor.processor.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/workers/processors/seo-monitor.processor.ts"
+      ],
+      "kind": "test",
+      "loc": 139,
+      "owner": "@ak125",
+      "path": "backend/src/workers/processors/__tests__/seo-monitor.processor.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D9",
       "id": "backend/src/workers/processors/agentic.processor.ts",
       "importedBy": [
         "backend/src/workers/worker.module.ts"
@@ -64594,6 +64709,7 @@
       "domain": "D9",
       "id": "backend/src/workers/processors/seo-monitor.processor.ts",
       "importedBy": [
+        "backend/src/workers/processors/__tests__/seo-monitor.processor.test.ts",
         "backend/src/workers/worker.module.ts"
       ],
       "imports": [
@@ -64603,7 +64719,7 @@
         "backend/src/modules/admin/services/admin-job-health.service.ts"
       ],
       "kind": "service",
-      "loc": 438,
+      "loc": 458,
       "owner": "@ak125",
       "path": "backend/src/workers/processors/seo-monitor.processor.ts",
       "risk": "medium",
@@ -82721,7 +82837,7 @@
         "~/utils/seo/canonical"
       ],
       "kind": "route",
-      "loc": 821,
+      "loc": 836,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/blog-pieces-auto.conseils.$pg_alias.tsx",
       "risk": "medium",
@@ -84843,7 +84959,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 1241,
+      "loc": 1263,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/reference-auto.$slug.tsx",
       "risk": "medium",
@@ -87182,7 +87298,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 47,
+      "loc": 92,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/internal-api.server.ts",
       "risk": "medium",
@@ -89299,6 +89415,26 @@
         "manual"
       ],
       "domain": "D2",
+      "id": "frontend/tests/unit/internal-api-loopback.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 101,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/internal-api-loopback.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
       "id": "frontend/tests/unit/lazy-boundary.test.tsx",
       "importedBy": [],
       "imports": [],
@@ -89863,7 +89999,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 115,
+      "loc": 151,
       "owner": "@ak125",
       "path": "frontend/tests/unit/reference-auto-loader-parallel.test.ts",
       "risk": "medium",
@@ -95295,6 +95431,46 @@
         "manual"
       ],
       "domain": "D13",
+      "id": "scripts/ci/assert-r2-golden.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 507,
+      "owner": "@ak125",
+      "path": "scripts/ci/assert-r2-golden.mjs",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
+      "id": "scripts/ci/assert-r2-golden.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 632,
+      "owner": "@ak125",
+      "path": "scripts/ci/assert-r2-golden.test.mjs",
+      "risk": "medium",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
       "id": "scripts/ci/pr-2e-readiness-gate.mjs",
       "importedBy": [],
       "imports": [],
@@ -98036,15 +98212,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "98f10df3b19858e0d723a5a21218be5e599b0c3f6038a3672b10bbb02baf0e29",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "f6d7717a16309ad0fa9c995ff72f32241d63b9f06ab0d09213f4f305e24a9997",
+      ".spec/00-canon/repository-registry/ownership.yaml": "ef8aa7ac1331209b2b95f81f0c58db5de3e365fb3154c10d29de88784c2f659a",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
-      "audit/registry/db.json": "5615f6c8f657b5ebdf48b6add1216f66c227b805ae687b1f401c95e8d393fbf9",
+      "audit/registry/db.json": "c874feb59f5d00601c29a139560da9ecd2d63678eea0eddc4bb4fbd8d79672d1",
       "audit/registry/deps.json": "6f667991be593e37b2798c4ca0f0689d89c412731aa2bdf50000248da9f2c5bd",
-      "audit/registry/files.json": "af476ef3b420b209347e626df42fdcdbe6051327fd73a9bfc0ede839330eefc0",
+      "audit/registry/files.json": "c764b429d515654d426bf887ed5cf17ce246c4791b75c1e3862350b91f017ffd",
       "audit/registry/rpc.json": "e7d09287e11bb447da93a48d1a18e4c5ee13ad6667a6e10356a3af95d7463cbd",
       "audit/registry/runtime.json": "314a3bda98e2b9bb87a4b6a88a1efa131a3c12505d9e56b5f60eeebd23e5f70f"
     },
-    "sotFingerprint": "9575abc78d8e"
+    "sotFingerprint": "b2172e0ae8b0"
   },
   "runtime": [
     {
