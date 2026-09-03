@@ -10,6 +10,11 @@ import {
 import { pickGammeKeywordModifier } from '../../catalog/services/vehicle-aware-description.composer';
 import { SeoShadowObservatory } from '../../seo-shadow-observatory/seo-shadow-observatory.service';
 import {
+  CACHE_STRATEGIES,
+  getCacheKey,
+} from '../../../config/cache-ttl.config';
+import { classifyPageV2Result } from '../utils/page-v2-response';
+import {
   RmProduct,
   RmListing,
   ProductsResponse,
@@ -20,8 +25,55 @@ import {
   GetPageV2Params,
 } from '../rm.types';
 
-// Cache TTL: 1 hour (3600 seconds)
+// Cache TTL: 1 hour (3600 seconds) — rm:products / rm:page (v1)
 const CACHE_TTL = 3600;
+
+/**
+ * Limit canonique de `getPageCompleteV2` (A2, 2026-09-02).
+ *
+ * Le cache `rm:page-v2:v1:g{génération}:{gamme}:{vehicle}` (A3 : version
+ * statique + génération Redis `cache:gen:catalog`) ne porte pas le limit
+ * et ne tranche pas : `count`, `filters` et `minPrice` sont calculés par la
+ * RPC sur les N premières lignes. Seules les requêtes à ce limit lisent et
+ * écrivent le cache ; tout autre limit contourne le cache (lecture + écriture).
+ * Partagé avec le contrôleur (`DefaultValuePipe`) pour qu'un changement de
+ * défaut ne désactive pas silencieusement le cache. Le loader R2 envoie la
+ * même valeur (`INITIAL_PRODUCTS_LIMIT`, frontend).
+ */
+export const PAGE_V2_CANONICAL_LIMIT = 200;
+
+/**
+ * TTL de cache de `getPageCompleteV2`, ou `null` = jamais mis en cache.
+ * Unique source de vérité « cette entrée est-elle cacheable / servable » —
+ * utilisée à l'écriture ET à la lecture.
+ *
+ * Décision = classification (`classifyPageV2Result`) × `count` :
+ *   'ok'    et count > 0 → RM.PAGE_V2 (1 h)
+ *   'ok'    et count = 0 → RM.PAGE_V2_EMPTY (15 min) — forme RÉELLE d'un couple
+ *                          existant sans produit : rm_get_page_complete_v2 ne
+ *                          rend `success:false` que sur INVALID_PARAMS /
+ *                          *_NOT_FOUND / INTERNAL_ERROR (toujours avec `error`)
+ *   'empty'              → RM.PAGE_V2_EMPTY (15 min) — population soft-404,
+ *                          avant A2 elle rejouait la RPC (~280 ms) à chaque
+ *                          requête, pour toujours
+ *   'not_found'          → null
+ *   'error'              → null (mettre une erreur RPC en cache comme « vide »
+ *                          = incident 2026-05-19)
+ */
+function pageV2CacheTtl(
+  result: Pick<RmPageCompleteV2Response, 'success' | 'error' | 'count'>,
+): number | null {
+  switch (classifyPageV2Result(result)) {
+    case 'ok':
+      return (result.count ?? 0) > 0
+        ? CACHE_STRATEGIES.RM.PAGE_V2.ttl
+        : CACHE_STRATEGIES.RM.PAGE_V2_EMPTY.ttl;
+    case 'empty':
+      return CACHE_STRATEGIES.RM.PAGE_V2_EMPTY.ttl;
+    default:
+      return null;
+  }
+}
 
 /**
  * 🏗️ RM Builder Service
@@ -505,25 +557,41 @@ export class RmBuilderService extends SupabaseBaseService {
     params: GetPageV2Params,
   ): Promise<RmPageCompleteV2Response> {
     const startTime = performance.now();
-    const { gamme_id, vehicle_id, limit = 200 } = params;
-    const cacheKey = `rm:page-v2:${gamme_id}:${vehicle_id}`;
+    const { gamme_id, vehicle_id, limit = PAGE_V2_CANONICAL_LIMIT } = params;
+    // La clé ne porte pas le limit et l'entrée n'est pas tranchable
+    // (count/filters/minPrice dépendent du limit) : seul le limit canonique
+    // lit et écrit le cache. Voir PAGE_V2_CANONICAL_LIMIT.
+    const useCache = limit === PAGE_V2_CANONICAL_LIMIT;
+    // Clé `rm:page-v2:v1:g{génération}:{gamme}:{véhicule}` (A3) — la
+    // génération (Redis `cache:gen:catalog`) n'est lue que si le cache sert.
+    const cacheKey = getCacheKey(
+      CACHE_STRATEGIES.RM.PAGE_V2,
+      `${gamme_id}:${vehicle_id}`,
+      useCache
+        ? await this.cacheService.getGeneration(
+            CACHE_STRATEGIES.RM.PAGE_V2.generation,
+          )
+        : undefined,
+    );
 
     // 1. Try cache first
-    try {
-      const cached =
-        await this.cacheService.get<RmPageCompleteV2Response>(cacheKey);
-      if (cached && cached.success) {
-        const cacheDuration = Math.max(
-          1,
-          Math.round(performance.now() - startTime),
-        );
-        this.logger.debug(
-          `Cache HIT for ${cacheKey} (${cached.count} products) in ${cacheDuration}ms`,
-        );
-        return { ...cached, cacheHit: true, duration_ms: cacheDuration };
+    if (useCache) {
+      try {
+        const cached =
+          await this.cacheService.get<RmPageCompleteV2Response>(cacheKey);
+        if (cached && pageV2CacheTtl(cached) !== null) {
+          const cacheDuration = Math.max(
+            1,
+            Math.round(performance.now() - startTime),
+          );
+          this.logger.debug(
+            `Cache HIT for ${cacheKey} (${cached.count} products) in ${cacheDuration}ms`,
+          );
+          return { ...cached, cacheHit: true, duration_ms: cacheDuration };
+        }
+      } catch {
+        // Cache error - continue to RPC
       }
-    } catch {
-      // Cache error - continue to RPC
     }
 
     this.logger.debug(
@@ -662,18 +730,22 @@ export class RmBuilderService extends SupabaseBaseService {
           `Page v2 complete: ${result.count} products, ${result.grouped_pieces?.length || 0} groups, ` +
             `${result.oemRefs?.length || 0} OEM refs in ${result.duration_ms}ms`,
         );
+      } else {
+        result.duration_ms = duration_ms;
+      }
 
-        // 2. Store in cache (TTL: 1h)
-        if (result.count && result.count > 0) {
+      // 2. Store in cache — sur la classification, jamais sur `count > 0`
+      //    (voir pageV2CacheTtl). Le limit non canonique n'écrit jamais.
+      if (useCache) {
+        const ttl = pageV2CacheTtl(result);
+        if (ttl !== null) {
           try {
-            await this.cacheService.set(cacheKey, result, CACHE_TTL);
-            this.logger.debug(`Cached ${cacheKey} for ${CACHE_TTL}s`);
+            await this.cacheService.set(cacheKey, result, ttl);
+            this.logger.debug(`Cached ${cacheKey} for ${ttl}s`);
           } catch {
             // Cache error - continue without caching
           }
         }
-      } else {
-        result.duration_ms = duration_ms;
       }
 
       return result;

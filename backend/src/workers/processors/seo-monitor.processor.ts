@@ -17,6 +17,12 @@ import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import { getErrorMessage } from '@common/utils/error.utils';
 import { AdminJobHealthService } from '../../modules/admin/services/admin-job-health.service';
 
+/**
+ * Seuil « peu de pièces » (warning). C'est aussi la borne de lecture de la
+ * sonde `checkUrl` : au-delà, le compte exact n'a aucune valeur de décision.
+ */
+const WARNING_THRESHOLD = 5;
+
 interface SeoMonitorJobData {
   taskType: 'check-critical-urls' | 'check-random-sample';
   triggeredBy: 'scheduler' | 'api' | 'alert';
@@ -231,12 +237,24 @@ export class SeoMonitorProcessor extends SupabaseBaseService {
     gammeId: number,
   ): Promise<UrlCheckResult> {
     try {
-      // Source de verite: pieces_relation_type (meme table que la RPC get_pieces_for_type_gamme_v4)
-      const { count, error } = await this.supabase
+      // Source de vérité : pieces_relation_type, MÊME colonne que les RPC de la
+      // page R2 (rm_get_page_complete_v2 / get_listing_products_extended /
+      // get_soft_404_alternatives) = `rtp_pg_id` (gamme de la page). `rtp_ga_id`
+      // est la gamme ARTICLE TecDoc (sous-gamme), non indexée : l'ancien filtre
+      // sous-comptait de 1 à 12 % sur les couples critiques et coûtait
+      // 2 705 blocs lus par appel (comptage exact sur 368 M lignes, A1 plan
+      // massdoc 2026-09-02).
+      //
+      // Sonde BORNÉE : la décision ne dépend que de « 0 / moins de
+      // WARNING_THRESHOLD / au moins WARNING_THRESHOLD » — on lit au plus
+      // WARNING_THRESHOLD lignes via l'index composite (rtp_type_id, rtp_pg_id),
+      // jamais un COUNT complet.
+      const { data, error } = await this.supabase
         .from('pieces_relation_type')
-        .select('rtp_piece_id', { count: 'exact', head: true })
+        .select('rtp_piece_id')
         .eq('rtp_type_id', typeId)
-        .eq('rtp_ga_id', gammeId);
+        .eq('rtp_pg_id', gammeId)
+        .limit(WARNING_THRESHOLD);
 
       if (error) {
         return {
@@ -250,7 +268,9 @@ export class SeoMonitorProcessor extends SupabaseBaseService {
         };
       }
 
-      const piecesCount = count ?? 0;
+      // = min(nombre réel, WARNING_THRESHOLD) : exact sous le seuil (ce qui
+      // alimente les alertes), « ≥ WARNING_THRESHOLD » au-dessus.
+      const piecesCount = data?.length ?? 0;
 
       // Analyse du résultat
       if (piecesCount === 0) {
@@ -268,7 +288,7 @@ export class SeoMonitorProcessor extends SupabaseBaseService {
         };
       }
 
-      if (piecesCount < 5) {
+      if (piecesCount < WARNING_THRESHOLD) {
         this.logger.warn(
           `⚠️ WARNING: Seulement ${piecesCount} pièce(s) pour ${url}`,
         );

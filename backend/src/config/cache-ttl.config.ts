@@ -24,11 +24,46 @@ export enum CacheTTL {
   SEVEN_DAYS = 604800,
 }
 
+/**
+ * Périmètres de génération de cache (A3, plan massdoc 2026-09-02).
+ *
+ * Une génération = un entier Redis (`cache:gen:{scope}`, sans expiration)
+ * que les consommateurs lisent pour composer leurs clés et que le chemin
+ * d'activation pricing incrémente (`CacheService.bumpGeneration`). Un bump
+ * rend toutes les entrées de la génération précédente inatteignables en O(1)
+ * — elles expirent par leur TTL. Levier gouverné : déclaré ici, journalisé au
+ * bump. NO-GO `clearByPattern()` (Redis KEYS, O(N) bloquant).
+ */
+export type CacheGenerationScope = 'catalog';
+
+export const CACHE_GENERATIONS: Record<
+  CacheGenerationScope,
+  { key: string; description: string }
+> = {
+  catalog: {
+    key: 'cache:gen:catalog',
+    description:
+      'Données dérivées du catalogue (compatibilité TecDoc, prix/dispo affichés) — bump à chaque activation pricing (cadence d’import), jamais par expiration',
+  },
+};
+
 export interface CacheStrategy {
   ttl: number;
   prefix: string;
   description: string;
   adaptive?: boolean;
+  /**
+   * Jeton de version STATIQUE (code) : à bumper quand la FORME de la valeur
+   * cachée change (nouveau champ, payload brut au lieu de réponse construite…).
+   * Fait partie de la clé → l'ancienne forme devient inatteignable au déploiement.
+   */
+  keyVersion?: string;
+  /**
+   * Périmètre de génération RUNTIME (Redis) : à déclarer quand la DONNÉE
+   * dérive d'un import / d'une activation. Fait partie de la clé via
+   * `getCacheKey(strategy, id, generation)`.
+   */
+  generation?: CacheGenerationScope;
 }
 
 /**
@@ -353,6 +388,66 @@ export const CACHE_STRATEGIES = {
       description: 'Promotional data',
     },
   },
+
+  // ═══════════════════════════════════════════════════════════════
+  // RM (page R2 gamme × véhicule) — A2 2026-09-02
+  // Toute entrée est stockée au `limit` canonique, jamais par limit.
+  // ═══════════════════════════════════════════════════════════════
+  // Clé = `{prefix}{keyVersion}:g{génération}:{id}` (A3) — génération lue
+  // dans Redis `cache:gen:catalog`, bumpée à l'activation pricing.
+  RM: {
+    PAGE_V2: {
+      ttl: CacheTTL.ONE_HOUR,
+      prefix: 'rm:page-v2:',
+      // v1 (2026-09-02, A3) : première version explicite de la forme cachée
+      // (RmPageCompleteV2Response entière au limit canonique).
+      keyVersion: 'v1',
+      generation: 'catalog',
+      description:
+        'rm_get_page_complete_v2 — résultat plein (classification ok)',
+    },
+    PAGE_V2_EMPTY: {
+      ttl: CacheTTL.FIFTEEN_MINUTES,
+      prefix: 'rm:page-v2:',
+      keyVersion: 'v1',
+      generation: 'catalog',
+      description:
+        'rm_get_page_complete_v2 — 0 produit (classification empty) : population soft-404, TTL court',
+    },
+    ALTERNATIVES: {
+      ttl: CacheTTL.ONE_DAY,
+      prefix: 'alt:',
+      // v1 → v2 (PR #633) : purge des entrées vides de l'ère .from() RLS-bypass.
+      // v2 → v3 (2026-05-19) : purge des entrées vides de l'ère clé publishable
+      //   tournée (chaque RPC rendait 'Invalid API key', caché vide 5 min).
+      // v3 → v4 (2026-09-02, A2) : la valeur change de forme — payload RPC brut
+      //   au limit canonique (tranché à la lecture) au lieu de la réponse construite.
+      keyVersion: 'v4',
+      generation: 'catalog',
+      description:
+        'get_soft_404_alternatives — dérivé de compatibilité TecDoc, stable entre imports catalogue',
+    },
+    ALTERNATIVES_ERROR: {
+      ttl: 30,
+      prefix: 'alt:',
+      keyVersion: 'v4',
+      generation: 'catalog',
+      description:
+        'get_soft_404_alternatives — échec RPC : réponse vide à TTL court, anti-poisoning (incident 2026-05-19)',
+    },
+  },
+
+  // ═══════════════════════════════════════════════════════════════
+  // KEYWORD PLAN (admin batch R1, 0-LLM)
+  // ═══════════════════════════════════════════════════════════════
+  KEYWORD_PLAN: {
+    R1_TOP_VEHICLES: {
+      ttl: CacheTTL.ONE_DAY,
+      prefix: 'r1kp:top-vehicles:',
+      description:
+        'Top véhicules par gamme (RPC get_alternative_vehicles_for_gamme, clé = pgId seul) — compatibilité TecDoc, stable entre imports',
+    },
+  },
 } as const;
 
 /**
@@ -396,8 +491,14 @@ export const AdaptiveTTL = {
 /**
  * Helper to get full cache key with prefix.
  */
-export function getCacheKey(strategy: CacheStrategy, id: string): string {
-  return `${strategy.prefix}${id}`;
+export function getCacheKey(
+  strategy: CacheStrategy,
+  id: string,
+  generation?: number,
+): string {
+  const version = strategy.keyVersion ? `${strategy.keyVersion}:` : '';
+  const gen = generation === undefined ? '' : `g${generation}:`;
+  return `${strategy.prefix}${version}${gen}${id}`;
 }
 
 /**
