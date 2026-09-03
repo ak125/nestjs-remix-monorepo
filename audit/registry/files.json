@@ -1848,9 +1848,31 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/cache/cache.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/cache/cache.service.ts"
+      ],
+      "kind": "test",
+      "loc": 93,
+      "owner": "__unassigned__",
+      "path": "backend/src/cache/cache.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/cache/cache.service.ts",
       "importedBy": [
         "backend/src/cache/cache.module.ts",
+        "backend/src/cache/cache.service.test.ts",
         "backend/src/modules/admin/services/command-center-reader.service.ts",
         "backend/src/modules/admin/services/registry-reader.service.ts",
         "backend/src/modules/admin/services/seo-control.service.ts",
@@ -1864,7 +1886,7 @@
         "events"
       ],
       "kind": "service",
-      "loc": 454,
+      "loc": 515,
       "owner": "__unassigned__",
       "path": "backend/src/cache/cache.service.ts",
       "risk": "low",
@@ -3040,6 +3062,27 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/config/cache-ttl.config.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/config/cache-ttl.config.ts"
+      ],
+      "kind": "test",
+      "loc": 53,
+      "owner": "__unassigned__",
+      "path": "backend/src/config/cache-ttl.config.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
         "depcruise",
         "reachability"
       ],
@@ -3048,14 +3091,17 @@
       "importedBy": [
         "backend/src/cache/cache.service.ts",
         "backend/src/config/cache-store.factory.test.ts",
+        "backend/src/config/cache-ttl.config.test.ts",
         "backend/src/config/index.ts",
+        "backend/src/modules/admin/services/r1-keyword-plan-batch.service.test.ts",
+        "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
         "backend/src/modules/vehicles/services/brand-bestsellers.service.ts",
         "backend/src/modules/vehicles/services/vehicle-motor-codes.service.ts",
         "backend/src/modules/vehicles/services/vehicle-profile.service.ts"
       ],
       "imports": [],
       "kind": "config",
-      "loc": 409,
+      "loc": 510,
       "owner": "__unassigned__",
       "path": "backend/src/config/cache-ttl.config.ts",
       "risk": "low",
@@ -8704,13 +8750,38 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/admin/services/r1-keyword-plan-batch.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/config/cache-ttl.config.ts",
+        "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts"
+      ],
+      "kind": "test",
+      "loc": 176,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/admin/services/r1-keyword-plan-batch.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
-        "backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts"
+        "backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts",
+        "backend/src/modules/admin/services/r1-keyword-plan-batch.service.test.ts"
       ],
       "imports": [
+        "@cache/cache.service",
         "@database/services/supabase-base.service",
+        "backend/src/config/cache-ttl.config.ts",
         "backend/src/config/r1-keyword-plan.constants.ts",
         "backend/src/config/rag.config.ts",
         "backend/src/modules/admin/services/enricher-yaml-parser.service.ts",
@@ -8719,7 +8790,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 524,
+      "loc": 556,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
       "risk": "low",
@@ -22244,7 +22315,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "controller",
-      "loc": 381,
+      "loc": 387,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/controllers/rm.controller.ts",
       "risk": "low",
@@ -22320,9 +22391,28 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 187,
+      "loc": 305,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/services/__tests__/rm-alternatives.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/rm/services/__tests__/rm-builder-page-v2-cache.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 274,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/rm/services/__tests__/rm-builder-page-v2-cache.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -22396,7 +22486,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 151,
+      "loc": 197,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/services/rm-alternatives.service.ts",
       "risk": "low",
@@ -22415,7 +22505,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 919,
+      "loc": 991,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/services/rm-builder.service.ts",
       "risk": "low",
@@ -35977,6 +36067,27 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/workers/processors/__tests__/seo-monitor.processor.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/workers/processors/seo-monitor.processor.ts"
+      ],
+      "kind": "test",
+      "loc": 139,
+      "owner": "__unassigned__",
+      "path": "backend/src/workers/processors/__tests__/seo-monitor.processor.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/workers/processors/agentic.processor.ts",
       "importedBy": [
         "backend/src/workers/worker.module.ts"
@@ -36077,6 +36188,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/workers/processors/seo-monitor.processor.ts",
       "importedBy": [
+        "backend/src/workers/processors/__tests__/seo-monitor.processor.test.ts",
         "backend/src/workers/worker.module.ts"
       ],
       "imports": [
@@ -36086,7 +36198,7 @@
         "backend/src/modules/admin/services/admin-job-health.service.ts"
       ],
       "kind": "service",
-      "loc": 438,
+      "loc": 458,
       "owner": "__unassigned__",
       "path": "backend/src/workers/processors/seo-monitor.processor.ts",
       "risk": "low",
@@ -53500,7 +53612,7 @@
         "~/utils/seo/canonical"
       ],
       "kind": "route",
-      "loc": 821,
+      "loc": 836,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/blog-pieces-auto.conseils.$pg_alias.tsx",
       "risk": "low",
@@ -55547,7 +55659,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 1241,
+      "loc": 1263,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/reference-auto.$slug.tsx",
       "risk": "low",
@@ -57841,7 +57953,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 47,
+      "loc": 92,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/internal-api.server.ts",
       "risk": "low",
@@ -59864,6 +59976,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/internal-api-loopback.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 101,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/internal-api-loopback.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/tests/unit/lazy-boundary.test.tsx",
       "importedBy": [],
       "imports": [],
@@ -60400,7 +60531,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 115,
+      "loc": 151,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/reference-auto-loader-parallel.test.ts",
       "risk": "low",
@@ -65557,6 +65688,44 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/ci/assert-r2-golden.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 507,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/assert-r2-golden.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/ci/assert-r2-golden.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 632,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/assert-r2-golden.test.mjs",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
