@@ -51,6 +51,17 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_xtr_msg_crm_status_active
   WHERE msg_crm_status IS NOT NULL
     AND msg_crm_status NOT IN ('won', 'lost');
 
+-- Garde de reprise, symetrique de celle posee sur `status_active`. No-op
+-- aujourd'hui : `follow_up_due` n'existe pas. Elle couvre l'interruption du
+-- build ci-dessous : le job d'application est plafonne a `timeout-minutes: 20`
+-- (.github/workflows/apply-supabase-migrations.yml) alors que l'en-tete annonce
+-- 5-20 min PAR index. Un build interrompu laisse l'index INVALIDE ; la relance
+-- verrait le nom pris et `CREATE ... IF NOT EXISTS` serait un no-op silencieux
+-- -> migration « appliquee » avec un index inutilisable. C'est exactement le
+-- defaut repare plus haut, un index plus loin. Le `.down.sql` portait deja les
+-- deux DROP ; cette ligne retablit la symetrie cote up.
+DROP INDEX CONCURRENTLY IF EXISTS idx_xtr_msg_crm_follow_up_due;
+
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_xtr_msg_crm_follow_up_due
   ON ___xtr_msg (msg_crm_next_follow_up_at)
   WHERE msg_crm_next_follow_up_at IS NOT NULL
