@@ -17,8 +17,8 @@
         "backend/src/modules/admin/services/r1-image-prompt-builders",
         "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__"
       ],
-      "files_count": 145,
-      "loc_total": 40669,
+      "files_count": 146,
+      "loc_total": 40877,
       "has_barrel": true
     },
     "agentic-engine": {
@@ -118,8 +118,8 @@
       "dirs": [
         "backend/src/cache"
       ],
-      "files_count": 2,
-      "loc_total": 466,
+      "files_count": 3,
+      "loc_total": 620,
       "has_barrel": false
     },
     "cart": {
@@ -185,8 +185,8 @@
         "backend/src/modules/config/services",
         "backend/src/modules/config/validators"
       ],
-      "files_count": 95,
-      "loc_total": 23793,
+      "files_count": 96,
+      "loc_total": 23947,
       "has_barrel": true
     },
     "customers": {
@@ -224,8 +224,8 @@
         "backend/src/modules/rm/services/__tests__",
         "backend/src/modules/rm/utils"
       ],
-      "files_count": 12,
-      "loc_total": 2528,
+      "files_count": 13,
+      "loc_total": 3044,
       "has_barrel": false
     },
     "diagnostic-engine": {
@@ -699,8 +699,8 @@
         "scripts/wiki-generators",
         "scripts/wiki-generators/__tests__"
       ],
-      "files_count": 168,
-      "loc_total": 34249,
+      "files_count": 170,
+      "loc_total": 35388,
       "has_barrel": true
     },
     "search": {
@@ -1019,11 +1019,12 @@
       "dirs": [
         "backend/src/workers",
         "backend/src/workers/processors",
+        "backend/src/workers/processors/__tests__",
         "backend/src/workers/services",
         "backend/src/workers/types"
       ],
-      "files_count": 16,
-      "loc_total": 3550,
+      "files_count": 17,
+      "loc_total": 3709,
       "has_barrel": false
     }
   },
@@ -1056,7 +1057,7 @@
     {
       "from": "admin",
       "to": "config",
-      "count": 69
+      "count": 71
     },
     {
       "from": "admin",
