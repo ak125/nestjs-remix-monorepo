@@ -27,8 +27,12 @@ excluded_paths = [
 fail_on_violations = true         # CI must hard-fail on any default-rule violation.
 
 # Legacy WARN rules NOT in squawk's stock set, captured separately :
-#   - DISABLE RLS / GRANT public : enforced by Supabase advisors + RPC Safety Gate
-#                                  (scripts/audit/rpc-safety-gate.js).
+#   - DISABLE RLS / GRANT public : enforced by the Supabase security advisors
+#                                  (rls_disabled_in_public, rls_enabled_no_policy,
+#                                  anon/authenticated_security_definer_function_executable).
+#                                  They are the sole carrier: the RPC Safety Gate
+#                                  (ci.yml job `rpc-gate-check`) reads .rpc() call
+#                                  sites only and inspects neither GRANT nor RLS.
 #   - DELETE-no-WHERE            : runtime-relevant, not migration-shape ; out of scope.
 #   - DROP POLICY                : pattern is idempotent re-create within same migration
 #                                  — design-allowed, not a safety issue.

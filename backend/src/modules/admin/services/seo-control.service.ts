@@ -297,9 +297,9 @@ export class SeoControlService extends SupabaseBaseService {
    * Thin wrapper around the inherited callRpc() (SupabaseBaseService) for
    * fail-loud semantics : throws on error instead of returning { data, error }.
    *
-   * MUST use callRpc (not this.supabase.rpc direct) per RPC Safety Gate
-   * (scripts/audit/rpc-safety-gate.js + .github/workflows/ci.yml). Direct
-   * supabase.rpc bypasses the governance RpcGateService.
+   * MUST use callRpc (not this.supabase.rpc direct) per the RPC Safety Gate,
+   * whose logic is inline in .github/workflows/ci.yml (job `rpc-gate-check`).
+   * Direct supabase.rpc bypasses the governance RpcGateService.
    */
   private async invokeRpc<T>(
     name: string,
