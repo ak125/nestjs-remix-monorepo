@@ -31,6 +31,7 @@ CLI
     python3 apply-supabase-migration.py --dry-run
     python3 apply-supabase-migration.py [--limit N]
     python3 apply-supabase-migration.py --only 20260529_xtr_msg_crm_indexes
+    python3 apply-supabase-migration.py --retry 20260529_xtr_msg_crm_indexes
 
 Env vars consumed
 =================
@@ -511,6 +512,43 @@ def mark_failed(cur, migration_id: str, error: str) -> "None":
     )
 
 
+def reopen_failed(
+    cur, mig: LocalMigration, runner: str, git_sha: str, note: str
+) -> "None":
+    """Move a 'failed' ledger row back to 'applying' for ONE retry.
+
+    UPDATE in place, never DELETE + INSERT : the ledger grants service_role no
+    DELETE at all, and keeping the row keeps its primary key — so the audit
+    trail in `note` stays continuous across the retry instead of restarting.
+
+    The WHERE clause re-checks `status = 'failed'`, so a row that changed
+    between the precheck and here touches nothing and trips the rowcount guard
+    below rather than silently reopening a live or already-applied migration.
+    """
+    cur.execute(
+        """
+        UPDATE infra.schema_migrations
+        SET status        = 'applying',
+            checksum      = %s,
+            started_at    = NOW(),
+            applied_at    = NULL,
+            execution_ms  = NULL,
+            runner        = %s,
+            git_sha       = %s,
+            error_message = NULL,
+            note          = %s
+        WHERE id = %s AND status = 'failed'
+        """,
+        (mig.checksum, runner, git_sha, note[:2000], mig.id),
+    )
+    if cur.rowcount != 1:
+        raise RuntimeError(
+            f"{mig.id}: expected exactly one 'failed' row to reopen, the UPDATE "
+            f"touched {cur.rowcount}. The ledger changed between the precheck "
+            "and now — nothing was applied."
+        )
+
+
 # ── Session hygiene between migrations ──────────────────────────────────────
 #
 # The engine reuses ONE connection for the whole run. A migration that issues a
@@ -575,9 +613,16 @@ def reset_session(conn) -> "None":
 
 
 def apply_migration(
-    conn, mig: LocalMigration, runner: str, git_sha: str
+    conn, mig: LocalMigration, runner: str, git_sha: str,
+    *, resume_note: "str | None" = None,
 ) -> int:
-    """Apply one migration. Returns elapsed ms. Raises on failure."""
+    """Apply one migration. Returns elapsed ms. Raises on failure.
+
+    `resume_note` switches the ledger bookkeeping from "insert a new row" to
+    "reopen the existing 'failed' one" (--retry). The SQL execution itself is
+    byte-for-byte the same path in both cases : a retry must not be a second,
+    subtly different way of running a migration.
+    """
     sql = mig.path.read_text(encoding="utf-8")
     start = time.monotonic()
 
@@ -587,7 +632,10 @@ def apply_migration(
         # the next run will refuse to overwrite (Case D in the verify flow).
         conn.autocommit = True
         with conn.cursor() as cur:
-            insert_applying(cur, mig, runner, git_sha)
+            if resume_note is None:
+                insert_applying(cur, mig, runner, git_sha)
+            else:
+                reopen_failed(cur, mig, runner, git_sha, resume_note)
         try:
             # Send each statement in its OWN execute(). A multi-statement
             # simple-query string is wrapped by Postgres in an implicit
@@ -613,9 +661,16 @@ def apply_migration(
     conn.autocommit = False
     try:
         with conn.cursor() as cur:
+            if resume_note is not None:
+                # Same transaction as the SQL : if the retry fails again, the
+                # reopen rolls back with it and the row stays 'failed'.
+                reopen_failed(cur, mig, runner, git_sha, resume_note)
             cur.execute(sql)
             elapsed_ms = int((time.monotonic() - start) * 1000)
-            insert_applied_tx(cur, mig, elapsed_ms, runner, git_sha)
+            if resume_note is None:
+                insert_applied_tx(cur, mig, elapsed_ms, runner, git_sha)
+            else:
+                mark_applied(cur, mig.id, elapsed_ms)
         conn.commit()
     except Exception:
         conn.rollback()
@@ -790,6 +845,10 @@ def status_step_summary(rows, summary) -> "list[str]":
             f"### Blockers ({len(blockers)})",
             "",
             "These stop every apply **and every dry-run** (exit 5) until resolved.",
+            "",
+            "Ways out, by state: `failed` → `--retry ID` (re-runs it, reopening "
+            "the row); `drift` → `--reapply ID`; `applying` → establish by hand "
+            "whether a run is still live before touching anything.",
             "",
             "| ID | State |",
             "| --- | --- |",
@@ -1204,6 +1263,20 @@ def run_self_test() -> int:
         LocalMigration("x", Path("x.sql"), "bbb", True), _rm, _ok_sql)
     assert "not replayable" in reapply_precheck(_lm, _rm, "DROP TABLE IF EXISTS t;")
 
+    # retry_precheck — the mirror image : only a 'failed' row is retryable.
+    _failed = RemoteMigration("x", "aaa", "failed", None, "gh-actions:1")
+    assert retry_precheck(_lm, _failed) is None
+    # An amended file is the NORMAL case for a retry, never a refusal.
+    assert retry_precheck(
+        LocalMigration("x", Path("x.sql"), "zzz", False), _failed) is None
+    # …including a @non_transactional one, which --reapply refuses outright.
+    assert retry_precheck(
+        LocalMigration("x", Path("x.sql"), "zzz", True), _failed) is None
+    assert "not recorded" in retry_precheck(_lm, None)
+    assert "nothing to retry" in retry_precheck(_lm, _rm)
+    assert "still live" in retry_precheck(
+        _lm, RemoteMigration("x", "aaa", "applying", None, None))
+
     # The two real files that pin both directions of this gate.
     _target = MIGRATIONS_DIR / "20260429_diag_maintenance_via_kg.sql"
     if _target.exists():
@@ -1438,6 +1511,35 @@ def reapply_precheck(mig, row, sql) -> "str | None":
     return None
 
 
+def retry_precheck(mig, row) -> "str | None":
+    """Why `mig` cannot be retried, or None when it can.
+
+    Pure : no database. `row` is the RemoteMigration or None.
+
+    Deliberately does NOT require the checksum to match. A retry exists to run
+    a migration again AFTER the cause of its failure was removed, and removing
+    it usually means editing the file. The change is printed and recorded in
+    `note` — refusing it would leave a failed migration with no governed way
+    back, which is the hole this primitive closes.
+    """
+    if row is None:
+        return "not recorded in the ledger — a normal apply already covers this"
+    if row.status == "applied":
+        return (
+            "ledger status is 'applied' — nothing to retry "
+            "(--reapply covers a drifted 'applied' row)"
+        )
+    if row.status == "applying":
+        return (
+            "ledger status is 'applying' — either a run is still live, or one "
+            "died before it could record the outcome. Establish which by hand "
+            "first: retrying under a live run would execute the file twice"
+        )
+    if row.status != "failed":
+        return f"ledger status is '{row.status}', not 'failed'"
+    return None
+
+
 def _assert_in_transaction(conn, when: str) -> "None":
     """Fail loudly if our transaction is no longer open.
 
@@ -1544,6 +1646,106 @@ def run_reapply(conn, local, remote, target_id: str, runner: str, git_sha: str) 
          f"- previous checksum : `{row.checksum}`",
          f"- new checksum      : `{mig.checksum}`",
          f"- previous record   : {row.runner or '—'} at {row.applied_at or '—'}",
+         ""]
+    )
+    return 0
+
+
+# ── Retry (Flyway repair + re-run / Sqitch revert-free rerun) ────────────
+
+
+def run_retry(
+    conn, local, remote, target_id: str, runner: str, git_sha: str
+) -> int:
+    """Re-run ONE migration whose ledger row is 'failed'.
+
+    Closes a real hole: once a migration fails, its id IS in the ledger, so it
+    is no longer pending; `--only` refuses a recorded id, `--reapply` refuses a
+    row that is not a drifted 'applied' (and refuses @non_transactional files
+    outright), and `insert_applying` is a bare INSERT that would raise on the
+    primary key. Without this, a failed migration is unreachable by every
+    governed path and the whole queue stays blocked behind it (exit 5).
+    """
+    mig = next((m for m in local if m.id == target_id), None)
+    if mig is None:
+        fail(11, f"{target_id}: no such file under {MIGRATIONS_DIR}/.")
+
+    row = remote.get(target_id)
+    why = retry_precheck(mig, row)
+    if why:
+        fail(11, f"{target_id}: {why}.")
+
+    # `checksum` and `started_at` sit OUTSIDE the service_role column grant :
+    # only the table owner can reopen a row. Say so plainly instead of
+    # surfacing a bare 42501 halfway through.
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT current_user,
+                   has_column_privilege('infra.schema_migrations',
+                                        'checksum', 'UPDATE'),
+                   has_column_privilege('infra.schema_migrations',
+                                        'started_at', 'UPDATE')
+            """
+        )
+        who, c_ok, s_ok = cur.fetchone()
+    if not (c_ok and s_ok):
+        fail(
+            9,
+            f"role '{who}' cannot UPDATE checksum/started_at on "
+            "infra.schema_migrations (column-scoped grant). --retry needs the "
+            "table owner — the DATABASE_URL the engine bootstraps with.",
+        )
+
+    # RemoteMigration carries neither started_at nor error_message (it exists to
+    # serve --status). Fetch the failure detail for this one id rather than
+    # widening a type the whole engine shares.
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT started_at::text, coalesce(error_message, '')
+            FROM infra.schema_migrations WHERE id = %s
+            """,
+            (target_id,),
+        )
+        failed_at, prev_error = cur.fetchone()
+
+    sql = mig.path.read_text(encoding="utf-8")
+    amended = row.checksum != mig.checksum
+    mode = "non-tx" if mig.non_transactional else "tx"
+    first_line = (prev_error.splitlines() or ["—"])[0][:200]
+
+    print(f"Retrying {target_id} ({mode})")
+    print(f"  failed at       : {failed_at or '—'} under {row.runner or '—'}")
+    print(f"  failed with     : {first_line or '—'}")
+    print(f"  ledger checksum : {row.checksum}")
+    print(f"  file checksum   : {mig.checksum}")
+    print(f"  statements      : {len(split_sql_statements(sql))}")
+    if amended:
+        print("  the file was AMENDED since the failure — recorded in note")
+    else:
+        print(
+            "  the file is BYTE-IDENTICAL to the one that failed — a retry only "
+            "makes sense if the cause was outside the file (a lock that has "
+            "since cleared, a timeout since raised)"
+        )
+
+    note = (
+        f"retried after failure: was checksum={row.checksum} "
+        f"runner={row.runner or '—'} started_at={failed_at or '—'} "
+        f"error={first_line}"
+    )
+    reset_session(conn)
+    elapsed_ms = apply_migration(conn, mig, runner, git_sha, resume_note=note)
+    print(f"OK in {elapsed_ms}ms")
+    write_step_summary(
+        ["## Retried", "",
+         f"`{target_id}` re-executed after a failure, in {elapsed_ms}ms.", "",
+         f"- previously failed at : {failed_at or '—'} ({row.runner or '—'})",
+         f"- previous error       : `{first_line or '—'}`",
+         f"- file since the failure : "
+         f"{'AMENDED' if amended else 'byte-identical'}",
+         f"- ledger checksum      : `{row.checksum}` → `{mig.checksum}`",
          ""]
     )
     return 0
@@ -1706,6 +1908,17 @@ def main(argv: list[str]) -> int:
         ),
     )
     parser.add_argument(
+        "--retry", type=str, default="", metavar="ID",
+        help=(
+            "Re-run ONE migration whose ledger row is 'failed', reopening that "
+            "row instead of inserting a second one. Refuses unless the row is "
+            "exactly 'failed'. Unlike --reapply it accepts @non_transactional "
+            "files and an amended file — fixing the cause of a failure usually "
+            "means editing it; the change is printed and recorded in `note`. "
+            "Needs the table owner."
+        ),
+    )
+    parser.add_argument(
         "--no-bootstrap", action="store_true",
         help=(
             "Skip the ledger DDL/GRANT bootstrap. Only valid with --status : it "
@@ -1769,11 +1982,20 @@ def main(argv: list[str]) -> int:
         return run_lint_markers(args.lint_markers)
 
     if args.only and (args.limit is not None or args.baseline or args.status
-                      or args.reapply):
+                      or args.reapply or args.retry):
         fail(
             2,
             "--only is exclusive : it cannot be combined with --limit, "
-            "--baseline, --status or --reapply.",
+            "--baseline, --status, --reapply or --retry.",
+        )
+
+    if args.retry and (args.limit is not None or args.baseline or args.status
+                       or args.reapply or args.dry_run):
+        fail(
+            2,
+            "--retry is exclusive : it cannot be combined with --limit, "
+            "--baseline, --status, --reapply or --dry-run. There is no dry-run "
+            "for a retry — it executes the migration.",
         )
 
     if args.no_bootstrap and (not args.status or args.reapply or args.baseline):
@@ -1821,6 +2043,11 @@ def main(argv: list[str]) -> int:
             return run_reapply(
                 conn, local, remote, args.reapply, runner, git_sha
             )
+
+        # Before the blocker check below : a 'failed' row IS a blocker, so a
+        # retry has to run ahead of the very gate it exists to clear.
+        if args.retry:
+            return run_retry(conn, local, remote, args.retry, runner, git_sha)
 
         if args.baseline:
             return run_baseline(conn, local, remote, args.exclude)

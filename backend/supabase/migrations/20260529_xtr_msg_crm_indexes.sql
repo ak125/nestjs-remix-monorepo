@@ -1,6 +1,5 @@
 -- @non_transactional
 -- squawk-ignore-file ban-concurrent-index-creation-in-transaction
--- squawk-ignore-file require-timeout-settings
 --
 -- Migration: 20260529_xtr_msg_crm_indexes
 -- Follow-up structurel de #784 (mini-CRM V0). Crée les 2 indexes partiels
@@ -29,18 +28,46 @@
 -- SHARE UPDATE EXCLUSIVE (pas de blocage des writes) et un index invalide
 -- n'est jamais utilisé par le planner : retrait sans effet sur le runtime.
 --
--- squawk `require-timeout-settings` ignoré à dessein : un statement_timeout
--- sur un build CONCURRENTLY de 5-20 min le tuerait en laissant… un index
--- invalide (exactement le défaut réparé ici). Seul lock_timeout est posé
--- (fail-fast si un lock est tenu, sans démarrer le build).
+-- TIMEOUTS — corrigé après l'incident du 2026-09-04 (run 33839602437).
+-- Ce fichier portait `-- squawk-ignore-file require-timeout-settings`. Il est
+-- RETIRÉ : la règle qu'il faisait taire est exactement celle qui aurait prédit
+-- l'incident — « Missing `set statement_timeout` before potentially slow
+-- operations », pointant le DROP INDEX CONCURRENTLY. Vérifié avec la version
+-- utilisée par la CI (squawk 2.52.1, cf. ci.yml) : sans le SET ci-dessous la
+-- règle lève et sort en rc=1 ; avec lui, 0 problème. Un garde juste, réduit au
+-- silence par une justification fausse.
+-- La version précédente de cet en-tête raisonnait ainsi : « ne pas poser de
+-- statement_timeout, sinon il tuerait le build CONCURRENTLY ». Le raisonnement
+-- est faux, et c'est lui qui a produit l'incident : NE PAS poser la valeur ne
+-- veut pas dire « aucun timeout », cela veut dire HÉRITER celle du rôle. Sur ce
+-- projet Supabase, `ALTER ROLE postgres SET statement_timeout` vaut 60 s — et le
+-- runner se connecte précisément comme `postgres` :
+--   SELECT setconfig FROM pg_db_role_setting s JOIN pg_roles r ON r.oid=s.setrole
+--    WHERE r.rolname='postgres';   -->  {search_path=…, statement_timeout=60s}
+-- Le run a donc été tué à 60,588 s (`QueryCanceled`), laissant l'index en
+-- indisvalid=false — exactement le défaut que ce fichier répare.
+-- 60 s n'auraient jamais suffi : un parcours complet du heap de ___xtr_msg est
+-- mesuré à ~54 s (40 000 pages en 2 305 ms sur 935 631 pages), et un
+-- CREATE INDEX CONCURRENTLY en fait DEUX par index.
+-- D'où `statement_timeout = 0` EXPLICITE ci-dessous. La borne extérieure reste
+-- le `timeout-minutes: 20` du job (~4 min de parcours pour les deux index :
+-- confortable). `reset_session()` (#1388) restaure le défaut du rôle avant la
+-- migration suivante — la levée ne fuit pas.
+-- `lock_timeout` reste à 5 s : fail-fast si un verrou est tenu, sans démarrer
+-- le build.
 --
--- Durée typique : 5-20 minutes par index (CONCURRENTLY = 2 scans + suivi
--- des writes). N'occupe pas de lock bloquant → safe sur prod hot.
+-- Durée attendue : ~2 min par index. Mesure du 2026-09-04 (EXPLAIN ANALYZE,
+-- BUFFERS sur une plage de ctid) : 40 000 pages lues à froid en 2 305 ms, soit
+-- ~54 s pour les 935 631 pages du heap ; CONCURRENTLY en fait 2 par index, plus
+-- l'attente des transactions concurrentes. L'estimation « 5-20 min » d'origine
+-- n'était pas mesurée. N'occupe aucun lock bloquant → safe sur prod hot.
 --
 -- Rollback : companion .down.sql avec DROP INDEX CONCURRENTLY (symétrique
 -- sur le lock side ; SHARE UPDATE EXCLUSIVE ne bloque pas les writes).
 
 SET lock_timeout = '5s';
+-- Explicite, et non omis : voir l'en-tête. 0 = pas de limite pour CETTE session.
+SET statement_timeout = 0;
 
 -- Réparation : retire l'index INVALIDE laissé par le build interrompu
 -- (voir en-tête). No-op si l'index n'existe pas ou a déjà été réparé.
