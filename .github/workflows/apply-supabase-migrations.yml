@@ -76,6 +76,15 @@ on:
           confirm=APPLY and dry_run=false. Blank = not this mode.
         required: false
         default: ''
+      retry_id:
+        description: |
+          Re-run ONE migration whose ledger row is `failed`, reopening that row
+          rather than inserting a second one. Accepts @non_transactional files
+          and a file amended since the failure (fixing the cause usually means
+          editing it) — the change is printed and recorded in `note`. Needs
+          confirm=APPLY and dry_run=false. Blank = not this mode.
+        required: false
+        default: ''
 
 permissions:
   contents: read
@@ -116,6 +125,18 @@ jobs:
           echo "::error::reapply_id cannot be combined with baseline_only / status_only / limit. Pick one mode per run."
           exit 1
 
+      - name: 🛑 Reject retry combined with another mode
+        if: ${{ inputs.retry_id != '' && (inputs.baseline_only || inputs.status_only || inputs.limit != '' || inputs.reapply_id != '' || inputs.only_ids != '') }}
+        run: |
+          echo "::error::retry_id cannot be combined with baseline_only / status_only / limit / reapply_id / only_ids. Pick one mode per run."
+          exit 1
+
+      - name: 🛑 Reject retry under dry_run
+        if: ${{ inputs.retry_id != '' && inputs.dry_run }}
+        run: |
+          echo "::error::retry_id executes the migration — there is no dry-run for it. Re-run with dry_run=false and confirm=APPLY."
+          exit 1
+
       - name: 🛑 Reject reapply under dry_run
         if: ${{ inputs.reapply_id != '' && inputs.dry_run }}
         run: |
@@ -144,6 +165,7 @@ jobs:
           # Operator-supplied strings reach the shell as env vars, never as `${{ }}`
           # interpolation inside `run:` — this runner holds DATABASE_URL.
           REAPPLY_ID: ${{ inputs.reapply_id }}
+          RETRY_ID: ${{ inputs.retry_id }}
           ONLY_IDS: ${{ inputs.only_ids }}
           EXCLUDE_IDS: ${{ inputs.exclude_ids }}
           LIMIT: ${{ inputs.limit }}
@@ -152,6 +174,8 @@ jobs:
           ARGS=()
           if [ -n "$REAPPLY_ID" ]; then
             ARGS+=("--reapply" "$REAPPLY_ID")
+          elif [ -n "$RETRY_ID" ]; then
+            ARGS+=("--retry" "$RETRY_ID")
           elif [ "${{ inputs.baseline_only }}" = "true" ]; then
             ARGS+=("--baseline")
             if [ -n "$EXCLUDE_IDS" ]; then
