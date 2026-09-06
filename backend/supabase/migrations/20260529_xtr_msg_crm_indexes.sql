@@ -53,8 +53,27 @@
 -- le `timeout-minutes: 20` du job (~4 min de parcours pour les deux index :
 -- confortable). `reset_session()` (#1388) restaure le défaut du rôle avant la
 -- migration suivante — la levée ne fuit pas.
--- `lock_timeout` reste à 5 s : fail-fast si un verrou est tenu, sans démarrer
--- le build.
+-- `lock_timeout` est AUSSI à 0, et ce n'est pas un oubli. La version précédente
+-- le posait à 5 s « pour échouer vite sans démarrer le build » — faux :
+-- `lock_timeout` s'applique à TOUT verrou, « table, index, ligne ou autre objet »,
+-- y compris implicitement acquis (doc PostgreSQL, runtime-config-client). Or un
+-- CREATE INDEX CONCURRENTLY attend TROIS fois les transactions existantes (doc
+-- sql-createindex), et chaque attente est une acquisition de verrou sur une
+-- transaction virtuelle. À 5 s, toute transaction concurrente un peu longue
+-- aurait tué le build APRÈS création de l'entrée de catalogue → index invalide,
+-- le défaut même que ce fichier répare.
+-- Le contre-argument (« à 0, une attente non bornée finit tuée par le job à
+-- 20 min et laisse 'applying' orphelin ») ne tient pas SUR CETTE BASE : tout
+-- bloqueur potentiel est lui-même borné par son statement_timeout de rôle
+-- (postgres/service_role 60 s, authenticated 8 s — pg_db_role_setting, mesuré
+-- le 2026-09-07). Une attente de verrou du CIC ne peut donc pas dépasser ~60 s
+-- par phase, loin des 20 min ; alors qu'à 5 s, n'importe quelle requête
+-- analytique d'une minute sur cette table de 15 M de lignes tuerait le build.
+-- Un échec de verrou reste bruyant (55P03 → mark_failed → 'failed' → --retry).
+-- Note : l'incident 2026-09-04 n'est PAS mort dans une attente : indisready=false
+-- + 60,6 s = mort pendant le PREMIER scan (~54 s), avant index_set_state_flags.
+-- Le verrou SHARE UPDATE EXCLUSIVE pris au démarrage est faible et rarement
+-- contendu : la borne extérieure utile est le `timeout-minutes` du job.
 --
 -- Durée attendue : ~2 min par index. Mesure du 2026-09-04 (EXPLAIN ANALYZE,
 -- BUFFERS sur une plage de ctid) : 40 000 pages lues à froid en 2 305 ms, soit
@@ -65,12 +84,16 @@
 -- Rollback : companion .down.sql avec DROP INDEX CONCURRENTLY (symétrique
 -- sur le lock side ; SHARE UPDATE EXCLUSIVE ne bloque pas les writes).
 
-SET lock_timeout = '5s';
+SET lock_timeout = 0;
 -- Explicite, et non omis : voir l'en-tête. 0 = pas de limite pour CETTE session.
 SET statement_timeout = 0;
 
 -- Réparation : retire l'index INVALIDE laissé par le build interrompu
--- (voir en-tête). No-op si l'index n'existe pas ou a déjà été réparé.
+-- (voir en-tête). No-op si l'index n'existe pas. Coût assumé : sur une reprise
+-- (--retry) après un succès PARTIEL (1er index valide, 2e interrompu), ce DROP
+-- retire aussi un index VALIDE et le reconstruit (~2 min). Un DROP conditionnel
+-- sur indisvalid exigerait un bloc DO, impossible avec CONCURRENTLY (non
+-- transactionnel) : la simplicité idempotente vaut ces 2 minutes.
 DROP INDEX CONCURRENTLY IF EXISTS idx_xtr_msg_crm_status_active;
 
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_xtr_msg_crm_status_active
@@ -81,8 +104,8 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_xtr_msg_crm_status_active
 -- Garde de reprise, symetrique de celle posee sur `status_active`. No-op
 -- aujourd'hui : `follow_up_due` n'existe pas. Elle couvre l'interruption du
 -- build ci-dessous : le job d'application est plafonne a `timeout-minutes: 20`
--- (.github/workflows/apply-supabase-migrations.yml) alors que l'en-tete annonce
--- 5-20 min PAR index. Un build interrompu laisse l'index INVALIDE ; la relance
+-- (.github/workflows/apply-supabase-migrations.yml) ; ~2 min par index mesures
+-- (voir l'en-tete). Un build interrompu laisse l'index INVALIDE ; la relance
 -- verrait le nom pris et `CREATE ... IF NOT EXISTS` serait un no-op silencieux
 -- -> migration « appliquee » avec un index inutilisable. C'est exactement le
 -- defaut repare plus haut, un index plus loin. Le `.down.sql` portait deja les

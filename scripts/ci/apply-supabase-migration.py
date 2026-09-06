@@ -559,7 +559,8 @@ def reopen_failed(
 # This is not hypothetical. `20260513_default_privileges_data_api_post_oct30.sql`
 # sets `lock_timeout = '1s'` and `statement_timeout = '5s'`. The next migrations
 # in lexicographic order include `20260529_xtr_msg_crm_indexes.sql`, whose
-# CREATE INDEX CONCURRENTLY is documented at 5-20 minutes per index. Under a
+# CREATE INDEX CONCURRENTLY was measured at ~2 minutes per index on
+# ___xtr_msg (two heap scans of ~54 s each, 2026-09-04). Under a
 # leaked 5s timeout it would be killed, leave the index INVALID — which
 # `CREATE INDEX CONCURRENTLY IF NOT EXISTS` then silently treats as a no-op on
 # every later attempt — and write a `failed` ledger row that blocks all runs.
@@ -614,7 +615,7 @@ def reset_session(conn) -> "None":
 
 def apply_migration(
     conn, mig: LocalMigration, runner: str, git_sha: str,
-    *, resume_note: "str | None" = None,
+    *, resume_note: "str | None" = None, sql: "str | None" = None,
 ) -> int:
     """Apply one migration. Returns elapsed ms. Raises on failure.
 
@@ -622,8 +623,13 @@ def apply_migration(
     "reopen the existing 'failed' one" (--retry). The SQL execution itself is
     byte-for-byte the same path in both cases : a retry must not be a second,
     subtly different way of running a migration.
+
+    `sql`, when given, is the text a caller already validated (run_retry's A5
+    gate) : executing exactly that text, not a fresh read, is what makes the
+    gate's verdict apply to what runs.
     """
-    sql = mig.path.read_text(encoding="utf-8")
+    if sql is None:
+        sql = mig.path.read_text(encoding="utf-8")
     start = time.monotonic()
 
     if mig.non_transactional:
@@ -661,16 +667,21 @@ def apply_migration(
     conn.autocommit = False
     try:
         with conn.cursor() as cur:
-            if resume_note is not None:
-                # Same transaction as the SQL : if the retry fails again, the
-                # reopen rolls back with it and the row stays 'failed'.
-                reopen_failed(cur, mig, runner, git_sha, resume_note)
             cur.execute(sql)
             elapsed_ms = int((time.monotonic() - start) * 1000)
             if resume_note is None:
                 insert_applied_tx(cur, mig, elapsed_ms, runner, git_sha)
             else:
+                # Ledger writes come AFTER the SQL, never before : a file that
+                # closes our transaction (a stray COMMIT) would otherwise make
+                # 'applying' durable with no run behind it — an orphan row no
+                # mode can clear. Checked the same way run_reapply does, then
+                # reopen + mark_applied commit together with the SQL, or not at
+                # all : a retry that fails again leaves the row 'failed'.
+                _assert_in_transaction(conn, "after running the migration SQL")
+                reopen_failed(cur, mig, runner, git_sha, resume_note)
                 mark_applied(cur, mig.id, elapsed_ms)
+                _assert_in_transaction(conn, "before committing the ledger row")
         conn.commit()
     except Exception:
         conn.rollback()
@@ -1277,6 +1288,49 @@ def run_self_test() -> int:
     assert "still live" in retry_precheck(
         _lm, RemoteMigration("x", "aaa", "applying", None, None))
 
+    # run_retry must refuse an A5-inconsistent file with exit 7 BEFORE any
+    # ledger write. Exercised in-process : fail() is swapped for a raiser and
+    # the connection is a stub whose only job is to record what was executed.
+    import tempfile as _tf
+    _g = globals()
+    _saved_fail = _g["fail"]
+    class _Exit(Exception):
+        def __init__(self, code, msg): self.code, self.msg = code, msg
+    _g["fail"] = lambda code, msg: (_ for _ in ()).throw(_Exit(code, msg))
+    class _Cur:
+        def __init__(self, conn): self.conn, self.rowcount = conn, 1
+        def execute(self, q, p=None): self.conn.log.append(" ".join(q.split()))
+        def fetchone(self): return self.conn.rows.pop(0)
+        def __enter__(self): return self
+        def __exit__(self, *a): pass
+    class _Conn:
+        autocommit = True
+        def __init__(self):
+            self.log = []
+            # privilege probe (5 columns), then failure detail (2 columns)
+            self.rows = [("postgres", True, True, True, True), ("2026-09-04", "boom")]
+        def cursor(self): return _Cur(self)
+    try:
+        with _tf.TemporaryDirectory() as _d:
+            _p = Path(_d) / "20260901_a5_bad.sql"
+            _p.write_text("-- @non_transactional\nCREATE TABLE t (id int);\n")
+            _bad = LocalMigration(id=_p.stem, path=_p, checksum="new", non_transactional=True)
+            _row = RemoteMigration(_p.stem, "old", "failed", None, "gh-actions:1")
+            _c = _Conn()
+            import io as _io, contextlib as _cl
+            _out = _io.StringIO()
+            try:
+                with _cl.redirect_stdout(_out):
+                    run_retry(_c, [_bad], {_p.stem: _row}, _p.stem, "self-test", "")
+                raise AssertionError("run_retry accepted an A5-inconsistent file")
+            except _Exit as _e:
+                assert _e.code == 7, _e.code
+            assert "::error::" in _out.getvalue()
+            assert "Retrying" not in _out.getvalue()
+            assert not any("UPDATE infra.schema_migrations" in q for q in _c.log)
+    finally:
+        _g["fail"] = _saved_fail
+
     # The two real files that pin both directions of this gate.
     _target = MIGRATIONS_DIR / "20260429_diag_maintenance_via_kg.sql"
     if _target.exists():
@@ -1675,7 +1729,8 @@ def run_retry(
     if why:
         fail(11, f"{target_id}: {why}.")
 
-    # `checksum` and `started_at` sit OUTSIDE the service_role column grant :
+    # `checksum`, `started_at`, `runner`, `git_sha` sit OUTSIDE the service_role
+    # column grant (every column reopen_failed writes that the grant omits) :
     # only the table owner can reopen a row. Say so plainly instead of
     # surfacing a bare 42501 halfway through.
     with conn.cursor() as cur:
@@ -1685,14 +1740,18 @@ def run_retry(
                    has_column_privilege('infra.schema_migrations',
                                         'checksum', 'UPDATE'),
                    has_column_privilege('infra.schema_migrations',
-                                        'started_at', 'UPDATE')
+                                        'started_at', 'UPDATE'),
+                   has_column_privilege('infra.schema_migrations',
+                                        'runner', 'UPDATE'),
+                   has_column_privilege('infra.schema_migrations',
+                                        'git_sha', 'UPDATE')
             """
         )
-        who, c_ok, s_ok = cur.fetchone()
-    if not (c_ok and s_ok):
+        who, c_ok, s_ok, r_ok, g_ok = cur.fetchone()
+    if not (c_ok and s_ok and r_ok and g_ok):
         fail(
             9,
-            f"role '{who}' cannot UPDATE checksum/started_at on "
+            f"role '{who}' cannot UPDATE checksum/started_at/runner/git_sha on "
             "infra.schema_migrations (column-scoped grant). --retry needs the "
             "table owner — the DATABASE_URL the engine bootstraps with.",
         )
@@ -1712,7 +1771,9 @@ def run_retry(
 
     sql = mig.path.read_text(encoding="utf-8")
 
-    # A5 gate — the SAME gate every apply path runs, with the SAME exit code.
+    # A5 gate — the same function and exit code as the apply / dry-run path in
+    # main(). (run_reapply does not run it : it only accepts transactional
+    # files, and widening it is a separate change.)
     # A retry is by design the mode for a file amended since it failed, and an
     # amendment is exactly where a marker/statement contradiction can appear :
     # this path needs the gate most, not least. Checked before any print or
@@ -1752,7 +1813,9 @@ def run_retry(
         f"error={first_line}"
     )
     reset_session(conn)
-    elapsed_ms = apply_migration(conn, mig, runner, git_sha, resume_note=note)
+    elapsed_ms = apply_migration(
+        conn, mig, runner, git_sha, resume_note=note, sql=sql
+    )
     print(f"OK in {elapsed_ms}ms")
     write_step_summary(
         ["## Retried", "",
@@ -1915,7 +1978,7 @@ def main(argv: list[str]) -> int:
         help="Print the migration state table and exit. Read-only on the data.",
     )
     parser.add_argument(
-        "--reapply", type=str, default="", metavar="ID",
+        "--reapply", type=str, default=None, metavar="ID",
         help=(
             "Re-execute ONE migration whose ledger row is in drift, then rewrite "
             "that row from the run. Refuses unless the row is a drifted "
@@ -1957,7 +2020,7 @@ def main(argv: list[str]) -> int:
         help="Show the apply plan without writing.",
     )
     parser.add_argument(
-        "--only", type=str, default="", metavar="ID[,ID...]",
+        "--only", type=str, default=None, metavar="ID[,ID...]",
         help=(
             "Apply exactly these pending migrations and nothing else, in file "
             "order. Refuses an unknown id or one already in the ledger. Prints "
@@ -1997,8 +2060,9 @@ def main(argv: list[str]) -> int:
     if args.lint_markers:
         return run_lint_markers(args.lint_markers)
 
-    if args.only and (args.limit is not None or args.baseline or args.status
-                      or args.reapply or args.retry is not None):
+    if args.only is not None and (args.limit is not None or args.baseline
+                                  or args.status or args.reapply is not None
+                                  or args.retry is not None):
         fail(
             2,
             "--only is exclusive : it cannot be combined with --limit, "
@@ -2010,9 +2074,14 @@ def main(argv: list[str]) -> int:
     # full-queue apply below.
     if args.retry is not None and not args.retry.strip():
         fail(11, "--retry was given an empty migration id — nothing was retried.")
+    if args.reapply is not None and not args.reapply.strip():
+        fail(8, "--reapply was given an empty migration id — nothing was re-applied.")
+    if args.only is not None and not args.only.strip():
+        fail(10, "--only was given an empty migration id — nothing was applied.")
 
     if args.retry is not None and (args.limit is not None or args.baseline
-                                   or args.status or args.reapply or args.dry_run):
+                                   or args.status or args.reapply is not None
+                                   or args.dry_run):
         fail(
             2,
             "--retry is exclusive : it cannot be combined with --limit, "
@@ -2020,7 +2089,8 @@ def main(argv: list[str]) -> int:
             "for a retry — it executes the migration.",
         )
 
-    if args.no_bootstrap and (not args.status or args.reapply or args.baseline):
+    if args.no_bootstrap and (not args.status or args.reapply is not None
+                              or args.baseline):
         fail(
             2,
             "--no-bootstrap is only valid with a bare --status : every write path "
@@ -2061,9 +2131,9 @@ def main(argv: list[str]) -> int:
         runner = f"gh-actions:{os.environ.get('GITHUB_RUN_ID', 'local')}"
         git_sha = os.environ.get("GITHUB_SHA", "")
 
-        if args.reapply:
+        if args.reapply is not None:
             return run_reapply(
-                conn, local, remote, args.reapply, runner, git_sha
+                conn, local, remote, args.reapply.strip(), runner, git_sha
             )
 
         # Before the blocker check below : a 'failed' row IS a blocker, so a
@@ -2103,7 +2173,7 @@ def main(argv: list[str]) -> int:
 
         pending = [m for m in local if m.id not in remote]
         skipped_earlier: list[str] = []
-        if args.only:
+        if args.only is not None:
             pending, skipped_earlier, errors = select_only(
                 local, remote, args.only
             )
@@ -2148,7 +2218,7 @@ def main(argv: list[str]) -> int:
                 state = "✅ applied"
             elif m in pending:
                 state = "⏳ pending"
-            elif args.only:
+            elif args.only is not None:
                 state = "⏸️ not selected (--only)"
             else:
                 state = "⏸️ deferred (limit)"
