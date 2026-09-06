@@ -416,3 +416,21 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `chore/codex-agents-md-bootstrap`
 - **Décision** : docs(agents): amorcer Codex sur le canon via un AGENTS.md racine pointeur
 - **Sortie** : PR aucune | commits 64e534ecb
+
+## 2026-09-04 — fix/fabricated-rpc-safety-gate-reference (auto)
+
+- **Branche** : `fix/fabricated-rpc-safety-gate-reference`
+- **Décision** : docs(governance): retirer une référence de gate fabriquée, nommer les vrais carriers
+- **Sortie** : PR #1392 | commits 5ce3cc612
+
+## 2026-09-04 — fix/20260529-idempotent-concurrent-index (auto)
+
+- **Branche** : `fix/20260529-idempotent-concurrent-index`
+- **Décision** : fix(migrations): rendre 20260529 idempotent sur le SECOND index aussi
+- **Sortie** : PR #1393 | commits d238d79ec
+
+## 2026-09-04 — fix/engine-retry-failed-migration (auto)
+
+- **Branche** : `fix/engine-retry-failed-migration`
+- **Décision** : fix(migrations): --retry pour une migration en échec + lever le timeout hérité
+- **Sortie** : PR #1395 | commits 09dd81c97
