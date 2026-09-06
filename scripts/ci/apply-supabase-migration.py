@@ -1711,6 +1711,22 @@ def run_retry(
         failed_at, prev_error = cur.fetchone()
 
     sql = mig.path.read_text(encoding="utf-8")
+
+    # A5 gate — the SAME gate every apply path runs, with the SAME exit code.
+    # A retry is by design the mode for a file amended since it failed, and an
+    # amendment is exactly where a marker/statement contradiction can appear :
+    # this path needs the gate most, not least. Checked before any print or
+    # ledger write, so a refused retry leaves the 'failed' row untouched.
+    mismatches = reconcile_non_transactional(sql)
+    if mismatches:
+        for msg in mismatches:
+            print(f"::error::{target_id}: {msg}")
+        fail(
+            7,
+            f"{len(mismatches)} @non_transactional mismatch(es) in {target_id} "
+            "— fix the file (see --lint-markers). Nothing was retried.",
+        )
+
     amended = row.checksum != mig.checksum
     mode = "non-tx" if mig.non_transactional else "tx"
     first_line = (prev_error.splitlines() or ["—"])[0][:200]
@@ -1908,7 +1924,7 @@ def main(argv: list[str]) -> int:
         ),
     )
     parser.add_argument(
-        "--retry", type=str, default="", metavar="ID",
+        "--retry", type=str, default=None, metavar="ID",
         help=(
             "Re-run ONE migration whose ledger row is 'failed', reopening that "
             "row instead of inserting a second one. Refuses unless the row is "
@@ -1982,15 +1998,21 @@ def main(argv: list[str]) -> int:
         return run_lint_markers(args.lint_markers)
 
     if args.only and (args.limit is not None or args.baseline or args.status
-                      or args.reapply or args.retry):
+                      or args.reapply or args.retry is not None):
         fail(
             2,
             "--only is exclusive : it cannot be combined with --limit, "
             "--baseline, --status, --reapply or --retry.",
         )
 
-    if args.retry and (args.limit is not None or args.baseline or args.status
-                       or args.reapply or args.dry_run):
+    # `default=None` so an EMPTY value is distinguishable from an absent flag :
+    # `--retry "$ID"` with ID unset must refuse, never fall through to the
+    # full-queue apply below.
+    if args.retry is not None and not args.retry.strip():
+        fail(11, "--retry was given an empty migration id — nothing was retried.")
+
+    if args.retry is not None and (args.limit is not None or args.baseline
+                                   or args.status or args.reapply or args.dry_run):
         fail(
             2,
             "--retry is exclusive : it cannot be combined with --limit, "
@@ -2046,8 +2068,10 @@ def main(argv: list[str]) -> int:
 
         # Before the blocker check below : a 'failed' row IS a blocker, so a
         # retry has to run ahead of the very gate it exists to clear.
-        if args.retry:
-            return run_retry(conn, local, remote, args.retry, runner, git_sha)
+        if args.retry is not None:
+            return run_retry(
+                conn, local, remote, args.retry.strip(), runner, git_sha
+            )
 
         if args.baseline:
             return run_baseline(conn, local, remote, args.exclude)
