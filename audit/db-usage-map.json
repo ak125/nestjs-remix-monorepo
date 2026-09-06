@@ -2,7 +2,7 @@
   "_generated_by": "scripts/audit/build-db-usage-map.js",
   "note": "Candidates only — never a \"dead\" verdict. A real DROP table/function goes through the RPC Gate + a vault ADR, never from this map.",
   "important_caveats": [
-    "896 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
+    "897 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
     "Migration parsing is regex-based and tracks last CREATE vs last DROP per object (date-prefixed filenames ≈ chronological); re-create-after-drop edge cases may slip through.",
     "RLS-only / dashboard / external-cron / RPC-internal usage is invisible here — see per-candidate caveats."
   ],
@@ -14,10 +14,10 @@
     "rpc_with_callsites": 14,
     "trigger_functions": 30,
     "candidate_orphan_rpc": 198,
-    "dynamic_from_callsites": 896,
-    "dynamic_rpc_callsites": 2,
-    "migrations_scanned": 340,
-    "backend_files_scanned": 1372
+    "dynamic_from_callsites": 897,
+    "dynamic_rpc_callsites": 1,
+    "migrations_scanned": 342,
+    "backend_files_scanned": 1377
   },
   "tables": {
     "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7": {
@@ -268,10 +268,9 @@
     "__cross_gamme_car_new": {
       "used_by": [
         "backend/src/modules/admin/services/gamme-detail-enricher.service.ts",
-        "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
         "backend/src/modules/blog/services/blog-article-relation.service.ts"
       ],
-      "used_by_count": 3,
+      "used_by_count": 2,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false
@@ -14294,16 +14293,16 @@
     {
       "file": "backend/src/shared/crypto/password-crypto.service.ts",
       "line": 246
+    },
+    {
+      "file": "backend/src/workers/processors/__tests__/seo-monitor.processor.test.ts",
+      "line": 78
     }
   ],
   "dynamic_rpc_callsites": [
     {
       "file": "backend/src/database/services/supabase-base.service.ts",
       "line": 509
-    },
-    {
-      "file": "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
-      "line": 218
     }
   ]
 }

@@ -2721,6 +2721,8 @@
       "backend/supabase/migrations/20260703_blog_advice_increment_views_rpc.sql",
       "backend/supabase/migrations/20260703_blog_advice_increment_views_rpc_grant_tighten.down.sql",
       "backend/supabase/migrations/20260703_blog_advice_increment_views_rpc_grant_tighten.sql",
+      "backend/supabase/migrations/20260902_b0_rm_rpc_volatility_stable.down.sql",
+      "backend/supabase/migrations/20260902_b0_rm_rpc_volatility_stable.sql",
       "backend/supabase/migrations/README.md"
     ],
     "ci_workflows": [
@@ -2756,6 +2758,7 @@
       ".github/workflows/governance-checks.yml",
       ".github/workflows/impeccable-ratchet.yml",
       ".github/workflows/marketing-voice-hash.yml",
+      ".github/workflows/migration-ledger-freshness.yml",
       ".github/workflows/monorepo-invariants.yml",
       ".github/workflows/morning-health-digest.yml",
       ".github/workflows/orphan-files-ratchet.yml",
@@ -2841,6 +2844,7 @@
       "scripts/audit/ts7-shadow-parity.test.ts",
       "scripts/audit/ts7-shadow-parity.ts",
       "scripts/check-no-client-localhost.sh",
+      "scripts/ci/assert-r2-golden.test.mjs",
       "scripts/ci/preprod-response-probe.test.mjs",
       "scripts/ci/preprod-response-suite.test.mjs",
       "scripts/ci/prod-rollback.test.mjs",
@@ -2883,7 +2887,7 @@
       "tests/registry/rpc-parser.test.ts"
     ]
   },
-  "runtime_files_count": 1495,
+  "runtime_files_count": 1499,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -2919,6 +2923,7 @@
     ".github/workflows/governance-checks.yml",
     ".github/workflows/impeccable-ratchet.yml",
     ".github/workflows/marketing-voice-hash.yml",
+    ".github/workflows/migration-ledger-freshness.yml",
     ".github/workflows/monorepo-invariants.yml",
     ".github/workflows/morning-health-digest.yml",
     ".github/workflows/orphan-files-ratchet.yml",
@@ -4058,6 +4063,8 @@
     "backend/supabase/migrations/20260703_blog_advice_increment_views_rpc.sql",
     "backend/supabase/migrations/20260703_blog_advice_increment_views_rpc_grant_tighten.down.sql",
     "backend/supabase/migrations/20260703_blog_advice_increment_views_rpc_grant_tighten.sql",
+    "backend/supabase/migrations/20260902_b0_rm_rpc_volatility_stable.down.sql",
+    "backend/supabase/migrations/20260902_b0_rm_rpc_volatility_stable.sql",
     "backend/supabase/migrations/README.md",
     "backend/tests/unit/route-wildcard-middleware.test.ts",
     "docker/lighthouse/Dockerfile",
@@ -4339,6 +4346,7 @@
     "scripts/audit/ts7-shadow-parity.test.ts",
     "scripts/audit/ts7-shadow-parity.ts",
     "scripts/check-no-client-localhost.sh",
+    "scripts/ci/assert-r2-golden.test.mjs",
     "scripts/ci/preprod-response-probe.test.mjs",
     "scripts/ci/preprod-response-suite.test.mjs",
     "scripts/ci/prod-rollback.test.mjs",

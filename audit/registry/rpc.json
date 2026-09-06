@@ -7187,7 +7187,9 @@
       "returnType": "TABLE(updated bigint)",
       "schema": "public",
       "schemaVersion": "1.0.0",
-      "searchPath": [],
+      "searchPath": [
+        "public"
+      ],
       "securityDefiner": false,
       "sourceConfidence": "high",
       "status": "UNKNOWN",
@@ -7925,7 +7927,9 @@
       "returnType": "integer",
       "schema": "public",
       "schemaVersion": "1.0.0",
-      "searchPath": [],
+      "searchPath": [
+        "public"
+      ],
       "securityDefiner": false,
       "sourceConfidence": "high",
       "status": "UNKNOWN",
@@ -8541,7 +8545,9 @@
       "returnType": "trigger",
       "schema": "public",
       "schemaVersion": "1.0.0",
-      "searchPath": [],
+      "searchPath": [
+        "public"
+      ],
       "securityDefiner": false,
       "sourceConfidence": "high",
       "status": "UNKNOWN",
