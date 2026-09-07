@@ -1,0 +1,21 @@
+# Empreintes des 7 paires entree/sortie produites par le pipeline TecDoc reel
+# (mars 2026, /opt/automecanik/data/tecdoc/extract/). Les octets ne sont PAS
+# versionnes ici : ce sont des donnees TecDoc sous licence. Ce manifeste permet
+# de rejouer la validation sur une machine qui dispose du repertoire, sans
+# redistribuer la donnee. Genere le 2026-09-07.
+#
+# format : <sha256>  <nom>   (.dat.sql = entree, .csv = sortie attendue)
+b406b192bbfbfd1c80ab4a9fa782dfe48c5afa322b05b5137b2ed4aea686d1a6  012.dat.sql
+1c5db13278e489f96cd29bb1638f57ef08f1c6c75be9502f60383f121fa02f36  012.csv
+e64f54a4dc719f95412bb6c6a247acecb896a5e608938c689522db39a84bf769  140.dat.sql
+3cb038996c9252c2fddab062826b8dc1765d2efd85effaa50af94a35a2b5a95d  140.csv
+60f34bf1651cb5b5b04f6ce50c5ded90ac8d43eb5098b1137e1e4ffa2637236b  143.dat.sql
+3543bdf31b8990fa84820529d63998c3e12bd0f1aafa2cd482b7108e30b764ca  143.csv
+c7d25a31dd45e0908c1d954fa8f3debf6994f8c5a27c58006c933d65f8f39530  144.dat.sql
+957eff79cf9f4f9ce7042ebab1d85841b806e3fec17849d5a4f11ccdd3356aee  144.csv
+ea98b1db863539e158b4b9f52e105bf8fad1cb52559daa11a23e740a78d8f2fb  145.dat.sql
+538be56bbc4dbd351626b30b21d7dcabd7eae2e8f92ae5155379ed23f50d0a08  145.csv
+12549de6d3657900dc834f8e62829bf988c9bf457ad1f7737cdf6afe52cd7575  146.dat.sql
+3db2297bcda6c6c602d562065477541a0d0f5ddf022bbb44f5b93889f75959af  146.csv
+633ddfc7bde3080967ceb3012c456602ca6817633377c8257bf46528c4a8921f  147.dat.sql
+1ec59349929db4b6480a828946b7960877e6a3f333e76a11088c7dd052cb1085  147.csv

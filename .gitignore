@@ -203,6 +203,8 @@ agent-submissions/
 # CSV exports at root (Ahrefs, Search Console, etc.)
 *.csv
 !packages/**/*.csv
+# Fixture de non-regression du parseur TecDoc : la sortie attendue DOIT etre versionnee
+!scripts/tecdoc-parser-fixtures/*.csv
 
 # PDFs (source brochures, not for git)
 frontend/*.pdf
