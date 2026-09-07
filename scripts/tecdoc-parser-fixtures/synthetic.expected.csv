@@ -1,0 +1,8 @@
+1,simple,,__PG_NULL__,synthetic.dat.sql,,,1,4cb6334680ea7a14b997b3f7794e2d6d
+2,"avec, une virgule","avec ""guillemets""",fin,synthetic.dat.sql,,,2,751273e833082c3098cacc494a626003
+3,apostrophe' backslash,double''quote,x,synthetic.dat.sql,,,3,09ca29705057593df310414b75ca5e73
+4,anti\slash,tab	here,"nl
+ici",synthetic.dat.sql,,,4,e568d532e985073ed27fc69eb9174459
+5,0000-00-00,retourchariot,__PG_NULL__,synthetic.dat.sql,,,5,62ee59115bbb7b112180e340e87f3215
+6,second statement,compteur continue,,synthetic.dat.sql,,,6,54c5db6c4af832776865bfeb67806fff
+7,__PG_NULL__,__PG_NULL__,__PG_NULL__,synthetic.dat.sql,,,7,0bb31445376d07c0aa5ad0127a4d7469
