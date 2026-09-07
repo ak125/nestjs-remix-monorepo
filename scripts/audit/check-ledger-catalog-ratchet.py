@@ -28,7 +28,7 @@ catalogue, dans n'importe quel schéma.**
 Il ne dit PAS dans quel schéma l'objet devrait être : une relation déplacée dans
 `_archive` par un `SET SCHEMA` est **présente** et ne déclenche rien ici. Savoir
 si `public` devrait la porter est une autre question, instruite ailleurs
-(`audit/ledger-tail-owner-decisions-2026-09-04.md`) — un garde qui répondrait
+(`audit/massdoc-ledger-tail-owner-decisions-2026-09-04.md`) — un garde qui répondrait
 aux deux serait un garde au périmètre flou.
 
 Il ne remplace ni ne double aucun garde existant : les invariants registry
@@ -354,7 +354,7 @@ BASELINE_CONTRACT = (
     "l'emplacement : une relation deplacee dans _archive est presente et n'est "
     "PAS listee ici. Ces entrees sont une dette ecrite, instruite dans "
     "audit/massdoc-ledger-declared-objects-2026-09-07.md (PR #1407) et arbitree "
-    "dans audit/ledger-tail-owner-decisions-2026-09-04.md ; ce fichier ne les "
+    "dans audit/massdoc-ledger-tail-owner-decisions-2026-09-04.md ; ce fichier ne les "
     "absout pas, il empeche qu'elles augmentent en silence. Ratchet symetrique : "
     "une absence nouvelle ECHOUE, une absence resolue ECHOUE aussi tant que ce "
     "fichier n'a pas ete rafraichi (--refresh) dans la MEME PR que la correction."

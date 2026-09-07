@@ -1,7 +1,7 @@
 # Le ledger dit « appliquée ». La base dit « absente ». 24 fois.
 
 > Mesuré le 2026-09-07 sur le projet live, **lecture seule**. Reproductible :
-> `python3 scripts/audit/extract-declared-objects.py /tmp/declared.json` produit la
+> `python3 scripts/audit/check-ledger-catalog-ratchet.py --emit /tmp/declared.json` produit la
 > liste des objets déclarés par chaque migration ; la requête catalogue qui vérifie
 > leur existence est dérivée de cette liste. Aucune mutation.
 
@@ -86,7 +86,7 @@ Supabase n'est pas typé `Database`) :
 
 S'y ajoutent les 3 fonctions du sitemap v10 appelées par `callRpc` et les 5 `.from()`
 vers des objets archivés, déjà décrits dans
-`audit/ledger-tail-owner-decisions-2026-09-04.md`.
+`audit/massdoc-ledger-tail-owner-decisions-2026-09-04.md`.
 
 ## La cause racine
 
