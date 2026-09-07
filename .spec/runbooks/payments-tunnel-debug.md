@@ -1,3 +1,11 @@
+---
+title: "Tunnel de paiement Paybox — runbook de diagnostic SEV1"
+status: current
+version: "1.0"
+date: 2026-09-07
+applies_to: scripts/monitoring/check-payment-tunnel.sh
+---
+
 # Runbook — tunnel de paiement Paybox
 
 > Destination des alertes `[SEV1] AutoMecanik — Payment tunnel…` / `— No payment for Nd…`
