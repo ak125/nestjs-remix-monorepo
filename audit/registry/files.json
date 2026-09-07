@@ -24087,7 +24087,7 @@
         "backend/src/modules/seo-monitoring/services/funnel-events.service.ts"
       ],
       "kind": "controller",
-      "loc": 36,
+      "loc": 38,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-monitoring/controllers/funnel-events.controller.ts",
       "risk": "low",
@@ -24568,7 +24568,7 @@
         "@repo/seo-types"
       ],
       "kind": "service",
-      "loc": 81,
+      "loc": 84,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-monitoring/services/funnel-events.service.ts",
       "risk": "low",
