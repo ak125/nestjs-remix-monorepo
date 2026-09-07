@@ -22,7 +22,7 @@
 -- doublon le 2026-08-25, aucune ligne depuis le 2026-09-04. L'index UNIQUE sans
 -- plancher échouerait donc au build (23505). L'historique des VENTES n'est jamais
 -- réécrit (décision owner 2026-09-07, option B du brief
--- audit/ledger-tail-owner-decisions-2026-09-04.md) : le prédicat partiel porte un
+-- audit/massdoc-ledger-tail-owner-decisions-2026-09-04.md) : le prédicat partiel porte un
 -- PLANCHER DE DATE strictement postérieur au dernier doublon — les doublons passés
 -- restent visibles (CA fantôme à corriger séparément, jamais en silence), la garde
 -- protège tout ce qui s'écrit à partir du plancher, beacon comme émetteur serveur.
