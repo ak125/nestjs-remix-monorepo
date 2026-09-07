@@ -65,15 +65,28 @@ For those, add an **explicit header marker** in the first 20 lines:
 -- @non_transactional
 --
 -- Rationale : CREATE INDEX CONCURRENTLY ne tolère pas BEGIN/COMMIT.
-SET statement_timeout = '5min';
+-- Both timeouts EXPLICIT. Omitted, a GUC inherits the ROLE default — 60 s
+-- for `postgres` on this project, which killed 20260529 on 2026-09-04 at
+-- 60.6 s. CONCURRENTLY's waits for other transactions count against
+-- lock_timeout ; the CI job's `timeout-minutes` bounds the whole run.
+SET lock_timeout = 0;
+SET statement_timeout = 0;
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_foo ON public.bar (col);
 ```
 
 The engine switches to autocommit, inserts a row with
-`status='applying'`, runs the SQL, then flips the row to
-`status='applied'`. If the SQL crashes mid-run the row stays in
-`'applying'` and the next workflow run **HARD FAILs** until a human
-investigates.
+`status='applying'`, runs the statements one by one, then flips the row
+to `status='applied'`. A statement that errors flips it to
+`status='failed'` (the error is kept in `error_message`) ; a process
+killed mid-run leaves it in `'applying'`. Either row **HARD FAILs**
+every later run (exit 5) until resolved : `failed` → `--retry ID`
+(cheatsheet below) ; `applying` → a human confirms the run is really
+dead before touching the row.
+
+An interrupted `CREATE INDEX CONCURRENTLY` leaves an INVALID index that
+a later `CREATE INDEX CONCURRENTLY IF NOT EXISTS` silently skips — a
+retryable file drops it first (`DROP INDEX CONCURRENTLY IF EXISTS`), as
+`20260529_xtr_msg_crm_indexes.sql` does.
 
 Why a marker and not a regex SQL parser : comment / dollar-quote /
 PL/pgSQL bodies fool regex-based detection of `CONCURRENTLY`. The
@@ -120,6 +133,25 @@ python3 scripts/ci/apply-supabase-migration.py
 # Apply at most N migrations (staged rollout)
 python3 scripts/ci/apply-supabase-migration.py --limit 1
 
+# Apply exactly these pending ids (comma-separated), in file order, nothing
+# else. Refuses an unknown id or one already at the ledger (exit 10) and
+# prints the pending migrations it steps over — the engine does not know
+# dependencies, that judgement stays with you.
+python3 scripts/ci/apply-supabase-migration.py \
+  --only 20260605_vlevel_capture_db_only_functions,20260611_quality_features_r3_guide_semantics
+
+# Re-run ONE migration whose row is 'failed', reopening that row in place
+# (never a second row). Accepts @non_transactional files and a file amended
+# since the failure — fixing the cause usually means editing it ; the
+# previous checksum / runner / git_sha / started_at / error are kept in
+# `note`. Refuses any other state (exit 11). Needs the table owner.
+python3 scripts/ci/apply-supabase-migration.py --retry 20260529_xtr_msg_crm_indexes
+
+# Re-execute ONE 'applied' migration whose row is in drift, then rewrite the
+# row from the run. Transactional files only, and no statement that would
+# misbehave on a second run. Needs the table owner.
+python3 scripts/ci/apply-supabase-migration.py --reapply 20260518_seo_admin_job_table
+
 # Baseline : mark every local file as applied WITHOUT running it.
 # Use ONCE when adopting this engine on a project where migrations are
 # already deployed via another channel (Supabase dashboard, MCP, psql).
@@ -155,11 +187,24 @@ CREATE TABLE infra.schema_migrations (
   error_message  TEXT
 );
 
+CREATE INDEX IF NOT EXISTS idx_schema_migrations_status
+  ON infra.schema_migrations (status)
+  WHERE status IN ('applying', 'failed');
+
+-- Audit trail for --reapply / --retry : why a row was rewritten, and what it
+-- held before. Additive and idempotent.
+ALTER TABLE infra.schema_migrations ADD COLUMN IF NOT EXISTS note TEXT;
+
 GRANT SELECT, INSERT ON infra.schema_migrations TO service_role;
-GRANT UPDATE (status, applied_at, execution_ms, error_message)
+GRANT UPDATE (status, applied_at, execution_ms, error_message, note)
   ON infra.schema_migrations TO service_role;
 -- No DELETE grant : append-only ledger.
 ```
+
+`--retry` and `--reapply` also rewrite `checksum`, `started_at`, `runner`
+and `git_sha`, which the column-scoped grant deliberately leaves out :
+they need the table owner (the `DATABASE_URL` the engine bootstraps
+with) and refuse a lesser role with exit 9 before touching the row.
 
 Why our own schema and not `supabase_migrations.schema_migrations` :
 the `supabase_migrations.*` schema is a Supabase **internal** that may
