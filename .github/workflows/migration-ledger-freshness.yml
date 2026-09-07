@@ -78,3 +78,25 @@ jobs:
             --status \
             --no-bootstrap \
             --max-pending-age-days 30
+
+      # `if: !cancelled()` — même raison que dans registry-fresh.yml : sans lui,
+      # le premier step rouge ferait passer celui-ci en `skipped` et le job
+      # n'aurait plus rien validé. Or le ledger est ROUGE par conception tant
+      # que le backlog n'est pas traité, donc le cas est la norme, pas l'exception.
+      - name: 🧾 Auto-test du ratchet ledger ↔ catalogue
+        if: ${{ !cancelled() }}
+        run: python3 scripts/audit/check-ledger-catalog-ratchet.py --self-test
+
+      # Le step ci-dessus vérifie ledger ↔ FICHIERS. Celui-ci vérifie
+      # ledger ↔ BASE : un objet déclaré par une migration `applied` doit
+      # exister. C'était la responsabilité que personne ne portait — 270 des
+      # 300 lignes `applied` sont des baselines, et rien n'avait jamais
+      # confronté l'hypothèse au catalogue (PR #1407). Pas de nouveau workflow,
+      # pas de second détecteur : la sonde du ledger est déjà ici, et elle est
+      # déjà read-only. Le SELECT sur les catalogues système respecte le
+      # contrat de périmètre du workflow — aucun DDL, aucun bootstrap.
+      - name: 🗂️ Ratchet ledger ↔ catalogue
+        if: ${{ !cancelled() }}
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python3 scripts/audit/check-ledger-catalog-ratchet.py --verify

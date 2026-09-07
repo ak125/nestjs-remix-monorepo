@@ -1,0 +1,716 @@
+{
+  "schemaVersion": "1.0.0",
+  "_contract": "Absences declarees : un objet (table, vue, fonction, type, valeur d'enum) declare par une migration que infra.schema_migrations dit 'applied', et absent de TOUS les schemas du catalogue. Le predicat est l'existence, pas l'emplacement : une relation deplacee dans _archive est presente et n'est PAS listee ici. Ces entrees sont une dette ecrite, instruite dans audit/massdoc-ledger-declared-objects-2026-09-07.md (PR #1407) et arbitree dans audit/ledger-tail-owner-decisions-2026-09-04.md ; ce fichier ne les absout pas, il empeche qu'elles augmentent en silence. Ratchet symetrique : une absence nouvelle ECHOUE, une absence resolue ECHOUE aussi tant que ce fichier n'a pas ete rafraichi (--refresh) dans la MEME PR que la correction.",
+  "count": 100,
+  "byKind": {
+    "enumvalue": 1,
+    "function": 50,
+    "table": 26,
+    "type": 8,
+    "view": 15
+  },
+  "entries": [
+    {
+      "identity": "enumvalue:seo_event_type.crux_fetch_run",
+      "kind": "enumvalue",
+      "declaredBy": [
+        "20260514_seo_crux_field_history"
+      ]
+    },
+    {
+      "identity": "function:__ux_debt_updated_at",
+      "kind": "function",
+      "declaredBy": [
+        "20260128_dco_v2_tables"
+      ]
+    },
+    {
+      "identity": "function:assign_page_role_from_url",
+      "kind": "function",
+      "declaredBy": [
+        "20260124_add_page_role"
+      ]
+    },
+    {
+      "identity": "function:build_rm_listing",
+      "kind": "function",
+      "declaredBy": [
+        "20260115_rm_tables"
+      ]
+    },
+    {
+      "identity": "function:calculate_risk_flags",
+      "kind": "function",
+      "declaredBy": [
+        "20260123_seo_enterprise_dashboard"
+      ]
+    },
+    {
+      "identity": "function:cleanup_expired_breakglass",
+      "kind": "function",
+      "declaredBy": [
+        "20260204_breakglass_mechanism"
+      ]
+    },
+    {
+      "identity": "function:count_sitemap_urls_by_temperature",
+      "kind": "function",
+      "declaredBy": [
+        "20260122_sitemap_v10_enterprise"
+      ]
+    },
+    {
+      "identity": "function:detect_satellite_pages",
+      "kind": "function",
+      "declaredBy": [
+        "20260123_seo_enterprise_dashboard"
+      ]
+    },
+    {
+      "identity": "function:fn_marketing_brief_updated_at",
+      "kind": "function",
+      "declaredBy": [
+        "20260430_marketing_layer_phase1"
+      ]
+    },
+    {
+      "identity": "function:generate_purchase_guide_v2",
+      "kind": "function",
+      "declaredBy": [
+        "20260104_purchase_guide_v2_all_gammes"
+      ]
+    },
+    {
+      "identity": "function:get_claim_stats",
+      "kind": "function",
+      "declaredBy": [
+        "20260202_create_claims_table"
+      ]
+    },
+    {
+      "identity": "function:get_cwv_summary_by_role",
+      "kind": "function",
+      "declaredBy": [
+        "20260128_dco_v2_tables"
+      ]
+    },
+    {
+      "identity": "function:get_design_system",
+      "kind": "function",
+      "declaredBy": [
+        "20260128_dco_v2_tables"
+      ]
+    },
+    {
+      "identity": "function:get_latest_ux_capture",
+      "kind": "function",
+      "declaredBy": [
+        "20260128_dco_v2_tables"
+      ]
+    },
+    {
+      "identity": "function:get_listing_products_for_build",
+      "kind": "function",
+      "declaredBy": [
+        "20260115_rm_rpc_get_listing_products",
+        "20260117_rm_add_image_fields",
+        "20260118_rm_remove_stock_filter"
+      ]
+    },
+    {
+      "identity": "function:get_quote_stats",
+      "kind": "function",
+      "declaredBy": [
+        "20260202_create_quotes_tables"
+      ]
+    },
+    {
+      "identity": "function:get_rm_listing",
+      "kind": "function",
+      "declaredBy": [
+        "20260115_rm_tables"
+      ]
+    },
+    {
+      "identity": "function:get_seo_critical_alerts",
+      "kind": "function",
+      "declaredBy": [
+        "20260122_sitemap_v10_dashboard"
+      ]
+    },
+    {
+      "identity": "function:get_seo_interpolation_stats",
+      "kind": "function",
+      "declaredBy": [
+        "20260129_seo_interpolation_alerts"
+      ]
+    },
+    {
+      "identity": "function:get_sitemap_urls_by_temperature",
+      "kind": "function",
+      "declaredBy": [
+        "20260122_sitemap_v10_enterprise"
+      ]
+    },
+    {
+      "identity": "function:get_stabilize_pages",
+      "kind": "function",
+      "declaredBy": [
+        "20260125_hub_stabilize_rpc"
+      ]
+    },
+    {
+      "identity": "function:get_urls_at_risk",
+      "kind": "function",
+      "declaredBy": [
+        "20260123_seo_enterprise_dashboard"
+      ]
+    },
+    {
+      "identity": "function:get_ux_debt_by_roi",
+      "kind": "function",
+      "declaredBy": [
+        "20260128_dco_v2_tables"
+      ]
+    },
+    {
+      "identity": "function:kg_apply_learning",
+      "kind": "function",
+      "declaredBy": [
+        "20260127_kg_v3_case_learning"
+      ]
+    },
+    {
+      "identity": "function:kg_audit_edges_trigger",
+      "kind": "function",
+      "declaredBy": [
+        "20260126_kg_v3_governance"
+      ]
+    },
+    {
+      "identity": "function:kg_audit_nodes_trigger",
+      "kind": "function",
+      "declaredBy": [
+        "20260126_kg_v3_governance"
+      ]
+    },
+    {
+      "identity": "function:kg_diagnose",
+      "kind": "function",
+      "declaredBy": [
+        "20251230_knowledge_graph"
+      ]
+    },
+    {
+      "identity": "function:kg_edge_auto_history",
+      "kind": "function",
+      "declaredBy": [
+        "20260125_kg_v3_versioning"
+      ]
+    },
+    {
+      "identity": "function:kg_find_similar_cases",
+      "kind": "function",
+      "declaredBy": [
+        "20260127_kg_v3_case_learning"
+      ]
+    },
+    {
+      "identity": "function:kg_get_compatible_parts_for_fault",
+      "kind": "function",
+      "declaredBy": [
+        "20260125_kg_v3_observable_pro"
+      ]
+    },
+    {
+      "identity": "function:kg_get_confidence_improvements",
+      "kind": "function",
+      "declaredBy": [
+        "20260125_kg_v3_explainable_score"
+      ]
+    },
+    {
+      "identity": "function:kg_node_auto_history",
+      "kind": "function",
+      "declaredBy": [
+        "20260125_kg_v3_versioning"
+      ]
+    },
+    {
+      "identity": "function:kg_process_feedback_batch",
+      "kind": "function",
+      "declaredBy": [
+        "20260125_kg_v3_feedback"
+      ]
+    },
+    {
+      "identity": "function:kg_process_truth_labels_batch",
+      "kind": "function",
+      "declaredBy": [
+        "20260125_kg_v3_truth_labels"
+      ]
+    },
+    {
+      "identity": "function:kg_quick_diagnose",
+      "kind": "function",
+      "declaredBy": [
+        "20260125_kg_v3_explainable_score"
+      ]
+    },
+    {
+      "identity": "function:link_satellites_to_entities",
+      "kind": "function",
+      "declaredBy": [
+        "20260123_seo_enterprise_dashboard"
+      ]
+    },
+    {
+      "identity": "function:mcp_cleanup_old_logs",
+      "kind": "function",
+      "declaredBy": [
+        "20260128_mcp_validation_shadow"
+      ]
+    },
+    {
+      "identity": "function:mcp_get_dashboard_summary",
+      "kind": "function",
+      "declaredBy": [
+        "20260128_mcp_validation_shadow"
+      ]
+    },
+    {
+      "identity": "function:mcp_get_match_rate",
+      "kind": "function",
+      "declaredBy": [
+        "20260128_mcp_validation_shadow"
+      ]
+    },
+    {
+      "identity": "function:mcp_get_mismatch_endpoints",
+      "kind": "function",
+      "declaredBy": [
+        "20260128_mcp_validation_shadow"
+      ]
+    },
+    {
+      "identity": "function:refresh_temperature_scores",
+      "kind": "function",
+      "declaredBy": [
+        "20260122_sitemap_v10_enterprise"
+      ]
+    },
+    {
+      "identity": "function:snapshot_index_status",
+      "kind": "function",
+      "declaredBy": [
+        "20260122_sitemap_v10_dashboard"
+      ]
+    },
+    {
+      "identity": "function:strip_html_tags",
+      "kind": "function",
+      "declaredBy": [
+        "20260107_clean_html_from_seo_descriptions"
+      ]
+    },
+    {
+      "identity": "function:sync_entity_health_from_scores",
+      "kind": "function",
+      "declaredBy": [
+        "20260123_seo_enterprise_dashboard"
+      ]
+    },
+    {
+      "identity": "function:trg_seo_keyword_type_mapping_updated_at",
+      "kind": "function",
+      "declaredBy": [
+        "20260128_create_seo_keyword_type_mapping"
+      ]
+    },
+    {
+      "identity": "function:update_claims_updated_at",
+      "kind": "function",
+      "declaredBy": [
+        "20260202_create_claims_table"
+      ]
+    },
+    {
+      "identity": "function:update_index_status_from_crawl_log",
+      "kind": "function",
+      "declaredBy": [
+        "20260123_seo_enterprise_dashboard"
+      ]
+    },
+    {
+      "identity": "function:update_quote_requests_updated_at",
+      "kind": "function",
+      "declaredBy": [
+        "20260202_create_quotes_tables"
+      ]
+    },
+    {
+      "identity": "function:update_seo_reference_updated_at",
+      "kind": "function",
+      "declaredBy": [
+        "20260125_create_seo_reference"
+      ]
+    },
+    {
+      "identity": "function:validate_capture_against_gates",
+      "kind": "function",
+      "declaredBy": [
+        "20260128_dco_v2_tables"
+      ]
+    },
+    {
+      "identity": "function:validate_page_role",
+      "kind": "function",
+      "declaredBy": [
+        "20260124_add_page_role"
+      ]
+    },
+    {
+      "identity": "table:__lighthouse_alerts",
+      "kind": "table",
+      "declaredBy": [
+        "20260310_lighthouse_cwv_tables"
+      ]
+    },
+    {
+      "identity": "table:__lighthouse_runs",
+      "kind": "table",
+      "declaredBy": [
+        "20260310_lighthouse_cwv_tables"
+      ]
+    },
+    {
+      "identity": "table:__marketing_brief",
+      "kind": "table",
+      "declaredBy": [
+        "20260430_marketing_layer_phase1"
+      ]
+    },
+    {
+      "identity": "table:__phase2a_audit_reports",
+      "kind": "table",
+      "declaredBy": [
+        "20260315_phase2a_shadow_audit"
+      ]
+    },
+    {
+      "identity": "table:__retention_trigger_rules",
+      "kind": "table",
+      "declaredBy": [
+        "20260430_marketing_layer_phase1"
+      ]
+    },
+    {
+      "identity": "table:__seo_crux_alert_state",
+      "kind": "table",
+      "declaredBy": [
+        "20260514_seo_crux_field_history"
+      ]
+    },
+    {
+      "identity": "table:__seo_crux_field_history",
+      "kind": "table",
+      "declaredBy": [
+        "20260514_seo_crux_field_history"
+      ]
+    },
+    {
+      "identity": "table:__seo_entity_health",
+      "kind": "table",
+      "declaredBy": [
+        "20260123_seo_enterprise_dashboard"
+      ]
+    },
+    {
+      "identity": "table:__seo_index_status",
+      "kind": "table",
+      "declaredBy": [
+        "20260123_seo_enterprise_dashboard"
+      ]
+    },
+    {
+      "identity": "table:__seo_role_template_pool",
+      "kind": "table",
+      "declaredBy": [
+        "20260509_seo_role_template_pool_with_r8_meta_seed"
+      ]
+    },
+    {
+      "identity": "table:__seo_sitemap_file",
+      "kind": "table",
+      "declaredBy": [
+        "20260122_sitemap_v10_enterprise"
+      ]
+    },
+    {
+      "identity": "table:__seo_snapshot_cf_analytics",
+      "kind": "table",
+      "declaredBy": [
+        "20260514_seo_snapshot_cf_analytics"
+      ]
+    },
+    {
+      "identity": "table:__seo_snapshot_runtime_logs",
+      "kind": "table",
+      "declaredBy": [
+        "20260514_seo_snapshot_runtime_logs"
+      ]
+    },
+    {
+      "identity": "table:__seo_surface_duplicate_decisions",
+      "kind": "table",
+      "declaredBy": [
+        "20260315_duplicate_gate_tables"
+      ]
+    },
+    {
+      "identity": "table:__seo_surface_duplicate_scores",
+      "kind": "table",
+      "declaredBy": [
+        "20260315_duplicate_gate_tables"
+      ]
+    },
+    {
+      "identity": "table:__seo_surface_fingerprints",
+      "kind": "table",
+      "declaredBy": [
+        "20260315_duplicate_gate_tables"
+      ]
+    },
+    {
+      "identity": "table:__sitemap_p_link_archive_20260423",
+      "kind": "table",
+      "declaredBy": [
+        "20260424_archive_purge_sitemap_orphan_types"
+      ]
+    },
+    {
+      "identity": "table:__ux_captures",
+      "kind": "table",
+      "declaredBy": [
+        "20260128_dco_v2_tables"
+      ]
+    },
+    {
+      "identity": "table:__ux_debt",
+      "kind": "table",
+      "declaredBy": [
+        "20260128_dco_v2_tables"
+      ]
+    },
+    {
+      "identity": "table:__ux_design_systems",
+      "kind": "table",
+      "declaredBy": [
+        "20260128_dco_v2_tables"
+      ]
+    },
+    {
+      "identity": "table:__ux_perf_gates",
+      "kind": "table",
+      "declaredBy": [
+        "20260128_dco_v2_tables"
+      ]
+    },
+    {
+      "identity": "table:kg_vehicle_usage_profiles",
+      "kind": "table",
+      "declaredBy": [
+        "20260125_kg_v3_maintenance_risk"
+      ]
+    },
+    {
+      "identity": "table:mcp_validation_log",
+      "kind": "table",
+      "declaredBy": [
+        "20260128_mcp_validation_shadow"
+      ]
+    },
+    {
+      "identity": "table:rag_document_versions",
+      "kind": "table",
+      "declaredBy": [
+        "20260313_rag_documents_v2"
+      ]
+    },
+    {
+      "identity": "table:rag_documents",
+      "kind": "table",
+      "declaredBy": [
+        "20260313_rag_documents_v2"
+      ]
+    },
+    {
+      "identity": "table:rag_job_history",
+      "kind": "table",
+      "declaredBy": [
+        "20260313_rag_documents_v2"
+      ]
+    },
+    {
+      "identity": "type:claim_priority_enum",
+      "kind": "type",
+      "declaredBy": [
+        "20260202_create_claims_table"
+      ]
+    },
+    {
+      "identity": "type:claim_resolution_type_enum",
+      "kind": "type",
+      "declaredBy": [
+        "20260202_create_claims_table"
+      ]
+    },
+    {
+      "identity": "type:claim_status_enum",
+      "kind": "type",
+      "declaredBy": [
+        "20260202_create_claims_table"
+      ]
+    },
+    {
+      "identity": "type:claim_type_enum",
+      "kind": "type",
+      "declaredBy": [
+        "20260202_create_claims_table"
+      ]
+    },
+    {
+      "identity": "type:kg_smart_maintenance_item",
+      "kind": "type",
+      "declaredBy": [
+        "20260125_kg_v3_maintenance_risk"
+      ]
+    },
+    {
+      "identity": "type:quote_request_priority_enum",
+      "kind": "type",
+      "declaredBy": [
+        "20260202_create_quotes_tables"
+      ]
+    },
+    {
+      "identity": "type:quote_request_status_enum",
+      "kind": "type",
+      "declaredBy": [
+        "20260202_create_quotes_tables"
+      ]
+    },
+    {
+      "identity": "type:quote_status_enum",
+      "kind": "type",
+      "declaredBy": [
+        "20260202_create_quotes_tables"
+      ]
+    },
+    {
+      "identity": "view:kg_diagnostic_quality_stats",
+      "kind": "view",
+      "declaredBy": [
+        "20260125_kg_v3_explainable_score"
+      ]
+    },
+    {
+      "identity": "view:kg_faults_without_action",
+      "kind": "view",
+      "declaredBy": [
+        "20260126_kg_v3_governance"
+      ]
+    },
+    {
+      "identity": "view:kg_maintenance_risk_dashboard",
+      "kind": "view",
+      "declaredBy": [
+        "20260125_kg_v3_maintenance_risk"
+      ]
+    },
+    {
+      "identity": "view:kg_orphan_observables",
+      "kind": "view",
+      "declaredBy": [
+        "20260126_kg_v3_governance"
+      ]
+    },
+    {
+      "identity": "view:kg_parts_without_fitment",
+      "kind": "view",
+      "declaredBy": [
+        "20260126_kg_v3_governance"
+      ]
+    },
+    {
+      "identity": "view:kg_quality_dashboard",
+      "kind": "view",
+      "declaredBy": [
+        "20260126_kg_v3_governance"
+      ]
+    },
+    {
+      "identity": "view:kg_truth_labels_pending",
+      "kind": "view",
+      "declaredBy": [
+        "20260125_kg_v3_truth_labels"
+      ]
+    },
+    {
+      "identity": "view:kg_undocumented_edges",
+      "kind": "view",
+      "declaredBy": [
+        "20260126_kg_v3_governance"
+      ]
+    },
+    {
+      "identity": "view:v_seo_crawl_activity",
+      "kind": "view",
+      "declaredBy": [
+        "20260123_seo_enterprise_dashboard"
+      ]
+    },
+    {
+      "identity": "view:v_seo_dashboard_stats",
+      "kind": "view",
+      "declaredBy": [
+        "20260123_seo_enterprise_dashboard"
+      ]
+    },
+    {
+      "identity": "view:v_seo_entity_cluster",
+      "kind": "view",
+      "declaredBy": [
+        "20260123_seo_enterprise_dashboard"
+      ]
+    },
+    {
+      "identity": "view:v_seo_page_roles_audit",
+      "kind": "view",
+      "declaredBy": [
+        "20260124_add_page_role"
+      ]
+    },
+    {
+      "identity": "view:v_seo_pages_unclassified",
+      "kind": "view",
+      "declaredBy": [
+        "20260124_add_page_role"
+      ]
+    },
+    {
+      "identity": "view:v_seo_reference_with_gamme",
+      "kind": "view",
+      "declaredBy": [
+        "20260125_create_seo_reference"
+      ]
+    },
+    {
+      "identity": "view:v_seo_urls_at_risk",
+      "kind": "view",
+      "declaredBy": [
+        "20260123_seo_enterprise_dashboard"
+      ]
+    }
+  ]
+}
