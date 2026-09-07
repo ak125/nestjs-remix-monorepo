@@ -7849,7 +7849,7 @@
           "20260327_resolve_type_id_remap.sql"
         ],
         "domain": "UNKNOWN",
-        "id": "public.resolve_type_id_remap",
+        "id": "public.resolve_type_id_remap#sig:7e35db43",
         "language": "sql",
         "name": "resolve_type_id_remap",
         "owner": "__unassigned__",
@@ -7863,6 +7863,33 @@
         "searchPath": [],
         "securityDefiner": true,
         "sourceConfidence": "medium",
+        "status": "UNKNOWN",
+        "usedBy": []
+      },
+      {
+        "args": [
+          {
+            "mode": "IN",
+            "name": "p_old_id",
+            "type": "integer"
+          }
+        ],
+        "definedInMigrations": [
+          "20260907_tecdoc_api_surface_lockdown.sql"
+        ],
+        "domain": "UNKNOWN",
+        "id": "public.resolve_type_id_remap#sig:c19fc985",
+        "language": "sql",
+        "name": "resolve_type_id_remap",
+        "owner": "__unassigned__",
+        "parseMode": "parsed",
+        "parseWarnings": [],
+        "returnType": "TABLE(new_id integer, type_alias text, type_name text, modele_alias text, modele_id integer, marque_alias text, marque_id smallint)",
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "searchPath": [],
+        "securityDefiner": true,
+        "sourceConfidence": "high",
         "status": "UNKNOWN",
         "usedBy": []
       },
@@ -98223,10 +98250,10 @@
       "audit/registry/db.json": "c874feb59f5d00601c29a139560da9ecd2d63678eea0eddc4bb4fbd8d79672d1",
       "audit/registry/deps.json": "6f667991be593e37b2798c4ca0f0689d89c412731aa2bdf50000248da9f2c5bd",
       "audit/registry/files.json": "2cde5d2ed3ec6a07c7d70e868d317a25255cf6688d3bc8f1bad062d4dd0d451e",
-      "audit/registry/rpc.json": "1ccf24c62a2cc645fdf0e61ee2cc78506411c61f2762088584ff4820ca79cdfe",
+      "audit/registry/rpc.json": "59d3bb0e2b79c240fb14ec32e3adab2b269fe5a69a3c721ab762128504f4f980",
       "audit/registry/runtime.json": "314a3bda98e2b9bb87a4b6a88a1efa131a3c12505d9e56b5f60eeebd23e5f70f"
     },
-    "sotFingerprint": "d026216333f1"
+    "sotFingerprint": "9eb6bc1e5abb"
   },
   "runtime": [
     {

@@ -7436,7 +7436,7 @@
         "20260327_resolve_type_id_remap.sql"
       ],
       "domain": "UNKNOWN",
-      "id": "public.resolve_type_id_remap",
+      "id": "public.resolve_type_id_remap#sig:7e35db43",
       "language": "sql",
       "name": "resolve_type_id_remap",
       "owner": "__unassigned__",
@@ -7450,6 +7450,33 @@
       "searchPath": [],
       "securityDefiner": true,
       "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_old_id",
+          "type": "integer"
+        }
+      ],
+      "definedInMigrations": [
+        "20260907_tecdoc_api_surface_lockdown.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.resolve_type_id_remap#sig:c19fc985",
+      "language": "sql",
+      "name": "resolve_type_id_remap",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "TABLE(new_id integer, type_alias text, type_name text, modele_alias text, modele_id integer, marque_alias text, marque_id smallint)",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
       "status": "UNKNOWN",
       "usedBy": []
     },
