@@ -338,6 +338,21 @@ entries:
   # Audits de bundle de release PROD (read-only, ancrés au SHA candidat) — même
   # famille D13 que la surface deploy (.github/workflows/** + scripts/ci/**).
   # Owner GO nominatif 2026-07-16. cf. audit/2026-07-16-prod-bundle-da90deabd-a931205c.md
+  # Dossiers d'incident du tunnel de paiement (read-only, ancrés à la date de
+  # capture) — même famille D11 que backend/src/modules/payments/**. Couvre aussi
+  # audit/payment-tunnel-sev1-investigation-2026-07-14.md, resté non commité.
+  - glob: audit/payment-tunnel-*.md
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: high
+    risk: low
+  # Runbook d'exploitation du tunnel de paiement — procédure citée par chaque
+  # alerte SEV1 émise par scripts/monitoring/check-payment-tunnel.sh.
+  - glob: .spec/runbooks/payments-*.md
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: high
+    risk: low
   # Audits massdoc (pg_stat_statements PROD, staging TecDoc, disque/Compute) — read-only,
   # ancrés à la date de capture. Même famille que audit/*-prod-bundle-*.md ci-dessous.
   - glob: audit/massdoc-*.md
