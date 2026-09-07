@@ -28,20 +28,23 @@ export class FunnelEventsService extends SupabaseBaseService {
    * mais on ne lève jamais (un beacon raté ne doit pas casser une requête user).
    * `severity` est toujours `info` (events de mesure, pas d'alerte).
    */
-  async record(input: FunnelEventInput): Promise<{ ok: boolean }> {
-    const { error } = await this.supabase.from('__seo_event_log').insert({
-      event_type: input.event_type,
-      entity_url: input.entity_url ?? null,
-      severity: 'info',
-      payload: input.payload,
-    });
-    if (error) {
-      this.logger.error(
-        `funnel event insert failed (${input.event_type}): ${error.message}`,
-      );
-      return { ok: false };
-    }
-    return { ok: true };
+  /**
+   * Public beacon path (`POST /api/funnel/event`).
+   *
+   * Delegates to {@link recordOnce} so BOTH emitters share ONE insert and ONE
+   * error policy. Before this delegation the beacon had its own copy of the
+   * insert with no `23505` branch: once the partial unique index
+   * `uq_seo_event_log_r2_order_placed_order_id` exists (migration 20260623), a
+   * client re-firing `r2_order_placed` on a return to the confirmation page —
+   * the observed behaviour, 2 order_ids in 07-08/2026 — would log an
+   * `error` for what is by design a benign duplicate, mis-classifying the
+   * signal. The dedup verdict is returned (`deduped: true`) rather than
+   * swallowed: observable, never silent (CLAUDE.md no-silent-fallback).
+   */
+  async record(
+    input: FunnelEventInput,
+  ): Promise<{ ok: boolean; deduped: boolean }> {
+    return this.recordOnce(input);
   }
 
   /**

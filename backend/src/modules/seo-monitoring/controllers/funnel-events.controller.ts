@@ -20,7 +20,9 @@ export class FunnelEventsController {
 
   @Post('event')
   @HttpCode(202)
-  async event(@Body() body: unknown): Promise<{ ok: boolean }> {
+  async event(
+    @Body() body: unknown,
+  ): Promise<{ ok: boolean; deduped?: boolean }> {
     const parsed = FunnelEventInputSchema.safeParse(body);
     if (!parsed.success) {
       // Beacon malformé : ignoré silencieusement (202) pour ne pas polluer les
