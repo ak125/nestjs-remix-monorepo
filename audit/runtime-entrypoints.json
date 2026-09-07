@@ -2723,6 +2723,8 @@
       "backend/supabase/migrations/20260703_blog_advice_increment_views_rpc_grant_tighten.sql",
       "backend/supabase/migrations/20260902_b0_rm_rpc_volatility_stable.down.sql",
       "backend/supabase/migrations/20260902_b0_rm_rpc_volatility_stable.sql",
+      "backend/supabase/migrations/20260907_xtr_msg_crm_indexes_align_to_leads_query.down.sql",
+      "backend/supabase/migrations/20260907_xtr_msg_crm_indexes_align_to_leads_query.sql",
       "backend/supabase/migrations/README.md"
     ],
     "ci_workflows": [
@@ -2887,7 +2889,7 @@
       "tests/registry/rpc-parser.test.ts"
     ]
   },
-  "runtime_files_count": 1499,
+  "runtime_files_count": 1501,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4065,6 +4067,8 @@
     "backend/supabase/migrations/20260703_blog_advice_increment_views_rpc_grant_tighten.sql",
     "backend/supabase/migrations/20260902_b0_rm_rpc_volatility_stable.down.sql",
     "backend/supabase/migrations/20260902_b0_rm_rpc_volatility_stable.sql",
+    "backend/supabase/migrations/20260907_xtr_msg_crm_indexes_align_to_leads_query.down.sql",
+    "backend/supabase/migrations/20260907_xtr_msg_crm_indexes_align_to_leads_query.sql",
     "backend/supabase/migrations/README.md",
     "backend/tests/unit/route-wildcard-middleware.test.ts",
     "docker/lighthouse/Dockerfile",
