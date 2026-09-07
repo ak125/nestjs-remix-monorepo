@@ -27,6 +27,9 @@ Pour chaque fichier de migration, les objets déclarés (`CREATE TABLE`, `VIEW`,
 `FUNCTION`, `TYPE`, `ALTER TYPE … ADD VALUE`) ont été extraits puis cherchés au
 catalogue, **tous schémas confondus**.
 
+> ⚠️ Les décomptes de ce tableau sont un premier passage manuel. Ils ont été corrigés
+> le même jour par la mesure mécanisée — voir la section « Correction » en fin de document.
+
 | type d'objet | déclarés vérifiés | absents |
 |---|---|---|
 | relations (tables, vues) | 148 | **38** |
@@ -102,10 +105,14 @@ et `CruxAlerterService` (dormant, non planifié).
 
 **Un gate de cohérence ledger ↔ catalogue**, dans la même famille que les invariants
 existants : pour chaque migration `applied`, les objets qu'elle déclare doivent
-exister — ou l'écart doit être déclaré explicitement (archivé, retiré, remplacé).
-Le dépistage est déjà écrit et rejouable
-(`scripts/audit/extract-declared-objects.py`) ; ce qui manque est la partie qui
-interroge le catalogue en CI et la liste d'écarts assumés.
+exister — ou l'écart doit être déclaré explicitement.
+
+**Livré le même jour.** `scripts/audit/check-ledger-catalog-ratchet.py` (ex-
+`extract-declared-objects.py`) porte l'extraction, la confrontation au catalogue et
+un ratchet symétrique sur `audit/baselines/ledger-catalog-baseline.json`. Il est
+branché sur la sonde nocturne existante (`migration-ledger-freshness.yml`) — pas de
+nouveau workflow, pas de second détecteur, et le contrat read-only du workflow est
+préservé : uniquement des `SELECT` sur les catalogues système.
 
 Ce qu'il ne faut **pas** faire : rejouer les 270 baselines. La plupart des objets
 existent ; l'archivage de 14 relations était délibéré ; et certaines familles
@@ -124,3 +131,37 @@ retirer ?** Les trois familles se distinguent bien :
 | surfaces SEO vivantes | `__seo_index_status`, `__seo_crux_*`, `__seo_entity_health`, `__seo_surface_*`, `__seo_sitemap_file`, `__seo_snapshot_*`, `__marketing_brief`, `rag_documents` | **cas par cas** — zone SEO indexée, accord nominatif requis |
 
 _Aucune action prise. Ce document mesure et instruit ; il ne tranche pas._
+
+---
+
+## Correction du 2026-09-07 (même jour) — les chiffres ci-dessus étaient un premier passage
+
+Ce document a été écrit à partir d'une extraction manuelle. En la mécanisant pour en
+faire un garde (`scripts/audit/check-ledger-catalog-ratchet.py`), deux défauts du
+parseur sont apparus, tous deux dus au DDL construit dans une chaîne
+`EXECUTE format('CREATE TABLE … %I …')` : un nom vide et le faux nom `if` (le moteur
+d'expressions rétrograde sur `IF NOT EXISTS` quand `%I` ne peut pas être un
+identifiant). La règle d'exclusion des partitions datées était par ailleurs une
+constante en dur qui n'attrapait que 3 des 24 partitions concernées.
+
+Mesure mécanisée, reproductible, confrontée au catalogue le même jour :
+
+| nature | déclarées vérifiées | absentes de TOUS les schémas |
+|---|---|---|
+| relations (tables, vues) | 214 | **46** |
+| fonctions | 242 | **50** |
+| types | 20 | **8** |
+| valeurs d'enum | 21 | **1** |
+
+**105 absences**, dont 5 sont déclarées par `20260520_supplier_truth_v1`, qui est
+**pending** — le garde ne reproche rien à une migration jamais appliquée. Restent
+**100 absences imputables à des migrations que le ledger dit `applied`**, figées dans
+`audit/baselines/ledger-catalog-baseline.json` : 26 tables, 15 vues, 50 fonctions,
+8 types, 1 valeur d'enum.
+
+Le sens de l'écart va dans la même direction que le constat initial : le défaut est
+**plus large** que ce que ce document annonçait, pas plus étroit. Ce qui tenait déjà
+tient toujours — la séparation entre les 14 relations archivées (présentes dans
+`_archive`, donc jamais listées ici) et les absences réelles, l'analyse des appels
+`.from()` vivants, et la cause racine. Seuls les décomptes changent, et c'est
+désormais une machine qui les tient.
