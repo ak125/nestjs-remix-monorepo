@@ -1,0 +1,7 @@
+# Exceptions gouvernées au ratchet scripts/lint/check-tecdoc-api-surface.sh
+#
+# Une ligne = un nom de fichier de migration (basename), précédé d'une ligne
+# "# motif : ..." qui explique pourquoi la surface TecDoc doit se rouvrir.
+# Une entrée sans motif est une dette, pas une exception.
+#
+# (vide au 2026-09-07 — aucune exception)
