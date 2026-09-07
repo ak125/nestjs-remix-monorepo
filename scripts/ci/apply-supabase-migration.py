@@ -1308,7 +1308,10 @@ def run_self_test() -> int:
         def __init__(self):
             self.log = []
             # privilege probe (5 columns), then failure detail (2 columns)
-            self.rows = [("postgres", True, True, True, True), ("2026-09-04", "boom")]
+            self.rows = [
+                ("postgres", True, True, True, True),
+                ("2026-09-04", "boom", "cafe0000cafe"),
+            ]
         def cursor(self): return _Cur(self)
     try:
         with _tf.TemporaryDirectory() as _d:
@@ -1756,18 +1759,20 @@ def run_retry(
             "table owner — the DATABASE_URL the engine bootstraps with.",
         )
 
-    # RemoteMigration carries neither started_at nor error_message (it exists to
-    # serve --status). Fetch the failure detail for this one id rather than
-    # widening a type the whole engine shares.
+    # RemoteMigration carries neither started_at, error_message nor git_sha (it
+    # exists to serve --status). Fetch the failure detail for this one id rather
+    # than widening a type the whole engine shares. git_sha matters : reopen_failed
+    # overwrites it in place, so the note is the only place the commit the failed
+    # attempt ran from survives (the runner id alone needs GitHub to resolve it).
     with conn.cursor() as cur:
         cur.execute(
             """
-            SELECT started_at::text, coalesce(error_message, '')
+            SELECT started_at::text, coalesce(error_message, ''), coalesce(git_sha, '')
             FROM infra.schema_migrations WHERE id = %s
             """,
             (target_id,),
         )
-        failed_at, prev_error = cur.fetchone()
+        failed_at, prev_error, prev_sha = cur.fetchone()
 
     sql = mig.path.read_text(encoding="utf-8")
 
@@ -1794,6 +1799,7 @@ def run_retry(
 
     print(f"Retrying {target_id} ({mode})")
     print(f"  failed at       : {failed_at or '—'} under {row.runner or '—'}")
+    print(f"  failed on git   : {prev_sha or '—'}")
     print(f"  failed with     : {first_line or '—'}")
     print(f"  ledger checksum : {row.checksum}")
     print(f"  file checksum   : {mig.checksum}")
@@ -1809,8 +1815,8 @@ def run_retry(
 
     note = (
         f"retried after failure: was checksum={row.checksum} "
-        f"runner={row.runner or '—'} started_at={failed_at or '—'} "
-        f"error={first_line}"
+        f"runner={row.runner or '—'} git_sha={prev_sha or '—'} "
+        f"started_at={failed_at or '—'} error={first_line}"
     )
     reset_session(conn)
     elapsed_ms = apply_migration(
