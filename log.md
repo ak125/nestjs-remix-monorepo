@@ -452,3 +452,15 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `chore/types-resync-supabase-generated`
 - **Décision** : chore(types): resync des types Supabase générés (MCP) — catch-up dédié après 20260611
 - **Sortie** : PR #1401 | commits b3c9c1c85
+
+## 2026-09-07 — fix/payment-tunnel-alerting-rules (auto)
+
+- **Branche** : `fix/payment-tunnel-alerting-rules`
+- **Décision** : fix(monitoring): la règle qui aurait vu la panne de 8 semaines, et la fin des doubles alertes
+- **Sortie** : PR aucune | commits 4cd98c0b3
+
+## 2026-09-07 — fix/payment-tunnel-alerting-rules (auto)
+
+- **Branche** : `fix/payment-tunnel-alerting-rules`
+- **Décision** : chore(registry): ownership D11 pour les dossiers d'incident et le runbook paiement (+2 other commits)
+- **Sortie** : PR #1413 | commits 6429b40a5 9f1790ef3 c9f26ee75
