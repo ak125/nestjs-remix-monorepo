@@ -446,3 +446,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/migration-engine-closure-gaps`
 - **Décision** : clôture 20260529 — note de reprise avec `git_sha`, trace CI vivante (`PYTHONUNBUFFERED`), README projeté depuis l'engine
 - **Sortie** : PR #1399 | commits bf263d73d 1d84a4fbe 5357ac0c8 (+ correctifs revue)
+
+## 2026-09-07 — chore/types-resync-supabase-generated (auto)
+
+- **Branche** : `chore/types-resync-supabase-generated`
+- **Décision** : chore(types): resync des types Supabase générés (MCP) — catch-up dédié après 20260611
+- **Sortie** : PR #1401 | commits b3c9c1c85

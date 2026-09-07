@@ -34,7 +34,6 @@ export const TABLES = {
   config: '___config',
   config_admin: '___config_admin',
   config_ip: '___config_ip',
-  config_old: '___config_old',
   footer_menu: '___footer_menu',
   header_menu: '___header_menu',
   meta_tags_ariane: '___meta_tags_ariane',
@@ -83,7 +82,6 @@ export const TABLES = {
 
   // Tables authentification et sécurité
   password_resets: 'password_resets',
-  sessions: 'sessions',
 
   // Tables SEO et blog
   blog_advice: '__blog_advice',
@@ -110,7 +108,6 @@ export const TABLES = {
   quantity_discounts: 'quantity_discounts',
   shipping_rates_cache: 'shipping_rates_cache',
   users: 'users',
-  products: 'products',
 } as const satisfies Record<string, TableName>;
 
 /**
