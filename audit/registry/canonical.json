@@ -90721,7 +90721,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 390,
+      "loc": 387,
       "owner": "@ak125",
       "path": "packages/database-types/src/constants.ts",
       "risk": "medium",
@@ -90941,7 +90941,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 16601,
+      "loc": 48035,
       "owner": "@ak125",
       "path": "packages/database-types/src/supabase-generated.types.ts",
       "risk": "medium",
@@ -90961,7 +90961,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 176,
+      "loc": 171,
       "owner": "@ak125",
       "path": "packages/database-types/src/types.ts",
       "risk": "medium",
@@ -98222,11 +98222,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "c874feb59f5d00601c29a139560da9ecd2d63678eea0eddc4bb4fbd8d79672d1",
       "audit/registry/deps.json": "6f667991be593e37b2798c4ca0f0689d89c412731aa2bdf50000248da9f2c5bd",
-      "audit/registry/files.json": "c764b429d515654d426bf887ed5cf17ce246c4791b75c1e3862350b91f017ffd",
+      "audit/registry/files.json": "e0daf9f1c668d8a57626486dbd74d0307c4aa56d19c09e765de84c572919dd31",
       "audit/registry/rpc.json": "1ccf24c62a2cc645fdf0e61ee2cc78506411c61f2762088584ff4820ca79cdfe",
       "audit/registry/runtime.json": "314a3bda98e2b9bb87a4b6a88a1efa131a3c12505d9e56b5f60eeebd23e5f70f"
     },
-    "sotFingerprint": "35c0b9542058"
+    "sotFingerprint": "a80064ba887a"
   },
   "runtime": [
     {
