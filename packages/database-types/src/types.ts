@@ -38,7 +38,6 @@ export type TableUpdate<T extends TableName> = Database['public']['Tables'][T]['
 export type Config = TableRow<'___config'>;
 export type ConfigAdmin = TableRow<'___config_admin'>;
 export type ConfigIp = TableRow<'___config_ip'>;
-export type ConfigOld = TableRow<'___config_old'>;
 export type FooterMenu = TableRow<'___footer_menu'>;
 export type HeaderMenu = TableRow<'___header_menu'>;
 export type LegalPages = TableRow<'___legal_pages'>;
@@ -75,7 +74,6 @@ export type BlogAdvice = TableRow<'__blog_advice'>;
 export type BlogAdviceCross = TableRow<'__blog_advice_cross'>;
 export type BlogAdviceH2 = TableRow<'__blog_advice_h2'>;
 export type BlogAdviceH3 = TableRow<'__blog_advice_h3'>;
-export type BlogAdviceOld = TableRow<'__blog_advice_old'>;
 export type BlogGuide = TableRow<'__blog_guide'>;
 export type BlogGuideH2 = TableRow<'__blog_guide_h2'>;
 export type BlogGuideH3 = TableRow<'__blog_guide_h3'>;
@@ -102,16 +100,13 @@ export type SeoTypeSwitch = TableRow<'__seo_type_switch'>;
 // ALIASES — Cross gamme (__cross_gamme_*)
 // ============================================================================
 
-export type CrossGammeCar = TableRow<'__cross_gamme_car'>;
 export type CrossGammeCarNew = TableRow<'__cross_gamme_car_new'>;
-export type CrossGammeCarNew2 = TableRow<'__cross_gamme_car_new2'>;
 
 // ============================================================================
 // ALIASES — Sitemap (__sitemap_*)
 // ============================================================================
 
 export type SitemapBlog = TableRow<'__sitemap_blog'>;
-export type SitemapGamme = TableRow<'__sitemap_gamme'>;
 export type SitemapMarque = TableRow<'__sitemap_marque'>;
 export type SitemapMotorisation = TableRow<'__sitemap_motorisation'>;
 export type SitemapPLink = TableRow<'__sitemap_p_link'>;
