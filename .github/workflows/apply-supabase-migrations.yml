@@ -162,6 +162,12 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           GITHUB_RUN_ID: ${{ github.run_id }}
           GITHUB_SHA: ${{ github.sha }}
+          # The engine narrates progress line by line ("Applying X ... OK in Nms").
+          # Piped into the runner, Python block-buffers stdout and the whole
+          # narration surfaces at exit : run 34080251591 (a 173 s --retry) logged
+          # as a single burst stamped at the end. Unbuffered = a live trace that
+          # tells a long CREATE INDEX CONCURRENTLY apart from a hung run.
+          PYTHONUNBUFFERED: "1"
           # Operator-supplied strings reach the shell as env vars, never as `${{ }}`
           # interpolation inside `run:` — this runner holds DATABASE_URL.
           REAPPLY_ID: ${{ inputs.reapply_id }}
