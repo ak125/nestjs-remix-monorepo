@@ -439,10 +439,10 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 
 - **Branche** : `docs/guardrails-silenced-guard-mirror-case`
 - **Décision** : docs(guardrails): le cas miroir — une garde juste réduite au silence par un motif faux (passes 5–6) + entrées log.md #1392/#1393/#1395
-- **Sortie** : PR #1398 MERGÉE (squash `5ad36ab8cc11`) ; #1395 MERGÉ le même jour (squash `581aae90e4b9`)
+- **Sortie** : PR #1398 | commits 233a9e3a5
 
 ## 2026-09-07 — fix/migration-engine-closure-gaps
 
 - **Branche** : `fix/migration-engine-closure-gaps`
-- **Décision** : reprise de `20260529` réussie (run 34080251591, 173 s, 2 index valides, ledger 298/0 failed) ; vérification adversariale de clôture (10 verdicts, 0 réfuté) → 3 lacunes fermées : note de reprise avec `git_sha`, `PYTHONUNBUFFERED` sur le step engine, README projeté depuis l'engine
-- **Sortie** : PR #1399 | hors périmètre remonté owner : index partiel CRM ↔ requête `/admin/leads`, index INVALIDE `idx_pieces_ref_search_piece_id_i_kind`, doublon `idx____xtr_msg_msg_id`
+- **Décision** : clôture 20260529 — note de reprise avec `git_sha`, trace CI vivante (`PYTHONUNBUFFERED`), README projeté depuis l'engine
+- **Sortie** : PR #1399 | commits bf263d73d 1d84a4fbe 5357ac0c8 (+ correctifs revue)

@@ -79,9 +79,12 @@ The engine switches to autocommit, inserts a row with
 to `status='applied'`. A statement that errors flips it to
 `status='failed'` (the error is kept in `error_message`) ; a process
 killed mid-run leaves it in `'applying'`. Either row **HARD FAILs**
-every later run (exit 5) until resolved : `failed` → `--retry ID`
-(cheatsheet below) ; `applying` → a human confirms the run is really
-dead before touching the row.
+every later apply and dry-run (exit 5) until resolved, and `--status`
+reports it (exit 1) : `failed` → `--retry ID` (cheatsheet below) ;
+`applying` → a human confirms the run is really dead before touching
+the row. `--retry`, `--reapply` and `--baseline` dispatch before that
+gate by design (the first two are the ways out ; `--baseline` is the
+adoption mode and does not repair a row).
 
 An interrupted `CREATE INDEX CONCURRENTLY` leaves an INVALID index that
 a later `CREATE INDEX CONCURRENTLY IF NOT EXISTS` silently skips — a
@@ -174,7 +177,7 @@ python3 scripts/ci/apply-supabase-migration.py --lint-markers \
 ```sql
 CREATE SCHEMA IF NOT EXISTS infra;
 
-CREATE TABLE infra.schema_migrations (
+CREATE TABLE IF NOT EXISTS infra.schema_migrations (
   id             TEXT PRIMARY KEY,                       -- filename stem, e.g. "20260518_seo_admin_job_table"
   checksum       TEXT NOT NULL,                          -- sha256(file bytes)
   status         TEXT NOT NULL DEFAULT 'applied'
@@ -201,10 +204,11 @@ GRANT UPDATE (status, applied_at, execution_ms, error_message, note)
 -- No DELETE grant : append-only ledger.
 ```
 
-`--retry` and `--reapply` also rewrite `checksum`, `started_at`, `runner`
-and `git_sha`, which the column-scoped grant deliberately leaves out :
-they need the table owner (the `DATABASE_URL` the engine bootstraps
-with) and refuse a lesser role with exit 9 before touching the row.
+`--retry` also rewrites `checksum`, `started_at`, `runner` and `git_sha` ;
+`--reapply` rewrites `checksum`, `runner` and `git_sha`. The column-scoped
+grant deliberately leaves those out : both need the table owner (the
+`DATABASE_URL` the engine bootstraps with) and refuse a lesser role with
+exit 9 before touching the row.
 
 Why our own schema and not `supabase_migrations.schema_migrations` :
 the `supabase_migrations.*` schema is a Supabase **internal** that may
