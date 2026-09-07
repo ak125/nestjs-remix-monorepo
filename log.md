@@ -434,3 +434,15 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/engine-retry-failed-migration`
 - **Décision** : fix(migrations): --retry pour une migration en échec + lever le timeout hérité
 - **Sortie** : PR #1395 | commits 09dd81c97
+
+## 2026-09-07 — docs/guardrails-silenced-guard-mirror-case
+
+- **Branche** : `docs/guardrails-silenced-guard-mirror-case`
+- **Décision** : docs(guardrails): le cas miroir — une garde juste réduite au silence par un motif faux (passes 5–6) + entrées log.md #1392/#1393/#1395
+- **Sortie** : PR #1398 | commits 233a9e3a5
+
+## 2026-09-07 — fix/migration-engine-closure-gaps
+
+- **Branche** : `fix/migration-engine-closure-gaps`
+- **Décision** : clôture 20260529 — note de reprise avec `git_sha`, trace CI vivante (`PYTHONUNBUFFERED`), README projeté depuis l'engine
+- **Sortie** : PR #1399 | commits bf263d73d 1d84a4fbe 5357ac0c8 (+ correctifs revue)
