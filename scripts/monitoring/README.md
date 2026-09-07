@@ -34,20 +34,47 @@ check-payment-tunnel.sh
        3. EmailMessage RFC5322 à ALERT_EMAIL_TO
 ```
 
-Anti-spam : ne ré-alerte pas avant `DEDUP_WINDOW_MIN` minutes (défaut 60).
+Anti-spam : la dédup porte sur le **contenu** de l'alerte (règle + compteurs + ids de
+commande), pas sur le temps écoulé seul. Une cooldown purement temporelle plus courte que
+`WINDOW_HOURS` ré-alertait sur les mêmes lignes dès son expiration — c'est ce qui a produit
+deux emails identiques à 75 min d'intervalle le 2026-09-07. Situation inchangée ⇒ silence ;
+situation modifiée (une commande de plus) ⇒ alerte immédiate ; situation figée ⇒ re-notification
+après `DEDUP_MAX_HOURS` pour qu'une panne durable ne soit pas oubliée.
 
-### Règle d'alerte
+### Règles d'alerte (3, indépendantes, évaluées dans cet ordre)
 
 ```
-alerte si (orders_count >= MIN_ORDERS_THRESHOLD)
-       ET (paid_count == 0)
-       ET (pas d'alerte envoyée depuis DEDUP_WINDOW_MIN minutes)
+1. CREATION   si (order_idempotency completed == 0) ET (failed >= 1) sur OC_WINDOW_HOURS
+2. SUSTAINED  si (commandes impayées depuis le dernier paiement >= MAX_UNPAID_SINCE_LAST_PAYMENT)
+              ET (jours depuis le dernier paiement >= MIN_SILENCE_DAYS)
+3. BURST      si (orders_count >= MIN_ORDERS_THRESHOLD) ET (paid_count == 0) sur WINDOW_HOURS
 ```
+
+**Pourquoi trois règles et pas une.** La règle BURST est un détecteur de rafale : il lui faut
+2 commandes dans la *même* fenêtre de 2 h. Sur une boutique à faible volume (~6 commandes /
+21 jours), une rupture réelle peut donc rester invisible des semaines — c'est exactement ce qui
+s'est passé du 2026-05-19 au 07-22 : 8 commandes impayées trop étalées pour jamais en réunir 2
+dans une fenêtre, et aucune alerte pendant 8 semaines. La règle SUSTAINED est la contrepartie
+**cumulative** : elle compte les commandes accumulées depuis le dernier paiement réussi, quel que
+soit le rythme. Un seuil par fenêtre et un seuil cumulé sont deux gardes distinctes ; aucune ne
+remplace l'autre.
+
+`last_paid_at` était auparavant lu, journalisé et affiché dans l'email, mais **jamais comparé à
+un seuil** : de la décoration, pas une règle. SUSTAINED est cette règle manquante.
+
+**Sensibilité inchangée sur BURST.** L'email expose désormais `Distinct carts` et `Shape` pour
+distinguer d'un coup d'œil un *retry cluster* (un acheteur, un panier, N tentatives) d'une
+rupture touchant plusieurs acheteurs. C'est un enrichissement du diagnostic, **pas** un
+relèvement de seuil : une vente perdue reste digne d'une alerte, et
+`.claude/rules/guardrails.md` interdit d'assouplir une garde pour la faire taire.
 
 Défauts :
 - `WINDOW_HOURS=2`
 - `MIN_ORDERS_THRESHOLD=2` (évite faux positifs sur site peu fréquenté nuit/WE)
-- `DEDUP_WINDOW_MIN=60`
+- `MAX_UNPAID_SINCE_LAST_PAYMENT=5` · `MIN_SILENCE_DAYS=2`
+- `DEDUP_MAX_HOURS=24`
+
+Runbook de traitement des alertes : [`.spec/runbooks/payments-tunnel-debug.md`](../../.spec/runbooks/payments-tunnel-debug.md)
 
 ### Env vars requises
 
@@ -67,9 +94,12 @@ Optionnelles :
 | Variable | Défaut | Usage |
 |---|---|---|
 | `WINDOW_HOURS` | `2` | Fenêtre d'observation (heures) |
-| `MIN_ORDERS_THRESHOLD` | `2` | Nb min commandes pour déclencher |
-| `DEDUP_WINDOW_MIN` | `60` | Minutes avant ré-alerte |
-| `DEDUP_CACHE` | `/var/tmp/check-payment-tunnel.last-alert` | Fichier dedup |
+| `MIN_ORDERS_THRESHOLD` | `2` | Nb min commandes pour déclencher (règle BURST) |
+| `OC_WINDOW_HOURS` | `48` | Fenêtre de la règle CREATION |
+| `MAX_UNPAID_SINCE_LAST_PAYMENT` | `5` | Commandes impayées cumulées déclenchant SUSTAINED |
+| `MIN_SILENCE_DAYS` | `2` | Jours sans paiement requis pour SUSTAINED |
+| `DEDUP_MAX_HOURS` | `24` | Re-notification d'une situation inchangée |
+| `DEDUP_CACHE` | `/var/tmp/check-payment-tunnel.last-alert` | Fichier dedup (`<signature> <timestamp>`) |
 
 ### Installation prod (host `49.12.233.2`)
 
