@@ -1,0 +1,103 @@
+{
+  "ensembles_figes": [
+    {
+      "borne_max": 60009,
+      "borne_min": 60000,
+      "cardinal": 10,
+      "cle": "type_id_i",
+      "confidence": "SYNTHETIQUE",
+      "empreinte_md5": "8dc56ce4e3beaa89f87daf2253685e64",
+      "nom": "auto_type — types crees/remappes par la campagne",
+      "table": "public.auto_type"
+    },
+    {
+      "borne_max": 5,
+      "borne_min": 1,
+      "cardinal": 5,
+      "cle": "modele_id",
+      "confidence": "SYNTHETIQUE",
+      "empreinte_md5": "afe805e5a3c3ec7fa05645a6a2a6e607",
+      "nom": "auto_modele — modeles ajoutes",
+      "table": "public.auto_modele"
+    },
+    {
+      "borne_max": 8,
+      "borne_min": 1,
+      "cardinal": 8,
+      "cle": "piece_id",
+      "confidence": "SYNTHETIQUE",
+      "empreinte_md5": "b5ca3ba695d8ec8ce47bf6e7a2b579d0",
+      "nom": "pieces — cohorte introduite par la campagne",
+      "table": "public.pieces"
+    },
+    {
+      "borne_max": 5,
+      "borne_min": 1,
+      "cardinal": 5,
+      "cle": "piece_id",
+      "confidence": "SYNTHETIQUE",
+      "empreinte_md5": "afe805e5a3c3ec7fa05645a6a2a6e607",
+      "nom": "pieces — sous-ensemble affiche de la cohorte",
+      "table": "public.pieces"
+    },
+    {
+      "borne_max": 60004,
+      "borne_min": 60000,
+      "cardinal": 5,
+      "cle": "pg_id",
+      "confidence": "SYNTHETIQUE",
+      "empreinte_md5": "52db30b1f40326df222da7de43773eeb",
+      "nom": "pieces_gamme — gammes creees par la campagne (bande reservee)",
+      "table": "public.pieces_gamme"
+    },
+    {
+      "borne_max": "100002",
+      "borne_min": "100001",
+      "cardinal": 2,
+      "cle": "old_id",
+      "confidence": "SYNTHETIQUE",
+      "empreinte_md5": "03cd88fb11e57cd6332ec3985c1d0d2c",
+      "nom": "tecdoc_map.type_id_remap — mapping d'identite vehicule (ancien -> nouveau)",
+      "table": "tecdoc_map.type_id_remap"
+    },
+    {
+      "borne_max": 60002,
+      "borne_min": 60000,
+      "cardinal": 3,
+      "cle": "pg_id",
+      "confidence": "SYNTHETIQUE",
+      "empreinte_md5": "9ef256df14185e9f45cb321e6b4b52ec",
+      "nom": "tecdoc_map.gamme_registry — filiation gamme source -> pg_id",
+      "table": "tecdoc_map.gamme_registry"
+    },
+    {
+      "borne_max": 4,
+      "borne_min": 1,
+      "cardinal": 4,
+      "cle": "id",
+      "confidence": "SYNTHETIQUE",
+      "empreinte_md5": "f8ef5bbac13edd1c0251d9200be10bf6",
+      "nom": "tecdoc_map.linkage_target_registry — cibles de liaison",
+      "table": "tecdoc_map.linkage_target_registry"
+    },
+    {
+      "borne_max": null,
+      "borne_min": null,
+      "cardinal": 3,
+      "cle": "piece_id",
+      "confidence": "SYNTHETIQUE",
+      "empreinte_md5": "df9683fa7afa5872f9a92cdc664e4b45",
+      "nom": "tecdoc_map.article_registry — ancrage piece_id <-> ARTNR/DLNR",
+      "table": "tecdoc_map.article_registry"
+    }
+  ],
+  "invariant": "Les ensembles figes ne changent pas entre deux rejeux.",
+  "manifest_version": "banc-synthetique-v1",
+  "methode_de_controle": "identique au manifeste reel : cardinal, bornes, empreinte md5.",
+  "objet": "Manifeste du banc de rejeu — mesure sur reference-synthetique.sql. N'a AUCUNE valeur sur MassDoc PROD ; il ne sert qu'a eprouver la garde.",
+  "seal": {
+    "algorithm": "sha256",
+    "canonicalization": "sort_keys, UTF-8, separateurs (',',':'), bloc seal exclu.",
+    "sha256": "b30a1b480691290b6b724dccefee0c056fddc0ff1e3a1386626b3d8df4def357"
+  }
+}
