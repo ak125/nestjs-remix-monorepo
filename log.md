@@ -470,3 +470,15 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `security/tecdoc-api-surface-lockdown`
 - **Décision** : chore(registry): resync L1+L3 projections (+1 other commit)
 - **Sortie** : PR #1414 | commits 6343b3f5e 297d6c3b3
+
+## 2026-09-08 — feat/tecdoc-pipeline-recovery (auto)
+
+- **Branche** : `feat/tecdoc-pipeline-recovery`
+- **Décision** : feat(tecdoc): rapatrier les 16 scripts du pipeline et instrumenter le rejeu source-truth
+- **Sortie** : PR #1417 | commits ae0871d03
+
+## 2026-09-08 — feat/tecdoc-pipeline-recovery (auto)
+
+- **Branche** : `feat/tecdoc-pipeline-recovery`
+- **Décision** : docs(tecdoc): consigner le piege latent de derivation du DLNR par str.replace (+2 other commits)
+- **Sortie** : PR #1417 | commits 9c4b7640f b1dd9aa25 ae0871d03

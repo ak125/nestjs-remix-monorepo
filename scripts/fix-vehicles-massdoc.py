@@ -38,12 +38,44 @@ except ImportError:
     sys.exit(1)
 
 # ─── Config ───────────────────────────────────────────────
+# Le mot de passe etait ici EN CLAIR depuis le commit 756e619c4 (2026-03-27), sur un
+# depot PUBLIC. Il est desormais lu dans l'environnement, comme le fait deja
+# scripts/tecdoc-batch-load.py. Retirer la valeur du fichier ne reduit PAS l'exposition
+# passee : l'historique git public la conserve. Seule une rotation du credential ferme
+# la breche — voir audit/massdoc-tecdoc-pipeline-recovery-2026-09-08.md.
+
+
+def _db_password() -> str:
+    """Rend le mot de passe DB, ou sort en erreur. Jamais de valeur par defaut.
+
+    Un mot de passe par defaut redonnerait au fichier le role qu'on lui retire.
+    """
+    pw = os.environ.get('SUPABASE_DB_PASSWORD')
+    if not pw:
+        env = os.environ.get('SUPABASE_ENV_FILE', '/opt/automecanik/app/backend/.env')
+        try:
+            with open(env) as f:
+                for ligne in f:
+                    if ligne.startswith('SUPABASE_DB_PASSWORD='):
+                        pw = ligne.split('=', 1)[1].strip().strip('"').strip("'")
+                        break
+        except OSError:
+            pw = None
+    if not pw:
+        sys.exit(
+            "SUPABASE_DB_PASSWORD absent de l'environnement et de "
+            f"{os.environ.get('SUPABASE_ENV_FILE', '/opt/automecanik/app/backend/.env')}. "
+            "Refus de se connecter."
+        )
+    return pw
+
+
 DB_DIRECT = {
-    'host': 'db.cxpojprgwgubzjyqzmoq.supabase.co',
-    'port': 5432,
-    'dbname': 'postgres',
-    'user': 'postgres',
-    'password': 'T7qrnbWg7MwqkF7v',
+    'host': os.environ.get('SUPABASE_DB_HOST_DIRECT', 'db.cxpojprgwgubzjyqzmoq.supabase.co'),
+    'port': int(os.environ.get('SUPABASE_DB_PORT_DIRECT', '5432')),
+    'dbname': os.environ.get('SUPABASE_DB_NAME', 'postgres'),
+    'user': os.environ.get('SUPABASE_DB_USER_DIRECT', 'postgres'),
+    'password': _db_password(),
     'options': '-c statement_timeout=0',
 }
 
