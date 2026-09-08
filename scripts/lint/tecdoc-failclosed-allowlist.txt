@@ -1,0 +1,35 @@
+# Exceptions gouvernées au ratchet scripts/lint/check-tecdoc-failclosed-ratchet.sh
+#
+# Une ligne = "<règle> <chemin>", précédée d'une ligne "# motif : ..." qui explique
+# pourquoi la règle ne s'applique pas, ou pourquoi la dette est assumée et par quoi
+# elle sera soldée. Une entrée sans motif est une dette, pas une exception.
+#
+# Le ratchet est SYMÉTRIQUE : une entrée qui ne viole plus rien fait échouer le
+# garde. Une exemption morte est pire qu'inutile — elle étoufferait la règle le jour
+# où quelqu'un retire le correctif.
+
+# motif : fournisseur du mode `current`. C'est ce fichier qui PORTE, par construction,
+# la requête de merchandising vivante que R1 interdit à ses appelants. `resoudre_dlnr`
+# exige un mode explicite et lève `PerimetreManquant` plutôt que de se replier sur le
+# vivant : l'exemption porte sur le fournisseur du mode, jamais sur un consommateur.
+R1 scripts/tecdoc_scope.py
+
+# motif : producteur de l'artefact scellé (PR #1416). N'interroge aucune base — il
+# lit `suppliers.json` et ENREGISTRE `pm_display` comme donnée d'époque dans le
+# périmètre figé. Les occurrences sont des noms de champs et de la prose décrivant
+# le critère de mars 2026, pas une dérivation de périmètre.
+R1 scripts/tecdoc-scope-build/build_scope.py
+
+# motif : DETTE ASSUMÉE, préexistante (commit df8f5a4d3, avant ce chantier). Dérive
+# réellement sa liste de fournisseurs de `__tecdoc_supplier_mapping` (L118-129).
+# Hors périmètre de la mission fail-closed, qui ne devait pas refactorer les scripts
+# existants. À solder en câblant `tecdoc_scope.resoudre_dlnr` — suivi :
+# audit/massdoc-tecdoc-failclosed-replay-2026-09-08.md §9.
+R1 scripts/tecdoc-import.py
+
+# motif : DETTE ASSUMÉE, rapatriée en PR #1412. Écrit dans `tecdoc_raw` (L66) sans
+# garde de comptabilité. Chemin d'écriture réel, donc dette RÉELLE et non un faux
+# positif : tant qu'elle n'est pas soldée, le principe « une perte de ligne ne peut
+# plus produire un run vert » ne vaut que pour le chemin canonique `tecdoc_replay.py`.
+# À solder en câblant `verifier_lot` — même suivi.
+R2 scripts/tecdoc-batch-load.py

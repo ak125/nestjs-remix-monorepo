@@ -1,0 +1,58 @@
+name: TecDoc rejeu fail-closed
+
+# Empêche la réouverture des trois portes qui ont rendu la perte de mars 2026
+# invisible : périmètre dérivé du merchandising vivant, chargement sans garde de
+# comptabilité, résurrection des scripts historiques mis en quarantaine.
+# Voir scripts/lint/check-tecdoc-failclosed-ratchet.sh et
+# audit/massdoc-tecdoc-failclosed-replay-2026-09-08.md.
+#
+# PÉRIMÈTRE DE CE WORKFLOW — à lire avant d'y ajouter un job.
+# Il exécute le ratchet et les deux suites HERMÉTIQUES (périmètre scellé, gardes).
+# Il n'exécute PAS `scripts/test-tecdoc-replay.sh` : ce banc exige Docker et
+# l'archive source de 6 Go, absents d'un runner GitHub. Le déclarer « passé » ici
+# ferait d'un skip une preuve — exactement le vert-mais-faux que ce chantier
+# corrige. Son exécution est un geste DEV, et ses relevés sont consignés dans le
+# rapport d'audit cité plus haut.
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/tecdoc_*.py'
+      - 'scripts/tecdoc-replay/**'
+      - 'scripts/tecdoc-pipeline/**'
+      - 'scripts/test-tecdoc-*.sh'
+      - 'scripts/lint/check-tecdoc-failclosed-ratchet.sh'
+      - 'scripts/lint/tecdoc-failclosed-allowlist.txt'
+      - 'audit/massdoc-tecdoc-import-scope-2026-03.json'
+      - 'audit/massdoc-tecdoc-preservation-manifest-2026-03.json'
+      - '.github/workflows/tecdoc-failclosed-guard.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/tecdoc_*.py'
+      - 'scripts/tecdoc-replay/**'
+      - 'scripts/lint/check-tecdoc-failclosed-ratchet.sh'
+
+permissions:
+  contents: read
+
+jobs:
+  ratchet:
+    name: Ratchet fail-closed (R1 périmètre · R2 comptabilité · R3 quarantaine)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash scripts/lint/check-tecdoc-failclosed-ratchet.sh
+
+  suites:
+    name: Suites hermétiques — périmètre scellé et gardes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Périmètre scellé
+        run: bash scripts/test-tecdoc-scope.sh
+      - name: Gardes (comptabilité · identité · conservation · réconciliation)
+        run: bash scripts/test-tecdoc-guards.sh
