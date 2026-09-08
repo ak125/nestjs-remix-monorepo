@@ -116,13 +116,64 @@ Cinq autres dérivent leur périmètre de `__tecdoc_supplier_mapping` sans filtr
 d'affichage. Le problème dépasse donc le périmètre fournisseur identifié en #1416 : la
 frontière de ce qui est reconstruit dépend, à chaque étage, de décisions de vitrine.
 
-### 2.2 Aucun script n'a d'appelant
+### 2.2 Aucun script ne sort jamais en erreur — 16 sur 16
+
+Sept des seize contiennent un `sys.exit(1)`. **Les sept sont précédés de
+`parser.print_help()`** : ils ne couvrent qu'un argument CLI manquant.
+
+```
+$ grep -B3 'sys.exit(1)' *.py | grep -c 'parser.print_help()'
+7      # sur 7
+```
+
+**Aucun des 16 ne propage un code non nul sur un échec de données.** Le seul moyen
+d'obtenir une sortie non nulle est d'oublier un drapeau.
+
+La passe de vérification adverse (32 agents, 16 analyses + 16 vérifications
+contradictoires) a relevé **44 mécanismes de faux succès** répartis sur les **16**
+scripts : exceptions avalées rendant `(dlnr, 0)`, `completed += 1` inconditionnel,
+lignes évincées par `ON CONFLICT DO NOTHING` comptées comme créées, seuils de
+journalisation rendant « 0 ligne » indiscernable du silence.
+
+Ce n'est pas un défaut isolé qu'on corrige : c'est la convention du lot. Elle explique
+pourquoi la perte de mars 2026 a pu rester invisible pendant cinq mois, et pourquoi la
+garde de complétude livrée ici doit être **bloquante** et non informative.
+
+**Preuve la plus nette, log à l'appui.** `activate-pieces-v1.py` construit son rapport
+final avec `WHERE wave = 1 ORDER BY created_at DESC LIMIT 20` (L125-131) — **sans aucun
+filtre sur le run courant**. Il somme donc l'historique et le présente comme le résultat
+de l'exécution. Dans `logs/activate-vague2a.log`, à la même seconde
+(2026-03-24 19:44:50) :
+
+```
+[2026-03-24 19:44:50]   Gammes: 0, Total candidates: 0
+  TOTAL ACTIVATED: 0
+[2026-03-24 19:44:50]   Gammes: 20
+[2026-03-24 19:44:50]   Candidates: 33
+[2026-03-24 19:44:50]   Activated: 33
+[2026-03-24 19:44:50]   Success rate: 100.0%
+```
+
+Un run à effet nul, rapporté comme un succès à 100 %.
+
+### 2.3 Un `DELETE` qui précède la lecture
+
+`load-vehicle-tables.py` exécute `DELETE FROM tecdoc_raw.{name}` en **L91**, puis ouvre
+le CSV en **L99** et lit sa première ligne en **L101**. Aucune garde de non-vacuité,
+aucune transaction englobante. Un fichier absent, vide ou illisible laisse donc la table
+de staging **vidée à 100 %** — et le script, dépourvu de sortie non nulle (§2.2), se
+termine par `print("\nDone.")`.
+
+Ce script est classé **REQUIS** : il charge les 7 tables véhicules dont dépend
+`create-vehicles-p4a.py`. C'est une raison de plus de ne pas le lancer tel quel.
+
+### 2.4 Aucun script n'a d'appelant
 
 Ni cron, ni unité systemd, ni wrapper shell, ni référence dans le dépôt. Vérifié sur les
 16. L'ordre d'exécution de mars 2026 n'existait que dans la tête de l'opérateur ; les
 dépendances documentées dans le README ont été reconstituées par lecture du code.
 
-### 2.3 Des chemins concurrents et contradictoires
+### 2.5 Des chemins concurrents et contradictoires
 
 - **Trois** scripts écrivent `pieces.piece_display` avec des critères d'éligibilité
   **différents et non réconciliés** (`activate-pieces-v1`, `populate-linkages-genartnr`,

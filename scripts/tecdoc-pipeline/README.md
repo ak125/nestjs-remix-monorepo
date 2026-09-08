@@ -66,24 +66,40 @@ dangereuse pour l'état actuel de la base :
    aujourd'hui, traite 109 fournisseurs au lieu des 110 projetés en mars — et un
    changement de vitrine sur une marque suffit à déplacer la frontière, sans trace.
 
-2. **Aucune comptabilité lu/écrit.** Aucun script ne compare ce qu'il a lu à ce qu'il a
+2. **Aucun script ne sort jamais en erreur.** Sept des seize contiennent un
+   `sys.exit(1)` — et **les sept sont précédés de `parser.print_help()`**. Ils ne
+   couvrent qu'un argument CLI manquant. Aucun des 16 ne propage un code non nul sur un
+   échec de données : le seul moyen d'obtenir une sortie non nulle est d'oublier un
+   drapeau.
+
+   ```
+   $ grep -B3 'sys.exit(1)' *.py | grep -c 'parser.print_help()'   →  7 sur 7
+   ```
+
+   La vérification adverse a relevé **44 mécanismes de faux succès** répartis sur les
+   **16** scripts : exceptions avalées rendant `(dlnr, 0)`, `completed += 1`
+   inconditionnel, `ON CONFLICT DO NOTHING` comptés comme créations, seuils de
+   journalisation qui rendent « 0 ligne » indiscernable du silence. Ce n'est pas un
+   défaut isolé, c'est la convention du lot.
+
+3. **Aucune comptabilité lu/écrit.** Aucun script ne compare ce qu'il a lu à ce qu'il a
    écrit, ni ne compte ses rejets. `load-t400-active.py` additionne les lignes *envoyées*
    au `COPY` sans jamais lire `cur.rowcount`, et sort toujours en code 0.
 
-3. **Un chargement partiel devient définitif.** Le saut « déjà chargé » est à la
+4. **Un chargement partiel devient définitif.** Le saut « déjà chargé » est à la
    granularité du DLNR : dès qu'une seule ligne existe, le shard est réputé complet et
    ne sera jamais rechargé. C'est ce qui a rendu permanente la perte de 99,99 % des
    lignes NISSENS.
 
-4. **Les preuves sont détruites après coup.** `load-t400-active.py` supprime les `.sql`
+5. **Les preuves sont détruites après coup.** `load-t400-active.py` supprime les `.sql`
    et `.csv` intermédiaires même après un chargement partiel.
 
-5. **Des chemins concurrents et contradictoires.** Trois scripts écrivent le même booléen
+6. **Des chemins concurrents et contradictoires.** Trois scripts écrivent le même booléen
    `pieces.piece_display` avec des critères d'éligibilité **différents et non
    réconciliés** ; trois autres portent le même `INSERT` vers `pieces_relation_type`.
    Lequel fait autorité n'est écrit nulle part.
 
-6. **Un piège latent sur le nom de shard.** `load-t400-active.py:90` dérive le DLNR par
+7. **Un piège latent sur le nom de shard.** `load-t400-active.py:90` dérive le DLNR par
    `fname.replace('400.', '')`, qui remplace **toutes** les occurrences, pas seulement le
    préfixe. Pour un DLNR **400** ou **1400**, `400.0400.sql` et `400.1400.sql` donnent
    `'0sql'` et `'1sql'` → `ValueError` → `except ValueError: pass` → **le shard est
@@ -93,7 +109,13 @@ dangereuse pour l'état actuel de la base :
    Il est donc latent, pas actif — mais un périmètre futur contenant l'un de ces
    identifiants perdrait son shard sans le moindre signal.
 
-7. **Aucun ordonnancement.** Aucun des 16 n'a d'appelant : ni cron, ni unité systemd, ni
+8. **Un `DELETE` qui précède la lecture.** `load-vehicle-tables.py:91` exécute
+   `DELETE FROM tecdoc_raw.{name}` **avant** d'ouvrir le CSV (L99) et de lire la première
+   ligne (L101), sans garde de non-vacuité. Un fichier absent, vide ou illisible laisse
+   donc la table de staging **vidée à 100 %** — et le script, dépourvu de sortie non
+   nulle (point 2), se termine par `print("\nDone.")`.
+
+9. **Aucun ordonnancement.** Aucun des 16 n'a d'appelant : ni cron, ni unité systemd, ni
    wrapper shell, ni référence dans le dépôt. L'ordre d'exécution de mars 2026 n'existait
    que dans la tête de l'opérateur. Les dépendances reconstituées ci-dessus viennent de
    la lecture du code, pas d'un orchestrateur.
