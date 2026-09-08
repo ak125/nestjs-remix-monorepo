@@ -500,3 +500,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/tecdoc-rebuild-environment`
 - **Décision** : feat(ops): rotation d'identifiant de base par le chemin supporté, et le piège qu'il évite (+4 other commits)
 - **Sortie** : PR #1419 | commits 716c4085c e28197c57 647dc5b6a 01bd9a0c8 e4d4f650e
+
+## 2026-09-09 — feat/tecdoc-rebuild-environment (auto)
+
+- **Branche** : `feat/tecdoc-rebuild-environment`
+- **Décision** : fix(ops): vérifier le jeton avant d'engendrer un secret, et nommer le piège du collage (+6 other commits)
+- **Sortie** : PR #1419 | commits c67f82a31 fed9560b8 716c4085c e28197c57 647dc5b6a 01bd9a0c8 e4d4f650e
