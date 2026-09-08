@@ -54,6 +54,12 @@ from pathlib import Path
 
 CLE = "SUPABASE_DB_PASSWORD"
 JETON = "SUPABASE_ACCESS_TOKEN"
+#: Sans User-Agent explicite, `urllib` s'annonce « Python-urllib/3.x » — signature
+#: bannie par le pare-feu applicatif devant l'API, qui repond 403 « error code: 1010 ».
+#: La requete n'atteint alors JAMAIS l'API : le meme 403 sort pour un jeton valide et
+#: pour un jeton bidon, ce qui fait accuser le jeton a tort. Mesure a l'appui : avec
+#: cet en-tete, un jeton faux rend « 401 JWT could not be decoded » — donc l'API repond.
+AGENT = "massdoc-rotation-secret/1.0"
 #: Alphabet volontairement alphanumerique. Un `.env` n'a pas de regle de citation
 #: universelle et une URL de connexion encore moins : un caractere special mal
 #: echappe reproduit exactement le defaut qu'on vient de diagnostiquer.
@@ -137,7 +143,7 @@ def verifier_jeton(projet: str, jeton: str) -> tuple[int, str]:
     """
     requete = urllib.request.Request(
         f"https://api.supabase.com/v1/projects/{projet}/config/database/postgres",
-        headers={"Authorization": f"Bearer {jeton}"},
+        headers={"Authorization": f"Bearer {jeton}", "User-Agent": AGENT},
         method="GET",
     )
     try:
@@ -153,7 +159,8 @@ def appeler_api(projet: str, secret: str, jeton: str) -> tuple[int, str]:
     requete = urllib.request.Request(
         f"https://api.supabase.com/v1/projects/{projet}/database/password",
         data=json.dumps({"password": secret}).encode("utf-8"),
-        headers={"Authorization": f"Bearer {jeton}", "Content-Type": "application/json"},
+        headers={"Authorization": f"Bearer {jeton}", "Content-Type": "application/json",
+                 "User-Agent": AGENT},
         method="PATCH",
     )
     try:
@@ -235,15 +242,19 @@ def main(argv: list[str] | None = None) -> int:
     code, corps = verifier_jeton(args.projet, jeton)
     print(f"  GET /v1/projects/{args.projet}/config/database/postgres -> HTTP {code}")
     if code != 200:
-        # Un 403 ne discrimine pas : il couvre le jeton malforme rejete en amont
-        # (le corps porte alors un « error code » de la couche de filtrage) et le
-        # jeton valide sans droit sur ce projet. Nommer une seule cause avec
-        # assurance enverrait chercher au mauvais endroit.
-        indice = {401: "jeton invalide, expire, ou saisi a vide",
-                  403: "jeton malforme rejete en amont, OU sans la permission "
-                       "« Database Config » sur ce projet — voir la reponse",
-                  404: "reference de projet inconnue de ce compte",
-                  0: "l'appel n'a pas abouti"}.get(code, "refus de l'API")
+        # Distinguer « l'API a refuse » de « on n'a jamais atteint l'API ». Une
+        # reponse qui n'est pas du JSON ne vient pas de l'API mais du pare-feu
+        # applicatif devant elle : accuser le jeton dans ce cas envoie chercher au
+        # mauvais endroit — c'est arrive.
+        if not corps.lstrip().startswith("{"):
+            indice = ("reponse non-JSON : la requete a ete arretee AVANT l'API, par "
+                      "le pare-feu applicatif. Le jeton n'est pas en cause.")
+        else:
+            indice = {401: "jeton invalide, expire, ou saisi a vide",
+                      403: "jeton sans la permission « Database Config » "
+                           "(lecture-ecriture) sur ce projet",
+                      404: "reference de projet inconnue de ce compte",
+                      0: "l'appel n'a pas abouti"}.get(code, "refus de l'API")
         print(f"  {indice}", file=sys.stderr)
         print(f"  reponse : {corps}", file=sys.stderr)
         print("\n  Rien n'a ete engendre ni modifie.", file=sys.stderr)

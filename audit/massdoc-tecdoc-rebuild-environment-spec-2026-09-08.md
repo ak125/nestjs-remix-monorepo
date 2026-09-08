@@ -225,9 +225,28 @@ aurait donc été refusé par le préflight lui-même. **Une garde doit éprouve
 permission que ce qu'elle précède**, sinon elle bloque exactement les cas les mieux
 configurés.
 
-Le diagnostic ne sur-affirme pas : un `403` couvre à la fois le jeton malformé rejeté en
-amont et le jeton valide sans la permission. Le script nomme les deux et montre la
-réponse, plutôt que d'envoyer chercher au mauvais endroit.
+**Le client HTTP doit s'annoncer.** Sans `User-Agent` explicite, `urllib` s'annonce
+`Python-urllib/3.x` — signature bannie par le pare-feu applicatif devant l'API, qui rend
+`403 · error code: 1010`. Mesuré, même jeton (faux) :
+
+| Client | Réponse |
+|---|---|
+| `urllib` par défaut | `403` · `error code: 1010` |
+| `urllib` + `User-Agent` | `401` · `JWT could not be decoded` |
+| `curl` | `401` · `JWT could not be decoded` |
+
+Le piège est que le `403` sort **à l'identique pour un jeton valide et pour un jeton
+bidon** : la requête n'atteint jamais l'API, et un diagnostic naïf accuse le jeton. C'est
+arrivé en conditions réelles, et le message du script a envoyé chercher du côté des
+permissions un défaut qui était dans le client HTTP.
+
+Deux gardes en découlent : toute requête porte l'en-tête (assertion de couverture au
+banc, pour qu'une requête ajoutée plus tard ne rejoue pas l'incident), et **une réponse
+qui n'est pas du JSON est imputée au pare-feu, jamais au jeton** — l'API répond en JSON,
+le filtrage en amont non.
+
+Le diagnostic ne sur-affirme pas non plus sur le reste : le script nomme la permission
+attendue et montre la réponse, plutôt que d'envoyer chercher au mauvais endroit.
 
 **Saisie du jeton — pourquoi le script le demande lui-même.** La voie évidente était
 `read -rs VAR && export VAR` puis la commande. Elle échoue silencieusement : `read` lit

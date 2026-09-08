@@ -188,6 +188,27 @@ verifier "le .env n'a pas bouge" 0 \
 verifier "plus aucun renvoi vers read/export" 0 \
   "$(echo "$SORTIE" | grep -cE 'read -rsp|export ')"
 
+# --- 4d. toute requete HTTP doit s'annoncer ------------------------------
+# Sans User-Agent explicite, `urllib` est banni par le pare-feu applicatif devant
+# l'API : 403 « error code: 1010 » identique pour un jeton valide et un jeton bidon,
+# donc un diagnostic qui accuse le jeton a tort. C'est arrive ; cette assertion
+# empeche qu'une requete ajoutee plus tard rejoue l'incident.
+echo
+echo "=== 4d. couverture du User-Agent sur toutes les requetes ==="
+LU="$(python3 - "$ICI/tourner-secret-db.py" <<'PYCHK'
+import re, sys
+t = open(sys.argv[1]).read()
+print(len(re.findall(r'urllib\.request\.Request\(', t)),
+      len(re.findall(r'"User-Agent": AGENT', t)))
+PYCHK
+)"
+verifier "chaque requete porte le User-Agent" "$(echo "$LU" | cut -d' ' -f1)" \
+  "$(echo "$LU" | cut -d' ' -f2)"
+verifier "au moins une requete existe" 1 \
+  "$([ "$(echo "$LU" | cut -d' ' -f1)" -ge 1 ] && echo 1 || echo 0)"
+verifier "une reponse non-JSON est imputee au pare-feu, pas au jeton" 1 \
+  "$(grep -c "AVANT l'API" "$ICI/tourner-secret-db.py")"
+
 # --- 5. non-regression : aucun pointeur en dur ---------------------------
 echo
 echo "=== 5. le script ne contient aucun pointeur ==="
