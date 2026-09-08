@@ -494,3 +494,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/tecdoc-rebuild-environment`
 - **Décision** : feat(tecdoc): rejeu par vagues — le pic disque passe de 250 Go à ~5 Go, et la preuve survit à la donnée (+2 other commits)
 - **Sortie** : PR #1419 | commits 647dc5b6a 01bd9a0c8 e4d4f650e
+
+## 2026-09-09 — feat/tecdoc-rebuild-environment (auto)
+
+- **Branche** : `feat/tecdoc-rebuild-environment`
+- **Décision** : feat(ops): rotation d'identifiant de base par le chemin supporté, et le piège qu'il évite (+4 other commits)
+- **Sortie** : PR #1419 | commits 716c4085c e28197c57 647dc5b6a 01bd9a0c8 e4d4f650e
