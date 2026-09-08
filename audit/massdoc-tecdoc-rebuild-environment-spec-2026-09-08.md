@@ -203,6 +203,7 @@ Ordre des étapes, choisi pour qu'aucune panne ne verrouille la base :
 
 | # | Étape | Ce qu'elle protège |
 |---|---|---|
+| 0 | le jeton ouvre-t-il ce projet ? (`GET`, lecture seule) | un jeton absent ou erroné ne laisse aucun secret orphelin derrière lui |
 | 1 | prouver qu'un identifiant de référence ouvre la base | sans lui, on ne pourra pas prouver qu'il cesse de fonctionner |
 | 2 | engendrer et déposer en `0600` **avant** tout changement | un plantage ne peut pas perdre le nouveau secret |
 | 3 | appeler l'API | — |
@@ -212,6 +213,22 @@ Ordre des étapes, choisi pour qu'aucune panne ne verrouille la base :
 Codes de sortie : `0` rotation prouvée · `2` état de départ inexploitable · `3` erreur
 d'E/S · `4` le changement n'a pas pris · `5` l'ancien est encore accepté · `6` l'API a
 refusé. Aux codes 2, 4, 6 le `.env` n'est pas touché — vérifié par le banc.
+
+L'étape 0 diagnostique sans sur-affirmer : un `403` couvre à la fois le jeton malformé
+rejeté en amont et le jeton valide sans droit sur le projet. Le script nomme les deux
+et montre la réponse, plutôt que d'envoyer chercher au mauvais endroit.
+
+**Saisie du jeton — le piège du collage.** `read -rs VAR` lit l'entrée standard. Si la
+commande est collée avec les lignes suivantes, `read` avale la ligne d'après au lieu
+d'attendre la frappe, et la variable est exportée **vide**. D'où :
+
+```bash
+read -rsp "Jeton : " SUPABASE_ACCESS_TOKEN < /dev/tty && export SUPABASE_ACCESS_TOKEN && echo
+```
+
+Le `< /dev/tty` force la lecture sur le terminal. Le script rend ce diagnostic lui-même
+quand la variable est vide — sinon l'erreur se relit comme « jeton refusé » alors qu'il
+n'a jamais été saisi.
 
 Le jeton d'API est lu dans `SUPABASE_ACCESS_TOKEN`, jamais dans un fichier de
 configuration ni en `argv`. Le script ne contient aucune référence de projet, de dépôt

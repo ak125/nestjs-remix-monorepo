@@ -44,8 +44,12 @@ import importlib.util, sys
 spec = importlib.util.spec_from_file_location("outil", sys.argv[1])
 outil = importlib.util.module_from_spec(spec); spec.loader.exec_module(outil)
 
-CODE = int(sys.argv[2])          # code HTTP a simuler
+CODE = int(sys.argv[2])          # code HTTP simule pour le PATCH
 PORT = int(sys.argv[3])
+CODE_JETON = int(sys.argv[4])    # code HTTP simule pour le preflight GET
+
+def faux_jeton(projet, jeton):
+    return CODE_JETON, '{"id":"simule"}' if CODE_JETON == 200 else '{"message":"simule"}'
 
 def faux(projet, secret, jeton):
     if CODE != 200:
@@ -61,12 +65,19 @@ def faux(projet, secret, jeton):
     return 200, "{}"
 
 outil.appeler_api = faux
-sys.exit(outil.main(sys.argv[4:]))
+outil.verifier_jeton = faux_jeton
+sys.exit(outil.main(sys.argv[5:]))
 PY
 
-lancer() { # code-http, arguments...
+lancer() { # code-http-PATCH, arguments...
   local code="$1"; shift
-  python3 "$TRAVAIL/faux_api.py" "$ICI/tourner-secret-db.py" "$code" "$PORT" \
+  python3 "$TRAVAIL/faux_api.py" "$ICI/tourner-secret-db.py" "$code" "$PORT" 200 \
+    --projet banc --hote 127.0.0.1 --port "$PORT" --utilisateur postgres "$@"
+}
+
+lancer_jeton() { # code-http-preflight, arguments...
+  local code="$1"; shift
+  python3 "$TRAVAIL/faux_api.py" "$ICI/tourner-secret-db.py" 200 "$PORT" "$code" \
     --projet banc --hote 127.0.0.1 --port "$PORT" --utilisateur postgres "$@"
 }
 
@@ -141,6 +152,38 @@ SORTIE="$(SUPABASE_ACCESS_TOKEN=factice lancer 200 \
 verifier "sortie non nulle" 1 "$([ "$CODE" -ne 0 ] && echo 1 || echo 0)"
 verifier "aucune ligne ajoutee a l'aveugle" 0 \
   "$(grep -c '^SUPABASE_DB_PASSWORD=' "$TRAVAIL/vide.env")"
+
+# --- 4b. le jeton n'ouvre pas le projet ----------------------------------
+echo
+echo "=== 4b. preflight du jeton (attendu : 6, RIEN engendre) ==="
+cp "$TRAVAIL/cible.env" "$TRAVAIL/cible4b.env"
+for HTTP in 401 403 404; do
+  SORTIE="$(SUPABASE_ACCESS_TOKEN=factice lancer_jeton "$HTTP" \
+    --reference "$TRAVAIL/reference3.env" --env "$TRAVAIL/cible4b.env" \
+    --coffre "$TRAVAIL/coffre4b.txt" 2>&1)"; CODE=$?
+  verifier "HTTP $HTTP -> code de sortie 6" 6 "$CODE"
+  verifier "HTTP $HTTP -> aucun secret engendre" 0 \
+    "$([ -f "$TRAVAIL/coffre4b.txt" ] && echo 1 || echo 0)"
+  verifier "HTTP $HTTP -> arret avant l'etat de depart" 0 \
+    "$(echo "$SORTIE" | grep -c '1/5')"
+done
+verifier "le .env n'a pas bouge" 0 \
+  "$(diff -q "$TRAVAIL/cible.env" "$TRAVAIL/cible4b.env" >/dev/null && echo 0 || echo 1)"
+
+# --- 4c. jeton vide : diagnostic explicite du piege du collage -----------
+echo
+echo "=== 4c. jeton vide (le piege de read sans /dev/tty) ==="
+SORTIE="$(SUPABASE_ACCESS_TOKEN="" lancer 200 \
+  --reference "$TRAVAIL/reference3.env" --env "$TRAVAIL/cible4b.env" \
+  --coffre "$TRAVAIL/coffre4c.txt" 2>&1)"; CODE=$?
+verifier "code de sortie 3" 3 "$CODE"
+# Deux choses distinctes doivent sortir : la commande corrigee, et la RAISON.
+# Donner la commande sans la raison ferait recopier un incantatoire.
+verifier "la commande corrigee est donnee" 1 \
+  "$(echo "$SORTIE" | grep -c 'read -rsp .* < /dev/tty')"
+verifier "la raison du /dev/tty est expliquee" 1 \
+  "$(echo "$SORTIE" | grep -c "n'est pas decoratif")"
+verifier "aucun secret engendre" 0 "$([ -f "$TRAVAIL/coffre4c.txt" ] && echo 1 || echo 0)"
 
 # --- 5. non-regression : aucun pointeur en dur ---------------------------
 echo

@@ -15,6 +15,8 @@ C'est la seule voie qui laisse le systeme coherent.
 
 ORDRE DES OPERATIONS — pense pour qu'aucune panne ne verrouille la base
 -----------------------------------------------------------------------
+  0. prouver que le jeton ouvre ce projet, en lecture seule — avant d'engendrer
+     quoi que ce soit, pour qu'un jeton absent ou errone ne laisse aucune trace
   1. prouver qu'un identifiant de reference ouvre bien la base (sinon on ne pourra
      rien prouver ensuite, et l'etat de depart est deja inconnu)
   2. engendrer le secret et l'ecrire IMMEDIATEMENT dans un fichier 0600 —
@@ -91,6 +93,27 @@ def essayer(secret: str, *, hote: str, port: int, utilisateur: str, base: str) -
         return False, f"PANNE:{type(e).__name__}"
 
 
+def verifier_jeton(projet: str, jeton: str) -> tuple[int, str]:
+    """Preflight : le jeton ouvre-t-il ce projet ? Appel en lecture seule.
+
+    Sans lui, un jeton absent ou errone n'est decouvert qu'a l'etape 4, apres qu'un
+    secret a ete engendre et depose — du bruit a nettoyer pour rien. Echouer ici
+    coute un aller-retour et ne laisse aucune trace.
+    """
+    requete = urllib.request.Request(
+        f"https://api.supabase.com/v1/projects/{projet}",
+        headers={"Authorization": f"Bearer {jeton}"},
+        method="GET",
+    )
+    try:
+        with urllib.request.urlopen(requete, timeout=60) as r:
+            return r.status, r.read().decode("utf-8", "replace")[:200]
+    except urllib.error.HTTPError as e:
+        return e.code, e.read().decode("utf-8", "replace")[:200]
+    except Exception as e:  # noqa: BLE001
+        return 0, f"{type(e).__name__}: {e}"
+
+
 def appeler_api(projet: str, secret: str, jeton: str) -> tuple[int, str]:
     requete = urllib.request.Request(
         f"https://api.supabase.com/v1/projects/{projet}/database/password",
@@ -152,9 +175,17 @@ def main(argv: list[str] | None = None) -> int:
 
     jeton = os.environ.get(JETON, "").strip()
     if not jeton:
-        print(f"{JETON} absent de l'environnement.", file=sys.stderr)
-        print("Creer un jeton sur https://supabase.com/dashboard/account/tokens", file=sys.stderr)
-        print(f"puis : read -rs {JETON} && export {JETON}", file=sys.stderr)
+        print(f"{JETON} absent (ou vide) dans l'environnement.", file=sys.stderr)
+        print(file=sys.stderr)
+        print("Creer un jeton sur https://supabase.com/dashboard/account/tokens, puis :",
+              file=sys.stderr)
+        print(f'  read -rsp "Jeton : " {JETON} < /dev/tty && export {JETON} && echo',
+              file=sys.stderr)
+        print(file=sys.stderr)
+        print("Le `< /dev/tty` n'est pas decoratif : sans lui, `read` lit l'entree", file=sys.stderr)
+        print("standard, et si la commande a ete collee avec les lignes suivantes,", file=sys.stderr)
+        print("il avale la ligne d'apres au lieu d'attendre la frappe — la variable", file=sys.stderr)
+        print("est alors exportee vide.", file=sys.stderr)
         return 3
 
     cfg = dict(hote=args.hote, port=args.port, utilisateur=args.utilisateur, base=args.base)
@@ -165,6 +196,26 @@ def main(argv: list[str] | None = None) -> int:
         print(f"{CLE} introuvable dans {args.reference}", file=sys.stderr)
         return 3
 
+    print("=== 0/5 — le jeton ouvre-t-il ce projet ? ===")
+    code, corps = verifier_jeton(args.projet, jeton)
+    print(f"  GET /v1/projects/{args.projet} -> HTTP {code}")
+    if code != 200:
+        # Un 403 ne discrimine pas : il couvre le jeton malforme rejete en amont
+        # (le corps porte alors un « error code » de la couche de filtrage) et le
+        # jeton valide sans droit sur ce projet. Nommer une seule cause avec
+        # assurance enverrait chercher au mauvais endroit.
+        indice = {401: "jeton invalide, expire, ou saisi a vide",
+                  403: "jeton malforme rejete en amont, OU valide mais sans droit "
+                       "sur ce projet — voir la reponse ci-dessous",
+                  404: "reference de projet inconnue de ce compte",
+                  0: "l'appel n'a pas abouti"}.get(code, "refus de l'API")
+        print(f"  {indice}", file=sys.stderr)
+        print(f"  reponse : {corps}", file=sys.stderr)
+        print("\n  Rien n'a ete engendre ni modifie.", file=sys.stderr)
+        return 6
+    print("  jeton accepte sur ce projet")
+
+    print()
     print("=== 1/5 — etat de depart ===")
     ok, detail = essayer(ancien, **cfg)
     print(f"  identifiant de reference ({empreinte(ancien)}) : "
