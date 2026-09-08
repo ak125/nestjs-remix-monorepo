@@ -83,7 +83,17 @@ dangereuse pour l'état actuel de la base :
    réconciliés** ; trois autres portent le même `INSERT` vers `pieces_relation_type`.
    Lequel fait autorité n'est écrit nulle part.
 
-6. **Aucun ordonnancement.** Aucun des 16 n'a d'appelant : ni cron, ni unité systemd, ni
+6. **Un piège latent sur le nom de shard.** `load-t400-active.py:90` dérive le DLNR par
+   `fname.replace('400.', '')`, qui remplace **toutes** les occurrences, pas seulement le
+   préfixe. Pour un DLNR **400** ou **1400**, `400.0400.sql` et `400.1400.sql` donnent
+   `'0sql'` et `'1sql'` → `ValueError` → `except ValueError: pass` → **le shard est
+   ignoré en silence**, sans log ni compteur.
+
+   Vérifié sur le périmètre réel : **0 des 149 DLNR** de mars 2026 déclenche le défaut.
+   Il est donc latent, pas actif — mais un périmètre futur contenant l'un de ces
+   identifiants perdrait son shard sans le moindre signal.
+
+7. **Aucun ordonnancement.** Aucun des 16 n'a d'appelant : ni cron, ni unité systemd, ni
    wrapper shell, ni référence dans le dépôt. L'ordre d'exécution de mars 2026 n'existait
    que dans la tête de l'opérateur. Les dépendances reconstituées ci-dessus viennent de
    la lecture du code, pas d'un orchestrateur.
