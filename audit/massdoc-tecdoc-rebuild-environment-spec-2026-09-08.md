@@ -203,7 +203,7 @@ Ordre des étapes, choisi pour qu'aucune panne ne verrouille la base :
 
 | # | Étape | Ce qu'elle protège |
 |---|---|---|
-| 0 | le jeton ouvre-t-il ce projet ? (`GET`, lecture seule) | un jeton absent ou erroné ne laisse aucun secret orphelin derrière lui |
+| 0 | le jeton porte-t-il la permission voulue ? (`GET`, lecture seule) | un jeton absent ou erroné ne laisse aucun secret orphelin derrière lui |
 | 1 | prouver qu'un identifiant de référence ouvre la base | sans lui, on ne pourra pas prouver qu'il cesse de fonctionner |
 | 2 | engendrer et déposer en `0600` **avant** tout changement | un plantage ne peut pas perdre le nouveau secret |
 | 3 | appeler l'API | — |
@@ -214,9 +214,20 @@ Codes de sortie : `0` rotation prouvée · `2` état de départ inexploitable ·
 d'E/S · `4` le changement n'a pas pris · `5` l'ancien est encore accepté · `6` l'API a
 refusé. Aux codes 2, 4, 6 le `.env` n'est pas touché — vérifié par le banc.
 
-L'étape 0 diagnostique sans sur-affirmer : un `403` couvre à la fois le jeton malformé
-rejeté en amont et le jeton valide sans droit sur le projet. Le script nomme les deux
-et montre la réponse, plutôt que d'envoyer chercher au mauvais endroit.
+**Permission requise sur le jeton : « Database Config », en lecture-écriture.** C'est
+elle qui porte `v1-update-database-password`. Un jeton classique (accès complet du
+compte) convient aussi, mais un jeton restreint est préférable et se révoque après usage.
+
+L'étape 0 interroge `GET /v1/projects/{ref}/config/database/postgres`, et ce choix n'est
+pas anodin : `GET /v1/projects/{ref}` relève de « Project Settings », pas de « Database
+Config ». Une première version l'utilisait — un jeton correctement restreint à la tâche
+aurait donc été refusé par le préflight lui-même. **Une garde doit éprouver la même
+permission que ce qu'elle précède**, sinon elle bloque exactement les cas les mieux
+configurés.
+
+Le diagnostic ne sur-affirme pas : un `403` couvre à la fois le jeton malformé rejeté en
+amont et le jeton valide sans la permission. Le script nomme les deux et montre la
+réponse, plutôt que d'envoyer chercher au mauvais endroit.
 
 **Saisie du jeton — pourquoi le script le demande lui-même.** La voie évidente était
 `read -rs VAR && export VAR` puis la commande. Elle échoue silencieusement : `read` lit

@@ -122,14 +122,21 @@ def obtenir_jeton() -> str | None:
 
 
 def verifier_jeton(projet: str, jeton: str) -> tuple[int, str]:
-    """Preflight : le jeton ouvre-t-il ce projet ? Appel en lecture seule.
+    """Preflight : le jeton porte-t-il la bonne permission ? Appel en lecture seule.
 
     Sans lui, un jeton absent ou errone n'est decouvert qu'a l'etape 4, apres qu'un
     secret a ete engendre et depose — du bruit a nettoyer pour rien. Echouer ici
     coute un aller-retour et ne laisse aucune trace.
+
+    Le point interroge n'est PAS choisi au hasard. `GET /v1/projects/{ref}` releve de
+    la permission « Project Settings », alors que le changement de mot de passe releve
+    de « Database Config » : un jeton correctement restreint a la tache aurait ete
+    refuse par le preflight lui-meme. On interroge donc la config Postgres, qui releve
+    de « Database Config » en lecture — impliquee par la lecture-ecriture qu'exige
+    l'operation. Une garde doit eprouver la meme permission que ce qu'elle precede.
     """
     requete = urllib.request.Request(
-        f"https://api.supabase.com/v1/projects/{projet}",
+        f"https://api.supabase.com/v1/projects/{projet}/config/database/postgres",
         headers={"Authorization": f"Bearer {jeton}"},
         method="GET",
     )
@@ -226,15 +233,15 @@ def main(argv: list[str] | None = None) -> int:
 
     print("=== 0/5 — le jeton ouvre-t-il ce projet ? ===")
     code, corps = verifier_jeton(args.projet, jeton)
-    print(f"  GET /v1/projects/{args.projet} -> HTTP {code}")
+    print(f"  GET /v1/projects/{args.projet}/config/database/postgres -> HTTP {code}")
     if code != 200:
         # Un 403 ne discrimine pas : il couvre le jeton malforme rejete en amont
         # (le corps porte alors un « error code » de la couche de filtrage) et le
         # jeton valide sans droit sur ce projet. Nommer une seule cause avec
         # assurance enverrait chercher au mauvais endroit.
         indice = {401: "jeton invalide, expire, ou saisi a vide",
-                  403: "jeton malforme rejete en amont, OU valide mais sans droit "
-                       "sur ce projet — voir la reponse ci-dessous",
+                  403: "jeton malforme rejete en amont, OU sans la permission "
+                       "« Database Config » sur ce projet — voir la reponse",
                   404: "reference de projet inconnue de ce compte",
                   0: "l'appel n'a pas abouti"}.get(code, "refus de l'API")
         print(f"  {indice}", file=sys.stderr)
