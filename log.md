@@ -482,3 +482,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/tecdoc-pipeline-recovery`
 - **Décision** : docs(tecdoc): consigner le piege latent de derivation du DLNR par str.replace (+2 other commits)
 - **Sortie** : PR #1417 | commits 9c4b7640f b1dd9aa25 ae0871d03
+
+## 2026-09-08 — feat/tecdoc-rebuild-environment (auto)
+
+- **Branche** : `feat/tecdoc-rebuild-environment`
+- **Décision** : feat(tecdoc): spécifier et outiller l'environnement de rebuild isolé (~250 Go)
+- **Sortie** : PR #1419 | commits e4d4f650e
