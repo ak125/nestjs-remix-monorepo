@@ -155,6 +155,13 @@ docker exec "$CONTENEUR" psql -U postgres -d reference -q \
 cas "ensemble applicatif modifie refuse" 7 \
   python3 tecdoc_replay_controls.py --reference-dsn "$REF" --rejeu-dsn "$BANC" \
     --manifeste tecdoc-replay/manifeste-synthetique.json --controles conservation
+# Restaurer la reference : une injection destructive qui ne se defait pas contamine
+# tous les cas suivants, et son echec serait mis au compte du mauvais composant.
+docker exec "$CONTENEUR" psql -U postgres -d reference -q \
+  -c "INSERT INTO public.auto_type(type_id_i) VALUES (60000) ON CONFLICT DO NOTHING" >/dev/null
+cas "reference restauree : conservation a nouveau intacte" 0 \
+  python3 tecdoc_replay_controls.py --reference-dsn "$REF" --rejeu-dsn "$BANC" \
+    --manifeste tecdoc-replay/manifeste-synthetique.json --controles conservation
 
 echo
 echo "-- Injection 6 : inclusion PROD ⊆ REBUILD rompue --"
@@ -173,6 +180,40 @@ cas "contenu servi contredisant le rejeu refuse (CONFLICT)" 8 \
   python3 tecdoc_replay_controls.py --reference-dsn "$REF" --rejeu-dsn "$BANC" \
     --dlnr "$DLNR_TEST" --controles reconciliation
 
+echo
+echo "-- Vagues : la preuve survit a la purge, l'echec conserve la matiere --"
+docker exec "$CONTENEUR" psql -U postgres -d banc -q -c 'DELETE FROM tecdoc_raw.t400' >/dev/null
+docker exec "$CONTENEUR" psql -U postgres -d reference -q -c 'DELETE FROM tecdoc_raw.t400' >/dev/null
+rm -f "$TMP"/400.*.csv "$TMP"/400.*.meta "$TMP/registre.json"
+cas "vague nominale (LOT 0) puis purge" 0 \
+  python3 tecdoc_replay_wave.py --lot 0 --plan tecdoc-replay/plan-lots.json \
+    --scope-file "$SCOPE" --cible-dsn "$BANC" --reference-dsn "$REF" \
+    --manifeste tecdoc-replay/manifeste-synthetique.json \
+    --workdir "$TMP" --registre "$TMP/registre.json" --archive "$ARCHIVE"
+egal "matiere purgee apres preuve" "0" "$(sql banc 'select count(*) from tecdoc_raw.t400')"
+egal "preuve conservee dans le registre" "13057" \
+  "$(python3 -c "import json;print(json.load(open('$TMP/registre.json'))['entrees'][0]['comptabilite']['rows_loaded'])" 2>/dev/null)"
+egal "registre scelle" "64" \
+  "$(python3 -c "import json;print(len(json.load(open('$TMP/registre.json'))['seal']['sha256']))" 2>/dev/null)"
+cas "relance du meme lot : idempotente" 0 \
+  python3 tecdoc_replay_wave.py --lot 0 --plan tecdoc-replay/plan-lots.json \
+    --scope-file "$SCOPE" --cible-dsn "$BANC" --reference-dsn "$REF" \
+    --manifeste tecdoc-replay/manifeste-synthetique.json \
+    --workdir "$TMP" --registre "$TMP/registre.json" --archive "$ARCHIVE"
+
+# La reference sert une ligne que le rejeu ne reproduit pas : inclusion rompue.
+rm -f "$TMP/registre2.json" "$TMP"/400.*.csv "$TMP"/400.*.meta
+docker exec "$CONTENEUR" psql -U postgres -d reference -q \
+  -c "INSERT INTO tecdoc_raw.t400(col_2,_source_row_no,_raw_hash) VALUES ('$DLNR_TEST',999999,'servie_mais_absente_du_rejeu')" >/dev/null
+cas "inclusion rompue : vague arretee" 8 \
+  python3 tecdoc_replay_wave.py --lot 0 --plan tecdoc-replay/plan-lots.json \
+    --scope-file "$SCOPE" --cible-dsn "$BANC" --reference-dsn "$REF" \
+    --manifeste tecdoc-replay/manifeste-synthetique.json \
+    --workdir "$TMP" --registre "$TMP/registre2.json" --archive "$ARCHIVE"
+egal "matiere CONSERVEE pour diagnostic sur echec" "13057" \
+  "$(sql banc 'select count(*) from tecdoc_raw.t400')"
+
+echo
 echo
 echo "=== $ok assertions vertes, $ko rouges ==="
 [ "$ko" -eq 0 ] || exit 1

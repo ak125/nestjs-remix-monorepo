@@ -1,158 +1,138 @@
-# Environnement de rebuild TecDoc isolé — spécification et plan de lots
+# Rebuild TecDoc par vagues — environnement, dimensionnement, plan
 
-> **Date** : 2026-09-08 · **Base** : `33d0049` (PR #1418 mergée) · **Statut** : `NO_GO`
-> — le volume dédié n'existe pas encore. Le rejeu complet **n'est pas lancé**.
+> **Date** : 2026-09-08, révisé 2026-09-09 · **Base** : `33d0049` (PR #1418 mergée)
+> **Statut** : environnement **GO** sur la machine existante. Le rejeu complet des
+> 110 DLNR **n'est pas lancé**.
 >
-> Ce document couvre l'environnement et le découpage. Il ne traite d'aucun secret.
+> Ce document ne consigne aucun état de secret : ce dépôt est public.
 
 ---
 
-## 1. Architecture cible
+## 1. Correction du dimensionnement — de 250 Go à ~5 Go
+
+La première version de cette spécification exigeait un volume dédié de **250 Go** et
+concluait `NO_GO`. Ce chiffre ne venait pas des données : il venait d'une hypothèse non
+soumise — **matérialiser les 110 DLNR simultanément** dans une seule instance.
+
+Or l'invariant à démontrer — `PROD actuelle ⊆ REBUILD source-truth`, sans perte de ligne
+ni dérive d'identité — se vérifie **DLNR par DLNR**. On rejoue un fournisseur, on le
+réconcilie, on scelle la preuve, **puis on jette la matière**. Le pic disque devient celui
+du plus gros fournisseur seul, pas leur somme.
+
+**Mesure réelle** (rejeu HIDRIA, PostgreSQL 17 jetable) : `2 654 208` octets pour
+`13 057` lignes, index compris → **203 octets/ligne**.
+
+| | lignes source | occupation en base |
+|---|---:|---:|
+| FEBI (DLNR 101) — cas dimensionnant | 17 421 432 | 3,3 Go |
+| BOSCH (DLNR 30) | 9 357 752 | 1,8 Go |
+| VALEO (DLNR 21) | 6 369 779 | 1,2 Go |
+
+```
+pic en base (FEBI seul) ........... 3,3 Go
++ CSV de parsing (transitoire) .... 1,5 Go
++ archive 7z (déjà présente) ...... 5,8 Go, non dupliquée
+PIC ESTIMÉ ....................... ~5 Go
+libre sur / aujourd'hui .......... 39 Go        → GO
+```
+
+Un volume de 250 Go n'est nécessaire **que** si l'on souhaite conserver un rebuild
+matérialisé à inspecter après coup. Pour démontrer l'invariant, les preuves suffisent.
+
+## 2. Ce que le rejeu par vagues démontre — et ce qu'il ne démontre pas
+
+**Démontré, au niveau RAW (`tecdoc_raw.t400`)** : aucune ligne source n'est perdue
+(comptabilité vérifiée avant commit), la PROD est incluse dans le rejeu, les registres
+d'identité ne bougent pas, les 9 ensembles figés sont intacts. C'est exactement là que la
+perte de mars 2026 s'est produite.
+
+**Non démontré** : rien sur la projection `source_linkages`. Aucun projecteur vérifié
+n'existe à ce jour — les projecteurs historiques sont en quarantaine, dont celui qui a
+pollué `pieces_relation_type` de ~219 M lignes fantômes. Ce sera un chantier séparé.
+Annoncer ici une preuve de projection serait le vert-mais-faux que ce pipeline combat.
+
+## 3. Le registre de preuve
+
+Puisque la matière est jetée, **la preuve est le livrable**. Chaque DLNR y laisse :
+
+```json
+{ "dlnr": 4523, "fichier": "400.4523.sql", "batch_id": "5df6aa47…",
+  "comptabilite":       { "rows_emitted": 13057, "rows_loaded": 13057,
+                          "rows_deduplicated": 0, "rows_rejected": {} },
+  "empreinte_du_charge":{ "lignes": 13057, "borne_min": 1, "borne_max": 13057,
+                          "empreinte_md5": "0f46f853577f32c79303bc8505e034ca" },
+  "reconciliation":     { "identites_conservees": 13057, "conflits": 0,
+                          "inclusion_respectee": true } }
+```
+
+Le registre est **scellé** (SHA-256, canonicalisation identique aux autres artefacts).
+Vérifié : falsifier une seule valeur fait diverger le sceau. Une preuve qu'on peut
+réécrire n'en est pas une.
+
+L'empreinte du contenu chargé survit à la purge : elle permet de constater qu'un second
+rejeu produit exactement le même contenu, sans conserver la donnée.
+
+## 4. Fail-closed — ce qui se passe quand ça casse
+
+Toute anomalie arrête la vague et **ne purge pas** le DLNR fautif : sa matière reste en
+base pour le diagnostic. Un DLNR n'est purgé que **lorsque sa preuve est écrite**.
+
+| Situation | Code | Effet |
+|---|---:|---|
+| Comptabilité déséquilibrée | 5 | rollback du DLNR, vague arrêtée |
+| Dérive d'identité | 6 | vague arrêtée |
+| Conservation rompue | 7 | vague arrêtée |
+| Inclusion PROD ⊄ REBUILD | 8 | vague arrêtée, **matière conservée** |
+| Purge non confirmée | 9 | vague arrêtée |
+
+Éprouvé : `test-tecdoc-replay.sh` — **32 assertions, 0 rouge**, dont la vague nominale
+avec purge, la relance idempotente, l'inclusion rompue et la conservation de la matière
+sur échec.
+
+## 5. Environnement
 
 ```
 archive TecDoc (SQL-CONVERTED.7z, 5,8 Go)
         ↓  extraction + CRC32 confronté au périmètre scellé
-volume dédié /mnt/tecdoc-rebuild  (~250 Go, hors /)
-        ↓
 PostgreSQL 17 isolé — 127.0.0.1 uniquement, aucun accès PROD
-        ↓  scripts/tecdoc_replay.py (fail-closed)
-tecdoc_raw.t400 / t232
-        ↓
-tecdoc_map.source_linkages
-        ↓  projection
-réconciliation — scripts/tecdoc_replay_controls.py
+        ↓  tecdoc_replay.py (fail-closed)      un DLNR
+        ↓  tecdoc_replay_controls.py           réconciliation + identité
+        ↓  registre scellé                     la preuve
+        ↓  purge vérifiée                      la matière repart
+        ↺  DLNR suivant
 ```
-
-**Aucun chemin d'écriture vers PROD n'existe dans cette chaîne.** Le container ne reçoit
-aucune variable d'accès PROD, et `provision-rebuild-env.sh` **refuse de démarrer** si
-`SUPABASE_DB_PASSWORD`, `DATABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` ou `PGPASSWORD` sont
-exportées dans le shell appelant.
-
-## 2. Chiffrage de la capacité
-
-Mesures PROD du 2026-09-08 (lecture seule) :
-
-| Objet | Total | dont index |
-|---|---:|---:|
-| `tecdoc_map.source_linkages` | 90,0 Go | 33,7 Go |
-| `tecdoc_raw.t400` | 17,4 Go | 924 Mo |
-| `tecdoc_raw.t232` | 1,7 Go | — |
-| `tecdoc_map.source_linkage_criteria` | 356 Mo | 157 Mo |
-| **Staging PROD** | **109,5 Go** | 34,7 Go |
-
-Le rebuild charge la **source complète**, plus volumineuse que la PROD tronquée. Facteur
-mesuré depuis l'artefact scellé : **×1,20** (149 DLNR chargés) et **×1,28** (110 projetés).
-
-```
-données + index en rebuild ........... ~139 Go
-+ WAL, tri de construction d'index,
-  scratch de parsing, archive 5,8 Go
-+ marge de sécurité 20 %
-
-besoin minimal ....................... 160 Go
-besoin recommandé .................... 210 Go   ← seuil de la garde
-cible de provisionnement ............. 250 Go
-```
-
-> **Borne inférieure assumée** : seuls **66/110** DLNR projetés (et 83/149 chargés) portent
-> un `.meta` de parsing. Pour les autres, la valeur PROD — donc éventuellement tronquée — a
-> été retenue. Le facteur source-truth réel est **supérieur** à ×1,28, et ces seuils sont
-> des planchers, pas des estimations centrales.
-
-## 3. État de la machine DEV — pourquoi c'est `NO_GO`
-
-```
-hôte ................. dev-automecanik (Hetzner Cloud vServer, instance 115238775)
-disque physique ...... /dev/sda — 152,6 Go   ← total, pas disponible
-partition / .......... /dev/sda1 — 150 Go, 106 Go utilisés, 39 Go libres (74 %)
-espace non alloué .... 0,00 Go
-volume additionnel ... aucun
-```
-
-Le disque **entier** fait 152,6 Go, soit moins que le besoin minimal de 160 Go. Même en
-libérant tout `/opt/automecanik` (~38 Go), on plafonnerait vers 77 Go. **Le rebuild ne peut
-pas tenir sur cette machine sans volume supplémentaire.**
-
-## 4. Provisionnement — action hébergeur (owner)
-
-Attacher un disque est une opération chez l'hébergeur, hors de portée d'un agent.
-
-```bash
-# 1. Créer et attacher un volume de 250 Go dans la même zone que le serveur
-hcloud volume create --name tecdoc-rebuild --size 250 --server dev-automecanik --format ext4
-# (ou : Console Hetzner → Volumes → Create Volume → 250 GB → attach to dev-automecanik)
-
-# 2. Repérer le device (Hetzner l'expose sous /dev/disk/by-id/scsi-0HC_Volume_<id>)
-ls -l /dev/disk/by-id/ | grep HC_Volume
-
-# 3. Monter sur un chemin dédié — jamais sous /tmp
-sudo mkdir -p /mnt/tecdoc-rebuild
-sudo mount -o discard,defaults,noatime /dev/disk/by-id/scsi-0HC_Volume_<id> /mnt/tecdoc-rebuild
-
-# 4. Rendre le montage persistant
-echo '/dev/disk/by-id/scsi-0HC_Volume_<id> /mnt/tecdoc-rebuild ext4 discard,defaults,noatime,nofail 0 0' \
-  | sudo tee -a /etc/fstab
-
-# 5. Vérifier la capacité — rend GO ou NO_GO, jamais « probablement »
-bash scripts/tecdoc-replay/check-rebuild-capacity.sh /mnt/tecdoc-rebuild
-
-# 6. Provisionner (idempotent, refuse si la capacité est insuffisante)
-env -u DATABASE_URL -u SUPABASE_DB_PASSWORD -u SUPABASE_SERVICE_ROLE_KEY -u PGPASSWORD \
-  bash scripts/tecdoc-replay/provision-rebuild-env.sh
-```
-
-`noatime` évite des écritures inutiles pendant le chargement massif ; `nofail` empêche un
-volume absent de bloquer le démarrage de la machine.
-
-## 5. Contrat de l'environnement
 
 | Contrainte | Mise en œuvre | Vérifiée par |
 |---|---|---|
-| PostgreSQL 17 | image `postgres:17-alpine` (17.11 constatée) | contrôle final du provisionnement |
-| Isolé | `-p 127.0.0.1:55440:5432`, jamais d'écoute publique | `provision-rebuild-env.sh` |
-| Jetable | tout l'état vit sous `/mnt/tecdoc-rebuild` | — |
+| PostgreSQL 17 | `postgres:17-alpine` (17.11 constatée) | contrôle final du provisionnement |
+| Isolé | `-p 127.0.0.1:<port>:5432` | `provision-rebuild-env.sh` |
+| Jetable | tout l'état sous le point de montage | — |
 | Aucun accès PROD | refus si une variable d'accès PROD est exportée | garde §2 du script |
-| Volume dédié | refus si le point de montage partage le device de `/` | `check-rebuild-capacity.sh` |
-| Capacité | refus sous 210 Go libres | `check-rebuild-capacity.sh` |
+| Capacité | seuil paramétrable, refus en dessous | `check-rebuild-capacity.sh` |
 
-Arborescence créée : `pgdata/` (PGDATA, uid 70), `scratch/` (parsing), `archive/` (source),
-`rapports/` (comptabilité par lot). Le mot de passe local est généré sur place (32 octets
-d'entropie), stocké en `0600` sur le volume, **jamais affiché ni journalisé**.
+`provision-rebuild-env.sh` reste utilisable tel quel ; en mode vagues, le seuil de
+capacité se règle par `TECDOC_REBUILD_MIN_GO` (≈ 10 Go suffisent, contre 210 en mode
+matérialisé). Le mot de passe local est généré sur place, `0600`, jamais affiché.
 
-**Réglages** : `shared_buffers=2GB`, `maintenance_work_mem=2GB`, `max_wal_size=8GB`,
-`checkpoint_timeout=30min`, `synchronous_commit=off`, `--shm-size=2g`.
-`fsync` reste **actif** par défaut : un crash hôte avec `fsync=off` corromprait le cluster et
-ferait perdre des heures de rejeu, alors que l'idempotence par `_batch_id` permet sinon de
-reprendre au DLNR près. `--rapide` l'ouvre explicitement, avec l'avertissement associé.
+## 6. Plan de lots
 
-## 6. Plan de lots — préparé, non exécuté
+`plan-lots.json`, dérivé de l'artefact scellé, régénération déterministe vérifiée.
+**110/110 DLNR couverts.**
 
-Généré depuis l'artefact scellé par `generer-plan-lots.py` → `plan-lots.json`.
-**110/110 DLNR couverts**, volumétrie croissante, divergents placés par poids.
+| Lot | DLNR | Lignes source | Pic disque | Divergents |
+|---|---:|---:|---:|---|
+| 0 — fumée | 1 | 13 057 | < 0,1 Go | — |
+| 1 | 5 | 2 179 199 | ~0,3 Go | NISSENS, PAYEN |
+| 2 | 20 | 7 932 092 | ~1,1 Go | RIDEX |
+| 3 — lourds isolés | 2 | 26 779 184 | ~3,3 Go | BOSCH, FEBI |
+| 4 | 30 | 9 404 364 | ~0,5 Go | — |
+| 5 | 30 | 25 567 877 | ~1,2 Go | — |
+| 6 | 22 | 59 056 373 | ~1,2 Go | — |
 
-| Lot | DLNR | Lignes source attendues | Divergents |
-|---|---:|---:|---|
-| 0 — fumée | 1 | 13 057 | — (HIDRIA, déjà validé en #1418) |
-| 1 — 5 DLNR | 5 | 2 179 199 | NISSENS, PAYEN |
-| 2 — 20 DLNR | 20 | 7 932 092 | RIDEX |
-| 3 — divergents lourds isolés | 2 | 26 779 184 | BOSCH, FEBI |
-| 4 — reste | 30 | 9 404 364 | — |
-| 5 — reste | 30 | 25 567 877 | — |
-| 6 — reste | 22 | 59 056 373 | — |
-
-Les cinq divergents sont traités **tôt et par poids croissant** : ce sont les cas de
-non-régression prioritaires, et les rencontrer tard signifierait découvrir un défaut après
+Le pic est celui du **plus gros DLNR de chaque lot**, la matière étant purgée entre
+chacun. Les 5 divergents arrivent tôt et par poids croissant : ce sont les cas de
+non-régression prioritaires, et les découvrir tard reviendrait à trouver un défaut après
 des heures de rejeu.
-
-**Contrat de chaque lot** :
-
-- **Checkpoint** — `_batch_id` déterministe `(table, DLNR, CRC32, version)`. Un lot
-  interrompu se reprend au DLNR près, sans doublon.
-- **Comptabilité** — `émis = chargées + dédoublonnées + rejets explicites`, vérifiée
-  **avant** commit. Sinon `FAIL` + `ROLLBACK` + `STOP`.
-- **Rollback** — une transaction par DLNR ; aucun préfixe partiel n'est committable.
-- **Rapport** — `/mnt/tecdoc-rebuild/rapports/lot-<n>.json`.
-- **Condition de passage** — un lot ne s'ouvre que si le précédent est intégralement vert.
 
 ## 7. Cibles de non-régression des 5 divergents
 
@@ -165,11 +145,41 @@ des heures de rejeu.
 | 113 | PAYEN | 1 085 500 | 1 259 429 | +173 929 | 86,19 % |
 | | **Total** | **6 036 100** | **34 492 354** | **+28 456 254** | |
 
-Le rebuild doit atteindre la colonne « source émise ». Les préfixes tronqués de `t400` sont
-de la **vérité forensique historique**, jamais une cible.
+Les préfixes tronqués de `t400` sont de la **vérité forensique historique**, jamais une
+cible.
 
-## 8. Ce que ce document ne dit pas
+## 8. Rotation d'un identifiant de base — procédure vérifiable
 
-Il ne mentionne aucun état de secret, aucune empreinte, aucune valeur : ce dépôt est public,
-et y consigner l'état d'un identifiant vivant l'exposerait davantage. Ces éléments sont
-transmis hors dépôt.
+`scripts/verifier-rotation-secret.py` établit mécaniquement qu'une rotation a eu lieu.
+Une rotation n'est pas prouvée parce qu'on l'a faite : elle l'est quand **l'ancien
+identifiant est refusé** *et* que le nouveau fonctionne.
+
+```bash
+python3 scripts/verifier-rotation-secret.py \
+  --env /chemin/vers/backend/.env --commit <sha> --chemin <fichier>
+```
+
+| Sortie | Signification |
+|---|---|
+| `ROTATED` (0) | ancien refusé en `28P01`, nouveau accepté |
+| `ROTATION_FAIL` (1) | l'ancien ouvre encore la base |
+| `BLOCKED_BY_SECRET_ROTATION` (2) | actif == publié, rien n'a changé |
+| `INDETERMINE` (3) | une vérification n'a pas pu être menée — jamais supposée |
+
+Aucune valeur n'est affichée, journalisée, passée en `argv` ni écrite : seules des
+empreintes SHA-256 tronquées à 12 hexadécimaux apparaissent. La référence du blob publié
+est fournie **à l'exécution** et n'est pas inscrite dans le dépôt — l'y figer en ferait un
+panneau indicateur.
+
+Le distinguo refus d'authentification / panne réseau est **éprouvé** : un `INDETERMINE`
+est rendu si l'ancien identifiant échoue autrement qu'en `28P01`, parce qu'une coupure
+réseau ressemble à un refus sans en être un.
+
+Ordre des opérations, une fois le nouvel identifiant en place :
+
+1. mettre à jour le `.env` de la machine opérateur ;
+2. mettre à jour le secret CI correspondant (saisie interactive) ;
+3. lancer le vérificateur → doit rendre `ROTATED` ;
+4. **alors seulement**, supprimer les copies locales que le vérificateur inventorie —
+   les purger avant la rotation détruirait une sauvegarde d'un identifiant encore en
+   service, sans rien réduire.
