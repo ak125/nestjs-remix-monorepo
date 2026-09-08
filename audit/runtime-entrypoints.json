@@ -2723,6 +2723,7 @@
       "backend/supabase/migrations/20260703_blog_advice_increment_views_rpc_grant_tighten.sql",
       "backend/supabase/migrations/20260902_b0_rm_rpc_volatility_stable.down.sql",
       "backend/supabase/migrations/20260902_b0_rm_rpc_volatility_stable.sql",
+      "backend/supabase/migrations/20260907_tecdoc_api_surface_lockdown.sql",
       "backend/supabase/migrations/20260907_xtr_msg_crm_indexes_align_to_leads_query.down.sql",
       "backend/supabase/migrations/20260907_xtr_msg_crm_indexes_align_to_leads_query.sql",
       "backend/supabase/migrations/README.md"
@@ -2789,6 +2790,7 @@
       ".github/workflows/spec-canon-sql-rule-r2-check.yml",
       ".github/workflows/spec-validation.yml",
       ".github/workflows/stale.yml",
+      ".github/workflows/tecdoc-api-surface-guard.yml",
       ".github/workflows/validator-dev-safety-observe.yml",
       ".github/workflows/vault-canon-exists.yml",
       ".github/workflows/visual-gate.yml",
@@ -2889,7 +2891,7 @@
       "tests/registry/rpc-parser.test.ts"
     ]
   },
-  "runtime_files_count": 1501,
+  "runtime_files_count": 1503,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -2954,6 +2956,7 @@
     ".github/workflows/spec-canon-sql-rule-r2-check.yml",
     ".github/workflows/spec-validation.yml",
     ".github/workflows/stale.yml",
+    ".github/workflows/tecdoc-api-surface-guard.yml",
     ".github/workflows/validator-dev-safety-observe.yml",
     ".github/workflows/vault-canon-exists.yml",
     ".github/workflows/visual-gate.yml",
@@ -4067,6 +4070,7 @@
     "backend/supabase/migrations/20260703_blog_advice_increment_views_rpc_grant_tighten.sql",
     "backend/supabase/migrations/20260902_b0_rm_rpc_volatility_stable.down.sql",
     "backend/supabase/migrations/20260902_b0_rm_rpc_volatility_stable.sql",
+    "backend/supabase/migrations/20260907_tecdoc_api_surface_lockdown.sql",
     "backend/supabase/migrations/20260907_xtr_msg_crm_indexes_align_to_leads_query.down.sql",
     "backend/supabase/migrations/20260907_xtr_msg_crm_indexes_align_to_leads_query.sql",
     "backend/supabase/migrations/README.md",

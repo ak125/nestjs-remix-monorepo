@@ -1,0 +1,29 @@
+name: TecDoc API surface guard
+
+# Empêche la réouverture silencieuse de la surface d'accès TecDoc fermée par
+# backend/supabase/migrations/20260907_tecdoc_api_surface_lockdown.sql.
+# Périmètre étroit : cinq objets nommés. Voir scripts/lint/check-tecdoc-api-surface.sh.
+
+on:
+  pull_request:
+    paths:
+      - 'backend/supabase/migrations/**.sql'
+      - 'scripts/lint/check-tecdoc-api-surface.sh'
+      - 'scripts/lint/tecdoc-api-surface-allowlist.txt'
+      - '.github/workflows/tecdoc-api-surface-guard.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'backend/supabase/migrations/**.sql'
+
+permissions:
+  contents: read
+
+jobs:
+  tecdoc-api-surface:
+    name: Surface TecDoc — pas de réouverture
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ratchet surface TecDoc
+        run: bash scripts/lint/check-tecdoc-api-surface.sh

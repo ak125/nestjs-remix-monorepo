@@ -1305,3 +1305,10 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: low
+
+  # Lockdown surface d'accès TecDoc — fermeture des 5 portes indirectes (PR #1414).
+  - glob: backend/supabase/migrations/20260907_tecdoc_api_surface_lockdown.sql
+    domain: D4
+    owner: '@ak125/vehicle-team'
+    sourceConfidence: high
+    risk: medium

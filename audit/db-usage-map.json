@@ -16,7 +16,7 @@
     "candidate_orphan_rpc": 198,
     "dynamic_from_callsites": 897,
     "dynamic_rpc_callsites": 1,
-    "migrations_scanned": 344,
+    "migrations_scanned": 345,
     "backend_files_scanned": 1377
   },
   "tables": {
@@ -4854,7 +4854,8 @@
       "called_by": [],
       "called_by_count": 0,
       "defined_in_migrations": [
-        "20260327_resolve_type_id_remap.sql"
+        "20260327_resolve_type_id_remap.sql",
+        "20260907_tecdoc_api_surface_lockdown.sql"
       ],
       "is_trigger_function": false
     },
@@ -10335,7 +10336,8 @@
         "no-rpc-callsite"
       ],
       "defined_in_migrations": [
-        "20260327_resolve_type_id_remap.sql"
+        "20260327_resolve_type_id_remap.sql",
+        "20260907_tecdoc_api_surface_lockdown.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
