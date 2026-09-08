@@ -183,3 +183,59 @@ Ordre des opérations, une fois le nouvel identifiant en place :
 4. **alors seulement**, supprimer les copies locales que le vérificateur inventorie —
    les purger avant la rotation détruirait une sauvegarde d'un identifiant encore en
    service, sans rien réduire.
+
+### 8.1 Exécuter la rotation — pourquoi l'API et pas `ALTER USER`
+
+`scripts/tourner-secret-db.py` exécute la rotation ; `verifier-rotation-secret.py` la
+constate après coup. Les deux sont séparés à dessein : un outil qui juge son propre
+travail ne prouve rien.
+
+Le mot de passe de la base vit à **deux endroits** : le rôle PostgreSQL, et
+l'identifiant que le pooler (Supavisor) conserve côté plan de contrôle pour ouvrir ses
+connexions amont. Un `ALTER USER` émis en direct ne change que le premier — le pooler
+garde l'ancien et cesse de fonctionner. Sur une base qui sert du trafic, c'est une
+coupure du site. `PATCH /v1/projects/{ref}/database/password` est l'opération
+qu'appelle le bouton du tableau de bord : elle change les deux ensemble. C'est la
+seule voie qui laisse le système cohérent, et c'est pour ça que l'outil n'expose pas
+de chemin SQL.
+
+Ordre des étapes, choisi pour qu'aucune panne ne verrouille la base :
+
+| # | Étape | Ce qu'elle protège |
+|---|---|---|
+| 1 | prouver qu'un identifiant de référence ouvre la base | sans lui, on ne pourra pas prouver qu'il cesse de fonctionner |
+| 2 | engendrer et déposer en `0600` **avant** tout changement | un plantage ne peut pas perdre le nouveau secret |
+| 3 | appeler l'API | — |
+| 4 | nouveau accepté **et** ancien refusé en `28P01` | un `200` de l'API n'est pas une preuve de rotation |
+| 5 | écrire le `.env`, atomiquement, après sauvegarde | le `.env` ne devance jamais l'état réel de la base |
+
+Codes de sortie : `0` rotation prouvée · `2` état de départ inexploitable · `3` erreur
+d'E/S · `4` le changement n'a pas pris · `5` l'ancien est encore accepté · `6` l'API a
+refusé. Aux codes 2, 4, 6 le `.env` n'est pas touché — vérifié par le banc.
+
+Le jeton d'API est lu dans `SUPABASE_ACCESS_TOKEN`, jamais dans un fichier de
+configuration ni en `argv`. Le script ne contient aucune référence de projet, de dépôt
+ni de chemin de secret : tout est paramètre, pour que sa présence dans un dépôt public
+ne désigne rien.
+
+`scripts/test-tourner-secret-db.sh` — **23 assertions, banc hermétique**. Un
+PostgreSQL jetable, l'API remplacée par un double qui applique réellement le
+changement. Sont vérifiés le cas nominal, les trois refus (2, 6, clé absente), la
+préservation des autres lignes du `.env`, le contenu de la sauvegarde, et surtout que
+le secret **n'apparaît jamais** dans la sortie — seulement trois empreintes de douze
+hexadécimaux.
+
+### 8.2 Le point d'entrée direct n'est pas utilisable ici
+
+Mesuré : `db.<ref>.supabase.co:5432` ne résout plus qu'en IPv6 et **refuse activement**
+la connexion (RST immédiat, pas un délai d'attente), route IPv6 valide côté appelant.
+Le pooler répond sur les deux ports, en mode session comme en mode transaction.
+
+Conséquence pratique : la vérification comme la rotation passent par le pooler, avec
+l'utilisateur au format `postgres.<ref>`. Une erreur de région se signale par
+`ENOTFOUND tenant/user … not found` — c'est un message de routage, **pas** un refus
+d'authentification, et le confondre avec un `28P01` ferait conclure à une rotation
+réussie alors qu'on frappe la mauvaise porte.
+
+Les scripts du dépôt qui ouvrent une connexion directe sont à recenser séparément :
+c'est une dette distincte de la rotation, et elle ne doit pas la retarder.
