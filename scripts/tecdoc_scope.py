@@ -19,9 +19,26 @@ et chercherait VDO (4836), qui n'a jamais eu de shard source.
 Ce module lit a la place un artefact scelle et immuable, et REFUSE de servir un
 perimetre dont le sceau ne se verifie pas. Aucun repli silencieux.
 
+Deux modes, jamais confondus
+----------------------------
+Les scripts du pipeline n'ont plus le droit de deviner leur perimetre. Ils declarent
+lequel des deux ils veulent, et il n'existe aucun repli de l'un vers l'autre :
+
+    --scope-mode historical --scope-file <artefact scelle>
+        Rejouer mars 2026. L'artefact est OBLIGATOIRE ; son absence leve
+        PerimetreManquant. Retomber sur la requete vivante rejouerait le perimetre
+        de 2026-09 en croyant rejouer mars — c'est precisement le defaut a interdire.
+
+    --scope-mode current
+        Import courant, pilote par pieces_marque.pm_display. `--scope-file` y est
+        REFUSE : les deux sources se contrediraient, et l'appelant croirait rejouer
+        l'historique alors qu'il lit le vivant.
+
 Usage bibliotheque
 ------------------
-    from tecdoc_scope import charger_perimetre
+    from tecdoc_scope import charger_perimetre, resoudre_dlnr
+
+    dlnrs = resoudre_dlnr("historical", "audit/massdoc-tecdoc-import-scope-2026-03.json")
 
     scope = charger_perimetre("audit/massdoc-tecdoc-import-scope-2026-03.json")
     for dlnr in scope.dlnr_projetes():      # 110 — ce que mars 2026 a projete
@@ -40,25 +57,30 @@ Codes de sortie : 0 succes · 2 sceau invalide · 3 fichier illisible · 4 diver
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import sys
 from pathlib import Path
 
+from tecdoc_seal import SceauInvalide, verifier as _verifier_sceau
+
 VERSIONS_SUPPORTEES = {"2026-03-reconstructed-v1", "2026-03-reconstructed-v2"}
 
 
-class SceauInvalide(RuntimeError):
-    """Le hash recalcule ne correspond pas au hash declare — l'artefact a ete altere."""
+MODES = ("historical", "current")
+
+#: Re-exporte depuis tecdoc_seal : le sceau a UNE seule definition, partagee avec le
+#: manifeste de preservation. `except SceauInvalide` continue de fonctionner a l'identique.
+__all__ = ["MODES", "SceauInvalide", "PerimetreManquant", "Perimetre",
+           "charger_perimetre", "resoudre_dlnr", "ajouter_arguments_perimetre"]
 
 
-def _canonique(charge: dict) -> str:
-    """Serialisation canonique documentee dans l'artefact lui-meme.
+class PerimetreManquant(RuntimeError):
+    """Mode `historical` demande sans artefact scelle.
 
-    Doit rester STRICTEMENT identique a celle de scripts/tecdoc-scope-build/build_scope.py,
-    sinon le sceau ne se verifiera jamais.
+    On leve au lieu de retomber sur la requete vivante. Ce repli est exactement le
+    defaut que le mode `historical` existe pour empecher : il rejouerait un perimetre
+    de 2026-09 en croyant rejouer mars 2026.
     """
-    return json.dumps(charge, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
 
 
 class Perimetre:
@@ -133,31 +155,90 @@ def charger_perimetre(chemin: str | Path, *, verifier_sceau: bool = True) -> Per
         )
 
     if verifier_sceau:
-        sceau = document.get("seal")
-        if not sceau or "sha256" not in sceau:
-            raise SceauInvalide(f"{p} ne porte aucun sceau — refus de servir ce perimetre")
-        charge = {k: v for k, v in document.items() if k != "seal"}
-        calcule = hashlib.sha256(_canonique(charge).encode("utf-8")).hexdigest()
-        if calcule != sceau["sha256"]:
-            raise SceauInvalide(
-                f"sceau invalide pour {p}\n  declare  : {sceau['sha256']}\n  recalcule: {calcule}\n"
-                "L'artefact a ete modifie apres scellement. Rejeu REFUSE."
-            )
+        _verifier_sceau(document, source=str(p))
 
     return Perimetre(document, p)
+
+
+# ---------------------------------------------------------------------------
+# Resolution du perimetre — le point d'entree des scripts du pipeline
+# ---------------------------------------------------------------------------
+
+def ajouter_arguments_perimetre(ap: argparse.ArgumentParser) -> None:
+    """Ajoute `--scope-mode` et `--scope-file` a un parseur de script du pipeline.
+
+    Mutualise pour que les 16 scripts exposent EXACTEMENT la meme surface : un mode
+    divergent d'un script a l'autre serait une porte de rentree du defaut.
+    """
+    ap.add_argument(
+        "--scope-mode", choices=MODES, required=True,
+        help="historical = rejouer le perimetre fige de mars 2026 (--scope-file obligatoire) ; "
+             "current = importer le perimetre commercial du jour (requete vivante). "
+             "Aucune valeur par defaut : le mode doit etre choisi explicitement.",
+    )
+    ap.add_argument(
+        "--scope-file", default=None,
+        help="artefact scelle du perimetre. Obligatoire en mode historical, "
+             "interdit en mode current.",
+    )
+    ap.add_argument(
+        "--scope-selection", choices=["projetes", "charges"], default="projetes",
+        help="projetes = les 110 DLNR qui ont produit des source_linkages ; "
+             "charges = les 149 presents dans t400. Defaut : projetes.",
+    )
+
+
+def resoudre_dlnr(mode: str, scope_file: str | Path | None = None, *,
+                  selection: str = "projetes", dsn: str | None = None) -> list[int]:
+    """Rend la liste de DLNR a traiter, selon un mode EXPLICITE.
+
+    C'est la fonction qui remplace `get_active_dlnrs()` dans les scripts du pipeline.
+
+    Contrat, volontairement rigide :
+      * `historical` sans `scope_file`      -> PerimetreManquant. Jamais de repli.
+      * `historical` avec artefact altere   -> SceauInvalide (via charger_perimetre).
+      * `historical` avec version inconnue  -> SceauInvalide.
+      * `current` avec `scope_file`         -> ValueError : les deux sources se
+        contrediraient, et laisser passer reviendrait a ce que l'appelant croie
+        rejouer l'historique alors qu'il lit le vivant.
+    """
+    if mode not in MODES:
+        raise ValueError(f"mode de perimetre inconnu : {mode!r} (attendus : {list(MODES)})")
+
+    if mode == "historical":
+        if not scope_file:
+            raise PerimetreManquant(
+                "--scope-mode historical exige --scope-file.\n"
+                "Refus de deriver le perimetre de l'etat vivant : pieces_marque.pm_display "
+                "a change depuis mars 2026, un rejeu ainsi pilote perdrait DIEDERICHS (253) "
+                "et RIDEX (6358) et chercherait VDO (4836), qui n'a aucun shard source."
+            )
+        scope = charger_perimetre(scope_file)
+        return scope.dlnr_projetes() if selection == "projetes" else scope.dlnr_charges()
+
+    if scope_file:
+        raise ValueError(
+            "--scope-file est interdit avec --scope-mode current : l'artefact decrit "
+            "mars 2026, la requete vivante decrit aujourd'hui. Choisir l'un des deux."
+        )
+    return _dlnr_vivants(dsn)
 
 
 # ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 
-def _dlnr_vivants() -> list[int]:
-    """Rejoue la requete vivante de load-t400-active.py, pour comparaison uniquement."""
+def _dlnr_vivants(dsn: str | None = None) -> list[int]:
+    """Rejoue la requete vivante de load-t400-active.py.
+
+    Legitime pour un import courant et pour la comparaison ; JAMAIS pour un rejeu
+    historique — c'est `resoudre_dlnr` qui fait respecter cette distinction.
+    """
     import os
 
     import psycopg2  # import tardif : la comparaison est optionnelle
 
-    dsn = os.environ.get("DATABASE_URL")
+    dsn = dsn or os.environ.get("DATABASE_URL")
     if not dsn:
         raise SystemExit("DATABASE_URL absent de l'environnement — comparaison impossible")
     with psycopg2.connect(dsn) as conn, conn.cursor() as cur:

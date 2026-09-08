@@ -100,5 +100,36 @@ egal "9 ensembles applicatifs figes" "9" \
      "$(python3 -c "import json;print(len(json.load(open('$MANIFEST',encoding='utf-8'))['ensembles_figes']))")"
 
 echo
+echo "=== deux modes de perimetre, aucun repli de l'un vers l'autre ==="
+egal "historical + artefact = les 110 projetes" "110" \
+     "$(cd "$RACINE/scripts" && python3 -c "
+from tecdoc_scope import resoudre_dlnr
+print(len(resoudre_dlnr('historical', '$SCOPE')))" 2>/dev/null)"
+egal "historical + selection charges = les 149" "149" \
+     "$(cd "$RACINE/scripts" && python3 -c "
+from tecdoc_scope import resoudre_dlnr
+print(len(resoudre_dlnr('historical', '$SCOPE', selection='charges')))" 2>/dev/null)"
+egal "historical SANS scope-file est REFUSE" "PerimetreManquant" \
+     "$(cd "$RACINE/scripts" && python3 -c "
+from tecdoc_scope import resoudre_dlnr, PerimetreManquant
+try: resoudre_dlnr('historical')
+except PerimetreManquant: print('PerimetreManquant')" 2>/dev/null)"
+egal "historical sur artefact altere est REFUSE" "SceauInvalide" \
+     "$(cd "$RACINE/scripts" && python3 -c "
+from tecdoc_scope import resoudre_dlnr, SceauInvalide
+try: resoudre_dlnr('historical', '$TMP/altere.json')
+except SceauInvalide: print('SceauInvalide')" 2>/dev/null)"
+egal "current + scope-file est REFUSE (sources contradictoires)" "ValueError" \
+     "$(cd "$RACINE/scripts" && python3 -c "
+from tecdoc_scope import resoudre_dlnr
+try: resoudre_dlnr('current', '$SCOPE')
+except ValueError: print('ValueError')" 2>/dev/null)"
+egal "un mode inconnu est REFUSE" "ValueError" \
+     "$(cd "$RACINE/scripts" && python3 -c "
+from tecdoc_scope import resoudre_dlnr
+try: resoudre_dlnr('historique')
+except ValueError: print('ValueError')" 2>/dev/null)"
+
+echo
 echo "PASS=$PASS  FAIL=$FAIL"
 [ "$FAIL" -eq 0 ] || exit 1
