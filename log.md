@@ -518,3 +518,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/tecdoc-rebuild-environment`
 - **Décision** : fix(ops): le préflight éprouvait la mauvaise permission — il aurait bloqué les jetons bien réglés (+10 other commits)
 - **Sortie** : PR #1419 | commits 3cb6996f2 bb0a1cc46 a2d53a7bc 0a0ebbd79 c67f82a31 fed9560b8 716c4085c e28197c57 647dc5b6a 01bd9a0c8 e4d4f650e
+
+## 2026-09-09 — feat/tecdoc-rebuild-environment (auto)
+
+- **Branche** : `feat/tecdoc-rebuild-environment`
+- **Décision** : fix(ops): le client HTTP ne s'annonçait pas — la requête n'atteignait jamais l'API (+12 other commits)
+- **Sortie** : PR #1419 | commits 8564bded9 0e1b6456e 3cb6996f2 bb0a1cc46 a2d53a7bc 0a0ebbd79 c67f82a31 fed9560b8 716c4085c e28197c57 647dc5b6a 01bd9a0c8 e4d4f650e
