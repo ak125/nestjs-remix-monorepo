@@ -218,17 +218,20 @@ L'étape 0 diagnostique sans sur-affirmer : un `403` couvre à la fois le jeton 
 rejeté en amont et le jeton valide sans droit sur le projet. Le script nomme les deux
 et montre la réponse, plutôt que d'envoyer chercher au mauvais endroit.
 
-**Saisie du jeton — le piège du collage.** `read -rs VAR` lit l'entrée standard. Si la
-commande est collée avec les lignes suivantes, `read` avale la ligne d'après au lieu
-d'attendre la frappe, et la variable est exportée **vide**. D'où :
+**Saisie du jeton — pourquoi le script le demande lui-même.** La voie évidente était
+`read -rs VAR && export VAR` puis la commande. Elle échoue silencieusement : `read` lit
+l'entrée standard, donc un collage multi-lignes lui fait avaler la ligne suivante au lieu
+d'attendre la frappe, et la variable part **vide**. L'erreur se relit alors comme « jeton
+refusé » alors qu'il n'a jamais été saisi. Constaté deux fois de suite en conditions
+réelles.
 
-```bash
-read -rsp "Jeton : " SUPABASE_ACCESS_TOKEN < /dev/tty && export SUPABASE_ACCESS_TOKEN && echo
-```
-
-Le `< /dev/tty` force la lecture sur le terminal. Le script rend ce diagnostic lui-même
-quand la variable est vide — sinon l'erreur se relit comme « jeton refusé » alors qu'il
-n'a jamais été saisi.
+Ajouter `< /dev/tty` corrige le symptôme mais laisse la cause : un état de shell à porter
+d'une commande à l'autre, donc un ordre à respecter et une session à ne pas changer. Le
+script **demande le jeton directement** (`getpass`, saisie masquée sur `/dev/tty`) — plus
+d'`export`, plus d'ordre, la classe d'erreur entière disparaît. `SUPABASE_ACCESS_TOKEN`
+reste lu en priorité pour l'usage non interactif ; sans terminal *et* sans variable, le
+script sort en `3` en nommant la voie non interactive plutôt qu'en ouvrant une saisie
+qui resterait suspendue.
 
 Le jeton d'API est lu dans `SUPABASE_ACCESS_TOKEN`, jamais dans un fichier de
 configuration ni en `argv`. Le script ne contient aucune référence de projet, de dépôt

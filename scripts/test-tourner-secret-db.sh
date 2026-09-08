@@ -170,20 +170,23 @@ done
 verifier "le .env n'a pas bouge" 0 \
   "$(diff -q "$TRAVAIL/cible.env" "$TRAVAIL/cible4b.env" >/dev/null && echo 0 || echo 1)"
 
-# --- 4c. jeton vide : diagnostic explicite du piege du collage -----------
+# --- 4c. aucun jeton, aucun terminal pour le saisir ----------------------
 echo
-echo "=== 4c. jeton vide (le piege de read sans /dev/tty) ==="
+echo "=== 4c. pas de jeton et pas de terminal (usage non interactif) ==="
+# `< /dev/null` est indispensable : sans lui, le script ouvrirait une saisie
+# masquee et le banc resterait suspendu a attendre une frappe.
 SORTIE="$(SUPABASE_ACCESS_TOKEN="" lancer 200 \
   --reference "$TRAVAIL/reference3.env" --env "$TRAVAIL/cible4b.env" \
-  --coffre "$TRAVAIL/coffre4c.txt" 2>&1)"; CODE=$?
+  --coffre "$TRAVAIL/coffre4c.txt" < /dev/null 2>&1)"; CODE=$?
 verifier "code de sortie 3" 3 "$CODE"
-# Deux choses distinctes doivent sortir : la commande corrigee, et la RAISON.
-# Donner la commande sans la raison ferait recopier un incantatoire.
-verifier "la commande corrigee est donnee" 1 \
-  "$(echo "$SORTIE" | grep -c 'read -rsp .* < /dev/tty')"
-verifier "la raison du /dev/tty est expliquee" 1 \
-  "$(echo "$SORTIE" | grep -c "n'est pas decoratif")"
+verifier "la voie non interactive est nommee" 1 \
+  "$(echo "$SORTIE" | grep -c 'SUPABASE_ACCESS_TOKEN')"
 verifier "aucun secret engendre" 0 "$([ -f "$TRAVAIL/coffre4c.txt" ] && echo 1 || echo 0)"
+verifier "le .env n'a pas bouge" 0 \
+  "$(diff -q "$TRAVAIL/cible.env" "$TRAVAIL/cible4b.env" >/dev/null && echo 0 || echo 1)"
+# Le banc ne doit plus renvoyer vers la voie en deux temps : c'est elle qui echouait.
+verifier "plus aucun renvoi vers read/export" 0 \
+  "$(echo "$SORTIE" | grep -cE 'read -rsp|export ')"
 
 # --- 5. non-regression : aucun pointeur en dur ---------------------------
 echo

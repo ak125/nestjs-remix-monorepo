@@ -27,7 +27,9 @@ ORDRE DES OPERATIONS — pense pour qu'aucune panne ne verrouille la base
 Rien n'est ecrit dans le .env tant que la base n'a pas confirme.
 
 Le secret n'est ni affiche, ni journalise, ni passe en argv. Seules des empreintes
-SHA-256 tronquees apparaissent. Le jeton d'API est lu dans l'environnement.
+SHA-256 tronquees apparaissent. Le jeton d'API est demande au terminal (saisie
+masquee via /dev/tty) ou, en usage non interactif, lu dans SUPABASE_ACCESS_TOKEN —
+jamais dans un fichier de configuration, jamais en argv.
 
 Codes de sortie
   0 rotation prouvee             4 le changement n'a pas pris
@@ -91,6 +93,32 @@ def essayer(secret: str, *, hote: str, port: int, utilisateur: str, base: str) -
         return False, f"PANNE:{texte[:70]}"
     except Exception as e:  # noqa: BLE001
         return False, f"PANNE:{type(e).__name__}"
+
+
+def obtenir_jeton() -> str | None:
+    """Recupere le jeton d'API : variable d'environnement, sinon saisie au terminal.
+
+    La saisie directe existe parce que la voie en deux temps
+    (`read … && export …` puis la commande) echoue silencieusement : `read` lit
+    l'entree standard, donc un collage multi-lignes lui fait avaler la ligne
+    suivante au lieu d'attendre la frappe, et la variable part vide. Demander
+    ici supprime l'etat de shell a porter entre deux commandes — donc la classe
+    d'erreur entiere.
+
+    `getpass` ouvre `/dev/tty` : la saisie est masquee et ne passe ni par argv,
+    ni par l'historique, ni par l'environnement d'un autre processus.
+    """
+    depuis_env = os.environ.get(JETON, "").strip()
+    if depuis_env:
+        return depuis_env
+    if not sys.stdin.isatty():
+        return None
+    import getpass
+    try:
+        return getpass.getpass("Jeton Supabase (saisie masquee, rien ne s'affiche) : ").strip() or None
+    except (EOFError, KeyboardInterrupt):
+        print(file=sys.stderr)
+        return None
 
 
 def verifier_jeton(projet: str, jeton: str) -> tuple[int, str]:
@@ -173,19 +201,19 @@ def main(argv: list[str] | None = None) -> int:
                     help="secondes d'attente max pour la propagation")
     args = ap.parse_args(argv)
 
-    jeton = os.environ.get(JETON, "").strip()
+    jeton = obtenir_jeton()
     if not jeton:
-        print(f"{JETON} absent (ou vide) dans l'environnement.", file=sys.stderr)
+        print("Aucun jeton d'API.", file=sys.stderr)
         print(file=sys.stderr)
-        print("Creer un jeton sur https://supabase.com/dashboard/account/tokens, puis :",
-              file=sys.stderr)
-        print(f'  read -rsp "Jeton : " {JETON} < /dev/tty && export {JETON} && echo',
-              file=sys.stderr)
+        if sys.stdin.isatty():
+            print("La saisie a ete annulee ou laissee vide. Relancer la commande :", file=sys.stderr)
+            print("le jeton est demande directement, rien a exporter au prealable.", file=sys.stderr)
+        else:
+            print(f"Pas de terminal pour la saisie — fournir {JETON} dans", file=sys.stderr)
+            print("l'environnement (usage non interactif).", file=sys.stderr)
         print(file=sys.stderr)
-        print("Le `< /dev/tty` n'est pas decoratif : sans lui, `read` lit l'entree", file=sys.stderr)
-        print("standard, et si la commande a ete collee avec les lignes suivantes,", file=sys.stderr)
-        print("il avale la ligne d'apres au lieu d'attendre la frappe — la variable", file=sys.stderr)
-        print("est alors exportee vide.", file=sys.stderr)
+        print("Creer un jeton sur https://supabase.com/dashboard/account/tokens",
+              file=sys.stderr)
         return 3
 
     cfg = dict(hote=args.hote, port=args.port, utilisateur=args.utilisateur, base=args.base)
