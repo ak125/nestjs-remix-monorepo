@@ -1,0 +1,238 @@
+{
+  "cardinalites_relations_finales": [
+    {
+      "confidence": "INFERRED",
+      "mesure_exacte": "UNKNOWN",
+      "n_dead_tup": 31608007,
+      "n_live_tup": 368304446,
+      "note": "Un count exact exigerait un parcours sequentiel de 49 Go (EXPLAIN : Parallel Seq Scan, cout 6058859). Non lance : hors budget de requete autorise. 31,6 M de tuples morts.",
+      "reltuples": 367854592,
+      "table": "public.pieces_relation_type"
+    },
+    {
+      "confidence": "INFERRED",
+      "mesure_exacte": "UNKNOWN",
+      "n_dead_tup": 1305323,
+      "n_live_tup": 158120540,
+      "reltuples": 158120544,
+      "table": "public.pieces_relation_criteria"
+    },
+    {
+      "confidence": "INFERRED",
+      "mesure_exacte": "UNKNOWN",
+      "n_dead_tup": 312819,
+      "n_live_tup": 72879106,
+      "reltuples": 72796264,
+      "table": "public.pieces_ref_search"
+    },
+    {
+      "confidence": "INFERRED",
+      "mesure_exacte": "UNKNOWN",
+      "n_dead_tup": 3317288,
+      "n_live_tup": 17931380,
+      "reltuples": 17874924,
+      "table": "public.pieces_criteria"
+    },
+    {
+      "confidence": "INFERRED",
+      "mesure_exacte": "UNKNOWN",
+      "n_dead_tup": 0,
+      "n_live_tup": 15386354,
+      "reltuples": 15386354,
+      "table": "public.pieces_ref_oem"
+    },
+    {
+      "confidence": "INFERRED",
+      "mesure_exacte": "UNKNOWN",
+      "n_dead_tup": 1821391,
+      "n_live_tup": 9593115,
+      "reltuples": 9576492,
+      "table": "public.pieces_media_img"
+    },
+    {
+      "confidence": "KNOWN",
+      "mesure_exacte": 4131445,
+      "n_dead_tup": 9319,
+      "n_live_tup": 4131445,
+      "reltuples": 4131445,
+      "table": "public.pieces"
+    },
+    {
+      "confidence": "KNOWN",
+      "mesure_exacte": 9719,
+      "n_dead_tup": 1,
+      "n_live_tup": 9719,
+      "reltuples": 9719,
+      "table": "public.pieces_gamme"
+    },
+    {
+      "confidence": "KNOWN",
+      "mesure_exacte": 53959,
+      "n_dead_tup": 4440,
+      "n_live_tup": 53959,
+      "reltuples": 53959,
+      "table": "public.auto_type"
+    },
+    {
+      "confidence": "KNOWN",
+      "mesure_exacte": 8150,
+      "n_dead_tup": 0,
+      "n_live_tup": 8150,
+      "reltuples": 8150,
+      "table": "public.auto_modele"
+    },
+    {
+      "confidence": "KNOWN",
+      "mesure_exacte": 117,
+      "n_dead_tup": 49,
+      "n_live_tup": 117,
+      "note": "reltuples (114) est PERIME : le compte exact est 117. Ne jamais utiliser reltuples comme reference.",
+      "reltuples": 114,
+      "table": "public.auto_marque"
+    }
+  ],
+  "ensembles_figes": [
+    {
+      "borne_max": 83456,
+      "borne_min": 60000,
+      "cardinal": 23457,
+      "cle": "type_id_i",
+      "confidence": "KNOWN",
+      "empreinte_md5": "8c0370a62481a77810d7b9d6ff3f743b",
+      "filtre": "type_id_i BETWEEN 60000 AND 83456",
+      "nom": "auto_type — types crees/remappes par la campagne",
+      "table": "public.auto_type"
+    },
+    {
+      "borne_max": 667022,
+      "borne_min": 65,
+      "cardinal": 7088,
+      "cle": "modele_id",
+      "confidence": "KNOWN",
+      "empreinte_md5": "b3a824a363dd655a4543a2dd56b9fa5b",
+      "filtre": "modele_is_new::text = '1'",
+      "nom": "auto_modele — modeles ajoutes",
+      "table": "public.auto_modele"
+    },
+    {
+      "borne_max": 12516015,
+      "borne_min": 12151739,
+      "cardinal": 119702,
+      "cle": "piece_id",
+      "confidence": "KNOWN",
+      "empreinte_md5": "1dc356832e4282d505fa6c3185c0c503",
+      "filtre": "piece_year::text = '2025'",
+      "nom": "pieces — cohorte introduite par la campagne",
+      "table": "public.pieces"
+    },
+    {
+      "borne_max": 12516015,
+      "borne_min": 12151739,
+      "cardinal": 84033,
+      "cle": "piece_id",
+      "confidence": "KNOWN",
+      "empreinte_md5": "573f3dbb18e6a87306522c7de869a74f",
+      "filtre": "piece_year::text = '2025' AND piece_display",
+      "nom": "pieces — sous-ensemble affiche de la cohorte",
+      "table": "public.pieces"
+    },
+    {
+      "borne_max": 61103,
+      "borne_min": 60000,
+      "cardinal": 876,
+      "cle": "pg_id",
+      "confidence": "KNOWN",
+      "empreinte_md5": "3ff8875e19000315dabe88f23b67317e",
+      "filtre": "pg_id >= 60000",
+      "nom": "pieces_gamme — gammes creees par la campagne (bande reservee)",
+      "note": "Provenance etablie par la BANDE D'IDENTIFIANTS, pas par le nom. pieces_gamme n'a aucune colonne de date. La table se scinde en deux bandes disjointes : 8843 gammes sous 10000 et 876 de 60000 a 61103, rien entre les deux — meme convention de bande reservee que auto_type. Seules 18 des 876 portent 'TecDoc' dans leur nom : filtrer sur le libelle en manquerait 858.",
+      "table": "public.pieces_gamme"
+    },
+    {
+      "borne_max": 801701,
+      "borne_min": 100001,
+      "cardinal": 23457,
+      "cle": "old_id||'>'||new_id",
+      "confidence": "KNOWN",
+      "empreinte_md5": "5dec18e5dc69765d998beda5680b418f",
+      "filtre": "(aucun)",
+      "nom": "tecdoc_map.type_id_remap — mapping d'identite vehicule (ancien -> nouveau)",
+      "note": "Cardinal identique a la plage auto_type 60000-83456 : correspondance 1:1. Sert les 301 en PROD.",
+      "table": "tecdoc_map.type_id_remap"
+    },
+    {
+      "borne_max": 61103,
+      "borne_min": 1,
+      "cardinal": 9702,
+      "cle": "pg_id_source||'>'||pg_id",
+      "confidence": "KNOWN",
+      "empreinte_md5": "0a2ef785f1b820e7405f375819450a96",
+      "filtre": "pg_id IS NOT NULL",
+      "nom": "tecdoc_map.gamme_registry — filiation gamme source -> pg_id",
+      "note": "976 lignes supplementaires en mapping_confidence='low' ont pg_id NULL : gammes source jamais mappees.",
+      "table": "tecdoc_map.gamme_registry"
+    },
+    {
+      "borne_max": 43488,
+      "borne_min": 5,
+      "cardinal": 43484,
+      "cle": "id",
+      "confidence": "KNOWN",
+      "empreinte_md5": "30c9a6f68a2dbd74020d35c9a146abda",
+      "filtre": "(aucun)",
+      "nom": "tecdoc_map.linkage_target_registry — cibles de liaison",
+      "table": "tecdoc_map.linkage_target_registry"
+    },
+    {
+      "borne_max": null,
+      "borne_min": null,
+      "cardinal": 3240177,
+      "cle": "rollup source_dlnr:count",
+      "confidence": "KNOWN",
+      "empreinte_md5": "8f1183fcb7aa9c71ac9ac6c485c943b8",
+      "filtre": "(aucun)",
+      "nom": "tecdoc_map.article_registry — ancrage piece_id <-> ARTNR/DLNR",
+      "note": "Empreinte calculee sur le rollup par source_dlnr (229 DLNR distincts), pas sur les 3,24 M identifiants : un string_agg complet batirait une chaine de ~50 Mo cote serveur. A noter : 229 DLNR ici contre 149 charges dans t400 — ce registre DEBORDE le perimetre de la campagne de mars 2026.",
+      "table": "tecdoc_map.article_registry"
+    }
+  ],
+  "invariant": "AVANT cleanup == APRES cleanup, pour chaque ensemble ci-dessous. Un seul ecart => VERDICT ECHEC, STOP, aucun DROP suivant.",
+  "lacunes_assumees": [
+    "Les identifiants ne sont pas stockes en clair : seule leur empreinte l'est. Si un controle APRES echoue, l'empreinte dit QUE l'ensemble a change, pas QUELS identifiants manquent. Exporter les listes completes avant tout DROP si ce niveau de diagnostic est voulu.",
+    "Les cardinalites exactes des 6 grosses tables de relations ne sont pas mesurees : chacune exigerait un parcours sequentiel de plusieurs dizaines de Go. n_live_tup en tient lieu, et c'est une ESTIMATION.",
+    "Aucun lien prouve piece -> DLNR d'origine pour la cohorte 2025 : public.pieces ne porte pas de colonne dlnr. Le rapprochement passerait par tecdoc_map.article_registry (source_artnr, source_dlnr, piece_id), non mesure ici."
+  ],
+  "manifest_version": "2026-03-preservation-v1",
+  "methode_de_controle": {
+    "determinisme": "L'ORDER BY dans string_agg rend l'empreinte independante du plan d'execution et de l'ordre physique des lignes.",
+    "forme_de_la_requete": "SELECT count(*), min(<cle>), max(<cle>), md5(string_agg(<cle>::text, ',' ORDER BY <cle>)) FROM <table> WHERE <filtre>",
+    "principe": "Rejouer la requete d'empreinte de chaque ensemble et comparer au champ empreinte_md5."
+  },
+  "objet": "Resultats applicatifs produits par la campagne TecDoc de mars 2026 qui DOIVENT survivre intacts a tout retrait ulterieur de staging.",
+  "seal": {
+    "algorithm": "sha256",
+    "canonicalization": "identique a tecdoc-import-scope-2026-03.json : sort_keys, UTF-8, separateurs (',',':'), bloc seal exclu.",
+    "sha256": "9c946a8401da1e660346901d23c817e9b47524e00b2fc2d3d01782ab864cacce"
+  },
+  "tables_intouchables": {
+    "projections_applicatives": [
+      "public.auto_marque",
+      "public.auto_modele",
+      "public.auto_type",
+      "public.pieces",
+      "public.pieces_gamme",
+      "public.pieces_relation_type",
+      "public.pieces_relation_criteria",
+      "public.pieces_criteria",
+      "public.pieces_ref_search",
+      "public.pieces_ref_oem",
+      "public.pieces_media_img"
+    ],
+    "registres_tecdoc_primaires": [
+      "tecdoc_map.type_id_remap",
+      "tecdoc_map.article_registry",
+      "tecdoc_map.linkage_target_registry"
+    ],
+    "regle": "Ni DROP, ni TRUNCATE, ni DELETE, ni ALTER destructif sur ces tables, en aucune phase du nettoyage."
+  }
+}
