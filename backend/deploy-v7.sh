@@ -3,17 +3,25 @@ cd /opt/automecanik/app/backend
 
 # Read SQL and convert to JSON
 python3 << 'PYEOF'
+import os
 import json
 import urllib.request
 
 sql = open('sql/fix-rpc-v3-integer-cast.sql').read()
 payload = json.dumps({"query": sql}).encode('utf-8')
 
+ACCESS_TOKEN = os.environ.get('SUPABASE_ACCESS_TOKEN')
+if not ACCESS_TOKEN:
+    raise SystemExit(
+        'SUPABASE_ACCESS_TOKEN requis (personal access token Supabase, '
+        'format sbp_...) — aucune valeur par defaut.'
+    )
+
 req = urllib.request.Request(
     'https://api.supabase.com/v1/projects/cxpojprgwgubzjyqzmoq/database/query',
     data=payload,
     headers={
-        'Authorization': 'Bearer sbp_3985705a56e1f265447aed1ef6ff51e4e6c1c091',
+        'Authorization': f'Bearer {ACCESS_TOKEN}',
         'Content-Type': 'application/json'
     }
 )
