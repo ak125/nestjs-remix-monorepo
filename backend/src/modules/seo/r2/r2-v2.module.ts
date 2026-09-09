@@ -40,7 +40,6 @@ import {
   R2_FEATURE_FLAG_REDIS_TOKEN,
 } from './services/r2-feature-flag.service';
 import { R2MotorDeltaService } from './services/r2-motor-delta.service';
-import { R2OpaEvaluatorService } from './services/r2-opa-evaluator.service';
 import { R2VehicleFamilyService } from './services/r2-vehicle-family.service';
 import { R8ParentEnrichmentService } from './services/r8-parent-enrichment.service';
 import { R8SnapshotSeedService } from './services/r8-snapshot-seed.service';
@@ -73,7 +72,6 @@ import { SeoOutboxRelaySchedulerService } from './services/seo-outbox-relay-sche
     R2CompositionService,
     R2EligibilityService,
     R2MotorDeltaService,
-    R2OpaEvaluatorService,
     R2VehicleFamilyService,
     R2FeatureFlagService,
     R8SnapshotReaderService, // ADR-072 §3 R8 Vehicle Domain bounded context read-side
@@ -107,7 +105,6 @@ import { SeoOutboxRelaySchedulerService } from './services/seo-outbox-relay-sche
     R2CompositionService,
     R2EligibilityService,
     R2MotorDeltaService,
-    R2OpaEvaluatorService,
     R2FeatureFlagService,
     R8SnapshotReaderService,
     R8ParentEnrichmentService,
