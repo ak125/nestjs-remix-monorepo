@@ -85,9 +85,20 @@ base pour le diagnostic. Un DLNR n'est purgé que **lorsque sa preuve est écrit
 | Inclusion PROD ⊄ REBUILD | 8 | vague arrêtée, **matière conservée** |
 | Purge non confirmée | 9 | vague arrêtée |
 
-Éprouvé : `test-tecdoc-replay.sh` — **32 assertions, 0 rouge**, dont la vague nominale
+Éprouvé : `test-tecdoc-replay.sh` — **35 assertions, 0 rouge**, dont la vague nominale
 avec purge, la relance idempotente, l'inclusion rompue et la conservation de la matière
 sur échec.
+
+Trois de ces assertions portent sur la **preuve elle-même**, pas sur le chargement :
+
+- les **13 champs** du contrat de registre sont présents et non nuls — une preuve
+  incomplète est une preuve qu'on ne peut pas refaire ;
+- la **partition de la réconciliation** : tout ce que le rejeu produit est soit déjà
+  identique en PROD, soit en quarantaine ; aucune troisième catégorie silencieusement
+  activable ;
+- le **sceau est un vrai sceau** — recalculé sur le contenu il concorde, recalculé après
+  modification d'une seule valeur (`rows_loaded += 1`) il diverge. Sans cette seconde
+  moitié, le sceau n'atteste que de lui-même.
 
 ## 5. Environnement
 
@@ -108,11 +119,38 @@ PostgreSQL 17 isolé — 127.0.0.1 uniquement, aucun accès PROD
 | Isolé | `-p 127.0.0.1:<port>:5432` | `provision-rebuild-env.sh` |
 | Jetable | tout l'état sous le point de montage | — |
 | Aucun accès PROD | refus si une variable d'accès PROD est exportée | garde §2 du script |
-| Capacité | seuil paramétrable, refus en dessous | `check-rebuild-capacity.sh` |
+| Capacité | deux modes, deux seuils, deux périmètres physiques — refus en dessous | `check-rebuild-capacity.sh`, banc `test-check-rebuild-capacity.sh` |
 
-`provision-rebuild-env.sh` reste utilisable tel quel ; en mode vagues, le seuil de
-capacité se règle par `TECDOC_REBUILD_MIN_GO` (≈ 10 Go suffisent, contre 210 en mode
-matérialisé). Le mot de passe local est généré sur place, `0600`, jamais affiché.
+`provision-rebuild-env.sh` reste utilisable tel quel. Le mot de passe local est généré
+sur place, `0600`, jamais affiché.
+
+**La porte de capacité a deux modes**, parce que les deux stratégies de rebuild ont des
+besoins disque de nature différente et qu'une porte unique ne peut pas juger les deux
+honnêtement. Desserrer le seuil du mode matérialisé pour faire passer un rejeu par vagues
+masquerait le besoin réel du premier.
+
+| | `materialise` (défaut) | `vagues` |
+|---|---|---|
+| Sélection | `TECDOC_REBUILD_MODE` non défini | `TECDOC_REBUILD_MODE=vagues` |
+| Besoin disque | la **somme** des 110 DLNR | le **plus gros DLNR seul** |
+| Cible par défaut | `/mnt/tecdoc-rebuild` | `/` (stockage Docker) |
+| Seuil de refus | `TECDOC_REBUILD_MIN_GO` — **210 Go** | `TECDOC_REBUILD_VAGUE_MIN_GO` — **20 Go** (4× le pic mesuré) |
+| Cible de provisionnement | `TECDOC_REBUILD_CIBLE_GO` — 250 Go | sans objet |
+| Volume dédié obligatoire | **oui** | **non** |
+| Mode inconnu | refusé, code 2 — jamais interprété | idem |
+
+L'exigence de volume dédié n'a jamais protégé de la *taille* mais du *blast radius* : un
+rebuild de ~139 Go qui remplit `/` arrête le runtime DEV et la session opérateur. Un pic
+de ~5 Go ne menace pas `/`, donc la lever en mode vagues n'assouplit rien — l'imposer
+reviendrait à refuser précisément les configurations bien dimensionnées. Le seuil des
+vagues reste une **vraie porte** : sous 20 Go libres, elle rend `NO_GO` et chiffre le
+manque.
+
+Cette double-lecture est le risque propre à une porte à deux modes — on la desserre par
+inadvertance. `test-check-rebuild-capacity.sh` existe pour que cela se voie : **25
+assertions, 0 rouge**, dont la paire décisive *même cible `/`, mode matérialisé refuse,
+mode vagues accepte*, et la vérification que le refus « volume non dédié » n'existe
+**que** en matérialisé.
 
 ## 6. Plan de lots
 

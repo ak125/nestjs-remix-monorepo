@@ -421,8 +421,14 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.json:
         import json
+        # `crc32` et `version_perimetre` ne sont pas decoratifs : ce sont les deux
+        # entrees, avec la table et le DLNR, du `batch_id`. Sans eux dans la preuve,
+        # le registre affirme une identite de lot que personne ne peut recalculer —
+        # or une preuve qu'on ne peut pas refaire n'en est pas une.
         print(json.dumps({"dlnr": lot.dlnr, "table": lot.table,
                           "batch_id": lot.batch_id, "fichier": lot.fichier,
+                          "crc32": shard["crc32"],
+                          "version_perimetre": perimetre.version,
                           "emis": lot.emis, "charges": lot.charges,
                           "dedoublonnes": lot.dedoublonnes, "rejets": lot.rejets},
                          ensure_ascii=False, sort_keys=True))

@@ -195,6 +195,11 @@ def main(argv: list[str] | None = None) -> int:
                 "dlnr": dlnr,
                 "fichier": resultat["fichier"],
                 "batch_id": resultat["batch_id"],
+                # Les deux entrees qui, avec la table et le DLNR, PRODUISENT le
+                # batch_id. Les consigner rend l'identite du lot recalculable par un
+                # tiers ; sans elles le registre demande qu'on le croie sur parole.
+                "source": {"crc32": resultat["crc32"],
+                           "version_perimetre": resultat["version_perimetre"]},
                 "comptabilite": {"rows_emitted": resultat["emis"],
                                  "rows_loaded": resultat["charges"],
                                  "rows_deduplicated": resultat["dedoublonnes"],
