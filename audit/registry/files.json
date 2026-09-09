@@ -716,6 +716,7 @@
         "backend/src/common/guards/cloudflare-throttler.guard.ts",
         "backend/src/config/feature-flags.module.ts",
         "backend/src/config/logger.config.ts",
+        "backend/src/config/throttler-tiers.config.ts",
         "backend/src/config/write-guard.module.ts",
         "backend/src/controllers/analytics.controller.ts",
         "backend/src/database/database.module.ts",
@@ -777,7 +778,7 @@
         "backend/src/workers/worker.module.ts"
       ],
       "kind": "service",
-      "loc": 297,
+      "loc": 273,
       "owner": "__unassigned__",
       "path": "backend/src/app.module.ts",
       "risk": "low",
@@ -2343,7 +2344,8 @@
       "id": "backend/src/common/guards/cloudflare-throttler.guard.ts",
       "importedBy": [
         "backend/src/app.module.ts",
-        "backend/src/common/guards/cloudflare-throttler.guard.test.ts"
+        "backend/src/common/guards/cloudflare-throttler.guard.test.ts",
+        "backend/src/config/throttler-tiers.config.test.ts"
       ],
       "imports": [],
       "kind": "service",
@@ -4957,6 +4959,51 @@
       "loc": 37,
       "owner": "__unassigned__",
       "path": "backend/src/config/source-provenance.constants.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/config/throttler-tiers.config.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/common/guards/cloudflare-throttler.guard.ts",
+        "backend/src/config/throttler-tiers.config.ts"
+      ],
+      "kind": "test",
+      "loc": 110,
+      "owner": "__unassigned__",
+      "path": "backend/src/config/throttler-tiers.config.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "reachability"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/config/throttler-tiers.config.ts",
+      "importedBy": [
+        "backend/src/app.module.ts",
+        "backend/src/config/throttler-tiers.config.test.ts"
+      ],
+      "imports": [],
+      "kind": "config",
+      "loc": 64,
+      "owner": "__unassigned__",
+      "path": "backend/src/config/throttler-tiers.config.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -10387,7 +10434,7 @@
         "backend/src/modules/analytics/landing-source.classifier.ts"
       ],
       "kind": "controller",
-      "loc": 157,
+      "loc": 162,
       "owner": "__unassigned__",
       "path": "backend/src/modules/analytics/controllers/landing-attribution.controller.ts",
       "risk": "low",
@@ -24039,7 +24086,7 @@
         "backend/src/modules/seo-monitoring/services/cwv-beacon.service.ts"
       ],
       "kind": "controller",
-      "loc": 69,
+      "loc": 76,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-monitoring/controllers/cwv-beacon.controller.ts",
       "risk": "low",
@@ -24138,7 +24185,7 @@
         "backend/src/modules/seo-monitoring/services/runtime-events.service.ts"
       ],
       "kind": "controller",
-      "loc": 70,
+      "loc": 76,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-monitoring/controllers/runtime-events.controller.ts",
       "risk": "low",
