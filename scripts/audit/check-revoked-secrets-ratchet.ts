@@ -75,16 +75,32 @@ export interface RevokedValueFingerprint {
   revoked_at: string | null;
 }
 
+/**
+ * A secret whose literal must never appear at HEAD, whether or not its
+ * revocation is established. `revoked_at: null` is a legitimate state here —
+ * purging the repository and rotating the credential are different acts, and
+ * conflating them is how a "cleaned" repo comes to be read as a safe one.
+ */
+export interface KnownSecretFingerprint {
+  sha256_12: string;
+  secret_type: string;
+  /** Exact character count of the value — the index that makes the scan cheap. */
+  length: number;
+  revoked_at: string | null;
+}
+
 export interface Baseline {
   schemaVersion: string;
   revoked: RevokedEntry[];
   revoked_value_fingerprints?: RevokedValueFingerprint[];
+  known_secret_fingerprints?: KnownSecretFingerprint[];
 }
 
 export type Rule =
   | "supabase-legacy-jwt"
   | "supabase-management-token"
-  | "revoked-secret-reintroduced";
+  | "revoked-secret-reintroduced"
+  | "known-secret-literal";
 
 export interface Finding {
   file: string;
@@ -103,6 +119,35 @@ export function fingerprint(token: string): string {
 
 const JWT_RE = /eyJ[A-Za-z0-9_-]{8,}\.eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}/g;
 const SBP_RE = /sbp_[A-Za-z0-9]{20,}/g;
+
+/**
+ * Candidate literals for the fingerprint pass. The 12-character floor is a
+ * measured decision, not a guess: `PAYBOX_RANG` is 3 digits and matching it
+ * across the tree returned 826 hits, `PAYBOX_SITE` (7) returned 40 — all noise.
+ * Merchant identifiers are also transmitted in the client-side payment form, so
+ * they are not secrets to begin with. Below 12 characters a value carries too
+ * little entropy to be a credential AND too much ambiguity to be matched.
+ */
+const CANDIDATE_RE = /[A-Za-z0-9_-]{12,}/g;
+
+/** fingerprints indexed by value length — only same-length tokens get hashed. */
+export type LengthIndex = ReadonlyMap<
+  number,
+  ReadonlyMap<string, KnownSecretFingerprint>
+>;
+
+export function buildLengthIndex(
+  entries: readonly KnownSecretFingerprint[],
+): LengthIndex {
+  const idx = new Map<number, Map<string, KnownSecretFingerprint>>();
+  for (const e of entries) {
+    if (!e.length || !e.sha256_12) continue;
+    let bucket = idx.get(e.length);
+    if (!bucket) idx.set(e.length, (bucket = new Map()));
+    bucket.set(e.sha256_12, e);
+  }
+  return idx;
+}
 
 /**
  * Decode a JWT payload. Returns null when the middle segment is not JSON —
@@ -132,6 +177,7 @@ export function scanContent(
   file: string,
   content: string,
   revokedFps: ReadonlySet<string> = new Set(),
+  lengthIndex: LengthIndex = new Map(),
 ): Finding[] {
   const out: Finding[] = [];
   content.split("\n").forEach((line, i) => {
@@ -167,6 +213,28 @@ export function scanContent(
         fp,
         detail: "personal access token Supabase (sbp_) en clair",
       });
+    }
+    // Fingerprint pass — catches credentials that have no recognisable shape
+    // (a 128-hex HMAC key, a 16-digit certificate). Hashing is gated on an
+    // exact length match, so a clean tree costs one length lookup per token.
+    if (lengthIndex.size) {
+      for (const m of line.matchAll(CANDIDATE_RE)) {
+        const tok = m[0];
+        const bucket = lengthIndex.get(tok.length);
+        if (!bucket) continue;
+        const fp = fingerprint(tok);
+        const hit = bucket.get(fp);
+        if (!hit) continue;
+        out.push({
+          file,
+          line: lineNo,
+          rule: hit.revoked_at
+            ? "revoked-secret-reintroduced"
+            : "known-secret-literal",
+          fp,
+          detail: `${hit.secret_type} en clair`,
+        });
+      }
     }
   });
   return out;
@@ -226,6 +294,15 @@ function main(): void {
   const revokedFps = new Set(
     (baseline.revoked_value_fingerprints ?? []).map((r) => r.sha256_12),
   );
+  // Both arrays feed the fingerprint pass: a revoked secret must not come back,
+  // and a secret whose rotation is still unknown must not come back either.
+  const lengthIndex = buildLengthIndex([
+    ...(baseline.known_secret_fingerprints ?? []),
+    ...(baseline.revoked_value_fingerprints ?? []).filter(
+      (r): r is RevokedValueFingerprint & { length: number } =>
+        typeof (r as { length?: number }).length === "number",
+    ),
+  ]);
 
   const contractViolations = existsSync(GITLEAKSIGNORE_PATH)
     ? checkIgnoreContract(
@@ -253,7 +330,9 @@ function main(): void {
       const buf = Buffer.allocUnsafe(st.size);
       readSync(fd, buf, 0, st.size, 0);
       if (buf.includes(0)) continue; // binaire
-      findings.push(...scanContent(file, buf.toString("utf8"), revokedFps));
+      findings.push(
+        ...scanContent(file, buf.toString("utf8"), revokedFps, lengthIndex),
+      );
     } finally {
       closeSync(fd);
     }

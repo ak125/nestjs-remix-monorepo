@@ -57,14 +57,14 @@ else
     SYSTEMPAY_OK=false
 fi
 
-if [ "$SYSTEMPAY_CERT_PROD" = "9816635272016068" ]; then
+if [ "$(printf '%s' "$SYSTEMPAY_CERT_PROD" | sha256sum | cut -c1-12)" = "819b20125a00" ]; then
     echo -e "${GREEN}  âœ… Certificat PRODUCTION correct${NC}"
 else
     echo -e "${RED}  âŒ Certificat PRODUCTION incorrect${NC}"
     SYSTEMPAY_OK=false
 fi
 
-if [ "$SYSTEMPAY_CERT_TEST" = "9300172162563656" ]; then
+if [ "$(printf '%s' "$SYSTEMPAY_CERT_TEST" | sha256sum | cut -c1-12)" = "bb9ceaaa408d" ]; then
     echo -e "${GREEN}  âœ… Certificat TEST correct${NC}"
 else
     echo -e "${YELLOW}  âš ï¸  Certificat TEST diffÃ©rent${NC}"
