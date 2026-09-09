@@ -1,7 +1,14 @@
 #!/usr/bin/env node
 const https = require('https');
 
-const SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN4cG9qcHJnd2d1YnpqeXF6bW9xIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MjUzNDU5NSwiZXhwIjoyMDY4MTEwNTk1fQ.ta_KmARDalKoBf6pIKNwZM0e6cBGO3F15CEgfw0lkzY';
+const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (!SERVICE_ROLE_KEY) {
+  console.error(
+    '❌ SUPABASE_SERVICE_ROLE_KEY absente. Exporter la clé serveur Supabase ' +
+      '(format sb_secret_…) avant de lancer ce script — aucune valeur par défaut.',
+  );
+  process.exit(1);
+}
 
 // Liste des tables potentielles basées sur la structure du projet
 const POTENTIAL_TABLES = [
