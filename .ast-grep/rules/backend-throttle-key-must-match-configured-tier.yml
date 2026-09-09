@@ -1,0 +1,38 @@
+id: backend-throttle-key-must-match-configured-tier
+language: typescript
+severity: error
+message: |
+  `@Throttle({ <clé>: … })` nomme un tier qui n'existe pas dans
+  `backend/src/config/throttler-tiers.config.ts` → l'override est
+  SILENCIEUSEMENT IGNORÉ (aucune erreur, aucun log, la route garde la
+  politique par défaut).
+
+  Mécanique : le guard résout l'override en lisant la métadonnée sous le NOM
+  du tier configuré — `this.reflector.getAllAndOverride(THROTTLER_LIMIT +
+  namedThrottler.name, …)` (@nestjs/throttler 6.5.0, throttler.guard.js:77) —
+  en bouclant sur `this.throttlers`. Une clé qui ne correspond à aucun tier
+  n'est jamais lue. En particulier `default` : il n'est attribué qu'à un
+  throttler déclaré SANS `name` (throttler.guard.js:44), ce qui n'est le cas
+  d'aucun des nôtres.
+
+  Incident 2026-09-09 : trois endpoints de télémétrie portaient
+  `@Throttle({ default: … })` (120/min, 60/min, 30/min annoncés). Preuve
+  runtime sur DEV:3000 — 20 POST en rafale sur /api/seo/cwv/beacon →
+  15× 202 puis 5× 429, soit le tier `short` (15/s), jamais les 120/min.
+
+  Clés valides : `short` · `medium` · `long` · `payment_callback`.
+  Ajouter un tier = modifier `THROTTLER_TIERS` **et** cette règle — et lire
+  d'abord l'invariant de portée : un tier nommé dans `forRoot` s'applique à
+  TOUTES les routes (régression #390 : le site entier plafonné à 30 req/min).
+files:
+  - backend/src/**/*.ts
+ignores:
+  - backend/src/**/*.spec.ts
+  - backend/src/**/*.test.ts
+  - backend/src/**/*.e2e-spec.ts
+rule:
+  pattern: '@Throttle({ $KEY: $$$ })'
+constraints:
+  KEY:
+    not:
+      regex: '^(short|medium|long|payment_callback)$'
