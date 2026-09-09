@@ -26,7 +26,7 @@ automatisé par [`scripts/ops/sync-dev-runtime.sh`](../../scripts/ops/sync-dev-r
 feature/agent se fait en **worktree** (`.claude/worktrees/`). Ne jamais y laisser une branche
 feature (sinon DEV:3000 sert du code périmé).
 
-**5 axes de dérive** vs `main` (le script garde 1-2, alerte sur 3-5 — jamais d'action destructive auto) :
+**6 axes de dérive** vs `main` (le script garde 1-2, alerte sur 3-6 — jamais d'action destructive auto) :
 
 1. **Git** : checkout sur main + ff-pull `origin/main`. (auto)
 2. **`.env`** : `backend/.env` doit avoir toutes les vars REQUIRED de `env-validation.ts`
@@ -40,6 +40,13 @@ feature (sinon DEV:3000 sert du code périmé).
    `MODULE_NOT_FOUND` (incident 2026-05-25 : `@repo/domain-commerce` + `@repo/cwv-taxonomy`).
    Détection `check_workspace_integrity()` ; install/build = action manuelle owner-gated
    (mutation `package-lock.json`, comme l'axe 4). (alerte)
+6. **Topologie runtime** : le superviseur du stack dev peut mourir en laissant ses tâches
+   persistantes vivantes, reparentées à PID 1 — `:3000` répond alors toujours `200` alors que plus
+   rien ne supervise (incident 2026-09-09 : `turbo dev` SIGSEGV, bug amont turbo 2.10.0 corrigé en
+   2.10.4). Détection `check_dev_runtime_topology()` : santé HTTP à chaque tick, racines orphelines
+   (PPID 1), stacks dev concurrents, dumps frais dans `/var/crash`. Sonde **placée avant les gardes
+   git** (un incident runtime est indépendant de l'état git) et **alert-only** — jamais `abort`, qui
+   couperait les axes de resync. Détail : `audit/turbo-dev-sigsegv-shutdown-2026-09-09.md`. (alerte)
 
 ## Mécanique du tag Docker `:preprod` (alias flottant)
 

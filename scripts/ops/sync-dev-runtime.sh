@@ -88,6 +88,106 @@ check_workspace_integrity() {
   return "$drift"
 }
 
+# ---------------------------------------------------------------------------
+# Sonde de topologie runtime — 6e axe de dérive.
+#
+# POURQUOI ELLE EXISTE : le 2026-09-09 09:01:41, `turbo dev` (superviseur du
+# stack DEV) est mort en SIGSEGV. Ses tâches persistantes ont survécu,
+# reparentées à PID 1, et `:3000` a continué de répondre 200. Résultat : plus
+# aucun superviseur, mais TOUS les signaux existants restaient au vert. La
+# cause du crash est un bug amont (turbo 2.10.0, cf. audit) — ce que cette
+# sonde corrige, c'est le SILENCE, qui lui est local.
+#
+# CE QU'ELLE AJOUTE que /health ne peut pas voir : /health interroge le
+# processus backend, pas la chaîne qui le supervise. Un superviseur mort avec
+# enfants orphelins rend exactement le même 200 qu'un stack sain. Le seul
+# signal qui distingue les deux est TOPOLOGIQUE (qui est le parent), pas HTTP.
+#
+# POURQUOI AVANT LES GARDES GIT (1 et 2) : la mort du superviseur est un fait
+# runtime, sans rapport avec l'état git. Les gardes branche/working-tree font
+# `abort` ; placée après elles, la sonde ne verrait jamais un incident survenu
+# pendant qu'une branche feature ou un fichier modifié traîne dans le checkout.
+# C'est précisément l'état du 2026-09-09 (branche feature + turbo.json modifié)
+# : le cron abortait à l'étape 1 et n'a rien probé pendant ~10 h.
+#
+# ALERT-ONLY, JAMAIS `abort` : un abort ici stopperait les axes de resync git
+# qui gardent DEV:3000 frais — on transformerait un incident d'observabilité en
+# panne de synchronisation.
+check_dev_runtime_topology() {
+  local drift=0 stamp="/tmp/.${LOG_TAG}-topology-stamp"
+
+  # (a) Santé HTTP à CHAQUE tick. L'unique appel à $HEALTH_URL du script vit
+  #     dans l'étape 8, atteignable seulement sur le chemin de resync : quand
+  #     HEAD == origin/main (le cas nominal) le script sortait sans avoir rien
+  #     probé du runtime.
+  #     Debounce volontaire (3 essais / 5 s) : nodemon coupe :3000 quelques
+  #     secondes à chaque rebuild tsc. Sans ça le cron alerterait sur une
+  #     fenêtre de redémarrage normale, et une alerte qui crie faux finit
+  #     ignorée — exactement le mode de panne qu'on cherche à supprimer.
+  local up=0 i
+  for i in 1 2 3; do
+    if curl -sf --max-time 5 "$HEALTH_URL" >/dev/null 2>&1; then up=1; break; fi
+    [ "$i" -lt 3 ] && sleep 5
+  done
+  if [ "$up" != "1" ]; then
+    alert "DEV:3000 ne répond pas après 3 essais ($HEALTH_URL) — runtime DOWN"
+    drift=1
+  fi
+
+  # (b) Superviseur mort, enfants orphelins. Signature exacte de l'incident :
+  #     une racine de stack dev reparentée à PID 1. Dans un stack sain la
+  #     racine a un parent shell/tmux/VS Code, jamais init. On restreint au
+  #     cwd du repo pour ne pas compter un autre projet de la machine.
+  local orphans=() pid ppid cwd cmd
+  while read -r pid ppid cmd; do
+    [ "$ppid" = "1" ] || continue
+    case "$cmd" in *"npm run dev"*|*"turbo dev"*) ;; *) continue ;; esac
+    cwd=$(readlink -f "/proc/$pid/cwd" 2>/dev/null) || continue
+    case "$cwd" in "$APP_DIR"*) orphans+=("$pid") ;; esac
+  done < <(ps -eo pid=,ppid=,args= 2>/dev/null)
+  if [ "${#orphans[@]}" -gt 0 ]; then
+    alert "superviseur dev MORT — ${#orphans[@]} racine(s) orpheline(s) reparentée(s) à PID 1 (pids: ${orphans[*]}). Le stack tourne sans superviseur : /health reste vert mais plus rien ne surveille les watchers. Cf. turbo 2.10.0 SIGSEGV au shutdown."
+    drift=1
+  fi
+
+  # (c) Stacks dev concurrents. Après le crash du 2026-09-09, deux arbres
+  #     `npm run dev` tournaient en parallèle sur le même backend/dist : deux
+  #     tsc écrivant le même dist, deux nodemon le surveillant. État instable
+  #     qu'aucun signal existant ne rendait visible.
+  local all_roots
+  all_roots=$(pgrep -c -f '^npm run dev$' 2>/dev/null || true)
+  if [ "${all_roots:-0}" -gt 1 ]; then
+    alert "stacks dev CONCURRENTS : $all_roots racines \`npm run dev\` simultanées — elles se disputent backend/dist (tsc + nodemon en double). Une seule doit tourner."
+    drift=1
+  fi
+
+  # (d) Crash dumps frais imputables au repo. La machine écrit déjà des dumps
+  #     apport dans /var/crash ; personne ne les lit jamais (aucun script du
+  #     repo ne référence /var/crash — vérifié). On ne lit PAS le contenu des
+  #     dumps (pas de privilège requis) : uniquement nom + mtime.
+  if [ -d /var/crash ]; then
+    local newdumps
+    if [ -f "$stamp" ]; then
+      newdumps=$(find /var/crash -maxdepth 1 -name '*.crash' -newer "$stamp" 2>/dev/null \
+                 | grep -E 'automecanik|turbo|node' || true)
+    else
+      newdumps=$(find /var/crash -maxdepth 1 -name '*.crash' -mmin -15 2>/dev/null \
+                 | grep -E 'automecanik|turbo|node' || true)
+    fi
+    if [ -n "$newdumps" ]; then
+      alert "crash dump(s) frais dans /var/crash : $(echo "$newdumps" | tr '\n' ' ')— un process du stack a crashé (SIGSEGV/SIGBUS). Inspecter avec: grep -a '^Signal\|^ProcCmdline' <fichier>"
+      drift=1
+    fi
+  fi
+  touch "$stamp" 2>/dev/null || true
+
+  return "$drift"
+}
+
+# 0. Sonde de topologie runtime (6e axe) — AVANT les gardes git, alert-only.
+#    Voir l'en-tête de check_dev_runtime_topology pour le « pourquoi avant ».
+check_dev_runtime_topology || true
+
 # 1. Garde branche : le checkout runtime DOIT rester sur main (features = worktrees).
 branch=$(git rev-parse --abbrev-ref HEAD)
 [ "$branch" = "main" ] || abort "checkout sur '$branch' (pas main) — resync refusée (cf. convention worktree)"

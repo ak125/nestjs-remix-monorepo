@@ -177,7 +177,7 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "squawk-cli": "2.58.0",
-    "turbo": "^2.9.16",
+    "turbo": "^2.10.12",
     "typescript": "6.0.3"
   },
   "dependencies": {
