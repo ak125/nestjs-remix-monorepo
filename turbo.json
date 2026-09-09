@@ -1,6 +1,13 @@
 {
     "$schema": "https://turbo.build/schema.json",
     "globalDependencies": ["packages/typescript-config/*.json"],
+    // 11 paquets declarent un script `dev`, tous persistent:true (backend,
+    // frontend, et 9 watchers de paquets). Le plafond par defaut de turbo est
+    // 10, et il refuse de demarrer des qu'il y a plus de taches persistantes
+    // que de slots : `npm run dev` echouait donc entierement. Turbo demande une
+    // valeur strictement superieure au nombre de taches persistantes — 12 laisse
+    // une marge d'un paquet avant de devoir y revenir.
+    "concurrency": "12",
     "tasks": {
       "dev": {
         "cache": false,
