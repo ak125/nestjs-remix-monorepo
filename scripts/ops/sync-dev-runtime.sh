@@ -88,6 +88,59 @@ check_workspace_integrity() {
   return "$drift"
 }
 
+# 7e axe de dérive — PERMISSIONS DES FICHIERS D'ENVIRONNEMENT.
+#
+# POURQUOI : tous les `.env*` porteurs de secrets étaient en 664 (lisibles par
+# tout compte local). Le `chmod 600` seul ne tient pas : l'umask de la machine
+# est 0002 et RECRÉE du 664 au prochain `cp`, à la prochaine sauvegarde d'éditeur,
+# au prochain script qui réécrit un `.env`. Chaîne mesurée :
+#   pam_umask (common-session) + /etc/login.defs UMASK 022 + USERGROUPS_ENAB yes
+#   + groupe primaire de `deploy` nommé `deploy`  =>  022 devient 002  =>  0664.
+# Corriger l'umask système (login.defs 022 -> 027) a un rayon d'action bien plus
+# large que les .env (tout ce que la box écrit) : c'est une décision owner. En
+# attendant, on DÉTECTE la récidive à chaque tick plutôt que de la subir.
+#
+# ALERT-ONLY, ET AUCUN `chmod` AUTOMATIQUE — délibéré :
+#   - un chmod auto masquerait ce qui recrée du 664, donc la cause ;
+#   - `backend/.env.paybox-test-keys` est en zone paiement (invariant 9 STOP) :
+#     ce script ne doit jamais y toucher, même pour "améliorer" ses droits.
+# Périmètre : uniquement les fichiers NON suivis par git (= ceux qui portent de
+# vrais secrets). Les `*.example` / `*.template` suivis restent en 664, c'est
+# voulu : ils sont publics.
+check_env_file_permissions() {
+  local drift=0 f mode
+  local files=(
+    backend/.env
+    backend/.env.production
+    backend/.env.test
+    backend/.env.supabase.timeout
+    backend/.env.backup-20251104-174224
+    backend/.env.paybox-test-keys
+    config/vector/.env.vector
+    frontend/.env
+    .env
+    .env.vps
+  )
+  local loose=()
+  for f in "${files[@]}"; do
+    [ -f "$f" ] || continue
+    # Un fichier suivi par git n'est pas un porteur de secret : on l'ignore.
+    git ls-files --error-unmatch "$f" >/dev/null 2>&1 && continue
+    mode=$(stat -c '%a' "$f" 2>/dev/null) || continue
+    [ "$mode" = "600" ] && continue
+    loose+=("$f:$mode")
+  done
+  if [ "${#loose[@]}" -gt 0 ]; then
+    alert "fichiers d'environnement trop permissifs (attendu 600) : ${loose[*]} — corriger: chmod 600 <fichier>. Cause récurrente = umask 0002 (pam_umask + login.defs UMASK 022 + USERGROUPS_ENAB yes). NE PAS chmod backend/.env.paybox-test-keys sans accord owner (zone paiement)."
+    drift=1
+  fi
+  return "$drift"
+}
+
+# 0b. Permissions des fichiers d'environnement (7e axe) — avant les gardes git,
+#     alert-only : un secret lisible par tous ne dépend pas de l'état du dépôt.
+check_env_file_permissions || true
+
 # 1. Garde branche : le checkout runtime DOIT rester sur main (features = worktrees).
 branch=$(git rev-parse --abbrev-ref HEAD)
 [ "$branch" = "main" ] || abort "checkout sur '$branch' (pas main) — resync refusée (cf. convention worktree)"
