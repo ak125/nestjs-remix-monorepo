@@ -553,6 +553,24 @@ jobs:
           head: ${{ github.event.pull_request.head.sha || github.sha }}
           extra_args: --results=verified,unknown
 
+      # gitleaks above scans INCREMENTALLY (PR diff only) and is allowlisted by PATH.
+      # Neither property can see a credential that is ALREADY on main — which is how a
+      # service_role JWT lived at HEAD of this PUBLIC repo from 2025-11-01 to 2026-09-09
+      # with this very job green on every PR. The ratchet below scans the FULL tracked
+      # tree at HEAD, with no path allowlist, and matches on the decoded JWT `role`
+      # claim rather than on a known value (so a re-issued key is caught too).
+      # Node-builtins only — no `npm ci` needed. Canon: audit/baselines/revoked-secrets-baseline.json
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: 🧊 Revoked-secrets ratchet — comparator unit tests (BLOCKING)
+        run: npx -y tsx@4.22.4 --test scripts/audit/check-revoked-secrets-ratchet.test.ts
+
+      - name: 🧊 Revoked-secrets ratchet — 0 credential Supabase en clair (BLOCKING)
+        run: npx -y tsx@4.22.4 scripts/audit/check-revoked-secrets-ratchet.ts
+
   migration-safety:
     # AST-based Postgres SQL linter (squawk, libpg_query) — replaces the
     # legacy grep-based gate that produced false positives on prose comments

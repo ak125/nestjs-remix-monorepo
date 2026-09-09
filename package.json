@@ -134,7 +134,10 @@
     "audit:orphan-ratchet": "tsx scripts/audit/check-orphan-files-ratchet.ts",
     "audit:orphan-ratchet:json": "tsx scripts/audit/check-orphan-files-ratchet.ts --json",
     "audit:orphan-ratchet:refresh": "tsx scripts/audit/check-orphan-files-ratchet.ts --refresh",
-    "audit:orphan-ratchet:test": "tsx --test scripts/audit/check-orphan-files-ratchet.test.ts"
+    "audit:orphan-ratchet:test": "tsx --test scripts/audit/check-orphan-files-ratchet.test.ts",
+    "audit:revoked-secrets-ratchet": "tsx scripts/audit/check-revoked-secrets-ratchet.ts",
+    "audit:revoked-secrets-ratchet:json": "tsx scripts/audit/check-revoked-secrets-ratchet.ts --json",
+    "audit:revoked-secrets-ratchet:test": "tsx --test scripts/audit/check-revoked-secrets-ratchet.test.ts"
   },
   "keywords": [],
   "author": "",

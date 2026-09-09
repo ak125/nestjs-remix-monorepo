@@ -15,7 +15,12 @@
 
 const https = require('https');
 
-const SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN4cG9qcHJnd2d1YnpqeXF6bW9xIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MjUzNDU5NSwiZXhwIjoyMDY4MTEwNTk1fQ.ta_KmARDalKoBf6pIKNwZM0e6cBGO3F15CEgfw0lkzY';
+const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (!SERVICE_ROLE_KEY) {
+  throw new Error(
+    'SUPABASE_SERVICE_ROLE_KEY manquante — exporter la cle sb_secret_ avant de lancer ce script.',
+  );
+}
 
 const CRITICAL_TABLES = [
   { name: '__blog_advice', columns: ['ba_preview', 'ba_content', 'ba_descrip'] },

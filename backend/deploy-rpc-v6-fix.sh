@@ -1,7 +1,7 @@
 #!/bin/bash
 # Deploy RPC V6 fix to Supabase
 
-TOKEN="sbp_3985705a56e1f265447aed1ef6ff51e4e6c1c091"
+TOKEN="${SUPABASE_ACCESS_TOKEN:?SUPABASE_ACCESS_TOKEN manquant — exporter un jeton Supabase valide}"
 PROJECT_ID="cxpojprgwgubzjyqzmoq"
 
 # Read SQL file and create JSON payload
