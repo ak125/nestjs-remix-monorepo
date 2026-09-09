@@ -524,3 +524,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/tecdoc-rebuild-environment`
 - **Décision** : fix(ops): le client HTTP ne s'annonçait pas — la requête n'atteignait jamais l'API (+12 other commits)
 - **Sortie** : PR #1419 | commits 8564bded9 0e1b6456e 3cb6996f2 bb0a1cc46 a2d53a7bc 0a0ebbd79 c67f82a31 fed9560b8 716c4085c e28197c57 647dc5b6a 01bd9a0c8 e4d4f650e
+
+## 2026-09-09 — feat/tecdoc-rebuild-environment (auto)
+
+- **Branche** : `feat/tecdoc-rebuild-environment`
+- **Décision** : feat(tecdoc): porte de capacite a deux modes, et un registre de preuve recalculable (+14 other commits)
+- **Sortie** : PR #1419 | commits f73b300c0 d6f3e94a1 93bd601eb a3ec3a602 45e8c6402 fc222949f f1994b30d 08d28175b 5650961cf b4408e7b1 fb9bcd355 90358994c d348f3eec 098be7744 c1ee2d690
