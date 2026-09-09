@@ -14,7 +14,9 @@
  * Pattern mirror de `FunnelEventsController` :
  *   - @HttpCode(202) — beacon = fire-and-forget, jamais 4xx visible côté UA
  *   - Validation safeParse → 202 silencieux si malformé (ne pas casser le client)
- *   - Throttler @nestjs/throttler 120/min/IP (= ~5 metrics × 24 pages-views/min absolute max)
+ *   - Throttler @nestjs/throttler : politique standard, bucket propre à ce
+ *     handler (15/s · 100/min · 2000/h par IP). Le client émet jusqu'à 5
+ *     beacons par page vue (un par métrique — web-vitals.client.ts:336-340).
  */
 import {
   Body,
@@ -24,7 +26,6 @@ import {
   Logger,
   Post,
 } from '@nestjs/common';
-import { Throttle } from '@nestjs/throttler';
 import {
   CwvBeaconClientPayloadSchema,
   classifyUserAgent,
@@ -41,7 +42,13 @@ export class CwvBeaconController {
 
   @Post('beacon')
   @HttpCode(202)
-  @Throttle({ default: { limit: 120, ttl: 60_000 } })
+  // Pas d'override de tier ici : la politique standard s'applique
+  // (15/s · 100/min · 2000/h par IP, bucket propre à ce handler —
+  // src/config/throttler-tiers.config.ts). Un `@Throttle({ default: … })`
+  // a vécu ici sans jamais s'appliquer : aucun tier ne s'appelle `default`,
+  // et le guard lit l'override sous le NOM du tier configuré
+  // (throttler.guard.js:77). Prouvé le 2026-09-09 : 20 POST en rafale →
+  // 15× 202 puis 5× 429, soit le tier `short`, pas la limite annoncée.
   async beacon(
     @Body() body: unknown,
     @Headers('user-agent') ua: string | undefined,

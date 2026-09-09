@@ -7,6 +7,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { LoggerModule } from 'nestjs-pino';
 import { SentryModule } from '@sentry/nestjs/setup';
 import { loggerConfig } from './config/logger.config';
+import { THROTTLER_TIERS } from './config/throttler-tiers.config';
 import { RequestIdMiddleware } from './modules/mcp-validation/middleware/request-id.middleware';
 // import { ScheduleModule } from '@nestjs/schedule'; // ❌ DÉSACTIVÉ - Conflit de version avec @nestjs/common v10
 // import { BullModule } from '@nestjs/bullmq'; // ❌ DÉSACTIVÉ - Conflit de version avec @nestjs/common v10
@@ -97,34 +98,9 @@ import { TrendSignalsModule } from './modules/trend-signals/trend-signals.module
     LoggerModule.forRoot(loggerConfig),
     // 🛡️ RATE LIMITING - Protection anti-spam/DDoS
     ThrottlerModule.forRoot({
-      throttlers: [
-        {
-          name: 'short',
-          ttl: 1000, // 1 seconde
-          limit: 15, // 15 req/sec max par IP
-        },
-        {
-          name: 'medium',
-          ttl: 60000, // 1 minute
-          limit: 100, // 100 req/min par IP
-        },
-        {
-          name: 'long',
-          ttl: 3600000, // 1 heure
-          limit: 2000, // 2000 req/heure par IP
-        },
-        {
-          // ADR-043 Sprint 1 ticket #6 — payment callbacks (STRIDE 01-paiement
-          // critique #2). Apply via @Throttle({ payment_callback: {...} }) on
-          // /api/paybox/callback + /api/payments/callback/cyberplus. Gateway IPN
-          // sends ~1-2 callbacks per transaction → 30/min/IP is generous for
-          // legitimate flow, tight for crypto-compute DoS. On 429, gateways
-          // retry idempotently (HMAC signature dedups).
-          name: 'payment_callback',
-          ttl: 60000, // 1 minute
-          limit: 30,
-        },
-      ],
+      // Tiers + invariant de portée : src/config/throttler-tiers.config.ts
+      // (un tier nommé ici s'applique à TOUTES les routes — cf. régression #390).
+      throttlers: THROTTLER_TIERS,
       // 🛡️ Skip internal calls (Remix SSR + Docker containers + Admin users)
       skipIf: (context) => {
         const request = context.switchToHttp().getRequest();
