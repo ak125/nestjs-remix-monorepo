@@ -5,9 +5,19 @@ import { SupabaseBaseService } from '../../database/services/supabase-base.servi
 /**
  * Supplier Availability Truth — data access (Layers 2 & 3 persistence).
  *
- * Snapshots are APPEND-ONLY: this repository exposes `insertSnapshot` only — no
- * update/delete path exists, by design (immutable observation log). The projection
- * is upserted (1 row per piece_id). The funnel reads ONLY the projection.
+ * WIRED, dormant by default: `insertOffer` → `supplier_offer_snapshot` (canonical,
+ * append-only), plus the working-set / brand / ref-resolution reads the sync runner
+ * uses. Nothing runs unless `SUPPLIER_TRUTH_SYNC_ENABLED` is exactly `'true'`
+ * (`supplier-sync.flag.ts`) or an owner-gated one-shot sets
+ * `SUPPLIER_SYNC_ONESHOT_CONFIRM=true` (`run-supplier-sync-once.guard.ts`).
+ *
+ * DEFERRED (H3, NOT WIRED): the availability-consensus methods target
+ * `supplier_inventory_snapshots` (append-only by design — insert, never
+ * update/delete), `supplier_truth_projection` (1 row per piece_id) and
+ * `supplier_runtime_profile`. None of these tables exists and no migration declares
+ * them: `20260520_supplier_truth_v1` was retired unapplied on 2026-09-10 — it would
+ * have created a second SoT beside `supplier_offer_snapshot`, with two views lacking
+ * `security_invoker`. H3 must bring its own migration before any caller is wired.
  */
 
 const T_SNAPSHOTS = 'supplier_inventory_snapshots';
@@ -119,7 +129,7 @@ export class SupplierTruthRepository extends SupabaseBaseService {
    * APPEND-ONLY. Write into the (deferred-H3) availability-consensus snapshot log
    * `supplier_inventory_snapshots`. NOT wired into the live collection path — that
    * writes `supplier_offer_snapshot` via `insertOffer`. Kept for the future
-   * availability-consensus layer (truth-engine); its table is not yet applied.
+   * availability-consensus layer (truth-engine); no migration declares its table.
    */
   async insertSnapshot(snapshot: SnapshotInsert): Promise<void> {
     const { error } = await this.supabase.from(T_SNAPSHOTS).insert(snapshot);

@@ -1,9 +1,7 @@
 import type { ConfigService } from '@nestjs/config';
+import { PATH_METADATA } from '@nestjs/common/constants';
 import { SupplierTruthModule } from './supplier-truth.module';
 import { SupplierTruthController } from './supplier-truth.controller';
-import { SupplierTruthReadModule } from './supplier-truth-read.module';
-import { SupplierTruthService } from './supplier-truth.service';
-import { AvailabilityState } from './domain/availability-state';
 
 describe('SupplierTruthModule wiring (read-only API — no sync duplication)', () => {
   const imports = Reflect.getMetadata('imports', SupplierTruthModule) ?? [];
@@ -11,9 +9,11 @@ describe('SupplierTruthModule wiring (read-only API — no sync duplication)', (
     Reflect.getMetadata('controllers', SupplierTruthModule) ?? [];
   const providers = Reflect.getMetadata('providers', SupplierTruthModule) ?? [];
 
-  it('reuses the shared read slice + declares the read-only controller', () => {
-    expect(imports).toContain(SupplierTruthReadModule);
+  it('declares only the read-only controller and imports no data access', () => {
     expect(controllers).toEqual([SupplierTruthController]);
+    // The status endpoint reads the env flag + the static connector registry.
+    // Nothing here reaches the database, so the read slice is not imported.
+    expect(imports).toHaveLength(0);
   });
 
   it('does NOT re-provide the sync runtime (queue/scheduler/processor/runner live in WorkerModule)', () => {
@@ -22,6 +22,20 @@ describe('SupplierTruthModule wiring (read-only API — no sync duplication)', (
     // the same BullMQ queue (double processing once active) + a duplicate armer.
     expect(providers).toHaveLength(0);
   });
+
+  it('exposes exactly one route: status', () => {
+    // `projection/:pieceId` was removed with the never-applied supplier_truth_v1
+    // migration — it read a table that has never existed. A DB-backed route here
+    // needs H3's own migration first.
+    const proto = SupplierTruthController.prototype;
+    const routes = Object.getOwnPropertyNames(proto)
+      .filter((name) => name !== 'constructor')
+      .map((name) =>
+        Reflect.getMetadata(PATH_METADATA, proto[name as keyof typeof proto]),
+      )
+      .filter((path): path is string => typeof path === 'string');
+    expect(routes).toEqual(['status']);
+  });
 });
 
 function mockConfig(value: string): ConfigService {
@@ -29,54 +43,22 @@ function mockConfig(value: string): ConfigService {
 }
 
 describe('SupplierTruthController is strictly read-only', () => {
-  it('status reports OBSERVABLE_DORMANT + connectable suppliers, no DB hit', () => {
-    const service = {
-      getProjection: jest.fn(),
-    } as unknown as SupplierTruthService;
-    const controller = new SupplierTruthController(
-      service,
-      mockConfig('false'),
-    );
-
-    const status = controller.status();
+  it('status reports OBSERVABLE_DORMANT + connectable suppliers', () => {
+    const status = new SupplierTruthController(mockConfig('false')).status();
 
     expect(status.mode).toBe('OBSERVABLE_DORMANT');
     expect(status.syncEnabled).toBe(false);
     const ids = status.connectableSuppliers.map((s) => s.supplierId).sort();
     expect(ids).toEqual(['19', '71']); // CAL + DistriCash
-    expect(service.getProjection).not.toHaveBeenCalled(); // status hits no DB
   });
 
   it('reports ACTIVE only when the flag is exactly "true" (conservative)', () => {
-    const service = {
-      getProjection: jest.fn(),
-    } as unknown as SupplierTruthService;
-    expect(
-      new SupplierTruthController(service, mockConfig('true')).status().mode,
-    ).toBe('ACTIVE');
+    expect(new SupplierTruthController(mockConfig('true')).status().mode).toBe(
+      'ACTIVE',
+    );
     // any other value (e.g. '1', 'TRUE') stays dormant — fail-safe
     expect(
-      new SupplierTruthController(service, mockConfig('1')).status()
-        .syncEnabled,
+      new SupplierTruthController(mockConfig('1')).status().syncEnabled,
     ).toBe(false);
-  });
-
-  it('projection delegates to the read service (UNKNOWN when unverified)', async () => {
-    const view = {
-      state: AvailabilityState.UNKNOWN,
-      confidence: 0,
-      delayDays: null,
-      sourceSupplier: null,
-    };
-    const service = {
-      getProjection: jest.fn(async () => view),
-    } as unknown as SupplierTruthService;
-    const controller = new SupplierTruthController(
-      service,
-      mockConfig('false'),
-    );
-
-    await expect(controller.projection(123)).resolves.toBe(view);
-    expect(service.getProjection).toHaveBeenCalledWith(123);
   });
 });

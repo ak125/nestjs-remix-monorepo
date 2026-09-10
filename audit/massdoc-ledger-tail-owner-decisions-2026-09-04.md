@@ -12,8 +12,8 @@
 | `20260529_xtr_msg_crm_indexes` | **`applied`** 2026-09-07 (run 34080251591, `--retry`, 173 516 ms) | CLOS — 2 index `valid/ready/live`, note ledger = ancien échec (run 33839602437, `statement_timeout=60s` hérité du rôle `postgres`) ; la file n'est plus bloquée (0 failed / 0 applying) |
 | `20260605_vlevel_capture_db_only_functions` | **`applied`** 2026-09-07 (run 34084270158, `--only`, 277 ms) | CLOS — vérifié contre l'état d'avant : `proconfig`/`proacl` conformes, 3 fonctions inchangées + COMMENT versionné |
 | `20260611_quality_features_r3_guide_semantics` | **`applied`** 2026-09-07 (run 34084270158, `--only`, 289 ms) | CLOS — vérifié contre l'état d'avant : `proconfig`/`proacl` conformes, `get_page_quality_features` 59 → 66 colonnes, ACL reconstruite ; types générés à resynchroniser (PR dédiée) |
-| `20260520_supplier_truth_v1` | bloquée | décision produit (§1) |
-| `20260623_seo_event_log_r2_order_placed_idempotency` | bloquée | décision données (§2) |
+| `20260520_supplier_truth_v1` | **retirée** 2026-09-10 (fichier supprimé, jamais appliquée, aucune ligne au ledger) | CLOS — voir « Décision prise le 2026-09-10 » sous §1, état au 2026-09-07 |
+| `20260623_seo_event_log_r2_order_placed_idempotency` | **`applied`** 2026-09-08 13:00 (ledger `infra.schema_migrations`) | CLOS — option B, #1404 |
 
 ---
 
@@ -142,7 +142,7 @@ re-tir produira un faux `error` en log jusqu'au basculement du flag.
 Au 2026-09-04 la question était posée comme un choix produit ouvert. La lecture du code
 la referme : **le dépôt a déjà tranché, et pas en faveur de ces tables.**
 
-`supplier-truth.repository.ts:16-22` nomme la table canonique et disqualifie explicitement
+`supplier-truth.repository.ts:26-32` nomme la table canonique et disqualifie explicitement
 celles de la migration :
 
 > *Canonical per-supplier price+availability observation timeline (pricing H2, 20260523
@@ -151,7 +151,7 @@ celles de la migration :
 
 `supplier_offer_snapshot` existe, est partitionnée, porte un trigger anti-mutation, et
 c'est elle que le runtime alimente. Les méthodes qui lisent les 3 tables de la migration
-sont annotées « Kept for the future » (l.121) et « DEFERRED (H3, not wired) »
+sont annotées « Kept for the future » (l.131) et « DEFERRED (H3, not wired) »
 (`supplier-sync.processor.ts:18`).
 
 **Donc appliquer la migration créerait une seconde source de vérité parallèle à celle qui
@@ -166,6 +166,48 @@ aucune exposition publique ni SEO) lisent `supplier_truth_projection` et
 un 42P01. Retirer la migration suppose donc de **retirer aussi ces deux routes**, ou de les
 repointer vers `supplier_offer_snapshot`. C'est un choix de surface produit, pas de
 plomberie — je ne le prends pas.
+
+### Décision prise le 2026-09-10 — retirer, avec une correction du constat ci-dessus
+
+**Qui a décidé.** L'assistant, le 2026-09-10, en application de la consigne permanente de
+l'owner (« utiliser meilleures approche pas de bricolage ») et après les vérifications
+ci-dessous. L'owner a validé en acte : il a retiré lui-même le glob d'ownership de la
+migration dans `ownership.yaml` (fichier owner-only), puis a répondu « fais ».
+
+**Correction** : seule `/projection/:pieceId` lit la base. `GET /status` ne lit que le
+drapeau d'activation et le registre statique des connecteurs
+(`supplier-truth.controller.ts:31-51`) — elle est saine et reste en place.
+
+**La route ne pouvait pas répondre.** Même appel que le repository, sur la base partagée :
+`GET /rest/v1/supplier_truth_projection?piece_id=eq.1` →
+`{"code":"42P01","message":"relation \"public.supplier_truth_projection\" does not exist"}`.
+Dans le code, `getProjection` lève sur cette erreur et `GlobalErrorFilter` (`APP_FILTER`)
+rend toute `Error` non HTTP en 500 : un appel admin avec un `pieceId` entier finissait donc
+en 500 (un non-admin reçoit 403, un identifiant non entier 400). Chaîne lue dans le code ;
+la route n'a pas été appelée en PROD.
+
+**Aucun objet à détruire.** Les 5 objets déclarés (3 tables, 2 vues) sont absents de tous
+les schémas (`to_regclass` et `pg_class`). Retirer le fichier n'est pas un geste destructif.
+
+**Aucun appelant panier ni commande.** `OrderAvailabilityService` n'est injecté nulle
+part ; `SupplierTruthReadModule` n'était importé que par `WorkerModule` et
+`SupplierTruthModule` (ce dernier ne l'importe plus). Les en-têtes qui affirmaient
+« cart/orders import this » décrivaient une intégration qui n'a jamais eu lieu.
+
+**La table canonique est branchée, mais dormante.** `supplier_offer_snapshot` compte
+0 ligne au 2026-09-10 (`count(*)`, et `n_tup_ins = 0` sur ses 8 partitions). Le scheduler
+reste inerte tant que `SUPPLIER_TRUTH_SYNC_ENABLED` ne vaut pas exactement `'true'` ; le
+one-shot exige `SUPPLIER_SYNC_ONESHOT_CONFIRM=true`.
+
+**Pourquoi pas « repointer ».** `supplier_offer_snapshot` porte des observations brutes,
+pas un consensus (`state`, `confidence`, `conflict_kind`). Servir l'une sous le nom de
+l'autre inventerait une sémantique ; calculer le consensus à la volée reviendrait à livrer
+H3 hors de son chantier.
+
+**Retiré** : la migration et la route `/projection/:pieceId`. **Conservé** : `/status`, et
+le code domaine H3 (truth-engine, routing, lectures du repository), gardé délibérément par
+le chantier et désormais annoté comme non branché. H3 devra apporter sa propre migration —
+et poser `security_invoker` sur ses vues, ce que celle-ci omettait.
 
 ## `20260603_seo_cwv_aggregation_cron` — décidé : supprimer, pas committer
 
