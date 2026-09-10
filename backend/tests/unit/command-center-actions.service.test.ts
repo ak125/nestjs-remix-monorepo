@@ -130,19 +130,147 @@ function seoSupabase(
   return chain as ReturnType<typeof brokenSupabase>;
 }
 
-describe('PR4: rpc_seo_low_ctr_v2 envelope + explicit v1 fallback', () => {
+describe('PR4: rpc_seo_low_ctr_v4 envelope + explicit v3 → v2 → v1 fallback', () => {
   const gscRow = {
     page: '/pieces/filtre-a-air-8/x-1/y-2/z-3.html',
     impressions: 200,
     clicks: 0,
     avg_position: 4.2,
   };
+  const daysAgo = (n: number) =>
+    new Date(Date.now() - n * 86_400_000).toISOString().slice(0, 10);
+  /** Enveloppe v4 certifiable (grain fidèle, jours complets, couverture ok). */
+  const v4Envelope = (
+    lastDate: string,
+    over: Record<string, unknown> = {},
+  ) => ({
+    rows: [gscRow],
+    total_qualifying: 147,
+    data_from: '2026-06-01',
+    data_to: lastDate,
+    last_data_date: lastDate,
+    grain: 'page_totals',
+    days_expected: 90,
+    days_present: 90,
+    missing_dates: [],
+    clicks_coverage_ratio: 1,
+    impressions_coverage_ratio: 1.04,
+    coverage_ratio: 1.04,
+    coverage_status: 'ok',
+    ...over,
+  });
 
-  it('v2 envelope → meta wired: fresh data = confidence 90, cap + real coverage in reason', async () => {
+  it('v4 envelope (grain fidèle, jours complets, couverture ok, frais) → CERTIFIED 90, cap + jours dans la raison', async () => {
     // last ingested date 2 days ago → within the 7-day freshness SLA
-    const freshDate = new Date(Date.now() - 2 * 86_400_000)
-      .toISOString()
-      .slice(0, 10);
+    const freshDate = daysAgo(2);
+    const supabase = seoSupabase((name) =>
+      name === 'rpc_seo_low_ctr_v4'
+        ? { data: v4Envelope(freshDate), error: null }
+        : { data: null, error: { message: `unexpected call to ${name}` } },
+    );
+    const service = makeService(supabase);
+    const queue = await service.computeActionQueue([], [], 'full');
+    const product = queue.find((a) => a.id === 'seo:opportunity:product');
+    expect(product).toBeDefined();
+    expect(product!.action_type).toBe('business');
+    expect(product!.data_confidence).toBe(90);
+    expect(product!.title).toMatch(/top 1/); // 147 qualifying > 1 shown → cap disclosed
+    expect(product!.reason).toMatch(/147 pages qualifiantes/);
+    expect(product!.reason).toMatch(
+      new RegExp(`2026-06-01 au ${freshDate} \\(90/90 jours\\)`),
+    );
+    expect(product!.reason).not.toMatch(/non exhaustif/);
+    // v4 est seule à recevoir les 2 paramètres gouvernés (défauts documentés : la
+    // config de test renvoie 'mock-value' → invalide → défaut appliqué et loggué).
+    expect(supabase.rpc).toHaveBeenCalledTimes(1);
+    expect(supabase.rpc).toHaveBeenCalledWith('rpc_seo_low_ctr_v4', {
+      p_window_days: 120,
+      p_min_impressions: 50,
+      p_max_ctr: 0,
+      p_limit: 50,
+      p_coverage_min_ratio: 0.9,
+      p_expected_from: '2026-06-01',
+    });
+  });
+
+  it('v4 avec jours manquants (incomplete_days) → PARTIAL 55, N/M jours et totaux non exhaustifs dits', async () => {
+    const freshDate = daysAgo(2);
+    const supabase = seoSupabase((name) =>
+      name === 'rpc_seo_low_ctr_v4'
+        ? {
+            data: v4Envelope(freshDate, {
+              total_qualifying: 1,
+              days_expected: 28,
+              days_present: 15,
+              coverage_status: 'incomplete_days',
+            }),
+            error: null,
+          }
+        : { data: null, error: { message: `unexpected call to ${name}` } },
+    );
+    const service = makeService(supabase);
+    const queue = await service.computeActionQueue([], [], 'full');
+    const product = queue.find((a) => a.id === 'seo:opportunity:product');
+    expect(product!.data_confidence).toBe(55);
+    expect(product!.reason).toMatch(/\(15\/28 jours\)/);
+    expect(product!.reason).toMatch(/jours GSC manquants/);
+    expect(product!.reason).toMatch(/Liste non exhaustive/);
+    expect(product!.reason).not.toMatch(/Liste complète/);
+  });
+
+  it('v4 annonçant un autre grain que page_totals → fidélité inconnue, PARTIAL 55', async () => {
+    const freshDate = daysAgo(2);
+    const supabase = seoSupabase((name) =>
+      name === 'rpc_seo_low_ctr_v4'
+        ? { data: v4Envelope(freshDate, { grain: 'pages' }), error: null }
+        : { data: null, error: { message: `unexpected call to ${name}` } },
+    );
+    const service = makeService(supabase);
+    const queue = await service.computeActionQueue([], [], 'full');
+    const product = queue.find((a) => a.id === 'seo:opportunity:product');
+    expect(product!.data_confidence).toBe(55);
+    expect(product!.reason).toMatch(/fidélité du grain pages inconnue/);
+  });
+
+  it('v4 absente → repli v3 EXPLICITE (sans les params v4) : grain lossy → PARTIAL 55 même frais et couvert', async () => {
+    const freshDate = daysAgo(2);
+    const supabase = seoSupabase((name) =>
+      name === 'rpc_seo_low_ctr_v3'
+        ? {
+            data: {
+              rows: [gscRow],
+              total_qualifying: 1,
+              data_from: '2026-06-01',
+              data_to: freshDate,
+              last_data_date: freshDate,
+              coverage_status: 'ok',
+            },
+            error: null,
+          }
+        : {
+            data: null,
+            error: { message: `function ${name} does not exist` },
+          },
+    );
+    const service = makeService(supabase);
+    const queue = await service.computeActionQueue([], [], 'full');
+    const product = queue.find((a) => a.id === 'seo:opportunity:product');
+    expect(product!.action_type).toBe('business');
+    expect(product!.data_confidence).toBe(55);
+    expect(product!.reason).toMatch(/grain pages non exhaustif/);
+    expect(product!.reason).toMatch(/Liste non exhaustive/);
+    expect(supabase.rpc).toHaveBeenNthCalledWith(2, 'rpc_seo_low_ctr_v3', {
+      p_window_days: 120,
+      p_min_impressions: 50,
+      p_max_ctr: 0,
+      p_limit: 50,
+    });
+  });
+
+  it('v2 envelope (v4/v3 absentes) → meta wired mais grain requêtes lossy : fresh = PARTIAL 55, cap + real coverage in reason', async () => {
+    // Changement délibéré (2026-09-11) : ce cas valait CERTIFIED 90 alors que le grain
+    // sommé restitue ~7 % des clics (mesure API) — le 90 ne vaut plus que pour v4.
+    const freshDate = daysAgo(2);
     const supabase = seoSupabase((name) =>
       name === 'rpc_seo_low_ctr_v2'
         ? {
@@ -162,16 +290,15 @@ describe('PR4: rpc_seo_low_ctr_v2 envelope + explicit v1 fallback', () => {
     const product = queue.find((a) => a.id === 'seo:opportunity:product');
     expect(product).toBeDefined();
     expect(product!.action_type).toBe('business');
-    expect(product!.data_confidence).toBe(90);
+    expect(product!.data_confidence).toBe(55);
     expect(product!.title).toMatch(/top 1/); // 147 qualifying > 1 shown → cap disclosed
     expect(product!.reason).toMatch(/147 pages qualifiantes/);
     expect(product!.reason).toMatch(new RegExp(`2026-04-01 au ${freshDate}`));
+    expect(product!.reason).toMatch(/grain pages non exhaustif/);
   });
 
   it('v2 stale ingestion → business action survives at PARTIAL (55), staleness said out loud', async () => {
-    const staleDate = new Date(Date.now() - 20 * 86_400_000)
-      .toISOString()
-      .slice(0, 10);
+    const staleDate = daysAgo(20);
     const supabase = seoSupabase((name) =>
       name === 'rpc_seo_low_ctr_v2'
         ? {
@@ -210,7 +337,9 @@ describe('PR4: rpc_seo_low_ctr_v2 envelope + explicit v1 fallback', () => {
     expect(product!.action_type).toBe('business'); // 55 ≥ floor 40 — survives flagged « prudence »
     expect(product!.data_confidence).toBe(55);
     expect(product!.reason).toMatch(/total qualifiant inconnu/i);
-    expect(product!.reason).toMatch(/Couverture réelle des données GSC inconnue/);
+    expect(product!.reason).toMatch(
+      /Couverture réelle des données GSC inconnue/,
+    );
   });
 
   it('v2 returns a v1-style ARRAY (invalid envelope) → explicit v1 fallback at PARTIAL', async () => {
@@ -230,25 +359,15 @@ describe('PR4: rpc_seo_low_ctr_v2 envelope + explicit v1 fallback', () => {
   });
 
   it('freshness boundary is calendar-day based: 7 days ago = fresh (90), 8 days ago = stale (55)', async () => {
-    const dateDaysAgo = (n: number) =>
-      new Date(Date.now() - n * 86_400_000).toISOString().slice(0, 10);
-    for (const [daysAgo, expected] of [
+    // Enveloppe v4 certifiable par ailleurs : seule la fraîcheur fait basculer.
+    for (const [lag, expected] of [
       [7, 90],
       [8, 55],
     ] as const) {
-      const d = dateDaysAgo(daysAgo);
+      const d = daysAgo(lag);
       const supabase = seoSupabase((name) =>
-        name === 'rpc_seo_low_ctr_v2'
-          ? {
-              data: {
-                rows: [gscRow],
-                total_qualifying: 1,
-                data_from: '2026-04-01',
-                data_to: d,
-                last_data_date: d,
-              },
-              error: null,
-            }
+        name === 'rpc_seo_low_ctr_v4'
+          ? { data: v4Envelope(d, { total_qualifying: 1 }), error: null }
           : { data: null, error: { message: `unexpected call to ${name}` } },
       );
       const service = makeService(supabase);
@@ -258,7 +377,7 @@ describe('PR4: rpc_seo_low_ctr_v2 envelope + explicit v1 fallback', () => {
     }
   });
 
-  it('v2 AND v1 broken → honest sourceUnavailable certification, never business', async () => {
+  it('v4, v3, v2 AND v1 broken → honest sourceUnavailable certification, never business', async () => {
     const supabase = seoSupabase(() => ({
       data: null,
       error: { message: 'boom' },
@@ -266,8 +385,6 @@ describe('PR4: rpc_seo_low_ctr_v2 envelope + explicit v1 fallback', () => {
     const service = makeService(supabase);
     const queue = await service.computeActionQueue([], [], 'full');
     expect(queue.find((a) => a.id === 'unavailable:seo')).toBeDefined();
-    expect(
-      queue.some((a) => a.id.startsWith('seo:opportunity:')),
-    ).toBe(false);
+    expect(queue.some((a) => a.id.startsWith('seo:opportunity:'))).toBe(false);
   });
 });

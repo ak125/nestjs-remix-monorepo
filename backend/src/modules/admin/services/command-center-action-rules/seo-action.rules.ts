@@ -1,6 +1,6 @@
 /**
  * SEO opportunity rules — REAL business actions (source SEO/GSC, CERTIFIED
- * seulement si la fraîcheur d'ingestion est vérifiée — sinon PARTIAL).
+ * seulement si grain page fidèle + fraîcheur + couverture sont vérifiés — sinon PARTIAL).
  * Input = GSC rows already filtered by the service to "high impressions, ~0 clicks"
  * (the clearest opportunity) — requêtes synthétiques exclues côté RPC
  * (_seo_is_synthetic_query). Pure function (no I/O) → testable with fixtures.
@@ -25,7 +25,7 @@ export interface GscOpportunityRow {
 }
 
 /**
- * Méta d'honnêteté de la source GSC (enveloppe rpc_seo_low_ctr_v2) :
+ * Méta d'honnêteté de la source GSC (enveloppe rpc_seo_low_ctr_v4/v3/v2) :
  *   - total_qualifying : pages qualifiantes AVANT le cap p_limit (divulgue le cap),
  *   - data_from/data_to : couverture réellement présente dans la fenêtre demandée
  *     (remplace le « sur 120j » qui affirmait une couverture non vérifiée),
@@ -38,11 +38,28 @@ export interface GscOpportunityMeta {
   data_to: string | null; // YYYY-MM-DD — dernière date réellement couverte
   freshness: 'fresh' | 'stale' | 'unknown';
   /**
-   * Couverture du grain pages vs le total global (rpc_seo_low_ctr_v3 ; absent en
-   * v2/v1). `coverage_gap`/`insufficient_data` dégrade la confiance comme `stale` :
-   * la liste pages est partielle (anonymisation) → PARTIAL, jamais un faux CERTIFIED.
+   * Fidélité du grain page sommé par la RPC (OBLIGATOIRE — pas de défaut rassurant) :
+   *   - 'faithful' : `__seo_gsc_daily_page_totals` (dimension page seule ≈ total
+   *     propriété ; rpc_seo_low_ctr_v4) ;
+   *   - 'lossy'    : grains segmentés (v3 page+country+device, v2/v1 requêtes) qui
+   *     restituent ~7 % des clics (mesure API 2026-09-10) → CTR par page sous-estimé ;
+   *   - 'unknown'  : enveloppe absente (v1).
+   * Seul 'faithful' peut être CERTIFIED.
    */
-  coverage_status?: 'ok' | 'coverage_gap' | 'insufficient_data';
+  grain_fidelity: 'faithful' | 'lossy' | 'unknown';
+  /**
+   * Couverture du grain pages vs le total propriété (v3 : impressions ; v4 :
+   * impressions ET clics + jours commités ; absent en v2/v1). Tout statut ≠ 'ok'
+   * dégrade la confiance → PARTIAL, jamais un faux CERTIFIED.
+   */
+  coverage_status?:
+    | 'ok'
+    | 'coverage_gap'
+    | 'insufficient_data'
+    | 'incomplete_days';
+  /** Jours attendus / commités dans la fenêtre (v4 uniquement ; null = inconnu). */
+  days_expected?: number | null;
+  days_present?: number | null;
 }
 
 /** Fallback honnête (RPC v1 sans enveloppe) : rien d'affirmé, confiance PARTIAL. */
@@ -51,7 +68,21 @@ export const UNKNOWN_GSC_META: GscOpportunityMeta = {
   data_from: null,
   data_to: null,
   freshness: 'unknown',
+  grain_fidelity: 'unknown',
 };
+
+/**
+ * Source GSC certifiable = grain page fidèle + fraîcheur vérifiée + couverture
+ * 'ok' (jours complets, clics et impressions au plancher). Une couverture absente
+ * n'est PAS une couverture ok.
+ */
+function isGscSourceCertifiable(meta: GscOpportunityMeta): boolean {
+  return (
+    meta.grain_fidelity === 'faithful' &&
+    meta.freshness === 'fresh' &&
+    meta.coverage_status === 'ok'
+  );
+}
 
 type PageKind = 'product' | 'content' | 'other';
 
@@ -134,11 +165,12 @@ export function buildSeoOpportunityActions(
   rows: GscOpportunityRow[],
   meta: GscOpportunityMeta = UNKNOWN_GSC_META,
 ): RawAction[] {
+  const certifiable = isGscSourceCertifiable(meta);
   if (!rows.length) {
-    // 0 ligne + données fraîches et couvertes = vraie bonne nouvelle → rien.
-    // 0 ligne SANS fraîcheur/couverture vérifiée = indistinguable d'une panne
-    // d'ingestion : un signal de certification, jamais un silence ambigu.
-    if (meta.freshness === 'fresh' && meta.data_from) return [];
+    // 0 ligne + source certifiable (grain fidèle, fraîche, couverte) = vraie
+    // bonne nouvelle → rien. Sinon indistinguable d'une panne d'ingestion ou
+    // d'un grain qui perd des lignes : signal de certification, jamais un silence.
+    if (certifiable && meta.data_from) return [];
     return [
       {
         id: 'seo:gsc-data-gap',
@@ -154,12 +186,14 @@ export function buildSeoOpportunityActions(
         effort: 3,
         risk: 1,
         reason:
-          "0 page d'opportunité remontée, mais la fraîcheur/couverture GSC n'est pas vérifiée " +
-          `(fraîcheur : ${meta.freshness}${meta.data_from ? '' : ', couverture inconnue'}) — ` +
-          "impossible de distinguer « aucune opportunité » d'une ingestion arrêtée.",
-        evidence: ['__seo_gsc_daily (fenêtre interrogée vide ou non fraîche)'],
+          "0 page d'opportunité remontée, mais la source GSC n'est pas vérifiée " +
+          `(fraîcheur : ${meta.freshness} ; grain : ${meta.grain_fidelity} ; couverture : ${meta.coverage_status ?? 'inconnue'}${meta.data_from ? '' : ', période inconnue'}) — ` +
+          "impossible de distinguer « aucune opportunité » d'une ingestion arrêtée ou d'un grain incomplet.",
+        evidence: [
+          '__seo_gsc_daily_page_totals / __seo_gsc_daily_property_total (fenêtre vide, non fraîche ou non couverte)',
+        ],
         next_step:
-          "Vérifier l'ingestion GSC (gsc-daily-fetcher) et appliquer la migration rpc_seo_low_ctr_v2 si absente.",
+          "Vérifier l'ingestion GSC (gsc-daily-fetcher, rattrapage des jours manquants) et appliquer les migrations rpc_seo_low_ctr_v4 si absentes.",
       },
     ];
   }
@@ -167,25 +201,29 @@ export function buildSeoOpportunityActions(
   const sampleSize = rows.length;
   const truncated =
     meta.total_qualifying != null && meta.total_qualifying > sampleSize;
-  // CERTIFIED exige une fraîcheur vérifiée ET une couverture OK ; stale/unknown
-  // OU coverage_gap/insufficient_data → PARTIAL (≥ floor 40 : l'action business
-  // survit mais l'UI la marque « prudence », pas de faux 90 sur donnée partielle).
-  const coverageOk =
-    meta.coverage_status == null || meta.coverage_status === 'ok';
-  const confidence =
-    meta.freshness === 'fresh' && coverageOk
-      ? CONFIDENCE_BY_CERT.CERTIFIED
-      : CONFIDENCE_BY_CERT.PARTIAL;
+  // CERTIFIED exige grain fidèle + fraîcheur vérifiée + couverture 'ok' ; tout
+  // autre cas → PARTIAL (≥ floor 40 : l'action business survit mais l'UI la
+  // marque « prudence », pas de faux 90 sur donnée partielle ou grain lossy).
+  const confidence = certifiable
+    ? CONFIDENCE_BY_CERT.CERTIFIED
+    : CONFIDENCE_BY_CERT.PARTIAL;
   // sampleSize/total_qualifying sont GLOBAUX (tous types de pages, cap p_limit
   // partagé) alors que chaque action est émise PAR type — le wording le dit.
+  // « Liste complète » n'est affirmé que sur une source certifiable.
   const scopeNote = truncated
     ? `Échantillon global top ${sampleSize} par impact — ${meta.total_qualifying} pages qualifiantes (fortes impressions, ~0 clic) au total, tous types de pages confondus.`
     : meta.total_qualifying != null
-      ? `Liste complète (${meta.total_qualifying} pages qualifiantes, tous types confondus).`
+      ? certifiable
+        ? `Liste complète (${meta.total_qualifying} pages qualifiantes, tous types confondus).`
+        : `Liste non exhaustive (${meta.total_qualifying} pages qualifiantes sur les données disponibles, tous types confondus).`
       : `Échantillon top ${sampleSize} (toutes pages) — total qualifiant inconnu (RPC v1).`;
+  const daysNote =
+    meta.days_expected != null && meta.days_present != null
+      ? ` (${meta.days_present}/${meta.days_expected} jours)`
+      : '';
   const coverageNote =
     meta.data_from && meta.data_to
-      ? `Données GSC réellement couvertes du ${meta.data_from} au ${meta.data_to}`
+      ? `Données GSC réellement couvertes du ${meta.data_from} au ${meta.data_to}${daysNote}`
       : 'Couverture réelle des données GSC inconnue';
   const freshnessNote =
     (meta.freshness === 'fresh'
@@ -193,11 +231,22 @@ export function buildSeoOpportunityActions(
       : meta.freshness === 'stale'
         ? ' ; fraîcheur GSC dégradée (ingestion en retard)'
         : ' ; fraîcheur GSC non vérifiée') +
-    (coverageOk
+    (meta.grain_fidelity === 'faithful'
       ? ''
-      : meta.coverage_status === 'insufficient_data'
-        ? ' ; couverture GSC indéterminée (total global absent)'
-        : ' ; couverture pages partielle (anonymisation) — opportunités possiblement incomplètes');
+      : meta.grain_fidelity === 'lossy'
+        ? ' ; grain pages non exhaustif (détail segmenté ≈ 7 % des clics) — CTR par page sous-estimé, opportunités à confirmer'
+        : ' ; fidélité du grain pages inconnue') +
+    (meta.coverage_status == null
+      ? meta.grain_fidelity === 'faithful'
+        ? ' ; couverture GSC non publiée'
+        : ''
+      : meta.coverage_status === 'ok'
+        ? ''
+        : meta.coverage_status === 'insufficient_data'
+          ? ' ; couverture GSC indéterminée (total propriété absent)'
+          : meta.coverage_status === 'incomplete_days'
+            ? ' ; jours GSC manquants dans la fenêtre — totaux non exhaustifs'
+            : ' ; couverture pages partielle vs total propriété — opportunités possiblement incomplètes');
 
   const byKind = new Map<PageKind, GscOpportunityRow[]>();
   for (const r of rows) {

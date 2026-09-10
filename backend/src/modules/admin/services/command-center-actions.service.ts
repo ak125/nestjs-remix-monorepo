@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import {
+  GSC_BACKFILL_FLOOR_DATE_DEFAULT,
+  GSC_PAGE_TOTALS_MIN_RATIO_DEFAULT,
+  isIsoDate,
+} from '@repo/seo-types';
 import { existsSync, readFileSync, readdirSync } from 'fs';
 import { basename, join } from 'path';
 import { gzipSync } from 'zlib';
@@ -30,7 +35,7 @@ import {
   type RawAction,
 } from './command-center-action-rules/score-action';
 
-/** Forme brute d'une ligne GSC renvoyée par rpc_seo_low_ctr_v1/v2 (JSONB). */
+/** Forme brute d'une ligne GSC renvoyée par rpc_seo_low_ctr_v1..v4 (JSONB). */
 interface RawGscRow {
   page: string;
   impressions: number | string;
@@ -43,9 +48,9 @@ interface RawGscRow {
  * Combines:
  *   - certification/repair actions from the canon snapshot (no DB),
  *   - REAL SEO opportunity actions (GSC — via the governed STABLE aggregation
- *     RPC rpc_seo_low_ctr_v2: synthetic queries filtered server-side, envelope
- *     discloses the p_limit cap + real data coverage + ingestion freshness;
- *     explicit logged fallback to v1 while the migration is not applied),
+ *     RPC rpc_seo_low_ctr_v4: faithful page grain, envelope discloses the p_limit
+ *     cap + committed days + clicks/impressions coverage + ingestion freshness;
+ *     explicit logged fallback v3 → v2 → v1 while the migration is not applied),
  *   - cautious pricing actions (missing purchase price via count; margin thresholds
  *     + runtime sell-at-loss kept as certification — no fake threshold).
  * Every source is graceful: a failed query yields a "source unavailable" certification
@@ -60,8 +65,36 @@ export class CommandCenterActionsService extends SupabaseBaseService {
   /** SLA fraîcheur GSC : lag normal ≈ 3 j ; au-delà de 7 j = stale → PARTIAL. */
   private static readonly GSC_FRESH_MAX_LAG_DAYS = 7;
 
+  /** Plancher de couverture page_totals/propriété passé à v4 (même param que le fetcher). */
+  private readonly gscCoverageMinRatio: number;
+  /** Premier jour GSC attendu passé à v4 (même param que le planificateur d'ingestion). */
+  private readonly gscExpectedFrom: string;
+
   constructor(configService: ConfigService) {
     super(configService);
+    const rawRatio = configService.get<string>('SEO_GSC_PAGE_TOTALS_MIN_RATIO');
+    const ratio = Number(rawRatio);
+    if (rawRatio == null || String(rawRatio).trim() === '') {
+      this.gscCoverageMinRatio = GSC_PAGE_TOTALS_MIN_RATIO_DEFAULT;
+    } else if (Number.isFinite(ratio) && ratio > 0 && ratio <= 1) {
+      this.gscCoverageMinRatio = ratio;
+    } else {
+      this.logger.warn(
+        `⚠️ SEO_GSC_PAGE_TOTALS_MIN_RATIO=${rawRatio} invalide (attendu ]0,1]) — défaut ${GSC_PAGE_TOTALS_MIN_RATIO_DEFAULT} appliqué`,
+      );
+      this.gscCoverageMinRatio = GSC_PAGE_TOTALS_MIN_RATIO_DEFAULT;
+    }
+    const rawFloor = configService.get<string>('SEO_GSC_BACKFILL_FLOOR_DATE');
+    if (rawFloor == null || String(rawFloor).trim() === '') {
+      this.gscExpectedFrom = GSC_BACKFILL_FLOOR_DATE_DEFAULT;
+    } else if (isIsoDate(String(rawFloor).trim())) {
+      this.gscExpectedFrom = String(rawFloor).trim();
+    } else {
+      this.logger.warn(
+        `⚠️ SEO_GSC_BACKFILL_FLOOR_DATE=${rawFloor} invalide (attendu YYYY-MM-DD) — défaut ${GSC_BACKFILL_FLOOR_DATE_DEFAULT} appliqué`,
+      );
+      this.gscExpectedFrom = GSC_BACKFILL_FLOOR_DATE_DEFAULT;
+    }
   }
 
   /** Full mode only — light/disabled never expose action detail. */
@@ -84,13 +117,12 @@ export class CommandCenterActionsService extends SupabaseBaseService {
     try {
       // Governed STABLE aggregation, server-side GROUP BY + HAVING (avoids the
       // supabase-js 1000-row cap). p_max_ctr: 0 → strictly zero-click. Routed
-      // through callRpc (RPC Safety Gate) — v1/v2 sont dans
+      // through callRpc (RPC Safety Gate) — v1..v4 sont dans
       // governance/rpc/rpc_allowlist.json (une fonction inconnue du gate est
       // BLOCK en PROD enforce ; le « contexte interne » seul ne suffit pas).
-      // v2 = synthetic queries filtered + honest envelope {rows, total_qualifying,
-      // data_from, data_to, last_data_date}. v1 fallback is EXPLICIT and logged
-      // (migration not yet applied): meta stays 'unknown' → the rule degrades
-      // confidence to PARTIAL and the reason says the coverage is unknown —
+      // Enveloppe honnête {rows, total_qualifying, data_from, data_to,
+      // last_data_date, coverage_status, grain, days_*}. Chaque repli est EXPLICITE
+      // et loggué ; seul le grain fidèle (v4) peut conduire à CERTIFIED —
       // governed, observable, never a silent green.
       const rpcParams = {
         p_window_days: CommandCenterActionsService.GSC_WINDOW_DAYS,
@@ -98,51 +130,98 @@ export class CommandCenterActionsService extends SupabaseBaseService {
         p_max_ctr: 0,
         p_limit: 50,
       };
-      // Enveloppe honnête partagée v3/v2 (v3 ajoute coverage_status). v1 = sans enveloppe.
+      // v4 seule accepte ces 2 paramètres (PostgREST résout la signature par noms :
+      // les passer à v3/v2/v1 ferait échouer l'appel).
+      const rpcParamsV4 = {
+        ...rpcParams,
+        p_coverage_min_ratio: this.gscCoverageMinRatio,
+        p_expected_from: this.gscExpectedFrom,
+      };
+      // Enveloppe honnête partagée v4/v3/v2 (v3 ajoute coverage_status ; v4 ajoute
+      // grain + jours). v1 = sans enveloppe.
       type Envelope = {
         rows?: RawGscRow[];
         total_qualifying?: number | string | null;
         data_from?: string | null;
         data_to?: string | null;
         last_data_date?: string | null;
-        coverage_status?: 'ok' | 'coverage_gap' | 'insufficient_data' | null;
+        coverage_status?:
+          | 'ok'
+          | 'coverage_gap'
+          | 'insufficient_data'
+          | 'incomplete_days'
+          | null;
+        grain?: string | null;
+        days_expected?: number | string | null;
+        days_present?: number | string | null;
       };
-      const toMeta = (d: Envelope): GscOpportunityMeta => {
-        // null doit RESTER null (Number(null) === 0 fabriquerait « Liste complète
-        // (0 pages qualifiantes) » à côté de lignes non vides).
-        const rawTotal = d.total_qualifying;
-        const total = rawTotal == null ? NaN : Number(rawTotal);
-        return {
-          total_qualifying: Number.isFinite(total) ? total : null,
-          data_from: d.data_from ?? null,
-          data_to: d.data_to ?? null,
-          freshness: this.gscFreshness(d.last_data_date ?? null),
-          coverage_status: d.coverage_status ?? undefined,
-        };
+      // null doit RESTER null (Number(null) === 0 fabriquerait « Liste complète
+      // (0 pages qualifiantes) » à côté de lignes non vides).
+      const toCount = (raw: number | string | null | undefined) => {
+        const n = raw == null ? NaN : Number(raw);
+        return Number.isFinite(n) ? n : null;
       };
+      const toMeta = (
+        d: Envelope,
+        grain_fidelity: GscOpportunityMeta['grain_fidelity'],
+      ): GscOpportunityMeta => ({
+        total_qualifying: toCount(d.total_qualifying),
+        data_from: d.data_from ?? null,
+        data_to: d.data_to ?? null,
+        freshness: this.gscFreshness(d.last_data_date ?? null),
+        grain_fidelity,
+        coverage_status: d.coverage_status ?? undefined,
+        days_expected: toCount(d.days_expected),
+        days_present: toCount(d.days_present),
+      });
 
-      // Chaîne v3 → v2 → v1 (dégradation gracieuse, chaque repli loggué — no silent
-      // fallback). v3 = grain pages FIDÈLE (__seo_gsc_daily_pages, sans query) +
-      // couverture ; v2 = enveloppe honnête sans couverture ; v1 = sans enveloppe.
-      // Toutes 3 dans rpc_allowlist.json (RPC Safety Gate). Une fonction non encore
-      // déployée (migration non appliquée) → repli explicite, jamais un faux-vert.
-      let rawRows: RawGscRow[];
-      let meta: GscOpportunityMeta;
-      const v3 = await this.callRpc<Envelope>('rpc_seo_low_ctr_v3', rpcParams);
-      if (!v3.error && v3.data && Array.isArray(v3.data.rows)) {
-        rawRows = v3.data.rows;
-        meta = toMeta(v3.data);
+      // Chaîne v4 → v3 → v2 → v1 (dégradation gracieuse, chaque repli loggué — no
+      // silent fallback). v4 = grain page FIDÈLE (__seo_gsc_daily_page_totals, jours
+      // commités) + couverture jours/clics/impressions ; v3 = grain page+country+device
+      // (LOSSY, ~7 % des clics) + couverture impressions ; v2 = grain requêtes (LOSSY)
+      // sans couverture ; v1 = sans enveloppe. Toutes dans rpc_allowlist.json (RPC
+      // Safety Gate). Une fonction non encore déployée (migration non appliquée) →
+      // repli explicite, confiance PARTIAL, jamais un faux-vert.
+      let rawRows: RawGscRow[] | undefined;
+      let meta: GscOpportunityMeta = UNKNOWN_GSC_META;
+      const v4 = await this.callRpc<Envelope>(
+        'rpc_seo_low_ctr_v4',
+        rpcParamsV4,
+      );
+      if (!v4.error && v4.data && Array.isArray(v4.data.rows)) {
+        rawRows = v4.data.rows;
+        // grain annoncé ≠ page_totals → fidélité non prouvée, pas supposée.
+        meta = toMeta(
+          v4.data,
+          v4.data.grain === 'page_totals' ? 'faithful' : 'unknown',
+        );
       } else {
         this.logger.warn(
-          `[command-center-actions] rpc_seo_low_ctr_v3 indisponible (${v3.error ?? 'enveloppe invalide'}) — fallback v2 : couverture inconnue`,
+          `[command-center-actions] rpc_seo_low_ctr_v4 indisponible (${v4.error ?? 'enveloppe invalide'}) — fallback v3 : grain pages lossy, confiance dégradée`,
         );
+      }
+      if (rawRows === undefined) {
+        const v3 = await this.callRpc<Envelope>(
+          'rpc_seo_low_ctr_v3',
+          rpcParams,
+        );
+        if (!v3.error && v3.data && Array.isArray(v3.data.rows)) {
+          rawRows = v3.data.rows;
+          meta = toMeta(v3.data, 'lossy');
+        } else {
+          this.logger.warn(
+            `[command-center-actions] rpc_seo_low_ctr_v3 indisponible (${v3.error ?? 'enveloppe invalide'}) — fallback v2 : couverture inconnue`,
+          );
+        }
+      }
+      if (rawRows === undefined) {
         const v2 = await this.callRpc<Envelope>(
           'rpc_seo_low_ctr_v2',
           rpcParams,
         );
         if (!v2.error && v2.data && Array.isArray(v2.data.rows)) {
           rawRows = v2.data.rows;
-          meta = toMeta(v2.data);
+          meta = toMeta(v2.data, 'lossy');
         } else {
           this.logger.warn(
             `[command-center-actions] rpc_seo_low_ctr_v2 indisponible (${v2.error ?? 'enveloppe invalide'}) — fallback v1 : couverture/total inconnus, confiance dégradée`,
@@ -160,7 +239,7 @@ export class CommandCenterActionsService extends SupabaseBaseService {
       // RPC returns BIGINT sums as JSONB numbers; coerce defensively. avg_position
       // → position (PR3): only a real SERP position (>0) survives; 0/NaN/absent → null
       // (explicit finite check, not a falsy-coerce) so the rule uses its honest fallback.
-      const rows: GscOpportunityRow[] = rawRows.map((r) => {
+      const rows: GscOpportunityRow[] = (rawRows ?? []).map((r) => {
         const pos = Number(r.avg_position);
         return {
           page: r.page,

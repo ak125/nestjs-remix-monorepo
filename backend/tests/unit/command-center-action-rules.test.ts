@@ -330,8 +330,32 @@ describe('SEO opportunity rules — real business actions (certified source)', (
         data_from: '2026-04-01',
         data_to: '2026-06-08',
         freshness: 'fresh',
+        grain_fidelity: 'faithful',
+        coverage_status: 'ok',
       }),
     ).toEqual([]);
+  });
+
+  it('empty input frais mais grain lossy ou jours manquants → data-gap, pas un « rien » rassurant', () => {
+    for (const over of [
+      { grain_fidelity: 'lossy' as const, coverage_status: 'ok' as const },
+      {
+        grain_fidelity: 'faithful' as const,
+        coverage_status: 'incomplete_days' as const,
+      },
+      { grain_fidelity: 'faithful' as const, coverage_status: undefined },
+    ]) {
+      const out = buildSeoOpportunityActions([], {
+        total_qualifying: 0,
+        data_from: '2026-06-01',
+        data_to: '2026-09-07',
+        freshness: 'fresh',
+        ...over,
+      }).map(finalizeAction);
+      expect(out).toHaveLength(1);
+      expect(out[0].id).toBe('seo:gsc-data-gap');
+      expect(out[0].reason).toMatch(/ingestion/i);
+    }
   });
 
   it('empty input SANS fraîcheur vérifiée → action certification data-gap, jamais un silence ambigu', () => {
@@ -414,7 +438,11 @@ describe('PR4: GSC meta honnêteté — cap divulgué, couverture réelle, fraî
       clicks: 0,
       position: 4,
     },
-    { page: 'https://x/blog-pieces-auto/conseils/c', impressions: 100, clicks: 0 },
+    {
+      page: 'https://x/blog-pieces-auto/conseils/c',
+      impressions: 100,
+      clicks: 0,
+    },
   ];
 
   it('fresh + cap dépassé → confiance CERTIFIED (90), cap dans le titre, couverture réelle dans la raison', () => {
@@ -423,6 +451,8 @@ describe('PR4: GSC meta honnêteté — cap divulgué, couverture réelle, fraî
       data_from: '2026-04-01',
       data_to: '2026-06-08',
       freshness: 'fresh',
+      grain_fidelity: 'faithful',
+      coverage_status: 'ok',
     }).map(finalizeAction);
     const product = out.find((a) => a.id === 'seo:opportunity:product')!;
     expect(product.data_confidence).toBe(90);
@@ -433,12 +463,14 @@ describe('PR4: GSC meta honnêteté — cap divulgué, couverture réelle, fraî
     expect(product.reason).not.toMatch(/120j/); // plus de claim de fenêtre non vérifiée
   });
 
-  it('stale → PARTIAL (55) annoncé, l\'action business survit (≥ floor) marquée prudence', () => {
+  it("stale → PARTIAL (55) annoncé, l'action business survit (≥ floor) marquée prudence", () => {
     const out = buildSeoOpportunityActions(rows, {
       total_qualifying: 2,
       data_from: '2026-04-01',
       data_to: '2026-05-01',
       freshness: 'stale',
+      grain_fidelity: 'faithful',
+      coverage_status: 'ok',
     }).map(finalizeAction);
     const product = out.find((a) => a.id === 'seo:opportunity:product')!;
     expect(product.data_confidence).toBe(55);
@@ -451,7 +483,9 @@ describe('PR4: GSC meta honnêteté — cap divulgué, couverture réelle, fraî
     const product = out.find((a) => a.id === 'seo:opportunity:product')!;
     expect(product.data_confidence).toBe(55);
     expect(product.reason).toMatch(/total qualifiant inconnu/i);
-    expect(product.reason).toMatch(/Couverture réelle des données GSC inconnue/);
+    expect(product.reason).toMatch(
+      /Couverture réelle des données GSC inconnue/,
+    );
   });
 
   it('liste complète (total ≤ échantillon) → pas de cap dans le titre, « Liste complète » dans la raison', () => {
@@ -460,10 +494,80 @@ describe('PR4: GSC meta honnêteté — cap divulgué, couverture réelle, fraî
       data_from: '2026-04-01',
       data_to: '2026-06-08',
       freshness: 'fresh',
+      grain_fidelity: 'faithful',
+      coverage_status: 'ok',
     }).map(finalizeAction);
     const product = out.find((a) => a.id === 'seo:opportunity:product')!;
     expect(product.title).not.toMatch(/top \d/);
     expect(product.reason).toMatch(/Liste complète \(2 pages qualifiantes/);
+  });
+
+  it('grain lossy (v3/v2) frais et couvert → PARTIAL 55, « non exhaustive » + CTR sous-estimé dits, jamais « Liste complète »', () => {
+    const out = buildSeoOpportunityActions(rows, {
+      total_qualifying: 2,
+      data_from: '2026-06-01',
+      data_to: '2026-09-07',
+      freshness: 'fresh',
+      grain_fidelity: 'lossy',
+      coverage_status: 'ok',
+    }).map(finalizeAction);
+    const product = out.find((a) => a.id === 'seo:opportunity:product')!;
+    expect(product.data_confidence).toBe(55);
+    expect(product.action_type).toBe('business');
+    expect(product.reason).toMatch(
+      /Liste non exhaustive \(2 pages qualifiantes/,
+    );
+    expect(product.reason).toMatch(/grain pages non exhaustif/);
+    expect(product.reason).not.toMatch(/Liste complète/);
+  });
+
+  it('grain fidèle frais mais jours manquants → PARTIAL 55 avec N/M jours ; couverture absente ≠ ok', () => {
+    const incomplete = buildSeoOpportunityActions(rows, {
+      total_qualifying: 2,
+      data_from: '2026-08-10',
+      data_to: '2026-09-06',
+      freshness: 'fresh',
+      grain_fidelity: 'faithful',
+      coverage_status: 'incomplete_days',
+      days_expected: 28,
+      days_present: 15,
+    })
+      .map(finalizeAction)
+      .find((a) => a.id === 'seo:opportunity:product')!;
+    expect(incomplete.data_confidence).toBe(55);
+    expect(incomplete.reason).toMatch(
+      /2026-08-10 au 2026-09-06 \(15\/28 jours\)/,
+    );
+    expect(incomplete.reason).toMatch(/jours GSC manquants/);
+
+    const noCoverage = buildSeoOpportunityActions(rows, {
+      total_qualifying: 2,
+      data_from: '2026-08-10',
+      data_to: '2026-09-06',
+      freshness: 'fresh',
+      grain_fidelity: 'faithful',
+    })
+      .map(finalizeAction)
+      .find((a) => a.id === 'seo:opportunity:product')!;
+    expect(noCoverage.data_confidence).toBe(55);
+    expect(noCoverage.reason).toMatch(/couverture GSC non publiée/);
+  });
+
+  it('coverage_gap (clics ou impressions sous le plancher) → PARTIAL 55, couverture partielle dite', () => {
+    const product = buildSeoOpportunityActions(rows, {
+      total_qualifying: 2,
+      data_from: '2026-06-01',
+      data_to: '2026-09-07',
+      freshness: 'fresh',
+      grain_fidelity: 'faithful',
+      coverage_status: 'coverage_gap',
+    })
+      .map(finalizeAction)
+      .find((a) => a.id === 'seo:opportunity:product')!;
+    expect(product.data_confidence).toBe(55);
+    expect(product.reason).toMatch(
+      /couverture pages partielle vs total propriété/,
+    );
   });
 });
 
