@@ -277,7 +277,7 @@ export default function AdminCommandCenter() {
           Projection lecture-seule de la carte opérationnelle IA —{" "}
           {cc.summary.departments_total} départements ·{" "}
           {cc.summary.capabilities_certified}/{cc.summary.capabilities_total}{" "}
-          capacités certifiées
+          capacités certifiées structurellement
         </p>
       </header>
 
@@ -309,7 +309,7 @@ export default function AdminCommandCenter() {
 
           {cc.mode === "light" ? (
             <p className="text-sm text-muted-foreground">
-              Mode light — synthèse de santé uniquement. Le détail
+              Mode light — synthèse de cartographie uniquement. Le détail
               (départements, capacités, handoffs, actions) est disponible en
               DEV/PREPROD.
             </p>
@@ -413,14 +413,14 @@ function CapabilityTable({ data }: { data: CommandCenterResponse }) {
         <div className="hidden md:block">
           <Table>
             <caption className="sr-only">
-              Capacités et leur certification
+              Capacités et leur certification structurelle
             </caption>
             <TableHeader>
               <TableRow>
                 <TableHead scope="col">Capacité</TableHead>
                 <TableHead scope="col">Département</TableHead>
                 <TableHead scope="col">Type</TableHead>
-                <TableHead scope="col">Certification</TableHead>
+                <TableHead scope="col">Certification structurelle</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

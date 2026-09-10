@@ -5,11 +5,11 @@
  * capabilities with per-capability certification (OVERCLAIM highlight when a
  * live capability has no evidence).
  */
-import { type CommandCenterResponse, type Certification } from "@repo/registry";
+import { type CommandCenterResponse } from "@repo/registry";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Progress } from "~/components/ui/progress";
-import { certVariant, scoreTextClass } from "./badges";
+import { CertBadge, scoreTextClass } from "./badges";
 
 const FAMILIES = ["Business", "Growth", "Operations", "AI-Governance"] as const;
 
@@ -57,13 +57,7 @@ export function ModuleGrid({ data }: { data: CommandCenterResponse }) {
                               {d.priority}
                             </Badge>
                           ) : null}
-                          <Badge
-                            variant={
-                              certVariant[d.certification as Certification]
-                            }
-                          >
-                            {d.certification}
-                          </Badge>
+                          <CertBadge value={d.certification} />
                         </div>
                       </div>
                       {d.kpi_primary ? (
@@ -75,7 +69,9 @@ export function ModuleGrid({ data }: { data: CommandCenterResponse }) {
                     <CardContent className="flex grow flex-col gap-3">
                       <div>
                         <div className="mb-1 flex items-center justify-between text-xs">
-                          <span className="text-muted-foreground">Santé</span>
+                          <span className="text-muted-foreground">
+                            Score de cartographie
+                          </span>
                           <span
                             className={`font-semibold ${scoreTextClass(d.health_score_current)}`}
                           >
@@ -84,7 +80,7 @@ export function ModuleGrid({ data }: { data: CommandCenterResponse }) {
                         </div>
                         <Progress
                           value={d.health_score_current}
-                          aria-label={`Santé ${d.label} : ${d.health_score_current} sur 100`}
+                          aria-label={`Score de cartographie ${d.label} : ${d.health_score_current} sur 100`}
                         />
                         {d.live_caps_applied.length +
                           d.structural_caps_applied.length >
@@ -120,19 +116,7 @@ export function ModuleGrid({ data }: { data: CommandCenterResponse }) {
                                     OVERCLAIM
                                   </Badge>
                                 ) : null}
-                                {c.certification === "BROKEN" ? (
-                                  <Badge variant="destructive">BROKEN</Badge>
-                                ) : (
-                                  <Badge
-                                    variant={
-                                      certVariant[
-                                        c.certification as Certification
-                                      ]
-                                    }
-                                  >
-                                    {c.certification}
-                                  </Badge>
-                                )}
+                                <CertBadge value={c.certification} />
                               </span>
                             </li>
                           );

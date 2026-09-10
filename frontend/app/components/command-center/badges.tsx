@@ -68,8 +68,11 @@ export function scoreBarClass(score: number): string {
 
 export function CertBadge({ value }: { value: Certification }) {
   return (
-    <Badge variant={certVariant[value]} aria-label={`Certification : ${value}`}>
-      {value}
+    <Badge
+      variant={certVariant[value]}
+      aria-label={`Certification structurelle : ${value}`}
+    >
+      {value} · structure
     </Badge>
   );
 }
@@ -89,7 +92,7 @@ export function ValidationBadge({ value }: { value: string }) {
   return (
     <Badge
       variant={validationVariant[value] ?? "subtle"}
-      aria-label={`Validation : ${value}`}
+      aria-label={`Validation de la carte : ${value}`}
     >
       {value.replace("_", " ")}
     </Badge>

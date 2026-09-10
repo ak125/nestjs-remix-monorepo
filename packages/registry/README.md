@@ -123,6 +123,42 @@ npm run -w @repo/registry test        # tsx --test src/**/*.test.ts
 npm run -w @repo/registry build       # tsc
 ```
 
+### Reconstruire depuis les sources, sans commit implicite
+
+```bash
+npm run audit:inventory   # analyse les sources et produit un cache vérifiable
+npm run registry          # reconstruit les projections depuis ce cache
+```
+
+`registry` reste une commande de projection : elle ne relance pas implicitement
+les analyseurs. Les builders qui consomment le cache refusent désormais un cache
+absent, ancien sans provenance, périmé, ou dissocié de sa projection runtime.
+Le message indique la commande d'analyse à exécuter ; aucun repli silencieux.
+
+L'empreinte est calculée par le producteur sur les octets courants des sources et
+configurations (y compris les nouveaux fichiers non ignorés), la liste des chemins
+suivis, le HEAD, l'état shallow et les versions des outils principaux/Node/OS.
+Les artefacts générés sous `audit/` sont exclus pour éviter une invalidation par
+leur propre reconstruction. Le cache est écrit en dernier, après vérification que
+les inputs n'ont pas changé pendant l'analyse, et lié par SHA-256 au fichier
+`runtime-entrypoints.json` associé. Un ancien cache doit être régénéré une fois.
+
+Ce contrôle concerne les inputs observés par le producteur dans ce checkout ;
+il ne certifie ni une base distante, ni une exécution applicative, ni une égalité
+cross-OS. Les fichiers ignorés par Git et les modifications manuelles internes à
+`node_modules` sans changement de version ne sont pas couverts. Le périmètre du
+producteur reste celui des sources suivies ; un nouveau fichier non suivi peut
+invalider son cache sans devenir une entrée de l'inventaire avant son ajout à Git.
+
+**I6 reste distinct** : il compare le canonical à ses inputs directs déclarés.
+Un I6 vert ne prouve pas la fraîcheur transitive de toute la chaîne. En CI, conserver
+son exécution sur le canonical commité **avant** toute reconstruction, puis
+comparer les projections reconstruites comme le fait `registry-fresh.yml`.
+
+La commande `registry:heal` ci-dessous conserve ses effets Git : elle crée un
+commit. Elle n'est pas une commande de diagnostic, et ne remplace pas l'analyse
+amont. Vérifier séparément le diff des inventaires et celui des projections.
+
 ### Resynchroniser les projections L1+L3 — `npm run registry:heal`
 
 ```bash
@@ -186,6 +222,30 @@ Trancher demande de comparer deux caches générés sur les deux OS au même com
 couvre que **4** (`deps`, `pr-9-inventory`, `canonical`, `llm-map`) et *abort* si autre chose
 bouge : `files.json`, `runtime.json`, `db.json` et `rpc.json` n'ont aucun chemin de resync
 automatique et relèvent de ce script (cf. les resyncs manuelles #990, #1078, #1116).
+
+## Command Center : portée de CERTIFIED
+
+Le contrat `command-center.v1` conserve ses valeurs d’API et son calcul de score.
+`CERTIFIED` est une **certification structurelle** : la capacité est déclarée
+`live`, au moins un chemin `evidence.scripts[]` est cité et tous les chemins cités
+existent au moment de la génération. La résolution du module n’est pas un
+contrôle supplémentaire de cette règle. Un chemin absent passe avant `live` et
+produit `BROKEN`.
+
+Cette projection ne vérifie ni l’exécution du fichier, ni la disponibilité d’un
+service, ni un parcours métier. `evidence.runtime` est une déclaration. Le score
+`health_score_current` et le verdict `OPERATIONAL` décrivent la cartographie et
+ses plafonds de fraîcheur/validation ; ils ne mesurent pas l’uptime. La date de
+réponse du lecteur n’est pas la date d’un test d’exécution. L’interface nomme
+explicitement cette portée, y compris dans sa synthèse light.
+
+Pour les automatismes, le contrat existant `src/overlay/automation-reality.ts`
+sépare les références de conception des preuves d’exécution : `actual_mode: ACTIVE`
+requiert `runtime_evidence.trigger`, `output` et `consumer` (ou
+`no-consumer-by-design`). Valider la forme de ces références ne remplace pas la
+vérification de leurs sources et de leur fraîcheur. Le Command Center ne les
+recoupe pas actuellement : aucun lien ni succès runtime ne doit être déduit de
+son badge `CERTIFIED`.
 
 ## Voir aussi
 

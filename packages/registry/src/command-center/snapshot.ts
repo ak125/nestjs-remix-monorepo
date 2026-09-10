@@ -20,6 +20,12 @@
  */
 import { z } from "zod";
 
+/**
+ * Structural tier only: CERTIFIED means declared live with >=1 cited script path
+ * and every cited path present at build time. It does not establish module
+ * validity, service execution or business-flow success. `evidence.runtime` is a
+ * declaration, not a verified execution receipt. Keep the v1 enum for consumers.
+ */
 export const CertificationSchema = z.enum([
   "CERTIFIED",
   "PARTIAL",
@@ -214,6 +220,7 @@ export const ValidationStatusSchema = z.enum([
   "UNKNOWN",
 ]);
 
+/** Map-level verdict (including request-time freshness/validation caps), not uptime. */
 export const GlobalStatusSchema = z
   .object({
     level: z.enum(["OK", "WARNING", "CRITICAL"]),

@@ -1,6 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
+import {
+  CanonicalRegistrySchema,
+  type CanonicalRegistry,
+} from '@repo/registry';
 import { CacheService } from '../../../cache/cache.service';
 
 /**
@@ -75,17 +79,30 @@ export class RegistryReaderService {
 
   private aggregateRepo(canonical: CanonicalDoc | null): RepoSummary | null {
     if (!canonical) return null;
-    const sections = ['files', 'db', 'rpc', 'deps', 'runtime'] as const;
+    const parsed = CanonicalRegistrySchema.safeParse(canonical);
+    if (!parsed.success) {
+      this.logger.warn('[control-plane] invalid canonical registry schema');
+      return null;
+    }
+    // Keep Layer 2 ownership/domain annotations: not every Layer 1 entry schema
+    // declares them. Use schema defaults only for omitted sections.
+    const sections = {
+      files: canonical.files ?? parsed.data.files,
+      db: canonical.db?.tables ?? parsed.data.db.tables,
+      rpc: canonical.db?.rpc ?? parsed.data.db.rpc,
+      deps: canonical.deps ?? parsed.data.deps,
+      runtime: canonical.runtime ?? parsed.data.runtime,
+    };
     const counts: Record<string, number> = {};
     const domains = new Set<string>();
     let ownershipGaps = 0;
 
-    for (const s of sections) {
-      const entries = Array.isArray(canonical[s]) ? canonical[s]! : [];
+    for (const [s, entries] of Object.entries(sections)) {
       counts[s] = entries.length;
       for (const e of entries) {
-        if (e?.domain) domains.add(e.domain);
-        if (!e?.owner || e.owner === '__unassigned__') ownershipGaps += 1;
+        const { domain, owner } = e as CanonicalAnnotation;
+        if (domain) domains.add(domain);
+        if (!owner || owner === '__unassigned__') ownershipGaps += 1;
       }
     }
 
@@ -157,19 +174,15 @@ export class RegistryReaderService {
   }
 }
 
-// ── Shapes (loose — defensive against registry schema drift) ───────────────
-interface CanonicalEntry {
-  domain?: string;
-  owner?: string;
-}
-interface CanonicalDoc {
-  files?: CanonicalEntry[];
-  db?: CanonicalEntry[];
-  rpc?: CanonicalEntry[];
-  deps?: CanonicalEntry[];
-  runtime?: CanonicalEntry[];
-  meta?: { sotFingerprint?: string };
-}
+// The builder adds this fingerprint to the shared canonical metadata contract.
+type CanonicalDoc = CanonicalRegistry & {
+  meta: CanonicalRegistry['meta'] & { sotFingerprint?: string };
+};
+type CanonicalAnnotation = Partial<
+  Pick<CanonicalRegistry['files'][number], 'domain' | 'owner'>
+>;
+
+// Planning remains optional and defensive when its builder has not run.
 interface PlanningPr {
   number: number;
   title: string;
