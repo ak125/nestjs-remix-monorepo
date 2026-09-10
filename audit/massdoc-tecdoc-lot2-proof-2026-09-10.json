@@ -1,0 +1,870 @@
+{
+  "objet": "Preuve scellee du rejeu TecDoc LOT 2 — 20 DLNR, execute le 2026-09-10.",
+  "portee": "RAW (tecdoc_raw.t400) uniquement. Aucune preuve sur la projection source_linkages.",
+  "environnement": "PostgreSQL 17.11 jetable (volume Docker, boucle locale). Reference MassDoc lue en SELECT seuls, aucune ecriture.",
+  "purge": {
+    "matiere_jetable_purgee": true,
+    "rows_restantes_t400": 0,
+    "base_jetable_supprimee": true
+  },
+  "constat_non_normatif": {
+    "note": "Projection lisible du registre scelle ci-dessous. Le registre fait foi ; ce bloc n'est pas une seconde source de verite.",
+    "totaux": {
+      "emitted": 7932092,
+      "loaded": 7932092,
+      "deduplicated": 0,
+      "rejected": 0,
+      "conflicts": 0,
+      "quarantine": 3339767,
+      "en_trop_dans_prod": 0,
+      "preservation": "9/9",
+      "dlnr_reproduits_a_l_identique": 19
+    },
+    "ecarts_source_vs_prod": [
+      {
+        "dlnr": 6358,
+        "prod": 2323000,
+        "source": 5662767,
+        "new_from_source": 3339767
+      }
+    ],
+    "disposition": "NEW_FROM_SOURCE -> QUARANTAINE -> NON ACTIVEES. Aucune decision fonctionnelle n'est prise ici. Ces lignes prouvent que le rejeu recupere ce que le chargement de mars 2026 avait perdu ; elles ne prouvent pas qu'il faille les publier."
+  },
+  "verification_du_sceau": "python3 -c \"import json,sys; sys.path.insert(0,'scripts'); from tecdoc_seal import verifier; verifier(json.load(open('audit/massdoc-tecdoc-lot2-proof-2026-09-10.json'))['registre_scelle'])\"",
+  "registre_scelle": {
+    "conservation": {
+      "ensembles_verifies": 9,
+      "lot": "LOT 2 — 20 DLNR, 1 divergent moyen"
+    },
+    "entrees": [
+      {
+        "batch_id": "1cf17243ee88268a08c2d8ac58ff6d29",
+        "comptabilite": {
+          "rows_deduplicated": 0,
+          "rows_emitted": 60404,
+          "rows_loaded": 60404,
+          "rows_rejected": {}
+        },
+        "dlnr": 11,
+        "empreinte_du_charge": {
+          "borne_max": 60404,
+          "borne_min": 1,
+          "empreinte_md5": "752548f45f2d608ccfb8a8d8afe64740",
+          "lignes": 60404
+        },
+        "fichier": "400.0011.sql",
+        "identite": [
+          "tecdoc_map.type_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.article_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.linkage_target_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.pg_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.modele_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)"
+        ],
+        "reconciliation": {
+          "absentes_de_prod": 0,
+          "activables_sans_decision_humaine": 60404,
+          "candidats_en_quarantaine": 0,
+          "conflits": 0,
+          "dlnr": 11,
+          "en_trop_dans_prod": 0,
+          "identites_conservees": 60404,
+          "inclusion_respectee": true,
+          "indecidables": 0,
+          "lignes_prod_actuelles": 60404,
+          "lignes_source_attendues": 60404
+        },
+        "source": {
+          "crc32": "F2CD9682",
+          "version_perimetre": "2026-03-reconstructed-v2"
+        }
+      },
+      {
+        "batch_id": "8a97902c160314900a0e4ff71414c9f1",
+        "comptabilite": {
+          "rows_deduplicated": 0,
+          "rows_emitted": 141066,
+          "rows_loaded": 141066,
+          "rows_rejected": {}
+        },
+        "dlnr": 15,
+        "empreinte_du_charge": {
+          "borne_max": 141066,
+          "borne_min": 1,
+          "empreinte_md5": "62917c80e0581d9d8c5e35707155c99a",
+          "lignes": 141066
+        },
+        "fichier": "400.0015.sql",
+        "identite": [
+          "tecdoc_map.type_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.article_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.linkage_target_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.pg_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.modele_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)"
+        ],
+        "reconciliation": {
+          "absentes_de_prod": 0,
+          "activables_sans_decision_humaine": 141066,
+          "candidats_en_quarantaine": 0,
+          "conflits": 0,
+          "dlnr": 15,
+          "en_trop_dans_prod": 0,
+          "identites_conservees": 141066,
+          "inclusion_respectee": true,
+          "indecidables": 0,
+          "lignes_prod_actuelles": 141066,
+          "lignes_source_attendues": 141066
+        },
+        "source": {
+          "crc32": "F4BB7802",
+          "version_perimetre": "2026-03-reconstructed-v2"
+        }
+      },
+      {
+        "batch_id": "62f40b4506ac7052c7c4ad7efc90a60f",
+        "comptabilite": {
+          "rows_deduplicated": 0,
+          "rows_emitted": 157499,
+          "rows_loaded": 157499,
+          "rows_rejected": {}
+        },
+        "dlnr": 41,
+        "empreinte_du_charge": {
+          "borne_max": 157499,
+          "borne_min": 1,
+          "empreinte_md5": "66f2c1cc07f0d4e4bddad883d1c87a56",
+          "lignes": 157499
+        },
+        "fichier": "400.0041.sql",
+        "identite": [
+          "tecdoc_map.type_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.article_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.linkage_target_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.pg_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.modele_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)"
+        ],
+        "reconciliation": {
+          "absentes_de_prod": 0,
+          "activables_sans_decision_humaine": 157499,
+          "candidats_en_quarantaine": 0,
+          "conflits": 0,
+          "dlnr": 41,
+          "en_trop_dans_prod": 0,
+          "identites_conservees": 157499,
+          "inclusion_respectee": true,
+          "indecidables": 0,
+          "lignes_prod_actuelles": 157499,
+          "lignes_source_attendues": 157499
+        },
+        "source": {
+          "crc32": "034CDB14",
+          "version_perimetre": "2026-03-reconstructed-v2"
+        }
+      },
+      {
+        "batch_id": "5a383d064c14183077f95948d171014b",
+        "comptabilite": {
+          "rows_deduplicated": 0,
+          "rows_emitted": 100802,
+          "rows_loaded": 100802,
+          "rows_rejected": {}
+        },
+        "dlnr": 83,
+        "empreinte_du_charge": {
+          "borne_max": 100802,
+          "borne_min": 1,
+          "empreinte_md5": "54e98f2708cd2fb4999743f8e774a2ba",
+          "lignes": 100802
+        },
+        "fichier": "400.0083.sql",
+        "identite": [
+          "tecdoc_map.type_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.article_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.linkage_target_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.pg_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.modele_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)"
+        ],
+        "reconciliation": {
+          "absentes_de_prod": 0,
+          "activables_sans_decision_humaine": 100802,
+          "candidats_en_quarantaine": 0,
+          "conflits": 0,
+          "dlnr": 83,
+          "en_trop_dans_prod": 0,
+          "identites_conservees": 100802,
+          "inclusion_respectee": true,
+          "indecidables": 0,
+          "lignes_prod_actuelles": 100802,
+          "lignes_source_attendues": 100802
+        },
+        "source": {
+          "crc32": "DD7DE9AC",
+          "version_perimetre": "2026-03-reconstructed-v2"
+        }
+      },
+      {
+        "batch_id": "8290b3b0e7fac1347e4a520ec399cbdc",
+        "comptabilite": {
+          "rows_deduplicated": 0,
+          "rows_emitted": 134950,
+          "rows_loaded": 134950,
+          "rows_rejected": {}
+        },
+        "dlnr": 96,
+        "empreinte_du_charge": {
+          "borne_max": 134950,
+          "borne_min": 1,
+          "empreinte_md5": "dea1addc8331f8127ad4dc7e0be6e224",
+          "lignes": 134950
+        },
+        "fichier": "400.0096.sql",
+        "identite": [
+          "tecdoc_map.type_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.article_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.linkage_target_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.pg_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.modele_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)"
+        ],
+        "reconciliation": {
+          "absentes_de_prod": 0,
+          "activables_sans_decision_humaine": 134950,
+          "candidats_en_quarantaine": 0,
+          "conflits": 0,
+          "dlnr": 96,
+          "en_trop_dans_prod": 0,
+          "identites_conservees": 134950,
+          "inclusion_respectee": true,
+          "indecidables": 0,
+          "lignes_prod_actuelles": 134950,
+          "lignes_source_attendues": 134950
+        },
+        "source": {
+          "crc32": "DC888F97",
+          "version_perimetre": "2026-03-reconstructed-v2"
+        }
+      },
+      {
+        "batch_id": "69cfd7f503ee8c1f4ae69ab9050b4c57",
+        "comptabilite": {
+          "rows_deduplicated": 0,
+          "rows_emitted": 125731,
+          "rows_loaded": 125731,
+          "rows_rejected": {}
+        },
+        "dlnr": 109,
+        "empreinte_du_charge": {
+          "borne_max": 125731,
+          "borne_min": 1,
+          "empreinte_md5": "1c5748355ceeb480cfc47d44624300dc",
+          "lignes": 125731
+        },
+        "fichier": "400.0109.sql",
+        "identite": [
+          "tecdoc_map.type_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.article_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.linkage_target_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.pg_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.modele_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)"
+        ],
+        "reconciliation": {
+          "absentes_de_prod": 0,
+          "activables_sans_decision_humaine": 125731,
+          "candidats_en_quarantaine": 0,
+          "conflits": 0,
+          "dlnr": 109,
+          "en_trop_dans_prod": 0,
+          "identites_conservees": 125731,
+          "inclusion_respectee": true,
+          "indecidables": 0,
+          "lignes_prod_actuelles": 125731,
+          "lignes_source_attendues": 125731
+        },
+        "source": {
+          "crc32": "626EC08F",
+          "version_perimetre": "2026-03-reconstructed-v2"
+        }
+      },
+      {
+        "batch_id": "10527050417f6c1534c3dcaf98ec7946",
+        "comptabilite": {
+          "rows_deduplicated": 0,
+          "rows_emitted": 144195,
+          "rows_loaded": 144195,
+          "rows_rejected": {}
+        },
+        "dlnr": 154,
+        "empreinte_du_charge": {
+          "borne_max": 144195,
+          "borne_min": 1,
+          "empreinte_md5": "1dcf571485729d1f1319bfabf80435c6",
+          "lignes": 144195
+        },
+        "fichier": "400.0154.sql",
+        "identite": [
+          "tecdoc_map.type_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.article_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.linkage_target_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.pg_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.modele_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)"
+        ],
+        "reconciliation": {
+          "absentes_de_prod": 0,
+          "activables_sans_decision_humaine": 144195,
+          "candidats_en_quarantaine": 0,
+          "conflits": 0,
+          "dlnr": 154,
+          "en_trop_dans_prod": 0,
+          "identites_conservees": 144195,
+          "inclusion_respectee": true,
+          "indecidables": 0,
+          "lignes_prod_actuelles": 144195,
+          "lignes_source_attendues": 144195
+        },
+        "source": {
+          "crc32": "45863E66",
+          "version_perimetre": "2026-03-reconstructed-v2"
+        }
+      },
+      {
+        "batch_id": "901d5cb5853474fc3e1352081d5a9303",
+        "comptabilite": {
+          "rows_deduplicated": 0,
+          "rows_emitted": 112823,
+          "rows_loaded": 112823,
+          "rows_rejected": {}
+        },
+        "dlnr": 175,
+        "empreinte_du_charge": {
+          "borne_max": 112823,
+          "borne_min": 1,
+          "empreinte_md5": "f59b519044bad32e6cedf47a22a4842a",
+          "lignes": 112823
+        },
+        "fichier": "400.0175.sql",
+        "identite": [
+          "tecdoc_map.type_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.article_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.linkage_target_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.pg_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.modele_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)"
+        ],
+        "reconciliation": {
+          "absentes_de_prod": 0,
+          "activables_sans_decision_humaine": 112823,
+          "candidats_en_quarantaine": 0,
+          "conflits": 0,
+          "dlnr": 175,
+          "en_trop_dans_prod": 0,
+          "identites_conservees": 112823,
+          "inclusion_respectee": true,
+          "indecidables": 0,
+          "lignes_prod_actuelles": 112823,
+          "lignes_source_attendues": 112823
+        },
+        "source": {
+          "crc32": "8CA6B528",
+          "version_perimetre": "2026-03-reconstructed-v2"
+        }
+      },
+      {
+        "batch_id": "30da017bdf02e928f8da47c977ab1f79",
+        "comptabilite": {
+          "rows_deduplicated": 0,
+          "rows_emitted": 155055,
+          "rows_loaded": 155055,
+          "rows_rejected": {}
+        },
+        "dlnr": 193,
+        "empreinte_du_charge": {
+          "borne_max": 155055,
+          "borne_min": 1,
+          "empreinte_md5": "7bf369fb01ca9a647d6414ecb92b5503",
+          "lignes": 155055
+        },
+        "fichier": "400.0193.sql",
+        "identite": [
+          "tecdoc_map.type_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.article_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.linkage_target_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.pg_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.modele_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)"
+        ],
+        "reconciliation": {
+          "absentes_de_prod": 0,
+          "activables_sans_decision_humaine": 155055,
+          "candidats_en_quarantaine": 0,
+          "conflits": 0,
+          "dlnr": 193,
+          "en_trop_dans_prod": 0,
+          "identites_conservees": 155055,
+          "inclusion_respectee": true,
+          "indecidables": 0,
+          "lignes_prod_actuelles": 155055,
+          "lignes_source_attendues": 155055
+        },
+        "source": {
+          "crc32": "58C5C9BA",
+          "version_perimetre": "2026-03-reconstructed-v2"
+        }
+      },
+      {
+        "batch_id": "c4f3a0dc4ef9273640bf7fd389432a60",
+        "comptabilite": {
+          "rows_deduplicated": 0,
+          "rows_emitted": 115736,
+          "rows_loaded": 115736,
+          "rows_rejected": {}
+        },
+        "dlnr": 273,
+        "empreinte_du_charge": {
+          "borne_max": 115736,
+          "borne_min": 1,
+          "empreinte_md5": "6a2b1240c0dcda8c2182bd869e8601cc",
+          "lignes": 115736
+        },
+        "fichier": "400.0273.sql",
+        "identite": [
+          "tecdoc_map.type_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.article_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.linkage_target_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.pg_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.modele_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)"
+        ],
+        "reconciliation": {
+          "absentes_de_prod": 0,
+          "activables_sans_decision_humaine": 115736,
+          "candidats_en_quarantaine": 0,
+          "conflits": 0,
+          "dlnr": 273,
+          "en_trop_dans_prod": 0,
+          "identites_conservees": 115736,
+          "inclusion_respectee": true,
+          "indecidables": 0,
+          "lignes_prod_actuelles": 115736,
+          "lignes_source_attendues": 115736
+        },
+        "source": {
+          "crc32": "CA627B80",
+          "version_perimetre": "2026-03-reconstructed-v2"
+        }
+      },
+      {
+        "batch_id": "2195c71993509bb25e9a1451d347ef8e",
+        "comptabilite": {
+          "rows_deduplicated": 0,
+          "rows_emitted": 111630,
+          "rows_loaded": 111630,
+          "rows_rejected": {}
+        },
+        "dlnr": 310,
+        "empreinte_du_charge": {
+          "borne_max": 111630,
+          "borne_min": 1,
+          "empreinte_md5": "a88419a25ebdf5576e87397e4cfbf5e6",
+          "lignes": 111630
+        },
+        "fichier": "400.0310.sql",
+        "identite": [
+          "tecdoc_map.type_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.article_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.linkage_target_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.pg_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.modele_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)"
+        ],
+        "reconciliation": {
+          "absentes_de_prod": 0,
+          "activables_sans_decision_humaine": 111630,
+          "candidats_en_quarantaine": 0,
+          "conflits": 0,
+          "dlnr": 310,
+          "en_trop_dans_prod": 0,
+          "identites_conservees": 111630,
+          "inclusion_respectee": true,
+          "indecidables": 0,
+          "lignes_prod_actuelles": 111630,
+          "lignes_source_attendues": 111630
+        },
+        "source": {
+          "crc32": "5564A648",
+          "version_perimetre": "2026-03-reconstructed-v2"
+        }
+      },
+      {
+        "batch_id": "299e345b48b54805ea4c84ae768915a1",
+        "comptabilite": {
+          "rows_deduplicated": 0,
+          "rows_emitted": 167582,
+          "rows_loaded": 167582,
+          "rows_rejected": {}
+        },
+        "dlnr": 357,
+        "empreinte_du_charge": {
+          "borne_max": 167582,
+          "borne_min": 1,
+          "empreinte_md5": "e887b6379a26ff07dc543024876fb666",
+          "lignes": 167582
+        },
+        "fichier": "400.0357.sql",
+        "identite": [
+          "tecdoc_map.type_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.article_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.linkage_target_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.pg_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.modele_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)"
+        ],
+        "reconciliation": {
+          "absentes_de_prod": 0,
+          "activables_sans_decision_humaine": 167582,
+          "candidats_en_quarantaine": 0,
+          "conflits": 0,
+          "dlnr": 357,
+          "en_trop_dans_prod": 0,
+          "identites_conservees": 167582,
+          "inclusion_respectee": true,
+          "indecidables": 0,
+          "lignes_prod_actuelles": 167582,
+          "lignes_source_attendues": 167582
+        },
+        "source": {
+          "crc32": "7A1E95FC",
+          "version_perimetre": "2026-03-reconstructed-v2"
+        }
+      },
+      {
+        "batch_id": "9e26ed8527b0785242e0190dce510f74",
+        "comptabilite": {
+          "rows_deduplicated": 0,
+          "rows_emitted": 59729,
+          "rows_loaded": 59729,
+          "rows_rejected": {}
+        },
+        "dlnr": 396,
+        "empreinte_du_charge": {
+          "borne_max": 59729,
+          "borne_min": 1,
+          "empreinte_md5": "ece45eb8f213c9909ddfb3fb85af1330",
+          "lignes": 59729
+        },
+        "fichier": "400.0396.sql",
+        "identite": [
+          "tecdoc_map.type_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.article_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.linkage_target_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.pg_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.modele_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)"
+        ],
+        "reconciliation": {
+          "absentes_de_prod": 0,
+          "activables_sans_decision_humaine": 59729,
+          "candidats_en_quarantaine": 0,
+          "conflits": 0,
+          "dlnr": 396,
+          "en_trop_dans_prod": 0,
+          "identites_conservees": 59729,
+          "inclusion_respectee": true,
+          "indecidables": 0,
+          "lignes_prod_actuelles": 59729,
+          "lignes_source_attendues": 59729
+        },
+        "source": {
+          "crc32": "345773F1",
+          "version_perimetre": "2026-03-reconstructed-v2"
+        }
+      },
+      {
+        "batch_id": "c6787e48f65130fe011239ca3dc1e8f9",
+        "comptabilite": {
+          "rows_deduplicated": 0,
+          "rows_emitted": 99810,
+          "rows_loaded": 99810,
+          "rows_rejected": {}
+        },
+        "dlnr": 492,
+        "empreinte_du_charge": {
+          "borne_max": 99810,
+          "borne_min": 1,
+          "empreinte_md5": "08da9e385ea21198c529845d7709af6a",
+          "lignes": 99810
+        },
+        "fichier": "400.0492.sql",
+        "identite": [
+          "tecdoc_map.type_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.article_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.linkage_target_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.pg_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.modele_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)"
+        ],
+        "reconciliation": {
+          "absentes_de_prod": 0,
+          "activables_sans_decision_humaine": 99810,
+          "candidats_en_quarantaine": 0,
+          "conflits": 0,
+          "dlnr": 492,
+          "en_trop_dans_prod": 0,
+          "identites_conservees": 99810,
+          "inclusion_respectee": true,
+          "indecidables": 0,
+          "lignes_prod_actuelles": 99810,
+          "lignes_source_attendues": 99810
+        },
+        "source": {
+          "crc32": "34C296E1",
+          "version_perimetre": "2026-03-reconstructed-v2"
+        }
+      },
+      {
+        "batch_id": "c2a7431431682669279e7f5854fb8cf6",
+        "comptabilite": {
+          "rows_deduplicated": 0,
+          "rows_emitted": 115265,
+          "rows_loaded": 115265,
+          "rows_rejected": {}
+        },
+        "dlnr": 4368,
+        "empreinte_du_charge": {
+          "borne_max": 115265,
+          "borne_min": 1,
+          "empreinte_md5": "70b5912f87f9a5ae5357f033cc64475a",
+          "lignes": 115265
+        },
+        "fichier": "400.4368.sql",
+        "identite": [
+          "tecdoc_map.type_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.article_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.linkage_target_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.pg_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.modele_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)"
+        ],
+        "reconciliation": {
+          "absentes_de_prod": 0,
+          "activables_sans_decision_humaine": 115265,
+          "candidats_en_quarantaine": 0,
+          "conflits": 0,
+          "dlnr": 4368,
+          "en_trop_dans_prod": 0,
+          "identites_conservees": 115265,
+          "inclusion_respectee": true,
+          "indecidables": 0,
+          "lignes_prod_actuelles": 115265,
+          "lignes_source_attendues": 115265
+        },
+        "source": {
+          "crc32": "88FD4738",
+          "version_perimetre": "2026-03-reconstructed-v2"
+        }
+      },
+      {
+        "batch_id": "0f24a85242372dfb19fb8900af22c3ce",
+        "comptabilite": {
+          "rows_deduplicated": 0,
+          "rows_emitted": 130635,
+          "rows_loaded": 130635,
+          "rows_rejected": {}
+        },
+        "dlnr": 4819,
+        "empreinte_du_charge": {
+          "borne_max": 130635,
+          "borne_min": 1,
+          "empreinte_md5": "4126b79a8ac966a0ce1e34426224c765",
+          "lignes": 130635
+        },
+        "fichier": "400.4819.sql",
+        "identite": [
+          "tecdoc_map.type_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.article_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.linkage_target_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.pg_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.modele_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)"
+        ],
+        "reconciliation": {
+          "absentes_de_prod": 0,
+          "activables_sans_decision_humaine": 130635,
+          "candidats_en_quarantaine": 0,
+          "conflits": 0,
+          "dlnr": 4819,
+          "en_trop_dans_prod": 0,
+          "identites_conservees": 130635,
+          "inclusion_respectee": true,
+          "indecidables": 0,
+          "lignes_prod_actuelles": 130635,
+          "lignes_source_attendues": 130635
+        },
+        "source": {
+          "crc32": "C161E470",
+          "version_perimetre": "2026-03-reconstructed-v2"
+        }
+      },
+      {
+        "batch_id": "8569a84555ed043bbc7ffcb2f336c3f6",
+        "comptabilite": {
+          "rows_deduplicated": 0,
+          "rows_emitted": 115765,
+          "rows_loaded": 115765,
+          "rows_rejected": {}
+        },
+        "dlnr": 4828,
+        "empreinte_du_charge": {
+          "borne_max": 115765,
+          "borne_min": 1,
+          "empreinte_md5": "26aee4e68115c58be1d6c74e24bed9c9",
+          "lignes": 115765
+        },
+        "fichier": "400.4828.sql",
+        "identite": [
+          "tecdoc_map.type_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.article_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.linkage_target_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.pg_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.modele_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)"
+        ],
+        "reconciliation": {
+          "absentes_de_prod": 0,
+          "activables_sans_decision_humaine": 115765,
+          "candidats_en_quarantaine": 0,
+          "conflits": 0,
+          "dlnr": 4828,
+          "en_trop_dans_prod": 0,
+          "identites_conservees": 115765,
+          "inclusion_respectee": true,
+          "indecidables": 0,
+          "lignes_prod_actuelles": 115765,
+          "lignes_source_attendues": 115765
+        },
+        "source": {
+          "crc32": "3B7A0184",
+          "version_perimetre": "2026-03-reconstructed-v2"
+        }
+      },
+      {
+        "batch_id": "6a4ed3ef1c922e408b31837c59c28320",
+        "comptabilite": {
+          "rows_deduplicated": 0,
+          "rows_emitted": 152628,
+          "rows_loaded": 152628,
+          "rows_rejected": {}
+        },
+        "dlnr": 4849,
+        "empreinte_du_charge": {
+          "borne_max": 152628,
+          "borne_min": 1,
+          "empreinte_md5": "e31a56dd86e1ed9c3a0a7bfc2d45a902",
+          "lignes": 152628
+        },
+        "fichier": "400.4849.sql",
+        "identite": [
+          "tecdoc_map.type_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.article_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.linkage_target_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.pg_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.modele_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)"
+        ],
+        "reconciliation": {
+          "absentes_de_prod": 0,
+          "activables_sans_decision_humaine": 152628,
+          "candidats_en_quarantaine": 0,
+          "conflits": 0,
+          "dlnr": 4849,
+          "en_trop_dans_prod": 0,
+          "identites_conservees": 152628,
+          "inclusion_respectee": true,
+          "indecidables": 0,
+          "lignes_prod_actuelles": 152628,
+          "lignes_source_attendues": 152628
+        },
+        "source": {
+          "crc32": "C4C6E3D3",
+          "version_perimetre": "2026-03-reconstructed-v2"
+        }
+      },
+      {
+        "batch_id": "9c41a8f5a5cd31a2e796e31df5d67e8b",
+        "comptabilite": {
+          "rows_deduplicated": 0,
+          "rows_emitted": 68020,
+          "rows_loaded": 68020,
+          "rows_rejected": {}
+        },
+        "dlnr": 6277,
+        "empreinte_du_charge": {
+          "borne_max": 68020,
+          "borne_min": 1,
+          "empreinte_md5": "5dfe41b9ade772f988010c52479e9e22",
+          "lignes": 68020
+        },
+        "fichier": "400.6277.sql",
+        "identite": [
+          "tecdoc_map.type_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.article_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.linkage_target_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.pg_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.modele_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)"
+        ],
+        "reconciliation": {
+          "absentes_de_prod": 0,
+          "activables_sans_decision_humaine": 68020,
+          "candidats_en_quarantaine": 0,
+          "conflits": 0,
+          "dlnr": 6277,
+          "en_trop_dans_prod": 0,
+          "identites_conservees": 68020,
+          "inclusion_respectee": true,
+          "indecidables": 0,
+          "lignes_prod_actuelles": 68020,
+          "lignes_source_attendues": 68020
+        },
+        "source": {
+          "crc32": "2D124F4E",
+          "version_perimetre": "2026-03-reconstructed-v2"
+        }
+      },
+      {
+        "batch_id": "9e48f20b4446004d0085305967f974c5",
+        "comptabilite": {
+          "rows_deduplicated": 0,
+          "rows_emitted": 5662767,
+          "rows_loaded": 5662767,
+          "rows_rejected": {}
+        },
+        "dlnr": 6358,
+        "empreinte_du_charge": {
+          "borne_max": 5662767,
+          "borne_min": 1,
+          "empreinte_md5": "3f60496340f19179b00caaac14e4778f",
+          "lignes": 5662767
+        },
+        "fichier": "400.6358.sql",
+        "identite": [
+          "tecdoc_map.type_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.article_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.linkage_target_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.pg_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.modele_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)"
+        ],
+        "reconciliation": {
+          "absentes_de_prod": 3339767,
+          "activables_sans_decision_humaine": 2323000,
+          "candidats_en_quarantaine": 3339767,
+          "conflits": 0,
+          "dlnr": 6358,
+          "en_trop_dans_prod": 0,
+          "identites_conservees": 2323000,
+          "inclusion_respectee": true,
+          "indecidables": 0,
+          "lignes_prod_actuelles": 2323000,
+          "lignes_source_attendues": 5662767
+        },
+        "source": {
+          "crc32": "417BB693",
+          "version_perimetre": "2026-03-reconstructed-v2"
+        }
+      }
+    ],
+    "invariant": "PROD actuelle ⊆ REBUILD source-truth, sans perte de ligne ni derive d'identite.",
+    "objet": "Registre de preuve du rejeu TecDoc par vagues.",
+    "portee": "RAW (tecdoc_raw.t400) uniquement. Aucune preuve de projection.",
+    "seal": {
+      "algorithm": "sha256",
+      "canonicalization": "sort_keys, UTF-8, separateurs (',',':'), bloc seal exclu.",
+      "sha256": "0118b8e70b8db1891afa13d6c8586fdb89d36ddab9c75bfa59b61a2e09e3d114"
+    }
+  }
+}
