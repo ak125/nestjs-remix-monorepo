@@ -76,18 +76,38 @@ export const PlanningEntrySchema = z.object({
 
 export type PlanningEntry = z.infer<typeof PlanningEntrySchema>;
 
-export const PlanningRegistrySchema = z.object({
-  schemaVersion: SchemaVersionSchema,
-  generatedBy: z.string(),
-  meta: z.object({
-    generatedAt: z.string(),
-    source: z.string(), // "github_pulls"
-    sot: z.string(), // pointer to vault MOC-Planning-Live (ADR-053)
-    repo: z.string(),
-    degraded: z.boolean(), // true if gh fetch failed → empty entries
-    prCount: z.number().int().nonnegative(),
-  }),
-  entries: z.array(PlanningEntrySchema),
-});
+export const PlanningRegistrySchema = z
+  .object({
+    schemaVersion: SchemaVersionSchema,
+    generatedBy: z.string(),
+    meta: z.object({
+      generatedAt: z.string().datetime(),
+      source: z.string(), // "github_pulls"
+      sot: z.string(), // pointer to vault MOC-Planning-Live (ADR-053)
+      repo: z.string(),
+      degraded: z.boolean(), // true if gh fetch failed → empty entries
+      prCount: z.number().int().nonnegative(),
+    }),
+    entries: z.array(PlanningEntrySchema),
+  })
+  .superRefine((registry, context) => {
+    if (registry.meta.prCount !== registry.entries.length) {
+      context.addIssue({
+        code: "custom",
+        path: ["meta", "prCount"],
+        message: "PR count must match the collected entries",
+      });
+    }
+    if (
+      new Set(registry.entries.map((entry) => entry.number)).size !==
+      registry.entries.length
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["entries"],
+        message: "PR numbers must be unique",
+      });
+    }
+  });
 
 export type PlanningRegistry = z.infer<typeof PlanningRegistrySchema>;

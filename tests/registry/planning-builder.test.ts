@@ -129,11 +129,51 @@ describe("buildRegistry", () => {
   test("output validates against PlanningRegistrySchema (populated)", () => {
     const reg = buildRegistry(FIXTURE_PRS, FIXED_NOW);
     const result = PlanningRegistrySchema.safeParse(reg);
-    assert.equal(result.success, true, JSON.stringify(result.error?.format(), null, 2));
+    assert.equal(
+      result.success,
+      true,
+      JSON.stringify(result.error?.format(), null, 2),
+    );
   });
 
   test("output validates against PlanningRegistrySchema (degraded)", () => {
     const reg = buildRegistry(null, FIXED_NOW);
     assert.equal(PlanningRegistrySchema.safeParse(reg).success, true);
+  });
+
+  test("valid empty collection remains a known zero", () => {
+    const reg = buildRegistry([], FIXED_NOW);
+    assert.equal(reg.meta.degraded, false);
+    assert.equal(reg.meta.prCount, 0);
+    assert.equal(PlanningRegistrySchema.safeParse(reg).success, true);
+  });
+
+  test("fetch ceiling is unavailable rather than an apparently complete count", () => {
+    const prs = Array.from({ length: 200 }, (_, i) => ({
+      ...FIXTURE_PRS[0],
+      number: i + 1,
+    }));
+    assert.equal(
+      buildRegistry(prs.slice(0, 199), FIXED_NOW).meta.degraded,
+      false,
+    );
+    const capped = buildRegistry(prs, FIXED_NOW);
+    assert.equal(capped.meta.degraded, true);
+    assert.deepEqual(capped.entries, []);
+    assert.equal(PlanningRegistrySchema.safeParse(capped).success, true);
+  });
+
+  test("shared contract rejects invalid collection timestamps, counts and duplicate PRs", () => {
+    for (const invalid of ["date", "count", "duplicate"]) {
+      const reg = buildRegistry(FIXTURE_PRS, FIXED_NOW);
+      if (invalid === "date") reg.meta.generatedAt = "invalid";
+      if (invalid === "count") reg.meta.prCount = 0;
+      if (invalid === "duplicate") reg.entries[1] = reg.entries[0];
+      assert.equal(
+        PlanningRegistrySchema.safeParse(reg).success,
+        false,
+        invalid,
+      );
+    }
   });
 });
