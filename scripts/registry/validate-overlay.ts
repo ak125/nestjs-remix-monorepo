@@ -112,7 +112,7 @@ export function validate(): 0 | 1 {
   for (const [name, data, schema] of checks) {
     const r = schema.safeParse(data);
     if (!r.success) {
-      for (const issue of r.error.errors) {
+      for (const issue of r.error.issues) {
         findings.push({
           level: "error",
           file: name,

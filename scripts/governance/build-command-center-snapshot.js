@@ -14,7 +14,7 @@
  *     health_score_current at request time.
  *   - Certification ladder evaluated in ORDER (first match wins):
  *       1. BROKEN    — a declared evidence.scripts[] path is absent on disk
- *       2. CERTIFIED — status=live AND ≥1 evidence path (verified) AND module known
+ *       2. CERTIFIED — status=live AND ≥1 cited script path AND all cited script paths present
  *       3. PARTIAL   — status=partial | tables/endpoints-only (liveness deferred) | live w/o evidence
  *       4. UNKNOWN   — no evidence / dormant / duplicate / unproven
  *     BROKEN is checked BEFORE CERTIFIED. V1 scope: BROKEN only for scripts[]/path
@@ -98,7 +98,8 @@ function computeCertification(cap, pathExists) {
   const hasVerifiedPath = scripts.length > 0; // not BROKEN ⇒ all present
   const hasTableEvidence = tables.length > 0;
 
-  // 2. CERTIFIED — live + ≥1 verified path + module source known.
+  // 2. CERTIFIED — structural only: declared live + ≥1 path, all present.
+  // Module resolution and runtime evidence are not checked by this ladder.
   if (cap.status === "live" && hasVerifiedPath) {
     return { certification: "CERTIFIED" };
   }

@@ -1,12 +1,86 @@
 {
   "schemaVersion": "1.0.0",
-  "meta": { "sotFingerprint": "test-fingerprint-abc" },
+  "meta": {
+    "generatedAt": "1970-01-01T00:00:00.000Z",
+    "generatorVersion": "1.0.0",
+    "inputHashes": {},
+    "sotFingerprint": "test-fingerprint-abc"
+  },
   "files": [
-    { "id": "a.ts", "domain": "D1", "owner": "@ak125/frontend-team" },
-    { "id": "b.ts", "domain": "D2", "owner": "__unassigned__" }
+    {
+      "schemaVersion": "1.0.0",
+      "status": "LIVE",
+      "sourceConfidence": "high",
+      "id": "a.ts",
+      "path": "a.ts",
+      "domain": "D1",
+      "owner": "@ak125/frontend-team",
+      "kind": "service",
+      "runtime": true,
+      "loc": 10
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "status": "LIVE",
+      "sourceConfidence": "high",
+      "id": "b.ts",
+      "path": "b.ts",
+      "domain": "D2",
+      "owner": "__unassigned__",
+      "kind": "service",
+      "runtime": true,
+      "loc": 10
+    }
   ],
-  "db": [{ "id": "t1", "domain": "D1", "owner": "@ak125/db-team" }],
-  "rpc": [],
-  "deps": [{ "id": "zod", "domain": "D3", "owner": "__unassigned__" }],
-  "runtime": [{ "id": "main", "domain": "D1", "owner": "@ak125/backend-team" }]
+  "db": {
+    "tables": [
+      {
+        "schemaVersion": "1.0.0",
+        "status": "LIVE",
+        "sourceConfidence": "high",
+        "id": "t1",
+        "name": "t1",
+        "domain": "D4",
+        "owner": "__unassigned__",
+        "rlsEnabled": true
+      }
+    ],
+    "rpc": [
+      {
+        "schemaVersion": "1.0.0",
+        "status": "LIVE",
+        "sourceConfidence": "high",
+        "id": "r1",
+        "name": "r1",
+        "domain": "D5",
+        "owner": "__unassigned__",
+        "parseMode": "parsed"
+      }
+    ]
+  },
+  "deps": [
+    {
+      "schemaVersion": "1.0.0",
+      "status": "LIVE",
+      "sourceConfidence": "high",
+      "id": "zod",
+      "name": "zod",
+      "version": "4.4.3",
+      "source": "npm",
+      "domain": "D3",
+      "owner": "__unassigned__"
+    }
+  ],
+  "runtime": [
+    {
+      "schemaVersion": "1.0.0",
+      "status": "LIVE",
+      "sourceConfidence": "high",
+      "id": "main",
+      "path": "backend/src/main.ts",
+      "kind": "nestjs-module",
+      "domain": "D1",
+      "owner": "@ak125/backend-team"
+    }
+  ]
 }
