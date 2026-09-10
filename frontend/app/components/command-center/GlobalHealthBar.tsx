@@ -105,7 +105,7 @@ export function GlobalHealthBar({ data }: { data: CommandCenterResponse }) {
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {families.map((f) => (
           <Card key={f.family}>
-            <CardContent className="flex items-center justify-between gap-2 p-4">
+            <CardContent className="flex flex-wrap items-center justify-between gap-2 p-4">
               <div>
                 <p className="text-sm font-medium">{f.family}</p>
                 <p className="text-xs text-muted-foreground">{f.count} dépt.</p>
