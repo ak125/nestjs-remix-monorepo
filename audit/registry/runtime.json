@@ -3231,9 +3231,7 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [
-        "runtime:backend/src/modules/supplier-truth/supplier-truth.service.ts"
-      ],
+      "dependsOn": [],
       "id": "runtime:backend/src/modules/supplier-truth/supplier-truth.controller.ts",
       "kind": "nestjs-controller",
       "path": "backend/src/modules/supplier-truth/supplier-truth.controller.ts",
@@ -3243,7 +3241,6 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/modules/supplier-truth/supplier-truth-read.module.ts",
         "runtime:backend/src/modules/supplier-truth/supplier-truth.controller.ts"
       ],
       "id": "runtime:backend/src/modules/supplier-truth/supplier-truth.module.ts",
