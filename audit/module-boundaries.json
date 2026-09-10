@@ -53,7 +53,7 @@
         "backend/src/modules/analytics/services"
       ],
       "files_count": 8,
-      "loc_total": 1525,
+      "loc_total": 1530,
       "has_barrel": false
     },
     "api": {
@@ -91,7 +91,7 @@
         "backend/src/utils"
       ],
       "files_count": 35,
-      "loc_total": 6156,
+      "loc_total": 6132,
       "has_barrel": true
     },
     "blog": {
@@ -185,8 +185,8 @@
         "backend/src/modules/config/services",
         "backend/src/modules/config/validators"
       ],
-      "files_count": 96,
-      "loc_total": 23947,
+      "files_count": 98,
+      "loc_total": 24121,
       "has_barrel": true
     },
     "customers": {
@@ -804,7 +804,7 @@
         "backend/src/modules/seo-monitoring/services"
       ],
       "files_count": 38,
-      "loc_total": 7116,
+      "loc_total": 7129,
       "has_barrel": false
     },
     "seo-projection": {
@@ -1257,7 +1257,7 @@
     {
       "from": "backend-core",
       "to": "config",
-      "count": 8
+      "count": 9
     },
     {
       "from": "backend-core",
@@ -1587,6 +1587,11 @@
     {
       "from": "config",
       "to": "backend-core",
+      "count": 1
+    },
+    {
+      "from": "config",
+      "to": "common",
       "count": 1
     },
     {

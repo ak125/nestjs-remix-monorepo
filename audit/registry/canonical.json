@@ -28045,6 +28045,7 @@
         "backend/src/common/guards/cloudflare-throttler.guard.ts",
         "backend/src/config/feature-flags.module.ts",
         "backend/src/config/logger.config.ts",
+        "backend/src/config/throttler-tiers.config.ts",
         "backend/src/config/write-guard.module.ts",
         "backend/src/controllers/analytics.controller.ts",
         "backend/src/database/database.module.ts",
@@ -28106,7 +28107,7 @@
         "backend/src/workers/worker.module.ts"
       ],
       "kind": "service",
-      "loc": 297,
+      "loc": 273,
       "owner": "__unassigned__",
       "path": "backend/src/app.module.ts",
       "risk": "low",
@@ -29723,7 +29724,8 @@
       "id": "backend/src/common/guards/cloudflare-throttler.guard.ts",
       "importedBy": [
         "backend/src/app.module.ts",
-        "backend/src/common/guards/cloudflare-throttler.guard.test.ts"
+        "backend/src/common/guards/cloudflare-throttler.guard.test.ts",
+        "backend/src/config/throttler-tiers.config.test.ts"
       ],
       "imports": [],
       "kind": "service",
@@ -32434,6 +32436,53 @@
       "loc": 37,
       "owner": "@ak125",
       "path": "backend/src/config/source-provenance.constants.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
+      "id": "backend/src/config/throttler-tiers.config.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/common/guards/cloudflare-throttler.guard.ts",
+        "backend/src/config/throttler-tiers.config.ts"
+      ],
+      "kind": "test",
+      "loc": 110,
+      "owner": "@ak125",
+      "path": "backend/src/config/throttler-tiers.config.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D13",
+      "id": "backend/src/config/throttler-tiers.config.ts",
+      "importedBy": [
+        "backend/src/app.module.ts",
+        "backend/src/config/throttler-tiers.config.test.ts"
+      ],
+      "imports": [],
+      "kind": "config",
+      "loc": 64,
+      "owner": "@ak125",
+      "path": "backend/src/config/throttler-tiers.config.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -38048,7 +38097,7 @@
         "backend/src/modules/analytics/landing-source.classifier.ts"
       ],
       "kind": "controller",
-      "loc": 157,
+      "loc": 162,
       "owner": "@ak125",
       "path": "backend/src/modules/analytics/controllers/landing-attribution.controller.ts",
       "risk": "medium",
@@ -52156,7 +52205,7 @@
         "backend/src/modules/seo-monitoring/services/cwv-beacon.service.ts"
       ],
       "kind": "controller",
-      "loc": 69,
+      "loc": 76,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo-monitoring/controllers/cwv-beacon.controller.ts",
       "risk": "medium",
@@ -52259,7 +52308,7 @@
         "backend/src/modules/seo-monitoring/services/runtime-events.service.ts"
       ],
       "kind": "controller",
-      "loc": 70,
+      "loc": 76,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo-monitoring/controllers/runtime-events.controller.ts",
       "risk": "medium",
@@ -98249,11 +98298,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "c874feb59f5d00601c29a139560da9ecd2d63678eea0eddc4bb4fbd8d79672d1",
       "audit/registry/deps.json": "6f667991be593e37b2798c4ca0f0689d89c412731aa2bdf50000248da9f2c5bd",
-      "audit/registry/files.json": "2cde5d2ed3ec6a07c7d70e868d317a25255cf6688d3bc8f1bad062d4dd0d451e",
+      "audit/registry/files.json": "f92ed7e5f12fa525e51b6b73d1eca1bc30ef50778a8dfd0ea7aae6e1068c7f11",
       "audit/registry/rpc.json": "59d3bb0e2b79c240fb14ec32e3adab2b269fe5a69a3c721ab762128504f4f980",
       "audit/registry/runtime.json": "314a3bda98e2b9bb87a4b6a88a1efa131a3c12505d9e56b5f60eeebd23e5f70f"
     },
-    "sotFingerprint": "3e0506607356"
+    "sotFingerprint": "60e8951e88c3"
   },
   "runtime": [
     {

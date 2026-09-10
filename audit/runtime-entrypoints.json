@@ -2791,6 +2791,7 @@
       ".github/workflows/spec-validation.yml",
       ".github/workflows/stale.yml",
       ".github/workflows/tecdoc-api-surface-guard.yml",
+      ".github/workflows/tecdoc-failclosed-guard.yml",
       ".github/workflows/validator-dev-safety-observe.yml",
       ".github/workflows/vault-canon-exists.yml",
       ".github/workflows/visual-gate.yml",
@@ -2891,7 +2892,7 @@
       "tests/registry/rpc-parser.test.ts"
     ]
   },
-  "runtime_files_count": 1503,
+  "runtime_files_count": 1504,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -2957,6 +2958,7 @@
     ".github/workflows/spec-validation.yml",
     ".github/workflows/stale.yml",
     ".github/workflows/tecdoc-api-surface-guard.yml",
+    ".github/workflows/tecdoc-failclosed-guard.yml",
     ".github/workflows/validator-dev-safety-observe.yml",
     ".github/workflows/vault-canon-exists.yml",
     ".github/workflows/visual-gate.yml",
