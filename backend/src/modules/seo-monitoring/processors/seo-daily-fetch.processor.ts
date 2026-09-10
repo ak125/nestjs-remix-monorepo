@@ -134,11 +134,12 @@ export class SeoDailyFetchProcessor {
         let message: string | undefined;
 
         if (t === 'gsc') {
-          // PR1 : ingestion multi-niveaux (property_total/totals/pages/queries)
-          // + fenêtre glissante self-healing (re-upsert J-3..J-6 : GSC révise J-1/J-2).
+          // Ingestion multi-niveaux (5 grains) : fenêtre glissante gouvernée
+          // (SEO_GSC_ROLLING_DAYS) + rattrapage des jours non commités de la
+          // fenêtre SEO_GSC_BACKFILL_LOOKBACK_DAYS (plafonné par run).
           const r = await this.gscFetcher.fetchAndPersistMultiGrain({
             date,
-            rollingDays: 4,
+            triggeredBy: job.data.triggeredBy,
           });
           rowsInserted = r.rowsInserted;
           if (
@@ -147,9 +148,20 @@ export class SeoDailyFetchProcessor {
           ) {
             status = 'skipped';
             message = r.warnings.join(',');
+          } else if (r.dates) {
+            const d = r.dates;
+            if (d.failed.length > 0) status = 'failed';
+            message =
+              `refresh=${d.refresh.length} backfill=${d.backfill.length} deferred=${d.deferred.length} ` +
+              `ingested=${d.ingested.length} real_zero=${d.realZero.length} not_final=${d.notFinal.length} ` +
+              `finality_unknown=${d.finalityUnknown.length} failed=${d.failed.length}`;
           }
         } else if (t === 'ga4') {
-          const r = await this.ga4Fetcher.fetchAndPersist({ date });
+          // Ancre + jours absents de la fenêtre SEO_GA4_BACKFILL_LOOKBACK_DAYS.
+          const r = await this.ga4Fetcher.fetchAndPersistWindow({
+            anchorDate: date,
+            triggeredBy: job.data.triggeredBy,
+          });
           rowsInserted = r.rowsInserted;
           if (
             r.warnings.includes('monitoring_disabled') ||
@@ -157,6 +169,12 @@ export class SeoDailyFetchProcessor {
           ) {
             status = 'skipped';
             message = r.warnings.join(',');
+          } else {
+            const d = r.dates;
+            if (d.failed.length > 0) status = 'failed';
+            message =
+              `refresh=${d.refresh.length} backfill=${d.backfill.length} deferred=${d.deferred.length} ` +
+              `ingested=${d.ingested.length} empty=${d.empty.length} failed=${d.failed.length}`;
           }
         } else if (t === 'gsc_links') {
           const r = await this.gscLinksFetcher.fetchAndPersist({
@@ -249,9 +267,23 @@ export class SeoDailyFetchProcessor {
       `✅ [Job #${job.id}] daily-fetch terminé en ${totalDurationSeconds.toFixed(1)}s — ${totalRowsInserted} rows insérés (${perSource.length} sources)`,
     );
 
-    this.jobHealth
-      .recordSuccess('seo-daily-fetch', Date.now() - startedAt)
-      .catch(() => {});
+    // Un succès n'est enregistré que si aucune source n'a échoué (avant :
+    // recordSuccess systématique, même avec GSC/GA4 en échec).
+    const failedSources = perSource.filter((p) => p.status === 'failed');
+    if (failedSources.length > 0) {
+      this.jobHealth
+        .recordFailure(
+          'seo-daily-fetch',
+          failedSources
+            .map((p) => `${p.source}: ${p.message ?? 'failed'}`)
+            .join(' | '),
+        )
+        .catch(() => {});
+    } else {
+      this.jobHealth
+        .recordSuccess('seo-daily-fetch', Date.now() - startedAt)
+        .catch(() => {});
+    }
 
     return {
       date,
