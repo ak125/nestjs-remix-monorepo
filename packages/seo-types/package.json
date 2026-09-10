@@ -16,6 +16,11 @@
       "import": "./dist/observability.js",
       "require": "./dist/observability.js"
     },
+    "./day-coverage": {
+      "types": "./dist/day-coverage.d.ts",
+      "import": "./dist/day-coverage.js",
+      "require": "./dist/day-coverage.js"
+    },
     "./onpage": {
       "types": "./dist/onpage.d.ts",
       "import": "./dist/onpage.js",
