@@ -3,11 +3,16 @@ import { SupplierTruthRepository } from './supplier-truth.repository';
 import { AvailabilityState } from './domain/availability-state';
 
 /**
- * Read API for the funnel (Layer 4 entry point).
+ * Read API for the availability-consensus projection — DEFERRED to H3, NOT WIRED.
  *
- * The funnel reads ONLY the canonical projection through this service — never the
- * connector or raw snapshots. A piece with no projection is `UNKNOWN` (shown as
- * "sur commande"), never "en stock". Never throws on a missing row.
+ * Intended contract: the funnel reads ONLY the canonical projection through this
+ * service — never the connector or raw snapshots; a piece with no projection is
+ * `UNKNOWN` (shown as "sur commande"), never "en stock".
+ *
+ * Current state (verified 2026-09-10): no funnel, cart or order code calls it, and
+ * the `supplier_truth_projection` table it reads has never existed — its migration
+ * was retired unapplied. A missing ROW maps to UNKNOWN, but a missing TABLE is an
+ * error and propagates. Wire nothing to this until H3 ships its own migration.
  */
 
 export interface AvailabilityView {

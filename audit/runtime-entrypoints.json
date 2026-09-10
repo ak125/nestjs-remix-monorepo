@@ -2625,7 +2625,6 @@
       "backend/supabase/migrations/20260519_merchant_center_feed_v1.sql",
       "backend/supabase/migrations/20260520_order_landing_attribution.down.sql",
       "backend/supabase/migrations/20260520_order_landing_attribution.sql",
-      "backend/supabase/migrations/20260520_supplier_truth_v1.sql",
       "backend/supabase/migrations/20260521_seo_event_funnel_enum.sql",
       "backend/supabase/migrations/20260521_seo_sitemap_freshness_000_enum.sql",
       "backend/supabase/migrations/20260521_seo_sitemap_freshness_001_alert_rpc.sql",
@@ -2895,7 +2894,7 @@
       "tests/registry/rpc-parser.test.ts"
     ]
   },
-  "runtime_files_count": 1507,
+  "runtime_files_count": 1506,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -3978,7 +3977,6 @@
     "backend/supabase/migrations/20260519_merchant_center_feed_v1.sql",
     "backend/supabase/migrations/20260520_order_landing_attribution.down.sql",
     "backend/supabase/migrations/20260520_order_landing_attribution.sql",
-    "backend/supabase/migrations/20260520_supplier_truth_v1.sql",
     "backend/supabase/migrations/20260521_seo_event_funnel_enum.sql",
     "backend/supabase/migrations/20260521_seo_sitemap_freshness_000_enum.sql",
     "backend/supabase/migrations/20260521_seo_sitemap_freshness_001_alert_rpc.sql",

@@ -22674,74 +22674,6 @@
       {
         "columns": [
           {
-            "hasDefault": false,
-            "name": "id",
-            "nullable": true,
-            "type": "bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY"
-          },
-          {
-            "hasDefault": false,
-            "name": "supplier_id",
-            "nullable": false,
-            "type": "text"
-          },
-          {
-            "hasDefault": false,
-            "name": "delay_days",
-            "nullable": true,
-            "type": "integer"
-          },
-          {
-            "hasDefault": true,
-            "name": "parse_error",
-            "nullable": false,
-            "type": "boolean"
-          },
-          {
-            "hasDefault": false,
-            "name": "latency_ms",
-            "nullable": true,
-            "type": "integer"
-          },
-          {
-            "hasDefault": true,
-            "name": "fetched_at",
-            "nullable": false,
-            "type": "timestamptz"
-          },
-          {
-            "hasDefault": false,
-            "name": "source_verified_at",
-            "nullable": true,
-            "type": "timestamptz"
-          },
-          {
-            "hasDefault": false,
-            "name": "price_buy_ht",
-            "nullable": true,
-            "type": "numeric"
-          }
-        ],
-        "deletePolicy": "FREE",
-        "domain": "UNKNOWN",
-        "id": "supplier_inventory_snapshots",
-        "inMigrations": [
-          "20260520_supplier_truth_v1.sql"
-        ],
-        "indexes": [],
-        "name": "supplier_inventory_snapshots",
-        "owner": "__unassigned__",
-        "risk": "low",
-        "rlsEnabled": true,
-        "schema": "public",
-        "schemaVersion": "1.0.0",
-        "sourceConfidence": "high",
-        "status": "LIVE",
-        "usedBy": []
-      },
-      {
-        "columns": [
-          {
             "hasDefault": true,
             "name": "offer_id",
             "nullable": false,
@@ -22970,148 +22902,6 @@
         "usedBy": [
           "backend/src/modules/pricing/services/pricing.repository.ts"
         ]
-      },
-      {
-        "columns": [
-          {
-            "hasDefault": false,
-            "name": "supplier_id",
-            "nullable": true,
-            "type": "text PRIMARY KEY"
-          },
-          {
-            "hasDefault": true,
-            "name": "timeout_rate",
-            "nullable": false,
-            "type": "numeric"
-          },
-          {
-            "hasDefault": true,
-            "name": "unresolved_rate",
-            "nullable": false,
-            "type": "numeric"
-          },
-          {
-            "hasDefault": false,
-            "name": "default_ttl_minutes",
-            "nullable": true,
-            "type": "integer"
-          },
-          {
-            "hasDefault": false,
-            "name": "quarantined_since",
-            "nullable": true,
-            "type": "timestamptz"
-          },
-          {
-            "hasDefault": false,
-            "name": "recovery_after",
-            "nullable": true,
-            "type": "timestamptz"
-          },
-          {
-            "hasDefault": true,
-            "name": "updated_at",
-            "nullable": false,
-            "type": "timestamptz"
-          }
-        ],
-        "deletePolicy": "FREE",
-        "domain": "UNKNOWN",
-        "id": "supplier_runtime_profile",
-        "inMigrations": [
-          "20260520_supplier_truth_v1.sql"
-        ],
-        "indexes": [],
-        "name": "supplier_runtime_profile",
-        "owner": "__unassigned__",
-        "risk": "low",
-        "rlsEnabled": true,
-        "schema": "public",
-        "schemaVersion": "1.0.0",
-        "sourceConfidence": "high",
-        "status": "LIVE",
-        "usedBy": []
-      },
-      {
-        "columns": [
-          {
-            "hasDefault": false,
-            "name": "piece_id",
-            "nullable": true,
-            "type": "integer PRIMARY KEY"
-          },
-          {
-            "hasDefault": true,
-            "name": "confidence",
-            "nullable": false,
-            "type": "integer"
-          },
-          {
-            "hasDefault": false,
-            "name": "delay_days",
-            "nullable": true,
-            "type": "integer"
-          },
-          {
-            "hasDefault": false,
-            "name": "source_supplier",
-            "nullable": true,
-            "type": "text"
-          },
-          {
-            "hasDefault": true,
-            "name": "state_since",
-            "nullable": false,
-            "type": "timestamptz"
-          },
-          {
-            "hasDefault": true,
-            "name": "state_counter",
-            "nullable": false,
-            "type": "integer"
-          },
-          {
-            "hasDefault": true,
-            "name": "projected_at",
-            "nullable": false,
-            "type": "timestamptz"
-          },
-          {
-            "hasDefault": false,
-            "name": "projection_metadata",
-            "nullable": true,
-            "type": "jsonb"
-          },
-          {
-            "hasDefault": false,
-            "name": "projection_inputs_hash",
-            "nullable": true,
-            "type": "text"
-          },
-          {
-            "hasDefault": true,
-            "name": "projection_version",
-            "nullable": false,
-            "type": "integer"
-          }
-        ],
-        "deletePolicy": "FREE",
-        "domain": "UNKNOWN",
-        "id": "supplier_truth_projection",
-        "inMigrations": [
-          "20260520_supplier_truth_v1.sql"
-        ],
-        "indexes": [],
-        "name": "supplier_truth_projection",
-        "owner": "__unassigned__",
-        "risk": "low",
-        "rlsEnabled": true,
-        "schema": "public",
-        "schemaVersion": "1.0.0",
-        "sourceConfidence": "high",
-        "status": "LIVE",
-        "usedBy": []
       },
       {
         "columns": [],
@@ -59863,7 +59653,6 @@
         "backend/src/modules/supplier-truth/domain/truth-engine.ts",
         "backend/src/modules/supplier-truth/order-availability.service.test.ts",
         "backend/src/modules/supplier-truth/order-availability.service.ts",
-        "backend/src/modules/supplier-truth/supplier-truth.module.test.ts",
         "backend/src/modules/supplier-truth/supplier-truth.service.test.ts",
         "backend/src/modules/supplier-truth/supplier-truth.service.ts"
       ],
@@ -60252,7 +60041,7 @@
         "backend/src/modules/supplier-truth/supplier-truth.service.ts"
       ],
       "kind": "service",
-      "loc": 42,
+      "loc": 43,
       "owner": "@ak125",
       "path": "backend/src/modules/supplier-truth/order-availability.service.ts",
       "risk": "high",
@@ -60533,8 +60322,6 @@
       "domain": "D11",
       "id": "backend/src/modules/supplier-truth/supplier-truth-read.module.ts",
       "importedBy": [
-        "backend/src/modules/supplier-truth/supplier-truth.module.test.ts",
-        "backend/src/modules/supplier-truth/supplier-truth.module.ts",
         "backend/src/workers/worker.module.ts"
       ],
       "imports": [
@@ -60567,11 +60354,10 @@
       "imports": [
         "@auth/is-admin.guard",
         "backend/src/modules/supplier-truth/connectors/supplier-registry.ts",
-        "backend/src/modules/supplier-truth/supplier-sync.flag.ts",
-        "backend/src/modules/supplier-truth/supplier-truth.service.ts"
+        "backend/src/modules/supplier-truth/supplier-sync.flag.ts"
       ],
       "kind": "controller",
-      "loc": 68,
+      "loc": 53,
       "owner": "@ak125",
       "path": "backend/src/modules/supplier-truth/supplier-truth.controller.ts",
       "risk": "high",
@@ -60590,14 +60376,11 @@
       "id": "backend/src/modules/supplier-truth/supplier-truth.module.test.ts",
       "importedBy": [],
       "imports": [
-        "backend/src/modules/supplier-truth/domain/availability-state.ts",
-        "backend/src/modules/supplier-truth/supplier-truth-read.module.ts",
         "backend/src/modules/supplier-truth/supplier-truth.controller.ts",
-        "backend/src/modules/supplier-truth/supplier-truth.module.ts",
-        "backend/src/modules/supplier-truth/supplier-truth.service.ts"
+        "backend/src/modules/supplier-truth/supplier-truth.module.ts"
       ],
       "kind": "test",
-      "loc": 83,
+      "loc": 65,
       "owner": "@ak125",
       "path": "backend/src/modules/supplier-truth/supplier-truth.module.test.ts",
       "risk": "high",
@@ -60619,11 +60402,10 @@
         "backend/src/modules/supplier-truth/supplier-truth.module.test.ts"
       ],
       "imports": [
-        "backend/src/modules/supplier-truth/supplier-truth-read.module.ts",
         "backend/src/modules/supplier-truth/supplier-truth.controller.ts"
       ],
       "kind": "service",
-      "loc": 26,
+      "loc": 24,
       "owner": "@ak125",
       "path": "backend/src/modules/supplier-truth/supplier-truth.module.ts",
       "risk": "high",
@@ -60677,7 +60459,7 @@
         "backend/src/database/services/supabase-base.service.ts"
       ],
       "kind": "service",
-      "loc": 264,
+      "loc": 274,
       "owner": "@ak125",
       "path": "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
       "risk": "high",
@@ -60722,8 +60504,6 @@
         "backend/src/modules/supplier-truth/order-availability.service.test.ts",
         "backend/src/modules/supplier-truth/order-availability.service.ts",
         "backend/src/modules/supplier-truth/supplier-truth-read.module.ts",
-        "backend/src/modules/supplier-truth/supplier-truth.controller.ts",
-        "backend/src/modules/supplier-truth/supplier-truth.module.test.ts",
         "backend/src/modules/supplier-truth/supplier-truth.service.test.ts"
       ],
       "imports": [
@@ -60731,7 +60511,7 @@
         "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
       ],
       "kind": "service",
-      "loc": 54,
+      "loc": 59,
       "owner": "@ak125",
       "path": "backend/src/modules/supplier-truth/supplier-truth.service.ts",
       "risk": "high",
@@ -98375,15 +98155,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "98f10df3b19858e0d723a5a21218be5e599b0c3f6038a3672b10bbb02baf0e29",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "2255e6d1f03052054863c715702e67889698e4c8f608e475b93ab3281fcabaa2",
+      ".spec/00-canon/repository-registry/ownership.yaml": "ac200d75ead8a0d4f14172c30ddf482b3f0be9fd03e53406fd923b2a8eb7731b",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
-      "audit/registry/db.json": "c874feb59f5d00601c29a139560da9ecd2d63678eea0eddc4bb4fbd8d79672d1",
+      "audit/registry/db.json": "25765692c5c196e2cf2b669cee3f80d6995921876e836ade74240dd538b87bdb",
       "audit/registry/deps.json": "6f667991be593e37b2798c4ca0f0689d89c412731aa2bdf50000248da9f2c5bd",
-      "audit/registry/files.json": "a4004f621dbd020af3508a8982ecb5f7f8642f3016663a84308b3d73d1dd72d6",
+      "audit/registry/files.json": "4d0a379f4c8e01618cb2a5944a97d0fe11c2b14d38b9c1418cd063572c477a38",
       "audit/registry/rpc.json": "59d3bb0e2b79c240fb14ec32e3adab2b269fe5a69a3c721ab762128504f4f980",
-      "audit/registry/runtime.json": "314a3bda98e2b9bb87a4b6a88a1efa131a3c12505d9e56b5f60eeebd23e5f70f"
+      "audit/registry/runtime.json": "11b58e35c0f151b043fc74b164953c754d4c32c7164107587b53fd9046e30e68"
     },
-    "sotFingerprint": "a3ab2c4b0810"
+    "sotFingerprint": "63c2c69cf0c0"
   },
   "runtime": [
     {
@@ -101617,9 +101397,7 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [
-        "runtime:backend/src/modules/supplier-truth/supplier-truth.service.ts"
-      ],
+      "dependsOn": [],
       "id": "runtime:backend/src/modules/supplier-truth/supplier-truth.controller.ts",
       "kind": "nestjs-controller",
       "path": "backend/src/modules/supplier-truth/supplier-truth.controller.ts",
@@ -101629,7 +101407,6 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/modules/supplier-truth/supplier-truth-read.module.ts",
         "runtime:backend/src/modules/supplier-truth/supplier-truth.controller.ts"
       ],
       "id": "runtime:backend/src/modules/supplier-truth/supplier-truth.module.ts",

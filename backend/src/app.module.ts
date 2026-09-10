@@ -215,7 +215,7 @@ import { TrendSignalsModule } from './modules/trend-signals/trend-signals.module
     SeoControlPlaneModule, // 🤖 ADR-064 — SEO Production Control Plane (L1 synthetic crawler q15min)
     SeoProjectionModule, // 🗄️ ADR-059 PR-6c — forward-writer (write-side actif ; feed R1 flag-gated OFF ; read-path dark PR-7)
     MerchantCenterModule, // 🛒 PR commerce-loop V1 step 5B — Google Shopping XML feed /api/feed/merchant-center.xml
-    SupplierTruthModule, // 🔌 Read-only observability for the supplier-truth sentinel (admin status + projection); the inert-gated sync runtime lives in WorkerModule
+    SupplierTruthModule, // 🔌 Read-only observability for the supplier-truth sentinel (admin status); the inert-gated sync runtime lives in WorkerModule
     SearchModule, // 🔍 NOUVEAU - Module de recherche optimisé v3.0 avec Meilisearch !
     BlogModule, // 📚 NOUVEAU - Module blog avec conseils, guides et glossaire intégrés !
     SystemModule, // ⚡ NOUVEAU - Module system monitoring et métriques !
