@@ -1237,7 +1237,8 @@
         "runtime:backend/src/modules/catalog/services/unified-page-data.service.ts",
         "runtime:backend/src/modules/catalog/services/vehicle-filtered-catalog-v4-hybrid.service.ts",
         "runtime:backend/src/modules/catalog/services/vehicle-pieces-compatibility.service.ts",
-        "runtime:backend/src/modules/products/services/pricing.service.ts"
+        "runtime:backend/src/modules/products/services/pricing.service.ts",
+        "runtime:backend/src/modules/seo/services/seo-placeholder-events.service.ts"
       ],
       "id": "runtime:backend/src/modules/catalog/catalog.module.ts",
       "kind": "nestjs-module",
@@ -2608,6 +2609,20 @@
       "id": "runtime:backend/src/modules/seo-logs/seo-logs.module.ts",
       "kind": "nestjs-module",
       "path": "backend/src/modules/seo-logs/seo-logs.module.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/modules/seo-monitoring/services/ga4-daily-fetcher.service.ts",
+        "runtime:backend/src/modules/seo-monitoring/services/google-credentials.service.ts",
+        "runtime:backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.ts",
+        "runtime:backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/seo-monitoring/cli/run-ingestion-backfill.ts",
+      "kind": "nestjs-module",
+      "path": "backend/src/modules/seo-monitoring/cli/run-ingestion-backfill.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"

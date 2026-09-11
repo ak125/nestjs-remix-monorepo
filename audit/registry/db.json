@@ -5299,6 +5299,68 @@
         },
         {
           "hasDefault": true,
+          "name": "clicks",
+          "nullable": false,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": true,
+          "name": "impressions",
+          "nullable": false,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": true,
+          "name": "ctr",
+          "nullable": false,
+          "type": "REAL"
+        },
+        {
+          "hasDefault": true,
+          "name": "position",
+          "nullable": false,
+          "type": "REAL"
+        },
+        {
+          "hasDefault": true,
+          "name": "fetched_at",
+          "nullable": false,
+          "type": "TIMESTAMPTZ"
+        }
+      ],
+      "deletePolicy": "ADR_REQUIRED",
+      "domain": "UNKNOWN",
+      "id": "__seo_gsc_daily_page_totals",
+      "inMigrations": [
+        "20260911_seo_gsc_multilevel_page_totals.sql"
+      ],
+      "indexes": [],
+      "name": "__seo_gsc_daily_page_totals",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": false,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "usedBy": []
+    },
+    {
+      "columns": [
+        {
+          "hasDefault": false,
+          "name": "date",
+          "nullable": false,
+          "type": "DATE"
+        },
+        {
+          "hasDefault": false,
+          "name": "page",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": true,
           "name": "country",
           "nullable": false,
           "type": "TEXT"
@@ -5411,7 +5473,11 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "usedBy": []
+      "usedBy": [
+        "backend/src/modules/admin/services/seo-control.service.ts",
+        "backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts",
+        "backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.ts"
+      ]
     },
     {
       "columns": [

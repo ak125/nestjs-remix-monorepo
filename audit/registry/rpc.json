@@ -422,7 +422,7 @@
         }
       ],
       "definedInMigrations": [
-        "20260613_seo_gsc_multilevel_grains.sql"
+        "20260911_seo_gsc_multilevel_page_totals.sql"
       ],
       "domain": "UNKNOWN",
       "id": "public.__seo_ensure_monthly_partitions",
@@ -434,7 +434,9 @@
       "returnType": "INT",
       "schema": "public",
       "schemaVersion": "1.0.0",
-      "searchPath": [],
+      "searchPath": [
+        "public"
+      ],
       "securityDefiner": false,
       "sourceConfidence": "high",
       "status": "UNKNOWN",
@@ -7857,6 +7859,60 @@
       "searchPath": [],
       "securityDefiner": false,
       "sourceConfidence": "low",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_window_days",
+          "type": "integer"
+        },
+        {
+          "mode": "IN",
+          "name": "p_now",
+          "type": "timestamptz"
+        },
+        {
+          "mode": "IN",
+          "name": "p_min_impressions",
+          "type": "integer"
+        },
+        {
+          "mode": "IN",
+          "name": "p_max_ctr",
+          "type": "numeric"
+        },
+        {
+          "mode": "IN",
+          "name": "p_limit",
+          "type": "integer"
+        },
+        {
+          "mode": "IN",
+          "name": "p_expected_from",
+          "type": "date"
+        }
+      ],
+      "definedInMigrations": [
+        "20260911_seo_gsc_multilevel_page_totals_rpc_low_ctr_v4.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.rpc_seo_low_ctr_v4",
+      "language": "sql",
+      "name": "rpc_seo_low_ctr_v4",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "jsonb",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public"
+      ],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
       "status": "UNKNOWN",
       "usedBy": []
     },
