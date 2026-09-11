@@ -5798,7 +5798,7 @@
         "frontend/index.cjs"
       ],
       "kind": "service",
-      "loc": 299,
+      "loc": 300,
       "owner": "__unassigned__",
       "path": "backend/src/main.ts",
       "risk": "low",
