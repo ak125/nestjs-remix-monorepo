@@ -60,7 +60,7 @@ const content = (text: string): SeoTemplates => ({
 function tagCounts(html: string): Record<string, number> {
   const count = (re: RegExp) => (html.match(re) ?? []).length;
   return {
-    aOpen: count(/<a\s/g),
+    aOpen: count(/<a[\s>]/g),
     aClose: count(/<\/a>/g),
     bOpen: count(/<b>/g),
     bClose: count(/<\/b>/g),
@@ -68,6 +68,11 @@ function tagCounts(html: string): Record<string, number> {
     pOpen: count(/<p>/g),
     pClose: count(/<\/p>/g),
   };
+}
+
+/** Valeurs de tous les attributs href, dans l'ordre. */
+function hrefs(html: string): string[] {
+  return [...html.matchAll(/\shref\s*=\s*"([^"]*)"/g)].map((m) => m[1]);
 }
 
 function build(cached: unknown = null) {
@@ -141,7 +146,7 @@ describe('SeoTemplateService — garde des marqueurs non résolus (données rée
     });
   });
 
-  it('pg 3096 : marqueurs dans les href retirés (cible effective inchangée), #VMotorisation#/#VCodeMoteur# résolus, HTML équilibré', async () => {
+  it('pg 3096 : les 5 liens dont la destination porte un marqueur sont neutralisés, texte utile conservé, HTML équilibré', async () => {
     const { svc, record } = build();
     const r = await svc.processTemplates(
       content(PG3096_CONTENT),
@@ -155,17 +160,24 @@ describe('SeoTemplateService — garde des marqueurs non résolus (données rée
     );
 
     expect(r.content).not.toMatch(RESIDUAL);
-    expect(tagCounts(r.content)).toEqual(tagCounts(PG3096_CONTENT));
-    // href : seul le fragment `#Marqueur#` disparaît
-    expect(r.content).toContain('<a href="https://www.automecanik.com/">');
+    // Aucune destination reconstituable (pas de mapping connu) : aucun lien servi.
+    // Retirer le seul jeton laissait « https://www.automecanik.com/ » (autre
+    // destination) et « …/courroie-de-distribution-306/ » (URL tronquée).
+    expect(hrefs(r.content)).toEqual([]);
+    expect(tagCounts(r.content)).toEqual({
+      ...tagCounts(PG3096_CONTENT),
+      aOpen: 0,
+      aClose: 0,
+    });
     expect(r.content).toContain(
-      '<a href="https://www.automecanik.com/pieces/courroie-de-distribution-306/">',
+      'de la <b>Audi A5 Sportback 1.9 TDI 90 ch </b> de motorisation <b>Diesel</b> pour code moteur <b>AJM, ATJ</b> est composé',
     );
     expect(r.content).toContain(
-      '<a href="https://www.automecanik.com/pieces/pompe-a-eau-1260/">',
+      "d'une <b>courroie de distribution</b>, d'un <b>galet tendeur de distribution</b>",
     );
+    expect(r.content).toContain("d'une <b>pompe à eau</b> pour la");
     expect(r.content).toContain(
-      'de motorisation <b>Diesel</b> pour code moteur <b>AJM, ATJ</b> est composé',
+      'avant le remplacement du <b>kit de distribution avec pompe à eau</b> de votre',
     );
     expect(record).toHaveBeenCalledTimes(1);
     expect(record.mock.calls[0][0]).toMatchObject({
@@ -181,6 +193,76 @@ describe('SeoTemplateService — garde des marqueurs non résolus (données rée
       ],
       pg_id: 3096,
     });
+  });
+
+  it('lien valide conservé à l’identique ; seul le lien à destination non résolue est neutralisé', async () => {
+    const { svc, record } = build();
+    const text =
+      '<p>Voir <a href="https://www.automecanik.com/pieces/capteur-niveau-d-huile-moteur-1289.html">le capteur</a> et <a href="https://www.automecanik.com/pieces/pompe-a-eau-1260/#ContentLinkToGamCar#"><b>pompe à eau</b></a>.</p>';
+    const r = await svc.processTemplates(content(text), ctx());
+
+    expect(r.content).toBe(
+      '<p>Voir <a href="https://www.automecanik.com/pieces/capteur-niveau-d-huile-moteur-1289.html">le capteur</a> et <b>pompe à eau</b>.</p>',
+    );
+    expect(record.mock.calls[0][0]).toMatchObject({
+      field: 'content',
+      markers: ['#ContentLinkToGamCar#'],
+    });
+  });
+
+  it.each([
+    ['pg 1289', PG1289_CONTENT],
+    ['pg 1298', PG1298_PREVIEW],
+    ['pg 3096', PG3096_CONTENT],
+    ['pg 1795', PG1795_CONTENT],
+  ])(
+    '%s : aucune destination vide, tronquée ou inventée après traitement',
+    async (_label, template) => {
+      const { svc } = build();
+      const r = await svc.processTemplates(
+        content(template),
+        ctx({
+          comp_switches: { '11': ['a'], '15': ['b'], '3': ['c'] },
+          legacy_marker_motorisation: 'Diesel',
+          legacy_marker_code_moteur: 'AJM, ATJ',
+        }),
+      );
+      const validSourceHrefs = hrefs(template).filter((h) => !RESIDUAL.test(h));
+
+      for (const href of hrefs(r.content)) {
+        expect(validSourceHrefs).toContain(href);
+      }
+      expect(r.content).not.toMatch(/\shref\s*=\s*"\s*"/);
+    },
+  );
+
+  it('lien sans fermeture exploitable : seul l’attribut fautif est retiré, les balises restent équilibrées', async () => {
+    const { svc, record } = build();
+    const text =
+      '<p><a href="https://www.automecanik.com/#ContentLinkToCar#">Audi A5 <a href="https://www.automecanik.com/pieces/capteur-niveau-d-huile-moteur-1289.html">capteur</a></p>';
+    const r = await svc.processTemplates(content(text), ctx());
+
+    expect(r.content).toBe(
+      '<p><a>Audi A5 <a href="https://www.automecanik.com/pieces/capteur-niveau-d-huile-moteur-1289.html">capteur</a></p>',
+    );
+    expect(tagCounts(r.content)).toEqual(tagCounts(text));
+    expect(record.mock.calls[0][0]).toMatchObject({
+      markers: ['#ContentLinkToCar#'],
+    });
+  });
+
+  it('marqueur dans le texte d’un lien valide : le lien reste, seul le jeton est retiré', async () => {
+    const { svc } = build();
+    const r = await svc.processTemplates(
+      content(
+        '<a href="https://www.automecanik.com/pieces/capteur-niveau-d-huile-moteur-1289.html">Contrôler le capteur #CompSwicth_12_1289#</a>',
+      ),
+      ctx(),
+    );
+
+    expect(r.content).toBe(
+      '<a href="https://www.automecanik.com/pieces/capteur-niveau-d-huile-moteur-1289.html">Contrôler le capteur </a>',
+    );
   });
 
   it('pg 1795 : #VMotorisation#/#VCodeMoteur# résolus depuis les valeurs véhicule, aucun signal', async () => {

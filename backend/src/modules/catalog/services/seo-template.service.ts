@@ -21,7 +21,53 @@ import { composeVehicleAwareDescription } from './vehicle-aware-description.comp
  * dont aucune n'est connue des résolveurs. Majuscule initiale puis lettres
  * contiguës : `#fff`, `href="#faq"`, `123#R3#S1` ou `&#39;` ne correspondent pas.
  */
-const RESIDUAL_MARKER_REGEX = /#[A-Z][A-Za-z]+(?:_\d+){0,2}#/g;
+const RESIDUAL_MARKER = '#[A-Z][A-Za-z]+(?:_\\d+){0,2}#';
+const RESIDUAL_MARKER_REGEX = new RegExp(RESIDUAL_MARKER, 'g');
+
+/**
+ * Lien `<a …>` dont un attribut porte un marqueur non résolu, avec sa fermeture
+ * et sans autre `<a` imbriqué. Les 5 cas mesurés (pg 3096) sont des href du type
+ * `https://www.automecanik.com/pieces/pompe-a-eau-1260/#ContentLinkToGamCar#` :
+ * aucune destination fiable ne peut en être reconstituée.
+ */
+const LINK_WITH_RESIDUAL_MARKER = new RegExp(
+  `(<[aA]\\b[^>]*${RESIDUAL_MARKER}[^>]*>)((?:(?!<[aA]\\b)[\\s\\S])*?)<\\/[aA]>`,
+  'g',
+);
+const OPENING_LINK_TAG = /<[aA]\b[^>]*>/g;
+const ATTRIBUTE_WITH_RESIDUAL_MARKER = new RegExp(
+  `\\s[\\w:-]+\\s*=\\s*(?:"[^"]*${RESIDUAL_MARKER}[^"]*"|'[^']*${RESIDUAL_MARKER}[^']*')`,
+  'g',
+);
+
+/**
+ * Neutralise les liens dont la destination porte un marqueur non résolu :
+ * retirer le seul jeton laisserait une destination différente
+ * (`https://www.automecanik.com/`) ou tronquée (`…/pompe-a-eau-1260/`).
+ * Le lien est retiré, son contenu conservé ; sans fermeture exploitable, seul
+ * l'attribut fautif est retiré (balises inchangées). Aucune URL n'est inventée.
+ */
+function neutralizeLinksWithResidualMarkers(
+  html: string,
+  residual: string[],
+): string {
+  const collect = (fragment: string) =>
+    residual.push(...(fragment.match(RESIDUAL_MARKER_REGEX) ?? []));
+  return html
+    .replace(
+      LINK_WITH_RESIDUAL_MARKER,
+      (_link, openTag: string, inner: string) => {
+        collect(openTag);
+        return inner;
+      },
+    )
+    .replace(OPENING_LINK_TAG, (tag) =>
+      tag.replace(ATTRIBUTE_WITH_RESIDUAL_MARKER, (attribute) => {
+        collect(attribute);
+        return '';
+      }),
+    );
+}
 
 type SeoTemplateField = 'h1' | 'title' | 'description' | 'content' | 'preview';
 
@@ -480,11 +526,14 @@ export class SeoTemplateService {
       // Autres liens non résolus
       .replace(/#Link[A-Za-z]+(_\d+)?#/gi, '');
 
-    // Garde finale : aucun marqueur inconnu n'est servi. Seul le jeton est
-    // retiré — aucun texte inventé, balises intactes (un jeton ne contient ni
-    // `<` ni `>`). Dans un href (`…/306/#ContentLinkToGamCar#`) le marqueur
-    // n'était qu'un fragment d'URL : la cible effective reste la même.
-    const guarded = resolved.replace(RESIDUAL_MARKER_REGEX, (marker) => {
+    // Garde finale : aucun marqueur inconnu n'est servi. D'abord les liens dont
+    // la destination porte un marqueur (neutralisés), puis les jetons restants
+    // dans le texte : seul le jeton est retiré — aucun texte inventé, balises
+    // intactes (un jeton ne contient ni `<` ni `>`).
+    const guarded = neutralizeLinksWithResidualMarkers(
+      resolved,
+      residual,
+    ).replace(RESIDUAL_MARKER_REGEX, (marker) => {
       residual.push(marker);
       return '';
     });
