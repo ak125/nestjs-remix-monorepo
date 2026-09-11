@@ -13,19 +13,18 @@
  *
  * Pattern mirror de `FunnelEventsController` :
  *   - @HttpCode(202) — beacon = fire-and-forget, jamais 4xx visible côté UA
- *   - Validation safeParse → 202 silencieux si malformé (ne pas casser le client)
+ *   - Validation safeParse → 202 `{ ok: false }` si malformé (ne pas casser le
+ *     client), et rejet COMPTÉ par raison (`CwvBeaconService.countRejection`) :
+ *     corps absent, schéma invalide, page hors origine canonique
+ *   - Intégrité : seules les pages de `SITE_ORIGIN` alimentent la mesure. Le
+ *     runtime DEV (pages localhost, base partagée) et le container PREPROD
+ *     (sondes CI sur localhost) voient leurs beacons comptés `foreign_host`
  *   - Throttler @nestjs/throttler : politique standard, bucket propre à ce
  *     handler (15/s · 100/min · 2000/h par IP). Le client émet jusqu'à 5
  *     beacons par page vue (un par métrique — web-vitals.client.ts:336-340).
  */
-import {
-  Body,
-  Controller,
-  Headers,
-  HttpCode,
-  Logger,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Headers, HttpCode, Post } from '@nestjs/common';
+import { SITE_ORIGIN } from '@config/site.constants';
 import {
   CwvBeaconClientPayloadSchema,
   classifyUserAgent,
@@ -36,8 +35,6 @@ import { CwvBeaconService } from '../services/cwv-beacon.service';
 
 @Controller('api/seo/cwv')
 export class CwvBeaconController {
-  private readonly logger = new Logger(CwvBeaconController.name);
-
   constructor(private readonly cwvBeacon: CwvBeaconService) {}
 
   @Post('beacon')
@@ -53,11 +50,22 @@ export class CwvBeaconController {
     @Body() body: unknown,
     @Headers('user-agent') ua: string | undefined,
   ): Promise<{ ok: boolean }> {
+    // Content-Type non JSON → body-parser laisse `req.body` indéfini.
+    if (body === undefined || body === null) {
+      this.cwvBeacon.countRejection('empty_body');
+      return { ok: false };
+    }
+
     const parsed = CwvBeaconClientPayloadSchema.safeParse(body);
     if (!parsed.success) {
-      this.logger.debug(
-        `cwv beacon rejected (schema): ${parsed.error.message}`,
-      );
+      this.cwvBeacon.countRejection('schema_invalid', parsed.error.issues);
+      return { ok: false };
+    }
+
+    // Avant le routage bot : une page hors origine canonique ne nourrit aucune
+    // table, bots compris. `url` est déjà une URL absolue validée par le schéma.
+    if (new URL(parsed.data.url).origin !== SITE_ORIGIN) {
+      this.cwvBeacon.countRejection('foreign_host');
       return { ok: false };
     }
 
