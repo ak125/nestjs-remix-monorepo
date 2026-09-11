@@ -71,10 +71,12 @@ test('native budget failure remains visible, separate from evidence completeness
 
 test('summary uses configured budgets and escapes untrusted markdown', () => {
   const result = checkReports(fixture());
-  result.pages[0].issues.push('<script>|\n`unsafe`');
+  result.pages[0].issues.push('<SCRIPT>|\n`unsafe`');
   const summary = renderSummary(result, budgets);
   assert.match(summary, /11100/);
-  assert.doesNotMatch(summary, /<script>|1\.8s/);
+  assert.equal(summary.includes('<'), false);
+  assert.equal(summary.includes('>'), false);
+  assert.equal(summary.includes('1.8s'), false);
 });
 
 test('invalid declared scope fails rather than validating zero pages', () => {
