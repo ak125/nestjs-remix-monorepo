@@ -414,6 +414,7 @@ Title, meta et H1 relevés en live le 2026-09-11. Toute proposition part d'une r
 |---|---|---|---|
 | 5 | Étape autorisée | « PR guard-only (Recommandé) » | Branche dédiée depuis `origin/main`, rejeu des tests, push, PR #1460 en draft. Projections registry régénérées dans la même PR après signalement CI. Aucun merge. |
 | 6 | Vérification des appelants de `cron/health` | « Je lis les logs PROD » | Lecture seule des journaux d'accès Caddy. Depuis DEV : accès SSH refusé. **Réalisée par l'owner** sur la machine PROD le 2026-09-11, avec les commandes fournies : 0 appel, contrôle positif retrouvé (§4.3). |
+| 7 | Sortie du draft de #1460 (message du **2026-09-11T14:20:14.329Z**) | « oui » | PR passée en « ready for review ». Pas d'auto-merge, pas de merge, pas de déploiement. |
 
 **Propositions à valider** (aucun accord identifiable) :
 - emplacement du collecteur (PROD) et désactivation du collecteur DEV ;
@@ -433,7 +434,7 @@ Title, meta et H1 relevés en live le 2026-09-11. Toute proposition part d'une r
 - **Poussé** : la garde admin seule, PR #1460 en draft (§4.5). Rien d'autre n'a quitté la machine DEV.
 - **Nécessite un GO** : chaque étape du §4.7, les SQL du §8, les corrections du §7, les purges, le merge de #1460.
 
-**Prochaine action unique proposée** : décision owner sur la sortie du draft de la PR #1460. Aucun appelant de `cron/health` n'a été observé (§4.3). Juste avant le merge : mise à jour de la branche (conflits attendus sur les 6 projections générées, résolus par régénération), puis CI. C'est la seule exposition confirmée encore active en PROD.
+**Prochaine action unique proposée** : GO owner pour merger la PR #1460, sortie du draft le 2026-09-11. Juste avant le merge : mise à jour de la branche (conflits attendus sur les 6 projections générées, résolus par régénération), puis CI. Le merge ne met à jour que PREPROD ; la PROD demande un tag `v*`, avec un GO séparé. C'est la seule exposition confirmée encore active en PROD.
 
 ## 12. Vérification liée au SHA `25cfd1bc4`, rejouée pour `771c7b934`
 
