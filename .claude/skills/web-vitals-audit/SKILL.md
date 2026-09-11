@@ -7,13 +7,13 @@ owners: ['@ak125']
 domain: D3
 runtime_class: read-only
 llm_safe: true
-last_verified: '2026-06-26'
+last_verified: '2026-09-11'
 license: Internal - Automecanik
 compatibility: Claude Code in the AutoMecanik monorepo. Reads frontend/app/** + audit/registry/canonical.json + the RUM chain __seo_cwv_raw/__seo_cwv_hourly/__seo_cwv_daily_rum (distinct from the lab table __seo_cwv_daily) + cron.job(_run_details). No mutations.
 allowed-tools: Read Grep Glob Bash
 tags: [audit, web-vitals, frontend, performance, inp, lcp, cls, react-router]
 metadata:
-  version: "0.2"
+  version: "0.3"
   argument-hint: "[check-name or 'all']"
   spec: agentskills.io/specification v1
 ---
@@ -75,6 +75,8 @@ existant** plutôt qu'étendre `web-vitals-audit`.
     content-visibility-gap.md         # cause #694 (below-fold non cv:auto)
     cwv-beacon-ingestion-gap.md       # web-vitals wiré mais __seo_cwv_raw vide (RUM in)
     cwv-aggregation-coverage-gap.md   # raw non agrégé → hourly/daily_rum (incident 06-03→23)
+  references/
+    lab-probe-protocol.md             # garde-fou transverse : sonde labo sûre (pas un check)
 ```
 
 **Un check = une responsabilité** (≤ 100 lignes).
@@ -118,12 +120,23 @@ strict V1, `incidents_proven:` OU `risk_documented:`.
    liste de root-causes priorisées par severity.
 4. **Pas d'auto-fix**. Suggérer le patch (ex: `cv: auto` sur block X) en
    description du finding.
+5. Toute sonde navigateur ou comparaison avant/après exigée par un check suit
+   [`references/lab-probe-protocol.md`](references/lab-probe-protocol.md), recopié
+   dans le prompt de chaque agent labo délégué.
 
 ## Garde-fous
 
 Si un check tente de devenir "mega analyzer" (audit perf globale,
 bundle stats, profiling React), **le retirer**. Le scope CWV est non
 négociable.
+
+**Sonde labo** : protocole obligatoire dans
+[`references/lab-probe-protocol.md`](references/lab-probe-protocol.md) —
+télémétrie neutralisée dans la page + marqueur `cb=lab-<run_id>`, concurrence 1
+vers PROD (`flock`, pas de fan-out), contrôle SQL lecture seule après chaque run
+(purge = GO owner + sauvegarde), avant/après stratifié par uptime du process.
+Fichier dédié : responsabilité transverse à tous les checks, sans severity ni
+détection, donc hors format `checks/`.
 
 ## Règle d'admission d'un nouveau check
 
@@ -143,3 +156,5 @@ Identique à `runtime-truth-audit` :
 - `feedback_cwv_rum_stack_already_exists.md` — gap ingestion documenté
 - `feedback_no_blind_trust_gsc_first_detection_date.md` — distinguer
   date détection cohorte vs date régression code
+- `feedback_lab_probe_page_route_does_not_block_sendbeacon.md` — origine du
+  protocole de sonde labo
