@@ -560,3 +560,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/dev-shutdown-comment-bull`
 - **Décision** : docs(dev): borne d'arrêt DEV — c'est le close() de Bull qui attendait le crawl, pas @nestjs/bullmq
 - **Sortie** : PR aucune | commits 5d395718b
+
+## 2026-09-11 — fix/seo-monitoring-admin-guard (auto)
+
+- **Branche** : `fix/seo-monitoring-admin-guard`
+- **Décision** : Merge remote-tracking branch 'origin/main' into fix/seo-monitoring-admin-guard (+2 other commits)
+- **Sortie** : PR #1460 | commits 4736b191c 28bb4140d b10c1c884
