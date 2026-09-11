@@ -1,9 +1,10 @@
 # Audit SEO — 7 leviers, fiabilité de la mesure GSC, robots, marqueurs (2026-09-11)
 
 > **Statut par défaut de tout ce qui suit : CODE CORRIGÉ + TESTÉ, POUSSÉ dans la PR #1467
-> (brouillon) le 2026-09-11. NON APPLIQUÉ EN BASE, NON MERGÉ, NON DÉPLOYÉ, EFFET SEO NON MESURÉ.**
-> Seule exception : la garde admin, livrée par la PR #1460 et déployée en PROD le 2026-09-11
-> (§4.5, §11).
+> (brouillon) le 2026-09-11. NON MERGÉ, NON DÉPLOYÉ, EFFET SEO NON MESURÉ.**
+> Deux exceptions : la garde admin, livrée par la PR #1460 et déployée en PROD le 2026-09-11
+> (§4.5, §11) ; et les **2 migrations, APPLIQUÉES le 2026-09-11 à 23:36 UTC** sur GO owner
+> (§4.1). Le code qui les utilise n'est toujours pas mergé ni déployé.
 > Branche `fix/seo-measure-robots-markers` (worktree `.claude/worktrees/seo-leviers-mesure`),
 > base `bcf0c775a`. Vérification complète au SHA `25cfd1bc4`. Les contrôles touchés par le
 > dernier changement de code (un test frontend, `771c7b934`) ont été rejoués à ce SHA (§12).
@@ -15,7 +16,7 @@
 | Plan | Où on en est | Ce qui manque |
 |---|---|---|
 | **Remise en service technique** | Code d'ingestion rattrapable, lecteurs honnêtes, robots, marqueurs et garde admin : corrigés et testés localement. | Revue, GO ciblés : migrations, merge, tag `v*`, activation d'un collecteur unique, reprise. Aujourd'hui aucune donnée GSC nouvelle n'est garantie : le seul collecteur actif est le backend DEV lancé à la main. |
-| **Qualité de la mesure** | Un jour n'est certifié que présent **et** confirmé (marqueur de commit). Les états dégradés (manquant, non confirmé, non finalisé, erreur, grain non récupéré) sont visibles au lieu d'être comptés comme complets. | Tant que les migrations ne sont pas appliquées puis la reprise faite, les écrans afficheront « non certifié » ou « indisponible ». C'est voulu : aucune donnée partielle n'est présentée comme complète. |
+| **Qualité de la mesure** | Un jour n'est certifié que présent **et** confirmé (marqueur de commit). Les états dégradés (manquant, non confirmé, non finalisé, erreur, grain non récupéré) sont visibles au lieu d'être comptés comme complets. | Migrations appliquées le 2026-09-11 à 23:36 UTC ; tant que la reprise n'est pas faite, les écrans afficheront « non certifié » ou « indisponible ». C'est voulu : aucune donnée partielle n'est présentée comme complète. |
 | **Résultat SEO** | Non mesuré. | Déploiement, recrawl, puis au moins une fenêtre GSC complète et confirmée avant toute comparaison. Aucun délai d'effet n'est promis. |
 
 ## 1. Verdict des 7 leviers
@@ -24,7 +25,7 @@ Classement de l'existant : RÉUTILISER / CORRIGER / ABSENT / NON PROUVÉ.
 
 | # | Levier | Existant et classement | Statut dans ce lot |
 |---|---|---|---|
-| 1 | Réveiller les pages à fort potentiel | `rpc_seo_low_ctr_v1`/`v3` + command center : **CORRIGER** (grain faux, §2 D2). Candidats observés : requêtes en position 3 à 6 sans clic sur les conseils (§7). | v4 et certification : CODE + TESTÉ ; migration non appliquée. |
+| 1 | Réveiller les pages à fort potentiel | `rpc_seo_low_ctr_v1`/`v3` + command center : **CORRIGER** (grain faux, §2 D2). Candidats observés : requêtes en position 3 à 6 sans clic sur les conseils (§7). | v4 et certification : CODE + TESTÉ ; **migrations appliquées le 2026-09-11 à 23:36 UTC** ; code non mergé, donc v4 n'est encore lue par aucun runtime. |
 | 2 | Problèmes SEO silencieux | Robots, marqueurs R2, META conseils, contrôleur admin ouvert : **CORRIGER** (fait). Signal `seo_placeholder_unresolved` : **RÉUTILISER** (réutilisé). Santé du job `seo-daily-fetch` : **CORRIGER** (§4.3, non fait). | CODE + TESTÉ, sauf la santé du job (proposition). |
 | 3 | Chemins de conversion | CTA des pages R3 non tracés : **ABSENT**. JSON-LD `relatedLink` vers `/pieces/<alias>` en 410 : **CORRIGER**, non traité (SEO indexé). Parcours `/panier` de récupération : cassé mais dormant (§4.6). | Observations. Aucun changement (zone STOP panier). |
 | 4 | Intentions sous-couvertes | Requêtes GSC par page : **RÉUTILISER**. Couverture du contenu face à ces requêtes : **NON PROUVÉ** (pas de confrontation au WIKI). Cannibalisation « corps papillon » : rejetée (§3). | Propositions marquées hypothèses (§7). |
@@ -64,7 +65,7 @@ Classement de l'existant : RÉUTILISER / CORRIGER / ABSENT / NON PROUVÉ.
 
 ### 4.1 Migrations et SQL (point 1)
 
-- Deux migrations additives préparées, **non appliquées** (absentes de PROD, vérifié en lecture) : `20260911_seo_gsc_multilevel_page_totals.sql` et `20260911_seo_gsc_multilevel_page_totals_rpc_low_ctr_v4.sql`, chacune avec son `.down.sql`.
+- Deux migrations additives, **APPLIQUÉES le 2026-09-11 à 23:36:53 et 23:36:54 UTC** (run 34658711995, depuis la tête de PR `ae4a19d14`, après un dry-run qui n'a rien écrit) : `20260911_seo_gsc_multilevel_page_totals.sql` et `20260911_seo_gsc_multilevel_page_totals_rpc_low_ctr_v4.sql`, chacune avec son `.down.sql`.
 - **Banc exécuté** : `scripts/db/test-seo-gsc-page-totals-migrations.sh`, conteneur `postgres:17-alpine` jetable. La fixture reproduit l'état PROD avant migration, relevé en lecture seule. Résultat au SHA `25cfd1bc4` : **80 PASS / 0 FAIL**. Cas couverts :
   - **schéma absent** : fetcher en 42703 (`schema_drift`, 0 écriture) ; v4 en 42883 (repli v3) ; v4 refusée avant la création de la table ;
   - **idempotence et permissions** : deux applications idempotentes ; RLS sur le parent et les 7 partitions ; anon et authenticated refusés (SELECT, INSERT, UPDATE, EXECUTE v4), service_role autorisé ; aucune surcharge de fonction ;
@@ -410,7 +411,7 @@ Title, meta et H1 relevés en live le 2026-09-11. Toute proposition part d'une r
 
 | # | Décision | Réponse | Portée appliquée |
 |---|---|---|---|
-| 1 | Correction de la mesure par page | « Table additive (Recommandé) » | Migrations préparées, non appliquées. La mention « avant merge » de l'option est **remplacée** par la consigne ultérieure : aucune application sans revue, tests et GO (§4.7). |
+| 1 | Correction de la mesure par page | « Table additive (Recommandé) » | Migrations préparées, puis **appliquées le 2026-09-11 à 23:36 UTC sur GO owner** (ligne 11 ci-dessous). La mention « avant merge » de l'option est **remplacée** par la consigne ultérieure : aucune application sans revue, tests et GO (§4.7). |
 | 2 | Politique robots Googlebot | « Recherche bloquée (Recommandé) » | Recherche interne bloquée ; panier, commande et compte explorables + noindex ; tracking explorable ; `Crawl-delay` retiré ; repli généré depuis la même source. |
 | 3 | Validation de contenu | « Garde marqueurs R2, Filtre META conseils, Résoudre 2 variables » | Pour les liens, précisé par la consigne du point 4 : on neutralise le lien et on garde le texte. |
 | 4 | Guards du contrôleur admin | « Oui, guards admin (Recommandé) » | Code et test. Aucun déploiement. |
@@ -425,6 +426,7 @@ Title, meta et H1 relevés en live le 2026-09-11. Toute proposition part d'une r
 | 8 | Merge de #1460 (message du **2026-09-11T14:47:10.066Z**) | « go » | Mise à jour de branche, régénération, CI verte, squash épinglé sur le SHA vérifié. Merge = PREPROD. **Pas de tag PROD** : le « go » n'a pas été lu comme un GO de mise en production. |
 | 9 | Tag PROD (message du **2026-09-11T21:09:50.040Z**) | « push tag » | Traité comme une **demande de confirmation**, pas comme un GO : un GO PROD doit nommer le lot et ses PR. **Aucun tag poussé.** Lot candidat au 2026-09-11 21:35Z : `v2026.09.09-throttler-caddy-perf-cache..38747ac6b`, 33 PR. |
 | 10 | Tag PROD (message du **2026-09-11, 21:44Z**) | « GO PROD pour le lot `v2026.09.09-throttler-caddy-perf-cache..38747ac6b` » | Lot nommé sans ambiguïté, après publication de la liste des 33 PR et de l'échec Lighthouse connu. Contrôle préalable : l'échec Lighthouse a bien la cause préexistante (`/search?q=plaquette`, preuve invalide). Tag `v2026.09.11-cwv-sanitizer-admin-guard` posé sur `38747ac6b` à 21:49Z ; deploy PROD ✅ à 21:51:31Z ; **garde admin vérifiée en PROD : `cron/health` = 403**. |
+| 11 | Application des 2 migrations (message du **2026-09-11, 23:34Z**) | « go » | Dry-run d'abord (chemin vérifié sans écriture) : exactement les 2 identifiants attendus, transactionnels, aucune migration antérieure enjambée. Puis APPLY depuis la tête de PR `ae4a19d14` (run 34658711995) : appliquées à 23:36:53 et 23:36:54 UTC. Registre **308 applied, 0 pending, 0 drift, 0 failed**. Contrôles Q4 et Q6 passés ; `rpc_seo_low_ctr_v4` STABLE, EXECUTE réservé à `service_role`. **Merge, tag, collecteur et reprise restent gated.** |
 
 **Propositions à valider** (aucun accord identifiable) :
 - emplacement du collecteur (PROD) et désactivation du collecteur DEV ;
@@ -443,6 +445,7 @@ Title, meta et H1 relevés en live le 2026-09-11. Toute proposition part d'une r
 - **Local, non suivi** : patch guard-only ; description de PR (`.claude/handoffs/`).
 - **Mergé sur main** : la garde admin seule, PR #1460 (§4.5). Déployée sur PREPROD via le run de `f64ef5197`, puis via celui de `38747ac6b`.
 - **Poussé, non mergé** : le reste de la branche, le 2026-09-11 à 22:15Z, dans la **PR #1467 (brouillon)**, au SHA `09261d63a` — après reprise de `origin/main` (`38747ac6b`) et régénération des projections. CI de la PR : 44 checks verts, 9 skippés, 0 échec. Brouillon délibéré : les 2 migrations passent **avant** le merge.
+- **Appliqué en base** : les 2 migrations additives, le 2026-09-11 à 23:36 UTC (GO owner), depuis la tête de PR. Le code qui les consomme n'est ni mergé ni déployé — aucun runtime ne lit encore `page_totals` ni v4.
 - **Déployé en PROD** : la garde admin, par le tag `v2026.09.11-cwv-sanitizer-admin-guard` sur `38747ac6b`, le 2026-09-11 à 21:51Z. Vérification en PROD : `GET /api/admin/seo-monitoring/cron/health` = **403** (200 sans authentification avant), `credentials/health` = 403, `/` et `/health` = 200.
 - **Nécessite un GO** : chaque étape du §4.7, les SQL du §8, les corrections du §7, les purges, le tag PROD.
 
