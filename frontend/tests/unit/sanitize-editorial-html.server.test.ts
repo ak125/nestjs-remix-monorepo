@@ -7,11 +7,13 @@ import golden from "./fixtures/sanitize-editorial-html.golden.json";
 /**
  * sanitizeEditorialHtml — chemin serveur (SSR).
  *
- * Sans `window` global, isomorphic-dompurify charge sa build Node : une fenêtre jsdom
- * propre au process, partagée par tous les rendus serveur (loader de `editorial-parser`,
- * chaque `HtmlContent` rendu côté serveur). Le fichier voisin
- * `sanitize-editorial-html.test.ts` tourne sous l'environnement jsdom de Vitest : il y
- * reçoit la build navigateur et ne couvre donc pas ce chemin.
+ * En SSR il n'existe aucun `window` global : isomorphic-dompurify y sanitise dans une
+ * fenêtre jsdom propre au process, partagée par tous les rendus serveur (loader de
+ * `editorial-parser`, chaque `HtmlContent` rendu côté serveur). L'environnement `node`
+ * reproduit exactement cette condition. Le fichier voisin
+ * `sanitize-editorial-html.test.ts` tourne sous l'environnement jsdom de Vitest, dont le
+ * `window` global faisait basculer isomorphic-dompurify 2.x sur la fenêtre de test : il
+ * ne couvrait pas ce chemin. La 4.x choisit sa build par condition d'export `node`.
  *
  * 1. Coût par appel : il ne doit pas dépendre du nombre d'appels déjà servis par le
  *    process. Avec isomorphic-dompurify 2.36.0 (jsdom 28), chaque appel laissait sur la
