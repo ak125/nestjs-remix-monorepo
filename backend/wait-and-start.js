@@ -185,10 +185,15 @@ function watchEnvFile() {
           }
         }
 
-        // Envoyer SIGUSR2 pour redémarrer nodemon proprement
-        // (nodemon écoute ce signal pour un restart graceful)
-        console.log('🔁 Envoi du signal de redémarrage à nodemon...');
-        process.kill(process.pid, 'SIGUSR2');
+        // Redémarrer l'app par le watcher de nodemon sur dist/ (arrêt gracieux compris).
+        // Jamais de signal à ce processus : sans handler, SIGUSR2 le tue, et run-p arrête
+        // alors toute la chaîne dev (tsc, tsc-alias, nodemon). Sans dist/main.js, nodemon
+        // n'a pas encore démarré : son premier démarrage lira le nouveau .env.
+        if (fs.existsSync(mainJsPath)) {
+          console.log('🔁 Redémarrage de l\'app (dist/main.js touché)...');
+          const now = new Date();
+          fs.utimesSync(mainJsPath, now, now);
+        }
       }, 1000); // Attendre 1s pour éviter les faux positifs
     }
   });

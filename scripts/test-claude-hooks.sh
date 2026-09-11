@@ -363,6 +363,38 @@ assert_contains "sonde : dump de plus de 24 h → ok" '"ok"' "$(sync_state '.sta
 
 rm -rf "$SB"
 
+# backend/wait-and-start.js (dev:watch du stack DEV) : une modification de backend/.env relance
+# l'app sans tuer le script — sa mort fait arrêter par run-p toute la chaîne (tsc, tsc-alias,
+# nodemon). Vrai script, lancé dans un bac à sable : `ps`, `ss` et `docker` y sont factices,
+# sinon son nettoyage de démarrage tuerait les watchers tsc du stack dev de la machine.
+WS=$(mktemp -d)
+mkdir -p "$WS/backend/dist" "$WS/bin"
+cp "$REPO_ROOT/backend/wait-and-start.js" "$WS/backend/"
+echo "SANDBOX=1" > "$WS/backend/.env"
+echo 'require("fs").appendFileSync(__dirname + "/../../boots.log", "boot\n"); setInterval(() => {}, 1e9);' > "$WS/backend/dist/main.js"
+printf '#!/bin/sh\nexit 0\n' > "$WS/bin/ps"
+cp "$WS/bin/ps" "$WS/bin/ss"
+printf '#!/bin/sh\necho "Up 1 hour"\n' > "$WS/bin/docker"
+printf '#!/bin/sh\nexec node %s "$@"\n' "$(cd "$REPO_ROOT" && node -p 'require.resolve("nodemon/bin/nodemon.js")')" > "$WS/bin/nodemon"
+chmod +x "$WS/bin/"*
+boots() { wc -l < "$WS/boots.log" 2>/dev/null || echo 0; }
+wait_boots() { local i; for i in $(seq $(( $2 * 10 ))); do [ "$(boots)" -ge "$1" ] && return; sleep 0.1; done; }
+alive() { [ -n "$(ps -o stat= -p "$1" 2>/dev/null | grep -v Z)" ] && echo vivant || echo mort; }
+# stdin ouvert comme dans le terminal ; setsid : un groupe de processus à tuer d'un bloc.
+mkfifo "$WS/stdin" && exec 7<>"$WS/stdin"
+(cd "$WS/backend" && PATH="$WS/bin:$PATH" exec setsid node wait-and-start.js <&7 >"$WS/out" 2>&1) &
+WPID=$!
+wait_boots 1 30
+assert_contains "wait-and-start : l'app démarre sous nodemon (bac à sable)" "^1$" "$(boots)"
+echo "SANDBOX=2" >> "$WS/backend/.env"
+wait_boots 2 15
+assert_contains "wait-and-start : backend/.env modifié → l'app redémarre" "^2$" "$(boots)"
+assert_contains "wait-and-start : backend/.env modifié → le script reste vivant (la chaîne dev survit)" "vivant" "$(alive "$WPID")"
+kill -- -"$WPID" 2>/dev/null
+wait "$WPID" 2>/dev/null
+exec 7>&-
+rm -rf "$WS"
+
 # ============================================================
 # Hook 3 : stop-claude-md-suggest.sh
 # ============================================================
