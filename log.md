@@ -536,3 +536,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/seo-measure-robots-markers`
 - **Décision** : docs(seo): rapport des 7 leviers, preuves de fiabilité de la mesure et procédure de livraison (+19 other commits)
 - **Sortie** : PR aucune | commits cdbdb58a4 25cfd1bc4 bb9aea9a8 67de7d4a3 b3448f055 a60d1b6a6 8719db00a 6bdc8c9ae 673e6ee98 5cc403e5f f2a7ff9e9 84e9e57ce 039a44fc5 6de46c5cb 35704971e ce012960e af79afe5c a2cf87e83 4007ff96d fe658657d
+
+## 2026-09-11 — fix/seo-measure-robots-markers (auto)
+
+- **Branche** : `fix/seo-measure-robots-markers`
+- **Décision** : docs(seo): erratum — le backend prod journalise bien les requêtes http (+27 other commits)
+- **Sortie** : PR aucune | commits 5a6e496a6 8ee571707 1c487eecc 46a934184 2f4c5b78e e244807a6 771c7b934 f2ab4cbbb cdbdb58a4 25cfd1bc4 bb9aea9a8 67de7d4a3 b3448f055 a60d1b6a6 8719db00a 6bdc8c9ae 673e6ee98 5cc403e5f f2a7ff9e9 84e9e57ce 039a44fc5 6de46c5cb 35704971e ce012960e af79afe5c a2cf87e83 4007ff96d fe658657d
