@@ -1,8 +1,9 @@
 // Dev-only safety net : register tsconfig-paths before any other require().
 // PROD utilise tsc-alias pour réécrire les @alias en relatifs au build (single-shot,
-// race-free). En dev, `tsc --watch` et `tsc-alias --watch` tournent en parallèle ;
-// nodemon peut redémarrer node sur un dist/*.js fraîchement réécrit par tsc mais
-// pas encore traité par tsc-alias → MODULE_NOT_FOUND `@common/exceptions`.
+// race-free). En dev, `scripts/ops/dev-compile-watch.js` fait les deux dans le même
+// processus : tsc écrit le fichier émis, la réécriture des alias suit dans le même
+// cycle. Nodemon peut redémarrer node entre ces deux écritures →
+// MODULE_NOT_FOUND `@common/exceptions`.
 // La registration runtime ci-dessous patche le loader Node pour résoudre les
 // `@alias/*` résiduels, éliminant la race. Inactive en prod (tsc-alias a déjà fait
 // le travail au build, et tsconfig-paths reste en devDependencies).

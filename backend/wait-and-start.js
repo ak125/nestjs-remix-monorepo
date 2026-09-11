@@ -43,6 +43,7 @@ function cleanupOldProcesses() {
 
   // Phase 1: Always kill orphan watchers (tsc, tsup) — they accumulate across restarts
   const watcherPatterns = [
+    'dev-compile-watch.js',
     'tsc --build --watch',
     'tsc --watch',
     'tsup --watch',

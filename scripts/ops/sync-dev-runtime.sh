@@ -338,7 +338,7 @@ fi
 #    run ; le cron alerte déjà (abort ci-dessous) et re-tente au tick suivant (~10 min).
 #
 #    Build de tout le monorepo SAUF le backend : `backend/dist` appartient au stack dev
-#    en marche (`tsc --build --watch` et `tsc-alias --watch` le recompilent depuis les
+#    en marche (`scripts/ops/dev-compile-watch.js` le recompile depuis les
 #    sources que le ff-merge vient de changer, nodemon le surveille). Le `build` du
 #    backend commence par `prebuild: rimraf dist` : lancé ici, il supprime le répertoire
 #    que surveille nodemon, qui perd tous ses watches inotify et ne relance plus jamais
