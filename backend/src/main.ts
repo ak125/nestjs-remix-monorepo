@@ -217,7 +217,8 @@ async function bootstrap() {
     // close() doit retrouver son action par défaut.
     if (!isProd) {
       const DEV_SHUTDOWN_GRACE_MS = 10_000;
-      for (const signal of ['SIGUSR2', 'SIGINT', 'SIGTERM', 'SIGHUP'] as const) {
+      const signals = ['SIGUSR2', 'SIGINT', 'SIGTERM', 'SIGHUP'] as const;
+      for (const signal of signals) {
         process.once(signal, () => {
           setTimeout(() => {
             // eslint-disable-next-line no-console
