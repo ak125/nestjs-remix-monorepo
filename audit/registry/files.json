@@ -65828,6 +65828,63 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "scripts/ci/lighthouse-report-quality.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 103,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/lighthouse-report-quality.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/ci/lighthouse-report-quality.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 107,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/lighthouse-report-quality.test.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/ci/lighthouserc.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 17,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/lighthouserc.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "scripts/ci/pr-2e-readiness-gate.mjs",
       "importedBy": [],
       "imports": [],
