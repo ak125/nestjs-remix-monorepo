@@ -164,7 +164,15 @@ Proposition à valider, non implémentée : ancrer `p_now` sur le lendemain du d
 - ajouter une règle d'ancienneté consommée par l'alerte admin existante ;
 - respecter la règle de #1448 (la machine DEV n'écrit pas dans `__admin_job_health`).
 
-**Effet de la garde admin sur la supervision.** `GET cron/health` n'est plus public. Si une sonde externe l'appelle, elle recevra 403. Avant le merge : lire les journaux d'accès PROD pour ce chemin (lecture seule, sur GO).
+**Effet de la garde admin sur la supervision.** `GET cron/health` n'est plus public. Si une sonde externe l'appelle, elle recevra 403.
+- **ADR-045** (statut *proposed*) décrit cette route comme « utilisable par monitoring externe ».
+- **ADR-063** (statut *accepted*, amende ADR-045) prescrit `IsAdminGuard` sur les routes admin du contrôleur.
+- **Côté dépôt et machine DEV** : aucun appelant. Le healthcheck Docker et le health check Caddy appellent `/health`.
+- **Où chercher en PROD.**
+  - **Pas dans les journaux du conteneur backend** : aucun journal de requêtes HTTP n'y est branché (`LoggerModule` de `nestjs-pino` jamais importé).
+  - **Dans le journal d'accès Caddy du site www** (`logs/caddy/automecanik*.log*`). Sa rotation est de 50 Mo × 5, sans durée minimale : la couverture réelle est à mesurer.
+- **Commandes en lecture seule** : description de la PR #1460.
+- **Tentative de lecture le 2026-09-11** : accès SSH à la machine PROD refusé depuis DEV.
 
 ### 4.4 Marqueurs dans les liens (point 4)
 
@@ -189,7 +197,13 @@ Proposition à valider, non implémentée : ancrer `p_now` sur le lendemain du d
 - **contre-exemple** : guards neutralisés → la même requête anonyme déclenche le fetcher. Le 403 n'est donc pas vacant ;
 - **job interne** : le processor `daily-fetch` appelle le fetcher sans requête ni session.
 
-**Livrable indépendamment des migrations SEO : oui.** `.claude/handoffs/seo-monitoring-admin-guard-only.patch` (non suivi) contient seulement la garde et le test HTTP. Validé 29/29 sur `origin/main` `b580da6a6`. Depuis, `origin/main` (`5ccf04bf3`) ne touche que `.claude/rules/deployment.md`, `scripts/ops/sync-dev-runtime.sh` et `scripts/test-claude-hooks.sh`, hors du périmètre du patch. Écart assumé : sur main, l'assertion du job utilise `objectContaining({ date })`, car main transmet aussi `rollingDays`.
+**Livré séparément : PR #1460, en draft**, branche `fix/seo-monitoring-admin-guard`.
+- Commits `b10c1c884` (garde + test HTTP) et `28bb4140d` (projections registry régénérées).
+- CI au SHA `28bb4140d` : 37 checks passés, 9 sautés, 0 échec ; les 13 checks requis passent.
+- Aucun merge, tag ni déploiement.
+- **Au rebase de cette branche** : le lot C contient la même garde. Si #1460 est mergée d'abord, le conflit ou le doublon est à résoudre.
+
+**Historique.** `.claude/handoffs/seo-monitoring-admin-guard-only.patch` (non suivi) contient seulement la garde et le test HTTP. Validé 29/29 sur `origin/main` `b580da6a6`. Depuis, `origin/main` (`5ccf04bf3`) ne touche que `.claude/rules/deployment.md`, `scripts/ops/sync-dev-runtime.sh` et `scripts/test-claude-hooks.sh`, hors du périmètre du patch. Écart assumé : sur main, l'assertion du job utilise `objectContaining({ date })`, car main transmet aussi `rollingDays`.
 
 ### 4.6 `/panier` sans toucher à la zone STOP (point 6)
 
@@ -390,11 +404,17 @@ Title, meta et H1 relevés en live le 2026-09-11. Toute proposition part d'une r
 | 3 | Validation de contenu | « Garde marqueurs R2, Filtre META conseils, Résoudre 2 variables » | Pour les liens, précisé par la consigne du point 4 : on neutralise le lien et on garde le texte. |
 | 4 | Guards du contrôleur admin | « Oui, guards admin (Recommandé) » | Code et test. Aucun déploiement. |
 
+**Accords réels, suite.** Même transcript, réponse AskUserQuestion du **2026-09-11T12:42:54.294Z**. Libellé de la question : « Aucun merge, migration, tag ni déploiement dans aucune option. »
+
+| # | Décision | Réponse | Portée appliquée |
+|---|---|---|---|
+| 5 | Étape autorisée | « PR guard-only (Recommandé) » | Branche dédiée depuis `origin/main`, rejeu des tests, push, PR #1460 en draft. Projections registry régénérées dans la même PR après signalement CI. Aucun merge. |
+| 6 | Vérification des appelants de `cron/health` | « Je lis les logs PROD » | Lecture seule des journaux d'accès PROD. **Non réalisée** : accès SSH refusé depuis DEV. Aucune autre commande tentée. |
+
 **Propositions à valider** (aucun accord identifiable) :
 - emplacement du collecteur (PROD) et désactivation du collecteur DEV ;
 - correctif D14 ;
 - option A ou B du §4.7 ;
-- PR séparée guard-only ;
 - périmètre et calendrier de la reprise ;
 - corrections des 5 pages ;
 - SQL pg 1298 / 1289 / 3096 et nettoyage META ;
@@ -404,11 +424,12 @@ Title, meta et H1 relevés en live le 2026-09-11. Toute proposition part d'une r
 
 ## 11. Local ou GO
 
-- **Local, commité sur la branche** : 22 commits, de `fe658657d` à `771c7b934`. Parmi eux : ce rapport (`cdbdb58a4`) et une entrée `log.md` créée automatiquement par le hook Stop (`f2ab4cbbb`).
+- **Local, commité sur la branche** : tous les commits depuis `fe658657d` jusqu'à la tête de branche (`git log bcf0c775a..HEAD`). Parmi eux : ce rapport (`cdbdb58a4`) et une entrée `log.md` créée automatiquement par le hook Stop (`f2ab4cbbb`).
 - **Local, non suivi** : patch guard-only ; description de PR (`.claude/handoffs/`).
-- **Nécessite un GO** : chaque étape du §4.7, les SQL du §8, les corrections du §7, les purges, la lecture des journaux d'accès PROD.
+- **Poussé** : la garde admin seule, PR #1460 en draft (§4.5). Rien d'autre n'a quitté la machine DEV.
+- **Nécessite un GO** : chaque étape du §4.7, les SQL du §8, les corrections du §7, les purges, le merge de #1460.
 
-**Prochaine action unique proposée** : GO owner pour pousser et ouvrir la PR guard-only (`.claude/handoffs/seo-monitoring-admin-guard-only.patch`), après lecture seule des journaux d'accès PROD sur `cron/health`. C'est la seule exposition confirmée encore active en PROD, et elle se livre sans migration.
+**Prochaine action unique proposée** : lecture seule du journal d'accès Caddy du site www sur la machine PROD, pour trouver les appelants de `cron/health` (commandes dans la PR #1460). Accès depuis une machine autorisée, puisque DEV est refusé. Selon le résultat, décision owner sur la sortie du draft de #1460. C'est la seule exposition confirmée encore active en PROD.
 
 ## 12. Vérification liée au SHA `25cfd1bc4`, rejouée pour `771c7b934`
 
