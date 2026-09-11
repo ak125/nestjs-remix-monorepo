@@ -5,9 +5,11 @@ import { CwvBeaconController } from './cwv-beacon.controller';
 /**
  * Tests du point d'entrée public POST /api/seo/cwv/beacon.
  *
- * Chaque beacon qui n'atteint pas `__seo_cwv_raw` doit être compté avec une
- * raison : corps absent, schéma invalide, page hors origine canonique — ou routé
- * vers l'événement bot existant. Aucune branche ne se tait.
+ * Chaque beacon qui atteint le handler sans aller jusqu'à `__seo_cwv_raw` doit
+ * être compté avec une raison : corps absent, schéma invalide, page hors origine
+ * canonique — ou routé vers l'événement bot existant. Aucune branche du handler
+ * ne se tait. Les refus émis avant lui (throttler 429, body-parser 400/413) ne
+ * relèvent pas de ce comptage : ils passent par `GlobalErrorFilter`.
  */
 
 const HUMAN_UA =
@@ -124,6 +126,26 @@ describe('CwvBeaconController', () => {
       expect(service.record).not.toHaveBeenCalled();
     },
   );
+
+  it('counts a start URL outside the canonical origin as foreign_host, even with a canonical url', async () => {
+    const { controller, service } = makeController();
+    const body = validBeacon();
+    const beacon = {
+      ...body,
+      attribution: {
+        ...body.attribution,
+        attr_start_url:
+          'http://localhost:3000/pieces/plaquette-de-frein-402.html',
+      },
+    };
+
+    await expect(controller.beacon(beacon, HUMAN_UA)).resolves.toEqual({
+      ok: false,
+    });
+
+    expect(service.countRejection).toHaveBeenCalledWith('foreign_host');
+    expect(service.record).not.toHaveBeenCalled();
+  });
 
   it('checks the canonical origin before routing bots, so non-canonical bot beacons are counted too', async () => {
     const { controller, service } = makeController();

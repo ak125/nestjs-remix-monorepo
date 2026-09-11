@@ -209,6 +209,61 @@ test('CwvAttributionSchema: start URL must be an absolute URL', () => {
   assert.equal(r.success, false);
 });
 
+test('CwvAttributionSchema: URL-like keys carry only an http(s) URL without credentials', () => {
+  for (const key of ['attr_longest_script_src', 'attr_start_url']) {
+    for (const value of [
+      'javascript:void(0)',
+      'data:text/plain,x',
+      'ftp://www.automecanik.com/x.js',
+      'https://user:pass@www.automecanik.com/x.js',
+      'https://user@www.automecanik.com/x.js',
+    ]) {
+      assert.equal(CwvAttributionSchema.safeParse({ [key]: value }).success, false, `${key}: ${value}`);
+    }
+  }
+});
+
+test('CwvAttributionSchema: a non-canonical http page passes the schema — its host is counted by the controller', () => {
+  const r = CwvAttributionSchema.safeParse({ attr_start_url: 'http://localhost:3000/pieces/x.html' });
+  assert.equal(r.success, true, JSON.stringify(r.error?.issues));
+});
+
+test('CwvAttributionSchema: a script source is a bare URL scheme or an http(s) URL', () => {
+  for (const value of ['chrome-extension:', 'blob:', 'https://cdn.example.net/lib/a.js']) {
+    const r = CwvAttributionSchema.safeParse({ attr_longest_script_src: value });
+    assert.equal(r.success, true, `${value}: ${JSON.stringify(r.error?.issues)}`);
+  }
+  for (const value of [
+    'free text',
+    'chrome-extension://abcdefghijklmnop/content.js',
+    '/assets/app.js',
+    'Chrome-Extension:',
+  ]) {
+    assert.equal(CwvAttributionSchema.safeParse({ attr_longest_script_src: value }).success, false, value);
+  }
+});
+
+test('CwvAttributionSchema: browser-enumerated keys carry only lowercase hyphenated tokens', () => {
+  for (const key of [
+    'attr_longest_script_invoker_type',
+    'attr_longest_script_subpart',
+    'attr_visibility_state',
+    'attr_navigation_type',
+  ]) {
+    for (const value of ['hidden', 'event-listener', 'back-forward-cache']) {
+      const r = CwvAttributionSchema.safeParse({ [key]: value });
+      assert.equal(r.success, true, `${key}: ${value}: ${JSON.stringify(r.error?.issues)}`);
+    }
+    for (const value of ['', 'Hidden', 'event listener', 'event_listener', '-hidden', 'hidden-']) {
+      assert.equal(
+        CwvAttributionSchema.safeParse({ [key]: value }).success,
+        false,
+        `${key}: ${JSON.stringify(value)}`,
+      );
+    }
+  }
+});
+
 test('CwvAttributionSchema: string enrichment keys are length-bounded', () => {
   const tooLong = 'x'.repeat(200);
   for (const key of [

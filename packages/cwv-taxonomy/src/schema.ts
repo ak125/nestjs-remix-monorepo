@@ -30,8 +30,11 @@ const userAgentClassEnum = z.enum(USER_AGENT_CLASS_VALUES);
 
 // Bornes des clés d'enrichissement — chacune dérive d'une borne déjà en place.
 //
-// Une sous-partie d'interaction (totaux LoAF, script le plus long) ne peut pas
-// dépasser l'INP qui la contient : même plafond que la métrique.
+// Totaux LoAF et script le plus long : web-vitals additionne des frames longues
+// qui recoupent l'interaction (le style/layout d'une frame y compte en entier),
+// ils peuvent donc dépasser la valeur de l'INP. Aucune borne ne se déduit de
+// cette valeur : même plafond de plausibilité que la métrique INP et que les
+// phases existantes. Un dépassement fait refuser le beacon, compté schema_invalid.
 const INP_SUBPART_MAX_MS = METRIC_BOUNDS.INP.max;
 // `interactionTime` et le mark d'hydratation sont des horodatages relatifs au
 // début de la navigation, pas des durées : le plafond de 60 s des phases
@@ -44,11 +47,49 @@ const URL_MAX_LENGTH = 2000;
 // telles quelles (`attr_interaction_type`, `attr_load_state`) : une valeur
 // nouvelle d'une version de navigateur ne fait pas rejeter tout le beacon.
 const BROWSER_ENUM_MAX_LENGTH = 40;
+// Forme des valeurs d'enum de la plateforme web (`visibilityState`,
+// `PerformanceScriptTiming.invokerType`) et de web-vitals (`navigationType`,
+// `subpart`) : minuscules séparées par des tirets. Une valeur nouvelle garde
+// cette forme et reste acceptée.
+const BROWSER_ENUM_TOKEN = /^[a-z]+(?:-[a-z]+)*$/;
+// Schéma d'URL seul (RFC 3986 §3.1, mis en minuscules par le parseur WHATWG) :
+// forme réduite d'une source de script hors web (extension, blob…).
+const URL_SCHEME_ONLY = /^[a-z][a-z0-9+.-]*:$/;
 // Même borne que `session_id` (CHECK DB 8..64) ; `metric.id` web-vitals = 30 car.
 const CLIENT_ID_MAX_LENGTH = 64;
 
 /** Réduction origine + chemin : jamais de query string ni de fragment. */
 const hasNoQueryOrFragment = (value: string): boolean => !/[?#]/.test(value);
+
+// URL WHATWG : global de chaque runtime qui exécute ce package (Node, navigateurs),
+// absent de la lib ES à laquelle le package se limite (`lib` ES, `types: []`).
+// Déclaration locale au module, réduite aux champs lus ici ; rien n'est émis.
+declare const URL: new (input: string) => { readonly username: string; readonly password: string };
+
+/** Aucun identifiant dans l'URL. Une valeur non analysable est refusée, sans lever. */
+const hasNoCredentials = (value: string): boolean => {
+  try {
+    const u = new URL(value);
+    return u.username === '' && u.password === '';
+  } catch {
+    return false;
+  }
+};
+
+/** Valeur énumérée par le navigateur, transmise telle quelle. */
+const browserEnum = z.string().max(BROWSER_ENUM_MAX_LENGTH).regex(BROWSER_ENUM_TOKEN);
+
+/**
+ * URL http(s) réduite à origine + chemin (`attr_start_url`, source de script).
+ * L'hôte n'est pas contraint ici : une page hors origine canonique est comptée
+ * `foreign_host` par le contrôleur, pas `schema_invalid`.
+ */
+const httpOriginAndPath = z
+  .string()
+  .url({ protocol: z.regexes.httpProtocol })
+  .max(URL_MAX_LENGTH)
+  .refine(hasNoQueryOrFragment)
+  .refine(hasNoCredentials);
 
 /** Attribution payload — selector sanitized client-side before send. */
 export const CwvAttributionSchema = z
@@ -66,12 +107,10 @@ export const CwvAttributionSchema = z
     attr_total_paint_duration: z.number().int().min(0).max(INP_SUBPART_MAX_MS).optional(),
     attr_total_unattributed_duration: z.number().int().min(0).max(INP_SUBPART_MAX_MS).optional(),
     attr_longest_script_src: z
-      .string()
-      .max(URL_MAX_LENGTH)
-      .refine(hasNoQueryOrFragment)
+      .union([z.string().max(BROWSER_ENUM_MAX_LENGTH).regex(URL_SCHEME_ONLY), httpOriginAndPath])
       .optional(),
-    attr_longest_script_invoker_type: z.string().max(BROWSER_ENUM_MAX_LENGTH).optional(),
-    attr_longest_script_subpart: z.string().max(BROWSER_ENUM_MAX_LENGTH).optional(),
+    attr_longest_script_invoker_type: browserEnum.optional(),
+    attr_longest_script_subpart: browserEnum.optional(),
     attr_longest_script_intersecting_duration: z
       .number()
       .int()
@@ -83,10 +122,10 @@ export const CwvAttributionSchema = z
     attr_hydrated_at: z.number().int().min(0).max(TIMESTAMP_MAX_MS).optional(),
     // Contexte du report — toutes métriques
     attr_metric_id: z.string().min(1).max(CLIENT_ID_MAX_LENGTH).optional(),
-    attr_visibility_state: z.string().max(BROWSER_ENUM_MAX_LENGTH).optional(),
+    attr_visibility_state: browserEnum.optional(),
     // Valeur web-vitals brute : garde `back-forward-cache`, que `nav_type` range en `unknown`.
-    attr_navigation_type: z.string().max(BROWSER_ENUM_MAX_LENGTH).optional(),
-    attr_start_url: z.string().url().max(URL_MAX_LENGTH).refine(hasNoQueryOrFragment).optional(),
+    attr_navigation_type: browserEnum.optional(),
+    attr_start_url: httpOriginAndPath.optional(),
     // LCP attribution
     attr_element: z.string().max(120).optional(),
     attr_ttfb: z.number().int().min(0).max(60000).optional(),

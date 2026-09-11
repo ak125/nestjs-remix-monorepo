@@ -16,9 +16,12 @@
  *   - Validation safeParse → 202 `{ ok: false }` si malformé (ne pas casser le
  *     client), et rejet COMPTÉ par raison (`CwvBeaconService.countRejection`) :
  *     corps absent, schéma invalide, page hors origine canonique
- *   - Intégrité : seules les pages de `SITE_ORIGIN` alimentent la mesure. Le
- *     runtime DEV (pages localhost, base partagée) et le container PREPROD
- *     (sondes CI sur localhost) voient leurs beacons comptés `foreign_host`
+ *   - Intégrité : seules les pages de `SITE_ORIGIN` alimentent la mesure (`url`
+ *     et `attr_start_url`). Le runtime DEV (pages localhost, base partagée) et
+ *     le container PREPROD (sondes CI sur localhost) voient leurs beacons
+ *     comptés `foreign_host`
+ *   - Hors de ce comptage : les refus émis avant le handler (throttler 429,
+ *     body-parser 400/413) passent par `GlobalErrorFilter` et `err_status`
  *   - Throttler @nestjs/throttler : politique standard, bucket propre à ce
  *     handler (15/s · 100/min · 2000/h par IP). Le client émet jusqu'à 5
  *     beacons par page vue (un par métrique — web-vitals.client.ts:336-340).
@@ -63,8 +66,12 @@ export class CwvBeaconController {
     }
 
     // Avant le routage bot : une page hors origine canonique ne nourrit aucune
-    // table, bots compris. `url` est déjà une URL absolue validée par le schéma.
-    if (new URL(parsed.data.url).origin !== SITE_ORIGIN) {
+    // table, bots compris. `url` et `attr_start_url` viennent du même document ;
+    // le schéma les a déjà validées comme URL absolues.
+    const pageUrls = [parsed.data.url, parsed.data.attribution?.attr_start_url];
+    if (
+      pageUrls.some((u) => u !== undefined && new URL(u).origin !== SITE_ORIGIN)
+    ) {
       this.cwvBeacon.countRejection('foreign_host');
       return { ok: false };
     }
