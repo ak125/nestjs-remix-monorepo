@@ -249,11 +249,13 @@ git clone -q "$SB/origin.git" "$SB/app" 2>/dev/null
 )
 mkdir -p "$SB/app/backend/dist"
 git clone -q -b main "$SB/origin.git" "$SB/up" 2>/dev/null
-mkdir -p "$SB/tmp"
+mkdir -p "$SB/tmp" "$SB/crash"
 # TMPDIR : logs de build et sauvegardes untracked restent dans le bac à sable, jamais
-# mêlés à ceux des vrais ticks cron dans /tmp.
+# mêlés à ceux des vrais ticks cron dans /tmp. CRASH_DIR : les dumps de la machine
+# n'influencent pas l'issue. SB_HEALTH_URL : santé simulée à terre (cas 4).
 run_sync() {
-  APP_DIR="$SB/app" HEALTH_URL="file://$SB/app/package.json" CRON_STATE_DIR="$SB/state" TMPDIR="$SB/tmp" \
+  APP_DIR="$SB/app" HEALTH_URL="${SB_HEALTH_URL:-file://$SB/app/package.json}" CRASH_DIR="$SB/crash" \
+    CRON_STATE_DIR="$SB/state" TMPDIR="$SB/tmp" \
     bash "$SB/app/scripts/ops/sync-dev-runtime.sh" >"$SB/out" 2>"$SB/err"
 }
 
@@ -279,6 +281,80 @@ run_sync; EXIT=$?
 assert_exit "sync bac à sable : build cassé → abort (exit 1)" "1" "$EXIT"
 assert_contains "sync bac à sable : abort → issue error + alerte précédente" \
   "npm run build échoué.*alertes précédentes : fichiers untracked en collision" "$(state "$SB/state/sync-dev-runtime.json" '.summary')"
+
+# Sonde runtime (6e axe), à chaque tick. Faux processus du stack : node prend le titre d'un
+# process npm, avec le même remplissage d'octets nuls que npm, et écrit son pid ; un 3e
+# argument lui fait lancer une tâche enfant de ce titre.
+# Toujours lancé en arrière-plan (`&`) : le `exec` remplace le sous-shell du job, si bien que
+# le parent de node est le banc — ou PID 1 quand le job est détaché par `( … & )`.
+spawn_titled() { # $1 cwd, $2 titre, $3 fichier pid, [$4 titre de l'enfant]
+  cd "$1" && exec node -e '
+      const [title, pidfile, child] = process.argv.slice(1);
+      process.title = title;
+      if (child) require("child_process").spawn(process.execPath,
+        ["-e", "process.title = process.argv[1]; setTimeout(() => {}, 120000)", child], { stdio: "ignore" });
+      require("fs").writeFileSync(pidfile, String(process.pid));
+      setTimeout(() => {}, 120000);' "$2" "$3" "${4:-}"
+}
+wait_pid() { local i; for i in $(seq 50); do [ -s "$1" ] && { sleep 0.3; cat "$1"; return; }; sleep 0.1; done; }
+kill_tree() {
+  local p
+  for p in "$@"; do pkill -P "$p"; kill "$p"; wait "$p"; done 2>/dev/null
+}
+sync_state() { state "$SB/state/sync-dev-runtime.json" "$1"; }
+
+run_sync
+assert_contains "sonde : tick de référence (git synchronisé, rien à signaler) → ok" '"ok"' "$(sync_state '.status')"
+
+# 4. Runtime à terre, git synchronisé → `warn` (cas réel du 2026-09-11 : DEV:3000 à terre de
+#    07:20 à 11:11 sans signal — le no-op ne sondait pas la santé)
+SB_HEALTH_URL="file://$SB/absent" run_sync; EXIT=$?
+assert_exit "sonde : runtime à terre → tick au bout (alert-only, exit 0)" "0" "$EXIT"
+assert_contains "sonde : runtime à terre → issue warn « runtime DOWN »" '"warn".*runtime DOWN' "$(sync_state '[.status,.summary]')"
+
+# 5. Stack sain : une racine « npm run dev » et sa tâche → `ok`
+spawn_titled "$SB/app/backend" "npm run dev" "$SB/root1.pid" "npm run dev:watch" &
+ROOT1=$(wait_pid "$SB/root1.pid")
+assert_contains "sonde : le faux stack porte le titre exact de npm" "^npm run dev$" "$(ps -o args= -p "$ROOT1")"
+assert_not_contains "sonde : pgrep '^npm run dev\$' ne voit pas cette racine (octets nuls de npm)" "^$ROOT1$" "$(pgrep -f '^npm run dev$')"
+run_sync
+assert_contains "sonde : stack sain (1 racine + sa tâche) → ok" '"ok"' "$(sync_state '.status')"
+
+# 6. Deux racines supervisées → stacks concurrents
+spawn_titled "$SB/app" "npm run dev" "$SB/root2.pid" &
+ROOT2=$(wait_pid "$SB/root2.pid")
+run_sync
+assert_contains "sonde : 2 racines supervisées → warn CONCURRENTS" '"warn".*stacks dev CONCURRENTS : 2 racine' "$(sync_state '[.status,.summary]')"
+kill_tree "$ROOT1" "$ROOT2"
+
+# 7. Superviseur mort : racine reparentée à PID 1, seule → MORT, pas CONCURRENTS
+( spawn_titled "$SB/app/backend" "npm run dev" "$SB/orphan.pid" & )
+ORPHAN=$(wait_pid "$SB/orphan.pid")
+assert_contains "sonde : précondition — le processus détaché est reparenté à PID 1" "^ *1$" "$(ps -o ppid= -p "$ORPHAN")"
+run_sync
+assert_contains "sonde : racine orpheline → warn superviseur MORT" '"warn".*superviseur dev MORT' "$(sync_state '[.status,.summary]')"
+assert_not_contains "sonde : orpheline seule → pas de CONCURRENTS" "CONCURRENTS" "$(sync_state '.summary')"
+
+# 8. Orpheline + stack relancé à côté → les deux alertes
+spawn_titled "$SB/app/backend" "npm run dev" "$SB/root3.pid" "npm run dev:watch" &
+ROOT3=$(wait_pid "$SB/root3.pid")
+run_sync
+assert_contains "sonde : orpheline + stack relancé → CONCURRENTS (1 supervisée, 1 orpheline)" \
+  "superviseur dev MORT.*CONCURRENTS : 1 racine(s) supervisée(s).*et 1 orpheline" "$(sync_state '.summary')"
+kill_tree "$ORPHAN" "$ROOT3"
+run_sync
+assert_contains "sonde : faux stacks arrêtés → ok" '"ok"' "$(sync_state '.status')"
+
+# 9. Crash dump du stack : signalé à chaque tick tant qu'il a moins de 24 h, puis plus
+touch "$SB/crash/_usr_bin_node.1000.crash" "$SB/crash/_usr_bin_python3.1000.crash"
+run_sync
+assert_contains "sonde : dump node frais → warn crash dump" '"warn".*_usr_bin_node.1000.crash' "$(sync_state '[.status,.summary]')"
+assert_not_contains "sonde : dump hors stack (python) ignoré" "python3" "$(sync_state '.summary')"
+run_sync
+assert_contains "sonde : dump encore frais au tick suivant → toujours warn (série 2, pas effacé)" '"warn",2' "$(sync_state '[.status,.streak]')"
+touch -d '25 hours ago' "$SB/crash/_usr_bin_node.1000.crash"
+run_sync
+assert_contains "sonde : dump de plus de 24 h → ok" '"ok"' "$(sync_state '.status')"
 
 rm -rf "$SB"
 
