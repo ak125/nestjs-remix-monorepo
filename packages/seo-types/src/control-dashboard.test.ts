@@ -104,6 +104,25 @@ const validSnapshot = {
   },
   range: '7d',
   window_days: 7,
+  gscComparability: {
+    comparable: true,
+    reason: null,
+    source: '__seo_gsc_daily_property_total',
+    current: {
+      from: '2026-09-04',
+      to: '2026-09-10',
+      days_expected: 7,
+      days_present: 7,
+      missing_dates: [],
+    },
+    previous: {
+      from: '2026-08-28',
+      to: '2026-09-03',
+      days_expected: 7,
+      days_present: 7,
+      missing_dates: [],
+    },
+  },
   trafficWindow: validTraffic,
   topLosers: [validTopLoser],
   lowCtrOpportunities: [],
@@ -335,6 +354,45 @@ describe('SeoControlSnapshotSchema', () => {
   });
   it('accepts conversionGap null (Phase A masking)', () => {
     SeoControlSnapshotSchema.parse({ ...validSnapshot, conversionGap: null });
+  });
+  it('rejects a snapshot without gscComparability (no implicit "comparable")', () => {
+    const { gscComparability: _omit, ...withoutComparability } = validSnapshot;
+    assert.throws(() => SeoControlSnapshotSchema.parse(withoutComparability));
+  });
+  it('accepts a non-comparable window with its reason and missing dates', () => {
+    SeoControlSnapshotSchema.parse({
+      ...validSnapshot,
+      gscComparability: {
+        ...validSnapshot.gscComparability,
+        comparable: false,
+        reason: 'current_incomplete',
+        current: {
+          ...validSnapshot.gscComparability.current,
+          days_present: 5,
+          missing_dates: ['2026-09-09', '2026-09-10'],
+        },
+      },
+    });
+  });
+  it('rejects comparable=true with a reason, and comparable=false without one', () => {
+    assert.throws(() =>
+      SeoControlSnapshotSchema.parse({
+        ...validSnapshot,
+        gscComparability: {
+          ...validSnapshot.gscComparability,
+          reason: 'current_incomplete',
+        },
+      }),
+    );
+    assert.throws(() =>
+      SeoControlSnapshotSchema.parse({
+        ...validSnapshot,
+        gscComparability: {
+          ...validSnapshot.gscComparability,
+          comparable: false,
+        },
+      }),
+    );
   });
 });
 

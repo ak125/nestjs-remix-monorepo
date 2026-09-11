@@ -23,7 +23,12 @@ import { ConfigService } from '@nestjs/config';
 import { createHash, randomUUID } from 'node:crypto';
 import stableStringify from 'fast-json-stable-stringify';
 import {
+  addDaysIso,
+  assessPeriodComparability,
+  computeDayCoverage,
   SeoControlSnapshotSchema,
+  type DayCoverage,
+  type GscComparability,
   type Range,
   type SeoControlSnapshot,
 } from '@repo/seo-types';
@@ -76,44 +81,52 @@ export class SeoControlService extends SupabaseBaseService {
     const days = range === '7d' ? 7 : 28;
     const nowIso = new Date().toISOString();
 
-    const [trafficRaw, losersRaw, lowCtrRaw, alertsRaw, conversionRaw] =
-      await Promise.all([
-        this.getBlock<unknown>('traffic', range, () =>
-          this.invokeRpc('rpc_seo_traffic_v1', {
-            p_window_days: days,
-            p_now: nowIso,
-          }),
-        ),
-        this.getBlock<unknown[]>('losers', range, () =>
-          this.invokeRpc('rpc_seo_top_losers_v1', {
-            p_window_days: days,
-            p_now: nowIso,
-            p_limit: 20,
-          }),
-        ),
-        this.getBlock<unknown[]>('lowctr', range, () =>
-          this.invokeRpc('rpc_seo_low_ctr_v1', {
-            p_window_days: days,
-            p_now: nowIso,
-            p_min_impressions: 100,
-            p_max_ctr: 0.01,
-            p_limit: 50,
-          }),
-        ),
-        this.getBlock<unknown[]>('alerts', range, () =>
-          this.invokeRpc('rpc_seo_alerts_v1', {
-            p_now: nowIso,
-            p_limit: 50,
-          }),
-        ),
-        this.getBlock<unknown[] | null>('conversion', range, () =>
-          this.invokeRpc('rpc_seo_conversion_v1', {
-            p_window_days: days,
-            p_now: nowIso,
-            p_limit: 20,
-          }),
-        ),
-      ]);
+    const [
+      gscComparability,
+      trafficRaw,
+      losersRaw,
+      lowCtrRaw,
+      alertsRaw,
+      conversionRaw,
+    ] = await Promise.all([
+      // Non caché : lecture ≤ 2N lignes, doit refléter la dernière ingestion.
+      this.gscWindowComparability(days, nowIso),
+      this.getBlock<unknown>('traffic', range, () =>
+        this.invokeRpc('rpc_seo_traffic_v1', {
+          p_window_days: days,
+          p_now: nowIso,
+        }),
+      ),
+      this.getBlock<unknown[]>('losers', range, () =>
+        this.invokeRpc('rpc_seo_top_losers_v1', {
+          p_window_days: days,
+          p_now: nowIso,
+          p_limit: 20,
+        }),
+      ),
+      this.getBlock<unknown[]>('lowctr', range, () =>
+        this.invokeRpc('rpc_seo_low_ctr_v1', {
+          p_window_days: days,
+          p_now: nowIso,
+          p_min_impressions: 100,
+          p_max_ctr: 0.01,
+          p_limit: 50,
+        }),
+      ),
+      this.getBlock<unknown[]>('alerts', range, () =>
+        this.invokeRpc('rpc_seo_alerts_v1', {
+          p_now: nowIso,
+          p_limit: 50,
+        }),
+      ),
+      this.getBlock<unknown[] | null>('conversion', range, () =>
+        this.invokeRpc('rpc_seo_conversion_v1', {
+          p_window_days: days,
+          p_now: nowIso,
+          p_limit: 20,
+        }),
+      ),
+    ]);
 
     // Inject decisions on each applicable row
     const losersArr = (losersRaw as any[] | null | undefined) ?? [];
@@ -121,9 +134,27 @@ export class SeoControlService extends SupabaseBaseService {
     const alertsArr = (alertsRaw as any[] | null | undefined) ?? [];
     const conversionArr = conversionRaw as any[] | null | undefined;
 
+    // Fenêtres non comparables (jours manquants) : delta inconnu et perdants non
+    // calculés — l'écart mesurerait le trou d'ingestion, pas le trafic. Rendu
+    // observable via `gscComparability` (raison + jours manquants), pas un silence.
+    const comparable = gscComparability.comparable;
+    const trafficWindow =
+      comparable || trafficRaw == null
+        ? trafficRaw
+        : {
+            ...(trafficRaw as Record<string, unknown>),
+            delta_vs_previous: {
+              clicks_pct: null,
+              impressions_pct: null,
+              direction: 'unknown',
+              change_severity: 'info',
+            },
+          };
+
     const enriched = {
-      trafficWindow: trafficRaw,
-      topLosers: losersArr.map((r: any) => ({
+      gscComparability,
+      trafficWindow,
+      topLosers: (comparable ? losersArr : []).map((r: any) => ({
         ...r,
         decisions: this.decisions.deriveLoser(r),
       })),
@@ -183,6 +214,62 @@ export class SeoControlService extends SupabaseBaseService {
     void this.logAccessDeduped(adminUserId, range);
 
     return parsed;
+  }
+
+  /**
+   * Couverture jours des fenêtres comparées par rpc_seo_traffic_v1 /
+   * rpc_seo_top_losers_v1 : courante [J-N, J-1], précédente [J-2N, J-N-1]
+   * (bornes `p_now::DATE - N` inclusives, `p_now::DATE` exclue — dates UTC).
+   *
+   * Présence lue sur `__seo_gsc_daily_property_total` (1 ligne/jour) plutôt que
+   * sur `__seo_gsc_daily` lu par les RPC (≈30 M lignes/mois) : jeux de dates
+   * identiques sur les 4 grains au 2026-09-10, et l'ingestion écrit désormais le
+   * total propriété APRÈS les autres grains. Erreur de lecture → exception (même
+   * contrat fail-loud que invokeRpc), jamais « comparable » par défaut.
+   */
+  private async gscWindowComparability(
+    days: number,
+    nowIso: string,
+  ): Promise<GscComparability> {
+    const today = nowIso.slice(0, 10);
+    const current = {
+      from: addDaysIso(today, -days),
+      to: addDaysIso(today, -1),
+    };
+    const previous = {
+      from: addDaysIso(today, -2 * days),
+      to: addDaysIso(today, -days - 1),
+    };
+    const { data, error } = await this.supabase
+      .from('__seo_gsc_daily_property_total')
+      .select('date')
+      .gte('date', previous.from)
+      .lte('date', current.to)
+      .limit(1000);
+    if (error) {
+      this.logger.error('GSC day presence read failed', error);
+      throw error;
+    }
+    const presentDates = (data ?? []).map((r: { date: string }) =>
+      String(r.date),
+    );
+    const cur = computeDayCoverage({ ...current, presentDates });
+    const prev = computeDayCoverage({ ...previous, presentDates });
+    const verdict = assessPeriodComparability(cur, prev);
+    const toWindow = (c: DayCoverage) => ({
+      from: c.from,
+      to: c.to,
+      days_expected: c.daysExpected,
+      days_present: c.daysPresent,
+      missing_dates: c.missingDates,
+    });
+    return {
+      comparable: verdict.comparable,
+      reason: 'reason' in verdict ? verdict.reason : null,
+      source: '__seo_gsc_daily_property_total',
+      current: toWindow(cur),
+      previous: toWindow(prev),
+    };
   }
 
   /**
