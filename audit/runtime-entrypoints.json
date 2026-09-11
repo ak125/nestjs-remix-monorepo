@@ -2729,6 +2729,7 @@
       "backend/supabase/migrations/20260911_seo_cwv_beacon_rejected_event_enum.sql",
       "backend/supabase/migrations/20260911_seo_cwv_daily_rum_exact_p75.down.sql",
       "backend/supabase/migrations/20260911_seo_cwv_daily_rum_exact_p75.sql",
+      "backend/supabase/migrations/20260911_seo_cwv_function_grants.sql",
       "backend/supabase/migrations/README.md"
     ],
     "ci_workflows": [
@@ -2898,7 +2899,7 @@
       "tests/registry/rpc-parser.test.ts"
     ]
   },
-  "runtime_files_count": 1510,
+  "runtime_files_count": 1511,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4085,6 +4086,7 @@
     "backend/supabase/migrations/20260911_seo_cwv_beacon_rejected_event_enum.sql",
     "backend/supabase/migrations/20260911_seo_cwv_daily_rum_exact_p75.down.sql",
     "backend/supabase/migrations/20260911_seo_cwv_daily_rum_exact_p75.sql",
+    "backend/supabase/migrations/20260911_seo_cwv_function_grants.sql",
     "backend/supabase/migrations/README.md",
     "backend/tests/unit/route-wildcard-middleware.test.ts",
     "docker/lighthouse/Dockerfile",
