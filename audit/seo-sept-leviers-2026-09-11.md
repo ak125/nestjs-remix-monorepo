@@ -422,6 +422,7 @@ Title, meta et H1 relevés en live le 2026-09-11. Toute proposition part d'une r
 | 7 | Sortie du draft de #1460 (message du **2026-09-11T14:20:14.329Z**) | « oui » | PR passée en « ready for review ». Pas d'auto-merge, pas de merge, pas de déploiement. |
 | 8 | Merge de #1460 (message du **2026-09-11T14:47:10.066Z**) | « go » | Mise à jour de branche, régénération, CI verte, squash épinglé sur le SHA vérifié. Merge = PREPROD. **Pas de tag PROD** : le « go » n'a pas été lu comme un GO de mise en production. |
 | 9 | Tag PROD (message du **2026-09-11T21:09:50.040Z**) | « push tag » | Traité comme une **demande de confirmation**, pas comme un GO : un GO PROD doit nommer le lot et ses PR. **Aucun tag poussé.** Lot candidat au 2026-09-11 21:35Z : `v2026.09.09-throttler-caddy-perf-cache..38747ac6b`, 33 PR. |
+| 10 | Tag PROD (message du **2026-09-11, 21:44Z**) | « GO PROD pour le lot `v2026.09.09-throttler-caddy-perf-cache..38747ac6b` » | Lot nommé sans ambiguïté, après publication de la liste des 33 PR et de l'échec Lighthouse connu. Contrôle préalable : l'échec Lighthouse a bien la cause préexistante (`/search?q=plaquette`, preuve invalide). Tag `v2026.09.11-cwv-sanitizer-admin-guard` posé sur `38747ac6b` à 21:49Z ; deploy PROD ✅ à 21:51:31Z ; **garde admin vérifiée en PROD : `cron/health` = 403**. |
 
 **Propositions à valider** (aucun accord identifiable) :
 - emplacement du collecteur (PROD) et désactivation du collecteur DEV ;
@@ -438,12 +439,13 @@ Title, meta et H1 relevés en live le 2026-09-11. Toute proposition part d'une r
 
 - **Local, commité sur la branche** : tous les commits depuis `fe658657d` jusqu'à la tête de branche (`git log bcf0c775a..HEAD`). Parmi eux : ce rapport (`cdbdb58a4`) et une entrée `log.md` créée automatiquement par le hook Stop (`f2ab4cbbb`).
 - **Local, non suivi** : patch guard-only ; description de PR (`.claude/handoffs/`).
-- **Mergé sur main** : la garde admin seule, PR #1460 (§4.5). Déployée sur PREPROD via le run de `f64ef5197`. Rien d'autre n'a quitté la machine DEV.
+- **Mergé sur main** : la garde admin seule, PR #1460 (§4.5). Déployée sur PREPROD via le run de `f64ef5197`, puis via celui de `38747ac6b`. Rien d'autre n'a quitté la machine DEV.
+- **Déployé en PROD** : la garde admin, par le tag `v2026.09.11-cwv-sanitizer-admin-guard` sur `38747ac6b`, le 2026-09-11 à 21:51Z. Vérification en PROD : `GET /api/admin/seo-monitoring/cron/health` = **403** (200 sans authentification avant), `credentials/health` = 403, `/` et `/health` = 200.
 - **Nécessite un GO** : chaque étape du §4.7, les SQL du §8, les corrections du §7, les purges, le tag PROD.
 
-**Prochaine action unique proposée** : décision owner sur un tag `v*`, qui mettrait la garde admin en PROD, où `/api/admin/seo-monitoring/*` reste ouvert sans authentification.
-- **Avant le tag** : auditer tout le delta de main depuis le dernier tag (le tag embarque plus que #1460).
-- **Et** obtenir un run de main vert de bout en bout : le contrôle de qualité Lighthouse sur `/search` est rouge depuis avant le merge.
+**Fait le 2026-09-11** : le lot complet a été audité (33 PR), puis taggé sur GO owner. `/api/admin/seo-monitoring/*` n'est plus ouvert sans authentification en PROD. Lighthouse `/search` reste rouge sur main : cause préexistante, hors périmètre de ce rapport.
+
+**Prochaine action unique proposée** : GO owner sur l'exécutant de l'ingestion GSC et sur les 2 migrations. Sans collecteur fiable, aucune correction de mesure ne produit de donnée.
 
 ## 12. Vérification liée au SHA `25cfd1bc4`, rejouée pour `771c7b934`
 
