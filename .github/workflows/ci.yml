@@ -344,6 +344,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Validate Lighthouse evidence checker
+        run: node --test scripts/ci/lighthouse-report-quality.test.mjs
+
       - name: 🔒 Build core modules only
         run: |
           echo "🔒 Building CORE modules (no DEV ONLY)"
@@ -1290,10 +1293,12 @@ jobs:
           retention-days: 7
 
   # ============================================
-  # Lighthouse Performance Audit (post-deploy, observe-only)
+  # Lighthouse Performance Audit (post-deploy)
   # ============================================
   # SCOPE : observabilité timing synthétique sur serveur PREPROD réel après
-  # deploy main. **Non-bloquant** (cf. step "Lighthouse summary"). Catch les
+  # deploy main. La collecte doit être exploitable ; les budgets natifs existants
+  # conservent leur sévérité. Pas de promesse de performance sur preuve invalide.
+  # Catch les
   # régressions de TTFB / cold start / CDN / gzip serveur qu'un bundle scan
   # statique ne voit pas.
   #
@@ -1309,6 +1314,13 @@ jobs:
     runs-on: [self-hosted, Linux, X64]
     needs: [e2e-smoke]
     if: ${{ (github.ref == 'refs/heads/main') && github.event_name == 'push' }}
+    env:
+      # Same declared sample for the collector and evidence validation.
+      LIGHTHOUSE_URLS: |
+        http://localhost:3200/
+        http://localhost:3200/search?q=plaquette
+        http://localhost:3200/pieces/plaquette-de-frein-402.html
+      LIGHTHOUSE_RUNS: 3
 
     steps:
       - name: Checkout code
@@ -1345,29 +1357,24 @@ jobs:
         env:
           CHROME_PATH: /usr/bin/google-chrome-stable
         with:
-          urls: |
-            http://localhost:3200/
-            http://localhost:3200/search?q=plaquette
-            http://localhost:3200/pieces/catalogue
-          budgetPath: ./frontend/lighthouse-budget.json
+          urls: ${{ env.LIGHTHOUSE_URLS }}
+          configPath: ./scripts/ci/lighthouserc.cjs
           uploadArtifacts: true
           temporaryPublicStorage: true
-          runs: 3
+          runs: ${{ env.LIGHTHOUSE_RUNS }}
 
-      - name: Lighthouse summary
+      - name: Validate Lighthouse collection and summarize actual budgets
         if: always()
-        run: |
-          echo "## 🔦 Lighthouse CI — PREPROD (port 3200)" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Metric | Target |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| FCP | < 1.8s |" >> $GITHUB_STEP_SUMMARY
-          echo "| LCP | < 2.5s |" >> $GITHUB_STEP_SUMMARY
-          echo "| TBT | < 200ms |" >> $GITHUB_STEP_SUMMARY
-          echo "| TTI | < 3.5s |" >> $GITHUB_STEP_SUMMARY
-          echo "| CLS | < 0.1 |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "> Non-blocking: violations signalees mais ne bloquent pas le pipeline." >> $GITHUB_STEP_SUMMARY
+        run: node scripts/ci/lighthouse-report-quality.mjs
+
+      - name: Archive Lighthouse collection quality
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: lighthouse-collection-quality
+          path: .lighthouseci/collection-quality.json
+          if-no-files-found: warn
+          retention-days: 7
 
   # ============================================
   # Notifications (Phase 3)
