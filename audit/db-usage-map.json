@@ -16,8 +16,8 @@
     "candidate_orphan_rpc": 198,
     "dynamic_from_callsites": 897,
     "dynamic_rpc_callsites": 1,
-    "migrations_scanned": 344,
-    "backend_files_scanned": 1379
+    "migrations_scanned": 348,
+    "backend_files_scanned": 1381
   },
   "tables": {
     "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7": {
@@ -3335,7 +3335,9 @@
       "called_by": [],
       "called_by_count": 0,
       "defined_in_migrations": [
-        "20260527_seo_cwv_aggregation.sql"
+        "20260527_seo_cwv_aggregation.sql",
+        "20260911_seo_cwv_daily_rum_exact_p75.down.sql",
+        "20260911_seo_cwv_daily_rum_exact_p75.sql"
       ],
       "is_trigger_function": false
     },
@@ -3585,7 +3587,9 @@
       "called_by": [],
       "called_by_count": 0,
       "defined_in_migrations": [
-        "20260529_seo_cwv_dashboard_rpcs.sql"
+        "20260529_seo_cwv_dashboard_rpcs.sql",
+        "20260911_seo_cwv_daily_rum_exact_p75.down.sql",
+        "20260911_seo_cwv_daily_rum_exact_p75.sql"
       ],
       "is_trigger_function": false
     },
@@ -7721,7 +7725,9 @@
         "no-rpc-callsite"
       ],
       "defined_in_migrations": [
-        "20260527_seo_cwv_aggregation.sql"
+        "20260527_seo_cwv_aggregation.sql",
+        "20260911_seo_cwv_daily_rum_exact_p75.down.sql",
+        "20260911_seo_cwv_daily_rum_exact_p75.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
@@ -8179,7 +8185,9 @@
         "no-rpc-callsite"
       ],
       "defined_in_migrations": [
-        "20260529_seo_cwv_dashboard_rpcs.sql"
+        "20260529_seo_cwv_dashboard_rpcs.sql",
+        "20260911_seo_cwv_daily_rum_exact_p75.down.sql",
+        "20260911_seo_cwv_daily_rum_exact_p75.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",

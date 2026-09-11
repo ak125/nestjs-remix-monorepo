@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: c02379121de121dfb1efbcf5163abfe5a4efb9919c4a4771f868eb47279840ce
+source_sha256: 711d8b6d14c2bbaf9189087da374820edcb9f6fe512239b1b8d7704105340e23
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 2848 |
+| Files (Layer 1) | 2853 |
 | DB tables (Layer 1) | 304 |
 | DB RPC (Layer 1) | 259 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 515 |
 
-Source sotFingerprint: `bfb9c9af5039`.
+Source sotFingerprint: `39ae1b9505b7`.
 
 ## Comment l'utiliser
 
@@ -45,19 +45,19 @@ Source sotFingerprint: `bfb9c9af5039`.
 
 ### D2 — Legacy / XTR Migration
 
-- **Files**: 99 (test=85, service=10, config=3, controller=1)
+- **Files**: 102 (test=88, service=10, config=3, controller=1)
 - **Runtime entrypoints**: 1
-- **Top owners**: @ak125 (86), __unassigned__ (13)
+- **Top owners**: @ak125 (89), __unassigned__ (13)
 - **Knowledge prose**: [`rm`](modules/rm.md)
-- **Status**: LEGACY=12, LIVE=1, UNKNOWN=86
+- **Status**: LEGACY=12, LIVE=1, UNKNOWN=89
 
 ### D3 — SEO & Sitemap
 
-- **Files**: 409 (service=211, test=110, controller=34, config=28, script=26)
+- **Files**: 411 (service=211, test=112, controller=34, config=28, script=26)
 - **Runtime entrypoints**: 41
-- **Top owners**: @ak125/seo-team (409)
+- **Top owners**: @ak125/seo-team (411)
 - **Knowledge prose**: [`merchant-center`](modules/merchant-center.md), [`seo`](modules/seo.md), [`seo-control-plane`](modules/seo-control-plane.md), [`seo-logs`](modules/seo-logs.md), [`seo-monitoring`](modules/seo-monitoring.md), [`seo-shadow-observatory`](modules/seo-shadow-observatory.md)
-- **Status**: LIVE=214, UNKNOWN=195
+- **Status**: LIVE=214, UNKNOWN=197
 
 ### D4 — Vehicle / Compatibility
 
