@@ -132,7 +132,8 @@ négociable.
 
 **Sonde labo** : protocole obligatoire dans
 [`references/lab-probe-protocol.md`](references/lab-probe-protocol.md) —
-télémétrie neutralisée dans la page + marqueur `cb=lab-<run_id>`, concurrence 1
+écritures neutralisées dans la page (bouchon auto-contrôlé) + marqueur
+`cb=lab-<run_id>` pour toute origine qui écrit en base partagée, concurrence 1
 vers PROD (`flock`, pas de fan-out), contrôle SQL lecture seule après chaque run
 (purge = GO owner + sauvegarde), avant/après stratifié par uptime du process.
 Fichier dédié : responsabilité transverse à tous les checks, sans severity ni
@@ -152,7 +153,7 @@ Identique à `runtime-truth-audit` :
 ## Mémoires liées
 
 - `project_inp_pieces_root_cause_20260522.md` — méthodo Playwright+CDP
-  réutilisable
+  réutilisable, sous réserve de `references/lab-probe-protocol.md` qui la précède
 - `feedback_cwv_rum_stack_already_exists.md` — gap ingestion documenté
 - `feedback_no_blind_trust_gsc_first_detection_date.md` — distinguer
   date détection cohorte vs date régression code
