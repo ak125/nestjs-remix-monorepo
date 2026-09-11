@@ -4,8 +4,8 @@
  * POURQUOI : le job quotidien ne re-traitait qu'une fenêtre fixe ancrée sur J-3
  * (GSC J-3..J-6, GA4 J-3 seul). Toute interruption plus longue que la fenêtre
  * laissait des jours absents À JAMAIS, alors que Google sert encore la donnée
- * (constaté 2026-09-10 : 18 dates perdues entre 06-10 et 09-07 sur les 4 grains
- * GSC, 08-20 toujours servie live). Chaque run planifie désormais :
+ * (relevé 2026-09-11 : 19 dates absentes du 06-11 au 09-07, identiques sur les
+ * 4 grains GSC ; 08-20 toujours servie live). Chaque run planifie désormais :
  *
  *   refresh  = fenêtre glissante [ancre-(rolling-1) .. ancre], toujours re-traitée
  *              (Google révise les jours récents) ;
