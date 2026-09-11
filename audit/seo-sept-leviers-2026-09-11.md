@@ -169,7 +169,7 @@ Proposition à valider, non implémentée : ancrer `p_now` sur le lendemain du d
 - **ADR-063** (statut *accepted*, amende ADR-045) prescrit `IsAdminGuard` sur les routes admin du contrôleur.
 - **Côté dépôt et machine DEV** : aucun appelant. Le healthcheck Docker et le health check Caddy appellent `/health`.
 - **Où chercher en PROD.**
-  - **Pas dans les journaux du conteneur backend** : aucun journal de requêtes HTTP n'y est branché (`LoggerModule` de `nestjs-pino` jamais importé).
+  - **Dans les journaux du conteneur backend** : pino y écrit une ligne par requête (`LoggerModule.forRoot` dans `backend/src/app.module.ts:98` ; seuls `/health`, `/assets/`, `/build/` et `*.ico` sont ignorés). Couverture limitée à la vie du conteneur. Seule source pour un appelant interne au réseau Docker. Non lus pour la vérification ci-dessous (erratum, §13).
   - **Dans le journal d'accès Caddy du site www** (`logs/caddy/automecanik*.log*`). Sa rotation est de 50 Mo × 5, sans durée minimale : la couverture réelle est à mesurer.
 - **Vérification du 2026-09-11**, faite par l'owner en lecture seule sur la machine PROD (l'accès SSH depuis DEV était refusé) :
   - **Contrôle positif retrouvé** : l'appel d'audit du 2026-09-10 22:34 UTC sur `credentials/health` apparaît, donc le journal enregistre ces appels.
@@ -421,6 +421,7 @@ Title, meta et H1 relevés en live le 2026-09-11. Toute proposition part d'une r
 | 6 | Vérification des appelants de `cron/health` | « Je lis les logs PROD » | Lecture seule des journaux d'accès Caddy. Depuis DEV : accès SSH refusé. **Réalisée par l'owner** sur la machine PROD le 2026-09-11, avec les commandes fournies : 0 appel, contrôle positif retrouvé (§4.3). |
 | 7 | Sortie du draft de #1460 (message du **2026-09-11T14:20:14.329Z**) | « oui » | PR passée en « ready for review ». Pas d'auto-merge, pas de merge, pas de déploiement. |
 | 8 | Merge de #1460 (message du **2026-09-11T14:47:10.066Z**) | « go » | Mise à jour de branche, régénération, CI verte, squash épinglé sur le SHA vérifié. Merge = PREPROD. **Pas de tag PROD** : le « go » n'a pas été lu comme un GO de mise en production. |
+| 9 | Tag PROD (message du **2026-09-11T21:09:50.040Z**) | « push tag » | Traité comme une **demande de confirmation**, pas comme un GO : un GO PROD doit nommer le lot et ses PR. **Aucun tag poussé.** Lot candidat au 2026-09-11 21:35Z : `v2026.09.09-throttler-caddy-perf-cache..38747ac6b`, 33 PR. |
 
 **Propositions à valider** (aucun accord identifiable) :
 - emplacement du collecteur (PROD) et désactivation du collecteur DEV ;
@@ -491,6 +492,11 @@ Entre `25cfd1bc4` et `771c7b934`, le seul changement de code est `frontend/tests
 - **`backend/.env.example`** qualifiait le seuil page_totals d'« alerte ». Depuis `6bdc8c9ae`, c'est un seuil de signal hors certification. Commentaire corrigé dans `25cfd1bc4`.
 - **Erreur ESLint bloquante non vue.** `frontend/tests/unit/robots-txt-fallback.test.ts` (`039a44fc5`) portait une erreur `import/first`. Le job CI « ESLint » (`turbo lint`, soit `eslint .` côté frontend) aurait échoué. Le lint local annoncé plus tôt ne couvrait que les 3 routes. Corrigé dans `771c7b934`, en déplaçant seulement l'import : 3/3.
 - **Commentaire de `ingestion-date-planner.ts`** (`4007ff96d`) : il annonçait 18 dates perdues. Le relevé du 2026-09-11 en compte 19, identiques sur les 4 grains. Corrigé dans `25cfd1bc4`.
+- **Journaux du backend PROD.** Le §4 et la description de #1460 affirmaient que le backend ne journalise pas les requêtes HTTP (« `LoggerModule` jamais importé »). C'est faux :
+  - `LoggerModule.forRoot(loggerConfig)` est importé dans `backend/src/app.module.ts:98` ;
+  - les journaux PROD lus par l'owner le 2026-09-11 montrent une ligne par requête (`req.url`, `statusCode`, `responseTime`).
+  - **Cause** : recherche git avec le motif `backend/src/**/*.ts`, qui exige un sous-dossier et ne voit pas `app.module.ts`.
+  - **Correction** : §4 et description de #1460 (erratum daté). Le résultat sur les journaux Caddy reste valable. Les journaux du backend n'ont pas été lus.
 
 ## 14. Coverage manifest
 
