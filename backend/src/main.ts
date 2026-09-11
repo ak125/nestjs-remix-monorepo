@@ -71,7 +71,7 @@ async function bootstrap() {
 
     // Démarrage du serveur Remix uniquement en dev
     if (!isProd) {
-      await startDevServer(expressApp);
+      await startDevServer(expressApp, app.getHttpServer());
       logger.log('Serveur de développement démarré');
     }
 

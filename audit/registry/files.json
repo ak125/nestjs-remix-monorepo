@@ -59182,7 +59182,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 76,
+      "loc": 83,
       "owner": "__unassigned__",
       "path": "frontend/index.cjs",
       "risk": "low",

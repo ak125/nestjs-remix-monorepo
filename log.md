@@ -530,3 +530,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/tecdoc-rebuild-environment`
 - **Décision** : feat(tecdoc): porte de capacite a deux modes, et un registre de preuve recalculable (+14 other commits)
 - **Sortie** : PR #1419 | commits f73b300c0 d6f3e94a1 93bd601eb a3ec3a602 45e8c6402 fc222949f f1994b30d 08d28175b 5650961cf b4408e7b1 fb9bcd355 90358994c d348f3eec 098be7744 c1ee2d690
+
+## 2026-09-11 — worktree-fix-dev-vite-hmr-single-port (auto)
+
+- **Branche** : `worktree-fix-dev-vite-hmr-single-port`
+- **Décision** : fix(dev): faire passer le HMR Vite par le port 3000 (redirection de port)
+- **Sortie** : PR #1444 | commits f9e35866a
