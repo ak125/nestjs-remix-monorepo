@@ -15,7 +15,15 @@
 #   trop risquées en cron sur une DB partagée).
 #
 # Idempotent : no-op si le SHA local == origin/main. Conçu pour tourner en cron
-#   (~10 min) sur la box DEV. Voir crontab `* /10 * * * *`.
+#   (~10 min) sur la box DEV, crontab de l'utilisateur deploy :
+#     */10 * * * * /usr/bin/bash /opt/automecanik/app/scripts/ops/sync-dev-runtime.sh >> /tmp/sync-dev-runtime-cron.log 2>&1
+#   Le `2>&1` est requis : les alertes et les aborts partent sur stderr, et la
+#   machine n'a pas de MTA — sans lui, cron les jette.
+#
+# OBSERVABILITÉ : chaque tick (sync, no-op ou abort) enregistre son issue via
+#   `cron_report` (scripts/cron/lib-supabase-report.sh). Le hook SessionStart
+#   alerte ensuite toute session Claude de la machine si le dernier tick a échoué,
+#   ou si aucun tick n'a tourné depuis CRON_REPORT_MAX_AGE_S (cron arrêté).
 # ==============================================================================
 set -uo pipefail
 
@@ -24,19 +32,29 @@ APP_DIR="${APP_DIR:-/opt/automecanik/app}"
 HEALTH_URL="${HEALTH_URL:-http://localhost:3000/health}"
 LOG_TAG="sync-dev-runtime"
 START=$(date +%s)
+# Trois ticks manqués (cadence 10 min) = cron considéré arrêté.
+CRON_REPORT_MAX_AGE_S=1800
 
 cd "$APP_DIR" 2>/dev/null || { echo "[$LOG_TAG] FATAL: $APP_DIR introuvable" >&2; exit 1; }
 
 # shellcheck disable=SC1091
 source scripts/cron/lib-supabase-report.sh 2>/dev/null || true
 
-log()   { echo "[$LOG_TAG] $1"; }
+log()   { echo "[$LOG_TAG] $(date -u +%FT%TZ) $1"; }
 alert() {
-  echo "[$LOG_TAG] ⚠️ ALERT: $1" >&2
+  echo "[$LOG_TAG] $(date -u +%FT%TZ) ⚠️ ALERT: $1" >&2
   [ -n "${ALERT_WEBHOOK_URL:-}" ] && curl -sf --max-time 5 -X POST "$ALERT_WEBHOOK_URL" \
     -H 'Content-Type: application/json' -d "{\"text\":\"[DEV sync] $1\"}" >/dev/null 2>&1 || true
 }
-report() { command -v cron_report >/dev/null 2>&1 && cron_report "$LOG_TAG" "$1" "$(( $(date +%s) - START ))" "${2:-{}}" "${3:-}" 2>/dev/null || true; }
+# Pas de `2>/dev/null || true` ici : c'est ce qui rendait le rapport muet. cron_report
+# ne fait jamais échouer le script et signale lui-même sur stderr un état non écrit.
+report() {
+  if ! command -v cron_report >/dev/null 2>&1; then
+    echo "[$LOG_TAG] ⚠️ cron_report indisponible (scripts/cron/lib-supabase-report.sh non chargée) — issue du tick NON enregistrée" >&2
+    return 0
+  fi
+  cron_report "$LOG_TAG" "$1" "$(( $(date +%s) - START ))" "${2:-}" "${3:-}"
+}
 abort()  { alert "$1"; report "error" "{}" "$1"; exit 1; }
 
 # 5e axe de dérive — Workspaces npm (drift install/dist).

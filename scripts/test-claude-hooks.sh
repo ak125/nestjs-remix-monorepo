@@ -47,6 +47,20 @@ assert_contains() {
   fi
 }
 
+assert_not_contains() {
+  local description="$1"
+  local needle="$2"
+  local haystack="$3"
+  if echo "$haystack" | grep -q "$needle"; then
+    FAIL=$((FAIL+1))
+    FAILED_TESTS+=("$description (unexpected: '$needle')")
+    echo "  FAIL: $description (unexpected: '$needle')"
+  else
+    PASS=$((PASS+1))
+    echo "  PASS: $description"
+  fi
+}
+
 assert_size_lt() {
   local description="$1"
   local max="$2"
@@ -94,6 +108,11 @@ assert_exit "posttool non-matching file → exit 0" "0" "$?"
 echo ""
 echo "=== sessionstart-workspace-context.sh ==="
 
+# Hermétique : les alertes cron de la machine (hors manifest) ne doivent pas fausser
+# la borne de taille du manifest mesurée ci-dessous.
+export CRON_STATE_DIR
+CRON_STATE_DIR=$(mktemp -d)
+
 # Cas 1 : nominal depuis repo root → output contient sections attendues
 OUT=$(bash scripts/claude-hooks/sessionstart-workspace-context.sh 2>/tmp/h2-err)
 EXIT=$?
@@ -118,6 +137,97 @@ else
   FAILED_TESTS+=("sessionstart CLAUDE_HOOKS_DISABLE=1 should emit nothing")
   echo "  FAIL: sessionstart CLAUDE_HOOKS_DISABLE=1 should emit nothing"
 fi
+
+# ============================================================
+# Hook 2b : état des crons — cron_report (lib) → alerte SessionStart
+# ============================================================
+
+echo ""
+echo "=== cron_report + alertes cron SessionStart ==="
+
+# cron_report dans un sous-shell isolé : run_report <state_dir> <max_age|-> <args cron_report…>
+run_report() {
+  local dir="$1" max_age="$2"; shift 2
+  (
+    CRON_STATE_DIR="$dir"
+    CRON_REPORT_MAX_AGE_S=""
+    [ "$max_age" = "-" ] || CRON_REPORT_MAX_AGE_S="$max_age"
+    # shellcheck disable=SC1091
+    source scripts/cron/lib-supabase-report.sh
+    cron_report "$@"
+  )
+}
+state() { jq -c "$2" "$1" 2>/dev/null; }
+run_hook() { CRON_STATE_DIR="$1" bash scripts/claude-hooks/sessionstart-workspace-context.sh 2>/dev/null; }
+
+D=$(mktemp -d)
+
+# Lib — enregistrement nominal
+run_report "$D" - t-ok ok 3 '{"a":1}' "" 2>/tmp/cr-err
+assert_exit "cron_report ok → exit 0" "0" "$?"
+assert_contains "cron_report ok → status, streak 1, métriques fournies CONSERVÉES (bug \${4:-{}}), max_age null" \
+  '"ok",1,1,null' "$(state "$D/t-ok.json" '[.status,.streak,.metrics.a,.max_age_s]')"
+
+# Lib — série : même statut → streak incrémenté, début conservé ; changement → reset
+run_report "$D" 1800 t-err error 1 '{}' "boom" 2>/dev/null
+SINCE1=$(state "$D/t-err.json" '.since')
+run_report "$D" 1800 t-err error 1 '{}' "boom" 2>/dev/null
+assert_contains "cron_report error×2 → streak 2" '^2$' "$(state "$D/t-err.json" '.streak')"
+assert_contains "cron_report error×2 → since du 1er échec conservé" "^${SINCE1}$" "$(state "$D/t-err.json" '.since')"
+assert_contains "cron_report → max_age_s déclaré enregistré" '^1800$' "$(state "$D/t-err.json" '.max_age_s')"
+run_report "$D" 1800 t-err ok 1 '{}' "" 2>/dev/null
+assert_contains "cron_report error→ok → streak remis à 1" '^1$' "$(state "$D/t-err.json" '.streak')"
+
+# Lib — métriques invalides → {} ; statut invalide / dossier non inscriptible → signalé, exit 0
+run_report "$D" - t-met ok 1 'pas du json' "" 2>/dev/null
+assert_contains "cron_report metrics invalides → {}" '^{}$' "$(state "$D/t-met.json" '.metrics')"
+run_report "$D" - t-bad degraded 1 '{}' "" 2>/tmp/cr-err
+assert_exit "cron_report statut invalide → exit 0" "0" "$?"
+assert_contains "cron_report statut invalide → signalé sur stderr" "NON enregistré" "$(cat /tmp/cr-err)"
+assert_exit "cron_report statut invalide → aucun fichier" "absent" "$([ -e "$D/t-bad.json" ] && echo present || echo absent)"
+run_report "/proc/cron-report-test" - t-ro ok 1 '{}' "" 2>/tmp/cr-err
+assert_exit "cron_report dossier non inscriptible → exit 0" "0" "$?"
+assert_contains "cron_report dossier non inscriptible → signalé sur stderr" "non inscriptible" "$(cat /tmp/cr-err)"
+
+# Hook — état sain et frais → aucune alerte
+H=$(mktemp -d)
+run_report "$H" 1800 sync-ok ok 2 '{}' "" 2>/dev/null
+OUT=$(run_hook "$H"); EXIT=$?
+assert_exit "sessionstart état cron sain → exit 0" "0" "$EXIT"
+assert_not_contains "sessionstart état cron sain → aucune alerte" "⚠️ cron" "$OUT"
+
+# Hook — échec en cours → ÉCHEC + raison
+run_report "$H" 1800 sync-ko error 0 '{}' "working tree sale — resync refusée" 2>/dev/null
+OUT=$(run_hook "$H")
+assert_contains "sessionstart cron en error → alerte ÉCHEC" "cron sync-ko : ÉCHEC depuis" "$OUT"
+assert_contains "sessionstart cron en error → raison citée" "working tree sale" "$OUT"
+assert_contains "sessionstart manifest toujours émis malgré l'alerte" "## Workspace" "$OUT"
+
+# Hook — cron muet au-delà de max_age_s (aucun tick depuis 4000 s pour 1800 attendus)
+jq -n --argjson ts "$(( $(date +%s) - 4000 ))" \
+  '{job:"sync-mute",status:"ok",ts:$ts,since:$ts,streak:1,duration_s:1,max_age_s:1800,summary:"",metrics:{}}' \
+  > "$H/sync-mute.json"
+OUT=$(run_hook "$H")
+assert_contains "sessionstart cron muet → alerte MUET" "cron sync-mute : MUET depuis" "$OUT"
+
+# Hook — état corrompu → signalé, hook non bloqué
+echo '{pas du json' > "$H/zz-corrupt.json"
+OUT=$(run_hook "$H"); EXIT=$?
+assert_exit "sessionstart état corrompu → exit 0" "0" "$EXIT"
+assert_contains "sessionstart état corrompu → signalé" "état illisible" "$OUT"
+
+# Hook — plus de 3 alertes → borné à 3 lignes + résumé
+run_report "$H" - warn-x warn 0 '{}' "disque 85 %" 2>/dev/null
+OUT=$(run_hook "$H")
+assert_contains "sessionstart >3 alertes → résumé +N" "+1 autre(s)" "$OUT"
+
+# Hook — avertissement seul → AVERTISSEMENT
+W=$(mktemp -d)
+run_report "$W" - disk warn 0 '{}' "disque 85 %" 2>/dev/null
+OUT=$(run_hook "$W")
+assert_contains "sessionstart cron en warn → alerte AVERTISSEMENT" "cron disk : AVERTISSEMENT depuis" "$OUT"
+
+rm -rf "$D" "$H" "$W"
 
 # ============================================================
 # Hook 3 : stop-claude-md-suggest.sh
