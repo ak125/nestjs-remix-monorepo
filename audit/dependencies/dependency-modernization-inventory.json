@@ -1,5 +1,5 @@
 {
-  "artifact_immutability_hash": "sha256:562a89ba928dc1d1143cac5f36916a0c251851e7bb3db8452536226732b71044",
+  "artifact_immutability_hash": "sha256:05192663aa4c1603295343c1d878dd29c4ccf7ee95a8a129f1dbe7c156b81fef",
   "divergences": [
     {
       "kind": "resolved",
@@ -510,6 +510,7 @@
       ],
       "resolved_versions": [
         "7.28.0",
+        "8.10.2",
         "8.5.0"
       ]
     },
@@ -3722,9 +3723,9 @@
   ],
   "generatedFrom": {
     "deps_registry": "audit/registry/deps.json",
-    "deps_registry_sha": "sha256:6f667991be593e37b2798c4ca0f0689d89c412731aa2bdf50000248da9f2c5bd",
+    "deps_registry_sha": "sha256:28f63bf4383ddec90e009095ddc11db9298b7cd92b52ceb234a3e6a2fd996f90",
     "lockfile": "package-lock.json",
-    "lockfile_sha": "sha256:573155a005ff858ad576d8cef1aa827c5a1131449ee09b1ad83823d86f152e45",
+    "lockfile_sha": "sha256:5c752f16c7205a3905ee294e59d38f556862c42e3dd69ecccaf4c1aead4c12fc",
     "overlay": "audit/dependencies/family-overlay.yaml",
     "overlay_sha": "sha256:f5b19e7c0c73a75b55e4c0a620e0d01c6665dfcfffe8b00a77d5c8928bb05117"
   },
@@ -5496,12 +5497,12 @@
       "occurrences": [
         {
           "declaredIn": "frontend/package.json",
-          "specifier": "^2.35.0",
+          "specifier": "^4.2.0",
           "workspace": "@fafa/frontend"
         }
       ],
       "resolved_versions": [
-        "2.36.0"
+        "4.2.0"
       ]
     },
     {
@@ -6274,6 +6275,7 @@
       ],
       "resolved_versions": [
         "7.28.0",
+        "8.10.2",
         "8.5.0"
       ]
     },
