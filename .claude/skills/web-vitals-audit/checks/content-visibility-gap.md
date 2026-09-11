@@ -86,4 +86,5 @@ généralisable aux autres routes long-form (catalog, blog, gamme pages).
    `<section className="cv-auto contain-intrinsic-size-[Xpx]">` où X est
    l'estimation de hauteur (Tailwind class à activer).
 2. Ne pas appliquer sur sections above-the-fold (pas de bénéfice).
-3. Mesurer avant/après via web-vitals attribution réelle pour confirmer.
+3. Mesurer avant/après via web-vitals attribution réelle pour confirmer, selon
+   [`../references/lab-probe-protocol.md`](../references/lab-probe-protocol.md) (sonde labo, uptime).
