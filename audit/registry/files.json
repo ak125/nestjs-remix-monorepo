@@ -24078,16 +24078,41 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/seo-monitoring/controllers/cwv-beacon.controller.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@config/site.constants",
+        "backend/src/modules/seo-monitoring/controllers/cwv-beacon.controller.ts",
+        "backend/src/modules/seo-monitoring/services/cwv-beacon.service.ts"
+      ],
+      "kind": "test",
+      "loc": 176,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/seo-monitoring/controllers/cwv-beacon.controller.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/seo-monitoring/controllers/cwv-beacon.controller.ts",
       "importedBy": [
+        "backend/src/modules/seo-monitoring/controllers/cwv-beacon.controller.test.ts",
         "backend/src/modules/seo-monitoring/seo-monitoring.module.ts"
       ],
       "imports": [
+        "@config/site.constants",
         "@repo/cwv-taxonomy",
         "backend/src/modules/seo-monitoring/services/cwv-beacon.service.ts"
       ],
       "kind": "controller",
-      "loc": 76,
+      "loc": 91,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-monitoring/controllers/cwv-beacon.controller.ts",
       "risk": "low",
@@ -24531,17 +24556,41 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/seo-monitoring/services/cwv-beacon.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@repo/cwv-taxonomy",
+        "backend/src/modules/seo-monitoring/services/cwv-beacon.service.ts"
+      ],
+      "kind": "test",
+      "loc": 301,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/seo-monitoring/services/cwv-beacon.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/seo-monitoring/services/cwv-beacon.service.ts",
       "importedBy": [
+        "backend/src/modules/seo-monitoring/controllers/cwv-beacon.controller.test.ts",
         "backend/src/modules/seo-monitoring/controllers/cwv-beacon.controller.ts",
-        "backend/src/modules/seo-monitoring/seo-monitoring.module.ts"
+        "backend/src/modules/seo-monitoring/seo-monitoring.module.ts",
+        "backend/src/modules/seo-monitoring/services/cwv-beacon.service.test.ts"
       ],
       "imports": [
         "@database/services/supabase-base.service",
         "@repo/cwv-taxonomy"
       ],
       "kind": "service",
-      "loc": 94,
+      "loc": 242,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-monitoring/services/cwv-beacon.service.ts",
       "risk": "low",
@@ -48877,7 +48926,7 @@
         "~/utils/web-vitals.client"
       ],
       "kind": "service",
-      "loc": 274,
+      "loc": 298,
       "owner": "__unassigned__",
       "path": "frontend/app/entry.client.tsx",
       "risk": "low",
@@ -57991,7 +58040,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 92,
+      "loc": 98,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/internal-api.server.ts",
       "risk": "low",
@@ -59114,10 +59163,11 @@
       "id": "frontend/app/utils/web-vitals.client.ts",
       "importedBy": [],
       "imports": [
-        "@repo/cwv-taxonomy"
+        "@repo/cwv-taxonomy",
+        "~/utils/safe-storage"
       ],
       "kind": "service",
-      "loc": 342,
+      "loc": 476,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/web-vitals.client.ts",
       "risk": "low",
@@ -59976,6 +60026,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/entry-client-hydration-mark.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 137,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/entry-client-hydration-mark.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/tests/unit/entry-server-session-privacy.test.ts",
       "importedBy": [],
       "imports": [],
@@ -60660,6 +60729,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/sanitize-editorial-html.server.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 115,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/sanitize-editorial-html.server.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/tests/unit/sanitize-editorial-html.test.ts",
       "importedBy": [],
       "imports": [],
@@ -60869,6 +60957,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/web-vitals-beacon.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 349,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/web-vitals-beacon.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/tests/visual/pages.visual.spec.ts",
       "importedBy": [],
       "imports": [],
@@ -61025,7 +61132,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 114,
+      "loc": 290,
       "owner": "__unassigned__",
       "path": "packages/cwv-taxonomy/src/__tests__/schema.test.ts",
       "risk": "low",
@@ -61158,7 +61265,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 91,
+      "loc": 179,
       "owner": "__unassigned__",
       "path": "packages/cwv-taxonomy/src/schema.ts",
       "risk": "low",

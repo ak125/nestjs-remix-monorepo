@@ -722,7 +722,7 @@
         }
       ],
       "definedInMigrations": [
-        "20260527_seo_cwv_aggregation.sql"
+        "20260911_seo_cwv_daily_rum_exact_p75.sql"
       ],
       "domain": "UNKNOWN",
       "id": "public.aggregate_cwv_daily_rum",
@@ -734,9 +734,7 @@
       "returnType": "TABLE(rows_upserted INT)",
       "schema": "public",
       "schemaVersion": "1.0.0",
-      "searchPath": [
-        "public"
-      ],
+      "searchPath": [],
       "securityDefiner": true,
       "sourceConfidence": "high",
       "status": "UNKNOWN",
@@ -1925,7 +1923,7 @@
     {
       "args": [],
       "definedInMigrations": [
-        "20260529_seo_cwv_dashboard_rpcs.sql"
+        "20260911_seo_cwv_daily_rum_exact_p75.sql"
       ],
       "domain": "UNKNOWN",
       "id": "public.detect_cwv_trend_divergence",
@@ -1937,9 +1935,7 @@
       "returnType": "TABLE(alerts_inserted INT)",
       "schema": "public",
       "schemaVersion": "1.0.0",
-      "searchPath": [
-        "public"
-      ],
+      "searchPath": [],
       "securityDefiner": true,
       "sourceConfidence": "high",
       "status": "UNKNOWN",

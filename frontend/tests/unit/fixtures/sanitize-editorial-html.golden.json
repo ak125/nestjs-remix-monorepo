@@ -1,0 +1,875 @@
+{
+  "schema": "sanitize-editorial-html-golden/v1",
+  "captured_at": "2026-09-11",
+  "git_sha": "554738b5882be5a32e97cc5a88c6fcd9fa1fe507",
+  "captured_with": {
+    "isomorphic-dompurify": "2.36.0",
+    "dompurify": "3.4.11",
+    "jsdom": "28.1.0",
+    "node": "v24.17.0",
+    "export_condition": "node"
+  },
+  "fixtures": [
+    {
+      "id": "conseils/capteur-abs/S1",
+      "kind": "conseils-section",
+      "why": "page conseils complète (s1)",
+      "input": "Le <b>capteur ABS</b> nommé aussi <b>capteur devitesse de roue</b> est placé au dessus de la roue d'impulsion qui est reliée aumoyeu de roue ou à l'<b><a href=\"/pièces/<a href=\"/pieces/cardan-13.html\" class=\"seo-internal-link\" data-link-type=\"LinkGamme\"><b>Cardan</b></a>-13.html\">arbre de transmission</a></b>. Son rôle est de déterminer lavitesse de la roue. La rotation du disque cible monté sur les moyeux de roueentraîne des variations du champ magnétique, ce phénomène va déclencher des signauxqui seront transmis au calculateur puis analysés. Le calculateur ABS déterminela vitesse des roues ainsi le glissement et il utilise ces paramètres pourpermettre d'obtenir un freinage optimale sans bloquer les roues lors d'unfreinage d'urgence.<br><b style=\"background-color: rgb(249, 249, 249);\">Les capteurs ABS</b><span style=\"background-color: rgb(249, 249, 249);\"> transmettent également les données qu'ils collectent à d'autres systèmesavancés au sein du véhicule suivant le niveau d'équipement de chaque voiture :</span><br><span style=\"background-color: rgb(249, 249, 249);\">- Le stabilisateur électronique detrajectoire ESP.</span><br><span style=\"background-color: rgb(249, 249, 249);\">- Le système anti-patinage ASR.</span><br><span style=\"background-color: rgb(249, 249, 249);\">- Le régulateur de vitesse.</span><br><span style=\"background-color: rgb(249, 249, 249);\">- Le système de navigation intégré.<br></span>Il existe deux types de <b>capteur ABS</b>&nbsp;:<br>- Capteur actif&nbsp;: il estactivé par l'application d'une alimentation en tension et génère alors unsignal de sortie.<br>- Capteur passif&nbsp;: iltravaille sans alimentation en tension supplémentaire.<br><br><a href=\"/référence-auto/capteur-abs\">En savoir plus : capteur abs — définition et rôle mécanique</a>\n<p class=\"text-sm mt-3\">🚨 <a href=\"/diagnostic-auto/bruit-capteur-abs\">Bruit Capteur ABS : causes et diagnostic</a></p><br><br><b>Capteur ABS et capteur ESP : la même pièce ?</b><br>Le <b>capteur ESP</b> (Electronic Stability Program) utilise les mêmes <b>capteurs de vitesse de roue</b> que le système ABS. En pratique, le capteur ABS et le capteur ESP sont <b>une seule et même pièce physique</b>. Lorsque le capteur de roue tombe en panne, les voyants ABS et ESP s'allument souvent simultanément au tableau de bord. Le système ESP utilise cependant des capteurs supplémentaires dédiés : le <b>capteur de lacet</b> (gyroscope mesurant la rotation du véhicule) et le <b>capteur d'angle de braquage</b>, qui sont des pièces distinctes.",
+      "expected": "Le <b>capteur ABS</b> nommé aussi <b>capteur devitesse de roue</b> est placé au dessus de la roue d'impulsion qui est reliée aumoyeu de roue ou à l'<b><a href=\"/pièces/<a href=\" class=\"seo-internal-link\" data-link-type=\"LinkGamme\"><b>Cardan</b></a>-13.html\"&gt;arbre de transmission</b>. Son rôle est de déterminer lavitesse de la roue. La rotation du disque cible monté sur les moyeux de roueentraîne des variations du champ magnétique, ce phénomène va déclencher des signauxqui seront transmis au calculateur puis analysés. Le calculateur ABS déterminela vitesse des roues ainsi le glissement et il utilise ces paramètres pourpermettre d'obtenir un freinage optimale sans bloquer les roues lors d'unfreinage d'urgence.<br><b>Les capteurs ABS</b><span> transmettent également les données qu'ils collectent à d'autres systèmesavancés au sein du véhicule suivant le niveau d'équipement de chaque voiture :</span><br><span>- Le stabilisateur électronique detrajectoire ESP.</span><br><span>- Le système anti-patinage ASR.</span><br><span>- Le régulateur de vitesse.</span><br><span>- Le système de navigation intégré.<br></span>Il existe deux types de <b>capteur ABS</b>&nbsp;:<br>- Capteur actif&nbsp;: il estactivé par l'application d'une alimentation en tension et génère alors unsignal de sortie.<br>- Capteur passif&nbsp;: iltravaille sans alimentation en tension supplémentaire.<br><br><a href=\"/référence-auto/capteur-abs\">En savoir plus : capteur abs — définition et rôle mécanique</a> <p class=\"text-sm mt-3\">🚨 <a href=\"/diagnostic-auto/bruit-capteur-abs\">Bruit Capteur ABS : causes et diagnostic</a></p><br><br><b>Capteur ABS et capteur ESP : la même pièce ?</b><br>Le <b>capteur ESP</b> (Electronic Stability Program) utilise les mêmes <b>capteurs de vitesse de roue</b> que le système ABS. En pratique, le capteur ABS et le capteur ESP sont <b>une seule et même pièce physique</b>. Lorsque le capteur de roue tombe en panne, les voyants ABS et ESP s'allument souvent simultanément au tableau de bord. Le système ESP utilise cependant des capteurs supplémentaires dédiés : le <b>capteur de lacet</b> (gyroscope mesurant la rotation du véhicule) et le <b>capteur d'angle de braquage</b>, qui sont des pièces distinctes."
+    },
+    {
+      "id": "conseils/capteur-abs/S2",
+      "kind": "conseils-section",
+      "why": "page conseils complète (body)",
+      "input": "Ne pas attendre la panne complète pour intervenir.<br><b>Symptômes d'usure :</b><br>- Voyant abs allume au tableau de bord<br>- Code défaut spécifique a une roue<br>- Capteur visible endommage ou couvert de crasse<br>- Cable du capteur coupe ou denude<br>- Abs qui se declenche a basse vitesse sans raison<br>- Bruit anormal lors du fonctionnement abs<br>- Freinage desequilibre avec abs actif<br>- Plus de 150 000 km sans vérification capteurs\n\n<br><br><b>Symptômes détaillés et vérifications — ABS et ESP</b><br>\nUn <b>capteur ABS défaillant</b> peut également déclencher des alertes liées au système ESP. Voici l'ensemble des signaux à surveiller, du simple voyant à la perte de contrôle active&nbsp;:<br>\n<ul>\n<li><b>Voyant ABS allumé au tableau de bord&nbsp;:</b> signe le plus fréquent — le calculateur a détecté un signal anormal sur au moins un capteur de roue.</li>\n<li><b>Code défaut spécifique à une roue&nbsp;:</b> un diagnostic OBD2 permet d'identifier précisément le capteur en cause (avant gauche, arrière droit, etc.).</li>\n<li><b>Capteur visible endommagé ou couvert de crasse&nbsp;:</b> un capteur magnétique obstrué par de la boue ou un dépôt métallique peut générer des lectures erratiques sans être physiquement cassé.</li>\n<li><b>Câble du capteur coupé ou dénudé&nbsp;:</b> le câble longe le train roulant et est exposé aux projections — une rupture partielle produit des défauts intermittents difficiles à reproduire.</li>\n<li><b>ABS qui se déclenche à basse vitesse sans raison&nbsp;:</b> une roue qui envoie un signal de vitesse nul ou incohérent fait réagir le système de manière intempestive, ce qui allonge les distances de freinage.</li>\n<li><b>Bruit anormal lors du fonctionnement ABS&nbsp;:</b> un claquement ou un battement de la pédale de frein hors situation de freinage d'urgence peut indiquer une lecture erronée d'un capteur.</li>\n<li><b>Freinage déséquilibré avec ABS actif&nbsp;:</b> si une roue reçoit un signal erroné, le modulateur de pression peut sous-freiner ou sur-freiner sélectivement.</li>\n<li><b>Voyant ESP allumé (capteur ESP défaillant)&nbsp;:</b> le système ESP utilise les mêmes capteurs de vitesse de roue que l'ABS — un capteur ABS HS éteint également l'ESP, augmentant le risque de perte de contrôle en virage.</li>\n<li><b>Perte de stabilité en virage ou sur sol glissant&nbsp;:</b> sans données fiables de vitesse roue, le calculateur ESP ne peut pas moduler le freinage sélectif pour corriger une dérive.</li>\n<li><b>Plus de 150&nbsp;000 km sans vérification des capteurs&nbsp;:</b> une inspection préventive est recommandée, notamment pour les véhicules exposés à la corrosion ou circulant souvent sur des pistes.</li>\n</ul>\n<br><b>Hypothèses à explorer</b><br>\nCes symptômes peuvent indiquer&nbsp;: un capteur physiquement endommagé, un encrassement de la cible magnétique ou de la roue phonique, une rupture du câble dans un gant de protection fissuré, ou une corrosion du connecteur. Un simple nettoyage suffit parfois si le capteur est intact.<br>\n<br><b>Vérifications non-invasives (à faire soi-même)</b><br>\n<ul>\n<li>Brancher un outil de diagnostic OBD2&nbsp;: les codes P0500–P0509 et C-ABS permettent d'identifier immédiatement la roue concernée sans démontage.</li>\n<li>Inspecter visuellement chaque capteur accessible derrière la jante&nbsp;: présence de crasse, de déformation mécanique (choc de carrosserie) ou de corrosion sur le connecteur.</li>\n<li>Tester un freinage progressif sur sol sec à basse vitesse (zone sécurisée)&nbsp;: un déclenchement ABS prématuré avant 10 km/h confirme un signal aberrant sur un capteur.</li>\n<li>Vérifier l'état de la roue phonique (couronne dentée solidaire du moyeu ou de la transmission)&nbsp;: une dent cassée ou encrassée peut simuler une vitesse nulle sur la roue.</li>\n</ul>\n<br>Pour un diagnostic personnalisé adapté à votre véhicule, utilisez notre <a href=\"/diagnostic-auto\">outil de diagnostic gratuit</a>.",
+      "expected": "Ne pas attendre la panne complète pour intervenir.<br><b>Symptômes d'usure :</b><br>- Voyant abs allume au tableau de bord<br>- Code défaut spécifique a une roue<br>- Capteur visible endommage ou couvert de crasse<br>- Cable du capteur coupe ou denude<br>- Abs qui se declenche a basse vitesse sans raison<br>- Bruit anormal lors du fonctionnement abs<br>- Freinage desequilibre avec abs actif<br>- Plus de 150 000 km sans vérification capteurs <br><br><b>Symptômes détaillés et vérifications — ABS et ESP</b><br> Un <b>capteur ABS défaillant</b> peut également déclencher des alertes liées au système ESP. Voici l'ensemble des signaux à surveiller, du simple voyant à la perte de contrôle active&nbsp;:<br> <ul> <li><b>Voyant ABS allumé au tableau de bord&nbsp;:</b> signe le plus fréquent — le calculateur a détecté un signal anormal sur au moins un capteur de roue.</li> <li><b>Code défaut spécifique à une roue&nbsp;:</b> un diagnostic OBD2 permet d'identifier précisément le capteur en cause (avant gauche, arrière droit, etc.).</li> <li><b>Capteur visible endommagé ou couvert de crasse&nbsp;:</b> un capteur magnétique obstrué par de la boue ou un dépôt métallique peut générer des lectures erratiques sans être physiquement cassé.</li> <li><b>Câble du capteur coupé ou dénudé&nbsp;:</b> le câble longe le train roulant et est exposé aux projections — une rupture partielle produit des défauts intermittents difficiles à reproduire.</li> <li><b>ABS qui se déclenche à basse vitesse sans raison&nbsp;:</b> une roue qui envoie un signal de vitesse nul ou incohérent fait réagir le système de manière intempestive, ce qui allonge les distances de freinage.</li> <li><b>Bruit anormal lors du fonctionnement ABS&nbsp;:</b> un claquement ou un battement de la pédale de frein hors situation de freinage d'urgence peut indiquer une lecture erronée d'un capteur.</li> <li><b>Freinage déséquilibré avec ABS actif&nbsp;:</b> si une roue reçoit un signal erroné, le modulateur de pression peut sous-freiner ou sur-freiner sélectivement.</li> <li><b>Voyant ESP allumé (capteur ESP défaillant)&nbsp;:</b> le système ESP utilise les mêmes capteurs de vitesse de roue que l'ABS — un capteur ABS HS éteint également l'ESP, augmentant le risque de perte de contrôle en virage.</li> <li><b>Perte de stabilité en virage ou sur sol glissant&nbsp;:</b> sans données fiables de vitesse roue, le calculateur ESP ne peut pas moduler le freinage sélectif pour corriger une dérive.</li> <li><b>Plus de 150&nbsp;000 km sans vérification des capteurs&nbsp;:</b> une inspection préventive est recommandée, notamment pour les véhicules exposés à la corrosion ou circulant souvent sur des pistes.</li> </ul> <br><b>Hypothèses à explorer</b><br> Ces symptômes peuvent indiquer&nbsp;: un capteur physiquement endommagé, un encrassement de la cible magnétique ou de la roue phonique, une rupture du câble dans un gant de protection fissuré, ou une corrosion du connecteur. Un simple nettoyage suffit parfois si le capteur est intact.<br> <br><b>Vérifications non-invasives (à faire soi-même)</b><br> <ul> <li>Brancher un outil de diagnostic OBD2&nbsp;: les codes P0500–P0509 et C-ABS permettent d'identifier immédiatement la roue concernée sans démontage.</li> <li>Inspecter visuellement chaque capteur accessible derrière la jante&nbsp;: présence de crasse, de déformation mécanique (choc de carrosserie) ou de corrosion sur le connecteur.</li> <li>Tester un freinage progressif sur sol sec à basse vitesse (zone sécurisée)&nbsp;: un déclenchement ABS prématuré avant 10 km/h confirme un signal aberrant sur un capteur.</li> <li>Vérifier l'état de la roue phonique (couronne dentée solidaire du moyeu ou de la transmission)&nbsp;: une dent cassée ou encrassée peut simuler une vitesse nulle sur la roue.</li> </ul> <br>Pour un diagnostic personnalisé adapté à votre véhicule, utilisez notre <a href=\"/diagnostic-auto\">outil de diagnostic gratuit</a>."
+    },
+    {
+      "id": "conseils/capteur-abs/S3",
+      "kind": "conseils-section",
+      "why": "page conseils complète (body)",
+      "input": "<b>Critères essentiels pour choisir le bon capteur ABS :</b><br><br>\n<b>1. Type de capteur :</b><br>\n- <b>Capteur passif (inductif)</b> — génère un signal alternatif proportionnel à la vitesse. 2 fils, pas d'alimentation. Courant sur véhicules avant 2005.<br>\n- <b>Capteur actif (magnétorésistif / effet Hall)</b> — signal carré numérique, plus précis à basse vitesse. 3 fils (alimentation + signal + masse). Standard sur véhicules récents.<br>\n⚠️ Les deux types ne sont <b>pas interchangeables</b>. Vérifiez le nombre de broches du connecteur.<br><br>\n<b>2. Longueur du câble :</b><br>\n- Elle varie entre l'avant et l'arrière, et parfois entre gauche et droite. Un câble trop court ne rejoindra pas le connecteur du faisceau.<br><br>\n<b>3. Entrefer (gap) :</b><br>\n- Sur les capteurs passifs, l'entrefer entre le capteur et la roue dentée (cible) est critique : typiquement <b>0.3 à 1.0 mm</b>. Un entrefer trop grand = signal faible = code défaut.<br>\n- Les capteurs actifs sont généralement auto-calibrés à l'entrefer.<br><br>\n<b>4. OE vs aftermarket :</b><br>\n- Les capteurs adaptables de qualité (Bosch, ATE, Delphi) fonctionnent très bien et coûtent 30 à 50 % de moins que l'OE.<br>\n- Vérifiez la <b>référence OE</b> de votre capteur d'origine pour garantir la compatibilité.<br><br>\n<b>5. Compatibilité véhicule :</b><br>\n- Renseignez votre <b>marque, modèle, année et motorisation</b> pour filtrer les références compatibles.\n<p class=\"mt-4 text-sm\"><strong>Pour aller plus loin :</strong> consultez notre <a href=\"/blog-pièces-auto/guide-achat/capteur-abs\">guide d'achat capteur ABS</a> — comparatif marques, critères de choix et prix.</p>",
+      "expected": "<b>Critères essentiels pour choisir le bon capteur ABS :</b><br><br> <b>1. Type de capteur :</b><br> - <b>Capteur passif (inductif)</b> — génère un signal alternatif proportionnel à la vitesse. 2 fils, pas d'alimentation. Courant sur véhicules avant 2005.<br> - <b>Capteur actif (magnétorésistif / effet Hall)</b> — signal carré numérique, plus précis à basse vitesse. 3 fils (alimentation + signal + masse). Standard sur véhicules récents.<br> ⚠️ Les deux types ne sont <b>pas interchangeables</b>. Vérifiez le nombre de broches du connecteur.<br><br> <b>2. Longueur du câble :</b><br> - Elle varie entre l'avant et l'arrière, et parfois entre gauche et droite. Un câble trop court ne rejoindra pas le connecteur du faisceau.<br><br> <b>3. Entrefer (gap) :</b><br> - Sur les capteurs passifs, l'entrefer entre le capteur et la roue dentée (cible) est critique : typiquement <b>0.3 à 1.0 mm</b>. Un entrefer trop grand = signal faible = code défaut.<br> - Les capteurs actifs sont généralement auto-calibrés à l'entrefer.<br><br> <b>4. OE vs aftermarket :</b><br> - Les capteurs adaptables de qualité (Bosch, ATE, Delphi) fonctionnent très bien et coûtent 30 à 50 % de moins que l'OE.<br> - Vérifiez la <b>référence OE</b> de votre capteur d'origine pour garantir la compatibilité.<br><br> <b>5. Compatibilité véhicule :</b><br> - Renseignez votre <b>marque, modèle, année et motorisation</b> pour filtrer les références compatibles. <p class=\"mt-4 text-sm\"><strong>Pour aller plus loin :</strong> consultez notre <a href=\"/blog-pièces-auto/guide-achat/capteur-abs\">guide d'achat capteur ABS</a> — comparatif marques, critères de choix et prix.</p>"
+    },
+    {
+      "id": "conseils/capteur-abs/S4_DEPOSE",
+      "kind": "conseils-section",
+      "why": "page conseils complète (body)",
+      "input": "<p class=\"text-xs text-gray-500 mt-1 mb-2\"><b>Procédure de diagnostic d'un capteur ABS :</b></p><p class=\"text-xs text-gray-500 mt-1 mb-2\"><b>1. Lecture du code défaut (OBD) :</b></p><p class=\"text-xs text-gray-500 mt-1 mb-2\">Branchez une valise ou un lecteur OBD2. Les codes C0035-C0050 désignent un capteur spécifique (avant gauche, avant droit, arrière gauche, arrière droit). Notez la roue concernée.</p><p class=\"text-xs text-gray-500 mt-1 mb-2\"><b>2. Inspection visuelle du capteur :</b></p><ol>\n<li>Vérifier l'état du <b>câble du capteur</b> — coupure, dénudage, traces de frottement sur les flexibles de frein.</li>\n<li>Vérifier le <b>connecteur</b> — oxydation, broches tordues, clips cassés.</li>\n<li>Vérifier que le capteur n'est pas couvert de <b>limaille ou de boue</b> (faux signal).</li>\n</ol><p class=\"text-xs text-gray-500 mt-1 mb-2\"><b>3. Contrôle de l'entrefer :</b></p><p class=\"text-xs text-gray-500 mt-1 mb-2\">L'espace entre le capteur et la roue dentée (cible) doit être régulier. Un entrefer trop grand (capteur reculé) ou irrégulier (cible voilée) provoque un signal erratique.</p><p class=\"text-xs text-gray-500 mt-1 mb-2\"><b>4. Test de résistance (multimètre) :</b></p><p class=\"text-xs text-gray-500 mt-1 mb-2\">Débrancher le capteur et mesurer la résistance aux bornes : typiquement 800 Ω à 2 000 Ω pour un capteur inductif. Hors plage = capteur HS.</p><p class=\"text-xs text-gray-500 mt-1 mb-2\"><b>5. Contrôle de la roue dentée (cible) :</b></p><p class=\"text-xs text-gray-500 mt-1 mb-2\">Vérifier l'absence de dents cassées ou d'encrassement magnétique. Sur certains véhicules, la cible est intégrée au <a href=\"/pièces/roulement-de-roue\">roulement de roue</a>.</p>",
+      "expected": "<p class=\"text-xs text-gray-500 mt-1 mb-2\"><b>Procédure de diagnostic d'un capteur ABS :</b></p><p class=\"text-xs text-gray-500 mt-1 mb-2\"><b>1. Lecture du code défaut (OBD) :</b></p><p class=\"text-xs text-gray-500 mt-1 mb-2\">Branchez une valise ou un lecteur OBD2. Les codes C0035-C0050 désignent un capteur spécifique (avant gauche, avant droit, arrière gauche, arrière droit). Notez la roue concernée.</p><p class=\"text-xs text-gray-500 mt-1 mb-2\"><b>2. Inspection visuelle du capteur :</b></p><ol> <li>Vérifier l'état du <b>câble du capteur</b> — coupure, dénudage, traces de frottement sur les flexibles de frein.</li> <li>Vérifier le <b>connecteur</b> — oxydation, broches tordues, clips cassés.</li> <li>Vérifier que le capteur n'est pas couvert de <b>limaille ou de boue</b> (faux signal).</li> </ol><p class=\"text-xs text-gray-500 mt-1 mb-2\"><b>3. Contrôle de l'entrefer :</b></p><p class=\"text-xs text-gray-500 mt-1 mb-2\">L'espace entre le capteur et la roue dentée (cible) doit être régulier. Un entrefer trop grand (capteur reculé) ou irrégulier (cible voilée) provoque un signal erratique.</p><p class=\"text-xs text-gray-500 mt-1 mb-2\"><b>4. Test de résistance (multimètre) :</b></p><p class=\"text-xs text-gray-500 mt-1 mb-2\">Débrancher le capteur et mesurer la résistance aux bornes : typiquement 800 Ω à 2 000 Ω pour un capteur inductif. Hors plage = capteur HS.</p><p class=\"text-xs text-gray-500 mt-1 mb-2\"><b>5. Contrôle de la roue dentée (cible) :</b></p><p class=\"text-xs text-gray-500 mt-1 mb-2\">Vérifier l'absence de dents cassées ou d'encrassement magnétique. Sur certains véhicules, la cible est intégrée au <a href=\"/pièces/roulement-de-roue\">roulement de roue</a>.</p>"
+    },
+    {
+      "id": "conseils/capteur-abs/S4_REPOSE",
+      "kind": "conseils-section",
+      "why": "page conseils complète (body)",
+      "input": "<p>Le remontage d'un capteur ABS est une opération accessible, mais plusieurs points de contrôle conditionnent l'efficacité du système après installation. L'entrefer entre le capteur et la cible (couronne dentée ou roulement encodeur) est particulièrement critique sur les capteurs actifs à effet Hall : un jeu hors tolérance génère des signaux erronés et déclenche le voyant ABS dès le premier roulage.</p>\n<ol>\n<li>Vérifiez que le <b>capteur ABS neuf</b> est identique à celui déposé : type inductif ou effet Hall, nombre de broches du connecteur (2 ou 3), longueur du câble et diamètre du corps. Une confusion entre les positions avant et arrière, ou gauche et droite, est la première source d'erreur.</li>\n<li>Nettoyez soigneusement le <b>logement du capteur</b> dans le moyeu ou la platine de freinage : éliminez la rouille, la crasse et les résidus de l'ancien capteur à l'aide d'un chiffon non pelucheux et si nécessaire d'un dégrippant.</li>\n<li>Contrôlez l'état de la <b>cible (couronne dentée)</b> : les dents doivent être intactes, sans déformation ni encrassement. Si la cible est intégrée au <a href=\"/pieces/roulement-de-roue-655.html\" class=\"seo-internal-link\" data-link-type=\"LinkGamme\"><b>Roulement de roue</b></a>, vérifiez l'état du roulement.</li>\n<li>Insérez le <b>capteur ABS</b> dans son logement sans forcer. S'il ne rentre pas, vérifiez l'absence de corps étranger dans l'alésage — ne jamais frapper sur le corps du capteur.</li>\n<li>Serrez la <b>vis ou bride de fixation</b> au couple constructeur (généralement 7 à 10 Nm). Un sous-serrage laisse le capteur vibrer et génère des faux signaux ; un sur-serrage fissure le corps du capteur.</li>\n<li>Si le capteur est réglable en entrefer, vérifiez la distance capteur/cible avec un calibre à lame selon la valeur constructeur (typiquement 0,2 à 1,5 mm). Ajustez avec la cale d'épaisseur fournie si nécessaire.</li>\n<li>Guidez le <b>câble du capteur</b> dans son chemin de câblage d'origine. Clipez chaque attache-câble et vérifiez qu'il n'y a pas de contact avec les pièces mobiles (roue, <a href=\"/pieces/bras-de-suspension-273.html\" class=\"seo-internal-link\" data-link-type=\"LinkGamme\"><b>Bras de suspension</b></a>, disque de frein ).</li>\n<li>Reconnectez le <b>connecteur électrique</b> jusqu'au clic de verrouillage. Vérifiez la continuité visuelle du câble sur toute sa longueur.</li>\n<li>Remontez la <b>roue</b> et serrez les boulons de roue au couple constructeur (généralement 100 à 120 Nm). Abaissez le véhicule.</li>\n<li>Rebranchez la <b>batterie</b>, puis effacez les codes défaut ABS avec la valise de diagnostic. Roulez à plus de 20 km/h pour que le calculateur recalibré valide le signal du nouveau capteur — le voyant ABS doit s'éteindre définitivement.</li>\n</ol>",
+      "expected": "<p>Le remontage d'un capteur ABS est une opération accessible, mais plusieurs points de contrôle conditionnent l'efficacité du système après installation. L'entrefer entre le capteur et la cible (couronne dentée ou roulement encodeur) est particulièrement critique sur les capteurs actifs à effet Hall : un jeu hors tolérance génère des signaux erronés et déclenche le voyant ABS dès le premier roulage.</p> <ol> <li>Vérifiez que le <b>capteur ABS neuf</b> est identique à celui déposé : type inductif ou effet Hall, nombre de broches du connecteur (2 ou 3), longueur du câble et diamètre du corps. Une confusion entre les positions avant et arrière, ou gauche et droite, est la première source d'erreur.</li> <li>Nettoyez soigneusement le <b>logement du capteur</b> dans le moyeu ou la platine de freinage : éliminez la rouille, la crasse et les résidus de l'ancien capteur à l'aide d'un chiffon non pelucheux et si nécessaire d'un dégrippant.</li> <li>Contrôlez l'état de la <b>cible (couronne dentée)</b> : les dents doivent être intactes, sans déformation ni encrassement. Si la cible est intégrée au <a href=\"/pieces/roulement-de-roue-655.html\" class=\"seo-internal-link\" data-link-type=\"LinkGamme\"><b>Roulement de roue</b></a>, vérifiez l'état du roulement.</li> <li>Insérez le <b>capteur ABS</b> dans son logement sans forcer. S'il ne rentre pas, vérifiez l'absence de corps étranger dans l'alésage — ne jamais frapper sur le corps du capteur.</li> <li>Serrez la <b>vis ou bride de fixation</b> au couple constructeur (généralement 7 à 10 Nm). Un sous-serrage laisse le capteur vibrer et génère des faux signaux ; un sur-serrage fissure le corps du capteur.</li> <li>Si le capteur est réglable en entrefer, vérifiez la distance capteur/cible avec un calibre à lame selon la valeur constructeur (typiquement 0,2 à 1,5 mm). Ajustez avec la cale d'épaisseur fournie si nécessaire.</li> <li>Guidez le <b>câble du capteur</b> dans son chemin de câblage d'origine. Clipez chaque attache-câble et vérifiez qu'il n'y a pas de contact avec les pièces mobiles (roue, <a href=\"/pieces/bras-de-suspension-273.html\" class=\"seo-internal-link\" data-link-type=\"LinkGamme\"><b>Bras de suspension</b></a>, disque de frein ).</li> <li>Reconnectez le <b>connecteur électrique</b> jusqu'au clic de verrouillage. Vérifiez la continuité visuelle du câble sur toute sa longueur.</li> <li>Remontez la <b>roue</b> et serrez les boulons de roue au couple constructeur (généralement 100 à 120 Nm). Abaissez le véhicule.</li> <li>Rebranchez la <b>batterie</b>, puis effacez les codes défaut ABS avec la valise de diagnostic. Roulez à plus de 20 km/h pour que le calculateur recalibré valide le signal du nouveau capteur — le voyant ABS doit s'éteindre définitivement.</li> </ol>"
+    },
+    {
+      "id": "conseils/capteur-abs/S6",
+      "kind": "conseils-section",
+      "why": "page conseils complète (body)",
+      "input": "<div class=\"conseil-section\">\n<h4>Contrôles statiques</h4>\n<ul>\n<li>Vérifier le bon encliquetage du connecteur électrique</li>\n<li>Contrôler que le câble est fixé dans tous ses clips et ne touche aucun élément mobile</li>\n<li>Avec une valise OBD : effacer les codes défaut, vérifier que le capteur envoie un signal (vitesse de roue affichée)</li>\n<li>Démarrer le moteur : le voyant ABS doit s'allumer puis s'éteindre après quelques secondes</li>\n</ul>\n<h4>Essai routier</h4>\n<ul>\n<li>Rouler à 20-30 km/h : le voyant ABS doit rester éteint</li>\n<li>Freiner progressivement puis fermement : l'ABS doit s'activer normalement sur surface glissante (pulsation dans la pédale)</li>\n<li>Effectuer des virages à basse vitesse : vérifier l'absence de voyant ESP/ABS intempestif</li>\n</ul>\n<div class=\"warning-box\"><strong>⚠️ Consulter un atelier si :</strong> le voyant ABS reste allumé après effacement du code, le code défaut réapparaît immédiatement, pulsation anormale de la pédale en ligne droite.</div>\n</div>\n<p class=\"text-sm mt-3\">🚨 <a href=\"/diagnostic-auto/bruit-capteur-abs\">Bruit Capteur ABS : causes et diagnostic</a></p>",
+      "expected": "<div class=\"conseil-section\"> <h4>Contrôles statiques</h4> <ul> <li>Vérifier le bon encliquetage du connecteur électrique</li> <li>Contrôler que le câble est fixé dans tous ses clips et ne touche aucun élément mobile</li> <li>Avec une valise OBD : effacer les codes défaut, vérifier que le capteur envoie un signal (vitesse de roue affichée)</li> <li>Démarrer le moteur : le voyant ABS doit s'allumer puis s'éteindre après quelques secondes</li> </ul> <h4>Essai routier</h4> <ul> <li>Rouler à 20-30 km/h : le voyant ABS doit rester éteint</li> <li>Freiner progressivement puis fermement : l'ABS doit s'activer normalement sur surface glissante (pulsation dans la pédale)</li> <li>Effectuer des virages à basse vitesse : vérifier l'absence de voyant ESP/ABS intempestif</li> </ul> <div class=\"warning-box\"><strong>⚠️ Consulter un atelier si :</strong> le voyant ABS reste allumé après effacement du code, le code défaut réapparaît immédiatement, pulsation anormale de la pédale en ligne droite.</div> </div> <p class=\"text-sm mt-3\">🚨 <a href=\"/diagnostic-auto/bruit-capteur-abs\">Bruit Capteur ABS : causes et diagnostic</a></p>"
+    },
+    {
+      "id": "conseils/capteur-abs/S5",
+      "kind": "conseils-section",
+      "why": "page conseils complète (body)",
+      "input": "<p class=\"text-xs text-red-700 mt-1 mb-2\"><b>Erreurs fréquentes avec les capteurs ABS :</b></p><ul>\n<li>❌ <b>Forcer pour extraire un capteur grippé</b> — le corps du capteur est fragile (céramique ou plastique). Appliquer du dégrippant, chauffer légèrement le logement, puis tourner doucement.</li>\n<li>❌ <b>Oublier de nettoyer la cible (roue dentée)</b> — la limaille s'accumule sur les capteurs magnétiques. Nettoyer au chiffon non abrasif.</li>\n<li>❌ <b>Ne pas effacer le code défaut après remplacement</b> — le voyant ABS restera allumé tant que le défaut n'est pas effacé à la valise OBD.</li>\n<li>❌ <b>Ignorer l'entrefer</b> — sur les capteurs réglables, un entrefer trop grand donne un signal faible. Respecter la cote constructeur (généralement 0,5 à 1,5 mm).</li>\n<li>❌ <b>Confondre capteur inductif et capteur actif</b> — les capteurs actifs (Hall) ont 3 broches et ne sont pas interchangeables avec les inductifs (2 broches).</li></ul>",
+      "expected": "<p class=\"text-xs text-red-700 mt-1 mb-2\"><b>Erreurs fréquentes avec les capteurs ABS :</b></p><ul> <li>❌ <b>Forcer pour extraire un capteur grippé</b> — le corps du capteur est fragile (céramique ou plastique). Appliquer du dégrippant, chauffer légèrement le logement, puis tourner doucement.</li> <li>❌ <b>Oublier de nettoyer la cible (roue dentée)</b> — la limaille s'accumule sur les capteurs magnétiques. Nettoyer au chiffon non abrasif.</li> <li>❌ <b>Ne pas effacer le code défaut après remplacement</b> — le voyant ABS restera allumé tant que le défaut n'est pas effacé à la valise OBD.</li> <li>❌ <b>Ignorer l'entrefer</b> — sur les capteurs réglables, un entrefer trop grand donne un signal faible. Respecter la cote constructeur (généralement 0,5 à 1,5 mm).</li> <li>❌ <b>Confondre capteur inductif et capteur actif</b> — les capteurs actifs (Hall) ont 3 broches et ne sont pas interchangeables avec les inductifs (2 broches).</li></ul>"
+    },
+    {
+      "id": "conseils/capteur-abs/S_GARAGE",
+      "kind": "conseils-section",
+      "why": "page conseils complète (body)",
+      "input": "<div class=\"garage-callout\"><p><strong>Quand confier le remplacement d'un capteur ABS à un professionnel :</strong></p><br>\n- <b>Capteur grippé ou cassé dans son logement</b> — l'extraction d'un capteur corrodé demande un outillage spécifique (extracteur, chalumeau) pour ne pas endommager le moyeu ou le porte-fusée.<br>\n- <b>Code défaut persistant après remplacement</b> — un capteur neuf qui déclenche encore le voyant ABS nécessite un diagnostic OBD approfondi : le problème peut venir du <a href=\"/pièces/agregat-de-freinage\">bloc ABS (agrégat)</a>, du câblage ou du calculateur.<br>\n- <b>Codage ou calibrage requis</b> — sur certains véhicules (VAG, BMW), le nouveau capteur doit être appairé au calculateur ABS avec un outil de diagnostic constructeur.<br>\n- <b>Capteur arrière intégré au roulement</b> — sur de nombreux véhicules récents, la cible magnétique est intégrée au <a href=\"/pièces/roulement-de-roue\">roulement de roue</a>. Le remplacement du capteur seul ne suffira pas si le roulement est en cause.<br><br>\n<p>Un garagiste qualifié dispose de l'outillage OBD, des extracteurs et de l'expérience nécessaires pour un diagnostic fiable et un montage sûr.</p></div>",
+      "expected": "<div class=\"garage-callout\"><p><strong>Quand confier le remplacement d'un capteur ABS à un professionnel :</strong></p><br> - <b>Capteur grippé ou cassé dans son logement</b> — l'extraction d'un capteur corrodé demande un outillage spécifique (extracteur, chalumeau) pour ne pas endommager le moyeu ou le porte-fusée.<br> - <b>Code défaut persistant après remplacement</b> — un capteur neuf qui déclenche encore le voyant ABS nécessite un diagnostic OBD approfondi : le problème peut venir du <a href=\"/pièces/agregat-de-freinage\">bloc ABS (agrégat)</a>, du câblage ou du calculateur.<br> - <b>Codage ou calibrage requis</b> — sur certains véhicules (VAG, BMW), le nouveau capteur doit être appairé au calculateur ABS avec un outil de diagnostic constructeur.<br> - <b>Capteur arrière intégré au roulement</b> — sur de nombreux véhicules récents, la cible magnétique est intégrée au <a href=\"/pièces/roulement-de-roue\">roulement de roue</a>. Le remplacement du capteur seul ne suffira pas si le roulement est en cause.<br><br> <p>Un garagiste qualifié dispose de l'outillage OBD, des extracteurs et de l'expérience nécessaires pour un diagnostic fiable et un montage sûr.</p></div>"
+    },
+    {
+      "id": "conseils/capteur-abs/S2_DIAG",
+      "kind": "conseils-section",
+      "why": "page conseils complète (body)",
+      "input": "<table><thead><tr><th>Symptôme</th><th>Cause probable</th><th>Action</th></tr></thead><tbody><tr><td>Voyant abs allume au tableau de bord</td><td>localiser source et vérifier usure mécanique</td><td>Voyant abs allume au tableau de bord ?</td></tr><tr><td>Code défaut spécifique a une roue</td><td>lecture codes défaut obd et diagnostic electronique</td><td>Observer : code défaut spécifique a une roue ?</td></tr><tr><td>Capteur visible endommage ou couvert de crasse</td><td>remplacement préventif recommande</td><td>Observer : capteur visible endommage ou couvert de crasse ?</td></tr><tr><td>Cable du capteur coupe ou denude</td><td>localiser source et vérifier usure mécanique</td><td>Observer : cable du capteur coupe ou denude ?</td></tr><tr><td>Abs qui se declenche a basse vitesse sans raison</td><td>localiser source et vérifier usure mécanique</td><td>Voyant abs allume au tableau de bord ?</td></tr><tr><td>Bruit anormal lors du fonctionnement abs</td><td>localiser source et vérifier usure mécanique</td><td>Voyant abs allume au tableau de bord ?</td></tr></tbody></table>",
+      "expected": "<table><thead><tr><th>Symptôme</th><th>Cause probable</th><th>Action</th></tr></thead><tbody><tr><td>Voyant abs allume au tableau de bord</td><td>localiser source et vérifier usure mécanique</td><td>Voyant abs allume au tableau de bord ?</td></tr><tr><td>Code défaut spécifique a une roue</td><td>lecture codes défaut obd et diagnostic electronique</td><td>Observer : code défaut spécifique a une roue ?</td></tr><tr><td>Capteur visible endommage ou couvert de crasse</td><td>remplacement préventif recommande</td><td>Observer : capteur visible endommage ou couvert de crasse ?</td></tr><tr><td>Cable du capteur coupe ou denude</td><td>localiser source et vérifier usure mécanique</td><td>Observer : cable du capteur coupe ou denude ?</td></tr><tr><td>Abs qui se declenche a basse vitesse sans raison</td><td>localiser source et vérifier usure mécanique</td><td>Voyant abs allume au tableau de bord ?</td></tr><tr><td>Bruit anormal lors du fonctionnement abs</td><td>localiser source et vérifier usure mécanique</td><td>Voyant abs allume au tableau de bord ?</td></tr></tbody></table>"
+    },
+    {
+      "id": "conseils/capteur-abs/S7",
+      "kind": "conseils-section",
+      "why": "page conseils complète (body)",
+      "input": "<div class=\"faq-section\" itemscope itemtype=\"https://schema.org/FAQPage\">\n<div itemscope itemprop=\"mainEntity\" itemtype=\"https://schema.org/Question\">\n<h3 itemprop=\"name\">Combien de capteurs ABS possède une voiture ?</h3>\n<div itemscope itemprop=\"acceptedAnswer\" itemtype=\"https://schema.org/Answer\">\n<p itemprop=\"text\">La plupart des véhicules modernes possèdent <strong>4 capteurs ABS</strong>, un par roue. Certains véhicules plus anciens n'en ont que 3 (un par roue avant + un sur le différentiel arrière). Le code défaut OBD identifie précisément le capteur en cause.</p>\n</div></div>\n<div itemscope itemprop=\"mainEntity\" itemtype=\"https://schema.org/Question\">\n<h3 itemprop=\"name\">Peut-on nettoyer un capteur ABS au lieu de le remplacer ?</h3>\n<div itemscope itemprop=\"acceptedAnswer\" itemtype=\"https://schema.org/Answer\">\n<p itemprop=\"text\">Oui, si le capteur est simplement encrassé (limaille, boue). Nettoyez avec un <strong>nettoyant frein</strong> et une brosse douce. Si le voyant persiste après nettoyage et effacement du code défaut, le capteur est défaillant et doit être remplacé.</p>\n</div></div>\n<div itemscope itemprop=\"mainEntity\" itemtype=\"https://schema.org/Question\">\n<h3 itemprop=\"name\">Quel est le prix d'un capteur ABS ?</h3>\n<div itemscope itemprop=\"acceptedAnswer\" itemtype=\"https://schema.org/Answer\">\n<p itemprop=\"text\">Un capteur ABS coûte entre <strong>15 € et 80 €</strong> selon le véhicule et la marque (Bosch, ATE, Febi). La main-d'œuvre varie de 30 à 90 minutes selon l'accessibilité — les capteurs arrière sont souvent plus longs à extraire (risque de grippage).</p>\n</div></div>\n<div itemscope itemprop=\"mainEntity\" itemtype=\"https://schema.org/Question\">\n<h3 itemprop=\"name\">Peut-on rouler avec un capteur ABS défaillant ?</h3>\n<div itemscope itemprop=\"acceptedAnswer\" itemtype=\"https://schema.org/Answer\">\n<p itemprop=\"text\">Oui, le freinage classique reste fonctionnel. En revanche, l'<strong>ABS sera désactivé</strong> : en cas de freinage d'urgence sur route mouillée, les roues peuvent bloquer. Le contrôle technique sanctionne un voyant ABS allumé en défaut majeur.</p>\n</div></div>\n</div>\n<hr>\n<b>Pièces associées au capteur ABS :</b><br>- <b><a href=\"/pièces/agregat-de-freinage\">agregat de freinage</a></b><br>- <b><a href=\"/pièces/cable-de-frein-a-main\">cable de frein a main</a></b><br>- <b><a href=\"/pièces/disque-de-frein\"><a href=\"/pieces/disque-de-frein-82.html\" class=\"seo-internal-link\" data-link-type=\"LinkGamme\"><b>Disque de frein</b></a></a></b><br>- <b><a href=\"/pièces/etrier-de-frein\">étrier de frein</a></b><br>- <b><a href=\"/pièces/kit-de-freins-arriere\">kit de freins arrière</a></b><br>- <b><a href=\"/pièces/machoires-de-frein\">mâchoires de frein</a></b><br>- <b><a href=\"/pièces/plaquette-de-frein\"><a href=\"/pieces/plaquette-de-frein-402.html\" class=\"seo-internal-link\" data-link-type=\"LinkGamme\"><b>Plaquette de frein</b></a></a></b><br>- <b><a href=\"/pièces/roulement-de-roue\">roulement de roue </a></b>",
+      "expected": "<div class=\"faq-section\"> <div> <h3>Combien de capteurs ABS possède une voiture ?</h3> <div> <p>La plupart des véhicules modernes possèdent <strong>4 capteurs ABS</strong>, un par roue. Certains véhicules plus anciens n'en ont que 3 (un par roue avant + un sur le différentiel arrière). Le code défaut OBD identifie précisément le capteur en cause.</p> </div></div> <div> <h3>Peut-on nettoyer un capteur ABS au lieu de le remplacer ?</h3> <div> <p>Oui, si le capteur est simplement encrassé (limaille, boue). Nettoyez avec un <strong>nettoyant frein</strong> et une brosse douce. Si le voyant persiste après nettoyage et effacement du code défaut, le capteur est défaillant et doit être remplacé.</p> </div></div> <div> <h3>Quel est le prix d'un capteur ABS ?</h3> <div> <p>Un capteur ABS coûte entre <strong>15 € et 80 €</strong> selon le véhicule et la marque (Bosch, ATE, Febi). La main-d'œuvre varie de 30 à 90 minutes selon l'accessibilité — les capteurs arrière sont souvent plus longs à extraire (risque de grippage).</p> </div></div> <div> <h3>Peut-on rouler avec un capteur ABS défaillant ?</h3> <div> <p>Oui, le freinage classique reste fonctionnel. En revanche, l'<strong>ABS sera désactivé</strong> : en cas de freinage d'urgence sur route mouillée, les roues peuvent bloquer. Le contrôle technique sanctionne un voyant ABS allumé en défaut majeur.</p> </div></div> </div> <hr> <b>Pièces associées au capteur ABS :</b><br>- <b><a href=\"/pièces/agregat-de-freinage\">agregat de freinage</a></b><br>- <b><a href=\"/pièces/cable-de-frein-a-main\">cable de frein a main</a></b><br>- <b><a href=\"/pièces/disque-de-frein\"></a><a href=\"/pieces/disque-de-frein-82.html\" class=\"seo-internal-link\" data-link-type=\"LinkGamme\"><b>Disque de frein</b></a></b><br>- <b><a href=\"/pièces/etrier-de-frein\">étrier de frein</a></b><br>- <b><a href=\"/pièces/kit-de-freins-arriere\">kit de freins arrière</a></b><br>- <b><a href=\"/pièces/machoires-de-frein\">mâchoires de frein</a></b><br>- <b><a href=\"/pièces/plaquette-de-frein\"></a><a href=\"/pieces/plaquette-de-frein-402.html\" class=\"seo-internal-link\" data-link-type=\"LinkGamme\"><b>Plaquette de frein</b></a></b><br>- <b><a href=\"/pièces/roulement-de-roue\">roulement de roue </a></b>"
+    },
+    {
+      "id": "conseils/capteur-abs/S8",
+      "kind": "conseils-section",
+      "why": "page conseils complète (body)",
+      "input": "<details><summary><b>Capteur ABS OE ou adaptable ?</b></summary><p>Les capteurs adaptables de qualité fonctionnent très bien. Vérifiez la longueur du câble et le type de connecteur (2 ou 3 broches).</p></details>\n<details><summary><b>Comment savoir si mon capteur ABS est HS ?</b></summary><p>Voyant ABS allumé, code défaut capteur spécifique à une roue, capteur visible endommagé ou câble coupé.</p></details>\n<details><summary><b>Tous les combien changer les capteurs ABS ?</b></summary><p>Pas de périodicité. C'est une pièce durable. Remplacez uniquement en cas de défaillance confirmée par diagnostic.</p></details>\n<details><summary><b>Peut-on changer un capteur ABS soi-même ?</b></summary><p>Oui, opération simple. Débrancher le connecteur, dévisser le capteur, nettoyer le logement, monter le neuf. Effacer le défaut après.</p></details>\n<details><summary><b>Quelle erreur éviter avec les capteurs ABS ?</b></summary><p>Ne pas forcer si le capteur est grippé (risque de casse). Nettoyer la cible (roue dentée). Respecter l'entrefer si réglable.</p></details>\n<details><summary><b>Capteur ABS et capteur ESP, est-ce la même pièce ?</b></summary><p>Oui, le capteur de vitesse de roue est partagé entre le système ABS et le système ESP. Une seule pièce physique alimente les deux systèmes. Si le capteur tombe en panne, les voyants ABS et ESP s'allument ensemble.</p></details>\n<details><summary><b>Pourquoi les voyants ABS et ESP s'allument en même temps ?</b></summary><p>Parce qu'ils utilisent le même capteur de roue. Un capteur défaillant coupe l'information aux deux systèmes simultanément. Un diagnostic OBD confirmera quel capteur est en cause.</p></details>",
+      "expected": "<b>Capteur ABS OE ou adaptable ?</b><p>Les capteurs adaptables de qualité fonctionnent très bien. Vérifiez la longueur du câble et le type de connecteur (2 ou 3 broches).</p> <b>Comment savoir si mon capteur ABS est HS ?</b><p>Voyant ABS allumé, code défaut capteur spécifique à une roue, capteur visible endommagé ou câble coupé.</p> <b>Tous les combien changer les capteurs ABS ?</b><p>Pas de périodicité. C'est une pièce durable. Remplacez uniquement en cas de défaillance confirmée par diagnostic.</p> <b>Peut-on changer un capteur ABS soi-même ?</b><p>Oui, opération simple. Débrancher le connecteur, dévisser le capteur, nettoyer le logement, monter le neuf. Effacer le défaut après.</p> <b>Quelle erreur éviter avec les capteurs ABS ?</b><p>Ne pas forcer si le capteur est grippé (risque de casse). Nettoyer la cible (roue dentée). Respecter l'entrefer si réglable.</p> <b>Capteur ABS et capteur ESP, est-ce la même pièce ?</b><p>Oui, le capteur de vitesse de roue est partagé entre le système ABS et le système ESP. Une seule pièce physique alimente les deux systèmes. Si le capteur tombe en panne, les voyants ABS et ESP s'allument ensemble.</p> <b>Pourquoi les voyants ABS et ESP s'allument en même temps ?</b><p>Parce qu'ils utilisent le même capteur de roue. Un capteur défaillant coupe l'information aux deux systèmes simultanément. Un diagnostic OBD confirmera quel capteur est en cause.</p>"
+    },
+    {
+      "id": "conseils/capteur-abs/META",
+      "kind": "conseils-section",
+      "why": "page conseils complète (meta)",
+      "input": "{\"og_title\": \"Capteur ABS défaillant : diagnostic voyant et remplacement\", \"meta_title\": \"Capteur ABS défaillant : voyant, diagnostic OBD et changement | AutoMecanik\", \"gate_report\": \"PASS\", \"schema_type\": \"Article\", \"og_description\": \"Voyant ABS allumé ? Capteur de roue défaillant. Guide entrefer, code défaut, compatibilité et remplacement étape par étape.\", \"primary_intent\": \"diagnostic\", \"char_count_desc\": 153, \"char_count_title\": 55, \"meta_description\": \"Voyant ABS allumé ? Capteur de roue défaillant probable. Vérifiez l'entrefer, lisez le code défaut et remplacez la bonne référence selon votre véhicule.\"}",
+      "expected": "{\"og_title\": \"Capteur ABS défaillant : diagnostic voyant et remplacement\", \"meta_title\": \"Capteur ABS défaillant : voyant, diagnostic OBD et changement | AutoMecanik\", \"gate_report\": \"PASS\", \"schema_type\": \"Article\", \"og_description\": \"Voyant ABS allumé ? Capteur de roue défaillant. Guide entrefer, code défaut, compatibilité et remplacement étape par étape.\", \"primary_intent\": \"diagnostic\", \"char_count_desc\": 153, \"char_count_title\": 55, \"meta_description\": \"Voyant ABS allumé ? Capteur de roue défaillant probable. Vérifiez l'entrefer, lisez le code défaut et remplacez la bonne référence selon votre véhicule.\"}"
+    },
+    {
+      "id": "conseils/cardan/META",
+      "kind": "conseils-section",
+      "why": "type de section META, variété de balises/attributs",
+      "input": "- <b><a href=\"/blog/articles/changer-cardan-clio-ii-1-2-16v-12.html\">Changer Cardan de la Renault Clio II 1.2 16V</a></b>.",
+      "expected": "- <b><a href=\"/blog/articles/changer-cardan-clio-ii-1-2-16v-12.html\">Changer Cardan de la Renault Clio II 1.2 16V</a></b>."
+    },
+    {
+      "id": "conseils/galet-tendeur-de-courroie-d-accessoire/S1",
+      "kind": "conseils-section",
+      "why": "type de section S1, variété de balises/attributs",
+      "input": "Le rôle du<b>galet tendeur</b>&nbsp;<b>d'accessoires</b> est assuré la tension de la courroie etréduire les vibrations. Le réglage de la tension de la courroie se faitmanuellement ou automatiquement suivant le type du <b>galet tendeur</b>.<br>Il existe deuxtypes de <b>galet tendeur</b>&nbsp;:<br>- <b>Galet tendeur</b> mécanique est composé d'un ressort de torsion etd'éléments de friction.<br>- <b>Galet tendeur</b> hydrauliqueest composé d'un ressort de compression et d'un circuit hydraulique où unfluide est forcé par un orifice calibré<br><br><a href=\"/référence-auto/galet-tendeur-de-courroie-d-accessoire\">En savoir plus : galet tendeur de <a href=\"/pieces/courroie-d-accessoire-10.html\" class=\"seo-internal-link\" data-link-type=\"LinkGamme\"><b>Courroie d'accessoire</b></a> — définition et rôle mécanique</a>\n<p class=\"text-sm mt-3\">🚨 <a href=\"/diagnostic-auto/bruit-galet-tendeur-de-courroie-d-accessoire\">Bruit Galet tendeur de courroie d'accessoire : causes et diagnostic</a></p>",
+      "expected": "Le rôle du<b>galet tendeur</b>&nbsp;<b>d'accessoires</b> est assuré la tension de la courroie etréduire les vibrations. Le réglage de la tension de la courroie se faitmanuellement ou automatiquement suivant le type du <b>galet tendeur</b>.<br>Il existe deuxtypes de <b>galet tendeur</b>&nbsp;:<br>- <b>Galet tendeur</b> mécanique est composé d'un ressort de torsion etd'éléments de friction.<br>- <b>Galet tendeur</b> hydrauliqueest composé d'un ressort de compression et d'un circuit hydraulique où unfluide est forcé par un orifice calibré<br><br><a href=\"/référence-auto/galet-tendeur-de-courroie-d-accessoire\">En savoir plus : galet tendeur de </a><a href=\"/pieces/courroie-d-accessoire-10.html\" class=\"seo-internal-link\" data-link-type=\"LinkGamme\"><b>Courroie d'accessoire</b></a> — définition et rôle mécanique <p class=\"text-sm mt-3\">🚨 <a href=\"/diagnostic-auto/bruit-galet-tendeur-de-courroie-d-accessoire\">Bruit Galet tendeur de courroie d'accessoire : causes et diagnostic</a></p>"
+    },
+    {
+      "id": "conseils/cable-d-embrayage/S2",
+      "kind": "conseils-section",
+      "why": "type de section S2, variété de balises/attributs",
+      "input": "Un <b>câble d'embrayage</b> usé présente plusieurs symptômes&nbsp;:<br>- Passage de vitesses difficile.<br>- <b>Pédale d'embrayage</b> dur à cause du grippage du câble.<br>Un <b>câble d'embrayage</b> défaillant et qu'il n'est remplacé à temps&nbsp;peutentraîner plusieurs pannes&nbsp;:<br>- Usure de la <b><a href=\"/pieces/butee-d-embrayage-48.html\" class=\"seo-internal-link\" data-link-type=\"LinkGamme\"><b>Butée d'embrayage</b></a></b> et de la <b><a href=\"/pièces/fourchette-d-embrayage-3419.html\">fourchetted'embrayage</a></b>.<br>- Usure du <b><a href=\"/pieces/kit-d-embrayage-479.html\" class=\"seo-internal-link\" data-link-type=\"LinkGamme\"><b>Kit d'embrayage</b></a></b>.<br><br><a href=\"/diagnostic-auto/bruit-cable-d-embrayage\">Diagnostic complet : identifier une panne de câble d'embrayage</a>\n\n<br><br><b>Symptômes détaillés et vérifications</b><br>\nUn <b>câble d'embrayage cassé ou en fin de vie</b> envoie des signaux de plus en plus nets avant de lâcher complètement. Voici les symptômes caractéristiques à ne pas négliger&nbsp;:<br>\n<ul>\n<li><b>Pédale d'embrayage dure ou difficile à enfoncer&nbsp;:</b> signe typique d'un câble qui se grippe dans sa gaine, souvent dû à la corrosion ou à l'usure des fils internes.</li>\n<li><b>Point de patinage très haut ou très bas&nbsp;:</b> un câble détendu ou partiellement cassé modifie le point d'engagement, rendant les départs hésitants.</li>\n<li><b>Craquement ou grincement à la pédale&nbsp;:</b> peut indiquer un câble effiloché en frottement dans la gaine, ou une gaine elle-même détériorée.</li>\n<li><b>Câble visible effiloché ou rouillé&nbsp;:</b> une inspection sous capot ou sous véhicule permet parfois de constater directement l'usure des fils.</li>\n<li><b>Embrayage qui ne débraye pas complètement&nbsp;:</b> le câble ne tire plus suffisamment la fourchette, entraînant des difficultés à passer les vitesses.</li>\n<li><b>Pédale qui reste enfoncée au plancher&nbsp;:</b> signe d'une rupture franche du câble — le véhicule est immobilisé.</li>\n</ul>\n<br><b>Hypothèses à explorer</b><br>\nCes symptômes peuvent indiquer&nbsp;: un câble effiloché progressivement, une gaine fendue laissant entrer l'humidité, un réglage de tension inadapté, ou une rupture complète. Un câble usé peut également accélérer l'usure de la butée d'embrayage et de la fourchette.<br>\n<br><b>Vérifications non-invasives (à faire soi-même)</b><br>\n<ul>\n<li>Évaluer la résistance à la pédale&nbsp;: une résistance irrégulière ou une pédale qui accroche en cours de course signale un câble à inspecter.</li>\n<li>Inspecter le câble visible (côté pédale et côté boîte) à la recherche de fils dénudés, de rouille ou d'effilochage.</li>\n<li>Vérifier le réglage de la tension du câble&nbsp;: un jeu excessif ou une tension trop forte peut être rectifié avant remplacement si le câble est encore sain.</li>\n<li>Contrôler l'état de la gaine&nbsp;: une gaine fendue ou écrasée compromet la lubrification du câble et accélère son usure.</li>\n</ul>\n<br>Pour un diagnostic personnalisé adapté à votre véhicule, utilisez notre <a href=\"/diagnostic-auto\">outil de diagnostic gratuit</a>.",
+      "expected": "Un <b>câble d'embrayage</b> usé présente plusieurs symptômes&nbsp;:<br>- Passage de vitesses difficile.<br>- <b>Pédale d'embrayage</b> dur à cause du grippage du câble.<br>Un <b>câble d'embrayage</b> défaillant et qu'il n'est remplacé à temps&nbsp;peutentraîner plusieurs pannes&nbsp;:<br>- Usure de la <b><a href=\"/pieces/butee-d-embrayage-48.html\" class=\"seo-internal-link\" data-link-type=\"LinkGamme\"><b>Butée d'embrayage</b></a></b> et de la <b><a href=\"/pièces/fourchette-d-embrayage-3419.html\">fourchetted'embrayage</a></b>.<br>- Usure du <b><a href=\"/pieces/kit-d-embrayage-479.html\" class=\"seo-internal-link\" data-link-type=\"LinkGamme\"><b>Kit d'embrayage</b></a></b>.<br><br><a href=\"/diagnostic-auto/bruit-cable-d-embrayage\">Diagnostic complet : identifier une panne de câble d'embrayage</a> <br><br><b>Symptômes détaillés et vérifications</b><br> Un <b>câble d'embrayage cassé ou en fin de vie</b> envoie des signaux de plus en plus nets avant de lâcher complètement. Voici les symptômes caractéristiques à ne pas négliger&nbsp;:<br> <ul> <li><b>Pédale d'embrayage dure ou difficile à enfoncer&nbsp;:</b> signe typique d'un câble qui se grippe dans sa gaine, souvent dû à la corrosion ou à l'usure des fils internes.</li> <li><b>Point de patinage très haut ou très bas&nbsp;:</b> un câble détendu ou partiellement cassé modifie le point d'engagement, rendant les départs hésitants.</li> <li><b>Craquement ou grincement à la pédale&nbsp;:</b> peut indiquer un câble effiloché en frottement dans la gaine, ou une gaine elle-même détériorée.</li> <li><b>Câble visible effiloché ou rouillé&nbsp;:</b> une inspection sous capot ou sous véhicule permet parfois de constater directement l'usure des fils.</li> <li><b>Embrayage qui ne débraye pas complètement&nbsp;:</b> le câble ne tire plus suffisamment la fourchette, entraînant des difficultés à passer les vitesses.</li> <li><b>Pédale qui reste enfoncée au plancher&nbsp;:</b> signe d'une rupture franche du câble — le véhicule est immobilisé.</li> </ul> <br><b>Hypothèses à explorer</b><br> Ces symptômes peuvent indiquer&nbsp;: un câble effiloché progressivement, une gaine fendue laissant entrer l'humidité, un réglage de tension inadapté, ou une rupture complète. Un câble usé peut également accélérer l'usure de la butée d'embrayage et de la fourchette.<br> <br><b>Vérifications non-invasives (à faire soi-même)</b><br> <ul> <li>Évaluer la résistance à la pédale&nbsp;: une résistance irrégulière ou une pédale qui accroche en cours de course signale un câble à inspecter.</li> <li>Inspecter le câble visible (côté pédale et côté boîte) à la recherche de fils dénudés, de rouille ou d'effilochage.</li> <li>Vérifier le réglage de la tension du câble&nbsp;: un jeu excessif ou une tension trop forte peut être rectifié avant remplacement si le câble est encore sain.</li> <li>Contrôler l'état de la gaine&nbsp;: une gaine fendue ou écrasée compromet la lubrification du câble et accélère son usure.</li> </ul> <br>Pour un diagnostic personnalisé adapté à votre véhicule, utilisez notre <a href=\"/diagnostic-auto\">outil de diagnostic gratuit</a>."
+    },
+    {
+      "id": "conseils/galet-tendeur-de-courroie-d-accessoire/S2_DIAG",
+      "kind": "conseils-section",
+      "why": "type de section S2_DIAG, variété de balises/attributs",
+      "input": "<table><thead><tr><th>Symptôme</th><th>Cause probable</th><th>Action</th></tr></thead><tbody><tr><td>Sifflement de la courroie</td><td>vérification urgente pièce et alimentation</td><td>Observer : sifflement de la courroie ?</td></tr><tr><td>Bruit de roulement cote accessoires</td><td>localiser source et vérifier usure mécanique</td><td>Bruit de roulement cote accessoires ?</td></tr><tr><td>Courroie qui patine temoin batterie</td><td>lecture codes défaut obd et diagnostic electronique</td><td>Observer : courroie qui patine temoin batterie ?</td></tr><tr><td>Galet qui ne bouge plus tendeur bloque</td><td>vérifier equilibrage et fixations</td><td>Observer : galet qui ne bouge plus tendeur bloque ?</td></tr><tr><td>Vibrations dans le moteur</td><td>vérification urgente pièce et alimentation</td><td>Observer : sifflement de la courroie ?</td></tr><tr><td>Bruit de claquement courroie detendue</td><td>vérification urgente pièce et alimentation</td><td>Observer : sifflement de la courroie ?</td></tr></tbody></table>",
+      "expected": "<table><thead><tr><th>Symptôme</th><th>Cause probable</th><th>Action</th></tr></thead><tbody><tr><td>Sifflement de la courroie</td><td>vérification urgente pièce et alimentation</td><td>Observer : sifflement de la courroie ?</td></tr><tr><td>Bruit de roulement cote accessoires</td><td>localiser source et vérifier usure mécanique</td><td>Bruit de roulement cote accessoires ?</td></tr><tr><td>Courroie qui patine temoin batterie</td><td>lecture codes défaut obd et diagnostic electronique</td><td>Observer : courroie qui patine temoin batterie ?</td></tr><tr><td>Galet qui ne bouge plus tendeur bloque</td><td>vérifier equilibrage et fixations</td><td>Observer : galet qui ne bouge plus tendeur bloque ?</td></tr><tr><td>Vibrations dans le moteur</td><td>vérification urgente pièce et alimentation</td><td>Observer : sifflement de la courroie ?</td></tr><tr><td>Bruit de claquement courroie detendue</td><td>vérification urgente pièce et alimentation</td><td>Observer : sifflement de la courroie ?</td></tr></tbody></table>"
+    },
+    {
+      "id": "conseils/arbre-a-came/S3",
+      "kind": "conseils-section",
+      "why": "type de section S3, variété de balises/attributs",
+      "input": "<ul>\n<li><strong>Nombre de cames</strong> : admission seule (simple ACT) ou admission + échappement (double ACT). Ne pas confondre.</li>\n<li><strong>Profil des cames</strong> : spécifique à chaque motorisation. Vérifiez la référence OEM exacte.</li>\n<li><strong>Entraînement</strong> : par courroie ou chaîne. Le pignon/poulie de l'arbre doit correspondre au type d'entraînement.</li>\n<li><strong>Capteur de position</strong> : certains arbres intègrent une cible pour le capteur d'arbre à cames. Vérifiez la compatibilité.</li>\n<li><strong>Système de distribution variable (VVT)</strong> : si équipé, l'arbre intègre un phaser ou un actuateur. La référence est spécifique.</li>\n</ul><p class=\"mt-4 text-sm\"><strong>Pour aller plus loin :</strong> consultez notre <a href=\"/blog-pièces-auto/guide-achat/arbre-a-came\">guide d'achat arbre à came</a> — comparatif marques, critères de choix et prix.</p>",
+      "expected": "<ul> <li><strong>Nombre de cames</strong> : admission seule (simple ACT) ou admission + échappement (double ACT). Ne pas confondre.</li> <li><strong>Profil des cames</strong> : spécifique à chaque motorisation. Vérifiez la référence OEM exacte.</li> <li><strong>Entraînement</strong> : par courroie ou chaîne. Le pignon/poulie de l'arbre doit correspondre au type d'entraînement.</li> <li><strong>Capteur de position</strong> : certains arbres intègrent une cible pour le capteur d'arbre à cames. Vérifiez la compatibilité.</li> <li><strong>Système de distribution variable (VVT)</strong> : si équipé, l'arbre intègre un phaser ou un actuateur. La référence est spécifique.</li> </ul><p class=\"mt-4 text-sm\"><strong>Pour aller plus loin :</strong> consultez notre <a href=\"/blog-pièces-auto/guide-achat/arbre-a-came\">guide d'achat arbre à came</a> — comparatif marques, critères de choix et prix.</p>"
+    },
+    {
+      "id": "conseils/joint-de-cache-culbuteurs/S4_DEPOSE",
+      "kind": "conseils-section",
+      "why": "type de section S4_DEPOSE, variété de balises/attributs",
+      "input": "<p class=\"text-xs text-gray-500 mt-1 mb-2\"><p class=\"text-sm mb-3\">📖 Avant de démonter, consultez la <a href=\"/référence-auto/joint-de-cache-culbuteurs\">fiche technique Joint de cache culbuteurs</a> pour connaître les spécifications.</p>\n- Arrêtez le moteur et le laissé refroidir.</p><ol>\n<li>Ouvrez le capot moteur.</li>\n<li>Démontez le cache moteur si équipé.</li>\n<li>Localisez le <b>couvre culasse</b> et ses fixations.</li>\n<li>Démontez les canalisations monté sur le couvre culasse.</li>\n<li>Desserrez les vis de fixation du couvre culasse.</li>\n<li>Démontez le couvre culasse.</li>\n<li>Retirez le <b>joint cache <a href=\"/pieces/culbuteur-432.html\" class=\"seo-internal-link\" data-link-type=\"LinkGamme\"><b>Culbuteur</b></a></b> à l'aide d'un tournevis.</li></ol>",
+      "expected": "<p class=\"text-xs text-gray-500 mt-1 mb-2\"></p><p class=\"text-sm mb-3\">📖 Avant de démonter, consultez la <a href=\"/référence-auto/joint-de-cache-culbuteurs\">fiche technique Joint de cache culbuteurs</a> pour connaître les spécifications.</p> - Arrêtez le moteur et le laissé refroidir.<p></p><ol> <li>Ouvrez le capot moteur.</li> <li>Démontez le cache moteur si équipé.</li> <li>Localisez le <b>couvre culasse</b> et ses fixations.</li> <li>Démontez les canalisations monté sur le couvre culasse.</li> <li>Desserrez les vis de fixation du couvre culasse.</li> <li>Démontez le couvre culasse.</li> <li>Retirez le <b>joint cache <a href=\"/pieces/culbuteur-432.html\" class=\"seo-internal-link\" data-link-type=\"LinkGamme\"><b>Culbuteur</b></a></b> à l'aide d'un tournevis.</li></ol>"
+    },
+    {
+      "id": "conseils/galet-tendeur-de-courroie-d-accessoire/S4_REPOSE",
+      "kind": "conseils-section",
+      "why": "type de section S4_REPOSE, variété de balises/attributs",
+      "input": "<ol><li>Vérifiez que le galet tendeur neuf est identique à celui démonté.</li>\n<li>Remplacez la courroie d'accessoires.</li>\n<li>Remontez le galet tendeur.</li>\n<li>Serrez la fixation du galet tendeur.</li>\n<li>Mettre en place la courroie d'accessoires en respectant le cheminement.</li>\n<li>Rebranchez la batterie.\n<p class=\"text-sm mt-3\">✅ Après remontage, vérifiez les spécifications dans la <a href=\"/référence-auto/galet-tendeur-de-courroie-d-accessoire\">fiche technique Galet tendeur de <a href=\"/pieces/courroie-d-accessoire-10.html\" class=\"seo-internal-link\" data-link-type=\"LinkGamme\"><b>Courroie d'accessoire</b></a></a>.</p></li></ol>",
+      "expected": "<ol><li>Vérifiez que le galet tendeur neuf est identique à celui démonté.</li> <li>Remplacez la courroie d'accessoires.</li> <li>Remontez le galet tendeur.</li> <li>Serrez la fixation du galet tendeur.</li> <li>Mettre en place la courroie d'accessoires en respectant le cheminement.</li> <li>Rebranchez la batterie. <p class=\"text-sm mt-3\">✅ Après remontage, vérifiez les spécifications dans la <a href=\"/référence-auto/galet-tendeur-de-courroie-d-accessoire\">fiche technique Galet tendeur de </a><a href=\"/pieces/courroie-d-accessoire-10.html\" class=\"seo-internal-link\" data-link-type=\"LinkGamme\"><b>Courroie d'accessoire</b></a>.</p></li></ol>"
+    },
+    {
+      "id": "conseils/commande-de-ventilation/S5",
+      "kind": "conseils-section",
+      "why": "type de section S5, variété de balises/attributs",
+      "input": "<p>La commande de ventilation est souvent commandée alors que la panne provient de la résistance de pulseur ou des servomoteurs de volets. Voici les erreurs à éviter pour un diagnostic et un remplacement efficaces.</p>\n<table>\n<thead><tr><th>Erreur</th><th>Risque</th><th>Correctif</th></tr></thead>\n<tbody>\n<tr><td>Remplacer la commande sans tester la résistance de pulseur</td><td>La résistance grillée est la cause la plus fréquente de perte de vitesses de ventilation — la commande neuve ne résoudra pas le problème</td><td>Tester la résistance de pulseur en mesurant sa continuité et sa valeur ohmique avant de commander la commande de ventilation</td></tr>\n<tr><td>Confondre panne de pulseur d'air et défaut de commande</td><td>Si aucune vitesse ne fonctionne, le pulseur ou son alimentation est en cause — remplacer la commande n'a aucun effet</td><td>Alimenter le pulseur directement sur la batterie (test hors circuit) pour confirmer qu'il tourne à toutes les vitesses avant diagnostic commande</td></tr>\n<tr><td>Débrancher les connecteurs sans couper la batterie</td><td>Le circuit de ventilation est sous tension permanente — un court-circuit sur le connecteur peut griller la commande neuve ou endommager le calculateur</td><td>Débrancher la borne négative de la batterie avant tout démontage de la commande sous la planche de bord</td></tr>\n<tr><td>Forcer les boutons rotatifs lors du démontage</td><td>Les axes des boutons rotatifs sont fragiles — tirer latéralement casse l'axe et rend la commande inutilisable</td><td>Tirer les boutons rotatifs droit dans l'axe, sans effort latéral ni torsion</td></tr>\n<tr><td>Choisir une commande générique adaptable</td><td>Incompatibilité avec le calculateur de climatisation — les volets peuvent ne pas répondre ou l'affichage rester partiellement éteint</td><td>Privilégier la pièce OE ou un équipementier de rang 1 (Denso, Valeo) en vérifiant la référence constructeur exacte</td></tr>\n<tr><td>Omettre de tester toutes les vitesses et sorties d'air après montage</td><td>Un connecteur mal encliqué laisse silencieusement des vitesses ou des volets inactifs</td><td>Tester chaque vitesse (positions 1 à 4 min.), chaque sortie d'air (pied, tableau de bord, dégivrage), la température et l'AC après remontage</td></tr>\n</tbody>\n</table>",
+      "expected": "<p>La commande de ventilation est souvent commandée alors que la panne provient de la résistance de pulseur ou des servomoteurs de volets. Voici les erreurs à éviter pour un diagnostic et un remplacement efficaces.</p> <table> <thead><tr><th>Erreur</th><th>Risque</th><th>Correctif</th></tr></thead> <tbody> <tr><td>Remplacer la commande sans tester la résistance de pulseur</td><td>La résistance grillée est la cause la plus fréquente de perte de vitesses de ventilation — la commande neuve ne résoudra pas le problème</td><td>Tester la résistance de pulseur en mesurant sa continuité et sa valeur ohmique avant de commander la commande de ventilation</td></tr> <tr><td>Confondre panne de pulseur d'air et défaut de commande</td><td>Si aucune vitesse ne fonctionne, le pulseur ou son alimentation est en cause — remplacer la commande n'a aucun effet</td><td>Alimenter le pulseur directement sur la batterie (test hors circuit) pour confirmer qu'il tourne à toutes les vitesses avant diagnostic commande</td></tr> <tr><td>Débrancher les connecteurs sans couper la batterie</td><td>Le circuit de ventilation est sous tension permanente — un court-circuit sur le connecteur peut griller la commande neuve ou endommager le calculateur</td><td>Débrancher la borne négative de la batterie avant tout démontage de la commande sous la planche de bord</td></tr> <tr><td>Forcer les boutons rotatifs lors du démontage</td><td>Les axes des boutons rotatifs sont fragiles — tirer latéralement casse l'axe et rend la commande inutilisable</td><td>Tirer les boutons rotatifs droit dans l'axe, sans effort latéral ni torsion</td></tr> <tr><td>Choisir une commande générique adaptable</td><td>Incompatibilité avec le calculateur de climatisation — les volets peuvent ne pas répondre ou l'affichage rester partiellement éteint</td><td>Privilégier la pièce OE ou un équipementier de rang 1 (Denso, Valeo) en vérifiant la référence constructeur exacte</td></tr> <tr><td>Omettre de tester toutes les vitesses et sorties d'air après montage</td><td>Un connecteur mal encliqué laisse silencieusement des vitesses ou des volets inactifs</td><td>Tester chaque vitesse (positions 1 à 4 min.), chaque sortie d'air (pied, tableau de bord, dégivrage), la température et l'AC après remontage</td></tr> </tbody> </table>"
+    },
+    {
+      "id": "conseils/maitre-cylindre-de-frein/S6",
+      "kind": "conseils-section",
+      "why": "type de section S6, variété de balises/attributs",
+      "input": "<div class=\"conseil-section\">\n<h4>Contrôles statiques</h4>\n<ul>\n<li>Vérifier l'absence de fuite à tous les raccords hydrauliques et entre le maître-cylindre et le servo-frein</li>\n<li>Contrôler le niveau de liquide dans le bocal (entre MIN et MAX)</li>\n<li>Pomper la pédale : elle doit devenir dure et ne pas s'enfoncer progressivement (signe d'air résiduel ou de fuite interne)</li>\n<li>Maintenir la pédale enfoncée 30 secondes : elle ne doit pas descendre (test de fuite interne)</li>\n</ul>\n<h4>Essai routier progressif</h4>\n<ul>\n<li>Démarrer sur parking : freinages doux à 10 km/h, vérifier la progressivité de la pédale</li>\n<li>Augmenter à 30, 50, puis 70 km/h avec des freinages normaux</li>\n<li>Freinage d'urgence à 50 km/h sur route dégagée : la pédale doit rester ferme et le véhicule freiner droit</li>\n<li>Après 10 km, vérifier le niveau du bocal (il ne doit pas avoir baissé)</li>\n</ul>\n<div class=\"warning-box\"><strong>⚠️ Arrêter immédiatement si :</strong> pédale molle ou qui s'enfonce, perte de liquide visible, distance de freinage anormale, pédale qui descend lentement pied maintenu.</div>\n</div>\n<p class=\"text-sm mt-3\">🚨 <a href=\"/diagnostic-auto/bruit-maitre-cylindre-de-frein\">Bruit Maître cylindre de frein : causes et diagnostic</a></p>",
+      "expected": "<div class=\"conseil-section\"> <h4>Contrôles statiques</h4> <ul> <li>Vérifier l'absence de fuite à tous les raccords hydrauliques et entre le maître-cylindre et le servo-frein</li> <li>Contrôler le niveau de liquide dans le bocal (entre MIN et MAX)</li> <li>Pomper la pédale : elle doit devenir dure et ne pas s'enfoncer progressivement (signe d'air résiduel ou de fuite interne)</li> <li>Maintenir la pédale enfoncée 30 secondes : elle ne doit pas descendre (test de fuite interne)</li> </ul> <h4>Essai routier progressif</h4> <ul> <li>Démarrer sur parking : freinages doux à 10 km/h, vérifier la progressivité de la pédale</li> <li>Augmenter à 30, 50, puis 70 km/h avec des freinages normaux</li> <li>Freinage d'urgence à 50 km/h sur route dégagée : la pédale doit rester ferme et le véhicule freiner droit</li> <li>Après 10 km, vérifier le niveau du bocal (il ne doit pas avoir baissé)</li> </ul> <div class=\"warning-box\"><strong>⚠️ Arrêter immédiatement si :</strong> pédale molle ou qui s'enfonce, perte de liquide visible, distance de freinage anormale, pédale qui descend lentement pied maintenu.</div> </div> <p class=\"text-sm mt-3\">🚨 <a href=\"/diagnostic-auto/bruit-maitre-cylindre-de-frein\">Bruit Maître cylindre de frein : causes et diagnostic</a></p>"
+    },
+    {
+      "id": "conseils/sonde-de-refroidissement/S7",
+      "kind": "conseils-section",
+      "why": "type de section S7, variété de balises/attributs",
+      "input": "<div class=\"faq-section\" itemscope itemtype=\"https://schema.org/FAQPage\"><div itemscope itemprop=\"mainEntity\" itemtype=\"https://schema.org/Question\"><h3 itemprop=\"name\">Quel est le prix d'un sonde de refroidissement ?</h3><div itemscope itemprop=\"acceptedAnswer\" itemtype=\"https://schema.org/Answer\"><p itemprop=\"text\">Le prix varie selon le véhicule et la marque. Utilisez notre sélecteur pour trouver le sonde de refroidissement compatible avec votre véhicule et comparer les tarifs des différents équipementiers.</p></div></div><div itemscope itemprop=\"mainEntity\" itemtype=\"https://schema.org/Question\"><h3 itemprop=\"name\">Comment savoir si mon sonde de refroidissement est à changer ?</h3><div itemscope itemprop=\"acceptedAnswer\" itemtype=\"https://schema.org/Answer\"><p itemprop=\"text\">Les signes d'usure les plus courants sont détaillés dans la section diagnostic ci-dessus. En cas de doute, faites contrôler la pièce par un professionnel.</p></div></div><div itemscope itemprop=\"mainEntity\" itemtype=\"https://schema.org/Question\"><h3 itemprop=\"name\">Peut-on rouler avec un sonde de refroidissement défaillant ?</h3><div itemscope itemprop=\"acceptedAnswer\" itemtype=\"https://schema.org/Answer\"><p itemprop=\"text\">Cela dépend de la gravité du dysfonctionnement et du rôle de la pièce dans la sécurité du véhicule. Consultez la section symptômes pour évaluer l'urgence du remplacement.</p></div></div></div><hr>- <a href=\"/pièces/<a href=\"/pieces/thermostat-316.html\" class=\"seo-internal-link\" data-link-type=\"LinkGamme\"><b>Thermostat</b></a>-316.html\"><b>Thermostat</b></a>.<br>- <b><a href=\"/pièces/pompe-a-eau-1260.html\"><a href=\"/pieces/pompe-a-eau-1260.html\" class=\"seo-internal-link\" data-link-type=\"LinkGamme\"><b>Pompe à eau</b></a></a></b>.\n<p class=\"text-sm mt-3\">📖 <a href=\"/référence-auto/sonde-de-refroidissement\">Fiche technique Sonde de refroidissement</a> — intervalles et spécifications d’entretien.</p>",
+      "expected": "<div class=\"faq-section\"><div><h3>Quel est le prix d'un sonde de refroidissement ?</h3><div><p>Le prix varie selon le véhicule et la marque. Utilisez notre sélecteur pour trouver le sonde de refroidissement compatible avec votre véhicule et comparer les tarifs des différents équipementiers.</p></div></div><div><h3>Comment savoir si mon sonde de refroidissement est à changer ?</h3><div><p>Les signes d'usure les plus courants sont détaillés dans la section diagnostic ci-dessus. En cas de doute, faites contrôler la pièce par un professionnel.</p></div></div><div><h3>Peut-on rouler avec un sonde de refroidissement défaillant ?</h3><div><p>Cela dépend de la gravité du dysfonctionnement et du rôle de la pièce dans la sécurité du véhicule. Consultez la section symptômes pour évaluer l'urgence du remplacement.</p></div></div></div><hr>- <a href=\"/pièces/<a href=\" class=\"seo-internal-link\" data-link-type=\"LinkGamme\"><b>Thermostat</b></a>-316.html\"&gt;<b>Thermostat</b>.<br>- <b><a href=\"/pièces/pompe-a-eau-1260.html\"></a><a href=\"/pieces/pompe-a-eau-1260.html\" class=\"seo-internal-link\" data-link-type=\"LinkGamme\"><b>Pompe à eau</b></a></b>. <p class=\"text-sm mt-3\">📖 <a href=\"/référence-auto/sonde-de-refroidissement\">Fiche technique Sonde de refroidissement</a> — intervalles et spécifications d’entretien.</p>"
+    },
+    {
+      "id": "conseils/carter-d-huile/S8",
+      "kind": "conseils-section",
+      "why": "type de section S8, variété de balises/attributs",
+      "input": "<details><summary><b>Comment choisir Carter d'huile compatible avec mon véhicule ?</b></summary><p>Renseignez marque, modèle, type moteur et année, puis vérifiez la référence</p></details>\n<details><summary><b>Quand remplacer Carter d'huile ?</b></summary><p>En cas de fuite d huile importante sous le moteur ou de dégradation mesurable,</p></details>\n<details><summary><b>Puis-je monter Carter d'huile sans vérification atelier ?</b></summary><p>Le montage peut exiger controles de couple, alignement et références.</p></details>",
+      "expected": "<b>Comment choisir Carter d'huile compatible avec mon véhicule ?</b><p>Renseignez marque, modèle, type moteur et année, puis vérifiez la référence</p> <b>Quand remplacer Carter d'huile ?</b><p>En cas de fuite d huile importante sous le moteur ou de dégradation mesurable,</p> <b>Puis-je monter Carter d'huile sans vérification atelier ?</b><p>Le montage peut exiger controles de couple, alignement et références.</p>"
+    },
+    {
+      "id": "conseils/alternateur/S_GARAGE",
+      "kind": "conseils-section",
+      "why": "type de section S_GARAGE, variété de balises/attributs",
+      "input": "<div class=\"garage-callout\"><p><strong>Nous vous recommandons de confier cette intervention à un professionnel :</strong></p><br>- Plusieurs causes possibles de défaillance (3 identifiées) nécessitent un diagnostic professionnel<br><br><p>Un garagiste qualifié dispose de l'outillage et de l'expérience nécessaires pour effectuer cette opération en toute sécurité.</p></div>",
+      "expected": "<div class=\"garage-callout\"><p><strong>Nous vous recommandons de confier cette intervention à un professionnel :</strong></p><br>- Plusieurs causes possibles de défaillance (3 identifiées) nécessitent un diagnostic professionnel<br><br><p>Un garagiste qualifié dispose de l'outillage et de l'expérience nécessaires pour effectuer cette opération en toute sécurité.</p></div>"
+    },
+    {
+      "id": "r1/sg-content-brut",
+      "kind": "r1-sg-content",
+      "why": "sg_content brut de la page gamme (entrée de extractEditorialBlocks)",
+      "input": "<h2>Filtre à huile voiture : rôle, types de montage et références</h2>\n<p>Le <strong>filtre à huile</strong> est une pièce d'usure essentielle du circuit de lubrification de votre moteur. Sa fonction principale est de <strong>retenir les impuretés métalliques</strong>, les résidus de combustion et les microparticules qui circulent dans l'huile moteur. Sans filtration efficace, ces contaminants attaquent les surfaces internes — pistons, bielles, arbre à cames, coussinets — et provoquent une usure prématurée pouvant réduire la durée de vie du moteur de 30 à 50 %. Le <strong>filtre à huile moteur</strong> se remplace systématiquement à chaque vidange, soit entre 15 000 et 30 000 km selon les préconisations constructeur, ou au minimum une fois par an. <a href=\"/reference-auto/filtre-a-huile\">En savoir plus sur le filtre à huile</a>.</p>\n<p>Deux grandes familles de montage existent : le filtre <strong>vissable</strong> (spin-on), qui se visse directement sur le bloc moteur, et le filtre <strong>cartouche</strong> (élément filtrant), inséré dans un boîtier fixe. Le type de montage dépend du constructeur et de la motorisation. Les moteurs diesel modernes (1.5 dCi, 1.6 HDI, 2.0 TDI) utilisent majoritairement des filtres cartouche, tandis que les moteurs essence plus anciens conservent souvent le montage vissable. La <strong>pression différentielle</strong> supportée, le diamètre du filetage et la présence d'un clapet anti-retour varient d'une référence à l'autre — d'où l'importance de sélectionner la pièce exacte pour votre véhicule.</p>\n\n<h2>Filtre à huile : trouvez la référence compatible avec votre véhicule</h2>\n<p>Un même modèle de voiture peut nécessiter des filtres à huile différents selon la motorisation et l'année de fabrication. Par exemple, une Renault Clio équipée d'un 1.5 dCi n'utilise pas le même filtre qu'une version 1.2 essence. C'est pourquoi notre sélecteur de compatibilité est indispensable : saisissez votre <strong>marque</strong>, votre <strong>modèle</strong> et votre <strong>motorisation</strong> pour afficher uniquement les références 100 % compatibles. En cas de doute, le <strong>code moteur</strong> figure sur votre carte grise (case D.2).</p>\n<ul>\n<li>Un même modèle peut avoir jusqu'à 8 montages différents selon la motorisation (1.5 dCi, 1.6 HDI, 2.0 TDI, 1.2 PureTech…)</li>\n<li>Le sélecteur affiche uniquement les <strong>filtres à huile</strong> vérifiés compatibles avec votre moteur</li>\n<li>Plus de <strong>22 450 références</strong> disponibles couvrant plus de 5 200 motorisations</li>\n<li>Compatibilité constructeur vérifiée : Renault, Peugeot, Citroën, Volkswagen, BMW, Audi, Fiat, Dacia et 50+ marques</li>\n</ul>\n\n<h2>Marques de filtre à huile : BOSCH, MANN FILTER, PURFLUX</h2>\n<p>Les <strong>équipementiers de première monte</strong> (OE) fabriquent les filtres installés en usine par les constructeurs automobiles. Sur notre catalogue, vous retrouvez les marques de confiance qui fournissent directement les chaînes de production :</p>\n<ul>\n<li><strong>BOSCH</strong> (1 237 références) — équipementier OE pour Renault, Volkswagen, Mercedes. Technologie de filtration multi-couches, clapet anti-retour intégré, certifié ISO 4548-12</li>\n<li><strong>MANN FILTER</strong> (1 913 références) — leader mondial de la filtration, fournisseur OE BMW, Audi, Porsche. Média filtrant haute efficacité, résistance pression jusqu'à 2 bars</li>\n<li><strong>PURFLUX</strong> — spécialiste français, fournisseur OE Renault et PSA. Cartouches à élément filtrant avec joint torique pré-positionné</li>\n<li><strong>KNECHT/MAHLE</strong> (505 références) — équipementier OE Mercedes, BMW. Double filtration brevetée</li>\n<li><strong>WIX FILTERS</strong> (808 références) — alternative OES reconnue, bon rapport qualité-prix</li>\n</ul>\n<p>Tous les filtres proposés respectent les normes <strong>ISO 4548-12</strong> (efficacité de filtration multi-pass) et <strong>ISO 4548-1</strong> (résistance pression différentielle). Pour les moteurs avec spécification huile longlife (VW 502.00, BMW LL-01), vérifiez que le filtre est certifié compatible sur la fiche produit.</p>\n\n<h2>Filtre à huile prix : fourchettes selon le type et la marque</h2>\n<p>Le <strong>prix d'un filtre à huile</strong> varie de 5 € à 30 € selon la marque, le type de montage et le véhicule. Voici les fourchettes constatées :</p>\n<ul>\n<li><strong>Éco (4-9 €)</strong> — marques alternatives, filtration standard, convient pour un usage quotidien sans exigence longlife</li>\n<li><strong>Standard OES (9-15 €)</strong> — BOSCH, MANN FILTER, PURFLUX : qualité équivalente première monte, rapport qualité-prix optimal</li>\n<li><strong>Premium (15-30 €)</strong> — filtres haute performance, double filtration, compatibilité huile longlife, clapet anti-drain back renforcé</li>\n<li><strong>OE/Spécial (30 €+)</strong> — référence constructeur exacte, concessions et ateliers agréés</li>\n</ul>\n<p>Le coût d'une <strong>vidange complète en atelier</strong> (huile + filtre + main d'œuvre) se situe entre 80 et 150 € selon le véhicule et la viscosité d'huile requise. <a href=\"/blog-pieces-auto/guide-achat/filtre-a-huile\">Guide d'achat filtre à huile : critères, budget et marques recommandées</a>.</p>\n\n<h2>Types de filtre à huile : vissable, cartouche et centrifuge</h2>\n<p>Le choix du type de filtre dépend de votre moteur. Ne confondez pas les trois familles principales :</p>\n<ul>\n<li><strong>Filtre vissable (spin-on)</strong> — boîtier métallique intégral qui se visse sur le bloc moteur. Remplacement simple : dévisser l'ancien, graisser le joint du neuf, visser à la main + ¾ de tour. Courant sur les moteurs essence et diesel anciens</li>\n<li><strong>Filtre cartouche (élément filtrant)</strong> — média filtrant remplaçable dans un boîtier plastique ou alu fixe. Nécessite l'ouverture du couvercle et le remplacement du joint torique. Moteurs diesel modernes (HDI, dCi, TDI, JTDM) et essence récents (PureTech, TSI)</li>\n<li><strong>Filtre centrifuge</strong> — utilisé en complément sur certains moteurs industriels ou poids lourds, rare en automobile légère</li>\n</ul>\n<p>Attention à ne pas confondre le <strong>filtre à huile moteur</strong> avec le <a href=\"/pieces/filtre-a-air\">filtre à air</a> (circuit admission), le <a href=\"/pieces/filtre-a-carburant\">filtre à carburant</a> (circuit essence/diesel) ou le <a href=\"/pieces/filtre-de-boite-auto\">filtre à huile de boîte automatique</a> (transmission). Ce sont des pièces distinctes avec des références différentes.</p>\n\n<h2>Commander votre filtre à huile en stock — livraison rapide</h2>\n<p>Sélectionnez votre <strong>marque → modèle → motorisation</strong> dans le sélecteur ci-dessus. Le sélecteur affiche instantanément les filtres à huile compatibles avec votre véhicule, avec le prix, la disponibilité et la marque. Votre <strong>filtre à huile neuf</strong> est expédié le jour même pour toute commande passée avant 15h, avec livraison sous 24 à 48h partout en France.</p>\n<p>Pensez à commander en même temps les pièces associées pour votre vidange complète : <a href=\"/pieces/bouchon-de-vidange\">bouchon de vidange</a>, <a href=\"/pieces/filtre-a-air\">filtre à air</a> et huile moteur adaptée à votre spécification constructeur. <a href=\"/blog-pieces-auto/conseils/comment-changer-un-filtre-a-huile\">Conseils : changer un filtre à huile étape par étape</a>.</p>\n\n<h2>Questions fréquentes sur le filtre à huile</h2>\n<details><summary>Combien coûte un filtre à huile ?</summary>\n<p>Entre 5 € et 30 € selon la marque et le type (vissable ou cartouche). Un filtre OES (BOSCH, MANN FILTER) coûte en moyenne 9 à 15 €. La vidange complète en atelier (huile + filtre + main d'œuvre) revient entre 80 et 150 €.</p>\n</details>\n<details><summary>Quel est le prix d'un filtre à huile ?</summary>\n<p>Le prix dépend de la marque et du véhicule. Comptez 4-9 € en éco, 9-15 € en standard OES, 15-30 € en premium. Les filtres cartouche sont généralement plus chers que les vissables.</p>\n</details>\n<details><summary>Quel filtre à huile pour ma voiture ?</summary>\n<p>Utilisez le sélecteur en haut de page : saisissez marque, modèle et motorisation. Le sélecteur affiche uniquement les références 100 % compatibles avec votre moteur. En cas de doute, le code moteur est indiqué case D.2 de votre carte grise.</p>\n</details>\n<details><summary>Où acheter un filtre à huile ?</summary>\n<p>Directement sur AutoMecanik.com : plus de 22 450 références en stock, prix dégressifs, livraison 24-48h. Sélectionnez votre véhicule pour voir les filtres compatibles.</p>\n</details>\n<details><summary>Combien de temps pour la livraison d'un filtre à huile ?</summary>\n<p>Expédition le jour même avant 15h, livraison sous 24 à 48h en France métropolitaine. Suivi de colis inclus.</p>\n</details>\n<details><summary>Quel est le prix d'un filtre à huile diesel ?</summary>\n<p>Les filtres diesel (cartouche) coûtent en moyenne 10 à 20 €. Les motorisations 1.5 dCi, 1.6 HDI ou 2.0 TDI nécessitent souvent un filtre cartouche plus large que les versions essence.</p>\n</details>\n<p class=\"mt-3 text-sm\"><a href=\"/diagnostic-auto/filtre-a-huile\">Diagnostic filtre à huile : symptômes et causes de défaillance</a></p>",
+      "expected": "<h2>Filtre à huile voiture : rôle, types de montage et références</h2> <p>Le <strong>filtre à huile</strong> est une pièce d'usure essentielle du circuit de lubrification de votre moteur. Sa fonction principale est de <strong>retenir les impuretés métalliques</strong>, les résidus de combustion et les microparticules qui circulent dans l'huile moteur. Sans filtration efficace, ces contaminants attaquent les surfaces internes — pistons, bielles, arbre à cames, coussinets — et provoquent une usure prématurée pouvant réduire la durée de vie du moteur de 30 à 50 %. Le <strong>filtre à huile moteur</strong> se remplace systématiquement à chaque vidange, soit entre 15 000 et 30 000 km selon les préconisations constructeur, ou au minimum une fois par an. <a href=\"/reference-auto/filtre-a-huile\">En savoir plus sur le filtre à huile</a>.</p> <p>Deux grandes familles de montage existent : le filtre <strong>vissable</strong> (spin-on), qui se visse directement sur le bloc moteur, et le filtre <strong>cartouche</strong> (élément filtrant), inséré dans un boîtier fixe. Le type de montage dépend du constructeur et de la motorisation. Les moteurs diesel modernes (1.5 dCi, 1.6 HDI, 2.0 TDI) utilisent majoritairement des filtres cartouche, tandis que les moteurs essence plus anciens conservent souvent le montage vissable. La <strong>pression différentielle</strong> supportée, le diamètre du filetage et la présence d'un clapet anti-retour varient d'une référence à l'autre — d'où l'importance de sélectionner la pièce exacte pour votre véhicule.</p> <h2>Filtre à huile : trouvez la référence compatible avec votre véhicule</h2> <p>Un même modèle de voiture peut nécessiter des filtres à huile différents selon la motorisation et l'année de fabrication. Par exemple, une Renault Clio équipée d'un 1.5 dCi n'utilise pas le même filtre qu'une version 1.2 essence. C'est pourquoi notre sélecteur de compatibilité est indispensable : saisissez votre <strong>marque</strong>, votre <strong>modèle</strong> et votre <strong>motorisation</strong> pour afficher uniquement les références 100 % compatibles. En cas de doute, le <strong>code moteur</strong> figure sur votre carte grise (case D.2).</p> <ul> <li>Un même modèle peut avoir jusqu'à 8 montages différents selon la motorisation (1.5 dCi, 1.6 HDI, 2.0 TDI, 1.2 PureTech…)</li> <li>Le sélecteur affiche uniquement les <strong>filtres à huile</strong> vérifiés compatibles avec votre moteur</li> <li>Plus de <strong>22 450 références</strong> disponibles couvrant plus de 5 200 motorisations</li> <li>Compatibilité constructeur vérifiée : Renault, Peugeot, Citroën, Volkswagen, BMW, Audi, Fiat, Dacia et 50+ marques</li> </ul> <h2>Marques de filtre à huile : BOSCH, MANN FILTER, PURFLUX</h2> <p>Les <strong>équipementiers de première monte</strong> (OE) fabriquent les filtres installés en usine par les constructeurs automobiles. Sur notre catalogue, vous retrouvez les marques de confiance qui fournissent directement les chaînes de production :</p> <ul> <li><strong>BOSCH</strong> (1 237 références) — équipementier OE pour Renault, Volkswagen, Mercedes. Technologie de filtration multi-couches, clapet anti-retour intégré, certifié ISO 4548-12</li> <li><strong>MANN FILTER</strong> (1 913 références) — leader mondial de la filtration, fournisseur OE BMW, Audi, Porsche. Média filtrant haute efficacité, résistance pression jusqu'à 2 bars</li> <li><strong>PURFLUX</strong> — spécialiste français, fournisseur OE Renault et PSA. Cartouches à élément filtrant avec joint torique pré-positionné</li> <li><strong>KNECHT/MAHLE</strong> (505 références) — équipementier OE Mercedes, BMW. Double filtration brevetée</li> <li><strong>WIX FILTERS</strong> (808 références) — alternative OES reconnue, bon rapport qualité-prix</li> </ul> <p>Tous les filtres proposés respectent les normes <strong>ISO 4548-12</strong> (efficacité de filtration multi-pass) et <strong>ISO 4548-1</strong> (résistance pression différentielle). Pour les moteurs avec spécification huile longlife (VW 502.00, BMW LL-01), vérifiez que le filtre est certifié compatible sur la fiche produit.</p> <h2>Filtre à huile prix : fourchettes selon le type et la marque</h2> <p>Le <strong>prix d'un filtre à huile</strong> varie de 5 € à 30 € selon la marque, le type de montage et le véhicule. Voici les fourchettes constatées :</p> <ul> <li><strong>Éco (4-9 €)</strong> — marques alternatives, filtration standard, convient pour un usage quotidien sans exigence longlife</li> <li><strong>Standard OES (9-15 €)</strong> — BOSCH, MANN FILTER, PURFLUX : qualité équivalente première monte, rapport qualité-prix optimal</li> <li><strong>Premium (15-30 €)</strong> — filtres haute performance, double filtration, compatibilité huile longlife, clapet anti-drain back renforcé</li> <li><strong>OE/Spécial (30 €+)</strong> — référence constructeur exacte, concessions et ateliers agréés</li> </ul> <p>Le coût d'une <strong>vidange complète en atelier</strong> (huile + filtre + main d'œuvre) se situe entre 80 et 150 € selon le véhicule et la viscosité d'huile requise. <a href=\"/blog-pieces-auto/guide-achat/filtre-a-huile\">Guide d'achat filtre à huile : critères, budget et marques recommandées</a>.</p> <h2>Types de filtre à huile : vissable, cartouche et centrifuge</h2> <p>Le choix du type de filtre dépend de votre moteur. Ne confondez pas les trois familles principales :</p> <ul> <li><strong>Filtre vissable (spin-on)</strong> — boîtier métallique intégral qui se visse sur le bloc moteur. Remplacement simple : dévisser l'ancien, graisser le joint du neuf, visser à la main + ¾ de tour. Courant sur les moteurs essence et diesel anciens</li> <li><strong>Filtre cartouche (élément filtrant)</strong> — média filtrant remplaçable dans un boîtier plastique ou alu fixe. Nécessite l'ouverture du couvercle et le remplacement du joint torique. Moteurs diesel modernes (HDI, dCi, TDI, JTDM) et essence récents (PureTech, TSI)</li> <li><strong>Filtre centrifuge</strong> — utilisé en complément sur certains moteurs industriels ou poids lourds, rare en automobile légère</li> </ul> <p>Attention à ne pas confondre le <strong>filtre à huile moteur</strong> avec le <a href=\"/pieces/filtre-a-air\">filtre à air</a> (circuit admission), le <a href=\"/pieces/filtre-a-carburant\">filtre à carburant</a> (circuit essence/diesel) ou le <a href=\"/pieces/filtre-de-boite-auto\">filtre à huile de boîte automatique</a> (transmission). Ce sont des pièces distinctes avec des références différentes.</p> <h2>Commander votre filtre à huile en stock — livraison rapide</h2> <p>Sélectionnez votre <strong>marque → modèle → motorisation</strong> dans le sélecteur ci-dessus. Le sélecteur affiche instantanément les filtres à huile compatibles avec votre véhicule, avec le prix, la disponibilité et la marque. Votre <strong>filtre à huile neuf</strong> est expédié le jour même pour toute commande passée avant 15h, avec livraison sous 24 à 48h partout en France.</p> <p>Pensez à commander en même temps les pièces associées pour votre vidange complète : <a href=\"/pieces/bouchon-de-vidange\">bouchon de vidange</a>, <a href=\"/pieces/filtre-a-air\">filtre à air</a> et huile moteur adaptée à votre spécification constructeur. <a href=\"/blog-pieces-auto/conseils/comment-changer-un-filtre-a-huile\">Conseils : changer un filtre à huile étape par étape</a>.</p> <h2>Questions fréquentes sur le filtre à huile</h2> Combien coûte un filtre à huile ? <p>Entre 5 € et 30 € selon la marque et le type (vissable ou cartouche). Un filtre OES (BOSCH, MANN FILTER) coûte en moyenne 9 à 15 €. La vidange complète en atelier (huile + filtre + main d'œuvre) revient entre 80 et 150 €.</p> Quel est le prix d'un filtre à huile ? <p>Le prix dépend de la marque et du véhicule. Comptez 4-9 € en éco, 9-15 € en standard OES, 15-30 € en premium. Les filtres cartouche sont généralement plus chers que les vissables.</p> Quel filtre à huile pour ma voiture ? <p>Utilisez le sélecteur en haut de page : saisissez marque, modèle et motorisation. Le sélecteur affiche uniquement les références 100 % compatibles avec votre moteur. En cas de doute, le code moteur est indiqué case D.2 de votre carte grise.</p> Où acheter un filtre à huile ? <p>Directement sur AutoMecanik.com : plus de 22 450 références en stock, prix dégressifs, livraison 24-48h. Sélectionnez votre véhicule pour voir les filtres compatibles.</p> Combien de temps pour la livraison d'un filtre à huile ? <p>Expédition le jour même avant 15h, livraison sous 24 à 48h en France métropolitaine. Suivi de colis inclus.</p> Quel est le prix d'un filtre à huile diesel ? <p>Les filtres diesel (cartouche) coûtent en moyenne 10 à 20 €. Les motorisations 1.5 dCi, 1.6 HDI ou 2.0 TDI nécessitent souvent un filtre cartouche plus large que les versions essence.</p> <p class=\"mt-3 text-sm\"><a href=\"/diagnostic-auto/filtre-a-huile\">Diagnostic filtre à huile : symptômes et causes de défaillance</a></p>"
+    },
+    {
+      "id": "r1/bloc-1",
+      "kind": "r1-bloc-editorial",
+      "why": "bloc éditorial déjà découpé, re-sanitisé au rendu",
+      "input": "<p>Notre sélection de filtres à huile couvre les principales marques de véhicules : Citroën, Renault, Peugeot, Volkswagen, BMW et plus de 50 autres marques. Compatibilité vérifiée par immatriculation ou saisie manuelle marque/modèle/motorisation.</p>\n<p>Les filtres à huile disponibles couvrent les motorisations essence et diesel, du moteur urbain compact aux motorisations longlife (VW 502.00, BMW LL-01). Filtres OEM ou équipementiers — Mann Filter, Mahle, Bosch, Purflux, WIX — qualité équivalente à l'origine, homologations constructeur vérifiables.</p>\n<p>Filtrez par marque de véhicule, modèle et motorisation pour identifier le filtre à huile moteur correspondant à votre véhicule. La sélection inclut les deux types principaux : filtre vissant spin-on et filtre cartouche à élément filtrant.</p>",
+      "expected": "<p>Notre sélection de filtres à huile couvre les principales marques de véhicules : Citroën, Renault, Peugeot, Volkswagen, BMW et plus de 50 autres marques. Compatibilité vérifiée par immatriculation ou saisie manuelle marque/modèle/motorisation.</p> <p>Les filtres à huile disponibles couvrent les motorisations essence et diesel, du moteur urbain compact aux motorisations longlife (VW 502.00, BMW LL-01). Filtres OEM ou équipementiers — Mann Filter, Mahle, Bosch, Purflux, WIX — qualité équivalente à l'origine, homologations constructeur vérifiables.</p> <p>Filtrez par marque de véhicule, modèle et motorisation pour identifier le filtre à huile moteur correspondant à votre véhicule. La sélection inclut les deux types principaux : filtre vissant spin-on et filtre cartouche à élément filtrant.</p>"
+    },
+    {
+      "id": "r1/bloc-2",
+      "kind": "r1-bloc-editorial",
+      "why": "bloc éditorial déjà découpé, re-sanitisé au rendu",
+      "input": "<h3>Questions fréquentes sur le filtre à huile</h3> Combien coûte un filtre à huile ? <p>Entre 5 € et 30 € selon la marque et le type (vissable ou cartouche). Un filtre OES (BOSCH, MANN FILTER) coûte en moyenne 9 à 15 €. La vidange complète en atelier (huile + filtre + main d'œuvre) revient entre 80 et 150 €.</p> Quel est le prix d'un filtre à huile ? <p>Le prix dépend de la marque et du véhicule. Comptez 4-9 € en éco, 9-15 € en standard OES, 15-30 € en premium. Les filtres cartouche sont généralement plus chers que les vissables.</p> Quel filtre à huile pour ma voiture ? <p>Utilisez le sélecteur en haut de page : saisissez marque, modèle et motorisation. Le sélecteur affiche uniquement les références 100 % compatibles avec votre moteur. En cas de doute, le code moteur est indiqué case D.2 de votre carte grise.</p> Où acheter un filtre à huile ? <p>Directement sur AutoMecanik.com : plus de 22 450 références en stock, prix dégressifs, livraison 24-48h. Sélectionnez votre véhicule pour voir les filtres compatibles.</p> Combien de temps pour la livraison d'un filtre à huile ? <p>Expédition le jour même avant 15h, livraison sous 24 à 48h en France métropolitaine. Suivi de colis inclus.</p> Quel est le prix d'un filtre à huile diesel ? <p>Les filtres diesel (cartouche) coûtent en moyenne 10 à 20 €. Les motorisations 1.5 dCi, 1.6 HDI ou 2.0 TDI nécessitent souvent un filtre cartouche plus large que les versions essence.</p> <p class=\"mt-3 text-sm\"><a href=\"/diagnostic-auto/filtre-a-huile\">Diagnostic filtre à huile : symptômes et causes de défaillance</a></p>",
+      "expected": "<h3>Questions fréquentes sur le filtre à huile</h3> Combien coûte un filtre à huile ? <p>Entre 5 € et 30 € selon la marque et le type (vissable ou cartouche). Un filtre OES (BOSCH, MANN FILTER) coûte en moyenne 9 à 15 €. La vidange complète en atelier (huile + filtre + main d'œuvre) revient entre 80 et 150 €.</p> Quel est le prix d'un filtre à huile ? <p>Le prix dépend de la marque et du véhicule. Comptez 4-9 € en éco, 9-15 € en standard OES, 15-30 € en premium. Les filtres cartouche sont généralement plus chers que les vissables.</p> Quel filtre à huile pour ma voiture ? <p>Utilisez le sélecteur en haut de page : saisissez marque, modèle et motorisation. Le sélecteur affiche uniquement les références 100 % compatibles avec votre moteur. En cas de doute, le code moteur est indiqué case D.2 de votre carte grise.</p> Où acheter un filtre à huile ? <p>Directement sur AutoMecanik.com : plus de 22 450 références en stock, prix dégressifs, livraison 24-48h. Sélectionnez votre véhicule pour voir les filtres compatibles.</p> Combien de temps pour la livraison d'un filtre à huile ? <p>Expédition le jour même avant 15h, livraison sous 24 à 48h en France métropolitaine. Suivi de colis inclus.</p> Quel est le prix d'un filtre à huile diesel ? <p>Les filtres diesel (cartouche) coûtent en moyenne 10 à 20 €. Les motorisations 1.5 dCi, 1.6 HDI ou 2.0 TDI nécessitent souvent un filtre cartouche plus large que les versions essence.</p> <p class=\"mt-3 text-sm\"><a href=\"/diagnostic-auto/filtre-a-huile\">Diagnostic filtre à huile : symptômes et causes de défaillance</a></p>"
+    },
+    {
+      "id": "r1/bloc-3",
+      "kind": "r1-bloc-editorial",
+      "why": "bloc éditorial déjà découpé, re-sanitisé au rendu",
+      "input": "<h3>Filtre à huile : trouvez la référence compatible avec votre véhicule</h3> <p>Un même modèle de voiture peut nécessiter des filtres à huile différents selon la motorisation et l'année de fabrication. Par exemple, une Renault Clio équipée d'un 1.5 dCi n'utilise pas le même filtre qu'une version 1.2 essence. C'est pourquoi notre sélecteur de compatibilité est indispensable : saisissez votre <strong>marque</strong>, votre <strong>modèle</strong> et votre <strong>motorisation</strong> pour afficher uniquement les références 100 % compatibles. En cas de doute, le <strong>code moteur</strong> figure sur votre carte grise (case D.2).</p> <ul> <li>Un même modèle peut avoir jusqu'à 8 montages différents selon la motorisation (1.5 dCi, 1.6 HDI, 2.0 TDI, 1.2 PureTech…)</li> <li>Le sélecteur affiche uniquement les <strong>filtres à huile</strong> vérifiés compatibles avec votre moteur</li> <li>Plus de <strong>22 450 références</strong> disponibles couvrant plus de 5 200 motorisations</li> <li>Compatibilité constructeur vérifiée : Renault, Peugeot, Citroën, Volkswagen, BMW, Audi, Fiat, Dacia et 50+ marques</li> </ul>",
+      "expected": "<h3>Filtre à huile : trouvez la référence compatible avec votre véhicule</h3> <p>Un même modèle de voiture peut nécessiter des filtres à huile différents selon la motorisation et l'année de fabrication. Par exemple, une Renault Clio équipée d'un 1.5 dCi n'utilise pas le même filtre qu'une version 1.2 essence. C'est pourquoi notre sélecteur de compatibilité est indispensable : saisissez votre <strong>marque</strong>, votre <strong>modèle</strong> et votre <strong>motorisation</strong> pour afficher uniquement les références 100 % compatibles. En cas de doute, le <strong>code moteur</strong> figure sur votre carte grise (case D.2).</p> <ul> <li>Un même modèle peut avoir jusqu'à 8 montages différents selon la motorisation (1.5 dCi, 1.6 HDI, 2.0 TDI, 1.2 PureTech…)</li> <li>Le sélecteur affiche uniquement les <strong>filtres à huile</strong> vérifiés compatibles avec votre moteur</li> <li>Plus de <strong>22 450 références</strong> disponibles couvrant plus de 5 200 motorisations</li> <li>Compatibilité constructeur vérifiée : Renault, Peugeot, Citroën, Volkswagen, BMW, Audi, Fiat, Dacia et 50+ marques</li> </ul>"
+    },
+    {
+      "id": "r2/seo-content-1",
+      "kind": "r2-seo-content",
+      "why": "contenu SEO de la page produit-véhicule (spans imbriqués)",
+      "input": "<span><span><strong><span>La courroie d'accessoires</span></strong><span> de votre PEUGEOT PARTNER I assure le fonctionnement des différents équipements du véhicule.<br />L'état de la <strong>courroie d'accessoires</strong> doit être vérifier le bon état afin d'assurer l'actionnement: de l'<strong>alternateur à</strong> vérifier le bon état et optimiser les performances, de la <strong>pompe de direction assistée</strong> à vérifier le bon état et optimiser les performances, le <strong>compresseur de climatisation</strong> à vérifier le bon état et optimiser les performances. il faut aussi vérifier le bon état la pompe à eau et optimiser les performances.<br />Ces organes sont disponibles selon les options de votre PEUGEOT PARTNER I 1.9 D (Phase 1).<br />Automecanik vous propose des <strong>courroies d'accessoires</strong> à petit prix pour PEUGEOT PARTNER I 1.9 D (Phase 1) qui doivent être.<br />Choisissez la <strong>courroie d'accessoires</strong> selon la longueur et le nombre de nervure et selon les équipements du véhicule.<br />Nous vous conseillons de Courroie d'accessoire PEUGEOT PARTNER I, proposé au meilleur prix pour entraîner les accessoires du moteur. De Courroie d'accessoire PEUGEOT PARTNER I, proposé au meilleur prix pour entraîner les accessoires du moteur. De Courroie d'accessoire PEUGEOT PARTNER I, proposé au meilleur prix pour entraîner les accessoires du moteur.<br />.</span></span></span>",
+      "expected": "<span><span><strong><span>La courroie d'accessoires</span></strong><span> de votre PEUGEOT PARTNER I assure le fonctionnement des différents équipements du véhicule.<br>L'état de la <strong>courroie d'accessoires</strong> doit être vérifier le bon état afin d'assurer l'actionnement: de l'<strong>alternateur à</strong> vérifier le bon état et optimiser les performances, de la <strong>pompe de direction assistée</strong> à vérifier le bon état et optimiser les performances, le <strong>compresseur de climatisation</strong> à vérifier le bon état et optimiser les performances. il faut aussi vérifier le bon état la pompe à eau et optimiser les performances.<br>Ces organes sont disponibles selon les options de votre PEUGEOT PARTNER I 1.9 D (Phase 1).<br>Automecanik vous propose des <strong>courroies d'accessoires</strong> à petit prix pour PEUGEOT PARTNER I 1.9 D (Phase 1) qui doivent être.<br>Choisissez la <strong>courroie d'accessoires</strong> selon la longueur et le nombre de nervure et selon les équipements du véhicule.<br>Nous vous conseillons de Courroie d'accessoire PEUGEOT PARTNER I, proposé au meilleur prix pour entraîner les accessoires du moteur. De Courroie d'accessoire PEUGEOT PARTNER I, proposé au meilleur prix pour entraîner les accessoires du moteur. De Courroie d'accessoire PEUGEOT PARTNER I, proposé au meilleur prix pour entraîner les accessoires du moteur.<br>.</span></span></span>"
+    },
+    {
+      "id": "r2/seo-content-2",
+      "kind": "r2-seo-content",
+      "why": "contenu SEO de la page produit-véhicule (spans imbriqués)",
+      "input": "<span>Legalet tendeur de courroie d'accessoire de la PEUGEOT 207 va régler la tension de la courroie d'accessoires.<br />Automecanik vous recommande des galets tendeur de la courroie d'accessoires au meilleur prix pour PEUGEOT 207 1.6 HDI 16V qui doivent être.</span> <br /><span>Choisissez votre galet tendeur de courroie d'accessoireselon les dimenssions le type de fonctionnement manuel ou mécanique ou hydraulique de votre PEUGEOT 207 1.6 HDI 16V compatible et homologué pour entraîner les accessoires du moteur.<br />Nous vous conseillons lors de Galet tendeur de courroie d'accessoire PEUGEOT 207 pour assurer le bon fonctionnement des différents équipements du véhicule: de Galet tendeur de courroie d'accessoire PEUGEOT 207, compatible et homologué pour entraîner les accessoires du moteur. De Galet tendeur de courroie d'accessoire PEUGEOT 207, compatible et homologué pour entraîner les accessoires du moteur. De Galet tendeur de courroie d'accessoire PEUGEOT 207, compatible et homologué pour entraîner les accessoires du moteur. De Galet tendeur de courroie d'accessoire PEUGEOT 207, compatible et homologué pour entraîner les accessoires du moteur. De Galet tendeur de courroie d'accessoire PEUGEOT 207, compatible et homologué pour entraîner les accessoires du moteur.<br />.</span>",
+      "expected": "<span>Legalet tendeur de courroie d'accessoire de la PEUGEOT 207 va régler la tension de la courroie d'accessoires.<br>Automecanik vous recommande des galets tendeur de la courroie d'accessoires au meilleur prix pour PEUGEOT 207 1.6 HDI 16V qui doivent être.</span> <br><span>Choisissez votre galet tendeur de courroie d'accessoireselon les dimenssions le type de fonctionnement manuel ou mécanique ou hydraulique de votre PEUGEOT 207 1.6 HDI 16V compatible et homologué pour entraîner les accessoires du moteur.<br>Nous vous conseillons lors de Galet tendeur de courroie d'accessoire PEUGEOT 207 pour assurer le bon fonctionnement des différents équipements du véhicule: de Galet tendeur de courroie d'accessoire PEUGEOT 207, compatible et homologué pour entraîner les accessoires du moteur. De Galet tendeur de courroie d'accessoire PEUGEOT 207, compatible et homologué pour entraîner les accessoires du moteur. De Galet tendeur de courroie d'accessoire PEUGEOT 207, compatible et homologué pour entraîner les accessoires du moteur. De Galet tendeur de courroie d'accessoire PEUGEOT 207, compatible et homologué pour entraîner les accessoires du moteur. De Galet tendeur de courroie d'accessoire PEUGEOT 207, compatible et homologué pour entraîner les accessoires du moteur.<br>.</span>"
+    },
+    {
+      "id": "r2/seo-content-3",
+      "kind": "r2-seo-content",
+      "why": "contenu SEO de la page produit-véhicule (spans imbriqués)",
+      "input": "<span><span>Le <strong>compresseur de climatisation</strong> de votre PEUGEOT 406 assure le refroidissement de l'air avant d'arriver à l'habitacle pour le confort des passagers.<br />Automecanik vous offre des <strong>compresseurs de climatisation</strong> à tarif avantageux pour PEUGEOT 406 2.0 HDI (Phase 2) qui doivent être.<br />Choisissez votre <strong>compresseur de climatisation</strong> suivant le montage d'origine indiqué sur le compresseur ainsi que le numéro d'identification de votre PEUGEOT 406 2.0 HDI (Phase 2) certifié constructeur pour comprimer le fluide frigorigène.<br /><a href=\"https://www.automecanik.com/pieces/compresseur-de-climatisation-447.html\"><strong>Contrôler l'état de fonctionnement du compresseur de climatisation </strong></a>.<br />Nous vous conseillons de <span style=\"background-color:#fafbfc\"><span style=\"color:#222222\">Compresseur de climatisation PEUGEOT 406</span></span>, certifié constructeur pour comprimer le fluide frigorigène. De Compresseur de climatisation PEUGEOT 406, certifié constructeur pour comprimer le fluide frigorigène. De Compresseur de climatisation PEUGEOT 406, certifié constructeur pour comprimer le fluide frigorigène. De Compresseur de climatisation PEUGEOT 406, certifié constructeur pour comprimer le fluide frigorigène. De Compresseur de climatisation PEUGEOT 406, certifié constructeur pour comprimer le fluide frigorigène.<br />Attention:.<br />.</span></span></p><p>",
+      "expected": "<span><span>Le <strong>compresseur de climatisation</strong> de votre PEUGEOT 406 assure le refroidissement de l'air avant d'arriver à l'habitacle pour le confort des passagers.<br>Automecanik vous offre des <strong>compresseurs de climatisation</strong> à tarif avantageux pour PEUGEOT 406 2.0 HDI (Phase 2) qui doivent être.<br>Choisissez votre <strong>compresseur de climatisation</strong> suivant le montage d'origine indiqué sur le compresseur ainsi que le numéro d'identification de votre PEUGEOT 406 2.0 HDI (Phase 2) certifié constructeur pour comprimer le fluide frigorigène.<br><a href=\"https://www.automecanik.com/pieces/compresseur-de-climatisation-447.html\"><strong>Contrôler l'état de fonctionnement du compresseur de climatisation </strong></a>.<br>Nous vous conseillons de <span><span>Compresseur de climatisation PEUGEOT 406</span></span>, certifié constructeur pour comprimer le fluide frigorigène. De Compresseur de climatisation PEUGEOT 406, certifié constructeur pour comprimer le fluide frigorigène. De Compresseur de climatisation PEUGEOT 406, certifié constructeur pour comprimer le fluide frigorigène. De Compresseur de climatisation PEUGEOT 406, certifié constructeur pour comprimer le fluide frigorigène. De Compresseur de climatisation PEUGEOT 406, certifié constructeur pour comprimer le fluide frigorigène.<br>Attention:.<br>.</span></span><p></p><p></p>"
+    },
+    {
+      "id": "r6/guide-achat-item-1",
+      "kind": "r6-guide-item",
+      "why": "item de guide d’achat (emoji + gras)",
+      "input": "❌ <b>Confondre capteur inductif et capteur actif</b> — les capteurs actifs (Hall) ont 3 broches et ne sont pas interchangeables avec les inductifs (2 broches).",
+      "expected": "❌ <b>Confondre capteur inductif et capteur actif</b> — les capteurs actifs (Hall) ont 3 broches et ne sont pas interchangeables avec les inductifs (2 broches)."
+    },
+    {
+      "id": "r6/guide-achat-item-2",
+      "kind": "r6-guide-item",
+      "why": "item de guide d’achat (emoji + gras)",
+      "input": "❌ <b>Forcer pour extraire un capteur grippé</b> — le corps du capteur est fragile (céramique ou plastique). Appliquer du dégrippant, chauffer légèrement le logement, puis tourner doucement.",
+      "expected": "❌ <b>Forcer pour extraire un capteur grippé</b> — le corps du capteur est fragile (céramique ou plastique). Appliquer du dégrippant, chauffer légèrement le logement, puis tourner doucement."
+    },
+    {
+      "id": "r8/rendered-text-markdown",
+      "kind": "r8-rendered-text",
+      "why": "renderedText R8 : texte brut à puces et doubles sauts de ligne (forme du composer)",
+      "input": "Pour votre Renault Clio III 1.5 dCi 105 ch (diesel), voici comment bien choisir vos plaquettes de frein.\n\nLes plaquettes homologuées ECE R90 garantissent un freinage conforme.\n\n**Critères de sélection :**\n- Indice ECE R90\n- Compatibilité disque\n\n**À éviter :**\n- Monter sans changer les disques usés",
+      "expected": "Pour votre Renault Clio III 1.5 dCi 105 ch (diesel), voici comment bien choisir vos plaquettes de frein. Les plaquettes homologuées ECE R90 garantissent un freinage conforme. **Critères de sélection :** - Indice ECE R90 - Compatibilité disque **À éviter :** - Monter sans changer les disques usés"
+    },
+    {
+      "id": "r8/seo-content-html",
+      "kind": "r8-seo-content",
+      "why": "contenu SEO véhicule : gras, retours ligne, lien interne",
+      "input": "<b>Pièces auto Renault Clio III</b><br />Retrouvez les pièces compatibles avec votre <a href=\"/constructeurs/renault-140/clio-iii-140004.html\">Renault Clio III</a>.<br /><br />Livraison rapide&nbsp;: 24/48&nbsp;h.",
+      "expected": "<b>Pièces auto Renault Clio III</b><br>Retrouvez les pièces compatibles avec votre <a href=\"/constructeurs/renault-140/clio-iii-140004.html\">Renault Clio III</a>.<br><br>Livraison rapide&nbsp;: 24/48&nbsp;h."
+    },
+    {
+      "id": "commande/ord-info-texte",
+      "kind": "commande-info",
+      "why": "ord_info non-JSON après remplacement <br> → <br/>",
+      "input": "Commande passée depuis le site<br/>Mode de livraison : point relais<br/>Remarque : merci de livrer en semaine<br/>",
+      "expected": "Commande passée depuis le site<br>Mode de livraison : point relais<br>Remarque : merci de livrer en semaine<br>"
+    },
+    {
+      "id": "compte/message",
+      "kind": "compte-message",
+      "why": "message de compte client (HTML simple + lien)",
+      "input": "<p>Bonjour,</p><p>Votre demande concernant la référence <strong>0 986 494 000</strong> a bien été prise en compte.</p><p>Consultez le suivi : <a href=\"/account/orders\">mes commandes</a>.</p><p>Cordialement,<br>Le service client</p>",
+      "expected": "<p>Bonjour,</p><p>Votre demande concernant la référence <strong>0 986 494 000</strong> a bien été prise en compte.</p><p>Consultez le suivi : <a href=\"/account/orders\">mes commandes</a>.</p><p>Cordialement,<br>Le service client</p>"
+    },
+    {
+      "id": "legal/page",
+      "kind": "legal-page",
+      "why": "page légale : titres, listes, mailto",
+      "input": "<h2>Article 1 – Objet</h2><p>Les présentes conditions générales de vente régissent les ventes réalisées sur le site.</p><h3>1.1 Champ d’application</h3><ul><li>Particuliers</li><li>Professionnels</li></ul><p>Contact : <a href=\"mailto:contact@example.com\">contact@example.com</a> ou <a href=\"tel:+33100000000\">téléphone</a>.</p>",
+      "expected": "<h2>Article 1 – Objet</h2><p>Les présentes conditions générales de vente régissent les ventes réalisées sur le site.</p><h3>1.1 Champ d’application</h3><ul><li>Particuliers</li><li>Professionnels</li></ul><p>Contact : <a href=\"mailto:contact@example.com\">contact@example.com</a> ou <a href=\"tel:+33100000000\">téléphone</a>.</p>"
+    },
+    {
+      "id": "admin/brand-seo-defaut",
+      "kind": "admin-preview",
+      "why": "valeur par défaut de la prévisualisation admin",
+      "input": "<p>Aucun contenu</p>",
+      "expected": "<p>Aucun contenu</p>"
+    },
+    {
+      "id": "word/mso-normal",
+      "kind": "residu-word",
+      "why": "paragraphe Word avec o:p, classes Mso et styles",
+      "input": "<p class=\"MsoNormal\" style=\"margin-bottom:0cm;line-height:normal\"><span style=\"font-family:&quot;Calibri&quot;,sans-serif;mso-fareast-language:FR\">Le disque de frein doit être contrôlé.<o:p></o:p></span></p>",
+      "expected": "<p class=\"MsoNormal\"><span>Le disque de frein doit être contrôlé.</span></p>"
+    },
+    {
+      "id": "word/spancalibri",
+      "kind": "residu-word",
+      "why": "balise inventée <spancalibri>",
+      "input": "<p><spancalibri>Texte collé depuis Word</spancalibri> puis suite.</p>",
+      "expected": "<p>Texte collé depuis Word puis suite.</p>"
+    },
+    {
+      "id": "word/commentaire-conditionnel",
+      "kind": "residu-word",
+      "why": "commentaire conditionnel mso + xml",
+      "input": "<!--[if gte mso 9]><xml><w:WordDocument><w:View>Normal</w:View></w:WordDocument></xml><![endif]--><p>Après le bloc Word</p>",
+      "expected": "<p>Après le bloc Word</p>"
+    },
+    {
+      "id": "word/font-st1",
+      "kind": "residu-word",
+      "why": "font + st1:personname",
+      "input": "<p><font face=\"Calibri\" size=\"2\"><st1:personname w:st=\"on\">Garage Martin</st1:personname></font></p>",
+      "expected": "<p>Garage Martin</p>"
+    },
+    {
+      "id": "word/nbsp-vides",
+      "kind": "residu-word",
+      "why": "paragraphes vides et espaces insécables",
+      "input": "<p>&nbsp;</p><p> Texte  à garder&nbsp;&nbsp;</p><p> </p>",
+      "expected": "<p>&nbsp;</p><p>&nbsp;Texte&nbsp; à&nbsp;garder&nbsp;&nbsp;</p><p> </p>"
+    },
+    {
+      "id": "typo/accents-ponctuation",
+      "kind": "typographie",
+      "why": "accents, guillemets, tirets, ligatures, symboles",
+      "input": "<p>« Qualité d’origine » — œuvre, cœur, Ærø, 25 €, 0,5 à 1,5 mm, ½, n°, ✅ ❌ 🚗</p>",
+      "expected": "<p>« Qualité d’origine » — œuvre, cœur, Ærø, 25 €, 0,5 à 1,5 mm, ½, n°, ✅ ❌ 🚗</p>"
+    },
+    {
+      "id": "tests-existants/script",
+      "kind": "test-existant",
+      "why": "cas existant",
+      "input": "<p>Avant</p><script>alert('xss')</script><p>Après</p>",
+      "expected": "<p>Avant</p><p>Après</p>"
+    },
+    {
+      "id": "tests-existants/handlers",
+      "kind": "test-existant",
+      "why": "cas existant",
+      "input": "<img src=\"x\" onerror=\"alert(1)\"><a href=\"#\" onclick=\"steal()\">lien</a>",
+      "expected": "<img src=\"x\"><a href=\"#\">lien</a>"
+    },
+    {
+      "id": "tests-existants/iframe",
+      "kind": "test-existant",
+      "why": "cas existant",
+      "input": "<iframe src=\"//evil.tld\"></iframe><p>ok</p>",
+      "expected": "<p>ok</p>"
+    },
+    {
+      "id": "tests-existants/href-javascript",
+      "kind": "test-existant",
+      "why": "cas existant",
+      "input": "<a href=\"javascript:alert(1)\">clic</a>",
+      "expected": "<a>clic</a>"
+    },
+    {
+      "id": "tests-existants/style",
+      "kind": "test-existant",
+      "why": "cas existant",
+      "input": "<p style=\"color:red\">texte</p>",
+      "expected": "<p>texte</p>"
+    },
+    {
+      "id": "tests-existants/balises-editoriales",
+      "kind": "test-existant",
+      "why": "cas existant",
+      "input": "<h2>Titre</h2><p>Para <strong>gras</strong></p><ul><li>item</li></ul><table><thead><tr><th>A</th></tr></thead><tbody><tr><td>1</td></tr></tbody></table><a href=\"/pieces/filtre\" class=\"lien\">interne</a>",
+      "expected": "<h2>Titre</h2><p>Para <strong>gras</strong></p><ul><li>item</li></ul><table><thead><tr><th>A</th></tr></thead><tbody><tr><td>1</td></tr></tbody></table><a href=\"/pieces/filtre\" class=\"lien\">interne</a>"
+    },
+    {
+      "id": "tests-existants/family-tips",
+      "kind": "test-existant",
+      "why": "cas existant",
+      "input": "<b class=\"font-semibold\">Conseil freinage :</b> vérifiez le diamètre.",
+      "expected": "<b class=\"font-semibold\">Conseil freinage :</b> vérifiez le diamètre."
+    },
+    {
+      "id": "tests-existants/accents",
+      "kind": "test-existant",
+      "why": "cas existant",
+      "input": "<p>Référence d'équipementier — qualité éprouvée à l'usage çà et là</p>",
+      "expected": "<p>Référence d'équipementier — qualité éprouvée à l'usage çà et là</p>"
+    },
+    {
+      "id": "tests-existants/sg-content-script",
+      "kind": "test-existant",
+      "why": "cas existant (extractEditorialBlocks)",
+      "input": "<h2>Bien choisir</h2><p>Texte</p><script>alert('xss')</script><h2>Prix et marques</h2><p>Budget</p>",
+      "expected": "<h2>Bien choisir</h2><p>Texte</p><h2>Prix et marques</h2><p>Budget</p>"
+    },
+    {
+      "id": "allowlist/toutes-balises",
+      "kind": "allowlist",
+      "why": "toutes les balises autorisées",
+      "input": "<div><h2>h2</h2><h3>h3</h3><h4>h4</h4><p>p <strong>strong</strong> <em>em</em> <b>b</b> <i>i</i> <u>u</u> <span>span</span> <sup>2</sup> <sub>2</sub><br></p><blockquote>q</blockquote><pre><code>code &lt;x&gt;</code></pre><hr><ul><li>ul</li></ul><ol><li>ol</li></ol><dl><dt>dt</dt><dd>dd</dd></dl><table><thead><tr><th scope=\"col\" colspan=\"2\">th</th></tr></thead><tbody><tr><td rowspan=\"1\">td</td><td>td</td></tr></tbody></table><img src=\"/img/x.webp\" alt=\"alt\" width=\"120\" height=\"80\" title=\"t\"></div>",
+      "expected": "<div><h2>h2</h2><h3>h3</h3><h4>h4</h4><p>p <strong>strong</strong> <em>em</em> <b>b</b> <i>i</i> <u>u</u> <span>span</span> <sup>2</sup> <sub>2</sub><br></p><blockquote>q</blockquote><pre><code>code &lt;x&gt;</code></pre><hr><ul><li>ul</li></ul><ol><li>ol</li></ol><dl><dt>dt</dt><dd>dd</dd></dl><table><thead><tr><th scope=\"col\" colspan=\"2\">th</th></tr></thead><tbody><tr><td rowspan=\"1\">td</td><td>td</td></tr></tbody></table><img src=\"/img/x.webp\" alt=\"alt\" width=\"120\" height=\"80\" title=\"t\"></div>"
+    },
+    {
+      "id": "allowlist/tous-attributs-lien",
+      "kind": "allowlist",
+      "why": "attributs de lien autorisés + data-* de tracking",
+      "input": "<a href=\"/pieces/disque-de-frein-82.html\" class=\"seo-link\" id=\"lien-1\" data-link-type=\"gamme\" data-formula=\"F1\" data-target-gamme=\"82\" target=\"_blank\" rel=\"noopener noreferrer\" title=\"Disques\">disques</a>",
+      "expected": "<a href=\"/pieces/disque-de-frein-82.html\" class=\"seo-link\" id=\"lien-1\" data-link-type=\"gamme\" data-formula=\"F1\" data-target-gamme=\"82\" target=\"_blank\" rel=\"noopener noreferrer\" title=\"Disques\">disques</a>"
+    },
+    {
+      "id": "allowlist/attributs-hors-liste",
+      "kind": "allowlist",
+      "why": "attributs non autorisés retirés",
+      "input": "<p lang=\"fr\" dir=\"ltr\" data-x=\"1\" aria-label=\"x\" name=\"n\" itemprop=\"text\" tabindex=\"0\">texte</p>",
+      "expected": "<p data-x=\"1\" aria-label=\"x\">texte</p>"
+    },
+    {
+      "id": "allowlist/balises-hors-liste",
+      "kind": "allowlist",
+      "why": "balises non autorisées retirées, texte conservé",
+      "input": "<section><article><header><h1>H1</h1></header><details open><summary>Résumé</summary><p>corps</p></details><figure><figcaption>légende</figcaption></figure><h5>h5</h5><h6>h6</h6><mark>m</mark><small>s</small><abbr title=\"t\">a</abbr></article></section>",
+      "expected": "H1Résumé<p>corps</p>légendeh5h6msa"
+    },
+    {
+      "id": "xss/script-simple",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<script>alert(1)</script><p>x</p>",
+      "expected": "<p>x</p>"
+    },
+    {
+      "id": "xss/script-majuscules",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<SCRIPT SRC=//example.com/x.js></SCRIPT><p>x</p>",
+      "expected": "<p>x</p>"
+    },
+    {
+      "id": "xss/img-onerror",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<img src=x onerror=alert(1)>",
+      "expected": "<img src=\"x\">"
+    },
+    {
+      "id": "xss/img-onerror-backtick",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<img src=`x` onerror=`alert(1)`>",
+      "expected": "<img src=\"`x`\">"
+    },
+    {
+      "id": "xss/svg-onload",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<svg onload=alert(1)><p>x</p></svg>",
+      "expected": "<p>x</p>"
+    },
+    {
+      "id": "xss/svg-script",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<svg><script>alert(1)</script></svg>",
+      "expected": ""
+    },
+    {
+      "id": "xss/svg-animate",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<svg><animate onbegin=alert(1) attributeName=x dur=1s></svg>",
+      "expected": ""
+    },
+    {
+      "id": "xss/svg-a-xlink",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<svg><a xlink:href=\"javascript:alert(1)\"><text x=\"20\" y=\"20\">x</text></a></svg>",
+      "expected": ""
+    },
+    {
+      "id": "xss/math-xlink",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<math><mi xlink:href=\"javascript:alert(1)\">x</mi></math>",
+      "expected": ""
+    },
+    {
+      "id": "xss/href-javascript-casse",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<a href=\"JaVaScRiPt:alert(1)\">x</a>",
+      "expected": "<a>x</a>"
+    },
+    {
+      "id": "xss/href-javascript-espace",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<a href=\" javascript:alert(1)\">x</a>",
+      "expected": "<a>x</a>"
+    },
+    {
+      "id": "xss/href-javascript-tab-entite",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<a href=\"java&#x09;script:alert(1)\">x</a>",
+      "expected": "<a>x</a>"
+    },
+    {
+      "id": "xss/href-javascript-entites-decimales",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<a href=\"&#106;&#97;&#118;&#97;&#115;&#99;&#114;&#105;&#112;&#116;&#58;alert(1)\">x</a>",
+      "expected": "<a>x</a>"
+    },
+    {
+      "id": "xss/href-javascript-entite-hex",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<a href=\"&#x6A;avascript:alert(1)\">x</a>",
+      "expected": "<a>x</a>"
+    },
+    {
+      "id": "xss/href-javascript-colon-nomme",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<a href=\"javascript&colon;alert(1)\">x</a>",
+      "expected": "<a>x</a>"
+    },
+    {
+      "id": "xss/href-javascript-nul",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<a href=\"java\u0000script:alert(1)\">x</a>",
+      "expected": "<a href=\"java�script:alert(1)\">x</a>"
+    },
+    {
+      "id": "xss/href-javascript-sep-ligne",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<a href=\" javascript:alert(1)\">x</a>",
+      "expected": "<a>x</a>"
+    },
+    {
+      "id": "xss/href-vbscript",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<a href=\"vbscript:msgbox(1)\">x</a>",
+      "expected": "<a>x</a>"
+    },
+    {
+      "id": "xss/href-data-html",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<a href=\"data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==\">x</a>",
+      "expected": "<a>x</a>"
+    },
+    {
+      "id": "xss/img-data-png",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<img src=\"data:image/png;base64,iVBORw0KGgo=\" alt=\"pixel\">",
+      "expected": "<img src=\"data:image/png;base64,iVBORw0KGgo=\" alt=\"pixel\">"
+    },
+    {
+      "id": "xss/img-src-javascript",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<img src=\"javascript:alert(1)\" alt=\"x\">",
+      "expected": "<img alt=\"x\">"
+    },
+    {
+      "id": "xss/img-srcset",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<img src=\"/a.webp\" srcset=\"javascript:alert(1) 1x\" alt=\"x\">",
+      "expected": "<img src=\"/a.webp\" alt=\"x\">"
+    },
+    {
+      "id": "xss/href-protocole-relatif",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<a href=\"//example.com/x\">x</a>",
+      "expected": "<a href=\"//example.com/x\">x</a>"
+    },
+    {
+      "id": "xss/href-mailto-tel",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<a href=\"mailto:contact@example.com\">m</a> <a href=\"tel:+33100000000\">t</a>",
+      "expected": "<a href=\"mailto:contact@example.com\">m</a> <a href=\"tel:+33100000000\">t</a>"
+    },
+    {
+      "id": "xss/iframe-srcdoc",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<iframe srcdoc=\"<script>alert(1)</script>\"></iframe><p>x</p>",
+      "expected": "<p>x</p>"
+    },
+    {
+      "id": "xss/object-embed",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<object data=\"x.swf\"></object><embed src=\"x.swf\"><p>x</p>",
+      "expected": "<p>x</p>"
+    },
+    {
+      "id": "xss/form-formaction",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<form action=\"/x\"><input name=\"q\"><button formaction=\"javascript:alert(1)\">go</button></form>",
+      "expected": "go"
+    },
+    {
+      "id": "xss/noscript-titre",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<noscript><p title=\"</noscript><img src=x onerror=alert(1)>\"></noscript>",
+      "expected": "<p></p>"
+    },
+    {
+      "id": "xss/style-img",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<style><img src=x onerror=alert(1)></style><p>x</p>",
+      "expected": "<p>x</p>"
+    },
+    {
+      "id": "xss/template-script",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<template><script>alert(1)</script></template><p>x</p>",
+      "expected": "<p>x</p>"
+    },
+    {
+      "id": "xss/svg-style-img",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<svg><style><img src=x onerror=alert(1)></style></svg>",
+      "expected": "<img src=\"x\">"
+    },
+    {
+      "id": "xss/math-mtext-mglyph-style",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<math><mtext><table><mglyph><style><img src=x onerror=alert(1)>",
+      "expected": ""
+    },
+    {
+      "id": "xss/form-math-mglyph",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<form><math><mtext></form><form><mglyph><style></math><img src onerror=alert(1)>",
+      "expected": ""
+    },
+    {
+      "id": "xss/svg-p-style-id",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<svg></p><style><a id=\"</style><img src=1 onerror=alert(1)>\">",
+      "expected": "<p></p><img src=\"1\">\"&gt;"
+    },
+    {
+      "id": "xss/math-textarea-path",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<math><mi><mglyph><svg><mtext><textarea><path id=\"</textarea><img onerror=alert(1) src=1>\"></path></textarea></mtext></svg></mglyph></mi></math>",
+      "expected": ""
+    },
+    {
+      "id": "xss/select-template-style",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<select><template><style><img src=x onerror=alert(1)></style></template></select>",
+      "expected": ""
+    },
+    {
+      "id": "xss/commentaire-img",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<!--<img src=x onerror=alert(1)>--><p>x</p>",
+      "expected": "<p>x</p>"
+    },
+    {
+      "id": "xss/commentaire-casse",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<!--><img src=x onerror=alert(1)>-->",
+      "expected": "<img src=\"x\">--&gt;"
+    },
+    {
+      "id": "xss/cdata",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<![CDATA[<img src=x onerror=alert(1)>]]><p>x</p>",
+      "expected": "]]&gt;<p>x</p>"
+    },
+    {
+      "id": "xss/instruction-xml",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<?xml version=\"1.0\"?><p>x</p>",
+      "expected": "<p>x</p>"
+    },
+    {
+      "id": "xss/texte-entites",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "&lt;script&gt;alert(1)&lt;/script&gt;",
+      "expected": "&lt;script&gt;alert(1)&lt;/script&gt;"
+    },
+    {
+      "id": "xss/texte-double-encode",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<p>a &amp;lt;b&amp;gt; c</p>",
+      "expected": "<p>a &amp;lt;b&amp;gt; c</p>"
+    },
+    {
+      "id": "xss/alt-entites",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<img src=\"x\" alt=\"&quot;&gt;&lt;script&gt;alert(1)&lt;/script&gt;\">",
+      "expected": "<img src=\"x\">"
+    },
+    {
+      "id": "xss/balises-non-fermees",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<div><p>non fermé <b>gras <i>italique</div>",
+      "expected": "<div><p>non fermé <b>gras <i>italique</i></b></p></div>"
+    },
+    {
+      "id": "xss/td-sans-tr",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<table><td>cellule sans ligne</td></table>",
+      "expected": "<table><tbody><tr><td>cellule sans ligne</td></tr></tbody></table>"
+    },
+    {
+      "id": "xss/div-dans-p",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<p><div>bloc dans paragraphe</div></p>",
+      "expected": "<p></p><div>bloc dans paragraphe</div><p></p>"
+    },
+    {
+      "id": "xss/li-implicites",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<ul><li>un<li>deux</ul>",
+      "expected": "<ul><li>un</li><li>deux</li></ul>"
+    },
+    {
+      "id": "xss/liens-imbriques",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<a href=\"/x\"><a href=\"/y\">liens imbriqués</a></a>",
+      "expected": "<a href=\"/x\"></a><a href=\"/y\">liens imbriqués</a>"
+    },
+    {
+      "id": "xss/fin-de-balise-orpheline",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<p>Texte</p></p></div>",
+      "expected": "<p>Texte</p><p></p>"
+    },
+    {
+      "id": "xss/base-meta-link",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<base href=\"https://example.com/\"><meta http-equiv=\"refresh\" content=\"0;url=javascript:alert(1)\"><link rel=\"stylesheet\" href=\"https://example.com/x.css\"><p>x</p>",
+      "expected": "<p>x</p>"
+    },
+    {
+      "id": "xss/style-attribut-url",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<div style=\"background:url(javascript:alert(1))\">x</div>",
+      "expected": "<div>x</div>"
+    },
+    {
+      "id": "xss/span-handler-data",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<span class=\"x\" data-link-type=\"gamme\" data-evil=\"1\" onmouseover=\"alert(1)\">x</span>",
+      "expected": "<span class=\"x\" data-link-type=\"gamme\" data-evil=\"1\">x</span>"
+    },
+    {
+      "id": "xss/video-source-onerror",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<video><source onerror=\"alert(1)\"></video><p>x</p>",
+      "expected": "<p>x</p>"
+    },
+    {
+      "id": "xss/details-ontoggle",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<details open ontoggle=alert(1)><summary>s</summary></details>",
+      "expected": "s"
+    },
+    {
+      "id": "xss/isindex-keygen-marquee",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<isindex type=image src=1 onerror=alert(1)><keygen autofocus onfocus=alert(1)><marquee onstart=alert(1)>m</marquee>",
+      "expected": "m"
+    },
+    {
+      "id": "xss/body-onload",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<body onload=alert(1)><p>corps</p></body>",
+      "expected": "<p>corps</p>"
+    },
+    {
+      "id": "xss/document-complet",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<html><head><title>t</title></head><body><p>document complet</p></body></html>",
+      "expected": "<p>document complet</p>"
+    },
+    {
+      "id": "xss/h2-onclick",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<h2 onclick=\"alert(1)\">Titre</h2>",
+      "expected": "<h2>Titre</h2>"
+    },
+    {
+      "id": "xss/td-background",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<table><tr><td background=\"javascript:alert(1)\">x</td></tr></table>",
+      "expected": "<table><tbody><tr><td>x</td></tr></tbody></table>"
+    },
+    {
+      "id": "xss/blockquote-cite",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<blockquote cite=\"javascript:alert(1)\">q</blockquote>",
+      "expected": "<blockquote>q</blockquote>"
+    },
+    {
+      "id": "xss/clobbering-id",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<p id=\"cookie\">a</p><img id=\"getElementById\" src=\"/x.webp\" alt=\"b\"><a id=\"location\" href=\"/z\">c</a>",
+      "expected": "<p>a</p><img src=\"/x.webp\" alt=\"b\"><a href=\"/z\">c</a>"
+    },
+    {
+      "id": "xss/clobbering-form-name",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<form name=\"body\"><input name=\"attributes\"></form><p>x</p>",
+      "expected": "<p>x</p>"
+    },
+    {
+      "id": "xss/svg-foreignobject",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<svg><foreignObject><iframe src=\"javascript:alert(1)\"></iframe></foreignObject></svg>",
+      "expected": ""
+    },
+    {
+      "id": "xss/script-nul",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<scr\u0000ipt>alert(1)</scr\u0000ipt><p>x</p>",
+      "expected": "alert(1)<p>x</p>"
+    },
+    {
+      "id": "xss/imbrication-profonde",
+      "kind": "xss-vecteur",
+      "why": "vecteur XSS/mXSS : la sortie doit rester identique",
+      "input": "<div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div>profond</div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div>",
+      "expected": "<div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div><div>profond</div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div></div>"
+    }
+  ]
+}
