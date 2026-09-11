@@ -7,8 +7,12 @@
  *
  * Contrat API (searchconsole v1, `Schema$Metadata`) : `firstIncompleteDate` n'est
  * renseigné que si `dataState = 'all'`, groupé par `date`, ET si la plage contient
- * des jours incomplets. La sonde se termine donc sur la veille UTC (toujours
- * incomplète côté GSC) : 1 seul appel par run couvre toute la plage planifiée.
+ * des jours incomplets. La sonde se termine donc sur la veille UTC, normalement
+ * encore incomplète : 1 seul appel par run couvre toute la plage planifiée.
+ * Capture 2026-09-11 (googleapis 164.1.0, lecture seule) : firstIncompleteDate =
+ * J-2 UTC ; la même requête sans `dataState: 'all'` ne renvoie AUCUNE metadata.
+ * Fin effective d'une reprise = veille de firstIncompleteDate, jamais une ancre
+ * fixe (« veille », « J-2 ») ; metadata absente → aucune finalité supposée.
  *
  *   jour > fin de sonde | jour >= firstIncompleteDate  → skip_not_final (0 écriture)
  *   jour final + données                               → fetch (preuve : metadata)

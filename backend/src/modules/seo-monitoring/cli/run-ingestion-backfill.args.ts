@@ -68,8 +68,11 @@ export function parseBackfillArgs(
       `--from ${from} antérieur au plancher gouverné ${source} ${floor}`,
     );
   }
-  // GSC : la finalité est prouvée par sonde, la veille UTC est la borne haute.
-  // GA4 : pas de preuve de finalité → même ancre que le job quotidien (J-3).
+  // GSC : la veille UTC n'est que la borne haute de PLANIFICATION. La fin effective
+  // de la reprise suit la finalité démontrée par la sonde : jours >=
+  // metadata.firstIncompleteDate → not_final, 0 écriture (capture 2026-09-11 :
+  // firstIncompleteDate = J-2 UTC, dernier jour final J-3).
+  // GA4 : pas de sonde de finalité → même ancre que le job quotidien (J-3), supposée.
   const maxTo = addDaysIso(ctx.todayUtc, source === 'gsc' ? -1 : -3);
   if (to > maxTo) {
     return refuse(`--to ${to} trop récent pour ${source} (max ${maxTo})`);

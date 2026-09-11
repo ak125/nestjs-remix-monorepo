@@ -831,8 +831,10 @@ export class GscDailyFetcherService {
     planned: string[],
   ): Promise<GscFinalityProbe> {
     const startDate = planned.reduce((min, d) => (d < min ? d : min));
-    // Veille UTC : toujours ≤ « aujourd'hui » Pacific → jour incomplet côté GSC,
-    // condition pour que l'API renseigne `metadata.firstIncompleteDate`.
+    // Veille UTC : normalement encore incomplète côté GSC (capture 2026-09-11 :
+    // firstIncompleteDate = J-2 UTC) — condition pour que l'API renseigne
+    // `metadata.firstIncompleteDate`. Metadata absente → final_rows_required /
+    // finality_unknown, jamais une finalité supposée.
     const endDate = addDaysIso(new Date().toISOString().slice(0, 10), -1);
     const span =
       startDate <= endDate ? enumerateDatesIso(startDate, endDate).length : 1;

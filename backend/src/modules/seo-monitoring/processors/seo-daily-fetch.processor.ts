@@ -36,7 +36,7 @@ export type DailyFetchTask =
   | 'indexation';
 
 export interface SeoDailyFetchJobData {
-  /** Date à fetcher au format ISO (YYYY-MM-DD). Si absent, J-3 par défaut (latence GSC/GA4). */
+  /** Ancre ISO (YYYY-MM-DD). Si absent, J-3 UTC (planification ; finalité GSC décidée par sonde). */
   date?: string;
   /**
    * Périmètre : `all` lance GSC + GA4 + GSC Links.
@@ -323,8 +323,10 @@ export class SeoDailyFetchProcessor {
 }
 
 /**
- * J-3 par défaut : la latence GSC est de 2-3 jours, GA4 ~24-48h.
- * J-3 garantit que les données sont stabilisées côté Google avant fetch.
+ * Ancre J-3 (UTC) du job quotidien — pas une preuve de finalité.
+ * GSC : la sonde `dataState: 'all'` décide jour par jour (capture 2026-09-11 :
+ * dernier jour final J-3, metadata.firstIncompleteDate = J-2).
+ * GA4 : aucune sonde ; J-3 reste une hypothèse de latence, non vérifiée ici.
  */
 function defaultFetchDate(): string {
   const d = new Date(Date.now() - 3 * 86_400_000);
