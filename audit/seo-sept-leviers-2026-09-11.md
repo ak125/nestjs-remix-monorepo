@@ -171,8 +171,12 @@ Proposition à valider, non implémentée : ancrer `p_now` sur le lendemain du d
 - **Où chercher en PROD.**
   - **Pas dans les journaux du conteneur backend** : aucun journal de requêtes HTTP n'y est branché (`LoggerModule` de `nestjs-pino` jamais importé).
   - **Dans le journal d'accès Caddy du site www** (`logs/caddy/automecanik*.log*`). Sa rotation est de 50 Mo × 5, sans durée minimale : la couverture réelle est à mesurer.
-- **Commandes en lecture seule** : description de la PR #1460.
-- **Tentative de lecture le 2026-09-11** : accès SSH à la machine PROD refusé depuis DEV.
+- **Vérification du 2026-09-11**, faite par l'owner en lecture seule sur la machine PROD (l'accès SSH depuis DEV était refusé) :
+  - **Contrôle positif retrouvé** : l'appel d'audit du 2026-09-10 22:34 UTC sur `credentials/health` apparaît, donc le journal enregistre ces appels.
+  - **`cron/health` : 0 appel** dans le journal www (~19 h en septembre, ~22 h en juin) et dans `access.log` (HTTP, du 2026-07-14 au 2026-09-11).
+  - **Aucune autre route du contrôleur** n'est appelée, hormis l'appel d'audit.
+  - **Limite** : un appelant HTTPS moins fréquent qu'une fois par jour a pu passer entre les fenêtres.
+  - Commandes et tableau : description de la PR #1460.
 
 ### 4.4 Marqueurs dans les liens (point 4)
 
@@ -409,7 +413,7 @@ Title, meta et H1 relevés en live le 2026-09-11. Toute proposition part d'une r
 | # | Décision | Réponse | Portée appliquée |
 |---|---|---|---|
 | 5 | Étape autorisée | « PR guard-only (Recommandé) » | Branche dédiée depuis `origin/main`, rejeu des tests, push, PR #1460 en draft. Projections registry régénérées dans la même PR après signalement CI. Aucun merge. |
-| 6 | Vérification des appelants de `cron/health` | « Je lis les logs PROD » | Lecture seule des journaux d'accès PROD. **Non réalisée** : accès SSH refusé depuis DEV. Aucune autre commande tentée. |
+| 6 | Vérification des appelants de `cron/health` | « Je lis les logs PROD » | Lecture seule des journaux d'accès Caddy. Depuis DEV : accès SSH refusé. **Réalisée par l'owner** sur la machine PROD le 2026-09-11, avec les commandes fournies : 0 appel, contrôle positif retrouvé (§4.3). |
 
 **Propositions à valider** (aucun accord identifiable) :
 - emplacement du collecteur (PROD) et désactivation du collecteur DEV ;
@@ -429,7 +433,7 @@ Title, meta et H1 relevés en live le 2026-09-11. Toute proposition part d'une r
 - **Poussé** : la garde admin seule, PR #1460 en draft (§4.5). Rien d'autre n'a quitté la machine DEV.
 - **Nécessite un GO** : chaque étape du §4.7, les SQL du §8, les corrections du §7, les purges, le merge de #1460.
 
-**Prochaine action unique proposée** : lecture seule du journal d'accès Caddy du site www sur la machine PROD, pour trouver les appelants de `cron/health` (commandes dans la PR #1460). Accès depuis une machine autorisée, puisque DEV est refusé. Selon le résultat, décision owner sur la sortie du draft de #1460. C'est la seule exposition confirmée encore active en PROD.
+**Prochaine action unique proposée** : décision owner sur la sortie du draft de la PR #1460. Aucun appelant de `cron/health` n'a été observé (§4.3). Juste avant le merge : mise à jour de la branche (conflits attendus sur les 6 projections générées, résolus par régénération), puis CI. C'est la seule exposition confirmée encore active en PROD.
 
 ## 12. Vérification liée au SHA `25cfd1bc4`, rejouée pour `771c7b934`
 
