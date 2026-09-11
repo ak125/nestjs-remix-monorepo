@@ -51,12 +51,19 @@ module.exports.getCreateAppLoadContext = async function getCreateAppLoadContext(
 	return (values) => factory(values, () => new RouterContextProvider());
 };
 
-module.exports.startDevServer = async function startDevServer(app) {
+module.exports.startDevServer = async function startDevServer(app, httpServer) {
 	if (process.env.NODE_ENV === 'production') return;
+	if (!httpServer) {
+		throw new Error('[Vite] startDevServer(app, httpServer): httpServer requis pour le WebSocket HMR');
+	}
 
 	const vite = await import('vite');
 	devServer = await vite.createServer({
-		server: { middlewareMode: true },
+		// HMR sur le serveur HTTP de Nest, donc sur le port de la page. Sans
+		// `ws.server`, Vite en middlewareMode ouvre un second port (24678) que
+		// les redirections de port (VS Code Remote-SSH, ssh -L) ne suivent pas :
+		// la page s'affiche mais le HMR ne se connecte jamais.
+		server: { middlewareMode: true, ws: { server: httpServer } },
 		root: __dirname,
 		appType: 'custom',
 	});
