@@ -1,7 +1,9 @@
 # Audit SEO — 7 leviers, fiabilité de la mesure GSC, robots, marqueurs (2026-09-11)
 
-> **Statut par défaut de tout ce qui suit : CODE CORRIGÉ + TESTÉ localement. NON POUSSÉ,
-> NON APPLIQUÉ EN BASE, NON DÉPLOYÉ, EFFET SEO NON MESURÉ.**
+> **Statut par défaut de tout ce qui suit : CODE CORRIGÉ + TESTÉ, POUSSÉ dans la PR #1467
+> (brouillon) le 2026-09-11. NON APPLIQUÉ EN BASE, NON MERGÉ, NON DÉPLOYÉ, EFFET SEO NON MESURÉ.**
+> Seule exception : la garde admin, livrée par la PR #1460 et déployée en PROD le 2026-09-11
+> (§4.5, §11).
 > Branche `fix/seo-measure-robots-markers` (worktree `.claude/worktrees/seo-leviers-mesure`),
 > base `bcf0c775a`. Vérification complète au SHA `25cfd1bc4`. Les contrôles touchés par le
 > dernier changement de code (un test frontend, `771c7b934`) ont été rejoués à ce SHA (§12).
@@ -439,7 +441,8 @@ Title, meta et H1 relevés en live le 2026-09-11. Toute proposition part d'une r
 
 - **Local, commité sur la branche** : tous les commits depuis `fe658657d` jusqu'à la tête de branche (`git log bcf0c775a..HEAD`). Parmi eux : ce rapport (`cdbdb58a4`) et une entrée `log.md` créée automatiquement par le hook Stop (`f2ab4cbbb`).
 - **Local, non suivi** : patch guard-only ; description de PR (`.claude/handoffs/`).
-- **Mergé sur main** : la garde admin seule, PR #1460 (§4.5). Déployée sur PREPROD via le run de `f64ef5197`, puis via celui de `38747ac6b`. Rien d'autre n'a quitté la machine DEV.
+- **Mergé sur main** : la garde admin seule, PR #1460 (§4.5). Déployée sur PREPROD via le run de `f64ef5197`, puis via celui de `38747ac6b`.
+- **Poussé, non mergé** : le reste de la branche, le 2026-09-11 à 22:15Z, dans la **PR #1467 (brouillon)**, au SHA `09261d63a` — après reprise de `origin/main` (`38747ac6b`) et régénération des projections. CI de la PR : 44 checks verts, 9 skippés, 0 échec. Brouillon délibéré : les 2 migrations passent **avant** le merge.
 - **Déployé en PROD** : la garde admin, par le tag `v2026.09.11-cwv-sanitizer-admin-guard` sur `38747ac6b`, le 2026-09-11 à 21:51Z. Vérification en PROD : `GET /api/admin/seo-monitoring/cron/health` = **403** (200 sans authentification avant), `credentials/health` = 403, `/` et `/health` = 200.
 - **Nécessite un GO** : chaque étape du §4.7, les SQL du §8, les corrections du §7, les purges, le tag PROD.
 
