@@ -536,3 +536,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `worktree-fix-dev-vite-hmr-single-port`
 - **Décision** : fix(dev): faire passer le HMR Vite par le port 3000 (redirection de port)
 - **Sortie** : PR #1444 | commits f9e35866a
+
+## 2026-09-11 — fix/cron-report-dead-channel (auto)
+
+- **Branche** : `fix/cron-report-dead-channel`
+- **Décision** : fix(ops): rendre visibles les échecs des crons — leur canal visait une table supprimée
+- **Sortie** : PR #1448 | commits 54a543157
