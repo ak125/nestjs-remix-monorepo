@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Shared SEO types and Zod schemas for the SEO department modules (Observability, On-page, Content ops, Intelligence, GEO/AEO).",
   "type": "module",
+  "sideEffects": false,
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
