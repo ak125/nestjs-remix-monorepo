@@ -25,7 +25,6 @@ import {
   ExternalLink,
   Gauge,
   LineChart as LineChartIcon,
-  TrendingDown,
   TrendingUp,
   Users,
   Zap,
@@ -88,6 +87,34 @@ interface GscRow {
   impressions: number;
   ctr: number;
   position: number;
+}
+
+/** Total propriété d'un jour PRÉSENT (`__seo_gsc_daily_property_total`). */
+interface GscDailyTotal {
+  date: string;
+  clicks: number;
+  impressions: number;
+  ctr: number;
+  position: number;
+}
+
+/** Couverture jours du total propriété (jours absents ≠ zéro). */
+interface GscCoverage {
+  last_data_date: string | null;
+  expected_from: string | null;
+  expected_to: string | null;
+  days_expected: number;
+  days_present: number;
+  missing_dates: string[];
+  complete: boolean;
+}
+
+/** Portée de l'échantillon `rows` (grain requêtes, jamais exhaustif). */
+interface GscRowsScope {
+  exhaustive: false;
+  limit: number;
+  returned: number;
+  truncated: boolean;
 }
 
 interface Ga4Row {
@@ -180,6 +207,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return {
       health,
       gscRows: (gscData?.rows ?? []) as GscRow[],
+      gscRowsScope: (gscData?.rows_scope ?? null) as GscRowsScope | null,
+      gscDaily: (gscData?.daily ?? []) as GscDailyTotal[],
+      gscCoverage: (gscData?.coverage ?? null) as GscCoverage | null,
       gscTotals: gscData?.totals ?? {
         clicks: 0,
         impressions: 0,
@@ -200,6 +230,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return {
       health: null,
       gscRows: [] as GscRow[],
+      gscRowsScope: null as GscRowsScope | null,
+      gscDaily: [] as GscDailyTotal[],
+      gscCoverage: null as GscCoverage | null,
       gscTotals: { clicks: 0, impressions: 0, ctr: 0, avg_position: 0 },
       ga4Rows: [] as Ga4Row[],
       ga4Totals: { sessions: 0, conversions: 0 },
@@ -225,10 +258,20 @@ export default function SeoHubObservability() {
     data.health?.readiness.gsc.ready && data.health?.readiness.ga4.ready;
   const monitoringOn = data.health?.monitoring_enabled ?? false;
   const hasGscData = data.gscRows.length > 0;
+  const hasGscDaily = data.gscDaily.length > 0;
   const hasGa4Data = data.ga4Rows.length > 0;
+  const gscCov = data.gscCoverage;
+  const gscDaysLabel =
+    gscCov && gscCov.days_expected > 0
+      ? `${gscCov.days_present}/${gscCov.days_expected} jours`
+      : "couverture inconnue";
 
-  // Aggrégation par jour pour les line charts
-  const gscByDay = useMemo(() => aggregateByDate(data.gscRows), [data.gscRows]);
+  // Série quotidienne du total propriété ; jours manquants = null (trou visible), jamais 0.
+  const gscByDay = useMemo(
+    () =>
+      dailySeriesWithGaps(data.gscDaily, data.gscCoverage?.missing_dates ?? []),
+    [data.gscDaily, data.gscCoverage],
+  );
   const ga4ByDay = useMemo(
     () => aggregateGa4ByDate(data.ga4Rows),
     [data.ga4Rows],
@@ -326,13 +369,29 @@ export default function SeoHubObservability() {
         </Alert>
       ) : null}
 
+      {gscCov && !gscCov.complete && gscCov.days_expected > 0 ? (
+        <Alert>
+          <AlertCircle className="size-4" />
+          <AlertTitle>Données GSC incomplètes ({gscDaysLabel})</AlertTitle>
+          <AlertDescription className="space-y-1">
+            <p>
+              Totaux non exhaustifs : les jours manquants ne sont pas comptés
+              comme zéro et apparaissent comme des trous dans la courbe.
+            </p>
+            <p className="text-xs font-mono break-words">
+              Jours manquants : {gscCov.missing_dates.join(", ")}
+            </p>
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
       {/* KPI cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard
           icon={<TrendingUp className="size-4" />}
           label="Clicks GSC"
           value={data.gscTotals.clicks.toLocaleString("fr-FR")}
-          hint={`${data.gscTotals.impressions.toLocaleString("fr-FR")} impressions`}
+          hint={`${data.gscTotals.impressions.toLocaleString("fr-FR")} impressions · ${gscDaysLabel}${gscCov?.last_data_date ? ` · dernier jour ${gscCov.last_data_date}` : ""}`}
         />
         <KpiCard
           icon={<Gauge className="size-4" />}
@@ -367,10 +426,13 @@ export default function SeoHubObservability() {
           <Card>
             <CardHeader>
               <CardTitle>Position moyenne & CTR (GSC)</CardTitle>
-              <CardDescription>Évolution sur {data.days} jours</CardDescription>
+              <CardDescription>
+                Total propriété par jour · {gscDaysLabel} · jours manquants non
+                tracés
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              {hasGscData ? (
+              {hasGscDaily ? (
                 <ResponsiveContainer width="100%" height={280}>
                   <LineChart data={gscByDay}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -442,7 +504,12 @@ export default function SeoHubObservability() {
           <Card>
             <CardHeader>
               <CardTitle>Top pages GSC</CardTitle>
-              <CardDescription>Triées par clicks décroissants</CardDescription>
+              <CardDescription>
+                Échantillon non exhaustif du détail requêtes (
+                {data.gscRowsScope?.returned ?? data.gscRows.length} lignes
+                {data.gscRowsScope?.truncated ? ", tronqué" : ""}) — trié par
+                clics sur cet échantillon, pas un classement complet
+              </CardDescription>
             </CardHeader>
             <CardContent>
               {hasGscData ? (
@@ -691,39 +758,26 @@ function EmptyState({ message }: { message: string }) {
   );
 }
 
-function aggregateByDate(rows: GscRow[]): Array<{
-  date: string;
-  clicks: number;
-  impressions: number;
-  position: number;
-  ctr_pct: number;
-}> {
-  const m = new Map<
-    string,
-    { clicks: number; impressions: number; position_sum: number }
-  >();
-  for (const r of rows) {
-    const acc = m.get(r.date) ?? { clicks: 0, impressions: 0, position_sum: 0 };
-    acc.clicks += r.clicks;
-    acc.impressions += r.impressions;
-    acc.position_sum += r.position * r.impressions;
-    m.set(r.date, acc);
-  }
-  return Array.from(m.entries())
-    .map(([date, v]) => ({
-      date,
-      clicks: v.clicks,
-      impressions: v.impressions,
-      position:
-        v.impressions > 0
-          ? Number((v.position_sum / v.impressions).toFixed(2))
-          : 0,
+/**
+ * Série du total propriété : jours présents + jours manquants à `null` (recharts
+ * coupe la ligne, `connectNulls` false par défaut) — un trou d'ingestion reste
+ * visible au lieu d'être dessiné comme une chute à zéro ou masqué par l'axe.
+ */
+function dailySeriesWithGaps(
+  daily: GscDailyTotal[],
+  missingDates: string[],
+): Array<{ date: string; position: number | null; ctr_pct: number | null }> {
+  return [
+    ...daily.map((d) => ({
+      date: d.date,
+      position: d.impressions > 0 ? Number(d.position.toFixed(2)) : null,
       ctr_pct:
-        v.impressions > 0
-          ? Number(((v.clicks / v.impressions) * 100).toFixed(2))
-          : 0,
-    }))
-    .sort((a, b) => a.date.localeCompare(b.date));
+        d.impressions > 0
+          ? Number(((d.clicks / d.impressions) * 100).toFixed(2))
+          : null,
+    })),
+    ...missingDates.map((date) => ({ date, position: null, ctr_pct: null })),
+  ].sort((a, b) => a.date.localeCompare(b.date));
 }
 
 function aggregateGa4ByDate(
