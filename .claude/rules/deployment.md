@@ -40,6 +40,12 @@ feature (sinon DEV:3000 sert du code périmé).
    `MODULE_NOT_FOUND` (incident 2026-05-25 : `@repo/domain-commerce` + `@repo/cwv-taxonomy`).
    Détection `check_workspace_integrity()` ; install/build = action manuelle owner-gated
    (mutation `package-lock.json`, comme l'axe 4). (alerte)
+7. **Permissions des `.env`** : tout `.env*` non suivi par git doit être en `600`. L'umask de la
+   machine est `0002` (pam_umask + `login.defs UMASK 022` + `USERGROUPS_ENAB yes` + groupe primaire
+   `deploy`), donc un `chmod` seul ne tient pas — le 664 se recrée. Détection
+   `check_env_file_permissions()`, **alert-only et sans chmod automatique** (un correctif auto
+   masquerait ce qui recrée le 664 ; et le fichier de clés Paybox est en zone paiement, jamais
+   touché par ce script). Détail : `audit/env-file-permissions-2026-09-09.md`. (alerte)
 
 ## Mécanique du tag Docker `:preprod` (alias flottant)
 
