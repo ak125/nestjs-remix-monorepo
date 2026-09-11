@@ -4,7 +4,12 @@
 
 import { strict as assert } from 'node:assert';
 import { test } from 'node:test';
-import { CwvBeaconClientPayloadSchema, CwvBeaconServerInsertSchema } from '../schema';
+import { METRIC_BOUNDS } from '../metric';
+import {
+  CwvAttributionSchema,
+  CwvBeaconClientPayloadSchema,
+  CwvBeaconServerInsertSchema,
+} from '../schema';
 
 const validClientPayload = {
   session_id: 'abc12345',
@@ -110,4 +115,120 @@ test('CwvBeaconServerInsertSchema: rejects unknown ua_class', () => {
     ua_class: 'martian',
   });
   assert.equal(r.success, false);
+});
+
+// ---------------------------------------------------------------------------
+// Enrichissement de l'attribution (INP LoAF, hydratation, contexte du report)
+// ---------------------------------------------------------------------------
+
+const enrichedInpAttribution = {
+  ...validClientPayload.attribution,
+  attr_total_script_duration: 42,
+  attr_total_style_layout_duration: 96,
+  attr_total_paint_duration: 18,
+  attr_total_unattributed_duration: 0,
+  attr_longest_script_src: 'https://www.automecanik.com/assets/app-core.js',
+  attr_longest_script_invoker_type: 'event-listener',
+  attr_longest_script_subpart: 'processing-duration',
+  attr_longest_script_intersecting_duration: 38,
+  // Une interaction peut survenir bien après 60 s de vie de la page.
+  attr_interaction_time: 184_250,
+  attr_hydrated_at: 2_310,
+  attr_metric_id: 'v5-1757590000000-1234567890123',
+  attr_visibility_state: 'hidden',
+  attr_navigation_type: 'back-forward-cache',
+  attr_start_url: 'https://www.automecanik.com/pieces/x/y/z.html',
+};
+
+function withAttribution(attribution: Record<string, unknown>) {
+  return { ...validClientPayload, attribution };
+}
+
+test('CwvAttributionSchema: accepts the INP enrichment keys within bounds', () => {
+  const r = CwvBeaconClientPayloadSchema.safeParse(withAttribution(enrichedInpAttribution));
+  assert.equal(r.success, true, JSON.stringify(r.error?.issues));
+});
+
+test('CwvAttributionSchema: interaction time is a timestamp, not a phase — no 60 s cap', () => {
+  const r = CwvAttributionSchema.safeParse({
+    attr_interaction_time: METRIC_BOUNDS.INP.max + 1,
+    attr_hydrated_at: METRIC_BOUNDS.INP.max + 1,
+  });
+  assert.equal(r.success, true, JSON.stringify(r.error?.issues));
+});
+
+test('CwvAttributionSchema: timestamps stay exactly representable (safe integers only)', () => {
+  const r = CwvAttributionSchema.safeParse({ attr_interaction_time: Number.MAX_SAFE_INTEGER + 1 });
+  assert.equal(r.success, false);
+});
+
+test('CwvAttributionSchema: LoAF totals are bounded by the INP metric bounds', () => {
+  for (const key of [
+    'attr_total_script_duration',
+    'attr_total_style_layout_duration',
+    'attr_total_paint_duration',
+    'attr_total_unattributed_duration',
+    'attr_longest_script_intersecting_duration',
+  ]) {
+    assert.equal(CwvAttributionSchema.safeParse({ [key]: -1 }).success, false, `${key} < min`);
+    assert.equal(
+      CwvAttributionSchema.safeParse({ [key]: METRIC_BOUNDS.INP.max + 1 }).success,
+      false,
+      `${key} > max`,
+    );
+    assert.equal(
+      CwvAttributionSchema.safeParse({ [key]: METRIC_BOUNDS.INP.max }).success,
+      true,
+      `${key} = max`,
+    );
+  }
+});
+
+test('CwvAttributionSchema: URL-like keys never carry a query string or a fragment', () => {
+  for (const key of ['attr_longest_script_src', 'attr_start_url']) {
+    assert.equal(
+      CwvAttributionSchema.safeParse({ [key]: 'https://www.automecanik.com/x.js?token=abc' }).success,
+      false,
+      `${key} with query`,
+    );
+    assert.equal(
+      CwvAttributionSchema.safeParse({ [key]: 'https://www.automecanik.com/x#frag' }).success,
+      false,
+      `${key} with fragment`,
+    );
+  }
+});
+
+test('CwvAttributionSchema: a non-web script source may be reduced to its scheme', () => {
+  const r = CwvAttributionSchema.safeParse({ attr_longest_script_src: 'chrome-extension:' });
+  assert.equal(r.success, true, JSON.stringify(r.error?.issues));
+});
+
+test('CwvAttributionSchema: start URL must be an absolute URL', () => {
+  const r = CwvAttributionSchema.safeParse({ attr_start_url: '/pieces/x.html' });
+  assert.equal(r.success, false);
+});
+
+test('CwvAttributionSchema: string enrichment keys are length-bounded', () => {
+  const tooLong = 'x'.repeat(200);
+  for (const key of [
+    'attr_longest_script_invoker_type',
+    'attr_longest_script_subpart',
+    'attr_metric_id',
+    'attr_visibility_state',
+    'attr_navigation_type',
+  ]) {
+    assert.equal(CwvAttributionSchema.safeParse({ [key]: tooLong }).success, false, key);
+  }
+});
+
+test('CwvAttributionSchema: strict mode still rejects unknown attribution keys', () => {
+  const r = CwvBeaconClientPayloadSchema.safeParse(
+    withAttribution({ ...enrichedInpAttribution, attr_not_declared: 1 }),
+  );
+  assert.equal(r.success, false);
+  assert.deepEqual(
+    r.error?.issues.map((i) => [i.code, i.path.join('.')]),
+    [['unrecognized_keys', 'attribution']],
+  );
 });
