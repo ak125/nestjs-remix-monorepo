@@ -10,11 +10,22 @@
  *  POST /api/admin/seo-monitoring/run/gsc             — trigger manuel GSC fetch (debug)
  *  POST /api/admin/seo-monitoring/run/ga4             — trigger manuel GA4 fetch (debug)
  *
- * Auth : protégé par IsAdminGuard (ajouté à brancher dans AppModule).
+ * Auth : AuthenticatedGuard + IsAdminGuard sur toute la classe (y compris
+ * cron/health) — anonyme et non-admin → 403 sans appel de service.
  */
-import { Body, Controller, Get, Logger, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Logger,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseClient, createClient } from '@supabase/supabase-js';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { getEffectiveSupabaseKey } from '@common/utils';
 import { GoogleCredentialsService } from '../services/google-credentials.service';
 import { GscDailyFetcherService } from '../services/gsc-daily-fetcher.service';
@@ -28,6 +39,7 @@ import { SeoMonitoringRunsService } from '../services/seo-monitoring-runs.servic
 import { RagMirrorFreshnessService } from '../services/rag-mirror-freshness.service';
 
 @Controller('api/admin/seo-monitoring')
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class SeoMonitoringController {
   private readonly logger = new Logger(SeoMonitoringController.name);
   private readonly supabase: SupabaseClient;
