@@ -24232,6 +24232,8 @@
         "backend/src/modules/seo-monitoring/seo-monitoring.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "@common/utils",
         "backend/src/modules/seo-monitoring/services/audit-findings.service.ts",
         "backend/src/modules/seo-monitoring/services/ga4-daily-fetcher.service.ts",
@@ -24242,7 +24244,7 @@
         "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts"
       ],
       "kind": "controller",
-      "loc": 374,
+      "loc": 386,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts",
       "risk": "low",
@@ -37752,6 +37754,25 @@
       "loc": 48,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/seo-monitoring/quality-history.controller.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/seo-monitoring/seo-monitoring.controller.http-guards.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 341,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/seo-monitoring/seo-monitoring.controller.http-guards.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
