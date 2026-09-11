@@ -33076,7 +33076,7 @@
         "frontend/index.cjs"
       ],
       "kind": "service",
-      "loc": 277,
+      "loc": 300,
       "owner": "__unassigned__",
       "path": "backend/src/main.ts",
       "risk": "low",
@@ -98239,11 +98239,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "25765692c5c196e2cf2b669cee3f80d6995921876e836ade74240dd538b87bdb",
       "audit/registry/deps.json": "6f667991be593e37b2798c4ca0f0689d89c412731aa2bdf50000248da9f2c5bd",
-      "audit/registry/files.json": "ae650a7780d5937f8d970f2572e11977dbfc898bff507ba36c2a1c81cfe4872b",
+      "audit/registry/files.json": "15fe09528bda107fe6d80df16d9a069aab52350d2ecc033d7eeeff887d205b8b",
       "audit/registry/rpc.json": "59d3bb0e2b79c240fb14ec32e3adab2b269fe5a69a3c721ab762128504f4f980",
       "audit/registry/runtime.json": "11b58e35c0f151b043fc74b164953c754d4c32c7164107587b53fd9046e30e68"
     },
-    "sotFingerprint": "edb094f5c068"
+    "sotFingerprint": "b6a50ab37ed7"
   },
   "runtime": [
     {

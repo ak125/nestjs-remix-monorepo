@@ -336,6 +336,14 @@ fi
 #    C'est aussi ce que fait la CI. Contrepartie assumée : `npm ci` purge
 #    node_modules avant réinstall → un échec laisse DEV sans deps jusqu'au prochain
 #    run ; le cron alerte déjà (abort ci-dessous) et re-tente au tick suivant (~10 min).
+#
+#    Build de tout le monorepo SAUF le backend : `backend/dist` appartient au stack dev
+#    en marche (`tsc --build --watch` et `tsc-alias --watch` le recompilent depuis les
+#    sources que le ff-merge vient de changer, nodemon le surveille). Le `build` du
+#    backend commence par `prebuild: rimraf dist` : lancé ici, il supprime le répertoire
+#    que surveille nodemon, qui perd tous ses watches inotify et ne relance plus jamais
+#    l'app — DEV:3000 à terre jusqu'à relance manuelle (2026-09-11, 07:20 et 13:50, à
+#    chaque cache turbo manqué du backend ; le `touch` de l'étape 7 n'y peut rien).
 INSTALL_LOG="${TMPDIR:-/tmp}/${LOG_TAG}-npm-install-$$.log"
 BUILD_LOG="${TMPDIR:-/tmp}/${LOG_TAG}-npm-build-$$.log"
 if ! git diff --quiet "$local_sha" "$remote_sha" -- package-lock.json 2>/dev/null; then
@@ -345,7 +353,7 @@ if ! git diff --quiet "$local_sha" "$remote_sha" -- package-lock.json 2>/dev/nul
     abort "npm ci échoué — log complet : $INSTALL_LOG"
   fi
 fi
-if ! npm run build >"$BUILD_LOG" 2>&1; then
+if ! npm run build -- --filter='!@fafa/backend' >"$BUILD_LOG" 2>&1; then
   tail -50 "$BUILD_LOG" >&2
   abort "npm run build échoué — log complet : $BUILD_LOG"
 fi
@@ -356,7 +364,8 @@ fi
 #     refuse de marquer ":3000 sain" sans l'avoir vérifié.
 check_workspace_integrity || abort "drift workspaces après npm install + build — install/build incomplet (cf. alerts ci-dessus)"
 
-# 7. Redémarrer le runtime (nodemon surveille dist ; le build l'a réécrit, on force un boot propre).
+# 7. Redémarrer le runtime : nodemon ne surveille que backend/dist, pas les dist des
+#    workspaces que le build vient de réécrire — on force un boot qui les recharge.
 touch backend/dist/main.js
 
 # 8. Health check avec retries — un échec ici = dérive non auto-réparable (env manquant,
