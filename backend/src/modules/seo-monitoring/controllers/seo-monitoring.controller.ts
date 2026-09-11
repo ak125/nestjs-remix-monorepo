@@ -136,10 +136,16 @@ export class SeoMonitoringController {
    *
    * - `totals` + `daily` : `__seo_gsc_daily_property_total` (1 ligne/jour, total
    *   propriété sans dimension). Un jour absent reste ABSENT (listé dans
-   *   `coverage.missing_dates`), jamais compté comme zéro.
+   *   `coverage.missing_dates`), jamais compté comme zéro. Chaque point porte
+   *   `confirmed` (marqueur de commit posé) : un zéro confirmé est un vrai zéro ;
+   *   une ligne sans marqueur (ancien ingesteur, qui l'écrivait en premier et à
+   *   zéro si GSC ne renvoyait rien, ou réécriture interrompue) est listée dans
+   *   `coverage.unconfirmed_dates` et interdit `complete`.
    * - `coverage` : jours attendus = [max(from, plancher d'ingestion) ..
-   *   min(to, dernier jour présent)] ; le retard de fraîcheur GSC en queue de
+   *   min(to, dernier jour présent)] ; le retard de finalisation GSC en queue de
    *   fenêtre est porté par `last_data_date`, pas compté manquant.
+   * - Erreur de lecture (dont schéma sans `commit_version`) → `{ error }`, aucune
+   *   couverture affirmée.
    * - `rows` : échantillon du grain requêtes (`__seo_gsc_daily`), ordre non
    *   garanti, borné par `top` — NON EXHAUSTIF (`rows_scope`).
    *
@@ -170,7 +176,7 @@ export class SeoMonitoringController {
 
     const totalsRes = await this.supabase
       .from('__seo_gsc_daily_property_total')
-      .select('date, clicks, impressions, ctr, position')
+      .select('date, clicks, impressions, ctr, position, commit_version')
       .gte('date', dateFrom)
       .lte('date', dateTo)
       .order('date', { ascending: true })
@@ -200,6 +206,7 @@ export class SeoMonitoringController {
       impressions: Number(d.impressions) || 0,
       ctr: Number(d.ctr) || 0,
       position: Number(d.position) || 0,
+      confirmed: d.commit_version !== null && d.commit_version !== undefined,
     }));
     const totals = daily.reduce(
       (acc, d) => {
@@ -221,6 +228,7 @@ export class SeoMonitoringController {
             from: expectedFrom,
             to: expectedTo,
             presentDates: daily.map((d) => d.date),
+            confirmedDates: daily.filter((d) => d.confirmed).map((d) => d.date),
           })
         : null;
 
@@ -251,7 +259,9 @@ export class SeoMonitoringController {
         expected_to: days?.to ?? null,
         days_expected: days?.daysExpected ?? 0,
         days_present: days?.daysPresent ?? 0,
+        days_confirmed: days?.daysConfirmed ?? 0,
         missing_dates: days?.missingDates ?? [],
+        unconfirmed_dates: days?.unconfirmedDates ?? [],
         // aucune donnée → pas « complet » (rien n'est affirmé)
         complete: days?.complete ?? false,
       },

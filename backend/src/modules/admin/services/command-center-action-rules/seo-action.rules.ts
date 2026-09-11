@@ -51,7 +51,7 @@ export interface GscOpportunityMeta {
    * Synthèse de couverture publiée par la RPC (absente en v2/v1). v3 : ratio
    * impressions du grain segmenté. v4 (sans ratio) : 'insufficient_data' = aucune
    * impression commitée ; 'coverage_gap' = jour commité sans ligne page (grain non
-   * récupéré) ; 'incomplete_days' = jours attendus non commités. L'écart
+   * récupéré) ; 'incomplete_days' = jours attendus absents ou non confirmés. L'écart
    * d'agrégation GSC byPage/propriété n'entre pas dans ce statut. Tout statut ≠
    * 'ok' dégrade la confiance → PARTIAL, jamais un faux CERTIFIED.
    */
@@ -60,9 +60,9 @@ export interface GscOpportunityMeta {
     | 'coverage_gap'
     | 'insufficient_data'
     | 'incomplete_days';
-  /** Jours attendus / commités dans la fenêtre (v4 uniquement ; null = inconnu). */
+  /** Jours attendus / confirmés (marqueur de commit) dans la fenêtre (v4 uniquement ; null = inconnu). */
   days_expected?: number | null;
-  days_present?: number | null;
+  days_confirmed?: number | null;
 }
 
 /** Fallback honnête (RPC v1 sans enveloppe) : rien d'affirmé, confiance PARTIAL. */
@@ -221,8 +221,8 @@ export function buildSeoOpportunityActions(
         : `Liste non exhaustive (${meta.total_qualifying} pages qualifiantes sur les données disponibles, tous types confondus).`
       : `Échantillon top ${sampleSize} (toutes pages) — total qualifiant inconnu (RPC v1).`;
   const daysNote =
-    meta.days_expected != null && meta.days_present != null
-      ? ` (${meta.days_present}/${meta.days_expected} jours)`
+    meta.days_expected != null && meta.days_confirmed != null
+      ? ` (${meta.days_confirmed}/${meta.days_expected} jours confirmés)`
       : '';
   const coverageNote =
     meta.data_from && meta.data_to
@@ -248,7 +248,7 @@ export function buildSeoOpportunityActions(
         : meta.coverage_status === 'insufficient_data'
           ? ' ; couverture GSC indéterminée (total propriété absent)'
           : meta.coverage_status === 'incomplete_days'
-            ? ' ; jours GSC manquants dans la fenêtre — totaux non exhaustifs'
+            ? ' ; jours GSC manquants ou non confirmés dans la fenêtre — totaux non exhaustifs'
             : meta.grain_fidelity === 'faithful'
               ? ' ; grain page non récupéré pour certains jours commités — opportunités possiblement incomplètes'
               : ' ; couverture pages partielle vs total propriété — opportunités possiblement incomplètes');

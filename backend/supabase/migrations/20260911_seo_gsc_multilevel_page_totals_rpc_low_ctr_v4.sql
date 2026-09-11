@@ -32,10 +32,14 @@
 --
 -- Enveloppe v3 conservée (rows/total_qualifying/data_from/data_to/last_data_date/
 -- impact_score_version/coverage_status) + grain, days_expected, days_present,
--- missing_dates, retrieval_status, retrieval_gap_dates, gsc_aggregation.
+-- days_confirmed, missing_dates, unconfirmed_dates, retrieval_status,
+-- retrieval_gap_dates, gsc_aggregation. Vocabulaire des jours partagé avec
+-- timeseries/gsc et seo-control : présent = ligne property_total ; confirmé =
+-- marqueur posé ; manquant = aucune ligne ; non confirmé = ligne sans marqueur
+-- (ancien ingesteur ou réécriture interrompue).
 -- coverage_status (synthèse consommateur, SANS ratio) :
 --   insufficient_data (aucune impression commitée) > coverage_gap (récupération
---   incomplète) > incomplete_days (jours manquants) > ok.
+--   incomplète) > incomplete_days (jours manquants ou non confirmés) > ok.
 -- Additive (v3 inchangée) · STABLE read-only · pas de BEGIN/COMMIT (squawk).
 -- =====================================================
 
@@ -82,9 +86,17 @@ AS $function$
     ) AS d
     WHERE db.data_to IS NOT NULL
   ),
+  -- Jour attendu sans aucune ligne property_total.
   missing AS (
-    SELECT e.date FROM expected e LEFT JOIN committed c USING (date)
-    WHERE c.date IS NULL
+    SELECT e.date FROM expected e
+    LEFT JOIN __seo_gsc_daily_property_total pt ON pt.date = e.date
+    WHERE pt.date IS NULL
+  ),
+  -- Jour attendu dont la ligne property_total n'a pas de marqueur de commit.
+  unconfirmed AS (
+    SELECT e.date FROM expected e
+    JOIN __seo_gsc_daily_property_total pt ON pt.date = e.date
+    WHERE pt.commit_version IS NULL
   ),
   pages AS (
     SELECT p.date, p.page, p.clicks, p.impressions, p.position
@@ -143,9 +155,10 @@ AS $function$
       COALESCE((SELECT SUM(clicks) FROM committed), 0)::BIGINT AS prop_clicks,
       COALESCE((SELECT SUM(impressions) FROM committed), 0)::BIGINT AS prop_impr,
       (SELECT COUNT(*) FROM expected)::INT AS days_expected,
-      (SELECT COUNT(*) FROM expected e JOIN committed c USING (date))::INT AS days_present,
+      ((SELECT COUNT(*) FROM expected) - (SELECT COUNT(*) FROM missing))::INT AS days_present,
+      (SELECT COUNT(*) FROM expected e JOIN committed c USING (date))::INT AS days_confirmed,
       (SELECT COUNT(*) FROM committed)::INT AS days_committed,
-      EXISTS (SELECT 1 FROM missing) AS has_missing,
+      (EXISTS (SELECT 1 FROM missing) OR EXISTS (SELECT 1 FROM unconfirmed)) AS has_incomplete_days,
       EXISTS (SELECT 1 FROM retrieval_gaps) AS has_retrieval_gap
   )
   SELECT jsonb_build_object(
@@ -174,10 +187,12 @@ AS $function$
     'last_data_date', (SELECT data_to FROM day_bounds),
     'impact_score_version', 'v1',
     'grain', 'page_totals',
-    -- a. Couverture des jours importés (jours COMMITÉS)
+    -- a. Couverture des jours importés (seuls les jours CONFIRMÉS alimentent rows)
     'days_expected', (SELECT days_expected FROM cov),
     'days_present', (SELECT days_present FROM cov),
+    'days_confirmed', (SELECT days_confirmed FROM cov),
     'missing_dates', COALESCE((SELECT jsonb_agg(date ORDER BY date) FROM missing), '[]'::jsonb),
+    'unconfirmed_dates', COALESCE((SELECT jsonb_agg(date ORDER BY date) FROM unconfirmed), '[]'::jsonb),
     -- b. Récupération du grain demandé sur les jours commités
     'retrieval_status', (
       SELECT CASE
@@ -200,7 +215,7 @@ AS $function$
       SELECT CASE
         WHEN prop_impr <= 0 THEN 'insufficient_data'
         WHEN has_retrieval_gap THEN 'coverage_gap'
-        WHEN has_missing THEN 'incomplete_days'
+        WHEN has_incomplete_days THEN 'incomplete_days'
         ELSE 'ok' END FROM cov
     )
   );

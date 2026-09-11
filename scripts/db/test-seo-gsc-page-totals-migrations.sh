@@ -80,9 +80,9 @@ assert() { # assert <libellé> <attendu> <obtenu>
 
 P_NOW="TIMESTAMPTZ '2026-09-11 02:00:00+00'"
 v4() { echo "public.rpc_seo_low_ctr_v4(${1:-10}, $P_NOW, 100, 0.01, 50, ${2:-NULL})"; }
-# Synthèse : statut|attendus|commités|manquants|récupération|trous|qualifiantes|from|to
+# Synthèse : statut|attendus|présents|confirmés|manquants|non_confirmés|récupération|trous|qualifiantes|from|to
 summary() {
-  echo "(SELECT concat_ws('|', v->>'coverage_status', v->>'days_expected', v->>'days_present', (v->'missing_dates')::text, v->>'retrieval_status', (v->'retrieval_gap_dates')::text, v->>'total_qualifying', COALESCE(v->>'data_from','null'), COALESCE(v->>'data_to','null')) FROM (SELECT $1 AS v) x)"
+  echo "(SELECT concat_ws('|', v->>'coverage_status', v->>'days_expected', v->>'days_present', v->>'days_confirmed', (v->'missing_dates')::text, (v->'unconfirmed_dates')::text, v->>'retrieval_status', (v->'retrieval_gap_dates')::text, v->>'total_qualifying', COALESCE(v->>'data_from','null'), COALESCE(v->>'data_to','null')) FROM (SELECT $1 AS v) x)"
 }
 # scen <seed> <expr> [TimeZone] → exécuté en service_role sur des tables vidées, ROLLBACK
 scen() {
@@ -211,7 +211,7 @@ assert "v3 : enveloppe toujours identique" "$V3_BEFORE" \
   "$(sql "BEGIN; SET LOCAL ROLE service_role; SELECT $V3_CALL::text; ROLLBACK;")"
 
 echo; echo "=== rpc_seo_low_ctr_v4 — scénarios (fenêtre 10 j : 09-01..09-10) ==="
-assert "S1 complet → ok" 'ok|10|10|[]|complete|[]|1|2026-09-01|2026-09-10' \
+assert "S1 complet → ok" 'ok|10|10|10|[]|[]|complete|[]|1|2026-09-01|2026-09-10' \
   "$(scen "$SEED_COMPLETE" "$(summary "$(v4)")")"
 assert "S1 ligne : page, surface R1 (chemin), impressions, position pondérée, sévérité, score" \
   "$PAGE_A|R1|30000|0|4|critical|1500" \
@@ -222,16 +222,16 @@ S2_SEED="$SEED_COMPLETE
 DELETE FROM public.__seo_gsc_daily_property_total WHERE date IN ('2026-09-04', '2026-09-05');
 UPDATE public.__seo_gsc_daily_property_total SET commit_version = NULL WHERE date = '2026-09-06';
 UPDATE public.__seo_gsc_daily_page_totals SET impressions = 99999 WHERE date = '2026-09-06' AND page = '$PAGE_A';"
-assert "S2 partiel (2 absents + 1 non commité) → incomplete_days, jours listés" \
-  'incomplete_days|10|7|["2026-09-04", "2026-09-05", "2026-09-06"]|complete|[]|1|2026-09-01|2026-09-10' \
+assert "S2 partiel (2 absents + 1 non commité) → incomplete_days, absents et non confirmé listés séparément" \
+  'incomplete_days|10|8|7|["2026-09-04", "2026-09-05"]|["2026-09-06"]|complete|[]|1|2026-09-01|2026-09-10' \
   "$(scen "$S2_SEED" "$(summary "$(v4)")")"
 assert "S2 lignes page des jours non commités exclues du numérateur" "21000" \
   "$(scen "$S2_SEED" "$(v4)->'rows'->0->>'impressions'")"
-assert "S3 vide → insufficient_data, rien d'affirmé" 'insufficient_data|0|0|[]|unknown|[]|0|null|null' \
+assert "S3 vide → insufficient_data, rien d'affirmé" 'insufficient_data|0|0|0|[]|[]|unknown|[]|0|null|null' \
   "$(scen "" "$(summary "$(v4)")")"
 assert "S3 vide → rows []" "[]" "$(scen "" "($(v4)->'rows')::text")"
 assert "S4 grain page non récupéré un jour commité → coverage_gap (récupération), pas un jour manquant" \
-  'coverage_gap|10|10|[]|gap|["2026-09-03"]|1|2026-09-01|2026-09-10' \
+  'coverage_gap|10|10|10|[]|[]|gap|["2026-09-03"]|1|2026-09-01|2026-09-10' \
   "$(scen "$SEED_COMPLETE
 DELETE FROM public.__seo_gsc_daily_page_totals WHERE date = '2026-09-03';" "$(summary "$(v4)")")"
 assert "S4b grain page indisponible sur toute la fenêtre → coverage_gap, 10 jours en trou, 0 ligne" "coverage_gap|gap|10|0" \
@@ -241,11 +241,11 @@ S5_SEED="$SEED_COMPLETE
 UPDATE public.__seo_gsc_daily_page_totals SET impressions = 1500 WHERE page = '$PAGE_A';
 UPDATE public.__seo_gsc_daily_page_totals SET impressions = 1250, clicks = 40 WHERE page = '$PAGE_B';"
 assert "S5 écart d'agrégation GSC fort (ratios 0,5), grain récupéré → ok (le ratio ne décide pas)" \
-  'ok|10|10|[]|complete|[]|1|2026-09-01|2026-09-10' "$(scen "$S5_SEED" "$(summary "$(v4)")")"
+  'ok|10|10|10|[]|[]|complete|[]|1|2026-09-01|2026-09-10' "$(scen "$S5_SEED" "$(summary "$(v4)")")"
 assert "S5 ratios publiés" "0.5|0.5" \
   "$(scen "$S5_SEED" "(SELECT concat_ws('|', g->>'page_vs_property_clicks_ratio', g->>'page_vs_property_impressions_ratio') FROM (SELECT $(v4)->'gsc_aggregation' AS g) x)")"
 assert "S6 jour zéro CONFIRMÉ (commité 0/0, sans ligne page) → présent, pas un trou" \
-  'ok|10|10|[]|complete|[]|1|2026-09-01|2026-09-10' \
+  'ok|10|10|10|[]|[]|complete|[]|1|2026-09-01|2026-09-10' \
   "$(scen "$SEED_COMPLETE
 UPDATE public.__seo_gsc_daily_property_total SET clicks = 0, impressions = 0, ctr = 0, position = 0 WHERE date = '2026-09-02';
 DELETE FROM public.__seo_gsc_daily_page_totals WHERE date = '2026-09-02';" "$(summary "$(v4)")")"
@@ -253,22 +253,26 @@ S7_SEED="$SEED_COMPLETE
 DELETE FROM public.__seo_gsc_daily_property_total WHERE date < '2026-09-05';
 DELETE FROM public.__seo_gsc_daily_page_totals WHERE date < '2026-09-05';"
 assert "S7 plancher p_expected_from = 09-05 → jours antérieurs non attendus" \
-  'ok|6|6|[]|complete|[]|1|2026-09-05|2026-09-10' "$(scen "$S7_SEED" "$(summary "$(v4 10 "DATE '2026-09-05'")")")"
+  'ok|6|6|6|[]|[]|complete|[]|1|2026-09-05|2026-09-10' "$(scen "$S7_SEED" "$(summary "$(v4 10 "DATE '2026-09-05'")")")"
 assert "S7 sans plancher → 09-01..09-04 manquants" \
-  'incomplete_days|10|6|["2026-09-01", "2026-09-02", "2026-09-03", "2026-09-04"]|complete|[]|1|2026-09-05|2026-09-10' \
+  'incomplete_days|10|6|6|["2026-09-01", "2026-09-02", "2026-09-03", "2026-09-04"]|[]|complete|[]|1|2026-09-05|2026-09-10' \
   "$(scen "$S7_SEED" "$(summary "$(v4)")")"
 assert "S8 queue non finalisée (09-09, 09-10 absents) → non comptée manquante, portée par last_data_date" \
-  'ok|8|8|[]|complete|[]|1|2026-09-01|2026-09-08|2026-09-08' \
+  'ok|8|8|8|[]|[]|complete|[]|1|2026-09-01|2026-09-08|2026-09-08' \
   "$(scen "$SEED_COMPLETE
 DELETE FROM public.__seo_gsc_daily_property_total WHERE date > '2026-09-08';
 DELETE FROM public.__seo_gsc_daily_page_totals WHERE date > '2026-09-08';" "$(summary "$(v4)") || '|' || ($(v4)->>'last_data_date')")"
+assert "S8b dernier jour en réécriture (marqueur retiré) → hors fenêtre attendue, recul porté par last_data_date (règle documentée)" \
+  'ok|9|9|9|[]|[]|complete|[]|1|2026-09-01|2026-09-09|2026-09-09' \
+  "$(scen "$SEED_COMPLETE
+UPDATE public.__seo_gsc_daily_property_total SET commit_version = NULL WHERE date = '2026-09-10';" "$(summary "$(v4)") || '|' || ($(v4)->>'last_data_date')")"
 S1_UTC=$(scen "$SEED_COMPLETE" "$(summary "$(v4)")")
 assert "S9 fuseau de session America/Los_Angeles → même enveloppe qu'en UTC" "$S1_UTC" \
   "$(scen "$SEED_COMPLETE" "$(summary "$(v4)")" "America/Los_Angeles")"
 assert "S9 fuseau de session Pacific/Kiritimati → même enveloppe qu'en UTC" "$S1_UTC" \
   "$(scen "$SEED_COMPLETE" "$(summary "$(v4)")" "Pacific/Kiritimati")"
 assert "S10 état actuel PROD (lignes legacy sans marqueur) → insufficient_data, jamais certifié" \
-  'insufficient_data|0|0|[]|unknown|[]|0|null|null' \
+  'insufficient_data|0|0|0|[]|[]|unknown|[]|0|null|null' \
   "$(sql "BEGIN; SET LOCAL ROLE service_role; SELECT $(summary "$(v4 30)"); ROLLBACK;")"
 
 echo; echo "=== Reprise interrompue rejouée côté base (séquence d'écritures du fetcher) ==="
@@ -292,15 +296,15 @@ VALUES ('2026-09-07', 80, 5500, 0.0145, 11, 1)
 ON CONFLICT (date) DO UPDATE SET clicks = EXCLUDED.clicks, impressions = EXCLUDED.impressions, commit_version = EXCLUDED.commit_version;
 SELECT 'T3=' || $(summary "$(v4)") || '|' || ($(v4)->'rows'->0->>'impressions');
 ROLLBACK;")
-assert "T0 jour 09-07 commité → ok" 'T0=ok|10|10|[]|complete|[]|1|2026-09-01|2026-09-10' "$(grep '^T0=' <<<"$RESUME")"
-assert "T1 marqueur retiré avant réécriture → 09-07 exclu, listé manquant" \
-  'T1=incomplete_days|10|9|["2026-09-07"]|complete|[]|1|2026-09-01|2026-09-10' "$(grep '^T1=' <<<"$RESUME")"
+assert "T0 jour 09-07 commité → ok" 'T0=ok|10|10|10|[]|[]|complete|[]|1|2026-09-01|2026-09-10' "$(grep '^T0=' <<<"$RESUME")"
+assert "T1 marqueur retiré avant réécriture → 09-07 exclu, listé non confirmé (ligne présente)" \
+  'T1=incomplete_days|10|10|9|[]|["2026-09-07"]|complete|[]|1|2026-09-01|2026-09-10' "$(grep '^T1=' <<<"$RESUME")"
 assert "T2 réécriture partielle puis panne → toujours exclu, valeur partielle NON comptée" \
-  'T2=incomplete_days|10|9|["2026-09-07"]|complete|[]|1|2026-09-01|2026-09-10|27000' "$(grep '^T2=' <<<"$RESUME")"
+  'T2=incomplete_days|10|10|9|[]|["2026-09-07"]|complete|[]|1|2026-09-01|2026-09-10|27000' "$(grep '^T2=' <<<"$RESUME")"
 assert "T3 reprise complète + commit en dernier → ok, valeurs complètes" \
-  'T3=ok|10|10|[]|complete|[]|1|2026-09-01|2026-09-10|30000' "$(grep '^T3=' <<<"$RESUME")"
+  'T3=ok|10|10|10|[]|[]|complete|[]|1|2026-09-01|2026-09-10|30000' "$(grep '^T3=' <<<"$RESUME")"
 assert "Contre-exemple (code avant correctif, sans retrait du marqueur) → reprise partielle CERTIFIÉE" \
-  'ok|10|10|[]|complete|[]|1|2026-09-01|2026-09-10|126999' \
+  'ok|10|10|10|[]|[]|complete|[]|1|2026-09-01|2026-09-10|126999' \
   "$(scen "$SEED_COMPLETE
 UPDATE public.__seo_gsc_daily_page_totals SET impressions = 99999 WHERE date = '2026-09-07' AND page = '$PAGE_A';" \
     "$(summary "$(v4)") || '|' || ($(v4)->'rows'->0->>'impressions')")"

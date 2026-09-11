@@ -135,7 +135,8 @@ export class CommandCenterActionsService extends SupabaseBaseService {
           | null;
         grain?: string | null;
         days_expected?: number | string | null;
-        days_present?: number | string | null;
+        /** v4 : jours attendus CONFIRMÉS (marqueur de commit) — seuls à alimenter rows. */
+        days_confirmed?: number | string | null;
       };
       // null doit RESTER null (Number(null) === 0 fabriquerait « Liste complète
       // (0 pages qualifiantes) » à côté de lignes non vides).
@@ -154,7 +155,7 @@ export class CommandCenterActionsService extends SupabaseBaseService {
         grain_fidelity,
         coverage_status: d.coverage_status ?? undefined,
         days_expected: toCount(d.days_expected),
-        days_present: toCount(d.days_present),
+        days_confirmed: toCount(d.days_confirmed),
       });
 
       // Chaîne v4 → v3 → v2 → v1 (dégradation gracieuse, chaque repli loggué — no

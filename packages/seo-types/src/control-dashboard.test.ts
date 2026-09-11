@@ -113,14 +113,18 @@ const validSnapshot = {
       to: '2026-09-10',
       days_expected: 7,
       days_present: 7,
+      days_confirmed: 7,
       missing_dates: [],
+      unconfirmed_dates: [],
     },
     previous: {
       from: '2026-08-28',
       to: '2026-09-03',
       days_expected: 7,
       days_present: 7,
+      days_confirmed: 7,
       missing_dates: [],
+      unconfirmed_dates: [],
     },
   },
   trafficWindow: validTraffic,
@@ -369,10 +373,59 @@ describe('SeoControlSnapshotSchema', () => {
         current: {
           ...validSnapshot.gscComparability.current,
           days_present: 5,
+          days_confirmed: 5,
           missing_dates: ['2026-09-09', '2026-09-10'],
         },
       },
     });
+  });
+  it('accepts a non-comparable window whose rows exist but are not committed', () => {
+    SeoControlSnapshotSchema.parse({
+      ...validSnapshot,
+      gscComparability: {
+        ...validSnapshot.gscComparability,
+        comparable: false,
+        reason: 'current_incomplete',
+        current: {
+          ...validSnapshot.gscComparability.current,
+          days_confirmed: 5,
+          unconfirmed_dates: ['2026-09-06', '2026-09-07'],
+        },
+      },
+    });
+  });
+  it('rejects a window without confirmation fields (no implicit "confirmed")', () => {
+    const {
+      days_confirmed: _dc,
+      unconfirmed_dates: _ud,
+      ...legacyWindow
+    } = validSnapshot.gscComparability.current;
+    assert.throws(() =>
+      SeoControlSnapshotSchema.parse({
+        ...validSnapshot,
+        gscComparability: {
+          ...validSnapshot.gscComparability,
+          current: legacyWindow,
+        },
+      }),
+    );
+  });
+  it('rejects a window whose confirmed + unconfirmed days do not add up to present days', () => {
+    assert.throws(() =>
+      SeoControlSnapshotSchema.parse({
+        ...validSnapshot,
+        gscComparability: {
+          ...validSnapshot.gscComparability,
+          comparable: false,
+          reason: 'current_incomplete',
+          current: {
+            ...validSnapshot.gscComparability.current,
+            days_confirmed: 5,
+            unconfirmed_dates: [],
+          },
+        },
+      }),
+    );
   });
   it('rejects comparable=true with a reason, and comparable=false without one', () => {
     assert.throws(() =>

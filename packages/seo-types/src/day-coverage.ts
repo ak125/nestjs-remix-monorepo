@@ -10,6 +10,13 @@
  * Consommateurs : planificateur d'ingestion GSC/GA4 (seo-monitoring),
  * timeseries GSC (seo-monitoring), snapshot seo-control (admin).
  *
+ * Présent ≠ confirmé (2026-09-11) : une ligne du jour peut exister sans que le
+ * jour soit certifié (ligne écrite par l'ancien ingesteur, qui posait le total
+ * propriété EN PREMIER et à zéro quand GSC ne renvoyait rien ; ou réécriture
+ * interrompue dont le marqueur de commit a été retiré). Les consommateurs qui
+ * passent `confirmedDates` n'obtiennent `complete` que si chaque jour attendu
+ * est présent ET confirmé.
+ *
  * Dates = chaînes ISO `YYYY-MM-DD` (jour de reporting), arithmétique en UTC
  * pour ne jamais dépendre du fuseau du process.
  */
@@ -54,33 +61,58 @@ export interface DayCoverage {
   from: string;
   to: string;
   daysExpected: number;
+  /** Jours attendus ayant une ligne (confirmée ou non). */
   daysPresent: number;
-  /** Jours attendus mais absents, ordre croissant. */
+  /** Jours attendus ayant une ligne confirmée (= `daysPresent` sans `confirmedDates`). */
+  daysConfirmed: number;
+  /** Jours attendus sans aucune ligne, ordre croissant. */
   missingDates: string[];
-  /** Au moins un jour attendu ET aucun jour manquant. */
+  /** Jours attendus présents mais non confirmés, ordre croissant. */
+  unconfirmedDates: string[];
+  /** Au moins un jour attendu, aucun manquant ET aucun non confirmé. */
   complete: boolean;
 }
 
 /**
  * Couverture d'une fenêtre `[from, to]` inclusive à partir des dates présentes.
- * Les dates présentes hors fenêtre sont ignorées.
+ * Les dates hors fenêtre sont ignorées. Sans `confirmedDates`, tout jour présent
+ * est tenu pour confirmé (comportement historique). Une date confirmée sans
+ * ligne présente est une entrée incohérente → exception (jamais comptée).
  */
 export function computeDayCoverage(input: {
   from: string;
   to: string;
   presentDates: Iterable<string>;
+  confirmedDates?: Iterable<string>;
 }): DayCoverage {
   const expected = enumerateDatesIso(input.from, input.to);
   const present = new Set(input.presentDates);
+  const confirmed = input.confirmedDates
+    ? new Set(input.confirmedDates)
+    : present;
+  const orphan = [...confirmed].filter((d) => !present.has(d));
+  if (orphan.length > 0) {
+    throw new Error(
+      `computeDayCoverage: date(s) confirmée(s) sans ligne présente (${orphan.join(", ")})`,
+    );
+  }
   const missingDates = expected.filter((d) => !present.has(d));
+  const unconfirmedDates = expected.filter(
+    (d) => present.has(d) && !confirmed.has(d),
+  );
   const daysPresent = expected.length - missingDates.length;
   return {
     from: input.from,
     to: input.to,
     daysExpected: expected.length,
     daysPresent,
+    daysConfirmed: daysPresent - unconfirmedDates.length,
     missingDates,
-    complete: expected.length > 0 && missingDates.length === 0,
+    unconfirmedDates,
+    complete:
+      expected.length > 0 &&
+      missingDates.length === 0 &&
+      unconfirmedDates.length === 0,
   };
 }
 

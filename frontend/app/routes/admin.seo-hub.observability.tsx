@@ -96,16 +96,21 @@ interface GscDailyTotal {
   impressions: number;
   ctr: number;
   position: number;
+  /** Marqueur de commit posé : jour certifié (un zéro confirmé est un vrai zéro). */
+  confirmed: boolean;
 }
 
-/** Couverture jours du total propriété (jours absents ≠ zéro). */
+/** Couverture jours du total propriété (jours absents ≠ zéro, présent ≠ confirmé). */
 interface GscCoverage {
   last_data_date: string | null;
   expected_from: string | null;
   expected_to: string | null;
   days_expected: number;
   days_present: number;
+  days_confirmed: number;
   missing_dates: string[];
+  /** Ligne présente sans marqueur : ancien ingesteur ou réécriture interrompue. */
+  unconfirmed_dates: string[];
   complete: boolean;
 }
 
@@ -263,7 +268,7 @@ export default function SeoHubObservability() {
   const gscCov = data.gscCoverage;
   const gscDaysLabel =
     gscCov && gscCov.days_expected > 0
-      ? `${gscCov.days_present}/${gscCov.days_expected} jours`
+      ? `${gscCov.days_confirmed}/${gscCov.days_expected} jours confirmés`
       : "couverture inconnue";
 
   // Série quotidienne du total propriété ; jours manquants = null (trou visible), jamais 0.
@@ -378,9 +383,17 @@ export default function SeoHubObservability() {
               Totaux non exhaustifs : les jours manquants ne sont pas comptés
               comme zéro et apparaissent comme des trous dans la courbe.
             </p>
-            <p className="text-xs font-mono break-words">
-              Jours manquants : {gscCov.missing_dates.join(", ")}
-            </p>
+            {gscCov.missing_dates.length > 0 ? (
+              <p className="text-xs font-mono break-words">
+                Jours manquants : {gscCov.missing_dates.join(", ")}
+              </p>
+            ) : null}
+            {gscCov.unconfirmed_dates.length > 0 ? (
+              <p className="text-xs font-mono break-words">
+                Jours présents non confirmés (ingestion à reprendre) :{" "}
+                {gscCov.unconfirmed_dates.join(", ")}
+              </p>
+            ) : null}
           </AlertDescription>
         </Alert>
       ) : null}

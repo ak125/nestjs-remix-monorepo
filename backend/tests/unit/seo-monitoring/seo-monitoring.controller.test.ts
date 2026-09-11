@@ -20,8 +20,11 @@ jest.mock('@supabase/supabase-js', () => ({ createClient: jest.fn() }));
 
 type Row = Record<string, unknown>;
 
-/** Builder PostgREST minimal : enregistre les filtres, résout les lignes de la table. */
-function fakeSupabase(tables: Record<string, Row[]>) {
+/** Builder PostgREST minimal : enregistre les filtres, résout les lignes (ou l'erreur) de la table. */
+function fakeSupabase(
+  tables: Record<string, Row[]>,
+  errors: Record<string, { code: string; message: string }> = {},
+) {
   const calls: Array<{ table: string; ops: Array<[string, unknown[]]> }> = [];
   const from = jest.fn((table: string) => {
     const call = { table, ops: [] as Array<[string, unknown[]]> };
@@ -33,15 +36,22 @@ function fakeSupabase(tables: Record<string, Row[]>) {
         return builder;
       };
     }
-    builder.then = (resolve: (v: { data: Row[]; error: null }) => unknown) =>
-      resolve({ data: tables[table] ?? [], error: null });
+    builder.then = (resolve: (v: unknown) => unknown) =>
+      resolve(
+        errors[table]
+          ? { data: null, error: errors[table] }
+          : { data: tables[table] ?? [], error: null },
+      );
     return builder;
   });
   return { client: { from }, calls };
 }
 
-function makeController(tables: Record<string, Row[]>) {
-  const fake = fakeSupabase(tables);
+function makeController(
+  tables: Record<string, Row[]>,
+  errors: Record<string, { code: string; message: string }> = {},
+) {
+  const fake = fakeSupabase(tables, errors);
   (createClient as jest.Mock).mockReturnValue(fake.client);
   const config = {
     get: (key: string) =>
@@ -89,6 +99,7 @@ describe('SeoMonitoringController — GET timeseries/gsc', () => {
       impressions: 3000,
       ctr: 0.0133,
       position: 20,
+      commit_version: 1,
     },
     {
       date: '2026-08-11',
@@ -96,6 +107,7 @@ describe('SeoMonitoringController — GET timeseries/gsc', () => {
       impressions: 3500,
       ctr: 0.0143,
       position: 18,
+      commit_version: 1,
     },
     // 08-12 et 08-13 ABSENTS (trou d'ingestion)
     {
@@ -104,6 +116,7 @@ describe('SeoMonitoringController — GET timeseries/gsc', () => {
       impressions: 4000,
       ctr: 0.015,
       position: 16,
+      commit_version: 1,
     },
   ];
   // échantillon requêtes : volontairement sans rapport avec les totaux propriété
@@ -175,7 +188,9 @@ describe('SeoMonitoringController — GET timeseries/gsc', () => {
       expected_to: '2026-08-14', // 08-15/08-16 = retard GSC, porté par last_data_date
       days_expected: 5,
       days_present: 3,
+      days_confirmed: 3,
       missing_dates: ['2026-08-12', '2026-08-13'],
+      unconfirmed_dates: [],
       complete: false,
     });
     // aucun zéro fabriqué dans la série
@@ -191,6 +206,7 @@ describe('SeoMonitoringController — GET timeseries/gsc', () => {
           impressions: 10,
           ctr: 0.1,
           position: 5,
+          commit_version: 1,
         },
         {
           date: '2026-06-02',
@@ -198,6 +214,7 @@ describe('SeoMonitoringController — GET timeseries/gsc', () => {
           impressions: 10,
           ctr: 0.1,
           position: 5,
+          commit_version: 1,
         },
       ],
       __seo_gsc_daily: [],
@@ -241,6 +258,10 @@ describe('SeoMonitoringController — GET timeseries/gsc', () => {
     )!;
     expect(totalsCall.ops).toEqual(
       expect.arrayContaining([
+        [
+          'select',
+          ['date, clicks, impressions, ctr, position, commit_version'],
+        ],
         ['gte', ['date', '2026-08-10']],
         ['lte', ['date', '2026-08-16']],
         ['order', ['date', { ascending: true }]],
@@ -250,6 +271,126 @@ describe('SeoMonitoringController — GET timeseries/gsc', () => {
     const queryCall = calls.find((c) => c.table === '__seo_gsc_daily')!;
     expect(queryCall.ops).toContainEqual(['limit', [500]]);
     expect(res.rows_scope.limit).toBe(500);
+  });
+
+  it('distingue jour confirmé, zéro confirmé, ligne non commitée (héritée ou réécriture interrompue) et jour absent', async () => {
+    const { controller } = makeController({
+      __seo_gsc_daily_property_total: [
+        // commité
+        {
+          date: '2026-08-10',
+          clicks: 40,
+          impressions: 3000,
+          ctr: 0.0133,
+          position: 20,
+          commit_version: 1,
+        },
+        // zéro CONFIRMÉ : jour finalisé sans impression, marqueur posé
+        {
+          date: '2026-08-11',
+          clicks: 0,
+          impressions: 0,
+          ctr: 0,
+          position: 0,
+          commit_version: 1,
+        },
+        // ligne héritée : l'ancien code écrivait property_total EN PREMIER, à 0 si GSC ne renvoyait rien
+        {
+          date: '2026-08-12',
+          clicks: 0,
+          impressions: 0,
+          ctr: 0,
+          position: 0,
+          commit_version: null,
+        },
+        // 08-13 ABSENT
+        // réécriture interrompue : marqueur retiré, ancienne valeur encore là
+        {
+          date: '2026-08-14',
+          clicks: 60,
+          impressions: 4000,
+          ctr: 0.015,
+          position: 16,
+          commit_version: null,
+        },
+      ],
+      __seo_gsc_daily: [],
+    });
+    const res = (await controller.timeseriesGsc(
+      '2026-08-10',
+      '2026-08-16',
+    )) as Record<string, any>;
+
+    expect(res.coverage).toEqual({
+      grain: 'property_total',
+      last_data_date: '2026-08-14',
+      expected_from: '2026-08-10',
+      expected_to: '2026-08-14',
+      days_expected: 5,
+      days_present: 4,
+      days_confirmed: 2,
+      missing_dates: ['2026-08-13'],
+      unconfirmed_dates: ['2026-08-12', '2026-08-14'],
+      complete: false,
+    });
+    expect(
+      res.daily.map((d: Row) => [d.date, d.impressions, d.confirmed]),
+    ).toEqual([
+      ['2026-08-10', 3000, true],
+      ['2026-08-11', 0, true],
+      ['2026-08-12', 0, false],
+      ['2026-08-14', 4000, false],
+    ]);
+  });
+
+  it('une ligne non commitée ne rend jamais la fenêtre complète, même seule manquante de marqueur', async () => {
+    const committed = (date: string) => ({
+      date,
+      clicks: 10,
+      impressions: 1000,
+      ctr: 0.01,
+      position: 10,
+      commit_version: 1,
+    });
+    const { controller } = makeController({
+      __seo_gsc_daily_property_total: [
+        committed('2026-08-10'),
+        committed('2026-08-11'),
+        { ...committed('2026-08-12'), commit_version: null },
+      ],
+      __seo_gsc_daily: [],
+    });
+    const res = (await controller.timeseriesGsc(
+      '2026-08-10',
+      '2026-08-12',
+    )) as Record<string, any>;
+    expect(res.coverage.days_present).toBe(3);
+    expect(res.coverage.missing_dates).toEqual([]);
+    expect(res.coverage.unconfirmed_dates).toEqual(['2026-08-12']);
+    expect(res.coverage.complete).toBe(false);
+  });
+
+  it('schéma sans marqueur de commit (migration absente) → erreur explicite, aucune couverture affirmée', async () => {
+    const { controller } = makeController(
+      { __seo_gsc_daily: [] },
+      {
+        __seo_gsc_daily_property_total: {
+          code: '42703',
+          message:
+            'column __seo_gsc_daily_property_total.commit_version does not exist',
+        },
+      },
+    );
+    const res = (await controller.timeseriesGsc(
+      '2026-08-10',
+      '2026-08-16',
+    )) as Record<string, any>;
+    expect(res).toEqual({
+      error:
+        'column __seo_gsc_daily_property_total.commit_version does not exist',
+      rows: [],
+    });
+    expect(res.coverage).toBeUndefined();
   });
 
   it('dates invalides ou inversées → 400 explicite, aucune lecture', async () => {

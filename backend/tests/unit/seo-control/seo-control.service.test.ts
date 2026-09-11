@@ -58,7 +58,15 @@ function range(from: string, to: string): string[] {
   return out;
 }
 
-function makeService(presentDates: string[], presenceError: unknown = null) {
+/**
+ * `committedDates` : lignes property_total portant le marqueur de commit ;
+ * `uncommittedDates` : lignes présentes SANS marqueur (héritées ou réécriture interrompue).
+ */
+function makeService(
+  committedDates: string[],
+  presenceError: unknown = null,
+  uncommittedDates: string[] = [],
+) {
   const config = {
     get: (key: string) =>
       ({
@@ -84,7 +92,16 @@ function makeService(presentDates: string[], presenceError: unknown = null) {
     resolve(
       presenceError
         ? { data: null, error: presenceError }
-        : { data: presentDates.map((date) => ({ date })), error: null },
+        : {
+            data: [
+              ...committedDates.map((date) => ({ date, commit_version: 1 })),
+              ...uncommittedDates.map((date) => ({
+                date,
+                commit_version: null,
+              })),
+            ],
+            error: null,
+          },
     );
   const rpcData: Record<string, unknown> = {
     rpc_seo_traffic_v1: traffic,
@@ -150,14 +167,18 @@ describe('SeoControlService — comparabilité des fenêtres GSC', () => {
         to: '2026-09-10',
         days_expected: 7,
         days_present: 7,
+        days_confirmed: 7,
         missing_dates: [],
+        unconfirmed_dates: [],
       },
       previous: {
         from: '2026-08-28',
         to: '2026-09-03',
         days_expected: 7,
         days_present: 7,
+        days_confirmed: 7,
         missing_dates: [],
+        unconfirmed_dates: [],
       },
     });
     expect(snap.trafficWindow.delta_vs_previous.direction).toBe('down');
@@ -165,7 +186,7 @@ describe('SeoControlService — comparabilité des fenêtres GSC', () => {
     expect(snap.topLosers).toHaveLength(1);
     // lecture bornée aux 2 fenêtres
     expect(presenceOps).toEqual([
-      ['select', ['date']],
+      ['select', ['date, commit_version']],
       ['gte', ['date', '2026-08-28']],
       ['lte', ['date', '2026-09-10']],
       ['limit', [1000]],
@@ -235,6 +256,57 @@ describe('SeoControlService — comparabilité des fenêtres GSC', () => {
     expect(snap.gscComparability.previous.to).toBe('2026-08-13');
     expect(snap.gscComparability.comparable).toBe(false);
     expect(snap.trafficWindow.delta_vs_previous.direction).toBe('unknown');
+  });
+
+  it('lignes présentes mais non commitées dans la fenêtre courante → non comparable, jours non confirmés distingués des manquants', async () => {
+    const all = range('2026-08-28', '2026-09-10');
+    const legacy = ['2026-09-06', '2026-09-07'];
+    const { service } = makeService(
+      all.filter((d) => !legacy.includes(d)),
+      null,
+      legacy,
+    );
+    const snap = await service.getSnapshot('7d', 'admin-1');
+
+    expect(snap.gscComparability.comparable).toBe(false);
+    expect(snap.gscComparability.reason).toBe('current_incomplete');
+    expect(snap.gscComparability.current).toEqual({
+      from: '2026-09-04',
+      to: '2026-09-10',
+      days_expected: 7,
+      days_present: 7,
+      days_confirmed: 5,
+      missing_dates: [],
+      unconfirmed_dates: ['2026-09-06', '2026-09-07'],
+    });
+    expect(snap.trafficWindow.delta_vs_previous.direction).toBe('unknown');
+    expect(snap.topLosers).toEqual([]);
+  });
+
+  it('après migration, avant reprise : lignes toutes héritées (marqueur NULL) → aucune fenêtre certifiée', async () => {
+    const { service } = makeService(
+      [],
+      null,
+      range('2026-08-28', '2026-09-10'),
+    );
+    const snap = await service.getSnapshot('7d', null);
+    expect(snap.gscComparability.comparable).toBe(false);
+    expect(snap.gscComparability.current.days_present).toBe(7);
+    expect(snap.gscComparability.current.days_confirmed).toBe(0);
+    expect(snap.gscComparability.previous.days_confirmed).toBe(0);
+    expect(snap.gscComparability.previous.unconfirmed_dates).toHaveLength(7);
+    expect(snap.topLosers).toEqual([]);
+  });
+
+  it('schéma sans marqueur de commit (migration absente) → exception, jamais « comparable »', async () => {
+    const { service } = makeService([], {
+      code: '42703',
+      message:
+        'column __seo_gsc_daily_property_total.commit_version does not exist',
+    });
+    await expect(service.getSnapshot('7d', 'admin-1')).rejects.toMatchObject({
+      code: '42703',
+    });
   });
 
   it('lecture de présence en erreur → exception (jamais « comparable » par défaut)', async () => {

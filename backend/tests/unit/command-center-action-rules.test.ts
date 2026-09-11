@@ -530,13 +530,13 @@ describe('PR4: GSC meta honnêteté — cap divulgué, couverture réelle, fraî
       grain_fidelity: 'faithful',
       coverage_status: 'incomplete_days',
       days_expected: 28,
-      days_present: 15,
+      days_confirmed: 15,
     })
       .map(finalizeAction)
       .find((a) => a.id === 'seo:opportunity:product')!;
     expect(incomplete.data_confidence).toBe(55);
     expect(incomplete.reason).toMatch(
-      /2026-08-10 au 2026-09-06 \(15\/28 jours\)/,
+      /2026-08-10 au 2026-09-06 \(15\/28 jours confirmés\)/,
     );
     expect(incomplete.reason).toMatch(/jours GSC manquants/);
 

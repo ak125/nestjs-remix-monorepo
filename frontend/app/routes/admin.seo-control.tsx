@@ -114,7 +114,11 @@ export default function SeoControlDashboard() {
     ? null
     : `comparaison indisponible : fenêtre ${
         cmp.reason === "previous_incomplete" ? "précédente" : "courante"
-      } incomplète (${incompleteWindow.days_present}/${incompleteWindow.days_expected} jours)`;
+      } incomplète (${incompleteWindow.days_confirmed}/${incompleteWindow.days_expected} jours confirmés)`;
+  const unconfirmedDates = [
+    ...cmp.previous.unconfirmed_dates,
+    ...cmp.current.unconfirmed_dates,
+  ];
 
   // Filter alerts to severity ∈ {critical, high} only (Phase A discipline)
   const criticalAlerts = snapshot.technicalAlerts
@@ -147,9 +151,9 @@ export default function SeoControlDashboard() {
             ) : null}
           </p>
           <p className="text-xs text-muted-foreground">
-            Jours GSC présents : courante {cmp.current.days_present}/
+            Jours GSC confirmés : courante {cmp.current.days_confirmed}/
             {cmp.current.days_expected} ({cmp.current.from} → {cmp.current.to})
-            · précédente {cmp.previous.days_present}/
+            · précédente {cmp.previous.days_confirmed}/
             {cmp.previous.days_expected}
           </p>
           <p className="text-xs text-muted-foreground font-mono">
@@ -199,7 +203,7 @@ export default function SeoControlDashboard() {
                 >
                   {cmp.comparable
                     ? "Aucune page en perte cette semaine."
-                    : `Pertes non calculées — ${comparabilityNote}. Un jour manquant n'est pas une baisse ; jours manquants : ${[...cmp.previous.missing_dates, ...cmp.current.missing_dates].join(", ")}.`}
+                    : `Pertes non calculées — ${comparabilityNote}. Un jour manquant n'est pas une baisse ; jours manquants : ${[...cmp.previous.missing_dates, ...cmp.current.missing_dates].join(", ") || "aucun"}${unconfirmedDates.length > 0 ? ` ; jours présents non confirmés (ingestion à reprendre) : ${unconfirmedDates.join(", ")}` : ""}.`}
                 </TableCell>
               </TableRow>
             ) : (

@@ -184,19 +184,33 @@ export const SnapshotLineageSchema = z.object({
 
 // ─── Comparabilité des fenêtres GSC (jours présents) ────────────────
 
-export const GscWindowDaysSchema = z.object({
-  from: z.string(),
-  to: z.string(),
-  days_expected: z.number().int().nonnegative(),
-  days_present: z.number().int().nonnegative(),
-  missing_dates: z.array(z.string()),
-});
+/**
+ * `days_present` = jours ayant une ligne ; `days_confirmed` = jours dont la ligne
+ * porte le marqueur de commit d'ingestion. Une ligne sans marqueur (écrite par
+ * l'ancien ingesteur ou réécriture interrompue) est listée dans
+ * `unconfirmed_dates` : elle ne prouve pas que le grain lu par les RPC existe.
+ */
+export const GscWindowDaysSchema = z
+  .object({
+    from: z.string(),
+    to: z.string(),
+    days_expected: z.number().int().nonnegative(),
+    days_present: z.number().int().nonnegative(),
+    days_confirmed: z.number().int().nonnegative(),
+    missing_dates: z.array(z.string()),
+    unconfirmed_dates: z.array(z.string()),
+  })
+  .refine(
+    (w) => w.days_confirmed + w.unconfirmed_dates.length === w.days_present,
+    { message: "days_confirmed + unconfirmed_dates doit égaler days_present" },
+  );
 
 /**
  * Les RPC trafic/perdants comparent [J-N, J-1] à [J-2N, J-N-1] sans vérifier
- * les jours présents : un trou d'ingestion (ou le retard GSC de ~3 j en queue
- * de fenêtre courante) y devient une « baisse ». Hors `comparable`, le delta
- * est `unknown` et les perdants ne sont pas calculés — jamais une baisse fictive.
+ * les jours présents : un trou d'ingestion (ou le retard de finalisation GSC en
+ * queue de fenêtre courante) y devient une « baisse ». `comparable` exige tous
+ * les jours présents ET confirmés. Hors `comparable`, le delta est `unknown` et
+ * les perdants ne sont pas calculés — jamais une baisse fictive.
  */
 export const GscComparabilitySchema = z
   .object({

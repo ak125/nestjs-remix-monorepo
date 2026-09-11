@@ -222,10 +222,13 @@ export class SeoControlService extends SupabaseBaseService {
    * (bornes `p_now::DATE - N` inclusives, `p_now::DATE` exclue — dates UTC).
    *
    * Présence lue sur `__seo_gsc_daily_property_total` (1 ligne/jour) plutôt que
-   * sur `__seo_gsc_daily` lu par les RPC (≈30 M lignes/mois) : jeux de dates
-   * identiques sur les 4 grains au 2026-09-10, et l'ingestion écrit désormais le
-   * total propriété APRÈS les autres grains. Erreur de lecture → exception (même
-   * contrat fail-loud que invokeRpc), jamais « comparable » par défaut.
+   * sur `__seo_gsc_daily` lu par les RPC (≈30 M lignes/mois). Seul le marqueur
+   * `commit_version` prouve que les autres grains du jour ont été écrits : il est
+   * posé EN DERNIER par l'ingesteur. Une ligne sans marqueur (ancien ingesteur,
+   * qui écrivait le total propriété EN PREMIER, ou réécriture interrompue) ne
+   * rend pas le jour confirmé → fenêtre non comparable. Erreur de lecture (dont
+   * schéma sans `commit_version`) → exception (même contrat fail-loud que
+   * invokeRpc), jamais « comparable » par défaut.
    */
   private async gscWindowComparability(
     days: number,
@@ -242,7 +245,7 @@ export class SeoControlService extends SupabaseBaseService {
     };
     const { data, error } = await this.supabase
       .from('__seo_gsc_daily_property_total')
-      .select('date')
+      .select('date, commit_version')
       .gte('date', previous.from)
       .lte('date', current.to)
       .limit(1000);
@@ -250,18 +253,35 @@ export class SeoControlService extends SupabaseBaseService {
       this.logger.error('GSC day presence read failed', error);
       throw error;
     }
-    const presentDates = (data ?? []).map((r: { date: string }) =>
-      String(r.date),
-    );
-    const cur = computeDayCoverage({ ...current, presentDates });
-    const prev = computeDayCoverage({ ...previous, presentDates });
+    const rows = (data ?? []) as Array<{
+      date: string;
+      commit_version: number | null;
+    }>;
+    const presentDates = rows.map((r) => String(r.date));
+    const confirmedDates = rows
+      .filter(
+        (r) => r.commit_version !== null && r.commit_version !== undefined,
+      )
+      .map((r) => String(r.date));
+    const cur = computeDayCoverage({
+      ...current,
+      presentDates,
+      confirmedDates,
+    });
+    const prev = computeDayCoverage({
+      ...previous,
+      presentDates,
+      confirmedDates,
+    });
     const verdict = assessPeriodComparability(cur, prev);
     const toWindow = (c: DayCoverage) => ({
       from: c.from,
       to: c.to,
       days_expected: c.daysExpected,
       days_present: c.daysPresent,
+      days_confirmed: c.daysConfirmed,
       missing_dates: c.missingDates,
+      unconfirmed_dates: c.unconfirmedDates,
     });
     return {
       comparable: verdict.comparable,

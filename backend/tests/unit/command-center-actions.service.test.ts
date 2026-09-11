@@ -152,7 +152,9 @@ describe('PR4: rpc_seo_low_ctr_v4 envelope + explicit v3 → v2 → v1 fallback'
     grain: 'page_totals',
     days_expected: 90,
     days_present: 90,
+    days_confirmed: 90,
     missing_dates: [],
+    unconfirmed_dates: [],
     retrieval_status: 'complete',
     retrieval_gap_dates: [],
     gsc_aggregation: {
@@ -181,7 +183,7 @@ describe('PR4: rpc_seo_low_ctr_v4 envelope + explicit v3 → v2 → v1 fallback'
     expect(product!.title).toMatch(/top 1/); // 147 qualifying > 1 shown → cap disclosed
     expect(product!.reason).toMatch(/147 pages qualifiantes/);
     expect(product!.reason).toMatch(
-      new RegExp(`2026-06-01 au ${freshDate} \\(90/90 jours\\)`),
+      new RegExp(`2026-06-01 au ${freshDate} \\(90/90 jours confirmés\\)`),
     );
     expect(product!.reason).not.toMatch(/non exhaustif/);
     // v4 est seule à recevoir le plancher de jours attendus (défaut documenté : la
@@ -206,6 +208,7 @@ describe('PR4: rpc_seo_low_ctr_v4 envelope + explicit v3 → v2 → v1 fallback'
               total_qualifying: 1,
               days_expected: 28,
               days_present: 15,
+              days_confirmed: 15,
               coverage_status: 'incomplete_days',
             }),
             error: null,
@@ -216,9 +219,39 @@ describe('PR4: rpc_seo_low_ctr_v4 envelope + explicit v3 → v2 → v1 fallback'
     const queue = await service.computeActionQueue([], [], 'full');
     const product = queue.find((a) => a.id === 'seo:opportunity:product');
     expect(product!.data_confidence).toBe(55);
-    expect(product!.reason).toMatch(/\(15\/28 jours\)/);
+    expect(product!.reason).toMatch(/\(15\/28 jours confirmés\)/);
     expect(product!.reason).toMatch(/jours GSC manquants/);
     expect(product!.reason).toMatch(/Liste non exhaustive/);
+    expect(product!.reason).not.toMatch(/Liste complète/);
+  });
+
+  it('v4 : tous les jours présents mais 2 non confirmés (ancien ingesteur / réécriture interrompue) → PARTIAL 55, N/M jours confirmés', async () => {
+    const freshDate = daysAgo(2);
+    const supabase = seoSupabase((name) =>
+      name === 'rpc_seo_low_ctr_v4'
+        ? {
+            data: v4Envelope(freshDate, {
+              total_qualifying: 1,
+              days_expected: 28,
+              days_present: 28,
+              days_confirmed: 26,
+              unconfirmed_dates: ['2026-09-01', '2026-09-02'],
+              coverage_status: 'incomplete_days',
+            }),
+            error: null,
+          }
+        : { data: null, error: { message: `unexpected call to ${name}` } },
+    );
+    const queue = await makeService(supabase).computeActionQueue(
+      [],
+      [],
+      'full',
+    );
+    const product = queue.find((a) => a.id === 'seo:opportunity:product');
+    expect(product!.data_confidence).toBe(55);
+    expect(product!.reason).toMatch(/\(26\/28 jours confirmés\)/);
+    expect(product!.reason).not.toMatch(/28\/28/);
+    expect(product!.reason).toMatch(/non confirmés/);
     expect(product!.reason).not.toMatch(/Liste complète/);
   });
 
@@ -321,6 +354,7 @@ describe('PR4: rpc_seo_low_ctr_v4 envelope + explicit v3 → v2 → v1 fallback'
               grain: 'page_totals',
               days_expected: 90,
               days_present: 90,
+              days_confirmed: 90,
               coverage_status: 'ok',
             },
             error: null,
