@@ -4,7 +4,8 @@
  * Fakes : API Search Console (données par jour) + base Supabase en mémoire
  * clé = colonnes `onConflict` (même sémantique d'idempotence que la PK SQL).
  * Couvre : trou historique, vrai zéro, jour non finalisé, finalité inconnue,
- * import partiel, erreur API systémique, schéma absent, pagination,
+ * import partiel, reprise d’un jour commité ou legacy interrompue (marqueur
+ * retiré avant réécriture), erreur API systémique, schéma absent, pagination,
  * ré-exécution sans doublon, dry-run / plan seul sans aucune écriture.
  */
 import { Test } from '@nestjs/testing';
@@ -18,6 +19,9 @@ type Row = Record<string, any>;
 interface FakeDb {
   tables: Map<string, Map<string, Row>>;
   upserts: Array<{ table: string; rows: Row[] }>;
+  updates: Array<{ table: string; values: Row; date: string | undefined }>;
+  /** Journal ordonné de TOUTES les écritures (upsert + update), par date. */
+  writes: Array<{ op: 'upsert' | 'update'; table: string; dates: string[] }>;
   failUpsert:
     | ((
         table: string,
@@ -25,12 +29,24 @@ interface FakeDb {
       ) => { code?: string; message: string } | null)
     | null;
   selectError: { code: string; message: string } | null;
+  failUpdate:
+    | ((
+        table: string,
+        date: string | undefined,
+      ) => {
+        code?: string;
+        message: string;
+      } | null)
+    | null;
 }
 const mockDb: FakeDb = {
   tables: new Map(),
   upserts: [],
+  updates: [],
+  writes: [],
   failUpsert: null,
   selectError: null,
+  failUpdate: null,
 };
 
 function mockFrom(table: string) {
@@ -68,10 +84,39 @@ function mockFrom(table: string) {
       };
       return q;
     },
+    update(values: Row) {
+      let date: string | undefined;
+      const q: any = {
+        eq(col: string, v: any) {
+          if (col === 'date') date = v;
+          return q;
+        },
+        then(resolve: (v: any) => void) {
+          const failure = mockDb.failUpdate?.(table, date) ?? null;
+          if (failure) return resolve({ error: failure });
+          mockDb.updates.push({ table, values, date });
+          mockDb.writes.push({
+            op: 'update',
+            table,
+            dates: date ? [date] : [],
+          });
+          for (const r of mockDb.tables.get(table)?.values() ?? []) {
+            if (date === undefined || r.date === date) Object.assign(r, values);
+          }
+          return resolve({ error: null });
+        },
+      };
+      return q;
+    },
     async upsert(rows: Row[], opts: { onConflict: string }) {
       const failure = mockDb.failUpsert?.(table, rows) ?? null;
       if (failure) return { error: failure };
       mockDb.upserts.push({ table, rows });
+      mockDb.writes.push({
+        op: 'upsert',
+        table,
+        dates: [...new Set(rows.map((r) => String(r.date)))],
+      });
       const store = mockDb.tables.get(table) ?? new Map<string, Row>();
       for (const r of rows) {
         const key = opts.onConflict
@@ -293,8 +338,11 @@ beforeEach(() => {
   });
   mockDb.tables = new Map();
   mockDb.upserts = [];
+  mockDb.updates = [];
+  mockDb.writes = [];
   mockDb.failUpsert = null;
   mockDb.selectError = null;
+  mockDb.failUpdate = null;
   mockGoogle.days = {};
   mockGoogle.firstIncompleteDate = '2026-09-09';
   mockGoogle.finalEmpty = new Set();
@@ -479,6 +527,136 @@ describe('GscDailyFetcherService.fetchAndPersistMultiGrain', () => {
     ).toMatchObject({ commit_version: 1 });
   });
 
+  it('reprise d’un jour DÉJÀ commité : marqueur retiré avant la 1re écriture, panne en cours → jour non certifié, repris au run suivant', async () => {
+    // 09-07 (fenêtre refresh) : commité par un run antérieur + anciennes lignes page.
+    commitMarker('2026-09-07');
+    mockDb.tables.set(
+      '__seo_gsc_daily_page_totals',
+      new Map([
+        [
+          '2026-09-07|https://www.automecanik.com/pieces/ancienne.html',
+          {
+            date: '2026-09-07',
+            page: 'https://www.automecanik.com/pieces/ancienne.html',
+            clicks: 50,
+            impressions: 900,
+          },
+        ],
+      ]),
+    );
+    commitAllCandidatesExcept('none');
+    mockDb.failUpsert = (table, rows) =>
+      table === '__seo_gsc_daily_page_totals' &&
+      rows.some((x) => x.date === '2026-09-07')
+        ? { message: 'fetch failed: ECONNRESET' }
+        : null;
+
+    const first = await build();
+    const r1 = await first.svc.fetchAndPersistMultiGrain({ date: ANCHOR });
+
+    const writes0907 = mockDb.writes.filter((w) =>
+      w.dates.includes('2026-09-07'),
+    );
+    // 1re écriture du jour = retrait du marqueur, AVANT tout grain.
+    expect(writes0907[0]).toEqual({
+      op: 'update',
+      table: '__seo_gsc_daily_property_total',
+      dates: ['2026-09-07'],
+    });
+    expect(writes0907.map((w) => w.table)).toEqual([
+      '__seo_gsc_daily_property_total',
+      '__seo_gsc_daily_totals',
+      '__seo_gsc_daily_pages',
+    ]);
+    expect(mockDb.updates[0].values).toEqual({ commit_version: null });
+    // L'ancienne ligne property_total reste (valeurs d'un run complet), NON certifiée.
+    expect(
+      rowsOf('__seo_gsc_daily_property_total').find(
+        (x) => x.date === '2026-09-07',
+      ),
+    ).toMatchObject({ clicks: 1, impressions: 100, commit_version: null });
+    expect(r1.dates!.failed).toEqual([
+      expect.objectContaining({ date: '2026-09-07', errorClass: 'network' }),
+    ]);
+
+    // Run suivant, ancre +2 j : 09-07 sort du refresh → replanifié comme trou.
+    mockDb.failUpsert = null;
+    mockGoogle.calls = [];
+    const second = await build();
+    const r2 = await second.svc.fetchAndPersistMultiGrain({
+      date: '2026-09-10',
+    });
+    expect(r2.dates!.backfill).toContain('2026-09-07');
+    expect(r2.dates!.ingested).toContain('2026-09-07');
+    expect(
+      rowsOf('__seo_gsc_daily_property_total').find(
+        (x) => x.date === '2026-09-07',
+      ),
+    ).toMatchObject({ clicks: 80, impressions: 5500, commit_version: 1 });
+  });
+
+  it('reprise d’un jour LEGACY (property_total sans marqueur + anciennes données) : panne → reste non certifié', async () => {
+    commitAllCandidatesExcept('2026-09-01');
+    commitMarker('2026-09-01', null);
+    mockDb.failUpsert = (table, rows) =>
+      table === '__seo_gsc_daily' && rows.some((x) => x.date === '2026-09-01')
+        ? { message: 'fetch failed: ECONNRESET' }
+        : null;
+    const { svc } = await build();
+    const r = await svc.fetchAndPersistMultiGrain({ date: ANCHOR });
+
+    expect(r.dates!.backfill).toEqual(['2026-09-01']);
+    expect(r.dates!.failed).toEqual([
+      expect.objectContaining({ date: '2026-09-01' }),
+    ]);
+    expect(
+      rowsOf('__seo_gsc_daily_property_total').find(
+        (x) => x.date === '2026-09-01',
+      ),
+    ).toMatchObject({ clicks: 1, impressions: 100, commit_version: null });
+    // page_totals réécrites, mais jour non commité → aucun consommateur certifiant ne le compte.
+    expect(
+      rowsOf('__seo_gsc_daily_page_totals').some(
+        (x) => x.date === '2026-09-01',
+      ),
+    ).toBe(true);
+  });
+
+  it('retrait du marqueur en échec : aucun grain écrit pour ce jour, ancien commit intact, jour en échec', async () => {
+    commitMarker('2026-09-07');
+    commitAllCandidatesExcept('none');
+    mockDb.failUpdate = (table, date) =>
+      table === '__seo_gsc_daily_property_total' && date === '2026-09-07'
+        ? { message: 'fetch failed: ECONNRESET' }
+        : null;
+    const { svc } = await build();
+    const r = await svc.fetchAndPersistMultiGrain({ date: ANCHOR });
+    expect(
+      mockDb.writes.filter((w) => w.dates.includes('2026-09-07')),
+    ).toHaveLength(0);
+    expect(r.dates!.failed).toEqual([
+      expect.objectContaining({ date: '2026-09-07', errorClass: 'network' }),
+    ]);
+    expect(
+      rowsOf('__seo_gsc_daily_property_total').find(
+        (x) => x.date === '2026-09-07',
+      ),
+    ).toMatchObject({ commit_version: 1, clicks: 1, impressions: 100 });
+    expect(r.dates!.ingested).toEqual(['2026-09-08']);
+  });
+
+  it('dry-run sur un jour déjà commité : marqueur intact, aucune écriture', async () => {
+    commitMarker('2026-09-07');
+    const { svc } = await build();
+    await svc.fetchAndPersistMultiGrain({ date: ANCHOR, dryRun: true });
+    expect(mockDb.writes).toHaveLength(0);
+    expect(
+      rowsOf('__seo_gsc_daily_property_total').find(
+        (x) => x.date === '2026-09-07',
+      ),
+    ).toMatchObject({ commit_version: 1 });
+  });
+
   it('erreur API systémique (429) : run arrêté, aucune requête suivante, rejet + journal quota', async () => {
     mockGoogle.failQuery = (body) =>
       body.dataState !== 'all'
@@ -570,7 +748,7 @@ describe('GscDailyFetcherService.fetchAndPersistMultiGrain', () => {
     expect(r.dryRun).toBe(true);
     expect(r.runId).toBe('dry-run');
     expect(r.dates!.ingested.length).toBeGreaterThan(0);
-    expect(mockDb.upserts).toHaveLength(0);
+    expect(mockDb.writes).toHaveLength(0);
     expect(mockDb.tables.size).toBe(0);
     expect(runs.logStarted).not.toHaveBeenCalled();
     expect(runs.logCompleted).not.toHaveBeenCalled();

@@ -20,7 +20,9 @@
  *    non finalisé n'est JAMAIS écrit (avant : 0 ligne → `property_total = 0`).
  *  - `property_total` est upserté EN DERNIER avec `commit_version` : un jour n'est
  *    commité que si tous les grains sont persistés ; un échec en cours de jour
- *    laisse le jour non commité → replanifié au run suivant.
+ *    laisse le jour non commité → replanifié au run suivant. Le marqueur d'un
+ *    jour déjà commité est RETIRÉ avant la 1re écriture de grain (reprise
+ *    interrompue ≠ jour certifié par l'ancienne ligne).
  *  - `dryRun` / `planOnly` : AUCUNE écriture, journal compris (avant : le journal
  *    `__seo_event_log` était écrit même en dry-run).
  *  - `fetched_at` rafraîchi à chaque upsert (avant : date du 1er insert seulement).
@@ -568,6 +570,10 @@ export class GscDailyFetcherService {
     }
     const propertyTotal: GSCDailyPropertyTotalRow = ptParsed.data;
 
+    // Avant la 1re écriture de grain : une reprise interrompue ne doit pas rester
+    // certifiée par la ligne property_total d'un run antérieur.
+    await this.uncommitDay(date, ctx);
+
     // 2) totals (date+country+device)
     const tRaw = await this.query(
       sc,
@@ -724,6 +730,31 @@ export class GscDailyFetcherService {
       apiCalls,
       schemaRejects,
     };
+  }
+
+  /**
+   * Retire le marqueur de commit d'un jour avant de réécrire ses grains. Sans
+   * cela, une panne en cours de réécriture laisse des grains partiellement
+   * remplacés sous le marqueur du run précédent, que les lecteurs certifiants
+   * (rpc_seo_low_ctr_v4, rattrapage) prennent pour un jour complet. Aucune ligne
+   * pour ce jour = no-op ; dry-run = aucune écriture ; échec → aucun grain écrit.
+   */
+  private async uncommitDay(
+    date: string,
+    ctx: { dryRun: boolean },
+  ): Promise<void> {
+    if (ctx.dryRun) return;
+    const { error } = await this.supabase
+      .from('__seo_gsc_daily_property_total')
+      .update({ commit_version: null })
+      .eq('date', date);
+    if (error) {
+      throw new IngestionDbError(
+        '__seo_gsc_daily_property_total',
+        error.code,
+        error.message,
+      );
+    }
   }
 
   /**
