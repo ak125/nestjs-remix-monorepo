@@ -1,0 +1,138 @@
+{
+  "objet": "Preuve scellee du rejeu TecDoc LOT 3 — DLNR 30 (BOSCH) et 101 (FEBI), execute le 2026-09-10.",
+  "portee": "RAW (tecdoc_raw.t400) uniquement. Aucune preuve sur la projection source_linkages.",
+  "environnement": "PostgreSQL 17.11 jetable (volume Docker, boucle locale). Reference MassDoc lue en SELECT seuls, aucune ecriture.",
+  "purge": {
+    "matiere_jetable_purgee": true,
+    "rows_restantes_t400": 0,
+    "base_jetable_supprimee": true
+  },
+  "reprise": "La vague a ete interrompue apres la preuve de DLNR 30 et pendant DLNR 101. Elle a ete reprise par le pipeline : le garde d'idempotence (_batch_id) refuse de recharger par-dessus un lot present, la base jetable a donc ete recreee et DLNR 101 rejoue entierement. Aucune preuve n'a ete completee a la main.",
+  "constat_non_normatif": {
+    "note": "Projection lisible du registre scelle ci-dessous. Le registre fait foi ; ce bloc n'est pas une seconde source de verite.",
+    "totaux": {
+      "emitted": 26779184,
+      "loaded": 26779184,
+      "deduplicated": 0,
+      "rejected": 0,
+      "conflicts": 0,
+      "quarantine": 24151684,
+      "en_trop_dans_prod": 0,
+      "preservation": "9/9"
+    },
+    "ecarts_source_vs_prod": [
+      {
+        "dlnr": 30,
+        "prod": 69000,
+        "source": 9357752,
+        "new_from_source": 9288752
+      },
+      {
+        "dlnr": 101,
+        "prod": 2558500,
+        "source": 17421432,
+        "new_from_source": 14862932
+      }
+    ],
+    "disposition": "NEW_FROM_SOURCE -> QUARANTAINE -> NON ACTIVEES. Aucune decision fonctionnelle n'est prise ici. Ces lignes prouvent que le rejeu recupere ce que le chargement de mars 2026 avait perdu ; elles ne prouvent pas qu'il faille les publier."
+  },
+  "verification_du_sceau": "python3 -c \"import json,sys; sys.path.insert(0,'scripts'); from tecdoc_seal import verifier; verifier(json.load(open('audit/massdoc-tecdoc-lot3-proof-2026-09-10.json'))['registre_scelle'])\"",
+  "registre_scelle": {
+    "conservation": {
+      "ensembles_verifies": 9,
+      "lot": "LOT 3 — divergents lourds, isoles"
+    },
+    "entrees": [
+      {
+        "batch_id": "807313f757932510b87403521b5ba292",
+        "comptabilite": {
+          "rows_deduplicated": 0,
+          "rows_emitted": 9357752,
+          "rows_loaded": 9357752,
+          "rows_rejected": {}
+        },
+        "dlnr": 30,
+        "empreinte_du_charge": {
+          "borne_max": 9357752,
+          "borne_min": 1,
+          "empreinte_md5": "ee3e72ef1e7a82a642747c8b0cc0a65e",
+          "lignes": 9357752
+        },
+        "fichier": "400.0030.sql",
+        "identite": [
+          "tecdoc_map.type_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.article_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.linkage_target_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.pg_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.modele_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)"
+        ],
+        "reconciliation": {
+          "absentes_de_prod": 9288752,
+          "activables_sans_decision_humaine": 69000,
+          "candidats_en_quarantaine": 9288752,
+          "conflits": 0,
+          "dlnr": 30,
+          "en_trop_dans_prod": 0,
+          "identites_conservees": 69000,
+          "inclusion_respectee": true,
+          "indecidables": 0,
+          "lignes_prod_actuelles": 69000,
+          "lignes_source_attendues": 9357752
+        },
+        "source": {
+          "crc32": "A906030C",
+          "version_perimetre": "2026-03-reconstructed-v2"
+        }
+      },
+      {
+        "batch_id": "1bfcc4f5f3f4996674c5e43d1e15793f",
+        "comptabilite": {
+          "rows_deduplicated": 0,
+          "rows_emitted": 17421432,
+          "rows_loaded": 17421432,
+          "rows_rejected": {}
+        },
+        "dlnr": 101,
+        "empreinte_du_charge": {
+          "borne_max": 17421432,
+          "borne_min": 1,
+          "empreinte_md5": "78f6831be78b621edf158396ce1c7144",
+          "lignes": 17421432
+        },
+        "fichier": "400.0101.sql",
+        "identite": [
+          "tecdoc_map.type_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.article_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.linkage_target_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.pg_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.modele_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)"
+        ],
+        "reconciliation": {
+          "absentes_de_prod": 14862932,
+          "activables_sans_decision_humaine": 2558500,
+          "candidats_en_quarantaine": 14862932,
+          "conflits": 0,
+          "dlnr": 101,
+          "en_trop_dans_prod": 0,
+          "identites_conservees": 2558500,
+          "inclusion_respectee": true,
+          "indecidables": 0,
+          "lignes_prod_actuelles": 2558500,
+          "lignes_source_attendues": 17421432
+        },
+        "source": {
+          "crc32": "32B70D20",
+          "version_perimetre": "2026-03-reconstructed-v2"
+        }
+      }
+    ],
+    "invariant": "PROD actuelle ⊆ REBUILD source-truth, sans perte de ligne ni derive d'identite.",
+    "objet": "Registre de preuve du rejeu TecDoc par vagues.",
+    "portee": "RAW (tecdoc_raw.t400) uniquement. Aucune preuve de projection.",
+    "seal": {
+      "algorithm": "sha256",
+      "canonicalization": "sort_keys, UTF-8, separateurs (',',':'), bloc seal exclu.",
+      "sha256": "ed13aa9b0b9a1bbc31ed35d97ddd6c1e44f0381494007db5054a5210b34daee2"
+    }
+  }
+}

@@ -1,0 +1,100 @@
+name: 📟 Deploy monitoring scripts
+
+# Les scripts de `scripts/monitoring/` tournent en cron sur la box 49.12.233.2
+# depuis `/usr/local/bin/`, une COPIE installée à la main (`scripts/monitoring/README.md`
+# §Installation prod). Conséquence : merger un correctif ne le déploie pas, et rien
+# ne signale la dérive — c'est un cas d'école de l'invariant 8 (« présent » ≠
+# « réellement servi »). Le 2026-09-07, les correctifs d'alerte du tunnel de paiement
+# (#1413) sont restés inertes pour cette seule raison.
+#
+# Ce workflow ferme le chemin manquant : le runner self-hosted TOURNE sur cette
+# machine et y dispose déjà de sudo (cf. `ci.yml` job `lighthouse`, qui installe
+# google-chrome par `sudo dpkg`). Il se contente de recopier les exécutables ;
+# il ne touche NI `/etc/default/*` (secrets, installés une fois à la main),
+# NI `/etc/cron.d/*` (planification, décision opérateur).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/monitoring/*.sh'
+  # Indispensable : le merge de CE workflow ne modifie aucun `scripts/monitoring/*.sh`,
+  # donc le filtre `paths` ci-dessus ne se déclenchera pas. Le premier déploiement —
+  # et toute resynchronisation après une dérive — passe par un run manuel.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-monitoring-scripts
+  cancel-in-progress: false
+
+jobs:
+  install:
+    name: 📟 Installer sur /usr/local/bin (49.12.233.2)
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 5
+
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v4
+
+      - name: 🔍 Contrôle syntaxique AVANT toute écriture
+        # Fail-closed : on n'écrase JAMAIS un script qui tourne par un script
+        # cassé. `bash -n` parse sans exécuter — les scripts de monitoring
+        # envoient des mails et interrogent la base, ils ne doivent jamais être
+        # lancés ici.
+        run: |
+          set -euo pipefail
+          failed=0
+          for f in scripts/monitoring/*.sh; do
+            if bash -n "$f"; then
+              echo "✅ $f"
+            else
+              echo "❌ $f — syntaxe invalide, rien ne sera installé"
+              failed=1
+            fi
+          done
+          [ "$failed" -eq 0 ]
+
+      - name: 📊 Dérive constatée avant installation
+        # Rend la dérive lisible dans le log : quelle version tournait vraiment.
+        run: |
+          set -euo pipefail
+          for f in scripts/monitoring/*.sh; do
+            name=$(basename "$f")
+            repo_sum=$(md5sum "$f" | cut -d' ' -f1)
+            if [ -f "/usr/local/bin/$name" ]; then
+              live_sum=$(md5sum "/usr/local/bin/$name" | cut -d' ' -f1)
+            else
+              live_sum="(absent)"
+            fi
+            if [ "$repo_sum" = "$live_sum" ]; then
+              echo "≡ $name déjà à jour ($repo_sum)"
+            else
+              echo "≠ $name  installé=$live_sum  repo=$repo_sum"
+            fi
+          done
+
+      - name: 📦 Installation
+        run: |
+          set -euo pipefail
+          for f in scripts/monitoring/*.sh; do
+            sudo install -m 755 "$f" /usr/local/bin/
+            echo "→ installé : /usr/local/bin/$(basename "$f")"
+          done
+
+      - name: ✅ Vérification post-installation
+        # Le job échoue si une copie ne correspond pas au repo — sans quoi
+        # « vert » ne prouverait rien.
+        run: |
+          set -euo pipefail
+          for f in scripts/monitoring/*.sh; do
+            name=$(basename "$f")
+            if [ "$(md5sum "$f" | cut -d' ' -f1)" != "$(md5sum "/usr/local/bin/$name" | cut -d' ' -f1)" ]; then
+              echo "❌ $name diffère encore après installation"
+              exit 1
+            fi
+            echo "✅ $name identique au repo"
+          done

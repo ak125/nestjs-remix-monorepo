@@ -181,7 +181,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 148,
+      "loc": 155,
       "owner": "__unassigned__",
       "path": "backend/scripts/detect-all-entities.js",
       "risk": "low",
@@ -200,7 +200,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 240,
+      "loc": 247,
       "owner": "__unassigned__",
       "path": "backend/scripts/fix-all-entities.js",
       "risk": "low",
@@ -219,7 +219,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 154,
+      "loc": 161,
       "owner": "__unassigned__",
       "path": "backend/scripts/fix-entities-simple.js",
       "risk": "low",
@@ -295,7 +295,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 82,
+      "loc": 89,
       "owner": "__unassigned__",
       "path": "backend/scripts/list-all-tables.js",
       "risk": "low",
@@ -333,7 +333,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 113,
+      "loc": 120,
       "owner": "__unassigned__",
       "path": "backend/scripts/search-text-in-db.js",
       "risk": "low",
@@ -637,7 +637,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 131,
+      "loc": 138,
       "owner": "__unassigned__",
       "path": "backend/scripts/test-html-entities.js",
       "risk": "low",
@@ -716,6 +716,7 @@
         "backend/src/common/guards/cloudflare-throttler.guard.ts",
         "backend/src/config/feature-flags.module.ts",
         "backend/src/config/logger.config.ts",
+        "backend/src/config/throttler-tiers.config.ts",
         "backend/src/config/write-guard.module.ts",
         "backend/src/controllers/analytics.controller.ts",
         "backend/src/database/database.module.ts",
@@ -777,7 +778,7 @@
         "backend/src/workers/worker.module.ts"
       ],
       "kind": "service",
-      "loc": 297,
+      "loc": 273,
       "owner": "__unassigned__",
       "path": "backend/src/app.module.ts",
       "risk": "low",
@@ -2343,7 +2344,8 @@
       "id": "backend/src/common/guards/cloudflare-throttler.guard.ts",
       "importedBy": [
         "backend/src/app.module.ts",
-        "backend/src/common/guards/cloudflare-throttler.guard.test.ts"
+        "backend/src/common/guards/cloudflare-throttler.guard.test.ts",
+        "backend/src/config/throttler-tiers.config.test.ts"
       ],
       "imports": [],
       "kind": "service",
@@ -4957,6 +4959,51 @@
       "loc": 37,
       "owner": "__unassigned__",
       "path": "backend/src/config/source-provenance.constants.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/config/throttler-tiers.config.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/common/guards/cloudflare-throttler.guard.ts",
+        "backend/src/config/throttler-tiers.config.ts"
+      ],
+      "kind": "test",
+      "loc": 110,
+      "owner": "__unassigned__",
+      "path": "backend/src/config/throttler-tiers.config.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "reachability"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/config/throttler-tiers.config.ts",
+      "importedBy": [
+        "backend/src/app.module.ts",
+        "backend/src/config/throttler-tiers.config.test.ts"
+      ],
+      "imports": [],
+      "kind": "config",
+      "loc": 64,
+      "owner": "__unassigned__",
+      "path": "backend/src/config/throttler-tiers.config.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -9210,12 +9257,13 @@
         "backend/src/modules/admin/controllers/control-plane.controller.ts"
       ],
       "imports": [
+        "@repo/registry",
         "backend/src/cache/cache.service.ts",
         "fs",
         "path"
       ],
       "kind": "service",
-      "loc": 221,
+      "loc": 234,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/registry-reader.service.ts",
       "risk": "low",
@@ -10387,7 +10435,7 @@
         "backend/src/modules/analytics/landing-source.classifier.ts"
       ],
       "kind": "controller",
-      "loc": 157,
+      "loc": 162,
       "owner": "__unassigned__",
       "path": "backend/src/modules/analytics/controllers/landing-attribution.controller.ts",
       "risk": "low",
@@ -24039,7 +24087,7 @@
         "backend/src/modules/seo-monitoring/services/cwv-beacon.service.ts"
       ],
       "kind": "controller",
-      "loc": 69,
+      "loc": 76,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-monitoring/controllers/cwv-beacon.controller.ts",
       "risk": "low",
@@ -24138,7 +24186,7 @@
         "backend/src/modules/seo-monitoring/services/runtime-events.service.ts"
       ],
       "kind": "controller",
-      "loc": 70,
+      "loc": 76,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-monitoring/controllers/runtime-events.controller.ts",
       "risk": "low",
@@ -31410,7 +31458,6 @@
         "backend/src/modules/supplier-truth/domain/truth-engine.ts",
         "backend/src/modules/supplier-truth/order-availability.service.test.ts",
         "backend/src/modules/supplier-truth/order-availability.service.ts",
-        "backend/src/modules/supplier-truth/supplier-truth.module.test.ts",
         "backend/src/modules/supplier-truth/supplier-truth.service.test.ts",
         "backend/src/modules/supplier-truth/supplier-truth.service.ts"
       ],
@@ -31783,7 +31830,7 @@
         "backend/src/modules/supplier-truth/supplier-truth.service.ts"
       ],
       "kind": "service",
-      "loc": 42,
+      "loc": 43,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/order-availability.service.ts",
       "risk": "low",
@@ -32053,8 +32100,6 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/supplier-truth/supplier-truth-read.module.ts",
       "importedBy": [
-        "backend/src/modules/supplier-truth/supplier-truth.module.test.ts",
-        "backend/src/modules/supplier-truth/supplier-truth.module.ts",
         "backend/src/workers/worker.module.ts"
       ],
       "imports": [
@@ -32086,11 +32131,10 @@
       "imports": [
         "@auth/is-admin.guard",
         "backend/src/modules/supplier-truth/connectors/supplier-registry.ts",
-        "backend/src/modules/supplier-truth/supplier-sync.flag.ts",
-        "backend/src/modules/supplier-truth/supplier-truth.service.ts"
+        "backend/src/modules/supplier-truth/supplier-sync.flag.ts"
       ],
       "kind": "controller",
-      "loc": 68,
+      "loc": 53,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-truth.controller.ts",
       "risk": "low",
@@ -32108,14 +32152,11 @@
       "id": "backend/src/modules/supplier-truth/supplier-truth.module.test.ts",
       "importedBy": [],
       "imports": [
-        "backend/src/modules/supplier-truth/domain/availability-state.ts",
-        "backend/src/modules/supplier-truth/supplier-truth-read.module.ts",
         "backend/src/modules/supplier-truth/supplier-truth.controller.ts",
-        "backend/src/modules/supplier-truth/supplier-truth.module.ts",
-        "backend/src/modules/supplier-truth/supplier-truth.service.ts"
+        "backend/src/modules/supplier-truth/supplier-truth.module.ts"
       ],
       "kind": "test",
-      "loc": 83,
+      "loc": 65,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-truth.module.test.ts",
       "risk": "low",
@@ -32136,11 +32177,10 @@
         "backend/src/modules/supplier-truth/supplier-truth.module.test.ts"
       ],
       "imports": [
-        "backend/src/modules/supplier-truth/supplier-truth-read.module.ts",
         "backend/src/modules/supplier-truth/supplier-truth.controller.ts"
       ],
       "kind": "service",
-      "loc": 26,
+      "loc": 24,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-truth.module.ts",
       "risk": "low",
@@ -32192,7 +32232,7 @@
         "backend/src/database/services/supabase-base.service.ts"
       ],
       "kind": "service",
-      "loc": 264,
+      "loc": 274,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
       "risk": "low",
@@ -32235,8 +32275,6 @@
         "backend/src/modules/supplier-truth/order-availability.service.test.ts",
         "backend/src/modules/supplier-truth/order-availability.service.ts",
         "backend/src/modules/supplier-truth/supplier-truth-read.module.ts",
-        "backend/src/modules/supplier-truth/supplier-truth.controller.ts",
-        "backend/src/modules/supplier-truth/supplier-truth.module.test.ts",
         "backend/src/modules/supplier-truth/supplier-truth.service.test.ts"
       ],
       "imports": [
@@ -32244,7 +32282,7 @@
         "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
       ],
       "kind": "service",
-      "loc": 54,
+      "loc": 59,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-truth.service.ts",
       "risk": "low",
@@ -36503,7 +36541,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 83,
+      "loc": 90,
       "owner": "__unassigned__",
       "path": "backend/test-supabase-connection.ts",
       "risk": "low",
@@ -37377,7 +37415,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 137,
+      "loc": 214,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/registry-reader.service.test.ts",
       "risk": "low",
@@ -41076,7 +41114,7 @@
         "~/components/ui/card"
       ],
       "kind": "config",
-      "loc": 107,
+      "loc": 121,
       "owner": "__unassigned__",
       "path": "frontend/app/components/command-center/GlobalHealthBar.tsx",
       "risk": "low",
@@ -41101,7 +41139,7 @@
         "~/components/ui/progress"
       ],
       "kind": "config",
-      "loc": 152,
+      "loc": 136,
       "owner": "__unassigned__",
       "path": "frontend/app/components/command-center/ModuleGrid.tsx",
       "risk": "low",
@@ -41174,7 +41212,7 @@
         "~/components/ui/badge"
       ],
       "kind": "config",
-      "loc": 98,
+      "loc": 101,
       "owner": "__unassigned__",
       "path": "frontend/app/components/command-center/badges.tsx",
       "risk": "low",
@@ -59144,7 +59182,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 76,
+      "loc": 83,
       "owner": "__unassigned__",
       "path": "frontend/index.cjs",
       "risk": "low",
@@ -62488,7 +62526,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 292,
+      "loc": 299,
       "owner": "__unassigned__",
       "path": "packages/registry/src/command-center/snapshot.ts",
       "risk": "low",
@@ -64635,7 +64673,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 703,
+      "loc": 765,
       "owner": "__unassigned__",
       "path": "scripts/audit/build-deep-inventory.js",
       "risk": "low",
@@ -64961,6 +64999,44 @@
       "loc": 225,
       "owner": "__unassigned__",
       "path": "scripts/audit/check-rag-authority-read-ratchet.ts",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/audit/check-revoked-secrets-ratchet.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 172,
+      "owner": "__unassigned__",
+      "path": "scripts/audit/check-revoked-secrets-ratchet.test.ts",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/audit/check-revoked-secrets-ratchet.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 292,
+      "owner": "__unassigned__",
+      "path": "scripts/audit/check-revoked-secrets-ratchet.ts",
       "risk": "low",
       "runtime": true,
       "schemaVersion": "1.0.0",
@@ -66079,7 +66155,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 421,
+      "loc": 422,
       "owner": "__unassigned__",
       "path": "scripts/governance/build-command-center-snapshot.js",
       "risk": "low",
@@ -66554,7 +66630,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 139,
+      "loc": 150,
       "owner": "__unassigned__",
       "path": "scripts/registry/lib/utils.js",
       "risk": "low",
@@ -66611,7 +66687,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 98,
+      "loc": 110,
       "owner": "__unassigned__",
       "path": "scripts/registry/validate-invariants.test.ts",
       "risk": "low",
@@ -68291,6 +68367,44 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "tests/registry/inventory-cache-freshness.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 264,
+      "owner": "__unassigned__",
+      "path": "tests/registry/inventory-cache-freshness.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "tests/registry/overlay-pre-commit.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 158,
+      "owner": "__unassigned__",
+      "path": "tests/registry/overlay-pre-commit.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",

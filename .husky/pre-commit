@@ -155,7 +155,7 @@ fi
 #     (a) npm_lifecycle_event ∈ registry:* AND (b) reproducible from current SoT
 # These run only when relevant files are staged.
 if git diff --cached --name-only --diff-filter=ACMR | grep -qE '^\.spec/00-canon/repository-registry/.*\.yaml$'; then
-  if command -v npm >/dev/null 2>&1 && [ -f scripts/registry/validate-overlay.js ]; then
+  if command -v npm >/dev/null 2>&1 && [ -f scripts/registry/validate-overlay.ts ]; then
     npm run registry:validate --silent || {
       echo ""
       echo "ERROR (ADR-058): Layer 2 overlay validation failed."

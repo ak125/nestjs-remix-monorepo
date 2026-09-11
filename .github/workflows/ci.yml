@@ -553,6 +553,38 @@ jobs:
           head: ${{ github.event.pull_request.head.sha || github.sha }}
           extra_args: --results=verified,unknown
 
+      # ── Ratchet d'ÉTAT (complète gitleaks, ne le duplique pas) ───────────────
+      #
+      # gitleaks-action ci-dessus scanne le DIFF de la PR. Un secret commité
+      # AVANT l'existence de la garde reste donc à HEAD indéfiniment sans qu'un
+      # seul run ne rougisse. Mesuré le 2026-09-09 : `gitleaks dir .` remontait
+      # le JWT `service_role` legacy Supabase dans 8 fichiers suivis (règle
+      # `jwt`) sur lesquels aucune PR n'avait jamais été bloquée.
+      #
+      # Ce ratchet lit l'ÉTAT de HEAD, pas le diff. Répartition sans SoT
+      # dupliquée : gitleaks = secret NOUVEAU qui entre par une PR ; ce ratchet
+      # = secret RÉVOQUÉ connu, ou jeton Supabase legacy/management de n'importe
+      # quelle valeur, encore présent dans (ou revenu dans) l'arbre suivi.
+      # Détection par forme + empreinte SHA-256 tronquée — jamais par valeur
+      # (l'allowlist par valeur est l'anti-pattern que .gitleaksignore a tué).
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install deps
+        run: npm ci
+
+      # Le garde est gardé : les tests unitaires du détecteur tournent AVANT le
+      # ratchet. Un détecteur cassé doit se voir sur ses fixtures synthétiques,
+      # pas passer silencieusement sur l'arbre réel.
+      - name: 🔐 Revoked-secrets ratchet — tests du détecteur
+        run: npm run audit:revoked-secrets-ratchet:test
+
+      - name: 🔐 Revoked-secrets ratchet — état de HEAD (bloquant)
+        run: npm run audit:revoked-secrets-ratchet
+
   migration-safety:
     # AST-based Postgres SQL linter (squawk, libpg_query) — replaces the
     # legacy grep-based gate that produced false positives on prose comments

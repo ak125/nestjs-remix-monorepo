@@ -35,6 +35,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
+const crypto = require('crypto');
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const AUDIT_DIR = path.join(REPO_ROOT, 'audit');
@@ -166,6 +167,45 @@ function listTrackedSourceFiles() {
     .filter((f) => !/(^|\/)build\//.test(f))
     .filter((f) => !/\.d\.ts$/.test(f))
     .sort();
+}
+
+/**
+ * Cache provenance belongs to the inventory producer, not to canonical I6.
+ * Hash working-tree bytes and the complete tracked path set (DevOps discovery),
+ * plus non-ignored new source/config files scanned by the external tools.
+ * Generated audit outputs are excluded to avoid a self-invalidating cache.
+ */
+function inventoryInputFingerprint(root = REPO_ROOT) {
+  const git = (args) => execFileSync('git', args, {
+    cwd: root, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024,
+  });
+  const tracked = git(['ls-files', '-z']).split('\0').filter(Boolean).sort();
+  const candidates = git(['ls-files', '--cached', '--others', '--exclude-standard', '-z'])
+    .split('\0').filter(Boolean);
+  const inputs = [...new Set(candidates)].filter((f) => {
+    if (/^(audit|node_modules)\//.test(f) || /\/(node_modules|dist|build)\//.test(f)) return false;
+    if (/^(dist|build)\//.test(f)) return false;
+    return /\.(ts|tsx|mts|cts|js|jsx|mjs|cjs|json|jsonc|yaml|yml)$/.test(f)
+      || f === '.gitignore'
+      || /(^|\/)\.gitignore$/.test(f)
+      || /^(\.github\/workflows|\.husky|docker)\//.test(f)
+      || /(^|\/)Dockerfile/.test(f);
+  }).sort().map((f) => {
+    const file = path.join(root, f);
+    // A tracked deletion is part of the snapshot, never silently forgotten.
+    const digest = fs.existsSync(file)
+      ? crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex')
+      : null;
+    return [f, digest];
+  });
+  const toolVersions = Object.fromEntries(['typescript', 'dependency-cruiser', 'madge', 'knip']
+    .map((name) => [name, JSON.parse(fs.readFileSync(path.join(root, 'node_modules', name, 'package.json'), 'utf8')).version]));
+  return crypto.createHash('sha256').update(JSON.stringify({
+    version: 1, tracked, inputs,
+    head: git(['rev-parse', 'HEAD']).trim(),
+    shallow: git(['rev-parse', '--is-shallow-repository']).trim(),
+    node: process.version, platform: process.platform, arch: process.arch, toolVersions,
+  })).digest('hex');
 }
 
 /** Single `git log` walk → most-recent commit ISO date per file (deterministic). */
@@ -496,6 +536,7 @@ function sortByPath(arr, key = 'path') { return arr.slice().sort((a, b) => cmpSt
 async function main() {
   if (!fs.existsSync(path.join(REPO_ROOT, '.dependency-cruiser.cjs'))) die('must run from repo root (.dependency-cruiser.cjs not found)');
   const ts = require('typescript');
+  const inputFingerprint = inventoryInputFingerprint();
 
   const allTracked = gitLines(['ls-files']).filter((f) => !f.includes('/node_modules/'));
   const sourceFiles = listTrackedSourceFiles();
@@ -553,7 +594,9 @@ async function main() {
     imported_by: [...(dc.importedBy.get(f) || [])].sort(),
     dynamic_imports: [...(dc.dynImports.get(f) || [])].sort(),
   }));
-  writeJson(path.join(CACHE_DIR, 'codebase-inventory.json'), { _generated_by: GENERATED_BY, _note: 'cache — gitignored — derive the versioned audit/*.json from this', file_count: inventoryFiles.length, files: inventoryFiles });
+  if (inventoryInputFingerprint() !== inputFingerprint) {
+    throw new Error('inventory inputs changed during analysis; rerun npm run audit:inventory');
+  }
 
   // ---- runtime-entrypoints.json ------------------------------------------
   const remixRoutes = sourceFiles.filter((f) => f.startsWith('frontend/app/routes/')).sort();
@@ -682,6 +725,21 @@ async function main() {
     candidates: sortByPath(candidates),
   });
 
+  // Publish the cache last: its paired runtime projection must already exist.
+  // A failed/interrupted rebuild must not advertise a new usable inventory.
+  if (inventoryInputFingerprint() !== inputFingerprint) {
+    throw new Error('inventory inputs changed during analysis; rerun npm run audit:inventory');
+  }
+  writeJson(path.join(CACHE_DIR, 'codebase-inventory.json'), {
+    _generated_by: GENERATED_BY,
+    _note: 'cache — gitignored — derive the versioned audit/*.json from this',
+    _source_fingerprint: inputFingerprint,
+    _runtime_entrypoints_sha256: crypto.createHash('sha256')
+      .update(fs.readFileSync(path.join(AUDIT_DIR, 'runtime-entrypoints.json'))).digest('hex'),
+    file_count: inventoryFiles.length,
+    files: inventoryFiles,
+  });
+
   // ---- summary -----------------------------------------------------------
   log('');
   log('=== deep-inventory summary ===');
@@ -699,4 +757,8 @@ async function main() {
   log('  artefacts written to audit/ (+ audit/cache/codebase-inventory.json, gitignored)');
 }
 
-main().catch((e) => die(e && e.stack ? e.stack : String(e)));
+if (require.main === module) {
+  main().catch((e) => die(e && e.stack ? e.stack : String(e)));
+}
+
+module.exports = { inventoryInputFingerprint };

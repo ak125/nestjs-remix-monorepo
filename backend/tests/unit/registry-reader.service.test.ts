@@ -1,4 +1,7 @@
-import { join } from 'path';
+import { isAbsolute, join } from 'path';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'fs';
+import { tmpdir } from 'os';
+import { CanonicalRegistrySchema } from '../../../packages/registry/src/canonical/canonical-registry';
 import {
   RegistryReaderService,
   type ControlPlaneSummary,
@@ -11,8 +14,10 @@ import {
  */
 const FIXTURES = join(__dirname, 'fixtures', 'control-plane');
 
-function makeService(scenario: 'full' | 'repo-only' | 'missing') {
-  process.env.REGISTRY_DIR = join(FIXTURES, scenario);
+function makeService(scenario: string) {
+  process.env.REGISTRY_DIR = isAbsolute(scenario)
+    ? scenario
+    : join(FIXTURES, scenario);
   const cache = {
     get: jest.fn().mockResolvedValue(null),
     set: jest.fn().mockResolvedValue(undefined),
@@ -25,8 +30,19 @@ function makeService(scenario: 'full' | 'repo-only' | 'missing') {
 describe('RegistryReaderService', () => {
   const ORIGINAL_ENV = process.env.REGISTRY_DIR;
   afterAll(() => {
-    process.env.REGISTRY_DIR = ORIGINAL_ENV;
+    if (ORIGINAL_ENV === undefined) delete process.env.REGISTRY_DIR;
+    else process.env.REGISTRY_DIR = ORIGINAL_ENV;
   });
+
+  it.each(['full', 'repo-only'])(
+    '%s fixture respects the producer contract',
+    (scenario) => {
+      const canonical = JSON.parse(
+        readFileSync(join(FIXTURES, scenario, 'canonical.json'), 'utf8'),
+      );
+      expect(CanonicalRegistrySchema.safeParse(canonical).success).toBe(true);
+    },
+  );
 
   describe('full (canonical + planning)', () => {
     let summary: ControlPlaneSummary;
@@ -45,14 +61,13 @@ describe('RegistryReaderService', () => {
       expect(summary.repo!.counts).toEqual({
         files: 2,
         db: 1,
-        rpc: 0,
+        rpc: 1,
         deps: 1,
         runtime: 1,
       });
-      // 2 entries with owner __unassigned__ (b.ts + zod)
-      expect(summary.repo!.ownershipGaps).toBe(2);
-      // domains D1, D2, D3
-      expect(summary.repo!.domainCount).toBe(3);
+      // b.ts, zod, the table and RPC; DB entries also contribute to domains.
+      expect(summary.repo!.ownershipGaps).toBe(4);
+      expect(summary.repo!.domainCount).toBe(5);
       expect(summary.repo!.sotFingerprint).toBe('test-fingerprint-abc');
     });
 
@@ -132,5 +147,67 @@ describe('RegistryReaderService', () => {
       expect(result).toBe(cached);
       expect(cache.set).not.toHaveBeenCalled();
     });
+  });
+
+  describe('canonical input boundaries', () => {
+    let directory: string;
+    beforeEach(() => {
+      directory = mkdtempSync(join(tmpdir(), 'registry-reader-'));
+      writeFileSync(
+        join(directory, 'planning.json'),
+        readFileSync(join(FIXTURES, 'full', 'planning.json')),
+      );
+    });
+    afterEach(() => rmSync(directory, { recursive: true, force: true }));
+
+    it('accepts an empty registry normalized by the shared contract', async () => {
+      const canonical = CanonicalRegistrySchema.parse({
+        schemaVersion: '1.0.0',
+        meta: {
+          generatedAt: '1970-01-01T00:00:00.000Z',
+          generatorVersion: '1.0.0',
+          inputHashes: {},
+        },
+      });
+      writeFileSync(
+        join(directory, 'canonical.json'),
+        JSON.stringify(canonical),
+      );
+      const { service, cache } = makeService(directory);
+      const result = await service.getControlPlaneSummary();
+      expect(result.degraded).toBe(false);
+      expect(result.repo?.counts).toEqual({
+        files: 0,
+        db: 0,
+        rpc: 0,
+        deps: 0,
+        runtime: 0,
+      });
+      expect(cache.set).toHaveBeenCalledWith(expect.any(String), result, 60);
+    });
+
+    it.each([
+      ['legacy flat db', []],
+      ['malformed tables', { tables: {}, rpc: [] }],
+      ['malformed rpc', { tables: [], rpc: {} }],
+    ])(
+      'degrades %s instead of presenting valid zero counts',
+      async (_name, db) => {
+        const canonical = JSON.parse(
+          readFileSync(join(FIXTURES, 'full', 'canonical.json'), 'utf8'),
+        );
+        canonical.db = db;
+        writeFileSync(
+          join(directory, 'canonical.json'),
+          JSON.stringify(canonical),
+        );
+        const { service, cache } = makeService(directory);
+        const result = await service.getControlPlaneSummary();
+        expect(result.degraded).toBe(true);
+        expect(result.repo).toBeNull();
+        expect(result.wip.degraded).toBe(false);
+        expect(cache.set).toHaveBeenCalledWith(expect.any(String), result, 15);
+      },
+    );
   });
 });

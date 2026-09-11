@@ -103,10 +103,23 @@ Optionnelles :
 
 ### Installation prod (host `49.12.233.2`)
 
+> **L'étape 1 est automatisée depuis 2026-09-09.** Tout merge sur `main` touchant
+> `scripts/monitoring/*.sh` déclenche [`deploy-monitoring-scripts.yml`](../../.github/workflows/deploy-monitoring-scripts.yml),
+> qui recopie les exécutables dans `/usr/local/bin/` depuis le runner self-hosted
+> (la même machine). Le workflow contrôle la syntaxe **avant** d'écrire et vérifie
+> l'empreinte **après** : il ne peut donc ni installer un script cassé, ni passer au
+> vert sans avoir réellement mis à jour la copie.
+>
+> Avant cette date, la copie était manuelle et **un merge ne déployait rien** — les
+> correctifs d'alerte de #1413 sont restés inertes pendant deux jours pour cette
+> seule raison.
+>
+> Les étapes 2 et 4 (secrets, planification) restent **manuelles et faites une fois** :
+> le workflow ne touche ni `/etc/default/*` ni `/etc/cron.d/*`.
+
 ```bash
-# 1. Le script est déjà dans le repo git (après CI deploy de main)
-#    Path canonique : /home/deploy/actions-runner/_work/.../scripts/monitoring/
-#    Copier vers path stable (hors workdir du runner qui peut être wipé) :
+# 1. (automatique) — équivalent manuel, pour un premier amorçage ou un dépannage.
+#    Sinon : Actions → « 📟 Deploy monitoring scripts » → Run workflow.
 RUNNER_REPO=/home/deploy/actions-runner/_work/nestjs-remix-monorepo/nestjs-remix-monorepo
 sudo install -m 755 "$RUNNER_REPO/scripts/monitoring/check-payment-tunnel.sh" /usr/local/bin/
 
@@ -245,7 +258,13 @@ Identiques à PREV-1 (les secrets Gmail sont partagés). Seuls les seuils change
 
 ### Installation prod (host `49.12.233.2`)
 
+> Même mécanique que PREV-1 : la copie de l'exécutable est **automatisée** par
+> [`deploy-monitoring-scripts.yml`](../../.github/workflows/deploy-monitoring-scripts.yml)
+> (le workflow traite tous les `scripts/monitoring/*.sh`). Le lien env et le cron
+> ci-dessous restent manuels et faits une fois.
+
 ```bash
+# (automatique) — équivalent manuel pour amorçage/dépannage
 RUNNER_REPO=/home/deploy/actions-runner/_work/nestjs-remix-monorepo/nestjs-remix-monorepo
 sudo install -m 755 "$RUNNER_REPO/scripts/monitoring/check-error-logs-5xx.sh" /usr/local/bin/
 

@@ -20,6 +20,7 @@
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
+const { inventoryInputFingerprint } = require("../../audit/build-deep-inventory.js");
 
 const MONOREPO_ROOT = path.resolve(__dirname, "..", "..", "..");
 const AUDIT_DIR = path.join(MONOREPO_ROOT, "audit");
@@ -78,17 +79,27 @@ function readJsonSafe(filePath) {
 }
 
 /**
- * Ensure `audit/cache/codebase-inventory.json` exists. If absent, instruct caller
- * to run the inventory builder first — but do NOT auto-run it (orchestration
- * lives in the top-level `registry:build` npm script).
+ * Refuse missing, legacy or stale inventories; do not implicitly run producers.
+ * I6 checks canonical's declared inputs, not source-to-inventory freshness.
  */
 function loadInventoryCache() {
   const cachePath = path.join(AUDIT_DIR, "cache", "codebase-inventory.json");
   const data = readJsonSafe(cachePath);
-  if (!data) {
-    throw new Error(
-      `[registry] audit/cache/codebase-inventory.json absent. Run \`npm run audit:inventory\` first.`
-    );
+  const rebuild = "Run `npm run audit:inventory` first, then retry the registry build.";
+  if (!data || !Array.isArray(data.files) || !data._source_fingerprint) {
+    throw new Error(`[registry] inventory cache absent, invalid or without source provenance. ${rebuild}`);
+  }
+  try {
+    if (data._source_fingerprint !== inventoryInputFingerprint(MONOREPO_ROOT)) {
+      throw new Error("inventory inputs changed");
+    }
+    const runtimeHash = crypto.createHash("sha256")
+      .update(fs.readFileSync(path.join(AUDIT_DIR, "runtime-entrypoints.json"))).digest("hex");
+    if (data._runtime_entrypoints_sha256 !== runtimeHash) {
+      throw new Error("runtime projection does not match the inventory cache");
+    }
+  } catch (error) {
+    throw new Error(`[registry] stale or unverifiable inventory cache: ${error.message}. ${rebuild}`);
   }
   return data;
 }

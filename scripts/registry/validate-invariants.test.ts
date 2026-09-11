@@ -95,3 +95,15 @@ test("I6: absent inputHashes → warn (cannot verify)", () => {
   const findings = checkCanonicalFresh(undefined, () => null);
   assert.ok(findings.some((f) => f.invariant === "I6-canonical-fresh" && f.severity === "warn"));
 });
+
+// Source-to-inventory freshness belongs to the producer/cache boundary.
+// Extending I6 to guess undeclared inputs would duplicate that responsibility.
+test("I6: matching declared inputs do not certify undeclared source freshness", () => {
+  const inspected: string[] = [];
+  const findings = checkCanonicalFresh({ "files.json": "current" }, (file) => {
+    inspected.push(file);
+    return file === "files.json" ? "current" : "changed-source";
+  });
+  assert.deepEqual(findings, []);
+  assert.deepEqual(inspected, ["files.json"]);
+});

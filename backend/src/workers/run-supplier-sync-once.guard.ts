@@ -20,6 +20,6 @@ export function isOneshotConfirmed(
 
 export const ONESHOT_REFUSAL =
   `REFUSING real supplier sync — set ${ONESHOT_CONFIRM_ENV}=true for an explicit, ` +
-  'owner-gated one-shot run (real CAL/DCA portal logins + writes to ' +
-  'supplier_inventory_snapshots / supplier_truth_projection on the shared prod DB). ' +
+  'owner-gated one-shot run (real CAL/DCA portal logins + appends to ' +
+  'supplier_offer_snapshot on the shared prod DB). ' +
   'Exiting now with NO portal login and NO DB write.';

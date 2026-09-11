@@ -120,6 +120,10 @@ automecanik.com, www.automecanik.com {
         reverse_proxy https://cxpojprgwgubzjyqzmoq.supabase.co {
             header_up Host cxpojprgwgubzjyqzmoq.supabase.co
             header_down -Cache-Control
+            # Supabase renvoie `__cf_bm; Domain=supabase.co` — cookie que le
+            # navigateur rejette (mauvais domaine) et qui fait refuser le cache
+            # a Cloudflare : cf-cache-status BYPASS sur des images immutable 1 an.
+            header_down -Set-Cookie
         }
     }
 

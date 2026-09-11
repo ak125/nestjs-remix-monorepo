@@ -1,0 +1,196 @@
+{
+  "contrat_par_lot": {
+    "checkpoint": "_batch_id deterministe par (table, DLNR, CRC32, version) — un lot interrompu se reprend au DLNR pres, sans doublon.",
+    "comptabilite": "emis = charges + dedoublonnes + rejets_explicites, verifiee AVANT commit (tecdoc_load_guard.verifier_lot). Sinon FAIL + ROLLBACK + STOP.",
+    "condition_de_passage": "un lot ne s'ouvre que si le precedent est integralement vert.",
+    "rapport": "<volume>/rapports/lot-<n>.json — par DLNR : rows_source, rows_parsed, rows_emitted, rows_loaded, rows_deduplicated, rows_rejected, rows_fatal.",
+    "rollback": "une transaction par DLNR : toute anomalie annule le DLNR entier. Aucun prefixe partiel ne peut etre committe."
+  },
+  "couverture": {
+    "dlnr_du_perimetre": 110,
+    "dlnr_planifies": 110,
+    "lignes_source_totales": 130932146
+  },
+  "lots": [
+    {
+      "divergents_inclus": [],
+      "dlnr": [
+        4523
+      ],
+      "lignes_source_attendues": 13057,
+      "nom": "LOT 0 — fumee",
+      "nombre": 1
+    },
+    {
+      "divergents_inclus": [
+        "NISSENS",
+        "PAYEN"
+      ],
+      "dlnr": [
+        79,
+        113,
+        123,
+        220,
+        382
+      ],
+      "lignes_source_attendues": 2179199,
+      "nom": "LOT 1 — 5 DLNR, 2 divergents legers",
+      "nombre": 5
+    },
+    {
+      "divergents_inclus": [
+        "RIDEX"
+      ],
+      "dlnr": [
+        11,
+        15,
+        41,
+        83,
+        96,
+        109,
+        154,
+        175,
+        193,
+        273,
+        310,
+        357,
+        396,
+        492,
+        4368,
+        4819,
+        4828,
+        4849,
+        6277,
+        6358
+      ],
+      "lignes_source_attendues": 7932092,
+      "nom": "LOT 2 — 20 DLNR, 1 divergent moyen",
+      "nombre": 20
+    },
+    {
+      "divergents_inclus": [
+        "BOSCH",
+        "FEBI"
+      ],
+      "dlnr": [
+        30,
+        101
+      ],
+      "lignes_source_attendues": 26779184,
+      "nom": "LOT 3 — divergents lourds, isoles",
+      "nombre": 2
+    },
+    {
+      "divergents_inclus": [],
+      "dlnr": [
+        5,
+        6,
+        13,
+        16,
+        24,
+        31,
+        34,
+        38,
+        43,
+        59,
+        86,
+        137,
+        190,
+        211,
+        215,
+        218,
+        239,
+        240,
+        245,
+        263,
+        292,
+        298,
+        313,
+        408,
+        437,
+        4470,
+        4572,
+        4627,
+        4705,
+        4940
+      ],
+      "lignes_source_attendues": 9404364,
+      "nom": "LOT 4 — reste (30 DLNR)",
+      "nombre": 30
+    },
+    {
+      "divergents_inclus": [],
+      "dlnr": [
+        3,
+        4,
+        32,
+        33,
+        35,
+        42,
+        55,
+        62,
+        65,
+        66,
+        73,
+        85,
+        110,
+        114,
+        134,
+        140,
+        159,
+        192,
+        204,
+        205,
+        226,
+        247,
+        249,
+        260,
+        324,
+        332,
+        393,
+        460,
+        469,
+        4680
+      ],
+      "lignes_source_attendues": 25567877,
+      "nom": "LOT 5 — reste (30 DLNR)",
+      "nombre": 30
+    },
+    {
+      "divergents_inclus": [],
+      "dlnr": [
+        10,
+        21,
+        37,
+        39,
+        50,
+        54,
+        67,
+        75,
+        89,
+        95,
+        127,
+        151,
+        161,
+        244,
+        253,
+        350,
+        440,
+        475,
+        484,
+        4501,
+        4664,
+        4667
+      ],
+      "lignes_source_attendues": 59056373,
+      "nom": "LOT 6 — reste (22 DLNR)",
+      "nombre": 22
+    }
+  ],
+  "objet": "Plan de lots du rejeu complet TecDoc. PREPARE, NON EXECUTE.",
+  "perimetre_source": {
+    "dlnr_projetes": 110,
+    "fichier": "massdoc-tecdoc-import-scope-2026-03.json",
+    "version": "2026-03-reconstructed-v2"
+  }
+}

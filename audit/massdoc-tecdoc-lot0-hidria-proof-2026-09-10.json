@@ -1,0 +1,68 @@
+{
+  "objet": "Preuve scellee du rejeu TecDoc LOT 0 — DLNR 4523 (HIDRIA), execute le 2026-09-10.",
+  "portee": "RAW (tecdoc_raw.t400) uniquement. Aucune preuve sur la projection source_linkages.",
+  "environnement": "PostgreSQL 17.11 jetable (tmpfs, boucle locale). Reference MassDoc lue en SELECT seuls, aucune ecriture.",
+  "purge": {
+    "matiere_jetable_purgee": true,
+    "rows_dlnr_4523_restantes": 0,
+    "base_jetable_supprimee": true
+  },
+  "verification_du_sceau": "python3 -c \"import json,sys; sys.path.insert(0,'scripts'); from tecdoc_seal import verifier; verifier(json.load(open('audit/massdoc-tecdoc-lot0-hidria-proof-2026-09-10.json'))['registre_scelle'])\"",
+  "registre_scelle": {
+    "conservation": {
+      "ensembles_verifies": 9,
+      "lot": "LOT 0 — fumee"
+    },
+    "entrees": [
+      {
+        "batch_id": "5df6aa4716dd1944fbf3746d5890852c",
+        "comptabilite": {
+          "rows_deduplicated": 0,
+          "rows_emitted": 13057,
+          "rows_loaded": 13057,
+          "rows_rejected": {}
+        },
+        "dlnr": 4523,
+        "empreinte_du_charge": {
+          "borne_max": 13057,
+          "borne_min": 1,
+          "empreinte_md5": "0f46f853577f32c79303bc8505e034ca",
+          "lignes": 13057
+        },
+        "fichier": "400.4523.sql",
+        "identite": [
+          "tecdoc_map.type_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.article_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.linkage_target_registry : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.pg_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)",
+          "tecdoc_map.modele_id_remap : non_applicable — le rejeu n'a produit aucune entree (aucune projection n'a encore tourne)"
+        ],
+        "reconciliation": {
+          "absentes_de_prod": 0,
+          "activables_sans_decision_humaine": 13057,
+          "candidats_en_quarantaine": 0,
+          "conflits": 0,
+          "dlnr": 4523,
+          "en_trop_dans_prod": 0,
+          "identites_conservees": 13057,
+          "inclusion_respectee": true,
+          "indecidables": 0,
+          "lignes_prod_actuelles": 13057,
+          "lignes_source_attendues": 13057
+        },
+        "source": {
+          "crc32": "79F794A2",
+          "version_perimetre": "2026-03-reconstructed-v2"
+        }
+      }
+    ],
+    "invariant": "PROD actuelle ⊆ REBUILD source-truth, sans perte de ligne ni derive d'identite.",
+    "objet": "Registre de preuve du rejeu TecDoc par vagues.",
+    "portee": "RAW (tecdoc_raw.t400) uniquement. Aucune preuve de projection.",
+    "seal": {
+      "algorithm": "sha256",
+      "canonicalization": "sort_keys, UTF-8, separateurs (',',':'), bloc seal exclu.",
+      "sha256": "dfdf0faaed837644fd6ac3f18e881ee9830524c28dca154c39a23f9aefc3bd82"
+    }
+  }
+}

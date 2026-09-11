@@ -155,6 +155,13 @@ docker exec "$CONTENEUR" psql -U postgres -d reference -q \
 cas "ensemble applicatif modifie refuse" 7 \
   python3 tecdoc_replay_controls.py --reference-dsn "$REF" --rejeu-dsn "$BANC" \
     --manifeste tecdoc-replay/manifeste-synthetique.json --controles conservation
+# Restaurer la reference : une injection destructive qui ne se defait pas contamine
+# tous les cas suivants, et son echec serait mis au compte du mauvais composant.
+docker exec "$CONTENEUR" psql -U postgres -d reference -q \
+  -c "INSERT INTO public.auto_type(type_id_i) VALUES (60000) ON CONFLICT DO NOTHING" >/dev/null
+cas "reference restauree : conservation a nouveau intacte" 0 \
+  python3 tecdoc_replay_controls.py --reference-dsn "$REF" --rejeu-dsn "$BANC" \
+    --manifeste tecdoc-replay/manifeste-synthetique.json --controles conservation
 
 echo
 echo "-- Injection 6 : inclusion PROD ⊆ REBUILD rompue --"
@@ -173,6 +180,107 @@ cas "contenu servi contredisant le rejeu refuse (CONFLICT)" 8 \
   python3 tecdoc_replay_controls.py --reference-dsn "$REF" --rejeu-dsn "$BANC" \
     --dlnr "$DLNR_TEST" --controles reconciliation
 
+echo
+echo "-- Vagues : la preuve survit a la purge, l'echec conserve la matiere --"
+docker exec "$CONTENEUR" psql -U postgres -d banc -q -c 'DELETE FROM tecdoc_raw.t400' >/dev/null
+docker exec "$CONTENEUR" psql -U postgres -d reference -q -c 'DELETE FROM tecdoc_raw.t400' >/dev/null
+rm -f "$TMP"/400.*.csv "$TMP"/400.*.meta "$TMP/registre.json"
+cas "vague nominale (LOT 0) puis purge" 0 \
+  python3 tecdoc_replay_wave.py --lot 0 --plan tecdoc-replay/plan-lots.json \
+    --scope-file "$SCOPE" --cible-dsn "$BANC" --reference-dsn "$REF" \
+    --manifeste tecdoc-replay/manifeste-synthetique.json \
+    --workdir "$TMP" --registre "$TMP/registre.json" --archive "$ARCHIVE"
+egal "matiere purgee apres preuve" "0" "$(sql banc 'select count(*) from tecdoc_raw.t400')"
+egal "preuve conservee dans le registre" "13057" \
+  "$(python3 -c "import json;print(json.load(open('$TMP/registre.json'))['entrees'][0]['comptabilite']['rows_loaded'])" 2>/dev/null)"
+egal "registre scelle" "64" \
+  "$(python3 -c "import json;print(len(json.load(open('$TMP/registre.json'))['seal']['sha256']))" 2>/dev/null)"
+
+# Une preuve incomplete est une preuve qu'on ne peut pas refaire. Les 13 champs
+# ci-dessous sont le contrat du registre : chacun doit etre present ET non nul.
+egal "les 13 champs du contrat de preuve sont presents" "13/13" \
+  "$(python3 - "$TMP/registre.json" <<'PYCHK'
+import json, sys
+e = json.load(open(sys.argv[1]))["entrees"][0]
+r = e.get("reconciliation", {})
+champs = {
+    "dlnr":               e.get("dlnr"),
+    "batch_id":           e.get("batch_id"),
+    "source shard":       e.get("fichier"),
+    "scope hash":         e.get("source", {}).get("version_perimetre"),
+    "CRC32 source":       e.get("source", {}).get("crc32"),
+    "rows_emitted":       e.get("comptabilite", {}).get("rows_emitted"),
+    "rows_loaded":        e.get("comptabilite", {}).get("rows_loaded"),
+    "rows_deduplicated":  e.get("comptabilite", {}).get("rows_deduplicated"),
+    "rows_rejected":      e.get("comptabilite", {}).get("rows_rejected"),
+    "empreinte charge":   (e.get("empreinte_du_charge") or {}).get("empreinte_md5"),
+    "reconciliation":     r or None,
+    "inclusion":          r.get("inclusion_respectee"),
+    "conflits":           r.get("conflits"),
+}
+presents = sum(1 for v in champs.values() if v is not None)
+manquants = [k for k, v in champs.items() if v is None]
+print(f"{presents}/{len(champs)}" + (" manquants: " + ",".join(manquants) if manquants else ""))
+PYCHK
+)"
+# La reference est VIDEE par la fixture juste avant ce cas : les 13 057 lignes du
+# rejeu n'ont donc aucun equivalent en PROD et sont toutes NEW_FROM_SOURCE. Les voir
+# TOUTES en quarantaine est le comportement correct, pas un defaut — attendre 0 ici
+# reviendrait a exiger que le delta source soit active d'office.
+#
+# On n'assert donc pas un nombre mais la PARTITION : tout ce que le rejeu produit est
+# soit deja identique en PROD (`identites_conservees`), soit en quarantaine. Aucune
+# troisieme categorie, silencieusement activable, ne doit exister.
+egal "quarantaine : partition exacte, rien d'activable en silence" "13057 partition couverture" \
+  "$(python3 - "$TMP/registre.json" <<'PYCHK'
+import json, sys
+r = json.load(open(sys.argv[1]))["entrees"][0]["reconciliation"]
+q = r["candidats_en_quarantaine"]
+somme = r["absentes_de_prod"] + r["conflits"] + r["indecidables"]
+couvert = r["identites_conservees"] + q
+print(q,
+      "partition" if q == somme else f"FUITE({q}!={somme})",
+      "couverture" if couvert == r["lignes_source_attendues"] else
+      f"TROU({couvert}!={r['lignes_source_attendues']})")
+PYCHK
+)"
+
+# Le sceau doit etre un vrai sceau : recalcule sur le contenu il concorde, recalcule
+# apres avoir change UNE valeur il diverge. Sans cette seconde moitie, le sceau
+# n'atteste que de lui-meme.
+egal "sceau : concorde sur le contenu, diverge sur une valeur alteree" "concorde diverge" \
+  "$(python3 - "$TMP/registre.json" <<'PYCHK'
+import importlib.util as u, json, sys
+spec = u.spec_from_file_location("w", "tecdoc_replay_wave.py")
+m = u.module_from_spec(spec); spec.loader.exec_module(m)
+d = json.load(open(sys.argv[1]))
+scelle = d["seal"]["sha256"]
+sans = {k: v for k, v in d.items() if k != "seal"}
+a = "concorde" if m.sceller(sans) == scelle else "DIVERGE"
+sans["entrees"][0]["comptabilite"]["rows_loaded"] += 1      # une seule valeur
+b = "diverge" if m.sceller(sans) != scelle else "CONCORDE"
+print(a, b)
+PYCHK
+)"
+cas "relance du meme lot : idempotente" 0 \
+  python3 tecdoc_replay_wave.py --lot 0 --plan tecdoc-replay/plan-lots.json \
+    --scope-file "$SCOPE" --cible-dsn "$BANC" --reference-dsn "$REF" \
+    --manifeste tecdoc-replay/manifeste-synthetique.json \
+    --workdir "$TMP" --registre "$TMP/registre.json" --archive "$ARCHIVE"
+
+# La reference sert une ligne que le rejeu ne reproduit pas : inclusion rompue.
+rm -f "$TMP/registre2.json" "$TMP"/400.*.csv "$TMP"/400.*.meta
+docker exec "$CONTENEUR" psql -U postgres -d reference -q \
+  -c "INSERT INTO tecdoc_raw.t400(col_2,_source_row_no,_raw_hash) VALUES ('$DLNR_TEST',999999,'servie_mais_absente_du_rejeu')" >/dev/null
+cas "inclusion rompue : vague arretee" 8 \
+  python3 tecdoc_replay_wave.py --lot 0 --plan tecdoc-replay/plan-lots.json \
+    --scope-file "$SCOPE" --cible-dsn "$BANC" --reference-dsn "$REF" \
+    --manifeste tecdoc-replay/manifeste-synthetique.json \
+    --workdir "$TMP" --registre "$TMP/registre2.json" --archive "$ARCHIVE"
+egal "matiere CONSERVEE pour diagnostic sur echec" "13057" \
+  "$(sql banc 'select count(*) from tecdoc_raw.t400')"
+
+echo
 echo
 echo "=== $ok assertions vertes, $ko rouges ==="
 [ "$ko" -eq 0 ] || exit 1

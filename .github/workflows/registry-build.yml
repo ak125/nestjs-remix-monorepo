@@ -17,6 +17,7 @@ on:
       - "scripts/audit/build-db-usage-map.js"
       - "packages/registry/**"
       - "tests/registry/**"
+      - ".husky/pre-commit"
       - "audit/**"
       - "backend/supabase/migrations/**"
       - ".github/workflows/registry-build.yml"
@@ -27,6 +28,7 @@ on:
       - "scripts/registry/**"
       - "packages/registry/**"
       - "tests/registry/**"
+      - ".husky/pre-commit"
       - ".github/workflows/registry-build.yml"
 
 jobs:
@@ -48,6 +50,12 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Test overlay pre-commit with the real validator
+        run: npx --no-install tsx --test tests/registry/overlay-pre-commit.test.ts
+
+      - name: Test inventory cache freshness and invariant boundaries
+        run: npx --no-install tsx --test tests/registry/inventory-cache-freshness.test.ts scripts/registry/validate-invariants.test.ts
 
       - name: Run upstream audit producers (provide inputs for builders)
         run: npm run audit:inventory

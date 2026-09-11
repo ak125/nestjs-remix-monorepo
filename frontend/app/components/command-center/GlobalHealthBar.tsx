@@ -1,16 +1,20 @@
 /**
  * Command Center — Global Health Bar.
- * Answers "is the system healthy?" in <10s: global verdict + reasons + per-family
+ * Summarizes the operating map, not application execution: verdict + reasons + per-family
  * rollup + freshness/validation. Enforces "no green on broken source" — a family
  * with any non-CERTIFIED department is never shown green.
  */
-import { type CommandCenterResponse, type Certification } from "@repo/registry";
+import {
+  type CommandCenterResponse,
+  type Certification,
+  type GlobalStatus,
+} from "@repo/registry";
 import { ShieldCheck, ShieldAlert, AlertTriangle, Clock } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent } from "~/components/ui/card";
 import {
-  certVariant,
+  CertBadge,
   globalLevelVariant,
   StaleBadge,
   ValidationBadge,
@@ -22,6 +26,12 @@ const RANK: Record<Certification, number> = {
   UNKNOWN: 1,
   PARTIAL: 2,
   CERTIFIED: 3,
+};
+
+const VERDICT_LABEL: Record<GlobalStatus["verdict"], string> = {
+  OPERATIONAL: "Cartographie sans blocage détecté",
+  PARTIAL_READY: "Cartographie partielle",
+  BLOCKED: "Cartographie bloquée",
 };
 
 export function GlobalHealthBar({ data }: { data: CommandCenterResponse }) {
@@ -52,21 +62,30 @@ export function GlobalHealthBar({ data }: { data: CommandCenterResponse }) {
   }).filter((f) => f.count > 0);
 
   return (
-    <section aria-label="Santé globale" className="space-y-4">
+    <section aria-label="État de la cartographie" className="space-y-4">
       <Alert
         variant={alertVariant}
         icon={<Icon className="h-5 w-5" aria-hidden />}
       >
         <AlertTitle className="flex flex-wrap items-center gap-2">
-          <span>État global&nbsp;:</span>
+          <span>État de la cartographie&nbsp;:</span>
           <Badge variant={globalLevelVariant[g.level]}>{g.level}</Badge>
-          <Badge variant="outline">{g.verdict}</Badge>
+          <Badge variant="outline">{VERDICT_LABEL[g.verdict]}</Badge>
           <StaleBadge value={data.stale_status} />
           <ValidationBadge value={data.validation_status} />
         </AlertTitle>
         <AlertDescription>
+          <p className="mb-2">
+            Certification structurelle : déclaration et présence des fichiers
+            cités. L’exécution des services et des parcours métier n’est pas
+            vérifiée ici.
+          </p>
           {g.reasons.length === 0 ? (
-            <span>Aucun risque signalé.</span>
+            <span>
+              {data.mode === "light"
+                ? "Détail des alertes non exposé en mode light."
+                : "Aucune alerte de cartographie signalée."}
+            </span>
           ) : (
             <ul className="list-disc pl-5">
               {g.reasons.map((r, i) => (
@@ -76,8 +95,8 @@ export function GlobalHealthBar({ data }: { data: CommandCenterResponse }) {
           )}
           <p className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
             <Clock className="h-3 w-3" aria-hidden />
-            Snapshot {data.source_truth.last_verified ?? "—"} · servi{" "}
-            {new Date(data.generated_at).toLocaleString("fr-FR")}
+            Vérification déclarée : {data.source_truth.last_verified ?? "—"} ·
+            réponse servie {new Date(data.generated_at).toLocaleString("fr-FR")}
             {data.git_sha ? ` · ${data.git_sha.slice(0, 7)}` : ""}
           </p>
         </AlertDescription>
@@ -86,17 +105,12 @@ export function GlobalHealthBar({ data }: { data: CommandCenterResponse }) {
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {families.map((f) => (
           <Card key={f.family}>
-            <CardContent className="flex items-center justify-between gap-2 p-4">
+            <CardContent className="flex flex-wrap items-center justify-between gap-2 p-4">
               <div>
                 <p className="text-sm font-medium">{f.family}</p>
                 <p className="text-xs text-muted-foreground">{f.count} dépt.</p>
               </div>
-              <Badge
-                variant={certVariant[f.worst]}
-                aria-label={`${f.family} : ${f.worst}`}
-              >
-                {f.worst}
-              </Badge>
+              <CertBadge value={f.worst} />
             </CardContent>
           </Card>
         ))}
