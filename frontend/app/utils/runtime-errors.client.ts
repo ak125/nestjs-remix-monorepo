@@ -18,12 +18,12 @@
  * Initialisé depuis `entry.client.tsx` après `reportWebVitals()`.
  */
 
-import {
-  classifyRoute,
-  priorityTierFromSurface,
-  type DeviceType,
-  type Surface,
-} from "@repo/cwv-taxonomy";
+// Sous-chemins sans zod : la racine "@repo/cwv-taxonomy" réexporte les schémas
+// Zod du beacon et embarquerait zod dans le bundle évalué au démarrage.
+import { type DeviceType } from "@repo/cwv-taxonomy/metric";
+import { priorityTierFromSurface } from "@repo/cwv-taxonomy/priority-tier";
+import { classifyRoute } from "@repo/cwv-taxonomy/route-group";
+import { type Surface } from "@repo/cwv-taxonomy/surface";
 
 import { isChunkLoadErrorMessage } from "~/utils/chunk-error-classification";
 import { safeSessionStorage } from "~/utils/safe-storage";

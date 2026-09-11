@@ -22,11 +22,10 @@
  * `console`, CMP qui mock `gtag`, etc.).
  */
 
-import {
-  classifyRoute,
-  type DeviceType,
-  type NavType,
-} from "@repo/cwv-taxonomy";
+// Sous-chemins sans zod : la racine "@repo/cwv-taxonomy" réexporte les schémas
+// Zod du beacon et embarquerait zod dans le bundle évalué au démarrage.
+import { type DeviceType, type NavType } from "@repo/cwv-taxonomy/metric";
+import { classifyRoute } from "@repo/cwv-taxonomy/route-group";
 import {
   onLCP,
   onCLS,
