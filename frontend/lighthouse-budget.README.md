@@ -1,10 +1,10 @@
-# `lighthouse-budget.json` — budgets timing post-deploy (observe-only)
+# `lighthouse-budget.json` — budgets timing post-deploy
 
 ## Rôle actuel (post-cascade size-limit 2026-05-14)
 
-Ce fichier est consommé **uniquement** par le job `lighthouse:` post-deploy de [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) (ligne ~969). Il définit les seuils de timing (FCP/LCP/TTI/TBT/CLS) mesurés par Lighthouse-CI sur le **serveur PREPROD réel** (`localhost:3200` du runner self-hosted), **après deploy sur main**, en mode **observe-only / non-bloquant**.
+Ce fichier est consommé **uniquement** par le job `lighthouse:` post-deploy de [`.github/workflows/ci.yml`](../.github/workflows/ci.yml), via [lighthouserc.cjs](../scripts/ci/lighthouserc.cjs). Il définit les seuils de timing (FCP/LCP/TTI/TBT/CLS) mesurés par Lighthouse-CI sur le **serveur PREPROD réel** (`localhost:3200` du runner self-hosted), **après deploy sur main**.
 
-> *"Non-blocking: violations signalees mais ne bloquent pas le pipeline."* — extrait du step summary du job.
+L’ancienne mention « non bloquant » contredisait le code de `treosh/lighthouse-ci-action@v12` : les assertions natives de niveau `error` font échouer l’action. Ce comportement et les seuils sont conservés. Le résumé affiche les budgets réellement configurés, et non des cibles différentes codées dans le YAML.
 
 **Ce n'est pas un PR gate.** Le gate PR vit dans [`.github/workflows/perf-gates.yml`](../.github/workflows/perf-gates.yml) qui appelle [size-limit](https://github.com/ai/size-limit) sur [`.size-limit.json`](./.size-limit.json) (budgets structurels gzip déterministes). Voir [`size-limit.README.md`](./size-limit.README.md) pour la philosophie complète.
 
@@ -16,9 +16,9 @@ Contexte différent :
 |--|--|--|
 | Quand | Sur chaque PR | Sur push main (1×/merge) |
 | Quoi | Bundle artefact statique | Serveur réel deployed |
-| Où | GitHub runner partagé | Self-hosted DEV VPS (port 3200) |
+| Où | GitHub runner partagé | Runner self-hosted, conteneur PREPROD (port 3200) |
 | Mesure | Octets gzip sur disque | TTFB + render + parse + paint sur HTTP réel |
-| Bloque | Oui (`exit 1` sur dépassement) | Non (`> Non-blocking`) |
+| Bloque | Oui (`exit 1` sur dépassement) | Assertions natives en erreur ou collecte inexploitable |
 | Catch | Bundle bloat | CDN / gzip serveur / cold start / SSL / Nest boot |
 | Valeur | Anti-régression structurelle | Sanity check post-deploy |
 
@@ -40,7 +40,17 @@ Mesures de référence prises sur CI run [`25178882039`](https://github.com/ak12
 | Total Blocking Time | 125 ms (home) | 500 ms | enveloppe variance |
 | Cumulative Layout Shift | n/a | 0.25 | défaut Lighthouse |
 
-URLs auditées (cf. `ci.yml` job `lighthouse:`) : `/`, `/search?q=plaquette`, `/pieces/catalogue`. Le budget `path: "/*"` couvre les trois — calibré sur la **pire** valeur observée.
+URLs auditées (liste unique `LIGHTHOUSE_URLS` dans `ci.yml`) : `/`, `/search?q=plaquette`, `/pieces/plaquette-de-frein-402.html`. Cette dernière est une page R1 déjà utilisée par le smoke PREPROD. `/pieces/catalogue` est une redirection legacy vers `/`, toujours testée comme telle par le smoke HTTP ; aucune route applicative n’est modifiée. Le budget `path: "/*"` et ses seuils restent inchangés.
+
+## Qualité de la collecte
+
+Le collecteur et le validateur utilisent la même liste d’URL et le même nombre de passages (`LIGHTHOUSE_RUNS=3`). [lighthouse-report-quality.mjs](../scripts/ci/lighthouse-report-quality.mjs) exige les rapports attendus, des dates distinctes, la bonne URL finale, les cinq métriques numériques et les assertions natives correspondantes. Une erreur runtime, un avertissement de collecte, une mesure absente ou une redirection rendent la collecte inexploitable et font échouer ce contrôle. Aucun timeout n’est allongé et aucun avertissement n’est masqué pour obtenir un résultat vert.
+
+`includePassedAssertions=true` conserve aussi les assertions réussies. Sans cette option, un `assertion-results.json` vide peut simplement signifier que tous les budgets ont été respectés : ce n’est pas une preuve de désactivation des budgets. LHCI 0.15.1 remplace ses options lors de la conversion de `budgetsFile` et perd cette option. La configuration transmet donc les seuils du JSON aux assertions natives, au même niveau `error`, sans les recopier ni les recalculer. Un changement du périmètre global `/*` exige une mise à jour explicite de cette configuration. Voir la [documentation LHCI](https://github.com/GoogleChrome/lighthouse-ci/blob/main/docs/configuration.md#includepassedassertions).
+
+Les rapports natifs et `collection-quality.json` sont archivés. Un score calculé sur une collecte signalée incomplète ne suffit pas à valider une performance. Le validateur ne recalcule pas les budgets : leur verdict et leur sévérité restent ceux de LHCI.
+
+Tests du validateur et de son mode CLI : `node --test scripts/ci/lighthouse-report-quality.test.mjs`, exécutés dans le contrôle CI Core Build.
 
 ### Trajectoire vs baseline pré-plan
 
@@ -62,7 +72,7 @@ Pour mémoire, la baseline pré-plan (CI run [`25175348869`](https://github.com/
 
 ## Hors-scope du budget
 
-Le travail d'optimisation perf réel (réduction structurelle, critical CSS, lazy hydration, audit deps lourdes) est tracké comme projet engineering séparé. Ce check sert uniquement à surfacer des régressions de timing post-deploy en mode observe.
+Le travail d'optimisation perf réel (réduction structurelle, critical CSS, lazy hydration, audit deps lourdes) est tracké comme projet engineering séparé. Ce lot fiabilise la preuve post-deploy ; il ne corrige pas le chargement de la recherche.
 
 **Vraie surveillance CWV utilisateurs réels** : à venir via ADR CrUX API + cron + alerting (chantier séparé).
 
