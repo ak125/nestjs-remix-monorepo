@@ -96,11 +96,37 @@ test('classifyRoute: voisins servis inchangés (hubs, autres rubriques blog, R1,
     { path: '/diagnostic-auto', expectedGroup: 'other' },
     { path: '/diagnostic', expectedGroup: 'other' },
     // R1 (pieces.$slug.tsx) et R2 (pieces.$gamme.$marque.$modele.$type[.]html.tsx)
+    // R1 : fige le comportement ACTUEL, pas le rôle attendu. Le hub gamme est R1_ROUTER
+    // (backend/src/modules/seo/types/page-role.types.ts) mais tombe en pieces_product
+    // (R2_PRODUCT) faute de groupe R1. À modifier quand R1 aura son groupe (décision canon
+    // + migration CHECK) : ce changement-là ne sera pas une régression.
     { path: '/pieces/kit-d-embrayage-479.html', expectedGroup: 'pieces_product' },
     {
       path: '/pieces/plaquette-de-frein-402/volkswagen-173/transporter-iv-fourgon-173146/2-5-tdi-8773.html',
       expectedGroup: 'pieces_product',
     },
+  ];
+  for (const { path, expectedGroup } of fixtures) {
+    const r = classifyRoute(path);
+    assert.equal(r.route_group, expectedGroup, `expected ${expectedGroup} for ${path}, got ${r.route_group}`);
+  }
+});
+
+test('classifyRoute: index avec slash final — sémantique startsWith du path_prefix', () => {
+  // Aucune redirection du slash final repérée pour ces routes : React Router rend l'index
+  // (blog-pieces-auto.conseils._index.tsx, diagnostic-auto._index.tsx) pour les deux
+  // formes. Le classifieur applique `startsWith(path_prefix)` comme pour tous les
+  // groupes (`/constructeurs/` → r8_vehicle, `/pieces/` → pieces_gamme_vehicle) :
+  // l'index écrit avec slash final entre donc dans le groupe, sans slash il reste
+  // `other`. Ces fixtures figent ce comportement ; le groupe des pages index est une
+  // décision canon ouverte, à trancher dans cwv-taxonomy.yaml avant de les modifier.
+  const fixtures: Array<{ path: string; expectedGroup: string }> = [
+    { path: '/blog-pieces-auto/conseils/', expectedGroup: 'r3_guide' },
+    { path: '/blog-pieces-auto/conseils', expectedGroup: 'other' },
+    { path: '/diagnostic-auto/', expectedGroup: 'r5_diagnostic' },
+    { path: '/diagnostic-auto', expectedGroup: 'other' },
+    // Outil /diagnostic (diagnostic.tsx, sans sous-route) : hors r5_diagnostic.
+    { path: '/diagnostic/', expectedGroup: 'other' },
   ];
   for (const { path, expectedGroup } of fixtures) {
     const r = classifyRoute(path);
