@@ -14,7 +14,7 @@
       "build/client/assets/ErrorGeneric-*.js",
       "build/client/assets/LazyFooter-*.js"
     ],
-    "limit": "322 KB",
+    "limit": "248 KB",
     "gzip": true
   },
   {

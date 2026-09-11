@@ -29,7 +29,7 @@ size-limit gagne sur tous les axes pour notre cas (gate PR sur build statique).
 
 | Budget | Mesuré (`9797b488`) | Limite | Headroom | Rôle |
 |--|--:|--:|--:|--|
-| Initial load JS (closure d'imports statiques `entry.client` + `root`), gzip | 319 kB | **322 KB** | ~1 % | **Critique** : bloque le démarrage client. Liste **dérivée du graphe réel**, pas écrite à la main — vérifiée par `scripts/ci/verify-size-limit-initial-load.mjs`. |
+| Initial load JS (closure d'imports statiques `entry.client` + `root`), gzip | 225 kB | **248 KB** | 10 % | **Critique** : bloque le démarrage client. Liste **dérivée du graphe réel**, pas écrite à la main — vérifiée par `scripts/ci/verify-size-limit-initial-load.mjs`. |
 | Total JS (all chunks), gzip | 884 KB | **1000 KB** | 12 % | Hygiène globale — catch toute injection massive |
 | Total CSS, gzip | 49 KB | **60 KB** | 18 % | CSS bloat |
 | sentry-vendor chunk, gzip | 159 KB | **180 KB** | 12 % | Vendor le plus lourd (chargé async normalement) |
@@ -146,4 +146,13 @@ size-limit ne supporte que `error` (exit code) — pas de niveau `warn`. C'est i
   fausse. La liste est désormais dérivée du graphe réel et la limite recalée sur la
   mesure (319,14 kB → **322 KB**, même serrage ~1 % que l'ancienne 214,7 → 216).
   Garde-fou ajouté pour que le cas ne puisse pas se reproduire silencieusement.
+- **2026-09-11 (resserrement « Initial load », PR perf/client-eager-bundle-without-zod)** :
+  zod sort du graphe de démarrage. Les rapporteurs client importent les sous-chemins sans
+  zod de `@repo/cwv-taxonomy`, et `@repo/database-types` / `@repo/seo-types` déclarent
+  `"sideEffects": false`. Mesuré par ce gate sur les builds de production :
+  **318,56 kB → 225,42 kB**. Limite recalée selon « Resserrer un budget » :
+  225,42 × 1,10 = 247,96 → **248 KB**. L'ancienne limite de 322 KB laissait passer chaque
+  retour arrière mesuré : réimporter la racine de `@repo/cwv-taxonomy` dans
+  `web-vitals.client.ts` seul (294,13 kB), retirer `sideEffects` seul (250,26 kB), les deux
+  à la fois (318,56 kB, build de main). Tous trois dépassent désormais la limite.
 - **Historique antérieur** : voir [`lighthouse-budget.README.md`](./lighthouse-budget.README.md) — fichier conservé exclusivement pour le job `lighthouse:` PREPROD post-deploy de `ci.yml` (observe-only, mesure timing synthétique sur serveur réel). Ne migre pas vers size-limit : contexte différent (artefact statique vs serveur deployed). Détails dans son README.
