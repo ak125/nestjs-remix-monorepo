@@ -20,9 +20,12 @@
 -- (pas une preuve) → ré-ingérée par la fenêtre de rattrapage. Un upsert PostgREST
 -- qui omet la colonne ne la remet pas à NULL (merge-duplicates = colonnes fournies).
 --
--- ORDRE DE DÉPLOIEMENT : appliquer AVANT de merger le code du fetcher. Sans cette
--- migration, la 1re lecture du fetcher (`commit_version`) échoue `schema_drift`
--- → run journalisé en échec, AUCUNE écriture de données (fail loud, pas partiel).
+-- DÉPENDANCE (constat technique, pas une autorisation d'appliquer) : le fetcher de
+-- la même branche lit `commit_version`. Tout environnement qui exécute ce code sans
+-- la migration voit sa 1re lecture échouer `schema_drift` → run journalisé en échec,
+-- AUCUNE écriture de données (fail loud, pas partiel). L'application suit la
+-- procédure de livraison (revue, tests, GO ciblé, apply-supabase-migrations.yml) :
+-- audit/seo-sept-leviers-2026-09-11.md.
 --
 -- Additive · idempotente (IF NOT EXISTS / CREATE OR REPLACE même signature) ·
 -- réversible (.down.sql, donnée re-fetchable depuis GSC). Pas de BEGIN/COMMIT
@@ -64,7 +67,7 @@ ALTER TABLE __seo_gsc_daily_property_total
     ADD COLUMN IF NOT EXISTS commit_version BIGINT;
 
 COMMENT ON COLUMN __seo_gsc_daily_property_total.commit_version IS
-  'NULL = ligne antérieure au contrat (pas une preuve de commit). N >= 1 = tous les grains du contrat N persistés avec une donnée finale ; écrit EN DERNIER par gsc-daily-fetcher (GSC_INGEST_COMMIT_VERSION).';
+  'NULL = ligne antérieure au contrat, ou jour en cours de réécriture (pas une preuve de commit). N >= 1 = tous les grains du contrat N lus puis persistés avec une donnée finale ; retiré avant réécriture et écrit EN DERNIER par gsc-daily-fetcher (GSC_INGEST_COMMIT_VERSION).';
 
 -- =====================================================
 -- PARTITIONS : historique depuis 2026-06 (1er mois multi-grain, rattrapage

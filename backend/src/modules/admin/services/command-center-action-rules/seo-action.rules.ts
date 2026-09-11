@@ -48,9 +48,12 @@ export interface GscOpportunityMeta {
    */
   grain_fidelity: 'faithful' | 'lossy' | 'unknown';
   /**
-   * Couverture du grain pages vs le total propriété (v3 : impressions ; v4 :
-   * impressions ET clics + jours commités ; absent en v2/v1). Tout statut ≠ 'ok'
-   * dégrade la confiance → PARTIAL, jamais un faux CERTIFIED.
+   * Synthèse de couverture publiée par la RPC (absente en v2/v1). v3 : ratio
+   * impressions du grain segmenté. v4 (sans ratio) : 'insufficient_data' = aucune
+   * impression commitée ; 'coverage_gap' = jour commité sans ligne page (grain non
+   * récupéré) ; 'incomplete_days' = jours attendus non commités. L'écart
+   * d'agrégation GSC byPage/propriété n'entre pas dans ce statut. Tout statut ≠
+   * 'ok' dégrade la confiance → PARTIAL, jamais un faux CERTIFIED.
    */
   coverage_status?:
     | 'ok'
@@ -246,7 +249,9 @@ export function buildSeoOpportunityActions(
           ? ' ; couverture GSC indéterminée (total propriété absent)'
           : meta.coverage_status === 'incomplete_days'
             ? ' ; jours GSC manquants dans la fenêtre — totaux non exhaustifs'
-            : ' ; couverture pages partielle vs total propriété — opportunités possiblement incomplètes');
+            : meta.grain_fidelity === 'faithful'
+              ? ' ; grain page non récupéré pour certains jours commités — opportunités possiblement incomplètes'
+              : ' ; couverture pages partielle vs total propriété — opportunités possiblement incomplètes');
 
   const byKind = new Map<PageKind, GscOpportunityRow[]>();
   for (const r of rows) {

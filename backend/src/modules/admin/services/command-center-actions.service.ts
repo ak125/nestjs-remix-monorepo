@@ -1,10 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  GSC_BACKFILL_FLOOR_DATE_DEFAULT,
-  GSC_PAGE_TOTALS_MIN_RATIO_DEFAULT,
-  isIsoDate,
-} from '@repo/seo-types';
+import { GSC_BACKFILL_FLOOR_DATE_DEFAULT, isIsoDate } from '@repo/seo-types';
 import { existsSync, readFileSync, readdirSync } from 'fs';
 import { basename, join } from 'path';
 import { gzipSync } from 'zlib';
@@ -65,25 +61,11 @@ export class CommandCenterActionsService extends SupabaseBaseService {
   /** SLA fraîcheur GSC : lag normal ≈ 3 j ; au-delà de 7 j = stale → PARTIAL. */
   private static readonly GSC_FRESH_MAX_LAG_DAYS = 7;
 
-  /** Plancher de couverture page_totals/propriété passé à v4 (même param que le fetcher). */
-  private readonly gscCoverageMinRatio: number;
   /** Premier jour GSC attendu passé à v4 (même param que le planificateur d'ingestion). */
   private readonly gscExpectedFrom: string;
 
   constructor(configService: ConfigService) {
     super(configService);
-    const rawRatio = configService.get<string>('SEO_GSC_PAGE_TOTALS_MIN_RATIO');
-    const ratio = Number(rawRatio);
-    if (rawRatio == null || String(rawRatio).trim() === '') {
-      this.gscCoverageMinRatio = GSC_PAGE_TOTALS_MIN_RATIO_DEFAULT;
-    } else if (Number.isFinite(ratio) && ratio > 0 && ratio <= 1) {
-      this.gscCoverageMinRatio = ratio;
-    } else {
-      this.logger.warn(
-        `⚠️ SEO_GSC_PAGE_TOTALS_MIN_RATIO=${rawRatio} invalide (attendu ]0,1]) — défaut ${GSC_PAGE_TOTALS_MIN_RATIO_DEFAULT} appliqué`,
-      );
-      this.gscCoverageMinRatio = GSC_PAGE_TOTALS_MIN_RATIO_DEFAULT;
-    }
     const rawFloor = configService.get<string>('SEO_GSC_BACKFILL_FLOOR_DATE');
     if (rawFloor == null || String(rawFloor).trim() === '') {
       this.gscExpectedFrom = GSC_BACKFILL_FLOOR_DATE_DEFAULT;
@@ -130,11 +112,11 @@ export class CommandCenterActionsService extends SupabaseBaseService {
         p_max_ctr: 0,
         p_limit: 50,
       };
-      // v4 seule accepte ces 2 paramètres (PostgREST résout la signature par noms :
-      // les passer à v3/v2/v1 ferait échouer l'appel).
+      // v4 seule accepte ce paramètre (PostgREST résout la signature par noms :
+      // le passer à v3/v2/v1 ferait échouer l'appel). Aucun ratio n'est passé : le
+      // statut v4 ne dépend pas de l'écart d'agrégation byPage/propriété.
       const rpcParamsV4 = {
         ...rpcParams,
-        p_coverage_min_ratio: this.gscCoverageMinRatio,
         p_expected_from: this.gscExpectedFrom,
       };
       // Enveloppe honnête partagée v4/v3/v2 (v3 ajoute coverage_status ; v4 ajoute
@@ -177,7 +159,7 @@ export class CommandCenterActionsService extends SupabaseBaseService {
 
       // Chaîne v4 → v3 → v2 → v1 (dégradation gracieuse, chaque repli loggué — no
       // silent fallback). v4 = grain page FIDÈLE (__seo_gsc_daily_page_totals, jours
-      // commités) + couverture jours/clics/impressions ; v3 = grain page+country+device
+      // commités) + jours et récupération du grain ; v3 = grain page+country+device
       // (LOSSY, ~7 % des clics) + couverture impressions ; v2 = grain requêtes (LOSSY)
       // sans couverture ; v1 = sans enveloppe. Toutes dans rpc_allowlist.json (RPC
       // Safety Gate). Une fonction non encore déployée (migration non appliquée) →

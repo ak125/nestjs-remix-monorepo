@@ -7,4 +7,4 @@
 set lock_timeout = '5s';
 set statement_timeout = '60s';
 
-DROP FUNCTION IF EXISTS public.rpc_seo_low_ctr_v4(integer, timestamptz, integer, numeric, integer, numeric, date);
+DROP FUNCTION IF EXISTS public.rpc_seo_low_ctr_v4(integer, timestamptz, integer, numeric, integer, date);

@@ -153,9 +153,13 @@ describe('PR4: rpc_seo_low_ctr_v4 envelope + explicit v3 → v2 → v1 fallback'
     days_expected: 90,
     days_present: 90,
     missing_dates: [],
-    clicks_coverage_ratio: 1,
-    impressions_coverage_ratio: 1.04,
-    coverage_ratio: 1.04,
+    retrieval_status: 'complete',
+    retrieval_gap_dates: [],
+    gsc_aggregation: {
+      page_vs_property_clicks_ratio: 1,
+      page_vs_property_impressions_ratio: 1.04,
+      blocking: false,
+    },
     coverage_status: 'ok',
     ...over,
   });
@@ -180,15 +184,15 @@ describe('PR4: rpc_seo_low_ctr_v4 envelope + explicit v3 → v2 → v1 fallback'
       new RegExp(`2026-06-01 au ${freshDate} \\(90/90 jours\\)`),
     );
     expect(product!.reason).not.toMatch(/non exhaustif/);
-    // v4 est seule à recevoir les 2 paramètres gouvernés (défauts documentés : la
+    // v4 est seule à recevoir le plancher de jours attendus (défaut documenté : la
     // config de test renvoie 'mock-value' → invalide → défaut appliqué et loggué).
+    // Aucun ratio d'agrégation n'est passé : il ne décide pas du statut.
     expect(supabase.rpc).toHaveBeenCalledTimes(1);
     expect(supabase.rpc).toHaveBeenCalledWith('rpc_seo_low_ctr_v4', {
       p_window_days: 120,
       p_min_impressions: 50,
       p_max_ctr: 0,
       p_limit: 50,
-      p_coverage_min_ratio: 0.9,
       p_expected_from: '2026-06-01',
     });
   });
@@ -230,6 +234,110 @@ describe('PR4: rpc_seo_low_ctr_v4 envelope + explicit v3 → v2 → v1 fallback'
     const product = queue.find((a) => a.id === 'seo:opportunity:product');
     expect(product!.data_confidence).toBe(55);
     expect(product!.reason).toMatch(/fidélité du grain pages inconnue/);
+  });
+
+  it('v4 : grain page non récupéré sur un jour commité (coverage_gap) → PARTIAL 55, dit comme tel', async () => {
+    const freshDate = daysAgo(2);
+    const supabase = seoSupabase((name) =>
+      name === 'rpc_seo_low_ctr_v4'
+        ? {
+            data: v4Envelope(freshDate, {
+              retrieval_status: 'gap',
+              retrieval_gap_dates: ['2026-08-20'],
+              coverage_status: 'coverage_gap',
+            }),
+            error: null,
+          }
+        : { data: null, error: { message: `unexpected call to ${name}` } },
+    );
+    const queue = await makeService(supabase).computeActionQueue(
+      [],
+      [],
+      'full',
+    );
+    const product = queue.find((a) => a.id === 'seo:opportunity:product');
+    expect(product!.data_confidence).toBe(55);
+    expect(product!.reason).toMatch(/grain page non récupéré/);
+  });
+
+  it('v4 sans impression commitée (insufficient_data) ou sans statut publié → jamais CERTIFIED', async () => {
+    const freshDate = daysAgo(2);
+    for (const over of [
+      { coverage_status: 'insufficient_data' },
+      { coverage_status: undefined },
+      { coverage_status: null },
+    ]) {
+      const supabase = seoSupabase((name) =>
+        name === 'rpc_seo_low_ctr_v4'
+          ? { data: v4Envelope(freshDate, over), error: null }
+          : { data: null, error: { message: `unexpected call to ${name}` } },
+      );
+      const queue = await makeService(supabase).computeActionQueue(
+        [],
+        [],
+        'full',
+      );
+      const product = queue.find((a) => a.id === 'seo:opportunity:product');
+      expect(product!.data_confidence).toBe(55);
+    }
+  });
+
+  it('v4 : un écart d’agrégation GSC fort (ratios ≪ 1) ne décide pas du statut — jours commités et grain récupéré → CERTIFIED', async () => {
+    const freshDate = daysAgo(2);
+    const supabase = seoSupabase((name) =>
+      name === 'rpc_seo_low_ctr_v4'
+        ? {
+            data: v4Envelope(freshDate, {
+              gsc_aggregation: {
+                page_vs_property_clicks_ratio: 0.5,
+                page_vs_property_impressions_ratio: 0.6,
+                blocking: false,
+              },
+            }),
+            error: null,
+          }
+        : { data: null, error: { message: `unexpected call to ${name}` } },
+    );
+    const queue = await makeService(supabase).computeActionQueue(
+      [],
+      [],
+      'full',
+    );
+    const product = queue.find((a) => a.id === 'seo:opportunity:product');
+    expect(product!.data_confidence).toBe(90);
+  });
+
+  it('repli v3 annonçant grain page_totals et coverage ok : reste lossy → PARTIAL 55 (un repli ne se présente pas comme certifié)', async () => {
+    const freshDate = daysAgo(2);
+    const supabase = seoSupabase((name) =>
+      name === 'rpc_seo_low_ctr_v3'
+        ? {
+            data: {
+              rows: [gscRow],
+              total_qualifying: 1,
+              data_from: '2026-06-01',
+              data_to: freshDate,
+              last_data_date: freshDate,
+              grain: 'page_totals',
+              days_expected: 90,
+              days_present: 90,
+              coverage_status: 'ok',
+            },
+            error: null,
+          }
+        : {
+            data: null,
+            error: { message: `function ${name} does not exist` },
+          },
+    );
+    const queue = await makeService(supabase).computeActionQueue(
+      [],
+      [],
+      'full',
+    );
+    const product = queue.find((a) => a.id === 'seo:opportunity:product');
+    expect(product!.data_confidence).toBe(55);
+    expect(product!.reason).toMatch(/grain pages non exhaustif/);
   });
 
   it('v4 absente → repli v3 EXPLICITE (sans les params v4) : grain lossy → PARTIAL 55 même frais et couvert', async () => {

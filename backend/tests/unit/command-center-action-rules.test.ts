@@ -553,7 +553,24 @@ describe('PR4: GSC meta honnêteté — cap divulgué, couverture réelle, fraî
     expect(noCoverage.reason).toMatch(/couverture GSC non publiée/);
   });
 
-  it('coverage_gap (clics ou impressions sous le plancher) → PARTIAL 55, couverture partielle dite', () => {
+  it('coverage_gap v3 (grain lossy, ratio sous le plancher) → PARTIAL 55, couverture partielle dite', () => {
+    const product = buildSeoOpportunityActions(rows, {
+      total_qualifying: 2,
+      data_from: '2026-06-01',
+      data_to: '2026-09-07',
+      freshness: 'fresh',
+      grain_fidelity: 'lossy',
+      coverage_status: 'coverage_gap',
+    })
+      .map(finalizeAction)
+      .find((a) => a.id === 'seo:opportunity:product')!;
+    expect(product.data_confidence).toBe(55);
+    expect(product.reason).toMatch(
+      /couverture pages partielle vs total propriété/,
+    );
+  });
+
+  it('coverage_gap v4 (grain fidèle non récupéré sur un jour commité) → PARTIAL 55, récupération dite', () => {
     const product = buildSeoOpportunityActions(rows, {
       total_qualifying: 2,
       data_from: '2026-06-01',
@@ -565,9 +582,7 @@ describe('PR4: GSC meta honnêteté — cap divulgué, couverture réelle, fraî
       .map(finalizeAction)
       .find((a) => a.id === 'seo:opportunity:product')!;
     expect(product.data_confidence).toBe(55);
-    expect(product.reason).toMatch(
-      /couverture pages partielle vs total propriété/,
-    );
+    expect(product.reason).toMatch(/grain page non récupéré/);
   });
 });
 
