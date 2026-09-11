@@ -25597,14 +25597,14 @@
       "declaredIn": [
         "frontend/package.json"
       ],
-      "id": "npm:isomorphic-dompurify@^2.35.0",
+      "id": "npm:isomorphic-dompurify@^4.2.0",
       "name": "isomorphic-dompurify",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^2.35.0",
+      "version": "^4.2.0",
       "workspaces": [
         "@fafa/frontend"
       ]
@@ -87157,7 +87157,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 92,
+      "loc": 98,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/internal-api.server.ts",
       "risk": "medium",
@@ -89941,6 +89941,26 @@
       "loc": 141,
       "owner": "@ak125",
       "path": "frontend/tests/unit/safe-storage.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/sanitize-editorial-html.server.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 115,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/sanitize-editorial-html.server.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -98234,12 +98254,12 @@
       ".spec/00-canon/repository-registry/ownership.yaml": "ac200d75ead8a0d4f14172c30ddf482b3f0be9fd03e53406fd923b2a8eb7731b",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "25765692c5c196e2cf2b669cee3f80d6995921876e836ade74240dd538b87bdb",
-      "audit/registry/deps.json": "6f667991be593e37b2798c4ca0f0689d89c412731aa2bdf50000248da9f2c5bd",
-      "audit/registry/files.json": "15fe09528bda107fe6d80df16d9a069aab52350d2ecc033d7eeeff887d205b8b",
+      "audit/registry/deps.json": "28f63bf4383ddec90e009095ddc11db9298b7cd92b52ceb234a3e6a2fd996f90",
+      "audit/registry/files.json": "37774b7c6fb3aa618f3cfac52cccbed41653dc3c9e4598875712e2f8583208be",
       "audit/registry/rpc.json": "c32fa1d7a14862b55e0fbf4d74706fba4ea259ba4fe92a21152bfa6d66d66628",
       "audit/registry/runtime.json": "11b58e35c0f151b043fc74b164953c754d4c32c7164107587b53fd9046e30e68"
     },
-    "sotFingerprint": "95ba21a8c8eb"
+    "sotFingerprint": "84d90f5d0ccd"
   },
   "runtime": [
     {
