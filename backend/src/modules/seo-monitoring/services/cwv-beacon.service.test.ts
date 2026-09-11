@@ -221,6 +221,45 @@ describe('CwvBeaconService — rejection accounting', () => {
     expect(message).toContain('22P02');
   });
 
+  it('skips the write under READ_ONLY through the governed guard, keeping persist_failed for real failures', async () => {
+    const { service, inserts, logger } = makeService();
+    Object.assign(service, { isReadOnlyMode: true });
+    service.countRejection('foreign_host');
+    service.countRejection('foreign_host');
+    service.countRejection('schema_invalid');
+
+    await expect(service.flushRejections()).resolves.toBeUndefined();
+
+    expect(inserts).toHaveLength(0);
+    expect(logger.warn).toHaveBeenCalledTimes(1);
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        metric: 'readonly.skipped',
+        operation: 'flushRejections',
+        context: 'foreign_host=2 schema_invalid=1',
+      }),
+      expect.any(String),
+    );
+    expect(JSON.stringify(logger.warn.mock.calls)).not.toContain(
+      'persist_failed',
+    );
+
+    // Les comptes écartés ne reviennent pas au flush suivant.
+    Object.assign(service, { isReadOnlyMode: false });
+    await service.flushRejections();
+    expect(inserts).toHaveLength(0);
+  });
+
+  it('writes nothing and logs nothing under READ_ONLY when the window is empty', async () => {
+    const { service, inserts, logger } = makeService();
+    Object.assign(service, { isReadOnlyMode: true });
+
+    await service.flushRejections();
+
+    expect(inserts).toHaveLength(0);
+    expect(logger.warn).not.toHaveBeenCalled();
+  });
+
   it('logs reason and count when the insert throws, without throwing', async () => {
     const { service, logger } = makeService(() =>
       Promise.reject(new Error('fetch failed')),

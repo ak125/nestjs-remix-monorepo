@@ -23,6 +23,8 @@
  *     un nom de clé inconnue n'y figure jamais (Zod le rapporte au parent) ;
  *   - si l'écriture échoue (dont : valeur d'enum pas encore migrée), le compte
  *     part dans un warning structuré, sans relance ni rétention ;
+ *   - en READ_ONLY (container PREPROD), l'écriture est court-circuitée par
+ *     `guardReadOnly` : warning `readonly.skipped` portant les comptes ;
  *   - perte bornée : sur un arrêt non gracieux, au plus un intervalle de
  *     comptes. L'arrêt gracieux vide l'agrégat (`enableShutdownHooks`, main.ts).
  */
@@ -143,6 +145,14 @@ export class CwvBeaconService
 
     const tallies = this.rejectionTallies;
     this.rejectionTallies = new Map();
+    // READ_ONLY (container PREPROD, clé anon) : `__seo_event_log` n'accepte pas
+    // l'INSERT. Skip gouverné (ADR-028), journalisé `readonly.skipped` avec les
+    // comptes ; `persist_failed` reste réservé aux vrais échecs d'écriture.
+    const counts = [...tallies]
+      .map(([reason, tally]) => `${reason}=${tally.count}`)
+      .join(' ');
+    if (this.guardReadOnly('flushRejections', counts)) return;
+
     const rows = [...tallies].map(([reason, tally]) => ({
       event_type: CWV_BEACON_REJECTED_EVENT_TYPE,
       entity_url: null,
