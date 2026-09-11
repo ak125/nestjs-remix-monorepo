@@ -201,10 +201,15 @@ Proposition à valider, non implémentée : ancrer `p_now` sur le lendemain du d
 - **contre-exemple** : guards neutralisés → la même requête anonyme déclenche le fetcher. Le 403 n'est donc pas vacant ;
 - **job interne** : le processor `daily-fetch` appelle le fetcher sans requête ni session.
 
-**Livré séparément : PR #1460, en draft**, branche `fix/seo-monitoring-admin-guard`.
-- Commits `b10c1c884` (garde + test HTTP) et `28bb4140d` (projections registry régénérées).
-- CI au SHA `28bb4140d` : 37 checks passés, 9 sautés, 0 échec ; les 13 checks requis passent.
-- Aucun merge, tag ni déploiement.
+**Livré séparément : PR #1460, mergée le 2026-09-11 à 15:38:42Z** (squash `1c2cb48b2`).
+- Branche `fix/seo-monitoring-admin-guard`, deux mises à jour avec main, projections régénérées à chaque fois.
+- Empreinte de contenu `abb4d6497c0a768e` (sha256 du diff hors projections) identique de la revue au squash ; 8 fichiers.
+- CI de la tête `8c78cd8a2` : 37 checks passés, 9 sautés, 0 échec ; les 13 checks requis passent.
+- **CI de main après merge** :
+  - le run de `1c2cb48b2` a été annulé par la concurrence (#1465 poussé ensuite) ;
+  - le run de `f64ef5197`, qui contient #1460 : déploiement PREPROD ✅, E2E smoke ✅, Lighthouse ❌.
+  - Lighthouse : toutes les assertions de performance passent ; le contrôle de qualité des preuves rejette `/search?q=plaquette` (chargement trop lent pour la collecte). Lighthouse échouait déjà sur main avant le merge (`1df615789`, `f61db4678`) et n'audite aucune route admin.
+- **PROD non déployée** : tag `v*` = GO séparé.
 - **Au rebase de cette branche** : le lot C contient la même garde. Si #1460 est mergée d'abord, le conflit ou le doublon est à résoudre.
 
 **Historique.** `.claude/handoffs/seo-monitoring-admin-guard-only.patch` (non suivi) contient seulement la garde et le test HTTP. Validé 29/29 sur `origin/main` `b580da6a6`. Depuis, `origin/main` (`5ccf04bf3`) ne touche que `.claude/rules/deployment.md`, `scripts/ops/sync-dev-runtime.sh` et `scripts/test-claude-hooks.sh`, hors du périmètre du patch. Écart assumé : sur main, l'assertion du job utilise `objectContaining({ date })`, car main transmet aussi `rollingDays`.
@@ -415,6 +420,7 @@ Title, meta et H1 relevés en live le 2026-09-11. Toute proposition part d'une r
 | 5 | Étape autorisée | « PR guard-only (Recommandé) » | Branche dédiée depuis `origin/main`, rejeu des tests, push, PR #1460 en draft. Projections registry régénérées dans la même PR après signalement CI. Aucun merge. |
 | 6 | Vérification des appelants de `cron/health` | « Je lis les logs PROD » | Lecture seule des journaux d'accès Caddy. Depuis DEV : accès SSH refusé. **Réalisée par l'owner** sur la machine PROD le 2026-09-11, avec les commandes fournies : 0 appel, contrôle positif retrouvé (§4.3). |
 | 7 | Sortie du draft de #1460 (message du **2026-09-11T14:20:14.329Z**) | « oui » | PR passée en « ready for review ». Pas d'auto-merge, pas de merge, pas de déploiement. |
+| 8 | Merge de #1460 (message du **2026-09-11T14:47:10.066Z**) | « go » | Mise à jour de branche, régénération, CI verte, squash épinglé sur le SHA vérifié. Merge = PREPROD. **Pas de tag PROD** : le « go » n'a pas été lu comme un GO de mise en production. |
 
 **Propositions à valider** (aucun accord identifiable) :
 - emplacement du collecteur (PROD) et désactivation du collecteur DEV ;
@@ -431,10 +437,12 @@ Title, meta et H1 relevés en live le 2026-09-11. Toute proposition part d'une r
 
 - **Local, commité sur la branche** : tous les commits depuis `fe658657d` jusqu'à la tête de branche (`git log bcf0c775a..HEAD`). Parmi eux : ce rapport (`cdbdb58a4`) et une entrée `log.md` créée automatiquement par le hook Stop (`f2ab4cbbb`).
 - **Local, non suivi** : patch guard-only ; description de PR (`.claude/handoffs/`).
-- **Poussé** : la garde admin seule, PR #1460 en draft (§4.5). Rien d'autre n'a quitté la machine DEV.
-- **Nécessite un GO** : chaque étape du §4.7, les SQL du §8, les corrections du §7, les purges, le merge de #1460.
+- **Mergé sur main** : la garde admin seule, PR #1460 (§4.5). Déployée sur PREPROD via le run de `f64ef5197`. Rien d'autre n'a quitté la machine DEV.
+- **Nécessite un GO** : chaque étape du §4.7, les SQL du §8, les corrections du §7, les purges, le tag PROD.
 
-**Prochaine action unique proposée** : GO owner pour merger la PR #1460, sortie du draft le 2026-09-11. Juste avant le merge : mise à jour de la branche (conflits attendus sur les 6 projections générées, résolus par régénération), puis CI. Le merge ne met à jour que PREPROD ; la PROD demande un tag `v*`, avec un GO séparé. C'est la seule exposition confirmée encore active en PROD.
+**Prochaine action unique proposée** : décision owner sur un tag `v*`, qui mettrait la garde admin en PROD, où `/api/admin/seo-monitoring/*` reste ouvert sans authentification.
+- **Avant le tag** : auditer tout le delta de main depuis le dernier tag (le tag embarque plus que #1460).
+- **Et** obtenir un run de main vert de bout en bout : le contrôle de qualité Lighthouse sur `/search` est rouge depuis avant le merge.
 
 ## 12. Vérification liée au SHA `25cfd1bc4`, rejouée pour `771c7b934`
 
