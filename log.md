@@ -542,3 +542,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/cron-report-dead-channel`
 - **Décision** : fix(ops): rendre visibles les échecs des crons — leur canal visait une table supprimée
 - **Sortie** : PR #1448 | commits 54a543157
+
+## 2026-09-11 — fix/cron-alert-only-to-state (auto)
+
+- **Branche** : `fix/cron-alert-only-to-state`
+- **Décision** : fix(ops): une alerte qui n'interrompt pas un tick cron n'est plus enregistrée « ok »
+- **Sortie** : PR #1450 | commits 2d31f7a34

@@ -21,9 +21,10 @@
 #   machine n'a pas de MTA — sans lui, cron les jette.
 #
 # OBSERVABILITÉ : chaque tick (sync, no-op ou abort) enregistre son issue via
-#   `cron_report` (scripts/cron/lib-supabase-report.sh). Le hook SessionStart
-#   alerte ensuite toute session Claude de la machine si le dernier tick a échoué,
-#   ou si aucun tick n'a tourné depuis CRON_REPORT_MAX_AGE_S (cron arrêté).
+#   `cron_report` (scripts/cron/lib-supabase-report.sh) : error (abort), warn (tick
+#   arrivé au bout mais avec alerte), ok. Le hook SessionStart alerte ensuite toute
+#   session Claude de la machine sur error/warn, ou si aucun tick n'a tourné depuis
+#   CRON_REPORT_MAX_AGE_S (cron arrêté).
 # ==============================================================================
 set -uo pipefail
 
@@ -41,11 +42,17 @@ cd "$APP_DIR" 2>/dev/null || { echo "[$LOG_TAG] FATAL: $APP_DIR introuvable" >&2
 source scripts/cron/lib-supabase-report.sh 2>/dev/null || true
 
 log()   { echo "[$LOG_TAG] $(date -u +%FT%TZ) $1"; }
+# Alertes émises pendant ce tick. Une alerte qui n'interrompt pas le tick (dérive Node,
+# fichiers untracked écartés…) passe l'issue enregistrée de `ok` à `warn` — sans quoi
+# seul le log en gardait la trace et le hook SessionStart ne la voyait jamais.
+RUN_ALERTS=()
 alert() {
   echo "[$LOG_TAG] $(date -u +%FT%TZ) ⚠️ ALERT: $1" >&2
+  RUN_ALERTS+=("$1")
   [ -n "${ALERT_WEBHOOK_URL:-}" ] && curl -sf --max-time 5 -X POST "$ALERT_WEBHOOK_URL" \
     -H 'Content-Type: application/json' -d "{\"text\":\"[DEV sync] $1\"}" >/dev/null 2>&1 || true
 }
+join_alerts() { local joined; joined=$(printf ' | %s' "${RUN_ALERTS[@]}"); printf '%s' "${joined:3}"; }
 # Pas de `2>/dev/null || true` ici : c'est ce qui rendait le rapport muet. cron_report
 # ne fait jamais échouer le script et signale lui-même sur stderr un état non écrit.
 report() {
@@ -55,7 +62,23 @@ report() {
   fi
   cron_report "$LOG_TAG" "$1" "$(( $(date +%s) - START ))" "${2:-}" "${3:-}"
 }
-abort()  { alert "$1"; report "error" "{}" "$1"; exit 1; }
+# Issue d'un tick arrivé au bout : `ok`, ou `warn` portant les alertes émises en route.
+report_done() {
+  if [ "${#RUN_ALERTS[@]}" -gt 0 ]; then
+    report "warn" "$1" "${#RUN_ALERTS[@]} alerte(s) : $(join_alerts)"
+  else
+    report "ok" "$1" ""
+  fi
+}
+# L'abort enregistre aussi les alertes qui l'ont précédé (ex. le détail d'une dérive
+# workspaces, que son message résume par « cf. alerts ci-dessus »).
+abort() {
+  local ctx=""
+  [ "${#RUN_ALERTS[@]}" -gt 0 ] && ctx=" — alertes précédentes : $(join_alerts)"
+  alert "$1"
+  report "error" "{}" "$1$ctx"
+  exit 1
+}
 
 # 5e axe de dérive — Workspaces npm (drift install/dist).
 # Détecte (sans corriger — canon no-silent-fallback) :
@@ -123,10 +146,10 @@ if [ "$local_sha" = "$remote_sha" ]; then
   # ici (symlink supprimé, dist effacé entre 2 ticks cron, install manuel
   # interrompu) doit être visible AVANT que nodemon redémarre et crashe.
   if ! check_workspace_integrity; then
-    report "error" "{\"action\":\"workspace_drift_noop\",\"sha\":\"$local_sha\"}" "workspace drift detected without git change"
+    report "error" "{\"action\":\"workspace_drift_noop\",\"sha\":\"$local_sha\"}" "dérive workspaces sans changement git : $(join_alerts)"
     exit 1
   fi
-  report "ok" "{\"action\":\"noop\",\"sha\":\"$local_sha\"}" ""
+  report_done "{\"action\":\"noop\",\"sha\":\"$local_sha\"}"
   exit 0
 fi
 
@@ -156,7 +179,7 @@ collisions=$(git diff --name-only --diff-filter=A "$local_sha".."$remote_sha" 2>
         && printf '%s\n' "$f"
     done)
 if [ -n "$collisions" ]; then
-  bkdir="/tmp/${LOG_TAG}-untracked-backup-$(date +%Y%m%d-%H%M%S)"
+  bkdir="${TMPDIR:-/tmp}/${LOG_TAG}-untracked-backup-$(date +%Y%m%d-%H%M%S)"
   while IFS= read -r f; do
     [ -z "$f" ] && continue
     mkdir -p "$bkdir/$(dirname "$f")" && mv "$f" "$bkdir/$f"
@@ -186,8 +209,8 @@ fi
 #    C'est aussi ce que fait la CI. Contrepartie assumée : `npm ci` purge
 #    node_modules avant réinstall → un échec laisse DEV sans deps jusqu'au prochain
 #    run ; le cron alerte déjà (abort ci-dessous) et re-tente au tick suivant (~10 min).
-INSTALL_LOG="/tmp/${LOG_TAG}-npm-install-$$.log"
-BUILD_LOG="/tmp/${LOG_TAG}-npm-build-$$.log"
+INSTALL_LOG="${TMPDIR:-/tmp}/${LOG_TAG}-npm-install-$$.log"
+BUILD_LOG="${TMPDIR:-/tmp}/${LOG_TAG}-npm-build-$$.log"
 if ! git diff --quiet "$local_sha" "$remote_sha" -- package-lock.json 2>/dev/null; then
   log "package-lock.json modifié → npm ci (install déterministe, log: $INSTALL_LOG)"
   if ! npm ci >"$INSTALL_LOG" 2>&1; then
@@ -221,5 +244,5 @@ if [ "$healthy" != "1" ]; then
 fi
 
 log "✅ DEV:3000 sain sur $remote_sha"
-report "ok" "{\"action\":\"synced\",\"from\":\"$local_sha\",\"to\":\"$remote_sha\"}" ""
+report_done "{\"action\":\"synced\",\"from\":\"$local_sha\",\"to\":\"$remote_sha\"}"
 exit 0
