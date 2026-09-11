@@ -1,16 +1,6 @@
-import {
-  Controller,
-  Get,
-  Param,
-  ParseIntPipe,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { IsAdminGuard } from '@auth/is-admin.guard';
-import {
-  SupplierTruthService,
-  type AvailabilityView,
-} from './supplier-truth.service';
 import { isSupplierSyncEnabled } from './supplier-sync.flag';
 import {
   listConnectableSuppliers,
@@ -21,20 +11,23 @@ import {
  * Read-only observability surface for the supplier-truth sentinel (admin-only).
  *
  * Strictly READ: `status` reflects the activation flag + the connectable-supplier
- * registry (no portal hit); `projection/:pieceId` reads the canonical projection
- * via the service (UNKNOWN when not yet verified). No endpoint triggers a sync,
- * mutates pricing/orders, or writes anything. There is intentionally NO trigger
- * route — activation stays an env-flag decision, not an HTTP action.
+ * registry (no portal hit, no DB access). No endpoint triggers a sync, mutates
+ * pricing/orders, or writes anything. There is intentionally NO trigger route —
+ * activation stays an env-flag decision, not an HTTP action.
+ *
+ * `projection/:pieceId` was removed on 2026-09-10 together with the never-applied
+ * `20260520_supplier_truth_v1` migration: it read `supplier_truth_projection`, a
+ * table that has never existed, so any admin call that reached the handler threw
+ * on PostgREST 42P01 and left as a 500 through `GlobalErrorFilter`.
+ * The availability-consensus projection is deferred to H3, which must bring its
+ * own migration; `supplier_offer_snapshot` is the canonical observation store.
  */
 @Controller('api/admin/supplier-truth')
 @UseGuards(IsAdminGuard)
 export class SupplierTruthController {
-  constructor(
-    private readonly service: SupplierTruthService,
-    private readonly config: ConfigService,
-  ) {}
+  constructor(private readonly config: ConfigService) {}
 
-  /** Activation + wiring status. Read-only; no connector login, no DB write. */
+  /** Activation + wiring status. Read-only; no connector login, no DB access. */
   @Get('status')
   status(): {
     mode: 'ACTIVE' | 'OBSERVABLE_DORMANT';
@@ -55,13 +48,5 @@ export class SupplierTruthController {
         platform: c.platform,
       })),
     };
-  }
-
-  /** Canonical availability for one piece; UNKNOWN until verified. Read-only. */
-  @Get('projection/:pieceId')
-  projection(
-    @Param('pieceId', ParseIntPipe) pieceId: number,
-  ): Promise<AvailabilityView> {
-    return this.service.getProjection(pieceId);
   }
 }

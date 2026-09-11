@@ -31458,7 +31458,6 @@
         "backend/src/modules/supplier-truth/domain/truth-engine.ts",
         "backend/src/modules/supplier-truth/order-availability.service.test.ts",
         "backend/src/modules/supplier-truth/order-availability.service.ts",
-        "backend/src/modules/supplier-truth/supplier-truth.module.test.ts",
         "backend/src/modules/supplier-truth/supplier-truth.service.test.ts",
         "backend/src/modules/supplier-truth/supplier-truth.service.ts"
       ],
@@ -31831,7 +31830,7 @@
         "backend/src/modules/supplier-truth/supplier-truth.service.ts"
       ],
       "kind": "service",
-      "loc": 42,
+      "loc": 43,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/order-availability.service.ts",
       "risk": "low",
@@ -32101,8 +32100,6 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/supplier-truth/supplier-truth-read.module.ts",
       "importedBy": [
-        "backend/src/modules/supplier-truth/supplier-truth.module.test.ts",
-        "backend/src/modules/supplier-truth/supplier-truth.module.ts",
         "backend/src/workers/worker.module.ts"
       ],
       "imports": [
@@ -32134,11 +32131,10 @@
       "imports": [
         "@auth/is-admin.guard",
         "backend/src/modules/supplier-truth/connectors/supplier-registry.ts",
-        "backend/src/modules/supplier-truth/supplier-sync.flag.ts",
-        "backend/src/modules/supplier-truth/supplier-truth.service.ts"
+        "backend/src/modules/supplier-truth/supplier-sync.flag.ts"
       ],
       "kind": "controller",
-      "loc": 68,
+      "loc": 53,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-truth.controller.ts",
       "risk": "low",
@@ -32156,14 +32152,11 @@
       "id": "backend/src/modules/supplier-truth/supplier-truth.module.test.ts",
       "importedBy": [],
       "imports": [
-        "backend/src/modules/supplier-truth/domain/availability-state.ts",
-        "backend/src/modules/supplier-truth/supplier-truth-read.module.ts",
         "backend/src/modules/supplier-truth/supplier-truth.controller.ts",
-        "backend/src/modules/supplier-truth/supplier-truth.module.ts",
-        "backend/src/modules/supplier-truth/supplier-truth.service.ts"
+        "backend/src/modules/supplier-truth/supplier-truth.module.ts"
       ],
       "kind": "test",
-      "loc": 83,
+      "loc": 65,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-truth.module.test.ts",
       "risk": "low",
@@ -32184,11 +32177,10 @@
         "backend/src/modules/supplier-truth/supplier-truth.module.test.ts"
       ],
       "imports": [
-        "backend/src/modules/supplier-truth/supplier-truth-read.module.ts",
         "backend/src/modules/supplier-truth/supplier-truth.controller.ts"
       ],
       "kind": "service",
-      "loc": 26,
+      "loc": 24,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-truth.module.ts",
       "risk": "low",
@@ -32240,7 +32232,7 @@
         "backend/src/database/services/supabase-base.service.ts"
       ],
       "kind": "service",
-      "loc": 264,
+      "loc": 274,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
       "risk": "low",
@@ -32283,8 +32275,6 @@
         "backend/src/modules/supplier-truth/order-availability.service.test.ts",
         "backend/src/modules/supplier-truth/order-availability.service.ts",
         "backend/src/modules/supplier-truth/supplier-truth-read.module.ts",
-        "backend/src/modules/supplier-truth/supplier-truth.controller.ts",
-        "backend/src/modules/supplier-truth/supplier-truth.module.test.ts",
         "backend/src/modules/supplier-truth/supplier-truth.service.test.ts"
       ],
       "imports": [
@@ -32292,7 +32282,7 @@
         "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
       ],
       "kind": "service",
-      "loc": 54,
+      "loc": 59,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-truth.service.ts",
       "risk": "low",

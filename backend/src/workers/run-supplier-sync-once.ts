@@ -8,10 +8,10 @@
  *
  * REFUSES to do anything real unless `SUPPLIER_SYNC_ONESHOT_CONFIRM=true` is set
  * (see `./run-supplier-sync-once.guard`). A real run performs CAL/DCA portal
- * logins with real credentials and writes the (funnel-dormant) observation tables
- * `supplier_inventory_snapshots` / `supplier_truth_projection` on the shared prod
- * DB — a real, owner-gated supplier activation. Without the flag it exits with no
- * portal login and no DB write.
+ * logins with real credentials and appends observations to the canonical
+ * `supplier_offer_snapshot` on the shared prod DB (`SupplierSyncProcessor` →
+ * `insertOffer`) — a real, owner-gated supplier activation. Without the flag it
+ * exits with no portal login and no DB write.
  *
  * Run (only after an explicit owner GO), from backend/, COMPILED (not tsx, which
  * breaks Playwright `$eval`):
