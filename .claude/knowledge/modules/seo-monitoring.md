@@ -7,11 +7,14 @@ primary_files:
 - backend/src/modules/seo-monitoring/cli/run-ingestion-backfill.args.test.ts
 - backend/src/modules/seo-monitoring/cli/run-ingestion-backfill.args.ts
 - backend/src/modules/seo-monitoring/cli/run-ingestion-backfill.ts
+- backend/src/modules/seo-monitoring/controllers/cwv-beacon.controller.test.ts
 - backend/src/modules/seo-monitoring/controllers/cwv-beacon.controller.ts
 - backend/src/modules/seo-monitoring/controllers/cwv-dashboard.controller.ts
 - backend/src/modules/seo-monitoring/controllers/funnel-events.controller.ts
 - backend/src/modules/seo-monitoring/controllers/quality-history.controller.ts
 - backend/src/modules/seo-monitoring/controllers/runtime-events.controller.ts
+- backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts
+- backend/src/modules/seo-monitoring/helpers/ai-readiness-detectors.ts
 depends_on:
 - ConfigModule
 ---

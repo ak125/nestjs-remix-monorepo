@@ -80,3 +80,4 @@ de ~1250 nœuds DOM, scalant CPU à 537 ms sur mobile bas-de-gamme.
   `__seo_cwv_daily` ou Sentry web-vitals attribution pour confirmer.
 - Méthodo Playwright + CDP documentée dans
   `project_inp_pieces_root_cause_20260522.md` pour aller plus loin.
+- Toute sonde ou mesure avant/après suit [`../references/lab-probe-protocol.md`](../references/lab-probe-protocol.md).

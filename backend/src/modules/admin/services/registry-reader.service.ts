@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import {
   CanonicalRegistrySchema,
+  PlanningRegistrySchema,
   type CanonicalRegistry,
 } from '@repo/registry';
 import { CacheService } from '../../../cache/cache.service';
@@ -64,7 +65,7 @@ export class RegistryReaderService {
   /** Pure aggregation (no I/O beyond the two file reads). */
   private buildSummary(): ControlPlaneSummary {
     const canonical = this.readJson<CanonicalDoc>('canonical.json');
-    const planning = this.readJson<PlanningDoc>('planning.json');
+    const planning = this.readJson<unknown>('planning.json');
 
     const repo = this.aggregateRepo(canonical);
     const wip = this.aggregateWip(planning);
@@ -114,25 +115,25 @@ export class RegistryReaderService {
     };
   }
 
-  private aggregateWip(planning: PlanningDoc | null): WipSummary {
-    if (
-      !planning ||
-      planning.meta?.degraded ||
-      !Array.isArray(planning.entries)
-    ) {
+  private aggregateWip(planning: unknown): WipSummary {
+    const parsed = PlanningRegistrySchema.safeParse(planning);
+    if (!parsed.success || parsed.data.meta.degraded) {
+      if (planning !== null && !parsed.success) {
+        this.logger.warn('[control-plane] invalid planning registry schema');
+      }
       return {
         degraded: true,
-        generatedAt: planning?.meta?.generatedAt ?? null,
-        prCount: 0,
+        generatedAt: parsed.success ? parsed.data.meta.generatedAt : null,
+        prCount: null,
         byStatus: {},
         byWorkType: {},
-        stacks: 0,
-        zombies: 0,
+        stacks: null,
+        zombies: null,
         topStale: [],
       };
     }
 
-    const entries = planning.entries;
+    const entries = parsed.data.entries;
     const byStatus: Record<string, number> = {};
     const byWorkType: Record<string, number> = {};
     let stacks = 0;
@@ -163,7 +164,7 @@ export class RegistryReaderService {
 
     return {
       degraded: false,
-      generatedAt: planning.meta?.generatedAt ?? null,
+      generatedAt: parsed.data.meta.generatedAt,
       prCount: entries.length,
       byStatus,
       byWorkType,
@@ -182,23 +183,6 @@ type CanonicalAnnotation = Partial<
   Pick<CanonicalRegistry['files'][number], 'domain' | 'owner'>
 >;
 
-// Planning remains optional and defensive when its builder has not run.
-interface PlanningPr {
-  number: number;
-  title: string;
-  url: string;
-  status: string;
-  priority: string;
-  workType: string | null;
-  isStack: boolean;
-  ageDays: number;
-  stalenessDays: number;
-}
-interface PlanningDoc {
-  meta?: { generatedAt?: string; degraded?: boolean };
-  entries?: PlanningPr[];
-}
-
 export interface RepoSummary {
   counts: Record<string, number>;
   domainCount: number;
@@ -208,11 +192,11 @@ export interface RepoSummary {
 export interface WipSummary {
   degraded: boolean;
   generatedAt: string | null;
-  prCount: number;
+  prCount: number | null;
   byStatus: Record<string, number>;
   byWorkType: Record<string, number>;
-  stacks: number;
-  zombies: number;
+  stacks: number | null;
+  zombies: number | null;
   topStale: Array<{
     number: number;
     title: string;

@@ -1,7 +1,7 @@
 declare module '@fafa/frontend' {
 	export function getPublicDir(): string;
 	export function getServerBuild(): Promise<any>;
-	export function startDevServer(app: any): Promise<void>;
+	export function startDevServer(app: any, httpServer: import('node:http').Server): Promise<void>;
 
 	/**
 	 * RemixApplicationPort contract re-export — SINGLE source of truth.

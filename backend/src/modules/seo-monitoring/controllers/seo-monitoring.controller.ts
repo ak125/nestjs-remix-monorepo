@@ -11,7 +11,8 @@
  *  POST /api/admin/seo-monitoring/run/ga4             — trigger manuel GA4 fetch (debug)
  *
  * Auth : AuthenticatedGuard + IsAdminGuard au niveau classe (même motif que
- * QualityHistoryController). Avant 2026-09-11 le contrôleur n'avait AUCUN guard :
+ * QualityHistoryController), cron/health compris — anonyme et non-admin → 403
+ * sans appel de service. Avant 2026-09-11 le contrôleur n'avait AUCUN guard :
  * GET credentials/health répondait 200 sans session en PROD (vérifié) et les
  * POST run/* / audit/r-content/run étaient exposés de la même façon.
  */

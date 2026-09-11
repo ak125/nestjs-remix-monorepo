@@ -52,9 +52,14 @@ import { SessionStoreService } from './modules/session/session-store.service';
 
 async function bootstrap() {
   try {
+    const isProd = process.env.NODE_ENV === 'production';
     const app = await NestFactory.create(AppModule, {
       bodyParser: false,
       bufferLogs: true, // Buffer logs jusqu'à ce que Pino soit initialisé
+      // Dev : le WebSocket HMR de Vite partage ce serveur HTTP (startDevServer).
+      // Sans destruction des sockets ouverts, app.close() attend indéfiniment
+      // que le navigateur ferme ce WebSocket et nodemon ne redémarre jamais.
+      forceCloseConnections: !isProd,
     });
 
     // 📝 Utiliser Pino comme logger global
@@ -67,11 +72,10 @@ async function bootstrap() {
 
     // Cast pour éviter les conflits de types entre les dépendances
     const expressApp = app as any;
-    const isProd = process.env.NODE_ENV === 'production';
 
     // Démarrage du serveur Remix uniquement en dev
     if (!isProd) {
-      await startDevServer(expressApp);
+      await startDevServer(expressApp, app.getHttpServer());
       logger.log('Serveur de développement démarré');
     }
 
@@ -203,6 +207,29 @@ async function bootstrap() {
 
     // ✅ Graceful shutdown pour éviter les fuites mémoire et connexions orphelines
     app.enableShutdownHooks();
+
+    // Dev : l'arrêt gracieux est borné, comme `docker stop` le borne en PREPROD/PROD
+    // (SIGKILL après 10 s). Sans borne, app.close() attend la fin des jobs de file
+    // actifs (le close() de Bull comme de BullMQ attend les jobs en cours) : le
+    // 2026-09-11, un redémarrage nodemon a attendu 3 min 21 s la fin d'un
+    // `seo-cp-synthetic-crawl`, DEV:3000 hors ligne pendant tout ce temps. Le job
+    // interrompu est repris par le processus suivant (job « stalled »). `once` : le
+    // signal que Nest renvoie après close() doit retrouver son action par défaut.
+    if (!isProd) {
+      const DEV_SHUTDOWN_GRACE_MS = 10_000;
+      const signals = ['SIGUSR2', 'SIGINT', 'SIGTERM', 'SIGHUP'] as const;
+      for (const signal of signals) {
+        process.once(signal, () => {
+          setTimeout(() => {
+            // eslint-disable-next-line no-console
+            console.error(
+              `[shutdown] ${signal} : arrêt gracieux inachevé après ${DEV_SHUTDOWN_GRACE_MS / 1000} s (jobs BullMQ actifs, connexions…) — sortie forcée`,
+            );
+            process.exit(1);
+          }, DEV_SHUTDOWN_GRACE_MS).unref();
+        });
+      }
+    }
 
     // 🔷 Configuration OpenAPI / Swagger
     if (!isProd || process.env.ENABLE_SWAGGER === 'true') {

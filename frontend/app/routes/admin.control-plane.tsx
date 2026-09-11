@@ -60,11 +60,11 @@ interface ControlPlaneSummary {
   wip: {
     degraded: boolean;
     generatedAt: string | null;
-    prCount: number;
+    prCount: number | null;
     byStatus: Record<string, number>;
     byWorkType: Record<string, number>;
-    stacks: number;
-    zombies: number;
+    stacks: number | null;
+    zombies: number | null;
     topStale: Array<{
       number: number;
       title: string;
@@ -134,7 +134,11 @@ function Stat({
         <span className={toneClass}>{icon}</span>
       </CardHeader>
       <CardContent>
-        <div className={`text-3xl font-bold ${toneClass}`}>{value}</div>
+        <div
+          className={`break-words font-bold ${typeof value === "number" ? "text-3xl" : "text-lg"} ${toneClass}`}
+        >
+          {value}
+        </div>
       </CardContent>
     </Card>
   );
@@ -149,8 +153,8 @@ export default function AdminControlPlane() {
       <div>
         <h1 className="text-2xl font-bold">Repository Control Plane</h1>
         <p className="text-sm text-muted-foreground">
-          Snapshot {new Date(summary.generatedAt).toLocaleString("fr-FR")} ·
-          source canonical.json (ADR-058) + planning.json (ADR-053)
+          Réponse servie {new Date(summary.generatedAt).toLocaleString("fr-FR")}{" "}
+          · source canonical.json (ADR-058) + planning.json (ADR-053)
         </p>
       </div>
 
@@ -159,7 +163,8 @@ export default function AdminControlPlane() {
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Données WIP indisponibles</AlertTitle>
           <AlertDescription>
-            planning.json absent ou dégradé. Génère-le avec{" "}
+            Le nombre de PRs ouvertes est inconnu : la collecte GitHub est
+            absente, invalide ou incomplète. Actualise-la avec{" "}
             <code>npm run registry:build:planning</code> puis recharge. La vue
             dépôt (canonical.json) reste affichée.
           </AlertDescription>
@@ -168,23 +173,43 @@ export default function AdminControlPlane() {
 
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">WIP (PRs ouvertes)</h2>
+        {wip.generatedAt ? (
+          <p className="text-sm text-muted-foreground">
+            {wip.degraded
+              ? "Dernière tentative de collecte"
+              : "Collecte GitHub"}
+            {" : "}
+            <time dateTime={wip.generatedAt}>
+              {new Date(wip.generatedAt).toLocaleString("fr-FR")}
+            </time>
+            . Instantané ponctuel, sans actualisation automatique.
+          </p>
+        ) : null}
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           <Stat
             icon={<GitPullRequest className="h-4 w-4" />}
             label="PRs ouvertes"
-            value={wip.prCount}
+            value={
+              wip.degraded ? "Indisponible" : (wip.prCount ?? "Indisponible")
+            }
           />
           <Stat
             icon={<Skull className="h-4 w-4" />}
             label="Zombies (>14j)"
-            value={wip.zombies}
-            tone={wip.zombies > 0 ? "danger" : "default"}
+            value={
+              wip.degraded ? "Indisponible" : (wip.zombies ?? "Indisponible")
+            }
+            tone={
+              !wip.degraded && (wip.zombies ?? 0) > 0 ? "danger" : "default"
+            }
           />
           <Stat
             icon={<Layers className="h-4 w-4" />}
             label="Stacks"
-            value={wip.stacks}
-            tone={wip.stacks > 0 ? "warn" : "default"}
+            value={
+              wip.degraded ? "Indisponible" : (wip.stacks ?? "Indisponible")
+            }
+            tone={!wip.degraded && (wip.stacks ?? 0) > 0 ? "warn" : "default"}
           />
           <Stat
             icon={<Clock className="h-4 w-4" />}
@@ -193,7 +218,7 @@ export default function AdminControlPlane() {
           />
         </div>
 
-        {wip.topStale.length > 0 ? (
+        {!wip.degraded && wip.topStale.length > 0 ? (
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Top staleness</CardTitle>

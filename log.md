@@ -531,20 +531,38 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Décision** : feat(tecdoc): porte de capacite a deux modes, et un registre de preuve recalculable (+14 other commits)
 - **Sortie** : PR #1419 | commits f73b300c0 d6f3e94a1 93bd601eb a3ec3a602 45e8c6402 fc222949f f1994b30d 08d28175b 5650961cf b4408e7b1 fb9bcd355 90358994c d348f3eec 098be7744 c1ee2d690
 
-## 2026-09-11 — fix/seo-measure-robots-markers (auto)
+## 2026-09-11 — worktree-fix-dev-vite-hmr-single-port (auto)
+
+- **Branche** : `worktree-fix-dev-vite-hmr-single-port`
+- **Décision** : fix(dev): faire passer le HMR Vite par le port 3000 (redirection de port)
+- **Sortie** : PR #1444 | commits f9e35866a
+
+## 2026-09-11 — fix/cron-report-dead-channel (auto)
+
+- **Branche** : `fix/cron-report-dead-channel`
+- **Décision** : fix(ops): rendre visibles les échecs des crons — leur canal visait une table supprimée
+- **Sortie** : PR #1448 | commits 54a543157
+
+## 2026-09-11 — fix/cron-alert-only-to-state (auto)
+
+- **Branche** : `fix/cron-alert-only-to-state`
+- **Décision** : fix(ops): une alerte qui n'interrompt pas un tick cron n'est plus enregistrée « ok »
+- **Sortie** : PR #1450 | commits 2d31f7a34
+
+## 2026-09-11 — fix/dev-shutdown-grace-period (auto)
+
+- **Branche** : `fix/dev-shutdown-grace-period`
+- **Décision** : chore(registry): régénérer les projections après le formatage de la borne d'arrêt (+3 other commits)
+- **Sortie** : PR #1452 | commits 45657eaab 33059d07a 4b750ec63 b61bb42df
+
+## 2026-09-11 — fix/dev-shutdown-comment-bull (auto)
+
+- **Branche** : `fix/dev-shutdown-comment-bull`
+- **Décision** : docs(dev): borne d'arrêt DEV — c'est le close() de Bull qui attendait le crawl, pas @nestjs/bullmq
+- **Sortie** : PR aucune | commits 5d395718b
+
+## 2026-09-11 — fix/seo-measure-robots-markers
 
 - **Branche** : `fix/seo-measure-robots-markers`
-- **Décision** : docs(seo): rapport des 7 leviers, preuves de fiabilité de la mesure et procédure de livraison (+19 other commits)
-- **Sortie** : PR aucune | commits cdbdb58a4 25cfd1bc4 bb9aea9a8 67de7d4a3 b3448f055 a60d1b6a6 8719db00a 6bdc8c9ae 673e6ee98 5cc403e5f f2a7ff9e9 84e9e57ce 039a44fc5 6de46c5cb 35704971e ce012960e af79afe5c a2cf87e83 4007ff96d fe658657d
-
-## 2026-09-11 — fix/seo-measure-robots-markers (auto)
-
-- **Branche** : `fix/seo-measure-robots-markers`
-- **Décision** : docs(seo): erratum — le backend prod journalise bien les requêtes http (+27 other commits)
-- **Sortie** : PR aucune | commits 5a6e496a6 8ee571707 1c487eecc 46a934184 2f4c5b78e e244807a6 771c7b934 f2ab4cbbb cdbdb58a4 25cfd1bc4 bb9aea9a8 67de7d4a3 b3448f055 a60d1b6a6 8719db00a 6bdc8c9ae 673e6ee98 5cc403e5f f2a7ff9e9 84e9e57ce 039a44fc5 6de46c5cb 35704971e ce012960e af79afe5c a2cf87e83 4007ff96d fe658657d
-
-## 2026-09-11 — fix/seo-measure-robots-markers (auto)
-
-- **Branche** : `fix/seo-measure-robots-markers`
-- **Décision** : docs(seo): rapport — garde admin déployée en prod par le tag du 2026-09-11 (+29 other commits)
-- **Sortie** : PR aucune | commits 701130cd5 c23c7c277 5a6e496a6 8ee571707 1c487eecc 46a934184 2f4c5b78e e244807a6 771c7b934 f2ab4cbbb cdbdb58a4 25cfd1bc4 bb9aea9a8 67de7d4a3 b3448f055 a60d1b6a6 8719db00a 6bdc8c9ae 673e6ee98 5cc403e5f f2a7ff9e9 84e9e57ce 039a44fc5 6de46c5cb 35704971e ce012960e af79afe5c a2cf87e83 4007ff96d fe658657d
+- **Décision** : audit des 7 leviers SEO — ingestion GSC rattrapable et certifiable, robots via source unique, garde des marqueurs R2, META conseils filtrées ; rapport `audit/seo-sept-leviers-2026-09-11.md`.
+- **Sortie** : PR à ouvrir | 2 migrations NON appliquées | garde admin livrée séparément (#1460, en PROD par le tag `v2026.09.11-cwv-sanitizer-admin-guard`).

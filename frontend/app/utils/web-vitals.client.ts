@@ -23,6 +23,11 @@
  */
 
 import {
+  classifyRoute,
+  type DeviceType,
+  type NavType,
+} from "@repo/cwv-taxonomy";
+import {
   onLCP,
   onCLS,
   onINP,
@@ -30,11 +35,8 @@ import {
   onTTFB,
   type MetricWithAttribution,
 } from "web-vitals/attribution";
-import {
-  classifyRoute,
-  type DeviceType,
-  type NavType,
-} from "@repo/cwv-taxonomy";
+
+import { safeSessionStorage } from "~/utils/safe-storage";
 
 interface SentryMetricsDistribution {
   (
@@ -212,22 +214,20 @@ const SESSION_ID_KEY = "_aut_cwv_sid";
 const PREVIOUS_STEP_KEY = "_aut_cwv_prev_step";
 
 function getOrCreateSessionId(): string {
-  try {
-    const existing = sessionStorage.getItem(SESSION_ID_KEY);
-    if (existing && existing.length >= 8) return existing;
-    const fresh = crypto.randomUUID();
-    sessionStorage.setItem(SESSION_ID_KEY, fresh);
-    return fresh;
-  } catch {
-    // Storage disabled (private mode strict, CMP block) — fallback ephemeral.
-    return crypto.randomUUID();
-  }
+  const existing = safeSessionStorage.getItem(SESSION_ID_KEY);
+  if (existing && existing.length >= 8) return existing;
+  const fresh = crypto.randomUUID();
+  // Storage disabled (private mode strict, CMP block) → setItem is a no-op and
+  // the identifier stays ephemeral.
+  safeSessionStorage.setItem(SESSION_ID_KEY, fresh);
+  return fresh;
 }
 
 function detectDevice(): DeviceType {
   if (typeof window === "undefined") return "unknown";
   const ua = navigator.userAgent.toLowerCase();
-  if (/ipad|tablet|playbook|silk/.test(ua) && !/mobile/.test(ua)) return "tablet";
+  if (/ipad|tablet|playbook|silk/.test(ua) && !/mobile/.test(ua))
+    return "tablet";
   if (/mobile|android|iphone|ipod|blackberry|opera mini|iemobile/.test(ua)) {
     return "mobile";
   }
@@ -236,7 +236,13 @@ function detectDevice(): DeviceType {
 
 function detectNavType(metric: MetricWithAttribution): NavType {
   const t = metric.navigationType;
-  if (t === "navigate" || t === "reload" || t === "back-forward" || t === "prerender" || t === "restore") {
+  if (
+    t === "navigate" ||
+    t === "reload" ||
+    t === "back-forward" ||
+    t === "prerender" ||
+    t === "restore"
+  ) {
     return t === "back-forward" ? "back_forward" : t;
   }
   return "unknown";
@@ -256,32 +262,148 @@ function sanitizeSelector(raw: string | undefined): string | undefined {
   return raw.replace(/#[a-zA-Z0-9_-]+/g, "#dyn").slice(0, 120);
 }
 
-function buildBeaconPayload(metric: MetricWithAttribution): Record<string, unknown> | null {
+// -----------------------------------------------------------------------------
+// Enrichissement réservé au beacon interne
+// -----------------------------------------------------------------------------
+//
+// Clés à forte cardinalité (identifiant, horodatages, URLs) : elles restent hors
+// de `attributionFields`, partagé avec les tags Sentry et les paramètres GA4.
+// Leurs bornes sont celles de `CwvAttributionSchema` (@repo/cwv-taxonomy) ; le
+// test `web-vitals-beacon.test.ts` valide chaque payload contre ce schéma.
+
+/**
+ * Mark posé au commit React de la racine hydratée (`entry.client.tsx`), et non
+ * au retour de `hydrateRoot` : le commit arrive plus tard. Comparé à
+ * `attr_interaction_time`, il dit si le tap a précédé l'hydratation.
+ */
+export const HYDRATION_COMMIT_MARK = "aut:hydration-commit";
+
+/** Pose le mark d'hydratation une seule fois (le premier commit fait foi). */
+export function markHydrationCommit(): void {
+  try {
+    if (typeof performance?.mark !== "function") return;
+    if (performance.getEntriesByName(HYDRATION_COMMIT_MARK, "mark").length > 0)
+      return;
+    performance.mark(HYDRATION_COMMIT_MARK);
+  } catch {
+    // Reporter passif — ne jamais propager.
+  }
+}
+
+function hydrationCommitTime(): number | undefined {
+  try {
+    if (typeof performance?.getEntriesByName !== "function") return undefined;
+    const [mark] = performance.getEntriesByName(HYDRATION_COMMIT_MARK, "mark");
+    return mark ? Math.round(mark.startTime) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Origine + chemin, sans query string ni fragment. Une source hors web
+ * (extension, blob…) est réduite à son schéma : aucun identifiant n'est émis.
+ */
+function reduceToOriginAndPath(raw: string | undefined): string | undefined {
+  if (!raw) return undefined;
+  try {
+    const u = new URL(raw);
+    if (u.protocol !== "http:" && u.protocol !== "https:") return u.protocol;
+    return `${u.origin}${u.pathname}`.slice(0, 2000);
+  } catch {
+    return undefined;
+  }
+}
+
+// URL de la page au démarrage des métriques : au lancement du reporter, puis à
+// chaque restauration bfcache (web-vitals y ouvre de nouvelles instances). Une
+// métrique reportée après une navigation client garde ainsi sa page d'origine,
+// que `url` (lue à l'envoi) ne donne pas.
+let metricStartUrl: string | undefined;
+
+function captureMetricStartUrl(): void {
+  metricStartUrl = reduceToOriginAndPath(window.location.href);
+}
+
+/**
+ * Durée arrondie, jamais négative : `totalUnattributedDuration` est une
+ * différence calculée par web-vitals, qui passe sous zéro quand les totaux LoAF
+ * se recouvrent.
+ */
+function nonNegativeMs(value: number | undefined): number | undefined {
+  return typeof value === "number" && Number.isFinite(value)
+    ? Math.round(Math.max(0, value))
+    : undefined;
+}
+
+function beaconOnlyAttributionFields(
+  metric: MetricWithAttribution,
+): Record<string, string | number> {
+  const fields: Record<string, string | number | undefined> = {
+    attr_metric_id: metric.id,
+    attr_visibility_state: document.visibilityState,
+    attr_navigation_type: metric.navigationType,
+    attr_start_url: metricStartUrl,
+  };
+  if (metric.name === "INP") {
+    const a = metric.attribution;
+    Object.assign(fields, {
+      attr_interaction_time: nonNegativeMs(a.interactionTime),
+      attr_hydrated_at: hydrationCommitTime(),
+      attr_total_script_duration: nonNegativeMs(a.totalScriptDuration),
+      attr_total_style_layout_duration: nonNegativeMs(
+        a.totalStyleAndLayoutDuration,
+      ),
+      attr_total_paint_duration: nonNegativeMs(a.totalPaintDuration),
+      attr_total_unattributed_duration: nonNegativeMs(
+        a.totalUnattributedDuration,
+      ),
+      attr_longest_script_src: reduceToOriginAndPath(
+        a.longestScript?.entry.sourceURL,
+      ),
+      attr_longest_script_invoker_type: a.longestScript?.entry.invokerType,
+      attr_longest_script_subpart: a.longestScript?.subpart,
+      attr_longest_script_intersecting_duration: nonNegativeMs(
+        a.longestScript?.intersectingDuration,
+      ),
+    });
+  }
+  const defined: Record<string, string | number> = {};
+  for (const [k, v] of Object.entries(fields)) {
+    if (v !== undefined) defined[k] = v;
+  }
+  return defined;
+}
+
+function buildBeaconPayload(
+  metric: MetricWithAttribution,
+): Record<string, unknown> | null {
   if (typeof window === "undefined") return null;
   const url = window.location.href;
   const pathname = window.location.pathname;
   const classification = classifyRoute(pathname);
 
-  // previous_funnel_step lookup + persist current
-  let previous_funnel_step: string | null = null;
-  try {
-    previous_funnel_step = sessionStorage.getItem(PREVIOUS_STEP_KEY);
-    sessionStorage.setItem(PREVIOUS_STEP_KEY, classification.funnel_step);
-  } catch {
-    // ignore storage errors
-  }
+  // previous_funnel_step lookup + persist current (blocked storage → null, no-op)
+  const previous_funnel_step = safeSessionStorage.getItem(PREVIOUS_STEP_KEY);
+  safeSessionStorage.setItem(PREVIOUS_STEP_KEY, classification.funnel_step);
 
   // Sanitize attribution selectors (defense in depth, backend re-sanitizes via Zod)
   const rawAttr = attributionFields(metric);
   const attribution: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(rawAttr)) {
-    if (typeof v === "string" && (k === "attr_target" || k === "attr_element" || k === "attr_largest_shift_target")) {
+    if (
+      typeof v === "string" &&
+      (k === "attr_target" ||
+        k === "attr_element" ||
+        k === "attr_largest_shift_target")
+    ) {
       const s = sanitizeSelector(v);
       if (s !== undefined) attribution[k] = s;
     } else {
       attribution[k] = v;
     }
   }
+  Object.assign(attribution, beaconOnlyAttributionFields(metric));
 
   return {
     session_id: getOrCreateSessionId(),
@@ -332,6 +454,18 @@ function dispatchMetric(metric: MetricWithAttribution) {
  */
 export function reportWebVitals(): void {
   if (typeof window === "undefined") return;
+
+  captureMetricStartUrl();
+  // À la restauration bfcache, web-vitals reporte TTFB de façon synchrone dans un
+  // écouteur `pageshow` en phase de capture. Le nôtre doit donc être en capture
+  // lui aussi (sinon il passe après) et enregistré avant les `on*` ci-dessous.
+  window.addEventListener(
+    "pageshow",
+    (event) => {
+      if (event.persisted) captureMetricStartUrl();
+    },
+    true,
+  );
 
   onLCP(dispatchMetric);
   onCLS(dispatchMetric);

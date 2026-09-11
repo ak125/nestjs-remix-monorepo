@@ -82,14 +82,14 @@ route_groups:
 
   r3_guide:
     surface: R3_GUIDE
-    path_prefix: "/conseils/"
-    remix_pattern: "/conseils/$slug"
+    path_prefix: "/blog-pieces-auto/conseils/"
+    remix_pattern: "/blog-pieces-auto/conseils/$pg_alias"
     description: "Guides R3 thématiques"
 
   r5_diagnostic:
     surface: R5_DIAGNOSTIC
-    path_prefix: "/diagnostic/"
-    remix_pattern: "/diagnostic/$symptom"
+    path_prefix: "/diagnostic-auto/"
+    remix_pattern: "/diagnostic-auto/$slug"
     description: "Pages diagnostic R5 (V1A.0 actif)"
 
   r8_vehicle:

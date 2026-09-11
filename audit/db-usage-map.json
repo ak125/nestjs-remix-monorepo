@@ -7,17 +7,17 @@
     "RLS-only / dashboard / external-cron / RPC-internal usage is invisible here — see per-candidate caveats."
   ],
   "summary": {
-    "tables_seen": 307,
+    "tables_seen": 304,
     "tables_with_callsites": 200,
-    "candidate_orphan_tables": 107,
+    "candidate_orphan_tables": 104,
     "rpc_seen": 242,
     "rpc_with_callsites": 14,
     "trigger_functions": 30,
     "candidate_orphan_rpc": 198,
     "dynamic_from_callsites": 897,
     "dynamic_rpc_callsites": 1,
-    "migrations_scanned": 345,
-    "backend_files_scanned": 1379
+    "migrations_scanned": 349,
+    "backend_files_scanned": 1381
   },
   "tables": {
     "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7": {
@@ -2978,15 +2978,6 @@
       "rls_present": true,
       "in_knowledge_db": false
     },
-    "supplier_inventory_snapshots": {
-      "used_by": [],
-      "used_by_count": 0,
-      "in_migrations": [
-        "20260520_supplier_truth_v1.sql"
-      ],
-      "rls_present": true,
-      "in_knowledge_db": false
-    },
     "supplier_offer_snapshot": {
       "used_by": [],
       "used_by_count": 0,
@@ -3039,24 +3030,6 @@
       "used_by_count": 1,
       "in_migrations": [
         "20260522_pricing_control_plane_v1.sql"
-      ],
-      "rls_present": true,
-      "in_knowledge_db": false
-    },
-    "supplier_runtime_profile": {
-      "used_by": [],
-      "used_by_count": 0,
-      "in_migrations": [
-        "20260520_supplier_truth_v1.sql"
-      ],
-      "rls_present": true,
-      "in_knowledge_db": false
-    },
-    "supplier_truth_projection": {
-      "used_by": [],
-      "used_by_count": 0,
-      "in_migrations": [
-        "20260520_supplier_truth_v1.sql"
       ],
       "rls_present": true,
       "in_knowledge_db": false
@@ -3362,7 +3335,9 @@
       "called_by": [],
       "called_by_count": 0,
       "defined_in_migrations": [
-        "20260527_seo_cwv_aggregation.sql"
+        "20260527_seo_cwv_aggregation.sql",
+        "20260911_seo_cwv_daily_rum_exact_p75.down.sql",
+        "20260911_seo_cwv_daily_rum_exact_p75.sql"
       ],
       "is_trigger_function": false
     },
@@ -3612,7 +3587,9 @@
       "called_by": [],
       "called_by_count": 0,
       "defined_in_migrations": [
-        "20260529_seo_cwv_dashboard_rpcs.sql"
+        "20260529_seo_cwv_dashboard_rpcs.sql",
+        "20260911_seo_cwv_daily_rum_exact_p75.down.sql",
+        "20260911_seo_cwv_daily_rum_exact_p75.sql"
       ],
       "is_trigger_function": false
     },
@@ -7333,26 +7310,6 @@
       ]
     },
     {
-      "name": "supplier_inventory_snapshots",
-      "confidence": "low",
-      "derived_from": [
-        "migrations",
-        "no-literal-from-callsite"
-      ],
-      "rls_present": true,
-      "in_migrations": [
-        "20260520_supplier_truth_v1.sql"
-      ],
-      "in_knowledge_db": false,
-      "caveats": [
-        "may be read/written by Supabase internals (auth, storage, realtime)",
-        "may be used by ad-hoc SQL / psql / dashboard",
-        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
-        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
-        "may be written by an external cron / ETL outside this repo"
-      ]
-    },
-    {
       "name": "supplier_offer_snapshot",
       "confidence": "low",
       "derived_from": [
@@ -7442,46 +7399,6 @@
       "rls_present": true,
       "in_migrations": [
         "20260523_pricing_decision_snapshot_and_offers.sql"
-      ],
-      "in_knowledge_db": false,
-      "caveats": [
-        "may be read/written by Supabase internals (auth, storage, realtime)",
-        "may be used by ad-hoc SQL / psql / dashboard",
-        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
-        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
-        "may be written by an external cron / ETL outside this repo"
-      ]
-    },
-    {
-      "name": "supplier_runtime_profile",
-      "confidence": "low",
-      "derived_from": [
-        "migrations",
-        "no-literal-from-callsite"
-      ],
-      "rls_present": true,
-      "in_migrations": [
-        "20260520_supplier_truth_v1.sql"
-      ],
-      "in_knowledge_db": false,
-      "caveats": [
-        "may be read/written by Supabase internals (auth, storage, realtime)",
-        "may be used by ad-hoc SQL / psql / dashboard",
-        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
-        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
-        "may be written by an external cron / ETL outside this repo"
-      ]
-    },
-    {
-      "name": "supplier_truth_projection",
-      "confidence": "low",
-      "derived_from": [
-        "migrations",
-        "no-literal-from-callsite"
-      ],
-      "rls_present": true,
-      "in_migrations": [
-        "20260520_supplier_truth_v1.sql"
       ],
       "in_knowledge_db": false,
       "caveats": [
@@ -7808,7 +7725,9 @@
         "no-rpc-callsite"
       ],
       "defined_in_migrations": [
-        "20260527_seo_cwv_aggregation.sql"
+        "20260527_seo_cwv_aggregation.sql",
+        "20260911_seo_cwv_daily_rum_exact_p75.down.sql",
+        "20260911_seo_cwv_daily_rum_exact_p75.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
@@ -8266,7 +8185,9 @@
         "no-rpc-callsite"
       ],
       "defined_in_migrations": [
-        "20260529_seo_cwv_dashboard_rpcs.sql"
+        "20260529_seo_cwv_dashboard_rpcs.sql",
+        "20260911_seo_cwv_daily_rum_exact_p75.down.sql",
+        "20260911_seo_cwv_daily_rum_exact_p75.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
@@ -13362,19 +13283,15 @@
     },
     {
       "file": "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
-      "line": 112
+      "line": 122
     },
     {
       "file": "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
-      "line": 125
+      "line": 135
     },
     {
       "file": "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
-      "line": 136
-    },
-    {
-      "file": "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
-      "line": 150
+      "line": 146
     },
     {
       "file": "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
@@ -13382,7 +13299,11 @@
     },
     {
       "file": "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
-      "line": 253
+      "line": 170
+    },
+    {
+      "file": "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
+      "line": 263
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",

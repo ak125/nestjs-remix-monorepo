@@ -5798,7 +5798,7 @@
         "frontend/index.cjs"
       ],
       "kind": "service",
-      "loc": 273,
+      "loc": 300,
       "owner": "__unassigned__",
       "path": "backend/src/main.ts",
       "risk": "low",
@@ -9263,7 +9263,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 234,
+      "loc": 218,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/registry-reader.service.ts",
       "risk": "low",
@@ -24078,16 +24078,41 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/seo-monitoring/controllers/cwv-beacon.controller.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@config/site.constants",
+        "backend/src/modules/seo-monitoring/controllers/cwv-beacon.controller.ts",
+        "backend/src/modules/seo-monitoring/services/cwv-beacon.service.ts"
+      ],
+      "kind": "test",
+      "loc": 176,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/seo-monitoring/controllers/cwv-beacon.controller.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/seo-monitoring/controllers/cwv-beacon.controller.ts",
       "importedBy": [
+        "backend/src/modules/seo-monitoring/controllers/cwv-beacon.controller.test.ts",
         "backend/src/modules/seo-monitoring/seo-monitoring.module.ts"
       ],
       "imports": [
+        "@config/site.constants",
         "@repo/cwv-taxonomy",
         "backend/src/modules/seo-monitoring/services/cwv-beacon.service.ts"
       ],
       "kind": "controller",
-      "loc": 76,
+      "loc": 91,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-monitoring/controllers/cwv-beacon.controller.ts",
       "risk": "low",
@@ -24207,6 +24232,8 @@
         "backend/src/modules/seo-monitoring/seo-monitoring.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "@common/utils",
         "backend/src/modules/seo-monitoring/services/audit-findings.service.ts",
         "backend/src/modules/seo-monitoring/services/ga4-daily-fetcher.service.ts",
@@ -24217,7 +24244,7 @@
         "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts"
       ],
       "kind": "controller",
-      "loc": 374,
+      "loc": 386,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts",
       "risk": "low",
@@ -24531,17 +24558,41 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/seo-monitoring/services/cwv-beacon.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@repo/cwv-taxonomy",
+        "backend/src/modules/seo-monitoring/services/cwv-beacon.service.ts"
+      ],
+      "kind": "test",
+      "loc": 301,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/seo-monitoring/services/cwv-beacon.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/seo-monitoring/services/cwv-beacon.service.ts",
       "importedBy": [
+        "backend/src/modules/seo-monitoring/controllers/cwv-beacon.controller.test.ts",
         "backend/src/modules/seo-monitoring/controllers/cwv-beacon.controller.ts",
-        "backend/src/modules/seo-monitoring/seo-monitoring.module.ts"
+        "backend/src/modules/seo-monitoring/seo-monitoring.module.ts",
+        "backend/src/modules/seo-monitoring/services/cwv-beacon.service.test.ts"
       ],
       "imports": [
         "@database/services/supabase-base.service",
         "@repo/cwv-taxonomy"
       ],
       "kind": "service",
-      "loc": 94,
+      "loc": 242,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-monitoring/services/cwv-beacon.service.ts",
       "risk": "low",
@@ -31458,7 +31509,6 @@
         "backend/src/modules/supplier-truth/domain/truth-engine.ts",
         "backend/src/modules/supplier-truth/order-availability.service.test.ts",
         "backend/src/modules/supplier-truth/order-availability.service.ts",
-        "backend/src/modules/supplier-truth/supplier-truth.module.test.ts",
         "backend/src/modules/supplier-truth/supplier-truth.service.test.ts",
         "backend/src/modules/supplier-truth/supplier-truth.service.ts"
       ],
@@ -31831,7 +31881,7 @@
         "backend/src/modules/supplier-truth/supplier-truth.service.ts"
       ],
       "kind": "service",
-      "loc": 42,
+      "loc": 43,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/order-availability.service.ts",
       "risk": "low",
@@ -32101,8 +32151,6 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/supplier-truth/supplier-truth-read.module.ts",
       "importedBy": [
-        "backend/src/modules/supplier-truth/supplier-truth.module.test.ts",
-        "backend/src/modules/supplier-truth/supplier-truth.module.ts",
         "backend/src/workers/worker.module.ts"
       ],
       "imports": [
@@ -32134,11 +32182,10 @@
       "imports": [
         "@auth/is-admin.guard",
         "backend/src/modules/supplier-truth/connectors/supplier-registry.ts",
-        "backend/src/modules/supplier-truth/supplier-sync.flag.ts",
-        "backend/src/modules/supplier-truth/supplier-truth.service.ts"
+        "backend/src/modules/supplier-truth/supplier-sync.flag.ts"
       ],
       "kind": "controller",
-      "loc": 68,
+      "loc": 53,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-truth.controller.ts",
       "risk": "low",
@@ -32156,14 +32203,11 @@
       "id": "backend/src/modules/supplier-truth/supplier-truth.module.test.ts",
       "importedBy": [],
       "imports": [
-        "backend/src/modules/supplier-truth/domain/availability-state.ts",
-        "backend/src/modules/supplier-truth/supplier-truth-read.module.ts",
         "backend/src/modules/supplier-truth/supplier-truth.controller.ts",
-        "backend/src/modules/supplier-truth/supplier-truth.module.ts",
-        "backend/src/modules/supplier-truth/supplier-truth.service.ts"
+        "backend/src/modules/supplier-truth/supplier-truth.module.ts"
       ],
       "kind": "test",
-      "loc": 83,
+      "loc": 65,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-truth.module.test.ts",
       "risk": "low",
@@ -32184,11 +32228,10 @@
         "backend/src/modules/supplier-truth/supplier-truth.module.test.ts"
       ],
       "imports": [
-        "backend/src/modules/supplier-truth/supplier-truth-read.module.ts",
         "backend/src/modules/supplier-truth/supplier-truth.controller.ts"
       ],
       "kind": "service",
-      "loc": 26,
+      "loc": 24,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-truth.module.ts",
       "risk": "low",
@@ -32240,7 +32283,7 @@
         "backend/src/database/services/supabase-base.service.ts"
       ],
       "kind": "service",
-      "loc": 264,
+      "loc": 274,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
       "risk": "low",
@@ -32283,8 +32326,6 @@
         "backend/src/modules/supplier-truth/order-availability.service.test.ts",
         "backend/src/modules/supplier-truth/order-availability.service.ts",
         "backend/src/modules/supplier-truth/supplier-truth-read.module.ts",
-        "backend/src/modules/supplier-truth/supplier-truth.controller.ts",
-        "backend/src/modules/supplier-truth/supplier-truth.module.test.ts",
         "backend/src/modules/supplier-truth/supplier-truth.service.test.ts"
       ],
       "imports": [
@@ -32292,7 +32333,7 @@
         "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
       ],
       "kind": "service",
-      "loc": 54,
+      "loc": 59,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-truth.service.ts",
       "risk": "low",
@@ -37425,7 +37466,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 214,
+      "loc": 287,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/registry-reader.service.test.ts",
       "risk": "low",
@@ -37713,6 +37754,25 @@
       "loc": 48,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/seo-monitoring/quality-history.controller.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/seo-monitoring/seo-monitoring.controller.http-guards.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 341,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/seo-monitoring/seo-monitoring.controller.http-guards.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -38299,7 +38359,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 274,
+      "loc": 279,
       "owner": "__unassigned__",
       "path": "backend/wait-and-start.js",
       "risk": "low",
@@ -48887,7 +48947,7 @@
         "~/utils/web-vitals.client"
       ],
       "kind": "service",
-      "loc": 274,
+      "loc": 298,
       "owner": "__unassigned__",
       "path": "frontend/app/entry.client.tsx",
       "risk": "low",
@@ -50689,7 +50749,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 295,
+      "loc": 320,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.control-plane.tsx",
       "risk": "low",
@@ -58001,7 +58061,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 92,
+      "loc": 98,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/internal-api.server.ts",
       "risk": "low",
@@ -59124,10 +59184,11 @@
       "id": "frontend/app/utils/web-vitals.client.ts",
       "importedBy": [],
       "imports": [
-        "@repo/cwv-taxonomy"
+        "@repo/cwv-taxonomy",
+        "~/utils/safe-storage"
       ],
       "kind": "service",
-      "loc": 342,
+      "loc": 476,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/web-vitals.client.ts",
       "risk": "low",
@@ -59192,7 +59253,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 76,
+      "loc": 83,
       "owner": "__unassigned__",
       "path": "frontend/index.cjs",
       "risk": "low",
@@ -59910,6 +59971,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/control-plane-availability.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 63,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/control-plane-availability.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/tests/unit/cta-contrast.test.ts",
       "importedBy": [],
       "imports": [],
@@ -59955,6 +60035,25 @@
       "loc": 82,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/dual-realm-provider-injection.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/entry-client-hydration-mark.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 137,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/entry-client-hydration-mark.test.tsx",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -60651,6 +60750,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/sanitize-editorial-html.server.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 115,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/sanitize-editorial-html.server.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/tests/unit/sanitize-editorial-html.test.ts",
       "importedBy": [],
       "imports": [],
@@ -60860,6 +60978,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/web-vitals-beacon.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 349,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/web-vitals-beacon.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/tests/visual/pages.visual.spec.ts",
       "importedBy": [],
       "imports": [],
@@ -60997,7 +61134,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 156,
+      "loc": 248,
       "owner": "__unassigned__",
       "path": "packages/cwv-taxonomy/src/__tests__/route-group.test.ts",
       "risk": "low",
@@ -61016,7 +61153,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 114,
+      "loc": 290,
       "owner": "__unassigned__",
       "path": "packages/cwv-taxonomy/src/__tests__/schema.test.ts",
       "risk": "low",
@@ -61149,7 +61286,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 91,
+      "loc": 179,
       "owner": "__unassigned__",
       "path": "packages/cwv-taxonomy/src/schema.ts",
       "risk": "low",
@@ -62631,7 +62768,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 94,
+      "loc": 114,
       "owner": "__unassigned__",
       "path": "packages/registry/src/entries/planning-entry.ts",
       "risk": "low",
@@ -65819,6 +65956,63 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "scripts/ci/lighthouse-report-quality.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 103,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/lighthouse-report-quality.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/ci/lighthouse-report-quality.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 109,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/lighthouse-report-quality.test.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/ci/lighthouserc.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 17,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/lighthouserc.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "scripts/ci/pr-2e-readiness-gate.mjs",
       "importedBy": [],
       "imports": [],
@@ -66564,7 +66758,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 190,
+      "loc": 201,
       "owner": "__unassigned__",
       "path": "scripts/registry/build-planning-registry.js",
       "risk": "low",
@@ -68426,7 +68620,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 140,
+      "loc": 180,
       "owner": "__unassigned__",
       "path": "tests/registry/planning-builder.test.ts",
       "risk": "low",
