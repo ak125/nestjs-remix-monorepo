@@ -11,7 +11,10 @@ import {
   isRobotsProductionEnv,
 } from "@repo/seo-url-contract/robots-policy";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { loader } from "~/routes/robots[.]txt";
 
+// vi.mock est remonté par vitest avant les imports : le loader importé
+// ci-dessus reçoit bien le module simulé.
 const fetchWithRetry = vi.fn();
 const logSitemapError = vi.fn();
 
@@ -23,8 +26,6 @@ vi.mock("~/lib/sitemap-fetch", () => ({
   fetchWithRetry: (...args: unknown[]) => fetchWithRetry(...args),
   logSitemapError: (...args: unknown[]) => logSitemapError(...args),
 }));
-
-import { loader } from "~/routes/robots[.]txt";
 
 const NOW = new Date("2026-09-11T08:00:00Z");
 
