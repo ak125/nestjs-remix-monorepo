@@ -91,7 +91,7 @@
         "backend/src/utils"
       ],
       "files_count": 35,
-      "loc_total": 6136,
+      "loc_total": 6159,
       "has_barrel": true
     },
     "blog": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 597,
-      "loc_total": 113429,
+      "loc_total": 113593,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -525,7 +525,7 @@
         "packages/cwv-taxonomy/src/__tests__"
       ],
       "files_count": 12,
-      "loc_total": 1063,
+      "loc_total": 1327,
       "has_barrel": true
     },
     "pkg-database-types": {
@@ -803,8 +803,8 @@
         "backend/src/modules/seo-monitoring/processors",
         "backend/src/modules/seo-monitoring/services"
       ],
-      "files_count": 38,
-      "loc_total": 7129,
+      "files_count": 40,
+      "loc_total": 7769,
       "has_barrel": false
     },
     "seo-projection": {
@@ -955,8 +955,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 224,
-      "loc_total": 39508,
+      "files_count": 227,
+      "loc_total": 40109,
       "has_barrel": true
     },
     "upload": {

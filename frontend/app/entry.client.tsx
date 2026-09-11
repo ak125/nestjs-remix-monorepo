@@ -10,7 +10,7 @@
 // See ~/utils/array-at-polyfill.client for the full rationale.
 import "~/utils/array-at-polyfill.client";
 
-import { startTransition } from "react";
+import { startTransition, useLayoutEffect, type ReactNode } from "react";
 import { hydrateRoot } from "react-dom/client";
 import { HydratedRouter } from "react-router/dom";
 import {
@@ -33,7 +33,10 @@ import {
   reportHydrationError,
   startRuntimeErrorReporter,
 } from "~/utils/runtime-errors.client";
-import { reportWebVitals } from "~/utils/web-vitals.client";
+import {
+  markHydrationCommit,
+  reportWebVitals,
+} from "~/utils/web-vitals.client";
 
 // Service worker cleanup — sync, no Sentry dep
 if ("serviceWorker" in navigator) {
@@ -89,6 +92,21 @@ const reactErrorHandlers = createReactErrorHandlers({
   reportHydration: () => reportHydrationError({ source: "onRecoverableError" }),
 });
 
+/**
+ * Marks the moment React commits the hydrated root. `hydrateRoot` returns before
+ * that commit, so a mark placed right after it would date hydration too early.
+ * A layout effect of the outermost component runs inside the hydration commit,
+ * after the layout effects of the shell it wraps (Suspense boundaries streamed
+ * later hydrate in their own commits). Renders no DOM, so the server markup is
+ * unchanged. Read by the CWV beacon as `attr_hydrated_at` (~/utils/web-vitals.client).
+ */
+function HydrationCommitMark({ children }: { children: ReactNode }) {
+  useLayoutEffect(() => {
+    markHydrationCommit();
+  }, []);
+  return children;
+}
+
 startTransition(() => {
   // PROD/PREPROD only: providing these options replaces React's default error
   // handlers, so in DEV we pass `undefined` to keep React's standard dev
@@ -96,7 +114,13 @@ startTransition(() => {
   // at build time — false under the DEV `vite dev` server, true in the Docker
   // production build that ships to both PREPROD and PROD.
   const rootOptions = import.meta.env.PROD ? reactErrorHandlers : undefined;
-  hydrateRoot(document, <HydratedRouter />, rootOptions);
+  hydrateRoot(
+    document,
+    <HydrationCommitMark>
+      <HydratedRouter />
+    </HydrationCommitMark>,
+    rootOptions,
+  );
   // Web Vitals observers attached early — `web-vitals` v4 uses
   // PerformanceObserver buffered:true so LCP/FCP candidates that already
   // fired are still observed. Sentry pipe is wired up later via
