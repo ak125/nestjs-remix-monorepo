@@ -2725,6 +2725,8 @@
       "backend/supabase/migrations/20260907_tecdoc_api_surface_lockdown.sql",
       "backend/supabase/migrations/20260907_xtr_msg_crm_indexes_align_to_leads_query.down.sql",
       "backend/supabase/migrations/20260907_xtr_msg_crm_indexes_align_to_leads_query.sql",
+      "backend/supabase/migrations/20260911_seo_cwv_beacon_rejected_event_enum.down.sql",
+      "backend/supabase/migrations/20260911_seo_cwv_beacon_rejected_event_enum.sql",
       "backend/supabase/migrations/20260911_seo_cwv_daily_rum_exact_p75.down.sql",
       "backend/supabase/migrations/20260911_seo_cwv_daily_rum_exact_p75.sql",
       "backend/supabase/migrations/README.md"
@@ -2896,7 +2898,7 @@
       "tests/registry/rpc-parser.test.ts"
     ]
   },
-  "runtime_files_count": 1508,
+  "runtime_files_count": 1510,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4079,6 +4081,8 @@
     "backend/supabase/migrations/20260907_tecdoc_api_surface_lockdown.sql",
     "backend/supabase/migrations/20260907_xtr_msg_crm_indexes_align_to_leads_query.down.sql",
     "backend/supabase/migrations/20260907_xtr_msg_crm_indexes_align_to_leads_query.sql",
+    "backend/supabase/migrations/20260911_seo_cwv_beacon_rejected_event_enum.down.sql",
+    "backend/supabase/migrations/20260911_seo_cwv_beacon_rejected_event_enum.sql",
     "backend/supabase/migrations/20260911_seo_cwv_daily_rum_exact_p75.down.sql",
     "backend/supabase/migrations/20260911_seo_cwv_daily_rum_exact_p75.sql",
     "backend/supabase/migrations/README.md",

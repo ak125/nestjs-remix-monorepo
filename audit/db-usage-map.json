@@ -16,8 +16,8 @@
     "candidate_orphan_rpc": 198,
     "dynamic_from_callsites": 897,
     "dynamic_rpc_callsites": 1,
-    "migrations_scanned": 346,
-    "backend_files_scanned": 1379
+    "migrations_scanned": 348,
+    "backend_files_scanned": 1381
   },
   "tables": {
     "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7": {
