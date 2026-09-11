@@ -244,7 +244,8 @@ git clone -q "$SB/origin.git" "$SB/app" 2>/dev/null
   mkdir -p scripts/cron scripts/ops
   cp "$REPO_ROOT/scripts/cron/lib-supabase-report.sh" scripts/cron/
   cp "$REPO_ROOT/scripts/ops/sync-dev-runtime.sh" scripts/ops/
-  printf '{"name":"sandbox","private":true,"scripts":{"build":"true"}}\n' > package.json
+  # build : note les arguments que la synchro lui passe (lus après le cas 1).
+  printf '{"name":"sandbox","private":true,"scripts":{"build":"echo >\\"$TMPDIR/build-args\\""}}\n' > package.json
   git add -A && commit_sb init && git push -q origin main
 )
 mkdir -p "$SB/app/backend/dist"
@@ -266,6 +267,10 @@ run_sync; EXIT=$?
 assert_exit "sync bac à sable : collision untracked → tick au bout (exit 0)" "0" "$EXIT"
 assert_contains "sync bac à sable : alerte sans abort → issue warn (plus ok)" '"warn"' "$(state "$SB/state/sync-dev-runtime.json" '.status')"
 assert_contains "sync bac à sable : l'alerte est dans l'état enregistré" "1 alerte(s) : fichiers untracked en collision" "$(state "$SB/state/sync-dev-runtime.json" '.summary')"
+# Le build de la synchro exclut le backend : son `prebuild: rimraf dist` supprimait le
+# répertoire surveillé par nodemon, DEV:3000 restait à terre (2026-09-11, 07:20 et 13:50).
+assert_contains "sync bac à sable : build lancé sans le backend (backend/dist appartient au stack dev)" \
+  '^--filter=!@fafa/backend$' "$(cat "$SB/tmp/build-args" 2>/dev/null)"
 
 # 2. Tick suivant sans alerte → `ok`, série remise à 1
 run_sync; EXIT=$?
