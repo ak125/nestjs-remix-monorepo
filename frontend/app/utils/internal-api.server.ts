@@ -7,17 +7,23 @@
  *
  * ⚠️ NEVER derive the API host from the incoming request's public origin. In PROD the
  * request origin is `https://www.automecanik.com`, so the server would egress to
- * Cloudflare and route back into itself for every loader call. Measured on PROD
- * (2026-08-15) for `/blog-pieces-auto/conseils/*`, which used the request origin:
- *   - TTFB 1.78-2.27 s for a 221 KB document
- *   - `/` (same process, same renderer, 279 KB — bigger) served in 0.29 s, because it
- *     already resolved the API internally via `getInternalApiUrl`
- *   - `/api/r3-guide/capteur-abs` answered in 227 ms on its own
- * The ~1.5 s delta was pure CDN round-trip, and it capped mobile LCP at 4.6 s (CrUX,
- * GSC "LCP > 4 s" group of 46 URLs). Egressing also made the loopback traffic subject
- * to the app's own global rate limiter with `Cf-Connecting-Ip` set to the ORIGIN's
- * public IP (`backend/src/common/guards/cloudflare-throttler.guard.ts`), so bursts
- * self-throttled into 429s.
+ * Cloudflare and route back into itself for every loader call: one extra CDN round trip
+ * per call, and the loopback traffic becomes subject to the app's own global rate limiter
+ * with `Cf-Connecting-Ip` set to the ORIGIN's public IP
+ * (`backend/src/common/guards/cloudflare-throttler.guard.ts`), so bursts self-throttle
+ * into 429s.
+ *
+ * Measurement note — do not reuse the earlier attribution. A PROD sample on 2026-08-15
+ * for `/blog-pieces-auto/conseils/*`, then using the request origin (TTFB 1.78-2.27 s,
+ * against 0.29 s for `/` and 227 ms for `/api/r3-guide/capteur-abs` alone), was read as a
+ * ~1.5 s pure CDN round trip that capped mobile LCP at 4.6 s. The 2026-09-11 measurement
+ * refutes that reading: moving these loaders to loopback gained at most 0.1-0.2 s, and the
+ * conseils TTFB grows with process uptime (field p50 ~1.1 s in the first 12 h, ~3.2 s at
+ * 24-36 h, while `/` stays flat). That uptime-dependent part matches the SSR HTML
+ * sanitizer, whose per-call cost grew with the number of calls served since process start
+ * (isomorphic-dompurify 2.36 on jsdom 28, now guarded by
+ * `frontend/tests/unit/sanitize-editorial-html.server.test.ts`). A TTFB sample cannot be
+ * interpreted without the process uptime it was taken at.
  */
 
 /** Port the NestJS process listens on — mirrors `backend/src/main.ts`. */
