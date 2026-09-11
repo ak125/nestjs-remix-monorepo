@@ -213,16 +213,13 @@ const SESSION_ID_KEY = "_aut_cwv_sid";
 const PREVIOUS_STEP_KEY = "_aut_cwv_prev_step";
 
 function getOrCreateSessionId(): string {
-  try {
-    const existing = safeSessionStorage.getItem(SESSION_ID_KEY);
-    if (existing && existing.length >= 8) return existing;
-    const fresh = crypto.randomUUID();
-    safeSessionStorage.setItem(SESSION_ID_KEY, fresh);
-    return fresh;
-  } catch {
-    // Storage disabled (private mode strict, CMP block) — fallback ephemeral.
-    return crypto.randomUUID();
-  }
+  const existing = safeSessionStorage.getItem(SESSION_ID_KEY);
+  if (existing && existing.length >= 8) return existing;
+  const fresh = crypto.randomUUID();
+  // Storage disabled (private mode strict, CMP block) → setItem is a no-op and
+  // the identifier stays ephemeral.
+  safeSessionStorage.setItem(SESSION_ID_KEY, fresh);
+  return fresh;
 }
 
 function detectDevice(): DeviceType {
@@ -272,14 +269,9 @@ function buildBeaconPayload(
   const pathname = window.location.pathname;
   const classification = classifyRoute(pathname);
 
-  // previous_funnel_step lookup + persist current
-  let previous_funnel_step: string | null = null;
-  try {
-    previous_funnel_step = safeSessionStorage.getItem(PREVIOUS_STEP_KEY);
-    safeSessionStorage.setItem(PREVIOUS_STEP_KEY, classification.funnel_step);
-  } catch {
-    // ignore storage errors
-  }
+  // previous_funnel_step lookup + persist current (blocked storage → null, no-op)
+  const previous_funnel_step = safeSessionStorage.getItem(PREVIOUS_STEP_KEY);
+  safeSessionStorage.setItem(PREVIOUS_STEP_KEY, classification.funnel_step);
 
   // Sanitize attribution selectors (defense in depth, backend re-sanitizes via Zod)
   const rawAttr = attributionFields(metric);
