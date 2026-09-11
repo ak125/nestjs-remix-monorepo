@@ -18,7 +18,7 @@
         "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__"
       ],
       "files_count": 146,
-      "loc_total": 40890,
+      "loc_total": 40874,
       "has_barrel": true
     },
     "agentic-engine": {
@@ -259,7 +259,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115308,
+      "loc_total": 115333,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -593,7 +593,7 @@
         "packages/registry/src/vehicle-context"
       ],
       "files_count": 56,
-      "loc_total": 6367,
+      "loc_total": 6387,
       "has_barrel": true
     },
     "pkg-seo-types": {
@@ -700,7 +700,7 @@
         "scripts/wiki-generators/__tests__"
       ],
       "files_count": 172,
-      "loc_total": 35980,
+      "loc_total": 35991,
       "has_barrel": true
     },
     "search": {
@@ -955,8 +955,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 223,
-      "loc_total": 39332,
+      "files_count": 224,
+      "loc_total": 39508,
       "has_barrel": true
     },
     "upload": {

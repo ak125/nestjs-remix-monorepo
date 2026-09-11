@@ -109,7 +109,9 @@ describe('RegistryReaderService', () => {
 
     it('degrades WIP gracefully but keeps repo', () => {
       expect(summary.wip.degraded).toBe(true);
-      expect(summary.wip.prCount).toBe(0);
+      expect(summary.wip.prCount).toBeNull();
+      expect(summary.wip.stacks).toBeNull();
+      expect(summary.wip.zombies).toBeNull();
       expect(summary.wip.topStale).toEqual([]);
       expect(summary.repo).not.toBeNull();
       expect(summary.degraded).toBe(true);
@@ -146,6 +148,77 @@ describe('RegistryReaderService', () => {
       const result = await service.getControlPlaneSummary();
       expect(result).toBe(cached);
       expect(cache.set).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('planning input boundaries', () => {
+    let directory: string;
+    beforeEach(() => {
+      directory = mkdtempSync(join(tmpdir(), 'planning-reader-'));
+      writeFileSync(
+        join(directory, 'canonical.json'),
+        readFileSync(join(FIXTURES, 'full', 'canonical.json')),
+      );
+    });
+    afterEach(() => rmSync(directory, { recursive: true, force: true }));
+
+    it.each([
+      'invalid JSON',
+      'missing metadata',
+      'invalid entry',
+      'wrong count',
+      'duplicate PR',
+      'invalid date',
+      'degraded',
+    ])(
+      'reports %s as unknown while preserving repo counts',
+      async (scenario) => {
+        const planning = JSON.parse(
+          readFileSync(join(FIXTURES, 'full', 'planning.json'), 'utf8'),
+        );
+        if (scenario === 'missing metadata') delete planning.meta;
+        if (scenario === 'invalid entry') planning.entries = [null];
+        if (scenario === 'wrong count') planning.meta.prCount = 0;
+        if (scenario === 'duplicate PR')
+          planning.entries[1] = planning.entries[0];
+        if (scenario === 'invalid date') planning.meta.generatedAt = 'invalid';
+        if (scenario === 'degraded') planning.meta.degraded = true;
+        writeFileSync(
+          join(directory, 'planning.json'),
+          scenario === 'invalid JSON' ? '{' : JSON.stringify(planning),
+        );
+        const { service, cache } = makeService(directory);
+        const result = await service.getControlPlaneSummary();
+        expect(result.repo?.counts.db).toBe(1);
+        expect(result.degraded).toBe(true);
+        expect(result.wip).toMatchObject({
+          degraded: true,
+          prCount: null,
+          stacks: null,
+          zombies: null,
+          topStale: [],
+        });
+        expect(cache.set).toHaveBeenCalledWith(expect.any(String), result, 15);
+      },
+    );
+
+    it('distinguishes a valid empty collection from unavailable data', async () => {
+      const planning = JSON.parse(
+        readFileSync(join(FIXTURES, 'full', 'planning.json'), 'utf8'),
+      );
+      planning.entries = [];
+      planning.meta.prCount = 0;
+      writeFileSync(join(directory, 'planning.json'), JSON.stringify(planning));
+      const { service, cache } = makeService(directory);
+      const result = await service.getControlPlaneSummary();
+      expect(result.wip).toMatchObject({
+        degraded: false,
+        prCount: 0,
+        stacks: 0,
+        zombies: 0,
+        generatedAt: planning.meta.generatedAt,
+      });
+      expect(cache.set).toHaveBeenCalledWith(expect.any(String), result, 60);
     });
   });
 

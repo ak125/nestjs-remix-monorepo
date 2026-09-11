@@ -36672,7 +36672,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 234,
+      "loc": 218,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/registry-reader.service.ts",
       "risk": "medium",
@@ -65816,7 +65816,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 214,
+      "loc": 287,
       "owner": "@ak125",
       "path": "backend/tests/unit/registry-reader.service.test.ts",
       "risk": "medium",
@@ -79615,7 +79615,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 295,
+      "loc": 320,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.control-plane.tsx",
       "risk": "medium",
@@ -89158,6 +89158,26 @@
         "manual"
       ],
       "domain": "D2",
+      "id": "frontend/tests/unit/control-plane-availability.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 63,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/control-plane-availability.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
       "id": "frontend/tests/unit/cta-contrast.test.ts",
       "importedBy": [],
       "imports": [],
@@ -92018,7 +92038,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 94,
+      "loc": 114,
       "owner": "@ak125",
       "path": "packages/registry/src/entries/planning-entry.ts",
       "risk": "high",
@@ -96158,7 +96178,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 190,
+      "loc": 201,
       "owner": "@ak125",
       "path": "scripts/registry/build-planning-registry.js",
       "risk": "high",
@@ -98118,7 +98138,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 140,
+      "loc": 180,
       "owner": "@ak125",
       "path": "tests/registry/planning-builder.test.ts",
       "risk": "medium",
@@ -98159,11 +98179,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "25765692c5c196e2cf2b669cee3f80d6995921876e836ade74240dd538b87bdb",
       "audit/registry/deps.json": "6f667991be593e37b2798c4ca0f0689d89c412731aa2bdf50000248da9f2c5bd",
-      "audit/registry/files.json": "ae47ff5c86e724ae4671dfa381f61fc339ef73922e60341a656b5b20e5a029fd",
+      "audit/registry/files.json": "dda97b3992eaf85f94635908b2faf8324f577dfa19c42c52fbf2d91f8053414c",
       "audit/registry/rpc.json": "59d3bb0e2b79c240fb14ec32e3adab2b269fe5a69a3c721ab762128504f4f980",
       "audit/registry/runtime.json": "11b58e35c0f151b043fc74b164953c754d4c32c7164107587b53fd9046e30e68"
     },
-    "sotFingerprint": "0034c235457e"
+    "sotFingerprint": "67e79262be0e"
   },
   "runtime": [
     {

@@ -39,7 +39,8 @@ const {
 const log = makeLogger("planning");
 
 const REPO = "ak125/nestjs-remix-monorepo";
-const SOT_POINTER = "vault:MOC-Planning-Live (ADR-053) — chantier/EPIC SoT; this file is a PR projection";
+const SOT_POINTER =
+  "vault:MOC-Planning-Live (ADR-053) — chantier/EPIC SoT; this file is a PR projection";
 const FETCH_LIMIT = 200;
 
 const VALID_WORKTYPES = new Set([
@@ -76,9 +77,10 @@ function fetchPullRequests() {
         "--json",
         "number,title,url,state,isDraft,author,headRefName,baseRefName,createdAt,updatedAt,labels",
       ],
-      { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }
+      { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] },
     );
-    return JSON.parse(stdout);
+    const prs = JSON.parse(stdout);
+    return Array.isArray(prs) ? prs : null;
   } catch (_err) {
     return null;
   }
@@ -119,7 +121,9 @@ function daysBetween(fromIso, toMs) {
  * Exported for fixture-based testing (no live gh dependency).
  */
 function buildRegistry(prs, nowMs) {
-  const degraded = prs === null;
+  // At the fetch ceiling completeness is unknown; never report a partial
+  // collection as the total number of open PRs.
+  const degraded = prs === null || prs.length >= FETCH_LIMIT;
   const list = degraded ? [] : prs;
 
   const entries = list.map((pr) => {
@@ -164,16 +168,23 @@ function buildRegistry(prs, nowMs) {
 function main() {
   const prs = fetchPullRequests();
   if (prs === null) {
-    log("⚠️  gh unavailable/unauthenticated — writing degraded empty snapshot (V1-3)");
+    log(
+      "⚠️  gh unavailable/unauthenticated — writing degraded empty snapshot (V1-3)",
+    );
   } else {
     log(`fetched ${prs.length} open PRs from ${REPO}`);
+    if (prs.length >= FETCH_LIMIT) {
+      log(
+        "⚠️  fetch limit reached — completeness unknown, writing degraded snapshot",
+      );
+    }
   }
 
   const output = buildRegistry(prs, Date.now());
   const outPath = path.join(REGISTRY_DIR, "planning.json");
   const sha = writeDeterministicJson(outPath, output);
   log(
-    `wrote ${outPath} (${output.meta.prCount} entries, degraded=${output.meta.degraded}, sha256:${sha.slice(0, 12)})`
+    `wrote ${outPath} (${output.meta.prCount} entries, degraded=${output.meta.degraded}, sha256:${sha.slice(0, 12)})`,
   );
 }
 
