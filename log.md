@@ -548,3 +548,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/cron-alert-only-to-state`
 - **Décision** : fix(ops): une alerte qui n'interrompt pas un tick cron n'est plus enregistrée « ok »
 - **Sortie** : PR #1450 | commits 2d31f7a34
+
+## 2026-09-11 — fix/dev-shutdown-grace-period (auto)
+
+- **Branche** : `fix/dev-shutdown-grace-period`
+- **Décision** : chore(registry): régénérer les projections après le formatage de la borne d'arrêt (+3 other commits)
+- **Sortie** : PR #1452 | commits 45657eaab 33059d07a 4b750ec63 b61bb42df
