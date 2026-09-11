@@ -52,9 +52,14 @@ import { SessionStoreService } from './modules/session/session-store.service';
 
 async function bootstrap() {
   try {
+    const isProd = process.env.NODE_ENV === 'production';
     const app = await NestFactory.create(AppModule, {
       bodyParser: false,
       bufferLogs: true, // Buffer logs jusqu'à ce que Pino soit initialisé
+      // Dev : le WebSocket HMR de Vite partage ce serveur HTTP (startDevServer).
+      // Sans destruction des sockets ouverts, app.close() attend indéfiniment
+      // que le navigateur ferme ce WebSocket et nodemon ne redémarre jamais.
+      forceCloseConnections: !isProd,
     });
 
     // 📝 Utiliser Pino comme logger global
@@ -67,7 +72,6 @@ async function bootstrap() {
 
     // Cast pour éviter les conflits de types entre les dépendances
     const expressApp = app as any;
-    const isProd = process.env.NODE_ENV === 'production';
 
     // Démarrage du serveur Remix uniquement en dev
     if (!isProd) {
