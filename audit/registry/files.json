@@ -65851,7 +65851,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 107,
+      "loc": 109,
       "owner": "__unassigned__",
       "path": "scripts/ci/lighthouse-report-quality.test.mjs",
       "risk": "low",
