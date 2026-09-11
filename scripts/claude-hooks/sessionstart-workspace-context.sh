@@ -123,6 +123,50 @@ extract_section() {
 MEM_FILE="${HOME}/.claude/projects/$(printf '%s' "$REPO_ROOT_CANON" | tr '/' '-')/memory/MEMORY.md"
 bash "$REPO_ROOT/scripts/claude-hooks/check-memory-size.sh" "$MEM_FILE" 2>/dev/null || true
 
+# État des crons de CETTE machine — ALERT-ONLY, hors manifest borné (même contrat que
+# la garde MEMORY.md). Lit les enregistrements de `cron_report`
+# (scripts/cron/lib-supabase-report.sh) : job en error/warn, ou muet au-delà du
+# max_age_s qu'il a déclaré. Pourquoi : la sync DEV est restée figée du 2026-09-08 au
+# 2026-09-11 (branche feature puis WIP dans le checkout principal) sans aucun signal —
+# ses aborts partaient sur stderr, jeté faute de MTA, et son rapport visait une table
+# supprimée. Au plus 3 lignes ; jamais bloquant.
+emit_cron_alerts() {
+  local dir="${CRON_STATE_DIR:-${XDG_STATE_HOME:-$HOME/.local/state}/automecanik/cron}"
+  [ -d "$dir" ] || return 0
+  command -v jq >/dev/null 2>&1 || { echo "⚠️ cron : jq absent — état des crons non lu ($dir)"; return 0; }
+  local now f line
+  local -a alerts=()
+  now=$(date +%s)
+  for f in "$dir"/*.json; do
+    [ -f "$f" ] || continue
+    if line=$(jq -r --argjson now "$now" '
+        def hm: strflocaltime("%Y-%m-%d %H:%M");
+        def cut: if length > 160 then .[:160] + "…" else . end;
+        def detail: (.summary // "") as $s | if $s == "" then "" else " — " + ($s | cut) end;
+        select(type == "object" and (.job | type) == "string" and (.ts | type) == "number")
+        | if (.max_age_s | type) == "number" and ($now - .ts) > .max_age_s then
+            "⚠️ cron \(.job) : MUET depuis \(.ts | hm) (attendu au moins toutes les \(.max_age_s / 60 | floor) min) — dernier état \(.status)\(detail)"
+          elif .status == "error" then
+            "⚠️ cron \(.job) : ÉCHEC depuis \((.since // .ts) | hm) (\(.streak // 1) exécution(s))\(detail)"
+          elif .status == "warn" then
+            "⚠️ cron \(.job) : AVERTISSEMENT depuis \((.since // .ts) | hm) (\(.streak // 1) exécution(s))\(detail)"
+          else empty end' "$f" 2>/dev/null); then
+      [ -n "$line" ] && alerts+=("$line")
+    else
+      alerts+=("⚠️ cron : état illisible $f")
+    fi
+  done
+  local i
+  for ((i = 0; i < ${#alerts[@]} && i < 3; i++)); do
+    echo "${alerts[$i]}"
+  done
+  if [ "${#alerts[@]}" -gt 3 ]; then
+    echo "⚠️ cron : +$(( ${#alerts[@]} - 3 )) autre(s) — détail dans $dir"
+  fi
+  return 0
+}
+emit_cron_alerts || true
+
 # Borne taille : sortie ≤ 2000 bytes (~500 tokens). Si dépasse → fail silencieux (exit 0)
 # avec message stderr ; ne JAMAIS bloquer la session sur ce défaut.
 SIZE=$(wc -c < /tmp/sessionstart-output.txt)

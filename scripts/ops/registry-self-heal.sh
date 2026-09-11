@@ -50,6 +50,9 @@ INV_FILE="audit/dependencies/dependency-modernization-inventory.json"
 LOG_TAG="registry-self-heal"
 LOCK_FILE="/tmp/${LOG_TAG}.lock"
 START=$(date +%s)
+# Trois ticks manqués (cadence 30 min) = cron considéré arrêté — alerte SessionStart
+# via l'enregistrement de cron_report (scripts/cron/lib-supabase-report.sh).
+CRON_REPORT_MAX_AGE_S=5400
 
 cd "$APP_DIR" 2>/dev/null || { echo "[$LOG_TAG] FATAL: $APP_DIR introuvable" >&2; exit 1; }
 
@@ -58,11 +61,19 @@ source scripts/cron/lib-supabase-report.sh 2>/dev/null || true
 
 log()   { echo "[$LOG_TAG] $(date -u +%FT%TZ) $1"; }
 alert() {
-  echo "[$LOG_TAG] ⚠️ ALERT: $1" >&2
+  echo "[$LOG_TAG] $(date -u +%FT%TZ) ⚠️ ALERT: $1" >&2
   [ -n "${ALERT_WEBHOOK_URL:-}" ] && curl -sf --max-time 5 -X POST "$ALERT_WEBHOOK_URL" \
     -H 'Content-Type: application/json' -d "{\"text\":\"[registry-self-heal] $1\"}" >/dev/null 2>&1 || true
 }
-report() { command -v cron_report >/dev/null 2>&1 && cron_report "$LOG_TAG" "$1" "$(( $(date +%s) - START ))" "${2:-{}}" "${3:-}" 2>/dev/null || true; }
+# Pas de `2>/dev/null || true` ici : c'est ce qui rendait le rapport muet. cron_report
+# ne fait jamais échouer le script et signale lui-même sur stderr un état non écrit.
+report() {
+  if ! command -v cron_report >/dev/null 2>&1; then
+    echo "[$LOG_TAG] ⚠️ cron_report indisponible (scripts/cron/lib-supabase-report.sh non chargée) — issue du run NON enregistrée" >&2
+    return 0
+  fi
+  cron_report "$LOG_TAG" "$1" "$(( $(date +%s) - START ))" "${2:-}" "${3:-}"
+}
 abort()  { alert "$1"; report "error" "{}" "$1"; cleanup; exit 1; }
 
 cleanup() {
