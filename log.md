@@ -542,3 +542,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/cron-report-dead-channel`
 - **Décision** : fix(ops): rendre visibles les échecs des crons — leur canal visait une table supprimée
 - **Sortie** : PR #1448 | commits 54a543157
+
+## 2026-09-11 — fix/ssr-sanitizer-jsdom-listener-leak (auto)
+
+- **Branche** : `fix/ssr-sanitizer-jsdom-listener-leak`
+- **Décision** : test(frontend): préciser pourquoi le test SSR du sanitizer tourne sans window global (+3 other commits)
+- **Sortie** : PR #1457 | commits bbf0beafd b45678449 234b6fe3e 207d41698
