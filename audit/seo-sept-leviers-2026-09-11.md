@@ -3,8 +3,9 @@
 > **Statut par défaut de tout ce qui suit : CODE CORRIGÉ + TESTÉ localement. NON POUSSÉ,
 > NON APPLIQUÉ EN BASE, NON DÉPLOYÉ, EFFET SEO NON MESURÉ.**
 > Branche `fix/seo-measure-robots-markers` (worktree `.claude/worktrees/seo-leviers-mesure`),
-> base `bcf0c775a`. Vérification complète au SHA de code `25cfd1bc4` (§12). Le commit de ce
-> rapport n'ajoute que ce fichier (`git diff --stat 25cfd1bc4 HEAD`).
+> base `bcf0c775a`. Vérification complète au SHA `25cfd1bc4`. Les contrôles touchés par le
+> dernier changement de code (un test frontend, `771c7b934`) ont été rejoués à ce SHA (§12).
+> Les commits suivants sont documentaires (`git diff --stat 771c7b934 HEAD`).
 > Verdict de couverture : **PARTIAL_COVERAGE** (§14).
 
 ## 0. Trois plans à ne pas confondre
@@ -201,7 +202,11 @@ Proposition à valider, non implémentée : ancrer `p_now` sur le lendemain du d
 
 **Aucune étape ci-dessous n'est autorisée par ce rapport.** Chaque GO est distinct et nominatif.
 
-1. **GO push.** Rebase sur `origin/main` (hunks distincts dans `backend/.env.example`, aucun autre fichier commun). Rejouer au SHA rebasé les contrôles du §12, puis régénérer le registre dans un environnement équivalent à la CI (`npm ci`, sans `dist` locaux ; F4). Push de la branche, ouverture de la PR.
+1. **GO push.** Rebase sur `origin/main`. Deux fichiers sont communs :
+   - `backend/.env.example` : hunks distincts, pas de conflit attendu ;
+   - `log.md` : conflit attendu. La branche porte une entrée ajoutée par le hook Stop (`f2ab4cbbb`) et main a ajouté 18 lignes depuis la base. Résolution : garder les deux entrées, celles de main d'abord.
+
+   Ensuite, rejouer au SHA rebasé les contrôles du §12, puis régénérer le registre dans un environnement équivalent à la CI (`npm ci`, sans `dist` locaux ; F4). Push de la branche, ouverture de la PR.
 2. **Revue + CI verte sur le SHA final `S`.** Les preuves de la PR doivent citer `S`. Tout rebase ultérieur oblige à rejouer les contrôles touchés avant de réutiliser le verdict.
 3. **GO migration** (droits : écriture repo pour `workflow_dispatch` ; secret `DATABASE_URL` existant). Workflow `apply-supabase-migrations.yml` avec `only_ids` = les 2 ids, d'abord `dry_run=true`, puis `confirm=APPLY` et `dry_run=false`. Puis contrôles en lecture (§5, Q4 et Q6). Choix de la référence Git, à valider :
    - **Option A : tête de PR revue `S`, avant merge.** Schéma d'abord ; l'ancien code est compatible (prouvé au banc) ; aucune fenêtre d'erreur. Le workflow n'a pas de garde de ref. Tant que la PR n'est pas mergée, le statut du ledger sur main classe ces ids en `orphan`, ce qui ne produit qu'un avertissement (`scripts/ci/apply-supabase-migration.py`). Toute modification ultérieure du fichier → dérive de checksum → échec franc.
@@ -399,15 +404,17 @@ Title, meta et H1 relevés en live le 2026-09-11. Toute proposition part d'une r
 
 ## 11. Local ou GO
 
-- **Local, commité sur la branche** : 19 commits, de `fe658657d` à `25cfd1bc4`, plus ce rapport.
+- **Local, commité sur la branche** : 22 commits, de `fe658657d` à `771c7b934`. Parmi eux : ce rapport (`cdbdb58a4`) et une entrée `log.md` créée automatiquement par le hook Stop (`f2ab4cbbb`).
 - **Local, non suivi** : patch guard-only ; description de PR (`.claude/handoffs/`).
 - **Nécessite un GO** : chaque étape du §4.7, les SQL du §8, les corrections du §7, les purges, la lecture des journaux d'accès PROD.
 
 **Prochaine action unique proposée** : GO owner pour pousser et ouvrir la PR guard-only (`.claude/handoffs/seo-monitoring-admin-guard-only.patch`), après lecture seule des journaux d'accès PROD sur `cron/health`. C'est la seule exposition confirmée encore active en PROD, et elle se livre sans migration.
 
-## 12. Vérification liée au SHA `25cfd1bc4`
+## 12. Vérification liée au SHA `25cfd1bc4`, rejouée pour `771c7b934`
 
 Tout a été exécuté localement, séquentiellement, le 2026-09-11. Les journaux sont conservés hors dépôt (scratchpad de session). Tous les codes de sortie valent 0.
+
+Entre `25cfd1bc4` et `771c7b934`, le seul changement de code est `frontend/tests/unit/robots-txt-fallback.test.ts`. Les contrôles frontend touchés ont été rejoués à `771c7b934` (second tableau). Les contrôles backend, des paquets et SQL ne sont pas concernés.
 
 | Contrôle | Résultat |
 |---|---|
@@ -423,6 +430,18 @@ Tout a été exécuté localement, séquentiellement, le 2026-09-11. Les journau
 | Squawk 2.52.1 (2 migrations) / `--lint-markers` | 0 issue / OK |
 | Banc SQL éphémère | 80 PASS / 0 FAIL |
 
+**Rejoués à `771c7b934`, avec les gardes CI reproduites localement :**
+
+| Contrôle | Résultat |
+|---|---|
+| frontend ESLint sur les 4 fichiers de la branche (3 routes + test robots), comme `turbo lint` en CI | 0 erreur, 0 avertissement. Avant correction : 1 **erreur** `import/first` dans le test. |
+| frontend vitest, suite complète (commande CI, sans couverture) | 68 fichiers, **525 tests passés**, 0 échec |
+| frontend `tsc --noEmit --incremental false` (tests inclus) | 2 051 fichiers, 0 erreur |
+| Garde bloquante des nouveaux fichiers (`scripts/registry/check-new-files.js --base origin/main`) | 33 nouveaux fichiers, 33 OK (propriétaire et domaine) |
+| Ratchet des fichiers orphelins (`audit:orphan-ratchet`) | aucun finding |
+| Ratchet des écritures de contenu servi (`audit:served-write-ratchet`) | correspondance exacte avec la baseline (61 clés, 265 occurrences) |
+| Ratchet de dérive des contrats (tableau de bord régénéré, ignoré par git, puis `check-contract-drift-ratchet.ts --json`) | pass : 0 ajout, 296 réductions |
+
 **Non exécuté** :
 - `rpcs.test.ts` sur une vraie base (interdit sans base jetable équivalente) ;
 - workflows CI, E2E et Lighthouse (aucun push) ;
@@ -436,6 +455,7 @@ Tout a été exécuté localement, séquentiellement, le 2026-09-11. Les journau
 - **`v4` exposait `days_present`** égal aux jours commités et rangeait les jours non commités parmi les manquants. Vocabulaire unifié par `a60d1b6a6`.
 - **« Veille UTC » et « J-2 » présentés comme bornes de finalité** : corrigé par `b3448f055`.
 - **`backend/.env.example`** qualifiait le seuil page_totals d'« alerte ». Depuis `6bdc8c9ae`, c'est un seuil de signal hors certification. Commentaire corrigé dans `25cfd1bc4`.
+- **Erreur ESLint bloquante non vue.** `frontend/tests/unit/robots-txt-fallback.test.ts` (`039a44fc5`) portait une erreur `import/first`. Le job CI « ESLint » (`turbo lint`, soit `eslint .` côté frontend) aurait échoué. Le lint local annoncé plus tôt ne couvrait que les 3 routes. Corrigé dans `771c7b934`, en déplaçant seulement l'import : 3/3.
 - **Commentaire de `ingestion-date-planner.ts`** (`4007ff96d`) : il annonçait 18 dates perdues. Le relevé du 2026-09-11 en compte 19, identiques sur les 4 grains. Corrigé dans `25cfd1bc4`.
 
 ## 14. Coverage manifest
@@ -448,6 +468,6 @@ Tout a été exécuté localement, séquentiellement, le 2026-09-11. Les journau
 | excluded_paths | `payments/`, TecDoc, autres projets, vault, écriture des contenus |
 | unscanned_zones | GA4 au-delà du planificateur ; données de liens entrants ; contenu WIKI des 5 pages ; journaux d'accès PROD ; configuration réelle de l'`env_file` PROD ; comportement E2E du container PREPROD sur les routes admin SEO |
 | corrections_proposed | §2 (D1 à D13 codés), D14, §4.7, §6, §7, §8, §9 |
-| validation_executed | §12 (au SHA `25cfd1bc4`) ; banc SQL éphémère ; capture API en lecture ; relevés live en GET ; Q1 et relevé par grain exécutés en lecture seule sur PROD le 2026-09-11 (`transaction_read_only = on`, `statement_timeout` 10 s) |
+| validation_executed | §12 (au SHA `25cfd1bc4`, contrôles frontend et gardes CI rejoués à `771c7b934`) ; banc SQL éphémère ; capture API en lecture ; relevés live en GET ; Q1 et relevé par grain exécutés en lecture seule sur PROD le 2026-09-11 (`transaction_read_only = on`, `statement_timeout` 10 s) |
 | remaining_unknowns | Exécutant PROD historique ; cause de l'anomalie GA4 07-22→24 ; activation réelle de `SEO_CONTROL_DASHBOARD_ENABLED` en PROD ; appelants externes de `cron/health` ; comportement réel du ledger et de PREPROD selon l'option A ou B ; concurrence entre collecteurs |
 | final_status | **PARTIAL_COVERAGE** |
