@@ -69,8 +69,8 @@ export interface RouteClassification {
  *   1. Exact match `/` → home
  *   2. `/pieces/...` + `.html` → pieces_product (5-segments URL canonical)
  *   3. `/pieces/...` (no `.html`)         → pieces_gamme_vehicle (4-segments listing)
- *   4. `/conseils/...`     → r3_guide
- *   5. `/diagnostic/...`   → r5_diagnostic
+ *   4. `/blog-pieces-auto/conseils/...` → r3_guide
+ *   5. `/diagnostic-auto/...`           → r5_diagnostic
  *   6. `/constructeurs/...`→ r8_vehicle
  *   7. `/marques/...`      → marques_listing
  *   8. `/recherche`        → search
@@ -91,9 +91,9 @@ export function classifyRoute(pathname: string | null | undefined): RouteClassif
       group = 'home';
     } else if (pathname.startsWith('/pieces/')) {
       group = pathname.endsWith('.html') ? 'pieces_product' : 'pieces_gamme_vehicle';
-    } else if (pathname.startsWith('/conseils/')) {
+    } else if (pathname.startsWith('/blog-pieces-auto/conseils/')) {
       group = 'r3_guide';
-    } else if (pathname.startsWith('/diagnostic/')) {
+    } else if (pathname.startsWith('/diagnostic-auto/')) {
       group = 'r5_diagnostic';
     } else if (pathname.startsWith('/constructeurs/')) {
       group = 'r8_vehicle';

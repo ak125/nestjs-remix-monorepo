@@ -33,7 +33,8 @@ test('classifyRoute: pieces_gamme_vehicle short (2-segments)', () => {
 });
 
 test('classifyRoute: r3_guide', () => {
-  const r = classifyRoute('/conseils/changer-plaquettes-frein');
+  // Route servie : frontend/app/routes/blog-pieces-auto.conseils.$pg_alias.tsx
+  const r = classifyRoute('/blog-pieces-auto/conseils/plaquette-de-frein');
   assert.equal(r.route_group, 'r3_guide');
   assert.equal(r.surface, 'R3_GUIDE');
   assert.equal(r.priority_tier, 'CWV_P1');
@@ -41,11 +42,102 @@ test('classifyRoute: r3_guide', () => {
 });
 
 test('classifyRoute: r5_diagnostic', () => {
-  const r = classifyRoute('/diagnostic/voiture-ne-demarre-pas');
+  // Route servie : frontend/app/routes/diagnostic-auto.$slug.tsx
+  const r = classifyRoute('/diagnostic-auto/bruit-embrayage');
   assert.equal(r.route_group, 'r5_diagnostic');
   assert.equal(r.surface, 'R5_DIAGNOSTIC');
   assert.equal(r.priority_tier, 'CWV_P0');
   assert.equal(r.funnel_step, 'view_diagnostic');
+});
+
+test('classifyRoute: r3_guide sur les URLs conseils réellement servies', () => {
+  // Liens internes de frontend/app/components/blog/BlogInternalLinks.tsx : les
+  // conseils sont servis sous /blog-pieces-auto/conseils/<pg_alias>. Le préfixe
+  // /conseils/ n'est plus servi : le beacon de ces pages tombait en `other`.
+  const paths = [
+    '/blog-pieces-auto/conseils/plaquette-de-frein',
+    '/blog-pieces-auto/conseils/kit-embrayage',
+    '/blog-pieces-auto/conseils/alternateur',
+    '/blog-pieces-auto/conseils/amortisseur',
+    '/blog-pieces-auto/conseils/kit-de-distribution',
+  ];
+  for (const p of paths) {
+    const r = classifyRoute(p);
+    assert.equal(r.route_group, 'r3_guide', `expected r3_guide for ${p}, got ${r.route_group}`);
+    assert.equal(r.surface, 'R3_GUIDE');
+  }
+});
+
+test('classifyRoute: r5_diagnostic sur les URLs diagnostic réellement servies', () => {
+  // /diagnostic-auto/<slug> : canonical de diagnostic-auto.$slug.tsx ; slugs issus du
+  // seed 20260126_create_seo_observable.sql et de backend/tests/unit/page-role-links.test.ts.
+  const paths = ['/diagnostic-auto/bruit-embrayage', '/diagnostic-auto/bruit-freinage'];
+  for (const p of paths) {
+    const r = classifyRoute(p);
+    assert.equal(r.route_group, 'r5_diagnostic', `expected r5_diagnostic for ${p}, got ${r.route_group}`);
+    assert.equal(r.surface, 'R5_DIAGNOSTIC');
+  }
+});
+
+test('classifyRoute: voisins servis inchangés (hubs, autres rubriques blog, R1, R2, home)', () => {
+  // Comportement existant conservé à l'identique : cette correction ne touche que les
+  // préfixes r3_guide et r5_diagnostic. Les index (sans slug) restent hors groupe, comme
+  // le prévoit le motif `$slug` du canon.
+  const fixtures: Array<{ path: string; expectedGroup: string }> = [
+    { path: '/', expectedGroup: 'home' },
+    { path: '/blog-pieces-auto', expectedGroup: 'other' },
+    { path: '/blog-pieces-auto/conseils', expectedGroup: 'other' },
+    {
+      path: '/blog-pieces-auto/guide-achat/comment-utiliser-selecteur-vehicule-pieces-auto',
+      expectedGroup: 'other',
+    },
+    { path: '/blog-pieces-auto/article/guide-freins', expectedGroup: 'other' },
+    { path: '/reference-auto/definition-abs', expectedGroup: 'other' },
+    { path: '/diagnostic-auto', expectedGroup: 'other' },
+    { path: '/diagnostic', expectedGroup: 'other' },
+    // R1 (pieces.$slug.tsx) et R2 (pieces.$gamme.$marque.$modele.$type[.]html.tsx)
+    // R1 : fige le comportement ACTUEL, pas le rôle attendu. Le hub gamme est R1_ROUTER
+    // (backend/src/modules/seo/types/page-role.types.ts) mais tombe en pieces_product
+    // (R2_PRODUCT) faute de groupe R1. À modifier quand R1 aura son groupe (décision canon
+    // + migration CHECK) : ce changement-là ne sera pas une régression.
+    { path: '/pieces/kit-d-embrayage-479.html', expectedGroup: 'pieces_product' },
+    {
+      path: '/pieces/plaquette-de-frein-402/volkswagen-173/transporter-iv-fourgon-173146/2-5-tdi-8773.html',
+      expectedGroup: 'pieces_product',
+    },
+  ];
+  for (const { path, expectedGroup } of fixtures) {
+    const r = classifyRoute(path);
+    assert.equal(r.route_group, expectedGroup, `expected ${expectedGroup} for ${path}, got ${r.route_group}`);
+  }
+});
+
+test('classifyRoute: index avec slash final — sémantique startsWith du path_prefix', () => {
+  // Aucune redirection du slash final repérée pour ces routes : React Router rend l'index
+  // (blog-pieces-auto.conseils._index.tsx, diagnostic-auto._index.tsx) pour les deux
+  // formes. Le classifieur applique `startsWith(path_prefix)` comme pour tous les
+  // groupes (`/constructeurs/` → r8_vehicle, `/pieces/` → pieces_gamme_vehicle) :
+  // l'index écrit avec slash final entre donc dans le groupe, sans slash il reste
+  // `other`. Ces fixtures figent ce comportement ; le groupe des pages index est une
+  // décision canon ouverte, à trancher dans cwv-taxonomy.yaml avant de les modifier.
+  const fixtures: Array<{ path: string; expectedGroup: string }> = [
+    { path: '/blog-pieces-auto/conseils/', expectedGroup: 'r3_guide' },
+    { path: '/blog-pieces-auto/conseils', expectedGroup: 'other' },
+    { path: '/diagnostic-auto/', expectedGroup: 'r5_diagnostic' },
+    { path: '/diagnostic-auto', expectedGroup: 'other' },
+    // Outil /diagnostic (diagnostic.tsx, sans sous-route) : hors r5_diagnostic.
+    { path: '/diagnostic/', expectedGroup: 'other' },
+  ];
+  for (const { path, expectedGroup } of fixtures) {
+    const r = classifyRoute(path);
+    assert.equal(r.route_group, expectedGroup, `expected ${expectedGroup} for ${path}, got ${r.route_group}`);
+  }
+});
+
+test('classifyRoute: préfixe legacy /conseils/ non classé (redirigé en 301 par $.tsx)', () => {
+  // resolveKnownPattern() de frontend/app/routes/$.tsx redirige /conseils/* vers
+  // /blog-pieces-auto/conseils/* : aucune page n'est rendue sous l'ancien préfixe.
+  assert.equal(classifyRoute('/conseils/plaquette-de-frein').route_group, 'other');
 });
 
 test('classifyRoute: r8_vehicle', () => {
@@ -146,7 +238,7 @@ test('classifyRoute: GSC INP report fixtures (sample 12 of 376 /pieces/* URLs)',
 });
 
 test('classifyRoute: idempotence (re-classification stable)', () => {
-  const paths = ['/pieces/x/y/z.html', '/conseils/foo', '/checkout', '/'];
+  const paths = ['/pieces/x/y/z.html', '/blog-pieces-auto/conseils/plaquette-de-frein', '/checkout', '/'];
   for (const p of paths) {
     const a = classifyRoute(p);
     const b = classifyRoute(p);
