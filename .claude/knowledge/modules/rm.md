@@ -2,7 +2,7 @@
 module: rm
 sources:
 - backend/src/modules/rm
-last_scan: '2026-09-02'
+last_scan: '2026-09-11'
 primary_files:
 - backend/src/modules/rm/controllers/rm.controller.ts
 - backend/src/modules/rm/dto/alternatives-v2.dto.ts
@@ -10,8 +10,8 @@ primary_files:
 - backend/src/modules/rm/rm.types.ts
 - backend/src/modules/rm/services/__tests__/rm-alternatives.service.test.ts
 - backend/src/modules/rm/services/__tests__/rm-builder-page-v2-cache.test.ts
+- backend/src/modules/rm/services/__tests__/rm-builder-seo-legacy-markers.test.ts
 - backend/src/modules/rm/services/__tests__/rm-builder-seo-shadow.test.ts
-- backend/src/modules/rm/services/__tests__/rm-soft404-tracker.service.test.ts
 depends_on:
 - DatabaseModule
 - CatalogModule

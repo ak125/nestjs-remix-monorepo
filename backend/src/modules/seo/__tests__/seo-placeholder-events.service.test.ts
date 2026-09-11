@@ -48,6 +48,36 @@ describe('SeoPlaceholderEventsService', () => {
     expect(row.payload.marker_count).toBe(2);
     expect(row.payload.stripped_count).toBe(1);
     expect(row.payload.markers).toEqual(['#Gamme#', '#LinkGamme_9#']);
+    // émetteur historique V4 : pas de source
+    expect(row.payload.source).toBeNull();
+  });
+
+  it('propage la source et les champs R2 (garde finale SeoTemplateService)', async () => {
+    const { svc, insert } = build({ error: null });
+
+    await svc.record({
+      trigger: 'residual_marker_detected',
+      source: 'r2_seo_template',
+      field: 'content',
+      marker_count: 1,
+      stripped_count: 1,
+      markers: ['#CompSwicth_12_1289#'],
+      pg_id: 1289,
+      type_id: 33409,
+    });
+
+    const row = insert.mock.calls[0][0];
+    expect(row.payload).toEqual({
+      trigger: 'residual_marker_detected',
+      source: 'r2_seo_template',
+      field: 'content',
+      marker_count: 1,
+      stripped_count: 1,
+      markers: ['#CompSwicth_12_1289#'],
+      pg_id: 1289,
+      type_id: 33409,
+      fallback_version: null,
+    });
   });
 
   it('ne lève jamais sur erreur insert — retourne {ok:false} + log', async () => {
@@ -68,6 +98,7 @@ describe('SeoPlaceholderEventsService', () => {
     expect(row.payload.trigger).toBe('runtime_default_fallback');
     expect(row.payload.pg_id).toBe(3);
     expect(row.payload.field).toBeNull();
+    expect(row.payload.source).toBeNull();
     expect(row.payload.marker_count).toBeNull();
     expect(row.payload.markers).toBeNull();
   });

@@ -30,9 +30,17 @@ export type PlaceholderTrigger =
   | 'residual_marker_detected'
   | 'runtime_default_fallback';
 
+/**
+ * Émetteur du signal. Absent = émetteur historique V4 (`cleanContent` /
+ * `generateDefaultSeo` de `DynamicSeoV4UltimateService`).
+ * `r2_seo_template` = garde finale de `SeoTemplateService` (pages R2).
+ */
+export type PlaceholderSource = 'r2_seo_template';
+
 export interface PlaceholderEventInput {
   trigger: PlaceholderTrigger;
-  field?: 'title' | 'description';
+  source?: PlaceholderSource;
+  field?: 'h1' | 'title' | 'description' | 'content' | 'preview';
   /** Total des marqueurs `#X#` détectés (regex large, chiffres inclus). */
   marker_count?: number;
   /** Sous-ensemble réellement retiré par le strip `/#[A-Za-z_]+#/g` (sans chiffres). */
@@ -63,6 +71,7 @@ export class SeoPlaceholderEventsService extends SupabaseBaseService {
       severity: 'info',
       payload: {
         trigger: input.trigger,
+        source: input.source ?? null,
         field: input.field ?? null,
         marker_count: input.marker_count ?? null,
         stripped_count: input.stripped_count ?? null,
