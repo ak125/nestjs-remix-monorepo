@@ -3,7 +3,9 @@
  *
  * Mirror runtime de `.spec/00-canon/seo-runtime/cwv-taxonomy.yaml`. Consommé
  * par :
- *   - frontend/app/utils/web-vitals.client.ts (envoi beacon)
+ *   - frontend/app/utils/web-vitals.client.ts (envoi beacon), par sous-chemins
+ *     sans zod (`./surface`, `./priority-tier`, `./route-group`, `./metric`) :
+ *     cette racine réexporte schema.ts, donc zod, dans le bundle navigateur
  *   - backend/src/modules/seo-monitoring/controllers/cwv-beacon.controller.ts
  *     (validation + classification + INSERT)
  *

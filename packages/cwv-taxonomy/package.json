@@ -9,6 +9,26 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.js"
+    },
+    "./surface": {
+      "types": "./dist/surface.d.ts",
+      "import": "./dist/surface.js",
+      "require": "./dist/surface.js"
+    },
+    "./priority-tier": {
+      "types": "./dist/priority-tier.d.ts",
+      "import": "./dist/priority-tier.js",
+      "require": "./dist/priority-tier.js"
+    },
+    "./route-group": {
+      "types": "./dist/route-group.d.ts",
+      "import": "./dist/route-group.js",
+      "require": "./dist/route-group.js"
+    },
+    "./metric": {
+      "types": "./dist/metric.d.ts",
+      "import": "./dist/metric.js",
+      "require": "./dist/metric.js"
     }
   },
   "scripts": {
