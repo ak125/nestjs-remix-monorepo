@@ -525,7 +525,7 @@
         "packages/cwv-taxonomy/src/__tests__"
       ],
       "files_count": 12,
-      "loc_total": 1327,
+      "loc_total": 1419,
       "has_barrel": true
     },
     "pkg-database-types": {
