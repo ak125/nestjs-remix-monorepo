@@ -147,6 +147,10 @@ interface FakeGoogle {
   /** Jours signalés avec données par la sonde mais vides en requête finale. */
   finalEmpty: Set<string>;
   failQuery: ((body: any) => any) | null;
+  /** Jours dont la requête `page` (byPage) revient vide malgré un total > 0. */
+  emptyPageGrain: Set<string>;
+  /** Jours dont une clé `page` renvoyée est hors contrat (pas une URL). */
+  badPageKey: Set<string>;
   calls: any[];
 }
 const mockGoogle: FakeGoogle = {
@@ -154,6 +158,8 @@ const mockGoogle: FakeGoogle = {
   firstIncompleteDate: null,
   finalEmpty: new Set(),
   failQuery: null,
+  emptyPageGrain: new Set(),
+  badPageKey: new Set(),
   calls: [],
 };
 
@@ -219,13 +225,19 @@ function mockQuery({ requestBody: body }: { requestBody: any }) {
       position: 20,
     }));
   } else if (key === 'page') {
-    rows = day.pages.map((p) => ({
-      keys: [p.page],
-      clicks: p.clicks,
-      impressions: p.impressions,
-      ctr: ctr(p.clicks, p.impressions),
-      position: 9,
-    }));
+    rows = mockGoogle.emptyPageGrain.has(body.startDate)
+      ? []
+      : day.pages.map((p, i) => ({
+          keys: [
+            mockGoogle.badPageKey.has(body.startDate) && i === 0
+              ? '/pieces/sans-origine.html'
+              : p.page,
+          ],
+          clicks: p.clicks,
+          impressions: p.impressions,
+          ctr: ctr(p.clicks, p.impressions),
+          position: 9,
+        }));
   } else if (key === 'page,query,device') {
     rows = day.pages.slice(0, 1).map((p) => ({
       keys: [p.page, 'capteur abs', 'MOBILE'],
@@ -347,6 +359,8 @@ beforeEach(() => {
   mockGoogle.firstIncompleteDate = '2026-09-09';
   mockGoogle.finalEmpty = new Set();
   mockGoogle.failQuery = null;
+  mockGoogle.emptyPageGrain = new Set();
+  mockGoogle.badPageKey = new Set();
   mockGoogle.calls = [];
   for (const d of [
     '2026-08-30',
@@ -620,6 +634,88 @@ describe('GscDailyFetcherService.fetchAndPersistMultiGrain', () => {
         (x) => x.date === '2026-09-01',
       ),
     ).toBe(true);
+  });
+
+  it('récupération du grain page incomplète (0 ligne byPage, total > 0) : rien écrit, ancien commit intact, finalité non prouvée', async () => {
+    commitMarker('2026-09-07');
+    commitAllCandidatesExcept('none');
+    mockGoogle.emptyPageGrain = new Set(['2026-09-07']);
+    const { svc } = await build();
+    const r = await svc.fetchAndPersistMultiGrain({ date: ANCHOR });
+    expect(
+      mockDb.writes.filter((w) => w.dates.includes('2026-09-07')),
+    ).toHaveLength(0);
+    expect(r.dates!.ingested).toEqual(['2026-09-08']);
+    expect(r.dates!.finalityUnknown).toEqual(['2026-09-07']);
+    expect(r.warnings).toContain('final_rows_missing:2026-09-07:page_totals');
+    expect(
+      rowsOf('__seo_gsc_daily_property_total').find(
+        (x) => x.date === '2026-09-07',
+      ),
+    ).toMatchObject({ commit_version: 1, clicks: 1, impressions: 100 });
+  });
+
+  it('ligne page hors contrat (clé non URL) : grain certifié non persisté, run arrêté en schema_drift, 0 écriture du jour', async () => {
+    commitAllCandidatesExcept('none');
+    mockGoogle.badPageKey = new Set(['2026-09-07']);
+    const { svc, runs } = await build();
+    await expect(
+      svc.fetchAndPersistMultiGrain({ date: ANCHOR }),
+    ).rejects.toThrow('page_totals');
+    expect(mockDb.writes).toHaveLength(0);
+    expect(runs.logFailed.mock.calls[0][1].errorClass).toBe('schema_drift');
+  });
+
+  it('panne API sur le dernier grain lu : AUCUNE écriture du jour (lecture complète avant écriture), ancien commit intact', async () => {
+    commitMarker('2026-09-07');
+    commitAllCandidatesExcept('none');
+    mockGoogle.failQuery = (body) =>
+      body.startDate === '2026-09-07' &&
+      (body.dimensions ?? []).join(',') === 'page,query,device'
+        ? Object.assign(new Error('Backend Error'), { status: 503 })
+        : null;
+    const { svc } = await build();
+    const r = await svc.fetchAndPersistMultiGrain({ date: ANCHOR });
+    expect(r.dates!.failed).toEqual([
+      expect.objectContaining({ date: '2026-09-07', errorClass: 'network' }),
+    ]);
+    expect(
+      mockDb.writes.filter((w) => w.dates.includes('2026-09-07')),
+    ).toHaveLength(0);
+    expect(
+      rowsOf('__seo_gsc_daily_property_total').find(
+        (x) => x.date === '2026-09-07',
+      ),
+    ).toMatchObject({ commit_version: 1 });
+  });
+
+  it('écart d’agrégation GSC (Σ byPage < seuil de signal) avec grain récupéré en entier : jour commité, signalé comme limite GSC et non comme trou', async () => {
+    commitAllCandidatesExcept('none');
+    mockGoogle.days['2026-09-08'] = {
+      clicks: 80,
+      impressions: 5500,
+      pages: [
+        {
+          page: 'https://www.automecanik.com/pieces/a.html',
+          clicks: 40,
+          impressions: 2000,
+        },
+      ],
+    };
+    const { svc } = await build();
+    const r = await svc.fetchAndPersistMultiGrain({ date: ANCHOR });
+    expect(r.dates!.ingested).toContain('2026-09-08');
+    expect(
+      rowsOf('__seo_gsc_daily_property_total').find(
+        (x) => x.date === '2026-09-08',
+      ),
+    ).toMatchObject({ commit_version: 1 });
+    expect(r.warnings).toContain('gsc_detail_below_signal:2026-09-08');
+    expect(r.warnings.some((w) => w.startsWith('coverage_'))).toBe(false);
+    expect(r.coverage!.find((c) => c.date === '2026-09-08')).toMatchObject({
+      grain: 'page_totals',
+      pagesVsPropertyClicks: 0.5,
+    });
   });
 
   it('retrait du marqueur en échec : aucun grain écrit pour ce jour, ancien commit intact, jour en échec', async () => {

@@ -23,6 +23,9 @@
  *    laisse le jour non commité → replanifié au run suivant. Le marqueur d'un
  *    jour déjà commité est RETIRÉ avant la 1re écriture de grain (reprise
  *    interrompue ≠ jour certifié par l'ancienne ligne).
+ *  - Les 5 grains sont LUS avant toute écriture : panne API, ligne page hors
+ *    contrat ou grain page vide (propriété > 0) → base intacte. L'écart
+ *    d'agrégation byPage/propriété est une limite GSC signalée, jamais un trou.
  *  - `dryRun` / `planOnly` : AUCUNE écriture, journal compris (avant : le journal
  *    `__seo_event_log` était écrit même en dry-run).
  *  - `fetched_at` rafraîchi à chaque upsert (avant : date du 1er insert seulement).
@@ -190,6 +193,8 @@ type GscDimension = 'page' | 'query' | 'device' | 'country' | 'date';
 
 interface DayOutcome {
   status: 'ingested' | 'final_rows_missing';
+  /** Grain dont la requête finale est revenue vide (status final_rows_missing). */
+  missingGrain?: 'property_total' | 'page_totals';
   grains: GscGrainResult[];
   coverage: GscCoverageResult | null;
   segmentedCoverage: GscCoverageResult | null;
@@ -494,21 +499,28 @@ export class GscDailyFetcherService {
         result.warnings.push(`schema_rejects:${date}=${day.schemaRejects}`);
       }
       if (day.status === 'final_rows_missing') {
-        // Données annoncées par la sonde mais requête finale vide : finalité
-        // non prouvée → rien écrit, jour replanifié.
+        // Données annoncées mais requête finale vide (total, ou grain page alors
+        // que la propriété a des impressions) : finalité / récupération non
+        // prouvée → rien écrit, jour replanifié.
         report.finalityUnknown.push(date);
-        result.warnings.push(`final_rows_missing:${date}`);
+        result.warnings.push(
+          day.missingGrain === 'page_totals'
+            ? `final_rows_missing:${date}:page_totals`
+            : `final_rows_missing:${date}`,
+        );
         return;
       }
       report.ingested.push(date);
       if (day.coverage) {
         result.coverage!.push(day.coverage);
-        if (day.coverage.status !== 'ok') {
-          // No silent fallback : un gap de couverture du grain fidèle est observable.
+        if (day.coverage.status === 'coverage_gap') {
+          // Limite / perte de détail côté GSC (agrégation byPage ≠ propriété) :
+          // observable mais NON bloquante — le grain page a été récupéré en
+          // entier (contrôlé en lecture), le jour est commité.
           this.logger.warn(
-            `⚠️ GSC coverage ${date}: ${day.coverage.status} (page_totals/total clics=${day.coverage.pagesVsPropertyClicks ?? 'n/a'}, impr=${day.coverage.pagesVsPropertyImpr ?? 'n/a'}, min=${day.coverage.minRatio})`,
+            `⚠️ GSC ${date}: écart d'agrégation byPage/propriété sous le seuil de signal (clics=${day.coverage.pagesVsPropertyClicks ?? 'n/a'}, impr=${day.coverage.pagesVsPropertyImpr ?? 'n/a'}, seuil=${day.coverage.minRatio}) — limite GSC, jour commité`,
           );
-          result.warnings.push(`coverage_${day.coverage.status}:${date}`);
+          result.warnings.push(`gsc_detail_below_signal:${date}`);
         }
       }
       if (day.segmentedCoverage) {
@@ -529,7 +541,17 @@ export class GscDailyFetcherService {
     }
   }
 
-  /** Un jour : les 5 grains, couverture, puis marqueur de commit en dernier. */
+  /**
+   * Un jour, en deux temps :
+   *  1. LECTURE des 5 grains, sans aucune écriture. Une panne API, une ligne du
+   *     grain page certifié hors contrat ou un grain page vide alors que la
+   *     propriété a des impressions laissent la base intacte (ancien état,
+   *     ancien commit éventuel compris).
+   *  2. ÉCRITURE : retrait du marqueur, grains, puis property_total + marqueur
+   *     EN DERNIER (commit seulement si tout a été persisté).
+   * Récupération du grain page (réussite du niveau demandé) ≠ écart d'agrégation
+   * byPage/propriété (limite GSC, signalée mais non bloquante).
+   */
   private async fetchDay(
     sc: searchconsole_v1.Searchconsole,
     siteUrl: string,
@@ -540,22 +562,24 @@ export class GscDailyFetcherService {
     let apiCalls = 0;
     let schemaRejects = 0;
     const grains: GscGrainResult[] = [];
+    const rowsMissing = (
+      missingGrain: 'property_total' | 'page_totals',
+    ): DayOutcome => ({
+      status: 'final_rows_missing',
+      missingGrain,
+      grains,
+      coverage: null,
+      segmentedCoverage: null,
+      apiCalls,
+      schemaRejects,
+    });
 
-    // 1) property_total (aucune dimension → 1 ligne agrégée), requête `final`.
-    //    Lu d'abord (couverture), écrit en DERNIER (marqueur de commit).
+    // ── 1. LECTURE ────────────────────────────────────────────────────────
+    // property_total (aucune dimension → 1 ligne agrégée), requête `final`.
     const ptRaw = await this.query(sc, siteUrl, date, [], rowLimit);
     apiCalls += ptRaw.apiCalls;
     const ptRow = ptRaw.rows[0];
-    if (!ptRow) {
-      return {
-        status: 'final_rows_missing',
-        grains,
-        coverage: null,
-        segmentedCoverage: null,
-        apiCalls,
-        schemaRejects,
-      };
-    }
+    if (!ptRow) return rowsMissing('property_total');
     const ptParsed = GSCDailyPropertyTotalRowSchema.safeParse({
       date,
       clicks: ptRow.clicks ?? 0,
@@ -570,11 +594,7 @@ export class GscDailyFetcherService {
     }
     const propertyTotal: GSCDailyPropertyTotalRow = ptParsed.data;
 
-    // Avant la 1re écriture de grain : une reprise interrompue ne doit pas rester
-    // certifiée par la ligne property_total d'un run antérieur.
-    await this.uncommitDay(date, ctx);
-
-    // 2) totals (date+country+device)
+    // totals (date+country+device)
     const tRaw = await this.query(
       sc,
       siteUrl,
@@ -598,19 +618,8 @@ export class GscDailyFetcherService {
       if (parsed.success) totalsRows.push(parsed.data);
       else schemaRejects += 1;
     }
-    grains.push({
-      grain: 'totals',
-      rowsFetched: tRaw.rows.length,
-      rowsInserted: await this.upsert(
-        '__seo_gsc_daily_totals',
-        totalsRows,
-        'date,country,device',
-        ctx,
-      ),
-      schemaRejects: tRaw.rows.length - totalsRows.length,
-    });
 
-    // 3) pages (date+page+country+device) — détail segmenté, LOSSY
+    // pages (date+page+country+device) — détail segmenté, LOSSY
     const pRaw = await this.query(
       sc,
       siteUrl,
@@ -635,6 +644,56 @@ export class GscDailyFetcherService {
       if (parsed.success) pageRows.push(parsed.data);
       else schemaRejects += 1;
     }
+
+    // page_totals (date+page, agrégation byPage) — grain page FIDÈLE, lu par
+    // rpc_seo_low_ctr_v4 : récupération complète exigée avant toute écriture.
+    const ptPagesRaw = await this.query(sc, siteUrl, date, ['page'], rowLimit, {
+      aggregationType: 'byPage',
+    });
+    apiCalls += ptPagesRaw.apiCalls;
+    const pageTotalRows: GSCDailyPageTotalsRow[] = [];
+    const pageTotalIssues: string[] = [];
+    for (const r of ptPagesRaw.rows) {
+      const parsed = GSCDailyPageTotalsRowSchema.safeParse({
+        date,
+        page: r.keys?.[0] ?? '',
+        clicks: r.clicks ?? 0,
+        impressions: r.impressions ?? 0,
+        ctr: r.ctr ?? 0,
+        position: r.position ?? 0,
+      });
+      if (parsed.success) pageTotalRows.push(parsed.data);
+      else pageTotalIssues.push(parsed.error.issues[0]?.message ?? 'invalide');
+    }
+    if (pageTotalIssues.length > 0) {
+      throw new IngestionSchemaError(
+        `page_totals ${date} hors contrat : ${pageTotalIssues.length} ligne(s) rejetée(s) sur ${ptPagesRaw.rows.length} (${pageTotalIssues[0]})`,
+      );
+    }
+    if (propertyTotal.impressions > 0 && pageTotalRows.length === 0) {
+      return rowsMissing('page_totals');
+    }
+
+    // queries (legacy, détail secondaire)
+    const q = await this.fetchQueryGrainRows(sc, siteUrl, date, rowLimit);
+    apiCalls += q.apiCalls;
+
+    // ── 2. ÉCRITURE ───────────────────────────────────────────────────────
+    // Avant la 1re écriture de grain : une reprise interrompue ne doit pas rester
+    // certifiée par la ligne property_total d'un run antérieur.
+    await this.uncommitDay(date, ctx);
+
+    grains.push({
+      grain: 'totals',
+      rowsFetched: tRaw.rows.length,
+      rowsInserted: await this.upsert(
+        '__seo_gsc_daily_totals',
+        totalsRows,
+        'date,country,device',
+        ctx,
+      ),
+      schemaRejects: tRaw.rows.length - totalsRows.length,
+    });
     grains.push({
       grain: 'pages',
       rowsFetched: pRaw.rows.length,
@@ -646,25 +705,6 @@ export class GscDailyFetcherService {
       ),
       schemaRejects: pRaw.rows.length - pageRows.length,
     });
-
-    // 4) page_totals (date+page, agrégation byPage) — grain page FIDÈLE
-    const ptPagesRaw = await this.query(sc, siteUrl, date, ['page'], rowLimit, {
-      aggregationType: 'byPage',
-    });
-    apiCalls += ptPagesRaw.apiCalls;
-    const pageTotalRows: GSCDailyPageTotalsRow[] = [];
-    for (const r of ptPagesRaw.rows) {
-      const parsed = GSCDailyPageTotalsRowSchema.safeParse({
-        date,
-        page: r.keys?.[0] ?? '',
-        clicks: r.clicks ?? 0,
-        impressions: r.impressions ?? 0,
-        ctr: r.ctr ?? 0,
-        position: r.position ?? 0,
-      });
-      if (parsed.success) pageTotalRows.push(parsed.data);
-      else schemaRejects += 1;
-    }
     grains.push({
       grain: 'page_totals',
       rowsFetched: ptPagesRaw.rows.length,
@@ -674,12 +714,8 @@ export class GscDailyFetcherService {
         'date,page',
         ctx,
       ),
-      schemaRejects: ptPagesRaw.rows.length - pageTotalRows.length,
+      schemaRejects: 0,
     });
-
-    // 5) queries (legacy, détail secondaire)
-    const q = await this.fetchQueryGrainRows(sc, siteUrl, date, rowLimit);
-    apiCalls += q.apiCalls;
     grains.push({
       grain: 'queries',
       rowsFetched: q.rows.length,
@@ -692,7 +728,7 @@ export class GscDailyFetcherService {
       schemaRejects: 0,
     });
 
-    // Couvertures GLOBALES (pures) : grain fidèle (alerte) + segmenté (info).
+    // Écarts d'agrégation (purs, information) : grain fidèle + segmenté.
     const coverage = computeGlobalCoverage(
       date,
       propertyTotal,
@@ -708,8 +744,8 @@ export class GscDailyFetcherService {
       'segmented_pages',
     );
 
-    // 6) property_total EN DERNIER + marqueur : le jour n'est commité que si
-    //    tous les grains précédents ont été persistés sans erreur.
+    // property_total EN DERNIER + marqueur : le jour n'est commité que si
+    // tous les grains précédents ont été persistés sans erreur.
     grains.push({
       grain: 'property_total',
       rowsFetched: ptRaw.rows.length,

@@ -135,10 +135,13 @@ export type GscGrain = (typeof GSC_GRAIN)[number];
 export const GSC_INGEST_COMMIT_VERSION = 1;
 
 /**
- * Plancher de couverture du grain page fidèle (Σpage_totals / property_total,
- * clics ET impressions). Défaut du paramètre gouverné
- * `SEO_GSC_PAGE_TOTALS_MIN_RATIO`, partagé par le fetcher et le Command Center.
- * Mesuré : clics 1,00, impressions ≈ 1,04 ; les grains lossy tombent à 0,07–0,44.
+ * Seuil de SIGNAL de l'écart d'agrégation du grain page fidèle
+ * (Σpage_totals / property_total, clics ET impressions). Défaut du paramètre
+ * gouverné `SEO_GSC_PAGE_TOTALS_MIN_RATIO`, lu par le fetcher uniquement.
+ * NON bloquant et hors certification : byPage et propriété sont deux agrégations
+ * GSC différentes (aucune égalité attendue ; ≈ 1 n'est pas une preuve). La
+ * certification repose sur les jours commités et la récupération complète du
+ * grain (contrôlée par le fetcher). Mesuré : clics 1,00, impressions ≈ 1,04.
  */
 export const GSC_PAGE_TOTALS_MIN_RATIO_DEFAULT = 0.9;
 
