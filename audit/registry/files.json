@@ -5798,7 +5798,7 @@
         "frontend/index.cjs"
       ],
       "kind": "service",
-      "loc": 300,
+      "loc": 301,
       "owner": "__unassigned__",
       "path": "backend/src/main.ts",
       "risk": "low",
@@ -38800,7 +38800,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 279,
+      "loc": 280,
       "owner": "__unassigned__",
       "path": "backend/wait-and-start.js",
       "risk": "low",
@@ -49661,7 +49661,7 @@
         "~/utils/logger"
       ],
       "kind": "config",
-      "loc": 232,
+      "loc": 198,
       "owner": "__unassigned__",
       "path": "frontend/app/hooks/useEnhancedSearch.ts",
       "risk": "low",
@@ -61348,7 +61348,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 75,
+      "loc": 132,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/use-enhanced-search.test.ts",
       "risk": "low",
@@ -67132,6 +67132,25 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/ops/dev-compile-watch.js",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 68,
+      "owner": "__unassigned__",
+      "path": "scripts/ops/dev-compile-watch.js",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",

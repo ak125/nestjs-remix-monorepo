@@ -48,7 +48,7 @@ Les fichiers `modules/*.md` ont tous une section `Rôle` / `Pourquoi` /
 | Module | Rôle principal | Criticité |
 |---|---|---|
 | [payments](modules/payments.md) | Passerelles Paybox + SystemPay (HMAC, callbacks, RSA) | **HIGH** — sécurité |
-| [rag-proxy](modules/rag-proxy.md) | Pipeline RAG, ingestion, search, circuit breaker | **HIGH** — coeur IA |
+| [rag-proxy](modules/rag-proxy.md) | Chat et recherche RAG, consommateur du WIKI validé | **HIGH** — coeur IA |
 | [seo](modules/seo.md) | SEO V4 Ultimate, DynamicSeo, sitemap, JSON-LD | **HIGH** — trafic |
 | [admin](modules/admin.md) | Dashboard, SEO tooling, gammes, content-refresh | **HIGH** — outillage interne |
 | [auth](modules/../../rules/backend.md) | Sessions Redis, bcrypt+MD5, JWT admin (voir rules/) | **HIGH** — sécurité |
@@ -131,8 +131,10 @@ Ce dossier `knowledge/` est le miroir *code applicatif*, pas le vault.
 
 ## Maintenance
 
-- Auto-refresh du bloc `<!-- AUTO-GENERATED -->` + frontmatter à chaque commit via `.husky/pre-commit`
-- Audit manuel : `python3 scripts/knowledge/refresh-knowledge.py refresh`
+- Contrôle de fraîcheur avant commit : `.husky/pre-commit` vérifie les projections des modules affectés à partir des sources et documents **dans l'index Git**, sans modifier de fichier ni ajouter de contenu au commit. Python3 et PyYAML sont requis pour ce périmètre ; un contrôle impossible ou une dérive bloque le commit.
+- Correction ciblée : `python3 scripts/knowledge/refresh-knowledge.py refresh --module rag-proxy`, puis relire le diff et sélectionner explicitement les changements avec Git. Cette commande ne reconstruit pas `REPO_MAP.md`. Une projection inchangée conserve sa date ; les noms exportés/providers sont aussi rafraîchis.
+- Contrôle manuel de l'index : `python3 scripts/knowledge/refresh-knowledge.py refresh --check-staged`. Les renommages/suppressions de fichiers TS sont couverts ; une documentation conservée après suppression de son module demande une revue. La création d'une documentation absente reste explicite via bootstrap.
+- Rafraîchissement global manuel : `python3 scripts/knowledge/refresh-knowledge.py refresh` (inclut `REPO_MAP.md`). `--headers-only` reste disponible manuellement mais ne remet pas à jour le bloc généré.
 - Audit complet : `python3 scripts/knowledge/refresh-knowledge.py bootstrap` (recrée les manquants, ne touche pas l'humain)
 
 ---

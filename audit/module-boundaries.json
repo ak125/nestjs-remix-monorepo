@@ -91,7 +91,7 @@
         "backend/src/utils"
       ],
       "files_count": 35,
-      "loc_total": 6159,
+      "loc_total": 6160,
       "has_barrel": true
     },
     "blog": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 597,
-      "loc_total": 113593,
+      "loc_total": 113559,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -687,6 +687,7 @@
         "scripts/governance/__tests__",
         "scripts/marketing",
         "scripts/mcp-server",
+        "scripts/ops",
         "scripts/registry",
         "scripts/registry/lib",
         "scripts/testing",
@@ -699,8 +700,8 @@
         "scripts/wiki-generators",
         "scripts/wiki-generators/__tests__"
       ],
-      "files_count": 175,
-      "loc_total": 36220,
+      "files_count": 176,
+      "loc_total": 36288,
       "has_barrel": true
     },
     "search": {
@@ -957,7 +958,7 @@
         "tests/registry"
       ],
       "files_count": 235,
-      "loc_total": 42280,
+      "loc_total": 42338,
       "has_barrel": true
     },
     "upload": {

@@ -395,6 +395,51 @@ wait "$WPID" 2>/dev/null
 exec 7>&-
 rm -rf "$WS"
 
+# scripts/ops/dev-compile-watch.js (dev:compile du stack DEV) : UN seul processus compile et
+# réécrit les @alias en chemins relatifs. Bac à sable : mini-projet TypeScript avec un alias,
+# node_modules symlinké vers le repo (mêmes typescript et tsc-alias que le backend).
+DW=$(mktemp -d)
+mkdir -p "$DW/src/common"
+# node_modules du dépôt (un worktree n'en a pas : on remonte jusqu'au checkout qui en a un).
+DW_NM=""; d="$REPO_ROOT"
+while [ "$d" != "/" ]; do [ -d "$d/node_modules/typescript" ] && { DW_NM="$d/node_modules"; break; }; d=$(dirname "$d"); done
+[ -n "$DW_NM" ] || { FAIL=$((FAIL + 1)); FAILED_TESTS+=("dev-compile-watch : node_modules introuvable (npm ci requis)"); echo "  FAIL: dev-compile-watch : node_modules introuvable (npm ci requis)"; }
+ln -s "$DW_NM" "$DW/node_modules"
+cp "$REPO_ROOT/scripts/ops/dev-compile-watch.js" "$DW/"
+cat > "$DW/tsconfig.json" <<'TSCONFIG'
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "ES2022",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "skipLibCheck": true,
+    "types": [],
+    "paths": { "@common/*": ["./src/common/*"] }
+  },
+  "include": ["src/**/*.ts"]
+}
+TSCONFIG
+printf 'import { greet } from "@common/greet";\nexport const hello = greet("dev");\n' > "$DW/src/main.ts"
+printf 'export const greet = (name: string) => `bonjour ${name}`;\n' > "$DW/src/common/greet.ts"
+dw_wait() { local i; for i in $(seq $(( ${2:-30} * 10 ))); do grep -q "$1" "$DW/dist/main.js" 2>/dev/null && return 0; sleep 0.1; done; return 1; }
+dw_residuals() { grep -rlE 'require\("@common/' --include='*.js' "$DW/dist" 2>/dev/null | wc -l; }
+(cd "$DW" && exec node dev-compile-watch.js > "$DW/out" 2>&1) &
+DWPID=$!
+dw_wait 'require("./common/greet")' 90
+assert_contains "dev-compile-watch : premier cycle, alias réécrit en relatif" 'require("./common/greet")' "$(cat "$DW/dist/main.js" 2>/dev/null)"
+# Pas de second écrivain sur dist/ : le processus de compilation n'a aucun enfant.
+assert_contains "dev-compile-watch : aucun second processus lancé (pas de watcher séparé)" "^0$" "$(pgrep -P "$DWPID" 2>/dev/null | wc -l)"
+printf 'export const extra = "x";\n' > "$DW/src/common/extra.ts"
+printf 'import { extra } from "@common/extra";\nexport const e = extra;\n' >> "$DW/src/main.ts"
+dw_wait 'require("./common/extra")' 90
+assert_contains "dev-compile-watch : module ajouté en cours de session, alias résolu" 'require("./common/extra")' "$(cat "$DW/dist/main.js" 2>/dev/null)"
+assert_contains "dev-compile-watch : aucun @alias résiduel dans dist" "^0$" "$(dw_residuals)"
+assert_contains "dev-compile-watch : le processus unique survit aux cycles" "vivant" "$(kill -0 "$DWPID" 2>/dev/null && echo vivant || echo mort)"
+kill "$DWPID" 2>/dev/null
+wait "$DWPID" 2>/dev/null
+rm -rf "$DW"
+
 # ============================================================
 # Hook 3 : stop-claude-md-suggest.sh
 # ============================================================

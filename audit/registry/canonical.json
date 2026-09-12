@@ -33194,7 +33194,7 @@
         "frontend/index.cjs"
       ],
       "kind": "service",
-      "loc": 300,
+      "loc": 301,
       "owner": "__unassigned__",
       "path": "backend/src/main.ts",
       "risk": "low",
@@ -67386,7 +67386,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 279,
+      "loc": 280,
       "owner": "__unassigned__",
       "path": "backend/wait-and-start.js",
       "risk": "low",
@@ -78682,7 +78682,7 @@
         "~/utils/logger"
       ],
       "kind": "config",
-      "loc": 232,
+      "loc": 198,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/hooks/useEnhancedSearch.ts",
       "risk": "low",
@@ -90795,7 +90795,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 75,
+      "loc": 132,
       "owner": "@ak125",
       "path": "frontend/tests/unit/use-enhanced-search.test.ts",
       "risk": "medium",
@@ -96886,6 +96886,26 @@
         "depcruise",
         "manual"
       ],
+      "domain": "D13",
+      "id": "scripts/ops/dev-compile-watch.js",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 68,
+      "owner": "@ak125",
+      "path": "scripts/ops/dev-compile-watch.js",
+      "risk": "high",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
       "domain": "D15",
       "id": "scripts/registry/build-canonical-registry.js",
       "importedBy": [],
@@ -99032,11 +99052,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "d2562814b938caeca897c78a440e7e949bd5ee88311c72cf0cf9b36fd21ddb07",
       "audit/registry/deps.json": "28f63bf4383ddec90e009095ddc11db9298b7cd92b52ceb234a3e6a2fd996f90",
-      "audit/registry/files.json": "8fd009ac2756d19791eeaa267cf776b20cbaa064a3e9c221f585fd444922f661",
+      "audit/registry/files.json": "a99ab4d23a54a6832c2c36aec71ddbdb582d21a02276a99c03c80e06c167ac8a",
       "audit/registry/rpc.json": "dc4ad60e799d63c28c7e739134dcfde40b60b889a3b538ff23d4235e39245a18",
       "audit/registry/runtime.json": "6eac2f9390d957b35b36a266be34f33c97a323d7963c024207c319e953d0fdb7"
     },
-    "sotFingerprint": "ab3106272ef0"
+    "sotFingerprint": "ec0baa266d9e"
   },
   "runtime": [
     {

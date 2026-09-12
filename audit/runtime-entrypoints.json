@@ -2875,6 +2875,7 @@
       "scripts/governance/__tests__/build-command-center-snapshot.test.ts",
       "scripts/governance/build-command-center-snapshot.js",
       "scripts/governance/check-family-pr-scope.sh",
+      "scripts/ops/dev-compile-watch.js",
       "scripts/registry/build-canonical-registry.js",
       "scripts/registry/build-db-registry.js",
       "scripts/registry/build-dependency-graph.js",
@@ -2906,7 +2907,7 @@
       "tests/registry/rpc-parser.test.ts"
     ]
   },
-  "runtime_files_count": 1516,
+  "runtime_files_count": 1517,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4394,6 +4395,7 @@
     "scripts/governance/__tests__/build-command-center-snapshot.test.ts",
     "scripts/governance/build-command-center-snapshot.js",
     "scripts/governance/check-family-pr-scope.sh",
+    "scripts/ops/dev-compile-watch.js",
     "scripts/registry/build-canonical-registry.js",
     "scripts/registry/build-db-registry.js",
     "scripts/registry/build-dependency-graph.js",

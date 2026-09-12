@@ -113,20 +113,15 @@ if [ -n "$STAGED_MD" ]; then
   bash scripts/lint/check-preprod-vocabulary.sh $STAGED_MD || exit 1
 fi
 
-# Refresh auto-generated YAML frontmatter + AUTO-GENERATED blocks in
-# .claude/knowledge/modules/*.md so last_scan + primary_files stay honest.
-# Only touches files when the module .ts changed; otherwise no-op.
-# Soft-fail: a missing python3/pyyaml must NOT block a commit.
-if command -v python3 >/dev/null 2>&1 \
-   && python3 -c "import yaml" >/dev/null 2>&1 \
-   && [ -f scripts/knowledge/refresh-knowledge.py ]; then
-  # Headers-only: fast path for commit time. Full refresh remains manual.
-  python3 scripts/knowledge/refresh-knowledge.py refresh --headers-only >/dev/null 2>&1 || true
-  # If any knowledge/ files were changed, stage them so they ride along.
-  CHANGED=$(git diff --name-only -- '.claude/knowledge/' || true)
-  if [ -n "$CHANGED" ]; then
-    git add $CHANGED 2>/dev/null || true
+# Validate affected projections BEFORE regeneration, using staged source/docs only.
+# Never rewrite knowledge files or stage unrelated operator edits from this hook.
+if git diff --cached --name-only --no-renames \
+   | grep -qE '^(backend/src/modules/.*\.ts|\.claude/knowledge/modules/[^/]+\.md)$'; then
+  if ! command -v python3 >/dev/null 2>&1 || ! python3 -c "import yaml" >/dev/null 2>&1; then
+    echo "ERROR: knowledge freshness check requires python3 and pyyaml."
+    exit 1
   fi
+  python3 scripts/knowledge/refresh-knowledge.py refresh --check-staged || exit 1
 fi
 
 # Guard the churn-preservation logic itself: when a scripts/knowledge/*.py file
@@ -141,7 +136,7 @@ if git diff --cached --name-only --diff-filter=ACMR | grep -qE '^scripts/knowled
     python3 scripts/knowledge/test_refresh_knowledge.py || {
       echo ""
       echo "ERROR: scripts/knowledge/test_refresh_knowledge.py failed."
-      echo "The headers-only last_scan preservation invariant is broken — fix it"
+      echo "Knowledge projection freshness or no-churn invariant is broken — fix it"
       echo "before committing (this guards the daily knowledge-module churn)."
       exit 1
     }
