@@ -14,7 +14,11 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { useEnhancedSearch } from "~/hooks/useEnhancedSearch";
+import {
+  useEnhancedAutocomplete,
+  useEnhancedSearch,
+  useEnhancedSearchWithDebounce,
+} from "~/hooks/useEnhancedSearch";
 
 function jsonResponse(body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -32,15 +36,53 @@ describe("useEnhancedSearch", () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
 
-  it("does not call the disabled /api/search-existing/autocomplete route and returns []", async () => {
-    const { result } = renderHook(() => useEnhancedSearch());
-    // Flush the mount-time `loadMetrics` effect so its setState runs inside act.
+  it("does not request unused metrics when mounted", async () => {
+    const { unmount } = renderHook(() => useEnhancedSearch());
     await act(async () => {});
 
+    expect(fetchSpy).not.toHaveBeenCalled();
+    unmount();
+  });
+
+  it("only requests a real search after the debounce delay", async () => {
+    vi.useFakeTimers();
+    const { result, unmount } = renderHook(() =>
+      useEnhancedSearchWithDebounce("", 300),
+    );
+    await act(async () => {});
+    expect(fetchSpy).not.toHaveBeenCalled();
+
+    act(() => result.current.setQuery("plaquette"));
+    await act(async () => vi.advanceTimersByTimeAsync(299));
+    expect(fetchSpy).not.toHaveBeenCalled();
+    await act(async () => vi.advanceTimersByTimeAsync(1));
+
+    expect(fetchSpy).toHaveBeenCalledExactlyOnceWith(
+      "/api/search-existing/search?query=plaquette",
+    );
+    unmount();
+  });
+
+  it("does not request metrics or disabled suggestions through autocomplete", async () => {
+    vi.useFakeTimers();
+    const { result, unmount } = renderHook(() =>
+      useEnhancedAutocomplete("plaquette", 300),
+    );
+    await act(async () => vi.advanceTimersByTimeAsync(300));
+
+    expect(result.current.suggestions).toEqual([]);
+    expect(result.current.loading).toBe(false);
+    expect(fetchSpy).not.toHaveBeenCalled();
+    unmount();
+  });
+
+  it("does not call the disabled /api/search-existing/autocomplete route and returns []", async () => {
+    const { result } = renderHook(() => useEnhancedSearch());
     const suggestions = await result.current.autocomplete("90915YZZM3");
 
     expect(suggestions).toEqual([]);
@@ -70,5 +112,20 @@ describe("useEnhancedSearch", () => {
       String(url).includes("/api/search-existing/search"),
     );
     expect(searchCalls).toHaveLength(1);
+  });
+
+  it("keeps search failures observable and clears the loading state", async () => {
+    fetchSpy.mockResolvedValue(new Response(null, { status: 503 }));
+    const { result, unmount } = renderHook(() => useEnhancedSearch());
+    await act(async () => {
+      expect(await result.current.search({ query: "plaquette" })).toBeNull();
+    });
+
+    expect(result.current.error).toContain("503");
+    expect(result.current.loading).toBe(false);
+    expect(fetchSpy).toHaveBeenCalledExactlyOnceWith(
+      "/api/search-existing/search?query=plaquette",
+    );
+    unmount();
   });
 });
