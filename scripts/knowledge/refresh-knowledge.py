@@ -6,9 +6,9 @@ Modes
     bootstrap              Create missing .md files, never overwrite human edits.
     refresh                Rewrite only the `<!-- AUTO-GENERATED -->` block in
                            existing .md files. Idempotent.
-    --headers-only         Update the YAML frontmatter only. Fast; designed for
-                           the pre-commit hook.
+    --headers-only         Update the YAML frontmatter only (manual compatibility).
     --module NAME          Limit to a single module.
+    --check-staged         Check affected modules from the Git index, without writes.
 
 Non-goals
 ---------
@@ -22,6 +22,8 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+import subprocess
+import tempfile
 from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
@@ -101,7 +103,7 @@ def detect_modules(only: str | None = None) -> list[ModuleInfo]:
         module_file = mod_dir / f"{mod_dir.name}.module.ts"
         if not module_file.exists():
             # some folders use a different naming convention
-            candidates = list(mod_dir.glob("*.module.ts"))
+            candidates = sorted(mod_dir.glob("*.module.ts"))
             if not candidates:
                 continue
             module_file = candidates[0]
@@ -297,13 +299,7 @@ def process(mode: str, mods: Iterable[ModuleInfo], headers_only: bool) -> tuple[
                 print(f"SKIP     {mod.name} (no .md, use `bootstrap` mode to create)")
             continue
         existing = md_path.read_text(encoding="utf-8")
-        if headers_only:
-            # Pre-commit fast path: refresh frontmatter only, preserving last_scan
-            # when the module's derived content is unchanged (no daily churn).
-            new = replace_frontmatter(existing, mod, preserve_unchanged=True)
-        else:
-            # Full refresh: rewrite the AUTO block, then the frontmatter.
-            new = replace_frontmatter(replace_auto_block(existing, mod), mod)
+        new = refreshed_text(existing, mod, headers_only)
         if new != existing:
             md_path.write_text(new, encoding="utf-8")
             print(f"UPDATED  {_rel(md_path)}")
@@ -311,12 +307,106 @@ def process(mode: str, mods: Iterable[ModuleInfo], headers_only: bool) -> tuple[
     return created, updated
 
 
+def refreshed_text(existing: str, mod: ModuleInfo, headers_only: bool = False) -> str:
+    """Refresh derived content; an unchanged projection keeps its freshness date."""
+    if headers_only:
+        return replace_frontmatter(existing, mod, preserve_unchanged=True)
+    body = replace_auto_block(existing, mod)
+    return replace_frontmatter(body, mod, preserve_unchanged=(body == existing))
+
+
+def check_staged() -> int:
+    """Validate only affected, tracked projections against staged source files.
+
+    Worktree edits never enter the comparison or get staged by this command.
+    The temporary view contains only selected TypeScript paths and knowledge docs;
+    symlinks/unmerged entries fail explicitly. No REPO_MAP rebuild runs here.
+    """
+    global APP_ROOT
+    root = APP_ROOT
+    def git(*args: str) -> bytes:
+        return subprocess.check_output(['git', '-C', str(root), *args])
+
+    changed = git('diff', '--cached', '--name-only', '--no-renames', '-z').decode().split('\0')
+    selected: set[str] = set()
+    for name in changed:
+        parts = Path(name).parts
+        if len(parts) >= 5 and parts[:3] == ('backend', 'src', 'modules') and name.endswith('.ts'):
+            selected.add(parts[3])
+        elif len(parts) == 4 and parts[:3] == ('.claude', 'knowledge', 'modules') and name.endswith('.md'):
+            selected.add(Path(name).stem)
+    if not selected:
+        print('Knowledge check: no affected modules in the index.')
+        return 0
+
+    entries = {}
+    for record in git('ls-files', '--stage', '-z').decode().split('\0'):
+        if record:
+            meta, name = record.split('\t', 1)
+            mode, oid, stage = meta.split()
+            entries[name] = (mode, oid, stage)
+
+    failures = 0
+    # APP_ROOT is used by the existing renderer for relative paths. Restore it
+    # even on a failing Git read; this is a single-threaded CLI, not shared state.
+    global_root = APP_ROOT
+    try:
+        with tempfile.TemporaryDirectory(prefix='knowledge-index-') as directory:
+            view = Path(directory)
+            APP_ROOT = view
+            for module in sorted(selected):
+                doc_name = f'.claude/knowledge/modules/{module}.md'
+                if doc_name not in entries:
+                    print(f'SKIP {module}: no tracked projection in the index (bootstrap is explicit).')
+                    continue
+                prefix = f'backend/src/modules/{module}/'
+                names = [p for p in entries if p.startswith(prefix) and p.endswith('.ts')]
+                for name in [doc_name, *names]:
+                    mode, oid, stage = entries[name]
+                    if mode not in ('100644', '100755') or stage != '0':
+                        raise ValueError(f'Unsupported staged entry: {name}')
+                    dest = view / name
+                    dest.parent.mkdir(parents=True, exist_ok=True)
+                    # The analyzer reads module descriptors; primary files only
+                    # need their names. Nested TS file contents are not loaded.
+                    data = git('cat-file', 'blob', oid) if name == doc_name or Path(name).name.endswith('.module.ts') else b''
+                    dest.write_bytes(data)
+                mod_dir = view / prefix
+                descriptor = mod_dir / f'{module}.module.ts'
+                if not descriptor.exists():
+                    candidates = sorted(mod_dir.glob('*.module.ts'))
+                    if not candidates:
+                        print(f'DRIFT {doc_name}: module removed; review its retained documentation.', file=sys.stderr)
+                        failures += 1
+                        continue
+                    descriptor = candidates[0]
+                mod = analyze_module(mod_dir, descriptor)
+                existing = (view / doc_name).read_text(encoding='utf-8')
+                if refreshed_text(existing, mod) != existing:
+                    print(f'DRIFT {doc_name}: run refresh --module {module}, review and stage the projection.', file=sys.stderr)
+                    failures += 1
+    finally:
+        APP_ROOT = global_root
+    print(f'Knowledge check: {len(selected)} affected module(s), {failures} stale projection(s).')
+    return 1 if failures else 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("mode", choices=["bootstrap", "refresh"], help="bootstrap: create missing. refresh: only update AUTO blocks.")
     ap.add_argument("--module", help="Limit to one module name (directory name under backend/src/modules).")
-    ap.add_argument("--headers-only", action="store_true", help="Only refresh the YAML frontmatter. Fast path for pre-commit.")
+    ap.add_argument("--headers-only", action="store_true", help="Only refresh the YAML frontmatter (manual compatibility).")
+    ap.add_argument("--check-staged", action="store_true", help="Read-only freshness check from the Git index.")
     args = ap.parse_args()
+
+    if args.check_staged:
+        if args.mode != 'refresh' or args.headers_only or args.module:
+            ap.error('--check-staged requires refresh, without --headers-only or --module')
+        try:
+            return check_staged()
+        except (OSError, ValueError, subprocess.CalledProcessError) as exc:
+            print(f'Knowledge check failed: {exc}', file=sys.stderr)
+            return 1
 
     modules = detect_modules(only=args.module)
     if not modules:
@@ -330,7 +420,8 @@ def main() -> int:
     # is available. This crosses Python → Node via subprocess. No-op gracefully
     # if canonical.json absent (PR-E builds it ; in fresh checkouts before
     # `npm run registry` runs, the map just isn't refreshed yet).
-    _maybe_refresh_repo_map()
+    if not args.module:
+        _maybe_refresh_repo_map()
 
     return 0
 
