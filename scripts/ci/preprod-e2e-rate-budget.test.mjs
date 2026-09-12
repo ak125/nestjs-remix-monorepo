@@ -2,6 +2,13 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { waitForRateBudget } from "./preprod-e2e-rate-budget.mjs";
 
+const tiers = [
+  { name: "short", ttl: 1000 },
+  { name: "medium", ttl: 60_000 },
+  { name: "long", ttl: 3_600_000 },
+  { name: "payment_callback", ttl: 60_000 },
+];
+
 function response(overrides = {}) {
   const headers = {};
   for (const [tier, limit, reset] of [
@@ -23,6 +30,7 @@ function harness(responses) {
   const waits = [];
   return {
     options: {
+      tiers,
       probe: async () => {
         assert.ok(probes < responses.length, "unexpected setup request");
         return responses[probes++];
@@ -46,7 +54,7 @@ test("ready budget resets only the short window before returning to the test", a
   assert.equal(h.probes(), 1);
 });
 
-test("near-exhausted minute budget waits for the server reset, then rechecks", async () => {
+test("near-exhausted minute budget waits for its configured sliding TTL, then rechecks", async () => {
   const h = harness([
     response({
       "x-ratelimit-remaining-medium": "20",
@@ -55,7 +63,7 @@ test("near-exhausted minute budget waits for the server reset, then rechecks", a
     response(),
   ]);
   await waitForRateBudget(h.options);
-  assert.deepEqual(h.waits, [17_000, 1000]);
+  assert.deepEqual(h.waits, [60_000, 1000]);
 });
 
 test("all longer tiers participate, including the globally configured callback tier", async () => {
@@ -67,7 +75,7 @@ test("all longer tiers participate, including the globally configured callback t
     response(),
   ]);
   await waitForRateBudget(h.options);
-  assert.deepEqual(h.waits, [23_000, 1000]);
+  assert.deepEqual(h.waits, [60_000, 1000]);
 });
 
 test("setup 429 waits for the named tier rather than the generic error-page header", async () => {
@@ -125,10 +133,23 @@ test("429 without a named window fails instead of hiding unknown throttling", as
 test("transport failures propagate without a hidden retry", async () => {
   await assert.rejects(
     waitForRateBudget({
+      tiers,
       probe: async () => {
         throw new Error("connection reset");
       },
     }),
     /connection reset/,
   );
+});
+
+test("the idle duration follows the supplied policy instead of a copied minute constant", async () => {
+  const h = harness([
+    response({ "x-ratelimit-remaining-medium": "20" }),
+    response(),
+  ]);
+  h.options.tiers = tiers.map((tier) =>
+    tier.name === "medium" ? { ...tier, ttl: 5000 } : tier,
+  );
+  await waitForRateBudget(h.options);
+  assert.deepEqual(h.waits, [5000, 1000]);
 });

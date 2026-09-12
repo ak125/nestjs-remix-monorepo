@@ -217,7 +217,7 @@ jobs:
         run: node --test scripts/ci/prod-client-ip-probe.test.mjs
 
       - name: Test E2E rate-budget admission
-        run: node --test scripts/ci/preprod-e2e-rate-budget.test.mjs
+        run: node --test scripts/ci/preprod-e2e-rate-budget.test.mjs scripts/ci/preprod-e2e-rate-budget.storage.test.mjs
 
       - name: 🧪 Run backend tests
         run: cd backend && npx jest --ci --verbose --maxWorkers=1 --forceExit --coverage --coverageReporters=text-summary --coverageReporters=json-summary
