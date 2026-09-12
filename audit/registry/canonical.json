@@ -27831,6 +27831,7 @@
         "backend/src/common/guards/cloudflare-throttler.guard.ts",
         "backend/src/config/feature-flags.module.ts",
         "backend/src/config/logger.config.ts",
+        "backend/src/config/throttler-skip.config.ts",
         "backend/src/config/throttler-tiers.config.ts",
         "backend/src/config/write-guard.module.ts",
         "backend/src/controllers/analytics.controller.ts",
@@ -27870,7 +27871,6 @@
         "backend/src/modules/search/search.module.ts",
         "backend/src/modules/seo-control-plane/seo-control-plane.module.ts",
         "backend/src/modules/seo-control-plane/synthetic-probe-credential.module.ts",
-        "backend/src/modules/seo-control-plane/types.ts",
         "backend/src/modules/seo-monitoring/seo-monitoring.module.ts",
         "backend/src/modules/seo-projection/seo-projection.module.ts",
         "backend/src/modules/seo/seo.module.ts",
@@ -27893,7 +27893,7 @@
         "backend/src/workers/worker.module.ts"
       ],
       "kind": "service",
-      "loc": 273,
+      "loc": 222,
       "owner": "__unassigned__",
       "path": "backend/src/app.module.ts",
       "risk": "low",
@@ -29511,6 +29511,7 @@
       "importedBy": [
         "backend/src/app.module.ts",
         "backend/src/common/guards/cloudflare-throttler.guard.test.ts",
+        "backend/src/config/throttler-skip.config.test.ts",
         "backend/src/config/throttler-tiers.config.test.ts"
       ],
       "imports": [],
@@ -32235,6 +32236,57 @@
         "manual"
       ],
       "domain": "D13",
+      "id": "backend/src/config/throttler-skip.config.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/common/guards/cloudflare-throttler.guard.ts",
+        "backend/src/config/throttler-skip.config.ts",
+        "backend/src/config/throttler-tiers.config.ts"
+      ],
+      "kind": "test",
+      "loc": 200,
+      "owner": "@ak125",
+      "path": "backend/src/config/throttler-skip.config.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D13",
+      "id": "backend/src/config/throttler-skip.config.ts",
+      "importedBy": [
+        "backend/src/app.module.ts",
+        "backend/src/config/throttler-skip.config.test.ts"
+      ],
+      "imports": [
+        "backend/src/modules/seo-control-plane/types.ts",
+        "http"
+      ],
+      "kind": "config",
+      "loc": 51,
+      "owner": "@ak125",
+      "path": "backend/src/config/throttler-skip.config.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
       "id": "backend/src/config/throttler-tiers.config.test.ts",
       "importedBy": [],
       "imports": [
@@ -32262,6 +32314,7 @@
       "id": "backend/src/config/throttler-tiers.config.ts",
       "importedBy": [
         "backend/src/app.module.ts",
+        "backend/src/config/throttler-skip.config.test.ts",
         "backend/src/config/throttler-tiers.config.test.ts"
       ],
       "imports": [],
@@ -51625,7 +51678,7 @@
       "domain": "D3",
       "id": "backend/src/modules/seo-control-plane/types.ts",
       "importedBy": [
-        "backend/src/app.module.ts",
+        "backend/src/config/throttler-skip.config.ts",
         "backend/src/modules/seo-control-plane/collectors/synthetic-crawler/synthetic-crawler.processor.ts",
         "backend/src/modules/seo-control-plane/collectors/synthetic-crawler/synthetic-crawler.scheduler.service.test.ts",
         "backend/src/modules/seo-control-plane/collectors/synthetic-crawler/synthetic-crawler.scheduler.service.ts",
@@ -95704,6 +95757,46 @@
         "manual"
       ],
       "domain": "D13",
+      "id": "scripts/ci/prod-client-ip-probe.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 114,
+      "owner": "@ak125",
+      "path": "scripts/ci/prod-client-ip-probe.mjs",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
+      "id": "scripts/ci/prod-client-ip-probe.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 76,
+      "owner": "@ak125",
+      "path": "scripts/ci/prod-client-ip-probe.test.mjs",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
       "id": "scripts/ci/prod-rollback.test.mjs",
       "importedBy": [],
       "imports": [],
@@ -98389,11 +98482,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "25765692c5c196e2cf2b669cee3f80d6995921876e836ade74240dd538b87bdb",
       "audit/registry/deps.json": "28f63bf4383ddec90e009095ddc11db9298b7cd92b52ceb234a3e6a2fd996f90",
-      "audit/registry/files.json": "eacbee4b77c628e21b54518baf687b7c6bd70455b4bae653ae3546ae0520d623",
+      "audit/registry/files.json": "11aada9d7b9e17339faaf369e98c7032706b724832bd89f53363fa6a5bdb8483",
       "audit/registry/rpc.json": "c32fa1d7a14862b55e0fbf4d74706fba4ea259ba4fe92a21152bfa6d66d66628",
       "audit/registry/runtime.json": "11b58e35c0f151b043fc74b164953c754d4c32c7164107587b53fd9046e30e68"
     },
-    "sotFingerprint": "f61297a17250"
+    "sotFingerprint": "ea93becbc1b0"
   },
   "runtime": [
     {
