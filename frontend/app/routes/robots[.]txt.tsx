@@ -1,21 +1,25 @@
 // app/routes/robots[.]txt.tsx
 /**
- * 🤖 ROBOTS.TXT - Aligné avec structure PHP
+ * 🤖 ROBOTS.TXT
  *
- * Règles PHP originales:
- * - Disallow: /_form.get.car.* (formulaires AJAX)
- * - Disallow: /fiche/ (fiches produits - duplicate content)
- * - Disallow: /find/ (recherche générale)
- * - Disallow: /searchmine/ (recherche par type mine)
- * - Disallow: /account/ (espace client privé)
+ * Corps normal : relais de GET /api/seo/robots.txt (backend RobotsTxtService).
+ * Repli (backend indisponible / timeout / non-2xx) : MÊME politique, construite
+ * localement depuis la source unique `@repo/seo-url-contract/robots-policy`.
+ * Avant 2026-09-11 le repli codait en dur une autre politique (Disallow:
+ * /account/ contraire à la décision noindex, aucun blocage des bots, 4 sitemaps
+ * dont 2 en 302). Le repli reste un 200 (un 5xx sur robots.txt suspend
+ * l'exploration Google) et reste observable via `X-Error` + log.
  *
  * Optimisations v2:
  * - Timeout + retry automatique
- * - Cache long (24h browser, 48h CDN)
- * - Fallback complet si backend indisponible
+ * - Cache long (24h browser, 48h CDN) ; repli 1h
  *
- * @see backend/src/modules/seo/services/robots-txt.service.ts
+ * @see backend/src/modules/seo/infrastructure/robots-txt.service.ts
  */
+import {
+  buildRobotsTxt,
+  isRobotsProductionEnv,
+} from "@repo/seo-url-contract/robots-policy";
 import { type LoaderFunctionArgs } from "react-router";
 import {
   SITEMAP_CONFIG,
@@ -24,38 +28,14 @@ import {
 } from "~/lib/sitemap-fetch";
 
 /**
- * Générer le robots.txt de fallback
+ * Générer le robots.txt de repli — même source et même critère d'environnement
+ * que le backend (même process, même NODE_ENV).
  */
 function generateFallbackRobots(): string {
-  return `# ===========================================
-# 🤖 ROBOTS.TXT - AutoMecanik.com (Fallback)
-# ===========================================
-
-User-agent: *
-Allow: /
-
-# ❌ Blocages hérités du système PHP
-Disallow: /_form.get.car.*
-Disallow: /fiche/
-Disallow: /find/
-Disallow: /searchmine/
-Disallow: /account/
-
-# ❌ Blocages additionnels
-Disallow: /admin/
-Disallow: /api/
-Disallow: /checkout/
-Disallow: /cart/
-Disallow: /img/
-
-# ⏱️ Crawl-delay
-Crawl-delay: 1
-
-# 📍 Sitemaps
-Sitemap: ${SITEMAP_CONFIG.BASE_URL}/sitemap.xml
-Sitemap: ${SITEMAP_CONFIG.BASE_URL}/sitemap-constructeurs.xml
-Sitemap: ${SITEMAP_CONFIG.BASE_URL}/sitemap-types.xml
-Sitemap: ${SITEMAP_CONFIG.BASE_URL}/sitemap-blog.xml`;
+  return buildRobotsTxt({
+    production: isRobotsProductionEnv(process.env.NODE_ENV),
+    baseUrl: SITEMAP_CONFIG.BASE_URL,
+  });
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {

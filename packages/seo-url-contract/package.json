@@ -9,6 +9,18 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.js"
+    },
+    "./robots-policy": {
+      "types": "./dist/robots-policy.d.ts",
+      "import": "./dist/robots-policy.js",
+      "require": "./dist/robots-policy.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "robots-policy": [
+        "./dist/robots-policy.d.ts"
+      ]
     }
   },
   "scripts": {

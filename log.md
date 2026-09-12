@@ -560,3 +560,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/dev-shutdown-comment-bull`
 - **Décision** : docs(dev): borne d'arrêt DEV — c'est le close() de Bull qui attendait le crawl, pas @nestjs/bullmq
 - **Sortie** : PR aucune | commits 5d395718b
+
+## 2026-09-11 — fix/seo-measure-robots-markers
+
+- **Branche** : `fix/seo-measure-robots-markers`
+- **Décision** : audit des 7 leviers SEO — ingestion GSC rattrapable et certifiable, robots via source unique, garde des marqueurs R2, META conseils filtrées ; rapport `audit/seo-sept-leviers-2026-09-11.md`.
+- **Sortie** : PR à ouvrir | 2 migrations NON appliquées | garde admin livrée séparément (#1460, en PROD par le tag `v2026.09.11-cwv-sanitizer-admin-guard`).

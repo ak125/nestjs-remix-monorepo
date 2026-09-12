@@ -10,6 +10,11 @@ const noCache = {
   set: async () => undefined,
 } as unknown as ConstructorParameters<typeof SeoTemplateService>[0];
 
+// Émetteur d'événements inerte (la garde des marqueurs a sa propre suite)
+const noEvents = {
+  record: async () => ({ ok: true }),
+} as unknown as ConstructorParameters<typeof SeoTemplateService>[1];
+
 function ctx(overrides: Partial<SeoContext> = {}): SeoContext {
   return {
     type_id: 1,
@@ -40,7 +45,7 @@ const tpl = (text: string): SeoTemplates => ({
 describe('SeoTemplateService — résolution switch #CompSwitch#', () => {
   let svc: SeoTemplateService;
   beforeEach(() => {
-    svc = new SeoTemplateService(noCache);
+    svc = new SeoTemplateService(noCache, noEvents);
   });
 
   it('résout #CompSwitch_3# depuis comp_switches (plus de strip à vide)', async () => {
@@ -113,7 +118,7 @@ describe('SeoTemplateService — résolution switch #CompSwitch#', () => {
 describe('SeoTemplateService — description composée (vraie phrase véhicule-aware)', () => {
   let svc: SeoTemplateService;
   beforeEach(() => {
-    svc = new SeoTemplateService(noCache);
+    svc = new SeoTemplateService(noCache, noEvents);
   });
 
   const tplDesc = (description: string): SeoTemplates => ({

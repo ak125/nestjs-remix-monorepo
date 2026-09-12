@@ -10,7 +10,66 @@ import {
   selectVariation,
 } from '../../../config/seo-variations.config';
 import { enrichTypeNameForHeadings } from '@repo/seo-types';
+import { SeoPlaceholderEventsService } from '../../seo/services/seo-placeholder-events.service';
 import { composeVehicleAwareDescription } from './vehicle-aware-description.composer';
+
+/**
+ * Marqueur legacy non résolu : `#Nom#`, `#Nom_12#`, `#Nom_12_1289#`.
+ * Grammaire tolérante mesurée sur `__seo_gamme_car` (2026-09-11) : fautes de
+ * frappe `#CompSwicth_12_1289#` (pg 1289), `#CompSwich_3_1298#` (pg 1298) et
+ * `#ContentLinkToCar#`/`#ContentLinkToGam#`/`#ContentLinkToGamCar#` (pg 3096),
+ * dont aucune n'est connue des résolveurs. Majuscule initiale puis lettres
+ * contiguës : `#fff`, `href="#faq"`, `123#R3#S1` ou `&#39;` ne correspondent pas.
+ */
+const RESIDUAL_MARKER = '#[A-Z][A-Za-z]+(?:_\\d+){0,2}#';
+const RESIDUAL_MARKER_REGEX = new RegExp(RESIDUAL_MARKER, 'g');
+
+/**
+ * Lien `<a …>` dont un attribut porte un marqueur non résolu, avec sa fermeture
+ * et sans autre `<a` imbriqué. Les 5 cas mesurés (pg 3096) sont des href du type
+ * `https://www.automecanik.com/pieces/pompe-a-eau-1260/#ContentLinkToGamCar#` :
+ * aucune destination fiable ne peut en être reconstituée.
+ */
+const LINK_WITH_RESIDUAL_MARKER = new RegExp(
+  `(<[aA]\\b[^>]*${RESIDUAL_MARKER}[^>]*>)((?:(?!<[aA]\\b)[\\s\\S])*?)<\\/[aA]>`,
+  'g',
+);
+const OPENING_LINK_TAG = /<[aA]\b[^>]*>/g;
+const ATTRIBUTE_WITH_RESIDUAL_MARKER = new RegExp(
+  `\\s[\\w:-]+\\s*=\\s*(?:"[^"]*${RESIDUAL_MARKER}[^"]*"|'[^']*${RESIDUAL_MARKER}[^']*')`,
+  'g',
+);
+
+/**
+ * Neutralise les liens dont la destination porte un marqueur non résolu :
+ * retirer le seul jeton laisserait une destination différente
+ * (`https://www.automecanik.com/`) ou tronquée (`…/pompe-a-eau-1260/`).
+ * Le lien est retiré, son contenu conservé ; sans fermeture exploitable, seul
+ * l'attribut fautif est retiré (balises inchangées). Aucune URL n'est inventée.
+ */
+function neutralizeLinksWithResidualMarkers(
+  html: string,
+  residual: string[],
+): string {
+  const collect = (fragment: string) =>
+    residual.push(...(fragment.match(RESIDUAL_MARKER_REGEX) ?? []));
+  return html
+    .replace(
+      LINK_WITH_RESIDUAL_MARKER,
+      (_link, openTag: string, inner: string) => {
+        collect(openTag);
+        return inner;
+      },
+    )
+    .replace(OPENING_LINK_TAG, (tag) =>
+      tag.replace(ATTRIBUTE_WITH_RESIDUAL_MARKER, (attribute) => {
+        collect(attribute);
+        return '';
+      }),
+    );
+}
+
+type SeoTemplateField = 'h1' | 'title' | 'description' | 'content' | 'preview';
 
 /**
  * 📝 Contexte SEO pour le remplacement des variables
@@ -53,6 +112,18 @@ export interface SeoContext {
    * Absent/null → terme produit = nom de gamme seul.
    */
   gamme_keyword_modifier?: string | null;
+  /**
+   * Valeurs des marqueurs legacy `#VMotorisation#` (carburant) et `#VCodeMoteur#`
+   * (codes moteur), même sémantique que
+   * `seo/services/chain/seo-template-renderer.service.ts`. Volontairement
+   * distincts de `fuel` / `motor_codes` : ceux-ci alimentent aussi h1/title
+   * (enrichissement du type ambigu, `%fuel%`, `#VFuel#`) et les renseigner
+   * changerait des titres indexés qui ne contiennent aucun marqueur. Ici, seuls
+   * les textes qui servent aujourd'hui le marqueur brut changent.
+   * Absent → le marqueur est remplacé par une chaîne vide (aucun texte inventé).
+   */
+  legacy_marker_motorisation?: string;
+  legacy_marker_code_moteur?: string;
 }
 
 /**
@@ -113,9 +184,12 @@ export class SeoTemplateService {
   // 🔄 Regex pour le format LEGACY #Vxxx# et #Xxx# (templates existants en base)
   // Inclut: #VMarque#, #VGamme#, mais aussi #Gamme#, #MinPrice#
   private readonly LEGACY_REGEX =
-    /#(VMarque|VModele|VType|VNbCh|VAnnee|VGamme|VAnneeFrom|VAnneeTo|VFuel|VPower|Gamme|MinPrice|Count)#/g;
+    /#(VMarque|VModele|VType|VNbCh|VAnnee|VGamme|VAnneeFrom|VAnneeTo|VFuel|VPower|VMotorisation|VCodeMoteur|Gamme|MinPrice|Count)#/g;
 
-  constructor(private readonly cacheService: CacheService) {
+  constructor(
+    private readonly cacheService: CacheService,
+    private readonly placeholderEvents: SeoPlaceholderEventsService,
+  ) {
     this.logger.log(
       '🚀 SeoTemplateService initialisé - Mode NestJS Processing (Regex Single-Pass)',
     );
@@ -162,15 +236,40 @@ export class SeoTemplateService {
         ? { ...context, type_name: enrichedTypeName.value }
         : context;
 
+      // Marqueurs non résolus retirés par la garde finale, par champ servi.
+      const residual: Record<SeoTemplateField, string[]> = {
+        h1: [],
+        title: [],
+        description: [],
+        content: [],
+        preview: [],
+      };
       const processed: ProcessedSeo = {
         success: true,
-        h1: this.processTemplate(templates.h1, headingContext),
-        title: this.processTemplate(templates.title, headingContext),
-        description: this.composeDescription(templates.description, context),
-        content: this.processTemplate(templates.content, context),
-        preview: this.processTemplate(templates.preview, context),
+        h1: this.processTemplate(templates.h1, headingContext, residual.h1),
+        title: this.processTemplate(
+          templates.title,
+          headingContext,
+          residual.title,
+        ),
+        description: this.composeDescription(
+          templates.description,
+          context,
+          residual.description,
+        ),
+        content: this.processTemplate(
+          templates.content,
+          context,
+          residual.content,
+        ),
+        preview: this.processTemplate(
+          templates.preview,
+          context,
+          residual.preview,
+        ),
         keywords: this.generateKeywords(context),
       };
+      this.reportResidualMarkers(residual, context);
 
       // 3. Mise en cache Redis
       await this.cacheService.set(cacheKey, processed, this.SEO_CACHE_TTL);
@@ -194,10 +293,22 @@ export class SeoTemplateService {
    * rédigée à la main), on conserve le rendu du template tel quel
    * (`feedback_no_touch_meta_h1_if_optimized`).
    */
-  private composeDescription(template: string, context: SeoContext): string {
-    const rendered = this.processTemplate(template, context);
-    if (!context.gamme_name) return rendered; // pas de terme produit fiable
-    if (!this.isDegenerateDescriptionTemplate(template)) return rendered;
+  private composeDescription(
+    template: string,
+    context: SeoContext,
+    residual: string[],
+  ): string {
+    // Marqueurs signalés seulement si le rendu du template est servi : la
+    // phrase composée le remplace entièrement sinon.
+    const found: string[] = [];
+    const rendered = this.processTemplate(template, context, found);
+    if (
+      !context.gamme_name || // pas de terme produit fiable
+      !this.isDegenerateDescriptionTemplate(template)
+    ) {
+      residual.push(...found);
+      return rendered;
+    }
     return composeVehicleAwareDescription({
       gammeName: context.gamme_name,
       marqueName: context.marque_name,
@@ -232,7 +343,11 @@ export class SeoTemplateService {
    * Remplace les variables %xxx% par leur valeur du contexte.
    * ⚡ OPTIMISÉ: Single-pass regex (350ms → 50ms)
    */
-  private processTemplate(template: string, context: SeoContext): string {
+  private processTemplate(
+    template: string,
+    context: SeoContext,
+    residual: string[],
+  ): string {
     if (!template) return '';
 
     // 🗺️ Map des valeurs (clés SANS les %)
@@ -289,6 +404,8 @@ export class SeoTemplateService {
       VAnneeTo: context.year_to || '',
       VFuel: context.fuel || '',
       VPower: context.power_ps ? `${context.power_ps} ch` : '',
+      VMotorisation: context.legacy_marker_motorisation || '',
+      VCodeMoteur: context.legacy_marker_code_moteur || '',
       // Format #Xxx# (sans préfixe V)
       Gamme: context.gamme_name || '',
       MinPrice: context.min_price
@@ -313,7 +430,7 @@ export class SeoTemplateService {
     });
 
     // 3. Traiter les switches statiques (#VousPropose#, #PrixPasCher#, #LinkCarAll#, etc.)
-    result = this.processStaticSwitches(result, context);
+    result = this.processStaticSwitches(result, context, residual);
 
     // 🧹 Nettoyage basique (espaces multiples uniquement)
     result = result
@@ -328,8 +445,13 @@ export class SeoTemplateService {
    *
    * Remplace les tags comme #VousPropose#, #PrixPasCher#, #LinkCarAll#, etc.
    * et supprime les switches non résolus (#CompSwitch_X_Y#, #FamilySwitch_X#, etc.)
+   * Tout marqueur restant ensuite est retiré et ajouté à `residual`.
    */
-  private processStaticSwitches(text: string, context: SeoContext): string {
+  private processStaticSwitches(
+    text: string,
+    context: SeoContext,
+    residual: string[],
+  ): string {
     if (!text) return '';
 
     // Construire les liens dynamiques
@@ -351,7 +473,7 @@ export class SeoTemplateService {
       1, // offset pour décaler la rotation
     );
 
-    const result = text
+    const resolved = text
       // Tags de style texte (rotation dynamique)
       .replace(/#VousPropose#/gi, vousPropose)
       .replace(/#PrixPasCher#/gi, prixPasCher)
@@ -402,15 +524,56 @@ export class SeoTemplateService {
       })
 
       // Autres liens non résolus
-      .replace(/#Link[A-Za-z]+(_\d+)?#/gi, '')
+      .replace(/#Link[A-Za-z]+(_\d+)?#/gi, '');
 
-      // Nettoyage : ponctuation orpheline laissée par un switch vide (ex. ", ," ou " .")
-      .replace(/,\s*,/g, ',')
-      .replace(/\s+([.,;:])/g, '$1')
-      .replace(/(^[\s,;:]+)|([\s,;:]+$)/g, '')
-      .trim();
+    // Garde finale : aucun marqueur inconnu n'est servi. D'abord les liens dont
+    // la destination porte un marqueur (neutralisés), puis les jetons restants
+    // dans le texte : seul le jeton est retiré — aucun texte inventé, balises
+    // intactes (un jeton ne contient ni `<` ni `>`).
+    const guarded = neutralizeLinksWithResidualMarkers(
+      resolved,
+      residual,
+    ).replace(RESIDUAL_MARKER_REGEX, (marker) => {
+      residual.push(marker);
+      return '';
+    });
 
-    return result;
+    return (
+      guarded
+        // Nettoyage : ponctuation orpheline laissée par un switch vide (ex. ", ," ou " .")
+        .replace(/,\s*,/g, ',')
+        .replace(/\s+([.,;:])/g, '$1')
+        .replace(/(^[\s,;:]+)|([\s,;:]+$)/g, '')
+        .trim()
+    );
+  }
+
+  /**
+   * Rend observable le retrait des marqueurs non résolus : un événement
+   * `seo_placeholder_unresolved` par champ concerné (même infrastructure que
+   * le V4). Fire-and-forget : un échec d'écriture ne casse pas le rendu. Émis
+   * au calcul (cache miss) seulement, pas à chaque lecture du cache.
+   */
+  private reportResidualMarkers(
+    residual: Record<SeoTemplateField, string[]>,
+    context: SeoContext,
+  ): void {
+    for (const field of Object.keys(residual) as SeoTemplateField[]) {
+      const markers = residual[field];
+      if (markers.length === 0) continue;
+      void this.placeholderEvents
+        .record({
+          trigger: 'residual_marker_detected',
+          source: 'r2_seo_template',
+          field,
+          marker_count: markers.length,
+          stripped_count: markers.length,
+          markers: markers.slice(0, 10),
+          pg_id: context.pg_id,
+          type_id: context.type_id,
+        })
+        .catch(() => {});
+    }
   }
 
   /**

@@ -182,9 +182,55 @@ export const SnapshotLineageSchema = z.object({
 
 // ─── Full snapshot (root response) ──────────────────────────────────
 
+// ─── Comparabilité des fenêtres GSC (jours présents) ────────────────
+
+/**
+ * `days_present` = jours ayant une ligne ; `days_confirmed` = jours dont la ligne
+ * porte le marqueur de commit d'ingestion. Une ligne sans marqueur (écrite par
+ * l'ancien ingesteur ou réécriture interrompue) est listée dans
+ * `unconfirmed_dates` : elle ne prouve pas que le grain lu par les RPC existe.
+ */
+export const GscWindowDaysSchema = z
+  .object({
+    from: z.string(),
+    to: z.string(),
+    days_expected: z.number().int().nonnegative(),
+    days_present: z.number().int().nonnegative(),
+    days_confirmed: z.number().int().nonnegative(),
+    missing_dates: z.array(z.string()),
+    unconfirmed_dates: z.array(z.string()),
+  })
+  .refine(
+    (w) => w.days_confirmed + w.unconfirmed_dates.length === w.days_present,
+    { message: "days_confirmed + unconfirmed_dates doit égaler days_present" },
+  );
+
+/**
+ * Les RPC trafic/perdants comparent [J-N, J-1] à [J-2N, J-N-1] sans vérifier
+ * les jours présents : un trou d'ingestion (ou le retard de finalisation GSC en
+ * queue de fenêtre courante) y devient une « baisse ». `comparable` exige tous
+ * les jours présents ET confirmés. Hors `comparable`, le delta est `unknown` et
+ * les perdants ne sont pas calculés — jamais une baisse fictive.
+ */
+export const GscComparabilitySchema = z
+  .object({
+    comparable: z.boolean(),
+    reason: z
+      .enum(["current_incomplete", "previous_incomplete", "length_mismatch"])
+      .nullable(),
+    source: z.literal("__seo_gsc_daily_property_total"),
+    current: GscWindowDaysSchema,
+    previous: GscWindowDaysSchema,
+  })
+  .refine((c) => c.comparable === (c.reason === null), {
+    message: "reason doit être null si et seulement si comparable",
+  });
+export type GscComparability = z.infer<typeof GscComparabilitySchema>;
+
 export const SeoControlSnapshotSchema = SnapshotLineageSchema.extend({
   range: RangeSchema,
   window_days: z.number().int().positive(),
+  gscComparability: GscComparabilitySchema,
   trafficWindow: TrafficWindowSchema,
   topLosers: z.array(TopLoserSchema).max(20),
   lowCtrOpportunities: z.array(LowCtrOpportunitySchema).max(50),

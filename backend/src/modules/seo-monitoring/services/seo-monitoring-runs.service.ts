@@ -13,6 +13,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { randomUUID } from 'crypto';
+import * as os from 'os';
 
 export type IngestionSource =
   | 'gsc'
@@ -22,10 +23,31 @@ export type IngestionSource =
   | 'indexation'
   | 'crux';
 
+/**
+ * Champs additionnels du payload (dates planifiées, runtime exécutant…).
+ * Les clés de base du journal priment toujours sur `extra`.
+ */
+export type RunPayloadExtra = Record<string, unknown>;
+
 export interface RunStartContext {
   source: IngestionSource;
   scope: string;
   expectedPages?: number;
+  extra?: RunPayloadExtra;
+}
+
+/**
+ * Identité du runtime qui exécute l'ingestion. Plusieurs runtimes enregistrent
+ * le job quotidien : sans cette trace, impossible de prouver lequel a (ou n'a
+ * pas) collecté un jour donné (constat 2026-09-10).
+ */
+export function runtimeIdentity(): Record<string, unknown> {
+  return {
+    hostname: os.hostname(),
+    pid: process.pid,
+    node_env: process.env.NODE_ENV ?? null,
+    git_sha: process.env.GIT_SHA || process.env.SOURCE_COMMIT || null,
+  };
 }
 
 export interface RunCompleteContext {
@@ -36,6 +58,7 @@ export interface RunCompleteContext {
   durationSeconds: number;
   apiCalls: number;
   warnings?: string[];
+  extra?: RunPayloadExtra;
 }
 
 export interface RunFailContext {
@@ -51,6 +74,7 @@ export interface RunFailContext {
   errorMessage: string;
   partialRowsInserted: number;
   retryScheduled: boolean;
+  extra?: RunPayloadExtra;
 }
 
 @Injectable()
@@ -70,6 +94,7 @@ export class SeoMonitoringRunsService {
       event_type: 'ingestion_run_started',
       severity: 'info',
       payload: {
+        ...ctx.extra,
         run_id: runId,
         source: ctx.source,
         scope: ctx.scope,
@@ -93,6 +118,7 @@ export class SeoMonitoringRunsService {
       event_type: 'ingestion_run_completed',
       severity: 'info',
       payload: {
+        ...ctx.extra,
         run_id: ctx.runId,
         source: ctx.source,
         rows_inserted: ctx.rowsInserted,
@@ -185,6 +211,7 @@ export class SeoMonitoringRunsService {
       event_type: 'ingestion_run_failed',
       severity,
       payload: {
+        ...ctx.extra,
         run_id: ctx.runId,
         source: ctx.source,
         error_class: ctx.errorClass,

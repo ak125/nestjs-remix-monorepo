@@ -107,6 +107,18 @@ export default function SeoControlDashboard() {
 
   const { snapshot, range } = data;
   const tw = snapshot.trafficWindow;
+  const cmp = snapshot.gscComparability;
+  const incompleteWindow =
+    cmp.reason === "previous_incomplete" ? cmp.previous : cmp.current;
+  const comparabilityNote = cmp.comparable
+    ? null
+    : `comparaison indisponible : fenêtre ${
+        cmp.reason === "previous_incomplete" ? "précédente" : "courante"
+      } incomplète (${incompleteWindow.days_confirmed}/${incompleteWindow.days_expected} jours confirmés)`;
+  const unconfirmedDates = [
+    ...cmp.previous.unconfirmed_dates,
+    ...cmp.current.unconfirmed_dates,
+  ];
 
   // Filter alerts to severity ∈ {critical, high} only (Phase A discipline)
   const criticalAlerts = snapshot.technicalAlerts
@@ -134,6 +146,15 @@ export default function SeoControlDashboard() {
             <span className={directionColor}>
               Δ clics {tw.delta_vs_previous.clicks_pct ?? "—"}%
             </span>
+            {comparabilityNote ? (
+              <span className="text-amber-700"> · {comparabilityNote}</span>
+            ) : null}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Jours GSC confirmés : courante {cmp.current.days_confirmed}/
+            {cmp.current.days_expected} ({cmp.current.from} → {cmp.current.to})
+            · précédente {cmp.previous.days_confirmed}/
+            {cmp.previous.days_expected}
           </p>
           <p className="text-xs text-muted-foreground font-mono">
             snapshot_id: {snapshot.snapshot_id} · hash:{" "}
@@ -180,7 +201,9 @@ export default function SeoControlDashboard() {
                   colSpan={8}
                   className="text-center text-muted-foreground"
                 >
-                  Aucune page en perte cette semaine.
+                  {cmp.comparable
+                    ? "Aucune page en perte cette semaine."
+                    : `Pertes non calculées — ${comparabilityNote}. Un jour manquant n'est pas une baisse ; jours manquants : ${[...cmp.previous.missing_dates, ...cmp.current.missing_dates].join(", ") || "aucun"}${unconfirmedDates.length > 0 ? ` ; jours présents non confirmés (ingestion à reprendre) : ${unconfirmedDates.join(", ")}` : ""}.`}
                 </TableCell>
               </TableRow>
             ) : (

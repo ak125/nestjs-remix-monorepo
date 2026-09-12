@@ -835,7 +835,7 @@
           }
         ],
         "definedInMigrations": [
-          "20260613_seo_gsc_multilevel_grains.sql"
+          "20260911_seo_gsc_multilevel_page_totals.sql"
         ],
         "domain": "UNKNOWN",
         "id": "public.__seo_ensure_monthly_partitions",
@@ -847,7 +847,9 @@
         "returnType": "INT",
         "schema": "public",
         "schemaVersion": "1.0.0",
-        "searchPath": [],
+        "searchPath": [
+          "public"
+        ],
         "securityDefiner": false,
         "sourceConfidence": "high",
         "status": "UNKNOWN",
@@ -8278,6 +8280,60 @@
           {
             "mode": "IN",
             "name": "p_window_days",
+            "type": "integer"
+          },
+          {
+            "mode": "IN",
+            "name": "p_now",
+            "type": "timestamptz"
+          },
+          {
+            "mode": "IN",
+            "name": "p_min_impressions",
+            "type": "integer"
+          },
+          {
+            "mode": "IN",
+            "name": "p_max_ctr",
+            "type": "numeric"
+          },
+          {
+            "mode": "IN",
+            "name": "p_limit",
+            "type": "integer"
+          },
+          {
+            "mode": "IN",
+            "name": "p_expected_from",
+            "type": "date"
+          }
+        ],
+        "definedInMigrations": [
+          "20260911_seo_gsc_multilevel_page_totals_rpc_low_ctr_v4.sql"
+        ],
+        "domain": "UNKNOWN",
+        "id": "public.rpc_seo_low_ctr_v4",
+        "language": "sql",
+        "name": "rpc_seo_low_ctr_v4",
+        "owner": "__unassigned__",
+        "parseMode": "parsed",
+        "parseWarnings": [],
+        "returnType": "jsonb",
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "searchPath": [
+          "public"
+        ],
+        "securityDefiner": false,
+        "sourceConfidence": "high",
+        "status": "UNKNOWN",
+        "usedBy": []
+      },
+      {
+        "args": [
+          {
+            "mode": "IN",
+            "name": "p_window_days",
             "type": "INT"
           },
           {
@@ -14320,6 +14376,68 @@
           },
           {
             "hasDefault": true,
+            "name": "clicks",
+            "nullable": false,
+            "type": "BIGINT"
+          },
+          {
+            "hasDefault": true,
+            "name": "impressions",
+            "nullable": false,
+            "type": "BIGINT"
+          },
+          {
+            "hasDefault": true,
+            "name": "ctr",
+            "nullable": false,
+            "type": "REAL"
+          },
+          {
+            "hasDefault": true,
+            "name": "position",
+            "nullable": false,
+            "type": "REAL"
+          },
+          {
+            "hasDefault": true,
+            "name": "fetched_at",
+            "nullable": false,
+            "type": "TIMESTAMPTZ"
+          }
+        ],
+        "deletePolicy": "ADR_REQUIRED",
+        "domain": "UNKNOWN",
+        "id": "__seo_gsc_daily_page_totals",
+        "inMigrations": [
+          "20260911_seo_gsc_multilevel_page_totals.sql"
+        ],
+        "indexes": [],
+        "name": "__seo_gsc_daily_page_totals",
+        "owner": "__unassigned__",
+        "risk": "low",
+        "rlsEnabled": false,
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "sourceConfidence": "high",
+        "status": "LIVE",
+        "usedBy": []
+      },
+      {
+        "columns": [
+          {
+            "hasDefault": false,
+            "name": "date",
+            "nullable": false,
+            "type": "DATE"
+          },
+          {
+            "hasDefault": false,
+            "name": "page",
+            "nullable": false,
+            "type": "TEXT"
+          },
+          {
+            "hasDefault": true,
             "name": "country",
             "nullable": false,
             "type": "TEXT"
@@ -14432,7 +14550,11 @@
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
         "status": "LIVE",
-        "usedBy": []
+        "usedBy": [
+          "backend/src/modules/admin/services/seo-control.service.ts",
+          "backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts",
+          "backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.ts"
+        ]
       },
       {
         "columns": [
@@ -35154,7 +35276,7 @@
         "backend/src/modules/admin/services/command-center-action-rules/score-action.ts"
       ],
       "kind": "service",
-      "loc": 254,
+      "loc": 308,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/command-center-action-rules/seo-action.rules.ts",
       "risk": "medium",
@@ -35176,6 +35298,7 @@
         "backend/src/modules/admin/services/command-center-reader.service.ts"
       ],
       "imports": [
+        "@repo/seo-types",
         "backend/src/database/services/supabase-base.service.ts",
         "backend/src/modules/admin/services/command-center-action-rules/certification-action.rules.ts",
         "backend/src/modules/admin/services/command-center-action-rules/improvement-candidate.rules.ts",
@@ -35188,7 +35311,7 @@
         "zlib"
       ],
       "kind": "service",
-      "loc": 380,
+      "loc": 442,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/command-center-actions.service.ts",
       "risk": "medium",
@@ -36957,7 +37080,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 316,
+      "loc": 423,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/seo-control.service.ts",
       "risk": "medium",
@@ -38949,7 +39072,7 @@
         "backend/src/modules/seo/internal-linking.service.ts"
       ],
       "kind": "test",
-      "loc": 444,
+      "loc": 586,
       "owner": "@ak125/content-team",
       "path": "backend/src/modules/blog/services/r3-guide.service.test.ts",
       "risk": "medium",
@@ -38984,7 +39107,7 @@
         "backend/src/modules/seo/seo-v4.types.ts"
       ],
       "kind": "service",
-      "loc": 502,
+      "loc": 548,
       "owner": "@ak125/content-team",
       "path": "backend/src/modules/blog/services/r3-guide.service.ts",
       "risk": "medium",
@@ -39886,6 +40009,7 @@
       "id": "backend/src/modules/catalog/catalog.module.ts",
       "importedBy": [
         "backend/src/app.module.ts",
+        "backend/src/modules/catalog/services/__tests__/seo-template-di.test.ts",
         "backend/src/modules/gamme-rest/gamme-rest.module.ts",
         "backend/src/modules/seo/seo.module.ts",
         "backend/src/modules/vehicles/vehicles.module.ts",
@@ -39921,10 +40045,11 @@
         "backend/src/modules/catalog/services/unified-page-data.service.ts",
         "backend/src/modules/catalog/services/vehicle-filtered-catalog-v4-hybrid.service.ts",
         "backend/src/modules/catalog/services/vehicle-pieces-compatibility.service.ts",
-        "backend/src/modules/products/services/pricing.service.ts"
+        "backend/src/modules/products/services/pricing.service.ts",
+        "backend/src/modules/seo/services/seo-placeholder-events.service.ts"
       ],
       "kind": "service",
-      "loc": 161,
+      "loc": 166,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/catalog/catalog.module.ts",
       "risk": "high",
@@ -40238,13 +40363,61 @@
         "manual"
       ],
       "domain": "D1",
+      "id": "backend/src/modules/catalog/services/__tests__/seo-template-di.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@cache/cache.service",
+        "backend/src/modules/catalog/catalog.module.ts",
+        "backend/src/modules/catalog/services/seo-template.service.ts",
+        "backend/src/modules/seo/seo.module.ts",
+        "backend/src/modules/seo/services/seo-placeholder-events.service.ts"
+      ],
+      "kind": "test",
+      "loc": 58,
+      "owner": "@ak125/catalog-team",
+      "path": "backend/src/modules/catalog/services/__tests__/seo-template-di.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D1",
+      "id": "backend/src/modules/catalog/services/__tests__/seo-template-residual-markers.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/catalog/services/seo-template.service.ts"
+      ],
+      "kind": "test",
+      "loc": 417,
+      "owner": "@ak125/catalog-team",
+      "path": "backend/src/modules/catalog/services/__tests__/seo-template-residual-markers.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D1",
       "id": "backend/src/modules/catalog/services/__tests__/seo-template-switch.test.ts",
       "importedBy": [],
       "imports": [
         "backend/src/modules/catalog/services/seo-template.service.ts"
       ],
       "kind": "test",
-      "loc": 177,
+      "loc": 182,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/catalog/services/__tests__/seo-template-switch.test.ts",
       "risk": "high",
@@ -40656,16 +40829,19 @@
       "id": "backend/src/modules/catalog/services/seo-template.service.ts",
       "importedBy": [
         "backend/src/modules/catalog/catalog.module.ts",
+        "backend/src/modules/catalog/services/__tests__/seo-template-di.test.ts",
+        "backend/src/modules/catalog/services/__tests__/seo-template-residual-markers.test.ts",
         "backend/src/modules/catalog/services/__tests__/seo-template-switch.test.ts"
       ],
       "imports": [
         "@cache/cache.service",
         "@repo/seo-types",
         "backend/src/config/seo-variations.config.ts",
-        "backend/src/modules/catalog/services/vehicle-aware-description.composer.ts"
+        "backend/src/modules/catalog/services/vehicle-aware-description.composer.ts",
+        "backend/src/modules/seo/services/seo-placeholder-events.service.ts"
       ],
       "kind": "service",
-      "loc": 509,
+      "loc": 672,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/catalog/services/seo-template.service.ts",
       "risk": "high",
@@ -50385,6 +50561,26 @@
         "manual"
       ],
       "domain": "D2",
+      "id": "backend/src/modules/rm/services/__tests__/rm-builder-seo-legacy-markers.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 133,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/rm/services/__tests__/rm-builder-seo-legacy-markers.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LEGACY"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
       "id": "backend/src/modules/rm/services/__tests__/rm-builder-seo-shadow.test.ts",
       "importedBy": [],
       "imports": [],
@@ -50469,7 +50665,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 991,
+      "loc": 998,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/services/rm-builder.service.ts",
       "risk": "medium",
@@ -52036,6 +52232,81 @@
         "manual"
       ],
       "domain": "D3",
+      "id": "backend/src/modules/seo-monitoring/cli/run-ingestion-backfill.args.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/seo-monitoring/cli/run-ingestion-backfill.args.ts"
+      ],
+      "kind": "test",
+      "loc": 130,
+      "owner": "@ak125/seo-team",
+      "path": "backend/src/modules/seo-monitoring/cli/run-ingestion-backfill.args.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D3",
+      "id": "backend/src/modules/seo-monitoring/cli/run-ingestion-backfill.args.ts",
+      "importedBy": [
+        "backend/src/modules/seo-monitoring/cli/run-ingestion-backfill.args.test.ts",
+        "backend/src/modules/seo-monitoring/cli/run-ingestion-backfill.ts"
+      ],
+      "imports": [
+        "@repo/seo-types"
+      ],
+      "kind": "service",
+      "loc": 110,
+      "owner": "@ak125/seo-team",
+      "path": "backend/src/modules/seo-monitoring/cli/run-ingestion-backfill.args.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D3",
+      "id": "backend/src/modules/seo-monitoring/cli/run-ingestion-backfill.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/seo-monitoring/cli/run-ingestion-backfill.args.ts",
+        "backend/src/modules/seo-monitoring/services/ga4-daily-fetcher.service.ts",
+        "backend/src/modules/seo-monitoring/services/google-credentials.service.ts",
+        "backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.ts",
+        "backend/src/modules/seo-monitoring/services/ingestion-date-planner.ts",
+        "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts"
+      ],
+      "kind": "service",
+      "loc": 119,
+      "owner": "@ak125/seo-team",
+      "path": "backend/src/modules/seo-monitoring/cli/run-ingestion-backfill.ts",
+      "risk": "medium",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D3",
       "id": "backend/src/modules/seo-monitoring/controllers/cwv-beacon.controller.test.ts",
       "importedBy": [],
       "imports": [
@@ -52199,6 +52470,7 @@
         "@auth/authenticated.guard",
         "@auth/is-admin.guard",
         "@common/utils",
+        "@repo/seo-types",
         "backend/src/modules/seo-monitoring/services/audit-findings.service.ts",
         "backend/src/modules/seo-monitoring/services/ga4-daily-fetcher.service.ts",
         "backend/src/modules/seo-monitoring/services/google-credentials.service.ts",
@@ -52208,7 +52480,7 @@
         "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts"
       ],
       "kind": "controller",
-      "loc": 386,
+      "loc": 473,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts",
       "risk": "medium",
@@ -52315,7 +52587,7 @@
         "backend/src/modules/seo-monitoring/services/gsc-links-fetcher.service.ts"
       ],
       "kind": "service",
-      "loc": 320,
+      "loc": 354,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo-monitoring/processors/seo-daily-fetch.processor.ts",
       "risk": "medium",
@@ -52687,6 +52959,7 @@
       "domain": "D3",
       "id": "backend/src/modules/seo-monitoring/services/ga4-daily-fetcher.service.ts",
       "importedBy": [
+        "backend/src/modules/seo-monitoring/cli/run-ingestion-backfill.ts",
         "backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts",
         "backend/src/modules/seo-monitoring/processors/seo-daily-fetch.processor.ts",
         "backend/src/modules/seo-monitoring/seo-monitoring.module.ts",
@@ -52695,11 +52968,14 @@
       "imports": [
         "@common/utils",
         "@config/site.constants",
+        "@repo/seo-types",
         "backend/src/modules/seo-monitoring/services/google-credentials.service.ts",
+        "backend/src/modules/seo-monitoring/services/ingestion-date-planner.ts",
+        "backend/src/modules/seo-monitoring/services/ingestion-error-classifier.ts",
         "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts"
       ],
       "kind": "service",
-      "loc": 266,
+      "loc": 674,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo-monitoring/services/ga4-daily-fetcher.service.ts",
       "risk": "medium",
@@ -52724,7 +53000,7 @@
         "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts"
       ],
       "kind": "test",
-      "loc": 102,
+      "loc": 300,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo-monitoring/services/ga4-daily-fetcher.test.ts",
       "risk": "medium",
@@ -52742,11 +53018,13 @@
       "domain": "D3",
       "id": "backend/src/modules/seo-monitoring/services/google-credentials.service.ts",
       "importedBy": [
+        "backend/src/modules/seo-monitoring/cli/run-ingestion-backfill.ts",
         "backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts",
         "backend/src/modules/seo-monitoring/seo-monitoring.module.ts",
         "backend/src/modules/seo-monitoring/services/cwv-fetcher.service.ts",
         "backend/src/modules/seo-monitoring/services/ga4-daily-fetcher.service.ts",
         "backend/src/modules/seo-monitoring/services/ga4-daily-fetcher.test.ts",
+        "backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.test.ts",
         "backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.ts",
         "backend/src/modules/seo-monitoring/services/gsc-index-history-collector.service.ts",
         "backend/src/modules/seo-monitoring/services/gsc-links-fetcher.service.ts"
@@ -52773,7 +53051,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 74,
+      "loc": 115,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo-monitoring/services/gsc-coverage.test.ts",
       "risk": "medium",
@@ -52796,7 +53074,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 95,
+      "loc": 113,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo-monitoring/services/gsc-coverage.ts",
       "risk": "medium",
@@ -52812,25 +53090,100 @@
         "manual"
       ],
       "domain": "D3",
+      "id": "backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/seo-monitoring/services/google-credentials.service.ts",
+        "backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.ts",
+        "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts"
+      ],
+      "kind": "test",
+      "loc": 892,
+      "owner": "@ak125/seo-team",
+      "path": "backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D3",
       "id": "backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.ts",
       "importedBy": [
+        "backend/src/modules/seo-monitoring/cli/run-ingestion-backfill.ts",
         "backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts",
         "backend/src/modules/seo-monitoring/processors/seo-daily-fetch.processor.ts",
-        "backend/src/modules/seo-monitoring/seo-monitoring.module.ts"
+        "backend/src/modules/seo-monitoring/seo-monitoring.module.ts",
+        "backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.test.ts"
       ],
       "imports": [
         "@common/utils",
         "@repo/seo-types",
         "backend/src/modules/seo-monitoring/services/google-credentials.service.ts",
         "backend/src/modules/seo-monitoring/services/gsc-coverage.ts",
+        "backend/src/modules/seo-monitoring/services/gsc-finality.ts",
+        "backend/src/modules/seo-monitoring/services/ingestion-date-planner.ts",
+        "backend/src/modules/seo-monitoring/services/ingestion-error-classifier.ts",
         "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts"
       ],
       "kind": "service",
-      "loc": 576,
+      "loc": 1106,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.ts",
       "risk": "medium",
       "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D3",
+      "id": "backend/src/modules/seo-monitoring/services/gsc-finality.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/seo-monitoring/services/gsc-finality.ts"
+      ],
+      "kind": "test",
+      "loc": 81,
+      "owner": "@ak125/seo-team",
+      "path": "backend/src/modules/seo-monitoring/services/gsc-finality.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D3",
+      "id": "backend/src/modules/seo-monitoring/services/gsc-finality.ts",
+      "importedBy": [
+        "backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.ts",
+        "backend/src/modules/seo-monitoring/services/gsc-finality.test.ts"
+      ],
+      "imports": [],
+      "kind": "service",
+      "loc": 80,
+      "owner": "@ak125/seo-team",
+      "path": "backend/src/modules/seo-monitoring/services/gsc-finality.ts",
+      "risk": "medium",
+      "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
@@ -52933,6 +53286,106 @@
       "path": "backend/src/modules/seo-monitoring/services/gsc-links-fetcher.service.ts",
       "risk": "medium",
       "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D3",
+      "id": "backend/src/modules/seo-monitoring/services/ingestion-date-planner.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@repo/seo-types",
+        "backend/src/modules/seo-monitoring/services/ingestion-date-planner.ts"
+      ],
+      "kind": "test",
+      "loc": 258,
+      "owner": "@ak125/seo-team",
+      "path": "backend/src/modules/seo-monitoring/services/ingestion-date-planner.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D3",
+      "id": "backend/src/modules/seo-monitoring/services/ingestion-date-planner.ts",
+      "importedBy": [
+        "backend/src/modules/seo-monitoring/cli/run-ingestion-backfill.ts",
+        "backend/src/modules/seo-monitoring/services/ga4-daily-fetcher.service.ts",
+        "backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.ts",
+        "backend/src/modules/seo-monitoring/services/ingestion-date-planner.test.ts"
+      ],
+      "imports": [
+        "@repo/seo-types"
+      ],
+      "kind": "service",
+      "loc": 218,
+      "owner": "@ak125/seo-team",
+      "path": "backend/src/modules/seo-monitoring/services/ingestion-date-planner.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D3",
+      "id": "backend/src/modules/seo-monitoring/services/ingestion-error-classifier.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/seo-monitoring/services/ingestion-error-classifier.ts"
+      ],
+      "kind": "test",
+      "loc": 93,
+      "owner": "@ak125/seo-team",
+      "path": "backend/src/modules/seo-monitoring/services/ingestion-error-classifier.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D3",
+      "id": "backend/src/modules/seo-monitoring/services/ingestion-error-classifier.ts",
+      "importedBy": [
+        "backend/src/modules/seo-monitoring/services/ga4-daily-fetcher.service.ts",
+        "backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.ts",
+        "backend/src/modules/seo-monitoring/services/ingestion-error-classifier.test.ts"
+      ],
+      "imports": [
+        "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts"
+      ],
+      "kind": "service",
+      "loc": 140,
+      "owner": "@ak125/seo-team",
+      "path": "backend/src/modules/seo-monitoring/services/ingestion-error-classifier.ts",
+      "risk": "medium",
+      "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
@@ -53075,6 +53528,7 @@
       "domain": "D3",
       "id": "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts",
       "importedBy": [
+        "backend/src/modules/seo-monitoring/cli/run-ingestion-backfill.ts",
         "backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts",
         "backend/src/modules/seo-monitoring/seo-monitoring.module.ts",
         "backend/src/modules/seo-monitoring/services/crux-field-fetcher.service.ts",
@@ -53082,15 +53536,18 @@
         "backend/src/modules/seo-monitoring/services/cwv-fetcher.service.ts",
         "backend/src/modules/seo-monitoring/services/ga4-daily-fetcher.service.ts",
         "backend/src/modules/seo-monitoring/services/ga4-daily-fetcher.test.ts",
+        "backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.test.ts",
         "backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.ts",
         "backend/src/modules/seo-monitoring/services/gsc-index-history-collector.service.ts",
-        "backend/src/modules/seo-monitoring/services/gsc-links-fetcher.service.ts"
+        "backend/src/modules/seo-monitoring/services/gsc-links-fetcher.service.ts",
+        "backend/src/modules/seo-monitoring/services/ingestion-error-classifier.ts"
       ],
       "imports": [
-        "crypto"
+        "crypto",
+        "os"
       ],
       "kind": "service",
-      "loc": 201,
+      "loc": 228,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts",
       "risk": "medium",
@@ -54028,7 +54485,7 @@
         "backend/src/modules/seo/services/seo-placeholder-events.service.ts"
       ],
       "kind": "test",
-      "loc": 75,
+      "loc": 106,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/__tests__/seo-placeholder-events.service.test.ts",
       "risk": "high",
@@ -54658,10 +55115,11 @@
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
+        "@repo/seo-url-contract/robots-policy",
         "backend/src/config/app.config.ts"
       ],
       "kind": "service",
-      "loc": 354,
+      "loc": 89,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/infrastructure/robots-txt.service.ts",
       "risk": "high",
@@ -56503,6 +56961,7 @@
         "backend/src/app.module.ts",
         "backend/src/modules/admin/admin.module.ts",
         "backend/src/modules/blog/blog.module.ts",
+        "backend/src/modules/catalog/services/__tests__/seo-template-di.test.ts",
         "backend/src/modules/gamme-rest/gamme-rest.module.ts",
         "backend/src/modules/seo/index.ts"
       ],
@@ -57737,6 +58196,9 @@
       "domain": "D3",
       "id": "backend/src/modules/seo/services/seo-placeholder-events.service.ts",
       "importedBy": [
+        "backend/src/modules/catalog/catalog.module.ts",
+        "backend/src/modules/catalog/services/__tests__/seo-template-di.test.ts",
+        "backend/src/modules/catalog/services/seo-template.service.ts",
         "backend/src/modules/seo/__tests__/dynamic-seo-v4-via-chain.test.ts",
         "backend/src/modules/seo/__tests__/seo-placeholder-events.service.test.ts",
         "backend/src/modules/seo/dynamic-seo-v4-ultimate.service.ts",
@@ -57746,7 +58208,7 @@
         "@database/services/supabase-base.service"
       ],
       "kind": "service",
-      "loc": 84,
+      "loc": 93,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/services/seo-placeholder-events.service.ts",
       "risk": "high",
@@ -65198,7 +65660,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 562,
+      "loc": 681,
       "owner": "@ak125",
       "path": "backend/tests/unit/command-center-action-rules.test.ts",
       "risk": "medium",
@@ -65218,7 +65680,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 274,
+      "loc": 533,
       "owner": "@ak125",
       "path": "backend/tests/unit/command-center-actions.service.test.ts",
       "risk": "medium",
@@ -66014,6 +66476,46 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "backend/tests/unit/robots-policy.google-matching.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 267,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/robots-policy.google-matching.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/robots-txt.service.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 47,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/robots-txt.service.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "backend/tests/unit/route-splat-characterization.test.ts",
       "importedBy": [],
       "imports": [],
@@ -66114,6 +66616,26 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "backend/tests/unit/seo-control/seo-control.service.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 319,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/seo-control/seo-control.service.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "backend/tests/unit/seo-headers-interceptor.test.ts",
       "importedBy": [],
       "imports": [],
@@ -66194,6 +66716,46 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "backend/tests/unit/seo-monitoring/gsc-searchanalytics-2026-09-11.fixture.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 179,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/seo-monitoring/gsc-searchanalytics-2026-09-11.fixture.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/seo-monitoring/gsc-searchanalytics-shape.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 112,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/seo-monitoring/gsc-searchanalytics-shape.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "backend/tests/unit/seo-monitoring/quality-history-snapshot-ai-readiness.test.ts",
       "importedBy": [],
       "imports": [],
@@ -66241,6 +66803,26 @@
       "loc": 341,
       "owner": "@ak125",
       "path": "backend/tests/unit/seo-monitoring/seo-monitoring.controller.http-guards.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/seo-monitoring/seo-monitoring.controller.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 407,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/seo-monitoring/seo-monitoring.controller.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -66398,7 +66980,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 260,
+      "loc": 268,
       "owner": "@ak125",
       "path": "backend/tests/unit/seo-template-interpolation.test.ts",
       "risk": "medium",
@@ -81084,7 +81666,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 300,
+      "loc": 323,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.seo-control.tsx",
       "risk": "medium",
@@ -81686,7 +82268,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 776,
+      "loc": 843,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.seo-hub.observability.tsx",
       "risk": "medium",
@@ -85127,10 +85709,11 @@
       "id": "frontend/app/routes/robots[.]txt.tsx",
       "importedBy": [],
       "imports": [
+        "@repo/seo-url-contract/robots-policy",
         "~/lib/sitemap-fetch"
       ],
       "kind": "route",
-      "loc": 98,
+      "loc": 78,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/robots[.]txt.tsx",
       "risk": "medium",
@@ -90061,6 +90644,26 @@
         "manual"
       ],
       "domain": "D2",
+      "id": "frontend/tests/unit/robots-txt-fallback.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 108,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/robots-txt-fallback.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
       "id": "frontend/tests/unit/runtime-errors-chunk-beacon.test.ts",
       "importedBy": [],
       "imports": [],
@@ -93801,7 +94404,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 355,
+      "loc": 466,
       "owner": "@ak125/seo-team",
       "path": "packages/seo-types/src/control-dashboard.test.ts",
       "risk": "medium",
@@ -93821,7 +94424,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 211,
+      "loc": 257,
       "owner": "@ak125/seo-team",
       "path": "packages/seo-types/src/control-dashboard.ts",
       "risk": "medium",
@@ -93844,6 +94447,46 @@
       "loc": 250,
       "owner": "@ak125/seo-team",
       "path": "packages/seo-types/src/crux.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D3",
+      "id": "packages/seo-types/src/day-coverage.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 107,
+      "owner": "@ak125/seo-team",
+      "path": "packages/seo-types/src/day-coverage.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D3",
+      "id": "packages/seo-types/src/day-coverage.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 146,
+      "owner": "@ak125/seo-team",
+      "path": "packages/seo-types/src/day-coverage.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -93881,7 +94524,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 43,
+      "loc": 44,
       "owner": "@ak125/seo-team",
       "path": "packages/seo-types/src/index.ts",
       "risk": "medium",
@@ -93921,7 +94564,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 226,
+      "loc": 276,
       "owner": "@ak125/seo-team",
       "path": "packages/seo-types/src/observability.ts",
       "risk": "medium",
@@ -94044,6 +94687,26 @@
       "loc": 2,
       "owner": "@ak125/seo-team",
       "path": "packages/seo-url-contract/src/index.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D3",
+      "id": "packages/seo-url-contract/src/robots-policy.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 318,
+      "owner": "@ak125/seo-team",
+      "path": "packages/seo-url-contract/src/robots-policy.ts",
       "risk": "high",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -98480,13 +99143,13 @@
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
       ".spec/00-canon/repository-registry/ownership.yaml": "ac200d75ead8a0d4f14172c30ddf482b3f0be9fd03e53406fd923b2a8eb7731b",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
-      "audit/registry/db.json": "25765692c5c196e2cf2b669cee3f80d6995921876e836ade74240dd538b87bdb",
+      "audit/registry/db.json": "d2562814b938caeca897c78a440e7e949bd5ee88311c72cf0cf9b36fd21ddb07",
       "audit/registry/deps.json": "28f63bf4383ddec90e009095ddc11db9298b7cd92b52ceb234a3e6a2fd996f90",
-      "audit/registry/files.json": "11aada9d7b9e17339faaf369e98c7032706b724832bd89f53363fa6a5bdb8483",
-      "audit/registry/rpc.json": "c32fa1d7a14862b55e0fbf4d74706fba4ea259ba4fe92a21152bfa6d66d66628",
-      "audit/registry/runtime.json": "11b58e35c0f151b043fc74b164953c754d4c32c7164107587b53fd9046e30e68"
+      "audit/registry/files.json": "8ccf2dbcc4609244d87d1879c2c1de4c0929ae8b2cc809a8da149c9f643a2391",
+      "audit/registry/rpc.json": "dc4ad60e799d63c28c7e739134dcfde40b60b889a3b538ff23d4235e39245a18",
+      "audit/registry/runtime.json": "6eac2f9390d957b35b36a266be34f33c97a323d7963c024207c319e953d0fdb7"
     },
-    "sotFingerprint": "ea93becbc1b0"
+    "sotFingerprint": "39baa84030d9"
   },
   "runtime": [
     {
@@ -99726,7 +100389,8 @@
         "runtime:backend/src/modules/catalog/services/unified-page-data.service.ts",
         "runtime:backend/src/modules/catalog/services/vehicle-filtered-catalog-v4-hybrid.service.ts",
         "runtime:backend/src/modules/catalog/services/vehicle-pieces-compatibility.service.ts",
-        "runtime:backend/src/modules/products/services/pricing.service.ts"
+        "runtime:backend/src/modules/products/services/pricing.service.ts",
+        "runtime:backend/src/modules/seo/services/seo-placeholder-events.service.ts"
       ],
       "id": "runtime:backend/src/modules/catalog/catalog.module.ts",
       "kind": "nestjs-module",
@@ -101097,6 +101761,20 @@
       "id": "runtime:backend/src/modules/seo-logs/seo-logs.module.ts",
       "kind": "nestjs-module",
       "path": "backend/src/modules/seo-logs/seo-logs.module.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/modules/seo-monitoring/services/ga4-daily-fetcher.service.ts",
+        "runtime:backend/src/modules/seo-monitoring/services/google-credentials.service.ts",
+        "runtime:backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.ts",
+        "runtime:backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/seo-monitoring/cli/run-ingestion-backfill.ts",
+      "kind": "nestjs-module",
+      "path": "backend/src/modules/seo-monitoring/cli/run-ingestion-backfill.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"

@@ -11,6 +11,11 @@
  * la détection relative-à-baseline est en PR4). On ne compare JAMAIS un grain
  * page à un total d'un autre grain (sinon faux gap).
  *
+ * Le plancher s'applique aux IMPRESSIONS ET aux CLICS : l'anonymisation retire
+ * surtout des lignes à clics (constaté 2026-09-10 : impressions ≈ 0,4 mais clics
+ * ≈ 0,06–0,10 sur le grain segmenté, statut resté `ok` à tort depuis le 08-03).
+ * Un ratio > 1 est accepté (agrégation byPage : impressions page ≥ propriété).
+ *
  * Pas de magic constant : le plancher est un paramètre gouverné, injecté
  * (env `SEO_GSC_COVERAGE_MIN_RATIO`), avec défaut documenté ci-dessous.
  */
@@ -19,6 +24,12 @@
 export const DEFAULT_GSC_COVERAGE_MIN_RATIO = 0.3;
 
 export type GscCoverageStatus = 'ok' | 'coverage_gap' | 'insufficient_data';
+
+/**
+ * Grain comparé : `page_totals` (dimension page seule, fidèle) ou
+ * `segmented_pages` (page+country+device, lossy).
+ */
+export type GscCoverageGrain = 'page_totals' | 'segmented_pages';
 
 export interface GscDailyMetricLike {
   clicks: number;
@@ -34,6 +45,7 @@ export interface GscCoverageResult {
   status: GscCoverageStatus;
   /** Plancher appliqué (traçabilité — jamais une constante muette). */
   minRatio: number;
+  grain: GscCoverageGrain;
 }
 
 function ratio(part: number, whole: number): number | null {
@@ -46,12 +58,14 @@ function ratio(part: number, whole: number): number | null {
  * @param propertyTotal total global du jour (grain `date` seul)
  * @param pagesRows lignes du grain `pages` du même jour
  * @param minRatio plancher gouverné (défaut DEFAULT_GSC_COVERAGE_MIN_RATIO)
+ * @param grain grain des lignes page comparées (traçabilité)
  */
 export function computeGlobalCoverage(
   date: string,
   propertyTotal: GscDailyMetricLike | null,
   pagesRows: GscDailyMetricLike[],
   minRatio: number = DEFAULT_GSC_COVERAGE_MIN_RATIO,
+  grain: GscCoverageGrain = 'segmented_pages',
 ): GscCoverageResult {
   // Pas de total fiable ⇒ on ne peut RIEN affirmer (jamais « 0 opportunité »).
   if (!propertyTotal || propertyTotal.impressions <= 0) {
@@ -61,6 +75,7 @@ export function computeGlobalCoverage(
       pagesVsPropertyClicks: null,
       status: 'insufficient_data',
       minRatio,
+      grain,
     };
   }
 
@@ -78,11 +93,13 @@ export function computeGlobalCoverage(
       pagesVsPropertyClicks: clickRatio,
       status: 'coverage_gap',
       minRatio,
+      grain,
     };
   }
 
+  const belowFloor = (r: number | null) => r !== null && r < minRatio;
   const status: GscCoverageStatus =
-    imprRatio !== null && imprRatio < minRatio ? 'coverage_gap' : 'ok';
+    belowFloor(imprRatio) || belowFloor(clickRatio) ? 'coverage_gap' : 'ok';
 
   return {
     date,
@@ -90,5 +107,6 @@ export function computeGlobalCoverage(
     pagesVsPropertyClicks: clickRatio,
     status,
     minRatio,
+    grain,
   };
 }

@@ -2,22 +2,22 @@
   "_generated_by": "scripts/audit/build-db-usage-map.js",
   "note": "Candidates only — never a \"dead\" verdict. A real DROP table/function goes through the RPC Gate + a vault ADR, never from this map.",
   "important_caveats": [
-    "897 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
+    "898 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
     "Migration parsing is regex-based and tracks last CREATE vs last DROP per object (date-prefixed filenames ≈ chronological); re-create-after-drop edge cases may slip through.",
     "RLS-only / dashboard / external-cron / RPC-internal usage is invisible here — see per-candidate caveats."
   ],
   "summary": {
-    "tables_seen": 304,
-    "tables_with_callsites": 200,
+    "tables_seen": 305,
+    "tables_with_callsites": 201,
     "candidate_orphan_tables": 104,
-    "rpc_seen": 242,
+    "rpc_seen": 243,
     "rpc_with_callsites": 14,
     "trigger_functions": 30,
-    "candidate_orphan_rpc": 198,
-    "dynamic_from_callsites": 897,
+    "candidate_orphan_rpc": 199,
+    "dynamic_from_callsites": 898,
     "dynamic_rpc_callsites": 1,
-    "migrations_scanned": 349,
-    "backend_files_scanned": 1383
+    "migrations_scanned": 353,
+    "backend_files_scanned": 1396
   },
   "tables": {
     "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7": {
@@ -1168,6 +1168,15 @@
       "rls_present": true,
       "in_knowledge_db": false
     },
+    "__seo_gsc_daily_page_totals": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260911_seo_gsc_multilevel_page_totals.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false
+    },
     "__seo_gsc_daily_pages": {
       "used_by": [],
       "used_by_count": 0,
@@ -1178,8 +1187,12 @@
       "in_knowledge_db": false
     },
     "__seo_gsc_daily_property_total": {
-      "used_by": [],
-      "used_by_count": 0,
+      "used_by": [
+        "backend/src/modules/admin/services/seo-control.service.ts",
+        "backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts",
+        "backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.ts"
+      ],
+      "used_by_count": 3,
       "in_migrations": [
         "20260613_seo_gsc_multilevel_grains.sql"
       ],
@@ -3253,7 +3266,9 @@
       "called_by": [],
       "called_by_count": 0,
       "defined_in_migrations": [
-        "20260613_seo_gsc_multilevel_grains.sql"
+        "20260613_seo_gsc_multilevel_grains.sql",
+        "20260911_seo_gsc_multilevel_page_totals.down.sql",
+        "20260911_seo_gsc_multilevel_page_totals.sql"
       ],
       "is_trigger_function": false
     },
@@ -4916,6 +4931,14 @@
       ],
       "is_trigger_function": false
     },
+    "rpc_seo_low_ctr_v4": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260911_seo_gsc_multilevel_page_totals_rpc_low_ctr_v4.sql"
+      ],
+      "is_trigger_function": false
+    },
     "rpc_seo_top_losers_v1": {
       "called_by": [],
       "called_by_count": 0,
@@ -5802,15 +5825,15 @@
       ]
     },
     {
-      "name": "__seo_gsc_daily_pages",
+      "name": "__seo_gsc_daily_page_totals",
       "confidence": "low",
       "derived_from": [
         "migrations",
         "no-literal-from-callsite"
       ],
-      "rls_present": true,
+      "rls_present": false,
       "in_migrations": [
-        "20260613_seo_gsc_multilevel_grains.sql"
+        "20260911_seo_gsc_multilevel_page_totals.sql"
       ],
       "in_knowledge_db": false,
       "caveats": [
@@ -5822,7 +5845,7 @@
       ]
     },
     {
-      "name": "__seo_gsc_daily_property_total",
+      "name": "__seo_gsc_daily_pages",
       "confidence": "low",
       "derived_from": [
         "migrations",
@@ -7611,7 +7634,9 @@
         "no-rpc-callsite"
       ],
       "defined_in_migrations": [
-        "20260613_seo_gsc_multilevel_grains.sql"
+        "20260613_seo_gsc_multilevel_grains.sql",
+        "20260911_seo_gsc_multilevel_page_totals.down.sql",
+        "20260911_seo_gsc_multilevel_page_totals.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
@@ -10419,6 +10444,22 @@
       ]
     },
     {
+      "name": "rpc_seo_low_ctr_v4",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260911_seo_gsc_multilevel_page_totals_rpc_low_ctr_v4.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
       "name": "rpc_seo_top_losers_v1",
       "confidence": "medium",
       "derived_from": [
@@ -11511,7 +11552,7 @@
     },
     {
       "file": "backend/src/modules/blog/services/r3-guide.service.test.ts",
-      "line": 233
+      "line": 239
     },
     {
       "file": "backend/src/modules/cart/services/abandoned-cart-data.service.ts",
@@ -13006,8 +13047,12 @@
       "line": 114
     },
     {
+      "file": "backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.test.ts",
+      "line": 274
+    },
+    {
       "file": "backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.ts",
-      "line": 438
+      "line": 909
     },
     {
       "file": "backend/src/modules/seo-projection/seo-projection-snapshot.test.ts",
