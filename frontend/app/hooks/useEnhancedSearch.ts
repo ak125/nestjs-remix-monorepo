@@ -2,7 +2,7 @@
  * 🚀 useEnhancedSearch Hook
  *
  * Hook personnalisé pour utiliser le service de recherche enhanced
- * avec gestion d'état, cache, et métriques intégrées
+ * avec gestion d'état et recherche temporisée.
  */
 
 import { useState, useCallback, useEffect } from "react";
@@ -32,19 +32,10 @@ interface EnhancedSearchResult {
   features: string[];
 }
 
-interface SearchMetrics {
-  totalSearches: number;
-  successfulSearches: number;
-  averageResponseTime: number;
-  cacheHitRate: number;
-  popularQueries: Array<{ query: string; count: number }>;
-}
-
 export function useEnhancedSearch() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [results, setResults] = useState<EnhancedSearchResult | null>(null);
-  const [metrics, setMetrics] = useState<SearchMetrics | null>(null);
 
   // Fonction de recherche principale
   const search = useCallback(async (params: EnhancedSearchParams) => {
@@ -97,24 +88,6 @@ export function useEnhancedSearch() {
     [],
   );
 
-  // Charger les métriques
-  const loadMetrics = useCallback(async () => {
-    try {
-      const response = await fetch("/api/search-existing/metrics");
-
-      if (!response.ok) {
-        throw new Error("Erreur métriques");
-      }
-
-      const data = await response.json();
-      setMetrics(data);
-      return data;
-    } catch (err) {
-      logger.warn("Erreur métriques:", err);
-      return null;
-    }
-  }, []);
-
   // Vérifier le status du service
   const checkHealth = useCallback(async () => {
     try {
@@ -135,22 +108,15 @@ export function useEnhancedSearch() {
     }
   }, []);
 
-  // Charger les métriques automatiquement
-  useEffect(() => {
-    loadMetrics();
-  }, [loadMetrics]);
-
   return {
     // État
     loading,
     error,
     results,
-    metrics,
 
     // Actions
     search,
     autocomplete,
-    loadMetrics,
     checkHealth,
 
     // Helpers

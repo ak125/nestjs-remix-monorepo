@@ -49220,7 +49220,7 @@
         "~/utils/logger"
       ],
       "kind": "config",
-      "loc": 232,
+      "loc": 198,
       "owner": "__unassigned__",
       "path": "frontend/app/hooks/useEnhancedSearch.ts",
       "risk": "low",
@@ -60887,7 +60887,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 75,
+      "loc": 132,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/use-enhanced-search.test.ts",
       "risk": "low",
