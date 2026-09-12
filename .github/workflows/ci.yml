@@ -216,6 +216,9 @@ jobs:
       - name: Test client-IP deployment probe
         run: node --test scripts/ci/prod-client-ip-probe.test.mjs
 
+      - name: Test E2E rate-budget admission
+        run: node --test scripts/ci/preprod-e2e-rate-budget.test.mjs
+
       - name: 🧪 Run backend tests
         run: cd backend && npx jest --ci --verbose --maxWorkers=1 --forceExit --coverage --coverageReporters=text-summary --coverageReporters=json-summary
         env:
@@ -1234,6 +1237,7 @@ jobs:
         env:
           CI: true
           PLAYWRIGHT_BASE_URL: http://localhost:3200
+          E2E_RATE_BUDGET: "true"
 
       # Diagnostic root-cause sur échec E2E. Le runner self-hosted EST l'hôte
       # PREPROD (49.12.233.2) : on capture l'état exact du container + la mémoire
