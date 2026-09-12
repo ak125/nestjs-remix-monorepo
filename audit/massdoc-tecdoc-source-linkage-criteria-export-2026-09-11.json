@@ -1,0 +1,352 @@
+{
+  "objet": "Artefact scelle des criteres de source_linkages (R1-bis, decision owner D1-B), 2026-09-11. N'autorise aucun DROP.",
+  "portee": "Manifeste et sceau des fichiers criteres.csv.gz et parents.csv.gz. Les fichiers eux-memes sont stockes hors depot (plan §5).",
+  "decisions_owner": {
+    "date": "2026-09-11",
+    "D1": "B — exporter puis supprimer ; export scelle avant tout DROP",
+    "D5": "GO migration NON DONNE"
+  },
+  "stockage": {
+    "regle": "hors depot Git, hors base, hors machine DEV ; manifeste et sceau versionnes",
+    "statut": "DEPOSE_ET_RELU",
+    "destination": "Supabase Storage, bucket prive tecdoc-drop-backup-2026-09-11, parts de 45 Mo (limite projet 52428800 octets)",
+    "depose_le": "2026-09-11T22:03:15Z",
+    "depots": [
+      {
+        "cle": "criteres/criteres.csv.gz",
+        "octets": 77676829,
+        "sha256": "369868fdd3b04cba35d2beade421d81ac2a4e6b204fc078da0ab56b5e5b6b919",
+        "relu_en_entier": true,
+        "parts": [
+          {
+            "part": 0,
+            "cle": "criteres/criteres.csv.gz.part-0000",
+            "octets": 47185920,
+            "sha256": "9d4652e2afb88bd21a2516f685d7a462d918fe205ad80420156ad343bb584444"
+          },
+          {
+            "part": 1,
+            "cle": "criteres/criteres.csv.gz.part-0001",
+            "octets": 30490909,
+            "sha256": "30165e306dacc996c20f1f09f18700805b7e6d84c372966a971d50cf3720972b"
+          }
+        ]
+      },
+      {
+        "cle": "criteres/parents.csv.gz",
+        "octets": 54016412,
+        "sha256": "56745fc52cea4df954008e719aa665ace8dadd4e251e8cd15660b196b4bcda7e",
+        "relu_en_entier": true,
+        "parts": [
+          {
+            "part": 0,
+            "cle": "criteres/parents.csv.gz.part-0000",
+            "octets": 47185920,
+            "sha256": "00363d176e5a75d838a5cf38e65e4c25133a5a9667ba09a23fc59db9cf76e2b4"
+          },
+          {
+            "part": 1,
+            "cle": "criteres/parents.csv.gz.part-0001",
+            "octets": 6830492,
+            "sha256": "b7a5761dfe02bb9d88689197c1437f50686ec2637aaa8449fbed0f780097be82"
+          }
+        ]
+      },
+      {
+        "cle": "criteres/export-mesure.json",
+        "octets": 2735,
+        "sha256": "5a86e5a5fe6dc49f3993872c560a89064164c29a78a6cfc85b30289675a266da",
+        "relu_en_entier": true
+      },
+      {
+        "cle": "criteres/restore-test.json",
+        "octets": 1249,
+        "sha256": "33a03ad94f241f8651357151531015298b979e8e221d03ba669fbd75dfbcba36",
+        "relu_en_entier": true
+      }
+    ],
+    "note": "l'artefact lui-meme est depose sous le meme prefixe, avec ce bloc a jour"
+  },
+  "verification_du_sceau": "python3 -c \"import json,sys; sys.path.insert(0,'scripts'); from tecdoc_seal import verifier; verifier(json.load(open('audit/massdoc-tecdoc-source-linkage-criteria-export-2026-09-11.json'))['registre_scelle'])\"",
+  "registre_scelle": {
+    "objet": "Export verbatim de tecdoc_map.source_linkage_criteria et des lignes parentes de tecdoc_map.source_linkages qu'ils referencent (decision owner D1-B).",
+    "portee": "Deux fichiers CSV gzip directement restaurables, independants de l'export complet R1. Contenu conserve sans jugement de verite. N'autorise aucun DROP.",
+    "invariant": "criteres : enregistrements == PROD == plan, id unique, chaque source_linkage_id present dans parents ; parents : enregistrements == linkages distincts des criteres ; repartition par DLNR == PROD == plan ; empreintes de contenu d'une copie restauree == PROD.",
+    "fichiers": {
+      "criteres.csv.gz": {
+        "octets_gzip": 77676829,
+        "sha256_gzip": "369868fdd3b04cba35d2beade421d81ac2a4e6b204fc078da0ab56b5e5b6b919",
+        "octets_csv": 239522652,
+        "sha256_csv": "22ae31238c7f315e550f5337de18db68739e9f2b7d62da039ce7f16740a9687d",
+        "lignes_texte_avec_entete": 1614422,
+        "colonnes": [
+          {
+            "nom": "id",
+            "type": "integer"
+          },
+          {
+            "nom": "source_linkage_id",
+            "type": "integer"
+          },
+          {
+            "nom": "source_kritnr",
+            "type": "integer"
+          },
+          {
+            "nom": "source_kritwert",
+            "type": "character varying(200)"
+          },
+          {
+            "nom": "source_business_key",
+            "type": "character(64)"
+          },
+          {
+            "nom": "batch_id",
+            "type": "integer"
+          },
+          {
+            "nom": "created_at",
+            "type": "timestamp with time zone"
+          },
+          {
+            "nom": "updated_at",
+            "type": "timestamp with time zone"
+          }
+        ]
+      },
+      "parents.csv.gz": {
+        "octets_gzip": 54016412,
+        "sha256_gzip": "56745fc52cea4df954008e719aa665ace8dadd4e251e8cd15660b196b4bcda7e",
+        "octets_csv": 207822184,
+        "sha256_csv": "916f6970e023d45708a646e47071c3612d1d1af65e2e92bece180df919442120",
+        "lignes_texte_avec_entete": 1095154,
+        "colonnes": [
+          {
+            "nom": "source_linkage_id",
+            "type": "integer"
+          },
+          {
+            "nom": "source_artnr",
+            "type": "character varying(22)"
+          },
+          {
+            "nom": "source_dlnr",
+            "type": "integer"
+          },
+          {
+            "nom": "pg_id_source",
+            "type": "integer"
+          },
+          {
+            "nom": "source_vknzielart",
+            "type": "smallint"
+          },
+          {
+            "nom": "source_vknzielnr_raw",
+            "type": "character(9)"
+          },
+          {
+            "nom": "source_vknzielnr",
+            "type": "integer"
+          },
+          {
+            "nom": "target_internal_id",
+            "type": "integer"
+          },
+          {
+            "nom": "rtp_target_kind",
+            "type": "character varying(20)"
+          },
+          {
+            "nom": "deduplicated",
+            "type": "boolean"
+          },
+          {
+            "nom": "source_business_key",
+            "type": "character(64)"
+          },
+          {
+            "nom": "batch_id",
+            "type": "integer"
+          },
+          {
+            "nom": "created_at",
+            "type": "timestamp with time zone"
+          },
+          {
+            "nom": "updated_at",
+            "type": "timestamp with time zone"
+          }
+        ]
+      }
+    },
+    "format": "CSV RFC 4180 avec en-tete (COPY ... FORMAT csv, HEADER true), UTF-8, gzip niveau 6 ; texte produit sous TimeZone UTC et DateStyle ISO, MDY.",
+    "cle_metier_parente": {
+      "contrainte": "source_linkages_artnr_dlnr_pgid_vknzielart_vknzielnr_key",
+      "definition": "UNIQUE (source_artnr, source_dlnr, pg_id_source, source_vknzielart, source_vknzielnr)",
+      "colonnes": [
+        "source_artnr",
+        "source_dlnr",
+        "pg_id_source",
+        "source_vknzielart",
+        "source_vknzielnr"
+      ]
+    },
+    "controle": {
+      "criteres": {
+        "enregistrements": 1614421,
+        "id_uniques": true,
+        "linkages_distincts": 1095153,
+        "sans_parent_dans_le_fichier": 0
+      },
+      "parents": {
+        "enregistrements": 1095153,
+        "source_linkage_id_uniques": true,
+        "non_references_par_un_critere": 0
+      },
+      "par_dlnr": [
+        {
+          "source_dlnr": 253,
+          "criteres": 554568,
+          "linkages": 431472
+        },
+        {
+          "source_dlnr": 6358,
+          "criteres": 1059853,
+          "linkages": 663681
+        }
+      ],
+      "conformite": {
+        "sha256_et_tailles_identiques_a_l_export": true,
+        "criteres_egal_plan_et_prod": true,
+        "id_uniques": true,
+        "linkages_egal_plan_et_prod": true,
+        "fermeture_referentielle": true,
+        "par_dlnr_egal_plan_et_prod": true,
+        "restauration_identique": true
+      }
+    },
+    "prod": {
+      "mesure_debut": "2026-09-11T15:36:10Z",
+      "mesure_fin": "2026-09-11T15:36:43Z",
+      "criteres": {
+        "lignes": 1614421,
+        "empreinte_md5_lignes": "3d80eff69430b30e9e37a33061ac9bf7"
+      },
+      "parents": {
+        "lignes": 1095153,
+        "empreinte_md5_lignes": "04cc4db05a16364c53f7ea3d36a8c0ea"
+      },
+      "par_dlnr": [
+        {
+          "source_dlnr": 253,
+          "criteres": 554568,
+          "linkages": 431472
+        },
+        {
+          "source_dlnr": 6358,
+          "criteres": 1059853,
+          "linkages": 663681
+        }
+      ],
+      "gel": [
+        {
+          "table": "tecdoc_map.source_linkage_criteria",
+          "n_tup_ins": 1614421,
+          "n_tup_upd": 0,
+          "n_tup_del": 0
+        },
+        {
+          "table": "tecdoc_map.source_linkages",
+          "n_tup_ins": 507209168,
+          "n_tup_upd": 0,
+          "n_tup_del": 0
+        }
+      ]
+    },
+    "methode_empreinte": "md5(string_agg(md5(ligne::text), '' order by cle)) ; cle = id pour les criteres, source_linkage_id pour les parents ; calcule sous TimeZone UTC et DateStyle ISO, MDY.",
+    "requetes": {
+      "exports": {
+        "criteres.csv.gz": "COPY (select * from tecdoc_map.source_linkage_criteria order by id) TO STDOUT WITH (FORMAT csv, HEADER true)",
+        "parents.csv.gz": "COPY (select sl.* from tecdoc_map.source_linkages sl where sl.source_linkage_id in (select c.source_linkage_id from tecdoc_map.source_linkage_criteria c) order by sl.source_linkage_id) TO STDOUT WITH (FORMAT csv, HEADER true)"
+      },
+      "empreintes": {
+        "criteres": "select count(*), md5(string_agg(md5(c::text), '' order by c.id)) from tecdoc_map.source_linkage_criteria c",
+        "parents": "select count(*), md5(string_agg(md5(sl::text), '' order by sl.source_linkage_id)) from (select sl.* from tecdoc_map.source_linkages sl where sl.source_linkage_id in (select c.source_linkage_id from tecdoc_map.source_linkage_criteria c)) sl",
+        "par_dlnr": "select sl.source_dlnr, count(*) as criteres, count(distinct c.source_linkage_id) as linkages\n                      from tecdoc_map.source_linkage_criteria c join tecdoc_map.source_linkages sl on sl.source_linkage_id = c.source_linkage_id group by 1 order by 1",
+        "gel": "select relid::regclass::text, n_tup_ins, n_tup_upd, n_tup_del from pg_stat_user_tables\n                where relid in ('tecdoc_map.source_linkages'::regclass, 'tecdoc_map.source_linkage_criteria'::regclass) order by 1"
+      }
+    },
+    "restauration": {
+      "ddl": {
+        "sequences": [
+          "CREATE SEQUENCE IF NOT EXISTS tecdoc_map.source_linkages_id_seq;",
+          "CREATE SEQUENCE tecdoc_map.source_linkage_criteria_id_seq START 1616354;"
+        ],
+        "tables": [
+          "CREATE TABLE tecdoc_map.source_linkages (\n  source_linkage_id integer NOT NULL DEFAULT nextval('tecdoc_map.source_linkages_id_seq'::regclass),\n  source_artnr character varying(22) NOT NULL,\n  source_dlnr integer NOT NULL,\n  pg_id_source integer NOT NULL,\n  source_vknzielart smallint NOT NULL,\n  source_vknzielnr_raw character(9) NOT NULL,\n  source_vknzielnr integer NOT NULL,\n  target_internal_id integer,\n  rtp_target_kind character varying(20),\n  deduplicated boolean NOT NULL DEFAULT false,\n  source_business_key character(64) NOT NULL,\n  batch_id integer,\n  created_at timestamp with time zone DEFAULT now(),\n  updated_at timestamp with time zone DEFAULT now()\n);",
+          "CREATE TABLE tecdoc_map.source_linkage_criteria (\n  id integer NOT NULL DEFAULT nextval('tecdoc_map.source_linkage_criteria_id_seq'::regclass),\n  source_linkage_id integer NOT NULL,\n  source_kritnr integer NOT NULL,\n  source_kritwert character varying(200),\n  source_business_key character(64) NOT NULL,\n  batch_id integer,\n  created_at timestamp with time zone DEFAULT now(),\n  updated_at timestamp with time zone DEFAULT now()\n);"
+        ],
+        "cles_et_index_apres_chargement": [
+          "ALTER TABLE tecdoc_map.source_linkages ADD CONSTRAINT source_linkages_artnr_dlnr_pgid_vknzielart_vknzielnr_key UNIQUE (source_artnr, source_dlnr, pg_id_source, source_vknzielart, source_vknzielnr);\nALTER TABLE tecdoc_map.source_linkages ADD CONSTRAINT source_linkages_pkey PRIMARY KEY (source_linkage_id);\nCREATE INDEX idx_sl_dlnr_artnr ON tecdoc_map.source_linkages USING btree (source_dlnr, source_artnr);\nCREATE INDEX idx_sl_pg_id_source_dlnr ON tecdoc_map.source_linkages USING btree (pg_id_source, source_dlnr) WHERE (source_vknzielart = 2);",
+          "ALTER TABLE tecdoc_map.source_linkage_criteria ADD CONSTRAINT source_linkage_criteria_pkey PRIMARY KEY (id);\nALTER TABLE tecdoc_map.source_linkage_criteria ADD CONSTRAINT source_linkage_criteria_source_linkage_id_source_kritnr_sou_key UNIQUE (source_linkage_id, source_kritnr, source_kritwert);\nCREATE INDEX idx_slc_source_linkage_id ON tecdoc_map.source_linkage_criteria USING btree (source_linkage_id);"
+        ],
+        "cle_etrangere_en_dernier": "ALTER TABLE tecdoc_map.source_linkage_criteria ADD CONSTRAINT source_linkage_criteria_source_linkage_id_fkey FOREIGN KEY (source_linkage_id) REFERENCES tecdoc_map.source_linkages(source_linkage_id);"
+      },
+      "procedure": [
+        "1. Si tecdoc_map.source_linkages existe deja (restauree depuis R1), ne charger que criteres.csv.gz ; sinon creer la table parente et y charger parents.csv.gz.",
+        "2. La sequence tecdoc_map.source_linkages_id_seq est partagee et conservee en base : ne la creer que sur une base vide.",
+        "3. Creer la sequence et la table des criteres, charger criteres.csv.gz (\\copy ... from pstdin with (format csv, header true)).",
+        "4. Poser cles primaires, cles uniques et index, puis la cle etrangere criteres -> parents.",
+        "5. Recalculer les empreintes (methode_empreinte) et les comparer au bloc prod ; tout ecart bloque."
+      ],
+      "test": {
+        "conteneur": "postgres:17-alpine, sans port publie, detruit en fin de test",
+        "version": "PostgreSQL 17.11 on x86_64-pc-linux-musl",
+        "chargement_secondes": 6.5,
+        "contraintes_index_secondes": 4.9,
+        "contraintes_posees": [
+          "tecdoc_map.source_linkage_criteria:source_linkage_criteria_pkey:p",
+          "tecdoc_map.source_linkage_criteria:source_linkage_criteria_source_linkage_id_fkey:f",
+          "tecdoc_map.source_linkage_criteria:source_linkage_criteria_source_linkage_id_source_kritnr_sou_key:u",
+          "tecdoc_map.source_linkages:source_linkages_artnr_dlnr_pgid_vknzielart_vknzielnr_key:u",
+          "tecdoc_map.source_linkages:source_linkages_pkey:p"
+        ],
+        "criteres": {
+          "lignes": 1614421,
+          "empreinte_md5_lignes": "3d80eff69430b30e9e37a33061ac9bf7"
+        },
+        "parents": {
+          "lignes": 1095153,
+          "empreinte_md5_lignes": "04cc4db05a16364c53f7ea3d36a8c0ea"
+        },
+        "par_dlnr": [
+          {
+            "source_dlnr": 253,
+            "criteres": 554568,
+            "linkages": 431472
+          },
+          {
+            "source_dlnr": 6358,
+            "criteres": 1059853,
+            "linkages": 663681
+          }
+        ],
+        "comparaison_prod": {
+          "criteres_lignes": true,
+          "criteres_empreinte": true,
+          "parents_lignes": true,
+          "parents_empreinte": true,
+          "par_dlnr": true,
+          "fk_criteres_parents_posee": true
+        },
+        "verdict": "RESTAURATION_IDENTIQUE"
+      }
+    },
+    "seal": {
+      "algorithm": "sha256",
+      "canonicalization": "sort_keys, UTF-8, separateurs (',',':'), bloc seal exclu.",
+      "sha256": "7b72ca214dcac6cd6e76388d432a8a57dc96fa1bf15bdd6db294873f7765ecdd"
+    }
+  }
+}
