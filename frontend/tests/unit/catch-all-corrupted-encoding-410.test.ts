@@ -38,12 +38,17 @@ describe("catch-all $.tsx — URL au %-encoding corrompu (U+FFFD) → 410, jamai
     );
   });
 
-  const call = (path: string) =>
-    loader({
-      request: new Request(`https://www.automecanik.com${path}`),
+  // Requête document : l'argument `url` de React Router porte le même chemin
+  // que `request.url`.
+  const call = (path: string) => {
+    const request = new Request(`https://www.automecanik.com${path}`);
+    return loader({
+      request,
+      url: new URL(request.url),
       params: {},
       context: {},
     } as never);
+  };
 
   // `isGarbageUrl` court-circuite via `throw data(...)` → DataWithResponseInit
   // (même forme que les 410 garbage existants, cf. catch-all-404-noindex.test).
