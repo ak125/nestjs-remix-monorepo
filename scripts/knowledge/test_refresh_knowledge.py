@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for refresh-knowledge.py `--headers-only` last_scan preservation.
+"""Tests for refresh-knowledge.py freshness, no-churn and staged-content isolation.
 
 Run:  python3 scripts/knowledge/test_refresh_knowledge.py
 Exit 0 = all pass. Stdlib + pyyaml only (same deps as the script under test).
@@ -20,8 +20,11 @@ from __future__ import annotations
 import contextlib
 import importlib.util
 import io
+import os
 import sys
 import tempfile
+import subprocess
+from unittest.mock import patch
 from datetime import date
 from pathlib import Path
 
@@ -148,12 +151,126 @@ def test_content_keys_stay_in_sync_with_build_frontmatter() -> None:
     )
 
 
+def test_full_refresh_preserves_date_and_repairs_retired_export() -> None:
+    """Actual full refresh: no daily churn; an export-only change repairs the body."""
+    mod = make_mod(['BarModule'])
+    existing = existing_md(mod, OLD) + rk.build_auto_block(mod) + '\n\nHuman prose stays.\n'
+    with tempfile.TemporaryDirectory(dir=APP_ROOT) as directory, patch.object(rk, 'MODULES_DIR', Path(directory)):
+        doc = Path(directory) / 'foo.md'; doc.write_text(existing, encoding='utf-8')
+        with contextlib.redirect_stdout(io.StringIO()):
+            assert rk.process('refresh', [mod], headers_only=False) == (0, 0)
+        assert doc.read_text(encoding='utf-8') == existing
+        mod.exports = ['NewService']
+        with contextlib.redirect_stdout(io.StringIO()):
+            assert rk.process('refresh', [mod], headers_only=False) == (0, 1)
+        fresh = doc.read_text(encoding='utf-8')
+        assert '`NewService`' in fresh and '`FooService`' not in fresh.split('### Providers')[0]
+        assert TODAY in fresh and 'Human prose stays.' in fresh
+        with contextlib.redirect_stdout(io.StringIO()):
+            assert rk.process('refresh', [mod], headers_only=False) == (0, 0)
+
+
+def test_index_check_ignores_unstaged_edits_and_detects_deletion() -> None:
+    """A working-tree repair cannot conceal a stale staged projection or be auto-staged."""
+    # Hooks export repository-local GIT_* variables. -C alone does not override
+    # those: clear them for the entire fixture, including the checker subprocesses.
+    fixture_env = {key: value for key, value in os.environ.items() if not key.startswith('GIT_')}
+    with patch.dict(os.environ, fixture_env, clear=True), tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        def git(*args):
+            return subprocess.check_output(['git', '-C', directory, *args], stderr=subprocess.DEVNULL)
+        git('init')
+        module = root/'backend/src/modules/foo'; module.mkdir(parents=True)
+        source = module/'foo.module.ts'
+        source.write_text('@Module({exports: [OldService]}) export class FooModule {}')
+        primary = module/'foo.service.ts'; primary.write_text('export class OldService {}')
+        docs = root/'.claude/knowledge/modules'; docs.mkdir(parents=True)
+        doc = docs/'foo.md'
+        with patch.object(rk, 'APP_ROOT', root), patch.object(rk, 'MODULES_DIR', docs):
+            def regenerate():
+                mod = rk.analyze_module(module, source)
+                if not doc.exists(): doc.write_text(rk.build_full_md(mod), encoding='utf-8')
+                else: rk.process('refresh', [mod], headers_only=False)
+            def check():
+                with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+                    return rk.check_staged()
+            regenerate()
+            # Unrelated historical debt must not block a targeted commit.
+            (docs/'unrelated.md').write_text('stale unrelated projection', encoding='utf-8')
+            git('add', '.'); git('-c','core.hooksPath=/dev/null','-c','commit.gpgSign=false','-c','user.name=Fixture','-c','user.email=fixture@example.invalid','commit','-qm','base')
+            source.write_text('@Module({exports: [NewService]}) export class FooModule {}')
+            git('add', str(source.relative_to(root)))
+            regenerate()  # fixed in worktree, deliberately NOT staged
+            index_before = (root/'.git/index').read_bytes(); doc_before = doc.read_bytes()
+            assert check() == 1, 'stale staged export must fail despite unstaged repair'
+            assert (root/'.git/index').read_bytes() == index_before and doc.read_bytes() == doc_before
+            git('add', str(doc.relative_to(root)))
+            assert check() == 0
+            source.write_text('@Module({exports: [UnstagedService]}) export class FooModule {}')
+            doc.write_text(doc.read_text(encoding='utf-8') + '\nUnstaged operator prose.\n', encoding='utf-8')
+            index_before = (root/'.git/index').read_bytes(); doc_before = doc.read_bytes()
+            assert check() == 0, 'only index content belongs to the candidate'
+            assert (root/'.git/index').read_bytes() == index_before and doc.read_bytes() == doc_before
+            source.write_text('@Module({exports: [NewService]}) export class FooModule {}')
+            renamed = module/'renamed.service.ts'
+            git('mv', str(primary.relative_to(root)), str(renamed.relative_to(root)))
+            assert check() == 1, 'renamed primary file must invalidate staged paths'
+            regenerate(); git('add', str(doc.relative_to(root)))
+            assert check() == 0
+            primary = renamed
+            git('rm', '-f', str(primary.relative_to(root)))
+            assert check() == 1, 'deleted primary file must invalidate staged documentation'
+            regenerate(); git('add', str(doc.relative_to(root)))
+            assert check() == 0
+            git('rm', '-f', str(source.relative_to(root)))
+            assert check() == 1, 'retained documentation for a removed module requires review'
+
+
+def test_fixture_preserves_calling_repository_under_hook_environment() -> None:
+    """A fixture run from a hook cannot commit to or stage into its caller."""
+    clean_env = {key: value for key, value in os.environ.items() if not key.startswith('GIT_')}
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        def git(*args):
+            return subprocess.check_output(['git', '-C', directory, *args], env=clean_env, stderr=subprocess.DEVNULL)
+        git('init')
+        (root/'sentinel').write_text('caller content', encoding='utf-8')
+        git('add', '.')
+        git('-c','core.hooksPath=/dev/null','-c','commit.gpgSign=false','-c','user.name=Fixture','-c','user.email=fixture@example.invalid','commit','-qm','caller')
+        head = git('rev-parse','HEAD')
+        index = (root/'.git/index').read_bytes()
+        config = (root/'.git/config').read_bytes()
+        hostile_env = dict(clean_env, GIT_DIR=str(root/'.git'), GIT_WORK_TREE=str(root),
+                           GIT_INDEX_FILE=str(root/'.git/index'), GIT_PREFIX='',
+                           GIT_COMMON_DIR=str(root/'.git'), GIT_OBJECT_DIRECTORY=str(root/'.git/objects'))
+        with patch.dict(os.environ, hostile_env, clear=True):
+            test_index_check_ignores_unstaged_edits_and_detects_deletion()
+        assert git('rev-parse','HEAD') == head, 'fixture changed caller HEAD'
+        assert (root/'.git/index').read_bytes() == index, 'fixture changed caller index'
+        assert (root/'.git/config').read_bytes() == config, 'fixture changed caller config'
+        assert (root/'sentinel').read_text(encoding='utf-8') == 'caller content'
+
+
+def test_targeted_refresh_does_not_build_repo_map() -> None:
+    """A single-module refresh cannot mutate unrelated registry projections."""
+    with patch.object(sys, 'argv', ['refresh-knowledge.py', 'refresh', '--module', 'foo']), \
+         patch.object(rk, 'detect_modules', return_value=[make_mod([])]), \
+         patch.object(rk, 'process', return_value=(0, 0)), \
+         patch.object(rk, '_maybe_refresh_repo_map') as rebuild:
+        with contextlib.redirect_stdout(io.StringIO()): assert rk.main() == 0
+        rebuild.assert_not_called()
+
+
 ALL_TESTS = [
     test_case1_no_churn,
     test_case2_bump_on_change,
     test_default_path_still_bumps,
     test_process_only_writes_changed_modules,
     test_content_keys_stay_in_sync_with_build_frontmatter,
+    test_full_refresh_preserves_date_and_repairs_retired_export,
+    test_index_check_ignores_unstaged_edits_and_detects_deletion,
+    test_fixture_preserves_calling_repository_under_hook_environment,
+    test_targeted_refresh_does_not_build_repo_map,
 ]
 
 
@@ -161,7 +278,7 @@ def run() -> None:
     for t in ALL_TESTS:
         t()
     print(f"OK — {len(ALL_TESTS)} tests passed "
-          "(no-churn, bump-on-change, default-path, process-isolation, content-keys-sync)")
+          "(no-churn, full-refresh, staged isolation, rename/deletion, targeted scope)")
 
 
 if __name__ == "__main__":
