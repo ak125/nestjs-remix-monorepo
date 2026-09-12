@@ -457,6 +457,12 @@ jobs:
             echo "⚠️ /api/catalog/families -> unexpected response (non-blocking)"
           fi
 
+          # Verify the deployed edge configuration and the live application
+          # exemption boundary. Two read-only catalogue requests, no payment call.
+          if ! node "$GITHUB_WORKSPACE/scripts/ci/prod-client-ip-probe.mjs"; then
+            FAILED=1
+          fi
+
           # Test Supabase connectivity (catches disabled/invalid keys)
           echo "🔌 Testing Supabase RPC connectivity..."
           SUPABASE_TEST=$($EXEC wget -qO- 'http://localhost:3000/api/gamme-rest/4/page-data-rpc-v2' 2>/dev/null || echo "FAIL")
