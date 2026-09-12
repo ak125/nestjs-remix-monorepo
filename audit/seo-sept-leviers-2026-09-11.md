@@ -1,10 +1,11 @@
 # Audit SEO — 7 leviers, fiabilité de la mesure GSC, robots, marqueurs (2026-09-11)
 
-> **Statut par défaut de tout ce qui suit : CODE CORRIGÉ + TESTÉ, POUSSÉ dans la PR #1467
-> (brouillon) le 2026-09-11. NON MERGÉ, NON DÉPLOYÉ, EFFET SEO NON MESURÉ.**
+> **Statut par défaut de tout ce qui suit : CODE CORRIGÉ + TESTÉ, MERGÉ sur main par la
+> PR #1467 le 2026-09-12 à 21:20Z (squash `90a66e170`), donc déployé sur PREPROD uniquement.
+> NON DÉPLOYÉ EN PROD (aucun tag), EFFET SEO NON MESURÉ.**
 > Deux exceptions : la garde admin, livrée par la PR #1460 et déployée en PROD le 2026-09-11
 > (§4.5, §11) ; et les **2 migrations, APPLIQUÉES le 2026-09-11 à 23:36 UTC** sur GO owner
-> (§4.1). Le code qui les utilise n'est toujours pas mergé ni déployé.
+> (§4.1). Aucun runtime PROD ne lit encore les objets qu'elles créent.
 > Branche `fix/seo-measure-robots-markers` (worktree `.claude/worktrees/seo-leviers-mesure`),
 > base `bcf0c775a`. Vérification complète au SHA `25cfd1bc4`. Les contrôles touchés par le
 > dernier changement de code (un test frontend, `771c7b934`) ont été rejoués à ce SHA (§12).
@@ -427,6 +428,9 @@ Title, meta et H1 relevés en live le 2026-09-11. Toute proposition part d'une r
 | 9 | Tag PROD (message du **2026-09-11T21:09:50.040Z**) | « push tag » | Traité comme une **demande de confirmation**, pas comme un GO : un GO PROD doit nommer le lot et ses PR. **Aucun tag poussé.** Lot candidat au 2026-09-11 21:35Z : `v2026.09.09-throttler-caddy-perf-cache..38747ac6b`, 33 PR. |
 | 10 | Tag PROD (message du **2026-09-11, 21:44Z**) | « GO PROD pour le lot `v2026.09.09-throttler-caddy-perf-cache..38747ac6b` » | Lot nommé sans ambiguïté, après publication de la liste des 33 PR et de l'échec Lighthouse connu. Contrôle préalable : l'échec Lighthouse a bien la cause préexistante (`/search?q=plaquette`, preuve invalide). Tag `v2026.09.11-cwv-sanitizer-admin-guard` posé sur `38747ac6b` à 21:49Z ; deploy PROD ✅ à 21:51:31Z ; **garde admin vérifiée en PROD : `cron/health` = 403**. |
 | 11 | Application des 2 migrations (message du **2026-09-11, 23:34Z**) | « go » | Dry-run d'abord (chemin vérifié sans écriture) : exactement les 2 identifiants attendus, transactionnels, aucune migration antérieure enjambée. Puis APPLY depuis la tête de PR `ae4a19d14` (run 34658711995) : appliquées à 23:36:53 et 23:36:54 UTC. Registre **308 applied, 0 pending, 0 drift, 0 failed**. Contrôles Q4 et Q6 passés ; `rpc_seo_low_ctr_v4` STABLE, EXECUTE réservé à `service_role`. **Merge, tag, collecteur et reprise restent gated.** |
+| 12 | Reprise de main dans la PR (message du **2026-09-12, 20:48Z**) | « go » | Merge de `origin/main` (`90977bf6a`) → `1e8dab45f`. Conflits limités aux projections générées : côté main repris, puis régénération complète. Contrôles locaux et CI de la PR verts (44 / 9 skippés / 0 échec). **Pas de merge.** |
+| 13 | Merge de la PR #1467 (message du **2026-09-12, 21:07Z**) | « merge » | Nouvelle reprise de main (`943b9a5ff`) → `2d67100f7`, contrôles locaux rejoués, sortie du brouillon, merge squash automatique **verrouillé sur ce SHA**. Mergée à 21:20:17Z (`90a66e170`, arbre identique à `2d67100f7`). PREPROD uniquement, **aucun tag**. |
+| 14 | Mise à jour de ce statut (message du **2026-09-12, 21:27Z**) | « go » | Lu comme l'accord pour ouvrir **cette PR docs seulement**, seule action soumise à accord dans le message précédent. **Pas un GO PROD** : aucun lot n'était nommé. |
 
 **Propositions à valider** (aucun accord identifiable) :
 - emplacement du collecteur (PROD) et désactivation du collecteur DEV ;
@@ -441,17 +445,15 @@ Title, meta et H1 relevés en live le 2026-09-11. Toute proposition part d'une r
 
 ## 11. Local ou GO
 
-- **Local, commité sur la branche** : tous les commits depuis `fe658657d` jusqu'à la tête de branche (`git log bcf0c775a..HEAD`). Parmi eux : ce rapport (`cdbdb58a4`) et une entrée `log.md` créée automatiquement par le hook Stop (`f2ab4cbbb`).
-- **Local, non suivi** : patch guard-only ; description de PR (`.claude/handoffs/`).
-- **Mergé sur main** : la garde admin seule, PR #1460 (§4.5). Déployée sur PREPROD via le run de `f64ef5197`, puis via celui de `38747ac6b`.
-- **Poussé, non mergé** : le reste de la branche, le 2026-09-11 à 22:15Z, dans la **PR #1467 (brouillon)**, au SHA `09261d63a` — après reprise de `origin/main` (`38747ac6b`) et régénération des projections. CI de la PR : 44 checks verts, 9 skippés, 0 échec. Brouillon délibéré : les 2 migrations passent **avant** le merge.
-- **Appliqué en base** : les 2 migrations additives, le 2026-09-11 à 23:36 UTC (GO owner), depuis la tête de PR. Le code qui les consomme n'est ni mergé ni déployé — aucun runtime ne lit encore `page_totals` ni v4.
+- **Mergé sur main** : la garde admin, PR #1460 (§4.5), déployée sur PREPROD via le run de `f64ef5197`, puis via celui de `38747ac6b` ; puis le reste de la branche, **PR #1467, le 2026-09-12 à 21:20:17Z** (squash `90a66e170`). Pour #1467 : **PREPROD uniquement**, run main `34719663096`.
+- **Appliqué en base** : les 2 migrations additives, le 2026-09-11 à 23:36 UTC (GO owner), avant le merge. Registre : 308 applied, 0 pending. Aucun runtime PROD ne lit encore `page_totals` ni v4.
 - **Déployé en PROD** : la garde admin, par le tag `v2026.09.11-cwv-sanitizer-admin-guard` sur `38747ac6b`, le 2026-09-11 à 21:51Z. Vérification en PROD : `GET /api/admin/seo-monitoring/cron/health` = **403** (200 sans authentification avant), `credentials/health` = 403, `/` et `/health` = 200.
-- **Nécessite un GO** : chaque étape du §4.7, les SQL du §8, les corrections du §7, les purges, le tag PROD.
+- **Non suivi, conservé hors worktree** : description de PR et patch guard-only, copiés dans `.claude/handoffs/` du checkout principal.
+- **Nécessite un GO** : le tag PROD (GO nommant le lot), le collecteur GSC/GA4 unique en PROD, la reprise GSC mois par mois (§4.7), les SQL du §8, les corrections du §7, les purges.
 
 **Fait le 2026-09-11** : le lot complet a été audité (33 PR), puis taggé sur GO owner. `/api/admin/seo-monitoring/*` n'est plus ouvert sans authentification en PROD. Lighthouse `/search` reste rouge sur main : cause préexistante, hors périmètre de ce rapport.
 
-**Prochaine action unique proposée** : GO owner sur l'exécutant de l'ingestion GSC et sur les 2 migrations. Sans collecteur fiable, aucune correction de mesure ne produit de donnée.
+**Prochaine action unique proposée** : vérifier le run PREPROD de `90a66e170`, puis obtenir un GO owner qui nomme le lot du tag PROD. Ensuite seulement, activer le collecteur unique en PROD : sans collecteur fiable, aucune correction de mesure ne produit de donnée. Le rattrapage automatique ne couvre plus le 2026-06-01 à partir du run du 2026-10-02 UTC.
 
 ## 12. Vérification liée au SHA `25cfd1bc4`, rejouée pour `771c7b934`
 
