@@ -440,6 +440,34 @@ kill "$DWPID" 2>/dev/null
 wait "$DWPID" 2>/dev/null
 rm -rf "$DW"
 
+# backend/tsconfig.json garde "incremental": true : sous `npm run dev`, un changement ne réécrit que les
+# fichiers concernés. Sans lui, le premier changement après le démarrage réécrit TOUT dist/ (4 152 fichiers
+# sur le backend : la tempête qui abattait tsc-alias --watch le 2026-09-11). Bac à sable qui rejoue la
+# séquence de dev:compile (build + alias, puis le watcher) avec le réglage lu dans backend/tsconfig.json.
+DI=$(mktemp -d)
+mkdir -p "$DI/src/common"
+ln -s "$DW_NM" "$DI/node_modules"
+cp "$REPO_ROOT/scripts/ops/dev-compile-watch.js" "$DI/"
+DI_INCR=$(jq -r '.compilerOptions.incremental // false' "$REPO_ROOT/backend/tsconfig.json")
+printf '{"compilerOptions":{"incremental":%s,"module":"commonjs","target":"ES2022","outDir":"./dist","rootDir":"./src","declaration":true,"skipLibCheck":true,"types":[],"paths":{"@common/*":["./src/common/*"]}},"include":["src/**/*.ts"]}\n' "$DI_INCR" > "$DI/tsconfig.json"
+printf 'import { greet } from "@common/greet";\nexport const hello = greet("dev");\n' > "$DI/src/main.ts"
+printf 'export const greet = (name: string) => `bonjour ${name}`;\n' > "$DI/src/common/greet.ts"
+(cd "$DI" && node node_modules/.bin/tsc --build && node node_modules/.bin/tsc-alias -p tsconfig.json) > "$DI/build.log" 2>&1
+(cd "$DI" && exec node dev-compile-watch.js > "$DI/out" 2>&1) &
+DIPID=$!
+di_cycles() { local n; n=$(grep -c 'Watching for file changes' "$DI/out" 2>/dev/null); echo "${n:-0}"; }
+di_wait() { local i; for i in $(seq 900); do [ "$(di_cycles)" -ge "$1" ] && return 0; sleep 0.1; done; return 1; }
+di_wait 1
+DI_MAIN0=$(stat -c %y "$DI/dist/main.js" 2>/dev/null)
+sleep 1.2
+echo '// commentaire' >> "$DI/src/common/greet.ts"
+di_wait 2
+sleep 1
+assert_contains "dev-compile-watch : backend incrémental, un changement ne réécrit pas les fichiers non concernés" "^intact$" "$([ -n "$DI_MAIN0" ] && [ "$DI_MAIN0" = "$(stat -c %y "$DI/dist/main.js" 2>/dev/null)" ] && echo intact || echo réécrit)"
+kill "$DIPID" 2>/dev/null
+wait "$DIPID" 2>/dev/null
+rm -rf "$DI"
+
 # ============================================================
 # Hook 3 : stop-claude-md-suggest.sh
 # ============================================================
