@@ -213,6 +213,9 @@ jobs:
       - name: Build packages
         run: npm run build
 
+      - name: Test client-IP deployment probe
+        run: node --test scripts/ci/prod-client-ip-probe.test.mjs
+
       - name: 🧪 Run backend tests
         run: cd backend && npx jest --ci --verbose --maxWorkers=1 --forceExit --coverage --coverageReporters=text-summary --coverageReporters=json-summary
         env:

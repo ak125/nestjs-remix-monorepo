@@ -8,6 +8,7 @@ import { LoggerModule } from 'nestjs-pino';
 import { SentryModule } from '@sentry/nestjs/setup';
 import { loggerConfig } from './config/logger.config';
 import { THROTTLER_TIERS } from './config/throttler-tiers.config';
+import { shouldSkipThrottling } from './config/throttler-skip.config';
 import { RequestIdMiddleware } from './modules/mcp-validation/middleware/request-id.middleware';
 // import { ScheduleModule } from '@nestjs/schedule'; // ❌ DÉSACTIVÉ - Conflit de version avec @nestjs/common v10
 // import { BullModule } from '@nestjs/bullmq'; // ❌ DÉSACTIVÉ - Conflit de version avec @nestjs/common v10
@@ -18,7 +19,6 @@ import { WriteGuardModule } from './config/write-guard.module'; // 🛡️ P1.5 
 import { RpcGateModule } from './security/rpc-gate/rpc-gate.module'; // 🛡️ NOUVEAU - RPC Safety Gate pour gouvernance Supabase !
 import { BotGuardModule } from './modules/bot-guard/bot-guard.module'; // 🛡️ Bot protection (geo-block, IP block, behavioral scoring)
 import { SyntheticProbeCredentialModule } from './modules/seo-control-plane/synthetic-probe-credential.module'; // 🛡️ HMAC credential du crawler synthétique (exemption rate-limit scopée)
-import { isSyntheticExemptPath } from './modules/seo-control-plane/types';
 import { DatabaseModule } from './database/database.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { HealthModule } from './modules/health/health.module';
@@ -101,58 +101,7 @@ import { TrendSignalsModule } from './modules/trend-signals/trend-signals.module
       // Tiers + invariant de portée : src/config/throttler-tiers.config.ts
       // (un tier nommé ici s'applique à TOUTES les routes — cf. régression #390).
       throttlers: THROTTLER_TIERS,
-      // 🛡️ Skip internal calls (Remix SSR + Docker containers + Admin users)
-      skipIf: (context) => {
-        const request = context.switchToHttp().getRequest();
-        const ip = request.ip || request.connection?.remoteAddress;
-        const user = request.user;
-
-        // Skip forward-confirmed search-engine crawlers (flag set upstream by
-        // BotGuardMiddleware via FCrDNS) — they must never hit the rate limiter
-        // and get a 429 mid-crawl.
-        if (request.isVerifiedBot === true) {
-          return true;
-        }
-
-        // Skip the internal synthetic crawler (seo-control-plane L1) — but ONLY
-        // for public-catalogue GETs (least-privilege). The flag is set upstream
-        // by BotGuardMiddleware after verifying an HMAC credential (NOT the UA),
-        // and isSyntheticExemptPath() blocks /api, /auth, /cart, /checkout,
-        // /admin and every non-GET, so even a leaked credential cannot relax
-        // rate-limiting beyond already-public, already-CDN-cached reads.
-        // Incident 2026-06-25 (crawler 89.7% 429 → L1 monitoring blind).
-        if (
-          request.isVerifiedSyntheticProbe === true &&
-          isSyntheticExemptPath(request.method, request.path || '')
-        ) {
-          return true;
-        }
-
-        // Skip for admin users (level >= 7)
-        if (user?.isAdmin === true || parseInt(user?.level) >= 7) {
-          return true;
-        }
-
-        // Skip localhost/127.0.0.1/::1 (internal SSR calls)
-        if (ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1') {
-          return true;
-        }
-
-        // Skip Docker bridge network (172.17.0.0/16) - pour n8n et autres conteneurs
-        if (ip?.startsWith('172.17.') || ip?.startsWith('::ffff:172.17.')) {
-          return true;
-        }
-
-        // Skip Docker internal networks (172.16-31.0.0/12) - tous réseaux Docker
-        const dockerMatch = ip?.match(
-          /^(?:::ffff:)?172\.(1[6-9]|2[0-9]|3[0-1])\./,
-        );
-        if (dockerMatch) {
-          return true;
-        }
-
-        return false;
-      },
+      skipIf: shouldSkipThrottling,
     }),
 
     // Event Emitter global
