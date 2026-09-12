@@ -70,6 +70,11 @@ transport_detail=""
 # "transport-only", retried, got a clean pass, and the real defect shipped green.
 # Every attempt is collected; the verdict is decided once, after the loop.
 for _ in $(seq 1 "$COUNT"); do
+  # These are latency samples, not a load test. All SSR pages share one IP
+  # bucket (15 requests/second), including preceding CI checks. Give EVERY
+  # sample a fresh burst window; keep this outside curl's measured duration.
+  # A 429 that still occurs remains a wrong status and is never retried.
+  sleep 1 || exit 1
   # One curl per probe yields BOTH status and timing, so the two can never drift
   # apart. No `-L`: a redirect must surface as 3xx, never be followed silently.
   # On a network error / DNS failure / timeout curl exits non-zero and prints
