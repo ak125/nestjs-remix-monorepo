@@ -15,7 +15,8 @@
  * the base URL comes from `PLAYWRIGHT_BASE_URL`.
  */
 
-import { test, expect, type Page, type BrowserContext } from "@playwright/test";
+import { type Page, type BrowserContext } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 // Hydration / SSR-mismatch / chunk-load signatures. Kept IN SYNC with the
 // runtime classifier `isHydrationRecoverableError` (react-error-handlers.client)
