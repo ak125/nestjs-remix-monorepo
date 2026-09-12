@@ -8,6 +8,14 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { setTimeout as wait } from 'node:timers/promises';
+
+// These single-IP URL checks validate responses, not burst capacity. Start each
+// case in a fresh one-second window; performance timers begin inside the test.
+// Keep the real limiter and every status assertion active, including 429s.
+test.beforeEach(async () => {
+  await wait(1000);
+});
 
 // ============================================
 // URLS CRITIQUES À VALIDER
