@@ -716,6 +716,7 @@
         "backend/src/common/guards/cloudflare-throttler.guard.ts",
         "backend/src/config/feature-flags.module.ts",
         "backend/src/config/logger.config.ts",
+        "backend/src/config/throttler-skip.config.ts",
         "backend/src/config/throttler-tiers.config.ts",
         "backend/src/config/write-guard.module.ts",
         "backend/src/controllers/analytics.controller.ts",
@@ -755,7 +756,6 @@
         "backend/src/modules/search/search.module.ts",
         "backend/src/modules/seo-control-plane/seo-control-plane.module.ts",
         "backend/src/modules/seo-control-plane/synthetic-probe-credential.module.ts",
-        "backend/src/modules/seo-control-plane/types.ts",
         "backend/src/modules/seo-monitoring/seo-monitoring.module.ts",
         "backend/src/modules/seo-projection/seo-projection.module.ts",
         "backend/src/modules/seo/seo.module.ts",
@@ -778,7 +778,7 @@
         "backend/src/workers/worker.module.ts"
       ],
       "kind": "service",
-      "loc": 273,
+      "loc": 222,
       "owner": "__unassigned__",
       "path": "backend/src/app.module.ts",
       "risk": "low",
@@ -2345,6 +2345,7 @@
       "importedBy": [
         "backend/src/app.module.ts",
         "backend/src/common/guards/cloudflare-throttler.guard.test.ts",
+        "backend/src/config/throttler-skip.config.test.ts",
         "backend/src/config/throttler-tiers.config.test.ts"
       ],
       "imports": [],
@@ -4971,6 +4972,55 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/config/throttler-skip.config.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/common/guards/cloudflare-throttler.guard.ts",
+        "backend/src/config/throttler-skip.config.ts",
+        "backend/src/config/throttler-tiers.config.ts"
+      ],
+      "kind": "test",
+      "loc": 200,
+      "owner": "__unassigned__",
+      "path": "backend/src/config/throttler-skip.config.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "reachability"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/config/throttler-skip.config.ts",
+      "importedBy": [
+        "backend/src/app.module.ts",
+        "backend/src/config/throttler-skip.config.test.ts"
+      ],
+      "imports": [
+        "backend/src/modules/seo-control-plane/types.ts",
+        "http"
+      ],
+      "kind": "config",
+      "loc": 51,
+      "owner": "__unassigned__",
+      "path": "backend/src/config/throttler-skip.config.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/config/throttler-tiers.config.test.ts",
       "importedBy": [],
       "imports": [
@@ -4997,6 +5047,7 @@
       "id": "backend/src/config/throttler-tiers.config.ts",
       "importedBy": [
         "backend/src/app.module.ts",
+        "backend/src/config/throttler-skip.config.test.ts",
         "backend/src/config/throttler-tiers.config.test.ts"
       ],
       "imports": [],
@@ -23804,7 +23855,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/seo-control-plane/types.ts",
       "importedBy": [
-        "backend/src/app.module.ts",
+        "backend/src/config/throttler-skip.config.ts",
         "backend/src/modules/seo-control-plane/collectors/synthetic-crawler/synthetic-crawler.processor.ts",
         "backend/src/modules/seo-control-plane/collectors/synthetic-crawler/synthetic-crawler.scheduler.service.test.ts",
         "backend/src/modules/seo-control-plane/collectors/synthetic-crawler/synthetic-crawler.scheduler.service.ts",
@@ -66638,6 +66689,44 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/ci/prod-client-ip-probe.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 114,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/prod-client-ip-probe.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/ci/prod-client-ip-probe.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 76,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/prod-client-ip-probe.test.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
