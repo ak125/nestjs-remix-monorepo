@@ -261,6 +261,81 @@ def test_targeted_refresh_does_not_build_repo_map() -> None:
         rebuild.assert_not_called()
 
 
+def test_staged_cli_reports_skips_and_rejects_unsupported_entries() -> None:
+    """Explicit skips and fail-closed paths preserve the real fixture index."""
+    clean_env = {key: value for key, value in os.environ.items() if not key.startswith('GIT_')}
+    with patch.dict(os.environ, clean_env, clear=True), tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        def git(*args, data=None):
+            return subprocess.check_output(['git', '-C', directory, *args], input=data, stderr=subprocess.DEVNULL)
+        git('init')
+        docs = root/'.claude/knowledge/modules'
+        with patch.object(rk, 'APP_ROOT', root), patch.object(rk, 'MODULES_DIR', docs):
+            def check():
+                output = io.StringIO()
+                with patch.object(sys, 'argv', ['refresh-knowledge.py', 'refresh', '--check-staged']), \
+                     contextlib.redirect_stdout(output), contextlib.redirect_stderr(output):
+                    code = rk.main()
+                assert rk.APP_ROOT == root, 'temporary renderer root leaked after check'
+                return code, output.getvalue()
+            code, output = check()
+            assert code == 0 and 'no affected modules' in output
+            module = root/'backend/src/modules/foo'; module.mkdir(parents=True)
+            source = module/'foo.module.ts'
+            source.write_text('@Module({exports: [FooService]}) export class FooModule {}', encoding='utf-8')
+            git('add', '.')
+            code, output = check()
+            assert code == 0 and 'SKIP foo' in output and 'bootstrap' in output
+            docs.mkdir(parents=True)
+            doc = docs/'foo.md'
+            doc.write_text(rk.build_full_md(rk.analyze_module(module, source)), encoding='utf-8')
+            git('add', '.')
+            assert check()[0] == 0
+            doc_name = doc.relative_to(root).as_posix()
+            # A link may not be followed, even if its target would be a valid doc.
+            oid = git('hash-object', '-w', '--stdin', data=b'missing-target').decode().strip()
+            git('update-index', '--cacheinfo', f'120000,{oid},{doc_name}')
+            index = (root/'.git/index').read_bytes(); content = doc.read_bytes()
+            code, output = check()
+            assert code == 1 and 'Unsupported staged entry' in output
+            assert (root/'.git/index').read_bytes() == index and doc.read_bytes() == content
+            # Unmerged index stages must fail explicitly as well.
+            git('update-index', '--index-info', data=(f'0 {"0"*40}\t{doc_name}\n'
+                f'100644 {oid} 1\t{doc_name}\n100644 {oid} 2\t{doc_name}\n100644 {oid} 3\t{doc_name}\n').encode())
+            index = (root/'.git/index').read_bytes()
+            code, output = check()
+            assert code == 1 and 'Unsupported staged entry' in output
+            assert (root/'.git/index').read_bytes() == index
+
+
+def test_fallback_descriptor_selection_matches_staged_check() -> None:
+    """Refresh and check select the same descriptor regardless of filesystem order."""
+    clean_env = {key: value for key, value in os.environ.items() if not key.startswith('GIT_')}
+    with patch.dict(os.environ, clean_env, clear=True), tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        subprocess.run(['git', '-C', directory, 'init', '-q'], check=True)
+        modules = root/'backend/src/modules'; module = modules/'foo'; module.mkdir(parents=True)
+        # Create in reverse lexical order: no descriptor matches the folder name.
+        for name in ['Zeta', 'Alpha']:
+            (module/f'{name.lower()}.module.ts').write_text(
+                f'@Module({{exports: [{name}Service]}}) export class {name}Module {{}}', encoding='utf-8')
+        docs = root/'.claude/knowledge/modules'
+        with patch.object(rk, 'APP_ROOT', root), patch.object(rk, 'MODULES_DIR', docs), \
+             patch.object(rk, 'BACKEND_MODULES_DIR', modules):
+            # Directory iteration order is unspecified; exercise a valid reverse
+            # order explicitly rather than relying on the host filesystem.
+            with patch.object(Path, 'glob', return_value=iter([
+                module/'zeta.module.ts', module/'alpha.module.ts'
+            ])):
+                detected = rk.detect_modules(only='foo')
+            assert detected[0].module_file.name == 'alpha.module.ts', 'fallback selection depends on filesystem order'
+            with contextlib.redirect_stdout(io.StringIO()):
+                assert rk.process('bootstrap', detected, headers_only=False) == (1, 0)
+            subprocess.run(['git', '-C', directory, 'add', '.'], check=True)
+            with contextlib.redirect_stdout(io.StringIO()):
+                assert rk.check_staged() == 0, 'generator and checker disagree on fallback descriptor'
+
+
 ALL_TESTS = [
     test_case1_no_churn,
     test_case2_bump_on_change,
@@ -271,6 +346,8 @@ ALL_TESTS = [
     test_index_check_ignores_unstaged_edits_and_detects_deletion,
     test_fixture_preserves_calling_repository_under_hook_environment,
     test_targeted_refresh_does_not_build_repo_map,
+    test_staged_cli_reports_skips_and_rejects_unsupported_entries,
+    test_fallback_descriptor_selection_matches_staged_check,
 ]
 
 

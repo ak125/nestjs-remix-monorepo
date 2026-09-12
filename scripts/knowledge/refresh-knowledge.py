@@ -103,7 +103,7 @@ def detect_modules(only: str | None = None) -> list[ModuleInfo]:
         module_file = mod_dir / f"{mod_dir.name}.module.ts"
         if not module_file.exists():
             # some folders use a different naming convention
-            candidates = list(mod_dir.glob("*.module.ts"))
+            candidates = sorted(mod_dir.glob("*.module.ts"))
             if not candidates:
                 continue
             module_file = candidates[0]
