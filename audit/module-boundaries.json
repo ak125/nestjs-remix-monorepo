@@ -91,7 +91,7 @@
         "backend/src/utils"
       ],
       "files_count": 35,
-      "loc_total": 6160,
+      "loc_total": 6109,
       "has_barrel": true
     },
     "blog": {
@@ -185,8 +185,8 @@
         "backend/src/modules/config/services",
         "backend/src/modules/config/validators"
       ],
-      "files_count": 98,
-      "loc_total": 24121,
+      "files_count": 100,
+      "loc_total": 24372,
       "has_barrel": true
     },
     "customers": {
@@ -700,8 +700,8 @@
         "scripts/wiki-generators",
         "scripts/wiki-generators/__tests__"
       ],
-      "files_count": 176,
-      "loc_total": 36288,
+      "files_count": 178,
+      "loc_total": 36478,
       "has_barrel": true
     },
     "search": {
@@ -1258,7 +1258,7 @@
     {
       "from": "backend-core",
       "to": "config",
-      "count": 9
+      "count": 10
     },
     {
       "from": "backend-core",
@@ -1383,7 +1383,7 @@
     {
       "from": "backend-core",
       "to": "seo-control-plane",
-      "count": 3
+      "count": 2
     },
     {
       "from": "backend-core",
@@ -1593,7 +1593,7 @@
     {
       "from": "config",
       "to": "common",
-      "count": 1
+      "count": 2
     },
     {
       "from": "config",
@@ -1608,6 +1608,11 @@
     {
       "from": "config",
       "to": "seo",
+      "count": 1
+    },
+    {
+      "from": "config",
+      "to": "seo-control-plane",
       "count": 1
     },
     {
