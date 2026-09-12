@@ -9,8 +9,8 @@
  *
  * Pourquoi un seul processus (incident du 2026-09-11) : la paire
  * `tsc --build --watch` + `tsc-alias -p tsconfig.json --watch` faisait surveiller les ~2 800
- * fichiers émis par un second processus. Le backend compile en non-incrémental : changer un
- * commentaire réémet les 4 152 fichiers de dist/, soit ~18 400 événements inotify d'un coup.
+ * fichiers émis par un second processus. Le backend compilait alors en non-incrémental : changer
+ * un commentaire réémettait les 4 152 fichiers de dist/, soit ~18 400 événements inotify d'un coup.
  * tsc-alias traite chaque événement sans borne de concurrence ; sa mémoire explose (mesuré :
  * 792 Mo à la première réémission, au-delà de 2 Go à la deuxième), V8 finit par l'abattre
  * (SIGABRT) et `run-p` arrête alors toute la chaîne dev — DEV:3000 à terre jusqu'à une relance

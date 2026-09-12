@@ -6,6 +6,7 @@
     "strict": false,
     "skipLibCheck": true,
     "noEmitOnError": false,
+    "incremental": true,
     "outDir": "./dist",
     "rootDir": "./src",
     "noEmit": false,
