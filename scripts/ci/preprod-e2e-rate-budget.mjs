@@ -1,7 +1,5 @@
 import { setTimeout } from "node:timers/promises";
 
-const TIERS = ["short", "medium", "long", "payment_callback"];
-
 function integer(headers, key) {
   const value = headers[key];
   if (typeof value !== "string" || !/^\d+$/.test(value)) {
@@ -17,17 +15,28 @@ function integer(headers, key) {
  * Never retry a scenario request or add latency inside its measured actions.
  * Missing limiter headers, unexpected HTTP errors and long exhaustion fail.
  *
- * @param {{ probe: () => Promise<{status: number, headers: Record<string, string>}>,
+ * @param {{ tiers: Array<{name: string, ttl: number}>,
+ *   probe: () => Promise<{status: number, headers: Record<string, string>}>,
  *   sleep?: (ms: number) => Promise<unknown>, now?: () => number,
  *   log?: (message: string) => void, maxWaitMs?: number }} options
  */
 export async function waitForRateBudget({
+  tiers,
   probe,
   sleep = setTimeout,
   now = Date.now,
   log = console.log,
   maxWaitMs = 75_000,
 }) {
+  const short = tiers.find(({ name }) => name === "short");
+  if (
+    !short ||
+    tiers.some(
+      ({ name, ttl }) => !name || !Number.isSafeInteger(ttl) || ttl <= 0,
+    )
+  ) {
+    throw new Error("Rate-budget setup requires the configured numeric TTLs");
+  }
   const deadline = now() + maxWaitMs;
   for (;;) {
     const { status, headers } = await probe();
@@ -36,7 +45,9 @@ export async function waitForRateBudget({
     if (status === 429) {
       // Nest exposes the actual blocked tier. The HTML error filter's generic
       // Retry-After is always 60 and does not identify the exhausted window.
-      const blocked = TIERS.filter((tier) => `retry-after-${tier}` in headers);
+      const blocked = tiers
+        .map(({ name }) => name)
+        .filter((tier) => `retry-after-${tier}` in headers);
       if (!blocked.length)
         throw new Error("429 without a named retry-after tier");
       waitSeconds = Math.max(
@@ -46,21 +57,26 @@ export async function waitForRateBudget({
     } else {
       if (status !== 200)
         throw new Error(`Rate-budget setup returned HTTP ${status}`);
-      for (const tier of TIERS) {
+      for (const { name: tier, ttl } of tiers) {
         const limit = integer(headers, `x-ratelimit-limit-${tier}`);
         const remaining = integer(headers, `x-ratelimit-remaining-${tier}`);
-        const reset = integer(headers, `x-ratelimit-reset-${tier}`);
+        integer(headers, `x-ratelimit-reset-${tier}`);
         if (limit < 2 || remaining >= limit) {
           throw new Error(`Invalid or bypassed rate-limit tier: ${tier}`);
         }
         // The setup request consumes one slot. Short is a burst window; the
         // scenario starts after it resets. Longer windows reserve navigation.
         const required = tier === "short" ? limit - 1 : Math.min(32, limit - 1);
-        if (remaining < required) waitSeconds = Math.max(waitSeconds, reset, 1);
+        // Nest expires EACH hit after its own TTL. Reset describes the key's
+        // older window boundary, not when all recent hits disappear. Waiting
+        // that boundary can leave the bucket almost full for another window.
+        // One configured TTL of idle time releases all preceding hits; source
+        // these durations from THROTTLER_TIERS, never duplicate them here.
+        if (remaining < required)
+          waitSeconds = Math.max(waitSeconds, Math.ceil(ttl / 1000));
       }
       ready = waitSeconds === 0;
-      if (ready)
-        waitSeconds = Math.max(integer(headers, "x-ratelimit-reset-short"), 1);
+      if (ready) waitSeconds = Math.ceil(short.ttl / 1000);
     }
     const waitMs = waitSeconds * 1000;
     if (now() + waitMs > deadline) {
