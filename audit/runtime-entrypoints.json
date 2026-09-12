@@ -551,6 +551,7 @@
       "backend/src/modules/seo-control-plane/seo-control-plane.module.ts",
       "backend/src/modules/seo-control-plane/synthetic-probe-credential.module.ts",
       "backend/src/modules/seo-logs/seo-logs.module.ts",
+      "backend/src/modules/seo-monitoring/cli/run-ingestion-backfill.ts",
       "backend/src/modules/seo-monitoring/seo-monitoring.module.ts",
       "backend/src/modules/seo-projection/seo-projection-read.module.ts",
       "backend/src/modules/seo-projection/seo-projection.module.ts",
@@ -658,6 +659,7 @@
       "backend/src/modules/maintenance/maintenance.module.ts",
       "backend/src/modules/mcp-validation/mcp-validation.module.ts",
       "backend/src/modules/rm/rm.module.ts",
+      "backend/src/modules/seo-monitoring/cli/run-ingestion-backfill.ts",
       "backend/src/modules/upload/upload.module.ts",
       "backend/tests/unit/route-wildcard-middleware.test.ts"
     ],
@@ -2090,6 +2092,7 @@
       "backend/src/modules/seo-logs/services/crawl-budget-integrations.service.ts",
       "backend/src/modules/seo-logs/services/crawl-budget-supabase.service.ts",
       "backend/src/modules/seo-logs/services/seo-audit-scheduler.service.ts",
+      "backend/src/modules/seo-monitoring/cli/run-ingestion-backfill.ts",
       "backend/src/modules/seo-monitoring/controllers/cwv-beacon.controller.ts",
       "backend/src/modules/seo-monitoring/controllers/cwv-dashboard.controller.ts",
       "backend/src/modules/seo-monitoring/controllers/funnel-events.controller.ts",
@@ -2730,6 +2733,10 @@
       "backend/supabase/migrations/20260911_seo_cwv_daily_rum_exact_p75.down.sql",
       "backend/supabase/migrations/20260911_seo_cwv_daily_rum_exact_p75.sql",
       "backend/supabase/migrations/20260911_seo_cwv_function_grants.sql",
+      "backend/supabase/migrations/20260911_seo_gsc_multilevel_page_totals.down.sql",
+      "backend/supabase/migrations/20260911_seo_gsc_multilevel_page_totals.sql",
+      "backend/supabase/migrations/20260911_seo_gsc_multilevel_page_totals_rpc_low_ctr_v4.down.sql",
+      "backend/supabase/migrations/20260911_seo_gsc_multilevel_page_totals_rpc_low_ctr_v4.sql",
       "backend/supabase/migrations/README.md"
     ],
     "ci_workflows": [
@@ -2900,7 +2907,7 @@
       "tests/registry/rpc-parser.test.ts"
     ]
   },
-  "runtime_files_count": 1512,
+  "runtime_files_count": 1517,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -3471,6 +3478,7 @@
     "backend/src/modules/seo-logs/services/crawl-budget-integrations.service.ts",
     "backend/src/modules/seo-logs/services/crawl-budget-supabase.service.ts",
     "backend/src/modules/seo-logs/services/seo-audit-scheduler.service.ts",
+    "backend/src/modules/seo-monitoring/cli/run-ingestion-backfill.ts",
     "backend/src/modules/seo-monitoring/controllers/cwv-beacon.controller.ts",
     "backend/src/modules/seo-monitoring/controllers/cwv-dashboard.controller.ts",
     "backend/src/modules/seo-monitoring/controllers/funnel-events.controller.ts",
@@ -4088,6 +4096,10 @@
     "backend/supabase/migrations/20260911_seo_cwv_daily_rum_exact_p75.down.sql",
     "backend/supabase/migrations/20260911_seo_cwv_daily_rum_exact_p75.sql",
     "backend/supabase/migrations/20260911_seo_cwv_function_grants.sql",
+    "backend/supabase/migrations/20260911_seo_gsc_multilevel_page_totals.down.sql",
+    "backend/supabase/migrations/20260911_seo_gsc_multilevel_page_totals.sql",
+    "backend/supabase/migrations/20260911_seo_gsc_multilevel_page_totals_rpc_low_ctr_v4.down.sql",
+    "backend/supabase/migrations/20260911_seo_gsc_multilevel_page_totals_rpc_low_ctr_v4.sql",
     "backend/supabase/migrations/README.md",
     "backend/tests/unit/route-wildcard-middleware.test.ts",
     "docker/lighthouse/Dockerfile",

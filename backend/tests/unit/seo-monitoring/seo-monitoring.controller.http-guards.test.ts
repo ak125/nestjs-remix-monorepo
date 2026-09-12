@@ -325,10 +325,10 @@ describe('Job interne légitime — non concerné par les guards HTTP', () => {
       progress: jest.fn().mockResolvedValue(undefined),
     } as never);
 
-    // origin/main : arguments du fetcher différents de la branche SEO (hors sujet guards)
-    expect(gscFetcher.fetchAndPersistMultiGrain).toHaveBeenCalledWith(
-      expect.objectContaining({ date: '2026-09-08' }),
-    );
+    expect(gscFetcher.fetchAndPersistMultiGrain).toHaveBeenCalledWith({
+      date: '2026-09-08',
+      triggeredBy: 'scheduler',
+    });
     expect(result.perSource).toEqual([
       expect.objectContaining({ source: 'gsc', status: 'ok' }),
     ]);

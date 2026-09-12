@@ -677,6 +677,13 @@ export class RmBuilderService extends SupabaseBaseService {
               min_price: result.minPrice ?? undefined,
               count: result.count,
               power_ps: seoCtx.type_power_ps || '',
+              // #VMotorisation# / #VCodeMoteur# (contenus legacy pg 468, 469,
+              // 596, 1795, 3096) — valeurs déjà présentes dans la RPC. Pas de
+              // `fuel`/`motor_codes` : ils changeraient aussi h1/title.
+              legacy_marker_motorisation:
+                result.vehicleInfo?.typeFuel ?? undefined,
+              legacy_marker_code_moteur:
+                result.vehicleInfo?.motorCodesFormatted ?? undefined,
               // Fragments switch PAR GAMME (legacy) pour résoudre #CompSwitch_alias#
               // (sinon strippés à vide → meta dégénérée). Chargé caché.
               ...(await this.loadSeoCtxSwitches(

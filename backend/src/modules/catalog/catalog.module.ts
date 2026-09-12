@@ -33,6 +33,7 @@ import { OemPlatformMappingService } from './services/oem-platform-mapping.servi
 import { UnifiedPageDataService } from './services/unified-page-data.service';
 import { AccessoryProductsService } from './services/accessory-products.service';
 import { SeoTemplateService } from './services/seo-template.service'; // ⚡ SEO processing NestJS (RPC V4)
+import { SeoPlaceholderEventsService } from '../seo/services/seo-placeholder-events.service';
 import { HomepageRpcService } from './services/homepage-rpc.service';
 import { CatalogHierarchyService } from './services/catalog-hierarchy.service';
 import { CacheWarmingService } from './services/cache-warming.service';
@@ -97,6 +98,10 @@ import { GammePricePreviewService } from './services/gamme-price-preview.service
     OemPlatformMappingService,
     // ⚡ SEO TEMPLATE SERVICE - Processing NestJS avec cache Redis (RPC V4)
     SeoTemplateService,
+    // Signal `seo_placeholder_unresolved` de SeoTemplateService. Fourni ici
+    // (comme PricingService) et non importé de SeoModule, qui importe déjà
+    // CatalogModule : pas de cycle. Service sans état (ConfigService global).
+    SeoPlaceholderEventsService,
     // ⚡ UNIFIED PAGE DATA - RPC V4 (1 requête + SEO NestJS)
     UnifiedPageDataService,
     // 🏠 HOMEPAGE RPC - below-fold (brands/blog/equipementiers)

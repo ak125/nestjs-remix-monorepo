@@ -36,8 +36,31 @@ import { PRIX_PAS_CHER } from '../../seo/seo-v4.types';
 import { InternalLinkingService } from '../../seo/internal-linking.service';
 
 /** Cache key prefix versionnée — bump v1→v2 invalide tous les payloads.
- *  v2 (2026-05-24) : compatible vehicles capped à 24 (LCP /blog-pieces-auto/conseils/* — voir PR LCP-R3-PR1). */
-const R3_CACHE_PREFIX = 'r3-guide:v2:';
+ *  v2 (2026-05-24) : compatible vehicles capped à 24 (LCP /blog-pieces-auto/conseils/* — voir PR LCP-R3-PR1).
+ *  v3 (2026-09-11) : sections META hors contrat « liens » retirées du payload
+ *  (sinon les payloads v2 cachés continueraient de servir le JSON 24 h). */
+const R3_CACHE_PREFIX = 'r3-guide:v3:';
+
+/** Motif de rejet d'une section META hors contrat « liens ». */
+type MetaSectionRejection = 'empty' | 'json' | 'meta_tag' | 'no_link';
+
+/**
+ * Contrat d'une section META servie : le bloc « Pour aller plus loin »
+ * (`MetaLinksSection`) rend des liens HTML. Mesuré 2026-09-11 sur
+ * `__seo_gamme_conseil` (219 sections META) : 132 objets JSON de métadonnées
+ * (meta_title, gate_report…), 49 balises `<meta>`, 32 meta descriptions en
+ * texte brut, 6 listes de liens. Seules les listes de liens sont conformes ;
+ * les autres étaient rendues telles quelles dans le corps public.
+ * Évalué sur le HTML déjà traité (les jetons `#LinkGamme_n#` y sont des liens).
+ */
+function metaSectionRejection(html: string): MetaSectionRejection | null {
+  const text = html.trim();
+  if (!text) return 'empty';
+  if (text.startsWith('{') || text.startsWith('[')) return 'json';
+  if (/<meta[\s/>]/i.test(text)) return 'meta_tag';
+  if (!/<a\s[^>]*href\s*=/i.test(text)) return 'no_link';
+  return null;
+}
 
 /** TTL fresh window (seconds) — CacheService utilise ioredis SETEX en secondes.
  *  24 h (audit LCP 2026-07-14 §2B) : /blog-pieces-auto/conseils/* = 43 URLs à
@@ -100,7 +123,7 @@ export class R3GuideService {
    */
   async getR3GuidePayload(pg_alias: string): Promise<R3GuidePayload | null> {
     // Canary ciblée → bypass TOTAL du cache (lecture ET écriture). Sans cela, la clé partagée
-    // `r3-guide:v2:<alias>` pourrait contenir alternativement un payload ciblé et un payload
+    // `r3-guide:v3:<alias>` pourrait contenir alternativement un payload ciblé et un payload
     // hors-canary selon qui l'a peuplée en premier — empoisonnement croisé. Décision synchrone,
     // 0 RPC : hors canary, le chemin ci-dessous reste strictement inchangé.
     if (this.projectionDecision.isTargeted(pg_alias)) {
@@ -259,7 +282,12 @@ export class R3GuideService {
 
     // Step 3 — Resolve canonical sections (port of frontend resolveCanonicalSections)
     const { s1Sections, bodySections, metaSections, sourceType } =
-      await this.resolveCanonicalSections(conseil, article.sections, article);
+      await this.resolveCanonicalSections(
+        conseil,
+        article.sections,
+        article,
+        gammeData.pg_id,
+      );
 
     // Step 3b — Inject approved images into sections
     const approvedImages = await this.seoService.getApprovedImages(
@@ -348,6 +376,7 @@ export class R3GuideService {
     }>,
     articleSections: BlogSection[],
     _article: BlogArticle,
+    pgId: number,
   ): Promise<{
     s1Sections: R3GuideSection[];
     bodySections: R3GuideSection[];
@@ -360,7 +389,7 @@ export class R3GuideService {
     );
 
     if (hasConseil) {
-      return this.resolveConseilMode(conseil);
+      return this.resolveConseilMode(conseil, pgId);
     }
 
     return this.resolveArticleMode(articleSections, conseil);
@@ -375,6 +404,7 @@ export class R3GuideService {
       qualityScore: number | null;
       sources: string[];
     }>,
+    pgId: number,
   ): Promise<{
     s1Sections: R3GuideSection[];
     bodySections: R3GuideSection[];
@@ -394,11 +424,27 @@ export class R3GuideService {
         return oa - ob;
       });
 
-    const [s1Sections, bodySections, metaSections] = await Promise.all([
+    const [s1Sections, bodySections, mappedMeta] = await Promise.all([
       Promise.all(s1.map((s, i) => this.mapConseilSection(s, i))),
       Promise.all(body.map((s, i) => this.mapConseilSection(s, i))),
       Promise.all(meta.map((s, i) => this.mapConseilSection(s, i))),
     ]);
+
+    // Sections META hors contrat « liens » : non servies (donc ni rendues, ni
+    // dans le JSON-LD, ni comptées dans le temps de lecture) et journalisées.
+    // Aucune réécriture : la donnée reste à corriger à la source.
+    const metaSections: R3GuideSection[] = [];
+    const rejected: string[] = [];
+    for (const section of mappedMeta) {
+      const reason = metaSectionRejection(section.html);
+      if (reason === null) metaSections.push(section);
+      else rejected.push(reason);
+    }
+    if (rejected.length > 0) {
+      this.logger.warn(
+        `[r3-meta] pg_id=${pgId} sections META non servies=${rejected.length} motifs=${rejected.join(',')}`,
+      );
+    }
 
     return { s1Sections, bodySections, metaSections, sourceType: 'conseil' };
   }

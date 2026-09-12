@@ -30,6 +30,7 @@
  */
 
 export * from "./observability.js";
+export * from "./day-coverage.js";
 export * from "./onpage.js";
 export * from "./intelligence.js";
 export * from "./geo-aeo.js";

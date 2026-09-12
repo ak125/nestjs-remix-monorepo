@@ -98,9 +98,59 @@ export const GSCDailyPagesRowSchema = z.object({
 });
 export type GSCDailyPagesRow = z.infer<typeof GSCDailyPagesRowSchema>;
 
+/**
+ * Grain PAGE FIDÈLE : date+page (dimension `page` SEULE, agrégation byPage).
+ *
+ * Mesuré live 2026-09-10 : `page` seul ≈ property_total (79/5 730 vs 79/5 506
+ * clics/impr le 09-01) alors que `page+country+device` ne restitue que 8/2 282
+ * (≡ grain requêtes). `__seo_gsc_daily_pages` reste le détail segmenté, lossy.
+ */
+export const GSCDailyPageTotalsRowSchema = z.object({
+  date: GSC_ISO_DATE,
+  page: z.string().url(),
+  clicks: z.number().int().nonnegative(),
+  impressions: z.number().int().nonnegative(),
+  ctr: z.number().min(0).max(1),
+  position: z.number().min(0),
+});
+export type GSCDailyPageTotalsRow = z.infer<typeof GSCDailyPageTotalsRowSchema>;
+
 /** Grain de couverture GSC (date seule en sortie de l'API, dim `date`). */
-export const GSC_GRAIN = ["property_total", "totals", "pages", "queries"] as const;
+export const GSC_GRAIN = [
+  "property_total",
+  "totals",
+  "pages",
+  "page_totals",
+  "queries",
+] as const;
 export type GscGrain = (typeof GSC_GRAIN)[number];
+
+/**
+ * Version du contrat d'ingestion d'un jour GSC. Écrite EN DERNIER dans
+ * `__seo_gsc_daily_property_total.commit_version` quand TOUS les grains du
+ * contrat sont persistés avec une donnée finale. NULL = ligne antérieure (pas
+ * une preuve). Incrémenter à l'ajout d'un grain → ré-ingestion automatique des
+ * jours de la fenêtre de rattrapage.
+ */
+export const GSC_INGEST_COMMIT_VERSION = 1;
+
+/**
+ * Seuil de SIGNAL de l'écart d'agrégation du grain page fidèle
+ * (Σpage_totals / property_total, clics ET impressions). Défaut du paramètre
+ * gouverné `SEO_GSC_PAGE_TOTALS_MIN_RATIO`, lu par le fetcher uniquement.
+ * NON bloquant et hors certification : byPage et propriété sont deux agrégations
+ * GSC différentes (aucune égalité attendue ; ≈ 1 n'est pas une preuve). La
+ * certification repose sur les jours commités et la récupération complète du
+ * grain (contrôlée par le fetcher). Mesuré : clics 1,00, impressions ≈ 1,04.
+ */
+export const GSC_PAGE_TOTALS_MIN_RATIO_DEFAULT = 0.9;
+
+/**
+ * Premier jour GSC attendu (défaut de `SEO_GSC_BACKFILL_FLOOR_DATE`) : premier
+ * mois partitionné des grains multi-niveaux (20260613). Aucun jour antérieur
+ * n'est planifié par l'ingestion ni compté manquant par les consommateurs.
+ */
+export const GSC_BACKFILL_FLOOR_DATE_DEFAULT = "2026-06-01";
 
 // ─── GA4 Data API ────────────────────────────────────────────────────────
 

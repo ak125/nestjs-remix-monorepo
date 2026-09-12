@@ -18,7 +18,7 @@
         "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__"
       ],
       "files_count": 146,
-      "loc_total": 40874,
+      "loc_total": 41097,
       "has_barrel": true
     },
     "agentic-engine": {
@@ -103,7 +103,7 @@
         "backend/src/modules/blog/utils"
       ],
       "files_count": 36,
-      "loc_total": 13232,
+      "loc_total": 13420,
       "has_barrel": false
     },
     "bot-guard": {
@@ -144,8 +144,8 @@
         "backend/src/modules/catalog/types",
         "backend/src/modules/catalog/utils"
       ],
-      "files_count": 37,
-      "loc_total": 9694,
+      "files_count": 39,
+      "loc_total": 10342,
       "has_barrel": false
     },
     "commercial": {
@@ -224,8 +224,8 @@
         "backend/src/modules/rm/services/__tests__",
         "backend/src/modules/rm/utils"
       ],
-      "files_count": 13,
-      "loc_total": 3044,
+      "files_count": 14,
+      "loc_total": 3184,
       "has_barrel": false
     },
     "diagnostic-engine": {
@@ -259,7 +259,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115333,
+      "loc_total": 115403,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -600,16 +600,16 @@
       "dirs": [
         "packages/seo-types/src"
       ],
-      "files_count": 18,
-      "loc_total": 2867,
+      "files_count": 20,
+      "loc_total": 3328,
       "has_barrel": true
     },
     "pkg-seo-url-contract": {
       "dirs": [
         "packages/seo-url-contract/src"
       ],
-      "files_count": 3,
-      "loc_total": 174,
+      "files_count": 4,
+      "loc_total": 492,
       "has_barrel": true
     },
     "pricing": {
@@ -701,7 +701,7 @@
         "scripts/wiki-generators/__tests__"
       ],
       "files_count": 178,
-      "loc_total": 36484,
+      "loc_total": 36478,
       "has_barrel": true
     },
     "search": {
@@ -768,7 +768,7 @@
         "scripts/seo/lib"
       ],
       "files_count": 276,
-      "loc_total": 58666,
+      "loc_total": 58441,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -798,14 +798,15 @@
     "seo-monitoring": {
       "dirs": [
         "backend/src/modules/seo-monitoring",
+        "backend/src/modules/seo-monitoring/cli",
         "backend/src/modules/seo-monitoring/controllers",
         "backend/src/modules/seo-monitoring/helpers",
         "backend/src/modules/seo-monitoring/listeners",
         "backend/src/modules/seo-monitoring/processors",
         "backend/src/modules/seo-monitoring/services"
       ],
-      "files_count": 40,
-      "loc_total": 7781,
+      "files_count": 50,
+      "loc_total": 11245,
       "has_barrel": false
     },
     "seo-projection": {
@@ -956,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 228,
-      "loc_total": 40521,
+      "files_count": 235,
+      "loc_total": 42338,
       "has_barrel": true
     },
     "upload": {
@@ -1574,6 +1575,11 @@
       "from": "catalog",
       "to": "products",
       "count": 1
+    },
+    {
+      "from": "catalog",
+      "to": "seo",
+      "count": 4
     },
     {
       "from": "commercial",
@@ -2420,6 +2426,21 @@
     {
       "from": "backend/src/modules/catalog/catalog.module.ts",
       "to": "backend/src/modules/products/services/pricing.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/catalog/catalog.module.ts",
+      "to": "backend/src/modules/seo/services/seo-placeholder-events.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/catalog/services/__tests__/seo-template-di.test.ts",
+      "to": "backend/src/modules/seo/services/seo-placeholder-events.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/catalog/services/seo-template.service.ts",
+      "to": "backend/src/modules/seo/services/seo-placeholder-events.service.ts",
       "rule": "no-deep-module-access"
     },
     {

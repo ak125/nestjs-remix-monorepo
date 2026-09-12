@@ -1,47 +1,93 @@
 /**
- * GSC Daily Fetcher Service — ingestion multi-niveaux (PR1).
+ * GSC Daily Fetcher Service — ingestion multi-niveaux (PR1) + rattrapage des trous.
  *
- * Ingère GSC Search Analytics à 4 GRAINS explicites (1 table par grain → les RPC
+ * Ingère GSC Search Analytics à 5 GRAINS explicites (1 table par grain → les RPC
  * ne mélangent jamais les grains). POURQUOI : la dimension `query` déclenche
  * l'anonymisation Google → totaux ~4× sous-capturés. On ne dérive PAS un total
  * d'un grain page/query.
  *
- *   property_total  date seule                → __seo_gsc_daily_property_total  (vérité volume globale)
+ *   property_total  date seule                → __seo_gsc_daily_property_total  (vérité volume globale + marqueur de commit)
  *   totals          date+country+device       → __seo_gsc_daily_totals          (vérité volume segmentée)
- *   pages           date+page+country+device  → __seo_gsc_daily_pages           (réactions par URL)
+ *   pages           date+page+country+device  → __seo_gsc_daily_pages           (détail segmenté, LOSSY)
+ *   page_totals     date+page                 → __seo_gsc_daily_page_totals     (grain page FIDÈLE)
  *   queries         date+page+query+device    → __seo_gsc_daily (existant)      (détail secondaire)
  *
- * Best-practice (cf. plan PR1) :
- *  - Contrat Zod par ligne AVANT insert (robuste à la dérive d'API).
- *  - Fenêtre glissante (self-healing) : GSC révise J-1/J-2 → re-upsert N derniers jours.
- *  - `type: 'web'` explicite (Discover/Image = exclusion connue, hors V1).
- *  - Idempotence : upsert composite par grain.
- *  - Couverture (pure `gsc-coverage.ts`) logguée — no silent fallback.
+ * Contrat d'un jour (2026-09-11, cf. audit/seo-sept-leviers-2026-09-11.md) :
+ *  - Dates planifiées par `ingestion-date-planner.ts` : fenêtre glissante toujours
+ *    re-traitée + jours NON commités de la fenêtre de rattrapage (plafonnés/run).
+ *    Avant : fenêtre fixe J-3..J-6 → tout arrêt > 3 jours = trou définitif.
+ *  - Finalité prouvée par 1 sonde `dataState: 'all'` (`gsc-finality.ts`) : un jour
+ *    non finalisé n'est JAMAIS écrit (avant : 0 ligne → `property_total = 0`).
+ *  - `property_total` est upserté EN DERNIER avec `commit_version` : un jour n'est
+ *    commité que si tous les grains sont persistés ; un échec en cours de jour
+ *    laisse le jour non commité → replanifié au run suivant. Le marqueur d'un
+ *    jour déjà commité est RETIRÉ avant la 1re écriture de grain (reprise
+ *    interrompue ≠ jour certifié par l'ancienne ligne).
+ *  - Les 5 grains sont LUS avant toute écriture : panne API, ligne page hors
+ *    contrat ou grain page vide (propriété > 0) → base intacte. L'écart
+ *    d'agrégation byPage/propriété est une limite GSC signalée, jamais un trou.
+ *  - `dryRun` / `planOnly` : AUCUNE écriture, journal compris (avant : le journal
+ *    `__seo_event_log` était écrit même en dry-run).
+ *  - `fetched_at` rafraîchi à chaque upsert (avant : date du 1er insert seulement).
+ *  - Contrat Zod par ligne AVANT insert ; `type: 'web'` explicite (Discover/Image
+ *    = exclusion connue, hors V1) ; idempotence = upsert composite par grain.
  *
  * Fuseaux : la `date` stockée est le JOUR DE REPORTING GSC (ancré Pacific côté
  * Google) — on ne convertit pas. Ne JAMAIS comparer ce jour à un jour GA4
  * (Europe/Paris) sans alignement (cf. consommateurs).
  *
  * Réutilise GoogleCredentialsService (ENV `GSC_*` câblées dans crawl-budget-audit).
- * Refs: 20260613_seo_gsc_multilevel_grains.sql · packages/seo-types/src/observability.ts
+ * Refs: 20260613_seo_gsc_multilevel_grains.sql · 20260911_seo_gsc_multilevel_page_totals.sql
+ *       packages/seo-types/src/observability.ts
  */
 import { Injectable, Logger } from '@nestjs/common';
 import { google, searchconsole_v1 } from 'googleapis';
 import {
+  addDaysIso,
+  enumerateDatesIso,
+  GSC_INGEST_COMMIT_VERSION,
+  GSC_PAGE_TOTALS_MIN_RATIO_DEFAULT,
+  GSCDailyPageTotalsRowSchema,
   GSCDailyPagesRowSchema,
   GSCDailyPropertyTotalRowSchema,
   GSCDailyTotalsRowSchema,
+  isIsoDate,
+  type GSCDailyPageTotalsRow,
   type GSCDailyPagesRow,
   type GSCDailyPropertyTotalRow,
   type GSCDailyTotalsRow,
 } from '@repo/seo-types';
 import { GoogleCredentialsService } from './google-credentials.service';
-import { SeoMonitoringRunsService } from './seo-monitoring-runs.service';
+import {
+  runtimeIdentity,
+  SeoMonitoringRunsService,
+} from './seo-monitoring-runs.service';
 import {
   computeGlobalCoverage,
   DEFAULT_GSC_COVERAGE_MIN_RATIO,
   type GscCoverageResult,
 } from './gsc-coverage';
+import {
+  INGESTION_MAX_LOOKBACK_DAYS,
+  ingestionWindow,
+  planIngestionDates,
+  resolveIngestionConfig,
+  type IngestionConfig,
+  type IngestionPlan,
+} from './ingestion-date-planner';
+import {
+  parseFinalityProbe,
+  resolveGscDayDecision,
+  type GscDayDecision,
+  type GscFinalityProbe,
+} from './gsc-finality';
+import {
+  classifyIngestionError,
+  IngestionDbError,
+  IngestionSchemaError,
+  isSystemicIngestionError,
+  type IngestionErrorClass,
+} from './ingestion-error-classifier';
 import { SupabaseClient, createClient } from '@supabase/supabase-js';
 import { ConfigService } from '@nestjs/config';
 import { getEffectiveSupabaseKey } from '@common/utils';
@@ -58,22 +104,63 @@ export interface GscFetchOptions {
   dryRun?: boolean;
 }
 
+export type IngestionTrigger = 'scheduler' | 'api' | 'manual' | 'cli';
+
 export interface GscMultiGrainOptions {
-  /** Dernier jour (ancre) au format YYYY-MM-DD. */
+  /** Ancre = dernier jour éligible au format YYYY-MM-DD. */
   date: string;
-  /** Fenêtre glissante self-healing : re-upsert les N derniers jours (défaut 4). */
+  /** Surcharge de la fenêtre glissante (défaut : `SEO_GSC_ROLLING_DAYS`). 0 = CLI. */
   rollingDays?: number;
+  /** Surcharge du lookback (défaut : `SEO_GSC_BACKFILL_LOOKBACK_DAYS`). */
+  lookbackDays?: number;
+  /** Surcharge du plafond de rattrapage (défaut : `SEO_GSC_BACKFILL_MAX_DAYS_PER_RUN`). */
+  maxBackfillDays?: number;
+  /** Plancher (jamais sous `SEO_GSC_BACKFILL_FLOOR_DATE`). */
+  floorDate?: string;
   rowLimit?: number;
+  /** Lit GSC mais n'écrit RIEN (ni données ni journal). */
   dryRun?: boolean;
+  /** Plan seul : 1 lecture DB + 1 sonde API de finalité, 0 écriture. */
+  planOnly?: boolean;
+  triggeredBy?: IngestionTrigger;
 }
 
-export type GscGrain = 'property_total' | 'totals' | 'pages' | 'queries';
+export type GscGrain =
+  | 'property_total'
+  | 'totals'
+  | 'pages'
+  | 'page_totals'
+  | 'queries';
 
 export interface GscGrainResult {
   grain: GscGrain;
   rowsFetched: number;
   rowsInserted: number;
   schemaRejects: number;
+}
+
+export interface GscDateFailure {
+  date: string;
+  errorClass: IngestionErrorClass;
+  message: string;
+}
+
+/** Compte-rendu par date d'un run multi-grain (journalisé, sans secret). */
+export interface GscIngestionDatesReport {
+  window: IngestionPlan['window'];
+  refresh: string[];
+  backfill: string[];
+  deferred: string[];
+  /** Décision de finalité par date planifiée. */
+  decisions: Record<string, GscDayDecision['kind']>;
+  /** Tous grains lus (+ écrits hors dry-run) et marqueur posé. */
+  ingested: string[];
+  /** Jour finalisé sans aucune donnée → zéro explicite commité. */
+  realZero: string[];
+  notFinal: string[];
+  /** Finalité non prouvée (métadonnée absente ou requête finale vide). */
+  finalityUnknown: string[];
+  failed: GscDateFailure[];
 }
 
 export interface GscFetchResult {
@@ -86,18 +173,42 @@ export interface GscFetchResult {
   warnings: string[];
   /** Détail par grain (multi-niveaux). */
   perGrain?: GscGrainResult[];
-  /** Couverture par jour de la fenêtre (pure, observabilité). */
+  /** Couverture du grain page FIDÈLE par jour ingéré (observabilité). */
   coverage?: GscCoverageResult[];
+  /** Couverture du grain segmenté lossy (information, n'émet pas d'alerte). */
+  segmentedCoverage?: GscCoverageResult[];
+  /** Compte-rendu par date (runs multi-grain). */
+  dates?: GscIngestionDatesReport;
+  dryRun?: boolean;
 }
 
 // Discover/Image NON capturés (exclusion connue, hors V1) — `type` explicite.
 const SEARCH_TYPE_WEB = 'web';
+/** Identifiant de run d'une exécution sans écriture (aucun journal émis). */
+export const DRY_RUN_ID = 'dry-run';
+/** Plafond supabase-js : une lecture qui l'atteint est tronquée. */
+const SUPABASE_ROW_CAP = 1000;
+
+type GscDimension = 'page' | 'query' | 'device' | 'country' | 'date';
+
+interface DayOutcome {
+  status: 'ingested' | 'final_rows_missing';
+  /** Grain dont la requête finale est revenue vide (status final_rows_missing). */
+  missingGrain?: 'property_total' | 'page_totals';
+  grains: GscGrainResult[];
+  coverage: GscCoverageResult | null;
+  segmentedCoverage: GscCoverageResult | null;
+  apiCalls: number;
+  schemaRejects: number;
+}
 
 @Injectable()
 export class GscDailyFetcherService {
   private readonly logger = new Logger(GscDailyFetcherService.name);
   private readonly supabase: SupabaseClient;
   private readonly coverageMinRatio: number;
+  private readonly pageTotalsMinRatio: number;
+  private readonly ingestion: IngestionConfig;
 
   constructor(
     private readonly credentials: GoogleCredentialsService,
@@ -115,24 +226,43 @@ export class GscDailyFetcherService {
     this.supabase = createClient(url, key, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
-    // Param gouverné (pas de magic constant) — env override + défaut documenté.
-    const raw = Number(configService.get<string>('SEO_GSC_COVERAGE_MIN_RATIO'));
-    this.coverageMinRatio =
-      Number.isFinite(raw) && raw > 0 && raw <= 1
-        ? raw
-        : DEFAULT_GSC_COVERAGE_MIN_RATIO;
+    // Params gouvernés (pas de magic constant) — env override + défauts documentés.
+    this.coverageMinRatio = this.readRatio(
+      configService,
+      'SEO_GSC_COVERAGE_MIN_RATIO',
+      DEFAULT_GSC_COVERAGE_MIN_RATIO,
+    );
+    this.pageTotalsMinRatio = this.readRatio(
+      configService,
+      'SEO_GSC_PAGE_TOTALS_MIN_RATIO',
+      GSC_PAGE_TOTALS_MIN_RATIO_DEFAULT,
+    );
+    const { config, invalidKeys } = resolveIngestionConfig('gsc', (k) =>
+      configService.get<string>(k),
+    );
+    if (invalidKeys.length > 0) {
+      this.logger.warn(
+        `⚠️ GSC ingestion : variables invalides ${invalidKeys.join(', ')} — défauts documentés appliqués`,
+      );
+    }
+    this.ingestion = config;
+  }
+
+  /** Configuration gouvernée résolue (lecture seule — CLI/diagnostic). */
+  get ingestionConfig(): Readonly<IngestionConfig> {
+    return this.ingestion;
   }
 
   /**
-   * Fenêtre glissante multi-grain — point d'entrée du job daily.
-   * Re-upsert les `rollingDays` derniers jours (self-healing : GSC révise J-1/J-2),
-   * chacun aux 4 grains, + couverture. Un seul run loggué pour la fenêtre.
+   * Point d'entrée du job daily et du rattrapage CLI : planifie les dates
+   * (refresh + trous), prouve la finalité, ingère chaque jour aux 5 grains et
+   * pose le marqueur de commit en dernier. Un seul run journalisé.
    */
   async fetchAndPersistMultiGrain(
     options: GscMultiGrainOptions,
   ): Promise<GscFetchResult> {
     const startedAt = Date.now();
-    const rollingDays = Math.max(1, options.rollingDays ?? 4);
+    const dryRun = options.dryRun === true || options.planOnly === true;
     const result: GscFetchResult = {
       date: options.date,
       runId: '',
@@ -143,6 +273,8 @@ export class GscDailyFetcherService {
       warnings: [],
       perGrain: [],
       coverage: [],
+      segmentedCoverage: [],
+      dryRun,
     };
 
     if (!this.credentials.isMonitoringEnabled()) {
@@ -156,14 +288,38 @@ export class GscDailyFetcherService {
       return result;
     }
 
+    const plan = this.resolvePlanParams(options);
     const siteUrl = this.credentials.getGSCSiteUrl();
     const rowLimit = options.rowLimit ?? 5000;
-    const runId = await this.runsService.logStarted(this.supabase, {
-      source: 'gsc',
-      scope: `${siteUrl}@${options.date}~${rollingDays}d`,
-    });
+    const baseExtra = {
+      runtime: runtimeIdentity(),
+      triggered_by: options.triggeredBy ?? null,
+      anchor_date: options.date,
+    };
+    const runId = dryRun
+      ? DRY_RUN_ID
+      : await this.runsService.logStarted(this.supabase, {
+          source: 'gsc',
+          scope: `${siteUrl}@${options.date}`,
+          extra: baseExtra,
+        });
     result.runId = runId;
     const sc = google.searchconsole({ version: 'v1', auth });
+    const fetchedAt = new Date().toISOString();
+
+    const report: GscIngestionDatesReport = {
+      window: null,
+      refresh: [],
+      backfill: [],
+      deferred: [],
+      decisions: {},
+      ingested: [],
+      realZero: [],
+      notFinal: [],
+      finalityUnknown: [],
+      failed: [],
+    };
+    result.dates = report;
 
     const grainTotals: Record<string, GscGrainResult> = {};
     const accGrain = (g: GscGrainResult) => {
@@ -179,120 +335,266 @@ export class GscDailyFetcherService {
     };
 
     try {
-      for (const date of rollingWindowDates(options.date, rollingDays)) {
-        const day = await this.fetchDay(sc, siteUrl, date, rowLimit, {
-          dryRun: options.dryRun,
-        });
-        result.apiCalls += day.apiCalls;
-        result.rowsFetched += day.grains.reduce((s, g) => s + g.rowsFetched, 0);
-        result.rowsInserted += day.grains.reduce(
-          (s, g) => s + g.rowsInserted,
-          0,
-        );
-        day.grains.forEach(accGrain);
-        if (day.coverage) {
-          result.coverage!.push(day.coverage);
-          if (day.coverage.status !== 'ok') {
-            // No silent fallback : un gap de couverture est observable.
-            this.logger.warn(
-              `⚠️ GSC coverage ${date}: ${day.coverage.status} (pages/total impr=${day.coverage.pagesVsPropertyImpr ?? 'n/a'}, min=${day.coverage.minRatio})`,
-            );
-            result.warnings.push(`coverage_${day.coverage.status}:${date}`);
-          }
+      const window = ingestionWindow(
+        options.date,
+        plan.lookbackDays,
+        plan.floorDate,
+      );
+      const committed = window
+        ? await this.readCommittedDates(window.from, window.to)
+        : new Set<string>();
+      const datesPlan = planIngestionDates({
+        ...plan,
+        anchorDate: options.date,
+        committedDates: committed,
+      });
+      report.window = datesPlan.window;
+      report.refresh = datesPlan.refresh;
+      report.backfill = datesPlan.backfill;
+      report.deferred = datesPlan.deferred;
+      if (datesPlan.deferred.length > 0) {
+        result.warnings.push(`deferred:${datesPlan.deferred.length}`);
+      }
+
+      const planned = [...datesPlan.refresh, ...datesPlan.backfill];
+      if (planned.length > 0) {
+        const probe = await this.probeFinality(sc, siteUrl, planned);
+        result.apiCalls += 1;
+        for (const d of planned) {
+          report.decisions[d] = resolveGscDayDecision(d, probe).kind;
         }
-        if (day.schemaRejects > 0) {
-          result.warnings.push(`schema_rejects:${date}=${day.schemaRejects}`);
+
+        if (!options.planOnly) {
+          for (const date of planned) {
+            await this.processDate(sc, siteUrl, date, rowLimit, probe, {
+              dryRun,
+              fetchedAt,
+              result,
+              report,
+              accGrain,
+            });
+          }
         }
       }
 
       result.perGrain = Object.values(grainTotals);
       result.durationSeconds = (Date.now() - startedAt) / 1000;
-      await this.runsService.logCompleted(this.supabase, {
-        runId,
-        source: 'gsc',
-        rowsInserted: result.rowsInserted,
-        rowsUpdated: 0,
-        durationSeconds: result.durationSeconds,
-        apiCalls: result.apiCalls,
-        warnings: result.warnings,
-      });
+      const datesExtra = { ...baseExtra, dates: this.journalDates(report) };
+
+      if (!dryRun) {
+        if (report.failed.length > 0) {
+          const first = report.failed[0];
+          await this.runsService.logFailed(this.supabase, {
+            runId,
+            source: 'gsc',
+            errorClass: first.errorClass,
+            errorMessage: `${report.failed.length} jour(s) en échec — ${first.date}: ${first.message}`,
+            partialRowsInserted: result.rowsInserted,
+            // Pas de retry immédiat : les jours non commités sont replanifiés
+            // par le run suivant (fenêtre de rattrapage).
+            retryScheduled: false,
+            extra: datesExtra,
+          });
+        } else {
+          await this.runsService.logCompleted(this.supabase, {
+            runId,
+            source: 'gsc',
+            rowsInserted: result.rowsInserted,
+            rowsUpdated: 0,
+            durationSeconds: result.durationSeconds,
+            apiCalls: result.apiCalls,
+            warnings: result.warnings,
+            extra: datesExtra,
+          });
+        }
+      }
       this.logger.log(
-        `✅ GSC multi-grain ${options.date} (${rollingDays}d): ${result.rowsInserted} rows, ${result.apiCalls} calls in ${result.durationSeconds}s`,
+        `${report.failed.length ? '⚠️' : '✅'} GSC multi-grain ${options.date}${dryRun ? ' [dry-run]' : ''}: ` +
+          `refresh=${report.refresh.length} backfill=${report.backfill.length} deferred=${report.deferred.length} ` +
+          `ingested=${report.ingested.length} real_zero=${report.realZero.length} not_final=${report.notFinal.length} ` +
+          `finality_unknown=${report.finalityUnknown.length} failed=${report.failed.length} — ` +
+          `${result.rowsInserted} rows, ${result.apiCalls} calls in ${result.durationSeconds}s`,
       );
       return result;
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      const errorClass = this.classifyError(message);
+      const errorClass = classifyIngestionError(err);
       result.durationSeconds = (Date.now() - startedAt) / 1000;
-      await this.runsService.logFailed(this.supabase, {
-        runId,
-        source: 'gsc',
-        errorClass,
-        errorMessage: message,
-        partialRowsInserted: result.rowsInserted,
-        retryScheduled: errorClass === 'quota_exceeded',
-      });
+      if (!dryRun) {
+        await this.runsService.logFailed(this.supabase, {
+          runId,
+          source: 'gsc',
+          errorClass,
+          errorMessage: message,
+          partialRowsInserted: result.rowsInserted,
+          retryScheduled: false,
+          extra: { ...baseExtra, dates: this.journalDates(report) },
+        });
+      }
       this.logger.error(
-        `❌ GSC multi-grain ${options.date} failed: ${message}`,
+        `❌ GSC multi-grain ${options.date} failed (${errorClass}): ${message}`,
       );
       throw err;
     }
   }
 
-  /** Un jour, les 4 grains + couverture. */
+  /** Traite une date planifiée selon sa décision de finalité. */
+  private async processDate(
+    sc: searchconsole_v1.Searchconsole,
+    siteUrl: string,
+    date: string,
+    rowLimit: number,
+    probe: GscFinalityProbe,
+    ctx: {
+      dryRun: boolean;
+      fetchedAt: string;
+      result: GscFetchResult;
+      report: GscIngestionDatesReport;
+      accGrain: (g: GscGrainResult) => void;
+    },
+  ): Promise<void> {
+    const { result, report } = ctx;
+    const decision = resolveGscDayDecision(date, probe);
+    if (decision.kind === 'skip_not_final') {
+      report.notFinal.push(date);
+      result.warnings.push(`not_final:${date}`);
+      return;
+    }
+    if (decision.kind === 'skip_finality_unknown') {
+      report.finalityUnknown.push(date);
+      result.warnings.push(`finality_unknown:${date}`);
+      return;
+    }
+
+    try {
+      if (decision.kind === 'real_zero') {
+        // Jour finalisé sans aucune impression : zéro EXPLICITE et commité.
+        const inserted = await this.upsert(
+          '__seo_gsc_daily_property_total',
+          [
+            {
+              date,
+              clicks: 0,
+              impressions: 0,
+              ctr: 0,
+              position: 0,
+              commit_version: GSC_INGEST_COMMIT_VERSION,
+            },
+          ],
+          'date',
+          ctx,
+        );
+        result.rowsInserted += inserted;
+        report.realZero.push(date);
+        result.warnings.push(`real_zero:${date}`);
+        return;
+      }
+
+      const day = await this.fetchDay(sc, siteUrl, date, rowLimit, ctx);
+      result.apiCalls += day.apiCalls;
+      result.rowsFetched += day.grains.reduce((s, g) => s + g.rowsFetched, 0);
+      result.rowsInserted += day.grains.reduce((s, g) => s + g.rowsInserted, 0);
+      day.grains.forEach(ctx.accGrain);
+      if (day.schemaRejects > 0) {
+        result.warnings.push(`schema_rejects:${date}=${day.schemaRejects}`);
+      }
+      if (day.status === 'final_rows_missing') {
+        // Données annoncées mais requête finale vide (total, ou grain page alors
+        // que la propriété a des impressions) : finalité / récupération non
+        // prouvée → rien écrit, jour replanifié.
+        report.finalityUnknown.push(date);
+        result.warnings.push(
+          day.missingGrain === 'page_totals'
+            ? `final_rows_missing:${date}:page_totals`
+            : `final_rows_missing:${date}`,
+        );
+        return;
+      }
+      report.ingested.push(date);
+      if (day.coverage) {
+        result.coverage!.push(day.coverage);
+        if (day.coverage.status === 'coverage_gap') {
+          // Limite / perte de détail côté GSC (agrégation byPage ≠ propriété) :
+          // observable mais NON bloquante — le grain page a été récupéré en
+          // entier (contrôlé en lecture), le jour est commité.
+          this.logger.warn(
+            `⚠️ GSC ${date}: écart d'agrégation byPage/propriété sous le seuil de signal (clics=${day.coverage.pagesVsPropertyClicks ?? 'n/a'}, impr=${day.coverage.pagesVsPropertyImpr ?? 'n/a'}, seuil=${day.coverage.minRatio}) — limite GSC, jour commité`,
+          );
+          result.warnings.push(`gsc_detail_below_signal:${date}`);
+        }
+      }
+      if (day.segmentedCoverage) {
+        result.segmentedCoverage!.push(day.segmentedCoverage);
+      }
+    } catch (err) {
+      const errorClass = classifyIngestionError(err);
+      const message = err instanceof Error ? err.message : String(err);
+      report.failed.push({ date, errorClass, message });
+      result.warnings.push(`failed:${date}:${errorClass}`);
+      if (isSystemicIngestionError(errorClass)) {
+        // Quota/auth/schéma : les jours suivants échoueraient pareil → arrêt.
+        throw err;
+      }
+      this.logger.warn(
+        `⚠️ GSC ${date} non commité (${errorClass}) — replanifié au prochain run : ${message}`,
+      );
+    }
+  }
+
+  /**
+   * Un jour, en deux temps :
+   *  1. LECTURE des 5 grains, sans aucune écriture. Une panne API, une ligne du
+   *     grain page certifié hors contrat ou un grain page vide alors que la
+   *     propriété a des impressions laissent la base intacte (ancien état,
+   *     ancien commit éventuel compris).
+   *  2. ÉCRITURE : retrait du marqueur, grains, puis property_total + marqueur
+   *     EN DERNIER (commit seulement si tout a été persisté).
+   * Récupération du grain page (réussite du niveau demandé) ≠ écart d'agrégation
+   * byPage/propriété (limite GSC, signalée mais non bloquante).
+   */
   private async fetchDay(
     sc: searchconsole_v1.Searchconsole,
     siteUrl: string,
     date: string,
     rowLimit: number,
-    opts: { dryRun?: boolean },
-  ): Promise<{
-    grains: GscGrainResult[];
-    coverage: GscCoverageResult | null;
-    apiCalls: number;
-    schemaRejects: number;
-  }> {
+    ctx: { dryRun: boolean; fetchedAt: string },
+  ): Promise<DayOutcome> {
     let apiCalls = 0;
     let schemaRejects = 0;
     const grains: GscGrainResult[] = [];
+    const rowsMissing = (
+      missingGrain: 'property_total' | 'page_totals',
+    ): DayOutcome => ({
+      status: 'final_rows_missing',
+      missingGrain,
+      grains,
+      coverage: null,
+      segmentedCoverage: null,
+      apiCalls,
+      schemaRejects,
+    });
 
-    // 1) property_total (aucune dimension → 1 ligne agrégée)
+    // ── 1. LECTURE ────────────────────────────────────────────────────────
+    // property_total (aucune dimension → 1 ligne agrégée), requête `final`.
     const ptRaw = await this.query(sc, siteUrl, date, [], rowLimit);
     apiCalls += ptRaw.apiCalls;
     const ptRow = ptRaw.rows[0];
+    if (!ptRow) return rowsMissing('property_total');
     const ptParsed = GSCDailyPropertyTotalRowSchema.safeParse({
       date,
-      clicks: ptRow?.clicks ?? 0,
-      impressions: ptRow?.impressions ?? 0,
-      ctr: ptRow?.ctr ?? 0,
-      position: ptRow?.position ?? 0,
+      clicks: ptRow.clicks ?? 0,
+      impressions: ptRow.impressions ?? 0,
+      ctr: ptRow.ctr ?? 0,
+      position: ptRow.position ?? 0,
     });
-    let propertyTotalForCoverage: GSCDailyPropertyTotalRow | null = null;
-    if (ptParsed.success) {
-      propertyTotalForCoverage = ptParsed.data;
-      const ins = await this.upsert(
-        '__seo_gsc_daily_property_total',
-        [ptParsed.data],
-        'date',
-        opts.dryRun,
+    if (!ptParsed.success) {
+      throw new IngestionSchemaError(
+        `property_total ${date} hors contrat : ${ptParsed.error.message}`,
       );
-      grains.push({
-        grain: 'property_total',
-        rowsFetched: ptRaw.rows.length,
-        rowsInserted: ins,
-        schemaRejects: 0,
-      });
-    } else {
-      schemaRejects += 1;
-      grains.push({
-        grain: 'property_total',
-        rowsFetched: ptRaw.rows.length,
-        rowsInserted: 0,
-        schemaRejects: 1,
-      });
     }
+    const propertyTotal: GSCDailyPropertyTotalRow = ptParsed.data;
 
-    // 2) totals (date+country+device)
+    // totals (date+country+device)
     const tRaw = await this.query(
       sc,
       siteUrl,
@@ -316,19 +618,8 @@ export class GscDailyFetcherService {
       if (parsed.success) totalsRows.push(parsed.data);
       else schemaRejects += 1;
     }
-    grains.push({
-      grain: 'totals',
-      rowsFetched: tRaw.rows.length,
-      rowsInserted: await this.upsert(
-        '__seo_gsc_daily_totals',
-        totalsRows,
-        'date,country,device',
-        opts.dryRun,
-      ),
-      schemaRejects: tRaw.rows.length - totalsRows.length,
-    });
 
-    // 3) pages (date+page+country+device)
+    // pages (date+page+country+device) — détail segmenté, LOSSY
     const pRaw = await this.query(
       sc,
       siteUrl,
@@ -353,6 +644,56 @@ export class GscDailyFetcherService {
       if (parsed.success) pageRows.push(parsed.data);
       else schemaRejects += 1;
     }
+
+    // page_totals (date+page, agrégation byPage) — grain page FIDÈLE, lu par
+    // rpc_seo_low_ctr_v4 : récupération complète exigée avant toute écriture.
+    const ptPagesRaw = await this.query(sc, siteUrl, date, ['page'], rowLimit, {
+      aggregationType: 'byPage',
+    });
+    apiCalls += ptPagesRaw.apiCalls;
+    const pageTotalRows: GSCDailyPageTotalsRow[] = [];
+    const pageTotalIssues: string[] = [];
+    for (const r of ptPagesRaw.rows) {
+      const parsed = GSCDailyPageTotalsRowSchema.safeParse({
+        date,
+        page: r.keys?.[0] ?? '',
+        clicks: r.clicks ?? 0,
+        impressions: r.impressions ?? 0,
+        ctr: r.ctr ?? 0,
+        position: r.position ?? 0,
+      });
+      if (parsed.success) pageTotalRows.push(parsed.data);
+      else pageTotalIssues.push(parsed.error.issues[0]?.message ?? 'invalide');
+    }
+    if (pageTotalIssues.length > 0) {
+      throw new IngestionSchemaError(
+        `page_totals ${date} hors contrat : ${pageTotalIssues.length} ligne(s) rejetée(s) sur ${ptPagesRaw.rows.length} (${pageTotalIssues[0]})`,
+      );
+    }
+    if (propertyTotal.impressions > 0 && pageTotalRows.length === 0) {
+      return rowsMissing('page_totals');
+    }
+
+    // queries (legacy, détail secondaire)
+    const q = await this.fetchQueryGrainRows(sc, siteUrl, date, rowLimit);
+    apiCalls += q.apiCalls;
+
+    // ── 2. ÉCRITURE ───────────────────────────────────────────────────────
+    // Avant la 1re écriture de grain : une reprise interrompue ne doit pas rester
+    // certifiée par la ligne property_total d'un run antérieur.
+    await this.uncommitDay(date, ctx);
+
+    grains.push({
+      grain: 'totals',
+      rowsFetched: tRaw.rows.length,
+      rowsInserted: await this.upsert(
+        '__seo_gsc_daily_totals',
+        totalsRows,
+        'date,country,device',
+        ctx,
+      ),
+      schemaRejects: tRaw.rows.length - totalsRows.length,
+    });
     grains.push({
       grain: 'pages',
       rowsFetched: pRaw.rows.length,
@@ -360,34 +701,155 @@ export class GscDailyFetcherService {
         '__seo_gsc_daily_pages',
         pageRows,
         'date,page,country,device',
-        opts.dryRun,
+        ctx,
       ),
       schemaRejects: pRaw.rows.length - pageRows.length,
     });
-
-    // 4) queries (legacy, détail secondaire — réutilise fetchAndPersist)
-    const q = await this.fetchAndPersist({
-      date,
-      rowLimit,
-      dryRun: opts.dryRun,
+    grains.push({
+      grain: 'page_totals',
+      rowsFetched: ptPagesRaw.rows.length,
+      rowsInserted: await this.upsert(
+        '__seo_gsc_daily_page_totals',
+        pageTotalRows,
+        'date,page',
+        ctx,
+      ),
+      schemaRejects: 0,
     });
-    apiCalls += q.apiCalls;
     grains.push({
       grain: 'queries',
-      rowsFetched: q.rowsFetched,
-      rowsInserted: q.rowsInserted,
+      rowsFetched: q.rows.length,
+      rowsInserted: await this.upsert(
+        '__seo_gsc_daily',
+        q.rows,
+        'date,page,query,device',
+        ctx,
+      ),
       schemaRejects: 0,
     });
 
-    // Couverture GLOBALE (pure) : Σpages vs property_total.
+    // Écarts d'agrégation (purs, information) : grain fidèle + segmenté.
     const coverage = computeGlobalCoverage(
       date,
-      propertyTotalForCoverage,
+      propertyTotal,
+      pageTotalRows,
+      this.pageTotalsMinRatio,
+      'page_totals',
+    );
+    const segmentedCoverage = computeGlobalCoverage(
+      date,
+      propertyTotal,
       pageRows,
       this.coverageMinRatio,
+      'segmented_pages',
     );
 
-    return { grains, coverage, apiCalls, schemaRejects };
+    // property_total EN DERNIER + marqueur : le jour n'est commité que si
+    // tous les grains précédents ont été persistés sans erreur.
+    grains.push({
+      grain: 'property_total',
+      rowsFetched: ptRaw.rows.length,
+      rowsInserted: await this.upsert(
+        '__seo_gsc_daily_property_total',
+        [{ ...propertyTotal, commit_version: GSC_INGEST_COMMIT_VERSION }],
+        'date',
+        ctx,
+      ),
+      schemaRejects: 0,
+    });
+
+    return {
+      status: 'ingested',
+      grains,
+      coverage,
+      segmentedCoverage,
+      apiCalls,
+      schemaRejects,
+    };
+  }
+
+  /**
+   * Retire le marqueur de commit d'un jour avant de réécrire ses grains. Sans
+   * cela, une panne en cours de réécriture laisse des grains partiellement
+   * remplacés sous le marqueur du run précédent, que les lecteurs certifiants
+   * (rpc_seo_low_ctr_v4, rattrapage) prennent pour un jour complet. Aucune ligne
+   * pour ce jour = no-op ; dry-run = aucune écriture ; échec → aucun grain écrit.
+   */
+  private async uncommitDay(
+    date: string,
+    ctx: { dryRun: boolean },
+  ): Promise<void> {
+    if (ctx.dryRun) return;
+    const { error } = await this.supabase
+      .from('__seo_gsc_daily_property_total')
+      .update({ commit_version: null })
+      .eq('date', date);
+    if (error) {
+      throw new IngestionDbError(
+        '__seo_gsc_daily_property_total',
+        error.code,
+        error.message,
+      );
+    }
+  }
+
+  /**
+   * Jours déjà commités (marqueur ≥ contrat courant) dans [from, to].
+   * Première lecture DB du run : sert aussi de contrôle de schéma (colonne
+   * `commit_version` absente = migration non appliquée → `schema_drift`, 0 écriture).
+   */
+  private async readCommittedDates(
+    from: string,
+    to: string,
+  ): Promise<Set<string>> {
+    const { data, error } = await this.supabase
+      .from('__seo_gsc_daily_property_total')
+      .select('date')
+      .gte('date', from)
+      .lte('date', to)
+      .gte('commit_version', GSC_INGEST_COMMIT_VERSION);
+    if (error) {
+      throw new IngestionDbError(
+        '__seo_gsc_daily_property_total',
+        error.code,
+        error.message,
+      );
+    }
+    const rows = (data ?? []) as Array<{ date: string }>;
+    if (rows.length >= SUPABASE_ROW_CAP) {
+      throw new Error(
+        `readCommittedDates: ${rows.length} lignes ≥ plafond supabase-js (${SUPABASE_ROW_CAP}) — fenêtre trop large`,
+      );
+    }
+    return new Set(rows.map((r) => r.date));
+  }
+
+  /** Sonde de finalité : 1 appel `dataState: 'all'` groupé par date. */
+  private async probeFinality(
+    sc: searchconsole_v1.Searchconsole,
+    siteUrl: string,
+    planned: string[],
+  ): Promise<GscFinalityProbe> {
+    const startDate = planned.reduce((min, d) => (d < min ? d : min));
+    // Veille UTC : normalement encore incomplète côté GSC (capture 2026-09-11 :
+    // firstIncompleteDate = J-2 UTC) — condition pour que l'API renseigne
+    // `metadata.firstIncompleteDate`. Metadata absente → final_rows_required /
+    // finality_unknown, jamais une finalité supposée.
+    const endDate = addDaysIso(new Date().toISOString().slice(0, 10), -1);
+    const span =
+      startDate <= endDate ? enumerateDatesIso(startDate, endDate).length : 1;
+    const resp = await sc.searchanalytics.query({
+      siteUrl,
+      requestBody: {
+        startDate: startDate <= endDate ? startDate : endDate,
+        endDate,
+        type: SEARCH_TYPE_WEB,
+        dimensions: ['date'],
+        dataState: 'all',
+        rowLimit: Math.min(25000, Math.max(1, span)),
+      },
+    });
+    return parseFinalityProbe(resp.data, endDate);
   }
 
   /** Une requête GSC paginée pour un grain donné (dimensions). `type: 'web'`. */
@@ -395,8 +857,9 @@ export class GscDailyFetcherService {
     sc: searchconsole_v1.Searchconsole,
     siteUrl: string,
     date: string,
-    dimensions: Array<'page' | 'query' | 'device' | 'country' | 'date'>,
+    dimensions: GscDimension[],
     rowLimit: number,
+    extra: { aggregationType?: 'byPage' | 'byProperty' } = {},
   ): Promise<{ rows: searchconsole_v1.Schema$ApiDataRow[]; apiCalls: number }> {
     const rows: searchconsole_v1.Schema$ApiDataRow[] = [];
     let startRow = 0;
@@ -411,6 +874,9 @@ export class GscDailyFetcherService {
           endDate: date,
           type: SEARCH_TYPE_WEB,
           dimensions: dimensions.length ? dimensions : undefined,
+          ...(extra.aggregationType
+            ? { aggregationType: extra.aggregationType }
+            : {}),
           rowLimit,
           startRow,
         },
@@ -423,30 +889,93 @@ export class GscDailyFetcherService {
     return { rows, apiCalls };
   }
 
-  /** Upsert idempotent par grain. Retourne le nombre de lignes upsertées. */
+  /**
+   * Upsert idempotent par grain, `fetched_at` rafraîchi (1 horodatage par run).
+   * Retourne le nombre de lignes upsertées ; 0 et aucune écriture en dry-run.
+   */
   private async upsert(
     table: string,
     rows: Array<Record<string, unknown>>,
     onConflict: string,
-    dryRun?: boolean,
+    ctx: { dryRun: boolean; fetchedAt: string },
   ): Promise<number> {
-    if (dryRun || rows.length === 0) return 0;
+    if (ctx.dryRun || rows.length === 0) return 0;
     let inserted = 0;
     const batchSize = 1000;
     for (let i = 0; i < rows.length; i += batchSize) {
-      const batch = rows.slice(i, i + batchSize);
+      const batch = rows
+        .slice(i, i + batchSize)
+        .map((r) => ({ ...r, fetched_at: ctx.fetchedAt }));
       const { error } = await this.supabase
         .from(table)
         .upsert(batch, { onConflict, ignoreDuplicates: false });
-      if (error) throw new Error(`upsert ${table}: ${error.message}`);
+      if (error) throw new IngestionDbError(table, error.code, error.message);
       inserted += batch.length;
     }
     return inserted;
   }
 
+  /** Lignes du grain `queries` (page+query+device par défaut), paginées. */
+  private async fetchQueryGrainRows(
+    sc: searchconsole_v1.Searchconsole,
+    siteUrl: string,
+    date: string,
+    rowLimit: number,
+    dimensions: GscDimension[] = ['page', 'query', 'device'],
+    prefixes: string[] = [''],
+  ): Promise<{ rows: Array<Record<string, unknown>>; apiCalls: number }> {
+    const out: Array<Record<string, unknown>> = [];
+    let apiCalls = 0;
+    for (const prefix of prefixes) {
+      const filters: searchconsole_v1.Schema$ApiDimensionFilter[] = [];
+      if (prefix) {
+        filters.push({
+          dimension: 'page',
+          operator: 'contains',
+          expression: prefix,
+        });
+      }
+      let startRow = 0;
+      let keepGoing = true;
+      while (keepGoing) {
+        apiCalls += 1;
+        const resp = await sc.searchanalytics.query({
+          siteUrl,
+          requestBody: {
+            startDate: date,
+            endDate: date,
+            type: SEARCH_TYPE_WEB,
+            dimensions,
+            rowLimit,
+            startRow,
+            dimensionFilterGroups: filters.length ? [{ filters }] : undefined,
+          },
+        });
+        const rows = resp.data.rows ?? [];
+        for (const row of rows) {
+          const dims = row.keys ?? [];
+          out.push({
+            date,
+            page: dims[dimensions.indexOf('page')] ?? '',
+            query: dims[dimensions.indexOf('query')] ?? '',
+            device: (dims[dimensions.indexOf('device')] ?? 'all').toLowerCase(),
+            clicks: row.clicks ?? 0,
+            impressions: row.impressions ?? 0,
+            ctr: row.ctr ?? 0,
+            position: row.position ?? 0,
+          });
+        }
+        if (rows.length < rowLimit) keepGoing = false;
+        else startRow += rowLimit;
+      }
+    }
+    return { rows: out, apiCalls };
+  }
+
   /**
-   * Grain `queries` (legacy, détail secondaire) — back-compat conservée.
-   * Reste appelable seul ; n'est PLUS la source des totaux.
+   * Grain `queries` (legacy, détail secondaire) — back-compat conservée
+   * (déclenchement admin `POST run/gsc`). N'est PAS la source des totaux et ne
+   * pose aucun marqueur de commit.
    */
   async fetchAndPersist(options: GscFetchOptions): Promise<GscFetchResult> {
     const startedAt = Date.now();
@@ -471,68 +1000,27 @@ export class GscDailyFetcherService {
     }
 
     const siteUrl = this.credentials.getGSCSiteUrl();
-    const dimensions = options.dimensions ?? ['page', 'query', 'device'];
-    const rowLimit = options.rowLimit ?? 5000;
     const sc = google.searchconsole({ version: 'v1', auth });
-    const allRows: Array<Record<string, unknown>> = [];
-
     try {
-      const prefixes = options.pagePrefixes ?? [''];
-      for (const prefix of prefixes) {
-        const filters: searchconsole_v1.Schema$ApiDimensionFilter[] = [];
-        if (prefix) {
-          filters.push({
-            dimension: 'page',
-            operator: 'contains',
-            expression: prefix,
-          });
-        }
-        let startRow = 0;
-        let keepGoing = true;
-        while (keepGoing) {
-          result.apiCalls += 1;
-          const resp = await sc.searchanalytics.query({
-            siteUrl,
-            requestBody: {
-              startDate: options.date,
-              endDate: options.date,
-              type: SEARCH_TYPE_WEB,
-              dimensions,
-              rowLimit,
-              startRow,
-              dimensionFilterGroups: filters.length ? [{ filters }] : undefined,
-            },
-          });
-          const rows = resp.data.rows ?? [];
-          for (const row of rows) {
-            const dims = row.keys ?? [];
-            allRows.push({
-              date: options.date,
-              page: dims[dimensions.indexOf('page' as const)] ?? '',
-              query: dims[dimensions.indexOf('query' as const)] ?? '',
-              device: (
-                dims[dimensions.indexOf('device' as const)] ?? 'all'
-              ).toLowerCase(),
-              clicks: row.clicks ?? 0,
-              impressions: row.impressions ?? 0,
-              ctr: row.ctr ?? 0,
-              position: row.position ?? 0,
-            });
-          }
-          if (rows.length < rowLimit) keepGoing = false;
-          else startRow += rowLimit;
-        }
-      }
-
-      result.rowsFetched = allRows.length;
-      if (!options.dryRun && allRows.length > 0) {
-        result.rowsInserted = await this.upsert(
-          '__seo_gsc_daily',
-          allRows,
-          'date,page,query,device',
-          false,
-        );
-      }
+      const q = await this.fetchQueryGrainRows(
+        sc,
+        siteUrl,
+        options.date,
+        options.rowLimit ?? 5000,
+        options.dimensions ?? ['page', 'query', 'device'],
+        options.pagePrefixes ?? [''],
+      );
+      result.apiCalls = q.apiCalls;
+      result.rowsFetched = q.rows.length;
+      result.rowsInserted = await this.upsert(
+        '__seo_gsc_daily',
+        q.rows,
+        'date,page,query,device',
+        {
+          dryRun: options.dryRun === true,
+          fetchedAt: new Date().toISOString(),
+        },
+      );
       result.durationSeconds = (Date.now() - startedAt) / 1000;
       return result;
     } catch (err) {
@@ -543,33 +1031,75 @@ export class GscDailyFetcherService {
     }
   }
 
-  private classifyError(
-    msg: string,
-  ): 'quota_exceeded' | 'auth_failure' | 'network' | 'unknown' {
-    const lower = msg.toLowerCase();
-    if (lower.includes('quota')) return 'quota_exceeded';
-    if (
-      lower.includes('unauth') ||
-      lower.includes('forbidden') ||
-      lower.includes('invalid_grant')
-    )
-      return 'auth_failure';
-    if (
-      lower.includes('econnreset') ||
-      lower.includes('etimedout') ||
-      lower.includes('socket')
-    )
-      return 'network';
-    return 'unknown';
+  /** Paramètres de planification : config gouvernée + surcharges bornées. */
+  private resolvePlanParams(options: GscMultiGrainOptions): IngestionConfig {
+    const cfg = this.ingestion;
+    const intOr = (v: number | undefined, fallback: number, min: number) => {
+      if (v === undefined) return fallback;
+      if (!Number.isInteger(v) || v < min || v > INGESTION_MAX_LOOKBACK_DAYS) {
+        throw new Error(`GSC ingestion : surcharge invalide (${v})`);
+      }
+      return v;
+    };
+    const floorDate = options.floorDate ?? cfg.floorDate;
+    if (!isIsoDate(options.date) || !isIsoDate(floorDate)) {
+      throw new Error(
+        `GSC ingestion : dates invalides (anchor=${options.date}, floor=${floorDate})`,
+      );
+    }
+    if (floorDate < cfg.floorDate) {
+      throw new Error(
+        `GSC ingestion : plancher ${floorDate} antérieur au plancher gouverné ${cfg.floorDate}`,
+      );
+    }
+    const rollingDays = intOr(options.rollingDays, cfg.rollingDays, 0);
+    const lookbackDays = intOr(
+      options.lookbackDays,
+      Math.max(cfg.lookbackDays, rollingDays),
+      1,
+    );
+    return {
+      rollingDays,
+      lookbackDays,
+      maxBackfillPerRun: intOr(
+        options.maxBackfillDays,
+        cfg.maxBackfillPerRun,
+        0,
+      ),
+      floorDate,
+    };
   }
-}
 
-/** Liste des jours [anchor-(n-1) .. anchor] inclus, ISO YYYY-MM-DD. */
-function rollingWindowDates(anchor: string, n: number): string[] {
-  const out: string[] = [];
-  const end = new Date(`${anchor}T00:00:00Z`).getTime();
-  for (let i = n - 1; i >= 0; i--) {
-    out.push(new Date(end - i * 86_400_000).toISOString().slice(0, 10));
+  /** Vue bornée du compte-rendu pour le journal (listes ≤ lookback). */
+  private journalDates(report: GscIngestionDatesReport) {
+    return {
+      window: report.window,
+      refresh: report.refresh,
+      backfill: report.backfill,
+      deferred_count: report.deferred.length,
+      ingested: report.ingested,
+      real_zero: report.realZero,
+      not_final: report.notFinal,
+      finality_unknown: report.finalityUnknown,
+      failed: report.failed.map((f) => ({
+        date: f.date,
+        error_class: f.errorClass,
+      })),
+    };
   }
-  return out;
+
+  private readRatio(
+    configService: ConfigService,
+    key: string,
+    fallback: number,
+  ): number {
+    const raw = configService.get<string>(key);
+    if (raw == null || String(raw).trim() === '') return fallback;
+    const n = Number(raw);
+    if (Number.isFinite(n) && n > 0 && n <= 1) return n;
+    this.logger.warn(
+      `⚠️ ${key}=${raw} invalide (attendu ]0,1]) — défaut ${fallback} appliqué`,
+    );
+    return fallback;
+  }
 }

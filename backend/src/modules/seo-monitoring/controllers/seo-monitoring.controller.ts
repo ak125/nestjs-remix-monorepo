@@ -10,10 +10,14 @@
  *  POST /api/admin/seo-monitoring/run/gsc             — trigger manuel GSC fetch (debug)
  *  POST /api/admin/seo-monitoring/run/ga4             — trigger manuel GA4 fetch (debug)
  *
- * Auth : AuthenticatedGuard + IsAdminGuard sur toute la classe (y compris
- * cron/health) — anonyme et non-admin → 403 sans appel de service.
+ * Auth : AuthenticatedGuard + IsAdminGuard au niveau classe (même motif que
+ * QualityHistoryController), cron/health compris — anonyme et non-admin → 403
+ * sans appel de service. Avant 2026-09-11 le contrôleur n'avait AUCUN guard :
+ * GET credentials/health répondait 200 sans session en PROD (vérifié) et les
+ * POST run/* / audit/r-content/run étaient exposés de la même façon.
  */
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -27,6 +31,7 @@ import { SupabaseClient, createClient } from '@supabase/supabase-js';
 import { AuthenticatedGuard } from '@auth/authenticated.guard';
 import { IsAdminGuard } from '@auth/is-admin.guard';
 import { getEffectiveSupabaseKey } from '@common/utils';
+import { computeDayCoverage, isIsoDate } from '@repo/seo-types';
 import { GoogleCredentialsService } from '../services/google-credentials.service';
 import { GscDailyFetcherService } from '../services/gsc-daily-fetcher.service';
 import { Ga4DailyFetcherService } from '../services/ga4-daily-fetcher.service';
@@ -43,6 +48,8 @@ import { RagMirrorFreshnessService } from '../services/rag-mirror-freshness.serv
 export class SeoMonitoringController {
   private readonly logger = new Logger(SeoMonitoringController.name);
   private readonly supabase: SupabaseClient;
+  /** Premier jour GSC attendu (même paramètre gouverné que le planificateur d'ingestion). */
+  private readonly gscExpectedFrom: string;
 
   constructor(
     private readonly credentials: GoogleCredentialsService,
@@ -65,6 +72,8 @@ export class SeoMonitoringController {
     this.supabase = createClient(url, key, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
+    // Source unique du plancher résolu (env validé + défaut) : le planificateur.
+    this.gscExpectedFrom = this.gscFetcher.ingestionConfig.floorDate;
   }
 
   @Get('credentials/health')
@@ -126,7 +135,24 @@ export class SeoMonitoringController {
   /**
    * GET /timeseries/gsc?from=YYYY-MM-DD&to=YYYY-MM-DD&page=&group_by=&top=
    *
-   * Aggrège côté DB (pas côté Node) pour gérer 30M rows/mois.
+   * - `totals` + `daily` : `__seo_gsc_daily_property_total` (1 ligne/jour, total
+   *   propriété sans dimension). Un jour absent reste ABSENT (listé dans
+   *   `coverage.missing_dates`), jamais compté comme zéro. Chaque point porte
+   *   `confirmed` (marqueur de commit posé) : un zéro confirmé est un vrai zéro ;
+   *   une ligne sans marqueur (ancien ingesteur, qui l'écrivait en premier et à
+   *   zéro si GSC ne renvoyait rien, ou réécriture interrompue) est listée dans
+   *   `coverage.unconfirmed_dates` et interdit `complete`.
+   * - `coverage` : jours attendus = [max(from, plancher d'ingestion) ..
+   *   min(to, dernier jour présent)] ; le retard de finalisation GSC en queue de
+   *   fenêtre est porté par `last_data_date`, pas compté manquant.
+   * - Erreur de lecture (dont schéma sans `commit_version`) → `{ error }`, aucune
+   *   couverture affirmée.
+   * - `rows` : échantillon du grain requêtes (`__seo_gsc_daily`), ordre non
+   *   garanti, borné par `top` — NON EXHAUSTIF (`rows_scope`).
+   *
+   * Défaut corrigé 2026-09-11 : les totaux et la courbe sommaient ≤ `top` lignes
+   * arbitraires du grain requêtes (lui-même ~7 % des clics) → KPI faux.
+   * `page` filtre uniquement l'échantillon `rows` (le total propriété n'a pas de page).
    */
   @Get('timeseries/gsc')
   async timeseriesGsc(
@@ -139,7 +165,27 @@ export class SeoMonitoringController {
     const dateTo = to ?? new Date().toISOString().slice(0, 10);
     const dateFrom =
       from ?? new Date(Date.now() - 90 * 86_400_000).toISOString().slice(0, 10);
-    const limit = Math.min(parseInt(top ?? '500', 10), 5000);
+    if (!isIsoDate(dateFrom) || !isIsoDate(dateTo) || dateFrom > dateTo) {
+      throw new BadRequestException(
+        `from/to : dates ISO YYYY-MM-DD attendues avec from <= to (reçu ${dateFrom} → ${dateTo})`,
+      );
+    }
+    const parsedTop = Number.parseInt(top ?? '500', 10);
+    const limit = Number.isFinite(parsedTop)
+      ? Math.min(Math.max(parsedTop, 1), 5000)
+      : 500;
+
+    const totalsRes = await this.supabase
+      .from('__seo_gsc_daily_property_total')
+      .select('date, clicks, impressions, ctr, position, commit_version')
+      .gte('date', dateFrom)
+      .lte('date', dateTo)
+      .order('date', { ascending: true })
+      // 1 ligne/jour : 1000 = ~2,7 ans, au-delà de la rétention GSC (16 mois).
+      .limit(1000);
+    if (totalsRes.error) {
+      return { error: totalsRes.error.message, rows: [] };
+    }
 
     let query = this.supabase
       .from('__seo_gsc_daily')
@@ -153,31 +199,72 @@ export class SeoMonitoringController {
     if (error) {
       return { error: error.message, rows: [] };
     }
-
-    // Aggrégation simple côté Node (pour 50k pages, l'agrégation lourde
-    // sera déléguée à Postgres via vue matérialisée Phase 1b).
     const rows = data ?? [];
-    const totals = rows.reduce(
-      (acc, r) => {
-        acc.clicks += r.clicks ?? 0;
-        acc.impressions += r.impressions ?? 0;
-        acc.position_sum += (r.position ?? 0) * (r.impressions ?? 0);
+
+    const daily = (totalsRes.data ?? []).map((d) => ({
+      date: String(d.date),
+      clicks: Number(d.clicks) || 0,
+      impressions: Number(d.impressions) || 0,
+      ctr: Number(d.ctr) || 0,
+      position: Number(d.position) || 0,
+      confirmed: d.commit_version !== null && d.commit_version !== undefined,
+    }));
+    const totals = daily.reduce(
+      (acc, d) => {
+        acc.clicks += d.clicks;
+        acc.impressions += d.impressions;
+        acc.position_sum += d.position * d.impressions;
         return acc;
       },
       { clicks: 0, impressions: 0, position_sum: 0 },
     );
+    const lastDataDate = daily.length ? daily[daily.length - 1].date : null;
+    const expectedFrom =
+      dateFrom > this.gscExpectedFrom ? dateFrom : this.gscExpectedFrom;
+    const expectedTo =
+      lastDataDate && lastDataDate < dateTo ? lastDataDate : dateTo;
+    const days =
+      lastDataDate && expectedFrom <= expectedTo
+        ? computeDayCoverage({
+            from: expectedFrom,
+            to: expectedTo,
+            presentDates: daily.map((d) => d.date),
+            confirmedDates: daily.filter((d) => d.confirmed).map((d) => d.date),
+          })
+        : null;
 
     return {
       from: dateFrom,
       to: dateTo,
       group_by: groupBy,
       rows,
+      rows_scope: {
+        grain: 'query' as const,
+        exhaustive: false,
+        limit,
+        returned: rows.length,
+        truncated: rows.length >= limit,
+      },
+      daily,
       totals: {
         clicks: totals.clicks,
         impressions: totals.impressions,
         ctr: totals.impressions > 0 ? totals.clicks / totals.impressions : 0,
         avg_position:
           totals.impressions > 0 ? totals.position_sum / totals.impressions : 0,
+      },
+      coverage: {
+        grain: 'property_total' as const,
+        last_data_date: lastDataDate,
+        expected_from: days?.from ?? null,
+        expected_to: days?.to ?? null,
+        days_expected: days?.daysExpected ?? 0,
+        days_present: days?.daysPresent ?? 0,
+        days_confirmed: days?.daysConfirmed ?? 0,
+        missing_dates: days?.missingDates ?? [],
+        unconfirmed_dates: days?.unconfirmedDates ?? [],
+        // aucune donnée → pas « complet » (rien n'est affirmé)
+        complete: days?.complete ?? false,
       },
     };
   }

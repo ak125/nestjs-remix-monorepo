@@ -15,6 +15,11 @@ const mockCacheService = {
   clearByPattern: jest.fn().mockResolvedValue(undefined),
 };
 
+// Mock du SeoPlaceholderEventsService (signal des marqueurs non résolus)
+const mockPlaceholderEvents = {
+  record: jest.fn().mockResolvedValue({ ok: true }),
+};
+
 describe('SeoTemplateService - Interpolation', () => {
   let service: SeoTemplateService;
 
@@ -43,7 +48,10 @@ describe('SeoTemplateService - Interpolation', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    service = new SeoTemplateService(mockCacheService as any);
+    service = new SeoTemplateService(
+      mockCacheService as any,
+      mockPlaceholderEvents as any,
+    );
   });
 
   describe('Variables Legacy (#Xxx#)', () => {
