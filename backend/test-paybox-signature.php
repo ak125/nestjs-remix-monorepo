@@ -9,7 +9,11 @@ $commande_id_injected_Paybox = "TEST-ORDER-123";
 $mailcltTOPAY = "test@test.com";
 $dateTimePaybox = "2025-11-04T17:43:16+00:00"; // Format ISO8601
 
-$CertificatTest = "7731B4225651B0C434189E2A13B963F91D8BBE78AEC97838E40925569E25357373C792E2FBE5A6B8C0CBC12ED27524CC2EE0C4653C93A14A39414AA42F85AEE5";
+$CertificatTest = getenv('PAYBOX_HMAC_KEY');
+if ($CertificatTest === false || $CertificatTest === '') {
+    fwrite(STDERR, "PAYBOX_HMAC_KEY manquant - exporter la cle avant de lancer ce script.\n");
+    exit(1);
+}
 
 $signaturePayboxCHAINE = "PBX_SITE=" . $sitemerchantsite .
     "&PBX_RANG=" . $sitemerchantrang .

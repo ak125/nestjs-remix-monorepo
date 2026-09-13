@@ -7,7 +7,9 @@ import {
   scanContent,
   isExempt,
   checkIgnoreContract,
+  buildLengthIndex,
   type Baseline,
+  type KnownSecretFingerprint,
 } from "./check-revoked-secrets-ratchet.ts";
 
 /**
@@ -168,4 +170,140 @@ test("ignore-contract: FAIL when revoked_at is null or evidence missing", () => 
   assert.equal(v.length, 2);
   assert.ok(v.some((x) => /revoked_at nul/.test(x)));
   assert.ok(v.some((x) => /rotation_evidence absente/.test(x)));
+});
+
+
+// ── SEC-03 : passe par empreinte pour les secrets sans forme reconnaissable ───
+//
+// Un HMAC Paybox est 128 caractères hex ; un certificat SystemPay, 16 chiffres.
+// Aucune expression régulière ne les distingue d'un hash ou d'un numéro. Seule
+// l'empreinte le fait — et l'empreinte ne révèle pas la valeur.
+//
+// Tous les secrets ci-dessous sont SYNTHÉTIQUES : construits ici, jamais issus
+// du dépôt. C'est la propriété que la détection par empreinte rend possible.
+
+const SYNTH_HMAC = "a".repeat(128); // même forme qu'une clé Paybox, valeur bidon
+const SYNTH_CERT = "1234567890123456"; // même forme qu'un certificat SystemPay
+const SYNTH_SHORT = "12345678"; // un identifiant marchand : 8 chiffres
+
+function known(
+  value: string,
+  revoked_at: string | null = null,
+  secret_type = "secret synthétique de test",
+): KnownSecretFingerprint {
+  return {
+    sha256_12: fingerprint(value),
+    secret_type,
+    length: value.length,
+    revoked_at,
+  };
+}
+
+const IDX = buildLengthIndex([known(SYNTH_HMAC), known(SYNTH_CERT)]);
+
+// ── 1. POSITIF — le littéral connu est détecté ───────────────────────────────
+
+test("POSITIF: un littéral de secret connu est signalé par empreinte", () => {
+  const found = scanContent(
+    "backend/PAYBOX-CONFIGURATION.md",
+    `PAYBOX_HMAC_KEY=${SYNTH_HMAC}\n`,
+    new Set(),
+    IDX,
+  );
+  assert.equal(found.length, 1);
+  assert.equal(found[0].rule, "known-secret-literal");
+  assert.equal(found[0].fp, fingerprint(SYNTH_HMAC));
+  assert.equal(found[0].line, 1);
+});
+
+test("POSITIF: la détection porte sur la valeur, pas sur le nom de variable", () => {
+  // Même valeur, variable différente, fichier différent, langage différent.
+  const found = scanContent("t.php", `$C = "${SYNTH_HMAC}";`, new Set(), IDX);
+  assert.equal(found.length, 1);
+});
+
+test("POSITIF: un secret RÉVOQUÉ est étiqueté différemment d'un secret à statut inconnu", () => {
+  const revokedIdx = buildLengthIndex([known(SYNTH_CERT, "2026-09-09")]);
+  const a = scanContent("a.md", SYNTH_CERT, new Set(), revokedIdx);
+  const b = scanContent("b.md", SYNTH_CERT, new Set(), IDX);
+  assert.equal(a[0].rule, "revoked-secret-reintroduced");
+  assert.equal(b[0].rule, "known-secret-literal");
+});
+
+// ── 2. NÉGATIF — ce que la garde ne doit JAMAIS bloquer ──────────────────────
+
+test("NÉGATIF: noms de variables, empreintes SHA-256, fixtures et docs neutralisées", () => {
+  const benign = [
+    "PAYBOX_HMAC_KEY=<SET_IN_ENV>",
+    "SYSTEMPAY_CERTIFICATE_PROD=<SET_IN_ENV>",
+    'HMAC_KEY="${PAYBOX_HMAC_KEY:?manquant}"',
+    "const k = process.env.PAYBOX_HMAC_KEY;",
+    // l'empreinte elle-même, telle qu'elle apparaît dans la baseline et dans
+    // check-payment-config.sh — la publier est le but, pas une fuite
+    `sha256_12: "${fingerprint(SYNTH_HMAC)}"`,
+    `sha256_12: "${fingerprint(SYNTH_CERT)}"`,
+    "Certificats : 16 caractères (ex: `9999888877776666`)",
+  ].join("\n");
+  assert.deepEqual(scanContent("doc.md", benign, new Set(), IDX), []);
+});
+
+test("NÉGATIF: le plancher de 12 caractères exclut les identifiants marchands", () => {
+  // PAYBOX_RANG (3), PAYBOX_SITE (7), SYSTEMPAY_SITE_ID (8) : transmis dans le
+  // formulaire de paiement côté client, donc publics. Les indexer produirait
+  // 826 faux positifs pour le seul PAYBOX_RANG (mesuré le 2026-09-09).
+  const shortIdx = buildLengthIndex([known(SYNTH_SHORT)]);
+  assert.deepEqual(
+    scanContent("a.md", `SITE_ID=${SYNTH_SHORT}`, new Set(), shortIdx),
+    [],
+  );
+});
+
+test("NÉGATIF: sans index, la passe par empreinte est inerte", () => {
+  assert.deepEqual(scanContent("a.md", SYNTH_HMAC, new Set()), []);
+});
+
+test("NÉGATIF: une valeur de même longueur mais différente n'est pas signalée", () => {
+  const other = "b".repeat(128);
+  assert.deepEqual(scanContent("a.md", other, new Set(), IDX), []);
+});
+
+// ── 3. ANCIEN ÉTAT FAUTIF vs 4. NOUVEL ÉTAT PROPRE ───────────────────────────
+//
+// Les deux formes exactes rencontrées dans les 11 fichiers de SEC-03, avant et
+// après assainissement. Le test échouerait si l'assainissement rendait la garde
+// aveugle plutôt que le dépôt propre.
+
+const ANCIEN = [
+  `SYSTEMPAY_CERTIFICATE_PROD=${SYNTH_CERT}`,
+  `HMAC_KEY="${SYNTH_HMAC}"`,
+  `$CertificatTest = "${SYNTH_HMAC}";`,
+  `if [ "$CERT" = "${SYNTH_CERT}" ]; then`,
+  `sed -i 's/^X=.*/X=${SYNTH_CERT}/' .env`,
+].join("\n");
+
+const NOUVEAU = [
+  "SYSTEMPAY_CERTIFICATE_PROD=<SET_IN_ENV>",
+  'HMAC_KEY="${PAYBOX_HMAC_KEY:?PAYBOX_HMAC_KEY manquant}"',
+  "$CertificatTest = getenv('PAYBOX_HMAC_KEY');",
+  `if [ "$(printf '%s' "$CERT" | sha256sum | cut -c1-12)" = "${fingerprint(SYNTH_CERT)}" ]; then`,
+  'sed -i "s/^X=.*/X=${SYSTEMPAY_CERTIFICATE_PROD:?manquant}/" .env',
+].join("\n");
+
+test("ANCIEN ÉTAT: les 5 formes fautives sont toutes signalées", () => {
+  const found = scanContent("mixed", ANCIEN, new Set(), IDX);
+  assert.equal(found.length, 5);
+  assert.deepEqual([...new Set(found.map((f) => f.line))], [1, 2, 3, 4, 5]);
+});
+
+test("NOUVEL ÉTAT: les 5 formes assainies ne produisent aucun constat", () => {
+  assert.deepEqual(scanContent("mixed", NOUVEAU, new Set(), IDX), []);
+});
+
+test("buildLengthIndex ignore les entrées sans longueur (schéma hérité)", () => {
+  const idx = buildLengthIndex([
+    { sha256_12: "aaaaaaaaaaaa", secret_type: "x", revoked_at: null } as KnownSecretFingerprint,
+    known(SYNTH_CERT),
+  ]);
+  assert.equal(idx.size, 1);
+  assert.ok(idx.get(SYNTH_CERT.length));
 });
