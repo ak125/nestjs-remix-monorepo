@@ -1,4 +1,6 @@
 import { existsSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
@@ -63,11 +65,17 @@ describe("catalogue image failure is bounded", () => {
       const setSource = vi.spyOn(HTMLImageElement.prototype, "src", "set");
       fireEvent.error(image);
       const fallback = image.getAttribute("src")!;
-      expect(
-        existsSync(new URL(`../../public${fallback}`, import.meta.url)),
-      ).toBe(true);
       for (let i = 0; i < 100; i++) fireEvent.error(image);
       expect(setSource).toHaveBeenCalledTimes(1);
+      expect(
+        existsSync(
+          resolve(
+            dirname(fileURLToPath(import.meta.url)),
+            "../../public",
+            `.${fallback}`,
+          ),
+        ),
+      ).toBe(true);
       expect(image.alt).toBe(alt);
       expect(image.closest("a")!.getAttribute("href")).toBe(link);
     },
