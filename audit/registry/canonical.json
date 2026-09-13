@@ -96524,7 +96524,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 114,
+      "loc": 141,
       "owner": "@ak125",
       "path": "scripts/ci/prod-client-ip-probe.mjs",
       "risk": "medium",
@@ -96544,7 +96544,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 76,
+      "loc": 143,
       "owner": "@ak125",
       "path": "scripts/ci/prod-client-ip-probe.test.mjs",
       "risk": "medium",
@@ -99245,11 +99245,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "d2562814b938caeca897c78a440e7e949bd5ee88311c72cf0cf9b36fd21ddb07",
       "audit/registry/deps.json": "28f63bf4383ddec90e009095ddc11db9298b7cd92b52ceb234a3e6a2fd996f90",
-      "audit/registry/files.json": "72421a16b9a600ec8713b3aef835e7f59576d5ba27b3c138d1c0b344341186a6",
+      "audit/registry/files.json": "8ad9eb9af71fb69f11996d36e1291a9a98a8365019d674d857eaab934147e825",
       "audit/registry/rpc.json": "dc4ad60e799d63c28c7e739134dcfde40b60b889a3b538ff23d4235e39245a18",
       "audit/registry/runtime.json": "6eac2f9390d957b35b36a266be34f33c97a323d7963c024207c319e953d0fdb7"
     },
-    "sotFingerprint": "f3e48bbf7508"
+    "sotFingerprint": "ecccb89d5e9b"
   },
   "runtime": [
     {

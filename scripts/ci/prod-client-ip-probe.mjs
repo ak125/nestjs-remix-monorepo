@@ -57,6 +57,33 @@ export function assertCaddyConfig(expectedBytes, runtimeHash, adapted) {
   ) {
     throw new Error("Caddy client_ip_headers must use only Cf-Connecting-Ip");
   }
+  const proxies = [];
+  function visit(value) {
+    if (!value || typeof value !== "object") return;
+    if (
+      value.handler === "reverse_proxy" &&
+      value.upstreams?.some(
+        (upstream) => upstream.dial === "monorepo_prod:3000",
+      )
+    )
+      proxies.push(value);
+    for (const child of Object.values(value)) visit(child);
+  }
+  visit(adapted);
+  if (
+    !proxies.length ||
+    proxies.some((proxy) =>
+      ["Cf-Connecting-Ip", "X-Forwarded-For", "X-Real-Ip"].some(
+        (header) =>
+          JSON.stringify(proxy.headers?.request?.set?.[header]) !==
+          JSON.stringify(["{http.vars.client_ip}"]),
+      ),
+    )
+  ) {
+    throw new Error(
+      "Every application proxy must normalize all three client IP headers",
+    );
+  }
   return expectedHash;
 }
 

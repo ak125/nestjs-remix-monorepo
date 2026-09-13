@@ -12,11 +12,11 @@ import { ThrottlerGuard } from '@nestjs/throttler';
  * « Trop de requêtes » sur les routes no-cache qui tapent toujours l'origine
  * (/cart, /checkout, /account, /api/*).
  *
- * Défense en profondeur (indépendante de la config Caddy) : on lit en priorité
- * `Cf-Connecting-Ip`, l'en-tête que Cloudflare positionne sur CHAQUE requête
- * avec l'IP client réelle — valeur unique (pas une liste à parser) et
- * non-spoofable côté client puisque l'origine n'accepte que des connexions
- * Cloudflare (firewall + Caddy). Hors Cloudflare (DEV / PREPROD / tests),
+ * On lit en priorité `Cf-Connecting-Ip`, normalisé par Caddy en PROD :
+ * le proxy accepte la valeur Cloudflare uniquement depuis ses plages fiables
+ * et remplace les trois en-têtes IP par {client_ip}, y compris pour un accès
+ * direct à l'origine. Cette garantie dépend de la configuration Caddy et de
+ * l'absence de port applicatif publié. Hors Caddy (DEV / PREPROD / tests),
  * repli déterministe sur `X-Real-IP` puis la pile IP d'Express.
  *
  * Pas de fallback silencieux : la clé est toujours définie et déterministe.
