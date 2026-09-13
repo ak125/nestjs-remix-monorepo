@@ -74,7 +74,13 @@ services:
       --maxmemory 128mb
       --maxmemory-policy allkeys-lru
     volumes:
-      - /dev/volumes/nestjs-remix/preprod/sessions/:/data
+      # /dev is volatile on the runner host; migrate existing data before rollout.
+      - type: bind
+        source: /home/deploy/preprod/data/redis
+        target: /data
+        bind:
+          # Fail instead of creating an empty Redis directory before migration.
+          create_host_path: false
     networks:
       - automecanik-preprod
 
