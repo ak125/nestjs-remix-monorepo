@@ -70,21 +70,26 @@ automecanik.com, www.automecanik.com {
         header Vary "Accept"
         header X-Robots-Tag "noindex, nofollow"
 
-        # Strip /imgproxy prefix avant envoi à imgproxy
-        uri strip_prefix /imgproxy
+        # Conserver les URL publiques ; imgproxy 4 exige le segment signature.
+        # Ordre explicite : strip, adaptation des URL legacy, proxy.
+        route {
+            uri strip_prefix /imgproxy
+            @imgproxy_legacy_options path_regexp ^/[a-zA-Z0-9_]+:
+            rewrite @imgproxy_legacy_options /insecure{uri}
 
-        reverse_proxy imgproxy:8080 {
-            header_up Host imgproxy
-            header_down -Server
+            reverse_proxy imgproxy:8080 {
+                header_up Host imgproxy
+                header_down -Server
 
-            # Anti cache-poisoning (INC-2026-015 / ADR-078) — upstream 4xx
-            # (source absente, fallback no.png servi par imgproxy) → cache
-            # court 5min, pas le 1 an immutable du parent (qui piégerait
-            # toute future ingestion sous le même nom).
-            @upstream_4xx status 4xx
-            handle_response @upstream_4xx {
-                header Cache-Control "public, max-age=300, must-revalidate"
-                copy_response
+                # Anti cache-poisoning (INC-2026-015 / ADR-078) — upstream 4xx
+                # (source absente, fallback no.png servi par imgproxy) → cache
+                # court 5min, pas le 1 an immutable du parent (qui piégerait
+                # toute future ingestion sous le même nom).
+                @upstream_4xx status 4xx
+                handle_response @upstream_4xx {
+                    header Cache-Control "public, max-age=300, must-revalidate"
+                    copy_response
+                }
             }
         }
     }
@@ -139,7 +144,7 @@ automecanik.com, www.automecanik.com {
         header Vary "Accept"
         # No @webp modifier — imgproxy negotiates AVIF > WebP via Accept header
         # (IMGPROXY_AUTO_AVIF + IMGPROXY_AUTO_WEBP).
-        rewrite * /rs:fit:800/q:85/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/gammes-produits/r1/{re.gamme_img.1}
+        rewrite * /insecure/rs:fit:800/q:85/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/gammes-produits/r1/{re.gamme_img.1}
         reverse_proxy imgproxy:8080 {
             header_up Host imgproxy
             header_down -Server
