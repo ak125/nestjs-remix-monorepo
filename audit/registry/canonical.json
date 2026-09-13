@@ -74229,7 +74229,7 @@
         "~/utils/r1-copy-gate"
       ],
       "kind": "config",
-      "loc": 302,
+      "loc": 306,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/pieces/CatalogueSection.tsx",
       "risk": "low",
@@ -74365,7 +74365,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 151,
+      "loc": 155,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/pieces/EquipementiersSection.tsx",
       "risk": "low",
@@ -89208,9 +89208,29 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 424,
+      "loc": 425,
       "owner": "@ak125",
       "path": "frontend/tests/e2e/critical-path.spec.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/e2e/fixtures.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 37,
+      "owner": "@ak125",
+      "path": "frontend/tests/e2e/fixtures.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -89288,7 +89308,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 124,
+      "loc": 125,
       "owner": "@ak125",
       "path": "frontend/tests/e2e/react19-hydration.spec.ts",
       "risk": "medium",
@@ -89368,7 +89388,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 201,
+      "loc": 193,
       "owner": "@ak125",
       "path": "frontend/tests/e2e/url-validation.spec.ts",
       "risk": "medium",
@@ -89631,6 +89651,26 @@
       "loc": 44,
       "owner": "@ak125",
       "path": "frontend/tests/unit/catalog-gammes.server.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/catalogue-image-fallback.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 84,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/catalogue-image-fallback.test.tsx",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -96380,6 +96420,66 @@
         "manual"
       ],
       "domain": "D13",
+      "id": "scripts/ci/preprod-e2e-rate-budget.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 95,
+      "owner": "@ak125",
+      "path": "scripts/ci/preprod-e2e-rate-budget.mjs",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
+      "id": "scripts/ci/preprod-e2e-rate-budget.storage.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 56,
+      "owner": "@ak125",
+      "path": "scripts/ci/preprod-e2e-rate-budget.storage.test.mjs",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
+      "id": "scripts/ci/preprod-e2e-rate-budget.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 156,
+      "owner": "@ak125",
+      "path": "scripts/ci/preprod-e2e-rate-budget.test.mjs",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
       "id": "scripts/ci/preprod-response-probe.test.mjs",
       "importedBy": [],
       "imports": [],
@@ -99145,11 +99245,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "d2562814b938caeca897c78a440e7e949bd5ee88311c72cf0cf9b36fd21ddb07",
       "audit/registry/deps.json": "28f63bf4383ddec90e009095ddc11db9298b7cd92b52ceb234a3e6a2fd996f90",
-      "audit/registry/files.json": "cb057f5d3ef1ecdb6fe0a0cee2d1a747ad6fb31e24da1018b9327a3b91856f94",
+      "audit/registry/files.json": "72421a16b9a600ec8713b3aef835e7f59576d5ba27b3c138d1c0b344341186a6",
       "audit/registry/rpc.json": "dc4ad60e799d63c28c7e739134dcfde40b60b889a3b538ff23d4235e39245a18",
       "audit/registry/runtime.json": "6eac2f9390d957b35b36a266be34f33c97a323d7963c024207c319e953d0fdb7"
     },
-    "sotFingerprint": "5da4b323a15b"
+    "sotFingerprint": "f3e48bbf7508"
   },
   "runtime": [
     {
