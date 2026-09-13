@@ -1,5 +1,5 @@
 {
-  "artifact_immutability_hash": "sha256:05192663aa4c1603295343c1d878dd29c4ccf7ee95a8a129f1dbe7c156b81fef",
+  "artifact_immutability_hash": "sha256:c947904c784aa2cfd9495be327087177347be1a8fda151a1a713dc18a7ebe01d",
   "divergences": [
     {
       "kind": "resolved",
@@ -3725,7 +3725,7 @@
     "deps_registry": "audit/registry/deps.json",
     "deps_registry_sha": "sha256:28f63bf4383ddec90e009095ddc11db9298b7cd92b52ceb234a3e6a2fd996f90",
     "lockfile": "package-lock.json",
-    "lockfile_sha": "sha256:5c752f16c7205a3905ee294e59d38f556862c42e3dd69ecccaf4c1aead4c12fc",
+    "lockfile_sha": "sha256:f62a068bc6f91861880091b28013c6d98c47c91ada60bcc6f828baf43739b690",
     "overlay": "audit/dependencies/family-overlay.yaml",
     "overlay_sha": "sha256:f5b19e7c0c73a75b55e4c0a620e0d01c6665dfcfffe8b00a77d5c8928bb05117"
   },
@@ -6229,7 +6229,7 @@
         }
       ],
       "resolved_versions": [
-        "2.10.0"
+        "2.10.12"
       ]
     },
     {
