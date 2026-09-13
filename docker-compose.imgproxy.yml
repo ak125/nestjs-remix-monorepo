@@ -12,7 +12,7 @@
 
 services:
   imgproxy:
-    image: darthsim/imgproxy:latest
+    image: ghcr.io/imgproxy/imgproxy:v4.0.14@sha256:595fb82df2364e35711e4303c6de6ad412bbd93963db47be58354a4d52dd1f17
     container_name: imgproxy
     environment:
       # Bind address
@@ -35,13 +35,6 @@ services:
       IMGPROXY_MAX_SRC_RESOLUTION: "50"  # 50 megapixels max
       IMGPROXY_MAX_ANIMATION_FRAMES: "1"  # Pas de GIFs animés
 
-      # ═══════════════════════════════════════════════════════════════
-      # 🚀 CACHE MÉMOIRE - Amélioration performance +30-50%
-      # ═══════════════════════════════════════════════════════════════
-      # Cache en mémoire (pas besoin de Redis)
-      IMGPROXY_RESULT_CACHE_SIZE: "256"      # 256 images transformées en cache
-      IMGPROXY_SOURCE_CACHE_SIZE: "128"      # 128 images sources en cache
-
       # Cache headers pour navigateur/CDN (Cloudflare cache 1 an)
       IMGPROXY_CACHE_CONTROL_PASSTHROUGH: "false"
       IMGPROXY_TTL: "31536000"               # 1 an en secondes (SUCCESS uniquement)
@@ -63,14 +56,17 @@ services:
       # → Le placeholder est servi (UX OK), mais cache court → toute future
       # vraie image arrive sous 5min sans purge manuelle.
       IMGPROXY_FALLBACK_IMAGE_URL: "https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/no.png"
-      IMGPROXY_FALLBACK_IMAGE_TTL: "60"        # TTL interne d'imgproxy pour rafraîchir
-                                               # la source fallback en cache mémoire
-                                               # (pas le Cache-Control HTTP renvoyé).
+      IMGPROXY_FALLBACK_IMAGE_TTL: "60"        # Cache-Control du fallback imgproxy 4.
+                                               # Caddy le remplace par 300 s sur les 4xx.
       IMGPROXY_FALLBACK_IMAGE_HTTP_CODE: "404" # Status explicite 4xx, condition
                                                # nécessaire pour le matching Caddy.
 
       # Performance
-      IMGPROXY_CONCURRENCY: "4"
+      # Deux traitements pour 1 CPU / 1 Go ; limiter la pression mémoire.
+      IMGPROXY_WORKERS: "2"
+      IMGPROXY_REQUESTS_QUEUE_SIZE: "100"
+      # Allocateur fourni par l’image officielle, limite la fragmentation libvips.
+      IMGPROXY_MALLOC: "jemalloc"
       IMGPROXY_MAX_CLIENTS: "100"
       IMGPROXY_DOWNLOAD_TIMEOUT: "10"
       IMGPROXY_READ_REQUEST_TIMEOUT: "10"  # Remplace IMGPROXY_READ_TIMEOUT
@@ -80,8 +76,8 @@ services:
       IMGPROXY_LOG_LEVEL: "warn"
       IMGPROXY_LOG_FORMAT: "json"
 
-      # Désactiver signature en dev (activer en prod avec IMGPROXY_KEY/SALT)
-      IMGPROXY_ALLOW_INSECURE_URLS: "true"
+      # Sans IMGPROXY_KEY/SALT, les URL sont non signees.
+      # L allowlist des sources reste obligatoire ; Caddy preserve les URL legacy.
 
     ports:
       - "8081:8080"
