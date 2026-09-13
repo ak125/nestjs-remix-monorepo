@@ -37,7 +37,7 @@ tmux kill-session -t $SESSION 2>/dev/null || true
 # Vérifier que Redis tourne
 if ! docker ps | grep -q redis; then
     echo -e "${YELLOW}📦 Démarrage de Redis...${NC}"
-    docker run -d --name redis-dev --rm -p 6379:6379 redis:7-alpine 2>/dev/null || true
+    docker run -d --name redis-dev --rm -p 6379:6379 redis:7.4.11-alpine@sha256:ff02b58f971e7d7d156a1267e283fcbbeee91773b6aa36c49dac28ecfe28eadf 2>/dev/null || true
 fi
 
 # Window 0: TypeScript compiler watch (mémoire réduite à 2GB)
