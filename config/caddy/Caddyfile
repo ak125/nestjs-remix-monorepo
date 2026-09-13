@@ -80,6 +80,7 @@ automecanik.com, www.automecanik.com {
             reverse_proxy imgproxy:8080 {
                 header_up Host imgproxy
                 header_down -Server
+                header_down -Cache-Control
 
                 # Anti cache-poisoning (INC-2026-015 / ADR-078) — upstream 4xx
                 # (source absente, fallback no.png servi par imgproxy) → cache
@@ -87,7 +88,7 @@ automecanik.com, www.automecanik.com {
                 # toute future ingestion sous le même nom).
                 @upstream_4xx status 4xx
                 handle_response @upstream_4xx {
-                    header Cache-Control "public, max-age=300, must-revalidate"
+                    header >Cache-Control "public, max-age=300, must-revalidate"
                     copy_response
                 }
             }
