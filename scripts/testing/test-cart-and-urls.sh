@@ -103,7 +103,7 @@ if docker ps | grep -q redis; then
     echo -e "   ${GREEN}âœ… Redis actif${NC}"
 else
     echo -e "   ${RED}âŒ Redis non actif${NC}"
-    echo -e "   ${YELLOW}ðŸ’¡ DÃ©marrer: docker run -d --name redis-dev --rm -p 6379:6379 redis:7-alpine${NC}"
+    echo -e "   ${YELLOW}ðŸ’¡ DÃ©marrer: docker run -d --name redis-dev --rm -p 6379:6379 redis:7.4.11-alpine@sha256:ff02b58f971e7d7d156a1267e283fcbbeee91773b6aa36c49dac28ecfe28eadf${NC}"
 fi
 
 # VÃ©rifier le backend

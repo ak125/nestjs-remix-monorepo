@@ -46,7 +46,7 @@ if docker ps --filter "name=redis" --format "{{.Names}}" | grep -q redis; then
     fi
 else
     echo -e "${RED}âŒ NON ACTIF${NC}"
-    echo "   DÃ©marrer avec: docker run -d --name redis-dev --rm -p 6379:6379 redis:7-alpine"
+    echo "   DÃ©marrer avec: docker run -d --name redis-dev --rm -p 6379:6379 redis:7.4.11-alpine@sha256:ff02b58f971e7d7d156a1267e283fcbbeee91773b6aa36c49dac28ecfe28eadf"
 fi
 echo ""
 
@@ -95,14 +95,14 @@ elif [ $SCORE -eq 1 ]; then
         echo "   - DÃ©marrer le backend : npm run dev"
     fi
     if ! docker ps --filter "name=redis" --format "{{.Names}}" | grep -q redis; then
-        echo "   - DÃ©marrer Redis     : docker run -d --name redis-dev --rm -p 6379:6379 redis:7-alpine"
+        echo "   - DÃ©marrer Redis     : docker run -d --name redis-dev --rm -p 6379:6379 redis:7.4.11-alpine@sha256:ff02b58f971e7d7d156a1267e283fcbbeee91773b6aa36c49dac28ecfe28eadf"
     fi
     echo ""
 else
     echo -e "${RED}âŒ AUCUN SERVICE ACTIF${NC}"
     echo ""
     echo "ðŸš€ Pour dÃ©marrer :"
-    echo "   1. Redis : docker run -d --name redis-dev --rm -p 6379:6379 redis:7-alpine"
+    echo "   1. Redis : docker run -d --name redis-dev --rm -p 6379:6379 redis:7.4.11-alpine@sha256:ff02b58f971e7d7d156a1267e283fcbbeee91773b6aa36c49dac28ecfe28eadf"
     echo "   2. App   : npm run dev"
     echo ""
     echo "   Ou utiliser: ./scripts/dev-start.sh"
