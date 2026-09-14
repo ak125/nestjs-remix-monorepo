@@ -1,0 +1,33 @@
+id: commerce-no-direct-dispo-filter
+language: typescript
+severity: warning
+message: |
+  Hand-rolled `pri_dispo` filter on the Supabase query builder outside the pricing module.
+  The sellability predicate (pri_dispo IN ('1','2','3') AND pri_vente_ttc_n > 0 AND piece_display)
+  has a SINGLE authority: SellabilityTruthService (isSellablePiece / getAggregate) + the SQL
+  functions is_piece_sellable / refresh_catalog_sellable_candidates. Re-expressing a dispo filter
+  inline re-introduces the divergence class (frontend {1,2,3} vs backend '1'-only) the PR1
+  "vérité canonique" subsystem exists to remove.
+note: |
+  ADVISORY (warning) for now — PR1 establishes the authority; alignment is PROGRESSIVE:
+    • PR2 aligns the sellability-intent sites (products/pricing.service.ts, search/* listing) to
+      SellabilityTruthService / {1,2,3}, then this rule flips to `severity: error`.
+    • Legitimate NON-sellability uses (e.g. admin/working-stock.service.ts inspects dispo STATE
+      '1' vs '0' for a stock view — not a buy gate) go under `ignores` with owner review when
+      the rule is promoted to error.
+  Surfacing (warning) makes the full divergent surface visible WITHOUT breaking CI or forcing a
+  premature multi-file refactor (scope discipline).
+files:
+  - backend/src/**/*.ts
+ignores:
+  - backend/src/modules/pricing/**
+rule:
+  any:
+    - pattern: $X.eq('pri_dispo', $$$)
+    - pattern: $X.eq("pri_dispo", $$$)
+    - pattern: $X.in('pri_dispo', $$$)
+    - pattern: $X.in("pri_dispo", $$$)
+    - pattern: $X.neq('pri_dispo', $$$)
+    - pattern: $X.neq("pri_dispo", $$$)
+    - pattern: $X.filter('pri_dispo', $$$)
+    - pattern: $X.filter("pri_dispo", $$$)
