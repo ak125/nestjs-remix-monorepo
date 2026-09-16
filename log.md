@@ -566,3 +566,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/seo-measure-robots-markers`
 - **Décision** : audit des 7 leviers SEO — ingestion GSC rattrapable et certifiable, robots via source unique, garde des marqueurs R2, META conseils filtrées ; rapport `audit/seo-sept-leviers-2026-09-11.md`.
 - **Sortie** : PR à ouvrir | 2 migrations NON appliquées | garde admin livrée séparément (#1460, en PROD par le tag `v2026.09.11-cwv-sanitizer-admin-guard`).
+
+## 2026-09-16 — fix/cwv-trend-detector-vacancy-signal (auto)
+
+- **Branche** : `fix/cwv-trend-detector-vacancy-signal`
+- **Décision** : fix(seo-cwv): une garde qui n'a rien regardé ne doit plus se taire
+- **Sortie** : PR aucune | commits f3beecf1c
