@@ -1,6 +1,6 @@
 {
-  "compliantCount": 12,
-  "generatedAt": "2026-07-04T16:55:44.902Z",
+  "compliantCount": 13,
+  "generatedAt": "2026-09-16T14:27:42.707Z",
   "issues": [],
   "schemaPath": ".spec/00-canon/ai-registry/skill.schema.json",
   "schemaVersion": "1.0.0",
@@ -134,6 +134,35 @@
         "vault"
       ],
       "type": "discipline"
+    },
+    {
+      "checksum": "sha256:835213e794a3f3d2605438f2d1fd4e0d5c7b21c05f73a81d9c1a883f38132b52",
+      "domain": "D15",
+      "last_verified": "2026-09-16",
+      "llm_safe": true,
+      "metadata": {
+        "argument-hint": "[sonde ou tout] [--fenetre <coupure visée>]",
+        "spec": "agentskills.io/specification v1",
+        "version": "1.0"
+      },
+      "name": "live-evidence-sweep",
+      "owners": [
+        "@ak125"
+      ],
+      "path": ".claude/skills/live-evidence-sweep/SKILL.md",
+      "runtime_class": "read-only",
+      "spec_compliant": true,
+      "status": "experimental",
+      "tags": [
+        "audit",
+        "evidence",
+        "governance",
+        "incident",
+        "logs",
+        "runtime",
+        "upgrade"
+      ],
+      "type": "technique"
     },
     {
       "checksum": "sha256:10bbfa0fc4f1143958961b4ae57c7f1f6a783078f04aeba446d075abf84bd08c",
@@ -303,14 +332,14 @@
       "type": "technique"
     },
     {
-      "checksum": "sha256:9359545ce817ca5aff7cf78406a084e043108ad790b6bd2294680c17fbb0d9ba",
+      "checksum": "sha256:5c3881df3cd1051c425614ddf55f7c53ba4a6fbf23526a45c820f00fee8c3131",
       "domain": "D3",
-      "last_verified": "2026-06-26",
+      "last_verified": "2026-09-11",
       "llm_safe": true,
       "metadata": {
         "argument-hint": "[check-name or 'all']",
         "spec": "agentskills.io/specification v1",
-        "version": "0.2"
+        "version": "0.3"
       },
       "name": "web-vitals-audit",
       "owners": [
@@ -333,5 +362,5 @@
       "type": "technique"
     }
   ],
-  "totalSkills": 12
+  "totalSkills": 13
 }
