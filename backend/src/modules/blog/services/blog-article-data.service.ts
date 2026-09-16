@@ -177,14 +177,19 @@ export class BlogArticleDataService {
         `✅ Gamme trouvée: ${gammeData.pg_name} (ID: ${gammeData.pg_id})`,
       );
 
-      // 2. Trouver l'article le plus récent pour cette gamme
+      // 2. Trouver l'article le plus récent pour cette gamme.
+      // `maybeSingle` et non `single` : une gamme sans article est un
+      // resultat normal (156 gammes sur 241), pas une erreur. `single`
+      // faisait rendre 406/PGRST116 a PostgREST 12 206 fois par 24 h pour
+      // decrire une situation attendue. Le test `if (error || !data)`
+      // ci-dessous continue de fonctionner : data vaut null.
       const { data, error } = await this.supabaseService.client
         .from(TABLES.blog_advice)
         .select('*')
         .eq('ba_pg_id', gammeData.pg_id)
         .order('ba_update', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (error || !data) {
         this.logger.warn(
