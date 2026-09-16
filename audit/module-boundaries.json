@@ -130,8 +130,8 @@
         "backend/src/modules/cart/dto/__tests__",
         "backend/src/modules/cart/services"
       ],
-      "files_count": 19,
-      "loc_total": 3698,
+      "files_count": 20,
+      "loc_total": 3772,
       "has_barrel": false
     },
     "catalog": {
@@ -212,7 +212,7 @@
         "backend/src/database/types"
       ],
       "files_count": 15,
-      "loc_total": 21515,
+      "loc_total": 21678,
       "has_barrel": true
     },
     "dev-only": {

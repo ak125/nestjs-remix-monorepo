@@ -17,7 +17,7 @@
     "dynamic_from_callsites": 897,
     "dynamic_rpc_callsites": 1,
     "migrations_scanned": 355,
-    "backend_files_scanned": 1399
+    "backend_files_scanned": 1400
   },
   "tables": {
     "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7": {
@@ -2643,14 +2643,13 @@
     "pieces_price": {
       "used_by": [
         "backend/src/modules/admin/services/command-center-actions.service.ts",
-        "backend/src/modules/cart/services/shipping-calculator.service.ts",
         "backend/src/modules/catalog/controllers/pieces-diagnostic.controller.ts",
         "backend/src/modules/mcp-validation/services/mcp-query.service.ts",
         "backend/src/modules/pricing/services/pricing.repository.ts",
         "backend/src/modules/search/controllers/search-debug.controller.ts",
         "backend/src/modules/search/controllers/search-enhanced-existing.controller.ts"
       ],
-      "used_by_count": 7,
+      "used_by_count": 6,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false
@@ -10712,27 +10711,27 @@
     },
     {
       "file": "backend/src/database/services/cart-data.service.ts",
-      "line": 456
+      "line": 455
     },
     {
       "file": "backend/src/database/services/cart-data.service.ts",
-      "line": 470
+      "line": 468
     },
     {
       "file": "backend/src/database/services/cart-data.service.ts",
-      "line": 510
+      "line": 508
     },
     {
       "file": "backend/src/database/services/cart-data.service.ts",
-      "line": 596
+      "line": 587
     },
     {
       "file": "backend/src/database/services/cart-data.service.ts",
-      "line": 628
+      "line": 619
     },
     {
       "file": "backend/src/database/services/cart-data.service.ts",
-      "line": 684
+      "line": 675
     },
     {
       "file": "backend/src/database/services/meta-tags-ariane-data.service.ts",
@@ -10896,11 +10895,11 @@
     },
     {
       "file": "backend/src/database/services/piece-price-data.service.test.ts",
-      "line": 168
+      "line": 257
     },
     {
       "file": "backend/src/database/services/piece-price-data.service.ts",
-      "line": 119
+      "line": 186
     },
     {
       "file": "backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts",
@@ -11612,11 +11611,11 @@
     },
     {
       "file": "backend/src/modules/cart/services/shipping-calculator.service.ts",
-      "line": 109
+      "line": 110
     },
     {
       "file": "backend/src/modules/cart/services/shipping-calculator.service.ts",
-      "line": 138
+      "line": 139
     },
     {
       "file": "backend/src/modules/cart/services/stock-management.service.ts",
