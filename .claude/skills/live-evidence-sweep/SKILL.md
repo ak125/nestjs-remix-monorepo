@@ -163,6 +163,19 @@ Ces erreurs ont toutes été commises pendant le passage qui a produit ce skill 
   créant une table de plus en production, qu'il a fallu supprimer. Le verrou qui tient est
   `--single-transaction` + `set transaction read only` (`scripts/sweep-psql.sh`), et il est validé par une
   écriture qui échoue.
+- **Une moyenne calculée sur des journaux mesure la queue, pas la population.** Ce projet tourne avec
+  `log_min_duration_statement = -1` et `auto_explain.log_min_duration = 10000` : les journaux ne
+  contiennent **que** les exécutions de plus de 10 s. Une « moyenne » calculée dessus est fausse d'un
+  facteur qui a été mesuré à ≈ 22 sur cette base. Le signe qui trahit l'artefact est le **minimum de
+  l'échantillon** : s'il vaut exactement le seuil du filtre, la population a été tronquée. Pour une
+  vraie distribution, aller chercher `pg_stat_statements` (tous les appels) ou `edge_logs`
+  (`response.origin_time`), et donner p50/p95/max plutôt qu'une moyenne seule.
+- **Un nom de colonne faux ne se corrige pas en prenant le nom le plus ressemblant.** Deux cas vécus
+  le même jour : `ba3_ba_id` → le seul candidat plausible, `ba3_ba2_id`, est en réalité une clé vers
+  une table intermédiaire H2, et les plages d'identifiants se recouvrent — le renommage aurait rendu
+  des données **fausses en silence** là où le code échouait bruyamment en `42703`. Et réparer un gate
+  qui renvoyait toujours `false` aurait affiché un **second** lien vers une URL déjà liée par un bloc
+  voisin. Retrouver ce que la requête voulait dire, puis vérifier ce que la correction **affiche**.
 - **Ne jamais inventer une URL pour tester.** Deux routes devinées ont rendu 404, ce qui ne prouvait rien
   sur le site. Prendre les URL dans le sitemap, la base ou les journaux.
 - **Un constat sans commande exécutée n'est pas un constat.** Exiger la commande et un extrait de sa sortie.
