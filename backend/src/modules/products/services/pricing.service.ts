@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { TABLES } from '@repo/database-types';
 import { z } from 'zod';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { PiecePriceDataService } from '@database/services/piece-price-data.service';
 import { DomainValidationException, ErrorCodes } from '@common/exceptions';
 
 /**
@@ -52,7 +53,10 @@ export class PricingService extends SupabaseBaseService {
     start_time: Date.now(),
   };
 
-  constructor(configService?: ConfigService) {
+  constructor(
+    private readonly piecePriceData: PiecePriceDataService,
+    configService?: ConfigService,
+  ) {
     super(configService);
   }
 
@@ -109,39 +113,14 @@ export class PricingService extends SupabaseBaseService {
         };
       }
 
-      // Requête VRAIES DONNÉES (CORRIGÉE vs original avec erreurs)
-      const { data, error } = await this.client
-        .from(TABLES.pieces_price)
-        .select(
-          `
-          pri_piece_id_i,
-          pri_vente_ttc_n,
-          pri_consigne_ttc_n,
-          pri_vente_ht_n,
-          pri_consigne_ht_n,
-          pri_dispo,
-          pri_type,
-          pri_qte_vente,
-          pri_tva_n,
-          pri_marge_n,
-          pri_ref,
-          pri_des
-        `,
-        )
-        .eq('pri_piece_id_i', validPieceId)
-        .eq('pri_dispo', '1')
-        .not('pri_vente_ttc_n', 'is', null)
-        .gt('pri_vente_ttc_n', 0)
-        .order('pri_type', { ascending: false })
-        .limit(1)
-        .single();
+      // Sélection de la ligne tarifaire déléguée à PiecePriceDataService, qui
+      // porte la règle unique. Elle vivait ici et triait `pri_type` comme du
+      // texte ; le panier en avait deux autres versions encore. Une seule règle
+      // désormais, partagée par la fiche produit et par le panier.
+      const data = await this.piecePriceData.findSellablePrice(validPieceId);
 
-      // Gestion erreur améliorée (vs original basique)
-      if (error || !data) {
-        this.logger.warn(
-          `Aucun prix trouvé pour pièce ${validPieceId}:`,
-          error?.message,
-        );
+      if (!data) {
+        this.logger.warn(`Aucun prix vendable pour la pièce ${validPieceId}`);
         return null; // Compatibilité avec original
       }
 
