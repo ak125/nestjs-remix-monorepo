@@ -436,7 +436,6 @@ export class CartDataService extends SupabaseBaseService {
         price_ttc: number;
         consigne_ttc: number;
         weight_g: number;
-        weight_udm: string;
         /** `false` quand aucune ligne de tarif vendable n'existe : le prix rendu
          * vaut alors 0 et ne doit pas être présenté comme un prix de vente. */
         sellable: boolean;
@@ -451,7 +450,7 @@ export class CartDataService extends SupabaseBaseService {
 
     try {
       // 3 requêtes parallèles (pieces + prix + images) puis 1 requête marques après collecte des pm_ids
-      const [piecesResult, tarifsVendables, imagesResult] = await Promise.all([
+      const [piecesResult, tarifs, imagesResult] = await Promise.all([
         // Batch pieces — seulement les colonnes nécessaires
         this.client
           .from(TABLES.pieces)
@@ -460,11 +459,10 @@ export class CartDataService extends SupabaseBaseService {
           )
           .in('piece_id', uniqueIds),
 
-        // Tarifs vendables + poids. La sélection de la ligne appartient à
-        // PiecePriceDataService et à lui seul : c'est en requêtant pieces_price
-        // ici que l'affichage du panier avait fini par retenir une autre ligne
-        // que l'ajout au panier, pour la même pièce.
-        this.piecePriceData.findSellablePrices(uniqueIds),
+        // Prix ET poids en une seule requête, via l'autorité unique. C'est en
+        // requêtant pieces_price ici que l'affichage du panier avait fini par
+        // retenir une autre ligne que l'ajout au panier, pour la même pièce.
+        this.piecePriceData.findTariffs(uniqueIds),
 
         // Batch images — images avec folder valide (triées par pmi_sort)
         this.client
@@ -524,7 +522,7 @@ export class CartDataService extends SupabaseBaseService {
 
       // Assembler la Map de résultats
       for (const piece of piecesResult.data || []) {
-        const priceRow = tarifsVendables.get(piece.piece_id);
+        const priceRow = tarifs.vendables.get(piece.piece_id);
         // Pas de tarif vendable => 0 €, mais SIGNALÉ (`sellable: false`) et
         // journalisé. Un 0 € muet se confond avec un article gratuit ; l'appelant
         // doit pouvoir distinguer les deux.
@@ -535,16 +533,10 @@ export class CartDataService extends SupabaseBaseService {
         }
         const priceTTC = Number(priceRow?.pri_vente_ttc_n) || 0;
         const consigneTTC = Number(priceRow?.pri_consigne_ttc_n) || 0;
-        const rawWeight = parseFloat(priceRow?.pri_poids ?? '') || 0;
-        const udm = (priceRow?.pri_udm_poids || '').toUpperCase();
-        // Heuristique KGM/GRM cohérente avec ShippingCalculatorService
-        const KGM_THRESHOLD = 100;
-        const weightG =
-          rawWeight > 0
-            ? udm === 'KGM' && rawWeight <= KGM_THRESHOLD
-              ? rawWeight * 1000
-              : rawWeight
-            : 0;
+        // Le poids ne suit PAS la disponibilité : une pièce pèse le même poids
+        // que son tarif soit à la vente ou non. Conversion en grammes faite une
+        // seule fois, dans PiecePriceDataService, partagée avec les frais de port.
+        const weightG = tarifs.poidsEnGrammes.get(piece.piece_id) ?? 0;
 
         const brandName =
           piece.piece_pm_id && brandMap.has(piece.piece_pm_id.toString())
@@ -568,7 +560,6 @@ export class CartDataService extends SupabaseBaseService {
           price_ttc: priceTTC,
           consigne_ttc: consigneTTC,
           weight_g: weightG,
-          weight_udm: udm,
           sellable: Boolean(priceRow),
         });
       }
