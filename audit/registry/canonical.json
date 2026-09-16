@@ -2338,7 +2338,7 @@
       {
         "args": [],
         "definedInMigrations": [
-          "20260911_seo_cwv_daily_rum_exact_p75.sql"
+          "20260916_seo_cwv_trend_detector_vacancy_signal.sql"
         ],
         "domain": "UNKNOWN",
         "id": "public.detect_cwv_trend_divergence",
@@ -99246,10 +99246,10 @@
       "audit/registry/db.json": "d2562814b938caeca897c78a440e7e949bd5ee88311c72cf0cf9b36fd21ddb07",
       "audit/registry/deps.json": "28f63bf4383ddec90e009095ddc11db9298b7cd92b52ceb234a3e6a2fd996f90",
       "audit/registry/files.json": "8ad9eb9af71fb69f11996d36e1291a9a98a8365019d674d857eaab934147e825",
-      "audit/registry/rpc.json": "dc4ad60e799d63c28c7e739134dcfde40b60b889a3b538ff23d4235e39245a18",
+      "audit/registry/rpc.json": "10db5aff88e6b7677e6e3ab7a2d604a844af66d8aca05ee34b5f0f8913573b72",
       "audit/registry/runtime.json": "6eac2f9390d957b35b36a266be34f33c97a323d7963c024207c319e953d0fdb7"
     },
-    "sotFingerprint": "ecccb89d5e9b"
+    "sotFingerprint": "419602fb4a17"
   },
   "runtime": [
     {

@@ -566,3 +566,15 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/seo-measure-robots-markers`
 - **Décision** : audit des 7 leviers SEO — ingestion GSC rattrapable et certifiable, robots via source unique, garde des marqueurs R2, META conseils filtrées ; rapport `audit/seo-sept-leviers-2026-09-11.md`.
 - **Sortie** : PR à ouvrir | 2 migrations NON appliquées | garde admin livrée séparément (#1460, en PROD par le tag `v2026.09.11-cwv-sanitizer-admin-guard`).
+
+## 2026-09-16 — fix/cwv-trend-detector-vacancy-signal (auto)
+
+- **Branche** : `fix/cwv-trend-detector-vacancy-signal`
+- **Décision** : rendre observable la cécité de `detect_cwv_trend_divergence` — la garde tournait 7/7 `succeeded` avec 0 ligne de référence éligible, donc incapable d'alerter ; elle signale désormais ses clés aveugles et referme son alerte quand la couverture revient.
+- **Sortie** : PR #1498 | commits f3beecf1c 3475070af e8344865b | migration NON appliquée (owner, chemin ledger) | test 48 assertions + 10/10 mutants tués
+
+## 2026-09-16 — fix/cwv-trend-detector-vacancy-signal (auto)
+
+- **Branche** : `fix/cwv-trend-detector-vacancy-signal`
+- **Décision** : chore(registry): resync L1+L3 projections (+3 other commits)
+- **Sortie** : PR #1498 | commits e8344865b 3475070af 2b464b8bc f3beecf1c
