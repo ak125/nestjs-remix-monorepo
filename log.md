@@ -576,3 +576,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - UPDATE legacy limité à V1/null, zéro ligne affectée refusé ; score seul sans autorité de vérification documentaire.
 - 73 tests backend et 5 frontend PASS ; typage backend PASS, frontend global limité par dépendances absentes hors périmètre.
 - Candidat uniquement, aucune DB ni publication. Preuves vault : `ledger/audit-trail/editorial-pipeline-evidence-20260912/r6-contract-verification.md`.
+
+## 2026-09-16 — codex/editorial-pipeline-provenance-20260912 (auto)
+
+- **Branche** : `codex/editorial-pipeline-provenance-20260912`
+- **Décision** : docs(seo-batch): préserver les 3 documents seo-batch réécrits par Codex (+1 other commit)
+- **Sortie** : PR aucune | commits 86a37571e c4823464c
