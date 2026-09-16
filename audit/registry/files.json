@@ -5477,7 +5477,7 @@
         "backend/src/modules/catalog/utils/image-urls.utils.ts"
       ],
       "kind": "service",
-      "loc": 1037,
+      "loc": 1028,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/cart-data.service.ts",
       "risk": "low",
@@ -5649,7 +5649,7 @@
         "backend/src/database/services/piece-price-data.service.ts"
       ],
       "kind": "test",
-      "loc": 189,
+      "loc": 275,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/piece-price-data.service.test.ts",
       "risk": "low",
@@ -5676,7 +5676,7 @@
         "backend/src/database/services/supabase-base.service.ts"
       ],
       "kind": "service",
-      "loc": 177,
+      "loc": 263,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/piece-price-data.service.ts",
       "risk": "low",
@@ -12371,14 +12371,16 @@
         "backend/src/modules/cart/cart.module.ts",
         "backend/src/modules/cart/controllers/cart-core.controller.ts",
         "backend/src/modules/cart/controllers/cart-shipping.controller.ts",
+        "backend/src/modules/cart/services/shipping-weight-authority.test.ts",
         "backend/src/modules/orders/services/orders.service.ts",
         "backend/src/modules/shipping/shipping.service.ts"
       ],
       "imports": [
+        "@database/services/piece-price-data.service",
         "@database/services/supabase-base.service"
       ],
       "kind": "service",
-      "loc": 319,
+      "loc": 282,
       "owner": "__unassigned__",
       "path": "backend/src/modules/cart/services/shipping-calculator.service.ts",
       "risk": "low",
@@ -12386,6 +12388,28 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/cart/services/shipping-weight-authority.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@database/services/piece-price-data.service",
+        "backend/src/modules/cart/services/shipping-calculator.service.ts"
+      ],
+      "kind": "test",
+      "loc": 111,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/cart/services/shipping-weight-authority.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",

@@ -21328,7 +21328,6 @@
         "status": "LIVE",
         "usedBy": [
           "backend/src/modules/admin/services/command-center-actions.service.ts",
-          "backend/src/modules/cart/services/shipping-calculator.service.ts",
           "backend/src/modules/catalog/controllers/pieces-diagnostic.controller.ts",
           "backend/src/modules/mcp-validation/services/mcp-query.service.ts",
           "backend/src/modules/pricing/services/pricing.repository.ts",
@@ -32875,7 +32874,7 @@
         "backend/src/modules/catalog/utils/image-urls.utils.ts"
       ],
       "kind": "service",
-      "loc": 1037,
+      "loc": 1028,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/cart-data.service.ts",
       "risk": "low",
@@ -33047,7 +33046,7 @@
         "backend/src/database/services/piece-price-data.service.ts"
       ],
       "kind": "test",
-      "loc": 189,
+      "loc": 275,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/piece-price-data.service.test.ts",
       "risk": "low",
@@ -33074,7 +33073,7 @@
         "backend/src/database/services/supabase-base.service.ts"
       ],
       "kind": "service",
-      "loc": 177,
+      "loc": 263,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/piece-price-data.service.ts",
       "risk": "low",
@@ -40009,14 +40008,16 @@
         "backend/src/modules/cart/cart.module.ts",
         "backend/src/modules/cart/controllers/cart-core.controller.ts",
         "backend/src/modules/cart/controllers/cart-shipping.controller.ts",
+        "backend/src/modules/cart/services/shipping-weight-authority.test.ts",
         "backend/src/modules/orders/services/orders.service.ts",
         "backend/src/modules/shipping/shipping.service.ts"
       ],
       "imports": [
+        "@database/services/piece-price-data.service",
         "@database/services/supabase-base.service"
       ],
       "kind": "service",
-      "loc": 319,
+      "loc": 282,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/cart/services/shipping-calculator.service.ts",
       "risk": "high",
@@ -40024,6 +40025,29 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
+      "id": "backend/src/modules/cart/services/shipping-weight-authority.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@database/services/piece-price-data.service",
+        "backend/src/modules/cart/services/shipping-calculator.service.ts"
+      ],
+      "kind": "test",
+      "loc": 111,
+      "owner": "@ak125/payments-team",
+      "path": "backend/src/modules/cart/services/shipping-weight-authority.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -99319,13 +99343,13 @@
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
       ".spec/00-canon/repository-registry/ownership.yaml": "ac200d75ead8a0d4f14172c30ddf482b3f0be9fd03e53406fd923b2a8eb7731b",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
-      "audit/registry/db.json": "d2562814b938caeca897c78a440e7e949bd5ee88311c72cf0cf9b36fd21ddb07",
+      "audit/registry/db.json": "ceedf7857568368c16815495b1733fab34e8f663335fe21d6567d7cd6cbcc609",
       "audit/registry/deps.json": "28f63bf4383ddec90e009095ddc11db9298b7cd92b52ceb234a3e6a2fd996f90",
-      "audit/registry/files.json": "1c8be73165c0671468c174a360aa246b59d3fa8bf67bd118738b3651492a09df",
+      "audit/registry/files.json": "afdc254fd09a92a596888ec8744db4528ec4d727b0cd3d2a239141b69d50ae8b",
       "audit/registry/rpc.json": "10db5aff88e6b7677e6e3ab7a2d604a844af66d8aca05ee34b5f0f8913573b72",
       "audit/registry/runtime.json": "d75bdbf151ee60b2f8b82cfa9e95554fa9627743ccfd2f1d37716e3ab920a9b0"
     },
-    "sotFingerprint": "b6f99dc6d274"
+    "sotFingerprint": "90c77a1732de"
   },
   "runtime": [
     {
