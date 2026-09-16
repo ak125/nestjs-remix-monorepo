@@ -566,3 +566,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/seo-measure-robots-markers`
 - **Décision** : audit des 7 leviers SEO — ingestion GSC rattrapable et certifiable, robots via source unique, garde des marqueurs R2, META conseils filtrées ; rapport `audit/seo-sept-leviers-2026-09-11.md`.
 - **Sortie** : PR à ouvrir | 2 migrations NON appliquées | garde admin livrée séparément (#1460, en PROD par le tag `v2026.09.11-cwv-sanitizer-admin-guard`).
+
+## 2026-09-16 — feat/skill-live-evidence-sweep (auto)
+
+- **Branche** : `feat/skill-live-evidence-sweep`
+- **Décision** : feat(skills): live-evidence-sweep — demander a la production ce qui est casse
+- **Sortie** : PR #1494 | commits 910b1e9f0

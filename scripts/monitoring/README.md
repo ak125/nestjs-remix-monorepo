@@ -319,3 +319,28 @@ SELECT * FROM check_payment_tunnel_health(168); -- 7 jours
 ```
 
 Retourne : `orders_count`, `paid_count`, `last_paid_at` (timestamp text ISO).
+
+## `lib/send-gmail.sh` — expéditeur partagé (nouveaux appelants)
+
+Le bloc « OAuth2 refresh → SMTP XOAUTH2 » était recopié à l'identique dans `check-payment-tunnel.sh`
+puis dans `check-error-logs-5xx.sh`, qui le signale lui-même (« identique à PREV-1 »). Le troisième
+appelant — [`scripts/ops/analysis-report-mail.sh`](../ops/analysis-report-mail.sh), qui livre les
+comptes-rendus du skill `live-evidence-sweep` — déclenche la rule-of-three du canon : l'envoi est
+extrait au lieu d'être recopié une troisième fois.
+
+```bash
+printf '%s\n' "corps du message" \
+  | SUBJECT="sujet" MAIL_TO="dest@example.com" scripts/monitoring/lib/send-gmail.sh
+scripts/monitoring/lib/send-gmail.sh --attach rapport.md < corps.txt   # avec pièce jointe (≤ 10 Mo)
+```
+
+Même contrat env que les deux gardes (`GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN`,
+`GMAIL_USER_EMAIL`, plus `MAIL_TO` ou `ALERT_EMAIL_TO`) : les secrets sont **fournis par l'appelant**,
+jamais lus par le fichier. Sortie `OK` + exit 0, sinon `ERROR_<phase>:<détail>` + exit 1. Les erreurs
+OAuth sont tronquées à 300 caractères et ne contiennent que la réponse de Google — aucun identifiant
+n'est imprimé.
+
+**Les deux gardes existantes ne sont pas migrées ici.** Ce sont des détecteurs vivants, dont celui de
+la rupture du tunnel de paiement ; leur réécriture change leur blast radius et mérite sa propre PR avec
+sa propre preuve d'envoi. Ce fichier est la surface canonique pour tout **nouvel** appelant ; la
+migration des deux anciens est un follow-up assumé, pas un oubli.
