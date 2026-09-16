@@ -182,7 +182,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
         const raw = apiResponse.data;
         blogData = {
           featured: raw.featured ?? raw.sections?.pillars ?? [],
-          recent: raw.recent ?? raw.sections?.recentUpdated ?? [],
+          // `??` ne se declenche que sur null/undefined : quand l'API rend
+          // `recent: []`, le repli ne partait jamais et l'onglet restait vide.
+          recent: raw.recent?.length
+            ? raw.recent
+            : (raw.sections?.recentUpdated ?? []),
           popular: raw.popular ?? raw.sections?.popularAllTime ?? [],
           diagnostic: raw.sections?.diagnostic ?? [],
           categories: raw.categories ?? [],
