@@ -2,6 +2,18 @@
  * Types TypeScript generees depuis le schema Supabase (546 tables)
  * Source de verite : supabase-generated.types.ts (genere par MCP supabase)
  *
+ * PORTEE DE LA FRAICHEUR — a lire avant de se fier a la date du dernier resync.
+ * Ce fichier declare des tables partitionnees dont les partitions journalieres
+ * entrent et sortent de rotation en continu (familles __seo_cwv_raw*,
+ * __seo_gsc_daily_*, __seo_snapshot_*). Une regeneration est donc exacte le jour
+ * ou elle est faite, et re-derive sous 24 h sur ces familles SANS qu'aucune
+ * migration n'ait eu lieu. Un `git log` recent sur ce fichier ne signifie PAS
+ * qu'il decrit le schema d'aujourd'hui.
+ * Ce qui reste stable entre deux regenerations : les tables et vues non
+ * partitionnees, les colonnes, les enums, les signatures de fonctions.
+ * Ne pas poser de gate CI de fraicheur naif sur ce fichier : il serait rouge
+ * tous les jours pour une rotation de partitions, pas pour une derive reelle.
+ *
  * Ce fichier fournit :
  * - Re-export du type Database officiel Supabase
  * - Helpers generiques : TableRow<T>, TableInsert<T>, TableUpdate<T>
