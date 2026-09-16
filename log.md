@@ -570,8 +570,8 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 ## 2026-09-16 — fix/cwv-trend-detector-vacancy-signal (auto)
 
 - **Branche** : `fix/cwv-trend-detector-vacancy-signal`
-- **Décision** : fix(seo-cwv): une garde qui n'a rien regardé ne doit plus se taire
-- **Sortie** : PR aucune | commits f3beecf1c
+- **Décision** : rendre observable la cécité de `detect_cwv_trend_divergence` — la garde tournait 7/7 `succeeded` avec 0 ligne de référence éligible, donc incapable d'alerter ; elle signale désormais ses clés aveugles et referme son alerte quand la couverture revient.
+- **Sortie** : PR #1498 | commits f3beecf1c 3475070af e8344865b | migration NON appliquée (owner, chemin ledger) | test 48 assertions + 10/10 mutants tués
 
 ## 2026-09-16 — fix/cwv-trend-detector-vacancy-signal (auto)
 
