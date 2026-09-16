@@ -516,6 +516,20 @@ entries:
     owner: '@ak125/payments-team'
     sourceConfidence: high
     risk: high
+  # Tests de cette autorité — mêmes domaine et propriétaire que le code qu'ils
+  # décrivent. Chemins exacts plutôt que `*.test.ts` : un glob de répertoire
+  # attribuerait d'office D11 à tout futur test voisin (orders, invoices…),
+  # ownership décidé par inadvertance.
+  - glob: backend/src/database/services/piece-price-data.service.test.ts
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: high
+    risk: low
+  - glob: backend/src/database/services/cart-data.sellable-guard.test.ts
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: high
+    risk: low
   # ADR-059 PR-6b — SEO projection forward-writer module (workers BullMQ, NON wiré AppModule). Owner GO 2026-06-19.
   - glob: backend/src/modules/seo-projection/**
     domain: D14
