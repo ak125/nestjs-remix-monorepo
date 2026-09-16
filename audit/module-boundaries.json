@@ -171,7 +171,7 @@
         "backend/src/common/utils"
       ],
       "files_count": 38,
-      "loc_total": 1585,
+      "loc_total": 1589,
       "has_barrel": true
     },
     "config": {
@@ -211,8 +211,8 @@
         "backend/src/database/services",
         "backend/src/database/types"
       ],
-      "files_count": 12,
-      "loc_total": 20999,
+      "files_count": 15,
+      "loc_total": 21515,
       "has_barrel": true
     },
     "dev-only": {
@@ -635,7 +635,7 @@
         "backend/src/modules/products/types"
       ],
       "files_count": 27,
-      "loc_total": 7128,
+      "loc_total": 7107,
       "has_barrel": true
     },
     "promo": {

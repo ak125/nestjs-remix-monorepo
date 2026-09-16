@@ -1246,6 +1246,7 @@
       "PdfTextExtractorService",
       "PermissionsGuard",
       "PermissionsService",
+      "PiecePriceDataService",
       "PiecesAnalysisService",
       "PiecesCleanController",
       "PiecesController",
@@ -1656,6 +1657,7 @@
       "backend/src/database/services/cart-data.service.ts",
       "backend/src/database/services/database-composition.service.ts",
       "backend/src/database/services/meta-tags-ariane-data.service.ts",
+      "backend/src/database/services/piece-price-data.service.ts",
       "backend/src/database/services/promo-data.service.ts",
       "backend/src/database/services/shipping-data.service.ts",
       "backend/src/modules/admin/admin.module.ts",
@@ -2909,7 +2911,7 @@
       "tests/registry/rpc-parser.test.ts"
     ]
   },
-  "runtime_files_count": 1519,
+  "runtime_files_count": 1520,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -3042,6 +3044,7 @@
     "backend/src/database/services/cart-data.service.ts",
     "backend/src/database/services/database-composition.service.ts",
     "backend/src/database/services/meta-tags-ariane-data.service.ts",
+    "backend/src/database/services/piece-price-data.service.ts",
     "backend/src/database/services/promo-data.service.ts",
     "backend/src/database/services/shipping-data.service.ts",
     "backend/src/main.server.ts",
