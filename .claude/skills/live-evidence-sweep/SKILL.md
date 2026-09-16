@@ -153,6 +153,24 @@ des tables protégées. Le rejouer après la fenêtre et faire un `diff` transfo
 preuve. **Le ranger hors de `/tmp`** : un redémarrage efface le scratchpad, et la photo d'avant disparaît
 précisément quand elle devient utile.
 
+Le rejeu est outillé : `scripts/ops/verify-after-upgrade.sh` relit la photo d'avant, rejoue la baseline,
+diffe, ajoute les contrôles qui n'ont de sens qu'après (index invalides, contraintes `NOT VALID`,
+statistiques reconstruites, durées des jobs `pg_cron`, plan du prédicat chaud), écrit un rapport et
+l'envoie. Trois choix y sont volontaires :
+
+- **Il s'arrête si la photo d'avant manque.** Une vérification sans référence ne vérifie rien, et rendrait
+  exactement le même « conforme » qu'une vérification réussie.
+- **Il compare les mesures, pas le protocole.** Les échos `SET` / `BEGIN` / `COMMIT` diffèrent selon que la
+  baseline passe ou non par le verrou lecture seule : mesuré, ils produisaient 5 écarts fantômes sur une
+  base inchangée. Un compteur d'écarts dont la valeur normale n'est pas zéro apprend à l'ignorer.
+- **Il dit ce qu'il ne couvre pas** dans le rapport lui-même : le plan interne des fonctions plpgsql
+  (`EXPLAIN` ne le voit pas — c'est `auto_explain` qui l'attrape), l'état des sauvegardes, et tout ce qui
+  met plus d'une heure à se manifester.
+
+Prouvé par l'échec attendu, comme tout garde-fou de ce skill : base inchangée → 0 écart, sortie 0 ;
+référence trafiquée sur la version → détectée ; sur deux compteurs (`cron_jobs_actifs` 18 → 17,
+`index_total` 3481 → 3475) → détectés, sortie 2.
+
 ## Discipline de preuve — pièges vécus
 
 Ces erreurs ont toutes été commises pendant le passage qui a produit ce skill :
