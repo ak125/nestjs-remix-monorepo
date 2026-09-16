@@ -1,6 +1,6 @@
 {
   "compliantCount": 13,
-  "generatedAt": "2026-09-16T14:27:42.707Z",
+  "generatedAt": "2026-09-16T14:43:48.265Z",
   "issues": [],
   "schemaPath": ".spec/00-canon/ai-registry/skill.schema.json",
   "schemaVersion": "1.0.0",
@@ -136,25 +136,27 @@
       "type": "discipline"
     },
     {
-      "checksum": "sha256:835213e794a3f3d2605438f2d1fd4e0d5c7b21c05f73a81d9c1a883f38132b52",
+      "checksum": "sha256:f26e0f290951ed038ec1bc699000d0f0cea2ad9254104cf1a00de54c989469d6",
       "domain": "D15",
       "last_verified": "2026-09-16",
       "llm_safe": true,
       "metadata": {
         "argument-hint": "[sonde ou tout] [--fenetre <coupure visée>]",
         "spec": "agentskills.io/specification v1",
-        "version": "1.0"
+        "version": "1.1"
       },
       "name": "live-evidence-sweep",
       "owners": [
         "@ak125"
       ],
       "path": ".claude/skills/live-evidence-sweep/SKILL.md",
-      "runtime_class": "read-only",
+      "runtime_class": "mutating",
       "spec_compliant": true,
       "status": "experimental",
       "tags": [
+        "alerting",
         "audit",
+        "autofix",
         "evidence",
         "governance",
         "incident",

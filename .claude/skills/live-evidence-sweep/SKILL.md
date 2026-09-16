@@ -6,15 +6,17 @@ description: >
   balayage lecture seule de la production vivante (journaux Postgres et edge, colonnes et tables citées par le
   code mais absentes de la base, planifié côté base et côté machine, restes d'une opération récente, dérive de
   la machine DEV), puis réfutation adverse de chaque constat, puis synthèse priorisée avant/après fenêtre.
-  Triggers — "vérifie si il y a autre chose", "qu'est-ce qui est cassé", "balayage", "audit production",
-  "avant la mise à jour de ce soir", "après l'incident", "what else is broken", "sweep the logs".
+  Corrige ensuite les défauts hors zone STOP en ouvrant une PR par cause racine, et livre le compte-rendu
+  par mail. Triggers — "vérifie si il y a autre chose", "qu'est-ce qui est cassé", "balayage", "audit
+  production", "avant la mise à jour de ce soir", "après l'incident", "envoie-moi le compte-rendu",
+  "corrige automatiquement", "what else is broken", "sweep the logs".
 
 # === REQUIS (gouvernance AutoMecanik) ===
 type: technique
 status: experimental
 owners: ['@ak125']
 domain: D15
-runtime_class: read-only
+runtime_class: mutating
 llm_safe: true
 
 # === RECOMMANDÉ ===
@@ -23,12 +25,14 @@ license: Internal - Automecanik
 compatibility: >
   Claude Code dans le monorepo AutoMecanik. Lit postgres_logs et edge_logs via le MCP supabase,
   la base via psql sur le pooler (identifiants backend/.env, jamais affichés), PostgREST avec la clé de
-  service, /proc et systemd sur la machine DEV, gh en lecture. Aucune mutation, aucun déploiement.
-allowed-tools: Read Grep Glob Bash
-tags: [audit, logs, runtime, evidence, incident, upgrade, governance]
+  service, /proc et systemd sur la machine DEV, gh en lecture. Les seules mutations sont locales à un
+  worktree jetable et sortent en PR ; l'envoi du compte-rendu passe par scripts/ops/analysis-report-mail.sh
+  (Gmail OAuth2, python3 stdlib). Aucune écriture en base, aucun merge, aucun déploiement.
+allowed-tools: Read Grep Glob Bash Edit Write
+tags: [audit, logs, runtime, evidence, incident, upgrade, governance, alerting, autofix]
 
 metadata:
-  version: "1.0"
+  version: "1.1"
   argument-hint: "[sonde ou tout] [--fenetre <coupure visée>]"
   spec: agentskills.io/specification v1
 ---
@@ -172,15 +176,58 @@ Ces erreurs ont toutes été commises pendant le passage qui a produit ce skill 
   fichier manquant peut signifier « effacé », pas « jamais écrit ».
 - **Dire ce qui n'a pas été couvert.** Une portée annoncée honnêtement vaut mieux qu'un « tout est vert ».
 
-## Après le balayage
+## 4. Corriger — automatiquement jusqu'à la PR, jamais au-delà
 
-Le skill s'arrête au rapport : il ne corrige rien et n'ouvre aucune PR tout seul. Pour chaque constat
-confirmé que l'humain décide de traiter :
+Le balayage ne s'arrête plus au rapport : chaque constat confirmé **hors zone STOP** repart en correction
+sans attendre qu'on le demande. Ce qui reste manuel n'est pas la correction, c'est la **décision de la
+mettre en service**, et cette frontière n'est pas une prudence de principe : merger sur `main` déploie le
+container PREPROD, et poser un tag `v*` déploie la PROD. Une boucle qui irait jusque-là transformerait un
+constat mal réfuté en incident, sans personne entre les deux.
 
-1. une PR par défaut, portant **la preuve avant/après** dans son corps (l'appel qui échouait, le même appel
-   qui réussit) — c'est ce qui rend la revue instantanée ;
-2. les défauts de cause identique se corrigent séparément : trois colonnes inexistantes dans le même module
-   sont trois régressions distinctes, pas un « nettoyage du module » ;
-3. ce qui relève d'un check atomique existant retourne à `runtime-truth-audit` ;
-4. les découvertes durables (un piège d'outillage, une cause racine surprenante) vont en mémoire, sinon le
-   prochain balayage les redécouvre au même prix.
+Pour chaque constat confirmé :
+
+1. **Classer d'abord.** Zone STOP (paiement, prix/stock, panier/commande, RLS et DB destructive, SEO
+   indexé, déploiement PROD) → **aucune ligne n'est écrite**. Le rapport nomme le défaut, la correction
+   proposée et ce qu'elle coûte, et demande un accord nominatif. Tout le reste est corrigeable ici.
+2. **Un worktree jetable au tip de `origin/main`**, jamais le checkout principal — il sert DEV:3000, et une
+   branche feature oubliée dedans lui fait servir du code périmé.
+3. **Une PR par cause racine**, avec dans son corps l'appel qui échouait et le même appel qui réussit. Trois
+   colonnes inexistantes dans le même module sont trois régressions distinctes, pas un « nettoyage ».
+4. **Scope-guard avant le commit** : si le diff touche un fichier hors du périmètre annoncé du constat,
+   abandonner la correction au lieu de committer partiellement. Modèle éprouvé :
+   `scripts/ops/registry-self-heal.sh`, qui abort dès qu'un fichier sort de ses deux projections.
+5. **L'auto-merge ne s'arme pas tout seul.** La PR part sans, et le rapport dit lesquelles attendent une
+   décision. L'owner l'arme s'il le veut ; la CI reste le juge dans les deux cas.
+
+Un constat que la réfutation n'a pas confirmé ne se corrige pas — il va dans « écartés ». Corriger sur un
+doute, c'est écrire du code que personne n'a demandé pour un défaut qui n'existe peut-être pas.
+
+## 5. Notifier — le rapport part par mail, sans qu'on vienne le chercher
+
+Un rapport qui ne vit que dans `audit/` ou dans le scrollback d'une session n'est lu par personne. Le
+compte-rendu se livre :
+
+```bash
+set -a; . backend/.env; set +a
+MAIL_TO=<boîte owner> scripts/ops/analysis-report-mail.sh audit/<rapport>.md
+```
+
+Le script met le titre `H1` en sujet, envoie en corps ce qui précède le marqueur `<!-- MAIL-CUT -->` (à
+placer dans le rapport juste après la synthèse — au-delà, c'est le détail, il part en pièce jointe), et
+joint le rapport intégral. La dédup porte sur le **sha256 du contenu** : relancer sur un rapport inchangé
+n'envoie rien, un rapport modifié part immédiatement. Une cooldown purement temporelle ré-alerterait sur les
+mêmes lignes à chaque expiration — c'est l'erreur qui a produit deux mails identiques à 75 min d'intervalle
+sur le tunnel de paiement.
+
+Le rapport envoyé **liste les PR ouvertes à l'étape 4** avec leur numéro, et sépare visiblement ce qui est
+corrigé de ce qui attend un accord nominatif. Sans cette séparation, le mail laisse croire que tout est
+traité.
+
+`--check` rend le sujet, la taille du corps et l'état de dédup sans rien envoyer : à utiliser avant le
+premier envoi d'un nouveau format de rapport.
+
+## Ce qui va en mémoire
+
+Les découvertes durables — un piège d'outillage, une cause racine surprenante — vont en mémoire. Sinon le
+prochain balayage les redécouvre au même prix. Ce qui relève d'un check atomique déjà existant retourne à
+`runtime-truth-audit` plutôt que de vivre ici.
