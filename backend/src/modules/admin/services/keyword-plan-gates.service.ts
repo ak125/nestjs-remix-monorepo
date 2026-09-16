@@ -13,6 +13,8 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
+import { normalizeSeoText } from '@repo/seo-roles';
+import { hasDeclaredSourceReferences } from '../../blog/utils/source-provenance.util';
 import {
   type GateResult,
   type AuditResult,
@@ -645,6 +647,7 @@ export class KeywordPlanGatesService {
     const priorityFixes: PriorityFix[] = [
       ...ga1.fixes,
       ...ga2.fixes,
+      ...ga3.fixes,
       ...ga4.fixes,
       ...ga5.fixes,
       ...ga6.fixes,
@@ -662,7 +665,13 @@ export class KeywordPlanGatesService {
     const sectionsToCreate = ga1.fixes
       .filter((f) => f.fix_type === 'create')
       .map((f) => f.section);
-    const sectionsToImprove = [...ga2.fixes, ...ga4.fixes, ...ga6.fixes]
+    const sectionsToImprove = [
+      ...ga2.fixes,
+      ...ga3.fixes,
+      ...ga4.fixes,
+      ...ga5.fixes,
+      ...ga6.fixes,
+    ]
       .filter((f) => f.fix_type === 'improve')
       .map((f) => f.section)
       .filter((s, i, arr) => arr.indexOf(s) === i);
@@ -828,23 +837,41 @@ export class KeywordPlanGatesService {
     result: GateResult;
     fixes: PriorityFix[];
   } {
-    const paragraphMap = new Map<string, string>();
+    const paragraphMap = new Map<string, ConseilSectionRow>();
+    const headingMap = new Map<string, ConseilSectionRow>();
+    const affectedSections = new Map<string, ConseilSectionRow>();
     let dupCount = 0;
+    let headingDupCount = 0;
 
     for (const row of sections) {
+      // Compare declared section headings, not repeated labels from navigation/TOC.
+      const heading = row.title ? normalizeSeoText(row.title) : '';
+      if (heading) {
+        const existing = headingMap.get(heading);
+        if (existing && existing.section_type !== row.section_type) {
+          headingDupCount++;
+          affectedSections.set(existing.section_type, existing);
+          affectedSections.set(row.section_type, row);
+        } else if (!existing) {
+          headingMap.set(heading, row);
+        }
+      }
       if (!row.content) continue;
       const text = this.stripHtml(row.content);
       const paragraphs = text
         .split(/\.\s+/)
-        .map((p) => p.trim().toLowerCase())
+        .map((p) => normalizeSeoText(p))
         .filter((p) => p.length > 40);
 
       for (const p of paragraphs) {
         const existing = paragraphMap.get(p);
-        if (existing && existing !== row.section_type) {
+        if (existing && existing.section_type !== row.section_type) {
           dupCount++;
+          // Both sections need review; input order does not identify an owner.
+          affectedSections.set(existing.section_type, existing);
+          affectedSections.set(row.section_type, row);
         } else if (!existing) {
-          paragraphMap.set(p, row.section_type);
+          paragraphMap.set(p, row);
         }
       }
     }
@@ -852,13 +879,18 @@ export class KeywordPlanGatesService {
     return {
       result: {
         gate: 'GA3_CROSS_SECTION_DEDUP',
-        status: dupCount === 0 ? 'pass' : 'warn',
+        status: dupCount === 0 && headingDupCount === 0 ? 'pass' : 'warn',
         message:
-          dupCount === 0
-            ? 'No duplicate paragraphs across sections'
-            : `${dupCount} duplicate paragraph(s) found across sections`,
+          dupCount === 0 && headingDupCount === 0
+            ? 'No duplicate detected in supplied paragraphs or declared headings across sections'
+            : `${dupCount} duplicate paragraph(s), ${headingDupCount} duplicate heading(s) found across sections`,
       },
-      fixes: [],
+      fixes: [...affectedSections.values()].map((row) => ({
+        section: row.section_type,
+        issue: 'duplicate_content',
+        current_score: row.quality_score,
+        fix_type: 'improve',
+      })),
     };
   }
 
@@ -903,15 +935,9 @@ export class KeywordPlanGatesService {
     result: GateResult;
     fixes: PriorityFix[];
   } {
-    const noSource = sections.filter((s) => {
-      if (!s.sources || s.sources.trim().length === 0) return true;
-      try {
-        const parsed = JSON.parse(s.sources);
-        return !Array.isArray(parsed) || parsed.length === 0;
-      } catch {
-        return true;
-      }
-    });
+    const noSource = sections.filter(
+      (s) => !hasDeclaredSourceReferences(s.sources),
+    );
     const fixes: PriorityFix[] = noSource.map((s) => ({
       section: s.section_type,
       issue: 'no_sources' as const,
@@ -924,7 +950,7 @@ export class KeywordPlanGatesService {
         status: noSource.length === 0 ? 'pass' : 'warn',
         message:
           noSource.length === 0
-            ? 'All sections have E-E-A-T sources'
+            ? 'All sections declare source references (evidence not verified here)'
             : `${noSource.length} sections missing sources: ${noSource.map((s) => s.section_type).join(', ')}`,
       },
       fixes,
@@ -1006,6 +1032,8 @@ export class KeywordPlanGatesService {
 
 export interface ConseilSectionRow {
   section_type: string;
+  /** Declared section title; omitted by callers that only supply body text. */
+  title?: string | null;
   quality_score: number | null;
   content_len: number | null;
   content?: string | null;

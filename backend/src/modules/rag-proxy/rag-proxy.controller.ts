@@ -21,6 +21,7 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { RagProxyService } from './rag-proxy.service';
 import { RagCleanupService } from './services/rag-cleanup.service';
+import { RawAcquisitionClientService } from './services/raw-acquisition-client.service';
 import { RagImageManagementService } from './services/rag-image-management.service';
 import { RagVideoManagementService } from './services/rag-video-management.service';
 import { RagGammeDetectionService } from './services/rag-gamme-detection.service';
@@ -61,6 +62,7 @@ export class RagProxyController {
     private readonly ragGammeDetectionService: RagGammeDetectionService,
     private readonly ragPhase2aShadowAuditService: RagPhase2aShadowAuditService,
     private readonly webhookAuditService: WebhookAuditService,
+    private readonly rawAcquisitionClient: RawAcquisitionClientService,
   ) {}
 
   @Post('chat')
@@ -301,17 +303,16 @@ export class RagProxyController {
 
   @Post('admin/ingest/video/single')
   @UseGuards(AuthenticatedGuard, IsAdminGuard)
-  @ApiOperation({ summary: 'Ingest a video from URL (yt-dlp)' })
+  @ApiOperation({
+    summary: 'Receive an allowlisted direct video URL in RAW for qualification',
+  })
   async ingestVideoUrl(
     @Body() body: { url: string; gamme?: string; type?: string },
   ) {
-    if (!body.url) {
+    if (!body?.url) {
       throw new BadRequestException('url is required');
     }
-    return this.ragVideoManagementService.ingestVideoUrl(body.url, {
-      gamme: body.gamme,
-      type: body.type,
-    });
+    return this.rawAcquisitionClient.receiveVideo(body);
   }
 
   @Post('admin/videos/assign')
@@ -448,16 +449,20 @@ export class RagProxyController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthenticatedGuard, IsAdminGuard)
   @ApiOperation({
-    summary: 'Apply an ingestion decision (upsert/archive/quarantine)',
+    summary:
+      'Receive submitted source material in RAW for later WIKI validation',
   })
-  @ApiResponse({ status: 200, description: 'Applied document ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'RAW receipt; source remains to_verify and non-retrievable',
+  })
   async cleanupApply(
-    @Body() body: { doc: RagDocInput; decision: IngestDecision },
+    @Body() body: { doc: RagDocInput; decision?: IngestDecision },
   ) {
-    if (!body.doc || !body.decision) {
-      throw new BadRequestException('Missing required fields: doc, decision');
+    if (!body?.doc) {
+      throw new BadRequestException('Missing required field: doc');
     }
-    return this.ragCleanupService.applyIngest(body.doc, body.decision);
+    return this.rawAcquisitionClient.receiveDocument(body.doc);
   }
 
   @Post('admin/cleanup/batch')

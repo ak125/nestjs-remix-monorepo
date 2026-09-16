@@ -324,6 +324,8 @@ export interface PriorityFix {
     | 'thin_content'
     | 'weak_phrases'
     | 'no_sources'
+    | 'duplicate_content'
+    | 'role_violation'
     | 'rag_stale'
     | 'rag_insufficient';
   current_score: number | null;
@@ -505,7 +507,7 @@ export interface AuditResult {
   priority_score: number;
   /** Structured fix descriptors */
   priority_fixes: PriorityFix[];
-  /** Sections that exist but score < improvementScoreThreshold */
+  /** Existing sections with an actionable audit finding, independently of score */
   sections_to_improve: string[];
   /** Sections missing entirely from required pack */
   sections_to_create: string[];

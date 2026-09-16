@@ -7,6 +7,7 @@ import { RagProxyService } from './rag-proxy.service';
 // Existing extracted services
 import { FrontmatterValidatorService } from './services/frontmatter-validator.service';
 import { RagCleanupService } from './services/rag-cleanup.service';
+import { RawAcquisitionClientService } from './services/raw-acquisition-client.service';
 import { WebhookAuditService } from './services/webhook-audit.service';
 
 // P1 — extracted sub-services (dependency order)
@@ -60,6 +61,7 @@ import { RagPhase2aShadowAuditService } from './services/rag-phase2a-shadow-audi
     // Existing services
     FrontmatterValidatorService,
     RagCleanupService,
+    RawAcquisitionClientService,
     WebhookAuditService,
     // P1 sub-services (leaf deps first)
     RagCircuitBreakerService,
@@ -69,7 +71,8 @@ import { RagPhase2aShadowAuditService } from './services/rag-phase2a-shadow-audi
     RagGammeDetectionService,
     RagWebhookCompletionService,
     // NB: RagIngestionService + RagWebIngestDbService RETIRÉS — rag-purge B9 (ADR-031/046).
-    // Plus d'ingestion RAG déclenchée par l'app ; entrée = sync wiki→rag. Services bannerisés (salvage).
+    // Entrée de connaissance RAG = sync wiki→rag. cleanup/apply transmet le texte au producteur RAW.
+    // Le chemin vidéo historique reste à migrer ; aucune affirmation de purge complète ici.
     // PDF merge pipeline
     PdfTextExtractorService,
     PdfRagClassifierService,

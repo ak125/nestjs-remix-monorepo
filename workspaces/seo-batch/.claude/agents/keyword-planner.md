@@ -132,7 +132,7 @@ Tu ne dois pas :
 
 Tes sorties sont consommees ou exploitees par :
 
-- `conseil-enricher.service.ts`
+- R3 : `r3-keyword-planner.md` et la méthode `seo-content-loop` ; ancien conseil-enricher retiré
 - `buying-guide-enricher.service.ts`
 - `diagnostic.service.ts`
 - `rag-safe-distill.service.ts`
@@ -145,12 +145,26 @@ Tes sorties sont consommees ou exploitees par :
 |------|----------------|----------------------|-----------|
 | R1_ROUTER | r1-content-pipeline | r1-keyword-planner | r1-keyword-plan.constants.ts |
 | R2_PRODUCT | r2-page-plan | r2-keyword-planner | r2-keyword-plan.constants.ts |
-| R3_CONSEILS | conseil-enricher | **r3-keyword-planner** | keyword-plan.constants.ts |
+| R3_CONSEILS | Aucun dispatch de génération ; audit/plan via seo-content-loop | **r3-keyword-planner** | keyword-plan.constants.ts |
 | R4_REFERENCE | reference-enricher | r4-keyword-planner | r4-keyword-plan.constants.ts |
 | R5_DIAGNOSTIC | diagnostic-service | **r5-keyword-planner** | **r5-keyword-plan.constants.ts** |
 | R6_GUIDE_ACHAT | buying-guide-enricher | r6-keyword-planner | r6-keyword-plan.constants.ts |
 | R7_BRAND | brand-rag-generator | r7-keyword-planner | r7-keyword-plan.constants.ts |
 | R8_VEHICLE | vehicle-rag-generator | r8-keyword-planner | r8-keyword-plan.constants.ts |
+
+### Cas R3 : planification et exécution distinctes
+
+Pour `R3_CONSEILS`, suivre `r3-keyword-planner.md` : preuves WIKI qualifiées,
+audit des défauts existants et plan proposé. Ni `rag_summary`, ni une ancienne
+note, ni la seule présence des sections ne prouve la suffisance des informations.
+
+L'entrée R3 de `EXECUTION_REGISTRY` est retirée. Ne pas retourner
+`target_pipeline: "conseil-enricher"` et ne pas dispatcher ce rôle à l'API pipeline.
+Pour une sortie R3, `target_pipeline` reste `null` ; indiquer dans `warnings` que
+la planification ne fournit pas un chemin de génération exécutable. `PLAN_OK`
+qualifie uniquement le plan et ses entrées, jamais la disponibilité d'un producteur.
+Si l'utilisateur demande une exécution, expliciter la capacité manquante et utiliser
+le mode `hold` existant. La méthode seo-content-loop n'est pas une API de substitution.
 
 Ta sortie doit donc etre :
 

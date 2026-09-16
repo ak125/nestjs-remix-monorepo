@@ -15,8 +15,10 @@ interface MiniDiagnosticTableProps {
 export function MiniDiagnosticTable({ section }: MiniDiagnosticTableProps) {
   return (
     <GuideCard
+      sectionType="S2_DIAG"
       title={section.title}
       anchor={section.anchor}
+      legacyAnchor={section.legacyAnchor}
       icon={Stethoscope}
       label="Diagnostic rapide"
       gradient=""

@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 /**
  * R6 Guide d'Achat interfaces V2.
  * Typed payload served by R6GuideService from __seo_gamme_purchase_guide.
@@ -68,14 +70,17 @@ export interface R6Argument {
 // V2 buying-guide interfaces
 // ══════════════════════════════════════════════════════════
 
-export interface R6QualityTier {
-  tier_id: string;
-  label: string;
-  description: string;
-  target_profile?: string;
-  price_hint?: string;
-  available: boolean;
-}
+/** Runtime contract for comparison tiers; V1 compatibility criteria do not satisfy it. */
+export const R6QualityTierSchema = z.object({
+  tier_id: z.string().trim().min(1),
+  label: z.string().trim().min(1),
+  description: z.string().trim().min(1),
+  target_profile: z.string().optional(),
+  price_hint: z.string().optional(),
+  available: z.boolean(),
+});
+
+export type R6QualityTier = z.infer<typeof R6QualityTierSchema>;
 
 export interface R6CompatibilityAxis {
   axis: string;
@@ -199,6 +204,8 @@ export interface R6GuidePayload {
   heroDecision?: R6HeroDecision;
   summaryPickFast?: R6DecisionNode[];
   qualityTiers?: R6QualityTier[];
+  /** Missing/invalid comparison data; keep the section explicit without invented tiers. */
+  qualityTiersReviewRequired?: boolean;
   compatibilityAxes?: R6CompatibilityAxis[];
   priceGuide?: R6PriceGuideSection;
   brandsGuide?: R6BrandsGuideSection;

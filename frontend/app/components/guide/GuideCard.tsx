@@ -10,6 +10,8 @@ import { slugifyTitle } from "~/components/blog/conseil/section-config";
 interface GuideCardProps {
   title: string;
   anchor?: string;
+  legacyAnchor?: string;
+  sectionType?: string;
   icon: LucideIcon;
   label: string;
   gradient: string;
@@ -25,6 +27,8 @@ interface GuideCardProps {
 export function GuideCard({
   title,
   anchor,
+  legacyAnchor,
+  sectionType,
   icon: Icon,
   label,
   gradient,
@@ -38,8 +42,8 @@ export function GuideCard({
 }: GuideCardProps) {
   const id = anchor ?? slugifyTitle(title);
 
-  return (
-    <div id={id} className="mb-8">
+  const card = (
+    <div id={id} data-r3-section={sectionType} className="mb-8">
       <div
         className={`rounded-xl border-2 ${border} overflow-hidden shadow-${shadow}`}
       >
@@ -70,5 +74,12 @@ export function GuideCard({
         )}
       </div>
     </div>
+  );
+
+  // Both fragments point to the actual section; existing deep links stay valid.
+  return legacyAnchor && legacyAnchor !== id ? (
+    <div id={legacyAnchor}>{card}</div>
+  ) : (
+    card
   );
 }

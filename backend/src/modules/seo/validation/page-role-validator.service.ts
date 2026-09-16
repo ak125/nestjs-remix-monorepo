@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { parseDocument, DomUtils } from 'htmlparser2';
 import {
   PageRole,
   getPageRoleFromUrl,
@@ -587,7 +588,7 @@ export class PageRoleValidatorService {
   /**
    * Valide une page R3/conseils (How-To)
    * GATES: pas de contenu encyclopédique, pas de vocabulaire commercial,
-   * liens R4/R5 requis, phrases génériques détectées
+   * liens R4 requis, phrases génériques détectées
    *
    * Phase 1: tous WARNING sauf ENCYCLOPEDIC_OVERLAP (ERROR immédiat)
    */
@@ -670,18 +671,70 @@ export class PageRoleValidatorService {
       });
     }
 
-    // GATE: NO_LINK_TO_R5 (WARNING Phase 1)
-    if (!lowerContent.includes('/diagnostic-auto/')) {
-      violations.push({
-        type: 'missing_element',
-        message:
-          'R3/conseils: aucun lien vers /diagnostic-auto/ (maillage R5 manquant)',
-        severity: 'warning',
-        details: { flag: 'NO_LINK_TO_R5' },
-      });
-    }
+    // ADR-027: diagnostic details live in R3/S2_DIAG. Requiring a link to a
+    // retired R5 detail would send the editor back to the former architecture.
 
     return violations;
+  }
+
+  /**
+   * Validate stored R3 sections before composition (ADR-027).
+   * S2_DIAG uses the existing diagnostic checks; this grants no exception to
+   * other R3 sections and makes no claim about the final HTML or redirect.
+   */
+  validateR3Sections(
+    url: string,
+    sections: ReadonlyArray<{
+      sectionType: string;
+      title?: string | null;
+      content: string;
+    }>,
+  ): PageValidationResult {
+    if (
+      getPageRoleFromUrl(url) !== PageRole.R3_BLOG ||
+      getR3SubRoleFromUrl(url) !== 'conseils'
+    ) {
+      return {
+        url,
+        detectedRole: getPageRoleFromUrl(url),
+        declaredRole: PageRole.R3_BLOG,
+        isValid: false,
+        violations: [
+          {
+            type: 'role_mismatch',
+            severity: 'error',
+            message: 'R3 section validation requires a conseils page',
+          },
+        ],
+      };
+    }
+    const sectionText = (section: (typeof sections)[number]) =>
+      `${section.title ?? ''}\n${section.content}`;
+    const result = this.validatePage(
+      url,
+      sections
+        .filter((section) => section.sectionType !== 'S2_DIAG')
+        .map(sectionText)
+        .join('\n'),
+      PageRole.R3_BLOG,
+    );
+    for (const section of sections) {
+      if (section.sectionType !== 'S2_DIAG') continue;
+      const content = sectionText(section);
+      const violations = [
+        ...this.validateR5Diagnostic(content),
+        ...this.validateExclusiveVocabulary(content, PageRole.R5_DIAGNOSTIC),
+      ];
+      result.violations.push(
+        ...violations.map((violation) => ({
+          ...violation,
+          message: `R3/S2_DIAG: ${violation.message}`,
+          details: { ...violation.details, sectionType: 'S2_DIAG' },
+        })),
+      );
+    }
+    result.isValid = !result.violations.some((v) => v.severity === 'error');
+    return result;
   }
 
   /**
@@ -1136,9 +1189,22 @@ export class PageRoleValidatorService {
     content: string,
     html: string,
     declaredRole?: PageRole,
+    expectedR3Sections: readonly string[] = [],
   ): PageValidationResult {
-    // Validation standard
-    const result = this.validatePage(url, content, declaredRole);
+    const isR3Conseils =
+      getPageRoleFromUrl(url) === PageRole.R3_BLOG &&
+      getR3SubRoleFromUrl(url) === 'conseils';
+    const result = isR3Conseils
+      ? this.validateR3Html(url, html, expectedR3Sections)
+      : this.validatePage(url, content, declaredRole);
+    if (isR3Conseils && declaredRole && declaredRole !== PageRole.R3_BLOG) {
+      result.declaredRole = declaredRole;
+      result.violations.push({
+        type: 'role_mismatch',
+        severity: 'error',
+        message: 'Declared role disagrees with the R3 conseils route',
+      });
+    }
 
     // Extraire et valider canonical
     const canonical = this.extractCanonical(html);
@@ -1149,6 +1215,164 @@ export class PageRoleValidatorService {
     result.isValid =
       result.violations.filter((v) => v.severity === 'error').length === 0;
 
+    return result;
+  }
+
+  /**
+   * Inspect the composed article with the same parser family as HtmlContent.
+   * This is structural/lexical evidence, not CSS visibility or factual review.
+   * Only a uniquely identified diagnostic subtree gets diagnostic rules.
+   */
+  private validateR3Html(
+    url: string,
+    html: string,
+    expectedSections: readonly string[],
+  ): PageValidationResult {
+    const document = parseDocument(html);
+    const inert = DomUtils.findAll(
+      (node) => ['script', 'style', 'template'].includes(node.name),
+      document.children,
+    );
+    for (const node of inert) DomUtils.removeElement(node);
+    const articles = DomUtils.getElementsByTagName(
+      'article',
+      document.children,
+    );
+    const structural: RoleViolation[] = [];
+    const invalid = (flag: string, message: string) => {
+      structural.push({
+        type: 'missing_element',
+        severity: 'error',
+        message,
+        details: { flag, sectionType: 'S2_DIAG', scope: 'rendered_html' },
+      });
+    };
+    if (articles.length !== 1) {
+      const result = this.validatePage(
+        url,
+        DomUtils.innerText(document),
+        PageRole.R3_BLOG,
+      );
+      result.violations.push({
+        type: 'missing_element',
+        severity: 'error',
+        message: 'R3 HTML requires exactly one article root',
+        details: {
+          flag: 'R3_ARTICLE_AMBIGUOUS',
+          count: articles.length,
+          scope: 'rendered_html',
+        },
+      });
+      result.isValid = false;
+      return result;
+    }
+    const article = articles[0];
+    const markers = DomUtils.findAll(
+      (node) => node.attribs['data-r3-section'] === 'S2_DIAG',
+      document.children,
+    );
+    const anchors = DomUtils.findAll(
+      (node) => node.attribs.id === 'diagnostic-rapide',
+      document.children,
+    );
+    const sections: Array<{ sectionType: string; content: string }> = [];
+    if (
+      expectedSections.includes('S2_DIAG') &&
+      markers.length === 0 &&
+      anchors.length === 0
+    ) {
+      invalid(
+        'R3_DIAGNOSTIC_MISSING',
+        'Stored S2_DIAG is missing from the rendered article',
+      );
+    }
+    if (markers.length || anchors.length) {
+      const diagnostic = markers[0];
+      const insideArticle =
+        diagnostic &&
+        DomUtils.findAll((node) => node === diagnostic, article.children)
+          .length === 1;
+      if (
+        markers.length !== 1 ||
+        anchors.length !== 1 ||
+        anchors[0] !== diagnostic ||
+        !insideArticle
+      ) {
+        invalid(
+          'R3_DIAGNOSTIC_BOUNDARY',
+          'R3/S2_DIAG requires one marked subtree at #diagnostic-rapide inside the article',
+        );
+      } else {
+        const headings = DomUtils.getElementsByTagName(
+          'h2',
+          diagnostic.children,
+        );
+        const tables = DomUtils.getElementsByTagName(
+          'table',
+          diagnostic.children,
+        );
+        if (headings.length !== 1 || !DomUtils.innerText(headings[0]).trim()) {
+          invalid(
+            'R3_DIAGNOSTIC_HEADING',
+            'R3/S2_DIAG requires a single nonempty H2',
+          );
+        }
+        if (tables.length !== 1) {
+          invalid(
+            'R3_DIAGNOSTIC_TABLE',
+            'R3/S2_DIAG requires one diagnostic table',
+          );
+        } else {
+          const rows = DomUtils.getElementsByTagName('tr', tables[0].children);
+          let dataRows = 0;
+          let malformed = rows.length === 0;
+          for (const row of rows) {
+            const cells = row.children.filter(
+              (node) => 'name' in node && ['th', 'td'].includes(node.name),
+            );
+            const complete =
+              cells.length === 3 &&
+              cells.every(
+                (cell) =>
+                  DomUtils.innerText(cell).trim() &&
+                  (!('attribs' in cell) ||
+                    ((!cell.attribs.colspan || cell.attribs.colspan === '1') &&
+                      (!cell.attribs.rowspan || cell.attribs.rowspan === '1'))),
+              );
+            // A full-width footer does not count as a three-column data row.
+            const footer =
+              cells.length === 1 &&
+              'attribs' in cells[0] &&
+              cells[0].attribs.colspan === '3' &&
+              DomUtils.innerText(cells[0]).trim();
+            if (!complete && !footer) malformed = true;
+            if (
+              complete &&
+              cells.every((cell) => 'name' in cell && cell.name === 'td')
+            )
+              dataRows++;
+          }
+          if (malformed || dataRows === 0) {
+            invalid(
+              'R3_DIAGNOSTIC_COLUMNS',
+              'R3/S2_DIAG requires complete three-column data rows',
+            );
+          }
+        }
+        sections.push({
+          sectionType: 'S2_DIAG',
+          content: DomUtils.innerText(diagnostic),
+        });
+        DomUtils.removeElement(diagnostic);
+      }
+    }
+    sections.unshift({
+      sectionType: 'R3_ARTICLE',
+      content: DomUtils.innerText(article),
+    });
+    const result = this.validateR3Sections(url, sections);
+    result.violations.push(...structural);
+    result.isValid = !result.violations.some((v) => v.severity === 'error');
     return result;
   }
 

@@ -44,7 +44,9 @@ log "=== sync-rag-from-wiki start ==="
 
 # --- Sanity checks ---
 for d in "$WIKI_PATH" "$RAG_PATH" "$APP_PATH"; do
-  [ -d "$d/.git" ] || { log "ERROR: $d not a git repo"; exit 2; }
+  git -C "$d" rev-parse --is-inside-work-tree >/dev/null 2>&1 || {
+    log "ERROR: $d not a git repo"; exit 2;
+  }
 done
 [ -x "$SYNC_SCRIPT" ] || [ -r "$SYNC_SCRIPT" ] || {
   log "ERROR: sync script not found: $SYNC_SCRIPT"; exit 2;
@@ -63,10 +65,10 @@ log "[1/4] git pull wiki main"
 cd "$WIKI_PATH"
 WIKI_BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null || echo "detached")
 if [ "$WIKI_BRANCH" != "main" ]; then
-  log "WARN: wiki not on main (branch=$WIKI_BRANCH), skipping pull"
-else
-  git pull --ff-only origin main 2>&1 | tee -a "$LOG_FILE"
+  log "ERROR: wiki not on main (branch=$WIKI_BRANCH), aborting before mirror writes"
+  exit 3
 fi
+git pull --ff-only origin main 2>&1 | tee -a "$LOG_FILE"
 WIKI_SHA=$(git rev-parse --short HEAD)
 log "  wiki HEAD: $WIKI_SHA"
 

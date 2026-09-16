@@ -2,7 +2,9 @@
  * 🎯 INTERCEPTOR VALIDATION RÔLES DE PAGES SEO
  *
  * Phase B: Enforcement Pipeline
- * Valide chaque page HTML contre les règles de son rôle.
+ * Valide les chaines HTML retournees par les controleurs Nest.
+ * React Router ecrit directement dans Express : ce flux SSR ne produit pas une
+ * chaine interceptee ici. L'audit R3 explicite lit la page servie pour le controler.
  *
  * Mode: Monitoring (logs violations, ne bloque pas)
  */

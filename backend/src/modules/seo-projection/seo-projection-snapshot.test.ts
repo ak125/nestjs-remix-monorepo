@@ -133,3 +133,12 @@ describe('seo-projection-snapshot builder', () => {
     });
   });
 });
+
+it('refuse deux entrées du même nom avant de produire une archive ambiguë', () => {
+  expect(() =>
+    buildDeterministicTar([
+      e('commun.json', '{"entity_id":"gamme:commun"}'),
+      e('commun.json', '{"entity_id":"vehicle:commun"}'),
+    ]),
+  ).toThrow(/duplicate snapshot entry/i);
+});

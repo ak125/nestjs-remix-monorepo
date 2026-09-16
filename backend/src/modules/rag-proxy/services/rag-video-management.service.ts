@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  BadRequestException,
-  NotFoundException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 import {
@@ -14,16 +9,9 @@ import {
   unlinkSync,
   existsSync,
   createReadStream,
-  mkdirSync,
-  renameSync,
 } from 'node:fs';
 import path from 'node:path';
-import { createHash } from 'node:crypto';
-import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
 import type { Response } from 'express';
-
-const execFileAsync = promisify(execFile);
 
 const VIDEO_EXTS = new Set(['.mp4', '.webm', '.mkv', '.mov', '.m4v']);
 
@@ -210,167 +198,5 @@ export class RagVideoManagementService {
       }
     }
     return enriched;
-  }
-
-  /**
-   * Ingest a video from URL using yt-dlp.
-   * Downloads video + extracts metadata → creates .prompt.md sidecar.
-   * Returns the SHA256 hash of the downloaded file.
-   */
-  async ingestVideoUrl(
-    url: string,
-    options?: { gamme?: string; type?: string },
-  ): Promise<{
-    hash: string;
-    title: string;
-    durationSec: number;
-    ext: string;
-    promptMdCreated: boolean;
-  }> {
-    const dir = this.videoDir;
-    mkdirSync(dir, { recursive: true });
-
-    // 1. Get metadata first (no download)
-    this.logger.log(`Fetching metadata for: ${url}`);
-    let metadata: {
-      title: string;
-      duration: number;
-      description: string;
-      ext: string;
-    };
-
-    try {
-      const { stdout } = await execFileAsync(
-        'yt-dlp',
-        ['--dump-json', '--no-playlist', url],
-        { timeout: 60_000 },
-      );
-      const info = JSON.parse(stdout);
-      metadata = {
-        title: info.title || 'Untitled',
-        duration: Math.round(info.duration || 0),
-        description: (info.description || '').slice(0, 500),
-        ext: info.ext || 'mp4',
-      };
-    } catch (err) {
-      throw new BadRequestException(
-        `Failed to fetch video metadata: ${err instanceof Error ? err.message : String(err)}`,
-      );
-    }
-
-    this.logger.log(`Metadata: "${metadata.title}" (${metadata.duration}s)`);
-
-    // 2. Download video
-    const tmpName = `dl_${Date.now()}`;
-    const outTemplate = path.join(dir, `${tmpName}.%(ext)s`);
-
-    try {
-      await execFileAsync(
-        'yt-dlp',
-        [
-          '--no-playlist',
-          '-f',
-          'mp4/best[ext=mp4]/best',
-          '-o',
-          outTemplate,
-          url,
-        ],
-        { timeout: 600_000 },
-      ); // 10 min max
-    } catch (err) {
-      throw new BadRequestException(
-        `Video download failed: ${err instanceof Error ? err.message : String(err)}`,
-      );
-    }
-
-    // Find the downloaded file
-    const dlFiles = readdirSync(dir).filter((f) => f.startsWith(tmpName + '.'));
-    if (dlFiles.length === 0) {
-      throw new BadRequestException('Download produced no output file');
-    }
-    const dlFile = dlFiles[0];
-    const dlPath = path.join(dir, dlFile);
-
-    // 3. Compute SHA256 hash
-    const fileBuffer = readFileSync(dlPath);
-    const sha256 = createHash('sha256').update(fileBuffer).digest('hex');
-    const ext = path.extname(dlFile).toLowerCase();
-    const finalName = `${sha256}${ext}`;
-    const finalPath = path.join(dir, finalName);
-
-    // Rename to hash-based name (skip if already exists = dedup)
-    if (existsSync(finalPath)) {
-      unlinkSync(dlPath); // already have this video
-      this.logger.log(`Video already archived: ${sha256}`);
-    } else {
-      renameSync(dlPath, finalPath);
-      this.logger.log(
-        `Video archived: ${finalName} (${fileBuffer.length} bytes)`,
-      );
-    }
-
-    // 4. Generate .prompt.md sidecar
-    const promptPath = path.join(dir, `${sha256}.prompt.md`);
-    const promptMdCreated = !existsSync(promptPath);
-
-    if (promptMdCreated) {
-      const videoType = options?.type || this.detectVideoType(metadata.title);
-      const gamme = options?.gamme || null;
-
-      const promptContent = [
-        '---',
-        `hash: "${sha256}"`,
-        `source_url: "${url}"`,
-        `gamme: ${gamme ? `"${gamme}"` : 'null'}`,
-        `type: "${videoType}"`,
-        `usage: "page-gamme"`,
-        `duration_sec: ${metadata.duration}`,
-        `title: "${metadata.title.replace(/"/g, "'")}"`,
-        `described_at: "${new Date().toISOString().slice(0, 10)}"`,
-        `described_by: "yt-dlp-metadata"`,
-        '---',
-        '',
-        `${metadata.title}`,
-        '',
-        metadata.description || `Video ${videoType} automobile.`,
-      ].join('\n');
-
-      writeFileSync(promptPath, promptContent, 'utf-8');
-      this.logger.log(`Prompt.md created: ${sha256}.prompt.md`);
-    }
-
-    // 5. Also write legacy .json sidecar for compatibility with ingest_videos.py
-    const jsonPath = path.join(dir, `${sha256}.json`);
-    if (!existsSync(jsonPath)) {
-      const jsonMeta = {
-        sha256,
-        source_label: metadata.title,
-        source_url: url,
-        ingested_at: new Date().toISOString(),
-        size_bytes: fileBuffer.length,
-      };
-      writeFileSync(jsonPath, JSON.stringify(jsonMeta, null, 2), 'utf-8');
-    }
-
-    return {
-      hash: sha256,
-      title: metadata.title,
-      durationSec: metadata.duration,
-      ext: ext.slice(1),
-      promptMdCreated,
-    };
-  }
-
-  /**
-   * Auto-detect video type from title keywords.
-   */
-  private detectVideoType(title: string): string {
-    const t = title.toLowerCase();
-    if (/tuto|comment|how.?to|changer|remplacer|monter|demonter/.test(t))
-      return 'tutoriel';
-    if (/diagnostic|panne|symptom|bruit|vibra/.test(t)) return 'diagnostic';
-    if (/compara|vs\b|meilleur|top\s?\d/.test(t)) return 'comparatif';
-    if (/test|review|avis|essai/.test(t)) return 'test';
-    return 'presentation';
   }
 }

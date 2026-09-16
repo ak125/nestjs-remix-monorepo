@@ -33,7 +33,7 @@ export function humanizeProvenance(s: ProvenanceDescriptor): string {
   if (s.ref?.includes('OEM') || s.ref === 'OEM_manual')
     return 'Manuel constructeur';
   if (s.ref?.endsWith('.pdf')) return 'Documentation technique';
-  return 'Source vérifiée';
+  return 'Référence documentaire';
 }
 
 /** Convert a raw string source ref into a user-facing label. */
@@ -42,4 +42,33 @@ export function humanizeProvenanceRef(ref: string): string {
   if (ref.includes('OEM')) return 'Manuel constructeur';
   if (ref.endsWith('.pdf')) return 'Documentation technique';
   return ref;
+}
+
+/**
+ * Validate the declared sgc_sources shape shared by section scoring and GA5.
+ * Accept the existing string-ref or object-with-ref formats. This checks the
+ * declaration only: it does not resolve the reference or verify any claim.
+ */
+export function hasDeclaredSourceReferences(
+  raw: string | null | undefined,
+): boolean {
+  if (!raw) return false;
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    return (
+      Array.isArray(parsed) &&
+      parsed.length > 0 &&
+      parsed.every((entry: unknown) => {
+        const ref =
+          typeof entry === 'string'
+            ? entry
+            : entry !== null && typeof entry === 'object' && 'ref' in entry
+              ? entry.ref
+              : undefined;
+        return typeof ref === 'string' && ref.trim().length > 0;
+      })
+    );
+  } catch {
+    return false;
+  }
 }

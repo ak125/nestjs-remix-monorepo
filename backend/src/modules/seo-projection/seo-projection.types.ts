@@ -20,6 +20,8 @@ export const PROJECTION_REFRESH_QUEUE = 'projection-refresh-queue';
 
 export const PROJECTION_WRITE_JOB = 'seo-projection-write';
 export const PROJECTION_REFRESH_JOB = 'seo-projection-refresh';
+/** Same coalescing key for writes and recovery after completion/restart. */
+export const PROJECTION_REFRESH_JOB_ID = 'projection-refresh-singleton';
 
 /**
  * Feeder R1 (PR-6c, ADR-090 §C2) : queue/job du déclencheur qui découvre les exports/seo/gamme
@@ -43,9 +45,9 @@ export const WRITER_CONTRACT_VERSION = '1.0.0';
  * → tout run réel échouait `validate_run_for_replay`.
  */
 export const PROJECTION_BUILDER_VERSION = '1.0.0'; // adaptateur export→DB (mapExportBlockToDbBlock)
-export const PROJECTION_PIPELINE_VERSION = '1.0.0'; // pipeline d'écriture (projectExports)
+export const PROJECTION_PIPELINE_VERSION = '1.2.1'; // capture unique, identités vérifiées et axe R8 préservé
 export const PROJECTION_EXTRACTOR_VERSION = '1.0.0'; // extraction facts/blocks depuis l'export
-export const PROJECTION_RUNNER_VERSION = '1.0.0'; // runner (processor → writer)
+export const PROJECTION_RUNNER_VERSION = '1.0.4'; // runner (processor → writer)
 /** Fallback si l'export ne déclare pas de `projection_contract_version` semver exploitable. */
 export const PROJECTION_CONTRACT_FALLBACK = '1.0.0';
 
@@ -193,6 +195,7 @@ export interface EntityWriteOutcome {
   factsOutcome: 'written' | 'noop';
   roleOutcome: 'written' | 'noop' | 'blocked' | 'regressed_draft';
   factsVersionId?: string;
+  /** Active block writes confirmed before success OR a later failure. */
   blocksWritten?: number;
   conflicts?: number;
   reasons?: string[];

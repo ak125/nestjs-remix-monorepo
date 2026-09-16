@@ -1,12 +1,11 @@
 import { Injectable, Logger, Optional, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { FAMILY_MARKERS } from '../../../../config/buying-guide-quality.constants';
 import {
-  MIN_VERIFIED_CONFIDENCE,
-  MIN_QUALITY_SCORE,
-  FAMILY_MARKERS,
-} from '../../../../config/buying-guide-quality.constants';
-import { SOURCE_TIER } from '../../../../config/source-provenance.constants';
+  SOURCE_TIER,
+  isLegacyRagTier,
+} from '../../../../config/source-provenance.constants';
 import type { SectionValidationResult } from './buying-guide.types';
 import { BuyingGuideSectionExtractor } from './buying-guide-section-extractor.service';
 import { FeatureFlagsService } from '../../../../config/feature-flags.service';
@@ -83,8 +82,8 @@ export class BuyingGuideDbService extends SupabaseBaseService {
     sections: Record<string, SectionValidationResult>,
     sourceUri: string,
     sourceRef: string,
-    avgConfidence: number,
-    qualityScore: number,
+    _avgConfidence: number,
+    _qualityScore: number,
   ): Record<string, unknown> {
     const payload: Record<string, unknown> = {
       // Honest provenance tier: parsed from the legacy RAG knowledge doc
@@ -92,11 +91,11 @@ export class BuyingGuideDbService extends SupabaseBaseService {
       sgpg_source_type: SOURCE_TIER.RAG_LEGACY,
       sgpg_source_uri: sourceUri,
       sgpg_source_ref: sourceRef,
-      sgpg_source_verified:
-        avgConfidence >= MIN_VERIFIED_CONFIDENCE &&
-        qualityScore >= MIN_QUALITY_SCORE,
-      sgpg_source_verified_by: 'pipeline:rag-enrich',
-      sgpg_source_verified_at: new Date().toISOString(),
+      // A retrieval score is not a source review. Legacy content cannot
+      // manufacture verification metadata, even with perfect numeric scores.
+      sgpg_source_verified: false,
+      sgpg_source_verified_by: null,
+      sgpg_source_verified_at: null,
     };
 
     // Map each OK section to its DB column
@@ -377,17 +376,29 @@ export class BuyingGuideDbService extends SupabaseBaseService {
       }
     }
 
-    // ── Existing write (UNCHANGED) ──
-    const { error } = await this.client
+    // Legacy criteria are V1 data. Apply the version condition in the UPDATE
+    // itself so a concurrent V2 conversion cannot be overwritten after a read.
+    let update = this.client
       .from('__seo_gamme_purchase_guide')
       .update(payload)
       .eq('sgpg_pg_id', pgId);
+    if (isLegacyRagTier(payload.sgpg_source_type as string | null)) {
+      update = update.or('sgpg_role_version.is.null,sgpg_role_version.eq.v1');
+    }
+    const { data: updatedRows, error } = await update.select('sgpg_pg_id');
 
     if (error) {
       this.logger.error(
         `Failed to update buying guide for pgId=${pgId}: ${error.message}`,
       );
       throw new Error(`DB update failed: ${error.message}`);
+    }
+
+    if (!updatedRows?.length) {
+      // Zero affected rows is not success (version mismatch, missing row or RLS).
+      throw new Error(
+        `R6_WRITE_NOT_APPLIED: pgId=${pgId}, no eligible row updated`,
+      );
     }
 
     this.logger.log(`Buying guide updated for pgId=${pgId}`);

@@ -189,6 +189,7 @@ export interface R6GuidePayload {
   heroDecision?: R6HeroDecision;
   summaryPickFast?: R6DecisionNode[];
   qualityTiers?: R6QualityTier[];
+  qualityTiersReviewRequired?: boolean;
   compatibilityAxes?: R6CompatibilityAxis[];
   priceGuide?: R6PriceGuideSection;
   brandsGuide?: R6BrandsGuideSection;

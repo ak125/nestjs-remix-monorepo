@@ -94,6 +94,7 @@ function toConseil(s: R3GuideSection): GammeConseil {
     qualityScore: s.qualityScore,
     sources: s.sources,
     anchor: s.anchor,
+    legacyAnchor: s.legacyAnchor,
     image: s.image ?? null,
   };
 }

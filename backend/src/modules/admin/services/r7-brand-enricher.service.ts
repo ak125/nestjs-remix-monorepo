@@ -580,49 +580,20 @@ export class R7BrandEnricherService extends SupabaseBaseService {
       semanticPayload: [brandName, 'entretien', 'remplacement', 'intervalles'],
     });
 
-    // S9_FAQ (5 Q/R)
-    const ragFaqs = rag.faq || [];
-    const faqItems: Array<{ q: string; a: string }> = [];
-    // Use RAG FAQs first
-    ragFaqs.slice(0, 5).forEach((f) => faqItems.push(f));
-    // Fill with defaults if needed
-    const defaultFaqs = [
-      {
-        q: `Comment trouver la bonne pièce pour ma ${brandName} ?`,
-        a: `Sélectionnez votre modèle ${brandName} et votre motorisation dans notre configurateur. Le système vérifie automatiquement la compatibilité.`,
-      },
-      {
-        q: `Les pièces ${brandName} sont-elles d'origine ?`,
-        a: `Nous proposons des pièces OEM et des pièces de qualité équivalente certifiées par les grands équipementiers (Bosch, Valeo, TRW, etc.).`,
-      },
-      {
-        q: `Quels modèles ${brandName} sont couverts ?`,
-        a: `Notre catalogue couvre l'ensemble des modèles ${brandName} disponibles sur le marché français.`,
-      },
-      {
-        q: `Comment vérifier la compatibilité d'une pièce ${brandName} ?`,
-        a: `Chaque fiche produit affiche les véhicules compatibles. Utilisez le sélecteur de véhicule pour filtrer les pièces adaptées à votre motorisation.`,
-      },
-      {
-        q: `Quel délai de livraison pour les pièces ${brandName} ?`,
-        a: `La livraison standard est de 24 à 48h en France métropolitaine.`,
-      },
-    ];
-    while (faqItems.length < 5 && defaultFaqs.length > 0) {
-      const next = defaultFaqs.shift();
-      if (next && !faqItems.some((f) => f.q === next.q)) {
-        faqItems.push(next);
-      }
+    // S9_FAQ: curated DB entries only. Missing evidence stays missing;
+    // the existing MISSING_FAQ gate sends the candidate to review.
+    const faqItems = (rag.faq || []).slice(0, 5);
+    if (faqItems.length > 0) {
+      blocks.push({
+        id: 'R7_S9_FAQ',
+        type: 'faq',
+        title: tpl('R7_S9_FAQ'),
+        renderedText: faqItems.map((f) => `**${f.q}**\n${f.a}`).join('\n\n'),
+        specificityWeight: 0.75,
+        boilerplateRisk: 0.15,
+        semanticPayload: faqItems.map((f) => f.q.slice(0, 30)),
+      });
     }
-    blocks.push({
-      id: 'R7_S9_FAQ',
-      type: 'faq',
-      title: tpl('R7_S9_FAQ'),
-      renderedText: faqItems.map((f) => `**${f.q}**\n${f.a}`).join('\n\n'),
-      specificityWeight: ragFaqs.length > 0 ? 0.75 : 0.5,
-      boilerplateRisk: ragFaqs.length > 0 ? 0.15 : 0.35,
-      semanticPayload: faqItems.map((f) => f.q.slice(0, 30)),
-    });
 
     // S10_RELATED (brand → brand maillage)
     if (relatedBrands.length > 0) {
@@ -812,11 +783,8 @@ export class R7BrandEnricherService extends SupabaseBaseService {
       return { decision: 'PUBLISH', reasons, warnings };
     }
 
-    if (metrics.diversityScore >= R7_KP_QUALITY_THRESHOLDS.minQualityScore) {
-      warnings.push(...reasons.map((r) => `gate warning: ${r}`));
-      return { decision: 'PUBLISH', reasons, warnings };
-    }
-
+    // A high aggregate score cannot waive a declared hard gate.
+    // Keep the recorded reasons and require review; no score/threshold change.
     return { decision: 'REVIEW_REQUIRED', reasons, warnings };
   }
 

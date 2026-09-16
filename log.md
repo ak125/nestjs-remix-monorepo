@@ -560,3 +560,19 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/dev-shutdown-comment-bull`
 - **Décision** : docs(dev): borne d'arrêt DEV — c'est le close() de Bull qui attendait le crawl, pas @nestjs/bullmq
 - **Sortie** : PR aucune | commits 5d395718b
+
+
+## 2026-09-14 — R6 : candidat de refus qualité avant écriture
+
+- Candidat isolé `codex/editorial-pipeline-provenance-20260912`, sans commit ni déploiement.
+- Décision commune simulation/exécution ; un critère dupliqué, mal formé ou sans explication distincte bloque le contenu. Diagnostics conservés, aucune suppression de données.
+- Validation : 24 tests ciblés, typage backend, lint zéro erreur (un avertissement legacy). Couverture partielle ; rendu V1/V2 et données existantes restent à reprendre.
+- Preuve canon : vault, `ledger/audit-trail/editorial-pipeline-evidence-20260912/r6-quality-verification.md`.
+
+
+## 2026-09-14 — R6 : candidat contrats V1/V2 et provenance
+
+- Comparaison V2 validée, AltTier retiré ; lacune explicite, ancre conservée, données V1 préservées.
+- UPDATE legacy limité à V1/null, zéro ligne affectée refusé ; score seul sans autorité de vérification documentaire.
+- 73 tests backend et 5 frontend PASS ; typage backend PASS, frontend global limité par dépendances absentes hors périmètre.
+- Candidat uniquement, aucune DB ni publication. Preuves vault : `ledger/audit-trail/editorial-pipeline-evidence-20260912/r6-contract-verification.md`.

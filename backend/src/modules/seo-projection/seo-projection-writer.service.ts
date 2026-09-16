@@ -83,7 +83,7 @@ function slugifyKind(raw: string): string {
  * `usefulness_target` + provenance D3 optionnelle) vers la forme **DB** versionnée
  * (`block_kind` + `content` jsonb, tous deux NOT NULL). Déterministe, **sans perte, sans enrichissement** :
  * toute la provenance est copiée verbatim dans `content`. `block_kind = slug(section)` ; fallback
- * positionnel `b<index>` si `section` absente (jamais de collision, jamais de silent-fallback — l'appelant
+ * positionnel `b<index>` si `section` absente (unicité vérifiée avant écriture ; l'appelant
  * logue `kindFallback`). `content_hash` recalculé sur le `content` réel → no-op detection correcte par bloc.
  */
 export function mapExportBlockToDbBlock(
@@ -95,7 +95,15 @@ export function mapExportBlockToDbBlock(
   const kindFallback = sectionSlug === '';
   const blockKind =
     b.block_kind?.trim() || (kindFallback ? `b${index}` : sectionSlug);
-  const blockId = b.block_id ?? `${entityId}#${b.role}#${blockKind}`;
+  // R8 : la section est partagée entre plusieurs motorisations (ADR-086 §4).
+  // Le builder transporte déjà leur clé dans usefulness_target. Elle appartient
+  // à l'identité, indépendamment du texte et de l'ordre des blocs. L'encodage
+  // conserve la clé exacte sans collision avec le séparateur '#'. Les autres
+  // rôles, les blocs sans axe et les identifiants explicites gardent leur contrat.
+  const axis = b.role === 'R8_VEHICLE' ? b.usefulness_target : null;
+  const scopeSuffix = axis ? `#${encodeURIComponent(axis)}` : '';
+  const blockId =
+    b.block_id ?? `${entityId}#${b.role}#${blockKind}${scopeSuffix}`;
 
   // content jsonb = contenu citable verbatim (zéro enrichissement, ordre de clés déterministe pour le hash).
   const content: Record<string, unknown> = {
@@ -193,9 +201,19 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
       };
     }
 
-    // Versions semver résolues depuis l'export + composants writer (jamais le `pipeline_version`
-    // non-semver historique du feeder). Seed = 1er export lisible (best-effort, fail-open sur meta).
-    const seed = await this.readExportMeta(exportPaths[0]);
+    // Capturer une seule fois les octets d'entrée : métadonnées, archive durable et
+    // projection doivent décrire le même contenu même si l'export change pendant le run.
+    // Une erreur de capture suit le chemin d'échec snapshot existant (0 write actif).
+    const inputs: Array<{ exportPath: string; data: Buffer }> = [];
+    let inputError: unknown;
+    try {
+      for (const exportPath of exportPaths) {
+        inputs.push({ exportPath, data: await fs.readFile(exportPath) });
+      }
+    } catch (e) {
+      inputError = e;
+    }
+    const seed = this.readExportMeta(inputs[0]?.data);
     const versions = this.resolveRunVersions(seed, runMeta);
     const wikiCommitSha = seed.wikiCommitSha ?? runMeta.wiki_commit_sha ?? null;
     const runId = await this.openRun(triggeredBy, versions, wikiCommitSha);
@@ -226,12 +244,33 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
     // même quand le snapshot échouait ensuite.)
     let snapshot: { hash: string; uri: string };
     try {
+      if (inputError) throw inputError;
       snapshot = await this.buildSnapshotForRun(
-        exportPaths,
+        inputs,
         runId,
         wikiCommitSha,
         versions,
       );
+      const { data: attached, error } = await this.supabase
+        .from('__seo_projection_runs')
+        .update({
+          exports_snapshot_hash: snapshot.hash,
+          exports_snapshot_uri: snapshot.uri,
+        })
+        .eq('run_id', runId)
+        .eq('status', 'running')
+        .select('run_id, exports_snapshot_hash, exports_snapshot_uri')
+        .single();
+      if (
+        error ||
+        attached?.run_id !== runId ||
+        attached.exports_snapshot_hash !== snapshot.hash ||
+        attached.exports_snapshot_uri !== snapshot.uri
+      ) {
+        throw new Error(
+          `snapshot attachment failed: ${error?.message ?? 'run/snapshot not confirmed'}`,
+        );
+      }
     } catch (e) {
       const snapshotError = getErrorMessage(e);
       this.log.error(
@@ -265,8 +304,15 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
 
     // Snapshot durable garanti → on peut écrire (flip des versions actives) en sûreté.
     const outcomes: EntityWriteOutcome[] = [];
-    for (const p of exportPaths) {
-      outcomes.push(await this.projectOne(p, runId, projectionRole));
+    for (const input of inputs) {
+      outcomes.push(
+        await this.projectOne(
+          input.exportPath,
+          input.data,
+          runId,
+          projectionRole,
+        ),
+      );
     }
 
     const entitiesWritten = outcomes.filter(
@@ -307,14 +353,13 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
   /** Projette un export. Fail-closed : erreur → conflit + roleOutcome blocked, jamais de throw. */
   private async projectOne(
     exportPath: string,
+    exportBytes: Buffer,
     runId: string | null,
     role?: string,
   ): Promise<EntityWriteOutcome> {
     let exp: SeoProjectionExport;
     try {
-      exp = JSON.parse(
-        await fs.readFile(exportPath, 'utf-8'),
-      ) as SeoProjectionExport;
+      exp = JSON.parse(exportBytes.toString('utf-8')) as SeoProjectionExport;
     } catch (e) {
       await this.recordConflict(
         '?',
@@ -370,20 +415,33 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
       };
     }
 
+    // Progress belongs to this entity/run. Preserve already-confirmed writes
+    // when a later block fails; a blocked outcome does not mean zero effects.
+    const progress: EntityWriteOutcome = {
+      entity_id: exp.entity_id,
+      role: role ?? null,
+      factsOutcome: 'noop',
+      roleOutcome: 'blocked',
+      blocksWritten: 0,
+      conflicts: 0,
+    };
     try {
-      return await this.writeEntity(exp, runId, role);
+      return await this.writeEntity(exp, runId, role, progress);
     } catch (e) {
       await this.recordConflict(
         exp.entity_id,
         null,
         'write_error',
-        { error: String(e) },
+        {
+          error: String(e),
+          factsOutcome: progress.factsOutcome,
+          factsVersionId: progress.factsVersionId,
+          blocksWritten: progress.blocksWritten,
+        },
         runId,
       );
       return {
-        entity_id: exp.entity_id,
-        role: role ?? null,
-        factsOutcome: 'noop',
+        ...progress,
         roleOutcome: 'blocked',
         reasons: [`écriture: ${String(e)}`],
       };
@@ -400,7 +458,71 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
     exp: SeoProjectionExport,
     runId: string | null,
     role?: string,
+    progress: EntityWriteOutcome = {
+      entity_id: exp.entity_id,
+      role: role ?? null,
+      factsOutcome: 'noop',
+      roleOutcome: 'blocked',
+      blocksWritten: 0,
+      conflicts: 0,
+    },
   ): Promise<EntityWriteOutcome> {
+    // Résoudre une seule fois les identités réellement utilisées en DB. Les sections
+    // normalisées, les overrides et les indices positionnels peuvent se rencontrer.
+    // Refuser l'ambiguïté AVANT les facts partagés et tout upsert ; jamais inventer
+    // un suffixe pour faire passer le lot. Inspecter aussi les blocs hors rôle pour
+    // empêcher un block_id explicite de réaffecter un bloc à un autre rôle.
+    const rows = (exp.blocks ?? []).map((block, index) =>
+      mapExportBlockToDbBlock(exp.entity_id, block, index),
+    );
+    const selectedIds = new Set(
+      rows
+        .filter((_, index) => !role || exp.blocks[index].role === role)
+        .map((row) => row.blockId),
+    );
+    const seen = new Set<string>();
+    for (const row of rows) {
+      if (seen.has(row.blockId) && selectedIds.has(row.blockId)) {
+        throw new Error(`ambiguous block identity: ${row.blockId}`);
+      }
+      seen.add(row.blockId);
+    }
+
+    // Une ancienne identité R8 active ne doit pas coexister silencieusement avec
+    // ses nouvelles identités par axe. Réconciliation explicite nécessaire : le
+    // writer ne peut pas deviner quel contenu historique fusionner ou retirer.
+    const legacyR8Ids = new Set<string>();
+    for (let index = 0; index < rows.length; index += 1) {
+      const block = exp.blocks[index];
+      if (
+        block.role === 'R8_VEHICLE' &&
+        (!role || role === block.role) &&
+        block.block_id == null &&
+        block.usefulness_target
+      ) {
+        legacyR8Ids.add(
+          `${exp.entity_id}#${block.role}#${rows[index].blockKind}`,
+        );
+      }
+    }
+    if (legacyR8Ids.size > 0) {
+      const { data: legacy, error } = await this.supabase
+        .from('__seo_content_block_versions')
+        .select('block_id')
+        .in('block_id', [...legacyR8Ids])
+        .eq('status', 'active')
+        .limit(1)
+        .maybeSingle();
+      if (error) {
+        throw new Error(`R8 legacy identity check failed: ${error.message}`);
+      }
+      if (legacy) {
+        throw new Error(
+          `legacy R8 block requires reconciliation: ${legacy.block_id}`,
+        );
+      }
+    }
+
     // 1. Upsert la ligne entity (idempotent ; ne touche pas active_version_id ici).
     await this.supabase.from('__seo_entity_facts').upsert(
       {
@@ -415,9 +537,11 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
 
     // 2. FACTS partagés — INSERT-new-version + flip, ou no-op. Résultat INDÉPENDANT du rôle.
     const facts = await this.writeFacts(exp, runId);
+    progress.factsOutcome = facts.written ? 'written' : 'noop';
+    progress.factsVersionId = facts.versionId;
 
     // 3. BLOCS du rôle demandé (ou tous si slurp) — TOUJOURS exécuté, même sur un facts no-op.
-    const blocks = await this.writeBlocks(exp, runId, role);
+    const blocks = await this.writeBlocks(exp, rows, runId, role, progress);
     const roleOutcome: EntityWriteOutcome['roleOutcome'] =
       blocks.written > 0
         ? 'written'
@@ -495,8 +619,10 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
    */
   private async writeBlocks(
     exp: SeoProjectionExport,
+    rows: ReadonlyArray<ProjectedBlockRow>,
     runId: string | null,
-    role?: string,
+    role: string | undefined,
+    progress: EntityWriteOutcome,
   ): Promise<{ written: number; regressed: number; noop: number }> {
     let written = 0;
     let regressed = 0;
@@ -505,30 +631,51 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
     for (let index = 0; index < blocks.length; index += 1) {
       const b = blocks[index];
       if (role && b?.role !== role) continue; // role-scoped : ignore les autres rôles (index préservé)
-      // Adapte le bloc FLAT (builder) → forme DB (block_kind + content jsonb NOT NULL). Sans perte.
-      const row = mapExportBlockToDbBlock(exp.entity_id, b, index);
+      // Réutilise l'identité et le contenu validés avant toute écriture de l'entité.
+      const row = rows[index];
       if (row.kindFallback) {
         this.log.warn(
           `bloc sans 'section' (${exp.entity_id} role=${b.role} #${index}) → block_kind positionnel '${row.blockKind}' (observable, pas de fallback silencieux)`,
         );
       }
-      await this.supabase.from('__seo_content_blocks').upsert(
-        {
-          block_id: row.blockId,
-          entity_id: exp.entity_id,
-          role: b.role,
-          block_kind: row.blockKind,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'block_id' },
-      );
-
-      const { data: active } = await this.supabase
+      const { data: block, error: blockError } = await this.supabase
+        .from('__seo_content_blocks')
+        .select('entity_id, role, block_kind, active_version_id')
+        .eq('block_id', row.blockId)
+        .maybeSingle();
+      if (blockError)
+        throw new Error(`block lookup ${row.blockId}: ${blockError.message}`);
+      if (
+        block &&
+        (block.entity_id !== exp.entity_id ||
+          block.role !== b.role ||
+          block.block_kind !== row.blockKind)
+      ) {
+        throw new Error(`block scope mismatch: ${row.blockId}`);
+      }
+      // A retained inactive row is not a new block. Neither replay nor absence of
+      // an active version authorizes reactivation after an explicit withdrawal.
+      if (block && !block.active_version_id) {
+        throw new Error(
+          `inactive block requires reconciliation: ${row.blockId}`,
+        );
+      }
+      const { data: active, error: activeError } = await this.supabase
         .from('__seo_content_block_versions')
-        .select('content_hash, confidence_base')
+        .select('version_id, content_hash, confidence_base')
         .eq('block_id', row.blockId)
         .eq('status', 'active')
         .maybeSingle();
+      if (activeError)
+        throw new Error(
+          `active block lookup ${row.blockId}: ${activeError.message}`,
+        );
+      if (
+        (block && (!active || active.version_id !== block.active_version_id)) ||
+        (!block && active)
+      ) {
+        throw new Error(`inconsistent active block: ${row.blockId}`);
+      }
 
       if (active?.content_hash === row.contentHash) {
         noop += 1;
@@ -563,6 +710,82 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
         }
       }
 
+      if (active && !wouldRegress) {
+        const { data: previous, error: headError } = await this.supabase
+          .from('__rag_change_events')
+          .select('rce_id')
+          .eq('rce_block_id', row.blockId)
+          .not('rce_operation', 'is', null)
+          .order('rce_id', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (headError)
+          throw new Error(
+            `block event lookup ${row.blockId}: ${headError.message}`,
+          );
+        const { data: result, error: transitionError } = await this.callRpc<
+          Array<{
+            event_id: number;
+            active_version_id: string | null;
+            replayed: boolean;
+          }>
+        >(
+          'transition_seo_projection_block',
+          {
+            p_block_id: row.blockId,
+            p_entity_id: exp.entity_id,
+            p_role: b.role,
+            p_run_id: runId,
+            p_expected_version_id: active.version_id,
+            p_expected_event_id: previous?.rce_id ?? null,
+            p_operation: 'replace',
+            p_wiki_source: exp.wiki_path,
+            p_content_hash: row.contentHash,
+            p_content: row.content,
+            p_confidence_base: row.confidenceBase,
+            p_source_type: row.sourceType,
+          },
+          { source: 'internal' },
+        );
+        const committed = result?.[0];
+        if (
+          transitionError ||
+          !Array.isArray(result) ||
+          result.length !== 1 ||
+          !committed ||
+          !Number.isSafeInteger(committed.event_id) ||
+          committed.event_id <= 0 ||
+          typeof committed.active_version_id !== 'string' ||
+          !committed.active_version_id ||
+          committed.active_version_id === active.version_id ||
+          typeof committed.replayed !== 'boolean'
+        ) {
+          throw new Error(
+            `block transition ${row.blockId}: ${transitionError?.message ?? 'commit not confirmed'}`,
+          );
+        }
+        written += 1;
+        progress.blocksWritten = written;
+        continue; // No direct-write fallback when the RPC is unavailable or rejected.
+      }
+
+      if (!block) {
+        // Creation retains its native path; INSERT refuses a concurrent identity
+        // collision instead of rewriting an existing/withdrawn block's scope.
+        const { error: createError } = await this.supabase
+          .from('__seo_content_blocks')
+          .insert({
+            block_id: row.blockId,
+            entity_id: exp.entity_id,
+            role: b.role,
+            block_kind: row.blockKind,
+          });
+        if (createError)
+          throw new Error(
+            `create block ${row.blockId}: ${createError.message}`,
+          );
+      }
+
       const { data: ins, error } = await this.supabase
         .from('__seo_content_block_versions')
         .insert({
@@ -590,6 +813,7 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
           runId,
         );
         regressed += 1;
+        progress.conflicts = regressed;
         continue; // ne flippe PAS l'active : le contenu meilleur est conservé
       }
       await this.supabase
@@ -606,8 +830,29 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
         })
         .eq('block_id', row.blockId);
       written += 1;
+      progress.blocksWritten = written;
     }
     return { written, regressed, noop };
+  }
+
+  /** Recover committed transitions even when the current writer run is a no-op. */
+  async hasPendingProjectionRefresh(): Promise<boolean> {
+    if (this.readOnly) return false;
+    const { data, error } = await this.supabase
+      .from('__rag_change_events')
+      .select('rce_id')
+      .in('rce_operation', ['replace', 'withdraw'])
+      .is('rce_projection_refreshed_at', null)
+      .limit(1);
+    if (error) {
+      throw new Error(
+        `projection pending refresh lookup failed: ${error.message}`,
+      );
+    }
+    if (!Array.isArray(data)) {
+      throw new Error('projection pending refresh lookup returned no row set');
+    }
+    return data.length > 0;
   }
 
   /**
@@ -631,12 +876,21 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
       );
       return { refreshed: false, error: error.message };
     }
+    // Le contrat RPC confirme les deux vues : une réponse partielle ou dupliquée
+    // n'est pas un succès global, même si toutes les lignes reçues valent true.
     const refreshed =
-      Array.isArray(data) && data.length > 0 && data.every((r) => r.refreshed);
-    this.log.log(
-      `refreshViews: ${data?.length ?? 0} MV rafraîchie(s) (refreshed=${refreshed}).`,
-    );
-    return { refreshed };
+      Array.isArray(data) &&
+      data.length === 2 &&
+      data.every((row) => row?.refreshed === true) &&
+      data.some((row) => row.view_name === 'mv_seo_entity_facts_current') &&
+      data.some((row) => row.view_name === 'mv_seo_content_blocks_current');
+    if (!refreshed) {
+      const message = 'incomplete projection refresh response';
+      this.log.error(`refreshViews: ${message}`);
+      return { refreshed: false, error: message };
+    }
+    this.log.log('refreshViews: facts et blocs rafraîchis.');
+    return { refreshed: true };
   }
 
   /** Ouvre un run avec les 5 versions canoniques semver déjà résolues (jamais de `...meta` opaque). */
@@ -715,14 +969,12 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
     };
   }
 
-  /** Best-effort (fail-open sur la META uniquement) : lit versions + wiki_commit du 1er export. */
-  private async readExportMeta(
-    firstPath: string | undefined,
-  ): Promise<ExportSeedMeta> {
-    if (!firstPath) return {};
+  /** Versions + wiki_commit des mêmes octets que l'archive et la projection. */
+  private readExportMeta(firstBytes: Buffer | undefined): ExportSeedMeta {
+    if (!firstBytes) return {};
     try {
       const exp = JSON.parse(
-        await fs.readFile(firstPath, 'utf-8'),
+        firstBytes.toString('utf-8'),
       ) as Partial<SeoProjectionExport>;
       return {
         projectionContractVersion: exp.projection_contract_version,
@@ -743,18 +995,18 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
   }
 
   /**
-   * Lit les octets bruts des exports + publie le snapshot tar.zst durable (délègue au builder
+   * Publie les octets capturés dans le snapshot tar.zst durable (délègue au builder
    * reproductible). Fail-loud : toute erreur d'I/O remonte → run marqué `failed` par l'appelant.
    */
   private async buildSnapshotForRun(
-    exportPaths: string[],
+    inputs: Array<{ exportPath: string; data: Buffer }>,
     runId: string,
     wikiCommitSha: string | null,
     versions: RunVersions,
   ): Promise<{ hash: string; uri: string }> {
     const entries: SnapshotEntry[] = [];
-    for (const p of exportPaths) {
-      entries.push({ name: path.basename(p), data: await fs.readFile(p) });
+    for (const input of inputs) {
+      entries.push({ name: path.basename(input.exportPath), data: input.data });
     }
     const published = await buildAndPublishSnapshot({
       objectStoreRoot: this.getObjectStoreRoot(),

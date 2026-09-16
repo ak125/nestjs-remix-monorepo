@@ -7,10 +7,7 @@ import type {
   EnrichmentResult,
 } from '../dto/buying-guide-enrich.dto';
 import type { GammeContentQualityFlag } from '../../../config/buying-guide-quality.constants';
-import {
-  FLAG_PENALTIES,
-  MIN_QUALITY_SCORE,
-} from '../../../config/buying-guide-quality.constants';
+import { FLAG_PENALTIES } from '../../../config/buying-guide-quality.constants';
 import {
   BuyingGuideRagFetcherService,
   BuyingGuideQualityGatesService,
@@ -183,6 +180,14 @@ export class BuyingGuideEnricherService {
 
     // 5. Anti-wiki gate check
     const antiWikiGate = this.qualityGates.checkAntiWikiGate(sectionResults);
+    const gatekeeper = this.qualityGates.computeGatekeeperScore({
+      sectionResults,
+      qualityFlags: uniqueFlags,
+      qualityScore,
+      antiWikiGate,
+    });
+    // One decision for preview and execution; a score never overrides a failed gate.
+    const wouldUpdate = gatekeeper.checks.passed === true;
 
     // 6. DryRun → return preview
     if (dryRun) {
@@ -206,7 +211,7 @@ export class BuyingGuideEnricherService {
         qualityScore,
         qualityFlags: uniqueFlags,
         antiWikiGate,
-        wouldUpdate: qualityScore >= MIN_QUALITY_SCORE && antiWikiGate.ok,
+        wouldUpdate,
       } satisfies EnrichDryRunResult;
     }
 
@@ -223,12 +228,6 @@ export class BuyingGuideEnricherService {
       // is worse than {score, flags: [ALL_SECTIONS_SKIPPED]} = "known RAG-incomplete".
       // The fn_invalidate_sgpg_gatekeeper trigger only fires on content changes,
       // so this metadata-only write is safe.
-      const gatekeeper = this.qualityGates.computeGatekeeperScore({
-        sectionResults,
-        qualityFlags: uniqueFlags,
-        qualityScore,
-        antiWikiGate,
-      });
       const gateOnlyPayload: Record<string, unknown> = {
         sgpg_gatekeeper_score: gatekeeper.score,
         sgpg_gatekeeper_flags: [...gatekeeper.flags, 'ALL_SECTIONS_SKIPPED'],
@@ -270,7 +269,29 @@ export class BuyingGuideEnricherService {
         updated: false,
         sectionsUpdated: 0,
         skippedSections: Object.keys(sectionResults),
+        qualityScore,
+        qualityFlags: uniqueFlags,
+        antiWikiGate,
         evidencePack: evidenceEntries,
+      };
+    }
+
+    if (!wouldUpdate) {
+      this.logger.warn(
+        `QUALITY_GATE_BLOCKED: pgId=${pgId}, score=${qualityScore}, reasons=${gatekeeper.flags.join(' | ')}`,
+      );
+      return {
+        pgId,
+        sections: {},
+        averageConfidence: 0,
+        updated: false,
+        sectionsUpdated: 0,
+        skippedSections: Object.keys(sectionResults),
+        qualityScore,
+        qualityFlags: uniqueFlags,
+        antiWikiGate,
+        evidencePack: evidenceEntries,
+        claims,
       };
     }
 
@@ -300,12 +321,6 @@ export class BuyingGuideEnricherService {
     // Persisted in the same UPDATE as content columns so the BEFORE UPDATE
     // trigger `trg_invalidate_sgpg_gatekeeper` keeps our fresh values instead
     // of nulling them out.
-    const gatekeeper = this.qualityGates.computeGatekeeperScore({
-      sectionResults,
-      qualityFlags: uniqueFlags,
-      qualityScore,
-      antiWikiGate,
-    });
     updatePayload.sgpg_gatekeeper_score = gatekeeper.score;
     updatePayload.sgpg_gatekeeper_flags = gatekeeper.flags;
     updatePayload.sgpg_gatekeeper_checks = gatekeeper.checks;
@@ -359,6 +374,9 @@ export class BuyingGuideEnricherService {
       updated: true,
       sectionsUpdated: okSections.length,
       skippedSections,
+      qualityScore,
+      qualityFlags: uniqueFlags,
+      antiWikiGate,
       evidencePack: evidenceEntries,
       claims,
     };

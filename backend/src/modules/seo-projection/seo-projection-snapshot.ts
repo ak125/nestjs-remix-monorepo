@@ -133,7 +133,12 @@ const byName = (a: { name: string }, b: { name: string }): number =>
 export function buildDeterministicTar(entries: SnapshotEntry[]): Buffer {
   const sorted = [...entries].sort(byName);
   const chunks: Buffer[] = [];
+  const names = new Set<string>();
   for (const e of sorted) {
+    if (names.has(e.name)) {
+      throw new Error(`duplicate snapshot entry: ${e.name}`);
+    }
+    names.add(e.name);
     chunks.push(ustarHeader(e.name, e.data.length));
     chunks.push(e.data);
     const p = pad512(e.data.length);

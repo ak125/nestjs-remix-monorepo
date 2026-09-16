@@ -46,6 +46,8 @@ export interface R3GuideSection {
   level?: 2 | 3; // only when sourceType=article
   title: string;
   anchor: string; // pre-computed server-side
+  /** Previous title-based fragment, preserved for existing links. */
+  legacyAnchor?: string;
   order: number;
   html: string; // pre-normalized for S4/S5
   sources: string[];

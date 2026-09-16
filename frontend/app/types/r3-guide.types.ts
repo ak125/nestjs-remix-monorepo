@@ -38,6 +38,8 @@ export interface R3GuideSection {
   level?: 2 | 3;
   title: string;
   anchor: string;
+  /** Previous title-based fragment, preserved for existing links. */
+  legacyAnchor?: string;
   order: number;
   html: string;
   sources: string[];

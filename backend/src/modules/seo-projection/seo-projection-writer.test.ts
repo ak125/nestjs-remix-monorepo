@@ -130,3 +130,71 @@ describe('mapExportBlockToDbBlock', () => {
     ).toBeNull();
   });
 });
+
+describe('identité R8 par axe moteur natif', () => {
+  const vehicleBlock = (target: string) =>
+    baseBlock({
+      role: 'R8_VEHICLE',
+      section: 'known_issues',
+      usefulness_target: target,
+    });
+
+  it.each([
+    ['engine_family:f4r', 'engine_family:k9k'],
+    ['fuel:diesel', 'fuel:essence'],
+  ])('conserve deux blocs de même section pour %s et %s', (left, right) => {
+    const a = mapExportBlockToDbBlock(
+      'vehicle:renault-scenic-ii',
+      vehicleBlock(left),
+      0,
+    );
+    const b = mapExportBlockToDbBlock(
+      'vehicle:renault-scenic-ii',
+      vehicleBlock(right),
+      1,
+    );
+    expect(a.blockId).not.toBe(b.blockId);
+    expect(a.blockKind).toBe(b.blockKind);
+    expect(a.content.usefulness_target).toBe(left);
+    expect(b.content.usefulness_target).toBe(right);
+  });
+
+  it('le même axe garde son identité après réordonnancement et correction du contenu', () => {
+    const b = vehicleBlock('engine_family:k9k');
+    const before = mapExportBlockToDbBlock('vehicle:renault-scenic-ii', b, 1);
+    const after = mapExportBlockToDbBlock(
+      'vehicle:renault-scenic-ii',
+      { ...b, content_md: 'Contenu corrigé' },
+      5,
+    );
+    expect(after.blockId).toBe(before.blockId);
+    expect(after.contentHash).not.toBe(before.contentHash);
+  });
+
+  it('préserve les identités sans axe, des autres rôles et les overrides explicites', () => {
+    expect(
+      mapExportBlockToDbBlock(
+        'vehicle:x',
+        baseBlock({ role: 'R8_VEHICLE', section: 'maintenance' }),
+        0,
+      ).blockId,
+    ).toBe('vehicle:x#R8_VEHICLE#maintenance');
+    expect(
+      mapExportBlockToDbBlock(
+        'gamme:x',
+        baseBlock({
+          section: 'Diagnostic',
+          usefulness_target: 'audience:owner',
+        }),
+        0,
+      ).blockId,
+    ).toBe('gamme:x#R3_CONSEILS#diagnostic');
+    expect(
+      mapExportBlockToDbBlock(
+        'vehicle:x',
+        { ...vehicleBlock('fuel:diesel'), block_id: 'explicit-native-id' },
+        0,
+      ).blockId,
+    ).toBe('explicit-native-id');
+  });
+});

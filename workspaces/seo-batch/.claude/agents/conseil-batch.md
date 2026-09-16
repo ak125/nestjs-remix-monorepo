@@ -40,7 +40,9 @@ polluées, **non-RAG**) restent intacts — ils ne violent pas ADR-031/046. Le s
 ## Remplacement (méthode canon)
 
 - **Successeur** : skill **`seo-content-loop`** (boucle gouvernée `RAW → WIKI → consumer`, NO-RAG).
-  La vérité contenu vient du **WIKI** (sourcée, lintée, validée humainement), **jamais** du RAG.
+  La vérité contenu vient du **WIKI** qualifié par son décideur existant, **jamais** du RAG.
+  Lire `_meta/quality-gates.md` §7 dans le WIKI courant : la décision automatique par
+  preuves remplace la validation humaine systématique ; aucun score seul ne suffit.
 
 > **Le successeur WIKI→R3 existe mais est DARK — travail owner-séquencé :**
 > `backend/src/modules/seo-projection/projection-r3.mapper.ts` existe (P2-R3), mais (a) il écrit

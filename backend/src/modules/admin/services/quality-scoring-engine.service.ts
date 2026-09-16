@@ -3,10 +3,10 @@ import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import {
   SCORING_VERSION,
   SCORING_PROFILES,
+  scoringPageTypeToRoleId,
   PRIORITY_THRESHOLDS,
   DEPTH_THRESHOLDS,
   SEO_THRESHOLDS,
-  TRUST_THRESHOLDS,
   FRESHNESS_THRESHOLDS,
   CONFIDENCE_SIGNALS,
   CONTINUOUS_SCORING,
@@ -246,7 +246,12 @@ export class QualityScoringEngineService extends SupabaseBaseService {
     row: FeatureRow,
     profile: ScoringProfile,
   ): PageScoreResult {
-    const reasons: string[] = [];
+    if (profile.dimensions.length === 0) {
+      throw new Error(`Unimplemented scoring profile: ${profile.pageType}`);
+    }
+    const reasons: string[] = [
+      'Diagnostic de structure uniquement : preuves factuelles, doublons et page rendue non verifies',
+    ];
     const nextActions: string[] = [];
     const penalties: PenaltyEntry[] = [];
 
@@ -309,9 +314,9 @@ export class QualityScoringEngineService extends SupabaseBaseService {
       status = 'BLOCKED';
     } else if (isInsufficientData) {
       status = 'INSUFFICIENT_DATA';
-    } else if (qualityScore >= 80 && confidenceScore >= 60) {
-      status = 'HEALTHY';
     } else if (qualityScore >= 60) {
+      // The RPC has no evidence tied to a rendered page revision. A structural
+      // score cannot certify editorial health, regardless of its numeric value.
       status = 'REVIEW';
     } else {
       status = 'DEGRADED';
@@ -355,11 +360,11 @@ export class QualityScoringEngineService extends SupabaseBaseService {
       case 'seo_technical':
         return this.scoreSeoTechnical(row, pageType, reasons);
       case 'trust_evidence':
-        return this.scoreTrustEvidence(row, reasons);
+        return this.scoreTrustEvidence(row, pageType, reasons);
       case 'freshness':
         return this.scoreFreshness(row, pageType, reasons);
       default:
-        return 50;
+        throw new Error(`Unsupported scoring dimension: ${dim}`);
     }
   }
 
@@ -557,17 +562,39 @@ export class QualityScoringEngineService extends SupabaseBaseService {
     }
   }
 
+  private pageSeoFeatures(row: FeatureRow, pageType: ScoringPageType) {
+    // seo_* comes from __seo_gamme (R1), ref_* from __seo_reference (R4).
+    // The RPC exposes no guide/conseil page metadata or R4 H1.
+    if (pageType === 'R1_pieces')
+      return {
+        title_length: row.seo_title_length,
+        description_length: row.seo_desc_length,
+        h1_length: row.seo_h1_length,
+        content_length: row.seo_content_length,
+      };
+    if (pageType === 'R4_reference')
+      return {
+        title_length: row.ref_title_length,
+        description_length: row.ref_meta_desc_length,
+        h1_length: null,
+        content_length: row.ref_content_html_length,
+      };
+    return null;
+  }
+
   private scoreSeoTechnical(
     row: FeatureRow,
     pageType: ScoringPageType,
     reasons: string[],
   ): number {
+    const pageSeo = this.pageSeoFeatures(row, pageType);
+    if (!pageSeo) {
+      reasons.push('Metadonnees SEO propres a cette page non disponibles');
+      return 0;
+    }
     const t = SEO_THRESHOLDS;
     let score = 0;
-
-    // Title — use ref_title for R4, seo_title for others
-    const titleLen =
-      pageType === 'R4_reference' ? row.ref_title_length : row.seo_title_length;
+    const titleLen = pageSeo.title_length;
     if (titleLen >= t.title_min && titleLen <= t.title_max) score += 25;
     else if (titleLen > 0) {
       score += 5; // v2.1: partial credit reduit de 10 → 5
@@ -577,10 +604,7 @@ export class QualityScoringEngineService extends SupabaseBaseService {
     } else reasons.push('Titre SEO absent');
 
     // Meta description
-    const descLen =
-      pageType === 'R4_reference'
-        ? row.ref_meta_desc_length
-        : row.seo_desc_length;
+    const descLen = pageSeo.description_length;
     if (descLen >= t.desc_min && descLen <= t.desc_max) score += 25;
     else if (descLen > 0) {
       score += 5; // v2.1: partial credit reduit de 10 → 5
@@ -588,17 +612,16 @@ export class QualityScoringEngineService extends SupabaseBaseService {
     } else reasons.push('Meta description absente');
 
     // H1
-    const h1Len = row.seo_h1_length;
-    if (h1Len >= t.h1_min) score += 15;
-    else reasons.push('H1 absent ou trop court');
+    const h1Len = pageSeo.h1_length;
+    if (h1Len !== null && h1Len >= t.h1_min) score += 15;
+    else
+      reasons.push(
+        h1Len === null
+          ? 'H1 de cette page non verifie'
+          : 'H1 absent ou trop court',
+      );
 
-    // Content length (for R4 use content_html, for others use seo_content)
-    // v2.2: contenu RÉEL de la page (sg_content). Absorbe les 15 pts de l'ex-signal
-    // RAG (retiré : RAG = chatbot only, ADR-031/046). 25+25+15+35 = 100.
-    const contentLen =
-      pageType === 'R4_reference'
-        ? row.ref_content_html_length
-        : row.seo_content_length;
+    const contentLen = pageSeo.content_length;
     if (contentLen >= t.content_min) score += 35;
     else if (contentLen > 0) {
       score += 14;
@@ -610,43 +633,19 @@ export class QualityScoringEngineService extends SupabaseBaseService {
     return decimalClamp(score);
   }
 
-  private scoreTrustEvidence(row: FeatureRow, reasons: string[]): number {
-    let score = 0;
-
-    // Source verified (guide-specific but important for all)
-    // v2.2: +10 pts (absorbe une partie de l'ex-signal "RAG truth" retiré).
-    if (row.guide_source_verified) score += 40;
-    else reasons.push('Source non verifiee');
-
-    // Pipeline quality — v2.2: +10 pts (absorbe le reste de l'ex-signal RAG).
-    const pq = row.pipeline_quality_score;
-    if (pq >= TRUST_THRESHOLDS.pipeline_quality_good) score += 35;
-    else if (pq >= TRUST_THRESHOLDS.pipeline_quality_min) score += 25;
-    else if (pq > 0) {
-      score += 10;
-      reasons.push(`Pipeline quality faible (${pq})`);
+  private scoreTrustEvidence(
+    row: FeatureRow,
+    pageType: ScoringPageType,
+    reasons: string[],
+  ): number {
+    // The RPC's pipeline_* fields come from __rag_content_refresh_log, selected
+    // by gamme, without a page role or content revision. They are not evidence
+    // for this page. Neither a canonical URL nor an empty gate array is a source.
+    if (pageType === 'R3_guide' && row.guide_source_verified === true) {
+      return 40; // Guide metadata only; no claim-level verification is available.
     }
-
-    // (ex-signal "RAG truth level" RETIRÉ : RAG = chatbot only, ADR-031/046.
-    //  La confiance s'ancre sur la provenance vérifiée + le pipeline réels.)
-    // Max inchangé : 40 + 35 + 15 = 90 (+10 canonical R4) = identique à l'ex 30+25+20+15.
-
-    // Hard gate results (pipeline)
-    const hgr = row.pipeline_hard_gate_results;
-    if (hgr && Array.isArray(hgr)) {
-      const violations = (hgr as Array<{ verdict?: string }>).filter(
-        (g) => g.verdict === 'FAIL',
-      );
-      if (violations.length === 0) score += 15;
-      else reasons.push(`${violations.length} hard gate violation(s)`);
-    } else {
-      score += 5; // v2.1: no data = low trust (no pipeline run yet)
-    }
-
-    // Canonical URL (for R4)
-    if (row.ref_has_canonical) score += 10;
-
-    return decimalClamp(score);
+    reasons.push('Provenance verifiee pour cette page non disponible');
+    return 0;
   }
 
   private scoreFreshness(
@@ -661,27 +660,30 @@ export class QualityScoringEngineService extends SupabaseBaseService {
     let dateStr: string | null = null;
     switch (pageType) {
       case 'R3_guide':
-        dateStr = row.guide_updated_at || row.pipeline_completed_at;
+        dateStr = row.guide_updated_at;
         break;
       case 'R4_reference':
-        dateStr = row.ref_updated_at || row.pipeline_completed_at;
+        dateStr = row.ref_updated_at;
         break;
       case 'R3_conseils':
-        dateStr = row.pipeline_completed_at || row.guide_updated_at;
+        dateStr = null;
         break;
       case 'R1_pieces':
-        dateStr = row.pipeline_completed_at;
+        dateStr = null;
         break;
     }
 
     if (!dateStr) {
       reasons.push('Date de mise a jour inconnue');
-      return 30; // unknown = partial score
+      return 0; // No credit for missing page-specific evidence.
     }
 
-    const daysSince = Math.floor(
-      (now - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24),
-    );
+    const timestamp = new Date(dateStr).getTime();
+    if (!Number.isFinite(timestamp) || timestamp > now) {
+      reasons.push('Date de mise a jour invalide ou future');
+      return 0;
+    }
+    const daysSince = Math.floor((now - timestamp) / 86400000);
 
     if (daysSince <= thresholds.good) return 100;
     if (daysSince <= thresholds.acceptable) {
@@ -708,7 +710,7 @@ export class QualityScoringEngineService extends SupabaseBaseService {
   private evaluateHardGate(check: string, row: FeatureRow): boolean {
     switch (check) {
       case 'checkGuideNotDraft':
-        return !row.guide_is_draft;
+        return row.guide_is_draft === false;
       case 'checkGuideHasContent':
         return (
           row.guide_how_to_choose_length > 0 ||
@@ -720,7 +722,7 @@ export class QualityScoringEngineService extends SupabaseBaseService {
       case 'checkConseilHasSections':
         return row.conseil_total_sections > 0;
       default:
-        return true;
+        throw new Error(`Unsupported hard gate: ${check}`);
     }
   }
 
@@ -784,7 +786,7 @@ export class QualityScoringEngineService extends SupabaseBaseService {
         return generic > 0 && action === 0;
       }
       default:
-        return false;
+        throw new Error(`Unsupported penalty: ${check}`);
     }
   }
 
@@ -799,18 +801,12 @@ export class QualityScoringEngineService extends SupabaseBaseService {
     for (const signal of CONFIDENCE_SIGNALS) {
       switch (signal.id) {
         case 'source_verified':
-          if (row.guide_source_verified) score += signal.weight;
+          if (_pageType === 'R3_guide' && row.guide_source_verified === true)
+            score += signal.weight;
           break;
         case 'pipeline_recent':
-          if (row.pipeline_completed_at) {
-            const days = Math.floor(
-              (Date.now() - new Date(row.pipeline_completed_at).getTime()) /
-                86400000,
-            );
-            if (days <= 30) score += signal.weight;
-            else if (days <= 90) score += signal.weight * 0.5;
-            else if (days <= 180) score += signal.weight * 0.2;
-          }
+          // Reserved weight, deliberately not redistributed: the legacy RAG
+          // timestamp cannot attest the freshness of this page's evidence.
           break;
         // v2.2: cases 'rag_available' + 'truth_level_high' RETIRÉES (RAG = chatbot only).
         case 'data_completeness': {
@@ -839,12 +835,12 @@ export class QualityScoringEngineService extends SupabaseBaseService {
       if (val !== defaultVal && val !== null && val !== undefined) present++;
     };
 
-    // Common features
-    check(row.seo_title_length, 0);
-    check(row.seo_desc_length, 0);
-    check(row.seo_h1_length, 0);
-    // v2.2: rag_content_length retiré des features de complétude (RAG = chatbot only).
-    check(row.pipeline_quality_score, 0);
+    const pageSeo = this.pageSeoFeatures(row, pageType);
+    if (pageSeo) {
+      check(pageSeo.title_length, 0);
+      check(pageSeo.description_length, 0);
+      if (pageSeo.h1_length !== null) check(pageSeo.h1_length, 0);
+    }
 
     switch (pageType) {
       case 'R3_guide':
@@ -889,45 +885,68 @@ export class QualityScoringEngineService extends SupabaseBaseService {
     pageType: ScoringPageType,
     _reasons: string[],
   ): string[] {
-    const actions: string[] = [];
+    const actions: string[] = [
+      'Relier les affirmations aux sources et verifier la version rendue, le role et les doublons avant validation editoriale',
+    ];
 
     // Priority actions based on page type and issues
     if (pageType === 'R3_guide') {
       if (row.guide_how_to_choose_length < 200)
-        actions.push('Rediger section "comment choisir" (>200 chars)');
+        actions.push(
+          'Expliquer les criteres de choix utiles et leurs limites avec des faits sources',
+        );
       if (!row.guide_source_verified)
         actions.push('Verifier et documenter la source');
       if (row.guide_faq_count < 3)
-        actions.push('Ajouter FAQ (min 3 questions)');
+        actions.push(
+          'Verifier les questions de choix restant sans reponse ; ajouter seulement des reponses utiles et sourcees',
+        );
       if (row.guide_anti_mistakes_count < 3)
-        actions.push('Ajouter erreurs a eviter (min 3)');
+        actions.push(
+          'Documenter les erreurs de choix pertinentes et leur consequence verifiable',
+        );
     }
 
     if (pageType === 'R4_reference') {
       if (row.ref_definition_length < 200)
-        actions.push('Enrichir la definition (>200 chars)');
-      if (!row.ref_has_schema_json) actions.push('Ajouter schema.org JSON-LD');
+        actions.push(
+          'Clarifier la definition, le role et les limites a partir de sources identifiees',
+        );
+      if (!row.ref_has_schema_json)
+        actions.push(
+          'Verifier le balisage applicable et sa concordance avec le contenu visible',
+        );
       if (row.ref_confusions_count === 0)
         actions.push('Documenter les confusions courantes');
     }
 
     if (pageType === 'R3_conseils') {
       if (!row.conseil_has_s1) actions.push('Creer section S1 (introduction)');
-      if (!row.conseil_has_s2) actions.push('Creer section S2 (symptomes)');
+      if (!row.conseil_has_s2)
+        actions.push(
+          'Expliquer quand cette intervention est indiquee et renvoyer au diagnostic R5 si necessaire',
+        );
       if (row.conseil_rich_sections < 3)
-        actions.push('Enrichir les sections (>300 chars chacune)');
+        actions.push(
+          'Verifier outils, etapes, precautions et controle final ; completer les faits manquants',
+        );
     }
 
-    // SEO actions (common)
-    if (row.seo_title_length === 0 && row.ref_title_length === 0)
-      actions.push('Ajouter un titre SEO');
-    if (row.seo_desc_length === 0 && row.ref_meta_desc_length === 0)
-      actions.push('Ajouter une meta description');
-    // v2.2: action ré-ancrée sur le contenu RÉEL de la page (source RAW→WIKI), plus le RAG.
-    if (row.seo_content_length < 800)
+    const pageSeo = this.pageSeoFeatures(row, pageType);
+    if (!pageSeo) {
       actions.push(
-        'Enrichir le contenu éditorial de la page (source RAW→WIKI)',
+        'Examiner le titre, la description et le H1 de la page rendue',
       );
+    } else {
+      if (pageSeo.title_length === 0)
+        actions.push('Ajouter un titre SEO pertinent pour cette page');
+      if (pageSeo.description_length === 0)
+        actions.push('Decrire precisement la reponse apportee par cette page');
+      if (pageSeo.content_length === 0)
+        actions.push(
+          'Verifier le contenu visible et les questions sans reponse avant collecte RAW→WIKI',
+        );
+    }
 
     return actions;
   }
@@ -937,12 +956,21 @@ export class QualityScoringEngineService extends SupabaseBaseService {
     pageType: ScoringPageType,
   ): Record<string, unknown> {
     const base: Record<string, unknown> = {
-      seo_title_length: row.seo_title_length,
-      seo_desc_length: row.seo_desc_length,
-      seo_h1_length: row.seo_h1_length,
-      seo_content_length: row.seo_content_length,
-      rag_content_length: row.rag_content_length,
-      pipeline_quality_score: row.pipeline_quality_score,
+      entity: {
+        pg_id: row.pg_id,
+        pg_alias: row.pg_alias,
+        role_id: scoringPageTypeToRoleId(pageType),
+      },
+      page_seo_features: this.pageSeoFeatures(row, pageType),
+      evaluation_scope: 'page_structure_proxy',
+      publication_assessment: 'NOT_EVALUATED',
+      evidence_gaps: [
+        'rendered_page_revision',
+        'claim_source_links',
+        'role_contract_validation',
+        'duplicate_content_validation',
+      ],
+      legacy_pipeline_evidence_used: false,
     };
 
     switch (pageType) {

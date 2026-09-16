@@ -7,6 +7,9 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
+import { normalizeSeoText } from '@repo/seo-roles';
+import { R6QualityTierSchema } from '../interfaces/r6-guide.interfaces';
+import { isLegacyRagTier } from '../../../config/source-provenance.constants';
 import { FeatureFlagsService } from '../../../config/feature-flags.service';
 import { SupabaseIndexationService } from '../../search/services/supabase-indexation.service';
 import { BlogArticleTransformService } from './blog-article-transform.service';
@@ -264,34 +267,51 @@ export class R6GuideService {
         ),
       }));
 
-    // Quality tiers from selection_criteria
-    // V2 agent format: {tiers:[{tier_id, label, description, available, ...}], block_type, intro_text}
-    const rawCriteria = row.sgpg_selection_criteria as
-      | { tiers: R6QualityTier[]; intro_text?: string }
-      | R6QualityTier[]
-      | null;
-    const rawTiers: R6QualityTier[] = Array.isArray(rawCriteria)
-      ? rawCriteria
-      : rawCriteria?.tiers || [];
-    // Sanitize: filter out RAG chunks and clean markdown artifacts from labels
-    const qualityTiers: R6QualityTier[] = rawTiers
-      .filter((t) => {
-        const label = t.label || '';
-        const guidance =
-          ((t as unknown as Record<string, unknown>).guidance as string) || '';
-        return !this.isRagChunk(label) && !this.isRagChunk(guidance);
-      })
-      .map((t) => {
-        const cleaned = { ...t };
-        if (cleaned.label) cleaned.label = this.sanitizeRagLeaks(cleaned.label);
-        const rec = cleaned as unknown as Record<string, unknown>;
-        if (rec.guidance) {
-          rec.guidance = this.sanitizeRagLeaks(rec.guidance as string);
-        }
-        if (cleaned.description)
-          cleaned.description = this.sanitizeRagLeaks(cleaned.description);
-        return cleaned;
+    // Validate V2 comparison data instead of interpreting V1 criteria as tiers.
+    // Both existing V2 containers are supported. Invalid source data stays in DB;
+    // the section is explicitly unavailable and flagged for editorial review.
+    const rawCriteria = row.sgpg_selection_criteria;
+    const rawTiers =
+      rawCriteria !== null &&
+      typeof rawCriteria === 'object' &&
+      !Array.isArray(rawCriteria) &&
+      'tiers' in rawCriteria
+        ? rawCriteria.tiers
+        : rawCriteria;
+    const parsedTiers = R6QualityTierSchema.array().min(1).safeParse(rawTiers);
+    let qualityTiers: R6QualityTier[] = [];
+    let qualityTiersReviewRequired = !parsedTiers.success;
+    if (parsedTiers.success) {
+      const ids = new Set<string>();
+      const labels = new Set<string>();
+      const cleaned = parsedTiers.data.map((tier) => ({
+        ...tier,
+        label: this.sanitizeRagLeaks(tier.label),
+        description: this.sanitizeRagLeaks(tier.description),
+      }));
+      qualityTiersReviewRequired = cleaned.some((tier, index) => {
+        const label = normalizeSeoText(tier.label);
+        const id = normalizeSeoText(tier.tier_id);
+        const source = parsedTiers.data[index];
+        const invalid =
+          !label ||
+          !id ||
+          !normalizeSeoText(tier.description) ||
+          ids.has(id) ||
+          labels.has(label) ||
+          this.isRagChunk(source.label) ||
+          this.isRagChunk(source.description);
+        ids.add(id);
+        labels.add(label);
+        return invalid;
       });
+      if (!qualityTiersReviewRequired) qualityTiers = cleaned;
+    }
+    if (qualityTiersReviewRequired) {
+      this.logger.warn(
+        `R6_QUALITY_TIERS_REVIEW_REQUIRED: pg_alias=${pg_alias}, field=sgpg_selection_criteria`,
+      );
+    }
 
     // Compatibility axes from new JSONB column — sanitize RAG leaks
     const rawAxesField = row.sgpg_compatibility_axes as
@@ -423,6 +443,7 @@ export class R6GuideService {
       heroDecision,
       summaryPickFast,
       qualityTiers,
+      qualityTiersReviewRequired,
       compatibilityAxes,
       priceGuide,
       brandsGuide,
@@ -437,7 +458,9 @@ export class R6GuideService {
             ref: row.sgpg_source_ref as string | undefined,
           })
         : null,
-      sourceVerified: (row.sgpg_source_verified as boolean) ?? false,
+      sourceVerified:
+        row.sgpg_source_verified === true &&
+        !isLegacyRagTier(row.sgpg_source_type as string | null),
     };
   }
 
@@ -523,7 +546,9 @@ export class R6GuideService {
             ref: row.sgpg_source_ref as string | undefined,
           })
         : null,
-      sourceVerified: (row.sgpg_source_verified as boolean) ?? false,
+      sourceVerified:
+        row.sgpg_source_verified === true &&
+        !isLegacyRagTier(row.sgpg_source_type as string | null),
     };
   }
 

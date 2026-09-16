@@ -1,4 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { normalizeSeoText } from '@repo/seo-roles';
+import { SelectionCriterionSchema } from '../../dto/buying-guide-enrich.dto';
 import {
   type GammeContentQualityFlag,
   MIN_NARRATIVE_LENGTH,
@@ -199,22 +201,42 @@ export class BuyingGuideQualityGatesService {
       reasons.push('GENERIC_WITHOUT_ACTION');
     }
 
-    // D1: Check guidance is not a mere copy of label in selection_criteria
-    if (
-      criteria?.ok &&
-      Array.isArray(criteria.content) &&
-      criteria.content.length > 0
-    ) {
-      const guidanceCopies = (
-        criteria.content as Array<{ label?: string; guidance?: string }>
-      ).filter(
-        (c) =>
-          c.guidance?.trim() === c.label?.trim() + '.' ||
-          c.guidance?.trim() === c.label?.trim(),
-      );
-      if (guidanceCopies.length > criteria.content.length / 2) {
+    // D1: Validate the existing criterion contract before comparing content.
+    // A single duplicate or empty explanation requires editorial review; counting
+    // repeated criteria must never make an incomplete guide eligible to write.
+    if (criteria?.ok && Array.isArray(criteria.content)) {
+      const labels = new Set<string>();
+      const invalidRows: number[] = [];
+      const copiedRows: number[] = [];
+      const duplicateRows: number[] = [];
+      criteria.content.forEach((item: unknown, index: number) => {
+        const parsed = SelectionCriterionSchema.safeParse(item);
+        if (!parsed.success) {
+          invalidRows.push(index + 1);
+          return;
+        }
+        const { key, label, guidance } = parsed.data;
+        const normalizedLabel = normalizeSeoText(label);
+        const normalizedGuidance = normalizeSeoText(guidance);
+        if (!key.trim() || !normalizedLabel || !normalizedGuidance) {
+          invalidRows.push(index + 1);
+          return;
+        }
+        if (normalizedLabel === normalizedGuidance) copiedRows.push(index + 1);
+        if (labels.has(normalizedLabel)) duplicateRows.push(index + 1);
+        labels.add(normalizedLabel);
+      });
+      if (invalidRows.length) {
         reasons.push(
-          `GUIDANCE_COPIES_LABEL (${guidanceCopies.length}/${criteria.content.length} criteria have guidance identical to label)`,
+          `INVALID_SELECTION_CRITERIA (rows: ${invalidRows.join(', ')})`,
+        );
+      }
+      if (copiedRows.length) {
+        reasons.push(`GUIDANCE_COPIES_LABEL (rows: ${copiedRows.join(', ')})`);
+      }
+      if (duplicateRows.length) {
+        reasons.push(
+          `DUPLICATE_SELECTION_CRITERIA (rows: ${duplicateRows.join(', ')})`,
         );
       }
     }

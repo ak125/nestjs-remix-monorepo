@@ -11,7 +11,7 @@
 // Les poids des ex-signaux RAG (contenu + truth) sont ré-ancrés sur le contenu
 // RÉEL de la page (sg_content, provenance vérifiée, complétude). Décalage de score
 // attendu = correction (dé-pollution), pas régression.
-export const SCORING_VERSION = 'v2.2';
+export const SCORING_VERSION = 'v2.3';
 
 // ── Types ──
 
@@ -431,7 +431,8 @@ export interface ConfidenceSignal {
 
 // v2.2: signaux RAG (rag_available, truth_level_high) RETIRÉS — RAG = chatbot only
 // (ADR-031/046). Leurs 35 pts redistribués sur les signaux RÉELS (provenance + complétude).
-// Somme = 100 (40 + 25 + 35).
+// v2.3: poids nominal = 100 ; 25 points pipeline reserves et non attribues.
+// Ne pas redistribuer une preuve absente sur les autres signaux.
 export const CONFIDENCE_SIGNALS: ConfidenceSignal[] = [
   {
     id: 'source_verified',
@@ -441,7 +442,8 @@ export const CONFIDENCE_SIGNALS: ConfidenceSignal[] = [
   {
     id: 'pipeline_recent',
     weight: 25,
-    description: 'Pipeline execute < 30 jours',
+    description:
+      'Poids reserve, non attribue : pipeline historique non lie a la page',
   },
   {
     id: 'data_completeness',

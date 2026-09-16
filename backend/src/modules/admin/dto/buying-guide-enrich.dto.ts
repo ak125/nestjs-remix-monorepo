@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { GammeContentQualityFlag } from '../../../config/buying-guide-quality.constants';
 import type {
   EvidenceEntry,
   ClaimEntry,
@@ -68,6 +69,10 @@ export interface EnrichmentResult {
   updated: boolean;
   sectionsUpdated: number;
   skippedSections: string[];
+  /** Diagnostic score, not an approval of factual accuracy or publication. */
+  qualityScore?: number;
+  qualityFlags?: GammeContentQualityFlag[];
+  antiWikiGate?: { ok: boolean; reasons: string[] };
   evidencePack?: EvidenceEntry[];
   claims?: ClaimEntry[];
 }

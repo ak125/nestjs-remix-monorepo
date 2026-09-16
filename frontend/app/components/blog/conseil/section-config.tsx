@@ -37,6 +37,7 @@ export interface GammeConseil {
   sources: string[];
   /** Pre-computed anchor slug from server (single source of truth for TOC) */
   anchor?: string;
+  legacyAnchor?: string;
   /** Image approuvée pour cette section (pipeline R3 Image Prompts) */
   image?: GammeConseilImage | null;
 }

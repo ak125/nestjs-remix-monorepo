@@ -255,7 +255,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         .join("\n\n"),
       faq: [],
       sourceType: "manual",
-      sourceVerified: true,
+      sourceVerified: false,
     };
 
     const r4Reference = await fetchR4Reference(guide.page.pg_id, request);
@@ -288,7 +288,10 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
 
 // ── Meta (noindex if no data) ───────────────────────────
 
-export const meta: MetaFunction<typeof loader> = ({ loaderData: data, location }) => {
+export const meta: MetaFunction<typeof loader> = ({
+  loaderData: data,
+  location,
+}) => {
   if (!data) {
     return [
       { title: "Guide non trouve" },
@@ -377,7 +380,10 @@ function buildTocSections(guide: R6GuidePayload) {
         anchor: "quiz-assistant",
       });
     }
-    if (guide.qualityTiers && guide.qualityTiers.length > 0) {
+    if (
+      guide.qualityTiersReviewRequired ||
+      (guide.qualityTiers && guide.qualityTiers.length > 0)
+    ) {
       sections.push({
         level: 2,
         title: "Niveaux de qualite",
@@ -724,8 +730,13 @@ function V2Sections({
       )}
 
       {/* 3. Quality Tiers */}
-      {guide.qualityTiers && guide.qualityTiers.length > 0 && (
-        <R6QualityTiersTable tiers={guide.qualityTiers} gammeName={gn} />
+      {(guide.qualityTiersReviewRequired ||
+        (guide.qualityTiers && guide.qualityTiers.length > 0)) && (
+        <R6QualityTiersTable
+          tiers={guide.qualityTiers || []}
+          gammeName={gn}
+          reviewRequired={guide.qualityTiersReviewRequired !== false}
+        />
       )}
       {ms?.quality_tiers && (
         <R6MediaSlotRenderer slots={ms.quality_tiers} gammeName={gn} />
