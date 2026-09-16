@@ -11244,7 +11244,7 @@
         "backend/src/modules/search/services/supabase-indexation.service.ts"
       ],
       "kind": "service",
-      "loc": 635,
+      "loc": 643,
       "owner": "__unassigned__",
       "path": "backend/src/modules/blog/services/blog-statistics.service.ts",
       "risk": "low",
@@ -53995,7 +53995,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 409,
+      "loc": 413,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/blog-pieces-auto._index.tsx",
       "risk": "low",
