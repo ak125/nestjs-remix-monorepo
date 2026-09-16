@@ -572,3 +572,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/cwv-trend-detector-vacancy-signal`
 - **Décision** : fix(seo-cwv): une garde qui n'a rien regardé ne doit plus se taire
 - **Sortie** : PR aucune | commits f3beecf1c
+
+## 2026-09-16 — fix/cwv-trend-detector-vacancy-signal (auto)
+
+- **Branche** : `fix/cwv-trend-detector-vacancy-signal`
+- **Décision** : chore(registry): resync L1+L3 projections (+3 other commits)
+- **Sortie** : PR #1498 | commits e8344865b 3475070af 2b464b8bc f3beecf1c
