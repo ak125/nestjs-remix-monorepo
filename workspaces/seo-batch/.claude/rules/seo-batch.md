@@ -4,9 +4,13 @@ S'applique aux runs depuis `workspaces/seo-batch/`. Complète (sans les remplace
 
 ## Sources de vérité
 
-- **RAG knowledge** : `/opt/automecanik/rag/knowledge/` (gammes `.md`, vehicles, constructeurs). **Ne jamais seed du contenu métier depuis le LLM** — incident breezy-eagle 2026-04-18, 350 entrées rollback.
+- **Contenu éditorial** : WIKI validé et exports/projections autorisés, selon le contrat racine (ADR-031/046/059). RAW conserve les sources ; RAG consomme pour le chatbot et ne produit pas le contenu SEO. Ne jamais inventer de contenu métier depuis le LLM.
 - **DB Supabase** via MCP (`mcp__supabase__execute_sql` ou `mcp__claude_ai_Supabase__execute_sql`). Tables : `__seo_*`, `__rag_*`, `__pg_*`, `__diag_*`, `__blog_*`. Pas de DROP/TRUNCATE sans validation humaine.
 - **Vault gouvernance** : `/opt/automecanik/governance-vault/ledger/knowledge/` pour les recettes canon (V-Level, KW pipeline, gamme audit).
+
+Pour conduire la boucle, lire `.claude/skills/seo-content-loop/SKILL.md` depuis la racine
+du workspace et revérifier ses références courantes avant toute validation. Les statuts
+KW historiques ci-dessous ne constituent pas une autorisation de production depuis RAG.
 
 ## Pièges DB connus
 
@@ -26,10 +30,10 @@ S'applique aux runs depuis `workspaces/seo-batch/`. Complète (sans les remplace
 ## Anti-patterns SEO
 
 - **Pas de scrape "parts-feed"** (catalogue fournisseur) sans recipe canon. Termes neutres uniquement dans nouveaux fichiers (jamais "tecdoc" dans contenus créés ici).
-- **Pas de commit de contenu seedé** — toute génération R1-R8 doit s'appuyer sur RAG `.md` + KW DB, pas sur l'imagination du LLM.
+- **Pas de commit de contenu inventé** — toute génération s'appuie sur le WIKI validé et les données métier autorisées pour son rôle. Les KW DB renseignent la demande ; ils ne prouvent pas une affirmation et ne constituent pas automatiquement un terme produit.
 - **Pas de trigger sitemap** (`POST /api/sitemap/v10/generate-all`) sans validation explicite. Incident 2026-04-18.
 - **R7 vs R8** : R7 = hub marque transversal. R8 = page véhicule (modele/motorisation/type_id). Ne **jamais** dériver R8 vers une page gamme.
 
 ## Contrat de sortie agents
 
-`./agent-exit-contract.md` — règle non-négociable applicable à tous les agents R*.
+`.claude/canon-mirrors/agent-exit-contract.md` depuis la racine du workspace — contrat de sortie applicable à tous les agents R*.

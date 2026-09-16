@@ -1,6 +1,6 @@
 # CLAUDE.md — Workspace SEO Batch (AutoMecanik)
 
-> Workspace dédié aux campagnes SEO : keyword planning R0-R8, content generation, RAG enrichment, audits gammes et véhicules.
+> Workspace dédié aux campagnes SEO : keyword planning R0-R8, production et enrichissement depuis le WIKI validé, audits gammes et véhicules.
 
 ## Quand utiliser ce workspace
 
@@ -20,14 +20,14 @@ Pour le dev quotidien (backend NestJS, frontend Remix, hooks, refactor, CI, gove
 Les règles globales suivantes s'appliquent même en SEO workspace — voir `/opt/automecanik/app/CLAUDE.md` pour le détail :
 
 - **Source de vérité gouvernance** : `/opt/automecanik/governance-vault/` (jamais écrire dans `app/.local/`)
-- **Vérifier l'existant AVANT d'inventer** : grep racine, lire `.claude/knowledge/`, `MEMORY.md`
-- **3-VPS Architecture** : DEV `46.224.118.55` = SoT, PROD `49.12.233.2` = read-only mirror, AI-COS `178.104.1.118` = agents IA
+- **Vérifier l'existant AVANT d'inventer** : suivre l'ordre registry-first du contrat racine, puis les connaissances du domaine ; recherche ciblée après cartographie.
+- **Infrastructure** : consulter `.claude/rules/deployment.md` à la racine avant toute action infra ; ne pas dupliquer ici les cibles.
 - **Démarrage de session** : lire `/opt/automecanik/app/log.md` pour le contexte récent
 
 ## Règles spécifiques SEO
 
 Voir `.claude/rules/seo-batch.md` pour :
-- Sources RAG (`/opt/automecanik/rag/knowledge/`) — jamais seed depuis LLM
+- Sources éditoriales : RAW → WIKI validé → exports/projection ; RAG réservé au chatbot, jamais de contenu métier inventé.
 - Pièges DB connus (`gamme_aggregates`, V-Level v5.0, vehicles)
 - Anti-patterns (parts-feed re-scrape, naming "tecdoc")
 
