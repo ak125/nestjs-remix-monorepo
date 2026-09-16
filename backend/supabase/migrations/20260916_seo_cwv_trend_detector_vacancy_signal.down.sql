@@ -7,19 +7,26 @@
 -- lignes 298-403), c'est-à-dire SANS le signal de vacance.
 --
 -- EFFET DU ROLLBACK — à lire avant de l'appliquer : la fonction redevient
--- incapable de distinguer « 0 régression trouvée sur N clés comparées » de
--- « 0 clé comparée, donc rien regardé ». C'est précisément le défaut que
+-- incapable de distinguer « 0 régression trouvée sur N clés jugées » de
+-- « aucune clé jugée, donc rien regardé ». C'est précisément le défaut que
 -- 20260916 corrige. Ne rouler en arrière que si le signal lui-même pose
--- problème (bruit, coût), jamais pour « faire taire » la vacance : une garde
+-- problème (bruit, coût), jamais pour « faire taire » la cécité : une garde
 -- muette pendant une fenêtre d'évaluation est le risque, pas le symptôme.
 --
--- Les événements anomaly_detected / alert_kind='cwv_trend_detector_vacant'
--- déjà écrits dans __seo_event_log ne sont PAS supprimés : ce sont des faits
--- observés, pas de la configuration. Les résoudre à la main si besoin
---   (UPDATE public.__seo_event_log SET resolved_at = now()
---     WHERE event_type = 'anomaly_detected'
---       AND payload->>'alert_kind' = 'cwv_trend_detector_vacant'
---       AND resolved_at IS NULL;).
+-- SECOND EFFET, moins évident : le rollback retire aussi l'AUTO-RÉSOLUTION.
+-- Tout événement alert_kind='cwv_trend_detector_blind_keys' encore OUVERT le
+-- restera indéfiniment, puisque plus rien ne pose resolved_at — et un gate
+-- « 0 alerte ouverte » échouerait alors à vie. Avant de rouler en arrière,
+-- refermer les événements ouverts à la main :
+--   UPDATE public.__seo_event_log
+--      SET resolved_at = now(),
+--          payload = payload || jsonb_build_object('resolution_kind', 'manual_after_rollback')
+--    WHERE event_type = 'anomaly_detected'
+--      AND payload->>'alert_kind' = 'cwv_trend_detector_blind_keys'
+--      AND resolved_at IS NULL;
+--
+-- Les événements déjà écrits ne sont PAS supprimés par ce rollback : ce sont
+-- des faits observés, pas de la configuration.
 --
 -- Aucune colonne, aucun type, aucun job pg_cron n'a été créé par 20260916 :
 -- il n'y a rien d'autre à défaire. Les droits EXECUTE (service_role) sont

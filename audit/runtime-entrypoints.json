@@ -2737,6 +2737,8 @@
       "backend/supabase/migrations/20260911_seo_gsc_multilevel_page_totals.sql",
       "backend/supabase/migrations/20260911_seo_gsc_multilevel_page_totals_rpc_low_ctr_v4.down.sql",
       "backend/supabase/migrations/20260911_seo_gsc_multilevel_page_totals_rpc_low_ctr_v4.sql",
+      "backend/supabase/migrations/20260916_seo_cwv_trend_detector_vacancy_signal.down.sql",
+      "backend/supabase/migrations/20260916_seo_cwv_trend_detector_vacancy_signal.sql",
       "backend/supabase/migrations/README.md"
     ],
     "ci_workflows": [
@@ -2907,7 +2909,7 @@
       "tests/registry/rpc-parser.test.ts"
     ]
   },
-  "runtime_files_count": 1517,
+  "runtime_files_count": 1519,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4100,6 +4102,8 @@
     "backend/supabase/migrations/20260911_seo_gsc_multilevel_page_totals.sql",
     "backend/supabase/migrations/20260911_seo_gsc_multilevel_page_totals_rpc_low_ctr_v4.down.sql",
     "backend/supabase/migrations/20260911_seo_gsc_multilevel_page_totals_rpc_low_ctr_v4.sql",
+    "backend/supabase/migrations/20260916_seo_cwv_trend_detector_vacancy_signal.down.sql",
+    "backend/supabase/migrations/20260916_seo_cwv_trend_detector_vacancy_signal.sql",
     "backend/supabase/migrations/README.md",
     "backend/tests/unit/route-wildcard-middleware.test.ts",
     "docker/lighthouse/Dockerfile",

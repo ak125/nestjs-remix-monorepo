@@ -16,7 +16,7 @@
     "candidate_orphan_rpc": 199,
     "dynamic_from_callsites": 898,
     "dynamic_rpc_callsites": 1,
-    "migrations_scanned": 353,
+    "migrations_scanned": 355,
     "backend_files_scanned": 1396
   },
   "tables": {
@@ -3604,7 +3604,9 @@
       "defined_in_migrations": [
         "20260529_seo_cwv_dashboard_rpcs.sql",
         "20260911_seo_cwv_daily_rum_exact_p75.down.sql",
-        "20260911_seo_cwv_daily_rum_exact_p75.sql"
+        "20260911_seo_cwv_daily_rum_exact_p75.sql",
+        "20260916_seo_cwv_trend_detector_vacancy_signal.down.sql",
+        "20260916_seo_cwv_trend_detector_vacancy_signal.sql"
       ],
       "is_trigger_function": false
     },
@@ -8212,7 +8214,9 @@
       "defined_in_migrations": [
         "20260529_seo_cwv_dashboard_rpcs.sql",
         "20260911_seo_cwv_daily_rum_exact_p75.down.sql",
-        "20260911_seo_cwv_daily_rum_exact_p75.sql"
+        "20260911_seo_cwv_daily_rum_exact_p75.sql",
+        "20260916_seo_cwv_trend_detector_vacancy_signal.down.sql",
+        "20260916_seo_cwv_trend_detector_vacancy_signal.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
