@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 2baab4e6682fd7f0b114145d4135b9b8d659f78646ae28c8839f2f56081862e3
+source_sha256: ba5787c7ec94443d31e6723369c0fb3c056fa215cdde7e4135dc91f681381656
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -24,7 +24,7 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 516 |
 
-Source sotFingerprint: `90c77a1732de`.
+Source sotFingerprint: `78d61bbd7ae4`.
 
 ## Comment l'utiliser
 
@@ -116,11 +116,11 @@ Source sotFingerprint: `90c77a1732de`.
 
 ### D11 — Commerce & Users
 
-- **Files**: 277 (service=184, test=52, controller=40, config=1)
+- **Files**: 280 (service=185, test=54, controller=40, config=1)
 - **Runtime entrypoints**: 51
-- **Top owners**: @ak125 (115), @ak125/payments-team (78), @ak125/auth-team (72)
+- **Top owners**: @ak125 (115), @ak125/payments-team (81), @ak125/auth-team (72)
 - **Knowledge prose**: [`cart`](modules/cart.md), [`invoices`](modules/invoices.md), [`messages`](modules/messages.md), [`orders`](modules/orders.md), [`payments`](modules/payments.md), [`support`](modules/support.md), [`users`](modules/users.md)
-- **Status**: LIVE=175, UNKNOWN=102
+- **Status**: LIVE=176, UNKNOWN=104
 
 ### D12 — Marketing & Video
 
@@ -155,13 +155,13 @@ Source sotFingerprint: `90c77a1732de`.
 
 ### UNKNOWN — Unknown (overlay non résolu)
 
-- **Files**: 248 (service=151, config=57, controller=21, script=14, test=5)
+- **Files**: 245 (service=150, config=57, controller=21, script=14, test=3)
 - **DB tables**: 305
 - **DB RPC**: 260
 - **Runtime entrypoints**: 41
-- **Top owners**: __unassigned__ (248)
+- **Top owners**: __unassigned__ (245)
 - **Knowledge prose**: [`config`](modules/config.md), [`layout`](modules/layout.md), [`mcp-validation`](modules/mcp-validation.md), [`metadata`](modules/metadata.md), [`navigation`](modules/navigation.md), [`search`](modules/search.md), [`shipping`](modules/shipping.md), [`suppliers`](modules/suppliers.md), [`system`](modules/system.md)
-- **Status**: LIVE=142, UNKNOWN=106
+- **Status**: LIVE=141, UNKNOWN=104
 
 ## Voir aussi
 

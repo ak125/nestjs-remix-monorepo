@@ -37887,7 +37887,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 230,
+      "loc": 238,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/readonly-guards.test.ts",
       "risk": "low",
