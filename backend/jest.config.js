@@ -30,6 +30,14 @@ module.exports = {
     '^@repo/seo-types/(.*)$': '<rootDir>/../packages/seo-types/src/$1.ts',
     '^@repo/seo-url-contract$': '<rootDir>/../packages/seo-url-contract/src/index.ts',
     '^@repo/seo-url-contract/(.*)$': '<rootDir>/../packages/seo-url-contract/src/$1.ts',
+    // Manquait : toute suite important un module dont la chaîne atteint
+    // `seo-surface.registry.ts` échouait sur « Cannot find module
+    // '@repo/seo-role-contracts' » — le paquet n'expose que `dist/`, absent sous
+    // `npm ci`. Même forme que les deux entrées ci-dessus. Ajout non régressif par
+    // construction : il ne fait que RÉSOUDRE un specifier qui levait jusqu'ici, donc
+    // aucune suite verte aujourd'hui ne peut en dépendre.
+    '^@repo/seo-role-contracts$': '<rootDir>/../packages/seo-role-contracts/src/index.ts',
+    '^@repo/seo-role-contracts/(.*)$': '<rootDir>/../packages/seo-role-contracts/src/$1.ts',
   },
   // Ignore dist and node_modules
   testPathIgnorePatterns: ['/node_modules/', '/dist/'],

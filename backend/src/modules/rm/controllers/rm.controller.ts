@@ -360,6 +360,29 @@ export class RmController {
   async getHealth() {
     const health = await this.rmBuilder.getHealth();
 
+    // Une sonde de santé qui répond 200 `success: true` tout en annonçant
+    // `status: "error"` dans son corps est lue comme VERTE par tout moniteur qui
+    // regarde le code HTTP. Constaté en PROD le 2026-09-17 : `rm_health` est refusé
+    // par la garde RPC (P2 SECURITY_DEFINER). La garde a raison — cet endpoint n'a
+    // AUCUN guard, et un appelant anonyme ne doit pas déclencher une fonction
+    // SECURITY DEFINER. Ce qui était faux, c'est la réponse.
+    //
+    // Invisible en CI : `RPC_GATE_ENFORCE_LEVEL` vaut P2 en PROD et P1 en PREPROD,
+    // donc l'appel passe toutes les sondes de pré-production.
+    if (health?.status === 'error') {
+      // Le détail — nom de la garde, palier de politique, nom de la fonction — reste
+      // côté serveur. Le rendre à un appelant anonyme décrit la posture de sécurité
+      // à qui sonde l'endpoint.
+      this.logger.warn(
+        `RM health indisponible: ${String(
+          (health as { message?: unknown }).message ?? 'raison non fournie',
+        )}`,
+      );
+      throw new ServiceUnavailableException({
+        message: 'RM system health is currently unavailable',
+      });
+    }
+
     return {
       success: true,
       ...health,

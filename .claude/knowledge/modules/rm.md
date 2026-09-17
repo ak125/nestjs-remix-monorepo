@@ -2,8 +2,9 @@
 module: rm
 sources:
 - backend/src/modules/rm
-last_scan: '2026-09-11'
+last_scan: '2026-09-17'
 primary_files:
+- backend/src/modules/rm/controllers/rm-health.controller.test.ts
 - backend/src/modules/rm/controllers/rm.controller.ts
 - backend/src/modules/rm/dto/alternatives-v2.dto.ts
 - backend/src/modules/rm/rm.module.ts
@@ -11,7 +12,6 @@ primary_files:
 - backend/src/modules/rm/services/__tests__/rm-alternatives.service.test.ts
 - backend/src/modules/rm/services/__tests__/rm-builder-page-v2-cache.test.ts
 - backend/src/modules/rm/services/__tests__/rm-builder-seo-legacy-markers.test.ts
-- backend/src/modules/rm/services/__tests__/rm-builder-seo-shadow.test.ts
 depends_on:
 - DatabaseModule
 - CatalogModule
@@ -28,15 +28,23 @@ _Section à rédiger._
 
 ### Exports publics du module
 - `RmBuilderService`
+- `RmAlternativesService`
+- `RmSoft404TrackerService`
 
 ### Providers (top 15)
 - `RmBuilderService`
+- `RmAlternativesService`
+- `RmSoft404TrackerService`
 
 ### Fichiers primaires
+- [backend/src/modules/rm/controllers/rm-health.controller.test.ts](../../../backend/src/modules/rm/controllers/rm-health.controller.test.ts)
 - [backend/src/modules/rm/controllers/rm.controller.ts](../../../backend/src/modules/rm/controllers/rm.controller.ts)
+- [backend/src/modules/rm/dto/alternatives-v2.dto.ts](../../../backend/src/modules/rm/dto/alternatives-v2.dto.ts)
 - [backend/src/modules/rm/rm.module.ts](../../../backend/src/modules/rm/rm.module.ts)
 - [backend/src/modules/rm/rm.types.ts](../../../backend/src/modules/rm/rm.types.ts)
-- [backend/src/modules/rm/services/rm-builder.service.ts](../../../backend/src/modules/rm/services/rm-builder.service.ts)
+- [backend/src/modules/rm/services/__tests__/rm-alternatives.service.test.ts](../../../backend/src/modules/rm/services/__tests__/rm-alternatives.service.test.ts)
+- [backend/src/modules/rm/services/__tests__/rm-builder-page-v2-cache.test.ts](../../../backend/src/modules/rm/services/__tests__/rm-builder-page-v2-cache.test.ts)
+- [backend/src/modules/rm/services/__tests__/rm-builder-seo-legacy-markers.test.ts](../../../backend/src/modules/rm/services/__tests__/rm-builder-seo-legacy-markers.test.ts)
 
 <!-- END AUTO-GENERATED -->
 
