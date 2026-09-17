@@ -38595,10 +38595,10 @@
       "owner": "@ak125",
       "path": "backend/src/modules/analytics/landing-attribution-cutover.nest.test.ts",
       "risk": "medium",
-      "runtime": true,
+      "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE"
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -67053,10 +67053,10 @@
       "owner": "@ak125",
       "path": "backend/tests/unit/route-wildcard-middleware.test.ts",
       "risk": "medium",
-      "runtime": true,
+      "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE"
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -95613,7 +95613,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 765,
+      "loc": 780,
       "owner": "@ak125",
       "path": "scripts/audit/build-deep-inventory.js",
       "risk": "medium",
@@ -99789,6 +99789,26 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "tests/registry/runtime-excludes-tests.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 101,
+      "owner": "@ak125",
+      "path": "tests/registry/runtime-excludes-tests.test.ts",
+      "risk": "medium",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "tests/registry/sql-lex.test.ts",
       "importedBy": [],
       "imports": [],
@@ -99814,11 +99834,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "3045154dd16aeefab01f398f2540e47939a253f9cb3d5194599764dbc02e9958",
       "audit/registry/deps.json": "28f63bf4383ddec90e009095ddc11db9298b7cd92b52ceb234a3e6a2fd996f90",
-      "audit/registry/files.json": "4499f3bb2ad6b078beaf22daf36f1a26c0089bc0caf214b23d95a8e66a24bb22",
+      "audit/registry/files.json": "b5d4820ea2117d1f378fef0d405e19cceb8961c9f2b88cbe8cf2fe6bc91fe05e",
       "audit/registry/rpc.json": "821912126b4b0b6e8c5a86b4269f43106cc40a44d2ee85a107b550ab9ea0a7b6",
-      "audit/registry/runtime.json": "d75bdbf151ee60b2f8b82cfa9e95554fa9627743ccfd2f1d37716e3ab920a9b0"
+      "audit/registry/runtime.json": "318660e25fd46b071d4d9304612b68caa389cc5a86f67b7e04ff31d07658714a"
     },
-    "sotFingerprint": "6e1c5523be99"
+    "sotFingerprint": "4dc9583530c6"
   },
   "runtime": [
     {
@@ -100746,17 +100766,6 @@
       "id": "runtime:backend/src/modules/analytics/controllers/simple-analytics.controller.ts",
       "kind": "nestjs-controller",
       "path": "backend/src/modules/analytics/controllers/simple-analytics.controller.ts",
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "dependsOn": [
-        "runtime:backend/src/modules/analytics/controllers/landing-attribution.controller.ts"
-      ],
-      "id": "runtime:backend/src/modules/analytics/landing-attribution-cutover.nest.test.ts",
-      "kind": "nestjs-module",
-      "path": "backend/src/modules/analytics/landing-attribution-cutover.nest.test.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
@@ -103617,15 +103626,6 @@
       "path": "backend/src/workers/worker.module.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE"
-    },
-    {
-      "dependsOn": [],
-      "id": "runtime:backend/tests/unit/route-wildcard-middleware.test.ts",
-      "kind": "nestjs-module",
-      "path": "backend/tests/unit/route-wildcard-middleware.test.ts",
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
       "status": "LIVE"
     },
     {

@@ -10612,10 +10612,10 @@
       "owner": "__unassigned__",
       "path": "backend/src/modules/analytics/landing-attribution-cutover.nest.test.ts",
       "risk": "low",
-      "runtime": true,
+      "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE"
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -38100,10 +38100,10 @@
       "owner": "__unassigned__",
       "path": "backend/tests/unit/route-wildcard-middleware.test.ts",
       "risk": "low",
-      "runtime": true,
+      "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE"
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -65546,7 +65546,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 765,
+      "loc": 780,
       "owner": "__unassigned__",
       "path": "scripts/audit/build-deep-inventory.js",
       "risk": "low",
@@ -69501,6 +69501,25 @@
       "loc": 343,
       "owner": "__unassigned__",
       "path": "tests/registry/rpc-parser.test.ts",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "tests/registry/runtime-excludes-tests.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 101,
+      "owner": "__unassigned__",
+      "path": "tests/registry/runtime-excludes-tests.test.ts",
       "risk": "low",
       "runtime": true,
       "schemaVersion": "1.0.0",
