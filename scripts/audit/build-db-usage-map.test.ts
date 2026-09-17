@@ -676,3 +676,83 @@ describe("résolution — déterminisme, prouvé et non déduit", () => {
     );
   });
 });
+
+/* ────────────────────────────────────────────────────────────────────────────
+ * PARTITIONS — une partition n'a pas de cycle de vie propre
+ *
+ * `CREATE TABLE x PARTITION OF y` ne crée pas un objet supprimable isolément :
+ * c'est du stockage attaché à un parent. Aucun code ne l'adressera jamais par
+ * son nom — il interroge le parent. Son `used_by = 0` est donc ATTENDU et ne
+ * porte aucun signal.
+ *
+ * Les laisser dans `candidate_orphan_tables` ne rend pas la liste plus prudente,
+ * seulement plus longue : on y lisait « 3 partitions de pieces_price_history »
+ * là où le seul objet décidable est le parent. Et une liste longue se lit mal —
+ * c'est ainsi qu'un vrai signal se perd.
+ *
+ * DÉTECTION STRUCTURELLE, jamais lexicale. Le motif de nom (`_pYYYYMMDD`,
+ * `_YYYY_MM`) attrapait 24 des 27 partitions réelles : trois lui échappaient.
+ * On lit donc la DDL, sur la vue à commentaires dépouillés.
+ * ──────────────────────────────────────────────────────────────────────────── */
+
+describe("partitions — détection structurelle, jamais par le nom", () => {
+  const art = () => JSON.parse(fs.readFileSync(ARTIFACT, "utf8"));
+
+  test("une partition porte son parent et sort de la liste de revue", () => {
+    const a = art();
+    const cand = new Set(a.candidate_orphan_tables.map((c: any) => c.name));
+    const parts = Object.entries(a.tables).filter(([, t]: any) => t.partition_of);
+    assert.ok(parts.length > 0, "le dépôt déclare des partitions — elles doivent être reconnues");
+    for (const [name, t] of parts as any) {
+      assert.ok(!cand.has(name), `${name} est une partition de ${t.partition_of} : pas un candidat`);
+      assert.ok(a.tables[t.partition_of], `le parent ${t.partition_of} doit exister dans l'inventaire`);
+    }
+  });
+
+  test("les partitions restent DANS l'inventaire — jamais omises", () => {
+    const a = art();
+    for (const n of ["__seo_gsc_daily_2026_04", "__seo_ga4_daily_2026_04"]) {
+      assert.ok(a.tables[n], `${n} doit rester listée : une absence est plus grave qu'un faux positif`);
+      assert.equal(typeof a.tables[n].partition_of, "string");
+    }
+  });
+
+  test("SENTINELLE — les parents réellement inutilisés RESTENT candidats", () => {
+    const a = art();
+    const cand = new Set(a.candidate_orphan_tables.map((c: any) => c.name));
+    // Zone STOP prix : ces deux parents ont used_by = 0 et une migration. Ce sont
+    // les vrais signaux que le bruit des partitions masquait. Les perdre en
+    // nettoyant la liste serait exactement l'inverse du but.
+    for (const p of ["pieces_price_history", "pricing_decision_snapshot"]) {
+      assert.equal(a.tables[p].used_by_count, 0);
+      assert.equal(a.tables[p].partition_of, null, `${p} est un PARENT, pas une partition`);
+      assert.ok(cand.has(p), `${p} doit RESTER candidat — c'est le signal, pas le bruit`);
+    }
+  });
+
+  test("les parents utilisés ne deviennent pas candidats par effet de bord", () => {
+    const a = art();
+    const cand = new Set(a.candidate_orphan_tables.map((c: any) => c.name));
+    for (const p of ["__seo_gsc_daily", "__seo_ga4_daily", "__seo_cwv_daily", "__seo_crux_field_history"]) {
+      assert.ok(a.tables[p].used_by_count > 0, `${p} doit conserver son usage`);
+      assert.ok(!cand.has(p));
+    }
+  });
+
+  test("une table ordinaire garde partition_of null et reste candidate si inutilisée", () => {
+    const a = art();
+    const cand = a.candidate_orphan_tables.map((c: any) => c.name);
+    assert.ok(cand.length > 0);
+    for (const n of cand) assert.equal(a.tables[n].partition_of, null);
+  });
+
+  test("un PARTITION OF en COMMENTAIRE ne déclare rien", () => {
+    // Le lexer partagé dépouille les commentaires : la doc de rollback ne doit
+    // pas fabriquer une partition, comme elle ne fabriquait plus un DROP.
+    const { maskComments } = require("../registry/lib/sql-lex.js");
+    const sql = `-- CREATE TABLE faux_p2026_01 PARTITION OF faux;\nCREATE TABLE vrai_p2026_01 PARTITION OF vrai;`;
+    const masked = maskComments(sql);
+    assert.ok(!/faux_p2026_01/.test(masked.replace(/\n.*vrai.*/s, "")), "la ligne commentée doit être blanchie");
+    assert.ok(/vrai_p2026_01/.test(masked));
+  });
+});

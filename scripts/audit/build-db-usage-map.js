@@ -460,6 +460,7 @@ function scanMigrations() {
   const lastCreateTable = new Map(); const lastDropTable = new Map(); const createdInTable = new Map();
   const lastCreateFn = new Map();    const lastDropFn = new Map();    const createdInFn = new Map();
   const rlsTables = new Set();
+  const partitionOf = new Map();   // partition → table parente
   let files = [];
   try { files = fs.readdirSync(dir).filter((f) => f.endsWith('.sql')).sort(); } catch { return { tablesInMig: new Map(), rpcInMig: new Map(), rlsTables, scanned: 0 }; }
   const ident = '([A-Za-z_][A-Za-z0-9_$]*|"[^"]+")';
@@ -479,6 +480,17 @@ function scanMigrations() {
     // décalerait silencieusement m[2] (le nom de table) en m[3]. `UNLOGGED`
     // reste une vraie table et n'est pas concerné.
     while ((m = reCreateTable.exec(sql))) { if (/\bcreate\s+(?:temp|temporary)\b/i.test(m[0])) continue; const t = norm(m[2]); if (!ok(t)) continue; lastCreateTable.set(t, f); if (!createdInTable.has(t)) createdInTable.set(t, new Set()); createdInTable.get(t).add(f); }
+    // `CREATE TABLE x PARTITION OF y` ne crée pas un objet supprimable
+    // isolément : c'est du stockage attaché à un parent. Aucun code ne
+    // l'adressera jamais par son nom — il interroge le parent. Son
+    // `used_by = 0` est donc ATTENDU et ne porte aucun signal.
+    //
+    // Détection STRUCTURELLE, jamais lexicale : le motif de nom
+    // (`_pYYYYMMDD`, `_YYYY_MM`) n'attrapait que 24 des 27 partitions réelles
+    // du dépôt. On lit la DDL, sur la vue à commentaires dépouillés — un
+    // `PARTITION OF` en commentaire ne déclare donc rien.
+    const rePartitionOf = new RegExp(`create\\s+table\\s+(?:if\\s+not\\s+exists\\s+)?(?:${ident}\\.)?${ident}\\s+partition\\s+of\\s+(?:${ident}\\.)?${ident}`, 'gi');
+    while ((m = rePartitionOf.exec(sql))) { const c = norm(m[2]); const par = norm(m[4]); if (!ok(c) || !ok(par)) continue; partitionOf.set(c, par); }
     const reDropTable = new RegExp(`drop\\s+table\\s+(?:if\\s+exists\\s+)?(?:${ident}\\.)?${ident}`, 'gi');
     while ((m = reDropTable.exec(sql))) { const t = norm(m[2]); if (ok(t)) lastDropTable.set(t, f); }
     const reCreateFn = new RegExp(`create\\s+(?:or\\s+replace\\s+)?function\\s+(?:${ident}\\.)?${ident}\\s*\\(([\\s\\S]*?)\\)\\s*returns\\s+(\\w+)`, 'gi');
@@ -498,7 +510,7 @@ function scanMigrations() {
   for (const [t, lastC] of lastCreateTable) { const lastD = lastDropTable.get(t); if (!lastD || lastC > lastD) liveTables.set(t, [...createdInTable.get(t)].sort()); }
   const liveFns = new Map();
   for (const [fn, lastC] of lastCreateFn) { const lastD = lastDropFn.get(fn); if (!lastD || lastC > lastD) liveFns.set(fn, [...(createdInFn.get(fn) || [])].sort()); }
-  return { tablesInMig: liveTables, rpcInMig: liveFns, rlsTables, triggerFns, scanned: files.length };
+  return { tablesInMig: liveTables, rpcInMig: liveFns, rlsTables, triggerFns, partitionOf, scanned: files.length };
 }
 
 // ---- 3. Knowledge/db references (best-effort) -----------------------------
@@ -535,8 +547,14 @@ function main() {
     const inMig = [...(mig.tablesInMig.get(name) || [])].sort();
     const rls = mig.rlsTables.has(name);
     const inKb = kbRefs.has(name);
-    tables[name] = { used_by: usedBy, used_by_count: usedBy.length, in_migrations: inMig, rls_present: rls, in_knowledge_db: inKb };
-    if (usedBy.length === 0 && !unresolvedNames.has(name) && (inMig.length > 0 || inKb)) {
+    const partOf = (mig.partitionOf && mig.partitionOf.get(name)) || null;
+    tables[name] = { used_by: usedBy, used_by_count: usedBy.length, in_migrations: inMig, rls_present: rls, in_knowledge_db: inKb, partition_of: partOf };
+    // Une partition n'est jamais candidate : elle n'a pas de cycle de vie
+    // propre, et la décision porte sur son parent — qui, lui, reste évalué
+    // normalement (mesuré : 2 des 8 parents sont candidats, et le restent).
+    // Elle demeure DANS l'inventaire : une absence est plus grave qu'un faux
+    // positif, un objet sans ligne n'ayant aucun `usedBy` opposable.
+    if (usedBy.length === 0 && !partOf && !unresolvedNames.has(name) && (inMig.length > 0 || inKb)) {
       // always "low" for tables: there are hundreds of dynamic `.from(<var>)` callsites
       // in the backend, so a literal-only scan cannot honestly claim a table is unused.
       const derived = []; if (inMig.length) derived.push('migrations'); if (inKb) derived.push('knowledge-db'); derived.push('no-literal-from-callsite');
@@ -575,6 +593,7 @@ function main() {
       tables_seen: Object.keys(tables).length,
       tables_with_callsites: Object.values(tables).filter((t) => t.used_by_count > 0).length,
       candidate_orphan_tables: candidateOrphanTables.length,
+      partitions: Object.values(tables).filter((t) => t.partition_of).length,
       rpc_seen: Object.keys(rpc).length,
       rpc_with_callsites: Object.values(rpc).filter((r) => r.called_by_count > 0).length,
       trigger_functions: triggerFunctions.length,

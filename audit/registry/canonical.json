@@ -95829,7 +95829,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 623,
+      "loc": 642,
       "owner": "@ak125",
       "path": "scripts/audit/build-db-usage-map.js",
       "risk": "medium",
@@ -95849,7 +95849,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 679,
+      "loc": 759,
       "owner": "@ak125",
       "path": "scripts/audit/build-db-usage-map.test.ts",
       "risk": "medium",
@@ -100070,11 +100070,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "3045154dd16aeefab01f398f2540e47939a253f9cb3d5194599764dbc02e9958",
       "audit/registry/deps.json": "28f63bf4383ddec90e009095ddc11db9298b7cd92b52ceb234a3e6a2fd996f90",
-      "audit/registry/files.json": "0a4751ba9d7ffd578866325bdbabfdfdfdc0f1a931f7c7b2a8eba4d80f35545e",
+      "audit/registry/files.json": "30b4f7b3f9a0f686f952630b0d2572b36c75737e63569204c99146951c7be40e",
       "audit/registry/rpc.json": "10db5aff88e6b7677e6e3ab7a2d604a844af66d8aca05ee34b5f0f8913573b72",
       "audit/registry/runtime.json": "d75bdbf151ee60b2f8b82cfa9e95554fa9627743ccfd2f1d37716e3ab920a9b0"
     },
-    "sotFingerprint": "d2823ecd67cb"
+    "sotFingerprint": "b1514fe53144"
   },
   "runtime": [
     {
