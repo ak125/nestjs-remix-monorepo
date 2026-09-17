@@ -24,6 +24,8 @@ const fetchMock = vi.fn(() =>
  * crawl des liens internes existants tout en empêchant l'indexation).
  */
 describe("catch-all $.tsx — 404/410 X-Robots-Tag noindex,follow", () => {
+  // Requêtes document : l'argument `url` de React Router porte le même chemin
+  // que `request.url`.
   beforeEach(() => {
     fetchMock.mockReset();
     fetchMock.mockImplementation(() =>
@@ -37,7 +39,12 @@ describe("catch-all $.tsx — 404/410 X-Robots-Tag noindex,follow", () => {
 
     let thrown: { init?: { status?: number; headers?: HeadersInit } } | undefined;
     try {
-      await loader({ request, params: {}, context: {} } as never);
+      await loader({
+        request,
+        url: new URL(request.url),
+        params: {},
+        context: {},
+      } as never);
     } catch (e) {
       thrown = e as { init?: { status?: number; headers?: HeadersInit } };
     }
@@ -56,7 +63,12 @@ describe("catch-all $.tsx — 404/410 X-Robots-Tag noindex,follow", () => {
 
     let thrown: { init?: { status?: number; headers?: HeadersInit } } | undefined;
     try {
-      await loader({ request, params: {}, context: {} } as never);
+      await loader({
+        request,
+        url: new URL(request.url),
+        params: {},
+        context: {},
+      } as never);
     } catch (e) {
       thrown = e as { init?: { status?: number; headers?: HeadersInit } };
     }
@@ -78,7 +90,12 @@ describe("catch-all $.tsx — 404/410 X-Robots-Tag noindex,follow", () => {
 
     let thrown: { init?: { status?: number; headers?: HeadersInit } } | undefined;
     try {
-      await loader({ request, params: {}, context: {} } as never);
+      await loader({
+        request,
+        url: new URL(request.url),
+        params: {},
+        context: {},
+      } as never);
     } catch (e) {
       thrown = e as { init?: { status?: number; headers?: HeadersInit } };
     }

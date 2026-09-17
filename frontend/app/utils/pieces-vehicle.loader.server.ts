@@ -83,6 +83,7 @@ async function notify503ToErrorLog(
 export async function piecesVehicleLoader({
   params,
   request,
+  url: documentUrl,
 }: LoaderFunctionArgs) {
   const startTime = Date.now();
 
@@ -423,7 +424,10 @@ export async function piecesVehicleLoader({
 
     // 301 redirect si l'URL courante ne correspond pas a l'URL canonique
     // Normalisation URI pour eviter les faux positifs (encoding, trailing slash)
-    const currentPath = decodeURIComponent(url.pathname);
+    // `documentUrl` = argument `url` de React Router : URL normalisee par le
+    // framework (sans suffixe `.data` ni `_routes`). `request.url` reste brut en
+    // navigation client : le comparer redirigeait chaque navigation R2.
+    const currentPath = decodeURIComponent(documentUrl.pathname);
     const targetPath = decodeURIComponent(canonicalPath);
 
     if (currentPath !== targetPath) {
@@ -436,7 +440,7 @@ export async function piecesVehicleLoader({
         logger.log(
           `🔄 [301] Canonical mismatch: ${currentPath} → ${targetPath}`,
         );
-        const redirectUrl = new URL(request.url);
+        const redirectUrl = new URL(documentUrl);
         redirectUrl.pathname = canonicalPath;
         redirectUrl.searchParams.set("r", "1");
         return redirect(redirectUrl.toString(), 301);
