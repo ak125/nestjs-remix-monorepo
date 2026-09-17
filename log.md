@@ -405,3 +405,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/db-inventory-constant-resolution`
 - **Décision** : chore(audit): resync des artefacts PR-8 après changement du canonical (+13 other commits)
 - **Sortie** : PR #1506 | commits 04805e48b 13deb3836 c66b59106 6d710d7eb c5e2eab16 5e032b92f 0823facd5 1ac6a228d ab9ef3527 dc63271ff 8b5bf6168 b17d65f64 2f5dcf4d5 fde67c138
+
+## 2026-09-17 — chore/secrets-detection-before-rotation
+
+- **Branche** : `chore/secrets-detection-before-rotation`
+- **Décision** : détecter un secret de paiement AVANT publication — moteur par empreinte (inerte sans données) + 2 règles de FORME sur les LIGNES AJOUTÉES, câblées en pre-commit (bloquant) et en CI. Scan d'ajout et non d'état : aucun inventaire des porteurs, donc rien à publier sur un dépôt public avant rotation.
+- **Sortie** : PR #1511 | resync registry L1+L3 + ré-épinglage inventaire PR-8 (262 candidats inchangés, vérifié champ à champ)
