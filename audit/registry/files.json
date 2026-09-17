@@ -65508,9 +65508,28 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 236,
+      "loc": 354,
       "owner": "__unassigned__",
       "path": "scripts/audit/build-db-usage-map.js",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/audit/build-db-usage-map.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 267,
+      "owner": "__unassigned__",
+      "path": "scripts/audit/build-db-usage-map.test.ts",
       "risk": "low",
       "runtime": true,
       "schemaVersion": "1.0.0",
@@ -67651,6 +67670,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "scripts/registry/lib/sql-lex.js",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 163,
+      "owner": "__unassigned__",
+      "path": "scripts/registry/lib/sql-lex.js",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "scripts/registry/lib/utils.js",
       "importedBy": [],
       "imports": [],
@@ -69463,6 +69501,25 @@
       "loc": 186,
       "owner": "__unassigned__",
       "path": "tests/registry/rpc-parser.test.ts",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "tests/registry/sql-lex.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 163,
+      "owner": "__unassigned__",
+      "path": "tests/registry/sql-lex.test.ts",
       "risk": "low",
       "runtime": true,
       "schemaVersion": "1.0.0",

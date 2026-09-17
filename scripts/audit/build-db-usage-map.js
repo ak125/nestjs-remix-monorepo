@@ -23,6 +23,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
+const { maskComments } = require('../registry/lib/sql-lex');
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const QUIET = process.argv.includes('--quiet');
@@ -56,14 +57,85 @@ function gitLines(args) {
   return execFileSync('git', args, { cwd: REPO_ROOT, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 }).split('\n').filter(Boolean);
 }
 
+// Récepteurs sur lesquels `.from()` est un constructeur JS, pas PostgREST.
+// `from` n'est pas un nom propre à Supabase : Buffer.from(<base64>) enregistrait
+// le GIF de suivi du panier comme une TABLE dans audit/registry/db.json.
+const JS_STATIC_FROM_OWNERS = new Set([
+  'Array', 'Buffer', 'Object', 'Promise', 'Date', 'String', 'Number',
+  'Int8Array', 'Uint8Array', 'Uint8ClampedArray', 'Int16Array', 'Uint16Array',
+  'Int32Array', 'Uint32Array', 'Float32Array', 'Float64Array',
+  'BigInt64Array', 'BigUint64Array',
+]);
+
+// Verbes PostgREST qui prouvent qu'un `.from(x)` cible bien une table. Jeu
+// MINIMAL et délibéré : y ajouter `filter` réintroduirait Array.from(x).filter(…).
+const POSTGREST_VERBS = new Set(['select', 'insert', 'update', 'upsert', 'delete']);
+
+// Déballe (x), x as T, x satisfies T, x! pour atteindre le vrai récepteur.
+// Indispensable : `(this.dataService as any).supabase.from('__diag_…')` et
+// `this.paymentDataService['supabase'].from('__paybox_gate_log')` sont de VRAIS
+// appels DB, et une règle qui n'accepterait que Identifier/PropertyAccess les
+// perdrait — dont une table de la zone STOP paiement.
+function unwrapReceiver(ts, node) {
+  let n = node;
+  for (;;) {
+    if (ts.isParenthesizedExpression(n)) { n = n.expression; continue; }
+    if (ts.isAsExpression(n)) { n = n.expression; continue; }
+    if (ts.isNonNullExpression(n)) { n = n.expression; continue; }
+    if (ts.isSatisfiesExpression && ts.isSatisfiesExpression(n)) { n = n.expression; continue; }
+    return n;
+  }
+}
+
+// Le verbe PostgREST immédiatement chaîné à cet appel, ou null.
+function chainedVerb(ts, call) {
+  const parent = call.parent;
+  if (!parent || !ts.isPropertyAccessExpression(parent)) return null;
+  if (parent.expression !== call) return null;
+  if (!ts.isIdentifier(parent.name)) return null;
+  const v = parent.name.text;
+  return POSTGREST_VERBS.has(v) ? v : null;
+}
+
+// Classification à TROIS issues — jamais un filtre binaire (invariant 3 : aucun
+// repli silencieux). DB : preuve positive. NOT_DB : rejet STRUCTUREL, par liste
+// noire, jamais par liste blanche de noms de récepteurs — une liste blanche
+// perdrait `sb`, `this.searchService['client']` et consorts. UNRESOLVED : ni
+// l'un ni l'autre, donc publié et compté, jamais jeté en silence.
+function classifyCallSite(ts, call, method) {
+  const recvNode = unwrapReceiver(ts, call.expression.expression);
+  const recvText = call.expression.expression.getText().replace(/\s+/g, ' ');
+  const verb = chainedVerb(ts, call);
+
+  if (ts.isIdentifier(recvNode) && JS_STATIC_FROM_OWNERS.has(recvNode.text)) {
+    return { kind: 'NOT_DB', reason: 'js-builtin-static-from', recvText };
+  }
+  // `<client>.storage.from('bucket')` nomme un BUCKET Storage, pas une table :
+  // c'est ainsi que `uploads` entrait dans db.json. Rejet STRUCTUREL (dernier
+  // segment + absence de chaînage PostgREST), jamais un verdict sur le nom du
+  // bucket — un bucket homonyme d'une table réelle doit rester distinguable.
+  if (ts.isPropertyAccessExpression(recvNode) && ts.isIdentifier(recvNode.name)
+      && recvNode.name.text === 'storage' && !verb) {
+    return { kind: 'NOT_DB', reason: 'supabase-storage-bucket', recvText };
+  }
+  // `.rpc()` n'a aucun homonyme statique JS, et 14 des 15 appels réels ne sont
+  // PAS chaînés (résultat directement await-é). Lui appliquer la règle de
+  // chaînage de `.from()` détruirait 14/14 noms de RPC.
+  if (method === 'rpc') return { kind: 'DB', reason: 'rpc-call', recvText };
+  if (verb) return { kind: 'DB', reason: `postgrest-chain:${verb}`, recvText };
+  return { kind: 'UNRESOLVED', reason: 'no-postgrest-chain', recvText };
+}
+
 // ---- 1. AST scan of backend/src for .from('x') / .rpc('x') ----------------
 function scanCallSites(ts) {
   log('[build-db-usage-map] scanning backend/src for .from() / .rpc() …');
   const files = gitLines(['ls-files', 'backend/src']).filter((f) => /\.tsx?$/.test(f) && !/\.spec\.ts$|\.e2e-spec\.ts$/.test(f));
   const tableUses = new Map();      // table → Set<file>
   const rpcUses = new Map();        // fn → Set<file>
-  const dynamicFrom = [];           // { file, line } where .from(<non-literal>)
+  const dynamicFrom = [];           // { file, line } where .from(<non-literal>) on a DB receiver
   const dynamicRpc = [];
+  const unresolved = [];            // { file, line, method, receiver } — ni DB ni NOT_DB
+  const dropped = [];               // { name, method, reason, file, line, receiver }
 
   for (const file of files) {
     let src;
@@ -75,13 +147,21 @@ function scanCallSites(ts) {
         if (method === 'from' || method === 'rpc') {
           const arg0 = node.arguments[0];
           const lineOf = () => sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1;
-          if (arg0 && (ts.isStringLiteral(arg0) || ts.isNoSubstitutionTemplateLiteral(arg0))) {
-            const name = arg0.text;
-            const bag = method === 'from' ? tableUses : rpcUses;
-            if (!bag.has(name)) bag.set(name, new Set());
-            bag.get(name).add(file);
-          } else if (arg0) {
-            (method === 'from' ? dynamicFrom : dynamicRpc).push({ file, line: lineOf() });
+          const isLiteral = arg0 && (ts.isStringLiteral(arg0) || ts.isNoSubstitutionTemplateLiteral(arg0));
+          if (arg0) {
+            const { kind, reason, recvText } = classifyCallSite(ts, node, method);
+            if (kind === 'NOT_DB') {
+              if (isLiteral) dropped.push({ name: arg0.text, method, reason, file, line: lineOf(), receiver: recvText });
+            } else if (kind === 'UNRESOLVED') {
+              unresolved.push({ file, line: lineOf(), method, receiver: recvText, name: isLiteral ? arg0.text : null });
+            } else if (isLiteral) {
+              const name = arg0.text;
+              const bag = method === 'from' ? tableUses : rpcUses;
+              if (!bag.has(name)) bag.set(name, new Set());
+              bag.get(name).add(file);
+            } else {
+              (method === 'from' ? dynamicFrom : dynamicRpc).push({ file, line: lineOf() });
+            }
           }
         }
       }
@@ -89,7 +169,7 @@ function scanCallSites(ts) {
     };
     visit(sf);
   }
-  return { tableUses, rpcUses, dynamicFrom, dynamicRpc, scanned: files.length };
+  return { tableUses, rpcUses, dynamicFrom, dynamicRpc, unresolved, dropped, scanned: files.length };
 }
 
 // ---- 2. Parse migrations for CREATE/DROP TABLE / FUNCTION / RLS -----------
@@ -97,6 +177,15 @@ function scanCallSites(ts) {
 // An object is "currently defined" iff its last CREATE comes after its last DROP
 // (or it was never dropped). This filters away objects killed by a later migration
 // (ADR-017 RPC cleanup, the -38 tables / -44 RPC cleanup, etc.).
+//
+// Les regex ci-dessous s'appliquent au SQL DÉPOUILLÉ DE SES COMMENTAIRES
+// (`maskComments`, scripts/registry/lib/sql-lex.js), jamais au SQL brut : une
+// procédure de rollback documentée en commentaire N'EST PAS du DDL exécuté.
+// Sur SQL brut, 20 `DROP TABLE` commentés effaçaient 9 tables réelles (tout le
+// système `__seo_r8_*`) et 5 fonctions dont deux de durcissement RLS, et un
+// `CREATE TABLE` cité dans un commentaire français fabriquait la table `sont`.
+// Les CINQ familles de regex sont dépouillées, pas seulement les tables :
+// n'en traiter qu'une partie recréerait l'asymétrie qui a causé le défaut.
 function scanMigrations() {
   log('[build-db-usage-map] scanning supabase migrations …');
   const dir = path.join(REPO_ROOT, 'backend', 'supabase', 'migrations');
@@ -112,10 +201,16 @@ function scanMigrations() {
   const triggerFns = new Set();
   for (const f of files) {
     let sql;
-    try { sql = fs.readFileSync(path.join(dir, f), 'utf8'); } catch { continue; }
+    try { sql = maskComments(fs.readFileSync(path.join(dir, f), 'utf8')); } catch { continue; }
     let m;
     const reCreateTable = new RegExp(`create\\s+(?:unlogged\\s+|temp(?:orary)?\\s+)?table\\s+(?:if\\s+not\\s+exists\\s+)?(?:${ident}\\.)?${ident}`, 'gi');
-    while ((m = reCreateTable.exec(sql))) { const t = norm(m[2]); if (!ok(t)) continue; lastCreateTable.set(t, f); if (!createdInTable.has(t)) createdInTable.set(t, new Set()); createdInTable.get(t).add(f); }
+    // `CREATE TEMP/TEMPORARY TABLE … ON COMMIT DROP` est une table de travail
+    // interne à une transaction, jamais un objet du schéma : 4 d'entre elles
+    // figuraient dans `candidate_orphan_tables`. Le test porte sur m[0] et NON
+    // sur un groupe capturant ajouté à la regex — capturer `temp(?:orary)?`
+    // décalerait silencieusement m[2] (le nom de table) en m[3]. `UNLOGGED`
+    // reste une vraie table et n'est pas concerné.
+    while ((m = reCreateTable.exec(sql))) { if (/\bcreate\s+(?:temp|temporary)\b/i.test(m[0])) continue; const t = norm(m[2]); if (!ok(t)) continue; lastCreateTable.set(t, f); if (!createdInTable.has(t)) createdInTable.set(t, new Set()); createdInTable.get(t).add(f); }
     const reDropTable = new RegExp(`drop\\s+table\\s+(?:if\\s+exists\\s+)?(?:${ident}\\.)?${ident}`, 'gi');
     while ((m = reDropTable.exec(sql))) { const t = norm(m[2]); if (ok(t)) lastDropTable.set(t, f); }
     const reCreateFn = new RegExp(`create\\s+(?:or\\s+replace\\s+)?function\\s+(?:${ident}\\.)?${ident}\\s*\\(([\\s\\S]*?)\\)\\s*returns\\s+(\\w+)`, 'gi');
@@ -159,6 +254,11 @@ function main() {
   const kbRefs = scanKnowledgeDb();
 
   // ---- tables ----
+  // Un `.from()` dont le récepteur n'a pu être ni prouvé DB ni rejeté reste
+  // VISIBLE (unresolved_callsites) et, s'il porte un littéral, INTERDIT le
+  // verdict d'orphelinat sur ce nom : sans cela le filet serait décoratif,
+  // et une table vivante pourrait être déclarée orpheline en silence.
+  const unresolvedNames = new Set(cs.unresolved.filter((u) => u.name).map((u) => u.name));
   const tableNames = new Set([...cs.tableUses.keys(), ...mig.tablesInMig.keys()]);
   const tables = {};
   const candidateOrphanTables = [];
@@ -168,7 +268,7 @@ function main() {
     const rls = mig.rlsTables.has(name);
     const inKb = kbRefs.has(name);
     tables[name] = { used_by: usedBy, used_by_count: usedBy.length, in_migrations: inMig, rls_present: rls, in_knowledge_db: inKb };
-    if (usedBy.length === 0 && (inMig.length > 0 || inKb)) {
+    if (usedBy.length === 0 && !unresolvedNames.has(name) && (inMig.length > 0 || inKb)) {
       // always "low" for tables: there are hundreds of dynamic `.from(<var>)` callsites
       // in the backend, so a literal-only scan cannot honestly claim a table is unused.
       const derived = []; if (inMig.length) derived.push('migrations'); if (inKb) derived.push('knowledge-db'); derived.push('no-literal-from-callsite');
@@ -200,6 +300,8 @@ function main() {
       `${cs.dynamicFrom.length} \`.from(<non-literal>)\` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as "needs manual check", not "dead".`,
       'Migration parsing is regex-based and tracks last CREATE vs last DROP per object (date-prefixed filenames ≈ chronological); re-create-after-drop edge cases may slip through.',
       'RLS-only / dashboard / external-cron / RPC-internal usage is invisible here — see per-candidate caveats.',
+      `${cs.dropped.length} call-site(s) écarté(s) : le récepteur n'est pas un client PostgREST (Buffer/Array, ou bucket Supabase Storage) — voir dropped_call_sites[].`,
+      `${cs.unresolved.length} call-site(s) non résolu(s) : récepteur ni prouvé DB ni rejeté — voir unresolved_callsites[]. Un nom non résolu ne peut pas être déclaré orphelin.`,
     ],
     summary: {
       tables_seen: Object.keys(tables).length,
@@ -211,6 +313,8 @@ function main() {
       candidate_orphan_rpc: candidateOrphanRpc.length,
       dynamic_from_callsites: cs.dynamicFrom.length,
       dynamic_rpc_callsites: cs.dynamicRpc.length,
+      unresolved_callsites: cs.unresolved.length,
+      dropped_call_sites: cs.dropped.length,
       migrations_scanned: mig.scanned,
       backend_files_scanned: cs.scanned,
     },
@@ -221,6 +325,13 @@ function main() {
     candidate_orphan_rpc: candidateOrphanRpc,
     dynamic_from_callsites: cs.dynamicFrom.slice().sort((a, b) => cmpStr(a.file, b.file) || a.line - b.line),
     dynamic_rpc_callsites: cs.dynamicRpc.slice().sort((a, b) => cmpStr(a.file, b.file) || a.line - b.line),
+    // Noms écartés parce que le récepteur n'est PAS un client PostgREST.
+    // Publier la liste rend l'exclusion auditable : on voit ce qui a été
+    // retiré et pourquoi, au lieu d'un silence (guardrails, passe 5).
+    dropped_call_sites: cs.dropped.slice().sort((a, b) => cmpStr(a.file, b.file) || a.line - b.line),
+    // Ni prouvé DB, ni rejeté. Doit rester VIDE ; une entrée n'est pas un
+    // seuil à assouplir mais un cas à traiter (cf. important_caveats).
+    unresolved_callsites: cs.unresolved.slice().sort((a, b) => cmpStr(a.file, b.file) || a.line - b.line),
   };
   const dest = path.join(REPO_ROOT, 'audit', 'db-usage-map.json');
   fs.mkdirSync(path.dirname(dest), { recursive: true });
@@ -231,5 +342,12 @@ function main() {
   for (const [k, v] of Object.entries(out.summary)) log(`  ${k.padEnd(26)}: ${v}`);
 }
 
-if (!fs.existsSync(path.join(REPO_ROOT, 'backend', 'supabase'))) die('must run from repo root (backend/supabase not found)');
-main();
+// Seam — même patron que build-deep-inventory.js:760. Sans lui, `require()` de ce
+// module EXÉCUTE main() et RÉÉCRIT audit/db-usage-map.json : c'est la raison pour
+// laquelle ce générateur était le seul de scripts/audit/ sans test.
+if (require.main === module) {
+  if (!fs.existsSync(path.join(REPO_ROOT, 'backend', 'supabase'))) die('must run from repo root (backend/supabase not found)');
+  main();
+}
+
+module.exports = { scanCallSites, scanMigrations, classifyCallSite, JS_STATIC_FROM_OWNERS, POSTGREST_VERBS };

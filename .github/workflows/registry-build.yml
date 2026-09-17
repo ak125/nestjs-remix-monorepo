@@ -82,6 +82,9 @@ jobs:
           fi
           echo "✓ Deterministic across 2 runs"
 
+      - name: "Run shared SQL region-lexer tests (offsets + comment masking)"
+        run: npm run registry:test:sql-lex
+
       - name: "Run RPC parser fixture tests (V1-3: 3 parse modes)"
         run: npm run registry:test:rpc-parser
 

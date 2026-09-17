@@ -17,6 +17,7 @@ on:
       - "scripts/registry/**"
       - "scripts/audit/build-deep-inventory.js"
       - "scripts/audit/build-db-usage-map.js"
+      - "scripts/audit/build-db-usage-map.test.ts"
       # --- Générateurs que CE workflow exécute (PR-8 + déterminisme) ---
       # Oubliés jusqu'au 2026-08-14 : le job lance `audit:cleanup-candidates:check`,
       # `audit:cleanup-candidates:test` et `audit:inventory:test`, mais aucun `paths:`
@@ -231,6 +232,13 @@ jobs:
       #     git) — les deux côtés captureraient la même saleté, donc vert.
       # Constaté le 2026-08-13 : 2 fichiers untracked s'étaient glissés dans
       # dead-code-candidates.json, et donc dans le fingerprint PR-8 en aval.
+      # Même logique que le step PR-8 ci-dessus : un générateur cassé doit se voir
+      # sur ses cas de test, pas sur l'inventaire réel. Ce générateur n'avait aucun
+      # test jusqu'ici, faute de seam — `require()` réécrivait son propre artefact.
+      - name: db-usage-map guard — unit tests (récepteur + dépouillement SQL)
+        if: ${{ !cancelled() }}
+        run: npm run audit:db-usage:test
+
       - name: Deep-inventory determinism (committed projections, cross-machine)
         if: ${{ !cancelled() }}
         run: npm run audit:inventory:test
