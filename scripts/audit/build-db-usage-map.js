@@ -342,5 +342,12 @@ function main() {
   for (const [k, v] of Object.entries(out.summary)) log(`  ${k.padEnd(26)}: ${v}`);
 }
 
-if (!fs.existsSync(path.join(REPO_ROOT, 'backend', 'supabase'))) die('must run from repo root (backend/supabase not found)');
-main();
+// Seam — même patron que build-deep-inventory.js:760. Sans lui, `require()` de ce
+// module EXÉCUTE main() et RÉÉCRIT audit/db-usage-map.json : c'est la raison pour
+// laquelle ce générateur était le seul de scripts/audit/ sans test.
+if (require.main === module) {
+  if (!fs.existsSync(path.join(REPO_ROOT, 'backend', 'supabase'))) die('must run from repo root (backend/supabase not found)');
+  main();
+}
+
+module.exports = { scanCallSites, scanMigrations, classifyCallSite, JS_STATIC_FROM_OWNERS, POSTGREST_VERBS };
