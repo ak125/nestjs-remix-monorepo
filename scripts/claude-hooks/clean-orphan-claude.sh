@@ -1,58 +1,82 @@
 #!/usr/bin/env bash
-# clean-orphan-claude.sh — Kill orphan Claude Code processes
-# Runs via cron every 5 minutes to prevent RAM accumulation
-# Each orphan session = ~500 MB (claude + shadcn MCP + supabase MCP)
+# clean-orphan-claude.sh — Kill ORPHAN Claude Code processes (RAM reclaim)
+#
+# Un orphelin = son client est mort : le processus a été réattaché à init (PPID 1)
+# ET son entrée standard ne mène plus à personne (tube sans autre détenteur, ou fd/0
+# disparu). Les deux conditions sont requises : elles décrivent un état, jamais une
+# habitude d'usage.
+#
+# INTERDIT ICI (incident 2026-09-17 09:30:01, 4 sessions vivantes tuées) :
+#   - le temps CPU ("vivant > 600 s avec < 5 s de CPU") : une session qui attend un
+#     agent, un export ou une longue requête est inactive au sens CPU, pas orpheline ;
+#   - le drapeau `--resume` ("vivant > 900 s") : Claude Code reprend TOUTES ses
+#     sessions avec `--resume`, donc ce critère tue le travail en cours.
+# Voir la mémoire reference_clean_orphan_claude_kills_live_resumed_sessions.
+#
+# Usage : clean-orphan-claude.sh [--dry-run] [--verbose]
 set -euo pipefail
 
-LOG="/tmp/claude-orphan-cleanup.log"
+LOG="${CLAUDE_ORPHAN_LOG:-/tmp/claude-orphan-cleanup.log}"
+DRY_RUN=0
+VERBOSE=0
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run) DRY_RUN=1 ;;
+    --verbose) VERBOSE=1 ;;
+    *) echo "usage: $0 [--dry-run] [--verbose]" >&2; exit 2 ;;
+  esac
+done
+
 KILLED=0
+# Motif surchargeable pour les tests (jamais en production : valeur par défaut figée).
+CLAUDE_PATTERN="${CLAUDE_ORPHAN_PATTERN:-native-binary/claude}"
+mapfile -t CLAUDE_PIDS < <(pgrep -f "$CLAUDE_PATTERN" 2>/dev/null || true)
 
-# Get all claude binary PIDs
-mapfile -t CLAUDE_PIDS < <(pgrep -f 'native-binary/claude' 2>/dev/null || true)
-
-if [[ ${#CLAUDE_PIDS[@]} -le 1 ]]; then
-  exit 0  # 0 or 1 process = nothing to clean
-fi
+# Le tube d'entrée d'un processus vivant est détenu par au moins un autre processus
+# (l'hôte d'extension, le terminal…). Sans détenteur, plus personne ne lit sa sortie.
+pipe_has_peer() {
+  local pipe="$1" self="$2" fd
+  for fd in /proc/[0-9]*/fd/*; do
+    [[ "$fd" == /proc/"$self"/fd/* ]] && continue
+    [[ "$(readlink "$fd" 2>/dev/null)" == "$pipe" ]] && return 0
+  done
+  return 1
+}
 
 for PID in "${CLAUDE_PIDS[@]}"; do
-  [[ -z "$PID" ]] && continue
-  [[ ! -d "/proc/$PID" ]] && continue
+  [[ -z "$PID" || ! -d "/proc/$PID" ]] && continue
 
-  # Check if stdin (fd/0) is a broken pipe (orphan) or active pipe
-  # An active claude process has an open pipe from extensionHost
-  # An orphan has a broken/closed pipe
-  if ! ls -l "/proc/$PID/fd/0" &>/dev/null; then
-    # fd/0 not accessible = orphan
-    echo "$(date '+%Y-%m-%d %H:%M:%S') KILL orphan PID=$PID (fd/0 gone)" >> "$LOG"
-    kill -TERM "$PID" 2>/dev/null || true
-    ((KILLED++)) || true
+  PPID_VAL=$(ps -o ppid= -p "$PID" 2>/dev/null | tr -d ' ')
+  [[ -z "$PPID_VAL" ]] && continue
+
+  # Condition 1 — le parent vit encore : ce n'est pas un orphelin, on ne touche à rien.
+  if [[ "$PPID_VAL" != "1" ]]; then
+    [[ "$VERBOSE" == "1" ]] && echo "GARDE PID=$PID (parent vivant PPID=$PPID_VAL)"
     continue
   fi
 
-  # Check if the process has been idle (no CPU) for a while
-  # Get process state: S=sleeping is normal, but check elapsed time
-  ETIME=$(ps -o etimes= -p "$PID" 2>/dev/null | tr -d ' ')
-  CPUTIME=$(ps -o cputimes= -p "$PID" 2>/dev/null | tr -d ' ')
-
-  if [[ -z "$ETIME" || -z "$CPUTIME" ]]; then
-    continue  # process disappeared
+  # Condition 2 — l'entrée standard ne mène plus à personne.
+  STDIN_TARGET=$(readlink "/proc/$PID/fd/0" 2>/dev/null || true)
+  REASON=""
+  if [[ -z "$STDIN_TARGET" ]]; then
+    REASON="fd/0 disparu"
+  elif [[ "$STDIN_TARGET" == pipe:* ]] && ! pipe_has_peer "$STDIN_TARGET" "$PID"; then
+    REASON="tube d'entrée sans détenteur ($STDIN_TARGET)"
   fi
 
-  # If process has been alive >10 min and used <5s CPU = likely orphan
-  if [[ "$ETIME" -gt 600 && "$CPUTIME" -lt 5 ]]; then
-    echo "$(date '+%Y-%m-%d %H:%M:%S') KILL idle orphan PID=$PID (alive=${ETIME}s, cpu=${CPUTIME}s)" >> "$LOG"
-    kill -TERM "$PID" 2>/dev/null || true
-    ((KILLED++)) || true
+  if [[ -z "$REASON" ]]; then
+    [[ "$VERBOSE" == "1" ]] && echo "GARDE PID=$PID (PPID 1 mais entrée encore reliée : ${STDIN_TARGET:-?})"
     continue
   fi
 
-  # If process has --resume flag and has been alive >15 min = old conversation
-  CMDLINE=$(cat "/proc/$PID/cmdline" 2>/dev/null | tr '\0' ' ')
-  if [[ "$CMDLINE" == *"--resume"* && "$ETIME" -gt 900 ]]; then
-    echo "$(date '+%Y-%m-%d %H:%M:%S') KILL stale --resume PID=$PID (alive=${ETIME}s)" >> "$LOG"
-    kill -TERM "$PID" 2>/dev/null || true
-    ((KILLED++)) || true
+  if [[ "$DRY_RUN" == "1" ]]; then
+    echo "SIMULATION — tuerait PID=$PID ($REASON)"
+    continue
   fi
+
+  echo "$(date '+%Y-%m-%d %H:%M:%S') KILL orphan PID=$PID ($REASON)" >> "$LOG"
+  kill -TERM "$PID" 2>/dev/null || true
+  KILLED=$((KILLED + 1))
 done
 
 if [[ "$KILLED" -gt 0 ]]; then

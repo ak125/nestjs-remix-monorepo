@@ -7,11 +7,13 @@
  *   - ___xtr_delivery_ape_domtom1 (DOM-TOM zone OM1)
  *   - ___xtr_delivery_ape_domtom2 (DOM-TOM zone OM2)
  *
- * Poids réel des produits via pieces_price.pri_poids + pri_udm_poids (heuristique GRM/KGM)
+ * Poids réel des produits via PiecePriceDataService (autorité unique de la ligne
+ * tarifaire et de la conversion GRM/KGM) — ce service ne requête plus pieces_price
  * Seuil livraison gratuite : 150€ TTC
  */
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { PiecePriceDataService } from '@database/services/piece-price-data.service';
 
 interface ShippingTier {
   minWeightG: number;
@@ -45,9 +47,8 @@ export class ShippingCalculatorService
   private readonly FREE_SHIPPING_THRESHOLD = 150;
   private readonly DEFAULT_ITEM_WEIGHT_G = 1000; // 1kg par défaut si poids inconnu
   private readonly MAX_SINGLE_PACKAGE_G = 30000; // Colissimo max 30kg
-  private readonly KGM_THRESHOLD = 100; // KGM ≤ 100 = vrais kg, > 100 = grammes mal étiquetés
 
-  constructor() {
+  constructor(private readonly piecePriceData: PiecePriceDataService) {
     super();
   }
 
@@ -227,72 +228,32 @@ export class ShippingCalculatorService
   }
 
   /**
-   * Récupérer le poids total des articles du panier depuis pieces_price
-   * Batch query pour éviter N+1
+   * Poids total du panier, en grammes, via l'autorité unique du tarif.
+   * Lecture groupée (aucun N+1) ; repli au forfait par article si le poids manque.
    */
   async getCartItemsWeight(items: CartItemWeight[]): Promise<number> {
     if (!items || items.length === 0) return 0;
 
-    const productIds = items.map((item) => item.productId);
-
     try {
-      // Batch `.in()` by chunks of 1000 — PostgREST silently caps results at
-      // 1000 rows, which on a >1000-item cart would drop weights and skew the
-      // shipping fee. Same root cause as the pieces_media_img corruption
-      // (cf. .ast-grep/rules/supabase-js-bulk-select-paginate.yml).
-      const CHUNK = 1000;
-      const data: Array<{
-        pri_piece_id_i: number;
-        pri_poids: string;
-        pri_udm_poids: string;
-      }> = [];
-      for (let i = 0; i < productIds.length; i += CHUNK) {
-        const slice = productIds.slice(i, i + CHUNK);
-        const { data: chunkData, error } = await this.supabase
-          .from('pieces_price')
-          .select('pri_piece_id_i, pri_poids, pri_udm_poids')
-          .in('pri_piece_id_i', slice);
-        if (error) {
-          this.logger.warn(
-            `Erreur récupération poids: ${error.message}. Fallback ${this.DEFAULT_ITEM_WEIGHT_G}g/article`,
-          );
-          return items.reduce(
-            (sum, item) => sum + this.DEFAULT_ITEM_WEIGHT_G * item.quantity,
-            0,
-          );
-        }
-        if (chunkData) data.push(...chunkData);
-      }
+      // Le poids vient de l'autorité unique : même ligne tarifaire retenue et
+      // même conversion GRM/KGM que l'affichage du panier. Ce service avait sa
+      // propre requête et sa propre copie de l'heuristique, si bien qu'un même
+      // panier pouvait peser deux poids — donc coûter deux frais de port —
+      // selon qu'on passait par /cart ou par /cart/shipping.
+      //
+      // La disponibilité n'entre PAS en compte : une pièce pèse le même poids
+      // que son tarif soit à la vente ou non.
+      const poidsParPiece = await this.piecePriceData.findWeightsInGrams(
+        items.map((item) => Number(item.productId)),
+      );
 
-      // Map product_id → poids en grammes
-      // Heuristique KGM/GRM :
-      //   - GRM : valeur déjà en grammes
-      //   - KGM ≤ 100 : vrais kg (plaquettes, amortisseurs) → ×1000
-      //   - KGM > 100 : grammes mal étiquetés (disques de frein à 9445 "KGM") → tel quel
-      const weightMap = new Map<string, number>();
-      for (const row of data) {
-        const rawWeight = parseFloat(row.pri_poids);
-        if (!isNaN(rawWeight) && rawWeight > 0) {
-          const udm = (row.pri_udm_poids || '').toUpperCase();
-          const weightG =
-            udm === 'KGM' && rawWeight <= this.KGM_THRESHOLD
-              ? rawWeight * 1000
-              : rawWeight;
-          weightMap.set(String(row.pri_piece_id_i), weightG);
-        }
-      }
-
-      // Calculer poids total = Σ (poids_article × quantité)
       let totalWeightG = 0;
       let fallbackCount = 0;
 
       for (const item of items) {
-        const weightG =
-          weightMap.get(item.productId) ?? this.DEFAULT_ITEM_WEIGHT_G;
-        if (!weightMap.has(item.productId)) {
-          fallbackCount++;
-        }
-        totalWeightG += weightG * item.quantity;
+        const poids = poidsParPiece.get(Number(item.productId));
+        if (poids === undefined) fallbackCount++;
+        totalWeightG += (poids ?? this.DEFAULT_ITEM_WEIGHT_G) * item.quantity;
       }
 
       if (fallbackCount > 0) {
@@ -306,6 +267,8 @@ export class ShippingCalculatorService
       );
       return totalWeightG;
     } catch (err) {
+      // Repli assumé et journalisé : sans poids, aucun palier Colissimo ne peut
+      // être choisi. Mieux vaut un port au forfait qu'un panier bloqué.
       this.logger.error(
         `Erreur getCartItemsWeight: ${err instanceof Error ? err.message : String(err)}`,
       );

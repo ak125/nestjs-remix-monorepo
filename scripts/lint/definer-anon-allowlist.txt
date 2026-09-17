@@ -1,0 +1,60 @@
+# Exceptions gouvernées au ratchet scripts/lint/check-definer-anon-surface.sh
+#
+# Une ligne = un NOM de fonction du schéma public (sans schéma ni arguments),
+# précédé d'une ligne "# motif : ..." qui nomme la page servie ou la sonde CI qui
+# casserait si anon perdait EXECUTE. Une entrée sans motif est refusée par le
+# garde : c'est une dette, pas une exception.
+#
+# CRITÈRE D'ADMISSION, ET IL EST ÉTROIT
+# -------------------------------------
+# Une fonction n'entre ici que si elle EST le chemin de rendu d'une page publique.
+# Le chemin anon n'existe que dans le container PREPROD (READ_ONLY=true, ADR-028
+# Option D) : le container PROD s'authentifie en service_role et le frontend
+# n'instancie aucun client supabase-js navigateur (`grep -rn '\.rpc(' frontend/app`
+# = 0 occurrence). Une fonction qui ne sert AUCUNE page n'a donc jamais besoin
+# d'anon, même si un contrôleur admin l'appelle : ce contrôleur tourne en
+# service_role en PROD.
+#
+# « Aucun appelant trouvé » n'est PAS un motif d'admission — c'est un motif de
+# fermeture. « Une route admin l'appelle » n'est PAS un motif d'admission — le
+# garde HTTP ne protège rien sur le chemin PostgREST, qui contourne NestJS.
+#
+# État au 2026-09-17 : 12 entrées, établies par l'audit de l'incident
+# (47 fonctions DEFINER anon-exécutables → 35 fermées par
+# backend/supabase/migrations/20260917_definer_rpc_anon_lockdown.sql, 12 ici).
+
+# motif : home publique — sert le menu catalogue et les familles. Sonde BLOQUANTE `/api/catalog/families` (seule sonde `critical` du step API Smoke Tests, ci.yml) et ligne `/api/catalog/families` de scripts/ci/preprod-response-suite.sh.
+get_homepage_families
+
+# motif : home publique `/` — familles, gammes, marques, conseils. Sonde BLOQUANTE `/` de preprod-response-suite.sh et 1re URL Lighthouse (ci.yml).
+get_homepage_data_optimized
+
+# motif : rendu des pages gamme R1 — 5 pages sondées en 200 BLOQUANT par preprod-response-suite.sh (plaquette-de-frein-402, disque-de-frein-82, filtre-a-huile-7, filtre-a-air-8, courroie-de-distribution-306) + 3e URL Lighthouse. Le rebuild qu'elle déclenche sur cache-miss reste, lui, fermé à anon (rebuild_gamme_page_cache révoquée) : l'appel imbriqué s'exécute sous postgres.
+get_gamme_page_data_cached
+
+# motif : rendu des pages véhicule R8 (`/constructeurs/...`) — même défaut de conception et même traitement que sa jumelle gamme ci-dessus, par cohérence. AUCUNE sonde PREPROD n'exerce R8 aujourd'hui : la fermer serait donc une rupture SILENCIEUSE du rendu R8 en PREPROD, que rien n'attraperait. Correctif structurel suivi en dette : scinder lecture pure (anon) / rebuild (service_role).
+get_vehicle_page_data_cached
+
+# motif : blocs éditoriaux des pages gamme R1. Corps = `SELECT payload FROM __seo_r1_related_blocks_cache WHERE pg_id = $1 AND stale = FALSE` — lecture pure. Une erreur 42501 dans le loader R1 ferait passer les 5 sondes R1 bloquantes de 200 à 500.
+get_r1_related_blocks_cached
+
+# motif : fiche pièce publique (catalog.service.ts getPieceById). N'expose que des valeurs de VENTE déjà affichées sur la page (pri_vente_ttc_n, pri_consigne_ttc_n, pri_dispo) — aucun prix d'achat, aucune marge, aucun coût fournisseur.
+get_piece_detail
+
+# motif : page marque publique — @Controller('api/brands') sans UseGuards. Assemble véhicules, gammes populaires et blocs SEO de la page marque.
+get_brand_page_data_optimized
+
+# motif : pages encyclopédie publiques, lecture par slug. Le filtre `is_published = true` est DANS le corps : les brouillons ne fuient pas. Les routes d'écriture voisines portent, elles, @UseGuards(IsAdminGuard).
+get_seo_reference_by_slug
+
+# motif : alternatives servies sur une page R2 vide. Step BLOQUANT « Soft-404 R2 smoke » (ci.yml) — 5 fixtures de scripts/ci/soft-404-fixtures.txt assertées par scripts/ci/assert-soft-404.py.
+get_soft_404_alternatives
+
+# motif : résolution des alias gamme/marque/modèle/type pour servir une page catalogue. @Controller('api/substitution') sans UseGuards — route publique.
+get_substitution_data
+
+# motif : moteur de la page produit R2 (rôle R2 de la role-matrix). TROIS gates bloquants en dépendent : sonde R2 de preprod-response-suite.sh, step « R2 golden » (scripts/ci/assert-r2-golden.mjs) et step « API Timing Gate » (/api/rm/page-v2).
+rm_get_page_complete_v2
+
+# motif : redirection 301 des anciennes URLs TecDoc vers les URLs MassDoc. Trafic mesuré à 16 369 appels cumulés dans pg_stat_statements AVANT l'upgrade PostgreSQL 17.6 du 2026-09-17 ; cet upgrade a re-provisionné une instance NEUVE et remis les compteurs à zéro, donc ce chiffre n'est plus re-dérivable aujourd'hui (32 appels seulement depuis). Le trafic reste réel, la mesure ne l'est plus : ne pas conclure d'un pg_stat_statements actuel que l'exception serait surdimensionnée. Surface DÉJÀ arbitrée et durcie par 20260907_tecdoc_api_surface_lockdown.sql §PORTE 5 (PUBLIC et authenticated retirés, anon délibérément conservé, search_path vidé). Fermer anon casserait le SEO. Non touchée par la migration du 2026-09-17.
+resolve_type_id_remap

@@ -506,6 +506,46 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: medium
+  # Autorité unique du tarif vendable d'une pièce (sélection de la ligne
+  # pieces_price + conversion du poids), consommée par le panier, la fiche
+  # produit et les frais de port — PR #1499. Glob exact et non
+  # `database/services/**` : le reste du répertoire est historiquement non
+  # assigné, l'élargir est une décision d'ownership distincte.
+  - glob: backend/src/database/services/piece-price-data.service.ts
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: high
+    risk: high
+  # Tests de cette autorité — PR #1499. ENTRÉES POSÉES PAR L'AGENT, au-delà du
+  # snippet exact approuvé par l'owner (qui ne portait que le glob du service
+  # ci-dessus) : sans elles le ratchet `Block new contract-drift findings`
+  # comptait deux `ownership_gap` nouveaux. À RATIFIER par l'owner.
+  # domain / owner = ceux du sujet : aucun test du dépôt ne diverge du domaine ni
+  # du propriétaire de son sujet (0 divergence sur 128 paires co-localisées).
+  # Chemins exacts et non un motif `*.test.ts` : aucune des 229 entrées de ce
+  # fichier n'emploie de motif de suffixe, et un motif attribuerait d'office
+  # D11/payments-team à tout futur test voisin de ce répertoire hétérogène
+  # (meta-tags-ariane-data = surface SEO, promo-data = marketing).
+  # sourceConfidence: medium — le canon réserve `high` au signal direct, dont
+  # l'exemple est l'entrée CODEOWNERS exacte (packages/registry/src/shared/
+  # source-confidence.ts) ; or `.github/CODEOWNERS` ne mentionne ni `database` ni
+  # `payments-team`. L'attribution est donc une dérivation heuristique. L'overlay
+  # ne relève la confiance que vers le haut (build-canonical-registry.js:136-143) :
+  # écrire `high` graverait dans canonical.json une confiance que rien ne soutient.
+  # À passer `high` le jour où l'owner ratifie ces deux entrées.
+  # risk: medium — valeur des quatre entrées de test nommées du dépôt
+  # (tests/registry/**, backend/tests/**, frontend/tests/**,
+  # vehicle-context.server.test.ts). Aucune n'emploie `low`.
+  - glob: backend/src/database/services/piece-price-data.service.test.ts
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: medium
+    risk: medium
+  - glob: backend/src/database/services/cart-data.sellable-guard.test.ts
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: medium
+    risk: medium
   # ADR-059 PR-6b — SEO projection forward-writer module (workers BullMQ, NON wiré AppModule). Owner GO 2026-06-19.
   - glob: backend/src/modules/seo-projection/**
     domain: D14

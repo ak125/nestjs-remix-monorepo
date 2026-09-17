@@ -43,6 +43,10 @@ export const ErrorCodes = {
     PRODUCT_NOT_FOUND: 'CART.PRODUCT_NOT_FOUND',
     ITEM_NOT_FOUND: 'CART.ITEM_NOT_FOUND',
     UPDATE_FAILED: 'CART.UPDATE_FAILED',
+    /** La pièce existe mais n'a aucun tarif vendable (aucune ligne
+     * `pri_dispo = '1'` à prix strictement positif). Distinct de
+     * PRODUCT_NOT_FOUND : le produit existe, il n'est simplement pas à vendre. */
+    NOT_SELLABLE: 'CART.NOT_SELLABLE',
   },
 
   ORDER: {

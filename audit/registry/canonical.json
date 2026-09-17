@@ -2338,7 +2338,7 @@
       {
         "args": [],
         "definedInMigrations": [
-          "20260911_seo_cwv_daily_rum_exact_p75.sql"
+          "20260916_seo_cwv_trend_detector_vacancy_signal.sql"
         ],
         "domain": "UNKNOWN",
         "id": "public.detect_cwv_trend_divergence",
@@ -9081,25 +9081,6 @@
         "columns": [],
         "deletePolicy": "FREE",
         "domain": "UNKNOWN",
-        "id": "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
-        "inMigrations": [],
-        "indexes": [],
-        "name": "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
-        "owner": "__unassigned__",
-        "risk": "low",
-        "rlsEnabled": false,
-        "schema": "public",
-        "schemaVersion": "1.0.0",
-        "sourceConfidence": "low",
-        "status": "LIVE",
-        "usedBy": [
-          "backend/src/modules/cart/controllers/cart-recovery.controller.ts"
-        ]
-      },
-      {
-        "columns": [],
-        "deletePolicy": "FREE",
-        "domain": "UNKNOWN",
         "id": "___config",
         "inMigrations": [],
         "indexes": [],
@@ -9468,7 +9449,9 @@
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
         "status": "LIVE",
-        "usedBy": []
+        "usedBy": [
+          "backend/src/modules/cart/services/abandoned-cart-data.service.ts"
+        ]
       },
       {
         "columns": [],
@@ -10176,7 +10159,9 @@
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
         "status": "LIVE",
-        "usedBy": []
+        "usedBy": [
+          "backend/src/modules/support/services/claim.service.ts"
+        ]
       },
       {
         "columns": [],
@@ -10424,7 +10409,9 @@
         "deletePolicy": "ADR_REQUIRED",
         "domain": "UNKNOWN",
         "id": "__diag_safety_rule",
-        "inMigrations": [],
+        "inMigrations": [
+          "20260308_diagnostic_engine_mvp.sql"
+        ],
         "indexes": [],
         "name": "__diag_safety_rule",
         "owner": "__unassigned__",
@@ -10851,6 +10838,7 @@
         "sourceConfidence": "high",
         "status": "LIVE",
         "usedBy": [
+          "backend/src/modules/errors/services/error-log.service.ts",
           "backend/src/modules/seo-control-plane/collectors/runtime-logs/runtime-logs.service.ts"
         ]
       },
@@ -12265,7 +12253,9 @@
         "deletePolicy": "FREE",
         "domain": "UNKNOWN",
         "id": "__rag_proposals",
-        "inMigrations": [],
+        "inMigrations": [
+          "20260424_create_rag_proposals.sql"
+        ],
         "indexes": [],
         "name": "__rag_proposals",
         "owner": "__unassigned__",
@@ -12551,6 +12541,7 @@
         "sourceConfidence": "high",
         "status": "LIVE",
         "usedBy": [
+          "backend/src/modules/admin/services/brand-editorial.service.ts",
           "backend/src/modules/seo-monitoring/services/r-content-auditor.service.ts"
         ]
       },
@@ -12702,7 +12693,9 @@
         "deletePolicy": "ADR_REQUIRED",
         "domain": "UNKNOWN",
         "id": "__seo_content_block_versions",
-        "inMigrations": [],
+        "inMigrations": [
+          "20260619_adr059_pr6_seo_projection_schema.sql"
+        ],
         "indexes": [],
         "name": "__seo_content_block_versions",
         "owner": "__unassigned__",
@@ -12746,7 +12739,9 @@
         "deletePolicy": "ADR_REQUIRED",
         "domain": "UNKNOWN",
         "id": "__seo_content_blocks",
-        "inMigrations": [],
+        "inMigrations": [
+          "20260619_adr059_pr6_seo_projection_schema.sql"
+        ],
         "indexes": [],
         "name": "__seo_content_blocks",
         "owner": "__unassigned__",
@@ -13410,7 +13405,9 @@
         "deletePolicy": "ADR_REQUIRED",
         "domain": "UNKNOWN",
         "id": "__seo_entity_fact_versions",
-        "inMigrations": [],
+        "inMigrations": [
+          "20260619_adr059_pr6_seo_projection_schema.sql"
+        ],
         "indexes": [],
         "name": "__seo_entity_fact_versions",
         "owner": "__unassigned__",
@@ -13454,7 +13451,9 @@
         "deletePolicy": "ADR_REQUIRED",
         "domain": "UNKNOWN",
         "id": "__seo_entity_facts",
-        "inMigrations": [],
+        "inMigrations": [
+          "20260619_adr059_pr6_seo_projection_schema.sql"
+        ],
         "indexes": [],
         "name": "__seo_entity_facts",
         "owner": "__unassigned__",
@@ -13669,6 +13668,68 @@
         "columns": [
           {
             "hasDefault": true,
+            "name": "source_id",
+            "nullable": true,
+            "type": "uuid PRIMARY KEY"
+          },
+          {
+            "hasDefault": false,
+            "name": "entity_id",
+            "nullable": true,
+            "type": "text NOT NULL REFERENCES __seo_entity_facts(entity_id) ON DELETE CASCADE"
+          },
+          {
+            "hasDefault": false,
+            "name": "source_ref",
+            "nullable": false,
+            "type": "text"
+          },
+          {
+            "hasDefault": false,
+            "name": "kind",
+            "nullable": true,
+            "type": "text"
+          },
+          {
+            "hasDefault": false,
+            "name": "url",
+            "nullable": true,
+            "type": "text"
+          },
+          {
+            "hasDefault": false,
+            "name": "run_id",
+            "nullable": true,
+            "type": "uuid REFERENCES __seo_projection_runs(run_id) ON DELETE SET"
+          },
+          {
+            "hasDefault": true,
+            "name": "created_at",
+            "nullable": false,
+            "type": "timestamptz"
+          }
+        ],
+        "deletePolicy": "ADR_REQUIRED",
+        "domain": "UNKNOWN",
+        "id": "__seo_entity_sources",
+        "inMigrations": [
+          "20260619_adr059_pr6_seo_projection_schema.sql"
+        ],
+        "indexes": [],
+        "name": "__seo_entity_sources",
+        "owner": "__unassigned__",
+        "risk": "low",
+        "rlsEnabled": true,
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "sourceConfidence": "high",
+        "status": "LIVE",
+        "usedBy": []
+      },
+      {
+        "columns": [
+          {
+            "hasDefault": true,
             "name": "id",
             "nullable": true,
             "type": "UUID PRIMARY KEY"
@@ -13739,6 +13800,7 @@
           "backend/src/modules/seo-monitoring/services/funnel-events.service.ts",
           "backend/src/modules/seo-monitoring/services/runtime-events.service.ts",
           "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts",
+          "backend/src/modules/seo-shadow-observatory/seo-shadow-event-sink.service.ts",
           "backend/src/modules/seo/services/seo-placeholder-events.service.ts",
           "backend/src/modules/seo/services/sitemap-event-log.service.ts"
         ]
@@ -15486,7 +15548,9 @@
         "deletePolicy": "ADR_REQUIRED",
         "domain": "UNKNOWN",
         "id": "__seo_projection_conflicts",
-        "inMigrations": [],
+        "inMigrations": [
+          "20260619_adr059_pr6_seo_projection_schema.sql"
+        ],
         "indexes": [],
         "name": "__seo_projection_conflicts",
         "owner": "__unassigned__",
@@ -15560,7 +15624,9 @@
         "deletePolicy": "ADR_REQUIRED",
         "domain": "UNKNOWN",
         "id": "__seo_projection_runs",
-        "inMigrations": [],
+        "inMigrations": [
+          "20260619_adr059_pr6_seo_projection_schema.sql"
+        ],
         "indexes": [],
         "name": "__seo_projection_runs",
         "owner": "__unassigned__",
@@ -16795,6 +16861,44 @@
         "columns": [],
         "deletePolicy": "ADR_REQUIRED",
         "domain": "UNKNOWN",
+        "id": "__seo_r7_fingerprints",
+        "inMigrations": [],
+        "indexes": [],
+        "name": "__seo_r7_fingerprints",
+        "owner": "__unassigned__",
+        "risk": "low",
+        "rlsEnabled": false,
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "sourceConfidence": "low",
+        "status": "LIVE",
+        "usedBy": [
+          "backend/src/modules/admin/services/r7-brand-enricher.service.ts"
+        ]
+      },
+      {
+        "columns": [],
+        "deletePolicy": "ADR_REQUIRED",
+        "domain": "UNKNOWN",
+        "id": "__seo_r7_page_versions",
+        "inMigrations": [],
+        "indexes": [],
+        "name": "__seo_r7_page_versions",
+        "owner": "__unassigned__",
+        "risk": "low",
+        "rlsEnabled": false,
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "sourceConfidence": "low",
+        "status": "LIVE",
+        "usedBy": [
+          "backend/src/modules/admin/services/r7-brand-enricher.service.ts"
+        ]
+      },
+      {
+        "columns": [],
+        "deletePolicy": "ADR_REQUIRED",
+        "domain": "UNKNOWN",
         "id": "__seo_r7_pages",
         "inMigrations": [],
         "indexes": [],
@@ -16808,8 +16912,431 @@
         "status": "LIVE",
         "usedBy": [
           "backend/src/modules/admin/services/execution-router.service.ts",
+          "backend/src/modules/admin/services/r7-brand-enricher.service.ts",
           "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
           "backend/src/modules/vehicles/services/brand-rpc.service.ts"
+        ]
+      },
+      {
+        "columns": [],
+        "deletePolicy": "ADR_REQUIRED",
+        "domain": "UNKNOWN",
+        "id": "__seo_r7_qa_reviews",
+        "inMigrations": [],
+        "indexes": [],
+        "name": "__seo_r7_qa_reviews",
+        "owner": "__unassigned__",
+        "risk": "low",
+        "rlsEnabled": false,
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "sourceConfidence": "low",
+        "status": "LIVE",
+        "usedBy": [
+          "backend/src/modules/admin/services/r7-brand-enricher.service.ts"
+        ]
+      },
+      {
+        "columns": [],
+        "deletePolicy": "ADR_REQUIRED",
+        "domain": "UNKNOWN",
+        "id": "__seo_r7_regeneration_queue",
+        "inMigrations": [],
+        "indexes": [],
+        "name": "__seo_r7_regeneration_queue",
+        "owner": "__unassigned__",
+        "risk": "low",
+        "rlsEnabled": false,
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "sourceConfidence": "low",
+        "status": "LIVE",
+        "usedBy": [
+          "backend/src/modules/admin/services/r7-brand-enricher.service.ts"
+        ]
+      },
+      {
+        "columns": [
+          {
+            "hasDefault": false,
+            "name": "engine_family_key",
+            "nullable": true,
+            "type": "TEXT PRIMARY KEY"
+          },
+          {
+            "hasDefault": true,
+            "name": "page_count",
+            "nullable": false,
+            "type": "INTEGER"
+          },
+          {
+            "hasDefault": true,
+            "name": "updated_at",
+            "nullable": false,
+            "type": "TIMESTAMPTZ"
+          }
+        ],
+        "deletePolicy": "ADR_REQUIRED",
+        "domain": "UNKNOWN",
+        "id": "__seo_r8_engine_family_stats",
+        "inMigrations": [
+          "20260311142250_r8_diversity_system.sql"
+        ],
+        "indexes": [],
+        "name": "__seo_r8_engine_family_stats",
+        "owner": "__unassigned__",
+        "risk": "low",
+        "rlsEnabled": true,
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "sourceConfidence": "high",
+        "status": "LIVE",
+        "usedBy": []
+      },
+      {
+        "columns": [
+          {
+            "hasDefault": true,
+            "name": "id",
+            "nullable": true,
+            "type": "UUID PRIMARY KEY"
+          },
+          {
+            "hasDefault": false,
+            "name": "page_key",
+            "nullable": false,
+            "type": "TEXT"
+          },
+          {
+            "hasDefault": false,
+            "name": "neighbor_family_key",
+            "nullable": false,
+            "type": "TEXT"
+          },
+          {
+            "hasDefault": false,
+            "name": "engine_family_key",
+            "nullable": false,
+            "type": "TEXT"
+          },
+          {
+            "hasDefault": false,
+            "name": "content_fingerprint",
+            "nullable": false,
+            "type": "TEXT"
+          },
+          {
+            "hasDefault": false,
+            "name": "normalized_text_fingerprint",
+            "nullable": false,
+            "type": "TEXT"
+          },
+          {
+            "hasDefault": false,
+            "name": "block_sequence_fingerprint",
+            "nullable": false,
+            "type": "TEXT"
+          },
+          {
+            "hasDefault": false,
+            "name": "semantic_key_fingerprint",
+            "nullable": false,
+            "type": "TEXT"
+          },
+          {
+            "hasDefault": false,
+            "name": "faq_signature",
+            "nullable": false,
+            "type": "TEXT"
+          },
+          {
+            "hasDefault": false,
+            "name": "category_signature",
+            "nullable": false,
+            "type": "TEXT"
+          },
+          {
+            "hasDefault": true,
+            "name": "top_tokens",
+            "nullable": false,
+            "type": "JSONB"
+          },
+          {
+            "hasDefault": true,
+            "name": "block_type_sequence",
+            "nullable": false,
+            "type": "JSONB"
+          },
+          {
+            "hasDefault": true,
+            "name": "created_at",
+            "nullable": false,
+            "type": "TIMESTAMPTZ"
+          }
+        ],
+        "deletePolicy": "ADR_REQUIRED",
+        "domain": "UNKNOWN",
+        "id": "__seo_r8_fingerprints",
+        "inMigrations": [
+          "20260311142250_r8_diversity_system.sql"
+        ],
+        "indexes": [],
+        "name": "__seo_r8_fingerprints",
+        "owner": "__unassigned__",
+        "risk": "low",
+        "rlsEnabled": true,
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "sourceConfidence": "high",
+        "status": "LIVE",
+        "usedBy": [
+          "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
+        ]
+      },
+      {
+        "columns": [
+          {
+            "hasDefault": false,
+            "name": "id",
+            "nullable": true,
+            "type": "BIGSERIAL PRIMARY KEY"
+          },
+          {
+            "hasDefault": false,
+            "name": "type_id",
+            "nullable": true,
+            "type": "TEXT NOT NULL UNIQUE"
+          },
+          {
+            "hasDefault": false,
+            "name": "brand",
+            "nullable": false,
+            "type": "TEXT"
+          },
+          {
+            "hasDefault": false,
+            "name": "model",
+            "nullable": false,
+            "type": "TEXT"
+          },
+          {
+            "hasDefault": false,
+            "name": "type_name",
+            "nullable": false,
+            "type": "TEXT"
+          },
+          {
+            "hasDefault": false,
+            "name": "power",
+            "nullable": true,
+            "type": "TEXT"
+          },
+          {
+            "hasDefault": false,
+            "name": "fuel",
+            "nullable": true,
+            "type": "TEXT"
+          },
+          {
+            "hasDefault": false,
+            "name": "years",
+            "nullable": true,
+            "type": "TEXT"
+          },
+          {
+            "hasDefault": true,
+            "name": "intent_map",
+            "nullable": false,
+            "type": "JSONB"
+          },
+          {
+            "hasDefault": true,
+            "name": "sections",
+            "nullable": false,
+            "type": "JSONB"
+          },
+          {
+            "hasDefault": true,
+            "name": "quality",
+            "nullable": false,
+            "type": "JSONB"
+          },
+          {
+            "hasDefault": true,
+            "name": "evidence",
+            "nullable": false,
+            "type": "JSONB"
+          },
+          {
+            "hasDefault": true,
+            "name": "created_at",
+            "nullable": false,
+            "type": "TIMESTAMPTZ"
+          },
+          {
+            "hasDefault": true,
+            "name": "updated_at",
+            "nullable": false,
+            "type": "TIMESTAMPTZ"
+          },
+          {
+            "hasDefault": true,
+            "name": "intent_boundary",
+            "nullable": true,
+            "type": "JSONB"
+          },
+          {
+            "hasDefault": true,
+            "name": "query_pool",
+            "nullable": true,
+            "type": "JSONB"
+          },
+          {
+            "hasDefault": true,
+            "name": "clusters",
+            "nullable": true,
+            "type": "JSONB"
+          },
+          {
+            "hasDefault": true,
+            "name": "rejected_queries",
+            "nullable": true,
+            "type": "JSONB"
+          },
+          {
+            "hasDefault": true,
+            "name": "heading_plan",
+            "nullable": true,
+            "type": "JSONB"
+          },
+          {
+            "hasDefault": true,
+            "name": "pipeline_phase",
+            "nullable": true,
+            "type": "TEXT"
+          },
+          {
+            "hasDefault": true,
+            "name": "content_focus_targets",
+            "nullable": true,
+            "type": "JSONB"
+          },
+          {
+            "hasDefault": true,
+            "name": "coverage_map",
+            "nullable": true,
+            "type": "JSONB"
+          },
+          {
+            "hasDefault": true,
+            "name": "negatives_final",
+            "nullable": true,
+            "type": "JSONB"
+          },
+          {
+            "hasDefault": true,
+            "name": "media_slots",
+            "nullable": true,
+            "type": "JSONB"
+          }
+        ],
+        "deletePolicy": "ADR_REQUIRED",
+        "domain": "UNKNOWN",
+        "id": "__seo_r8_keyword_plan",
+        "inMigrations": [
+          "20260311142250_r8_diversity_system.sql"
+        ],
+        "indexes": [],
+        "name": "__seo_r8_keyword_plan",
+        "owner": "__unassigned__",
+        "risk": "low",
+        "rlsEnabled": true,
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "sourceConfidence": "high",
+        "status": "LIVE",
+        "usedBy": []
+      },
+      {
+        "columns": [
+          {
+            "hasDefault": true,
+            "name": "id",
+            "nullable": true,
+            "type": "UUID PRIMARY KEY"
+          },
+          {
+            "hasDefault": false,
+            "name": "version_no",
+            "nullable": false,
+            "type": "INTEGER"
+          },
+          {
+            "hasDefault": false,
+            "name": "content_main",
+            "nullable": false,
+            "type": "TEXT"
+          },
+          {
+            "hasDefault": false,
+            "name": "rendered_json",
+            "nullable": false,
+            "type": "JSONB"
+          },
+          {
+            "hasDefault": false,
+            "name": "block_plan",
+            "nullable": false,
+            "type": "JSONB"
+          },
+          {
+            "hasDefault": false,
+            "name": "seo_decision",
+            "nullable": false,
+            "type": "TEXT"
+          },
+          {
+            "hasDefault": false,
+            "name": "content_fingerprint",
+            "nullable": false,
+            "type": "TEXT"
+          },
+          {
+            "hasDefault": false,
+            "name": "faq_signature",
+            "nullable": false,
+            "type": "TEXT"
+          },
+          {
+            "hasDefault": false,
+            "name": "category_signature",
+            "nullable": false,
+            "type": "TEXT"
+          },
+          {
+            "hasDefault": true,
+            "name": "created_at",
+            "nullable": false,
+            "type": "TIMESTAMPTZ"
+          }
+        ],
+        "deletePolicy": "ADR_REQUIRED",
+        "domain": "UNKNOWN",
+        "id": "__seo_r8_page_versions",
+        "inMigrations": [
+          "20260311142250_r8_diversity_system.sql"
+        ],
+        "indexes": [],
+        "name": "__seo_r8_page_versions",
+        "owner": "__unassigned__",
+        "risk": "low",
+        "rlsEnabled": true,
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "sourceConfidence": "high",
+        "status": "LIVE",
+        "usedBy": [
+          "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
         ]
       },
       {
@@ -17028,7 +17555,9 @@
         "deletePolicy": "ADR_REQUIRED",
         "domain": "UNKNOWN",
         "id": "__seo_r8_pages",
-        "inMigrations": [],
+        "inMigrations": [
+          "20260311142250_r8_diversity_system.sql"
+        ],
         "indexes": [],
         "name": "__seo_r8_pages",
         "owner": "__unassigned__",
@@ -17039,9 +17568,178 @@
         "sourceConfidence": "high",
         "status": "LIVE",
         "usedBy": [
+          "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
           "backend/src/modules/seo/r2/services/r2-r8-gate-status.service.ts",
           "backend/src/modules/seo/r2/services/r8-snapshot-reader.service.ts",
           "backend/src/modules/vehicles/services/vehicle-rpc.service.ts"
+        ]
+      },
+      {
+        "columns": [
+          {
+            "hasDefault": true,
+            "name": "id",
+            "nullable": true,
+            "type": "UUID PRIMARY KEY"
+          },
+          {
+            "hasDefault": false,
+            "name": "reviewer",
+            "nullable": true,
+            "type": "TEXT"
+          },
+          {
+            "hasDefault": false,
+            "name": "notes",
+            "nullable": true,
+            "type": "TEXT"
+          },
+          {
+            "hasDefault": true,
+            "name": "actions",
+            "nullable": false,
+            "type": "JSONB"
+          },
+          {
+            "hasDefault": true,
+            "name": "created_at",
+            "nullable": false,
+            "type": "TIMESTAMPTZ"
+          },
+          {
+            "hasDefault": true,
+            "name": "updated_at",
+            "nullable": false,
+            "type": "TIMESTAMPTZ"
+          }
+        ],
+        "deletePolicy": "ADR_REQUIRED",
+        "domain": "UNKNOWN",
+        "id": "__seo_r8_qa_reviews",
+        "inMigrations": [
+          "20260311142250_r8_diversity_system.sql"
+        ],
+        "indexes": [],
+        "name": "__seo_r8_qa_reviews",
+        "owner": "__unassigned__",
+        "risk": "low",
+        "rlsEnabled": true,
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "sourceConfidence": "high",
+        "status": "LIVE",
+        "usedBy": [
+          "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
+        ]
+      },
+      {
+        "columns": [
+          {
+            "hasDefault": true,
+            "name": "id",
+            "nullable": true,
+            "type": "UUID PRIMARY KEY"
+          },
+          {
+            "hasDefault": false,
+            "name": "page_key",
+            "nullable": false,
+            "type": "TEXT"
+          },
+          {
+            "hasDefault": false,
+            "name": "reason_code",
+            "nullable": false,
+            "type": "TEXT"
+          },
+          {
+            "hasDefault": true,
+            "name": "reason_details",
+            "nullable": false,
+            "type": "JSONB"
+          },
+          {
+            "hasDefault": true,
+            "name": "priority",
+            "nullable": false,
+            "type": "INTEGER"
+          },
+          {
+            "hasDefault": true,
+            "name": "attempts",
+            "nullable": false,
+            "type": "INTEGER"
+          },
+          {
+            "hasDefault": true,
+            "name": "scheduled_at",
+            "nullable": false,
+            "type": "TIMESTAMPTZ"
+          },
+          {
+            "hasDefault": false,
+            "name": "processed_at",
+            "nullable": true,
+            "type": "TIMESTAMPTZ"
+          },
+          {
+            "hasDefault": true,
+            "name": "created_at",
+            "nullable": false,
+            "type": "TIMESTAMPTZ"
+          }
+        ],
+        "deletePolicy": "ADR_REQUIRED",
+        "domain": "UNKNOWN",
+        "id": "__seo_r8_regeneration_queue",
+        "inMigrations": [
+          "20260311142250_r8_diversity_system.sql"
+        ],
+        "indexes": [],
+        "name": "__seo_r8_regeneration_queue",
+        "owner": "__unassigned__",
+        "risk": "low",
+        "rlsEnabled": true,
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "sourceConfidence": "high",
+        "status": "LIVE",
+        "usedBy": [
+          "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
+        ]
+      },
+      {
+        "columns": [
+          {
+            "hasDefault": true,
+            "name": "id",
+            "nullable": true,
+            "type": "UUID PRIMARY KEY"
+          },
+          {
+            "hasDefault": true,
+            "name": "created_at",
+            "nullable": false,
+            "type": "TIMESTAMPTZ"
+          }
+        ],
+        "deletePolicy": "ADR_REQUIRED",
+        "domain": "UNKNOWN",
+        "id": "__seo_r8_similarity_index",
+        "inMigrations": [
+          "20260311142250_r8_diversity_system.sql"
+        ],
+        "indexes": [],
+        "name": "__seo_r8_similarity_index",
+        "owner": "__unassigned__",
+        "risk": "low",
+        "rlsEnabled": true,
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "sourceConfidence": "high",
+        "status": "LIVE",
+        "usedBy": [
+          "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
         ]
       },
       {
@@ -17164,6 +17862,7 @@
         "sourceConfidence": "high",
         "status": "LIVE",
         "usedBy": [
+          "backend/src/modules/admin/services/r4-content-enricher.service.ts",
           "backend/src/modules/admin/services/seo-cockpit.service.ts",
           "backend/src/modules/marketing/services/marketing-data.service.ts",
           "backend/src/modules/seo-monitoring/services/r-content-auditor.service.ts",
@@ -18174,6 +18873,25 @@
         "columns": [],
         "deletePolicy": "FREE",
         "domain": "UNKNOWN",
+        "id": "__sitemap_p_link_archive_20260423",
+        "inMigrations": [
+          "20260424_archive_purge_sitemap_orphan_types.sql"
+        ],
+        "indexes": [],
+        "name": "__sitemap_p_link_archive_20260423",
+        "owner": "__unassigned__",
+        "risk": "low",
+        "rlsEnabled": false,
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "sourceConfidence": "medium",
+        "status": "LIVE",
+        "usedBy": []
+      },
+      {
+        "columns": [],
+        "deletePolicy": "FREE",
+        "domain": "UNKNOWN",
         "id": "__sitemap_vehicules",
         "inMigrations": [],
         "indexes": [],
@@ -18886,25 +19604,6 @@
         "columns": [],
         "deletePolicy": "FREE",
         "domain": "UNKNOWN",
-        "id": "_acc_eligible",
-        "inMigrations": [
-          "20260607_pricing_catalog_accessory_link.sql"
-        ],
-        "indexes": [],
-        "name": "_acc_eligible",
-        "owner": "__unassigned__",
-        "risk": "low",
-        "rlsEnabled": false,
-        "schema": "public",
-        "schemaVersion": "1.0.0",
-        "sourceConfidence": "medium",
-        "status": "LIVE",
-        "usedBy": []
-      },
-      {
-        "columns": [],
-        "deletePolicy": "FREE",
-        "domain": "UNKNOWN",
         "id": "_cache_redis",
         "inMigrations": [],
         "indexes": [],
@@ -18919,64 +19618,6 @@
         "usedBy": [
           "backend/src/modules/products/services/cross-selling.service.ts"
         ]
-      },
-      {
-        "columns": [],
-        "deletePolicy": "FREE",
-        "domain": "UNKNOWN",
-        "id": "_disp_eligible",
-        "inMigrations": [
-          "20260607_pricing_catalog_display_activate.sql",
-          "20260608_pricing_catalog_display_activate_respect_pg_display.sql"
-        ],
-        "indexes": [],
-        "name": "_disp_eligible",
-        "owner": "__unassigned__",
-        "risk": "low",
-        "rlsEnabled": false,
-        "schema": "public",
-        "schemaVersion": "1.0.0",
-        "sourceConfidence": "medium",
-        "status": "LIVE",
-        "usedBy": []
-      },
-      {
-        "columns": [],
-        "deletePolicy": "FREE",
-        "domain": "UNKNOWN",
-        "id": "_disp_quarantine_eligible",
-        "inMigrations": [
-          "20260607_pricing_catalog_display_quarantine.sql"
-        ],
-        "indexes": [],
-        "name": "_disp_quarantine_eligible",
-        "owner": "__unassigned__",
-        "risk": "low",
-        "rlsEnabled": false,
-        "schema": "public",
-        "schemaVersion": "1.0.0",
-        "sourceConfidence": "medium",
-        "status": "LIVE",
-        "usedBy": []
-      },
-      {
-        "columns": [],
-        "deletePolicy": "FREE",
-        "domain": "UNKNOWN",
-        "id": "_gamme_disp_eligible",
-        "inMigrations": [
-          "20260607_pricing_catalog_gamme_display_activate.sql"
-        ],
-        "indexes": [],
-        "name": "_gamme_disp_eligible",
-        "owner": "__unassigned__",
-        "risk": "low",
-        "rlsEnabled": false,
-        "schema": "public",
-        "schemaVersion": "1.0.0",
-        "sourceConfidence": "medium",
-        "status": "LIVE",
-        "usedBy": []
       },
       {
         "columns": [
@@ -19643,6 +20284,7 @@
         "sourceConfidence": "low",
         "status": "LIVE",
         "usedBy": [
+          "backend/src/modules/admin/services/gamme-seo-audit.service.ts",
           "backend/src/modules/admin/services/seo-cockpit.service.ts"
         ]
       },
@@ -21328,7 +21970,6 @@
         "status": "LIVE",
         "usedBy": [
           "backend/src/modules/admin/services/command-center-actions.service.ts",
-          "backend/src/modules/cart/services/shipping-calculator.service.ts",
           "backend/src/modules/catalog/controllers/pieces-diagnostic.controller.ts",
           "backend/src/modules/mcp-validation/services/mcp-query.service.ts",
           "backend/src/modules/pricing/services/pricing.repository.ts",
@@ -22656,25 +23297,6 @@
         "columns": [],
         "deletePolicy": "FREE",
         "domain": "UNKNOWN",
-        "id": "sont",
-        "inMigrations": [
-          "20260621_pricing_partition_rotation_cron.down.sql"
-        ],
-        "indexes": [],
-        "name": "sont",
-        "owner": "__unassigned__",
-        "risk": "low",
-        "rlsEnabled": false,
-        "schema": "public",
-        "schemaVersion": "1.0.0",
-        "sourceConfidence": "medium",
-        "status": "LIVE",
-        "usedBy": []
-      },
-      {
-        "columns": [],
-        "deletePolicy": "FREE",
-        "domain": "UNKNOWN",
         "id": "stock",
         "inMigrations": [],
         "indexes": [],
@@ -22790,6 +23412,25 @@
         ]
       },
       {
+        "columns": [],
+        "deletePolicy": "FREE",
+        "domain": "UNKNOWN",
+        "id": "supplier_inventory_snapshots",
+        "inMigrations": [],
+        "indexes": [],
+        "name": "supplier_inventory_snapshots",
+        "owner": "__unassigned__",
+        "risk": "low",
+        "rlsEnabled": false,
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "sourceConfidence": "low",
+        "status": "LIVE",
+        "usedBy": [
+          "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
+        ]
+      },
+      {
         "columns": [
           {
             "hasDefault": true,
@@ -22855,7 +23496,9 @@
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
         "status": "LIVE",
-        "usedBy": []
+        "usedBy": [
+          "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
+        ]
       },
       {
         "columns": [],
@@ -23025,6 +23668,44 @@
         "columns": [],
         "deletePolicy": "FREE",
         "domain": "UNKNOWN",
+        "id": "supplier_runtime_profile",
+        "inMigrations": [],
+        "indexes": [],
+        "name": "supplier_runtime_profile",
+        "owner": "__unassigned__",
+        "risk": "low",
+        "rlsEnabled": false,
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "sourceConfidence": "low",
+        "status": "LIVE",
+        "usedBy": [
+          "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
+        ]
+      },
+      {
+        "columns": [],
+        "deletePolicy": "FREE",
+        "domain": "UNKNOWN",
+        "id": "supplier_truth_projection",
+        "inMigrations": [],
+        "indexes": [],
+        "name": "supplier_truth_projection",
+        "owner": "__unassigned__",
+        "risk": "low",
+        "rlsEnabled": false,
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "sourceConfidence": "low",
+        "status": "LIVE",
+        "usedBy": [
+          "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
+        ]
+      },
+      {
+        "columns": [],
+        "deletePolicy": "FREE",
+        "domain": "UNKNOWN",
         "id": "system_config",
         "inMigrations": [],
         "indexes": [],
@@ -23057,26 +23738,6 @@
         "status": "LIVE",
         "usedBy": [
           "backend/src/modules/upload/services/upload-analytics.service.ts"
-        ]
-      },
-      {
-        "columns": [],
-        "deletePolicy": "FREE",
-        "domain": "UNKNOWN",
-        "id": "uploads",
-        "inMigrations": [],
-        "indexes": [],
-        "name": "uploads",
-        "owner": "__unassigned__",
-        "risk": "low",
-        "rlsEnabled": false,
-        "schema": "public",
-        "schemaVersion": "1.0.0",
-        "sourceConfidence": "low",
-        "status": "LIVE",
-        "usedBy": [
-          "backend/src/modules/admin/services/r1-image-prompt.service.ts",
-          "backend/src/modules/rag-proxy/services/rag-image-management.service.ts"
         ]
       },
       {
@@ -29512,7 +30173,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 215,
+      "loc": 219,
       "owner": "__unassigned__",
       "path": "backend/src/common/exceptions/error-codes.ts",
       "risk": "low",
@@ -32804,11 +33465,12 @@
         "backend/src/database/services/database-composition.service.ts",
         "backend/src/database/services/meta-tags-ariane-data.service.ts",
         "backend/src/database/services/orders.service.ts",
+        "backend/src/database/services/piece-price-data.service.ts",
         "backend/src/database/services/promo-data.service.ts",
         "backend/src/database/services/shipping-data.service.ts"
       ],
       "kind": "service",
-      "loc": 45,
+      "loc": 49,
       "owner": "__unassigned__",
       "path": "backend/src/database/database.module.ts",
       "risk": "low",
@@ -32816,6 +33478,30 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
+      "id": "backend/src/database/services/cart-data.sellable-guard.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@cache/cache.service",
+        "backend/src/database/services/cart-data.service.ts",
+        "backend/src/database/services/piece-price-data.service.ts"
+      ],
+      "kind": "test",
+      "loc": 133,
+      "owner": "@ak125/payments-team",
+      "path": "backend/src/database/services/cart-data.sellable-guard.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -32828,6 +33514,7 @@
         "backend/src/auth/cart-merge.middleware.ts",
         "backend/src/auth/controllers/auth-login.controller.ts",
         "backend/src/database/database.module.ts",
+        "backend/src/database/services/cart-data.sellable-guard.test.ts",
         "backend/src/database/services/database-composition.service.ts",
         "backend/src/database/services/index.ts",
         "backend/src/modules/cart/cart.module.ts",
@@ -32845,11 +33532,12 @@
         "@cache/cache.service",
         "@common/exceptions",
         "@repo/database-types",
+        "backend/src/database/services/piece-price-data.service.ts",
         "backend/src/database/services/supabase-base.service.ts",
         "backend/src/modules/catalog/utils/image-urls.utils.ts"
       ],
       "kind": "service",
-      "loc": 1024,
+      "loc": 1028,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/cart-data.service.ts",
       "risk": "low",
@@ -33012,6 +33700,56 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
+      "id": "backend/src/database/services/piece-price-data.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/database/services/piece-price-data.service.ts"
+      ],
+      "kind": "test",
+      "loc": 275,
+      "owner": "@ak125/payments-team",
+      "path": "backend/src/database/services/piece-price-data.service.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
+      "id": "backend/src/database/services/piece-price-data.service.ts",
+      "importedBy": [
+        "backend/src/database/database.module.ts",
+        "backend/src/database/services/cart-data.sellable-guard.test.ts",
+        "backend/src/database/services/cart-data.service.ts",
+        "backend/src/database/services/piece-price-data.service.test.ts"
+      ],
+      "imports": [
+        "@repo/database-types",
+        "backend/src/database/services/supabase-base.service.ts"
+      ],
+      "kind": "service",
+      "loc": 263,
+      "owner": "@ak125/payments-team",
+      "path": "backend/src/database/services/piece-price-data.service.ts",
+      "risk": "high",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
         "depcruise"
       ],
       "domain": "UNKNOWN",
@@ -33073,6 +33811,7 @@
         "backend/src/database/services/index.ts",
         "backend/src/database/services/meta-tags-ariane-data.service.ts",
         "backend/src/database/services/orders.service.ts",
+        "backend/src/database/services/piece-price-data.service.ts",
         "backend/src/database/services/promo-data.service.ts",
         "backend/src/database/services/shipping-data.service.ts",
         "backend/src/modules/admin/services/command-center-actions.service.ts",
@@ -39934,14 +40673,16 @@
         "backend/src/modules/cart/cart.module.ts",
         "backend/src/modules/cart/controllers/cart-core.controller.ts",
         "backend/src/modules/cart/controllers/cart-shipping.controller.ts",
+        "backend/src/modules/cart/services/shipping-weight-authority.test.ts",
         "backend/src/modules/orders/services/orders.service.ts",
         "backend/src/modules/shipping/shipping.service.ts"
       ],
       "imports": [
+        "@database/services/piece-price-data.service",
         "@database/services/supabase-base.service"
       ],
       "kind": "service",
-      "loc": 319,
+      "loc": 282,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/cart/services/shipping-calculator.service.ts",
       "risk": "high",
@@ -39949,6 +40690,29 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
+      "id": "backend/src/modules/cart/services/shipping-weight-authority.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@database/services/piece-price-data.service",
+        "backend/src/modules/cart/services/shipping-calculator.service.ts"
+      ],
+      "kind": "test",
+      "loc": 111,
+      "owner": "@ak125/payments-team",
+      "path": "backend/src/modules/cart/services/shipping-weight-authority.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -49115,11 +49879,12 @@
       ],
       "imports": [
         "@common/exceptions",
+        "@database/services/piece-price-data.service",
         "@database/services/supabase-base.service",
         "@repo/database-types"
       ],
       "kind": "service",
-      "loc": 553,
+      "loc": 532,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/products/services/pricing.service.ts",
       "risk": "high",
@@ -66320,7 +67085,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 230,
+      "loc": 238,
       "owner": "@ak125",
       "path": "backend/tests/unit/readonly-guards.test.ts",
       "risk": "medium",
@@ -91644,7 +92409,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 48428,
+      "loc": 48035,
       "owner": "@ak125",
       "path": "packages/database-types/src/supabase-generated.types.ts",
       "risk": "medium",
@@ -91664,7 +92429,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 183,
+      "loc": 171,
       "owner": "@ak125",
       "path": "packages/database-types/src/types.ts",
       "risk": "medium",
@@ -94924,7 +95689,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 75,
+      "loc": 81,
       "owner": "@ak125",
       "path": "scripts/audit/__tests__/deep-inventory-determinism.test.ts",
       "risk": "medium",
@@ -95064,9 +95829,29 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 236,
+      "loc": 623,
       "owner": "@ak125",
       "path": "scripts/audit/build-db-usage-map.js",
+      "risk": "medium",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "scripts/audit/build-db-usage-map.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 679,
+      "owner": "@ak125",
+      "path": "scripts/audit/build-db-usage-map.test.ts",
       "risk": "medium",
       "runtime": true,
       "schemaVersion": "1.0.0",
@@ -97320,6 +98105,26 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "scripts/registry/lib/sql-lex.js",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 163,
+      "owner": "@ak125",
+      "path": "scripts/registry/lib/sql-lex.js",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "scripts/registry/lib/utils.js",
       "importedBy": [],
       "imports": [],
@@ -99232,6 +100037,26 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "tests/registry/sql-lex.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 163,
+      "owner": "@ak125",
+      "path": "tests/registry/sql-lex.test.ts",
+      "risk": "medium",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE"
     }
   ],
   "meta": {
@@ -99241,15 +100066,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "98f10df3b19858e0d723a5a21218be5e599b0c3f6038a3672b10bbb02baf0e29",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "ac200d75ead8a0d4f14172c30ddf482b3f0be9fd03e53406fd923b2a8eb7731b",
+      ".spec/00-canon/repository-registry/ownership.yaml": "5a541e997eba2f4a388b50cf0391c11b7c0041a43047063b051fb74c38b5dff5",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
-      "audit/registry/db.json": "d2562814b938caeca897c78a440e7e949bd5ee88311c72cf0cf9b36fd21ddb07",
+      "audit/registry/db.json": "3045154dd16aeefab01f398f2540e47939a253f9cb3d5194599764dbc02e9958",
       "audit/registry/deps.json": "28f63bf4383ddec90e009095ddc11db9298b7cd92b52ceb234a3e6a2fd996f90",
-      "audit/registry/files.json": "68681ddacaa528ef82d3a4c7f9004b86a7ea5fe55954da74f495a51f8c0f1afd",
-      "audit/registry/rpc.json": "dc4ad60e799d63c28c7e739134dcfde40b60b889a3b538ff23d4235e39245a18",
-      "audit/registry/runtime.json": "6eac2f9390d957b35b36a266be34f33c97a323d7963c024207c319e953d0fdb7"
+      "audit/registry/files.json": "2966172e3b54531c2290860c351a6836ea6c7d476b0c01a51123a6581e9479b3",
+      "audit/registry/rpc.json": "10db5aff88e6b7677e6e3ab7a2d604a844af66d8aca05ee34b5f0f8913573b72",
+      "audit/registry/runtime.json": "d75bdbf151ee60b2f8b82cfa9e95554fa9627743ccfd2f1d37716e3ab920a9b0"
     },
-    "sotFingerprint": "ae8f6f81df46"
+    "sotFingerprint": "6ad826f0cbb3"
   },
   "runtime": [
     {
@@ -99536,6 +100361,7 @@
         "runtime:backend/src/database/services/cart-data.service.ts",
         "runtime:backend/src/database/services/database-composition.service.ts",
         "runtime:backend/src/database/services/meta-tags-ariane-data.service.ts",
+        "runtime:backend/src/database/services/piece-price-data.service.ts",
         "runtime:backend/src/database/services/promo-data.service.ts",
         "runtime:backend/src/database/services/shipping-data.service.ts"
       ],

@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: ea2e9b335557a3d260513c983b734614dbfd85bc534add39e774368c362c9733
+source_sha256: d7f3f5b99e9e9f2eb08d74febe21571abd24ec67c157dec7af452fb35d3aa9dc
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 2886 |
-| DB tables (Layer 1) | 305 |
+| Files (Layer 1) | 2893 |
+| DB tables (Layer 1) | 314 |
 | DB RPC (Layer 1) | 260 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 516 |
 
-Source sotFingerprint: `ae8f6f81df46`.
+Source sotFingerprint: `6ad826f0cbb3`.
 
 ## Comment l'utiliser
 
@@ -116,11 +116,11 @@ Source sotFingerprint: `ae8f6f81df46`.
 
 ### D11 — Commerce & Users
 
-- **Files**: 276 (service=184, test=51, controller=40, config=1)
+- **Files**: 280 (service=185, test=54, controller=40, config=1)
 - **Runtime entrypoints**: 51
-- **Top owners**: @ak125 (115), @ak125/payments-team (77), @ak125/auth-team (72)
+- **Top owners**: @ak125 (115), @ak125/payments-team (81), @ak125/auth-team (72)
 - **Knowledge prose**: [`cart`](modules/cart.md), [`invoices`](modules/invoices.md), [`messages`](modules/messages.md), [`orders`](modules/orders.md), [`payments`](modules/payments.md), [`support`](modules/support.md), [`users`](modules/users.md)
-- **Status**: LIVE=175, UNKNOWN=101
+- **Status**: LIVE=176, UNKNOWN=104
 
 ### D12 — Marketing & Video
 
@@ -147,16 +147,16 @@ Source sotFingerprint: `ae8f6f81df46`.
 
 ### D15 — Security & Governance
 
-- **Files**: 255 (test=146, script=61, service=45, config=2, controller=1)
+- **Files**: 258 (test=148, script=62, service=45, config=2, controller=1)
 - **Runtime entrypoints**: 3
-- **Top owners**: @ak125 (255)
+- **Top owners**: @ak125 (258)
 - **Knowledge prose**: [`bot-guard`](modules/bot-guard.md)
-- **Status**: LIVE=52, UNKNOWN=203
+- **Status**: LIVE=54, UNKNOWN=204
 
 ### UNKNOWN — Unknown (overlay non résolu)
 
 - **Files**: 245 (service=150, config=57, controller=21, script=14, test=3)
-- **DB tables**: 305
+- **DB tables**: 314
 - **DB RPC**: 260
 - **Runtime entrypoints**: 41
 - **Top owners**: __unassigned__ (245)

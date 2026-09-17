@@ -284,6 +284,7 @@
         "runtime:backend/src/database/services/cart-data.service.ts",
         "runtime:backend/src/database/services/database-composition.service.ts",
         "runtime:backend/src/database/services/meta-tags-ariane-data.service.ts",
+        "runtime:backend/src/database/services/piece-price-data.service.ts",
         "runtime:backend/src/database/services/promo-data.service.ts",
         "runtime:backend/src/database/services/shipping-data.service.ts"
       ],

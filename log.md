@@ -40,209 +40,6 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 
 ---
 
-## 2026-06-13 — feat/seo-gsc-multilevel-ingestion (auto)
-
-- **Branche** : `feat/seo-gsc-multilevel-ingestion`
-- **Décision** : chore(registry): ownership glob D3/seo-team pour migration seo_gsc_multilevel (+2 other commits)
-- **Sortie** : PR #968 | commits b255abb51 128b28316 3c4bacb1e
-
-## 2026-06-14 — feat/seo-gsc-low-ctr-v3-pages (auto)
-
-- **Branche** : `feat/seo-gsc-low-ctr-v3-pages`
-- **Décision** : feat(seo): rpc_seo_low_ctr_v3 (grain pages fidèle + couverture) → réveille la file command-center (+5 other commits)
-- **Sortie** : PR #969 | commits c124075c3 84f45e18a 26f25aed0 b255abb51 128b28316 3c4bacb1e
-
-## 2026-06-14 — feat/trust-ledger-b0a (auto)
-
-- **Branche** : `feat/trust-ledger-b0a`
-- **Décision** : feat(audit): runtime-truth pg-stable-write deterministic runner + __gov_m7 RPC (PR-B0a)
-- **Sortie** : PR #978 | commits f8c27b88b
-
-## 2026-06-14 — feat/trust-ledger-rpc-registry-drift (auto)
-
-- **Branche** : `feat/trust-ledger-rpc-registry-drift`
-- **Décision** : feat(audit): runtime-truth rpc-registry-drift runner + __gov_m9 RPC (PR-B0a-3)
-- **Sortie** : PR #981 | commits 72ab73fd6
-
-## 2026-06-15 — fix/rpc-drift-silent-bugs (auto)
-
-- **Branche** : `fix/rpc-drift-silent-bugs`
-- **Décision** : fix(rpc-drift): repair advice view counter + drop execute_sql anti-pattern
-- **Sortie** : PR #982 | commits 4bf1dfdef
-
-## 2026-06-16 — feat/runtime-truth-overload-runner (auto)
-
-- **Branche** : `feat/runtime-truth-overload-runner`
-- **Décision** : feat(audit): runtime-truth rpc-overload-ambiguity runner + __gov_m10 RPC (PR-B0a-4)
-- **Sortie** : PR aucune | commits 4e659dfee
-
-## 2026-06-16 — feat/cc-orchestration-shadow-phase1 (auto)
-
-- **Branche** : `feat/cc-orchestration-shadow-phase1`
-- **Décision** : feat(command-center): orchestration Phase 1 « shadow » — fondation inerte (ADR-087)
-- **Sortie** : PR #1010 | commits ed3c3be20
-
-## 2026-06-18 — feat/seo-content-loop-source-discovery (auto)
-
-- **Branche** : `feat/seo-content-loop-source-discovery`
-- **Décision** : feat(skill): seo-content-loop — découverte de sources data-driven par gamme/véhicule/diagnostic (+ track)
-- **Sortie** : PR aucune | commits 171a23158
-
-## 2026-06-19 — chore/rag-purge-b8-pipeline-service (auto)
-
-- **Branche** : `chore/rag-purge-b8-pipeline-service`
-- **Décision** : chore(rag-proxy): retire RagPipelineService + endpoints pipeline (rag-purge B8)
-- **Sortie** : PR aucune | commits f5d45041f
-
-## 2026-06-19 — feat/adr059-pr6-seo-projection-schema (auto)
-
-- **Branche** : `feat/adr059-pr6-seo-projection-schema`
-- **Décision** : feat(db): ADR-059 PR-6 — SEO projection schema (7 tables + 2 MV, kg_v3 pattern)
-- **Sortie** : PR aucune | commits 3771252c1
-
-## 2026-06-20 — feat/seo-projection-block-content-adapter (auto)
-
-- **Branche** : `feat/seo-projection-block-content-adapter`
-- **Décision** : fix(seo-projection): PR-0 — adapt flat wiki export blocks to DB content shape
-- **Sortie** : PR aucune | commits a8b79cd87
-
-## 2026-06-20 — feat/seo-projection-block-content-adapter (auto)
-
-- **Branche** : `feat/seo-projection-block-content-adapter`
-- **Décision** : feat(seo-brief): D1 — WIKI evidence-driven brief generator core (SeoBriefService, dark) (+2 other commits)
-- **Sortie** : PR aucune | commits b4a226f6a 4961b59fa a8b79cd87
-
-## 2026-06-20 — feat/seo-projection-block-content-adapter (auto)
-
-- **Branche** : `feat/seo-projection-block-content-adapter`
-- **Décision** : feat(seo-brief): D1 wiring — brief-template uses WIKI evidence brief when flag ON (dark) (+4 other commits)
-- **Sortie** : PR aucune | commits 6350b71ff 1d8c45715 b4a226f6a 4961b59fa a8b79cd87
-
-## 2026-06-20 — feat/seo-projection-block-content-adapter (auto)
-
-- **Branche** : `feat/seo-projection-block-content-adapter`
-- **Décision** : fix(migration): D1 columns — squawk gate (timeouts + text/bigint) (+7 other commits)
-- **Sortie** : PR #1045 | commits cec9dca92 e4df62251 1e61e0792 6350b71ff 1d8c45715 b4a226f6a 4961b59fa a8b79cd87
-
-## 2026-06-20 — feat/media-factory-revive-fetch (auto)
-
-- **Branche** : `feat/media-factory-revive-fetch`
-- **Décision** : chore(governance): restore main's deterministic baseline — do NOT bless main's pre-existing SEO ast-grep debt (+11 other commits)
-- **Sortie** : PR #1043 | commits c95c5c113 79bd9fb96 66a8a906e 8c2a5e5a8 ef7a98b7f 0b2fade99 03f308e68 b6d0907bc cb857874f 7ff079f64 a0e645f53 e410a5194
-
-## 2026-06-20 — feat/media-factory-revive-fetch (auto)
-
-- **Branche** : `feat/media-factory-revive-fetch`
-- **Décision** : Merge remote-tracking branch 'origin/main' into feat/media-factory-revive-fetch (+13 other commits)
-- **Sortie** : PR #1043 | commits 341285c3c 029e2eac3 c95c5c113 79bd9fb96 66a8a906e 8c2a5e5a8 ef7a98b7f 0b2fade99 03f308e68 b6d0907bc cb857874f 7ff079f64 a0e645f53 e410a5194
-
-## 2026-06-21 — fix/sitemap-children-dev-parity (auto)
-
-- **Branche** : `fix/sitemap-children-dev-parity`
-- **Décision** : fix(sitemap): serve /sitemap*.xml from Node for DEV/PROD edge parity
-- **Sortie** : PR #1068 | commits 05ca12857
-
-## 2026-06-21 — fix/sitemap-children-dev-parity (auto)
-
-- **Branche** : `fix/sitemap-children-dev-parity`
-- **Décision** : Merge remote-tracking branch 'origin/main' into fix/sitemap-children-dev-parity (+3 other commits)
-- **Sortie** : PR #1068 | commits e0bd733a0 77a4a82ca 59b7e510f 05ca12857
-
-## 2026-06-21 — fix/rpc-drift-maintenance-adr032 (auto)
-
-- **Branche** : `fix/rpc-drift-maintenance-adr032`
-- **Décision** : fix(diagnostic): apply ADR-032 PR-1 maintenance kg_* RPCs (runtime-truth-p0 drift)
-- **Sortie** : PR #1084 | commits 0a25d1b80
-
-## 2026-06-22 — fix/client-ip-429-throttle (auto)
-
-- **Branche** : `fix/client-ip-429-throttle`
-- **Décision** : Merge remote-tracking branch 'origin/main' into fix/client-ip-429-throttle (+10 other commits)
-- **Sortie** : PR #1097 | commits 7b58ac6d1 5bb95cac4 951bb51ab fb7fe4dff 349d7653b 9414165c8 f74cac270 2c8179fa0 3ad43e1f4 6047cf3c9 1334a4234
-
-## 2026-06-23 — feat/rr8-prep-sentry-decouple (auto)
-
-- **Branche** : `feat/rr8-prep-sentry-decouple`
-- **Décision** : refactor(observability): single server Sentry SDK — decouple SSR from React Router (prep RR8)
-- **Sortie** : PR #1116 | commits 33a3c6a44
-
-## 2026-06-23 — feat/rr8-prep-sentry-decouple (auto)
-
-- **Branche** : `feat/rr8-prep-sentry-decouple`
-- **Décision** : chore(canon): align dep-governance Sentry ids (owner) (+2 other commits)
-- **Sortie** : PR #1116 | commits 5233664db c583c9cfa 33a3c6a44
-
-## 2026-06-23 — feat/rr8-prep-a6-middleware (auto)
-
-- **Branche** : `feat/rr8-prep-a6-middleware`
-- **Décision** : feat(rr8-prep): A6 — adopt future.v8_middleware + RouterContextProvider bridge (RR7.18)
-- **Sortie** : PR #1124 | commits 75dfb7275
-
-## 2026-06-24 — worktree-feat+pr9e1-session-store-abstraction (auto)
-
-- **Branche** : `worktree-feat+pr9e1-session-store-abstraction`
-- **Décision** : refactor(session): encapsulate store in SessionStoreService (PR-9e.1) (+1 other commit)
-- **Sortie** : PR aucune | commits 5cbe8a899 96db34e5f
-
-## 2026-06-24 — worktree-feat+pr9e1-session-store-abstraction (auto)
-
-- **Branche** : `worktree-feat+pr9e1-session-store-abstraction`
-- **Décision** : chore(registry): map backend/src/modules/session/** ownership (D11/auth-team) (+3 other commits)
-- **Sortie** : PR aucune | commits bd7d1a547 3670bc1b7 5cbe8a899 96db34e5f
-
-## 2026-06-25 — worktree-feat+pr9e2-session-impl-swap (auto)
-
-- **Branche** : `worktree-feat+pr9e2-session-impl-swap`
-- **Décision** : feat(session): swap session store to connect-redis@9 + node-redis v5, fail-fast boot (PR-9e.2)
-- **Sortie** : PR aucune | commits 9e8a273bb
-
-## 2026-06-25 — feat/seo-a1a-observe-placeholder-events (auto)
-
-- **Branche** : `feat/seo-a1a-observe-placeholder-events`
-- **Décision** : feat(seo): A1a-observe — make silent placeholder strip + runtime fallback observable
-- **Sortie** : PR #1146 | commits d949b723e
-
-## 2026-06-25 — feat/seo-a1a-observe-placeholder-events (auto)
-
-- **Branche** : `feat/seo-a1a-observe-placeholder-events`
-- **Décision** : fix(seo): A1a-observe CI gates — prettier format + role-purity skip on aggregator module (+2 other commits)
-- **Sortie** : PR #1146 | commits 4b3d6ffb9 427927bdc d949b723e
-
-## 2026-06-25 — feat/seo-a1d-sanitize-editorial-sgcontent (auto)
-
-- **Branche** : `feat/seo-a1d-sanitize-editorial-sgcontent`
-- **Décision** : fix(seo): A1d — sanitize sg_content editorial HTML at the render boundary (latent stored-XSS)
-- **Sortie** : PR #1151 | commits bc3821665
-
-## 2026-06-25 — feat/seo-a1d-sanitize-editorial-sgcontent (auto)
-
-- **Branche** : `feat/seo-a1d-sanitize-editorial-sgcontent`
-- **Décision** : Merge branch 'feat/seo-a1d-sanitize-editorial-sgcontent' of https://github.com/ak125/nestjs-remix-monorepo into feat/seo (+4 other commits)
-- **Sortie** : PR #1151 | commits 89db0ec7d ea2fe82e7 ccb2b15e4 e45eddf2b bc3821665
-## 2026-06-25 — fix/catchall-data-suffix-redirects (auto)
-
-- **Branche** : `fix/catchall-data-suffix-redirects`
-- **Décision** : fix(catch-all): strip RR8 .data suffix so legacy 301 redirects fire on client-nav
-- **Sortie** : PR #1150 | commits 601ee8c43
-
-## 2026-06-25 — feat/pr9f-nestjs11 (auto)
-
-- **Branche** : `feat/pr9f-nestjs11`
-- **Décision** : chore(registry): register backend/src/common/{utils,decorators} ownership (PR-9f, owner-applied) (+1 other commit)
-- **Sortie** : PR #1152 | commits bffbf89f9 e74b57c6d
-
-## 2026-06-26 — feat/tw4-gate-0-visual-gate (auto)
-
-- **Branche** : `feat/tw4-gate-0-visual-gate`
-- **Décision** : feat(tw4-gate-0): wire authoritative visual-regression gate + 2-tier snapshot topology
-- **Sortie** : PR #1160 | commits 83de3e0f5
-
-## 2026-06-26 — fix/visual-gate-recapture-preprod (auto)
-
-- **Branche** : `fix/visual-gate-recapture-preprod`
-- **Décision** : fix(tw4-gate-0): purge root-owned Docker leftovers pre-checkout + fix report path (+1 other commit)
-- **Sortie** : PR #1170 | commits f94b7ad9d 9a7f2acc0
-
 ## 2026-06-26 — fix/visual-gate-recapture-preprod (auto)
 
 - **Branche** : `fix/visual-gate-recapture-preprod`
@@ -566,3 +363,45 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/seo-measure-robots-markers`
 - **Décision** : audit des 7 leviers SEO — ingestion GSC rattrapable et certifiable, robots via source unique, garde des marqueurs R2, META conseils filtrées ; rapport `audit/seo-sept-leviers-2026-09-11.md`.
 - **Sortie** : PR à ouvrir | 2 migrations NON appliquées | garde admin livrée séparément (#1460, en PROD par le tag `v2026.09.11-cwv-sanitizer-admin-guard`).
+
+## 2026-09-16 — fix/cwv-trend-detector-vacancy-signal (auto)
+
+- **Branche** : `fix/cwv-trend-detector-vacancy-signal`
+- **Décision** : rendre observable la cécité de `detect_cwv_trend_divergence` — la garde tournait 7/7 `succeeded` avec 0 ligne de référence éligible, donc incapable d'alerter ; elle signale désormais ses clés aveugles et referme son alerte quand la couverture revient.
+- **Sortie** : PR #1498 | commits f3beecf1c 3475070af e8344865b | migration NON appliquée (owner, chemin ledger) | test 48 assertions + 10/10 mutants tués
+
+## 2026-09-16 — fix/cwv-trend-detector-vacancy-signal (auto)
+
+- **Branche** : `fix/cwv-trend-detector-vacancy-signal`
+- **Décision** : chore(registry): resync L1+L3 projections (+3 other commits)
+- **Sortie** : PR #1498 | commits e8344865b 3475070af 2b464b8bc f3beecf1c
+
+## 2026-09-17 — fix/cart-sellable-price (auto)
+
+- **Branche** : `fix/cart-sellable-price`
+- **Décision** : chore(ownership): glob pour le service de tarif — owner-directed override (+6 other commits)
+- **Sortie** : PR #1499 | commits 72c208470 e475cdeca c282f3409 2c4496caf 639f0acd5 2c8601673 679a179cf
+
+## 2026-09-17 — fix/cart-sellable-price (auto)
+
+- **Branche** : `fix/cart-sellable-price`
+- **Décision** : chore(registry): resync L1+L3 projections (+9 other commits)
+- **Sortie** : PR #1499 | commits 48c29f041 c28cbe722 d1ed178a6 72c208470 e475cdeca c282f3409 2c4496caf 639f0acd5 2c8601673 679a179cf
+
+## 2026-09-17 — fix/db-inventory-sql-lexer (auto)
+
+- **Branche** : `fix/db-inventory-sql-lexer`
+- **Décision** : chore(registry): régénérer les projections après correction des deux scanners (+4 other commits)
+- **Sortie** : PR #1502 | commits dc63271ff 8b5bf6168 b17d65f64 2f5dcf4d5 fde67c138
+
+## 2026-09-17 — fix/db-inventory-sql-lexer (auto)
+
+- **Branche** : `fix/db-inventory-sql-lexer`
+- **Décision** : chore(audit): resync deep-inventory + PR-8 projections (+7 other commits)
+- **Sortie** : PR #1502 | commits 0823facd5 1ac6a228d ab9ef3527 dc63271ff 8b5bf6168 b17d65f64 2f5dcf4d5 fde67c138
+
+## 2026-09-17 — fix/db-inventory-constant-resolution (auto)
+
+- **Branche** : `fix/db-inventory-constant-resolution`
+- **Décision** : chore(audit): resync des artefacts PR-8 après changement du canonical (+13 other commits)
+- **Sortie** : PR #1506 | commits 04805e48b 13deb3836 c66b59106 6d710d7eb c5e2eab16 5e032b92f 0823facd5 1ac6a228d ab9ef3527 dc63271ff 8b5bf6168 b17d65f64 2f5dcf4d5 fde67c138
