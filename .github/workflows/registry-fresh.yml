@@ -45,10 +45,42 @@ on:
       - "packages/**"
   push:
     branches: [main]
+    # ALIGNÉ sur le bloc `pull_request` ci-dessus — constaté le 2026-09-17.
+    #
+    # Ce bloc ne listait que 5 entrées là où `pull_request` en liste 18. La garde
+    # vérifiait donc AVANT le merge et se taisait APRÈS, pour exactement les
+    # familles de fichiers qui font dériver les projections : `audit/**`,
+    # `backend/supabase/migrations/**`, `scripts/audit/**`, `package.json`.
+    #
+    # Cas réel qui l'a révélé : #1503 (35 RPC SECURITY DEFINER fermées aux rôles
+    # publics) a mergé le 2026-09-17 en ajoutant une migration — donc en faisant
+    # bouger `migrations_scanned` et `audit/db-usage-map.json`. Aucun de ses
+    # fichiers ne figurait dans la liste ci-dessous : AUCUN run de fraîcheur n'a
+    # eu lieu sur `main` (vérifié : le dernier datait de `c1d419356`). La dérive
+    # n'a été vue que parce qu'une PR ouverte est entrée en conflit dessus.
+    #
+    # Une garde qui n'observe pas l'état post-merge laisse `main` dériver en
+    # silence — même famille de défaut que l'I6 vacant plus bas, un cran plus
+    # haut : la règle est juste, elle n'est simplement jamais consultée.
     paths:
+      # --- Builder + overlay : la CONFIG du registre ---
       - "scripts/registry/**"
+      - "scripts/audit/build-deep-inventory.js"
+      - "scripts/audit/build-db-usage-map.js"
+      # --- Générateurs que CE workflow exécute (PR-8 + déterminisme) ---
+      - "scripts/audit/build-cleanup-candidates.ts"
+      - "scripts/audit/build-cleanup-candidates.test.ts"
+      - "scripts/audit/cleanup-candidates.schema.ts"
+      - "scripts/audit/__tests__/**"
+      - "audit/cleanup/**"
+      - "scripts/cleanup/validate-before-delete.sh"
       - "packages/**"
+      - "audit/registry/**"
       - ".spec/00-canon/repository-registry/**"
+      - "backend/supabase/migrations/**"
+      - ".github/workflows/registry-fresh.yml"
+      - "package.json"
+      # --- Arbres INDEXÉS par files.json ---
       - "backend/src/**"
       - "frontend/app/**"
   # Déclenchement manuel : un gate de fraîcheur filtré par `paths:` peut rester muet
@@ -112,6 +144,28 @@ jobs:
       #
       # Le step post-rebuild plus bas reste utile pour I1..I5 (structure du
       # canonical reconstruit) — mais il ne prouve RIEN sur la fraîcheur.
+      #
+      # ROLLOUT — WARN-ONLY D'ABORD (ratchet ADR-062). `continue-on-error: true`
+      # est posé au niveau du JOB (voir plus haut) : ce step sort bien 1 sur une
+      # dérive — step rouge, annotation ::error, explication dans le summary —
+      # mais l'échec ne bloque pas la PR.
+      #
+      # PROMOTION EN BLOQUANT — retirer `continue-on-error` ET déclarer ce job
+      # comme required status check dans la branch protection — seulement après
+      # TOUTES ces conditions :
+      #   1. `main` est I6-vert (le rattrapage du canonical a atterri) ;
+      #   2. ce job a été observé VERT sur `main` pendant la fenêtre de ratchet
+      #      ADR-062 (>= 10 builds verts consécutifs / ~7-14 jours), sans aucun
+      #      faux positif.
+      # Basculer plus tôt exige une dérogation ADR au vault.
+      #
+      # Doctrine transplantée de la PR #1229 (PR-F), qui proposait un SECOND job
+      # `canonical-committed-fresh` lançant la MÊME commande sur le MÊME état
+      # commité. La détection qu'elle voulait ajouter est déjà portée ici, au bon
+      # moment (avant tout rebuild) : la fusionner aurait créé la source de
+      # vérité dupliquée que l'invariant 2 interdit. Seule sa doctrine de
+      # promotion était unique — elle vit désormais ici, et #1229 peut se fermer
+      # sans rien perdre.
       - name: I6 — freshness of the COMMITTED canonical (must precede any rebuild)
         if: ${{ !cancelled() }}
         run: npm run registry:validate-invariants
