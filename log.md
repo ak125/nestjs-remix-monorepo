@@ -560,3 +560,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/dev-shutdown-comment-bull`
 - **Décision** : docs(dev): borne d'arrêt DEV — c'est le close() de Bull qui attendait le crawl, pas @nestjs/bullmq
 - **Sortie** : PR aucune | commits 5d395718b
+
+## 2026-09-17 — codex/tecdoc-xl-large-20260914 (auto)
+
+- **Branche** : `codex/tecdoc-xl-large-20260914`
+- **Décision** : docs(tecdoc): verser le plan de suppression de source_linkages
+- **Sortie** : PR aucune | commits a0a681306
