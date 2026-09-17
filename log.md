@@ -590,3 +590,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/cart-sellable-price`
 - **Décision** : chore(registry): resync L1+L3 projections (+9 other commits)
 - **Sortie** : PR #1499 | commits 48c29f041 c28cbe722 d1ed178a6 72c208470 e475cdeca c282f3409 2c4496caf 639f0acd5 2c8601673 679a179cf
+
+## 2026-09-17 — fix/db-inventory-sql-lexer (auto)
+
+- **Branche** : `fix/db-inventory-sql-lexer`
+- **Décision** : chore(registry): régénérer les projections après correction des deux scanners (+4 other commits)
+- **Sortie** : PR #1502 | commits dc63271ff 8b5bf6168 b17d65f64 2f5dcf4d5 fde67c138
