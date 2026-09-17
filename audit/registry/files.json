@@ -69498,7 +69498,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 343,
+      "loc": 424,
       "owner": "__unassigned__",
       "path": "tests/registry/rpc-parser.test.ts",
       "risk": "low",

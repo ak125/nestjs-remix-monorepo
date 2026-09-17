@@ -158,6 +158,22 @@ describe("parseFunctionBlock — edge cases (V1-3 : 3 parse modes, never throw)"
     );
   });
 
+  // La classification ci-dessus dépend du lookahead borné à 1 Ko de
+  // `parseFunctionBlock`. Case 7 avait été déplacé en amont de deux cas portant
+  // `LANGUAGE` et n'était resté correct que par une marge de 453 octets. Sans cette
+  // mesure, le test précédent échouerait un jour avec « attendu partially_parsed,
+  // obtenu parsed » — un verdict qui ne dit RIEN de la cause. Celui-ci la nomme.
+  test("Case 7 reste le dernier cas : aucun LANGUAGE dans son lookahead de 1 Ko", () => {
+    const at = FIXTURE_SQL.indexOf("fixture_no_language");
+    assert.ok(at >= 0, "fixture_no_language doit exister");
+    const lookahead = FIXTURE_SQL.slice(at, at + 1024);
+    assert.ok(
+      !/\bLANGUAGE\b/i.test(lookahead),
+      "un LANGUAGE est apparu dans les 1024 octets suivant fixture_no_language : " +
+        "Case 7 va basculer en `parsed`. Le cas doit rester en FIN de fixture.",
+    );
+  });
+
   test("parser never throws even on malformed input (V1-3 totality)", () => {
     const malformed = `CREATE FUNCTION broken(\n  this is not valid SQL anywhere\n`;
     assert.doesNotThrow(() => {
@@ -218,6 +234,18 @@ describe("croisement db-usage-map → rpc.json", () => {
       !keys.has("used_by"),
       "`used_by` est réservé aux TABLES — s'il apparaît ici, le vocabulaire a changé " +
         "et le builder doit être relu, pas adapté à l'aveugle",
+    );
+  });
+
+  test("SENTINELLE — ni `grant` ni `unknown` ne réapparaissent comme fonctions", () => {
+    // Deux entrées de `rpc.json` portaient ces noms jusqu'à #1510. Aucune n'est une
+    // fonction : elles sortaient du repli `unknown_signature`, qui devinait un nom
+    // dans un extrait illisible de prose SQL. Sentinelle nommée, pas un cardinal.
+    const phantoms = entries.filter((e) => e.name === "grant" || e.name === "unknown");
+    assert.deepEqual(
+      phantoms.map((e) => e.id),
+      [],
+      "un nom deviné est réapparu dans la projection : le producteur relit du SQL brut",
     );
   });
 
@@ -312,6 +340,59 @@ describe("dépouillement des commentaires (lib/sql-lex)", () => {
         assert.ok(!topSet.has(i), `${decl} est commentée : elle ne doit PAS déclarer de fonction`);
       }
     }
+  });
+
+  // Noms déclarés par le scanner, lus comme `main()` le fait : détection sur
+  // `topLevel`, parsing sur `commentsMasked`.
+  const declaredNames = () => {
+    const { topLevel, commentsMasked } = lexViews(FIXTURE_SQL);
+    return findFunctionBlocks(topLevel)
+      .map((i) => parseFunctionBlock(commentsMasked, i))
+      .filter(Boolean)
+      .map((r: any) => r.funcName);
+  };
+
+  test("un CREATE FUNCTION dans un corps dollar-quoté n'est pas une fonction de plus", () => {
+    // Case 8c : DDL dynamique. La vue `topLevel` blanchit les corps `$$…$$`.
+    assert.ok(
+      !declaredNames().includes("fixture_inside_body"),
+      "une fonction émise dynamiquement par EXECUTE n'est pas déclarée par ce fichier",
+    );
+  });
+
+  test("l'émetteur de DDL dynamique, lui, est bien extrait", () => {
+    // Le pendant du test précédent : blanchir le corps ne doit pas faire disparaître
+    // la vraie fonction qui le porte. Sans cette moitié, « ne rien détecter » passerait.
+    const { topLevel, commentsMasked } = lexViews(FIXTURE_SQL);
+    const f = findFunctionBlocks(topLevel)
+      .map((i) => parseFunctionBlock(commentsMasked, i))
+      .find((r: any) => r?.funcName === "fixture_dynamic_ddl_emitter");
+    assert.ok(f, "l'émetteur doit être détecté");
+    assert.equal((f as any).parseMode, "parsed");
+  });
+
+  test("sur la fixture, tout bloc détecté parse — aucun repli `unknown_signature`", () => {
+    // C'est ce repli qui fabriquait les fantômes : quand `parseFunctionBlock` rend
+    // `null`, `main()` devine un nom dans un extrait de 200 octets. Sur la prose du
+    // Case 8b — copie littérale d'une migration — il en tirait `public.grant`.
+    // Détecter un bloc que l'on ne sait pas parser est donc le vrai symptôme.
+    const { topLevel, commentsMasked } = lexViews(FIXTURE_SQL);
+    const blocks = findFunctionBlocks(topLevel);
+    assert.ok(blocks.length > 0, "la fixture doit produire des blocs");
+    const unparsed = blocks
+      .filter((i) => parseFunctionBlock(commentsMasked, i) === null)
+      .map((i) => JSON.stringify(FIXTURE_SQL.slice(i, i + 60)));
+    assert.deepEqual(unparsed, [], `blocs détectés mais non parsables : ${unparsed.join(" | ")}`);
+  });
+
+  test("un commentaire en fin de type est retiré du type", () => {
+    const sql =
+      "CREATE FUNCTION fixture_trailing(p_x INT -- price in centimes\n" +
+      ") RETURNS void LANGUAGE sql AS $$ SELECT 1 $$;";
+    const { topLevel, commentsMasked } = lexViews(sql);
+    const f = parseFunctionBlock(commentsMasked, findFunctionBlocks(topLevel)[0]) as any;
+    assert.ok(f, "doit parser");
+    assert.equal(f.args[0].type, "INT");
   });
 
   test("un commentaire inline dans la liste d'arguments ne change pas la signature", () => {

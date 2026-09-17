@@ -59,13 +59,6 @@ BEGIN
 END;
 $$;
 
--- Case 7 : Partially parseable — missing LANGUAGE (intentional, will be partially_parsed)
-CREATE FUNCTION fixture_no_language(x integer)
-  RETURNS integer
-AS $$
-  SELECT x
-$$;
-
 -- Case 8 : a CREATE FUNCTION mentioned INSIDE a comment must NOT be detected.
 -- This was a documented limitation ("V1.5+ : strip comments before parsing"). The
 -- old note claimed the fixture avoided triggering it — it did not : the `-- Case N :
@@ -75,6 +68,25 @@ $$;
 -- non-executable region is blanked. Both lines below are documentation, not DDL.
 --   CREATE FUNCTION fixture_commented_out(x integer) RETURNS integer AS $$ SELECT x $$;
 /* CREATE FUNCTION fixture_block_commented(y text) RETURNS text AS $$ SELECT y $$; */
+
+-- 8b : la prose qui a RÉELLEMENT fabriqué un fantôme. `public.grant` figurait dans
+-- `audit/registry/rpc.json` jusqu'à #1510, extrait d'une phrase de ce genre — le
+-- repli `unknown_signature` devinait un nom dans un extrait illisible.
+-- EXECUTE : verrouiller. CREATE FUNCTION grant EXECUTE à PUBLIC, ET les default-privileges
+-- restent à révoquer explicitement.   (copie littérale de
+-- 20260619_adr059_pr6c_mv_revoke_and_refresh_rpc.sql:77 — de la prose, pas du DDL)
+
+-- 8c : un `CREATE FUNCTION` vivant dans le corps dollar-quoté d'une VRAIE fonction
+-- (DDL dynamique) ne doit pas être compté comme une fonction de plus. La vue
+-- `topLevel` blanchit les corps `$$…$$`, donc seul l'émetteur est déclaré.
+CREATE FUNCTION fixture_dynamic_ddl_emitter()
+  RETURNS void
+  LANGUAGE plpgsql
+  AS $$
+BEGIN
+  EXECUTE 'CREATE FUNCTION fixture_inside_body(x int) RETURNS int LANGUAGE sql AS ''SELECT x''';
+END;
+$$;
 
 -- Case 9 : inline comments inside the ARGUMENT LIST must not leak into the parsed
 -- types. Otherwise the same PostgreSQL signature, written with and without inline
@@ -86,3 +98,18 @@ CREATE FUNCTION fixture_commented_args(
   p_batch_id uuid,   -- governed batch id, required for commit
   p_rows     jsonb   /* payload : [{ "id": <bigint> }] */
 ) RETURNS void AS $$ BEGIN END $$ LANGUAGE plpgsql;
+
+-- Case 7 : Partially parseable — missing LANGUAGE (intentional, will be
+-- partially_parsed).
+--
+-- CE CAS DOIT RESTER LE DERNIER DU FICHIER. Sa classification dépend du lookahead
+-- borné à 1 Ko de `parseFunctionBlock` : tout `LANGUAGE` apparaissant dans les 1024
+-- octets qui suivent le ferait basculer en `parsed`. Il avait été déplacé en amont
+-- de deux cas contenant `LANGUAGE`, et n'était resté correct que par une marge de
+-- 453 octets — un hasard, pas une intention. Contrainte reprise de la PR #1227, et
+-- désormais asservie par un test qui mesure cette distance.
+CREATE FUNCTION fixture_no_language(x integer)
+  RETURNS integer
+AS $$
+  SELECT x
+$$;
