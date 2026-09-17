@@ -11,6 +11,7 @@ import {
   scanShapes,
   addedLines,
   scanAddedLines,
+  fingerprintLine,
   type Baseline,
   type KnownSecretFingerprint,
 } from "./check-revoked-secrets-ratchet.ts";
@@ -410,4 +411,59 @@ test("ANTI-OVERCLAIM: les règles de forme ne touchent PAS l'état de HEAD", () 
   // avant rotation, cet inventaire est une carte vers les secrets.
   assert.deepEqual(scanContent("a.md", `K=${SYNTH_HMAC}`, new Set()), []);
   assert.equal(scanShapes("a.md", `K=${SYNTH_HMAC}`).length, 1);
+});
+
+// ── 6. Mode --fingerprint : comparer sans jamais afficher ────────────────────
+//
+// Rend exécutable la comparaison que la baseline décrit déjà en prose : une
+// valeur vivante correspond-elle à une empreinte connue ? La valeur arrive par
+// STDIN, jamais par argv — un argument resterait dans l'historique du shell et
+// serait lisible dans `ps` par tout utilisateur de la machine pendant
+// l'exécution.
+
+const SYNTH_VALUE = "valeur-synthetique-de-test-12345";
+
+test("POSITIF: la ligne porte l'empreinte et la longueur, dans ce format", () => {
+  assert.equal(
+    fingerprintLine(SYNTH_VALUE),
+    `sha256_12=${fingerprint(SYNTH_VALUE)} length=${SYNTH_VALUE.length}`,
+  );
+});
+
+test("NON-DIVULGATION: la sortie ne contient jamais la valeur", () => {
+  // L'assertion centrale de ce mode. Elle est le pendant de celle qui garde le
+  // rapport de constats : ici aussi, l'empreinte circule, la valeur non.
+  assert.ok(!fingerprintLine(SYNTH_VALUE)!.includes(SYNTH_VALUE));
+});
+
+test("`echo` et `printf` donnent la MÊME empreinte", () => {
+  // Sinon l'outil dirait « les valeurs diffèrent » pour une simple différence
+  // de commande — un faux négatif de rotation, le pire cas d'usage.
+  assert.equal(fingerprintLine(`${SYNTH_VALUE}\n`), fingerprintLine(SYNTH_VALUE));
+  assert.equal(fingerprintLine(`${SYNTH_VALUE}\r\n`), fingerprintLine(SYNTH_VALUE));
+});
+
+test("NÉGATIF: seul le saut de ligne TERMINAL est retiré", () => {
+  // Une valeur peut légitimement contenir des espaces. Les rogner produirait
+  // une empreinte fausse EN SILENCE — on comparerait deux empreintes sans
+  // savoir qu'elles portent sur deux valeurs différentes.
+  const spaced = ` ${SYNTH_VALUE} `;
+  assert.equal(
+    fingerprintLine(`${spaced}\n`),
+    `sha256_12=${fingerprint(spaced)} length=${spaced.length}`,
+  );
+  assert.notEqual(fingerprintLine(spaced), fingerprintLine(SYNTH_VALUE));
+});
+
+test("NÉGATIF: entrée vide → null (l'appelant sort en code 2)", () => {
+  assert.equal(fingerprintLine(""), null);
+  assert.equal(fingerprintLine("\n"), null);
+});
+
+test("l'empreinte est celle qu'attend la baseline (même fonction, 12 hex)", () => {
+  const line = fingerprintLine(SYNTH_VALUE)!;
+  const fp = /^sha256_12=([0-9a-f]{12}) length=(\d+)$/.exec(line);
+  assert.ok(fp, "format exact attendu par une entrée de baseline");
+  assert.equal(fp[1], fingerprint(SYNTH_VALUE));
+  assert.equal(Number(fp[2]), SYNTH_VALUE.length);
 });
