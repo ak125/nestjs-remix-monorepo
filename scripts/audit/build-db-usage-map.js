@@ -126,10 +126,264 @@ function classifyCallSite(ts, call, method) {
   return { kind: 'UNRESOLVED', reason: 'no-postgrest-chain', recvText };
 }
 
+// ---- 1bis. Résolution des constantes passées à .from() --------------------
+//
+// 771 call-sites écrivent `.from(TABLES.x)` au lieu de `.from('x')`. Sans les
+// résoudre, des tables vivantes portent `used_by = 0` et basculent en candidates
+// orphelines — c'est ainsi que les 9 tables `__seo_r8_*` s'y sont retrouvées.
+//
+// HIÉRARCHIE D'ERREUR, qui gouverne chaque décision ci-dessous : un faux
+// « utilisée » est PLUS GRAVE qu'un faux « orpheline ». Une table qui reste à
+// tort dans la liste sera relue avant toute suppression ; une table qui en sort
+// à tort ne sera plus jamais questionnée. Au moindre doute : REFUS NOMMÉ.
+//
+// PÉRIMÈTRE V1 : l'univers de résolution est le corpus DÉJÀ scanné
+// (`git ls-files backend/src`). Aucun spécificateur nu (`@repo/*`) n'est
+// franchi — le résoudre exigerait de consulter `node_modules` ou
+// `packages/*/dist`, dont la présence dépend d'un build local : c'est
+// exactement la sensibilité à l'environnement que ce dépôt a déjà payée une
+// fois (mémoire `reference_registry_l1_files_builder_is_environment_sensitive`).
+// Gain mesuré de ce saut sur candidate_orphan_tables : NUL — l'intersection
+// entre les valeurs de `TABLES` et la liste des candidates est vide.
+
+const RESOLUTION_REFUSAL_REASONS = Object.freeze([
+  'unsupported-form',
+  'binding-not-found',
+  'binding-not-literal',
+  'key-not-in-object',
+  'class-field-not-private-readonly',
+  'class-field-reassigned',
+  'ambiguous-class-field',
+  'import-outside-scanned-corpus',
+]);
+
+// Déballe `x as const`, `x as T`, `(x)`, `x!` pour atteindre l'expression réelle.
+function unwrapExpr(ts, n) {
+  let cur = n;
+  for (;;) {
+    if (!cur) return cur;
+    if (ts.isAsExpression(cur) || ts.isParenthesizedExpression(cur) || ts.isNonNullExpression(cur)) { cur = cur.expression; continue; }
+    if (ts.isSatisfiesExpression && ts.isSatisfiesExpression(cur)) { cur = cur.expression; continue; }
+    return cur;
+  }
+}
+
+function stringOf(ts, n) {
+  const e = unwrapExpr(ts, n);
+  return e && (ts.isStringLiteral(e) || ts.isNoSubstitutionTemplateLiteral(e)) ? e.text : null;
+}
+
+// Décrit la FORME de l'argument, sans rien résoudre. On lit toujours la CLÉ
+// effectivement accédée au nœud `.from()`, jamais l'objet entier : créditer
+// l'objet reviendrait à déclarer « utilisées » toutes les tables qu'il énumère.
+function describeDynamicArg(ts, arg) {
+  const a = unwrapExpr(ts, arg);
+  if (!a) return { form: 'UNSUPPORTED', root: null, key: null };
+  if (ts.isPropertyAccessExpression(a) && ts.isIdentifier(a.name)) {
+    const recv = unwrapExpr(ts, a.expression);
+    if (recv.kind === ts.SyntaxKind.ThisKeyword) return { form: 'THIS_FIELD', root: 'this', key: a.name.text };
+    if (ts.isIdentifier(recv)) return { form: 'OBJ.KEY', root: recv.text, key: a.name.text };
+    return { form: 'UNSUPPORTED', root: null, key: null };
+  }
+  if (ts.isIdentifier(a)) return { form: 'IDENT', root: a.text, key: null };
+  return { form: 'UNSUPPORTED', root: null, key: null };
+}
+
+// Table de symboles d'UN fichier. Purement syntaxique : ni programme, ni
+// typechecker, ni lecture hors du fichier passé.
+function collectFileSymbols(ts, sf) {
+  const objects = new Map();    // nom → Map<clé, valeur littérale>
+  const strings = new Map();    // nom → valeur littérale
+  const nonLiteral = new Set(); // nom déclaré, initialiseur non littéral
+  const imports = new Map();    // nom local → { spec, imported }
+  const classFields = new Map();// nom → { value } | { refusal }
+  const reassigned = new Set(); // noms de champs réaffectés quelque part
+
+  // Passe 1 — repérer toute réaffectation `<qqch>.CHAMP = …`, y compris
+  // `(this as any).CHAMP = …`, qui contourne `readonly` à la compilation.
+  const findAssign = (n) => {
+    if (ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.EqualsToken
+        && ts.isPropertyAccessExpression(n.left) && ts.isIdentifier(n.left.name)) {
+      reassigned.add(n.left.name.text);
+    }
+    ts.forEachChild(n, findAssign);
+  };
+  findAssign(sf);
+
+  for (const st of sf.statements) {
+    if (ts.isVariableStatement(st)) {
+      for (const d of st.declarationList.declarations) {
+        if (!ts.isIdentifier(d.name) || !d.initializer) continue;
+        const name = d.name.text;
+        const init = unwrapExpr(ts, d.initializer);
+        const lit = stringOf(ts, init);
+        if (lit !== null) { strings.set(name, lit); continue; }
+        if (ts.isObjectLiteralExpression(init)) {
+          const m = new Map();
+          for (const p of init.properties) {
+            if (!ts.isPropertyAssignment(p)) continue;
+            const k = ts.isIdentifier(p.name) || ts.isStringLiteral(p.name) ? p.name.text : null;
+            const v = stringOf(ts, p.initializer);
+            if (k !== null && v !== null) m.set(k, v);
+          }
+          objects.set(name, m);
+          continue;
+        }
+        nonLiteral.add(name);
+      }
+    } else if (ts.isImportDeclaration(st) && ts.isStringLiteral(st.moduleSpecifier)) {
+      const spec = st.moduleSpecifier.text;
+      const nb = st.importClause && st.importClause.namedBindings;
+      if (nb && ts.isNamedImports(nb)) {
+        for (const el of nb.elements) {
+          imports.set(el.name.text, { spec, imported: (el.propertyName || el.name).text });
+        }
+      }
+    }
+  }
+
+  // Champs de classe. Frontière STRICTE : `private readonly` et rien d'autre.
+  // `protected`/`public` sont redéclarables en sous-classe, donc la valeur lue
+  // ici ne prouve pas celle du `this` à l'exécution.
+  const visitClass = (n) => {
+    if (ts.isClassDeclaration(n) || ts.isClassExpression(n)) {
+      for (const m of n.members) {
+        if (!ts.isPropertyDeclaration(m) || !ts.isIdentifier(m.name) || !m.initializer) continue;
+        const name = m.name.text;
+        const lit = stringOf(ts, m.initializer);
+        if (lit === null) continue;
+        const mods = m.modifiers || [];
+        const has = (k) => mods.some((x) => x.kind === k);
+        let entry;
+        if (!has(ts.SyntaxKind.PrivateKeyword) || !has(ts.SyntaxKind.ReadonlyKeyword)) {
+          entry = { refusal: 'class-field-not-private-readonly' };
+        } else if (reassigned.has(name)) {
+          entry = { refusal: 'class-field-reassigned' };
+        } else {
+          entry = { value: lit };
+        }
+        const prev = classFields.get(name);
+        if (prev && (prev.value !== entry.value || prev.refusal !== entry.refusal)) {
+          classFields.set(name, { refusal: 'ambiguous-class-field' });
+        } else {
+          classFields.set(name, entry);
+        }
+      }
+    }
+    ts.forEachChild(n, visitClass);
+  };
+  visitClass(sf);
+
+  return { objects, strings, nonLiteral, imports, classFields };
+}
+
+// Résout un spécificateur RELATIF vers un chemin du corpus scanné, ou null.
+// Jamais de consultation du disque : l'appartenance au corpus est le seul
+// oracle d'existence, ce qui rend la résolution insensible à l'environnement.
+function resolveRelativeSpecifier(fromFile, spec, corpusSet) {
+  if (typeof spec !== 'string' || !spec.startsWith('.')) return null;
+  const base = path.posix.join(path.posix.dirname(fromFile), spec);
+  for (const cand of [`${base}.ts`, `${base}.tsx`, `${base}/index.ts`, `${base}/index.tsx`, base]) {
+    if (corpusSet.has(cand)) return cand;
+  }
+  return null;
+}
+
+// Déclaration `const` la plus proche en remontant les portées réelles
+// (node.parent est disponible : `setParentNodes: true` au parse).
+function findLocalDeclaration(ts, node, name) {
+  for (let cur = node; cur; cur = cur.parent) {
+    const stmts = ts.isSourceFile(cur) ? cur.statements : (ts.isBlock(cur) ? cur.statements : null);
+    if (!stmts) continue;
+    for (const st of stmts) {
+      if (!ts.isVariableStatement(st)) continue;
+      for (const d of st.declarationList.declarations) {
+        if (ts.isIdentifier(d.name) && d.name.text === name) return d;
+      }
+    }
+  }
+  return null;
+}
+
+function resolveRootBinding(ts, node, desc, file, symbolsByFile, corpusSet) {
+  const no = (refusal) => ({ table: null, refusal });
+  if (!desc || desc.form === 'UNSUPPORTED') return no('unsupported-form');
+  const syms = symbolsByFile.get(file);
+  if (!syms) return no('binding-not-found');
+
+  if (desc.form === 'THIS_FIELD') {
+    const f = syms.classFields.get(desc.key);
+    if (!f) return no('binding-not-found');
+    return f.refusal ? no(f.refusal) : { table: f.value, refusal: null };
+  }
+
+  // Une déclaration locale l'emporte sur toute homonyme de premier niveau.
+  const local = findLocalDeclaration(ts, node, desc.root);
+  if (local && local.initializer) {
+    const init = unwrapExpr(ts, local.initializer);
+    if (desc.form === 'IDENT') {
+      const lit = stringOf(ts, init);
+      return lit !== null ? { table: lit, refusal: null } : no('binding-not-literal');
+    }
+    if (ts.isObjectLiteralExpression(init)) {
+      for (const p of init.properties) {
+        if (!ts.isPropertyAssignment(p)) continue;
+        const k = ts.isIdentifier(p.name) || ts.isStringLiteral(p.name) ? p.name.text : null;
+        if (k === desc.key) {
+          const v = stringOf(ts, p.initializer);
+          return v !== null ? { table: v, refusal: null } : no('binding-not-literal');
+        }
+      }
+      return no('key-not-in-object');
+    }
+    return no('binding-not-literal');
+  }
+
+  const fromImport = syms.imports.get(desc.root);
+  if (fromImport) {
+    const target = resolveRelativeSpecifier(file, fromImport.spec, corpusSet);
+    if (!target) return no('import-outside-scanned-corpus');
+    const tsy = symbolsByFile.get(target);
+    if (!tsy) return no('import-outside-scanned-corpus');
+    if (desc.form === 'IDENT') {
+      const v = tsy.strings.get(fromImport.imported);
+      if (v !== undefined) return { table: v, refusal: null };
+      return tsy.nonLiteral.has(fromImport.imported) ? no('binding-not-literal') : no('binding-not-found');
+    }
+    const obj = tsy.objects.get(fromImport.imported);
+    if (!obj) return tsy.nonLiteral.has(fromImport.imported) ? no('binding-not-literal') : no('binding-not-found');
+    const v = obj.get(desc.key);
+    return v !== undefined ? { table: v, refusal: null } : no('key-not-in-object');
+  }
+
+  if (desc.form === 'IDENT') {
+    const v = syms.strings.get(desc.root);
+    if (v !== undefined) return { table: v, refusal: null };
+    return syms.nonLiteral.has(desc.root) ? no('binding-not-literal') : no('binding-not-found');
+  }
+  const obj = syms.objects.get(desc.root);
+  if (!obj) return syms.nonLiteral.has(desc.root) ? no('binding-not-literal') : no('binding-not-found');
+  const v = obj.get(desc.key);
+  return v !== undefined ? { table: v, refusal: null } : no('key-not-in-object');
+}
+
 // ---- 1. AST scan of backend/src for .from('x') / .rpc('x') ----------------
 function scanCallSites(ts) {
   log('[build-db-usage-map] scanning backend/src for .from() / .rpc() …');
   const files = gitLines(['ls-files', 'backend/src']).filter((f) => /\.tsx?$/.test(f) && !/\.spec\.ts$|\.e2e-spec\.ts$/.test(f));
+  // Passe 1 — table de symboles par fichier. Deux passes plutôt qu'un cache des
+  // AST : 1400 `SourceFile` avec `setParentNodes` tiendraient tout le scan en
+  // mémoire, et ce dépôt a déjà payé un OOM V8. Le coût d'un second parse est
+  // borné et mesuré ; il n'y a de toute façon pas de budget pre-commit ici (ce
+  // générateur n'y tourne pas — la contrainte est l'égalité octet en CI).
+  const corpusSet = new Set(files);
+  const symbolsByFile = new Map();
+  for (const file of files) {
+    let src;
+    try { src = fs.readFileSync(path.join(REPO_ROOT, file), 'utf8'); } catch { continue; }
+    const sf = ts.createSourceFile(file, src, ts.ScriptTarget.Latest, true, file.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
+    symbolsByFile.set(file, collectFileSymbols(ts, sf));
+  }
   const tableUses = new Map();      // table → Set<file>
   const rpcUses = new Map();        // fn → Set<file>
   const dynamicFrom = [];           // { file, line } where .from(<non-literal>) on a DB receiver
@@ -160,7 +414,21 @@ function scanCallSites(ts) {
               if (!bag.has(name)) bag.set(name, new Set());
               bag.get(name).add(file);
             } else {
-              (method === 'from' ? dynamicFrom : dynamicRpc).push({ file, line: lineOf() });
+              // Argument non littéral : on tente la résolution 1-hop. Un refus
+              // est NOMMÉ et publié ; il n'accorde aucun usage, donc il ne peut
+              // pas retirer une table de la liste de revue. C'est la direction
+              // sûre de l'asymétrie (cf. en-tête §1bis).
+              const desc = describeDynamicArg(ts, arg0);
+              const res = resolveRootBinding(ts, arg0, desc, file, symbolsByFile, corpusSet);
+              const entry = {
+                file, line: lineOf(), form: desc.form,
+                resolved_table: res.table, refusal: res.refusal,
+              };
+              (method === 'from' ? dynamicFrom : dynamicRpc).push(entry);
+              if (method === 'from' && res.table) {
+                if (!tableUses.has(res.table)) tableUses.set(res.table, new Set());
+                tableUses.get(res.table).add(file);
+              }
             }
           }
         }
@@ -350,4 +618,5 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { scanCallSites, scanMigrations, classifyCallSite, JS_STATIC_FROM_OWNERS, POSTGREST_VERBS };
+module.exports = { scanCallSites, scanMigrations, classifyCallSite, JS_STATIC_FROM_OWNERS, POSTGREST_VERBS,
+  describeDynamicArg, collectFileSymbols, resolveRelativeSpecifier, resolveRootBinding, RESOLUTION_REFUSAL_REASONS };

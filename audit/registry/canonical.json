@@ -9449,7 +9449,9 @@
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
         "status": "LIVE",
-        "usedBy": []
+        "usedBy": [
+          "backend/src/modules/cart/services/abandoned-cart-data.service.ts"
+        ]
       },
       {
         "columns": [],
@@ -10157,7 +10159,9 @@
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
         "status": "LIVE",
-        "usedBy": []
+        "usedBy": [
+          "backend/src/modules/support/services/claim.service.ts"
+        ]
       },
       {
         "columns": [],
@@ -10834,6 +10838,7 @@
         "sourceConfidence": "high",
         "status": "LIVE",
         "usedBy": [
+          "backend/src/modules/errors/services/error-log.service.ts",
           "backend/src/modules/seo-control-plane/collectors/runtime-logs/runtime-logs.service.ts"
         ]
       },
@@ -12536,6 +12541,7 @@
         "sourceConfidence": "high",
         "status": "LIVE",
         "usedBy": [
+          "backend/src/modules/admin/services/brand-editorial.service.ts",
           "backend/src/modules/seo-monitoring/services/r-content-auditor.service.ts"
         ]
       },
@@ -13794,6 +13800,7 @@
           "backend/src/modules/seo-monitoring/services/funnel-events.service.ts",
           "backend/src/modules/seo-monitoring/services/runtime-events.service.ts",
           "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts",
+          "backend/src/modules/seo-shadow-observatory/seo-shadow-event-sink.service.ts",
           "backend/src/modules/seo/services/seo-placeholder-events.service.ts",
           "backend/src/modules/seo/services/sitemap-event-log.service.ts"
         ]
@@ -16854,6 +16861,44 @@
         "columns": [],
         "deletePolicy": "ADR_REQUIRED",
         "domain": "UNKNOWN",
+        "id": "__seo_r7_fingerprints",
+        "inMigrations": [],
+        "indexes": [],
+        "name": "__seo_r7_fingerprints",
+        "owner": "__unassigned__",
+        "risk": "low",
+        "rlsEnabled": false,
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "sourceConfidence": "low",
+        "status": "LIVE",
+        "usedBy": [
+          "backend/src/modules/admin/services/r7-brand-enricher.service.ts"
+        ]
+      },
+      {
+        "columns": [],
+        "deletePolicy": "ADR_REQUIRED",
+        "domain": "UNKNOWN",
+        "id": "__seo_r7_page_versions",
+        "inMigrations": [],
+        "indexes": [],
+        "name": "__seo_r7_page_versions",
+        "owner": "__unassigned__",
+        "risk": "low",
+        "rlsEnabled": false,
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "sourceConfidence": "low",
+        "status": "LIVE",
+        "usedBy": [
+          "backend/src/modules/admin/services/r7-brand-enricher.service.ts"
+        ]
+      },
+      {
+        "columns": [],
+        "deletePolicy": "ADR_REQUIRED",
+        "domain": "UNKNOWN",
         "id": "__seo_r7_pages",
         "inMigrations": [],
         "indexes": [],
@@ -16867,8 +16912,47 @@
         "status": "LIVE",
         "usedBy": [
           "backend/src/modules/admin/services/execution-router.service.ts",
+          "backend/src/modules/admin/services/r7-brand-enricher.service.ts",
           "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
           "backend/src/modules/vehicles/services/brand-rpc.service.ts"
+        ]
+      },
+      {
+        "columns": [],
+        "deletePolicy": "ADR_REQUIRED",
+        "domain": "UNKNOWN",
+        "id": "__seo_r7_qa_reviews",
+        "inMigrations": [],
+        "indexes": [],
+        "name": "__seo_r7_qa_reviews",
+        "owner": "__unassigned__",
+        "risk": "low",
+        "rlsEnabled": false,
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "sourceConfidence": "low",
+        "status": "LIVE",
+        "usedBy": [
+          "backend/src/modules/admin/services/r7-brand-enricher.service.ts"
+        ]
+      },
+      {
+        "columns": [],
+        "deletePolicy": "ADR_REQUIRED",
+        "domain": "UNKNOWN",
+        "id": "__seo_r7_regeneration_queue",
+        "inMigrations": [],
+        "indexes": [],
+        "name": "__seo_r7_regeneration_queue",
+        "owner": "__unassigned__",
+        "risk": "low",
+        "rlsEnabled": false,
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "sourceConfidence": "low",
+        "status": "LIVE",
+        "usedBy": [
+          "backend/src/modules/admin/services/r7-brand-enricher.service.ts"
         ]
       },
       {
@@ -17005,7 +17089,9 @@
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
         "status": "LIVE",
-        "usedBy": []
+        "usedBy": [
+          "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
+        ]
       },
       {
         "columns": [
@@ -17249,7 +17335,9 @@
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
         "status": "LIVE",
-        "usedBy": []
+        "usedBy": [
+          "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
+        ]
       },
       {
         "columns": [
@@ -17480,6 +17568,7 @@
         "sourceConfidence": "high",
         "status": "LIVE",
         "usedBy": [
+          "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
           "backend/src/modules/seo/r2/services/r2-r8-gate-status.service.ts",
           "backend/src/modules/seo/r2/services/r8-snapshot-reader.service.ts",
           "backend/src/modules/vehicles/services/vehicle-rpc.service.ts"
@@ -17539,7 +17628,9 @@
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
         "status": "LIVE",
-        "usedBy": []
+        "usedBy": [
+          "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
+        ]
       },
       {
         "columns": [
@@ -17613,7 +17704,9 @@
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
         "status": "LIVE",
-        "usedBy": []
+        "usedBy": [
+          "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
+        ]
       },
       {
         "columns": [
@@ -17645,7 +17738,9 @@
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
         "status": "LIVE",
-        "usedBy": []
+        "usedBy": [
+          "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
+        ]
       },
       {
         "columns": [
@@ -17767,6 +17862,7 @@
         "sourceConfidence": "high",
         "status": "LIVE",
         "usedBy": [
+          "backend/src/modules/admin/services/r4-content-enricher.service.ts",
           "backend/src/modules/admin/services/seo-cockpit.service.ts",
           "backend/src/modules/marketing/services/marketing-data.service.ts",
           "backend/src/modules/seo-monitoring/services/r-content-auditor.service.ts",
@@ -20188,6 +20284,7 @@
         "sourceConfidence": "low",
         "status": "LIVE",
         "usedBy": [
+          "backend/src/modules/admin/services/gamme-seo-audit.service.ts",
           "backend/src/modules/admin/services/seo-cockpit.service.ts"
         ]
       },
@@ -23315,6 +23412,25 @@
         ]
       },
       {
+        "columns": [],
+        "deletePolicy": "FREE",
+        "domain": "UNKNOWN",
+        "id": "supplier_inventory_snapshots",
+        "inMigrations": [],
+        "indexes": [],
+        "name": "supplier_inventory_snapshots",
+        "owner": "__unassigned__",
+        "risk": "low",
+        "rlsEnabled": false,
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "sourceConfidence": "low",
+        "status": "LIVE",
+        "usedBy": [
+          "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
+        ]
+      },
+      {
         "columns": [
           {
             "hasDefault": true,
@@ -23380,7 +23496,9 @@
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
         "status": "LIVE",
-        "usedBy": []
+        "usedBy": [
+          "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
+        ]
       },
       {
         "columns": [],
@@ -23544,6 +23662,44 @@
         "status": "LIVE",
         "usedBy": [
           "backend/src/modules/pricing/services/pricing.repository.ts"
+        ]
+      },
+      {
+        "columns": [],
+        "deletePolicy": "FREE",
+        "domain": "UNKNOWN",
+        "id": "supplier_runtime_profile",
+        "inMigrations": [],
+        "indexes": [],
+        "name": "supplier_runtime_profile",
+        "owner": "__unassigned__",
+        "risk": "low",
+        "rlsEnabled": false,
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "sourceConfidence": "low",
+        "status": "LIVE",
+        "usedBy": [
+          "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
+        ]
+      },
+      {
+        "columns": [],
+        "deletePolicy": "FREE",
+        "domain": "UNKNOWN",
+        "id": "supplier_truth_projection",
+        "inMigrations": [],
+        "indexes": [],
+        "name": "supplier_truth_projection",
+        "owner": "__unassigned__",
+        "risk": "low",
+        "rlsEnabled": false,
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "sourceConfidence": "low",
+        "status": "LIVE",
+        "usedBy": [
+          "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
         ]
       },
       {
@@ -95533,7 +95689,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 75,
+      "loc": 81,
       "owner": "@ak125",
       "path": "scripts/audit/__tests__/deep-inventory-determinism.test.ts",
       "risk": "medium",
@@ -95673,7 +95829,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 354,
+      "loc": 623,
       "owner": "@ak125",
       "path": "scripts/audit/build-db-usage-map.js",
       "risk": "medium",
@@ -95693,7 +95849,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 267,
+      "loc": 679,
       "owner": "@ak125",
       "path": "scripts/audit/build-db-usage-map.test.ts",
       "risk": "medium",
@@ -99912,13 +100068,13 @@
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
       ".spec/00-canon/repository-registry/ownership.yaml": "5a541e997eba2f4a388b50cf0391c11b7c0041a43047063b051fb74c38b5dff5",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
-      "audit/registry/db.json": "bf63b522e6553816b524b848ee2d8651df02769c5f0066d068ad5c5a0c3774c2",
+      "audit/registry/db.json": "3045154dd16aeefab01f398f2540e47939a253f9cb3d5194599764dbc02e9958",
       "audit/registry/deps.json": "28f63bf4383ddec90e009095ddc11db9298b7cd92b52ceb234a3e6a2fd996f90",
-      "audit/registry/files.json": "b2fede4b9313809d3badea7697042ba98a3d4ecc72f369ed79b0b3096aa788ce",
+      "audit/registry/files.json": "2966172e3b54531c2290860c351a6836ea6c7d476b0c01a51123a6581e9479b3",
       "audit/registry/rpc.json": "10db5aff88e6b7677e6e3ab7a2d604a844af66d8aca05ee34b5f0f8913573b72",
       "audit/registry/runtime.json": "d75bdbf151ee60b2f8b82cfa9e95554fa9627743ccfd2f1d37716e3ab920a9b0"
     },
-    "sotFingerprint": "2f11ed8e6c23"
+    "sotFingerprint": "6ad826f0cbb3"
   },
   "runtime": [
     {
