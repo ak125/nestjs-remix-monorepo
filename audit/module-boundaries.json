@@ -224,8 +224,8 @@
         "backend/src/modules/rm/services/__tests__",
         "backend/src/modules/rm/utils"
       ],
-      "files_count": 14,
-      "loc_total": 3184,
+      "files_count": 15,
+      "loc_total": 3292,
       "has_barrel": false
     },
     "diagnostic-engine": {
@@ -958,7 +958,7 @@
         "tests/registry"
       ],
       "files_count": 239,
-      "loc_total": 42971,
+      "loc_total": 42979,
       "has_barrel": true
     },
     "upload": {
