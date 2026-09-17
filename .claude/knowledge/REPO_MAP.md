@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 08f80ec1d33e05e75ad8606534e9997c7fce27c283947f290ffd5d5f25b033c3
+source_sha256: 792f13be62ee5c7d82d64e8260515847ecb7f22a3957052cbd28eda37f596756
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 2893 |
+| Files (Layer 1) | 2894 |
 | DB tables (Layer 1) | 314 |
 | DB RPC (Layer 1) | 253 |
 | Dependencies (Layer 1) | 237 |
-| Runtime entrypoints (Layer 1) | 516 |
+| Runtime entrypoints (Layer 1) | 514 |
 
-Source sotFingerprint: `6e1c5523be99`.
+Source sotFingerprint: `4dc9583530c6`.
 
 ## Comment l'utiliser
 
@@ -109,10 +109,10 @@ Source sotFingerprint: `6e1c5523be99`.
 ### D10 — Quality, Monitoring & Observabilité
 
 - **Files**: 33 (service=20, test=7, controller=6)
-- **Runtime entrypoints**: 13
+- **Runtime entrypoints**: 12
 - **Top owners**: @ak125 (33)
 - **Knowledge prose**: [`analytics`](modules/analytics.md), [`dashboard`](modules/dashboard.md), [`errors`](modules/errors.md), [`health`](modules/health.md), [`observability`](modules/observability.md)
-- **Status**: LIVE=27, UNKNOWN=6
+- **Status**: LIVE=26, UNKNOWN=7
 
 ### D11 — Commerce & Users
 
@@ -147,11 +147,11 @@ Source sotFingerprint: `6e1c5523be99`.
 
 ### D15 — Security & Governance
 
-- **Files**: 258 (test=148, script=62, service=45, config=2, controller=1)
-- **Runtime entrypoints**: 3
-- **Top owners**: @ak125 (258)
+- **Files**: 259 (test=149, script=62, service=45, config=2, controller=1)
+- **Runtime entrypoints**: 2
+- **Top owners**: @ak125 (259)
 - **Knowledge prose**: [`bot-guard`](modules/bot-guard.md)
-- **Status**: LIVE=54, UNKNOWN=204
+- **Status**: LIVE=54, UNKNOWN=205
 
 ### UNKNOWN — Unknown (overlay non résolu)
 
