@@ -12251,7 +12251,6 @@
       "status": "LIVE",
       "usedBy": [
         "backend/src/modules/admin/services/command-center-actions.service.ts",
-        "backend/src/modules/cart/services/shipping-calculator.service.ts",
         "backend/src/modules/catalog/controllers/pieces-diagnostic.controller.ts",
         "backend/src/modules/mcp-validation/services/mcp-query.service.ts",
         "backend/src/modules/pricing/services/pricing.repository.ts",

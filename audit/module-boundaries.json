@@ -130,8 +130,8 @@
         "backend/src/modules/cart/dto/__tests__",
         "backend/src/modules/cart/services"
       ],
-      "files_count": 19,
-      "loc_total": 3698,
+      "files_count": 20,
+      "loc_total": 3772,
       "has_barrel": false
     },
     "catalog": {
@@ -171,7 +171,7 @@
         "backend/src/common/utils"
       ],
       "files_count": 38,
-      "loc_total": 1585,
+      "loc_total": 1589,
       "has_barrel": true
     },
     "config": {
@@ -211,8 +211,8 @@
         "backend/src/database/services",
         "backend/src/database/types"
       ],
-      "files_count": 12,
-      "loc_total": 20999,
+      "files_count": 15,
+      "loc_total": 21678,
       "has_barrel": true
     },
     "dev-only": {
@@ -635,7 +635,7 @@
         "backend/src/modules/products/types"
       ],
       "files_count": 27,
-      "loc_total": 7128,
+      "loc_total": 7107,
       "has_barrel": true
     },
     "promo": {
@@ -958,7 +958,7 @@
         "tests/registry"
       ],
       "files_count": 237,
-      "loc_total": 42461,
+      "loc_total": 42469,
       "has_barrel": true
     },
     "upload": {

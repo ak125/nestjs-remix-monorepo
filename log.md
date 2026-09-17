@@ -578,3 +578,15 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/cwv-trend-detector-vacancy-signal`
 - **Décision** : chore(registry): resync L1+L3 projections (+3 other commits)
 - **Sortie** : PR #1498 | commits e8344865b 3475070af 2b464b8bc f3beecf1c
+
+## 2026-09-17 — fix/cart-sellable-price (auto)
+
+- **Branche** : `fix/cart-sellable-price`
+- **Décision** : chore(ownership): glob pour le service de tarif — owner-directed override (+6 other commits)
+- **Sortie** : PR #1499 | commits 72c208470 e475cdeca c282f3409 2c4496caf 639f0acd5 2c8601673 679a179cf
+
+## 2026-09-17 — fix/cart-sellable-price (auto)
+
+- **Branche** : `fix/cart-sellable-price`
+- **Décision** : chore(registry): resync L1+L3 projections (+9 other commits)
+- **Sortie** : PR #1499 | commits 48c29f041 c28cbe722 d1ed178a6 72c208470 e475cdeca c282f3409 2c4496caf 639f0acd5 2c8601673 679a179cf

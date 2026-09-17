@@ -2226,7 +2226,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 215,
+      "loc": 219,
       "owner": "__unassigned__",
       "path": "backend/src/common/exceptions/error-codes.ts",
       "risk": "low",
@@ -5406,11 +5406,12 @@
         "backend/src/database/services/database-composition.service.ts",
         "backend/src/database/services/meta-tags-ariane-data.service.ts",
         "backend/src/database/services/orders.service.ts",
+        "backend/src/database/services/piece-price-data.service.ts",
         "backend/src/database/services/promo-data.service.ts",
         "backend/src/database/services/shipping-data.service.ts"
       ],
       "kind": "service",
-      "loc": 45,
+      "loc": 49,
       "owner": "__unassigned__",
       "path": "backend/src/database/database.module.ts",
       "risk": "low",
@@ -5425,11 +5426,35 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/database/services/cart-data.sellable-guard.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@cache/cache.service",
+        "backend/src/database/services/cart-data.service.ts",
+        "backend/src/database/services/piece-price-data.service.ts"
+      ],
+      "kind": "test",
+      "loc": 133,
+      "owner": "__unassigned__",
+      "path": "backend/src/database/services/cart-data.sellable-guard.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/database/services/cart-data.service.ts",
       "importedBy": [
         "backend/src/auth/cart-merge.middleware.ts",
         "backend/src/auth/controllers/auth-login.controller.ts",
         "backend/src/database/database.module.ts",
+        "backend/src/database/services/cart-data.sellable-guard.test.ts",
         "backend/src/database/services/database-composition.service.ts",
         "backend/src/database/services/index.ts",
         "backend/src/modules/cart/cart.module.ts",
@@ -5447,11 +5472,12 @@
         "@cache/cache.service",
         "@common/exceptions",
         "@repo/database-types",
+        "backend/src/database/services/piece-price-data.service.ts",
         "backend/src/database/services/supabase-base.service.ts",
         "backend/src/modules/catalog/utils/image-urls.utils.ts"
       ],
       "kind": "service",
-      "loc": 1024,
+      "loc": 1028,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/cart-data.service.ts",
       "risk": "low",
@@ -5617,6 +5643,54 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/database/services/piece-price-data.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/database/services/piece-price-data.service.ts"
+      ],
+      "kind": "test",
+      "loc": 275,
+      "owner": "__unassigned__",
+      "path": "backend/src/database/services/piece-price-data.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/database/services/piece-price-data.service.ts",
+      "importedBy": [
+        "backend/src/database/database.module.ts",
+        "backend/src/database/services/cart-data.sellable-guard.test.ts",
+        "backend/src/database/services/cart-data.service.ts",
+        "backend/src/database/services/piece-price-data.service.test.ts"
+      ],
+      "imports": [
+        "@repo/database-types",
+        "backend/src/database/services/supabase-base.service.ts"
+      ],
+      "kind": "service",
+      "loc": 263,
+      "owner": "__unassigned__",
+      "path": "backend/src/database/services/piece-price-data.service.ts",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/database/services/promo-data.service.ts",
       "importedBy": [
         "backend/src/database/database.module.ts",
@@ -5675,6 +5749,7 @@
         "backend/src/database/services/index.ts",
         "backend/src/database/services/meta-tags-ariane-data.service.ts",
         "backend/src/database/services/orders.service.ts",
+        "backend/src/database/services/piece-price-data.service.ts",
         "backend/src/database/services/promo-data.service.ts",
         "backend/src/database/services/shipping-data.service.ts",
         "backend/src/modules/admin/services/command-center-actions.service.ts",
@@ -12296,14 +12371,16 @@
         "backend/src/modules/cart/cart.module.ts",
         "backend/src/modules/cart/controllers/cart-core.controller.ts",
         "backend/src/modules/cart/controllers/cart-shipping.controller.ts",
+        "backend/src/modules/cart/services/shipping-weight-authority.test.ts",
         "backend/src/modules/orders/services/orders.service.ts",
         "backend/src/modules/shipping/shipping.service.ts"
       ],
       "imports": [
+        "@database/services/piece-price-data.service",
         "@database/services/supabase-base.service"
       ],
       "kind": "service",
-      "loc": 319,
+      "loc": 282,
       "owner": "__unassigned__",
       "path": "backend/src/modules/cart/services/shipping-calculator.service.ts",
       "risk": "low",
@@ -12311,6 +12388,28 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/cart/services/shipping-weight-authority.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@database/services/piece-price-data.service",
+        "backend/src/modules/cart/services/shipping-calculator.service.ts"
+      ],
+      "kind": "test",
+      "loc": 111,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/cart/services/shipping-weight-authority.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -21183,11 +21282,12 @@
       ],
       "imports": [
         "@common/exceptions",
+        "@database/services/piece-price-data.service",
         "@database/services/supabase-base.service",
         "@repo/database-types"
       ],
       "kind": "service",
-      "loc": 553,
+      "loc": 532,
       "owner": "__unassigned__",
       "path": "backend/src/modules/products/services/pricing.service.ts",
       "risk": "low",
@@ -37787,7 +37887,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 230,
+      "loc": 238,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/readonly-guards.test.ts",
       "risk": "low",

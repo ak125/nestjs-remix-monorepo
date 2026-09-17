@@ -2,7 +2,7 @@
   "_generated_by": "scripts/audit/build-db-usage-map.js",
   "note": "Candidates only — never a \"dead\" verdict. A real DROP table/function goes through the RPC Gate + a vault ADR, never from this map.",
   "important_caveats": [
-    "898 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
+    "897 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
     "Migration parsing is regex-based and tracks last CREATE vs last DROP per object (date-prefixed filenames ≈ chronological); re-create-after-drop edge cases may slip through.",
     "RLS-only / dashboard / external-cron / RPC-internal usage is invisible here — see per-candidate caveats."
   ],
@@ -14,10 +14,10 @@
     "rpc_with_callsites": 14,
     "trigger_functions": 30,
     "candidate_orphan_rpc": 199,
-    "dynamic_from_callsites": 898,
+    "dynamic_from_callsites": 897,
     "dynamic_rpc_callsites": 1,
     "migrations_scanned": 355,
-    "backend_files_scanned": 1396
+    "backend_files_scanned": 1400
   },
   "tables": {
     "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7": {
@@ -2643,14 +2643,13 @@
     "pieces_price": {
       "used_by": [
         "backend/src/modules/admin/services/command-center-actions.service.ts",
-        "backend/src/modules/cart/services/shipping-calculator.service.ts",
         "backend/src/modules/catalog/controllers/pieces-diagnostic.controller.ts",
         "backend/src/modules/mcp-validation/services/mcp-query.service.ts",
         "backend/src/modules/pricing/services/pricing.repository.ts",
         "backend/src/modules/search/controllers/search-debug.controller.ts",
         "backend/src/modules/search/controllers/search-enhanced-existing.controller.ts"
       ],
-      "used_by_count": 7,
+      "used_by_count": 6,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false
@@ -10712,35 +10711,27 @@
     },
     {
       "file": "backend/src/database/services/cart-data.service.ts",
-      "line": 433
+      "line": 455
     },
     {
       "file": "backend/src/database/services/cart-data.service.ts",
-      "line": 441
+      "line": 468
     },
     {
       "file": "backend/src/database/services/cart-data.service.ts",
-      "line": 449
+      "line": 508
     },
     {
       "file": "backend/src/database/services/cart-data.service.ts",
-      "line": 499
+      "line": 587
     },
     {
       "file": "backend/src/database/services/cart-data.service.ts",
-      "line": 576
+      "line": 619
     },
     {
       "file": "backend/src/database/services/cart-data.service.ts",
-      "line": 594
-    },
-    {
-      "file": "backend/src/database/services/cart-data.service.ts",
-      "line": 610
-    },
-    {
-      "file": "backend/src/database/services/cart-data.service.ts",
-      "line": 672
+      "line": 675
     },
     {
       "file": "backend/src/database/services/meta-tags-ariane-data.service.ts",
@@ -10901,6 +10892,14 @@
     {
       "file": "backend/src/database/services/orders.service.ts",
       "line": 966
+    },
+    {
+      "file": "backend/src/database/services/piece-price-data.service.test.ts",
+      "line": 257
+    },
+    {
+      "file": "backend/src/database/services/piece-price-data.service.ts",
+      "line": 186
     },
     {
       "file": "backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts",
@@ -11612,11 +11611,11 @@
     },
     {
       "file": "backend/src/modules/cart/services/shipping-calculator.service.ts",
-      "line": 109
+      "line": 110
     },
     {
       "file": "backend/src/modules/cart/services/shipping-calculator.service.ts",
-      "line": 138
+      "line": 139
     },
     {
       "file": "backend/src/modules/cart/services/stock-management.service.ts",
@@ -12544,23 +12543,19 @@
     },
     {
       "file": "backend/src/modules/products/services/pricing.service.ts",
-      "line": 113
+      "line": 277
     },
     {
       "file": "backend/src/modules/products/services/pricing.service.ts",
-      "line": 298
+      "line": 408
     },
     {
       "file": "backend/src/modules/products/services/pricing.service.ts",
-      "line": 429
+      "line": 443
     },
     {
       "file": "backend/src/modules/products/services/pricing.service.ts",
       "line": 464
-    },
-    {
-      "file": "backend/src/modules/products/services/pricing.service.ts",
-      "line": 485
     },
     {
       "file": "backend/src/modules/products/services/product-filtering.service.ts",

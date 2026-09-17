@@ -173,7 +173,15 @@ describe('ADR-028 Option D — READ_ONLY guards (PR-A)', () => {
   describe('3. ShippingCalculatorService.loadAllZoneTiers — env fallback distinct', () => {
     it('uses hardcoded fallback WITHOUT DB call when READ_ONLY=true, logs [READ_ONLY]', async () => {
       setReadOnlyEnv(true);
-      const svc = new ShippingCalculatorService();
+      // Ce test n'exerce que les paliers de zone. Le poids des pièces vient
+      // désormais de PiecePriceDataService (autorité unique) : un double qui
+      // jette signale immédiatement si loadAllZoneTiers se met à le solliciter.
+      const piecePriceData = {
+        findWeightsInGrams: jest.fn(() => {
+          throw new Error('loadAllZoneTiers ne doit pas lire les tarifs');
+        }),
+      };
+      const svc = new ShippingCalculatorService(piecePriceData as any);
       (svc as any).supabase = failingSupabase();
       const warnSpy = jest
         .spyOn((svc as any).logger, 'warn')

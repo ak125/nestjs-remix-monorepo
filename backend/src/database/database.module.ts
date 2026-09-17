@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 
 // Services métier spécialisés (architecture modulaire)
 import { CartDataService } from './services/cart-data.service';
+import { PiecePriceDataService } from './services/piece-price-data.service';
 import { OrdersService } from './services/orders.service';
 import { ShippingDataService } from './services/shipping-data.service';
 import { PromoDataService } from './services/promo-data.service';
@@ -22,6 +23,8 @@ import { MetaTagsArianeDataService } from './services/meta-tags-ariane-data.serv
   imports: [ConfigModule],
   providers: [
     // Services de données spécialisés (architecture modulaire)
+    // Autorité unique du tarif vendable : tout consommateur de prix passe par elle.
+    PiecePriceDataService,
     CartDataService,
     OrdersService, // Service unifié de commandes
     ShippingDataService,
@@ -34,6 +37,7 @@ import { MetaTagsArianeDataService } from './services/meta-tags-ariane-data.serv
     DatabaseCompositionService,
 
     // Services spécialisés disponibles individuellement
+    PiecePriceDataService,
     CartDataService,
     OrdersService, // Service unifié de commandes
     ShippingDataService,

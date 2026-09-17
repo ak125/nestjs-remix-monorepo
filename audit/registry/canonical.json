@@ -21328,7 +21328,6 @@
         "status": "LIVE",
         "usedBy": [
           "backend/src/modules/admin/services/command-center-actions.service.ts",
-          "backend/src/modules/cart/services/shipping-calculator.service.ts",
           "backend/src/modules/catalog/controllers/pieces-diagnostic.controller.ts",
           "backend/src/modules/mcp-validation/services/mcp-query.service.ts",
           "backend/src/modules/pricing/services/pricing.repository.ts",
@@ -29512,7 +29511,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 215,
+      "loc": 219,
       "owner": "__unassigned__",
       "path": "backend/src/common/exceptions/error-codes.ts",
       "risk": "low",
@@ -32804,11 +32803,12 @@
         "backend/src/database/services/database-composition.service.ts",
         "backend/src/database/services/meta-tags-ariane-data.service.ts",
         "backend/src/database/services/orders.service.ts",
+        "backend/src/database/services/piece-price-data.service.ts",
         "backend/src/database/services/promo-data.service.ts",
         "backend/src/database/services/shipping-data.service.ts"
       ],
       "kind": "service",
-      "loc": 45,
+      "loc": 49,
       "owner": "__unassigned__",
       "path": "backend/src/database/database.module.ts",
       "risk": "low",
@@ -32816,6 +32816,30 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
+      "id": "backend/src/database/services/cart-data.sellable-guard.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@cache/cache.service",
+        "backend/src/database/services/cart-data.service.ts",
+        "backend/src/database/services/piece-price-data.service.ts"
+      ],
+      "kind": "test",
+      "loc": 133,
+      "owner": "@ak125/payments-team",
+      "path": "backend/src/database/services/cart-data.sellable-guard.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -32828,6 +32852,7 @@
         "backend/src/auth/cart-merge.middleware.ts",
         "backend/src/auth/controllers/auth-login.controller.ts",
         "backend/src/database/database.module.ts",
+        "backend/src/database/services/cart-data.sellable-guard.test.ts",
         "backend/src/database/services/database-composition.service.ts",
         "backend/src/database/services/index.ts",
         "backend/src/modules/cart/cart.module.ts",
@@ -32845,11 +32870,12 @@
         "@cache/cache.service",
         "@common/exceptions",
         "@repo/database-types",
+        "backend/src/database/services/piece-price-data.service.ts",
         "backend/src/database/services/supabase-base.service.ts",
         "backend/src/modules/catalog/utils/image-urls.utils.ts"
       ],
       "kind": "service",
-      "loc": 1024,
+      "loc": 1028,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/cart-data.service.ts",
       "risk": "low",
@@ -33012,6 +33038,56 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
+      "id": "backend/src/database/services/piece-price-data.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/database/services/piece-price-data.service.ts"
+      ],
+      "kind": "test",
+      "loc": 275,
+      "owner": "@ak125/payments-team",
+      "path": "backend/src/database/services/piece-price-data.service.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
+      "id": "backend/src/database/services/piece-price-data.service.ts",
+      "importedBy": [
+        "backend/src/database/database.module.ts",
+        "backend/src/database/services/cart-data.sellable-guard.test.ts",
+        "backend/src/database/services/cart-data.service.ts",
+        "backend/src/database/services/piece-price-data.service.test.ts"
+      ],
+      "imports": [
+        "@repo/database-types",
+        "backend/src/database/services/supabase-base.service.ts"
+      ],
+      "kind": "service",
+      "loc": 263,
+      "owner": "@ak125/payments-team",
+      "path": "backend/src/database/services/piece-price-data.service.ts",
+      "risk": "high",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
         "depcruise"
       ],
       "domain": "UNKNOWN",
@@ -33073,6 +33149,7 @@
         "backend/src/database/services/index.ts",
         "backend/src/database/services/meta-tags-ariane-data.service.ts",
         "backend/src/database/services/orders.service.ts",
+        "backend/src/database/services/piece-price-data.service.ts",
         "backend/src/database/services/promo-data.service.ts",
         "backend/src/database/services/shipping-data.service.ts",
         "backend/src/modules/admin/services/command-center-actions.service.ts",
@@ -39934,14 +40011,16 @@
         "backend/src/modules/cart/cart.module.ts",
         "backend/src/modules/cart/controllers/cart-core.controller.ts",
         "backend/src/modules/cart/controllers/cart-shipping.controller.ts",
+        "backend/src/modules/cart/services/shipping-weight-authority.test.ts",
         "backend/src/modules/orders/services/orders.service.ts",
         "backend/src/modules/shipping/shipping.service.ts"
       ],
       "imports": [
+        "@database/services/piece-price-data.service",
         "@database/services/supabase-base.service"
       ],
       "kind": "service",
-      "loc": 319,
+      "loc": 282,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/cart/services/shipping-calculator.service.ts",
       "risk": "high",
@@ -39949,6 +40028,29 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
+      "id": "backend/src/modules/cart/services/shipping-weight-authority.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@database/services/piece-price-data.service",
+        "backend/src/modules/cart/services/shipping-calculator.service.ts"
+      ],
+      "kind": "test",
+      "loc": 111,
+      "owner": "@ak125/payments-team",
+      "path": "backend/src/modules/cart/services/shipping-weight-authority.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -49115,11 +49217,12 @@
       ],
       "imports": [
         "@common/exceptions",
+        "@database/services/piece-price-data.service",
         "@database/services/supabase-base.service",
         "@repo/database-types"
       ],
       "kind": "service",
-      "loc": 553,
+      "loc": 532,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/products/services/pricing.service.ts",
       "risk": "high",
@@ -66320,7 +66423,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 230,
+      "loc": 238,
       "owner": "@ak125",
       "path": "backend/tests/unit/readonly-guards.test.ts",
       "risk": "medium",
@@ -99241,15 +99344,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "98f10df3b19858e0d723a5a21218be5e599b0c3f6038a3672b10bbb02baf0e29",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "ac200d75ead8a0d4f14172c30ddf482b3f0be9fd03e53406fd923b2a8eb7731b",
+      ".spec/00-canon/repository-registry/ownership.yaml": "5a541e997eba2f4a388b50cf0391c11b7c0041a43047063b051fb74c38b5dff5",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
-      "audit/registry/db.json": "d2562814b938caeca897c78a440e7e949bd5ee88311c72cf0cf9b36fd21ddb07",
+      "audit/registry/db.json": "ceedf7857568368c16815495b1733fab34e8f663335fe21d6567d7cd6cbcc609",
       "audit/registry/deps.json": "28f63bf4383ddec90e009095ddc11db9298b7cd92b52ceb234a3e6a2fd996f90",
-      "audit/registry/files.json": "8ad9eb9af71fb69f11996d36e1291a9a98a8365019d674d857eaab934147e825",
+      "audit/registry/files.json": "802e0f81c443369d8cb2bb0afc3466befc3dd05d61e2ac0e44f16495fab7f93e",
       "audit/registry/rpc.json": "10db5aff88e6b7677e6e3ab7a2d604a844af66d8aca05ee34b5f0f8913573b72",
-      "audit/registry/runtime.json": "6eac2f9390d957b35b36a266be34f33c97a323d7963c024207c319e953d0fdb7"
+      "audit/registry/runtime.json": "d75bdbf151ee60b2f8b82cfa9e95554fa9627743ccfd2f1d37716e3ab920a9b0"
     },
-    "sotFingerprint": "419602fb4a17"
+    "sotFingerprint": "17294756148b"
   },
   "runtime": [
     {
@@ -99536,6 +99639,7 @@
         "runtime:backend/src/database/services/cart-data.service.ts",
         "runtime:backend/src/database/services/database-composition.service.ts",
         "runtime:backend/src/database/services/meta-tags-ariane-data.service.ts",
+        "runtime:backend/src/database/services/piece-price-data.service.ts",
         "runtime:backend/src/database/services/promo-data.service.ts",
         "runtime:backend/src/database/services/shipping-data.service.ts"
       ],
