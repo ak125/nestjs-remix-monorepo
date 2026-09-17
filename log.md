@@ -590,3 +590,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/cart-sellable-price`
 - **Décision** : chore(registry): resync L1+L3 projections (+9 other commits)
 - **Sortie** : PR #1499 | commits 48c29f041 c28cbe722 d1ed178a6 72c208470 e475cdeca c282f3409 2c4496caf 639f0acd5 2c8601673 679a179cf
+
+## 2026-09-17 — docs/handoff-reprise-20260917 (auto)
+
+- **Branche** : `docs/handoff-reprise-20260917`
+- **Décision** : docs(handoffs): consigner deux expositions fournisseur que gitleaks ne voyait pas (+1 other commit)
+- **Sortie** : PR #1504 | commits 7566dad4a 731e37221
