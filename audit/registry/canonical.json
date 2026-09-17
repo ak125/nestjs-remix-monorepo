@@ -95673,9 +95673,29 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 236,
+      "loc": 354,
       "owner": "@ak125",
       "path": "scripts/audit/build-db-usage-map.js",
+      "risk": "medium",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "scripts/audit/build-db-usage-map.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 267,
+      "owner": "@ak125",
+      "path": "scripts/audit/build-db-usage-map.test.ts",
       "risk": "medium",
       "runtime": true,
       "schemaVersion": "1.0.0",
@@ -97929,6 +97949,26 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "scripts/registry/lib/sql-lex.js",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 163,
+      "owner": "@ak125",
+      "path": "scripts/registry/lib/sql-lex.js",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "scripts/registry/lib/utils.js",
       "importedBy": [],
       "imports": [],
@@ -99841,6 +99881,26 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "tests/registry/sql-lex.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 163,
+      "owner": "@ak125",
+      "path": "tests/registry/sql-lex.test.ts",
+      "risk": "medium",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE"
     }
   ],
   "meta": {
@@ -99854,11 +99914,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "bf63b522e6553816b524b848ee2d8651df02769c5f0066d068ad5c5a0c3774c2",
       "audit/registry/deps.json": "28f63bf4383ddec90e009095ddc11db9298b7cd92b52ceb234a3e6a2fd996f90",
-      "audit/registry/files.json": "802e0f81c443369d8cb2bb0afc3466befc3dd05d61e2ac0e44f16495fab7f93e",
+      "audit/registry/files.json": "b2fede4b9313809d3badea7697042ba98a3d4ecc72f369ed79b0b3096aa788ce",
       "audit/registry/rpc.json": "10db5aff88e6b7677e6e3ab7a2d604a844af66d8aca05ee34b5f0f8913573b72",
       "audit/registry/runtime.json": "d75bdbf151ee60b2f8b82cfa9e95554fa9627743ccfd2f1d37716e3ab920a9b0"
     },
-    "sotFingerprint": "ca475de33eec"
+    "sotFingerprint": "2f11ed8e6c23"
   },
   "runtime": [
     {
