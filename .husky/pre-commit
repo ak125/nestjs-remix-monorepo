@@ -249,3 +249,19 @@ if [ -n "$STAGED_TS" ] && [ -f scripts/governance/check-role-purity.ts ]; then
     npx --no-install tsx scripts/governance/check-role-purity.ts --staged || exit 1
   fi
 fi
+
+# Secrets de paiement — règles de FORME sur les lignes AJOUTÉES (BLOQUANT).
+#
+# Pourquoi bloquant, alors que les autres hooks de ce fichier sont warn-only :
+# ceux-là gardent des choix de design, qu'une PR peut discuter. Un secret, non.
+# Sur un dépôt PUBLIC, la CI bloque le MERGE mais le PUSH a déjà publié la
+# valeur, et rien ne la dé-publie — le pre-commit est le dernier point d'arrêt.
+#
+# Le mode --staged ne lit QUE les lignes ajoutées : les littéraux déjà présents
+# dans l'arbre ne le déclenchent pas, donc éditer un de ces fichiers pour une
+# raison sans rapport ne bloque pas, et aucune liste d'exceptions n'est requise.
+if [ -f scripts/audit/check-revoked-secrets-ratchet.ts ]; then
+  if command -v npx >/dev/null 2>&1; then
+    npx --no-install tsx scripts/audit/check-revoked-secrets-ratchet.ts --staged || exit 1
+  fi
+fi
