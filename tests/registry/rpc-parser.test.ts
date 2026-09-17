@@ -183,3 +183,75 @@ describe("sigHash determinism", () => {
     assert.notEqual(sigHash(a), sigHash(b));
   });
 });
+
+/**
+ * Croisement `db-usage-map.json` → `rpc.json`.
+ *
+ * Les deux artefacts n'emploient pas le même mot : `db-usage-map` réserve
+ * `used_by` aux TABLES et nomme les appels de FONCTION `called_by`. Le builder
+ * lisait `used_by` sur les entrées RPC — un champ qui n'y existe pas. `hasUsage`
+ * était donc toujours faux et `usedBy` toujours vide : 260 entrées sur 260 en
+ * `UNKNOWN`, la branche `LIVE` inatteignable par construction.
+ *
+ * Un champ lu sous un nom absent ne lève rien — il rend `undefined`. C'est la
+ * raison pour laquelle rien ne l'a signalé pendant si longtemps, et pourquoi le
+ * croisement a besoin d'une assertion qui MEURT s'il redevient vide, et non
+ * d'un simple parcours qui passerait sur zéro élément.
+ */
+describe("croisement db-usage-map → rpc.json", () => {
+  const REPO_ROOT = path.join(__dirname, "..", "..");
+  const usage = JSON.parse(
+    fs.readFileSync(path.join(REPO_ROOT, "audit", "db-usage-map.json"), "utf8"),
+  );
+  const registry = JSON.parse(
+    fs.readFileSync(path.join(REPO_ROOT, "audit", "registry", "rpc.json"), "utf8"),
+  );
+  const entries: any[] = registry.entries ?? registry;
+
+  test("db-usage-map nomme les appels de fonction `called_by`, jamais `used_by`", () => {
+    const keys = new Set<string>(
+      Object.values(usage.rpc as Record<string, any>).flatMap((v) => Object.keys(v)),
+    );
+    assert.ok(keys.has("called_by"), "le producteur doit publier `called_by`");
+    assert.ok(
+      !keys.has("used_by"),
+      "`used_by` est réservé aux TABLES — s'il apparaît ici, le vocabulaire a changé " +
+        "et le builder doit être relu, pas adapté à l'aveugle",
+    );
+  });
+
+  test("un RPC appelé depuis le backend porte ses callsites dans rpc.json", () => {
+    const called = Object.entries(usage.rpc as Record<string, any>).filter(
+      ([, v]) => (v.called_by_count || 0) > 0,
+    );
+    assert.ok(called.length > 0, "le dépôt appelle des RPC — le scan doit en voir");
+
+    let crossed = 0;
+    for (const [name, v] of called) {
+      // Une surcharge produit plusieurs entrées pour un même nom : toutes la portent.
+      const matching = entries.filter((e) => e.name === name);
+      // Absente de rpc.json = aucun `CREATE FUNCTION` dans les migrations scannées.
+      // Trou distinct (la fonction existe en base sans migration), pas l'objet de ce test.
+      if (matching.length === 0) continue;
+      for (const e of matching) {
+        crossed++;
+        assert.deepEqual(
+          e.usedBy,
+          [...v.called_by].sort(),
+          `${name}: usedBy doit refléter called_by`,
+        );
+        if (e.parseMode !== "unknown_signature" && e.status !== "ARCHIVED") {
+          assert.equal(e.status, "LIVE", `${name} est appelée : son status doit être LIVE`);
+        }
+      }
+    }
+
+    // L'assertion qui tient tout le test : sans elle, un `usedBy` redevenu vide
+    // ferait boucler sur zéro croisement et passerait au vert.
+    assert.ok(
+      crossed > 0,
+      "aucun RPC appelé n'a été croisé avec rpc.json — le croisement est mort, " +
+        "pas satisfait (c'est exactement le défaut que ce test existe pour attraper)",
+    );
+  });
+});
