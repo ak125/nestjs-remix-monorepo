@@ -355,6 +355,23 @@ export function scanAddedLines(
   return out;
 }
 
+/**
+ * Partie pure du mode `--fingerprint` : brut de STDIN → ligne de sortie.
+ *
+ * Un seul saut de ligne terminal est retiré (celui qu'ajoutent `echo` et les
+ * heredocs). Rien d'autre n'est rogné : une valeur peut légitimement contenir
+ * des espaces, et les rogner donnerait une empreinte fausse EN SILENCE — le
+ * pire mode d'échec ici, puisqu'on comparerait deux empreintes sans savoir
+ * qu'elles portent sur deux valeurs différentes.
+ *
+ * Retourne null sur entrée vide (l'appelant sort en code 2).
+ */
+export function fingerprintLine(raw: string): string | null {
+  const value = raw.replace(/\r?\n$/, "");
+  if (!value) return null;
+  return `sha256_12=${fingerprint(value)} length=${value.length}`;
+}
+
 export function isExempt(file: string): boolean {
   return EXEMPT_PATH_PATTERNS.some((re) => re.test(file));
 }
@@ -439,7 +456,57 @@ function diffMode(argv: readonly string[]): never {
   process.exit(1);
 }
 
+/**
+ * Fingerprint mode — `--fingerprint`, value on STDIN.
+ *
+ * Rend exécutable la comparaison que la baseline décrit déjà en prose : vérifier
+ * qu'une valeur vivante correspond (ou non) à une empreinte connue, SANS jamais
+ * l'afficher, la journaliser ni l'écrire sur disque.
+ *
+ * STDIN, jamais argv : un argument de ligne de commande atterrit dans
+ * l'historique du shell ET reste lisible dans `ps` pendant l'exécution, pour
+ * tout utilisateur de la machine. C'est la différence entre
+ *   check … --fingerprint "$SECRET"        ← fuite
+ *   printf '%s' "$SECRET" | check … --fingerprint   ← pas de fuite
+ *
+ * Sortie : exactement `sha256_12=<12 hex> length=<n>`, rien d'autre — de quoi
+ * comparer à une entrée de baseline, et rien de plus.
+ *
+ * Usages :
+ *   - AVANT rotation, sur le container PROD : l'empreinte imprimée doit-elle
+ *     correspondre à une entrée `known_secret_fingerprints` ? Si oui, la valeur
+ *     publiée EST la valeur vivante.
+ *   - APRÈS rotation : elle doit DIFFÉRER. Et la nouvelle empreinte obtenue ici
+ *     est celle à inscrire en baseline — calculée sans que la valeur transite
+ *     par un fichier, un argument ou un log.
+ */
+function fingerprintMode(): never {
+  if (process.stdin.isTTY) {
+    console.error(
+      "✖ --fingerprint lit la valeur sur STDIN, pas en argument.\n" +
+        "  Un argument resterait dans l'historique du shell et dans `ps`.\n" +
+        "  Usage : printf '%s' \"$MA_VALEUR\" | … --fingerprint",
+    );
+    process.exit(2);
+  }
+  let raw: string;
+  try {
+    raw = readFileSync(0, "utf8");
+  } catch {
+    console.error("✖ --fingerprint : lecture de STDIN impossible.");
+    process.exit(2);
+  }
+  const line = fingerprintLine(raw);
+  if (!line) {
+    console.error("✖ --fingerprint : STDIN vide.");
+    process.exit(2);
+  }
+  console.log(line);
+  process.exit(0);
+}
+
 function main(): void {
+  if (process.argv.includes("--fingerprint")) fingerprintMode();
   if (
     process.argv.includes("--staged") ||
     process.argv.includes("--diff")
