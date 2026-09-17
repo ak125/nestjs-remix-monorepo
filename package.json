@@ -108,6 +108,7 @@
     "registry:build:dependency-graph": "node scripts/registry/build-dependency-graph.js",
     "registry:build:automation": "node scripts/audit/build-automation-inventory.js",
     "registry:validate:automation": "tsx scripts/registry/validate-automation-overlay.ts",
+    "registry:test:sql-lex": "tsx --test tests/registry/sql-lex.test.ts",
     "registry:test:rpc-parser": "tsx --test tests/registry/rpc-parser.test.ts",
     "registry:test:invariants": "tsx --test scripts/registry/validate-invariants.test.ts",
     "registry:test:files-reachability": "tsx --test scripts/registry/build-files-registry.test.ts",
