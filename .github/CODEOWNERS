@@ -20,6 +20,16 @@
 /.github/workflows/agents-md-validation.yml       @ak125
 /.github/CODEOWNERS                               @ak125
 
+# Surface DEFINER/anon — garde, ses tests, et son allowlist.
+# Supabase octroie EXECUTE à `anon` sur chaque nouvelle fonction de `public`
+# (ALTER DEFAULT PRIVILEGES) : une exception ajoutée à l'allowlist rouvre une
+# surface joignable par /rest/v1/rpc avec la clé publishable, hors de tout guard
+# NestJS. Cela se décide par une review owner, pas par un CI vert.
+/scripts/lint/check-definer-anon-surface.sh        @ak125
+/scripts/lint/check-definer-anon-surface.test.sh   @ak125
+/scripts/lint/definer-anon-allowlist.txt           @ak125
+/backend/supabase/migrations/20260917_definer_rpc_anon_lockdown.sql  @ak125
+
 # Diagnostic Control Plane V1 (ADR-pending) — bounded contexts + governance.
 # Ports are stable contracts ; any signature change = L4 in
 # .claude/governance/guard-hierarchy.yaml and requires architecture review.
