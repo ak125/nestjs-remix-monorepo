@@ -42,6 +42,19 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: low
+  # Documents de reprise de session (`reprise-AAAA-MM-JJ.md` + README de contrat).
+  # Même famille D15 que les autres surfaces `.claude/` ci-dessus. `risk: medium` et
+  # non `low` : contrairement à `knowledge/**` qui est informationnel, un document de
+  # reprise dicte des séquences d'actions à un agent qui n'a pas le contexte — une
+  # version initiale de reprise-2026-09-17.md donnait un ordre de remise en route du
+  # cron qui aurait tué les sessions vivantes. Sans atteindre le normatif de
+  # `rules/**` (`high`). Posé dans la PR qui apporte les fichiers (I4 refuse un glob
+  # orphelin). Entrée à ratifier par l'owner — cf. PR #1504.
+  - glob: .claude/handoffs/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
   - glob: .spec/00-canon/ai-registry/**
     domain: D15
     owner: '@ak125'
