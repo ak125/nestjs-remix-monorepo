@@ -66,7 +66,7 @@ this.logger.log(`Certificate: ${this.paymentConfig.cyberplus.certificat}`);
 ```bash
 # backend/.env
 CYBERPLUS_SITE_ID=43962882
-CYBERPLUS_CERTIFICAT=9816635272016068
+CYBERPLUS_CERTIFICAT=<SET_IN_ENV>
 CYBERPLUS_MODE=TEST
 APP_URL=http://localhost:3000
 ```
