@@ -18,6 +18,10 @@ on:
       - "scripts/audit/build-deep-inventory.js"
       - "scripts/audit/build-db-usage-map.js"
       - "scripts/audit/build-db-usage-map.test.ts"
+      # Le job lance `registry:test:rpc-parser` (tests/registry/) sans qu'aucune
+      # entrée ne couvre cet arbre : affaiblir un de ces tests ne déclenchait
+      # aucune garde. Même angle mort que les générateurs PR-8 ci-dessous.
+      - "tests/registry/**"
       # --- Générateurs que CE workflow exécute (PR-8 + déterminisme) ---
       # Oubliés jusqu'au 2026-08-14 : le job lance `audit:cleanup-candidates:check`,
       # `audit:cleanup-candidates:test` et `audit:inventory:test`, mais aucun `paths:`
@@ -68,6 +72,11 @@ on:
       - "scripts/registry/**"
       - "scripts/audit/build-deep-inventory.js"
       - "scripts/audit/build-db-usage-map.js"
+      # Résidu d'alignement du 2026-09-17 : ces deux entrées existaient côté
+      # `pull_request` et manquaient ici. `packages/registry/**` n'est pas repris,
+      # `packages/**` plus bas le couvrant déjà.
+      - "scripts/audit/build-db-usage-map.test.ts"
+      - "tests/registry/**"
       # --- Générateurs que CE workflow exécute (PR-8 + déterminisme) ---
       - "scripts/audit/build-cleanup-candidates.ts"
       - "scripts/audit/build-cleanup-candidates.test.ts"

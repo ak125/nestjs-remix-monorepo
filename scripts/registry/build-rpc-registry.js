@@ -29,8 +29,8 @@
  *     `status: 'ARCHIVED'` (not part of monorepo runtime)
  *   - `DROP FUNCTION` (we ignore — function removed from this migration set)
  *
- * Cross-referenced with `audit/db-usage-map.json#rpc_with_callsites` to
- * populate `usedBy[]`.
+ * Cross-referenced with `audit/db-usage-map.json#rpc[].called_by` to populate
+ * `usedBy[]` (le compteur `summary.rpc_with_callsites` n'est qu'un total).
  *
  * Usage:
  *   node scripts/registry/build-rpc-registry.js [--quiet] [--migrations-dir <dir>]
@@ -339,7 +339,16 @@ function main() {
           ? "medium"
           : "low";
 
-      const hasUsage = callsites[funcName] && (callsites[funcName].used_by_count || 0) > 0;
+      // `db-usage-map.json` nomme les appels de FONCTION `called_by` / `called_by_count`,
+      // et réserve `used_by` aux TABLES. Lire `used_by` ici rendait `hasUsage`
+      // toujours faux et `usedBy` toujours vide : la branche `LIVE` était
+      // inatteignable par construction (260/260 entrées en `UNKNOWN`).
+      // Le champ de SORTIE reste `usedBy`, gouverné par le schéma L1
+      // (packages/registry/src/entries/rpc-entry.ts) — seule la lecture change.
+      const calledBy = Array.isArray(callsites[funcName] && callsites[funcName].called_by)
+        ? callsites[funcName].called_by
+        : [];
+      const hasUsage = calledBy.length > 0;
 
       let status;
       if (isExtension) {
@@ -376,10 +385,7 @@ function main() {
         securityDefiner: Boolean(parsed.securityDefiner),
         searchPath: parsed.searchPath || [],
         definedInMigrations: parsed.filename ? [parsed.filename] : [],
-        usedBy:
-          callsites[funcName] && Array.isArray(callsites[funcName].used_by)
-            ? [...callsites[funcName].used_by].sort()
-            : [],
+        usedBy: [...calledBy].sort(),
         parseWarnings: parsed.parseWarnings || [],
       };
       if (parsed.parseError) entry.parseError = parsed.parseError;
