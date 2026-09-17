@@ -8,6 +8,9 @@ import {
   isExempt,
   checkIgnoreContract,
   buildLengthIndex,
+  scanShapes,
+  addedLines,
+  scanAddedLines,
   type Baseline,
   type KnownSecretFingerprint,
 } from "./check-revoked-secrets-ratchet.ts";
@@ -238,8 +241,8 @@ test("NÉGATIF: noms de variables, empreintes SHA-256, fixtures et docs neutrali
     "SYSTEMPAY_CERTIFICATE_PROD=<SET_IN_ENV>",
     'HMAC_KEY="${PAYBOX_HMAC_KEY:?manquant}"',
     "const k = process.env.PAYBOX_HMAC_KEY;",
-    // l'empreinte elle-même, telle qu'elle apparaît dans la baseline et dans
-    // check-payment-config.sh — la publier est le but, pas une fuite
+    // l'empreinte elle-même, telle qu'elle apparaît dans la baseline — la
+    // publier est le but, pas une fuite
     `sha256_12: "${fingerprint(SYNTH_HMAC)}"`,
     `sha256_12: "${fingerprint(SYNTH_CERT)}"`,
     "Certificats : 16 caractères (ex: `9999888877776666`)",
@@ -269,8 +272,8 @@ test("NÉGATIF: une valeur de même longueur mais différente n'est pas signalé
 
 // ── 3. ANCIEN ÉTAT FAUTIF vs 4. NOUVEL ÉTAT PROPRE ───────────────────────────
 //
-// Les deux formes exactes rencontrées dans les 11 fichiers de SEC-03, avant et
-// après assainissement. Le test échouerait si l'assainissement rendait la garde
+// Les formes rencontrées sur le périmètre SEC-03, avant et après
+// assainissement. Le test échouerait si l'assainissement rendait la garde
 // aveugle plutôt que le dépôt propre.
 
 const ANCIEN = [
@@ -306,4 +309,105 @@ test("buildLengthIndex ignore les entrées sans longueur (schéma hérité)", ()
   ]);
   assert.equal(idx.size, 1);
   assert.ok(idx.get(SYNTH_CERT.length));
+});
+
+// ── 5. SEC-04 : règles de FORME, évaluées sur les LIGNES AJOUTÉES ────────────
+//
+// Les règles de forme ne connaissent AUCUNE valeur. C'est ce qui leur permet
+// d'attraper une clé qui n'existe pas encore : après une rotation, la nouvelle
+// valeur collée dans un fichier suivi est signalée dès le commit, sans mise à
+// jour de baseline.
+//
+// Elles s'évaluent sur ce qu'un commit AJOUTE, jamais sur l'état de HEAD. C'est
+// ce choix qui permet de les livrer AVANT la purge : les littéraux que
+// l'arbre porte déjà ne sont tout simplement pas dans l'entrée, donc il n'y a
+// rien à tolérer — et donc aucun inventaire à publier. Sur un dépôt public,
+// avant rotation, un inventaire des porteurs serait une carte vers les secrets.
+
+const SYNTH_HEX128_B = "b".repeat(128);
+
+test("POSITIF: une clé HMAC de 128 hex est signalée sans aucune baseline", () => {
+  const f = scanShapes("a.md", `PAYBOX_HMAC_KEY=${SYNTH_HMAC}`);
+  assert.equal(f.length, 1);
+  assert.equal(f[0].rule, "payment-hmac-hex128-literal");
+  assert.equal(f[0].fp, fingerprint(SYNTH_HMAC));
+});
+
+test("NÉGATIF: 128 hex noyés dans une chaîne hex plus longue ne matchent pas", () => {
+  assert.deepEqual(scanShapes("a.md", "c".repeat(160)), []);
+});
+
+test("NÉGATIF: 16 chiffres NUS ne matchent pas — 143 lignes de bruit mesurées", () => {
+  // Mesuré sur l'arbre suivi : la forme nue touche 143 lignes dans 23 fichiers,
+  // dont 86 pour le seul PageContractR6.json. L'ancre n'est pas un confort.
+  assert.deepEqual(scanShapes("a.json", `{"ref": "${SYNTH_CERT}"}`), []);
+});
+
+test("POSITIF: 16 chiffres ancrés sur le nom de variable sont signalés", () => {
+  const f = scanShapes("a.env", `SYSTEMPAY_CERTIFICATE_PROD=${SYNTH_CERT}`);
+  assert.equal(f.length, 1);
+  assert.equal(f[0].rule, "payment-certificate-literal");
+});
+
+test("POSITIF: l'ancre couvre SYSTEMPAY_CERT_PROD — la forme longue le ratait", () => {
+  // Les deux orthographes de la variable sont en usage. L'ancre sur la forme
+  // longue rate silencieusement la forme abrégée ; élargir au préfixe n'ajoute
+  // aucun faux positif, mesuré sur le même arbre.
+  const f = scanShapes("s.sh", `if [ "$SYSTEMPAY_CERT_PROD" = "${SYNTH_CERT}" ]; then`);
+  assert.equal(f.length, 1);
+});
+
+test("NON-DIVULGATION: un constat de forme porte l'empreinte, jamais la valeur", () => {
+  const f = scanShapes("a.md", `K=${SYNTH_HMAC}`);
+  assert.ok(!JSON.stringify(f).includes(SYNTH_HMAC));
+});
+
+// ── addedLines : ce qu'un commit AJOUTE ─────────────────────────────────────
+
+const DIFF = [
+  "diff --git a/conf.md b/conf.md",
+  "--- a/conf.md",
+  "+++ b/conf.md",
+  "@@ -4,0 +5,1 @@",
+  `+PAYBOX_HMAC_KEY=${SYNTH_HEX128_B}`,
+].join("\n");
+
+test("POSITIF: une clé ajoutée par le diff est signalée, au bon numéro de ligne", () => {
+  const f = scanAddedLines(addedLines(DIFF));
+  assert.equal(f.length, 1);
+  assert.equal(f[0].file, "conf.md");
+  assert.equal(f[0].line, 5);
+});
+
+test("NÉGATIF: une ligne SUPPRIMÉE n'est pas un ajout", () => {
+  const del = DIFF.replace(`+PAYBOX_HMAC_KEY=${SYNTH_HEX128_B}`, `-PAYBOX_HMAC_KEY=${SYNTH_HEX128_B}`);
+  assert.deepEqual(scanAddedLines(addedLines(del)), []);
+});
+
+test("CLÉ DU DÉCOUPAGE: un littéral DÉJÀ présent n'est pas dans l'entrée", () => {
+  // La propriété qui rend inutile tout inventaire, donc toute publication de la
+  // liste des fichiers porteurs. Un diff qui ne touche pas la ligne du secret
+  // ne la contient pas : le mode ne peut pas la voir, donc rien à tolérer.
+  const unrelated = [
+    "--- a/conf.md",
+    "+++ b/conf.md",
+    "@@ -9,0 +10,1 @@",
+    "+# un commentaire sans rapport",
+  ].join("\n");
+  assert.deepEqual(scanAddedLines(addedLines(unrelated)), []);
+});
+
+test("NÉGATIF: les chemins exemptés restent exemptés en mode lignes ajoutées", () => {
+  const inFixture = DIFF.replace(/conf\.md/g, "x/__fixtures__/conf.md");
+  assert.deepEqual(scanAddedLines(addedLines(inFixture)), []);
+});
+
+test("ANTI-OVERCLAIM: les règles de forme ne touchent PAS l'état de HEAD", () => {
+  // scanContent est la garde d'ÉTAT, scanShapes la garde d'AJOUT. Si quelqu'un
+  // fusionne un jour les deux, ce test tombe — et il doit tomber : faire tirer
+  // les règles de forme sur HEAD exigerait, pour revenir au vert, un inventaire
+  // des littéraux existants dans une baseline suivie. Sur un dépôt public et
+  // avant rotation, cet inventaire est une carte vers les secrets.
+  assert.deepEqual(scanContent("a.md", `K=${SYNTH_HMAC}`, new Set()), []);
+  assert.equal(scanShapes("a.md", `K=${SYNTH_HMAC}`).length, 1);
 });

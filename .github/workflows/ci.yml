@@ -594,6 +594,43 @@ jobs:
       - name: 🔐 Revoked-secrets ratchet — état de HEAD (bloquant)
         run: npm run audit:revoked-secrets-ratchet
 
+      # ── Règles de FORME sur les lignes AJOUTÉES (bloquant) ──────────────────
+      #
+      # Troisième axe, encore distinct des deux précédents : gitleaks détecte par
+      # motif et par entropie, ce qui laisse passer les formes courtes ou peu
+      # entropiques ; le ratchet d'état ne connaît que des empreintes déjà
+      # inscrites en baseline, donc seulement des valeurs DÉJÀ connues.
+      #
+      # Ces règles ne connaissent AUCUNE valeur : elles matchent une FORME. Elles
+      # attrapent donc une clé qui n'existe pas encore — après une rotation, la
+      # nouvelle valeur collée dans un fichier suivi est signalée dès la première
+      # PR, sans mise à jour de baseline.
+      #
+      # Évaluées sur les lignes AJOUTÉES, jamais sur l'état de HEAD : les
+      # littéraux que l'arbre porte déjà ne sont pas dans l'entrée, donc aucun
+      # inventaire d'exceptions n'est nécessaire — et sur un dépôt public, un tel
+      # inventaire serait lui-même une carte vers les secrets.
+      #
+      # Le hook .husky/pre-commit lance le même contrôle en `--staged`. Il est le
+      # dernier point d'arrêt utile : ici la CI bloque le MERGE, mais le PUSH a
+      # déjà publié la valeur, et rien ne la dé-publie.
+      - name: 🔐 Secrets — règles de forme sur les lignes ajoutées (bloquant)
+        # Les SHA transitent par l'environnement, jamais par interpolation dans
+        # le script : `${{ }}` dans un `run:` est le motif d'injection Actions.
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          # Un premier push de branche donne un base tout-à-zéro, et un
+          # force-push peut laisser un base injoignable : on retombe alors sur le
+          # parent du head plutôt que d'échouer sur un artefact de plomberie.
+          if ! git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
+            BASE_SHA="${HEAD_SHA}^"
+          fi
+          npx tsx scripts/audit/check-revoked-secrets-ratchet.ts \
+            --diff "${BASE_SHA}" "${HEAD_SHA}"
+
   migration-safety:
     # AST-based Postgres SQL linter (squawk, libpg_query) — replaces the
     # legacy grep-based gate that produced false positives on prose comments

@@ -96,11 +96,24 @@ export interface Baseline {
   known_secret_fingerprints?: KnownSecretFingerprint[];
 }
 
+/**
+ * Shape rules know no value. They match a FORM, so they catch a credential that
+ * does not exist yet — which is the whole point: after a rotation, the new key
+ * pasted into a tracked file is caught on the first commit, with no baseline
+ * update. They are evaluated on ADDED LINES only — never on HEAD state — so they
+ * need no inventory of what the tree already carries, and therefore publish
+ * nothing about it.
+ */
+export type ShapeRule =
+  | "payment-hmac-hex128-literal"
+  | "payment-certificate-literal";
+
 export type Rule =
   | "supabase-legacy-jwt"
   | "supabase-management-token"
   | "revoked-secret-reintroduced"
-  | "known-secret-literal";
+  | "known-secret-literal"
+  | ShapeRule;
 
 export interface Finding {
   file: string;
@@ -240,6 +253,108 @@ export function scanContent(
   return out;
 }
 
+/**
+ * A Paybox HMAC key is 128 hex characters — a form specific enough to match on
+ * its own: measured over the tracked tree, this rule produces no false positive.
+ * The lookarounds reject a 128-hex run that is part of a longer hex string (a
+ * SHA-512 digest pair, a lock-file integrity field).
+ */
+const HMAC_HEX128_RE = /(?<![0-9A-Fa-f])[0-9A-Fa-f]{128}(?![0-9A-Fa-f])/g;
+
+/**
+ * A SystemPay/Lyra certificate is 16 decimal digits — a form far too common to
+ * match on its own. Measured: the bare 16-digit form hits 143 lines in 23 files
+ * (`PageContractR6.json` alone accounts for 86). So the rule is ANCHORED on the
+ * variable name, within 40 non-digit characters.
+ *
+ * The anchor is the PREFIX `SYSTEMPAY_CERT[A-Z_]*`, not the full
+ * `SYSTEMPAY_CERTIFICATE`: both the full and the abbreviated spellings of the
+ * variable are in use, and the narrow form silently misses the abbreviated one.
+ * Broadening the prefix adds no false positive, measured over the same tree.
+ */
+const PAYMENT_CERT_RE =
+  /(?:SYSTEMPAY_CERT[A-Z_]*|CYBERPLUS_CERTIFICAT[A-Z_]*)[^0-9]{0,40}([0-9]{16})(?![0-9])/g;
+
+/**
+ * Shape pass — deliberately NOT part of `scanContent`.
+ *
+ * Keeping it separate from `scanContent` is a safety property, not a style
+ * choice. The two passes answer different questions and run at different times:
+ * `scanContent` audits the STATE of HEAD, `scanShapes` audits what a commit ADDS.
+ * Fusing them would make the shape rules fire on the 26 literals the tree already
+ * carries, and the only way back to green would be an inventory of those literals
+ * in a tracked baseline — on a public repository, before rotation, that inventory
+ * is a map to the secrets. Separation is what makes it unnecessary.
+ */
+export function scanShapes(file: string, content: string): Finding[] {
+  const out: Finding[] = [];
+  content.split("\n").forEach((line, i) => {
+    for (const m of line.matchAll(HMAC_HEX128_RE)) {
+      out.push({
+        file,
+        line: i + 1,
+        rule: "payment-hmac-hex128-literal",
+        fp: fingerprint(m[0]),
+        detail: "clé HMAC de paiement (128 hex) en clair",
+      });
+    }
+    for (const m of line.matchAll(PAYMENT_CERT_RE)) {
+      out.push({
+        file,
+        line: i + 1,
+        rule: "payment-certificate-literal",
+        fp: fingerprint(m[1]),
+        detail: "certificat de paiement (16 chiffres) en clair",
+      });
+    }
+  });
+  return out;
+}
+
+/**
+ * Parse a unified diff and return only the lines it ADDS, with their line number
+ * in the new file. `-U0` keeps the hunks minimal.
+ *
+ * Auditing what a commit ADDS, rather than what the tree HOLDS, is what lets the
+ * shape rules ship before the purge: pre-existing literals are simply not in the
+ * input, so there is nothing to tolerate and no inventory to publish.
+ */
+export function addedLines(
+  diff: string,
+): { file: string; line: number; text: string }[] {
+  const out: { file: string; line: number; text: string }[] = [];
+  let file = "";
+  let next = 0;
+  for (const raw of diff.split("\n")) {
+    if (raw.startsWith("+++ ")) {
+      const p = raw.slice(4).trim();
+      file = p === "/dev/null" ? "" : p.replace(/^b\//, "");
+      continue;
+    }
+    const hunk = /^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@/.exec(raw);
+    if (hunk) {
+      next = Number(hunk[1]);
+      continue;
+    }
+    if (!file) continue;
+    if (raw.startsWith("+")) out.push({ file, line: next++, text: raw.slice(1) });
+    else if (!raw.startsWith("-") && !raw.startsWith("\\")) next++;
+  }
+  return out;
+}
+
+/** Shape findings over the added lines of a diff. */
+export function scanAddedLines(
+  added: readonly { file: string; line: number; text: string }[],
+): Finding[] {
+  const out: Finding[] = [];
+  for (const a of added) {
+    if (isExempt(a.file)) continue;
+    for (const f of scanShapes(a.file, a.text)) out.push({ ...f, line: a.line });
+  }
+  return out;
+}
+
 export function isExempt(file: string): boolean {
   return EXEMPT_PATH_PATTERNS.some((re) => re.test(file));
 }
@@ -285,7 +400,52 @@ function trackedFiles(): string[] {
     .filter(Boolean);
 }
 
+/**
+ * Added-lines mode. `--staged` guards the commit that is about to be written;
+ * `--diff <base> <head>` guards a PR range in CI.
+ *
+ * On a PUBLIC repository this is the mode that actually protects: CI blocks the
+ * MERGE, but the PUSH has already published the value, and nothing un-publishes
+ * it. A pre-commit hook is the last point where a secret can still be stopped.
+ */
+function diffMode(argv: readonly string[]): never {
+  const staged = argv.includes("--staged");
+  const i = argv.indexOf("--diff");
+  const args = staged
+    ? ["diff", "--cached", "-U0", "--no-color"]
+    : ["diff", "-U0", "--no-color", `${argv[i + 1]}...${argv[i + 2]}`];
+  const diff = execFileSync("git", args, {
+    cwd: REPO_ROOT,
+    maxBuffer: 64 * 1024 * 1024,
+  }).toString("utf8");
+  const findings = scanAddedLines(addedLines(diff));
+  if (!findings.length) {
+    console.log(
+      `\u2713 secrets (lignes ajout\u00e9es) : 0 litt\u00e9ral de forme connue`,
+    );
+    process.exit(0);
+  }
+  console.error(
+    `\u2716 ${findings.length} litt\u00e9ral(aux) de secret dans les lignes AJOUT\u00c9ES :`,
+  );
+  for (const f of findings) {
+    console.error(`  - ${f.file}:${f.line}  [${f.rule}] fp=${f.fp} — ${f.detail}`);
+  }
+  console.error(
+    "\n  Sur un d\u00e9p\u00f4t public, un push est d\u00e9finitif : la CI bloque le merge,\n" +
+      "  elle ne d\u00e9-publie rien. Remplacer par une lecture d'environnement\n" +
+      "  (process.env.…), sans valeur par d\u00e9faut, AVANT de commiter.",
+  );
+  process.exit(1);
+}
+
 function main(): void {
+  if (
+    process.argv.includes("--staged") ||
+    process.argv.includes("--diff")
+  ) {
+    diffMode(process.argv);
+  }
   if (!existsSync(BASELINE_PATH)) {
     console.error(`✖ baseline introuvable : ${BASELINE_PATH}`);
     process.exit(2);
@@ -339,7 +499,9 @@ function main(): void {
   }
 
   if (process.argv.includes("--json")) {
-    console.log(JSON.stringify({ findings, contractViolations }, null, 2));
+    console.log(
+      JSON.stringify({ findings, contractViolations }, null, 2),
+    );
   }
 
   if (contractViolations.length) {
