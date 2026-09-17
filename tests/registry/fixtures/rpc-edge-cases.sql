@@ -66,9 +66,23 @@ AS $$
   SELECT x
 $$;
 
--- Case bonus : a comment with 'CREATE FUNCTION' inside that should NOT match
--- because we look at top-level CREATE keyword, not inside a comment block.
--- The current parser doesn't strip SQL comments, so this is documented as a
--- known limitation : the regex matches the inline mention. V1.5+ : strip
--- comments before parsing. For now, fixture explicitly avoids triggering false
--- positives by not having CREATE inside comments here.
+-- Case 8 : a CREATE FUNCTION mentioned INSIDE a comment must NOT be detected.
+-- This was a documented limitation ("V1.5+ : strip comments before parsing"). The
+-- old note claimed the fixture avoided triggering it — it did not : the `-- Case N :
+-- CREATE FUNCTION …` headers above are themselves commented mentions that the raw
+-- scan matched. The limitation was live in this very file. It is now ENFORCED : the producer runs
+-- detection on the `topLevel` view of scripts/registry/lib/sql-lex.js, where every
+-- non-executable region is blanked. Both lines below are documentation, not DDL.
+--   CREATE FUNCTION fixture_commented_out(x integer) RETURNS integer AS $$ SELECT x $$;
+/* CREATE FUNCTION fixture_block_commented(y text) RETURNS text AS $$ SELECT y $$; */
+
+-- Case 9 : inline comments inside the ARGUMENT LIST must not leak into the parsed
+-- types. Otherwise the same PostgreSQL signature, written with and without inline
+-- documentation, yields two different sigHash — and the registry invents an
+-- overload. Mesuré sur ce dépôt : 19 arguments portaient un marqueur de commentaire
+-- dans leur type, et `public.pricing_commit_chunk#sig:e0a855c1` était une surcharge
+-- qui n'a jamais existé.
+CREATE FUNCTION fixture_commented_args(
+  p_batch_id uuid,   -- governed batch id, required for commit
+  p_rows     jsonb   /* payload : [{ "id": <bigint> }] */
+) RETURNS void AS $$ BEGIN END $$ LANGUAGE plpgsql;
