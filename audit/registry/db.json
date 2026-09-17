@@ -372,7 +372,9 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "usedBy": []
+      "usedBy": [
+        "backend/src/modules/cart/services/abandoned-cart-data.service.ts"
+      ]
     },
     {
       "columns": [],
@@ -1080,7 +1082,9 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "usedBy": []
+      "usedBy": [
+        "backend/src/modules/support/services/claim.service.ts"
+      ]
     },
     {
       "columns": [],
@@ -1757,6 +1761,7 @@
       "sourceConfidence": "high",
       "status": "LIVE",
       "usedBy": [
+        "backend/src/modules/errors/services/error-log.service.ts",
         "backend/src/modules/seo-control-plane/collectors/runtime-logs/runtime-logs.service.ts"
       ]
     },
@@ -3459,6 +3464,7 @@
       "sourceConfidence": "high",
       "status": "LIVE",
       "usedBy": [
+        "backend/src/modules/admin/services/brand-editorial.service.ts",
         "backend/src/modules/seo-monitoring/services/r-content-auditor.service.ts"
       ]
     },
@@ -4717,6 +4723,7 @@
         "backend/src/modules/seo-monitoring/services/funnel-events.service.ts",
         "backend/src/modules/seo-monitoring/services/runtime-events.service.ts",
         "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts",
+        "backend/src/modules/seo-shadow-observatory/seo-shadow-event-sink.service.ts",
         "backend/src/modules/seo/services/seo-placeholder-events.service.ts",
         "backend/src/modules/seo/services/sitemap-event-log.service.ts"
       ]
@@ -7777,6 +7784,44 @@
       "columns": [],
       "deletePolicy": "ADR_REQUIRED",
       "domain": "UNKNOWN",
+      "id": "__seo_r7_fingerprints",
+      "inMigrations": [],
+      "indexes": [],
+      "name": "__seo_r7_fingerprints",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": false,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "low",
+      "status": "LIVE",
+      "usedBy": [
+        "backend/src/modules/admin/services/r7-brand-enricher.service.ts"
+      ]
+    },
+    {
+      "columns": [],
+      "deletePolicy": "ADR_REQUIRED",
+      "domain": "UNKNOWN",
+      "id": "__seo_r7_page_versions",
+      "inMigrations": [],
+      "indexes": [],
+      "name": "__seo_r7_page_versions",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": false,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "low",
+      "status": "LIVE",
+      "usedBy": [
+        "backend/src/modules/admin/services/r7-brand-enricher.service.ts"
+      ]
+    },
+    {
+      "columns": [],
+      "deletePolicy": "ADR_REQUIRED",
+      "domain": "UNKNOWN",
       "id": "__seo_r7_pages",
       "inMigrations": [],
       "indexes": [],
@@ -7790,8 +7835,47 @@
       "status": "LIVE",
       "usedBy": [
         "backend/src/modules/admin/services/execution-router.service.ts",
+        "backend/src/modules/admin/services/r7-brand-enricher.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
         "backend/src/modules/vehicles/services/brand-rpc.service.ts"
+      ]
+    },
+    {
+      "columns": [],
+      "deletePolicy": "ADR_REQUIRED",
+      "domain": "UNKNOWN",
+      "id": "__seo_r7_qa_reviews",
+      "inMigrations": [],
+      "indexes": [],
+      "name": "__seo_r7_qa_reviews",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": false,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "low",
+      "status": "LIVE",
+      "usedBy": [
+        "backend/src/modules/admin/services/r7-brand-enricher.service.ts"
+      ]
+    },
+    {
+      "columns": [],
+      "deletePolicy": "ADR_REQUIRED",
+      "domain": "UNKNOWN",
+      "id": "__seo_r7_regeneration_queue",
+      "inMigrations": [],
+      "indexes": [],
+      "name": "__seo_r7_regeneration_queue",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": false,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "low",
+      "status": "LIVE",
+      "usedBy": [
+        "backend/src/modules/admin/services/r7-brand-enricher.service.ts"
       ]
     },
     {
@@ -7928,7 +8012,9 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "usedBy": []
+      "usedBy": [
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
+      ]
     },
     {
       "columns": [
@@ -8172,7 +8258,9 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "usedBy": []
+      "usedBy": [
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
+      ]
     },
     {
       "columns": [
@@ -8403,6 +8491,7 @@
       "sourceConfidence": "high",
       "status": "LIVE",
       "usedBy": [
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
         "backend/src/modules/seo/r2/services/r2-r8-gate-status.service.ts",
         "backend/src/modules/seo/r2/services/r8-snapshot-reader.service.ts",
         "backend/src/modules/vehicles/services/vehicle-rpc.service.ts"
@@ -8462,7 +8551,9 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "usedBy": []
+      "usedBy": [
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
+      ]
     },
     {
       "columns": [
@@ -8536,7 +8627,9 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "usedBy": []
+      "usedBy": [
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
+      ]
     },
     {
       "columns": [
@@ -8568,7 +8661,9 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "usedBy": []
+      "usedBy": [
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
+      ]
     },
     {
       "columns": [
@@ -8690,6 +8785,7 @@
       "sourceConfidence": "high",
       "status": "LIVE",
       "usedBy": [
+        "backend/src/modules/admin/services/r4-content-enricher.service.ts",
         "backend/src/modules/admin/services/seo-cockpit.service.ts",
         "backend/src/modules/marketing/services/marketing-data.service.ts",
         "backend/src/modules/seo-monitoring/services/r-content-auditor.service.ts",
@@ -11111,6 +11207,7 @@
       "sourceConfidence": "low",
       "status": "LIVE",
       "usedBy": [
+        "backend/src/modules/admin/services/gamme-seo-audit.service.ts",
         "backend/src/modules/admin/services/seo-cockpit.service.ts"
       ]
     },
@@ -14238,6 +14335,25 @@
       ]
     },
     {
+      "columns": [],
+      "deletePolicy": "FREE",
+      "domain": "UNKNOWN",
+      "id": "supplier_inventory_snapshots",
+      "inMigrations": [],
+      "indexes": [],
+      "name": "supplier_inventory_snapshots",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": false,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "low",
+      "status": "LIVE",
+      "usedBy": [
+        "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
+      ]
+    },
+    {
       "columns": [
         {
           "hasDefault": true,
@@ -14303,7 +14419,9 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "usedBy": []
+      "usedBy": [
+        "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
+      ]
     },
     {
       "columns": [],
@@ -14467,6 +14585,44 @@
       "status": "LIVE",
       "usedBy": [
         "backend/src/modules/pricing/services/pricing.repository.ts"
+      ]
+    },
+    {
+      "columns": [],
+      "deletePolicy": "FREE",
+      "domain": "UNKNOWN",
+      "id": "supplier_runtime_profile",
+      "inMigrations": [],
+      "indexes": [],
+      "name": "supplier_runtime_profile",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": false,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "low",
+      "status": "LIVE",
+      "usedBy": [
+        "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
+      ]
+    },
+    {
+      "columns": [],
+      "deletePolicy": "FREE",
+      "domain": "UNKNOWN",
+      "id": "supplier_truth_projection",
+      "inMigrations": [],
+      "indexes": [],
+      "name": "supplier_truth_projection",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": false,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "low",
+      "status": "LIVE",
+      "usedBy": [
+        "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
       ]
     },
     {
