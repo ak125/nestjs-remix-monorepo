@@ -2846,6 +2846,7 @@
       "scripts/audit/build-cleanup-candidates.test.ts",
       "scripts/audit/build-cleanup-candidates.ts",
       "scripts/audit/build-db-usage-map.js",
+      "scripts/audit/build-db-usage-map.test.ts",
       "scripts/audit/build-deep-inventory.js",
       "scripts/audit/build-dependency-modernization-inventory.ts",
       "scripts/audit/build-drift-dashboard.test.ts",
@@ -2908,10 +2909,11 @@
       "tests/registry/depcruise-integrity.test.ts",
       "tests/registry/dependency-graph-builder.test.ts",
       "tests/registry/planning-builder.test.ts",
-      "tests/registry/rpc-parser.test.ts"
+      "tests/registry/rpc-parser.test.ts",
+      "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1520,
+  "runtime_files_count": 1522,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4369,6 +4371,7 @@
     "scripts/audit/build-cleanup-candidates.test.ts",
     "scripts/audit/build-cleanup-candidates.ts",
     "scripts/audit/build-db-usage-map.js",
+    "scripts/audit/build-db-usage-map.test.ts",
     "scripts/audit/build-deep-inventory.js",
     "scripts/audit/build-dependency-modernization-inventory.ts",
     "scripts/audit/build-drift-dashboard.test.ts",
@@ -4432,6 +4435,7 @@
     "tests/registry/depcruise-integrity.test.ts",
     "tests/registry/dependency-graph-builder.test.ts",
     "tests/registry/planning-builder.test.ts",
-    "tests/registry/rpc-parser.test.ts"
+    "tests/registry/rpc-parser.test.ts",
+    "tests/registry/sql-lex.test.ts"
   ]
 }
