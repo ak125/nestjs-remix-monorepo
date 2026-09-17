@@ -665,6 +665,26 @@ jobs:
         if: steps.changed-sql.outputs.files != ''
         run: python3 scripts/ci/apply-supabase-migration.py --lint-markers ${{ steps.changed-sql.outputs.files }}
 
+      # Surface DEFINER/anon : ratchet sur les privilèges d'exécution, pas sur la
+      # syntaxe — c'est pourquoi squawk ne le porte pas. Supabase octroie
+      # `EXECUTE` à `anon` sur CHAQUE nouvelle fonction de `public` via
+      # `ALTER DEFAULT PRIVILEGES` : une fonction SECURITY DEFINER créée sans
+      # REVOKE explicite est joignable par `/rest/v1/rpc/<nom>` avec la clé
+      # publishable, hors de tout guard NestJS.
+      #
+      # Câblé ICI, dans un contexte REQUIS, et non dans un workflow dédié : un
+      # workflow non requis constaterait sans bloquer.
+      #
+      # Volontairement SANS `if: steps.changed-sql.outputs.files != ''` — la
+      # garde juge aussi l'allowlist et la présence de la migration de fermeture.
+      # La conditionner aux `.sql` modifiés laisserait passer, non jugée, une
+      # exception ajoutée à l'allowlist sans une seule ligne de SQL touchée.
+      - name: Tests de la garde DEFINER/anon
+        run: bash scripts/lint/check-definer-anon-surface.test.sh
+
+      - name: Surface DEFINER/anon (ratchet privilèges)
+        run: bash scripts/lint/check-definer-anon-surface.sh
+
   build:
     name: 🐳 build
     uses: ./.github/workflows/build.yml
