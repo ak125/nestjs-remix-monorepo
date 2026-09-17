@@ -1984,8 +1984,10 @@
       "searchPath": [],
       "securityDefiner": true,
       "sourceConfidence": "medium",
-      "status": "UNKNOWN",
-      "usedBy": []
+      "status": "LIVE",
+      "usedBy": [
+        "backend/src/modules/seo-monitoring/services/quality-history-snapshot.service.ts"
+      ]
     },
     {
       "args": [],
@@ -2090,8 +2092,10 @@
       "searchPath": [],
       "securityDefiner": true,
       "sourceConfidence": "high",
-      "status": "UNKNOWN",
-      "usedBy": []
+      "status": "LIVE",
+      "usedBy": [
+        "backend/src/modules/seo-monitoring/services/quality-history-snapshot.service.ts"
+      ]
     },
     {
       "args": [
@@ -2569,8 +2573,10 @@
       ],
       "securityDefiner": true,
       "sourceConfidence": "medium",
-      "status": "UNKNOWN",
-      "usedBy": []
+      "status": "LIVE",
+      "usedBy": [
+        "backend/src/modules/seo-monitoring/services/cwv-dashboard.service.ts"
+      ]
     },
     {
       "args": [
@@ -2605,8 +2611,10 @@
       ],
       "securityDefiner": true,
       "sourceConfidence": "medium",
-      "status": "UNKNOWN",
-      "usedBy": []
+      "status": "LIVE",
+      "usedBy": [
+        "backend/src/modules/seo-monitoring/services/cwv-dashboard.service.ts"
+      ]
     },
     {
       "args": [
@@ -3908,8 +3916,10 @@
       "searchPath": [],
       "securityDefiner": true,
       "sourceConfidence": "high",
-      "status": "UNKNOWN",
-      "usedBy": []
+      "status": "LIVE",
+      "usedBy": [
+        "backend/src/modules/blog/services/advice.service.ts"
+      ]
     },
     {
       "args": [
@@ -6527,8 +6537,10 @@
       "searchPath": [],
       "securityDefiner": true,
       "sourceConfidence": "high",
-      "status": "UNKNOWN",
-      "usedBy": []
+      "status": "LIVE",
+      "usedBy": [
+        "backend/src/modules/payments/repositories/payment-data.service.ts"
+      ]
     },
     {
       "args": [
