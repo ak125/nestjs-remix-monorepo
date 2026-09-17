@@ -20,6 +20,7 @@ import {
   findFunctionBlocks,
   sigHash,
 } from "../../scripts/registry/build-rpc-registry.js";
+import { lexViews } from "../../scripts/registry/lib/sql-lex.js";
 
 const FIXTURE_PATH = path.join(__dirname, "fixtures", "rpc-edge-cases.sql");
 const FIXTURE_SQL = fs.readFileSync(FIXTURE_PATH, "utf8");
@@ -220,6 +221,29 @@ describe("croisement db-usage-map → rpc.json", () => {
     );
   });
 
+  test("aucun argument de la projection ne porte de marqueur de commentaire", () => {
+    // Invariant de CÂBLAGE, pas de parsing : les tests unitaires ci-dessous
+    // prouvent que le lexer sait dépouiller, celui-ci prouve que `main()` s'en
+    // sert. Débrancher `lexViews` dans le producteur laisserait les tests
+    // unitaires verts et ferait tomber celui-ci.
+    //
+    // Mesuré avant câblage : 19 arguments portaient `--` ou un marqueur de bloc
+    // dans leur type, et le registre en tirait des surcharges inexistantes.
+    const polluted = entries.flatMap((e) =>
+      e.args
+        .filter(
+          (a: any) =>
+            `${a.name}${a.type}`.includes("--") || `${a.name}${a.type}`.includes("/*"),
+        )
+        .map((a: any) => `${e.id} → ${a.name}: ${a.type}`),
+    );
+    assert.deepEqual(
+      polluted,
+      [],
+      "un commentaire a fuité dans un type d'argument : le producteur lit du SQL brut",
+    );
+  });
+
   test("un RPC appelé depuis le backend porte ses callsites dans rpc.json", () => {
     const called = Object.entries(usage.rpc as Record<string, any>).filter(
       ([, v]) => (v.called_by_count || 0) > 0,
@@ -253,5 +277,66 @@ describe("croisement db-usage-map → rpc.json", () => {
       "aucun RPC appelé n'a été croisé avec rpc.json — le croisement est mort, " +
         "pas satisfait (c'est exactement le défaut que ce test existe pour attraper)",
     );
+  });
+});
+
+/**
+ * Dépouillement des commentaires — la limitation V1.5 annoncée dans la fixture.
+ *
+ * `main()` détecte sur la vue `topLevel` (régions non exécutables blanchies) et
+ * parse sur `commentsMasked` (seuls les commentaires blanchis). Ces deux tests
+ * prouvent que c'est bien le LEXER qui fait la différence, en comparant la même
+ * entrée lue des deux façons — et non pas seulement que le résultat est correct
+ * aujourd'hui.
+ */
+describe("dépouillement des commentaires (lib/sql-lex)", () => {
+  test("un CREATE FUNCTION en commentaire est vu sur le SQL brut, jamais sur `topLevel`", () => {
+    const raw = findFunctionBlocks(FIXTURE_SQL).length;
+    const top = findFunctionBlocks(lexViews(FIXTURE_SQL).topLevel).length;
+    assert.ok(
+      raw > top,
+      `le SQL brut doit voir PLUS de blocs que la vue exécutable (brut=${raw}, topLevel=${top}) — ` +
+        "sinon la fixture ne contient plus de CREATE commenté et le test ne prouve rien",
+    );
+    // Nommément, les deux déclarations commentées du Case 8 : détectées sur le brut,
+    // absentes de la vue exécutable. Une assertion par nom, pas un cardinal — les
+    // en-têtes `-- Case N : CREATE FUNCTION …` de la fixture en produisent d'autres,
+    // et leur nombre n'a pas à être figé.
+    const topSet = new Set(findFunctionBlocks(lexViews(FIXTURE_SQL).topLevel));
+    for (const decl of ["fixture_commented_out", "fixture_block_commented"]) {
+      const at = findFunctionBlocks(FIXTURE_SQL).filter((i) =>
+        FIXTURE_SQL.slice(i, i + 80).includes(decl),
+      );
+      assert.ok(at.length > 0, `${decl} doit être vue par le scan brut`);
+      for (const i of at) {
+        assert.ok(!topSet.has(i), `${decl} est commentée : elle ne doit PAS déclarer de fonction`);
+      }
+    }
+  });
+
+  test("un commentaire inline dans la liste d'arguments ne change pas la signature", () => {
+    const masked = lexViews(FIXTURE_SQL).commentsMasked;
+    const start = findFunctionBlocks(lexViews(FIXTURE_SQL).topLevel).find(
+      (i) => masked.slice(i, i + 200).includes("fixture_commented_args"),
+    );
+    assert.ok(start !== undefined, "Case 9 doit être détectée");
+    const withComments = parseFunctionBlock(masked, start as number);
+    assert.ok(withComments, "Case 9 doit parser");
+
+    const plain = `CREATE FUNCTION fixture_commented_args(\n  p_batch_id uuid,\n  p_rows jsonb\n) RETURNS void AS $$ BEGIN END $$ LANGUAGE plpgsql;`;
+    const ref = parseFunctionBlock(plain, 0);
+    assert.ok(ref, "la forme sans commentaire doit parser");
+
+    assert.equal(
+      sigHash((withComments as any).args),
+      sigHash((ref as any).args),
+      "même signature PostgreSQL ⇒ même sigHash, commentaires ou non — sinon le registre invente une surcharge",
+    );
+    for (const a of (withComments as any).args) {
+      assert.ok(
+        !a.type.includes("--") && !a.type.includes("/*"),
+        `le type de ${a.name} ne doit porter aucun marqueur de commentaire, trouvé: ${a.type}`,
+      );
+    }
   });
 });

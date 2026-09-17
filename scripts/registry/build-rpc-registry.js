@@ -54,6 +54,7 @@ const {
   sortById,
   makeLogger,
 } = require("./lib/utils");
+const { lexViews } = require("./lib/sql-lex");
 
 const log = makeLogger("rpc");
 
@@ -283,12 +284,26 @@ function main() {
   const byFullName = new Map(); // "schema.name" → array of parsed records
 
   for (const { filename, sql } of migrations) {
-    const blocks = findFunctionBlocks(sql);
+    // Deux vues de MÊME longueur, donc à offsets interchangeables (lib/sql-lex.js) :
+    //   topLevel        — toute région non exécutable blanchie. DÉTECTION : seul un
+    //                     `CREATE FUNCTION` survivant dans du code réellement exécutable
+    //                     déclare une fonction — jamais un dans un commentaire, une
+    //                     chaîne ou un corps `$$…$$`.
+    //   commentsMasked  — seuls les commentaires blanchis. PARSING : un commentaire
+    //                     inline ne peut plus fuiter dans un type d'argument et
+    //                     fabriquer une signature.
+    // Sans cette séparation, le scan lisait du SQL brut et confondait documentation
+    // et DDL — même cause racine que #1502 côté tables.
+    const { topLevel, commentsMasked } = lexViews(sql);
+    const blocks = findFunctionBlocks(topLevel);
     for (const start of blocks) {
-      const parsed = parseFunctionBlock(sql, start);
+      const parsed = parseFunctionBlock(commentsMasked, start);
       if (!parsed) {
-        // CREATE FUNCTION matched by keyword but parser couldn't extract — emit unknown_signature
-        const around = sql.slice(start, Math.min(start + 200, sql.length));
+        // CREATE FUNCTION matched by keyword but parser couldn't extract — emit unknown_signature.
+        // L'extrait cite ce que le parseur a RÉELLEMENT lu (vue masquée), pas le texte
+        // d'origine : diagnostiquer sur une entrée que le parseur n'a jamais vue mène
+        // à chercher un défaut là où il n'est pas.
+        const around = commentsMasked.slice(start, Math.min(start + 200, commentsMasked.length));
         const nameGuess = (around.match(/FUNCTION\s+([\w."']+)/i) || [])[1] || "unknown";
         const cleanName = nameGuess.replace(/["']/g, "");
         const [schemaName, funcName] = cleanName.includes(".")
