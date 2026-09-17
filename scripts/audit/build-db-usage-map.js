@@ -23,6 +23,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
+const { maskComments } = require('../registry/lib/sql-lex');
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const QUIET = process.argv.includes('--quiet');
@@ -97,6 +98,15 @@ function scanCallSites(ts) {
 // An object is "currently defined" iff its last CREATE comes after its last DROP
 // (or it was never dropped). This filters away objects killed by a later migration
 // (ADR-017 RPC cleanup, the -38 tables / -44 RPC cleanup, etc.).
+//
+// Les regex ci-dessous s'appliquent au SQL DÉPOUILLÉ DE SES COMMENTAIRES
+// (`maskComments`, scripts/registry/lib/sql-lex.js), jamais au SQL brut : une
+// procédure de rollback documentée en commentaire N'EST PAS du DDL exécuté.
+// Sur SQL brut, 20 `DROP TABLE` commentés effaçaient 9 tables réelles (tout le
+// système `__seo_r8_*`) et 5 fonctions dont deux de durcissement RLS, et un
+// `CREATE TABLE` cité dans un commentaire français fabriquait la table `sont`.
+// Les CINQ familles de regex sont dépouillées, pas seulement les tables :
+// n'en traiter qu'une partie recréerait l'asymétrie qui a causé le défaut.
 function scanMigrations() {
   log('[build-db-usage-map] scanning supabase migrations …');
   const dir = path.join(REPO_ROOT, 'backend', 'supabase', 'migrations');
@@ -112,10 +122,16 @@ function scanMigrations() {
   const triggerFns = new Set();
   for (const f of files) {
     let sql;
-    try { sql = fs.readFileSync(path.join(dir, f), 'utf8'); } catch { continue; }
+    try { sql = maskComments(fs.readFileSync(path.join(dir, f), 'utf8')); } catch { continue; }
     let m;
     const reCreateTable = new RegExp(`create\\s+(?:unlogged\\s+|temp(?:orary)?\\s+)?table\\s+(?:if\\s+not\\s+exists\\s+)?(?:${ident}\\.)?${ident}`, 'gi');
-    while ((m = reCreateTable.exec(sql))) { const t = norm(m[2]); if (!ok(t)) continue; lastCreateTable.set(t, f); if (!createdInTable.has(t)) createdInTable.set(t, new Set()); createdInTable.get(t).add(f); }
+    // `CREATE TEMP/TEMPORARY TABLE … ON COMMIT DROP` est une table de travail
+    // interne à une transaction, jamais un objet du schéma : 4 d'entre elles
+    // figuraient dans `candidate_orphan_tables`. Le test porte sur m[0] et NON
+    // sur un groupe capturant ajouté à la regex — capturer `temp(?:orary)?`
+    // décalerait silencieusement m[2] (le nom de table) en m[3]. `UNLOGGED`
+    // reste une vraie table et n'est pas concerné.
+    while ((m = reCreateTable.exec(sql))) { if (/\bcreate\s+(?:temp|temporary)\b/i.test(m[0])) continue; const t = norm(m[2]); if (!ok(t)) continue; lastCreateTable.set(t, f); if (!createdInTable.has(t)) createdInTable.set(t, new Set()); createdInTable.get(t).add(f); }
     const reDropTable = new RegExp(`drop\\s+table\\s+(?:if\\s+exists\\s+)?(?:${ident}\\.)?${ident}`, 'gi');
     while ((m = reDropTable.exec(sql))) { const t = norm(m[2]); if (ok(t)) lastDropTable.set(t, f); }
     const reCreateFn = new RegExp(`create\\s+(?:or\\s+replace\\s+)?function\\s+(?:${ident}\\.)?${ident}\\s*\\(([\\s\\S]*?)\\)\\s*returns\\s+(\\w+)`, 'gi');
