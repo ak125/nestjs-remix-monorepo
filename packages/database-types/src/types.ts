@@ -2,6 +2,32 @@
  * Types TypeScript generees depuis le schema Supabase (546 tables)
  * Source de verite : supabase-generated.types.ts (genere par MCP supabase)
  *
+ * PORTEE DE LA FRAICHEUR — a lire avant de se fier a la date du dernier resync.
+ * Ce fichier declare des tables partitionnees dont les partitions entrent et
+ * sortent de rotation en continu. Une regeneration est donc exacte le jour ou
+ * elle est faite, et re-derive sous 24 h sur ces familles SANS qu'aucune
+ * migration n'ait eu lieu. Un `git log` recent sur ce fichier ne signifie PAS
+ * qu'il decrit le schema d'aujourd'hui.
+ *
+ * LES QUATRE FAMILLES QUI TOURNENT, mesurees sur le diff de ce resync (celles
+ * dont des partitions DISPARAISSENT, pas seulement celles qui en gagnent) :
+ *   __seo_cwv_hourly_p<YYYYMMDD>      __seo_cwv_raw_p<YYYYMMDD>
+ *   __seo_snapshot_cf_rum_p<YYYYMMDD> __seo_snapshot_synthetic_p<YYYYMMDD>
+ *
+ * NE PAS y ranger __seo_gsc_daily_* : malgre son nom, cette famille est
+ * partitionnee par MOIS (__seo_gsc_daily_2026_06 .. _2026_11) et n'apparait
+ * qu'en AJOUT dans ce resync — c'est un apport structurel stable, pas une
+ * rotation. Le nom « daily » qualifie la granularite des LIGNES, pas celle des
+ * partitions ; s'y fier fait classer volatile ce qui ne l'est pas, et masque la
+ * seule vraie derive non-partition que ce resync corrige.
+ *
+ * Ce qui reste stable entre deux regenerations : les tables et vues non
+ * partitionnees, les colonnes, les enums, les signatures de fonctions.
+ * Ne pas poser de gate CI de fraicheur naif sur ce fichier : il serait rouge
+ * tous les jours pour une rotation de partitions, pas pour une derive reelle.
+ * La regle pour distinguer : une famille n'est volatile que si des partitions
+ * en SORTENT — regarder les suppressions du diff, jamais les ajouts seuls.
+ *
  * Ce fichier fournit :
  * - Re-export du type Database officiel Supabase
  * - Helpers generiques : TableRow<T>, TableInsert<T>, TableUpdate<T>
