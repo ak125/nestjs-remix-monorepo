@@ -970,9 +970,6 @@ jobs:
           echo "✅ PREPROD deployed successfully on port 3200"
           echo "🔗 Test URL: http://$(hostname -I | awk '{print $1}'):3200"
 
-          # Nettoyer les images
-          docker image prune -f
-
       - name: 🔍 API Smoke Tests
         run: |
           BASE="http://localhost:3200"

@@ -69555,7 +69555,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 101,
+      "loc": 223,
       "owner": "__unassigned__",
       "path": "tests/registry/runtime-excludes-tests.test.ts",
       "risk": "low",
