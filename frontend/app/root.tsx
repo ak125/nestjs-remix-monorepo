@@ -225,6 +225,16 @@ function AppShell({ children }: { children: React.ReactNode }) {
     const currentUrl = location.pathname + location.search;
     // Dedup : ne pas re-fire si même URL (évite inflation /login et redirects)
     if (currentUrl === prevUrlRef.current) return;
+    // Snapshot this committed view before idle work: another navigation may
+    // change document.title/location before the callback runs.
+    const pageView = {
+      page_path: currentUrl,
+      page_title: document.title,
+      page_location: new URL(currentUrl, window.location.origin).href,
+      page_referrer: prevUrlRef.current
+        ? new URL(prevUrlRef.current, window.location.origin).href
+        : document.referrer,
+    };
     prevUrlRef.current = currentUrl;
 
     const trackPageView = () => {
@@ -232,11 +242,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
       if (location.pathname.startsWith("/admin")) return;
 
       if (typeof window.gtag === "function") {
-        window.gtag("event", "page_view", {
-          page_path: currentUrl,
-          page_title: document.title,
-          page_location: window.location.href,
-        });
+        window.gtag("event", "page_view", pageView);
       }
     };
 
@@ -444,6 +450,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 'wait_for_update': 500
               });
 
+              // Queue the destination before SPA events. gtag.js processes the
+              // queue before onload; events queued before config have no target.
+              // Only the network download is deferred, not configuration.
+              gtag('js', new Date());
+              gtag('config', '${gaMeasurementId}', {
+                page_title: document.title,
+                page_location: window.location.href,
+                send_page_view: false
+              });
+
               // Fonction pour accorder le consentement analytics
               window.__grantAnalyticsConsent = function() {
                 gtag('consent', 'update', { 'analytics_storage': 'granted' });
@@ -459,12 +475,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   script.src = 'https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}';
                   script.async = true;
                   script.onload = function() {
-                    gtag('js', new Date());
-                    gtag('config', '${gaMeasurementId}', {
-                      page_title: document.title,
-                      page_location: window.location.href,
-                      send_page_view: false
-                    });
                     // Accorder le consentement analytics après chargement
                     window.__grantAnalyticsConsent();
                   };
