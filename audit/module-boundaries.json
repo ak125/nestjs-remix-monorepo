@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 597,
-      "loc_total": 113567,
+      "loc_total": 113577,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 239,
-      "loc_total": 42979,
+      "files_count": 240,
+      "loc_total": 43194,
       "has_barrel": true
     },
     "upload": {

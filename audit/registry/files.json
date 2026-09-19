@@ -50335,7 +50335,7 @@
         "~/utils/resilient-lazy"
       ],
       "kind": "service",
-      "loc": 583,
+      "loc": 593,
       "owner": "__unassigned__",
       "path": "frontend/app/root.tsx",
       "risk": "low",
@@ -60742,6 +60742,25 @@
       "loc": 59,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/funnel-beacon.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/ga4-bootstrap.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 215,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/ga4-bootstrap.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
