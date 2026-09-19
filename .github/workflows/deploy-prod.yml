@@ -42,8 +42,8 @@ jobs:
         with:
           node-version: 24
 
-      - name: Verify client-IP probe before any PROD mutation
-        run: node --test scripts/ci/prod-client-ip-probe.test.mjs
+      - name: Verify deployment probes before any PROD mutation
+        run: node --test scripts/ci/prod-client-ip-probe.test.mjs scripts/ci/prod-admin-guard-probe.test.mjs
 
       - name: Login to Docker Hub
         uses: docker/login-action@v4
@@ -483,19 +483,10 @@ jobs:
           fi
 
           # Admin guard verification (warning only, non-blocking)
-          echo "🛡️ Testing admin guards..."
-          ADMIN_RESP=$($EXEC wget -q --server-response -O /dev/null http://localhost:3000/api/admin/content-refresh/dashboard 2>&1 | grep "HTTP/" | awk '{print $2}')
-          if [ "$ADMIN_RESP" = "403" ] || [ "$ADMIN_RESP" = "401" ]; then
-            echo "✅ admin guard /content-refresh -> $ADMIN_RESP"
-          else
-            echo "⚠️ admin guard /content-refresh -> ${ADMIN_RESP:-unknown} (expected 401/403)"
-          fi
-
-          ADMIN_RESP=$($EXEC wget -q --server-response -O /dev/null http://localhost:3000/api/admin/page-briefs 2>&1 | grep "HTTP/" | awk '{print $2}')
-          if [ "$ADMIN_RESP" = "403" ] || [ "$ADMIN_RESP" = "401" ]; then
-            echo "✅ admin guard /page-briefs -> $ADMIN_RESP"
-          else
-            echo "⚠️ admin guard /page-briefs -> ${ADMIN_RESP:-unknown} (expected 401/403)"
+          # Read a numeric HTTP status, never wget's human-readable error output.
+          # Keep the existing warning-only policy; no admin credentials are sent.
+          if ! node "$GITHUB_WORKSPACE/scripts/ci/prod-admin-guard-probe.mjs"; then
+            echo "::warning::Admin guard verification failed; see the probe error above (non-blocking)."
           fi
 
           if [ "$FAILED" = "1" ]; then
