@@ -4,11 +4,12 @@
  *
  * Reads `audit/runtime-entrypoints.json` (produced by
  * `scripts/audit/build-deep-inventory.js`) and emits one RuntimeEntry per
- * entrypoint. The startup-order DAG (`dependsOn[]`) is derived from the cache
- * `imports[]` graph restricted to runtime-reachable paths.
+ * detected entrypoint. `dependsOn[]` is the cached import graph restricted to
+ * emitted nodes, not proof of actual startup order or job execution.
  *
  * Per ADR-058 invariant V1-3 :
- *   - `status: 'LIVE'` for confirmed entrypoints
+ *   - `status: 'LIVE'` for structurally declared entrypoints (not runtime activity)
+ *   - decorator-only processors without DI wiring stay UNKNOWN / low confidence
  *   - `sourceConfidence: 'high'` for app_entries (direct startup) ; `'medium'`
  *     for derived (remix routes, NestJS reachable modules)
  *
@@ -41,8 +42,11 @@ const BUCKET_TO_KIND = {
   nestjs_controllers: "nestjs-controller",
   nestjs_services: "nestjs-service",
   workers: "worker",
+  bull_processors: "worker",
   cron: "cron",
   migrations: "migration",
+  // Last: specific module/controller/processor kinds take precedence.
+  di_live_files: "other",
 };
 
 function inferKindFromPath(filePath) {
@@ -78,6 +82,7 @@ function main() {
   const importGraph = buildImportGraph(cache);
 
   const buckets = ep.entrypoints || {};
+  const diLiveFiles = new Set(buckets.di_live_files || []);
   const seenPaths = new Set();
   const entries = [];
 
@@ -91,32 +96,17 @@ function main() {
       const kind = bucketKind === "other"
         ? inferKindFromPath(filePath)
         : bucketKind;
-      const confidence = bucketName === "app_entries" ? "high" : "medium";
-
-      // dependsOn = imports restricted to other entrypoints (runtime-only DAG)
-      const node = importGraph.get(filePath);
-      const allImports = node && Array.isArray(node.imports) ? node.imports : [];
-      const dependsOn = allImports
-        .filter((p) => {
-          // Keep only imports that are themselves entrypoints (runtime DAG)
-          for (const otherBucket of Object.values(buckets)) {
-            if (Array.isArray(otherBucket) && otherBucket.includes(p)) {
-              return true;
-            }
-          }
-          return false;
-        })
-        .map((p) => entryId(p))
-        .sort();
+      const unwiredProcessor = bucketName === "bull_processors" && !diLiveFiles.has(filePath);
+      const confidence = bucketName === "app_entries" ? "high" : unwiredProcessor ? "low" : "medium";
 
       const entry = {
         schemaVersion: SCHEMA_VERSION,
         id: entryId(filePath),
         path: filePath,
         kind,
-        status: "LIVE",
+        status: unwiredProcessor ? "UNKNOWN" : "LIVE",
         sourceConfidence: confidence,
-        dependsOn,
+        dependsOn: [],
       };
 
       // Optional fields for Remix routes
@@ -127,6 +117,16 @@ function main() {
 
       entries.push(entry);
     }
+  }
+
+  // Only emitted paths can become internal references. Other producer buckets
+  // contain class names, workflows, etc. and are not runtime graph nodes.
+  for (const entry of entries) {
+    const node = importGraph.get(entry.path);
+    const allImports = node && Array.isArray(node.imports) ? node.imports : [];
+    entry.dependsOn = [...new Set(allImports.filter((p) => seenPaths.has(p)))]
+      .map(entryId)
+      .sort();
   }
 
   log(`detected ${entries.length} runtime entrypoints`);
