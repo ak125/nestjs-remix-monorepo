@@ -756,3 +756,98 @@ describe("partitions — détection structurelle, jamais par le nom", () => {
     assert.ok(/vrai_p2026_01/.test(masked));
   });
 });
+
+describe("récepteur local — une API homonyme ne prouve pas un client DB", () => {
+  const ambiguous = [
+    ["rpc local", "const local = { rpc: () => null }; local.rpc('not_a_function');"],
+    ["from chaîné local", "const local = { from: () => ({ select: () => [] }) }; local.from('not_a_table').select('*');"],
+    ["objet direct", "({ rpc: () => null }).rpc('not_a_function');"],
+    ["cast et alias const", "const local = { rpc: () => null }; const alias = (local as any); alias!.rpc('not_a_function');"],
+    ["capture lexicale de l'alias", "const local = {}; const alias = local; { const local = createClient(); alias.rpc('not_a_function'); }"],
+    ["fermeture", "const local = {}; function run() { local.rpc('not_a_function'); }"],
+    ["wrapper potentiellement DB", "const local = { rpc: client.rpc.bind(client) }; local.rpc('maybe_real');"],
+    ["objet mutable réaffecté", "let local = {}; local = createClient(); local.rpc('maybe_real');"],
+  ];
+  for (const [label, code] of ambiguous) {
+    test(label, () => {
+      const result = classifySnippet(code)!;
+      assert.equal(result.kind, "UNRESOLVED", "un objet local ne doit pas créditer un usage DB");
+      assert.equal(result.reason, "local-object-receiver", "l'ambiguïté doit être nommée");
+    });
+  }
+
+  const shadowed = [
+    ["paramètre", "const client = {}; function run(client: SupabaseClient) { client.rpc('real'); }"],
+    ["paramètre déstructuré", "const client = {}; function run({client}: Context) { client.rpc('real'); }"],
+    ["variable de bloc", "const client = {}; { const client = createClient(); client.rpc('real'); }"],
+    ["liaison catch", "const client = {}; try {} catch (client) { client.rpc('real'); }"],
+    ["liaison de boucle", "const client = {}; for (const client of clients) { client.rpc('real'); }"],
+    ["var remontée dans la fonction", "const client = {}; function run() { if (ready) { var client = createClient(); } client.rpc('real'); }"],
+    ["nom de fonction expression", "const client = {}; const run = function client() { client.rpc('real'); };"],
+  ];
+  for (const [label, code] of shadowed) {
+    test(`ne confond pas une liaison masquée — ${label}`, () => {
+      assert.equal(classifySnippet(code)!.kind, "DB");
+    });
+  }
+
+  test("un client construit localement reste accepté", () => {
+    assert.equal(classifySnippet("const client = createClient(url, key); client.from('real').select('*');")!.kind, "DB");
+  });
+
+  test("les cycles d'alias ne bouclent pas", () => {
+    assert.equal(classifySnippet("const a = b; const b = a; a.rpc('unknown');")!.kind, "DB");
+  });
+
+  test("projection : ambiguïtés motivées, sans usage ni orphelinat indu", () => {
+    const { execFileSync } = require("node:child_process");
+    const { tmpdir } = require("node:os");
+    const root = fs.mkdtempSync(path.join(tmpdir(), "db-receiver-test-"));
+    try {
+      for (const dir of ["scripts/audit", "scripts/registry/lib", "backend/src", "backend/supabase/migrations"]) {
+        fs.mkdirSync(path.join(root, dir), { recursive: true });
+      }
+      for (const file of ["scripts/audit/build-db-usage-map.js", "scripts/registry/lib/sql-lex.js"]) {
+        fs.copyFileSync(path.join(REPO_ROOT, file), path.join(root, file));
+      }
+      fs.writeFileSync(path.join(root, "backend/src/fixture.ts"), `
+        const local = { from: () => ({ select: () => [] }), rpc: () => null };
+        local.from('local_table').select('*');
+        local.rpc('local_rpc');
+        local.rpc('table_only');
+        local.from('function_only').select('*');
+      `);
+      fs.writeFileSync(path.join(root, "backend/supabase/migrations/001_fixture.sql"), `
+        CREATE TABLE local_table (id int);
+        CREATE TABLE table_only (id int);
+        CREATE FUNCTION local_rpc() RETURNS void LANGUAGE sql AS $$ SELECT 1 $$;
+        CREATE FUNCTION function_only() RETURNS void LANGUAGE sql AS $$ SELECT 1 $$;
+      `);
+      execFileSync("git", ["init", "--quiet", root]);
+      execFileSync("git", ["-C", root, "add", "backend/src/fixture.ts"]);
+      const outputPath = path.join(root, "audit/db-usage-map.json");
+      const run = () => execFileSync(process.execPath, ["scripts/audit/build-db-usage-map.js", "--quiet"], {
+        cwd: root,
+        env: {
+          ...process.env,
+          NODE_PATH: [path.dirname(path.dirname(require.resolve("typescript/package.json"))), process.env.NODE_PATH]
+            .filter(Boolean).join(path.delimiter),
+        },
+      });
+      run();
+      const output = JSON.parse(fs.readFileSync(outputPath, "utf8"));
+      assert.equal(output.summary.unresolved_callsites, 4);
+      assert.equal(output.summary.tables_with_callsites, 0);
+      assert.equal(output.summary.rpc_with_callsites, 0);
+      assert.deepEqual(output.unresolved_callsites.map((entry: { reason: string }) => entry.reason),
+        Array(4).fill("local-object-receiver"));
+      assert.deepEqual(output.candidate_orphan_tables.map((entry: { name: string }) => entry.name), ["table_only"]);
+      assert.deepEqual(output.candidate_orphan_rpc.map((entry: { name: string }) => entry.name), ["function_only"]);
+      const first = fs.readFileSync(outputPath, "utf8");
+      run();
+      assert.equal(fs.readFileSync(outputPath, "utf8"), first, "la projection doit rester déterministe");
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+});

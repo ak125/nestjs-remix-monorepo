@@ -67,8 +67,8 @@ const JS_STATIC_FROM_OWNERS = new Set([
   'BigInt64Array', 'BigUint64Array',
 ]);
 
-// Verbes PostgREST qui prouvent qu'un `.from(x)` cible bien une table. Jeu
-// MINIMAL et délibéré : y ajouter `filter` réintroduirait Array.from(x).filter(…).
+// Verbes PostgREST utilisés comme indice syntaxique, pas comme preuve du type.
+// Jeu MINIMAL et délibéré : y ajouter `filter` réintroduirait Array.from(x).filter(…).
 const POSTGREST_VERBS = new Set(['select', 'insert', 'update', 'upsert', 'delete']);
 
 // Déballe (x), x as T, x satisfies T, x! pour atteindre le vrai récepteur.
@@ -97,8 +97,90 @@ function chainedVerb(ts, call) {
   return POSTGREST_VERBS.has(v) ? v : null;
 }
 
+// Liaison lexicale minimale du récepteur, sans TypeChecker ni résolution
+// d'import. Une liaison plus proche masque toujours l'objet d'une portée externe.
+function bindingContains(ts, binding, name) {
+  if (ts.isIdentifier(binding)) return binding.text === name;
+  if (ts.isObjectBindingPattern(binding) || ts.isArrayBindingPattern(binding)) {
+    return binding.elements.some((e) => ts.isBindingElement(e) && bindingContains(ts, e.name, name));
+  }
+  return false;
+}
+
+function findReceiverDeclaration(ts, identifier) {
+  const name = identifier.text;
+  const matches = (d) => d.name && bindingContains(ts, d.name, name);
+  // `var` remonte à la fonction/source, même s'il est déclaré dans un bloc.
+  // Ne jamais traverser une autre fonction/classe pour chercher cette liaison.
+  const hoistedVar = (root) => {
+    let found = null;
+    const visit = (n) => {
+      if (found || ts.isFunctionLike(n) || ts.isClassLike(n)) return;
+      if (ts.isVariableDeclarationList(n) && !(n.flags & ts.NodeFlags.BlockScoped)) {
+        found = n.declarations.find(matches) || null;
+      }
+      if (!found) ts.forEachChild(n, visit);
+    };
+    if (root) visit(root);
+    return found;
+  };
+  for (let scope = identifier.parent; scope; scope = scope.parent) {
+    const statements = ts.isCaseBlock(scope)
+      ? scope.clauses.flatMap((clause) => [...clause.statements])
+      : (ts.isBlock(scope) || ts.isSourceFile(scope) || ts.isModuleBlock(scope)) ? scope.statements : [];
+    for (const stmt of statements) {
+      if (ts.isVariableStatement(stmt)) {
+        const decl = stmt.declarationList.declarations.find(matches);
+        if (decl) return decl;
+      }
+      if ((ts.isFunctionDeclaration(stmt) || ts.isClassDeclaration(stmt) || ts.isEnumDeclaration(stmt)) && matches(stmt)) return null;
+      if (ts.isImportDeclaration(stmt) && stmt.importClause) {
+        const clause = stmt.importClause;
+        const bindings = clause.namedBindings;
+        if (matches(clause) || (bindings && (ts.isNamespaceImport(bindings)
+          ? matches(bindings) : bindings.elements.some(matches)))) return null;
+      }
+      if (ts.isImportEqualsDeclaration(stmt) && matches(stmt)) return null;
+    }
+    if (ts.isFunctionLike(scope)) {
+      if (scope.parameters.some(matches) || (ts.isFunctionExpression(scope) && matches(scope))) return null;
+      const decl = hoistedVar(scope.body);
+      if (decl) return decl;
+    }
+    if (ts.isSourceFile(scope)) {
+      const decl = hoistedVar(scope);
+      if (decl) return decl;
+    }
+    if (ts.isCatchClause(scope) && scope.variableDeclaration && matches(scope.variableDeclaration)) return scope.variableDeclaration;
+    if ((ts.isForStatement(scope) || ts.isForInStatement(scope) || ts.isForOfStatement(scope))
+        && scope.initializer && ts.isVariableDeclarationList(scope.initializer)) {
+      const decl = scope.initializer.declarations.find(matches);
+      if (decl) return decl;
+    }
+    if (ts.isClassExpression(scope) && matches(scope)) return null;
+  }
+  return null;
+}
+
+// Un objet littéral peut imiter PostgREST OU déléguer vers un vrai client.
+// Il est donc ambigu, pas NOT_DB. Périmètre : objets directs, initialisateurs
+// locaux et alias const ; ni analyse de flux, ni champs/propriétés/imports.
+function hasLocalObjectReceiver(ts, expression, seen = new Set()) {
+  const recv = unwrapReceiver(ts, expression);
+  if (ts.isObjectLiteralExpression(recv)) return true;
+  if (!ts.isIdentifier(recv)) return false;
+  const decl = findReceiverDeclaration(ts, recv);
+  if (!decl || !ts.isIdentifier(decl.name) || !decl.initializer || seen.has(decl)) return false;
+  seen.add(decl);
+  const init = unwrapReceiver(ts, decl.initializer);
+  if (ts.isObjectLiteralExpression(init)) return true;
+  return ts.isVariableDeclarationList(decl.parent) && !!(decl.parent.flags & ts.NodeFlags.Const)
+    && ts.isIdentifier(init) && hasLocalObjectReceiver(ts, init, seen);
+}
+
 // Classification à TROIS issues — jamais un filtre binaire (invariant 3 : aucun
-// repli silencieux). DB : preuve positive. NOT_DB : rejet STRUCTUREL, par liste
+// repli silencieux). DB : heuristique syntaxique, PAS preuve d'origine du client.
+// NOT_DB : rejet STRUCTUREL, par liste
 // noire, jamais par liste blanche de noms de récepteurs — une liste blanche
 // perdrait `sb`, `this.searchService['client']` et consorts. UNRESOLVED : ni
 // l'un ni l'autre, donc publié et compté, jamais jeté en silence.
@@ -107,6 +189,9 @@ function classifyCallSite(ts, call, method) {
   const recvText = call.expression.expression.getText().replace(/\s+/g, ' ');
   const verb = chainedVerb(ts, call);
 
+  if (hasLocalObjectReceiver(ts, recvNode)) {
+    return { kind: 'UNRESOLVED', reason: 'local-object-receiver', recvText };
+  }
   if (ts.isIdentifier(recvNode) && JS_STATIC_FROM_OWNERS.has(recvNode.text)) {
     return { kind: 'NOT_DB', reason: 'js-builtin-static-from', recvText };
   }
@@ -407,7 +492,7 @@ function scanCallSites(ts) {
             if (kind === 'NOT_DB') {
               if (isLiteral) dropped.push({ name: arg0.text, method, reason, file, line: lineOf(), receiver: recvText });
             } else if (kind === 'UNRESOLVED') {
-              unresolved.push({ file, line: lineOf(), method, receiver: recvText, name: isLiteral ? arg0.text : null });
+              unresolved.push({ file, line: lineOf(), method, receiver: recvText, name: isLiteral ? arg0.text : null, reason });
             } else if (isLiteral) {
               const name = arg0.text;
               const bag = method === 'from' ? tableUses : rpcUses;
@@ -538,7 +623,8 @@ function main() {
   // VISIBLE (unresolved_callsites) et, s'il porte un littéral, INTERDIT le
   // verdict d'orphelinat sur ce nom : sans cela le filet serait décoratif,
   // et une table vivante pourrait être déclarée orpheline en silence.
-  const unresolvedNames = new Set(cs.unresolved.filter((u) => u.name).map((u) => u.name));
+  const unresolvedTableNames = new Set(cs.unresolved.filter((u) => u.method === 'from' && u.name).map((u) => u.name));
+  const unresolvedRpcNames = new Set(cs.unresolved.filter((u) => u.method === 'rpc' && u.name).map((u) => u.name));
   const tableNames = new Set([...cs.tableUses.keys(), ...mig.tablesInMig.keys()]);
   const tables = {};
   const candidateOrphanTables = [];
@@ -554,7 +640,7 @@ function main() {
     // normalement (mesuré : 2 des 8 parents sont candidats, et le restent).
     // Elle demeure DANS l'inventaire : une absence est plus grave qu'un faux
     // positif, un objet sans ligne n'ayant aucun `usedBy` opposable.
-    if (usedBy.length === 0 && !partOf && !unresolvedNames.has(name) && (inMig.length > 0 || inKb)) {
+    if (usedBy.length === 0 && !partOf && !unresolvedTableNames.has(name) && (inMig.length > 0 || inKb)) {
       // always "low" for tables: there are hundreds of dynamic `.from(<var>)` callsites
       // in the backend, so a literal-only scan cannot honestly claim a table is unused.
       const derived = []; if (inMig.length) derived.push('migrations'); if (inKb) derived.push('knowledge-db'); derived.push('no-literal-from-callsite');
@@ -573,7 +659,7 @@ function main() {
     const isTrigger = mig.triggerFns.has(name);
     rpc[name] = { called_by: calledBy, called_by_count: calledBy.length, defined_in_migrations: inMig, is_trigger_function: isTrigger };
     if (isTrigger) { if (inMig.length) triggerFunctions.push({ name, defined_in_migrations: inMig }); continue; } // triggers are invoked by CREATE TRIGGER, never via .rpc()
-    if (calledBy.length === 0 && inMig.length > 0) {
+    if (calledBy.length === 0 && !unresolvedRpcNames.has(name) && inMig.length > 0) {
       // never "high": an RPC may be called by another function/RPC or the dashboard.
       candidateOrphanRpc.push({ name, confidence: 'medium', derived_from: ['migrations', 'no-rpc-callsite'], defined_in_migrations: inMig, caveats: ORPHAN_RPC_CAVEATS });
     }
