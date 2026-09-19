@@ -58,14 +58,18 @@ export class LogIngestionService implements OnModuleInit {
   private readonly meilisearch: MeiliSearch;
   private readonly lokiUrl: string;
   private readonly caddyLogPath: string;
+  /** Meilisearch est-il déclaré sur cet environnement ? (cf. constructeur) */
+  private readonly meilisearchConfigured: boolean;
 
   constructor(private readonly configService: ConfigService) {
-    // Meilisearch client
+    // Meilisearch client. Lecture SANS défaut d'abord : `MEILISEARCH_HOST`
+    // absent = Meilisearch n'est pas déployé sur cet environnement (aucun
+    // compose de déploiement / CI / Dockerfile ne le démarre). Garder ce signal
+    // est ce qui permet de ne pas confondre « pas déployé ici » et « en panne ».
+    const meiliHost = this.configService.get<string>('MEILISEARCH_HOST');
+    this.meilisearchConfigured = Boolean(meiliHost);
     this.meilisearch = new MeiliSearch({
-      host: this.configService.get<string>(
-        'MEILISEARCH_HOST',
-        'http://localhost:7700',
-      ),
+      host: meiliHost ?? 'http://localhost:7700',
       apiKey: this.configService.get<string>('MEILISEARCH_API_KEY', ''),
     });
 
@@ -89,6 +93,14 @@ export class LogIngestionService implements OnModuleInit {
    * `localhost:7700` qui bloque `app.listen()` → exit 124 sur /health.
    */
   onModuleInit(): void {
+    if (!this.meilisearchConfigured) {
+      // Même contrat que MeilisearchService : dégradation déclarée, une ligne,
+      // niveau warn. C'était le SECOND ERROR au boot pour la même cause.
+      this.logger.warn(
+        'MEILISEARCH_HOST non défini → indexation des access logs DÉSACTIVÉE sur cet environnement (dégradation assumée). L\'ingestion Loki/Caddy n\'est pas affectée.',
+      );
+      return;
+    }
     this.logger.log(
       '🚀 Init LogIngestionService — config Meilisearch en arrière-plan',
     );
