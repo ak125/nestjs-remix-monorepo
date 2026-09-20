@@ -75382,10 +75382,11 @@
         "frontend/app/components/pieces/PiecesGridView.tsx",
         "frontend/app/components/pieces/PiecesListView.tsx",
         "frontend/app/types/pieces-route.types.ts",
-        "frontend/app/utils/pieces-route.utils.ts"
+        "frontend/app/utils/pieces-route.utils.ts",
+        "~/services/api/rm-api.service"
       ],
       "kind": "config",
-      "loc": 283,
+      "loc": 294,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/pieces/PiecesGroupedDisplay.tsx",
       "risk": "low",
@@ -88794,7 +88795,7 @@
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 618,
+      "loc": 634,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/pieces-vehicle.loader.server.ts",
       "risk": "medium",
@@ -90820,6 +90821,26 @@
       "loc": 72,
       "owner": "@ak125",
       "path": "frontend/tests/unit/pieces-can-sell-render.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/pieces-grouped-display.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 178,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/pieces-grouped-display.test.tsx",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -99874,11 +99895,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "3045154dd16aeefab01f398f2540e47939a253f9cb3d5194599764dbc02e9958",
       "audit/registry/deps.json": "28f63bf4383ddec90e009095ddc11db9298b7cd92b52ceb234a3e6a2fd996f90",
-      "audit/registry/files.json": "859a26f98efbc21d1cd0a17748eeb577904fba48a1ae77238ea02f7c000b7b20",
+      "audit/registry/files.json": "a90898e8b5146fee78dba581a498764787dc6cadf23889708099b921606d2efc",
       "audit/registry/rpc.json": "821912126b4b0b6e8c5a86b4269f43106cc40a44d2ee85a107b550ab9ea0a7b6",
       "audit/registry/runtime.json": "3f153ecc8a7a52378e26435fe7ecf04c0a4549288d6ad12283b783545ba5e99e"
     },
-    "sotFingerprint": "dcea050869a6"
+    "sotFingerprint": "8e143d693855"
   },
   "runtime": [
     {
