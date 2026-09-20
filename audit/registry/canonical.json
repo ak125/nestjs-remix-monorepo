@@ -75487,7 +75487,7 @@
         "frontend/app/types/pieces-route.types.ts"
       ],
       "kind": "config",
-      "loc": 286,
+      "loc": 229,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/pieces/PiecesOemSection.tsx",
       "risk": "low",
@@ -90954,6 +90954,26 @@
         "manual"
       ],
       "domain": "D2",
+      "id": "frontend/tests/unit/pieces-oem-section.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 90,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/pieces-oem-section.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
       "id": "frontend/tests/unit/pieces-slug-substitution-lock-strip.test.ts",
       "importedBy": [],
       "imports": [],
@@ -99895,11 +99915,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "3045154dd16aeefab01f398f2540e47939a253f9cb3d5194599764dbc02e9958",
       "audit/registry/deps.json": "28f63bf4383ddec90e009095ddc11db9298b7cd92b52ceb234a3e6a2fd996f90",
-      "audit/registry/files.json": "a90898e8b5146fee78dba581a498764787dc6cadf23889708099b921606d2efc",
+      "audit/registry/files.json": "a3eed65ea2346f7f4b1ee837e588da39d5aba3eefaa2e8a2379a50f8e87fdae2",
       "audit/registry/rpc.json": "821912126b4b0b6e8c5a86b4269f43106cc40a44d2ee85a107b550ab9ea0a7b6",
       "audit/registry/runtime.json": "3f153ecc8a7a52378e26435fe7ecf04c0a4549288d6ad12283b783545ba5e99e"
     },
-    "sotFingerprint": "8e143d693855"
+    "sotFingerprint": "609fa31c1125"
   },
   "runtime": [
     {

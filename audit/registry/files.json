@@ -46191,7 +46191,7 @@
         "frontend/app/types/pieces-route.types.ts"
       ],
       "kind": "config",
-      "loc": 286,
+      "loc": 229,
       "owner": "__unassigned__",
       "path": "frontend/app/components/pieces/PiecesOemSection.tsx",
       "risk": "low",
@@ -61104,6 +61104,25 @@
       "loc": 142,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/pieces-hero-trust-strip.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/pieces-oem-section.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 90,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/pieces-oem-section.test.tsx",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
