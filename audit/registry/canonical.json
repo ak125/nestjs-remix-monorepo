@@ -68113,6 +68113,28 @@
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
+      "id": "frontend/app/components/AnalyticsConsent.tsx",
+      "importedBy": [],
+      "imports": [
+        "~/components/ui/button"
+      ],
+      "kind": "config",
+      "loc": 93,
+      "owner": "@ak125/frontend-team",
+      "path": "frontend/app/components/AnalyticsConsent.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
         "manual",
         "reachability"
       ],
@@ -79778,6 +79800,7 @@
         "frontend/app/hooks/useScrollBehavior.ts",
         "frontend/app/services/cart.server.ts",
         "frontend/app/styles/animations.css",
+        "~/components/AnalyticsConsent",
         "~/components/LazyBoundary",
         "~/components/home/LazyFooter",
         "~/utils/load-context",
@@ -79785,7 +79808,7 @@
         "~/utils/resilient-lazy"
       ],
       "kind": "service",
-      "loc": 593,
+      "loc": 611,
       "owner": "__unassigned__",
       "path": "frontend/app/root.tsx",
       "risk": "low",
@@ -90074,6 +90097,26 @@
         "manual"
       ],
       "domain": "D2",
+      "id": "frontend/tests/unit/analytics-consent-ui.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 107,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/analytics-consent-ui.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
       "id": "frontend/tests/unit/array-at-polyfill.test.ts",
       "importedBy": [],
       "imports": [],
@@ -90578,7 +90621,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 215,
+      "loc": 394,
       "owner": "@ak125",
       "path": "frontend/tests/unit/ga4-bootstrap.test.ts",
       "risk": "medium",
@@ -99915,11 +99958,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "3045154dd16aeefab01f398f2540e47939a253f9cb3d5194599764dbc02e9958",
       "audit/registry/deps.json": "28f63bf4383ddec90e009095ddc11db9298b7cd92b52ceb234a3e6a2fd996f90",
-      "audit/registry/files.json": "a3eed65ea2346f7f4b1ee837e588da39d5aba3eefaa2e8a2379a50f8e87fdae2",
+      "audit/registry/files.json": "870159fdb54376fec3a0f9b1a864613d6c0115f0f0aa8a97d9bf284a7c235042",
       "audit/registry/rpc.json": "821912126b4b0b6e8c5a86b4269f43106cc40a44d2ee85a107b550ab9ea0a7b6",
       "audit/registry/runtime.json": "3f153ecc8a7a52378e26435fe7ecf04c0a4549288d6ad12283b783545ba5e99e"
     },
-    "sotFingerprint": "609fa31c1125"
+    "sotFingerprint": "127b750927c2"
   },
   "runtime": [
     {
