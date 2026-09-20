@@ -46090,10 +46090,11 @@
         "frontend/app/components/pieces/PiecesGridView.tsx",
         "frontend/app/components/pieces/PiecesListView.tsx",
         "frontend/app/types/pieces-route.types.ts",
-        "frontend/app/utils/pieces-route.utils.ts"
+        "frontend/app/utils/pieces-route.utils.ts",
+        "~/services/api/rm-api.service"
       ],
       "kind": "config",
-      "loc": 283,
+      "loc": 294,
       "owner": "__unassigned__",
       "path": "frontend/app/components/pieces/PiecesGroupedDisplay.tsx",
       "risk": "low",
@@ -59056,7 +59057,7 @@
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 618,
+      "loc": 634,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/pieces-vehicle.loader.server.ts",
       "risk": "low",
@@ -60989,6 +60990,25 @@
       "loc": 72,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/pieces-can-sell-render.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/pieces-grouped-display.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 178,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/pieces-grouped-display.test.tsx",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
