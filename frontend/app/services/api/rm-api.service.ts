@@ -128,9 +128,9 @@ export interface RmProductV2 extends RmProduct {
 }
 
 export interface RmGroupedPiece {
-  filtre_gamme: string;
+  filtre_gamme: string | null;
   filtre_side: string | null;
-  title_h2: string;
+  title_h2: string | null;
   pieces: Array<{
     id: number;
     nom: string;
