@@ -411,3 +411,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `chore/secrets-detection-before-rotation`
 - **Décision** : détecter un secret de paiement AVANT publication — moteur par empreinte (inerte sans données) + 2 règles de FORME sur les LIGNES AJOUTÉES, câblées en pre-commit (bloquant) et en CI. Scan d'ajout et non d'état : aucun inventaire des porteurs, donc rien à publier sur un dépôt public avant rotation.
 - **Sortie** : PR #1511 | resync registry L1+L3 + ré-épinglage inventaire PR-8 (262 candidats inchangés, vérifié champ à champ)
+
+## 2026-09-23 — fix/cart-items-client-errors-4xx (auto)
+
+- **Branche** : `fix/cart-items-client-errors-4xx`
+- **Décision** : fix(cart): répondre 4xx aux erreurs du client sur /api/cart/items
+- **Sortie** : PR #1531 | commits 093a9ef9e
