@@ -100,6 +100,9 @@ jobs:
       - name: "Run RPC parser fixture tests (V1-3: 3 parse modes)"
         run: npm run registry:test:rpc-parser
 
+      - name: "Run DB column replay fixture tests (columns from migrations, never guessed)"
+        run: npm run registry:test:db-columns
+
       - name: "Run runtime-excludes-tests (test files never become runtime entrypoints)"
         run: npm run registry:test:runtime-excludes
 
