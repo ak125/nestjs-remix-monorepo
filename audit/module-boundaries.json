@@ -130,8 +130,8 @@
         "backend/src/modules/cart/dto/__tests__",
         "backend/src/modules/cart/services"
       ],
-      "files_count": 20,
-      "loc_total": 3772,
+      "files_count": 21,
+      "loc_total": 4009,
       "has_barrel": false
     },
     "catalog": {
@@ -212,7 +212,7 @@
         "backend/src/database/types"
       ],
       "files_count": 15,
-      "loc_total": 21678,
+      "loc_total": 21757,
       "has_barrel": true
     },
     "dev-only": {
@@ -1539,12 +1539,12 @@
     {
       "from": "cart",
       "to": "database",
-      "count": 12
+      "count": 13
     },
     {
       "from": "cart",
       "to": "products",
-      "count": 2
+      "count": 3
     },
     {
       "from": "cart",
@@ -2411,6 +2411,11 @@
     {
       "from": "backend/src/modules/bot-guard/bot-guard.middleware.ts",
       "to": "backend/src/modules/seo-control-plane/synthetic-probe-credential.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/cart/controllers/cart-items.controller.test.ts",
+      "to": "backend/src/modules/products/services/stock.service.ts",
       "rule": "no-deep-module-access"
     },
     {
