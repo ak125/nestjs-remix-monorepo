@@ -384,6 +384,14 @@ function buildTableStates(files) {
       diag.report("create-unbalanced-body", fileName, key);
       return;
     }
+    // `CREATE TABLE t (a, b) AS SELECT …` : the parenthesised list holds column
+    // NAMES only (types come from the query) — never parse it as definitions.
+    // The table options that may follow a real body (INHERITS, PARTITION BY,
+    // USING, WITH (…), ON COMMIT, TABLESPACE) never contain a depth-0 `AS`.
+    if (/\bas\b/i.test(maskNested(top.slice(close + 1)))) {
+      diag.report("create-as-or-typed-not-parsed", fileName, key, restTop.slice(0, 60));
+      return;
+    }
     if (/\binherits\b/i.test(top.slice(close + 1))) {
       diag.report("create-inherits-columns-not-included", fileName, key);
     }

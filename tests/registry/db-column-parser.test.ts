@@ -281,3 +281,108 @@ describe("loadMigrations", () => {
     }
   });
 });
+
+describe("buildTableStates — adversarial review cases", () => {
+  function replayOne(sql: string) {
+    return buildTableStates([{ name: "review.sql", sql }]);
+  }
+  function colsOf(r: ReturnType<typeof replayOne>, key: string): Map<string, Col> {
+    const st = r.states.get(key);
+    assert.ok(st, `expected a final state for ${key}`);
+    return st.columns as Map<string, Col>;
+  }
+
+  test("dollar-quoted DEFAULT holding `;`, `)` and `'` does not cut the statement or the body", () => {
+    const r = replayOne("CREATE TABLE rv_dollar (a text DEFAULT $t$ it's ) ; x $t$, b int NOT NULL);");
+    const c = colsOf(r, "public.rv_dollar");
+    assert.deepEqual([...c.keys()], ["a", "b"]);
+    assert.equal(c.get("a")!.explicitDefault, true);
+    assert.equal(c.get("b")!.notNull, true);
+  });
+
+  test("nested parentheses in DEFAULT keep the column split at depth 0", () => {
+    const r = replayOne(
+      "CREATE TABLE rv_paren (a int DEFAULT (1 + (2 * 3)), b numeric DEFAULT round((1.5)::numeric, 2) NOT NULL, c int);"
+    );
+    const c = colsOf(r, "public.rv_paren");
+    assert.deepEqual([...c.keys()], ["a", "b", "c"]);
+    assert.equal(c.get("b")!.type, "numeric");
+    assert.equal(c.get("b")!.notNull, true);
+  });
+
+  test("`;` and fake DDL inside a string literal are not statement boundaries", () => {
+    const r = replayOne(
+      "CREATE TABLE rv_semi (a text DEFAULT 'x; DROP TABLE rv_semi; ALTER TABLE rv_semi ADD COLUMN ghost int', b text);"
+    );
+    assert.deepEqual([...colsOf(r, "public.rv_semi").keys()], ["a", "b"]);
+  });
+
+  test("CREATE TABLE … AS SELECT (with or without a column-name list) is reported, never a state", () => {
+    const r = replayOne(
+      "CREATE TABLE rv_ctas AS SELECT 1 AS one;\nCREATE TABLE rv_ctas_cols (x, y) AS SELECT 1, 2;\n" +
+        "CREATE TABLE rv_ctas_with (x) WITH (fillfactor = 70) AS SELECT 1;"
+    );
+    for (const t of ["rv_ctas", "rv_ctas_cols", "rv_ctas_with"]) {
+      assert.ok(!r.states.has(`public.${t}`), `${t} must not get a state`);
+      assert.ok(!r.everCreated.has(`public.${t}`), `${t} must not count as parsed`);
+    }
+    assert.equal(r.diagnostics.counts["create-as-or-typed-not-parsed"], 3);
+  });
+
+  test("real table options after the body (PARTITION BY, WITH (…)) are not mistaken for CTAS", () => {
+    const r = replayOne(
+      "CREATE TABLE rv_opts (id int, d date) PARTITION BY RANGE (d);\n" +
+        "CREATE TABLE rv_opts2 (id int) WITH (fillfactor = 70);"
+    );
+    assert.deepEqual([...colsOf(r, "public.rv_opts").keys()], ["id", "d"]);
+    assert.deepEqual([...colsOf(r, "public.rv_opts2").keys()], ["id"]);
+  });
+
+  test('CREATE TABLE IF NOT EXISTS schema."Nom" keeps the quoted case and the schema', () => {
+    const r = replayOne(
+      'CREATE TABLE IF NOT EXISTS public."Nom" (id int PRIMARY KEY, "Val" text);\n' +
+        'CREATE TABLE IF NOT EXISTS "public"."Nom2"(id int);\n' +
+        'CREATE TABLE IF NOT EXISTS other."Nom" (z int);'
+    );
+    assert.deepEqual([...colsOf(r, "public.Nom").keys()], ["id", "Val"]);
+    assert.equal(colsOf(r, "public.Nom").get("id")!.notNull, true);
+    assert.deepEqual([...colsOf(r, "public.Nom2").keys()], ["id"]);
+    assert.deepEqual([...colsOf(r, "other.Nom").keys()], ["z"], "a non-public schema is a distinct table");
+    assert.ok(!r.states.has("public.nom"), "a quoted name is never case-folded");
+  });
+
+  test("PARTITION OF (with IF NOT EXISTS / DEFAULT) is reported, never synthesised", () => {
+    const r = replayOne(
+      "CREATE TABLE rv_parent (id int, d date) PARTITION BY RANGE (d);\n" +
+        "CREATE TABLE IF NOT EXISTS public.rv_parent_default PARTITION OF public.rv_parent DEFAULT;\n" +
+        "CREATE TABLE rv_parent_2026 PARTITION OF rv_parent FOR VALUES FROM ('2026-01-01') TO ('2027-01-01');"
+    );
+    assert.ok(!r.states.has("public.rv_parent_default"));
+    assert.ok(!r.states.has("public.rv_parent_2026"));
+    assert.equal(r.diagnostics.counts["create-partition-of-skipped"], 2);
+  });
+
+  test("one column per line with trailing comments holding keywords, commas and DDL", () => {
+    const r = replayOne(
+      "CREATE TABLE rv_cmt (a int, -- first, NOT NULL\n" +
+        "  b text NOT NULL, -- DEFAULT 'x', ALTER TABLE rv_cmt ADD COLUMN ghost int;\n" +
+        "  c int DEFAULT 1 /* NOT NULL, ghost2 int */, d int -- last )\n" +
+        "); -- CREATE TABLE rv_ghost (g int);"
+    );
+    const c = colsOf(r, "public.rv_cmt");
+    assert.deepEqual([...c.keys()], ["a", "b", "c", "d"]);
+    assert.equal(c.get("a")!.notNull, false);
+    assert.equal(c.get("b")!.explicitDefault, false);
+    assert.equal(c.get("c")!.notNull, false);
+    assert.ok(!r.everCreated.has("public.rv_ghost"));
+  });
+
+  test("DDL quoted in COMMENT ON / EXECUTE strings is invisible", () => {
+    const r = replayOne(
+      "CREATE TABLE rv_str (a int);\n" +
+        "COMMENT ON TABLE rv_str IS 'ALTER TABLE rv_str ADD COLUMN ghost int; )';\n" +
+        "DO $$ BEGIN EXECUTE 'ALTER TABLE rv_str ADD COLUMN dyn int'; END $$;"
+    );
+    assert.deepEqual([...colsOf(r, "public.rv_str").keys()], ["a"]);
+  });
+});
