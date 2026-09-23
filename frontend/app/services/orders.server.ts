@@ -255,11 +255,16 @@ export async function getOrderDetails(params: {
       paymentMethod:
         order.paymentMethod || order.payment_method || "Carte bancaire",
       // ___xtr_order n'a pas de colonne paymentStatus : le drapeau de paiement
-      // est ord_is_pay ('1' = payée). Ne jamais afficher « Payé » par défaut.
+      // est ord_is_pay ('1' = payée). Ne jamais afficher « Payé » par défaut,
+      // ni « En attente » pour une commande annulée ('2') sans paiement.
       paymentStatus:
         order.paymentStatus ||
         order.payment_status ||
-        (String(order.ord_is_pay) === "1" ? "Payé" : "En attente"),
+        (String(order.ord_is_pay) === "1"
+          ? "Payé"
+          : String(order.ord_ords_id) === "2"
+            ? "Aucun paiement"
+            : "En attente"),
       transactionId: order.transactionId || order.transaction_id,
       trackingNumber:
         order.ord_tracking || order.trackingNumber || order.tracking_number,

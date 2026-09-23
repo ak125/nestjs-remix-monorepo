@@ -9,8 +9,9 @@
  *    avec `ord_ords_id='3'`, que `cancel_order_atomic` accepte d'annuler.
  *
  * Ce test verrouille : id texte, propriétaire strict (404 sinon), refus 409 des
- * commandes payées ou hors transition canonique, et la même règle exposée au GET
- * (`customer_can_cancel`) pour l'affichage du bouton.
+ * commandes payées (drapeau ou date de paiement) ou qui ne sont plus « en cours »
+ * ('1'), et la même règle exposée au GET (`customer_can_cancel`) pour
+ * l'affichage du bouton.
  *
  * @see backend/src/modules/orders/controllers/orders.controller.ts (cancelOrder)
  * @see backend/src/modules/orders/services/orders.service.ts (getCustomerCancelRefusal)
@@ -60,28 +61,42 @@ function req(userId?: string) {
 }
 
 describe('getCustomerCancelRefusal', () => {
-  it.each([
-    ['1', '0'],
-    ['3', '0'],
-    ['4', '0'],
-  ])('allows an unpaid order in canonical status %s', (status, isPay) => {
-    expect(
-      getCustomerCancelRefusal({ ord_ords_id: status, ord_is_pay: isPay }),
-    ).toBeNull();
-  });
+  it.each([[null], [undefined], ['']])(
+    'allows an unpaid order in progress (status 1, pay date %p)',
+    (payDate) => {
+      expect(
+        getCustomerCancelRefusal({
+          ord_ords_id: '1',
+          ord_is_pay: '0',
+          ord_date_pay: payDate,
+        }),
+      ).toBeNull();
+    },
+  );
 
   it.each([
-    ['1', '1'], // payées historiques restées en '1'
-    ['3', '1'], // état posé par le callback Paybox
-    ['5', '1'],
-  ])('refuses a paid order (status %s) with a support message', (status) => {
-    expect(
-      getCustomerCancelRefusal({ ord_ords_id: status, ord_is_pay: '1' }),
-    ).toMatch(/payée.*service client/);
-  });
+    ['1', '1', null], // payées historiques restées en '1'
+    ['3', '1', null], // état posé par le callback Paybox
+    ['5', '1', null],
+    ['1', '0', '2020-11-27 12:40:00'], // payée (PayPal) mais drapeau resté à '0'
+    ['1', '0', '2000-01-01 00:00:00'], // date sentinelle : paiement enregistré
+  ])(
+    'refuses a paid order (status %s, is_pay %s, pay date %p) with a support message',
+    (status, isPay, payDate) => {
+      expect(
+        getCustomerCancelRefusal({
+          ord_ords_id: status,
+          ord_is_pay: isPay,
+          ord_date_pay: payDate,
+        }),
+      ).toMatch(/payée.*service client/);
+    },
+  );
 
   it.each([
     ['2', '0'], // déjà annulée
+    ['3', '0'], // '3' n'est posé que par le paiement : impayé = contradictoire
+    ['4', '0'], // suit '3'
     ['5', '0'],
     ['6', '0'], // hors canon (annulation admin)
     [null, '0'],
@@ -166,6 +181,8 @@ describe('OrdersController.cancelOrder (DELETE /api/orders/:id)', () => {
   it.each([
     ['paid via Paybox', { ord_ords_id: '3', ord_is_pay: '1' }],
     ['paid, legacy status 1', { ord_ords_id: '1', ord_is_pay: '1' }],
+    ['unpaid flag but a pay date', { ord_date_pay: '2020-11-27 12:40:00' }],
+    ['unpaid in status 3', { ord_ords_id: '3' }],
     ['already cancelled', { ord_ords_id: '2' }],
     ['admin-cancelled (6)', { ord_ords_id: '6' }],
   ])('answers 409 when the order is %s', async (_label, overrides) => {
@@ -182,6 +199,7 @@ describe('OrdersController.getOrderById — customer_can_cancel', () => {
   it.each([
     [{}, true],
     [{ ord_is_pay: '1', ord_ords_id: '3' }, false],
+    [{ ord_date_pay: '2000-01-01 00:00:00' }, false],
     [{ ord_ords_id: '2' }, false],
   ])(
     'exposes the same rule as DELETE (%o → %s)',

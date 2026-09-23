@@ -199,11 +199,13 @@ export default function OrderDetailPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <Badge
-              className={`px-3 py-1 ${getStatusBadgeColor(String(order.status))}`}
+            {/* Pas de <Badge> : sa variante par défaut (bg-primary) écrase les
+                couleurs de statut, faute de fusion des classes. */}
+            <span
+              className={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium ${getStatusBadgeColor(String(order.status))}`}
             >
               {getStatusLabel(String(order.status))}
-            </Badge>
+            </span>
           </div>
         </div>
 

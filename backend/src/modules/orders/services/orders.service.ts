@@ -115,26 +115,34 @@ export function computeOrderFingerprint(data: CreateOrderData): string {
  * (DELETE /api/orders/:id).
  *
  * - Paiement : seule une commande explicitement impayée (`ord_is_pay = '0'`)
- *   est annulable. Le statut ne suffit pas : le callback Paybox pose
- *   `ord_is_pay = '1'` avec `ord_ords_id = '3'`, et des commandes payées
- *   historiques sont restées en '1'. Rembourser relève du support
- *   (module payments/ hors périmètre), pas d'un bouton client.
- * - Statut : la transition vers '2' doit être canonique
- *   (@repo/domain-commerce) — exclut '2', '5', l'absence de statut et les
- *   valeurs hors canon ('6', posé par l'annulation admin).
+ *   et sans date de paiement est annulable. Le statut ne suffit pas : le
+ *   callback Paybox pose `ord_is_pay = '1'` avec `ord_ords_id = '3'`, des
+ *   commandes payées historiques sont restées en '1', et des commandes
+ *   réellement payées portent `ord_date_pay` avec `ord_is_pay = '0'`.
+ *   Rembourser relève du support (module payments/ hors périmètre), pas d'un
+ *   bouton client.
+ * - Statut : uniquement '1' (en cours de traitement), transition canonique
+ *   vers '2' (@repo/domain-commerce). '3' n'est posé que par le paiement
+ *   (`mark_order_paid_atomic`, avec `ord_is_pay = '1'`) et '4' le suit : un
+ *   '3'/'4' impayé est une donnée contradictoire, renvoyée au support. Exclut
+ *   aussi '2', '5', l'absence de statut et les valeurs hors canon ('6', posé
+ *   par l'annulation admin).
  */
 export function getCustomerCancelRefusal(order: {
   ord_ords_id?: unknown;
   ord_is_pay?: unknown;
+  ord_date_pay?: unknown;
 }): string | null {
   const isPaid = String(order.ord_is_pay);
-  if (isPaid === '1') {
+  const hasPayDate =
+    order.ord_date_pay != null && String(order.ord_date_pay).trim() !== '';
+  if (isPaid === '1' || hasPayDate) {
     return "Cette commande est déjà payée : pour l'annuler, contactez notre service client.";
   }
   const status = order.ord_ords_id;
   if (
     isPaid !== '0' ||
-    !isOrderStatusCode(status) ||
+    status !== OrderStatus.PROCESSING ||
     !isValidTransition(status, OrderStatus.CANCELLED)
   ) {
     return 'Cette commande ne peut plus être annulée.';
