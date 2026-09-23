@@ -1,11 +1,18 @@
 # Audit SEO — 7 leviers, fiabilité de la mesure GSC, robots, marqueurs (2026-09-11)
 
-> **Statut par défaut de tout ce qui suit : CODE CORRIGÉ + TESTÉ, MERGÉ sur main par la
-> PR #1467 le 2026-09-12 à 21:20Z (squash `90a66e170`), donc déployé sur PREPROD uniquement.
-> NON DÉPLOYÉ EN PROD (aucun tag), EFFET SEO NON MESURÉ.**
-> Deux exceptions : la garde admin, livrée par la PR #1460 et déployée en PROD le 2026-09-11
-> (§4.5, §11) ; et les **2 migrations, APPLIQUÉES le 2026-09-11 à 23:36 UTC** sur GO owner
-> (§4.1). Aucun runtime PROD ne lit encore les objets qu'elles créent.
+> **Statut au 2026-09-23 (relevé en lecture seule) : CODE CORRIGÉ + TESTÉ + DÉPLOYÉ EN PROD.
+> EFFET SEO NON MESURÉ.**
+> - **Merge** : PR #1467 mergée le 2026-09-12 à 21:20Z (squash `90a66e170`).
+> - **PROD** : tag `v2026.09.13-client-ip-s1-r2` (`ef84ec458`), posé par l'owner le 2026-09-13
+>   à 12:53:17Z ; déploiement PROD ✅ (run 34758319278, 13:05:08Z).
+>   - Le premier tag du jour, `v2026.09.13-client-ip-s1` (`073bb830e`, 07:50Z), avait échoué au step
+>     « Validate PROD » (run 34746215669). Corrigé par #1481, #1482 et #1483.
+>   - Tous les tags suivants contiennent aussi `90a66e170` (`git tag --contains`).
+>   - Vérifications en PROD : §11.1.
+> - **Pas encore livré : le collecteur.** L'ingestion GSC/GA4 tourne toujours sur le backend DEV.
+>   La PR #1534 le déplace en PROD ; elle est ouverte et non mergée (§4.7, étape 6).
+> - **Avant #1467** : la garde admin (PR #1460) était en PROD depuis le 2026-09-11 (§4.5, §11). Les
+>   **2 migrations** avaient été appliquées le 2026-09-11 à 23:36 UTC, sur GO owner (§4.1).
 > Branche `fix/seo-measure-robots-markers` (worktree `.claude/worktrees/seo-leviers-mesure`),
 > base `bcf0c775a`. Vérification complète au SHA `25cfd1bc4`. Les contrôles touchés par le
 > dernier changement de code (un test frontend, `771c7b934`) ont été rejoués à ce SHA (§12).
@@ -16,9 +23,9 @@
 
 | Plan | Où on en est | Ce qui manque |
 |---|---|---|
-| **Remise en service technique** | Code d'ingestion rattrapable, lecteurs honnêtes, robots, marqueurs et garde admin : corrigés et testés localement. | Revue, GO ciblés : migrations, merge, tag `v*`, activation d'un collecteur unique, reprise. Aujourd'hui aucune donnée GSC nouvelle n'est garantie : le seul collecteur actif est le backend DEV lancé à la main. |
-| **Qualité de la mesure** | Un jour n'est certifié que présent **et** confirmé (marqueur de commit). Les états dégradés (manquant, non confirmé, non finalisé, erreur, grain non récupéré) sont visibles au lieu d'être comptés comme complets. | Migrations appliquées le 2026-09-11 à 23:36 UTC ; tant que la reprise n'est pas faite, les écrans afficheront « non certifié » ou « indisponible ». C'est voulu : aucune donnée partielle n'est présentée comme complète. |
-| **Résultat SEO** | Non mesuré. | Déploiement, recrawl, puis au moins une fenêtre GSC complète et confirmée avant toute comparaison. Aucun délai d'effet n'est promis. |
+| **Remise en service technique** | Code d'ingestion rattrapable, lecteurs honnêtes, robots, marqueurs et garde admin : corrigés, testés, **en PROD depuis le 2026-09-13** (en-tête, §11.1). | **Le collecteur unique en PROD**, à faire en quatre temps : PR #1534, puis secrets, merge et tag (gestes owner). D'ici là, aucune donnée GSC nouvelle n'est garantie. Le seul collecteur est le backend DEV, qui a été hors service du ~2026-09-20 21:10Z au 2026-09-23 ~19:45Z. |
+| **Qualité de la mesure** | Un jour n'est certifié que présent **et** confirmé (marqueur de commit). Les états dégradés (manquant, non confirmé, non finalisé, erreur, grain non récupéré) sont visibles au lieu d'être comptés comme complets. | Migrations appliquées le 2026-09-11 à 23:36 UTC. La reprise automatique fonctionne (au 2026-09-23 : 80 jours confirmés sur 112 dans [06-01, 09-20]). Reste 08-03→09-03 : 32 jours, dont 14 absents et 18 non confirmés, affichés « non certifié » ou « indisponible ». C'est voulu : aucune donnée partielle n'est présentée comme complète. |
+| **Résultat SEO** | Non mesuré. | Recrawl, puis au moins une fenêtre GSC complète et confirmée avant toute comparaison. Aucun délai d'effet n'est promis. |
 
 ## 1. Verdict des 7 leviers
 
@@ -26,11 +33,11 @@ Classement de l'existant : RÉUTILISER / CORRIGER / ABSENT / NON PROUVÉ.
 
 | # | Levier | Existant et classement | Statut dans ce lot |
 |---|---|---|---|
-| 1 | Réveiller les pages à fort potentiel | `rpc_seo_low_ctr_v1`/`v3` + command center : **CORRIGER** (grain faux, §2 D2). Candidats observés : requêtes en position 3 à 6 sans clic sur les conseils (§7). | v4 et certification : CODE + TESTÉ ; **migrations appliquées le 2026-09-11 à 23:36 UTC** ; code non mergé, donc v4 n'est encore lue par aucun runtime. |
+| 1 | Réveiller les pages à fort potentiel | `rpc_seo_low_ctr_v1`/`v3` + command center : **CORRIGER** (grain faux, §2 D2). Candidats observés : requêtes en position 3 à 6 sans clic sur les conseils (§7). | v4 et certification : CODE + TESTÉ ; **migrations appliquées le 2026-09-11 à 23:36 UTC** ; code en PROD depuis le 2026-09-13. Lecture effective de v4 par l'écran admin PROD : non vérifiée (route authentifiée). |
 | 2 | Problèmes SEO silencieux | Robots, marqueurs R2, META conseils, contrôleur admin ouvert : **CORRIGER** (fait). Signal `seo_placeholder_unresolved` : **RÉUTILISER** (réutilisé). Santé du job `seo-daily-fetch` : **CORRIGER** (§4.3, non fait). | CODE + TESTÉ, sauf la santé du job (proposition). |
 | 3 | Chemins de conversion | CTA des pages R3 non tracés : **ABSENT**. JSON-LD `relatedLink` vers `/pieces/<alias>` en 410 : **CORRIGER**, non traité (SEO indexé). Parcours `/panier` de récupération : cassé mais dormant (§4.6). | Observations. Aucun changement (zone STOP panier). |
 | 4 | Intentions sous-couvertes | Requêtes GSC par page : **RÉUTILISER**. Couverture du contenu face à ces requêtes : **NON PROUVÉ** (pas de confrontation au WIKI). Cannibalisation « corps papillon » : rejetée (§3). | Propositions marquées hypothèses (§7). |
-| 5 | Rafraîchissement automatique fiable | Scheduler Bull `seo-monitor` : **RÉUTILISER**. Ingestion : **CORRIGER** (fait). Collecteur PROD désactivé : **ABSENT** en pratique. | Code CODE + TESTÉ ; collecteur proposé, non activé (§4.3). |
+| 5 | Rafraîchissement automatique fiable | Scheduler Bull `seo-monitor` : **RÉUTILISER**. Ingestion : **CORRIGER** (fait). Collecteur PROD désactivé : **ABSENT** en pratique. | Code en PROD ; collecteur PROD : PR #1534 ouverte, non déployée (§4.7, étape 6). |
 | 6 | Ressource digne de backlinks | **NON PROUVÉ** : aucune donnée de liens entrants relue dans ce lot, aucune ressource candidate évaluée. | Recommandation P4 seulement (§9). |
 | 7 | Meilleur crawl | robots.txt : **CORRIGER** (fait). Sitemap blog `lastmod` 2019–2021 et `dateModified` en lot au 2026-02-17 : **CORRIGER**, non traités. Crawl logger : **ABSENT** (non branché). | robots CODE + TESTÉ ; le reste en observations. |
 
@@ -213,7 +220,7 @@ Proposition à valider, non implémentée : ancrer `p_now` sur le lendemain du d
   - le run de `1c2cb48b2` a été annulé par la concurrence (#1465 poussé ensuite) ;
   - le run de `f64ef5197`, qui contient #1460 : déploiement PREPROD ✅, E2E smoke ✅, Lighthouse ❌.
   - Lighthouse : toutes les assertions de performance passent ; le contrôle de qualité des preuves rejette `/search?q=plaquette` (chargement trop lent pour la collecte). Lighthouse échouait déjà sur main avant le merge (`1df615789`, `f61db4678`) et n'audite aucune route admin.
-- **PROD non déployée** : tag `v*` = GO séparé.
+- **PROD** : déployée par le tag du 2026-09-11 (§10, décision 10 ; §11).
 - **Au rebase de cette branche** : le lot C contient la même garde. Si #1460 est mergée d'abord, le conflit ou le doublon est à résoudre.
 
 **Historique.** `.claude/handoffs/seo-monitoring-admin-guard-only.patch` (non suivi) contient seulement la garde et le test HTTP. Validé 29/29 sur `origin/main` `b580da6a6`. Depuis, `origin/main` (`5ccf04bf3`) ne touche que `.claude/rules/deployment.md`, `scripts/ops/sync-dev-runtime.sh` et `scripts/test-claude-hooks.sh`, hors du périmètre du patch. Écart assumé : sur main, l'assertion du job utilise `objectContaining({ date })`, car main transmet aussi `rollingDays`.
@@ -229,6 +236,12 @@ Proposition à valider, non implémentée : ancrer `p_now` sur le lendemain du d
 
 **Aucune étape ci-dessous n'est autorisée par ce rapport.** Chaque GO est distinct et nominatif.
 
+*État au 2026-09-23 :*
+- étapes 1 à 5 faites (§10, §11) ;
+- étape 6 en cours, via la PR #1534 ;
+- étape 7 : la reprise automatique en tient lieu (§6), et la CLI n'est plus nécessaire tant qu'un collecteur tourne ;
+- étape 8 : non faite par l'assistant, état non vérifié.
+
 1. **GO push.** Rebase sur `origin/main`. Deux fichiers sont communs :
    - `backend/.env.example` : hunks distincts, pas de conflit attendu ;
    - `log.md` : conflit attendu. La branche porte une entrée ajoutée par le hook Stop (`f2ab4cbbb`) et main a ajouté 18 lignes depuis la base. Résolution : garder les deux entrées, celles de main d'abord.
@@ -240,7 +253,11 @@ Proposition à valider, non implémentée : ancrer `p_now` sur le lendemain du d
    - **Option B : `main` après merge.** Le fichier appliqué est exactement celui de main. En contrepartie, jusqu'à l'application : le container PREPROD (READ_ONLY) renvoie des erreurs 42703 explicites sur les lectures admin SEO, et le backend DEV synchronisé sur main passe en `schema_drift` (0 écriture), ce qui prolonge les trous (rattrapables).
 4. **Merge → container PREPROD** (CI : E2E Smoke + Lighthouse).
 5. **GO tag `v*` → container PROD** (droit owner). Vérifier la parité d'environnement PREPROD/PROD avant le tag.
-6. **GO collecteur** (accès SSH à la machine PROD, owner). Clés du §4.3 dans l'`env_file` PROD, redémarrage, **désactivation du collecteur DEV** (un seul orchestrateur).
+6. **GO collecteur** (owner). *Mise à jour du 2026-09-23 : voie retenue, la PR #1534.*
+   - `deploy-prod.yml` écrit les clés du §4.3 dans `~/production/.env`, à partir de secrets et de variables GitHub, avant le point de non-retour. Le déploiement recrée ensuite le conteneur.
+   - L'owner crée les secrets depuis DEV, merge, puis tague.
+   - **Le collecteur DEV est coupé le jour même, avant 04:00 heure de Paris** (un seul orchestrateur).
+   - Écartée : l'édition à la main depuis la session root de l'owner sur la machine PROD. Elle se ferait hors pipeline : non validée, non tracée, et elle exige un `up -d` manuel.
 7. **GO reprise** mois par mois (§6), puis contrôles §5.
 8. **GO purges** de caches après release : `seo:processed:*`, `rm:page-v2:*`, CDN des pages conseils et R2.
 
@@ -355,7 +372,7 @@ ORDER BY created_at DESC LIMIT 100;
 4. **Après chaque mois** : Q2 (confirmés), Q5 (runs), Q7 (information).
 5. **Arrêt immédiat** sur `schema_drift` (migration absente ou dérive). Les jours en `final_rows_missing` sont replanifiés.
 6. **GA4 ensuite** : `--source ga4`, plancher 2026-04-01, `--to` au plus J-3. Aucune sonde de finalité GA4 : l'ancre est supposée.
-7. **Échéance du rattrapage automatique** : la fenêtre du planificateur est `[max(ancre − 119 jours, plancher) .. ancre]`, avec l'ancre à J-3. Le 2026-06-01 en sort dès que l'ancre dépasse le 2026-09-28, soit à partir du run du 2026-10-02 UTC. Seule la CLI peut ensuite le reprendre. Cela suppose un collecteur actif, ce qui n'est pas le cas aujourd'hui.
+7. **Échéance du rattrapage automatique** : la fenêtre du planificateur est `[max(ancre − 119 jours, plancher) .. ancre]`, avec l'ancre à J-3. Le 2026-06-01 en sort dès que l'ancre dépasse le 2026-09-28, soit à partir du run du 2026-10-02 UTC. Seule la CLI peut ensuite le reprendre. Cela suppose un collecteur actif. *Mise à jour du 2026-09-23 : échéance levée, puisque le 2026-06-01 est confirmé depuis le 2026-09-13 (reprise automatique, collecteur DEV).*
 
 ## 7. Pages conseils : propositions avant/après (hypothèses, GO éditorial requis)
 
@@ -431,11 +448,13 @@ Title, meta et H1 relevés en live le 2026-09-11. Toute proposition part d'une r
 | 12 | Reprise de main dans la PR (message du **2026-09-12, 20:48Z**) | « go » | Merge de `origin/main` (`90977bf6a`) → `1e8dab45f`. Conflits limités aux projections générées : côté main repris, puis régénération complète. Contrôles locaux et CI de la PR verts (44 / 9 skippés / 0 échec). **Pas de merge.** |
 | 13 | Merge de la PR #1467 (message du **2026-09-12, 21:07Z**) | « merge » | Nouvelle reprise de main (`943b9a5ff`) → `2d67100f7`, contrôles locaux rejoués, sortie du brouillon, merge squash automatique **verrouillé sur ce SHA**. Mergée à 21:20:17Z (`90a66e170`, arbre identique à `2d67100f7`). PREPROD uniquement, **aucun tag**. |
 | 14 | Mise à jour de ce statut (message du **2026-09-12, 21:27Z**) | « go » | Lu comme l'accord pour ouvrir **cette PR docs seulement**, seule action soumise à accord dans le message précédent. **Pas un GO PROD** : aucun lot n'était nommé. |
+| 15 | Tag PROD du lot contenant #1467 (**2026-09-13**) | aucun message adressé à l'assistant | Tags annotés posés **par l'owner lui-même** (tagger Fafa) : `v2026.09.13-client-ip-s1` sur `073bb830e` à 07:50Z (échec « Validate PROD »), puis `v2026.09.13-client-ip-s1-r2` sur `ef84ec458` à 12:53:17Z (✅). L'accord réel est l'acte de l'owner, pas un GO donné à l'assistant. L'assistant n'a posé aucun de ces tags. |
+| 16 | Collecteur unique (message du **2026-09-23, 21:11Z**) | « utilise  la  meilleire  approche  pas  de bricolage » | Lu comme le mandat de construire la solution structurelle : PR #1534 ouverte (config du collecteur écrite par `deploy-prod.yml` depuis des secrets GitHub). **Ce n'est pas** un accord pour créer les secrets, merger, taguer ou couper DEV : ces gestes restent à l'owner. |
 
 **Propositions à valider** (aucun accord identifiable) :
-- emplacement du collecteur (PROD) et désactivation du collecteur DEV ;
+- création des secrets et désactivation du collecteur DEV (le code du collecteur PROD est la PR #1534, décision 16) ;
 - correctif D14 ;
-- option A ou B du §4.7 ;
+- ~~option A ou B du §4.7~~ : tranché dans les faits, option A (décision 11) ;
 - périmètre et calendrier de la reprise ;
 - corrections des 5 pages ;
 - SQL pg 1298 / 1289 / 3096 et nettoyage META ;
@@ -445,15 +464,43 @@ Title, meta et H1 relevés en live le 2026-09-11. Toute proposition part d'une r
 
 ## 11. Local ou GO
 
-- **Mergé sur main** : la garde admin, PR #1460 (§4.5), déployée sur PREPROD via le run de `f64ef5197`, puis via celui de `38747ac6b` ; puis le reste de la branche, **PR #1467, le 2026-09-12 à 21:20:17Z** (squash `90a66e170`). Pour #1467 : **PREPROD uniquement**, run main `34719663096`.
-- **Appliqué en base** : les 2 migrations additives, le 2026-09-11 à 23:36 UTC (GO owner), avant le merge. Registre : 308 applied, 0 pending. Aucun runtime PROD ne lit encore `page_totals` ni v4.
-- **Déployé en PROD** : la garde admin, par le tag `v2026.09.11-cwv-sanitizer-admin-guard` sur `38747ac6b`, le 2026-09-11 à 21:51Z. Vérification en PROD : `GET /api/admin/seo-monitoring/cron/health` = **403** (200 sans authentification avant), `credentials/health` = 403, `/` et `/health` = 200.
+- **Mergé sur main** : la garde admin, PR #1460 (§4.5), déployée sur PREPROD via le run de `f64ef5197`, puis via celui de `38747ac6b` ; puis le reste de la branche, **PR #1467, le 2026-09-12 à 21:20:17Z** (squash `90a66e170`). Pour #1467 : PREPROD par le run main `34719663096`, puis PROD le 2026-09-13 (ligne « Déployé en PROD »).
+- **Appliqué en base** : les 2 migrations additives, le 2026-09-11 à 23:36 UTC (GO owner), avant le merge. Registre : 308 applied, 0 pending. Le code qui lit `page_totals` et v4 est en PROD depuis le 2026-09-13 ; sa lecture effective par l'écran admin PROD n'est pas vérifiée (§1).
+- **Déployé en PROD** : la PR #1467, par le tag `v2026.09.13-client-ip-s1-r2` (`ef84ec458`, posé par l'owner), deploy ✅ le 2026-09-13 à 13:05:08Z (§11.1). Avant elle, la garde admin, par le tag `v2026.09.11-cwv-sanitizer-admin-guard` sur `38747ac6b`, le 2026-09-11 à 21:51Z. Vérification en PROD : `GET /api/admin/seo-monitoring/cron/health` = **403** (200 sans authentification avant), `credentials/health` = 403, `/` et `/health` = 200.
 - **Non suivi, conservé hors worktree** : description de PR et patch guard-only, copiés dans `.claude/handoffs/` du checkout principal.
-- **Nécessite un GO** : le tag PROD (GO nommant le lot), le collecteur GSC/GA4 unique en PROD, la reprise GSC mois par mois (§4.7), les SQL du §8, les corrections du §7, les purges.
+- **Nécessite un GO** :
+  - le collecteur GSC/GA4 unique en PROD (PR #1534 : secrets, merge, puis tag sur GO nommant le lot) ;
+  - les SQL du §8 ;
+  - les corrections du §7 ;
+  - les purges.
 
 **Fait le 2026-09-11** : le lot complet a été audité (33 PR), puis taggé sur GO owner. `/api/admin/seo-monitoring/*` n'est plus ouvert sans authentification en PROD. Lighthouse `/search` reste rouge sur main : cause préexistante, hors périmètre de ce rapport.
 
-**Prochaine action unique proposée** : vérifier le run PREPROD de `90a66e170`, puis obtenir un GO owner qui nomme le lot du tag PROD. Ensuite seulement, activer le collecteur unique en PROD : sans collecteur fiable, aucune correction de mesure ne produit de donnée. Le rattrapage automatique ne couvre plus le 2026-06-01 à partir du run du 2026-10-02 UTC.
+### 11.1 Vérification en PROD du 2026-09-23 (lecture seule)
+
+- **robots.txt servi** : le groupe Googlebot contient `Disallow: /search?*` et `Disallow: /search/`, sans `Crawl-delay` ✅.
+- **Garde admin** : `GET /api/admin/seo-monitoring/cron/health` = 403 ✅.
+- **5 pages conseils** : 200, contenu réel (H1 et 11 à 13 H2), 0 bloc « Meta SEO ». Le 2026-09-11, 4 pages sur 5 l'affichaient ✅.
+- **Marqueur R2 pg 1289** :
+  - Page contrôlée, avec 12 produits : `/pieces/capteur-niveau-d-huile-moteur-1289/audi-22/a4-iv-break-22045/2-0-tdi-30006.html`. Résultat : 200, `index, follow`, 5 fragments `sgc_content` sur 5, 0 marqueur `#…#` ✅.
+  - Le gabarit brut (`sgc_id` 124) contient toujours `#CompSwicth_12_1289#`. La garde le retire et journalise `seo_placeholder_unresolved` (source `r2_seo_template`). Du 2026-09-13 13:14Z au 2026-09-23 : 1 286 événements pg 1289, 272 pg 1298, 24 pg 3096.
+  - Le payload ne porte pas le runtime : on ne peut pas savoir si un événement vient de DEV ou de PROD. La preuve PROD, c'est le HTML.
+  - Les URL `…/serie-3-e36-33026/1-6-316-i-{49,50}.html` sont des pages **sans produit**. Le loader prend la branche `NO_PRODUCTS` : `noindex, follow`, alternatives, aucun contenu SEO. C'est voulu, pas un défaut.
+  - Le SQL pg 1289 du §8 reste de l'hygiène : aucune variante alias 12 n'existe, le rendu ne changerait pas.
+- **Collecteur** : sur 14 jours, tous les runs de `__seo_event_log` portent `node_env=development` (`hostname=dev-automecanik`).
+  - Le backend DEV a été hors service du ~2026-09-20 21:10Z au 2026-09-23 ~19:45Z. Les runs du 09-21 et du 09-22 ont été perdus, puis rattrapés au redémarrage.
+- **Reprise** : 80 jours confirmés sur 112 dans [2026-06-01, 2026-09-20]. Reste 08-03→09-03, soit 32 jours : 14 absents et 18 non confirmés. Il faut environ 5 runs quotidiens, si le collecteur tient.
+- **Hors #1467, mais à connaître pour lire la mesure** : le tag `v2026.09.23-ga4-consent-catalog-ffc12af` (deploy PROD ✅ le 2026-09-23 à 21:23:36Z) contient #1524, qui exige un consentement explicite avant GA4.
+  - Une baisse du volume GA4 est attendue à partir de cette date. C'est un artefact de mesure, pas un signal SEO.
+
+**Prochaine action unique proposée** : l'owner met en service le collecteur PROD.
+1. Créer les secrets et variables `PROD_GSC_*` / `PROD_GA4_*` depuis DEV (commandes données hors de ce rapport ; aucune valeur affichée).
+2. Merger #1534.
+3. Donner un GO nominatif pour le tag PROD. Au 2026-09-23 23:45Z, le lot contiendrait #1531 (panier, zone STOP), #1533 et #1534.
+4. Couper le collecteur DEV le jour même, avant 04:00 heure de Paris.
+5. Vérifier en lecture seule qu'un run porte `node_env=production` et qu'aucun run `development` ne suit.
+
+Sans collecteur PROD, le trou 08-03→09-03 ne se referme que si le backend DEV reste levé.
 
 ## 12. Vérification liée au SHA `25cfd1bc4`, rejouée pour `771c7b934`
 
@@ -518,6 +565,6 @@ Entre `25cfd1bc4` et `771c7b934`, le seul changement de code est `frontend/tests
 | excluded_paths | `payments/`, TecDoc, autres projets, vault, écriture des contenus |
 | unscanned_zones | GA4 au-delà du planificateur ; données de liens entrants ; contenu WIKI des 5 pages ; journaux d'accès PROD ; configuration réelle de l'`env_file` PROD ; comportement E2E du container PREPROD sur les routes admin SEO |
 | corrections_proposed | §2 (D1 à D13 codés), D14, §4.7, §6, §7, §8, §9 |
-| validation_executed | §12 (au SHA `25cfd1bc4`, contrôles frontend et gardes CI rejoués à `771c7b934`) ; banc SQL éphémère ; capture API en lecture ; relevés live en GET ; Q1 et relevé par grain exécutés en lecture seule sur PROD le 2026-09-11 (`transaction_read_only = on`, `statement_timeout` 10 s) |
-| remaining_unknowns | Exécutant PROD historique ; cause de l'anomalie GA4 07-22→24 ; activation réelle de `SEO_CONTROL_DASHBOARD_ENABLED` en PROD ; appelants externes de `cron/health` ; comportement réel du ledger et de PREPROD selon l'option A ou B ; concurrence entre collecteurs |
+| validation_executed | §12 (au SHA `25cfd1bc4`, contrôles frontend et gardes CI rejoués à `771c7b934`) ; banc SQL éphémère ; capture API en lecture ; relevés live en GET ; Q1 et relevé par grain exécutés en lecture seule sur PROD le 2026-09-11 (`transaction_read_only = on`, `statement_timeout` 10 s) ; relevés PROD en lecture seule le 2026-09-23 (§11.1 : GET publics, `__seo_event_log`, couverture GSC, `statement_timeout` 15 s) |
+| remaining_unknowns | Exécutant PROD historique ; cause de l'anomalie GA4 07-22→24 ; activation réelle de `SEO_CONTROL_DASHBOARD_ENABLED` en PROD ; appelants externes de `cron/health` ; comportement réel du ledger et de PREPROD selon l'option A ou B ; concurrence entre collecteurs ; origine (DEV ou PROD) des événements `r2_seo_template` ; lecture effective de v4 par l'écran admin PROD |
 | final_status | **PARTIAL_COVERAGE** |
