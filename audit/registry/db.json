@@ -8899,7 +8899,8 @@
       "domain": "UNKNOWN",
       "id": "__seo_role_template_pool",
       "inMigrations": [
-        "20260509_seo_role_template_pool_with_r8_meta_seed.sql"
+        "20260509_seo_role_template_pool_with_r8_meta_seed.sql",
+        "20260924_seo_role_template_pool_forward_apply.sql"
       ],
       "indexes": [],
       "name": "__seo_role_template_pool",
