@@ -453,3 +453,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-collector-prod-secrets`
 - **Décision** : merge: origin/main (15c66177a, #1536) dans feat/seo-collector-prod-secrets (+5 other commits)
 - **Sortie** : PR #1534 | commits bf8acdbf8 47d1dcbf9 3d82d3c38 47a655e37 c019558dc f52d20406
+
+## 2026-09-24 — fix/ga4-skip-automated-browsers (auto)
+
+- **Branche** : `fix/ga4-skip-automated-browsers`
+- **Décision** : chore(registry): resync L1+L3 projections (+1 other commit)
+- **Sortie** : PR #1538 | commits 2af384d09 ef2a1e977
