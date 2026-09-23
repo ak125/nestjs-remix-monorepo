@@ -35861,7 +35861,7 @@
         "@security/rpc-gate/rpc-gate.service"
       ],
       "kind": "service",
-      "loc": 355,
+      "loc": 359,
       "owner": "__unassigned__",
       "path": "backend/src/modules/vehicles/services/vehicle-rpc.service.ts",
       "risk": "low",
@@ -38793,7 +38793,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 194,
+      "loc": 331,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/vehicle-rpc.service.test.ts",
       "risk": "low",
