@@ -39145,27 +39145,6 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
-      ],
-      "domain": "UNKNOWN",
-      "id": "frontend/app/components/AnalyticsConsent.tsx",
-      "importedBy": [],
-      "imports": [
-        "~/components/ui/button"
-      ],
-      "kind": "config",
-      "loc": 93,
-      "owner": "__unassigned__",
-      "path": "frontend/app/components/AnalyticsConsent.tsx",
-      "risk": "low",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
         "depcruise",
         "reachability"
       ],
@@ -50382,7 +50361,6 @@
         "frontend/app/hooks/useScrollBehavior.ts",
         "frontend/app/services/cart.server.ts",
         "frontend/app/styles/animations.css",
-        "~/components/AnalyticsConsent",
         "~/components/LazyBoundary",
         "~/components/home/LazyFooter",
         "~/utils/load-context",
@@ -50390,7 +50368,7 @@
         "~/utils/resilient-lazy"
       ],
       "kind": "service",
-      "loc": 611,
+      "loc": 593,
       "owner": "__unassigned__",
       "path": "frontend/app/root.tsx",
       "risk": "low",
@@ -60334,25 +60312,6 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
-      "id": "frontend/tests/unit/analytics-consent-ui.test.tsx",
-      "importedBy": [],
-      "imports": [],
-      "kind": "test",
-      "loc": 107,
-      "owner": "__unassigned__",
-      "path": "frontend/tests/unit/analytics-consent-ui.test.tsx",
-      "risk": "low",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise"
-      ],
-      "domain": "UNKNOWN",
       "id": "frontend/tests/unit/array-at-polyfill.test.ts",
       "importedBy": [],
       "imports": [],
@@ -60832,7 +60791,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 394,
+      "loc": 215,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/ga4-bootstrap.test.ts",
       "risk": "low",
