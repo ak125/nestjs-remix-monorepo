@@ -58687,7 +58687,7 @@
         "~/utils/logger"
       ],
       "kind": "service",
-      "loc": 580,
+      "loc": 614,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/image-optimizer.ts",
       "risk": "low",
@@ -58848,10 +58848,11 @@
       "id": "frontend/app/utils/og-image.utils.ts",
       "importedBy": [],
       "imports": [
+        "~/utils/image-optimizer",
         "~/utils/og-constants"
       ],
       "kind": "service",
-      "loc": 42,
+      "loc": 44,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/og-image.utils.ts",
       "risk": "low",
@@ -61304,7 +61305,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 85,
+      "loc": 204,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/r1-images-meta.test.ts",
       "risk": "low",

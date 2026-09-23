@@ -424,6 +424,12 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Décision** : chore(registry): resync L1+L3 projections (+2 other commits)
 - **Sortie** : PR #1531 | commits 160cb00fd 403523ded 093a9ef9e
 
+## 2026-09-23 — fix/og-imgproxy-supabase-source (auto)
+
+- **Branche** : `fix/og-imgproxy-supabase-source`
+- **Décision** : fix(seo): og:image imgproxy — source sur l'origine Supabase autorisée
+- **Sortie** : PR #1533 | commits 794de9716
+
 ## 2026-09-23 — revert/ga4-explicit-consent-1524 (auto)
 
 - **Branche** : `revert/ga4-explicit-consent-1524`
