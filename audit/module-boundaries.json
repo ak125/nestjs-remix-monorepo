@@ -17,8 +17,8 @@
         "backend/src/modules/admin/services/r1-image-prompt-builders",
         "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__"
       ],
-      "files_count": 146,
-      "loc_total": 41097,
+      "files_count": 147,
+      "loc_total": 41688,
       "has_barrel": true
     },
     "agentic-engine": {
@@ -186,7 +186,7 @@
         "backend/src/modules/config/validators"
       ],
       "files_count": 100,
-      "loc_total": 24372,
+      "loc_total": 24373,
       "has_barrel": true
     },
     "customers": {
@@ -1044,7 +1044,7 @@
     {
       "from": "admin",
       "to": "backend-core",
-      "count": 1
+      "count": 3
     },
     {
       "from": "admin",
