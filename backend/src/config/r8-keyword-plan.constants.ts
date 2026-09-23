@@ -671,6 +671,9 @@ export const R8_REASON_CODES = [
   'INVALID_CANONICAL',
   'INVALID_CONTRACT',
   'CONTENT_BROKEN',
+  // Panne base de données (lecture ou écriture) pendant l'enrichissement :
+  // cause d'infrastructure, distincte d'un contenu cassé (CONTENT_BROKEN).
+  'DB_ERROR',
 ] as const;
 export type R8ReasonCode = (typeof R8_REASON_CODES)[number];
 
