@@ -35,6 +35,92 @@
 /** Min quality floor for owned editorial to be eligible (gatekeeper / conseil quality). */
 export const R8_OWNED_EDITORIAL_MIN_QUALITY = 75;
 
+// ── RPC payload shape — single source of truth for the R8 enricher ─────────
+//
+// `get_vehicle_page_data_cached` returns `__vehicle_page_cache.payload`, built by
+// `build_vehicle_page_payload`. Measured shape (read-only, 2026-09-23, all
+// 28 505 cached rows):
+//   - `catalog.families[]` = { mf_id, mf_name, mf_pic, mf_description,
+//     gammes_count, gammes[] } — `gammes_count === gammes.length` on
+//     412 696 / 412 696 family rows; gamme rows carry NO product count;
+//   - TOP-LEVEL `motor_codes[]` (auto_type_motor_code.tmc_code) and
+//     `cnit_codes[]` (DISTINCT auto_type_number_code.tnc_cnit) — NOT under
+//     `vehicle`, which only carries marque_* / modele_* / type_* fields;
+//   - top-level `mine_codes[]` = DISTINCT auto_type_number_code.tnc_code
+//     (sampled values `["D","F"]`): semantics unverified → deliberately NOT
+//     read here (see `R8VehicleEnricherService.fetchVehicleData`).
+// The keys `compatible_families`, `families` and `vehicle.engine_codes` /
+// `vehicle.cnit_codes` never existed in this payload. Every payload read of the
+// enricher goes through the readers below; they return `null` when an expected
+// key is missing so the caller can `logger.warn` (no silent fallback).
+
+/** One parts family (`catalog.families[]` row) of the cache RPC payload. */
+export interface RpcCatalogFamily {
+  mf_id: string;
+  /** `mf_name`, trimmed; `''` when absent. */
+  family_name: string;
+  /** Number of gammes listed under the family (= `gammes.length`). */
+  gammes_count: number;
+  /** Raw gamme rows, unfiltered — consumers validate the fields they use. */
+  gammes: unknown[];
+}
+
+/**
+ * Parts families of the vehicle, in payload order. Returns `null` when
+ * `catalog.families` is missing / not an array (caller warns), `[]` when the
+ * vehicle has no family. Non-object rows are skipped (they carry no gamme).
+ */
+export function extractCatalogFamiliesFromRpc(
+  vehicleData: unknown,
+): RpcCatalogFamily[] | null {
+  const vd = (vehicleData ?? {}) as Record<string, any>;
+  const rawFamilies = vd.catalog?.families;
+  if (!Array.isArray(rawFamilies)) return null;
+  return rawFamilies
+    .filter((f: unknown) => !!f && typeof f === 'object')
+    .map((f: Record<string, any>) => {
+      const gammes: unknown[] = Array.isArray(f.gammes) ? f.gammes : [];
+      return {
+        mf_id: f.mf_id == null ? '' : String(f.mf_id),
+        family_name: typeof f.mf_name === 'string' ? f.mf_name.trim() : '',
+        gammes_count: gammes.length,
+        gammes,
+      };
+    });
+}
+
+/** Engine / CNIT codes of the vehicle; `null` = key missing (caller warns). */
+export interface RpcVehicleCodes {
+  engineCodes: string[] | null;
+  cnitCodes: string[] | null;
+}
+
+function readCodeList(raw: unknown): string[] | null {
+  if (!Array.isArray(raw)) return null;
+  const out: string[] = [];
+  for (const c of raw) {
+    if (typeof c !== 'string') continue;
+    const code = c.trim();
+    if (code && !out.includes(code)) out.push(code);
+  }
+  return out;
+}
+
+/**
+ * Engine codes (`motor_codes`) and CNIT codes (`cnit_codes`), read at the
+ * payload TOP level where the builder writes them. Order kept, blanks and
+ * duplicates dropped.
+ */
+export function extractVehicleCodesFromRpc(
+  vehicleData: unknown,
+): RpcVehicleCodes {
+  const vd = (vehicleData ?? {}) as Record<string, any>;
+  return {
+    engineCodes: readCodeList(vd.motor_codes),
+    cnitCodes: readCodeList(vd.cnit_codes),
+  };
+}
+
 // ── Gamme source (compatible gammes for owned editorial) ───────────────────
 
 /** Minimal gamme row consumed by `R8VehicleEnricherService.loadGammeEditorial()`. */
@@ -47,22 +133,19 @@ export interface OwnedGammeSource {
 
 /**
  * Extract the compatible-gamme list for owned editorial from the cache RPC
- * (`get_vehicle_page_data_cached`). The enricher's legacy `families` reads
- * `compatible_families`, which the current RPC does NOT return — the gammes
- * live under `popular_parts` (top, popularity-ranked) and, as a fallback,
- * `catalog.families[].gammes[]`. Used ONLY by the flag-gated owned-editorial
- * path; it does NOT touch the legacy `families` / catalog block. Pure +
- * defensive: returns `[]` when neither source is present.
+ * (`get_vehicle_page_data_cached`). The gammes live under `popular_parts`
+ * (top, popularity-ranked) and, as a fallback, `catalog.families[].gammes[]`
+ * (read through `extractCatalogFamiliesFromRpc`). Used ONLY by the flag-gated
+ * owned-editorial path. Pure + defensive: returns `[]` when neither source is
+ * present (a missing `catalog.families` is warned by the enricher).
  */
 export function extractGammeSourceFromRpc(
   vehicleData: unknown,
 ): OwnedGammeSource[] {
   const vd = (vehicleData ?? {}) as Record<string, any>;
   const popular = Array.isArray(vd.popular_parts) ? vd.popular_parts : [];
-  const catFamilies =
-    vd.catalog && Array.isArray(vd.catalog.families) ? vd.catalog.families : [];
-  const flattened = catFamilies.flatMap((f: any) =>
-    Array.isArray(f?.gammes) ? f.gammes : [],
+  const flattened = (extractCatalogFamiliesFromRpc(vd) ?? []).flatMap(
+    (f) => f.gammes,
   );
   const source = popular.length > 0 ? popular : flattened;
   const out: OwnedGammeSource[] = [];
