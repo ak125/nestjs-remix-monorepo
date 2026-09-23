@@ -179,7 +179,11 @@ export class VehicleRpcService extends SupabaseBaseService {
 
   /**
    * 🚗 Récupère le contenu R8 enrichi pour un véhicule (si INDEX).
-   * Retourne null si pas de contenu R8 ou si seo_decision != INDEX.
+   * Ne sert que les lignes `seo_decision = 'INDEX'` portant `rendered_json.blocks` ;
+   * s'il y en a plusieurs, celle de plus forte diversité.
+   * Retourne null sinon : REVIEW_REQUIRED (sous le seuil du gate d'enrichissement),
+   * REGENERATE, ligne INDEX sans blocs, timeout ou erreur. La page sert alors le
+   * gabarit SEO du payload véhicule.
    */
   async getR8Content(typeId: number): Promise<{
     h1: string;
@@ -201,7 +205,7 @@ export class VehicleRpcService extends SupabaseBaseService {
         'h1, meta_title, meta_description, rendered_json, seo_decision, diversity_score',
       )
       .eq('type_id', String(typeId))
-      .in('seo_decision', ['INDEX', 'REVIEW_REQUIRED'])
+      .eq('seo_decision', 'INDEX')
       .filter('rendered_json->blocks', 'not.is', null)
       .order('diversity_score', { ascending: false })
       .limit(1)
