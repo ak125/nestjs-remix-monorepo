@@ -10,7 +10,9 @@ import {
   Req,
   Logger,
   BadRequestException,
+  HttpException,
 } from '@nestjs/common';
+import { ZodError } from 'zod';
 import { OperationFailedException } from '@common/exceptions';
 import {
   ApiTags,
@@ -155,14 +157,7 @@ export class CartItemsController {
       this.logger.error(
         `Erreur ajout article: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
-
-      if (error instanceof BadRequestException) {
-        throw error;
-      }
-
-      throw new OperationFailedException({
-        message: "Erreur lors de l'ajout de l'article",
-      });
+      throw this.toHttpError(error, "Erreur lors de l'ajout de l'article");
     }
   }
 
@@ -218,14 +213,10 @@ export class CartItemsController {
       this.logger.error(
         `Erreur mise à jour article: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
-
-      if (error instanceof BadRequestException) {
-        throw error;
-      }
-
-      throw new OperationFailedException({
-        message: "Erreur lors de la mise à jour de l'article",
-      });
+      throw this.toHttpError(
+        error,
+        "Erreur lors de la mise à jour de l'article",
+      );
     }
   }
 
@@ -323,14 +314,32 @@ export class CartItemsController {
       this.logger.error(
         `Erreur suppression article: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
+      throw this.toHttpError(
+        error,
+        "Erreur lors de la suppression de l'article",
+      );
+    }
+  }
 
-      if (error instanceof BadRequestException) {
-        throw error;
-      }
-
-      throw new OperationFailedException({
-        message: "Erreur lors de la suppression de l'article",
+  /**
+   * Une erreur du client garde son statut 4xx : corps invalide (400, même
+   * forme que `ZodValidationPipe`) ou refus du service (produit introuvable,
+   * pièce sans tarif vendable…). Seule une défaillance interne devient un 500,
+   * avec un message générique qui n'expose rien de la cause.
+   */
+  private toHttpError(error: unknown, message: string): HttpException {
+    if (error instanceof ZodError) {
+      return new BadRequestException({
+        message: 'Validation failed',
+        errors: error.issues.map((issue) => ({
+          field: issue.path.join('.'),
+          message: issue.message,
+        })),
       });
     }
+    if (error instanceof HttpException && error.getStatus() < 500) {
+      return error;
+    }
+    return new OperationFailedException({ message });
   }
 }
