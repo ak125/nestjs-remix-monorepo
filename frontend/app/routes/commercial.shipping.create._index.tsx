@@ -119,6 +119,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // Récupérer toutes les commandes récentes depuis la vraie API dashboard
     const orderResponse = await fetch(
       `http://127.0.0.1:3000/api/dashboard/orders/recent?limit=100`,
+      { headers: { Cookie: request.headers.get("Cookie") || "" } },
     );
     const ordersData = await orderResponse.json();
     const allOrders: RawOrderData[] = ordersData.orders || [];

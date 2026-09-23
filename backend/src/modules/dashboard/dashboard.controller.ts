@@ -9,6 +9,9 @@ import {
   ModulePermissionGuard,
   RequireModule,
 } from '../../auth/guards/module-permission.guard';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { PermissionsGuard } from '@auth/guards/permissions.guard';
+import { RequirePermission } from '@auth/decorators/require-permission.decorator';
 import { DashboardService } from './dashboard.service';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 
@@ -83,6 +86,8 @@ export class DashboardController {
   }
 
   @Get('shipments')
+  @UseGuards(AuthenticatedGuard, PermissionsGuard)
+  @RequirePermission('canSeeCustomerDetails')
   async getShipments() {
     this.logger.log('[DashboardController] GET /api/dashboard/shipments');
     try {
@@ -104,12 +109,16 @@ export class DashboardController {
   }
 
   @Get('stock/alerts')
+  @UseGuards(AuthenticatedGuard, PermissionsGuard)
+  @RequirePermission('canSeeCustomerDetails')
   async getStockAlerts() {
     this.logger.log('[DashboardController] GET /api/dashboard/stock/alerts');
     return this.dashboardService.getStockAlerts();
   }
 
   @Get('orders/recent')
+  @UseGuards(AuthenticatedGuard, PermissionsGuard)
+  @RequirePermission('canSeeCustomerDetails')
   async getRecentOrders() {
     this.logger.log('[DashboardController] GET /api/dashboard/orders/recent');
     return {
@@ -119,6 +128,8 @@ export class DashboardController {
   }
 
   @Get('orders')
+  @UseGuards(AuthenticatedGuard, PermissionsGuard)
+  @RequirePermission('canSeeCustomerDetails')
   async getOrdersForDashboard() {
     this.logger.log('[DashboardController] GET /api/dashboard/orders');
 

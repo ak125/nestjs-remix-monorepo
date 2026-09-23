@@ -48,7 +48,7 @@ interface DashboardData {
   };
 }
 
-export async function loader({ context }: LoaderFunctionArgs) {
+export async function loader({ request, context }: LoaderFunctionArgs) {
   const user = await requireUser({ context });
 
   if (!user.level || user.level < 3) {
@@ -63,7 +63,10 @@ export async function loader({ context }: LoaderFunctionArgs) {
         headers: { "internal-call": "true" },
       }),
       fetch(`${API_BASE}/api/dashboard/orders/recent`, {
-        headers: { "internal-call": "true" },
+        headers: {
+          "internal-call": "true",
+          Cookie: request.headers.get("Cookie") || "",
+        },
       }),
     ]);
 

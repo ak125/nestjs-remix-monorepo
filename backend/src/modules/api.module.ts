@@ -6,6 +6,7 @@ import { NavigationModule } from './navigation/navigation.module';
 import { CommercialModule } from './commercial/commercial.module';
 import { SystemModule } from './system/system.module';
 import { SeoLogsModule } from './seo-logs/seo-logs.module';
+import { AuthModule } from '../auth/auth.module';
 
 // Services
 import { OrdersService } from '../database/services/orders.service';
@@ -23,6 +24,7 @@ import { OrdersController } from '../controllers/orders.controller';
     CommercialModule, // Module commercial avec archives
     SystemModule, // Nouveau module system avec monitoring
     SeoLogsModule, // Module d'analyse des logs SEO via Loki
+    AuthModule, // PermissionsService pour PermissionsGuard (legacy-users/orders)
   ],
   providers: [OrdersService],
   controllers: [UsersController, OrdersController],
