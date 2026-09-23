@@ -13,7 +13,10 @@
  *  - le rendu réel de la route (tableau + FAQ + JSON-LD + bouton copier) n'affiche que
  *    `cnit_codes_formatted`, inchangé ;
  *  - un payload qui ne porterait QUE `mine_codes` ne fait plus apparaître ni la ligne
- *    ni la question carte grise.
+ *    ni la question carte grise ;
+ *  - la ROUTE seule, indépendamment du transform : un LoaderData injecté tel quel qui
+ *    porterait encore `mine_codes_formatted` (champ retiré du type) n'est pas rendu.
+ *    Sans ce bloc, revenir sur la seule route resterait masqué par le transform.
  */
 
 import {
@@ -69,7 +72,11 @@ function makeRpc(
 }
 
 function renderRoute(rpc: ReturnType<typeof makeRpc>) {
-  const loaderData = transformRpcToLoaderData(rpc, PARAMS);
+  return renderLoaderData(transformRpcToLoaderData(rpc, PARAMS));
+}
+
+/** Rend la route avec un LoaderData fourni tel quel (sans passer par le transform). */
+function renderLoaderData(loaderData: unknown) {
   const Stub = createRoutesStub([
     {
       path: "/",
@@ -162,6 +169,67 @@ describe("R8 route — rendu réel : seuls les numéros `tnc_cnit` sont affiché
   it("payload portant SEULEMENT `mine_codes` : ni ligne ni question carte grise", async () => {
     const { container } = renderRoute(
       makeRpc({ mine_codes: ["F"], cnit_codes: [] }),
+    );
+    await waitFor(() =>
+      expect(screen.getByText("Questions fréquentes")).toBeTruthy(),
+    );
+    expect(screen.queryByText("Type mine / CNIT")).toBeNull();
+    const faq = faqJsonLd(container);
+    expect(faq.mainEntity.map((e) => e.name)).not.toContain(CARTE_GRISE_Q);
+  });
+});
+
+describe("R8 route seule — un LoaderData qui porterait encore `mine_codes_formatted` n'est pas rendu", () => {
+  /**
+   * LoaderData « legacy » injecté directement dans la route : il réintroduit
+   * `mine_codes` / `mine_codes_formatted` (retirés du type `VehicleData`) pour
+   * vérifier que la route elle-même ne les lit plus, indépendamment du transform.
+   */
+  function legacyLoaderData(vehicleOverrides: Record<string, unknown>) {
+    const data = transformRpcToLoaderData(makeRpc(), PARAMS);
+    return {
+      ...data,
+      vehicle: {
+        ...data.vehicle,
+        mine_codes: ["D", "F"],
+        mine_codes_formatted: "D, F",
+        ...vehicleOverrides,
+      },
+    };
+  }
+
+  it("cellule, bouton « Copier » et FAQPage JSON-LD = numéros CNIT seuls", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText },
+      configurable: true,
+    });
+    const { container } = renderLoaderData(legacyLoaderData({}));
+    await screen.findByText("Type mine / CNIT");
+    const cell = typeMineCell();
+    expect(cell?.textContent).toBe("M10RENVP000A123, 3333161");
+
+    const faq = faqJsonLd(container);
+    const q = faq.mainEntity.find((e) => e.name === CARTE_GRISE_Q);
+    expect(q!.acceptedAnswer.text).toContain(
+      "les codes connus sont : M10RENVP000A123, 3333161. ",
+    );
+    expect(q!.acceptedAnswer.text).not.toContain("D, F");
+
+    await act(async () => {
+      fireEvent.click(cell!.querySelector("button")!);
+    });
+    expect(writeText).toHaveBeenCalledWith("M10RENVP000A123, 3333161");
+  });
+
+  it("`mine_codes_formatted` seul (aucun numéro CNIT) : ni ligne ni question carte grise", async () => {
+    const { container } = renderLoaderData(
+      legacyLoaderData({
+        mine_codes: ["F"],
+        mine_codes_formatted: "F",
+        cnit_codes: [],
+        cnit_codes_formatted: "",
+      }),
     );
     await waitFor(() =>
       expect(screen.getByText("Questions fréquentes")).toBeTruthy(),

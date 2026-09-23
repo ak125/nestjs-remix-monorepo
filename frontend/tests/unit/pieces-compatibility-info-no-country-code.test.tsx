@@ -121,6 +121,11 @@ describe("R2 PiecesCompatibilityInfo — aucun « code mine » rendu", () => {
     expect(container.textContent).toContain("Code(s) Moteur");
   });
 
+  // Changement de texte servi DÉCLARÉ dans la PR : avant, un véhicule avec `tnc_code`
+  // mais sans code moteur recevait la phrase entière « Cette pièce est compatible avec
+  // votre X (code mine D, F). Vérifiez… ». Elle disparaît avec la mention (mesure
+  // lecture seule : 218 types, dont 57 `type_display = '1'`, 243 liens sitemap R2).
+  // Garder une phrase générique pour ces types = décision owner, non prise ici.
   it("sans code moteur : ni micro-bloc ni grille de codes", () => {
     const { container } = render(
       <PiecesCompatibilityInfo
