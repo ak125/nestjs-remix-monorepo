@@ -4682,7 +4682,7 @@
         "backend/src/config/keyword-plan.constants.ts"
       ],
       "kind": "config",
-      "loc": 865,
+      "loc": 866,
       "owner": "__unassigned__",
       "path": "backend/src/config/r8-keyword-plan.constants.ts",
       "risk": "low",
@@ -8261,7 +8261,7 @@
         "backend/src/modules/admin/services/execution-router.service.ts"
       ],
       "kind": "test",
-      "loc": 430,
+      "loc": 463,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/execution-router.service.test.ts",
       "risk": "low",
@@ -8299,7 +8299,7 @@
         "backend/src/modules/seo/validation/diagnostic.service.ts"
       ],
       "kind": "service",
-      "loc": 766,
+      "loc": 769,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/execution-router.service.ts",
       "risk": "low",
@@ -9242,9 +9242,11 @@
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
         "backend/src/modules/admin/controllers/admin-r8-vehicle.controller.ts",
-        "backend/src/modules/admin/services/execution-router.service.ts"
+        "backend/src/modules/admin/services/execution-router.service.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.write-gate.test.ts"
       ],
       "imports": [
+        "@common/exceptions",
         "@database/services/supabase-base.service",
         "backend/src/config/content-write-gate.service.ts",
         "backend/src/config/execution-registry.types.ts",
@@ -9258,12 +9260,13 @@
         "backend/src/modules/admin/services/r8-owned-editorial.composer.ts",
         "backend/src/modules/admin/services/vehicle-rag-generator.service.ts",
         "backend/src/modules/seo/services/chain/seo-role-template-selector.service.ts",
+        "backend/src/security/rpc-gate/rpc-gate.errors.ts",
         "crypto",
         "fs",
         "path"
       ],
       "kind": "service",
-      "loc": 1532,
+      "loc": 1674,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
       "risk": "low",
@@ -9271,6 +9274,29 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/admin/services/r8-vehicle-enricher.write-gate.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@common/exceptions",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
+        "backend/src/security/rpc-gate/rpc-gate.errors.ts"
+      ],
+      "kind": "test",
+      "loc": 414,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/admin/services/r8-vehicle-enricher.write-gate.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -36362,6 +36388,8 @@
       "id": "backend/src/security/rpc-gate/rpc-gate.errors.ts",
       "importedBy": [
         "backend/src/database/services/supabase-base.service.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.write-gate.test.ts",
         "backend/src/security/rpc-gate/index.ts"
       ],
       "imports": [],
