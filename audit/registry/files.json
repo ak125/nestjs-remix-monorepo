@@ -46011,7 +46011,7 @@
         "~/components/ui/alert"
       ],
       "kind": "config",
-      "loc": 266,
+      "loc": 237,
       "owner": "__unassigned__",
       "path": "frontend/app/components/pieces/PiecesCompatibilityInfo.tsx",
       "risk": "low",
@@ -46402,7 +46402,7 @@
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 617,
+      "loc": 616,
       "owner": "__unassigned__",
       "path": "frontend/app/components/pieces/PiecesVehicleContent.tsx",
       "risk": "low",
@@ -49188,7 +49188,7 @@
         "frontend/app/utils/url-builder.utils.ts"
       ],
       "kind": "config",
-      "loc": 253,
+      "loc": 254,
       "owner": "__unassigned__",
       "path": "frontend/app/components/vehicle/r8/r8-transform.ts",
       "risk": "low",
@@ -49220,7 +49220,7 @@
         "frontend/app/components/model/index.ts"
       ],
       "kind": "config",
-      "loc": 132,
+      "loc": 131,
       "owner": "__unassigned__",
       "path": "frontend/app/components/vehicle/r8/r8.types.ts",
       "risk": "low",
@@ -55440,7 +55440,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 1353,
+      "loc": 1345,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/constructeurs.$brand.$model.$type.tsx",
       "risk": "low",
@@ -58074,7 +58074,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 235,
+      "loc": 234,
       "owner": "__unassigned__",
       "path": "frontend/app/types/pieces-route.types.ts",
       "risk": "low",
@@ -59050,7 +59050,7 @@
         "frontend/app/utils/pieces-route.utils.ts"
       ],
       "kind": "service",
-      "loc": 198,
+      "loc": 197,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/pieces-loader.utils.ts",
       "risk": "low",
@@ -59382,7 +59382,7 @@
         "~/utils/image-optimizer"
       ],
       "kind": "service",
-      "loc": 316,
+      "loc": 317,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/rm-mapper.ts",
       "risk": "low",
@@ -61059,6 +61059,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/pieces-compatibility-info-no-country-code.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 135,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/pieces-compatibility-info-no-country-code.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/tests/unit/pieces-grouped-display.test.tsx",
       "importedBy": [],
       "imports": [],
@@ -61389,6 +61408,25 @@
       "loc": 96,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/r8-hero-h1-parity.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/r8-mine-codes-country-not-rendered.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 174,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/r8-mine-codes-country-not-rendered.test.tsx",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
