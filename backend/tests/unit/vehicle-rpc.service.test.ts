@@ -190,4 +190,141 @@ describe('VehicleRpcService', () => {
     await service.invalidateCache(33302);
     expect(mockCacheService.del).toHaveBeenCalledWith('vehicle:rpc:v2:33302');
   });
+
+  // ═══════════════════════════════════════════════════════════════
+  // TEST 9-11: getR8Content — l'overlay R8 ne sert que seo_decision = INDEX
+  // ═══════════════════════════════════════════════════════════════
+  describe('getR8Content', () => {
+    interface R8Row {
+      type_id: string;
+      seo_decision: string;
+      diversity_score: number;
+      h1: string;
+      meta_title: string;
+      meta_description: string;
+      rendered_json: Record<string, unknown>;
+    }
+
+    const block = {
+      id: 'b1',
+      type: 'vehicle_identity',
+      title: 'Identité',
+      renderedText: 'texte',
+      specificityWeight: 0.7,
+    };
+
+    const row = (over: Partial<R8Row>): R8Row => ({
+      type_id: '19053',
+      seo_decision: 'INDEX',
+      diversity_score: 80,
+      h1: 'h1',
+      meta_title: 'meta title',
+      meta_description: 'meta description',
+      rendered_json: { blocks: [block] },
+      ...over,
+    });
+
+    /**
+     * Faux client PostgREST sur des lignes en mémoire : n'honore que les
+     * opérateurs utilisés par getR8Content, et échoue sur tout autre filtre.
+     * `rendered_json->blocks not.is null` suit la sémantique SQL : la clé
+     * `blocks` absente donne SQL NULL, donc la ligne est exclue.
+     */
+    const useRows = (rows: R8Row[]) => {
+      let current = [...rows];
+      const builder = {
+        select: () => builder,
+        eq: (col: keyof R8Row, val: unknown) => {
+          current = current.filter((r) => r[col] === val);
+          return builder;
+        },
+        in: (col: keyof R8Row, vals: unknown[]) => {
+          current = current.filter((r) => vals.includes(r[col]));
+          return builder;
+        },
+        filter: (col: string, op: string, val: unknown) => {
+          if (
+            col !== 'rendered_json->blocks' ||
+            op !== 'not.is' ||
+            val !== null
+          ) {
+            throw new Error(`filtre non simulé : ${col} ${op} ${String(val)}`);
+          }
+          current = current.filter((r) => 'blocks' in r.rendered_json);
+          return builder;
+        },
+        order: (col: keyof R8Row, opts: { ascending: boolean }) => {
+          current.sort((a, b) =>
+            opts.ascending
+              ? Number(a[col]) - Number(b[col])
+              : Number(b[col]) - Number(a[col]),
+          );
+          return builder;
+        },
+        limit: (n: number) => {
+          current = current.slice(0, n);
+          return builder;
+        },
+        maybeSingle: () =>
+          Promise.resolve({ data: current[0] ?? null, error: null }),
+      };
+      const from = jest.fn().mockReturnValue(builder);
+      Object.defineProperty(service, 'client', { get: () => ({ from }) });
+      return from;
+    };
+
+    it('ne sert pas une ligne REVIEW_REQUIRED, même avec des blocs (cas 19053 : INDEX sans blocs + REVIEW avec blocs)', async () => {
+      const from = useRows([
+        row({
+          seo_decision: 'INDEX',
+          diversity_score: 88,
+          rendered_json: { sections: [] },
+        }),
+        row({ seo_decision: 'REVIEW_REQUIRED', diversity_score: 58.38 }),
+      ]);
+
+      await expect(service.getR8Content(19053)).resolves.toBeNull();
+      expect(from).toHaveBeenCalledWith('__seo_r8_pages');
+    });
+
+    it('sert la ligne INDEX avec blocs de plus forte diversité', async () => {
+      useRows([
+        row({
+          seo_decision: 'REVIEW_REQUIRED',
+          diversity_score: 95,
+          meta_title: 'review',
+        }),
+        row({
+          seo_decision: 'INDEX',
+          diversity_score: 72,
+          meta_title: 'index faible',
+        }),
+        row({
+          seo_decision: 'INDEX',
+          diversity_score: 81,
+          meta_title: 'index fort',
+        }),
+      ]);
+
+      await expect(service.getR8Content(19053)).resolves.toEqual({
+        h1: 'h1',
+        metaTitle: 'index fort',
+        metaDescription: 'meta description',
+        blocks: [block],
+        seoDecision: 'INDEX',
+        diversityScore: 81,
+      });
+    });
+
+    it('ne sert pas une ligne INDEX sans blocs', async () => {
+      useRows([
+        row({
+          seo_decision: 'INDEX',
+          rendered_json: { sections: [], categoryRanking: [] },
+        }),
+      ]);
+
+      await expect(service.getR8Content(19053)).resolves.toBeNull();
+    });
+  });
 });
