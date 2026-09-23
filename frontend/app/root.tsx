@@ -428,10 +428,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <link rel="stylesheet" href={animationsStylesheet} />
         </noscript>
         {/* Google Analytics 4 - Optimisé avec requestIdleCallback + Consent Mode v2 (RGPD) */}
-        {/* Double garde anti-pollution GA4 :
+        {/* Triple garde anti-pollution GA4 :
             1. !isBot         → exclut les crawlers (UA serveur)
             2. gaMeasurementId → l'ID n'est provisionné qu'en PROD (docker-compose.prod.yml),
-               donc pas de tag en DEV/PREPROD (stoppe la pollution headless E2E/Lighthouse). */}
+               donc pas de tag en DEV/PREPROD (stoppe la pollution headless E2E/Lighthouse).
+            3. navigator.webdriver → __loadGTM ne télécharge pas gtag.js dans un navigateur
+               piloté dont l'UA imite un Chrome ordinaire. */}
         {!isBot && gaMeasurementId !== "" && (
           <script
             nonce={nonce}
@@ -467,6 +469,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
               // Fonction pour charger GTM une seule fois (optimisée avec requestIdleCallback)
               window.__loadGTM = function() {
+                // Navigateur piloté (WebDriver, Puppeteer, Playwright) : son UA peut imiter
+                // un Chrome ordinaire et passer !isBot. gtag reste une file locale, rien n'est envoyé.
+                if (navigator.webdriver === true) return;
                 if (window.__gtmLoaded) return;
                 window.__gtmLoaded = true;
 
