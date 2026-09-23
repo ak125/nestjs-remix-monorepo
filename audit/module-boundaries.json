@@ -701,7 +701,7 @@
         "scripts/wiki-generators/__tests__"
       ],
       "files_count": 183,
-      "loc_total": 38919,
+      "loc_total": 39481,
       "has_barrel": true
     },
     "search": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 243,
-      "loc_total": 43870,
+      "files_count": 244,
+      "loc_total": 44154,
       "has_barrel": true
     },
     "upload": {
