@@ -447,3 +447,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/account-order-cancel`
 - **Décision** : Merge remote-tracking branch 'origin/main' into fix/account-order-cancel (+3 other commits)
 - **Sortie** : PR #1536 | commits 8d71e7fb0 2731f31ca 44a632308 57d984086
+
+## 2026-09-24 — feat/seo-collector-prod-secrets (auto)
+
+- **Branche** : `feat/seo-collector-prod-secrets`
+- **Décision** : merge: origin/main (15c66177a, #1536) dans feat/seo-collector-prod-secrets (+5 other commits)
+- **Sortie** : PR #1534 | commits bf8acdbf8 47d1dcbf9 3d82d3c38 47a655e37 c019558dc f52d20406

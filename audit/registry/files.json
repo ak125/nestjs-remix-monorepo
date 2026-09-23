@@ -35861,7 +35861,7 @@
         "@security/rpc-gate/rpc-gate.service"
       ],
       "kind": "service",
-      "loc": 359,
+      "loc": 355,
       "owner": "__unassigned__",
       "path": "backend/src/modules/vehicles/services/vehicle-rpc.service.ts",
       "risk": "low",
@@ -38812,7 +38812,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 331,
+      "loc": 194,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/vehicle-rpc.service.test.ts",
       "risk": "low",
@@ -67089,6 +67089,25 @@
       "loc": 191,
       "owner": "__unassigned__",
       "path": "scripts/ci/prod-rollback.test.mjs",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/ci/prod-seo-collector-env.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 266,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/prod-seo-collector-env.test.mjs",
       "risk": "low",
       "runtime": true,
       "schemaVersion": "1.0.0",
