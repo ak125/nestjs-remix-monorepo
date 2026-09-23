@@ -5430,11 +5430,12 @@
       "importedBy": [],
       "imports": [
         "@cache/cache.service",
+        "@common/exceptions",
         "backend/src/database/services/cart-data.service.ts",
         "backend/src/database/services/piece-price-data.service.ts"
       ],
       "kind": "test",
-      "loc": 133,
+      "loc": 203,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/cart-data.sellable-guard.test.ts",
       "risk": "low",
@@ -5459,6 +5460,7 @@
         "backend/src/database/services/index.ts",
         "backend/src/modules/cart/cart.module.ts",
         "backend/src/modules/cart/controllers/cart-core.controller.ts",
+        "backend/src/modules/cart/controllers/cart-items.controller.test.ts",
         "backend/src/modules/cart/controllers/cart-items.controller.ts",
         "backend/src/modules/cart/controllers/cart-promo.controller.ts",
         "backend/src/modules/cart/controllers/cart-recovery.controller.ts",
@@ -5477,7 +5479,7 @@
         "backend/src/modules/catalog/utils/image-urls.utils.ts"
       ],
       "kind": "service",
-      "loc": 1028,
+      "loc": 1037,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/cart-data.service.ts",
       "risk": "low",
@@ -11989,6 +11991,7 @@
       "id": "backend/src/modules/cart/controllers/cart-controller.utils.ts",
       "importedBy": [
         "backend/src/modules/cart/controllers/cart-core.controller.ts",
+        "backend/src/modules/cart/controllers/cart-items.controller.test.ts",
         "backend/src/modules/cart/controllers/cart-items.controller.ts",
         "backend/src/modules/cart/controllers/cart-promo.controller.ts",
         "backend/src/modules/cart/controllers/cart-shipping.controller.ts"
@@ -12037,9 +12040,36 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/cart/controllers/cart-items.controller.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@common/exceptions",
+        "backend/src/database/services/cart-data.service.ts",
+        "backend/src/modules/cart/controllers/cart-controller.utils.ts",
+        "backend/src/modules/cart/controllers/cart-items.controller.ts",
+        "backend/src/modules/cart/services/cart.service.ts",
+        "backend/src/modules/products/services/stock.service.ts"
+      ],
+      "kind": "test",
+      "loc": 228,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/cart/controllers/cart-items.controller.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/cart/controllers/cart-items.controller.ts",
       "importedBy": [
-        "backend/src/modules/cart/cart.module.ts"
+        "backend/src/modules/cart/cart.module.ts",
+        "backend/src/modules/cart/controllers/cart-items.controller.test.ts"
       ],
       "imports": [
         "@common/exceptions",
@@ -12052,7 +12082,7 @@
         "backend/src/modules/products/services/stock.service.ts"
       ],
       "kind": "controller",
-      "loc": 337,
+      "loc": 346,
       "owner": "__unassigned__",
       "path": "backend/src/modules/cart/controllers/cart-items.controller.ts",
       "risk": "low",
@@ -12343,6 +12373,7 @@
       "id": "backend/src/modules/cart/services/cart.service.ts",
       "importedBy": [
         "backend/src/modules/cart/cart.module.ts",
+        "backend/src/modules/cart/controllers/cart-items.controller.test.ts",
         "backend/src/modules/cart/controllers/cart-items.controller.ts",
         "backend/src/modules/cart/controllers/cart-promo.controller.ts"
       ],
@@ -21433,6 +21464,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/products/services/stock.service.ts",
       "importedBy": [
+        "backend/src/modules/cart/controllers/cart-items.controller.test.ts",
         "backend/src/modules/cart/controllers/cart-items.controller.ts",
         "backend/src/modules/products/controllers/products-core.controller.ts",
         "backend/src/modules/products/controllers/products-inventory.controller.ts",
