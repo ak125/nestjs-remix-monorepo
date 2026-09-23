@@ -119,7 +119,8 @@ function mapVehicleInfo(rmV2: RmPageV2Response): VehicleData {
     typeAlias: vi.typeAlias,
     modelePic: vi.modelePic || undefined,
     motorCodesFormatted: vi.motorCodesFormatted || undefined,
-    mineCodesFormatted: vi.mineCodesFormatted || undefined,
+    // `vi.mineCodesFormatted` volontairement non propagé : le RPC l'agrège depuis
+    // `tnc_code`, code pays « D » / « F » (KBA ou Mines/CNIT), jamais un numéro.
     cnitCodesFormatted: vi.cnitCodesFormatted || undefined,
     typePowerPs: vi.typePowerPs ? parseInt(vi.typePowerPs, 10) : undefined,
     typePowerKw: vi.typePowerKw ? parseInt(vi.typePowerKw, 10) : undefined,

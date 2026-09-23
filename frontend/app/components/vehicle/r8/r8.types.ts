@@ -36,9 +36,8 @@ export interface VehicleData {
   // 🔧 Codes moteur (depuis API /full)
   motor_codes?: string[];
   motor_codes_formatted?: string;
-  // 🔧 Types mines / CNIT (depuis API /full)
-  mine_codes?: string[];
-  mine_codes_formatted?: string;
+  // 🔧 Numéros type mine / CNIT (`tnc_cnit`). Pas de `mine_codes` : côté payload,
+  // il ne contient que le code pays `tnc_code` (« D » / « F »), jamais un numéro.
   cnit_codes?: string[];
   cnit_codes_formatted?: string;
   // 📊 Données techniques formatées

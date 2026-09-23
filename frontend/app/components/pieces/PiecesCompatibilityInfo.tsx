@@ -12,9 +12,9 @@ import { type CompatibilityInfo } from "../../types/pieces-route.types";
 interface PiecesCompatibilityInfoProps {
   compatibility: CompatibilityInfo;
   vehicleName: string;
-  // 🔧 Codes moteur et types mines (V7)
+  // 🔧 Codes moteur (V7). Pas de « code mine » : `vehicleInfo.mineCodesFormatted`
+  // ne contient que le code pays `tnc_code` (« D » / « F »), jamais un numéro.
   motorCodesFormatted?: string;
-  mineCodesFormatted?: string;
 }
 
 /**
@@ -24,7 +24,6 @@ export const PiecesCompatibilityInfo = memo(function PiecesCompatibilityInfo({
   compatibility,
   vehicleName,
   motorCodesFormatted,
-  mineCodesFormatted,
 }: PiecesCompatibilityInfoProps) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -50,15 +49,14 @@ export const PiecesCompatibilityInfo = memo(function PiecesCompatibilityInfo({
       </div>
 
       <div className="p-6 space-y-6">
-        {/* Micro-bloc sémantique SSR — précision moteur/mine pour crawl */}
-        {(motorCodesFormatted || mineCodesFormatted) && (
+        {/* Micro-bloc sémantique SSR — précision moteur pour crawl */}
+        {motorCodesFormatted && (
           <p className="text-sm text-gray-700 leading-relaxed">
             Cette pièce est compatible avec votre {vehicleName}
             {motorCodesFormatted
               ? ` équipé du moteur ${motorCodesFormatted}`
               : ""}
-            {mineCodesFormatted ? ` (code mine ${mineCodesFormatted})` : ""}.
-            Vérifiez la référence d'origine avant commande.
+            . Vérifiez la référence d'origine avant commande.
           </p>
         )}
 
@@ -87,8 +85,8 @@ export const PiecesCompatibilityInfo = memo(function PiecesCompatibilityInfo({
           </div>
         </div>
 
-        {/* 🔧 Codes moteur et types mines (V7) */}
-        {(motorCodesFormatted || mineCodesFormatted) && (
+        {/* 🔧 Codes moteur (V7) */}
+        {motorCodesFormatted && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {motorCodesFormatted && (
               <div className="flex items-start gap-4 bg-gradient-to-br from-gray-50 to-slate-50 rounded-lg p-4 border border-gray-200">
@@ -119,33 +117,6 @@ export const PiecesCompatibilityInfo = memo(function PiecesCompatibilityInfo({
                   </h3>
                   <p className="text-base font-bold text-gray-900">
                     {motorCodesFormatted}
-                  </p>
-                </div>
-              </div>
-            )}
-            {mineCodesFormatted && (
-              <div className="flex items-start gap-4 bg-gradient-to-br from-gray-50 to-slate-50 rounded-lg p-4 border border-gray-200">
-                <div className="shrink-0 w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                  <svg
-                    className="w-5 h-5 text-green-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-1">
-                    Type Mine / CNIT
-                  </h3>
-                  <p className="text-base font-bold text-gray-900">
-                    {mineCodesFormatted}
                   </p>
                 </div>
               </div>

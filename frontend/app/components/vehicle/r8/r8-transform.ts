@@ -79,8 +79,9 @@ export function transformRpcToLoaderData(
     date: type_date,
     motor_codes: rpcData.motor_codes || [],
     motor_codes_formatted: (rpcData.motor_codes || []).join(", "),
-    mine_codes: rpcData.mine_codes || [],
-    mine_codes_formatted: (rpcData.mine_codes || []).join(", "),
+    // `rpcData.mine_codes` n'est volontairement PAS propagé : le payload le calcule
+    // depuis `tnc_code`, qui vaut « D » ou « F » (pays de la numérotation, KBA ou
+    // Mines/CNIT), pas un numéro. Les numéros sont dans `cnit_codes` (`tnc_cnit`).
     cnit_codes: rpcData.cnit_codes || [],
     cnit_codes_formatted: (rpcData.cnit_codes || []).join(", "),
     power_formatted: v.type_power_ps ? `${v.type_power_ps} ch` : "",
