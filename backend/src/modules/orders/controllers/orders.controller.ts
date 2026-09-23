@@ -726,15 +726,13 @@ export class OrdersController {
         throw new ConflictException(refusal);
       }
 
-      // p_user_id reste null : les identifiants client invités ne sont pas
+      // userId reste absent : les identifiants client invités ne sont pas
       // numériques (bigint côté RPC). L'acteur est le propriétaire vérifié
-      // ci-dessus, tracé dans le motif.
-      await this.ordersService.cancelOrder(
-        orderId,
-        'Annulée par le client depuis son espace',
-        undefined,
-        crypto.randomUUID(),
-      );
+      // ci-dessus, tracé dans le motif et porté par l'événement d'annulation.
+      await this.ordersService.cancelOrder(orderId, String(order.ord_cst_id), {
+        reason: 'Annulée par le client depuis son espace',
+        correlationId: crypto.randomUUID(),
+      });
     } catch (error) {
       this.logger.error(`Error cancelling order ${orderId}:`, error);
       throw error;

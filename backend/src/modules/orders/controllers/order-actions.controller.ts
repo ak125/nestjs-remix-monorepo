@@ -195,21 +195,9 @@ export class OrderActionsController {
         `📦 Expédition commande ${orderId} - Suivi: ${body.trackingNumber}`,
       );
 
-      // 1. Expédier commande
+      // L'e-mail de suivi part de OrderEmailListener sur ORDER_EVENTS.SHIPPED,
+      // émis par shipOrder : pas d'envoi direct ici (sinon 2 e-mails).
       await this.orderActionsService.shipOrder(orderId, body.trackingNumber);
-
-      // 2. Récupérer données pour email
-      const order = await this.orderActionsService.getOrder(orderId);
-      const customer = await this.orderActionsService.getCustomer(
-        order.ord_cst_id,
-      );
-
-      // 3. Envoyer email avec suivi
-      await this.mailService.sendShippingNotification(
-        order,
-        customer,
-        body.trackingNumber,
-      );
 
       this.logger.log(`✅ Commande ${orderId} expédiée avec succès`);
 
@@ -269,21 +257,9 @@ export class OrderActionsController {
         `❌ Annulation commande ${orderId} - Raison: ${body.reason}`,
       );
 
-      // 1. Annuler commande
+      // L'e-mail d'annulation part de OrderEmailListener sur
+      // ORDER_EVENTS.CANCELLED, émis par cancelOrder : pas d'envoi direct ici.
       await this.orderActionsService.cancelOrder(orderId, body.reason);
-
-      // 2. Récupérer données pour email
-      const order = await this.orderActionsService.getOrder(orderId);
-      const customer = await this.orderActionsService.getCustomer(
-        order.ord_cst_id,
-      );
-
-      // 3. Envoyer email annulation
-      await this.mailService.sendCancellationEmail(
-        order,
-        customer,
-        body.reason,
-      );
 
       this.logger.log(`✅ Commande ${orderId} annulée avec succès`);
 

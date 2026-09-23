@@ -43,8 +43,6 @@ export interface CustomerRecord {
   cst_mail: string;
   cst_fname: string;
   cst_name: string;
-  cst_prenom?: string;
-  cst_nom?: string;
   cst_tel?: string;
   cst_gsm?: string;
   cst_address?: string;
