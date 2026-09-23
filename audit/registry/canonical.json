@@ -37178,7 +37178,8 @@
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
         "backend/src/modules/admin/controllers/admin-r8-vehicle.controller.ts",
-        "backend/src/modules/admin/services/execution-router.service.ts"
+        "backend/src/modules/admin/services/execution-router.service.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.tech-specs.test.ts"
       ],
       "imports": [
         "@database/services/supabase-base.service",
@@ -37199,7 +37200,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 1532,
+      "loc": 1466,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
       "risk": "medium",
@@ -37207,6 +37208,28 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
+      "id": "backend/src/modules/admin/services/r8-vehicle-enricher.tech-specs.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
+      ],
+      "kind": "test",
+      "loc": 269,
+      "owner": "@ak125/admin-team",
+      "path": "backend/src/modules/admin/services/r8-vehicle-enricher.tech-specs.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -99978,11 +100001,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "3045154dd16aeefab01f398f2540e47939a253f9cb3d5194599764dbc02e9958",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "da8542e8a68a3b11b12b5047cccaf6f3b8852a26cf00725f677158b90025e735",
+      "audit/registry/files.json": "4f0c2fe506813da884d6a5af1dafd02eedff9f4186b6f1478842f0630c747c4b",
       "audit/registry/rpc.json": "821912126b4b0b6e8c5a86b4269f43106cc40a44d2ee85a107b550ab9ea0a7b6",
       "audit/registry/runtime.json": "3f153ecc8a7a52378e26435fe7ecf04c0a4549288d6ad12283b783545ba5e99e"
     },
-    "sotFingerprint": "ace1b4bd804d"
+    "sotFingerprint": "a6bb8ee7f94d"
   },
   "runtime": [
     {
