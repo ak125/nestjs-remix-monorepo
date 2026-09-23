@@ -5430,11 +5430,12 @@
       "importedBy": [],
       "imports": [
         "@cache/cache.service",
+        "@common/exceptions",
         "backend/src/database/services/cart-data.service.ts",
         "backend/src/database/services/piece-price-data.service.ts"
       ],
       "kind": "test",
-      "loc": 133,
+      "loc": 203,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/cart-data.sellable-guard.test.ts",
       "risk": "low",
@@ -5459,6 +5460,7 @@
         "backend/src/database/services/index.ts",
         "backend/src/modules/cart/cart.module.ts",
         "backend/src/modules/cart/controllers/cart-core.controller.ts",
+        "backend/src/modules/cart/controllers/cart-items.controller.test.ts",
         "backend/src/modules/cart/controllers/cart-items.controller.ts",
         "backend/src/modules/cart/controllers/cart-promo.controller.ts",
         "backend/src/modules/cart/controllers/cart-recovery.controller.ts",
@@ -5477,7 +5479,7 @@
         "backend/src/modules/catalog/utils/image-urls.utils.ts"
       ],
       "kind": "service",
-      "loc": 1028,
+      "loc": 1037,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/cart-data.service.ts",
       "risk": "low",
@@ -11989,6 +11991,7 @@
       "id": "backend/src/modules/cart/controllers/cart-controller.utils.ts",
       "importedBy": [
         "backend/src/modules/cart/controllers/cart-core.controller.ts",
+        "backend/src/modules/cart/controllers/cart-items.controller.test.ts",
         "backend/src/modules/cart/controllers/cart-items.controller.ts",
         "backend/src/modules/cart/controllers/cart-promo.controller.ts",
         "backend/src/modules/cart/controllers/cart-shipping.controller.ts"
@@ -12037,9 +12040,36 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/cart/controllers/cart-items.controller.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@common/exceptions",
+        "backend/src/database/services/cart-data.service.ts",
+        "backend/src/modules/cart/controllers/cart-controller.utils.ts",
+        "backend/src/modules/cart/controllers/cart-items.controller.ts",
+        "backend/src/modules/cart/services/cart.service.ts",
+        "backend/src/modules/products/services/stock.service.ts"
+      ],
+      "kind": "test",
+      "loc": 228,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/cart/controllers/cart-items.controller.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/cart/controllers/cart-items.controller.ts",
       "importedBy": [
-        "backend/src/modules/cart/cart.module.ts"
+        "backend/src/modules/cart/cart.module.ts",
+        "backend/src/modules/cart/controllers/cart-items.controller.test.ts"
       ],
       "imports": [
         "@common/exceptions",
@@ -12052,7 +12082,7 @@
         "backend/src/modules/products/services/stock.service.ts"
       ],
       "kind": "controller",
-      "loc": 337,
+      "loc": 346,
       "owner": "__unassigned__",
       "path": "backend/src/modules/cart/controllers/cart-items.controller.ts",
       "risk": "low",
@@ -12343,6 +12373,7 @@
       "id": "backend/src/modules/cart/services/cart.service.ts",
       "importedBy": [
         "backend/src/modules/cart/cart.module.ts",
+        "backend/src/modules/cart/controllers/cart-items.controller.test.ts",
         "backend/src/modules/cart/controllers/cart-items.controller.ts",
         "backend/src/modules/cart/controllers/cart-promo.controller.ts"
       ],
@@ -21433,6 +21464,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/products/services/stock.service.ts",
       "importedBy": [
+        "backend/src/modules/cart/controllers/cart-items.controller.test.ts",
         "backend/src/modules/cart/controllers/cart-items.controller.ts",
         "backend/src/modules/products/controllers/products-core.controller.ts",
         "backend/src/modules/products/controllers/products-inventory.controller.ts",
@@ -39113,27 +39145,6 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
-      ],
-      "domain": "UNKNOWN",
-      "id": "frontend/app/components/AnalyticsConsent.tsx",
-      "importedBy": [],
-      "imports": [
-        "~/components/ui/button"
-      ],
-      "kind": "config",
-      "loc": 93,
-      "owner": "__unassigned__",
-      "path": "frontend/app/components/AnalyticsConsent.tsx",
-      "risk": "low",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
         "depcruise",
         "reachability"
       ],
@@ -50350,7 +50361,6 @@
         "frontend/app/hooks/useScrollBehavior.ts",
         "frontend/app/services/cart.server.ts",
         "frontend/app/styles/animations.css",
-        "~/components/AnalyticsConsent",
         "~/components/LazyBoundary",
         "~/components/home/LazyFooter",
         "~/utils/load-context",
@@ -50358,7 +50368,7 @@
         "~/utils/resilient-lazy"
       ],
       "kind": "service",
-      "loc": 611,
+      "loc": 593,
       "owner": "__unassigned__",
       "path": "frontend/app/root.tsx",
       "risk": "low",
@@ -58677,7 +58687,7 @@
         "~/utils/logger"
       ],
       "kind": "service",
-      "loc": 580,
+      "loc": 614,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/image-optimizer.ts",
       "risk": "low",
@@ -58838,10 +58848,11 @@
       "id": "frontend/app/utils/og-image.utils.ts",
       "importedBy": [],
       "imports": [
+        "~/utils/image-optimizer",
         "~/utils/og-constants"
       ],
       "kind": "service",
-      "loc": 42,
+      "loc": 44,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/og-image.utils.ts",
       "risk": "low",
@@ -60302,25 +60313,6 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
-      "id": "frontend/tests/unit/analytics-consent-ui.test.tsx",
-      "importedBy": [],
-      "imports": [],
-      "kind": "test",
-      "loc": 107,
-      "owner": "__unassigned__",
-      "path": "frontend/tests/unit/analytics-consent-ui.test.tsx",
-      "risk": "low",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise"
-      ],
-      "domain": "UNKNOWN",
       "id": "frontend/tests/unit/array-at-polyfill.test.ts",
       "importedBy": [],
       "imports": [],
@@ -60800,7 +60792,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 394,
+      "loc": 215,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/ga4-bootstrap.test.ts",
       "risk": "low",
@@ -61313,7 +61305,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 85,
+      "loc": 204,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/r1-images-meta.test.ts",
       "risk": "low",

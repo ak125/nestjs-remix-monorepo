@@ -3,7 +3,11 @@ import { SupabaseBaseService } from './supabase-base.service';
 import { TABLES } from '@repo/database-types';
 import { z } from 'zod';
 import { CacheService } from '@cache/cache.service';
-import { DatabaseException, ErrorCodes } from '@common/exceptions';
+import {
+  BusinessRuleException,
+  DomainNotFoundException,
+  ErrorCodes,
+} from '@common/exceptions';
 import { buildRackImageUrl } from '../../modules/catalog/utils/image-urls.utils';
 import { PiecePriceDataService } from './piece-price-data.service';
 
@@ -315,8 +319,8 @@ export class CartDataService extends SupabaseBaseService {
       // 1. Récupérer le produit avec TOUTES les vraies données
       const product = await this.getProductWithAllData(productId);
       if (!product) {
-        throw new DatabaseException({
-          code: ErrorCodes.CART.UPDATE_FAILED,
+        throw new DomainNotFoundException({
+          code: ErrorCodes.CART.PRODUCT_NOT_FOUND,
           message: `Produit ${productId} introuvable`,
         });
       }
@@ -331,7 +335,7 @@ export class CartDataService extends SupabaseBaseService {
         this.logger.warn(
           `Ajout refusé — pièce ${productId} sans tarif vendable (session ${sessionId})`,
         );
-        throw new DatabaseException({
+        throw new BusinessRuleException({
           code: ErrorCodes.CART.NOT_SELLABLE,
           message: `La pièce ${productId} n'a pas de prix disponible à la vente`,
         });
@@ -590,7 +594,12 @@ export class CartDataService extends SupabaseBaseService {
         .eq('piece_id', productId)
         .single();
 
-      if (pieceError || !pieceData) {
+      // Seul PGRST116 (`.single()` sans ligne) prouve l'absence de la pièce ;
+      // toute autre erreur est une panne, qui ne doit pas devenir un 404.
+      if (pieceError && pieceError.code !== 'PGRST116') {
+        throw pieceError;
+      }
+      if (!pieceData) {
         this.logger.warn(`⚠️ Pièce ${productId} introuvable`);
         return null;
       }
