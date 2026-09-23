@@ -17,8 +17,8 @@
         "backend/src/modules/admin/services/r1-image-prompt-builders",
         "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__"
       ],
-      "files_count": 146,
-      "loc_total": 41097,
+      "files_count": 147,
+      "loc_total": 41576,
       "has_barrel": true
     },
     "agentic-engine": {
