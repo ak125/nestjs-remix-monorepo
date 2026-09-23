@@ -2867,6 +2867,7 @@
       "scripts/ci/preprod-response-probe.test.mjs",
       "scripts/ci/preprod-response-suite.test.mjs",
       "scripts/ci/prod-rollback.test.mjs",
+      "scripts/ci/prod-seo-collector-env.test.mjs",
       "scripts/ci/prod-ssr-probe.test.mjs",
       "scripts/ci/verify-size-limit-initial-load.mjs",
       "scripts/ci/verify-size-limit-initial-load.test.mjs",
@@ -2909,7 +2910,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1522,
+  "runtime_files_count": 1523,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4392,6 +4393,7 @@
     "scripts/ci/preprod-response-probe.test.mjs",
     "scripts/ci/preprod-response-suite.test.mjs",
     "scripts/ci/prod-rollback.test.mjs",
+    "scripts/ci/prod-seo-collector-env.test.mjs",
     "scripts/ci/prod-ssr-probe.test.mjs",
     "scripts/ci/verify-size-limit-initial-load.mjs",
     "scripts/ci/verify-size-limit-initial-load.test.mjs",
