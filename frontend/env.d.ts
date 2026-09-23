@@ -53,14 +53,10 @@ declare global {
 
     /** Flag: GTM script already loaded (dedup guard) */
     __gtmLoaded?: boolean;
-    /** Deferred GA4 loader (requires explicit analytics acceptance) */
+    /** Deferred GTM loader (called on first interaction or idle) */
     __loadGTM?: () => void;
-    /** Explicit analytics choice, initialized on pages eligible for GA4. */
-    __analyticsConsent?: {
-      getChoice: () => "granted" | "denied" | null;
-      /** False when this browser cannot persist the choice. */
-      setChoice: (choice: "granted" | "denied") => boolean;
-    };
+    /** Grant analytics consent after user acceptance */
+    __grantAnalyticsConsent?: () => void;
   }
 
   // Google Analytics gtag (global function used in inline scripts)
