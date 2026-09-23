@@ -57,6 +57,7 @@ import {
   CreateOrderData,
   OrderFilters,
   computeOrderFingerprint,
+  getCustomerCancelRefusal,
 } from '../services/orders.service';
 import type { OrderStatusCode } from '@repo/domain-commerce';
 import {
@@ -319,7 +320,10 @@ export class OrdersController {
 
       return {
         success: true,
-        data: order,
+        data: {
+          ...order,
+          customer_can_cancel: getCustomerCancelRefusal(order) === null,
+        },
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
@@ -683,20 +687,54 @@ export class OrdersController {
   @ApiBearerAuth()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Annuler une commande' })
-  @ApiParam({ name: 'id', description: 'ID de la commande' })
+  @ApiParam({ name: 'id', description: 'ID de la commande (string)' })
   @ApiResponse({ status: 204, description: 'Commande annulée' })
   @ApiResponse({ status: 404, description: 'Commande non trouvée' })
+  @ApiResponse({
+    status: 409,
+    description: 'Commande payée ou plus annulable',
+  })
   async cancelOrder(
-    @Param('id', ParseIntPipe) orderId: number,
+    @Param('id') orderId: string,
     @Req() req: AuthenticatedRequest,
   ) {
     try {
       const userId = getUserId(req);
       this.logger.log(`Cancelling order ${orderId} by user ${userId}`);
 
-      // TODO: Vérifier que l'utilisateur possède cette commande
+      if (!userId) {
+        this.logger.warn(`Unauthenticated cancel attempt for order ${orderId}`);
+        throw new NotFoundException('Commande non trouvée');
+      }
 
-      await this.ordersService.cancelOrder(String(orderId));
+      const order = await this.ordersService.getOrderById(orderId);
+
+      // Ownership check (même règle que GET :id) — une commande sans client
+      // rattaché n'appartient à personne.
+      if (!order.ord_cst_id || String(order.ord_cst_id) !== String(userId)) {
+        this.logger.warn(
+          `Cancel denied: user ${userId} tried to cancel order ${orderId} owned by ${order.ord_cst_id}`,
+        );
+        throw new NotFoundException('Commande non trouvée');
+      }
+
+      const refusal = getCustomerCancelRefusal(order);
+      if (refusal) {
+        this.logger.warn(
+          `Cancel refused for order ${orderId} (status=${order.ord_ords_id}, is_pay=${order.ord_is_pay})`,
+        );
+        throw new ConflictException(refusal);
+      }
+
+      // p_user_id reste null : les identifiants client invités ne sont pas
+      // numériques (bigint côté RPC). L'acteur est le propriétaire vérifié
+      // ci-dessus, tracé dans le motif.
+      await this.ordersService.cancelOrder(
+        orderId,
+        'Annulée par le client depuis son espace',
+        undefined,
+        crypto.randomUUID(),
+      );
     } catch (error) {
       this.logger.error(`Error cancelling order ${orderId}:`, error);
       throw error;
