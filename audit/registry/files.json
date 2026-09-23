@@ -18793,7 +18793,7 @@
         "backend/src/services/mail.service.ts"
       ],
       "kind": "controller",
-      "loc": 365,
+      "loc": 341,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/controllers/order-actions.controller.ts",
       "risk": "low",
@@ -18848,7 +18848,7 @@
         "crypto"
       ],
       "kind": "controller",
-      "loc": 1243,
+      "loc": 1241,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/controllers/orders.controller.ts",
       "risk": "low",
@@ -18966,6 +18966,7 @@
       "id": "backend/src/modules/orders/events/order.events.ts",
       "importedBy": [
         "backend/src/modules/orders/listeners/order-audit.listener.ts",
+        "backend/src/modules/orders/listeners/order-email.listener.test.ts",
         "backend/src/modules/orders/listeners/order-email.listener.ts",
         "backend/src/modules/orders/services/order-actions.service.ts",
         "backend/src/modules/orders/services/orders.service.ts",
@@ -19015,8 +19016,32 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/orders/listeners/order-email.listener.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@repo/database-types",
+        "backend/src/modules/orders/events/order.events.ts",
+        "backend/src/modules/orders/listeners/order-email.listener.ts"
+      ],
+      "kind": "test",
+      "loc": 173,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/orders/listeners/order-email.listener.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/orders/listeners/order-email.listener.ts",
       "importedBy": [
+        "backend/src/modules/orders/listeners/order-email.listener.test.ts",
         "backend/src/modules/orders/orders.module.ts"
       ],
       "imports": [
@@ -19026,7 +19051,7 @@
         "backend/src/services/mail.service.ts"
       ],
       "kind": "service",
-      "loc": 121,
+      "loc": 137,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/listeners/order-email.listener.ts",
       "risk": "low",
@@ -19246,7 +19271,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 912,
+      "loc": 928,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/services/orders.service.ts",
       "risk": "low",
@@ -19293,7 +19318,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 57,
+      "loc": 55,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/types/order.types.ts",
       "risk": "low",
@@ -37649,6 +37674,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/tests/unit/order-actions.controller.emails.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 69,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/order-actions.controller.emails.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/tests/unit/order-calculation.service.test.ts",
       "importedBy": [],
       "imports": [],
@@ -37691,9 +37735,28 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 216,
+      "loc": 220,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/orders.controller.customer-cancel.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/orders.service.cancel-event.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 158,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/orders.service.cancel-event.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",

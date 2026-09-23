@@ -501,8 +501,8 @@
         "backend/src/modules/orders/services",
         "backend/src/modules/orders/types"
       ],
-      "files_count": 21,
-      "loc_total": 6201,
+      "files_count": 22,
+      "loc_total": 6378,
       "has_barrel": true
     },
     "payments": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 243,
-      "loc_total": 43919,
+      "files_count": 245,
+      "loc_total": 44150,
       "has_barrel": true
     },
     "upload": {
