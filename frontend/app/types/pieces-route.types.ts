@@ -29,11 +29,10 @@ export interface VehicleData {
   modeleAlias?: string; // Alias du modèle pour l'URL
   typeAlias?: string; // Alias du type/motorisation pour l'URL breadcrumb
   modelePic?: string; // Photo du modèle
-  // 🔧 Codes moteur et types mines (depuis RM V2 vehicleInfo)
+  // 🔧 Codes moteur et numéros CNIT (depuis RM V2 vehicleInfo). Pas de
+  // `mineCodes*` : le RPC n'y met que le code pays `tnc_code` (« D » / « F »).
   motorCodes?: string[];
   motorCodesFormatted?: string;
-  mineCodes?: string[];
-  mineCodesFormatted?: string;
   cnitCodes?: string[];
   cnitCodesFormatted?: string;
   // 📊 Specs techniques supplementaires

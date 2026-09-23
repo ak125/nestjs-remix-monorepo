@@ -26,7 +26,6 @@ interface BuildVehicleParams {
         modeleAlias?: string;
         typeAlias?: string;
         motorCodesFormatted?: string;
-        mineCodesFormatted?: string;
         cnitCodesFormatted?: string;
         typePowerPs?: number;
         typeEngine?: string;
@@ -75,9 +74,9 @@ export function buildVehicleData(params: BuildVehicleParams): VehicleData {
     modeleAlias: vehicleInfo?.modeleAlias || urlParams.modeleAlias,
     typeAlias: vehicleInfo?.typeAlias || urlParams.typeAlias,
     modelePic,
-    // 🔧 V7: Codes moteur et types mines (depuis RM V2 vehicleInfo)
+    // 🔧 V7: Codes moteur et CNIT (depuis RM V2 vehicleInfo) — pas de
+    // `mineCodesFormatted` : code pays `tnc_code` (« D » / « F »), pas un numéro.
     motorCodesFormatted: vehicleInfo?.motorCodesFormatted,
-    mineCodesFormatted: vehicleInfo?.mineCodesFormatted,
     cnitCodesFormatted: vehicleInfo?.cnitCodesFormatted,
     // 📊 Specs techniques supplémentaires
     typePowerPs: vehicleInfo?.typePowerPs,

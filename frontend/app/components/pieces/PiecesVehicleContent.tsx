@@ -486,7 +486,6 @@ export function PiecesVehicleContent() {
                     compatibility={data.compatibilityInfo}
                     vehicleName={`${data.vehicle.marque} ${data.vehicle.modele}`}
                     motorCodesFormatted={data.vehicle.motorCodesFormatted}
-                    mineCodesFormatted={data.vehicle.mineCodesFormatted}
                   />
                 </div>
 
