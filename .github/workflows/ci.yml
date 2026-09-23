@@ -216,6 +216,9 @@ jobs:
       - name: Test client-IP deployment probe
         run: node --test scripts/ci/prod-client-ip-probe.test.mjs
 
+      - name: Test E2E rate-budget admission
+        run: node --test scripts/ci/preprod-e2e-rate-budget.test.mjs scripts/ci/preprod-e2e-rate-budget.storage.test.mjs
+
       - name: 🧪 Run backend tests
         run: cd backend && npx jest --ci --verbose --maxWorkers=1 --forceExit --coverage --coverageReporters=text-summary --coverageReporters=json-summary
         env:
@@ -591,6 +594,43 @@ jobs:
       - name: 🔐 Revoked-secrets ratchet — état de HEAD (bloquant)
         run: npm run audit:revoked-secrets-ratchet
 
+      # ── Règles de FORME sur les lignes AJOUTÉES (bloquant) ──────────────────
+      #
+      # Troisième axe, encore distinct des deux précédents : gitleaks détecte par
+      # motif et par entropie, ce qui laisse passer les formes courtes ou peu
+      # entropiques ; le ratchet d'état ne connaît que des empreintes déjà
+      # inscrites en baseline, donc seulement des valeurs DÉJÀ connues.
+      #
+      # Ces règles ne connaissent AUCUNE valeur : elles matchent une FORME. Elles
+      # attrapent donc une clé qui n'existe pas encore — après une rotation, la
+      # nouvelle valeur collée dans un fichier suivi est signalée dès la première
+      # PR, sans mise à jour de baseline.
+      #
+      # Évaluées sur les lignes AJOUTÉES, jamais sur l'état de HEAD : les
+      # littéraux que l'arbre porte déjà ne sont pas dans l'entrée, donc aucun
+      # inventaire d'exceptions n'est nécessaire — et sur un dépôt public, un tel
+      # inventaire serait lui-même une carte vers les secrets.
+      #
+      # Le hook .husky/pre-commit lance le même contrôle en `--staged`. Il est le
+      # dernier point d'arrêt utile : ici la CI bloque le MERGE, mais le PUSH a
+      # déjà publié la valeur, et rien ne la dé-publie.
+      - name: 🔐 Secrets — règles de forme sur les lignes ajoutées (bloquant)
+        # Les SHA transitent par l'environnement, jamais par interpolation dans
+        # le script : `${{ }}` dans un `run:` est le motif d'injection Actions.
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          # Un premier push de branche donne un base tout-à-zéro, et un
+          # force-push peut laisser un base injoignable : on retombe alors sur le
+          # parent du head plutôt que d'échouer sur un artefact de plomberie.
+          if ! git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
+            BASE_SHA="${HEAD_SHA}^"
+          fi
+          npx tsx scripts/audit/check-revoked-secrets-ratchet.ts \
+            --diff "${BASE_SHA}" "${HEAD_SHA}"
+
   migration-safety:
     # AST-based Postgres SQL linter (squawk, libpg_query) — replaces the
     # legacy grep-based gate that produced false positives on prose comments
@@ -661,6 +701,26 @@ jobs:
       - name: Reconcile @non_transactional marker with statements
         if: steps.changed-sql.outputs.files != ''
         run: python3 scripts/ci/apply-supabase-migration.py --lint-markers ${{ steps.changed-sql.outputs.files }}
+
+      # Surface DEFINER/anon : ratchet sur les privilèges d'exécution, pas sur la
+      # syntaxe — c'est pourquoi squawk ne le porte pas. Supabase octroie
+      # `EXECUTE` à `anon` sur CHAQUE nouvelle fonction de `public` via
+      # `ALTER DEFAULT PRIVILEGES` : une fonction SECURITY DEFINER créée sans
+      # REVOKE explicite est joignable par `/rest/v1/rpc/<nom>` avec la clé
+      # publishable, hors de tout guard NestJS.
+      #
+      # Câblé ICI, dans un contexte REQUIS, et non dans un workflow dédié : un
+      # workflow non requis constaterait sans bloquer.
+      #
+      # Volontairement SANS `if: steps.changed-sql.outputs.files != ''` — la
+      # garde juge aussi l'allowlist et la présence de la migration de fermeture.
+      # La conditionner aux `.sql` modifiés laisserait passer, non jugée, une
+      # exception ajoutée à l'allowlist sans une seule ligne de SQL touchée.
+      - name: Tests de la garde DEFINER/anon
+        run: bash scripts/lint/check-definer-anon-surface.test.sh
+
+      - name: Surface DEFINER/anon (ratchet privilèges)
+        run: bash scripts/lint/check-definer-anon-surface.sh
 
   build:
     name: 🐳 build
@@ -909,9 +969,6 @@ jobs:
 
           echo "✅ PREPROD deployed successfully on port 3200"
           echo "🔗 Test URL: http://$(hostname -I | awk '{print $1}'):3200"
-
-          # Nettoyer les images
-          docker image prune -f
 
       - name: 🔍 API Smoke Tests
         run: |
@@ -1234,6 +1291,7 @@ jobs:
         env:
           CI: true
           PLAYWRIGHT_BASE_URL: http://localhost:3200
+          E2E_RATE_BUDGET: "true"
 
       # Diagnostic root-cause sur échec E2E. Le runner self-hosted EST l'hôte
       # PREPROD (49.12.233.2) : on capture l'état exact du container + la mémoire

@@ -24,7 +24,7 @@ else
     docker ps -a | grep redis | awk '{print $1}' | xargs -r docker rm -f 2>/dev/null || true
     
     # DÃ©marrer Redis
-    docker run -d --name redis-dev --rm -p 6379:6379 redis:7-alpine
+    docker run -d --name redis-dev --rm -p 6379:6379 redis:7.4.11-alpine@sha256:ff02b58f971e7d7d156a1267e283fcbbeee91773b6aa36c49dac28ecfe28eadf
     
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}âœ… Redis dÃ©marrÃ© avec succÃ¨s${NC}"

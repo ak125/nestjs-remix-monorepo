@@ -7,7 +7,7 @@
  * Temps d'exécution: ~30s
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 // ============================================
 // URLS CRITIQUES À VALIDER

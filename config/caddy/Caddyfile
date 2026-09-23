@@ -16,7 +16,8 @@
     #    Utiliser {client_ip} (résolu via trusted_proxies ci-dessous = vraie
     #    IP client ; requiert Caddy ≥ 2.7.3 — image épinglée caddy:2.11-alpine (= v2.11.4), OK).
     #    Bénéficie aussi aux consommateurs de X-Real-IP / X-Forwarded-For (logs,
-    #    error-reporting). (BotGuard lit déjà Cf-Connecting-Ip → inchangé.)
+    #    error-reporting). Cf-Connecting-Ip est aussi normalisé avant NestJS :
+    #    un accès direct à Caddy ne doit jamais transmettre une valeur forgée.
     #    Lire uniquement l'en-tête client fourni par Cloudflare : X-Forwarded-For
     #    peut contenir une valeur fournie par le visiteur avant le passage chez CF.
     servers {
@@ -69,21 +70,27 @@ automecanik.com, www.automecanik.com {
         header Vary "Accept"
         header X-Robots-Tag "noindex, nofollow"
 
-        # Strip /imgproxy prefix avant envoi à imgproxy
-        uri strip_prefix /imgproxy
+        # Conserver les URL publiques ; imgproxy 4 exige le segment signature.
+        # Ordre explicite : strip, adaptation des URL legacy, proxy.
+        route {
+            uri strip_prefix /imgproxy
+            @imgproxy_legacy_options path_regexp ^/[a-zA-Z0-9_]+:
+            rewrite @imgproxy_legacy_options /insecure{uri}
 
-        reverse_proxy imgproxy:8080 {
-            header_up Host imgproxy
-            header_down -Server
+            reverse_proxy imgproxy:8080 {
+                header_up Host imgproxy
+                header_down -Server
+                header_down -Cache-Control
 
-            # Anti cache-poisoning (INC-2026-015 / ADR-078) — upstream 4xx
-            # (source absente, fallback no.png servi par imgproxy) → cache
-            # court 5min, pas le 1 an immutable du parent (qui piégerait
-            # toute future ingestion sous le même nom).
-            @upstream_4xx status 4xx
-            handle_response @upstream_4xx {
-                header Cache-Control "public, max-age=300, must-revalidate"
-                copy_response
+                # Anti cache-poisoning (INC-2026-015 / ADR-078) — upstream 4xx
+                # (source absente, fallback no.png servi par imgproxy) → cache
+                # court 5min, pas le 1 an immutable du parent (qui piégerait
+                # toute future ingestion sous le même nom).
+                @upstream_4xx status 4xx
+                handle_response @upstream_4xx {
+                    header >Cache-Control "public, max-age=300, must-revalidate"
+                    copy_response
+                }
             }
         }
     }
@@ -138,7 +145,7 @@ automecanik.com, www.automecanik.com {
         header Vary "Accept"
         # No @webp modifier — imgproxy negotiates AVIF > WebP via Accept header
         # (IMGPROXY_AUTO_AVIF + IMGPROXY_AUTO_WEBP).
-        rewrite * /rs:fit:800/q:85/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/gammes-produits/r1/{re.gamme_img.1}
+        rewrite * /insecure/rs:fit:800/q:85/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/gammes-produits/r1/{re.gamme_img.1}
         reverse_proxy imgproxy:8080 {
             header_up Host imgproxy
             header_down -Server
@@ -198,6 +205,7 @@ automecanik.com, www.automecanik.com {
         header Cache-Control "public, max-age=31536000, immutable"
         reverse_proxy monorepo_prod:3000 {
             header_up Host {host}
+            header_up Cf-Connecting-Ip {client_ip}
             header_up X-Real-IP {client_ip}
             header_up X-Forwarded-For {client_ip}
             header_up X-Forwarded-Proto {scheme}
@@ -210,6 +218,7 @@ automecanik.com, www.automecanik.com {
         header Cache-Control "public, max-age=86400"
         reverse_proxy monorepo_prod:3000 {
             header_up Host {host}
+            header_up Cf-Connecting-Ip {client_ip}
             header_up X-Real-IP {client_ip}
             header_up X-Forwarded-For {client_ip}
             header_up X-Forwarded-Proto {scheme}
@@ -219,7 +228,8 @@ automecanik.com, www.automecanik.com {
     
     # ===== PROTECTION ORIGINE =====
     # Geo-blocking et bot protection sont geres par :
-    #   1. Firewall OS (ufw) — seules les IPs Cloudflare atteignent le port 443
+    #   1. Ne pas supposer que UFW filtre les ports publiés par Docker.
+    #      Caddy normalise les en-têtes IP même pour un pair direct non fiable.
     #   2. Cloudflare WAF — geo-block, rate limiting, bot management
     #   3. NestJS BotGuard — scoring comportemental (Googlebot whiteliste)
     # Caddy ne filtre PAS les acces — son role est reverse proxy + cache + headers
@@ -264,6 +274,7 @@ automecanik.com, www.automecanik.com {
 
         reverse_proxy monorepo_prod:3000 {
             header_up Host {host}
+            header_up Cf-Connecting-Ip {client_ip}
             header_up X-Real-IP {client_ip}
             header_up X-Forwarded-For {client_ip}
             header_up X-Forwarded-Proto {scheme}
@@ -298,6 +309,7 @@ automecanik.com, www.automecanik.com {
         # Laisser le backend définir Cache-Control (public, max-age=900)
         reverse_proxy monorepo_prod:3000 {
             header_up Host {host}
+            header_up Cf-Connecting-Ip {client_ip}
             header_up X-Real-IP {client_ip}
             header_up X-Forwarded-For {client_ip}
             header_up X-Forwarded-Proto {scheme}
@@ -321,6 +333,7 @@ automecanik.com, www.automecanik.com {
 
         reverse_proxy monorepo_prod:3000 {
             header_up Host {host}
+            header_up Cf-Connecting-Ip {client_ip}
             header_up X-Real-IP {client_ip}
             header_up X-Forwarded-For {client_ip}
             header_up X-Forwarded-Proto {scheme}
@@ -331,6 +344,7 @@ automecanik.com, www.automecanik.com {
     # ===== FALLBACK =====
     reverse_proxy monorepo_prod:3000 {
         header_up Host {host}
+        header_up Cf-Connecting-Ip {client_ip}
         header_up X-Real-IP {client_ip}
         header_up X-Forwarded-For {client_ip}
 

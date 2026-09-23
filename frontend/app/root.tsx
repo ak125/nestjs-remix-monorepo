@@ -21,6 +21,7 @@ import {
   useNavigation,
 } from "react-router";
 
+import { AnalyticsConsent } from "~/components/AnalyticsConsent";
 import { LazyFooter } from "~/components/home/LazyFooter";
 import { LazyBoundary } from "~/components/LazyBoundary";
 import { cspNonceContext } from "~/utils/load-context";
@@ -223,36 +224,32 @@ function AppShell({ children }: { children: React.ReactNode }) {
     if (navigation.state !== "idle") return;
 
     const currentUrl = location.pathname + location.search;
-    // Dedup : ne pas re-fire si même URL (évite inflation /login et redirects)
-    if (currentUrl === prevUrlRef.current) return;
-    prevUrlRef.current = currentUrl;
-
-    const trackPageView = () => {
-      // Exclure les pages admin du tracking GA4
-      if (location.pathname.startsWith("/admin")) return;
-
-      if (typeof window.gtag === "function") {
-        window.gtag("event", "page_view", {
-          page_path: currentUrl,
-          page_title: document.title,
-          page_location: window.location.href,
-        });
-      }
+    const pageView = {
+      page_path: currentUrl,
+      page_title: document.title,
+      page_location: new URL(currentUrl, window.location.origin).href,
+      page_referrer: prevUrlRef.current
+        ? new URL(prevUrlRef.current, window.location.origin).href
+        : document.referrer,
     };
-
-    // requestIdleCallback pour ne pas bloquer l'INP
-    if ("requestIdleCallback" in window) {
-      (
-        window as Window & {
-          requestIdleCallback: (
-            cb: () => void,
-            opts?: { timeout: number },
-          ) => number;
-        }
-      ).requestIdleCallback(trackPageView, { timeout: 1000 });
-    } else {
-      setTimeout(trackPageView, 0);
-    }
+    const trackPageView = () => {
+      if (window.__analyticsConsent?.getChoice() !== "granted") {
+        prevUrlRef.current = "";
+        return;
+      }
+      if (location.pathname.startsWith("/admin")) return;
+      if (currentUrl === prevUrlRef.current || !window.gtag) return;
+      // Only the current committed view; never replay pre-consent navigation.
+      window.gtag("event", "page_view", pageView);
+      prevUrlRef.current = currentUrl;
+    };
+    trackPageView();
+    window.addEventListener("automecanik:analytics-consent", trackPageView);
+    return () =>
+      window.removeEventListener(
+        "automecanik:analytics-consent",
+        trackPageView,
+      );
   }, [location.pathname, location.search, navigation.state]);
 
   // 📊 Phase 9: DataLayer GTM - Push pageRole attributes
@@ -421,7 +418,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <noscript>
           <link rel="stylesheet" href={animationsStylesheet} />
         </noscript>
-        {/* Google Analytics 4 - Optimisé avec requestIdleCallback + Consent Mode v2 (RGPD) */}
+        {/* Google Analytics 4 - chargement apres acceptation explicite */}
         {/* Double garde anti-pollution GA4 :
             1. !isBot         → exclut les crawlers (UA serveur)
             2. gaMeasurementId → l'ID n'est provisionné qu'en PROD (docker-compose.prod.yml),
@@ -432,72 +429,100 @@ export function Layout({ children }: { children: React.ReactNode }) {
             suppressHydrationWarning
             dangerouslySetInnerHTML={{
               __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-
-              // Consent Mode v2 - Default denied (RGPD compliant)
-              gtag('consent', 'default', {
-                'analytics_storage': 'denied',
-                'ad_storage': 'denied',
-                'ad_user_data': 'denied',
-                'ad_personalization': 'denied',
-                'wait_for_update': 500
-              });
-
-              // Fonction pour accorder le consentement analytics
-              window.__grantAnalyticsConsent = function() {
-                gtag('consent', 'update', { 'analytics_storage': 'granted' });
-              };
-
-              // Fonction pour charger GTM une seule fois (optimisée avec requestIdleCallback)
-              window.__loadGTM = function() {
-                if (window.__gtmLoaded) return;
-                window.__gtmLoaded = true;
-
-                var loadScript = function() {
+              (function () {
+                window.dataLayer = window.dataLayer || [];
+                var key = 'automecanik.analytics-consent.v1';
+                // Same retention for acceptance and refusal: 180 days.
+                var maxAge = 180 * 24 * 60 * 60 * 1000;
+                var measurementId = '${gaMeasurementId}';
+                var choice = null;
+                var configured = false;
+                window['ga-disable-' + measurementId] = true;
+                window.gtag = function () {
+                  if (arguments[0] === 'event' && choice !== 'granted') return;
+                  window.dataLayer.push(arguments);
+                };
+                window.gtag('consent', 'default', {
+                  analytics_storage: 'denied', ad_storage: 'denied',
+                  ad_user_data: 'denied', ad_personalization: 'denied'
+                });
+                function readChoice() {
+                  try {
+                    var saved = JSON.parse(window.localStorage.getItem(key));
+                    if (!saved || (saved.choice !== 'granted' && saved.choice !== 'denied') ||
+                        typeof saved.updatedAt !== 'number' || !Number.isFinite(saved.updatedAt) ||
+                        Date.now() < saved.updatedAt || Date.now() - saved.updatedAt >= maxAge) return null;
+                    return saved.choice;
+                  } catch (_) { return null; }
+                }
+                function clearAnalyticsCookies() {
+                  // GA's default path is /. Preserve cart/auth/preference cookies.
+                  var domains = window.location.hostname.split('.');
+                  document.cookie.split(';').forEach(function (entry) {
+                    var name = entry.trim().split('=')[0];
+                    if (name !== '_ga' && name.indexOf('_ga_') !== 0) return;
+                    var expired = name + '=; Max-Age=0; path=/; SameSite=Lax';
+                    document.cookie = expired;
+                    for (var i = 0; i < domains.length - 1; i++) {
+                      document.cookie = expired + '; domain=' + domains.slice(i).join('.');
+                    }
+                  });
+                }
+                window.__loadGTM = function () {
+                  if (choice !== 'granted' || window.__gtmLoaded) return;
                   var script = document.createElement('script');
-                  script.src = 'https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}';
+                  script.src = 'https://www.googletagmanager.com/gtag/js?id=' + measurementId;
                   script.async = true;
-                  script.onload = function() {
-                    gtag('js', new Date());
-                    gtag('config', '${gaMeasurementId}', {
-                      page_title: document.title,
-                      page_location: window.location.href,
-                      send_page_view: false
-                    });
-                    // Accorder le consentement analytics après chargement
-                    window.__grantAnalyticsConsent();
-                  };
+                  window.__gtmLoaded = true;
+                  // Loading a script never grants consent.
                   document.head.appendChild(script);
                 };
-
-                // Double requestIdleCallback pour minimiser l'impact sur le main thread
-                if ('requestIdleCallback' in window) {
-                  requestIdleCallback(loadScript, { timeout: 2000 });
-                } else {
-                  setTimeout(loadScript, 0);
+                function applyChoice(next) {
+                  var changed = next !== choice;
+                  choice = next;
+                  window['ga-disable-' + measurementId] = choice !== 'granted';
+                  if (choice === 'granted') {
+                    window.gtag('consent', 'update', { analytics_storage: 'granted' });
+                    if (!configured) {
+                      window.gtag('js', new Date());
+                      window.gtag('config', measurementId, { send_page_view: false });
+                      configured = true;
+                    }
+                    if ('requestIdleCallback' in window) {
+                      window.requestIdleCallback(window.__loadGTM, { timeout: 2000 });
+                    } else { window.setTimeout(window.__loadGTM, 0); }
+                  } else {
+                    // Remove events queued before withdrawal, including during tag download.
+                    for (var i = window.dataLayer.length - 1; i >= 0; i -= 1) {
+                      if (window.dataLayer[i][0] === 'event') window.dataLayer.splice(i, 1);
+                    }
+                    window.gtag('consent', 'update', { analytics_storage: 'denied' });
+                    clearAnalyticsCookies();
+                  }
+                  if (changed) window.dispatchEvent(new Event('automecanik:analytics-consent'));
                 }
-              };
-
-              // Charger sur première interaction (scroll, click, keypress, touch, mousemove)
-              var events = ['scroll', 'click', 'keypress', 'touchstart', 'mousemove'];
-              var loadOnInteraction = function() {
-                window.__loadGTM();
-                events.forEach(function(e) {
-                  window.removeEventListener(e, loadOnInteraction, { passive: true, capture: true });
+                window.__analyticsConsent = {
+                  getChoice: function () { return choice; },
+                  setChoice: function (next) {
+                    if (next !== 'granted' && next !== 'denied') return false;
+                    var persisted = true;
+                    try { window.localStorage.setItem(key, JSON.stringify({ choice: next, updatedAt: Date.now() })); }
+                    catch (_) {
+                      persisted = false;
+                      // Do not retain an earlier acceptance if replacing it fails.
+                      try { window.localStorage.removeItem(key); } catch (_) { /* Browser storage unavailable; UI reports failure. */ }
+                    }
+                    applyChoice(next);
+                    return persisted;
+                  }
+                };
+                applyChoice(readChoice());
+                window.addEventListener('storage', function (event) {
+                  if (event.key === key || event.key === null) applyChoice(readChoice());
                 });
-              };
-              events.forEach(function(e) {
-                window.addEventListener(e, loadOnInteraction, { passive: true, capture: true });
-              });
-
-              // Fallback: charger quand le browser est idle (plus intelligent que setTimeout fixe)
-              if ('requestIdleCallback' in window) {
-                requestIdleCallback(window.__loadGTM, { timeout: 5000 });
-              } else {
-                // Safari/anciens navigateurs: timeout de 3s
-                setTimeout(window.__loadGTM, 3000);
-              }
+                // Recheck expiry when a long-lived tab is revisited.
+                window.addEventListener('focus', function () { applyChoice(readChoice()); });
+              })();
             `,
             }}
           />
@@ -505,7 +530,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body className="h-full bg-gray-100" suppressHydrationWarning>
         <NotificationProvider>
-          <AppShell>{children}</AppShell>
+          <AppShell>
+            {children}
+            <AnalyticsConsent />
+          </AppShell>
         </NotificationProvider>
         {/* 🎉 Sonner Toaster - Lazy-loaded (non-critique pour first paint) */}
         <Suspense fallback={null}>

@@ -20,7 +20,7 @@ services:
       - fafa_network
 
   redis:
-    image: redis:7-alpine
+    image: redis:7.4.11-alpine@sha256:ff02b58f971e7d7d156a1267e283fcbbeee91773b6aa36c49dac28ecfe28eadf
     container_name: fafa_redis
     # SECURITY: Never expose Redis publicly - internal network only
     # BSI CB-Report#20260422-10008190 — ports retirés volontairement

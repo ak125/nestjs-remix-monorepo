@@ -220,7 +220,11 @@ const CatalogueSection = memo(function CatalogueSection({
                         loading="lazy"
                         decoding="async"
                         onError={(e) => {
-                          e.currentTarget.src = "/images/default-piece.jpg";
+                          const fallback = "/images/default-piece.svg";
+                          // A failed fallback must not issue another request.
+                          if (e.currentTarget.getAttribute("src") !== fallback) {
+                            e.currentTarget.src = fallback;
+                          }
                         }}
                       />
                     </div>

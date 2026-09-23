@@ -364,6 +364,17 @@ function decoratorName(node, ts) {
   return null;
 }
 
+// Prédicat de chemin de test, PARTAGÉ (repris verbatim de la PR #1227, branche
+// `chore/pr-e-registry-canonical-closure`). Un fichier de spec peut déclarer un
+// `@Module()` local — par exemple un `ProbeModule` pour `Test.createTestingModule` —
+// et c'est un DOUBLE de test, jamais un point d'entrée runtime. Les fichiers de test
+// restent dans l'inventaire de FICHIERS (`classifyKind` → 'test') mais doivent être
+// exclus de la collecte de métadonnées runtime NestJS/Remix, sinon leurs décorateurs
+// sont projetés comme un module LIVE. Une seule définition gouverne les deux usages.
+function isTestPath(f) {
+  return /\.spec\.ts$|\.e2e-spec\.ts$|\.test\.tsx?$|\/__tests__\//.test(f);
+}
+
 /**
  * Parse every tracked .ts/.tsx file once:
  *  - classByName: className → file (only classes carrying a NestJS class decorator)
@@ -401,6 +412,10 @@ function scanTypeScript(files, ts) {
 
   for (const file of files) {
     if (!TS_EXT.has(path.extname(file))) continue;
+    // Les fichiers de test restent dans l'inventaire de fichiers mais ne contribuent
+    // AUCUNE métadonnée runtime (@Module/@Controller/@Injectable Nest, @Processor,
+    // loaders Remix). Le `@Module()` d'un test est un double, pas un point d'entrée.
+    if (isTestPath(file)) continue;
     let src;
     try { src = fs.readFileSync(path.join(REPO_ROOT, file), 'utf8'); } catch { continue; }
     const sf = ts.createSourceFile(file, src, ts.ScriptTarget.Latest, /*setParentNodes*/ true, file.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
@@ -550,7 +565,7 @@ async function main() {
 
   // ---- file kind classification ------------------------------------------
   function classifyKind(f) {
-    if (/\.spec\.ts$|\.e2e-spec\.ts$|\.test\.tsx?$|\/__tests__\//.test(f)) return 'test';
+    if (isTestPath(f)) return 'test';
     if (f.endsWith('.module.ts')) return 'module';
     if (f.endsWith('.controller.ts')) return 'controller';
     if (f.endsWith('.service.ts')) return 'service';
@@ -761,4 +776,4 @@ if (require.main === module) {
   main().catch((e) => die(e && e.stack ? e.stack : String(e)));
 }
 
-module.exports = { inventoryInputFingerprint };
+module.exports = { inventoryInputFingerprint, isTestPath };

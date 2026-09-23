@@ -28,6 +28,12 @@ const SORTED_ARRAYS: Array<[string, string, (j: any) => any[], (x: any) => strin
   ["module-boundaries.json", "deep_access_violations", j => j.deep_access_violations, x => `${x.from} ${x.to}`],
   ["module-boundaries.json", "cross_domain_edges", j => j.cross_domain_edges, x => `${x.from} ${x.to}`],
   ["db-usage-map.json", "trigger_functions", j => j.trigger_functions, x => x.name],
+  // Ajoutés par la résolution des constantes. Ces tableaux entrent dans un
+  // artefact comparé OCTET par `git diff --exit-code` en CI : sans entrée ici,
+  // un tri dépendant de la locale y passerait sans être vu.
+  ["db-usage-map.json", "dynamic_from_callsites", j => j.dynamic_from_callsites, x => `${x.file}:${String(x.line).padStart(6, "0")}`],
+  ["db-usage-map.json", "dynamic_rpc_callsites", j => j.dynamic_rpc_callsites, x => `${x.file}:${String(x.line).padStart(6, "0")}`],
+  ["db-usage-map.json", "dropped_call_sites", j => j.dropped_call_sites, x => `${x.file}:${String(x.line).padStart(6, "0")}`],
 ];
 
 for (const [file, label, pick, key] of SORTED_ARRAYS) {

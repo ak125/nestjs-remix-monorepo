@@ -403,6 +403,22 @@ export async function piecesVehicleLoader({
     });
   }
 
+  // Unclassified catalog groups can have no heading. Preserve their products
+  // and report the missing metadata before the UI omits the absent heading.
+  const missingGroupLabelCount = (rmV2Response.grouped_pieces || []).filter(
+    (group) =>
+      !group.title_h2?.trim() &&
+      !group.filtre_gamme?.trim() &&
+      !group.filtre_side?.trim(),
+  ).length;
+  if (missingGroupLabelCount > 0) {
+    logger.warn("[R2_GROUP_LABEL_MISSING]", {
+      gammeId,
+      typeId: vehicleIds.typeId,
+      missingGroupLabelCount,
+    });
+  }
+
   // Extract mapped data
   const { vehicle, gamme, pieces: piecesData } = loaderData;
 

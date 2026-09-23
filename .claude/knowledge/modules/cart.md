@@ -2,16 +2,16 @@
 module: cart
 sources:
 - backend/src/modules/cart
-last_scan: '2026-07-02'
+last_scan: '2026-09-23'
 primary_files:
 - backend/src/modules/cart/cart.module.ts
 - backend/src/modules/cart/controllers/cart-analytics.controller.ts
 - backend/src/modules/cart/controllers/cart-controller.utils.ts
 - backend/src/modules/cart/controllers/cart-core.controller.ts
+- backend/src/modules/cart/controllers/cart-items.controller.test.ts
 - backend/src/modules/cart/controllers/cart-items.controller.ts
 - backend/src/modules/cart/controllers/cart-promo.controller.ts
 - backend/src/modules/cart/controllers/cart-recovery.controller.ts
-- backend/src/modules/cart/controllers/cart-shipping.controller.ts
 depends_on:
 - DatabaseModule
 - ProductsModule
@@ -52,10 +52,10 @@ _Section à rédiger._
 - [backend/src/modules/cart/controllers/cart-analytics.controller.ts](../../../backend/src/modules/cart/controllers/cart-analytics.controller.ts)
 - [backend/src/modules/cart/controllers/cart-controller.utils.ts](../../../backend/src/modules/cart/controllers/cart-controller.utils.ts)
 - [backend/src/modules/cart/controllers/cart-core.controller.ts](../../../backend/src/modules/cart/controllers/cart-core.controller.ts)
+- [backend/src/modules/cart/controllers/cart-items.controller.test.ts](../../../backend/src/modules/cart/controllers/cart-items.controller.test.ts)
 - [backend/src/modules/cart/controllers/cart-items.controller.ts](../../../backend/src/modules/cart/controllers/cart-items.controller.ts)
 - [backend/src/modules/cart/controllers/cart-promo.controller.ts](../../../backend/src/modules/cart/controllers/cart-promo.controller.ts)
 - [backend/src/modules/cart/controllers/cart-recovery.controller.ts](../../../backend/src/modules/cart/controllers/cart-recovery.controller.ts)
-- [backend/src/modules/cart/controllers/cart-shipping.controller.ts](../../../backend/src/modules/cart/controllers/cart-shipping.controller.ts)
 
 <!-- END AUTO-GENERATED -->
 

@@ -56,7 +56,7 @@ async function startServer(routes, port = 0) {
     server.once("error", reject);
     server.listen(port, "127.0.0.1", resolve);
   });
-  return { server, port: server.address().port, close: () => new Promise((r) => server.close(r)) };
+  return { server, hits, port: server.address().port, close: () => new Promise((r) => server.close(r)) };
 }
 
 const ok = (res) => res.writeHead(200, { "Content-Type": "text/html" }).end("ok");
@@ -103,14 +103,14 @@ describe("preprod-response-suite.sh — a wrong status is never retried", () => 
     const app = await startServer({ "/health": ok, "/flip": flipAfter(3) });
     try {
       const spec = specFile(["/health|/health|2000|200", "/flip|Flipper|2000|200"]);
-      const started = Date.now();
       const { code, stdout } = await runSuite(app.port, spec);
 
       assert.equal(code, 1, `a wrong status must block, got ${code}\n${stdout}`);
       assert.match(stdout, /wrong HTTP status is a real defect — never retried/);
       assert.doesNotMatch(stdout, /re-running the response probes/, "must NOT re-run");
       assert.doesNotMatch(stdout, /transient PREPROD restart/, "must NOT wait for stability");
-      assert.ok(Date.now() - started < 5000, "must fail fast, not sit in the stability loop");
+      assert.equal(app.hits.get("/health"), 3, "no extra health polls");
+      assert.equal(app.hits.get("/flip"), 3, "no second pass");
     } finally {
       await app.close();
     }
@@ -192,31 +192,21 @@ describe("preprod-response-suite.sh — a wrong status is never retried", () => 
 });
 
 describe("preprod-response-suite.sh — a transport failure may be retried once", () => {
-  test("exit 0 when the target is down, then comes back and answers 200", async () => {
-    // Grab a port, release it: pass 1 hits connection-refused (transport, exit 2),
-    // the suite polls /health, and the app appears mid-loop.
-    const probe = await startServer({});
-    const port = probe.port;
-    await probe.close();
-
-    const spec = specFile(["/health|/health|2000|200", "/page|Page|2000|200"]);
-    const suite = runSuite(port, spec);
-
-    let app;
-    const boot = new Promise((resolve) =>
-      setTimeout(async () => {
-        app = await startServer({ "/health": ok, "/page": ok }, port);
-        resolve();
-      }, 1500),
-    );
-
-    const [{ code, stdout }] = await Promise.all([suite, boot]);
+  test("exit 0 when transport fails, then recovers and answers 200", async () => {
+    // Drive recovery by actual requests, never a boot timer: sample cadence and
+    // shell startup time must not accidentally remove the transport failure.
+    const recover = (res, hit) => hit < 3 ? res.socket.destroy() : ok(res);
+    const app = await startServer({ "/health": recover, "/page": recover });
     try {
+      const spec = specFile(["/health|/health|2000|200", "/page|Page|2000|200"]);
+      const { code, stdout } = await runSuite(app.port, spec);
       assert.equal(code, 0, `a recovered transport failure may pass, got ${code}\n${stdout}`);
       assert.match(stdout, /transient PREPROD restart/);
       assert.match(stdout, /re-running the response probes once/);
+      assert.equal(app.hits.get("/health"), 8, "3 failed + 2 stable + 3 successful");
+      assert.equal(app.hits.get("/page"), 6, "exactly one re-run");
     } finally {
-      await app?.close();
+      await app.close();
     }
   });
 
@@ -231,28 +221,18 @@ describe("preprod-response-suite.sh — a transport failure may be retried once"
   });
 
   test("exit 1 when the re-run still returns a wrong status", async () => {
-    // Down at first (transport → retry allowed), then permanently 500.
-    const probe = await startServer({});
-    const port = probe.port;
-    await probe.close();
-
-    const spec = specFile(["/health|/health|2000|200", "/page|Page|2000|200"]);
-    const suite = runSuite(port, spec);
-
-    let app;
-    const boot = new Promise((resolve) =>
-      setTimeout(async () => {
-        app = await startServer({ "/health": ok, "/page": boom }, port);
-        resolve();
-      }, 1500),
-    );
-
-    const [{ code, stdout }] = await Promise.all([suite, boot]);
+    const app = await startServer({
+      "/health": (res, hit) => hit < 3 ? res.socket.destroy() : ok(res),
+      "/page": (res, hit) => hit < 3 ? res.socket.destroy() : boom(res),
+    });
     try {
+      const spec = specFile(["/health|/health|2000|200", "/page|Page|2000|200"]);
+      const { code, stdout } = await runSuite(app.port, spec);
       assert.equal(code, 1, "the single re-run must not rescue a real defect");
       assert.match(stdout, /still failing after the single re-run/);
+      assert.equal(app.hits.get("/page"), 6, "no third pass");
     } finally {
-      await app?.close();
+      await app.close();
     }
   });
 });

@@ -270,7 +270,7 @@ jobs:
         run: |
           FAILED=0
           for FMT in avif webp; do
-            STATUS=$(curl -s --max-time 15 -o /dev/null -w "%{http_code}" "http://localhost:8081/rs:fit:400/q:80/plain/$IMGPROXY_TEST_IMAGE@$FMT")
+            STATUS=$(curl -s --max-time 15 -o /dev/null -w "%{http_code}" "http://localhost:8081/insecure/rs:fit:400/q:80/plain/$IMGPROXY_TEST_IMAGE@$FMT")
             if [ "$STATUS" = "200" ]; then
               echo "✅ imgproxy $FMT: HTTP 200"
             else

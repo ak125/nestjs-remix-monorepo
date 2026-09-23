@@ -65,7 +65,7 @@ services:
       start_period: 60s
 
   redis_preprod:
-    image: redis:7-alpine
+    image: redis:7.4.11-alpine@sha256:ff02b58f971e7d7d156a1267e283fcbbeee91773b6aa36c49dac28ecfe28eadf
     container_name: redis-preprod
     restart: always
     command: >
@@ -74,7 +74,13 @@ services:
       --maxmemory 128mb
       --maxmemory-policy allkeys-lru
     volumes:
-      - /dev/volumes/nestjs-remix/preprod/sessions/:/data
+      # /dev is volatile on the runner host; migrate existing data before rollout.
+      - type: bind
+        source: /home/deploy/preprod/data/redis
+        target: /data
+        bind:
+          # Fail instead of creating an empty Redis directory before migration.
+          create_host_path: false
     networks:
       - automecanik-preprod
 

@@ -3,12 +3,36 @@ import { createHash } from "node:crypto";
 import { test } from "node:test";
 import { assertCaddyConfig, probeRateLimit } from "./prod-client-ip-probe.mjs";
 
+function applicationProxy() {
+  return {
+    handler: "reverse_proxy",
+    upstreams: [{ dial: "monorepo_prod:3000" }],
+    headers: {
+      request: {
+        set: Object.fromEntries(
+          ["Cf-Connecting-Ip", "X-Forwarded-For", "X-Real-Ip"].map((header) => [
+            header,
+            ["{http.vars.client_ip}"],
+          ]),
+        ),
+      },
+    },
+  };
+}
+
 test("Caddy proof requires both the exact Git file and explicit client IP source", () => {
   const bytes = Buffer.from("candidate");
   const hash = createHash("sha256").update(bytes).digest("hex");
   const adapted = {
     apps: {
-      http: { servers: { srv0: { client_ip_headers: ["Cf-Connecting-Ip"] } } },
+      http: {
+        servers: {
+          srv0: {
+            client_ip_headers: ["Cf-Connecting-Ip"],
+            routes: [{ handle: [applicationProxy()] }],
+          },
+        },
+      },
     },
   };
   assert.equal(
@@ -30,6 +54,49 @@ test("Caddy proof requires both the exact Git file and explicit client IP source
     );
   }
   assert.throws(() => assertCaddyConfig(bytes, hash, {}), /must use only/);
+});
+
+test("Caddy proof rejects any application route that forwards a forged client identity", () => {
+  const bytes = Buffer.from("candidate");
+  const hash = createHash("sha256").update(bytes).digest("hex");
+  const config = (handle) => ({
+    apps: {
+      http: {
+        servers: {
+          srv0: {
+            client_ip_headers: ["Cf-Connecting-Ip"],
+            routes: [{ handle }],
+          },
+        },
+      },
+    },
+  });
+  for (const header of ["Cf-Connecting-Ip", "X-Forwarded-For", "X-Real-Ip"]) {
+    for (const value of [
+      undefined,
+      ["{http.request.header.Cf-Connecting-Ip}"],
+      ["{http.request.remote.host}"],
+    ]) {
+      const unsafe = applicationProxy();
+      unsafe.headers.request.set[header] = value;
+      assert.throws(
+        () =>
+          assertCaddyConfig(
+            bytes,
+            hash,
+            config([
+              applicationProxy(),
+              { handler: "subroute", routes: [{ handle: [unsafe] }] },
+            ]),
+          ),
+        /normalize all three/,
+      );
+    }
+  }
+  assert.throws(
+    () => assertCaddyConfig(bytes, hash, config([])),
+    /normalize all three/,
+  );
 });
 
 function responses(values, status = 200, limit = "100") {

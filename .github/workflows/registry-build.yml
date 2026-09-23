@@ -24,12 +24,24 @@ on:
       - "package.json"
   push:
     branches: [main]
+    # ALIGNÉ sur le bloc `pull_request` ci-dessus — 2026-09-17. Il ne listait que 5
+    # entrées sur 11 : `scripts/audit/build-deep-inventory.js`, `build-db-usage-map.js`,
+    # `audit/**`, `backend/supabase/migrations/**` et `package.json` en étaient absents.
+    # Cette garde vérifiait donc AVANT le merge et se taisait APRÈS, pour exactement les
+    # fichiers qu'elle construit. Même défaut que celui corrigé dans `registry-fresh.yml`
+    # par #1507 — un cran plus haut : une garde qui n'observe pas l'état post-merge
+    # laisse `main` dériver en silence, et l'absence de run ne produit aucune ligne rouge.
     paths:
       - "scripts/registry/**"
+      - "scripts/audit/build-deep-inventory.js"
+      - "scripts/audit/build-db-usage-map.js"
       - "packages/registry/**"
       - "tests/registry/**"
       - ".husky/pre-commit"
+      - "audit/**"
+      - "backend/supabase/migrations/**"
       - ".github/workflows/registry-build.yml"
+      - "package.json"
 
 jobs:
   registry-build:
@@ -82,8 +94,14 @@ jobs:
           fi
           echo "✓ Deterministic across 2 runs"
 
+      - name: "Run shared SQL region-lexer tests (offsets + comment masking)"
+        run: npm run registry:test:sql-lex
+
       - name: "Run RPC parser fixture tests (V1-3: 3 parse modes)"
         run: npm run registry:test:rpc-parser
+
+      - name: "Run runtime-excludes-tests (test files never become runtime entrypoints)"
+        run: npm run registry:test:runtime-excludes
 
       - name: "Run planning builder transform tests (fixture, no live gh)"
         run: npm run registry:test:planning

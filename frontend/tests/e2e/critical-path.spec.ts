@@ -13,7 +13,8 @@
  * Temps d'exécution: ~2min par viewport
  */
 
-import { test, expect, type Page } from '@playwright/test';
+import { type Page } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 // 6 Viewports couvrant 98%+ du trafic réel
 const viewports = {

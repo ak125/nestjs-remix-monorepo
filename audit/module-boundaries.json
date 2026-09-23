@@ -130,8 +130,8 @@
         "backend/src/modules/cart/dto/__tests__",
         "backend/src/modules/cart/services"
       ],
-      "files_count": 19,
-      "loc_total": 3698,
+      "files_count": 21,
+      "loc_total": 4009,
       "has_barrel": false
     },
     "catalog": {
@@ -171,7 +171,7 @@
         "backend/src/common/utils"
       ],
       "files_count": 38,
-      "loc_total": 1585,
+      "loc_total": 1589,
       "has_barrel": true
     },
     "config": {
@@ -211,8 +211,8 @@
         "backend/src/database/services",
         "backend/src/database/types"
       ],
-      "files_count": 12,
-      "loc_total": 20999,
+      "files_count": 15,
+      "loc_total": 21757,
       "has_barrel": true
     },
     "dev-only": {
@@ -224,8 +224,8 @@
         "backend/src/modules/rm/services/__tests__",
         "backend/src/modules/rm/utils"
       ],
-      "files_count": 14,
-      "loc_total": 3184,
+      "files_count": 15,
+      "loc_total": 3292,
       "has_barrel": false
     },
     "diagnostic-engine": {
@@ -341,8 +341,8 @@
         "frontend/app/utils",
         "frontend/app/utils/seo"
       ],
-      "files_count": 597,
-      "loc_total": 113559,
+      "files_count": 598,
+      "loc_total": 113694,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -537,7 +537,7 @@
         "packages/database-types/src/helpers"
       ],
       "files_count": 17,
-      "loc_total": 52667,
+      "loc_total": 53086,
       "has_barrel": true
     },
     "pkg-design-tokens": {
@@ -635,7 +635,7 @@
         "backend/src/modules/products/types"
       ],
       "files_count": 27,
-      "loc_total": 7128,
+      "loc_total": 7107,
       "has_barrel": true
     },
     "promo": {
@@ -700,8 +700,8 @@
         "scripts/wiki-generators",
         "scripts/wiki-generators/__tests__"
       ],
-      "files_count": 178,
-      "loc_total": 36478,
+      "files_count": 183,
+      "loc_total": 38919,
       "has_barrel": true
     },
     "search": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 235,
-      "loc_total": 42338,
+      "files_count": 243,
+      "loc_total": 43989,
       "has_barrel": true
     },
     "upload": {
@@ -1539,12 +1539,12 @@
     {
       "from": "cart",
       "to": "database",
-      "count": 12
+      "count": 13
     },
     {
       "from": "cart",
       "to": "products",
-      "count": 2
+      "count": 3
     },
     {
       "from": "cart",
@@ -2411,6 +2411,11 @@
     {
       "from": "backend/src/modules/bot-guard/bot-guard.middleware.ts",
       "to": "backend/src/modules/seo-control-plane/synthetic-probe-credential.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/cart/controllers/cart-items.controller.test.ts",
+      "to": "backend/src/modules/products/services/stock.service.ts",
       "rule": "no-deep-module-access"
     },
     {

@@ -3,8 +3,13 @@ import { SupabaseBaseService } from './supabase-base.service';
 import { TABLES } from '@repo/database-types';
 import { z } from 'zod';
 import { CacheService } from '@cache/cache.service';
-import { DatabaseException, ErrorCodes } from '@common/exceptions';
+import {
+  BusinessRuleException,
+  DomainNotFoundException,
+  ErrorCodes,
+} from '@common/exceptions';
 import { buildRackImageUrl } from '../../modules/catalog/utils/image-urls.utils';
+import { PiecePriceDataService } from './piece-price-data.service';
 
 /**
  * 📊 INTERFACES ET TYPES OPTIMISÉS
@@ -75,7 +80,10 @@ const CART_EXPIRY_SECONDS = 30 * 24 * 60 * 60; // 30 jours comme les sessions PH
 export class CartDataService extends SupabaseBaseService {
   protected readonly logger = new Logger(CartDataService.name);
 
-  constructor(private readonly cacheService: CacheService) {
+  constructor(
+    private readonly cacheService: CacheService,
+    private readonly piecePriceData: PiecePriceDataService,
+  ) {
     super();
   }
 
@@ -311,9 +319,25 @@ export class CartDataService extends SupabaseBaseService {
       // 1. Récupérer le produit avec TOUTES les vraies données
       const product = await this.getProductWithAllData(productId);
       if (!product) {
-        throw new DatabaseException({
-          code: ErrorCodes.CART.UPDATE_FAILED,
+        throw new DomainNotFoundException({
+          code: ErrorCodes.CART.PRODUCT_NOT_FOUND,
           message: `Produit ${productId} introuvable`,
+        });
+      }
+
+      // Refus explicite plutôt que prix inventé. `customPrice` n'est jamais fourni
+      // par un client (le contrôleur impose l'autorité serveur, F5) : il ne porte
+      // que le prix déjà convenu d'un article présent au panier dont on modifie la
+      // quantité. Cette voie-là reste ouverte, y compris pour retirer un article
+      // devenu indisponible ; seul un AJOUT sans tarif vendable est refusé.
+      const sansTarifVendable = !(product as { sellable?: boolean }).sellable;
+      if (sansTarifVendable && customPrice === undefined) {
+        this.logger.warn(
+          `Ajout refusé — pièce ${productId} sans tarif vendable (session ${sessionId})`,
+        );
+        throw new BusinessRuleException({
+          code: ErrorCodes.CART.NOT_SELLABLE,
+          message: `La pièce ${productId} n'a pas de prix disponible à la vente`,
         });
       }
 
@@ -416,7 +440,9 @@ export class CartDataService extends SupabaseBaseService {
         price_ttc: number;
         consigne_ttc: number;
         weight_g: number;
-        weight_udm: string;
+        /** `false` quand aucune ligne de tarif vendable n'existe : le prix rendu
+         * vaut alors 0 et ne doit pas être présenté comme un prix de vente. */
+        sellable: boolean;
       }
     >
   > {
@@ -428,7 +454,7 @@ export class CartDataService extends SupabaseBaseService {
 
     try {
       // 3 requêtes parallèles (pieces + prix + images) puis 1 requête marques après collecte des pm_ids
-      const [piecesResult, pricesResult, imagesResult] = await Promise.all([
+      const [piecesResult, tarifs, imagesResult] = await Promise.all([
         // Batch pieces — seulement les colonnes nécessaires
         this.client
           .from(TABLES.pieces)
@@ -437,13 +463,10 @@ export class CartDataService extends SupabaseBaseService {
           )
           .in('piece_id', uniqueIds),
 
-        // Batch prices + poids (élimine la double requête du ShippingCalculator)
-        this.client
-          .from(TABLES.pieces_price)
-          .select(
-            'pri_piece_id_i, pri_vente_ttc_n, pri_consigne_ttc_n, pri_poids, pri_udm_poids',
-          )
-          .in('pri_piece_id_i', uniqueIds),
+        // Prix ET poids en une seule requête, via l'autorité unique. C'est en
+        // requêtant pieces_price ici que l'affichage du panier avait fini par
+        // retenir une autre ligne que l'ajout au panier, pour la même pièce.
+        this.piecePriceData.findTariffs(uniqueIds),
 
         // Batch images — images avec folder valide (triées par pmi_sort)
         this.client
@@ -457,16 +480,6 @@ export class CartDataService extends SupabaseBaseService {
       if (piecesResult.error) {
         this.logger.error(`Batch pieces error: ${piecesResult.error.message}`);
         return result;
-      }
-
-      // Index prices par product_id (prendre le premier prix trouvé par produit)
-      const priceMap = new Map<number, (typeof pricesResult.data)[0]>();
-      if (!pricesResult.error && pricesResult.data) {
-        for (const row of pricesResult.data) {
-          if (!priceMap.has(row.pri_piece_id_i)) {
-            priceMap.set(row.pri_piece_id_i, row);
-          }
-        }
       }
 
       // Index images par product_id (prendre la 1ère image triée par sort)
@@ -513,19 +526,21 @@ export class CartDataService extends SupabaseBaseService {
 
       // Assembler la Map de résultats
       for (const piece of piecesResult.data || []) {
-        const priceRow = priceMap.get(piece.piece_id);
+        const priceRow = tarifs.vendables.get(piece.piece_id);
+        // Pas de tarif vendable => 0 €, mais SIGNALÉ (`sellable: false`) et
+        // journalisé. Un 0 € muet se confond avec un article gratuit ; l'appelant
+        // doit pouvoir distinguer les deux.
+        if (!priceRow) {
+          this.logger.warn(
+            `Article ${piece.piece_id} sans tarif vendable (aucune ligne pri_dispo='1' à prix positif) — affiché non vendable`,
+          );
+        }
         const priceTTC = Number(priceRow?.pri_vente_ttc_n) || 0;
         const consigneTTC = Number(priceRow?.pri_consigne_ttc_n) || 0;
-        const rawWeight = parseFloat(priceRow?.pri_poids) || 0;
-        const udm = (priceRow?.pri_udm_poids || '').toUpperCase();
-        // Heuristique KGM/GRM cohérente avec ShippingCalculatorService
-        const KGM_THRESHOLD = 100;
-        const weightG =
-          rawWeight > 0
-            ? udm === 'KGM' && rawWeight <= KGM_THRESHOLD
-              ? rawWeight * 1000
-              : rawWeight
-            : 0;
+        // Le poids ne suit PAS la disponibilité : une pièce pèse le même poids
+        // que son tarif soit à la vente ou non. Conversion en grammes faite une
+        // seule fois, dans PiecePriceDataService, partagée avec les frais de port.
+        const weightG = tarifs.poidsEnGrammes.get(piece.piece_id) ?? 0;
 
         const brandName =
           piece.piece_pm_id && brandMap.has(piece.piece_pm_id.toString())
@@ -549,7 +564,7 @@ export class CartDataService extends SupabaseBaseService {
           price_ttc: priceTTC,
           consigne_ttc: consigneTTC,
           weight_g: weightG,
-          weight_udm: udm,
+          sellable: Boolean(priceRow),
         });
       }
 
@@ -579,7 +594,12 @@ export class CartDataService extends SupabaseBaseService {
         .eq('piece_id', productId)
         .single();
 
-      if (pieceError || !pieceData) {
+      // Seul PGRST116 (`.single()` sans ligne) prouve l'absence de la pièce ;
+      // toute autre erreur est une panne, qui ne doit pas devenir un 404.
+      if (pieceError && pieceError.code !== 'PGRST116') {
+        throw pieceError;
+      }
+      if (!pieceData) {
         this.logger.warn(`⚠️ Pièce ${productId} introuvable`);
         return null;
       }
@@ -590,12 +610,10 @@ export class CartDataService extends SupabaseBaseService {
       //   type_piece_pm_id: typeof pieceData.piece_pm_id,
       // });
 
-      // REQUÊTE SÉPARÉE POUR LES PRIX (inclut consignes)
-      const { data: priceData, error: priceError } = await this.client
-        .from(TABLES.pieces_price)
-        .select('pri_vente_ttc_n, pri_consigne_ttc_n')
-        .eq('pri_piece_id_i', productId)
-        .limit(1);
+      // Tarif vendable : même règle que l'affichage du panier et que la page
+      // catalogue, portée par PiecePriceDataService. `null` signifie « pièce non
+      // vendable » — surtout pas « prends la première ligne venue ».
+      const tarif = await this.piecePriceData.findSellablePrice(productId);
 
       // REQUÊTE POUR LA MARQUE SI piece_pm_id existe
       let brandName = 'MARQUE INCONNUE'; // fallback par défaut
@@ -647,23 +665,17 @@ export class CartDataService extends SupabaseBaseService {
         // );
       }
 
-      let priceTTC = 0;
-      if (!priceError && priceData && priceData.length > 0) {
-        priceTTC = Number(priceData[0]?.pri_vente_ttc_n) || 0;
-      }
+      // Aucun prix de repli. Un repli à 99,99 € vivait ici, commenté « prix par
+      // défaut pour tests » : il s'appliquait au vrai chemin d'ajout au panier et
+      // faisait payer un montant qu'aucune donnée ne justifiait. Une pièce sans
+      // tarif ressort désormais marquée non vendable, et `addCartItem` la refuse.
+      const priceTTC = Number(tarif?.pri_vente_ttc_n) || 0;
+      const consigneTTC = Number(tarif?.pri_consigne_ttc_n) || 0;
 
-      // Prix de test par défaut si toujours 0 (pour les tests E2E)
-      if (priceTTC === 0) {
-        priceTTC = 99.99; // Prix par défaut pour tests
+      if (!tarif) {
         this.logger.warn(
-          `⚠️ Aucun prix trouvé pour ${productId}, utilisation prix par défaut: ${priceTTC}€`,
+          `Pièce ${productId} sans tarif vendable (aucune ligne pri_dispo='1' à prix positif)`,
         );
-      }
-
-      // Extraire la consigne (caution remboursable)
-      let consigneTTC = 0;
-      if (!priceError && priceData && priceData.length > 0) {
-        consigneTTC = Number(priceData[0]?.pri_consigne_ttc_n) || 0;
       }
 
       // Récupérer l'image depuis pieces_media_img (1ère image triée par sort)
@@ -689,7 +701,8 @@ export class CartDataService extends SupabaseBaseService {
         piece_image: pieceImage, // URL construite depuis pieces_media_img
         price_ttc: priceTTC,
         consigne_ttc: consigneTTC, // ✅ PHASE 4: Consigne unitaire
-        pieces_price: priceData || [],
+        sellable: Boolean(tarif),
+        pieces_price: tarif ? [tarif] : [],
       };
     } catch (error) {
       this.logger.error(`❌ Erreur récupération produit ${productId}:`, error);

@@ -29,8 +29,8 @@
  *     `status: 'ARCHIVED'` (not part of monorepo runtime)
  *   - `DROP FUNCTION` (we ignore — function removed from this migration set)
  *
- * Cross-referenced with `audit/db-usage-map.json#rpc_with_callsites` to
- * populate `usedBy[]`.
+ * Cross-referenced with `audit/db-usage-map.json#rpc[].called_by` to populate
+ * `usedBy[]` (le compteur `summary.rpc_with_callsites` n'est qu'un total).
  *
  * Usage:
  *   node scripts/registry/build-rpc-registry.js [--quiet] [--migrations-dir <dir>]
@@ -54,6 +54,7 @@ const {
   sortById,
   makeLogger,
 } = require("./lib/utils");
+const { lexViews } = require("./lib/sql-lex");
 
 const log = makeLogger("rpc");
 
@@ -283,12 +284,26 @@ function main() {
   const byFullName = new Map(); // "schema.name" → array of parsed records
 
   for (const { filename, sql } of migrations) {
-    const blocks = findFunctionBlocks(sql);
+    // Deux vues de MÊME longueur, donc à offsets interchangeables (lib/sql-lex.js) :
+    //   topLevel        — toute région non exécutable blanchie. DÉTECTION : seul un
+    //                     `CREATE FUNCTION` survivant dans du code réellement exécutable
+    //                     déclare une fonction — jamais un dans un commentaire, une
+    //                     chaîne ou un corps `$$…$$`.
+    //   commentsMasked  — seuls les commentaires blanchis. PARSING : un commentaire
+    //                     inline ne peut plus fuiter dans un type d'argument et
+    //                     fabriquer une signature.
+    // Sans cette séparation, le scan lisait du SQL brut et confondait documentation
+    // et DDL — même cause racine que #1502 côté tables.
+    const { topLevel, commentsMasked } = lexViews(sql);
+    const blocks = findFunctionBlocks(topLevel);
     for (const start of blocks) {
-      const parsed = parseFunctionBlock(sql, start);
+      const parsed = parseFunctionBlock(commentsMasked, start);
       if (!parsed) {
-        // CREATE FUNCTION matched by keyword but parser couldn't extract — emit unknown_signature
-        const around = sql.slice(start, Math.min(start + 200, sql.length));
+        // CREATE FUNCTION matched by keyword but parser couldn't extract — emit unknown_signature.
+        // L'extrait cite ce que le parseur a RÉELLEMENT lu (vue masquée), pas le texte
+        // d'origine : diagnostiquer sur une entrée que le parseur n'a jamais vue mène
+        // à chercher un défaut là où il n'est pas.
+        const around = commentsMasked.slice(start, Math.min(start + 200, commentsMasked.length));
         const nameGuess = (around.match(/FUNCTION\s+([\w."']+)/i) || [])[1] || "unknown";
         const cleanName = nameGuess.replace(/["']/g, "");
         const [schemaName, funcName] = cleanName.includes(".")
@@ -339,7 +354,16 @@ function main() {
           ? "medium"
           : "low";
 
-      const hasUsage = callsites[funcName] && (callsites[funcName].used_by_count || 0) > 0;
+      // `db-usage-map.json` nomme les appels de FONCTION `called_by` / `called_by_count`,
+      // et réserve `used_by` aux TABLES. Lire `used_by` ici rendait `hasUsage`
+      // toujours faux et `usedBy` toujours vide : la branche `LIVE` était
+      // inatteignable par construction (260/260 entrées en `UNKNOWN`).
+      // Le champ de SORTIE reste `usedBy`, gouverné par le schéma L1
+      // (packages/registry/src/entries/rpc-entry.ts) — seule la lecture change.
+      const calledBy = Array.isArray(callsites[funcName] && callsites[funcName].called_by)
+        ? callsites[funcName].called_by
+        : [];
+      const hasUsage = calledBy.length > 0;
 
       let status;
       if (isExtension) {
@@ -376,10 +400,7 @@ function main() {
         securityDefiner: Boolean(parsed.securityDefiner),
         searchPath: parsed.searchPath || [],
         definedInMigrations: parsed.filename ? [parsed.filename] : [],
-        usedBy:
-          callsites[funcName] && Array.isArray(callsites[funcName].used_by)
-            ? [...callsites[funcName].used_by].sort()
-            : [],
+        usedBy: [...calledBy].sort(),
         parseWarnings: parsed.parseWarnings || [],
       };
       if (parsed.parseError) entry.parseError = parsed.parseError;

@@ -37,6 +37,7 @@ const PROBE_SH = join(SCRIPT_DIR, "preprod-response-probe.sh");
  */
 let flapCount = 0;
 let mixedCount = 0;
+let cadenceHits = [];
 let server;
 let PORT;
 
@@ -44,6 +45,14 @@ before(async () => {
   server = createServer((req, res) => {
     const path = req.url.split("?")[0];
     switch (path) {
+      case "/cadence": {
+        const now = Date.now();
+        const previous = cadenceHits.at(-1);
+        cadenceHits.push(now);
+        return res.writeHead(previous && now - previous < 900 ? 429 : 200).end("sample");
+      }
+      case "/limited":
+        return res.writeHead(429).end("limited");
       case "/ok":
         return res.writeHead(200, { "Content-Type": "text/html" }).end("<html>ok</html>");
       case "/boom":
@@ -107,6 +116,23 @@ async function runProbeUrl(url, { label = "probe", budget = 2000, expected, env 
 const runProbe = (path, opts) => runProbeUrl(`http://127.0.0.1:${PORT}${path}`, opts);
 
 describe("preprod-response-probe.sh — status is asserted, not just latency", () => {
+  test("cadence respects the burst window without including idle time in latency", async () => {
+    cadenceHits = [Date.now()]; // the previous CI step just made a request
+    const { code, stdout } = await runProbe("/cadence", { budget: 900 });
+    assert.equal(code, 0, stdout);
+    assert.equal(cadenceHits.length, 4, "all three samples must run");
+    for (let i = 1; i < cadenceHits.length; i++) {
+      assert.ok(cadenceHits[i] - cadenceHits[i - 1] >= 900, "each sample needs its own burst window");
+    }
+    assert.doesNotMatch(stdout, /SLOW|exceeds budget/, "idle time is outside curl's measurement");
+  });
+
+  test("a remaining 429 still fails as a wrong status, never as retryable transport", async () => {
+    const { code, stdout } = await runProbe("/limited");
+    assert.equal(code, 1);
+    assert.match(stdout, /HTTP 429 429 429/);
+  });
+
   test("PASSES on a fast 200 (the only green case)", async () => {
     const { code, stdout, summary } = await runProbe("/ok");
     assert.equal(code, 0, `expected pass, got ${code}\n${stdout}`);

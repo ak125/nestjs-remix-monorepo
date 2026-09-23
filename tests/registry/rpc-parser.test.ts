@@ -20,6 +20,7 @@ import {
   findFunctionBlocks,
   sigHash,
 } from "../../scripts/registry/build-rpc-registry.js";
+import { lexViews } from "../../scripts/registry/lib/sql-lex.js";
 
 const FIXTURE_PATH = path.join(__dirname, "fixtures", "rpc-edge-cases.sql");
 const FIXTURE_SQL = fs.readFileSync(FIXTURE_PATH, "utf8");
@@ -157,6 +158,22 @@ describe("parseFunctionBlock — edge cases (V1-3 : 3 parse modes, never throw)"
     );
   });
 
+  // La classification ci-dessus dépend du lookahead borné à 1 Ko de
+  // `parseFunctionBlock`. Case 7 avait été déplacé en amont de deux cas portant
+  // `LANGUAGE` et n'était resté correct que par une marge de 453 octets. Sans cette
+  // mesure, le test précédent échouerait un jour avec « attendu partially_parsed,
+  // obtenu parsed » — un verdict qui ne dit RIEN de la cause. Celui-ci la nomme.
+  test("Case 7 reste le dernier cas : aucun LANGUAGE dans son lookahead de 1 Ko", () => {
+    const at = FIXTURE_SQL.indexOf("fixture_no_language");
+    assert.ok(at >= 0, "fixture_no_language doit exister");
+    const lookahead = FIXTURE_SQL.slice(at, at + 1024);
+    assert.ok(
+      !/\bLANGUAGE\b/i.test(lookahead),
+      "un LANGUAGE est apparu dans les 1024 octets suivant fixture_no_language : " +
+        "Case 7 va basculer en `parsed`. Le cas doit rester en FIN de fixture.",
+    );
+  });
+
   test("parser never throws even on malformed input (V1-3 totality)", () => {
     const malformed = `CREATE FUNCTION broken(\n  this is not valid SQL anywhere\n`;
     assert.doesNotThrow(() => {
@@ -181,5 +198,226 @@ describe("sigHash determinism", () => {
     const a = [{ name: "x", type: "integer", mode: "IN" }];
     const b = [{ name: "x", type: "text", mode: "IN" }];
     assert.notEqual(sigHash(a), sigHash(b));
+  });
+});
+
+/**
+ * Croisement `db-usage-map.json` → `rpc.json`.
+ *
+ * Les deux artefacts n'emploient pas le même mot : `db-usage-map` réserve
+ * `used_by` aux TABLES et nomme les appels de FONCTION `called_by`. Le builder
+ * lisait `used_by` sur les entrées RPC — un champ qui n'y existe pas. `hasUsage`
+ * était donc toujours faux et `usedBy` toujours vide : 260 entrées sur 260 en
+ * `UNKNOWN`, la branche `LIVE` inatteignable par construction.
+ *
+ * Un champ lu sous un nom absent ne lève rien — il rend `undefined`. C'est la
+ * raison pour laquelle rien ne l'a signalé pendant si longtemps, et pourquoi le
+ * croisement a besoin d'une assertion qui MEURT s'il redevient vide, et non
+ * d'un simple parcours qui passerait sur zéro élément.
+ */
+describe("croisement db-usage-map → rpc.json", () => {
+  const REPO_ROOT = path.join(__dirname, "..", "..");
+  const usage = JSON.parse(
+    fs.readFileSync(path.join(REPO_ROOT, "audit", "db-usage-map.json"), "utf8"),
+  );
+  const registry = JSON.parse(
+    fs.readFileSync(path.join(REPO_ROOT, "audit", "registry", "rpc.json"), "utf8"),
+  );
+  const entries: any[] = registry.entries ?? registry;
+
+  test("db-usage-map nomme les appels de fonction `called_by`, jamais `used_by`", () => {
+    const keys = new Set<string>(
+      Object.values(usage.rpc as Record<string, any>).flatMap((v) => Object.keys(v)),
+    );
+    assert.ok(keys.has("called_by"), "le producteur doit publier `called_by`");
+    assert.ok(
+      !keys.has("used_by"),
+      "`used_by` est réservé aux TABLES — s'il apparaît ici, le vocabulaire a changé " +
+        "et le builder doit être relu, pas adapté à l'aveugle",
+    );
+  });
+
+  test("SENTINELLE — ni `grant` ni `unknown` ne réapparaissent comme fonctions", () => {
+    // Deux entrées de `rpc.json` portaient ces noms jusqu'à #1510. Aucune n'est une
+    // fonction : elles sortaient du repli `unknown_signature`, qui devinait un nom
+    // dans un extrait illisible de prose SQL. Sentinelle nommée, pas un cardinal.
+    const phantoms = entries.filter((e) => e.name === "grant" || e.name === "unknown");
+    assert.deepEqual(
+      phantoms.map((e) => e.id),
+      [],
+      "un nom deviné est réapparu dans la projection : le producteur relit du SQL brut",
+    );
+  });
+
+  test("aucun argument de la projection ne porte de marqueur de commentaire", () => {
+    // Invariant de CÂBLAGE, pas de parsing : les tests unitaires ci-dessous
+    // prouvent que le lexer sait dépouiller, celui-ci prouve que `main()` s'en
+    // sert. Débrancher `lexViews` dans le producteur laisserait les tests
+    // unitaires verts et ferait tomber celui-ci.
+    //
+    // Mesuré avant câblage : 19 arguments portaient `--` ou un marqueur de bloc
+    // dans leur type, et le registre en tirait des surcharges inexistantes.
+    const polluted = entries.flatMap((e) =>
+      e.args
+        .filter(
+          (a: any) =>
+            `${a.name}${a.type}`.includes("--") || `${a.name}${a.type}`.includes("/*"),
+        )
+        .map((a: any) => `${e.id} → ${a.name}: ${a.type}`),
+    );
+    assert.deepEqual(
+      polluted,
+      [],
+      "un commentaire a fuité dans un type d'argument : le producteur lit du SQL brut",
+    );
+  });
+
+  test("un RPC appelé depuis le backend porte ses callsites dans rpc.json", () => {
+    const called = Object.entries(usage.rpc as Record<string, any>).filter(
+      ([, v]) => (v.called_by_count || 0) > 0,
+    );
+    assert.ok(called.length > 0, "le dépôt appelle des RPC — le scan doit en voir");
+
+    let crossed = 0;
+    for (const [name, v] of called) {
+      // Une surcharge produit plusieurs entrées pour un même nom : toutes la portent.
+      const matching = entries.filter((e) => e.name === name);
+      // Absente de rpc.json = aucun `CREATE FUNCTION` dans les migrations scannées.
+      // Trou distinct (la fonction existe en base sans migration), pas l'objet de ce test.
+      if (matching.length === 0) continue;
+      for (const e of matching) {
+        crossed++;
+        assert.deepEqual(
+          e.usedBy,
+          [...v.called_by].sort(),
+          `${name}: usedBy doit refléter called_by`,
+        );
+        if (e.parseMode !== "unknown_signature" && e.status !== "ARCHIVED") {
+          assert.equal(e.status, "LIVE", `${name} est appelée : son status doit être LIVE`);
+        }
+      }
+    }
+
+    // L'assertion qui tient tout le test : sans elle, un `usedBy` redevenu vide
+    // ferait boucler sur zéro croisement et passerait au vert.
+    assert.ok(
+      crossed > 0,
+      "aucun RPC appelé n'a été croisé avec rpc.json — le croisement est mort, " +
+        "pas satisfait (c'est exactement le défaut que ce test existe pour attraper)",
+    );
+  });
+});
+
+/**
+ * Dépouillement des commentaires — la limitation V1.5 annoncée dans la fixture.
+ *
+ * `main()` détecte sur la vue `topLevel` (régions non exécutables blanchies) et
+ * parse sur `commentsMasked` (seuls les commentaires blanchis). Ces deux tests
+ * prouvent que c'est bien le LEXER qui fait la différence, en comparant la même
+ * entrée lue des deux façons — et non pas seulement que le résultat est correct
+ * aujourd'hui.
+ */
+describe("dépouillement des commentaires (lib/sql-lex)", () => {
+  test("un CREATE FUNCTION en commentaire est vu sur le SQL brut, jamais sur `topLevel`", () => {
+    const raw = findFunctionBlocks(FIXTURE_SQL).length;
+    const top = findFunctionBlocks(lexViews(FIXTURE_SQL).topLevel).length;
+    assert.ok(
+      raw > top,
+      `le SQL brut doit voir PLUS de blocs que la vue exécutable (brut=${raw}, topLevel=${top}) — ` +
+        "sinon la fixture ne contient plus de CREATE commenté et le test ne prouve rien",
+    );
+    // Nommément, les deux déclarations commentées du Case 8 : détectées sur le brut,
+    // absentes de la vue exécutable. Une assertion par nom, pas un cardinal — les
+    // en-têtes `-- Case N : CREATE FUNCTION …` de la fixture en produisent d'autres,
+    // et leur nombre n'a pas à être figé.
+    const topSet = new Set(findFunctionBlocks(lexViews(FIXTURE_SQL).topLevel));
+    for (const decl of ["fixture_commented_out", "fixture_block_commented"]) {
+      const at = findFunctionBlocks(FIXTURE_SQL).filter((i) =>
+        FIXTURE_SQL.slice(i, i + 80).includes(decl),
+      );
+      assert.ok(at.length > 0, `${decl} doit être vue par le scan brut`);
+      for (const i of at) {
+        assert.ok(!topSet.has(i), `${decl} est commentée : elle ne doit PAS déclarer de fonction`);
+      }
+    }
+  });
+
+  // Noms déclarés par le scanner, lus comme `main()` le fait : détection sur
+  // `topLevel`, parsing sur `commentsMasked`.
+  const declaredNames = () => {
+    const { topLevel, commentsMasked } = lexViews(FIXTURE_SQL);
+    return findFunctionBlocks(topLevel)
+      .map((i) => parseFunctionBlock(commentsMasked, i))
+      .filter(Boolean)
+      .map((r: any) => r.funcName);
+  };
+
+  test("un CREATE FUNCTION dans un corps dollar-quoté n'est pas une fonction de plus", () => {
+    // Case 8c : DDL dynamique. La vue `topLevel` blanchit les corps `$$…$$`.
+    assert.ok(
+      !declaredNames().includes("fixture_inside_body"),
+      "une fonction émise dynamiquement par EXECUTE n'est pas déclarée par ce fichier",
+    );
+  });
+
+  test("l'émetteur de DDL dynamique, lui, est bien extrait", () => {
+    // Le pendant du test précédent : blanchir le corps ne doit pas faire disparaître
+    // la vraie fonction qui le porte. Sans cette moitié, « ne rien détecter » passerait.
+    const { topLevel, commentsMasked } = lexViews(FIXTURE_SQL);
+    const f = findFunctionBlocks(topLevel)
+      .map((i) => parseFunctionBlock(commentsMasked, i))
+      .find((r: any) => r?.funcName === "fixture_dynamic_ddl_emitter");
+    assert.ok(f, "l'émetteur doit être détecté");
+    assert.equal((f as any).parseMode, "parsed");
+  });
+
+  test("sur la fixture, tout bloc détecté parse — aucun repli `unknown_signature`", () => {
+    // C'est ce repli qui fabriquait les fantômes : quand `parseFunctionBlock` rend
+    // `null`, `main()` devine un nom dans un extrait de 200 octets. Sur la prose du
+    // Case 8b — copie littérale d'une migration — il en tirait `public.grant`.
+    // Détecter un bloc que l'on ne sait pas parser est donc le vrai symptôme.
+    const { topLevel, commentsMasked } = lexViews(FIXTURE_SQL);
+    const blocks = findFunctionBlocks(topLevel);
+    assert.ok(blocks.length > 0, "la fixture doit produire des blocs");
+    const unparsed = blocks
+      .filter((i) => parseFunctionBlock(commentsMasked, i) === null)
+      .map((i) => JSON.stringify(FIXTURE_SQL.slice(i, i + 60)));
+    assert.deepEqual(unparsed, [], `blocs détectés mais non parsables : ${unparsed.join(" | ")}`);
+  });
+
+  test("un commentaire en fin de type est retiré du type", () => {
+    const sql =
+      "CREATE FUNCTION fixture_trailing(p_x INT -- price in centimes\n" +
+      ") RETURNS void LANGUAGE sql AS $$ SELECT 1 $$;";
+    const { topLevel, commentsMasked } = lexViews(sql);
+    const f = parseFunctionBlock(commentsMasked, findFunctionBlocks(topLevel)[0]) as any;
+    assert.ok(f, "doit parser");
+    assert.equal(f.args[0].type, "INT");
+  });
+
+  test("un commentaire inline dans la liste d'arguments ne change pas la signature", () => {
+    const masked = lexViews(FIXTURE_SQL).commentsMasked;
+    const start = findFunctionBlocks(lexViews(FIXTURE_SQL).topLevel).find(
+      (i) => masked.slice(i, i + 200).includes("fixture_commented_args"),
+    );
+    assert.ok(start !== undefined, "Case 9 doit être détectée");
+    const withComments = parseFunctionBlock(masked, start as number);
+    assert.ok(withComments, "Case 9 doit parser");
+
+    const plain = `CREATE FUNCTION fixture_commented_args(\n  p_batch_id uuid,\n  p_rows jsonb\n) RETURNS void AS $$ BEGIN END $$ LANGUAGE plpgsql;`;
+    const ref = parseFunctionBlock(plain, 0);
+    assert.ok(ref, "la forme sans commentaire doit parser");
+
+    assert.equal(
+      sigHash((withComments as any).args),
+      sigHash((ref as any).args),
+      "même signature PostgreSQL ⇒ même sigHash, commentaires ou non — sinon le registre invente une surcharge",
+    );
+    for (const a of (withComments as any).args) {
+      assert.ok(
+        !a.type.includes("--") && !a.type.includes("/*"),
+        `le type de ${a.name} ne doit porter aucun marqueur de commentaire, trouvé: ${a.type}`,
+      );
+    }
   });
 });
