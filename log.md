@@ -417,3 +417,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/cart-items-client-errors-4xx`
 - **Décision** : fix(cart): répondre 4xx aux erreurs du client sur /api/cart/items
 - **Sortie** : PR #1531 | commits 093a9ef9e
+
+## 2026-09-23 — fix/cart-items-client-errors-4xx (auto)
+
+- **Branche** : `fix/cart-items-client-errors-4xx`
+- **Décision** : chore(registry): resync L1+L3 projections (+2 other commits)
+- **Sortie** : PR #1531 | commits 160cb00fd 403523ded 093a9ef9e
