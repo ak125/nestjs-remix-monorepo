@@ -182,8 +182,12 @@ export class VehicleRpcService extends SupabaseBaseService {
    * Ne sert que les lignes `seo_decision = 'INDEX'` portant `rendered_json.blocks` ;
    * s'il y en a plusieurs, celle de plus forte diversité.
    * Retourne null sinon : REVIEW_REQUIRED (sous le seuil du gate d'enrichissement),
-   * REGENERATE, ligne INDEX sans blocs, timeout ou erreur. La page sert alors le
-   * gabarit SEO du payload véhicule.
+   * REGENERATE ou ligne INDEX sans blocs. La page sert alors le gabarit SEO du
+   * payload véhicule.
+   * Retourne aussi null sur timeout (journalisé en warn) et sur toute autre erreur
+   * renvoyée par la requête, par exemple une permission refusée : celle-ci n'est
+   * PAS journalisée. Repli silencieux préexistant, dette connue, à traiter dans
+   * une PR séparée.
    */
   async getR8Content(typeId: number): Promise<{
     h1: string;
