@@ -75304,7 +75304,7 @@
         "~/components/ui/alert"
       ],
       "kind": "config",
-      "loc": 237,
+      "loc": 266,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/pieces/PiecesCompatibilityInfo.tsx",
       "risk": "low",
@@ -75710,7 +75710,7 @@
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 616,
+      "loc": 617,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/pieces/PiecesVehicleContent.tsx",
       "risk": "low",
@@ -78604,7 +78604,7 @@
         "frontend/app/utils/url-builder.utils.ts"
       ],
       "kind": "config",
-      "loc": 254,
+      "loc": 253,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/vehicle/r8/r8-transform.ts",
       "risk": "low",
@@ -78637,7 +78637,7 @@
         "frontend/app/components/model/index.ts"
       ],
       "kind": "config",
-      "loc": 131,
+      "loc": 132,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/vehicle/r8/r8.types.ts",
       "risk": "low",
@@ -79842,7 +79842,7 @@
         "~/utils/resilient-lazy"
       ],
       "kind": "service",
-      "loc": 593,
+      "loc": 598,
       "owner": "__unassigned__",
       "path": "frontend/app/root.tsx",
       "risk": "low",
@@ -85086,7 +85086,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 1345,
+      "loc": 1353,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/constructeurs.$brand.$model.$type.tsx",
       "risk": "medium",
@@ -87777,7 +87777,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 234,
+      "loc": 235,
       "owner": "__unassigned__",
       "path": "frontend/app/types/pieces-route.types.ts",
       "risk": "low",
@@ -88792,7 +88792,7 @@
         "frontend/app/utils/pieces-route.utils.ts"
       ],
       "kind": "service",
-      "loc": 197,
+      "loc": 198,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/pieces-loader.utils.ts",
       "risk": "medium",
@@ -89139,7 +89139,7 @@
         "~/utils/image-optimizer"
       ],
       "kind": "service",
-      "loc": 317,
+      "loc": 316,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/rm-mapper.ts",
       "risk": "medium",
@@ -90641,7 +90641,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 215,
+      "loc": 234,
       "owner": "@ak125",
       "path": "frontend/tests/unit/ga4-bootstrap.test.ts",
       "risk": "medium",
@@ -90884,26 +90884,6 @@
       "loc": 72,
       "owner": "@ak125",
       "path": "frontend/tests/unit/pieces-can-sell-render.test.tsx",
-      "risk": "medium",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "high",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D2",
-      "id": "frontend/tests/unit/pieces-compatibility-info-no-country-code.test.tsx",
-      "importedBy": [],
-      "imports": [],
-      "kind": "test",
-      "loc": 135,
-      "owner": "@ak125",
-      "path": "frontend/tests/unit/pieces-compatibility-info-no-country-code.test.tsx",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -91264,26 +91244,6 @@
       "loc": 96,
       "owner": "@ak125",
       "path": "frontend/tests/unit/r8-hero-h1-parity.test.tsx",
-      "risk": "medium",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "high",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D2",
-      "id": "frontend/tests/unit/r8-mine-codes-country-not-rendered.test.tsx",
-      "importedBy": [],
-      "imports": [],
-      "kind": "test",
-      "loc": 174,
-      "owner": "@ak125",
-      "path": "frontend/tests/unit/r8-mine-codes-country-not-rendered.test.tsx",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -100038,11 +99998,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "3045154dd16aeefab01f398f2540e47939a253f9cb3d5194599764dbc02e9958",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "d34d353505c1bccdef127dceeea7d2a7837526bbcc58b9b4e4d0b218517b825b",
+      "audit/registry/files.json": "2635eb155c3212b502c4f27e574b8b600866691cfdd8389b44488f15a9e15757",
       "audit/registry/rpc.json": "821912126b4b0b6e8c5a86b4269f43106cc40a44d2ee85a107b550ab9ea0a7b6",
       "audit/registry/runtime.json": "3f153ecc8a7a52378e26435fe7ecf04c0a4549288d6ad12283b783545ba5e99e"
     },
-    "sotFingerprint": "68a0e30b752e"
+    "sotFingerprint": "55dd96f2a862"
   },
   "runtime": [
     {
