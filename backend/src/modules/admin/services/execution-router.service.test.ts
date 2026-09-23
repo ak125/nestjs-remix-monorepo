@@ -361,6 +361,39 @@ describe('ExecutionRouterService — regression smoke', () => {
     expect(result.results[0].status).toBe('success');
     expect(enrichSingle).toHaveBeenCalledWith(12345);
   });
+
+  it('7b. R8_VEHICLE write_gate_blocked → skipped (never success), detail kept in data', async () => {
+    setTable('pieces_gamme', {
+      single: () => Promise.resolve({ data: null, error: null }),
+    });
+    const enrichSingle = jest.fn().mockResolvedValue({
+      status: 'write_gate_blocked',
+      seoDecision: 'REVIEW_REQUIRED',
+      diversityScore: 58,
+      warnings: ['WRITE_GATE_BLOCKED: stale_base'],
+      reasons: [],
+      pageKey: `r8_vehicle_${12345}`,
+      writeGate: {
+        reason: 'stale_base',
+        fieldsSkipped: [],
+        fieldsStripped: [],
+      },
+    });
+    const service = makeService({
+      R8VehicleEnricherService: { enrichSingle },
+    });
+
+    const result = await service.execute({
+      roleId: 'R8_VEHICLE',
+      targetIds: ['12345'],
+      dryRun: false,
+    });
+
+    expect(result.results[0].status).toBe('skipped');
+    const data = result.results[0].data as any;
+    expect(data.status).toBe('write_gate_blocked');
+    expect(data.writeGate.reason).toBe('stale_base');
+  });
 });
 
 describe('ExecutionRouterService — R3_CONSEILS executable path removed (B2/B6, ADR-027 §Correction)', () => {

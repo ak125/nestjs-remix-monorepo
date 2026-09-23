@@ -10,6 +10,8 @@ import { join } from 'node:path';
 import * as yaml from 'js-yaml';
 import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { DatabaseException, ErrorCodes } from '@common/exceptions';
+import { SupabaseRpcError } from '../../../security/rpc-gate/rpc-gate.errors';
 import { EnricherTextUtils } from './enricher-text-utils.service';
 import { VehicleRagGeneratorService } from './vehicle-rag-generator.service';
 import {
@@ -52,12 +54,23 @@ import {
 // ── Result ──
 
 export interface R8EnrichResult {
-  status: 'draft' | 'failed' | 'skipped';
+  /**
+   * `write_gate_blocked` : contenu calculé mais écriture refusée par le
+   * WriteGate (`written=false`). Un refus de garde n'est pas une erreur :
+   * la page reste telle quelle et aucune version n'est enregistrée.
+   */
+  status: 'draft' | 'failed' | 'skipped' | 'write_gate_blocked';
   seoDecision: R8SeoDecision;
   diversityScore: number;
   warnings: string[];
   reasons: R8ReasonCode[];
   pageKey: string;
+  /** Détail du refus — présent uniquement avec `status: 'write_gate_blocked'`. */
+  writeGate?: {
+    reason: string;
+    fieldsSkipped: string[];
+    fieldsStripped: string[];
+  };
 }
 
 // ── RAG vehicle frontmatter ──
@@ -123,6 +136,24 @@ interface R8Neighbor {
   } | null;
 }
 
+// ── Page write outcome ──
+
+/**
+ * Issue de l'écriture de `__seo_r8_pages`. Seul `written` autorise les
+ * écritures dépendantes (version, fingerprints, similarité, files).
+ * `gate_refused` = refus du WriteGate (pas une erreur) ; `db_error` = panne DB.
+ */
+type R8PageWriteOutcome =
+  | { kind: 'written'; pageId: string }
+  | {
+      kind: 'gate_refused';
+      pageId: string;
+      reason: string;
+      fieldsSkipped: string[];
+      fieldsStripped: string[];
+    }
+  | { kind: 'db_error'; operation: string; code?: string; message: string };
+
 @Injectable()
 export class R8VehicleEnricherService extends SupabaseBaseService {
   protected override readonly logger = new Logger(
@@ -154,6 +185,22 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       { p_type_id: typeId },
       { source: 'api' },
     );
+    // Panne DB de la RPC ≠ véhicule introuvable : explicite, jamais un `null`.
+    // (RpcBlockedError = refus de politique, pas une panne DB → chemin inchangé.)
+    if (error instanceof SupabaseRpcError) {
+      this.logger.error(
+        `[R8_DB_ERROR] op=fetch_vehicle_data type_id=${typeId} code=${error.code ?? 'unknown'} message=${error.message}`,
+      );
+      throw new DatabaseException({
+        code: ErrorCodes.DATABASE.RPC_FAILED,
+        message: `R8 fetchVehicleData failed (code=${error.code ?? 'unknown'}): ${error.message}`,
+        context: {
+          operation: 'fetch_vehicle_data',
+          pgCode: error.code,
+          typeId,
+        },
+      });
+    }
     if (error || !data?.vehicle) return null;
 
     // Normalize French RPC field names → English field names expected by composeBlocks
@@ -428,7 +475,7 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       }));
 
       // 5a. UPSERT __seo_r8_pages
-      const pageId = await this.upsertPage({
+      const write = await this.upsertPage({
         pageKey,
         vehicle: v,
         typeId: String(typeId),
@@ -449,16 +496,40 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
         variantSignature,
       });
 
-      if (!pageId) {
+      if (write.kind === 'db_error') {
         return {
           status: 'failed',
           seoDecision: 'REJECT',
           diversityScore: 0,
-          warnings: ['DB write failed'],
-          reasons: ['CONTENT_BROKEN'],
+          warnings: [
+            'DB write failed',
+            `op=${write.operation} code=${write.code ?? 'unknown'} ${write.message}`,
+          ],
+          reasons: ['DB_ERROR'],
           pageKey,
         };
       }
+
+      // Refus du WriteGate (written=false) : la page n'a PAS été écrite.
+      // Aucune version / empreinte / similarité / file / QA n'est enregistrée
+      // pour un contenu qui n'existe pas en base ; statut distinct remonté.
+      if (write.kind === 'gate_refused') {
+        return {
+          status: 'write_gate_blocked',
+          seoDecision: decision,
+          diversityScore: metrics.diversityScore,
+          warnings: [...warnings, `WRITE_GATE_BLOCKED: ${write.reason}`],
+          reasons,
+          pageKey,
+          writeGate: {
+            reason: write.reason,
+            fieldsSkipped: write.fieldsSkipped,
+            fieldsStripped: write.fieldsStripped,
+          },
+        };
+      }
+
+      const pageId = write.pageId;
 
       // 5b. INSERT __seo_r8_page_versions
       await this.insertVersion(
@@ -523,7 +594,10 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
         seoDecision: 'REJECT',
         diversityScore: 0,
         warnings: [(error as Error).message],
-        reasons: ['CONTENT_BROKEN'],
+        // Panne DB (lecture/écriture) ≠ contenu cassé.
+        reasons: [
+          error instanceof DatabaseException ? 'DB_ERROR' : 'CONTENT_BROKEN',
+        ],
         pageKey,
       };
     }
@@ -685,8 +759,19 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       .neq('page_key', excludePageKey)
       .order('published_at', { ascending: false, nullsFirst: false })
       .limit(5);
-    if (error || !data) return [];
-    return data as R8Neighbor[];
+    // Une erreur DB (ex. colonne absente, 42703) n'est PAS « aucun voisin » :
+    // un [] silencieux gonfle le score de diversité et peut ouvrir le gate INDEX.
+    if (error) {
+      this.logger.error(
+        `[R8_DB_ERROR] op=fetch_neighbors neighbor_family_key=${neighborFamilyKey} code=${error.code ?? 'unknown'} message=${error.message}`,
+      );
+      throw new DatabaseException({
+        code: ErrorCodes.DATABASE.OPERATION_FAILED,
+        message: `R8 fetchNeighbors failed (code=${error.code ?? 'unknown'}): ${error.message}`,
+        context: { operation: 'fetch_neighbors', pgCode: error.code },
+      });
+    }
+    return (data ?? []) as R8Neighbor[];
   }
 
   // ── Compose Blocks ──
@@ -1312,7 +1397,7 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
     decision: R8SeoDecision;
     sitemapRules: { sitemap: boolean; robots: string };
     variantSignature: R8VariantSignature;
-  }): Promise<string | null> {
+  }): Promise<R8PageWriteOutcome> {
     const v = params.vehicle;
     const row = {
       page_key: params.pageKey,
@@ -1368,26 +1453,69 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
     // For new pages (insert), we still need the direct upsert path.
     if (this.writeGate && this.featureFlags?.writeGuardEnabled) {
       // Check if page already exists
-      const { data: existingPage } = await this.client
+      const { data: existingPage, error: lookupError } = await this.client
         .from(R8_TABLES.pages)
         .select('id')
         .eq('page_key', row.page_key)
         .maybeSingle();
 
+      // Lecture en échec ≠ « page absente » : sans ce garde, une page existante
+      // retomberait sur l'upsert direct et contournerait le WriteGate.
+      if (lookupError) {
+        this.logger.error(
+          `[R8_DB_ERROR] op=page_lookup page_key=${row.page_key} code=${lookupError.code ?? 'unknown'} message=${lookupError.message}`,
+        );
+        return {
+          kind: 'db_error',
+          operation: 'page_lookup',
+          code: lookupError.code,
+          message: lookupError.message,
+        };
+      }
+
       if (existingPage) {
         // Update existing — route through WriteGate
+        const correlationId = `r8-${row.page_key}-${Date.now().toString(36)}`;
         const result = await this.writeGate.writeToTarget({
           roleId: RoleId.R8_VEHICLE,
           target: 'r8_vehicle_main' as ResourceGroup,
           pkValue: existingPage.id,
           payload: row,
-          correlationId: `r8-${row.page_key}-${Date.now().toString(36)}`,
+          correlationId,
         });
         this.logger.log(
           `R8 page via WriteGate: ${row.page_key} written=${result.written} ` +
             `fields=${result.fieldsWritten.length} skipped=${result.fieldsSkipped.length}`,
         );
-        return existingPage.id;
+        if (!result.written) {
+          const reason = result.reason ?? 'unknown';
+          // Le WriteGate encode ses propres pannes DB en `db_error…` : ce n'est
+          // pas un refus de garde, c'est une panne d'écriture.
+          if (reason.startsWith('db_error')) {
+            this.logger.error(
+              `[R8_DB_ERROR] op=write_gate page_key=${row.page_key} page_id=${existingPage.id} ` +
+                `reason=${reason} correlation_id=${correlationId}`,
+            );
+            return {
+              kind: 'db_error',
+              operation: 'write_gate',
+              message: reason,
+            };
+          }
+          this.logger.warn(
+            `[R8_WRITE_GATE_REFUSED] page_key=${row.page_key} page_id=${existingPage.id} ` +
+              `reason=${reason} fields_skipped=${result.fieldsSkipped.join(',') || '-'} ` +
+              `fields_stripped=${result.fieldsStripped.join(',') || '-'} correlation_id=${correlationId}`,
+          );
+          return {
+            kind: 'gate_refused',
+            pageId: existingPage.id,
+            reason,
+            fieldsSkipped: result.fieldsSkipped,
+            fieldsStripped: result.fieldsStripped,
+          };
+        }
+        return { kind: 'written', pageId: existingPage.id };
       }
       // New page — fall through to upsert (insert)
     }
@@ -1400,10 +1528,24 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       .single();
 
     if (error) {
-      this.logger.error(`UPSERT __seo_r8_pages failed: ${error.message}`);
-      return null;
+      this.logger.error(
+        `[R8_DB_ERROR] op=upsert UPSERT __seo_r8_pages failed: code=${error.code ?? 'unknown'} message=${error.message}`,
+      );
+      return {
+        kind: 'db_error',
+        operation: 'upsert',
+        code: error.code,
+        message: error.message,
+      };
     }
-    return data?.id || null;
+    if (!data?.id) {
+      return {
+        kind: 'db_error',
+        operation: 'upsert',
+        message: 'upsert returned no id',
+      };
+    }
+    return { kind: 'written', pageId: data.id };
   }
 
   private async insertVersion(

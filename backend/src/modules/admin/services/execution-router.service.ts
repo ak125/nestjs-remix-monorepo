@@ -728,6 +728,9 @@ export class ExecutionRouterService extends SupabaseBaseService {
     if (typeof data === 'object' && data !== null) {
       const d = data as Record<string, unknown>;
       if (d.status === 'skipped') return 'skipped';
+      // R8 : refus du WriteGate (written=false) — la page n'a pas été écrite.
+      // Un refus de garde n'est pas une erreur, mais jamais un succès.
+      if (d.status === 'write_gate_blocked') return 'skipped';
       if (d.status === 'failed') return 'failed';
       if (d.status === 'ready') return 'success'; // dryRun preview
       if (
