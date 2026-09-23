@@ -9,9 +9,13 @@ import {
   RotateCcw,
 } from "lucide-react";
 import {
+  type ActionFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
+  data,
+  useActionData,
   useLoaderData,
+  useNavigation,
   Link,
   Form,
   useNavigate,
@@ -20,8 +24,22 @@ import {
 } from "react-router";
 
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+import { Alert } from "~/components/ui/alert";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "~/components/ui/alert-dialog";
+import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
+import { getStatusBadgeColor, getStatusLabel } from "~/utils/orders.utils";
+import { getProxyHeaders } from "~/utils/proxy-headers.server";
 import { requireAuth } from "../auth/unified.server";
 import { AccountLayout } from "../components/account/AccountNavigation";
 import { Badge } from "../components/ui/badge";
@@ -81,9 +99,70 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
   }
 }
 
+const CANCEL_FAILED_MESSAGE =
+  "L'annulation n'a pas pu aboutir. Réessayez ou contactez notre service client.";
+
+/**
+ * Annulation par le client. Le backend (DELETE /api/orders/:id) vérifie le
+ * propriétaire, refuse une commande payée ou plus annulable (409) et passe
+ * par l'autorité unique cancel_order_atomic.
+ */
+export async function action({ request, params }: ActionFunctionArgs) {
+  await requireAuth(request);
+  const orderId = params.orderId;
+  if (!orderId) {
+    return data({ error: "Commande introuvable." }, { status: 404 });
+  }
+
+  const formData = await request.formData();
+  if (formData.get("intent") !== "cancel") {
+    return data({ error: "Action inconnue." }, { status: 400 });
+  }
+
+  try {
+    const res = await fetch(
+      getInternalApiUrlFromRequest(
+        `/api/orders/${encodeURIComponent(orderId)}`,
+        request,
+      ),
+      {
+        method: "DELETE",
+        headers: {
+          Accept: "application/json",
+          Cookie: request.headers.get("Cookie") || "",
+          ...getProxyHeaders(request),
+        },
+      },
+    );
+
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      // 409 = refus métier (payée, déjà annulée) : message backend destiné au client
+      const message =
+        res.status === 409 && typeof errorData.message === "string"
+          ? errorData.message
+          : CANCEL_FAILED_MESSAGE;
+      return data({ error: message }, { status: res.status });
+    }
+
+    return { success: true as const };
+  } catch (error) {
+    logger.error("Erreur lors de l'annulation de la commande:", error);
+    return data({ error: CANCEL_FAILED_MESSAGE }, { status: 500 });
+  }
+}
+
 export default function OrderDetailPage() {
   const { order, user } = useLoaderData<typeof loader>();
+  const actionData = useActionData<typeof action>();
+  const navigation = useNavigation();
   const navigate = useNavigate();
+  const isCancelling =
+    navigation.state !== "idle" &&
+    navigation.formData?.get("intent") === "cancel";
+  const cancelError =
+    actionData && "error" in actionData ? actionData.error : null;
+  const cancelled = actionData && "success" in actionData;
 
   return (
     <AccountLayout user={user}>
@@ -120,14 +199,21 @@ export default function OrderDetailPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <Badge
-              variant={getStatusVariant(order.status)}
-              className="px-3 py-1"
+            {/* Pas de <Badge> : sa variante par défaut (bg-primary) écrase les
+                couleurs de statut, faute de fusion des classes. */}
+            <span
+              className={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium ${getStatusBadgeColor(String(order.status))}`}
             >
-              {getOrderStatusLabel(order.status)}
-            </Badge>
+              {getStatusLabel(String(order.status))}
+            </span>
           </div>
         </div>
+
+        {cancelled && (
+          <Alert variant="success" title="Commande annulée">
+            Votre commande a bien été annulée.
+          </Alert>
+        )}
 
         {/* Actions rapides */}
         <div className="flex flex-wrap gap-3">
@@ -402,25 +488,61 @@ export default function OrderDetailPage() {
               </CardContent>
             </Card>
 
-            {/* Actions selon le statut */}
-            {[1, 2].includes(order.status) && (
+            {/* Annulation : autorisée par le backend (commande non payée) */}
+            {order.canCancel && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-red-600">Zone de danger</CardTitle>
+                  <CardTitle>Annuler la commande</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground mb-3">
+                <CardContent className="space-y-3">
+                  <p className="text-sm text-muted-foreground">
                     Vous pouvez annuler cette commande tant qu'elle n'est pas
-                    expédiée.
+                    payée.
                   </p>
-                  <Form
-                    method="post"
-                    action={`/account/orders/${order.id}/cancel`}
-                  >
-                    <Button type="submit" variant="destructive">
-                      Annuler la commande
-                    </Button>
-                  </Form>
+                  {cancelError && (
+                    <p role="alert" className="text-sm text-red-600">
+                      {cancelError}
+                    </p>
+                  )}
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive">Annuler la commande</Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          Annuler la commande #{order.orderNumber} ?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          L'annulation est définitive : la commande ne pourra
+                          plus être payée ni reprise.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      {cancelError && (
+                        <p role="alert" className="text-sm text-red-600">
+                          {cancelError}
+                        </p>
+                      )}
+                      <AlertDialogFooter>
+                        <AlertDialogCancel disabled={isCancelling}>
+                          Garder ma commande
+                        </AlertDialogCancel>
+                        <Form method="post">
+                          <input type="hidden" name="intent" value="cancel" />
+                          <Button
+                            type="submit"
+                            variant="destructive"
+                            disabled={isCancelling}
+                            className="w-full"
+                          >
+                            {isCancelling
+                              ? "Annulation en cours…"
+                              : "Oui, annuler la commande"}
+                          </Button>
+                        </Form>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </CardContent>
               </Card>
             )}
@@ -432,22 +554,6 @@ export default function OrderDetailPage() {
 }
 
 // Fonctions utilitaires
-function getOrderStatusLabel(status: number): string {
-  const labels: Record<number, string> = {
-    1: "En attente",
-    2: "Confirmée",
-    3: "En préparation",
-    4: "Prête à expédier",
-    5: "Expédiée",
-    6: "Livrée",
-    91: "Annulée",
-    92: "En rupture",
-    93: "Retournée",
-    94: "Remboursée",
-  };
-  return labels[status] || "Statut inconnu";
-}
-
 function getLineStatusLabel(status: number): string {
   const labels: Record<number, string> = {
     1: "En attente",
@@ -462,15 +568,6 @@ function getLineStatusLabel(status: number): string {
     94: "Remboursée",
   };
   return labels[status] || "Inconnue";
-}
-
-function getStatusVariant(
-  status: number,
-): "default" | "secondary" | "destructive" | "outline" {
-  if ([6].includes(status)) return "default"; // Livrée
-  if ([3, 4, 5].includes(status)) return "secondary"; // En cours
-  if ([91, 92, 93, 94].includes(status)) return "destructive"; // Problèmes
-  return "outline"; // En attente
 }
 
 function getPaymentStatusVariant(
