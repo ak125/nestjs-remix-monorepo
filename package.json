@@ -74,6 +74,7 @@
     "audit:editorial-sinks:test": "tsx --test scripts/audit/editorial-authority-sinks.test.ts",
     "test:prod-rollback": "node --test scripts/ci/prod-rollback.test.mjs",
     "test:prod-ssr-probe": "node --test scripts/ci/prod-ssr-probe.test.mjs",
+    "test:prod-seo-collector-env": "node --test scripts/ci/prod-seo-collector-env.test.mjs",
     "test:preprod-response-probe": "node --test scripts/ci/preprod-response-probe.test.mjs",
     "test:preprod-response-suite": "node --test scripts/ci/preprod-response-suite.test.mjs",
     "test:r2-golden": "node --test scripts/ci/assert-r2-golden.test.mjs",

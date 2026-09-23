@@ -24,6 +24,7 @@ on:
       - "package-lock.json"
       - "audit-reports/phase0-baseline.json"
       - ".github/workflows/audit.yml"
+      - ".github/workflows/deploy-prod.yml"   # prod-seo-collector-env.test.mjs asserts its wiring
       - ".spec/00-canon/repository-registry/**"   # ALL L2 overlays the contract suite reads (was architecture+db only)
       - "audit/registry/**"                        # L1 projections the contract tests assert against
       - ".dependency-cruiser.generated.cjs"
@@ -83,6 +84,15 @@ jobs:
         # stubbed docker (pass/fail per homepage state) and statically forbids the
         # container temp-file write from ever coming back.
         run: npm run test:prod-ssr-probe
+
+      - name: 📈 PROD SEO collector env writer — behavioural proof on a scratch .env (BLOCKING)
+        # prod-seo-collector-env.sh runs ONLY in deploy-prod.yml, on the real PROD
+        # .env. This executes it against scratch .env files: a GSC/GA4 private key
+        # must read back byte-identical through bash `.` AND docker compose
+        # `env_file`, any partial group or wrong-shaped value must fail with the
+        # .env untouched, and the deploy step must call it before the point of no
+        # return.
+        run: npm run test:prod-seo-collector-env
 
       - name: ⏱️ PREPROD response probe — status vs latency proof (BLOCKING)
         # The step this backs used to time responses without asserting anything, so a
