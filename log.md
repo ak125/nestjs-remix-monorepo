@@ -441,3 +441,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/account-order-cancel`
 - **Décision** : fix(orders): réparer le bouton « Annuler la commande » de l'espace client
 - **Sortie** : PR aucune | commits 57d984086
+
+## 2026-09-24 — fix/account-order-cancel (auto)
+
+- **Branche** : `fix/account-order-cancel`
+- **Décision** : Merge remote-tracking branch 'origin/main' into fix/account-order-cancel (+3 other commits)
+- **Sortie** : PR #1536 | commits 8d71e7fb0 2731f31ca 44a632308 57d984086
