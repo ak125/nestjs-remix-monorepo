@@ -60,7 +60,10 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
     const [dashboardResponse, recentOrdersResponse] = await Promise.all([
       fetch(`${API_BASE}/api/dashboard/stats`, {
-        headers: { "internal-call": "true" },
+        headers: {
+          "internal-call": "true",
+          Cookie: request.headers.get("Cookie") || "",
+        },
       }),
       fetch(`${API_BASE}/api/dashboard/orders/recent`, {
         headers: {

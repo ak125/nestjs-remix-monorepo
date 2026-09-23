@@ -5,10 +5,6 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import {
-  ModulePermissionGuard,
-  RequireModule,
-} from '../../auth/guards/module-permission.guard';
 import { AuthenticatedGuard } from '@auth/authenticated.guard';
 import { PermissionsGuard } from '@auth/guards/permissions.guard';
 import { RequirePermission } from '@auth/decorators/require-permission.decorator';
@@ -45,6 +41,11 @@ interface ModuleStats {
   status: string;
 }
 
+/**
+ * Toutes les routes exposent des données internes : chacune est réservée au
+ * personnel (session + `canSeeCustomerDetails`). Les gardes passent avant le
+ * CacheInterceptor : une réponse en cache n'est jamais servie à un appel refusé.
+ */
 @Controller('api/dashboard')
 @UseInterceptors(CacheInterceptor)
 export class DashboardController {
@@ -53,8 +54,8 @@ export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
   @Get('stats')
-  @UseGuards(ModulePermissionGuard)
-  @RequireModule('dashboard', 'read')
+  @UseGuards(AuthenticatedGuard, PermissionsGuard)
+  @RequirePermission('canSeeCustomerDetails')
   async getStats(): Promise<DashboardStats> {
     this.logger.log('[DashboardController] GET /api/dashboard/stats avec SEO');
 
@@ -150,8 +151,8 @@ export class DashboardController {
   // ===== NOUVEAUX ENDPOINTS PAR MODULE =====
 
   @Get('commercial')
-  @UseGuards(ModulePermissionGuard)
-  @RequireModule('commercial', 'read')
+  @UseGuards(AuthenticatedGuard, PermissionsGuard)
+  @RequirePermission('canSeeCustomerDetails')
   async getCommercialStats(): Promise<ModuleStats> {
     this.logger.log('[DashboardController] GET /api/dashboard/commercial');
     try {
@@ -172,8 +173,8 @@ export class DashboardController {
   }
 
   @Get('expedition')
-  @UseGuards(ModulePermissionGuard)
-  @RequireModule('expedition', 'read')
+  @UseGuards(AuthenticatedGuard, PermissionsGuard)
+  @RequirePermission('canSeeCustomerDetails')
   async getExpeditionStats(): Promise<ModuleStats> {
     this.logger.log('[DashboardController] GET /api/dashboard/expedition');
     try {
@@ -194,8 +195,8 @@ export class DashboardController {
   }
 
   @Get('seo')
-  @UseGuards(ModulePermissionGuard)
-  @RequireModule('seo', 'read')
+  @UseGuards(AuthenticatedGuard, PermissionsGuard)
+  @RequirePermission('canSeeCustomerDetails')
   async getSeoStats(): Promise<ModuleStats> {
     this.logger.log('[DashboardController] GET /api/dashboard/seo');
     // Pour le moment, stats basiques - à étendre selon les besoins SEO
@@ -207,8 +208,8 @@ export class DashboardController {
   }
 
   @Get('staff')
-  @UseGuards(ModulePermissionGuard)
-  @RequireModule('staff', 'read')
+  @UseGuards(AuthenticatedGuard, PermissionsGuard)
+  @RequirePermission('canSeeCustomerDetails')
   async getStaffStats(): Promise<ModuleStats> {
     this.logger.log('[DashboardController] GET /api/dashboard/staff');
     try {

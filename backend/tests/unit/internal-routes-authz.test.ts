@@ -16,6 +16,10 @@
  * The customer dashboard route `GET /api/legacy-users/dashboard` stays
  * reachable by any authenticated customer (it serves the account page).
  *
+ * Known limit, out of this test's scope: the boundary is level-based. A
+ * principal's account source (customer vs staff table) is not consulted, so a
+ * customer account whose stored level is staff-grade passes like staff.
+ *
  * The test enumerates the handlers from NestJS route metadata rather than a
  * hand-kept list, so the contract covers routes added later.
  *
@@ -143,6 +147,7 @@ const LEGACY_USERS_CUSTOMER_ROUTES = new Set(['getDashboardStats']);
 const STAFF_CONTROLLERS: Array<{ label: string; controller: Type<any> }> = [
   { label: 'api/legacy-orders', controller: LegacyOrdersController },
   { label: 'api/legacy-users', controller: LegacyUsersController },
+  { label: 'api/dashboard', controller: DashboardController },
 ];
 
 describe('back-office read controllers refuse anonymous and customers', () => {
@@ -201,40 +206,6 @@ describe('back-office read controllers refuse anonymous and customers', () => {
       ).toBe(true);
     });
   });
-});
-
-// ─── Dashboard: the routes that had no guard ─────────────────────────────────
-
-describe('api/dashboard data routes refuse anonymous and customers', () => {
-  const STAFF_DASHBOARD_ROUTES = [
-    'getShipments',
-    'getStockAlerts',
-    'getRecentOrders',
-    'getOrdersForDashboard',
-  ];
-
-  it('every dashboard handler carries at least one guard', () => {
-    for (const method of routeHandlers(DashboardController)) {
-      expect(
-        effectiveGuards(DashboardController, method).length,
-      ).toBeGreaterThan(0);
-    }
-  });
-
-  it.each(STAFF_DASHBOARD_ROUTES)(
-    '%s: anonymous and customer refused, staff allowed',
-    (method) => {
-      expect(
-        Reflect.getMetadata(
-          REQUIRE_PERMISSION_KEY,
-          DashboardController.prototype[method],
-        ),
-      ).toBe('canSeeCustomerDetails');
-      expect(isAllowed(DashboardController, method, anonymous())).toBe(false);
-      expect(isAllowed(DashboardController, method, customer())).toBe(false);
-      expect(isAllowed(DashboardController, method, commercial())).toBe(true);
-    },
-  );
 });
 
 // ─── Admin-only controllers ──────────────────────────────────────────────────
