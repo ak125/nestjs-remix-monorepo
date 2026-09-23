@@ -491,12 +491,13 @@ Title, meta et H1 relevés en live le 2026-09-11. Toute proposition part d'une r
   - Le backend DEV a été hors service du ~2026-09-20 21:10Z au 2026-09-23 ~19:45Z. Les runs du 09-21 et du 09-22 ont été perdus, puis rattrapés au redémarrage.
 - **Reprise** : 80 jours confirmés sur 112 dans [2026-06-01, 2026-09-20]. Reste 08-03→09-03, soit 32 jours : 14 absents et 18 non confirmés. Il faut environ 5 runs quotidiens, si le collecteur tient.
 - **Hors #1467, mais à connaître pour lire la mesure** : le tag `v2026.09.23-ga4-consent-catalog-ffc12af` (deploy PROD ✅ le 2026-09-23 à 21:23:36Z) contient #1524, qui exige un consentement explicite avant GA4.
-  - Une baisse du volume GA4 est attendue à partir de cette date. C'est un artefact de mesure, pas un signal SEO.
+  - L'owner a annulé ce choix le même jour : #1535 (`de0aaddb9`) rétablit le consentement automatique. Au 2026-09-24 00:05 CEST, #1535 n'est que sur `main`, et aucun tag ne le contient.
+  - Une baisse du volume GA4 est donc attendue **entre le 2026-09-23 21:23Z et le prochain tag PROD**. C'est un artefact de mesure, pas un signal SEO. Il faut exclure cette fenêtre des comparaisons GA4.
 
 **Prochaine action unique proposée** : l'owner met en service le collecteur PROD.
-1. Créer les secrets et variables `PROD_GSC_*` / `PROD_GA4_*` depuis DEV (commandes données hors de ce rapport ; aucune valeur affichée).
+1. ✅ Créer les secrets et variables `PROD_GSC_*` / `PROD_GA4_*` : fait par l'owner le 2026-09-23 à 22:01Z. Constaté par leurs noms, aucune valeur lue.
 2. Merger #1534.
-3. Donner un GO nominatif pour le tag PROD. Au 2026-09-23 23:45Z, le lot contiendrait #1531 (panier, zone STOP), #1533 et #1534.
+3. Donner un GO nominatif pour le tag PROD. Au 2026-09-24 00:05 CEST, le lot contiendrait #1531 (panier, zone STOP), #1533, #1535 (rétablissement du consentement GA4 automatique) et #1534.
 4. Couper le collecteur DEV le jour même, avant 04:00 heure de Paris.
 5. Vérifier en lecture seule qu'un run porte `node_env=production` et qu'aucun run `development` ne suit.
 
