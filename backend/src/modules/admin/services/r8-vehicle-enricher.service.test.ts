@@ -312,3 +312,59 @@ describe('R8VehicleEnricherService.composeBlocks — real families and codes', (
     expect(compat).toContain('Codes CNIT : 3333161, 3333AAL, 3333AKL, BR1H06');
   });
 });
+
+// ── enrichSingle: the families it feeds downstream (the "0 familles" site) ──
+
+describe('R8VehicleEnricherService.enrichSingle — families source', () => {
+  const STOP = 'STOP_AFTER_COMPOSE';
+
+  /**
+   * Runs enrichSingle up to composeBlocks, captures the `families` argument,
+   * then aborts (the catch returns `failed`): no neighbour query, no meta pool,
+   * no DB write. RAG dir points to a non-existent path.
+   */
+  async function familiesFedBy(payload: unknown) {
+    const svc = makeEnricher(clone(payload)) as EnricherInternals &
+      Record<string, unknown>;
+    svc.RAG_VEHICLES_DIR = '/nonexistent-r8-enricher-test';
+    svc.vehicleRagGenerator = { generateForModel: jest.fn() };
+    svc.loadVehicleRag = jest.fn().mockReturnValue({});
+    svc.fetchNeighbors = jest.fn().mockResolvedValue([]);
+    const compose = jest.fn(() => {
+      throw new Error(STOP);
+    });
+    svc.composeBlocks = compose;
+    const result = await (
+      svc as unknown as R8VehicleEnricherService
+    ).enrichSingle(19053);
+    expect(result.warnings).toEqual([STOP]);
+    expect(compose).toHaveBeenCalledTimes(1);
+    const families = (compose.mock.calls[0] as unknown[])[1] as Array<{
+      family_name: string;
+      gammes_count: number;
+    }>;
+    return { svc, families };
+  }
+
+  it('feeds catalog.families (not the non-existent compatible_families) to composeBlocks', async () => {
+    const { svc, families } = await familiesFedBy(CACHED_PAYLOAD_19053);
+    expect(families.map((f) => f.family_name)).toEqual([
+      'Système de filtration',
+      'Système de freinage',
+      'Courroie, galet, poulie et chaîne',
+    ]);
+    expect(families.every((f) => f.gammes_count === 2)).toBe(true);
+    expect(svc.logger.warn).not.toHaveBeenCalled();
+  });
+
+  it('warns with typeId when catalog.families is missing (0 families used)', async () => {
+    const payload = clone(CACHED_PAYLOAD_19053) as Record<string, unknown>;
+    delete payload.catalog;
+    const { svc, families } = await familiesFedBy(payload);
+    expect(families).toEqual([]);
+    const warned = svc.logger.warn.mock.calls.map((c) => String(c[0]));
+    expect(warned).toEqual([
+      expect.stringContaining('key=catalog.families typeId=19053'),
+    ]);
+  });
+});
