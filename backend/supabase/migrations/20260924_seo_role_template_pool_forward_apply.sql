@@ -50,9 +50,24 @@ CREATE TABLE IF NOT EXISTS public.__seo_role_template_pool (
   CONSTRAINT chk_srtp_status CHECK (srtp_status IN ('active', 'retired', 'draft'))
 );
 
+-- INDEX: uq_srtp_role_slot_lang_order (repris de 20260509)
+-- Table: public.__seo_role_template_pool (18 lignes après seed)
+-- Pattern: arbitre de ON CONFLICT (srtp_role, srtp_slot, srtp_lang, srtp_order)
+--          du seed ci-dessous ; garantit un srtp_order unique par slot, dont
+--          dépend l'index sha256 reproductible du selector.
+-- Gain attendu: intégrité (unicité), pas de gain de lecture à 18 lignes.
+-- RPC concernees: aucune RPC ; SeoRoleTemplateSelector via
+--          SeoSwitchSelector.fetchVariants() (supabase.from, client backend).
 CREATE UNIQUE INDEX IF NOT EXISTS uq_srtp_role_slot_lang_order
   ON public.__seo_role_template_pool (srtp_role, srtp_slot, srtp_lang, srtp_order);
 
+-- INDEX: idx_srtp_active_lookup (repris de 20260509)
+-- Table: public.__seo_role_template_pool (18 lignes après seed)
+-- Pattern: WHERE srtp_role = $1 AND srtp_slot = $2 AND srtp_lang = $3
+--          AND srtp_status = 'active' ORDER BY srtp_order
+-- Gain attendu: négligeable à 18 lignes (Seq Scan probable) ; conservé pour
+--          la parité de schéma avec 20260509, dont il fait partie.
+-- RPC concernees: aucune RPC ; SeoRoleTemplateSelector.pick() (R8 meta).
 CREATE INDEX IF NOT EXISTS idx_srtp_active_lookup
   ON public.__seo_role_template_pool (srtp_role, srtp_slot, srtp_lang)
   WHERE srtp_status = 'active';
