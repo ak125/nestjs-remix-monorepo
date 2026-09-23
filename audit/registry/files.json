@@ -18870,7 +18870,7 @@
         "crypto"
       ],
       "kind": "controller",
-      "loc": 1205,
+      "loc": 1243,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/controllers/orders.controller.ts",
       "risk": "low",
@@ -19268,7 +19268,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 870,
+      "loc": 912,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/services/orders.service.ts",
       "risk": "low",
@@ -37709,6 +37709,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/tests/unit/orders.controller.customer-cancel.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 216,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/orders.controller.customer-cancel.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/tests/unit/orders.service.create-correlation-id.test.ts",
       "importedBy": [],
       "imports": [],
@@ -51120,11 +51139,16 @@
         "frontend/app/components/ui/card.tsx",
         "frontend/app/services/orders.server.ts",
         "~/components/errors/ErrorGeneric",
+        "~/components/ui/alert",
+        "~/components/ui/alert-dialog",
+        "~/utils/internal-api.server",
         "~/utils/logger",
-        "~/utils/meta-helpers"
+        "~/utils/meta-helpers",
+        "~/utils/orders.utils",
+        "~/utils/proxy-headers.server"
       ],
       "kind": "route",
-      "loc": 504,
+      "loc": 601,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/account_.orders.$orderId.tsx",
       "risk": "low",
@@ -57635,7 +57659,7 @@
         "~/utils/logger"
       ],
       "kind": "config",
-      "loc": 391,
+      "loc": 404,
       "owner": "__unassigned__",
       "path": "frontend/app/services/orders.server.ts",
       "risk": "low",
@@ -58901,7 +58925,7 @@
         "frontend/app/utils/format.ts"
       ],
       "kind": "service",
-      "loc": 76,
+      "loc": 78,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/orders.ts",
       "risk": "low",
