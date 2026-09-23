@@ -411,3 +411,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `chore/secrets-detection-before-rotation`
 - **Décision** : détecter un secret de paiement AVANT publication — moteur par empreinte (inerte sans données) + 2 règles de FORME sur les LIGNES AJOUTÉES, câblées en pre-commit (bloquant) et en CI. Scan d'ajout et non d'état : aucun inventaire des porteurs, donc rien à publier sur un dépôt public avant rotation.
 - **Sortie** : PR #1511 | resync registry L1+L3 + ré-épinglage inventaire PR-8 (262 candidats inchangés, vérifié champ à champ)
+
+## 2026-09-23 — fix/account-order-cancel (auto)
+
+- **Branche** : `fix/account-order-cancel`
+- **Décision** : fix(orders): réparer le bouton « Annuler la commande » de l'espace client
+- **Sortie** : PR aucune | commits 57d984086
