@@ -9,6 +9,7 @@
  * @see .spec/00-canon/image-matrix-v1.md §3
  */
 
+import { resolveImageSourceUrl } from "~/utils/image-optimizer";
 import { type IntentClass, OG_BASE, OG_FALLBACK } from "~/utils/og-constants";
 
 const IMGPROXY_BASE = `${OG_BASE}/imgproxy`;
@@ -25,9 +26,10 @@ export function getOgImageUrl(
 ): string {
   // 1. Image dynamique via imgproxy
   if (pgImg && pgImg !== "no.webp" && pgImg !== "/images/pieces/default.png") {
-    const sourceUrl = pgImg.startsWith("http")
-      ? pgImg
-      : `${OG_BASE}${pgImg.startsWith("/") ? "" : "/"}${pgImg}`;
+    // La source doit être une origine autorisée par IMGPROXY_ALLOWED_SOURCES
+    // (Supabase Storage). Préfixer OG_BASE donnait une source sur NOTRE domaine,
+    // rejetée par imgproxy en 404 `Invalid source URL`.
+    const sourceUrl = resolveImageSourceUrl(pgImg);
     return `${IMGPROXY_BASE}/rs:fit:1200:630/q:85/plain/${sourceUrl}@webp`;
   }
 
