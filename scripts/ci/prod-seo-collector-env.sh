@@ -11,9 +11,11 @@
 # ingestion run journaled in __seo_event_log came from node_env=development, so
 # the measurement lived and died with the DEV backend (runs fired only when DEV
 # was up at the cron minute or restarted; whole days were missed).
-# The operator has no shell on the PROD host. The deploy job is the existing
-# writer of ~/production/.env (JWT_SECRET, SEO_CP_* in deploy-prod.yml); this
-# script is that writer for the collector config.
+# Outside this pipeline the PROD host is reachable only through an owner root
+# session: a hand edit there is unvalidated and untracked, and is read only at
+# the next container recreation. The deploy job is the existing writer of
+# ~/production/.env (JWT_SECRET, SEO_CP_* in deploy-prod.yml); this script is
+# that writer for the collector config.
 #
 # WHY THIS IS A SCRIPT (not inline YAML)
 # --------------------------------------
