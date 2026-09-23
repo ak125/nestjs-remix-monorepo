@@ -1944,6 +1944,7 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/auth/auth.module.ts",
         "runtime:backend/src/controllers/users.controller.ts",
         "runtime:backend/src/database/database.module.ts",
         "runtime:backend/src/modules/commercial/commercial.module.ts",
