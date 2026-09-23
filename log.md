@@ -447,3 +447,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/account-order-cancel`
 - **Décision** : Merge remote-tracking branch 'origin/main' into fix/account-order-cancel (+3 other commits)
 - **Sortie** : PR #1536 | commits 8d71e7fb0 2731f31ca 44a632308 57d984086
+
+## 2026-09-24 — fix/ga4-skip-automated-browsers (auto)
+
+- **Branche** : `fix/ga4-skip-automated-browsers`
+- **Décision** : chore(registry): resync L1+L3 projections (+1 other commit)
+- **Sortie** : PR #1538 | commits 2af384d09 ef2a1e977
