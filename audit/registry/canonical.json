@@ -17720,7 +17720,8 @@
         "domain": "UNKNOWN",
         "id": "__seo_role_template_pool",
         "inMigrations": [
-          "20260509_seo_role_template_pool_with_r8_meta_seed.sql"
+          "20260509_seo_role_template_pool_with_r8_meta_seed.sql",
+          "20260924_seo_role_template_pool_forward_apply.sql"
         ],
         "indexes": [],
         "name": "__seo_role_template_pool",
@@ -99976,13 +99977,13 @@
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
       ".spec/00-canon/repository-registry/ownership.yaml": "5a541e997eba2f4a388b50cf0391c11b7c0041a43047063b051fb74c38b5dff5",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
-      "audit/registry/db.json": "3045154dd16aeefab01f398f2540e47939a253f9cb3d5194599764dbc02e9958",
+      "audit/registry/db.json": "6f242857acf984852387e862c515bf2726aeebf64c3a8e29b4c2d3f9c23910d8",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
       "audit/registry/files.json": "da8542e8a68a3b11b12b5047cccaf6f3b8852a26cf00725f677158b90025e735",
       "audit/registry/rpc.json": "821912126b4b0b6e8c5a86b4269f43106cc40a44d2ee85a107b550ab9ea0a7b6",
       "audit/registry/runtime.json": "3f153ecc8a7a52378e26435fe7ecf04c0a4549288d6ad12283b783545ba5e99e"
     },
-    "sotFingerprint": "ace1b4bd804d"
+    "sotFingerprint": "4e62e40d6c69"
   },
   "runtime": [
     {
