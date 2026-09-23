@@ -6,6 +6,26 @@
 > (`r8-vehicle-enricher` + système de switch + `__seo_r8_fingerprints`).*
 > `indexability_status = observed` · `noindex_action = out_of_scope`.
 
+> **Erratum 2026-09-23 — `PRESENT_IDENTICAL` est faux (§ Cause racine du Défaut B, § Limites honnêtes).**
+> Les signatures FAQ et catalogue sont identiques entre sœurs **parce que les deux blocs sont vides**,
+> pas parce qu'ils contiennent le même texte. Mesuré en base (lecture seule) :
+> 154 lignes sur 155 de `__seo_r8_pages` ont `faq_signature = encode(sha256('NO_FAQ'),'hex')`,
+> `category_signature = encode(sha256('NO_CATEGORY'),'hex')` et `catalog_delta_score = 0`. Seule exception :
+> `r8_renault_clio-iii_19053` (`INDEX`, 88.00), qui n'a pas de `rendered_json->blocks`.
+> Ces valeurs sont les sentinelles d'absence de l'enricher (`sha256(faqBlock?.renderedText || 'NO_FAQ')`,
+> idem `NO_CATEGORY`). Aucune ligne n'a été mise à jour après le 2026-04-24 (`max(updated_at)`, colonne
+> maintenue par le trigger `trg_seo_r8_pages_updated_at`) : l'état mesuré est donc celui du 2026-06-06.
+> Les versions de `__seo_r8_page_versions` portent aussi les deux sentinelles, avec deux exceptions :
+> la version 1 de `r8_renault_clio-iii_19053` (2026-03-16, aucune sentinelle) et les 2 versions du 2026-06-08
+> (19053 et 11056 : FAQ présente, `NO_CATEGORY` toujours là). Ces dernières n'ont pas été reportées dans
+> `__seo_r8_pages`.
+> **Conséquence :** le levier « diversifier une FAQ et un catalogue identiques » part d'un mauvais diagnostic.
+> Le bloc catalogue exige au moins 3 familles et la FAQ gamme dérive des familles : avec une liste de familles
+> vide, aucun des deux blocs n'est émis. Le payload actuel du RPC `get_vehicle_page_data_cached` expose les
+> gammes sous `catalog.families[].gammes` / `popular_parts`, pas sous `compatible_families` ni `families`
+> que lit l'enricher. La forme du payload au moment de l'écriture (mars-avril) n'est pas vérifiée.
+> Les autres constats de ce document ne sont pas re-vérifiés par cet erratum.
+
 ## Synthèse
 
 | Metric | Value | Meaning |
@@ -62,6 +82,8 @@ est **rendue par type** via `/api/vehicles/types/{id}/page-data-rpc` (loader
 avg 61.3, 0 indexée) / **Renault-Clio III 3** (avg 68.3, 1 indexée). Peugeot/Citroën/VW/Audi/Ford/Opel = **0**.
 
 ## Cause racine du Défaut B (diagnostiquée — lecture code)
+
+> ⚠️ Section invalidée par l'erratum 2026-09-23 (en tête) : les signatures sont des sentinelles d'absence.
 
 `faq_signature` **et** `category_signature` = **`PRESENT_IDENTICAL`** (pas absents) : par groupe de sœurs,
 `content`/`semantic` distincts, mais FAQ et catalogue collapsent à **1 seule valeur** (ex. `smart::city coupe
@@ -131,7 +153,8 @@ gamme · ratio de pondération FAQ · `engine_family_key` désambiguïse-t-il le
 ## Limites honnêtes
 
 - `faq/category = 1/groupe` est ici **`PRESENT_IDENTICAL`** (bloc rempli mais identique), pas un sentinelle
-  d'absence — à reconfirmer par cas avant tout refresh.
+  d'absence — à reconfirmer par cas avant tout refresh. **→ Reconfirmé le 2026-09-23 : faux, c'est bien la
+  sentinelle d'absence (voir l'erratum en tête).**
 - `~98,7 %` de recouvrement catalogue = **un échantillon de paire** (19052↔19053), pas une mesure exhaustive
   des 18 sœurs ; à élargir avant de décider du levier catalogue.
 - R8 = `/constructeurs/` ; le runtime `/pieces/` (RM API V2) **ne lit pas** `__seo_r8_pages`.
