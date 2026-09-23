@@ -45,6 +45,9 @@ jobs:
       - name: Verify client-IP probe before any PROD mutation
         run: node --test scripts/ci/prod-client-ip-probe.test.mjs
 
+      - name: Verify SEO collector env writer before any PROD mutation
+        run: node --test scripts/ci/prod-seo-collector-env.test.mjs
+
       - name: Login to Docker Hub
         uses: docker/login-action@v4
         with:
@@ -205,6 +208,19 @@ jobs:
           # readable/verifiable (`gh variable list`), unlike the write-only HMAC secret
           # above. cf-connecting-ip is anti-spoofed at origin, so exposing the IP is safe.
           SEO_CP_SYNTHETIC_PROBE_EGRESS_IPS_OVERRIDE: ${{ vars.PROD_SEO_CP_SYNTHETIC_PROBE_EGRESS_IPS }}
+          # GSC/GA4 daily ingestion (Bull `seo-monitor`) — makes PROD its single
+          # collector instead of the DEV backend. Written by
+          # scripts/ci/prod-seo-collector-env.sh (contract + format in its header):
+          # GSC group complete → collector ON; GSC group unset → collector OFF,
+          # written explicitly; any partial group → deploy aborts before any
+          # PROD mutation. Keys and e-mails are secrets; the property identifiers
+          # are variables (not credentials, readable with `gh variable list`).
+          GSC_CLIENT_EMAIL_OVERRIDE: ${{ secrets.PROD_GSC_CLIENT_EMAIL }}
+          GSC_PRIVATE_KEY_OVERRIDE: ${{ secrets.PROD_GSC_PRIVATE_KEY }}
+          GSC_SITE_URL_OVERRIDE: ${{ vars.PROD_GSC_SITE_URL }}
+          GA4_CLIENT_EMAIL_OVERRIDE: ${{ secrets.PROD_GA4_CLIENT_EMAIL }}
+          GA4_PRIVATE_KEY_OVERRIDE: ${{ secrets.PROD_GA4_PRIVATE_KEY }}
+          GA4_PROPERTY_ID_OVERRIDE: ${{ vars.PROD_GA4_PROPERTY_ID }}
         run: |
           docker pull massdoc/nestjs-remix-monorepo:production
 
@@ -301,6 +317,10 @@ jobs:
           else
             echo "ℹ️ PROD_SEO_CP_SYNTHETIC_PROBE_EGRESS_IPS unset — egress floor OFF (HMAC path only)"
           fi
+          # GSC/GA4 collector config (see the env block above). Runs before the
+          # point of no return: a refused config fails the deploy with the
+          # running container and the .env both untouched.
+          bash "$GITHUB_WORKSPACE/scripts/ci/prod-seo-collector-env.sh" .env
 
           docker network create automecanik-prod 2>/dev/null || true
 
