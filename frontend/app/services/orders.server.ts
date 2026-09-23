@@ -254,7 +254,12 @@ export async function getOrderDetails(params: {
       updatedAt: order.updatedAt || order.updated_at,
       paymentMethod:
         order.paymentMethod || order.payment_method || "Carte bancaire",
-      paymentStatus: order.paymentStatus || order.payment_status || "Payé",
+      // ___xtr_order n'a pas de colonne paymentStatus : le drapeau de paiement
+      // est ord_is_pay ('1' = payée). Ne jamais afficher « Payé » par défaut.
+      paymentStatus:
+        order.paymentStatus ||
+        order.payment_status ||
+        (String(order.ord_is_pay) === "1" ? "Payé" : "En attente"),
       transactionId: order.transactionId || order.transaction_id,
       trackingNumber:
         order.ord_tracking || order.trackingNumber || order.tracking_number,
@@ -264,6 +269,9 @@ export async function getOrderDetails(params: {
       deliveryDate: order.deliveryDate || order.delivery_date,
       hasReview: order.hasReview || false,
       canReturn: order.canReturn || order.status === 6,
+      // Règle portée par le backend (getCustomerCancelRefusal) : aucune
+      // recopie côté page, le bouton suit ce drapeau.
+      canCancel: order.customer_can_cancel === true,
 
       // Lignes de commande - Support structure legacy
       lines: (order.lines || order.orderLines || []).map((line: any) => ({

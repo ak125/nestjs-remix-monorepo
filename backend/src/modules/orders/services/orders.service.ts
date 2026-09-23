@@ -108,6 +108,40 @@ export function computeOrderFingerprint(data: CreateOrderData): string {
   return createHash('sha256').update(payload).digest('hex');
 }
 
+/**
+ * Motif de refus d'une annulation demandée par le client depuis son espace,
+ * ou `null` si elle est permise. Règle unique pour l'affichage du bouton
+ * (GET /api/orders/:id → `customer_can_cancel`) et l'annulation elle-même
+ * (DELETE /api/orders/:id).
+ *
+ * - Paiement : seule une commande explicitement impayée (`ord_is_pay = '0'`)
+ *   est annulable. Le statut ne suffit pas : le callback Paybox pose
+ *   `ord_is_pay = '1'` avec `ord_ords_id = '3'`, et des commandes payées
+ *   historiques sont restées en '1'. Rembourser relève du support
+ *   (module payments/ hors périmètre), pas d'un bouton client.
+ * - Statut : la transition vers '2' doit être canonique
+ *   (@repo/domain-commerce) — exclut '2', '5', l'absence de statut et les
+ *   valeurs hors canon ('6', posé par l'annulation admin).
+ */
+export function getCustomerCancelRefusal(order: {
+  ord_ords_id?: unknown;
+  ord_is_pay?: unknown;
+}): string | null {
+  const isPaid = String(order.ord_is_pay);
+  if (isPaid === '1') {
+    return "Cette commande est déjà payée : pour l'annuler, contactez notre service client.";
+  }
+  const status = order.ord_ords_id;
+  if (
+    isPaid !== '0' ||
+    !isOrderStatusCode(status) ||
+    !isValidTransition(status, OrderStatus.CANCELLED)
+  ) {
+    return 'Cette commande ne peut plus être annulée.';
+  }
+  return null;
+}
+
 export interface OrderFilters {
   customerId?: string;
   status?: number;
