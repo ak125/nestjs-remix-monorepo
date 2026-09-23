@@ -14,6 +14,7 @@ import {
 } from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Alert } from "~/components/ui/alert";
+import { getUserProfile, updateOwnProfile } from "~/services/profile.server";
 import { logger } from "~/utils/logger";
 import { requireUser } from "../auth/unified.server";
 import { Badge } from "../components/ui/badge";
@@ -58,13 +59,16 @@ export const loader: LoaderFunction = async ({ request, context }) => {
   const authUser = await requireUser({ context });
 
   try {
-    // TODO: Récupérer le profil complet depuis l'API
+    // Profil enregistré (GET /api/users/profile) ; la session ne porte pas le
+    // téléphone. Si l'API ne répond pas, getUserProfile le journalise et le
+    // formulaire part des valeurs de session (téléphone vide = non envoyé).
+    const profile = await getUserProfile(request);
     const user: User = {
       id: authUser.id,
       email: authUser.email,
-      firstName: authUser.firstName || "",
-      lastName: authUser.lastName || "",
-      phone: "", // TODO: Récupérer depuis l'API
+      firstName: profile?.firstName || authUser.firstName || "",
+      lastName: profile?.lastName || authUser.lastName || "",
+      phone: profile?.phone || "",
       status: "active",
     };
 
@@ -77,7 +81,7 @@ export const loader: LoaderFunction = async ({ request, context }) => {
 
 export const action: ActionFunction = async ({ request, context }) => {
   // Authentification requise
-  const authUser = await requireUser({ context });
+  await requireUser({ context });
 
   const formData = await request.formData();
   const firstName = formData.get("firstName")?.toString() || "";
@@ -104,25 +108,24 @@ export const action: ActionFunction = async ({ request, context }) => {
   }
 
   try {
-    // TODO: Appel API pour mettre à jour le profil
-    const baseUrl = process.env.API_BASE_URL || "http://127.0.0.1:3000";
-
-    const response = await fetch(`${baseUrl}/api/legacy-users/${authUser.id}`, {
-      method: "PUT",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        Cookie: request.headers.get("Cookie") || "",
-      },
-      body: JSON.stringify({
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-        phone: phone.trim() || undefined,
-      }),
+    // Profil du client connecté : le backend l'identifie par la session.
+    const result = await updateOwnProfile(request, {
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      phone: phone.trim() || undefined,
     });
 
-    if (!response.ok) {
-      logger.error(`Update profile API error: ${response.status}`);
+    if (!result.ok) {
+      if (result.status === 401) return redirect("/login");
+      if (result.status === 400) {
+        return data(
+          {
+            error:
+              "Certaines informations n'ont pas été acceptées. Vérifiez le formulaire.",
+          },
+          { status: 400 },
+        );
+      }
       return data(
         {
           error: "Erreur lors de la mise à jour du profil",
