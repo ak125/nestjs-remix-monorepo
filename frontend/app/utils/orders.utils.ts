@@ -53,17 +53,17 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
     label: "En cours de traitement",
     color: "bg-yellow-100 text-yellow-800 border-yellow-200",
   },
-  "2": { label: "Annulee", color: "bg-red-100 text-red-800 border-red-200" },
+  "2": { label: "Annulée", color: "bg-red-100 text-red-800 border-red-200" },
   "3": {
     label: "Attente frais de port",
     color: "bg-orange-100 text-orange-800 border-orange-200",
   },
   "4": {
-    label: "Frais de port recu",
+    label: "Frais de port reçu",
     color: "bg-blue-100 text-blue-800 border-blue-200",
   },
   "5": {
-    label: "Payee — En preparation",
+    label: "Payée — En préparation",
     color: "bg-green-100 text-green-800 border-green-200",
   },
 };
