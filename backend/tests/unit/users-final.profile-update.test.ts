@@ -23,6 +23,7 @@ import {
   mapUserToSupabase,
   UpdateOwnProfileSchema,
   UpdateUserSchema,
+  UserSchema,
 } from '../../src/modules/users/dto/user.dto';
 
 const USER_ID = 'u-1';
@@ -45,18 +46,17 @@ function req(userId?: string) {
   } as never;
 }
 
-// Champs réservés au personnel ou à des parcours dédiés (e-mail, mot de passe).
-const FORBIDDEN_SELF_FIELDS: Array<[string, unknown]> = [
-  ['level', 9],
-  ['isActive', true],
-  ['isPro', true],
-  ['isCompany', true],
-  ['email', 'other@test.invalid'],
-  ['country', 'Belgique'],
-  ['companyName', 'X'],
-  ['siret', '12345678900011'],
-  ['id', 'u-2'],
-  ['password', 'Secret123'],
+// Seuls champs que le client peut changer lui-même.
+const SELF_EDITABLE_FIELDS = ['firstName', 'lastName', 'phone'];
+
+// Tous les autres champs du compte, dérivés de `UserSchema` : un champ ajouté
+// plus tard au compte est refusé d'office. S'y ajoute `password`, qui a son
+// propre parcours (comme l'e-mail).
+const FORBIDDEN_SELF_FIELDS = [
+  ...Object.keys(UserSchema.shape).filter(
+    (field) => !SELF_EDITABLE_FIELDS.includes(field),
+  ),
+  'password',
 ];
 
 describe('UpdateOwnProfileSchema (self-service)', () => {
@@ -84,12 +84,36 @@ describe('UpdateOwnProfileSchema (self-service)', () => {
     expect(UpdateOwnProfileSchema.safeParse({}).success).toBe(false);
   });
 
-  it.each(FORBIDDEN_SELF_FIELDS)('rejects %s', (field, value) => {
+  it('allows exactly first name, last name and phone', () => {
+    expect(Object.keys(UpdateOwnProfileSchema.shape).sort()).toEqual(
+      [...SELF_EDITABLE_FIELDS].sort(),
+    );
+  });
+
+  it('covers the staff-only account fields', () => {
+    expect(FORBIDDEN_SELF_FIELDS).toEqual(
+      expect.arrayContaining([
+        'level',
+        'isActive',
+        'isPro',
+        'isCompany',
+        'email',
+        'id',
+        'password',
+      ]),
+    );
+  });
+
+  // La valeur envoyée importe peu : la clé elle-même est refusée.
+  it.each(FORBIDDEN_SELF_FIELDS)('rejects %s as an unknown key', (field) => {
     const result = UpdateOwnProfileSchema.safeParse({
       firstName: 'Jean',
-      [field]: value,
+      [field]: 'x',
     });
     expect(result.success).toBe(false);
+    expect(result.error?.issues).toContainEqual(
+      expect.objectContaining({ code: 'unrecognized_keys', keys: [field] }),
+    );
   });
 
   it('maps to the three customer columns only', () => {
@@ -149,14 +173,20 @@ describe('PUT /api/users/profile — updateProfile', () => {
 
   it.each(FORBIDDEN_SELF_FIELDS)(
     'refuses a body carrying %s and writes nothing',
-    async (field, value) => {
+    async (field) => {
       const { controller, usersService } = makeController();
       await expect(
         controller.updateProfile(req(USER_ID), {
           firstName: 'Jean',
-          [field]: value,
+          [field]: 'x',
         }),
-      ).rejects.toMatchObject({ status: 400 });
+      ).rejects.toMatchObject({
+        status: 400,
+        // Refusé parce que la clé est interdite, pas à cause de la valeur.
+        message: expect.stringMatching(
+          new RegExp(`unrecognized_keys[\\s\\S]*"${field}"`),
+        ),
+      });
       expect(usersService.updateUser).not.toHaveBeenCalled();
     },
   );
