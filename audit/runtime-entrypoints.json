@@ -2736,6 +2736,7 @@
       "backend/supabase/migrations/20260916_seo_cwv_trend_detector_vacancy_signal.down.sql",
       "backend/supabase/migrations/20260916_seo_cwv_trend_detector_vacancy_signal.sql",
       "backend/supabase/migrations/20260917_definer_rpc_anon_lockdown.sql",
+      "backend/supabase/migrations/20260924_seo_role_template_pool_forward_apply.sql",
       "backend/supabase/migrations/README.md"
     ],
     "ci_workflows": [
@@ -2909,7 +2910,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1522,
+  "runtime_files_count": 1523,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4105,6 +4106,7 @@
     "backend/supabase/migrations/20260916_seo_cwv_trend_detector_vacancy_signal.down.sql",
     "backend/supabase/migrations/20260916_seo_cwv_trend_detector_vacancy_signal.sql",
     "backend/supabase/migrations/20260917_definer_rpc_anon_lockdown.sql",
+    "backend/supabase/migrations/20260924_seo_role_template_pool_forward_apply.sql",
     "backend/supabase/migrations/README.md",
     "docker/lighthouse/Dockerfile",
     "docker/lighthouse/crontab",
