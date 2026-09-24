@@ -5,7 +5,10 @@
  */
 import { Logger } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
-import { MailDeliveryError, MailService } from './mail.service';
+import {
+  MailDeliveryError,
+  MailService,
+} from '../../src/services/mail.service';
 
 const sendMailMock = jest.fn();
 
