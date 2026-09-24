@@ -11072,63 +11072,63 @@
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 743,
+      "line": 665,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_pages",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1401,
+      "line": 1300,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_pages",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1476,
+      "line": 1375,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_pages",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1513,
+      "line": 1412,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_page_versions",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1521,
+      "line": 1420,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_page_versions",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1546,
+      "line": 1445,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_fingerprints",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1588,
+      "line": 1487,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_similarity_index",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1608,
+      "line": 1507,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_regeneration_queue",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1619,
+      "line": 1518,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_qa_reviews",
       "refusal": null
