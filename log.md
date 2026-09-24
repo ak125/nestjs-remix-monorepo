@@ -460,14 +460,14 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Décision** : chore(registry): resync L1+L3 projections (+1 other commit)
 - **Sortie** : PR #1538 | commits 2af384d09 ef2a1e977
 
-## 2026-09-24 — fix/support-module-authz (auto)
-
-- **Branche** : `fix/support-module-authz`
-- **Décision** : chore(registry): resync L1+L3 projections (+1 other commit)
-- **Sortie** : PR #1557 | commits a8ec8d4b7 3ee45fb2f
-
 ## 2026-09-24 — fix/auth-staff-session (auto)
 
 - **Branche** : `fix/auth-staff-session`
 - **Décision** : chore(registry): resync L1+L3 projections (+4 other commits)
 - **Sortie** : PR aucune | commits b6814b55e f1e2df4cb 391c458c5 05dd8c95f f74215a56
+
+## 2026-09-24 — fix/auth-staff-session (auto)
+
+- **Branche** : `fix/auth-staff-session`
+- **Décision** : chore(registry): resync L1+L3 projections (+7 other commits)
+- **Sortie** : PR #1561 | commits 796872024 1ba0da783 e015619ab b6814b55e f1e2df4cb 391c458c5 05dd8c95f f74215a56

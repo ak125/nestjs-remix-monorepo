@@ -184,6 +184,138 @@ describe('VehicleRpcService', () => {
   });
 
   // ═══════════════════════════════════════════════════════════════
+  // getR8Content — repli observable : erreur ≠ aucune ligne
+  // ═══════════════════════════════════════════════════════════════
+  describe('getR8Content — repli observable', () => {
+    interface PostgrestLikeError {
+      code: string;
+      message: string;
+      details: string | null;
+      hint: string | null;
+    }
+
+    /**
+     * Faux client PostgREST en mémoire : chaque filtre renvoie le builder,
+     * `maybeSingle()` résout comme postgrest-js (jamais de rejet) avec la
+     * première ligne restante ou l'erreur fournie. `pending` = requête qui ne
+     * répond jamais (cas timeout).
+     */
+    const usePostgrest = (opts: {
+      rows?: Array<Record<string, unknown>>;
+      error?: PostgrestLikeError;
+      pending?: boolean;
+    }) => {
+      const builder = {
+        select: () => builder,
+        eq: () => builder,
+        in: () => builder,
+        filter: () => builder,
+        order: () => builder,
+        limit: () => builder,
+        maybeSingle: () =>
+          opts.pending
+            ? new Promise(() => undefined)
+            : Promise.resolve(
+                opts.error
+                  ? { data: null, error: opts.error }
+                  : { data: opts.rows?.[0] ?? null, error: null },
+              ),
+      };
+      const from = jest.fn().mockReturnValue(builder);
+      Object.defineProperty(service, 'client', { get: () => ({ from }) });
+      return from;
+    };
+
+    const spyLogger = () => ({
+      warn: jest.spyOn(service['logger'], 'warn').mockImplementation(),
+      error: jest.spyOn(service['logger'], 'error').mockImplementation(),
+      log: jest.spyOn(service['logger'], 'log').mockImplementation(),
+    });
+
+    it('aucune ligne : renvoie null sans aucun log', async () => {
+      const from = usePostgrest({ rows: [] });
+      const logger = spyLogger();
+
+      await expect(service.getR8Content(19053)).resolves.toBeNull();
+
+      expect(from).toHaveBeenCalledWith('__seo_r8_pages');
+      expect(logger.warn).not.toHaveBeenCalled();
+      expect(logger.error).not.toHaveBeenCalled();
+      expect(logger.log).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      {
+        code: '42501',
+        message: 'permission denied for table __seo_r8_pages',
+        details: null,
+        hint: null,
+      },
+      {
+        code: '42703',
+        message: 'column __seo_r8_pages.diversity_score does not exist',
+        details: null,
+        hint: null,
+      },
+    ])(
+      'erreur PostgREST $code : renvoie null ET journalise code, message, typeId',
+      async (pgError) => {
+        usePostgrest({ error: pgError });
+        const logger = spyLogger();
+
+        await expect(service.getR8Content(19053)).resolves.toBeNull();
+
+        expect(logger.warn).toHaveBeenCalledTimes(1);
+        const line = String(logger.warn.mock.calls[0][0]);
+        expect(line).toContain('R8 overlay error');
+        expect(line).toContain('19053');
+        expect(line).toContain(`code=${pgError.code}`);
+        expect(line).toContain(pgError.message);
+        expect(line).not.toContain('timeout');
+      },
+    );
+
+    it('erreur réseau sans code (postgrest-js code vide) : journalisée avec code=?', async () => {
+      usePostgrest({
+        error: {
+          code: '',
+          message: 'TypeError: fetch failed',
+          details: null,
+          hint: null,
+        },
+      });
+      const logger = spyLogger();
+
+      await expect(service.getR8Content(33302)).resolves.toBeNull();
+
+      expect(logger.warn).toHaveBeenCalledTimes(1);
+      const line = String(logger.warn.mock.calls[0][0]);
+      expect(line).toContain('code=?');
+      expect(line).toContain('TypeError: fetch failed');
+      expect(line).toContain('33302');
+    });
+
+    it('timeout : conserve son warn dédié, sans le journaliser comme erreur', async () => {
+      jest.useFakeTimers();
+      try {
+        usePostgrest({ pending: true });
+        const logger = spyLogger();
+
+        const pending = service.getR8Content(19053);
+        jest.advanceTimersByTime(500);
+
+        await expect(pending).resolves.toBeNull();
+        expect(logger.warn).toHaveBeenCalledTimes(1);
+        const line = String(logger.warn.mock.calls[0][0]);
+        expect(line).toContain('R8 overlay timeout');
+        expect(line).not.toContain('R8 overlay error');
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+  });
+
+  // ═══════════════════════════════════════════════════════════════
   // TEST 8: invalidateCache removes L1 Redis entry
   // ═══════════════════════════════════════════════════════════════
   it('should invalidate Redis L1 cache for a type_id', async () => {

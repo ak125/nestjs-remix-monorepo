@@ -165,7 +165,7 @@ export const R8_FORBIDDEN_REPARATION = [
   'guide montage',
 ] as const;
 
-/** R4 glossaire/définition terms forbidden in R8 */
+/** R4 terms forbidden in R8 */
 export const R8_FORBIDDEN_GLOSSAIRE = [
   'définition',
   "c'est quoi",
@@ -256,7 +256,7 @@ export const R8_QUALITY_AXES = {
   ux_clarity: { max: 15 },
 } as const;
 
-// ── Gate definitions R8 (RG1-RG5) ─────────────────────
+// ── Gates R8 (RG1-RG5) ─────────────────────
 
 export const R8_GATE_DEFINITIONS: Record<string, GateDefinition> = {
   RG1_INTENT_ALIGNMENT: {
@@ -671,6 +671,7 @@ export const R8_REASON_CODES = [
   'INVALID_CANONICAL',
   'INVALID_CONTRACT',
   'CONTENT_BROKEN',
+  'DB_ERROR', // panne DB (lecture/écriture) — cause infra, distincte de CONTENT_BROKEN
 ] as const;
 export type R8ReasonCode = (typeof R8_REASON_CODES)[number];
 
