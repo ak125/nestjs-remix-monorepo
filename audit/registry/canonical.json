@@ -27508,7 +27508,8 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend/package.json",
+        "frontend/package.json"
       ],
       "id": "workspace:@repo/domain-commerce@*",
       "name": "@repo/domain-commerce",
@@ -27519,7 +27520,8 @@
       "status": "LIVE",
       "version": "*",
       "workspaces": [
-        "@fafa/backend"
+        "@fafa/backend",
+        "@fafa/frontend"
       ]
     },
     {
@@ -74623,32 +74625,6 @@
         "reachability"
       ],
       "domain": "D8",
-      "id": "frontend/app/components/orders/OrderSummaryWidget.tsx",
-      "importedBy": [
-        "frontend/app/routes/account.orders.tsx"
-      ],
-      "imports": [
-        "frontend/app/components/ui/badge.tsx",
-        "frontend/app/components/ui/card.tsx"
-      ],
-      "kind": "config",
-      "loc": 83,
-      "owner": "@ak125/frontend-team",
-      "path": "frontend/app/components/orders/OrderSummaryWidget.tsx",
-      "risk": "low",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual",
-        "reachability"
-      ],
-      "domain": "D8",
       "id": "frontend/app/components/orders/OrderWorkflowButtons.tsx",
       "importedBy": [
         "frontend/app/routes/admin.orders._index.tsx"
@@ -77340,7 +77316,6 @@
         "frontend/app/components/dashboard/QuickActions.tsx",
         "frontend/app/components/manufacturers/TypeGrid.tsx",
         "frontend/app/components/navbar/UserDropdownMenu.tsx",
-        "frontend/app/components/orders/OrderSummaryWidget.tsx",
         "frontend/app/components/pieces/PiecesToolbar.tsx",
         "frontend/app/components/pieces/PiecesVoirAussi.tsx",
         "frontend/app/components/products/ProductFilters.tsx",
@@ -77358,7 +77333,6 @@
         "frontend/app/routes/account.messages._index.tsx",
         "frontend/app/routes/account.messages.compose.tsx",
         "frontend/app/routes/account.messages.tsx",
-        "frontend/app/routes/account.orders.tsx",
         "frontend/app/routes/account.profile.edit.tsx",
         "frontend/app/routes/account.profile.tsx",
         "frontend/app/routes/account.security.tsx",
@@ -77522,7 +77496,6 @@
         "frontend/app/components/dashboard/StatCard.tsx",
         "frontend/app/components/manufacturers/FeaturedModelsCarousel.tsx",
         "frontend/app/components/manufacturers/TypeGrid.tsx",
-        "frontend/app/components/orders/OrderSummaryWidget.tsx",
         "frontend/app/components/products/ProductsQuickActions.tsx",
         "frontend/app/components/products/ProductsStatsCard.tsx",
         "frontend/app/components/profile/ActivityTimeline.tsx",
@@ -80394,18 +80367,17 @@
       "imports": [
         "frontend/app/auth/unified.server.ts",
         "frontend/app/components/account/AccountNavigation.tsx",
-        "frontend/app/components/orders/OrderSummaryWidget.tsx",
         "frontend/app/components/ui/PublicBreadcrumb.tsx",
-        "frontend/app/components/ui/badge.tsx",
         "frontend/app/components/ui/button.tsx",
         "frontend/app/components/ui/card.tsx",
         "frontend/app/services/orders.server.ts",
         "frontend/app/utils/orders.ts",
+        "frontend/app/utils/orders.utils.ts",
         "~/components/errors/ErrorGeneric",
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 428,
+      "loc": 361,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/account.orders.tsx",
       "risk": "medium",
@@ -80609,7 +80581,7 @@
         "~/utils/proxy-headers.server"
       ],
       "kind": "route",
-      "loc": 601,
+      "loc": 574,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/account_.orders.$orderId.tsx",
       "risk": "medium",
@@ -86773,11 +86745,10 @@
       "imports": [
         "frontend/app/utils/orders.ts",
         "~/utils/format",
-        "~/utils/logger",
-        "~/utils/orders"
+        "~/utils/logger"
       ],
       "kind": "config",
-      "loc": 360,
+      "loc": 359,
       "owner": "__unassigned__",
       "path": "frontend/app/services/admin-orders.server.ts",
       "risk": "low",
@@ -87340,7 +87311,7 @@
         "~/utils/logger"
       ],
       "kind": "config",
-      "loc": 404,
+      "loc": 400,
       "owner": "__unassigned__",
       "path": "frontend/app/services/orders.server.ts",
       "risk": "low",
@@ -88639,7 +88610,7 @@
         "frontend/app/utils/format.ts"
       ],
       "kind": "service",
-      "loc": 78,
+      "loc": 65,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/orders.ts",
       "risk": "medium",
@@ -88663,16 +88634,18 @@
         "frontend/app/components/orders/OrdersStats.tsx",
         "frontend/app/components/orders/OrdersTable.tsx",
         "frontend/app/hooks/use-orders-filters.ts",
+        "frontend/app/routes/account.orders.tsx",
         "frontend/app/routes/admin.orders.$orderId.tsx",
         "frontend/app/routes/commercial.orders.$orderId.tsx"
       ],
       "imports": [
+        "@repo/domain-commerce",
         "frontend/app/types/orders.types.ts",
         "frontend/app/utils/date.ts",
         "frontend/app/utils/format.ts"
       ],
       "kind": "service",
-      "loc": 412,
+      "loc": 440,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/orders.utils.ts",
       "risk": "medium",
@@ -90124,6 +90097,26 @@
       "loc": 181,
       "owner": "@ak125",
       "path": "frontend/tests/qa-audit/suites/visual.spec.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/account-orders-status.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 164,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/account-orders-status.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -99997,12 +99990,12 @@
       ".spec/00-canon/repository-registry/ownership.yaml": "5a541e997eba2f4a388b50cf0391c11b7c0041a43047063b051fb74c38b5dff5",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "3045154dd16aeefab01f398f2540e47939a253f9cb3d5194599764dbc02e9958",
-      "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "2635eb155c3212b502c4f27e574b8b600866691cfdd8389b44488f15a9e15757",
+      "audit/registry/deps.json": "f87f275b9471f6d6d2410d1d40d0035d09082dfeb9439a189e5f2d85a58ab72e",
+      "audit/registry/files.json": "34c7297ae44e7cf6f4014aef0d63b375b284e4a1be0e2d9cc6528ea068ee9644",
       "audit/registry/rpc.json": "821912126b4b0b6e8c5a86b4269f43106cc40a44d2ee85a107b550ab9ea0a7b6",
       "audit/registry/runtime.json": "3f153ecc8a7a52378e26435fe7ecf04c0a4549288d6ad12283b783545ba5e99e"
     },
-    "sotFingerprint": "55dd96f2a862"
+    "sotFingerprint": "be129e406232"
   },
   "runtime": [
     {

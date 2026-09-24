@@ -45358,31 +45358,6 @@
         "reachability"
       ],
       "domain": "UNKNOWN",
-      "id": "frontend/app/components/orders/OrderSummaryWidget.tsx",
-      "importedBy": [
-        "frontend/app/routes/account.orders.tsx"
-      ],
-      "imports": [
-        "frontend/app/components/ui/badge.tsx",
-        "frontend/app/components/ui/card.tsx"
-      ],
-      "kind": "config",
-      "loc": 83,
-      "owner": "__unassigned__",
-      "path": "frontend/app/components/orders/OrderSummaryWidget.tsx",
-      "risk": "low",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "reachability"
-      ],
-      "domain": "UNKNOWN",
       "id": "frontend/app/components/orders/OrderWorkflowButtons.tsx",
       "importedBy": [
         "frontend/app/routes/admin.orders._index.tsx"
@@ -47966,7 +47941,6 @@
         "frontend/app/components/dashboard/QuickActions.tsx",
         "frontend/app/components/manufacturers/TypeGrid.tsx",
         "frontend/app/components/navbar/UserDropdownMenu.tsx",
-        "frontend/app/components/orders/OrderSummaryWidget.tsx",
         "frontend/app/components/pieces/PiecesToolbar.tsx",
         "frontend/app/components/pieces/PiecesVoirAussi.tsx",
         "frontend/app/components/products/ProductFilters.tsx",
@@ -47984,7 +47958,6 @@
         "frontend/app/routes/account.messages._index.tsx",
         "frontend/app/routes/account.messages.compose.tsx",
         "frontend/app/routes/account.messages.tsx",
-        "frontend/app/routes/account.orders.tsx",
         "frontend/app/routes/account.profile.edit.tsx",
         "frontend/app/routes/account.profile.tsx",
         "frontend/app/routes/account.security.tsx",
@@ -48145,7 +48118,6 @@
         "frontend/app/components/dashboard/StatCard.tsx",
         "frontend/app/components/manufacturers/FeaturedModelsCarousel.tsx",
         "frontend/app/components/manufacturers/TypeGrid.tsx",
-        "frontend/app/components/orders/OrderSummaryWidget.tsx",
         "frontend/app/components/products/ProductsQuickActions.tsx",
         "frontend/app/components/products/ProductsStatsCard.tsx",
         "frontend/app/components/profile/ActivityTimeline.tsx",
@@ -50918,18 +50890,17 @@
       "imports": [
         "frontend/app/auth/unified.server.ts",
         "frontend/app/components/account/AccountNavigation.tsx",
-        "frontend/app/components/orders/OrderSummaryWidget.tsx",
         "frontend/app/components/ui/PublicBreadcrumb.tsx",
-        "frontend/app/components/ui/badge.tsx",
         "frontend/app/components/ui/button.tsx",
         "frontend/app/components/ui/card.tsx",
         "frontend/app/services/orders.server.ts",
         "frontend/app/utils/orders.ts",
+        "frontend/app/utils/orders.utils.ts",
         "~/components/errors/ErrorGeneric",
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 428,
+      "loc": 361,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/account.orders.tsx",
       "risk": "low",
@@ -51126,7 +51097,7 @@
         "~/utils/proxy-headers.server"
       ],
       "kind": "route",
-      "loc": 601,
+      "loc": 574,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/account_.orders.$orderId.tsx",
       "risk": "low",
@@ -57070,11 +57041,10 @@
       "imports": [
         "frontend/app/utils/orders.ts",
         "~/utils/format",
-        "~/utils/logger",
-        "~/utils/orders"
+        "~/utils/logger"
       ],
       "kind": "config",
-      "loc": 360,
+      "loc": 359,
       "owner": "__unassigned__",
       "path": "frontend/app/services/admin-orders.server.ts",
       "risk": "low",
@@ -57637,7 +57607,7 @@
         "~/utils/logger"
       ],
       "kind": "config",
-      "loc": 404,
+      "loc": 400,
       "owner": "__unassigned__",
       "path": "frontend/app/services/orders.server.ts",
       "risk": "low",
@@ -58903,7 +58873,7 @@
         "frontend/app/utils/format.ts"
       ],
       "kind": "service",
-      "loc": 78,
+      "loc": 65,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/orders.ts",
       "risk": "low",
@@ -58926,16 +58896,18 @@
         "frontend/app/components/orders/OrdersStats.tsx",
         "frontend/app/components/orders/OrdersTable.tsx",
         "frontend/app/hooks/use-orders-filters.ts",
+        "frontend/app/routes/account.orders.tsx",
         "frontend/app/routes/admin.orders.$orderId.tsx",
         "frontend/app/routes/commercial.orders.$orderId.tsx"
       ],
       "imports": [
+        "@repo/domain-commerce",
         "frontend/app/types/orders.types.ts",
         "frontend/app/utils/date.ts",
         "frontend/app/utils/format.ts"
       ],
       "kind": "service",
-      "loc": 412,
+      "loc": 440,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/orders.utils.ts",
       "risk": "low",
@@ -60325,6 +60297,25 @@
       "loc": 181,
       "owner": "__unassigned__",
       "path": "frontend/tests/qa-audit/suites/visual.spec.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/account-orders-status.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 164,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/account-orders-status.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
