@@ -237,20 +237,61 @@ export async function piecesVehicleLoader({
     gammeId,
     vehicleIds.typeId,
     INITIAL_PRODUCTS_LIMIT,
-  ).catch((err) => {
+  ).catch(async (err) => {
     logger.error(
       `❌ [RM V2] Failed:`,
       err instanceof Error ? err.message : err,
     );
-    return null;
+    await notify503ToErrorLog(
+      url.pathname,
+      "LOADER_503_BACKEND_RPC_ERROR",
+      `RM V2 fetch failed: ${err instanceof Error ? err.message : String(err)}`,
+      { error_name: err instanceof Error ? err.name : "unknown" },
+    );
+    // A failed catalogue read is not evidence of zero products. Do not emit
+    // an indexation decision or let the alternatives cache prolong the outage.
+    throw new Response("Service temporairement indisponible", {
+      status: 503,
+      headers: {
+        "Retry-After": "300",
+        "Cache-Control": "no-store, must-revalidate",
+      },
+    });
   });
 
   // LCP V9: seoSwitches deferred (below-fold only, has fallback anchors)
   const rmV2Response = await rmV2Promise;
 
-  // SEO: 0 produits -> page utile avec alternatives (200 + noindex)
-  // Mieux que 404 : pas d'erreur GSC, liens internes suivis, UX guidee
-  if (!rmV2Response || !isRmV2DataUsable(rmV2Response, 1)) {
+  // A 200 transport response may still carry an upstream error or an invalid
+  // payload. Only a successful, coherent zero count is an empty catalogue.
+  // Keep the existing usable-data predicate for positive results; a genuine
+  // empty result may legitimately have validation.valid=false (no relations).
+  if (
+    !rmV2Response ||
+    rmV2Response.success !== true ||
+    !Number.isInteger(rmV2Response.count) ||
+    rmV2Response.count < 0 ||
+    !Array.isArray(rmV2Response.products) ||
+    (rmV2Response.count === 0) !== (rmV2Response.products.length === 0) ||
+    (rmV2Response.count > 0 && !isRmV2DataUsable(rmV2Response, 1))
+  ) {
+    logger.error(`[RM V2] Invalid catalogue payload for ${url.pathname}`);
+    await notify503ToErrorLog(
+      url.pathname,
+      "LOADER_503_RPC_INVALID_PAYLOAD",
+      "RM V2 did not return a successful, coherent catalogue result",
+    );
+    throw new Response("Service temporairement indisponible", {
+      status: 503,
+      headers: {
+        "Retry-After": "300",
+        "Cache-Control": "no-store, must-revalidate",
+      },
+    });
+  }
+
+  // Genuine zero products: preserve the governed alternatives/noindex policy.
+  if (rmV2Response.count === 0) {
     logger.log(
       `🔄 [NO_PRODUCTS] 0 produits, page alternatives pour: /pieces/${gammeData.alias}-${gammeId}.html`,
     );
@@ -396,9 +437,8 @@ export async function piecesVehicleLoader({
     throw new Response("Service temporairement indisponible", {
       status: 503,
       headers: {
-        "X-Robots-Tag": "noindex",
         "Retry-After": "300",
-        "Cache-Control": "no-cache",
+        "Cache-Control": "no-store, must-revalidate",
       },
     });
   }
@@ -624,9 +664,8 @@ export async function piecesVehicleLoader({
     throw new Response("Service temporairement indisponible", {
       status: 503,
       headers: {
-        "X-Robots-Tag": "noindex",
         "Retry-After": "300",
-        "Cache-Control": "no-cache",
+        "Cache-Control": "no-store, must-revalidate",
       },
     });
   }
