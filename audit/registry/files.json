@@ -2010,7 +2010,8 @@
         "backend/src/common/decorators/index.ts",
         "backend/src/modules/admin/controllers/command-center.controller.ts",
         "backend/src/modules/admin/controllers/user-management.controller.ts",
-        "backend/src/modules/users/controllers/addresses.controller.ts"
+        "backend/src/modules/users/controllers/addresses.controller.ts",
+        "backend/src/modules/users/controllers/user-shipment.controller.ts"
       ],
       "imports": [],
       "kind": "service",
@@ -34521,10 +34522,13 @@
         "backend/src/modules/users/users.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@common/exceptions",
+        "backend/src/common/decorators/user.decorator.ts",
         "backend/src/modules/users/services/user-shipment.service.ts"
       ],
       "kind": "controller",
-      "loc": 81,
+      "loc": 113,
       "owner": "__unassigned__",
       "path": "backend/src/modules/users/controllers/user-shipment.controller.ts",
       "risk": "low",
@@ -38796,6 +38800,25 @@
       "loc": 40,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/trend-signals/rappels-gouv-fr.fetcher.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/user-shipment-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 212,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/user-shipment-authz.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
