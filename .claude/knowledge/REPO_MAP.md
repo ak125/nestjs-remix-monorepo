@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: c14a4f028a36f841d054bd663c81e501978905b06728caa155f1a0d5b08b44b5
+source_sha256: 5c10b1f96c49921ba292b8e36201ddb1656201b9d7225e4893bd46016451373d
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 2902 |
+| Files (Layer 1) | 2903 |
 | DB tables (Layer 1) | 314 |
 | DB RPC (Layer 1) | 253 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1000 |
 
-Source sotFingerprint: `b23792b19c8c`.
+Source sotFingerprint: `548b09ebde70`.
 
 ## Comment l'utiliser
 
@@ -101,10 +101,10 @@ Source sotFingerprint: `b23792b19c8c`.
 
 ### D9 — Import / ETL / Normalisation
 
-- **Files**: 15 (service=12, test=2, config=1)
+- **Files**: 16 (service=12, test=3, config=1)
 - **Runtime entrypoints**: 8
-- **Top owners**: @ak125 (15)
-- **Status**: LIVE=9, UNKNOWN=6
+- **Top owners**: @ak125 (16)
+- **Status**: LIVE=9, UNKNOWN=7
 
 ### D10 — Quality, Monitoring & Observabilité
 

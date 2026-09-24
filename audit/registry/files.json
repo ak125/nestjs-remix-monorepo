@@ -3226,7 +3226,8 @@
       "id": "backend/src/config/content-write-executor.service.ts",
       "importedBy": [
         "backend/src/config/content-write-gate.service.ts",
-        "backend/src/config/write-guard.module.ts"
+        "backend/src/config/write-guard.module.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.write-gate.test.ts"
       ],
       "imports": [
         "@common/utils",
@@ -3541,7 +3542,8 @@
         "backend/src/config/write-guard-ledger.service.ts",
         "backend/src/config/write-guard-lock.service.ts",
         "backend/src/modules/admin/services/r2-enricher.service.ts",
-        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.write-gate.test.ts"
       ],
       "imports": [
         "backend/src/config/role-ids.ts",
@@ -4784,6 +4786,7 @@
         "backend/src/modules/admin/services/execution-router.service.ts",
         "backend/src/modules/admin/services/r2-enricher.service.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.write-gate.test.ts",
         "backend/src/modules/rag-proxy/services/rag-admissibility-gate.service.ts",
         "backend/src/modules/rag-proxy/services/rag-phase2a-shadow-audit.service.ts",
         "backend/src/modules/rag-proxy/types/rag-phase2a.types.ts",
@@ -8261,7 +8264,7 @@
         "backend/src/modules/admin/services/execution-router.service.ts"
       ],
       "kind": "test",
-      "loc": 463,
+      "loc": 604,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/execution-router.service.test.ts",
       "risk": "low",
@@ -8282,6 +8285,7 @@
         "backend/src/modules/admin/controllers/admin-pipeline.controller.ts",
         "backend/src/modules/admin/controllers/internal-pipeline.controller.ts",
         "backend/src/modules/admin/services/execution-router.service.test.ts",
+        "backend/src/workers/processors/__tests__/pipeline-chain.processor.test.ts",
         "backend/src/workers/processors/pipeline-chain.processor.ts"
       ],
       "imports": [
@@ -8299,7 +8303,7 @@
         "backend/src/modules/seo/validation/diagnostic.service.ts"
       ],
       "kind": "service",
-      "loc": 769,
+      "loc": 820,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/execution-router.service.ts",
       "risk": "low",
@@ -9266,7 +9270,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 1674,
+      "loc": 1692,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
       "risk": "low",
@@ -9285,11 +9289,14 @@
       "importedBy": [],
       "imports": [
         "@common/exceptions",
+        "backend/src/config/content-write-executor.service.ts",
+        "backend/src/config/execution-registry.types.ts",
+        "backend/src/config/role-ids.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
         "backend/src/security/rpc-gate/rpc-gate.errors.ts"
       ],
       "kind": "test",
-      "loc": 414,
+      "loc": 518,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/r8-vehicle-enricher.write-gate.test.ts",
       "risk": "low",
@@ -36713,6 +36720,28 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/workers/processors/__tests__/pipeline-chain.processor.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/admin/services/execution-router.service.ts",
+        "backend/src/workers/processors/pipeline-chain.processor.ts"
+      ],
+      "kind": "test",
+      "loc": 188,
+      "owner": "__unassigned__",
+      "path": "backend/src/workers/processors/__tests__/pipeline-chain.processor.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/workers/processors/__tests__/seo-monitor.processor.test.ts",
       "importedBy": [],
       "imports": [
@@ -36809,6 +36838,7 @@
       "importedBy": [
         "backend/src/modules/admin/controllers/admin-pipeline.controller.ts",
         "backend/src/modules/admin/controllers/internal-pipeline.controller.ts",
+        "backend/src/workers/processors/__tests__/pipeline-chain.processor.test.ts",
         "backend/src/workers/worker.module.ts"
       ],
       "imports": [
@@ -36817,7 +36847,7 @@
         "backend/src/modules/admin/services/execution-router.service.ts"
       ],
       "kind": "service",
-      "loc": 156,
+      "loc": 151,
       "owner": "__unassigned__",
       "path": "backend/src/workers/processors/pipeline-chain.processor.ts",
       "risk": "low",
