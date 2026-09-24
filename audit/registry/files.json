@@ -39117,8 +39117,8 @@
         "frontend/app/routes/account.security.tsx",
         "frontend/app/routes/account.settings.tsx",
         "frontend/app/routes/account.tsx",
-        "frontend/app/routes/account_.orders.$orderId.invoice.tsx",
         "frontend/app/routes/account_.orders.$orderId.tsx",
+        "frontend/app/routes/account_.orders.$orderId_.invoice.tsx",
         "frontend/app/routes/admin.blog-analytics.tsx",
         "frontend/app/routes/admin.command-center.tsx",
         "frontend/app/routes/admin.commercial._index.tsx",
@@ -51121,34 +51121,6 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
-      "id": "frontend/app/routes/account_.orders.$orderId.invoice.tsx",
-      "importedBy": [],
-      "imports": [
-        "frontend/app/auth/unified.server.ts",
-        "~/components/errors/ErrorGeneric",
-        "~/components/ui/alert",
-        "~/components/ui/button",
-        "~/utils/internal-api.server",
-        "~/utils/logger",
-        "~/utils/meta-helpers",
-        "~/utils/proxy-headers.server"
-      ],
-      "kind": "route",
-      "loc": 515,
-      "owner": "__unassigned__",
-      "path": "frontend/app/routes/account_.orders.$orderId.invoice.tsx",
-      "risk": "low",
-      "runtime": true,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise"
-      ],
-      "domain": "UNKNOWN",
       "id": "frontend/app/routes/account_.orders.$orderId.tsx",
       "importedBy": [],
       "imports": [
@@ -51172,6 +51144,34 @@
       "loc": 601,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/account_.orders.$orderId.tsx",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/app/routes/account_.orders.$orderId_.invoice.tsx",
+      "importedBy": [],
+      "imports": [
+        "frontend/app/auth/unified.server.ts",
+        "~/components/errors/ErrorGeneric",
+        "~/components/ui/alert",
+        "~/components/ui/button",
+        "~/utils/internal-api.server",
+        "~/utils/logger",
+        "~/utils/meta-helpers",
+        "~/utils/proxy-headers.server"
+      ],
+      "kind": "route",
+      "loc": 515,
+      "owner": "__unassigned__",
+      "path": "frontend/app/routes/account_.orders.$orderId_.invoice.tsx",
       "risk": "low",
       "runtime": true,
       "schemaVersion": "1.0.0",

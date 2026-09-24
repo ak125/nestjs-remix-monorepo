@@ -68123,8 +68123,8 @@
         "frontend/app/routes/account.security.tsx",
         "frontend/app/routes/account.settings.tsx",
         "frontend/app/routes/account.tsx",
-        "frontend/app/routes/account_.orders.$orderId.invoice.tsx",
         "frontend/app/routes/account_.orders.$orderId.tsx",
+        "frontend/app/routes/account_.orders.$orderId_.invoice.tsx",
         "frontend/app/routes/admin.blog-analytics.tsx",
         "frontend/app/routes/admin.command-center.tsx",
         "frontend/app/routes/admin.commercial._index.tsx",
@@ -80605,35 +80605,6 @@
         "manual"
       ],
       "domain": "D8",
-      "id": "frontend/app/routes/account_.orders.$orderId.invoice.tsx",
-      "importedBy": [],
-      "imports": [
-        "frontend/app/auth/unified.server.ts",
-        "~/components/errors/ErrorGeneric",
-        "~/components/ui/alert",
-        "~/components/ui/button",
-        "~/utils/internal-api.server",
-        "~/utils/logger",
-        "~/utils/meta-helpers",
-        "~/utils/proxy-headers.server"
-      ],
-      "kind": "route",
-      "loc": 515,
-      "owner": "@ak125/frontend-team",
-      "path": "frontend/app/routes/account_.orders.$orderId.invoice.tsx",
-      "risk": "medium",
-      "runtime": true,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D8",
       "id": "frontend/app/routes/account_.orders.$orderId.tsx",
       "importedBy": [],
       "imports": [
@@ -80657,6 +80628,35 @@
       "loc": 601,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/account_.orders.$orderId.tsx",
+      "risk": "medium",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
+      "id": "frontend/app/routes/account_.orders.$orderId_.invoice.tsx",
+      "importedBy": [],
+      "imports": [
+        "frontend/app/auth/unified.server.ts",
+        "~/components/errors/ErrorGeneric",
+        "~/components/ui/alert",
+        "~/components/ui/button",
+        "~/utils/internal-api.server",
+        "~/utils/logger",
+        "~/utils/meta-helpers",
+        "~/utils/proxy-headers.server"
+      ],
+      "kind": "route",
+      "loc": 515,
+      "owner": "@ak125/frontend-team",
+      "path": "frontend/app/routes/account_.orders.$orderId_.invoice.tsx",
       "risk": "medium",
       "runtime": true,
       "schemaVersion": "1.0.0",
@@ -100084,11 +100084,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "3045154dd16aeefab01f398f2540e47939a253f9cb3d5194599764dbc02e9958",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "b9a0f333e1a46774f30999503442383ef4656ec268c50d78e4b4ad57597091e0",
+      "audit/registry/files.json": "5fa6b10ba0a9d0db140441b9ec5e1449426349611b6723cb3333e1264d7f43d9",
       "audit/registry/rpc.json": "821912126b4b0b6e8c5a86b4269f43106cc40a44d2ee85a107b550ab9ea0a7b6",
-      "audit/registry/runtime.json": "0237401f6f37cd4d77c6288a6b0f0d9fcf39a3c19e6fae556d945befea0e5edb"
+      "audit/registry/runtime.json": "c56a5896d277dc3dcca3d005cb7e8bb4b6e6711a73aa11ccc00cf9d5ac7656ae"
     },
-    "sotFingerprint": "f1e82be48265"
+    "sotFingerprint": "442e9c26d3d8"
   },
   "runtime": [
     {
@@ -109169,18 +109169,18 @@
     },
     {
       "dependsOn": [],
-      "id": "runtime:frontend/app/routes/account_.orders.$orderId.invoice.tsx",
+      "id": "runtime:frontend/app/routes/account_.orders.$orderId.tsx",
       "kind": "remix-route",
-      "path": "frontend/app/routes/account_.orders.$orderId.invoice.tsx",
+      "path": "frontend/app/routes/account_.orders.$orderId.tsx",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
     },
     {
       "dependsOn": [],
-      "id": "runtime:frontend/app/routes/account_.orders.$orderId.tsx",
+      "id": "runtime:frontend/app/routes/account_.orders.$orderId_.invoice.tsx",
       "kind": "remix-route",
-      "path": "frontend/app/routes/account_.orders.$orderId.tsx",
+      "path": "frontend/app/routes/account_.orders.$orderId_.invoice.tsx",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
