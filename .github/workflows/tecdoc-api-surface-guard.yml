@@ -24,6 +24,6 @@ jobs:
     name: Surface TecDoc — pas de réouverture
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Ratchet surface TecDoc
         run: bash scripts/lint/check-tecdoc-api-surface.sh

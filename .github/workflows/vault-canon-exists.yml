@@ -46,7 +46,7 @@ jobs:
 
     steps:
       - name: Checkout monorepo (full history for reliable base_ref diff)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           # fetch-depth: 0 — robustesse base_ref diff sur PRs multi-commits ou
           # branches éloignées (Réserve 2 v2.1). Coût acceptable pour gate
@@ -54,7 +54,7 @@ jobs:
           fetch-depth: 0
 
       - name: Checkout vault (sparse — ADR ledger only)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           # Vault est public (confirmé via gh api repos/ak125/governance-vault
           # --jq .private → false, 2026-05-27). Pas de PAT requis. Si le vault

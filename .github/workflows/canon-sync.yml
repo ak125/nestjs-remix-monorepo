@@ -46,7 +46,7 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Sync canon mirrors from vault
         run: bash scripts/ci/sync-canon-from-vault.sh

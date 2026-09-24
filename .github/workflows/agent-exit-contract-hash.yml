@@ -41,6 +41,6 @@ jobs:
           - workspaces/seo-batch/.claude/canon-mirrors/agent-exit-contract.md
           - workspaces/marketing/.claude/canon-mirrors/agent-exit-contract.md
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Verify ${{ matrix.copy }}
         run: bash scripts/ci/check-aec-hash.sh "${{ matrix.copy }}"
