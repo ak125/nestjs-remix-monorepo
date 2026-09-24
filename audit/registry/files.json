@@ -50972,10 +50972,11 @@
         "frontend/app/components/ui/card.tsx",
         "~/components/errors/ErrorGeneric",
         "~/components/ui/alert",
+        "~/services/profile.server",
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 362,
+      "loc": 365,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/account.profile.edit.tsx",
       "risk": "low",
@@ -57821,7 +57822,7 @@
         "~/utils/logger"
       ],
       "kind": "config",
-      "loc": 44,
+      "loc": 84,
       "owner": "__unassigned__",
       "path": "frontend/app/services/profile.server.ts",
       "risk": "low",
@@ -60344,6 +60345,25 @@
       "loc": 181,
       "owner": "__unassigned__",
       "path": "frontend/tests/qa-audit/suites/visual.spec.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/account-profile-edit.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 191,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/account-profile-edit.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",

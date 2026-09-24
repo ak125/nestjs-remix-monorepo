@@ -80450,10 +80450,11 @@
         "frontend/app/components/ui/card.tsx",
         "~/components/errors/ErrorGeneric",
         "~/components/ui/alert",
+        "~/services/profile.server",
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 362,
+      "loc": 365,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/account.profile.edit.tsx",
       "risk": "medium",
@@ -87525,7 +87526,7 @@
         "~/utils/logger"
       ],
       "kind": "config",
-      "loc": 44,
+      "loc": 84,
       "owner": "__unassigned__",
       "path": "frontend/app/services/profile.server.ts",
       "risk": "low",
@@ -90144,6 +90145,26 @@
       "loc": 181,
       "owner": "@ak125",
       "path": "frontend/tests/qa-audit/suites/visual.spec.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/account-profile-edit.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 191,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/account-profile-edit.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -100018,11 +100039,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "3045154dd16aeefab01f398f2540e47939a253f9cb3d5194599764dbc02e9958",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "07c52eb8fd58df8455a0889d965af887044631b77707b64383b5ffd833d380a1",
+      "audit/registry/files.json": "b7db7b35008ab229847fe1327ddb8b98f153a19b992d9e53a4f950491ae75a03",
       "audit/registry/rpc.json": "821912126b4b0b6e8c5a86b4269f43106cc40a44d2ee85a107b550ab9ea0a7b6",
       "audit/registry/runtime.json": "3f153ecc8a7a52378e26435fe7ecf04c0a4549288d6ad12283b783545ba5e99e"
     },
-    "sotFingerprint": "067931e0fa92"
+    "sotFingerprint": "919d68ae7cf3"
   },
   "runtime": [
     {
