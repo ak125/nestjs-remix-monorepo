@@ -459,3 +459,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/ga4-skip-automated-browsers`
 - **Décision** : chore(registry): resync L1+L3 projections (+1 other commit)
 - **Sortie** : PR #1538 | commits 2af384d09 ef2a1e977
+
+## 2026-09-24 — fix/support-module-authz (auto)
+
+- **Branche** : `fix/support-module-authz`
+- **Décision** : chore(registry): resync L1+L3 projections (+1 other commit)
+- **Sortie** : PR #1557 | commits a8ec8d4b7 3ee45fb2f
