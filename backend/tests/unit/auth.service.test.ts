@@ -3,7 +3,7 @@
  *
  * Tests the main authentication orchestrator.
  * 10 tests covering: authenticateUser (5 cases), login (2 cases),
- * validateToken (2 cases), isAdmin (1 case).
+ * validateToken (2 cases), isAdmin (1 case: staff vs customer tier).
  *
  * @see backend/src/auth/auth.service.ts
  */
@@ -390,20 +390,21 @@ describe('AuthService', () => {
   });
 
   // ═══════════════════════════════════════════════════════════════
-  // TEST 10: isAdmin — level >= 7 → true, level < 7 → false
+  // TEST 10: isAdmin — staff level >= 7 → true; a customer tier never is
   // ═══════════════════════════════════════════════════════════════
-  it('isAdmin() should return true for level >= 7 and false for level < 7', async () => {
-    const adminUser = { ...mockUserData, level: 7 };
-    const regularUser = { ...mockUserData, level: 1 };
+  it('isAdmin() should return true for staff level >= 7 and false for any customer tier', async () => {
+    const staffAdmin = { ...mockUserData, level: 7 };
+    const customerTier7 = { ...mockUserData, level: 7 };
 
-    // Admin check — findById returns User, getUserById calls mapUserToAuthUser
-    mockUserService.findById.mockResolvedValueOnce(adminUser);
+    // Staff check — findAdminById returns the staff row, getUserById maps it
+    mockUserService.findAdminById.mockResolvedValueOnce(staffAdmin);
     const isAdminResult = await service.isAdmin('admin-user-id');
     expect(isAdminResult).toBe(true);
 
-    // Regular user check
-    mockUserService.findById.mockResolvedValueOnce(regularUser);
-    const isNotAdminResult = await service.isAdmin('regular-user-id');
+    // Customer check — cst_level is a customer tier, not a staff level
+    mockUserService.findAdminById.mockResolvedValueOnce(null);
+    mockUserService.findById.mockResolvedValueOnce(customerTier7);
+    const isNotAdminResult = await service.isAdmin('customer-user-id');
     expect(isNotAdminResult).toBe(false);
   });
 });
