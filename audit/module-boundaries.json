@@ -73,8 +73,8 @@
         "backend/src/auth/guards",
         "backend/src/modules/auth/dto"
       ],
-      "files_count": 42,
-      "loc_total": 5346,
+      "files_count": 45,
+      "loc_total": 5938,
       "has_barrel": true
     },
     "backend-core": {
@@ -90,8 +90,8 @@
         "backend/src/types",
         "backend/src/utils"
       ],
-      "files_count": 35,
-      "loc_total": 6109,
+      "files_count": 36,
+      "loc_total": 6170,
       "has_barrel": true
     },
     "blog": {
@@ -259,7 +259,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115500,
+      "loc_total": 115501,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -958,7 +958,7 @@
         "tests/registry"
       ],
       "files_count": 243,
-      "loc_total": 43938,
+      "loc_total": 43939,
       "has_barrel": true
     },
     "upload": {
@@ -1174,7 +1174,7 @@
     {
       "from": "auth",
       "to": "backend-core",
-      "count": 2
+      "count": 3
     },
     {
       "from": "auth",
@@ -1184,17 +1184,17 @@
     {
       "from": "auth",
       "to": "database",
-      "count": 3
+      "count": 4
     },
     {
       "from": "auth",
       "to": "shared",
-      "count": 2
+      "count": 3
     },
     {
       "from": "auth",
       "to": "users",
-      "count": 6
+      "count": 9
     },
     {
       "from": "backend-core",
@@ -1219,7 +1219,7 @@
     {
       "from": "backend-core",
       "to": "auth",
-      "count": 2
+      "count": 3
     },
     {
       "from": "backend-core",
@@ -1269,7 +1269,7 @@
     {
       "from": "backend-core",
       "to": "database",
-      "count": 5
+      "count": 6
     },
     {
       "from": "backend-core",
@@ -1449,7 +1449,7 @@
     {
       "from": "backend-core",
       "to": "users",
-      "count": 3
+      "count": 4
     },
     {
       "from": "backend-core",
