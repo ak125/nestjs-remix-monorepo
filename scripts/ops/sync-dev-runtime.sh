@@ -252,6 +252,71 @@ check_dev_runtime_topology() {
   return "$drift"
 }
 
+# ---------------------------------------------------------------------------
+# Axe git, volet sous-modules — alignement sur le pin committé.
+#
+# POURQUOI : `backend/content/automecanik-wiki` est lu DEPUIS ce checkout par le
+# writer seo-projection (exports/seo, ADR-059) et par le moteur de diagnostic
+# (wiki/{diagnostic,support}). Le pin committé sur main est l'unique autorité sur la
+# version du wiki que DEV consomme. Or `git merge --ff-only` (étape 4) déplace le pin
+# SANS toucher au sous-module : le contenu restait sur l'ancien commit, et la garde
+# « working tree sale » voyait ensuite le pin modifié et abortait à chaque tick — le
+# premier bump de pin aurait figé DEV.
+#
+# MÊMES RÈGLES QUE POUR LE CHECKOUT PARENT : jamais de perte de travail. Contenu
+# modifié dans le sous-module, ou HEAD sur un commit publié sur aucune branche
+# distante → alerte, on n'y touche pas. Sinon checkout du commit épinglé (fetch si
+# absent), exactement ce que fait `git submodule update --checkout`.
+#
+# ALERT-ONLY, JAMAIS `abort` : un sous-module en retard ne justifie pas de priver le
+# backend de son code frais. Appelée sur les deux chemins (no-op et resync) : un échec
+# transitoire (réseau) est rattrapé au tick suivant, et signalé à chaque tick d'ici là.
+# Pas de redémarrage : les deux lecteurs relisent le wiki à la demande (le writer à
+# chaque exécution, le diagnostic derrière un cache de 5 min).
+sync_submodules() {
+  local drift=0 key path pinned head
+  while read -r key path; do
+    pinned=$(git ls-tree HEAD -- "$path" | awk '$2 == "commit" { print $3 }')
+    if [ -z "$pinned" ]; then
+      alert "sous-module $path déclaré dans .gitmodules mais absent de l'arbre de HEAD — .gitmodules à corriger"
+      drift=1; continue
+    fi
+    # Non initialisé (clone neuf, ou sous-module introduit par le ff) : rien à perdre.
+    # Test sur `$path/.git` et pas `git -C "$path"` : dans un répertoire non initialisé,
+    # `git -C` remonte au dépôt parent et rendrait SON HEAD.
+    if [ ! -e "$path/.git" ]; then
+      if git submodule update --init --checkout --quiet -- "$path"; then
+        log "sous-module $path initialisé sur le pin ${pinned:0:9}"
+      else
+        alert "sous-module $path : initialisation sur le pin ${pinned:0:9} échouée (nouvel essai au prochain tick)"
+        drift=1
+      fi
+      continue
+    fi
+    head=$(git -C "$path" rev-parse HEAD 2>/dev/null)
+    [ "$head" = "$pinned" ] && continue
+    if [ -n "$(git -C "$path" status --porcelain --untracked-files=no 2>/dev/null)" ]; then
+      alert "sous-module $path : contenu modifié localement — reste sur ${head:0:9}, pin ${pinned:0:9} non appliqué (réconcilier à la main)"
+      drift=1; continue
+    fi
+    if ! git -C "$path" fetch --quiet origin; then
+      alert "sous-module $path : fetch échoué — reste sur ${head:0:9}, pin ${pinned:0:9} non appliqué (nouvel essai au prochain tick)"
+      drift=1; continue
+    fi
+    if [ -z "$(git -C "$path" branch -r --contains "$head" 2>/dev/null)" ]; then
+      alert "sous-module $path : HEAD ${head:0:9} non publié (sur aucune branche distante) — pin ${pinned:0:9} non appliqué (réconcilier à la main)"
+      drift=1; continue
+    fi
+    if git submodule update --checkout --quiet -- "$path"; then
+      log "sous-module $path aligné sur le pin : ${head:0:9} → ${pinned:0:9}"
+    else
+      alert "sous-module $path : checkout du pin ${pinned:0:9} échoué — reste sur ${head:0:9} (nouvel essai au prochain tick)"
+      drift=1
+    fi
+  done < <(git config --file .gitmodules --get-regexp '^submodule\..*\.path$' 2>/dev/null)
+  return "$drift"
+}
+
 # 0. Sonde de topologie runtime (6e axe) — AVANT les gardes git, alert-only.
 #    Voir l'en-tête de check_dev_runtime_topology pour le « pourquoi avant ».
 check_dev_runtime_topology || true
@@ -261,14 +326,21 @@ branch=$(git rev-parse --abbrev-ref HEAD)
 [ "$branch" = "main" ] || abort "checkout sur '$branch' (pas main) — resync refusée (cf. convention worktree)"
 
 # 2. Garde working tree sale (on tolère le bruit log.md du hook session-log).
-dirty=$(git status --porcelain --untracked-files=no | grep -vE '(^| )log\.md$' || true)
+#    Sous-modules exclus : un pin déplacé par le ff n'est pas du travail local, et le
+#    contenu modifié DANS un sous-module a sa garde dédiée (sync_submodules, alert-only).
+dirty=$(git status --porcelain --untracked-files=no --ignore-submodules=all | grep -vE '(^| )log\.md$' || true)
 [ -z "$dirty" ] || abort "working tree sale — resync refusée: $(echo "$dirty" | tr '\n' ' ')"
 
 # 3. Fetch + comparer.
-git fetch --quiet origin main || abort "git fetch échoué"
+#    --no-recurse-submodules : par défaut (on-demand), un fetch qui ramène un pin déplacé
+#    fetche aussi le sous-module — un dépôt wiki injoignable faisait alors échouer ce fetch
+#    et bloquait la resync du CODE. Le fetch des sous-modules appartient à sync_submodules.
+git fetch --quiet --no-recurse-submodules origin main || abort "git fetch échoué"
 local_sha=$(git rev-parse HEAD)
 remote_sha=$(git rev-parse origin/main)
 if [ "$local_sha" = "$remote_sha" ]; then
+  # Rattrape un sous-module resté en retard sur son pin (échec d'un tick précédent).
+  sync_submodules || true
   # Pas de sync git — mais on probe quand même l'intégrité workspaces. Un drift
   # ici (symlink supprimé, dist effacé entre 2 ticks cron, install manuel
   # interrompu) doit être visible AVANT que nodemon redémarre et crashe.
@@ -315,6 +387,9 @@ if [ -n "$collisions" ]; then
 fi
 git merge --ff-only origin/main || abort "non fast-forwardable (lignée divergente) — réconcilier main à la main"
 log "synced $local_sha → $remote_sha"
+
+# 4b. Sous-modules sur le pin que le ff vient d'amener (le merge ne les touche pas).
+sync_submodules || true
 
 # 5. Garde parité Node (.nvmrc) — alerte seulement (upgrade = manuel via NodeSource).
 want_major=$(tr -d 'v' < .nvmrc 2>/dev/null | cut -d. -f1)

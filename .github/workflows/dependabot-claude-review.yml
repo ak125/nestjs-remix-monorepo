@@ -26,10 +26,16 @@ concurrency:
 
 jobs:
   review:
+    # Les bumps du sous-module wiki (écosystème gitsubmodule, branches
+    # `dependabot/submodules/…`) ne passent jamais par cette revue : leur diff
+    # est du contenu SEO à projeter, pas une dépendance, et la consigne ci-dessous
+    # fusionnerait un SHA sans semver. Filtre sur la branche, pas sur un label :
+    # le label n'est pas garanti dans la charge utile de l'événement `opened`.
     if: |
       github.actor == 'dependabot[bot]' &&
       github.event.pull_request.head.repo.full_name == github.repository &&
       vars.CLAUDE_REVIEW_ENABLED == 'true' &&
+      !startsWith(github.head_ref, 'dependabot/submodules/') &&
       !contains(github.event.pull_request.labels.*.name, 'dependabot-hold')
     runs-on: ubuntu-latest
     timeout-minutes: 5
