@@ -92,6 +92,13 @@ services:
       - /var/www/sitemaps:/var/www/sitemaps:rw
       - /var/www/crawl-hubs:/var/www/crawl-hubs:rw
       - /opt/automecanik/rag/knowledge:/opt/automecanik/rag/knowledge:ro
+      # 🗄️ Object-store des snapshots de replay SEO Projection (ADR-059, ADR-099 D3) :
+      # même chemin que le défaut code `OBJECT_STORE_ROOT_DEFAULT`. À provisionner sur
+      # l'hôte, propriétaire uid 1001 (remix-api), AVANT d'activer le feeder. Syntaxe
+      # courte volontaire (pas `create_host_path: false`) : un répertoire non provisionné
+      # ne doit pas empêcher le site de démarrer ; le writer échoue alors (EACCES → run
+      # `failed` `snapshot_publish_failed`, aucune écriture de contenu).
+      - /opt/automecanik/object-store:/opt/automecanik/object-store:rw
     networks:
       - automecanik-prod
     healthcheck:
