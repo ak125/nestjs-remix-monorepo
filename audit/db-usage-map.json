@@ -22,7 +22,7 @@
     "unresolved_callsites": 0,
     "dropped_call_sites": 5,
     "migrations_scanned": 356,
-    "backend_files_scanned": 1404
+    "backend_files_scanned": 1403
   },
   "tables": {
     "___config": {

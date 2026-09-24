@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 57ddf6d402313fb87b7ba5b2bb7de92ee7375fe34ff6a574a3bb32aabf4ed838
+source_sha256: 2896efeb497d44ae1fbcadb6b668bc7b1be09fbb01705b48a0618c667596fd0c
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -24,7 +24,7 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1000 |
 
-Source sotFingerprint: `17f60fd4b557`.
+Source sotFingerprint: `c816de0e205e`.
 
 ## Comment l'utiliser
 
@@ -147,21 +147,21 @@ Source sotFingerprint: `17f60fd4b557`.
 
 ### D15 — Security & Governance
 
-- **Files**: 260 (test=150, script=62, service=45, config=2, controller=1)
+- **Files**: 261 (test=151, script=62, service=45, config=2, controller=1)
 - **Runtime entrypoints**: 3
-- **Top owners**: @ak125 (260)
+- **Top owners**: @ak125 (261)
 - **Knowledge prose**: [`bot-guard`](modules/bot-guard.md)
-- **Status**: LIVE=54, UNKNOWN=206
+- **Status**: LIVE=54, UNKNOWN=207
 
 ### UNKNOWN — Unknown (overlay non résolu)
 
-- **Files**: 246 (service=150, config=57, controller=21, script=14, test=4)
+- **Files**: 245 (service=150, config=57, controller=21, script=14, test=3)
 - **DB tables**: 314
 - **DB RPC**: 253
 - **Runtime entrypoints**: 84
-- **Top owners**: __unassigned__ (246)
+- **Top owners**: __unassigned__ (245)
 - **Knowledge prose**: [`config`](modules/config.md), [`layout`](modules/layout.md), [`mcp-validation`](modules/mcp-validation.md), [`metadata`](modules/metadata.md), [`navigation`](modules/navigation.md), [`search`](modules/search.md), [`shipping`](modules/shipping.md), [`suppliers`](modules/suppliers.md), [`system`](modules/system.md)
-- **Status**: LIVE=141, UNKNOWN=105
+- **Status**: LIVE=141, UNKNOWN=104
 
 ## Voir aussi
 

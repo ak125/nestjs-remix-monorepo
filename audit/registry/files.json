@@ -36501,27 +36501,6 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
-      "id": "backend/src/services/mail.service.test.ts",
-      "importedBy": [],
-      "imports": [
-        "backend/src/services/mail.service.ts"
-      ],
-      "kind": "test",
-      "loc": 209,
-      "owner": "__unassigned__",
-      "path": "backend/src/services/mail.service.test.ts",
-      "risk": "low",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise"
-      ],
-      "domain": "UNKNOWN",
       "id": "backend/src/services/mail.service.ts",
       "importedBy": [
         "backend/src/auth/controllers/auth-login.controller.ts",
@@ -36535,7 +36514,6 @@
         "backend/src/modules/support/services/contact.service.ts",
         "backend/src/modules/users/services/password.service.ts",
         "backend/src/services/mail.module.ts",
-        "backend/src/services/mail.service.test.ts",
         "backend/src/workers/processors/email.processor.ts"
       ],
       "imports": [
@@ -37624,6 +37602,25 @@
       "loc": 191,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/global-error-filter.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/mail.service.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 212,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/mail.service.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
