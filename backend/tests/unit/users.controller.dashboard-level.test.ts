@@ -6,10 +6,10 @@
  * @see backend/src/auth/session-privilege.ts
  */
 import type { Request } from 'express';
-import { UsersController } from './users.controller';
-import type { UserDataConsolidatedService } from '../modules/users/services/user-data-consolidated.service';
-import type { OrdersService } from '../database/services/orders.service';
-import { CUSTOMER_SESSION_LEVEL } from '../auth/session-privilege';
+import { UsersController } from '../../src/controllers/users.controller';
+import type { UserDataConsolidatedService } from '../../src/modules/users/services/user-data-consolidated.service';
+import type { OrdersService } from '../../src/database/services/orders.service';
+import { CUSTOMER_SESSION_LEVEL } from '../../src/auth/session-privilege';
 
 describe('UsersController — niveau renvoyé au tableau de bord', () => {
   let fetchSpy: jest.SpyInstance;
