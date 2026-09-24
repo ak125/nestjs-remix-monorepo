@@ -78,7 +78,7 @@ Frontend → API Gateway → Controllers → Services → Supabase
 
 **Endpoint** : `GET /api/dashboard/stats`
 
-**Guard** : `@UseGuards(ModulePermissionGuard)` + `@RequireModule('dashboard', 'read')`
+**Guard** : `@UseGuards(AuthenticatedGuard, PermissionsGuard)` + `@RequirePermission('canSeeCustomerDetails')` (personnel uniquement)
 
 **Cache** : ✅ Redis (TTL 300s) - Clé `dashboard:stats:all`
 
@@ -262,7 +262,7 @@ Frontend → API Gateway → Controllers → Services → Supabase
 
 **Endpoint** : `GET /api/dashboard/commercial`
 
-**Guard** : `@RequireModule('commercial', 'read')`
+**Guard** : `@UseGuards(AuthenticatedGuard, PermissionsGuard)` + `@RequirePermission('canSeeCustomerDetails')` (personnel uniquement)
 
 **Réponse** :
 ```typescript
@@ -284,7 +284,7 @@ Frontend → API Gateway → Controllers → Services → Supabase
 
 **Endpoint** : `GET /api/dashboard/expedition`
 
-**Guard** : `@RequireModule('expedition', 'read')`
+**Guard** : `@UseGuards(AuthenticatedGuard, PermissionsGuard)` + `@RequirePermission('canSeeCustomerDetails')` (personnel uniquement)
 
 **Réponse** :
 ```typescript
@@ -306,7 +306,7 @@ Frontend → API Gateway → Controllers → Services → Supabase
 
 **Endpoint** : `GET /api/dashboard/seo`
 
-**Guard** : `@RequireModule('seo', 'read')`
+**Guard** : `@UseGuards(AuthenticatedGuard, PermissionsGuard)` + `@RequirePermission('canSeeCustomerDetails')` (personnel uniquement)
 
 **Réponse** :
 ```typescript
@@ -326,7 +326,7 @@ Frontend → API Gateway → Controllers → Services → Supabase
 
 **Endpoint** : `GET /api/dashboard/staff`
 
-**Guard** : `@RequireModule('staff', 'read')`
+**Guard** : `@UseGuards(AuthenticatedGuard, PermissionsGuard)` + `@RequirePermission('canSeeCustomerDetails')` (personnel uniquement)
 
 **Réponse** :
 ```typescript
@@ -912,10 +912,10 @@ interface AnalyticsEvent {
 
 ### Guards
 
-**ModulePermissionGuard** :
+**Personnel uniquement** (sur chaque route) :
 ```typescript
-@UseGuards(ModulePermissionGuard)
-@RequireModule('dashboard', 'read')
+@UseGuards(AuthenticatedGuard, PermissionsGuard)
+@RequirePermission('canSeeCustomerDetails')
 ```
 
 **Modules protégés** :

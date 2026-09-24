@@ -227,7 +227,7 @@ Module léger focalisé sur **archivage automatique des commandes** + **dashboar
 
 **Résumé** : Stats dashboard commercial (orders + users + suppliers)
 
-**Guard** : `@RequireModule('commercial', 'read')`
+**Guard** : `@UseGuards(AuthenticatedGuard, PermissionsGuard)` + `@RequirePermission('canSeeCustomerDetails')` (personnel uniquement)
 
 **Response** :
 ```json
@@ -312,7 +312,7 @@ restoreArchivedOrder(orderId) // Restauration
 
 **Intégration** : Module dashboard (Feature 7 - Analytics)
 
-**Permissions** : Guard `@RequireModule('commercial', 'read')`
+**Permissions** : `@UseGuards(AuthenticatedGuard, PermissionsGuard)` + `@RequirePermission('canSeeCustomerDetails')` (personnel uniquement)
 
 **Cache** : Non (données real-time orders/users/suppliers)
 
@@ -432,8 +432,7 @@ async autoArchiveOrders() { /* ... */ }
 - Vérification status avant archive/restore
 
 **Dashboard** :
-- Guard : `@RequireModule('commercial', 'read')`
-- Permissions granulaires par module
+- Guard : `@UseGuards(AuthenticatedGuard, PermissionsGuard)` + `@RequirePermission('canSeeCustomerDetails')` (personnel uniquement)
 
 **Audit** :
 - Log actions : archive manual (reason), restore

@@ -106,6 +106,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
+        Cookie: request.headers.get("Cookie") || "",
       },
       signal: controller.signal,
     });

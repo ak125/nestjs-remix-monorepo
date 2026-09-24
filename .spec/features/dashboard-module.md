@@ -30,7 +30,7 @@ Le **Dashboard Module** fournit les **métriques temps réel** et **analytics bu
 - ✅ **Métriques dérivées** (conversion rate, avg order value, SEO completion %)
 - ✅ **Analytics SEO** (714k pages, 95.2% optimisées, sitemap automation)
 - ✅ **Alertes temps réel** (stock bas, commandes récentes, expéditions)
-- ✅ **Permissions granulaires** (ModulePermissionGuard, RequireModule decorator)
+- ✅ **Accès réservé au personnel** (AuthenticatedGuard + PermissionsGuard, `@RequirePermission`)
 - ✅ **Performance optimisée** (parallel queries, cache hit 85%+)
 
 ---
@@ -194,7 +194,7 @@ const [users, orders, suppliers, products, seo] = await Promise.all([
 - Endpoints alertes `/api/dashboard/stock/alerts`
 - Endpoints commandes récentes `/api/dashboard/orders/recent`
 - Cache interceptor (automatic response caching)
-- Permissions guards (ModulePermissionGuard)
+- Accès réservé au personnel (AuthenticatedGuard + PermissionsGuard)
 
 **Routes:** `/api/dashboard/*` (9 endpoints)
 
@@ -415,7 +415,7 @@ cache:dashboard:stock:alerts → StockAlert[]
 #### 1. GET /api/dashboard/stats
 **Description:** Stats globales dashboard (14 KPIs + SEO)
 
-**Access:** Authenticated + ModulePermissionGuard('dashboard', 'read')
+**Access:** Personnel uniquement — AuthenticatedGuard + PermissionsGuard, `@RequirePermission('canSeeCustomerDetails')`
 
 **Response:** `200 OK`
 ```json
@@ -574,7 +574,7 @@ cache:dashboard:stock:alerts → StockAlert[]
 #### 6. GET /api/dashboard/commercial
 **Description:** Dashboard commercial (protected)
 
-**Access:** ModulePermissionGuard('commercial', 'read')
+**Access:** Personnel uniquement — AuthenticatedGuard + PermissionsGuard, `@RequirePermission('canSeeCustomerDetails')`
 
 **Response:** `200 OK`
 ```json
@@ -590,7 +590,7 @@ cache:dashboard:stock:alerts → StockAlert[]
 #### 7. GET /api/dashboard/expedition
 **Description:** Dashboard expédition (protected)
 
-**Access:** ModulePermissionGuard('expedition', 'read')
+**Access:** Personnel uniquement — AuthenticatedGuard + PermissionsGuard, `@RequirePermission('canSeeCustomerDetails')`
 
 **Response:** `200 OK`
 ```json
@@ -606,7 +606,7 @@ cache:dashboard:stock:alerts → StockAlert[]
 #### 8. GET /api/dashboard/seo
 **Description:** Dashboard SEO (protected)
 
-**Access:** ModulePermissionGuard('seo', 'read')
+**Access:** Personnel uniquement — AuthenticatedGuard + PermissionsGuard, `@RequirePermission('canSeeCustomerDetails')`
 
 **Response:** `200 OK`
 ```json
@@ -622,7 +622,7 @@ cache:dashboard:stock:alerts → StockAlert[]
 #### 9. GET /api/dashboard/staff
 **Description:** Dashboard staff (protected)
 
-**Access:** ModulePermissionGuard('staff', 'read')
+**Access:** Personnel uniquement — AuthenticatedGuard + PermissionsGuard, `@RequirePermission('canSeeCustomerDetails')`
 
 **Response:** `200 OK`
 ```json
@@ -639,22 +639,18 @@ cache:dashboard:stock:alerts → StockAlert[]
 
 ### Access Control
 - **Public endpoints:** Aucun
-- **Authenticated endpoints:** `/stats`, `/orders/recent`, `/orders`, `/shipments`, `/stock/alerts`
-- **Module-protected endpoints:** `/commercial`, `/expedition`, `/seo`, `/staff` (RequireModule decorator)
+- **Personnel uniquement (toutes les routes) :** `/stats`, `/orders/recent`, `/orders`, `/shipments`, `/stock/alerts`, `/commercial`, `/expedition`, `/seo`, `/staff`
 
 ### Guards
 
-**ModulePermissionGuard:**
+**Sur chaque route :**
 ```typescript
-@UseGuards(ModulePermissionGuard)
-@RequireModule('dashboard', 'read')
+@UseGuards(AuthenticatedGuard, PermissionsGuard)
+@RequirePermission('canSeeCustomerDetails')
 async getStats() { ... }
 ```
 
-**Permission Levels:**
-- `'read'`: Lecture stats (analytics)
-- `'write'`: Écriture config (settings)
-- `'admin'`: Administration complète
+Les niveaux sont ceux de `PermissionsService` (`backend/src/auth/permissions.service.ts`).
 
 ### Rate Limiting
 - **Authenticated:** 500 req/min/user
@@ -892,7 +888,7 @@ describe('Dashboard API', () => {
 ### Internal Modules
 - **Database Module** (database/services/supabase-base.service.ts)
 - **Cache Module** (cache-module.md) - Redis intelligent cache
-- **Auth Module** (auth-system.md) - ModulePermissionGuard
+- **Auth Module** (auth-system.md) - AuthenticatedGuard, PermissionsGuard
 - **Orders Module** (orders.md) - Orders stats
 - **Customers Module** (customers.md) - Users stats
 - **Products Module** (products.md) - Products stats

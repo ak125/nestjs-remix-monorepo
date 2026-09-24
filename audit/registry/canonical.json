@@ -28551,6 +28551,7 @@
       "id": "backend/src/auth/auth.module.ts",
       "importedBy": [
         "backend/src/app.module.ts",
+        "backend/src/modules/api.module.ts",
         "backend/src/modules/dashboard/dashboard.module.ts",
         "backend/src/modules/orders/orders.module.ts",
         "backend/src/modules/users/users.module.ts",
@@ -28601,7 +28602,6 @@
         "backend/src/auth/controllers/auth-permissions.controller.ts",
         "backend/src/auth/controllers/auth-token.controller.ts",
         "backend/src/auth/cookie-serializer.ts",
-        "backend/src/auth/guards/module-permission.guard.ts",
         "backend/src/auth/local.strategy.ts",
         "backend/src/auth/profile.controller.ts",
         "backend/src/modules/orders/controllers/orders.controller.ts"
@@ -29144,31 +29144,6 @@
       "path": "backend/src/auth/github-oidc.service.ts",
       "risk": "high",
       "runtime": true,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual",
-        "reachability"
-      ],
-      "domain": "D11",
-      "id": "backend/src/auth/guards/module-permission.guard.ts",
-      "importedBy": [
-        "backend/src/modules/dashboard/dashboard.controller.ts"
-      ],
-      "imports": [
-        "backend/src/auth/auth.service.ts"
-      ],
-      "kind": "service",
-      "loc": 45,
-      "owner": "@ak125/auth-team",
-      "path": "backend/src/auth/guards/module-permission.guard.ts",
-      "risk": "high",
-      "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
@@ -33126,11 +33101,14 @@
         "backend/src/modules/api.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/decorators/require-permission.decorator",
+        "@auth/guards/permissions.guard",
         "@common/exceptions",
         "backend/src/database/services/orders.service.ts"
       ],
       "kind": "controller",
-      "loc": 128,
+      "loc": 147,
       "owner": "__unassigned__",
       "path": "backend/src/controllers/orders.controller.ts",
       "risk": "low",
@@ -33150,12 +33128,15 @@
         "backend/src/modules/api.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/decorators/require-permission.decorator",
+        "@auth/guards/permissions.guard",
         "@common/exceptions",
         "backend/src/database/services/orders.service.ts",
         "backend/src/modules/users/services/user-data-consolidated.service.ts"
       ],
       "kind": "controller",
-      "loc": 369,
+      "loc": 395,
       "owner": "__unassigned__",
       "path": "backend/src/controllers/users.controller.ts",
       "risk": "low",
@@ -38691,6 +38672,7 @@
         "backend/src/modules/orders/orders.module.ts"
       ],
       "imports": [
+        "backend/src/auth/auth.module.ts",
         "backend/src/controllers/orders.controller.ts",
         "backend/src/controllers/users.controller.ts",
         "backend/src/database/database.module.ts",
@@ -38702,7 +38684,7 @@
         "backend/src/modules/users/users.module.ts"
       ],
       "kind": "service",
-      "loc": 32,
+      "loc": 34,
       "owner": "__unassigned__",
       "path": "backend/src/modules/api.module.ts",
       "risk": "low",
@@ -41867,11 +41849,13 @@
         "backend/src/modules/dashboard/dashboard.module.ts"
       ],
       "imports": [
-        "backend/src/auth/guards/module-permission.guard.ts",
+        "@auth/authenticated.guard",
+        "@auth/decorators/require-permission.decorator",
+        "@auth/guards/permissions.guard",
         "backend/src/modules/dashboard/dashboard.service.ts"
       ],
       "kind": "controller",
-      "loc": 220,
+      "loc": 232,
       "owner": "@ak125",
       "path": "backend/src/modules/dashboard/dashboard.controller.ts",
       "risk": "low",
@@ -43842,10 +43826,12 @@
         "backend/src/modules/invoices/invoices.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/invoices/invoices.service.ts"
       ],
       "kind": "controller",
-      "loc": 60,
+      "loc": 64,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/invoices/invoices.controller.ts",
       "risk": "high",
@@ -47063,10 +47049,12 @@
         "backend/src/modules/orders/orders.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/orders/services/order-archive.service.ts"
       ],
       "kind": "controller",
-      "loc": 273,
+      "loc": 284,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/orders/controllers/order-archive.controller.ts",
       "risk": "high",
@@ -47099,7 +47087,7 @@
         "crypto"
       ],
       "kind": "controller",
-      "loc": 1243,
+      "loc": 975,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/orders/controllers/orders.controller.ts",
       "risk": "high",
@@ -47120,10 +47108,12 @@
         "backend/src/modules/orders/orders.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/orders/services/tickets.service.ts"
       ],
       "kind": "controller",
-      "loc": 226,
+      "loc": 230,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/orders/controllers/tickets.controller.ts",
       "risk": "high",
@@ -66522,6 +66512,26 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "backend/tests/unit/internal-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 273,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/internal-routes-authz.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "backend/tests/unit/maintenance-calculator.service.test.ts",
       "importedBy": [],
       "imports": [],
@@ -82171,7 +82181,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 460,
+      "loc": 468,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.reports._index.tsx",
       "risk": "medium",
@@ -83002,7 +83012,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 528,
+      "loc": 529,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.staff.tsx",
       "risk": "medium",
@@ -83310,7 +83320,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 1183,
+      "loc": 1187,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.users._index.tsx",
       "risk": "medium",
@@ -84537,7 +84547,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 331,
+      "loc": 337,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/commercial._index.tsx",
       "risk": "medium",
@@ -84690,7 +84700,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 913,
+      "loc": 917,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/commercial.shipping._index.tsx",
       "risk": "medium",
@@ -84714,7 +84724,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 711,
+      "loc": 712,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/commercial.shipping.create._index.tsx",
       "risk": "medium",
@@ -84739,7 +84749,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 641,
+      "loc": 642,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/commercial.shipping.tracking._index.tsx",
       "risk": "medium",
@@ -84792,7 +84802,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 71,
+      "loc": 74,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/commercial.tsx",
       "risk": "medium",
@@ -84849,7 +84859,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 850,
+      "loc": 851,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/commercial.vehicles.advanced-search.tsx",
       "risk": "medium",
@@ -99998,11 +100008,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "3045154dd16aeefab01f398f2540e47939a253f9cb3d5194599764dbc02e9958",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "2635eb155c3212b502c4f27e574b8b600866691cfdd8389b44488f15a9e15757",
+      "audit/registry/files.json": "6a773e00d9dbbf409f02116cee90b55c359218041676d0fb64ae683267d32ff8",
       "audit/registry/rpc.json": "821912126b4b0b6e8c5a86b4269f43106cc40a44d2ee85a107b550ab9ea0a7b6",
-      "audit/registry/runtime.json": "3f153ecc8a7a52378e26435fe7ecf04c0a4549288d6ad12283b783545ba5e99e"
+      "audit/registry/runtime.json": "aaea860052eb6af01b2b2ce6cb52f82063ed0aeacc3865e9418009073dde2a5b"
     },
-    "sotFingerprint": "55dd96f2a862"
+    "sotFingerprint": "c87f29da9e12"
   },
   "runtime": [
     {
@@ -101949,6 +101959,7 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/auth/auth.module.ts",
         "runtime:backend/src/controllers/users.controller.ts",
         "runtime:backend/src/database/database.module.ts",
         "runtime:backend/src/modules/commercial/commercial.module.ts",

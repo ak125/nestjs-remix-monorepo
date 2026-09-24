@@ -900,6 +900,7 @@
       "id": "backend/src/auth/auth.module.ts",
       "importedBy": [
         "backend/src/app.module.ts",
+        "backend/src/modules/api.module.ts",
         "backend/src/modules/dashboard/dashboard.module.ts",
         "backend/src/modules/orders/orders.module.ts",
         "backend/src/modules/users/users.module.ts",
@@ -949,7 +950,6 @@
         "backend/src/auth/controllers/auth-permissions.controller.ts",
         "backend/src/auth/controllers/auth-token.controller.ts",
         "backend/src/auth/cookie-serializer.ts",
-        "backend/src/auth/guards/module-permission.guard.ts",
         "backend/src/auth/local.strategy.ts",
         "backend/src/auth/profile.controller.ts",
         "backend/src/modules/orders/controllers/orders.controller.ts"
@@ -1471,30 +1471,6 @@
       "path": "backend/src/auth/github-oidc.service.ts",
       "risk": "low",
       "runtime": true,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "reachability"
-      ],
-      "domain": "UNKNOWN",
-      "id": "backend/src/auth/guards/module-permission.guard.ts",
-      "importedBy": [
-        "backend/src/modules/dashboard/dashboard.controller.ts"
-      ],
-      "imports": [
-        "backend/src/auth/auth.service.ts"
-      ],
-      "kind": "service",
-      "loc": 45,
-      "owner": "__unassigned__",
-      "path": "backend/src/auth/guards/module-permission.guard.ts",
-      "risk": "low",
-      "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
@@ -5319,11 +5295,14 @@
         "backend/src/modules/api.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/decorators/require-permission.decorator",
+        "@auth/guards/permissions.guard",
         "@common/exceptions",
         "backend/src/database/services/orders.service.ts"
       ],
       "kind": "controller",
-      "loc": 128,
+      "loc": 147,
       "owner": "__unassigned__",
       "path": "backend/src/controllers/orders.controller.ts",
       "risk": "low",
@@ -5343,12 +5322,15 @@
         "backend/src/modules/api.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/decorators/require-permission.decorator",
+        "@auth/guards/permissions.guard",
         "@common/exceptions",
         "backend/src/database/services/orders.service.ts",
         "backend/src/modules/users/services/user-data-consolidated.service.ts"
       ],
       "kind": "controller",
-      "loc": 369,
+      "loc": 395,
       "owner": "__unassigned__",
       "path": "backend/src/controllers/users.controller.ts",
       "risk": "low",
@@ -10701,6 +10683,7 @@
         "backend/src/modules/orders/orders.module.ts"
       ],
       "imports": [
+        "backend/src/auth/auth.module.ts",
         "backend/src/controllers/orders.controller.ts",
         "backend/src/controllers/users.controller.ts",
         "backend/src/database/database.module.ts",
@@ -10712,7 +10695,7 @@
         "backend/src/modules/users/users.module.ts"
       ],
       "kind": "service",
-      "loc": 32,
+      "loc": 34,
       "owner": "__unassigned__",
       "path": "backend/src/modules/api.module.ts",
       "risk": "low",
@@ -13770,11 +13753,13 @@
         "backend/src/modules/dashboard/dashboard.module.ts"
       ],
       "imports": [
-        "backend/src/auth/guards/module-permission.guard.ts",
+        "@auth/authenticated.guard",
+        "@auth/decorators/require-permission.decorator",
+        "@auth/guards/permissions.guard",
         "backend/src/modules/dashboard/dashboard.service.ts"
       ],
       "kind": "controller",
-      "loc": 220,
+      "loc": 232,
       "owner": "__unassigned__",
       "path": "backend/src/modules/dashboard/dashboard.controller.ts",
       "risk": "low",
@@ -15671,10 +15656,12 @@
         "backend/src/modules/invoices/invoices.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/invoices/invoices.service.ts"
       ],
       "kind": "controller",
-      "loc": 60,
+      "loc": 64,
       "owner": "__unassigned__",
       "path": "backend/src/modules/invoices/invoices.controller.ts",
       "risk": "low",
@@ -18813,10 +18800,12 @@
         "backend/src/modules/orders/orders.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/orders/services/order-archive.service.ts"
       ],
       "kind": "controller",
-      "loc": 273,
+      "loc": 284,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/controllers/order-archive.controller.ts",
       "risk": "low",
@@ -18848,7 +18837,7 @@
         "crypto"
       ],
       "kind": "controller",
-      "loc": 1243,
+      "loc": 975,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/controllers/orders.controller.ts",
       "risk": "low",
@@ -18868,10 +18857,12 @@
         "backend/src/modules/orders/orders.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/orders/services/tickets.service.ts"
       ],
       "kind": "controller",
-      "loc": 226,
+      "loc": 230,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/controllers/tickets.controller.ts",
       "risk": "low",
@@ -37592,6 +37583,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/tests/unit/internal-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 273,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/internal-routes-authz.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/tests/unit/maintenance-calculator.service.test.ts",
       "importedBy": [],
       "imports": [],
@@ -52631,7 +52641,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 460,
+      "loc": 468,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.reports._index.tsx",
       "risk": "low",
@@ -53432,7 +53442,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 528,
+      "loc": 529,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.staff.tsx",
       "risk": "low",
@@ -53728,7 +53738,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 1183,
+      "loc": 1187,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.users._index.tsx",
       "risk": "low",
@@ -54911,7 +54921,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 331,
+      "loc": 337,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/commercial._index.tsx",
       "risk": "low",
@@ -55058,7 +55068,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 913,
+      "loc": 917,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/commercial.shipping._index.tsx",
       "risk": "low",
@@ -55081,7 +55091,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 711,
+      "loc": 712,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/commercial.shipping.create._index.tsx",
       "risk": "low",
@@ -55105,7 +55115,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 641,
+      "loc": 642,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/commercial.shipping.tracking._index.tsx",
       "risk": "low",
@@ -55156,7 +55166,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 71,
+      "loc": 74,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/commercial.tsx",
       "risk": "low",
@@ -55211,7 +55221,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 850,
+      "loc": 851,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/commercial.vehicles.advanced-search.tsx",
       "risk": "low",

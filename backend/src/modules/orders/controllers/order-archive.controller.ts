@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Param, Query, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Query,
+  Logger,
+  UseGuards,
+} from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { OrderArchiveService } from '../services/order-archive.service';
 
 /**
@@ -6,6 +16,7 @@ import { OrderArchiveService } from '../services/order-archive.service';
  * Mis à jour pour utiliser OrderArchiveService consolidé (Phase 2)
  */
 @Controller('order-archive')
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class OrderArchiveController {
   private readonly logger = new Logger(OrderArchiveController.name);
 

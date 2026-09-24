@@ -1,4 +1,12 @@
-import { Controller, Get, Param, Query, Req, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Query,
+  Req,
+  Logger,
+  UseGuards,
+} from '@nestjs/common';
 import {
   OperationFailedException,
   DomainNotFoundException,
@@ -6,6 +14,9 @@ import {
   AuthenticationException,
 } from '@common/exceptions';
 import { Request } from 'express';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { PermissionsGuard } from '@auth/guards/permissions.guard';
+import { RequirePermission } from '@auth/decorators/require-permission.decorator';
 import { UserDataConsolidatedService } from '../modules/users/services/user-data-consolidated.service';
 import { OrdersService } from '../database/services/orders.service';
 
@@ -35,6 +46,10 @@ interface UserProfileRow {
   [key: string]: unknown;
 }
 
+/**
+ * Gardes posées par handler : `dashboard` sert l'espace client (session seule),
+ * les autres routes exposent des données client et sont réservées au personnel.
+ */
 @Controller('api/legacy-users')
 export class UsersController {
   private readonly logger = new Logger(UsersController.name);
@@ -49,6 +64,8 @@ export class UsersController {
    * Récupère tous les utilisateurs avec pagination
    */
   @Get()
+  @UseGuards(AuthenticatedGuard, PermissionsGuard)
+  @RequirePermission('canSeeCustomerDetails')
   async getAllUsers(
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '20',
@@ -94,6 +111,8 @@ export class UsersController {
    * Recherche d'utilisateurs
    */
   @Get('search')
+  @UseGuards(AuthenticatedGuard, PermissionsGuard)
+  @RequirePermission('canSeeCustomerDetails')
   async searchUsers(@Query('q') searchTerm: string) {
     try {
       this.logger.log(`Recherche utilisateurs: "${searchTerm}"`);
@@ -128,6 +147,7 @@ export class UsersController {
    * Nécessite une session authentifiée
    */
   @Get('dashboard')
+  @UseGuards(AuthenticatedGuard)
   async getDashboardStats(@Req() req: Request) {
     try {
       this.logger.log('Récupération des statistiques dashboard');
@@ -291,6 +311,8 @@ export class UsersController {
    * Récupère un utilisateur par son ID
    */
   @Get(':id')
+  @UseGuards(AuthenticatedGuard, PermissionsGuard)
+  @RequirePermission('canSeeCustomerDetails')
   async getUserById(@Param('id') id: string) {
     try {
       this.logger.log(`Récupération utilisateur ID: ${id}`);
@@ -322,6 +344,8 @@ export class UsersController {
    * Récupère les commandes d'un utilisateur
    */
   @Get(':id/orders')
+  @UseGuards(AuthenticatedGuard, PermissionsGuard)
+  @RequirePermission('canSeeCustomerDetails')
   async getUserOrders(@Param('id') userId: string) {
     try {
       this.logger.log(`Récupération commandes utilisateur: ${userId}`);
@@ -347,6 +371,8 @@ export class UsersController {
    * Récupère les statistiques détaillées d'un utilisateur
    */
   @Get(':id/stats')
+  @UseGuards(AuthenticatedGuard, PermissionsGuard)
+  @RequirePermission('canSeeCustomerDetails')
   async getUserStats(@Param('id') userId: string) {
     try {
       this.logger.log(`Récupération statistiques utilisateur: ${userId}`);

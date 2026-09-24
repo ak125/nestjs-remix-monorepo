@@ -1,8 +1,24 @@
-import { Controller, Get, Param, Query, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Query,
+  Logger,
+  UseGuards,
+} from '@nestjs/common';
 import { OperationFailedException, DomainException } from '@common/exceptions';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { PermissionsGuard } from '@auth/guards/permissions.guard';
+import { RequirePermission } from '@auth/decorators/require-permission.decorator';
 import { OrdersService } from '../database/services/orders.service';
 
+/**
+ * Lecture back-office des commandes (données client incluses).
+ * Réservé au personnel : @RequirePermission est posé sur CHAQUE handler,
+ * car PermissionsGuard laisse passer un handler sans métadonnée.
+ */
 @Controller('api/legacy-orders')
+@UseGuards(AuthenticatedGuard, PermissionsGuard)
 export class OrdersController {
   private readonly logger = new Logger(OrdersController.name);
 
@@ -13,6 +29,7 @@ export class OrdersController {
    * Récupère toutes les commandes avec pagination
    */
   @Get()
+  @RequirePermission('canSeeCustomerDetails')
   async getAllOrders(
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '20',
@@ -81,6 +98,7 @@ export class OrdersController {
    * Récupère les statistiques des commandes
    */
   @Get('stats')
+  @RequirePermission('canSeeCustomerDetails')
   async getOrdersStats(@Query('userId') userId?: string) {
     try {
       this.logger.log('Calcul des statistiques des commandes...');
@@ -105,6 +123,7 @@ export class OrdersController {
    * Récupère une commande par son ID
    */
   @Get(':id')
+  @RequirePermission('canSeeCustomerDetails')
   async getOrderById(@Param('id') orderId: string) {
     try {
       this.logger.log(`Récupération commande ID: ${orderId}`);

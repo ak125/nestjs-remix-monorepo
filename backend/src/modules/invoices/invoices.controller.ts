@@ -9,10 +9,14 @@ import {
   Query,
   Logger,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { InvoicesService } from './invoices.service';
 
 @Controller('api/invoices')
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class InvoicesController {
   private readonly logger = new Logger(InvoicesController.name);
 
