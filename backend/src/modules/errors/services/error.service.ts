@@ -620,14 +620,39 @@ export class ErrorService {
     if (!body) return null;
 
     const sanitized = { ...body };
+    // Secrets, puis identifiants personnels directs (email, téléphone, nom,
+    // adresse postale). Le corps nettoyé accompagne l'erreur transmise à
+    // ErrorLogService ; la ligne `__error_logs` n'a aujourd'hui aucune colonne
+    // pour lui, et ce masquage garantit qu'un consommateur à venir ne recevra
+    // que la version masquée. Correspondance par sous-chaîne de la clé en
+    // minuscules : 'mail' couvre email, guestEmail, cst_mail ; 'address'
+    // couvre billingAddress et shippingAddress en entier.
     const sensitiveFields = [
       'password',
+      'pswd',
       'token',
       'secret',
       'key',
       'credit_card',
       'ssn',
+      'mail',
+      'phone',
+      'mobile',
+      'gsm',
+      'firstname',
+      'lastname',
+      'fname',
+      'prenom',
+      'address',
     ];
+    // Clés ambiguës, retenues sous leur forme exacte seulement : 'tel' en
+    // sous-chaîne toucherait rateLimit, 'name' toucherait product_name. Sont
+    // masqués : name / nom seuls (formulaires de contact et d'avis), les noms
+    // de personne composés (customerName, first_name, last_name, fullName,
+    // author_name) et les colonnes client/adresse/admin historiques
+    // (cst_, cda_, cba_, cnfa_) qui portent le nom de famille dans *_name / *_nom.
+    const sensitiveKeyPattern =
+      /(^|_)tel$|^(name|nom)$|^(customer|first|last|full|author)_?name$|^(cst|cda|cba|cnfa)_(name|nom)$/;
 
     const sanitizeObject = (
       obj: Record<string, unknown>,
@@ -638,7 +663,10 @@ export class ErrorService {
 
       for (const [key, value] of Object.entries(obj)) {
         const lowerKey = key.toLowerCase();
-        if (sensitiveFields.some((field) => lowerKey.includes(field))) {
+        if (
+          sensitiveFields.some((field) => lowerKey.includes(field)) ||
+          sensitiveKeyPattern.test(lowerKey)
+        ) {
           result[key] = '[REDACTED]';
         } else if (typeof value === 'object') {
           result[key] = sanitizeObject(value as Record<string, unknown>);

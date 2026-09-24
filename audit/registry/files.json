@@ -15086,6 +15086,27 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/errors/services/error-body-redaction.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/errors/services/error.service.ts"
+      ],
+      "kind": "test",
+      "loc": 158,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/errors/services/error-body-redaction.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/errors/services/error-log.service.ts",
       "importedBy": [
         "backend/src/api/errors-api.controller.ts",
@@ -15141,6 +15162,7 @@
         "backend/src/modules/errors/controllers/error.controller.ts",
         "backend/src/modules/errors/errors.module.ts",
         "backend/src/modules/errors/filters/global-error.filter.ts",
+        "backend/src/modules/errors/services/error-body-redaction.test.ts",
         "backend/src/modules/errors/services/error-status-population.test.ts"
       ],
       "imports": [
@@ -15149,7 +15171,7 @@
         "backend/src/modules/errors/services/redirect.service.ts"
       ],
       "kind": "service",
-      "loc": 747,
+      "loc": 775,
       "owner": "__unassigned__",
       "path": "backend/src/modules/errors/services/error.service.ts",
       "risk": "low",
@@ -19246,7 +19268,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 912,
+      "loc": 914,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/services/orders.service.ts",
       "risk": "low",
@@ -36498,7 +36520,7 @@
         "backend/src/config/app.config.ts"
       ],
       "kind": "service",
-      "loc": 1182,
+      "loc": 1261,
       "owner": "__unassigned__",
       "path": "backend/src/services/mail.service.ts",
       "risk": "low",
@@ -36762,7 +36784,7 @@
         "backend/src/services/mail.service.ts"
       ],
       "kind": "service",
-      "loc": 221,
+      "loc": 225,
       "owner": "__unassigned__",
       "path": "backend/src/workers/processors/email.processor.ts",
       "risk": "low",
@@ -37580,6 +37602,25 @@
       "loc": 191,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/global-error-filter.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/mail.service.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 212,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/mail.service.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",

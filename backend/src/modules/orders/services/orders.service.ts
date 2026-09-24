@@ -520,10 +520,12 @@ export class OrdersService extends SupabaseBaseService {
             emailOrder,
             customer as CustomerEmailData,
           );
-          this.logger.log(`Email confirmation envoye a ${customer.cst_mail}`);
+          this.logger.log(`Email confirmation envoye pour commande ${orderId}`);
         }
       } catch (mailError) {
-        this.logger.warn('Email confirmation non envoye:', mailError);
+        this.logger.warn(
+          `Email confirmation non envoye pour commande ${orderId}: ${mailError instanceof Error ? mailError.message : String(mailError)}`,
+        );
       }
 
       // Retourner commande complète

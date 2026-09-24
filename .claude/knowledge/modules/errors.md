@@ -2,16 +2,16 @@
 module: errors
 sources:
 - backend/src/modules/errors
-last_scan: '2026-07-02'
+last_scan: '2026-09-24'
 primary_files:
 - backend/src/modules/errors/controllers/error.controller.ts
 - backend/src/modules/errors/controllers/internal-error-log.controller.ts
 - backend/src/modules/errors/entities/error-log.entity.ts
 - backend/src/modules/errors/errors.module.ts
 - backend/src/modules/errors/filters/global-error.filter.ts
+- backend/src/modules/errors/services/error-body-redaction.test.ts
 - backend/src/modules/errors/services/error-log.service.ts
 - backend/src/modules/errors/services/error-status-population.test.ts
-- backend/src/modules/errors/services/error.service.ts
 depends_on: []
 ---
 
@@ -32,16 +32,18 @@ _Section à rédiger._
 - `ErrorService`
 - `ErrorLogService`
 - `RedirectService`
+- `InternalApiKeyGuard`
 - `GlobalErrorFilter`
 
 ### Fichiers primaires
 - [backend/src/modules/errors/controllers/error.controller.ts](../../../backend/src/modules/errors/controllers/error.controller.ts)
+- [backend/src/modules/errors/controllers/internal-error-log.controller.ts](../../../backend/src/modules/errors/controllers/internal-error-log.controller.ts)
 - [backend/src/modules/errors/entities/error-log.entity.ts](../../../backend/src/modules/errors/entities/error-log.entity.ts)
 - [backend/src/modules/errors/errors.module.ts](../../../backend/src/modules/errors/errors.module.ts)
 - [backend/src/modules/errors/filters/global-error.filter.ts](../../../backend/src/modules/errors/filters/global-error.filter.ts)
+- [backend/src/modules/errors/services/error-body-redaction.test.ts](../../../backend/src/modules/errors/services/error-body-redaction.test.ts)
 - [backend/src/modules/errors/services/error-log.service.ts](../../../backend/src/modules/errors/services/error-log.service.ts)
-- [backend/src/modules/errors/services/error.service.ts](../../../backend/src/modules/errors/services/error.service.ts)
-- [backend/src/modules/errors/services/redirect.service.ts](../../../backend/src/modules/errors/services/redirect.service.ts)
+- [backend/src/modules/errors/services/error-status-population.test.ts](../../../backend/src/modules/errors/services/error-status-population.test.ts)
 
 <!-- END AUTO-GENERATED -->
 
