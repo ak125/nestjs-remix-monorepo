@@ -86,6 +86,12 @@ describe('isOrderStatusCode type guard', () => {
     assert.equal(isOrderStatusCode(undefined), false);
     assert.equal(isOrderStatusCode(''), false);
   });
+
+  it('rejects keys inherited from Object.prototype', () => {
+    for (const key of ['toString', 'constructor', 'hasOwnProperty', '__proto__']) {
+      assert.equal(isOrderStatusCode(key), false, key);
+    }
+  });
 });
 
 describe('getOrderStatusLabel', () => {
