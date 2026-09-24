@@ -229,6 +229,55 @@ export interface OrderLine {
   subtotal: number;
 }
 
+/** Adresse imprimée sur la facture d'une commande. */
+export interface InvoiceAddress {
+  civility: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  address: string | null;
+  addressLine2: string | null;
+  zipCode: string | null;
+  city: string | null;
+  country: string | null;
+}
+
+/** Adresses enregistrées pour une commande (`null` : aucune enregistrée). */
+export interface OrderInvoiceAddresses {
+  billing: InvoiceAddress | null;
+  delivery: InvoiceAddress | null;
+}
+
+/** Colonnes de `___xtr_order` qui portent les adresses de la commande. */
+export interface OrderAddressFields {
+  ord_cst_id?: unknown;
+  ord_cba_id?: unknown;
+  ord_cda_id?: unknown;
+  ord_billing_snapshot?: unknown;
+  ord_shipping_snapshot?: unknown;
+}
+
+function textOrNull(value: unknown): string | null {
+  return typeof value === 'string' && value.trim() !== '' ? value : null;
+}
+
+/** Instantané JSON posé par `createOrder` (clés camelCase d'`OrderAddress`). */
+function invoiceAddressFromSnapshot(snapshot: unknown): InvoiceAddress | null {
+  if (!snapshot || typeof snapshot !== 'object' || Array.isArray(snapshot)) {
+    return null;
+  }
+  const s = snapshot as Record<string, unknown>;
+  return {
+    civility: null,
+    firstName: textOrNull(s.firstName),
+    lastName: textOrNull(s.lastName),
+    address: textOrNull(s.address),
+    addressLine2: textOrNull(s.addressLine2),
+    zipCode: textOrNull(s.zipCode),
+    city: textOrNull(s.city),
+    country: textOrNull(s.country),
+  };
+}
+
 /** Full order with customer and lines (returned by getOrderById) */
 export interface OrderWithDetails extends Record<string, unknown> {
   ord_id?: string;
@@ -640,6 +689,94 @@ export class OrdersService extends SupabaseBaseService {
       this.logger.error(`Erreur getOrderById(${orderId}):`, error);
       throw error;
     }
+  }
+
+  /**
+   * Adresses de facturation et de livraison enregistrées pour une commande —
+   * jamais l'adresse actuelle du client, qui a pu changer depuis :
+   * 1. l'instantané posé à la création (`ord_billing_snapshot` /
+   *    `ord_shipping_snapshot`) ;
+   * 2. sinon (commandes historiques) la ligne d'adresse référencée
+   *    (`ord_cba_id` / `ord_cda_id`), à condition qu'elle appartienne au
+   *    client de la commande ;
+   * 3. sinon `null`, que la facture affiche comme « non enregistrée ».
+   * Une erreur de lecture est propagée : pas de facture sans ses adresses.
+   */
+  async getOrderInvoiceAddresses(
+    order: OrderAddressFields,
+  ): Promise<OrderInvoiceAddresses> {
+    const customerId = textOrNull(order.ord_cst_id);
+    const billingSnapshot = invoiceAddressFromSnapshot(
+      order.ord_billing_snapshot,
+    );
+    const deliverySnapshot = invoiceAddressFromSnapshot(
+      order.ord_shipping_snapshot,
+    );
+    const billingId = textOrNull(order.ord_cba_id);
+    const deliveryId = textOrNull(order.ord_cda_id);
+
+    const [billingRow, deliveryRow] = await Promise.all([
+      billingSnapshot || !billingId || !customerId
+        ? null
+        : this.supabase
+            .from(TABLES.xtr_customer_billing_address)
+            .select(
+              'cba_civility, cba_fname, cba_name, cba_address, cba_zip_code, cba_city, cba_country',
+            )
+            .eq('cba_id', billingId)
+            .eq('cba_cst_id', customerId)
+            .maybeSingle(),
+      deliverySnapshot || !deliveryId || !customerId
+        ? null
+        : this.supabase
+            .from(TABLES.xtr_customer_delivery_address)
+            .select(
+              'cda_civility, cda_fname, cda_name, cda_address, cda_zip_code, cda_city, cda_country',
+            )
+            .eq('cda_id', deliveryId)
+            .eq('cda_cst_id', customerId)
+            .maybeSingle(),
+    ]);
+
+    const readError = billingRow?.error ?? deliveryRow?.error;
+    if (readError) {
+      throw new Error(
+        `Lecture des adresses de facture impossible: ${readError.message}`,
+      );
+    }
+
+    const b = billingRow?.data;
+    const d = deliveryRow?.data;
+    return {
+      billing:
+        billingSnapshot ??
+        (b
+          ? {
+              civility: textOrNull(b.cba_civility),
+              firstName: textOrNull(b.cba_fname),
+              lastName: textOrNull(b.cba_name),
+              address: textOrNull(b.cba_address),
+              addressLine2: null,
+              zipCode: textOrNull(b.cba_zip_code),
+              city: textOrNull(b.cba_city),
+              country: textOrNull(b.cba_country),
+            }
+          : null),
+      delivery:
+        deliverySnapshot ??
+        (d
+          ? {
+              civility: textOrNull(d.cda_civility),
+              firstName: textOrNull(d.cda_fname),
+              lastName: textOrNull(d.cda_name),
+              address: textOrNull(d.cda_address),
+              addressLine2: null,
+              zipCode: textOrNull(d.cda_zip_code),
+              city: textOrNull(d.cda_city),
+              country: textOrNull(d.cda_country),
+            }
+          : null),
+    };
   }
 
   /**

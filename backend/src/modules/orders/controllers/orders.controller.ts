@@ -60,6 +60,7 @@ import {
   getCustomerCancelRefusal,
   getOrderNotPayableMessage,
   getOrderPaymentState,
+  OrderWithDetails,
 } from '../services/orders.service';
 import { DomainConflictException, ErrorCodes } from '@common/exceptions';
 import type { OrderStatusCode } from '@repo/domain-commerce';
@@ -280,6 +281,41 @@ export class OrdersController {
     return { ...existingOrder, resumeToken };
   }
 
+  /**
+   * Commande du client connecté, sinon 404 « Commande non trouvée » — la même
+   * réponse pour une commande inexistante et pour celle d'un autre client, pour
+   * ne pas révéler quelles commandes existent. Une commande sans client
+   * rattaché n'appartient à personne.
+   */
+  private async getCustomerOrder(
+    orderId: string,
+    userId: string | undefined,
+    action: string,
+  ): Promise<OrderWithDetails> {
+    if (!userId) {
+      this.logger.warn(`${action} refusé sans session : commande ${orderId}`);
+      throw new NotFoundException('Commande non trouvée');
+    }
+
+    let order: OrderWithDetails;
+    try {
+      order = await this.ordersService.getOrderById(orderId);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw new NotFoundException('Commande non trouvée');
+      }
+      throw error;
+    }
+
+    if (!order.ord_cst_id || String(order.ord_cst_id) !== String(userId)) {
+      this.logger.warn(
+        `${action} refusé : commande ${orderId} hors du compte ${userId}`,
+      );
+      throw new NotFoundException('Commande non trouvée');
+    }
+    return order;
+  }
+
   // ═══════════════════════════════════════════════════════════════════════
   // 🔵 SECTION 1: ROUTES CLIENT (Authentification requise)
   // ═══════════════════════════════════════════════════════════════════════
@@ -355,26 +391,7 @@ export class OrdersController {
         `Getting order ${orderId} for user ${userId || 'guest-session'}`,
       );
 
-      const order = await this.ordersService.getOrderById(orderId);
-
-      if (!order) {
-        throw new NotFoundException('Commande non trouvée');
-      }
-
-      // Ownership check: user must own the order
-      if (userId) {
-        const orderCustomerId = String(order.ord_cst_id);
-        const requestUserId = String(userId);
-        if (orderCustomerId !== requestUserId) {
-          this.logger.warn(
-            `Access denied: user ${requestUserId} tried to access order ${orderId} owned by ${orderCustomerId}`,
-          );
-          throw new NotFoundException('Commande non trouvée');
-        }
-      } else {
-        this.logger.warn(`Unauthenticated access attempt for order ${orderId}`);
-        throw new NotFoundException('Commande non trouvée');
-      }
+      const order = await this.getCustomerOrder(orderId, userId, 'Lecture');
 
       return {
         success: true,
@@ -388,6 +405,73 @@ export class OrdersController {
       this.logger.error(`Error getting order ${orderId}:`, error);
       throw error;
     }
+  }
+
+  /**
+   * 🧾 Facture / bon de commande du client connecté
+   * GET /api/orders/:id/invoice
+   *
+   * Réponse limitée à ce que la facture imprime : ni e-mail ni téléphone.
+   * Les adresses sont celles enregistrées pour la commande (jamais l'adresse
+   * actuelle du client) et l'état de paiement vient de `getOrderPaymentState`,
+   * la même règle que le lien de reprise et le rejeu de la validation.
+   */
+  @Get(':id/invoice')
+  @UseGuards(AuthenticatedGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Facture d'une commande du client connecté" })
+  @ApiParam({ name: 'id', description: 'ID de la commande (string)' })
+  @ApiResponse({ status: 200, description: 'Données de la facture' })
+  @ApiResponse({ status: 404, description: 'Commande non trouvée' })
+  async getOrderInvoice(
+    @Param('id') orderId: string,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    const order = await this.getCustomerOrder(
+      orderId,
+      getUserId(req),
+      'Facture',
+    );
+    const addresses = await this.ordersService.getOrderInvoiceAddresses(order);
+    const paymentState = getOrderPaymentState(order);
+
+    const lines = [...order.lines]
+      .sort((a, b) =>
+        String(a.orl_id ?? '').localeCompare(String(b.orl_id ?? ''), 'fr', {
+          numeric: true,
+        }),
+      )
+      .map((line) => ({
+        orl_id: line.orl_id ?? null,
+        orl_pg_name: line.orl_pg_name ?? null,
+        orl_art_quantity: line.orl_art_quantity ?? null,
+        orl_art_price_sell_unit_ttc: line.orl_art_price_sell_unit_ttc ?? null,
+        orl_art_price_sell_ttc: line.orl_art_price_sell_ttc ?? null,
+      }));
+
+    return {
+      success: true,
+      data: {
+        ord_id: order.ord_id,
+        ord_parent: order.ord_parent ?? null,
+        ord_date: order.ord_date ?? null,
+        ord_date_pay: order.ord_date_pay ?? null,
+        ord_ords_id: order.ord_ords_id ?? null,
+        ord_amount_ttc: order.ord_amount_ttc ?? null,
+        ord_deposit_ttc: order.ord_deposit_ttc ?? null,
+        ord_shipping_fee_ttc: order.ord_shipping_fee_ttc ?? null,
+        ord_total_ttc: order.ord_total_ttc ?? null,
+        lines,
+        billing_address: addresses.billing,
+        delivery_address: addresses.delivery,
+        payment_state: paymentState,
+        payment_refusal:
+          paymentState === 'not_payable'
+            ? getOrderNotPayableMessage(order)
+            : null,
+      },
+      timestamp: new Date().toISOString(),
+    };
   }
 
   /**
@@ -753,21 +837,7 @@ export class OrdersController {
       const userId = getUserId(req);
       this.logger.log(`Cancelling order ${orderId} by user ${userId}`);
 
-      if (!userId) {
-        this.logger.warn(`Unauthenticated cancel attempt for order ${orderId}`);
-        throw new NotFoundException('Commande non trouvée');
-      }
-
-      const order = await this.ordersService.getOrderById(orderId);
-
-      // Ownership check (même règle que GET :id) — une commande sans client
-      // rattaché n'appartient à personne.
-      if (!order.ord_cst_id || String(order.ord_cst_id) !== String(userId)) {
-        this.logger.warn(
-          `Cancel denied: user ${userId} tried to cancel order ${orderId} owned by ${order.ord_cst_id}`,
-        );
-        throw new NotFoundException('Commande non trouvée');
-      }
+      const order = await this.getCustomerOrder(orderId, userId, 'Annulation');
 
       const refusal = getCustomerCancelRefusal(order);
       if (refusal) {

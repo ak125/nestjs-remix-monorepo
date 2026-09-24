@@ -11,170 +11,173 @@ import { toast } from "sonner";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Alert } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
+import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
+import { getProxyHeaders } from "~/utils/proxy-headers.server";
 import { requireAuth } from "../auth/unified.server";
 
 export const meta: MetaFunction = () => createNoIndexMeta("Facture");
 
-// Types
-interface InvoiceAddress {
-  civility?: string;
-  name: string;
-  firstName?: string;
-  address: string;
-  zipCode: string;
-  city: string;
-  country: string;
+// Réponse de GET /api/orders/:id/invoice (backend OrdersController.getOrderInvoice)
+interface InvoiceApiAddress {
+  civility: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  address: string | null;
+  addressLine2: string | null;
+  zipCode: string | null;
+  city: string | null;
+  country: string | null;
 }
 
-interface InvoiceOrderLine {
-  id: number;
-  productName: string;
-  unitPriceTTC: number;
-  quantity: number;
-  totalPriceTTC: number;
+interface InvoiceApiLine {
+  orl_id: string | null;
+  orl_pg_name: string | null;
+  orl_art_quantity: string | number | null;
+  orl_art_price_sell_unit_ttc: string | number | null;
+  orl_art_price_sell_ttc: string | number | null;
 }
 
-interface InvoiceOrder {
-  id: number;
-  orderId: string; // ORD_PARENT/A
-  date: string;
-  datePay?: string;
-  info?: string;
-  amountTTC: number;
-  depositTTC: number;
-  shippingFeeTTC: number;
-  totalTTC: number;
-  isPaid: boolean;
-  isSupplementOrder: boolean; // true si ORD_PARENT != 0
-  parentOrderId?: string;
+interface InvoiceApiData {
+  ord_id: string;
+  ord_parent: string | null;
+  ord_date: string | null;
+  ord_date_pay: string | null;
+  ord_amount_ttc: string | number | null;
+  ord_deposit_ttc: string | number | null;
+  ord_shipping_fee_ttc: string | number | null;
+  ord_total_ttc: string | number | null;
+  lines: InvoiceApiLine[];
+  billing_address: InvoiceApiAddress | null;
+  delivery_address: InvoiceApiAddress | null;
+  payment_state: "paid" | "payable" | "not_payable";
+  payment_refusal: string | null;
+}
 
-  // Customer
-  customer: {
-    id: number;
-    email: string;
-    phone?: string;
-    mobile?: string;
+const LOAD_FAILED = "Erreur lors du chargement de la facture";
+
+function toAmount(value: string | number | null): number {
+  const amount = typeof value === "number" ? value : parseFloat(value ?? "");
+  return Number.isFinite(amount) ? amount : 0;
+}
+
+/** Données affichées par la page, dérivées de la réponse du backend. */
+export function toInvoice(data: InvoiceApiData) {
+  const parentOrderId =
+    data.ord_parent && data.ord_parent !== "0" ? data.ord_parent : null;
+  return {
+    id: data.ord_id,
+    number: `${data.ord_id}/A`,
+    date: data.ord_date,
+    datePay: data.ord_date_pay,
+    isPaid: data.payment_state === "paid",
+    isSupplementOrder: parentOrderId !== null,
+    parentOrderId,
+    // Seul un supplément se paie depuis cette page, et seulement si le
+    // backend le déclare payable (même règle que le lien de reprise).
+    canPay: parentOrderId !== null && data.payment_state === "payable",
+    paymentRefusal: data.payment_refusal,
+    amountTTC: toAmount(data.ord_amount_ttc),
+    depositTTC: toAmount(data.ord_deposit_ttc),
+    shippingFeeTTC: toAmount(data.ord_shipping_fee_ttc),
+    totalTTC: toAmount(data.ord_total_ttc),
+    billingAddress: data.billing_address,
+    deliveryAddress: data.delivery_address,
+    lines: data.lines.map((line) => ({
+      id: line.orl_id,
+      productName: line.orl_pg_name ?? "",
+      unitPriceTTC: toAmount(line.orl_art_price_sell_unit_ttc),
+      quantity: toAmount(line.orl_art_quantity),
+      totalPriceTTC: toAmount(line.orl_art_price_sell_ttc),
+    })),
   };
-
-  // Addresses
-  billingAddress: InvoiceAddress;
-  deliveryAddress: InvoiceAddress;
-
-  // Lines
-  lines: InvoiceOrderLine[];
 }
 
+/**
+ * La facture passe par le backend, qui ne sert que les commandes du client
+ * connecté (404 sinon) et calcule l'état de paiement.
+ */
 export async function loader({ request, params }: LoaderFunctionArgs) {
-  const user = await requireAuth(request);
+  await requireAuth(request);
   const orderId = params.orderId;
-
   if (!orderId) {
-    throw new Response("Order ID manquant", { status: 400 });
-  }
-
-  // Récupérer les données de la commande avec JOIN sur les adresses
-  const response = await fetch(
-    `${process.env.SUPABASE_URL}/rest/v1/___xtr_order?select=*,___xtr_customer!inner(*),___xtr_customer_billing_address!inner(*),___xtr_customer_delivery_address!inner(*),___xtr_order_line(*)&ord_id=eq.${orderId}`,
-    {
-      headers: {
-        apikey: process.env.SUPABASE_ANON_KEY!,
-        Authorization: `Bearer ${process.env.SUPABASE_ANON_KEY!}`,
-      },
-    },
-  );
-
-  if (!response.ok) {
-    throw new Response("Erreur lors de la récupération de la commande", {
-      status: 500,
-    });
-  }
-
-  const orders = await response.json();
-
-  if (!orders || orders.length === 0) {
     throw new Response("Commande non trouvée", { status: 404 });
   }
 
-  const orderData = orders[0];
-
-  // Vérifier que la commande appartient au client connecté
-  if (orderData.ord_cst_id !== user.id) {
-    throw new Response("Accès non autorisé", { status: 403 });
+  let res: Response;
+  try {
+    res = await fetch(
+      getInternalApiUrlFromRequest(
+        `/api/orders/${encodeURIComponent(orderId)}/invoice`,
+        request,
+      ),
+      {
+        headers: {
+          Accept: "application/json",
+          Cookie: request.headers.get("Cookie") || "",
+          ...getProxyHeaders(request),
+        },
+      },
+    );
+  } catch (error) {
+    logger.error("Facture : backend injoignable", error);
+    throw new Response(LOAD_FAILED, { status: 500 });
   }
 
-  // Récupérer les lignes de commande
-  const linesResponse = await fetch(
-    `${process.env.SUPABASE_URL}/rest/v1/___xtr_order_line?orl_ord_id=eq.${orderId}`,
-    {
-      headers: {
-        apikey: process.env.SUPABASE_ANON_KEY!,
-        Authorization: `Bearer ${process.env.SUPABASE_ANON_KEY!}`,
-      },
-    },
+  if (res.status === 404) {
+    throw new Response("Commande non trouvée", { status: 404 });
+  }
+  if (!res.ok) {
+    logger.error(`Facture ${orderId} : réponse backend ${res.status}`);
+    throw new Response(LOAD_FAILED, { status: 500 });
+  }
+
+  const body = (await res.json().catch(() => null)) as {
+    data?: InvoiceApiData;
+  } | null;
+  if (!body?.data) {
+    logger.error(`Facture ${orderId} : réponse backend sans données`);
+    throw new Response(LOAD_FAILED, { status: 500 });
+  }
+
+  return { invoice: toInvoice(body.data) };
+}
+
+function formatDate(value: string | null): string | null {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toLocaleDateString("fr-FR");
+}
+
+function AddressBlock({
+  title,
+  address,
+}: {
+  title: string;
+  address: InvoiceApiAddress | null;
+}) {
+  const join = (...parts: (string | null)[]) => parts.filter(Boolean).join(" ");
+  return (
+    <div className="border border-gray-200 rounded p-4">
+      <h3 className="font-semibold mb-2 underline">{title}</h3>
+      {address ? (
+        <>
+          <p>{join(address.civility, address.lastName, address.firstName)}</p>
+          <p>{address.address}</p>
+          {address.addressLine2 && <p>{address.addressLine2}</p>}
+          <p>
+            {join(address.zipCode, address.city)}
+            {address.country ? `, ${address.country}` : ""}
+          </p>
+        </>
+      ) : (
+        <p className="text-gray-500">
+          Adresse non enregistrée pour cette commande
+        </p>
+      )}
+    </div>
   );
-
-  const lines = linesResponse.ok ? await linesResponse.json() : [];
-
-  // Mapper les données
-  const invoice: InvoiceOrder = {
-    id: orderData.ord_id,
-    orderId:
-      orderData.ord_parent && orderData.ord_parent !== "0"
-        ? `${orderData.ord_id}/A`
-        : `${orderData.ord_id}/A`,
-    date: orderData.ord_date,
-    datePay: orderData.ord_date_pay,
-    info: orderData.ord_info,
-    amountTTC: parseFloat(orderData.ord_amount_ttc || 0),
-    depositTTC: parseFloat(orderData.ord_deposit_ttc || 0),
-    shippingFeeTTC: parseFloat(orderData.ord_shipping_fee_ttc || 0),
-    totalTTC: parseFloat(orderData.ord_total_ttc || 0),
-    isPaid: orderData.ord_is_pay === 1 || orderData.ord_is_pay === true,
-    isSupplementOrder: orderData.ord_parent && orderData.ord_parent !== "0",
-    parentOrderId:
-      orderData.ord_parent && orderData.ord_parent !== "0"
-        ? orderData.ord_parent
-        : undefined,
-
-    customer: {
-      id: orderData.___xtr_customer?.cst_id,
-      email: orderData.___xtr_customer?.cst_mail,
-      phone: orderData.___xtr_customer?.cst_tel,
-      mobile: orderData.___xtr_customer?.cst_gsm,
-    },
-
-    billingAddress: {
-      civility: orderData.___xtr_customer_billing_address?.cba_civility,
-      name: orderData.___xtr_customer_billing_address?.cba_name,
-      firstName: orderData.___xtr_customer_billing_address?.cba_fname,
-      address: orderData.___xtr_customer_billing_address?.cba_address,
-      zipCode: orderData.___xtr_customer_billing_address?.cba_zip_code,
-      city: orderData.___xtr_customer_billing_address?.cba_city,
-      country: orderData.___xtr_customer_billing_address?.cba_country,
-    },
-
-    deliveryAddress: {
-      civility: orderData.___xtr_customer_delivery_address?.cda_civility,
-      name: orderData.___xtr_customer_delivery_address?.cda_name,
-      firstName: orderData.___xtr_customer_delivery_address?.cda_fname,
-      address: orderData.___xtr_customer_delivery_address?.cda_address,
-      zipCode: orderData.___xtr_customer_delivery_address?.cda_zip_code,
-      city: orderData.___xtr_customer_delivery_address?.cda_city,
-      country: orderData.___xtr_customer_delivery_address?.cda_country,
-    },
-
-    lines: lines.map((line: any) => ({
-      id: line.orl_id,
-      productName: line.orl_pg_name,
-      unitPriceTTC: parseFloat(line.orl_art_price_sell_unit_ttc || 0),
-      quantity: parseInt(line.orl_art_quantity || 0),
-      totalPriceTTC: parseFloat(line.orl_art_price_sell_ttc || 0),
-    })),
-  };
-
-  return { invoice, user };
 }
 
 export default function OrderInvoice() {
@@ -182,12 +185,8 @@ export default function OrderInvoice() {
   const [paymentMethod, setPaymentMethod] = useState<"PAYBOX" | "PAYPAL">(
     "PAYBOX",
   );
-
-  // Calculer le total des lignes
-  const linesTotal = invoice.lines.reduce(
-    (sum, line) => sum + line.totalPriceTTC,
-    0,
-  );
+  const date = formatDate(invoice.date);
+  const datePay = formatDate(invoice.datePay);
 
   return (
     <div className="container-fluid invoice-page bg-white">
@@ -217,29 +216,27 @@ export default function OrderInvoice() {
                       ? "Supplément n°"
                       : "Bon de commande n°"}
                 </span>
-                <span>{invoice.orderId}</span>
+                <span>{invoice.number}</span>
               </div>
 
               {/* Date de commande */}
-              <div className="flex justify-between">
-                <span className="font-semibold">Date</span>
-                <span>
-                  {new Date(invoice.date).toLocaleDateString("fr-FR")}
-                </span>
-              </div>
+              {date && (
+                <div className="flex justify-between">
+                  <span className="font-semibold">Date</span>
+                  <span>{date}</span>
+                </div>
+              )}
 
               {/* Date de paiement si payé */}
-              {invoice.isPaid && invoice.datePay && (
+              {invoice.isPaid && datePay && (
                 <div className="flex justify-between">
                   <span className="font-semibold">Date de paiement</span>
-                  <span>
-                    {new Date(invoice.datePay).toLocaleDateString("fr-FR")}
-                  </span>
+                  <span>{datePay}</span>
                 </div>
               )}
 
               {/* Référence commande parent si supplément */}
-              {invoice.isSupplementOrder && invoice.parentOrderId && (
+              {invoice.parentOrderId && (
                 <div className="flex justify-between">
                   <span className="font-semibold">Commande parente n°</span>
                   <span>{invoice.parentOrderId}/A</span>
@@ -259,31 +256,8 @@ export default function OrderInvoice() {
 
         {/* Adresses facturation et livraison */}
         <div className="grid grid-cols-2 gap-6 mb-6">
-          <div className="border border-gray-200 rounded p-4">
-            <h3 className="font-semibold mb-2 underline">Facturée à :</h3>
-            <p>
-              {invoice.billingAddress.civility} {invoice.billingAddress.name}{" "}
-              {invoice.billingAddress.firstName}
-            </p>
-            <p>{invoice.billingAddress.address}</p>
-            <p>
-              {invoice.billingAddress.zipCode} {invoice.billingAddress.city},{" "}
-              {invoice.billingAddress.country}
-            </p>
-          </div>
-
-          <div className="border border-gray-200 rounded p-4">
-            <h3 className="font-semibold mb-2 underline">Livrée à :</h3>
-            <p>
-              {invoice.deliveryAddress.civility} {invoice.deliveryAddress.name}{" "}
-              {invoice.deliveryAddress.firstName}
-            </p>
-            <p>{invoice.deliveryAddress.address}</p>
-            <p>
-              {invoice.deliveryAddress.zipCode} {invoice.deliveryAddress.city},{" "}
-              {invoice.deliveryAddress.country}
-            </p>
-          </div>
+          <AddressBlock title="Facturée à :" address={invoice.billingAddress} />
+          <AddressBlock title="Livrée à :" address={invoice.deliveryAddress} />
         </div>
 
         {/* Tableau des produits */}
@@ -311,22 +285,44 @@ export default function OrderInvoice() {
             </div>
           ))}
 
-          {/* Total */}
+          {/* Récapitulatif : montants enregistrés sur la commande */}
           <div className="grid grid-cols-12 bg-gray-50 p-4">
-            <div className="col-span-7 md:col-span-9"></div>
-            <div className="col-span-5 md:col-span-3">
-              <div className="flex justify-between items-center">
+            <div className="col-span-12 md:col-span-6 md:col-start-7 space-y-1">
+              <div className="flex justify-between">
+                <span>Total articles TTC</span>
+                <span>{invoice.amountTTC.toFixed(2)} €</span>
+              </div>
+              {invoice.depositTTC > 0 && (
+                <div className="flex justify-between">
+                  <span>Consignes TTC</span>
+                  <span>{invoice.depositTTC.toFixed(2)} €</span>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <span>Frais de port TTC</span>
+                <span>{invoice.shippingFeeTTC.toFixed(2)} €</span>
+              </div>
+              <div className="flex justify-between items-center border-t pt-2">
                 <span className="font-semibold">Total TTC</span>
                 <span className="text-lg font-bold">
-                  {linesTotal.toFixed(2)} €
+                  {invoice.totalTTC.toFixed(2)} €
                 </span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Section paiement (uniquement pour suppléments non payés) */}
-        {invoice.isSupplementOrder && !invoice.isPaid && (
+        {/* Supplément qui ne peut plus être payé (annulé, etc.) */}
+        {invoice.isSupplementOrder &&
+          !invoice.isPaid &&
+          invoice.paymentRefusal && (
+            <Alert intent="warning">
+              <p>{invoice.paymentRefusal}</p>
+            </Alert>
+          )}
+
+        {/* Section paiement (uniquement pour les suppléments payables) */}
+        {invoice.canPay && (
           <div className="space-y-6">
             <div className="grid grid-cols-2 gap-6">
               <div className="border border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors">
@@ -437,7 +433,7 @@ export default function OrderInvoice() {
                   variant="green"
                   type="submit"
                 >
-                  \n Payer maintenant\n
+                  Payer maintenant
                 </Button>
               </form>
             </div>
@@ -448,10 +444,8 @@ export default function OrderInvoice() {
         {invoice.isPaid && (
           <Alert intent="success">
             <p>
-              ✓ Cette commande a été payée le{" "}
-              {invoice.datePay
-                ? new Date(invoice.datePay).toLocaleDateString("fr-FR")
-                : "N/A"}
+              ✓ Cette commande a été payée
+              {datePay ? ` le ${datePay}` : ""}
             </p>
           </Alert>
         )}

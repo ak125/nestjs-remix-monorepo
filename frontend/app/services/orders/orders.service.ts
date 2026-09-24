@@ -217,21 +217,6 @@ export async function exportOrdersCSV(
   return response.blob();
 }
 
-/**
- * Génère une facture PDF pour une commande
- */
-export async function generateInvoicePDF(orderId: string): Promise<Blob> {
-  const response = await fetch(`${API_BASE_URL}/orders/${orderId}/invoice`);
-
-  if (!response.ok) {
-    throw new Error(
-      `Erreur lors de la génération de la facture: ${response.statusText}`,
-    );
-  }
-
-  return response.blob();
-}
-
 // ========================================
 // 📧 EMAIL
 // ========================================
