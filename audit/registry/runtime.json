@@ -1607,7 +1607,6 @@
         "runtime:backend/src/config/content-write-gate.service.ts",
         "runtime:backend/src/config/feature-flags.service.ts",
         "runtime:backend/src/modules/admin/services/enricher-text-utils.service.ts",
-        "runtime:backend/src/modules/admin/services/vehicle-rag-generator.service.ts",
         "runtime:backend/src/modules/seo/services/chain/seo-role-template-selector.service.ts"
       ],
       "id": "runtime:backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",

@@ -172,7 +172,19 @@ export class AuthService {
         }
       }
 
-      const authUser = this.mapResolvedToAuthUser(resolved);
+      // Le niveau de droits dépend de la table source : un palier client
+      // n'est pas un niveau d'équipe (voir session-privilege.ts).
+      const authUser: AuthUser = {
+        id: resolved.userId,
+        email: resolved.email,
+        firstName: resolved.firstName,
+        lastName: resolved.lastName,
+        level: sessionPrivilegeLevel(authSource, resolved.level),
+        isActive: resolved.isActive,
+        isPro: isAdmin || resolved.level >= 5,
+        isAdmin: isAdminSession(authSource, resolved.level),
+        authSource,
+      };
 
       // Vérifier que l'utilisateur est actif
       if (!authUser.isActive) {
@@ -483,7 +495,17 @@ export class AuthService {
         );
         if (!resolved) return null;
 
-        return this.mapResolvedToAuthUser(resolved);
+        return {
+          id: resolved.userId,
+          email: resolved.email,
+          firstName: resolved.firstName,
+          lastName: resolved.lastName,
+          level: sessionPrivilegeLevel(resolved.authSource, resolved.level),
+          isActive: resolved.isActive,
+          isPro: resolved.authSource === 'admin' || resolved.level >= 5,
+          isAdmin: isAdminSession(resolved.authSource, resolved.level),
+          authSource: resolved.authSource,
+        };
       }
 
       return null;
@@ -562,33 +584,6 @@ export class AuthService {
       level: sessionPrivilegeLevel('admin', admin.level),
       isAdmin: isAdminSession('admin', admin.level),
       authSource: 'admin',
-    };
-  }
-
-  /**
-   * Mapper le résultat de `auth_resolve_user` (personnel prioritaire, puis
-   * client) vers AuthUser. Le niveau de droits dépend de la table source :
-   * un palier client n'est pas un niveau d'équipe (voir session-privilege.ts).
-   */
-  private mapResolvedToAuthUser(resolved: {
-    userId: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    level: number;
-    isActive: boolean;
-    authSource: 'admin' | 'customer';
-  }): AuthUser {
-    return {
-      id: resolved.userId,
-      email: resolved.email,
-      firstName: resolved.firstName,
-      lastName: resolved.lastName,
-      level: sessionPrivilegeLevel(resolved.authSource, resolved.level),
-      isActive: resolved.isActive,
-      isPro: resolved.authSource === 'admin' || resolved.level >= 5,
-      isAdmin: isAdminSession(resolved.authSource, resolved.level),
-      authSource: resolved.authSource,
     };
   }
 

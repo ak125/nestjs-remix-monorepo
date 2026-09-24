@@ -118,6 +118,7 @@
     "registry:test:files-reachability": "tsx --test scripts/registry/build-files-registry.test.ts",
     "registry:test:planning": "tsx --test tests/registry/planning-builder.test.ts",
     "registry:test:dependency-graph": "tsx --test tests/registry/dependency-graph-builder.test.ts",
+    "registry:test:db-status": "tsx --test tests/registry/db-registry-status.test.ts",
     "registry:validate:zod": "tsx scripts/registry/validate-zod-schemas.ts",
     "registry:seed-ownership": "node scripts/registry/seed-ownership.js --write",
     "registry:validate": "tsx scripts/registry/validate-overlay.ts",

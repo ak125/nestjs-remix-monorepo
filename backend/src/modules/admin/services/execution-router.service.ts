@@ -59,6 +59,19 @@ export interface ExecutionResult {
   duration: number;
 }
 
+/**
+ * Ligne de rapport `__pipeline_chain_queue` d'une exécution : statut + détail.
+ * Seul calcul de ce couple — partagé par `logExecution` et par
+ * `PipelineChainProcessor` pour que les deux lignes d'une même exécution ne se
+ * contredisent pas.
+ */
+export interface QueueOutcome {
+  /** Contrat inchangé : `failed` dès qu'une cible échoue, sinon `done`. */
+  status: 'done' | 'failed';
+  /** Motif du premier échec, puis compte + motif des cibles `skipped`. */
+  error: string | null;
+}
+
 /** Minimal enricher interface for dispatch */
 interface EnricherLike {
   enrichSingle?: (...args: unknown[]) => Promise<unknown>;
@@ -546,19 +559,16 @@ export class ExecutionRouterService extends SupabaseBaseService {
 
       const firstPgId = parseInt(request.targetIds[0], 10);
       const firstAlias = await this.resolvePgAlias(request.targetIds[0]);
+      const outcome = this.summarizeQueueOutcome(result);
 
       await this.client.from('__pipeline_chain_queue').insert({
         pcq_pg_id: isNaN(firstPgId) ? 0 : firstPgId,
         pcq_pg_alias: firstAlias ?? request.targetIds[0],
         pcq_page_type: result.roleId,
         pcq_source: 'execution_router',
-        pcq_status: failedCount === 0 ? 'done' : 'failed',
+        pcq_status: outcome.status,
         pcq_processed_at: new Date().toISOString(),
-        pcq_error:
-          failedCount > 0
-            ? (this.extractDetailedError(result) ??
-              `${failedCount}/${result.totalTargets} failed`)
-            : null,
+        pcq_error: outcome.error,
         pcq_sections: request.targetIds,
       });
 
@@ -573,20 +583,61 @@ export class ExecutionRouterService extends SupabaseBaseService {
     }
   }
 
+  // ── Queue report: status + detail of one execution ──
+
+  /**
+   * Statut et détail d'une exécution pour `__pipeline_chain_queue`.
+   * `failed` si au moins une cible échoue (détail du premier échec, sinon le
+   * compte) ; sinon `done`. Une cible `skipped` (ex. R8 refusée par le
+   * WriteGate) n'est ni un échec ni un succès silencieux : son compte et le
+   * motif de la première sont ajoutés au détail.
+   */
+  summarizeQueueOutcome(result: ExecutionResult): QueueOutcome {
+    const failedCount = result.results.filter(
+      (r) => r.status === 'failed',
+    ).length;
+    const skippedCount = result.results.filter(
+      (r) => r.status === 'skipped',
+    ).length;
+
+    const parts: string[] = [];
+    if (failedCount > 0) {
+      parts.push(
+        this.extractDetailedError(result, 'failed') ??
+          `${failedCount}/${result.totalTargets} failed`,
+      );
+    }
+    if (skippedCount > 0) {
+      const skippedReason = this.extractDetailedError(result, 'skipped');
+      parts.push(
+        `${skippedCount}/${result.totalTargets} skipped` +
+          (skippedReason ? `: ${skippedReason}` : ''),
+      );
+    }
+
+    return {
+      status: failedCount === 0 ? 'done' : 'failed',
+      error: parts.length > 0 ? parts.join(' | ') : null,
+    };
+  }
+
   // ── Private: extract detailed error from execution result ──
 
-  private extractDetailedError(result: ExecutionResult): string | null {
-    const firstFailed = result.results.find((r) => r.status === 'failed');
-    if (!firstFailed) return null;
+  private extractDetailedError(
+    result: ExecutionResult,
+    status: 'failed' | 'skipped',
+  ): string | null {
+    const first = result.results.find((r) => r.status === status);
+    if (!first) return null;
 
     // Priority 1: explicit error message (from thrown errors caught by retry handler)
-    if (firstFailed.error) {
-      return `${firstFailed.error}`.substring(0, 500);
+    if (first.error) {
+      return `${first.error}`.substring(0, 500);
     }
 
     // Priority 2: reason from returned data (e.g. QUALITY_BELOW_THRESHOLD)
-    if (firstFailed.data && typeof firstFailed.data === 'object') {
-      const d = firstFailed.data as Record<string, unknown>;
+    if (first.data && typeof first.data === 'object') {
+      const d = first.data as Record<string, unknown>;
       if (d.reason) return `${d.reason}`.substring(0, 500);
       if (d.error) return `${d.error}`.substring(0, 500);
     }
@@ -728,6 +779,9 @@ export class ExecutionRouterService extends SupabaseBaseService {
     if (typeof data === 'object' && data !== null) {
       const d = data as Record<string, unknown>;
       if (d.status === 'skipped') return 'skipped';
+      // R8 : refus du WriteGate (written=false) — la page n'a pas été écrite.
+      // Un refus de garde n'est pas une erreur, mais jamais un succès.
+      if (d.status === 'write_gate_blocked') return 'skipped';
       if (d.status === 'failed') return 'failed';
       if (d.status === 'ready') return 'success'; // dryRun preview
       if (
