@@ -2907,6 +2907,7 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/auth/guards/permissions.guard.ts",
         "runtime:backend/src/modules/dashboard/dashboard.service.ts"
       ],
       "id": "runtime:backend/src/modules/dashboard/dashboard.controller.ts",
