@@ -45,7 +45,10 @@ import {
   buildOwnedEntretien,
   buildOwnedFaq,
   extractGammeSourceFromRpc,
+  extractCatalogFamiliesFromRpc,
+  extractVehicleCodesFromRpc,
   type GammeEditorial,
+  type RpcCatalogFamily,
   type MotorisationFacts,
 } from './r8-owned-editorial.composer';
 
@@ -137,6 +140,17 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
 
     // Normalize French RPC field names → English field names expected by composeBlocks
     const v = data.vehicle;
+    const codes = extractVehicleCodesFromRpc(data);
+    if (codes.engineCodes === null) {
+      this.logger.warn(
+        `R8_PAYLOAD_KEY_MISSING key=motor_codes typeId=${typeId} — engine codes unavailable`,
+      );
+    }
+    if (codes.cnitCodes === null) {
+      this.logger.warn(
+        `R8_PAYLOAD_KEY_MISSING key=cnit_codes typeId=${typeId} — CNIT codes unavailable`,
+      );
+    }
     data.vehicle = {
       ...v,
       brand_name: v.brand_name || v.marque_name || '',
@@ -152,6 +166,15 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       year_to: v.year_to || v.type_year_to || '',
       liter: v.liter || v.type_liter || '',
       type_name: v.type_name || '',
+      // Engine / CNIT codes live at the payload TOP level (`motor_codes`,
+      // `cnit_codes`), never under `vehicle` — read through the single
+      // payload-shape reader. A missing key is warned, never silently emptied.
+      engine_codes: codes.engineCodes ?? [],
+      cnit_codes: codes.cnitCodes ?? [],
+      // `mine_codes` deliberately NOT mapped: payload `mine_codes` holds
+      // DISTINCT auto_type_number_code.tnc_code (sampled values ["D","F"]),
+      // whose meaning vs the R8 `mine_codes` column is unverified. `v.mine_codes`
+      // stays unset → `[]` at upsert (behaviour unchanged).
     };
 
     return data;
@@ -180,13 +203,15 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       }
 
       const v = vehicleData.vehicle;
-      const families: Array<{
-        pg_id: number;
-        pg_alias: string;
-        pg_name: string;
-        family_name: string;
-        product_count: number;
-      }> = vehicleData.compatible_families || vehicleData.families || [];
+      // Parts families = `catalog.families` of the cache payload (the former
+      // `compatible_families` / `families` keys never existed → always []).
+      const catalogFamilies = extractCatalogFamiliesFromRpc(vehicleData);
+      if (catalogFamilies === null) {
+        this.logger.warn(
+          `R8_PAYLOAD_KEY_MISSING key=catalog.families typeId=${typeId} — 0 families used`,
+        );
+      }
+      const families: RpcCatalogFamily[] = catalogFamilies ?? [];
       const bestsellers: Array<{
         piece_id: number;
         piece_name: string;
@@ -224,22 +249,25 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
         v.brand_alias || v.brand_name || '',
       );
 
-      // RAG: top 5 gammes
-      const topGammes = families.slice(0, 5);
-      const gammeRags = topGammes.map((g) => this.loadGammeRag(g.pg_alias));
+      // Gamme-RAG FAQ deliberately NOT fed. It used to receive `families`,
+      // which was always [] (non-existent payload key), so it never produced
+      // anything. Feeding it the real families now would re-activate a
+      // RAG→content producer (ADR-031/046: RAG = chatbot only). Kept
+      // explicitly empty — served behaviour unchanged.
+      const gammeRags: Array<{
+        faq: Array<{ q: string; a: string }>;
+        symptoms: string[];
+      }> = [];
 
       // Fix B (flag R8_OWNED_EDITORIAL_ENABLED) — owned, quality-gated gamme
       // editorial from the OWNED DB tables. OFF (default) → [] → existing path.
       const useOwnedEditorial =
         this.featureFlags?.r8OwnedEditorialEnabled ?? false;
-      // The cache RPC exposes compatible gammes under popular_parts /
-      // catalog.families[].gammes (NOT compatible_families), so legacy
-      // `families` is often empty. When so, source owned-editorial gammes from
-      // the RPC. Flag-gated only — never touches the legacy families/catalog block.
-      const ownedGammeSource =
-        useOwnedEditorial && topGammes.length === 0
-          ? extractGammeSourceFromRpc(vehicleData)
-          : topGammes;
+      // Owned-editorial gammes come from the RPC gamme rows (popular_parts,
+      // else catalog.families[].gammes). Flag-gated only.
+      const ownedGammeSource = useOwnedEditorial
+        ? extractGammeSourceFromRpc(vehicleData)
+        : [];
       const gammeEditorials: GammeEditorial[] = useOwnedEditorial
         ? (
             await Promise.all(
@@ -672,13 +700,7 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
 
   private composeBlocks(
     v: any,
-    families: Array<{
-      pg_id: number;
-      pg_alias: string;
-      pg_name: string;
-      family_name: string;
-      product_count: number;
-    }>,
+    families: RpcCatalogFamily[],
     bestsellers: Array<{ piece_id: number; piece_name: string; price: number }>,
     vehicleRag: VehicleRagData,
     gammeRags: Array<{
@@ -872,8 +894,10 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       }
     }
 
-    // S_CATALOG_ACCESS (dynamic ranking + ADR-022 P2d variation opener)
-    const topFamilies = families.slice(0, 10);
+    // S_CATALOG_ACCESS (dynamic ranking + ADR-022 P2d variation opener).
+    // Families in payload order; the payload carries no product count, so
+    // each line states the real number of gammes of the family.
+    const topFamilies = families.filter((f) => f.family_name).slice(0, 10);
     if (topFamilies.length >= 3) {
       const catalogOpener = renderTemplate(
         selectVariation(
@@ -884,7 +908,8 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
         ),
       );
       const catalogLines = topFamilies.map(
-        (f, i) => `${i + 1}. **${f.pg_name}** — ${f.product_count} références`,
+        (f, i) =>
+          `${i + 1}. **${f.family_name}** — ${f.gammes_count} gamme${f.gammes_count > 1 ? 's' : ''}`,
       );
       blocks.push({
         id: 'S_CATALOG_ACCESS',
@@ -893,7 +918,7 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
         renderedText: `${catalogOpener}\n\n${catalogLines.join('\n')}`,
         specificityWeight: 0.75,
         boilerplateRisk: 0.15,
-        semanticPayload: topFamilies.map((f) => f.pg_alias),
+        semanticPayload: topFamilies.map((f) => f.family_name),
       });
     }
 
@@ -975,7 +1000,7 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
   private computeMetrics(
     blocks: R8Block[],
     neighbors: R8Neighbor[],
-    families: Array<{ pg_id: number; pg_alias: string; pg_name: string }>,
+    families: RpcCatalogFamily[],
   ) {
     const total = blocks.length;
     const specificBlocks = blocks.filter((b) => b.specificityWeight >= 0.65);

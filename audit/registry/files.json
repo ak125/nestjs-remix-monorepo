@@ -9219,11 +9219,12 @@
       "id": "backend/src/modules/admin/services/r8-owned-editorial.composer.ts",
       "importedBy": [
         "backend/src/modules/admin/services/r8-owned-editorial.composer.test.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.test.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
       ],
       "imports": [],
       "kind": "service",
-      "loc": 373,
+      "loc": 456,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/r8-owned-editorial.composer.ts",
       "risk": "low",
@@ -9238,11 +9239,34 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/admin/services/r8-vehicle-enricher.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/admin/services/r8-owned-editorial.composer.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
+      ],
+      "kind": "test",
+      "loc": 371,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/admin/services/r8-vehicle-enricher.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
         "backend/src/modules/admin/controllers/admin-r8-vehicle.controller.ts",
         "backend/src/modules/admin/services/execution-router.service.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.test.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.tech-specs.test.ts"
       ],
       "imports": [
@@ -9264,7 +9288,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 1466,
+      "loc": 1491,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
       "risk": "low",
