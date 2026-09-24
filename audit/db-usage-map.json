@@ -22,7 +22,7 @@
     "unresolved_callsites": 0,
     "dropped_call_sites": 5,
     "migrations_scanned": 356,
-    "backend_files_scanned": 1407
+    "backend_files_scanned": 1409
   },
   "tables": {
     "___config": {
@@ -14691,70 +14691,70 @@
     },
     {
       "file": "backend/src/modules/support/services/claim.service.ts",
-      "line": 229,
+      "line": 238,
       "form": "THIS_FIELD",
       "resolved_table": "__claims",
       "refusal": null
     },
     {
       "file": "backend/src/modules/support/services/claim.service.ts",
-      "line": 255,
+      "line": 264,
       "form": "THIS_FIELD",
       "resolved_table": "__claims",
       "refusal": null
     },
     {
       "file": "backend/src/modules/support/services/claim.service.ts",
-      "line": 281,
+      "line": 290,
       "form": "THIS_FIELD",
       "resolved_table": "__claims",
       "refusal": null
     },
     {
       "file": "backend/src/modules/support/services/claim.service.ts",
-      "line": 351,
+      "line": 360,
       "form": "THIS_FIELD",
       "resolved_table": "__claims",
       "refusal": null
     },
     {
       "file": "backend/src/modules/support/services/claim.service.ts",
-      "line": 399,
+      "line": 412,
       "form": "THIS_FIELD",
       "resolved_table": "__claims",
       "refusal": null
     },
     {
       "file": "backend/src/modules/support/services/claim.service.ts",
-      "line": 439,
+      "line": 452,
       "form": "THIS_FIELD",
       "resolved_table": "__claims",
       "refusal": null
     },
     {
       "file": "backend/src/modules/support/services/claim.service.ts",
-      "line": 487,
+      "line": 500,
       "form": "THIS_FIELD",
       "resolved_table": "__claims",
       "refusal": null
     },
     {
       "file": "backend/src/modules/support/services/claim.service.ts",
-      "line": 534,
+      "line": 547,
       "form": "THIS_FIELD",
       "resolved_table": "__claims",
       "refusal": null
     },
     {
       "file": "backend/src/modules/support/services/claim.service.ts",
-      "line": 586,
+      "line": 599,
       "form": "THIS_FIELD",
       "resolved_table": "__claims",
       "refusal": null
     },
     {
       "file": "backend/src/modules/support/services/claim.service.ts",
-      "line": 611,
+      "line": 624,
       "form": "THIS_FIELD",
       "resolved_table": "__claims",
       "refusal": null
