@@ -12,8 +12,11 @@
  *   - `sourceConfidence: 'high'` when columns + RLS info both available
  *   - `sourceConfidence: 'medium'` when usage map present but columns missing
  *   - `sourceConfidence: 'low'` when only the table name was inferred
- *   - `status: 'LIVE'` if has callsites OR present in migrations ; `'UNKNOWN'`
- *     otherwise (candidate orphan — never force 'LEGACY').
+ *   - `status: 'LIVE'` only if the table has code callsites (`used_by` of the
+ *     usage map) ; `'UNKNOWN'` otherwise — including a table that is only
+ *     DECLARED by a migration (never force 'LIVE' nor 'LEGACY'). A migration
+ *     is a declaration of intent, not proof that the table exists or is used :
+ *     this producer is an offline scan and does not know the database.
  *
  * Usage:
  *   node scripts/registry/build-db-registry.js [--quiet]
@@ -121,7 +124,16 @@ function main() {
     if (parsed && info.rls_present !== undefined) sourceConfidence = "high";
     else if (parsed || hasMigrations) sourceConfidence = "medium";
 
-    const status = hasUsage || hasMigrations ? "LIVE" : "UNKNOWN";
+    // LIVE = « référencée par le code » (StatusSchema : inbound references),
+    // le seul signal que ce producteur hors-ligne possède. L'ancienne règle
+    // `hasUsage || hasMigrations` rendait l'UNKNOWN inatteignable : les tables
+    // publiées sont l'UNION (callsites ∪ migrations), chacune avait donc l'un
+    // ou l'autre (314/314 en LIVE). Une table seulement déclarée par une
+    // migration — jamais créée, ou inscrite au ledger sans exécution — sortait
+    // LIVE pendant que `db-usage-map.json` la classait `candidate_orphan_tables`.
+    // L'existence réelle en base est portée par le ratchet ledger ↔ catalogue
+    // (scripts/audit/check-ledger-catalog-ratchet.py), pas par ce registre.
+    const status = hasUsage ? "LIVE" : "UNKNOWN";
 
     entries.push({
       schemaVersion: SCHEMA_VERSION,
