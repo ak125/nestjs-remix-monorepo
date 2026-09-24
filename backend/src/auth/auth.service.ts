@@ -224,7 +224,7 @@ export class AuthService {
     phone?: string;
   }): Promise<AuthUser> {
     try {
-      this.logger.debug(`Registering new user: ${registerDto.email}`);
+      this.logger.debug('Registering new user');
 
       // 1. Vérifier si l'utilisateur existe déjà
       const existingUser = await this.checkIfUserExists({
@@ -232,7 +232,7 @@ export class AuthService {
       });
 
       if (existingUser) {
-        this.logger.warn(`User already exists: ${registerDto.email}`);
+        this.logger.warn('Registration refused: email already registered');
         throw new BadRequestException(
           'Un utilisateur avec cet email existe déjà',
         );
@@ -249,13 +249,11 @@ export class AuthService {
       // 3. Formater et retourner l'utilisateur créé
       const authUser = this.mapUserToAuthUser(createdUser);
 
-      this.logger.log(
-        `User registered successfully: ${registerDto.email} (ID: ${authUser.id})`,
-      );
+      this.logger.log(`User registered successfully (ID: ${authUser.id})`);
 
       return authUser;
     } catch (error) {
-      this.logger.error(`Registration failed for ${registerDto.email}:`, error);
+      this.logger.error('Registration failed:', error);
       throw error;
     }
   }
@@ -462,6 +460,17 @@ export class AuthService {
       this.logger.error(`Login failed for ${email}:`, error);
       throw error;
     }
+  }
+
+  /**
+   * L'email est-il déjà pris (compte client OU admin) ?
+   *
+   * Contrairement à `checkIfUserExists`, ne masque aucune erreur : une
+   * vérification impossible remonte à l'appelant (fail-closed) au lieu d'être
+   * lue comme « email libre ».
+   */
+  async isEmailRegistered(email: string): Promise<boolean> {
+    return this.userDataService.emailExistsAnywhere(email);
   }
 
   /**

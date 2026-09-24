@@ -311,9 +311,9 @@ export async function action({ request, context }: ActionFunctionArgs) {
     const { orderId } = orderResult;
 
     // 6. Details Paybox lus depuis la reponse du POST de creation — PAS de
-    // GET /api/orders/:id ici : le POST guest regenere la session backend et
-    // le cookie de cette action devient invalide (INC tunnel paiement
-    // 2026-05→07 : ce GET repondait 404 et bloquait le client avant Paybox).
+    // GET /api/orders/:id ici : un invite n'a pas de session authentifiee
+    // (INC tunnel paiement 2026-05→07 : ce GET repondait 404 et bloquait le
+    // client avant Paybox).
     if (orderResult.isPaid) {
       return redirect(`/account/orders/${orderId}`);
     }
@@ -410,6 +410,10 @@ function saveCheckoutState(guestEmail: string, addr: ShippingAddress) {
   }
 }
 
+function newIdempotencyKey(): string {
+  return `ik-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
 function clearCheckoutState() {
   try {
     localStorage.removeItem(STORAGE_KEY);
@@ -446,10 +450,11 @@ export default function CheckoutPage() {
   const submitGuardRef = useRef(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const isLocked = isSubmitting || isRedirecting || submitGuardRef.current;
-  // Idempotency key — genere une fois au render, envoye avec le form pour eviter les commandes dupliquees
-  const [idempotencyKey] = useState(
-    () => `ik-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-  );
+  // Idempotency key — envoyée avec le form pour éviter les commandes dupliquées.
+  // Une clé couvre UNE tentative (un contenu) : le serveur refuse de la réutiliser
+  // pour un autre contenu. Elle est donc renouvelée quand il a refusé la tentative
+  // sans rien créer (EMAIL_CONFLICT), la suivante portant une autre adresse.
+  const [idempotencyKey, setIdempotencyKey] = useState(newIdempotencyKey);
 
   // Auto-detect if connected user has complete address → skip livraison
   const hasCompleteAddress = !!(
@@ -579,6 +584,7 @@ export default function CheckoutPage() {
       submitGuardRef.current = false;
       // EMAIL_CONFLICT: switch to livraison for inline login (no toast needed)
       if ("code" in actionData && actionData.code === "EMAIL_CONFLICT") {
+        setIdempotencyKey(newIdempotencyKey());
         setActiveSection("livraison");
         setAddressValidated(false);
       } else {

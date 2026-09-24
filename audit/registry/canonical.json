@@ -28614,7 +28614,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 1127,
+      "loc": 1136,
       "owner": "@ak125/auth-team",
       "path": "backend/src/auth/auth.service.ts",
       "risk": "high",
@@ -47090,16 +47090,16 @@
         "@auth/authenticated.guard",
         "@auth/is-admin.guard",
         "@cache/cache.service",
+        "@common/exceptions",
         "@repo/domain-commerce",
         "backend/src/auth/auth.service.ts",
         "backend/src/auth/guards/optional-auth.guard.ts",
         "backend/src/modules/orders/services/orders.service.ts",
         "backend/src/services/mail.service.ts",
-        "backend/src/utils/promise-helpers.ts",
         "crypto"
       ],
       "kind": "controller",
-      "loc": 1243,
+      "loc": 1237,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/orders/controllers/orders.controller.ts",
       "risk": "high",
@@ -47513,7 +47513,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 912,
+      "loc": 924,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/orders/services/orders.service.ts",
       "risk": "high",
@@ -63845,12 +63845,13 @@
         "backend/src/modules/users/users.module.ts"
       ],
       "imports": [
+        "@common/exceptions",
         "@database/services/supabase-base.service",
         "@repo/database-types",
         "backend/src/modules/users/dto/user.dto.ts"
       ],
       "kind": "service",
-      "loc": 643,
+      "loc": 648,
       "owner": "@ak125/auth-team",
       "path": "backend/src/modules/users/services/user-data-consolidated.service.ts",
       "risk": "high",
@@ -65530,7 +65531,6 @@
         "backend/src/modules/config/services/simple-database-config.service.ts",
         "backend/src/modules/mcp-validation/services/chrome-devtools-client.service.ts",
         "backend/src/modules/mcp-validation/services/external-compatibility.types.ts",
-        "backend/src/modules/orders/controllers/orders.controller.ts",
         "backend/src/modules/seo/services/sitemap-streaming.service.ts"
       ],
       "imports": [
@@ -66166,7 +66166,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 410,
+      "loc": 507,
       "owner": "@ak125",
       "path": "backend/tests/unit/auth.service.test.ts",
       "risk": "medium",
@@ -66629,6 +66629,26 @@
       "loc": 216,
       "owner": "@ak125",
       "path": "backend/tests/unit/orders.controller.customer-cancel.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/orders.controller.guest-checkout.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 559,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/orders.controller.guest-checkout.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -67789,6 +67809,26 @@
       "loc": 40,
       "owner": "@ak125",
       "path": "backend/tests/unit/trend-signals/rappels-gouv-fr.fetcher.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/user-data-consolidated.email-exists.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 86,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/user-data-consolidated.email-exists.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -84442,7 +84482,7 @@
         "~/utils/vehicle-cookie"
       ],
       "kind": "route",
-      "loc": 1343,
+      "loc": 1349,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/checkout.tsx",
       "risk": "medium",
@@ -87314,7 +87354,7 @@
         "~/utils/logger"
       ],
       "kind": "config",
-      "loc": 212,
+      "loc": 233,
       "owner": "__unassigned__",
       "path": "frontend/app/services/order.server.ts",
       "risk": "low",
@@ -90381,7 +90421,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 141,
+      "loc": 182,
       "owner": "@ak125",
       "path": "frontend/tests/unit/checkout.action.test.ts",
       "risk": "medium",
@@ -90821,7 +90861,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 122,
+      "loc": 200,
       "owner": "@ak125",
       "path": "frontend/tests/unit/order.server.test.ts",
       "risk": "medium",
@@ -99998,11 +100038,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "3045154dd16aeefab01f398f2540e47939a253f9cb3d5194599764dbc02e9958",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "2635eb155c3212b502c4f27e574b8b600866691cfdd8389b44488f15a9e15757",
+      "audit/registry/files.json": "d8bf16cd744b10229d0f25eb015b8b64ecfe293339bfd0fb53765978987e944b",
       "audit/registry/rpc.json": "821912126b4b0b6e8c5a86b4269f43106cc40a44d2ee85a107b550ab9ea0a7b6",
       "audit/registry/runtime.json": "3f153ecc8a7a52378e26435fe7ecf04c0a4549288d6ad12283b783545ba5e99e"
     },
-    "sotFingerprint": "55dd96f2a862"
+    "sotFingerprint": "1a9925e89a3a"
   },
   "runtime": [
     {

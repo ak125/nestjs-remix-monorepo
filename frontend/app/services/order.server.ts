@@ -85,6 +85,10 @@ export function buildOrderLines(items: CartItem[]) {
 /**
  * Cree une commande checkout (authentifie ou guest).
  * Gere les cas 409 (email conflict), 401/403 (auth required).
+ *
+ * Email conflict = POST guest refuse parce qu'un compte existe deja avec cet
+ * email (409 + code USER.DUPLICATE_EMAIL) : le checkout affiche alors la
+ * connexion. Les autres 409 (idempotence) restent des erreurs generiques.
  */
 export async function createCheckoutOrder(
   request: Request,
@@ -136,6 +140,23 @@ export async function createCheckoutOrder(
       const errorData = await response
         .json()
         .catch(() => ({ message: "Erreur serveur" }));
+
+      if (
+        isGuest &&
+        response.status === 409 &&
+        errorData.code === "USER.DUPLICATE_EMAIL"
+      ) {
+        return {
+          success: false,
+          error:
+            errorData.message ||
+            "Un compte existe deja avec cet email. Connectez-vous pour continuer.",
+          status: 409,
+          emailConflict: true,
+          conflictEmail: payload.guestEmail,
+        };
+      }
+
       return {
         success: false,
         error: errorData.message || "Erreur lors de la creation de la commande",
@@ -176,10 +197,10 @@ export async function createCheckoutOrder(
 
 /**
  * Extrait de la reponse des POST /api/orders(/guest) les champs necessaires
- * au redirect Paybox. Le montant/email DOIVENT venir de cette reponse : le
- * POST guest regenere la session cote backend, donc le cookie porte par
- * l'action est invalide pour tout fetch ulterieur (INC tunnel paiement
- * 2026-05→07 : GET /api/orders/:id → 404 → client jamais envoye vers Paybox).
+ * au redirect Paybox. Le montant/email DOIVENT venir de cette reponse : un
+ * invite n'a pas de session authentifiee, aucun GET /api/orders/:id ne peut
+ * suivre (INC tunnel paiement 2026-05→07 : GET /api/orders/:id → 404 →
+ * client jamais envoye vers Paybox).
  */
 export function extractPaymentFieldsFromCreateOrderResponse(
   order: Record<string, unknown>,
