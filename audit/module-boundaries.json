@@ -898,8 +898,8 @@
         "backend/src/modules/support/services/__tests__",
         "backend/src/modules/support/types"
       ],
-      "files_count": 28,
-      "loc_total": 10087,
+      "files_count": 30,
+      "loc_total": 10453,
       "has_barrel": true
     },
     "system": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 248,
-      "loc_total": 44744,
+      "files_count": 249,
+      "loc_total": 45661,
       "has_barrel": true
     },
     "upload": {
@@ -2034,6 +2034,11 @@
     {
       "from": "suppliers",
       "to": "database",
+      "count": 1
+    },
+    {
+      "from": "support",
+      "to": "auth",
       "count": 1
     },
     {

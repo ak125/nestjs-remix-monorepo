@@ -7936,6 +7936,7 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/auth/auth.module.ts",
         "runtime:backend/src/database/database.module.ts",
         "runtime:backend/src/modules/support/controllers/ai-support.controller.ts",
         "runtime:backend/src/modules/support/controllers/claim.controller.ts",

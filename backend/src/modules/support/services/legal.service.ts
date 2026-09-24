@@ -816,9 +816,8 @@ export class LegalService extends SupabaseBaseService {
       .replace(/[ñ]/g, 'n')
       .replace(/[ç]/g, 'c')
       .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-+|-+$/g, '');
+      .replace(/[\s-]+/g, '-')
+      .replace(/^-|-$/g, '');
   }
 
   /**
