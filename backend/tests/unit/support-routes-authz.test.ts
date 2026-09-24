@@ -41,6 +41,11 @@ import {
   DomainValidationException,
 } from '@common/exceptions';
 import { PermissionsService } from '../../src/auth/permissions.service';
+import {
+  AuthSource,
+  isAdminSession,
+  sessionPrivilegeLevel,
+} from '../../src/auth/session-privilege';
 import { AISupportController } from '../../src/modules/support/controllers/ai-support.controller';
 import { ClaimController } from '../../src/modules/support/controllers/claim.controller';
 import { ContactController } from '../../src/modules/support/controllers/contact.controller';
@@ -156,6 +161,25 @@ const customer = () => principal(1);
 const commercial = () => principal(3);
 const manager = () => principal(5);
 const admin = () => principal(7);
+
+/**
+ * Session opened by an account, built with the rule `AuthService` applies:
+ * the stored level is a privilege only for a staff account. A customer tier
+ * shares its numbers with the staff scale and must never open a staff route.
+ */
+const accountSession = (authSource: AuthSource, storedLevel: number) => ({
+  path: '/x',
+  isAuthenticated: () => true,
+  user: {
+    id: 'u1',
+    email: 'someone@example.test',
+    level: String(sessionPrivilegeLevel(authSource, storedLevel)),
+    isAdmin: isAdminSession(authSource, storedLevel),
+  },
+});
+
+/** Customer tiers that reuse a number of the staff scale (3, 5, 7, 9) or go above it. */
+const HIGH_CUSTOMER_TIERS = [3, 5, 7, 9, 10];
 
 // ─── Access contract ──────────────────────────────────────────────────────────
 
@@ -329,6 +353,18 @@ describe('support controllers — access tiers', () => {
         expect(isAllowed(controller, method, anonymous())).toBe(false);
         expect(isAllowed(controller, method, customer())).toBe(true);
       });
+
+      it('allows a customer account whatever its tier', () => {
+        for (const storedLevel of HIGH_CUSTOMER_TIERS) {
+          expect(
+            isAllowed(
+              controller,
+              method,
+              accountSession('customer', storedLevel),
+            ),
+          ).toBe(true);
+        }
+      });
     }
 
     if (tier === 'staff') {
@@ -344,6 +380,21 @@ describe('support controllers — access tiers', () => {
         expect(isAllowed(controller, method, manager())).toBe(true);
         expect(isAllowed(controller, method, admin())).toBe(true);
       });
+
+      it('refuses a customer account whatever its tier, allows a staff account', () => {
+        for (const storedLevel of HIGH_CUSTOMER_TIERS) {
+          expect(
+            isAllowed(
+              controller,
+              method,
+              accountSession('customer', storedLevel),
+            ),
+          ).toBe(false);
+        }
+        expect(isAllowed(controller, method, accountSession('admin', 3))).toBe(
+          true,
+        );
+      });
     }
 
     if (tier === 'admin') {
@@ -357,6 +408,21 @@ describe('support controllers — access tiers', () => {
         expect(isAllowed(controller, method, commercial())).toBe(false);
         expect(isAllowed(controller, method, manager())).toBe(false);
         expect(isAllowed(controller, method, admin())).toBe(true);
+      });
+
+      it('refuses a customer account whatever its tier, allows a staff admin', () => {
+        for (const storedLevel of HIGH_CUSTOMER_TIERS) {
+          expect(
+            isAllowed(
+              controller,
+              method,
+              accountSession('customer', storedLevel),
+            ),
+          ).toBe(false);
+        }
+        expect(isAllowed(controller, method, accountSession('admin', 7))).toBe(
+          true,
+        );
       });
     }
   });
