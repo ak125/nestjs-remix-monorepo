@@ -16,6 +16,7 @@ import { AuthenticatedGuard } from '@auth/authenticated.guard';
 import { PermissionsGuard } from '@auth/guards/permissions.guard';
 import { RequirePermission } from '@auth/decorators/require-permission.decorator';
 import { OrderActionsService } from '../services/order-actions.service';
+import { getOrderPaymentState } from '../services/orders.service';
 import { MailService } from '../../../services/mail.service';
 
 /**
@@ -336,9 +337,16 @@ export class OrderActionsController {
       // 1. Récupérer commande
       const order = await this.orderActionsService.getOrder(orderId);
 
-      // 2. Vérifier que pas déjà payée
-      if (order.ord_is_pay === '1') {
+      // 2. Relancer uniquement une commande payable (même règle que le lien
+      //    de reprise) : ni payée (drapeau ou date), ni annulée / hors statut.
+      const paymentState = getOrderPaymentState(order);
+      if (paymentState === 'paid') {
         throw new BadRequestException('Commande déjà payée');
+      }
+      if (paymentState === 'not_payable') {
+        throw new BadRequestException(
+          'Commande non payable (annulée ou statut incompatible) : aucun rappel envoyé',
+        );
       }
 
       // 3. Récupérer client
