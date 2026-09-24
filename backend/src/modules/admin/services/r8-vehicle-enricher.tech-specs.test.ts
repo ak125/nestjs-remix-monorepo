@@ -1,5 +1,7 @@
 /**
- * Tests — R8 vehicle enricher: the S_TECH_SPECS block carries NO RAG content.
+ * Tests — R8 vehicle enricher: no served block carries vehicle-RAG content
+ * (S_TECH_SPECS, and with the owned-editorial flag OFF neither
+ * S_SELECTION_GUIDE nor S_ENTRETIEN_CONTEXT).
  *
  * Invariant 4 (CLAUDE.md, ADR-031 / ADR-046): RAG is a chatbot-only consumer
  * layer with zero content-write authority. The enricher used to copy the
@@ -7,7 +9,10 @@
  * served S_TECH_SPECS block. That table comes from ONE unverified web sheet of
  * ONE variant, shared by every type of the model: on `__seo_r8_pages` it shows a
  * 1 461 cm3 diesel sheet on type 11056 (1.2 16V petrol) and a 5-speed gearbox
- * on type 19053 (1.5 dCi 106 ch).
+ * on type 19053 (1.5 dCi 106 ch). The two help blocks copied the same file's
+ * `pieces_usure` / `problemes_connus` lists under "Pièces d'usure courantes" /
+ * "Problèmes connus <marque> <modèle>" — present on all 148 REVIEW_REQUIRED
+ * `__seo_r8_pages` rows (read-only count, 2026-09-24).
  *
  * Fixtures (read-only extracts, 2026-09-24):
  *  - CLIO_III_RAG_SPECS = `specs_techniques` of
@@ -21,6 +26,7 @@
  * No personal data: catalogue identifiers only.
  */
 
+import { R8_SITEMAP_RULES } from '../../../config/r8-keyword-plan.constants';
 import { R8VehicleEnricherService } from './r8-vehicle-enricher.service';
 
 const CLIO_III_RAG_SPECS = {
@@ -97,7 +103,13 @@ type EnricherInternals = {
     neighbors: unknown[],
     families: unknown[],
   ) => Metrics;
-  gate: (metrics: Metrics, blocks: Block[]) => { decision: string };
+  gate: (
+    metrics: Metrics,
+    blocks: Block[],
+  ) => {
+    decision: 'INDEX' | 'REVIEW_REQUIRED' | 'REGENERATE' | 'REJECT';
+    reasons: string[];
+  };
 };
 
 /** Object.create bypasses the SupabaseBaseService ctor (env), as in r8-parent-enrichment.test.ts. */
@@ -109,16 +121,16 @@ function makeEnricher(): EnricherInternals {
   return svc;
 }
 
-/** composeBlocks with no families / neighbours / gamme RAG: only the vehicle and its RAG file vary. */
-function composeFor(
-  vehicle: Record<string, unknown>,
-  vehicleRag: Record<string, unknown>,
-): Map<string, Block> {
+/**
+ * composeBlocks with no families / neighbours / gamme RAG: only the vehicle
+ * varies. The enricher no longer reads the vehicle RAG file at all, so the
+ * CLIO_III_RAG_SPECS values below can only be asserted ABSENT from the output.
+ */
+function composeFor(vehicle: Record<string, unknown>): Map<string, Block> {
   const blocks = makeEnricher().composeBlocks(
     vehicle,
     [],
     [],
-    vehicleRag,
     [],
     [],
     false,
@@ -128,16 +140,12 @@ function composeFor(
   return new Map(blocks.map((b) => [b.id, b]));
 }
 
-const techSpecsOf = (
-  vehicle: Record<string, unknown>,
-  vehicleRag: Record<string, unknown>,
-): Block | undefined => composeFor(vehicle, vehicleRag).get('S_TECH_SPECS');
+const techSpecsOf = (vehicle: Record<string, unknown>): Block | undefined =>
+  composeFor(vehicle).get('S_TECH_SPECS');
 
 describe('R8VehicleEnricherService.composeBlocks — S_TECH_SPECS without RAG', () => {
   it('19053: keeps only the DB motorisation line, never the RAG table', () => {
-    const block = techSpecsOf(TYPE_19053, {
-      specs_techniques: CLIO_III_RAG_SPECS,
-    });
+    const block = techSpecsOf(TYPE_19053);
     expect(block).toBeDefined();
     expect(block!.renderedText).toBe(
       '**Motorisation** : 1.5 dCi 106 ch (Diesel)',
@@ -149,9 +157,7 @@ describe('R8VehicleEnricherService.composeBlocks — S_TECH_SPECS without RAG', 
   });
 
   it('11056 (1.2 petrol): no diesel 1 461 cm3 sheet inherited from the model file', () => {
-    const block = techSpecsOf(TYPE_11056, {
-      specs_techniques: CLIO_III_RAG_SPECS,
-    });
+    const block = techSpecsOf(TYPE_11056);
     expect(block!.renderedText).toBe(
       '**Motorisation** : 1.2 16V (Phase 2) 103 ch (Essence)',
     );
@@ -159,33 +165,35 @@ describe('R8VehicleEnricherService.composeBlocks — S_TECH_SPECS without RAG', 
     expect(block!.renderedText).not.toContain('98 g/km');
   });
 
-  it('is identical with and without the RAG specs (RAG has zero influence)', () => {
-    for (const vehicle of [TYPE_19053, TYPE_11056]) {
-      const withRag = techSpecsOf(vehicle, {
-        specs_techniques: CLIO_III_RAG_SPECS,
-      });
-      const withoutRag = techSpecsOf(vehicle, {});
-      expect(withRag).toEqual(withoutRag);
-    }
-  });
-
   it('weight 0.9 and a semantic payload made of DB facts only', () => {
-    const block = techSpecsOf(TYPE_19053, {
-      specs_techniques: CLIO_III_RAG_SPECS,
-    });
+    const block = techSpecsOf(TYPE_19053);
     expect(block!.specificityWeight).toBe(0.9);
     expect(block!.boilerplateRisk).toBe(0.05);
     expect(block!.semanticPayload).toEqual(['1.5 dCi', 'Diesel', '106ch']);
   });
 
-  it('emits no S_TECH_SPECS when the type has no name, even if the RAG file has specs', () => {
-    const blocks = composeFor(
-      { ...TYPE_19053, type_name: '' },
-      { specs_techniques: CLIO_III_RAG_SPECS },
-    );
+  it('emits no S_TECH_SPECS when the type has no name', () => {
+    const blocks = composeFor({ ...TYPE_19053, type_name: '' });
     expect(blocks.has('S_TECH_SPECS')).toBe(false);
     for (const block of blocks.values()) {
       expect(block.renderedText).not.toContain('1 461 cm3');
+    }
+  });
+});
+
+describe('R8VehicleEnricherService.composeBlocks — no vehicle-RAG help blocks (owned editorial OFF)', () => {
+  it('composes neither S_SELECTION_GUIDE nor S_ENTRETIEN_CONTEXT', () => {
+    for (const vehicle of [TYPE_19053, TYPE_11056]) {
+      const blocks = composeFor(vehicle);
+      expect(blocks.has('S_SELECTION_GUIDE')).toBe(false);
+      expect(blocks.has('S_ENTRETIEN_CONTEXT')).toBe(false);
+    }
+  });
+
+  it('no block keeps the former RAG titles', () => {
+    for (const block of composeFor(TYPE_19053).values()) {
+      expect(block.title).not.toMatch(/^Problèmes connus/);
+      expect(block.title).not.toBe("Pièces d'usure courantes");
     }
   });
 });
@@ -257,12 +265,27 @@ describe('R8VehicleEnricherService.computeMetrics — effect on the stored 19053
 
   it('with the S_TECH_SPECS weight now composed for 19053: 58.38 → 58.23, still REVIEW_REQUIRED', () => {
     const svc = makeEnricher();
-    const composedWeight = techSpecsOf(TYPE_19053, {
-      specs_techniques: CLIO_III_RAG_SPECS,
-    })!.specificityWeight;
+    const composedWeight = techSpecsOf(TYPE_19053)!.specificityWeight;
     const blocks = toBlocks(composedWeight);
     const metrics = svc.computeMetrics(blocks, [], []);
     expect(metrics.diversityScore).toBeCloseTo(58.23, 2);
     expect(svc.gate(metrics, blocks).decision).toBe('REVIEW_REQUIRED');
+  });
+
+  it('without the two vehicle-RAG help blocks: 58.23 → 53.00, REGENERATE (MISSING_HELP_BLOCK), still noindex', () => {
+    const svc = makeEnricher();
+    const composedWeight = techSpecsOf(TYPE_19053)!.specificityWeight;
+    const blocks = toBlocks(composedWeight).filter(
+      (b) => b.id !== 'S_SELECTION_GUIDE' && b.id !== 'S_ENTRETIEN_CONTEXT',
+    );
+    const metrics = svc.computeMetrics(blocks, [], []);
+    expect(metrics.diversityScore).toBeCloseTo(53.0, 2);
+    const verdict = svc.gate(metrics, blocks);
+    expect(verdict.decision).toBe('REGENERATE');
+    expect(verdict.reasons).toContain('MISSING_HELP_BLOCK');
+    // REVIEW_REQUIRED → REGENERATE changes no indexing directive.
+    expect(R8_SITEMAP_RULES[verdict.decision]).toEqual(
+      R8_SITEMAP_RULES.REVIEW_REQUIRED,
+    );
   });
 });

@@ -4678,7 +4678,8 @@
       "id": "backend/src/config/r8-keyword-plan.constants.ts",
       "importedBy": [
         "backend/src/config/page-contract-r8.schema.ts",
-        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.tech-specs.test.ts"
       ],
       "imports": [
         "backend/src/config/keyword-plan.constants.ts"
@@ -6060,7 +6061,7 @@
         "backend/src/workers/worker.module.ts"
       ],
       "kind": "service",
-      "loc": 333,
+      "loc": 332,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/admin.module.ts",
       "risk": "low",
@@ -9263,7 +9264,6 @@
         "backend/src/config/seo-variations.config.ts",
         "backend/src/modules/admin/services/enricher-text-utils.service.ts",
         "backend/src/modules/admin/services/r8-owned-editorial.composer.ts",
-        "backend/src/modules/admin/services/vehicle-rag-generator.service.ts",
         "backend/src/modules/seo/services/chain/seo-role-template-selector.service.ts",
         "backend/src/security/rpc-gate/rpc-gate.errors.ts",
         "crypto",
@@ -9271,7 +9271,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 1626,
+      "loc": 1525,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
       "risk": "low",
@@ -9289,10 +9289,11 @@
       "id": "backend/src/modules/admin/services/r8-vehicle-enricher.tech-specs.test.ts",
       "importedBy": [],
       "imports": [
+        "backend/src/config/r8-keyword-plan.constants.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
       ],
       "kind": "test",
-      "loc": 269,
+      "loc": 292,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/r8-vehicle-enricher.tech-specs.test.ts",
       "risk": "low",
@@ -9318,7 +9319,7 @@
         "backend/src/security/rpc-gate/rpc-gate.errors.ts"
       ],
       "kind": "test",
-      "loc": 518,
+      "loc": 514,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/r8-vehicle-enricher.write-gate.test.ts",
       "risk": "low",
@@ -9804,8 +9805,7 @@
       "id": "backend/src/modules/admin/services/vehicle-rag-generator.service.ts",
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
-        "backend/src/modules/admin/controllers/admin-vehicle-rag.controller.ts",
-        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
+        "backend/src/modules/admin/controllers/admin-vehicle-rag.controller.ts"
       ],
       "imports": [
         "@database/services/supabase-base.service",
@@ -66064,7 +66064,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 131,
+      "loc": 133,
       "owner": "__unassigned__",
       "path": "scripts/audit/check-rag-authority-read-ratchet.test.ts",
       "risk": "low",

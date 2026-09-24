@@ -49,7 +49,6 @@ const VEHICLE = {
   power_ps: '106',
   year_from: '2005',
   year_to: '2014',
-  // no model_id → no vehicle-RAG auto-generation in these tests
 };
 
 const NEIGHBOR = {
@@ -169,7 +168,6 @@ function makeHarness(
   Object.assign(svc as unknown as Record<string, unknown>, {
     logger,
     supabase: client,
-    RAG_VEHICLES_DIR: '/nonexistent/r8-write-gate-test/vehicles',
     RAG_GAMMES_DIR: '/nonexistent/r8-write-gate-test/gammes',
     callRpc: jest
       .fn()
@@ -177,13 +175,11 @@ function makeHarness(
         opts.rpc ?? { data: { vehicle: VEHICLE }, error: null },
       ),
     seoRoleTemplate: { pick: jest.fn().mockResolvedValue(null) },
-    vehicleRagGenerator: { generateForModel: jest.fn() },
     featureFlags: {
       writeGuardEnabled: opts.writeGuardEnabled ?? true,
       r8OwnedEditorialEnabled: false,
     },
     writeGate: { writeToTarget },
-    loadVehicleRag: jest.fn().mockReturnValue({}),
     loadGammeRag: jest.fn().mockReturnValue({ faq: [], symptoms: [] }),
     composeBlocks,
     computeMetrics: jest.fn().mockReturnValue({ ...METRICS }),
