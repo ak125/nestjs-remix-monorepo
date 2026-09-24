@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 243,
-      "loc_total": 43938,
+      "files_count": 244,
+      "loc_total": 44150,
       "has_barrel": true
     },
     "upload": {
@@ -980,7 +980,7 @@
         "backend/src/modules/users/services"
       ],
       "files_count": 27,
-      "loc_total": 5157,
+      "loc_total": 5189,
       "has_barrel": true
     },
     "vehicle-context": {
@@ -1440,11 +1440,6 @@
       "from": "backend-core",
       "to": "trend-signals",
       "count": 1
-    },
-    {
-      "from": "backend-core",
-      "to": "uncategorized",
-      "count": 4
     },
     {
       "from": "backend-core",
@@ -2069,7 +2064,7 @@
     {
       "from": "users",
       "to": "common",
-      "count": 2
+      "count": 3
     },
     {
       "from": "users",
