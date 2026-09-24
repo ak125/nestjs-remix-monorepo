@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { ORDER_LINE_STATUS_LABEL } from "@repo/domain-commerce";
+import { ORDER_LINE_STATUS_LABEL, OrderStatus } from "@repo/domain-commerce";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { getOrderDetails, getUserOrders } from "~/services/orders.server";
 import {
@@ -35,6 +35,9 @@ const request = new Request("http://localhost/account/orders");
 // déduit ni un statut par défaut.
 describe("statuts de commande (espace client)", () => {
   it("le filtre propose exactement les statuts réels 1 à 5", () => {
+    expect(ORDER_STATUS_OPTIONS.map(({ value }) => value)).toEqual(
+      Object.values(OrderStatus),
+    );
     expect(ORDER_STATUS_OPTIONS).toEqual([
       { value: "1", label: "En cours de traitement" },
       { value: "2", label: "Annulée" },
