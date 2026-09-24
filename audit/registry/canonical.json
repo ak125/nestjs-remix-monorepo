@@ -68303,9 +68303,7 @@
       "domain": "D8",
       "id": "frontend/app/components/RichTextEditor.tsx",
       "importedBy": [],
-      "imports": [
-        "@tiptap/react"
-      ],
+      "imports": [],
       "kind": "config",
       "loc": 235,
       "owner": "@ak125/frontend-team",
@@ -80452,10 +80450,11 @@
         "frontend/app/components/ui/card.tsx",
         "~/components/errors/ErrorGeneric",
         "~/components/ui/alert",
+        "~/services/profile.server",
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 362,
+      "loc": 365,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/account.profile.edit.tsx",
       "risk": "medium",
@@ -87527,7 +87526,7 @@
         "~/utils/logger"
       ],
       "kind": "config",
-      "loc": 44,
+      "loc": 84,
       "owner": "__unassigned__",
       "path": "frontend/app/services/profile.server.ts",
       "risk": "low",
@@ -90138,6 +90137,26 @@
       "loc": 181,
       "owner": "@ak125",
       "path": "frontend/tests/qa-audit/suites/visual.spec.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/account-profile-edit.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 191,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/account-profile-edit.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -100012,11 +100031,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "3045154dd16aeefab01f398f2540e47939a253f9cb3d5194599764dbc02e9958",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "37608eb9371f569ed307fc4cbc43f57e97d4bdfd7a2fb8b43cf04c96367f1efa",
+      "audit/registry/files.json": "4e75384d2399e8abff348eba2e14e3643e3a35ecf5540084568a58d2e85074bc",
       "audit/registry/rpc.json": "821912126b4b0b6e8c5a86b4269f43106cc40a44d2ee85a107b550ab9ea0a7b6",
       "audit/registry/runtime.json": "3f153ecc8a7a52378e26435fe7ecf04c0a4549288d6ad12283b783545ba5e99e"
     },
-    "sotFingerprint": "0c55e8d3841c"
+    "sotFingerprint": "ad6f6ccf62e2"
   },
   "runtime": [
     {
