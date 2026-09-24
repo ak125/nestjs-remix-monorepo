@@ -47,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout monorepo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           path: monorepo
 
@@ -115,7 +115,7 @@ jobs:
           npx tsx scripts/wiki/verify-diag-canon-parse.ts /tmp/canon/diag-canon.json
 
       - name: Checkout automecanik-wiki
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: ak125/automecanik-wiki
           path: automecanik-wiki

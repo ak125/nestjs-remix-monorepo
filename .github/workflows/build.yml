@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: ⬇️ Checkout repo
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v7
         with:
           # Sous-module `backend/content/automecanik-wiki` (dépôt public) récupéré
           # au SHA épinglé par ce commit : c'est la version d'exports SEO que l'image

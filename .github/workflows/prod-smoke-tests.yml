@@ -29,7 +29,7 @@ jobs:
         # `scripts/ci/sample-smoke-urls.ts`. PR #510 added that step without
         # checkout/setup-node, breaking the workflow on every schedule since
         # 2026-05-14.
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: ⚙️ Setup Node.js 22
         # Self-hosted runner has no node/npx in PATH by default. Matches the

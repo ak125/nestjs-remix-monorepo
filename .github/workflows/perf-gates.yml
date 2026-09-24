@@ -41,7 +41,7 @@ jobs:
     timeout-minutes: 8
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # Path filter au niveau job (vs workflow-level) pour permettre au job
       # de produire un check status "success" même quand les paths ne match

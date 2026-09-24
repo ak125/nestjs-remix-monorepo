@@ -41,7 +41,7 @@ jobs:
     name: validate-top-priorities.sh (ADR-081)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Run validator
         run: bash scripts/governance/validate-top-priorities.sh
 
@@ -49,7 +49,7 @@ jobs:
     name: validate-exploration-probe.sh (ADR-081 G10)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Run probe scope linter (single check au PR final, anti over-governance creep)
@@ -59,7 +59,7 @@ jobs:
     name: check-cart-conversion-r-role.sh (R-role invariant)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Run R-role cart/conversion classification check
         run: bash scripts/governance/check-cart-conversion-r-role.sh
 
@@ -67,7 +67,7 @@ jobs:
     name: check-role-purity.ts (role-vocabulary purity, source comments)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: actions/setup-node@v7
