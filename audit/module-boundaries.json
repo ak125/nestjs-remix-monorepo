@@ -90,8 +90,8 @@
         "backend/src/types",
         "backend/src/utils"
       ],
-      "files_count": 36,
-      "loc_total": 6170,
+      "files_count": 35,
+      "loc_total": 6110,
       "has_barrel": true
     },
     "blog": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 243,
-      "loc_total": 43939,
+      "files_count": 244,
+      "loc_total": 43999,
       "has_barrel": true
     },
     "upload": {
@@ -1219,7 +1219,7 @@
     {
       "from": "backend-core",
       "to": "auth",
-      "count": 3
+      "count": 2
     },
     {
       "from": "backend-core",
@@ -1269,7 +1269,7 @@
     {
       "from": "backend-core",
       "to": "database",
-      "count": 6
+      "count": 5
     },
     {
       "from": "backend-core",
@@ -1449,7 +1449,7 @@
     {
       "from": "backend-core",
       "to": "users",
-      "count": 4
+      "count": 3
     },
     {
       "from": "backend-core",

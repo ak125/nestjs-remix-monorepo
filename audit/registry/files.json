@@ -1903,8 +1903,7 @@
         "backend/src/auth/controllers/auth-login.controller.ts",
         "backend/src/auth/controllers/auth-login.redirect.test.ts",
         "backend/src/auth/permissions.service.ts",
-        "backend/src/auth/session-privilege.test.ts",
-        "backend/src/controllers/users.controller.dashboard-level.test.ts"
+        "backend/src/auth/session-privilege.test.ts"
       ],
       "imports": [],
       "kind": "service",
@@ -5435,33 +5434,8 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
-      "id": "backend/src/controllers/users.controller.dashboard-level.test.ts",
-      "importedBy": [],
-      "imports": [
-        "backend/src/auth/session-privilege.ts",
-        "backend/src/controllers/users.controller.ts",
-        "backend/src/database/services/orders.service.ts",
-        "backend/src/modules/users/services/user-data-consolidated.service.ts"
-      ],
-      "kind": "test",
-      "loc": 60,
-      "owner": "__unassigned__",
-      "path": "backend/src/controllers/users.controller.dashboard-level.test.ts",
-      "risk": "low",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise"
-      ],
-      "domain": "UNKNOWN",
       "id": "backend/src/controllers/users.controller.ts",
       "importedBy": [
-        "backend/src/controllers/users.controller.dashboard-level.test.ts",
         "backend/src/modules/api.module.ts"
       ],
       "imports": [
@@ -5721,7 +5695,6 @@
       "id": "backend/src/database/services/orders.service.ts",
       "importedBy": [
         "backend/src/controllers/orders.controller.ts",
-        "backend/src/controllers/users.controller.dashboard-level.test.ts",
         "backend/src/controllers/users.controller.ts",
         "backend/src/database/database.module.ts",
         "backend/src/database/services/database-composition.service.ts",
@@ -35143,7 +35116,6 @@
         "backend/src/auth/controllers/auth-login.redirect.test.ts",
         "backend/src/auth/controllers/auth-token.controller.ts",
         "backend/src/auth/session-privilege.test.ts",
-        "backend/src/controllers/users.controller.dashboard-level.test.ts",
         "backend/src/controllers/users.controller.ts",
         "backend/src/modules/users/services/profile.service.ts",
         "backend/src/modules/users/users-final.service.ts",
@@ -38948,6 +38920,25 @@
       "loc": 40,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/trend-signals/rappels-gouv-fr.fetcher.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/users.controller.dashboard-level.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 60,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/users.controller.dashboard-level.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
