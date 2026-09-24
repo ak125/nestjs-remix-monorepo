@@ -76,14 +76,17 @@ jobs:
 
       - name: Run builder — filter + transform only (0 LLM / 0 DB / 0 enrichment)
         run: |
-          set -e
-          # Purge d'abord les .json existants : un export devient une PROJECTION
-          # COMPLÈTE du canon éligible courant. Les fiches dé-approuvées / supprimées
-          # / passées exportable.seo=false voient leur export retiré (sinon il
-          # resterait orphelin/stale). `git add -A` plus bas capture les suppressions.
-          find automecanik-wiki/exports/seo -name '*.json' -delete
+          set -eo pipefail
+          # AUCUNE purge préalable : le builder réconcilie lui-même le scope. Un
+          # export existant sans source éligible (fiche dé-approuvée / supprimée /
+          # passée exportable.seo=false) est rapporté UNRECONCILED → exit ≠ 0, rien
+          # n'est écrit, l'export publié est conservé. Le retrait d'un export est
+          # une décision gouvernée, jamais un effet de bord silencieux du job
+          # (cf. automecanik-wiki/_scripts/README-build-exports-seo.md, « Retrait
+          # et perte d'approbation »). Rapport JSON conservé en artefact.
           python3 automecanik-wiki/_scripts/build_exports_seo.py \
-            --wiki-root "$GITHUB_WORKSPACE/automecanik-wiki"
+            --wiki-root "$GITHUB_WORKSPACE/automecanik-wiki" \
+            --format json | tee "$GITHUB_WORKSPACE/exports-seo-build-report.json"
           echo "---exports/seo/ produits---"
           find automecanik-wiki/exports/seo -name '*.json' -printf '%p (%s bytes)\n' | sort || true
 
@@ -125,8 +128,11 @@ jobs:
         run: |
           cd automecanik-wiki
           # Stage d'abord (--cached voit les fichiers NEUFS, que `git diff` seul
-          # ignore) ; -A capture aussi les SUPPRESSIONS (purge ci-dessus). Le gate
-          # est ainsi idempotent : canon inchangé → rien de stagé → no-op.
+          # ignore) ; -A capture aussi les suppressions. Le job lui-même n'en
+          # produit plus (aucune purge : un export orphelin fait échouer le builder
+          # plus haut) — une suppression ne peut venir que d'un retrait gouverné
+          # déjà commité côté wiki. Le gate est ainsi idempotent : canon inchangé
+          # → rien de stagé → no-op.
           git add -A exports/seo/
           if git diff --cached --quiet -- exports/seo/; then
             echo "[diff] exports/seo/ identical — idempotent no-op"
@@ -157,4 +163,13 @@ jobs:
         with:
           name: exports-seo-${{ github.run_id }}
           path: automecanik-wiki/exports/seo/
+          retention-days: 30
+
+      - name: Upload builder report (observations UNRECONCILED incluses)
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: exports-seo-build-report-${{ github.run_id }}
+          path: exports-seo-build-report.json
+          if-no-files-found: warn
           retention-days: 30
