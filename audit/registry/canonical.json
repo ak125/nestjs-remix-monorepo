@@ -47101,7 +47101,7 @@
         "packages/domain-commerce/dist/index.d.ts"
       ],
       "kind": "controller",
-      "loc": 1311,
+      "loc": 1381,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/orders/controllers/orders.controller.ts",
       "risk": "high",
@@ -47516,7 +47516,7 @@
         "packages/domain-commerce/dist/index.d.ts"
       ],
       "kind": "service",
-      "loc": 966,
+      "loc": 1103,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/orders/services/orders.service.ts",
       "risk": "high",
@@ -66069,7 +66069,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 98,
+      "loc": 100,
       "owner": "@ak125",
       "path": "backend/tests/__mocks__/@repo/database-types.ts",
       "risk": "medium",
@@ -66632,6 +66632,26 @@
       "loc": 216,
       "owner": "@ak125",
       "path": "backend/tests/unit/orders.controller.customer-cancel.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/orders.controller.invoice.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 472,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/orders.controller.invoice.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -80592,11 +80612,13 @@
         "~/components/errors/ErrorGeneric",
         "~/components/ui/alert",
         "~/components/ui/button",
+        "~/utils/internal-api.server",
         "~/utils/logger",
-        "~/utils/meta-helpers"
+        "~/utils/meta-helpers",
+        "~/utils/proxy-headers.server"
       ],
       "kind": "route",
-      "loc": 521,
+      "loc": 515,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/account_.orders.$orderId.invoice.tsx",
       "risk": "medium",
@@ -87385,7 +87407,7 @@
         "frontend/app/types/orders.types.ts"
       ],
       "kind": "service",
-      "loc": 284,
+      "loc": 269,
       "owner": "__unassigned__",
       "path": "frontend/app/services/orders/orders.service.ts",
       "risk": "low",
@@ -90148,6 +90170,26 @@
       "loc": 181,
       "owner": "@ak125",
       "path": "frontend/tests/qa-audit/suites/visual.spec.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/account.invoice.loader.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 226,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/account.invoice.loader.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -100042,11 +100084,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "3045154dd16aeefab01f398f2540e47939a253f9cb3d5194599764dbc02e9958",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "9f5daa40958b9cca382941e84ba0bfc24830a7205673dd0bd079dd45aa10271d",
+      "audit/registry/files.json": "d619d6d1546c1e6a511cf81a55fec1d834145729afd5bf01c4010b8792e1a29f",
       "audit/registry/rpc.json": "821912126b4b0b6e8c5a86b4269f43106cc40a44d2ee85a107b550ab9ea0a7b6",
       "audit/registry/runtime.json": "0237401f6f37cd4d77c6288a6b0f0d9fcf39a3c19e6fae556d945befea0e5edb"
     },
-    "sotFingerprint": "01413f2df346"
+    "sotFingerprint": "147ca49cc441"
   },
   "runtime": [
     {
