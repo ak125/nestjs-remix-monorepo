@@ -325,7 +325,6 @@ import { SeoControlRefreshProcessor } from './processors/seo-control-refresh.pro
     R1KeywordPlanGatesService, // 🚦 Export for R1 pipeline + keyword-planner R1 mode
     R8VehicleEnricherService, // 🚗 Export for content-refresh processor
     R7BrandEnricherService, // 🏭 Export for R7 brand enrichment
-    VehicleRagGeneratorService, // 🚗 Export for R8 enricher auto-generate
     RagGammeReaderService, // 🔧 Export for gamme-rest (r1-related-resources)
   ],
 })

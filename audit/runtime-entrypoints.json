@@ -2903,6 +2903,7 @@
       "scripts/wiki-generators/__tests__/raw-evidence-inventory.test.ts",
       "scripts/wiki-generators/raw-evidence-inventory.ts",
       "tests/registry/architecture-generator.test.ts",
+      "tests/registry/db-registry-status.test.ts",
       "tests/registry/depcruise-integrity.test.ts",
       "tests/registry/dependency-graph-builder.test.ts",
       "tests/registry/planning-builder.test.ts",
@@ -2911,7 +2912,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1524,
+  "runtime_files_count": 1525,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4431,6 +4432,7 @@
     "scripts/wiki-generators/raw-evidence-inventory.ts",
     "services/remotion-renderer/Dockerfile",
     "tests/registry/architecture-generator.test.ts",
+    "tests/registry/db-registry-status.test.ts",
     "tests/registry/depcruise-integrity.test.ts",
     "tests/registry/dependency-graph-builder.test.ts",
     "tests/registry/planning-builder.test.ts",
