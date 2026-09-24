@@ -48,7 +48,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   if (user) {
     const userLevel = user.level || 1;
     if (user.isAdmin && userLevel >= 7) return redirect("/admin");
-    if (user.isPro) return redirect("/commercial");
+    if (userLevel >= 3) return redirect("/commercial");
     return redirect("/account/dashboard");
   }
   return {
@@ -140,8 +140,9 @@ export async function action({ request }: ActionFunctionArgs) {
   let destination = redirectTo;
   if (destination === "/account" || destination === "/account/dashboard") {
     const level = parseInt(String(user?.level)) || 0;
+    // Même seuil que le loader de /commercial : isPro n'y donne pas accès
     if (user?.isAdmin && level >= 7) destination = "/admin";
-    else if (user?.isPro) destination = "/commercial";
+    else if (level >= 3) destination = "/commercial";
   }
 
   return redirect(destination, { headers });
