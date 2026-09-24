@@ -302,7 +302,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
         {
           ok: false,
           error: orderResult.error,
-          code: "ORDER_CREATION_FAILED",
+          code: orderResult.code ?? "ORDER_CREATION_FAILED",
         } satisfies CheckoutActionError,
         { status: orderResult.status },
       );
@@ -410,6 +410,10 @@ function saveCheckoutState(guestEmail: string, addr: ShippingAddress) {
   }
 }
 
+function newIdempotencyKey(): string {
+  return `ik-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
 function clearCheckoutState() {
   try {
     localStorage.removeItem(STORAGE_KEY);
@@ -446,10 +450,9 @@ export default function CheckoutPage() {
   const submitGuardRef = useRef(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const isLocked = isSubmitting || isRedirecting || submitGuardRef.current;
-  // Idempotency key — genere une fois au render, envoye avec le form pour eviter les commandes dupliquees
-  const [idempotencyKey] = useState(
-    () => `ik-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-  );
+  // Idempotency key — genere une fois au render, envoye avec le form pour eviter les commandes dupliquees.
+  // Renouvelee seulement quand le backend clot la tentative (voir effet actionData).
+  const [idempotencyKey, setIdempotencyKey] = useState(newIdempotencyKey);
 
   // Auto-detect if connected user has complete address → skip livraison
   const hasCompleteAddress = !!(
@@ -577,8 +580,15 @@ export default function CheckoutPage() {
       setIsRedirecting(false);
       setRedirectPhase("idle");
       submitGuardRef.current = false;
+      const code = "code" in actionData ? actionData.code : undefined;
+      // Tentative close cote backend (commande existante non payable, ou
+      // contenu modifie) : la cle actuelle rejouerait le meme refus, la
+      // prochaine validation doit creer une nouvelle commande.
+      if (code === "ORDER_NOT_PAYABLE" || code === "ORDER_PAYLOAD_CHANGED") {
+        setIdempotencyKey(newIdempotencyKey());
+      }
       // EMAIL_CONFLICT: switch to livraison for inline login (no toast needed)
-      if ("code" in actionData && actionData.code === "EMAIL_CONFLICT") {
+      if (code === "EMAIL_CONFLICT") {
         setActiveSection("livraison");
         setAddressValidated(false);
       } else {

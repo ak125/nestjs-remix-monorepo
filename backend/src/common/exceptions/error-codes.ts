@@ -55,6 +55,13 @@ export const ErrorCodes = {
     RESTORE_FAILED: 'ORDER.RESTORE_FAILED',
     CALCULATION_FAILED: 'ORDER.CALCULATION_FAILED',
     DELETE_FAILED: 'ORDER.DELETE_FAILED',
+    /** La commande n'est ni payée ni payable (annulée, statut hors canon,
+     * données contradictoires) : aucun chemin de paiement ne doit lui être
+     * proposé. Règle : `getOrderPaymentState` (orders.service). */
+    NOT_PAYABLE: 'ORDER.NOT_PAYABLE',
+    /** Clé d'idempotence déjà utilisée pour un contenu de commande différent :
+     * le client doit repartir d'une nouvelle clé. */
+    IDEMPOTENCY_KEY_REUSED: 'ORDER.IDEMPOTENCY_KEY_REUSED',
   },
 
   USER: {
