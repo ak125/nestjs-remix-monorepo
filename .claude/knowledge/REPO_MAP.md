@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: c869bab52453510cb8f755b5d59fa90784330bfc0bc9eb3f9c20eda927fd6632
+source_sha256: a83a571a4f3fca322aab291d2c1895c620ceb5c695cb4bde778a4fb067559726
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 2912 |
+| Files (Layer 1) | 2915 |
 | DB tables (Layer 1) | 314 |
 | DB RPC (Layer 1) | 253 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1000 |
 
-Source sotFingerprint: `60ea02b3804c`.
+Source sotFingerprint: `20b9e4df19ae`.
 
 ## Comment l'utiliser
 
@@ -116,11 +116,11 @@ Source sotFingerprint: `60ea02b3804c`.
 
 ### D11 — Commerce & Users
 
-- **Files**: 283 (service=185, test=57, controller=40, config=1)
+- **Files**: 285 (service=186, test=58, controller=40, config=1)
 - **Runtime entrypoints**: 128
-- **Top owners**: @ak125 (115), @ak125/payments-team (82), @ak125/auth-team (74)
+- **Top owners**: @ak125 (117), @ak125/payments-team (82), @ak125/auth-team (74)
 - **Knowledge prose**: [`cart`](modules/cart.md), [`invoices`](modules/invoices.md), [`messages`](modules/messages.md), [`orders`](modules/orders.md), [`payments`](modules/payments.md), [`support`](modules/support.md), [`users`](modules/users.md)
-- **Status**: LIVE=176, UNKNOWN=107
+- **Status**: LIVE=177, UNKNOWN=108
 
 ### D12 — Marketing & Video
 
@@ -147,11 +147,11 @@ Source sotFingerprint: `60ea02b3804c`.
 
 ### D15 — Security & Governance
 
-- **Files**: 263 (test=153, script=62, service=45, config=2, controller=1)
+- **Files**: 264 (test=154, script=62, service=45, config=2, controller=1)
 - **Runtime entrypoints**: 3
-- **Top owners**: @ak125 (263)
+- **Top owners**: @ak125 (264)
 - **Knowledge prose**: [`bot-guard`](modules/bot-guard.md)
-- **Status**: LIVE=55, UNKNOWN=208
+- **Status**: LIVE=55, UNKNOWN=209
 
 ### UNKNOWN — Unknown (overlay non résolu)
 
