@@ -459,3 +459,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/ga4-skip-automated-browsers`
 - **Décision** : chore(registry): resync L1+L3 projections (+1 other commit)
 - **Sortie** : PR #1538 | commits 2af384d09 ef2a1e977
+
+## 2026-09-24 — fix/auth-staff-session (auto)
+
+- **Branche** : `fix/auth-staff-session`
+- **Décision** : chore(registry): resync L1+L3 projections (+4 other commits)
+- **Sortie** : PR aucune | commits b6814b55e f1e2df4cb 391c458c5 05dd8c95f f74215a56
