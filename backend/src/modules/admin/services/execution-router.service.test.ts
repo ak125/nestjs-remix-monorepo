@@ -361,6 +361,180 @@ describe('ExecutionRouterService — regression smoke', () => {
     expect(result.results[0].status).toBe('success');
     expect(enrichSingle).toHaveBeenCalledWith(12345);
   });
+
+  it('7b. R8_VEHICLE write_gate_blocked → skipped (never success), detail kept in data', async () => {
+    setTable('pieces_gamme', {
+      single: () => Promise.resolve({ data: null, error: null }),
+    });
+    const enrichSingle = jest.fn().mockResolvedValue({
+      status: 'write_gate_blocked',
+      seoDecision: 'REVIEW_REQUIRED',
+      diversityScore: 58,
+      warnings: ['WRITE_GATE_BLOCKED: stale_base'],
+      reasons: [],
+      pageKey: `r8_vehicle_${12345}`,
+      writeGate: {
+        reason: 'stale_base',
+        fieldsSkipped: [],
+        fieldsStripped: [],
+      },
+    });
+    const service = makeService({
+      R8VehicleEnricherService: { enrichSingle },
+    });
+
+    const result = await service.execute({
+      roleId: 'R8_VEHICLE',
+      targetIds: ['12345'],
+      dryRun: false,
+    });
+
+    expect(result.results[0].status).toBe('skipped');
+    const data = result.results[0].data as any;
+    expect(data.status).toBe('write_gate_blocked');
+    expect(data.writeGate.reason).toBe('stale_base');
+  });
+});
+
+// Le rapport persisté (`__pipeline_chain_queue`) doit porter l'issue distincte :
+// avant, un refus WriteGate R8 était écrit `done` / pcq_error=null (identique à
+// un succès) et une panne DB R8 `failed` / « 1/1 failed » (sans motif, faute de
+// `data.reason` côté R8).
+describe('ExecutionRouterService — R8 outcome in the persisted __pipeline_chain_queue row', () => {
+  beforeEach(resetMocks);
+
+  function capturePcqInserts(): any[] {
+    const inserted: any[] = [];
+    setTable('pieces_gamme', {
+      single: () => Promise.resolve({ data: null, error: null }),
+    });
+    setTable('__pipeline_chain_queue', {
+      insert: (payload?: any) => {
+        inserted.push(payload);
+        return Promise.resolve({ error: null });
+      },
+    });
+    return inserted;
+  }
+
+  const gateBlocked = (typeId: number) => ({
+    status: 'write_gate_blocked',
+    seoDecision: 'REVIEW_REQUIRED',
+    diversityScore: 58,
+    warnings: ['WRITE_GATE_BLOCKED: stale_base'],
+    reasons: [],
+    reason: 'WRITE_GATE_BLOCKED: stale_base',
+    pageKey: `r8_vehicle_${typeId}`,
+    writeGate: { reason: 'stale_base', fieldsSkipped: [], fieldsStripped: [] },
+  });
+
+  const dbError = (typeId: number) => ({
+    status: 'failed',
+    seoDecision: 'REJECT',
+    diversityScore: 0,
+    warnings: [
+      'DB write failed',
+      'op=write_gate code=unknown db_error: canceling statement',
+    ],
+    reasons: ['DB_ERROR'],
+    reason:
+      'DB_ERROR: op=write_gate code=unknown db_error: canceling statement',
+    pageKey: `r8_vehicle_${typeId}`,
+  });
+
+  it('7c. write_gate_blocked → done (contract kept) + skipped count and reason in pcq_error', async () => {
+    const inserted = capturePcqInserts();
+    const service = makeService({
+      R8VehicleEnricherService: {
+        enrichSingle: jest.fn().mockResolvedValue(gateBlocked(12345)),
+      },
+    });
+
+    await service.execute({
+      roleId: 'R8_VEHICLE',
+      targetIds: ['12345'],
+      dryRun: false,
+    });
+
+    expect(inserted).toHaveLength(1);
+    expect(inserted[0]).toMatchObject({
+      pcq_page_type: RoleId.R8_VEHICLE,
+      pcq_source: 'execution_router',
+      pcq_status: 'done',
+      pcq_error: '1/1 skipped: WRITE_GATE_BLOCKED: stale_base',
+      pcq_sections: ['12345'],
+    });
+  });
+
+  it('7d. DB_ERROR → failed + R8 reason (not a bare count) in pcq_error', async () => {
+    const inserted = capturePcqInserts();
+    const service = makeService({
+      R8VehicleEnricherService: {
+        enrichSingle: jest.fn().mockResolvedValue(dbError(12345)),
+      },
+    });
+
+    await service.execute({
+      roleId: 'R8_VEHICLE',
+      targetIds: ['12345'],
+      dryRun: false,
+    });
+
+    expect(inserted).toHaveLength(1);
+    expect(inserted[0]).toMatchObject({
+      pcq_status: 'failed',
+      pcq_error:
+        'DB_ERROR: op=write_gate code=unknown db_error: canceling statement',
+    });
+  });
+
+  it('7e. written page (draft) → done, pcq_error null (control, unchanged)', async () => {
+    const inserted = capturePcqInserts();
+    const service = makeService({
+      R8VehicleEnricherService: {
+        enrichSingle: jest.fn().mockResolvedValue({
+          status: 'draft',
+          seoDecision: 'INDEX',
+          diversityScore: 80,
+          warnings: [],
+          reasons: [],
+          pageKey: `r8_vehicle_${12345}`,
+        }),
+      },
+    });
+
+    await service.execute({
+      roleId: 'R8_VEHICLE',
+      targetIds: ['12345'],
+      dryRun: false,
+    });
+
+    expect(inserted).toHaveLength(1);
+    expect(inserted[0]).toMatchObject({ pcq_status: 'done', pcq_error: null });
+  });
+
+  it('7f. summarizeQueueOutcome — failed and skipped together: failed wins, both reported', () => {
+    const service = makeService({});
+    const outcome = service.summarizeQueueOutcome({
+      roleId: RoleId.R8_VEHICLE,
+      mode: 'draft',
+      dryRun: false,
+      totalTargets: 3,
+      duration: 1,
+      results: [
+        { targetId: '1', status: 'success', data: { status: 'draft' } },
+        { targetId: '2', status: 'skipped', data: gateBlocked(2) },
+        { targetId: '3', status: 'failed', data: dbError(3) },
+      ],
+    });
+
+    expect(outcome).toEqual({
+      status: 'failed',
+      error:
+        'DB_ERROR: op=write_gate code=unknown db_error: canceling statement' +
+        ' | 1/3 skipped: WRITE_GATE_BLOCKED: stale_base',
+    });
+  });
 });
 
 describe('ExecutionRouterService — R3_CONSEILS executable path removed (B2/B6, ADR-027 §Correction)', () => {

@@ -28484,8 +28484,7 @@
       "id": "backend/src/auth/admin-session.guard.ts",
       "importedBy": [
         "backend/src/auth/admin-session.guard.test.ts",
-        "backend/src/auth/auth.module.ts",
-        "backend/src/auth/session-privilege.test.ts"
+        "backend/src/auth/auth.module.ts"
       ],
       "imports": [],
       "kind": "service",
@@ -28599,26 +28598,23 @@
       "importedBy": [
         "backend/src/auth/auth.module.ts",
         "backend/src/auth/controllers/auth-login.controller.ts",
-        "backend/src/auth/controllers/auth-login.redirect.test.ts",
         "backend/src/auth/controllers/auth-permissions.controller.ts",
         "backend/src/auth/controllers/auth-token.controller.ts",
         "backend/src/auth/cookie-serializer.ts",
         "backend/src/auth/guards/module-permission.guard.ts",
         "backend/src/auth/local.strategy.ts",
         "backend/src/auth/profile.controller.ts",
-        "backend/src/auth/session-privilege.test.ts",
         "backend/src/modules/orders/controllers/orders.controller.ts"
       ],
       "imports": [
         "@cache/cache.service",
-        "backend/src/auth/session-privilege.ts",
         "backend/src/modules/users/dto/user.dto.ts",
         "backend/src/modules/users/services/user-data-consolidated.service.ts",
         "backend/src/shared/crypto/password-crypto.service.ts",
         "crypto"
       ],
       "kind": "service",
-      "loc": 1141,
+      "loc": 1127,
       "owner": "@ak125/auth-team",
       "path": "backend/src/auth/auth.service.ts",
       "risk": "high",
@@ -28708,8 +28704,7 @@
       "domain": "D11",
       "id": "backend/src/auth/controllers/auth-login.controller.ts",
       "importedBy": [
-        "backend/src/auth/auth.module.ts",
-        "backend/src/auth/controllers/auth-login.redirect.test.ts"
+        "backend/src/auth/auth.module.ts"
       ],
       "imports": [
         "backend/src/auth/auth.service.ts",
@@ -28717,7 +28712,6 @@
         "backend/src/auth/dto/login-response.dto.ts",
         "backend/src/auth/dto/register.dto.ts",
         "backend/src/auth/local-auth.guard.ts",
-        "backend/src/auth/session-privilege.ts",
         "backend/src/common/decorators/rate-limit.decorator.ts",
         "backend/src/common/pipes/zod-validation.pipe.ts",
         "backend/src/database/services/cart-data.service.ts",
@@ -28727,7 +28721,7 @@
         "backend/src/utils/promise-helpers.ts"
       ],
       "kind": "controller",
-      "loc": 950,
+      "loc": 949,
       "owner": "@ak125/auth-team",
       "path": "backend/src/auth/controllers/auth-login.controller.ts",
       "risk": "high",
@@ -28735,34 +28729,6 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D11",
-      "id": "backend/src/auth/controllers/auth-login.redirect.test.ts",
-      "importedBy": [],
-      "imports": [
-        "backend/src/auth/auth.service.ts",
-        "backend/src/auth/controllers/auth-login.controller.ts",
-        "backend/src/auth/session-privilege.ts",
-        "backend/src/database/services/cart-data.service.ts",
-        "backend/src/modules/users/services/user-data-consolidated.service.ts",
-        "backend/src/modules/users/users-final.service.ts",
-        "backend/src/services/mail.service.ts"
-      ],
-      "kind": "test",
-      "loc": 124,
-      "owner": "@ak125/auth-team",
-      "path": "backend/src/auth/controllers/auth-login.redirect.test.ts",
-      "risk": "high",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -28853,8 +28819,7 @@
       "domain": "D11",
       "id": "backend/src/auth/cookie-serializer.ts",
       "importedBy": [
-        "backend/src/auth/auth.module.ts",
-        "backend/src/auth/session-privilege.test.ts"
+        "backend/src/auth/auth.module.ts"
       ],
       "imports": [
         "backend/src/auth/auth.service.ts"
@@ -29029,8 +28994,7 @@
         "backend/src/auth/decorators/require-permission.decorator.ts",
         "backend/src/auth/guards/permissions.guard.ts",
         "backend/src/auth/permissions.service.test.ts",
-        "backend/src/auth/permissions.service.ts",
-        "backend/src/auth/session-privilege.test.ts"
+        "backend/src/auth/permissions.service.ts"
       ],
       "imports": [],
       "kind": "service",
@@ -29272,8 +29236,7 @@
       "id": "backend/src/auth/guards/permissions.guard.ts",
       "importedBy": [
         "backend/src/auth/auth.module.ts",
-        "backend/src/auth/guards/permissions.guard.test.ts",
-        "backend/src/auth/session-privilege.test.ts"
+        "backend/src/auth/guards/permissions.guard.test.ts"
       ],
       "imports": [
         "backend/src/auth/decorators/require-permission.decorator.ts",
@@ -29332,7 +29295,6 @@
       "id": "backend/src/auth/is-admin.guard.ts",
       "importedBy": [
         "backend/src/auth/auth.module.ts",
-        "backend/src/auth/session-privilege.test.ts",
         "backend/src/modules/admin/controllers/admin-vehicle-cache.controller.ts",
         "backend/src/modules/media-factory/controllers/video-execution.controller.ts",
         "backend/src/modules/media-factory/controllers/video-gate-check.controller.ts",
@@ -29482,15 +29444,13 @@
         "backend/src/auth/controllers/auth-permissions.controller.ts",
         "backend/src/auth/guards/permissions.guard.test.ts",
         "backend/src/auth/guards/permissions.guard.ts",
-        "backend/src/auth/permissions.service.test.ts",
-        "backend/src/auth/session-privilege.test.ts"
+        "backend/src/auth/permissions.service.test.ts"
       ],
       "imports": [
-        "backend/src/auth/dto/user-permissions.dto.ts",
-        "backend/src/auth/session-privilege.ts"
+        "backend/src/auth/dto/user-permissions.dto.ts"
       ],
       "kind": "service",
-      "loc": 33,
+      "loc": 32,
       "owner": "@ak125/auth-team",
       "path": "backend/src/auth/permissions.service.ts",
       "risk": "high",
@@ -29541,65 +29501,6 @@
       "loc": 11,
       "owner": "@ak125/auth-team",
       "path": "backend/src/auth/redirected-error.exception.ts",
-      "risk": "high",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D11",
-      "id": "backend/src/auth/session-privilege.test.ts",
-      "importedBy": [],
-      "imports": [
-        "@cache/cache.service",
-        "backend/src/auth/admin-session.guard.ts",
-        "backend/src/auth/auth.service.ts",
-        "backend/src/auth/cookie-serializer.ts",
-        "backend/src/auth/dto/user-permissions.dto.ts",
-        "backend/src/auth/guards/permissions.guard.ts",
-        "backend/src/auth/is-admin.guard.ts",
-        "backend/src/auth/permissions.service.ts",
-        "backend/src/auth/session-privilege.ts",
-        "backend/src/modules/users/services/user-data-consolidated.service.ts",
-        "backend/src/shared/crypto/password-crypto.service.ts"
-      ],
-      "kind": "test",
-      "loc": 408,
-      "owner": "@ak125/auth-team",
-      "path": "backend/src/auth/session-privilege.test.ts",
-      "risk": "high",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual",
-        "reachability"
-      ],
-      "domain": "D11",
-      "id": "backend/src/auth/session-privilege.ts",
-      "importedBy": [
-        "backend/src/auth/auth.service.ts",
-        "backend/src/auth/controllers/auth-login.controller.ts",
-        "backend/src/auth/controllers/auth-login.redirect.test.ts",
-        "backend/src/auth/permissions.service.ts",
-        "backend/src/auth/session-privilege.test.ts"
-      ],
-      "imports": [],
-      "kind": "service",
-      "loc": 44,
-      "owner": "@ak125/auth-team",
-      "path": "backend/src/auth/session-privilege.ts",
       "risk": "high",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -31052,7 +30953,8 @@
       "id": "backend/src/config/content-write-executor.service.ts",
       "importedBy": [
         "backend/src/config/content-write-gate.service.ts",
-        "backend/src/config/write-guard.module.ts"
+        "backend/src/config/write-guard.module.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.write-gate.test.ts"
       ],
       "imports": [
         "@common/utils",
@@ -31379,7 +31281,8 @@
         "backend/src/config/write-guard-ledger.service.ts",
         "backend/src/config/write-guard-lock.service.ts",
         "backend/src/modules/admin/services/r2-enricher.service.ts",
-        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.write-gate.test.ts"
       ],
       "imports": [
         "backend/src/config/role-ids.ts",
@@ -32559,13 +32462,14 @@
       "id": "backend/src/config/r8-keyword-plan.constants.ts",
       "importedBy": [
         "backend/src/config/page-contract-r8.schema.ts",
-        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.tech-specs.test.ts"
       ],
       "imports": [
         "backend/src/config/keyword-plan.constants.ts"
       ],
       "kind": "config",
-      "loc": 865,
+      "loc": 866,
       "owner": "@ak125",
       "path": "backend/src/config/r8-keyword-plan.constants.ts",
       "risk": "medium",
@@ -32670,6 +32574,7 @@
         "backend/src/modules/admin/services/execution-router.service.ts",
         "backend/src/modules/admin/services/r2-enricher.service.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.write-gate.test.ts",
         "backend/src/modules/rag-proxy/services/rag-admissibility-gate.service.ts",
         "backend/src/modules/rag-proxy/services/rag-phase2a-shadow-audit.service.ts",
         "backend/src/modules/rag-proxy/types/rag-phase2a.types.ts",
@@ -33254,7 +33159,7 @@
         "backend/src/modules/users/services/user-data-consolidated.service.ts"
       ],
       "kind": "controller",
-      "loc": 370,
+      "loc": 369,
       "owner": "__unassigned__",
       "path": "backend/src/controllers/users.controller.ts",
       "risk": "low",
@@ -33361,7 +33266,6 @@
       "importedBy": [
         "backend/src/auth/cart-merge.middleware.ts",
         "backend/src/auth/controllers/auth-login.controller.ts",
-        "backend/src/auth/controllers/auth-login.redirect.test.ts",
         "backend/src/database/database.module.ts",
         "backend/src/database/services/cart-data.sellable-guard.test.ts",
         "backend/src/database/services/database-composition.service.ts",
@@ -33968,7 +33872,7 @@
         "backend/src/workers/worker.module.ts"
       ],
       "kind": "service",
-      "loc": 333,
+      "loc": 332,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/admin.module.ts",
       "risk": "medium",
@@ -36256,7 +36160,7 @@
         "backend/src/modules/admin/services/execution-router.service.ts"
       ],
       "kind": "test",
-      "loc": 430,
+      "loc": 604,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/execution-router.service.test.ts",
       "risk": "medium",
@@ -36278,6 +36182,7 @@
         "backend/src/modules/admin/controllers/admin-pipeline.controller.ts",
         "backend/src/modules/admin/controllers/internal-pipeline.controller.ts",
         "backend/src/modules/admin/services/execution-router.service.test.ts",
+        "backend/src/workers/processors/__tests__/pipeline-chain.processor.test.ts",
         "backend/src/workers/processors/pipeline-chain.processor.ts"
       ],
       "imports": [
@@ -36295,7 +36200,7 @@
         "backend/src/modules/seo/validation/diagnostic.service.ts"
       ],
       "kind": "service",
-      "loc": 766,
+      "loc": 820,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/execution-router.service.ts",
       "risk": "medium",
@@ -37279,9 +37184,11 @@
         "backend/src/modules/admin/admin.module.ts",
         "backend/src/modules/admin/controllers/admin-r8-vehicle.controller.ts",
         "backend/src/modules/admin/services/execution-router.service.ts",
-        "backend/src/modules/admin/services/r8-vehicle-enricher.tech-specs.test.ts"
+        "backend/src/modules/admin/services/r8-vehicle-enricher.tech-specs.test.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.write-gate.test.ts"
       ],
       "imports": [
+        "@common/exceptions",
         "@database/services/supabase-base.service",
         "backend/src/config/content-write-gate.service.ts",
         "backend/src/config/execution-registry.types.ts",
@@ -37293,14 +37200,14 @@
         "backend/src/config/seo-variations.config.ts",
         "backend/src/modules/admin/services/enricher-text-utils.service.ts",
         "backend/src/modules/admin/services/r8-owned-editorial.composer.ts",
-        "backend/src/modules/admin/services/vehicle-rag-generator.service.ts",
         "backend/src/modules/seo/services/chain/seo-role-template-selector.service.ts",
+        "backend/src/security/rpc-gate/rpc-gate.errors.ts",
         "crypto",
         "fs",
         "path"
       ],
       "kind": "service",
-      "loc": 1466,
+      "loc": 1525,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
       "risk": "medium",
@@ -37319,12 +37226,40 @@
       "id": "backend/src/modules/admin/services/r8-vehicle-enricher.tech-specs.test.ts",
       "importedBy": [],
       "imports": [
+        "backend/src/config/r8-keyword-plan.constants.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
       ],
       "kind": "test",
-      "loc": 269,
+      "loc": 292,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/r8-vehicle-enricher.tech-specs.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
+      "id": "backend/src/modules/admin/services/r8-vehicle-enricher.write-gate.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@common/exceptions",
+        "backend/src/config/content-write-executor.service.ts",
+        "backend/src/config/execution-registry.types.ts",
+        "backend/src/config/role-ids.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
+        "backend/src/security/rpc-gate/rpc-gate.errors.ts"
+      ],
+      "kind": "test",
+      "loc": 514,
+      "owner": "@ak125/admin-team",
+      "path": "backend/src/modules/admin/services/r8-vehicle-enricher.write-gate.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -37827,8 +37762,7 @@
       "id": "backend/src/modules/admin/services/vehicle-rag-generator.service.ts",
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
-        "backend/src/modules/admin/controllers/admin-vehicle-rag.controller.ts",
-        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
+        "backend/src/modules/admin/controllers/admin-vehicle-rag.controller.ts"
       ],
       "imports": [
         "@database/services/supabase-base.service",
@@ -63961,9 +63895,7 @@
       "importedBy": [
         "backend/src/auth/auth.service.ts",
         "backend/src/auth/controllers/auth-login.controller.ts",
-        "backend/src/auth/controllers/auth-login.redirect.test.ts",
         "backend/src/auth/controllers/auth-token.controller.ts",
-        "backend/src/auth/session-privilege.test.ts",
         "backend/src/controllers/users.controller.ts",
         "backend/src/modules/users/services/profile.service.ts",
         "backend/src/modules/users/users-final.service.ts",
@@ -64049,7 +63981,6 @@
       "id": "backend/src/modules/users/users-final.service.ts",
       "importedBy": [
         "backend/src/auth/controllers/auth-login.controller.ts",
-        "backend/src/auth/controllers/auth-login.redirect.test.ts",
         "backend/src/modules/users/users-final.controller.ts",
         "backend/src/modules/users/users.module.ts"
       ],
@@ -64863,7 +64794,7 @@
         "@security/rpc-gate/rpc-gate.service"
       ],
       "kind": "service",
-      "loc": 355,
+      "loc": 367,
       "owner": "@ak125",
       "path": "backend/src/modules/vehicles/services/vehicle-rpc.service.ts",
       "risk": "high",
@@ -65377,6 +65308,8 @@
       "id": "backend/src/security/rpc-gate/rpc-gate.errors.ts",
       "importedBy": [
         "backend/src/database/services/supabase-base.service.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.write-gate.test.ts",
         "backend/src/security/rpc-gate/index.ts"
       ],
       "imports": [],
@@ -65497,7 +65430,6 @@
       "id": "backend/src/services/mail.service.ts",
       "importedBy": [
         "backend/src/auth/controllers/auth-login.controller.ts",
-        "backend/src/auth/controllers/auth-login.redirect.test.ts",
         "backend/src/modules/admin/controllers/admin-health.controller.ts",
         "backend/src/modules/cart/services/abandoned-cart.service.ts",
         "backend/src/modules/orders/controllers/order-actions.controller.ts",
@@ -65579,7 +65511,6 @@
       "importedBy": [
         "backend/src/auth/auth.service.ts",
         "backend/src/auth/controllers/auth-token.controller.ts",
-        "backend/src/auth/session-privilege.test.ts",
         "backend/src/shared/crypto/crypto.module.ts",
         "backend/src/shared/crypto/index.ts"
       ],
@@ -65704,6 +65635,29 @@
         "manual"
       ],
       "domain": "D9",
+      "id": "backend/src/workers/processors/__tests__/pipeline-chain.processor.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/admin/services/execution-router.service.ts",
+        "backend/src/workers/processors/pipeline-chain.processor.ts"
+      ],
+      "kind": "test",
+      "loc": 188,
+      "owner": "@ak125",
+      "path": "backend/src/workers/processors/__tests__/pipeline-chain.processor.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D9",
       "id": "backend/src/workers/processors/__tests__/seo-monitor.processor.test.ts",
       "importedBy": [],
       "imports": [
@@ -65804,6 +65758,7 @@
       "importedBy": [
         "backend/src/modules/admin/controllers/admin-pipeline.controller.ts",
         "backend/src/modules/admin/controllers/internal-pipeline.controller.ts",
+        "backend/src/workers/processors/__tests__/pipeline-chain.processor.test.ts",
         "backend/src/workers/worker.module.ts"
       ],
       "imports": [
@@ -65812,7 +65767,7 @@
         "backend/src/modules/admin/services/execution-router.service.ts"
       ],
       "kind": "service",
-      "loc": 156,
+      "loc": 151,
       "owner": "@ak125",
       "path": "backend/src/workers/processors/pipeline-chain.processor.ts",
       "risk": "medium",
@@ -66294,7 +66249,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 411,
+      "loc": 410,
       "owner": "@ak125",
       "path": "backend/tests/unit/auth.service.test.ts",
       "risk": "medium",
@@ -67930,31 +67885,11 @@
         "manual"
       ],
       "domain": "D15",
-      "id": "backend/tests/unit/users.controller.dashboard-level.test.ts",
-      "importedBy": [],
-      "imports": [],
-      "kind": "test",
-      "loc": 60,
-      "owner": "@ak125",
-      "path": "backend/tests/unit/users.controller.dashboard-level.test.ts",
-      "risk": "medium",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "high",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D15",
       "id": "backend/tests/unit/vehicle-rpc.service.test.ts",
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 194,
+      "loc": 326,
       "owner": "@ak125",
       "path": "backend/tests/unit/vehicle-rpc.service.test.ts",
       "risk": "medium",
@@ -80204,7 +80139,7 @@
         "~/utils/safe-redirect.server"
       ],
       "kind": "route",
-      "loc": 397,
+      "loc": 396,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/_public+/login.tsx",
       "risk": "medium",
@@ -90885,26 +90820,6 @@
         "manual"
       ],
       "domain": "D2",
-      "id": "frontend/tests/unit/login-role-redirect.test.ts",
-      "importedBy": [],
-      "imports": [],
-      "kind": "test",
-      "loc": 96,
-      "owner": "@ak125",
-      "path": "frontend/tests/unit/login-role-redirect.test.ts",
-      "risk": "medium",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "high",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D2",
       "id": "frontend/tests/unit/no-ios16-incompatible-regex.test.ts",
       "importedBy": [],
       "imports": [],
@@ -96245,7 +96160,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 131,
+      "loc": 133,
       "owner": "@ak125",
       "path": "scripts/audit/check-rag-authority-read-ratchet.test.ts",
       "risk": "medium",
@@ -100166,11 +100081,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "3045154dd16aeefab01f398f2540e47939a253f9cb3d5194599764dbc02e9958",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "4a13312432a9279f368a1c7610dd285c0fee9148469d587fd663698a63ffbe4d",
+      "audit/registry/files.json": "ce59d8755b236a8631ae229a262205fdac623f000bfdec7ed157a997d1f876d3",
       "audit/registry/rpc.json": "821912126b4b0b6e8c5a86b4269f43106cc40a44d2ee85a107b550ab9ea0a7b6",
-      "audit/registry/runtime.json": "3f153ecc8a7a52378e26435fe7ecf04c0a4549288d6ad12283b783545ba5e99e"
+      "audit/registry/runtime.json": "c430ab464382663304f535702507f59b5ee0bdd2ca4d436be0c7b7497f44de95"
     },
-    "sotFingerprint": "182442b45f03"
+    "sotFingerprint": "8f9076e18dc6"
   },
   "runtime": [
     {
@@ -101780,7 +101695,6 @@
         "runtime:backend/src/config/content-write-gate.service.ts",
         "runtime:backend/src/config/feature-flags.service.ts",
         "runtime:backend/src/modules/admin/services/enricher-text-utils.service.ts",
-        "runtime:backend/src/modules/admin/services/vehicle-rag-generator.service.ts",
         "runtime:backend/src/modules/seo/services/chain/seo-role-template-selector.service.ts"
       ],
       "id": "runtime:backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",

@@ -22,7 +22,7 @@
     "unresolved_callsites": 0,
     "dropped_call_sites": 5,
     "migrations_scanned": 356,
-    "backend_files_scanned": 1406
+    "backend_files_scanned": 1405
   },
   "tables": {
     "___config": {
@@ -11072,63 +11072,63 @@
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 658,
+      "line": 665,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_pages",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1305,
+      "line": 1300,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_pages",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1330,
+      "line": 1375,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_pages",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1353,
+      "line": 1412,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_page_versions",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1361,
+      "line": 1420,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_page_versions",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1386,
+      "line": 1445,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_fingerprints",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1428,
+      "line": 1487,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_similarity_index",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1448,
+      "line": 1507,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_regeneration_queue",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1459,
+      "line": 1518,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_qa_reviews",
       "refusal": null
