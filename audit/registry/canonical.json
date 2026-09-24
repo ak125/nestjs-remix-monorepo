@@ -8979,7 +8979,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -10709,7 +10709,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -10819,7 +10819,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -11328,7 +11328,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -11402,7 +11402,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -11494,7 +11494,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -11862,7 +11862,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -12123,7 +12123,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -12349,7 +12349,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -12750,7 +12750,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "medium",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -12769,7 +12769,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "medium",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -12788,7 +12788,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "medium",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -12842,7 +12842,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "medium",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -12861,7 +12861,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "medium",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -12880,7 +12880,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "medium",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -13092,7 +13092,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -13467,7 +13467,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -13645,7 +13645,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "medium",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -13664,7 +13664,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "medium",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -13683,7 +13683,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "medium",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -14125,7 +14125,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "medium",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -14144,7 +14144,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "medium",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -14163,7 +14163,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "medium",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -14225,7 +14225,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -14299,7 +14299,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -14421,7 +14421,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -14477,7 +14477,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -14709,7 +14709,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -14922,7 +14922,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -15458,7 +15458,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "medium",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -15477,7 +15477,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "medium",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -15496,7 +15496,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "medium",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -15925,7 +15925,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -15963,7 +15963,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -16008,7 +16008,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -16040,7 +16040,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -16114,7 +16114,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -16182,7 +16182,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -16262,7 +16262,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -16306,7 +16306,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -16368,7 +16368,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -16418,7 +16418,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -16579,7 +16579,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -16734,7 +16734,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -16998,7 +16998,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -17644,7 +17644,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -17730,7 +17730,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -17774,7 +17774,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -18266,7 +18266,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -18328,7 +18328,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -18474,7 +18474,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -18568,7 +18568,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -18629,7 +18629,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "medium",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -18698,7 +18698,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -18849,7 +18849,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -18935,7 +18935,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -19069,7 +19069,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -19107,7 +19107,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -19423,7 +19423,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -19504,7 +19504,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -19755,7 +19755,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -19793,7 +19793,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -20115,7 +20115,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -20195,7 +20195,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -20275,7 +20275,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -20391,7 +20391,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -20453,7 +20453,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -20562,7 +20562,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -20606,7 +20606,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -20656,7 +20656,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -20712,7 +20712,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -20762,7 +20762,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -20846,7 +20846,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -20908,7 +20908,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -20993,7 +20993,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -21055,7 +21055,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -21105,7 +21105,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -21149,7 +21149,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -21376,7 +21376,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "medium",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -21395,7 +21395,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "medium",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -21483,7 +21483,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -21589,7 +21589,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -21633,7 +21633,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -21864,7 +21864,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -21883,7 +21883,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "medium",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -21902,7 +21902,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "medium",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -21921,7 +21921,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "medium",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -21940,7 +21940,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "medium",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -22273,7 +22273,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -22292,7 +22292,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "medium",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -22311,7 +22311,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "medium",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -22330,7 +22330,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "medium",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -22349,7 +22349,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "medium",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -22548,7 +22548,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -22752,7 +22752,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -22826,7 +22826,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "high",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -23260,7 +23260,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "medium",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -23279,7 +23279,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "medium",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -23298,7 +23298,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "medium",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -23317,7 +23317,7 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "medium",
-        "status": "LIVE",
+        "status": "UNKNOWN",
         "usedBy": []
       },
       {
@@ -28484,8 +28484,7 @@
       "id": "backend/src/auth/admin-session.guard.ts",
       "importedBy": [
         "backend/src/auth/admin-session.guard.test.ts",
-        "backend/src/auth/auth.module.ts",
-        "backend/src/auth/session-privilege.test.ts"
+        "backend/src/auth/auth.module.ts"
       ],
       "imports": [],
       "kind": "service",
@@ -28599,26 +28598,23 @@
       "importedBy": [
         "backend/src/auth/auth.module.ts",
         "backend/src/auth/controllers/auth-login.controller.ts",
-        "backend/src/auth/controllers/auth-login.redirect.test.ts",
         "backend/src/auth/controllers/auth-permissions.controller.ts",
         "backend/src/auth/controllers/auth-token.controller.ts",
         "backend/src/auth/cookie-serializer.ts",
         "backend/src/auth/guards/module-permission.guard.ts",
         "backend/src/auth/local.strategy.ts",
         "backend/src/auth/profile.controller.ts",
-        "backend/src/auth/session-privilege.test.ts",
         "backend/src/modules/orders/controllers/orders.controller.ts"
       ],
       "imports": [
         "@cache/cache.service",
-        "backend/src/auth/session-privilege.ts",
         "backend/src/modules/users/dto/user.dto.ts",
         "backend/src/modules/users/services/user-data-consolidated.service.ts",
         "backend/src/shared/crypto/password-crypto.service.ts",
         "crypto"
       ],
       "kind": "service",
-      "loc": 1136,
+      "loc": 1127,
       "owner": "@ak125/auth-team",
       "path": "backend/src/auth/auth.service.ts",
       "risk": "high",
@@ -28708,8 +28704,7 @@
       "domain": "D11",
       "id": "backend/src/auth/controllers/auth-login.controller.ts",
       "importedBy": [
-        "backend/src/auth/auth.module.ts",
-        "backend/src/auth/controllers/auth-login.redirect.test.ts"
+        "backend/src/auth/auth.module.ts"
       ],
       "imports": [
         "backend/src/auth/auth.service.ts",
@@ -28717,7 +28712,6 @@
         "backend/src/auth/dto/login-response.dto.ts",
         "backend/src/auth/dto/register.dto.ts",
         "backend/src/auth/local-auth.guard.ts",
-        "backend/src/auth/session-privilege.ts",
         "backend/src/common/decorators/rate-limit.decorator.ts",
         "backend/src/common/pipes/zod-validation.pipe.ts",
         "backend/src/database/services/cart-data.service.ts",
@@ -28727,7 +28721,7 @@
         "backend/src/utils/promise-helpers.ts"
       ],
       "kind": "controller",
-      "loc": 950,
+      "loc": 949,
       "owner": "@ak125/auth-team",
       "path": "backend/src/auth/controllers/auth-login.controller.ts",
       "risk": "high",
@@ -28735,34 +28729,6 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D11",
-      "id": "backend/src/auth/controllers/auth-login.redirect.test.ts",
-      "importedBy": [],
-      "imports": [
-        "backend/src/auth/auth.service.ts",
-        "backend/src/auth/controllers/auth-login.controller.ts",
-        "backend/src/auth/session-privilege.ts",
-        "backend/src/database/services/cart-data.service.ts",
-        "backend/src/modules/users/services/user-data-consolidated.service.ts",
-        "backend/src/modules/users/users-final.service.ts",
-        "backend/src/services/mail.service.ts"
-      ],
-      "kind": "test",
-      "loc": 124,
-      "owner": "@ak125/auth-team",
-      "path": "backend/src/auth/controllers/auth-login.redirect.test.ts",
-      "risk": "high",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -28853,8 +28819,7 @@
       "domain": "D11",
       "id": "backend/src/auth/cookie-serializer.ts",
       "importedBy": [
-        "backend/src/auth/auth.module.ts",
-        "backend/src/auth/session-privilege.test.ts"
+        "backend/src/auth/auth.module.ts"
       ],
       "imports": [
         "backend/src/auth/auth.service.ts"
@@ -29029,8 +28994,7 @@
         "backend/src/auth/decorators/require-permission.decorator.ts",
         "backend/src/auth/guards/permissions.guard.ts",
         "backend/src/auth/permissions.service.test.ts",
-        "backend/src/auth/permissions.service.ts",
-        "backend/src/auth/session-privilege.test.ts"
+        "backend/src/auth/permissions.service.ts"
       ],
       "imports": [],
       "kind": "service",
@@ -29272,8 +29236,7 @@
       "id": "backend/src/auth/guards/permissions.guard.ts",
       "importedBy": [
         "backend/src/auth/auth.module.ts",
-        "backend/src/auth/guards/permissions.guard.test.ts",
-        "backend/src/auth/session-privilege.test.ts"
+        "backend/src/auth/guards/permissions.guard.test.ts"
       ],
       "imports": [
         "backend/src/auth/decorators/require-permission.decorator.ts",
@@ -29332,7 +29295,6 @@
       "id": "backend/src/auth/is-admin.guard.ts",
       "importedBy": [
         "backend/src/auth/auth.module.ts",
-        "backend/src/auth/session-privilege.test.ts",
         "backend/src/modules/admin/controllers/admin-vehicle-cache.controller.ts",
         "backend/src/modules/media-factory/controllers/video-execution.controller.ts",
         "backend/src/modules/media-factory/controllers/video-gate-check.controller.ts",
@@ -29482,15 +29444,13 @@
         "backend/src/auth/controllers/auth-permissions.controller.ts",
         "backend/src/auth/guards/permissions.guard.test.ts",
         "backend/src/auth/guards/permissions.guard.ts",
-        "backend/src/auth/permissions.service.test.ts",
-        "backend/src/auth/session-privilege.test.ts"
+        "backend/src/auth/permissions.service.test.ts"
       ],
       "imports": [
-        "backend/src/auth/dto/user-permissions.dto.ts",
-        "backend/src/auth/session-privilege.ts"
+        "backend/src/auth/dto/user-permissions.dto.ts"
       ],
       "kind": "service",
-      "loc": 33,
+      "loc": 32,
       "owner": "@ak125/auth-team",
       "path": "backend/src/auth/permissions.service.ts",
       "risk": "high",
@@ -29541,65 +29501,6 @@
       "loc": 11,
       "owner": "@ak125/auth-team",
       "path": "backend/src/auth/redirected-error.exception.ts",
-      "risk": "high",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D11",
-      "id": "backend/src/auth/session-privilege.test.ts",
-      "importedBy": [],
-      "imports": [
-        "@cache/cache.service",
-        "backend/src/auth/admin-session.guard.ts",
-        "backend/src/auth/auth.service.ts",
-        "backend/src/auth/cookie-serializer.ts",
-        "backend/src/auth/dto/user-permissions.dto.ts",
-        "backend/src/auth/guards/permissions.guard.ts",
-        "backend/src/auth/is-admin.guard.ts",
-        "backend/src/auth/permissions.service.ts",
-        "backend/src/auth/session-privilege.ts",
-        "backend/src/modules/users/services/user-data-consolidated.service.ts",
-        "backend/src/shared/crypto/password-crypto.service.ts"
-      ],
-      "kind": "test",
-      "loc": 408,
-      "owner": "@ak125/auth-team",
-      "path": "backend/src/auth/session-privilege.test.ts",
-      "risk": "high",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual",
-        "reachability"
-      ],
-      "domain": "D11",
-      "id": "backend/src/auth/session-privilege.ts",
-      "importedBy": [
-        "backend/src/auth/auth.service.ts",
-        "backend/src/auth/controllers/auth-login.controller.ts",
-        "backend/src/auth/controllers/auth-login.redirect.test.ts",
-        "backend/src/auth/permissions.service.ts",
-        "backend/src/auth/session-privilege.test.ts"
-      ],
-      "imports": [],
-      "kind": "service",
-      "loc": 44,
-      "owner": "@ak125/auth-team",
-      "path": "backend/src/auth/session-privilege.ts",
       "risk": "high",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -33258,7 +33159,7 @@
         "backend/src/modules/users/services/user-data-consolidated.service.ts"
       ],
       "kind": "controller",
-      "loc": 370,
+      "loc": 369,
       "owner": "__unassigned__",
       "path": "backend/src/controllers/users.controller.ts",
       "risk": "low",
@@ -33365,7 +33266,6 @@
       "importedBy": [
         "backend/src/auth/cart-merge.middleware.ts",
         "backend/src/auth/controllers/auth-login.controller.ts",
-        "backend/src/auth/controllers/auth-login.redirect.test.ts",
         "backend/src/database/database.module.ts",
         "backend/src/database/services/cart-data.sellable-guard.test.ts",
         "backend/src/database/services/database-composition.service.ts",
@@ -63995,9 +63895,7 @@
       "importedBy": [
         "backend/src/auth/auth.service.ts",
         "backend/src/auth/controllers/auth-login.controller.ts",
-        "backend/src/auth/controllers/auth-login.redirect.test.ts",
         "backend/src/auth/controllers/auth-token.controller.ts",
-        "backend/src/auth/session-privilege.test.ts",
         "backend/src/controllers/users.controller.ts",
         "backend/src/modules/users/services/profile.service.ts",
         "backend/src/modules/users/users-final.service.ts",
@@ -64083,7 +63981,6 @@
       "id": "backend/src/modules/users/users-final.service.ts",
       "importedBy": [
         "backend/src/auth/controllers/auth-login.controller.ts",
-        "backend/src/auth/controllers/auth-login.redirect.test.ts",
         "backend/src/modules/users/users-final.controller.ts",
         "backend/src/modules/users/users.module.ts"
       ],
@@ -65533,7 +65430,6 @@
       "id": "backend/src/services/mail.service.ts",
       "importedBy": [
         "backend/src/auth/controllers/auth-login.controller.ts",
-        "backend/src/auth/controllers/auth-login.redirect.test.ts",
         "backend/src/modules/admin/controllers/admin-health.controller.ts",
         "backend/src/modules/cart/services/abandoned-cart.service.ts",
         "backend/src/modules/orders/controllers/order-actions.controller.ts",
@@ -65615,7 +65511,6 @@
       "importedBy": [
         "backend/src/auth/auth.service.ts",
         "backend/src/auth/controllers/auth-token.controller.ts",
-        "backend/src/auth/session-privilege.test.ts",
         "backend/src/shared/crypto/crypto.module.ts",
         "backend/src/shared/crypto/index.ts"
       ],
@@ -66354,7 +66249,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 411,
+      "loc": 410,
       "owner": "@ak125",
       "path": "backend/tests/unit/auth.service.test.ts",
       "risk": "medium",
@@ -67977,26 +67872,6 @@
       "loc": 40,
       "owner": "@ak125",
       "path": "backend/tests/unit/trend-signals/rappels-gouv-fr.fetcher.test.ts",
-      "risk": "medium",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "high",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D15",
-      "id": "backend/tests/unit/users.controller.dashboard-level.test.ts",
-      "importedBy": [],
-      "imports": [],
-      "kind": "test",
-      "loc": 60,
-      "owner": "@ak125",
-      "path": "backend/tests/unit/users.controller.dashboard-level.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -80264,7 +80139,7 @@
         "~/utils/safe-redirect.server"
       ],
       "kind": "route",
-      "loc": 397,
+      "loc": 396,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/_public+/login.tsx",
       "risk": "medium",
@@ -90945,26 +90820,6 @@
         "manual"
       ],
       "domain": "D2",
-      "id": "frontend/tests/unit/login-role-redirect.test.ts",
-      "importedBy": [],
-      "imports": [],
-      "kind": "test",
-      "loc": 96,
-      "owner": "@ak125",
-      "path": "frontend/tests/unit/login-role-redirect.test.ts",
-      "risk": "medium",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "high",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D2",
       "id": "frontend/tests/unit/no-ios16-incompatible-regex.test.ts",
       "importedBy": [],
       "imports": [],
@@ -98045,7 +97900,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 175,
+      "loc": 204,
       "owner": "@ak125",
       "path": "scripts/registry/build-db-registry.js",
       "risk": "high",
@@ -100061,6 +99916,26 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "tests/registry/db-registry-status.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 123,
+      "owner": "@ak125",
+      "path": "tests/registry/db-registry-status.test.ts",
+      "risk": "medium",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "tests/registry/depcruise-integrity.test.ts",
       "importedBy": [],
       "imports": [],
@@ -100224,13 +100099,13 @@
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
       ".spec/00-canon/repository-registry/ownership.yaml": "5a541e997eba2f4a388b50cf0391c11b7c0041a43047063b051fb74c38b5dff5",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
-      "audit/registry/db.json": "3045154dd16aeefab01f398f2540e47939a253f9cb3d5194599764dbc02e9958",
+      "audit/registry/db.json": "16c4df656319a470c263ddff9c38c661f5680184ee3f2404f676bd6ceb23e818",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "3ad53cf1625a3097f999b8c2f14d688bd9156598dac0d4fd165983d297950231",
+      "audit/registry/files.json": "779f3f31ebbeda80f86f25b5fc77b16a8891ca73a5ae474b6b782e096c444763",
       "audit/registry/rpc.json": "821912126b4b0b6e8c5a86b4269f43106cc40a44d2ee85a107b550ab9ea0a7b6",
       "audit/registry/runtime.json": "c430ab464382663304f535702507f59b5ee0bdd2ca4d436be0c7b7497f44de95"
     },
-    "sotFingerprint": "33781ab6e0fc"
+    "sotFingerprint": "0f540cdc20f0"
   },
   "runtime": [
     {
