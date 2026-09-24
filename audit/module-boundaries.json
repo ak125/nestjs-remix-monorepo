@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 243,
-      "loc_total": 43938,
+      "files_count": 244,
+      "loc_total": 44158,
       "has_barrel": true
     },
     "upload": {
@@ -980,7 +980,7 @@
         "backend/src/modules/users/services"
       ],
       "files_count": 27,
-      "loc_total": 5157,
+      "loc_total": 5184,
       "has_barrel": true
     },
     "vehicle-context": {

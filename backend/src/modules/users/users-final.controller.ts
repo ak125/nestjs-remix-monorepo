@@ -33,6 +33,7 @@ import {
   UserFilters,
   CreateUserSchema,
   UpdateUserSchema,
+  UpdateOwnProfileSchema,
   UserFiltersSchema,
 } from './dto/user.dto';
 
@@ -104,13 +105,12 @@ export class UsersFinalController {
 
   /**
    * PUT /api/users/profile - Mettre à jour son propre profil
+   * Champs modifiables : prénom, nom, téléphone (`UpdateOwnProfileSchema`).
+   * Tout autre champ est refusé (400).
    */
   @Put('profile')
   @UseGuards(AuthenticatedGuard)
-  async updateProfile(
-    @Req() req: RequestWithUser,
-    @Body() updates: UpdateUserDto,
-  ) {
+  async updateProfile(@Req() req: RequestWithUser, @Body() updates: unknown) {
     const user = req.user;
     this.logger.log(
       `PUT /api/users/profile - User: ${user?.email as string | undefined}`,
@@ -124,7 +124,7 @@ export class UsersFinalController {
 
     try {
       // Validation Zod
-      const validatedData = UpdateUserSchema.parse(updates);
+      const validatedData = UpdateOwnProfileSchema.parse(updates);
 
       const updatedUser = await this.usersService.updateUser(
         user.id as string,
