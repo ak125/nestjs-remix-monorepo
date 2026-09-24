@@ -11,12 +11,15 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-// INC tunnel paiement 2026-05→07 : le POST /api/orders/guest régénère la
-// session backend, donc le cookie porté par l'action est mort pour tout fetch
-// ultérieur. Ce test d'intégration de l'action grave l'invariant : le happy
-// path checkout ne fait AUCUN fetch après le POST de création — le redirect
-// Paybox est construit depuis la réponse du POST.
-function stubFetchRouter(overrides?: { orderResponse?: Record<string, unknown> }) {
+// INC tunnel paiement 2026-05→07 : un invité n'a pas de session authentifiée,
+// aucun fetch ultérieur ne peut relire la commande. Ce test d'intégration de
+// l'action grave l'invariant : le happy path checkout ne fait AUCUN fetch
+// après le POST de création — le redirect Paybox est construit depuis la
+// réponse du POST.
+function stubFetchRouter(overrides?: {
+  orderResponse?: Record<string, unknown>;
+  orderStatus?: number;
+}) {
   const calls: Array<{ url: string; method: string }> = [];
   const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input);
@@ -55,7 +58,10 @@ function stubFetchRouter(overrides?: { orderResponse?: Record<string, unknown> }
             resumeToken: "tok-1",
           },
         ),
-        { status: 201, headers: { "Content-Type": "application/json" } },
+        {
+          status: overrides?.orderStatus ?? 201,
+          headers: { "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -136,5 +142,40 @@ describe("checkout action — happy path guest sans re-GET (INC 2026-05→07)", 
 
     expect(result).toMatchObject({ ok: true, orderId: "ORD-43" });
     expect(String(result.redirectUrl)).toContain("email=client%40example.com");
+  });
+});
+
+describe("checkout action — email déjà associé à un compte", () => {
+  it("409 USER.DUPLICATE_EMAIL → EMAIL_CONFLICT (connexion proposée), aucun redirect Paybox", async () => {
+    const { calls } = stubFetchRouter({
+      orderStatus: 409,
+      orderResponse: {
+        statusCode: 409,
+        code: "USER.DUPLICATE_EMAIL",
+        message:
+          "Un compte existe déjà avec cet email. Connectez-vous pour finaliser votre commande.",
+      },
+    });
+
+    const result = (await action({
+      request: makeGuestCheckoutRequest(),
+      context: contextStub,
+      params: {},
+    } as ActionFunctionArgs)) as unknown as {
+      data: Record<string, unknown>;
+      init: { status?: number } | null;
+    };
+
+    expect(result.init?.status).toBe(409);
+    expect(result.data).toEqual({
+      ok: false,
+      error:
+        "Un compte existe déjà avec cet email. Connectez-vous pour finaliser votre commande.",
+      code: "EMAIL_CONFLICT",
+      emailConflict: true,
+      conflictEmail: "client@example.com",
+    });
+    expect(result.data).not.toHaveProperty("redirectUrl");
+    expect(calls.filter((c) => c.url.includes("/api/paybox"))).toEqual([]);
   });
 });

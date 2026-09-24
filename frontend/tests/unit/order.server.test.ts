@@ -14,10 +14,10 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-// INC tunnel paiement 2026-05→07 : le POST /api/orders/guest régénère la
-// session backend, donc l'action checkout ne peut PAS re-GET la commande avec
-// son cookie. Tout ce qu'il faut pour le redirect Paybox doit sortir de la
-// réponse du POST — ces tests figent ce contrat.
+// INC tunnel paiement 2026-05→07 : un invité n'a pas de session authentifiée,
+// donc l'action checkout ne peut PAS re-GET la commande. Tout ce qu'il faut
+// pour le redirect Paybox doit sortir de la réponse du POST — ces tests
+// figent ce contrat.
 describe("extractPaymentFieldsFromCreateOrderResponse", () => {
   it("lit total/email/isPaid depuis la shape plate getOrderById", () => {
     expect(
@@ -117,5 +117,83 @@ describe("createCheckoutOrder — contrat redirect Paybox sans re-GET", () => {
     await createCheckoutOrder(makeRequest(), payload);
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(String(fetchMock.mock.calls[0][0])).toContain("/api/orders/guest");
+  });
+});
+
+describe("createCheckoutOrder — email déjà associé à un compte", () => {
+  function makeRequest(): Request {
+    return new Request("http://localhost/checkout", {
+      method: "POST",
+      headers: { Cookie: "connect.sid=abc" },
+    });
+  }
+
+  const basePayload = {
+    orderLines: [],
+    billingAddress: {},
+    shippingAddress: {},
+    customerNote: "",
+    shippingMethod: "colissimo",
+  };
+
+  function stub409(body: Record<string, unknown>) {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response(JSON.stringify(body), { status: 409 }));
+    vi.stubGlobal("fetch", fetchMock);
+    return fetchMock;
+  }
+
+  it("409 USER.DUPLICATE_EMAIL (invité) → emailConflict, le checkout propose la connexion", async () => {
+    const fetchMock = stub409({
+      statusCode: 409,
+      code: "USER.DUPLICATE_EMAIL",
+      message: "Un compte existe déjà avec cet email.",
+    });
+
+    const result = await createCheckoutOrder(makeRequest(), {
+      ...basePayload,
+      guestEmail: "client@example.test",
+    } as unknown as CreateCheckoutOrderPayload);
+
+    expect(result).toEqual({
+      success: false,
+      error: "Un compte existe déjà avec cet email.",
+      status: 409,
+      emailConflict: true,
+      conflictEmail: "client@example.test",
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("autre 409 (idempotence) → erreur générique, pas de connexion proposée", async () => {
+    stub409({
+      statusCode: 409,
+      message:
+        "Commande en cours de traitement, réessayez dans quelques secondes",
+    });
+
+    const result = await createCheckoutOrder(makeRequest(), {
+      ...basePayload,
+      guestEmail: "client@example.test",
+    } as unknown as CreateCheckoutOrderPayload);
+
+    expect(result).toEqual({
+      success: false,
+      error:
+        "Commande en cours de traitement, réessayez dans quelques secondes",
+      status: 409,
+    });
+  });
+
+  it("409 USER.DUPLICATE_EMAIL sur le parcours connecté → erreur générique", async () => {
+    stub409({ statusCode: 409, code: "USER.DUPLICATE_EMAIL", message: "x" });
+
+    const result = await createCheckoutOrder(makeRequest(), {
+      ...basePayload,
+      customerId: "usr_test",
+    } as unknown as CreateCheckoutOrderPayload);
+
+    expect(result).toEqual({ success: false, error: "x", status: 409 });
   });
 });

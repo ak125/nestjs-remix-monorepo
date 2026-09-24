@@ -36,6 +36,7 @@ import {
   NotFoundException,
   ConflictException,
 } from '@nestjs/common';
+import { DomainConflictException, ErrorCodes } from '@common/exceptions';
 import { Request as ExpressRequest } from 'express';
 import * as crypto from 'crypto';
 import {
@@ -60,11 +61,6 @@ import {
   getCustomerCancelRefusal,
 } from '../services/orders.service';
 import type { OrderStatusCode } from '@repo/domain-commerce';
-import {
-  promisifyLoginNoRegenerate,
-  promisifySessionRegenerate,
-  promisifySessionSave,
-} from '../../../utils/promise-helpers';
 
 /** Query parameters for order listing */
 interface OrderListQuery {
@@ -442,6 +438,11 @@ export class OrdersController {
   })
   @ApiResponse({ status: 201, description: 'Commande créée avec succès' })
   @ApiResponse({ status: 400, description: 'Email invalide' })
+  @ApiResponse({
+    status: 409,
+    description:
+      'Un compte existe déjà avec cet email (code USER.DUPLICATE_EMAIL) : connexion requise',
+  })
   async createGuestOrder(
     @Body() body: CreateOrderData & { guestEmail?: string },
     @Req() req: AuthenticatedRequest,
@@ -457,13 +458,18 @@ export class OrdersController {
         return this.createOrder(body, req);
       }
 
-      const { guestEmail, ...orderData } = body;
+      const { guestEmail: rawGuestEmail, ...orderData } = body;
+      // Même normalisation que les RPC d'authentification (lower(trim(email))) :
+      // la vérification d'existence, le compte créé et l'email d'activation
+      // portent tous la même adresse canonique.
+      const guestEmail =
+        typeof rawGuestEmail === 'string'
+          ? rawGuestEmail.trim().toLowerCase()
+          : '';
 
       if (!guestEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail)) {
         throw new BadRequestException('Adresse email invalide');
       }
-
-      this.logger.log(`Guest checkout for email: ${guestEmail}`);
 
       // Idempotence guest : vérifier AVANT création de compte
       if (idempotencyKey) {
@@ -477,8 +483,7 @@ export class OrdersController {
           const resumeToken = await this.generateResumeToken(existing.existing);
           // Même shape que le happy path : le checkout construit le redirect
           // Paybox depuis CETTE réponse (total + customer.cst_mail), sans
-          // re-GET /api/orders/:id — le cookie de l'action peut être invalide
-          // après régénération de session (INC tunnel paiement 2026-05→07).
+          // re-GET /api/orders/:id — un invité n'a pas de session authentifiée.
           const existingOrder = await this.ordersService.getOrderById(
             existing.existing,
           );
@@ -486,50 +491,40 @@ export class OrdersController {
         }
       }
 
-      // Vérifier si l'email existe déjà — si oui, réutiliser le compte existant
-      const existingUser = await this.authService.checkIfUserExists({
-        email: guestEmail,
-      });
-
-      let newUser: { id: string; email: string };
-
-      if (existingUser) {
-        // Réutiliser le compte existant (guest checkout tolérant)
-        this.logger.log(
-          `Guest checkout: existing account found for ${guestEmail}, reusing user ${existingUser.id}`,
-        );
-        newUser = { id: existingUser.id, email: guestEmail };
-      } else {
-        // Créer un compte silencieux avec mot de passe aléatoire
-        const randomPassword = crypto.randomBytes(32).toString('hex');
-        const guestFirstName =
-          orderData.billingAddress?.firstName ||
-          orderData.shippingAddress?.firstName ||
-          'Client';
-        const guestLastName =
-          orderData.billingAddress?.lastName ||
-          orderData.shippingAddress?.lastName ||
-          '';
-        newUser = await this.authService.register({
-          email: guestEmail,
-          password: randomPassword,
-          firstName: guestFirstName,
-          lastName: guestLastName,
+      // Un email déjà associé à un compte ne passe jamais par le parcours
+      // invité : saisir une adresse ne prouve pas qu'on la possède. Le client
+      // se connecte (le checkout affiche le formulaire de connexion sur ce
+      // code) et commande depuis son compte. Vérification fail-closed : une
+      // erreur technique remonte, elle n'est jamais lue comme « email libre ».
+      if (await this.authService.isEmailRegistered(guestEmail)) {
+        this.logger.log('guest_checkout outcome=email_conflict');
+        throw new DomainConflictException({
+          code: ErrorCodes.USER.DUPLICATE_EMAIL,
+          message:
+            'Un compte existe déjà avec cet email. Connectez-vous pour finaliser votre commande.',
         });
-        this.logger.log(
-          `Guest account created: ${newUser.id} for ${guestEmail}`,
-        );
       }
 
-      // Passport 0.7 + connect-redis 5.x compat
-      await promisifySessionRegenerate(req.session);
-      await promisifyLoginNoRegenerate(req as unknown as ExpressRequest, {
-        id: newUser.id,
-        email: newUser.email,
+      // Nouveau client : compte créé avec un mot de passe aléatoire, activé
+      // par le lien envoyé à l'adresse saisie. Aucune session n'est ouverte
+      // ici : la possession de l'email n'est prouvée qu'à l'activation.
+      const guestFirstName =
+        orderData.billingAddress?.firstName ||
+        orderData.shippingAddress?.firstName ||
+        'Client';
+      const guestLastName =
+        orderData.billingAddress?.lastName ||
+        orderData.shippingAddress?.lastName ||
+        '';
+      const newUser = await this.authService.register({
+        email: guestEmail,
+        password: crypto.randomBytes(32).toString('hex'),
+        firstName: guestFirstName,
+        lastName: guestLastName,
       });
-      await promisifySessionSave(req.session);
-
-      this.logger.log(`Guest session established for user ${newUser.id}`);
+      this.logger.log(
+        `guest_checkout outcome=account_created user=${newUser.id}`,
+      );
 
       // Créer la commande avec le nouveau userId
       const dataWithUserId = {
@@ -566,7 +561,7 @@ export class OrdersController {
           activationToken,
           orderId,
         );
-        this.logger.log(`📧 Email activation envoyé à ${guestEmail}`);
+        this.logger.log(`📧 Email activation envoyé (user ${newUser.id})`);
       } catch (emailError: unknown) {
         const errMsg =
           emailError instanceof Error ? emailError.message : String(emailError);
@@ -605,16 +600,12 @@ export class OrdersController {
         }
         await sb.from('___xtr_order').update(patch).eq('ord_id', finalOrderId);
       }
-      // Observabilité seule (aucun changement de flux). Les commandes GUEST sont
-      // systématiquement `absent` : `req.session` est régénéré plus haut
-      // (promisifySessionRegenerate) AVANT ce point → EXCLUES du taux
-      // `attribution_capture_missing` (sinon elles gonflent artificiellement la
-      // perte). Perte structurelle pré-existante, non régressée / non corrigée
-      // par PR A (adjacent SEV1 tunnel paiement). Loggé pour complétude, marqué
-      // exclu — `landing` est ici toujours absent par construction.
+      // Observabilité seule (aucun changement de flux). La session de
+      // l'invité n'est plus régénérée : `landing` survit jusqu'ici comme sur
+      // le parcours authentifié, même format de log que `scope=auth_order`.
       if (finalOrderId) {
         this.logger.log(
-          `[attribution_capture] scope=guest_order excluded=session_regenerate`,
+          `[attribution_capture] scope=guest_order landing=${landing ? 'present' : 'absent'}`,
         );
       }
       // Générer resume token
@@ -623,11 +614,10 @@ export class OrdersController {
         resumeToken = await this.generateResumeToken(finalOrderId);
       }
 
-      // La régénération de session ci-dessus invalide le cookie que porte le
-      // fetch SSR de l'action checkout : cette réponse doit donc contenir tout
-      // le nécessaire au redirect Paybox (ord_total_ttc + customer.cst_mail,
-      // déjà présents via getOrderById) — aucun GET /api/orders/:id ne peut
-      // suivre avec ce cookie (INC tunnel paiement 2026-05→07).
+      // L'invité n'a pas de session authentifiée : cette réponse doit contenir
+      // tout le nécessaire au redirect Paybox (ord_total_ttc + customer.cst_mail,
+      // déjà présents via getOrderById) — aucun GET /api/orders/:id authentifié
+      // ne peut suivre (INC tunnel paiement 2026-05→07).
       return { ...(order as object), resumeToken };
     } catch (error) {
       this.logger.error('Error in guest checkout:', error);

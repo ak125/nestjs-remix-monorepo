@@ -17,6 +17,7 @@ import {
 } from '../dto/user.dto';
 import * as bcrypt from 'bcrypt';
 import { TABLES } from '@repo/database-types';
+import { DatabaseException, ErrorCodes } from '@common/exceptions';
 
 @Injectable()
 export class UserDataConsolidatedService extends SupabaseBaseService {
@@ -621,22 +622,26 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
   /**
    * Vérifier si un email existe dans l'une des deux tables (admin ou customer).
    * Utilisé pour bloquer les inscriptions avec des emails déjà pris.
+   *
+   * Une vérification en échec lève une exception (fail-closed) : répondre
+   * « email libre » sur une erreur RPC laisserait passer ce que l'appelant
+   * veut justement bloquer. Les logs ne contiennent jamais l'email.
    */
   async emailExistsAnywhere(email: string): Promise<boolean> {
-    try {
-      const { data, error } = await this.callRpc<boolean>('auth_email_exists', {
-        p_email: email,
+    const { data, error } = await this.callRpc<boolean>('auth_email_exists', {
+      p_email: email,
+    });
+
+    if (error) {
+      this.logger.error(
+        `emailExistsAnywhere: RPC auth_email_exists en échec — ${error.message}`,
+      );
+      throw new DatabaseException({
+        code: ErrorCodes.DATABASE.RPC_FAILED,
+        message: "Vérification de l'adresse email impossible",
       });
-
-      if (error) {
-        this.logger.error(`emailExistsAnywhere failed for ${email}:`, error);
-        return false;
-      }
-
-      return data === true;
-    } catch (error) {
-      this.logger.error(`emailExistsAnywhere failed for ${email}:`, error);
-      return false;
     }
+
+    return data === true;
   }
 }
