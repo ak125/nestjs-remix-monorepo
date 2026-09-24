@@ -33532,6 +33532,27 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/support/services/__tests__/legal.service.slug.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/support/services/legal.service.ts"
+      ],
+      "kind": "test",
+      "loc": 44,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/support/services/__tests__/legal.service.slug.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/support/services/ai-analysis.service.ts",
       "importedBy": [
         "backend/src/modules/support/controllers/ai-support.controller.ts",
@@ -33754,6 +33775,7 @@
       "importedBy": [
         "backend/src/modules/support/controllers/legal.controller.ts",
         "backend/src/modules/support/index.ts",
+        "backend/src/modules/support/services/__tests__/legal.service.slug.test.ts",
         "backend/src/modules/support/services/legal-page.service.ts",
         "backend/src/modules/support/services/legal-version.service.ts",
         "backend/src/modules/support/support.module.ts"
@@ -33766,7 +33788,7 @@
         "backend/src/modules/support/services/legal-version.service.ts"
       ],
       "kind": "service",
-      "loc": 913,
+      "loc": 912,
       "owner": "__unassigned__",
       "path": "backend/src/modules/support/services/legal.service.ts",
       "risk": "low",
@@ -38953,7 +38975,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 851,
+      "loc": 917,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/support-routes-authz.test.ts",
       "risk": "low",

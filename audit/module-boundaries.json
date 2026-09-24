@@ -17,8 +17,8 @@
         "backend/src/modules/admin/services/r1-image-prompt-builders",
         "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__"
       ],
-      "files_count": 146,
-      "loc_total": 41097,
+      "files_count": 147,
+      "loc_total": 41300,
       "has_barrel": true
     },
     "agentic-engine": {
@@ -73,8 +73,8 @@
         "backend/src/auth/guards",
         "backend/src/modules/auth/dto"
       ],
-      "files_count": 42,
-      "loc_total": 5346,
+      "files_count": 45,
+      "loc_total": 5938,
       "has_barrel": true
     },
     "backend-core": {
@@ -91,7 +91,7 @@
         "backend/src/utils"
       ],
       "files_count": 35,
-      "loc_total": 6109,
+      "loc_total": 6110,
       "has_barrel": true
     },
     "blog": {
@@ -259,7 +259,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115500,
+      "loc_total": 115501,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -898,8 +898,8 @@
         "backend/src/modules/support/services/__tests__",
         "backend/src/modules/support/types"
       ],
-      "files_count": 29,
-      "loc_total": 10410,
+      "files_count": 30,
+      "loc_total": 10453,
       "has_barrel": true
     },
     "system": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 244,
-      "loc_total": 44789,
+      "files_count": 246,
+      "loc_total": 45012,
       "has_barrel": true
     },
     "upload": {
@@ -1174,7 +1174,7 @@
     {
       "from": "auth",
       "to": "backend-core",
-      "count": 2
+      "count": 3
     },
     {
       "from": "auth",
@@ -1184,17 +1184,17 @@
     {
       "from": "auth",
       "to": "database",
-      "count": 3
+      "count": 4
     },
     {
       "from": "auth",
       "to": "shared",
-      "count": 2
+      "count": 3
     },
     {
       "from": "auth",
       "to": "users",
-      "count": 6
+      "count": 9
     },
     {
       "from": "backend-core",
