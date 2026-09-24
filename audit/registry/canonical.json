@@ -30953,7 +30953,8 @@
       "id": "backend/src/config/content-write-executor.service.ts",
       "importedBy": [
         "backend/src/config/content-write-gate.service.ts",
-        "backend/src/config/write-guard.module.ts"
+        "backend/src/config/write-guard.module.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.write-gate.test.ts"
       ],
       "imports": [
         "@common/utils",
@@ -31280,7 +31281,8 @@
         "backend/src/config/write-guard-ledger.service.ts",
         "backend/src/config/write-guard-lock.service.ts",
         "backend/src/modules/admin/services/r2-enricher.service.ts",
-        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.write-gate.test.ts"
       ],
       "imports": [
         "backend/src/config/role-ids.ts",
@@ -32466,7 +32468,7 @@
         "backend/src/config/keyword-plan.constants.ts"
       ],
       "kind": "config",
-      "loc": 865,
+      "loc": 866,
       "owner": "@ak125",
       "path": "backend/src/config/r8-keyword-plan.constants.ts",
       "risk": "medium",
@@ -32571,6 +32573,7 @@
         "backend/src/modules/admin/services/execution-router.service.ts",
         "backend/src/modules/admin/services/r2-enricher.service.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.write-gate.test.ts",
         "backend/src/modules/rag-proxy/services/rag-admissibility-gate.service.ts",
         "backend/src/modules/rag-proxy/services/rag-phase2a-shadow-audit.service.ts",
         "backend/src/modules/rag-proxy/types/rag-phase2a.types.ts",
@@ -36156,7 +36159,7 @@
         "backend/src/modules/admin/services/execution-router.service.ts"
       ],
       "kind": "test",
-      "loc": 430,
+      "loc": 604,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/execution-router.service.test.ts",
       "risk": "medium",
@@ -36178,6 +36181,7 @@
         "backend/src/modules/admin/controllers/admin-pipeline.controller.ts",
         "backend/src/modules/admin/controllers/internal-pipeline.controller.ts",
         "backend/src/modules/admin/services/execution-router.service.test.ts",
+        "backend/src/workers/processors/__tests__/pipeline-chain.processor.test.ts",
         "backend/src/workers/processors/pipeline-chain.processor.ts"
       ],
       "imports": [
@@ -36195,7 +36199,7 @@
         "backend/src/modules/seo/validation/diagnostic.service.ts"
       ],
       "kind": "service",
-      "loc": 766,
+      "loc": 820,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/execution-router.service.ts",
       "risk": "medium",
@@ -37179,9 +37183,11 @@
         "backend/src/modules/admin/admin.module.ts",
         "backend/src/modules/admin/controllers/admin-r8-vehicle.controller.ts",
         "backend/src/modules/admin/services/execution-router.service.ts",
-        "backend/src/modules/admin/services/r8-vehicle-enricher.tech-specs.test.ts"
+        "backend/src/modules/admin/services/r8-vehicle-enricher.tech-specs.test.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.write-gate.test.ts"
       ],
       "imports": [
+        "@common/exceptions",
         "@database/services/supabase-base.service",
         "backend/src/config/content-write-gate.service.ts",
         "backend/src/config/execution-registry.types.ts",
@@ -37195,12 +37201,13 @@
         "backend/src/modules/admin/services/r8-owned-editorial.composer.ts",
         "backend/src/modules/admin/services/vehicle-rag-generator.service.ts",
         "backend/src/modules/seo/services/chain/seo-role-template-selector.service.ts",
+        "backend/src/security/rpc-gate/rpc-gate.errors.ts",
         "crypto",
         "fs",
         "path"
       ],
       "kind": "service",
-      "loc": 1466,
+      "loc": 1626,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
       "risk": "medium",
@@ -37225,6 +37232,33 @@
       "loc": 269,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/r8-vehicle-enricher.tech-specs.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
+      "id": "backend/src/modules/admin/services/r8-vehicle-enricher.write-gate.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@common/exceptions",
+        "backend/src/config/content-write-executor.service.ts",
+        "backend/src/config/execution-registry.types.ts",
+        "backend/src/config/role-ids.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
+        "backend/src/security/rpc-gate/rpc-gate.errors.ts"
+      ],
+      "kind": "test",
+      "loc": 518,
+      "owner": "@ak125/admin-team",
+      "path": "backend/src/modules/admin/services/r8-vehicle-enricher.write-gate.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -65274,6 +65308,8 @@
       "id": "backend/src/security/rpc-gate/rpc-gate.errors.ts",
       "importedBy": [
         "backend/src/database/services/supabase-base.service.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.write-gate.test.ts",
         "backend/src/security/rpc-gate/index.ts"
       ],
       "imports": [],
@@ -65599,6 +65635,29 @@
         "manual"
       ],
       "domain": "D9",
+      "id": "backend/src/workers/processors/__tests__/pipeline-chain.processor.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/admin/services/execution-router.service.ts",
+        "backend/src/workers/processors/pipeline-chain.processor.ts"
+      ],
+      "kind": "test",
+      "loc": 188,
+      "owner": "@ak125",
+      "path": "backend/src/workers/processors/__tests__/pipeline-chain.processor.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D9",
       "id": "backend/src/workers/processors/__tests__/seo-monitor.processor.test.ts",
       "importedBy": [],
       "imports": [
@@ -65699,6 +65758,7 @@
       "importedBy": [
         "backend/src/modules/admin/controllers/admin-pipeline.controller.ts",
         "backend/src/modules/admin/controllers/internal-pipeline.controller.ts",
+        "backend/src/workers/processors/__tests__/pipeline-chain.processor.test.ts",
         "backend/src/workers/worker.module.ts"
       ],
       "imports": [
@@ -65707,7 +65767,7 @@
         "backend/src/modules/admin/services/execution-router.service.ts"
       ],
       "kind": "service",
-      "loc": 156,
+      "loc": 151,
       "owner": "@ak125",
       "path": "backend/src/workers/processors/pipeline-chain.processor.ts",
       "risk": "medium",
@@ -68306,7 +68366,9 @@
       "domain": "D8",
       "id": "frontend/app/components/RichTextEditor.tsx",
       "importedBy": [],
-      "imports": [],
+      "imports": [
+        "@tiptap/react"
+      ],
       "kind": "config",
       "loc": 235,
       "owner": "@ak125/frontend-team",
@@ -100021,11 +100083,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "3045154dd16aeefab01f398f2540e47939a253f9cb3d5194599764dbc02e9958",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "16a458bf60205e32fc66c2c128ed2bcce71c3c011b42245f850c8ee2c51e92d5",
+      "audit/registry/files.json": "4a1cac60cb3674056a3f337601cab62e5f6a7d94f288766f99f53256b65a7ce4",
       "audit/registry/rpc.json": "821912126b4b0b6e8c5a86b4269f43106cc40a44d2ee85a107b550ab9ea0a7b6",
       "audit/registry/runtime.json": "3f153ecc8a7a52378e26435fe7ecf04c0a4549288d6ad12283b783545ba5e99e"
     },
-    "sotFingerprint": "26a42c5bcdf2"
+    "sotFingerprint": "5567ee353966"
   },
   "runtime": [
     {
