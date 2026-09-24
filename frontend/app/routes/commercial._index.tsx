@@ -48,7 +48,7 @@ interface DashboardData {
   };
 }
 
-export async function loader({ context }: LoaderFunctionArgs) {
+export async function loader({ request, context }: LoaderFunctionArgs) {
   const user = await requireUser({ context });
 
   if (!user.level || user.level < 3) {
@@ -57,14 +57,14 @@ export async function loader({ context }: LoaderFunctionArgs) {
 
   try {
     const API_BASE = getInternalApiUrl("");
+    const headers = {
+      "internal-call": "true",
+      Cookie: request.headers.get("Cookie") || "",
+    };
 
     const [dashboardResponse, recentOrdersResponse] = await Promise.all([
-      fetch(`${API_BASE}/api/dashboard/stats`, {
-        headers: { "internal-call": "true" },
-      }),
-      fetch(`${API_BASE}/api/dashboard/orders/recent`, {
-        headers: { "internal-call": "true" },
-      }),
+      fetch(`${API_BASE}/api/dashboard/stats`, { headers }),
+      fetch(`${API_BASE}/api/dashboard/orders/recent`, { headers }),
     ]);
 
     let dashboardData: DashboardData = {
@@ -77,20 +77,24 @@ export async function loader({ context }: LoaderFunctionArgs) {
       },
     };
 
+    // Deux permissions distinctes : un commercial lit les commandes récentes
+    // sans avoir accès aux statistiques globales.
     if (dashboardResponse.ok) {
       const stats = await dashboardResponse.json();
-
-      let recentOrders: any[] = [];
-      if (recentOrdersResponse.ok) {
-        const recentData = await recentOrdersResponse.json();
-        recentOrders = recentData.orders || [];
-      }
-
       dashboardData.orders = {
+        ...dashboardData.orders,
         totalOrders: stats.totalOrders || 0,
         pendingOrders: stats.pendingOrders || 0,
         completedOrders: stats.completedOrders || 0,
         monthRevenue: stats.totalRevenue || 0,
+      };
+    }
+
+    if (recentOrdersResponse.ok) {
+      const recentData = await recentOrdersResponse.json();
+      const recentOrders: any[] = recentData.orders || [];
+      dashboardData.orders = {
+        ...dashboardData.orders,
         recentOrders: recentOrders.slice(0, 8).map((o: any) => ({
           id: o.id || o.ord_id,
           orderNumber: o.orderNumber || o.ord_id,
