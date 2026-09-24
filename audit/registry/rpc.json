@@ -1189,7 +1189,7 @@
         }
       ],
       "definedInMigrations": [
-        "20260523_002_cancel_order_atomic.sql"
+        "20260924_cancel_order_atomic_refuse_paid.sql"
       ],
       "domain": "UNKNOWN",
       "id": "public.cancel_order_atomic",
