@@ -355,5 +355,4 @@ export async function updateOrderStatus(params: {
   }
 }
 
-export { getOrderStatusLabel } from "~/utils/orders";
 export { formatPrice } from "~/utils/format";

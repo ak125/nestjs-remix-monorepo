@@ -1,11 +1,4 @@
-import {
-  Package,
-  Clock,
-  CheckCircle,
-  XCircle,
-  Truck,
-  ShoppingBag,
-} from "lucide-react";
+import { ShoppingBag } from "lucide-react";
 import {
   type LoaderFunctionArgs,
   type MetaFunction,
@@ -21,8 +14,6 @@ import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { logger } from "~/utils/logger";
 import { requireAuth } from "../auth/unified.server";
 import { AccountLayout } from "../components/account/AccountNavigation";
-import { OrderSummaryWidget } from "../components/orders/OrderSummaryWidget";
-import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import {
   Card,
@@ -32,7 +23,18 @@ import {
 } from "../components/ui/card";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { getUserOrders } from "../services/orders.server";
-import { getOrderStatusLabel, formatPrice } from "../utils/orders";
+import { formatPrice } from "../utils/orders";
+import {
+  ORDER_STATUS_OPTIONS,
+  getStatusBadgeColor,
+  getStatusLabel,
+} from "../utils/orders.utils";
+
+/**
+ * Année de la plus ancienne commande en base : le filtre propose chaque année
+ * depuis celle-ci jusqu'à l'année en cours.
+ */
+const FIRST_ORDER_YEAR = 2020;
 
 export const meta: MetaFunction = () => [
   { title: "Mes commandes | AutoMecanik" },
@@ -72,17 +74,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       request, // Transmission de la requête pour les cookies
     });
 
-    // Calcul des statistiques pour le widget de résumé
-    const stats = {
-      totalOrders: pagination.totalCount,
-      pendingOrders: orders.filter((order) =>
-        [1, 2, 3, 4, 5].includes(order.status),
-      ).length,
-      completedOrders: orders.filter((order) => order.status === 6).length,
-      totalSpent: orders.reduce((sum, order) => sum + order.totalTTC, 0),
-    };
-
-    return { orders, pagination, user, stats };
+    return { orders, pagination, user };
   } catch (error) {
     logger.error("Error in loader:", error);
 
@@ -95,19 +87,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
         totalCount: 0,
       },
       user: null,
-      stats: {
-        totalOrders: 0,
-        pendingOrders: 0,
-        completedOrders: 0,
-        totalSpent: 0,
-      },
       error: "Impossible de charger les commandes",
     };
   }
 }
 
 export default function OrdersListPage() {
-  const { orders, pagination, stats, user } = useLoaderData<typeof loader>();
+  const { orders, pagination, user } = useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
 
   if (!user) {
@@ -123,50 +109,16 @@ export default function OrdersListPage() {
     );
   }
 
-  const getStatusIcon = (status: number) => {
-    switch (status) {
-      case 1:
-      case 2:
-        return <Clock className="h-4 w-4" />;
-      case 3:
-      case 4:
-        return <Package className="h-4 w-4" />;
-      case 5:
-        return <Truck className="h-4 w-4" />;
-      case 6:
-        return <CheckCircle className="h-4 w-4" />;
-      case 7:
-      case 8:
-        return <XCircle className="h-4 w-4" />;
-      default:
-        return <Package className="h-4 w-4" />;
-    }
-  };
-
-  const getStatusVariant = (
-    status: number,
-  ): "default" | "secondary" | "destructive" | "outline" => {
-    switch (status) {
-      case 6:
-        return "default"; // Vert pour livrée
-      case 7:
-      case 8:
-        return "destructive"; // Rouge pour annulée/remboursée
-      case 4:
-      case 5:
-        return "secondary"; // Bleu pour expédiée/en livraison
-      default:
-        return "outline"; // Gris pour en attente
-    }
-  };
+  const currentYear = new Date().getFullYear();
+  const years = Array.from(
+    { length: currentYear - FIRST_ORDER_YEAR + 1 },
+    (_, i) => currentYear - i,
+  );
 
   return (
     <AccountLayout
       user={user}
-      stats={{
-        orders: { pending: stats.pendingOrders },
-        messages: { unread: 0 },
-      }}
+      stats={{ orders: { pending: 0 }, messages: { unread: 0 } }}
     >
       <div className="space-y-6">
         {/* Breadcrumb */}
@@ -175,14 +127,6 @@ export default function OrdersListPage() {
             { label: "Mon Compte", href: "/account" },
             { label: "Mes Commandes" },
           ]}
-        />
-
-        {/* Widget de résumé */}
-        <OrderSummaryWidget
-          totalOrders={stats.totalOrders}
-          pendingOrders={stats.pendingOrders}
-          completedOrders={stats.completedOrders}
-          totalSpent={stats.totalSpent}
         />
 
         {/* En-tête */}
@@ -220,13 +164,11 @@ export default function OrdersListPage() {
                   className="flex h-10 w-[180px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <option value="all">Tous les statuts</option>
-                  <option value="1">En attente</option>
-                  <option value="2">Confirmée</option>
-                  <option value="3">En préparation</option>
-                  <option value="4">Expédiée</option>
-                  <option value="5">En livraison</option>
-                  <option value="6">Livrée</option>
-                  <option value="7">Annulée</option>
+                  {ORDER_STATUS_OPTIONS.map(({ value, label }) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -241,7 +183,7 @@ export default function OrdersListPage() {
                   className="flex h-10 w-[120px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <option value="">Toutes</option>
-                  {[2023, 2024, 2025].map((year) => (
+                  {years.map((year) => (
                     <option key={year} value={year}>
                       {year}
                     </option>
@@ -279,13 +221,14 @@ export default function OrdersListPage() {
                         })}
                       </p>
                     </div>
-                    <Badge
-                      variant={getStatusVariant(order.status)}
-                      className="flex items-center gap-2"
+                    {/* Pas de <Badge> : sa variante par défaut (bg-primary)
+                        écrase les couleurs de statut, faute de fusion des
+                        classes. */}
+                    <span
+                      className={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-medium ${getStatusBadgeColor(order.status ?? "")}`}
                     >
-                      {getStatusIcon(order.status)}
-                      {getOrderStatusLabel(order.status)}
-                    </Badge>
+                      {getStatusLabel(order.status ?? "")}
+                    </span>
                   </div>
                 </CardHeader>
 
@@ -334,22 +277,12 @@ export default function OrdersListPage() {
                         </Link>
                       </Button>
 
-                      {order.status === 6 && (
+                      {order.isPaid && (
                         <Button variant="secondary" asChild>
                           <Link
                             to={`/account/orders/${order.ord_id || order.id}/invoice`}
                           >
                             Facture
-                          </Link>
-                        </Button>
-                      )}
-
-                      {[1, 2, 3, 4, 5].includes(order.status) && (
-                        <Button asChild>
-                          <Link
-                            to={`/account/orders/${order.ord_id || order.id}/track`}
-                          >
-                            Suivre
                           </Link>
                         </Button>
                       )}
@@ -371,7 +304,7 @@ export default function OrdersListPage() {
                 correspond à vos filtres.
               </p>
               <Button asChild>
-                <Link to="/products">Découvrir nos produits</Link>
+                <Link to="/">Découvrir nos produits</Link>
               </Button>
             </CardContent>
           </Card>

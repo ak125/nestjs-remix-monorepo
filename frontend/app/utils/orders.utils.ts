@@ -3,6 +3,10 @@
  * Extrait de routes/orders._index.tsx
  */
 
+import {
+  ORDER_LINE_STATUS_LABEL,
+  isOrderLineStatusCode,
+} from "@repo/domain-commerce";
 import { type Order, type OrdersStats } from "../types/orders.types";
 import { formatDate, formatDateTime } from "./date";
 import { formatPrice, formatPriceNumber } from "./format";
@@ -82,6 +86,30 @@ export function getStatusBadgeColor(statusId: string): string {
  */
 export function getStatusLabel(statusId: string): string {
   return STATUS_MAP[statusId]?.label || "Statut inconnu";
+}
+
+/**
+ * Options de filtre par statut, dérivées des statuts réels (STATUS_MAP)
+ */
+export const ORDER_STATUS_OPTIONS: ReadonlyArray<{
+  value: string;
+  label: string;
+}> = Object.entries(STATUS_MAP).map(([value, { label }]) => ({
+  value,
+  label,
+}));
+
+/**
+ * Libellé du statut d'une ligne de commande (___xtr_order_line_status), repris
+ * tel quel de @repo/domain-commerce. `null` si le code est absent ou inconnu :
+ * l'appelant n'affiche alors aucun badge plutôt qu'un statut inventé.
+ */
+export function getLineStatusLabel(
+  code: string | number | null | undefined,
+): string | null {
+  if (code === null || code === undefined) return null;
+  const key = String(code).trim();
+  return isOrderLineStatusCode(key) ? ORDER_LINE_STATUS_LABEL[key] : null;
 }
 
 /**

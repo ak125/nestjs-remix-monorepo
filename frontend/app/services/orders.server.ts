@@ -4,7 +4,17 @@
  */
 
 import { logger } from "~/utils/logger";
-import { type Order, getOrderStatusLabel } from "../utils/orders";
+import { type Order } from "../utils/orders";
+
+/**
+ * Code de statut tel qu'en base (colonne TEXT). Absent → `null` : jamais de
+ * statut par défaut, qui afficherait un état que la commande n'a pas.
+ */
+function toStatusCode(value: unknown): string | null {
+  if (value === null || value === undefined) return null;
+  const code = String(value).trim();
+  return code === "" ? null : code;
+}
 
 export interface GetUserOrdersParams {
   userId: string;
@@ -84,7 +94,9 @@ export async function getUserOrders(params: {
       (order: any) => ({
         id: order.ord_id || order.id?.toString() || order.order_id?.toString(),
         orderNumber: order.ord_id || order.orderNumber || `CMD-${order.id}`,
-        status: parseInt(order.ord_ords_id || order.status || 1),
+        status: toStatusCode(order.ord_ords_id),
+        isPaid: String(order.ord_is_pay) === "1",
+        datePay: order.ord_date_pay || null,
         totalTTC: parseFloat(
           order.ord_total_ttc || order.totalTTC || order.total_ttc || 0,
         ),
@@ -112,11 +124,11 @@ export async function getUserOrders(params: {
       }),
     );
 
-    // Pagination du backend ou par défaut
-    const pagination = data.pagination || {
-      currentPage: 1,
-      totalPages: 1,
-      totalCount: orders.length,
+    // Pagination du backend : { page, limit, total, totalPages, ... }
+    const pagination = {
+      currentPage: Number(data.pagination?.page) || page,
+      totalPages: Number(data.pagination?.totalPages) || 1,
+      totalCount: Number(data.pagination?.total) || orders.length,
     };
 
     return {
@@ -210,7 +222,9 @@ export async function getOrderDetails(params: {
     const mappedOrder = {
       id: order.ord_id || order.id?.toString() || order.order_id?.toString(),
       orderNumber: order.ord_id || order.orderNumber || `CMD-${order.id}`,
-      status: parseInt(order.ord_ords_id || order.status || 1),
+      status: toStatusCode(order.ord_ords_id),
+      isPaid: String(order.ord_is_pay) === "1",
+      datePay: order.ord_date_pay || null,
       totalTTC: parseFloat(
         order.ord_total_ttc || order.totalTTC || order.total_ttc || 0,
       ),
@@ -273,7 +287,7 @@ export async function getOrderDetails(params: {
       deliveryMethod: order.deliveryMethod || order.delivery_method,
       deliveryDate: order.deliveryDate || order.delivery_date,
       hasReview: order.hasReview || false,
-      canReturn: order.canReturn || order.status === 6,
+      canReturn: order.canReturn === true,
       // Règle portée par le backend (getCustomerCancelRefusal) : aucune
       // recopie côté page, le bouton suit ce drapeau.
       canCancel: order.customer_can_cancel === true,
@@ -306,13 +320,9 @@ export async function getOrderDetails(params: {
               parseInt(line.orl_art_quantity || 1) ||
             0,
         ),
-        status: parseInt(
-          line.orl_orls_id ||
-            line.status ||
-            order.ord_ords_id ||
-            order.status ||
-            1,
-        ),
+        // Statut propre à la ligne (___xtr_order_line_status) : jamais celui
+        // de la commande, qui appartient à une autre table de statuts.
+        status: toStatusCode(line.orl_orls_id),
       })),
 
       // Adresses
@@ -369,21 +379,7 @@ export async function getOrderDetails(params: {
         },
 
       // Historique de statut (si disponible)
-      statusHistory: order.statusHistory ||
-        order.status_history || [
-          {
-            label: getOrderStatusLabel(
-              parseInt(order.ord_ords_id || order.status || "1"),
-            ),
-            date:
-              order.ord_date ||
-              order.updatedAt ||
-              order.updated_at ||
-              order.createdAt ||
-              order.created_at,
-            isActive: true,
-          },
-        ],
+      statusHistory: order.statusHistory ?? order.status_history ?? [],
     };
 
     // 🔍 DEBUG: Afficher les données mappées
