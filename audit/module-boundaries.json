@@ -701,7 +701,7 @@
         "scripts/wiki-generators/__tests__"
       ],
       "files_count": 184,
-      "loc_total": 39197,
+      "loc_total": 39185,
       "has_barrel": true
     },
     "search": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 244,
-      "loc_total": 44040,
+      "files_count": 243,
+      "loc_total": 44070,
       "has_barrel": true
     },
     "upload": {
@@ -1006,7 +1006,7 @@
         "backend/src/modules/vehicles/types"
       ],
       "files_count": 30,
-      "loc_total": 8901,
+      "loc_total": 8913,
       "has_barrel": false
     },
     "wiki": {
