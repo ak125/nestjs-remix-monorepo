@@ -958,7 +958,7 @@
         "tests/registry"
       ],
       "files_count": 243,
-      "loc_total": 43938,
+      "loc_total": 44070,
       "has_barrel": true
     },
     "upload": {
@@ -1006,7 +1006,7 @@
         "backend/src/modules/vehicles/types"
       ],
       "files_count": 30,
-      "loc_total": 8901,
+      "loc_total": 8913,
       "has_barrel": false
     },
     "wiki": {
