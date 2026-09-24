@@ -21,7 +21,7 @@
     "dynamic_rpc_callsites": 1,
     "unresolved_callsites": 0,
     "dropped_call_sites": 5,
-    "migrations_scanned": 356,
+    "migrations_scanned": 357,
     "backend_files_scanned": 1409
   },
   "tables": {
@@ -2024,7 +2024,8 @@
       "used_by": [],
       "used_by_count": 0,
       "in_migrations": [
-        "20260509_seo_role_template_pool_with_r8_meta_seed.sql"
+        "20260509_seo_role_template_pool_with_r8_meta_seed.sql",
+        "20260924_seo_role_template_pool_forward_apply.sql"
       ],
       "rls_present": true,
       "in_knowledge_db": false,
@@ -6454,7 +6455,8 @@
       ],
       "rls_present": true,
       "in_migrations": [
-        "20260509_seo_role_template_pool_with_r8_meta_seed.sql"
+        "20260509_seo_role_template_pool_with_r8_meta_seed.sql",
+        "20260924_seo_role_template_pool_forward_apply.sql"
       ],
       "in_knowledge_db": false,
       "caveats": [
