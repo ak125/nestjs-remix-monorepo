@@ -4,6 +4,7 @@
  */
 
 import { type CartItem } from "~/schemas/cart.schemas";
+import { type CheckoutErrorCode } from "~/schemas/checkout.schemas";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 
@@ -60,7 +61,23 @@ export type CreateOrderResult =
       emailConflict?: boolean;
       conflictEmail?: string;
       redirect?: string;
+      /** Refus qui clôt la tentative : le checkout doit changer de clé
+       * d'idempotence avant toute nouvelle validation. */
+      code?: Extract<
+        CheckoutErrorCode,
+        "ORDER_NOT_PAYABLE" | "ORDER_PAYLOAD_CHANGED"
+      >;
     };
+
+/**
+ * Codes d'erreur domaine renvoyés par le backend (`body.code`, sérialisé par
+ * GlobalErrorFilter) avec un 409. Toujours lus AVEC le statut : d'autres 409
+ * (commande en cours de traitement) demandent au contraire de garder la clé.
+ */
+export const ORDER_API_CONFLICT_CODES = {
+  NOT_PAYABLE: "ORDER.NOT_PAYABLE",
+  IDEMPOTENCY_KEY_REUSED: "ORDER.IDEMPOTENCY_KEY_REUSED",
+} as const;
 
 // -- Service functions --
 
@@ -136,11 +153,29 @@ export async function createCheckoutOrder(
       const errorData = await response
         .json()
         .catch(() => ({ message: "Erreur serveur" }));
-      return {
-        success: false,
-        error: errorData.message || "Erreur lors de la creation de la commande",
-        status: response.status,
-      };
+      const error =
+        errorData.message || "Erreur lors de la creation de la commande";
+      if (response.status === 409) {
+        if (errorData.code === ORDER_API_CONFLICT_CODES.NOT_PAYABLE) {
+          return {
+            success: false,
+            error,
+            status: 409,
+            code: "ORDER_NOT_PAYABLE",
+          };
+        }
+        if (
+          errorData.code === ORDER_API_CONFLICT_CODES.IDEMPOTENCY_KEY_REUSED
+        ) {
+          return {
+            success: false,
+            error,
+            status: 409,
+            code: "ORDER_PAYLOAD_CHANGED",
+          };
+        }
+      }
+      return { success: false, error, status: response.status };
     }
 
     const order = await response.json();

@@ -4,6 +4,9 @@
  *
  * GET /checkout/resume?token=xxx          → relance le paiement
  * GET /checkout/resume?token=xxx&check=1  → vérifie l'état (read-only, ne consomme PAS le token)
+ *
+ * Une commande devenue non payable (annulée…) n'est jamais envoyée au
+ * paiement : le backend répond 409 ORDER.NOT_PAYABLE, affiché tel quel.
  */
 
 import { CheckCircle, CreditCard, AlertTriangle } from "lucide-react";
@@ -16,7 +19,10 @@ import {
 } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { buildPayboxRedirectUrl } from "~/services/order.server";
+import {
+  ORDER_API_CONFLICT_CODES,
+  buildPayboxRedirectUrl,
+} from "~/services/order.server";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 
@@ -46,6 +52,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
     if (!tokenRes.ok) {
       const status = tokenRes.status;
       if (status === 404) throw new Response("Token invalide", { status: 404 });
+      if (status === 409) {
+        const body = await tokenRes.json().catch(() => null);
+        if (body?.code === ORDER_API_CONFLICT_CODES.NOT_PAYABLE) {
+          return {
+            mode: "not_payable" as const,
+            message:
+              typeof body.message === "string" && body.message
+                ? body.message
+                : "Cette commande ne peut pas être payée en ligne.",
+          };
+        }
+      }
       if (status === 410)
         throw new Response("Token expiré ou déjà utilisé", { status: 410 });
       throw new Response("Erreur serveur", { status: 500 });
@@ -119,6 +137,32 @@ export default function CheckoutResume() {
             <Link to="/">
               <Button className="w-full">Retour à l&apos;accueil</Button>
             </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (data.mode === "not_payable") {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardHeader className="text-center">
+            <AlertTriangle className="mx-auto h-12 w-12 text-orange-500 mb-2" />
+            <CardTitle>Paiement impossible</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center space-y-4">
+            <p className="text-muted-foreground">{data.message}</p>
+            <div className="flex gap-3">
+              <Link to="/" className="flex-1">
+                <Button variant="outline" className="w-full">
+                  Accueil
+                </Button>
+              </Link>
+              <Link to="/contact" className="flex-1">
+                <Button className="w-full">Contacter le service client</Button>
+              </Link>
+            </div>
           </CardContent>
         </Card>
       </div>

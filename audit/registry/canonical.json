@@ -29923,7 +29923,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 219,
+      "loc": 226,
       "owner": "__unassigned__",
       "path": "backend/src/common/exceptions/error-codes.ts",
       "risk": "low",
@@ -47041,10 +47041,11 @@
         "@auth/decorators/require-permission.decorator",
         "@auth/guards/permissions.guard",
         "backend/src/modules/orders/services/order-actions.service.ts",
+        "backend/src/modules/orders/services/orders.service.ts",
         "backend/src/services/mail.service.ts"
       ],
       "kind": "controller",
-      "loc": 365,
+      "loc": 373,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/orders/controllers/order-actions.controller.ts",
       "risk": "high",
@@ -47092,6 +47093,7 @@
         "@auth/authenticated.guard",
         "@auth/is-admin.guard",
         "@cache/cache.service",
+        "@common/exceptions",
         "@repo/domain-commerce",
         "backend/src/auth/auth.service.ts",
         "backend/src/auth/guards/optional-auth.guard.ts",
@@ -47101,7 +47103,7 @@
         "crypto"
       ],
       "kind": "controller",
-      "loc": 1243,
+      "loc": 1311,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/orders/controllers/orders.controller.ts",
       "risk": "high",
@@ -47499,6 +47501,7 @@
       "domain": "D11",
       "id": "backend/src/modules/orders/services/orders.service.ts",
       "importedBy": [
+        "backend/src/modules/orders/controllers/order-actions.controller.ts",
         "backend/src/modules/orders/controllers/orders.controller.ts",
         "backend/src/modules/orders/orders.module.ts"
       ],
@@ -47515,7 +47518,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 912,
+      "loc": 966,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/orders/services/orders.service.ts",
       "risk": "high",
@@ -66644,6 +66647,26 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "backend/tests/unit/orders.controller.pay-non-payable.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 596,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/orders.controller.pay-non-payable.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "backend/tests/unit/orders.service.create-correlation-id.test.ts",
       "importedBy": [],
       "imports": [],
@@ -84367,7 +84390,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 175,
+      "loc": 219,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/checkout.resume.tsx",
       "risk": "medium",
@@ -84414,7 +84437,7 @@
         "~/utils/vehicle-cookie"
       ],
       "kind": "route",
-      "loc": 1343,
+      "loc": 1353,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/checkout.tsx",
       "risk": "medium",
@@ -86659,7 +86682,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 220,
+      "loc": 224,
       "owner": "__unassigned__",
       "path": "frontend/app/schemas/checkout.schemas.ts",
       "risk": "low",
@@ -87281,11 +87304,12 @@
       "importedBy": [],
       "imports": [
         "~/schemas/cart.schemas",
+        "~/schemas/checkout.schemas",
         "~/utils/internal-api.server",
         "~/utils/logger"
       ],
       "kind": "config",
-      "loc": 212,
+      "loc": 247,
       "owner": "__unassigned__",
       "path": "frontend/app/services/order.server.ts",
       "risk": "low",
@@ -90374,9 +90398,29 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 141,
+      "loc": 203,
       "owner": "@ak125",
       "path": "frontend/tests/unit/checkout.action.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/checkout.resume.loader.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 91,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/checkout.resume.loader.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -90814,7 +90858,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 122,
+      "loc": 204,
       "owner": "@ak125",
       "path": "frontend/tests/unit/order.server.test.ts",
       "risk": "medium",
@@ -99991,11 +100035,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "3045154dd16aeefab01f398f2540e47939a253f9cb3d5194599764dbc02e9958",
       "audit/registry/deps.json": "f87f275b9471f6d6d2410d1d40d0035d09082dfeb9439a189e5f2d85a58ab72e",
-      "audit/registry/files.json": "0eaa6096b0868136381e8a71e7027be9eb905d47cd8755597163db6085a10e16",
+      "audit/registry/files.json": "f079ec5758fbf948af760d7914b2d4020519912cf5ee6402175f382f7252477d",
       "audit/registry/rpc.json": "821912126b4b0b6e8c5a86b4269f43106cc40a44d2ee85a107b550ab9ea0a7b6",
-      "audit/registry/runtime.json": "3f153ecc8a7a52378e26435fe7ecf04c0a4549288d6ad12283b783545ba5e99e"
+      "audit/registry/runtime.json": "0237401f6f37cd4d77c6288a6b0f0d9fcf39a3c19e6fae556d945befea0e5edb"
     },
-    "sotFingerprint": "a783d5e0ef97"
+    "sotFingerprint": "dc62f4f31408"
   },
   "runtime": [
     {
@@ -104211,6 +104255,7 @@
     {
       "dependsOn": [
         "runtime:backend/src/modules/orders/services/order-actions.service.ts",
+        "runtime:backend/src/modules/orders/services/orders.service.ts",
         "runtime:backend/src/services/mail.service.ts"
       ],
       "id": "runtime:backend/src/modules/orders/controllers/order-actions.controller.ts",

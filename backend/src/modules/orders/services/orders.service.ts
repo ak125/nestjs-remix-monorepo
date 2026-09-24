@@ -108,6 +108,26 @@ export function computeOrderFingerprint(data: CreateOrderData): string {
   return createHash('sha256').update(payload).digest('hex');
 }
 
+/** Colonnes de `___xtr_order` qui décident du paiement et de l'annulation. */
+export interface OrderPaymentFields {
+  ord_ords_id?: unknown;
+  ord_is_pay?: unknown;
+  ord_date_pay?: unknown;
+}
+
+/**
+ * Paiement enregistré : drapeau `ord_is_pay = '1'` OU date de paiement
+ * renseignée. Les deux comptent : des commandes réellement payées portent
+ * `ord_date_pay` avec `ord_is_pay = '0'`. Partagé par l'annulation client
+ * (`getCustomerCancelRefusal`) et le paiement (`getOrderPaymentState`).
+ */
+export function isOrderPaid(order: OrderPaymentFields): boolean {
+  return (
+    String(order.ord_is_pay) === '1' ||
+    (order.ord_date_pay != null && String(order.ord_date_pay).trim() !== '')
+  );
+}
+
 /**
  * Motif de refus d'une annulation demandée par le client depuis son espace,
  * ou `null` si elle est permise. Règle unique pour l'affichage du bouton
@@ -128,26 +148,60 @@ export function computeOrderFingerprint(data: CreateOrderData): string {
  *   aussi '2', '5', l'absence de statut et les valeurs hors canon ('6', posé
  *   par l'annulation admin).
  */
-export function getCustomerCancelRefusal(order: {
-  ord_ords_id?: unknown;
-  ord_is_pay?: unknown;
-  ord_date_pay?: unknown;
-}): string | null {
-  const isPaid = String(order.ord_is_pay);
-  const hasPayDate =
-    order.ord_date_pay != null && String(order.ord_date_pay).trim() !== '';
-  if (isPaid === '1' || hasPayDate) {
+export function getCustomerCancelRefusal(
+  order: OrderPaymentFields,
+): string | null {
+  if (isOrderPaid(order)) {
     return "Cette commande est déjà payée : pour l'annuler, contactez notre service client.";
   }
   const status = order.ord_ords_id;
   if (
-    isPaid !== '0' ||
+    String(order.ord_is_pay) !== '0' ||
     status !== OrderStatus.PROCESSING ||
     !isValidTransition(status, OrderStatus.CANCELLED)
   ) {
     return 'Cette commande ne peut plus être annulée.';
   }
   return null;
+}
+
+/**
+ * - `paid` : paiement enregistré (`isOrderPaid`) — on affiche la confirmation,
+ *   jamais un second paiement.
+ * - `payable` : explicitement impayée (`ord_is_pay = '0'`, sans date) et en
+ *   cours de traitement ('1'), seul statut d'où part le paiement initial.
+ * - `not_payable` : tout le reste — annulée ('2'), valeur hors canon ('6',
+ *   annulation admin), statut absent, '3'/'4' impayés (données
+ *   contradictoires, renvoyées au support), paiement inconnu. Jamais de
+ *   paiement par défaut.
+ */
+export type OrderPaymentState = 'paid' | 'payable' | 'not_payable';
+
+/**
+ * État de paiement d'une commande, règle unique des chemins qui mènent au
+ * paiement : lien de reprise (GET /api/orders/resume-token/:token), rejeu
+ * idempotent de la création (POST /api/orders et /guest), rappel de paiement
+ * admin. Sans elle, une commande annulée pouvait recevoir un nouveau lien de
+ * paiement puis être payée.
+ */
+export function getOrderPaymentState(
+  order: OrderPaymentFields,
+): OrderPaymentState {
+  if (isOrderPaid(order)) return 'paid';
+  if (
+    String(order.ord_is_pay) === '0' &&
+    order.ord_ords_id === OrderStatus.PROCESSING
+  ) {
+    return 'payable';
+  }
+  return 'not_payable';
+}
+
+/** Message client d'une commande `not_payable`. */
+export function getOrderNotPayableMessage(order: OrderPaymentFields): string {
+  return order.ord_ords_id === OrderStatus.CANCELLED
+    ? 'Cette commande a été annulée : elle ne peut plus être payée.'
+    : 'Cette commande ne peut pas être payée en ligne : contactez notre service client.';
 }
 
 export interface OrderFilters {

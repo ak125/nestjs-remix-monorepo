@@ -58,7 +58,10 @@ import {
   OrderFilters,
   computeOrderFingerprint,
   getCustomerCancelRefusal,
+  getOrderNotPayableMessage,
+  getOrderPaymentState,
 } from '../services/orders.service';
+import { DomainConflictException, ErrorCodes } from '@common/exceptions';
 import type { OrderStatusCode } from '@repo/domain-commerce';
 import {
   promisifyLoginNoRegenerate,
@@ -113,8 +116,9 @@ export class OrdersController {
   /**
    * Vérifie l'idempotency key : insert + gestion conflit PK.
    * Retourne { existing: orderId } si la clé existe déjà avec même fingerprint.
-   * Lève ConflictException si processing ou fingerprint différent.
-   * Retourne null si la clé est nouvelle et prête.
+   * Lève une 409 si processing ou fingerprint différent.
+   * Retourne null si la clé est nouvelle et prête : la requête en devient
+   * propriétaire, et elle seule peut ensuite la marquer 'failed'.
    */
   private async checkIdempotency(
     idempotencyKey: string,
@@ -134,11 +138,17 @@ export class OrdersController {
 
     if (insertError?.code === '23505') {
       // Conflit PK = clé déjà utilisée → lire l'existant
-      const { data: existing } = await supabase
+      const { data: existing, error: readError } = await supabase
         .from('order_idempotency')
         .select('order_id, status, fingerprint')
         .eq('idempotency_key', idempotencyKey)
         .single();
+
+      // PGRST116 = aucune ligne : la clé est en cours de recyclage par une
+      // requête concurrente (traité plus bas comme « en cours »).
+      if (readError && readError.code !== 'PGRST116') {
+        throw readError;
+      }
 
       // Vérifier que le fingerprint correspond (v4 CRITIQUE)
       if (existing && existing.fingerprint !== fingerprint) {
@@ -147,9 +157,13 @@ export class OrdersController {
           existingFp: existing.fingerprint.slice(0, 8),
           newFp: fingerprint.slice(0, 8),
         });
-        throw new ConflictException(
-          'Idempotency key already used with different order payload',
-        );
+        // Code dédié : le checkout doit abandonner cette clé (une nouvelle
+        // validation = une nouvelle commande), sinon chaque essai rejoue ce refus.
+        throw new DomainConflictException({
+          code: ErrorCodes.ORDER.IDEMPOTENCY_KEY_REUSED,
+          message:
+            'Votre commande a changé depuis votre précédente validation : validez à nouveau pour enregistrer la nouvelle commande.',
+        });
       }
 
       if (existing?.status === 'completed' && existing.order_id) {
@@ -160,23 +174,37 @@ export class OrdersController {
         });
         return { existing: existing.order_id };
       }
-      if (existing?.status === 'processing') {
+      // 'processing', ligne disparue (recyclage concurrent) ou état
+      // inattendu : une autre requête détient la clé.
+      if (existing?.status !== 'failed') {
         throw new ConflictException(
           'Commande en cours de traitement, réessayez dans quelques secondes',
         );
       }
-      // status === 'failed' → supprimer et recréer
+      // 'failed' → supprimer et recréer. La requête n'en devient propriétaire
+      // que si SA ré-insertion réussit : sinon une requête concurrente vient de
+      // la reprendre, et créer la commande ici en ferait une seconde.
       await supabase
         .from('order_idempotency')
         .delete()
         .eq('idempotency_key', idempotencyKey)
         .eq('status', 'failed');
-      await supabase.from('order_idempotency').insert({
-        idempotency_key: idempotencyKey,
-        order_id: null,
-        fingerprint,
-        status: 'processing',
-      });
+      const { error: reinsertError } = await supabase
+        .from('order_idempotency')
+        .insert({
+          idempotency_key: idempotencyKey,
+          order_id: null,
+          fingerprint,
+          status: 'processing',
+        });
+      if (reinsertError?.code === '23505') {
+        throw new ConflictException(
+          'Commande en cours de traitement, réessayez dans quelques secondes',
+        );
+      }
+      if (reinsertError) {
+        throw reinsertError;
+      }
     } else if (insertError) {
       throw insertError;
     }
@@ -220,6 +248,36 @@ export class OrdersController {
       expires_at: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
     });
     return token;
+  }
+
+  /**
+   * Rejeu idempotent d'une création déjà aboutie (même clé, même contenu).
+   * Même shape que le happy path : le checkout construit le redirect Paybox
+   * depuis CETTE réponse (total + customer.cst_mail), sans re-GET
+   * /api/orders/:id — le cookie de l'action peut être invalide après
+   * régénération de session (INC tunnel paiement 2026-05→07).
+   *
+   * L'état de paiement est relu à chaque rejeu : une commande annulée depuis
+   * est refusée (409 ORDER.NOT_PAYABLE) et une commande payée est renvoyée
+   * sans nouveau lien de reprise. Seule une commande payable en reçoit un.
+   */
+  private async replayCompletedOrder(orderId: string) {
+    const existingOrder = await this.ordersService.getOrderById(orderId);
+    const paymentState = getOrderPaymentState(existingOrder);
+    if (paymentState === 'not_payable') {
+      this.logger.warn(
+        `Rejeu idempotent refusé : commande ${orderId} non payable (statut ${String(existingOrder.ord_ords_id)})`,
+      );
+      throw new DomainConflictException({
+        code: ErrorCodes.ORDER.NOT_PAYABLE,
+        message: getOrderNotPayableMessage(existingOrder),
+      });
+    }
+    const resumeToken =
+      paymentState === 'payable'
+        ? await this.generateResumeToken(orderId)
+        : undefined;
+    return { ...existingOrder, resumeToken };
   }
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -348,6 +406,10 @@ export class OrdersController {
     @Req() req: AuthenticatedRequest,
   ) {
     const { idempotencyKey, gaClientId } = orderData;
+    // Vrai seulement si CETTE requête a posé la clé : un refus de
+    // checkIdempotency ou un rejeu ne doit jamais la marquer 'failed' (une
+    // clé 'failed' est recyclée → seconde commande pour le même panier).
+    let ownsIdempotencyKey = false;
     try {
       const userId = getUserId(req);
       if (!userId) {
@@ -363,16 +425,9 @@ export class OrdersController {
         const fp = computeOrderFingerprint(dataWithUserId);
         const existing = await this.checkIdempotency(idempotencyKey, fp);
         if (existing) {
-          const resumeToken = await this.generateResumeToken(existing.existing);
-          // Même shape que le happy path : le checkout construit le redirect
-          // Paybox depuis CETTE réponse (total + customer.cst_mail), sans
-          // re-GET /api/orders/:id — le cookie de l'action peut être invalide
-          // après régénération de session (INC tunnel paiement 2026-05→07).
-          const existingOrder = await this.ordersService.getOrderById(
-            existing.existing,
-          );
-          return { ...existingOrder, resumeToken };
+          return await this.replayCompletedOrder(existing.existing);
         }
+        ownsIdempotencyKey = true;
       }
 
       const order = await this.ordersService.createOrder(dataWithUserId);
@@ -421,7 +476,7 @@ export class OrdersController {
       return { ...(order as object), resumeToken };
     } catch (error) {
       this.logger.error('Error creating order:', error);
-      if (idempotencyKey) {
+      if (idempotencyKey && ownsIdempotencyKey) {
         await this.finalizeIdempotency(idempotencyKey, null, 'failed').catch(
           () => {},
         );
@@ -447,6 +502,9 @@ export class OrdersController {
     @Req() req: AuthenticatedRequest,
   ) {
     const { idempotencyKey, gaClientId } = body;
+    // Cf. createOrder : seule la requête qui a posé la clé peut la marquer
+    // 'failed'. Reste false quand on délègue à createOrder (qui gère la sienne).
+    let ownsIdempotencyKey = false;
     try {
       // Si déjà authentifié, déléguer au flow normal
       const existingUserId = getUserId(req);
@@ -474,16 +532,9 @@ export class OrdersController {
         } as CreateOrderData);
         const existing = await this.checkIdempotency(idempotencyKey, fp);
         if (existing) {
-          const resumeToken = await this.generateResumeToken(existing.existing);
-          // Même shape que le happy path : le checkout construit le redirect
-          // Paybox depuis CETTE réponse (total + customer.cst_mail), sans
-          // re-GET /api/orders/:id — le cookie de l'action peut être invalide
-          // après régénération de session (INC tunnel paiement 2026-05→07).
-          const existingOrder = await this.ordersService.getOrderById(
-            existing.existing,
-          );
-          return { ...existingOrder, resumeToken };
+          return await this.replayCompletedOrder(existing.existing);
         }
+        ownsIdempotencyKey = true;
       }
 
       // Vérifier si l'email existe déjà — si oui, réutiliser le compte existant
@@ -631,7 +682,7 @@ export class OrdersController {
       return { ...(order as object), resumeToken };
     } catch (error) {
       this.logger.error('Error in guest checkout:', error);
-      if (idempotencyKey) {
+      if (idempotencyKey && ownsIdempotencyKey) {
         await this.finalizeIdempotency(idempotencyKey, null, 'failed').catch(
           () => {},
         );
@@ -793,6 +844,10 @@ export class OrdersController {
   @ApiParam({ name: 'token', description: 'Token de reprise' })
   @ApiResponse({ status: 200, description: 'Token valide' })
   @ApiResponse({ status: 404, description: 'Token invalide' })
+  @ApiResponse({
+    status: 409,
+    description: 'Commande non payable (ex. annulée) — code ORDER.NOT_PAYABLE',
+  })
   @ApiResponse({ status: 410, description: 'Token expiré ou déjà utilisé' })
   async validateResumeToken(@Param('token') token: string) {
     const supabase = this.ordersService.getSupabaseClient();
@@ -818,12 +873,24 @@ export class OrdersController {
     // Récupérer les infos de la commande
     const { data: order } = await supabase
       .from('___xtr_order')
-      .select('ord_id, ord_total_ttc, ord_is_pay, ord_ords_id, ord_cst_id')
+      .select(
+        'ord_id, ord_total_ttc, ord_is_pay, ord_date_pay, ord_ords_id, ord_cst_id',
+      )
       .eq('ord_id', tokenData.order_id)
       .single();
 
     if (!order) {
       throw new NotFoundException('Commande introuvable');
+    }
+
+    // Le lien reste valide 2 h, la commande peut changer entre-temps : une
+    // commande annulée (ou hors statut payable) ne doit plus mener au paiement.
+    const paymentState = getOrderPaymentState(order);
+    if (paymentState === 'not_payable') {
+      throw new DomainConflictException({
+        code: ErrorCodes.ORDER.NOT_PAYABLE,
+        message: getOrderNotPayableMessage(order),
+      });
     }
 
     // Récupérer l'email du client
@@ -845,7 +912,8 @@ export class OrdersController {
     return {
       orderId: order.ord_id,
       totalTTC: parseFloat(order.ord_total_ttc || '0'),
-      isPaid: order.ord_is_pay,
+      // Booléen : payée = drapeau OU date de paiement (isOrderPaid).
+      isPaid: paymentState === 'paid',
       orderStatus: order.ord_ords_id,
       customerEmail: customer?.cst_mail || '',
     };

@@ -92,6 +92,10 @@ export const checkoutErrorCodeSchema = z.enum([
   "UNAUTHORIZED",
   "PAYMENT_UNAVAILABLE",
   "ORDER_CREATION_FAILED",
+  // Commande existante annulée / hors statut payable : pas de redirection paiement
+  "ORDER_NOT_PAYABLE",
+  // Contenu modifié depuis la validation précédente : nouvelle clé d'idempotence
+  "ORDER_PAYLOAD_CHANGED",
   "UNKNOWN_ERROR",
 ]);
 
