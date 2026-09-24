@@ -9032,18 +9032,18 @@
     },
     {
       "dependsOn": [],
-      "id": "runtime:frontend/app/routes/account.profile.edit.tsx",
+      "id": "runtime:frontend/app/routes/account.profile.tsx",
       "kind": "remix-route",
-      "path": "frontend/app/routes/account.profile.edit.tsx",
+      "path": "frontend/app/routes/account.profile.tsx",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
     },
     {
       "dependsOn": [],
-      "id": "runtime:frontend/app/routes/account.profile.tsx",
+      "id": "runtime:frontend/app/routes/account.profile_.edit.tsx",
       "kind": "remix-route",
-      "path": "frontend/app/routes/account.profile.tsx",
+      "path": "frontend/app/routes/account.profile_.edit.tsx",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
