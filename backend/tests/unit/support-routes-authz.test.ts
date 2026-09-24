@@ -1,9 +1,10 @@
 /**
  * Support module — access boundary.
  *
- * Every handler of `backend/src/modules/support/controllers/*` is classified
- * in one of four access tiers, and the classification below is EXHAUSTIVE: a
- * handler added later without being classified here fails the test.
+ * Every handler of every controller that `SupportModule` registers is
+ * classified in one of four access tiers, and the classification below is
+ * EXHAUSTIVE: a controller or a handler added later without being classified
+ * here fails the test (the controller list is read from the module metadata).
  *
  *   - public   : no guard (site pages: contact form, FAQ, legal pages);
  *   - customer : `AuthenticatedGuard` only — the handler itself scopes the data
@@ -27,6 +28,7 @@ import {
   RequestMethod,
   Type,
 } from '@nestjs/common';
+import { MODULE_METADATA } from '@nestjs/common/constants';
 import { Reflector } from '@nestjs/core';
 
 import { AuthenticatedGuard } from '@auth/authenticated.guard';
@@ -53,6 +55,8 @@ import type {
   ClaimService,
 } from '../../src/modules/support/services/claim.service';
 import type { LegalService } from '../../src/modules/support/services/legal.service';
+import type { ReviewService } from '../../src/modules/support/services/review.service';
+import { SupportModule } from '../../src/modules/support/support.module';
 
 // NestJS reflection keys (`@nestjs/common/constants` — stable literals).
 const GUARDS_METADATA = '__guards__';
@@ -274,6 +278,19 @@ const CASES: Array<{
 ];
 
 describe('support controllers — access tiers', () => {
+  it('classifies every controller registered by SupportModule', () => {
+    const registered: Array<Type<any>> =
+      Reflect.getMetadata(MODULE_METADATA.CONTROLLERS, SupportModule) || [];
+    const classified = [
+      ...ADMIN_CONTROLLERS,
+      ...PER_HANDLER_TIERS.map((e) => e.controller),
+    ];
+    const names = (list: Array<Type<any>>) => list.map((c) => c.name).sort();
+    expect(registered.length).toBeGreaterThan(0);
+    expect(names(classified)).toEqual(names(registered));
+    expect(new Set(classified).size).toBe(classified.length);
+  });
+
   it.each(ADMIN_CONTROLLERS.map((c) => [c.name, c]))(
     '%s is guarded as a whole (AuthenticatedGuard + IsAdminGuard)',
     (_name, controller) => {
@@ -459,6 +476,7 @@ function claimsHarness() {
       id === 'c1' ? buildClaim() : null,
     ),
     updateClaimStatus: jest.fn(async () => buildClaim()),
+    assignClaim: jest.fn(async () => buildClaim()),
     addTimelineEntry: jest.fn(async () => buildClaim()),
     resolveClaim: jest.fn(async () => buildClaim()),
     escalateClaim: jest.fn(async () => buildClaim()),
@@ -552,6 +570,22 @@ describe('ClaimController — customer scoping', () => {
     expect(claim.timeline.map((e) => e.id)).toEqual(['t1', 't3']);
   });
 
+  it('the customer view only keeps entries marked for the customer', async () => {
+    const { service, controller } = claimsHarness();
+    const base = buildClaim();
+    service.getClaim.mockResolvedValueOnce(
+      buildClaim({
+        timeline: [
+          ...base.timeline,
+          { ...base.timeline[1], id: 't4', visibility: undefined as any },
+          { ...base.timeline[1], id: 't5', visibility: 'public' as any },
+        ],
+      }),
+    );
+    const claim = await controller.getClaim(session(1), 'c1');
+    expect(claim.timeline.map((e) => e.id)).toEqual(['t1', 't3']);
+  });
+
   it("another customer's claim reads as not found", async () => {
     const { controller } = claimsHarness();
     await expect(
@@ -623,6 +657,33 @@ describe('ClaimController — admin actions are attributed to the session', () =
     );
   });
 
+  it('assignment: the assignee comes from the body, the author from the session', async () => {
+    const { service, controller } = claimsHarness();
+    await controller.assignClaim(adminSession(), 'c1', {
+      staffId: 'staff-9',
+    });
+    expect(service.assignClaim).toHaveBeenCalledWith(
+      'c1',
+      'staff-9',
+      'admin-1',
+    );
+  });
+
+  it.each([undefined, 'public', 'INTERNAL'])(
+    'timeline entry with visibility %p is refused',
+    async (visibility) => {
+      const { service, controller } = claimsHarness();
+      await expect(
+        controller.addTimelineEntry(adminSession(), 'c1', {
+          action: 'note',
+          description: 'Note',
+          visibility: visibility as any,
+        }),
+      ).rejects.toBeInstanceOf(DomainValidationException);
+      expect(service.addTimelineEntry).not.toHaveBeenCalled();
+    },
+  );
+
   it('timeline entry ignores a forged author', async () => {
     const { service, controller } = claimsHarness();
     await controller.addTimelineEntry(adminSession(), 'c1', {
@@ -671,6 +732,7 @@ describe('ClaimController — admin actions are attributed to the session', () =
 
 function legalHarness() {
   const service = {
+    createDocument: jest.fn(async () => ({})),
     acceptDocument: jest.fn(async () => undefined),
     getUserAcceptances: jest.fn(async () => []),
     updateDocument: jest.fn(async () => ({})),
@@ -712,6 +774,27 @@ describe('LegalController — acceptances', () => {
 });
 
 describe('LegalController — admin edits are attributed to the session', () => {
+  it('document creation ignores a forged author', async () => {
+    const { service, controller } = legalHarness();
+    await controller.createDocument(session(7, 'admin-1'), {
+      type: 'terms',
+      title: 'Conditions générales',
+      content: 'Contenu',
+      language: 'fr',
+      createdBy: 'someone-else',
+      id: 'forged',
+    } as any);
+    expect(service.createDocument).toHaveBeenCalledWith({
+      type: 'terms',
+      title: 'Conditions générales',
+      content: 'Contenu',
+      language: 'fr',
+      effectiveDate: undefined,
+      metadata: undefined,
+      createdBy: 'admin-1',
+    });
+  });
+
   it('document update', async () => {
     const { service, controller } = legalHarness();
     await controller.updateDocument(session(7, 'admin-1'), 'd1', {
@@ -730,5 +813,38 @@ describe('LegalController — admin edits are attributed to the session', () => 
     const { service, controller } = legalHarness();
     await controller.restoreVersion(session(7, 'admin-1'), 'd1', 'v2');
     expect(service.restoreVersion).toHaveBeenCalledWith('d1', 'v2', 'admin-1');
+  });
+});
+
+// ─── Reviews — acting identity ───────────────────────────────────────────────
+
+describe('ReviewController — moderation is attributed to the session', () => {
+  it('ignores a forged moderator', async () => {
+    const service = { moderateReview: jest.fn(async () => ({})) };
+    const controller = new ReviewController(
+      service as unknown as ReviewService,
+    );
+    await controller.moderateReview(session(7, 'admin-1'), 'r1', {
+      action: 'approve',
+      moderatorId: 'someone-else',
+      moderatorNote: 'ok',
+    } as any);
+    expect(service.moderateReview).toHaveBeenCalledWith(
+      'r1',
+      'approve',
+      'admin-1',
+      'ok',
+    );
+  });
+
+  it('refuses a session without user id', async () => {
+    const service = { moderateReview: jest.fn(async () => ({})) };
+    const controller = new ReviewController(
+      service as unknown as ReviewService,
+    );
+    await expect(
+      controller.moderateReview({ user: {} }, 'r1', { action: 'reject' }),
+    ).rejects.toBeInstanceOf(AuthenticationException);
+    expect(service.moderateReview).not.toHaveBeenCalled();
   });
 });

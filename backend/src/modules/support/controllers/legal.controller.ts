@@ -17,12 +17,13 @@ import {
 import { AuthenticatedGuard } from '@auth/authenticated.guard';
 import { IsAdminGuard } from '@auth/is-admin.guard';
 import { PermissionsService } from '@auth/permissions.service';
-import { LegalService, LegalDocument } from '../services/legal.service';
 import {
-  AuthenticationException,
-  DomainNotFoundException,
-  ErrorCodes,
-} from '@common/exceptions';
+  LegalService,
+  LegalDocument,
+  CreateLegalDocumentRequest,
+} from '../services/legal.service';
+import { DomainNotFoundException, ErrorCodes } from '@common/exceptions';
+import { requireSessionUserId } from './session-user';
 
 interface RequestWithUser {
   user?: {
@@ -51,10 +52,19 @@ export class LegalController {
   @UseGuards(AuthenticatedGuard, IsAdminGuard)
   @HttpCode(HttpStatus.CREATED)
   async createDocument(
-    @Body() documentData: Omit<LegalDocument, 'id' | 'lastUpdated'>,
+    @Req() req: RequestWithUser,
+    @Body() body: Omit<CreateLegalDocumentRequest, 'createdBy'>,
   ): Promise<LegalDocument> {
     this.logger.log('Creating legal document');
-    return this.legalService.createDocument(documentData);
+    return this.legalService.createDocument({
+      type: body?.type,
+      title: body?.title,
+      content: body?.content,
+      language: body?.language,
+      effectiveDate: body?.effectiveDate,
+      metadata: body?.metadata,
+      createdBy: requireSessionUserId(req),
+    });
   }
 
   @Get()
@@ -151,7 +161,7 @@ export class LegalController {
     return this.legalService.updateDocument(
       documentId,
       body.updates,
-      this.requireUserId(req),
+      requireSessionUserId(req),
       body.changes,
     );
   }
@@ -207,7 +217,7 @@ export class LegalController {
     return this.legalService.restoreVersion(
       documentId,
       versionId,
-      this.requireUserId(req),
+      requireSessionUserId(req),
     );
   }
 
@@ -220,7 +230,7 @@ export class LegalController {
   ): Promise<void> {
     await this.legalService.acceptDocument(
       type as LegalDocument['type'],
-      this.requireUserId(req),
+      requireSessionUserId(req),
     );
   }
 
@@ -230,18 +240,10 @@ export class LegalController {
     @Req() req: RequestWithUser,
     @Param('userId') userId: string,
   ) {
-    if (userId !== this.requireUserId(req) && !this.isStaff(req)) {
+    if (userId !== requireSessionUserId(req) && !this.isStaff(req)) {
       throw new ForbiddenException('Access denied');
     }
     return this.legalService.getUserAcceptances(userId);
-  }
-
-  private requireUserId(req: RequestWithUser): string {
-    const id = req.user?.id;
-    if (id === undefined || id === null || String(id) === '') {
-      throw new AuthenticationException({ message: 'Non authentifié' });
-    }
-    return String(id);
   }
 
   private isStaff(req: RequestWithUser): boolean {

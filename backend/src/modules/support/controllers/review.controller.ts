@@ -7,6 +7,7 @@ import {
   Body,
   Param,
   Query,
+  Req,
   UseGuards,
   HttpCode,
   HttpStatus,
@@ -23,6 +24,7 @@ import {
   ReviewFilters,
 } from '../services/review.service';
 import { DomainNotFoundException, ErrorCodes } from '@common/exceptions';
+import { requireSessionUserId } from './session-user';
 
 /**
  * Accès : lecture des avis réservée à l'équipe (`canSeeCustomerDetails`) ;
@@ -130,18 +132,18 @@ export class ReviewController {
   @Put(':reviewId/moderate')
   @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async moderateReview(
+    @Req() req: { user?: { id?: string | number } },
     @Param('reviewId') reviewId: string,
     @Body()
     body: {
       action: 'approve' | 'reject';
-      moderatorId: string;
       moderatorNote?: string;
     },
   ): Promise<ReviewData> {
     return this.reviewService.moderateReview(
       reviewId,
       body.action,
-      body.moderatorId,
+      requireSessionUserId(req),
       body.moderatorNote,
     );
   }

@@ -21,13 +21,15 @@ import {
   ClaimService,
   Claim,
   ClaimResolution,
+  CLAIM_TIMELINE_VISIBILITIES,
+  ClaimTimelineVisibility,
 } from '../services/claim.service';
 import {
-  AuthenticationException,
   DomainNotFoundException,
   DomainValidationException,
   ErrorCodes,
 } from '@common/exceptions';
+import { requireSessionUserId } from './session-user';
 
 interface RequestWithUser {
   user?: {
@@ -53,6 +55,12 @@ type ClaimSubmission = Partial<
     | 'customerPhone'
   >
 >;
+
+/** Entrées de l'historique montrées au client ; toute autre valeur reste interne. */
+const CUSTOMER_VISIBLE: ReadonlyArray<ClaimTimelineVisibility> = [
+  'customer',
+  'both',
+];
 
 /**
  * Accès :
@@ -80,7 +88,7 @@ export class ClaimController {
     const user = req.user;
     this.logger.log('Submitting claim');
     return this.claimService.submitClaim({
-      customerId: this.requireUserId(req),
+      customerId: requireSessionUserId(req),
       customerName: `${user?.firstName ?? ''} ${user?.lastName ?? ''}`.trim(),
       customerEmail: user?.email ?? '',
       customerPhone: body?.customerPhone,
@@ -113,7 +121,7 @@ export class ClaimController {
       type,
       priority,
       assignedTo: isStaff ? assignedTo : undefined,
-      customerId: isStaff ? customerId : this.requireUserId(req),
+      customerId: isStaff ? customerId : requireSessionUserId(req),
       startDate: startDate ? new Date(startDate) : undefined,
       endDate: endDate ? new Date(endDate) : undefined,
     };
@@ -161,7 +169,7 @@ export class ClaimController {
     return this.claimService.updateClaimStatus(
       claimId,
       body.status as Claim['status'],
-      this.requireUserId(req),
+      requireSessionUserId(req),
       body.note,
     );
   }
@@ -169,10 +177,15 @@ export class ClaimController {
   @Put(':claimId/assign')
   @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async assignClaim(
+    @Req() req: RequestWithUser,
     @Param('claimId') claimId: string,
     @Body() body: { staffId: string },
   ): Promise<Claim> {
-    return this.claimService.assignClaim(claimId, body.staffId);
+    return this.claimService.assignClaim(
+      claimId,
+      body.staffId,
+      requireSessionUserId(req),
+    );
   }
 
   @Post(':claimId/timeline')
@@ -184,16 +197,22 @@ export class ClaimController {
     entryData: {
       action: string;
       description: string;
-      visibility: 'internal' | 'customer' | 'both';
+      visibility: ClaimTimelineVisibility;
       attachments?: string[];
     },
   ): Promise<Claim> {
+    if (!CLAIM_TIMELINE_VISIBILITIES.includes(entryData?.visibility)) {
+      throw new DomainValidationException({
+        message: `La visibilité doit valoir ${CLAIM_TIMELINE_VISIBILITIES.join(', ')}`,
+        code: ErrorCodes.VALIDATION.INVALID_FORMAT,
+      });
+    }
     return this.claimService.addTimelineEntry(claimId, {
       action: entryData.action,
       description: entryData.description,
       visibility: entryData.visibility,
       attachments: entryData.attachments,
-      performedBy: this.requireUserId(req),
+      performedBy: requireSessionUserId(req),
     });
   }
 
@@ -207,7 +226,7 @@ export class ClaimController {
       resolution: Omit<ClaimResolution, 'resolvedAt' | 'resolvedBy'>;
     },
   ): Promise<Claim> {
-    const resolvedBy = this.requireUserId(req);
+    const resolvedBy = requireSessionUserId(req);
     return this.claimService.resolveClaim(
       claimId,
       { ...body.resolution, resolvedBy },
@@ -224,7 +243,7 @@ export class ClaimController {
   ): Promise<Claim> {
     return this.claimService.escalateClaim(
       claimId,
-      this.requireUserId(req),
+      requireSessionUserId(req),
       body.reason,
     );
   }
@@ -253,14 +272,6 @@ export class ClaimController {
     );
   }
 
-  private requireUserId(req: RequestWithUser): string {
-    const id = req.user?.id;
-    if (id === undefined || id === null || String(id) === '') {
-      throw new AuthenticationException({ message: 'Non authentifié' });
-    }
-    return String(id);
-  }
-
   private isStaff(req: RequestWithUser): boolean {
     const level = parseInt(String(req.user?.level ?? 0), 10) || 0;
     return this.permissionsService.hasPermission(
@@ -274,7 +285,7 @@ export class ClaimController {
     req: RequestWithUser,
     claimId: string,
   ): Promise<Claim> {
-    const userId = this.requireUserId(req);
+    const userId = requireSessionUserId(req);
     const claim = await this.claimService.getClaim(claimId);
     if (!claim || claim.customerId !== userId) {
       throw this.claimNotFound(claimId);
@@ -289,13 +300,16 @@ export class ClaimController {
     });
   }
 
-  /** Vue client : sans les notes internes ni l'affectation. */
+  /**
+   * Vue client : sans l'affectation, et seulement les entrées marquées pour le
+   * client. Une entrée sans visibilité connue reste interne.
+   */
   private toCustomerView(claim: Claim): Claim {
     return {
       ...claim,
       assignedTo: undefined,
-      timeline: claim.timeline.filter(
-        (entry) => entry.visibility !== 'internal',
+      timeline: claim.timeline.filter((entry) =>
+        CUSTOMER_VISIBLE.includes(entry.visibility),
       ),
     };
   }
