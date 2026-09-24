@@ -25998,7 +25998,7 @@
         "zlib"
       ],
       "kind": "test",
-      "loc": 136,
+      "loc": 253,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-projection/seo-projection-snapshot.test.ts",
       "risk": "low",
@@ -26026,7 +26026,7 @@
         "zlib"
       ],
       "kind": "service",
-      "loc": 251,
+      "loc": 326,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-projection/seo-projection-snapshot.ts",
       "risk": "low",
