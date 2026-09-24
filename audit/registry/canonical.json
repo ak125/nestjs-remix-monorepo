@@ -32462,7 +32462,8 @@
       "id": "backend/src/config/r8-keyword-plan.constants.ts",
       "importedBy": [
         "backend/src/config/page-contract-r8.schema.ts",
-        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.tech-specs.test.ts"
       ],
       "imports": [
         "backend/src/config/keyword-plan.constants.ts"
@@ -33871,7 +33872,7 @@
         "backend/src/workers/worker.module.ts"
       ],
       "kind": "service",
-      "loc": 333,
+      "loc": 332,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/admin.module.ts",
       "risk": "medium",
@@ -37199,7 +37200,6 @@
         "backend/src/config/seo-variations.config.ts",
         "backend/src/modules/admin/services/enricher-text-utils.service.ts",
         "backend/src/modules/admin/services/r8-owned-editorial.composer.ts",
-        "backend/src/modules/admin/services/vehicle-rag-generator.service.ts",
         "backend/src/modules/seo/services/chain/seo-role-template-selector.service.ts",
         "backend/src/security/rpc-gate/rpc-gate.errors.ts",
         "crypto",
@@ -37207,7 +37207,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 1626,
+      "loc": 1525,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
       "risk": "medium",
@@ -37226,10 +37226,11 @@
       "id": "backend/src/modules/admin/services/r8-vehicle-enricher.tech-specs.test.ts",
       "importedBy": [],
       "imports": [
+        "backend/src/config/r8-keyword-plan.constants.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
       ],
       "kind": "test",
-      "loc": 269,
+      "loc": 292,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/r8-vehicle-enricher.tech-specs.test.ts",
       "risk": "medium",
@@ -37256,7 +37257,7 @@
         "backend/src/security/rpc-gate/rpc-gate.errors.ts"
       ],
       "kind": "test",
-      "loc": 518,
+      "loc": 514,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/r8-vehicle-enricher.write-gate.test.ts",
       "risk": "medium",
@@ -37761,8 +37762,7 @@
       "id": "backend/src/modules/admin/services/vehicle-rag-generator.service.ts",
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
-        "backend/src/modules/admin/controllers/admin-vehicle-rag.controller.ts",
-        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
+        "backend/src/modules/admin/controllers/admin-vehicle-rag.controller.ts"
       ],
       "imports": [
         "@database/services/supabase-base.service",
@@ -100081,11 +100081,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "3045154dd16aeefab01f398f2540e47939a253f9cb3d5194599764dbc02e9958",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "d3d0f4ec1850544d0f8471fffa0e5ef08857c4d5cd85c3d28b48dd417f5bfed5",
+      "audit/registry/files.json": "9a3b78589d95f7392d77b31f13c1b0f3c4eb7fc4b1db887f48c11b44be075db4",
       "audit/registry/rpc.json": "821912126b4b0b6e8c5a86b4269f43106cc40a44d2ee85a107b550ab9ea0a7b6",
-      "audit/registry/runtime.json": "3f153ecc8a7a52378e26435fe7ecf04c0a4549288d6ad12283b783545ba5e99e"
+      "audit/registry/runtime.json": "c430ab464382663304f535702507f59b5ee0bdd2ca4d436be0c7b7497f44de95"
     },
-    "sotFingerprint": "2b9e23026095"
+    "sotFingerprint": "5dd19bb7e015"
   },
   "runtime": [
     {
@@ -101695,7 +101695,6 @@
         "runtime:backend/src/config/content-write-gate.service.ts",
         "runtime:backend/src/config/feature-flags.service.ts",
         "runtime:backend/src/modules/admin/services/enricher-text-utils.service.ts",
-        "runtime:backend/src/modules/admin/services/vehicle-rag-generator.service.ts",
         "runtime:backend/src/modules/seo/services/chain/seo-role-template-selector.service.ts"
       ],
       "id": "runtime:backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
