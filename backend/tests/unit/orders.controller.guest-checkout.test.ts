@@ -8,15 +8,18 @@
  *    session ouverte : la possession de l'email n'est prouvée qu'à l'activation ;
  *  - vérification d'existence en échec → l'erreur remonte (fail-closed), jamais
  *    lue comme « email libre » ;
- *  - l'adresse est normalisée (trim + minuscules) avant tout usage, et n'apparaît
- *    dans aucun log.
+ *  - commande sans ligne → 400 avant tout effet (ni clé, ni vérification, ni
+ *    compte) ;
+ *  - l'adresse est normalisée (trim + minuscules) avant tout usage, et
+ *    n'apparaît dans aucun log du contrôleur. Les journaux des services
+ *    partagés (envoi d'email, création de commande) ne sont pas couverts ici.
  *
  * @see backend/src/modules/orders/controllers/orders.controller.ts (createGuestOrder)
  * @see backend/src/auth/auth.service.ts (isEmailRegistered)
  */
 
 import 'reflect-metadata';
-import { BadRequestException, Logger } from '@nestjs/common';
+import { BadRequestException, HttpException, Logger } from '@nestjs/common';
 import { DomainConflictException, ErrorCodes } from '@common/exceptions';
 import { OrdersController } from '../../src/modules/orders/controllers/orders.controller';
 import {
@@ -217,7 +220,7 @@ describe('OrdersController.createGuestOrder', () => {
       expectNoSessionOpened(req);
     });
 
-    it('marque la clé d’idempotence en échec pour permettre une nouvelle tentative', async () => {
+    it('marque la clé d’idempotence en échec, sans commande rattachée', async () => {
       const supabase = makeSupabase();
       const { controller } = makeController({
         emailRegistered: true,
@@ -254,6 +257,116 @@ describe('OrdersController.createGuestOrder', () => {
 
       expect(authService.isEmailRegistered).toHaveBeenCalledWith(EMAIL);
     });
+
+    it('une clé consommée par ce refus ne peut pas porter une autre adresse (le checkout en génère une nouvelle)', async () => {
+      // Première tentative refusée : la clé reste en échec avec l'empreinte
+      // de la première adresse.
+      const { guestEmail: _email, ...orderData } = body({
+        idempotencyKey: 'ik-test-conflict',
+      }) as Record<string, unknown>;
+      void _email;
+      const supabase = makeSupabase({
+        idempotencyInsertError: { code: '23505' },
+        idempotencyRow: {
+          order_id: null,
+          status: 'failed',
+          fingerprint: computeOrderFingerprint({
+            ...orderData,
+            customerId: EMAIL,
+            guestEmail: EMAIL,
+          } as CreateOrderData),
+        },
+      });
+      const { controller, authService, ordersService } = makeController({
+        supabase,
+      });
+
+      // Même clé, autre adresse : refus générique, aucun effet.
+      const error = await controller
+        .createGuestOrder(
+          body({
+            idempotencyKey: 'ik-test-conflict',
+            guestEmail: 'autre.adresse@example.test',
+          }),
+          guestRequest() as never,
+        )
+        .catch((e: unknown) => e);
+
+      // Refus propre à la clé (409), jamais confondu avec « compte existant ».
+      expect((error as HttpException).getStatus()).toBe(409);
+      expect((error as { code?: string }).code).not.toBe(
+        ErrorCodes.USER.DUPLICATE_EMAIL,
+      );
+      expect(authService.isEmailRegistered).not.toHaveBeenCalled();
+      expect(authService.register).not.toHaveBeenCalled();
+      expect(ordersService.createOrder).not.toHaveBeenCalled();
+
+      // Nouvelle clé (ce que fait le checkout après EMAIL_CONFLICT) : la
+      // commande passe.
+      const fresh = makeController();
+      await expect(
+        fresh.controller.createGuestOrder(
+          body({
+            idempotencyKey: 'ik-test-conflict-2',
+            guestEmail: 'autre.adresse@example.test',
+          }),
+          guestRequest() as never,
+        ),
+      ).resolves.toMatchObject({ ord_id: ORDER_ID });
+    });
+  });
+
+  it('commande sans ligne → 400 avant tout effet (ni clé, ni vérification, ni compte)', async () => {
+    const supabase = makeSupabase();
+    const { controller, authService, ordersService } = makeController({
+      supabase,
+    });
+
+    await expect(
+      controller.createGuestOrder(
+        body({ orderLines: [], idempotencyKey: 'ik-test-empty' }),
+        guestRequest() as never,
+      ),
+    ).rejects.toBeInstanceOf(BadRequestException);
+
+    expect(authService.isEmailRegistered).not.toHaveBeenCalled();
+    expect(authService.register).not.toHaveBeenCalled();
+    expect(ordersService.createOrder).not.toHaveBeenCalled();
+    // La clé n'est jamais posée : aucune insertion dans la table d'idempotence.
+    expect(
+      supabase.calls.filter(
+        (c) => c.table === 'order_idempotency' && c.op === 'insert',
+      ),
+    ).toEqual([]);
+  });
+
+  it('échec de création après le compte : l’erreur remonte, sans email d’activation ; une nouvelle tentative passe par la connexion', async () => {
+    const failure = new Error('rpc down');
+    const { controller, authService, ordersService, mailService } =
+      makeController();
+    ordersService.createOrder.mockRejectedValueOnce(failure);
+    const req = guestRequest();
+
+    await expect(
+      controller.createGuestOrder(body(), req as never),
+    ).rejects.toBe(failure);
+
+    expect(authService.register).toHaveBeenCalledTimes(1);
+    expect(mailService.sendGuestAccountActivation).not.toHaveBeenCalled();
+    expectNoSessionOpened(req);
+
+    // Le compte existe désormais : la nouvelle tentative est refusée comme
+    // pour tout compte existant (connexion ou « mot de passe oublié »).
+    authService.isEmailRegistered.mockResolvedValueOnce(true);
+    const retry = await controller
+      .createGuestOrder(body(), guestRequest() as never)
+      .catch((e: unknown) => e);
+
+    expect(retry).toBeInstanceOf(DomainConflictException);
+    expect((retry as DomainConflictException).code).toBe(
+      ErrorCodes.USER.DUPLICATE_EMAIL,
+    );
+    expect(authService.register).toHaveBeenCalledTimes(1);
   });
 
   it('vérification impossible → l’erreur remonte, aucun compte ni commande (fail-closed)', async () => {
@@ -355,7 +468,12 @@ describe('OrdersController.createGuestOrder', () => {
   });
 
   it('rejoue une commande déjà créée (même clé, même contenu) sans rien recréer', async () => {
-    const payload = body({ idempotencyKey: 'ik-test-replay' });
+    // Adresse saisie avec espaces et majuscules : l'empreinte doit porter
+    // l'adresse normalisée pour retrouver la commande.
+    const payload = body({
+      idempotencyKey: 'ik-test-replay',
+      guestEmail: '  Client.Test@EXAMPLE.test ',
+    });
     const { guestEmail: _email, ...orderData } = payload as Record<
       string,
       unknown
@@ -423,7 +541,7 @@ describe('OrdersController.createGuestOrder', () => {
     },
   );
 
-  it('aucun log ne contient l’adresse email, quel que soit le parcours', async () => {
+  it('aucun log du contrôleur ne contient l’adresse email, quel que soit le parcours', async () => {
     const conflict = makeController({ emailRegistered: true });
     await conflict.controller
       .createGuestOrder(body(), guestRequest() as never)

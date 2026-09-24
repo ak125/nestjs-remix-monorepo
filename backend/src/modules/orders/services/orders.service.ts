@@ -109,6 +109,22 @@ export function computeOrderFingerprint(data: CreateOrderData): string {
 }
 
 /**
+ * Refuse une commande sans ligne. Contrôle partagé par `createOrder` et le
+ * parcours invité, qui l'applique avant tout effet (clé d'idempotence,
+ * vérification d'existence, création du compte) : une commande invalide ne
+ * laisse jamais de compte derrière elle.
+ */
+export function assertOrderHasLines(
+  data: Pick<CreateOrderData, 'orderLines'>,
+): void {
+  if (!data.orderLines || data.orderLines.length === 0) {
+    throw new BadRequestException(
+      'La commande doit contenir au moins une ligne',
+    );
+  }
+}
+
+/**
  * Motif de refus d'une annulation demandée par le client depuis son espace,
  * ou `null` si elle est permise. Règle unique pour l'affichage du bouton
  * (GET /api/orders/:id → `customer_can_cancel`) et l'annulation elle-même
@@ -283,11 +299,7 @@ export class OrdersService extends SupabaseBaseService {
         );
       }
 
-      if (!orderData.orderLines || orderData.orderLines.length === 0) {
-        throw new BadRequestException(
-          'La commande doit contenir au moins une ligne',
-        );
-      }
+      assertOrderHasLines(orderData);
 
       // Générer numéro unique de commande
       const orderNumber = await this.generateOrderNumber();

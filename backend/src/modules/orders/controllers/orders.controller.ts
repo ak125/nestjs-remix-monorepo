@@ -57,6 +57,7 @@ import {
   OrdersService,
   CreateOrderData,
   OrderFilters,
+  assertOrderHasLines,
   computeOrderFingerprint,
   getCustomerCancelRefusal,
 } from '../services/orders.service';
@@ -470,6 +471,9 @@ export class OrdersController {
       if (!guestEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail)) {
         throw new BadRequestException('Adresse email invalide');
       }
+      // Contenu vérifié avant tout effet : une commande invalide ne crée ni
+      // clé d'idempotence, ni compte.
+      assertOrderHasLines(orderData);
 
       // Idempotence guest : vérifier AVANT création de compte
       if (idempotencyKey) {
