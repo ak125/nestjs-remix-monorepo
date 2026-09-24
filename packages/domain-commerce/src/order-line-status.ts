@@ -41,7 +41,11 @@ export const ORDER_LINE_STATUS_LABEL: Record<OrderLineStatusCode, string> = {
 export function isOrderLineStatusCode(
   value: unknown,
 ): value is OrderLineStatusCode {
-  return typeof value === 'string' && value in ORDER_LINE_STATUS_LABEL;
+  // Own keys only: `in` would also accept keys inherited from Object.prototype.
+  return (
+    typeof value === 'string' &&
+    Object.prototype.hasOwnProperty.call(ORDER_LINE_STATUS_LABEL, value)
+  );
 }
 
 export function getOrderLineStatusLabel(status: OrderLineStatusCode): string {

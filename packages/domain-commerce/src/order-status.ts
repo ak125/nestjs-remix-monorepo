@@ -38,8 +38,13 @@ export const ORDER_STATUS_TRANSITIONS: Record<OrderStatusCode, OrderStatusCode[]
   '5': [],
 };
 
+// Own keys only: `in` would also accept keys inherited from Object.prototype
+// ('toString', 'constructor', …).
 export function isOrderStatusCode(value: unknown): value is OrderStatusCode {
-  return typeof value === 'string' && value in ORDER_STATUS_LABEL;
+  return (
+    typeof value === 'string' &&
+    Object.prototype.hasOwnProperty.call(ORDER_STATUS_LABEL, value)
+  );
 }
 
 export function isValidTransition(
