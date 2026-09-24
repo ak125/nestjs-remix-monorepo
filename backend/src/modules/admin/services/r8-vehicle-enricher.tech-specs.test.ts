@@ -109,16 +109,16 @@ function makeEnricher(): EnricherInternals {
   return svc;
 }
 
-/** composeBlocks with no families / neighbours / gamme RAG: only the vehicle and its RAG file vary. */
-function composeFor(
-  vehicle: Record<string, unknown>,
-  vehicleRag: Record<string, unknown>,
-): Map<string, Block> {
+/**
+ * composeBlocks with no families / neighbours / gamme RAG: only the vehicle
+ * varies. The enricher no longer reads the vehicle RAG file at all, so the
+ * CLIO_III_RAG_SPECS values below can only be asserted ABSENT from the output.
+ */
+function composeFor(vehicle: Record<string, unknown>): Map<string, Block> {
   const blocks = makeEnricher().composeBlocks(
     vehicle,
     [],
     [],
-    vehicleRag,
     [],
     [],
     false,
@@ -128,16 +128,12 @@ function composeFor(
   return new Map(blocks.map((b) => [b.id, b]));
 }
 
-const techSpecsOf = (
-  vehicle: Record<string, unknown>,
-  vehicleRag: Record<string, unknown>,
-): Block | undefined => composeFor(vehicle, vehicleRag).get('S_TECH_SPECS');
+const techSpecsOf = (vehicle: Record<string, unknown>): Block | undefined =>
+  composeFor(vehicle).get('S_TECH_SPECS');
 
 describe('R8VehicleEnricherService.composeBlocks — S_TECH_SPECS without RAG', () => {
   it('19053: keeps only the DB motorisation line, never the RAG table', () => {
-    const block = techSpecsOf(TYPE_19053, {
-      specs_techniques: CLIO_III_RAG_SPECS,
-    });
+    const block = techSpecsOf(TYPE_19053);
     expect(block).toBeDefined();
     expect(block!.renderedText).toBe(
       '**Motorisation** : 1.5 dCi 106 ch (Diesel)',
@@ -149,9 +145,7 @@ describe('R8VehicleEnricherService.composeBlocks — S_TECH_SPECS without RAG', 
   });
 
   it('11056 (1.2 petrol): no diesel 1 461 cm3 sheet inherited from the model file', () => {
-    const block = techSpecsOf(TYPE_11056, {
-      specs_techniques: CLIO_III_RAG_SPECS,
-    });
+    const block = techSpecsOf(TYPE_11056);
     expect(block!.renderedText).toBe(
       '**Motorisation** : 1.2 16V (Phase 2) 103 ch (Essence)',
     );
@@ -159,30 +153,15 @@ describe('R8VehicleEnricherService.composeBlocks — S_TECH_SPECS without RAG', 
     expect(block!.renderedText).not.toContain('98 g/km');
   });
 
-  it('is identical with and without the RAG specs (RAG has zero influence)', () => {
-    for (const vehicle of [TYPE_19053, TYPE_11056]) {
-      const withRag = techSpecsOf(vehicle, {
-        specs_techniques: CLIO_III_RAG_SPECS,
-      });
-      const withoutRag = techSpecsOf(vehicle, {});
-      expect(withRag).toEqual(withoutRag);
-    }
-  });
-
   it('weight 0.9 and a semantic payload made of DB facts only', () => {
-    const block = techSpecsOf(TYPE_19053, {
-      specs_techniques: CLIO_III_RAG_SPECS,
-    });
+    const block = techSpecsOf(TYPE_19053);
     expect(block!.specificityWeight).toBe(0.9);
     expect(block!.boilerplateRisk).toBe(0.05);
     expect(block!.semanticPayload).toEqual(['1.5 dCi', 'Diesel', '106ch']);
   });
 
-  it('emits no S_TECH_SPECS when the type has no name, even if the RAG file has specs', () => {
-    const blocks = composeFor(
-      { ...TYPE_19053, type_name: '' },
-      { specs_techniques: CLIO_III_RAG_SPECS },
-    );
+  it('emits no S_TECH_SPECS when the type has no name', () => {
+    const blocks = composeFor({ ...TYPE_19053, type_name: '' });
     expect(blocks.has('S_TECH_SPECS')).toBe(false);
     for (const block of blocks.values()) {
       expect(block.renderedText).not.toContain('1 461 cm3');
@@ -257,9 +236,7 @@ describe('R8VehicleEnricherService.computeMetrics — effect on the stored 19053
 
   it('with the S_TECH_SPECS weight now composed for 19053: 58.38 → 58.23, still REVIEW_REQUIRED', () => {
     const svc = makeEnricher();
-    const composedWeight = techSpecsOf(TYPE_19053, {
-      specs_techniques: CLIO_III_RAG_SPECS,
-    })!.specificityWeight;
+    const composedWeight = techSpecsOf(TYPE_19053)!.specificityWeight;
     const blocks = toBlocks(composedWeight);
     const metrics = svc.computeMetrics(blocks, [], []);
     expect(metrics.diversityScore).toBeCloseTo(58.23, 2);
