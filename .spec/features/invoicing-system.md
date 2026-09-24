@@ -508,7 +508,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
 ### Route Client
 
-**Route** : `/account/orders/{orderId}/invoice` (`account_.orders.$orderId.invoice.tsx`)
+**Route** : `/account/orders/{orderId}/invoice` (`account_.orders.$orderId_.invoice.tsx`)
 
 **Features** :
 - Affichage facture complète

@@ -2,7 +2,7 @@
   "_generated_by": "scripts/audit/build-db-usage-map.js",
   "note": "Candidates only — never a \"dead\" verdict. A real DROP table/function goes through the RPC Gate + a vault ADR, never from this map.",
   "important_caveats": [
-    "771 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
+    "773 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
     "Migration parsing is regex-based and tracks last CREATE vs last DROP per object (date-prefixed filenames ≈ chronological); re-create-after-drop edge cases may slip through.",
     "RLS-only / dashboard / external-cron / RPC-internal usage is invisible here — see per-candidate caveats.",
     "5 call-site(s) écarté(s) : le récepteur n'est pas un client PostgREST (Buffer/Array, ou bucket Supabase Storage) — voir dropped_call_sites[].",
@@ -17,7 +17,7 @@
     "rpc_with_callsites": 14,
     "trigger_functions": 30,
     "candidate_orphan_rpc": 204,
-    "dynamic_from_callsites": 771,
+    "dynamic_from_callsites": 773,
     "dynamic_rpc_callsites": 1,
     "unresolved_callsites": 0,
     "dropped_call_sites": 5,
@@ -13074,21 +13074,14 @@
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 455,
+      "line": 504,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 465,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 550,
+      "line": 514,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -13102,35 +13095,56 @@
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 604,
+      "line": 648,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 620,
+      "line": 653,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 655,
+      "line": 669,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 774,
+      "line": 721,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 916,
+      "line": 731,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/orders/services/orders.service.ts",
+      "line": 792,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/orders/services/orders.service.ts",
+      "line": 911,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/orders/services/orders.service.ts",
+      "line": 1053,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"

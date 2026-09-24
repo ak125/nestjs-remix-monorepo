@@ -259,7 +259,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115554,
+      "loc_total": 115548,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 597,
-      "loc_total": 113642,
+      "loc_total": 113627,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -502,7 +502,7 @@
         "backend/src/modules/orders/types"
       ],
       "files_count": 21,
-      "loc_total": 6331,
+      "loc_total": 6538,
       "has_barrel": true
     },
     "payments": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 245,
-      "loc_total": 44769,
+      "files_count": 247,
+      "loc_total": 45469,
       "has_barrel": true
     },
     "upload": {

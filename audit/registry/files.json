@@ -18850,7 +18850,7 @@
         "crypto"
       ],
       "kind": "controller",
-      "loc": 1311,
+      "loc": 1381,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/controllers/orders.controller.ts",
       "risk": "low",
@@ -19249,7 +19249,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 966,
+      "loc": 1103,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/services/orders.service.ts",
       "risk": "low",
@@ -37162,7 +37162,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 98,
+      "loc": 100,
       "owner": "__unassigned__",
       "path": "backend/tests/__mocks__/@repo/database-types.ts",
       "risk": "low",
@@ -37697,6 +37697,25 @@
       "loc": 216,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/orders.controller.customer-cancel.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/orders.controller.invoice.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 472,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/orders.controller.invoice.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -39098,8 +39117,8 @@
         "frontend/app/routes/account.security.tsx",
         "frontend/app/routes/account.settings.tsx",
         "frontend/app/routes/account.tsx",
-        "frontend/app/routes/account_.orders.$orderId.invoice.tsx",
         "frontend/app/routes/account_.orders.$orderId.tsx",
+        "frontend/app/routes/account_.orders.$orderId_.invoice.tsx",
         "frontend/app/routes/admin.blog-analytics.tsx",
         "frontend/app/routes/admin.command-center.tsx",
         "frontend/app/routes/admin.commercial._index.tsx",
@@ -51102,32 +51121,6 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
-      "id": "frontend/app/routes/account_.orders.$orderId.invoice.tsx",
-      "importedBy": [],
-      "imports": [
-        "frontend/app/auth/unified.server.ts",
-        "~/components/errors/ErrorGeneric",
-        "~/components/ui/alert",
-        "~/components/ui/button",
-        "~/utils/logger",
-        "~/utils/meta-helpers"
-      ],
-      "kind": "route",
-      "loc": 521,
-      "owner": "__unassigned__",
-      "path": "frontend/app/routes/account_.orders.$orderId.invoice.tsx",
-      "risk": "low",
-      "runtime": true,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise"
-      ],
-      "domain": "UNKNOWN",
       "id": "frontend/app/routes/account_.orders.$orderId.tsx",
       "importedBy": [],
       "imports": [
@@ -51151,6 +51144,34 @@
       "loc": 601,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/account_.orders.$orderId.tsx",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/app/routes/account_.orders.$orderId_.invoice.tsx",
+      "importedBy": [],
+      "imports": [
+        "frontend/app/auth/unified.server.ts",
+        "~/components/errors/ErrorGeneric",
+        "~/components/ui/alert",
+        "~/components/ui/button",
+        "~/utils/internal-api.server",
+        "~/utils/logger",
+        "~/utils/meta-helpers",
+        "~/utils/proxy-headers.server"
+      ],
+      "kind": "route",
+      "loc": 515,
+      "owner": "__unassigned__",
+      "path": "frontend/app/routes/account_.orders.$orderId_.invoice.tsx",
       "risk": "low",
       "runtime": true,
       "schemaVersion": "1.0.0",
@@ -57681,7 +57702,7 @@
         "frontend/app/types/orders.types.ts"
       ],
       "kind": "service",
-      "loc": 284,
+      "loc": 269,
       "owner": "__unassigned__",
       "path": "frontend/app/services/orders/orders.service.ts",
       "risk": "low",
@@ -60348,6 +60369,25 @@
       "loc": 181,
       "owner": "__unassigned__",
       "path": "frontend/tests/qa-audit/suites/visual.spec.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/account.invoice.loader.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 226,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/account.invoice.loader.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",

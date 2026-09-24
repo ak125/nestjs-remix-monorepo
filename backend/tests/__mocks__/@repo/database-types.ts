@@ -8,6 +8,8 @@
 export const TABLES = {
   xtr_order: 'xtr_order',
   xtr_customer: 'xtr_customer',
+  xtr_customer_billing_address: 'xtr_customer_billing_address',
+  xtr_customer_delivery_address: 'xtr_customer_delivery_address',
   xtr_product: 'xtr_product',
   ic_postback: 'ic_postback',
 } as Record<string, string>;

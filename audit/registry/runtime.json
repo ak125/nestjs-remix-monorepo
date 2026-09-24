@@ -9078,18 +9078,18 @@
     },
     {
       "dependsOn": [],
-      "id": "runtime:frontend/app/routes/account_.orders.$orderId.invoice.tsx",
+      "id": "runtime:frontend/app/routes/account_.orders.$orderId.tsx",
       "kind": "remix-route",
-      "path": "frontend/app/routes/account_.orders.$orderId.invoice.tsx",
+      "path": "frontend/app/routes/account_.orders.$orderId.tsx",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
     },
     {
       "dependsOn": [],
-      "id": "runtime:frontend/app/routes/account_.orders.$orderId.tsx",
+      "id": "runtime:frontend/app/routes/account_.orders.$orderId_.invoice.tsx",
       "kind": "remix-route",
-      "path": "frontend/app/routes/account_.orders.$orderId.tsx",
+      "path": "frontend/app/routes/account_.orders.$orderId_.invoice.tsx",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
