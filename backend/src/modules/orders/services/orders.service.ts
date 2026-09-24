@@ -24,7 +24,11 @@ import {
   OrderEmailData,
   CustomerEmailData,
 } from '../../../services/mail.service';
-import { ORDER_EVENTS, type OrderCreatedEvent } from '../events/order.events';
+import {
+  ORDER_EVENTS,
+  type OrderCancelledEvent,
+  type OrderCreatedEvent,
+} from '../events/order.events';
 
 /** Postal address for billing or shipping */
 export interface OrderAddress {
@@ -783,29 +787,32 @@ export class OrdersService extends SupabaseBaseService {
   /**
    * Annuler une commande via cancel_order_atomic RPC (Vault #301 fix).
    *
-   * IMPORTANT V1: refuse HTTP 409 si commande payée (ord_ords_id='5') —
-   * annulation requiert workflow refund manuel (payments/ module off-limits,
-   * cf. feedback_no_payment_module_changes_ever). V1.7+: Human Override Authority
-   * permettra de réouvrir cette transition couplée à un refund manuel.
+   * La RPC est l'autorité d'écriture : UPDATE du statut + append_order_event
+   * dans une seule transaction (historique ___xtr_order_history côté DB). Ses
+   * refus (commande payée, déjà annulée, introuvable) sont traduits en 409/404.
    *
-   * La RPC est composite (UPDATE + append_order_event en une tx) — atomicité audit
-   * garantie côté DB. Reject mécaniquement enforced via canonical_transition_valid
-   * (matérialise ORDER_STATUS_TRANSITIONS de @repo/domain-commerce).
+   * Après succès seulement, ORDER_EVENTS.CANCELLED est émis : OrderEmailListener
+   * envoie l'e-mail d'annulation, OrderAuditListener trace l'action. Les deux
+   * écoutent en fire-and-forget — un échec d'e-mail ne défait pas l'annulation.
+   *
+   * @param customerId propriétaire de la commande, déjà vérifié par l'appelant
+   *   (porté par l'événement, jamais utilisé pour autoriser).
    */
   async cancelOrder(
     orderId: string,
-    reason?: string,
-    userId?: number,
-    correlationId?: string,
+    customerId: string,
+    options: { reason?: string; userId?: number; correlationId?: string } = {},
   ): Promise<OrderOperationResult> {
+    const reason = options.reason ?? 'Commande annulée';
+    const correlationId = options.correlationId ?? randomUUID();
     try {
       const { error: rpcError } = await this.callRpc(
         'cancel_order_atomic',
         {
           p_ord_id: orderId,
-          p_reason: reason ?? 'Commande annulée',
-          p_user_id: userId ?? null,
-          p_correlation_id: correlationId ?? randomUUID(),
+          p_reason: reason,
+          p_user_id: options.userId ?? null,
+          p_correlation_id: correlationId,
         },
         { isServiceRole: true, source: 'internal' },
       );
@@ -829,6 +836,15 @@ export class OrdersService extends SupabaseBaseService {
         }
         throw new BadRequestException(`Échec annulation: ${message}`);
       }
+
+      this.eventEmitter.emit(ORDER_EVENTS.CANCELLED, {
+        orderId,
+        customerId,
+        reason,
+        changedBy: options.userId != null ? String(options.userId) : customerId,
+        timestamp: new Date().toISOString(),
+        correlationId,
+      } satisfies OrderCancelledEvent);
 
       this.logger.log(`Commande #${orderId} annulée via cancel_order_atomic`);
       return { success: true, message: 'Commande annulée', ord_id: orderId };

@@ -129,12 +129,14 @@ describe('OrdersController.cancelOrder (DELETE /api/orders/:id)', () => {
 
     expect(ordersService.getOrderById).toHaveBeenCalledWith(ORDER_ID);
     expect(ordersService.cancelOrder).toHaveBeenCalledTimes(1);
-    const [id, reason, userId, correlationId] =
-      ordersService.cancelOrder.mock.calls[0];
+    const [id, customerId, options] = ordersService.cancelOrder.mock.calls[0];
     expect(id).toBe(ORDER_ID);
-    expect(reason).toBe('Annulée par le client depuis son espace');
-    expect(userId).toBeUndefined();
-    expect(correlationId).toMatch(UUID_RE);
+    // Le propriétaire vérifié est transmis : il porte l'événement d'annulation
+    // (e-mail + audit), jamais une autorisation.
+    expect(customerId).toBe(OWNER);
+    expect(options.reason).toBe('Annulée par le client depuis son espace');
+    expect(options.userId).toBeUndefined();
+    expect(options.correlationId).toMatch(UUID_RE);
   });
 
   it('works for a guest customer id that is not numeric', async () => {
@@ -145,7 +147,9 @@ describe('OrdersController.cancelOrder (DELETE /api/orders/:id)', () => {
     await controller.cancelOrder(ORDER_ID, req('guest-7f3a'));
 
     expect(ordersService.cancelOrder).toHaveBeenCalledTimes(1);
-    expect(ordersService.cancelOrder.mock.calls[0][2]).toBeUndefined();
+    const [, customerId, options] = ordersService.cancelOrder.mock.calls[0];
+    expect(customerId).toBe('guest-7f3a');
+    expect(options.userId).toBeUndefined();
   });
 
   it("answers 404 on someone else's order and does not cancel", async () => {

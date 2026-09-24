@@ -34,8 +34,8 @@ export class OrderEmailListener extends SupabaseBaseService {
         },
         {
           cst_mail: customer.cst_mail,
-          cst_fname: customer.cst_prenom || customer.cst_fname || '',
-          cst_name: customer.cst_nom || customer.cst_name || '',
+          cst_fname: customer.cst_fname ?? '',
+          cst_name: customer.cst_name ?? '',
         },
         event.trackingNumber,
       );
@@ -61,8 +61,8 @@ export class OrderEmailListener extends SupabaseBaseService {
         },
         {
           cst_mail: customer.cst_mail,
-          cst_fname: customer.cst_prenom || customer.cst_fname || '',
-          cst_name: customer.cst_nom || customer.cst_name || '',
+          cst_fname: customer.cst_fname ?? '',
+          cst_name: customer.cst_name ?? '',
         },
         event.reason,
       );
@@ -88,8 +88,8 @@ export class OrderEmailListener extends SupabaseBaseService {
         },
         {
           cst_mail: customer.cst_mail,
-          cst_fname: customer.cst_prenom || customer.cst_fname || '',
-          cst_name: customer.cst_nom || customer.cst_name || '',
+          cst_fname: customer.cst_fname ?? '',
+          cst_name: customer.cst_name ?? '',
         },
         event.amount,
         event.reason,
@@ -100,21 +100,37 @@ export class OrderEmailListener extends SupabaseBaseService {
     }
   }
 
+  /**
+   * Charge la commande et son client pour l'e-mail. Un échec de lecture est
+   * journalisé (jamais silencieux) : sans ces lignes, aucun e-mail ne part.
+   */
   private async loadOrderAndCustomer(orderId: string) {
-    const { data: order } = await this.supabase
+    const { data: order, error: orderError } = await this.supabase
       .from(TABLES.xtr_order)
       .select('ord_id, ord_cst_id, ord_total_ttc, ord_date')
       .eq('ord_id', orderId)
       .single();
 
-    if (!order) return { order: null, customer: null };
+    if (orderError || !order) {
+      this.logger.warn(
+        `Email skipped: order ${orderId} not readable (${orderError?.message ?? 'no row'})`,
+      );
+      return { order: null, customer: null };
+    }
 
-    const { data: customer } = await this.supabase
+    const { data: customer, error: customerError } = await this.supabase
       .from(TABLES.xtr_customer)
-      .select('cst_mail, cst_prenom, cst_nom, cst_fname, cst_name')
+      .select('cst_mail, cst_fname, cst_name')
       .eq('cst_id', order.ord_cst_id)
       .single();
 
-    return { order, customer: customer || null };
+    if (customerError || !customer) {
+      this.logger.warn(
+        `Email skipped: customer of order ${orderId} not readable (${customerError?.message ?? 'no row'})`,
+      );
+      return { order, customer: null };
+    }
+
+    return { order, customer };
   }
 }

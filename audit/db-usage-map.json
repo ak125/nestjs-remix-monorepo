@@ -22,7 +22,7 @@
     "unresolved_callsites": 0,
     "dropped_call_sites": 5,
     "migrations_scanned": 356,
-    "backend_files_scanned": 1402
+    "backend_files_scanned": 1403
   },
   "tables": {
     "___config": {
@@ -12787,14 +12787,14 @@
     },
     {
       "file": "backend/src/modules/orders/listeners/order-email.listener.ts",
-      "line": 104,
+      "line": 108,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/listeners/order-email.listener.ts",
-      "line": 112,
+      "line": 121,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -13074,63 +13074,63 @@
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 401,
+      "line": 405,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 411,
+      "line": 415,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 496,
+      "line": 500,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 545,
+      "line": 549,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 550,
+      "line": 554,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 566,
+      "line": 570,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 601,
+      "line": 605,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 720,
+      "line": 724,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 862,
+      "line": 878,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
