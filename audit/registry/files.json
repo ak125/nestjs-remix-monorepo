@@ -966,7 +966,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 1141,
+      "loc": 1136,
       "owner": "__unassigned__",
       "path": "backend/src/auth/auth.service.ts",
       "risk": "low",

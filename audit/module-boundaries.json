@@ -74,7 +74,7 @@
         "backend/src/modules/auth/dto"
       ],
       "files_count": 45,
-      "loc_total": 5938,
+      "loc_total": 5933,
       "has_barrel": true
     },
     "backend-core": {
