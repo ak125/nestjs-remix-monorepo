@@ -9242,7 +9242,8 @@
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
         "backend/src/modules/admin/controllers/admin-r8-vehicle.controller.ts",
-        "backend/src/modules/admin/services/execution-router.service.ts"
+        "backend/src/modules/admin/services/execution-router.service.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.tech-specs.test.ts"
       ],
       "imports": [
         "@database/services/supabase-base.service",
@@ -9263,7 +9264,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 1532,
+      "loc": 1466,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
       "risk": "low",
@@ -9271,6 +9272,27 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/admin/services/r8-vehicle-enricher.tech-specs.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
+      ],
+      "kind": "test",
+      "loc": 269,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/admin/services/r8-vehicle-enricher.tech-specs.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",

@@ -2,7 +2,7 @@
 module: admin
 sources:
 - backend/src/modules/admin
-last_scan: '2026-07-16'
+last_scan: '2026-09-24'
 primary_files:
 - backend/src/modules/admin/admin.module.ts
 - backend/src/modules/admin/constants/seo-control.constants.ts
@@ -51,7 +51,6 @@ _Section à rédiger._
 - `HardGatesService`
 - `ImageGatesService`
 - `AdminJobHealthService`
-- `RagSafeDistillService`
 - `KeywordPlanGatesService`
 - `R1KeywordPlanGatesService`
 - `R8VehicleEnricherService`
@@ -60,31 +59,20 @@ _Section à rédiger._
 - `RagGammeReaderService`
 
 ### Providers (top 15)
-- `ConfigurationService`
-- `StockManagementService`
-- `WorkingStockService`
-- `ReportingService`
-- `UserManagementService`
-- `AdminGammesSeoService`
-- `GammeSeoThresholdsService`
-- `GammeSeoAuditService`
-- `GammeSeoBadgesService`
-- `SeoCockpitService`
-- `GammeDetailEnricherService`
-- `GammeVLevelService`
-- `StockMovementService`
-- `StockReportService`
-- `BuyingGuideEnricherService`
+- `RegistryReaderService`
+- `CommandCenterReaderService`
+- `CommandCenterActionsService`
+- `CommandCenterOrchestratorService`
 
 ### Fichiers primaires
 - [backend/src/modules/admin/admin.module.ts](../../../backend/src/modules/admin/admin.module.ts)
+- [backend/src/modules/admin/constants/seo-control.constants.ts](../../../backend/src/modules/admin/constants/seo-control.constants.ts)
 - [backend/src/modules/admin/controllers/admin-buying-guide-preview.controller.ts](../../../backend/src/modules/admin/controllers/admin-buying-guide-preview.controller.ts)
 - [backend/src/modules/admin/controllers/admin-buying-guide.controller.ts](../../../backend/src/modules/admin/controllers/admin-buying-guide.controller.ts)
 - [backend/src/modules/admin/controllers/admin-conseil.controller.ts](../../../backend/src/modules/admin/controllers/admin-conseil.controller.ts)
 - [backend/src/modules/admin/controllers/admin-db-governance.controller.ts](../../../backend/src/modules/admin/controllers/admin-db-governance.controller.ts)
 - [backend/src/modules/admin/controllers/admin-feature-flags.controller.ts](../../../backend/src/modules/admin/controllers/admin-feature-flags.controller.ts)
 - [backend/src/modules/admin/controllers/admin-gammes-seo-aggregates.controller.ts](../../../backend/src/modules/admin/controllers/admin-gammes-seo-aggregates.controller.ts)
-- [backend/src/modules/admin/controllers/admin-gammes-seo-list.controller.ts](../../../backend/src/modules/admin/controllers/admin-gammes-seo-list.controller.ts)
 
 <!-- END AUTO-GENERATED -->
 
