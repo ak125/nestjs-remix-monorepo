@@ -61871,10 +61871,11 @@
         "@auth/is-admin.guard",
         "@auth/permissions.service",
         "@common/exceptions",
+        "backend/src/modules/support/controllers/session-user.ts",
         "backend/src/modules/support/services/claim.service.ts"
       ],
       "kind": "controller",
-      "loc": 303,
+      "loc": 317,
       "owner": "@ak125",
       "path": "backend/src/modules/support/controllers/claim.controller.ts",
       "risk": "medium",
@@ -61985,10 +61986,11 @@
         "@auth/is-admin.guard",
         "@auth/permissions.service",
         "@common/exceptions",
+        "backend/src/modules/support/controllers/session-user.ts",
         "backend/src/modules/support/services/legal.service.ts"
       ],
       "kind": "controller",
-      "loc": 255,
+      "loc": 257,
       "owner": "@ak125",
       "path": "backend/src/modules/support/controllers/legal.controller.ts",
       "risk": "medium",
@@ -62043,14 +62045,42 @@
         "@auth/guards/permissions.guard",
         "@auth/is-admin.guard",
         "@common/exceptions",
+        "backend/src/modules/support/controllers/session-user.ts",
         "backend/src/modules/support/services/review.service.ts"
       ],
       "kind": "controller",
-      "loc": 174,
+      "loc": 176,
       "owner": "@ak125",
       "path": "backend/src/modules/support/controllers/review.controller.ts",
       "risk": "medium",
       "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D11",
+      "id": "backend/src/modules/support/controllers/session-user.ts",
+      "importedBy": [
+        "backend/src/modules/support/controllers/claim.controller.ts",
+        "backend/src/modules/support/controllers/legal.controller.ts",
+        "backend/src/modules/support/controllers/review.controller.ts"
+      ],
+      "imports": [
+        "@common/exceptions"
+      ],
+      "kind": "service",
+      "loc": 17,
+      "owner": "@ak125",
+      "path": "backend/src/modules/support/controllers/session-user.ts",
+      "risk": "medium",
+      "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
@@ -62246,7 +62276,7 @@
         "backend/src/modules/support/services/notification.service.ts"
       ],
       "kind": "service",
-      "loc": 754,
+      "loc": 767,
       "owner": "@ak125",
       "path": "backend/src/modules/support/services/claim.service.ts",
       "risk": "medium",
@@ -67792,7 +67822,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 735,
+      "loc": 851,
       "owner": "@ak125",
       "path": "backend/tests/unit/support-routes-authz.test.ts",
       "risk": "medium",
@@ -100044,11 +100074,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "3045154dd16aeefab01f398f2540e47939a253f9cb3d5194599764dbc02e9958",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "6f50dcb27459d853ab291dd4f3ce8a69d2c1b6fbd013eaa47b9df9a757ba99d1",
+      "audit/registry/files.json": "1ec39865204cf5739638add8ec628ad06e359b9f2f074a6618fde7c867a2566e",
       "audit/registry/rpc.json": "821912126b4b0b6e8c5a86b4269f43106cc40a44d2ee85a107b550ab9ea0a7b6",
       "audit/registry/runtime.json": "d5b5c0f04fe1841b06231d2bd4a3f8fe4772b45aef0591edbb9fdfbde72f4ed8"
     },
-    "sotFingerprint": "7543692202e8"
+    "sotFingerprint": "99da8c99ff80"
   },
   "runtime": [
     {

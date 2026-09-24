@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: f0f6a540d7ab0df73872cf71473945a4d8f1949ae241d63e7c7c2222b6977869
+source_sha256: 15c28af874a9ff00844ea02dd8be49d00a3eddf7b6ec3ace3995a36cbb006021
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 2902 |
+| Files (Layer 1) | 2903 |
 | DB tables (Layer 1) | 314 |
 | DB RPC (Layer 1) | 253 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1000 |
 
-Source sotFingerprint: `7543692202e8`.
+Source sotFingerprint: `99da8c99ff80`.
 
 ## Comment l'utiliser
 
@@ -116,11 +116,11 @@ Source sotFingerprint: `7543692202e8`.
 
 ### D11 — Commerce & Users
 
-- **Files**: 281 (service=185, test=55, controller=40, config=1)
+- **Files**: 282 (service=186, test=55, controller=40, config=1)
 - **Runtime entrypoints**: 128
-- **Top owners**: @ak125 (115), @ak125/payments-team (82), @ak125/auth-team (72)
+- **Top owners**: @ak125 (116), @ak125/payments-team (82), @ak125/auth-team (72)
 - **Knowledge prose**: [`cart`](modules/cart.md), [`invoices`](modules/invoices.md), [`messages`](modules/messages.md), [`orders`](modules/orders.md), [`payments`](modules/payments.md), [`support`](modules/support.md), [`users`](modules/users.md)
-- **Status**: LIVE=176, UNKNOWN=105
+- **Status**: LIVE=177, UNKNOWN=105
 
 ### D12 — Marketing & Video
 

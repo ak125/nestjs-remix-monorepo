@@ -898,8 +898,8 @@
         "backend/src/modules/support/services/__tests__",
         "backend/src/modules/support/types"
       ],
-      "files_count": 28,
-      "loc_total": 10362,
+      "files_count": 29,
+      "loc_total": 10410,
       "has_barrel": true
     },
     "system": {
@@ -958,7 +958,7 @@
         "tests/registry"
       ],
       "files_count": 244,
-      "loc_total": 44673,
+      "loc_total": 44789,
       "has_barrel": true
     },
     "upload": {
