@@ -74,7 +74,7 @@
         "backend/src/modules/auth/dto"
       ],
       "files_count": 42,
-      "loc_total": 5346,
+      "loc_total": 5355,
       "has_barrel": true
     },
     "backend-core": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 597,
-      "loc_total": 113603,
+      "loc_total": 113624,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -502,7 +502,7 @@
         "backend/src/modules/orders/types"
       ],
       "files_count": 21,
-      "loc_total": 6201,
+      "loc_total": 6191,
       "has_barrel": true
     },
     "payments": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 243,
-      "loc_total": 43938,
+      "files_count": 245,
+      "loc_total": 44681,
       "has_barrel": true
     },
     "upload": {
@@ -980,7 +980,7 @@
         "backend/src/modules/users/services"
       ],
       "files_count": 27,
-      "loc_total": 5157,
+      "loc_total": 5162,
       "has_barrel": true
     },
     "vehicle-context": {
@@ -1819,7 +1819,7 @@
     {
       "from": "orders",
       "to": "backend-core",
-      "count": 5
+      "count": 4
     },
     {
       "from": "orders",
