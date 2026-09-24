@@ -71,27 +71,6 @@ interface VehicleRagData {
   pieces_usure?: string[];
   entretien?: string[];
   faq?: Array<{ q: string; a: string }>;
-  specs_techniques?: {
-    longueur?: string;
-    largeur?: string;
-    hauteur?: string;
-    empattement?: string;
-    poids?: string;
-    coffre?: string;
-    reservoir?: string;
-    vitesse_max?: string;
-    zero_a_cent?: string;
-    conso_mixte?: string;
-    co2?: string;
-    couple?: string;
-    cylindree?: string;
-    boite?: string;
-    transmission?: string;
-    pneus?: string;
-    diam_braquage?: string;
-    norme_euro?: string;
-    source_url?: string;
-  };
 }
 
 // ── Block ──
@@ -816,68 +795,23 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       semanticPayload: [...engineCodes, ...cnitCodes],
     });
 
-    // S_TECH_SPECS — motorisation du type courant + web specs (dimensions, performances)
-    const specs = vehicleRag.specs_techniques;
-    const hasSpecs =
-      specs && Object.keys(specs).filter((k) => k !== 'source_url').length > 0;
-    if (type || hasSpecs) {
-      const parts: string[] = [];
-
-      // Web specs table (dimensions, performances)
-      if (hasSpecs) {
-        const specRows: string[] = [];
-        if (specs.longueur) specRows.push(`| Longueur | ${specs.longueur} |`);
-        if (specs.largeur) specRows.push(`| Largeur | ${specs.largeur} |`);
-        if (specs.hauteur) specRows.push(`| Hauteur | ${specs.hauteur} |`);
-        if (specs.empattement)
-          specRows.push(`| Empattement | ${specs.empattement} |`);
-        if (specs.poids) specRows.push(`| Poids à vide | ${specs.poids} |`);
-        if (specs.coffre) specRows.push(`| Coffre | ${specs.coffre} |`);
-        if (specs.reservoir)
-          specRows.push(`| Réservoir | ${specs.reservoir} |`);
-        if (specs.cylindree)
-          specRows.push(`| Cylindrée | ${specs.cylindree} |`);
-        if (specs.couple) specRows.push(`| Couple | ${specs.couple} |`);
-        if (specs.boite) specRows.push(`| Boîte | ${specs.boite} |`);
-        if (specs.transmission)
-          specRows.push(`| Transmission | ${specs.transmission} |`);
-        if (specs.vitesse_max)
-          specRows.push(`| Vitesse max | ${specs.vitesse_max} |`);
-        if (specs.zero_a_cent)
-          specRows.push(`| 0 à 100 km/h | ${specs.zero_a_cent} |`);
-        if (specs.conso_mixte)
-          specRows.push(`| Consommation mixte | ${specs.conso_mixte} |`);
-        if (specs.co2) specRows.push(`| Émissions CO₂ | ${specs.co2} |`);
-        if (specs.pneus) specRows.push(`| Pneumatiques | ${specs.pneus} |`);
-        if (specs.norme_euro)
-          specRows.push(`| Norme Euro | ${specs.norme_euro} |`);
-        if (specRows.length > 0) {
-          parts.push(
-            `| Caractéristique | Valeur |\n|---|---|\n${specRows.join('\n')}`,
-          );
-        }
-      }
-
-      // Motorisation unique du type courant (1 type = 1 motorisation)
-      if (type) {
-        parts.push(
-          `**Motorisation** : ${type} ${power ? power + ' ch' : ''} (${fuel || 'N/C'})`,
-        );
-      }
-
+    // S_TECH_SPECS — motorisation du type courant, depuis auto_type uniquement.
+    // Le tableau `specs_techniques` du fichier RAG véhicule n'est plus rendu :
+    // RAG = couche chatbot, zéro autorité d'écriture contenu (CLAUDE.md
+    // invariant 4, ADR-031/046). Cette fiche vient d'une seule page web non
+    // vérifiée, niveau modèle, et était recopiée sur tous les types du modèle
+    // (cylindrée diesel 1 461 cm3 affichée sur un 1.2 essence).
+    if (type) {
       blocks.push({
         id: 'S_TECH_SPECS',
         type: 'technical_specs',
         title: `Fiche technique ${brand} ${model} ${type}`,
-        renderedText: parts.join('\n\n'),
-        specificityWeight: hasSpecs ? 0.95 : 0.9,
+        renderedText: `**Motorisation** : ${type} ${power ? power + ' ch' : ''} (${fuel || 'N/C'})`,
+        specificityWeight: 0.9,
         boilerplateRisk: 0.05,
-        semanticPayload: [
-          type,
-          fuel,
-          power ? `${power}ch` : '',
-          ...(hasSpecs ? ['dimensions', 'performances', 'specs'] : []),
-        ].filter(Boolean),
+        semanticPayload: [type, fuel, power ? `${power}ch` : ''].filter(
+          Boolean,
+        ),
       });
     }
 

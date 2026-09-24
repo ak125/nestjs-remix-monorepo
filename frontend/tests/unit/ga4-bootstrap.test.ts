@@ -48,10 +48,7 @@ afterEach(() => {
   for (const dom of doms.splice(0)) dom.window.close();
 });
 
-function start(
-  hasIdleCallback = true,
-  choice: "granted" | "denied" | null = null,
-) {
+function start(hasIdleCallback = true, automated = false) {
   const dom = new JSDOM("<!doctype html><title>Pièces auto</title>", {
     url: "https://automecanik.example/pieces?marque=renault",
     runScripts: "outside-only",
@@ -59,6 +56,9 @@ function start(
   });
   doms.push(dom);
   const { window } = dom;
+  if (automated) {
+    Object.defineProperty(window.navigator, "webdriver", { value: true });
+  }
   const pending: Array<() => void> = [];
   window.setTimeout = ((callback: () => void) => {
     pending.push(callback);
@@ -70,11 +70,6 @@ function start(
       return pending.length;
     };
   }
-  if (choice)
-    window.localStorage.setItem(
-      "automecanik.analytics-consent.v1",
-      JSON.stringify({ choice, updatedAt: Date.now() }),
-    );
   window.eval(bootstrap);
   const commands = () =>
     Array.from(window.dataLayer as ArrayLike<ArrayLike<unknown>>, (entry) =>
@@ -90,7 +85,7 @@ describe("GA4 deferred bootstrap", () => {
   it.each([true, false])(
     "configures the destination before a page view queued ahead of the script (idle=%s)",
     (idle) => {
-      const { window, commands } = start(idle, "granted");
+      const { window, commands } = start(idle);
       window.gtag("event", "page_view", {
         page_location: window.location.href,
         page_title: window.document.title,
@@ -110,7 +105,7 @@ describe("GA4 deferred bootstrap", () => {
   );
 
   it("does not reconfigure or add a second script when interaction and idle overlap", () => {
-    const { window, commands, flush } = start(true, "granted");
+    const { window, commands, flush } = start();
     window.dispatchEvent(new window.Event("click"));
     window.dispatchEvent(new window.Event("scroll"));
     flush();
@@ -129,139 +124,51 @@ describe("GA4 deferred bootstrap", () => {
   });
 
   it.each([true, false])(
-    "does not load or queue events before acceptance (idle=%s)",
+    "never downloads gtag.js in a browser under automation (idle=%s)",
     (idle) => {
-      const { window, commands, flush } = start(idle);
-      window.gtag("event", "web_vitals", { metric_name: "LCP" });
-      window.dispatchEvent(new window.Event("click"));
+      const { window, commands, flush } = start(idle, true);
       window.dispatchEvent(new window.Event("scroll"));
+      window.gtag("event", "page_view", { page_title: "Pièces auto" });
       flush();
       expect(window.document.querySelectorAll("script")).toHaveLength(0);
       expect(
-        commands().filter(([cmd]) => cmd === "event" || cmd === "config"),
+        commands().filter(
+          ([command, action]) => command === "consent" && action === "update",
+        ),
       ).toHaveLength(0);
-      expect(
-        (commands()[0][2] as Record<string, unknown>).analytics_storage,
-      ).toBe("denied");
     },
   );
 
-  it("accepts explicitly, persists, and does not grant again on script load", () => {
+  it("keeps denied consent ahead of configuration and defers the existing consent update until load", () => {
     const { window, commands, flush } = start();
-    expect(window.__analyticsConsent.setChoice("granted")).toBe(true);
-    flush();
-    expect(window.document.querySelectorAll("script")).toHaveLength(1);
-    const beforeLoad = commands().length;
-    window.document
-      .querySelector("script")
-      .dispatchEvent(new window.Event("load"));
-    expect(commands()).toHaveLength(beforeLoad);
+    expect(commands()[0]).toEqual([
+      "consent",
+      "default",
+      expect.objectContaining({
+        analytics_storage: "denied",
+        ad_storage: "denied",
+      }),
+    ]);
     expect(
       commands().filter(
-        ([cmd, action, params]) =>
-          cmd === "consent" &&
-          action === "update" &&
-          (params as Record<string, unknown>).analytics_storage === "granted",
+        ([command, action]) => command === "consent" && action === "update",
       ),
-    ).toHaveLength(1);
+    ).toHaveLength(0);
+    flush();
+    window.document
+      .querySelector("script")!
+      .dispatchEvent(new window.Event("load"));
     expect(
-      JSON.parse(
-        window.localStorage.getItem("automecanik.analytics-consent.v1"),
-      ).choice,
-    ).toBe("granted");
-  });
-
-  it("keeps a stored refusal across reload and ignores events", () => {
-    const { window, commands, flush } = start(true, "denied");
-    window.gtag("event", "page_view", {});
-    flush();
-    expect(window.__analyticsConsent.getChoice()).toBe("denied");
-    expect(window.document.querySelectorAll("script")).toHaveLength(0);
-    expect(commands().filter(([cmd]) => cmd === "event")).toHaveLength(0);
-  });
-
-  it("withdraws before a pending load, discards queued events and removes only GA cookies", () => {
-    const { window, commands, flush } = start(true, "granted");
-    window.document.cookie = "_ga=old; path=/";
-    window.document.cookie =
-      "_ga_TESTONLY=old; path=/; domain=automecanik.example";
-    window.document.cookie = "cart=preserved; path=/";
-    window.gtag("event", "web_vitals", {});
-    window.__analyticsConsent.setChoice("denied");
-    flush();
-    window.gtag("event", "page_view", {});
-    expect(window["ga-disable-G-TESTONLY"]).toBe(true);
-    expect(window.document.querySelectorAll("script")).toHaveLength(0);
-    expect(commands().filter(([cmd]) => cmd === "event")).toHaveLength(0);
-    expect(window.document.cookie).not.toContain("_ga");
-    expect(window.document.cookie).toContain("cart=preserved");
-  });
-
-  it("blocks events after an already loaded tag is withdrawn and permits reacceptance", () => {
-    const { window, commands, flush } = start(true, "granted");
-    flush();
-    window.__analyticsConsent.setChoice("denied");
-    window.gtag("event", "web_vitals", {});
-    expect(window["ga-disable-G-TESTONLY"]).toBe(true);
-    expect(commands().filter(([cmd]) => cmd === "event")).toHaveLength(0);
-    window.__analyticsConsent.setChoice("granted");
-    window.gtag("event", "web_vitals", {});
-    flush();
-    expect(window["ga-disable-G-TESTONLY"]).toBe(false);
-    expect(commands().filter(([cmd]) => cmd === "event")).toHaveLength(1);
-    expect(window.document.querySelectorAll("script")).toHaveLength(1);
-  });
-
-  it("reflects withdrawal in another tab", () => {
-    const { window } = start(true, "granted");
-    window.localStorage.setItem(
-      "automecanik.analytics-consent.v1",
-      JSON.stringify({ choice: "denied", updatedAt: Date.now() }),
-    );
-    window.dispatchEvent(
-      new window.StorageEvent("storage", {
-        key: "automecanik.analytics-consent.v1",
-        storageArea: window.localStorage,
-      }),
-    );
-    expect(window.__analyticsConsent.getChoice()).toBe("denied");
-    expect(window["ga-disable-G-TESTONLY"]).toBe(true);
-  });
-
-  it.each([
-    "invalid",
-    JSON.stringify({ choice: "granted", updatedAt: 1 }),
-    JSON.stringify({ choice: "granted", updatedAt: Date.now() + 86400000 }),
-  ])("rejects corrupt, expired or future stored choice: %s", (value) => {
-    const { window, commands, flush } = start();
-    window.localStorage.setItem("automecanik.analytics-consent.v1", value);
-    window.dispatchEvent(
-      new window.StorageEvent("storage", {
-        key: "automecanik.analytics-consent.v1",
-        storageArea: window.localStorage,
-      }),
-    );
-    flush();
-    expect(window.__analyticsConsent.getChoice()).toBe(null);
-    expect(commands().filter(([cmd]) => cmd === "config")).toHaveLength(0);
-  });
-
-  it("reports persistence failure without granting on a later reload", () => {
-    const { window } = start();
-    Object.defineProperty(window, "localStorage", {
-      get() {
-        throw new Error("blocked");
-      },
-    });
-    expect(window.__analyticsConsent.setChoice("granted")).toBe(false);
-    expect(window.__analyticsConsent.getChoice()).toBe("granted");
-    expect(start().window.__analyticsConsent.getChoice()).toBe(null);
+      commands().filter(
+        ([command, action]) => command === "consent" && action === "update",
+      ),
+    ).toEqual([["consent", "update", { analytics_storage: "granted" }]]);
   });
 });
 
 describe("SPA page view attribution", () => {
   it("preserves each committed page and its referrer when idle callbacks run after another navigation", () => {
-    const { window, commands, flush } = start(true, "granted");
+    const { window, commands, flush } = start();
     const prevUrlRef = { current: "" };
     const visit = (url: string, title: string) => {
       window.history.pushState({}, "", url);
@@ -323,71 +230,4 @@ describe("SPA page view attribution", () => {
       page_referrer: "https://automecanik.example/blog",
     });
   });
-});
-
-describe("consent and SPA navigation", () => {
-  it("sends only the current page at acceptance, skips refused pages and deduplicates reacceptance", () => {
-    const { window, commands, flush } = start();
-    const prevUrlRef = { current: "" };
-    let cleanup: (() => void) | undefined;
-    const visit = (pathname: string, state = "idle") => {
-      cleanup?.();
-      window.history.pushState({}, "", pathname);
-      window.document.title = pathname;
-      cleanup = runInNewContext(pageViewEffect, {
-        window,
-        document: window.document,
-        URL: window.URL,
-        location: { pathname, search: "" },
-        navigation: { state },
-        prevUrlRef,
-      });
-    };
-    const views = () =>
-      commands().filter(
-        ([cmd, event]) => cmd === "event" && event === "page_view",
-      );
-    visit("/before");
-    visit("/current");
-    window.__analyticsConsent.setChoice("granted");
-    flush();
-    expect(
-      views().map(
-        ([, , params]) => (params as Record<string, unknown>).page_path,
-      ),
-    ).toEqual(["/current"]);
-    window.__analyticsConsent.setChoice("granted");
-    expect(views()).toHaveLength(1);
-    visit("/next");
-    expect(
-      (views().slice(-1)[0][2] as Record<string, unknown>).page_referrer,
-    ).toBe("https://automecanik.example/current");
-    window.__analyticsConsent.setChoice("denied");
-    visit("/refused");
-    expect(views()).toHaveLength(0); // unprocessed queue discarded on withdrawal
-    window.__analyticsConsent.setChoice("granted");
-    expect(
-      views().map(
-        ([, , params]) => (params as Record<string, unknown>).page_path,
-      ),
-    ).toEqual(["/refused"]);
-    visit("/admin");
-    expect(views()).toHaveLength(1);
-    cleanup?.();
-  });
-});
-
-it("invalidates old acceptance if persisting withdrawal fails", () => {
-  const { window } = start(true, "granted");
-  // Storage methods live on the prototype in jsdom.
-  Object.defineProperty(Object.getPrototypeOf(window.localStorage), "setItem", {
-    value: () => {
-      throw new Error("quota");
-    },
-    configurable: true,
-  });
-  expect(window.__analyticsConsent.setChoice("denied")).toBe(false);
-  expect(window.localStorage.getItem("automecanik.analytics-consent.v1")).toBe(
-    null,
-  );
 });

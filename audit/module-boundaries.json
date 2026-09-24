@@ -18,7 +18,7 @@
         "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__"
       ],
       "files_count": 147,
-      "loc_total": 41576,
+      "loc_total": 41300,
       "has_barrel": true
     },
     "agentic-engine": {
@@ -259,7 +259,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115403,
+      "loc_total": 115500,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -341,8 +341,8 @@
         "frontend/app/utils",
         "frontend/app/utils/seo"
       ],
-      "files_count": 598,
-      "loc_total": 113658,
+      "files_count": 597,
+      "loc_total": 113603,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -502,7 +502,7 @@
         "backend/src/modules/orders/types"
       ],
       "files_count": 21,
-      "loc_total": 6121,
+      "loc_total": 6201,
       "has_barrel": true
     },
     "payments": {
@@ -700,8 +700,8 @@
         "scripts/wiki-generators",
         "scripts/wiki-generators/__tests__"
       ],
-      "files_count": 183,
-      "loc_total": 38919,
+      "files_count": 184,
+      "loc_total": 39185,
       "has_barrel": true
     },
     "search": {
@@ -958,7 +958,7 @@
         "tests/registry"
       ],
       "files_count": 243,
-      "loc_total": 43870,
+      "loc_total": 43938,
       "has_barrel": true
     },
     "upload": {
