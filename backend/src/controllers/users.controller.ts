@@ -238,7 +238,8 @@ export class UsersController {
             new Date().toISOString(),
           isPro: userDetails.isPro || false,
           isActive: userDetails.isActive,
-          level: userDetails.level || 1,
+          // Niveau de privilège de la session, pas le palier du compte client
+          level: user.level,
         },
         stats: userStats,
         globalStats: {
