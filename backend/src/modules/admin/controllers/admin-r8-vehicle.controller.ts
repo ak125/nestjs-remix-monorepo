@@ -34,7 +34,7 @@ export class AdminR8VehicleController {
     const result = await this.r8Enricher.enrichSingle(typeId);
 
     this.logger.log(
-      `R8 enrich done: typeId=${typeId} decision=${result.seoDecision} score=${result.diversityScore}`,
+      `R8 enrich done: typeId=${typeId} status=${result.status} decision=${result.seoDecision} score=${result.diversityScore}`,
     );
 
     return { result };

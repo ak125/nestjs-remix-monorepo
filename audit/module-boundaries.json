@@ -17,8 +17,8 @@
         "backend/src/modules/admin/services/r1-image-prompt-builders",
         "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__"
       ],
-      "files_count": 147,
-      "loc_total": 41300,
+      "files_count": 148,
+      "loc_total": 42206,
       "has_barrel": true
     },
     "agentic-engine": {
@@ -186,7 +186,7 @@
         "backend/src/modules/config/validators"
       ],
       "files_count": 100,
-      "loc_total": 24372,
+      "loc_total": 24373,
       "has_barrel": true
     },
     "customers": {
@@ -1025,8 +1025,8 @@
         "backend/src/workers/services",
         "backend/src/workers/types"
       ],
-      "files_count": 17,
-      "loc_total": 3709,
+      "files_count": 18,
+      "loc_total": 3892,
       "has_barrel": false
     }
   },
@@ -1044,7 +1044,7 @@
     {
       "from": "admin",
       "to": "backend-core",
-      "count": 1
+      "count": 3
     },
     {
       "from": "admin",
@@ -1059,7 +1059,7 @@
     {
       "from": "admin",
       "to": "config",
-      "count": 71
+      "count": 74
     },
     {
       "from": "admin",
@@ -2119,7 +2119,7 @@
     {
       "from": "workers",
       "to": "admin",
-      "count": 5
+      "count": 6
     },
     {
       "from": "workers",
