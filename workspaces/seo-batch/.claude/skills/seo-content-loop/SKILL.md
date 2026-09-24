@@ -1,8 +1,8 @@
 ---
 name: seo-content-loop
-description: "Méthode opératoire canonique du contenu SEO AutoMecanik : la BOUCLE scraping LARGE → RAW → WIKI → CONSUMER → mesure SCORE → itérer jusqu'au score. NO-RAG (RAG = chatbot only). Pointe vers le canon vault (ADR-031/046/059/083/086), ne le duplique pas. Use when: planifier/exécuter du contenu R1-R8, enrichir une gamme/motorisation, débloquer le pipeline, ou décider 'comment produire du contenu qui ranke'."
+description: "Méthode opératoire canonique du contenu SEO AutoMecanik : la BOUCLE scraping LARGE → RAW → WIKI → CONSUMER → scores distincts et preuve du contenu servi. NO-RAG (RAG = chatbot only). Pointe vers le canon vault (ADR-031/046/059/083/086), ne le duplique pas. Use when: planifier/exécuter du contenu R1-R8, enrichir une gamme/motorisation, débloquer le pipeline, ou décider 'comment produire du contenu qui ranke'."
 license: Internal - Automecanik
-version: "1.0"
+version: "1.1"
 argument-hint: "[gamme-name | vehicle-slug | status]"
 disable-model-invocation: false
 allowed-tools: mcp__claude_ai_Supabase__execute_sql, Read, Glob, Grep, Bash
@@ -19,17 +19,40 @@ allowed-tools: mcp__claude_ai_Supabase__execute_sql, Read, Glob, Grep, Bash
 > **Le contenu ne crée jamais l'information.** Il structure, clarifie, expose ce qui est **sourcé et vérifié**.
 > En cas de doute : s'abstenir. Jamais d'invention LLM, jamais de number-swapping, jamais de filler générique.
 
+## Avant de relancer : localiser le blocage réel
+
+Lire les implémentations à des commits identifiés, pas seulement les descriptions de skills.
+Ce contrôle ne change aucune gouvernance, aucun seuil, aucun flag : il classe le travail à faire.
+
+| Preuve à rechercher | Interprétation et action |
+|---|---|
+| RAW : allowlist, mode de découverte, statut de capture et revue | Une découverte désactivée ou une capture à examiner n'est pas un mauvais score. Respecter robots/licence/quarantaine ; ne pas contourner par un autre scraper. |
+| WIKI : décision canonique, raisons structurées, version des évaluateurs et provenance | Utiliser le décideur actuel partagé par dry-run/apply. `UNKNOWN_FAIL_CLOSED` ou évaluateur indisponible = réparer l'entrée/l'infrastructure, pas inventer des faits ni réduire le seuil. |
+| Export : gitlink WIKI du monorepo, exports effectivement montés, identité, rôles et empreintes | `main` WIKI à jour ne prouve pas que le conteneur possède cet export. Vérifier le contenu épinglé ; ne pas avancer automatiquement le gitlink ni injecter un export non validé. |
+| Projection : exécution, versions actives, blocs et rôle de l'entité ciblée | Un job terminé avec zéro export/projection n'est pas une page livrée. Distinguer no-op attendu, erreur et changement effectivement projeté. |
+| Consumer : `servedBodySource`, blocs retenus, HTML public et empreinte du contenu | `READY_FOR_RENDER` ne prouve jamais le rendu. Si le corps reste `legacy`, un score de proposition ne mesure pas la page publique. |
+| Scoring : entrées réelles, moteur, version, résultat et avertissements | `pr1_stub_data_loader_pending`, flag OFF ou scorer absent = non exécuté, pas qualité zéro. Ne pas utiliser ce résultat pour relancer l'enrichissement. |
+
+**Même entrée + même blocage = pas de nouvelle tentative automatique identique.** Reprendre seulement
+après changement de preuve, correction du composant responsable ou nouvelle autorisation applicable.
+Respecter les budgets/reprises de l'orchestrateur existant ; ne pas créer un autre moteur de boucle.
+Un chantier indépendant autorisé peut continuer, mais son avancement ne ferme pas le blocage aval.
+
+Tracer séparément : qualité de la proposition, éligibilité de promotion, export livré, projection active,
+contenu réellement rendu, score de surface et résultat Search Console. Ne jamais réduire ces états à un
+unique « score SEO ». Un hash de texte différent ne prouve ni une information différente ni un gain Google.
+
 ## La BOUCLE (ordre non négociable)
 
 ```
 SCRAPING LARGE (RUN_TARGETED_RAW_TO_WIKI) → RAW → WIKI → score SUBSTANCE (shadow, sur le WIKI)
   → revue/promotion → export → projection data → CONSUMER (R1/R2/R8) → resolver balises
-  → CONSTRUIRE le scorer SEO surface (shadow) → composition R2 → rendu SSR → EXÉCUTER le score surface
+  → vérifier le scorer SEO surface existant (shadow) → composition R2 → rendu SSR → EXÉCUTER le score surface
   → audit cluster (intra + cross-gamme) → calibration → correction → re-passage → outcome
 ```
 
 > **2 scores à 2 étapes** : substance (sur le WIKI, tôt) ≠ surface SEO (après composition+rendu, tard) ;
-> **construire le scorer ≠ l'exécuter**. Verdict terminal de page = `PAGE_QUALITY_COMPOSITE_PASS`
+> **construire le scorer ≠ l'exécuter** ; s'il manque, ouvrir le chantier existant prévu par le canon, pas un scorer parallèle. Verdict terminal de page = `PAGE_QUALITY_COMPOSITE_PASS`
 > (ADR-094, **shadow/gated** jusqu'à calibration — cf. §« scoring en transition » plus bas).
 
 1. **SCRAPING LARGE** (web → `automecanik-raw/sources/web-research/<gamme>/`) — la 1ʳᵉ étape, pas RAW directement.
@@ -46,12 +69,12 @@ SCRAPING LARGE (RUN_TARGETED_RAW_TO_WIKI) → RAW → WIKI → score SUBSTANCE (
      vault (**ADR-031** raw→wiki, **ADR-059** projection, **ADR-083** promotion tiered).
    - **PROFONDEUR > LARGEUR (gravé 2026-06-15, [[feedback_rank_1_objective_and_content_excellence_bar]])** :
      re-synthétiser les **mêmes blogs distributeurs/médias qui rankent déjà** (Oscaro/Vroomly/Mister-Auto…) = contenu
-     **dérivé** → **ne dépasse jamais ce qu'il recopie** → ne rank JAMAIS #1. Viser à **BATTRE** le SERP : **sources
+     **dérivé** sans valeur ajoutée suffisante. Viser une meilleure réponse utile que les résultats observés : **sources
      primaires/autoritaires** (OE technique/datasheets, **texte réglementaire brut** UNECE/ISO/SAE, registres
      FMSI/WVA), **data réelle**, angles/comparatifs uniques, et la **data catalogue AutoMecanik par véhicule**
-     (réf/fitment/specs — l'edge que les concurrents n'ont pas). **Motorisation-aware** = condition des variants R2.
+     (réf/fitment/specs — apport vérifiable, sans présumer son exclusivité). **Motorisation-aware** = condition des variants R2.
    - **LARGE et comprehensif** : multi-source, **par gamme ET par motorisation**, **saturer tout l'espace du
-     sujet**. **OBJECTIF = RANKER #1**. JAMAIS de gap-filling myope (ne pas s'isoler sur un champ/une norme).
+     sujet**. **OBJECTIF = une réponse utile, distinctive et mesurable** ; aucun score interne ne garantit une position Google. JAMAIS de gap-filling myope (ne pas s'isoler sur un champ/une norme).
    - Angles à saturer : rôle, symptômes, diagnostic, procédure, critères de choix, **qualité + équipementiers
      réels**, normes, comparatifs, **PAA / People-Also-Ask**, prix, compatibilité, **problèmes par code moteur**,
      OEM/OE, durées de vie, couples (sourcés).
@@ -59,7 +82,7 @@ SCRAPING LARGE (RUN_TARGETED_RAW_TO_WIKI) → RAW → WIKI → score SUBSTANCE (
      **NE PAS** lancer les legacy `download-oem-corpus.py` / `rag-enrich-*` / `ingest-oem-*` (= content-RAG abandonné).
    - **Découverte des sources par ENTITÉ (data-driven — « les chercher », pas les deviner)** :
      - **Gamme** : les bons équipementiers **DIFFÈRENT par gamme** (amortisseur = Bilstein/Sachs/Monroe · embrayage =
-       Sachs/LuK/Valeo · filtration = Mann/Mahle/Wix · freinage = Brembo/ATE/Textar — **aucun chevauchement**). Les
+       Sachs/LuK/Valeo · filtration = Mann/Mahle/Wix · freinage = Brembo/ATE/Textar — exemples, pas une partition exclusive). Les
        **dériver du CATALOGUE** (autorité), jamais de mémoire : `pieces ⋈ pieces_marque` filtré par
        `pieces_gamme.pg_alias`, classé `pm_oes DESC, pm_nb_stars DESC` → équipementiers réels, **OES en tête**. Puis
        marque → **site technique** : vérifié (seed = inventaire `__rag_web_ingest_jobs`, **URLs only, PAS le contenu
@@ -92,16 +115,20 @@ SCRAPING LARGE (RUN_TARGETED_RAW_TO_WIKI) → RAW → WIKI → score SUBSTANCE (
    Jamais un GO big-bang. Seul `WIKI_ACCEPTED` promu alimente PROD/indexable.
 4. **CONSUMER** (R1/R2/R8…) — lisent la **projection WIKI→DB** (ADR-059). Flags OFF par défaut, additif,
    fallback explicite logué. Jamais RAG, jamais candidat non promu en PROD.
-5. **SCORE — gate rank-#1 (l'étape qui empêche de livrer du médiocre, [[feedback_rank_1_objective_and_content_excellence_bar]])**.
-   Les gates WIKI existants (`_scripts/gates/` : claim/source/contradiction/risk/confidence) vérifient que le contenu
-   n'est pas **faux** — ils **ne mesurent pas l'excellence**. Ajouter une **mesure rank-#1 capable** (ancrée
-   **ADR-086 Content Excellence Contract** + `gamme.schema` + `diversity_score`/sibling-distinctness), 5 axes :
-   **① profondeur vs SERP** (couvre les tops +davantage) · **② autorité des sources** (primaire/OE/réglementaire vs
-   blog secondaire) · **③ différenciation/unicité** (data/angles que les concurrents n'ont pas, dont catalogue
-   AutoMecanik) · **④ motorisation-awareness** (permet les variants R2 + autorité R1) · **⑤ complétude topique**
-   (entité+PAA+comparatifs+intents). **Seuil promotion = rank-#1 capable** (ex. ≥85/100, aucun axe <60).
-   Si < seuil → **re-scraper plus PROFOND (pas plus large) / ré-enrichir → re-tourner** jusqu'au score. Jamais
-   déclarer « fait » sans score rank-#1 capable.
+5. **SCORE — qualité mesurée, sans promesse de position Google**.
+   Réutiliser les évaluateurs canoniques existants (substance, provenance, couverture, régression,
+   diversité) et leurs seuils/versionnements vérifiés sur le commit réellement utilisé. Ce skill
+   ne définit aucun seuil de promotion concurrent et ne transforme pas un mode shadow en gate actif.
+   Les contrôles de preuves ne garantissent pas, à eux seuls, la valeur ajoutée de la page. Examiner
+   aussi : profondeur utile, autorité des sources, différenciation vérifiable, contexte véhicule adapté
+   à la famille de pièces, et couverture des besoins du lecteur (ADR-086).
+   Mesurer la diversité structurelle avant la diversité de texte (`catalog_signature`, ADR-066).
+   Appliquer ensuite le scorer de surface au contenu réellement composé/rendu, avec son périmètre et
+   sa version ; `PAGE_QUALITY_COMPOSITE_PASS` n'est ni une publication ni une preuve de classement.
+   Une lacune factuelle identifiée peut justifier une recherche supplémentaire autorisée. Une panne,
+   une quarantaine ou un consumer non branché appelle la correction de cette étape, pas du scraping.
+   Toute itération conserve la baseline, les faits sourcés, les motifs et le progrès mesuré. Ne jamais
+   déclarer la boucle complète sans preuve de rendu et sans distinguer le résultat SEO encore inconnu.
 
 ## Différenciation = réelle, sur le bon AXE (anti-bricolage)
 - **Jamais fabriquée** : si deux sœurs (ex. 105 std vs 105 4Motion) sont proches pour une gamme, l'assumer ;
