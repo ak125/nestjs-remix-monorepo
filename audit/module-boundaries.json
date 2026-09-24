@@ -558,7 +558,7 @@
         "packages/domain-commerce/src"
       ],
       "files_count": 6,
-      "loc_total": 330,
+      "loc_total": 351,
       "has_barrel": true
     },
     "pkg-eslint-config": {
