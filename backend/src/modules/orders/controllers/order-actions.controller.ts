@@ -349,7 +349,7 @@ export class OrderActionsController {
       // 4. Envoyer email rappel
       await this.mailService.sendPaymentReminder(order, customer);
 
-      this.logger.log(`✅ Email rappel envoyé à ${customer.cst_mail}`);
+      this.logger.log(`✅ Email rappel envoyé pour commande ${orderId}`);
 
       return {
         success: true,
@@ -357,7 +357,7 @@ export class OrderActionsController {
       };
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
-      this.logger.error(`❌ Échec envoi rappel ${orderId}:`, message);
+      this.logger.error(`❌ Échec envoi rappel ${orderId}: ${message}`);
       throw error;
     }
   }

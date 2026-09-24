@@ -52,7 +52,9 @@ export class EmailProcessor {
    */
   @Process('send')
   async handleSendEmail(job: Job<EmailJobData>) {
-    this.logger.log(`📧 Sending email (Job #${job.id}): ${job.data.subject}`);
+    this.logger.log(
+      `📧 Sending email (Job #${job.id}): template=${job.data.template}`,
+    );
 
     try {
       const { to, subject } = job.data;
@@ -64,7 +66,9 @@ export class EmailProcessor {
         context: job.data.data || {},
       } as MailOptions);
 
-      this.logger.log(`📧 Email sent to ${to}: ${subject}`);
+      this.logger.log(
+        `📧 Email sent (Job #${job.id}): template=${job.data.template}`,
+      );
 
       return {
         success: true,
@@ -128,7 +132,7 @@ export class EmailProcessor {
   @Process('guest-activation')
   async handleGuestActivation(job: Job<GuestActivationJobData>) {
     this.logger.log(
-      `📧 Sending guest activation (Job #${job.id}): ${job.data.email}`,
+      `📧 Sending guest activation (Job #${job.id}): order ${job.data.orderId ?? '-'}`,
     );
 
     try {

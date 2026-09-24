@@ -46,6 +46,63 @@ export interface CustomerEmailData {
   cst_name: string;
 }
 
+/**
+ * Ce qui identifie un envoi dans les journaux, à la place du destinataire et
+ * de l'objet (qui peuvent porter l'adresse du client).
+ */
+export interface MailTrace {
+  kind: string;
+  orderId?: string | number;
+}
+
+/**
+ * Échec d'envoi SMTP, sans donnée personnelle.
+ *
+ * Une erreur nodemailer peut reprendre l'adresse du destinataire dans son
+ * message et dans `response`, `recipient` ou `rejected`. Seuls les champs
+ * techniques (`code`, `responseCode`, `command`) sont recopiés ; l'erreur
+ * d'origine n'est ni chaînée (`cause`) ni sa pile recopiée, car le
+ * sérialiseur d'erreurs des journaux inclut les deux.
+ */
+export class MailDeliveryError extends Error {
+  readonly kind: string;
+  readonly orderId?: string | number;
+  readonly code?: string;
+  readonly responseCode?: number;
+  readonly command?: string;
+
+  constructor(trace: MailTrace, source: unknown) {
+    const fields = (source ?? {}) as Record<string, unknown>;
+    const code = technicalToken(fields.code, /^[A-Z][A-Z0-9_]{0,31}$/);
+    const command = technicalToken(fields.command, /^[A-Z][A-Z0-9 _-]{0,31}$/);
+    const responseCode =
+      typeof fields.responseCode === 'number' &&
+      Number.isInteger(fields.responseCode)
+        ? fields.responseCode
+        : undefined;
+    super(
+      `Email delivery failed: ${describeTrace(trace)} code=${code ?? 'unknown'} responseCode=${responseCode ?? '-'} command=${command ?? '-'}`,
+    );
+    this.name = 'MailDeliveryError';
+    this.kind = trace.kind;
+    this.orderId = trace.orderId;
+    this.code = code;
+    this.responseCode = responseCode;
+    this.command = command;
+  }
+}
+
+/** Garde une valeur technique seulement si sa forme exclut une donnée libre. */
+function technicalToken(value: unknown, shape: RegExp): string | undefined {
+  return typeof value === 'string' && shape.test(value) ? value : undefined;
+}
+
+function describeTrace(trace: MailTrace): string {
+  return trace.orderId === undefined
+    ? `kind=${trace.kind}`
+    : `kind=${trace.kind} order=${trace.orderId}`;
+}
+
 @Injectable()
 export class MailService {
   private readonly logger = new Logger(MailService.name);
@@ -103,7 +160,10 @@ export class MailService {
 
   async sendMail(options: MailOptions): Promise<void> {
     const html = this.renderTemplate(options.template, options.context);
-    await this.doSend(options.to, options.subject, html);
+    await this.doSend(
+      { to: options.to, subject: options.subject, html },
+      { kind: `template:${options.template}` },
+    );
   }
 
   // ============================================================
@@ -116,9 +176,12 @@ export class MailService {
   ): Promise<void> {
     const html = this.getOrderConfirmationTemplate(order, customer);
     await this.doSend(
-      customer.cst_mail,
-      `Commande ${order.ord_id} confirmee - Automecanik`,
-      html,
+      {
+        to: customer.cst_mail,
+        subject: `Commande ${order.ord_id} confirmee - Automecanik`,
+        html,
+      },
+      { kind: 'order_confirmation', orderId: order.ord_id },
     );
   }
 
@@ -129,9 +192,12 @@ export class MailService {
   ): Promise<void> {
     const html = this.getShippingTemplate(order, customer, trackingNumber);
     await this.doSend(
-      customer.cst_mail,
-      `Commande ${order.ord_id} expediee - Automecanik`,
-      html,
+      {
+        to: customer.cst_mail,
+        subject: `Commande ${order.ord_id} expediee - Automecanik`,
+        html,
+      },
+      { kind: 'order_shipped', orderId: order.ord_id },
     );
   }
 
@@ -141,9 +207,12 @@ export class MailService {
   ): Promise<void> {
     const html = this.getPaymentReminderTemplate(order, customer);
     await this.doSend(
-      customer.cst_mail,
-      `Rappel : Paiement en attente pour commande ${order.ord_id}`,
-      html,
+      {
+        to: customer.cst_mail,
+        subject: `Rappel : Paiement en attente pour commande ${order.ord_id}`,
+        html,
+      },
+      { kind: 'payment_reminder', orderId: order.ord_id },
     );
   }
 
@@ -154,9 +223,12 @@ export class MailService {
   ): Promise<void> {
     const html = this.getCancellationTemplate(order, customer, reason);
     await this.doSend(
-      customer.cst_mail,
-      `Commande ${order.ord_id} annulee - Automecanik`,
-      html,
+      {
+        to: customer.cst_mail,
+        subject: `Commande ${order.ord_id} annulee - Automecanik`,
+        html,
+      },
+      { kind: 'order_cancelled', orderId: order.ord_id },
     );
   }
 
@@ -184,15 +256,21 @@ export class MailService {
       body,
     );
     await this.doSend(
-      customer.cst_mail,
-      `Remboursement commande ${order.ord_id} - Automecanik`,
-      html,
+      {
+        to: customer.cst_mail,
+        subject: `Remboursement commande ${order.ord_id} - Automecanik`,
+        html,
+      },
+      { kind: 'refund', orderId: order.ord_id },
     );
   }
 
   async sendWelcomeEmail(email: string, firstName: string): Promise<void> {
     const html = this.getWelcomeTemplate(firstName);
-    await this.doSend(email, 'Bienvenue sur Automecanik !', html);
+    await this.doSend(
+      { to: email, subject: 'Bienvenue sur Automecanik !', html },
+      { kind: 'welcome' },
+    );
   }
 
   async sendAdminOrderNotification(
@@ -234,9 +312,12 @@ export class MailService {
     );
 
     await this.doSend(
-      adminEmail,
-      `[COMMANDE] #${order.ord_id} — ${amount}EUR — ${customer.cst_mail}`,
-      html,
+      {
+        to: adminEmail,
+        subject: `[COMMANDE] #${order.ord_id} — ${amount}EUR — ${customer.cst_mail}`,
+        html,
+      },
+      { kind: 'admin_order_notification', orderId: order.ord_id },
     );
   }
 
@@ -246,7 +327,10 @@ export class MailService {
     orderId?: string,
   ): Promise<void> {
     const html = this.getGuestActivationTemplate(email, resetToken, orderId);
-    await this.doSend(email, `Activez votre compte Automecanik`, html);
+    await this.doSend(
+      { to: email, subject: `Activez votre compte Automecanik`, html },
+      { kind: 'guest_activation', orderId },
+    );
   }
 
   // ============================================================
@@ -343,10 +427,18 @@ export class MailService {
       <img src="${trackingPixelUrl}" width="1" height="1" alt="" style="display:none;" />`;
 
     const html = this.wrapLayout('Votre panier vous attend', '#f59e0b', body);
-    await this.doSendWithHeaders(to, subject, html, {
-      'List-Unsubscribe': `<${unsubscribeUrl}>`,
-      'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
-    });
+    await this.doSend(
+      {
+        to,
+        subject,
+        html,
+        headers: {
+          'List-Unsubscribe': `<${unsubscribeUrl}>`,
+          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        },
+      },
+      { kind: `abandoned_cart_${step}` },
+    );
   }
 
   // ============================================================
@@ -374,54 +466,41 @@ export class MailService {
   // TRANSPORT INTERNE
   // ============================================================
 
+  /**
+   * Point d'envoi unique. Les journaux ne portent jamais le destinataire ni
+   * l'objet : seulement le type d'email, la commande concernée et, en cas
+   * d'échec, les champs techniques de `MailDeliveryError`.
+   */
   private async doSend(
-    to: string,
-    subject: string,
-    html: string,
+    message: {
+      to: string;
+      subject: string;
+      html: string;
+      headers?: Record<string, string>;
+    },
+    trace: MailTrace,
   ): Promise<void> {
     if (!this.isConfigured || !this.transporter) {
-      this.logger.warn(`[DRY-RUN] Email to ${to}: ${subject}`);
+      this.logger.warn(
+        `[DRY-RUN] Email not sent (transport not configured): ${describeTrace(trace)}`,
+      );
       return;
     }
 
+    let info: { messageId?: string };
     try {
-      await this.transporter.sendMail({
+      info = await this.transporter.sendMail({
         from: this.fromEmail,
-        to,
-        subject,
-        html,
+        ...message,
       });
-      this.logger.log(`Email sent to ${to}: ${subject}`);
     } catch (error) {
-      this.logger.error(`Failed to send email to ${to}:`, error);
-      throw error;
+      const failure = new MailDeliveryError(trace, error);
+      this.logger.error(failure.message);
+      throw failure;
     }
-  }
-
-  private async doSendWithHeaders(
-    to: string,
-    subject: string,
-    html: string,
-    headers: Record<string, string>,
-  ): Promise<void> {
-    if (!this.isConfigured || !this.transporter) {
-      this.logger.warn(`[DRY-RUN] Email to ${to}: ${subject}`);
-      return;
-    }
-
-    try {
-      await this.transporter.sendMail({
-        from: this.fromEmail,
-        to,
-        subject,
-        html,
-        headers,
-      });
-      this.logger.log(`Email sent to ${to}: ${subject}`);
-    } catch (error) {
-      this.logger.error(`Failed to send email to ${to}:`, error);
-      throw error;
-    }
+    this.logger.log(
+      `Email sent: ${describeTrace(trace)} messageId=${info.messageId ?? '-'}`,
+    );
   }
 
   // ============================================================
