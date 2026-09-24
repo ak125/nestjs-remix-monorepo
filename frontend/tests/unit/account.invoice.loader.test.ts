@@ -1,6 +1,6 @@
 import { type LoaderFunctionArgs } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { loader } from "~/routes/account_.orders.$orderId.invoice";
+import { loader } from "~/routes/account_.orders.$orderId_.invoice";
 
 vi.mock("~/utils/logger", () => ({
   logger: { error: vi.fn(), warn: vi.fn(), log: vi.fn(), debug: vi.fn() },
