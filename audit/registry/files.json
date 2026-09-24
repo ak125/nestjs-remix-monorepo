@@ -18850,7 +18850,7 @@
         "crypto"
       ],
       "kind": "controller",
-      "loc": 1311,
+      "loc": 1328,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/controllers/orders.controller.ts",
       "risk": "low",
@@ -37709,6 +37709,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/tests/unit/orders.controller.customer-payment-state.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 113,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/orders.controller.customer-payment-state.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/tests/unit/orders.controller.pay-non-payable.test.ts",
       "importedBy": [],
       "imports": [],
@@ -50922,7 +50941,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 361,
+      "loc": 365,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/account.orders.tsx",
       "risk": "low",
@@ -51119,7 +51138,7 @@
         "~/utils/proxy-headers.server"
       ],
       "kind": "route",
-      "loc": 574,
+      "loc": 572,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/account_.orders.$orderId.tsx",
       "risk": "low",
@@ -57627,10 +57646,11 @@
       ],
       "imports": [
         "frontend/app/utils/orders.ts",
-        "~/utils/logger"
+        "~/utils/logger",
+        "~/utils/orders.utils"
       ],
       "kind": "config",
-      "loc": 400,
+      "loc": 396,
       "owner": "__unassigned__",
       "path": "frontend/app/services/orders.server.ts",
       "risk": "low",
@@ -58896,7 +58916,7 @@
         "frontend/app/utils/format.ts"
       ],
       "kind": "service",
-      "loc": 65,
+      "loc": 64,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/orders.ts",
       "risk": "low",
@@ -58930,7 +58950,7 @@
         "frontend/app/utils/format.ts"
       ],
       "kind": "service",
-      "loc": 440,
+      "loc": 456,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/orders.utils.ts",
       "risk": "low",
@@ -60336,7 +60356,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 167,
+      "loc": 257,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/account-orders-status.test.ts",
       "risk": "low",
