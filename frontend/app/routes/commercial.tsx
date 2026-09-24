@@ -16,7 +16,7 @@ import { CommercialSidebar } from "../components/CommercialSidebar";
 export const meta: MetaFunction = () =>
   createNoIndexMeta("Interface Commerciale - Commercial");
 
-export async function loader({ context }: LoaderFunctionArgs) {
+export async function loader({ request, context }: LoaderFunctionArgs) {
   const user = await getOptionalUser({ context });
   if (!user) throw redirect("/login");
   if (!user.level || user.level < 3) throw redirect("/unauthorized");
@@ -29,7 +29,10 @@ export async function loader({ context }: LoaderFunctionArgs) {
         ? process.env.API_URL
         : "http://127.0.0.1:3000";
     const statsResponse = await fetch(`${API_BASE}/api/dashboard/stats`, {
-      headers: { "internal-call": "true" },
+      headers: {
+        "internal-call": "true",
+        Cookie: request.headers.get("Cookie") || "",
+      },
     });
     if (statsResponse.ok) {
       stats = await statsResponse.json();

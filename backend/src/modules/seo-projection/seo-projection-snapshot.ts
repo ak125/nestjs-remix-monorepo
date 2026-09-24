@@ -12,7 +12,11 @@
  *   - zstd à niveau figé (zstd n'embarque PAS de timestamp, contrairement à gzip).
  * (invariant prouvé par `seo-projection-snapshot.test.ts`).
  *
- * Publication ATOMIQUE + durable : temp voisin → `fsync(fichier)` → `rename` → `fsync(dir parent)`.
+ * Publication ATOMIQUE, durable et WRITE-ONCE (ADR-099 D4) : temp voisin → `fsync(fichier)` →
+ * `link` (échoue si la cible existe, contrairement à `rename` qui écrase) → `fsync(dir parent)`.
+ * Un objet déjà publié n'est jamais réécrit : octets identiques → écriture sautée ; différents →
+ * throw (run `failed`). La racine object-store n'est jamais créée ici : elle est provisionnée sur
+ * l'hôte (ADR-099 D3) ; absente → throw (fail-closed).
  * Le manifest sidecar `<hash>.manifest.json` est écrit **en dernier** (commit marker : sa présence
  * prouve que l'archive est complète et durable). Aucune dépendance tar externe (le backend n'en
  * embarque pas) : writer USTAR minimal, déterministe, relu par `tar`/`bsdtar` standard.
@@ -166,17 +170,47 @@ export function digestEntries(entries: SnapshotEntry[]): SnapshotEntryDigest[] {
     .sort(byName);
 }
 
+const errnoCode = (e: unknown): string | undefined =>
+  (e as NodeJS.ErrnoException)?.code;
+
 /**
- * Écrit `bytes` en `finalPath` ATOMIQUEMENT + durablement : temp voisin unique → `fsync(fichier)`
- * → `rename` → `fsync(dir parent)`. Le suffixe `uniq` (runId) évite toute collision inter-runs.
+ * Objet déjà publié en `finalPath` : re-hash de ses octets. Identiques → rien à écrire ; différents
+ * → throw (write-once violé : un objet publié n'est jamais écrasé, ADR-099 D4).
  */
-export async function atomicWrite(
+async function assertPublishedBytesMatch(
+  finalPath: string,
+  bytes: Buffer,
+): Promise<void> {
+  const existingHex = sha256Hex(await fs.readFile(finalPath));
+  const newHex = sha256Hex(bytes);
+  if (existingHex !== newHex) {
+    throw new Error(
+      `write-once violation: ${finalPath} already published with different content ` +
+        `(existing sha256:${existingHex}, new sha256:${newHex})`,
+    );
+  }
+}
+
+/**
+ * Publie `bytes` en `finalPath` ATOMIQUEMENT, durablement et en WRITE-ONCE : temp voisin unique →
+ * `fsync(fichier)` → `link(temp, final)` → `unlink(temp)` → `fsync(dir parent)`. `link` échoue
+ * (EEXIST) au lieu d'écraser : même un publieur concurrent ne peut pas remplacer un objet publié.
+ * Cible déjà présente (avant ou pendant la publication) → `assertPublishedBytesMatch`.
+ * Le répertoire parent doit exister (jamais créé ici). Le suffixe `uniq` (runId) évite toute
+ * collision de temp inter-runs.
+ */
+export async function writeOnce(
   finalPath: string,
   bytes: Buffer,
   uniq: string,
-): Promise<void> {
-  const dir = path.dirname(finalPath);
-  await fs.mkdir(dir, { recursive: true });
+): Promise<'written' | 'already_present'> {
+  try {
+    await assertPublishedBytesMatch(finalPath, bytes);
+    return 'already_present';
+  } catch (e) {
+    if (errnoCode(e) !== 'ENOENT') throw e;
+  }
+
   const tmp = `${finalPath}.tmp-${uniq}`;
   const fh = await fs.open(tmp, 'w');
   try {
@@ -185,20 +219,60 @@ export async function atomicWrite(
   } finally {
     await fh.close();
   }
-  await fs.rename(tmp, finalPath);
-  // fsync du répertoire parent → rend le rename durable (POSIX).
+  try {
+    await fs.link(tmp, finalPath);
+  } catch (e) {
+    await fs.unlink(tmp);
+    if (errnoCode(e) !== 'EEXIST') throw e;
+    // Publié par un run concurrent entre la vérification et le link.
+    await assertPublishedBytesMatch(finalPath, bytes);
+    return 'already_present';
+  }
+  await fs.unlink(tmp);
+  // fsync du répertoire parent → rend le link durable (POSIX).
+  const dir = path.dirname(finalPath);
   const dh = await fs.open(dir, 'r');
   try {
     await dh.sync();
   } finally {
     await dh.close();
   }
+  return 'written';
+}
+
+/**
+ * Répertoire des snapshots sous une racine object-store EXISTANTE. La racine n'est jamais créée :
+ * elle est provisionnée sur l'hôte et montée dans le conteneur (ADR-099 D3). La créer ici ferait
+ * publier, sur un hôte non provisionné dont le parent est inscriptible, un snapshot hors du volume
+ * sauvegardé que le run déclarerait pourtant durable. Absente → throw (run `failed`).
+ */
+async function ensureSnapshotDir(objectStoreRoot: string): Promise<string> {
+  const root = await fs.stat(objectStoreRoot).catch((e: unknown) => {
+    if (errnoCode(e) === 'ENOENT') {
+      throw new Error(
+        `object-store root missing: ${objectStoreRoot} (must be provisioned on the host, ` +
+          `never created by the writer — ADR-099 D3)`,
+      );
+    }
+    throw e;
+  });
+  if (!root.isDirectory()) {
+    throw new Error(`object-store root is not a directory: ${objectStoreRoot}`);
+  }
+  const snapDir = path.join(objectStoreRoot, SNAPSHOTS_SUBDIR);
+  try {
+    await fs.mkdir(snapDir); // non récursif : ne recrée jamais la racine
+  } catch (e) {
+    if (errnoCode(e) !== 'EEXIST') throw e;
+  }
+  return snapDir;
 }
 
 /**
  * Construit + publie le snapshot d'un run : archive `<hex>.tar.zst` PUIS manifest sidecar
- * `<hex>.manifest.json` (en dernier = commit marker). Le `hash` retourné est calculé sur les octets
- * réellement écrits. Fail-loud : toute erreur d'I/O remonte (l'appelant marque le run `failed`).
+ * `<hex>.manifest.json` (en dernier = commit marker), tous deux en write-once. Le `hash` retourné
+ * est calculé sur les octets réellement écrits (ou re-hashés s'ils étaient déjà publiés).
+ * Fail-loud : racine absente, write-once violé ou erreur d'I/O remontent (run `failed`).
  */
 export async function buildAndPublishSnapshot(params: {
   objectStoreRoot: string;
@@ -212,7 +286,7 @@ export async function buildAndPublishSnapshot(params: {
   const hex = sha256Hex(tarZst);
   const hashFull = `sha256:${hex}`;
 
-  const snapDir = path.join(objectStoreRoot, SNAPSHOTS_SUBDIR);
+  const snapDir = await ensureSnapshotDir(objectStoreRoot);
   const archivePath = path.join(snapDir, `${hex}.tar.zst`);
   // Manifest keyé PAR RUN (`<hex>.<runId>.manifest.json`), pas seulement par hash : l'archive est
   // content-addressed (dédup — 2 runs d'exports identiques partagent le `.tar.zst`), MAIS les 5
@@ -221,8 +295,9 @@ export async function buildAndPublishSnapshot(params: {
   // divergentes). Le manifest per-run garantit versions==run + reste le commit marker (écrit en dernier).
   const manifestPath = path.join(snapDir, `${hex}.${runId}.manifest.json`);
 
-  // 1. Archive d'abord (durable).
-  await atomicWrite(archivePath, tarZst, runId);
+  // 1. Archive d'abord (durable). Content-addressed : déjà publiée par un run d'exports identiques
+  // → re-hash égal, écriture sautée.
+  await writeOnce(archivePath, tarZst, runId);
 
   // 2. Manifest EN DERNIER (commit marker : sa présence prouve l'archive complète).
   const manifest: SnapshotManifest = {
@@ -235,7 +310,7 @@ export async function buildAndPublishSnapshot(params: {
     entry_count: entries.length,
     entries: digestEntries(entries),
   };
-  await atomicWrite(
+  await writeOnce(
     manifestPath,
     Buffer.from(JSON.stringify(manifest, null, 2) + '\n', 'utf-8'),
     runId,
