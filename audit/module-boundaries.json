@@ -73,8 +73,8 @@
         "backend/src/auth/guards",
         "backend/src/modules/auth/dto"
       ],
-      "files_count": 45,
-      "loc_total": 5933,
+      "files_count": 44,
+      "loc_total": 5888,
       "has_barrel": true
     },
     "backend-core": {
@@ -202,7 +202,7 @@
         "backend/src/modules/dashboard"
       ],
       "files_count": 3,
-      "loc_total": 1183,
+      "loc_total": 1188,
       "has_barrel": false
     },
     "database": {
@@ -259,7 +259,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115501,
+      "loc_total": 115505,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -898,8 +898,8 @@
         "backend/src/modules/support/services/__tests__",
         "backend/src/modules/support/types"
       ],
-      "files_count": 28,
-      "loc_total": 10087,
+      "files_count": 30,
+      "loc_total": 10453,
       "has_barrel": true
     },
     "system": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 246,
-      "loc_total": 44350,
+      "files_count": 249,
+      "loc_total": 45661,
       "has_barrel": true
     },
     "upload": {
@@ -1629,7 +1629,7 @@
     {
       "from": "dashboard",
       "to": "auth",
-      "count": 2
+      "count": 4
     },
     {
       "from": "dashboard",
@@ -2034,6 +2034,11 @@
     {
       "from": "suppliers",
       "to": "database",
+      "count": 1
+    },
+    {
+      "from": "support",
+      "to": "auth",
       "count": 1
     },
     {

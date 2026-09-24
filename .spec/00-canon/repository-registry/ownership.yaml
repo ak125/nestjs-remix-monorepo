@@ -246,6 +246,12 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: high
+  # Fichiers ignorés que Claude Code copie dans chaque nouveau worktree (runner husky).
+  - glob: .worktreeinclude
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
   - glob: .npmrc
     domain: D13
     owner: '@ak125'
