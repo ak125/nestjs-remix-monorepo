@@ -7,13 +7,20 @@ import {
   Body,
   Param,
   Query,
+  UseGuards,
   HttpCode,
   HttpStatus,
   Logger,
 } from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { FaqService, FAQ, FAQCategory } from '../services/faq.service';
 import { DomainNotFoundException, ErrorCodes } from '@common/exceptions';
 
+/**
+ * Accès : consultation publique (questions, catégories, vote « utile ») ;
+ * rédaction, statistiques et suppression réservées à l'administration.
+ */
 @Controller('api/support/faq')
 export class FaqController {
   private readonly logger = new Logger(FaqController.name);
@@ -21,6 +28,7 @@ export class FaqController {
   constructor(private readonly faqService: FaqService) {}
 
   @Post()
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   @HttpCode(HttpStatus.CREATED)
   async createFAQ(
     @Body()
@@ -51,6 +59,7 @@ export class FaqController {
   }
 
   @Get('stats')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async getFAQStats() {
     return this.faqService.getFAQStats();
   }
@@ -64,6 +73,7 @@ export class FaqController {
   }
 
   @Post('categories')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   @HttpCode(HttpStatus.CREATED)
   async createCategory(
     @Body() categoryData: Omit<FAQCategory, 'faqCount'>,
@@ -86,6 +96,7 @@ export class FaqController {
   }
 
   @Put('categories/:categoryId')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async updateCategory(
     @Param('categoryId') categoryId: string,
     @Body() updates: Partial<Omit<FAQCategory, 'faqCount'>>,
@@ -94,6 +105,7 @@ export class FaqController {
   }
 
   @Delete('categories/:categoryId')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteCategory(@Param('categoryId') categoryId: string): Promise<void> {
     await this.faqService.deleteCategory(categoryId);
@@ -116,6 +128,7 @@ export class FaqController {
   }
 
   @Put(':faqId')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async updateFAQ(
     @Param('faqId') faqId: string,
     @Body()
@@ -125,6 +138,7 @@ export class FaqController {
   }
 
   @Delete(':faqId')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteFAQ(@Param('faqId') faqId: string): Promise<void> {
     await this.faqService.deleteFAQ(faqId);

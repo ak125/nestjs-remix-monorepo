@@ -6,16 +6,26 @@ import {
   Body,
   Param,
   Query,
+  UseGuards,
   HttpCode,
   HttpStatus,
   Logger,
 } from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
+import { PermissionsGuard } from '@auth/guards/permissions.guard';
+import { RequirePermission } from '@auth/decorators/require-permission.decorator';
 import {
   ContactService,
   ContactFormData,
   ContactTicket,
 } from '../services/contact.service';
 
+/**
+ * Accès : dépôt du formulaire public ; lecture des demandes réservée à
+ * l'équipe (`canSeeCustomerDetails`) ; changement de statut réservé à
+ * l'administration.
+ */
 @Controller('api/support/contact')
 export class ContactController {
   private readonly logger = new Logger(ContactController.name);
@@ -32,6 +42,8 @@ export class ContactController {
   }
 
   @Get('tickets')
+  @UseGuards(AuthenticatedGuard, PermissionsGuard)
+  @RequirePermission('canSeeCustomerDetails')
   async getAllTickets(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
@@ -57,16 +69,22 @@ export class ContactController {
   }
 
   @Get('stats')
+  @UseGuards(AuthenticatedGuard, PermissionsGuard)
+  @RequirePermission('canSeeCustomerDetails')
   async getStats() {
     return this.contactService.getStats();
   }
 
   @Get('ticket/:ticketId')
+  @UseGuards(AuthenticatedGuard, PermissionsGuard)
+  @RequirePermission('canSeeCustomerDetails')
   async getTicket(@Param('ticketId') ticketId: string): Promise<ContactTicket> {
     return this.contactService.getTicket(ticketId);
   }
 
   @Get('search')
+  @UseGuards(AuthenticatedGuard, PermissionsGuard)
+  @RequirePermission('canSeeCustomerDetails')
   async searchTickets(
     @Query('keyword') keyword?: string,
     @Query('customer_id') customerId?: string,
@@ -114,6 +132,7 @@ export class ContactController {
   }
 
   @Put('ticket/:ticketId/status')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async updateTicketStatus(
     @Param('ticketId') ticketId: string,
     @Body() body: { status: string },
