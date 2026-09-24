@@ -50450,7 +50450,7 @@
         "~/utils/resilient-lazy"
       ],
       "kind": "service",
-      "loc": 593,
+      "loc": 598,
       "owner": "__unassigned__",
       "path": "frontend/app/root.tsx",
       "risk": "low",
@@ -60879,7 +60879,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 215,
+      "loc": 234,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/ga4-bootstrap.test.ts",
       "risk": "low",

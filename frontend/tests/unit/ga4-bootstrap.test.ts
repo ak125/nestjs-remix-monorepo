@@ -48,7 +48,7 @@ afterEach(() => {
   for (const dom of doms.splice(0)) dom.window.close();
 });
 
-function start(hasIdleCallback = true) {
+function start(hasIdleCallback = true, automated = false) {
   const dom = new JSDOM("<!doctype html><title>Pièces auto</title>", {
     url: "https://automecanik.example/pieces?marque=renault",
     runScripts: "outside-only",
@@ -56,6 +56,9 @@ function start(hasIdleCallback = true) {
   });
   doms.push(dom);
   const { window } = dom;
+  if (automated) {
+    Object.defineProperty(window.navigator, "webdriver", { value: true });
+  }
   const pending: Array<() => void> = [];
   window.setTimeout = ((callback: () => void) => {
     pending.push(callback);
@@ -119,6 +122,22 @@ describe("GA4 deferred bootstrap", () => {
       0,
     );
   });
+
+  it.each([true, false])(
+    "never downloads gtag.js in a browser under automation (idle=%s)",
+    (idle) => {
+      const { window, commands, flush } = start(idle, true);
+      window.dispatchEvent(new window.Event("scroll"));
+      window.gtag("event", "page_view", { page_title: "Pièces auto" });
+      flush();
+      expect(window.document.querySelectorAll("script")).toHaveLength(0);
+      expect(
+        commands().filter(
+          ([command, action]) => command === "consent" && action === "update",
+        ),
+      ).toHaveLength(0);
+    },
+  );
 
   it("keeps denied consent ahead of configuration and defers the existing consent update until load", () => {
     const { window, commands, flush } = start();
