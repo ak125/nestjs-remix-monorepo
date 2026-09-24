@@ -3,6 +3,11 @@
  * Extrait de routes/orders._index.tsx
  */
 
+import {
+  ORDER_LINE_STATUS_LABEL,
+  OrderStatus,
+  isOrderLineStatusCode,
+} from "@repo/domain-commerce";
 import { type Order, type OrdersStats } from "../types/orders.types";
 import { formatDate, formatDateTime } from "./date";
 import { formatPrice, formatPriceNumber } from "./format";
@@ -85,6 +90,30 @@ export function getStatusLabel(statusId: string): string {
 }
 
 /**
+ * Options de filtre par statut, dérivées des statuts réels (STATUS_MAP)
+ */
+export const ORDER_STATUS_OPTIONS: ReadonlyArray<{
+  value: string;
+  label: string;
+}> = Object.entries(STATUS_MAP).map(([value, { label }]) => ({
+  value,
+  label,
+}));
+
+/**
+ * Libellé du statut d'une ligne de commande (___xtr_order_line_status), repris
+ * tel quel de @repo/domain-commerce. `null` si le code est absent ou inconnu :
+ * l'appelant n'affiche alors aucun badge plutôt qu'un statut inventé.
+ */
+export function getLineStatusLabel(
+  code: string | number | null | undefined,
+): string | null {
+  if (code === null || code === undefined) return null;
+  const key = String(code).trim();
+  return isOrderLineStatusCode(key) ? ORDER_LINE_STATUS_LABEL[key] : null;
+}
+
+/**
  * Retourne la couleur de badge pour le statut de paiement
  */
 export function getPaymentBadgeColor(isPaid: string): string {
@@ -98,6 +127,21 @@ export function getPaymentBadgeColor(isPaid: string): string {
  */
 export function getPaymentLabel(isPaid: string): string {
   return isPaid === "1" ? "Payée" : "Impayée";
+}
+
+/**
+ * Libellé de paiement de l'espace client (liste et détail des commandes).
+ * `isPaid` vient du `payment_state` du backend (règle unique
+ * getOrderPaymentState) : rien n'est recalculé ici depuis les colonnes.
+ */
+export function getCustomerPaymentLabel(order: {
+  isPaid?: boolean;
+  status: string | null;
+}): string {
+  if (order.isPaid) return "Payé";
+  return order.status === OrderStatus.CANCELLED
+    ? "Aucun paiement"
+    : "En attente";
 }
 
 /**

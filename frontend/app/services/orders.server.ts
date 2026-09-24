@@ -4,7 +4,18 @@
  */
 
 import { logger } from "~/utils/logger";
-import { type Order, getOrderStatusLabel } from "../utils/orders";
+import { getCustomerPaymentLabel } from "~/utils/orders.utils";
+import { type Order } from "../utils/orders";
+
+/**
+ * Code de statut tel qu'en base (colonne TEXT). Absent → `null` : jamais de
+ * statut par défaut, qui afficherait un état que la commande n'a pas.
+ */
+function toStatusCode(value: unknown): string | null {
+  if (value === null || value === undefined) return null;
+  const code = String(value).trim();
+  return code === "" ? null : code;
+}
 
 export interface GetUserOrdersParams {
   userId: string;
@@ -84,7 +95,10 @@ export async function getUserOrders(params: {
       (order: any) => ({
         id: order.ord_id || order.id?.toString() || order.order_id?.toString(),
         orderNumber: order.ord_id || order.orderNumber || `CMD-${order.id}`,
-        status: parseInt(order.ord_ords_id || order.status || 1),
+        status: toStatusCode(order.ord_ords_id),
+        // Verdict du backend (getOrderPaymentState : drapeau OU date de
+        // paiement), jamais recalculé ici depuis les colonnes.
+        isPaid: order.payment_state === "paid",
         totalTTC: parseFloat(
           order.ord_total_ttc || order.totalTTC || order.total_ttc || 0,
         ),
@@ -112,11 +126,11 @@ export async function getUserOrders(params: {
       }),
     );
 
-    // Pagination du backend ou par défaut
-    const pagination = data.pagination || {
-      currentPage: 1,
-      totalPages: 1,
-      totalCount: orders.length,
+    // Pagination du backend : { page, limit, total, totalPages, ... }
+    const pagination = {
+      currentPage: Number(data.pagination?.page) || page,
+      totalPages: Number(data.pagination?.totalPages) || 1,
+      totalCount: Number(data.pagination?.total) || orders.length,
     };
 
     return {
@@ -205,12 +219,17 @@ export async function getOrderDetails(params: {
       lines_count: order.lines?.length,
     });
 
+    const status = toStatusCode(order.ord_ords_id);
+    // Verdict du backend (getOrderPaymentState), comme dans la liste.
+    const isPaid = order.payment_state === "paid";
+
     // Mapping des données depuis la réponse du backend
     // ✅ Adaptation pour structure legacy (ord_id, ord_total_ttc, etc.)
     const mappedOrder = {
       id: order.ord_id || order.id?.toString() || order.order_id?.toString(),
       orderNumber: order.ord_id || order.orderNumber || `CMD-${order.id}`,
-      status: parseInt(order.ord_ords_id || order.status || 1),
+      status,
+      isPaid,
       totalTTC: parseFloat(
         order.ord_total_ttc || order.totalTTC || order.total_ttc || 0,
       ),
@@ -254,17 +273,8 @@ export async function getOrderDetails(params: {
       updatedAt: order.updatedAt || order.updated_at,
       paymentMethod:
         order.paymentMethod || order.payment_method || "Carte bancaire",
-      // ___xtr_order n'a pas de colonne paymentStatus : le drapeau de paiement
-      // est ord_is_pay ('1' = payée). Ne jamais afficher « Payé » par défaut,
-      // ni « En attente » pour une commande annulée ('2') sans paiement.
-      paymentStatus:
-        order.paymentStatus ||
-        order.payment_status ||
-        (String(order.ord_is_pay) === "1"
-          ? "Payé"
-          : String(order.ord_ords_id) === "2"
-            ? "Aucun paiement"
-            : "En attente"),
+      // Même libellé que la liste, tiré du verdict du backend.
+      paymentStatus: getCustomerPaymentLabel({ isPaid, status }),
       transactionId: order.transactionId || order.transaction_id,
       trackingNumber:
         order.ord_tracking || order.trackingNumber || order.tracking_number,
@@ -273,7 +283,7 @@ export async function getOrderDetails(params: {
       deliveryMethod: order.deliveryMethod || order.delivery_method,
       deliveryDate: order.deliveryDate || order.delivery_date,
       hasReview: order.hasReview || false,
-      canReturn: order.canReturn || order.status === 6,
+      canReturn: order.canReturn === true,
       // Règle portée par le backend (getCustomerCancelRefusal) : aucune
       // recopie côté page, le bouton suit ce drapeau.
       canCancel: order.customer_can_cancel === true,
@@ -306,13 +316,9 @@ export async function getOrderDetails(params: {
               parseInt(line.orl_art_quantity || 1) ||
             0,
         ),
-        status: parseInt(
-          line.orl_orls_id ||
-            line.status ||
-            order.ord_ords_id ||
-            order.status ||
-            1,
-        ),
+        // Statut propre à la ligne (___xtr_order_line_status) : jamais celui
+        // de la commande, qui appartient à une autre table de statuts.
+        status: toStatusCode(line.orl_orls_id),
       })),
 
       // Adresses
@@ -369,21 +375,7 @@ export async function getOrderDetails(params: {
         },
 
       // Historique de statut (si disponible)
-      statusHistory: order.statusHistory ||
-        order.status_history || [
-          {
-            label: getOrderStatusLabel(
-              parseInt(order.ord_ords_id || order.status || "1"),
-            ),
-            date:
-              order.ord_date ||
-              order.updatedAt ||
-              order.updated_at ||
-              order.createdAt ||
-              order.created_at,
-            isActive: true,
-          },
-        ],
+      statusHistory: order.statusHistory ?? order.status_history ?? [],
     };
 
     // 🔍 DEBUG: Afficher les données mappées

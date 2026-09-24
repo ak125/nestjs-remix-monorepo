@@ -3868,7 +3868,8 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend/package.json",
+        "frontend/package.json"
       ],
       "id": "workspace:@repo/domain-commerce@*",
       "name": "@repo/domain-commerce",
@@ -3879,7 +3880,8 @@
       "status": "LIVE",
       "version": "*",
       "workspaces": [
-        "@fafa/backend"
+        "@fafa/backend",
+        "@fafa/frontend"
       ]
     },
     {

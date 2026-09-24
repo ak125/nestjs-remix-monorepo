@@ -56,6 +56,7 @@ import {
   OrdersService,
   CreateOrderData,
   OrderFilters,
+  type OrderPaymentState,
   computeOrderFingerprint,
   getCustomerCancelRefusal,
   getOrderNotPayableMessage,
@@ -327,7 +328,22 @@ export class OrdersController {
         limit: query.limit ? parseInt(query.limit) : 10,
       };
 
-      return await this.ordersService.listOrders(filters);
+      const result = await this.ordersService.listOrders(filters);
+      // État de paiement calculé ici, règle unique (getOrderPaymentState) :
+      // l'espace client l'affiche sans recalculer « payée » depuis les colonnes.
+      return {
+        ...result,
+        data: result.data.map(
+          (
+            order,
+          ): Record<string, unknown> & {
+            payment_state: OrderPaymentState;
+          } => ({
+            ...order,
+            payment_state: getOrderPaymentState(order),
+          }),
+        ),
+      };
     } catch (error) {
       this.logger.error('Error listing user orders:', error);
       throw error;
@@ -381,6 +397,7 @@ export class OrdersController {
         data: {
           ...order,
           customer_can_cancel: getCustomerCancelRefusal(order) === null,
+          payment_state: getOrderPaymentState(order),
         },
         timestamp: new Date().toISOString(),
       };

@@ -5,8 +5,6 @@ import {
   CreditCard,
   FileText,
   Truck,
-  MessageSquare,
-  RotateCcw,
 } from "lucide-react";
 import {
   type ActionFunctionArgs,
@@ -38,7 +36,11 @@ import {
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
-import { getStatusBadgeColor, getStatusLabel } from "~/utils/orders.utils";
+import {
+  getLineStatusLabel,
+  getStatusBadgeColor,
+  getStatusLabel,
+} from "~/utils/orders.utils";
 import { getProxyHeaders } from "~/utils/proxy-headers.server";
 import { requireAuth } from "../auth/unified.server";
 import { AccountLayout } from "../components/account/AccountNavigation";
@@ -238,29 +240,9 @@ export default function OrderDetailPage() {
           <Button asChild variant="outline">
             <Link to={`/account/orders/${order.id}/invoice`} className="gap-2">
               <FileText className="h-4 w-4" />
-              {order.paymentStatus === "paid" || order.paymentStatus === "Payé"
-                ? "Voir la facture"
-                : "Voir le bon de commande"}
+              {order.isPaid ? "Voir la facture" : "Voir le bon de commande"}
             </Link>
           </Button>
-
-          {order.status === 6 && !order.hasReview && (
-            <Button asChild variant="outline">
-              <Link to={`/account/orders/${order.id}/review`} className="gap-2">
-                <MessageSquare className="h-4 w-4" />
-                Laisser un avis
-              </Link>
-            </Button>
-          )}
-
-          {order.status === 6 && order.canReturn && (
-            <Button asChild variant="outline">
-              <Link to={`/account/orders/${order.id}/return`} className="gap-2">
-                <RotateCcw className="h-4 w-4" />
-                Demander un retour
-              </Link>
-            </Button>
-          )}
         </div>
 
         {/* Timeline de statut */}
@@ -328,9 +310,7 @@ export default function OrderDetailPage() {
                           <span className="text-sm">
                             {formatPrice(line.unitPrice)} / unité
                           </span>
-                          <Badge variant="outline">
-                            {getLineStatusLabel(line.status)}
-                          </Badge>
+                          <LineStatusBadge status={line.status} />
                         </div>
                       </div>
                       <div className="text-right">
@@ -554,20 +534,11 @@ export default function OrderDetailPage() {
 }
 
 // Fonctions utilitaires
-function getLineStatusLabel(status: number): string {
-  const labels: Record<number, string> = {
-    1: "En attente",
-    2: "Confirmée",
-    3: "En préparation",
-    4: "Prête",
-    5: "Expédiée",
-    6: "Livrée",
-    91: "Annulée",
-    92: "Rupture",
-    93: "Retournée",
-    94: "Remboursée",
-  };
-  return labels[status] || "Inconnue";
+
+/** Statut propre à la ligne ; aucun badge si le code est absent ou inconnu. */
+function LineStatusBadge({ status }: { status?: string | null }) {
+  const label = getLineStatusLabel(status);
+  return label ? <Badge variant="outline">{label}</Badge> : null;
 }
 
 function getPaymentStatusVariant(

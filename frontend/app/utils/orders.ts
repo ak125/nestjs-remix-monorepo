@@ -2,26 +2,6 @@
  * Utilitaires pour les commandes - Côté client et serveur
  */
 
-/**
- * Utilitaires pour les statuts de commandes
- */
-export function getOrderStatusLabel(status: number): string {
-  const statusMap: Record<number, string> = {
-    1: "En attente",
-    2: "Confirmée",
-    3: "En préparation",
-    4: "Prête à expédier",
-    5: "Expédiée",
-    6: "Livrée",
-    91: "Annulée",
-    92: "En rupture",
-    93: "Retournée",
-    94: "Remboursée",
-  };
-
-  return statusMap[status] || "Statut inconnu";
-}
-
 export { formatPrice } from "./format";
 
 /**
@@ -34,6 +14,8 @@ export interface OrderLine {
   productImage: string;
   quantity: number;
   unitPrice: number;
+  /** Code ___xtr_order_line_status, `null` si absent */
+  status?: string | null;
 }
 
 export interface Order {
@@ -41,12 +23,16 @@ export interface Order {
   /** Legacy order ID from the database */
   ord_id?: string | number;
   orderNumber: string;
-  status: number;
+  /** Code ___xtr_order_status tel qu'en base (`ord_ords_id`), `null` si absent */
+  status: string | null;
+  /** Commande payée : `payment_state === 'paid'` renvoyé par le backend */
+  isPaid?: boolean;
   totalTTC: number;
   createdAt: string;
   lines: OrderLine[];
   trackingNumber?: string;
   trackingUrl?: string;
+  /** Libellé de paiement client (`getCustomerPaymentLabel`) */
   paymentStatus?: string;
   paymentMethod?: string;
   transactionId?: string;
