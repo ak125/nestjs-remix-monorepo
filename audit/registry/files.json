@@ -902,6 +902,7 @@
         "backend/src/app.module.ts",
         "backend/src/modules/dashboard/dashboard.module.ts",
         "backend/src/modules/orders/orders.module.ts",
+        "backend/src/modules/support/support.module.ts",
         "backend/src/modules/users/users.module.ts",
         "backend/src/remix/remix.module.ts"
       ],
@@ -33052,6 +33053,8 @@
         "backend/src/modules/support/support.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "@common/exceptions",
         "@common/utils/error.utils",
         "backend/src/modules/support/services/ai-analysis.service.ts",
@@ -33060,7 +33063,7 @@
         "backend/src/modules/support/services/review.service.ts"
       ],
       "kind": "controller",
-      "loc": 453,
+      "loc": 457,
       "owner": "__unassigned__",
       "path": "backend/src/modules/support/controllers/ai-support.controller.ts",
       "risk": "low",
@@ -33081,11 +33084,16 @@
         "backend/src/modules/support/support.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/decorators/require-permission.decorator",
+        "@auth/guards/permissions.guard",
+        "@auth/is-admin.guard",
+        "@auth/permissions.service",
         "@common/exceptions",
         "backend/src/modules/support/services/claim.service.ts"
       ],
       "kind": "controller",
-      "loc": 163,
+      "loc": 303,
       "owner": "__unassigned__",
       "path": "backend/src/modules/support/controllers/claim.controller.ts",
       "risk": "low",
@@ -33106,10 +33114,14 @@
         "backend/src/modules/support/support.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/decorators/require-permission.decorator",
+        "@auth/guards/permissions.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/support/services/contact.service.ts"
       ],
       "kind": "controller",
-      "loc": 124,
+      "loc": 143,
       "owner": "__unassigned__",
       "path": "backend/src/modules/support/controllers/contact.controller.ts",
       "risk": "low",
@@ -33130,11 +33142,13 @@
         "backend/src/modules/support/support.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "@common/exceptions",
         "backend/src/modules/support/services/faq.service.ts"
       ],
       "kind": "controller",
-      "loc": 141,
+      "loc": 155,
       "owner": "__unassigned__",
       "path": "backend/src/modules/support/controllers/faq.controller.ts",
       "risk": "low",
@@ -33182,11 +33196,14 @@
         "backend/src/modules/support/support.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
+        "@auth/permissions.service",
         "@common/exceptions",
         "backend/src/modules/support/services/legal.service.ts"
       ],
       "kind": "controller",
-      "loc": 192,
+      "loc": 255,
       "owner": "__unassigned__",
       "path": "backend/src/modules/support/controllers/legal.controller.ts",
       "risk": "low",
@@ -33207,11 +33224,13 @@
         "backend/src/modules/support/support.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "@common/exceptions",
         "backend/src/modules/support/services/quote.service.ts"
       ],
       "kind": "controller",
-      "loc": 141,
+      "loc": 145,
       "owner": "__unassigned__",
       "path": "backend/src/modules/support/controllers/quote.controller.ts",
       "risk": "low",
@@ -33232,11 +33251,15 @@
         "backend/src/modules/support/support.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/decorators/require-permission.decorator",
+        "@auth/guards/permissions.guard",
+        "@auth/is-admin.guard",
         "@common/exceptions",
         "backend/src/modules/support/services/review.service.ts"
       ],
       "kind": "controller",
-      "loc": 152,
+      "loc": 174,
       "owner": "__unassigned__",
       "path": "backend/src/modules/support/controllers/review.controller.ts",
       "risk": "low",
@@ -33257,11 +33280,13 @@
         "backend/src/modules/support/support.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "@common/exceptions",
         "backend/src/modules/support/services/support-analytics.service.ts"
       ],
       "kind": "controller",
-      "loc": 67,
+      "loc": 70,
       "owner": "__unassigned__",
       "path": "backend/src/modules/support/controllers/support-analytics.controller.ts",
       "risk": "low",
@@ -33757,6 +33782,7 @@
         "backend/src/modules/support/index.ts"
       ],
       "imports": [
+        "backend/src/auth/auth.module.ts",
         "backend/src/database/database.module.ts",
         "backend/src/modules/support/controllers/ai-support.controller.ts",
         "backend/src/modules/support/controllers/claim.controller.ts",
@@ -33784,7 +33810,7 @@
         "backend/src/notifications/notifications.module.ts"
       ],
       "kind": "service",
-      "loc": 111,
+      "loc": 117,
       "owner": "__unassigned__",
       "path": "backend/src/modules/support/support.module.ts",
       "risk": "low",
@@ -38758,6 +38784,25 @@
       "loc": 87,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/supabase-key-util.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/support-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 735,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/support-routes-authz.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
