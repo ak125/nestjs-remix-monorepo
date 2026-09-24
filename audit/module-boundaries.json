@@ -91,7 +91,7 @@
         "backend/src/utils"
       ],
       "files_count": 36,
-      "loc_total": 6377,
+      "loc_total": 6397,
       "has_barrel": true
     },
     "blog": {
@@ -250,7 +250,7 @@
         "backend/src/modules/errors/services"
       ],
       "files_count": 10,
-      "loc_total": 3198,
+      "loc_total": 3241,
       "has_barrel": false
     },
     "frontend-routes": {

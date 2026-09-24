@@ -15092,7 +15092,7 @@
         "backend/src/modules/errors/services/error.service.ts"
       ],
       "kind": "test",
-      "loc": 120,
+      "loc": 158,
       "owner": "__unassigned__",
       "path": "backend/src/modules/errors/services/error-body-redaction.test.ts",
       "risk": "low",
@@ -15171,7 +15171,7 @@
         "backend/src/modules/errors/services/redirect.service.ts"
       ],
       "kind": "service",
-      "loc": 770,
+      "loc": 775,
       "owner": "__unassigned__",
       "path": "backend/src/modules/errors/services/error.service.ts",
       "risk": "low",
@@ -36507,7 +36507,7 @@
         "backend/src/services/mail.service.ts"
       ],
       "kind": "test",
-      "loc": 189,
+      "loc": 209,
       "owner": "__unassigned__",
       "path": "backend/src/services/mail.service.test.ts",
       "risk": "low",
