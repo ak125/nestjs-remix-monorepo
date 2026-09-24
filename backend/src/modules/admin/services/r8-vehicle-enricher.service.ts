@@ -65,6 +65,14 @@ export interface R8EnrichResult {
   warnings: string[];
   reasons: R8ReasonCode[];
   pageKey: string;
+  /**
+   * Motif d'un résultat non abouti (`failed` ou `write_gate_blocked`), préfixé
+   * par son code (`DB_ERROR: …`, `WRITE_GATE_BLOCKED: …`, `CONTENT_BROKEN: …`).
+   * C'est le champ `data.reason` que `ExecutionRouterService` recopie dans
+   * `__pipeline_chain_queue.pcq_error` : sans lui, le rapport d'exécution ne
+   * distingue pas une panne DB d'un refus de garde. Absent sur `draft`.
+   */
+  reason?: string;
   /** Détail du refus — présent uniquement avec `status: 'write_gate_blocked'`. */
   writeGate?: {
     reason: string;
@@ -243,6 +251,7 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
           diversityScore: 0,
           warnings: ['vehicle not found'],
           reasons: ['CONTENT_BROKEN'],
+          reason: 'CONTENT_BROKEN: vehicle not found',
           pageKey,
         };
       }
@@ -497,15 +506,14 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       });
 
       if (write.kind === 'db_error') {
+        const detail = `op=${write.operation} code=${write.code ?? 'unknown'} ${write.message}`;
         return {
           status: 'failed',
           seoDecision: 'REJECT',
           diversityScore: 0,
-          warnings: [
-            'DB write failed',
-            `op=${write.operation} code=${write.code ?? 'unknown'} ${write.message}`,
-          ],
+          warnings: ['DB write failed', detail],
           reasons: ['DB_ERROR'],
+          reason: `DB_ERROR: ${detail}`,
           pageKey,
         };
       }
@@ -520,6 +528,7 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
           diversityScore: metrics.diversityScore,
           warnings: [...warnings, `WRITE_GATE_BLOCKED: ${write.reason}`],
           reasons,
+          reason: `WRITE_GATE_BLOCKED: ${write.reason}`,
           pageKey,
           writeGate: {
             reason: write.reason,
@@ -586,18 +595,20 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
         pageKey,
       };
     } catch (error) {
+      const message = (error as Error).message;
       this.logger.error(
-        `❌ R8 enrichment failed type_id=${typeId}: ${(error as Error).message}`,
+        `❌ R8 enrichment failed type_id=${typeId}: ${message}`,
       );
+      // Panne DB (lecture/écriture) ≠ contenu cassé.
+      const code: R8ReasonCode =
+        error instanceof DatabaseException ? 'DB_ERROR' : 'CONTENT_BROKEN';
       return {
         status: 'failed',
         seoDecision: 'REJECT',
         diversityScore: 0,
-        warnings: [(error as Error).message],
-        // Panne DB (lecture/écriture) ≠ contenu cassé.
-        reasons: [
-          error instanceof DatabaseException ? 'DB_ERROR' : 'CONTENT_BROKEN',
-        ],
+        warnings: [message],
+        reasons: [code],
+        reason: `${code}: ${message}`,
         pageKey,
       };
     }
@@ -1490,7 +1501,14 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
         if (!result.written) {
           const reason = result.reason ?? 'unknown';
           // Le WriteGate encode ses propres pannes DB en `db_error…` : ce n'est
-          // pas un refus de garde, c'est une panne d'écriture.
+          // pas un refus de garde, c'est une panne d'écriture. Contrat du
+          // préfixe = ContentWriteExecutor.execute, étape H
+          // (config/content-write-executor.service.ts) : `db_error: <message>`
+          // si l'UPDATE échoue (l.208) et `db_error_insert: <message>` si
+          // l'INSERT de repli échoue (l.230) ; ContentWriteGateService recopie
+          // ce `reason` tel quel. Épinglé par le test C2 de
+          // r8-vehicle-enricher.write-gate.test.ts (motif produit par le vrai
+          // exécuteur) : pas d'énumération parallèle ici.
           if (reason.startsWith('db_error')) {
             this.logger.error(
               `[R8_DB_ERROR] op=write_gate page_key=${row.page_key} page_id=${existingPage.id} ` +

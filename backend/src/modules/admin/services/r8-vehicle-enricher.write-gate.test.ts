@@ -7,6 +7,8 @@
  *   2. `fetchNeighbors` used to turn a DB error (e.g. 42703 on the missing
  *      `variant_signature` column) into `[]`, inflating the diversity score.
  *   3. DB failures used to be labelled `CONTENT_BROKEN`.
+ * Every non-written outcome also carries `reason`, the field the execution
+ * report (`__pipeline_chain_queue.pcq_error`) reads.
  *
  * The service is built with Object.create (bypasses the SupabaseBaseService
  * ctor, which needs env), as in r8-parent-enrichment.test.ts. Composition and
@@ -14,6 +16,9 @@
  */
 
 import { DatabaseException } from '@common/exceptions';
+import { ContentWriteExecutor } from '../../../config/content-write-executor.service';
+import type { ResourceGroup } from '../../../config/execution-registry.types';
+import { RoleId } from '../../../config/role-ids';
 import { SupabaseRpcError } from '../../../security/rpc-gate/rpc-gate.errors';
 import { R8VehicleEnricherService } from './r8-vehicle-enricher.service';
 
@@ -194,6 +199,36 @@ function makeHarness(
   return { svc, logger, writeToTarget, writes, inserts, composeBlocks };
 }
 
+/**
+ * Real ContentWriteExecutor with a stubbed Supabase client (Object.create
+ * bypasses its ctor, which builds a live client). Write guard off: no lock,
+ * no CAS — straight to step H (UPDATE, then INSERT fallback).
+ */
+function makeRealExecutor(db: {
+  update: { error: { message: string } | null; count: number | null };
+  insert?: { error: { message: string } | null };
+}): ContentWriteExecutor {
+  const executor = Object.create(
+    ContentWriteExecutor.prototype,
+  ) as ContentWriteExecutor;
+  const eq = jest.fn().mockResolvedValue(db.update);
+  const supabase = {
+    from: jest.fn(() => ({
+      update: jest.fn(() => ({ eq })),
+      insert: jest.fn().mockResolvedValue(db.insert ?? { error: null }),
+    })),
+  };
+  Object.assign(executor as unknown as Record<string, unknown>, {
+    logger: { log: jest.fn(), warn: jest.fn(), error: jest.fn() },
+    supabase,
+    lockService: {},
+    casService: {},
+    ledgerService: {},
+    featureFlags: { writeGuardEnabled: false, writeGuardMode: 'observe' },
+  });
+  return executor;
+}
+
 const messages = (m: jest.Mock): string[] =>
   m.mock.calls.map((c) => String(c[0]));
 
@@ -219,6 +254,7 @@ describe('R8VehicleEnricherService — WriteGate outcome', () => {
       fieldsStripped: ['h1'],
     });
     expect(res.warnings).toContain('WRITE_GATE_BLOCKED: stale_base');
+    expect(res.reason).toBe('WRITE_GATE_BLOCKED: stale_base');
     // Computed decision is reported as-is (a refusal is not an error).
     expect(res.seoDecision).toBe('REVIEW_REQUIRED');
     expect(res.reasons).not.toContain('DB_ERROR');
@@ -245,6 +281,7 @@ describe('R8VehicleEnricherService — WriteGate outcome', () => {
 
     expect(res.status).toBe('draft');
     expect(res.writeGate).toBeUndefined();
+    expect(res.reason).toBeUndefined();
     expect(h.inserts.insertVersion).toHaveBeenCalledTimes(1);
     expect(h.inserts.insertVersion.mock.calls[0][0]).toBe(PAGE_ID);
     expect(h.inserts.insertFingerprints).toHaveBeenCalledTimes(1);
@@ -265,6 +302,9 @@ describe('R8VehicleEnricherService — WriteGate outcome', () => {
 
     expect(res.status).toBe('failed');
     expect(res.reasons).toEqual(['DB_ERROR']);
+    expect(res.reason).toBe(
+      'DB_ERROR: op=write_gate code=unknown db_error: column "variant_signature" does not exist',
+    );
     expect(h.inserts.insertVersion).not.toHaveBeenCalled();
     expect(
       messages(h.logger.error).some(
@@ -272,6 +312,61 @@ describe('R8VehicleEnricherService — WriteGate outcome', () => {
       ),
     ).toBe(true);
   });
+
+  // Pins the `db_error` prefix contract on its producer: the reason below is
+  // produced by the real ContentWriteExecutor (step H), relayed unchanged as
+  // ContentWriteGateService.writeToTarget does. If the executor ever renames
+  // its prefix, this test fails instead of the enricher silently reporting a
+  // DB failure as a gate refusal.
+  it.each([
+    [
+      'UPDATE error',
+      { update: { error: { message: 'canceling statement' }, count: null } },
+      'db_error: canceling statement',
+    ],
+    [
+      'fallback INSERT error',
+      {
+        update: { error: null, count: 0 },
+        insert: { error: { message: 'duplicate key' } },
+      },
+      'db_error_insert: duplicate key',
+    ],
+  ])(
+    'C2. real executor %s → failed / DB_ERROR (not write_gate_blocked)',
+    async (_label, db, expectedReason) => {
+      const executor = makeRealExecutor(db);
+      const execResult = await executor.execute(
+        RoleId.R8_VEHICLE,
+        'r8_vehicle_main' as ResourceGroup,
+        PAGE_ID,
+        { content_main: 'x' },
+        [],
+        'corr-c2',
+      );
+      expect(execResult).toMatchObject({
+        written: false,
+        reason: expectedReason,
+      });
+
+      const h = makeHarness({
+        writeResult: {
+          written: execResult.written,
+          reason: execResult.reason,
+          fieldsWritten: execResult.fieldsWritten,
+        },
+      });
+      const res = await h.svc.enrichSingle(TYPE_ID);
+
+      expect(res.status).toBe('failed');
+      expect(res.reasons).toEqual(['DB_ERROR']);
+      expect(res.reason).toBe(
+        `DB_ERROR: op=write_gate code=unknown ${expectedReason}`,
+      );
+      expect(res.writeGate).toBeUndefined();
+      expect(h.inserts.insertVersion).not.toHaveBeenCalled();
+    },
+  );
 
   it('H. page lookup error → DB_ERROR, never falls back to the direct upsert (gate bypass)', async () => {
     const h = makeHarness({
@@ -287,6 +382,9 @@ describe('R8VehicleEnricherService — WriteGate outcome', () => {
 
     expect(res.status).toBe('failed');
     expect(res.reasons).toEqual(['DB_ERROR']);
+    expect(res.reason).toBe(
+      'DB_ERROR: op=page_lookup code=57014 canceling statement',
+    );
     expect(h.writeToTarget).not.toHaveBeenCalled();
     expect(h.writes).toEqual([]);
     expect(h.inserts.insertVersion).not.toHaveBeenCalled();
@@ -308,6 +406,9 @@ describe('R8VehicleEnricherService — WriteGate outcome', () => {
     expect(h.writes).toEqual([{ table: '__seo_r8_pages', op: 'upsert' }]);
     expect(res.status).toBe('failed');
     expect(res.reasons).toEqual(['DB_ERROR']);
+    expect(res.reason).toBe(
+      'DB_ERROR: op=upsert code=42703 column does not exist',
+    );
     expect(h.inserts.insertVersion).not.toHaveBeenCalled();
     expect(
       messages(h.logger.error).some(
@@ -335,6 +436,7 @@ describe('R8VehicleEnricherService — fetchNeighbors', () => {
 
     expect(res.status).toBe('failed');
     expect(res.reasons).toEqual(['DB_ERROR']);
+    expect(res.reason).toMatch(/^DB_ERROR: /);
     expect(h.composeBlocks).not.toHaveBeenCalled();
     expect(h.writeToTarget).not.toHaveBeenCalled();
     expect(h.writes).toEqual([]);
@@ -394,6 +496,7 @@ describe('R8VehicleEnricherService — fetchVehicleData', () => {
 
     expect(res.status).toBe('failed');
     expect(res.reasons).toEqual(['DB_ERROR']);
+    expect(res.reason).toMatch(/^DB_ERROR: /);
     expect(
       messages(h.logger.error).some(
         (m) => m.includes('op=fetch_vehicle_data') && m.includes('code=57014'),
@@ -409,5 +512,6 @@ describe('R8VehicleEnricherService — fetchVehicleData', () => {
     expect(res.status).toBe('failed');
     expect(res.reasons).toEqual(['CONTENT_BROKEN']);
     expect(res.warnings).toEqual(['vehicle not found']);
+    expect(res.reason).toBe('CONTENT_BROKEN: vehicle not found');
   });
 });
