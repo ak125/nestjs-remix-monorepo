@@ -1,0 +1,8 @@
+# Fichiers ignorés par git que Claude Code copie dans chaque nouveau worktree
+# (.claude/worktrees/*). Lu à la racine du checkout principal, à la création du worktree.
+#
+# .husky/_/ : runner husky généré par `prepare: husky`, ignoré par son propre .gitignore.
+# Sans lui, quand core.hooksPath vaut le relatif `.husky/_` (valeur réécrite par husky à
+# chaque npm install / npm ci), git ne trouve aucun hook dans le worktree : le commit
+# passe sans pre-commit ni commit-msg, et sans aucun message.
+.husky/_/
