@@ -18848,7 +18848,7 @@
         "crypto"
       ],
       "kind": "controller",
-      "loc": 1233,
+      "loc": 1237,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/controllers/orders.controller.ts",
       "risk": "low",
@@ -19246,7 +19246,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 912,
+      "loc": 924,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/services/orders.service.ts",
       "risk": "low",
@@ -37710,7 +37710,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 441,
+      "loc": 559,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/orders.controller.guest-checkout.test.ts",
       "risk": "low",
@@ -54858,7 +54858,7 @@
         "~/utils/vehicle-cookie"
       ],
       "kind": "route",
-      "loc": 1343,
+      "loc": 1349,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/checkout.tsx",
       "risk": "low",
