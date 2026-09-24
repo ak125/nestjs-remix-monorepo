@@ -138,11 +138,17 @@ export class OrdersController {
 
     if (insertError?.code === '23505') {
       // Conflit PK = clé déjà utilisée → lire l'existant
-      const { data: existing } = await supabase
+      const { data: existing, error: readError } = await supabase
         .from('order_idempotency')
         .select('order_id, status, fingerprint')
         .eq('idempotency_key', idempotencyKey)
         .single();
+
+      // PGRST116 = aucune ligne : la clé est en cours de recyclage par une
+      // requête concurrente (traité plus bas comme « en cours »).
+      if (readError && readError.code !== 'PGRST116') {
+        throw readError;
+      }
 
       // Vérifier que le fingerprint correspond (v4 CRITIQUE)
       if (existing && existing.fingerprint !== fingerprint) {
@@ -168,23 +174,37 @@ export class OrdersController {
         });
         return { existing: existing.order_id };
       }
-      if (existing?.status === 'processing') {
+      // 'processing', ligne disparue (recyclage concurrent) ou état
+      // inattendu : une autre requête détient la clé.
+      if (existing?.status !== 'failed') {
         throw new ConflictException(
           'Commande en cours de traitement, réessayez dans quelques secondes',
         );
       }
-      // status === 'failed' → supprimer et recréer
+      // 'failed' → supprimer et recréer. La requête n'en devient propriétaire
+      // que si SA ré-insertion réussit : sinon une requête concurrente vient de
+      // la reprendre, et créer la commande ici en ferait une seconde.
       await supabase
         .from('order_idempotency')
         .delete()
         .eq('idempotency_key', idempotencyKey)
         .eq('status', 'failed');
-      await supabase.from('order_idempotency').insert({
-        idempotency_key: idempotencyKey,
-        order_id: null,
-        fingerprint,
-        status: 'processing',
-      });
+      const { error: reinsertError } = await supabase
+        .from('order_idempotency')
+        .insert({
+          idempotency_key: idempotencyKey,
+          order_id: null,
+          fingerprint,
+          status: 'processing',
+        });
+      if (reinsertError?.code === '23505') {
+        throw new ConflictException(
+          'Commande en cours de traitement, réessayez dans quelques secondes',
+        );
+      }
+      if (reinsertError) {
+        throw reinsertError;
+      }
     } else if (insertError) {
       throw insertError;
     }

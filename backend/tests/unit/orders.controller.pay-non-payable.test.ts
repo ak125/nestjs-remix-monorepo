@@ -63,6 +63,8 @@ type QueryResult = { data?: unknown; error?: unknown };
 interface TableConfig {
   single?: QueryResult;
   insert?: QueryResult;
+  /** Réponses successives des inserts (sinon `insert` pour tous). */
+  inserts?: QueryResult[];
 }
 interface Call {
   table: string;
@@ -74,6 +76,8 @@ function makeSupabase(tables: Record<string, TableConfig>) {
   const calls: Call[] = [];
   const from = (table: string) => {
     const cfg = tables[table] ?? {};
+    const inserted = () =>
+      calls.filter((c) => c.table === table && c.op === 'insert').length;
     const builder: Record<string, unknown> = {};
     Object.assign(builder, {
       select: (payload?: unknown) => {
@@ -86,8 +90,9 @@ function makeSupabase(tables: Record<string, TableConfig>) {
       single: async () =>
         cfg.single ?? { data: null, error: { message: 'no rows' } },
       insert: async (payload: unknown) => {
+        const n = inserted();
         calls.push({ table, op: 'insert', payload });
-        return cfg.insert ?? { error: null };
+        return cfg.inserts?.[n] ?? cfg.insert ?? { error: null };
       },
       update: (payload: unknown) => {
         calls.push({ table, op: 'update', payload });
@@ -422,6 +427,84 @@ describe('POST /api/orders — replay of a completed idempotency key', () => {
       status: 'failed',
       order_id: null,
     });
+  });
+
+  // Clé 'failed' recyclée : la requête n'en devient propriétaire que si SA
+  // ré-insertion réussit. Sinon une requête concurrente vient de la reprendre
+  // et créer la commande ici en ferait une seconde.
+  function recycle(opts: { reinsert: QueryResult; createOrder?: jest.Mock }) {
+    return makeOrdersController({
+      tables: {
+        order_idempotency: {
+          inserts: [{ error: { code: '23505' } }, opts.reinsert],
+          single: {
+            data: { order_id: null, status: 'failed', fingerprint: AUTH_FP },
+            error: null,
+          },
+        },
+      },
+      createOrder: opts.createOrder,
+    });
+  }
+
+  it("'failed' key recycled by this request → it owns the key", async () => {
+    const createOrder = jest.fn().mockRejectedValue(new Error('rpc down'));
+    const { controller, calls, ordersService } = recycle({
+      reinsert: { error: null },
+      createOrder,
+    });
+    await expect(controller.createOrder(ORDER_BODY, authReq())).rejects.toThrow(
+      'rpc down',
+    );
+    expect(writes(calls, 'order_idempotency', 'delete')).toHaveLength(1);
+    expect(ordersService.createOrder).toHaveBeenCalledTimes(1);
+    // propriétaire → peut la marquer 'failed'
+    expect(writes(calls, 'order_idempotency', 'update')).toHaveLength(1);
+  });
+
+  it("'failed' key re-taken by a concurrent request → 409, no order, key untouched", async () => {
+    const { controller, calls, ordersService } = recycle({
+      reinsert: { error: { code: '23505' } },
+    });
+    await expect(
+      controller.createOrder(ORDER_BODY, authReq()),
+    ).rejects.toBeInstanceOf(ConflictException);
+    expect(ordersService.createOrder).not.toHaveBeenCalled();
+    expect(writes(calls, 'order_idempotency', 'update')).toEqual([]);
+  });
+
+  it('key row vanished between insert and read (concurrent recycle) → 409, no order', async () => {
+    const { controller, calls, ordersService } = makeOrdersController({
+      tables: {
+        order_idempotency: {
+          insert: { error: { code: '23505' } },
+          single: { data: null, error: { code: 'PGRST116' } },
+        },
+      },
+    });
+    await expect(
+      controller.createOrder(ORDER_BODY, authReq()),
+    ).rejects.toBeInstanceOf(ConflictException);
+    expect(ordersService.createOrder).not.toHaveBeenCalled();
+    expect(writes(calls, 'order_idempotency', 'delete')).toEqual([]);
+    expect(writes(calls, 'order_idempotency', 'update')).toEqual([]);
+  });
+
+  it('key read fails → error propagated, no order, key untouched', async () => {
+    const readError = { code: '57014', message: 'statement timeout' };
+    const { controller, calls, ordersService } = makeOrdersController({
+      tables: {
+        order_idempotency: {
+          insert: { error: { code: '23505' } },
+          single: { data: null, error: readError },
+        },
+      },
+    });
+    await expect(controller.createOrder(ORDER_BODY, authReq())).rejects.toBe(
+      readError,
+    );
+    expect(ordersService.createOrder).not.toHaveBeenCalled();
+    expect(writes(calls, 'order_idempotency', 'update')).toEqual([]);
   });
 });
 
