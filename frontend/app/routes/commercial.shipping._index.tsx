@@ -232,7 +232,11 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     ordersUrl.searchParams.set("limit", limit.toString());
     if (search) ordersUrl.searchParams.set("search", search);
 
-    const [ordersResponse] = await Promise.all([fetch(ordersUrl.toString())]);
+    const [ordersResponse] = await Promise.all([
+      fetch(ordersUrl.toString(), {
+        headers: { Cookie: request.headers.get("Cookie") || "" },
+      }),
+    ]);
 
     const ordersData = await ordersResponse.json();
 
