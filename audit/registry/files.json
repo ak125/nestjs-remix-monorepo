@@ -67340,6 +67340,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "scripts/ci/prod-seo-projection-env.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 383,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/prod-seo-projection-env.test.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "scripts/ci/prod-ssr-probe.test.mjs",
       "importedBy": [],
       "imports": [],
