@@ -25,15 +25,14 @@ export interface Order {
   orderNumber: string;
   /** Code ___xtr_order_status tel qu'en base (`ord_ords_id`), `null` si absent */
   status: string | null;
-  /** Commande payée (`ord_is_pay = '1'`) */
+  /** Commande payée : `payment_state === 'paid'` renvoyé par le backend */
   isPaid?: boolean;
-  /** Date de paiement (`ord_date_pay`) */
-  datePay?: string | null;
   totalTTC: number;
   createdAt: string;
   lines: OrderLine[];
   trackingNumber?: string;
   trackingUrl?: string;
+  /** Libellé de paiement client (`getCustomerPaymentLabel`) */
   paymentStatus?: string;
   paymentMethod?: string;
   transactionId?: string;

@@ -240,9 +240,7 @@ export default function OrderDetailPage() {
           <Button asChild variant="outline">
             <Link to={`/account/orders/${order.id}/invoice`} className="gap-2">
               <FileText className="h-4 w-4" />
-              {order.paymentStatus === "paid" || order.paymentStatus === "Payé"
-                ? "Voir la facture"
-                : "Voir le bon de commande"}
+              {order.isPaid ? "Voir la facture" : "Voir le bon de commande"}
             </Link>
           </Button>
         </div>

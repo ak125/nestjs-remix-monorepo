@@ -26,6 +26,7 @@ import { getUserOrders } from "../services/orders.server";
 import { formatPrice } from "../utils/orders";
 import {
   ORDER_STATUS_OPTIONS,
+  getCustomerPaymentLabel,
   getStatusBadgeColor,
   getStatusLabel,
 } from "../utils/orders.utils";
@@ -219,6 +220,9 @@ export default function OrdersListPage() {
                           month: "long",
                           day: "numeric",
                         })}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Paiement : {getCustomerPaymentLabel(order)}
                       </p>
                     </div>
                     {/* Pas de <Badge> : sa variante par défaut (bg-primary)

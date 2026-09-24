@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { getOrderDetails, getUserOrders } from "~/services/orders.server";
 import {
   ORDER_STATUS_OPTIONS,
+  getCustomerPaymentLabel,
   getLineStatusLabel,
   getStatusLabel,
 } from "~/utils/orders.utils";
@@ -68,17 +69,34 @@ describe("getLineStatusLabel", () => {
   });
 });
 
+describe("getCustomerPaymentLabel", () => {
+  it("« Payé » suit isPaid, « Aucun paiement » pour une annulée non payée", () => {
+    expect(getCustomerPaymentLabel({ isPaid: true, status: "3" })).toBe("Payé");
+    expect(
+      getCustomerPaymentLabel({ isPaid: true, status: OrderStatus.CANCELLED }),
+    ).toBe("Payé");
+    expect(
+      getCustomerPaymentLabel({ isPaid: false, status: OrderStatus.CANCELLED }),
+    ).toBe("Aucun paiement");
+    for (const status of ["1", "3", "5", null]) {
+      expect(getCustomerPaymentLabel({ isPaid: false, status })).toBe(
+        "En attente",
+      );
+    }
+  });
+});
+
 describe("getUserOrders — lecture de la réponse du backend", () => {
-  it("garde le code de statut, lit ord_is_pay et la pagination du backend", async () => {
+  it("garde le code de statut, lit payment_state et la pagination du backend", async () => {
     const fetchMock = stubFetchJson({
       data: [
         {
           ord_id: "ORD-TEST-1",
           ord_ords_id: "5",
           ord_is_pay: "1",
-          ord_date_pay: "2026-01-02 10:00:00",
           ord_total_ttc: "42.50",
           ord_date: "2026-01-01 09:00:00",
+          payment_state: "paid",
         },
         {
           ord_id: "ORD-TEST-2",
@@ -86,8 +104,25 @@ describe("getUserOrders — lecture de la réponse du backend", () => {
           ord_is_pay: "0",
           ord_total_ttc: "10.00",
           ord_date: "2026-01-03 09:00:00",
+          payment_state: "not_payable",
         },
         { ord_id: "ORD-TEST-3", ord_total_ttc: "1.00" },
+        // Payée d'après la seule date de paiement : le backend dit « paid ».
+        {
+          ord_id: "ORD-TEST-4",
+          ord_ords_id: "1",
+          ord_is_pay: "0",
+          ord_date_pay: "2026-01-02 10:00:00",
+          ord_total_ttc: "5.00",
+          payment_state: "paid",
+        },
+        // Le drapeau seul ne suffit pas : seul le verdict du backend compte.
+        {
+          ord_id: "ORD-TEST-5",
+          ord_ords_id: "1",
+          ord_is_pay: "1",
+          ord_total_ttc: "5.00",
+        },
       ],
       pagination: { page: 2, limit: 10, total: 23, totalPages: 3 },
     });
@@ -109,8 +144,9 @@ describe("getUserOrders — lecture de la réponse du backend", () => {
       ["5", true],
       ["2", false],
       [null, false],
+      ["1", true],
+      ["1", false],
     ]);
-    expect(result.orders[0].datePay).toBe("2026-01-02 10:00:00");
     expect(result.pagination).toEqual({
       currentPage: 2,
       totalPages: 3,
@@ -129,6 +165,7 @@ describe("getOrderDetails — statut propre à chaque ligne", () => {
         ord_ords_id: "5",
         ord_is_pay: "1",
         ord_total_ttc: "42.50",
+        payment_state: "paid",
         lines: [
           { orl_id: "L1", orl_orls_id: "6", orl_art_quantity: "1" },
           { orl_id: "L2", orl_art_quantity: "1" },
@@ -144,8 +181,61 @@ describe("getOrderDetails — statut propre à chaque ligne", () => {
 
     expect(order?.status).toBe("5");
     expect(order?.isPaid).toBe(true);
+    expect(order?.paymentStatus).toBe("Payé");
     expect(order?.lines.map((line) => line.status)).toEqual(["6", null]);
     expect(order?.canReturn).toBe(false);
+  });
+});
+
+describe("getOrderDetails — paiement lu dans payment_state", () => {
+  it.each([
+    // [colonnes + verdict du backend, isPaid, libellé]
+    [
+      { ord_ords_id: "1", ord_is_pay: "0", payment_state: "payable" },
+      false,
+      "En attente",
+    ],
+    [
+      { ord_ords_id: "3", ord_is_pay: "1", payment_state: "paid" },
+      true,
+      "Payé",
+    ],
+    [
+      {
+        ord_ords_id: "1",
+        ord_is_pay: "0",
+        ord_date_pay: "2026-01-02 10:00:00",
+        payment_state: "paid",
+      },
+      true,
+      "Payé",
+    ],
+    [
+      { ord_ords_id: "2", ord_is_pay: "0", payment_state: "not_payable" },
+      false,
+      "Aucun paiement",
+    ],
+    // Sans verdict du backend, le drapeau seul ne rend pas la commande payée.
+    [{ ord_ords_id: "5", ord_is_pay: "1" }, false, "En attente"],
+  ])("%o → isPaid %s, « %s »", async (fields, isPaid, label) => {
+    stubFetchJson({
+      success: true,
+      data: {
+        ord_id: "ORD-TEST-1",
+        ord_total_ttc: "1.00",
+        lines: [],
+        ...fields,
+      },
+    });
+
+    const order = await getOrderDetails({
+      orderId: "ORD-TEST-1",
+      userId: "u-test",
+      request,
+    });
+
+    expect(order?.isPaid).toBe(isPaid);
+    expect(order?.paymentStatus).toBe(label);
   });
 });
 

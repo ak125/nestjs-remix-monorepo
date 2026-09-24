@@ -4,6 +4,7 @@
  */
 
 import { logger } from "~/utils/logger";
+import { getCustomerPaymentLabel } from "~/utils/orders.utils";
 import { type Order } from "../utils/orders";
 
 /**
@@ -95,8 +96,9 @@ export async function getUserOrders(params: {
         id: order.ord_id || order.id?.toString() || order.order_id?.toString(),
         orderNumber: order.ord_id || order.orderNumber || `CMD-${order.id}`,
         status: toStatusCode(order.ord_ords_id),
-        isPaid: String(order.ord_is_pay) === "1",
-        datePay: order.ord_date_pay || null,
+        // Verdict du backend (getOrderPaymentState : drapeau OU date de
+        // paiement), jamais recalculé ici depuis les colonnes.
+        isPaid: order.payment_state === "paid",
         totalTTC: parseFloat(
           order.ord_total_ttc || order.totalTTC || order.total_ttc || 0,
         ),
@@ -217,14 +219,17 @@ export async function getOrderDetails(params: {
       lines_count: order.lines?.length,
     });
 
+    const status = toStatusCode(order.ord_ords_id);
+    // Verdict du backend (getOrderPaymentState), comme dans la liste.
+    const isPaid = order.payment_state === "paid";
+
     // Mapping des données depuis la réponse du backend
     // ✅ Adaptation pour structure legacy (ord_id, ord_total_ttc, etc.)
     const mappedOrder = {
       id: order.ord_id || order.id?.toString() || order.order_id?.toString(),
       orderNumber: order.ord_id || order.orderNumber || `CMD-${order.id}`,
-      status: toStatusCode(order.ord_ords_id),
-      isPaid: String(order.ord_is_pay) === "1",
-      datePay: order.ord_date_pay || null,
+      status,
+      isPaid,
       totalTTC: parseFloat(
         order.ord_total_ttc || order.totalTTC || order.total_ttc || 0,
       ),
@@ -268,17 +273,8 @@ export async function getOrderDetails(params: {
       updatedAt: order.updatedAt || order.updated_at,
       paymentMethod:
         order.paymentMethod || order.payment_method || "Carte bancaire",
-      // ___xtr_order n'a pas de colonne paymentStatus : le drapeau de paiement
-      // est ord_is_pay ('1' = payée). Ne jamais afficher « Payé » par défaut,
-      // ni « En attente » pour une commande annulée ('2') sans paiement.
-      paymentStatus:
-        order.paymentStatus ||
-        order.payment_status ||
-        (String(order.ord_is_pay) === "1"
-          ? "Payé"
-          : String(order.ord_ords_id) === "2"
-            ? "Aucun paiement"
-            : "En attente"),
+      // Même libellé que la liste, tiré du verdict du backend.
+      paymentStatus: getCustomerPaymentLabel({ isPaid, status }),
       transactionId: order.transactionId || order.transaction_id,
       trackingNumber:
         order.ord_tracking || order.trackingNumber || order.tracking_number,

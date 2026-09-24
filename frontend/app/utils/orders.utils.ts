@@ -5,6 +5,7 @@
 
 import {
   ORDER_LINE_STATUS_LABEL,
+  OrderStatus,
   isOrderLineStatusCode,
 } from "@repo/domain-commerce";
 import { type Order, type OrdersStats } from "../types/orders.types";
@@ -126,6 +127,21 @@ export function getPaymentBadgeColor(isPaid: string): string {
  */
 export function getPaymentLabel(isPaid: string): string {
   return isPaid === "1" ? "Payée" : "Impayée";
+}
+
+/**
+ * Libellé de paiement de l'espace client (liste et détail des commandes).
+ * `isPaid` vient du `payment_state` du backend (règle unique
+ * getOrderPaymentState) : rien n'est recalculé ici depuis les colonnes.
+ */
+export function getCustomerPaymentLabel(order: {
+  isPaid?: boolean;
+  status: string | null;
+}): string {
+  if (order.isPaid) return "Payé";
+  return order.status === OrderStatus.CANCELLED
+    ? "Aucun paiement"
+    : "En attente";
 }
 
 /**
