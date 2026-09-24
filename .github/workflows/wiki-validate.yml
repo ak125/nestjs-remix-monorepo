@@ -45,12 +45,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout monorepo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           path: monorepo
 
       - name: Checkout automecanik-wiki
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: ak125/automecanik-wiki
           path: automecanik-wiki
