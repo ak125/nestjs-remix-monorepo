@@ -24,6 +24,11 @@ import { UserDataConsolidatedService } from '../modules/users/services/user-data
 import type { User } from '../modules/users/dto/user.dto';
 import { CacheService } from '@cache/cache.service';
 import { PasswordCryptoService } from '../shared/crypto/password-crypto.service';
+import {
+  CUSTOMER_SESSION_LEVEL,
+  isAdminSession,
+  sessionPrivilegeLevel,
+} from './session-privilege';
 
 export interface AuthUser {
   id: string;
@@ -167,15 +172,17 @@ export class AuthService {
         }
       }
 
+      // Le niveau de droits dépend de la table source : un palier client
+      // n'est pas un niveau d'équipe (voir session-privilege.ts).
       const authUser: AuthUser = {
         id: resolved.userId,
         email: resolved.email,
         firstName: resolved.firstName,
         lastName: resolved.lastName,
-        level: resolved.level,
+        level: sessionPrivilegeLevel(authSource, resolved.level),
         isActive: resolved.isActive,
         isPro: isAdmin || resolved.level >= 5,
-        isAdmin: isAdmin && resolved.level >= 7,
+        isAdmin: isAdminSession(authSource, resolved.level),
         authSource,
       };
 
@@ -493,10 +500,10 @@ export class AuthService {
           email: resolved.email,
           firstName: resolved.firstName,
           lastName: resolved.lastName,
-          level: resolved.level,
+          level: sessionPrivilegeLevel(resolved.authSource, resolved.level),
           isActive: resolved.isActive,
           isPro: resolved.authSource === 'admin' || resolved.level >= 5,
-          isAdmin: resolved.authSource === 'admin' && resolved.level >= 7,
+          isAdmin: isAdminSession(resolved.authSource, resolved.level),
           authSource: resolved.authSource,
         };
       }
@@ -574,8 +581,8 @@ export class AuthService {
       lastName: admin.lastName,
       isPro: true,
       isActive: admin.isActive,
-      level: admin.level,
-      isAdmin: admin.level >= 7,
+      level: sessionPrivilegeLevel('admin', admin.level),
+      isAdmin: isAdminSession('admin', admin.level),
       authSource: 'admin',
     };
   }
@@ -607,7 +614,8 @@ export class AuthService {
   }
 
   /**
-   * Mapper un User DTO vers AuthUser
+   * Mapper un User DTO (table client) vers AuthUser. `user.level` est le
+   * palier du compte client : il ne confère aucun droit d'équipe.
    */
   private mapUserToAuthUser(user: User): AuthUser {
     return {
@@ -617,8 +625,9 @@ export class AuthService {
       lastName: user.lastName || '',
       isPro: user.isPro,
       isActive: user.isActive,
-      level: user.level,
-      isAdmin: user.level >= 7,
+      level: CUSTOMER_SESSION_LEVEL,
+      isAdmin: false,
+      authSource: 'customer',
     };
   }
 
@@ -909,8 +918,8 @@ export class AuthService {
         return { hasAccess: false, reason: 'User inactive or not found' };
       }
 
-      // Logique de permissions basée sur le niveau utilisateur existant
-      const userLevel = user.level;
+      // Recherche dans la table client : niveau de droits d'une session client
+      const userLevel = this.mapUserToAuthUser(user).level;
 
       const modulePermissions: Record<string, Record<string, number>> = {
         commercial: { read: 1, write: 3 },
