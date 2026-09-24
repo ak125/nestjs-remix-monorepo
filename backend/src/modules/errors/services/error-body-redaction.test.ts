@@ -2,7 +2,7 @@ import type { Request } from 'express';
 import { ErrorService } from './error.service';
 
 /**
- * Le corps de requête est recopié dans le journal d'erreurs
+ * Le corps de requête accompagne l'erreur transmise à ErrorLogService
  * (`msg_content` + `errorMetadata.request_body`). Les secrets y étaient déjà
  * masqués ; les identifiants personnels directs (email, téléphone, nom,
  * adresse) doivent l'être aussi, à toute profondeur.
@@ -96,12 +96,50 @@ describe('ErrorService.logError — corps de requête sans identifiant personnel
     });
   });
 
+  it('masque les noms et téléphones portés directement par le corps', async () => {
+    const entry = await loggedBody({
+      name: 'Prénom Nom',
+      nom: 'Nom',
+      customerName: 'Prénom Nom',
+      customer_name: 'Prénom Nom',
+      firstName: 'Prénom',
+      first_name: 'Prénom',
+      lastName: 'Nom',
+      last_name: 'Nom',
+      fullName: 'Prénom Nom',
+      author_name: 'Prénom Nom',
+      phone: PHONE,
+      mobile: PHONE,
+      subject: 'Question',
+    });
+
+    expect(entry.msg_content).not.toContain('Prénom');
+    expect(entry.msg_content).not.toContain(PHONE);
+    expect(entry.errorMetadata?.request_body).toEqual({
+      name: '[REDACTED]',
+      nom: '[REDACTED]',
+      customerName: '[REDACTED]',
+      customer_name: '[REDACTED]',
+      firstName: '[REDACTED]',
+      first_name: '[REDACTED]',
+      lastName: '[REDACTED]',
+      last_name: '[REDACTED]',
+      fullName: '[REDACTED]',
+      author_name: '[REDACTED]',
+      phone: '[REDACTED]',
+      mobile: '[REDACTED]',
+      subject: 'Question',
+    });
+  });
+
   it("garde les champs qui contiennent 'tel' ou 'name' sans être personnels", async () => {
     const body = {
       rateLimit: 10,
       autoGenerateLatest: true,
       product_name: 'Filtre à huile',
+      productName: 'Filtre à huile',
       pg_name: 'Filtres',
+      gammeName: 'Filtres',
     };
     const entry = await loggedBody(body);
 

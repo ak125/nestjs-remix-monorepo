@@ -621,10 +621,12 @@ export class ErrorService {
 
     const sanitized = { ...body };
     // Secrets, puis identifiants personnels directs (email, téléphone, nom,
-    // adresse postale) : le corps nettoyé est conservé dans le journal
-    // d'erreurs. Correspondance par sous-chaîne de la clé en minuscules :
-    // 'mail' couvre email, guestEmail, cst_mail ; 'address' couvre
-    // billingAddress et shippingAddress en entier.
+    // adresse postale). Le corps nettoyé accompagne l'erreur transmise à
+    // ErrorLogService ; la ligne `__error_logs` n'a aujourd'hui aucune colonne
+    // pour lui, et ce masquage garantit qu'un consommateur à venir ne recevra
+    // que la version masquée. Correspondance par sous-chaîne de la clé en
+    // minuscules : 'mail' couvre email, guestEmail, cst_mail ; 'address'
+    // couvre billingAddress et shippingAddress en entier.
     const sensitiveFields = [
       'password',
       'pswd',
@@ -644,10 +646,13 @@ export class ErrorService {
       'address',
     ];
     // Clés ambiguës, retenues sous leur forme exacte seulement : 'tel' en
-    // sous-chaîne toucherait rateLimit, 'name' toucherait product_name. Les
-    // colonnes client/adresse/admin historiques (cst_, cda_, cba_, cnfa_)
-    // portent le nom de famille dans *_name / *_nom.
-    const sensitiveKeyPattern = /(^|_)tel$|^(cst|cda|cba|cnfa)_(name|nom)$/;
+    // sous-chaîne toucherait rateLimit, 'name' toucherait product_name. Sont
+    // masqués : name / nom seuls (formulaires de contact et d'avis), les noms
+    // de personne composés (customerName, first_name, last_name, fullName,
+    // author_name) et les colonnes client/adresse/admin historiques
+    // (cst_, cda_, cba_, cnfa_) qui portent le nom de famille dans *_name / *_nom.
+    const sensitiveKeyPattern =
+      /(^|_)tel$|^(name|nom)$|^(customer|first|last|full|author)_?name$|^(cst|cda|cba|cnfa)_(name|nom)$/;
 
     const sanitizeObject = (
       obj: Record<string, unknown>,

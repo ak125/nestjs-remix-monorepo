@@ -18,8 +18,12 @@ const SENDER = 'boutique@example.test';
 
 function makeConfig(configured: boolean): ConfigService {
   const values: Record<string, string> = configured
-    ? { GMAIL_APP_PASSWORD: 'test-app-password', GMAIL_USER_EMAIL: SENDER }
-    : { GMAIL_USER_EMAIL: SENDER };
+    ? {
+        GMAIL_APP_PASSWORD: 'test-app-password',
+        GMAIL_USER_EMAIL: SENDER,
+        ADMIN_ORDER_EMAIL: SENDER,
+      }
+    : { GMAIL_USER_EMAIL: SENDER, ADMIN_ORDER_EMAIL: SENDER };
   return {
     get: (key: string) => values[key],
   } as unknown as ConfigService;
@@ -101,12 +105,20 @@ describe('MailService — journaux sans adresse du destinataire', () => {
     const service = new MailService(makeConfig(false));
 
     await service.sendWelcomeEmail(CUSTOMER, 'Prénom');
+    await service.sendOrderConfirmation(ORDER, CUSTOMER_DATA);
+    // Son objet contient l'email du client : il ne doit pas être journalisé.
+    await service.sendAdminOrderNotification(ORDER, CUSTOMER_DATA);
 
     expect(sendMailMock).not.toHaveBeenCalled();
     const text = loggedText(spies);
     expect(text).toContain('[DRY-RUN]');
     expect(text).toContain('kind=welcome');
+    expect(text).toContain('kind=order_confirmation order=ORD-TEST-1');
+    expect(text).toContain('kind=admin_order_notification order=ORD-TEST-1');
     expect(text).not.toContain(CUSTOMER);
+    expect(text).not.toContain('Bienvenue');
+    expect(text).not.toContain('confirmee');
+    expect(text).not.toContain('[COMMANDE]');
   });
 
   it("échec SMTP : l'erreur levée ne porte que les champs techniques", async () => {
@@ -131,7 +143,15 @@ describe('MailService — journaux sans adresse du destinataire', () => {
     });
     expect(failure.cause).toBeUndefined();
     expect(JSON.stringify(failure, errorReplacer)).not.toContain(CUSTOMER);
+    // L'échec est journalisé une fois, par le seul message technique : ni
+    // destinataire ni objet.
+    const errorCalls = (Logger.prototype.error as jest.Mock).mock.calls;
+    expect(errorCalls).toEqual([[failure.message]]);
+    expect(failure.message).toBe(
+      'Email delivery failed: kind=order_cancelled order=ORD-TEST-1 code=EENVELOPE responseCode=550 command=RCPT TO',
+    );
     expect(loggedText(spies)).not.toContain(CUSTOMER);
+    expect(loggedText(spies)).not.toContain('annulee');
   });
 
   it('écarte un code ou une commande qui ne sont pas des jetons techniques', () => {
