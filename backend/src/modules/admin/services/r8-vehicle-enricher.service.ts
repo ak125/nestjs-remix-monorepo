@@ -13,7 +13,6 @@ import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { DatabaseException, ErrorCodes } from '@common/exceptions';
 import { SupabaseRpcError } from '../../../security/rpc-gate/rpc-gate.errors';
 import { EnricherTextUtils } from './enricher-text-utils.service';
-import { VehicleRagGeneratorService } from './vehicle-rag-generator.service';
 import {
   R8_TABLES,
   R8_HARD_GATES,
@@ -81,16 +80,6 @@ export interface R8EnrichResult {
   };
 }
 
-// ── RAG vehicle frontmatter ──
-
-interface VehicleRagData {
-  motorisations?: Array<{ moteur: string; puissance: string; code: string }>;
-  problemes_connus?: string[];
-  pieces_usure?: string[];
-  entretien?: string[];
-  faq?: Array<{ q: string; a: string }>;
-}
-
 // ── Block ──
 
 interface R8Block {
@@ -146,13 +135,11 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
   protected override readonly logger = new Logger(
     R8VehicleEnricherService.name,
   );
-  private readonly RAG_VEHICLES_DIR = `${RAG_KNOWLEDGE_PATH}/vehicles`;
   private readonly RAG_GAMMES_DIR = `${RAG_KNOWLEDGE_PATH}/gammes`;
 
   constructor(
     configService: ConfigService,
     private readonly textUtils: EnricherTextUtils,
-    private readonly vehicleRagGenerator: VehicleRagGeneratorService,
     private readonly seoRoleTemplate: SeoRoleTemplateSelector,
     @Optional() private readonly writeGate?: ContentWriteGateService,
     @Optional() private readonly featureFlags?: FeatureFlagsService,
@@ -249,37 +236,6 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
         price: number;
       }> = vehicleData.bestsellers || [];
 
-      // RAG: vehicle model file — auto-generate if missing
-      const brandSlug = (v.brand_alias || '')
-        .toLowerCase()
-        .replace(/\s+/g, '-')
-        .replace(/[^a-z0-9-]/g, '');
-      const modelSlug = (v.model_alias || v.model_name || '')
-        .toLowerCase()
-        .replace(/\s+/g, '-')
-        .replace(/[^a-z0-9-]/g, '');
-      const ragPath = join(
-        this.RAG_VEHICLES_DIR,
-        `${brandSlug}-${modelSlug}.md`,
-      );
-      const ragFallback = join(this.RAG_VEHICLES_DIR, `${modelSlug}.md`);
-      if (!existsSync(ragPath) && !existsSync(ragFallback) && v.model_id) {
-        const modeleId =
-          typeof v.model_id === 'string'
-            ? parseInt(v.model_id, 10)
-            : v.model_id;
-        if (modeleId > 0) {
-          this.logger.log(
-            `Auto-generating vehicle RAG for ${brandSlug}-${modelSlug} (modele_id=${modeleId})`,
-          );
-          await this.vehicleRagGenerator.generateForModel(modeleId);
-        }
-      }
-      const vehicleRag = this.loadVehicleRag(
-        v.model_alias || v.model_name || '',
-        v.brand_alias || v.brand_name || '',
-      );
-
       // RAG: top 5 gammes
       const topGammes = families.slice(0, 5);
       const gammeRags = topGammes.map((g) => this.loadGammeRag(g.pg_alias));
@@ -320,7 +276,6 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
         v,
         families,
         bestsellers,
-        vehicleRag,
         gammeRags,
         neighbors,
         useOwnedEditorial,
@@ -595,39 +550,6 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
 
   // ── RAG Loaders ──
 
-  private loadVehicleRag(
-    modelName: string,
-    brandAlias?: string,
-  ): VehicleRagData {
-    const slug = modelName
-      .toLowerCase()
-      .replace(/\s+/g, '-')
-      .replace(/[^a-z0-9-]/g, '');
-    const brand = (brandAlias || '')
-      .toLowerCase()
-      .replace(/\s+/g, '-')
-      .replace(/[^a-z0-9-]/g, '');
-
-    // Try multiple slug patterns (brand-model first, model only as fallback)
-    const candidates = [brand ? `${brand}-${slug}` : '', slug].filter(Boolean);
-
-    for (const candidate of candidates) {
-      const filePath = join(this.RAG_VEHICLES_DIR, `${candidate}.md`);
-      if (!existsSync(filePath)) continue;
-      try {
-        const raw = readFileSync(filePath, 'utf-8');
-        const match = raw.match(/^---\n([\s\S]*?)\n---/);
-        if (match) {
-          const front = yaml.load(match[1]) as Record<string, unknown>;
-          return front as unknown as VehicleRagData;
-        }
-      } catch {
-        continue;
-      }
-    }
-    return {};
-  }
-
   private loadGammeRag(pgAlias: string): {
     faq: Array<{ q: string; a: string }>;
     symptoms: string[];
@@ -776,7 +698,6 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       product_count: number;
     }>,
     bestsellers: Array<{ piece_id: number; piece_name: string; price: number }>,
-    vehicleRag: VehicleRagData,
     gammeRags: Array<{
       faq: Array<{ q: string; a: string }>;
       symptoms: string[];
@@ -914,58 +835,36 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       ],
     });
 
-    // S_SELECTION_GUIDE — owned editorial (Fix B) × facts, else pieces_usure path
+    // S_SELECTION_GUIDE — owned editorial (Fix B) × facts only. The former
+    // fallback copied `pieces_usure` of the vehicle RAG file: RAG = chatbot
+    // layer, zero content-write authority (CLAUDE.md invariant 4, ADR-031/046).
+    // No owned editorial → no block; the gate records MISSING_HELP_BLOCK.
     const ownedSelection =
       useOwnedEditorial && anchorEditorial
         ? buildOwnedSelectionGuide(anchorEditorial, facts)
         : null;
     if (ownedSelection) {
       blocks.push(ownedSelection);
-    } else {
-      if (useOwnedEditorial) {
-        this.logger.log(
-          `R8_OWNED_EDITORIAL_FALLBACK section=S_SELECTION_GUIDE page=${pageKey} reason=${anchorEditorial ? 'no_owned_selection' : 'no_anchor_editorial'}`,
-        );
-      }
-      const usurePieces = vehicleRag.pieces_usure || [];
-      if (usurePieces.length > 0) {
-        blocks.push({
-          id: 'S_SELECTION_GUIDE',
-          type: 'selection_help',
-          title: `Pièces d'usure courantes`,
-          renderedText: usurePieces.map((p) => `- ${p}`).join('\n'),
-          specificityWeight: 0.85,
-          boilerplateRisk: 0.1,
-          semanticPayload: usurePieces.slice(0, 5),
-        });
-      }
+    } else if (useOwnedEditorial) {
+      this.logger.log(
+        `R8_OWNED_EDITORIAL_FALLBACK section=S_SELECTION_GUIDE page=${pageKey} reason=${anchorEditorial ? 'no_owned_selection' : 'no_anchor_editorial'}`,
+      );
     }
 
-    // S_ENTRETIEN_CONTEXT — owned editorial (Fix B) × facts, else problemes_connus path
+    // S_ENTRETIEN_CONTEXT — owned editorial (Fix B) × facts only. The former
+    // fallback copied `problemes_connus` of the vehicle RAG file, i.e. generic
+    // gamme symptoms identical across vehicles, under a "Problèmes connus
+    // <marque> <modèle>" H2 (same rule as S_SELECTION_GUIDE above).
     const ownedEntretien =
       useOwnedEditorial && anchorEditorial
         ? buildOwnedEntretien(anchorEditorial, facts)
         : null;
     if (ownedEntretien) {
       blocks.push(ownedEntretien);
-    } else {
-      if (useOwnedEditorial) {
-        this.logger.log(
-          `R8_OWNED_EDITORIAL_FALLBACK section=S_ENTRETIEN_CONTEXT page=${pageKey} reason=${anchorEditorial ? 'no_owned_entretien' : 'no_anchor_editorial'}`,
-        );
-      }
-      const problemes = vehicleRag.problemes_connus || [];
-      if (problemes.length > 0) {
-        blocks.push({
-          id: 'S_ENTRETIEN_CONTEXT',
-          type: 'maintenance_context',
-          title: `Problèmes connus ${brand} ${model}`,
-          renderedText: problemes.map((p) => `- ${p}`).join('\n'),
-          specificityWeight: 0.85,
-          boilerplateRisk: 0.1,
-          semanticPayload: problemes.slice(0, 3),
-        });
-      }
+    } else if (useOwnedEditorial) {
+      this.logger.log(
+        `R8_OWNED_EDITORIAL_FALLBACK section=S_ENTRETIEN_CONTEXT page=${pageKey} reason=${anchorEditorial ? 'no_owned_entretien' : 'no_anchor_editorial'}`,
+      );
     }
 
     // S_CATALOG_ACCESS (dynamic ranking + ADR-022 P2d variation opener)

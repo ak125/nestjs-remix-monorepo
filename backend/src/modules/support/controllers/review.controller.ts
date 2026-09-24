@@ -7,10 +7,16 @@ import {
   Body,
   Param,
   Query,
+  Req,
+  UseGuards,
   HttpCode,
   HttpStatus,
   Logger,
 } from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
+import { PermissionsGuard } from '@auth/guards/permissions.guard';
+import { RequirePermission } from '@auth/decorators/require-permission.decorator';
 import {
   ReviewService,
   ReviewData,
@@ -18,7 +24,12 @@ import {
   ReviewFilters,
 } from '../services/review.service';
 import { DomainNotFoundException, ErrorCodes } from '@common/exceptions';
+import { requireSessionUserId } from './session-user';
 
+/**
+ * Accès : lecture des avis réservée à l'équipe (`canSeeCustomerDetails`) ;
+ * saisie, modération et suppression réservées à l'administration.
+ */
 @Controller('api/support/reviews')
 export class ReviewController {
   private readonly logger = new Logger(ReviewController.name);
@@ -26,6 +37,7 @@ export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
 
   @Post()
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   @HttpCode(HttpStatus.CREATED)
   async submitReview(
     @Body()
@@ -36,6 +48,8 @@ export class ReviewController {
   }
 
   @Get()
+  @UseGuards(AuthenticatedGuard, PermissionsGuard)
+  @RequirePermission('canSeeCustomerDetails')
   async getReviews(
     @Query('rating') rating?: string,
     @Query('published') published?: string,
@@ -61,6 +75,8 @@ export class ReviewController {
   }
 
   @Get('stats')
+  @UseGuards(AuthenticatedGuard, PermissionsGuard)
+  @RequirePermission('canSeeCustomerDetails')
   async getReviewStats(
     @Query('rating') rating?: string,
     @Query('moderated') moderated?: string,
@@ -84,6 +100,7 @@ export class ReviewController {
   }
 
   @Get('product/:productId')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async getProductReviews(
     @Param('productId') productId: string,
   ): Promise<ReviewData[]> {
@@ -91,6 +108,7 @@ export class ReviewController {
   }
 
   @Get('customer/:customerId')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async getCustomerReviews(
     @Param('customerId') customerId: string,
   ): Promise<ReviewData[]> {
@@ -98,6 +116,8 @@ export class ReviewController {
   }
 
   @Get(':reviewId')
+  @UseGuards(AuthenticatedGuard, PermissionsGuard)
+  @RequirePermission('canSeeCustomerDetails')
   async getReview(@Param('reviewId') reviewId: string): Promise<ReviewData> {
     const review = await this.reviewService.getReview(reviewId);
     if (!review) {
@@ -110,24 +130,26 @@ export class ReviewController {
   }
 
   @Put(':reviewId/moderate')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async moderateReview(
+    @Req() req: { user?: { id?: string | number } },
     @Param('reviewId') reviewId: string,
     @Body()
     body: {
       action: 'approve' | 'reject';
-      moderatorId: string;
       moderatorNote?: string;
     },
   ): Promise<ReviewData> {
     return this.reviewService.moderateReview(
       reviewId,
       body.action,
-      body.moderatorId,
+      requireSessionUserId(req),
       body.moderatorNote,
     );
   }
 
   @Put(':reviewId/helpful')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async markHelpful(
     @Param('reviewId') reviewId: string,
     @Body() body: { helpful: boolean },
@@ -136,6 +158,7 @@ export class ReviewController {
   }
 
   @Put(':reviewId/verify')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async verifyReview(
     @Param('reviewId') reviewId: string,
     @Body() body: { verified: boolean },
@@ -144,6 +167,7 @@ export class ReviewController {
   }
 
   @Delete(':reviewId')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteReview(@Param('reviewId') reviewId: string): Promise<void> {
     await this.reviewService.deleteReview(reviewId);

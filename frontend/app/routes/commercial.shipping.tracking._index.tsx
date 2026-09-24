@@ -275,6 +275,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // Récupérer les expéditions depuis le nouveau endpoint dashboard
     const ordersResponse = await fetch(
       `http://127.0.0.1:3000/api/dashboard/shipments`,
+      { headers: { Cookie: request.headers.get("Cookie") || "" } },
     );
 
     let realShipments: ShipmentTracking[] = [];

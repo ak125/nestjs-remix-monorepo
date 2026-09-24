@@ -17,6 +17,7 @@ import { NextFunction, Request, Response } from 'express';
 import { LocalAuthGuard } from '../local-auth.guard';
 import { UsersFinalService } from '../../modules/users/users-final.service';
 import { AuthService, LoginResult } from '../auth.service';
+import { STAFF_LEVEL } from '../session-privilege';
 import { UserDataConsolidatedService } from '../../modules/users/services/user-data-consolidated.service';
 import { CartDataService } from '../../database/services/cart-data.service';
 import { MailService } from '../../services/mail.service';
@@ -314,8 +315,8 @@ export class AuthLoginController {
 
     if (user?.isAdmin && userLevel >= 7) {
       return response.redirect('/admin');
-    } else if (user?.isPro) {
-      return response.redirect('/pro/dashboard');
+    } else if (userLevel >= STAFF_LEVEL.COMMERCIAL) {
+      return response.redirect('/commercial');
     }
 
     return response.redirect('/');
@@ -414,8 +415,8 @@ export class AuthLoginController {
     if (!safeRedirectTo) {
       if (authUser.isAdmin && userLevel >= 7) {
         redirectUrl = '/admin';
-      } else if (authUser.isPro) {
-        redirectUrl = '/pro/dashboard';
+      } else if (userLevel >= STAFF_LEVEL.COMMERCIAL) {
+        redirectUrl = '/commercial';
       }
     }
 
@@ -582,8 +583,8 @@ export class AuthLoginController {
         const userLevel = parseInt(String(authUser.level), 10) || 0;
         if (authUser.isAdmin && userLevel >= 7) {
           redirectTo = '/admin';
-        } else if (authUser.isPro) {
-          redirectTo = '/pro/dashboard';
+        } else if (userLevel >= STAFF_LEVEL.COMMERCIAL) {
+          redirectTo = '/commercial';
         }
       }
 
@@ -885,11 +886,11 @@ export class AuthLoginController {
         `Admin niveau ${userLevel} détecté, redirection vers admin`,
       );
       response.redirect('/admin');
-    } else if (user?.isPro) {
+    } else if (userLevel >= STAFF_LEVEL.COMMERCIAL) {
       this.logger.log(
-        'Utilisateur pro détecté, redirection vers dashboard pro',
+        `Équipe niveau ${userLevel} détectée, redirection vers commercial`,
       );
-      response.redirect('/pro/dashboard');
+      response.redirect('/commercial');
     } else {
       this.logger.log('Utilisateur standard, redirection vers accueil');
       response.redirect('/');

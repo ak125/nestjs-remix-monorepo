@@ -22,7 +22,7 @@
     "unresolved_callsites": 0,
     "dropped_call_sites": 5,
     "migrations_scanned": 356,
-    "backend_files_scanned": 1405
+    "backend_files_scanned": 1409
   },
   "tables": {
     "___config": {
@@ -11072,63 +11072,63 @@
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 743,
+      "line": 665,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_pages",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1401,
+      "line": 1300,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_pages",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1476,
+      "line": 1375,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_pages",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1513,
+      "line": 1412,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_page_versions",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1521,
+      "line": 1420,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_page_versions",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1546,
+      "line": 1445,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_fingerprints",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1588,
+      "line": 1487,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_similarity_index",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1608,
+      "line": 1507,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_regeneration_queue",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1619,
+      "line": 1518,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_qa_reviews",
       "refusal": null
@@ -14691,70 +14691,70 @@
     },
     {
       "file": "backend/src/modules/support/services/claim.service.ts",
-      "line": 229,
+      "line": 238,
       "form": "THIS_FIELD",
       "resolved_table": "__claims",
       "refusal": null
     },
     {
       "file": "backend/src/modules/support/services/claim.service.ts",
-      "line": 255,
+      "line": 264,
       "form": "THIS_FIELD",
       "resolved_table": "__claims",
       "refusal": null
     },
     {
       "file": "backend/src/modules/support/services/claim.service.ts",
-      "line": 281,
+      "line": 290,
       "form": "THIS_FIELD",
       "resolved_table": "__claims",
       "refusal": null
     },
     {
       "file": "backend/src/modules/support/services/claim.service.ts",
-      "line": 351,
+      "line": 360,
       "form": "THIS_FIELD",
       "resolved_table": "__claims",
       "refusal": null
     },
     {
       "file": "backend/src/modules/support/services/claim.service.ts",
-      "line": 399,
+      "line": 412,
       "form": "THIS_FIELD",
       "resolved_table": "__claims",
       "refusal": null
     },
     {
       "file": "backend/src/modules/support/services/claim.service.ts",
-      "line": 439,
+      "line": 452,
       "form": "THIS_FIELD",
       "resolved_table": "__claims",
       "refusal": null
     },
     {
       "file": "backend/src/modules/support/services/claim.service.ts",
-      "line": 487,
+      "line": 500,
       "form": "THIS_FIELD",
       "resolved_table": "__claims",
       "refusal": null
     },
     {
       "file": "backend/src/modules/support/services/claim.service.ts",
-      "line": 534,
+      "line": 547,
       "form": "THIS_FIELD",
       "resolved_table": "__claims",
       "refusal": null
     },
     {
       "file": "backend/src/modules/support/services/claim.service.ts",
-      "line": 586,
+      "line": 599,
       "form": "THIS_FIELD",
       "resolved_table": "__claims",
       "refusal": null
     },
     {
       "file": "backend/src/modules/support/services/claim.service.ts",
-      "line": 611,
+      "line": 624,
       "form": "THIS_FIELD",
       "resolved_table": "__claims",
       "refusal": null

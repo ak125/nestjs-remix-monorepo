@@ -55,7 +55,6 @@ _Section à rédiger._
 - `R1KeywordPlanGatesService`
 - `R8VehicleEnricherService`
 - `R7BrandEnricherService`
-- `VehicleRagGeneratorService`
 - `RagGammeReaderService`
 
 ### Providers (top 15)

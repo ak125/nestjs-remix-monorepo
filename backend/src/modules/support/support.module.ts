@@ -34,6 +34,7 @@ import { LegalVersionService } from './services/legal-version.service';
 import { LegalPageService } from './services/legal-page.service';
 
 // External Modules
+import { AuthModule } from '../../auth/auth.module';
 import { DatabaseModule } from '../../database/database.module';
 import { NotificationsModule } from '../../notifications/notifications.module';
 
@@ -58,7 +59,12 @@ import { NotificationsModule } from '../../notifications/notifications.module';
  *   - Optimisation de workflow
  */
 @Module({
-  imports: [ConfigModule, DatabaseModule, NotificationsModule],
+  imports: [
+    ConfigModule,
+    DatabaseModule,
+    NotificationsModule,
+    AuthModule, // PermissionsService + PermissionsGuard (contrôle d'accès des routes)
+  ],
   controllers: [
     ReviewController,
     ContactController,

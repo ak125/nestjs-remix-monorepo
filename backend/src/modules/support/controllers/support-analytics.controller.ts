@@ -1,8 +1,11 @@
-import { Controller, Get, Query, Logger } from '@nestjs/common';
+import { Controller, Get, Query, Logger, UseGuards } from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { SupportAnalyticsService } from '../services/support-analytics.service';
 import { DomainValidationException, ErrorCodes } from '@common/exceptions';
 
 @Controller('api/support/analytics')
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class SupportAnalyticsController {
   private readonly logger = new Logger(SupportAnalyticsController.name);
 
