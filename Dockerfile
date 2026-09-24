@@ -98,6 +98,15 @@ COPY --chown=remix-api:nodejs --from=builder /app/backend/governance ./backend/g
 COPY --chown=remix-api:nodejs --from=builder /app/audit/registry ./audit/registry
 ENV REGISTRY_DIR=/app/audit/registry
 
+# 📚 Wiki SEO exports read by the SEO Projection feeder/writer (ADR-099 D2).
+# The embedded version is the submodule pin of the commit being built (build.yml
+# checks out with `submodules: true`); only `exports/seo` is copied, not the rest
+# of the wiki. Destination = the code default `content/automecanik-wiki/exports/seo`
+# resolved from cwd=/app/backend (start.sh "cd backend"). An uninitialised submodule
+# leaves the source missing and FAILS the build: an image never ships an unknown
+# exports version. Copied from the builder stage (full source), like audit/registry.
+COPY --chown=remix-api:nodejs --from=builder /app/backend/content/automecanik-wiki/exports/seo ./backend/content/automecanik-wiki/exports/seo
+
 COPY --chown=remix-api:nodejs --from=builder /app/backend/start.sh ./backend/start.sh
 RUN chmod +x ./backend/start.sh
 
