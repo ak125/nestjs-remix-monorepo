@@ -39353,9 +39353,7 @@
       "domain": "UNKNOWN",
       "id": "frontend/app/components/RichTextEditor.tsx",
       "importedBy": [],
-      "imports": [
-        "@tiptap/react"
-      ],
+      "imports": [],
       "kind": "config",
       "loc": 235,
       "owner": "__unassigned__",
