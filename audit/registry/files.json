@@ -62727,7 +62727,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 48428,
+      "loc": 48473,
       "owner": "__unassigned__",
       "path": "packages/database-types/src/supabase-generated.types.ts",
       "risk": "low",
