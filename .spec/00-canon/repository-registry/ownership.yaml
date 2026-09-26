@@ -1353,3 +1353,12 @@ entries:
     owner: '@ak125/vehicle-team'
     sourceConfidence: high
     risk: medium
+
+  # Forward de 20260509 (inscrit au ledger en baseline, jamais exécuté) :
+  # table __seo_role_template_pool + colonne __seo_r8_pages.variant_signature
+  # (PR #1540). Glob exact : les migrations ne sont pas auto-couvertes.
+  - glob: backend/supabase/migrations/20260924_seo_role_template_pool_forward_apply*.sql
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
