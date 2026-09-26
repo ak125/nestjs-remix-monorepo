@@ -131,5 +131,122 @@ describe('seo-projection-snapshot builder', () => {
       expect(p2.hash).toBe(p1.hash);
       expect(p2.uri).toBe(p1.uri);
     });
+
+    // ADR-099 D3 : la racine est provisionnée sur l'hôte, jamais créée par le writer (sinon un hôte
+    // non provisionné au parent inscriptible recevrait un snapshot hors du volume sauvegardé).
+    it('racine object-store absente → throw, racine JAMAIS créée', async () => {
+      const missing = path.join(root, 'not-provisioned');
+      await expect(
+        buildAndPublishSnapshot({
+          objectStoreRoot: missing,
+          entries: [e('a.json', '{}')],
+          runId: 'run-1',
+          wikiCommitSha: null,
+          versions: VERSIONS,
+        }),
+      ).rejects.toThrow(/object-store root missing/);
+      await expect(fs.stat(missing)).rejects.toMatchObject({ code: 'ENOENT' });
+    });
+
+    it('racine object-store = fichier → throw', async () => {
+      const notDir = path.join(root, 'a-file');
+      await fs.writeFile(notDir, 'x');
+      await expect(
+        buildAndPublishSnapshot({
+          objectStoreRoot: notDir,
+          entries: [e('a.json', '{}')],
+          runId: 'run-1',
+          wikiCommitSha: null,
+          versions: VERSIONS,
+        }),
+      ).rejects.toThrow(/not a directory/);
+    });
+
+    // ADR-099 D4 write-once : un objet publié n'est jamais réécrit (l'hôte peut le rendre immuable).
+    it("archive déjà publiée à l'identique → écriture sautée (même inode)", async () => {
+      const entries = [e('a.json', '{"k":1}')];
+      const p1 = await buildAndPublishSnapshot({
+        objectStoreRoot: root,
+        entries,
+        runId: 'run-1',
+        wikiCommitSha: null,
+        versions: VERSIONS,
+      });
+      const before = await fs.stat(p1.uri);
+      const p2 = await buildAndPublishSnapshot({
+        objectStoreRoot: root,
+        entries,
+        runId: 'run-2',
+        wikiCommitSha: null,
+        versions: VERSIONS,
+      });
+      const after = await fs.stat(p2.uri);
+      expect(p2.hash).toBe(p1.hash);
+      expect(after.ino).toBe(before.ino);
+      expect(after.mtimeMs).toBe(before.mtimeMs);
+      // Le manifest reste par run : chaque run a le sien.
+      expect(p2.manifestUri).not.toBe(p1.manifestUri);
+      await expect(fs.stat(p2.manifestUri)).resolves.toBeDefined();
+    });
+
+    it('archive présente avec un contenu différent → write-once violation, fichier intact, aucun manifest', async () => {
+      const entries = [e('a.json', '{"k":1}')];
+      const hex = sha256Hex(buildTarZst(entries));
+      const snapDir = path.join(root, 'exports-snapshots');
+      await fs.mkdir(snapDir);
+      const archivePath = path.join(snapDir, `${hex}.tar.zst`);
+      await fs.writeFile(archivePath, 'corrupted');
+      await expect(
+        buildAndPublishSnapshot({
+          objectStoreRoot: root,
+          entries,
+          runId: 'run-1',
+          wikiCommitSha: null,
+          versions: VERSIONS,
+        }),
+      ).rejects.toThrow(/write-once violation/);
+      expect(await fs.readFile(archivePath, 'utf-8')).toBe('corrupted');
+      const files = await fs.readdir(snapDir);
+      expect(files).toEqual([`${hex}.tar.zst`]);
+    });
+
+    it('manifest du run présent avec un contenu différent → write-once violation, manifest intact', async () => {
+      const entries = [e('a.json', '{"k":1}')];
+      const hex = sha256Hex(buildTarZst(entries));
+      const snapDir = path.join(root, 'exports-snapshots');
+      await fs.mkdir(snapDir);
+      const manifestPath = path.join(snapDir, `${hex}.run-1.manifest.json`);
+      await fs.writeFile(manifestPath, '{"tampered":true}\n');
+      await expect(
+        buildAndPublishSnapshot({
+          objectStoreRoot: root,
+          entries,
+          runId: 'run-1',
+          wikiCommitSha: null,
+          versions: VERSIONS,
+        }),
+      ).rejects.toThrow(/write-once violation/);
+      expect(await fs.readFile(manifestPath, 'utf-8')).toBe(
+        '{"tampered":true}\n',
+      );
+      const files = await fs.readdir(snapDir);
+      expect(files.some((f) => f.includes('.tmp-'))).toBe(false);
+    });
+
+    it('republication identique du même run → manifest sauté (même inode)', async () => {
+      const params = {
+        objectStoreRoot: root,
+        entries: [e('a.json', '{"k":1}')],
+        runId: 'run-1',
+        wikiCommitSha: 'abc1234',
+        versions: VERSIONS,
+      };
+      const p1 = await buildAndPublishSnapshot(params);
+      const before = await fs.stat(p1.manifestUri);
+      const p2 = await buildAndPublishSnapshot(params);
+      const after = await fs.stat(p2.manifestUri);
+      expect(p2.manifestUri).toBe(p1.manifestUri);
+      expect(after.ino).toBe(before.ino);
+    });
   });
 });

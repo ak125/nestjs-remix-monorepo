@@ -254,9 +254,12 @@ mkdir -p "$SB/tmp" "$SB/crash"
 # TMPDIR : logs de build et sauvegardes untracked restent dans le bac à sable, jamais
 # mêlés à ceux des vrais ticks cron dans /tmp. CRASH_DIR : les dumps de la machine
 # n'influencent pas l'issue. SB_HEALTH_URL : santé simulée à terre (cas 4).
+# GIT_CONFIG_* : le sous-module du bac à sable (cas 10+) est un dépôt local, que git refuse
+# de cloner par défaut (protocol.file) — autorisé pour ces seuls ticks, jamais en config globale.
 run_sync() {
   APP_DIR="$SB/app" HEALTH_URL="${SB_HEALTH_URL:-file://$SB/app/package.json}" CRASH_DIR="$SB/crash" \
     CRON_STATE_DIR="$SB/state" TMPDIR="$SB/tmp" \
+    GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=protocol.file.allow GIT_CONFIG_VALUE_0=always \
     bash "$SB/app/scripts/ops/sync-dev-runtime.sh" >"$SB/out" 2>"$SB/err"
 }
 
@@ -360,6 +363,87 @@ assert_contains "sonde : dump encore frais au tick suivant → toujours warn (s�
 touch -d '25 hours ago' "$SB/crash/_usr_bin_node.1000.crash"
 run_sync
 assert_contains "sonde : dump de plus de 24 h → ok" '"ok"' "$(sync_state '.status')"
+
+# Sous-modules (axe git). Le writer seo-projection et le moteur de diagnostic lisent le wiki
+# DEPUIS le sous-module de ce checkout ; le pin committé sur main en est l'unique autorité.
+# `git merge --ff-only` déplace le pin sans toucher au sous-module : sans alignement, le
+# contenu restait périmé et le tick suivant voyait le pin « modifié » → abort en boucle.
+sb_git() { git -c user.name=test -c user.email=test@example.invalid -c protocol.file.allow=always "$@"; }
+SM=content/wiki
+git init -q --bare "$SB/wiki.git"
+git clone -q "$SB/wiki.git" "$SB/wiki" 2>/dev/null
+( cd "$SB/wiki" && git checkout -q -B main && echo v1 > export.json && git add -A && commit_sb "wiki v1" && git push -q origin main )
+# Publie un commit wiki, puis épingle le sous-module dessus en amont (= PR de bump fusionnée).
+bump_pin() {
+  ( cd "$SB/wiki" && echo "$1" > export.json && git add -A && commit_sb "wiki $1" && git push -q origin main )
+  ( cd "$SB/up" && sb_git submodule update -q --remote -- "$SM" && git add "$SM" && commit_sb "pin wiki $1" && git push -q origin main )
+}
+pin_sha()  { git -C "$SB/app" ls-tree HEAD -- "$SM" | awk '{print $3}'; }
+head_sha() { git -C "$SB/app/$SM" rev-parse HEAD 2>/dev/null; }
+
+# 10. Sous-module introduit en amont → initialisé sur son pin au même tick
+#     (le même commit répare le build cassé au cas 3 : les cas suivants passent par le ff)
+( cd "$SB/up" && printf '{"name":"sandbox","private":true,"scripts":{"build":"true"}}\n' > package.json \
+  && sb_git submodule add -q -b main "$SB/wiki.git" "$SM" && git add -A && commit_sb "ajout sous-module wiki" && git push -q origin main )
+run_sync; EXIT=$?
+assert_exit "sous-module : introduit en amont → tick au bout (exit 0)" "0" "$EXIT"
+assert_contains "sous-module : introduit en amont → initialisé sur le pin" "^$(pin_sha)$" "$(head_sha)"
+assert_contains "sous-module : initialisation sans alerte → ok" '"ok"' "$(sync_state '.status')"
+
+# 11. Pin déplacé en amont → sous-module aligné au même tick, contenu du pin servi
+bump_pin v2
+run_sync; EXIT=$?
+assert_exit "sous-module : pin déplacé → tick au bout (exit 0)" "0" "$EXIT"
+assert_contains "sous-module : pin déplacé → aligné au même tick" "^$(pin_sha)$" "$(head_sha)"
+assert_contains "sous-module : le contenu lu est celui du pin" "^v2$" "$(cat "$SB/app/$SM/export.json")"
+assert_contains "sous-module : alignement journalisé" "sous-module $SM aligné sur le pin" "$(cat "$SB/out")"
+assert_contains "sous-module : alignement sans alerte → ok" '"ok"' "$(sync_state '.status')"
+
+# 12. Sous-module resté en retard (tick précédent en échec) → rattrapé au no-op suivant,
+#     sans abort « working tree sale » (le pin modifié n'est pas du travail local)
+git -C "$SB/app/$SM" checkout -q HEAD~1
+run_sync; EXIT=$?
+assert_exit "sous-module en retard sur le pin → pas d'abort working tree sale (exit 0)" "0" "$EXIT"
+assert_contains "sous-module en retard → rattrapé au tick no-op" "^$(pin_sha)$" "$(head_sha)"
+
+# 13. Contenu modifié dans le sous-module + pin déplacé → le code est synchronisé, le
+#     sous-module n'est pas touché (jamais de perte de travail), alerte à chaque tick
+echo local > "$SB/app/$SM/export.json"
+bump_pin v3
+run_sync; EXIT=$?
+assert_exit "sous-module modifié localement → le tick va au bout (exit 0)" "0" "$EXIT"
+assert_contains "sous-module modifié localement → le code est quand même synchronisé" \
+  "^$(git -C "$SB/up" rev-parse HEAD)$" "$(git -C "$SB/app" rev-parse HEAD)"
+assert_contains "sous-module modifié localement → warn « contenu modifié localement »" \
+  '"warn".*sous-module content/wiki : contenu modifié localement' "$(sync_state '[.status,.summary]')"
+assert_contains "sous-module modifié localement → modification conservée" "^local$" "$(cat "$SB/app/$SM/export.json")"
+git -C "$SB/app/$SM" checkout -q -- export.json
+run_sync
+assert_contains "sous-module rendu propre → aligné au tick suivant" "^$(pin_sha)$" "$(head_sha)"
+assert_contains "sous-module rendu propre → ok" '"ok"' "$(sync_state '.status')"
+
+# 14. HEAD du sous-module sur un commit non publié → jamais déplacé, alerte
+( cd "$SB/app/$SM" && echo wip > wip.md && git add wip.md && commit_sb "travail local" )
+LOCAL_SHA=$(head_sha)
+run_sync
+assert_contains "sous-module sur un commit non publié → warn « non publié »" \
+  '"warn".*sous-module content/wiki : HEAD .* non publié' "$(sync_state '[.status,.summary]')"
+assert_contains "sous-module sur un commit non publié → HEAD conservé" "^$LOCAL_SHA$" "$(head_sha)"
+git -C "$SB/app/$SM" checkout -q "$(pin_sha)"
+
+# 15. Dépôt wiki injoignable + pin déplacé → alerte, sous-module inchangé ; rattrapé ensuite
+PREV_SHA=$(head_sha)
+bump_pin v4
+mv "$SB/wiki.git" "$SB/wiki.git.off"
+run_sync; EXIT=$?
+assert_exit "dépôt wiki injoignable → le tick va au bout (exit 0)" "0" "$EXIT"
+assert_contains "dépôt wiki injoignable → warn « fetch échoué »" \
+  '"warn".*sous-module content/wiki : fetch échoué' "$(sync_state '[.status,.summary]')"
+assert_contains "dépôt wiki injoignable → sous-module inchangé" "^$PREV_SHA$" "$(head_sha)"
+mv "$SB/wiki.git.off" "$SB/wiki.git"
+run_sync
+assert_contains "dépôt wiki de retour → aligné au tick suivant" "^$(pin_sha)$" "$(head_sha)"
+assert_contains "dépôt wiki de retour → ok" '"ok"' "$(sync_state '.status')"
 
 rm -rf "$SB"
 

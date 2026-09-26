@@ -43,7 +43,7 @@ jobs:
     name: rag/knowledge direct modification guard
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0  # full history for diff against base
 
@@ -78,7 +78,7 @@ jobs:
     name: ast-grep no-direct-rag-knowledge-write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Run ast-grep rule
         run: |

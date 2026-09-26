@@ -90,20 +90,15 @@ export class PipelineChainProcessor extends SupabaseBaseService {
         vehicleKey,
       });
 
-      // Update queue status
+      // Update queue status — même calcul que la ligne écrite par
+      // router.execute() (logExecution) : une cible `skipped` (ex. refus du
+      // WriteGate R8) donne `done` + motif dans pcq_error, jamais `failed`.
       if (pcqId) {
-        const allSuccess = result.results.every((r) => r.status === 'success');
-        // Store detailed error from first failed target (not just count)
-        const firstFailed = result.results.find((r) => r.status === 'failed');
-        const errorDetail = firstFailed?.error
-          ? `${firstFailed.error}`.substring(0, 500)
-          : undefined;
+        const outcome = router.summarizeQueueOutcome(result);
         await this.updateQueueStatus(
           pcqId,
-          allSuccess ? 'done' : 'failed',
-          allSuccess
-            ? undefined
-            : (errorDetail ?? 'Some targets failed — check execution result'),
+          outcome.status,
+          outcome.error ?? undefined,
         );
       }
 
