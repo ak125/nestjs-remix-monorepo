@@ -213,8 +213,8 @@ jobs:
       - name: Build packages
         run: npm run build
 
-      - name: Test client-IP deployment probe
-        run: node --test scripts/ci/prod-client-ip-probe.test.mjs
+      - name: Test deployment probes
+        run: node --test scripts/ci/prod-client-ip-probe.test.mjs scripts/ci/prod-admin-guard-probe.test.mjs
 
       - name: Test E2E rate-budget admission
         run: node --test scripts/ci/preprod-e2e-rate-budget.test.mjs scripts/ci/preprod-e2e-rate-budget.storage.test.mjs
