@@ -246,6 +246,12 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: high
+  # Fichiers ignorés que Claude Code copie dans chaque nouveau worktree (runner husky).
+  - glob: .worktreeinclude
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
   - glob: .npmrc
     domain: D13
     owner: '@ak125'
@@ -1341,9 +1347,26 @@ entries:
     sourceConfidence: high
     risk: low
 
+  # Observabilité de l'échec de rebuild du cache R8 dans trg_auto_type_rebuild_cache
+  # (branche fix/vehicle-cache-trigger-observable). Glob exact : les migrations ne sont pas auto-couvertes.
+  - glob: backend/supabase/migrations/20260924_vehicle_cache_trigger_rebuild_failure_observable*.sql
+    domain: D4
+    owner: '@ak125/vehicle-team'
+    sourceConfidence: high
+    risk: medium
+
   # Lockdown surface d'accès TecDoc — fermeture des 5 portes indirectes (PR #1414).
   - glob: backend/supabase/migrations/20260907_tecdoc_api_surface_lockdown.sql
     domain: D4
     owner: '@ak125/vehicle-team'
+    sourceConfidence: high
+    risk: medium
+
+  # Forward de 20260509 (inscrit au ledger en baseline, jamais exécuté) :
+  # table __seo_role_template_pool + colonne __seo_r8_pages.variant_signature
+  # (PR #1540). Glob exact : les migrations ne sont pas auto-couvertes.
+  - glob: backend/supabase/migrations/20260924_seo_role_template_pool_forward_apply*.sql
+    domain: D3
+    owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: medium

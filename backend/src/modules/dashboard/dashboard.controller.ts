@@ -5,10 +5,9 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import {
-  ModulePermissionGuard,
-  RequireModule,
-} from '../../auth/guards/module-permission.guard';
+import { AuthenticatedGuard } from '../../auth/authenticated.guard';
+import { RequirePermission } from '../../auth/decorators/require-permission.decorator';
+import { PermissionsGuard } from '../../auth/guards/permissions.guard';
 import { DashboardService } from './dashboard.service';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 
@@ -42,7 +41,14 @@ interface ModuleStats {
   status: string;
 }
 
+/**
+ * Réservé à l'équipe : session obligatoire, puis une permission de la matrice
+ * canonique (`user-permissions.dto.ts`) par route. `PermissionsGuard` laisse
+ * passer une route sans `@RequirePermission` : chaque route doit en déclarer
+ * une (vérifié par `tests/unit/dashboard-routes-authz.test.ts`).
+ */
 @Controller('api/dashboard')
+@UseGuards(AuthenticatedGuard, PermissionsGuard)
 @UseInterceptors(CacheInterceptor)
 export class DashboardController {
   private readonly logger = new Logger(DashboardController.name);
@@ -50,8 +56,7 @@ export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
   @Get('stats')
-  @UseGuards(ModulePermissionGuard)
-  @RequireModule('dashboard', 'read')
+  @RequirePermission('canSeeFullStats')
   async getStats(): Promise<DashboardStats> {
     this.logger.log('[DashboardController] GET /api/dashboard/stats avec SEO');
 
@@ -83,6 +88,7 @@ export class DashboardController {
   }
 
   @Get('shipments')
+  @RequirePermission('canSeeCustomerDetails')
   async getShipments() {
     this.logger.log('[DashboardController] GET /api/dashboard/shipments');
     try {
@@ -104,12 +110,14 @@ export class DashboardController {
   }
 
   @Get('stock/alerts')
+  @RequirePermission('canSeeFullStats')
   async getStockAlerts() {
     this.logger.log('[DashboardController] GET /api/dashboard/stock/alerts');
     return this.dashboardService.getStockAlerts();
   }
 
   @Get('orders/recent')
+  @RequirePermission('canSeeCustomerDetails')
   async getRecentOrders() {
     this.logger.log('[DashboardController] GET /api/dashboard/orders/recent');
     return {
@@ -119,6 +127,7 @@ export class DashboardController {
   }
 
   @Get('orders')
+  @RequirePermission('canSeeFinancials')
   async getOrdersForDashboard() {
     this.logger.log('[DashboardController] GET /api/dashboard/orders');
 
@@ -139,8 +148,7 @@ export class DashboardController {
   // ===== NOUVEAUX ENDPOINTS PAR MODULE =====
 
   @Get('commercial')
-  @UseGuards(ModulePermissionGuard)
-  @RequireModule('commercial', 'read')
+  @RequirePermission('canSeeFinancials')
   async getCommercialStats(): Promise<ModuleStats> {
     this.logger.log('[DashboardController] GET /api/dashboard/commercial');
     try {
@@ -161,8 +169,7 @@ export class DashboardController {
   }
 
   @Get('expedition')
-  @UseGuards(ModulePermissionGuard)
-  @RequireModule('expedition', 'read')
+  @RequirePermission('canSeeFullStats')
   async getExpeditionStats(): Promise<ModuleStats> {
     this.logger.log('[DashboardController] GET /api/dashboard/expedition');
     try {
@@ -183,8 +190,7 @@ export class DashboardController {
   }
 
   @Get('seo')
-  @UseGuards(ModulePermissionGuard)
-  @RequireModule('seo', 'read')
+  @RequirePermission('canSeeFullStats')
   async getSeoStats(): Promise<ModuleStats> {
     this.logger.log('[DashboardController] GET /api/dashboard/seo');
     // Pour le moment, stats basiques - à étendre selon les besoins SEO
@@ -196,8 +202,7 @@ export class DashboardController {
   }
 
   @Get('staff')
-  @UseGuards(ModulePermissionGuard)
-  @RequireModule('staff', 'read')
+  @RequirePermission('canSeeFullStats')
   async getStaffStats(): Promise<ModuleStats> {
     this.logger.log('[DashboardController] GET /api/dashboard/staff');
     try {

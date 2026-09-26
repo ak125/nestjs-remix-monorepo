@@ -75,3 +75,19 @@ updates:
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 3
+
+  # Transport des exports/seo du wiki (ADR-059) : le pin du sous-module
+  # `backend/content/automecanik-wiki` est l'unique autorité de la version
+  # d'exports que consomment le writer seo-projection et le diagnostic. Chaque
+  # bump est une PR revue par un humain (le diff des exports est le contenu
+  # qui sera projeté) : jamais auto-fusionnée — un SHA n'a pas de semver
+  # (`dependabot-auto-merge.yml` ne la couvre pas) et `dependabot-claude-review.yml`
+  # l'exclut explicitement. Côté DEV, `scripts/ops/sync-dev-runtime.sh` aligne
+  # le sous-module sur le pin après le merge.
+  - package-ecosystem: "gitsubmodule"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 1
+    labels:
+      - "dependencies"

@@ -64,16 +64,6 @@ interface CompatibleProduct {
   category?: string;
 }
 
-interface LoaderData {
-  compatibleProducts: CompatibleProduct[];
-  stats: VehicleStats;
-  searchParams: {
-    modelId?: string;
-    typeId?: string;
-    year?: string;
-  };
-}
-
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const modelId = url.searchParams.get("modelId");
@@ -92,6 +82,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   try {
     const dashboardResponse = await fetch(
       "http://127.0.0.1:3000/api/dashboard/stats",
+      { headers: { Cookie: request.headers.get("Cookie") || "" } },
     );
     if (dashboardResponse.ok) {
       const dashboardData = await dashboardResponse.json();

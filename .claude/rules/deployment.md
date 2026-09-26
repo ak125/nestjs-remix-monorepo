@@ -28,7 +28,9 @@ feature (sinon DEV:3000 sert du code périmé).
 
 **6 axes de dérive** vs `main` (le script garde 1-2, alerte sur 3-6 — jamais d'action destructive auto) :
 
-1. **Git** : checkout sur main + ff-pull `origin/main`. (auto)
+1. **Git** : checkout sur main + ff-pull `origin/main`, puis sous-modules alignés sur leur pin
+   (`sync_submodules()` : le ff déplace le pin sans toucher le contenu). Contenu modifié
+   localement, commit non publié ou dépôt injoignable → alerte, jamais d'écrasement. (auto)
 2. **`.env`** : `backend/.env` doit avoir toutes les vars REQUIRED de `env-validation.ts`
    (ex. `JWT_SECRET` depuis #606) ; manquante → boot crash. (alerte via health-check KO)
 3. **Node** : doit matcher `.nvmrc`/`engines` (≥22) ; sinon crash `@supabase/realtime-js` ;
