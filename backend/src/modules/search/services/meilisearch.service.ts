@@ -15,20 +15,27 @@ interface SearchOptions {
 export class MeilisearchService implements OnModuleInit {
   private readonly logger = new Logger(MeilisearchService.name);
   private client: MeiliSearch;
+  /** Meilisearch est-il déclaré sur cet environnement ? (cf. constructeur) */
+  private readonly configured: boolean;
   private vehicleIndex: Index;
   private productIndex: Index;
 
   constructor(private readonly configService: ConfigService) {
+    // `MEILISEARCH_HOST` absent = Meilisearch n'est pas déployé sur CET
+    // environnement. Il n'est démarré par aucun compose de déploiement, aucun
+    // workflow CI et aucun Dockerfile : il n'existe que dans l'opt-in
+    // `docker-compose.meilisearch.yml`. On lit donc la valeur SANS défaut pour
+    // conserver ce signal — le substituer par `localhost:7700` rendait
+    // « pas déployé ici » indiscernable de « déployé mais en panne », et les
+    // deux finissaient en ERROR à chaque boot.
+    const host = this.configService.get<string>('MEILISEARCH_HOST');
+    this.configured = Boolean(host);
     const masterKey =
       this.configService.get('MEILISEARCH_MASTER_KEY') || 'masterKey123';
     this.client = new MeiliSearch({
-      host:
-        this.configService.get('MEILISEARCH_HOST') || 'http://localhost:7700',
+      host: host ?? 'http://localhost:7700',
       apiKey: masterKey,
     });
-    this.logger.debug(
-      `Meilisearch config: host=${this.configService.get('MEILISEARCH_HOST') || 'http://localhost:7700'}, apiKey=${masterKey ? '***' : 'undefined'}`,
-    );
   }
 
   /**
@@ -39,6 +46,16 @@ export class MeilisearchService implements OnModuleInit {
    * timeout, et bloque `app.listen()` → exit 124 sur /health.
    */
   onModuleInit(): void {
+    if (!this.configured) {
+      // Dégradation DÉCLARÉE, pas un repli silencieux : une ligne au boot qui
+      // dit l'état, la conséquence et le remède. Niveau warn — sur DEV et en CI
+      // c'est la configuration attendue, et un ERROR récurrent pour une
+      // condition normale apprend à ignorer les ERROR.
+      this.logger.warn(
+        'MEILISEARCH_HOST non défini → indexation/recherche Meilisearch DÉSACTIVÉE sur cet environnement (dégradation assumée). Pour l\'activer : `docker compose -f docker-compose.meilisearch.yml up -d` puis renseigner MEILISEARCH_HOST.',
+      );
+      return;
+    }
     this.logger.log(
       '🚀 Init MeilisearchService — initialisation des index en arrière-plan',
     );
