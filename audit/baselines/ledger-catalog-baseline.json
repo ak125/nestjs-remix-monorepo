@@ -1,11 +1,11 @@
 {
   "schemaVersion": "1.0.0",
   "_contract": "Absences declarees : un objet (table, vue, fonction, type, valeur d'enum) declare par une migration que infra.schema_migrations dit 'applied', et absent de TOUS les schemas du catalogue. Le predicat est l'existence, pas l'emplacement : une relation deplacee dans _archive est presente et n'est PAS listee ici. Ces entrees sont une dette ecrite, instruite dans audit/massdoc-ledger-declared-objects-2026-09-07.md (PR #1407) et arbitree dans audit/massdoc-ledger-tail-owner-decisions-2026-09-04.md ; ce fichier ne les absout pas, il empeche qu'elles augmentent en silence. Ratchet symetrique : une absence nouvelle ECHOUE, une absence resolue ECHOUE aussi tant que ce fichier n'a pas ete rafraichi (--refresh) dans la MEME PR que la correction.",
-  "count": 100,
+  "count": 99,
   "byKind": {
     "enumvalue": 1,
     "function": 50,
-    "table": 26,
+    "table": 25,
     "type": 8,
     "view": 15
   },
@@ -430,13 +430,6 @@
       "kind": "table",
       "declaredBy": [
         "20260123_seo_enterprise_dashboard"
-      ]
-    },
-    {
-      "identity": "table:__seo_role_template_pool",
-      "kind": "table",
-      "declaredBy": [
-        "20260509_seo_role_template_pool_with_r8_meta_seed"
       ]
     },
     {
