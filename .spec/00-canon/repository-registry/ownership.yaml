@@ -1347,6 +1347,14 @@ entries:
     sourceConfidence: high
     risk: low
 
+  # Observabilité de l'échec de rebuild du cache R8 dans trg_auto_type_rebuild_cache
+  # (branche fix/vehicle-cache-trigger-observable). Glob exact : les migrations ne sont pas auto-couvertes.
+  - glob: backend/supabase/migrations/20260924_vehicle_cache_trigger_rebuild_failure_observable*.sql
+    domain: D4
+    owner: '@ak125/vehicle-team'
+    sourceConfidence: high
+    risk: medium
+
   # Lockdown surface d'accès TecDoc — fermeture des 5 portes indirectes (PR #1414).
   - glob: backend/supabase/migrations/20260907_tecdoc_api_surface_lockdown.sql
     domain: D4
