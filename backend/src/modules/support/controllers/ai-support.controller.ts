@@ -5,10 +5,13 @@ import {
   Body,
   Param,
   Query,
+  UseGuards,
   HttpCode,
   HttpStatus,
   Logger,
 } from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import {
   DomainNotFoundException,
   DomainValidationException,
@@ -54,6 +57,7 @@ export interface AIWorkflowRequest {
 }
 
 @Controller('api/support/ai')
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class AISupportController {
   private readonly logger = new Logger(AISupportController.name);
 

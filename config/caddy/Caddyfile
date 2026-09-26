@@ -393,7 +393,7 @@ automecanik.com, www.automecanik.com {
     log {
         output file /var/log/caddy/automecanik.log {
             roll_size 50mb
-            roll_keep 5
+            roll_keep 30
         }
         format json {
             time_format "iso8601"
