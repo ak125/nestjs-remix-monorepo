@@ -1,5 +1,10 @@
 import { promises as dns } from 'node:dns';
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  OnModuleInit,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { CacheService } from '@cache/cache.service';
 
@@ -9,7 +14,7 @@ interface RequestFingerprint {
   userAgent: string;
   path: string;
   acceptLanguage?: string;
-  hasSession: boolean;
+  hasAuthenticatedSession: boolean;
 }
 
 export interface BlockedEntry {
@@ -170,10 +175,14 @@ export class BotGuardService implements OnModuleInit {
     this.verifiedBotBypass =
       this.configService.get('BOT_GUARD_VERIFIED_BOT_BYPASS', 'true') ===
       'true';
-    this.suspicionThreshold = parseInt(
+    const envThreshold = Number(
       this.configService.get('BOT_GUARD_SUSPICION_THRESHOLD', '80'),
-      10,
     );
+    if (this.isValidThreshold(envThreshold)) {
+      this.suspicionThreshold = envThreshold;
+    } else {
+      this.logger.warn('Invalid BotGuard env threshold; keeping default 80');
+    }
     const countries = this.configService.get(
       'BOT_GUARD_BLOCKED_COUNTRIES',
       'CN',
@@ -208,8 +217,14 @@ export class BotGuardService implements OnModuleInit {
         if (config.blockedIps) {
           this.blockedIps = new Set(config.blockedIps);
         }
-        if (config.suspicionThreshold) {
-          this.suspicionThreshold = config.suspicionThreshold;
+        if (config.suspicionThreshold !== undefined) {
+          if (this.isValidThreshold(config.suspicionThreshold)) {
+            this.suspicionThreshold = config.suspicionThreshold;
+          } else {
+            this.logger.warn(
+              'Invalid BotGuard stored threshold; keeping last valid value',
+            );
+          }
         }
         if (config.verifiedBotBypass !== undefined) {
           this.verifiedBotBypass = config.verifiedBotBypass;
@@ -225,6 +240,19 @@ export class BotGuardService implements OnModuleInit {
     if (Date.now() - this.lastConfigRefresh > this.CONFIG_REFRESH_MS) {
       await this.refreshConfig();
     }
+  }
+
+  private isValidThreshold(value: unknown): value is number {
+    return (
+      typeof value === 'number' &&
+      Number.isInteger(value) &&
+      value >= 1 &&
+      value <= 100
+    );
+  }
+
+  getSuspicionThreshold(): number {
+    return this.suspicionThreshold;
   }
 
   isEnabled(): boolean {
@@ -356,9 +384,9 @@ export class BotGuardService implements OnModuleInit {
     // Suspicious user-agent
     if (this.isSuspiciousUserAgent(data.userAgent)) score += 20;
 
-    // No session on deep page (not homepage)
+    // No server-authenticated session on a deep page (not homepage)
     if (
-      !data.hasSession &&
+      !data.hasAuthenticatedSession &&
       data.path !== '/' &&
       !data.path.startsWith('/build/')
     ) {
@@ -509,6 +537,15 @@ export class BotGuardService implements OnModuleInit {
     suspicionThreshold?: number;
     verifiedBotBypass?: boolean;
   }): Promise<void> {
+    // Validate before mutating any in-memory field or persisting to Redis.
+    if (
+      config.suspicionThreshold !== undefined &&
+      !this.isValidThreshold(config.suspicionThreshold)
+    ) {
+      throw new BadRequestException(
+        'suspicionThreshold must be an integer between 1 and 100',
+      );
+    }
     if (config.enabled !== undefined) this.enabled = config.enabled;
     if (config.blockedCountries) {
       this.blockedCountries = new Set(config.blockedCountries);
@@ -516,7 +553,7 @@ export class BotGuardService implements OnModuleInit {
     if (config.blockedIps) {
       this.blockedIps = new Set(config.blockedIps);
     }
-    if (config.suspicionThreshold) {
+    if (config.suspicionThreshold !== undefined) {
       this.suspicionThreshold = config.suspicionThreshold;
     }
     if (config.verifiedBotBypass !== undefined) {
