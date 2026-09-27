@@ -111,7 +111,7 @@
         "backend/src/modules/bot-guard"
       ],
       "files_count": 6,
-      "loc_total": 1589,
+      "loc_total": 1619,
       "has_barrel": false
     },
     "cache": {

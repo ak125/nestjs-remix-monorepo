@@ -11932,10 +11932,11 @@
       "importedBy": [],
       "imports": [
         "backend/src/modules/bot-guard/bot-guard.middleware.ts",
-        "backend/src/modules/bot-guard/bot-guard.service.ts"
+        "backend/src/modules/bot-guard/bot-guard.service.ts",
+        "crypto"
       ],
       "kind": "test",
-      "loc": 442,
+      "loc": 472,
       "owner": "__unassigned__",
       "path": "backend/src/modules/bot-guard/bot-guard.middleware.test.ts",
       "risk": "low",

@@ -1,3 +1,4 @@
+import { createHmac, randomUUID } from 'node:crypto';
 import express from 'express';
 import session from 'express-session';
 import { Passport } from 'passport';
@@ -365,9 +366,36 @@ describe('BotGuardMiddleware real scoring policy', () => {
 });
 
 describe('BotGuardMiddleware with the session/Passport HTTP chain', () => {
+  const sessionSecret = 'bot-guard-test-only-not-a-deployment-secret';
+
+  async function authenticatedCookie(store: session.MemoryStore) {
+    const sessionId = randomUUID();
+    // Seed an already authenticated server session; no test login endpoint.
+    const data = Object.assign(
+      {
+        cookie: Object.assign(new session.Cookie(), {
+          secure: true,
+          httpOnly: true,
+        }),
+      },
+      { passport: { user: 42 } },
+    );
+    await new Promise<void>((resolve, reject) => {
+      store.set(sessionId, data, (err) => (err ? reject(err) : resolve()));
+    });
+    // express-session cookie-signature wire format, using Node's HMAC primitive.
+    // Successful restoration below proves the cookie is accepted by the real middleware.
+    const signature = createHmac('sha256', sessionSecret)
+      .update(sessionId)
+      .digest('base64')
+      .replace(/=+$/, '');
+    return `connect.sid=${encodeURIComponent(`s:${sessionId}.${signature}`)}`;
+  }
   async function makeHttpApp() {
     const { middleware } = await makePolicyMiddleware();
     const app = express();
+    // Model TLS termination at the trusted local reverse proxy.
+    app.set('trust proxy', 'loopback');
     const sessionStore = new session.MemoryStore();
     const passport = new Passport();
     passport.serializeUser((user, done) => done(null, user.id_utilisateur));
@@ -377,19 +405,14 @@ describe('BotGuardMiddleware with the session/Passport HTTP chain', () => {
     app.use(
       session({
         store: sessionStore,
-        secret: 'bot-guard-test-only-not-a-deployment-secret',
+        secret: sessionSecret,
+        cookie: { secure: true, httpOnly: true, sameSite: 'lax' },
         resave: false,
         saveUninitialized: false,
       }),
     );
     app.use(passport.initialize());
     app.use(passport.session());
-    // A test fixture for an already completed authentication, not a real login route.
-    app.post('/test-login', (req, res, next) => {
-      req.logIn({ id_utilisateur: 42, email: 'fixture@example.test' }, (err) =>
-        err ? next(err) : res.sendStatus(204),
-      );
-    });
     app.use((req, res, next) => {
       void middleware.use(req, res, next);
     });
@@ -406,6 +429,7 @@ describe('BotGuardMiddleware with the session/Passport HTTP chain', () => {
       const response = await request(app)
         .get('/api/catalog/items')
         .set(SCRAPER_HEADERS)
+        .set('X-Forwarded-Proto', 'https')
         .set('Cookie', cookie);
       expect(response.status).toBe(403);
       expect(response.body).toEqual({
@@ -417,12 +441,15 @@ describe('BotGuardMiddleware with the session/Passport HTTP chain', () => {
 
   it('does not trust a valid signed cookie after its server session is gone', async () => {
     const { app, sessionStore } = await makeHttpApp();
-    const agent = request.agent(app);
-    await agent.post('/test-login').expect(204);
+    const cookie = await authenticatedCookie(sessionStore);
     await new Promise<void>((resolve, reject) => {
       sessionStore.clear((err) => (err ? reject(err) : resolve()));
     });
-    const response = await agent.get('/api/catalog/items').set(SCRAPER_HEADERS);
+    const response = await request(app)
+      .get('/api/catalog/items')
+      .set(SCRAPER_HEADERS)
+      .set('X-Forwarded-Proto', 'https')
+      .set('Cookie', cookie);
     expect(response.status).toBe(403);
     expect(response.body).toEqual({
       error: 'Access denied',
@@ -431,10 +458,13 @@ describe('BotGuardMiddleware with the session/Passport HTTP chain', () => {
   });
 
   it('recognizes the restored authenticated session on the following HTTP request', async () => {
-    const { app } = await makeHttpApp();
-    const agent = request.agent(app);
-    await agent.post('/test-login').expect(204);
-    const response = await agent.get('/api/catalog/items').set(SCRAPER_HEADERS);
+    const { app, sessionStore } = await makeHttpApp();
+    const cookie = await authenticatedCookie(sessionStore);
+    const response = await request(app)
+      .get('/api/catalog/items')
+      .set(SCRAPER_HEADERS)
+      .set('X-Forwarded-Proto', 'https')
+      .set('Cookie', cookie);
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ ok: true });
   });
