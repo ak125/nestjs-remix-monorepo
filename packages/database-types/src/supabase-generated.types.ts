@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.3 (519615d)"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -6693,456 +6693,6 @@ export type Database = {
         }
         Relationships: []
       }
-      __seo_cwv_hourly_p20260902: {
-        Row: {
-          device: string
-          fetched_at: string
-          hour: string
-          metric: string
-          p50_value: number | null
-          p75_value: number | null
-          p95_value: number | null
-          priority_tier: string
-          route_group: string
-          sample_count: number
-          surface: string
-          ua_class: string
-        }
-        Insert: {
-          device: string
-          fetched_at?: string
-          hour: string
-          metric: string
-          p50_value?: number | null
-          p75_value?: number | null
-          p95_value?: number | null
-          priority_tier: string
-          route_group: string
-          sample_count: number
-          surface: string
-          ua_class?: string
-        }
-        Update: {
-          device?: string
-          fetched_at?: string
-          hour?: string
-          metric?: string
-          p50_value?: number | null
-          p75_value?: number | null
-          p95_value?: number | null
-          priority_tier?: string
-          route_group?: string
-          sample_count?: number
-          surface?: string
-          ua_class?: string
-        }
-        Relationships: []
-      }
-      __seo_cwv_hourly_p20260903: {
-        Row: {
-          device: string
-          fetched_at: string
-          hour: string
-          metric: string
-          p50_value: number | null
-          p75_value: number | null
-          p95_value: number | null
-          priority_tier: string
-          route_group: string
-          sample_count: number
-          surface: string
-          ua_class: string
-        }
-        Insert: {
-          device: string
-          fetched_at?: string
-          hour: string
-          metric: string
-          p50_value?: number | null
-          p75_value?: number | null
-          p95_value?: number | null
-          priority_tier: string
-          route_group: string
-          sample_count: number
-          surface: string
-          ua_class?: string
-        }
-        Update: {
-          device?: string
-          fetched_at?: string
-          hour?: string
-          metric?: string
-          p50_value?: number | null
-          p75_value?: number | null
-          p95_value?: number | null
-          priority_tier?: string
-          route_group?: string
-          sample_count?: number
-          surface?: string
-          ua_class?: string
-        }
-        Relationships: []
-      }
-      __seo_cwv_hourly_p20260904: {
-        Row: {
-          device: string
-          fetched_at: string
-          hour: string
-          metric: string
-          p50_value: number | null
-          p75_value: number | null
-          p95_value: number | null
-          priority_tier: string
-          route_group: string
-          sample_count: number
-          surface: string
-          ua_class: string
-        }
-        Insert: {
-          device: string
-          fetched_at?: string
-          hour: string
-          metric: string
-          p50_value?: number | null
-          p75_value?: number | null
-          p95_value?: number | null
-          priority_tier: string
-          route_group: string
-          sample_count: number
-          surface: string
-          ua_class?: string
-        }
-        Update: {
-          device?: string
-          fetched_at?: string
-          hour?: string
-          metric?: string
-          p50_value?: number | null
-          p75_value?: number | null
-          p95_value?: number | null
-          priority_tier?: string
-          route_group?: string
-          sample_count?: number
-          surface?: string
-          ua_class?: string
-        }
-        Relationships: []
-      }
-      __seo_cwv_hourly_p20260905: {
-        Row: {
-          device: string
-          fetched_at: string
-          hour: string
-          metric: string
-          p50_value: number | null
-          p75_value: number | null
-          p95_value: number | null
-          priority_tier: string
-          route_group: string
-          sample_count: number
-          surface: string
-          ua_class: string
-        }
-        Insert: {
-          device: string
-          fetched_at?: string
-          hour: string
-          metric: string
-          p50_value?: number | null
-          p75_value?: number | null
-          p95_value?: number | null
-          priority_tier: string
-          route_group: string
-          sample_count: number
-          surface: string
-          ua_class?: string
-        }
-        Update: {
-          device?: string
-          fetched_at?: string
-          hour?: string
-          metric?: string
-          p50_value?: number | null
-          p75_value?: number | null
-          p95_value?: number | null
-          priority_tier?: string
-          route_group?: string
-          sample_count?: number
-          surface?: string
-          ua_class?: string
-        }
-        Relationships: []
-      }
-      __seo_cwv_hourly_p20260906: {
-        Row: {
-          device: string
-          fetched_at: string
-          hour: string
-          metric: string
-          p50_value: number | null
-          p75_value: number | null
-          p95_value: number | null
-          priority_tier: string
-          route_group: string
-          sample_count: number
-          surface: string
-          ua_class: string
-        }
-        Insert: {
-          device: string
-          fetched_at?: string
-          hour: string
-          metric: string
-          p50_value?: number | null
-          p75_value?: number | null
-          p95_value?: number | null
-          priority_tier: string
-          route_group: string
-          sample_count: number
-          surface: string
-          ua_class?: string
-        }
-        Update: {
-          device?: string
-          fetched_at?: string
-          hour?: string
-          metric?: string
-          p50_value?: number | null
-          p75_value?: number | null
-          p95_value?: number | null
-          priority_tier?: string
-          route_group?: string
-          sample_count?: number
-          surface?: string
-          ua_class?: string
-        }
-        Relationships: []
-      }
-      __seo_cwv_hourly_p20260907: {
-        Row: {
-          device: string
-          fetched_at: string
-          hour: string
-          metric: string
-          p50_value: number | null
-          p75_value: number | null
-          p95_value: number | null
-          priority_tier: string
-          route_group: string
-          sample_count: number
-          surface: string
-          ua_class: string
-        }
-        Insert: {
-          device: string
-          fetched_at?: string
-          hour: string
-          metric: string
-          p50_value?: number | null
-          p75_value?: number | null
-          p95_value?: number | null
-          priority_tier: string
-          route_group: string
-          sample_count: number
-          surface: string
-          ua_class?: string
-        }
-        Update: {
-          device?: string
-          fetched_at?: string
-          hour?: string
-          metric?: string
-          p50_value?: number | null
-          p75_value?: number | null
-          p95_value?: number | null
-          priority_tier?: string
-          route_group?: string
-          sample_count?: number
-          surface?: string
-          ua_class?: string
-        }
-        Relationships: []
-      }
-      __seo_cwv_hourly_p20260908: {
-        Row: {
-          device: string
-          fetched_at: string
-          hour: string
-          metric: string
-          p50_value: number | null
-          p75_value: number | null
-          p95_value: number | null
-          priority_tier: string
-          route_group: string
-          sample_count: number
-          surface: string
-          ua_class: string
-        }
-        Insert: {
-          device: string
-          fetched_at?: string
-          hour: string
-          metric: string
-          p50_value?: number | null
-          p75_value?: number | null
-          p95_value?: number | null
-          priority_tier: string
-          route_group: string
-          sample_count: number
-          surface: string
-          ua_class?: string
-        }
-        Update: {
-          device?: string
-          fetched_at?: string
-          hour?: string
-          metric?: string
-          p50_value?: number | null
-          p75_value?: number | null
-          p95_value?: number | null
-          priority_tier?: string
-          route_group?: string
-          sample_count?: number
-          surface?: string
-          ua_class?: string
-        }
-        Relationships: []
-      }
-      __seo_cwv_hourly_p20260909: {
-        Row: {
-          device: string
-          fetched_at: string
-          hour: string
-          metric: string
-          p50_value: number | null
-          p75_value: number | null
-          p95_value: number | null
-          priority_tier: string
-          route_group: string
-          sample_count: number
-          surface: string
-          ua_class: string
-        }
-        Insert: {
-          device: string
-          fetched_at?: string
-          hour: string
-          metric: string
-          p50_value?: number | null
-          p75_value?: number | null
-          p95_value?: number | null
-          priority_tier: string
-          route_group: string
-          sample_count: number
-          surface: string
-          ua_class?: string
-        }
-        Update: {
-          device?: string
-          fetched_at?: string
-          hour?: string
-          metric?: string
-          p50_value?: number | null
-          p75_value?: number | null
-          p95_value?: number | null
-          priority_tier?: string
-          route_group?: string
-          sample_count?: number
-          surface?: string
-          ua_class?: string
-        }
-        Relationships: []
-      }
-      __seo_cwv_hourly_p20260910: {
-        Row: {
-          device: string
-          fetched_at: string
-          hour: string
-          metric: string
-          p50_value: number | null
-          p75_value: number | null
-          p95_value: number | null
-          priority_tier: string
-          route_group: string
-          sample_count: number
-          surface: string
-          ua_class: string
-        }
-        Insert: {
-          device: string
-          fetched_at?: string
-          hour: string
-          metric: string
-          p50_value?: number | null
-          p75_value?: number | null
-          p95_value?: number | null
-          priority_tier: string
-          route_group: string
-          sample_count: number
-          surface: string
-          ua_class?: string
-        }
-        Update: {
-          device?: string
-          fetched_at?: string
-          hour?: string
-          metric?: string
-          p50_value?: number | null
-          p75_value?: number | null
-          p95_value?: number | null
-          priority_tier?: string
-          route_group?: string
-          sample_count?: number
-          surface?: string
-          ua_class?: string
-        }
-        Relationships: []
-      }
-      __seo_cwv_hourly_p20260911: {
-        Row: {
-          device: string
-          fetched_at: string
-          hour: string
-          metric: string
-          p50_value: number | null
-          p75_value: number | null
-          p95_value: number | null
-          priority_tier: string
-          route_group: string
-          sample_count: number
-          surface: string
-          ua_class: string
-        }
-        Insert: {
-          device: string
-          fetched_at?: string
-          hour: string
-          metric: string
-          p50_value?: number | null
-          p75_value?: number | null
-          p95_value?: number | null
-          priority_tier: string
-          route_group: string
-          sample_count: number
-          surface: string
-          ua_class?: string
-        }
-        Update: {
-          device?: string
-          fetched_at?: string
-          hour?: string
-          metric?: string
-          p50_value?: number | null
-          p75_value?: number | null
-          p95_value?: number | null
-          priority_tier?: string
-          route_group?: string
-          sample_count?: number
-          surface?: string
-          ua_class?: string
-        }
-        Relationships: []
-      }
       __seo_cwv_hourly_p20260912: {
         Row: {
           device: string
@@ -7503,6 +7053,456 @@ export type Database = {
         }
         Relationships: []
       }
+      __seo_cwv_hourly_p20260920: {
+        Row: {
+          device: string
+          fetched_at: string
+          hour: string
+          metric: string
+          p50_value: number | null
+          p75_value: number | null
+          p95_value: number | null
+          priority_tier: string
+          route_group: string
+          sample_count: number
+          surface: string
+          ua_class: string
+        }
+        Insert: {
+          device: string
+          fetched_at?: string
+          hour: string
+          metric: string
+          p50_value?: number | null
+          p75_value?: number | null
+          p95_value?: number | null
+          priority_tier: string
+          route_group: string
+          sample_count: number
+          surface: string
+          ua_class?: string
+        }
+        Update: {
+          device?: string
+          fetched_at?: string
+          hour?: string
+          metric?: string
+          p50_value?: number | null
+          p75_value?: number | null
+          p95_value?: number | null
+          priority_tier?: string
+          route_group?: string
+          sample_count?: number
+          surface?: string
+          ua_class?: string
+        }
+        Relationships: []
+      }
+      __seo_cwv_hourly_p20260921: {
+        Row: {
+          device: string
+          fetched_at: string
+          hour: string
+          metric: string
+          p50_value: number | null
+          p75_value: number | null
+          p95_value: number | null
+          priority_tier: string
+          route_group: string
+          sample_count: number
+          surface: string
+          ua_class: string
+        }
+        Insert: {
+          device: string
+          fetched_at?: string
+          hour: string
+          metric: string
+          p50_value?: number | null
+          p75_value?: number | null
+          p95_value?: number | null
+          priority_tier: string
+          route_group: string
+          sample_count: number
+          surface: string
+          ua_class?: string
+        }
+        Update: {
+          device?: string
+          fetched_at?: string
+          hour?: string
+          metric?: string
+          p50_value?: number | null
+          p75_value?: number | null
+          p95_value?: number | null
+          priority_tier?: string
+          route_group?: string
+          sample_count?: number
+          surface?: string
+          ua_class?: string
+        }
+        Relationships: []
+      }
+      __seo_cwv_hourly_p20260922: {
+        Row: {
+          device: string
+          fetched_at: string
+          hour: string
+          metric: string
+          p50_value: number | null
+          p75_value: number | null
+          p95_value: number | null
+          priority_tier: string
+          route_group: string
+          sample_count: number
+          surface: string
+          ua_class: string
+        }
+        Insert: {
+          device: string
+          fetched_at?: string
+          hour: string
+          metric: string
+          p50_value?: number | null
+          p75_value?: number | null
+          p95_value?: number | null
+          priority_tier: string
+          route_group: string
+          sample_count: number
+          surface: string
+          ua_class?: string
+        }
+        Update: {
+          device?: string
+          fetched_at?: string
+          hour?: string
+          metric?: string
+          p50_value?: number | null
+          p75_value?: number | null
+          p95_value?: number | null
+          priority_tier?: string
+          route_group?: string
+          sample_count?: number
+          surface?: string
+          ua_class?: string
+        }
+        Relationships: []
+      }
+      __seo_cwv_hourly_p20260923: {
+        Row: {
+          device: string
+          fetched_at: string
+          hour: string
+          metric: string
+          p50_value: number | null
+          p75_value: number | null
+          p95_value: number | null
+          priority_tier: string
+          route_group: string
+          sample_count: number
+          surface: string
+          ua_class: string
+        }
+        Insert: {
+          device: string
+          fetched_at?: string
+          hour: string
+          metric: string
+          p50_value?: number | null
+          p75_value?: number | null
+          p95_value?: number | null
+          priority_tier: string
+          route_group: string
+          sample_count: number
+          surface: string
+          ua_class?: string
+        }
+        Update: {
+          device?: string
+          fetched_at?: string
+          hour?: string
+          metric?: string
+          p50_value?: number | null
+          p75_value?: number | null
+          p95_value?: number | null
+          priority_tier?: string
+          route_group?: string
+          sample_count?: number
+          surface?: string
+          ua_class?: string
+        }
+        Relationships: []
+      }
+      __seo_cwv_hourly_p20260924: {
+        Row: {
+          device: string
+          fetched_at: string
+          hour: string
+          metric: string
+          p50_value: number | null
+          p75_value: number | null
+          p95_value: number | null
+          priority_tier: string
+          route_group: string
+          sample_count: number
+          surface: string
+          ua_class: string
+        }
+        Insert: {
+          device: string
+          fetched_at?: string
+          hour: string
+          metric: string
+          p50_value?: number | null
+          p75_value?: number | null
+          p95_value?: number | null
+          priority_tier: string
+          route_group: string
+          sample_count: number
+          surface: string
+          ua_class?: string
+        }
+        Update: {
+          device?: string
+          fetched_at?: string
+          hour?: string
+          metric?: string
+          p50_value?: number | null
+          p75_value?: number | null
+          p95_value?: number | null
+          priority_tier?: string
+          route_group?: string
+          sample_count?: number
+          surface?: string
+          ua_class?: string
+        }
+        Relationships: []
+      }
+      __seo_cwv_hourly_p20260925: {
+        Row: {
+          device: string
+          fetched_at: string
+          hour: string
+          metric: string
+          p50_value: number | null
+          p75_value: number | null
+          p95_value: number | null
+          priority_tier: string
+          route_group: string
+          sample_count: number
+          surface: string
+          ua_class: string
+        }
+        Insert: {
+          device: string
+          fetched_at?: string
+          hour: string
+          metric: string
+          p50_value?: number | null
+          p75_value?: number | null
+          p95_value?: number | null
+          priority_tier: string
+          route_group: string
+          sample_count: number
+          surface: string
+          ua_class?: string
+        }
+        Update: {
+          device?: string
+          fetched_at?: string
+          hour?: string
+          metric?: string
+          p50_value?: number | null
+          p75_value?: number | null
+          p95_value?: number | null
+          priority_tier?: string
+          route_group?: string
+          sample_count?: number
+          surface?: string
+          ua_class?: string
+        }
+        Relationships: []
+      }
+      __seo_cwv_hourly_p20260926: {
+        Row: {
+          device: string
+          fetched_at: string
+          hour: string
+          metric: string
+          p50_value: number | null
+          p75_value: number | null
+          p95_value: number | null
+          priority_tier: string
+          route_group: string
+          sample_count: number
+          surface: string
+          ua_class: string
+        }
+        Insert: {
+          device: string
+          fetched_at?: string
+          hour: string
+          metric: string
+          p50_value?: number | null
+          p75_value?: number | null
+          p95_value?: number | null
+          priority_tier: string
+          route_group: string
+          sample_count: number
+          surface: string
+          ua_class?: string
+        }
+        Update: {
+          device?: string
+          fetched_at?: string
+          hour?: string
+          metric?: string
+          p50_value?: number | null
+          p75_value?: number | null
+          p95_value?: number | null
+          priority_tier?: string
+          route_group?: string
+          sample_count?: number
+          surface?: string
+          ua_class?: string
+        }
+        Relationships: []
+      }
+      __seo_cwv_hourly_p20260927: {
+        Row: {
+          device: string
+          fetched_at: string
+          hour: string
+          metric: string
+          p50_value: number | null
+          p75_value: number | null
+          p95_value: number | null
+          priority_tier: string
+          route_group: string
+          sample_count: number
+          surface: string
+          ua_class: string
+        }
+        Insert: {
+          device: string
+          fetched_at?: string
+          hour: string
+          metric: string
+          p50_value?: number | null
+          p75_value?: number | null
+          p95_value?: number | null
+          priority_tier: string
+          route_group: string
+          sample_count: number
+          surface: string
+          ua_class?: string
+        }
+        Update: {
+          device?: string
+          fetched_at?: string
+          hour?: string
+          metric?: string
+          p50_value?: number | null
+          p75_value?: number | null
+          p95_value?: number | null
+          priority_tier?: string
+          route_group?: string
+          sample_count?: number
+          surface?: string
+          ua_class?: string
+        }
+        Relationships: []
+      }
+      __seo_cwv_hourly_p20260928: {
+        Row: {
+          device: string
+          fetched_at: string
+          hour: string
+          metric: string
+          p50_value: number | null
+          p75_value: number | null
+          p95_value: number | null
+          priority_tier: string
+          route_group: string
+          sample_count: number
+          surface: string
+          ua_class: string
+        }
+        Insert: {
+          device: string
+          fetched_at?: string
+          hour: string
+          metric: string
+          p50_value?: number | null
+          p75_value?: number | null
+          p95_value?: number | null
+          priority_tier: string
+          route_group: string
+          sample_count: number
+          surface: string
+          ua_class?: string
+        }
+        Update: {
+          device?: string
+          fetched_at?: string
+          hour?: string
+          metric?: string
+          p50_value?: number | null
+          p75_value?: number | null
+          p95_value?: number | null
+          priority_tier?: string
+          route_group?: string
+          sample_count?: number
+          surface?: string
+          ua_class?: string
+        }
+        Relationships: []
+      }
+      __seo_cwv_hourly_p20260929: {
+        Row: {
+          device: string
+          fetched_at: string
+          hour: string
+          metric: string
+          p50_value: number | null
+          p75_value: number | null
+          p95_value: number | null
+          priority_tier: string
+          route_group: string
+          sample_count: number
+          surface: string
+          ua_class: string
+        }
+        Insert: {
+          device: string
+          fetched_at?: string
+          hour: string
+          metric: string
+          p50_value?: number | null
+          p75_value?: number | null
+          p95_value?: number | null
+          priority_tier: string
+          route_group: string
+          sample_count: number
+          surface: string
+          ua_class?: string
+        }
+        Update: {
+          device?: string
+          fetched_at?: string
+          hour?: string
+          metric?: string
+          p50_value?: number | null
+          p75_value?: number | null
+          p95_value?: number | null
+          priority_tier?: string
+          route_group?: string
+          sample_count?: number
+          surface?: string
+          ua_class?: string
+        }
+        Relationships: []
+      }
       __seo_cwv_raw: {
         Row: {
           attribution: Json | null
@@ -7554,7 +7554,7 @@ export type Database = {
         }
         Relationships: []
       }
-      __seo_cwv_raw_p20260914: {
+      __seo_cwv_raw_p20260924: {
         Row: {
           attribution: Json | null
           device: string
@@ -7605,7 +7605,7 @@ export type Database = {
         }
         Relationships: []
       }
-      __seo_cwv_raw_p20260915: {
+      __seo_cwv_raw_p20260925: {
         Row: {
           attribution: Json | null
           device: string
@@ -7656,7 +7656,7 @@ export type Database = {
         }
         Relationships: []
       }
-      __seo_cwv_raw_p20260916: {
+      __seo_cwv_raw_p20260926: {
         Row: {
           attribution: Json | null
           device: string
@@ -7707,7 +7707,7 @@ export type Database = {
         }
         Relationships: []
       }
-      __seo_cwv_raw_p20260917: {
+      __seo_cwv_raw_p20260927: {
         Row: {
           attribution: Json | null
           device: string
@@ -7758,7 +7758,7 @@ export type Database = {
         }
         Relationships: []
       }
-      __seo_cwv_raw_p20260918: {
+      __seo_cwv_raw_p20260928: {
         Row: {
           attribution: Json | null
           device: string
@@ -7809,7 +7809,7 @@ export type Database = {
         }
         Relationships: []
       }
-      __seo_cwv_raw_p20260919: {
+      __seo_cwv_raw_p20260929: {
         Row: {
           attribution: Json | null
           device: string
@@ -13616,6 +13616,7 @@ export type Database = {
           type_id: string | null
           type_name: string
           updated_at: string
+          variant_signature: Json
           year_from: string
           year_to: string | null
         }
@@ -13664,6 +13665,7 @@ export type Database = {
           type_id?: string | null
           type_name: string
           updated_at?: string
+          variant_signature?: Json
           year_from: string
           year_to?: string | null
         }
@@ -13712,6 +13714,7 @@ export type Database = {
           type_id?: string | null
           type_name?: string
           updated_at?: string
+          variant_signature?: Json
           year_from?: string
           year_to?: string | null
         }
@@ -14376,787 +14379,49 @@ export type Database = {
           },
         ]
       }
+      __seo_role_template_pool: {
+        Row: {
+          srtp_created_at: string
+          srtp_id: string
+          srtp_lang: string
+          srtp_max_length: number | null
+          srtp_order: number
+          srtp_role: string
+          srtp_slot: string
+          srtp_status: string
+          srtp_template: string
+          srtp_updated_at: string
+          srtp_weight: number
+        }
+        Insert: {
+          srtp_created_at?: string
+          srtp_id?: string
+          srtp_lang?: string
+          srtp_max_length?: number | null
+          srtp_order: number
+          srtp_role: string
+          srtp_slot: string
+          srtp_status?: string
+          srtp_template: string
+          srtp_updated_at?: string
+          srtp_weight?: number
+        }
+        Update: {
+          srtp_created_at?: string
+          srtp_id?: string
+          srtp_lang?: string
+          srtp_max_length?: number | null
+          srtp_order?: number
+          srtp_role?: string
+          srtp_slot?: string
+          srtp_status?: string
+          srtp_template?: string
+          srtp_updated_at?: string
+          srtp_weight?: number
+        }
+        Relationships: []
+      }
       __seo_snapshot_cf_rum: {
-        Row: {
-          account_tag: string
-          bucket_start: string
-          cls_p50_milli: number | null
-          cls_p75_milli: number | null
-          cls_p95_milli: number | null
-          created_at: string
-          fcp_p75_ms: number | null
-          fetched_at: string
-          id: number
-          inp_p50_ms: number | null
-          inp_p75_ms: number | null
-          inp_p95_ms: number | null
-          lcp_p50_ms: number | null
-          lcp_p75_ms: number | null
-          lcp_p95_ms: number | null
-          metrics_extra: Json
-          pageview_count: number
-          path_group: string
-          run_id: string
-          sample_count: number
-          tier: string
-          ttfb_p75_ms: number | null
-          visit_count: number
-        }
-        Insert: {
-          account_tag: string
-          bucket_start: string
-          cls_p50_milli?: number | null
-          cls_p75_milli?: number | null
-          cls_p95_milli?: number | null
-          created_at?: string
-          fcp_p75_ms?: number | null
-          fetched_at?: string
-          id?: never
-          inp_p50_ms?: number | null
-          inp_p75_ms?: number | null
-          inp_p95_ms?: number | null
-          lcp_p50_ms?: number | null
-          lcp_p75_ms?: number | null
-          lcp_p95_ms?: number | null
-          metrics_extra?: Json
-          pageview_count?: number
-          path_group?: string
-          run_id: string
-          sample_count?: number
-          tier: string
-          ttfb_p75_ms?: number | null
-          visit_count?: number
-        }
-        Update: {
-          account_tag?: string
-          bucket_start?: string
-          cls_p50_milli?: number | null
-          cls_p75_milli?: number | null
-          cls_p95_milli?: number | null
-          created_at?: string
-          fcp_p75_ms?: number | null
-          fetched_at?: string
-          id?: never
-          inp_p50_ms?: number | null
-          inp_p75_ms?: number | null
-          inp_p95_ms?: number | null
-          lcp_p50_ms?: number | null
-          lcp_p75_ms?: number | null
-          lcp_p95_ms?: number | null
-          metrics_extra?: Json
-          pageview_count?: number
-          path_group?: string
-          run_id?: string
-          sample_count?: number
-          tier?: string
-          ttfb_p75_ms?: number | null
-          visit_count?: number
-        }
-        Relationships: []
-      }
-      __seo_snapshot_cf_rum_p20260618: {
-        Row: {
-          account_tag: string
-          bucket_start: string
-          cls_p50_milli: number | null
-          cls_p75_milli: number | null
-          cls_p95_milli: number | null
-          created_at: string
-          fcp_p75_ms: number | null
-          fetched_at: string
-          id: number
-          inp_p50_ms: number | null
-          inp_p75_ms: number | null
-          inp_p95_ms: number | null
-          lcp_p50_ms: number | null
-          lcp_p75_ms: number | null
-          lcp_p95_ms: number | null
-          metrics_extra: Json
-          pageview_count: number
-          path_group: string
-          run_id: string
-          sample_count: number
-          tier: string
-          ttfb_p75_ms: number | null
-          visit_count: number
-        }
-        Insert: {
-          account_tag: string
-          bucket_start: string
-          cls_p50_milli?: number | null
-          cls_p75_milli?: number | null
-          cls_p95_milli?: number | null
-          created_at?: string
-          fcp_p75_ms?: number | null
-          fetched_at?: string
-          id?: never
-          inp_p50_ms?: number | null
-          inp_p75_ms?: number | null
-          inp_p95_ms?: number | null
-          lcp_p50_ms?: number | null
-          lcp_p75_ms?: number | null
-          lcp_p95_ms?: number | null
-          metrics_extra?: Json
-          pageview_count?: number
-          path_group?: string
-          run_id: string
-          sample_count?: number
-          tier: string
-          ttfb_p75_ms?: number | null
-          visit_count?: number
-        }
-        Update: {
-          account_tag?: string
-          bucket_start?: string
-          cls_p50_milli?: number | null
-          cls_p75_milli?: number | null
-          cls_p95_milli?: number | null
-          created_at?: string
-          fcp_p75_ms?: number | null
-          fetched_at?: string
-          id?: never
-          inp_p50_ms?: number | null
-          inp_p75_ms?: number | null
-          inp_p95_ms?: number | null
-          lcp_p50_ms?: number | null
-          lcp_p75_ms?: number | null
-          lcp_p95_ms?: number | null
-          metrics_extra?: Json
-          pageview_count?: number
-          path_group?: string
-          run_id?: string
-          sample_count?: number
-          tier?: string
-          ttfb_p75_ms?: number | null
-          visit_count?: number
-        }
-        Relationships: []
-      }
-      __seo_snapshot_cf_rum_p20260619: {
-        Row: {
-          account_tag: string
-          bucket_start: string
-          cls_p50_milli: number | null
-          cls_p75_milli: number | null
-          cls_p95_milli: number | null
-          created_at: string
-          fcp_p75_ms: number | null
-          fetched_at: string
-          id: number
-          inp_p50_ms: number | null
-          inp_p75_ms: number | null
-          inp_p95_ms: number | null
-          lcp_p50_ms: number | null
-          lcp_p75_ms: number | null
-          lcp_p95_ms: number | null
-          metrics_extra: Json
-          pageview_count: number
-          path_group: string
-          run_id: string
-          sample_count: number
-          tier: string
-          ttfb_p75_ms: number | null
-          visit_count: number
-        }
-        Insert: {
-          account_tag: string
-          bucket_start: string
-          cls_p50_milli?: number | null
-          cls_p75_milli?: number | null
-          cls_p95_milli?: number | null
-          created_at?: string
-          fcp_p75_ms?: number | null
-          fetched_at?: string
-          id?: never
-          inp_p50_ms?: number | null
-          inp_p75_ms?: number | null
-          inp_p95_ms?: number | null
-          lcp_p50_ms?: number | null
-          lcp_p75_ms?: number | null
-          lcp_p95_ms?: number | null
-          metrics_extra?: Json
-          pageview_count?: number
-          path_group?: string
-          run_id: string
-          sample_count?: number
-          tier: string
-          ttfb_p75_ms?: number | null
-          visit_count?: number
-        }
-        Update: {
-          account_tag?: string
-          bucket_start?: string
-          cls_p50_milli?: number | null
-          cls_p75_milli?: number | null
-          cls_p95_milli?: number | null
-          created_at?: string
-          fcp_p75_ms?: number | null
-          fetched_at?: string
-          id?: never
-          inp_p50_ms?: number | null
-          inp_p75_ms?: number | null
-          inp_p95_ms?: number | null
-          lcp_p50_ms?: number | null
-          lcp_p75_ms?: number | null
-          lcp_p95_ms?: number | null
-          metrics_extra?: Json
-          pageview_count?: number
-          path_group?: string
-          run_id?: string
-          sample_count?: number
-          tier?: string
-          ttfb_p75_ms?: number | null
-          visit_count?: number
-        }
-        Relationships: []
-      }
-      __seo_snapshot_cf_rum_p20260620: {
-        Row: {
-          account_tag: string
-          bucket_start: string
-          cls_p50_milli: number | null
-          cls_p75_milli: number | null
-          cls_p95_milli: number | null
-          created_at: string
-          fcp_p75_ms: number | null
-          fetched_at: string
-          id: number
-          inp_p50_ms: number | null
-          inp_p75_ms: number | null
-          inp_p95_ms: number | null
-          lcp_p50_ms: number | null
-          lcp_p75_ms: number | null
-          lcp_p95_ms: number | null
-          metrics_extra: Json
-          pageview_count: number
-          path_group: string
-          run_id: string
-          sample_count: number
-          tier: string
-          ttfb_p75_ms: number | null
-          visit_count: number
-        }
-        Insert: {
-          account_tag: string
-          bucket_start: string
-          cls_p50_milli?: number | null
-          cls_p75_milli?: number | null
-          cls_p95_milli?: number | null
-          created_at?: string
-          fcp_p75_ms?: number | null
-          fetched_at?: string
-          id?: never
-          inp_p50_ms?: number | null
-          inp_p75_ms?: number | null
-          inp_p95_ms?: number | null
-          lcp_p50_ms?: number | null
-          lcp_p75_ms?: number | null
-          lcp_p95_ms?: number | null
-          metrics_extra?: Json
-          pageview_count?: number
-          path_group?: string
-          run_id: string
-          sample_count?: number
-          tier: string
-          ttfb_p75_ms?: number | null
-          visit_count?: number
-        }
-        Update: {
-          account_tag?: string
-          bucket_start?: string
-          cls_p50_milli?: number | null
-          cls_p75_milli?: number | null
-          cls_p95_milli?: number | null
-          created_at?: string
-          fcp_p75_ms?: number | null
-          fetched_at?: string
-          id?: never
-          inp_p50_ms?: number | null
-          inp_p75_ms?: number | null
-          inp_p95_ms?: number | null
-          lcp_p50_ms?: number | null
-          lcp_p75_ms?: number | null
-          lcp_p95_ms?: number | null
-          metrics_extra?: Json
-          pageview_count?: number
-          path_group?: string
-          run_id?: string
-          sample_count?: number
-          tier?: string
-          ttfb_p75_ms?: number | null
-          visit_count?: number
-        }
-        Relationships: []
-      }
-      __seo_snapshot_cf_rum_p20260621: {
-        Row: {
-          account_tag: string
-          bucket_start: string
-          cls_p50_milli: number | null
-          cls_p75_milli: number | null
-          cls_p95_milli: number | null
-          created_at: string
-          fcp_p75_ms: number | null
-          fetched_at: string
-          id: number
-          inp_p50_ms: number | null
-          inp_p75_ms: number | null
-          inp_p95_ms: number | null
-          lcp_p50_ms: number | null
-          lcp_p75_ms: number | null
-          lcp_p95_ms: number | null
-          metrics_extra: Json
-          pageview_count: number
-          path_group: string
-          run_id: string
-          sample_count: number
-          tier: string
-          ttfb_p75_ms: number | null
-          visit_count: number
-        }
-        Insert: {
-          account_tag: string
-          bucket_start: string
-          cls_p50_milli?: number | null
-          cls_p75_milli?: number | null
-          cls_p95_milli?: number | null
-          created_at?: string
-          fcp_p75_ms?: number | null
-          fetched_at?: string
-          id?: never
-          inp_p50_ms?: number | null
-          inp_p75_ms?: number | null
-          inp_p95_ms?: number | null
-          lcp_p50_ms?: number | null
-          lcp_p75_ms?: number | null
-          lcp_p95_ms?: number | null
-          metrics_extra?: Json
-          pageview_count?: number
-          path_group?: string
-          run_id: string
-          sample_count?: number
-          tier: string
-          ttfb_p75_ms?: number | null
-          visit_count?: number
-        }
-        Update: {
-          account_tag?: string
-          bucket_start?: string
-          cls_p50_milli?: number | null
-          cls_p75_milli?: number | null
-          cls_p95_milli?: number | null
-          created_at?: string
-          fcp_p75_ms?: number | null
-          fetched_at?: string
-          id?: never
-          inp_p50_ms?: number | null
-          inp_p75_ms?: number | null
-          inp_p95_ms?: number | null
-          lcp_p50_ms?: number | null
-          lcp_p75_ms?: number | null
-          lcp_p95_ms?: number | null
-          metrics_extra?: Json
-          pageview_count?: number
-          path_group?: string
-          run_id?: string
-          sample_count?: number
-          tier?: string
-          ttfb_p75_ms?: number | null
-          visit_count?: number
-        }
-        Relationships: []
-      }
-      __seo_snapshot_cf_rum_p20260622: {
-        Row: {
-          account_tag: string
-          bucket_start: string
-          cls_p50_milli: number | null
-          cls_p75_milli: number | null
-          cls_p95_milli: number | null
-          created_at: string
-          fcp_p75_ms: number | null
-          fetched_at: string
-          id: number
-          inp_p50_ms: number | null
-          inp_p75_ms: number | null
-          inp_p95_ms: number | null
-          lcp_p50_ms: number | null
-          lcp_p75_ms: number | null
-          lcp_p95_ms: number | null
-          metrics_extra: Json
-          pageview_count: number
-          path_group: string
-          run_id: string
-          sample_count: number
-          tier: string
-          ttfb_p75_ms: number | null
-          visit_count: number
-        }
-        Insert: {
-          account_tag: string
-          bucket_start: string
-          cls_p50_milli?: number | null
-          cls_p75_milli?: number | null
-          cls_p95_milli?: number | null
-          created_at?: string
-          fcp_p75_ms?: number | null
-          fetched_at?: string
-          id?: never
-          inp_p50_ms?: number | null
-          inp_p75_ms?: number | null
-          inp_p95_ms?: number | null
-          lcp_p50_ms?: number | null
-          lcp_p75_ms?: number | null
-          lcp_p95_ms?: number | null
-          metrics_extra?: Json
-          pageview_count?: number
-          path_group?: string
-          run_id: string
-          sample_count?: number
-          tier: string
-          ttfb_p75_ms?: number | null
-          visit_count?: number
-        }
-        Update: {
-          account_tag?: string
-          bucket_start?: string
-          cls_p50_milli?: number | null
-          cls_p75_milli?: number | null
-          cls_p95_milli?: number | null
-          created_at?: string
-          fcp_p75_ms?: number | null
-          fetched_at?: string
-          id?: never
-          inp_p50_ms?: number | null
-          inp_p75_ms?: number | null
-          inp_p95_ms?: number | null
-          lcp_p50_ms?: number | null
-          lcp_p75_ms?: number | null
-          lcp_p95_ms?: number | null
-          metrics_extra?: Json
-          pageview_count?: number
-          path_group?: string
-          run_id?: string
-          sample_count?: number
-          tier?: string
-          ttfb_p75_ms?: number | null
-          visit_count?: number
-        }
-        Relationships: []
-      }
-      __seo_snapshot_cf_rum_p20260623: {
-        Row: {
-          account_tag: string
-          bucket_start: string
-          cls_p50_milli: number | null
-          cls_p75_milli: number | null
-          cls_p95_milli: number | null
-          created_at: string
-          fcp_p75_ms: number | null
-          fetched_at: string
-          id: number
-          inp_p50_ms: number | null
-          inp_p75_ms: number | null
-          inp_p95_ms: number | null
-          lcp_p50_ms: number | null
-          lcp_p75_ms: number | null
-          lcp_p95_ms: number | null
-          metrics_extra: Json
-          pageview_count: number
-          path_group: string
-          run_id: string
-          sample_count: number
-          tier: string
-          ttfb_p75_ms: number | null
-          visit_count: number
-        }
-        Insert: {
-          account_tag: string
-          bucket_start: string
-          cls_p50_milli?: number | null
-          cls_p75_milli?: number | null
-          cls_p95_milli?: number | null
-          created_at?: string
-          fcp_p75_ms?: number | null
-          fetched_at?: string
-          id?: never
-          inp_p50_ms?: number | null
-          inp_p75_ms?: number | null
-          inp_p95_ms?: number | null
-          lcp_p50_ms?: number | null
-          lcp_p75_ms?: number | null
-          lcp_p95_ms?: number | null
-          metrics_extra?: Json
-          pageview_count?: number
-          path_group?: string
-          run_id: string
-          sample_count?: number
-          tier: string
-          ttfb_p75_ms?: number | null
-          visit_count?: number
-        }
-        Update: {
-          account_tag?: string
-          bucket_start?: string
-          cls_p50_milli?: number | null
-          cls_p75_milli?: number | null
-          cls_p95_milli?: number | null
-          created_at?: string
-          fcp_p75_ms?: number | null
-          fetched_at?: string
-          id?: never
-          inp_p50_ms?: number | null
-          inp_p75_ms?: number | null
-          inp_p95_ms?: number | null
-          lcp_p50_ms?: number | null
-          lcp_p75_ms?: number | null
-          lcp_p95_ms?: number | null
-          metrics_extra?: Json
-          pageview_count?: number
-          path_group?: string
-          run_id?: string
-          sample_count?: number
-          tier?: string
-          ttfb_p75_ms?: number | null
-          visit_count?: number
-        }
-        Relationships: []
-      }
-      __seo_snapshot_cf_rum_p20260624: {
-        Row: {
-          account_tag: string
-          bucket_start: string
-          cls_p50_milli: number | null
-          cls_p75_milli: number | null
-          cls_p95_milli: number | null
-          created_at: string
-          fcp_p75_ms: number | null
-          fetched_at: string
-          id: number
-          inp_p50_ms: number | null
-          inp_p75_ms: number | null
-          inp_p95_ms: number | null
-          lcp_p50_ms: number | null
-          lcp_p75_ms: number | null
-          lcp_p95_ms: number | null
-          metrics_extra: Json
-          pageview_count: number
-          path_group: string
-          run_id: string
-          sample_count: number
-          tier: string
-          ttfb_p75_ms: number | null
-          visit_count: number
-        }
-        Insert: {
-          account_tag: string
-          bucket_start: string
-          cls_p50_milli?: number | null
-          cls_p75_milli?: number | null
-          cls_p95_milli?: number | null
-          created_at?: string
-          fcp_p75_ms?: number | null
-          fetched_at?: string
-          id?: never
-          inp_p50_ms?: number | null
-          inp_p75_ms?: number | null
-          inp_p95_ms?: number | null
-          lcp_p50_ms?: number | null
-          lcp_p75_ms?: number | null
-          lcp_p95_ms?: number | null
-          metrics_extra?: Json
-          pageview_count?: number
-          path_group?: string
-          run_id: string
-          sample_count?: number
-          tier: string
-          ttfb_p75_ms?: number | null
-          visit_count?: number
-        }
-        Update: {
-          account_tag?: string
-          bucket_start?: string
-          cls_p50_milli?: number | null
-          cls_p75_milli?: number | null
-          cls_p95_milli?: number | null
-          created_at?: string
-          fcp_p75_ms?: number | null
-          fetched_at?: string
-          id?: never
-          inp_p50_ms?: number | null
-          inp_p75_ms?: number | null
-          inp_p95_ms?: number | null
-          lcp_p50_ms?: number | null
-          lcp_p75_ms?: number | null
-          lcp_p95_ms?: number | null
-          metrics_extra?: Json
-          pageview_count?: number
-          path_group?: string
-          run_id?: string
-          sample_count?: number
-          tier?: string
-          ttfb_p75_ms?: number | null
-          visit_count?: number
-        }
-        Relationships: []
-      }
-      __seo_snapshot_cf_rum_p20260625: {
-        Row: {
-          account_tag: string
-          bucket_start: string
-          cls_p50_milli: number | null
-          cls_p75_milli: number | null
-          cls_p95_milli: number | null
-          created_at: string
-          fcp_p75_ms: number | null
-          fetched_at: string
-          id: number
-          inp_p50_ms: number | null
-          inp_p75_ms: number | null
-          inp_p95_ms: number | null
-          lcp_p50_ms: number | null
-          lcp_p75_ms: number | null
-          lcp_p95_ms: number | null
-          metrics_extra: Json
-          pageview_count: number
-          path_group: string
-          run_id: string
-          sample_count: number
-          tier: string
-          ttfb_p75_ms: number | null
-          visit_count: number
-        }
-        Insert: {
-          account_tag: string
-          bucket_start: string
-          cls_p50_milli?: number | null
-          cls_p75_milli?: number | null
-          cls_p95_milli?: number | null
-          created_at?: string
-          fcp_p75_ms?: number | null
-          fetched_at?: string
-          id?: never
-          inp_p50_ms?: number | null
-          inp_p75_ms?: number | null
-          inp_p95_ms?: number | null
-          lcp_p50_ms?: number | null
-          lcp_p75_ms?: number | null
-          lcp_p95_ms?: number | null
-          metrics_extra?: Json
-          pageview_count?: number
-          path_group?: string
-          run_id: string
-          sample_count?: number
-          tier: string
-          ttfb_p75_ms?: number | null
-          visit_count?: number
-        }
-        Update: {
-          account_tag?: string
-          bucket_start?: string
-          cls_p50_milli?: number | null
-          cls_p75_milli?: number | null
-          cls_p95_milli?: number | null
-          created_at?: string
-          fcp_p75_ms?: number | null
-          fetched_at?: string
-          id?: never
-          inp_p50_ms?: number | null
-          inp_p75_ms?: number | null
-          inp_p95_ms?: number | null
-          lcp_p50_ms?: number | null
-          lcp_p75_ms?: number | null
-          lcp_p95_ms?: number | null
-          metrics_extra?: Json
-          pageview_count?: number
-          path_group?: string
-          run_id?: string
-          sample_count?: number
-          tier?: string
-          ttfb_p75_ms?: number | null
-          visit_count?: number
-        }
-        Relationships: []
-      }
-      __seo_snapshot_cf_rum_p20260626: {
-        Row: {
-          account_tag: string
-          bucket_start: string
-          cls_p50_milli: number | null
-          cls_p75_milli: number | null
-          cls_p95_milli: number | null
-          created_at: string
-          fcp_p75_ms: number | null
-          fetched_at: string
-          id: number
-          inp_p50_ms: number | null
-          inp_p75_ms: number | null
-          inp_p95_ms: number | null
-          lcp_p50_ms: number | null
-          lcp_p75_ms: number | null
-          lcp_p95_ms: number | null
-          metrics_extra: Json
-          pageview_count: number
-          path_group: string
-          run_id: string
-          sample_count: number
-          tier: string
-          ttfb_p75_ms: number | null
-          visit_count: number
-        }
-        Insert: {
-          account_tag: string
-          bucket_start: string
-          cls_p50_milli?: number | null
-          cls_p75_milli?: number | null
-          cls_p95_milli?: number | null
-          created_at?: string
-          fcp_p75_ms?: number | null
-          fetched_at?: string
-          id?: never
-          inp_p50_ms?: number | null
-          inp_p75_ms?: number | null
-          inp_p95_ms?: number | null
-          lcp_p50_ms?: number | null
-          lcp_p75_ms?: number | null
-          lcp_p95_ms?: number | null
-          metrics_extra?: Json
-          pageview_count?: number
-          path_group?: string
-          run_id: string
-          sample_count?: number
-          tier: string
-          ttfb_p75_ms?: number | null
-          visit_count?: number
-        }
-        Update: {
-          account_tag?: string
-          bucket_start?: string
-          cls_p50_milli?: number | null
-          cls_p75_milli?: number | null
-          cls_p95_milli?: number | null
-          created_at?: string
-          fcp_p75_ms?: number | null
-          fetched_at?: string
-          id?: never
-          inp_p50_ms?: number | null
-          inp_p75_ms?: number | null
-          inp_p95_ms?: number | null
-          lcp_p50_ms?: number | null
-          lcp_p75_ms?: number | null
-          lcp_p95_ms?: number | null
-          metrics_extra?: Json
-          pageview_count?: number
-          path_group?: string
-          run_id?: string
-          sample_count?: number
-          tier?: string
-          ttfb_p75_ms?: number | null
-          visit_count?: number
-        }
-        Relationships: []
-      }
-      __seo_snapshot_cf_rum_p20260627: {
         Row: {
           account_tag: string
           bucket_start: string
@@ -22644,1147 +21909,787 @@ export type Database = {
         }
         Relationships: []
       }
+      __seo_snapshot_cf_rum_p20261001: {
+        Row: {
+          account_tag: string
+          bucket_start: string
+          cls_p50_milli: number | null
+          cls_p75_milli: number | null
+          cls_p95_milli: number | null
+          created_at: string
+          fcp_p75_ms: number | null
+          fetched_at: string
+          id: number
+          inp_p50_ms: number | null
+          inp_p75_ms: number | null
+          inp_p95_ms: number | null
+          lcp_p50_ms: number | null
+          lcp_p75_ms: number | null
+          lcp_p95_ms: number | null
+          metrics_extra: Json
+          pageview_count: number
+          path_group: string
+          run_id: string
+          sample_count: number
+          tier: string
+          ttfb_p75_ms: number | null
+          visit_count: number
+        }
+        Insert: {
+          account_tag: string
+          bucket_start: string
+          cls_p50_milli?: number | null
+          cls_p75_milli?: number | null
+          cls_p95_milli?: number | null
+          created_at?: string
+          fcp_p75_ms?: number | null
+          fetched_at?: string
+          id?: never
+          inp_p50_ms?: number | null
+          inp_p75_ms?: number | null
+          inp_p95_ms?: number | null
+          lcp_p50_ms?: number | null
+          lcp_p75_ms?: number | null
+          lcp_p95_ms?: number | null
+          metrics_extra?: Json
+          pageview_count?: number
+          path_group?: string
+          run_id: string
+          sample_count?: number
+          tier: string
+          ttfb_p75_ms?: number | null
+          visit_count?: number
+        }
+        Update: {
+          account_tag?: string
+          bucket_start?: string
+          cls_p50_milli?: number | null
+          cls_p75_milli?: number | null
+          cls_p95_milli?: number | null
+          created_at?: string
+          fcp_p75_ms?: number | null
+          fetched_at?: string
+          id?: never
+          inp_p50_ms?: number | null
+          inp_p75_ms?: number | null
+          inp_p95_ms?: number | null
+          lcp_p50_ms?: number | null
+          lcp_p75_ms?: number | null
+          lcp_p95_ms?: number | null
+          metrics_extra?: Json
+          pageview_count?: number
+          path_group?: string
+          run_id?: string
+          sample_count?: number
+          tier?: string
+          ttfb_p75_ms?: number | null
+          visit_count?: number
+        }
+        Relationships: []
+      }
+      __seo_snapshot_cf_rum_p20261002: {
+        Row: {
+          account_tag: string
+          bucket_start: string
+          cls_p50_milli: number | null
+          cls_p75_milli: number | null
+          cls_p95_milli: number | null
+          created_at: string
+          fcp_p75_ms: number | null
+          fetched_at: string
+          id: number
+          inp_p50_ms: number | null
+          inp_p75_ms: number | null
+          inp_p95_ms: number | null
+          lcp_p50_ms: number | null
+          lcp_p75_ms: number | null
+          lcp_p95_ms: number | null
+          metrics_extra: Json
+          pageview_count: number
+          path_group: string
+          run_id: string
+          sample_count: number
+          tier: string
+          ttfb_p75_ms: number | null
+          visit_count: number
+        }
+        Insert: {
+          account_tag: string
+          bucket_start: string
+          cls_p50_milli?: number | null
+          cls_p75_milli?: number | null
+          cls_p95_milli?: number | null
+          created_at?: string
+          fcp_p75_ms?: number | null
+          fetched_at?: string
+          id?: never
+          inp_p50_ms?: number | null
+          inp_p75_ms?: number | null
+          inp_p95_ms?: number | null
+          lcp_p50_ms?: number | null
+          lcp_p75_ms?: number | null
+          lcp_p95_ms?: number | null
+          metrics_extra?: Json
+          pageview_count?: number
+          path_group?: string
+          run_id: string
+          sample_count?: number
+          tier: string
+          ttfb_p75_ms?: number | null
+          visit_count?: number
+        }
+        Update: {
+          account_tag?: string
+          bucket_start?: string
+          cls_p50_milli?: number | null
+          cls_p75_milli?: number | null
+          cls_p95_milli?: number | null
+          created_at?: string
+          fcp_p75_ms?: number | null
+          fetched_at?: string
+          id?: never
+          inp_p50_ms?: number | null
+          inp_p75_ms?: number | null
+          inp_p95_ms?: number | null
+          lcp_p50_ms?: number | null
+          lcp_p75_ms?: number | null
+          lcp_p95_ms?: number | null
+          metrics_extra?: Json
+          pageview_count?: number
+          path_group?: string
+          run_id?: string
+          sample_count?: number
+          tier?: string
+          ttfb_p75_ms?: number | null
+          visit_count?: number
+        }
+        Relationships: []
+      }
+      __seo_snapshot_cf_rum_p20261003: {
+        Row: {
+          account_tag: string
+          bucket_start: string
+          cls_p50_milli: number | null
+          cls_p75_milli: number | null
+          cls_p95_milli: number | null
+          created_at: string
+          fcp_p75_ms: number | null
+          fetched_at: string
+          id: number
+          inp_p50_ms: number | null
+          inp_p75_ms: number | null
+          inp_p95_ms: number | null
+          lcp_p50_ms: number | null
+          lcp_p75_ms: number | null
+          lcp_p95_ms: number | null
+          metrics_extra: Json
+          pageview_count: number
+          path_group: string
+          run_id: string
+          sample_count: number
+          tier: string
+          ttfb_p75_ms: number | null
+          visit_count: number
+        }
+        Insert: {
+          account_tag: string
+          bucket_start: string
+          cls_p50_milli?: number | null
+          cls_p75_milli?: number | null
+          cls_p95_milli?: number | null
+          created_at?: string
+          fcp_p75_ms?: number | null
+          fetched_at?: string
+          id?: never
+          inp_p50_ms?: number | null
+          inp_p75_ms?: number | null
+          inp_p95_ms?: number | null
+          lcp_p50_ms?: number | null
+          lcp_p75_ms?: number | null
+          lcp_p95_ms?: number | null
+          metrics_extra?: Json
+          pageview_count?: number
+          path_group?: string
+          run_id: string
+          sample_count?: number
+          tier: string
+          ttfb_p75_ms?: number | null
+          visit_count?: number
+        }
+        Update: {
+          account_tag?: string
+          bucket_start?: string
+          cls_p50_milli?: number | null
+          cls_p75_milli?: number | null
+          cls_p95_milli?: number | null
+          created_at?: string
+          fcp_p75_ms?: number | null
+          fetched_at?: string
+          id?: never
+          inp_p50_ms?: number | null
+          inp_p75_ms?: number | null
+          inp_p95_ms?: number | null
+          lcp_p50_ms?: number | null
+          lcp_p75_ms?: number | null
+          lcp_p95_ms?: number | null
+          metrics_extra?: Json
+          pageview_count?: number
+          path_group?: string
+          run_id?: string
+          sample_count?: number
+          tier?: string
+          ttfb_p75_ms?: number | null
+          visit_count?: number
+        }
+        Relationships: []
+      }
+      __seo_snapshot_cf_rum_p20261004: {
+        Row: {
+          account_tag: string
+          bucket_start: string
+          cls_p50_milli: number | null
+          cls_p75_milli: number | null
+          cls_p95_milli: number | null
+          created_at: string
+          fcp_p75_ms: number | null
+          fetched_at: string
+          id: number
+          inp_p50_ms: number | null
+          inp_p75_ms: number | null
+          inp_p95_ms: number | null
+          lcp_p50_ms: number | null
+          lcp_p75_ms: number | null
+          lcp_p95_ms: number | null
+          metrics_extra: Json
+          pageview_count: number
+          path_group: string
+          run_id: string
+          sample_count: number
+          tier: string
+          ttfb_p75_ms: number | null
+          visit_count: number
+        }
+        Insert: {
+          account_tag: string
+          bucket_start: string
+          cls_p50_milli?: number | null
+          cls_p75_milli?: number | null
+          cls_p95_milli?: number | null
+          created_at?: string
+          fcp_p75_ms?: number | null
+          fetched_at?: string
+          id?: never
+          inp_p50_ms?: number | null
+          inp_p75_ms?: number | null
+          inp_p95_ms?: number | null
+          lcp_p50_ms?: number | null
+          lcp_p75_ms?: number | null
+          lcp_p95_ms?: number | null
+          metrics_extra?: Json
+          pageview_count?: number
+          path_group?: string
+          run_id: string
+          sample_count?: number
+          tier: string
+          ttfb_p75_ms?: number | null
+          visit_count?: number
+        }
+        Update: {
+          account_tag?: string
+          bucket_start?: string
+          cls_p50_milli?: number | null
+          cls_p75_milli?: number | null
+          cls_p95_milli?: number | null
+          created_at?: string
+          fcp_p75_ms?: number | null
+          fetched_at?: string
+          id?: never
+          inp_p50_ms?: number | null
+          inp_p75_ms?: number | null
+          inp_p95_ms?: number | null
+          lcp_p50_ms?: number | null
+          lcp_p75_ms?: number | null
+          lcp_p95_ms?: number | null
+          metrics_extra?: Json
+          pageview_count?: number
+          path_group?: string
+          run_id?: string
+          sample_count?: number
+          tier?: string
+          ttfb_p75_ms?: number | null
+          visit_count?: number
+        }
+        Relationships: []
+      }
+      __seo_snapshot_cf_rum_p20261005: {
+        Row: {
+          account_tag: string
+          bucket_start: string
+          cls_p50_milli: number | null
+          cls_p75_milli: number | null
+          cls_p95_milli: number | null
+          created_at: string
+          fcp_p75_ms: number | null
+          fetched_at: string
+          id: number
+          inp_p50_ms: number | null
+          inp_p75_ms: number | null
+          inp_p95_ms: number | null
+          lcp_p50_ms: number | null
+          lcp_p75_ms: number | null
+          lcp_p95_ms: number | null
+          metrics_extra: Json
+          pageview_count: number
+          path_group: string
+          run_id: string
+          sample_count: number
+          tier: string
+          ttfb_p75_ms: number | null
+          visit_count: number
+        }
+        Insert: {
+          account_tag: string
+          bucket_start: string
+          cls_p50_milli?: number | null
+          cls_p75_milli?: number | null
+          cls_p95_milli?: number | null
+          created_at?: string
+          fcp_p75_ms?: number | null
+          fetched_at?: string
+          id?: never
+          inp_p50_ms?: number | null
+          inp_p75_ms?: number | null
+          inp_p95_ms?: number | null
+          lcp_p50_ms?: number | null
+          lcp_p75_ms?: number | null
+          lcp_p95_ms?: number | null
+          metrics_extra?: Json
+          pageview_count?: number
+          path_group?: string
+          run_id: string
+          sample_count?: number
+          tier: string
+          ttfb_p75_ms?: number | null
+          visit_count?: number
+        }
+        Update: {
+          account_tag?: string
+          bucket_start?: string
+          cls_p50_milli?: number | null
+          cls_p75_milli?: number | null
+          cls_p95_milli?: number | null
+          created_at?: string
+          fcp_p75_ms?: number | null
+          fetched_at?: string
+          id?: never
+          inp_p50_ms?: number | null
+          inp_p75_ms?: number | null
+          inp_p95_ms?: number | null
+          lcp_p50_ms?: number | null
+          lcp_p75_ms?: number | null
+          lcp_p95_ms?: number | null
+          metrics_extra?: Json
+          pageview_count?: number
+          path_group?: string
+          run_id?: string
+          sample_count?: number
+          tier?: string
+          ttfb_p75_ms?: number | null
+          visit_count?: number
+        }
+        Relationships: []
+      }
+      __seo_snapshot_cf_rum_p20261006: {
+        Row: {
+          account_tag: string
+          bucket_start: string
+          cls_p50_milli: number | null
+          cls_p75_milli: number | null
+          cls_p95_milli: number | null
+          created_at: string
+          fcp_p75_ms: number | null
+          fetched_at: string
+          id: number
+          inp_p50_ms: number | null
+          inp_p75_ms: number | null
+          inp_p95_ms: number | null
+          lcp_p50_ms: number | null
+          lcp_p75_ms: number | null
+          lcp_p95_ms: number | null
+          metrics_extra: Json
+          pageview_count: number
+          path_group: string
+          run_id: string
+          sample_count: number
+          tier: string
+          ttfb_p75_ms: number | null
+          visit_count: number
+        }
+        Insert: {
+          account_tag: string
+          bucket_start: string
+          cls_p50_milli?: number | null
+          cls_p75_milli?: number | null
+          cls_p95_milli?: number | null
+          created_at?: string
+          fcp_p75_ms?: number | null
+          fetched_at?: string
+          id?: never
+          inp_p50_ms?: number | null
+          inp_p75_ms?: number | null
+          inp_p95_ms?: number | null
+          lcp_p50_ms?: number | null
+          lcp_p75_ms?: number | null
+          lcp_p95_ms?: number | null
+          metrics_extra?: Json
+          pageview_count?: number
+          path_group?: string
+          run_id: string
+          sample_count?: number
+          tier: string
+          ttfb_p75_ms?: number | null
+          visit_count?: number
+        }
+        Update: {
+          account_tag?: string
+          bucket_start?: string
+          cls_p50_milli?: number | null
+          cls_p75_milli?: number | null
+          cls_p95_milli?: number | null
+          created_at?: string
+          fcp_p75_ms?: number | null
+          fetched_at?: string
+          id?: never
+          inp_p50_ms?: number | null
+          inp_p75_ms?: number | null
+          inp_p95_ms?: number | null
+          lcp_p50_ms?: number | null
+          lcp_p75_ms?: number | null
+          lcp_p95_ms?: number | null
+          metrics_extra?: Json
+          pageview_count?: number
+          path_group?: string
+          run_id?: string
+          sample_count?: number
+          tier?: string
+          ttfb_p75_ms?: number | null
+          visit_count?: number
+        }
+        Relationships: []
+      }
+      __seo_snapshot_cf_rum_p20261007: {
+        Row: {
+          account_tag: string
+          bucket_start: string
+          cls_p50_milli: number | null
+          cls_p75_milli: number | null
+          cls_p95_milli: number | null
+          created_at: string
+          fcp_p75_ms: number | null
+          fetched_at: string
+          id: number
+          inp_p50_ms: number | null
+          inp_p75_ms: number | null
+          inp_p95_ms: number | null
+          lcp_p50_ms: number | null
+          lcp_p75_ms: number | null
+          lcp_p95_ms: number | null
+          metrics_extra: Json
+          pageview_count: number
+          path_group: string
+          run_id: string
+          sample_count: number
+          tier: string
+          ttfb_p75_ms: number | null
+          visit_count: number
+        }
+        Insert: {
+          account_tag: string
+          bucket_start: string
+          cls_p50_milli?: number | null
+          cls_p75_milli?: number | null
+          cls_p95_milli?: number | null
+          created_at?: string
+          fcp_p75_ms?: number | null
+          fetched_at?: string
+          id?: never
+          inp_p50_ms?: number | null
+          inp_p75_ms?: number | null
+          inp_p95_ms?: number | null
+          lcp_p50_ms?: number | null
+          lcp_p75_ms?: number | null
+          lcp_p95_ms?: number | null
+          metrics_extra?: Json
+          pageview_count?: number
+          path_group?: string
+          run_id: string
+          sample_count?: number
+          tier: string
+          ttfb_p75_ms?: number | null
+          visit_count?: number
+        }
+        Update: {
+          account_tag?: string
+          bucket_start?: string
+          cls_p50_milli?: number | null
+          cls_p75_milli?: number | null
+          cls_p95_milli?: number | null
+          created_at?: string
+          fcp_p75_ms?: number | null
+          fetched_at?: string
+          id?: never
+          inp_p50_ms?: number | null
+          inp_p75_ms?: number | null
+          inp_p95_ms?: number | null
+          lcp_p50_ms?: number | null
+          lcp_p75_ms?: number | null
+          lcp_p95_ms?: number | null
+          metrics_extra?: Json
+          pageview_count?: number
+          path_group?: string
+          run_id?: string
+          sample_count?: number
+          tier?: string
+          ttfb_p75_ms?: number | null
+          visit_count?: number
+        }
+        Relationships: []
+      }
+      __seo_snapshot_cf_rum_p20261008: {
+        Row: {
+          account_tag: string
+          bucket_start: string
+          cls_p50_milli: number | null
+          cls_p75_milli: number | null
+          cls_p95_milli: number | null
+          created_at: string
+          fcp_p75_ms: number | null
+          fetched_at: string
+          id: number
+          inp_p50_ms: number | null
+          inp_p75_ms: number | null
+          inp_p95_ms: number | null
+          lcp_p50_ms: number | null
+          lcp_p75_ms: number | null
+          lcp_p95_ms: number | null
+          metrics_extra: Json
+          pageview_count: number
+          path_group: string
+          run_id: string
+          sample_count: number
+          tier: string
+          ttfb_p75_ms: number | null
+          visit_count: number
+        }
+        Insert: {
+          account_tag: string
+          bucket_start: string
+          cls_p50_milli?: number | null
+          cls_p75_milli?: number | null
+          cls_p95_milli?: number | null
+          created_at?: string
+          fcp_p75_ms?: number | null
+          fetched_at?: string
+          id?: never
+          inp_p50_ms?: number | null
+          inp_p75_ms?: number | null
+          inp_p95_ms?: number | null
+          lcp_p50_ms?: number | null
+          lcp_p75_ms?: number | null
+          lcp_p95_ms?: number | null
+          metrics_extra?: Json
+          pageview_count?: number
+          path_group?: string
+          run_id: string
+          sample_count?: number
+          tier: string
+          ttfb_p75_ms?: number | null
+          visit_count?: number
+        }
+        Update: {
+          account_tag?: string
+          bucket_start?: string
+          cls_p50_milli?: number | null
+          cls_p75_milli?: number | null
+          cls_p95_milli?: number | null
+          created_at?: string
+          fcp_p75_ms?: number | null
+          fetched_at?: string
+          id?: never
+          inp_p50_ms?: number | null
+          inp_p75_ms?: number | null
+          inp_p95_ms?: number | null
+          lcp_p50_ms?: number | null
+          lcp_p75_ms?: number | null
+          lcp_p95_ms?: number | null
+          metrics_extra?: Json
+          pageview_count?: number
+          path_group?: string
+          run_id?: string
+          sample_count?: number
+          tier?: string
+          ttfb_p75_ms?: number | null
+          visit_count?: number
+        }
+        Relationships: []
+      }
+      __seo_snapshot_cf_rum_p20261009: {
+        Row: {
+          account_tag: string
+          bucket_start: string
+          cls_p50_milli: number | null
+          cls_p75_milli: number | null
+          cls_p95_milli: number | null
+          created_at: string
+          fcp_p75_ms: number | null
+          fetched_at: string
+          id: number
+          inp_p50_ms: number | null
+          inp_p75_ms: number | null
+          inp_p95_ms: number | null
+          lcp_p50_ms: number | null
+          lcp_p75_ms: number | null
+          lcp_p95_ms: number | null
+          metrics_extra: Json
+          pageview_count: number
+          path_group: string
+          run_id: string
+          sample_count: number
+          tier: string
+          ttfb_p75_ms: number | null
+          visit_count: number
+        }
+        Insert: {
+          account_tag: string
+          bucket_start: string
+          cls_p50_milli?: number | null
+          cls_p75_milli?: number | null
+          cls_p95_milli?: number | null
+          created_at?: string
+          fcp_p75_ms?: number | null
+          fetched_at?: string
+          id?: never
+          inp_p50_ms?: number | null
+          inp_p75_ms?: number | null
+          inp_p95_ms?: number | null
+          lcp_p50_ms?: number | null
+          lcp_p75_ms?: number | null
+          lcp_p95_ms?: number | null
+          metrics_extra?: Json
+          pageview_count?: number
+          path_group?: string
+          run_id: string
+          sample_count?: number
+          tier: string
+          ttfb_p75_ms?: number | null
+          visit_count?: number
+        }
+        Update: {
+          account_tag?: string
+          bucket_start?: string
+          cls_p50_milli?: number | null
+          cls_p75_milli?: number | null
+          cls_p95_milli?: number | null
+          created_at?: string
+          fcp_p75_ms?: number | null
+          fetched_at?: string
+          id?: never
+          inp_p50_ms?: number | null
+          inp_p75_ms?: number | null
+          inp_p95_ms?: number | null
+          lcp_p50_ms?: number | null
+          lcp_p75_ms?: number | null
+          lcp_p95_ms?: number | null
+          metrics_extra?: Json
+          pageview_count?: number
+          path_group?: string
+          run_id?: string
+          sample_count?: number
+          tier?: string
+          ttfb_p75_ms?: number | null
+          visit_count?: number
+        }
+        Relationships: []
+      }
+      __seo_snapshot_cf_rum_p20261010: {
+        Row: {
+          account_tag: string
+          bucket_start: string
+          cls_p50_milli: number | null
+          cls_p75_milli: number | null
+          cls_p95_milli: number | null
+          created_at: string
+          fcp_p75_ms: number | null
+          fetched_at: string
+          id: number
+          inp_p50_ms: number | null
+          inp_p75_ms: number | null
+          inp_p95_ms: number | null
+          lcp_p50_ms: number | null
+          lcp_p75_ms: number | null
+          lcp_p95_ms: number | null
+          metrics_extra: Json
+          pageview_count: number
+          path_group: string
+          run_id: string
+          sample_count: number
+          tier: string
+          ttfb_p75_ms: number | null
+          visit_count: number
+        }
+        Insert: {
+          account_tag: string
+          bucket_start: string
+          cls_p50_milli?: number | null
+          cls_p75_milli?: number | null
+          cls_p95_milli?: number | null
+          created_at?: string
+          fcp_p75_ms?: number | null
+          fetched_at?: string
+          id?: never
+          inp_p50_ms?: number | null
+          inp_p75_ms?: number | null
+          inp_p95_ms?: number | null
+          lcp_p50_ms?: number | null
+          lcp_p75_ms?: number | null
+          lcp_p95_ms?: number | null
+          metrics_extra?: Json
+          pageview_count?: number
+          path_group?: string
+          run_id: string
+          sample_count?: number
+          tier: string
+          ttfb_p75_ms?: number | null
+          visit_count?: number
+        }
+        Update: {
+          account_tag?: string
+          bucket_start?: string
+          cls_p50_milli?: number | null
+          cls_p75_milli?: number | null
+          cls_p95_milli?: number | null
+          created_at?: string
+          fcp_p75_ms?: number | null
+          fetched_at?: string
+          id?: never
+          inp_p50_ms?: number | null
+          inp_p75_ms?: number | null
+          inp_p95_ms?: number | null
+          lcp_p50_ms?: number | null
+          lcp_p75_ms?: number | null
+          lcp_p95_ms?: number | null
+          metrics_extra?: Json
+          pageview_count?: number
+          path_group?: string
+          run_id?: string
+          sample_count?: number
+          tier?: string
+          ttfb_p75_ms?: number | null
+          visit_count?: number
+        }
+        Relationships: []
+      }
       __seo_snapshot_synthetic: {
-        Row: {
-          age_seconds: number | null
-          cache_control: string | null
-          canonical_url: string | null
-          cf_cache_status: string | null
-          cf_ray: string | null
-          content_length: number | null
-          created_at: string
-          error_kind: string | null
-          error_message: string | null
-          h1_text: string | null
-          has_canonical: boolean | null
-          has_h1: boolean | null
-          has_meta_description: boolean | null
-          has_og: boolean | null
-          has_title: boolean | null
-          http_code: number
-          id: number
-          meta_description: string | null
-          modele_id: number | null
-          og_description: string | null
-          og_image: string | null
-          og_title: string | null
-          og_url: string | null
-          pg_id: number | null
-          robots_meta: string | null
-          route_path: string
-          run_id: string
-          seed: number
-          tier: string
-          title_text: string | null
-          ttfb_ms: number
-          type_id: number | null
-          url: string
-          user_agent: string
-          x_robots_tag: string | null
-        }
-        Insert: {
-          age_seconds?: number | null
-          cache_control?: string | null
-          canonical_url?: string | null
-          cf_cache_status?: string | null
-          cf_ray?: string | null
-          content_length?: number | null
-          created_at?: string
-          error_kind?: string | null
-          error_message?: string | null
-          h1_text?: string | null
-          has_canonical?: boolean | null
-          has_h1?: boolean | null
-          has_meta_description?: boolean | null
-          has_og?: boolean | null
-          has_title?: boolean | null
-          http_code: number
-          id?: never
-          meta_description?: string | null
-          modele_id?: number | null
-          og_description?: string | null
-          og_image?: string | null
-          og_title?: string | null
-          og_url?: string | null
-          pg_id?: number | null
-          robots_meta?: string | null
-          route_path: string
-          run_id: string
-          seed: number
-          tier: string
-          title_text?: string | null
-          ttfb_ms: number
-          type_id?: number | null
-          url: string
-          user_agent: string
-          x_robots_tag?: string | null
-        }
-        Update: {
-          age_seconds?: number | null
-          cache_control?: string | null
-          canonical_url?: string | null
-          cf_cache_status?: string | null
-          cf_ray?: string | null
-          content_length?: number | null
-          created_at?: string
-          error_kind?: string | null
-          error_message?: string | null
-          h1_text?: string | null
-          has_canonical?: boolean | null
-          has_h1?: boolean | null
-          has_meta_description?: boolean | null
-          has_og?: boolean | null
-          has_title?: boolean | null
-          http_code?: number
-          id?: never
-          meta_description?: string | null
-          modele_id?: number | null
-          og_description?: string | null
-          og_image?: string | null
-          og_title?: string | null
-          og_url?: string | null
-          pg_id?: number | null
-          robots_meta?: string | null
-          route_path?: string
-          run_id?: string
-          seed?: number
-          tier?: string
-          title_text?: string | null
-          ttfb_ms?: number
-          type_id?: number | null
-          url?: string
-          user_agent?: string
-          x_robots_tag?: string | null
-        }
-        Relationships: []
-      }
-      __seo_snapshot_synthetic_p20260618: {
-        Row: {
-          age_seconds: number | null
-          cache_control: string | null
-          canonical_url: string | null
-          cf_cache_status: string | null
-          cf_ray: string | null
-          content_length: number | null
-          created_at: string
-          error_kind: string | null
-          error_message: string | null
-          h1_text: string | null
-          has_canonical: boolean | null
-          has_h1: boolean | null
-          has_meta_description: boolean | null
-          has_og: boolean | null
-          has_title: boolean | null
-          http_code: number
-          id: number
-          meta_description: string | null
-          modele_id: number | null
-          og_description: string | null
-          og_image: string | null
-          og_title: string | null
-          og_url: string | null
-          pg_id: number | null
-          robots_meta: string | null
-          route_path: string
-          run_id: string
-          seed: number
-          tier: string
-          title_text: string | null
-          ttfb_ms: number
-          type_id: number | null
-          url: string
-          user_agent: string
-          x_robots_tag: string | null
-        }
-        Insert: {
-          age_seconds?: number | null
-          cache_control?: string | null
-          canonical_url?: string | null
-          cf_cache_status?: string | null
-          cf_ray?: string | null
-          content_length?: number | null
-          created_at?: string
-          error_kind?: string | null
-          error_message?: string | null
-          h1_text?: string | null
-          has_canonical?: boolean | null
-          has_h1?: boolean | null
-          has_meta_description?: boolean | null
-          has_og?: boolean | null
-          has_title?: boolean | null
-          http_code: number
-          id?: never
-          meta_description?: string | null
-          modele_id?: number | null
-          og_description?: string | null
-          og_image?: string | null
-          og_title?: string | null
-          og_url?: string | null
-          pg_id?: number | null
-          robots_meta?: string | null
-          route_path: string
-          run_id: string
-          seed: number
-          tier: string
-          title_text?: string | null
-          ttfb_ms: number
-          type_id?: number | null
-          url: string
-          user_agent: string
-          x_robots_tag?: string | null
-        }
-        Update: {
-          age_seconds?: number | null
-          cache_control?: string | null
-          canonical_url?: string | null
-          cf_cache_status?: string | null
-          cf_ray?: string | null
-          content_length?: number | null
-          created_at?: string
-          error_kind?: string | null
-          error_message?: string | null
-          h1_text?: string | null
-          has_canonical?: boolean | null
-          has_h1?: boolean | null
-          has_meta_description?: boolean | null
-          has_og?: boolean | null
-          has_title?: boolean | null
-          http_code?: number
-          id?: never
-          meta_description?: string | null
-          modele_id?: number | null
-          og_description?: string | null
-          og_image?: string | null
-          og_title?: string | null
-          og_url?: string | null
-          pg_id?: number | null
-          robots_meta?: string | null
-          route_path?: string
-          run_id?: string
-          seed?: number
-          tier?: string
-          title_text?: string | null
-          ttfb_ms?: number
-          type_id?: number | null
-          url?: string
-          user_agent?: string
-          x_robots_tag?: string | null
-        }
-        Relationships: []
-      }
-      __seo_snapshot_synthetic_p20260619: {
-        Row: {
-          age_seconds: number | null
-          cache_control: string | null
-          canonical_url: string | null
-          cf_cache_status: string | null
-          cf_ray: string | null
-          content_length: number | null
-          created_at: string
-          error_kind: string | null
-          error_message: string | null
-          h1_text: string | null
-          has_canonical: boolean | null
-          has_h1: boolean | null
-          has_meta_description: boolean | null
-          has_og: boolean | null
-          has_title: boolean | null
-          http_code: number
-          id: number
-          meta_description: string | null
-          modele_id: number | null
-          og_description: string | null
-          og_image: string | null
-          og_title: string | null
-          og_url: string | null
-          pg_id: number | null
-          robots_meta: string | null
-          route_path: string
-          run_id: string
-          seed: number
-          tier: string
-          title_text: string | null
-          ttfb_ms: number
-          type_id: number | null
-          url: string
-          user_agent: string
-          x_robots_tag: string | null
-        }
-        Insert: {
-          age_seconds?: number | null
-          cache_control?: string | null
-          canonical_url?: string | null
-          cf_cache_status?: string | null
-          cf_ray?: string | null
-          content_length?: number | null
-          created_at?: string
-          error_kind?: string | null
-          error_message?: string | null
-          h1_text?: string | null
-          has_canonical?: boolean | null
-          has_h1?: boolean | null
-          has_meta_description?: boolean | null
-          has_og?: boolean | null
-          has_title?: boolean | null
-          http_code: number
-          id?: never
-          meta_description?: string | null
-          modele_id?: number | null
-          og_description?: string | null
-          og_image?: string | null
-          og_title?: string | null
-          og_url?: string | null
-          pg_id?: number | null
-          robots_meta?: string | null
-          route_path: string
-          run_id: string
-          seed: number
-          tier: string
-          title_text?: string | null
-          ttfb_ms: number
-          type_id?: number | null
-          url: string
-          user_agent: string
-          x_robots_tag?: string | null
-        }
-        Update: {
-          age_seconds?: number | null
-          cache_control?: string | null
-          canonical_url?: string | null
-          cf_cache_status?: string | null
-          cf_ray?: string | null
-          content_length?: number | null
-          created_at?: string
-          error_kind?: string | null
-          error_message?: string | null
-          h1_text?: string | null
-          has_canonical?: boolean | null
-          has_h1?: boolean | null
-          has_meta_description?: boolean | null
-          has_og?: boolean | null
-          has_title?: boolean | null
-          http_code?: number
-          id?: never
-          meta_description?: string | null
-          modele_id?: number | null
-          og_description?: string | null
-          og_image?: string | null
-          og_title?: string | null
-          og_url?: string | null
-          pg_id?: number | null
-          robots_meta?: string | null
-          route_path?: string
-          run_id?: string
-          seed?: number
-          tier?: string
-          title_text?: string | null
-          ttfb_ms?: number
-          type_id?: number | null
-          url?: string
-          user_agent?: string
-          x_robots_tag?: string | null
-        }
-        Relationships: []
-      }
-      __seo_snapshot_synthetic_p20260620: {
-        Row: {
-          age_seconds: number | null
-          cache_control: string | null
-          canonical_url: string | null
-          cf_cache_status: string | null
-          cf_ray: string | null
-          content_length: number | null
-          created_at: string
-          error_kind: string | null
-          error_message: string | null
-          h1_text: string | null
-          has_canonical: boolean | null
-          has_h1: boolean | null
-          has_meta_description: boolean | null
-          has_og: boolean | null
-          has_title: boolean | null
-          http_code: number
-          id: number
-          meta_description: string | null
-          modele_id: number | null
-          og_description: string | null
-          og_image: string | null
-          og_title: string | null
-          og_url: string | null
-          pg_id: number | null
-          robots_meta: string | null
-          route_path: string
-          run_id: string
-          seed: number
-          tier: string
-          title_text: string | null
-          ttfb_ms: number
-          type_id: number | null
-          url: string
-          user_agent: string
-          x_robots_tag: string | null
-        }
-        Insert: {
-          age_seconds?: number | null
-          cache_control?: string | null
-          canonical_url?: string | null
-          cf_cache_status?: string | null
-          cf_ray?: string | null
-          content_length?: number | null
-          created_at?: string
-          error_kind?: string | null
-          error_message?: string | null
-          h1_text?: string | null
-          has_canonical?: boolean | null
-          has_h1?: boolean | null
-          has_meta_description?: boolean | null
-          has_og?: boolean | null
-          has_title?: boolean | null
-          http_code: number
-          id?: never
-          meta_description?: string | null
-          modele_id?: number | null
-          og_description?: string | null
-          og_image?: string | null
-          og_title?: string | null
-          og_url?: string | null
-          pg_id?: number | null
-          robots_meta?: string | null
-          route_path: string
-          run_id: string
-          seed: number
-          tier: string
-          title_text?: string | null
-          ttfb_ms: number
-          type_id?: number | null
-          url: string
-          user_agent: string
-          x_robots_tag?: string | null
-        }
-        Update: {
-          age_seconds?: number | null
-          cache_control?: string | null
-          canonical_url?: string | null
-          cf_cache_status?: string | null
-          cf_ray?: string | null
-          content_length?: number | null
-          created_at?: string
-          error_kind?: string | null
-          error_message?: string | null
-          h1_text?: string | null
-          has_canonical?: boolean | null
-          has_h1?: boolean | null
-          has_meta_description?: boolean | null
-          has_og?: boolean | null
-          has_title?: boolean | null
-          http_code?: number
-          id?: never
-          meta_description?: string | null
-          modele_id?: number | null
-          og_description?: string | null
-          og_image?: string | null
-          og_title?: string | null
-          og_url?: string | null
-          pg_id?: number | null
-          robots_meta?: string | null
-          route_path?: string
-          run_id?: string
-          seed?: number
-          tier?: string
-          title_text?: string | null
-          ttfb_ms?: number
-          type_id?: number | null
-          url?: string
-          user_agent?: string
-          x_robots_tag?: string | null
-        }
-        Relationships: []
-      }
-      __seo_snapshot_synthetic_p20260621: {
-        Row: {
-          age_seconds: number | null
-          cache_control: string | null
-          canonical_url: string | null
-          cf_cache_status: string | null
-          cf_ray: string | null
-          content_length: number | null
-          created_at: string
-          error_kind: string | null
-          error_message: string | null
-          h1_text: string | null
-          has_canonical: boolean | null
-          has_h1: boolean | null
-          has_meta_description: boolean | null
-          has_og: boolean | null
-          has_title: boolean | null
-          http_code: number
-          id: number
-          meta_description: string | null
-          modele_id: number | null
-          og_description: string | null
-          og_image: string | null
-          og_title: string | null
-          og_url: string | null
-          pg_id: number | null
-          robots_meta: string | null
-          route_path: string
-          run_id: string
-          seed: number
-          tier: string
-          title_text: string | null
-          ttfb_ms: number
-          type_id: number | null
-          url: string
-          user_agent: string
-          x_robots_tag: string | null
-        }
-        Insert: {
-          age_seconds?: number | null
-          cache_control?: string | null
-          canonical_url?: string | null
-          cf_cache_status?: string | null
-          cf_ray?: string | null
-          content_length?: number | null
-          created_at?: string
-          error_kind?: string | null
-          error_message?: string | null
-          h1_text?: string | null
-          has_canonical?: boolean | null
-          has_h1?: boolean | null
-          has_meta_description?: boolean | null
-          has_og?: boolean | null
-          has_title?: boolean | null
-          http_code: number
-          id?: never
-          meta_description?: string | null
-          modele_id?: number | null
-          og_description?: string | null
-          og_image?: string | null
-          og_title?: string | null
-          og_url?: string | null
-          pg_id?: number | null
-          robots_meta?: string | null
-          route_path: string
-          run_id: string
-          seed: number
-          tier: string
-          title_text?: string | null
-          ttfb_ms: number
-          type_id?: number | null
-          url: string
-          user_agent: string
-          x_robots_tag?: string | null
-        }
-        Update: {
-          age_seconds?: number | null
-          cache_control?: string | null
-          canonical_url?: string | null
-          cf_cache_status?: string | null
-          cf_ray?: string | null
-          content_length?: number | null
-          created_at?: string
-          error_kind?: string | null
-          error_message?: string | null
-          h1_text?: string | null
-          has_canonical?: boolean | null
-          has_h1?: boolean | null
-          has_meta_description?: boolean | null
-          has_og?: boolean | null
-          has_title?: boolean | null
-          http_code?: number
-          id?: never
-          meta_description?: string | null
-          modele_id?: number | null
-          og_description?: string | null
-          og_image?: string | null
-          og_title?: string | null
-          og_url?: string | null
-          pg_id?: number | null
-          robots_meta?: string | null
-          route_path?: string
-          run_id?: string
-          seed?: number
-          tier?: string
-          title_text?: string | null
-          ttfb_ms?: number
-          type_id?: number | null
-          url?: string
-          user_agent?: string
-          x_robots_tag?: string | null
-        }
-        Relationships: []
-      }
-      __seo_snapshot_synthetic_p20260622: {
-        Row: {
-          age_seconds: number | null
-          cache_control: string | null
-          canonical_url: string | null
-          cf_cache_status: string | null
-          cf_ray: string | null
-          content_length: number | null
-          created_at: string
-          error_kind: string | null
-          error_message: string | null
-          h1_text: string | null
-          has_canonical: boolean | null
-          has_h1: boolean | null
-          has_meta_description: boolean | null
-          has_og: boolean | null
-          has_title: boolean | null
-          http_code: number
-          id: number
-          meta_description: string | null
-          modele_id: number | null
-          og_description: string | null
-          og_image: string | null
-          og_title: string | null
-          og_url: string | null
-          pg_id: number | null
-          robots_meta: string | null
-          route_path: string
-          run_id: string
-          seed: number
-          tier: string
-          title_text: string | null
-          ttfb_ms: number
-          type_id: number | null
-          url: string
-          user_agent: string
-          x_robots_tag: string | null
-        }
-        Insert: {
-          age_seconds?: number | null
-          cache_control?: string | null
-          canonical_url?: string | null
-          cf_cache_status?: string | null
-          cf_ray?: string | null
-          content_length?: number | null
-          created_at?: string
-          error_kind?: string | null
-          error_message?: string | null
-          h1_text?: string | null
-          has_canonical?: boolean | null
-          has_h1?: boolean | null
-          has_meta_description?: boolean | null
-          has_og?: boolean | null
-          has_title?: boolean | null
-          http_code: number
-          id?: never
-          meta_description?: string | null
-          modele_id?: number | null
-          og_description?: string | null
-          og_image?: string | null
-          og_title?: string | null
-          og_url?: string | null
-          pg_id?: number | null
-          robots_meta?: string | null
-          route_path: string
-          run_id: string
-          seed: number
-          tier: string
-          title_text?: string | null
-          ttfb_ms: number
-          type_id?: number | null
-          url: string
-          user_agent: string
-          x_robots_tag?: string | null
-        }
-        Update: {
-          age_seconds?: number | null
-          cache_control?: string | null
-          canonical_url?: string | null
-          cf_cache_status?: string | null
-          cf_ray?: string | null
-          content_length?: number | null
-          created_at?: string
-          error_kind?: string | null
-          error_message?: string | null
-          h1_text?: string | null
-          has_canonical?: boolean | null
-          has_h1?: boolean | null
-          has_meta_description?: boolean | null
-          has_og?: boolean | null
-          has_title?: boolean | null
-          http_code?: number
-          id?: never
-          meta_description?: string | null
-          modele_id?: number | null
-          og_description?: string | null
-          og_image?: string | null
-          og_title?: string | null
-          og_url?: string | null
-          pg_id?: number | null
-          robots_meta?: string | null
-          route_path?: string
-          run_id?: string
-          seed?: number
-          tier?: string
-          title_text?: string | null
-          ttfb_ms?: number
-          type_id?: number | null
-          url?: string
-          user_agent?: string
-          x_robots_tag?: string | null
-        }
-        Relationships: []
-      }
-      __seo_snapshot_synthetic_p20260623: {
-        Row: {
-          age_seconds: number | null
-          cache_control: string | null
-          canonical_url: string | null
-          cf_cache_status: string | null
-          cf_ray: string | null
-          content_length: number | null
-          created_at: string
-          error_kind: string | null
-          error_message: string | null
-          h1_text: string | null
-          has_canonical: boolean | null
-          has_h1: boolean | null
-          has_meta_description: boolean | null
-          has_og: boolean | null
-          has_title: boolean | null
-          http_code: number
-          id: number
-          meta_description: string | null
-          modele_id: number | null
-          og_description: string | null
-          og_image: string | null
-          og_title: string | null
-          og_url: string | null
-          pg_id: number | null
-          robots_meta: string | null
-          route_path: string
-          run_id: string
-          seed: number
-          tier: string
-          title_text: string | null
-          ttfb_ms: number
-          type_id: number | null
-          url: string
-          user_agent: string
-          x_robots_tag: string | null
-        }
-        Insert: {
-          age_seconds?: number | null
-          cache_control?: string | null
-          canonical_url?: string | null
-          cf_cache_status?: string | null
-          cf_ray?: string | null
-          content_length?: number | null
-          created_at?: string
-          error_kind?: string | null
-          error_message?: string | null
-          h1_text?: string | null
-          has_canonical?: boolean | null
-          has_h1?: boolean | null
-          has_meta_description?: boolean | null
-          has_og?: boolean | null
-          has_title?: boolean | null
-          http_code: number
-          id?: never
-          meta_description?: string | null
-          modele_id?: number | null
-          og_description?: string | null
-          og_image?: string | null
-          og_title?: string | null
-          og_url?: string | null
-          pg_id?: number | null
-          robots_meta?: string | null
-          route_path: string
-          run_id: string
-          seed: number
-          tier: string
-          title_text?: string | null
-          ttfb_ms: number
-          type_id?: number | null
-          url: string
-          user_agent: string
-          x_robots_tag?: string | null
-        }
-        Update: {
-          age_seconds?: number | null
-          cache_control?: string | null
-          canonical_url?: string | null
-          cf_cache_status?: string | null
-          cf_ray?: string | null
-          content_length?: number | null
-          created_at?: string
-          error_kind?: string | null
-          error_message?: string | null
-          h1_text?: string | null
-          has_canonical?: boolean | null
-          has_h1?: boolean | null
-          has_meta_description?: boolean | null
-          has_og?: boolean | null
-          has_title?: boolean | null
-          http_code?: number
-          id?: never
-          meta_description?: string | null
-          modele_id?: number | null
-          og_description?: string | null
-          og_image?: string | null
-          og_title?: string | null
-          og_url?: string | null
-          pg_id?: number | null
-          robots_meta?: string | null
-          route_path?: string
-          run_id?: string
-          seed?: number
-          tier?: string
-          title_text?: string | null
-          ttfb_ms?: number
-          type_id?: number | null
-          url?: string
-          user_agent?: string
-          x_robots_tag?: string | null
-        }
-        Relationships: []
-      }
-      __seo_snapshot_synthetic_p20260624: {
-        Row: {
-          age_seconds: number | null
-          cache_control: string | null
-          canonical_url: string | null
-          cf_cache_status: string | null
-          cf_ray: string | null
-          content_length: number | null
-          created_at: string
-          error_kind: string | null
-          error_message: string | null
-          h1_text: string | null
-          has_canonical: boolean | null
-          has_h1: boolean | null
-          has_meta_description: boolean | null
-          has_og: boolean | null
-          has_title: boolean | null
-          http_code: number
-          id: number
-          meta_description: string | null
-          modele_id: number | null
-          og_description: string | null
-          og_image: string | null
-          og_title: string | null
-          og_url: string | null
-          pg_id: number | null
-          robots_meta: string | null
-          route_path: string
-          run_id: string
-          seed: number
-          tier: string
-          title_text: string | null
-          ttfb_ms: number
-          type_id: number | null
-          url: string
-          user_agent: string
-          x_robots_tag: string | null
-        }
-        Insert: {
-          age_seconds?: number | null
-          cache_control?: string | null
-          canonical_url?: string | null
-          cf_cache_status?: string | null
-          cf_ray?: string | null
-          content_length?: number | null
-          created_at?: string
-          error_kind?: string | null
-          error_message?: string | null
-          h1_text?: string | null
-          has_canonical?: boolean | null
-          has_h1?: boolean | null
-          has_meta_description?: boolean | null
-          has_og?: boolean | null
-          has_title?: boolean | null
-          http_code: number
-          id?: never
-          meta_description?: string | null
-          modele_id?: number | null
-          og_description?: string | null
-          og_image?: string | null
-          og_title?: string | null
-          og_url?: string | null
-          pg_id?: number | null
-          robots_meta?: string | null
-          route_path: string
-          run_id: string
-          seed: number
-          tier: string
-          title_text?: string | null
-          ttfb_ms: number
-          type_id?: number | null
-          url: string
-          user_agent: string
-          x_robots_tag?: string | null
-        }
-        Update: {
-          age_seconds?: number | null
-          cache_control?: string | null
-          canonical_url?: string | null
-          cf_cache_status?: string | null
-          cf_ray?: string | null
-          content_length?: number | null
-          created_at?: string
-          error_kind?: string | null
-          error_message?: string | null
-          h1_text?: string | null
-          has_canonical?: boolean | null
-          has_h1?: boolean | null
-          has_meta_description?: boolean | null
-          has_og?: boolean | null
-          has_title?: boolean | null
-          http_code?: number
-          id?: never
-          meta_description?: string | null
-          modele_id?: number | null
-          og_description?: string | null
-          og_image?: string | null
-          og_title?: string | null
-          og_url?: string | null
-          pg_id?: number | null
-          robots_meta?: string | null
-          route_path?: string
-          run_id?: string
-          seed?: number
-          tier?: string
-          title_text?: string | null
-          ttfb_ms?: number
-          type_id?: number | null
-          url?: string
-          user_agent?: string
-          x_robots_tag?: string | null
-        }
-        Relationships: []
-      }
-      __seo_snapshot_synthetic_p20260625: {
-        Row: {
-          age_seconds: number | null
-          cache_control: string | null
-          canonical_url: string | null
-          cf_cache_status: string | null
-          cf_ray: string | null
-          content_length: number | null
-          created_at: string
-          error_kind: string | null
-          error_message: string | null
-          h1_text: string | null
-          has_canonical: boolean | null
-          has_h1: boolean | null
-          has_meta_description: boolean | null
-          has_og: boolean | null
-          has_title: boolean | null
-          http_code: number
-          id: number
-          meta_description: string | null
-          modele_id: number | null
-          og_description: string | null
-          og_image: string | null
-          og_title: string | null
-          og_url: string | null
-          pg_id: number | null
-          robots_meta: string | null
-          route_path: string
-          run_id: string
-          seed: number
-          tier: string
-          title_text: string | null
-          ttfb_ms: number
-          type_id: number | null
-          url: string
-          user_agent: string
-          x_robots_tag: string | null
-        }
-        Insert: {
-          age_seconds?: number | null
-          cache_control?: string | null
-          canonical_url?: string | null
-          cf_cache_status?: string | null
-          cf_ray?: string | null
-          content_length?: number | null
-          created_at?: string
-          error_kind?: string | null
-          error_message?: string | null
-          h1_text?: string | null
-          has_canonical?: boolean | null
-          has_h1?: boolean | null
-          has_meta_description?: boolean | null
-          has_og?: boolean | null
-          has_title?: boolean | null
-          http_code: number
-          id?: never
-          meta_description?: string | null
-          modele_id?: number | null
-          og_description?: string | null
-          og_image?: string | null
-          og_title?: string | null
-          og_url?: string | null
-          pg_id?: number | null
-          robots_meta?: string | null
-          route_path: string
-          run_id: string
-          seed: number
-          tier: string
-          title_text?: string | null
-          ttfb_ms: number
-          type_id?: number | null
-          url: string
-          user_agent: string
-          x_robots_tag?: string | null
-        }
-        Update: {
-          age_seconds?: number | null
-          cache_control?: string | null
-          canonical_url?: string | null
-          cf_cache_status?: string | null
-          cf_ray?: string | null
-          content_length?: number | null
-          created_at?: string
-          error_kind?: string | null
-          error_message?: string | null
-          h1_text?: string | null
-          has_canonical?: boolean | null
-          has_h1?: boolean | null
-          has_meta_description?: boolean | null
-          has_og?: boolean | null
-          has_title?: boolean | null
-          http_code?: number
-          id?: never
-          meta_description?: string | null
-          modele_id?: number | null
-          og_description?: string | null
-          og_image?: string | null
-          og_title?: string | null
-          og_url?: string | null
-          pg_id?: number | null
-          robots_meta?: string | null
-          route_path?: string
-          run_id?: string
-          seed?: number
-          tier?: string
-          title_text?: string | null
-          ttfb_ms?: number
-          type_id?: number | null
-          url?: string
-          user_agent?: string
-          x_robots_tag?: string | null
-        }
-        Relationships: []
-      }
-      __seo_snapshot_synthetic_p20260626: {
-        Row: {
-          age_seconds: number | null
-          cache_control: string | null
-          canonical_url: string | null
-          cf_cache_status: string | null
-          cf_ray: string | null
-          content_length: number | null
-          created_at: string
-          error_kind: string | null
-          error_message: string | null
-          h1_text: string | null
-          has_canonical: boolean | null
-          has_h1: boolean | null
-          has_meta_description: boolean | null
-          has_og: boolean | null
-          has_title: boolean | null
-          http_code: number
-          id: number
-          meta_description: string | null
-          modele_id: number | null
-          og_description: string | null
-          og_image: string | null
-          og_title: string | null
-          og_url: string | null
-          pg_id: number | null
-          robots_meta: string | null
-          route_path: string
-          run_id: string
-          seed: number
-          tier: string
-          title_text: string | null
-          ttfb_ms: number
-          type_id: number | null
-          url: string
-          user_agent: string
-          x_robots_tag: string | null
-        }
-        Insert: {
-          age_seconds?: number | null
-          cache_control?: string | null
-          canonical_url?: string | null
-          cf_cache_status?: string | null
-          cf_ray?: string | null
-          content_length?: number | null
-          created_at?: string
-          error_kind?: string | null
-          error_message?: string | null
-          h1_text?: string | null
-          has_canonical?: boolean | null
-          has_h1?: boolean | null
-          has_meta_description?: boolean | null
-          has_og?: boolean | null
-          has_title?: boolean | null
-          http_code: number
-          id?: never
-          meta_description?: string | null
-          modele_id?: number | null
-          og_description?: string | null
-          og_image?: string | null
-          og_title?: string | null
-          og_url?: string | null
-          pg_id?: number | null
-          robots_meta?: string | null
-          route_path: string
-          run_id: string
-          seed: number
-          tier: string
-          title_text?: string | null
-          ttfb_ms: number
-          type_id?: number | null
-          url: string
-          user_agent: string
-          x_robots_tag?: string | null
-        }
-        Update: {
-          age_seconds?: number | null
-          cache_control?: string | null
-          canonical_url?: string | null
-          cf_cache_status?: string | null
-          cf_ray?: string | null
-          content_length?: number | null
-          created_at?: string
-          error_kind?: string | null
-          error_message?: string | null
-          h1_text?: string | null
-          has_canonical?: boolean | null
-          has_h1?: boolean | null
-          has_meta_description?: boolean | null
-          has_og?: boolean | null
-          has_title?: boolean | null
-          http_code?: number
-          id?: never
-          meta_description?: string | null
-          modele_id?: number | null
-          og_description?: string | null
-          og_image?: string | null
-          og_title?: string | null
-          og_url?: string | null
-          pg_id?: number | null
-          robots_meta?: string | null
-          route_path?: string
-          run_id?: string
-          seed?: number
-          tier?: string
-          title_text?: string | null
-          ttfb_ms?: number
-          type_id?: number | null
-          url?: string
-          user_agent?: string
-          x_robots_tag?: string | null
-        }
-        Relationships: []
-      }
-      __seo_snapshot_synthetic_p20260627: {
         Row: {
           age_seconds: number | null
           cache_control: string | null
@@ -34615,6 +33520,1146 @@ export type Database = {
         Relationships: []
       }
       __seo_snapshot_synthetic_p20260930: {
+        Row: {
+          age_seconds: number | null
+          cache_control: string | null
+          canonical_url: string | null
+          cf_cache_status: string | null
+          cf_ray: string | null
+          content_length: number | null
+          created_at: string
+          error_kind: string | null
+          error_message: string | null
+          h1_text: string | null
+          has_canonical: boolean | null
+          has_h1: boolean | null
+          has_meta_description: boolean | null
+          has_og: boolean | null
+          has_title: boolean | null
+          http_code: number
+          id: number
+          meta_description: string | null
+          modele_id: number | null
+          og_description: string | null
+          og_image: string | null
+          og_title: string | null
+          og_url: string | null
+          pg_id: number | null
+          robots_meta: string | null
+          route_path: string
+          run_id: string
+          seed: number
+          tier: string
+          title_text: string | null
+          ttfb_ms: number
+          type_id: number | null
+          url: string
+          user_agent: string
+          x_robots_tag: string | null
+        }
+        Insert: {
+          age_seconds?: number | null
+          cache_control?: string | null
+          canonical_url?: string | null
+          cf_cache_status?: string | null
+          cf_ray?: string | null
+          content_length?: number | null
+          created_at?: string
+          error_kind?: string | null
+          error_message?: string | null
+          h1_text?: string | null
+          has_canonical?: boolean | null
+          has_h1?: boolean | null
+          has_meta_description?: boolean | null
+          has_og?: boolean | null
+          has_title?: boolean | null
+          http_code: number
+          id?: never
+          meta_description?: string | null
+          modele_id?: number | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          og_url?: string | null
+          pg_id?: number | null
+          robots_meta?: string | null
+          route_path: string
+          run_id: string
+          seed: number
+          tier: string
+          title_text?: string | null
+          ttfb_ms: number
+          type_id?: number | null
+          url: string
+          user_agent: string
+          x_robots_tag?: string | null
+        }
+        Update: {
+          age_seconds?: number | null
+          cache_control?: string | null
+          canonical_url?: string | null
+          cf_cache_status?: string | null
+          cf_ray?: string | null
+          content_length?: number | null
+          created_at?: string
+          error_kind?: string | null
+          error_message?: string | null
+          h1_text?: string | null
+          has_canonical?: boolean | null
+          has_h1?: boolean | null
+          has_meta_description?: boolean | null
+          has_og?: boolean | null
+          has_title?: boolean | null
+          http_code?: number
+          id?: never
+          meta_description?: string | null
+          modele_id?: number | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          og_url?: string | null
+          pg_id?: number | null
+          robots_meta?: string | null
+          route_path?: string
+          run_id?: string
+          seed?: number
+          tier?: string
+          title_text?: string | null
+          ttfb_ms?: number
+          type_id?: number | null
+          url?: string
+          user_agent?: string
+          x_robots_tag?: string | null
+        }
+        Relationships: []
+      }
+      __seo_snapshot_synthetic_p20261001: {
+        Row: {
+          age_seconds: number | null
+          cache_control: string | null
+          canonical_url: string | null
+          cf_cache_status: string | null
+          cf_ray: string | null
+          content_length: number | null
+          created_at: string
+          error_kind: string | null
+          error_message: string | null
+          h1_text: string | null
+          has_canonical: boolean | null
+          has_h1: boolean | null
+          has_meta_description: boolean | null
+          has_og: boolean | null
+          has_title: boolean | null
+          http_code: number
+          id: number
+          meta_description: string | null
+          modele_id: number | null
+          og_description: string | null
+          og_image: string | null
+          og_title: string | null
+          og_url: string | null
+          pg_id: number | null
+          robots_meta: string | null
+          route_path: string
+          run_id: string
+          seed: number
+          tier: string
+          title_text: string | null
+          ttfb_ms: number
+          type_id: number | null
+          url: string
+          user_agent: string
+          x_robots_tag: string | null
+        }
+        Insert: {
+          age_seconds?: number | null
+          cache_control?: string | null
+          canonical_url?: string | null
+          cf_cache_status?: string | null
+          cf_ray?: string | null
+          content_length?: number | null
+          created_at?: string
+          error_kind?: string | null
+          error_message?: string | null
+          h1_text?: string | null
+          has_canonical?: boolean | null
+          has_h1?: boolean | null
+          has_meta_description?: boolean | null
+          has_og?: boolean | null
+          has_title?: boolean | null
+          http_code: number
+          id?: never
+          meta_description?: string | null
+          modele_id?: number | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          og_url?: string | null
+          pg_id?: number | null
+          robots_meta?: string | null
+          route_path: string
+          run_id: string
+          seed: number
+          tier: string
+          title_text?: string | null
+          ttfb_ms: number
+          type_id?: number | null
+          url: string
+          user_agent: string
+          x_robots_tag?: string | null
+        }
+        Update: {
+          age_seconds?: number | null
+          cache_control?: string | null
+          canonical_url?: string | null
+          cf_cache_status?: string | null
+          cf_ray?: string | null
+          content_length?: number | null
+          created_at?: string
+          error_kind?: string | null
+          error_message?: string | null
+          h1_text?: string | null
+          has_canonical?: boolean | null
+          has_h1?: boolean | null
+          has_meta_description?: boolean | null
+          has_og?: boolean | null
+          has_title?: boolean | null
+          http_code?: number
+          id?: never
+          meta_description?: string | null
+          modele_id?: number | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          og_url?: string | null
+          pg_id?: number | null
+          robots_meta?: string | null
+          route_path?: string
+          run_id?: string
+          seed?: number
+          tier?: string
+          title_text?: string | null
+          ttfb_ms?: number
+          type_id?: number | null
+          url?: string
+          user_agent?: string
+          x_robots_tag?: string | null
+        }
+        Relationships: []
+      }
+      __seo_snapshot_synthetic_p20261002: {
+        Row: {
+          age_seconds: number | null
+          cache_control: string | null
+          canonical_url: string | null
+          cf_cache_status: string | null
+          cf_ray: string | null
+          content_length: number | null
+          created_at: string
+          error_kind: string | null
+          error_message: string | null
+          h1_text: string | null
+          has_canonical: boolean | null
+          has_h1: boolean | null
+          has_meta_description: boolean | null
+          has_og: boolean | null
+          has_title: boolean | null
+          http_code: number
+          id: number
+          meta_description: string | null
+          modele_id: number | null
+          og_description: string | null
+          og_image: string | null
+          og_title: string | null
+          og_url: string | null
+          pg_id: number | null
+          robots_meta: string | null
+          route_path: string
+          run_id: string
+          seed: number
+          tier: string
+          title_text: string | null
+          ttfb_ms: number
+          type_id: number | null
+          url: string
+          user_agent: string
+          x_robots_tag: string | null
+        }
+        Insert: {
+          age_seconds?: number | null
+          cache_control?: string | null
+          canonical_url?: string | null
+          cf_cache_status?: string | null
+          cf_ray?: string | null
+          content_length?: number | null
+          created_at?: string
+          error_kind?: string | null
+          error_message?: string | null
+          h1_text?: string | null
+          has_canonical?: boolean | null
+          has_h1?: boolean | null
+          has_meta_description?: boolean | null
+          has_og?: boolean | null
+          has_title?: boolean | null
+          http_code: number
+          id?: never
+          meta_description?: string | null
+          modele_id?: number | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          og_url?: string | null
+          pg_id?: number | null
+          robots_meta?: string | null
+          route_path: string
+          run_id: string
+          seed: number
+          tier: string
+          title_text?: string | null
+          ttfb_ms: number
+          type_id?: number | null
+          url: string
+          user_agent: string
+          x_robots_tag?: string | null
+        }
+        Update: {
+          age_seconds?: number | null
+          cache_control?: string | null
+          canonical_url?: string | null
+          cf_cache_status?: string | null
+          cf_ray?: string | null
+          content_length?: number | null
+          created_at?: string
+          error_kind?: string | null
+          error_message?: string | null
+          h1_text?: string | null
+          has_canonical?: boolean | null
+          has_h1?: boolean | null
+          has_meta_description?: boolean | null
+          has_og?: boolean | null
+          has_title?: boolean | null
+          http_code?: number
+          id?: never
+          meta_description?: string | null
+          modele_id?: number | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          og_url?: string | null
+          pg_id?: number | null
+          robots_meta?: string | null
+          route_path?: string
+          run_id?: string
+          seed?: number
+          tier?: string
+          title_text?: string | null
+          ttfb_ms?: number
+          type_id?: number | null
+          url?: string
+          user_agent?: string
+          x_robots_tag?: string | null
+        }
+        Relationships: []
+      }
+      __seo_snapshot_synthetic_p20261003: {
+        Row: {
+          age_seconds: number | null
+          cache_control: string | null
+          canonical_url: string | null
+          cf_cache_status: string | null
+          cf_ray: string | null
+          content_length: number | null
+          created_at: string
+          error_kind: string | null
+          error_message: string | null
+          h1_text: string | null
+          has_canonical: boolean | null
+          has_h1: boolean | null
+          has_meta_description: boolean | null
+          has_og: boolean | null
+          has_title: boolean | null
+          http_code: number
+          id: number
+          meta_description: string | null
+          modele_id: number | null
+          og_description: string | null
+          og_image: string | null
+          og_title: string | null
+          og_url: string | null
+          pg_id: number | null
+          robots_meta: string | null
+          route_path: string
+          run_id: string
+          seed: number
+          tier: string
+          title_text: string | null
+          ttfb_ms: number
+          type_id: number | null
+          url: string
+          user_agent: string
+          x_robots_tag: string | null
+        }
+        Insert: {
+          age_seconds?: number | null
+          cache_control?: string | null
+          canonical_url?: string | null
+          cf_cache_status?: string | null
+          cf_ray?: string | null
+          content_length?: number | null
+          created_at?: string
+          error_kind?: string | null
+          error_message?: string | null
+          h1_text?: string | null
+          has_canonical?: boolean | null
+          has_h1?: boolean | null
+          has_meta_description?: boolean | null
+          has_og?: boolean | null
+          has_title?: boolean | null
+          http_code: number
+          id?: never
+          meta_description?: string | null
+          modele_id?: number | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          og_url?: string | null
+          pg_id?: number | null
+          robots_meta?: string | null
+          route_path: string
+          run_id: string
+          seed: number
+          tier: string
+          title_text?: string | null
+          ttfb_ms: number
+          type_id?: number | null
+          url: string
+          user_agent: string
+          x_robots_tag?: string | null
+        }
+        Update: {
+          age_seconds?: number | null
+          cache_control?: string | null
+          canonical_url?: string | null
+          cf_cache_status?: string | null
+          cf_ray?: string | null
+          content_length?: number | null
+          created_at?: string
+          error_kind?: string | null
+          error_message?: string | null
+          h1_text?: string | null
+          has_canonical?: boolean | null
+          has_h1?: boolean | null
+          has_meta_description?: boolean | null
+          has_og?: boolean | null
+          has_title?: boolean | null
+          http_code?: number
+          id?: never
+          meta_description?: string | null
+          modele_id?: number | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          og_url?: string | null
+          pg_id?: number | null
+          robots_meta?: string | null
+          route_path?: string
+          run_id?: string
+          seed?: number
+          tier?: string
+          title_text?: string | null
+          ttfb_ms?: number
+          type_id?: number | null
+          url?: string
+          user_agent?: string
+          x_robots_tag?: string | null
+        }
+        Relationships: []
+      }
+      __seo_snapshot_synthetic_p20261004: {
+        Row: {
+          age_seconds: number | null
+          cache_control: string | null
+          canonical_url: string | null
+          cf_cache_status: string | null
+          cf_ray: string | null
+          content_length: number | null
+          created_at: string
+          error_kind: string | null
+          error_message: string | null
+          h1_text: string | null
+          has_canonical: boolean | null
+          has_h1: boolean | null
+          has_meta_description: boolean | null
+          has_og: boolean | null
+          has_title: boolean | null
+          http_code: number
+          id: number
+          meta_description: string | null
+          modele_id: number | null
+          og_description: string | null
+          og_image: string | null
+          og_title: string | null
+          og_url: string | null
+          pg_id: number | null
+          robots_meta: string | null
+          route_path: string
+          run_id: string
+          seed: number
+          tier: string
+          title_text: string | null
+          ttfb_ms: number
+          type_id: number | null
+          url: string
+          user_agent: string
+          x_robots_tag: string | null
+        }
+        Insert: {
+          age_seconds?: number | null
+          cache_control?: string | null
+          canonical_url?: string | null
+          cf_cache_status?: string | null
+          cf_ray?: string | null
+          content_length?: number | null
+          created_at?: string
+          error_kind?: string | null
+          error_message?: string | null
+          h1_text?: string | null
+          has_canonical?: boolean | null
+          has_h1?: boolean | null
+          has_meta_description?: boolean | null
+          has_og?: boolean | null
+          has_title?: boolean | null
+          http_code: number
+          id?: never
+          meta_description?: string | null
+          modele_id?: number | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          og_url?: string | null
+          pg_id?: number | null
+          robots_meta?: string | null
+          route_path: string
+          run_id: string
+          seed: number
+          tier: string
+          title_text?: string | null
+          ttfb_ms: number
+          type_id?: number | null
+          url: string
+          user_agent: string
+          x_robots_tag?: string | null
+        }
+        Update: {
+          age_seconds?: number | null
+          cache_control?: string | null
+          canonical_url?: string | null
+          cf_cache_status?: string | null
+          cf_ray?: string | null
+          content_length?: number | null
+          created_at?: string
+          error_kind?: string | null
+          error_message?: string | null
+          h1_text?: string | null
+          has_canonical?: boolean | null
+          has_h1?: boolean | null
+          has_meta_description?: boolean | null
+          has_og?: boolean | null
+          has_title?: boolean | null
+          http_code?: number
+          id?: never
+          meta_description?: string | null
+          modele_id?: number | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          og_url?: string | null
+          pg_id?: number | null
+          robots_meta?: string | null
+          route_path?: string
+          run_id?: string
+          seed?: number
+          tier?: string
+          title_text?: string | null
+          ttfb_ms?: number
+          type_id?: number | null
+          url?: string
+          user_agent?: string
+          x_robots_tag?: string | null
+        }
+        Relationships: []
+      }
+      __seo_snapshot_synthetic_p20261005: {
+        Row: {
+          age_seconds: number | null
+          cache_control: string | null
+          canonical_url: string | null
+          cf_cache_status: string | null
+          cf_ray: string | null
+          content_length: number | null
+          created_at: string
+          error_kind: string | null
+          error_message: string | null
+          h1_text: string | null
+          has_canonical: boolean | null
+          has_h1: boolean | null
+          has_meta_description: boolean | null
+          has_og: boolean | null
+          has_title: boolean | null
+          http_code: number
+          id: number
+          meta_description: string | null
+          modele_id: number | null
+          og_description: string | null
+          og_image: string | null
+          og_title: string | null
+          og_url: string | null
+          pg_id: number | null
+          robots_meta: string | null
+          route_path: string
+          run_id: string
+          seed: number
+          tier: string
+          title_text: string | null
+          ttfb_ms: number
+          type_id: number | null
+          url: string
+          user_agent: string
+          x_robots_tag: string | null
+        }
+        Insert: {
+          age_seconds?: number | null
+          cache_control?: string | null
+          canonical_url?: string | null
+          cf_cache_status?: string | null
+          cf_ray?: string | null
+          content_length?: number | null
+          created_at?: string
+          error_kind?: string | null
+          error_message?: string | null
+          h1_text?: string | null
+          has_canonical?: boolean | null
+          has_h1?: boolean | null
+          has_meta_description?: boolean | null
+          has_og?: boolean | null
+          has_title?: boolean | null
+          http_code: number
+          id?: never
+          meta_description?: string | null
+          modele_id?: number | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          og_url?: string | null
+          pg_id?: number | null
+          robots_meta?: string | null
+          route_path: string
+          run_id: string
+          seed: number
+          tier: string
+          title_text?: string | null
+          ttfb_ms: number
+          type_id?: number | null
+          url: string
+          user_agent: string
+          x_robots_tag?: string | null
+        }
+        Update: {
+          age_seconds?: number | null
+          cache_control?: string | null
+          canonical_url?: string | null
+          cf_cache_status?: string | null
+          cf_ray?: string | null
+          content_length?: number | null
+          created_at?: string
+          error_kind?: string | null
+          error_message?: string | null
+          h1_text?: string | null
+          has_canonical?: boolean | null
+          has_h1?: boolean | null
+          has_meta_description?: boolean | null
+          has_og?: boolean | null
+          has_title?: boolean | null
+          http_code?: number
+          id?: never
+          meta_description?: string | null
+          modele_id?: number | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          og_url?: string | null
+          pg_id?: number | null
+          robots_meta?: string | null
+          route_path?: string
+          run_id?: string
+          seed?: number
+          tier?: string
+          title_text?: string | null
+          ttfb_ms?: number
+          type_id?: number | null
+          url?: string
+          user_agent?: string
+          x_robots_tag?: string | null
+        }
+        Relationships: []
+      }
+      __seo_snapshot_synthetic_p20261006: {
+        Row: {
+          age_seconds: number | null
+          cache_control: string | null
+          canonical_url: string | null
+          cf_cache_status: string | null
+          cf_ray: string | null
+          content_length: number | null
+          created_at: string
+          error_kind: string | null
+          error_message: string | null
+          h1_text: string | null
+          has_canonical: boolean | null
+          has_h1: boolean | null
+          has_meta_description: boolean | null
+          has_og: boolean | null
+          has_title: boolean | null
+          http_code: number
+          id: number
+          meta_description: string | null
+          modele_id: number | null
+          og_description: string | null
+          og_image: string | null
+          og_title: string | null
+          og_url: string | null
+          pg_id: number | null
+          robots_meta: string | null
+          route_path: string
+          run_id: string
+          seed: number
+          tier: string
+          title_text: string | null
+          ttfb_ms: number
+          type_id: number | null
+          url: string
+          user_agent: string
+          x_robots_tag: string | null
+        }
+        Insert: {
+          age_seconds?: number | null
+          cache_control?: string | null
+          canonical_url?: string | null
+          cf_cache_status?: string | null
+          cf_ray?: string | null
+          content_length?: number | null
+          created_at?: string
+          error_kind?: string | null
+          error_message?: string | null
+          h1_text?: string | null
+          has_canonical?: boolean | null
+          has_h1?: boolean | null
+          has_meta_description?: boolean | null
+          has_og?: boolean | null
+          has_title?: boolean | null
+          http_code: number
+          id?: never
+          meta_description?: string | null
+          modele_id?: number | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          og_url?: string | null
+          pg_id?: number | null
+          robots_meta?: string | null
+          route_path: string
+          run_id: string
+          seed: number
+          tier: string
+          title_text?: string | null
+          ttfb_ms: number
+          type_id?: number | null
+          url: string
+          user_agent: string
+          x_robots_tag?: string | null
+        }
+        Update: {
+          age_seconds?: number | null
+          cache_control?: string | null
+          canonical_url?: string | null
+          cf_cache_status?: string | null
+          cf_ray?: string | null
+          content_length?: number | null
+          created_at?: string
+          error_kind?: string | null
+          error_message?: string | null
+          h1_text?: string | null
+          has_canonical?: boolean | null
+          has_h1?: boolean | null
+          has_meta_description?: boolean | null
+          has_og?: boolean | null
+          has_title?: boolean | null
+          http_code?: number
+          id?: never
+          meta_description?: string | null
+          modele_id?: number | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          og_url?: string | null
+          pg_id?: number | null
+          robots_meta?: string | null
+          route_path?: string
+          run_id?: string
+          seed?: number
+          tier?: string
+          title_text?: string | null
+          ttfb_ms?: number
+          type_id?: number | null
+          url?: string
+          user_agent?: string
+          x_robots_tag?: string | null
+        }
+        Relationships: []
+      }
+      __seo_snapshot_synthetic_p20261007: {
+        Row: {
+          age_seconds: number | null
+          cache_control: string | null
+          canonical_url: string | null
+          cf_cache_status: string | null
+          cf_ray: string | null
+          content_length: number | null
+          created_at: string
+          error_kind: string | null
+          error_message: string | null
+          h1_text: string | null
+          has_canonical: boolean | null
+          has_h1: boolean | null
+          has_meta_description: boolean | null
+          has_og: boolean | null
+          has_title: boolean | null
+          http_code: number
+          id: number
+          meta_description: string | null
+          modele_id: number | null
+          og_description: string | null
+          og_image: string | null
+          og_title: string | null
+          og_url: string | null
+          pg_id: number | null
+          robots_meta: string | null
+          route_path: string
+          run_id: string
+          seed: number
+          tier: string
+          title_text: string | null
+          ttfb_ms: number
+          type_id: number | null
+          url: string
+          user_agent: string
+          x_robots_tag: string | null
+        }
+        Insert: {
+          age_seconds?: number | null
+          cache_control?: string | null
+          canonical_url?: string | null
+          cf_cache_status?: string | null
+          cf_ray?: string | null
+          content_length?: number | null
+          created_at?: string
+          error_kind?: string | null
+          error_message?: string | null
+          h1_text?: string | null
+          has_canonical?: boolean | null
+          has_h1?: boolean | null
+          has_meta_description?: boolean | null
+          has_og?: boolean | null
+          has_title?: boolean | null
+          http_code: number
+          id?: never
+          meta_description?: string | null
+          modele_id?: number | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          og_url?: string | null
+          pg_id?: number | null
+          robots_meta?: string | null
+          route_path: string
+          run_id: string
+          seed: number
+          tier: string
+          title_text?: string | null
+          ttfb_ms: number
+          type_id?: number | null
+          url: string
+          user_agent: string
+          x_robots_tag?: string | null
+        }
+        Update: {
+          age_seconds?: number | null
+          cache_control?: string | null
+          canonical_url?: string | null
+          cf_cache_status?: string | null
+          cf_ray?: string | null
+          content_length?: number | null
+          created_at?: string
+          error_kind?: string | null
+          error_message?: string | null
+          h1_text?: string | null
+          has_canonical?: boolean | null
+          has_h1?: boolean | null
+          has_meta_description?: boolean | null
+          has_og?: boolean | null
+          has_title?: boolean | null
+          http_code?: number
+          id?: never
+          meta_description?: string | null
+          modele_id?: number | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          og_url?: string | null
+          pg_id?: number | null
+          robots_meta?: string | null
+          route_path?: string
+          run_id?: string
+          seed?: number
+          tier?: string
+          title_text?: string | null
+          ttfb_ms?: number
+          type_id?: number | null
+          url?: string
+          user_agent?: string
+          x_robots_tag?: string | null
+        }
+        Relationships: []
+      }
+      __seo_snapshot_synthetic_p20261008: {
+        Row: {
+          age_seconds: number | null
+          cache_control: string | null
+          canonical_url: string | null
+          cf_cache_status: string | null
+          cf_ray: string | null
+          content_length: number | null
+          created_at: string
+          error_kind: string | null
+          error_message: string | null
+          h1_text: string | null
+          has_canonical: boolean | null
+          has_h1: boolean | null
+          has_meta_description: boolean | null
+          has_og: boolean | null
+          has_title: boolean | null
+          http_code: number
+          id: number
+          meta_description: string | null
+          modele_id: number | null
+          og_description: string | null
+          og_image: string | null
+          og_title: string | null
+          og_url: string | null
+          pg_id: number | null
+          robots_meta: string | null
+          route_path: string
+          run_id: string
+          seed: number
+          tier: string
+          title_text: string | null
+          ttfb_ms: number
+          type_id: number | null
+          url: string
+          user_agent: string
+          x_robots_tag: string | null
+        }
+        Insert: {
+          age_seconds?: number | null
+          cache_control?: string | null
+          canonical_url?: string | null
+          cf_cache_status?: string | null
+          cf_ray?: string | null
+          content_length?: number | null
+          created_at?: string
+          error_kind?: string | null
+          error_message?: string | null
+          h1_text?: string | null
+          has_canonical?: boolean | null
+          has_h1?: boolean | null
+          has_meta_description?: boolean | null
+          has_og?: boolean | null
+          has_title?: boolean | null
+          http_code: number
+          id?: never
+          meta_description?: string | null
+          modele_id?: number | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          og_url?: string | null
+          pg_id?: number | null
+          robots_meta?: string | null
+          route_path: string
+          run_id: string
+          seed: number
+          tier: string
+          title_text?: string | null
+          ttfb_ms: number
+          type_id?: number | null
+          url: string
+          user_agent: string
+          x_robots_tag?: string | null
+        }
+        Update: {
+          age_seconds?: number | null
+          cache_control?: string | null
+          canonical_url?: string | null
+          cf_cache_status?: string | null
+          cf_ray?: string | null
+          content_length?: number | null
+          created_at?: string
+          error_kind?: string | null
+          error_message?: string | null
+          h1_text?: string | null
+          has_canonical?: boolean | null
+          has_h1?: boolean | null
+          has_meta_description?: boolean | null
+          has_og?: boolean | null
+          has_title?: boolean | null
+          http_code?: number
+          id?: never
+          meta_description?: string | null
+          modele_id?: number | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          og_url?: string | null
+          pg_id?: number | null
+          robots_meta?: string | null
+          route_path?: string
+          run_id?: string
+          seed?: number
+          tier?: string
+          title_text?: string | null
+          ttfb_ms?: number
+          type_id?: number | null
+          url?: string
+          user_agent?: string
+          x_robots_tag?: string | null
+        }
+        Relationships: []
+      }
+      __seo_snapshot_synthetic_p20261009: {
+        Row: {
+          age_seconds: number | null
+          cache_control: string | null
+          canonical_url: string | null
+          cf_cache_status: string | null
+          cf_ray: string | null
+          content_length: number | null
+          created_at: string
+          error_kind: string | null
+          error_message: string | null
+          h1_text: string | null
+          has_canonical: boolean | null
+          has_h1: boolean | null
+          has_meta_description: boolean | null
+          has_og: boolean | null
+          has_title: boolean | null
+          http_code: number
+          id: number
+          meta_description: string | null
+          modele_id: number | null
+          og_description: string | null
+          og_image: string | null
+          og_title: string | null
+          og_url: string | null
+          pg_id: number | null
+          robots_meta: string | null
+          route_path: string
+          run_id: string
+          seed: number
+          tier: string
+          title_text: string | null
+          ttfb_ms: number
+          type_id: number | null
+          url: string
+          user_agent: string
+          x_robots_tag: string | null
+        }
+        Insert: {
+          age_seconds?: number | null
+          cache_control?: string | null
+          canonical_url?: string | null
+          cf_cache_status?: string | null
+          cf_ray?: string | null
+          content_length?: number | null
+          created_at?: string
+          error_kind?: string | null
+          error_message?: string | null
+          h1_text?: string | null
+          has_canonical?: boolean | null
+          has_h1?: boolean | null
+          has_meta_description?: boolean | null
+          has_og?: boolean | null
+          has_title?: boolean | null
+          http_code: number
+          id?: never
+          meta_description?: string | null
+          modele_id?: number | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          og_url?: string | null
+          pg_id?: number | null
+          robots_meta?: string | null
+          route_path: string
+          run_id: string
+          seed: number
+          tier: string
+          title_text?: string | null
+          ttfb_ms: number
+          type_id?: number | null
+          url: string
+          user_agent: string
+          x_robots_tag?: string | null
+        }
+        Update: {
+          age_seconds?: number | null
+          cache_control?: string | null
+          canonical_url?: string | null
+          cf_cache_status?: string | null
+          cf_ray?: string | null
+          content_length?: number | null
+          created_at?: string
+          error_kind?: string | null
+          error_message?: string | null
+          h1_text?: string | null
+          has_canonical?: boolean | null
+          has_h1?: boolean | null
+          has_meta_description?: boolean | null
+          has_og?: boolean | null
+          has_title?: boolean | null
+          http_code?: number
+          id?: never
+          meta_description?: string | null
+          modele_id?: number | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
+          og_url?: string | null
+          pg_id?: number | null
+          robots_meta?: string | null
+          route_path?: string
+          run_id?: string
+          seed?: number
+          tier?: string
+          title_text?: string | null
+          ttfb_ms?: number
+          type_id?: number | null
+          url?: string
+          user_agent?: string
+          x_robots_tag?: string | null
+        }
+        Relationships: []
+      }
+      __seo_snapshot_synthetic_p20261010: {
         Row: {
           age_seconds: number | null
           cache_control: string | null

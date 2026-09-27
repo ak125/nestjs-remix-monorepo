@@ -38,7 +38,7 @@ jobs:
 
     steps:
       - name: ⬇️ Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: 🔍 Contrôle syntaxique AVANT toute écriture
         # Fail-closed : on n'écrase JAMAIS un script qui tourne par un script

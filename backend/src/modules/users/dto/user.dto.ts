@@ -42,10 +42,37 @@ export const CreateUserSchema = UserSchema.omit({
     .min(8, 'Le mot de passe doit contenir au moins 8 caractères'),
 });
 
+const hasAtLeastOneField = (payload: object) => Object.keys(payload).length > 0;
+const EMPTY_UPDATE_MESSAGE = 'Aucun champ à mettre à jour';
+
+// Update payload (admin): only the fields actually sent. Zod 4 applies a
+// `.default()` even under `.partial()`, so the defaulted fields are unwrapped
+// here — otherwise every update would rewrite country/isPro/isCompany/
+// isActive/level with their creation defaults.
 export const UpdateUserSchema = UserSchema.omit({
   id: true,
   createdAt: true,
-}).partial();
+})
+  .extend({
+    country: UserSchema.shape.country.unwrap(),
+    isPro: UserSchema.shape.isPro.unwrap(),
+    isCompany: UserSchema.shape.isCompany.unwrap(),
+    isActive: UserSchema.shape.isActive.unwrap(),
+    level: UserSchema.shape.level.unwrap(),
+  })
+  .partial()
+  .refine(hasAtLeastOneField, EMPTY_UPDATE_MESSAGE);
+
+// Self-service profile update (PUT /api/users/profile): the customer may only
+// change these fields. `.strict()` rejects any other key (400) instead of
+// dropping it silently — role, status and account flags stay admin-only.
+export const UpdateOwnProfileSchema = UserSchema.pick({
+  firstName: true,
+  lastName: true,
+  phone: true,
+})
+  .strict()
+  .refine(hasAtLeastOneField, EMPTY_UPDATE_MESSAGE);
 
 export const UserFiltersSchema = z.object({
   search: z.string().optional(),
