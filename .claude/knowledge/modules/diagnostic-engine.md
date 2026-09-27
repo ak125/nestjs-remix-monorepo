@@ -2,7 +2,7 @@
 module: diagnostic-engine
 sources:
 - backend/src/modules/diagnostic-engine
-last_scan: '2026-07-02'
+last_scan: '2026-09-27'
 primary_files:
 - backend/src/modules/diagnostic-engine/constants/gamme-map.constants.ts
 - backend/src/modules/diagnostic-engine/diagnostic-engine.controller.test.ts
@@ -28,19 +28,32 @@ _Section à rédiger._
 
 ### Exports publics du module
 - `DiagnosticEngineDataService`
+- `MaintenanceCalculatorService`
+- `DiagnosticContentService`
+- `DiagnosticResolutionPipelineService`
+- `OutcomeEmitterService`
 
 ### Providers (top 15)
 - `DiagnosticEngineDataService`
+- `MaintenanceCalculatorService`
+- `DiagnosticContentService`
+- `KgShadowService`
+- `IntentClassifierService`
+- `ActionRecommenderService`
+- `HumanEscalationBuilderService`
+- `InvariantAsserterService`
+- `OutcomeEmitterService`
+- `DiagnosticResolutionPipelineService`
 
 ### Fichiers primaires
 - [backend/src/modules/diagnostic-engine/constants/gamme-map.constants.ts](../../../backend/src/modules/diagnostic-engine/constants/gamme-map.constants.ts)
+- [backend/src/modules/diagnostic-engine/diagnostic-engine.controller.test.ts](../../../backend/src/modules/diagnostic-engine/diagnostic-engine.controller.test.ts)
 - [backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts](../../../backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts)
 - [backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts](../../../backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts)
 - [backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts](../../../backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts)
 - [backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts](../../../backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts)
 - [backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts](../../../backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts)
 - [backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts](../../../backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts)
-- [backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts](../../../backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts)
 
 <!-- END AUTO-GENERATED -->
 

@@ -48,33 +48,28 @@ def sha256_of(path: Path) -> str:
     return h.hexdigest()
 
 
-def assert_source_is_exports_rag(source: Path) -> None:
-    """D20 garde-fou. Source path must end at `<wiki>/exports/rag/`. Reading from
-    `<wiki>/wiki/<entity_type>/` directly is forbidden — that tree may contain
-    draft fields, notes-internes, or sections that are not yet validated for
-    consumption by Weaviate."""
-    parts = source.resolve().parts
-    if "exports" not in parts or "rag" not in parts:
+def assert_source_is_exports_rag(source: Path, wiki_repo: Path) -> None:
+    """D20: bind every source to the designated WIKI exports, including symlinks."""
+    expected = wiki_repo.resolve() / WIKI_EXPORTS_RAG_RELATIVE
+    try:
+        relative = source.resolve().relative_to(expected)
+    except ValueError:
         raise SystemExit(
-            f"D20 garde-fou: --source must be under <wiki>/exports/rag/. Got: {source}"
+            f"D20 garde-fou: source must be under {expected}. Got: {source}"
         )
-    # Reject explicit wiki/<entity_type>/ paths even nested under exports.
-    if "wiki" in parts:
-        # exports/rag/wiki/... would mean someone tried to nest the canonical wiki
-        # tree inside the export tree to bypass — fail loudly.
-        wiki_index = parts.index("wiki")
-        rag_index = parts.index("rag")
-        if wiki_index > rag_index:
-            raise SystemExit(
-                f"D20 garde-fou: detected `wiki/` inside `exports/rag/` — "
-                f"this would let unvalidated wiki/<entity_type>/ leak into RAG. {source}"
-            )
+    if "wiki" in relative.parts:
+        raise SystemExit(
+            f"D20 garde-fou: detected wiki/ inside exports/rag/: {source}"
+        )
 
 
-def iter_export_files(source: Path) -> list[Path]:
-    if not source.exists():
-        return []
-    return sorted(p for p in source.rglob("*") if p.is_file() and p.suffix in SUPPORTED_EXTS)
+def iter_export_files(source: Path, wiki_repo: Path) -> list[Path]:
+    # Validate the entire input before copying anything: a late escaping symlink
+    # must not leave a partially updated mirror.
+    files = sorted(p for p in source.rglob("*") if p.is_file() and p.suffix in SUPPORTED_EXTS)
+    for path in files:
+        assert_source_is_exports_rag(path, wiki_repo)
+    return files
 
 
 def main() -> int:
@@ -93,7 +88,7 @@ def main() -> int:
     ap.add_argument(
         "--source",
         default=None,
-        help="Override source. MUST resolve under <wiki-repo>/exports/rag/. "
+        help="Override source. MUST resolve to the complete <wiki-repo>/exports/rag/ root. "
              "Reading from <wiki-repo>/wiki/<entity_type>/ is forbidden (D20).",
     )
     args = ap.parse_args()
@@ -107,21 +102,49 @@ def main() -> int:
 
     # D20 enforcement: source must be under <wiki>/exports/rag/. Even if the user
     # passes --source pointing at wiki/wiki/<entity_type>/, we abort.
-    assert_source_is_exports_rag(source)
+    assert_source_is_exports_rag(source, wiki_repo)
 
     if not source.exists():
         print(
-            f"sync-from-wiki: nothing to do — source {source} does not exist yet "
-            f"(ADR-031 Phase F.x will populate it)",
+            f"sync-from-wiki: source unavailable: {source}",
             file=sys.stderr,
         )
-        return 0
+        return 1
 
     target_root = rag_repo / RAG_KNOWLEDGE_RELATIVE
-    files = iter_export_files(source)
+    files = iter_export_files(source, wiki_repo)
     if not files:
-        print(f"sync-from-wiki: 0 export files under {source}", file=sys.stderr)
-        return 0
+        print(f"sync-from-wiki: no export files under {source}; mirror not refreshed", file=sys.stderr)
+        return 1
+
+    # A partial export subtree cannot establish freshness for the whole mirror
+    # (and would flatten its topic prefix). Require the declared complete scope.
+    if source != wiki_repo / WIKI_EXPORTS_RAG_RELATIVE:
+        print("sync-from-wiki: partial source cannot refresh the complete mirror", file=sys.stderr)
+        return 1
+
+    # Do not certify a mirror that still exposes exports absent upstream. Missing
+    # files are NOT authority to delete: preserve evidence and require explicit
+    # reconciliation/tombstones through the governed withdrawal path.
+    expected_paths = {p.relative_to(source) for p in files}
+    try:
+        if target_root.is_symlink():
+            raise ValueError("knowledge root is a symlink")
+        for dst in target_root.rglob('*'):
+            if dst.is_symlink():
+                raise ValueError(f"mirror symlink: {dst.relative_to(target_root)}")
+        actual_paths = {
+            p.relative_to(target_root) for p in target_root.rglob('*')
+            if p.is_file() and p.suffix in SUPPORTED_EXTS and p.name != '.last-sync.json'
+        }
+        unreconciled = sorted(actual_paths - expected_paths)
+        if unreconciled:
+            for relative in unreconciled:
+                print(f"UNRECONCILED {relative} (preserved; absent from WIKI exports)", file=sys.stderr)
+            return 1
+    except (OSError, ValueError) as e:
+        print(f"sync-from-wiki: mirror preflight failed: {e}", file=sys.stderr)
+        return 1
 
     written = 0
     skipped = 0
@@ -160,8 +183,9 @@ def main() -> int:
 
     # PR-E.2 — produit le manifest `.last-sync.json` lu par le runtime
     # NestJS (RagMirrorFreshnessService) pour fail-fast / health endpoint.
-    # Compte les fichiers présents par topic dans le mirror après sync.
-    if args.apply:
+    # Compte les fichiers présents par topic après un sync intégralement réussi.
+    # Un échec ne doit jamais avancer la date du dernier succès.
+    if args.apply and not failed:
         manifest_path = target_root / ".last-sync.json"
         topic_counts: dict[str, int] = {}
         for topic_dir in sorted(p for p in target_root.iterdir() if p.is_dir()):
@@ -185,7 +209,8 @@ def main() -> int:
             print(f"manifest written: {manifest_path}", file=sys.stderr)
         except OSError as e:
             print(f"manifest write FAILED: {e}", file=sys.stderr)
-            # Le sync lui-même a réussi, ne pas faire échouer le run pour le manifest
+            # Freshness is part of the sync contract, not a best-effort signal.
+            return 1
 
     return 1 if failed else 0
 

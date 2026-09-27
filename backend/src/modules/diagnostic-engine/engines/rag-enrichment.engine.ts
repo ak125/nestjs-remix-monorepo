@@ -64,12 +64,22 @@ export class RagEnrichmentEngine {
       }
 
       for (const result of response.results) {
-        const sourcePath = result.sourcePath || result.source_path || 'unknown';
-        const truthLevel = (result.truth_level || 'L2') as
-          | 'L1'
-          | 'L2'
-          | 'L3'
-          | 'L4';
+        const sourcePath = result?.sourcePath || result?.source_path;
+        const truthLevel = result?.truth_level;
+        // Search filters express the request, not proof of the response.
+        // Never upgrade an unknown tier to L2 or manufacture source lineage.
+        if (
+          (truthLevel !== 'L1' && truthLevel !== 'L2') ||
+          typeof sourcePath !== 'string' ||
+          !sourcePath.trim() ||
+          sourcePath.trim() === 'unknown' ||
+          typeof result?.content !== 'string'
+        ) {
+          this.logger.warn(
+            'RAG diagnostic chunk refused: missing source, inadmissible truth level or malformed content',
+          );
+          continue;
+        }
 
         // Extract meaningful facts from RAG chunks
         const extractedFacts = this.extractFacts(
