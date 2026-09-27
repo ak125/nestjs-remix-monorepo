@@ -18,6 +18,12 @@ interface PiecesBuyingGuideProps {
 export const PiecesBuyingGuide = memo(function PiecesBuyingGuide({
   guide,
 }: PiecesBuyingGuideProps) {
+  const hasContent =
+    guide.content.trim() ||
+    guide.tips.some((tip) => tip.trim()) ||
+    guide.warnings?.some((warning) => warning.trim());
+  if (!hasContent) return null;
+
   return (
     <div className="relative overflow-hidden bg-white rounded-3xl shadow-2xl shadow-slate-900/10">
       {/* ✨ Effet de bordure gradient animé */}
