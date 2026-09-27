@@ -399,9 +399,9 @@ export const CACHE_STRATEGIES = {
     PAGE_V2: {
       ttl: CacheTTL.ONE_HOUR,
       prefix: 'rm:page-v2:',
-      // v1 (2026-09-02, A3) : première version explicite de la forme cachée
-      // (RmPageCompleteV2Response entière au limit canonique).
-      keyVersion: 'v1',
+      // v2 (2026-09-28) : ne plus relire les réponses v1 pouvant contenir
+      // des templates bruts ou un repli SEO publiés à tort comme succès.
+      keyVersion: 'v2',
       generation: 'catalog',
       description:
         'rm_get_page_complete_v2 — résultat plein (classification ok)',
@@ -409,7 +409,7 @@ export const CACHE_STRATEGIES = {
     PAGE_V2_EMPTY: {
       ttl: CacheTTL.FIFTEEN_MINUTES,
       prefix: 'rm:page-v2:',
-      keyVersion: 'v1',
+      keyVersion: 'v2',
       generation: 'catalog',
       description:
         'rm_get_page_complete_v2 — 0 produit (classification empty) : population soft-404, TTL court',
