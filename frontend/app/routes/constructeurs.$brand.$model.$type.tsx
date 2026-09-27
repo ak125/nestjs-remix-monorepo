@@ -532,11 +532,12 @@ export default function VehicleDetailPage() {
     },
   ];
 
-  // Add carte grise FAQ to defaults if CNIT/mine codes exist
-  if (vehicle.mine_codes_formatted || vehicle.cnit_codes_formatted) {
+  // `cnit_codes` agrège des références de plusieurs pays, pas seulement des CNIT.
+  // Ne pas les présenter comme une rubrique précise de la carte grise française.
+  if (vehicle.cnit_codes_formatted) {
     defaultFaqItems.push({
-      question: `Comment trouver le type mine ou CNIT sur ma carte grise ?`,
-      answer: `Le type mine se trouve en case D.2 de votre carte grise (format ancien : lettres+chiffres). Le CNIT (Code National d'Identification du Type) est le format actuel. Pour votre ${vehicle.marque_name} ${vehicle.modele_name}, les codes connus sont : ${[vehicle.mine_codes_formatted, vehicle.cnit_codes_formatted].filter(Boolean).join(", ")}. Utilisez ces codes pour confirmer la compatibilité des pièces.`,
+      question: `Quels codes d’identification sont associés à cette motorisation ?`,
+      answer: `Les références d’identification du catalogue pour votre ${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name} sont : ${vehicle.cnit_codes_formatted}. Vérifiez également la référence d'origine de la pièce avant commande.`,
     });
   }
 
@@ -1081,29 +1082,20 @@ export default function VehicleDetailPage() {
                       </td>
                     </tr>
                   )}
-                  {(vehicle.mine_codes_formatted ||
-                    vehicle.cnit_codes_formatted) && (
+                  {vehicle.cnit_codes_formatted && (
                     <tr>
                       <td className="py-3 pr-4 font-medium text-gray-500">
-                        Type mine / CNIT
+                        Références d’identification
                       </td>
                       <td className="py-3 font-semibold text-gray-900 flex items-center gap-2">
                         <span className="truncate max-w-[200px]">
-                          {vehicle.mine_codes_formatted}
-                          {vehicle.mine_codes_formatted &&
-                            vehicle.cnit_codes_formatted &&
-                            " / "}
                           {vehicle.cnit_codes_formatted}
                         </span>
                         <button
                           onClick={() => {
-                            const text = [
-                              vehicle.mine_codes_formatted,
-                              vehicle.cnit_codes_formatted,
-                            ]
-                              .filter(Boolean)
-                              .join(" / ");
-                            navigator.clipboard.writeText(text);
+                            navigator.clipboard.writeText(
+                              vehicle.cnit_codes_formatted ?? "",
+                            );
                           }}
                           className="p-1 hover:bg-gray-100 rounded transition-colors"
                           title="Copier"
