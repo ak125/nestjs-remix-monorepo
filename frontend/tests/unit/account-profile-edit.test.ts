@@ -12,7 +12,7 @@
  */
 import { type ActionFunctionArgs, type LoaderFunctionArgs } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { action, loader } from "~/routes/account.profile.edit";
+import { action, loader } from "~/routes/account.profile_.edit";
 
 vi.mock("~/utils/logger", () => ({
   logger: { error: vi.fn(), warn: vi.fn(), log: vi.fn(), debug: vi.fn() },
