@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 27eb0d0963c6d2c0f41021ddb21f2b36e37751d066625ee9211525bf74ff2cba
+source_sha256: ef6d694f900667feda03198e525ef35f9a7046dde71f22de0cc4b9600e074311
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -24,7 +24,7 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1000 |
 
-Source sotFingerprint: `2565652f2712`.
+Source sotFingerprint: `7e58ded6a429`.
 
 ## Comment l'utiliser
 
@@ -61,11 +61,11 @@ Source sotFingerprint: `2565652f2712`.
 
 ### D4 — Vehicle / Compatibility
 
-- **Files**: 91 (service=60, test=15, config=11, controller=5)
+- **Files**: 92 (service=60, test=16, config=11, controller=5)
 - **Runtime entrypoints**: 42
-- **Top owners**: @ak125/vehicle-team (52), @ak125 (39)
+- **Top owners**: @ak125/vehicle-team (53), @ak125 (39)
 - **Knowledge prose**: [`diagnostic-engine`](modules/diagnostic-engine.md), [`mcp-validation`](modules/mcp-validation.md), [`vehicle-context`](modules/vehicle-context.md), [`vehicles`](modules/vehicles.md)
-- **Status**: LIVE=62, UNKNOWN=29
+- **Status**: LIVE=62, UNKNOWN=30
 
 ### D5 — Blog / Content
 
@@ -155,13 +155,13 @@ Source sotFingerprint: `2565652f2712`.
 
 ### UNKNOWN — Unknown (overlay non résolu)
 
-- **Files**: 246 (service=150, config=57, controller=21, script=14, test=4)
+- **Files**: 245 (service=150, config=57, controller=21, script=14, test=3)
 - **DB tables**: 314
 - **DB RPC**: 253
 - **Runtime entrypoints**: 84
-- **Top owners**: __unassigned__ (246)
+- **Top owners**: __unassigned__ (245)
 - **Knowledge prose**: [`config`](modules/config.md), [`layout`](modules/layout.md), [`mcp-validation`](modules/mcp-validation.md), [`metadata`](modules/metadata.md), [`navigation`](modules/navigation.md), [`search`](modules/search.md), [`shipping`](modules/shipping.md), [`suppliers`](modules/suppliers.md), [`system`](modules/system.md)
-- **Status**: LIVE=140, UNKNOWN=106
+- **Status**: LIVE=141, UNKNOWN=104
 
 ## Voir aussi
 
