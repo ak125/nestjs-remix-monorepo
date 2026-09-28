@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 339cfced60aad9b269665f98e53971fdb2fc56d7931465a8b54faf5f599457b8
+source_sha256: 27eb0d0963c6d2c0f41021ddb21f2b36e37751d066625ee9211525bf74ff2cba
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 2917 |
+| Files (Layer 1) | 2937 |
 | DB tables (Layer 1) | 314 |
 | DB RPC (Layer 1) | 253 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1000 |
 
-Source sotFingerprint: `b0032767ab8d`.
+Source sotFingerprint: `2565652f2712`.
 
 ## Comment l'utiliser
 
@@ -45,11 +45,11 @@ Source sotFingerprint: `b0032767ab8d`.
 
 ### D2 — Legacy / XTR Migration
 
-- **Files**: 113 (test=98, service=11, config=3, controller=1)
+- **Files**: 122 (test=107, service=11, config=3, controller=1)
 - **Runtime entrypoints**: 1
-- **Top owners**: @ak125 (98), __unassigned__ (15)
+- **Top owners**: @ak125 (107), __unassigned__ (15)
 - **Knowledge prose**: [`rm`](modules/rm.md)
-- **Status**: LEGACY=14, LIVE=1, UNKNOWN=98
+- **Status**: LEGACY=14, LIVE=1, UNKNOWN=107
 
 ### D3 — SEO & Sitemap
 
@@ -61,11 +61,11 @@ Source sotFingerprint: `b0032767ab8d`.
 
 ### D4 — Vehicle / Compatibility
 
-- **Files**: 82 (service=60, test=9, config=8, controller=5)
+- **Files**: 91 (service=60, test=15, config=11, controller=5)
 - **Runtime entrypoints**: 42
-- **Top owners**: @ak125/vehicle-team (43), @ak125 (39)
-- **Knowledge prose**: [`diagnostic-engine`](modules/diagnostic-engine.md), [`vehicle-context`](modules/vehicle-context.md), [`vehicles`](modules/vehicles.md)
-- **Status**: LIVE=59, UNKNOWN=23
+- **Top owners**: @ak125/vehicle-team (52), @ak125 (39)
+- **Knowledge prose**: [`diagnostic-engine`](modules/diagnostic-engine.md), [`mcp-validation`](modules/mcp-validation.md), [`vehicle-context`](modules/vehicle-context.md), [`vehicles`](modules/vehicles.md)
+- **Status**: LIVE=62, UNKNOWN=29
 
 ### D5 — Blog / Content
 
@@ -93,11 +93,11 @@ Source sotFingerprint: `b0032767ab8d`.
 
 ### D8 — Read Model / Serving (RM)
 
-- **Files**: 944 (config=466, route=246, service=176, controller=38, test=18)
+- **Files**: 945 (config=467, route=246, service=176, controller=38, test=18)
 - **Runtime entrypoints**: 347
-- **Top owners**: @ak125/frontend-team (686), @ak125/admin-team (258)
+- **Top owners**: @ak125/frontend-team (687), @ak125/admin-team (258)
 - **Knowledge prose**: [`admin`](modules/admin.md), [`staff`](modules/staff.md)
-- **Status**: LIVE=498, UNKNOWN=446
+- **Status**: LIVE=498, UNKNOWN=447
 
 ### D9 — Import / ETL / Normalisation
 
@@ -155,13 +155,13 @@ Source sotFingerprint: `b0032767ab8d`.
 
 ### UNKNOWN — Unknown (overlay non résolu)
 
-- **Files**: 245 (service=150, config=57, controller=21, script=14, test=3)
+- **Files**: 246 (service=150, config=57, controller=21, script=14, test=4)
 - **DB tables**: 314
 - **DB RPC**: 253
 - **Runtime entrypoints**: 84
-- **Top owners**: __unassigned__ (245)
+- **Top owners**: __unassigned__ (246)
 - **Knowledge prose**: [`config`](modules/config.md), [`layout`](modules/layout.md), [`mcp-validation`](modules/mcp-validation.md), [`metadata`](modules/metadata.md), [`navigation`](modules/navigation.md), [`search`](modules/search.md), [`shipping`](modules/shipping.md), [`suppliers`](modules/suppliers.md), [`system`](modules/system.md)
-- **Status**: LIVE=141, UNKNOWN=104
+- **Status**: LIVE=140, UNKNOWN=106
 
 ## Voir aussi
 
