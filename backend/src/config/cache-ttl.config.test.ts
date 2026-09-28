@@ -28,8 +28,8 @@ describe('cache-ttl.config — jeton de version + génération (A3)', () => {
     expect(CACHE_STRATEGIES.RM.ALTERNATIVES.generation).toBe('catalog');
   });
 
-  it('RM.PAGE_V2 déclare keyVersion v1 et generation catalog', () => {
-    expect(CACHE_STRATEGIES.RM.PAGE_V2.keyVersion).toBe('v1');
+  it('RM.PAGE_V2 déclare keyVersion v2 et generation catalog', () => {
+    expect(CACHE_STRATEGIES.RM.PAGE_V2.keyVersion).toBe('v2');
     expect(CACHE_STRATEGIES.RM.PAGE_V2.generation).toBe('catalog');
   });
 
@@ -42,8 +42,8 @@ describe('cache-ttl.config — jeton de version + génération (A3)', () => {
   it('deux générations produisent deux clés distinctes (invalidation O(1))', () => {
     const g7 = getCacheKey(CACHE_STRATEGIES.RM.PAGE_V2, '402:100413', 7);
     const g8 = getCacheKey(CACHE_STRATEGIES.RM.PAGE_V2, '402:100413', 8);
-    expect(g7).toBe('rm:page-v2:v1:g7:402:100413');
-    expect(g8).toBe('rm:page-v2:v1:g8:402:100413');
+    expect(g7).toBe('rm:page-v2:v2:g7:402:100413');
+    expect(g8).toBe('rm:page-v2:v2:g8:402:100413');
   });
 
   it('CACHE_GENERATIONS.catalog désigne la clé Redis cache:gen:catalog', () => {
