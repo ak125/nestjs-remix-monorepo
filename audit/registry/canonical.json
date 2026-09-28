@@ -10071,6 +10071,7 @@
         "sourceConfidence": "low",
         "status": "LIVE",
         "usedBy": [
+          "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
           "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts"
         ]
       },
@@ -30588,6 +30589,7 @@
         "backend/src/modules/blog/services/advice.service.ts",
         "backend/src/modules/blog/services/blog-article-relation.service.ts",
         "backend/src/modules/blog/services/blog-article-transform.service.ts",
+        "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
         "backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-cluster.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
@@ -42141,6 +42143,7 @@
       "domain": "D4",
       "id": "backend/src/modules/diagnostic-engine/constants/gamme-map.constants.ts",
       "importedBy": [
+        "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
         "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts"
       ],
@@ -42186,7 +42189,10 @@
       "domain": "D4",
       "id": "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
       "importedBy": [
-        "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts"
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-session-integrity.test.ts",
+        "backend/src/modules/diagnostic-engine/maintenance-calendar-integrity.test.ts",
+        "backend/src/modules/diagnostic-engine/maintenance-flow.test.ts"
       ],
       "imports": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
@@ -42200,10 +42206,11 @@
         "backend/src/modules/diagnostic-engine/services/version-registry.ts",
         "backend/src/modules/diagnostic-engine/types/analyze-response.schema.ts",
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts",
+        "backend/src/modules/diagnostic-engine/types/maintenance-calendar.schema.ts",
         "backend/src/modules/diagnostic-engine/vehicle-context-mapping.ts"
       ],
       "kind": "controller",
-      "loc": 479,
+      "loc": 555,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
       "risk": "medium",
@@ -42225,16 +42232,21 @@
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-session-integrity.test.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
         "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
         "backend/src/modules/diagnostic-engine/engines/risk-safety.engine.ts",
-        "backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts"
+        "backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
+        "backend/src/modules/diagnostic-engine/maintenance-flow.test.ts"
       ],
       "imports": [
-        "@database/services/supabase-base.service"
+        "@database/services/supabase-base.service",
+        "backend/src/modules/diagnostic-engine/types/diagnostic-reference.schema.ts"
       ],
       "kind": "service",
-      "loc": 403,
+      "loc": 501,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
       "risk": "medium",
@@ -42306,7 +42318,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "test",
-      "loc": 154,
+      "loc": 169,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts",
       "risk": "medium",
@@ -42326,7 +42338,10 @@
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
-        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts"
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts",
+        "backend/src/modules/diagnostic-engine/maintenance-flow.test.ts"
       ],
       "imports": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
@@ -42340,7 +42355,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "service",
-      "loc": 367,
+      "loc": 586,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
       "risk": "medium",
@@ -42356,11 +42371,94 @@
         "manual"
       ],
       "domain": "D4",
+      "id": "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/diagnostic-engine/constants/gamme-map.constants.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
+        "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
+        "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
+        "backend/src/modules/diagnostic-engine/engines/risk-safety.engine.ts",
+        "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
+        "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts",
+        "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
+      ],
+      "kind": "test",
+      "loc": 431,
+      "owner": "@ak125/vehicle-team",
+      "path": "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D4",
+      "id": "backend/src/modules/diagnostic-engine/diagnostic-session-integrity.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts"
+      ],
+      "kind": "test",
+      "loc": 124,
+      "owner": "@ak125/vehicle-team",
+      "path": "backend/src/modules/diagnostic-engine/diagnostic-session-integrity.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D4",
+      "id": "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
+        "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
+        "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
+        "backend/src/modules/diagnostic-engine/engines/risk-safety.engine.ts",
+        "backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
+        "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
+      ],
+      "kind": "test",
+      "loc": 811,
+      "owner": "@ak125/vehicle-team",
+      "path": "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D4",
       "id": "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts",
-        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts"
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts"
       ],
       "imports": [
         "backend/src/modules/diagnostic-engine/constants/gamme-map.constants.ts",
@@ -42390,16 +42488,19 @@
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
         "backend/src/modules/diagnostic-engine/engines/risk-safety.engine.ts"
       ],
       "imports": [
         "backend/src/modules/diagnostic-engine/constants/gamme-map.constants.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
-        "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts"
+        "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts",
+        "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "service",
-      "loc": 216,
+      "loc": 238,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
       "risk": "medium",
@@ -42415,18 +42516,43 @@
         "manual"
       ],
       "domain": "D4",
+      "id": "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
+        "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts"
+      ],
+      "kind": "test",
+      "loc": 174,
+      "owner": "@ak125/vehicle-team",
+      "path": "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D4",
       "id": "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts",
-        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts"
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
+        "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.test.ts",
+        "backend/src/modules/diagnostic-engine/maintenance-flow.test.ts"
       ],
       "imports": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
         "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts"
       ],
       "kind": "service",
-      "loc": 245,
+      "loc": 392,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
       "risk": "medium",
@@ -42447,6 +42573,8 @@
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts"
       ],
       "imports": [
@@ -42454,7 +42582,7 @@
         "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts"
       ],
       "kind": "service",
-      "loc": 191,
+      "loc": 224,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/engines/risk-safety.engine.ts",
       "risk": "medium",
@@ -42474,14 +42602,15 @@
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts",
-        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts"
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts"
       ],
       "imports": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
         "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts"
       ],
       "kind": "service",
-      "loc": 87,
+      "loc": 94,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
       "risk": "medium",
@@ -42489,6 +42618,55 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D4",
+      "id": "backend/src/modules/diagnostic-engine/maintenance-calendar-integrity.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
+        "backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts"
+      ],
+      "kind": "test",
+      "loc": 184,
+      "owner": "@ak125/vehicle-team",
+      "path": "backend/src/modules/diagnostic-engine/maintenance-calendar-integrity.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D4",
+      "id": "backend/src/modules/diagnostic-engine/maintenance-flow.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
+        "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
+        "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
+      ],
+      "kind": "test",
+      "loc": 268,
+      "owner": "@ak125/vehicle-team",
+      "path": "backend/src/modules/diagnostic-engine/maintenance-flow.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -42593,10 +42771,12 @@
       "id": "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/services/action-recommender.test.ts",
         "backend/src/modules/diagnostic-engine/services/diagnostic-resolution-pipeline.service.ts"
       ],
       "imports": [
+        "backend/src/common/utils/url-builder.utils.ts",
         "backend/src/modules/diagnostic-engine/services/intent-classifier.service.ts",
         "backend/src/modules/diagnostic-engine/types/diagnostic-intent.ts",
         "backend/src/modules/diagnostic-engine/types/diagnostic-reason-code.ts",
@@ -42604,7 +42784,7 @@
         "backend/src/modules/diagnostic-engine/types/recommended-action.ts"
       ],
       "kind": "service",
-      "loc": 249,
+      "loc": 252,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
       "risk": "medium",
@@ -42628,7 +42808,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "test",
-      "loc": 188,
+      "loc": 195,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/services/action-recommender.test.ts",
       "risk": "medium",
@@ -42885,7 +43065,7 @@
         "backend/src/modules/diagnostic-engine/services/kg-shadow.service.ts"
       ],
       "kind": "test",
-      "loc": 114,
+      "loc": 150,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/services/kg-shadow.service.test.ts",
       "risk": "medium",
@@ -42913,7 +43093,7 @@
         "backend/src/database/services/supabase-base.service.ts"
       ],
       "kind": "service",
-      "loc": 213,
+      "loc": 227,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/services/kg-shadow.service.ts",
       "risk": "medium",
@@ -42932,14 +43112,16 @@
       "id": "backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
-        "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts"
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+        "backend/src/modules/diagnostic-engine/maintenance-calendar-integrity.test.ts"
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "backend/src/modules/diagnostic-engine/services/diagnostic-content.service.ts"
+        "backend/src/modules/diagnostic-engine/services/diagnostic-content.service.ts",
+        "backend/src/modules/diagnostic-engine/types/maintenance-calendar.schema.ts"
       ],
       "kind": "service",
-      "loc": 175,
+      "loc": 180,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts",
       "risk": "medium",
@@ -43089,17 +43271,20 @@
       "id": "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
         "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
+        "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.test.ts",
         "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
         "backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
-        "backend/src/modules/diagnostic-engine/validate-phase0.ts"
+        "backend/src/modules/diagnostic-engine/validate-phase0.ts",
+        "backend/src/modules/mcp-validation/types/mcp-diagnose.schema.ts"
       ],
       "imports": [
         "backend/src/modules/diagnostic-engine/types/diagnostic-contract.schema.ts"
       ],
       "kind": "config",
-      "loc": 100,
+      "loc": 192,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts",
       "risk": "medium",
@@ -43172,21 +43357,51 @@
         "reachability"
       ],
       "domain": "D4",
+      "id": "backend/src/modules/diagnostic-engine/types/diagnostic-reference.schema.ts",
+      "importedBy": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts"
+      ],
+      "imports": [
+        "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
+      ],
+      "kind": "config",
+      "loc": 81,
+      "owner": "@ak125/vehicle-team",
+      "path": "backend/src/modules/diagnostic-engine/types/diagnostic-reference.schema.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D4",
       "id": "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts",
+        "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
+        "backend/src/modules/diagnostic-engine/maintenance-flow.test.ts",
         "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
         "backend/src/modules/diagnostic-engine/services/action-recommender.test.ts",
         "backend/src/modules/diagnostic-engine/services/diagnostic-resolution-pipeline.service.ts",
         "backend/src/modules/diagnostic-engine/services/intent-classifier.service.ts",
         "backend/src/modules/diagnostic-engine/services/intent-classifier.test.ts",
+        "backend/src/modules/diagnostic-engine/types/diagnostic-reference.schema.ts",
         "backend/src/modules/diagnostic-engine/validate-phase0.ts"
       ],
       "imports": [],
       "kind": "config",
-      "loc": 146,
+      "loc": 161,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts",
       "risk": "medium",
@@ -43214,6 +43429,30 @@
       "loc": 29,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/types/human-escalation.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D4",
+      "id": "backend/src/modules/diagnostic-engine/types/maintenance-calendar.schema.ts",
+      "importedBy": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
+        "backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts"
+      ],
+      "imports": [],
+      "kind": "config",
+      "loc": 79,
+      "owner": "@ak125/vehicle-team",
+      "path": "backend/src/modules/diagnostic-engine/types/maintenance-calendar.schema.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -45721,6 +45960,29 @@
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
+        "manual"
+      ],
+      "domain": "D4",
+      "id": "backend/src/modules/mcp-validation/services/mcp-query-diagnostic.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/mcp-validation/services/mcp-query.service.ts",
+        "backend/src/modules/mcp-validation/types/mcp-verify.types.ts"
+      ],
+      "kind": "test",
+      "loc": 279,
+      "owner": "@ak125/vehicle-team",
+      "path": "backend/src/modules/mcp-validation/services/mcp-query-diagnostic.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
         "reachability"
       ],
       "domain": "UNKNOWN",
@@ -45728,21 +45990,49 @@
       "importedBy": [
         "backend/src/modules/mcp-validation/index.ts",
         "backend/src/modules/mcp-validation/interceptors/mcp-verify.interceptor.ts",
-        "backend/src/modules/mcp-validation/mcp-validation.module.ts"
+        "backend/src/modules/mcp-validation/mcp-validation.module.ts",
+        "backend/src/modules/mcp-validation/services/mcp-query-diagnostic.test.ts"
       ],
       "imports": [
         "@database/services/supabase-base.service",
         "@security/rpc-gate/rpc-gate.service",
+        "backend/src/modules/mcp-validation/types/mcp-diagnose.schema.ts",
         "backend/src/modules/mcp-validation/types/mcp-verify.types.ts"
       ],
       "kind": "service",
-      "loc": 674,
+      "loc": 693,
       "owner": "__unassigned__",
       "path": "backend/src/modules/mcp-validation/services/mcp-query.service.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D4",
+      "id": "backend/src/modules/mcp-validation/types/mcp-diagnose.schema.ts",
+      "importedBy": [
+        "backend/src/modules/mcp-validation/services/mcp-query.service.ts",
+        "backend/src/modules/mcp-validation/types/mcp-verify.types.ts"
+      ],
+      "imports": [
+        "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts"
+      ],
+      "kind": "config",
+      "loc": 99,
+      "owner": "@ak125/vehicle-team",
+      "path": "backend/src/modules/mcp-validation/types/mcp-diagnose.schema.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
       "status": "LIVE"
     },
     {
@@ -45758,13 +46048,15 @@
         "backend/src/modules/mcp-validation/index.ts",
         "backend/src/modules/mcp-validation/interceptors/mcp-verify.interceptor.ts",
         "backend/src/modules/mcp-validation/services/mcp-alerting.service.ts",
+        "backend/src/modules/mcp-validation/services/mcp-query-diagnostic.test.ts",
         "backend/src/modules/mcp-validation/services/mcp-query.service.ts"
       ],
       "imports": [
-        "backend/src/modules/mcp-validation/mcp-validation.types.ts"
+        "backend/src/modules/mcp-validation/mcp-validation.types.ts",
+        "backend/src/modules/mcp-validation/types/mcp-diagnose.schema.ts"
       ],
       "kind": "config",
-      "loc": 517,
+      "loc": 510,
       "owner": "__unassigned__",
       "path": "backend/src/modules/mcp-validation/types/mcp-verify.types.ts",
       "risk": "low",
@@ -66856,7 +67148,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 156,
+      "loc": 188,
       "owner": "@ak125",
       "path": "backend/tests/unit/maintenance-calculator.service.test.ts",
       "risk": "medium",
@@ -66876,7 +67168,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 122,
+      "loc": 148,
       "owner": "@ak125",
       "path": "backend/tests/unit/maintenance-calendar-endpoint.test.ts",
       "risk": "medium",
@@ -68693,7 +68985,9 @@
       "domain": "D8",
       "id": "frontend/app/components/RichTextEditor.tsx",
       "importedBy": [],
-      "imports": [],
+      "imports": [
+        "@tiptap/react"
+      ],
       "kind": "config",
       "loc": 235,
       "owner": "@ak125/frontend-team",
@@ -71797,6 +72091,7 @@
       "imports": [
         "frontend/app/components/diagnostic-wizard/hooks/use-diagnostic-vehicle-selector.ts",
         "frontend/app/components/diagnostic-wizard/results/DiagnosticResults.tsx",
+        "frontend/app/components/diagnostic-wizard/steps/StepMaintenance.tsx",
         "frontend/app/components/diagnostic-wizard/steps/StepSymptom.tsx",
         "frontend/app/components/diagnostic-wizard/steps/StepVehicle.tsx",
         "frontend/app/components/diagnostic-wizard/types.ts",
@@ -71804,7 +72099,7 @@
         "~/components/ui/progress"
       ],
       "kind": "config",
-      "loc": 510,
+      "loc": 811,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/DiagnosticWizard.tsx",
       "risk": "low",
@@ -71830,7 +72125,7 @@
         "~/services/api/enhanced-vehicle.api"
       ],
       "kind": "config",
-      "loc": 61,
+      "loc": 89,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/hooks/use-diagnostic-vehicle-selector.ts",
       "risk": "low",
@@ -71890,7 +72185,7 @@
         "~/components/ui/button"
       ],
       "kind": "config",
-      "loc": 146,
+      "loc": 189,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/results/DiagnosticResults.tsx",
       "risk": "low",
@@ -71991,10 +72286,11 @@
       "imports": [
         "frontend/app/components/diagnostic-wizard/types.ts",
         "~/components/ui/badge",
-        "~/components/ui/card"
+        "~/components/ui/card",
+        "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 114,
+      "loc": 123,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/results/ResultCatalog.tsx",
       "risk": "low",
@@ -72043,7 +72339,7 @@
         "~/components/ui/progress"
       ],
       "kind": "config",
-      "loc": 213,
+      "loc": 214,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/results/ResultHypotheses.tsx",
       "risk": "low",
@@ -72066,10 +72362,11 @@
       "imports": [
         "frontend/app/components/diagnostic-wizard/types.ts",
         "~/components/ui/badge",
-        "~/components/ui/card"
+        "~/components/ui/card",
+        "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 124,
+      "loc": 184,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/results/ResultMaintenance.tsx",
       "risk": "low",
@@ -72093,7 +72390,7 @@
         "~/components/ui/card"
       ],
       "kind": "config",
-      "loc": 39,
+      "loc": 43,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/results/ResultMissing.tsx",
       "risk": "low",
@@ -72208,6 +72505,36 @@
         "manual"
       ],
       "domain": "D8",
+      "id": "frontend/app/components/diagnostic-wizard/steps/StepMaintenance.tsx",
+      "importedBy": [
+        "frontend/app/components/diagnostic-wizard/DiagnosticWizard.tsx",
+        "frontend/app/components/diagnostic-wizard/types.ts"
+      ],
+      "imports": [
+        "~/components/ui/alert",
+        "~/components/ui/button",
+        "~/components/ui/card",
+        "~/components/ui/checkbox",
+        "~/components/ui/input",
+        "~/components/ui/label"
+      ],
+      "kind": "config",
+      "loc": 276,
+      "owner": "@ak125/frontend-team",
+      "path": "frontend/app/components/diagnostic-wizard/steps/StepMaintenance.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
       "id": "frontend/app/components/diagnostic-wizard/steps/StepSymptom.tsx",
       "importedBy": [
         "frontend/app/components/diagnostic-wizard/DiagnosticWizard.tsx"
@@ -72219,7 +72546,7 @@
         "~/components/ui/card"
       ],
       "kind": "config",
-      "loc": 352,
+      "loc": 430,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/steps/StepSymptom.tsx",
       "risk": "low",
@@ -72248,7 +72575,7 @@
         "~/components/ui/label"
       ],
       "kind": "config",
-      "loc": 262,
+      "loc": 265,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/steps/StepVehicle.tsx",
       "risk": "low",
@@ -72275,10 +72602,11 @@
         "frontend/app/components/diagnostic-wizard/steps/StepVehicle.tsx"
       ],
       "imports": [
-        "frontend/app/components/diagnostic-wizard/results/v1a-intent-types.ts"
+        "frontend/app/components/diagnostic-wizard/results/v1a-intent-types.ts",
+        "frontend/app/components/diagnostic-wizard/steps/StepMaintenance.tsx"
       ],
       "kind": "config",
-      "loc": 135,
+      "loc": 146,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/types.ts",
       "risk": "low",
@@ -84333,7 +84661,7 @@
         "~/components/ui/table"
       ],
       "kind": "route",
-      "loc": 499,
+      "loc": 516,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/blog-pieces-auto.calendrier-entretien.tsx",
       "risk": "medium",
@@ -85724,7 +86052,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 434,
+      "loc": 413,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/diagnostic.tsx",
       "risk": "medium",
@@ -89950,7 +90278,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 139,
+      "loc": 161,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/url-builder.utils.ts",
       "risk": "medium",
@@ -90982,6 +91310,106 @@
         "manual"
       ],
       "domain": "D2",
+      "id": "frontend/tests/unit/diagnostic-critical-urgency.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 152,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/diagnostic-critical-urgency.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/diagnostic-legacy-navigation.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 311,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/diagnostic-legacy-navigation.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/diagnostic-maintenance-flow.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 224,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/diagnostic-maintenance-flow.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/diagnostic-maintenance-step.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 229,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/diagnostic-maintenance-step.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/diagnostic-result-links.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 131,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/diagnostic-result-links.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
       "id": "frontend/tests/unit/diagnostic-results-content-authority.test.tsx",
       "importedBy": [],
       "imports": [],
@@ -90989,6 +91417,86 @@
       "loc": 62,
       "owner": "@ak125",
       "path": "frontend/tests/unit/diagnostic-results-content-authority.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/diagnostic-selection-freshness.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 287,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/diagnostic-selection-freshness.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/diagnostic-session-recovery.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 212,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/diagnostic-session-recovery.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/diagnostic-wizard-recovery.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 250,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/diagnostic-wizard-recovery.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/diagnostic-wizard-submission.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 169,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/diagnostic-wizard-submission.test.tsx",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -100579,15 +101087,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "98f10df3b19858e0d723a5a21218be5e599b0c3f6038a3672b10bbb02baf0e29",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "64c090a596ce2c0cb2973219ccd66b45e071166fdfbf0d903a547f4786d84c68",
+      ".spec/00-canon/repository-registry/ownership.yaml": "476fc30830d3d8bdffa3339af9e38c3877d77e1bd11465a210a15fc1eae9e6dc",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
-      "audit/registry/db.json": "9db21d8ceb22543470fffd5daa2c9a042215ac1e7737021ee33661af5c7c0d77",
+      "audit/registry/db.json": "90094e86c0a9d55c1c0ca1db6a22078fa001179245b2ac8ea7d75743a69fb54b",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "7be860a8241adf34a152b935b1f3c29676c7ee37d216af9c89a3bffa9e8f0a71",
+      "audit/registry/files.json": "13b40b9e9fc6cdaed95a8ea1512475a2f4b5d1382abd15dba53fef5cd6c80c0b",
       "audit/registry/rpc.json": "86d0c24b102036512a9f7b11d9ac04754288049a8b061981b19f0db0a8c86263",
       "audit/registry/runtime.json": "6c2cc554a40338761fba9f55f6aef70339e95d10dec2f0b93ba5b0152c33f766"
     },
-    "sotFingerprint": "d5254ac9f573"
+    "sotFingerprint": "3b069ea92b6e"
   },
   "runtime": [
     {

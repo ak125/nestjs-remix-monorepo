@@ -57,7 +57,11 @@ export function DiagnosticResults({
         className="rounded-lg border border-red-200 bg-red-50 p-6 text-center space-y-3"
         role="alert"
       >
-        <p className="text-red-700 font-medium">Erreur de diagnostic</p>
+        <p className="text-red-700 font-medium">
+          {state.analysisMode === "maintenance"
+            ? "Bilan entretien indisponible"
+            : "Erreur de diagnostic"}
+        </p>
         <p className="text-sm text-red-600">{state.error}</p>
         {onRetry && (
           <Button
@@ -83,10 +87,43 @@ export function DiagnosticResults({
     );
   }
 
+  if (ep.analysis_kind === "maintenance") {
+    return (
+      <div className="space-y-4" aria-live="polite">
+        <h2 className="text-xl font-semibold">Votre bilan entretien</h2>
+        <p className="text-sm text-gray-600">
+          Estimations génériques pour les opérations choisies. Vérifiez les
+          préconisations du carnet constructeur. Ce bilan ne détermine ni
+          l’usure réelle ni la sécurité du véhicule.
+        </p>
+        {ep.factual_inputs_confirmed.map((fact) => (
+          <p key={fact} className="text-sm">
+            {fact}
+          </p>
+        ))}
+        <ResultMaintenance
+          recommendations={ep.maintenance_recommendations ?? []}
+          maintenanceLinks={ep.maintenance_links}
+          catalogGammes={[]}
+          allowedOutputMode="none"
+        />
+        {ep.factual_inputs_missing.length > 0 && (
+          <ResultMissing
+            missing={ep.factual_inputs_missing}
+            title="Limites et informations manquantes"
+            description="À vérifier pour interpréter ces estimations :"
+          />
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4" aria-live="polite">
-      {/* Block 1: Safety alert (only if risk_flags present) */}
-      {ep.risk_flags.length > 0 && (
+      {/* Safety also remains visible when an alert has no detail flags. */}
+      {(ep.risk_flags.length > 0 ||
+        ep.safety_alert ||
+        ep.risk_level === "critical") && (
         <ResultSafety
           riskLevel={ep.risk_level}
           riskFlags={ep.risk_flags}
@@ -125,8 +162,10 @@ export function DiagnosticResults({
       {ep.maintenance_recommendations &&
         ep.maintenance_recommendations.length > 0 && (
           <ResultMaintenance
+            catalogGammes={ep.catalog_guard?.suggested_gammes ?? []}
             recommendations={ep.maintenance_recommendations}
             maintenanceLinks={ep.maintenance_links}
+            allowedOutputMode={ep.catalog_guard.allowed_output_mode}
           />
         )}
 
@@ -135,7 +174,11 @@ export function DiagnosticResults({
 
       {/* Block 6: Missing data */}
       {ep.factual_inputs_missing.length > 0 && (
-        <ResultMissing missing={ep.factual_inputs_missing} />
+        <ResultMissing
+          missing={ep.factual_inputs_missing}
+          title="Limites et informations manquantes"
+          description="À vérifier pour interpréter ce diagnostic :"
+        />
       )}
 
       {/* Block 7: Disclaimer */}

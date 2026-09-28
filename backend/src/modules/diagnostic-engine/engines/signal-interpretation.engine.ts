@@ -14,6 +14,7 @@ export interface SignalInterpretation {
   system_label: string;
   system_confirmed: boolean;
   unresolved_signals: string[];
+  critical_symptom_labels?: string[];
   signal_quality: 'high' | 'medium' | 'low';
 }
 
@@ -80,6 +81,12 @@ export class SignalInterpretationEngine {
       system_label: system.label,
       system_confirmed: true,
       unresolved_signals: unresolved,
+      critical_symptom_labels: availableSymptoms
+        .filter(
+          (symptom) =>
+            resolved.includes(symptom.slug) && symptom.urgency === 'critique',
+        )
+        .map((symptom) => symptom.label),
       signal_quality: signalQuality,
     };
   }

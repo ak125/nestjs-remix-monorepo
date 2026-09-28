@@ -1,6 +1,9 @@
 import { Test } from '@nestjs/testing';
 import { DiagnosticEngineOrchestrator } from './diagnostic-engine.orchestrator';
-import { DiagnosticEngineDataService } from './diagnostic-engine.data-service';
+import {
+  DiagnosticEngineDataService,
+  type DiagSafetyRule,
+} from './diagnostic-engine.data-service';
 import { SignalInterpretationEngine } from './engines/signal-interpretation.engine';
 import { HypothesisScoringEngine } from './engines/hypothesis-scoring.engine';
 import { RiskSafetyEngine } from './engines/risk-safety.engine';
@@ -19,9 +22,21 @@ const input = {
 // Only the existing business dependencies are available: no RAG provider,
 // network service or index can contribute diagnostic evidence (ADR-031).
 describe('Diagnostic without RAG content authority', () => {
+  // A diagnostic without safety-rule coverage is refused, so the fixture
+  // provides one active rule for the analysed system.
+  const safetyRule: DiagSafetyRule = {
+    id: 1,
+    system_id: 1,
+    rule_slug: 'brake_rule_fixture',
+    condition_description: 'Controle',
+    risk_flag: 'Risque de freinage',
+    urgency: 'haute',
+    blocks_catalog: true,
+    active: true,
+  };
   const data = {
     getScoredCausesForSymptoms: jest.fn().mockResolvedValue([]),
-    getSafetyRules: jest.fn().mockResolvedValue([]),
+    getSafetyRules: jest.fn().mockResolvedValue([safetyRule]),
     getCostRanges: jest.fn().mockResolvedValue(new Map()),
     saveSession: jest.fn().mockResolvedValue('session-fixture'),
   };

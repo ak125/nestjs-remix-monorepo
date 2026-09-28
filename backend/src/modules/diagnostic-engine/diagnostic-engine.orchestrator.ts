@@ -13,7 +13,8 @@
  */
 import { Injectable, Logger } from '@nestjs/common';
 import {
-  AnalyzeDiagnosticInputSchema,
+  AnalyzeInputSchema,
+  type AnalyzeMaintenanceInput,
   type AnalyzeDiagnosticInput,
 } from './types/diagnostic-input.schema';
 import type { EvidencePack } from './types/evidence-pack.schema';
@@ -50,7 +51,7 @@ export class DiagnosticEngineOrchestrator {
     const startTime = Date.now();
 
     // ── 1. Validate input ──────────────────────────────
-    const parseResult = AnalyzeDiagnosticInputSchema.safeParse(rawInput);
+    const parseResult = AnalyzeInputSchema.safeParse(rawInput);
     if (!parseResult.success) {
       return {
         success: false,
@@ -58,25 +59,110 @@ export class DiagnosticEngineOrchestrator {
       };
     }
     const input = parseResult.data;
-
-    // ── 2. Signal Interpretation Engine ─────────────────
-    const signal = await this.signalEngine.interpret(input);
-    if (!signal.system_confirmed) {
-      const systems = await this.dataService.getActiveSystems();
-      const available = systems.map((s) => s.slug).join(', ');
+    const inputLimitations: string[] = [];
+    if (input.usage_context?.immobilized_days !== undefined)
+      inputLimitations.push(
+        'Durée d’immobilisation non prise en compte dans cette analyse.',
+      );
+    if (input.usage_context?.recent_repairs?.length)
+      inputLimitations.push(
+        'Réparations récentes non prises en compte : elles ne prouvent ni la résolution du symptôme ni l’entretien des opérations concernées.',
+      );
+    if ('signal_input' in input) {
+      if (
+        Object.values(input.signal_input.context ?? {}).some((value) =>
+          Array.isArray(value) ? value.length > 0 : value !== undefined,
+        )
+      )
+        inputLimitations.push(
+          'Contexte du symptôme non interprété : il ne modifie ni les hypothèses ni le niveau de risque.',
+        );
+      if (input.session_id)
+        inputLimitations.push(
+          'Cette analyse ne reprend ni ne met à jour la session fournie.',
+        );
+    }
+    if (inputLimitations.length)
+      this.logger.warn(
+        `Diagnostic input limitations: ${inputLimitations.length} supplied fields are not interpreted`,
+      );
+    if (!('signal_input' in input))
+      return this.analyzeMaintenance(input, inputLimitations);
+    if (input.signal_input.signal_mode !== 'symptom_slugs') {
       return {
         success: false,
-        error: `Système inconnu: ${input.system_scope}. Systèmes disponibles: ${available}`,
+        error:
+          'Ce mode de signal n’est pas encore pris en charge par cette analyse. Sélectionnez un symptôme reconnu.',
+      };
+    }
+    // ── 2. Signal Interpretation Engine ─────────────────
+    let signal: Awaited<ReturnType<SignalInterpretationEngine['interpret']>>;
+    try {
+      signal = await this.signalEngine.interpret(input);
+    } catch (error) {
+      this.logger.error('Diagnostic signal data unavailable', error);
+      return {
+        success: false,
+        error:
+          'Analyse indisponible : les signaux ne peuvent pas être vérifiés. Aucun niveau de risque ne peut être établi.',
+      };
+    }
+    if (!signal.system_confirmed) {
+      try {
+        const systems = await this.dataService.getActiveSystems();
+        const available = systems.map((s) => s.slug).join(', ');
+        return {
+          success: false,
+          error: `Système inconnu: ${input.system_scope}. Systèmes disponibles: ${available}`,
+        };
+      } catch (error) {
+        this.logger.error('Diagnostic system catalog unavailable', error);
+        return {
+          success: false,
+          error:
+            'Analyse indisponible : les systèmes ne peuvent pas être vérifiés.',
+        };
+      }
+    }
+
+    if (
+      !signal.resolved_symptom_slugs.length ||
+      signal.unresolved_signals.length
+    ) {
+      return {
+        success: false,
+        error:
+          'Diagnostic insuffisant : un ou plusieurs signaux ne sont pas reconnus. Le niveau de risque ne peut pas être établi ; un contrôle professionnel est nécessaire.',
       };
     }
 
     // ── 3. Fetch raw data from DB ──────────────────────
-    const scoredLinks = await this.dataService.getScoredCausesForSymptoms(
-      signal.resolved_symptom_slugs,
-    );
-    const safetyRules = await this.dataService.getSafetyRules(
-      input.system_scope,
-    );
+    let scoredLinks: Awaited<
+      ReturnType<DiagnosticEngineDataService['getScoredCausesForSymptoms']>
+    >;
+    let safetyRules: Awaited<
+      ReturnType<DiagnosticEngineDataService['getSafetyRules']>
+    >;
+    try {
+      scoredLinks = await this.dataService.getScoredCausesForSymptoms(
+        signal.resolved_symptom_slugs,
+      );
+      safetyRules = await this.dataService.getSafetyRules(input.system_scope);
+    } catch (error) {
+      this.logger.error('Diagnostic safety data unavailable', error);
+      return {
+        success: false,
+        error:
+          'Analyse indisponible : les données de sécurité ne sont pas accessibles. Aucun niveau de risque ne peut être établi.',
+      };
+    }
+    if (!safetyRules.length) {
+      return {
+        success: false,
+        error:
+          'Diagnostic insuffisant : la couverture des règles de sécurité est absente. Aucun niveau de risque ne peut être établi.',
+      };
+    }
 
     // ── 4. Hypothesis Scoring Engine (multi-couches) ───
     const hypotheses = this.scoringEngine.score(
@@ -85,11 +171,20 @@ export class DiagnosticEngineOrchestrator {
       input.usage_context,
     );
 
+    if (!hypotheses.length) {
+      return {
+        success: false,
+        error:
+          'Diagnostic insuffisant : aucune hypothèse couverte pour ces signaux. Le niveau de risque ne peut pas être établi.',
+      };
+    }
+
     // ── 5. Risk Safety Engine ──────────────────────────
     const risk = this.riskEngine.assess(
       hypotheses,
       safetyRules,
       signal.resolved_symptom_slugs,
+      signal.critical_symptom_labels,
     );
 
     // ── 6. Catalog Orientation Engine ──────────────────
@@ -99,23 +194,51 @@ export class DiagnosticEngineOrchestrator {
       input.vehicle_context,
     );
 
-    // ── 7. Maintenance Intelligence Engine ─────────────
-    const maintenance = await this.maintenanceEngine.assess(
-      signal.resolved_symptom_slugs,
-      input.vehicle_context,
-      input.usage_context,
-    );
+    // Optional enrichment must not suppress an already determined safety
+    // alert. Degradation is logged and included in the returned missing facts.
+    const degraded: string[] = [...inputLimitations];
+    if (Object.keys(input.answers ?? {}).length > 0) {
+      this.logger.warn('Diagnostic questionnaire answers not interpreted');
+      degraded.push(
+        'Réponses complémentaires non interprétées : elles ne modifient ni les hypothèses ni le niveau de risque de cette analyse.',
+      );
+    }
+    let maintenance: Awaited<
+      ReturnType<MaintenanceIntelligenceEngine['assess']>
+    > = {
+      recommendations: [],
+      maintenance_links: [],
+      overdue_count: 0,
+    };
+    try {
+      maintenance = await this.maintenanceEngine.assess(
+        signal.resolved_symptom_slugs,
+        input.vehicle_context,
+        input.usage_context,
+      );
+    } catch (error) {
+      this.logger.warn('Diagnostic maintenance enrichment unavailable', error);
+      degraded.push(
+        'Informations d’entretien indisponibles — aucune conclusion sur les échéances.',
+      );
+    }
 
-    // ── 7b. Enrich catalog gammes with cost ranges ─────
     const pgIds = catalog.suggested_gammes.map((g) => g.pg_id);
-    const costRanges = await this.dataService.getCostRanges(pgIds);
-    for (const g of catalog.suggested_gammes) {
-      const cost = costRanges.get(g.pg_id);
-      if (cost) (g as unknown as Record<string, unknown>).cost_range = cost;
+    if (pgIds.length) {
+      try {
+        const costRanges = await this.dataService.getCostRanges(pgIds);
+        for (const g of catalog.suggested_gammes) {
+          const cost = costRanges.get(g.pg_id);
+          if (cost) (g as unknown as Record<string, unknown>).cost_range = cost;
+        }
+      } catch (error) {
+        this.logger.warn('Diagnostic cost enrichment unavailable', error);
+        degraded.push('Estimations de coût indisponibles.');
+      }
     }
 
     // ADR-031: RAG is a chatbot consumer, never a diagnostic content authority.
-    // ── 8. Assemble EvidencePack ───────────────────────
+    // ── 9. Assemble EvidencePack ───────────────────────
     const evidencePack = this.assembleEvidencePack(
       input,
       signal,
@@ -125,20 +248,21 @@ export class DiagnosticEngineOrchestrator {
       maintenance,
     );
 
+    evidencePack.evidence_pack.factual_inputs_missing.push(...degraded);
     const elapsed = Date.now() - startTime;
     this.logger.log(
       `Diagnostic completed in ${elapsed}ms — ${hypotheses.length} hypotheses, ` +
         `risk=${risk.risk_level}, catalog=${catalog.ready_for_catalog}`,
     );
 
-    // ── 8b. KG shadow comparison (PR-E, fire-and-forget) ────
+    // ── 9b. KG shadow comparison (PR-E, fire-and-forget) ────
     // Calls `kg_diagnose_vehicle_aware` in parallel with the canonical
     // engines, compares top-N fault_ids, emits `diagnostic_kg_shadow_diverged`
     // event. NEVER blocks the response ; failures are swallowed.
     // Identifier-mapping note : signal.resolved_symptom_slugs are slugs,
     // the RPC expects observable UUIDs. When the data layer can resolve
-    // slugs→UUIDs the shadow runs ; today it gracefully skips if the
-    // mapping is empty (the service guards on `observable_ids.length === 0`).
+    // slugs→UUIDs the shadow can compare. Until then, the service rejects
+    // invalid identities before any RPC and emits an observable kg_error.
     this.kgShadow.shadowCompare({
       observable_ids: signal.resolved_symptom_slugs,
       vehicle_id:
@@ -152,15 +276,24 @@ export class DiagnosticEngineOrchestrator {
       })),
     });
 
-    // ── 9. Save session ───────────────────────────────
-    const sessionId = await this.dataService.saveSession({
-      intent_type: input.intent_type,
-      system_scope: input.system_scope,
-      vehicle_context: input.vehicle_context || {},
-      signal_input: input.signal_input as Record<string, unknown>,
-      answers: input.answers || {},
-      result: evidencePack as unknown as Record<string, unknown>,
-    });
+    // ── 10. Save session ───────────────────────────────
+    let sessionId: string | null = null;
+    try {
+      sessionId = await this.dataService.saveSession({
+        intent_type: input.intent_type,
+        system_scope: input.system_scope,
+        vehicle_context: input.vehicle_context || {},
+        signal_input: input.signal_input as Record<string, unknown>,
+        answers: input.answers || {},
+        result: evidencePack as unknown as Record<string, unknown>,
+      });
+    } catch (error) {
+      this.logger.warn('Diagnostic session persistence unavailable', error);
+    }
+    if (!sessionId)
+      evidencePack.evidence_pack.factual_inputs_missing.push(
+        'Sauvegarde non confirmée — le lien de reprise est indisponible.',
+      );
 
     return {
       success: true,
@@ -169,8 +302,93 @@ export class DiagnosticEngineOrchestrator {
   }
 
   /**
-   * Assemble final EvidencePack from all engine outputs
+   * Assess selected maintenance operations without invoking the symptom pipeline.
    */
+  private async analyzeMaintenance(
+    input: AnalyzeMaintenanceInput,
+    inputLimitations: string[],
+  ): Promise<{
+    success: boolean;
+    data?: { evidence: EvidencePack; session_id: string | null };
+    error?: string;
+  }> {
+    try {
+      const maintenance = await this.maintenanceEngine.assessSelected(
+        input.vehicle_context,
+        input.usage_context,
+      );
+      const missing = [
+        ...inputLimitations,
+        'Applicabilité au véhicule et préconisations constructeur non vérifiées : intervalles génériques.',
+        'Le profil d’usage ne modifie pas ces intervalles.',
+        'Ce bilan ne détermine ni l’usure réelle ni la sécurité du véhicule.',
+        'Bilan non enregistré sur le serveur : vous pouvez l’imprimer.',
+      ];
+      if (input.vehicle_context.mileage_km === undefined)
+        missing.push('Kilométrage actuel non renseigné.');
+      for (const rec of maintenance.recommendations) {
+        if (rec.interval_km && rec.last_service_km === undefined)
+          missing.push(
+            `${rec.operation_label} : kilométrage d’intervention inconnu.`,
+          );
+        if (rec.interval_months && !rec.last_service_date)
+          missing.push(
+            `${rec.operation_label} : date d’intervention inconnue.`,
+          );
+      }
+      return {
+        success: true,
+        data: {
+          session_id: null,
+          evidence: {
+            evidence_pack: {
+              analysis_kind: 'maintenance',
+              factual_inputs_confirmed: [
+                'Opérations sélectionnées par l’utilisateur ; historique déclaré.',
+                ...(input.vehicle_context.mileage_km !== undefined
+                  ? [
+                      `Compteur actuel : ${input.vehicle_context.mileage_km.toLocaleString('fr-FR')} km`,
+                    ]
+                  : []),
+              ],
+              factual_inputs_missing: missing,
+              system_suspects: [],
+              candidate_hypotheses: [],
+              risk_flags: [],
+              maintenance_links: maintenance.maintenance_links,
+              maintenance_recommendations: maintenance.recommendations,
+              preventive_schedule: maintenance.preventive_schedule,
+              catalog_guard: {
+                ready_for_catalog: false,
+                confidence_before_purchase: 'low',
+                allowed_output_mode: 'none',
+                suggested_gammes: [],
+                reason:
+                  'Une estimation d’échéance ne justifie pas un achat ; applicabilité et état réel à vérifier.',
+              },
+              allowed_claims: [
+                'Comparez ces estimations au carnet constructeur et aux justificatifs d’entretien.',
+              ],
+              forbidden_claims_runtime: [
+                'Véhicule sans risque.',
+                'Remplacement nécessaire.',
+                'Préconisation constructeur vérifiée.',
+              ],
+              ui_block_inputs: {},
+            },
+          },
+        },
+      };
+    } catch (error) {
+      this.logger.warn('Maintenance assessment unavailable', error);
+      return {
+        success: false,
+        error:
+          'Bilan entretien indisponible : une opération ou ses intervalles ne peuvent pas être vérifiés. Aucune conclusion sur les échéances.',
+      };
+    }
+  }
+
   private assembleEvidencePack(
     input: AnalyzeDiagnosticInput,
     signal: Awaited<ReturnType<SignalInterpretationEngine['interpret']>>,
@@ -194,7 +412,7 @@ export class DiagnosticEngineOrchestrator {
       missing.push('Véhicule non identifié — diagnostic générique');
     }
 
-    if (vc.mileage_km) {
+    if (vc.mileage_km !== undefined) {
       confirmed.push(
         `Kilométrage: ${vc.mileage_km.toLocaleString('fr-FR')} km`,
       );
@@ -208,7 +426,7 @@ export class DiagnosticEngineOrchestrator {
       missing.push("Profil d'usage non renseigné");
     }
 
-    if (input.usage_context?.last_service_km) {
+    if (input.usage_context?.last_service_km !== undefined) {
       confirmed.push(
         `Dernier entretien: ${input.usage_context.last_service_km.toLocaleString('fr-FR')} km`,
       );
@@ -239,7 +457,10 @@ export class DiagnosticEngineOrchestrator {
     ];
 
     // ── Urgency timeline mapping ───────────────────────
-    const urgencyTimeline: Record<string, string> = {
+    const urgencyTimeline: Record<
+      ReturnType<HypothesisScoringEngine['score']>[number]['urgency'],
+      string
+    > = {
       critique: 'Immédiat — ne pas rouler',
       haute: 'Sous 48h — contrôle professionnel urgent',
       moyenne: 'Sous 2 semaines — planifier un contrôle',
@@ -250,12 +471,10 @@ export class DiagnosticEngineOrchestrator {
     const contractHypotheses = hypotheses.map((h) => ({
       hypothesis_id: h.hypothesis_id,
       label: h.label,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      cause_type: h.cause_type as any,
+      cause_type: h.cause_type,
       relative_score: h.total_score,
       urgency: h.urgency,
-      urgency_timeline:
-        urgencyTimeline[h.urgency] || urgencyTimeline['moyenne'],
+      urgency_timeline: urgencyTimeline[h.urgency],
       evidence_for: h.evidence_for,
       evidence_against: h.evidence_against,
       verification_method: h.verification_method,

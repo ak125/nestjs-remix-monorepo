@@ -2,6 +2,7 @@ import { Injectable, Logger, Optional } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { ConfigService } from '@nestjs/config';
+import { z } from 'zod';
 import { FeatureFlagsService } from '../../../config/feature-flags.service';
 
 /**
@@ -102,6 +103,19 @@ export class KgShadowService extends SupabaseBaseService {
     let kgResult: readonly KgFault[];
 
     try {
+      const uuid = z.string().uuid();
+      if (
+        !args.observable_ids.every((id) => uuid.safeParse(id).success) ||
+        (args.vehicle_id !== undefined &&
+          !uuid.safeParse(args.vehicle_id).success) ||
+        !args.canonical_hypotheses.every(
+          (cause) => uuid.safeParse(cause.cause_id).success,
+        )
+      ) {
+        throw new Error(
+          'KG identity mapping unavailable: UUID observables, vehicle and canonical faults required',
+        );
+      }
       kgResult = await this.queryKg(args.observable_ids, args.vehicle_id, topN);
     } catch (err) {
       const verdict: KgDivergence = {
@@ -197,12 +211,12 @@ export function compareTopN(
   const setMatch = canonicalSet.size === kgSet.size && intersection === union;
 
   let reason: KgDivergence['reason'];
-  if (setMatch) reason = 'match';
-  else if (!top1Match) reason = 'top1_diff';
+  if (!top1Match) reason = 'top1_diff';
+  else if (setMatch) reason = 'match';
   else reason = 'set_diff';
 
   return {
-    has_divergence: !setMatch,
+    has_divergence: !setMatch || !top1Match,
     reason,
     canonical_top_id: canonicalTop,
     kg_top_id: kgTop,

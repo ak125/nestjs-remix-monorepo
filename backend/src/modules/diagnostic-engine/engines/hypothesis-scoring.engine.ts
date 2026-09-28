@@ -15,11 +15,17 @@ import type {
   UsageContextInput,
 } from '../types/diagnostic-input.schema';
 import { CAUSE_GAMME_MAP } from '../constants/gamme-map.constants';
+import {
+  CauseTypeEnum,
+  UrgencyLevelEnum,
+  type CauseType,
+  type UrgencyLevel,
+} from '../types/evidence-pack.schema';
 
 export interface ScoredHypothesis {
   hypothesis_id: string;
   label: string;
-  cause_type: string;
+  cause_type: CauseType;
   // Multi-layer scores
   signal_match_score: number; // 0-30
   vehicle_fit_score: number; // 0-20
@@ -29,7 +35,7 @@ export interface ScoredHypothesis {
   context_score: number; // 0-10
   total_score: number; // 0-100
   // Metadata
-  urgency: 'haute' | 'moyenne' | 'basse';
+  urgency: UrgencyLevel;
   evidence_for: string[];
   evidence_against: string[];
   verification_method?: string;
@@ -56,7 +62,11 @@ export class HypothesisScoringEngine {
         const signalMatch = this.scoreSignalMatch(link.relative_score);
         const vehicleFit = this.scoreVehicleFit(cause, vehicle);
         const lifecycleFit = this.scoreLifecycleFit(cause, vehicle);
-        const maintenanceHistory = this.scoreMaintenanceHistory(cause, usage);
+        const maintenanceHistory = this.scoreMaintenanceHistory(
+          cause,
+          usage,
+          vehicle,
+        );
         const plausibility = this.scorePlausibility(cause, vehicle);
         const context = this.scoreContext(link);
 
@@ -71,7 +81,7 @@ export class HypothesisScoringEngine {
         return {
           hypothesis_id: cause.slug,
           label: cause.label,
-          cause_type: cause.cause_type,
+          cause_type: CauseTypeEnum.parse(cause.cause_type),
           signal_match_score: signalMatch,
           vehicle_fit_score: vehicleFit,
           lifecycle_fit_score: lifecycleFit,
@@ -163,6 +173,7 @@ export class HypothesisScoringEngine {
   private scoreMaintenanceHistory(
     _cause: any,
     usage?: UsageContextInput,
+    vehicle?: VehicleContextInput,
   ): number {
     if (!usage) return 7; // neutral
 
@@ -174,7 +185,18 @@ export class HypothesisScoringEngine {
     else if (usage.usage_profile === 'mixed') score += 1;
 
     // Long time since last service → higher maintenance risk
-    if (usage.last_service_km && usage.last_service_km > 30000) score += 3;
+    const currentKm = vehicle?.mileage_km;
+    const serviceKm = usage.last_service_km;
+    if (
+      currentKm !== undefined &&
+      serviceKm !== undefined &&
+      Number.isFinite(currentKm) &&
+      Number.isFinite(serviceKm) &&
+      serviceKm >= 0 &&
+      serviceKm <= currentKm &&
+      currentKm - serviceKm > 30000
+    )
+      score += 3;
 
     return Math.min(score, 15);
   }
@@ -209,7 +231,7 @@ export class HypothesisScoringEngine {
     return Math.min(score, 10);
   }
 
-  private mapUrgency(u: string): 'haute' | 'moyenne' | 'basse' {
-    return (['haute', 'moyenne', 'basse'].includes(u) ? u : 'moyenne') as any;
+  private mapUrgency(u: string): UrgencyLevel {
+    return UrgencyLevelEnum.parse(u);
   }
 }

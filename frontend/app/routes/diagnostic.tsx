@@ -347,33 +347,12 @@ export default function DiagnosticPage() {
                     </h4>
                     <div className="space-y-2">
                       {result.primaryFault.parts.map((part, i) => (
-                        <a
+                        <div
                           key={part.partNodeId || i}
-                          href={
-                            part.gammeId ? `/pieces/gamme-${part.gammeId}` : "#"
-                          }
-                          className="flex items-center justify-between p-4 bg-white rounded-lg border hover:border-blue-500 hover:shadow-md transition-all"
+                          className="flex items-center justify-between p-4 bg-white rounded-lg border"
                         >
                           <span className="font-medium">{part.partLabel}</span>
-                          {part.gammeId && (
-                            <span className="text-blue-600 text-sm flex items-center gap-1">
-                              Voir la gamme
-                              <svg
-                                className="h-4 w-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M9 5l7 7-7 7"
-                                />
-                              </svg>
-                            </span>
-                          )}
-                        </a>
+                        </div>
                       ))}
                     </div>
                   </div>

@@ -55,13 +55,13 @@ export class CatalogOrientationEngine {
     }
 
     // ── Gate 2: Critical risk → block catalog, show safety ─
-    if (risk.requires_immediate_action) {
+    if (risk.blocks_catalog || risk.requires_immediate_action) {
       return {
         ready_for_catalog: false,
         confidence_before_purchase: 'low',
-        allowed_output_mode: 'catalog_family_only',
+        allowed_output_mode: 'none',
         reason: `Alerte sécurité active — contrôle professionnel requis avant tout achat.`,
-        suggested_gammes: this.buildSuggestedGammes(hypotheses, 'low'),
+        suggested_gammes: [],
       };
     }
 

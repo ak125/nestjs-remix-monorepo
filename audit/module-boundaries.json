@@ -237,8 +237,8 @@
         "backend/src/modules/diagnostic-engine/services",
         "backend/src/modules/diagnostic-engine/types"
       ],
-      "files_count": 43,
-      "loc_total": 6446,
+      "files_count": 51,
+      "loc_total": 9387,
       "has_barrel": false
     },
     "errors": {
@@ -259,7 +259,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115481,
+      "loc_total": 115477,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -341,8 +341,8 @@
         "frontend/app/utils",
         "frontend/app/utils/seo"
       ],
-      "files_count": 596,
-      "loc_total": 113521,
+      "files_count": 597,
+      "loc_total": 114357,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -424,8 +424,8 @@
         "backend/src/modules/mcp-validation/services",
         "backend/src/modules/mcp-validation/types"
       ],
-      "files_count": 19,
-      "loc_total": 7381,
+      "files_count": 21,
+      "loc_total": 7771,
       "has_barrel": true
     },
     "media-factory": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 257,
-      "loc_total": 47583,
+      "files_count": 266,
+      "loc_total": 49606,
       "has_barrel": true
     },
     "upload": {
@@ -1658,6 +1658,11 @@
     },
     {
       "from": "diagnostic-engine",
+      "to": "common",
+      "count": 1
+    },
+    {
+      "from": "diagnostic-engine",
       "to": "config",
       "count": 1
     },
@@ -1745,6 +1750,11 @@
       "from": "mcp-validation",
       "to": "backend-core",
       "count": 2
+    },
+    {
+      "from": "mcp-validation",
+      "to": "diagnostic-engine",
+      "count": 1
     },
     {
       "from": "media-factory",
@@ -2471,6 +2481,11 @@
     {
       "from": "backend/src/modules/marketing/services/multi-channel-copywriter.service.ts",
       "to": "backend/src/modules/ai-content/ai-content.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/mcp-validation/types/mcp-diagnose.schema.ts",
+      "to": "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts",
       "rule": "no-deep-module-access"
     },
     {

@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 7f8e1bf4d519754398e83256eb650de499bc0689b824234ed3d973098c42e112
+source_sha256: 7e39db90f677f44e616e9a6734e69d9349919a1a1b34ec0436a13cc33c6fcea4
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 2925 |
+| Files (Layer 1) | 2945 |
 | DB tables (Layer 1) | 313 |
 | DB RPC (Layer 1) | 253 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 999 |
 
-Source sotFingerprint: `d5254ac9f573`.
+Source sotFingerprint: `3b069ea92b6e`.
 
 ## Comment l'utiliser
 
@@ -45,11 +45,11 @@ Source sotFingerprint: `d5254ac9f573`.
 
 ### D2 — Legacy / XTR Migration
 
-- **Files**: 118 (test=103, service=11, config=3, controller=1)
+- **Files**: 127 (test=112, service=11, config=3, controller=1)
 - **Runtime entrypoints**: 1
-- **Top owners**: @ak125 (103), __unassigned__ (15)
+- **Top owners**: @ak125 (112), __unassigned__ (15)
 - **Knowledge prose**: [`rm`](modules/rm.md)
-- **Status**: LEGACY=14, LIVE=1, UNKNOWN=103
+- **Status**: LEGACY=14, LIVE=1, UNKNOWN=112
 
 ### D3 — SEO & Sitemap
 
@@ -61,11 +61,11 @@ Source sotFingerprint: `d5254ac9f573`.
 
 ### D4 — Vehicle / Compatibility
 
-- **Files**: 82 (service=59, test=10, config=8, controller=5)
+- **Files**: 92 (service=59, test=17, config=11, controller=5)
 - **Runtime entrypoints**: 41
-- **Top owners**: @ak125/vehicle-team (43), @ak125 (39)
-- **Knowledge prose**: [`diagnostic-engine`](modules/diagnostic-engine.md), [`vehicle-context`](modules/vehicle-context.md), [`vehicles`](modules/vehicles.md)
-- **Status**: LIVE=58, UNKNOWN=24
+- **Top owners**: @ak125/vehicle-team (53), @ak125 (39)
+- **Knowledge prose**: [`diagnostic-engine`](modules/diagnostic-engine.md), [`mcp-validation`](modules/mcp-validation.md), [`vehicle-context`](modules/vehicle-context.md), [`vehicles`](modules/vehicles.md)
+- **Status**: LIVE=61, UNKNOWN=31
 
 ### D5 — Blog / Content
 
@@ -93,11 +93,11 @@ Source sotFingerprint: `d5254ac9f573`.
 
 ### D8 — Read Model / Serving (RM)
 
-- **Files**: 945 (config=465, route=246, service=176, controller=38, test=20)
+- **Files**: 946 (config=466, route=246, service=176, controller=38, test=20)
 - **Runtime entrypoints**: 347
-- **Top owners**: @ak125/frontend-team (685), @ak125/admin-team (260)
+- **Top owners**: @ak125/frontend-team (686), @ak125/admin-team (260)
 - **Knowledge prose**: [`admin`](modules/admin.md), [`staff`](modules/staff.md)
-- **Status**: LIVE=498, UNKNOWN=447
+- **Status**: LIVE=498, UNKNOWN=448
 
 ### D9 — Import / ETL / Normalisation
 

@@ -4,48 +4,40 @@
  * ADR-032 D2/D3/D7/D9 (Phase 2 PR-2 ex-PR-3).
  *
  * Wraps les RPCs `kg_*` créées en PR-1 (migration 20260429_diag_maintenance_via_kg.sql).
- * Single point of access pour le calendrier maintenance — supprime les queries
- * directes vers `__diag_maintenance_*` (tables ghost qui n'existaient pas en DB).
+ * Source du calendrier : intervalles MaintenanceInterval du KG, distincts des
+ * opérations `__diag_maintenance_operation` et de leurs liens, présents en DB
+ * et utilisés par le moteur d'entretien du parcours diagnostic.
  *
  * Méthodes :
- *   - getSchedule(typeId, currentKm) → MaintenanceInterval items personnalisés (fuel-aware)
+ *   - getSchedule(typeId, currentKm) → MaintenanceInterval intervalles génériques (filtre carburant indicatif)
  *   - getAlerts(typeId, milestones?) → 5 paliers d'actions (zéro hardcode des paliers)
  *
- * `getCalendar(typeId, currentKm)` agrégé (D9) sera implémenté en Phase 4 PR-6
- * (dépend de `DiagnosticContentService` qui lit `controles-mensuels.md` via
- * submodule git wiki). Découplage scope cohérent.
+ * `getCalendar(typeId, currentKm)` agrège ces intervalles et les contrôles wiki.
+ * Sans historique par opération, aucun statut personnel ne peut être calculé.
  *
  * @see governance-vault/ledger/decisions/adr/ADR-032-diagnostic-maintenance-unification.md
  * @see backend/supabase/migrations/20260429_diag_maintenance_via_kg.sql
  */
-import { Injectable, Inject, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  Logger,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { DiagnosticContentService } from './diagnostic-content.service';
 
-// ── DTOs (aligned on RPC return shapes) ─────────────────
-
-export interface MaintenanceScheduleItem {
-  rule_alias: string;
-  rule_label: string;
-  km_interval: number | null;
-  month_interval: number | null;
-  maintenance_priority: 'critique' | 'important' | 'normal' | null;
-  applies_to_fuel: 'essence' | 'diesel' | null;
-  km_remaining: number;
-  status: 'ok' | 'due_soon' | 'overdue' | 'time_only';
-}
-
-export interface MaintenanceAlertAction {
-  rule_alias: string;
-  rule_label: string;
-  maintenance_priority: 'critique' | 'important' | 'normal' | null;
-  km_interval: number | null;
-}
-
-export interface MaintenanceAlertMilestone {
-  milestone_km: number;
-  actions: MaintenanceAlertAction[];
-}
+import {
+  MaintenanceScheduleSchema,
+  MaintenanceAlertsSchema,
+  type MaintenanceScheduleItem,
+  type MaintenanceAlertMilestone,
+} from '../types/maintenance-calendar.schema';
+export type {
+  MaintenanceScheduleItem,
+  MaintenanceAlertAction,
+  MaintenanceAlertMilestone,
+} from '../types/maintenance-calendar.schema';
 
 /**
  * Calendrier d'entretien agrégé (ADR-032 D9).
@@ -57,6 +49,8 @@ export interface MaintenanceCalendar {
   type_id: number | null;
   current_km: number;
   fuel_type: string | null;
+  assessment_basis: 'generic_intervals';
+  applicability: 'unverified';
   schedule: MaintenanceScheduleItem[];
   alerts: MaintenanceAlertMilestone[];
   controles_mensuels: Array<{
@@ -76,8 +70,8 @@ export class MaintenanceCalculatorService extends SupabaseBaseService {
   protected readonly diagnosticContent!: DiagnosticContentService;
 
   /**
-   * Schedule entretien périodique pour un véhicule donné.
-   * Fuel-aware automatique via auto_type.type_fuel (ADR-032 D2).
+   * Intervalles génériques ; le filtre carburant de la RPC ne prouve pas
+   * une applicabilité constructeur. Son statut sans historique est neutralisé.
    *
    * @param typeId    auto_type.type_id (résolu en fuel_type côté RPC)
    * @param currentKm kilométrage actuel du véhicule
@@ -88,23 +82,29 @@ export class MaintenanceCalculatorService extends SupabaseBaseService {
     currentKm: number,
     fuelType?: string | null,
   ): Promise<MaintenanceScheduleItem[]> {
-    const { data, error } = await this.callRpc<MaintenanceScheduleItem[]>(
-      'kg_get_smart_maintenance_schedule',
-      {
-        p_type_id: typeId,
-        p_current_km: currentKm,
-        p_fuel_type: fuelType ?? null,
-      },
-      { source: 'internal' },
-    );
-
-    if (error) {
-      this.logger.error(
-        `kg_get_smart_maintenance_schedule failed for type_id=${typeId}: ${error.message}`,
+    try {
+      const { data, error } = await this.callRpc<unknown>(
+        'kg_get_smart_maintenance_schedule',
+        {
+          p_type_id: typeId,
+          p_current_km: currentKm,
+          p_fuel_type: fuelType ?? null,
+        },
+        { source: 'internal' },
       );
-      return [];
+      const parsed = MaintenanceScheduleSchema.safeParse(data);
+      if (error || !parsed.success) {
+        throw new Error(error?.message ?? 'Invalid schedule response');
+      }
+      return parsed.data;
+    } catch (error) {
+      this.logger.error(
+        `Maintenance schedule unavailable: ${error instanceof Error ? error.message : 'RPC failure'}`,
+      );
+      throw new ServiceUnavailableException(
+        "Les données d'entretien sont temporairement indisponibles.",
+      );
     }
-    return data ?? [];
   }
 
   /**
@@ -118,22 +118,25 @@ export class MaintenanceCalculatorService extends SupabaseBaseService {
     fuelType?: string | null,
     milestones: number[] = DEFAULT_MILESTONES,
   ): Promise<MaintenanceAlertMilestone[]> {
-    const { data, error } = await this.callRpc<MaintenanceAlertMilestone[]>(
-      'kg_get_maintenance_alerts_by_milestone',
-      {
-        p_milestones: milestones,
-        p_fuel_type: fuelType ?? null,
-      },
-      { source: 'internal' },
-    );
-
-    if (error) {
-      this.logger.error(
-        `kg_get_maintenance_alerts_by_milestone failed: ${error.message}`,
+    try {
+      const { data, error } = await this.callRpc<unknown>(
+        'kg_get_maintenance_alerts_by_milestone',
+        { p_milestones: milestones, p_fuel_type: fuelType ?? null },
+        { source: 'internal' },
       );
-      return [];
+      const parsed = MaintenanceAlertsSchema.safeParse(data);
+      if (error || !parsed.success) {
+        throw new Error(error?.message ?? 'Invalid milestone response');
+      }
+      return parsed.data;
+    } catch (error) {
+      this.logger.error(
+        `Maintenance milestones unavailable: ${error instanceof Error ? error.message : 'RPC failure'}`,
+      );
+      throw new ServiceUnavailableException(
+        "Les données d'entretien sont temporairement indisponibles.",
+      );
     }
-    return data ?? [];
   }
 
   /**
@@ -166,6 +169,8 @@ export class MaintenanceCalculatorService extends SupabaseBaseService {
       type_id: typeId,
       current_km: currentKm,
       fuel_type: fuelType ?? null,
+      assessment_basis: 'generic_intervals',
+      applicability: 'unverified',
       schedule,
       alerts,
       controles_mensuels: controlesItems,

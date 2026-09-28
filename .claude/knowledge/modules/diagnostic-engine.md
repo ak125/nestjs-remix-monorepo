@@ -11,7 +11,7 @@ primary_files:
 - backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts
 - backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts
 - backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts
-- backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts
+- backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts
 depends_on:
 - DatabaseModule
 - VehicleContextModule
@@ -53,7 +53,7 @@ ADR-031 : aucun enrichissement RAG ne produit de faits diagnostic. La voie `RagE
 - [backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts](../../../backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts)
 - [backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts](../../../backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts)
 - [backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts](../../../backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts)
-- [backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts](../../../backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts)
+- [backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts](../../../backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts)
 
 <!-- END AUTO-GENERATED -->
 
