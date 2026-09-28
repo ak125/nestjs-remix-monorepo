@@ -192,6 +192,14 @@ describe('diagnostic reference responses are checked before safety evaluation', 
     });
   });
 
+  test('suspected components are reported by gamme label, not catalogue slug', async () => {
+    const result = await pipeline(fixture().service).engine.analyze(input);
+    expect(result.success).toBe(true);
+    expect(result.data?.evidence.evidence_pack.system_suspects).toEqual([
+      'Plaquette de frein',
+    ]);
+  });
+
   test.each([
     ['__diag_safety_rule', { ...rule, urgency: null }],
     ['__diag_safety_rule', { ...rule, urgency: 'inconnue' }],

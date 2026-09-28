@@ -27,6 +27,7 @@ import { CatalogOrientationEngine } from './engines/catalog-orientation.engine';
 import { MaintenanceIntelligenceEngine } from './engines/maintenance-intelligence.engine';
 import { RagEnrichmentEngine } from './engines/rag-enrichment.engine';
 import { KgShadowService } from './services/kg-shadow.service';
+import { CAUSE_GAMME_MAP } from './constants/gamme-map.constants';
 
 @Injectable()
 export class DiagnosticEngineOrchestrator {
@@ -472,7 +473,12 @@ export class DiagnosticEngineOrchestrator {
       ...new Set(
         hypotheses
           .filter((h) => h.total_score >= 15)
-          .flatMap((h) => h.related_gamme_slugs || [h.label]),
+          .flatMap(
+            (h) =>
+              CAUSE_GAMME_MAP[h.hypothesis_id]?.map((g) => g.label) ?? [
+                h.label,
+              ],
+          ),
       ),
     ];
 
