@@ -1,30 +1,28 @@
 /**
  * DiagnosticEngine Orchestrator — Slice 2 + Slice 8
  *
- * Delegue a 6 engines :
+ * Delegue a 5 engines :
  *   1. SignalInterpretation    → resout les signaux
  *   2. HypothesisScoring       → scoring multi-couches (6 axes)
  *   3. RiskSafety              → court-circuit securite
  *   4. CatalogOrientation      → CatalogGuard
  *   5. MaintenanceIntelligence → entretien lie
- *   6. RagEnrichment           → faits documentes (degradation gracieuse)
  *
  * Pipeline :
- *   Input → Validation → Signal → Scoring → Risk → Catalog → Maintenance → RAG → EvidencePack
+ *   Input → Validation → Signal → Scoring → Risk → Catalog → Maintenance → EvidencePack
  */
 import { Injectable, Logger } from '@nestjs/common';
 import {
   AnalyzeDiagnosticInputSchema,
   type AnalyzeDiagnosticInput,
 } from './types/diagnostic-input.schema';
-import type { EvidencePack, RagFact } from './types/evidence-pack.schema';
+import type { EvidencePack } from './types/evidence-pack.schema';
 import { DiagnosticEngineDataService } from './diagnostic-engine.data-service';
 import { SignalInterpretationEngine } from './engines/signal-interpretation.engine';
 import { HypothesisScoringEngine } from './engines/hypothesis-scoring.engine';
 import { RiskSafetyEngine } from './engines/risk-safety.engine';
 import { CatalogOrientationEngine } from './engines/catalog-orientation.engine';
 import { MaintenanceIntelligenceEngine } from './engines/maintenance-intelligence.engine';
-import { RagEnrichmentEngine } from './engines/rag-enrichment.engine';
 import { KgShadowService } from './services/kg-shadow.service';
 
 @Injectable()
@@ -38,7 +36,6 @@ export class DiagnosticEngineOrchestrator {
     private readonly riskEngine: RiskSafetyEngine,
     private readonly catalogEngine: CatalogOrientationEngine,
     private readonly maintenanceEngine: MaintenanceIntelligenceEngine,
-    private readonly ragEngine: RagEnrichmentEngine,
     private readonly kgShadow: KgShadowService, // PR-E — fire-and-forget shadow
   ) {}
 
@@ -117,14 +114,8 @@ export class DiagnosticEngineOrchestrator {
       if (cost) (g as unknown as Record<string, unknown>).cost_range = cost;
     }
 
-    // ── 8. RAG Enrichment Engine (graceful degradation) ─
-    const ragFacts = await this.ragEngine.enrich(
-      input.system_scope,
-      signal.resolved_symptom_slugs,
-      hypotheses,
-    );
-
-    // ── 9. Assemble EvidencePack ───────────────────────
+    // ADR-031: RAG is a chatbot consumer, never a diagnostic content authority.
+    // ── 8. Assemble EvidencePack ───────────────────────
     const evidencePack = this.assembleEvidencePack(
       input,
       signal,
@@ -132,17 +123,15 @@ export class DiagnosticEngineOrchestrator {
       risk,
       catalog,
       maintenance,
-      ragFacts,
     );
 
     const elapsed = Date.now() - startTime;
     this.logger.log(
       `Diagnostic completed in ${elapsed}ms — ${hypotheses.length} hypotheses, ` +
-        `risk=${risk.risk_level}, catalog=${catalog.ready_for_catalog}, ` +
-        `rag_facts=${ragFacts.length}`,
+        `risk=${risk.risk_level}, catalog=${catalog.ready_for_catalog}`,
     );
 
-    // ── 9b. KG shadow comparison (PR-E, fire-and-forget) ────
+    // ── 8b. KG shadow comparison (PR-E, fire-and-forget) ────
     // Calls `kg_diagnose_vehicle_aware` in parallel with the canonical
     // engines, compares top-N fault_ids, emits `diagnostic_kg_shadow_diverged`
     // event. NEVER blocks the response ; failures are swallowed.
@@ -163,7 +152,7 @@ export class DiagnosticEngineOrchestrator {
       })),
     });
 
-    // ── 10. Save session ───────────────────────────────
+    // ── 9. Save session ───────────────────────────────
     const sessionId = await this.dataService.saveSession({
       intent_type: input.intent_type,
       system_scope: input.system_scope,
@@ -189,7 +178,6 @@ export class DiagnosticEngineOrchestrator {
     risk: ReturnType<RiskSafetyEngine['assess']>,
     catalog: ReturnType<CatalogOrientationEngine['evaluate']>,
     maintenance: Awaited<ReturnType<MaintenanceIntelligenceEngine['assess']>>,
-    ragFacts: RagFact[],
   ): EvidencePack {
     // ── Factual inputs ─────────────────────────────────
     const confirmed: string[] = [];
@@ -344,7 +332,6 @@ export class DiagnosticEngineOrchestrator {
         },
         maintenance_recommendations: maintenance.recommendations,
         preventive_schedule: maintenance.preventive_schedule,
-        rag_facts: ragFacts.length > 0 ? ragFacts : undefined,
         allowed_claims: allowedClaims,
         forbidden_claims_runtime: forbiddenClaims,
         ui_block_inputs: {

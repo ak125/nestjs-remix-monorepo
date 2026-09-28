@@ -3,6 +3,12 @@
  * Aligned on backend EvidencePack output (Slice 2)
  */
 
+import {
+  type HumanEscalation,
+  type IntentLayer,
+  type RecommendedAction,
+} from "./results/v1a-intent-types";
+
 export interface WizardState {
   step: number;
   vehicle: {
@@ -84,13 +90,6 @@ export interface MaintenanceRecommendation {
   related_pg_id?: number;
 }
 
-export interface RagFact {
-  evidence_type: string;
-  content: string;
-  source_file?: string;
-  truth_level?: "L1" | "L2" | "L3" | "L4";
-}
-
 export interface EvidencePack {
   factual_inputs_confirmed: string[];
   factual_inputs_missing: string[];
@@ -108,7 +107,6 @@ export interface EvidencePack {
     suggested_gammes: SuggestedGamme[];
   };
   maintenance_recommendations?: MaintenanceRecommendation[];
-  rag_facts?: RagFact[];
   allowed_claims: string[];
   forbidden_claims_runtime: string[];
   signal_quality?: string;
@@ -123,9 +121,9 @@ export interface DiagnosticApiResponse {
   // V1A.0 Intent Resolution fields (present when DIAGNOSTIC_PIPELINE_V1_ENABLED=true)
   mode?: "reactive";
   versions?: { pipeline_version: string };
-  intent?: import("./results/v1a-intent-types").IntentLayer;
-  recommended_actions?: import("./results/v1a-intent-types").RecommendedAction[];
-  human_escalation?: import("./results/v1a-intent-types").HumanEscalation;
+  intent?: IntentLayer;
+  recommended_actions?: RecommendedAction[];
+  human_escalation?: HumanEscalation;
 }
 
 export interface SymptomOption {
