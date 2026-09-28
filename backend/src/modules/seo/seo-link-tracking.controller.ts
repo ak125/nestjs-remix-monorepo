@@ -19,6 +19,8 @@ import {
   Query,
   Headers,
   Logger,
+  UseGuards,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -35,6 +37,7 @@ import {
   LinkPerformanceReport,
 } from './infrastructure/seo-link-tracking.service';
 import { z } from 'zod';
+import { InternalApiKeyGuard } from '@auth/internal-api-key.guard';
 
 // ── Body schemas (public, unauthenticated beacon endpoints) ────────────────
 // These POST endpoints are hit fire-and-forget via `navigator.sendBeacon`
@@ -47,6 +50,19 @@ import { z } from 'zod';
 // and prevents the 500 previously reported to Sentry
 // (`TypeError: reading 'linkType'`). Unknown extra keys are stripped, never a
 // hard reject, so a slightly richer client payload can't drop legit telemetry.
+
+// Do not reinterpret negative, fractional, repeated or partially numeric query values.
+// Also reject a retention period that cannot be represented by the service's Date.
+const RetentionDaysSchema = z
+  .string()
+  .regex(/^[1-9][0-9]*$/)
+  .transform(Number)
+  .pipe(z.number().int().positive())
+  .refine((days) => {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - days);
+    return Number.isFinite(cutoff.getTime());
+  });
 
 const DEVICE_TYPES = ['mobile', 'desktop', 'tablet'] as const;
 const LINK_POSITIONS = [
@@ -259,6 +275,7 @@ export class SeoLinkTrackingController {
    * 📊 Agrège les métriques quotidiennes (appelé par cron job)
    */
   @Post('aggregate')
+  @UseGuards(InternalApiKeyGuard)
   @ApiOperation({ summary: 'Agrège les métriques quotidiennes (cron job)' })
   @ApiResponse({ status: 200, description: 'Agrégation effectuée' })
   async aggregateDailyMetrics(): Promise<{
@@ -274,6 +291,7 @@ export class SeoLinkTrackingController {
    * 🧹 Nettoie les anciennes données brutes
    */
   @Post('cleanup')
+  @UseGuards(InternalApiKeyGuard)
   @ApiOperation({ summary: 'Nettoie les données de plus de 90 jours' })
   @ApiQuery({
     name: 'daysToKeep',
@@ -281,12 +299,18 @@ export class SeoLinkTrackingController {
     description: 'Nombre de jours à conserver (défaut: 90)',
   })
   @ApiResponse({ status: 200, description: 'Nettoyage effectué' })
-  async cleanupOldData(@Query('daysToKeep') daysToKeep?: string): Promise<{
+  async cleanupOldData(@Query('daysToKeep') daysToKeep?: unknown): Promise<{
     success: boolean;
     deletedClicks: number;
     deletedImpressions: number;
   }> {
-    const days = daysToKeep ? parseInt(daysToKeep, 10) : 90;
+    const parsed = RetentionDaysSchema.safeParse(daysToKeep ?? '90');
+    if (!parsed.success) {
+      throw new BadRequestException(
+        'daysToKeep must be a positive integer representing a valid retention date',
+      );
+    }
+    const days = parsed.data;
     this.logger.log(`🧹 Déclenchement nettoyage données > ${days} jours...`);
     return this.trackingService.cleanupOldData(days);
   }

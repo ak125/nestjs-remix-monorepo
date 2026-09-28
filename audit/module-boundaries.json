@@ -718,6 +718,7 @@
       "dirs": [
         "backend/src/modules/seo",
         "backend/src/modules/seo/__tests__",
+        "backend/src/modules/seo/cli",
         "backend/src/modules/seo/config",
         "backend/src/modules/seo/constants",
         "backend/src/modules/seo/controllers",
@@ -767,8 +768,8 @@
         "scripts/seo/__tests__/fixtures/r-seo-09/positive/05-loader-non-canonical",
         "scripts/seo/lib"
       ],
-      "files_count": 276,
-      "loc_total": 58441,
+      "files_count": 280,
+      "loc_total": 58858,
       "has_barrel": true
     },
     "seo-control-plane": {

@@ -480,12 +480,15 @@ export class SeoLinkTrackingService extends SupabaseBaseService {
         );
       }
 
-      this.logger.log(
-        `✅ Nettoyage terminé: ${deletedClicks || 0} clics, ${deletedImpressions || 0} impressions supprimés`,
-      );
+      const success = !clicksError && !impressionsError;
+      if (success) {
+        this.logger.log(
+          `✅ Nettoyage terminé: ${deletedClicks || 0} clics, ${deletedImpressions || 0} impressions supprimés`,
+        );
+      }
 
       return {
-        success: true,
+        success,
         deletedClicks: deletedClicks || 0,
         deletedImpressions: deletedImpressions || 0,
       };
