@@ -61522,7 +61522,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 201,
+      "loc": 212,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/diagnostic-session-recovery.test.tsx",
       "risk": "low",

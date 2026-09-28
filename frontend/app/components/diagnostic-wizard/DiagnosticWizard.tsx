@@ -322,7 +322,7 @@ export function DiagnosticWizard() {
       }
       try {
         const response = await fetch(
-          `/api/diagnostic-engine/sessions/${sessionId}`,
+          `/api/diagnostic-engine/sessions/${encodeURIComponent(sessionId)}`,
           { signal: abort.signal },
         );
         if (!response.ok) throw new Error("unavailable");

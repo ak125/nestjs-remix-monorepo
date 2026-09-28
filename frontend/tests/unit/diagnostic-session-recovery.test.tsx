@@ -142,10 +142,21 @@ describe("saved diagnostic links", () => {
       ).toBeTruthy();
     },
   );
-  it.each(["invalid", ""])(
+  it.each([
+    "invalid",
+    "",
+    "../admin",
+    "//example.invalid",
+    "https://example.invalid/session",
+    "12345678-1234-4123-8123-123456789abc/../admin",
+    "12345678-1234-4123-8123-123456789abc?redirect=/admin",
+    "12345678-1234-4123-8123-123456789abc#fragment",
+    "%2e%2e%2fadmin",
+    "12345678-1234-4123-8123-123456789abc\n",
+  ])(
     "rejects an invalid URL identifier %j without a session request",
     async (value) => {
-      window.history.replaceState({}, "", `/diagnostic-auto?session=${value}`);
+      window.history.replaceState({}, "", `/diagnostic-auto?session=${encodeURIComponent(value)}`);
       render(<DiagnosticWizard />);
       await screen.findByRole("alert");
       expect(
