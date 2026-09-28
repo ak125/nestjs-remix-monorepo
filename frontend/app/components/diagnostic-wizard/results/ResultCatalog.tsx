@@ -1,11 +1,12 @@
 /**
  * ResultCatalog — Block 5: Catalog orientation (CatalogGuard)
- * Hidden if ready_for_catalog === false AND no suggested gammes.
- * Shows with caution if gammes present.
+ * Catalogue destinations require permission and a valid gamme alias + ID.
+ * Shows permitted suggestions with caution when compatibility is unconfirmed.
  */
 import { ShoppingCart, ExternalLink, ShieldCheck, ShieldX } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { buildGammeUrl } from "~/utils/url-builder.utils";
 import { type EvidencePack } from "../types";
 
 interface Props {
@@ -36,7 +37,9 @@ export function ResultCatalog({ catalogGuard }: Props) {
     CONFIDENCE_LABELS[catalogGuard.confidence_before_purchase] ||
     CONFIDENCE_LABELS.low;
 
-  const hasGammes = catalogGuard.suggested_gammes.length > 0;
+  const hasGammes =
+    catalogGuard.allowed_output_mode !== "none" &&
+    catalogGuard.suggested_gammes.length > 0;
 
   return (
     <Card>
@@ -78,32 +81,38 @@ export function ResultCatalog({ catalogGuard }: Props) {
               Familles de pièces concernées
             </p>
             <div className="grid gap-2">
-              {catalogGuard.suggested_gammes.map((g) => (
-                <a
-                  key={g.gamme_slug}
-                  href={`/pieces/${g.gamme_slug}`}
-                  className="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50/30 transition-colors group min-h-[48px]"
-                >
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <span className="text-sm font-medium text-gray-900 group-hover:text-blue-700">
-                      {g.gamme_label}
-                    </span>
-                    <Badge
-                      variant="outline"
-                      className={`text-[10px] px-1.5 py-0 ${
-                        g.confidence === "high"
-                          ? "bg-green-50 text-green-700"
-                          : g.confidence === "medium"
-                            ? "bg-amber-50 text-amber-700"
-                            : "bg-gray-50 text-green-900"
-                      }`}
-                    >
-                      {g.confidence}
-                    </Badge>
-                  </div>
-                  <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-blue-500 shrink-0" />
-                </a>
-              ))}
+              {catalogGuard.suggested_gammes.map((g) => {
+                const href = buildGammeUrl(g.gamme_slug, g.pg_id);
+                const Tag = href ? "a" : "div";
+                return (
+                  <Tag
+                    key={g.gamme_slug}
+                    href={href}
+                    className="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50/30 transition-colors group min-h-[48px]"
+                  >
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <span className="text-sm font-medium text-gray-900 group-hover:text-blue-700">
+                        {g.gamme_label}
+                      </span>
+                      <Badge
+                        variant="outline"
+                        className={`text-[10px] px-1.5 py-0 ${
+                          g.confidence === "high"
+                            ? "bg-green-50 text-green-700"
+                            : g.confidence === "medium"
+                              ? "bg-amber-50 text-amber-700"
+                              : "bg-gray-50 text-green-900"
+                        }`}
+                      >
+                        {g.confidence}
+                      </Badge>
+                    </div>
+                    {href && (
+                      <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-blue-500 shrink-0" />
+                    )}
+                  </Tag>
+                );
+              })}
             </div>
           </div>
         )}

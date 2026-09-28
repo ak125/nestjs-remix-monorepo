@@ -6,21 +6,25 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 
 interface Props {
   missing: string[];
+  title?: string;
+  description?: string;
 }
 
-export function ResultMissing({ missing }: Props) {
+export function ResultMissing({
+  missing,
+  title = "Données manquantes",
+  description = "Ces informations permettraient d'affiner le diagnostic :",
+}: Props) {
   return (
     <Card className="border-dashed">
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2 text-gray-600">
           <HelpCircle className="w-5 h-5" />
-          Données manquantes
+          {title}
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="text-xs text-gray-500 mb-2">
-          Ces informations permettraient d'affiner le diagnostic :
-        </p>
+        <p className="text-xs text-gray-500 mb-2">{description}</p>
         <ul className="space-y-1">
           {missing.map((m, i) => (
             <li

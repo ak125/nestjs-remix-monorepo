@@ -1,0 +1,465 @@
+{
+  "scope_requested": "Verifier le rapport et corriger le code ; continuer les corrections et ameliorations",
+  "scope_actually_scanned": "Saved diagnostic link, session retrieval, persisted result contract and coexistence with local drafts",
+  "files_read_count": 32,
+  "files_read": [
+    ".claude/canon-mirrors/agent-exit-contract.md",
+    ".claude/knowledge/REPO_MAP.md",
+    ".claude/rules/backend.md",
+    ".claude/rules/frontend.md",
+    ".claude/rules/security-hooks.md",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "audit/registry/canonical.json",
+    "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
+    "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
+    "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
+    "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
+    "backend/src/modules/diagnostic-engine/diagnostic-session-integrity.test.ts",
+    "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts",
+    "backend/src/modules/diagnostic-engine/maintenance-calendar-integrity.test.ts",
+    "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts",
+    "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts",
+    "backend/supabase/migrations/20260308_diagnostic_engine_mvp.sql",
+    "docs/audits/diagnostic-coverage-20260928/CHECKPOINT.md",
+    "docs/audits/diagnostic-coverage-20260928/coverage-manifest.json",
+    "frontend/app/components/diagnostic-wizard/DiagnosticWizard.tsx",
+    "frontend/app/components/diagnostic-wizard/results/DiagnosticResults.tsx",
+    "frontend/app/components/diagnostic-wizard/results/ResultSummary.tsx",
+    "frontend/app/components/diagnostic-wizard/types.ts",
+    "frontend/app/routes/admin.diagnostic-engine.tsx",
+    "frontend/app/routes/diagnostic-auto._index.tsx",
+    "frontend/tests/unit/diagnostic-critical-urgency.test.tsx",
+    "frontend/tests/unit/diagnostic-result-links.test.tsx",
+    "frontend/tests/unit/diagnostic-session-recovery.test.tsx",
+    "frontend/tests/unit/diagnostic-wizard-recovery.test.tsx",
+    "frontend/tests/unit/diagnostic-wizard-submission.test.tsx",
+    "log.md"
+  ],
+  "read_scope_note": "Targeted excerpts/searches, authored tests and complete small files, not exhaustive repository coverage",
+  "rules_unchanged_against_prior_candidate": [
+    "AGENTS.md",
+    "CLAUDE.md",
+    ".claude/rules/backend.md",
+    ".claude/rules/frontend.md",
+    ".claude/rules/security-hooks.md",
+    ".claude/canon-mirrors/agent-exit-contract.md"
+  ],
+  "delegate_scope": {
+    "files": [
+      "frontend/app/components/diagnostic-wizard/DiagnosticWizard.tsx",
+      "frontend/app/routes/diagnostic-auto._index.tsx",
+      "frontend/app/routes/admin.diagnostic-engine.tsx",
+      "frontend/app/components/diagnostic-wizard/results/DiagnosticResults.tsx",
+      "frontend/tests/unit/diagnostic-wizard-recovery.test.tsx",
+      "frontend/tests/unit/diagnostic-wizard-submission.test.tsx"
+    ],
+    "read_only": true,
+    "no_subdelegation": true,
+    "result": "Shared link has no session consumer; local draft is independent"
+  },
+  "base": "4a2871dc4d19067c3ae077d6a79021b49cc60237",
+  "previous_candidate_tree": "09485a7252f77454a52433a2a9c99eb3c7f50086",
+  "latest_observed_main": "4fca2ef26f6af27451e7bb31945982258c904ede",
+  "branch": "codex/diagnostic-integrity-20260926",
+  "changed_code_test_files_this_lot": [
+    "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
+    "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
+    "backend/src/modules/diagnostic-engine/diagnostic-session-integrity.test.ts",
+    "frontend/app/components/diagnostic-wizard/DiagnosticWizard.tsx",
+    "frontend/tests/unit/diagnostic-session-recovery.test.tsx"
+  ],
+  "cumulative_changed_code_test_files": [
+    {
+      "path": "backend/src/modules/diagnostic-engine/constants/gamme-map.constants.ts",
+      "sha256": "f5246d9713a1ba83141818edb331b5124a4bc0be4f3ff65460126fe08b20e002"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
+      "sha256": "ccf53a4853a0033c4636baa6cca4acda44eb7505c5f2b7bc6b828993fcb6f4fa"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
+      "sha256": "b103001585e67770c6ca27038b99d2a72178c03ecf8d0d67516aff3c08b9edeb"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
+      "sha256": "3457b9fbe2534199cfe9937b104728d1bccfaa7141a7c91b8d594521de0edc48"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
+      "sha256": "e61e7e0eb118d29e58d196efd92da4af4c00cadbb373df2bbf90fd8a36e6c67b"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/diagnostic-session-integrity.test.ts",
+      "sha256": "c98ba18dd77042032cb9d8a9829f121c0efef9298217d97ac08919d8e0e548ed"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts",
+      "sha256": "f437b2a6243cda21cf73a3e7248000c38e152f7d5dcabfcbb5389dcc691304d0"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
+      "sha256": "9ec5e306a89a092b348c7fb8676b59502383367a74ccf0982a124152861b963e"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
+      "sha256": "df448ba6d564eb39b238c28cd6171923bf151375dbb71b78dc7551682bf0436c"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.test.ts",
+      "sha256": "22243a4b7cc4edfac1808e2bc77943326d8ed734a00f06f7ab06385b0cfa2c2a"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
+      "sha256": "56eba4aa244052f44929927e82378622e6ee86237b2770a560cefc1639113c24"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/engines/risk-safety.engine.ts",
+      "sha256": "be9465074020295bde3bd01c351a94edecc938951bd687b67612cdc3aad064d9"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
+      "sha256": "b1a4897f26a3fbd1f5dfb339a5e305b7e2f6ad22f35a8c0d4a552190e68b1a64"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/maintenance-calendar-integrity.test.ts",
+      "sha256": "560741f9714b9c976116defe98500987b188aa9623a4a7276e6ee6ea6074c243"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/maintenance-flow.test.ts",
+      "sha256": "397eff003109bc9c7c02f71acbcbf23ab21e3019c2640b57b7cbf712298ecf39"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
+      "sha256": "6315cfc8d6700aa85ae7c380f15ab35a43dbe3b9c86d1099f69b8201775f1131"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/services/action-recommender.test.ts",
+      "sha256": "1637cff54deec17db72c8b6f69792b138d00cb6d32a187ce5cfe48d4eab8864e"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/services/kg-shadow.service.test.ts",
+      "sha256": "ef0d3a207a5bd7115adc1162775f66ffb04a9e837d0d37987f5653a287ea3d54"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/services/kg-shadow.service.ts",
+      "sha256": "fc9923ee28e0cbd1e45b9ee158c0b104ea034fe90c1ffa4d163256169d27984a"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts",
+      "sha256": "b55e42e603bbe2b5f4f141e5226f8d8fde7d3d9c85517c6a823b69d9730d5f42"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts",
+      "sha256": "63f667c8a977f9cbcadd94f419f612451646d2a6fc18be5351cf04e0d9e88077"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/types/diagnostic-reference.schema.ts",
+      "sha256": "b47b37814dfea5a20a4733551d0333c820cc8490776aa70a710a05d59eb660a9"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts",
+      "sha256": "6f5c160e7c005c9c3c4468c90e8a19b6c1f888ef73611398a3feaba923260f3d"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/types/maintenance-calendar.schema.ts",
+      "sha256": "ecd4a8a113b3b0316ef250a8a4e341fcb77f92bb7ab86905f9689779c9594356"
+    },
+    {
+      "path": "backend/src/modules/mcp-validation/services/mcp-query-diagnostic.test.ts",
+      "sha256": "732ee2cdce0b02abfa5fc548e48a3f7b1cac7732fbf0f24fda224b391175bcd0"
+    },
+    {
+      "path": "backend/src/modules/mcp-validation/services/mcp-query.service.ts",
+      "sha256": "38c0323aa7447e611f4522bb8cb16b413e9b6252850e065e4d241add1bda1b4e"
+    },
+    {
+      "path": "backend/src/modules/mcp-validation/types/mcp-diagnose.schema.ts",
+      "sha256": "5a945610a8da904cde9b5423ed394bd1905496963b64d4c3efc561b886588fa8"
+    },
+    {
+      "path": "backend/src/modules/mcp-validation/types/mcp-verify.types.ts",
+      "sha256": "f3e454c61001139a9cd98a3b701b5f0174fe6ba68079a9e8dea68d5094999f18"
+    },
+    {
+      "path": "backend/tests/unit/maintenance-calculator.service.test.ts",
+      "sha256": "02b9d8967376161e37b38338ea80ec51ad5daf4ed4a2f3a16e9aef2e82f9d504"
+    },
+    {
+      "path": "backend/tests/unit/maintenance-calendar-endpoint.test.ts",
+      "sha256": "e760a9d71cdfbfece3bbb79ae6001fca781b550510f8e3b7ef36abdbf3ecb250"
+    },
+    {
+      "path": "frontend/app/components/diagnostic-wizard/DiagnosticWizard.tsx",
+      "sha256": "39c90e45eabe9a862b2006533c79700ef90f52e446d335fc31cbe284149068f1"
+    },
+    {
+      "path": "frontend/app/components/diagnostic-wizard/hooks/use-diagnostic-vehicle-selector.ts",
+      "sha256": "ca5f052c47ec24ed707d1d8c6846914462bf1d278c9ef7d1ad0490fa1af749f3"
+    },
+    {
+      "path": "frontend/app/components/diagnostic-wizard/results/DiagnosticResults.tsx",
+      "sha256": "c7a2193d2a5054fc9d3579d2dea941a69de27d92f2393f0d2e16e7d0dff89c06"
+    },
+    {
+      "path": "frontend/app/components/diagnostic-wizard/results/ResultCatalog.tsx",
+      "sha256": "b472563732c01b7497fd10ada171f6c3a13cf0f8e4f8d70d2ac2afbea63a3379"
+    },
+    {
+      "path": "frontend/app/components/diagnostic-wizard/results/ResultHypotheses.tsx",
+      "sha256": "edd054f111ac0a71a9195913436265c8edca5c640f3f5ce430bd0a13a8445332"
+    },
+    {
+      "path": "frontend/app/components/diagnostic-wizard/results/ResultMaintenance.tsx",
+      "sha256": "703cef5fc1585619682ee989837329168bf6d0168c85e7d4127a35ef10608c38"
+    },
+    {
+      "path": "frontend/app/components/diagnostic-wizard/results/ResultMissing.tsx",
+      "sha256": "77772cd9a9e0ad81074f243cefc5af892555d6754452889247eab8febea9d5c0"
+    },
+    {
+      "path": "frontend/app/components/diagnostic-wizard/steps/StepMaintenance.tsx",
+      "sha256": "00af60e449095353c3769af764486a35719f8a04c38e890509f1c53d340b6413"
+    },
+    {
+      "path": "frontend/app/components/diagnostic-wizard/steps/StepSymptom.tsx",
+      "sha256": "719fb605591faf30e14c4e17897a7033404263e03f34bc87ee9e17966bdb6197"
+    },
+    {
+      "path": "frontend/app/components/diagnostic-wizard/steps/StepVehicle.tsx",
+      "sha256": "1462c42218439f7d99b5a01d5541548dbef08f07a1b6fceb7d919e99a5e83a4b"
+    },
+    {
+      "path": "frontend/app/components/diagnostic-wizard/types.ts",
+      "sha256": "c0ca415cc8ef3f48ab0362fa64b1892b8209e49fa9401408c961afc647956f99"
+    },
+    {
+      "path": "frontend/app/routes/blog-pieces-auto.calendrier-entretien.tsx",
+      "sha256": "0cb7cae340a52d8a86f42c1972bfdd1d44eb2d58ded06b7636d7af96791ae92a"
+    },
+    {
+      "path": "frontend/app/routes/diagnostic.tsx",
+      "sha256": "1da5d63869dcf97d47251dc9b38facb16e12b66165c92d92e48f2f2d072db892"
+    },
+    {
+      "path": "frontend/app/utils/url-builder.utils.ts",
+      "sha256": "e497d9a119ba002b78ff33921d2c15437ff893f043c52e97d9cd056b202a4ff1"
+    },
+    {
+      "path": "frontend/tests/unit/diagnostic-critical-urgency.test.tsx",
+      "sha256": "576d7aaacecd0d58fdd38dc9c3fce2472ac74b66c209b91e21ebaace1d7ff320"
+    },
+    {
+      "path": "frontend/tests/unit/diagnostic-legacy-navigation.test.tsx",
+      "sha256": "33ad31d69a33a43207779e04fcd634ed060b81cf5ba58f49cbdf2c1d0494ab6c"
+    },
+    {
+      "path": "frontend/tests/unit/diagnostic-maintenance-flow.test.tsx",
+      "sha256": "239fae12f8078742b920210ca7009caebb13dd600e440e9c00b45929ad9e7511"
+    },
+    {
+      "path": "frontend/tests/unit/diagnostic-maintenance-step.test.tsx",
+      "sha256": "6fd4bcdb8dddedc490d984ed03c4e96180ab743608483802c61b8811a812fe58"
+    },
+    {
+      "path": "frontend/tests/unit/diagnostic-result-links.test.tsx",
+      "sha256": "2aa7d5a8b0051f4b793fbd33338275ca2084cad59e898badb22da168eefc1e32"
+    },
+    {
+      "path": "frontend/tests/unit/diagnostic-selection-freshness.test.tsx",
+      "sha256": "90326b33470830117f285b7824110ea2a431a1bfd6ba846086e86bf0506dce92"
+    },
+    {
+      "path": "frontend/tests/unit/diagnostic-session-recovery.test.tsx",
+      "sha256": "e4d58510b4a99b656c1409755ec1fd9a12bb3754099c7368ae7996912a25e10f"
+    },
+    {
+      "path": "frontend/tests/unit/diagnostic-wizard-recovery.test.tsx",
+      "sha256": "2454a3ab8ba6a6d490a1be42a40cbda080163670a7a8734f4b1b5504afc9bc3e"
+    },
+    {
+      "path": "frontend/tests/unit/diagnostic-wizard-submission.test.tsx",
+      "sha256": "48ebea7bc67757aaa9a6cab975814df7dea1732b06a3ca425096d6ae841156cb"
+    }
+  ],
+  "preserved_prior_code_test_files_count": 48,
+  "excluded_paths": [
+    "auth and RLS changes",
+    "payments",
+    "prices/stocks",
+    "cart/orders",
+    "indexed SEO changes",
+    "deployment and service configuration",
+    "database mutations"
+  ],
+  "unscanned_zones": [
+    "full repository",
+    "live database",
+    "real browser",
+    "full app bootstrap",
+    "vehicle cookie",
+    "optional intent layer",
+    "CI/PREPROD/PROD",
+    "mechanical calibration",
+    "all historical result shapes"
+  ],
+  "corrections_proposed": [],
+  "corrections_applied": {
+    "authorization": "Verifier le rapport et corriger le code; continuer les corrections et ameliorations",
+    "scope": "isolated DEV worktree",
+    "production_files": 3,
+    "test_files": 2
+  },
+  "validation_executed": {
+    "backend": {
+      "tests": 374,
+      "suites": 17,
+      "new_cases": 12,
+      "red_before_fix": {
+        "failed": 9,
+        "passed": 3
+      }
+    },
+    "frontend": {
+      "tests": 96,
+      "files": 9,
+      "new_cases": 12,
+      "red_before_fix": {
+        "failed": 11,
+        "passed": 0
+      },
+      "fresh_run": true
+    },
+    "types": "full backend and frontend passed",
+    "lint": "five changed files passed with zero warnings",
+    "http": {
+      "transport": "Real Nest controller on ephemeral loopback HTTP; PostgREST and storage simulated in memory",
+      "database_queries": 0,
+      "database_writes": 0,
+      "simulated_session_writes": 6,
+      "cases": [
+        {
+          "case": "voyant_huile",
+          "status": 200,
+          "success": true,
+          "exact_result_preserved": true,
+          "writes_during_lookup": 0
+        },
+        {
+          "case": "perte_puissance_filtration",
+          "status": 200,
+          "success": true,
+          "exact_result_preserved": true,
+          "writes_during_lookup": 0
+        },
+        {
+          "case": "bruit_claquement_moteur",
+          "status": 200,
+          "success": true,
+          "exact_result_preserved": true,
+          "writes_during_lookup": 0
+        },
+        {
+          "case": "perte_puissance_distribution",
+          "status": 200,
+          "success": true,
+          "exact_result_preserved": true,
+          "writes_during_lookup": 0
+        },
+        {
+          "case": "temoin_moteur_distribution",
+          "status": 200,
+          "success": true,
+          "exact_result_preserved": true,
+          "writes_during_lookup": 0
+        },
+        {
+          "case": "heater_weak",
+          "status": 200,
+          "success": true,
+          "exact_result_preserved": true,
+          "writes_during_lookup": 0
+        },
+        {
+          "case": "empty_result",
+          "status": 200,
+          "success": false,
+          "error": "Résultat sauvegardé illisible. Relancez une analyse."
+        },
+        {
+          "case": "null_result",
+          "status": 200,
+          "success": false,
+          "error": "Résultat sauvegardé illisible. Relancez une analyse."
+        },
+        {
+          "case": "unknown_risk",
+          "status": 200,
+          "success": false,
+          "error": "Résultat sauvegardé illisible. Relancez une analyse."
+        },
+        {
+          "case": "invalid_date",
+          "status": 200,
+          "success": false,
+          "error": "Résultat sauvegardé illisible. Relancez une analyse."
+        },
+        {
+          "case": "invalid_uuid",
+          "status": 200,
+          "success": false,
+          "error": "Format UUID invalide."
+        },
+        {
+          "case": "missing",
+          "status": 200,
+          "success": false,
+          "error": "Session introuvable."
+        },
+        {
+          "case": "storage_unavailable",
+          "status": 503,
+          "error": "Chargement de la session indisponible."
+        }
+      ],
+      "cases_count": 13,
+      "exact_roundtrips": 6,
+      "historical_critical_alerts_preserved": 5,
+      "not_proven": [
+        "live database persistence",
+        "browser",
+        "full app bootstrap",
+        "vehicle cookie",
+        "optional intent layer",
+        "CI",
+        "PREPROD",
+        "PROD"
+      ]
+    },
+    "database": "No live query or write; immutable snapshot and simulated PostgREST/storage",
+    "fixture_adjustments": [
+      "Retry response prepared before click",
+      "In-memory storage serialized as JSON to match transport and JSONB"
+    ]
+  },
+  "prior_evidence_reuse": {
+    "all_51_prior_code_hashes_matched_at_start": true,
+    "outside_lot_hashes_preserved": 48,
+    "lot9_reference_replay": "Historical evidence only; no fresh exhaustive 62-symptom replay"
+  },
+  "remaining_unknowns": [
+    "Live persistence",
+    "Historical payload diversity beyond current contract",
+    "Unused signal and usage fields",
+    "Question collection/options/effect",
+    "Climate safety rules",
+    "DTC",
+    "Identity and OEM mapping",
+    "Repair feedback",
+    "Mechanical calibration",
+    "Full integration and CI"
+  ],
+  "final_status": "VALIDATED_FOR_SCOPE_ONLY",
+  "overall_audit_status": "PARTIAL_COVERAGE"
+}

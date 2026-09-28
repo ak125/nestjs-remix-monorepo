@@ -19,9 +19,14 @@
  */
 import { z } from 'zod';
 
-// ── Urgency (aligne sur le RAG diagnostic : Haute/Moyenne/Basse) ──
+// ── Urgency (reference data + existing immediate-action timeline) ──
 
-export const UrgencyLevelEnum = z.enum(['haute', 'moyenne', 'basse']);
+export const UrgencyLevelEnum = z.enum([
+  'critique',
+  'haute',
+  'moyenne',
+  'basse',
+]);
 export type UrgencyLevel = z.infer<typeof UrgencyLevelEnum>;
 
 // ── Candidate Hypothesis ────────────────────────────────
@@ -31,6 +36,15 @@ export const CauseTypeEnum = z.enum([
   'wear_related',
   'component_fault',
   'contextual_factor',
+  // Additional reference categories introduced by the 20260321 migration.
+  // Preserve their identity; there is no documented mapping to MVP categories.
+  'wear',
+  'mechanical',
+  'hydraulic',
+  'electrical',
+  'corrosion',
+  'blockage',
+  'leak',
 ]);
 export type CauseType = z.infer<typeof CauseTypeEnum>;
 
@@ -106,6 +120,7 @@ export type RagFact = z.infer<typeof RagFactSchema>;
 
 export const EvidencePackSchema = z.object({
   evidence_pack: z.object({
+    analysis_kind: z.enum(['diagnostic', 'maintenance']).optional(),
     diagnostic_confidence: z.number().min(0).max(100).optional(),
     factual_inputs_confirmed: z.array(z.string()),
     factual_inputs_missing: z.array(z.string()),

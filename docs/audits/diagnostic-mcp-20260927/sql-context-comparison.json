@@ -1,0 +1,564 @@
+[
+  {
+    "case_name": "absent",
+    "observable_id": "12f848a8-c046-4aff-a664-b1723727a893",
+    "faults": [
+      {
+        "fault_id": "4d7f957d-ec1c-496b-8406-94f89ab134eb",
+        "raw_score": 0.574,
+        "fault_label": "Vanne EGR bloquée fermée",
+        "fault_family": "Émissions",
+        "missing_factors": [
+          "km",
+          "historique",
+          "contexte",
+          "véhicule",
+          "code_obd"
+        ],
+        "confidence_level": "very_low",
+        "confidence_score": 5,
+        "improvement_tips": [
+          "Ajoutez le kilométrage pour +15% de confidence",
+          "Ajoutez l'historique d'entretien pour +20% de confidence",
+          "Précisez le contexte (phase, température, vitesse) pour +10%",
+          "Identifiez le véhicule pour +10%",
+          "Un code OBD augmente la confidence de +15%"
+        ],
+        "probability_level": "very_low",
+        "probability_score": 6,
+        "total_observables": 1,
+        "confidence_factors": {
+          "has_km": false,
+          "has_dtc": false,
+          "has_context": false,
+          "has_history": false,
+          "has_known_vehicle": false,
+          "has_multiple_observables": false
+        },
+        "engine_family_boost": 1,
+        "is_vehicle_specific": false,
+        "matched_observables": 1,
+        "recommended_actions": [
+          {
+            "action_id": "a5f435dd-ce19-4883-9049-b0fb396fae11",
+            "action_label": "Remplacement vanne EGR"
+          }
+        ],
+        "diagnostic_timestamp": "2026-09-27T12:35:00.24928+00:00",
+        "confidence_explanation": "Informations insuffisantes pour un diagnostic fiable",
+        "matched_observable_labels": [
+          "Perte de puissance"
+        ]
+      },
+      {
+        "fault_id": "980f8bc3-5ff3-4ec4-88f7-f208fa0ff8b5",
+        "raw_score": 0.507,
+        "fault_label": "Wastegate grippée",
+        "fault_family": "Admission",
+        "missing_factors": [
+          "km",
+          "historique",
+          "contexte",
+          "véhicule",
+          "code_obd"
+        ],
+        "confidence_level": "very_low",
+        "confidence_score": 5,
+        "improvement_tips": [
+          "Ajoutez le kilométrage pour +15% de confidence",
+          "Ajoutez l'historique d'entretien pour +20% de confidence",
+          "Précisez le contexte (phase, température, vitesse) pour +10%",
+          "Identifiez le véhicule pour +10%",
+          "Un code OBD augmente la confidence de +15%"
+        ],
+        "probability_level": "very_low",
+        "probability_score": 5,
+        "total_observables": 1,
+        "confidence_factors": {
+          "has_km": false,
+          "has_dtc": false,
+          "has_context": false,
+          "has_history": false,
+          "has_known_vehicle": false,
+          "has_multiple_observables": false
+        },
+        "engine_family_boost": 1,
+        "is_vehicle_specific": false,
+        "matched_observables": 1,
+        "recommended_actions": [
+          {
+            "action_id": "c17ac72c-e0f9-4113-a8dc-6cfaac77bc7f",
+            "action_label": "Remplacement turbo"
+          }
+        ],
+        "diagnostic_timestamp": "2026-09-27T12:35:00.24928+00:00",
+        "confidence_explanation": "Informations insuffisantes pour un diagnostic fiable",
+        "matched_observable_labels": [
+          "Perte de puissance"
+        ]
+      },
+      {
+        "fault_id": "d219ea48-3e2d-4162-a7df-b0cedc08fdb4",
+        "raw_score": 0.782,
+        "fault_label": "Vanne EGR encrassée",
+        "fault_family": "Émissions",
+        "missing_factors": [
+          "km",
+          "historique",
+          "contexte",
+          "véhicule",
+          "code_obd"
+        ],
+        "confidence_level": "very_low",
+        "confidence_score": 5,
+        "improvement_tips": [
+          "Ajoutez le kilométrage pour +15% de confidence",
+          "Ajoutez l'historique d'entretien pour +20% de confidence",
+          "Précisez le contexte (phase, température, vitesse) pour +10%",
+          "Identifiez le véhicule pour +10%",
+          "Un code OBD augmente la confidence de +15%"
+        ],
+        "probability_level": "very_low",
+        "probability_score": 8,
+        "total_observables": 1,
+        "confidence_factors": {
+          "has_km": false,
+          "has_dtc": false,
+          "has_context": false,
+          "has_history": false,
+          "has_known_vehicle": false,
+          "has_multiple_observables": false
+        },
+        "engine_family_boost": 1,
+        "is_vehicle_specific": false,
+        "matched_observables": 1,
+        "recommended_actions": [
+          {
+            "action_id": "fa863167-1128-4bd9-aa6a-e70bcef29460",
+            "action_label": "Nettoyage vanne EGR"
+          },
+          {
+            "action_id": "a5f435dd-ce19-4883-9049-b0fb396fae11",
+            "action_label": "Remplacement vanne EGR"
+          }
+        ],
+        "diagnostic_timestamp": "2026-09-27T12:35:00.24928+00:00",
+        "confidence_explanation": "Informations insuffisantes pour un diagnostic fiable",
+        "matched_observable_labels": [
+          "Perte de puissance"
+        ]
+      },
+      {
+        "fault_id": "e0b2da42-4599-4fc2-ae84-89cda154a980",
+        "raw_score": 0.6375,
+        "fault_label": "Turbo HS",
+        "fault_family": "Admission",
+        "missing_factors": [
+          "km",
+          "historique",
+          "contexte",
+          "véhicule",
+          "code_obd"
+        ],
+        "confidence_level": "very_low",
+        "confidence_score": 5,
+        "improvement_tips": [
+          "Ajoutez le kilométrage pour +15% de confidence",
+          "Ajoutez l'historique d'entretien pour +20% de confidence",
+          "Précisez le contexte (phase, température, vitesse) pour +10%",
+          "Identifiez le véhicule pour +10%",
+          "Un code OBD augmente la confidence de +15%"
+        ],
+        "probability_level": "very_low",
+        "probability_score": 6,
+        "total_observables": 1,
+        "confidence_factors": {
+          "has_km": false,
+          "has_dtc": false,
+          "has_context": false,
+          "has_history": false,
+          "has_known_vehicle": false,
+          "has_multiple_observables": false
+        },
+        "engine_family_boost": 1,
+        "is_vehicle_specific": false,
+        "matched_observables": 1,
+        "recommended_actions": [
+          {
+            "action_id": "c17ac72c-e0f9-4113-a8dc-6cfaac77bc7f",
+            "action_label": "Remplacement turbo"
+          }
+        ],
+        "diagnostic_timestamp": "2026-09-27T12:35:00.24928+00:00",
+        "confidence_explanation": "Informations insuffisantes pour un diagnostic fiable",
+        "matched_observable_labels": [
+          "Perte de puissance"
+        ]
+      }
+    ]
+  },
+  {
+    "case_name": "declared",
+    "observable_id": "12f848a8-c046-4aff-a664-b1723727a893",
+    "faults": [
+      {
+        "fault_id": "4d7f957d-ec1c-496b-8406-94f89ab134eb",
+        "raw_score": 0.574,
+        "fault_label": "Vanne EGR bloquée fermée",
+        "fault_family": "Émissions",
+        "missing_factors": [
+          "véhicule",
+          "code_obd"
+        ],
+        "confidence_level": "medium",
+        "confidence_score": 55,
+        "improvement_tips": [
+          "Identifiez le véhicule pour +10%",
+          "Un code OBD augmente la confidence de +15%"
+        ],
+        "probability_level": "very_low",
+        "probability_score": 6,
+        "total_observables": 1,
+        "confidence_factors": {
+          "has_km": true,
+          "has_dtc": false,
+          "has_context": true,
+          "has_history": true,
+          "has_known_vehicle": false,
+          "has_multiple_observables": false
+        },
+        "engine_family_boost": 1,
+        "is_vehicle_specific": false,
+        "matched_observables": 1,
+        "recommended_actions": [
+          {
+            "action_id": "a5f435dd-ce19-4883-9049-b0fb396fae11",
+            "action_label": "Remplacement vanne EGR"
+          }
+        ],
+        "diagnostic_timestamp": "2026-09-27T12:35:00.24928+00:00",
+        "confidence_explanation": "Diagnostic indicatif - informations limitées",
+        "matched_observable_labels": [
+          "Perte de puissance"
+        ]
+      },
+      {
+        "fault_id": "980f8bc3-5ff3-4ec4-88f7-f208fa0ff8b5",
+        "raw_score": 0.507,
+        "fault_label": "Wastegate grippée",
+        "fault_family": "Admission",
+        "missing_factors": [
+          "véhicule",
+          "code_obd"
+        ],
+        "confidence_level": "medium",
+        "confidence_score": 55,
+        "improvement_tips": [
+          "Identifiez le véhicule pour +10%",
+          "Un code OBD augmente la confidence de +15%"
+        ],
+        "probability_level": "very_low",
+        "probability_score": 5,
+        "total_observables": 1,
+        "confidence_factors": {
+          "has_km": true,
+          "has_dtc": false,
+          "has_context": true,
+          "has_history": true,
+          "has_known_vehicle": false,
+          "has_multiple_observables": false
+        },
+        "engine_family_boost": 1,
+        "is_vehicle_specific": false,
+        "matched_observables": 1,
+        "recommended_actions": [
+          {
+            "action_id": "c17ac72c-e0f9-4113-a8dc-6cfaac77bc7f",
+            "action_label": "Remplacement turbo"
+          }
+        ],
+        "diagnostic_timestamp": "2026-09-27T12:35:00.24928+00:00",
+        "confidence_explanation": "Diagnostic indicatif - informations limitées",
+        "matched_observable_labels": [
+          "Perte de puissance"
+        ]
+      },
+      {
+        "fault_id": "d219ea48-3e2d-4162-a7df-b0cedc08fdb4",
+        "raw_score": 0.782,
+        "fault_label": "Vanne EGR encrassée",
+        "fault_family": "Émissions",
+        "missing_factors": [
+          "véhicule",
+          "code_obd"
+        ],
+        "confidence_level": "medium",
+        "confidence_score": 55,
+        "improvement_tips": [
+          "Identifiez le véhicule pour +10%",
+          "Un code OBD augmente la confidence de +15%"
+        ],
+        "probability_level": "very_low",
+        "probability_score": 8,
+        "total_observables": 1,
+        "confidence_factors": {
+          "has_km": true,
+          "has_dtc": false,
+          "has_context": true,
+          "has_history": true,
+          "has_known_vehicle": false,
+          "has_multiple_observables": false
+        },
+        "engine_family_boost": 1,
+        "is_vehicle_specific": false,
+        "matched_observables": 1,
+        "recommended_actions": [
+          {
+            "action_id": "fa863167-1128-4bd9-aa6a-e70bcef29460",
+            "action_label": "Nettoyage vanne EGR"
+          },
+          {
+            "action_id": "a5f435dd-ce19-4883-9049-b0fb396fae11",
+            "action_label": "Remplacement vanne EGR"
+          }
+        ],
+        "diagnostic_timestamp": "2026-09-27T12:35:00.24928+00:00",
+        "confidence_explanation": "Diagnostic indicatif - informations limitées",
+        "matched_observable_labels": [
+          "Perte de puissance"
+        ]
+      },
+      {
+        "fault_id": "e0b2da42-4599-4fc2-ae84-89cda154a980",
+        "raw_score": 0.6375,
+        "fault_label": "Turbo HS",
+        "fault_family": "Admission",
+        "missing_factors": [
+          "véhicule",
+          "code_obd"
+        ],
+        "confidence_level": "medium",
+        "confidence_score": 55,
+        "improvement_tips": [
+          "Identifiez le véhicule pour +10%",
+          "Un code OBD augmente la confidence de +15%"
+        ],
+        "probability_level": "very_low",
+        "probability_score": 6,
+        "total_observables": 1,
+        "confidence_factors": {
+          "has_km": true,
+          "has_dtc": false,
+          "has_context": true,
+          "has_history": true,
+          "has_known_vehicle": false,
+          "has_multiple_observables": false
+        },
+        "engine_family_boost": 1,
+        "is_vehicle_specific": false,
+        "matched_observables": 1,
+        "recommended_actions": [
+          {
+            "action_id": "c17ac72c-e0f9-4113-a8dc-6cfaac77bc7f",
+            "action_label": "Remplacement turbo"
+          }
+        ],
+        "diagnostic_timestamp": "2026-09-27T12:35:00.24928+00:00",
+        "confidence_explanation": "Diagnostic indicatif - informations limitées",
+        "matched_observable_labels": [
+          "Perte de puissance"
+        ]
+      }
+    ]
+  },
+  {
+    "case_name": "unconstrained_raw",
+    "observable_id": "12f848a8-c046-4aff-a664-b1723727a893",
+    "faults": [
+      {
+        "fault_id": "4d7f957d-ec1c-496b-8406-94f89ab134eb",
+        "raw_score": 0.574,
+        "fault_label": "Vanne EGR bloquée fermée",
+        "fault_family": "Émissions",
+        "missing_factors": [
+          "km",
+          "historique",
+          "véhicule",
+          "code_obd"
+        ],
+        "confidence_level": "low",
+        "confidence_score": 20,
+        "improvement_tips": [
+          "Ajoutez le kilométrage pour +15% de confidence",
+          "Ajoutez l'historique d'entretien pour +20% de confidence",
+          "Identifiez le véhicule pour +10%",
+          "Un code OBD augmente la confidence de +15%"
+        ],
+        "probability_level": "very_low",
+        "probability_score": 6,
+        "total_observables": 1,
+        "confidence_factors": {
+          "has_km": false,
+          "has_dtc": false,
+          "has_context": true,
+          "has_history": false,
+          "has_known_vehicle": false,
+          "has_multiple_observables": false
+        },
+        "engine_family_boost": 1,
+        "is_vehicle_specific": false,
+        "matched_observables": 1,
+        "recommended_actions": [
+          {
+            "action_id": "a5f435dd-ce19-4883-9049-b0fb396fae11",
+            "action_label": "Remplacement vanne EGR"
+          }
+        ],
+        "diagnostic_timestamp": "2026-09-27T12:35:00.24928+00:00",
+        "confidence_explanation": "Diagnostic à confirmer - plusieurs données manquantes",
+        "matched_observable_labels": [
+          "Perte de puissance"
+        ]
+      },
+      {
+        "fault_id": "980f8bc3-5ff3-4ec4-88f7-f208fa0ff8b5",
+        "raw_score": 0.507,
+        "fault_label": "Wastegate grippée",
+        "fault_family": "Admission",
+        "missing_factors": [
+          "km",
+          "historique",
+          "véhicule",
+          "code_obd"
+        ],
+        "confidence_level": "low",
+        "confidence_score": 20,
+        "improvement_tips": [
+          "Ajoutez le kilométrage pour +15% de confidence",
+          "Ajoutez l'historique d'entretien pour +20% de confidence",
+          "Identifiez le véhicule pour +10%",
+          "Un code OBD augmente la confidence de +15%"
+        ],
+        "probability_level": "very_low",
+        "probability_score": 5,
+        "total_observables": 1,
+        "confidence_factors": {
+          "has_km": false,
+          "has_dtc": false,
+          "has_context": true,
+          "has_history": false,
+          "has_known_vehicle": false,
+          "has_multiple_observables": false
+        },
+        "engine_family_boost": 1,
+        "is_vehicle_specific": false,
+        "matched_observables": 1,
+        "recommended_actions": [
+          {
+            "action_id": "c17ac72c-e0f9-4113-a8dc-6cfaac77bc7f",
+            "action_label": "Remplacement turbo"
+          }
+        ],
+        "diagnostic_timestamp": "2026-09-27T12:35:00.24928+00:00",
+        "confidence_explanation": "Diagnostic à confirmer - plusieurs données manquantes",
+        "matched_observable_labels": [
+          "Perte de puissance"
+        ]
+      },
+      {
+        "fault_id": "d219ea48-3e2d-4162-a7df-b0cedc08fdb4",
+        "raw_score": 0.782,
+        "fault_label": "Vanne EGR encrassée",
+        "fault_family": "Émissions",
+        "missing_factors": [
+          "km",
+          "historique",
+          "véhicule",
+          "code_obd"
+        ],
+        "confidence_level": "low",
+        "confidence_score": 20,
+        "improvement_tips": [
+          "Ajoutez le kilométrage pour +15% de confidence",
+          "Ajoutez l'historique d'entretien pour +20% de confidence",
+          "Identifiez le véhicule pour +10%",
+          "Un code OBD augmente la confidence de +15%"
+        ],
+        "probability_level": "very_low",
+        "probability_score": 8,
+        "total_observables": 1,
+        "confidence_factors": {
+          "has_km": false,
+          "has_dtc": false,
+          "has_context": true,
+          "has_history": false,
+          "has_known_vehicle": false,
+          "has_multiple_observables": false
+        },
+        "engine_family_boost": 1,
+        "is_vehicle_specific": false,
+        "matched_observables": 1,
+        "recommended_actions": [
+          {
+            "action_id": "fa863167-1128-4bd9-aa6a-e70bcef29460",
+            "action_label": "Nettoyage vanne EGR"
+          },
+          {
+            "action_id": "a5f435dd-ce19-4883-9049-b0fb396fae11",
+            "action_label": "Remplacement vanne EGR"
+          }
+        ],
+        "diagnostic_timestamp": "2026-09-27T12:35:00.24928+00:00",
+        "confidence_explanation": "Diagnostic à confirmer - plusieurs données manquantes",
+        "matched_observable_labels": [
+          "Perte de puissance"
+        ]
+      },
+      {
+        "fault_id": "e0b2da42-4599-4fc2-ae84-89cda154a980",
+        "raw_score": 0.6375,
+        "fault_label": "Turbo HS",
+        "fault_family": "Admission",
+        "missing_factors": [
+          "km",
+          "historique",
+          "véhicule",
+          "code_obd"
+        ],
+        "confidence_level": "low",
+        "confidence_score": 20,
+        "improvement_tips": [
+          "Ajoutez le kilométrage pour +15% de confidence",
+          "Ajoutez l'historique d'entretien pour +20% de confidence",
+          "Identifiez le véhicule pour +10%",
+          "Un code OBD augmente la confidence de +15%"
+        ],
+        "probability_level": "very_low",
+        "probability_score": 6,
+        "total_observables": 1,
+        "confidence_factors": {
+          "has_km": false,
+          "has_dtc": false,
+          "has_context": true,
+          "has_history": false,
+          "has_known_vehicle": false,
+          "has_multiple_observables": false
+        },
+        "engine_family_boost": 1,
+        "is_vehicle_specific": false,
+        "matched_observables": 1,
+        "recommended_actions": [
+          {
+            "action_id": "c17ac72c-e0f9-4113-a8dc-6cfaac77bc7f",
+            "action_label": "Remplacement turbo"
+          }
+        ],
+        "diagnostic_timestamp": "2026-09-27T12:35:00.24928+00:00",
+        "confidence_explanation": "Diagnostic à confirmer - plusieurs données manquantes",
+        "matched_observable_labels": [
+          "Perte de puissance"
+        ]
+      }
+    ]
+  }
+]
