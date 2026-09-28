@@ -31,6 +31,7 @@ import json
 import os
 import shutil
 import sys
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -167,7 +168,12 @@ def main() -> int:
         if args.apply:
             try:
                 dst.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(src, dst)
+                # Stage beside the destination (same filesystem). A failed copy
+                # must not truncate an existing document or expose a partial one.
+                with tempfile.TemporaryDirectory(prefix=".wiki-sync-", dir=dst.parent) as staging:
+                    staged = Path(staging) / "content.tmp"
+                    shutil.copy2(src, staged)
+                    os.replace(staged, dst)
                 print(f"WRITE {rel}")
                 written += 1
             except OSError as e:
@@ -205,7 +211,14 @@ def main() -> int:
             "topic_counts": topic_counts,
         }
         try:
-            manifest_path.write_text(json.dumps(manifest, indent=2) + "\n")
+            # Readers must see a complete old or new JSON document, never a
+            # truncated heartbeat. Retain existing access permissions on replace.
+            with tempfile.TemporaryDirectory(prefix=".wiki-sync-", dir=target_root) as staging:
+                staged = Path(staging) / "manifest.tmp"
+                staged.write_text(json.dumps(manifest, indent=2) + "\n")
+                if manifest_path.exists():
+                    shutil.copymode(manifest_path, staged)
+                os.replace(staged, manifest_path)
             print(f"manifest written: {manifest_path}", file=sys.stderr)
         except OSError as e:
             print(f"manifest write FAILED: {e}", file=sys.stderr)

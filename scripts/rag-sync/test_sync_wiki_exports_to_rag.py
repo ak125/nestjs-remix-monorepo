@@ -151,5 +151,100 @@ class SyncContractTests(unittest.TestCase):
         self.assertIn('previous-success', self.manifest.read_text())
 
 
+    def test_interrupted_copy_preserves_existing_complete_document(self):
+        self.add_export()
+        self.assertEqual(self.run_sync(), 0)
+        dst = self.mirror / 'gammes/oil.md'
+        previous = dst.read_bytes()
+        manifest_before = self.manifest.read_bytes()
+        (self.exports / 'gammes/oil.md').write_text('next complete approved version')
+        observed = []
+
+        def interrupted_copy(src, destination):
+            Path(destination).write_text('truncated')
+            observed.append(dst.read_bytes())
+            raise OSError('simulated interrupted copy')
+
+        with patch.object(sync.shutil, 'copy2', side_effect=interrupted_copy):
+            self.assertEqual(self.run_sync(), 1)
+        self.assertEqual(observed, [previous])
+        self.assertEqual(dst.read_bytes(), previous)
+        self.assertEqual(self.manifest.read_bytes(), manifest_before)
+        self.assertEqual(sorted(p.relative_to(self.mirror).as_posix() for p in self.mirror.rglob('*')),
+                         ['.last-sync.json', 'gammes', 'gammes/oil.md'])
+
+    def test_interrupted_new_document_never_becomes_visible(self):
+        self.add_export()
+        dst = self.mirror / 'gammes/oil.md'
+        manifest_before = self.manifest.read_bytes()
+        observed = []
+
+        def interrupted_copy(src, destination):
+            Path(destination).write_text('truncated')
+            observed.append(dst.exists())
+            raise OSError('simulated interrupted copy')
+
+        with patch.object(sync.shutil, 'copy2', side_effect=interrupted_copy):
+            self.assertEqual(self.run_sync(), 1)
+        self.assertEqual(observed, [False])
+        self.assertFalse(dst.exists())
+        self.assertEqual(self.manifest.read_bytes(), manifest_before)
+        self.assertFalse(any(p.name.startswith('.wiki-sync-') for p in self.mirror.rglob('*')))
+
+    def test_file_replacement_failure_preserves_previous_document(self):
+        source = self.add_export()
+        self.assertEqual(self.run_sync(), 0)
+        dst = self.mirror / 'gammes/oil.md'
+        before = dst.read_bytes()
+        manifest_before = self.manifest.read_bytes()
+        source.write_text('next complete approved version')
+        with patch.object(sync.os, 'replace', side_effect=OSError('replacement denied')):
+            self.assertEqual(self.run_sync(), 1)
+        self.assertEqual(dst.read_bytes(), before)
+        self.assertEqual(self.manifest.read_bytes(), manifest_before)
+        self.assertFalse(any(p.name.startswith('.wiki-sync-') for p in self.mirror.rglob('*')))
+
+    def test_interrupted_manifest_write_preserves_previous_valid_json(self):
+        self.add_export()
+        self.assertEqual(self.run_sync(), 0)
+        before = self.manifest.read_bytes()
+        write_text = Path.write_text
+        observed = []
+
+        def interrupted_write(path, content, *args, **kwargs):
+            write_text(path, '{"synced_at":', *args, **kwargs)
+            observed.append(self.manifest.read_bytes())
+            raise OSError('simulated interrupted manifest write')
+
+        with patch.object(Path, 'write_text', new=interrupted_write):
+            self.assertEqual(self.run_sync(), 1)
+        self.assertEqual(observed, [before])
+        self.assertEqual(self.manifest.read_bytes(), before)
+        self.assertEqual(json.loads(self.manifest.read_bytes())['stats']['failed'], 0)
+        self.assertFalse(any(p.name.startswith('.wiki-sync-') for p in self.mirror.rglob('*')))
+
+    def test_manifest_replacement_failure_preserves_previous_success(self):
+        self.add_export()
+        self.assertEqual(self.run_sync(), 0)
+        before = self.manifest.read_bytes()
+        with patch.object(sync.os, 'replace', side_effect=OSError('replacement denied')):
+            self.assertEqual(self.run_sync(), 1)
+        self.assertEqual(self.manifest.read_bytes(), before)
+        self.assertFalse(any(p.name.startswith('.wiki-sync-') for p in self.mirror.rglob('*')))
+
+    def test_successful_replacement_keeps_document_metadata_and_manifest_permissions(self):
+        source = self.add_export()
+        source.chmod(0o640)
+        os.utime(source, ns=(1_700_000_000_000_000_000, 1_700_000_000_000_000_000))
+        self.manifest.chmod(0o640)
+        self.assertEqual(self.run_sync(), 0)
+        dst = self.mirror / 'gammes/oil.md'
+        self.assertEqual(dst.read_bytes(), source.read_bytes())
+        self.assertEqual(dst.stat().st_mode & 0o777, 0o640)
+        self.assertEqual(dst.stat().st_mtime_ns, source.stat().st_mtime_ns)
+        self.assertEqual(self.manifest.stat().st_mode & 0o777, 0o640)
+        self.assertFalse(any(p.name.startswith('.wiki-sync-') for p in self.mirror.rglob('*')))
+
+
 if __name__ == '__main__':
     unittest.main()
