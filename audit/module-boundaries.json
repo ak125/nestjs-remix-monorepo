@@ -186,7 +186,7 @@
         "backend/src/modules/config/validators"
       ],
       "files_count": 101,
-      "loc_total": 24494,
+      "loc_total": 24495,
       "has_barrel": true
     },
     "customers": {
@@ -225,7 +225,7 @@
         "backend/src/modules/rm/utils"
       ],
       "files_count": 15,
-      "loc_total": 3463,
+      "loc_total": 3530,
       "has_barrel": false
     },
     "diagnostic-engine": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 596,
-      "loc_total": 113501,
+      "loc_total": 113521,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -958,7 +958,7 @@
         "tests/registry"
       ],
       "files_count": 257,
-      "loc_total": 47478,
+      "loc_total": 47583,
       "has_barrel": true
     },
     "upload": {
