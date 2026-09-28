@@ -22,7 +22,7 @@
     "unresolved_callsites": 0,
     "dropped_call_sites": 5,
     "migrations_scanned": 359,
-    "backend_files_scanned": 1409
+    "backend_files_scanned": 1419
   },
   "tables": {
     "___config": {
@@ -325,9 +325,10 @@
     },
     "__diag_maintenance_operation": {
       "used_by": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
         "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts"
       ],
-      "used_by_count": 1,
+      "used_by_count": 2,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false,

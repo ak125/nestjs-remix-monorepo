@@ -1250,6 +1250,7 @@
       "sourceConfidence": "low",
       "status": "LIVE",
       "usedBy": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
         "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts"
       ]
     },

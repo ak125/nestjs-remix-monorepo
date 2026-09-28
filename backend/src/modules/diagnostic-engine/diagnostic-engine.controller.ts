@@ -9,6 +9,8 @@
  */
 import {
   Controller,
+  BadRequestException,
+  ServiceUnavailableException,
   Post,
   Get,
   Body,
@@ -37,7 +39,22 @@ import {
   HandoffInputSchema,
   type AnalyzeResponseV1A0,
 } from './types/analyze-response.schema';
-import type { EvidencePack } from './types/evidence-pack.schema';
+import {
+  MaintenanceCalendarQuerySchema,
+  MaintenanceAlertsQuerySchema,
+} from './types/maintenance-calendar.schema';
+import { z } from 'zod';
+import {
+  EvidencePackSchema,
+  type EvidencePack,
+} from './types/evidence-pack.schema';
+
+// Check the stored contract without projecting away historical metadata.
+const SavedDiagnosticSessionSchema = z.object({
+  id: z.string().uuid(),
+  created_at: z.string().datetime({ offset: true }),
+  result: EvidencePackSchema,
+});
 
 @Controller('api/diagnostic-engine')
 export class DiagnosticEngineController {
@@ -109,18 +126,46 @@ export class DiagnosticEngineController {
    *
    * ADR-032 D2/D3 — schedule fuel-aware par véhicule.
    */
+  @Get('maintenance-operations')
+  async getMaintenanceOperations() {
+    try {
+      const operations = await this.dataService.getMaintenanceOperations();
+      return {
+        success: true,
+        operations: operations.map(({ slug, label, description }) => ({
+          slug,
+          label,
+          description,
+        })),
+      };
+    } catch {
+      throw new ServiceUnavailableException(
+        'Liste des opérations d’entretien indisponible',
+      );
+    }
+  }
+
   @Get('maintenance-schedule')
   async maintenanceSchedule(
     @Query('type_id') typeId?: string,
     @Query('current_km') currentKm?: string,
     @Query('fuel_type') fuelType?: string,
   ) {
-    const tid = typeId ? parseInt(typeId, 10) : null;
-    const km = currentKm ? parseInt(currentKm, 10) : 0;
+    const parsed = MaintenanceCalendarQuerySchema.safeParse({
+      type_id: typeId,
+      current_km: currentKm,
+      fuel_type: fuelType,
+    });
+    if (!parsed.success)
+      throw new BadRequestException(
+        "Paramètres du calendrier d'entretien invalides.",
+      );
+    const tid = parsed.data.type_id ?? null;
+    const km = parsed.data.current_km ?? 0;
     const items = await this.maintenanceCalculator.getSchedule(
       tid,
       km,
-      fuelType ?? null,
+      parsed.data.fuel_type ?? null,
     );
     return { success: true, type_id: tid, current_km: km, items };
   }
@@ -143,9 +188,22 @@ export class DiagnosticEngineController {
     @Query('current_km') currentKm?: string,
     @Query('fuel_type') fuelType?: string,
   ) {
-    const tid = typeId ? parseInt(typeId, 10) : null;
-    const km = currentKm ? parseInt(currentKm, 10) : 0;
-    return this.maintenanceCalculator.getCalendar(tid, km, fuelType ?? null);
+    const parsed = MaintenanceCalendarQuerySchema.safeParse({
+      type_id: typeId,
+      current_km: currentKm,
+      fuel_type: fuelType,
+    });
+    if (!parsed.success)
+      throw new BadRequestException(
+        "Paramètres du calendrier d'entretien invalides.",
+      );
+    const tid = parsed.data.type_id ?? null;
+    const km = parsed.data.current_km ?? 0;
+    return this.maintenanceCalculator.getCalendar(
+      tid,
+      km,
+      parsed.data.fuel_type ?? null,
+    );
   }
 
   @Get('maintenance-alerts')
@@ -153,15 +211,17 @@ export class DiagnosticEngineController {
     @Query('fuel_type') fuelType?: string,
     @Query('milestones') milestones?: string,
   ) {
-    const list = milestones
-      ? milestones
-          .split(',')
-          .map((s) => parseInt(s.trim(), 10))
-          .filter((n) => Number.isFinite(n))
-      : undefined;
+    const parsed = MaintenanceAlertsQuerySchema.safeParse({
+      fuel_type: fuelType,
+      milestones,
+    });
+    if (!parsed.success)
+      throw new BadRequestException(
+        "Paramètres des paliers d'entretien invalides.",
+      );
     const result = await this.maintenanceCalculator.getAlerts(
-      fuelType ?? null,
-      list,
+      parsed.data.fuel_type ?? null,
+      parsed.data.milestones,
     );
     return { success: true, milestones: result };
   }
@@ -190,7 +250,7 @@ export class DiagnosticEngineController {
       return {
         success: false,
         error: result.error,
-        hint: 'Voir le schema AnalyzeDiagnosticInput pour le format attendu.',
+        hint: 'Voir le schema AnalyzeInputSchema pour le format attendu.',
       };
     }
 
@@ -203,7 +263,10 @@ export class DiagnosticEngineController {
     };
 
     // V1A.0 — Intent Resolution layer (additif, feature-flag gated)
-    if (this.isIntentLayerEnabled()) {
+    if (
+      this.isIntentLayerEnabled() &&
+      result.data!.evidence.evidence_pack.analysis_kind !== 'maintenance'
+    ) {
       const intentLayer = await this.computeIntentLayer(
         body,
         result.data!.session_id,
@@ -461,6 +524,19 @@ export class DiagnosticEngineController {
     const session = await this.dataService.getSession(id);
     if (!session) {
       return { success: false, error: 'Session introuvable.' };
+    }
+
+    if (
+      !SavedDiagnosticSessionSchema.safeParse(session).success ||
+      session.id.toLowerCase() !== id.toLowerCase()
+    ) {
+      this.logger.warn(
+        'Saved diagnostic session rejected: invalid result or metadata',
+      );
+      return {
+        success: false,
+        error: 'Résultat sauvegardé illisible. Relancez une analyse.',
+      };
     }
 
     return {

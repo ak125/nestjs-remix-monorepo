@@ -8,6 +8,10 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
+import {
+  McpDiagnoseInputSchema,
+  McpDiagnoseFaultsSchema,
+} from '../types/mcp-diagnose.schema';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
@@ -398,20 +402,34 @@ export class McpQueryService extends SupabaseBaseService {
     _context: McpVerifyContext,
   ): Promise<DiagnoseOutput | null> {
     try {
-      const { observable_ids, vehicle_context } = input;
+      const parsed = McpDiagnoseInputSchema.safeParse(input);
+      if (!parsed.success) {
+        this.logger.warn(
+          'KG diagnose input is invalid; verification unavailable',
+        );
+        return null;
+      }
+      const {
+        observable_ids,
+        vehicle_context,
+        last_maintenance_records,
+        ctx_phase,
+        ctx_temp,
+        ctx_speed,
+      } = parsed.data;
 
       // 🛡️ RPC Safety Gate
-      const { data, error } = await this.callRpc<any[]>(
+      const { data, error } = await this.callRpc<unknown>(
         'kg_diagnose_with_explainable_score',
         {
           p_observable_ids: observable_ids,
-          p_vehicle_id: vehicle_context?.vehicle_id || null,
-          p_engine_family_code: vehicle_context?.engine_family_code || null,
-          p_current_km: vehicle_context?.mileage_km || null,
-          p_last_maintenance_records: [],
-          p_ctx_phase: null,
-          p_ctx_temp: null,
-          p_ctx_speed: null,
+          p_vehicle_id: vehicle_context?.vehicle_id ?? null,
+          p_engine_family_code: vehicle_context?.engine_family_code ?? null,
+          p_current_km: vehicle_context?.mileage_km ?? null,
+          p_last_maintenance_records: last_maintenance_records ?? [],
+          p_ctx_phase: ctx_phase ?? null,
+          p_ctx_temp: ctx_temp ?? null,
+          p_ctx_speed: ctx_speed ?? null,
           p_limit: 10,
         },
         { source: 'api' },
@@ -422,17 +440,18 @@ export class McpQueryService extends SupabaseBaseService {
         return null;
       }
 
-      // Data is an array of fault results
-      const faults = Array.isArray(data) ? data : [];
+      const faults = McpDiagnoseFaultsSchema.safeParse(data);
+      if (!faults.success) {
+        this.logger.warn(
+          'KG diagnose response is invalid; verification unavailable',
+        );
+        return null;
+      }
 
+      // This RPC does not check safety. Leave that result absent until checked
+      // independently via kg_check_safety_gate.
       return {
-        faults: faults.map((f: any) => ({
-          fault_id: f.fault_id,
-          fault_label: f.fault_label,
-          probability_score: f.probability_score,
-          confidence_score: f.confidence_score,
-        })),
-        safety_gate: 'none', // Safety gate is checked separately via kg_check_safety_gate
+        faults: faults.data,
         verifiedAt: new Date().toISOString(),
       };
     } catch (error) {

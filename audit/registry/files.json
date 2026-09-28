@@ -2891,6 +2891,7 @@
         "backend/src/modules/blog/services/advice.service.ts",
         "backend/src/modules/blog/services/blog-article-relation.service.ts",
         "backend/src/modules/blog/services/blog-article-transform.service.ts",
+        "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
         "backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-cluster.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
@@ -13980,6 +13981,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/diagnostic-engine/constants/gamme-map.constants.ts",
       "importedBy": [
+        "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
         "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts"
       ],
@@ -14023,7 +14025,10 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
       "importedBy": [
-        "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts"
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-session-integrity.test.ts",
+        "backend/src/modules/diagnostic-engine/maintenance-calendar-integrity.test.ts",
+        "backend/src/modules/diagnostic-engine/maintenance-flow.test.ts"
       ],
       "imports": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
@@ -14037,10 +14042,11 @@
         "backend/src/modules/diagnostic-engine/services/version-registry.ts",
         "backend/src/modules/diagnostic-engine/types/analyze-response.schema.ts",
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts",
+        "backend/src/modules/diagnostic-engine/types/maintenance-calendar.schema.ts",
         "backend/src/modules/diagnostic-engine/vehicle-context-mapping.ts"
       ],
       "kind": "controller",
-      "loc": 479,
+      "loc": 555,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
       "risk": "low",
@@ -14060,16 +14066,21 @@
         "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-session-integrity.test.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
         "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
         "backend/src/modules/diagnostic-engine/engines/risk-safety.engine.ts",
-        "backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts"
+        "backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
+        "backend/src/modules/diagnostic-engine/maintenance-flow.test.ts"
       ],
       "imports": [
-        "@database/services/supabase-base.service"
+        "@database/services/supabase-base.service",
+        "backend/src/modules/diagnostic-engine/types/diagnostic-reference.schema.ts"
       ],
       "kind": "service",
-      "loc": 403,
+      "loc": 501,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
       "risk": "low",
@@ -14130,7 +14141,10 @@
       "id": "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
-        "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts"
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts",
+        "backend/src/modules/diagnostic-engine/maintenance-flow.test.ts"
       ],
       "imports": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
@@ -14145,7 +14159,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "service",
-      "loc": 380,
+      "loc": 607,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
       "risk": "low",
@@ -14160,10 +14174,90 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/diagnostic-engine/constants/gamme-map.constants.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
+        "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
+        "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
+        "backend/src/modules/diagnostic-engine/engines/risk-safety.engine.ts",
+        "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
+        "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts",
+        "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
+      ],
+      "kind": "test",
+      "loc": 435,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/diagnostic-engine/diagnostic-session-integrity.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts"
+      ],
+      "kind": "test",
+      "loc": 124,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/diagnostic-engine/diagnostic-session-integrity.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
+        "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
+        "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
+        "backend/src/modules/diagnostic-engine/engines/risk-safety.engine.ts",
+        "backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
+        "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
+      ],
+      "kind": "test",
+      "loc": 812,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
-        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts"
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts"
       ],
       "imports": [
         "backend/src/modules/diagnostic-engine/constants/gamme-map.constants.ts",
@@ -14191,16 +14285,19 @@
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
         "backend/src/modules/diagnostic-engine/engines/risk-safety.engine.ts"
       ],
       "imports": [
         "backend/src/modules/diagnostic-engine/constants/gamme-map.constants.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
-        "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts"
+        "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts",
+        "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "service",
-      "loc": 216,
+      "loc": 238,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
       "risk": "low",
@@ -14215,17 +14312,41 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
+        "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts"
+      ],
+      "kind": "test",
+      "loc": 174,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
-        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts"
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
+        "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.test.ts",
+        "backend/src/modules/diagnostic-engine/maintenance-flow.test.ts"
       ],
       "imports": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
         "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts"
       ],
       "kind": "service",
-      "loc": 245,
+      "loc": 392,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
       "risk": "low",
@@ -14269,6 +14390,8 @@
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts"
       ],
       "imports": [
@@ -14276,7 +14399,7 @@
         "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts"
       ],
       "kind": "service",
-      "loc": 191,
+      "loc": 224,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/engines/risk-safety.engine.ts",
       "risk": "low",
@@ -14294,14 +14417,15 @@
       "id": "backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
-        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts"
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts"
       ],
       "imports": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
         "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts"
       ],
       "kind": "service",
-      "loc": 87,
+      "loc": 94,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
       "risk": "low",
@@ -14309,6 +14433,53 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/diagnostic-engine/maintenance-calendar-integrity.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
+        "backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts"
+      ],
+      "kind": "test",
+      "loc": 184,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/diagnostic-engine/maintenance-calendar-integrity.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/diagnostic-engine/maintenance-flow.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
+        "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
+        "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
+      ],
+      "kind": "test",
+      "loc": 271,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/diagnostic-engine/maintenance-flow.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -14408,10 +14579,12 @@
       "id": "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/services/action-recommender.test.ts",
         "backend/src/modules/diagnostic-engine/services/diagnostic-resolution-pipeline.service.ts"
       ],
       "imports": [
+        "backend/src/common/utils/url-builder.utils.ts",
         "backend/src/modules/diagnostic-engine/services/intent-classifier.service.ts",
         "backend/src/modules/diagnostic-engine/types/diagnostic-intent.ts",
         "backend/src/modules/diagnostic-engine/types/diagnostic-reason-code.ts",
@@ -14419,7 +14592,7 @@
         "backend/src/modules/diagnostic-engine/types/recommended-action.ts"
       ],
       "kind": "service",
-      "loc": 249,
+      "loc": 252,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
       "risk": "low",
@@ -14442,7 +14615,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "test",
-      "loc": 188,
+      "loc": 195,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/services/action-recommender.test.ts",
       "risk": "low",
@@ -14689,7 +14862,7 @@
         "backend/src/modules/diagnostic-engine/services/kg-shadow.service.ts"
       ],
       "kind": "test",
-      "loc": 114,
+      "loc": 150,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/services/kg-shadow.service.test.ts",
       "risk": "low",
@@ -14715,7 +14888,7 @@
         "backend/src/database/services/supabase-base.service.ts"
       ],
       "kind": "service",
-      "loc": 213,
+      "loc": 227,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/services/kg-shadow.service.ts",
       "risk": "low",
@@ -14733,14 +14906,16 @@
       "id": "backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
-        "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts"
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+        "backend/src/modules/diagnostic-engine/maintenance-calendar-integrity.test.ts"
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "backend/src/modules/diagnostic-engine/services/diagnostic-content.service.ts"
+        "backend/src/modules/diagnostic-engine/services/diagnostic-content.service.ts",
+        "backend/src/modules/diagnostic-engine/types/maintenance-calendar.schema.ts"
       ],
       "kind": "service",
-      "loc": 175,
+      "loc": 180,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts",
       "risk": "low",
@@ -14884,17 +15059,20 @@
       "id": "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
         "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
+        "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.test.ts",
         "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
         "backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
-        "backend/src/modules/diagnostic-engine/validate-phase0.ts"
+        "backend/src/modules/diagnostic-engine/validate-phase0.ts",
+        "backend/src/modules/mcp-validation/types/mcp-diagnose.schema.ts"
       ],
       "imports": [
         "backend/src/modules/diagnostic-engine/types/diagnostic-contract.schema.ts"
       ],
       "kind": "config",
-      "loc": 100,
+      "loc": 192,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts",
       "risk": "low",
@@ -14964,21 +15142,50 @@
         "reachability"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/diagnostic-engine/types/diagnostic-reference.schema.ts",
+      "importedBy": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts"
+      ],
+      "imports": [
+        "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
+      ],
+      "kind": "config",
+      "loc": 81,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/diagnostic-engine/types/diagnostic-reference.schema.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "reachability"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts",
+        "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
         "backend/src/modules/diagnostic-engine/engines/rag-enrichment.engine.ts",
+        "backend/src/modules/diagnostic-engine/maintenance-flow.test.ts",
         "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
         "backend/src/modules/diagnostic-engine/services/action-recommender.test.ts",
         "backend/src/modules/diagnostic-engine/services/diagnostic-resolution-pipeline.service.ts",
         "backend/src/modules/diagnostic-engine/services/intent-classifier.service.ts",
         "backend/src/modules/diagnostic-engine/services/intent-classifier.test.ts",
+        "backend/src/modules/diagnostic-engine/types/diagnostic-reference.schema.ts",
         "backend/src/modules/diagnostic-engine/validate-phase0.ts"
       ],
       "imports": [],
       "kind": "config",
-      "loc": 172,
+      "loc": 187,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts",
       "risk": "low",
@@ -15005,6 +15212,29 @@
       "loc": 29,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/types/human-escalation.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "reachability"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/diagnostic-engine/types/maintenance-calendar.schema.ts",
+      "importedBy": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
+        "backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts"
+      ],
+      "imports": [],
+      "kind": "config",
+      "loc": 79,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/diagnostic-engine/types/maintenance-calendar.schema.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -17445,6 +17675,28 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/mcp-validation/services/mcp-query-diagnostic.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/mcp-validation/services/mcp-query.service.ts",
+        "backend/src/modules/mcp-validation/types/mcp-verify.types.ts"
+      ],
+      "kind": "test",
+      "loc": 279,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/mcp-validation/services/mcp-query-diagnostic.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
         "depcruise",
         "reachability"
       ],
@@ -17453,17 +17705,44 @@
       "importedBy": [
         "backend/src/modules/mcp-validation/index.ts",
         "backend/src/modules/mcp-validation/interceptors/mcp-verify.interceptor.ts",
-        "backend/src/modules/mcp-validation/mcp-validation.module.ts"
+        "backend/src/modules/mcp-validation/mcp-validation.module.ts",
+        "backend/src/modules/mcp-validation/services/mcp-query-diagnostic.test.ts"
       ],
       "imports": [
         "@database/services/supabase-base.service",
         "@security/rpc-gate/rpc-gate.service",
+        "backend/src/modules/mcp-validation/types/mcp-diagnose.schema.ts",
         "backend/src/modules/mcp-validation/types/mcp-verify.types.ts"
       ],
       "kind": "service",
-      "loc": 674,
+      "loc": 693,
       "owner": "__unassigned__",
       "path": "backend/src/modules/mcp-validation/services/mcp-query.service.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "reachability"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/mcp-validation/types/mcp-diagnose.schema.ts",
+      "importedBy": [
+        "backend/src/modules/mcp-validation/services/mcp-query.service.ts",
+        "backend/src/modules/mcp-validation/types/mcp-verify.types.ts"
+      ],
+      "imports": [
+        "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts"
+      ],
+      "kind": "config",
+      "loc": 99,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/mcp-validation/types/mcp-diagnose.schema.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -17483,13 +17762,15 @@
         "backend/src/modules/mcp-validation/index.ts",
         "backend/src/modules/mcp-validation/interceptors/mcp-verify.interceptor.ts",
         "backend/src/modules/mcp-validation/services/mcp-alerting.service.ts",
+        "backend/src/modules/mcp-validation/services/mcp-query-diagnostic.test.ts",
         "backend/src/modules/mcp-validation/services/mcp-query.service.ts"
       ],
       "imports": [
-        "backend/src/modules/mcp-validation/mcp-validation.types.ts"
+        "backend/src/modules/mcp-validation/mcp-validation.types.ts",
+        "backend/src/modules/mcp-validation/types/mcp-diagnose.schema.ts"
       ],
       "kind": "config",
-      "loc": 517,
+      "loc": 510,
       "owner": "__unassigned__",
       "path": "backend/src/modules/mcp-validation/types/mcp-verify.types.ts",
       "risk": "low",
@@ -37854,7 +38135,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 156,
+      "loc": 188,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/maintenance-calculator.service.test.ts",
       "risk": "low",
@@ -37873,7 +38154,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 122,
+      "loc": 148,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/maintenance-calendar-endpoint.test.ts",
       "risk": "low",
@@ -42566,6 +42847,7 @@
       "imports": [
         "frontend/app/components/diagnostic-wizard/hooks/use-diagnostic-vehicle-selector.ts",
         "frontend/app/components/diagnostic-wizard/results/DiagnosticResults.tsx",
+        "frontend/app/components/diagnostic-wizard/steps/StepMaintenance.tsx",
         "frontend/app/components/diagnostic-wizard/steps/StepSymptom.tsx",
         "frontend/app/components/diagnostic-wizard/steps/StepVehicle.tsx",
         "frontend/app/components/diagnostic-wizard/types.ts",
@@ -42573,7 +42855,7 @@
         "~/components/ui/progress"
       ],
       "kind": "config",
-      "loc": 510,
+      "loc": 811,
       "owner": "__unassigned__",
       "path": "frontend/app/components/diagnostic-wizard/DiagnosticWizard.tsx",
       "risk": "low",
@@ -42598,7 +42880,7 @@
         "~/services/api/enhanced-vehicle.api"
       ],
       "kind": "config",
-      "loc": 61,
+      "loc": 89,
       "owner": "__unassigned__",
       "path": "frontend/app/components/diagnostic-wizard/hooks/use-diagnostic-vehicle-selector.ts",
       "risk": "low",
@@ -42657,7 +42939,7 @@
         "~/components/ui/button"
       ],
       "kind": "config",
-      "loc": 150,
+      "loc": 193,
       "owner": "__unassigned__",
       "path": "frontend/app/components/diagnostic-wizard/results/DiagnosticResults.tsx",
       "risk": "low",
@@ -42754,10 +43036,11 @@
       "imports": [
         "frontend/app/components/diagnostic-wizard/types.ts",
         "~/components/ui/badge",
-        "~/components/ui/card"
+        "~/components/ui/card",
+        "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 114,
+      "loc": 123,
       "owner": "__unassigned__",
       "path": "frontend/app/components/diagnostic-wizard/results/ResultCatalog.tsx",
       "risk": "low",
@@ -42804,7 +43087,7 @@
         "~/components/ui/progress"
       ],
       "kind": "config",
-      "loc": 213,
+      "loc": 214,
       "owner": "__unassigned__",
       "path": "frontend/app/components/diagnostic-wizard/results/ResultHypotheses.tsx",
       "risk": "low",
@@ -42826,10 +43109,11 @@
       "imports": [
         "frontend/app/components/diagnostic-wizard/types.ts",
         "~/components/ui/badge",
-        "~/components/ui/card"
+        "~/components/ui/card",
+        "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 124,
+      "loc": 184,
       "owner": "__unassigned__",
       "path": "frontend/app/components/diagnostic-wizard/results/ResultMaintenance.tsx",
       "risk": "low",
@@ -42852,7 +43136,7 @@
         "~/components/ui/card"
       ],
       "kind": "config",
-      "loc": 39,
+      "loc": 43,
       "owner": "__unassigned__",
       "path": "frontend/app/components/diagnostic-wizard/results/ResultMissing.tsx",
       "risk": "low",
@@ -42986,6 +43270,35 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/app/components/diagnostic-wizard/steps/StepMaintenance.tsx",
+      "importedBy": [
+        "frontend/app/components/diagnostic-wizard/DiagnosticWizard.tsx",
+        "frontend/app/components/diagnostic-wizard/types.ts"
+      ],
+      "imports": [
+        "~/components/ui/alert",
+        "~/components/ui/button",
+        "~/components/ui/card",
+        "~/components/ui/checkbox",
+        "~/components/ui/input",
+        "~/components/ui/label"
+      ],
+      "kind": "config",
+      "loc": 276,
+      "owner": "__unassigned__",
+      "path": "frontend/app/components/diagnostic-wizard/steps/StepMaintenance.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/app/components/diagnostic-wizard/steps/StepSymptom.tsx",
       "importedBy": [
         "frontend/app/components/diagnostic-wizard/DiagnosticWizard.tsx"
@@ -42997,7 +43310,7 @@
         "~/components/ui/card"
       ],
       "kind": "config",
-      "loc": 352,
+      "loc": 430,
       "owner": "__unassigned__",
       "path": "frontend/app/components/diagnostic-wizard/steps/StepSymptom.tsx",
       "risk": "low",
@@ -43025,7 +43338,7 @@
         "~/components/ui/label"
       ],
       "kind": "config",
-      "loc": 262,
+      "loc": 265,
       "owner": "__unassigned__",
       "path": "frontend/app/components/diagnostic-wizard/steps/StepVehicle.tsx",
       "risk": "low",
@@ -43051,10 +43364,11 @@
         "frontend/app/components/diagnostic-wizard/steps/StepVehicle.tsx"
       ],
       "imports": [
-        "frontend/app/components/diagnostic-wizard/results/v1a-intent-types.ts"
+        "frontend/app/components/diagnostic-wizard/results/v1a-intent-types.ts",
+        "frontend/app/components/diagnostic-wizard/steps/StepMaintenance.tsx"
       ],
       "kind": "config",
-      "loc": 137,
+      "loc": 154,
       "owner": "__unassigned__",
       "path": "frontend/app/components/diagnostic-wizard/types.ts",
       "risk": "low",
@@ -54657,7 +54971,7 @@
         "~/components/ui/table"
       ],
       "kind": "route",
-      "loc": 499,
+      "loc": 516,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/blog-pieces-auto.calendrier-entretien.tsx",
       "risk": "low",
@@ -56000,7 +56314,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 434,
+      "loc": 413,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/diagnostic.tsx",
       "risk": "low",
@@ -60105,7 +60419,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 139,
+      "loc": 161,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/url-builder.utils.ts",
       "risk": "low",
@@ -61078,6 +61392,177 @@
       "loc": 191,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/degraded-fallback-cache.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/diagnostic-critical-urgency.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 152,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/diagnostic-critical-urgency.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/diagnostic-legacy-navigation.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 311,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/diagnostic-legacy-navigation.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/diagnostic-maintenance-flow.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 224,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/diagnostic-maintenance-flow.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/diagnostic-maintenance-step.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 229,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/diagnostic-maintenance-step.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/diagnostic-result-links.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 131,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/diagnostic-result-links.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/diagnostic-selection-freshness.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 287,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/diagnostic-selection-freshness.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/diagnostic-session-recovery.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 212,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/diagnostic-session-recovery.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/diagnostic-wizard-recovery.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 250,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/diagnostic-wizard-recovery.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/diagnostic-wizard-submission.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 169,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/diagnostic-wizard-submission.test.tsx",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",

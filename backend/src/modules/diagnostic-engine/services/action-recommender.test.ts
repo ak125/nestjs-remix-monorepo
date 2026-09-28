@@ -134,7 +134,14 @@ describe('ActionRecommender V1A.0', () => {
   test('piece target uses gamme_slug + pg_id from DB (no hardcoded slug)', () => {
     const result = svc.recommend(mkIntent(), mkPack(), true);
     const piece = result.find((a) => a.type === 'piece');
-    expect(piece?.target).toBe('/pieces/plaquette-de-frein/402');
+    expect(piece?.target).toBe('/pieces/plaquette-de-frein-402.html');
+  });
+
+  test('a missing gamme uses the existing catalogue destination', () => {
+    const pack = mkPack();
+    pack.catalog_guard.suggested_gammes = [];
+    const result = svc.recommend(mkIntent(), pack, true);
+    expect(result.find((a) => a.type === 'piece')?.target).toBe('/#catalogue');
   });
 
   test('piece confidence reflects catalog_guard.confidence_before_purchase', () => {

@@ -1,0 +1,228 @@
+{
+  "base": "4a2871dc4d19067c3ae077d6a79021b49cc60237",
+  "branch": "codex/diagnostic-integrity-20260926",
+  "latest_observed_main": "38ce54f019ea43799a2c54172f406a172c4a1318",
+  "coverage_kind": "targeted audit, not all inventoried files analyzed",
+  "findings": {
+    "total": 28,
+    "corrected_targeted": 9,
+    "partial": 8,
+    "open": 11
+  },
+  "inventory_file_count": 75,
+  "inventory": [
+    "backend/src/modules/diagnostic-engine/__tests__/golden/diagnostic-engine-golden-v1.json",
+    "backend/src/modules/diagnostic-engine/constants/gamme-map.constants.ts",
+    "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.test.ts",
+    "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
+    "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
+    "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+    "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
+    "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
+    "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
+    "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
+    "backend/src/modules/diagnostic-engine/engines/rag-enrichment.engine.ts",
+    "backend/src/modules/diagnostic-engine/engines/risk-safety.engine.ts",
+    "backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
+    "backend/src/modules/diagnostic-engine/ports/README.md",
+    "backend/src/modules/diagnostic-engine/ports/commerce.port.ts",
+    "backend/src/modules/diagnostic-engine/ports/editorial.port.ts",
+    "backend/src/modules/diagnostic-engine/ports/maintenance.port.ts",
+    "backend/src/modules/diagnostic-engine/ports/vehicle-context.port.ts",
+    "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
+    "backend/src/modules/diagnostic-engine/services/action-recommender.test.ts",
+    "backend/src/modules/diagnostic-engine/services/confidence-policy.test.ts",
+    "backend/src/modules/diagnostic-engine/services/confidence-policy.ts",
+    "backend/src/modules/diagnostic-engine/services/diagnostic-content.service.ts",
+    "backend/src/modules/diagnostic-engine/services/diagnostic-resolution-pipeline.service.ts",
+    "backend/src/modules/diagnostic-engine/services/human-escalation-builder.service.ts",
+    "backend/src/modules/diagnostic-engine/services/intent-classifier.service.ts",
+    "backend/src/modules/diagnostic-engine/services/intent-classifier.test.ts",
+    "backend/src/modules/diagnostic-engine/services/invariant-asserter.service.ts",
+    "backend/src/modules/diagnostic-engine/services/invariant-asserter.test.ts",
+    "backend/src/modules/diagnostic-engine/services/kg-shadow.service.test.ts",
+    "backend/src/modules/diagnostic-engine/services/kg-shadow.service.ts",
+    "backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts",
+    "backend/src/modules/diagnostic-engine/services/outcome-emitter.service.ts",
+    "backend/src/modules/diagnostic-engine/services/version-registry.ts",
+    "backend/src/modules/diagnostic-engine/types/analyze-response.schema.ts",
+    "backend/src/modules/diagnostic-engine/types/diagnostic-contract.schema.ts",
+    "backend/src/modules/diagnostic-engine/types/diagnostic-failure-category.ts",
+    "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts",
+    "backend/src/modules/diagnostic-engine/types/diagnostic-intent.ts",
+    "backend/src/modules/diagnostic-engine/types/diagnostic-reason-code.ts",
+    "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts",
+    "backend/src/modules/diagnostic-engine/types/human-escalation.ts",
+    "backend/src/modules/diagnostic-engine/types/recommended-action.ts",
+    "backend/src/modules/diagnostic-engine/validate-phase0.ts",
+    "backend/src/modules/diagnostic-engine/vehicle-context-mapping.ts",
+    "backend/src/modules/knowledge-graph/index.ts",
+    "backend/src/modules/knowledge-graph/kg-data.service.ts",
+    "backend/src/modules/knowledge-graph/kg.controller.ts",
+    "backend/src/modules/knowledge-graph/kg.service.ts",
+    "backend/src/modules/knowledge-graph/kg.types.ts",
+    "backend/src/modules/knowledge-graph/knowledge-graph.module.ts",
+    "backend/src/modules/mcp-validation/services/mcp-query.service.ts",
+    "frontend/app/components/diagnostic-wizard/DiagnosticWizard.tsx",
+    "frontend/app/components/diagnostic-wizard/hooks/use-diagnostic-vehicle-selector.ts",
+    "frontend/app/components/diagnostic-wizard/results/ActionCard.tsx",
+    "frontend/app/components/diagnostic-wizard/results/DiagnosticResults.tsx",
+    "frontend/app/components/diagnostic-wizard/results/HumanEscalationCard.tsx",
+    "frontend/app/components/diagnostic-wizard/results/IntentResolutionBlock.tsx",
+    "frontend/app/components/diagnostic-wizard/results/RecommendedActionList.tsx",
+    "frontend/app/components/diagnostic-wizard/results/ResultCatalog.tsx",
+    "frontend/app/components/diagnostic-wizard/results/ResultDisclaimer.tsx",
+    "frontend/app/components/diagnostic-wizard/results/ResultHypotheses.tsx",
+    "frontend/app/components/diagnostic-wizard/results/ResultMaintenance.tsx",
+    "frontend/app/components/diagnostic-wizard/results/ResultMissing.tsx",
+    "frontend/app/components/diagnostic-wizard/results/ResultRagFacts.tsx",
+    "frontend/app/components/diagnostic-wizard/results/ResultSafety.tsx",
+    "frontend/app/components/diagnostic-wizard/results/ResultSummary.tsx",
+    "frontend/app/components/diagnostic-wizard/results/v1a-handoff-client.ts",
+    "frontend/app/components/diagnostic-wizard/results/v1a-intent-types.ts",
+    "frontend/app/components/diagnostic-wizard/steps/StepSymptom.tsx",
+    "frontend/app/components/diagnostic-wizard/steps/StepVehicle.tsx",
+    "frontend/app/components/diagnostic-wizard/types.ts",
+    "frontend/app/routes/blog-pieces-auto.calendrier-entretien.tsx",
+    "frontend/app/routes/diagnostic-auto._index.tsx",
+    "frontend/app/routes/diagnostic.tsx"
+  ],
+  "candidate_files": [
+    {
+      "path": "backend/src/modules/diagnostic-engine/constants/gamme-map.constants.ts",
+      "sha256": "f5246d9713a1ba83141818edb331b5124a4bc0be4f3ff65460126fe08b20e002"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
+      "sha256": "20b4a8538fec192061a361c445f5bba51f3274eddb9b1529b29e2087f0e4c28e"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
+      "sha256": "5f3bcb3c1e14e101b11fdb17cd20a88145b65e7c6c2e64aa558d6b22b716b154"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
+      "sha256": "e61e7e0eb118d29e58d196efd92da4af4c00cadbb373df2bbf90fd8a36e6c67b"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
+      "sha256": "9ec5e306a89a092b348c7fb8676b59502383367a74ccf0982a124152861b963e"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
+      "sha256": "f080b75dd15fde693a7dfdcf13209f6b18311d606156c2ede138eec8a28b0ad7"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.test.ts",
+      "sha256": "22243a4b7cc4edfac1808e2bc77943326d8ed734a00f06f7ab06385b0cfa2c2a"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
+      "sha256": "660489920b8dfb26332d48d188702e69d63f4f8d8bd1ec25740068e446ad5ced"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
+      "sha256": "6315cfc8d6700aa85ae7c380f15ab35a43dbe3b9c86d1099f69b8201775f1131"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/services/action-recommender.test.ts",
+      "sha256": "1637cff54deec17db72c8b6f69792b138d00cb6d32a187ce5cfe48d4eab8864e"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/services/kg-shadow.service.test.ts",
+      "sha256": "ef0d3a207a5bd7115adc1162775f66ffb04a9e837d0d37987f5653a287ea3d54"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/services/kg-shadow.service.ts",
+      "sha256": "fc9923ee28e0cbd1e45b9ee158c0b104ea034fe90c1ffa4d163256169d27984a"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts",
+      "sha256": "e0c76d053cd74e28b2c1fcbbd0e0a53cfd06b4a2d9e8439527344e9a54da82e5"
+    },
+    {
+      "path": "docs/audits/diagnostic-integrity-20260927/AUDIT.md",
+      "sha256": "1339d446de78d0344a4eb3b84480ff60fe05a03a9586d79047fcf6e187347619"
+    },
+    {
+      "path": "docs/audits/diagnostic-integrity-20260927/CHECKPOINT.md",
+      "sha256": "887df2b9d508e892e0c10f338994f2e4799bc8273f32fa45dd8980d1eecd948e"
+    },
+    {
+      "path": "docs/audits/diagnostic-integrity-20260927/fix-elapsed-months.candidate.sql",
+      "sha256": "2fea93e0d928f78464bd84ec83b6243b132ec437a777bf4136c1c1d07ae1f473"
+    },
+    {
+      "path": "docs/audits/diagnostic-integrity-20260927/restore-elapsed-months.reference.sql",
+      "sha256": "47b91776a35e640087d5812a002ef3d3c1d7e26cc84e73987c98254019fd56f9"
+    },
+    {
+      "path": "docs/audits/diagnostic-integrity-20260927/sql-evidence.json",
+      "sha256": "9af8217461c4b3fe95737ad82c4662e509e0ba421a4bffb48f1db6671ec60b99"
+    },
+    {
+      "path": "docs/audits/diagnostic-integrity-20260927/verify-elapsed-months.readonly.sql",
+      "sha256": "2fb1737c3bead524ceaae5a60762be5a1fa12dc5f0030e7ddc851cee8aa12a66"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-09-26-diagnostic-integrity.md",
+      "sha256": "9f57d56c3bbbd4d91bfb1a7872ed6936775a1e5455387e62a522f5aa82491c5c"
+    },
+    {
+      "path": "frontend/app/components/diagnostic-wizard/DiagnosticWizard.tsx",
+      "sha256": "83f0c41914b666bacdf829fb6b1041bcb219c8a413da527e99be208a6f175a9a"
+    },
+    {
+      "path": "frontend/app/components/diagnostic-wizard/results/DiagnosticResults.tsx",
+      "sha256": "ff5529d48ba179e264eb718ca4b7986bf890b235936eb70efb364bfb8458a952"
+    },
+    {
+      "path": "frontend/app/components/diagnostic-wizard/results/ResultCatalog.tsx",
+      "sha256": "b472563732c01b7497fd10ada171f6c3a13cf0f8e4f8d70d2ac2afbea63a3379"
+    },
+    {
+      "path": "frontend/app/components/diagnostic-wizard/results/ResultMaintenance.tsx",
+      "sha256": "e5037bbf90dcf808720044309d83a6c259f8969f6678b5a956f8cfe530cf59d9"
+    },
+    {
+      "path": "frontend/app/routes/blog-pieces-auto.calendrier-entretien.tsx",
+      "sha256": "ed4dcae6a738e4e49cd5877c265d708e0ffc850b55cc1d2225af1f4a1326fbc5"
+    },
+    {
+      "path": "frontend/app/routes/diagnostic.tsx",
+      "sha256": "1da5d63869dcf97d47251dc9b38facb16e12b66165c92d92e48f2f2d072db892"
+    },
+    {
+      "path": "frontend/app/utils/url-builder.utils.ts",
+      "sha256": "e497d9a119ba002b78ff33921d2c15437ff893f043c52e97d9cd056b202a4ff1"
+    },
+    {
+      "path": "frontend/tests/unit/diagnostic-legacy-navigation.test.tsx",
+      "sha256": "d7ed0f7d0b2de2c3f0f15e0bc4614755b90a7a3da3fa7a7924dd0ae8e645afe9"
+    },
+    {
+      "path": "frontend/tests/unit/diagnostic-result-links.test.tsx",
+      "sha256": "609e5d941721d666d778a258e200128f1d6ca77fce80f8001a159fded16af54d"
+    },
+    {
+      "path": "frontend/tests/unit/diagnostic-wizard-submission.test.tsx",
+      "sha256": "ac9990b214e6a399f634837afb24fd429319469914ca65a03ebc12dc2333ecc5"
+    }
+  ],
+  "validation": {
+    "backend_full_suites": 10,
+    "backend_full_tests": 135,
+    "backend_final_affected_action_tests": 11,
+    "backend_distinct_cases": 136,
+    "frontend_full_tests": 18,
+    "frontend_final_affected_calendar_tests": 6,
+    "frontend_distinct_cases": 21,
+    "backend_typecheck": "pass",
+    "frontend_final_typecheck": "pass",
+    "targeted_lint": "pass",
+    "sql_mode": "read-only",
+    "sql_families": 50,
+    "sql_associations_checked": 56,
+    "live_api_browser_ci_preprod_prod": "not executed"
+  }
+}

@@ -1,0 +1,514 @@
+{
+  "alerts": [
+    {
+      "actions": [],
+      "milestone_km": 10000
+    },
+    {
+      "actions": [
+        {
+          "rule_alias": "controle-freinage",
+          "rule_label": "Contrôle freinage",
+          "km_interval": 20000,
+          "maintenance_priority": "critique"
+        },
+        {
+          "rule_alias": "filtre-huile",
+          "rule_label": "Remplacement filtre à huile",
+          "km_interval": 15000,
+          "maintenance_priority": "critique"
+        },
+        {
+          "rule_alias": "vidange-diesel",
+          "rule_label": "Vidange moteur diesel",
+          "km_interval": 20000,
+          "maintenance_priority": "important"
+        },
+        {
+          "rule_alias": "vidange-essence",
+          "rule_label": "Vidange moteur essence",
+          "km_interval": 15000,
+          "maintenance_priority": "important"
+        },
+        {
+          "rule_alias": "filtre-air",
+          "rule_label": "Remplacement filtre à air",
+          "km_interval": 30000,
+          "maintenance_priority": "normal"
+        },
+        {
+          "rule_alias": "filtre-habitacle",
+          "rule_label": "Remplacement filtre habitacle",
+          "km_interval": 15000,
+          "maintenance_priority": "normal"
+        }
+      ],
+      "milestone_km": 30000
+    },
+    {
+      "actions": [
+        {
+          "rule_alias": "controle-freinage",
+          "rule_label": "Contrôle freinage",
+          "km_interval": 20000,
+          "maintenance_priority": "critique"
+        },
+        {
+          "rule_alias": "filtre-huile",
+          "rule_label": "Remplacement filtre à huile",
+          "km_interval": 15000,
+          "maintenance_priority": "critique"
+        },
+        {
+          "rule_alias": "remplacement-plaquettes-frein-avant",
+          "rule_label": "Remplacement plaquettes de frein avant",
+          "km_interval": 40000,
+          "maintenance_priority": "critique"
+        },
+        {
+          "rule_alias": "pneu",
+          "rule_label": "Remplacement pneus",
+          "km_interval": 45000,
+          "maintenance_priority": "critique"
+        },
+        {
+          "rule_alias": "bougies-essence",
+          "rule_label": "Remplacement bougies essence",
+          "km_interval": 60000,
+          "maintenance_priority": "important"
+        },
+        {
+          "rule_alias": "liquide-refroidissement",
+          "rule_label": "Remplacement liquide refroidissement",
+          "km_interval": 60000,
+          "maintenance_priority": "important"
+        },
+        {
+          "rule_alias": "vidange-bva",
+          "rule_label": "Vidange boîte automatique",
+          "km_interval": 60000,
+          "maintenance_priority": "important"
+        },
+        {
+          "rule_alias": "vidange-diesel",
+          "rule_label": "Vidange moteur diesel",
+          "km_interval": 20000,
+          "maintenance_priority": "important"
+        },
+        {
+          "rule_alias": "vidange-essence",
+          "rule_label": "Vidange moteur essence",
+          "km_interval": 15000,
+          "maintenance_priority": "important"
+        },
+        {
+          "rule_alias": "filtre-air",
+          "rule_label": "Remplacement filtre à air",
+          "km_interval": 30000,
+          "maintenance_priority": "normal"
+        },
+        {
+          "rule_alias": "filtre-habitacle",
+          "rule_label": "Remplacement filtre habitacle",
+          "km_interval": 15000,
+          "maintenance_priority": "normal"
+        },
+        {
+          "rule_alias": "vidange-bvm",
+          "rule_label": "Vidange boîte manuelle",
+          "km_interval": 60000,
+          "maintenance_priority": "normal"
+        }
+      ],
+      "milestone_km": 60000
+    },
+    {
+      "actions": [
+        {
+          "rule_alias": "controle-freinage",
+          "rule_label": "Contrôle freinage",
+          "km_interval": 20000,
+          "maintenance_priority": "critique"
+        },
+        {
+          "rule_alias": "remplacement-disques-frein-avant",
+          "rule_label": "Remplacement disques de frein avant",
+          "km_interval": 70000,
+          "maintenance_priority": "critique"
+        },
+        {
+          "rule_alias": "filtre-huile",
+          "rule_label": "Remplacement filtre à huile",
+          "km_interval": 15000,
+          "maintenance_priority": "critique"
+        },
+        {
+          "rule_alias": "remplacement-plaquettes-frein-avant",
+          "rule_label": "Remplacement plaquettes de frein avant",
+          "km_interval": 40000,
+          "maintenance_priority": "critique"
+        },
+        {
+          "rule_alias": "pneu",
+          "rule_label": "Remplacement pneus",
+          "km_interval": 45000,
+          "maintenance_priority": "critique"
+        },
+        {
+          "rule_alias": "amortisseur",
+          "rule_label": "Remplacement amortisseurs",
+          "km_interval": 90000,
+          "maintenance_priority": "important"
+        },
+        {
+          "rule_alias": "bougies-essence",
+          "rule_label": "Remplacement bougies essence",
+          "km_interval": 60000,
+          "maintenance_priority": "important"
+        },
+        {
+          "rule_alias": "bougies-prechauffage",
+          "rule_label": "Remplacement bougies préchauffage diesel",
+          "km_interval": 100000,
+          "maintenance_priority": "important"
+        },
+        {
+          "rule_alias": "liquide-refroidissement",
+          "rule_label": "Remplacement liquide refroidissement",
+          "km_interval": 60000,
+          "maintenance_priority": "important"
+        },
+        {
+          "rule_alias": "vidange-bva",
+          "rule_label": "Vidange boîte automatique",
+          "km_interval": 60000,
+          "maintenance_priority": "important"
+        },
+        {
+          "rule_alias": "vidange-diesel",
+          "rule_label": "Vidange moteur diesel",
+          "km_interval": 20000,
+          "maintenance_priority": "important"
+        },
+        {
+          "rule_alias": "vidange-essence",
+          "rule_label": "Vidange moteur essence",
+          "km_interval": 15000,
+          "maintenance_priority": "important"
+        },
+        {
+          "rule_alias": "filtre-air",
+          "rule_label": "Remplacement filtre à air",
+          "km_interval": 30000,
+          "maintenance_priority": "normal"
+        },
+        {
+          "rule_alias": "filtre-habitacle",
+          "rule_label": "Remplacement filtre habitacle",
+          "km_interval": 15000,
+          "maintenance_priority": "normal"
+        },
+        {
+          "rule_alias": "vidange-bvm",
+          "rule_label": "Vidange boîte manuelle",
+          "km_interval": 60000,
+          "maintenance_priority": "normal"
+        }
+      ],
+      "milestone_km": 100000
+    },
+    {
+      "actions": [
+        {
+          "rule_alias": "controle-freinage",
+          "rule_label": "Contrôle freinage",
+          "km_interval": 20000,
+          "maintenance_priority": "critique"
+        },
+        {
+          "rule_alias": "distribution",
+          "rule_label": "Remplacement courroie distribution",
+          "km_interval": 120000,
+          "maintenance_priority": "critique"
+        },
+        {
+          "rule_alias": "remplacement-disques-frein-avant",
+          "rule_label": "Remplacement disques de frein avant",
+          "km_interval": 70000,
+          "maintenance_priority": "critique"
+        },
+        {
+          "rule_alias": "filtre-huile",
+          "rule_label": "Remplacement filtre à huile",
+          "km_interval": 15000,
+          "maintenance_priority": "critique"
+        },
+        {
+          "rule_alias": "remplacement-plaquettes-frein-avant",
+          "rule_label": "Remplacement plaquettes de frein avant",
+          "km_interval": 40000,
+          "maintenance_priority": "critique"
+        },
+        {
+          "rule_alias": "pneu",
+          "rule_label": "Remplacement pneus",
+          "km_interval": 45000,
+          "maintenance_priority": "critique"
+        },
+        {
+          "rule_alias": "amortisseur",
+          "rule_label": "Remplacement amortisseurs",
+          "km_interval": 90000,
+          "maintenance_priority": "important"
+        },
+        {
+          "rule_alias": "bougies-essence",
+          "rule_label": "Remplacement bougies essence",
+          "km_interval": 60000,
+          "maintenance_priority": "important"
+        },
+        {
+          "rule_alias": "bougies-prechauffage",
+          "rule_label": "Remplacement bougies préchauffage diesel",
+          "km_interval": 100000,
+          "maintenance_priority": "important"
+        },
+        {
+          "rule_alias": "liquide-refroidissement",
+          "rule_label": "Remplacement liquide refroidissement",
+          "km_interval": 60000,
+          "maintenance_priority": "important"
+        },
+        {
+          "rule_alias": "vidange-bva",
+          "rule_label": "Vidange boîte automatique",
+          "km_interval": 60000,
+          "maintenance_priority": "important"
+        },
+        {
+          "rule_alias": "vidange-diesel",
+          "rule_label": "Vidange moteur diesel",
+          "km_interval": 20000,
+          "maintenance_priority": "important"
+        },
+        {
+          "rule_alias": "vidange-essence",
+          "rule_label": "Vidange moteur essence",
+          "km_interval": 15000,
+          "maintenance_priority": "important"
+        },
+        {
+          "rule_alias": "filtre-air",
+          "rule_label": "Remplacement filtre à air",
+          "km_interval": 30000,
+          "maintenance_priority": "normal"
+        },
+        {
+          "rule_alias": "filtre-habitacle",
+          "rule_label": "Remplacement filtre habitacle",
+          "km_interval": 15000,
+          "maintenance_priority": "normal"
+        },
+        {
+          "rule_alias": "vidange-bvm",
+          "rule_label": "Vidange boîte manuelle",
+          "km_interval": 60000,
+          "maintenance_priority": "normal"
+        }
+      ],
+      "milestone_km": 150000
+    }
+  ],
+  "schedule": [
+    {
+      "status": "overdue",
+      "rule_alias": "controle-freinage",
+      "rule_label": "Contrôle freinage",
+      "km_interval": 20000,
+      "km_remaining": 0,
+      "month_interval": 12,
+      "applies_to_fuel": null,
+      "maintenance_priority": "critique"
+    },
+    {
+      "status": "ok",
+      "rule_alias": "distribution",
+      "rule_label": "Remplacement courroie distribution",
+      "km_interval": 120000,
+      "km_remaining": 40000,
+      "month_interval": 72,
+      "applies_to_fuel": null,
+      "maintenance_priority": "critique"
+    },
+    {
+      "status": "overdue",
+      "rule_alias": "remplacement-disques-frein-avant",
+      "rule_label": "Remplacement disques de frein avant",
+      "km_interval": 70000,
+      "km_remaining": 0,
+      "month_interval": null,
+      "applies_to_fuel": null,
+      "maintenance_priority": "critique"
+    },
+    {
+      "status": "overdue",
+      "rule_alias": "filtre-huile",
+      "rule_label": "Remplacement filtre à huile",
+      "km_interval": 15000,
+      "km_remaining": 0,
+      "month_interval": 12,
+      "applies_to_fuel": null,
+      "maintenance_priority": "critique"
+    },
+    {
+      "status": "time_only",
+      "rule_alias": "liquide-frein",
+      "rule_label": "Remplacement liquide de frein",
+      "km_interval": null,
+      "km_remaining": 0,
+      "month_interval": 24,
+      "applies_to_fuel": null,
+      "maintenance_priority": "critique"
+    },
+    {
+      "status": "overdue",
+      "rule_alias": "remplacement-plaquettes-frein-avant",
+      "rule_label": "Remplacement plaquettes de frein avant",
+      "km_interval": 40000,
+      "km_remaining": 0,
+      "month_interval": null,
+      "applies_to_fuel": null,
+      "maintenance_priority": "critique"
+    },
+    {
+      "status": "overdue",
+      "rule_alias": "pneu",
+      "rule_label": "Remplacement pneus",
+      "km_interval": 45000,
+      "km_remaining": 0,
+      "month_interval": 60,
+      "applies_to_fuel": null,
+      "maintenance_priority": "critique"
+    },
+    {
+      "status": "ok",
+      "rule_alias": "amortisseur",
+      "rule_label": "Remplacement amortisseurs",
+      "km_interval": 90000,
+      "km_remaining": 10000,
+      "month_interval": 72,
+      "applies_to_fuel": null,
+      "maintenance_priority": "important"
+    },
+    {
+      "status": "time_only",
+      "rule_alias": "batterie",
+      "rule_label": "Remplacement batterie",
+      "km_interval": null,
+      "km_remaining": 0,
+      "month_interval": 60,
+      "applies_to_fuel": null,
+      "maintenance_priority": "important"
+    },
+    {
+      "status": "overdue",
+      "rule_alias": "bougies-essence",
+      "rule_label": "Remplacement bougies essence",
+      "km_interval": 60000,
+      "km_remaining": 0,
+      "month_interval": null,
+      "applies_to_fuel": "essence",
+      "maintenance_priority": "important"
+    },
+    {
+      "status": "ok",
+      "rule_alias": "bougies-prechauffage",
+      "rule_label": "Remplacement bougies préchauffage diesel",
+      "km_interval": 100000,
+      "km_remaining": 20000,
+      "month_interval": null,
+      "applies_to_fuel": "diesel",
+      "maintenance_priority": "important"
+    },
+    {
+      "status": "overdue",
+      "rule_alias": "liquide-refroidissement",
+      "rule_label": "Remplacement liquide refroidissement",
+      "km_interval": 60000,
+      "km_remaining": 0,
+      "month_interval": 48,
+      "applies_to_fuel": null,
+      "maintenance_priority": "important"
+    },
+    {
+      "status": "overdue",
+      "rule_alias": "vidange-bva",
+      "rule_label": "Vidange boîte automatique",
+      "km_interval": 60000,
+      "km_remaining": 0,
+      "month_interval": null,
+      "applies_to_fuel": null,
+      "maintenance_priority": "important"
+    },
+    {
+      "status": "overdue",
+      "rule_alias": "vidange-diesel",
+      "rule_label": "Vidange moteur diesel",
+      "km_interval": 20000,
+      "km_remaining": 0,
+      "month_interval": 24,
+      "applies_to_fuel": "diesel",
+      "maintenance_priority": "important"
+    },
+    {
+      "status": "overdue",
+      "rule_alias": "vidange-essence",
+      "rule_label": "Vidange moteur essence",
+      "km_interval": 15000,
+      "km_remaining": 0,
+      "month_interval": 12,
+      "applies_to_fuel": "essence",
+      "maintenance_priority": "important"
+    },
+    {
+      "status": "overdue",
+      "rule_alias": "filtre-air",
+      "rule_label": "Remplacement filtre à air",
+      "km_interval": 30000,
+      "km_remaining": 0,
+      "month_interval": 24,
+      "applies_to_fuel": null,
+      "maintenance_priority": "normal"
+    },
+    {
+      "status": "overdue",
+      "rule_alias": "filtre-habitacle",
+      "rule_label": "Remplacement filtre habitacle",
+      "km_interval": 15000,
+      "km_remaining": 0,
+      "month_interval": 12,
+      "applies_to_fuel": null,
+      "maintenance_priority": "normal"
+    },
+    {
+      "status": "overdue",
+      "rule_alias": "vidange-bvm",
+      "rule_label": "Vidange boîte manuelle",
+      "km_interval": 60000,
+      "km_remaining": 0,
+      "month_interval": null,
+      "applies_to_fuel": null,
+      "maintenance_priority": "normal"
+    },
+    {
+      "status": "time_only",
+      "rule_alias": "recharge-clim",
+      "rule_label": "Recharge climatisation",
+      "km_interval": null,
+      "km_remaining": 0,
+      "month_interval": 24,
+      "applies_to_fuel": null,
+      "maintenance_priority": "normal"
+    }
+  ]
+}

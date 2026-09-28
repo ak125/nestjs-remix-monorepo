@@ -26,6 +26,7 @@ export class RiskSafetyEngine {
     hypotheses: ScoredHypothesis[],
     safetyRules: DiagSafetyRule[],
     symptomSlugs: string[],
+    criticalSymptomLabels: string[] = [],
   ): RiskAssessment {
     const riskFlags: string[] = [];
     const activeRules: DiagSafetyRule[] = [];
@@ -39,6 +40,22 @@ export class RiskSafetyEngine {
       }
     }
 
+    // Explicit critical urgency already means immediate action in the
+    // EvidencePack timeline. A relative plausibility score must not downgrade it.
+    const criticalLabels = [
+      ...new Set([
+        ...criticalSymptomLabels,
+        ...hypotheses
+          .filter((h) => h.urgency === 'critique')
+          .map((h) => h.label),
+      ]),
+    ];
+    for (const label of criticalLabels)
+      riskFlags.push(`Urgence critique : ${label}`);
+    const hasExplicitCritical =
+      criticalLabels.length > 0 ||
+      activeRules.some((rule) => rule.urgency === 'critique');
+
     // ── Determine overall risk level ────────────────────
     const hasCriticalRule = activeRules.some(
       (r) => r.urgency === 'haute' && r.blocks_catalog,
@@ -49,7 +66,7 @@ export class RiskSafetyEngine {
     const hasBlockingRule = activeRules.some((r) => r.blocks_catalog);
 
     let riskLevel: 'critical' | 'high' | 'moderate' | 'low';
-    if (hasCriticalRule && hasHighUrgencyHypothesis) {
+    if (hasExplicitCritical || (hasCriticalRule && hasHighUrgencyHypothesis)) {
       riskLevel = 'critical';
     } else if (hasCriticalRule || hasHighUrgencyHypothesis) {
       riskLevel = 'high';
@@ -62,7 +79,11 @@ export class RiskSafetyEngine {
     // ── Safety alert (court-circuit) ────────────────────
     let safetyAlert: string | undefined;
     if (riskLevel === 'critical') {
-      safetyAlert = this.buildSafetyAlert(activeRules, hypotheses);
+      safetyAlert = this.buildSafetyAlert(
+        activeRules,
+        hypotheses,
+        criticalLabels,
+      );
     }
 
     return {
@@ -70,7 +91,7 @@ export class RiskSafetyEngine {
       risk_flags: riskFlags,
       safety_alert: safetyAlert,
       requires_immediate_action: riskLevel === 'critical',
-      blocks_catalog: hasBlockingRule,
+      blocks_catalog: hasBlockingRule || hasExplicitCritical,
       active_rules: activeRules,
     };
   }
@@ -150,8 +171,8 @@ export class RiskSafetyEngine {
       );
     }
 
-    // Default: haute urgency rules are relevant if any hypothesis scores >= 30
-    if (rule.urgency === 'haute') {
+    // Keep existing relevance thresholds for high/critical safety rules.
+    if (rule.urgency === 'haute' || rule.urgency === 'critique') {
       return hypotheses.some((h) => h.total_score >= 30);
     }
 
@@ -169,12 +190,24 @@ export class RiskSafetyEngine {
   private buildSafetyAlert(
     rules: DiagSafetyRule[],
     hypotheses: ScoredHypothesis[],
+    criticalLabels: string[],
   ): string {
     const topHypothesis = hypotheses[0];
     const criticalRules = rules.filter(
-      (r) => r.urgency === 'haute' && r.blocks_catalog,
+      (r) =>
+        r.urgency === 'critique' || (r.urgency === 'haute' && r.blocks_catalog),
     );
 
+    if (
+      criticalLabels.length ||
+      criticalRules.some((rule) => rule.urgency === 'critique')
+    ) {
+      const details = [
+        ...criticalLabels,
+        ...criticalRules.map((rule) => rule.condition_description),
+      ].join(' | ');
+      return `⚠️ ALERTE SÉCURITÉ — Immédiat — ne pas rouler. ${details}. Contrôle professionnel nécessaire.`;
+    }
     if (criticalRules.length === 0) return '';
 
     const ruleDescriptions = criticalRules
