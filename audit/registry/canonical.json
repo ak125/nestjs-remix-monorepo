@@ -63869,7 +63869,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 193,
+      "loc": 220,
       "owner": "@ak125/auth-team",
       "path": "backend/src/modules/users/dto/user.dto.ts",
       "risk": "high",
@@ -68089,6 +68089,26 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "backend/tests/unit/users-final.profile-update.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 220,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/users-final.profile-update.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "backend/tests/unit/users.controller.dashboard-level.test.ts",
       "importedBy": [],
       "imports": [],
@@ -68382,8 +68402,8 @@
         "frontend/app/routes/account.messages.compose.tsx",
         "frontend/app/routes/account.messages.tsx",
         "frontend/app/routes/account.orders.tsx",
-        "frontend/app/routes/account.profile.edit.tsx",
         "frontend/app/routes/account.profile.tsx",
+        "frontend/app/routes/account.profile_.edit.tsx",
         "frontend/app/routes/account.security.tsx",
         "frontend/app/routes/account.settings.tsx",
         "frontend/app/routes/account.tsx",
@@ -77666,8 +77686,8 @@
         "frontend/app/routes/account.messages.compose.tsx",
         "frontend/app/routes/account.messages.tsx",
         "frontend/app/routes/account.orders.tsx",
-        "frontend/app/routes/account.profile.edit.tsx",
         "frontend/app/routes/account.profile.tsx",
+        "frontend/app/routes/account.profile_.edit.tsx",
         "frontend/app/routes/account.security.tsx",
         "frontend/app/routes/account.settings.tsx",
         "frontend/app/routes/account_.orders.$orderId.tsx",
@@ -77763,8 +77783,8 @@
         "frontend/app/routes/account.messages.compose.tsx",
         "frontend/app/routes/account.messages.tsx",
         "frontend/app/routes/account.orders.tsx",
-        "frontend/app/routes/account.profile.edit.tsx",
         "frontend/app/routes/account.profile.tsx",
+        "frontend/app/routes/account.profile_.edit.tsx",
         "frontend/app/routes/account.security.tsx",
         "frontend/app/routes/account.settings.tsx",
         "frontend/app/routes/account_.orders.$orderId.tsx",
@@ -77847,8 +77867,8 @@
         "frontend/app/routes/account.messages.compose.tsx",
         "frontend/app/routes/account.messages.tsx",
         "frontend/app/routes/account.orders.tsx",
-        "frontend/app/routes/account.profile.edit.tsx",
         "frontend/app/routes/account.profile.tsx",
+        "frontend/app/routes/account.profile_.edit.tsx",
         "frontend/app/routes/account.security.tsx",
         "frontend/app/routes/account.settings.tsx",
         "frontend/app/routes/account_.orders.$orderId.tsx",
@@ -80728,34 +80748,6 @@
         "manual"
       ],
       "domain": "D8",
-      "id": "frontend/app/routes/account.profile.edit.tsx",
-      "importedBy": [],
-      "imports": [
-        "frontend/app/auth/unified.server.ts",
-        "frontend/app/components/ui/badge.tsx",
-        "frontend/app/components/ui/button.tsx",
-        "frontend/app/components/ui/card.tsx",
-        "~/components/errors/ErrorGeneric",
-        "~/components/ui/alert",
-        "~/utils/logger"
-      ],
-      "kind": "route",
-      "loc": 362,
-      "owner": "@ak125/frontend-team",
-      "path": "frontend/app/routes/account.profile.edit.tsx",
-      "risk": "medium",
-      "runtime": true,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D8",
       "id": "frontend/app/routes/account.profile.tsx",
       "importedBy": [],
       "imports": [
@@ -80773,6 +80765,35 @@
       "loc": 260,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/account.profile.tsx",
+      "risk": "medium",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
+      "id": "frontend/app/routes/account.profile_.edit.tsx",
+      "importedBy": [],
+      "imports": [
+        "frontend/app/auth/unified.server.ts",
+        "frontend/app/components/ui/badge.tsx",
+        "frontend/app/components/ui/button.tsx",
+        "frontend/app/components/ui/card.tsx",
+        "~/components/errors/ErrorGeneric",
+        "~/components/ui/alert",
+        "~/services/profile.server",
+        "~/utils/logger"
+      ],
+      "kind": "route",
+      "loc": 365,
+      "owner": "@ak125/frontend-team",
+      "path": "frontend/app/routes/account.profile_.edit.tsx",
       "risk": "medium",
       "runtime": true,
       "schemaVersion": "1.0.0",
@@ -87812,7 +87833,7 @@
         "~/utils/logger"
       ],
       "kind": "config",
-      "loc": 44,
+      "loc": 84,
       "owner": "__unassigned__",
       "path": "frontend/app/services/profile.server.ts",
       "risk": "low",
@@ -90431,6 +90452,26 @@
       "loc": 181,
       "owner": "@ak125",
       "path": "frontend/tests/qa-audit/suites/visual.spec.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/account-profile-edit.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 191,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/account-profile-edit.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -100385,11 +100426,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "3ce979325b7ec7418eee5e90833adc415429d8198c41f76f52e36e8069e0205c",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "8f91f3e4c4346a681ec54dfd63a911af8b7e796e004da7a0c0c67bec00f9bd7a",
+      "audit/registry/files.json": "57a47298b9df5e0c6ed4865b6f6ddb211d98ec32c747b2ba90f48ed0cab8fc73",
       "audit/registry/rpc.json": "86d0c24b102036512a9f7b11d9ac04754288049a8b061981b19f0db0a8c86263",
-      "audit/registry/runtime.json": "b6be6cd38987474e9218900ad7cd8d251f7e435fc9fe5639701c5c64d22adecb"
+      "audit/registry/runtime.json": "ed7cfe73a8ae1706ef9b54b7ad3d95f31c271d031c9b354a128e81b03296b24b"
     },
-    "sotFingerprint": "ab3fb8303f66"
+    "sotFingerprint": "b0032767ab8d"
   },
   "runtime": [
     {
@@ -109425,18 +109466,18 @@
     },
     {
       "dependsOn": [],
-      "id": "runtime:frontend/app/routes/account.profile.edit.tsx",
+      "id": "runtime:frontend/app/routes/account.profile.tsx",
       "kind": "remix-route",
-      "path": "frontend/app/routes/account.profile.edit.tsx",
+      "path": "frontend/app/routes/account.profile.tsx",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
     },
     {
       "dependsOn": [],
-      "id": "runtime:frontend/app/routes/account.profile.tsx",
+      "id": "runtime:frontend/app/routes/account.profile_.edit.tsx",
       "kind": "remix-route",
-      "path": "frontend/app/routes/account.profile.tsx",
+      "path": "frontend/app/routes/account.profile_.edit.tsx",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
