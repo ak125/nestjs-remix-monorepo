@@ -110,8 +110,8 @@
       "dirs": [
         "backend/src/modules/bot-guard"
       ],
-      "files_count": 6,
-      "loc_total": 1619,
+      "files_count": 7,
+      "loc_total": 1895,
       "has_barrel": false
     },
     "cache": {
@@ -119,7 +119,7 @@
         "backend/src/cache"
       ],
       "files_count": 3,
-      "loc_total": 620,
+      "loc_total": 700,
       "has_barrel": false
     },
     "cart": {
@@ -186,7 +186,7 @@
         "backend/src/modules/config/validators"
       ],
       "files_count": 100,
-      "loc_total": 24373,
+      "loc_total": 24385,
       "has_barrel": true
     },
     "customers": {
@@ -1509,6 +1509,11 @@
     {
       "from": "blog",
       "to": "seo-projection",
+      "count": 1
+    },
+    {
+      "from": "bot-guard",
+      "to": "config",
       "count": 1
     },
     {

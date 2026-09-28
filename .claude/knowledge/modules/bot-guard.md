@@ -5,6 +5,7 @@ sources:
 last_scan: '2026-09-28'
 primary_files:
 - backend/src/modules/bot-guard/bot-guard.controller.ts
+- backend/src/modules/bot-guard/bot-guard.metrics.test.ts
 - backend/src/modules/bot-guard/bot-guard.middleware.test.ts
 - backend/src/modules/bot-guard/bot-guard.middleware.ts
 - backend/src/modules/bot-guard/bot-guard.module.ts
@@ -29,6 +30,7 @@ _Section à rédiger._
 
 ### Fichiers primaires
 - [backend/src/modules/bot-guard/bot-guard.controller.ts](../../../backend/src/modules/bot-guard/bot-guard.controller.ts)
+- [backend/src/modules/bot-guard/bot-guard.metrics.test.ts](../../../backend/src/modules/bot-guard/bot-guard.metrics.test.ts)
 - [backend/src/modules/bot-guard/bot-guard.middleware.test.ts](../../../backend/src/modules/bot-guard/bot-guard.middleware.test.ts)
 - [backend/src/modules/bot-guard/bot-guard.middleware.ts](../../../backend/src/modules/bot-guard/bot-guard.middleware.ts)
 - [backend/src/modules/bot-guard/bot-guard.module.ts](../../../backend/src/modules/bot-guard/bot-guard.module.ts)

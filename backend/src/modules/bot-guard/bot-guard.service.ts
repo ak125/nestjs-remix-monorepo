@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { CacheService } from '@cache/cache.service';
+import { CACHE_STRATEGIES } from '../../config/cache-ttl.config';
 
 interface RequestFingerprint {
   ip: string;
@@ -39,6 +40,9 @@ export class BotGuardService implements OnModuleInit {
   private verifiedBotBypass = true;
   private lastConfigRefresh = 0;
   private readonly CONFIG_REFRESH_MS = 60_000;
+  private lastMetricsWarningAt = Number.NEGATIVE_INFINITY;
+  private readonly METRIC_MINUTE_MS = 60_000;
+  private readonly METRIC_WINDOW_MINUTES = 1440;
 
   // Target countries that should NEVER be blocked
   private readonly TARGET_COUNTRIES = new Set([
@@ -426,6 +430,33 @@ export class BotGuardService implements OnModuleInit {
 
   // --- Stats & Logging ---
 
+  private warnMetricsUnavailable(): void {
+    const now = Date.now();
+    if (now - this.lastMetricsWarningAt >= this.METRIC_MINUTE_MS) {
+      this.lastMetricsWarningAt = now;
+      this.logger.warn(
+        'BotGuard metrics unavailable; enforcement unchanged, observations may be missing',
+      );
+    }
+  }
+
+  private async recordObservation(
+    kind: 'allowed' | 'blocked',
+    country?: string,
+  ): Promise<void> {
+    const strategy = CACHE_STRATEGIES.BOT_GUARD.MINUTE_STATS;
+    const minute = Math.floor(Date.now() / this.METRIC_MINUTE_MS);
+    const fields: string[] = [kind];
+    // Bound field cardinality even if an upstream sends an invalid country header.
+    if (country && /^[A-Z]{2}$/.test(country))
+      fields.push(`${kind}:country:${country}`);
+    await this.cacheService.incrementHashCounters(
+      `${strategy.prefix}${minute}`,
+      fields,
+      strategy.ttl,
+    );
+  }
+
   async logBlocked(
     ip: string,
     country: string | undefined,
@@ -433,89 +464,89 @@ export class BotGuardService implements OnModuleInit {
     path: string,
   ): Promise<void> {
     try {
-      // Increment counters
-      await this.cacheService.set(
-        `bot-guard:stats:blocked:total`,
-        ((await this.cacheService.get<number>(
-          'bot-guard:stats:blocked:total',
-        )) || 0) + 1,
-        86400,
+      await this.recordObservation('blocked', country);
+      const strategy = CACHE_STRATEGIES.BOT_GUARD.RECENT_BLOCKS;
+      await this.cacheService.prependBoundedList<BlockedEntry>(
+        strategy.prefix,
+        {
+          ip,
+          country,
+          reason,
+          path,
+          timestamp: new Date(Date.now()).toISOString(),
+        },
+        100,
+        strategy.ttl,
       );
-
-      if (country) {
-        const countryKey = `bot-guard:stats:blocked:geo:${country}`;
-        await this.cacheService.set(
-          countryKey,
-          ((await this.cacheService.get<number>(countryKey)) || 0) + 1,
-          86400,
-        );
-      }
-
-      // Keep last 100 blocked entries
-      const recent =
-        (await this.cacheService.get<BlockedEntry[]>(
-          'bot-guard:recent-blocks',
-        )) || [];
-      recent.unshift({
-        ip,
-        country,
-        reason,
-        path,
-        timestamp: new Date().toISOString(),
-      });
-      if (recent.length > 100) recent.length = 100;
-      await this.cacheService.set('bot-guard:recent-blocks', recent, 86400);
     } catch {
-      // Non-blocking - stats failure should not affect request
+      // Telemetry must never change a blocking decision.
+      this.warnMetricsUnavailable();
     }
   }
 
   async trackAllowed(country?: string): Promise<void> {
     try {
-      await this.cacheService.set(
-        'bot-guard:stats:allowed:total',
-        ((await this.cacheService.get<number>(
-          'bot-guard:stats:allowed:total',
-        )) || 0) + 1,
-        86400,
-      );
-
-      if (country) {
-        const key = `bot-guard:stats:allowed:country:${country}`;
-        await this.cacheService.set(
-          key,
-          ((await this.cacheService.get<number>(key)) || 0) + 1,
-          86400,
-        );
-      }
+      await this.recordObservation('allowed', country);
     } catch {
-      // Non-blocking
+      this.warnMetricsUnavailable();
     }
   }
 
   // --- Admin API ---
 
   async getStats(): Promise<Record<string, unknown>> {
-    const totalBlocked =
-      (await this.cacheService.get<number>('bot-guard:stats:blocked:total')) ||
-      0;
-    const totalAllowed =
-      (await this.cacheService.get<number>('bot-guard:stats:allowed:total')) ||
-      0;
-    const total = totalBlocked + totalAllowed;
-
-    return {
-      enabled: this.enabled,
-      blockedCountries: [...this.blockedCountries],
-      blockedIpsCount: this.blockedIps.size,
-      suspicionThreshold: this.suspicionThreshold,
-      stats24h: {
+    const endMinute = Math.floor(Date.now() / this.METRIC_MINUTE_MS);
+    const startMinute = endMinute - this.METRIC_WINDOW_MINUTES;
+    const metadata = {
+      measurementVersion: 2,
+      historyBackfilled: false,
+      completeness: 'not_guaranteed',
+      scope: 'requests_evaluated_by_bot_guard',
+      window: {
+        from: new Date(startMinute * this.METRIC_MINUTE_MS).toISOString(),
+        to: new Date(endMinute * this.METRIC_MINUTE_MS).toISOString(),
+        resolutionSeconds: 60,
+        endExclusive: true,
+      },
+    };
+    let stats24h: Record<string, unknown>;
+    try {
+      const prefix = CACHE_STRATEGIES.BOT_GUARD.MINUTE_STATS.prefix;
+      const keys = Array.from(
+        { length: this.METRIC_WINDOW_MINUTES },
+        (_, index) => `${prefix}${startMinute + index}`,
+      );
+      const [totalBlocked, totalAllowed] =
+        await this.cacheService.sumHashCounters(keys, ['blocked', 'allowed']);
+      const total = totalBlocked + totalAllowed;
+      if (!Number.isSafeInteger(total))
+        throw new Error('BotGuard metric total overflow');
+      stats24h = {
+        ...metadata,
+        status: 'available',
         totalBlocked,
         totalAllowed,
         total,
         blockRate:
           total > 0 ? `${((totalBlocked / total) * 100).toFixed(1)}%` : '0%',
-      },
+      };
+    } catch {
+      this.warnMetricsUnavailable();
+      stats24h = {
+        ...metadata,
+        status: 'unavailable',
+        totalBlocked: null,
+        totalAllowed: null,
+        total: null,
+        blockRate: null,
+      };
+    }
+    return {
+      enabled: this.enabled,
+      blockedCountries: [...this.blockedCountries],
+      blockedIpsCount: this.blockedIps.size,
+      suspicionThreshold: this.suspicionThreshold,
+      stats24h,
     };
   }
 
@@ -596,10 +627,12 @@ export class BotGuardService implements OnModuleInit {
   }
 
   async getRecentBlocks(): Promise<BlockedEntry[]> {
-    return (
-      (await this.cacheService.get<BlockedEntry[]>(
-        'bot-guard:recent-blocks',
-      )) || []
+    const strategy = CACHE_STRATEGIES.BOT_GUARD.RECENT_BLOCKS;
+    const cutoff = Date.now() - strategy.ttl * 1000;
+    const entries = await this.cacheService.getList<BlockedEntry>(
+      strategy.prefix,
+      100,
     );
+    return entries.filter((entry) => Date.parse(entry.timestamp) >= cutoff);
   }
 }
