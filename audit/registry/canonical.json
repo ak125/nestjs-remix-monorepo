@@ -42270,7 +42270,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "service",
-      "loc": 607,
+      "loc": 627,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
       "risk": "medium",
@@ -42300,7 +42300,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "test",
-      "loc": 435,
+      "loc": 460,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
       "risk": "medium",
@@ -42351,7 +42351,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "test",
-      "loc": 812,
+      "loc": 889,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts",
       "risk": "medium",
@@ -42546,7 +42546,7 @@
         "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts"
       ],
       "kind": "service",
-      "loc": 94,
+      "loc": 102,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
       "risk": "medium",
@@ -100932,11 +100932,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "6fdea94ba60b096fd48830deaa74302a1ef9fde9a5185b64878a2c87dea763ef",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "af07c9b1dcea4e34f4cc7bfb492a285835eec4b6e896e7812b69947b84aea218",
+      "audit/registry/files.json": "a8fa2e8c414a996f2d39e923eb8cc7fc118e6482d8ce7179fdfa23ac04e5192f",
       "audit/registry/rpc.json": "86d0c24b102036512a9f7b11d9ac04754288049a8b061981b19f0db0a8c86263",
       "audit/registry/runtime.json": "ed7cfe73a8ae1706ef9b54b7ad3d95f31c271d031c9b354a128e81b03296b24b"
     },
-    "sotFingerprint": "4923d95d7bc1"
+    "sotFingerprint": "f1e1cd9ea67b"
   },
   "runtime": [
     {
