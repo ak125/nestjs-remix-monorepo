@@ -1334,7 +1334,6 @@
       "RagChatService",
       "RagCircuitBreakerService",
       "RagCleanupService",
-      "RagEnrichmentEngine",
       "RagFingerprintService",
       "RagFoundationGateService",
       "RagGammeDetectionService",
@@ -1857,7 +1856,6 @@
       "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
       "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
       "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
-      "backend/src/modules/diagnostic-engine/engines/rag-enrichment.engine.ts",
       "backend/src/modules/diagnostic-engine/engines/risk-safety.engine.ts",
       "backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
       "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
@@ -2914,7 +2912,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1527,
+  "runtime_files_count": 1526,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -3253,7 +3251,6 @@
     "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
     "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
     "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
-    "backend/src/modules/diagnostic-engine/engines/rag-enrichment.engine.ts",
     "backend/src/modules/diagnostic-engine/engines/risk-safety.engine.ts",
     "backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
     "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
