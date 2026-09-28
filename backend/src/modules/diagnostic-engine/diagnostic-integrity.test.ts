@@ -75,6 +75,7 @@ function orchestrator() {
       system_slug: 'freinage',
       system_label: 'Freinage',
       resolved_symptom_slugs: ['noise'],
+      symptom_labels: { noise: 'Bruit' },
       unresolved_signals: [],
       signal_quality: 'high',
     }),
@@ -220,6 +221,30 @@ describe('diagnostic safety and deterministic scoring regressions', () => {
       expect(f.data.saveSession).not.toHaveBeenCalled();
     },
   );
+  test('names secondary symptoms by their reference labels', async () => {
+    const f = orchestrator();
+    f.signal.interpret.mockResolvedValue({
+      system_confirmed: true,
+      system_slug: 'freinage',
+      system_label: 'Freinage',
+      resolved_symptom_slugs: ['noise', 'judder'],
+      symptom_labels: { noise: 'Bruit', judder: 'Vibrations' },
+      unresolved_signals: [],
+      signal_quality: 'high',
+    });
+    const result = await f.engine.analyze({
+      ...input,
+      signal_input: { ...input.signal_input, secondary_signals: ['judder'] },
+    });
+    expect(
+      result.data?.evidence.evidence_pack.factual_inputs_confirmed,
+    ).toEqual(
+      expect.arrayContaining([
+        'Symptôme principal: Bruit',
+        'Symptômes secondaires: Vibrations',
+      ]),
+    );
+  });
   test('no candidate causes cannot produce a reassuring low risk result', async () => {
     const f = orchestrator();
     f.data.getScoredCausesForSymptoms.mockResolvedValue([]);

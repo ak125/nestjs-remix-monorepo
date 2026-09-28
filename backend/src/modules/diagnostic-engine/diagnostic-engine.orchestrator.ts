@@ -67,6 +67,10 @@ export class DiagnosticEngineOrchestrator {
       inputLimitations.push(
         'Durée d’immobilisation non prise en compte dans cette analyse.',
       );
+    if (input.usage_context?.last_service_date !== undefined)
+      inputLimitations.push(
+        'Date du dernier entretien non prise en compte : seules les dates renseignées par opération sont utilisées.',
+      );
     if (input.usage_context?.recent_repairs?.length)
       inputLimitations.push(
         'Réparations récentes non prises en compte : elles ne prouvent ni la résolution du symptôme ni l’entretien des opérations concernées.',
@@ -446,19 +450,35 @@ export class DiagnosticEngineOrchestrator {
       missing.push("Profil d'usage non renseigné");
     }
 
-    if (input.usage_context?.last_service_km !== undefined) {
+    const usage = input.usage_context;
+    if (usage?.last_service_km !== undefined) {
       confirmed.push(
-        `Dernier entretien: ${input.usage_context.last_service_km.toLocaleString('fr-FR')} km`,
+        `Dernier entretien: ${usage.last_service_km.toLocaleString('fr-FR')} km`,
       );
-    } else {
+    }
+    if (usage?.maintenance_records?.length) {
+      confirmed.push(
+        `Historique d'entretien déclaré pour ${usage.maintenance_records.length} opération(s)`,
+      );
+    }
+    // A supplied global date is disclosed as not taken into account instead.
+    if (
+      usage?.last_service_km === undefined &&
+      !usage?.maintenance_records?.length &&
+      usage?.last_service_date === undefined
+    ) {
       missing.push('Historique entretien non renseigné');
     }
 
+    // Every signal is resolved at this point: analysis stops otherwise.
+    const symptomLabel = (slug: string) => signal.symptom_labels[slug];
     confirmed.push(`Système: ${signal.system_label}`);
-    confirmed.push(`Symptôme principal: ${input.signal_input.primary_signal}`);
+    confirmed.push(
+      `Symptôme principal: ${symptomLabel(input.signal_input.primary_signal)}`,
+    );
     if (input.signal_input.secondary_signals?.length) {
       confirmed.push(
-        `Symptômes secondaires: ${input.signal_input.secondary_signals.join(', ')}`,
+        `Symptômes secondaires: ${input.signal_input.secondary_signals.map(symptomLabel).join(', ')}`,
       );
     }
     if (signal.unresolved_signals.length > 0) {
