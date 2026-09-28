@@ -26665,6 +26665,48 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/seo/cli/run-link-maintenance.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/seo/cli/run-link-maintenance.ts"
+      ],
+      "kind": "test",
+      "loc": 122,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/seo/cli/run-link-maintenance.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/seo/cli/run-link-maintenance.ts",
+      "importedBy": [
+        "backend/src/modules/seo/cli/run-link-maintenance.test.ts"
+      ],
+      "imports": [],
+      "kind": "service",
+      "loc": 73,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/seo/cli/run-link-maintenance.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
         "depcruise",
         "reachability"
       ],
@@ -27299,8 +27341,31 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/seo/infrastructure/seo-link-tracking.cleanup.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/seo/infrastructure/seo-link-tracking.service.ts"
+      ],
+      "kind": "test",
+      "loc": 52,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/seo/infrastructure/seo-link-tracking.cleanup.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/seo/infrastructure/seo-link-tracking.service.ts",
       "importedBy": [
+        "backend/src/modules/seo/infrastructure/seo-link-tracking.cleanup.test.ts",
+        "backend/src/modules/seo/seo-link-tracking.auth.test.ts",
         "backend/src/modules/seo/seo-link-tracking.controller.test.ts",
         "backend/src/modules/seo/seo-link-tracking.controller.ts",
         "backend/src/modules/seo/seo.module.ts"
@@ -27310,7 +27375,7 @@
         "@security/rpc-gate/rpc-gate.service"
       ],
       "kind": "service",
-      "loc": 498,
+      "loc": 501,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/infrastructure/seo-link-tracking.service.ts",
       "risk": "low",
@@ -28893,6 +28958,28 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/seo/seo-link-tracking.auth.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/seo/infrastructure/seo-link-tracking.service.ts",
+        "backend/src/modules/seo/seo-link-tracking.controller.ts"
+      ],
+      "kind": "test",
+      "loc": 143,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/seo/seo-link-tracking.auth.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/seo/seo-link-tracking.controller.test.ts",
       "importedBy": [],
       "imports": [
@@ -28917,14 +29004,16 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/seo/seo-link-tracking.controller.ts",
       "importedBy": [
+        "backend/src/modules/seo/seo-link-tracking.auth.test.ts",
         "backend/src/modules/seo/seo-link-tracking.controller.test.ts",
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
+        "@auth/internal-api-key.guard",
         "backend/src/modules/seo/infrastructure/seo-link-tracking.service.ts"
       ],
       "kind": "controller",
-      "loc": 294,
+      "loc": 318,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/seo-link-tracking.controller.ts",
       "risk": "low",

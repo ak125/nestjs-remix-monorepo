@@ -6,11 +6,12 @@
 # SEO LINK TRACKING (Maillage interne)
 # =====================================================
 
+# These jobs require the same INTERNAL_API_KEY as the backend.
 # SEO - Aggregation metriques quotidiennes (2h30)
-30 2 * * * curl -s -X POST http://localhost:3000/api/seo/aggregate >> /logs/seo-aggregate.log 2>&1
+30 2 * * * node /app/backend/dist/modules/seo/cli/run-link-maintenance.js aggregate >> /logs/seo-aggregate.log 2>&1
 
 # SEO - Nettoyage donnees > 90 jours (lundis 3h30)
-30 3 * * 1 curl -s -X POST "http://localhost:3000/api/seo/cleanup?daysToKeep=90" >> /logs/seo-cleanup.log 2>&1
+30 3 * * 1 node /app/backend/dist/modules/seo/cli/run-link-maintenance.js cleanup >> /logs/seo-cleanup.log 2>&1
 
 # =====================================================
 # MAINTENANCE SYSTEME

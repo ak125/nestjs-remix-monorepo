@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 339cfced60aad9b269665f98e53971fdb2fc56d7931465a8b54faf5f599457b8
+source_sha256: 628f1840a99c15e19ccffaa62c6115ea51b538909d12292e1654f4c7fabc6932
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 2917 |
+| Files (Layer 1) | 2921 |
 | DB tables (Layer 1) | 314 |
 | DB RPC (Layer 1) | 253 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1000 |
 
-Source sotFingerprint: `b0032767ab8d`.
+Source sotFingerprint: `8e741432929f`.
 
 ## Comment l'utiliser
 
@@ -53,11 +53,11 @@ Source sotFingerprint: `b0032767ab8d`.
 
 ### D3 — SEO & Sitemap
 
-- **Files**: 424 (service=218, test=118, controller=34, config=28, script=26)
+- **Files**: 428 (service=219, test=121, controller=34, config=28, script=26)
 - **Runtime entrypoints**: 168
-- **Top owners**: @ak125/seo-team (424)
+- **Top owners**: @ak125/seo-team (428)
 - **Knowledge prose**: [`merchant-center`](modules/merchant-center.md), [`seo`](modules/seo.md), [`seo-control-plane`](modules/seo-control-plane.md), [`seo-logs`](modules/seo-logs.md), [`seo-monitoring`](modules/seo-monitoring.md), [`seo-shadow-observatory`](modules/seo-shadow-observatory.md)
-- **Status**: LIVE=219, UNKNOWN=205
+- **Status**: LIVE=219, UNKNOWN=209
 
 ### D4 — Vehicle / Compatibility
 
