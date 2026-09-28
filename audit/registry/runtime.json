@@ -1548,8 +1548,7 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/config/content-write-gate.service.ts",
-        "runtime:backend/src/config/feature-flags.service.ts"
+        "runtime:backend/src/config/content-write-gate.service.ts"
       ],
       "id": "runtime:backend/src/modules/admin/services/r2-enricher.service.ts",
       "kind": "nestjs-service",
@@ -2975,7 +2974,6 @@
         "runtime:backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
         "runtime:backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
         "runtime:backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
-        "runtime:backend/src/modules/diagnostic-engine/engines/rag-enrichment.engine.ts",
         "runtime:backend/src/modules/diagnostic-engine/engines/risk-safety.engine.ts",
         "runtime:backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
         "runtime:backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
@@ -2987,7 +2985,6 @@
         "runtime:backend/src/modules/diagnostic-engine/services/kg-shadow.service.ts",
         "runtime:backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts",
         "runtime:backend/src/modules/diagnostic-engine/services/outcome-emitter.service.ts",
-        "runtime:backend/src/modules/rag-proxy/rag-proxy.module.ts",
         "runtime:backend/src/modules/vehicle-context/vehicle-context.module.ts"
       ],
       "id": "runtime:backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
@@ -3003,7 +3000,6 @@
         "runtime:backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
         "runtime:backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
         "runtime:backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
-        "runtime:backend/src/modules/diagnostic-engine/engines/rag-enrichment.engine.ts",
         "runtime:backend/src/modules/diagnostic-engine/engines/risk-safety.engine.ts",
         "runtime:backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
         "runtime:backend/src/modules/diagnostic-engine/services/kg-shadow.service.ts"
@@ -3045,17 +3041,6 @@
       "id": "runtime:backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
       "kind": "other",
       "path": "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "dependsOn": [
-        "runtime:backend/src/modules/rag-proxy/rag-proxy.service.ts"
-      ],
-      "id": "runtime:backend/src/modules/diagnostic-engine/engines/rag-enrichment.engine.ts",
-      "kind": "other",
-      "path": "backend/src/modules/diagnostic-engine/engines/rag-enrichment.engine.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"

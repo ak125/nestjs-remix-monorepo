@@ -44,6 +44,15 @@ export const SearchResultSchema = z.object({
   canonical_weight: z.number().optional(),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
+  // Indexed hash describes the source, not the truncated search preview.
+  content_hash: z.string().optional(),
+  // F.5 provenance remains unknown for historical chunks/API responses.
+  canonical_source: z.string().nullish(),
+  source_layer: z.string().nullish(),
+  source_commit: z.string().nullish(),
+  lineage_id: z.string().nullish(),
+  embedding_model: z.string().nullish(),
+  origin_batch_kind: z.string().nullish(),
   // Role classification fields (from Weaviate chunk metadata)
   section_key: z.string().optional(),
   primary_role: z.string().optional(),
