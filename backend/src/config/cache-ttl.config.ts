@@ -422,7 +422,8 @@ export const CACHE_STRATEGIES = {
       //   tournée (chaque RPC rendait 'Invalid API key', caché vide 5 min).
       // v3 → v4 (2026-09-02, A2) : la valeur change de forme — payload RPC brut
       //   au limit canonique (tranché à la lecture) au lieu de la réponse construite.
-      keyVersion: 'v4',
+      // v5 : distinguer les erreurs mises en cache des vrais résultats vides.
+      keyVersion: 'v5',
       generation: 'catalog',
       description:
         'get_soft_404_alternatives — dérivé de compatibilité TecDoc, stable entre imports catalogue',
@@ -430,10 +431,10 @@ export const CACHE_STRATEGIES = {
     ALTERNATIVES_ERROR: {
       ttl: 30,
       prefix: 'alt:',
-      keyVersion: 'v4',
+      keyVersion: 'v5',
       generation: 'catalog',
       description:
-        'get_soft_404_alternatives — échec RPC : réponse vide à TTL court, anti-poisoning (incident 2026-05-19)',
+        'get_soft_404_alternatives — échec RPC : indisponibilité explicite à TTL court, anti-poisoning (incident 2026-05-19)',
     },
   },
 

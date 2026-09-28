@@ -325,8 +325,28 @@ export async function piecesVehicleLoader({
         },
       );
       if (altResp.ok) {
-        alternativesData = (await altResp.json()) as RmAlternativesResponse;
-        alternativesFetchOk = true;
+        const payload: unknown = await altResp.json();
+        // A 200 alone does not establish that alternatives were computed.
+        // Preserve the governed no-store degradation for failed/invalid bodies.
+        if (
+          payload !== null &&
+          typeof payload === "object" &&
+          "success" in payload &&
+          payload.success === true &&
+          "alternativeGammes" in payload &&
+          Array.isArray(payload.alternativeGammes) &&
+          "alternativeVehicles" in payload &&
+          Array.isArray(payload.alternativeVehicles) &&
+          "relatedModels" in payload &&
+          Array.isArray(payload.relatedModels)
+        ) {
+          alternativesData = payload as RmAlternativesResponse;
+          alternativesFetchOk = true;
+        } else {
+          logger.warn(
+            `[R2_ALTS_INVALID_PAYLOAD] gamme=${gammeId} type=${vehicleIds.typeId}`,
+          );
+        }
       } else {
         logger.warn(
           `[R2_ALTS_FETCH_NON_OK] gamme=${gammeId} type=${vehicleIds.typeId} status=${altResp.status}`,

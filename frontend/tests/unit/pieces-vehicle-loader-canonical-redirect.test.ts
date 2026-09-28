@@ -501,3 +501,108 @@ describe("R2 — le contenu servi respecte les données éditoriales disponibles
     expect(page.canonicalPath).toBe(CANONICAL_PATH);
   });
 });
+
+describe("R2 — confiance et cache des alternatives", () => {
+  const empty = {
+    success: true,
+    alternativeGammes: [],
+    alternativeVehicles: [],
+    relatedModels: [],
+  };
+  const gamme = {
+    pg_id: 403,
+    pg_name: "Disque de frein",
+    pg_alias: "disque-de-frein",
+    pg_pic: null,
+    piece_count: 2,
+    tier: 1,
+  };
+  const populated = { ...empty, alternativeGammes: [gamme] };
+
+  it.each([
+    {
+      label: "erreur applicative",
+      body: { ...populated, success: false },
+      status: 200,
+      cache: "no-store, must-revalidate",
+      gammes: [],
+    },
+    {
+      label: "objet incomplet",
+      body: {},
+      status: 200,
+      cache: "no-store, must-revalidate",
+      gammes: [],
+    },
+    {
+      label: "null",
+      body: null,
+      status: 200,
+      cache: "no-store, must-revalidate",
+      gammes: [],
+    },
+    {
+      label: "collection invalide",
+      body: { ...empty, alternativeGammes: {} },
+      status: 200,
+      cache: "no-store, must-revalidate",
+      gammes: [],
+    },
+    {
+      label: "collection absente",
+      body: { success: true, alternativeGammes: [] },
+      status: 200,
+      cache: "no-store, must-revalidate",
+      gammes: [],
+    },
+    {
+      label: "HTTP 503",
+      body: { message: "unavailable" },
+      status: 503,
+      cache: "no-store, must-revalidate",
+      gammes: [],
+    },
+    {
+      label: "vrai vide",
+      body: empty,
+      status: 200,
+      cache: "public, max-age=30, s-maxage=30",
+      gammes: [],
+    },
+    {
+      label: "succès renseigné",
+      body: populated,
+      status: 200,
+      cache: "public, max-age=300, s-maxage=3600",
+      gammes: [gamme],
+    },
+  ])(
+    "$label : cache et données cohérents en document et single-fetch",
+    async ({ body, status, cache, gammes }) => {
+      vi.mocked(fetchRmPageV2).mockResolvedValue({
+        success: true,
+        count: 0,
+        products: [],
+        validation: { valid: false },
+        vehicleInfo: {},
+        gamme: {},
+      } as never);
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(async () => new Response(JSON.stringify(body), { status })),
+      );
+      const document = await get(CANONICAL_PATH);
+      expect(document.status).toBe(200);
+      expect(document.headers.get("Cache-Control")).toBe(cache);
+      expect(document.headers.get("X-Robots-Tag")).toBe("noindex, follow");
+      const response = await get(`${CANONICAL_PATH}.data`);
+      expect(response.status).toBe(200);
+      expect(response.headers.get("Cache-Control")).toBe(cache);
+      const payload = await decodeSingleFetch(response);
+      expect(
+        (payload[r2RouteId] as { data: { alternativeGammes: unknown[] } }).data
+          .alternativeGammes,
+      ).toEqual(gammes);
+    },
+  );
+});

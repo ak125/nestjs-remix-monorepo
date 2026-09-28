@@ -23,8 +23,8 @@ describe('cache-ttl.config — jeton de version + génération (A3)', () => {
     );
   });
 
-  it('RM.ALTERNATIVES déclare keyVersion v4 et generation catalog', () => {
-    expect(CACHE_STRATEGIES.RM.ALTERNATIVES.keyVersion).toBe('v4');
+  it('RM.ALTERNATIVES déclare keyVersion v5 et generation catalog', () => {
+    expect(CACHE_STRATEGIES.RM.ALTERNATIVES.keyVersion).toBe('v5');
     expect(CACHE_STRATEGIES.RM.ALTERNATIVES.generation).toBe('catalog');
   });
 
@@ -33,9 +33,9 @@ describe('cache-ttl.config — jeton de version + génération (A3)', () => {
     expect(CACHE_STRATEGIES.RM.PAGE_V2.generation).toBe('catalog');
   });
 
-  it('la clé porte version puis génération puis id : alt:v4:g7:11836:3859', () => {
+  it('la clé porte version puis génération puis id : alt:v5:g7:11836:3859', () => {
     expect(getCacheKey(CACHE_STRATEGIES.RM.ALTERNATIVES, '11836:3859', 7)).toBe(
-      'alt:v4:g7:11836:3859',
+      'alt:v5:g7:11836:3859',
     );
   });
 
