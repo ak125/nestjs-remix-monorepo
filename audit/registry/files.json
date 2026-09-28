@@ -61423,6 +61423,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/diagnostic-hypothesis-rank.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 34,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/diagnostic-hypothesis-rank.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/tests/unit/diagnostic-legacy-navigation.test.tsx",
       "importedBy": [],
       "imports": [],
