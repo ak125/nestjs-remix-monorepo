@@ -23,6 +23,8 @@ import {
   getOwnedFieldsForGroup,
   resolveWriteTarget,
 } from './field-catalog.constants';
+import { isLegacyRagTier } from './source-provenance.constants';
+import type { SourceTier } from './source-provenance.constants';
 import { ContentMergeEngine } from './content-merge-engine.service';
 import type { MergeFieldResult } from './content-merge-engine.service';
 import { ContentRegressionGuard } from './content-regression-guard.service';
@@ -48,6 +50,13 @@ export interface WriteTargetInput {
   payload: Record<string, unknown>;
   correlationId: string;
   restoreMode?: 'none' | 'protected_restore';
+  /**
+   * Provenance of the payload content. When it is legacy-RAG (`rag` / `rag-legacy`)
+   * the write is REFUSED (ADR-031/046 — RAG is chatbot-retrieval only, never a
+   * served-content source). Optional for backward-compat: callers that do not stamp
+   * provenance are unaffected. See {@link isLegacyRagTier}.
+   */
+  provenance?: SourceTier;
 }
 
 @Injectable()
@@ -76,6 +85,26 @@ export class ContentWriteGateService {
    * Steps C-J are delegated to ContentWriteExecutor.
    */
   async writeToTarget(input: WriteTargetInput): Promise<WriteGateResult> {
+    // ── Step 0: Provenance refusal (fail-closed, FIRST — before target resolution) ──
+    // RAG is chatbot-retrieval only (ADR-031/046); no RAG-sourced content may reach a
+    // served __seo_* table. Mirrors the shipped R4/R5 refusal shape
+    // (execution-router.service.ts:377-388/418-427): explicit failure, ZERO rows, no
+    // silent fallback. Independent of WRITE_GUARD_ENABLED so the flag can never re-open it.
+    if (isLegacyRagTier(input.provenance)) {
+      this.logger.warn(
+        `WriteGate: REFUSED rag-provenance write — role=${input.roleId} ` +
+          `target=${input.target} corr=${input.correlationId}`,
+      );
+      return {
+        written: false,
+        reason: 'rag_provenance_refused',
+        fieldsWritten: [],
+        fieldsSkipped: [],
+        fieldsStripped: [],
+        mergeDetails: [],
+      };
+    }
+
     const { roleId, target, pkValue, payload, correlationId, restoreMode } =
       input;
 

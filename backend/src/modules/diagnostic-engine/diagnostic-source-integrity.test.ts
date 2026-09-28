@@ -158,7 +158,6 @@ function pipeline(service: DiagnosticEngineDataService) {
     new RiskSafetyEngine(),
     new CatalogOrientationEngine(),
     { assess: enriched } as never,
-    { enrich: async () => [] } as never,
     { shadowCompare: jest.fn() } as never,
   );
   return { engine, saved, enriched };

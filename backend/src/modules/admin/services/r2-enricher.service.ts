@@ -18,12 +18,12 @@
  *   - R2ValidatorService (contract validation + metrics)
  */
 
-import { Injectable, Logger, Optional } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { ContentWriteGateService } from '../../../config/content-write-gate.service';
-import { FeatureFlagsService } from '../../../config/feature-flags.service';
 import { RoleId } from '../../../config/role-ids';
+import { SOURCE_TIER } from '../../../config/source-provenance.constants';
 import type { ResourceGroup } from '../../../config/execution-registry.types';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -48,8 +48,7 @@ export class R2EnricherService extends SupabaseBaseService {
 
   constructor(
     configService: ConfigService,
-    private readonly flags: FeatureFlagsService,
-    @Optional() private readonly writeGate?: ContentWriteGateService,
+    private readonly writeGate: ContentWriteGateService,
   ) {
     super(configService);
   }
@@ -181,43 +180,17 @@ export class R2EnricherService extends SupabaseBaseService {
         r2kp_updated_at: new Date().toISOString(),
       };
 
-      if (this.writeGate && this.flags.writeGuardEnabled) {
-        // ── WriteGate path (merge + anti-regression + receipt) ──
-        const result = await this.writeGate.writeToTarget({
-          roleId: RoleId.R2_PRODUCT,
-          target: 'r2_product_main' as ResourceGroup,
-          pkValue: pgId,
-          payload,
-          correlationId: `r2-${pgId}-${Date.now().toString(36)}`,
-        });
-
-        this.logger.log(
-          `${ctx} WriteGate: written=${result.written} ` +
-            `fields=${result.fieldsWritten.length} skipped=${result.fieldsSkipped.length}`,
-        );
-
-        if (!result.written) {
-          flags.push('WRITE_GATE_BLOCKED');
-        }
-      } else {
-        // ── Legacy upsert path ──
-        const { error } = await this.client
-          .from('__seo_r2_keyword_plan')
-          .upsert(payload, { onConflict: 'r2kp_pg_id' });
-
-        if (error) {
-          this.logger.error(`${ctx} Upsert failed: ${error.message}`);
-          return {
-            pgId,
-            vehicleKey,
-            status: 'failed',
-            phase: 'write',
-            qualityScore: 0,
-            qualityFlags: ['UPSERT_FAILED'],
-            sectionsGenerated,
-            errorMessage: error.message,
-          };
-        }
+      // ── Write to __seo_r2_keyword_plan (RAG-sourced ⇒ refused at the governed gate) ──
+      const writeOutcome = await this.persistR2KeywordPlan(
+        pgId,
+        vehicleKey,
+        payload,
+        qualityScore,
+        sectionsGenerated,
+        flags,
+      );
+      if (writeOutcome) {
+        return writeOutcome;
       }
 
       this.logger.log(
@@ -247,5 +220,53 @@ export class R2EnricherService extends SupabaseBaseService {
         errorMessage: msg,
       };
     }
+  }
+
+  /**
+   * Persist the R2 keyword-plan through the governed write gate.
+   *
+   * R2 content is sourced from legacy RAG gamme docs (ADR-031/046): it must never
+   * reach the served `__seo_r2_keyword_plan` table. The write is stamped
+   * `provenance = RAG_LEGACY`, which the gate refuses (0 rows) — there is no
+   * fail-open direct-upsert fallback (writeGate is a required dependency). Returns
+   * a `skipped` result on refusal, or `null` when the gate accepted the write
+   * (the caller then continues to the success path).
+   */
+  private async persistR2KeywordPlan(
+    pgId: string,
+    vehicleKey: string | undefined,
+    payload: Record<string, unknown>,
+    qualityScore: number,
+    sectionsGenerated: number,
+    flags: string[],
+  ): Promise<R2EnrichResult | null> {
+    const result = await this.writeGate.writeToTarget({
+      roleId: RoleId.R2_PRODUCT,
+      target: 'r2_product_main' as ResourceGroup,
+      pkValue: pgId,
+      payload,
+      correlationId: `r2-${pgId}-${Date.now().toString(36)}`,
+      provenance: SOURCE_TIER.RAG_LEGACY,
+    });
+
+    if (!result.written) {
+      return {
+        pgId,
+        vehicleKey,
+        status: 'skipped',
+        phase: 'write',
+        qualityScore,
+        qualityFlags: [
+          ...flags,
+          result.reason === 'rag_provenance_refused'
+            ? 'RAG_SOURCE_REFUSED'
+            : 'WRITE_GATE_BLOCKED',
+        ],
+        sectionsGenerated,
+        errorMessage: result.reason,
+      };
+    }
+
+    return null;
   }
 }

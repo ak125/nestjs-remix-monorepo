@@ -7147,25 +7147,6 @@
       "usedBy": []
     },
     {
-      "columns": [],
-      "deletePolicy": "ADR_REQUIRED",
-      "domain": "UNKNOWN",
-      "id": "__seo_r2_keyword_plan",
-      "inMigrations": [],
-      "indexes": [],
-      "name": "__seo_r2_keyword_plan",
-      "owner": "__unassigned__",
-      "risk": "low",
-      "rlsEnabled": true,
-      "schema": "public",
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "low",
-      "status": "LIVE",
-      "usedBy": [
-        "backend/src/modules/admin/services/r2-enricher.service.ts"
-      ]
-    },
-    {
       "columns": [
         {
           "hasDefault": true,
