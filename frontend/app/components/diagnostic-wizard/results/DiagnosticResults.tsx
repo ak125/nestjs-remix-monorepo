@@ -4,7 +4,7 @@
  * Renders EvidencePack from API into visual blocks.
  * Order: Safety → Summary → Hypotheses → RAG Facts → Maintenance → Catalog → Missing → Disclaimer
  */
-import { Loader2, RefreshCw } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { type WizardState, type WizardAction } from "../types";
 import { IntentResolutionBlock } from "./IntentResolutionBlock";
@@ -61,7 +61,7 @@ export function DiagnosticResults({
         <p className="text-red-700 font-medium">
           {state.analysisMode === "maintenance"
             ? "Bilan entretien indisponible"
-            : "Erreur de diagnostic"}
+            : "Résultat indisponible"}
         </p>
         <p className="text-sm text-red-600">{state.error}</p>
         {onRetry && (
@@ -71,8 +71,8 @@ export function DiagnosticResults({
             onClick={onRetry}
             className="gap-1.5 mt-2"
           >
-            <RefreshCw className="w-3.5 h-3.5" />
-            Réessayer l&apos;analyse
+            <ArrowLeft className="w-3.5 h-3.5" />
+            Modifier la sélection
           </Button>
         )}
       </div>
