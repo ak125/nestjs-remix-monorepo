@@ -88,7 +88,10 @@ export class DiagnosticEngineOrchestrator {
         inputLimitations.push(
           'Cette analyse ne reprend ni ne met à jour la session fournie.',
         );
-    }
+    } else if (input.usage_context.last_service_km !== undefined)
+      inputLimitations.push(
+        'Kilométrage du dernier entretien non pris en compte : seuls les kilométrages renseignés par opération sont utilisés.',
+      );
     if (inputLimitations.length)
       this.logger.warn(
         `Diagnostic input limitations: ${inputLimitations.length} supplied fields are not interpreted`,
