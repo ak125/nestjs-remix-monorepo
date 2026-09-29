@@ -58120,9 +58120,11 @@
       "domain": "UNKNOWN",
       "id": "frontend/app/services/api/rm-api.service.ts",
       "importedBy": [],
-      "imports": [],
+      "imports": [
+        "frontend/app/services/common/errors.ts"
+      ],
       "kind": "service",
-      "loc": 282,
+      "loc": 289,
       "owner": "__unassigned__",
       "path": "frontend/app/services/api/rm-api.service.ts",
       "risk": "low",
@@ -58262,7 +58264,8 @@
       "domain": "UNKNOWN",
       "id": "frontend/app/services/common/errors.ts",
       "importedBy": [
-        "frontend/app/services/api/config.api.ts"
+        "frontend/app/services/api/config.api.ts",
+        "frontend/app/services/api/rm-api.service.ts"
       ],
       "imports": [],
       "kind": "config",
@@ -59804,6 +59807,7 @@
         "~/components/pieces/NoProductsAlternatives",
         "~/components/pieces/PiecesFilterSidebar",
         "~/services/api/rm-api.service",
+        "~/services/common/errors",
         "~/services/pieces/pieces-route.service",
         "~/utils/fetch.utils",
         "~/utils/internal-api.server",
@@ -59817,7 +59821,7 @@
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 693,
+      "loc": 708,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/pieces-vehicle.loader.server.ts",
       "risk": "low",
@@ -62241,7 +62245,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 609,
+      "loc": 697,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/pieces-vehicle-loader-canonical-redirect.test.ts",
       "risk": "low",

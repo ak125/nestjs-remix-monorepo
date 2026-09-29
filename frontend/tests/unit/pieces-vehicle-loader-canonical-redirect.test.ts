@@ -16,6 +16,7 @@ import {
 } from "vitest";
 
 import { fetchRmPageV2 } from "~/services/api/rm-api.service";
+import { ApiError } from "~/services/common/errors";
 import { buildCacheHeaders } from "~/utils/cache-control";
 import { resolveGammeId, resolveVehicleIds } from "~/utils/pieces-route.utils";
 import { piecesVehicleLoader } from "~/utils/pieces-vehicle.loader.server";
@@ -477,6 +478,93 @@ describe("R2 — panne catalogue distincte d'un catalogue vide", () => {
     expect(res.headers.get("Cache-Control")).toContain("no-store");
     expect(res.headers.get("X-Robots-Tag")).toBeNull();
   });
+});
+
+describe("R2 — combinaison absente du catalogue (page-v2 404, #690)", () => {
+  // Le vrai service est branché : la chaîne testée est celle de l'incident
+  // (backend 404 → fetchRmPageV2 → loader). Seul le réseau est simulé.
+  let realFetchRmPageV2: typeof fetchRmPageV2;
+  beforeAll(async () => {
+    ({ fetchRmPageV2: realFetchRmPageV2 } = await vi.importActual<{
+      fetchRmPageV2: typeof fetchRmPageV2;
+    }>("~/services/api/rm-api.service"));
+  });
+
+  function stubBackend(pageV2Status: number) {
+    const backend = vi.fn(async (input: RequestInfo | URL) =>
+      String(input).includes("/api/rm/page-v2")
+        ? new Response(JSON.stringify({ statusCode: pageV2Status }), {
+            status: pageV2Status,
+          })
+        : new Response(
+            JSON.stringify({
+              success: true,
+              alternativeGammes: [],
+              alternativeVehicles: [],
+              relatedModels: [],
+            }),
+          ),
+    );
+    vi.stubGlobal("fetch", backend);
+    vi.mocked(fetchRmPageV2).mockImplementation(realFetchRmPageV2);
+    return (fragment: string) =>
+      backend.mock.calls.some(([input]) => String(input).includes(fragment));
+  }
+
+  it("le service conserve le code HTTP du backend", async () => {
+    stubBackend(404);
+    const err = await realFetchRmPageV2(GAMME.id, VEHICLE.typeId).catch(
+      (e: unknown) => e,
+    );
+    expect(err).toBeInstanceOf(ApiError);
+    expect((err as ApiError).status).toBe(404);
+  });
+
+  it("document : page alternatives 200 + noindex, follow, jamais 503", async () => {
+    vi.stubEnv("INTERNAL_API_KEY", "test-key");
+    const called = stubBackend(404);
+    const res = await get(CANONICAL_PATH);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("X-Robots-Tag")).toBe("noindex, follow");
+    expect(res.headers.get("Retry-After")).toBeNull();
+    expect(called("/api/rm/alternatives?")).toBe(true);
+    expect(called("/api/internal/error-log")).toBe(false);
+  });
+
+  it("single-fetch : même statut et données « 0 produit »", async () => {
+    stubBackend(404);
+    const res = await get(`${CANONICAL_PATH}.data`);
+    expect(res.status).toBe(200);
+    const payload = await decodeSingleFetch(res);
+    expect(
+      (payload[r2RouteId] as { data: { noProducts?: boolean } }).data
+        .noProducts,
+    ).toBe(true);
+  });
+
+  it("avec r : nettoie le paramètre comme pour un catalogue vide", async () => {
+    const called = stubBackend(404);
+    const res = await get(`${CANONICAL_PATH}?r=1&brand=bosch`);
+    expect(res.status).toBe(301);
+    expect(res.headers.get("Location")).toBe(
+      `${ORIGIN}${CANONICAL_PATH}?brand=bosch`,
+    );
+    expect(called("/api/rm/alternatives")).toBe(false);
+  });
+
+  it.each([400, 500, 502, 503])(
+    "backend %i : 503 signalé, sans décision d'indexation",
+    async (status) => {
+      vi.stubEnv("INTERNAL_API_KEY", "test-key");
+      const called = stubBackend(status);
+      const res = await get(CANONICAL_PATH);
+      expect(res.status).toBe(503);
+      expect(res.headers.get("Cache-Control")).toContain("no-store");
+      expect(res.headers.get("X-Robots-Tag")).toBeNull();
+      expect(called("/api/internal/error-log")).toBe(true);
+      expect(called("/api/rm/alternatives")).toBe(false);
+    },
+  );
 });
 
 describe("R2 — le contenu servi respecte les données éditoriales disponibles", () => {
