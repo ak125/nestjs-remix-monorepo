@@ -287,7 +287,7 @@ export class BuyingGuideDataService extends SupabaseBaseService {
     pgId: string,
   ): Promise<BuyingGuideContractV1 | null> {
     try {
-      // Use RPC that LEFT JOINs R1 slots (COALESCE: R1 > sgpg fallback)
+      // RPC LEFT JOINs R1 slots (COALESCE: R1 > sgpg fallback)
       const { data, error } = await this.client.rpc(
         'get_buying_guide_with_r1_slots',
         { p_pg_id: pgId },
