@@ -74,7 +74,6 @@ type Reply = {
 type Tables = Record<string, Reply>;
 function fixture() {
   const tables: Tables = {
-    __seo_gamme_purchase_guide: { data: [], error: null },
     __diag_system: { data: [structuredClone(system)], error: null },
     __diag_symptom: { data: [structuredClone(symptom)], error: null },
     __diag_cause: { data: [structuredClone(cause)], error: null },
@@ -805,6 +804,31 @@ describe('session write acknowledgement reaches the diagnostic result', () => {
     );
     expect(evidence?.factual_inputs_missing.join(' ')).not.toMatch(
       /Analyse non sauvegardée/,
+    );
+  });
+});
+
+describe('suggested families carry no purchase estimate', () => {
+  test('the purchase guide is never read and no cost range reaches the result', async () => {
+    const f = fixture();
+    f.tables.__diag_symptom.data = [{ ...symptom, urgency: 'basse' }];
+    f.tables.__diag_cause.data = [{ ...cause, urgency: 'basse' }];
+    f.tables.__diag_safety_rule.data = [
+      { ...rule, urgency: 'moyenne', blocks_catalog: false },
+    ];
+    // Ranges in this table are produced by the RAG pipeline (ADR-031).
+    f.tables.__seo_gamme_purchase_guide = {
+      data: [{ sgpg_pg_id: '402', sgpg_risk_cost_range: '40-120 €' }],
+      error: null,
+    };
+    const result = await pipeline(f.service).engine.analyze(input);
+    expect(result.success).toBe(true);
+    const gammes =
+      result.data?.evidence.evidence_pack.catalog_guard.suggested_gammes;
+    expect(gammes?.map((g) => g.pg_id)).toEqual([402]);
+    expect(JSON.stringify(result.data)).not.toMatch(/cost_range|40-120/);
+    expect(f.queries.map((q) => q.table)).not.toContain(
+      '__seo_gamme_purchase_guide',
     );
   });
 });

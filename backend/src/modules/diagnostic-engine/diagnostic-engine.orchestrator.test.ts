@@ -37,7 +37,6 @@ describe('Diagnostic without RAG content authority', () => {
   const data = {
     getScoredCausesForSymptoms: jest.fn().mockResolvedValue([]),
     getSafetyRules: jest.fn().mockResolvedValue([safetyRule]),
-    getCostRanges: jest.fn().mockResolvedValue(new Map()),
     saveSession: jest.fn().mockResolvedValue('session-fixture'),
   };
   const hypothesis = {
