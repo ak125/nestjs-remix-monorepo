@@ -16,13 +16,6 @@
  * supabase.from(TABLES.pieces_price)  // ✅ Type-safe
  *         .select(COLUMNS.pieces_price.vente_ttc);
  * ```
- * 
- * @example Import des schémas Zod
- * ```ts
- * import { PiecesSchema, PiecesPriceSchema } from '@repo/database-types/schemas';
- * 
- * const validated = PiecesSchema.parse(data); // ✅ Runtime validation
- * ```
  */
 
 // ============================================================================
@@ -40,12 +33,6 @@ export * from './types.js';
  * Prévient les erreurs de typage comme 'pieces_prix' vs 'pieces_price'
  */
 export * from './constants.js';
-
-/**
- * Schémas Zod pour la validation runtime (90 schémas)
- * Auto-générés depuis les types TypeScript
- */
-export * from './schemas.js';
 
 // ============================================================================
 // 🆕 TYPES API & ENUMS & HELPERS (P4.5 Migration)
@@ -92,11 +79,6 @@ export * from './leads.js';
 // ============================================================================
 
 import { TABLES, COLUMNS, DEFAULT_VALUES } from './constants.js';
-import {
-  PiecesSchemas,
-  AutoSchemas,
-  AllSchemas,
-} from './schemas.js';
 
 import type {
   // Tables principales pièces
@@ -160,15 +142,6 @@ export const DatabaseConstants = {
   TABLES,
   COLUMNS,
   DEFAULT_VALUES,
-} as const;
-
-/**
- * 🎁 Bundle de schémas les plus utilisés
- */
-export const DatabaseSchemas = {
-  Pieces: PiecesSchemas,
-  Auto: AutoSchemas,
-  All: AllSchemas,
 } as const;
 
 // ============================================================================
