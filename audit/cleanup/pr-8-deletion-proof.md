@@ -8,13 +8,13 @@
 - Schema version: `1.0.0`
 - Cleanup policy version: `pr8-v1`
 - Validation mode: `snapshot-only` (active runtime check deferred to PR-8b)
-- Generated at: `2026-09-29T06:16:11.494Z`
+- Generated at: `2026-09-29T06:11:01.679Z`
 - Toolchain: `v24.21.0` on `linux/x64`
 
 ## Input Fingerprint (sha256)
 
-- `deadCodeCandidates`: `0bb912b4f29ff51876720eb2233a24850d983b0840f27115bdaddc7ab0f37279`
-- `canonical`: `e12f681ea0be025428b132c729f5a93566b5e37d29d6783f37a1582b2e41e9fb`
+- `deadCodeCandidates`: `7635be73b0f094a7989c8810eee6426517ebd8326bc5be0d0da5661c5141e2f4`
+- `canonical`: `6b6bbbd1ff72f99e055a653420787947db55c9bfd84162bb7a633b8ed97e2a75`
 - `ownershipYaml`: `476fc30830d3d8bdffa3339af9e38c3877d77e1bd11465a210a15fc1eae9e6dc`
 - `contractHealth`: `<none>`
 - `validateScript`: `0f5224c9823ce6de8d3bf9686c9eb445b0adc343296c68cf5b0e91f4aaac7f21`
@@ -22,9 +22,9 @@
 
 ## Counts
 
-- Total: **259**
-- By confidence: high=12 · medium=166 · low=81
-- By decision: candidate=178 · blocked=81 · excluded=0
+- Total: **258**
+- By confidence: high=12 · medium=166 · low=80
+- By decision: candidate=178 · blocked=80 · excluded=0
 
 ## candidate (178)
 
@@ -220,7 +220,7 @@
 
 _(empty)_
 
-## blocked (81)
+## blocked (80)
 
 ### blocked · high (0)
 
@@ -230,7 +230,7 @@ _(empty)_
 
 _(empty)_
 
-### blocked · low (81)
+### blocked · low (80)
 
 | Path | Domain | Kind | Confidence | Status | importedBy | Rationale |
 |---|---|---|---|---|---:|---|
@@ -312,7 +312,6 @@ _(empty)_
 | `frontend/app/components/ui/pagination.tsx` | frontend-shared | component | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `frontend/app/components/ui/popover.tsx` | frontend-shared | component | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `frontend/app/hooks/useProductSearch.ts` | frontend-shared | hook | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
-| `frontend/app/services/common/errors.ts` | frontend-shared | frontend-service | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `frontend/app/types/navigation.ts` | frontend-shared | other | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `frontend/app/utils/performance.utils.ts` | frontend-shared | other | low | UNKNOWN | 3 | snapshot c1 failed (static import); canonical.importedBy=3 |
 
