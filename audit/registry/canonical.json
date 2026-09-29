@@ -27119,7 +27119,6 @@
       "declaredIn": [
         "frontend/package.json",
         "packages/cwv-taxonomy/package.json",
-        "packages/database-types/package.json",
         "packages/domain-commerce/package.json",
         "packages/registry/package.json",
         "packages/seo-role-contracts/package.json",
@@ -27138,7 +27137,6 @@
       "workspaces": [
         "@fafa/frontend",
         "@repo/cwv-taxonomy",
-        "@repo/database-types",
         "@repo/domain-commerce",
         "@repo/registry",
         "@repo/seo-role-contracts",
@@ -93068,26 +93066,6 @@
         "manual"
       ],
       "domain": "D13",
-      "id": "packages/database-types/scripts/generate-zod-schemas.ts",
-      "importedBy": [],
-      "imports": [],
-      "kind": "service",
-      "loc": 232,
-      "owner": "@ak125",
-      "path": "packages/database-types/scripts/generate-zod-schemas.ts",
-      "risk": "medium",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D13",
       "id": "packages/database-types/src/api/index.ts",
       "importedBy": [],
       "imports": [],
@@ -93292,7 +93270,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 215,
+      "loc": 188,
       "owner": "@ak125",
       "path": "packages/database-types/src/index.ts",
       "risk": "medium",
@@ -93315,26 +93293,6 @@
       "loc": 54,
       "owner": "@ak125",
       "path": "packages/database-types/src/leads.ts",
-      "risk": "medium",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D13",
-      "id": "packages/database-types/src/schemas.ts",
-      "importedBy": [],
-      "imports": [],
-      "kind": "service",
-      "loc": 1889,
-      "owner": "@ak125",
-      "path": "packages/database-types/src/schemas.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -101092,12 +101050,12 @@
       ".spec/00-canon/repository-registry/ownership.yaml": "476fc30830d3d8bdffa3339af9e38c3877d77e1bd11465a210a15fc1eae9e6dc",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "90094e86c0a9d55c1c0ca1db6a22078fa001179245b2ac8ea7d75743a69fb54b",
-      "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "918c3c9166dfb4536b771cca30a4983f9cfb5fddd1a2ea937f1ccccb073f523d",
+      "audit/registry/deps.json": "bcb6fb76873ecc355ff28b999f014f75f1d489157e26f769db062e3b0c2a6f73",
+      "audit/registry/files.json": "17802307e50312686de44852573d02af0944a4c9b0e59067da0cf2cefcc78539",
       "audit/registry/rpc.json": "86d0c24b102036512a9f7b11d9ac04754288049a8b061981b19f0db0a8c86263",
       "audit/registry/runtime.json": "6c2cc554a40338761fba9f55f6aef70339e95d10dec2f0b93ba5b0152c33f766"
     },
-    "sotFingerprint": "c892f2940ced"
+    "sotFingerprint": "f4df3077b980"
   },
   "runtime": [
     {

@@ -63153,25 +63153,6 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
-      "id": "packages/database-types/scripts/generate-zod-schemas.ts",
-      "importedBy": [],
-      "imports": [],
-      "kind": "service",
-      "loc": 232,
-      "owner": "__unassigned__",
-      "path": "packages/database-types/scripts/generate-zod-schemas.ts",
-      "risk": "low",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise"
-      ],
-      "domain": "UNKNOWN",
       "id": "packages/database-types/src/api/index.ts",
       "importedBy": [],
       "imports": [],
@@ -63366,7 +63347,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 215,
+      "loc": 188,
       "owner": "__unassigned__",
       "path": "packages/database-types/src/index.ts",
       "risk": "low",
@@ -63388,25 +63369,6 @@
       "loc": 54,
       "owner": "__unassigned__",
       "path": "packages/database-types/src/leads.ts",
-      "risk": "low",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise"
-      ],
-      "domain": "UNKNOWN",
-      "id": "packages/database-types/src/schemas.ts",
-      "importedBy": [],
-      "imports": [],
-      "kind": "service",
-      "loc": 1889,
-      "owner": "__unassigned__",
-      "path": "packages/database-types/src/schemas.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",

@@ -3496,7 +3496,6 @@
       "declaredIn": [
         "frontend/package.json",
         "packages/cwv-taxonomy/package.json",
-        "packages/database-types/package.json",
         "packages/domain-commerce/package.json",
         "packages/registry/package.json",
         "packages/seo-role-contracts/package.json",
@@ -3515,7 +3514,6 @@
       "workspaces": [
         "@fafa/frontend",
         "@repo/cwv-taxonomy",
-        "@repo/database-types",
         "@repo/domain-commerce",
         "@repo/registry",
         "@repo/seo-role-contracts",
