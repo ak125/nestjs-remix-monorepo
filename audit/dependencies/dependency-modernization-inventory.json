@@ -1,5 +1,5 @@
 {
-  "artifact_immutability_hash": "sha256:e422cbc762376e1fd59ac77ec61351dd1b5f6259733912eab50cfdcadda26b3f",
+  "artifact_immutability_hash": "sha256:cde8cc224e6b5fa7beb50788509988c4671ef05c47636e82f593032f30a19b5e",
   "divergences": [
     {
       "kind": "resolved",
@@ -2881,11 +2881,6 @@
               "workspace": "@repo/cwv-taxonomy"
             },
             {
-              "declaredIn": "packages/database-types/package.json",
-              "specifier": "^4.22.4",
-              "workspace": "@repo/database-types"
-            },
-            {
               "declaredIn": "packages/domain-commerce/package.json",
               "specifier": "^4.22.4",
               "workspace": "@repo/domain-commerce"
@@ -2973,7 +2968,7 @@
       ],
       "supports_dual_runtime": "none",
       "target_major": "see source_url",
-      "total_occurrences": 15,
+      "total_occurrences": 14,
       "upgrade_cost_estimate": {
         "estimated_engineer_days": 2,
         "estimated_review_load": "low"
@@ -3733,9 +3728,9 @@
   ],
   "generatedFrom": {
     "deps_registry": "audit/registry/deps.json",
-    "deps_registry_sha": "sha256:eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
+    "deps_registry_sha": "sha256:bcb6fb76873ecc355ff28b999f014f75f1d489157e26f769db062e3b0c2a6f73",
     "lockfile": "package-lock.json",
-    "lockfile_sha": "sha256:e3143ef4e520e5553a54cc4b95e32c82a9261dba74e1f5d43782c48a6f7996cc",
+    "lockfile_sha": "sha256:00ecb9713724f513d0c633bc744860581b515242b62327e81354fbb8cba5a9f1",
     "overlay": "audit/dependencies/family-overlay.yaml",
     "overlay_sha": "sha256:f5b19e7c0c73a75b55e4c0a620e0d01c6665dfcfffe8b00a77d5c8928bb05117"
   },
@@ -3766,7 +3761,7 @@
     },
     "divergent_packages_count": 27,
     "families_count": 12,
-    "total_occurrences": 336,
+    "total_occurrences": 335,
     "total_packages": 227,
     "unassigned_count": 160
   },

@@ -20,11 +20,6 @@
       "types": "./dist/constants.d.ts",
       "import": "./dist/constants.js",
       "require": "./dist/constants.js"
-    },
-    "./schemas": {
-      "types": "./dist/schemas.d.ts",
-      "import": "./dist/schemas.js",
-      "require": "./dist/schemas.js"
     }
   },
   "scripts": {
@@ -32,15 +27,13 @@
     "dev": "tsc --watch",
     "clean": "rm -rf dist *.tsbuildinfo",
     "typecheck": "tsc --noEmit",
-    "generate:types": "echo 'Run: supabase gen types typescript --project-id YOUR_PROJECT_ID > src/types.ts'",
-    "generate:zod": "tsx scripts/generate-zod-schemas.ts"
+    "generate:types": "echo 'Run: supabase gen types typescript --project-id YOUR_PROJECT_ID > src/types.ts'"
   },
   "dependencies": {
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^24",
-    "tsx": "^4.22.4",
     "typescript": "~6.0.3"
   }
 }

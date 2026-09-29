@@ -530,14 +530,13 @@
     },
     "pkg-database-types": {
       "dirs": [
-        "packages/database-types/scripts",
         "packages/database-types/src",
         "packages/database-types/src/api",
         "packages/database-types/src/enums",
         "packages/database-types/src/helpers"
       ],
-      "files_count": 17,
-      "loc_total": 53131,
+      "files_count": 15,
+      "loc_total": 50983,
       "has_barrel": true
     },
     "pkg-design-tokens": {

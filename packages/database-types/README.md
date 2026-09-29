@@ -29,14 +29,6 @@ supabase.from('pieces_prix')  // ERREUR silencieuse !
 supabase.from(TABLES.pieces_price)  // Détecté à la compilation
 ```
 
-### Schémas Zod (90 schémas)
-```typescript
-import { PiecesSchema, PiecesPriceSchema } from '@repo/database-types';
-
-// Validation runtime
-const validated = PiecesSchema.parse(data);
-```
-
 ## 🚀 Installation
 
 Le package est automatiquement disponible dans le monorepo via npm workspaces.
@@ -68,9 +60,6 @@ import type { Pieces, PiecesPrice } from '@repo/database-types';
 
 // Constantes (recommandé !)
 import { TABLES, COLUMNS } from '@repo/database-types';
-
-// Schémas Zod
-import { PiecesSchema } from '@repo/database-types';
 ```
 
 ### 2. Requêtes Supabase (Backend)
@@ -88,20 +77,7 @@ const { data } = await supabase
   .select(COLUMNS.pieces_marque.quality);  // ✅ pm_quality (correct)
 ```
 
-### 3. Validation API (Frontend)
-```typescript
-import { PiecesPriceSchema } from '@repo/database-types';
-
-// Valider la réponse API
-try {
-  const validated = PiecesPriceSchema.parse(apiResponse);
-  console.log('✅ Données valides', validated);
-} catch (error) {
-  console.error('❌ Données invalides', error);
-}
-```
-
-### 4. Helpers types
+### 3. Helpers types
 ```typescript
 import type { GetTableType, GetInsertType } from '@repo/database-types';
 
@@ -136,11 +112,6 @@ supabase gen types typescript --project-id YOUR_PROJECT_ID > src/types.ts
 npm run build
 ```
 
-### Régénérer les schémas Zod
-```bash
-npm run generate:zod
-```
-
 ## 📊 Structure
 
 ```
@@ -148,10 +119,7 @@ packages/database-types/
 ├── src/
 │   ├── index.ts          # 🎯 Point d'entrée principal
 │   ├── types.ts          # 📋 Types TypeScript (97 tables)
-│   ├── constants.ts      # 🔑 TABLES + COLUMNS
-│   └── schemas.ts        # 🔐 Schémas Zod (auto-généré)
-├── scripts/
-│   └── generate-zod-schemas.ts  # 🏗️ Générateur Zod
+│   └── constants.ts      # 🔑 TABLES + COLUMNS
 ├── package.json
 ├── tsconfig.json
 └── README.md
@@ -199,15 +167,11 @@ packages/database-types/
    ```bash
    # Éditer src/constants.ts
    ```
-4. **Régénération des schémas Zod**
-   ```bash
-   npm run generate:zod
-   ```
-5. **Rebuild**
+4. **Rebuild**
    ```bash
    npm run build
    ```
-6. **Propagation automatique** vers backend et frontend (via npm workspaces)
+5. **Propagation automatique** vers backend et frontend (via npm workspaces)
 
 ## 📝 Avantages
 
@@ -253,24 +217,6 @@ async getPieceDetails(pieceId: string) {
     .single();
 
   return { piece, price, brand };
-}
-```
-
-```typescript
-// Frontend: product-detail.tsx
-import { PiecesSchema, PiecesPriceSchema } from '@repo/database-types';
-
-export async function loader({ params }: LoaderArgs) {
-  const response = await fetch(`/api/pieces/${params.id}`);
-  const data = await response.json();
-
-  // Validation runtime
-  const validated = {
-    piece: PiecesSchema.parse(data.piece),
-    price: PiecesPriceSchema.parse(data.price),
-  };
-
-  return json(validated);
 }
 ```
 
