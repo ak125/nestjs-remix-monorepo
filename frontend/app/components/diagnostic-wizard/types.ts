@@ -1,4 +1,4 @@
-import  {
+import {
   type IntentLayer,
   type RecommendedAction,
   type HumanEscalation,
