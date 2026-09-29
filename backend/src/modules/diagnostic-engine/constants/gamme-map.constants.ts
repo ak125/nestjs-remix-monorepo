@@ -86,6 +86,11 @@ export const CAUSE_GAMME_MAP: Record<string, GammeMapping[]> = {
       label: 'Kit de distribution avec pompe à eau',
       pg_id: 3096,
     },
+    {
+      slug: 'courroie-de-distribution',
+      label: 'Courroie de distribution',
+      pg_id: 306,
+    },
   ],
   galet_tendeur_defaillant: [
     {
