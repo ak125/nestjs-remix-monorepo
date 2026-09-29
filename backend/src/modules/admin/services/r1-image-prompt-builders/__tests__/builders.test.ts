@@ -138,13 +138,15 @@ describe('R1 Image Prompt Builders', () => {
   });
 
   describe('buildPricePrompt', () => {
-    it('uses quality_tiers with price labels for visual progression', () => {
+    it('uses quality_tiers labels for visual progression, never a RAG price', () => {
       const result = buildPricePrompt('Filtre à huile', RICH_RAG);
       expect(result.prompt).toContain('OEM');
       expect(result.prompt).toContain('Premium');
-      expect(result.prompt).toContain('15-40€');
+      expect(result.prompt).not.toContain('15-40€');
+      expect(result.prompt).not.toMatch(/\d\s*€/);
       expect(result.prompt).toContain('TEXTE DANS');
       expect(result.ragFieldsUsed).toContain('selection.quality_tiers');
+      expect(result.ragFieldsUsed).not.toContain('selection.cost_range');
       expect(result.richnessScore).toBeGreaterThanOrEqual(2);
     });
 
@@ -185,13 +187,15 @@ describe('R1 Image Prompt Builders', () => {
       expect(result.prompt).toContain('doré ambré');
       // Role
       expect(result.prompt).toContain('filtre les impuretés');
-      // Text with price accroche
+      // Text accroche, never a RAG price
       expect(result.prompt).toContain('FILTRE À HUILE');
-      expect(result.prompt).toContain('Dès 5€');
+      expect(result.prompt).toContain('Pièces auto en stock');
+      expect(result.prompt).not.toContain('Dès');
+      expect(result.prompt).not.toMatch(/\d\s*€/);
       expect(result.prompt).toContain('TEXTE DANS');
       expect(result.ragFieldsUsed).toContain('completeness_profile');
       expect(result.ragFieldsUsed).toContain('domain.role');
-      expect(result.ragFieldsUsed).toContain('selection.cost_range');
+      expect(result.ragFieldsUsed).not.toContain('selection.cost_range');
     });
 
     it('OG prompt differs from HERO prompt', () => {

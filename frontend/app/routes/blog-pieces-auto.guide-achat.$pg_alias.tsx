@@ -864,11 +864,6 @@ function V1Sections({
                   ))}
                 </div>
               )}
-              {guide.risk.costRange && (
-                <p className="mt-3 text-xs text-red-700 font-medium">
-                  Cout moyen : {guide.risk.costRange}
-                </p>
-              )}
               {guide.risk.conclusion && (
                 <HtmlContent
                   html={annotateGlossaryTerms(guide.risk.conclusion)}

@@ -52,15 +52,11 @@ export function buildOgPrompt(
     score++;
   }
 
-  // Texte intégré : nom + accroche conversion
+  // Texte intégré : nom + accroche. Aucun prix : selection.cost_range vient du
+  // RAG, qui n'est pas une source de contenu (ADR-031) ; un prix figé dans les
+  // pixels ne suit pas le tarif réel.
   const titleText = pgName.toUpperCase();
-  let accroche = 'Pièces auto en stock';
-  const minPrice = rag?.selection?.cost_range?.min;
-  if (minPrice != null) {
-    accroche = `Dès ${minPrice}€ — Livraison 24h`;
-    fieldsUsed.push('selection.cost_range');
-    score++;
-  }
+  const accroche = 'Pièces auto en stock';
 
   const prompt = [
     `Photo produit automobile pour partage social, ratio 1200x630.`,

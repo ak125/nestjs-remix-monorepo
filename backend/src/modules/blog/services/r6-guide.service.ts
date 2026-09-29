@@ -472,7 +472,6 @@ export class R6GuideService {
       title: (row.sgpg_risk_title as string) || 'Risques et conséquences',
       explanation: riskExplanation,
       consequences: (row.sgpg_risk_consequences as string[]) || [],
-      costRange: (row.sgpg_risk_cost_range as string) || null,
       conclusion: riskConclusion,
     };
 
