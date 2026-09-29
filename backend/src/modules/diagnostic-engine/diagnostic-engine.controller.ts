@@ -10,6 +10,7 @@
 import {
   Controller,
   BadRequestException,
+  NotFoundException,
   ServiceUnavailableException,
   Post,
   Get,
@@ -445,15 +446,21 @@ export class DiagnosticEngineController {
   /**
    * GET /api/diagnostic-engine/symptoms?system=freinage
    *
-   * List available symptoms for a system
+   * List available symptoms for a system. A missing parameter is a 400 and an
+   * unknown or inactive system a 404, so an empty list only ever means an
+   * active system without active symptoms.
    */
   @Get('symptoms')
   async getSymptoms(@Query('system') systemSlug?: string) {
     if (!systemSlug) {
-      return {
-        success: false,
-        error: 'Paramètre "system" requis (ex: ?system=freinage)',
-      };
+      throw new BadRequestException(
+        'Paramètre "system" requis (ex: ?system=freinage)',
+      );
+    }
+
+    const system = await this.dataService.getSystemBySlug(systemSlug);
+    if (!system) {
+      throw new NotFoundException('Système de diagnostic inconnu ou inactif.');
     }
 
     const symptoms = await this.dataService.getSymptomsBySystem(systemSlug);
