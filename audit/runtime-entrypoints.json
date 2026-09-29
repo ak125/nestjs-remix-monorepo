@@ -2737,6 +2737,7 @@
       "backend/supabase/migrations/20260924_seo_role_template_pool_forward_apply.sql",
       "backend/supabase/migrations/20260924_vehicle_cache_trigger_rebuild_failure_observable.down.sql",
       "backend/supabase/migrations/20260924_vehicle_cache_trigger_rebuild_failure_observable.sql",
+      "backend/supabase/migrations/20260929_definer_rpc_authenticated_lockdown.sql",
       "backend/supabase/migrations/README.md"
     ],
     "ci_workflows": [
@@ -2912,7 +2913,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1526,
+  "runtime_files_count": 1527,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4110,6 +4111,7 @@
     "backend/supabase/migrations/20260924_seo_role_template_pool_forward_apply.sql",
     "backend/supabase/migrations/20260924_vehicle_cache_trigger_rebuild_failure_observable.down.sql",
     "backend/supabase/migrations/20260924_vehicle_cache_trigger_rebuild_failure_observable.sql",
+    "backend/supabase/migrations/20260929_definer_rpc_authenticated_lockdown.sql",
     "backend/supabase/migrations/README.md",
     "docker/lighthouse/Dockerfile",
     "docker/lighthouse/crontab",
