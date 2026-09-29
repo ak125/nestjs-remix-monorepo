@@ -216,6 +216,11 @@ jobs:
       - name: Test client-IP deployment probe
         run: node --test scripts/ci/prod-client-ip-probe.test.mjs
 
+      # deploy-prod.yml refuses a commit unless the deploy / e2e-smoke / lighthouse
+      # jobs below passed; this catches a rename of those jobs at PR time.
+      - name: Test PREPROD evidence gate (deploy-prod)
+        run: node --test scripts/ci/prod-preprod-evidence.test.mjs
+
       - name: Test E2E rate-budget admission
         run: node --test scripts/ci/preprod-e2e-rate-budget.test.mjs scripts/ci/preprod-e2e-rate-budget.storage.test.mjs
 
