@@ -9,9 +9,7 @@ import {
   type VehicleData,
   type GammeData,
   type SEOEnrichedContent,
-  type FAQItem,
   type BlogArticle,
-  type GuideContent,
   type PieceData,
 } from "../types/pieces-route.types";
 
@@ -194,34 +192,6 @@ export function generateSEOContent(
 }
 
 /**
- * FAQ dynamique V5
- */
-export function generateFAQ(vehicle: VehicleData, gamme: GammeData): FAQItem[] {
-  const brandModel = `${vehicle.marque} ${vehicle.modele}`;
-
-  return [
-    {
-      id: "compatibility",
-      question: `Ces ${gamme.name} sont-ils garantis compatibles avec mon ${brandModel} ?`,
-      answer: `Absolument ! Tous nos ${gamme.name} sont rigoureusement sélectionnés et testés pour votre ${brandModel}. Notre équipe technique vérifie la compatibilité par numéro de châssis pour éliminer tout risque d'erreur.`,
-      schema: true,
-    },
-    {
-      id: "quality",
-      question: `Quelle garantie sur la qualité de vos ${gamme.name} ?`,
-      answer: `Nos ${gamme.name} proviennent exclusivement de fabricants OEM et aftermarket premium (BOSCH, MANN-FILTER, FEBI). Garantie constructeur 1 an + garantie satisfait ou remboursé 30 jours.`,
-      schema: true,
-    },
-    {
-      id: "delivery",
-      question: `Quels sont vos délais de livraison ?`,
-      answer: `Expédition sous 24h pour 90% de nos ${gamme.name} en stock. Livraison express 24-48h en France métropolitaine. Livraison gratuite dès 50€ d'achat.`,
-      schema: true,
-    },
-  ];
-}
-
-/**
  * Articles de blog pertinents
  */
 export function generateRelatedArticles(
@@ -252,29 +222,6 @@ export function generateRelatedArticles(
       readTime: 12,
     },
   ];
-}
-
-/**
- * Génère le guide d'achat
- */
-export function generateBuyingGuide(
-  vehicle: VehicleData,
-  gamme: GammeData,
-): GuideContent {
-  return {
-    title: `Guide d'achat ${gamme.name}`,
-    content: `Pour choisir les bons ${gamme.name} pour votre ${vehicle.marque} ${vehicle.modele}, suivez nos conseils d'experts.`,
-    tips: [
-      "Vérifiez la compatibilité avec votre numéro de châssis",
-      "Privilégiez les marques reconnues pour la fiabilité",
-      "Comparez les garanties proposées",
-      "Consultez les avis clients avant achat",
-    ],
-    warnings: [
-      "Attention aux contrefaçons sur les sites non spécialisés",
-      "Une pièce moins chère peut coûter plus cher à long terme",
-    ],
-  };
 }
 
 /**

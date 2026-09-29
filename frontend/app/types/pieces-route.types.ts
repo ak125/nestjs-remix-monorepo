@@ -29,11 +29,10 @@ export interface VehicleData {
   modeleAlias?: string; // Alias du modèle pour l'URL
   typeAlias?: string; // Alias du type/motorisation pour l'URL breadcrumb
   modelePic?: string; // Photo du modèle
-  // 🔧 Codes moteur et types mines (depuis RM V2 vehicleInfo)
+  // Codes moteur et références du catalogue (nom API historique `cnitCodes*`).
+  // Les origines sont mixtes : pas toutes CNIT. `mineCodes*` est exclu (pays).
   motorCodes?: string[];
   motorCodesFormatted?: string;
-  mineCodes?: string[];
-  mineCodesFormatted?: string;
   cnitCodes?: string[];
   cnitCodesFormatted?: string;
   // 📊 Specs techniques supplementaires

@@ -10,6 +10,7 @@ import { redirect, type LoaderFunctionArgs, data } from "react-router";
 import { type NoProductsData } from "~/components/pieces/NoProductsAlternatives";
 import { type FiltersData } from "~/components/pieces/PiecesFilterSidebar";
 import { fetchRmPageV2 } from "~/services/api/rm-api.service";
+import { ApiError } from "~/services/common/errors";
 import {
   fetchBlogArticleWithRelated,
   fetchSeoSwitches,
@@ -23,8 +24,6 @@ import {
 } from "~/utils/pieces-loader.utils";
 import {
   detectMalformedSegment,
-  generateBuyingGuide,
-  generateFAQ,
   parseUrlParam,
   resolveGammeId,
   resolveVehicleIds,
@@ -83,6 +82,7 @@ async function notify503ToErrorLog(
 export async function piecesVehicleLoader({
   params,
   request,
+  url: documentUrl,
 }: LoaderFunctionArgs) {
   const startTime = Date.now();
 
@@ -237,20 +237,82 @@ export async function piecesVehicleLoader({
     gammeId,
     vehicleIds.typeId,
     INITIAL_PRODUCTS_LIMIT,
-  ).catch((err) => {
-    logger.error(
-      `❌ [RM V2] Failed:`,
-      err instanceof Error ? err.message : err,
-    );
-    return null;
-  });
+  ).then(
+    (response) => ({ absentFromCatalogue: false as const, response }),
+    async (err) => {
+      // Contrat page-v2 (#690) : 404 = combinaison gamme × véhicule absente du
+      // catalogue (VEHICLE_NOT_FOUND / GAMME_NOT_FOUND). État permanent, pas une
+      // panne : il suit la politique « 0 produit » ci-dessous, jamais un 503.
+      if (err instanceof ApiError && err.status === 404) {
+        logger.warn(
+          `[RM V2] Combinaison absente du catalogue (404) pour ${url.pathname}`,
+        );
+        return { absentFromCatalogue: true as const, response: null };
+      }
+      logger.error(
+        `❌ [RM V2] Failed:`,
+        err instanceof Error ? err.message : err,
+      );
+      await notify503ToErrorLog(
+        url.pathname,
+        "LOADER_503_BACKEND_RPC_ERROR",
+        `RM V2 fetch failed: ${err instanceof Error ? err.message : String(err)}`,
+        { error_name: err instanceof Error ? err.name : "unknown" },
+      );
+      // A failed catalogue read is not evidence of zero products. Do not emit
+      // an indexation decision or let the alternatives cache prolong the outage.
+      throw new Response("Service temporairement indisponible", {
+        status: 503,
+        headers: {
+          "Retry-After": "300",
+          "Cache-Control": "no-store, must-revalidate",
+        },
+      });
+    },
+  );
 
   // LCP V9: seoSwitches deferred (below-fold only, has fallback anchors)
-  const rmV2Response = await rmV2Promise;
+  const { absentFromCatalogue, response: rmV2Response } = await rmV2Promise;
 
-  // SEO: 0 produits -> page utile avec alternatives (200 + noindex)
-  // Mieux que 404 : pas d'erreur GSC, liens internes suivis, UX guidee
-  if (!rmV2Response || !isRmV2DataUsable(rmV2Response, 1)) {
+  // A 200 transport response may still carry an upstream error or an invalid
+  // payload. Only a successful, coherent zero count is an empty catalogue.
+  // Keep the existing usable-data predicate for positive results; a genuine
+  // empty result may legitimately have validation.valid=false (no relations).
+  if (
+    !absentFromCatalogue &&
+    (!rmV2Response ||
+      rmV2Response.success !== true ||
+      !Number.isInteger(rmV2Response.count) ||
+      rmV2Response.count < 0 ||
+      !Array.isArray(rmV2Response.products) ||
+      (rmV2Response.count === 0) !== (rmV2Response.products.length === 0) ||
+      (rmV2Response.count > 0 && !isRmV2DataUsable(rmV2Response, 1)))
+  ) {
+    logger.error(`[RM V2] Invalid catalogue payload for ${url.pathname}`);
+    await notify503ToErrorLog(
+      url.pathname,
+      "LOADER_503_RPC_INVALID_PAYLOAD",
+      "RM V2 did not return a successful, coherent catalogue result",
+    );
+    throw new Response("Service temporairement indisponible", {
+      status: 503,
+      headers: {
+        "Retry-After": "300",
+        "Cache-Control": "no-store, must-revalidate",
+      },
+    });
+  }
+
+  // Genuine zero products, or a combination absent from the catalogue (404):
+  // preserve the governed alternatives/noindex policy.
+  if (absentFromCatalogue || rmV2Response.count === 0) {
+    // Retirer l'ancien paramètre interne même sur les pages alternatives.
+    // Aucun alias catalogue n'est inventé sur cette branche vide.
+    if (documentUrl.searchParams.has("r")) {
+      const cleanUrl = new URL(documentUrl);
+      cleanUrl.searchParams.delete("r");
+      return redirect(cleanUrl.toString(), 301);
+    }
     logger.log(
       `🔄 [NO_PRODUCTS] 0 produits, page alternatives pour: /pieces/${gammeData.alias}-${gammeId}.html`,
     );
@@ -278,8 +340,28 @@ export async function piecesVehicleLoader({
         },
       );
       if (altResp.ok) {
-        alternativesData = (await altResp.json()) as RmAlternativesResponse;
-        alternativesFetchOk = true;
+        const payload: unknown = await altResp.json();
+        // A 200 alone does not establish that alternatives were computed.
+        // Preserve the governed no-store degradation for failed/invalid bodies.
+        if (
+          payload !== null &&
+          typeof payload === "object" &&
+          "success" in payload &&
+          payload.success === true &&
+          "alternativeGammes" in payload &&
+          Array.isArray(payload.alternativeGammes) &&
+          "alternativeVehicles" in payload &&
+          Array.isArray(payload.alternativeVehicles) &&
+          "relatedModels" in payload &&
+          Array.isArray(payload.relatedModels)
+        ) {
+          alternativesData = payload as RmAlternativesResponse;
+          alternativesFetchOk = true;
+        } else {
+          logger.warn(
+            `[R2_ALTS_INVALID_PAYLOAD] gamme=${gammeId} type=${vehicleIds.typeId}`,
+          );
+        }
       } else {
         logger.warn(
           `[R2_ALTS_FETCH_NON_OK] gamme=${gammeId} type=${vehicleIds.typeId} status=${altResp.status}`,
@@ -396,9 +478,8 @@ export async function piecesVehicleLoader({
     throw new Response("Service temporairement indisponible", {
       status: 503,
       headers: {
-        "X-Robots-Tag": "noindex",
         "Retry-After": "300",
-        "Cache-Control": "no-cache",
+        "Cache-Control": "no-store, must-revalidate",
       },
     });
   }
@@ -439,35 +520,29 @@ export async function piecesVehicleLoader({
 
     // 301 redirect si l'URL courante ne correspond pas a l'URL canonique
     // Normalisation URI pour eviter les faux positifs (encoding, trailing slash)
-    const currentPath = decodeURIComponent(url.pathname);
+    // React Router fournit l'URL document normalisée, y compris en single-fetch.
+    // request.url contient encore `.data` : le comparer créait de faux 301.
+    const currentPath = decodeURIComponent(documentUrl.pathname);
     const targetPath = decodeURIComponent(canonicalPath);
 
-    if (currentPath !== targetPath) {
-      // Anti-boucle : si deja redirige (param r=1), servir la page telle quelle
-      if (url.searchParams.get("r") === "1") {
-        logger.warn(
-          `⚠️ [301-LOOP] Anti-boucle activé, page servie sans redirect: ${currentPath}`,
-        );
-      } else {
-        logger.log(
-          `🔄 [301] Canonical mismatch: ${currentPath} → ${targetPath}`,
-        );
-        const redirectUrl = new URL(request.url);
-        redirectUrl.pathname = canonicalPath;
-        redirectUrl.searchParams.set("r", "1");
-        return redirect(redirectUrl.toString(), 301);
-      }
+    if (currentPath !== targetPath || documentUrl.searchParams.has("r")) {
+      const redirectUrl = new URL(documentUrl);
+      redirectUrl.pathname = canonicalPath;
+      // `r` était un contournement du contrôle canonique, jamais une variante.
+      // Sa suppression empêche sa propagation et nettoie les anciennes URLs.
+      redirectUrl.searchParams.delete("r");
+      logger.log(
+        `🔄 [301] Canonical normalization: ${currentPath} → ${targetPath}`,
+      );
+      return redirect(redirectUrl.toString(), 301);
     }
 
     // SEO: URLs pre-calculees pour section "Voir aussi" (pas de construction cote client)
     const voirAussiLinks = buildVoirAussiLinks(gamme, vehicle);
 
-    // Generated Content (FAQ and buying guide with vehicle context)
-    // FAQ gating : ne garder que les Q/R avec reponse substantielle (>= 20 chars)
-    const faqItems = generateFAQ(vehicle, gamme).filter(
-      (item) => item.answer && item.answer.length >= 20,
-    );
-    const buyingGuide = generateBuyingGuide(vehicle, gamme);
+    // Respecter l'absence de contenu éditorial dans le Read Model.
+    // Les anciens générateurs ajoutaient partout les mêmes promesses non sourcées.
+    const { faqItems, buyingGuide } = loaderData;
 
     // LCP: blogData deferred (below-fold, non-bloquant pour TTFB)
     // Googlebot execute JS et verra les liens une fois le defer resolu
@@ -624,9 +699,8 @@ export async function piecesVehicleLoader({
     throw new Response("Service temporairement indisponible", {
       status: 503,
       headers: {
-        "X-Robots-Tag": "noindex",
         "Retry-After": "300",
-        "Cache-Control": "no-cache",
+        "Cache-Control": "no-store, must-revalidate",
       },
     });
   }

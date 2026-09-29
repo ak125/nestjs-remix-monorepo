@@ -37,6 +37,8 @@ export function buildCacheHeaders(
       const xRobots =
         errorHeaders.get("X-Robots-Tag") ?? opts?.defaultErrorRobots;
       if (xRobots) out["X-Robots-Tag"] = xRobots;
+      const retryAfter = errorHeaders.get("Retry-After");
+      if (retryAfter) out["Retry-After"] = retryAfter;
       return out;
     }
 

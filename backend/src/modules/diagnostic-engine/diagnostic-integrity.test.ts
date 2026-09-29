@@ -86,7 +86,6 @@ function orchestrator() {
       overdue_count: 0,
     }),
   };
-  const rag = { enrich: jest.fn().mockResolvedValue([]) };
   const shadow = { shadowCompare: jest.fn() };
   const engine = new DiagnosticEngineOrchestrator(
     data as unknown as DiagnosticEngineDataService,
@@ -95,10 +94,9 @@ function orchestrator() {
     new RiskSafetyEngine(),
     new CatalogOrientationEngine(),
     maintenance as never,
-    rag as never,
     shadow as never,
   );
-  return { engine, data, signal, maintenance, rag };
+  return { engine, data, signal, maintenance };
 }
 
 describe('diagnostic safety and deterministic scoring regressions', () => {
@@ -242,7 +240,7 @@ describe('diagnostic safety and deterministic scoring regressions', () => {
     expect(result.error).toMatch(/indisponible/i);
     expect(f.data.saveSession).not.toHaveBeenCalled();
   });
-  test.each(['rag', 'cost', 'maintenance', 'session'])(
+  test.each(['cost', 'maintenance', 'session'])(
     'an optional %s failure preserves known critical safety',
     async (dependency) => {
       const f = orchestrator();
@@ -250,8 +248,6 @@ describe('diagnostic safety and deterministic scoring regressions', () => {
         { ...link(), cause: { ...link().cause!, urgency: 'haute' } },
       ]);
       f.data.getSafetyRules.mockResolvedValue([{ ...rule, urgency: 'haute' }]);
-      if (dependency === 'rag')
-        f.rag.enrich.mockRejectedValue(new Error('optional'));
       if (dependency === 'cost')
         f.data.getCostRanges.mockRejectedValue(new Error('optional'));
       if (dependency === 'maintenance')

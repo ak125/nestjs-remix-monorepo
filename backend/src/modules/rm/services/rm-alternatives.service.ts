@@ -1,5 +1,9 @@
 // backend/src/modules/rm/services/rm-alternatives.service.ts
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { createHash } from 'node:crypto';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { CacheService } from '@cache/cache.service';
@@ -9,13 +13,13 @@ import {
 } from '../../../config/cache-ttl.config';
 import type { AlternativesV2Response } from '../dto/alternatives-v2.dto';
 
-// TTLs, jeton de version (v4) et périmètre de génération déclarés dans
+// TTLs, jeton de version (v5) et périmètre de génération déclarés dans
 // CACHE_STRATEGIES.RM.ALTERNATIVES (A2 + A3, 2026-09-02) — plus de littéral local.
 // Succès = 24 h : les alternatives dérivent de la compatibilité TecDoc, qui ne
 // bouge qu'à l'import catalogue. À 300 s sur une cardinalité 54 k × 9 k, le
 // taux de hit était structurellement ~0 (498 k appels RPC, 2 795 blocs/appel).
 // L'invalidation ne vient pas de l'expiration mais du bump de génération
-// (`cache:gen:catalog`) à l'activation pricing : clé `alt:v4:g{gen}:{type}:{pg}`.
+// (`cache:gen:catalog`) à l'activation pricing : clé `alt:v5:g{gen}:{type}:{pg}`.
 const STRATEGY = CACHE_STRATEGIES.RM.ALTERNATIVES;
 const CACHE_TTL_SECONDS = STRATEGY.ttl;
 // Error-path TTL kept low so a transient RPC failure does not poison the cache.
@@ -35,11 +39,8 @@ interface RpcPayload {
   relatedModels: unknown[];
 }
 
-const EMPTY_PAYLOAD: RpcPayload = {
-  alternativeVehicles: [],
-  alternativeGammes: [],
-  relatedModels: [],
-};
+// A cached outage must remain distinguishable from a successful empty result.
+const UNAVAILABLE_PAYLOAD = { unavailable: true } as const;
 
 function isRpcPayload(value: unknown): value is RpcPayload {
   if (!value || typeof value !== 'object') return false;
@@ -86,7 +87,12 @@ export class RmAlternativesService extends SupabaseBaseService {
     const cached = await this.cache.get(cacheKey);
     if (cached) {
       const payload = this.parseCachedPayload(cached, cacheKey);
-      if (payload) {
+      if (payload && 'unavailable' in payload) {
+        throw new ServiceUnavailableException(
+          'Alternatives temporairement indisponibles',
+        );
+      }
+      if (isRpcPayload(payload)) {
         return this.buildResponse(this.sliceToLimit(payload, limit));
       }
     }
@@ -100,7 +106,7 @@ export class RmAlternativesService extends SupabaseBaseService {
       { source: 'api' as const },
     );
 
-    if (error || !data) {
+    if (error || !isRpcPayload(data)) {
       // Auth/permission failures get ERROR level — they signal infra config drift
       // (e.g. rotated key not synced to deployment secrets) and need pager-grade
       // visibility, not the same WARN as a benign empty result.
@@ -111,7 +117,7 @@ export class RmAlternativesService extends SupabaseBaseService {
       const logLevel = isAuthFailure ? 'error' : 'warn';
       this.logger[logLevel](
         `RPC get_soft_404_alternatives failed for type=${type_id} pg=${pg_id}: ${
-          error?.message ?? 'no data'
+          error?.message ?? 'invalid or missing payload'
         }`,
       );
       // Short TTL on error path: thundering-herd protection without long-window
@@ -119,10 +125,12 @@ export class RmAlternativesService extends SupabaseBaseService {
       // policy fixed, transient timeout), recovery is bounded to 30s.
       await this.cache.set(
         cacheKey,
-        JSON.stringify(EMPTY_PAYLOAD),
+        JSON.stringify(UNAVAILABLE_PAYLOAD),
         CACHE_TTL_ERROR_SECONDS,
       );
-      return this.buildResponse(EMPTY_PAYLOAD);
+      throw new ServiceUnavailableException(
+        'Alternatives temporairement indisponibles',
+      );
     }
 
     await this.cache.set(cacheKey, JSON.stringify(data), CACHE_TTL_SECONDS);
@@ -168,10 +176,18 @@ export class RmAlternativesService extends SupabaseBaseService {
   private parseCachedPayload(
     cached: unknown,
     cacheKey: string,
-  ): RpcPayload | null {
+  ): RpcPayload | typeof UNAVAILABLE_PAYLOAD | null {
     try {
       const parsed: unknown =
         typeof cached === 'string' ? JSON.parse(cached) : cached;
+      if (
+        parsed &&
+        typeof parsed === 'object' &&
+        'unavailable' in parsed &&
+        parsed.unavailable === true
+      ) {
+        return UNAVAILABLE_PAYLOAD;
+      }
       if (isRpcPayload(parsed)) return parsed;
       this.logger.warn(`Cache shape mismatch for ${cacheKey}, recomputing`);
     } catch {

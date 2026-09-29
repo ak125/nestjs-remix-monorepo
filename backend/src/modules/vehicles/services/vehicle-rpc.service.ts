@@ -180,6 +180,7 @@ export class VehicleRpcService extends SupabaseBaseService {
   /**
    * 🚗 Récupère le contenu R8 enrichi pour un véhicule (si INDEX).
    * Retourne null si pas de contenu R8 ou si seo_decision != INDEX.
+   * REVIEW_REQUIRED ne peut pas remplacer le contenu de la page publique.
    *
    * Replis (retour inchangé : null → la page sert le gabarit SEO du payload) :
    *  - aucune ligne : null normal, non journalisé ;
@@ -208,7 +209,7 @@ export class VehicleRpcService extends SupabaseBaseService {
         'h1, meta_title, meta_description, rendered_json, seo_decision, diversity_score',
       )
       .eq('type_id', String(typeId))
-      .in('seo_decision', ['INDEX', 'REVIEW_REQUIRED'])
+      .eq('seo_decision', 'INDEX')
       .filter('rendered_json->blocks', 'not.is', null)
       .order('diversity_score', { ascending: false })
       .limit(1)

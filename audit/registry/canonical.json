@@ -15968,25 +15968,6 @@
         "usedBy": []
       },
       {
-        "columns": [],
-        "deletePolicy": "ADR_REQUIRED",
-        "domain": "UNKNOWN",
-        "id": "__seo_r2_keyword_plan",
-        "inMigrations": [],
-        "indexes": [],
-        "name": "__seo_r2_keyword_plan",
-        "owner": "__unassigned__",
-        "risk": "low",
-        "rlsEnabled": true,
-        "schema": "public",
-        "schemaVersion": "1.0.0",
-        "sourceConfidence": "low",
-        "status": "LIVE",
-        "usedBy": [
-          "backend/src/modules/admin/services/r2-enricher.service.ts"
-        ]
-      },
-      {
         "columns": [
           {
             "hasDefault": true,
@@ -30906,7 +30887,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 510,
+      "loc": 511,
       "owner": "@ak125",
       "path": "backend/src/config/cache-ttl.config.ts",
       "risk": "medium",
@@ -31064,9 +31045,35 @@
         "manual"
       ],
       "domain": "D13",
+      "id": "backend/src/config/content-write-gate.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/config/content-write-gate.service.ts",
+        "backend/src/config/role-ids.ts",
+        "backend/src/config/source-provenance.constants.ts"
+      ],
+      "kind": "test",
+      "loc": 92,
+      "owner": "@ak125",
+      "path": "backend/src/config/content-write-gate.service.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
       "id": "backend/src/config/content-write-gate.service.ts",
       "importedBy": [
+        "backend/src/config/content-write-gate.service.test.ts",
         "backend/src/config/write-guard.module.ts",
+        "backend/src/modules/admin/services/r2-enricher.service.test.ts",
         "backend/src/modules/admin/services/r2-enricher.service.ts",
         "backend/src/modules/admin/services/r4-content-enricher.service.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
@@ -31080,10 +31087,11 @@
         "backend/src/config/feature-flags.service.ts",
         "backend/src/config/field-catalog.constants.ts",
         "backend/src/config/role-ids.ts",
+        "backend/src/config/source-provenance.constants.ts",
         "backend/src/config/write-guard-cas.service.ts"
       ],
       "kind": "service",
-      "loc": 218,
+      "loc": 247,
       "owner": "@ak125",
       "path": "backend/src/config/content-write-gate.service.ts",
       "risk": "medium",
@@ -31425,7 +31433,6 @@
         "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts",
         "backend/src/modules/admin/services/execution-router.service.ts",
         "backend/src/modules/admin/services/keyword-density-gate.service.ts",
-        "backend/src/modules/admin/services/r2-enricher.service.ts",
         "backend/src/modules/admin/services/r4-content-enricher.service.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
         "backend/src/modules/admin/services/rag-gamme-reader.service.ts",
@@ -32575,7 +32582,6 @@
         "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
         "backend/src/modules/admin/services/r2-enricher.service.ts",
         "backend/src/modules/admin/services/r4-content-enricher.service.ts",
-        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
         "backend/src/modules/admin/services/rag-gamme-reader.service.ts",
         "backend/src/modules/admin/services/vehicle-rag-generator.service.ts",
         "backend/src/modules/rag-proxy/rag-proxy.controller.ts",
@@ -32635,6 +32641,7 @@
         "backend/src/config/agent-frontmatter.schema.ts",
         "backend/src/config/content-section-policy.ts",
         "backend/src/config/content-write-executor.service.ts",
+        "backend/src/config/content-write-gate.service.test.ts",
         "backend/src/config/content-write-gate.service.ts",
         "backend/src/config/execution-plan-resolver.service.ts",
         "backend/src/config/execution-registry.constants.ts",
@@ -32830,7 +32837,10 @@
       "domain": "D13",
       "id": "backend/src/config/source-provenance.constants.ts",
       "importedBy": [
+        "backend/src/config/content-write-gate.service.test.ts",
+        "backend/src/config/content-write-gate.service.ts",
         "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts",
+        "backend/src/modules/admin/services/r2-enricher.service.ts",
         "backend/src/modules/blog/utils/source-provenance.util.ts"
       ],
       "imports": [],
@@ -37019,23 +37029,47 @@
         "manual"
       ],
       "domain": "D8",
+      "id": "backend/src/modules/admin/services/r2-enricher.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/config/content-write-gate.service.ts",
+        "backend/src/modules/admin/services/r2-enricher.service.ts"
+      ],
+      "kind": "test",
+      "loc": 84,
+      "owner": "@ak125/admin-team",
+      "path": "backend/src/modules/admin/services/r2-enricher.service.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
       "id": "backend/src/modules/admin/services/r2-enricher.service.ts",
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
-        "backend/src/modules/admin/services/execution-router.service.ts"
+        "backend/src/modules/admin/services/execution-router.service.ts",
+        "backend/src/modules/admin/services/r2-enricher.service.test.ts"
       ],
       "imports": [
         "@database/services/supabase-base.service",
         "backend/src/config/content-write-gate.service.ts",
         "backend/src/config/execution-registry.types.ts",
-        "backend/src/config/feature-flags.service.ts",
         "backend/src/config/rag.config.ts",
         "backend/src/config/role-ids.ts",
+        "backend/src/config/source-provenance.constants.ts",
         "fs",
         "path"
       ],
       "kind": "service",
-      "loc": 252,
+      "loc": 273,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/r2-enricher.service.ts",
       "risk": "medium",
@@ -37240,11 +37274,12 @@
       "id": "backend/src/modules/admin/services/r8-owned-editorial.composer.ts",
       "importedBy": [
         "backend/src/modules/admin/services/r8-owned-editorial.composer.test.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.test.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
       ],
       "imports": [],
       "kind": "service",
-      "loc": 373,
+      "loc": 458,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/r8-owned-editorial.composer.ts",
       "risk": "medium",
@@ -37260,11 +37295,35 @@
         "manual"
       ],
       "domain": "D8",
+      "id": "backend/src/modules/admin/services/r8-vehicle-enricher.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/admin/services/r8-owned-editorial.composer.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
+      ],
+      "kind": "test",
+      "loc": 369,
+      "owner": "@ak125/admin-team",
+      "path": "backend/src/modules/admin/services/r8-vehicle-enricher.service.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
       "id": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
         "backend/src/modules/admin/controllers/admin-r8-vehicle.controller.ts",
         "backend/src/modules/admin/services/execution-router.service.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.test.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.tech-specs.test.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.write-gate.test.ts"
       ],
@@ -37276,19 +37335,16 @@
         "backend/src/config/feature-flags.service.ts",
         "backend/src/config/page-contract-r8.schema.ts",
         "backend/src/config/r8-keyword-plan.constants.ts",
-        "backend/src/config/rag.config.ts",
         "backend/src/config/role-ids.ts",
         "backend/src/config/seo-variations.config.ts",
         "backend/src/modules/admin/services/enricher-text-utils.service.ts",
         "backend/src/modules/admin/services/r8-owned-editorial.composer.ts",
         "backend/src/modules/seo/services/chain/seo-role-template-selector.service.ts",
         "backend/src/security/rpc-gate/rpc-gate.errors.ts",
-        "crypto",
-        "fs",
-        "path"
+        "crypto"
       ],
       "kind": "service",
-      "loc": 1525,
+      "loc": 1519,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
       "risk": "medium",
@@ -42115,7 +42171,7 @@
         "backend/src/modules/diagnostic-engine/vehicle-context-mapping.ts"
       ],
       "kind": "test",
-      "loc": 146,
+      "loc": 144,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.test.ts",
       "risk": "medium",
@@ -42174,6 +42230,7 @@
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-session-integrity.test.ts",
@@ -42217,7 +42274,6 @@
         "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
         "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
         "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
-        "backend/src/modules/diagnostic-engine/engines/rag-enrichment.engine.ts",
         "backend/src/modules/diagnostic-engine/engines/risk-safety.engine.ts",
         "backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
         "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
@@ -42229,11 +42285,10 @@
         "backend/src/modules/diagnostic-engine/services/kg-shadow.service.ts",
         "backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts",
         "backend/src/modules/diagnostic-engine/services/outcome-emitter.service.ts",
-        "backend/src/modules/rag-proxy/rag-proxy.module.ts",
         "backend/src/modules/vehicle-context/vehicle-context.module.ts"
       ],
       "kind": "service",
-      "loc": 84,
+      "loc": 79,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
       "risk": "medium",
@@ -42249,10 +42304,41 @@
         "manual"
       ],
       "domain": "D4",
+      "id": "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
+        "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
+        "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
+        "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
+        "backend/src/modules/diagnostic-engine/engines/risk-safety.engine.ts",
+        "backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
+        "backend/src/modules/diagnostic-engine/services/kg-shadow.service.ts",
+        "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
+      ],
+      "kind": "test",
+      "loc": 169,
+      "owner": "@ak125/vehicle-team",
+      "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D4",
       "id": "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/maintenance-flow.test.ts"
@@ -42262,7 +42348,6 @@
         "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
         "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
         "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
-        "backend/src/modules/diagnostic-engine/engines/rag-enrichment.engine.ts",
         "backend/src/modules/diagnostic-engine/engines/risk-safety.engine.ts",
         "backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
         "backend/src/modules/diagnostic-engine/services/kg-shadow.service.ts",
@@ -42270,7 +42355,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "service",
-      "loc": 607,
+      "loc": 586,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
       "risk": "medium",
@@ -42300,7 +42385,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "test",
-      "loc": 435,
+      "loc": 431,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
       "risk": "medium",
@@ -42351,7 +42436,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "test",
-      "loc": 812,
+      "loc": 811,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts",
       "risk": "medium",
@@ -42370,6 +42455,7 @@
       "id": "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts"
@@ -42400,6 +42486,7 @@
       "id": "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts",
@@ -42455,6 +42542,7 @@
       "id": "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
         "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.test.ts",
         "backend/src/modules/diagnostic-engine/maintenance-flow.test.ts"
@@ -42480,35 +42568,10 @@
         "manual"
       ],
       "domain": "D4",
-      "id": "backend/src/modules/diagnostic-engine/engines/rag-enrichment.engine.ts",
-      "importedBy": [
-        "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
-        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts"
-      ],
-      "imports": [
-        "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts",
-        "backend/src/modules/rag-proxy/rag-proxy.service.ts"
-      ],
-      "kind": "service",
-      "loc": 238,
-      "owner": "@ak125/vehicle-team",
-      "path": "backend/src/modules/diagnostic-engine/engines/rag-enrichment.engine.ts",
-      "risk": "medium",
-      "runtime": true,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D4",
       "id": "backend/src/modules/diagnostic-engine/engines/risk-safety.engine.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts",
@@ -42538,6 +42601,7 @@
       "id": "backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts"
       ],
@@ -42595,7 +42659,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "test",
-      "loc": 271,
+      "loc": 268,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/maintenance-flow.test.ts",
       "risk": "medium",
@@ -43020,6 +43084,7 @@
       "id": "backend/src/modules/diagnostic-engine/services/kg-shadow.service.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
         "backend/src/modules/diagnostic-engine/services/kg-shadow.service.test.ts"
       ],
@@ -43320,11 +43385,11 @@
       "id": "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
-        "backend/src/modules/diagnostic-engine/engines/rag-enrichment.engine.ts",
         "backend/src/modules/diagnostic-engine/maintenance-flow.test.ts",
         "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
         "backend/src/modules/diagnostic-engine/services/action-recommender.test.ts",
@@ -43336,7 +43401,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 187,
+      "loc": 161,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts",
       "risk": "medium",
@@ -43436,7 +43501,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "service",
-      "loc": 496,
+      "loc": 475,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/validate-phase0.ts",
       "risk": "medium",
@@ -50454,7 +50519,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 77,
+      "loc": 86,
       "owner": "@ak125/rag-team",
       "path": "backend/src/modules/rag-proxy/dto/search.dto.ts",
       "risk": "high",
@@ -50563,7 +50628,6 @@
       "importedBy": [
         "backend/src/app.module.ts",
         "backend/src/modules/admin/admin.module.ts",
-        "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
         "backend/src/workers/worker.module.ts"
       ],
       "imports": [
@@ -50611,7 +50675,6 @@
       "id": "backend/src/modules/rag-proxy/rag-proxy.service.ts",
       "importedBy": [
         "backend/src/modules/admin/services/buying-guide/buying-guide-rag-fetcher.service.ts",
-        "backend/src/modules/diagnostic-engine/engines/rag-enrichment.engine.ts",
         "backend/src/modules/rag-proxy/rag-proxy.controller.ts",
         "backend/src/modules/rag-proxy/rag-proxy.module.ts",
         "backend/src/modules/rag-proxy/services/rag-redis-job.service.ts",
@@ -51441,7 +51504,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "controller",
-      "loc": 410,
+      "loc": 405,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/controllers/rm.controller.ts",
       "risk": "medium",
@@ -51521,7 +51584,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 305,
+      "loc": 361,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/services/__tests__/rm-alternatives.service.test.ts",
       "risk": "medium",
@@ -51541,7 +51604,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 274,
+      "loc": 313,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/services/__tests__/rm-builder-page-v2-cache.test.ts",
       "risk": "medium",
@@ -51561,7 +51624,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 133,
+      "loc": 267,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/services/__tests__/rm-builder-seo-legacy-markers.test.ts",
       "risk": "medium",
@@ -51641,7 +51704,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 197,
+      "loc": 213,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/services/rm-alternatives.service.ts",
       "risk": "medium",
@@ -51661,7 +51724,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 998,
+      "loc": 996,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/services/rm-builder.service.ts",
       "risk": "medium",
@@ -65248,7 +65311,7 @@
         "@security/rpc-gate/rpc-gate.service"
       ],
       "kind": "service",
-      "loc": 367,
+      "loc": 368,
       "owner": "@ak125",
       "path": "backend/src/modules/vehicles/services/vehicle-rpc.service.ts",
       "risk": "high",
@@ -67405,9 +67468,29 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 439,
+      "loc": 441,
       "owner": "@ak125",
       "path": "backend/tests/unit/rag-proxy.service.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/rag-search-provenance.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 45,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/rag-search-provenance.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -68425,7 +68508,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 326,
+      "loc": 459,
       "owner": "@ak125",
       "path": "backend/tests/unit/vehicle-rpc.service.test.ts",
       "risk": "medium",
@@ -72094,14 +72177,13 @@
         "frontend/app/components/diagnostic-wizard/results/ResultHypotheses.tsx",
         "frontend/app/components/diagnostic-wizard/results/ResultMaintenance.tsx",
         "frontend/app/components/diagnostic-wizard/results/ResultMissing.tsx",
-        "frontend/app/components/diagnostic-wizard/results/ResultRagFacts.tsx",
         "frontend/app/components/diagnostic-wizard/results/ResultSafety.tsx",
         "frontend/app/components/diagnostic-wizard/results/ResultSummary.tsx",
         "frontend/app/components/diagnostic-wizard/types.ts",
         "~/components/ui/button"
       ],
       "kind": "config",
-      "loc": 193,
+      "loc": 189,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/results/DiagnosticResults.tsx",
       "risk": "low",
@@ -72322,31 +72404,6 @@
         "manual"
       ],
       "domain": "D8",
-      "id": "frontend/app/components/diagnostic-wizard/results/ResultRagFacts.tsx",
-      "importedBy": [
-        "frontend/app/components/diagnostic-wizard/results/DiagnosticResults.tsx"
-      ],
-      "imports": [
-        "~/components/ui/badge",
-        "~/components/ui/card"
-      ],
-      "kind": "config",
-      "loc": 128,
-      "owner": "@ak125/frontend-team",
-      "path": "frontend/app/components/diagnostic-wizard/results/ResultRagFacts.tsx",
-      "risk": "low",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D8",
       "id": "frontend/app/components/diagnostic-wizard/results/ResultSafety.tsx",
       "importedBy": [
         "frontend/app/components/diagnostic-wizard/results/DiagnosticResults.tsx"
@@ -72547,7 +72604,7 @@
         "frontend/app/components/diagnostic-wizard/steps/StepMaintenance.tsx"
       ],
       "kind": "config",
-      "loc": 154,
+      "loc": 146,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/types.ts",
       "risk": "low",
@@ -75887,7 +75944,7 @@
         "frontend/app/types/pieces-route.types.ts"
       ],
       "kind": "config",
-      "loc": 257,
+      "loc": 263,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/pieces/PiecesBuyingGuide.tsx",
       "risk": "low",
@@ -75957,7 +76014,7 @@
         "~/components/ui/alert"
       ],
       "kind": "config",
-      "loc": 266,
+      "loc": 263,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/pieces/PiecesCompatibilityInfo.tsx",
       "risk": "low",
@@ -76363,7 +76420,7 @@
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 617,
+      "loc": 619,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/pieces/PiecesVehicleContent.tsx",
       "risk": "low",
@@ -79257,7 +79314,7 @@
         "frontend/app/utils/url-builder.utils.ts"
       ],
       "kind": "config",
-      "loc": 253,
+      "loc": 254,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/vehicle/r8/r8-transform.ts",
       "risk": "low",
@@ -79290,7 +79347,7 @@
         "frontend/app/components/model/index.ts"
       ],
       "kind": "config",
-      "loc": 132,
+      "loc": 131,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/vehicle/r8/r8.types.ts",
       "risk": "low",
@@ -85740,7 +85797,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 1353,
+      "loc": 1326,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/constructeurs.$brand.$model.$type.tsx",
       "risk": "medium",
@@ -87774,9 +87831,11 @@
       "domain": "UNKNOWN",
       "id": "frontend/app/services/api/rm-api.service.ts",
       "importedBy": [],
-      "imports": [],
+      "imports": [
+        "frontend/app/services/common/errors.ts"
+      ],
       "kind": "service",
-      "loc": 282,
+      "loc": 289,
       "owner": "__unassigned__",
       "path": "frontend/app/services/api/rm-api.service.ts",
       "risk": "low",
@@ -87916,7 +87975,8 @@
       "domain": "UNKNOWN",
       "id": "frontend/app/services/common/errors.ts",
       "importedBy": [
-        "frontend/app/services/api/config.api.ts"
+        "frontend/app/services/api/config.api.ts",
+        "frontend/app/services/api/rm-api.service.ts"
       ],
       "imports": [],
       "kind": "config",
@@ -88431,7 +88491,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 235,
+      "loc": 234,
       "owner": "__unassigned__",
       "path": "frontend/app/types/pieces-route.types.ts",
       "risk": "low",
@@ -88709,7 +88769,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 56,
+      "loc": 58,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/cache-control.ts",
       "risk": "medium",
@@ -89446,7 +89506,7 @@
         "frontend/app/utils/pieces-route.utils.ts"
       ],
       "kind": "service",
-      "loc": 198,
+      "loc": 197,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/pieces-loader.utils.ts",
       "risk": "medium",
@@ -89476,7 +89536,7 @@
         "~/utils/logger"
       ],
       "kind": "service",
-      "loc": 558,
+      "loc": 505,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/pieces-route.utils.ts",
       "risk": "medium",
@@ -89499,6 +89559,7 @@
         "~/components/pieces/NoProductsAlternatives",
         "~/components/pieces/PiecesFilterSidebar",
         "~/services/api/rm-api.service",
+        "~/services/common/errors",
         "~/services/pieces/pieces-route.service",
         "~/utils/fetch.utils",
         "~/utils/internal-api.server",
@@ -89512,7 +89573,7 @@
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 634,
+      "loc": 708,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/pieces-vehicle.loader.server.ts",
       "risk": "medium",
@@ -89793,7 +89854,7 @@
         "~/utils/image-optimizer"
       ],
       "kind": "service",
-      "loc": 316,
+      "loc": 317,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/rm-mapper.ts",
       "risk": "medium",
@@ -90875,7 +90936,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 115,
+      "loc": 126,
       "owner": "@ak125",
       "path": "frontend/tests/unit/cache-control.test.ts",
       "risk": "medium",
@@ -91271,26 +91332,6 @@
         "manual"
       ],
       "domain": "D2",
-      "id": "frontend/tests/unit/diagnostic-hypothesis-rank.test.tsx",
-      "importedBy": [],
-      "imports": [],
-      "kind": "test",
-      "loc": 34,
-      "owner": "@ak125",
-      "path": "frontend/tests/unit/diagnostic-hypothesis-rank.test.tsx",
-      "risk": "medium",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "high",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D2",
       "id": "frontend/tests/unit/diagnostic-legacy-navigation.test.tsx",
       "importedBy": [],
       "imports": [],
@@ -91358,6 +91399,26 @@
       "loc": 131,
       "owner": "@ak125",
       "path": "frontend/tests/unit/diagnostic-result-links.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/diagnostic-results-content-authority.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 62,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/diagnostic-results-content-authority.test.tsx",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -91791,6 +91852,26 @@
         "manual"
       ],
       "domain": "D2",
+      "id": "frontend/tests/unit/pieces-buying-guide.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 29,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/pieces-buying-guide.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
       "id": "frontend/tests/unit/pieces-can-sell-render.test.tsx",
       "importedBy": [],
       "imports": [],
@@ -91798,6 +91879,26 @@
       "loc": 72,
       "owner": "@ak125",
       "path": "frontend/tests/unit/pieces-can-sell-render.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/pieces-compatibility-info-no-country-code.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 269,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/pieces-compatibility-info-no-country-code.test.tsx",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -92011,6 +92112,26 @@
         "manual"
       ],
       "domain": "D2",
+      "id": "frontend/tests/unit/pieces-vehicle-loader-canonical-redirect.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 697,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/pieces-vehicle-loader-canonical-redirect.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
       "id": "frontend/tests/unit/pieces-vehicle-meta.test.ts",
       "importedBy": [],
       "imports": [],
@@ -92158,6 +92279,26 @@
       "loc": 96,
       "owner": "@ak125",
       "path": "frontend/tests/unit/r8-hero-h1-parity.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/r8-mine-codes-country-not-rendered.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 351,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/r8-mine-codes-country-not-rendered.test.tsx",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -96991,7 +97132,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 133,
+      "loc": 137,
       "owner": "@ak125",
       "path": "scripts/audit/check-rag-authority-read-ratchet.test.ts",
       "risk": "medium",
@@ -98134,6 +98275,46 @@
       "loc": 143,
       "owner": "@ak125",
       "path": "scripts/ci/prod-client-ip-probe.test.mjs",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
+      "id": "scripts/ci/prod-preprod-evidence.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 184,
+      "owner": "@ak125",
+      "path": "scripts/ci/prod-preprod-evidence.mjs",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
+      "id": "scripts/ci/prod-preprod-evidence.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 308,
+      "owner": "@ak125",
+      "path": "scripts/ci/prod-preprod-evidence.test.mjs",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -100950,13 +101131,13 @@
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
       ".spec/00-canon/repository-registry/ownership.yaml": "476fc30830d3d8bdffa3339af9e38c3877d77e1bd11465a210a15fc1eae9e6dc",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
-      "audit/registry/db.json": "6fdea94ba60b096fd48830deaa74302a1ef9fde9a5185b64878a2c87dea763ef",
+      "audit/registry/db.json": "90094e86c0a9d55c1c0ca1db6a22078fa001179245b2ac8ea7d75743a69fb54b",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "868959e4df86cdee560471f35ca7c32dc79a12a5a508a225af7fb63efec827b5",
+      "audit/registry/files.json": "d431fa4fd1f357300a9c046c8a360ca2cbbc4b9e3beb29453c6411125eb1ec8a",
       "audit/registry/rpc.json": "86d0c24b102036512a9f7b11d9ac04754288049a8b061981b19f0db0a8c86263",
-      "audit/registry/runtime.json": "ed7cfe73a8ae1706ef9b54b7ad3d95f31c271d031c9b354a128e81b03296b24b"
+      "audit/registry/runtime.json": "6c2cc554a40338761fba9f55f6aef70339e95d10dec2f0b93ba5b0152c33f766"
     },
-    "sotFingerprint": "9ff1e29eac88"
+    "sotFingerprint": "435d30e78ad5"
   },
   "runtime": [
     {
@@ -102507,8 +102688,7 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/config/content-write-gate.service.ts",
-        "runtime:backend/src/config/feature-flags.service.ts"
+        "runtime:backend/src/config/content-write-gate.service.ts"
       ],
       "id": "runtime:backend/src/modules/admin/services/r2-enricher.service.ts",
       "kind": "nestjs-service",
@@ -103934,7 +104114,6 @@
         "runtime:backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
         "runtime:backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
         "runtime:backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
-        "runtime:backend/src/modules/diagnostic-engine/engines/rag-enrichment.engine.ts",
         "runtime:backend/src/modules/diagnostic-engine/engines/risk-safety.engine.ts",
         "runtime:backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
         "runtime:backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
@@ -103946,7 +104125,6 @@
         "runtime:backend/src/modules/diagnostic-engine/services/kg-shadow.service.ts",
         "runtime:backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts",
         "runtime:backend/src/modules/diagnostic-engine/services/outcome-emitter.service.ts",
-        "runtime:backend/src/modules/rag-proxy/rag-proxy.module.ts",
         "runtime:backend/src/modules/vehicle-context/vehicle-context.module.ts"
       ],
       "id": "runtime:backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
@@ -103962,7 +104140,6 @@
         "runtime:backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
         "runtime:backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
         "runtime:backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
-        "runtime:backend/src/modules/diagnostic-engine/engines/rag-enrichment.engine.ts",
         "runtime:backend/src/modules/diagnostic-engine/engines/risk-safety.engine.ts",
         "runtime:backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
         "runtime:backend/src/modules/diagnostic-engine/services/kg-shadow.service.ts"
@@ -104004,17 +104181,6 @@
       "id": "runtime:backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
       "kind": "other",
       "path": "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "dependsOn": [
-        "runtime:backend/src/modules/rag-proxy/rag-proxy.service.ts"
-      ],
-      "id": "runtime:backend/src/modules/diagnostic-engine/engines/rag-enrichment.engine.ts",
-      "kind": "other",
-      "path": "backend/src/modules/diagnostic-engine/engines/rag-enrichment.engine.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
