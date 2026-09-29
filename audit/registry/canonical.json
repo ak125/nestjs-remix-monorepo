@@ -72278,7 +72278,7 @@
         "~/components/ui/card"
       ],
       "kind": "config",
-      "loc": 80,
+      "loc": 77,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/results/HumanEscalationCard.tsx",
       "risk": "low",
@@ -72329,7 +72329,7 @@
         "frontend/app/components/diagnostic-wizard/results/v1a-intent-types.ts"
       ],
       "kind": "config",
-      "loc": 36,
+      "loc": 33,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/results/RecommendedActionList.tsx",
       "risk": "low",
@@ -72528,7 +72528,7 @@
         "frontend/app/components/diagnostic-wizard/results/v1a-intent-types.ts"
       ],
       "kind": "config",
-      "loc": 37,
+      "loc": 34,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/results/v1a-handoff-client.ts",
       "risk": "low",
@@ -101201,11 +101201,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "90094e86c0a9d55c1c0ca1db6a22078fa001179245b2ac8ea7d75743a69fb54b",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "fc214651253c3861a246669b31fe9aef7019dbc4ebd3934265cf73443fbb7b28",
+      "audit/registry/files.json": "11362ef7da3ebac7c70051fe39b143585a61d4c1edf5de26cc6163e45579d8bb",
       "audit/registry/rpc.json": "86d0c24b102036512a9f7b11d9ac04754288049a8b061981b19f0db0a8c86263",
       "audit/registry/runtime.json": "d98604e009c185cf432e9e97d9d5318a03798bd1d2a4f55ba6aa49efb63ce328"
     },
-    "sotFingerprint": "7eb59096a73e"
+    "sotFingerprint": "f86312eed1f3"
   },
   "runtime": [
     {

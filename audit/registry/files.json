@@ -43128,7 +43128,7 @@
         "~/components/ui/card"
       ],
       "kind": "config",
-      "loc": 80,
+      "loc": 77,
       "owner": "__unassigned__",
       "path": "frontend/app/components/diagnostic-wizard/results/HumanEscalationCard.tsx",
       "risk": "low",
@@ -43177,7 +43177,7 @@
         "frontend/app/components/diagnostic-wizard/results/v1a-intent-types.ts"
       ],
       "kind": "config",
-      "loc": 36,
+      "loc": 33,
       "owner": "__unassigned__",
       "path": "frontend/app/components/diagnostic-wizard/results/RecommendedActionList.tsx",
       "risk": "low",
@@ -43368,7 +43368,7 @@
         "frontend/app/components/diagnostic-wizard/results/v1a-intent-types.ts"
       ],
       "kind": "config",
-      "loc": 37,
+      "loc": 34,
       "owner": "__unassigned__",
       "path": "frontend/app/components/diagnostic-wizard/results/v1a-handoff-client.ts",
       "risk": "low",
