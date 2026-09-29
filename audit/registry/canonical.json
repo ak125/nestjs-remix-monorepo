@@ -21509,6 +21509,7 @@
           "backend/src/modules/blog/services/r6-guide.service.ts",
           "backend/src/modules/catalog/services/accessory-products.service.ts",
           "backend/src/modules/catalog/services/homepage-rpc.service.ts",
+          "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
           "backend/src/modules/marketing/services/marketing-data.service.ts",
           "backend/src/modules/marketing/services/marketing-hub-data.service.ts",
           "backend/src/modules/media-factory/services/script-generator.service.ts",
@@ -42246,7 +42247,7 @@
         "backend/src/modules/diagnostic-engine/types/diagnostic-reference.schema.ts"
       ],
       "kind": "service",
-      "loc": 501,
+      "loc": 522,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
       "risk": "medium",
@@ -42355,7 +42356,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "service",
-      "loc": 586,
+      "loc": 606,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
       "risk": "medium",
@@ -42385,7 +42386,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "test",
-      "loc": 431,
+      "loc": 554,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
       "risk": "medium",
@@ -42436,7 +42437,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "test",
-      "loc": 811,
+      "loc": 835,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts",
       "risk": "medium",
@@ -42467,7 +42468,7 @@
         "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts"
       ],
       "kind": "service",
-      "loc": 168,
+      "loc": 201,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
       "risk": "medium",
@@ -101091,13 +101092,13 @@
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
       ".spec/00-canon/repository-registry/ownership.yaml": "476fc30830d3d8bdffa3339af9e38c3877d77e1bd11465a210a15fc1eae9e6dc",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
-      "audit/registry/db.json": "90094e86c0a9d55c1c0ca1db6a22078fa001179245b2ac8ea7d75743a69fb54b",
+      "audit/registry/db.json": "df2d9bff81b09d242eec81c8edb943b095d19c3a89e91b38d9875009e69ca0c7",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "918c3c9166dfb4536b771cca30a4983f9cfb5fddd1a2ea937f1ccccb073f523d",
+      "audit/registry/files.json": "bbc2a3835d628dbbccfc052343c44335a73aeb8782b9df6523488082c642a9b8",
       "audit/registry/rpc.json": "86d0c24b102036512a9f7b11d9ac04754288049a8b061981b19f0db0a8c86263",
       "audit/registry/runtime.json": "6c2cc554a40338761fba9f55f6aef70339e95d10dec2f0b93ba5b0152c33f766"
     },
-    "sotFingerprint": "c892f2940ced"
+    "sotFingerprint": "b471f1c295c0"
   },
   "runtime": [
     {
