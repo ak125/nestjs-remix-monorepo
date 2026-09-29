@@ -68112,6 +68112,44 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "scripts/ci/prod-preprod-evidence.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 184,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/prod-preprod-evidence.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/ci/prod-preprod-evidence.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 308,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/prod-preprod-evidence.test.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "scripts/ci/prod-rollback.test.mjs",
       "importedBy": [],
       "imports": [],
