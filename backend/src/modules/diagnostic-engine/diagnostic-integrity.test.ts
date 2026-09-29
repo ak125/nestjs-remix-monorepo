@@ -125,6 +125,46 @@ describe('diagnostic safety and deterministic scoring regressions', () => {
       });
     },
   );
+  test.each([
+    {
+      scores: [95, 90],
+      withVehicle: true,
+      overall: 'low',
+      gammes: ['low', 'low'],
+    },
+    {
+      scores: [95, 40],
+      withVehicle: false,
+      overall: 'medium',
+      gammes: ['medium', 'low'],
+    },
+    {
+      scores: [95, 40],
+      withVehicle: true,
+      overall: 'high',
+      gammes: ['high', 'low'],
+    },
+  ])(
+    'a part family never claims more confidence than the diagnosis ($overall)',
+    ({ scores, withVehicle, overall, gammes }) => {
+      const disc = link(90, 2);
+      disc.cause_id = 2;
+      disc.cause = { ...disc.cause, id: 2, slug: 'brake_disc_warped' };
+      const hypotheses = new HypothesisScoringEngine().score(
+        [link(), disc],
+        vehicle,
+        undefined,
+      );
+      hypotheses.forEach((h, i) => (h.total_score = scores[i]));
+      const result = new CatalogOrientationEngine().evaluate(
+        hypotheses,
+        baselineRisk,
+        withVehicle ? vehicle : undefined,
+      );
+      expect(result.confidence_before_purchase).toBe(overall);
+      expect(result.suggested_gammes.map((g) => g.confidence)).toEqual(gammes);
+    },
+  );
   test.each(['maintenance', 'commerce', 'reassurance', 'devis'] as const)(
     'blocked catalogue never leaks commerce through %s',
     (value) => {
