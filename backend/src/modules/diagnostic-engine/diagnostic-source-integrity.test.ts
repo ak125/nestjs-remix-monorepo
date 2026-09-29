@@ -808,3 +808,26 @@ describe('session write acknowledgement reaches the diagnostic result', () => {
     );
   });
 });
+
+describe('the catalogue verdict is the same wherever the result shows it', () => {
+  test('the orientation block repeats the contract verdict, never the raw engine mode', async () => {
+    const f = fixture();
+    f.tables.__diag_symptom.data = [{ ...symptom, urgency: 'basse' }];
+    f.tables.__diag_cause.data = [{ ...cause, urgency: 'basse' }];
+    f.tables.__diag_safety_rule.data = [
+      { ...rule, urgency: 'moyenne', blocks_catalog: false },
+    ];
+    const result = await pipeline(f.service).engine.analyze(input);
+    expect(result.success).toBe(true);
+    const evidence = result.data!.evidence;
+    expect(EvidencePackSchema.safeParse(evidence).error).toBeUndefined();
+    const pack = evidence.evidence_pack;
+    const { reason: _reason, ...verdict } = pack.catalog_guard;
+    expect(verdict).toMatchObject({
+      ready_for_catalog: true,
+      confidence_before_purchase: 'high',
+      allowed_output_mode: 'catalog_family_with_caution',
+    });
+    expect(pack.ui_block_inputs.CatalogOrientationBox).toEqual(verdict);
+  });
+});

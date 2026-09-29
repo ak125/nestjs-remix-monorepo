@@ -17,7 +17,7 @@ import {
   type AnalyzeMaintenanceInput,
   type AnalyzeDiagnosticInput,
 } from './types/diagnostic-input.schema';
-import type { EvidencePack } from './types/evidence-pack.schema';
+import type { CatalogGuard, EvidencePack } from './types/evidence-pack.schema';
 import { DiagnosticEngineDataService } from './diagnostic-engine.data-service';
 import { SignalInterpretationEngine } from './engines/signal-interpretation.engine';
 import { HypothesisScoringEngine } from './engines/hypothesis-scoring.engine';
@@ -521,6 +521,21 @@ export class DiagnosticEngineOrchestrator {
       ),
     );
 
+    // One catalogue verdict, within the contract, for every field that shows it.
+    const catalogGuard: CatalogGuard = {
+      ready_for_catalog: catalog.ready_for_catalog,
+      confidence_before_purchase:
+        catalog.confidence_before_purchase === 'insufficient'
+          ? 'low'
+          : catalog.confidence_before_purchase,
+      allowed_output_mode:
+        catalog.allowed_output_mode === 'catalog_reference_with_caution'
+          ? 'catalog_family_with_caution'
+          : catalog.allowed_output_mode,
+      reason: catalog.reason,
+      suggested_gammes: catalog.suggested_gammes,
+    };
+
     return {
       evidence_pack: {
         diagnostic_confidence: diagnosticConfidence,
@@ -533,22 +548,7 @@ export class DiagnosticEngineOrchestrator {
         safety_alert: risk.safety_alert,
         risk_level: risk.risk_level,
         signal_quality: signal.signal_quality,
-        catalog_guard: {
-          ready_for_catalog: catalog.ready_for_catalog,
-          confidence_before_purchase: (catalog.confidence_before_purchase ===
-          'insufficient'
-            ? 'low'
-            : catalog.confidence_before_purchase) as 'low' | 'medium' | 'high',
-          allowed_output_mode: (catalog.allowed_output_mode ===
-          'catalog_reference_with_caution'
-            ? 'catalog_family_with_caution'
-            : catalog.allowed_output_mode) as
-            | 'none'
-            | 'catalog_family_only'
-            | 'catalog_family_with_caution',
-          reason: catalog.reason,
-          suggested_gammes: catalog.suggested_gammes,
-        },
+        catalog_guard: catalogGuard,
         maintenance_recommendations: maintenance.recommendations,
         preventive_schedule: maintenance.preventive_schedule,
         allowed_claims: allowedClaims,
@@ -573,10 +573,10 @@ export class DiagnosticEngineOrchestrator {
             overdue_count: maintenance.overdue_count,
           },
           CatalogOrientationBox: {
-            ready_for_catalog: catalog.ready_for_catalog,
-            confidence_before_purchase: catalog.confidence_before_purchase,
-            allowed_output_mode: catalog.allowed_output_mode,
-            suggested_gammes: catalog.suggested_gammes,
+            ready_for_catalog: catalogGuard.ready_for_catalog,
+            confidence_before_purchase: catalogGuard.confidence_before_purchase,
+            allowed_output_mode: catalogGuard.allowed_output_mode,
+            suggested_gammes: catalogGuard.suggested_gammes,
           },
         },
       },
