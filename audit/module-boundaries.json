@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 597,
-      "loc_total": 114357,
+      "loc_total": 114379,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -700,8 +700,8 @@
         "scripts/wiki-generators",
         "scripts/wiki-generators/__tests__"
       ],
-      "files_count": 185,
-      "loc_total": 39603,
+      "files_count": 187,
+      "loc_total": 40095,
       "has_barrel": true
     },
     "search": {
@@ -958,7 +958,7 @@
         "tests/registry"
       ],
       "files_count": 266,
-      "loc_total": 49606,
+      "loc_total": 49694,
       "has_barrel": true
     },
     "upload": {

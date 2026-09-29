@@ -10,6 +10,7 @@ import { redirect, type LoaderFunctionArgs, data } from "react-router";
 import { type NoProductsData } from "~/components/pieces/NoProductsAlternatives";
 import { type FiltersData } from "~/components/pieces/PiecesFilterSidebar";
 import { fetchRmPageV2 } from "~/services/api/rm-api.service";
+import { ApiError } from "~/services/common/errors";
 import {
   fetchBlogArticleWithRelated,
   fetchSeoSwitches,
@@ -236,43 +237,56 @@ export async function piecesVehicleLoader({
     gammeId,
     vehicleIds.typeId,
     INITIAL_PRODUCTS_LIMIT,
-  ).catch(async (err) => {
-    logger.error(
-      `❌ [RM V2] Failed:`,
-      err instanceof Error ? err.message : err,
-    );
-    await notify503ToErrorLog(
-      url.pathname,
-      "LOADER_503_BACKEND_RPC_ERROR",
-      `RM V2 fetch failed: ${err instanceof Error ? err.message : String(err)}`,
-      { error_name: err instanceof Error ? err.name : "unknown" },
-    );
-    // A failed catalogue read is not evidence of zero products. Do not emit
-    // an indexation decision or let the alternatives cache prolong the outage.
-    throw new Response("Service temporairement indisponible", {
-      status: 503,
-      headers: {
-        "Retry-After": "300",
-        "Cache-Control": "no-store, must-revalidate",
-      },
-    });
-  });
+  ).then(
+    (response) => ({ absentFromCatalogue: false as const, response }),
+    async (err) => {
+      // Contrat page-v2 (#690) : 404 = combinaison gamme × véhicule absente du
+      // catalogue (VEHICLE_NOT_FOUND / GAMME_NOT_FOUND). État permanent, pas une
+      // panne : il suit la politique « 0 produit » ci-dessous, jamais un 503.
+      if (err instanceof ApiError && err.status === 404) {
+        logger.warn(
+          `[RM V2] Combinaison absente du catalogue (404) pour ${url.pathname}`,
+        );
+        return { absentFromCatalogue: true as const, response: null };
+      }
+      logger.error(
+        `❌ [RM V2] Failed:`,
+        err instanceof Error ? err.message : err,
+      );
+      await notify503ToErrorLog(
+        url.pathname,
+        "LOADER_503_BACKEND_RPC_ERROR",
+        `RM V2 fetch failed: ${err instanceof Error ? err.message : String(err)}`,
+        { error_name: err instanceof Error ? err.name : "unknown" },
+      );
+      // A failed catalogue read is not evidence of zero products. Do not emit
+      // an indexation decision or let the alternatives cache prolong the outage.
+      throw new Response("Service temporairement indisponible", {
+        status: 503,
+        headers: {
+          "Retry-After": "300",
+          "Cache-Control": "no-store, must-revalidate",
+        },
+      });
+    },
+  );
 
   // LCP V9: seoSwitches deferred (below-fold only, has fallback anchors)
-  const rmV2Response = await rmV2Promise;
+  const { absentFromCatalogue, response: rmV2Response } = await rmV2Promise;
 
   // A 200 transport response may still carry an upstream error or an invalid
   // payload. Only a successful, coherent zero count is an empty catalogue.
   // Keep the existing usable-data predicate for positive results; a genuine
   // empty result may legitimately have validation.valid=false (no relations).
   if (
-    !rmV2Response ||
-    rmV2Response.success !== true ||
-    !Number.isInteger(rmV2Response.count) ||
-    rmV2Response.count < 0 ||
-    !Array.isArray(rmV2Response.products) ||
-    (rmV2Response.count === 0) !== (rmV2Response.products.length === 0) ||
-    (rmV2Response.count > 0 && !isRmV2DataUsable(rmV2Response, 1))
+    !absentFromCatalogue &&
+    (!rmV2Response ||
+      rmV2Response.success !== true ||
+      !Number.isInteger(rmV2Response.count) ||
+      rmV2Response.count < 0 ||
+      !Array.isArray(rmV2Response.products) ||
+      (rmV2Response.count === 0) !== (rmV2Response.products.length === 0) ||
+      (rmV2Response.count > 0 && !isRmV2DataUsable(rmV2Response, 1)))
   ) {
     logger.error(`[RM V2] Invalid catalogue payload for ${url.pathname}`);
     await notify503ToErrorLog(
@@ -289,8 +303,9 @@ export async function piecesVehicleLoader({
     });
   }
 
-  // Genuine zero products: preserve the governed alternatives/noindex policy.
-  if (rmV2Response.count === 0) {
+  // Genuine zero products, or a combination absent from the catalogue (404):
+  // preserve the governed alternatives/noindex policy.
+  if (absentFromCatalogue || rmV2Response.count === 0) {
     // Retirer l'ancien paramètre interne même sur les pages alternatives.
     // Aucun alias catalogue n'est inventé sur cette branche vide.
     if (documentUrl.searchParams.has("r")) {
