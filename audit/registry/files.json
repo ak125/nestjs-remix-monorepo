@@ -14259,7 +14259,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "service",
-      "loc": 586,
+      "loc": 609,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
       "risk": "low",
@@ -14288,7 +14288,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "test",
-      "loc": 431,
+      "loc": 456,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
       "risk": "low",
@@ -14337,7 +14337,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "test",
-      "loc": 811,
+      "loc": 888,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts",
       "risk": "low",
@@ -14505,7 +14505,7 @@
         "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts"
       ],
       "kind": "service",
-      "loc": 94,
+      "loc": 102,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
       "risk": "low",
@@ -14552,7 +14552,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "test",
-      "loc": 268,
+      "loc": 293,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/maintenance-flow.test.ts",
       "risk": "low",
