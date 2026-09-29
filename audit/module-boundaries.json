@@ -238,7 +238,7 @@
         "backend/src/modules/diagnostic-engine/types"
       ],
       "files_count": 51,
-      "loc_total": 9387,
+      "loc_total": 9433,
       "has_barrel": false
     },
     "errors": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 597,
-      "loc_total": 114379,
+      "loc_total": 114375,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -958,7 +958,7 @@
         "tests/registry"
       ],
       "files_count": 266,
-      "loc_total": 49694,
+      "loc_total": 49701,
       "has_barrel": true
     },
     "upload": {

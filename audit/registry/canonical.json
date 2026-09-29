@@ -42385,7 +42385,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "test",
-      "loc": 431,
+      "loc": 471,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
       "risk": "medium",
@@ -42467,7 +42467,7 @@
         "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts"
       ],
       "kind": "service",
-      "loc": 168,
+      "loc": 174,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
       "risk": "medium",
@@ -72288,7 +72288,7 @@
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 123,
+      "loc": 119,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/results/ResultCatalog.tsx",
       "risk": "low",
@@ -91396,7 +91396,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 131,
+      "loc": 138,
       "owner": "@ak125",
       "path": "frontend/tests/unit/diagnostic-result-links.test.tsx",
       "risk": "medium",
@@ -101093,11 +101093,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "90094e86c0a9d55c1c0ca1db6a22078fa001179245b2ac8ea7d75743a69fb54b",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "918c3c9166dfb4536b771cca30a4983f9cfb5fddd1a2ea937f1ccccb073f523d",
+      "audit/registry/files.json": "82eeab11b15547b1a11a89552eae4278f58b2d6cb65a85a7190d1517b3e604b8",
       "audit/registry/rpc.json": "86d0c24b102036512a9f7b11d9ac04754288049a8b061981b19f0db0a8c86263",
       "audit/registry/runtime.json": "6c2cc554a40338761fba9f55f6aef70339e95d10dec2f0b93ba5b0152c33f766"
     },
-    "sotFingerprint": "c892f2940ced"
+    "sotFingerprint": "37b5b6a2cdc0"
   },
   "runtime": [
     {
