@@ -80,6 +80,8 @@ function fixture() {
     __diag_cause: { data: [structuredClone(cause)], error: null },
     __diag_symptom_cause_link: { data: [structuredClone(link)], error: null },
     __diag_safety_rule: { data: [structuredClone(rule)], error: null },
+    // The family suggested for `cause` has its own catalogue page.
+    pieces_gamme: { data: [{ pg_id: '402' }], error: null },
   };
   const service = Object.create(
     DiagnosticEngineDataService.prototype,
