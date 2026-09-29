@@ -11,35 +11,19 @@ import { Link } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { emitHandoff } from "./v1a-handoff-client";
-import {
-  type HumanEscalation,
-  type DiagnosticIntent,
-} from "./v1a-intent-types";
+import { type HumanEscalation } from "./v1a-intent-types";
 
 interface Props {
   escalation: HumanEscalation;
   sessionId: string | null;
-  intent: DiagnosticIntent;
-  confidence: number;
 }
 
-export function HumanEscalationCard({
-  escalation,
-  sessionId,
-  intent,
-  confidence,
-}: Props) {
+export function HumanEscalationCard({ escalation, sessionId }: Props) {
   if (!escalation.available) return null;
 
   const handleClick = () => {
     if (sessionId) {
-      void emitHandoff({
-        session_id: sessionId,
-        action_type: "human_resolution",
-        target_role: "human",
-        intent,
-        confidence,
-      });
+      void emitHandoff({ surface: "human_escalation", session_id: sessionId });
     }
   };
 

@@ -59,6 +59,7 @@ function fixture(value: unknown = session()) {
     {} as never,
     {} as never,
     {} as never,
+    {} as never,
   );
   return { service, controller, reply, query };
 }
