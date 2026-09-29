@@ -477,3 +477,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `ci/deploy-prod-require-preprod-smokes`
 - **Décision** : chore(registry): resync L1+L3 projections (+2 fichiers scripts/ci) (+1 other commit)
 - **Sortie** : PR #1598 | commits ef976d67e e6bfe2ddf
+
+## 2026-09-29 — fix/r6-buying-guide-rag-write-gate (auto)
+
+- **Branche** : `fix/r6-buying-guide-rag-write-gate`
+- **Décision** : chore(audit): baseline served-content-write-sinks 61 → 60 (fermeture R6) (+3 other commits)
+- **Sortie** : PR #1615 | commits 729e5b178 fd26693a0 70208ce18 76de4e601
