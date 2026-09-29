@@ -15931,7 +15931,7 @@
         "backend/src/modules/gamme-rest/services/gamme-rpc.schema.ts"
       ],
       "kind": "service",
-      "loc": 493,
+      "loc": 495,
       "owner": "__unassigned__",
       "path": "backend/src/modules/gamme-rest/services/gamme-rpc.service.ts",
       "risk": "low",
