@@ -107,6 +107,39 @@ export class CatalogOrientationEngine {
   }
 
   /**
+   * Keep only the families that have their own catalogue page. A result is
+   * ready for the catalogue only while at least one such family remains.
+   * `null` means the catalogue could not be checked: nothing is suggested.
+   */
+  restrictToCataloguePages(
+    result: CatalogGuardResult,
+    cataloguePageIds: ReadonlySet<number> | null,
+  ): CatalogGuardResult {
+    const suggested = result.suggested_gammes.filter(
+      (g) => cataloguePageIds?.has(g.pg_id) === true,
+    );
+    if (suggested.length > 0) {
+      return { ...result, suggested_gammes: suggested };
+    }
+
+    let reason = result.reason;
+    if (cataloguePageIds === null && result.suggested_gammes.length > 0) {
+      reason =
+        'Orientation catalogue indisponible — les familles de pièces ne peuvent pas être vérifiées.';
+    } else if (result.ready_for_catalog) {
+      reason =
+        'Aucune famille de pièces du catalogue ne correspond à ces hypothèses — vérification recommandée avant achat.';
+    }
+    return {
+      ...result,
+      ready_for_catalog: false,
+      allowed_output_mode: 'none',
+      reason,
+      suggested_gammes: [],
+    };
+  }
+
+  /**
    * Multi-factor confidence evaluation
    */
   private evaluateConfidence(

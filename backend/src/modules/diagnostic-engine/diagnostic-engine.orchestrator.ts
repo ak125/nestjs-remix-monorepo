@@ -188,7 +188,7 @@ export class DiagnosticEngineOrchestrator {
     );
 
     // ── 6. Catalog Orientation Engine ──────────────────
-    const catalog = this.catalogEngine.evaluate(
+    const orientation = this.catalogEngine.evaluate(
       hypotheses,
       risk,
       input.vehicle_context,
@@ -203,6 +203,26 @@ export class DiagnosticEngineOrchestrator {
         'Réponses complémentaires non interprétées : elles ne modifient ni les hypothèses ni le niveau de risque de cette analyse.',
       );
     }
+
+    // A suggested family is only linked when it has its own catalogue page.
+    let cataloguePageIds: ReadonlySet<number> | null = new Set();
+    const candidateIds = orientation.suggested_gammes.map((g) => g.pg_id);
+    if (candidateIds.length) {
+      try {
+        cataloguePageIds =
+          await this.dataService.getGammeIdsWithCataloguePage(candidateIds);
+      } catch (error) {
+        this.logger.warn('Diagnostic catalogue check unavailable', error);
+        cataloguePageIds = null;
+        degraded.push(
+          'Orientation vers le catalogue indisponible : les familles de pièces ne peuvent pas être vérifiées.',
+        );
+      }
+    }
+    const catalog = this.catalogEngine.restrictToCataloguePages(
+      orientation,
+      cataloguePageIds,
+    );
     let maintenance: Awaited<
       ReturnType<MaintenanceIntelligenceEngine['assess']>
     > = {

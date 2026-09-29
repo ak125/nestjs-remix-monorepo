@@ -808,3 +808,27 @@ describe('session write acknowledgement reaches the diagnostic result', () => {
     );
   });
 });
+
+describe('catalogue family pages are read from the gamme level', () => {
+  test('only main gammes have their own page', async () => {
+    const f = fixture();
+    f.tables.pieces_gamme = { data: [{ pg_id: '402' }], error: null };
+    await expect(
+      f.service.getGammeIdsWithCataloguePage([402, 71]),
+    ).resolves.toEqual(new Set([402]));
+    expect(f.queries.at(-1)).toEqual({
+      table: 'pieces_gamme',
+      filters: [
+        ['pg_id', [402, 71]],
+        ['pg_level', ['1', '2']],
+      ],
+    });
+  });
+  test('a failed read is not an empty catalogue', async () => {
+    const f = fixture();
+    f.tables.pieces_gamme = { data: null, error: { message: 'down' } };
+    await expect(f.service.getGammeIdsWithCataloguePage([402])).rejects.toThrow(
+      /unavailable/,
+    );
+  });
+});
