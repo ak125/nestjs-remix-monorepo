@@ -66,22 +66,54 @@ describe('IntentClassifier V1A.0', () => {
     expect(result.reason_codes).toEqual(['DR_INTENT_SAFETY_URGENCY_IMMINENT']);
   });
 
-  test('garage: multi-system + catalog closed', () => {
+  test('several parts of one system + catalog closed → low confidence, not garage', () => {
     const result = svc.classify(
       mkPack({
-        system_suspects: ['plaquette-de-frein', 'disque-de-frein', 'etrier'],
+        system_suspects: ['butee-d-embrayage', 'volant-moteur'],
         catalog_guard: {
           ready_for_catalog: false,
           confidence_before_purchase: 'low',
-          allowed_output_mode: 'none',
-          reason: 'multi-system',
+          allowed_output_mode: 'catalog_family_only',
+          reason: 'low conf',
         },
       }),
       true,
     );
-    expect(result.value).toBe('garage');
-    expect(result.reason_codes).toContain('DR_INTENT_REPAIR_DIFFICULTY_HIGH');
+    expect(result.value).toBe('education');
+    expect(result.reason_codes).toEqual([
+      'DR_INTENT_HYPOTHESIS_CONFIDENCE_LOW',
+    ]);
   });
+
+  test.each([0, 1, 2, 3, 4])(
+    'no garage intent nor repair-difficulty code from %i suspects',
+    (n) => {
+      const system_suspects = ['a', 'b', 'c', 'd'].slice(0, n);
+      for (const risk_level of ['moderate', 'low'] as const)
+        for (const allowed_output_mode of [
+          'none',
+          'catalog_family_only',
+        ] as const) {
+          const result = svc.classify(
+            mkPack({
+              system_suspects,
+              risk_level,
+              catalog_guard: {
+                ready_for_catalog: false,
+                confidence_before_purchase: 'low',
+                allowed_output_mode,
+                reason: 'closed',
+              },
+            }),
+            true,
+          );
+          expect(result.value).not.toBe('garage');
+          expect(result.reason_codes).not.toContain(
+            'DR_INTENT_REPAIR_DIFFICULTY_HIGH',
+          );
+        }
+    },
+  );
 
   test('maintenance: maintenance_links present', () => {
     const result = svc.classify(
