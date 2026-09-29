@@ -21,7 +21,7 @@
     "dynamic_rpc_callsites": 1,
     "unresolved_callsites": 0,
     "dropped_call_sites": 5,
-    "migrations_scanned": 359,
+    "migrations_scanned": 361,
     "backend_files_scanned": 1422
   },
   "tables": {
@@ -4262,7 +4262,9 @@
       "called_by": [],
       "called_by_count": 0,
       "defined_in_migrations": [
-        "20260427_gamme_page_cache_build_fn.sql"
+        "20260427_gamme_page_cache_build_fn.sql",
+        "20260929_r1_gamme_page_cached_pure_read.down.sql",
+        "20260929_r1_gamme_page_cached_pure_read.sql"
       ],
       "is_trigger_function": false
     },
@@ -8344,7 +8346,9 @@
         "no-rpc-callsite"
       ],
       "defined_in_migrations": [
-        "20260427_gamme_page_cache_build_fn.sql"
+        "20260427_gamme_page_cache_build_fn.sql",
+        "20260929_r1_gamme_page_cached_pure_read.down.sql",
+        "20260929_r1_gamme_page_cached_pure_read.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
