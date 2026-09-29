@@ -369,11 +369,6 @@ export class DiagnosticEngineOrchestrator {
               allowed_claims: [
                 'Comparez ces estimations au carnet constructeur et aux justificatifs d’entretien.',
               ],
-              forbidden_claims_runtime: [
-                'Véhicule sans risque.',
-                'Remplacement nécessaire.',
-                'Préconisation constructeur vérifiée.',
-              ],
               ui_block_inputs: {},
             },
           },
@@ -496,12 +491,6 @@ export class DiagnosticEngineOrchestrator {
       'Un contrôle visuel est recommandé pour confirmer le diagnostic.',
       'Plusieurs causes sont possibles — seul un contrôle permet de conclure.',
     ];
-    const forbiddenClaims = [
-      'Vos plaquettes sont usées.',
-      'Il faut changer les disques.',
-      'Le problème vient certainement de X.',
-      'Achetez des plaquettes maintenant.',
-    ];
 
     // ── Diagnostic confidence score ─────────────────────
     const signalQualityMultiplier =
@@ -552,7 +541,6 @@ export class DiagnosticEngineOrchestrator {
         maintenance_recommendations: maintenance.recommendations,
         preventive_schedule: maintenance.preventive_schedule,
         allowed_claims: allowedClaims,
-        forbidden_claims_runtime: forbiddenClaims,
         ui_block_inputs: {
           VehicleContextCard: input.vehicle_context,
           SignalSummary: {
