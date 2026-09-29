@@ -490,3 +490,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/db-definer-authenticated-lockdown`
 - **Décision** : docs(log): consigner la fermeture DEFINER authenticated (+2 other commits)
 - **Sortie** : PR #1606 | commits fed13193f a167474a0 627496f3a
+
+## 2026-09-29 — fix/db-drop-exact-duplicate-indexes (auto)
+
+- **Branche** : `fix/db-drop-exact-duplicate-indexes`
+- **Décision** : fix(db): retirer 7 index strictement dupliqués que le planificateur n'utilise pas
+- **Sortie** : PR #1619 | commits 69b17b6d4
