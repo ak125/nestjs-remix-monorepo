@@ -3,12 +3,14 @@
 /**
  * Phase 0 — Contract Check
  *
- * Valide les 3 schemas Zod avec des exemples issus du RAG reel :
+ * Valide les 3 schemas Zod avec des fixtures historiques :
  * 1. AnalyzeDiagnosticInputSchema — 3 cas (freinage, demarrage, donnees manquantes)
  * 2. DiagnosticContractSchema — contrat freinage
  * 3. EvidencePackSchema — sortie freinage
  *
- * Sources RAG utilisees :
+ * Ces fixtures verifient la forme des contrats, pas la validite mecanique.
+ * Aucun corpus ni service RAG n'est lu a l'execution.
+ * Origine historique des exemples (pas une autorite de contenu runtime) :
  * - /opt/automecanik/rag/knowledge/diagnostic/bruits-freinage.md (probabilites, verifications)
  * - /opt/automecanik/rag/knowledge/diagnostic/demarrage-batterie.md (symptomes demarrage)
  * - /opt/automecanik/rag/knowledge/gammes/plaquette-de-frein.md (pg_id: 402)
@@ -298,29 +300,6 @@ validate('Evidence Pack freinage', EvidencePackSchema, {
       'Vos plaquettes sont usees.',
       'Il faut changer les disques.',
       'Achetez des plaquettes maintenant.',
-    ],
-    rag_facts: [
-      {
-        evidence_type: 'cause_support_evidence',
-        content:
-          'Plaquettes de frein usees : probabilite 70%, verification temoin usure, epaisseur < 3mm',
-        source_file: 'diagnostic/bruits-freinage.md',
-        truth_level: 'L2',
-      },
-      {
-        evidence_type: 'verification_support_evidence',
-        content:
-          'Controle visuel : verifier epaisseur des plaquettes (minimum 3mm)',
-        source_file: 'diagnostic/bruits-freinage.md',
-        truth_level: 'L2',
-      },
-      {
-        evidence_type: 'weak_point_evidence',
-        content:
-          'Bruit + vibration oriente vers usure disque/plaquette, voile disque, ou montage non conforme',
-        source_file: 'canonical/freinage__diagnostic-rapide.md',
-        truth_level: 'L4',
-      },
     ],
     ui_block_inputs: {
       VehicleContextCard: {

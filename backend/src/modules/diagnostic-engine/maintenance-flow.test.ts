@@ -44,7 +44,6 @@ function fixture() {
   const score = { score: jest.fn() };
   const risk = { assess: jest.fn() };
   const catalog = { evaluate: jest.fn() };
-  const rag = { enrich: jest.fn() };
   const shadow = { shadowCompare: jest.fn() };
   const engine = new DiagnosticEngineOrchestrator(
     data as never,
@@ -53,10 +52,9 @@ function fixture() {
     risk as never,
     catalog as never,
     new MaintenanceIntelligenceEngine(data as never),
-    rag as never,
     shadow as never,
   );
-  return { engine, data, signal, score, risk, catalog, rag, shadow };
+  return { engine, data, signal, score, risk, catalog, shadow };
 }
 describe('maintenance analysis without a symptom', () => {
   beforeEach(() => {
@@ -99,7 +97,6 @@ describe('maintenance analysis without a symptom', () => {
         f.score.score,
         f.risk.assess,
         f.catalog.evaluate,
-        f.rag.enrich,
         f.shadow.shadowCompare,
         f.data.saveSession,
       ])

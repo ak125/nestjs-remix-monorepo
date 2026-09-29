@@ -13,7 +13,6 @@ import { ResultDisclaimer } from "./ResultDisclaimer";
 import { ResultHypotheses } from "./ResultHypotheses";
 import { ResultMaintenance } from "./ResultMaintenance";
 import { ResultMissing } from "./ResultMissing";
-import { ResultRagFacts } from "./ResultRagFacts";
 import { ResultSafety } from "./ResultSafety";
 import { ResultSummary } from "./ResultSummary";
 // V1A.0 — Intent Resolution renderer (additif, conditionné par présence des champs)
@@ -157,12 +156,9 @@ export function DiagnosticResults({
         <ResultHypotheses hypotheses={ep.candidate_hypotheses} />
       )}
 
-      {/* Block 4: RAG documentation facts */}
-      {ep.rag_facts && ep.rag_facts.length > 0 && (
-        <ResultRagFacts facts={ep.rag_facts} />
-      )}
+      {/* ADR-031: historical rag_facts are not diagnostic evidence. */}
 
-      {/* Block 5: Maintenance */}
+      {/* Block 4: Maintenance */}
       {ep.maintenance_recommendations &&
         ep.maintenance_recommendations.length > 0 && (
           <ResultMaintenance
@@ -173,10 +169,10 @@ export function DiagnosticResults({
           />
         )}
 
-      {/* Block 6: Catalog orientation */}
+      {/* Block 5: Catalog orientation */}
       <ResultCatalog catalogGuard={ep.catalog_guard} />
 
-      {/* Block 7: Missing data */}
+      {/* Block 6: Missing data */}
       {ep.factual_inputs_missing.length > 0 && (
         <ResultMissing
           missing={ep.factual_inputs_missing}
@@ -185,7 +181,7 @@ export function DiagnosticResults({
         />
       )}
 
-      {/* Block 8: Disclaimer */}
+      {/* Block 7: Disclaimer */}
       <ResultDisclaimer claims={ep.allowed_claims} />
     </div>
   );
