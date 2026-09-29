@@ -368,3 +368,26 @@ entries:
     risk: "high"
     related_pr: [1165, 1166]
     drift_note: "Hourly leg live (succeeded '48 rows' @16:05, missing_complete_hours=0, daily_rum J-1). Daily cron first fire 00:15 UTC 2026-06-27. Bull v4 retired #1166; coverage detector @35 auto-resolves."
+  # ──────────────────────────────────────────────────────────────────────────
+  # DRAFTED — pg_cron rétention 90 j de __soft_404_events (ADR-076 accepted,
+  # « Rétention 90j »). Le runbook renvoyait à un cron `seo-routines` qui n'a
+  # jamais existé : aucune purge depuis 2026-05-19. Passe ACTIVE après apply +
+  # premier run 03:20 UTC prouvé (runtime_evidence trigger/output/consumer).
+  # ──────────────────────────────────────────────────────────────────────────
+  - automation_id: "soft-404-events-retention"
+    domain: "D3"
+    intended_mode: "ACTIVE"
+    actual_mode: "DRAFTED"
+    executor: "pg_cron"
+    evidence:
+      - path: "backend/supabase/migrations/20260929_soft_404_events_retention_cron.sql"
+        line: 73
+        excerpt: "PERFORM cron.schedule('soft-404-events-retention', '20 3 * * *', v_expected_command);"
+        note: "exact-match/fail-closed + provenance marker ; .down unschedules only this job ; first run deletes ~159k rows > 90 d (irreversible)"
+    last_verified_at: "2026-09-29"
+    last_verified_by: "@ak125"
+    last_verified_method: "manual-inspection"
+    missing_step: "merge PR #1620 + apply (only_ids) + prove first 03:20 UTC run: job_run_details succeeded 'DELETE n' and 0 rows older than 90 d"
+    risk: "medium"
+    related_pr: [1620]
+    owner_action: "review + merge #1620, then apply-supabase-migrations dry-run → APPLY"
