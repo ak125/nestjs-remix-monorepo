@@ -484,3 +484,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Décision** : les 72 RPC SECURITY DEFINER exécutables par authenticated seul sont révoquées par migration forward répétée en transaction annulée (0 restante), et les extensions ops passent par une PR séparée ; application par workflow après fusion owner.
 - **Sortie** : PRs #1606 #1604 | commits 627496f3a a167474a0 | fichiers `backend/supabase/migrations/20260929_definer_rpc_authenticated_lockdown.sql`
 
+
+## 2026-09-29 — fix/db-definer-authenticated-lockdown (auto)
+
+- **Branche** : `fix/db-definer-authenticated-lockdown`
+- **Décision** : docs(log): consigner la fermeture DEFINER authenticated (+2 other commits)
+- **Sortie** : PR #1606 | commits fed13193f a167474a0 627496f3a
