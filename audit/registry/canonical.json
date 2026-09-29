@@ -31444,13 +31444,15 @@
         "backend/src/modules/diagnostic-engine/services/kg-shadow.service.ts",
         "backend/src/modules/seo-projection/seo-projection-feeder.service.ts",
         "backend/src/modules/seo-projection/seo-projection-feeder.test.ts",
+        "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
+        "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
         "backend/src/modules/vehicle-context/vehicle-context.middleware.test.ts",
         "backend/src/modules/vehicle-context/vehicle-context.middleware.ts",
         "backend/src/workers/processors/pipeline-chain.processor.ts"
       ],
       "imports": [],
       "kind": "service",
-      "loc": 513,
+      "loc": 517,
       "owner": "@ak125",
       "path": "backend/src/config/feature-flags.service.ts",
       "risk": "medium",
@@ -39133,7 +39135,7 @@
         "backend/src/modules/blog/services/r6-guide.service.ts"
       ],
       "kind": "controller",
-      "loc": 83,
+      "loc": 105,
       "owner": "@ak125/content-team",
       "path": "backend/src/modules/blog/controllers/r6-guide.controller.ts",
       "risk": "medium",
@@ -39869,7 +39871,7 @@
         "backend/src/modules/blog/services/r6-guide.service.ts"
       ],
       "kind": "test",
-      "loc": 82,
+      "loc": 173,
       "owner": "@ak125/content-team",
       "path": "backend/src/modules/blog/services/r6-guide.service.redirect.test.ts",
       "risk": "medium",
@@ -39902,7 +39904,7 @@
         "backend/src/modules/seo/seo-v4.types.ts"
       ],
       "kind": "service",
-      "loc": 677,
+      "loc": 735,
       "owner": "@ak125/content-team",
       "path": "backend/src/modules/blog/services/r6-guide.service.ts",
       "risk": "medium",
@@ -59535,7 +59537,8 @@
       "id": "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
       "importedBy": [
         "backend/src/modules/seo/seo.module.ts",
-        "backend/src/modules/seo/services/sitemap-v10-hubs.service.ts"
+        "backend/src/modules/seo/services/sitemap-v10-hubs.service.ts",
+        "backend/src/modules/seo/services/sitemap-v10-r6-retirement.test.ts"
       ],
       "imports": [
         "@common/exceptions",
@@ -59543,13 +59546,15 @@
         "@security/rpc-gate/rpc-gate.service",
         "backend/src/common/utils/url-builder.utils.ts",
         "backend/src/config/app.config.ts",
+        "backend/src/config/feature-flags.service.ts",
         "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs.types.ts",
+        "backend/src/modules/seo/types/page-role.types.ts",
         "fs/promises",
         "path"
       ],
       "kind": "service",
-      "loc": 565,
+      "loc": 587,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
       "risk": "high",
@@ -59692,6 +59697,33 @@
         "manual"
       ],
       "domain": "D3",
+      "id": "backend/src/modules/seo/services/sitemap-v10-r6-retirement.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
+        "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
+        "backend/src/modules/seo/types/page-role.types.ts",
+        "fs/promises",
+        "os",
+        "path"
+      ],
+      "kind": "test",
+      "loc": 144,
+      "owner": "@ak125/seo-team",
+      "path": "backend/src/modules/seo/services/sitemap-v10-r6-retirement.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D3",
       "id": "backend/src/modules/seo/services/sitemap-v10-scheduler.heartbeat.test.ts",
       "importedBy": [],
       "imports": [
@@ -59772,19 +59804,22 @@
       "id": "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
       "importedBy": [
         "backend/src/modules/seo/seo.module.ts",
+        "backend/src/modules/seo/services/sitemap-v10-r6-retirement.test.ts",
         "backend/src/modules/seo/services/sitemap-v10.service.ts"
       ],
       "imports": [
         "@database/services/supabase-base.service",
         "@security/rpc-gate/rpc-gate.service",
+        "backend/src/config/feature-flags.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-data.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-xml.service.ts",
         "backend/src/modules/seo/services/sitemap-v10.types.ts",
+        "backend/src/modules/seo/types/page-role.types.ts",
         "fs/promises",
         "path"
       ],
       "kind": "service",
-      "loc": 517,
+      "loc": 542,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
       "risk": "high",
@@ -59925,6 +59960,9 @@
         "backend/src/modules/seo/internal-linking.service.ts",
         "backend/src/modules/seo/seo.module.ts",
         "backend/src/modules/seo/services/seo-pilotage.service.ts",
+        "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
+        "backend/src/modules/seo/services/sitemap-v10-r6-retirement.test.ts",
+        "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
         "backend/src/modules/seo/types/seo-kpis.types.ts",
         "backend/src/modules/seo/types/seo-pilotage.types.ts",
         "backend/src/modules/seo/validation/page-role-validator.service.ts"
@@ -59933,7 +59971,7 @@
         "backend/src/config/role-ids.ts"
       ],
       "kind": "config",
-      "loc": 453,
+      "loc": 471,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/types/page-role.types.ts",
       "risk": "high",
@@ -84807,7 +84845,7 @@
         "~/utils/seo/canonical"
       ],
       "kind": "route",
-      "loc": 1051,
+      "loc": 1065,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/blog-pieces-auto.guide-achat.$pg_alias.tsx",
       "risk": "medium",
@@ -84841,7 +84879,7 @@
         "~/utils/seo-clean.utils"
       ],
       "kind": "route",
-      "loc": 1726,
+      "loc": 1749,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/blog-pieces-auto.guide-achat._index.tsx",
       "risk": "medium",
@@ -101133,11 +101171,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "90094e86c0a9d55c1c0ca1db6a22078fa001179245b2ac8ea7d75743a69fb54b",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "d431fa4fd1f357300a9c046c8a360ca2cbbc4b9e3beb29453c6411125eb1ec8a",
+      "audit/registry/files.json": "e96bc41c9fc76ed4bbf3abf60f9d3db39accd24dd9906d97bd5ff44f5f92fbff",
       "audit/registry/rpc.json": "86d0c24b102036512a9f7b11d9ac04754288049a8b061981b19f0db0a8c86263",
-      "audit/registry/runtime.json": "6c2cc554a40338761fba9f55f6aef70339e95d10dec2f0b93ba5b0152c33f766"
+      "audit/registry/runtime.json": "794bd331e234789309ce7463a2c68f371feb22c2e408fad9849a5d1f32a03b24"
     },
-    "sotFingerprint": "435d30e78ad5"
+    "sotFingerprint": "71456d55f9f7"
   },
   "runtime": [
     {
@@ -108355,7 +108393,9 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [],
+      "dependsOn": [
+        "runtime:backend/src/config/feature-flags.service.ts"
+      ],
       "id": "runtime:backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
@@ -108417,6 +108457,7 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/config/feature-flags.service.ts",
         "runtime:backend/src/modules/seo/services/sitemap-v10-data.service.ts",
         "runtime:backend/src/modules/seo/services/sitemap-v10-xml.service.ts"
       ],
