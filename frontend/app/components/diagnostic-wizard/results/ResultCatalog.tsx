@@ -6,7 +6,8 @@
 import { ShoppingCart, ExternalLink, ShieldCheck, ShieldX } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { buildGammeUrl } from "~/utils/url-builder.utils";
+import { emitFunnel, getFunnelSessionId } from "~/utils/funnel-beacon";
+import { buildGammeUrl, normalizeAlias } from "~/utils/url-builder.utils";
 import { type EvidencePack } from "../types";
 
 interface Props {
@@ -32,14 +33,18 @@ const CONFIDENCE_LABELS: Record<string, { label: string; color: string }> = {
   },
 };
 
+export function hasSuggestedGammes(guard: EvidencePack["catalog_guard"]) {
+  return (
+    guard.allowed_output_mode !== "none" && guard.suggested_gammes.length > 0
+  );
+}
+
 export function ResultCatalog({ catalogGuard }: Props) {
   const confidence =
     CONFIDENCE_LABELS[catalogGuard.confidence_before_purchase] ||
     CONFIDENCE_LABELS.low;
 
-  const hasGammes =
-    catalogGuard.allowed_output_mode !== "none" &&
-    catalogGuard.suggested_gammes.length > 0;
+  const hasGammes = hasSuggestedGammes(catalogGuard);
 
   return (
     <Card>
@@ -88,6 +93,19 @@ export function ResultCatalog({ catalogGuard }: Props) {
                   <Tag
                     key={g.gamme_slug}
                     href={href}
+                    onClick={
+                      href
+                        ? () =>
+                            emitFunnel({
+                              event_type: "diag_gamme_cta_click",
+                              payload: {
+                                session_id: getFunnelSessionId(),
+                                gamme_slug: normalizeAlias(g.gamme_slug),
+                                confidence: g.confidence,
+                              },
+                            })
+                        : undefined
+                    }
                     className="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50/30 transition-colors group min-h-[48px]"
                   >
                     <div className="flex items-center gap-3 flex-wrap">
