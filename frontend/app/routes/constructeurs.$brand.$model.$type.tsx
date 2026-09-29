@@ -496,51 +496,30 @@ export default function VehicleDetailPage() {
     vehicle.marque_alias,
   );
 
-  // R8 FAQ: parse dedicated_faq block ("**q**\na\n\n**q**\na" format)
+  // Le producteur R8 fournit une introduction puis des paires "**question**\nréponse".
+  // Une introduction ou une FAQ absente ne doit pas créer de contenu de secours.
   const r8FaqBlock = r8Content?.blocks.find((b) => b.type === "dedicated_faq");
   const r8FaqParsed: Array<{ question: string; answer: string }> = [];
   if (r8FaqBlock?.renderedText) {
-    for (const pair of r8FaqBlock.renderedText.split("\n\n").filter(Boolean)) {
-      const lines = pair.split("\n");
-      const q = (lines[0] || "").replace(/^\*\*|\*\*$/g, "").trim();
-      const a = lines.slice(1).join(" ").trim();
-      if (q && a) r8FaqParsed.push({ question: q, answer: a });
+    const paragraphs = r8FaqBlock.renderedText
+      .replace(/\r\n/g, "\n")
+      .split(/\n\s*\n/);
+    for (const pair of paragraphs) {
+      const lines = pair.trim().split("\n");
+      const question = lines[0]
+        ?.trim()
+        .match(/^\*\*(.+?)\*\*$/)?.[1]
+        .trim();
+      const answer = lines
+        .slice(1)
+        .map((line) => line.trim())
+        .join(" ")
+        .trim();
+      if (question && answer) r8FaqParsed.push({ question, answer });
     }
   }
 
-  // FAQ: use R8 dedicated FAQ if >= 2 items, else fallback to template
-  const defaultFaqItems = [
-    {
-      question: `Quelles pièces sont compatibles avec ma ${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name} ?`,
-      answer: `Toutes les pièces proposées sur cette page sont 100% compatibles avec votre ${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name} ${vehicle.type_power_ps} ch. Nous vérifions systématiquement la compatibilité avec les références constructeur.`,
-    },
-    {
-      question: `Comment être sûr que la pièce correspond à mon ${vehicle.modele_name} ?`,
-      answer: `Chaque pièce affichée est filtrée selon les caractéristiques exactes de votre véhicule : motorisation ${vehicle.type_name}, puissance ${vehicle.type_power_ps} ch, années ${vehicle.type_year_from}-${vehicle.type_year_to || "aujourd'hui"}. En cas de doute, notre service client peut vérifier la compatibilité avec votre numéro de châssis.`,
-    },
-    {
-      question: `Quel est le délai de livraison pour les pièces ${vehicle.marque_name} ?`,
-      answer: `La majorité des pièces pour ${vehicle.marque_name} ${vehicle.modele_name} sont expédiées sous 24-48h. Les pièces en stock sont livrées en 2-4 jours ouvrés. Pour les pièces sur commande, comptez 5-7 jours ouvrés.`,
-    },
-    {
-      question: `Les pièces sont-elles garanties ?`,
-      answer: `Oui, toutes nos pièces bénéficient d'une garantie de 1 an. Les pièces d'origine constructeur ${vehicle.marque_name} et les équipementiers premium (Bosch, Valeo, TRW...) sont garanties selon les conditions du fabricant.`,
-    },
-    {
-      question: `Puis-je retourner une pièce si elle ne convient pas ?`,
-      answer: `Absolument. Vous disposez de 30 jours pour retourner toute pièce non montée et dans son emballage d'origine. Le remboursement est effectué sous 5 jours ouvrés après réception.`,
-    },
-  ];
-
-  // Add carte grise FAQ to defaults if CNIT/mine codes exist
-  if (vehicle.mine_codes_formatted || vehicle.cnit_codes_formatted) {
-    defaultFaqItems.push({
-      question: `Comment trouver le type mine ou CNIT sur ma carte grise ?`,
-      answer: `Le type mine se trouve en case D.2 de votre carte grise (format ancien : lettres+chiffres). Le CNIT (Code National d'Identification du Type) est le format actuel. Pour votre ${vehicle.marque_name} ${vehicle.modele_name}, les codes connus sont : ${[vehicle.mine_codes_formatted, vehicle.cnit_codes_formatted].filter(Boolean).join(", ")}. Utilisez ces codes pour confirmer la compatibilité des pièces.`,
-    });
-  }
-
-  const faqItems = r8FaqParsed.length >= 2 ? r8FaqParsed : defaultFaqItems;
+  const faqItems = r8FaqParsed.length >= 2 ? r8FaqParsed : [];
 
   return (
     <div
@@ -1081,29 +1060,20 @@ export default function VehicleDetailPage() {
                       </td>
                     </tr>
                   )}
-                  {(vehicle.mine_codes_formatted ||
-                    vehicle.cnit_codes_formatted) && (
+                  {vehicle.cnit_codes_formatted && (
                     <tr>
                       <td className="py-3 pr-4 font-medium text-gray-500">
-                        Type mine / CNIT
+                        Références d’identification
                       </td>
                       <td className="py-3 font-semibold text-gray-900 flex items-center gap-2">
                         <span className="truncate max-w-[200px]">
-                          {vehicle.mine_codes_formatted}
-                          {vehicle.mine_codes_formatted &&
-                            vehicle.cnit_codes_formatted &&
-                            " / "}
                           {vehicle.cnit_codes_formatted}
                         </span>
                         <button
                           onClick={() => {
-                            const text = [
-                              vehicle.mine_codes_formatted,
-                              vehicle.cnit_codes_formatted,
-                            ]
-                              .filter(Boolean)
-                              .join(" / ");
-                            navigator.clipboard.writeText(text);
+                            navigator.clipboard.writeText(
+                              vehicle.cnit_codes_formatted ?? "",
+                            );
                           }}
                           className="p-1 hover:bg-gray-100 rounded transition-colors"
                           title="Copier"
@@ -1142,76 +1112,79 @@ export default function VehicleDetailPage() {
 
         <HowtoSection vehicle={vehicle} />
 
-        {/* ❓ FAQ dynamique avec Schema.org */}
-        <div className="mb-12" data-section="S_FAQ">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-            <div className="p-6 border-b border-gray-100">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-brand">
-                  <HeadphonesIcon size={24} className="text-white" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900">
-                    Questions fréquentes
-                  </h2>
-                  <p className="text-gray-500 text-sm">
-                    Tout savoir sur les pièces pour votre {vehicle.modele_name}
-                  </p>
+        {/* FAQ éditoriale : même contenu visible et structuré, sans fallback. */}
+        {faqItems.length > 0 && (
+          <div className="mb-12" data-section="S_FAQ">
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+              <div className="p-6 border-b border-gray-100">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-brand">
+                    <HeadphonesIcon size={24} className="text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">
+                      Questions fréquentes
+                    </h2>
+                    <p className="text-gray-500 text-sm">
+                      Tout savoir sur les pièces pour votre{" "}
+                      {vehicle.modele_name}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* FAQ Schema.org JSON-LD */}
-            <script
-              type="application/ld+json"
-              dangerouslySetInnerHTML={{
-                __html: JSON.stringify({
-                  "@context": "https://schema.org",
-                  "@type": "FAQPage",
-                  mainEntity: faqItems.map((item) => ({
-                    "@type": "Question",
-                    name: item.question,
-                    acceptedAnswer: {
-                      "@type": "Answer",
-                      text: item.answer,
-                    },
-                  })),
-                }),
-              }}
-            />
+              {/* FAQ Schema.org JSON-LD */}
+              <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                  __html: JSON.stringify({
+                    "@context": "https://schema.org",
+                    "@type": "FAQPage",
+                    mainEntity: faqItems.map((item) => ({
+                      "@type": "Question",
+                      name: item.question,
+                      acceptedAnswer: {
+                        "@type": "Answer",
+                        text: item.answer,
+                      },
+                    })),
+                  }),
+                }}
+              />
 
-            <div className="divide-y divide-gray-100">
-              {faqItems.map((item, index) => (
-                <div key={index} className="group">
-                  <button
-                    onClick={() =>
-                      setOpenFaqIndex(openFaqIndex === index ? null : index)
-                    }
-                    className="w-full flex items-center justify-between p-5 text-left hover:bg-gray-50 transition-colors"
-                  >
-                    <span className="font-medium text-gray-900 pr-4">
-                      {item.question}
-                    </span>
-                    <div
-                      className={`shrink-0 p-1 rounded-full ${openFaqIndex === index ? "bg-brand" : "bg-gray-200"}`}
+              <div className="divide-y divide-gray-100">
+                {faqItems.map((item, index) => (
+                  <div key={index} className="group">
+                    <button
+                      onClick={() =>
+                        setOpenFaqIndex(openFaqIndex === index ? null : index)
+                      }
+                      className="w-full flex items-center justify-between p-5 text-left hover:bg-gray-50 transition-colors"
                     >
-                      {openFaqIndex === index ? (
-                        <ChevronUp size={18} className="text-white" />
-                      ) : (
-                        <ChevronDown size={18} className="text-gray-500" />
-                      )}
-                    </div>
-                  </button>
-                  {openFaqIndex === index && (
-                    <div className="px-5 pb-5 text-gray-600 animate-in slide-in-from-top-2 duration-200">
-                      <div className="pl-4 border-brand">{item.answer}</div>
-                    </div>
-                  )}
-                </div>
-              ))}
+                      <span className="font-medium text-gray-900 pr-4">
+                        {item.question}
+                      </span>
+                      <div
+                        className={`shrink-0 p-1 rounded-full ${openFaqIndex === index ? "bg-brand" : "bg-gray-200"}`}
+                      >
+                        {openFaqIndex === index ? (
+                          <ChevronUp size={18} className="text-white" />
+                        ) : (
+                          <ChevronDown size={18} className="text-gray-500" />
+                        )}
+                      </div>
+                    </button>
+                    {openFaqIndex === index && (
+                      <div className="px-5 pb-5 text-gray-600 animate-in slide-in-from-top-2 duration-200">
+                        <div className="pl-4 border-brand">{item.answer}</div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* 📚 Contenu V1 - Guide encyclopédique du modèle (APRÈS catalogue et FAQ) */}
         {modelContentV1 && (

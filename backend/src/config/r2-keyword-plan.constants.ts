@@ -183,7 +183,7 @@ export const R2_SECTION_CONFIG: Record<R2SectionId, R2SectionDef> = {
     required: true,
     keyword_targeted: true,
     seo_priority: 'critique',
-    page_component: 'PiecesFAQ (generateFAQ)',
+    page_component: 'PiecesFAQ',
   },
   S_COMPAT: {
     label: 'Compatibilite vehicule',

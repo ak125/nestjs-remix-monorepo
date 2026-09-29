@@ -100,13 +100,6 @@ export interface MaintenanceRecommendation {
   related_pg_id?: number;
 }
 
-export interface RagFact {
-  evidence_type: string;
-  content: string;
-  source_file?: string;
-  truth_level?: "L1" | "L2" | "L3" | "L4";
-}
-
 export interface EvidencePack {
   analysis_kind?: "diagnostic" | "maintenance";
   factual_inputs_confirmed: string[];
@@ -125,7 +118,6 @@ export interface EvidencePack {
     suggested_gammes: SuggestedGamme[];
   };
   maintenance_recommendations?: MaintenanceRecommendation[];
-  rag_facts?: RagFact[];
   allowed_claims: string[];
   forbidden_claims_runtime: string[];
   signal_quality?: string;
