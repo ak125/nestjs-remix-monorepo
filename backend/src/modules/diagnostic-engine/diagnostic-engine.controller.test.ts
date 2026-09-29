@@ -1,9 +1,7 @@
 /**
  * PR-B.4 — Pure mapping coverage : analyze input → VehicleContext cookie
- * payload. Pure function tests live here rather than a controller-level
- * jest spec because importing the controller drags in transitive modules
- * (RagProxy, engines, content services) whose pre-existing TS errors break
- * ts-jest compilation.
+ * payload. These tests exercise the pure vehicle-context mapping;
+ * orchestration is covered by diagnostic-engine.orchestrator.test.ts.
  *
  * Controller behaviour (persist conditional on success, silent on port
  * throw) is covered by inspection — the controller body is now 5 lines.

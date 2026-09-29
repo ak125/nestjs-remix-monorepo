@@ -3180,7 +3180,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 510,
+      "loc": 511,
       "owner": "__unassigned__",
       "path": "backend/src/config/cache-ttl.config.ts",
       "risk": "low",
@@ -3332,9 +3332,34 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/config/content-write-gate.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/config/content-write-gate.service.ts",
+        "backend/src/config/role-ids.ts",
+        "backend/src/config/source-provenance.constants.ts"
+      ],
+      "kind": "test",
+      "loc": 92,
+      "owner": "__unassigned__",
+      "path": "backend/src/config/content-write-gate.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/config/content-write-gate.service.ts",
       "importedBy": [
+        "backend/src/config/content-write-gate.service.test.ts",
         "backend/src/config/write-guard.module.ts",
+        "backend/src/modules/admin/services/r2-enricher.service.test.ts",
         "backend/src/modules/admin/services/r2-enricher.service.ts",
         "backend/src/modules/admin/services/r4-content-enricher.service.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
@@ -3348,10 +3373,11 @@
         "backend/src/config/feature-flags.service.ts",
         "backend/src/config/field-catalog.constants.ts",
         "backend/src/config/role-ids.ts",
+        "backend/src/config/source-provenance.constants.ts",
         "backend/src/config/write-guard-cas.service.ts"
       ],
       "kind": "service",
-      "loc": 218,
+      "loc": 247,
       "owner": "__unassigned__",
       "path": "backend/src/config/content-write-gate.service.ts",
       "risk": "low",
@@ -3680,7 +3706,6 @@
         "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts",
         "backend/src/modules/admin/services/execution-router.service.ts",
         "backend/src/modules/admin/services/keyword-density-gate.service.ts",
-        "backend/src/modules/admin/services/r2-enricher.service.ts",
         "backend/src/modules/admin/services/r4-content-enricher.service.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
         "backend/src/modules/admin/services/rag-gamme-reader.service.ts",
@@ -4786,7 +4811,6 @@
         "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
         "backend/src/modules/admin/services/r2-enricher.service.ts",
         "backend/src/modules/admin/services/r4-content-enricher.service.ts",
-        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
         "backend/src/modules/admin/services/rag-gamme-reader.service.ts",
         "backend/src/modules/admin/services/vehicle-rag-generator.service.ts",
         "backend/src/modules/rag-proxy/rag-proxy.controller.ts",
@@ -4844,6 +4868,7 @@
         "backend/src/config/agent-frontmatter.schema.ts",
         "backend/src/config/content-section-policy.ts",
         "backend/src/config/content-write-executor.service.ts",
+        "backend/src/config/content-write-gate.service.test.ts",
         "backend/src/config/content-write-gate.service.ts",
         "backend/src/config/execution-plan-resolver.service.ts",
         "backend/src/config/execution-registry.constants.ts",
@@ -5032,7 +5057,10 @@
       "domain": "UNKNOWN",
       "id": "backend/src/config/source-provenance.constants.ts",
       "importedBy": [
+        "backend/src/config/content-write-gate.service.test.ts",
+        "backend/src/config/content-write-gate.service.ts",
         "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts",
+        "backend/src/modules/admin/services/r2-enricher.service.ts",
         "backend/src/modules/blog/utils/source-provenance.util.ts"
       ],
       "imports": [],
@@ -9088,23 +9116,46 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/admin/services/r2-enricher.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/config/content-write-gate.service.ts",
+        "backend/src/modules/admin/services/r2-enricher.service.ts"
+      ],
+      "kind": "test",
+      "loc": 84,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/admin/services/r2-enricher.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/admin/services/r2-enricher.service.ts",
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
-        "backend/src/modules/admin/services/execution-router.service.ts"
+        "backend/src/modules/admin/services/execution-router.service.ts",
+        "backend/src/modules/admin/services/r2-enricher.service.test.ts"
       ],
       "imports": [
         "@database/services/supabase-base.service",
         "backend/src/config/content-write-gate.service.ts",
         "backend/src/config/execution-registry.types.ts",
-        "backend/src/config/feature-flags.service.ts",
         "backend/src/config/rag.config.ts",
         "backend/src/config/role-ids.ts",
+        "backend/src/config/source-provenance.constants.ts",
         "fs",
         "path"
       ],
       "kind": "service",
-      "loc": 252,
+      "loc": 273,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/r2-enricher.service.ts",
       "risk": "low",
@@ -9301,11 +9352,12 @@
       "id": "backend/src/modules/admin/services/r8-owned-editorial.composer.ts",
       "importedBy": [
         "backend/src/modules/admin/services/r8-owned-editorial.composer.test.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.test.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
       ],
       "imports": [],
       "kind": "service",
-      "loc": 373,
+      "loc": 458,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/r8-owned-editorial.composer.ts",
       "risk": "low",
@@ -9320,11 +9372,34 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/admin/services/r8-vehicle-enricher.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/admin/services/r8-owned-editorial.composer.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
+      ],
+      "kind": "test",
+      "loc": 369,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/admin/services/r8-vehicle-enricher.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
         "backend/src/modules/admin/controllers/admin-r8-vehicle.controller.ts",
         "backend/src/modules/admin/services/execution-router.service.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.test.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.tech-specs.test.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.write-gate.test.ts"
       ],
@@ -9336,19 +9411,16 @@
         "backend/src/config/feature-flags.service.ts",
         "backend/src/config/page-contract-r8.schema.ts",
         "backend/src/config/r8-keyword-plan.constants.ts",
-        "backend/src/config/rag.config.ts",
         "backend/src/config/role-ids.ts",
         "backend/src/config/seo-variations.config.ts",
         "backend/src/modules/admin/services/enricher-text-utils.service.ts",
         "backend/src/modules/admin/services/r8-owned-editorial.composer.ts",
         "backend/src/modules/seo/services/chain/seo-role-template-selector.service.ts",
         "backend/src/security/rpc-gate/rpc-gate.errors.ts",
-        "crypto",
-        "fs",
-        "path"
+        "crypto"
       ],
       "kind": "service",
-      "loc": 1525,
+      "loc": 1519,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
       "risk": "low",
@@ -14008,7 +14080,7 @@
         "backend/src/modules/diagnostic-engine/vehicle-context-mapping.ts"
       ],
       "kind": "test",
-      "loc": 146,
+      "loc": 144,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.test.ts",
       "risk": "low",
@@ -14067,6 +14139,7 @@
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-session-integrity.test.ts",
@@ -14109,7 +14182,6 @@
         "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
         "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
         "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
-        "backend/src/modules/diagnostic-engine/engines/rag-enrichment.engine.ts",
         "backend/src/modules/diagnostic-engine/engines/risk-safety.engine.ts",
         "backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
         "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
@@ -14121,11 +14193,10 @@
         "backend/src/modules/diagnostic-engine/services/kg-shadow.service.ts",
         "backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts",
         "backend/src/modules/diagnostic-engine/services/outcome-emitter.service.ts",
-        "backend/src/modules/rag-proxy/rag-proxy.module.ts",
         "backend/src/modules/vehicle-context/vehicle-context.module.ts"
       ],
       "kind": "service",
-      "loc": 84,
+      "loc": 79,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
       "risk": "low",
@@ -14140,10 +14211,40 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
+        "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
+        "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
+        "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
+        "backend/src/modules/diagnostic-engine/engines/risk-safety.engine.ts",
+        "backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
+        "backend/src/modules/diagnostic-engine/services/kg-shadow.service.ts",
+        "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
+      ],
+      "kind": "test",
+      "loc": 169,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/maintenance-flow.test.ts"
@@ -14153,7 +14254,6 @@
         "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
         "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
         "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
-        "backend/src/modules/diagnostic-engine/engines/rag-enrichment.engine.ts",
         "backend/src/modules/diagnostic-engine/engines/risk-safety.engine.ts",
         "backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
         "backend/src/modules/diagnostic-engine/services/kg-shadow.service.ts",
@@ -14161,7 +14261,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "service",
-      "loc": 607,
+      "loc": 586,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
       "risk": "low",
@@ -14190,7 +14290,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "test",
-      "loc": 435,
+      "loc": 431,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
       "risk": "low",
@@ -14241,7 +14341,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "test",
-      "loc": 812,
+      "loc": 811,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts",
       "risk": "low",
@@ -14259,6 +14359,7 @@
       "id": "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts"
@@ -14288,6 +14389,7 @@
       "id": "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts",
@@ -14341,6 +14443,7 @@
       "id": "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
         "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.test.ts",
         "backend/src/modules/diagnostic-engine/maintenance-flow.test.ts"
@@ -14365,34 +14468,10 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
-      "id": "backend/src/modules/diagnostic-engine/engines/rag-enrichment.engine.ts",
-      "importedBy": [
-        "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
-        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts"
-      ],
-      "imports": [
-        "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts",
-        "backend/src/modules/rag-proxy/rag-proxy.service.ts"
-      ],
-      "kind": "service",
-      "loc": 238,
-      "owner": "__unassigned__",
-      "path": "backend/src/modules/diagnostic-engine/engines/rag-enrichment.engine.ts",
-      "risk": "low",
-      "runtime": true,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise"
-      ],
-      "domain": "UNKNOWN",
       "id": "backend/src/modules/diagnostic-engine/engines/risk-safety.engine.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts",
@@ -14421,6 +14500,7 @@
       "id": "backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts"
       ],
@@ -14476,7 +14556,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "test",
-      "loc": 271,
+      "loc": 268,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/maintenance-flow.test.ts",
       "risk": "low",
@@ -14884,6 +14964,7 @@
       "id": "backend/src/modules/diagnostic-engine/services/kg-shadow.service.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
         "backend/src/modules/diagnostic-engine/services/kg-shadow.service.test.ts"
       ],
@@ -15173,11 +15254,11 @@
       "id": "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
-        "backend/src/modules/diagnostic-engine/engines/rag-enrichment.engine.ts",
         "backend/src/modules/diagnostic-engine/maintenance-flow.test.ts",
         "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
         "backend/src/modules/diagnostic-engine/services/action-recommender.test.ts",
@@ -15189,7 +15270,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 187,
+      "loc": 161,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts",
       "risk": "low",
@@ -15285,7 +15366,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "service",
-      "loc": 496,
+      "loc": 475,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/validate-phase0.ts",
       "risk": "low",
@@ -22082,7 +22163,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 77,
+      "loc": 86,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rag-proxy/dto/search.dto.ts",
       "risk": "low",
@@ -22187,7 +22268,6 @@
       "importedBy": [
         "backend/src/app.module.ts",
         "backend/src/modules/admin/admin.module.ts",
-        "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
         "backend/src/workers/worker.module.ts"
       ],
       "imports": [
@@ -22234,7 +22314,6 @@
       "id": "backend/src/modules/rag-proxy/rag-proxy.service.ts",
       "importedBy": [
         "backend/src/modules/admin/services/buying-guide/buying-guide-rag-fetcher.service.ts",
-        "backend/src/modules/diagnostic-engine/engines/rag-enrichment.engine.ts",
         "backend/src/modules/rag-proxy/rag-proxy.controller.ts",
         "backend/src/modules/rag-proxy/rag-proxy.module.ts",
         "backend/src/modules/rag-proxy/services/rag-redis-job.service.ts",
@@ -23035,7 +23114,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "controller",
-      "loc": 410,
+      "loc": 405,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/controllers/rm.controller.ts",
       "risk": "low",
@@ -23111,7 +23190,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 305,
+      "loc": 361,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/services/__tests__/rm-alternatives.service.test.ts",
       "risk": "low",
@@ -23130,7 +23209,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 274,
+      "loc": 313,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/services/__tests__/rm-builder-page-v2-cache.test.ts",
       "risk": "low",
@@ -23149,7 +23228,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 133,
+      "loc": 267,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/services/__tests__/rm-builder-seo-legacy-markers.test.ts",
       "risk": "low",
@@ -23225,7 +23304,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 197,
+      "loc": 213,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/services/rm-alternatives.service.ts",
       "risk": "low",
@@ -23244,7 +23323,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 998,
+      "loc": 996,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/services/rm-builder.service.ts",
       "risk": "low",
@@ -36358,7 +36437,7 @@
         "@security/rpc-gate/rpc-gate.service"
       ],
       "kind": "service",
-      "loc": 367,
+      "loc": 368,
       "owner": "__unassigned__",
       "path": "backend/src/modules/vehicles/services/vehicle-rpc.service.ts",
       "risk": "low",
@@ -38443,9 +38522,28 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 439,
+      "loc": 441,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/rag-proxy.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/rag-search-provenance.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 45,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/rag-search-provenance.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -39412,7 +39510,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 326,
+      "loc": 459,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/vehicle-rpc.service.test.ts",
       "risk": "low",
@@ -42937,14 +43035,13 @@
         "frontend/app/components/diagnostic-wizard/results/ResultHypotheses.tsx",
         "frontend/app/components/diagnostic-wizard/results/ResultMaintenance.tsx",
         "frontend/app/components/diagnostic-wizard/results/ResultMissing.tsx",
-        "frontend/app/components/diagnostic-wizard/results/ResultRagFacts.tsx",
         "frontend/app/components/diagnostic-wizard/results/ResultSafety.tsx",
         "frontend/app/components/diagnostic-wizard/results/ResultSummary.tsx",
         "frontend/app/components/diagnostic-wizard/types.ts",
         "~/components/ui/button"
       ],
       "kind": "config",
-      "loc": 193,
+      "loc": 189,
       "owner": "__unassigned__",
       "path": "frontend/app/components/diagnostic-wizard/results/DiagnosticResults.tsx",
       "risk": "low",
@@ -43156,30 +43253,6 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
-      "id": "frontend/app/components/diagnostic-wizard/results/ResultRagFacts.tsx",
-      "importedBy": [
-        "frontend/app/components/diagnostic-wizard/results/DiagnosticResults.tsx"
-      ],
-      "imports": [
-        "~/components/ui/badge",
-        "~/components/ui/card"
-      ],
-      "kind": "config",
-      "loc": 128,
-      "owner": "__unassigned__",
-      "path": "frontend/app/components/diagnostic-wizard/results/ResultRagFacts.tsx",
-      "risk": "low",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise"
-      ],
-      "domain": "UNKNOWN",
       "id": "frontend/app/components/diagnostic-wizard/results/ResultSafety.tsx",
       "importedBy": [
         "frontend/app/components/diagnostic-wizard/results/DiagnosticResults.tsx"
@@ -43373,7 +43446,7 @@
         "frontend/app/components/diagnostic-wizard/steps/StepMaintenance.tsx"
       ],
       "kind": "config",
-      "loc": 154,
+      "loc": 146,
       "owner": "__unassigned__",
       "path": "frontend/app/components/diagnostic-wizard/types.ts",
       "risk": "low",
@@ -46578,7 +46651,7 @@
         "frontend/app/types/pieces-route.types.ts"
       ],
       "kind": "config",
-      "loc": 257,
+      "loc": 263,
       "owner": "__unassigned__",
       "path": "frontend/app/components/pieces/PiecesBuyingGuide.tsx",
       "risk": "low",
@@ -46645,7 +46718,7 @@
         "~/components/ui/alert"
       ],
       "kind": "config",
-      "loc": 266,
+      "loc": 263,
       "owner": "__unassigned__",
       "path": "frontend/app/components/pieces/PiecesCompatibilityInfo.tsx",
       "risk": "low",
@@ -47036,7 +47109,7 @@
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 617,
+      "loc": 619,
       "owner": "__unassigned__",
       "path": "frontend/app/components/pieces/PiecesVehicleContent.tsx",
       "risk": "low",
@@ -49822,7 +49895,7 @@
         "frontend/app/utils/url-builder.utils.ts"
       ],
       "kind": "config",
-      "loc": 253,
+      "loc": 254,
       "owner": "__unassigned__",
       "path": "frontend/app/components/vehicle/r8/r8-transform.ts",
       "risk": "low",
@@ -49854,7 +49927,7 @@
         "frontend/app/components/model/index.ts"
       ],
       "kind": "config",
-      "loc": 132,
+      "loc": 131,
       "owner": "__unassigned__",
       "path": "frontend/app/components/vehicle/r8/r8.types.ts",
       "risk": "low",
@@ -56078,7 +56151,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 1353,
+      "loc": 1326,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/constructeurs.$brand.$model.$type.tsx",
       "risk": "low",
@@ -58055,9 +58128,11 @@
       "domain": "UNKNOWN",
       "id": "frontend/app/services/api/rm-api.service.ts",
       "importedBy": [],
-      "imports": [],
+      "imports": [
+        "frontend/app/services/common/errors.ts"
+      ],
       "kind": "service",
-      "loc": 282,
+      "loc": 289,
       "owner": "__unassigned__",
       "path": "frontend/app/services/api/rm-api.service.ts",
       "risk": "low",
@@ -58197,7 +58272,8 @@
       "domain": "UNKNOWN",
       "id": "frontend/app/services/common/errors.ts",
       "importedBy": [
-        "frontend/app/services/api/config.api.ts"
+        "frontend/app/services/api/config.api.ts",
+        "frontend/app/services/api/rm-api.service.ts"
       ],
       "imports": [],
       "kind": "config",
@@ -58712,7 +58788,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 235,
+      "loc": 234,
       "owner": "__unassigned__",
       "path": "frontend/app/types/pieces-route.types.ts",
       "risk": "low",
@@ -58983,7 +59059,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 56,
+      "loc": 58,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/cache-control.ts",
       "risk": "low",
@@ -59688,7 +59764,7 @@
         "frontend/app/utils/pieces-route.utils.ts"
       ],
       "kind": "service",
-      "loc": 198,
+      "loc": 197,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/pieces-loader.utils.ts",
       "risk": "low",
@@ -59717,7 +59793,7 @@
         "~/utils/logger"
       ],
       "kind": "service",
-      "loc": 558,
+      "loc": 505,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/pieces-route.utils.ts",
       "risk": "low",
@@ -59739,6 +59815,7 @@
         "~/components/pieces/NoProductsAlternatives",
         "~/components/pieces/PiecesFilterSidebar",
         "~/services/api/rm-api.service",
+        "~/services/common/errors",
         "~/services/pieces/pieces-route.service",
         "~/utils/fetch.utils",
         "~/utils/internal-api.server",
@@ -59752,7 +59829,7 @@
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 634,
+      "loc": 708,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/pieces-vehicle.loader.server.ts",
       "risk": "low",
@@ -60020,7 +60097,7 @@
         "~/utils/image-optimizer"
       ],
       "kind": "service",
-      "loc": 316,
+      "loc": 317,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/rm-mapper.ts",
       "risk": "low",
@@ -61055,7 +61132,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 115,
+      "loc": 126,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/cache-control.test.ts",
       "risk": "low",
@@ -61507,6 +61584,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/diagnostic-results-content-authority.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 62,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/diagnostic-results-content-authority.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/tests/unit/diagnostic-selection-freshness.test.tsx",
       "importedBy": [],
       "imports": [],
@@ -61906,6 +62002,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/pieces-buying-guide.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 29,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/pieces-buying-guide.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/tests/unit/pieces-can-sell-render.test.tsx",
       "importedBy": [],
       "imports": [],
@@ -61913,6 +62028,25 @@
       "loc": 72,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/pieces-can-sell-render.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/pieces-compatibility-info-no-country-code.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 269,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/pieces-compatibility-info-no-country-code.test.tsx",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -62115,6 +62249,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/pieces-vehicle-loader-canonical-redirect.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 697,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/pieces-vehicle-loader-canonical-redirect.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/tests/unit/pieces-vehicle-meta.test.ts",
       "importedBy": [],
       "imports": [],
@@ -62255,6 +62408,25 @@
       "loc": 96,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/r8-hero-h1-parity.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/r8-mine-codes-country-not-rendered.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 351,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/r8-mine-codes-country-not-rendered.test.tsx",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -66850,7 +67022,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 133,
+      "loc": 137,
       "owner": "__unassigned__",
       "path": "scripts/audit/check-rag-authority-read-ratchet.test.ts",
       "risk": "low",
@@ -67936,6 +68108,44 @@
       "loc": 143,
       "owner": "__unassigned__",
       "path": "scripts/ci/prod-client-ip-probe.test.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/ci/prod-preprod-evidence.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 184,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/prod-preprod-evidence.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/ci/prod-preprod-evidence.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 308,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/prod-preprod-evidence.test.mjs",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",

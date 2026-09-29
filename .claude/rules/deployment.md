@@ -57,6 +57,7 @@ feature (sinon DEV:3000 sert du code périmé).
 - Le tag `:preprod` est **réécrit à chaque merge sur `main`** (workflow `ci.yml` → step `build`).
 - Il est **promu vers `:production`** par push d'un tag git `v*` (workflow `deploy-prod.yml`).
 - Ce n'est **pas une référence stable** — pour debug historique ou rollback, utiliser un SHA git ou un tag semver explicite.
+- Le label SHA de `:preprod` prouve la **provenance**, pas la **validation** : `deploy-prod.yml` refuse aussi, avant toute mutation, un commit dont le run `ci.yml` (push `main`) n'a pas `🧪 Deploy PREPROD`, `🎭 E2E Smoke Tests` et `🔦 Lighthouse Performance Audit` en `success` (`scripts/ci/prod-preprod-evidence.mjs`). Un commit dont le run a été annulé par un merge suivant n'est pas validé : taguer le dernier commit vert.
 
 ## Pièges de nommage INTERDITS (CI lint enforcé)
 

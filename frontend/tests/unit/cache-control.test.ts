@@ -77,6 +77,17 @@ describe("buildCacheHeaders — error path (anti cache-poisoning)", () => {
     expect(out["Cache-Control"]).not.toContain("s-maxage");
   });
 
+  it("propagates Retry-After from a temporary error without adding a robots directive", () => {
+    const out = invoke(buildCacheHeaders(SUCCESS), {
+      error: {
+        "Retry-After": "300",
+        "Cache-Control": "no-store, must-revalidate",
+      },
+    });
+    expect(out["Retry-After"]).toBe("300");
+    expect(out["X-Robots-Tag"]).toBeUndefined();
+  });
+
   it("honours an explicit Cache-Control the error Response carried", () => {
     const out = invoke(buildCacheHeaders(SUCCESS), {
       error: { "Cache-Control": "public, max-age=300, must-revalidate" },

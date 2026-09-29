@@ -31,7 +31,7 @@ const CACHE_TTL = 3600;
 /**
  * Limit canonique de `getPageCompleteV2` (A2, 2026-09-02).
  *
- * Le cache `rm:page-v2:v1:g{génération}:{gamme}:{vehicle}` (A3 : version
+ * Le cache `rm:page-v2:v2:g{génération}:{gamme}:{vehicle}` (A3 : version
  * statique + génération Redis `cache:gen:catalog`) ne porte pas le limit
  * et ne tranche pas : `count`, `filters` et `minPrice` sont calculés par la
  * RPC sur les N premières lignes. Seules les requêtes à ce limit lisent et
@@ -562,7 +562,7 @@ export class RmBuilderService extends SupabaseBaseService {
     // (count/filters/minPrice dépendent du limit) : seul le limit canonique
     // lit et écrit le cache. Voir PAGE_V2_CANONICAL_LIMIT.
     const useCache = limit === PAGE_V2_CANONICAL_LIMIT;
-    // Clé `rm:page-v2:v1:g{génération}:{gamme}:{véhicule}` (A3) — la
+    // Clé `rm:page-v2:v2:g{génération}:{gamme}:{véhicule}` (A3) — la
     // génération (Redis `cache:gen:catalog`) n'est lue que si le cache sert.
     const cacheKey = getCacheKey(
       CACHE_STRATEGIES.RM.PAGE_V2,
@@ -661,69 +661,67 @@ export class RmBuilderService extends SupabaseBaseService {
         const seoCtx = raw.seo_context as Record<string, string> | null;
 
         if (seoTemplates && seoCtx) {
-          try {
-            const ctx: SeoContext = {
-              type_id: Number(seoCtx.type_id),
-              pg_id: Number(seoCtx.pg_id),
-              mf_id: Number(seoCtx.mf_id),
-              marque_name: seoCtx.marque_name || '',
-              marque_alias: seoCtx.marque_alias || '',
-              modele_name: seoCtx.modele_name || '',
-              modele_alias: seoCtx.modele_alias || '',
-              type_name: seoCtx.type_name || '',
-              type_alias: seoCtx.type_alias || '',
-              gamme_name: result.gamme?.pg_name || '',
-              gamme_alias: result.gamme?.pg_alias || '',
-              min_price: result.minPrice ?? undefined,
-              count: result.count,
-              power_ps: seoCtx.type_power_ps || '',
-              // #VMotorisation# / #VCodeMoteur# (contenus legacy pg 468, 469,
-              // 596, 1795, 3096) — valeurs déjà présentes dans la RPC. Pas de
-              // `fuel`/`motor_codes` : ils changeraient aussi h1/title.
-              legacy_marker_motorisation:
-                result.vehicleInfo?.typeFuel ?? undefined,
-              legacy_marker_code_moteur:
-                result.vehicleInfo?.motorCodesFormatted ?? undefined,
-              // Fragments switch PAR GAMME (legacy) pour résoudre #CompSwitch_alias#
-              // (sinon strippés à vide → meta dégénérée). Chargé caché.
-              ...(await this.loadSeoCtxSwitches(
-                Number(seoCtx.pg_id),
-                result.gamme?.pg_name || '',
-              )),
-            };
+          const ctx: SeoContext = {
+            type_id: Number(seoCtx.type_id),
+            pg_id: Number(seoCtx.pg_id),
+            mf_id: Number(seoCtx.mf_id),
+            marque_name: seoCtx.marque_name || '',
+            marque_alias: seoCtx.marque_alias || '',
+            modele_name: seoCtx.modele_name || '',
+            modele_alias: seoCtx.modele_alias || '',
+            type_name: seoCtx.type_name || '',
+            type_alias: seoCtx.type_alias || '',
+            gamme_name: result.gamme?.pg_name || '',
+            gamme_alias: result.gamme?.pg_alias || '',
+            min_price: result.minPrice ?? undefined,
+            count: result.count,
+            power_ps: seoCtx.type_power_ps || '',
+            // #VMotorisation# / #VCodeMoteur# (contenus legacy pg 468, 469,
+            // 596, 1795, 3096) — valeurs déjà présentes dans la RPC. Pas de
+            // `fuel`/`motor_codes` : ils changeraient aussi h1/title.
+            legacy_marker_motorisation:
+              result.vehicleInfo?.typeFuel ?? undefined,
+            legacy_marker_code_moteur:
+              result.vehicleInfo?.motorCodesFormatted ?? undefined,
+            // Fragments switch PAR GAMME (legacy) pour résoudre #CompSwitch_alias#
+            // (sinon strippés à vide → meta dégénérée). Chargé caché.
+            ...(await this.loadSeoCtxSwitches(
+              Number(seoCtx.pg_id),
+              result.gamme?.pg_name || '',
+            )),
+          };
 
-            const processed = await this.seoTemplateService.processTemplates(
-              seoTemplates,
-              ctx,
+          const processed = await this.seoTemplateService.processTemplates(
+            seoTemplates,
+            ctx,
+          );
+          // Un résultat de secours du moteur n'est pas du contenu validé.
+          // L'erreur remonte au contrat existant (503, jamais caché comme vide).
+          if (processed.success !== true) {
+            throw new Error(
+              `SEO processing failed for gamme=${gamme_id} vehicle=${vehicle_id}`,
             );
-            const legacySeo = {
-              h1: processed.h1,
-              title: processed.title,
-              description: processed.description,
-              content: processed.content,
-              preview: processed.preview,
-              // Expose per-pg_id technique variations (sgcs_alias=2) pour
-              // rotation H1 suffix côté frontend. `ctx.comp_switches` est
-              // déjà chargé via `loadSeoCtxSwitches(pgId, gammeName)` ;
-              // entities HTML déjà décodées. Aucune nouvelle query DB.
-              // Voir @repo/seo-types pickH1Suffix.
-              compSwitch2: ctx.comp_switches?.['2'] ?? [],
-            };
-
-            // Retrofit ADR-055 — shadow observation via SeoShadowObservatoryModule (I1).
-            // Observatory.observe() est sync : retour immédiat, comparaison réelle
-            // dispatchée via setImmediate. Aucune mutation de result.seo possible
-            // depuis ce module (I3 — pas de branche mode === 'on').
-            result.seo = legacySeo;
-            this.fireShadowObservation(ctx, legacySeo);
-          } catch (seoErr) {
-            this.logger.warn(
-              `SEO processing failed, fallback to raw: ${seoErr}`,
-            );
-            if (seoTemplates) {
-              result.seo = { ...seoTemplates };
-            }
           }
+          const legacySeo = {
+            h1: processed.h1,
+            title: processed.title,
+            description: processed.description,
+            content: processed.content,
+            preview: processed.preview,
+            // Expose per-pg_id technique variations (sgcs_alias=2) pour
+            // rotation H1 suffix côté frontend. `ctx.comp_switches` est
+            // déjà chargé via `loadSeoCtxSwitches(pgId, gammeName)` ;
+            // entities HTML déjà décodées. Aucune nouvelle query DB.
+            // Voir @repo/seo-types pickH1Suffix.
+            compSwitch2: ctx.comp_switches?.['2'] ?? [],
+          };
+
+          // Retrofit ADR-055 — shadow observation via SeoShadowObservatoryModule (I1).
+          // Observatory.observe() est sync : retour immédiat, comparaison réelle
+          // dispatchée via setImmediate. Aucune mutation de result.seo possible
+          // depuis ce module (I3 — pas de branche mode === 'on').
+          result.seo = legacySeo;
+          this.fireShadowObservation(ctx, legacySeo);
         }
 
         // Clean internal fields before caching

@@ -471,3 +471,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/auth-staff-session`
 - **Décision** : chore(registry): resync L1+L3 projections (+7 other commits)
 - **Sortie** : PR #1561 | commits 796872024 1ba0da783 e015619ab b6814b55e f1e2df4cb 391c458c5 05dd8c95f f74215a56
+
+## 2026-09-29 — ci/deploy-prod-require-preprod-smokes (auto)
+
+- **Branche** : `ci/deploy-prod-require-preprod-smokes`
+- **Décision** : chore(registry): resync L1+L3 projections (+2 fichiers scripts/ci) (+1 other commit)
+- **Sortie** : PR #1598 | commits ef976d67e e6bfe2ddf
