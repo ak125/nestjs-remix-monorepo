@@ -31441,6 +31441,7 @@
         "backend/src/modules/cart/services/abandoned-cart.service.ts",
         "backend/src/modules/catalog/services/accessory-products.service.test.ts",
         "backend/src/modules/catalog/services/accessory-products.service.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
         "backend/src/modules/diagnostic-engine/services/kg-shadow.service.ts",
         "backend/src/modules/seo-projection/seo-projection-feeder.service.ts",
         "backend/src/modules/seo-projection/seo-projection-feeder.test.ts",
@@ -31450,7 +31451,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 513,
+      "loc": 524,
       "owner": "@ak125",
       "path": "backend/src/config/feature-flags.service.ts",
       "risk": "medium",
@@ -42190,27 +42191,28 @@
       "id": "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-handoff-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-session-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/maintenance-calendar-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/maintenance-flow.test.ts"
       ],
       "imports": [
+        "backend/src/config/feature-flags.service.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
+        "backend/src/modules/diagnostic-engine/handoff-target.ts",
         "backend/src/modules/diagnostic-engine/ports/vehicle-context.port.ts",
-        "backend/src/modules/diagnostic-engine/services/confidence-policy.ts",
         "backend/src/modules/diagnostic-engine/services/diagnostic-content.service.ts",
         "backend/src/modules/diagnostic-engine/services/diagnostic-resolution-pipeline.service.ts",
         "backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts",
         "backend/src/modules/diagnostic-engine/services/outcome-emitter.service.ts",
-        "backend/src/modules/diagnostic-engine/services/version-registry.ts",
         "backend/src/modules/diagnostic-engine/types/analyze-response.schema.ts",
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts",
         "backend/src/modules/diagnostic-engine/types/maintenance-calendar.schema.ts",
         "backend/src/modules/diagnostic-engine/vehicle-context-mapping.ts"
       ],
       "kind": "controller",
-      "loc": 555,
+      "loc": 579,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
       "risk": "medium",
@@ -42371,6 +42373,34 @@
         "manual"
       ],
       "domain": "D4",
+      "id": "backend/src/modules/diagnostic-engine/diagnostic-handoff-integrity.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
+        "backend/src/modules/diagnostic-engine/handoff-target.ts",
+        "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
+        "backend/src/modules/diagnostic-engine/services/diagnostic-resolution-pipeline.service.ts",
+        "backend/src/modules/diagnostic-engine/services/human-escalation-builder.service.ts",
+        "backend/src/modules/diagnostic-engine/services/intent-classifier.service.ts",
+        "backend/src/modules/diagnostic-engine/services/invariant-asserter.service.ts"
+      ],
+      "kind": "test",
+      "loc": 257,
+      "owner": "@ak125/vehicle-team",
+      "path": "backend/src/modules/diagnostic-engine/diagnostic-handoff-integrity.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D4",
       "id": "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
       "importedBy": [],
       "imports": [
@@ -42408,7 +42438,7 @@
         "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts"
       ],
       "kind": "test",
-      "loc": 124,
+      "loc": 125,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-session-integrity.test.ts",
       "risk": "medium",
@@ -42623,6 +42653,36 @@
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D4",
+      "id": "backend/src/modules/diagnostic-engine/handoff-target.ts",
+      "importedBy": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-handoff-integrity.test.ts",
+        "backend/src/modules/diagnostic-engine/services/outcome-emitter.service.ts"
+      ],
+      "imports": [
+        "backend/src/modules/diagnostic-engine/types/analyze-response.schema.ts",
+        "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts",
+        "backend/src/modules/diagnostic-engine/types/diagnostic-reason-code.ts",
+        "backend/src/modules/diagnostic-engine/types/recommended-action.ts"
+      ],
+      "kind": "service",
+      "loc": 68,
+      "owner": "@ak125/vehicle-team",
+      "path": "backend/src/modules/diagnostic-engine/handoff-target.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
         "manual"
       ],
       "domain": "D4",
@@ -42633,7 +42693,7 @@
         "backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts"
       ],
       "kind": "test",
-      "loc": 184,
+      "loc": 185,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/maintenance-calendar-integrity.test.ts",
       "risk": "medium",
@@ -42659,7 +42719,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "test",
-      "loc": 268,
+      "loc": 261,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/maintenance-flow.test.ts",
       "risk": "medium",
@@ -42771,6 +42831,7 @@
       "id": "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-handoff-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/services/action-recommender.test.ts",
         "backend/src/modules/diagnostic-engine/services/diagnostic-resolution-pipeline.service.ts"
@@ -42849,7 +42910,6 @@
       "domain": "D4",
       "id": "backend/src/modules/diagnostic-engine/services/confidence-policy.ts",
       "importedBy": [
-        "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
         "backend/src/modules/diagnostic-engine/services/confidence-policy.test.ts",
         "backend/src/modules/diagnostic-engine/services/intent-classifier.service.ts"
       ],
@@ -42903,7 +42963,8 @@
       "id": "backend/src/modules/diagnostic-engine/services/diagnostic-resolution-pipeline.service.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
-        "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts"
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-handoff-integrity.test.ts"
       ],
       "imports": [
         "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
@@ -42916,7 +42977,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "service",
-      "loc": 75,
+      "loc": 88,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/services/diagnostic-resolution-pipeline.service.ts",
       "risk": "medium",
@@ -42935,6 +42996,7 @@
       "id": "backend/src/modules/diagnostic-engine/services/human-escalation-builder.service.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-handoff-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/services/diagnostic-resolution-pipeline.service.ts"
       ],
       "imports": [],
@@ -42958,6 +43020,7 @@
       "id": "backend/src/modules/diagnostic-engine/services/intent-classifier.service.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-handoff-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
         "backend/src/modules/diagnostic-engine/services/action-recommender.test.ts",
         "backend/src/modules/diagnostic-engine/services/diagnostic-resolution-pipeline.service.ts",
@@ -43012,6 +43075,7 @@
       "id": "backend/src/modules/diagnostic-engine/services/invariant-asserter.service.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-handoff-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/services/diagnostic-resolution-pipeline.service.ts",
         "backend/src/modules/diagnostic-engine/services/invariant-asserter.test.ts"
       ],
@@ -43145,6 +43209,7 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
+        "backend/src/modules/diagnostic-engine/handoff-target.ts",
         "backend/src/modules/diagnostic-engine/types/analyze-response.schema.ts",
         "backend/src/modules/diagnostic-engine/types/diagnostic-intent.ts",
         "backend/src/modules/diagnostic-engine/types/diagnostic-reason-code.ts",
@@ -43170,7 +43235,6 @@
       "domain": "D4",
       "id": "backend/src/modules/diagnostic-engine/services/version-registry.ts",
       "importedBy": [
-        "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
         "backend/src/modules/diagnostic-engine/services/diagnostic-resolution-pipeline.service.ts"
       ],
       "imports": [],
@@ -43195,6 +43259,7 @@
       "id": "backend/src/modules/diagnostic-engine/types/analyze-response.schema.ts",
       "importedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
+        "backend/src/modules/diagnostic-engine/handoff-target.ts",
         "backend/src/modules/diagnostic-engine/services/diagnostic-resolution-pipeline.service.ts",
         "backend/src/modules/diagnostic-engine/services/invariant-asserter.service.ts",
         "backend/src/modules/diagnostic-engine/services/invariant-asserter.test.ts",
@@ -43207,7 +43272,7 @@
         "backend/src/modules/diagnostic-engine/types/recommended-action.ts"
       ],
       "kind": "config",
-      "loc": 88,
+      "loc": 99,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/types/analyze-response.schema.ts",
       "risk": "medium",
@@ -43277,6 +43342,7 @@
         "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.test.ts",
         "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
         "backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
+        "backend/src/modules/diagnostic-engine/handoff-target.ts",
         "backend/src/modules/diagnostic-engine/validate-phase0.ts",
         "backend/src/modules/mcp-validation/types/mcp-diagnose.schema.ts"
       ],
@@ -43330,6 +43396,7 @@
       "domain": "D4",
       "id": "backend/src/modules/diagnostic-engine/types/diagnostic-reason-code.ts",
       "importedBy": [
+        "backend/src/modules/diagnostic-engine/handoff-target.ts",
         "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
         "backend/src/modules/diagnostic-engine/services/intent-classifier.service.ts",
         "backend/src/modules/diagnostic-engine/services/invariant-asserter.service.ts",
@@ -43469,6 +43536,7 @@
       "domain": "D4",
       "id": "backend/src/modules/diagnostic-engine/types/recommended-action.ts",
       "importedBy": [
+        "backend/src/modules/diagnostic-engine/handoff-target.ts",
         "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
         "backend/src/modules/diagnostic-engine/services/outcome-emitter.service.ts",
         "backend/src/modules/diagnostic-engine/types/analyze-response.schema.ts"
@@ -72150,7 +72218,7 @@
         "~/components/ui/card"
       ],
       "kind": "config",
-      "loc": 114,
+      "loc": 108,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/results/ActionCard.tsx",
       "risk": "low",
@@ -72183,7 +72251,7 @@
         "~/components/ui/button"
       ],
       "kind": "config",
-      "loc": 189,
+      "loc": 188,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/results/DiagnosticResults.tsx",
       "risk": "low",
@@ -72210,7 +72278,7 @@
         "~/components/ui/card"
       ],
       "kind": "config",
-      "loc": 96,
+      "loc": 80,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/results/HumanEscalationCard.tsx",
       "risk": "low",
@@ -72236,7 +72304,7 @@
         "frontend/app/components/diagnostic-wizard/results/v1a-intent-types.ts"
       ],
       "kind": "config",
-      "loc": 61,
+      "loc": 53,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/results/IntentResolutionBlock.tsx",
       "risk": "low",
@@ -72261,7 +72329,7 @@
         "frontend/app/components/diagnostic-wizard/results/v1a-intent-types.ts"
       ],
       "kind": "config",
-      "loc": 45,
+      "loc": 36,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/results/RecommendedActionList.tsx",
       "risk": "low",
@@ -72460,7 +72528,7 @@
         "frontend/app/components/diagnostic-wizard/results/v1a-intent-types.ts"
       ],
       "kind": "config",
-      "loc": 34,
+      "loc": 37,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/results/v1a-handoff-client.ts",
       "risk": "low",
@@ -101133,11 +101201,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "90094e86c0a9d55c1c0ca1db6a22078fa001179245b2ac8ea7d75743a69fb54b",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "d431fa4fd1f357300a9c046c8a360ca2cbbc4b9e3beb29453c6411125eb1ec8a",
+      "audit/registry/files.json": "fc214651253c3861a246669b31fe9aef7019dbc4ebd3934265cf73443fbb7b28",
       "audit/registry/rpc.json": "86d0c24b102036512a9f7b11d9ac04754288049a8b061981b19f0db0a8c86263",
-      "audit/registry/runtime.json": "6c2cc554a40338761fba9f55f6aef70339e95d10dec2f0b93ba5b0152c33f766"
+      "audit/registry/runtime.json": "d98604e009c185cf432e9e97d9d5318a03798bd1d2a4f55ba6aa49efb63ce328"
     },
-    "sotFingerprint": "435d30e78ad5"
+    "sotFingerprint": "7eb59096a73e"
   },
   "runtime": [
     {
@@ -104082,6 +104150,7 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/config/feature-flags.service.ts",
         "runtime:backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
         "runtime:backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
         "runtime:backend/src/modules/diagnostic-engine/services/diagnostic-content.service.ts",

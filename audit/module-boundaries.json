@@ -186,7 +186,7 @@
         "backend/src/modules/config/validators"
       ],
       "files_count": 101,
-      "loc_total": 24495,
+      "loc_total": 24506,
       "has_barrel": true
     },
     "customers": {
@@ -237,8 +237,8 @@
         "backend/src/modules/diagnostic-engine/services",
         "backend/src/modules/diagnostic-engine/types"
       ],
-      "files_count": 51,
-      "loc_total": 9387,
+      "files_count": 53,
+      "loc_total": 9755,
       "has_barrel": false
     },
     "errors": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 597,
-      "loc_total": 114379,
+      "loc_total": 114342,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -1664,7 +1664,7 @@
     {
       "from": "diagnostic-engine",
       "to": "config",
-      "count": 1
+      "count": 2
     },
     {
       "from": "diagnostic-engine",
