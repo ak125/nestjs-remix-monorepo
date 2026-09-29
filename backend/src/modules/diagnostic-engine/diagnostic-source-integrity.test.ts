@@ -366,6 +366,45 @@ describe('diagnostic reference responses are checked before safety evaluation', 
       await expect(f.service.getActiveSystems()).rejects.toThrow();
     }
   });
+  test('a system the analysis would refuse for lack of safety rules is not offered', async () => {
+    const f = fixture();
+    const uncovered = { ...system, id: 2, slug: 'climatisation' };
+    f.tables.__diag_system.data = [system, uncovered];
+    const { engine } = pipeline(f.service);
+    const warn = jest
+      .spyOn(engine['logger'], 'warn')
+      .mockImplementation(() => undefined);
+
+    const offered = await engine.getAnalysableSystems();
+    expect(offered.map((s) => s.slug)).toEqual(['freinage']);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('climatisation'));
+
+    // The listed alternatives follow the same rule.
+    jest.spyOn(f.service, 'getSystemBySlug').mockResolvedValue(null);
+    const unknown = await engine.analyze({ ...input, system_scope: 'absent' });
+    expect(unknown.error).toMatch(/Systèmes disponibles: freinage$/);
+
+    // What is offered can indeed be analysed, and what is not, cannot.
+    jest.restoreAllMocks();
+    expect((await pipeline(f.service).engine.analyze(input)).success).toBe(
+      true,
+    );
+    f.tables.__diag_safety_rule.data = [];
+    expect(await pipeline(f.service).engine.analyze(input)).toMatchObject({
+      success: false,
+      error: expect.stringMatching(/règles de sécurité est absente/),
+    });
+  });
+  test('safety rule coverage that cannot be read or is inactive is not an empty coverage', async () => {
+    const f = fixture();
+    f.tables.__diag_safety_rule.data = [{ ...rule, active: false }];
+    await expect(f.service.getSystemIdsWithSafetyRules()).rejects.toThrow();
+    f.tables.__diag_safety_rule = { data: null, error: { message: 'offline' } };
+    await expect(f.service.getSystemIdsWithSafetyRules()).rejects.toThrow();
+    await expect(
+      pipeline(f.service).engine.getAnalysableSystems(),
+    ).rejects.toThrow();
+  });
   test('an absent single row with the existing not-found error remains absent', async () => {
     const f = fixture();
     f.tables.__diag_system = {
