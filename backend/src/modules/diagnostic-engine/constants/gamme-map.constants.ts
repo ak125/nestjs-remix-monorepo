@@ -99,15 +99,15 @@ export const CAUSE_GAMME_MAP: Record<string, GammeMapping[]> = {
   ],
   courroie_accessoires_usee: [
     {
-      slug: 'courroie-trapezoidale-a-nervures',
-      label: 'Courroie trapézoïdale à nervures',
-      pg_id: 305,
+      slug: 'courroie-d-accessoire',
+      label: "Courroie d'accessoire",
+      pg_id: 10,
     },
   ],
 
   // ── Embrayage ─────────────────────────────────────────────
   disque_embrayage_use: [
-    { slug: 'embrayage', label: 'Embrayage', pg_id: 3825 },
+    { slug: 'kit-d-embrayage', label: "Kit d'embrayage", pg_id: 479 },
   ],
   butee_embrayage_hs: [
     { slug: 'butee-d-embrayage', label: "Butée d'embrayage", pg_id: 48 },
@@ -149,9 +149,9 @@ export const CAUSE_GAMME_MAP: Record<string, GammeMapping[]> = {
   ],
   coupelle_amortisseur_hs: [
     {
-      slug: 'coupelle-de-suspension',
-      label: 'Coupelle de suspension',
-      pg_id: 1180,
+      slug: 'kit-de-butee-de-suspension',
+      label: 'Kit de butée de suspension',
+      pg_id: 1632,
     },
   ],
 
@@ -172,11 +172,7 @@ export const CAUSE_GAMME_MAP: Record<string, GammeMapping[]> = {
     },
   ],
   biellette_direction_usee: [
-    {
-      slug: 'biellette-de-barre-stabilisatrice',
-      label: 'Biellette de barre stabilisatrice',
-      pg_id: 3230,
-    },
+    { slug: 'barre-de-direction', label: 'Barre de direction', pg_id: 285 },
   ],
 
   // ── Échappement ───────────────────────────────────────────
@@ -186,6 +182,7 @@ export const CAUSE_GAMME_MAP: Record<string, GammeMapping[]> = {
   ],
   silencieux_perce: [{ slug: 'silencieux', label: 'Silencieux', pg_id: 26 }],
   joint_collecteur_hs: [
+    { slug: 'joint-de-collecteur', label: 'Joint de collecteur', pg_id: 40 },
     {
       slug: 'tuyau-flexible-echappement',
       label: 'Tuyau flexible échappement',
@@ -213,7 +210,7 @@ export const CAUSE_GAMME_MAP: Record<string, GammeMapping[]> = {
     { slug: 'pompe-a-injection', label: 'Pompe à injection', pg_id: 3904 },
   ],
   bobine_allumage_hs: [
-    { slug: 'bougie-d-allumage', label: "Bougie d'allumage", pg_id: 686 },
+    { slug: 'bobine-d-allumage', label: "Bobine d'allumage", pg_id: 689 },
   ],
   filtre_carburant_injection: [
     { slug: 'filtre-a-carburant', label: 'Filtre à carburant', pg_id: 9 },

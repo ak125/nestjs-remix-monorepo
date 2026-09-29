@@ -202,6 +202,16 @@ describe('diagnostic safety and deterministic scoring regressions', () => {
       { slug: 'liquide-de-frein', label: 'Liquide de frein', pg_id: 71 },
     ]);
   });
+  test.each([
+    ['bobine_allumage_hs', [689]],
+    ['courroie_accessoires_usee', [10]],
+    ['disque_embrayage_use', [479]],
+    ['coupelle_amortisseur_hs', [1632]],
+    ['biellette_direction_usee', [285]],
+    ['joint_collecteur_hs', [40, 3191]],
+  ])('%s maps to the family that sells the part it names', (cause, ids) => {
+    expect(CAUSE_GAMME_MAP[cause].map((g) => g.pg_id)).toEqual(ids);
+  });
   test.each([{ resolved: [] }, { resolved: ['noise'] }])(
     'unresolved diagnostic coverage is explicit (%j)',
     async ({ resolved }) => {
