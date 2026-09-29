@@ -2742,6 +2742,8 @@
       "backend/supabase/migrations/20260929_definer_rpc_authenticated_lockdown.sql",
       "backend/supabase/migrations/20260929_drop_exact_duplicate_indexes.down.sql",
       "backend/supabase/migrations/20260929_drop_exact_duplicate_indexes.sql",
+      "backend/supabase/migrations/20260929_soft_404_events_retention_cron.down.sql",
+      "backend/supabase/migrations/20260929_soft_404_events_retention_cron.sql",
       "backend/supabase/migrations/README.md"
     ],
     "ci_workflows": [
@@ -2917,7 +2919,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1531,
+  "runtime_files_count": 1533,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4120,6 +4122,8 @@
     "backend/supabase/migrations/20260929_definer_rpc_authenticated_lockdown.sql",
     "backend/supabase/migrations/20260929_drop_exact_duplicate_indexes.down.sql",
     "backend/supabase/migrations/20260929_drop_exact_duplicate_indexes.sql",
+    "backend/supabase/migrations/20260929_soft_404_events_retention_cron.down.sql",
+    "backend/supabase/migrations/20260929_soft_404_events_retention_cron.sql",
     "backend/supabase/migrations/README.md",
     "docker/lighthouse/Dockerfile",
     "docker/lighthouse/crontab",
