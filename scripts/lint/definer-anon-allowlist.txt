@@ -29,10 +29,10 @@ get_homepage_families
 # motif : home publique `/` — familles, gammes, marques, conseils. Sonde BLOQUANTE `/` de preprod-response-suite.sh et 1re URL Lighthouse (ci.yml).
 get_homepage_data_optimized
 
-# motif : rendu des pages gamme R1 — 5 pages sondées en 200 BLOQUANT par preprod-response-suite.sh (plaquette-de-frein-402, disque-de-frein-82, filtre-a-huile-7, filtre-a-air-8, courroie-de-distribution-306) + 3e URL Lighthouse. Le rebuild qu'elle déclenche sur cache-miss reste, lui, fermé à anon (rebuild_gamme_page_cache révoquée) : l'appel imbriqué s'exécute sous postgres.
+# motif : rendu des pages gamme R1 — 5 pages sondées en 200 BLOQUANT par preprod-response-suite.sh (plaquette-de-frein-402, disque-de-frein-82, filtre-a-huile-7, filtre-a-air-8, courroie-de-distribution-306) + 3e URL Lighthouse. Lecture pure depuis 20260929_r1_gamme_page_cached_pure_read.sql : sur cache absent ou périmé, elle construit le payload par build_gamme_page_payload (fermée à anon ; l'appel imbriqué s'exécute sous postgres) sans rien écrire. rebuild_gamme_page_cache reste fermée à anon et n'est plus appelée par ce chemin.
 get_gamme_page_data_cached
 
-# motif : rendu des pages véhicule R8 (`/constructeurs/...`) — même défaut de conception et même traitement que sa jumelle gamme ci-dessus, par cohérence. AUCUNE sonde PREPROD n'exerce R8 aujourd'hui : la fermer serait donc une rupture SILENCIEUSE du rendu R8 en PREPROD, que rien n'attraperait. Correctif structurel suivi en dette : scinder lecture pure (anon) / rebuild (service_role).
+# motif : rendu des pages véhicule R8 (`/constructeurs/...`) — même traitement que sa jumelle gamme ci-dessus, par cohérence ; même défaut de conception que celle-ci avant 20260929 (la lecture reconstruit et écrit sur cache-miss). AUCUNE sonde PREPROD n'exerce R8 aujourd'hui : la fermer serait donc une rupture SILENCIEUSE du rendu R8 en PREPROD, que rien n'attraperait. Correctif structurel suivi en dette : scinder lecture pure (anon) / rebuild (service_role), comme 20260929 l'a fait pour R1.
 get_vehicle_page_data_cached
 
 # motif : blocs éditoriaux des pages gamme R1. Corps = `SELECT payload FROM __seo_r1_related_blocks_cache WHERE pg_id = $1 AND stale = FALSE` — lecture pure. Une erreur 42501 dans le loader R1 ferait passer les 5 sondes R1 bloquantes de 200 à 500.
