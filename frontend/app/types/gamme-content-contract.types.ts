@@ -40,7 +40,6 @@ export interface BuyingGuideContractV1 {
     title: string;
     explanation: string;
     consequences: string[];
-    costRange: string;
     conclusion: string;
   };
   timing: {

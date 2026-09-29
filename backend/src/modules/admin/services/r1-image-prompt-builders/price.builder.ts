@@ -20,7 +20,9 @@ import {
  * [F] no text, no prices, no labels
  * [G] perception de valeur, montée en gamme, choix éclairé
  *
- * RAG : selection.quality_tiers[], selection.cost_range, selection.criteria[]
+ * RAG : selection.quality_tiers[] (niveaux uniquement). Aucun prix : les
+ * fourchettes du RAG (cost_range, price_range) ne sont pas une source de
+ * contenu (ADR-031) et un prix figé dans les pixels ne suit pas le tarif réel.
  */
 export function buildPricePrompt(
   pgName: string,
@@ -40,13 +42,6 @@ export function buildPricePrompt(
     score += 2;
   }
 
-  // Cost range tracked for scoring
-  const range = rag?.selection?.cost_range;
-  if (range?.min != null && range?.max != null) {
-    fieldsUsed.push('selection.cost_range');
-    score++;
-  }
-
   // Visual features pour différencier les qualités
   let visualDiff = '';
   if (rag?.key_visual_features?.identifying_materials?.length) {
@@ -57,16 +52,13 @@ export function buildPricePrompt(
 
   const tierCount = Math.min(Math.max(tiers.length, 3), 3);
 
-  // Labels texte sous chaque pièce avec tier + prix
-  let priceLabels = '';
+  // Labels texte sous chaque pièce : niveau de gamme seul, sans prix
+  let tierLabels = '';
   if (tiers.length > 0) {
-    const labels = tiers.slice(0, 3).map((t) => {
-      const price = t.price_range ? ` — ${t.price_range}` : '';
-      return `"${t.tier}${price}"`;
-    });
-    priceLabels = ` TEXTE DANS L'IMAGE : Sous chaque pièce, un label avec le niveau de gamme et la fourchette de prix : ${labels.join(' / ')}. Police sans serif, couleur adaptée (gris clair pour éco, blanc pour standard, doré pour premium). Taille petite mais lisible.`;
+    const labels = tiers.slice(0, 3).map((t) => `"${t.tier}"`);
+    tierLabels = ` TEXTE DANS L'IMAGE : Sous chaque pièce, un label avec le niveau de gamme : ${labels.join(' / ')}. Police sans serif, couleur adaptée (gris clair pour éco, blanc pour standard, doré pour premium). Taille petite mais lisible. Aucun prix.`;
   } else {
-    priceLabels = ` TEXTE DANS L'IMAGE : Sous chaque pièce : "Éco" / "Standard" / "Premium" en texte blanc petit, police sans serif moderne.`;
+    tierLabels = ` TEXTE DANS L'IMAGE : Sous chaque pièce : "Éco" / "Standard" / "Premium" en texte blanc petit, police sans serif moderne.`;
   }
 
   const prompt = [
@@ -75,7 +67,7 @@ export function buildPricePrompt(
     `À gauche : pièce basique, finition standard. Au centre : pièce qualité intermédiaire. À droite : pièce premium, finition impeccable, détails soignés.`,
     `Même angle, même échelle, progression visible de la qualité de fabrication.${visualDiff}`,
     `Éclairage : ${amb.lighting}. Plus contrasté et dramatique sur la pièce premium à droite.`,
-    `Ultra réaliste, haute résolution.${priceLabels}`,
+    `Ultra réaliste, haute résolution.${tierLabels}`,
     `Intention : montrer visuellement la différence de qualité entre ${qualityDesc}.`,
     `Format 4:3.`,
   ]

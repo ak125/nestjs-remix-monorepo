@@ -135,7 +135,6 @@ export interface GammePagePurchaseGuideData {
     title: string;
     explanation: string;
     consequences: string[];
-    costRange: string;
     conclusion: string;
   };
   timing: { title: string; years: string; km: string; note: string };
@@ -192,7 +191,6 @@ export interface GammePageBuyingGuide {
     checks?: string[];
   };
   antiMistakes?: string[];
-  risk?: { costRange?: string };
   faq?: Array<{ question: string; answer: string }>;
   useCases?: Array<{
     id: string;
@@ -503,7 +501,6 @@ export const PurchaseGuideDataSchema = z
       title: z.string(),
       explanation: z.string(),
       consequences: z.array(z.string()),
-      costRange: z.string(),
       conclusion: z.string(),
     }),
     timing: z.object({
@@ -606,7 +603,6 @@ export const GammeBuyingGuideSchema = z
       })
       .optional(),
     antiMistakes: z.array(z.string()).optional(),
-    risk: z.object({ costRange: z.string().optional() }).optional(),
     faq: z.array(FaqItemSchema).optional(),
     useCases: z
       .array(

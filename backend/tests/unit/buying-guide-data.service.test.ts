@@ -62,6 +62,8 @@ describe('BuyingGuideDataService quality gate', () => {
     expect(result.quality.source).toBe('db:__seo_gamme_purchase_guide:82');
     expect(result.quality.verified).toBe(false);
     expect(result.quality.score).toBeLessThan(80);
+    // Le fallback sectionnel n'invente plus de fourchette de coût.
+    expect(result.risk).not.toHaveProperty('costRange');
   });
 
   it('conserve un contenu solide et valide une provenance PDF', () => {
@@ -157,6 +159,8 @@ describe('BuyingGuideDataService quality gate', () => {
       'pdf://catalog/ate-brake-discs-2025.pdf#pages=12-19',
     );
     expect(result.quality.verified).toBe(true);
+    // sgpg_risk_cost_range (produit par le pipeline RAG) n'est plus relayé.
+    expect(result.risk).not.toHaveProperty('costRange');
   });
 
   it('accepte une provenance scraping qualifiée', () => {

@@ -762,7 +762,6 @@ export class GammeResponseBuilderService {
               title: `Pourquoi remplacer ${pgNameSite} à temps ?`,
               explanation: '',
               consequences: [],
-              costRange: '',
               conclusion: '',
             },
             timing: {

@@ -49,7 +49,6 @@ interface PurchaseGuideRow {
   sgpg_risk_title?: string | null;
   sgpg_risk_explanation?: string | null;
   sgpg_risk_consequences?: string | string[] | null;
-  sgpg_risk_cost_range?: string | null;
   sgpg_risk_conclusion?: string | null;
   sgpg_timing_title?: string | null;
   sgpg_timing_years?: string | null;
@@ -134,7 +133,6 @@ export interface BuyingGuideContractV1 {
     title: string;
     explanation: string;
     consequences: string[];
-    costRange: string;
     conclusion: string;
   };
   // Section 3: Quand changer
@@ -289,7 +287,7 @@ export class BuyingGuideDataService extends SupabaseBaseService {
     pgId: string,
   ): Promise<BuyingGuideContractV1 | null> {
     try {
-      // Use RPC that LEFT JOINs R1 slots (COALESCE: R1 > sgpg fallback)
+      // RPC LEFT JOINs R1 slots (COALESCE: R1 > sgpg fallback)
       const { data, error } = await this.client.rpc(
         'get_buying_guide_with_r1_slots',
         { p_pg_id: pgId },
@@ -351,7 +349,7 @@ export class BuyingGuideDataService extends SupabaseBaseService {
       sgpg_id, sgpg_pg_id,
       sgpg_intro_title, sgpg_intro_role, sgpg_intro_sync_parts,
       sgpg_risk_title, sgpg_risk_explanation, sgpg_risk_consequences,
-      sgpg_risk_cost_range, sgpg_risk_conclusion,
+      sgpg_risk_conclusion,
       sgpg_timing_title, sgpg_timing_years, sgpg_timing_km, sgpg_timing_note,
       sgpg_arg1_title, sgpg_arg1_content, sgpg_arg1_icon,
       sgpg_arg2_title, sgpg_arg2_content, sgpg_arg2_icon,
@@ -405,7 +403,6 @@ export class BuyingGuideDataService extends SupabaseBaseService {
         sgpg_risk_title,
         sgpg_risk_explanation,
         sgpg_risk_consequences,
-        sgpg_risk_cost_range,
         sgpg_risk_conclusion,
         sgpg_timing_title,
         sgpg_timing_years,
@@ -1461,7 +1458,6 @@ export class BuyingGuideDataService extends SupabaseBaseService {
         title: raw.sgpg_risk_title || 'Pourquoi ne jamais attendre ?',
         explanation: raw.sgpg_risk_explanation || '',
         consequences: parseConsequences(raw.sgpg_risk_consequences),
-        costRange: raw.sgpg_risk_cost_range || '',
         conclusion: raw.sgpg_risk_conclusion || '',
       },
       timing: {
@@ -1830,7 +1826,6 @@ export class BuyingGuideDataService extends SupabaseBaseService {
   ): {
     explanation: string;
     consequences: string[];
-    costRange: string;
     conclusion: string;
   } {
     if (familyKey === 'freinage') {
@@ -1841,7 +1836,6 @@ export class BuyingGuideDataService extends SupabaseBaseService {
           "Usure accélérée des pièces associées et hausse du coût d'intervention.",
           "Risque d'immobilisation du véhicule si la défaillance progresse.",
         ],
-        costRange: '120 à 1200 EUR selon véhicule et gravité.',
         conclusion:
           'Un remplacement anticipé limite le risque sécurité et les surcoûts atelier.',
       };
@@ -1854,7 +1848,6 @@ export class BuyingGuideDataService extends SupabaseBaseService {
         "Risque d'immobilisation avec intervention plus coûteuse.",
         'Perte de fiabilité et de confort de conduite.',
       ],
-      costRange: 'Coût variable selon la référence et la main-d’œuvre.',
       conclusion:
         'Un diagnostic précoce permet de sécuriser le montage et de maîtriser le budget.',
     };
@@ -2060,7 +2053,6 @@ export class BuyingGuideDataService extends SupabaseBaseService {
         consequences: this.dedupeStrings(
           content.risk?.consequences || [],
         ).values.slice(0, 6),
-        costRange: this.cleanText(content.risk?.costRange || ''),
         conclusion: this.cleanText(content.risk?.conclusion || ''),
       },
       timing: {
@@ -2117,21 +2109,18 @@ export class BuyingGuideDataService extends SupabaseBaseService {
       const fallback = this.fallbackRisk(gammeName, familyKey);
       gated.risk.explanation = fallback.explanation;
       gated.risk.consequences = fallback.consequences;
-      gated.risk.costRange = gated.risk.costRange || fallback.costRange;
       gated.risk.conclusion = gated.risk.conclusion || fallback.conclusion;
     } else if (riskExplanation.length > MAX_NARRATIVE_LENGTH) {
       addFlag('TOO_LONG');
       const fallback = this.fallbackRisk(gammeName, familyKey);
       gated.risk.explanation = fallback.explanation;
       gated.risk.consequences = fallback.consequences;
-      gated.risk.costRange = gated.risk.costRange || fallback.costRange;
       gated.risk.conclusion = gated.risk.conclusion || fallback.conclusion;
     } else if (this.containsGenericPhrase(riskExplanation)) {
       addFlag('GENERIC_PHRASES');
       const fallback = this.fallbackRisk(gammeName, familyKey);
       gated.risk.explanation = fallback.explanation;
       gated.risk.consequences = fallback.consequences;
-      gated.risk.costRange = gated.risk.costRange || fallback.costRange;
       gated.risk.conclusion = gated.risk.conclusion || fallback.conclusion;
     }
 
@@ -2264,10 +2253,6 @@ export class BuyingGuideDataService extends SupabaseBaseService {
     if (!gated.timing.note)
       gated.timing.note = 'Respecter les tolérances constructeur.';
 
-    if (!gated.risk.costRange) {
-      const fallback = this.fallbackRisk(gammeName, familyKey);
-      gated.risk.costRange = fallback.costRange;
-    }
     if (!gated.risk.conclusion) {
       const fallback = this.fallbackRisk(gammeName, familyKey);
       gated.risk.conclusion = fallback.conclusion;
@@ -2506,7 +2491,6 @@ export class BuyingGuideDataService extends SupabaseBaseService {
         title: `Pourquoi remplacer ${gammeName} à temps ?`,
         explanation: risk.explanation,
         consequences: risk.consequences,
-        costRange: risk.costRange,
         conclusion: risk.conclusion,
       },
       timing: {

@@ -47,7 +47,6 @@ export interface R6RiskSection {
   title: string;
   explanation: string;
   consequences: string[];
-  costRange: string | null;
   conclusion: string | null;
 }
 
