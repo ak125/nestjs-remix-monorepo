@@ -17,10 +17,7 @@ interface Props {
 export function RecommendedActionList({ actions, sessionId }: Props) {
   if (actions.length === 0) return null;
   return (
-    <section
-      aria-label="Actions recommandées"
-      className="flex flex-col gap-3"
-    >
+    <section aria-label="Actions recommandées" className="flex flex-col gap-3">
       <h3 className="text-lg font-semibold">Que faire maintenant ?</h3>
       {actions.map((action) => (
         <ActionCard

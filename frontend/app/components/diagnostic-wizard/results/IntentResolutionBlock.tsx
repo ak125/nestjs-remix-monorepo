@@ -8,7 +8,7 @@
  */
 import { HumanEscalationCard } from "./HumanEscalationCard";
 import { RecommendedActionList } from "./RecommendedActionList";
-import  {
+import {
   type RecommendedAction,
   type HumanEscalation,
 } from "./v1a-intent-types";

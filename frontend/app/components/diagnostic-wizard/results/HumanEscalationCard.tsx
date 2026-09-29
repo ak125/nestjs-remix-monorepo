@@ -42,10 +42,7 @@ export function HumanEscalationCard({ escalation, sessionId }: Props) {
       aria-label="Escalade humaine"
     >
       {escalation.priority_boost ? (
-        <AlertCircle
-          className="h-6 w-6 shrink-0 text-amber-600"
-          aria-hidden
-        />
+        <AlertCircle className="h-6 w-6 shrink-0 text-amber-600" aria-hidden />
       ) : (
         <UserRound
           className="h-6 w-6 shrink-0 text-muted-foreground"
