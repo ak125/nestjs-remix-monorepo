@@ -87831,9 +87831,11 @@
       "domain": "UNKNOWN",
       "id": "frontend/app/services/api/rm-api.service.ts",
       "importedBy": [],
-      "imports": [],
+      "imports": [
+        "frontend/app/services/common/errors.ts"
+      ],
       "kind": "service",
-      "loc": 282,
+      "loc": 289,
       "owner": "__unassigned__",
       "path": "frontend/app/services/api/rm-api.service.ts",
       "risk": "low",
@@ -87973,7 +87975,8 @@
       "domain": "UNKNOWN",
       "id": "frontend/app/services/common/errors.ts",
       "importedBy": [
-        "frontend/app/services/api/config.api.ts"
+        "frontend/app/services/api/config.api.ts",
+        "frontend/app/services/api/rm-api.service.ts"
       ],
       "imports": [],
       "kind": "config",
@@ -89556,6 +89559,7 @@
         "~/components/pieces/NoProductsAlternatives",
         "~/components/pieces/PiecesFilterSidebar",
         "~/services/api/rm-api.service",
+        "~/services/common/errors",
         "~/services/pieces/pieces-route.service",
         "~/utils/fetch.utils",
         "~/utils/internal-api.server",
@@ -89569,7 +89573,7 @@
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 693,
+      "loc": 708,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/pieces-vehicle.loader.server.ts",
       "risk": "medium",
@@ -92112,7 +92116,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 609,
+      "loc": 697,
       "owner": "@ak125",
       "path": "frontend/tests/unit/pieces-vehicle-loader-canonical-redirect.test.ts",
       "risk": "medium",
@@ -101089,11 +101093,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "90094e86c0a9d55c1c0ca1db6a22078fa001179245b2ac8ea7d75743a69fb54b",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "0fe92ccfff34846f71f6378e9a7312dc6ef2cd241795cce68bab5c0585bf4470",
+      "audit/registry/files.json": "918c3c9166dfb4536b771cca30a4983f9cfb5fddd1a2ea937f1ccccb073f523d",
       "audit/registry/rpc.json": "86d0c24b102036512a9f7b11d9ac04754288049a8b061981b19f0db0a8c86263",
       "audit/registry/runtime.json": "6c2cc554a40338761fba9f55f6aef70339e95d10dec2f0b93ba5b0152c33f766"
     },
-    "sotFingerprint": "68b879e5119b"
+    "sotFingerprint": "c892f2940ced"
   },
   "runtime": [
     {
