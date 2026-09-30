@@ -32,6 +32,13 @@ ailleurs, et les lire est ta première action — pas une option.
 
 `Grep` et `Glob` viennent **après** cette cartographie, jamais avant.
 
+## Procédures (skills)
+
+Les procédures du repo sont écrites dans `.claude/skills/<nom>/SKILL.md` (et, par workspace,
+`workspaces/<ws>/.claude/skills/`). Codex ne les découvre pas : il cherche `.agents/skills/`.
+Quand ta tâche correspond au champ `description` (« Use when … ») d'un de ces fichiers, lis ce
+`SKILL.md` en entier avant d'agir. Un skill décrit une procédure ; il ne lève aucune zone STOP.
+
 ## Zones STOP
 
 Elles sont définies par l'**invariant 9 de `CLAUDE.md`**, et **volontairement pas recopiées
