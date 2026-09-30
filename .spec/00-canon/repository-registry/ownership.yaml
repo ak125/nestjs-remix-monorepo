@@ -1400,3 +1400,11 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: low
+  # Retrait des 2 index strictement dupliqués de pieces_price (zone STOP prix,
+  # GO owner nominatif 2026-09-30) — PR #1623. Couvre .sql + .down.sql. Glob exact
+  # volontaire ; domaine / owner = ceux de l'autorité du tarif (piece-price-data).
+  - glob: backend/supabase/migrations/20260930_drop_pieces_price_duplicate_indexes*.sql
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: high
+    risk: medium
