@@ -42694,7 +42694,7 @@
         "backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts"
       ],
       "kind": "test",
-      "loc": 236,
+      "loc": 258,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/maintenance-calendar-integrity.test.ts",
       "risk": "medium",
@@ -43182,7 +43182,7 @@
         "backend/src/modules/diagnostic-engine/types/maintenance-calendar.schema.ts"
       ],
       "kind": "service",
-      "loc": 235,
+      "loc": 252,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts",
       "risk": "medium",
@@ -67209,7 +67209,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 187,
+      "loc": 198,
       "owner": "@ak125",
       "path": "backend/tests/unit/maintenance-calculator.service.test.ts",
       "risk": "medium",
@@ -67229,7 +67229,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 230,
+      "loc": 239,
       "owner": "@ak125",
       "path": "backend/tests/unit/maintenance-calendar-endpoint.test.ts",
       "risk": "medium",
@@ -84720,7 +84720,7 @@
         "~/components/ui/table"
       ],
       "kind": "route",
-      "loc": 523,
+      "loc": 531,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/blog-pieces-auto.calendrier-entretien.tsx",
       "risk": "medium",
@@ -91397,7 +91397,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 349,
+      "loc": 367,
       "owner": "@ak125",
       "path": "frontend/tests/unit/diagnostic-legacy-navigation.test.tsx",
       "risk": "medium",
@@ -101194,11 +101194,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "d7a47c08718ad1fd1246f203ad2d8ae809b3ffe03b5d1710fb1466756bca7ec2",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "13603fd5c2319c849c375cf9c72924d41bddf7647c23a014590607b5321479dd",
+      "audit/registry/files.json": "a66691aeb9a487aecf088926d79c021e0e015f9fd97f1e8efbfb9ca1793bade6",
       "audit/registry/rpc.json": "86d0c24b102036512a9f7b11d9ac04754288049a8b061981b19f0db0a8c86263",
       "audit/registry/runtime.json": "67dc8fe02246ff5d7cf25668af7409b32ea66bc575d4ae23455b57f94d111174"
     },
-    "sotFingerprint": "86ee59ec5dfc"
+    "sotFingerprint": "35867696d738"
   },
   "runtime": [
     {
