@@ -11,7 +11,7 @@
 -- Migration: index sur l'expression `type_id::integer` de auto_type_motor_code et de
 -- auto_type_number_code, lue par `rm_get_page_complete_v2`
 --
--- CONSTAT (mesuré en lecture seule le 2026-09-30 vers 15:30Z) :
+-- CONSTAT (mesuré en lecture seule le 2026-09-30 vers 15:10Z) :
 --   `rm_get_page_complete_v2` est la RPC de la page pièces (R2) : 448 186 appels
 --   depuis le démarrage de l'instance re-provisionnée (2026-09-17 01:14Z), 158,7 ms en
 --   moyenne (pg_stat_statements). Elle lit les codes moteur et les codes mine/CNIT du
