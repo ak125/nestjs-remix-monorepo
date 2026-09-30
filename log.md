@@ -496,3 +496,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/db-drop-exact-duplicate-indexes`
 - **Décision** : fix(db): retirer 7 index strictement dupliqués que le planificateur n'utilise pas
 - **Sortie** : PR #1619 | commits 69b17b6d4
+
+## 2026-09-30 — fix/deploy-prod-evidence-commit-scoped (auto)
+
+- **Branche** : `fix/deploy-prod-evidence-commit-scoped`
+- **Décision** : chore(registry): resync L1+L3 projections (+1 other commit)
+- **Sortie** : PR #1625 | commits 7cfcb5a9f cabcecf98
