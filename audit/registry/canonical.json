@@ -5599,7 +5599,7 @@
           }
         ],
         "definedInMigrations": [
-          "20260429_diag_maintenance_via_kg.sql"
+          "20260930_kg_maintenance_schedule_fuel_filter_aligned.sql"
         ],
         "domain": "UNKNOWN",
         "id": "public.kg_get_smart_maintenance_schedule#sig:1b4233d0",
@@ -5618,6 +5618,58 @@
         ],
         "securityDefiner": false,
         "sourceConfidence": "medium",
+        "status": "UNKNOWN",
+        "usedBy": []
+      },
+      {
+        "args": [
+          {
+            "mode": "IN",
+            "name": "p_engine_family_code",
+            "type": "text"
+          },
+          {
+            "mode": "IN",
+            "name": "p_current_km",
+            "type": "integer"
+          },
+          {
+            "mode": "IN",
+            "name": "p_profile_id",
+            "type": "uuid"
+          },
+          {
+            "mode": "IN",
+            "name": "p_last_maintenance_records",
+            "type": "jsonb"
+          },
+          {
+            "mode": "IN",
+            "name": "p_type_id",
+            "type": "integer"
+          },
+          {
+            "mode": "IN",
+            "name": "p_fuel_type",
+            "type": "text"
+          }
+        ],
+        "definedInMigrations": [
+          "20260930_kg_maintenance_schedule_fuel_filter_aligned.down.sql"
+        ],
+        "domain": "UNKNOWN",
+        "id": "public.kg_get_smart_maintenance_schedule#sig:5d15ecda",
+        "language": "plpgsql",
+        "name": "kg_get_smart_maintenance_schedule",
+        "owner": "__unassigned__",
+        "parseMode": "parsed",
+        "parseWarnings": [],
+        "returnType": "TABLE(rule_alias text, rule_label text, km_interval integer, month_interval integer, maintenance_priority text, applies_to_fuel text, km_remaining integer, status text)",
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "searchPath": [],
+        "securityDefiner": false,
+        "sourceConfidence": "high",
         "status": "UNKNOWN",
         "usedBy": []
       },
@@ -101194,10 +101246,10 @@
       "audit/registry/db.json": "7c35439bb913f5b738577b09c86b7c5784884ba0907fcffb6173d864593ac0a6",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
       "audit/registry/files.json": "a82946d2cc234cf2f33bd3ed0536554661814a18066b8c1c1fa603fda58a9c75",
-      "audit/registry/rpc.json": "86d0c24b102036512a9f7b11d9ac04754288049a8b061981b19f0db0a8c86263",
+      "audit/registry/rpc.json": "8cbab7d080536426d7bd000db37de1f236f1f345a6f1f5b49256a94a096fa366",
       "audit/registry/runtime.json": "67dc8fe02246ff5d7cf25668af7409b32ea66bc575d4ae23455b57f94d111174"
     },
-    "sotFingerprint": "6a76c1857f54"
+    "sotFingerprint": "7610204beec1"
   },
   "runtime": [
     {
