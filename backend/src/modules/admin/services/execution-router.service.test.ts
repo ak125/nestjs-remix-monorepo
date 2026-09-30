@@ -601,3 +601,109 @@ describe('ExecutionRouterService — R1_ROUTER executable path removed (Tranche-
     expect(EXECUTION_REGISTRY[RoleId.R1_ROUTER]).toBeUndefined();
   });
 });
+
+// R6 : l'enrichisseur renvoie un tableau ; avant, le routeur le prenait tel quel
+// et `inferStatus` concluait `success` même quand rien n'était écrit (refus RAG
+// du WriteGate) ou quand enrich() avait avalé une erreur (tableau vide).
+describe('ExecutionRouterService — R6_GUIDE_ACHAT outcome (RAG write refused, ADR-031/046)', () => {
+  beforeEach(resetMocks);
+
+  function capturePcqInserts(): any[] {
+    const inserted: any[] = [];
+    setTable('pieces_gamme', {
+      single: () => Promise.resolve({ data: null, error: null }),
+    });
+    setTable('__pipeline_chain_queue', {
+      insert: (payload?: any) => {
+        inserted.push(payload);
+        return Promise.resolve({ error: null });
+      },
+    });
+    return inserted;
+  }
+
+  async function runR6(enrich: jest.Mock, dryRun = false) {
+    const service = makeService({ BuyingGuideEnricherService: { enrich } });
+    return service.execute({
+      roleId: 'R6_GUIDE_ACHAT',
+      targetIds: ['655'],
+      dryRun,
+    });
+  }
+
+  it('12. RAG write refused (updated:false) → skipped + reason in pcq_error, never success', async () => {
+    const inserted = capturePcqInserts();
+    const enrich = jest.fn().mockResolvedValue([
+      {
+        pgId: '655',
+        sections: {},
+        averageConfidence: 0.9,
+        updated: false,
+        sectionsUpdated: 0,
+        skippedSections: ['RAG_SOURCE_REFUSED'],
+        reason: 'rag_provenance_refused',
+      },
+    ]);
+
+    const result = await runR6(enrich);
+
+    expect(enrich).toHaveBeenCalledWith(['655'], false);
+    expect(result.results[0].status).toBe('skipped');
+    expect(inserted).toHaveLength(1);
+    expect(inserted[0]).toMatchObject({
+      pcq_page_type: RoleId.R6_GUIDE_ACHAT,
+      pcq_status: 'done',
+      pcq_error: '1/1 skipped: rag_provenance_refused',
+    });
+  });
+
+  it('13. enrich() swallowed an error (no result for the target) → failed', async () => {
+    const inserted = capturePcqInserts();
+
+    const result = await runR6(jest.fn().mockResolvedValue([]));
+
+    expect(result.results[0].status).toBe('failed');
+    expect(inserted[0]).toMatchObject({ pcq_status: 'failed' });
+  });
+
+  it('14. guide written (updated:true) → success (control)', async () => {
+    const inserted = capturePcqInserts();
+
+    const result = await runR6(
+      jest.fn().mockResolvedValue([
+        {
+          pgId: '655',
+          sections: {},
+          averageConfidence: 0.9,
+          updated: true,
+          sectionsUpdated: 3,
+          skippedSections: [],
+        },
+      ]),
+    );
+
+    expect(result.results[0].status).toBe('success');
+    expect(inserted[0]).toMatchObject({ pcq_status: 'done', pcq_error: null });
+  });
+
+  it('15. dryRun preview → success, enrich called in dryRun', async () => {
+    capturePcqInserts();
+    const enrich = jest.fn().mockResolvedValue([
+      {
+        pgId: '655',
+        gammeName: 'Roulement de roue',
+        family: 'unknown',
+        sections: {},
+        qualityScore: 100,
+        qualityFlags: [],
+        antiWikiGate: { ok: true, reasons: [] },
+        wouldUpdate: true,
+      },
+    ]);
+
+    const result = await runR6(enrich, true);
+
+    expect(enrich).toHaveBeenCalledWith(['655'], true);
+    expect(result.results[0].status).toBe('success');
+  });
+});
