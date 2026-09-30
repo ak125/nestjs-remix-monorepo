@@ -12,9 +12,9 @@ license: Internal - Automecanik
 compatibility: Claude Code in the AutoMecanik monorepo. Reads frontend/app/** + audit/registry/canonical.json + the RUM chain __seo_cwv_raw/__seo_cwv_hourly/__seo_cwv_daily_rum (distinct from the lab table __seo_cwv_daily) + cron.job(_run_details). No mutations.
 allowed-tools: Read Grep Glob Bash
 tags: [audit, web-vitals, frontend, performance, inp, lcp, cls, react-router]
+argument-hint: "[check-name or 'all']"
 metadata:
   version: "0.3"
-  argument-hint: "[check-name or 'all']"
   spec: agentskills.io/specification v1
 ---
 

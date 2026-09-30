@@ -11,10 +11,10 @@ last_verified: '2026-05-18'
 license: Internal - Automecanik
 compatibility: Designed for Claude Code in the AutoMecanik monorepo. Stack — Supabase + PostgreSQL. Touches backend/supabase/migrations/ and __* canonical tables. Privileged because DDL is irreversible on prod.
 tags: [supabase, postgres, ddl, rls, migration, governance]
+argument-hint: "[migration-name]"
+disable-model-invocation: true
 metadata:
   version: "1.2"
-  argument-hint: "[migration-name]"
-  disable-model-invocation: true
   spec: agentskills.io/specification v1
 ---
 

@@ -83,7 +83,7 @@ echo ""
 echo "=== posttool-lint-check.sh ==="
 
 # Cas 1 : édition CLAUDE.md → invoque validate-agents-md.sh (warn stderr possible)
-INPUT='{"tool_name":"Edit","file_path":"/opt/automecanik/app/CLAUDE.md"}'
+INPUT='{"tool_name":"Edit","tool_input":{"file_path":"/opt/automecanik/app/CLAUDE.md"}}'
 echo "$INPUT" | bash scripts/claude-hooks/posttool-lint-check.sh > /tmp/h1-out 2> /tmp/h1-err
 assert_exit "posttool CLAUDE.md edit → exit 0 (warn-only)" "0" "$?"
 
@@ -92,14 +92,22 @@ echo "" | bash scripts/claude-hooks/posttool-lint-check.sh > /tmp/h1b-out 2> /tm
 assert_exit "posttool empty input → exit 0" "0" "$?"
 
 # Cas 3 : rollback CLAUDE_HOOKS_DISABLE=1
-INPUT='{"tool_name":"Edit","file_path":"/opt/automecanik/app/CLAUDE.md"}'
+INPUT='{"tool_name":"Edit","tool_input":{"file_path":"/opt/automecanik/app/CLAUDE.md"}}'
 CLAUDE_HOOKS_DISABLE=1 bash scripts/claude-hooks/posttool-lint-check.sh <<<"$INPUT" > /tmp/h1c-out 2>&1
 assert_exit "posttool CLAUDE_HOOKS_DISABLE=1 → exit 0 silent" "0" "$?"
 
 # Cas 4 (sanity) : fichier non-matching → exit 0, no output
-echo '{"tool_name":"Edit","file_path":"/opt/automecanik/app/log.md"}' \
+echo '{"tool_name":"Edit","tool_input":{"file_path":"/opt/automecanik/app/log.md"}}' \
   | bash scripts/claude-hooks/posttool-lint-check.sh > /tmp/h1d-out 2> /tmp/h1d-err
 assert_exit "posttool non-matching file → exit 0" "0" "$?"
+
+# Cas 5 : édition d'un SKILL.md → le validateur tourne sur CE skill (`--skill <nom>`,
+# racine lue dans le chemin). Avant : argument positionnel ignoré, clé lue hors `tool_input`.
+rm -f /tmp/skills-frontmatter.log
+echo "{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"$REPO_ROOT/.claude/skills/db-migration/SKILL.md\"}}" \
+  | bash scripts/claude-hooks/posttool-lint-check.sh > /tmp/h1e-out 2> /tmp/h1e-err
+assert_exit "posttool SKILL.md edit → exit 0 (warn-only)" "0" "$?"
+assert_contains "posttool SKILL.md edit → validateur lancé sur 1 skill" "evaluating 1 skill" "$(cat /tmp/skills-frontmatter.log 2>/dev/null)"
 
 # ============================================================
 # Hook 2 : sessionstart-workspace-context.sh
@@ -639,7 +647,7 @@ echo ""
 echo "=== pretool-bash-guard.sh (Guard 6 tag PROD) ==="
 
 run_bash_guard() {
-  echo "{\"command\":\"$1\"}" | bash scripts/claude-hooks/pretool-bash-guard.sh >/dev/null 2>&1
+  echo "{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"$1\"}}" | bash scripts/claude-hooks/pretool-bash-guard.sh >/dev/null 2>&1
   echo $?
 }
 
@@ -664,7 +672,7 @@ echo ""
 echo "=== pretool-supabase-guard.sh (Guard 6 DML) ==="
 
 run_sql_guard() {
-  echo "{\"query\":\"$1\"}" | bash scripts/claude-hooks/pretool-supabase-guard.sh >/dev/null 2>&1
+  echo "{\"tool_name\":\"mcp__supabase__execute_sql\",\"tool_input\":{\"query\":\"$1\"}}" | bash scripts/claude-hooks/pretool-supabase-guard.sh >/dev/null 2>&1
   echo $?
 }
 
@@ -679,6 +687,41 @@ assert_exit "sql-guard: SELECT FROM pieces → allow"           "0" "$(run_sql_g
 assert_exit "sql-guard: INSERT pieces_price → allow (scope=UPDATE/DELETE)" "0" "$(run_sql_guard 'INSERT INTO pieces_price (id) VALUES (1)')"
 # Sanity : guard existant (Guard 1) toujours actif
 assert_exit "sql-guard: DROP TABLE foo (no IF EXISTS) → BLOCK (G1)" "2" "$(run_sql_guard 'DROP TABLE foo')"
+
+# ============================================================
+# Guard : pretool-file-guard.sh — chemins protégés (format réel : tool_input.file_path)
+# ============================================================
+
+echo ""
+echo "=== pretool-file-guard.sh ==="
+
+run_file_guard() {
+  echo "{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"$1\"}}" | bash scripts/claude-hooks/pretool-file-guard.sh >/dev/null 2>&1
+  echo $?
+}
+
+assert_exit "file-guard: .github/workflows/ci.yml → BLOCK"    "2" "$(run_file_guard "$REPO_ROOT/.github/workflows/ci.yml")"
+assert_exit "file-guard: package-lock.json → BLOCK"           "2" "$(run_file_guard "$REPO_ROOT/package-lock.json")"
+assert_exit "file-guard: backend/tsconfig.json → BLOCK"       "2" "$(run_file_guard "$REPO_ROOT/backend/tsconfig.json")"
+assert_exit "file-guard: backend/src/app.module.ts → allow"   "0" "$(run_file_guard "$REPO_ROOT/backend/src/app.module.ts")"
+assert_exit "file-guard: modules/payments/ → allow (warn)"    "0" "$(run_file_guard "$REPO_ROOT/backend/src/modules/payments/x.ts")"
+
+echo "=== pretool-agent-guard.sh ==="
+
+# Le runtime lance chaque hook depuis un processus parent éphémère : chaque `$(...)` ci-dessous
+# reproduit ce parent différent. Le compteur doit suivre la session (`session_id`), pas `$PPID`.
+AG_SID="hooktest-$$"
+AG_BEFORE=$(ls /tmp/claude-agent-count-* 2>/dev/null | sort)
+run_agent_guard() {
+  printf '{"session_id":"%s","tool_name":"Agent","tool_input":{"subagent_type":"Explore"}}' "$AG_SID" \
+    | CLAUDE_MAX_SUBAGENTS=1 bash scripts/claude-hooks/pretool-agent-guard.sh >/dev/null 2>&1
+  echo $?
+}
+
+assert_exit "agent-guard: 1er subagent de la session (limite 1) → allow"         "0" "$(run_agent_guard)"
+assert_exit "agent-guard: 2e subagent, même session, autre parent → BLOCK"       "2" "$(run_agent_guard)"
+# Nettoyage : uniquement les compteurs créés par ces deux cas
+comm -13 <(printf '%s\n' "$AG_BEFORE") <(ls /tmp/claude-agent-count-* 2>/dev/null | sort) | xargs -r rm -f
 
 # ============================================================
 # Résumé

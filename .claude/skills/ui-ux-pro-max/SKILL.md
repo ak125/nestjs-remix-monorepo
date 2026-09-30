@@ -11,9 +11,9 @@ last_verified: '2026-05-18'
 license: Internal - Automecanik
 compatibility: Designed for Claude Code in the AutoMecanik monorepo. Stack — React Router 8 + shadcn/ui + Tailwind CSS. Consults packages/design-tokens as project-specific overlay.
 tags: [design-system, ui, ux, a11y, typography, palettes, charts]
+argument-hint: "[design-query or component-type]"
 metadata:
   version: "1.1"
-  argument-hint: "[design-query or component-type]"
   spec: agentskills.io/specification v1
 ---
 # UI/UX Pro Max - Design Intelligence

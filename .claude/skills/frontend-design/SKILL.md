@@ -11,10 +11,10 @@ last_verified: '2026-05-18'
 license: Internal - Automecanik. Inherits upstream MIT terms from anthropics/claude-plugins-official/frontend-design.
 compatibility: Designed for Claude Code in the AutoMecanik monorepo. Stack — React Router 8 + shadcn/ui + Tailwind CSS + lucide-react. Requires packages/design-tokens (SoT for colors, typography, spacing).
 tags: [frontend, react-router, shadcn, tailwind, design-tokens, a11y, wcag]
+argument-hint: "[component or page description]"
 metadata:
   version: "2.0"
   upstream: anthropics/claude-plugins-official/frontend-design@2026-05
-  argument-hint: "[component or page description]"
   spec: agentskills.io/specification v1
 ---
 

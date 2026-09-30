@@ -12,9 +12,9 @@ license: Internal - Automecanik
 compatibility: Designed for Claude Code in the AutoMecanik monorepo. Stack — NestJS + Supabase. Requires Supabase MCP read access to auto_type, pieces_gamme, v_compat_strict views. Uses RAG/vault as SoT for vehicle facts (no LLM hallucination).
 allowed-tools: Read Grep Glob Bash mcp__claude_ai_Supabase__execute_sql
 tags: [vehicle, vlevel, compatibility, supabase, adr-032, diagnostic]
+argument-hint: "[diagnose|vlevel|cache|quality|maintenance|dtc] [gamme-id or type-id]"
 metadata:
   version: "1.1"
-  argument-hint: "[diagnose|vlevel|cache|quality|maintenance|dtc] [gamme-id or type-id]"
   spec: agentskills.io/specification v1
 ---
 

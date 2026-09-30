@@ -12,9 +12,9 @@ license: Internal - Automecanik
 compatibility: Designed for Claude Code in the AutoMecanik monorepo. Stack — React Router 8 + shadcn/ui + Tailwind CSS. Read-only audit, no code mutations.
 allowed-tools: Read Grep Glob
 tags: [responsive, mobile-first, wcag, viewport, shadcn]
+argument-hint: "[/url-path or file-pattern]"
 metadata:
   version: "1.1"
-  argument-hint: "[/url-path or file-pattern]"
   spec: agentskills.io/specification v1
 ---
 

@@ -35,10 +35,13 @@ compatibility: Designed for Claude Code in AutoMecanik monorepo. Stack — …
 allowed-tools: Read Grep Glob             # space-separated, agentskills.io v1 experimental
 tags: [scope, role, stack, ...]
 
-# === METADATA libre ===
+# === CLAUDE CODE (lus au top-level uniquement — ignorés sous metadata:) ===
+argument-hint: "[args]"                   # autocomplétion de /nom
+# disable-model-invocation: true          # décommenter seulement si le skill ne doit partir que sur /nom
+
+# === METADATA libre (non lu par le runtime) ===
 metadata:
   version: "1.0"
-  argument-hint: "[args]"
   spec: agentskills.io/specification v1
 ---
 ```
@@ -118,7 +121,7 @@ Source-of-truth machine-readable : [`.spec/00-canon/ai-registry/skills.registry.
 
 ## Anti-patterns à éviter
 
-- ❌ Frontmatter au top-level pour `version` / `argument-hint` → mettre sous `metadata:`
+- ❌ `version` au top-level → le mettre sous `metadata:` ; ❌ `argument-hint` / `disable-model-invocation` sous `metadata:` → le runtime ne les lit qu'au top-level (sous `metadata:` ils sont inertes)
 - ❌ Description sans « Use when » → CSO trigger manquant, skill jamais invoqué
 - ❌ Description qui résume le workflow → workflow-summary trap
 - ❌ Body sans frontmatter du tout → spec broken silently (cf. `governance-vault-ops` pré-PR-V2)
