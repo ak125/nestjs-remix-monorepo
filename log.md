@@ -526,3 +526,20 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/ci-r2-timing-real-product-page`
 - **Décision** : chore(registry): resync L1+L3 projections (+1 other commit)
 - **Sortie** : PR #1605 | commits f19027cf3 a89786344
+## 2026-09-30 — perf/db-auto-type-codes-int-expr-indexes (auto)
+
+- **Branche** : `perf/db-auto-type-codes-int-expr-indexes`
+- **Décision** : docs(db): heure réelle de la mesure dans l'en-tête de la migration (15:10Z, pas 15:30Z) (+2 other commits)
+- **Sortie** : PR #1628 | commits 47c12cda9 d8949a046 2def4654a
+
+## 2026-09-30 — perf/db-auto-type-codes-int-expr-indexes (auto)
+
+- **Branche** : `perf/db-auto-type-codes-int-expr-indexes`
+- **Décision** : Merge origin/main into perf/db-auto-type-codes-int-expr-indexes (+4 other commits)
+- **Sortie** : PR #1628 | commits ae753efc0 7f2063c85 47c12cda9 d8949a046 2def4654a
+
+## 2026-09-30 — perf/db-auto-type-codes-int-expr-indexes (auto)
+
+- **Branche** : `perf/db-auto-type-codes-int-expr-indexes`
+- **Décision** : Merge origin/main into perf/db-auto-type-codes-int-expr-indexes (+6 other commits)
+- **Sortie** : PR #1628 | commits 8f8b95fc4 eff332dc2 ae753efc0 7f2063c85 47c12cda9 d8949a046 2def4654a

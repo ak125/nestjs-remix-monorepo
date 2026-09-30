@@ -385,28 +385,42 @@
       }
     },
     {
-      "actual_mode": "DRAFTED",
+      "actual_mode": "ACTIVE",
       "automation_id": "soft-404-events-retention",
       "domain": "D3",
+      "drift_note": "Purge = borne de stockage, sans lecteur aval : aucun code ne lit __soft_404_events ni v_soft_404_demand_30d (git grep main 2026-09-30). Runbook vault encore sur seo-routines.",
       "evidence": [
         {
           "excerpt": "PERFORM cron.schedule('soft-404-events-retention', '20 3 * * *', v_expected_command);",
           "line": 73,
-          "note": "exact-match/fail-closed + provenance marker ; .down unschedules only this job ; first run deletes ~159k rows > 90 d (irreversible)",
+          "note": "exact-match/fail-closed + provenance marker ; .down unschedules only this job ; applied 2026-09-29 (run 36608269299)",
           "path": "backend/supabase/migrations/20260929_soft_404_events_retention_cron.sql"
         }
       ],
       "executor": "pg_cron",
       "intended_mode": "ACTIVE",
-      "last_verified_at": "2026-09-29",
+      "last_verified_at": "2026-09-30",
       "last_verified_by": "@ak125",
-      "last_verified_method": "manual-inspection",
-      "missing_step": "merge PR #1620 + apply (only_ids) + prove first 03:20 UTC run: job_run_details succeeded 'DELETE n' and 0 rows older than 90 d",
-      "owner_action": "review + merge #1620, then apply-supabase-migrations dry-run → APPLY",
+      "last_verified_method": "runtime-probe",
       "related_pr": [
         1620
       ],
-      "risk": "medium"
+      "risk": "medium",
+      "runtime_evidence": {
+        "consumer": "no-consumer-by-design",
+        "output": {
+          "kind": "db_row",
+          "observed_at": "2026-09-30",
+          "query_or_url": "WITH r AS (SELECT d.start_time FROM cron.job_run_details d JOIN cron.job j USING (jobid) WHERE j.jobname='soft-404-events-retention' AND d.status='succeeded' ORDER BY d.start_time DESC LIMIT 1) SELECT (SELECT min(ts) FROM public.__soft_404_events) >= r.start_time - interval '90 days' FROM r  -- = true ; min(ts) 2026-07-02 03:20:25Z, borne 03:20:00Z",
+          "source": "public.__soft_404_events"
+        },
+        "trigger": {
+          "kind": "db_row",
+          "observed_at": "2026-09-30",
+          "query_or_url": "SELECT j.schedule, j.active, r.status, r.return_message, r.start_time FROM cron.job j JOIN LATERAL (SELECT * FROM cron.job_run_details d WHERE d.jobid=j.jobid ORDER BY d.start_time DESC LIMIT 1) r ON true WHERE j.jobname='soft-404-events-retention'  -- '20 3 * * *', active, succeeded 'DELETE 160060' @2026-09-30 03:20:00Z (0.57 s)",
+          "source": "cron.job_run_details"
+        }
+      }
     },
     {
       "actual_mode": "SCRIPT_ONLY",
@@ -101172,7 +101186,7 @@
     "generatedAt": "1970-01-01T00:00:00.000Z",
     "generatorVersion": "1.0.0",
     "inputHashes": {
-      ".spec/00-canon/repository-registry/automation-reality.yaml": "03fea67f80c0783ae5a137d2a47952bd4abef0295d10c1cea4ea7b06ccc11eba",
+      ".spec/00-canon/repository-registry/automation-reality.yaml": "0ab11576b27d12f8c90f4202282216a5271a3feb7791c4cca86a4ae575020a2f",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
       ".spec/00-canon/repository-registry/ownership.yaml": "35f33dc0f7e4d4d6f1e67906816e6a8bfbb6b70794e60e9ea4b4148dca2c0f28",
@@ -101183,7 +101197,7 @@
       "audit/registry/rpc.json": "86d0c24b102036512a9f7b11d9ac04754288049a8b061981b19f0db0a8c86263",
       "audit/registry/runtime.json": "67dc8fe02246ff5d7cf25668af7409b32ea66bc575d4ae23455b57f94d111174"
     },
-    "sotFingerprint": "420ae7a776be"
+    "sotFingerprint": "05b6f751adbf"
   },
   "runtime": [
     {
