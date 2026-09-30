@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 9d3f901cbc9e6e751d7bc7d53096ce2618ebc5dcd3e99fe4ec53e5a65b4bda4a
+source_sha256: 25a81e56ea35e8a31fe872f1e9a7d5828ad1fba0a061d29b89f2395113aa12c5
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 2948 |
+| Files (Layer 1) | 2949 |
 | DB tables (Layer 1) | 313 |
 | DB RPC (Layer 1) | 253 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 999 |
 
-Source sotFingerprint: `8e371a24dfe0`.
+Source sotFingerprint: `7e4ee5281eed`.
 
 ## Comment l'utiliser
 
@@ -132,10 +132,10 @@ Source sotFingerprint: `8e371a24dfe0`.
 
 ### D13 — Config & System
 
-- **Files**: 208 (service=70, script=63, config=54, test=21)
+- **Files**: 209 (service=70, script=63, config=54, test=22)
 - **Runtime entrypoints**: 15
-- **Top owners**: @ak125 (208)
-- **Status**: LIVE=84, UNKNOWN=124
+- **Top owners**: @ak125 (209)
+- **Status**: LIVE=84, UNKNOWN=125
 
 ### D14 — Gamme Aggregates & V-Level
 
