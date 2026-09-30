@@ -508,3 +508,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/db-pieces-price-duplicate-indexes`
 - **Décision** : chore(registry): couvrir la migration des doublons pieces_price dans ownership.yaml (+3 other commits)
 - **Sortie** : PR #1623 | commits 723c42a30 af3b4c2cd f27dbb22e 3745a40da
+
+## 2026-09-29 — fix/r6-buying-guide-rag-write-gate (auto)
+
+- **Branche** : `fix/r6-buying-guide-rag-write-gate`
+- **Décision** : chore(audit): baseline served-content-write-sinks 61 → 60 (fermeture R6) (+3 other commits)
+- **Sortie** : PR #1615 | commits 729e5b178 fd26693a0 70208ce18 76de4e601
