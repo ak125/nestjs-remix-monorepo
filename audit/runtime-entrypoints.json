@@ -2748,8 +2748,12 @@
       "backend/supabase/migrations/20260930_auto_type_codes_type_id_int_expr_indexes.sql",
       "backend/supabase/migrations/20260930_drop_archive_agentic_duplicate_indexes.down.sql",
       "backend/supabase/migrations/20260930_drop_archive_agentic_duplicate_indexes.sql",
+      "backend/supabase/migrations/20260930_drop_duplicate_unique_keys.down.sql",
+      "backend/supabase/migrations/20260930_drop_duplicate_unique_keys.sql",
       "backend/supabase/migrations/20260930_drop_pieces_price_duplicate_indexes.down.sql",
       "backend/supabase/migrations/20260930_drop_pieces_price_duplicate_indexes.sql",
+      "backend/supabase/migrations/20260930_rls_align_service_role_only_policies.down.sql",
+      "backend/supabase/migrations/20260930_rls_align_service_role_only_policies.sql",
       "backend/supabase/migrations/README.md"
     ],
     "ci_workflows": [
@@ -2925,7 +2929,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1539,
+  "runtime_files_count": 1543,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4134,8 +4138,12 @@
     "backend/supabase/migrations/20260930_auto_type_codes_type_id_int_expr_indexes.sql",
     "backend/supabase/migrations/20260930_drop_archive_agentic_duplicate_indexes.down.sql",
     "backend/supabase/migrations/20260930_drop_archive_agentic_duplicate_indexes.sql",
+    "backend/supabase/migrations/20260930_drop_duplicate_unique_keys.down.sql",
+    "backend/supabase/migrations/20260930_drop_duplicate_unique_keys.sql",
     "backend/supabase/migrations/20260930_drop_pieces_price_duplicate_indexes.down.sql",
     "backend/supabase/migrations/20260930_drop_pieces_price_duplicate_indexes.sql",
+    "backend/supabase/migrations/20260930_rls_align_service_role_only_policies.down.sql",
+    "backend/supabase/migrations/20260930_rls_align_service_role_only_policies.sql",
     "backend/supabase/migrations/README.md",
     "docker/lighthouse/Dockerfile",
     "docker/lighthouse/crontab",
