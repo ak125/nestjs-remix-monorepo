@@ -172,6 +172,63 @@ describe('diagnostic safety and deterministic scoring regressions', () => {
     expect(scored.vehicle_fit_score).toBe(10);
     expect(scored.maintenance_history_score).toBe(7);
   });
+  const ranged = (score: number, id: number): DiagSymptomCauseLink => {
+    const base = link(score, id);
+    return {
+      ...base,
+      cause_id: id,
+      cause: {
+        ...base.cause!,
+        id,
+        slug: `ranged_${id}`,
+        ...{
+          plausible_km_min: 20000,
+          plausible_km_max: 120000,
+          plausible_age_min: 2,
+          plausible_age_max: 15,
+        },
+      },
+    };
+  };
+  test.each([15000, 100000, 200000])(
+    'a declared mileage range never promotes a cause (%i km)',
+    (mileage_km) => {
+      const context = { brand: 'Test', model: 'Test', year: 2015, mileage_km };
+      const scores = new HypothesisScoringEngine().score(
+        [ranged(40, 2), link(60, 1)],
+        context,
+      );
+      expect(scores[0].hypothesis_id).toBe('brake_pads_worn');
+      const [withRange, without] = [ranged(60, 2), link(60, 1)].map(
+        (l) => new HypothesisScoringEngine().score([l], context)[0],
+      );
+      expect(withRange.total_score).toBe(without.total_score);
+    },
+  );
+  test('a vehicle clearly below the declared range still lowers the cause', () => {
+    const engine = new HypothesisScoringEngine();
+    const young = new Date().getFullYear() - 1;
+    const [early] = engine.score([ranged(60, 2)], {
+      brand: 'Test',
+      model: 'Test',
+      year: 2015,
+      mileage_km: 5000,
+    });
+    const [recent] = engine.score([ranged(60, 2)], {
+      brand: 'Test',
+      model: 'Test',
+      year: young,
+      mileage_km: 100000,
+    });
+    expect(early).toMatchObject({
+      lifecycle_fit_score: 3,
+      plausibility_score: 2,
+    });
+    expect(recent).toMatchObject({
+      lifecycle_fit_score: 5,
+      plausibility_score: 5,
+    });
+  });
   test.each([0, 95])(
     'a mapped safety rule follows its linked cause, not its score (%i)',
     (total_score) => {
