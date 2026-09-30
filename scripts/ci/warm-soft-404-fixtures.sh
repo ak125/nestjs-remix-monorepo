@@ -94,12 +94,16 @@ prime_backend() {
 }
 
 # x-ratelimit-remaining-short of a captured `curl -i` response (first header
-# block only), or "absent".
+# block only), or "absent". awk reads the WHOLE response: exiting at the end of
+# the headers would close the pipe while the HTML body is still being written
+# (a page is larger than the pipe buffer), and the writer then fails with
+# "write error: Broken pipe" on every page (Deploy PREPROD run 36747085705).
 remaining_short() {
-  printf '%s\n' "$1" | tr -d '\r' | awk '
-    NF == 0 { exit }
-    tolower($1) == "x-ratelimit-remaining-short:" { print $2; found = 1; exit }
-    END { if (!found) print "absent" }'
+  printf '%s\n' "$1" | awk '
+    { sub(/\r$/, "") }
+    !done && NF == 0 { done = 1 }
+    !done && tolower($1) == "x-ratelimit-remaining-short:" { value = $2; done = 1 }
+    END { print (value == "" ? "absent" : value) }'
 }
 
 echo "🔥 Warming soft-404 R2 fixtures (condition-based cache pre-pass, ${PACE_SECONDS}s between pages) against $BASE"
