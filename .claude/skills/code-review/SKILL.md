@@ -12,9 +12,9 @@ license: Internal - Automecanik
 compatibility: Designed for Claude Code in the AutoMecanik monorepo. Read-only audit + analysis. Does NOT mutate code.
 allowed-tools: Read Grep Glob Bash
 tags: [review, security, hmac, rls, governance, adr]
+argument-hint: "[PR-number or file-path]"
 metadata:
   version: "1.1"
-  argument-hint: "[PR-number or file-path]"
   spec: agentskills.io/specification v1
 ---
 

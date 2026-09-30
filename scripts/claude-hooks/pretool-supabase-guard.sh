@@ -12,7 +12,7 @@ set -euo pipefail
 
 # Read tool input from stdin (JSON)
 INPUT=$(cat)
-QUERY=$(echo "$INPUT" | jq -r '.query // empty' 2>/dev/null || echo "")
+QUERY=$(echo "$INPUT" | jq -r '.tool_input.query // empty' 2>/dev/null || echo "")
 
 if [ -z "$QUERY" ]; then
   exit 0

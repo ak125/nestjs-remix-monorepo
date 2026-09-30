@@ -13,8 +13,17 @@ import { resolve } from "node:path";
 // This gate requires, for the exact tagged commit, the ci.yml push run on main
 // with each job below `success` in its latest execution. Read-only; fail-closed
 // on anything else (pending, failed, skipped, cancelled, missing, API error).
+//
+// The run is found from the commit's own check runs, never from the workflow-run
+// listing. On 2026-09-30 that listing, filtered on head_sha/event/branch, returned
+// nothing for 8bd2c6fce whose ci.yml run 36607311640 had existed for 20 h (created
+// 2026-09-29T17:46Z, all three jobs green): deploy-prod run 36726344534 refused a
+// validated commit. For an Actions job the check-run id is the job id; the job
+// object confirms it (check_run_url) and names its run, which is read by id.
 
 export const CI_WORKFLOW = "ci.yml";
+const CI_WORKFLOW_PATH = `.github/workflows/${CI_WORKFLOW}`;
+const ACTIONS_APP = "github-actions";
 
 // `key` is the job id in ci.yml, `name` its display name (what the API returns).
 // ci.yml chains them: deploy → e2e-smoke → lighthouse.
@@ -24,13 +33,19 @@ export const REQUIRED_JOBS = [
   { key: "lighthouse", name: "🔦 Lighthouse Performance Audit" },
 ];
 
-// Picks the most recent ci.yml run of `sha`. `runs` is the API list, already
-// filtered on head_sha/event/branch; the head_sha check keeps a filter the API
-// ignored from ever validating another commit.
+// Picks the most recent ci.yml push run on main of `sha`. `runs` are the runs
+// the commit's check runs point to, read by id: any workflow, event or branch
+// can appear, so the whole scope is checked here.
 export function selectRun(sha, runs) {
   return (
     runs
-      .filter((run) => run.head_sha === sha)
+      .filter(
+        (run) =>
+          run.head_sha === sha &&
+          run.path === CI_WORKFLOW_PATH &&
+          run.event === "push" &&
+          run.head_branch === "main",
+      )
       .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))[0] ??
     null
   );
@@ -81,26 +96,59 @@ export async function checkPreprodEvidence(
   })) {
     if (!value) throw new Error(`variable requise absente : ${name}`);
   }
-  const base = `${apiUrl}/repos/${repository}/actions`;
-  const params = new URLSearchParams({
-    head_sha: sha,
-    event: "push",
-    branch: "main",
-    per_page: "100",
-  });
-  const { workflow_runs: runs = [] } = await getJson(
-    `${base}/workflows/${CI_WORKFLOW}/runs?${params}`,
-    token,
-    fetchRequest,
-  );
+  const repoApi = `${apiUrl}/repos/${repository}`;
+  const runs = await findRuns(repoApi, sha, token, fetchRequest);
   const run = selectRun(sha, runs);
   if (!run) return { ok: false, run: null, rows: [] };
   const { jobs = [] } = await getJson(
-    `${base}/runs/${run.id}/jobs?filter=latest&per_page=100`,
+    `${repoApi}/actions/runs/${run.id}/jobs?filter=latest&per_page=100`,
     token,
     fetchRequest,
   );
   return { run, ...assessJobs(jobs) };
+}
+
+// Runs that recorded a required job on `sha`, read by id (all attempts, all
+// workflows: selectRun keeps the scope).
+async function findRuns(repoApi, sha, token, fetchRequest) {
+  const runIds = new Set();
+  for (const { name } of REQUIRED_JOBS) {
+    const params = new URLSearchParams({
+      check_name: name,
+      filter: "all",
+      per_page: "100",
+    });
+    const { total_count: total = 0, check_runs: checkRuns = [] } =
+      await getJson(
+        `${repoApi}/commits/${sha}/check-runs?${params}`,
+        token,
+        fetchRequest,
+      );
+    if (total > checkRuns.length) {
+      throw new Error(
+        `${total} check runs « ${name} » sur ce commit, au-delà d'une page`,
+      );
+    }
+    for (const checkRun of checkRuns) {
+      if (checkRun.app?.slug !== ACTIONS_APP) continue;
+      const job = await getJson(
+        `${repoApi}/actions/jobs/${checkRun.id}`,
+        token,
+        fetchRequest,
+      );
+      if (!job.check_run_url?.endsWith(`/check-runs/${checkRun.id}`)) {
+        throw new Error(
+          `le job ${checkRun.id} ne correspond pas au check run « ${name} »`,
+        );
+      }
+      runIds.add(job.run_id);
+    }
+  }
+  const runs = [];
+  for (const id of runIds) {
+    runs.push(await getJson(`${repoApi}/actions/runs/${id}`, token, fetchRequest));
+  }
+  return runs;
 }
 
 async function main() {
@@ -119,13 +167,20 @@ async function main() {
       `❌ FATAL: aucun run ${CI_WORKFLOW} (push sur main) pour ce commit.`,
     );
     console.log("");
-    console.log("  Ce commit n'a jamais été validé sur le container PREPROD.");
+    console.log(
+      "  Aucun job Deploy PREPROD, E2E Smoke ou Lighthouse de ci.yml n'est enregistré",
+    );
+    console.log("  sur ce commit pour un push sur main.");
     console.log(
       "  Seul un commit poussé sur main passe par Deploy PREPROD, E2E Smoke et Lighthouse.",
     );
     console.log("");
+    console.log("Remède :");
     console.log(
-      "Remède : taguer un commit de main dont ces trois jobs sont verts.",
+      "  1. Taguer un commit de main dont ces trois jobs sont verts.",
+    );
+    console.log(
+      "  2. OU, si le run ci.yml de ce commit n'a pas encore atteint Deploy PREPROD : attendre, puis relancer ce workflow.",
     );
     process.exitCode = 1;
     return;

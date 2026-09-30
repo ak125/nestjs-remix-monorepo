@@ -9,6 +9,23 @@ function integer(headers, key) {
 }
 
 /**
+ * Whole seconds of idle time that release every earlier hit of the burst tier.
+ * Nest expires each hit one TTL after it arrived, so a request sent after this
+ * idle time starts in an empty `short` window: it can only be throttled by its
+ * own cost, never by how fast the requests before it returned. Callers pacing
+ * real requests (shell smokes via the CLI below) take it from THROTTLER_TIERS.
+ *
+ * @param {Array<{name: string, ttl: number}>} tiers
+ */
+export function burstWindowSeconds(tiers) {
+  const short = tiers.find(({ name }) => name === "short");
+  if (!short || !Number.isSafeInteger(short.ttl) || short.ttl <= 0) {
+    throw new Error("Rate-budget setup requires the configured numeric TTLs");
+  }
+  return Math.ceil(short.ttl / 1000);
+}
+
+/**
  * Admit an independent scenario using the real SSR bucket on the runner's IP.
  * Reserve 32 requests for navigation/loaders/prefetch. This is headroom, not an
  * exemption: an over-budget scenario still receives 429 and fails normally.
@@ -28,15 +45,14 @@ export async function waitForRateBudget({
   log = console.log,
   maxWaitMs = 75_000,
 }) {
-  const short = tiers.find(({ name }) => name === "short");
   if (
-    !short ||
     tiers.some(
       ({ name, ttl }) => !name || !Number.isSafeInteger(ttl) || ttl <= 0,
     )
   ) {
     throw new Error("Rate-budget setup requires the configured numeric TTLs");
   }
+  const shortSeconds = burstWindowSeconds(tiers);
   const deadline = now() + maxWaitMs;
   for (;;) {
     const { status, headers } = await probe();
@@ -76,7 +92,7 @@ export async function waitForRateBudget({
           waitSeconds = Math.max(waitSeconds, Math.ceil(ttl / 1000));
       }
       ready = waitSeconds === 0;
-      if (ready) waitSeconds = Math.ceil(short.ttl / 1000);
+      if (ready) waitSeconds = shortSeconds;
     }
     const waitMs = waitSeconds * 1000;
     if (now() + waitMs > deadline) {
@@ -91,4 +107,20 @@ export async function waitForRateBudget({
     await sleep(waitMs);
     if (ready) return;
   }
+}
+
+// Shell entry point for CI steps that pace real requests on the same policy:
+//   node scripts/ci/preprod-e2e-rate-budget.mjs --burst-window-seconds
+// prints burstWindowSeconds(THROTTLER_TIERS); Node 24 strips the config's types.
+// No top-level await: Playwright fixtures import this module, and a module
+// with top-level await cannot be loaded through require(esm).
+if (import.meta.main) {
+  const args = process.argv.slice(2);
+  if (args.length !== 1 || args[0] !== "--burst-window-seconds") {
+    console.error("usage: preprod-e2e-rate-budget.mjs --burst-window-seconds");
+    process.exit(2);
+  }
+  import("../../backend/src/config/throttler-tiers.config.ts").then(
+    ({ THROTTLER_TIERS }) => console.log(burstWindowSeconds(THROTTLER_TIERS)),
+  );
 }
