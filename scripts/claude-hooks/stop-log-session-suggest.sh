@@ -22,20 +22,27 @@
 #   - Skips during rebase / merge / cherry-pick / bisect to avoid colliding
 #     with operations the user is steering by hand.
 #   - Honours pre-commit hooks (no --no-verify).
+#   - Never falls back to another checkout, never sweeps an index or an
+#     archive it did not prepare (the commit names its paths: `--only`),
+#     never commits after the branch's PR is merged or closed, and never
+#     commits when that state is unknown (gh missing or failing: stderr).
 
 set -u
 
-REPO_ROOT="$(git -C "${PWD}" rev-parse --show-toplevel 2>/dev/null || echo /opt/automecanik/app)"
+# No fallback: outside a git worktree there is nothing to log here, and a
+# hardcoded checkout would receive another session's entry.
+REPO_ROOT="$(git -C "${PWD}" rev-parse --show-toplevel 2>/dev/null)" || exit 0
 cd "$REPO_ROOT" 2>/dev/null || exit 0
 
 LOG_FILE="${REPO_ROOT}/log.md"
 MARKER_DIR="${REPO_ROOT}/.claude/.session-log-state"
-mkdir -p "$MARKER_DIR" 2>/dev/null
 LAST_SHA_FILE="${MARKER_DIR}/last-suggested-head"
 LAST_BRANCH_FILE="${MARKER_DIR}/last-suggested-branch"
+MAIN_REF=refs/remotes/origin/main
 
 # Bail if log.md does not exist (feature not yet shipped on this branch).
 [ -f "$LOG_FILE" ] || exit 0
+mkdir -p "$MARKER_DIR" 2>/dev/null
 
 # Bail if a multi-step git operation is in progress.
 GIT_DIR="$(git rev-parse --git-dir 2>/dev/null || echo .git)"
@@ -52,7 +59,7 @@ case "$current_branch" in
 esac
 
 # Look for commits ahead of origin/main on the current branch.
-commits_ahead="$(git log origin/main..HEAD --oneline 2>/dev/null | wc -l | tr -d ' ')"
+commits_ahead="$(git log "$MAIN_REF"..HEAD --oneline 2>/dev/null | wc -l | tr -d ' ')"
 [ "${commits_ahead:-0}" -lt 1 ] && exit 0
 
 # Defence-in-depth against runaway auto-commit chains:
@@ -79,20 +86,46 @@ if ! git diff --quiet -- "$LOG_FILE" || ! git diff --cached --quiet -- "$LOG_FIL
   exit 0
 fi
 
+# Only commit what this hook prepares: another staged path or a pre-existing
+# change to the archive belongs to someone else (the failure path below
+# resets, restores or removes the archive). The commit itself also names its
+# paths, so a path staged by someone else while this hook runs stays out.
+ARCHIVE_FILE="${REPO_ROOT}/log-archive-$(date +%Y).md"
+if ! git diff --cached --quiet; then
+  echo "stop-log: index non vide — entrée auto non créée" >&2
+  exit 0
+fi
+if [ -e "$ARCHIVE_FILE" ] && { ! git ls-files --error-unmatch -- "$ARCHIVE_FILE" >/dev/null 2>&1 || ! git diff --quiet -- "$ARCHIVE_FILE"; }; then
+  echo "stop-log: $(basename "$ARCHIVE_FILE") modifié ou non suivi — entrée auto non créée" >&2
+  exit 0
+fi
+
+# A merged or closed PR means the branch is done: a commit now would land
+# after the PR head (squash merges leave the branch "ahead" of origin/main).
+pr_number=""
+pr_part="aucune"
+if command -v gh >/dev/null 2>&1 \
+   && pr_state="$(gh pr list --head "$current_branch" --state all --json number,state \
+        --jq '([.[] | select(.state == "OPEN")][0].number // "") as $o | "\($o)|\(length)"' 2>/dev/null)"; then
+  IFS='|' read -r pr_number pr_total <<< "$pr_state"
+  if [ -z "$pr_number" ] && [ "${pr_total:-0}" -gt 0 ]; then
+    echo "stop-log: PR de ${current_branch} fusionnée ou fermée — aucun commit après sa tête" >&2
+    exit 0
+  fi
+  [ -n "$pr_number" ] && pr_part="#${pr_number}"
+else
+  # Unknown state is not "no PR": the branch may already be merged.
+  echo "stop-log: état de PR inconnu (gh indisponible ou en échec) — aucune entrée créée" >&2
+  exit 0
+fi
+
 # Gather facts for the entry.
 today="$(date +%F)"
 last_commit_subject="$(git log -1 --pretty=%s 2>/dev/null | tr -d '\r' | cut -c1-120)"
-short_shas="$(git log origin/main..HEAD --pretty=%h 2>/dev/null | tr '\n' ' ' | sed 's/ *$//')"
+short_shas="$(git log "$MAIN_REF"..HEAD --pretty=%h 2>/dev/null | tr '\n' ' ' | sed 's/ *$//')"
 plus_n=""
 if [ "$commits_ahead" -gt 1 ]; then
   plus_n=" (+$((commits_ahead - 1)) other commit$([ "$((commits_ahead - 1))" -gt 1 ] && echo s))"
-fi
-
-pr_number=""
-pr_part="aucune"
-if command -v gh >/dev/null 2>&1; then
-  pr_number="$(gh pr list --head "$current_branch" --state open --json number --jq '.[0].number' 2>/dev/null || true)"
-  [ -n "$pr_number" ] && pr_part="#${pr_number}"
 fi
 
 # Append deterministic entry. Always one blank line before the H2 heading.
@@ -107,7 +140,6 @@ fi
 # live file never grows without limit. Deterministic, no LLM. The archive is
 # committed for history but never read at session start (CLAUDE.md reads only
 # the bounded `tail` of log.md).
-ARCHIVE_FILE="${REPO_ROOT}/log-archive-$(date +%Y).md"
 bash "${REPO_ROOT}/scripts/claude-hooks/rotate-log.sh" "$LOG_FILE" "$ARCHIVE_FILE" 2>/dev/null || true
 
 # Stop hook companion : suggérer (stderr-only) une mise à jour CLAUDE.md /
@@ -119,13 +151,15 @@ if [ -x "${REPO_ROOT}/scripts/claude-hooks/stop-claude-md-suggest.sh" ]; then
 fi
 
 # Stage log.md (+ the archive if rotation just touched it) and commit.
-git add -- "$LOG_FILE" 2>/dev/null
-[ -f "$ARCHIVE_FILE" ] && git add -- "$ARCHIVE_FILE" 2>/dev/null
+commit_paths=("$LOG_FILE")
+[ -f "$ARCHIVE_FILE" ] && commit_paths+=("$ARCHIVE_FILE")
+git add -- "${commit_paths[@]}" 2>/dev/null
 
 # Use a dedicated commit message. Pre-commit hooks run normally (no bypass).
-if git commit -m "chore(log): auto session entry for ${current_branch}" \
+# `--only` + pathspec: the commit holds these paths and nothing else staged.
+if git commit --only -m "chore(log): auto session entry for ${current_branch}" \
               -m "Generated by stop-log-session-suggest.sh after detecting ${commits_ahead} commit(s) ahead of origin/main." \
-              --quiet 2>/tmp/.session-log-commit-err; then
+              --quiet -- "${commit_paths[@]}" 2>"${GIT_DIR}/stop-log-commit.err"; then
   # Update marker with the NEW HEAD (the auto-commit just landed).
   printf '%s\n' "$(git rev-parse HEAD)" > "$LAST_SHA_FILE"
   printf '%s\n' "$current_branch" > "$LAST_BRANCH_FILE"
