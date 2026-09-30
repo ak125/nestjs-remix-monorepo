@@ -521,6 +521,11 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Décision** : chore(registry): resync L1+L3 projections (+1 other commit)
 - **Sortie** : PR #1625 | commits 7cfcb5a9f cabcecf98
 
+## 2026-09-29 — fix/ci-r2-timing-real-product-page (auto)
+
+- **Branche** : `fix/ci-r2-timing-real-product-page`
+- **Décision** : chore(registry): resync L1+L3 projections (+1 other commit)
+- **Sortie** : PR #1605 | commits f19027cf3 a89786344
 ## 2026-09-30 — perf/db-auto-type-codes-int-expr-indexes (auto)
 
 - **Branche** : `perf/db-auto-type-codes-int-expr-indexes`
