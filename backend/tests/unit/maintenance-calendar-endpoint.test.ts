@@ -97,13 +97,13 @@ describe('MaintenanceCalculatorService.getCalendar() (ADR-032 D9)', () => {
     expect(calendar.controles_mensuels[0].element).toContain('huile');
   });
 
-  it('returns empty controles_mensuels when wiki content missing (graceful)', async () => {
+  it('returns null controles_mensuels when wiki content is missing (absence is not an empty list)', async () => {
     mockRpc.mockResolvedValue({ data: [], error: null });
     mockGetControles.mockReturnValue(null);
 
     const calendar = await service.getCalendar(null, 0);
 
-    expect(calendar.controles_mensuels).toEqual([]);
+    expect(calendar.controles_mensuels).toBeNull();
     expect(calendar.schedule).toEqual([]);
     expect(calendar.alerts).toEqual([]);
   });

@@ -108,7 +108,7 @@ describe('MaintenanceCalculatorService (ADR-032 PR-2)', () => {
   });
 
   describe('getAlerts()', () => {
-    it('uses default 5 milestones (10k/30k/60k/100k/150k) when none provided', async () => {
+    it('leaves the default milestones to the RPC when none provided', async () => {
       mockRpc.mockResolvedValueOnce({
         data: [
           { milestone_km: 10000, actions: [] },
@@ -122,12 +122,11 @@ describe('MaintenanceCalculatorService (ADR-032 PR-2)', () => {
 
       const alerts = await service.getAlerts();
 
+      // p_milestones is omitted so the RPC's own DEFAULT applies; the service
+      // keeps no copy of it.
       expect(mockRpc).toHaveBeenCalledWith(
         'kg_get_maintenance_alerts_by_milestone',
-        expect.objectContaining({
-          p_milestones: [10000, 30000, 60000, 100000, 150000],
-          p_fuel_type: null,
-        }),
+        { p_fuel_type: null },
         expect.objectContaining({ source: 'internal' }),
       );
       expect(alerts).toHaveLength(5);
