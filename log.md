@@ -496,3 +496,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/db-drop-exact-duplicate-indexes`
 - **Décision** : fix(db): retirer 7 index strictement dupliqués que le planificateur n'utilise pas
 - **Sortie** : PR #1619 | commits 69b17b6d4
+
+## 2026-09-30 — fix/db-pieces-price-duplicate-indexes (auto)
+
+- **Branche** : `fix/db-pieces-price-duplicate-indexes`
+- **Décision** : chore(registry): régénérer les projections pour la migration des doublons pieces_price (+1 other commit)
+- **Sortie** : PR #1623 | commits f27dbb22e 3745a40da
