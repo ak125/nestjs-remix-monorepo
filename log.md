@@ -549,3 +549,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `chore/skills-procedures-2026-09-30`
 - **Décision** : docs(skills): aligner skills et procédures agent sur l'état réel du dépôt
 - **Sortie** : PR aucune | commits f307cf3a8
+
+## 2026-09-30 — fix/db-pin-mark-order-paid-atomic-search-path (auto)
+
+- **Branche** : `fix/db-pin-mark-order-paid-atomic-search-path`
+- **Décision** : fix(db): épingler le search_path de mark_order_paid_atomic (public, pg_temp)
+- **Sortie** : PR #1643 | commits fd1009783
