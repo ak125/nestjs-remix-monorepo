@@ -12,7 +12,8 @@
  *   - getSchedule(typeId, currentKm) → MaintenanceInterval intervalles génériques (filtre carburant indicatif)
  *   - getAlerts(fuelType, milestones?) → actions par palier (paliers par défaut = défaut de la RPC)
  *
- * `getCalendar(typeId, currentKm)` agrège ces intervalles et les contrôles wiki.
+ * `getCalendar(typeId, currentKm)` agrège ces intervalles et les contrôles wiki,
+ * filtrés sur un même carburant résolu une fois (voir `resolveFuelType`).
  * Sans historique par opération, aucun statut personnel ne peut être calculé.
  *
  * @see governance-vault/ledger/decisions/adr/ADR-032-diagnostic-maintenance-unification.md
@@ -51,6 +52,10 @@ export interface MaintenanceCalendar {
   type_id: number | null;
   /** Kilométrage fourni par l'appelant ; `null` s'il n'en a fourni aucun. */
   current_km: number | null;
+  /**
+   * Carburant qui a filtré `schedule` et `alerts` : celui fourni par
+   * l'appelant, sinon celui du type ; `null` = aucun filtre carburant.
+   */
   fuel_type: string | null;
   assessment_basis: 'generic_intervals';
   applicability: 'unverified';
@@ -158,20 +163,56 @@ export class MaintenanceCalculatorService extends SupabaseBaseService {
     currentKm: number | null,
     fuelType?: string | null,
   ): Promise<MaintenanceCalendar> {
+    const fuel = await this.resolveFuelType(typeId, fuelType);
     const [schedule, alerts] = await Promise.all([
-      this.getSchedule(typeId, currentKm, fuelType),
-      this.getAlerts(fuelType),
+      this.getSchedule(typeId, currentKm, fuel),
+      this.getAlerts(fuel),
     ]);
     return {
       type_id: typeId,
       current_km: currentKm,
-      fuel_type: fuelType ?? null,
+      fuel_type: fuel,
       assessment_basis: 'generic_intervals',
       applicability: 'unverified',
       schedule,
       alerts,
       controles_mensuels: this.getControlesMensuels(),
     };
+  }
+
+  /**
+   * Carburant du calendrier : l'override explicite prime, sinon celui du type
+   * (auto_type.type_fuel), sinon aucun filtre — l'ordre de
+   * kg_get_smart_maintenance_schedule. Résolu une seule fois ici parce que
+   * kg_get_maintenance_alerts_by_milestone ne reçoit pas le type : sans cela,
+   * un véhicule désigné par son seul type_id avait un calendrier filtré et des
+   * paliers listant les opérations des deux carburants.
+   *
+   * Un type absent d'auto_type ne filtre pas, comme la RPC. Une lecture en
+   * échec rend le calendrier indisponible plutôt que non filtré.
+   */
+  private async resolveFuelType(
+    typeId: number | null,
+    fuelType?: string | null,
+  ): Promise<string | null> {
+    if (fuelType) return fuelType;
+    if (typeId === null) return null;
+    try {
+      const { data, error } = await this.supabase
+        .from('auto_type')
+        .select('type_fuel')
+        .eq('type_id', String(typeId))
+        .maybeSingle<{ type_fuel: string | null }>();
+      if (error) throw new Error(error.message);
+      return data?.type_fuel ?? null;
+    } catch (error) {
+      this.logger.error(
+        `Vehicle fuel unavailable: ${error instanceof Error ? error.message : 'query failure'}`,
+      );
+      throw new ServiceUnavailableException(
+        "Les données d'entretien sont temporairement indisponibles.",
+      );
+    }
   }
 
   /**
