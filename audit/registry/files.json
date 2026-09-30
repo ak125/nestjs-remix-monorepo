@@ -14059,7 +14059,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 265,
+      "loc": 271,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/constants/gamme-map.constants.ts",
       "risk": "low",
@@ -14288,7 +14288,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "test",
-      "loc": 442,
+      "loc": 443,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
       "risk": "low",

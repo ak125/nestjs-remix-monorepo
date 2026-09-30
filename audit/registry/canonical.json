@@ -42149,7 +42149,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 265,
+      "loc": 271,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/constants/gamme-map.constants.ts",
       "risk": "medium",
@@ -42385,7 +42385,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "test",
-      "loc": 442,
+      "loc": 443,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
       "risk": "medium",
@@ -101133,11 +101133,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "90094e86c0a9d55c1c0ca1db6a22078fa001179245b2ac8ea7d75743a69fb54b",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "85923be2c1eca053ba71404ff8c6cf77bb723d571f1a14d9f23039f332a34b3b",
+      "audit/registry/files.json": "f5c88985352401968ecb22d8cb64eef95040ace443bf399a7cc81f98d139fb8f",
       "audit/registry/rpc.json": "86d0c24b102036512a9f7b11d9ac04754288049a8b061981b19f0db0a8c86263",
       "audit/registry/runtime.json": "6c2cc554a40338761fba9f55f6aef70339e95d10dec2f0b93ba5b0152c33f766"
     },
-    "sotFingerprint": "ce16609b32ba"
+    "sotFingerprint": "8835eab0af48"
   },
   "runtime": [
     {
