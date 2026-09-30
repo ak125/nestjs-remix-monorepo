@@ -161,6 +161,24 @@ describe("Maintenance calendar source availability", () => {
   );
 
   it.each([
+    [404, /Véhicule introuvable/],
+    [400, /Paramètres du calendrier invalides/],
+  ])(
+    "reports a rejected request (HTTP %i) without calling it an outage",
+    async (status, message) => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue(new Response(null, { status })),
+      );
+      renderWithRealLoader();
+      const error = await screen.findByText(message);
+      expect(error.closest('[role="alert"]')).not.toBeNull();
+      expect(screen.queryByText(/temporairement indisponible/)).toBeNull();
+      expect(screen.queryByRole("table")).toBeNull();
+    },
+  );
+
+  it.each([
     null,
     {},
     { schedule: [], alerts: null, controles_mensuels: [] },

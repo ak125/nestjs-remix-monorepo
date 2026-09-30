@@ -14,6 +14,8 @@
  *
  * `getCalendar(typeId, currentKm)` agrège ces intervalles et les contrôles wiki,
  * filtrés sur un même carburant résolu une fois (voir `resolveFuelType`).
+ * Un type_id fourni doit désigner un type existant : sinon 404, jamais un
+ * calendrier générique attribué à un véhicule inexistant.
  * Sans historique par opération, aucun statut personnel ne peut être calculé.
  *
  * @see governance-vault/ledger/decisions/adr/ADR-032-diagnostic-maintenance-unification.md
@@ -23,6 +25,7 @@ import {
   Injectable,
   Inject,
   Logger,
+  NotFoundException,
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
@@ -76,7 +79,7 @@ export class MaintenanceCalculatorService extends SupabaseBaseService {
    * Intervalles génériques ; le filtre carburant de la RPC ne prouve pas
    * une applicabilité constructeur. Son statut sans historique est neutralisé.
    *
-   * @param typeId    auto_type.type_id (résolu en fuel_type côté RPC)
+   * @param typeId    auto_type.type_id ; un type inconnu est une 404
    * @param currentKm kilométrage actuel du véhicule, `null` s'il est inconnu
    * @param fuelType  override explicite (optionnel)
    */
@@ -85,13 +88,22 @@ export class MaintenanceCalculatorService extends SupabaseBaseService {
     currentKm: number | null,
     fuelType?: string | null,
   ): Promise<MaintenanceScheduleItem[]> {
+    const fuel = await this.resolveFuelType(typeId, fuelType);
+    return this.fetchSchedule(typeId, currentKm, fuel);
+  }
+
+  private async fetchSchedule(
+    typeId: number | null,
+    currentKm: number | null,
+    fuelType: string | null,
+  ): Promise<MaintenanceScheduleItem[]> {
     try {
       const { data, error } = await this.callRpc<unknown>(
         'kg_get_smart_maintenance_schedule',
         {
           p_type_id: typeId,
           ...(currentKm !== null && { p_current_km: currentKm }),
-          p_fuel_type: fuelType ?? null,
+          p_fuel_type: fuelType,
         },
         { source: 'internal' },
       );
@@ -165,7 +177,7 @@ export class MaintenanceCalculatorService extends SupabaseBaseService {
   ): Promise<MaintenanceCalendar> {
     const fuel = await this.resolveFuelType(typeId, fuelType);
     const [schedule, alerts] = await Promise.all([
-      this.getSchedule(typeId, currentKm, fuel),
+      this.fetchSchedule(typeId, currentKm, fuel),
       this.getAlerts(fuel),
     ]);
     return {
@@ -188,15 +200,16 @@ export class MaintenanceCalculatorService extends SupabaseBaseService {
    * un véhicule désigné par son seul type_id avait un calendrier filtré et des
    * paliers listant les opérations des deux carburants.
    *
-   * Un type absent d'auto_type ne filtre pas, comme la RPC. Une lecture en
-   * échec rend le calendrier indisponible plutôt que non filtré.
+   * Un type_id fourni est lu même avec un override : absent d'auto_type, il
+   * rend une 404 au lieu d'un calendrier générique qui le citerait. Une
+   * lecture en échec rend le calendrier indisponible plutôt que non filtré.
    */
   private async resolveFuelType(
     typeId: number | null,
     fuelType?: string | null,
   ): Promise<string | null> {
-    if (fuelType) return fuelType;
-    if (typeId === null) return null;
+    if (typeId === null) return fuelType || null;
+    let vehicle: { type_fuel: string | null } | null;
     try {
       const { data, error } = await this.supabase
         .from('auto_type')
@@ -204,7 +217,7 @@ export class MaintenanceCalculatorService extends SupabaseBaseService {
         .eq('type_id', String(typeId))
         .maybeSingle<{ type_fuel: string | null }>();
       if (error) throw new Error(error.message);
-      return data?.type_fuel ?? null;
+      vehicle = data;
     } catch (error) {
       this.logger.error(
         `Vehicle fuel unavailable: ${error instanceof Error ? error.message : 'query failure'}`,
@@ -213,6 +226,10 @@ export class MaintenanceCalculatorService extends SupabaseBaseService {
         "Les données d'entretien sont temporairement indisponibles.",
       );
     }
+    if (!vehicle) {
+      throw new NotFoundException('Véhicule introuvable.');
+    }
+    return fuelType || vehicle.type_fuel;
   }
 
   /**

@@ -6,7 +6,10 @@
  *
  * @see backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts
  */
-import { ServiceUnavailableException } from '@nestjs/common';
+import {
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { MaintenanceCalculatorService } from '../../src/modules/diagnostic-engine/services/maintenance-calculator.service';
@@ -171,10 +174,10 @@ describe('MaintenanceCalculatorService.getCalendar() (ADR-032 D9)', () => {
       expect(calendar.fuel_type).toBe('Diesel-Électrique');
     });
 
-    it('lets an explicit fuel win without reading the type', async () => {
+    it('lets an explicit fuel win over the fuel of the type it validates', async () => {
       const calendar = await service.getCalendar(42, null, 'diesel');
 
-      expect(mockFrom).not.toHaveBeenCalled();
+      expect(mockEq).toHaveBeenCalledWith('type_id', '42');
       expect(fuelSentTo('kg_get_smart_maintenance_schedule')).toBe('diesel');
       expect(fuelSentTo('kg_get_maintenance_alerts_by_milestone')).toBe(
         'diesel',
@@ -182,14 +185,20 @@ describe('MaintenanceCalculatorService.getCalendar() (ADR-032 D9)', () => {
       expect(calendar.fuel_type).toBe('diesel');
     });
 
-    it('does not filter a type absent from auto_type, like the schedule RPC', async () => {
+    it('rejects a type absent from auto_type instead of a generic calendar', async () => {
       mockTypeRow.mockResolvedValue({ data: null, error: null });
 
-      const calendar = await service.getCalendar(999999, null);
+      await expect(service.getCalendar(999999, null)).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+      expect(mockRpc).not.toHaveBeenCalled();
+      expect(mockGetControles).not.toHaveBeenCalled();
+    });
 
-      expect(fuelSentTo('kg_get_smart_maintenance_schedule')).toBeNull();
-      expect(fuelSentTo('kg_get_maintenance_alerts_by_milestone')).toBeNull();
-      expect(calendar.fuel_type).toBeNull();
+    it('reads the type once for the schedule and the milestones', async () => {
+      await service.getCalendar(42, 80000);
+
+      expect(mockTypeRow).toHaveBeenCalledTimes(1);
     });
 
     it('is unavailable, not unfiltered, when the type cannot be read', async () => {
