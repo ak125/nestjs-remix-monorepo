@@ -478,6 +478,25 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Décision** : chore(registry): resync L1+L3 projections (+2 fichiers scripts/ci) (+1 other commit)
 - **Sortie** : PR #1598 | commits ef976d67e e6bfe2ddf
 
+## 2026-09-29 — Fermeture DEFINER authenticated + extensions ops
+
+- **Branche** : `fix/db-definer-authenticated-lockdown`
+- **Décision** : les 72 RPC SECURITY DEFINER exécutables par authenticated seul sont révoquées par migration forward répétée en transaction annulée (0 restante), et les extensions ops passent par une PR séparée ; application par workflow après fusion owner.
+- **Sortie** : PRs #1606 #1604 | commits 627496f3a a167474a0 | fichiers `backend/supabase/migrations/20260929_definer_rpc_authenticated_lockdown.sql`
+
+
+## 2026-09-29 — fix/db-definer-authenticated-lockdown (auto)
+
+- **Branche** : `fix/db-definer-authenticated-lockdown`
+- **Décision** : docs(log): consigner la fermeture DEFINER authenticated (+2 other commits)
+- **Sortie** : PR #1606 | commits fed13193f a167474a0 627496f3a
+
+## 2026-09-29 — fix/db-drop-exact-duplicate-indexes (auto)
+
+- **Branche** : `fix/db-drop-exact-duplicate-indexes`
+- **Décision** : fix(db): retirer 7 index strictement dupliqués que le planificateur n'utilise pas
+- **Sortie** : PR #1619 | commits 69b17b6d4
+
 ## 2026-09-29 — fix/ci-r2-timing-real-product-page (auto)
 
 - **Branche** : `fix/ci-r2-timing-real-product-page`
