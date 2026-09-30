@@ -5090,7 +5090,6 @@
       "status": "LIVE",
       "usedBy": [
         "backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts",
-        "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts",
         "backend/src/modules/admin/services/conseil-priority.service.ts",
         "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",

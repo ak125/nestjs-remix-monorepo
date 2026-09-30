@@ -13935,7 +13935,6 @@
         "status": "LIVE",
         "usedBy": [
           "backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts",
-          "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts",
           "backend/src/modules/admin/services/conseil-priority.service.ts",
           "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts",
           "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
@@ -31097,6 +31096,8 @@
       "importedBy": [
         "backend/src/config/content-write-gate.service.test.ts",
         "backend/src/config/write-guard.module.ts",
+        "backend/src/modules/admin/services/buying-guide-enricher.service.test.ts",
+        "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
         "backend/src/modules/admin/services/r2-enricher.service.test.ts",
         "backend/src/modules/admin/services/r2-enricher.service.ts",
         "backend/src/modules/admin/services/r4-content-enricher.service.ts",
@@ -31453,8 +31454,6 @@
         "backend/src/config/feature-flags.module.ts",
         "backend/src/modules/admin/controllers/admin-feature-flags.controller.ts",
         "backend/src/modules/admin/controllers/seo-control.controller.ts",
-        "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
-        "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts",
         "backend/src/modules/admin/services/execution-router.service.ts",
         "backend/src/modules/admin/services/keyword-density-gate.service.ts",
         "backend/src/modules/admin/services/r4-content-enricher.service.ts",
@@ -31498,8 +31497,7 @@
         "backend/src/config/content-write-gate.service.ts",
         "backend/src/config/execution-registry.constants.ts",
         "backend/src/config/operating-matrix.service.ts",
-        "backend/src/config/write-guard-cas.service.ts",
-        "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts"
+        "backend/src/config/write-guard-cas.service.ts"
       ],
       "imports": [
         "backend/src/config/execution-registry.types.ts",
@@ -32679,8 +32677,8 @@
         "backend/src/config/scoring-profiles.config.ts",
         "backend/src/config/write-guard-cas.service.ts",
         "backend/src/config/write-guard-lock.service.ts",
+        "backend/src/modules/admin/services/buying-guide-enricher.service.test.ts",
         "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
-        "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts",
         "backend/src/modules/admin/services/execution-router.service.test.ts",
         "backend/src/modules/admin/services/execution-router.service.ts",
         "backend/src/modules/admin/services/r2-enricher.service.ts",
@@ -32863,6 +32861,8 @@
       "importedBy": [
         "backend/src/config/content-write-gate.service.test.ts",
         "backend/src/config/content-write-gate.service.ts",
+        "backend/src/modules/admin/services/buying-guide-enricher.service.test.ts",
+        "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
         "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts",
         "backend/src/modules/admin/services/r2-enricher.service.ts",
         "backend/src/modules/blog/utils/source-provenance.util.ts"
@@ -33060,8 +33060,7 @@
       "importedBy": [
         "backend/src/config/content-write-executor.service.ts",
         "backend/src/config/content-write-gate.service.ts",
-        "backend/src/config/write-guard.module.ts",
-        "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts"
+        "backend/src/config/write-guard.module.ts"
       ],
       "imports": [
         "@common/utils",
@@ -33090,8 +33089,7 @@
       "id": "backend/src/config/write-guard-ledger.service.ts",
       "importedBy": [
         "backend/src/config/content-write-executor.service.ts",
-        "backend/src/config/write-guard.module.ts",
-        "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts"
+        "backend/src/config/write-guard.module.ts"
       ],
       "imports": [
         "@common/utils",
@@ -34064,7 +34062,7 @@
         "backend/src/modules/admin/services/buying-guide-enricher.service.ts"
       ],
       "kind": "controller",
-      "loc": 46,
+      "loc": 47,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/controllers/admin-buying-guide.controller.ts",
       "risk": "medium",
@@ -35111,6 +35109,7 @@
       "importedBy": [
         "backend/src/modules/admin/controllers/admin-buying-guide.controller.ts",
         "backend/src/modules/admin/controllers/internal-enrich.controller.ts",
+        "backend/src/modules/admin/services/buying-guide-enricher.service.test.ts",
         "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
         "backend/src/modules/admin/services/buying-guide/buying-guide-rag-fetcher.service.ts",
         "backend/src/modules/admin/services/buying-guide/buying-guide-section-extractor.service.ts"
@@ -35119,7 +35118,7 @@
         "backend/src/workers/types/content-refresh.types.ts"
       ],
       "kind": "service",
-      "loc": 74,
+      "loc": 76,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/dto/buying-guide-enrich.dto.ts",
       "risk": "medium",
@@ -35501,25 +35500,53 @@
         "manual"
       ],
       "domain": "D8",
+      "id": "backend/src/modules/admin/services/buying-guide-enricher.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/config/content-write-gate.service.ts",
+        "backend/src/config/role-ids.ts",
+        "backend/src/config/source-provenance.constants.ts",
+        "backend/src/modules/admin/dto/buying-guide-enrich.dto.ts",
+        "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
+        "backend/src/modules/admin/services/buying-guide/index.ts"
+      ],
+      "kind": "test",
+      "loc": 170,
+      "owner": "@ak125/admin-team",
+      "path": "backend/src/modules/admin/services/buying-guide-enricher.service.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
       "id": "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
         "backend/src/modules/admin/controllers/admin-buying-guide.controller.ts",
         "backend/src/modules/admin/controllers/internal-enrich.controller.ts",
+        "backend/src/modules/admin/services/buying-guide-enricher.service.test.ts",
         "backend/src/modules/admin/services/execution-router.service.ts"
       ],
       "imports": [
         "backend/src/config/buying-guide-quality.constants.ts",
-        "backend/src/config/feature-flags.service.ts",
+        "backend/src/config/content-write-gate.service.ts",
         "backend/src/config/role-ids.ts",
+        "backend/src/config/source-provenance.constants.ts",
         "backend/src/modules/admin/dto/buying-guide-enrich.dto.ts",
-        "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts",
         "backend/src/modules/admin/services/buying-guide/index.ts",
         "backend/src/modules/admin/services/page-brief.service.ts",
         "backend/src/modules/rag-proxy/services/rag-foundation-gate.service.ts"
       ],
       "kind": "service",
-      "loc": 367,
+      "loc": 398,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
       "risk": "medium",
@@ -35537,23 +35564,17 @@
       "domain": "D8",
       "id": "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts",
       "importedBy": [
-        "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
         "backend/src/modules/admin/services/buying-guide/index.ts"
       ],
       "imports": [
         "@database/services/supabase-base.service",
         "backend/src/config/buying-guide-quality.constants.ts",
-        "backend/src/config/feature-flags.service.ts",
-        "backend/src/config/field-catalog.constants.ts",
-        "backend/src/config/role-ids.ts",
         "backend/src/config/source-provenance.constants.ts",
-        "backend/src/config/write-guard-cas.service.ts",
-        "backend/src/config/write-guard-ledger.service.ts",
         "backend/src/modules/admin/services/buying-guide/buying-guide-section-extractor.service.ts",
         "backend/src/modules/admin/services/buying-guide/buying-guide.types.ts"
       ],
       "kind": "service",
-      "loc": 468,
+      "loc": 150,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts",
       "risk": "medium",
@@ -35721,6 +35742,7 @@
       "id": "backend/src/modules/admin/services/buying-guide/index.ts",
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
+        "backend/src/modules/admin/services/buying-guide-enricher.service.test.ts",
         "backend/src/modules/admin/services/buying-guide-enricher.service.ts"
       ],
       "imports": [
@@ -36275,7 +36297,7 @@
         "backend/src/modules/admin/services/execution-router.service.ts"
       ],
       "kind": "test",
-      "loc": 604,
+      "loc": 710,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/execution-router.service.test.ts",
       "risk": "medium",
@@ -36315,7 +36337,7 @@
         "backend/src/modules/seo/validation/diagnostic.service.ts"
       ],
       "kind": "service",
-      "loc": 820,
+      "loc": 831,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/execution-router.service.ts",
       "risk": "medium",
@@ -98316,7 +98338,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 184,
+      "loc": 239,
       "owner": "@ak125",
       "path": "scripts/ci/prod-preprod-evidence.mjs",
       "risk": "medium",
@@ -98336,7 +98358,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 308,
+      "loc": 445,
       "owner": "@ak125",
       "path": "scripts/ci/prod-preprod-evidence.test.mjs",
       "risk": "medium",
@@ -101153,15 +101175,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "03fea67f80c0783ae5a137d2a47952bd4abef0295d10c1cea4ea7b06ccc11eba",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "7b76231175c29b31932a9fa6771ad80c2ec45dcbb271f783a111bd1903dccfb4",
+      ".spec/00-canon/repository-registry/ownership.yaml": "35f33dc0f7e4d4d6f1e67906816e6a8bfbb6b70794e60e9ea4b4148dca2c0f28",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
-      "audit/registry/db.json": "90094e86c0a9d55c1c0ca1db6a22078fa001179245b2ac8ea7d75743a69fb54b",
+      "audit/registry/db.json": "7c35439bb913f5b738577b09c86b7c5784884ba0907fcffb6173d864593ac0a6",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "d431fa4fd1f357300a9c046c8a360ca2cbbc4b9e3beb29453c6411125eb1ec8a",
+      "audit/registry/files.json": "a82946d2cc234cf2f33bd3ed0536554661814a18066b8c1c1fa603fda58a9c75",
       "audit/registry/rpc.json": "86d0c24b102036512a9f7b11d9ac04754288049a8b061981b19f0db0a8c86263",
-      "audit/registry/runtime.json": "6c2cc554a40338761fba9f55f6aef70339e95d10dec2f0b93ba5b0152c33f766"
+      "audit/registry/runtime.json": "67dc8fe02246ff5d7cf25668af7409b32ea66bc575d4ae23455b57f94d111174"
     },
-    "sotFingerprint": "8c9becbf905a"
+    "sotFingerprint": "8e2a34bebbb1"
   },
   "runtime": [
     {
@@ -102369,8 +102391,7 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/config/feature-flags.service.ts",
-        "runtime:backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts",
+        "runtime:backend/src/config/content-write-gate.service.ts",
         "runtime:backend/src/modules/admin/services/page-brief.service.ts",
         "runtime:backend/src/modules/rag-proxy/services/rag-foundation-gate.service.ts"
       ],
@@ -102383,9 +102404,6 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/config/feature-flags.service.ts",
-        "runtime:backend/src/config/write-guard-cas.service.ts",
-        "runtime:backend/src/config/write-guard-ledger.service.ts",
         "runtime:backend/src/modules/admin/services/buying-guide/buying-guide-section-extractor.service.ts"
       ],
       "id": "runtime:backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts",

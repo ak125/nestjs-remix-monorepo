@@ -17,8 +17,8 @@
         "backend/src/modules/admin/services/r1-image-prompt-builders",
         "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__"
       ],
-      "files_count": 150,
-      "loc_total": 42676,
+      "files_count": 151,
+      "loc_total": 42679,
       "has_barrel": true
     },
     "agentic-engine": {
@@ -701,7 +701,7 @@
         "scripts/wiki-generators/__tests__"
       ],
       "files_count": 187,
-      "loc_total": 40095,
+      "loc_total": 40287,
       "has_barrel": true
     },
     "search": {
@@ -1059,7 +1059,7 @@
     {
       "from": "admin",
       "to": "config",
-      "count": 75
+      "count": 74
     },
     {
       "from": "admin",
