@@ -16,6 +16,7 @@ import type {
   WriteLockHandle,
 } from './execution-registry.types';
 import type { RoleId } from './role-ids';
+import { redisConnectionOptions } from './app.config';
 
 const DEFAULT_TTL_MS = 30_000;
 
@@ -41,14 +42,15 @@ export class WriteGuardLockService {
   }
 
   private initRedis(): void {
+    // Hors du try : une REDIS_URL invalide doit échouer, pas basculer en mémoire.
+    const target = redisConnectionOptions((key) =>
+      this.config.get<string>(key),
+    );
     try {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const Redis = require('ioredis');
-      const host = this.config.get<string>('REDIS_HOST') || 'localhost';
-      const port = this.config.get<number>('REDIS_PORT') || 6379;
       this.redis = new Redis({
-        host,
-        port,
+        ...target,
         maxRetriesPerRequest: 1,
         lazyConnect: true,
         enableOfflineQueue: false,
