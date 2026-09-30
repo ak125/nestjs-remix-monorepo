@@ -34,7 +34,21 @@
 #     touch fixtures, or modify application runtime.
 #   - It reads the SAME fixtures file the smoke reads, so the two never drift.
 #
+# PACING ---------------------------------------------------------------------
+# Every SSR page of this runner shares ONE throttler bucket (the remix catch-all
+# handler, see backend/src/config/throttler-tiers.config.ts), and Nest expires
+# each hit one `short` TTL after it arrived. Unpaced, fast-returning pages fill
+# that burst window and the smoke receives a 429 — the Deploy PREPROD failures
+# of 2026-09-29 and 2026-09-30, while the rendering itself passed. Waiting one
+# TTL before EACH page request starts it in an empty window, so it can only be
+# throttled by its own cost. The duration is SSR_BURST_WINDOW_SECONDS, computed
+# from THROTTLER_TIERS by the caller (preprod-e2e-rate-budget.mjs
+# --burst-window-seconds): required, never defaulted here. Each page hit logs
+# its x-ratelimit-remaining-short, which measures what a page really costs.
+# The /api/rm/alternatives prime uses its own API bucket and is not paced.
+#
 # Usage: warm-soft-404-fixtures.sh <BASE_URL> [FIXTURES_FILE]
+#   SSR_BURST_WINDOW_SECONDS (env, REQUIRED): idle seconds before each page hit.
 #   WARM_MAX_SECONDS    (env, default 30): per-fixture condition-based deadline.
 #   WARM_POLL_SECONDS   (env, default 2):  gap between readiness polls.
 #   WARM_SETTLE_SECONDS (env, default 0):  residual settle after warming (legacy;
@@ -48,7 +62,12 @@ ASSERT="${SOFT_404_ASSERT:-scripts/ci/assert-soft-404.py}"
 WARM_MAX_SECONDS="${WARM_MAX_SECONDS:-30}"
 WARM_POLL_SECONDS="${WARM_POLL_SECONDS:-2}"
 SETTLE_SECONDS="${WARM_SETTLE_SECONDS:-0}"
+PACE_SECONDS="${SSR_BURST_WINDOW_SECONDS:-}"
 
+if ! [[ "$PACE_SECONDS" =~ ^[1-9][0-9]*$ ]]; then
+  echo "🔥 warm: SSR_BURST_WINDOW_SECONDS must be a positive integer (got '${PACE_SECONDS}')" >&2
+  exit 1
+fi
 if [ ! -f "$FIXTURES" ]; then
   echo "🔥 warm: fixtures file not found: $FIXTURES" >&2
   exit 1
@@ -74,7 +93,16 @@ prime_backend() {
   fi
 }
 
-echo "🔥 Warming soft-404 R2 fixtures (condition-based cache pre-pass) against $BASE"
+# x-ratelimit-remaining-short of a captured `curl -i` response (first header
+# block only), or "absent".
+remaining_short() {
+  printf '%s\n' "$1" | tr -d '\r' | awk '
+    NF == 0 { exit }
+    tolower($1) == "x-ratelimit-remaining-short:" { print $2; found = 1; exit }
+    END { if (!found) print "absent" }'
+}
+
+echo "🔥 Warming soft-404 R2 fixtures (condition-based cache pre-pass, ${PACE_SECONDS}s between pages) against $BASE"
 warmed=0
 ready=0
 while IFS= read -r url || [ -n "$url" ]; do
@@ -89,8 +117,10 @@ while IFS= read -r url || [ -n "$url" ]; do
   hits=0
   while :; do
     hits=$((hits + 1))
+    sleep "$PACE_SECONDS"
     # Same request shape as the smoke (curl -s -i, 15s).
     http_out="$(curl -s -i --max-time 15 "$BASE$url" || true)"
+    echo "  · page hit ${hits}: $url (x-ratelimit-remaining-short=$(remaining_short "$http_out"))"
     if [ -n "$http_out" ] && printf '%s' "$http_out" | python3 "$ASSERT" >/dev/null 2>&1; then
       ready=$((ready + 1))
       echo "  ✅ warm-ready: $url (after ${hits} page hit(s))"
