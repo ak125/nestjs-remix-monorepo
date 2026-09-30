@@ -210,6 +210,7 @@ describe('diagnostic safety and deterministic scoring regressions', () => {
     ['biellette_direction_usee', [285]],
     ['joint_collecteur_hs', [40, 3191]],
     ['courroie_distribution_usee', [307, 3096, 306]],
+    ['cremaillere_usee', [286]],
   ])('%s maps to the family that sells the part it names', (cause, ids) => {
     expect(CAUSE_GAMME_MAP[cause].map((g) => g.pg_id)).toEqual(ids);
   });

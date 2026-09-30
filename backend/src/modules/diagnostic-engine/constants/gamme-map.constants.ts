@@ -161,7 +161,13 @@ export const CAUSE_GAMME_MAP: Record<string, GammeMapping[]> = {
   ],
 
   // ── Direction ─────────────────────────────────────────────
-  cremaillere_usee: [], // pas de gamme crémaillère complète
+  cremaillere_usee: [
+    {
+      slug: 'cremailliere-de-direction',
+      label: 'Crémaillière de direction',
+      pg_id: 286,
+    },
+  ],
   pompe_direction_hs: [
     {
       slug: 'pompe-de-direction-assistee',
