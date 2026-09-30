@@ -295,6 +295,104 @@ describe('diagnostic safety and deterministic scoring regressions', () => {
   );
 });
 
+describe('catalogue readiness rests on the dominant hypothesis', () => {
+  // Live __diag_* rows (2026-09-30) for craquement_passage_vitesse: the dominant
+  // cause names no catalogue family, the lower-ranked one does.
+  const live = (
+    [
+      slug,
+      cause_type,
+      urgency,
+      relative_score,
+      km_min,
+      km_max,
+      evidence,
+    ]: readonly [string, string, string, number, number, number, number],
+    id: number,
+  ): DiagSymptomCauseLink => ({
+    id,
+    symptom_id: 1,
+    cause_id: id,
+    relative_score,
+    evidence_for: Array.from({ length: evidence }, (_, i) => `e${i}`),
+    evidence_against: [],
+    requires_verification: true,
+    active: true,
+    cause: {
+      id,
+      slug,
+      label: slug,
+      system_id: 1,
+      cause_type,
+      description: null,
+      verification_method: null,
+      urgency,
+      active: true,
+      plausible_km_min: km_min,
+      plausible_km_max: km_max,
+    } as DiagSymptomCauseLink['cause'],
+  });
+  const gearboxCrack = [
+    ['boite_vitesses_usee', 'mechanical', 'moyenne', 70, 150000, 350000, 2],
+    ['cardan_use', 'wear', 'haute', 20, 100000, 250000, 1],
+  ] as const;
+
+  test.each([90000, 180000])(
+    'a gearbox crack at %i km is not ready for the catalogue through the CV joint',
+    (mileage_km) => {
+      const car = { brand: 'Test', model: 'Test', mileage_km };
+      const hypotheses = new HypothesisScoringEngine().score(
+        gearboxCrack.map((c, i) => live(c, i + 1)),
+        car,
+        undefined,
+      );
+      const [top, second] = hypotheses;
+      expect(top.hypothesis_id).toBe('boite_vitesses_usee');
+      expect(CAUSE_GAMME_MAP[top.hypothesis_id]).toEqual([]);
+      expect(top.total_score - second.total_score).toBeGreaterThanOrEqual(15);
+
+      const result = new CatalogOrientationEngine().evaluate(
+        hypotheses,
+        baselineRisk,
+        car,
+      );
+      expect(result).toMatchObject({
+        ready_for_catalog: false,
+        confidence_before_purchase: 'low',
+        allowed_output_mode: 'catalog_family_only',
+        suggested_gammes: [
+          { gamme_slug: 'cardan', from_hypothesis: 'cardan_use' },
+        ],
+      });
+      expect(result.reason).toMatch(/cause la plus probable/);
+    },
+  );
+
+  test('a dominant hypothesis with its own family stays ready', () => {
+    const hypotheses = new HypothesisScoringEngine().score(
+      [link()],
+      vehicle,
+      undefined,
+    );
+    expect(
+      new CatalogOrientationEngine().evaluate(
+        hypotheses,
+        baselineRisk,
+        vehicle,
+      ),
+    ).toMatchObject({
+      ready_for_catalog: true,
+      allowed_output_mode: 'catalog_family_with_caution',
+      suggested_gammes: [
+        {
+          gamme_slug: 'plaquette-de-frein',
+          from_hypothesis: 'brake_pads_worn',
+        },
+      ],
+    });
+  });
+});
+
 describe('maintenance input integrity', () => {
   beforeEach(() => {
     jest.useFakeTimers();
