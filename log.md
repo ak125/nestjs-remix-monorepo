@@ -520,3 +520,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/deploy-prod-evidence-commit-scoped`
 - **Décision** : chore(registry): resync L1+L3 projections (+1 other commit)
 - **Sortie** : PR #1625 | commits 7cfcb5a9f cabcecf98
+
+## 2026-09-30 — perf/db-auto-type-codes-int-expr-indexes (auto)
+
+- **Branche** : `perf/db-auto-type-codes-int-expr-indexes`
+- **Décision** : docs(db): heure réelle de la mesure dans l'en-tête de la migration (15:10Z, pas 15:30Z) (+2 other commits)
+- **Sortie** : PR #1628 | commits 47c12cda9 d8949a046 2def4654a
