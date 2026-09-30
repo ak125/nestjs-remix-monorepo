@@ -532,3 +532,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `perf/db-auto-type-codes-int-expr-indexes`
 - **Décision** : Merge origin/main into perf/db-auto-type-codes-int-expr-indexes (+4 other commits)
 - **Sortie** : PR #1628 | commits ae753efc0 7f2063c85 47c12cda9 d8949a046 2def4654a
+
+## 2026-09-30 — perf/db-auto-type-codes-int-expr-indexes (auto)
+
+- **Branche** : `perf/db-auto-type-codes-int-expr-indexes`
+- **Décision** : Merge origin/main into perf/db-auto-type-codes-int-expr-indexes (+6 other commits)
+- **Sortie** : PR #1628 | commits 8f8b95fc4 eff332dc2 ae753efc0 7f2063c85 47c12cda9 d8949a046 2def4654a
