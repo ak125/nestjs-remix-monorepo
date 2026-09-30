@@ -238,7 +238,7 @@
         "backend/src/modules/diagnostic-engine/types"
       ],
       "files_count": 51,
-      "loc_total": 9506,
+      "loc_total": 9545,
       "has_barrel": false
     },
     "errors": {
@@ -259,7 +259,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115484,
+      "loc_total": 115492,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -958,7 +958,7 @@
         "tests/registry"
       ],
       "files_count": 266,
-      "loc_total": 49851,
+      "loc_total": 49889,
       "has_barrel": true
     },
     "upload": {
