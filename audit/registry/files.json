@@ -14288,7 +14288,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "test",
-      "loc": 461,
+      "loc": 518,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
       "risk": "low",
@@ -14399,7 +14399,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "service",
-      "loc": 201,
+      "loc": 195,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
       "risk": "low",
@@ -39967,7 +39967,9 @@
       "domain": "UNKNOWN",
       "id": "frontend/app/components/RichTextEditor.tsx",
       "importedBy": [],
-      "imports": [],
+      "imports": [
+        "@tiptap/react"
+      ],
       "kind": "config",
       "loc": 235,
       "owner": "__unassigned__",
