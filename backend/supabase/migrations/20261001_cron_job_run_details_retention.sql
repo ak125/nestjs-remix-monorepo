@@ -38,11 +38,13 @@
 --   DELETE. La table porte la politique RLS de pg_cron (`username = CURRENT_USER`) ;
 --   `postgres` a BYPASSRLS, donc le job, lancé sous `postgres`, voit toutes les lignes.
 --
--- COÛT : ≈ 30 000 lignes en régime établi, sans index sur `start_time` — un parcours
---   séquentiel quotidien de quelques millisecondes. Aucun index n'est ajouté : la table
---   appartient à l'extension et chaque exécution de job y écrit cinq fois. Le DELETE
---   prend un verrou ROW EXCLUSIVE, qui ne bloque pas les écritures de pg_cron. Le job
---   hérite des 60 s de `statement_timeout` du rôle `postgres`.
+-- COÛT : le prédicat mesuré en lecture seule (EXPLAIN ANALYZE, 2026-10-01) sur
+--   56 898 lignes prend 44 ms (deux parcours séquentiels, sous-requête hachée, tout en
+--   cache) ; ≈ 30 000 lignes en régime établi. Aucun index n'est ajouté : la table
+--   appartient à l'extension et pg_cron y écrit à chaque exécution de job. Le DELETE
+--   prend un verrou ROW EXCLUSIVE, qui ne bloque pas les écritures de pg_cron.
+--   `cron.use_background_workers` = off : le job passe par une connexion sous
+--   `postgres` et hérite des 60 s de `statement_timeout` de ce rôle.
 --
 -- IRRÉVERSIBLE : le premier run, à 03:30 UTC après l'application, supprime
 --   ≈ 27 800 lignes (prévision du 2026-10-01 : 27 802 ; 11 lignes de plus de 90 jours
