@@ -38236,7 +38236,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 188,
+      "loc": 187,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/maintenance-calculator.service.test.ts",
       "risk": "low",
