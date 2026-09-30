@@ -184,7 +184,7 @@ describe('redisConnectionOptions — REDIS_URL fait autorité', () => {
   it.each([
     ['illisible', 'not a url'],
     ['schéma', 'localhost:6379'],
-    ['schéma', 'http://:s3cr3t@cache:6379'],
+    ['schéma', 'tcp://:s3cr3t@cache:6379'],
     ['hôte absent', 'redis://'],
     ['base', 'redis://:s3cr3t@cache:6379/abc'],
     ['base', 'redis://:s3cr3t@cache:6379/-1'],
