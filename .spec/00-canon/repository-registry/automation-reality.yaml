@@ -369,25 +369,36 @@ entries:
     related_pr: [1165, 1166]
     drift_note: "Hourly leg live (succeeded '48 rows' @16:05, missing_complete_hours=0, daily_rum J-1). Daily cron first fire 00:15 UTC 2026-06-27. Bull v4 retired #1166; coverage detector @35 auto-resolves."
   # ──────────────────────────────────────────────────────────────────────────
-  # DRAFTED — pg_cron rétention 90 j de __soft_404_events (ADR-076 accepted,
+  # ACTIVE — pg_cron rétention 90 j de __soft_404_events (ADR-076 accepted,
   # « Rétention 90j »). Le runbook renvoyait à un cron `seo-routines` qui n'a
-  # jamais existé : aucune purge depuis 2026-05-19. Passe ACTIVE après apply +
-  # premier run 03:20 UTC prouvé (runtime_evidence trigger/output/consumer).
+  # jamais existé : aucune purge du 2026-05-19 au 2026-09-30. Premier run
+  # 2026-09-30 03:20 UTC prouvé : DELETE 160060, borne J-90 exacte.
   # ──────────────────────────────────────────────────────────────────────────
   - automation_id: "soft-404-events-retention"
     domain: "D3"
     intended_mode: "ACTIVE"
-    actual_mode: "DRAFTED"
+    actual_mode: "ACTIVE"
     executor: "pg_cron"
     evidence:
       - path: "backend/supabase/migrations/20260929_soft_404_events_retention_cron.sql"
         line: 73
         excerpt: "PERFORM cron.schedule('soft-404-events-retention', '20 3 * * *', v_expected_command);"
-        note: "exact-match/fail-closed + provenance marker ; .down unschedules only this job ; first run deletes ~159k rows > 90 d (irreversible)"
-    last_verified_at: "2026-09-29"
+        note: "exact-match/fail-closed + provenance marker ; .down unschedules only this job ; applied 2026-09-29 (run 36608269299)"
+    runtime_evidence:
+      trigger:
+        kind: "db_row"
+        source: "cron.job_run_details"
+        observed_at: "2026-09-30"
+        query_or_url: "SELECT j.schedule, j.active, r.status, r.return_message, r.start_time FROM cron.job j JOIN LATERAL (SELECT * FROM cron.job_run_details d WHERE d.jobid=j.jobid ORDER BY d.start_time DESC LIMIT 1) r ON true WHERE j.jobname='soft-404-events-retention'  -- '20 3 * * *', active, succeeded 'DELETE 160060' @2026-09-30 03:20:00Z (0.57 s)"
+      output:
+        kind: "db_row"
+        source: "public.__soft_404_events"
+        observed_at: "2026-09-30"
+        query_or_url: "WITH r AS (SELECT d.start_time FROM cron.job_run_details d JOIN cron.job j USING (jobid) WHERE j.jobname='soft-404-events-retention' AND d.status='succeeded' ORDER BY d.start_time DESC LIMIT 1) SELECT (SELECT min(ts) FROM public.__soft_404_events) >= r.start_time - interval '90 days' FROM r  -- = true ; min(ts) 2026-07-02 03:20:25Z, borne 03:20:00Z"
+      consumer: "no-consumer-by-design"
+    last_verified_at: "2026-09-30"
     last_verified_by: "@ak125"
-    last_verified_method: "manual-inspection"
-    missing_step: "merge PR #1620 + apply (only_ids) + prove first 03:20 UTC run: job_run_details succeeded 'DELETE n' and 0 rows older than 90 d"
+    last_verified_method: "runtime-probe"
     risk: "medium"
     related_pr: [1620]
-    owner_action: "review + merge #1620, then apply-supabase-migrations dry-run → APPLY"
+    drift_note: "Purge = borne de stockage, sans lecteur aval : aucun code ne lit __soft_404_events ni v_soft_404_demand_30d (git grep main 2026-09-30). Runbook vault encore sur seo-routines."
