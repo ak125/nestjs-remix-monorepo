@@ -75,7 +75,7 @@ const rule = z.object({
 });
 const CalendarPayloadSchema = z.object({
   type_id: z.number().int().positive().nullable(),
-  current_km: z.number().int().nonnegative(),
+  current_km: z.number().int().nonnegative().nullable(),
   fuel_type: z.string().nullable(),
   schedule: z
     .array(
@@ -98,13 +98,16 @@ const CalendarPayloadSchema = z.object({
       actions: z.array(rule),
     }),
   ),
-  controles_mensuels: z.array(
-    z.object({
-      element: z.string().trim().min(1),
-      icon: z.string(),
-      detail: z.string(),
-    }),
-  ),
+  // null = source unavailable, distinct from a valid empty list.
+  controles_mensuels: z
+    .array(
+      z.object({
+        element: z.string().trim().min(1),
+        icon: z.string(),
+        detail: z.string(),
+      }),
+    )
+    .nullable(),
 });
 
 /* ===========================================================================
@@ -383,7 +386,11 @@ export default function CalendrierEntretienPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {calendar.controles_mensuels.length === 0 ? (
+              {calendar.controles_mensuels === null ? (
+                <p className="text-sm text-gray-500 italic">
+                  Contrôles mensuels indisponibles pour le moment.
+                </p>
+              ) : calendar.controles_mensuels.length === 0 ? (
                 <p className="text-sm text-gray-500 italic">
                   Aucun contrôle mensuel disponible.
                 </p>

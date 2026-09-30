@@ -10,7 +10,7 @@
  *
  * Méthodes :
  *   - getSchedule(typeId, currentKm) → MaintenanceInterval intervalles génériques (filtre carburant indicatif)
- *   - getAlerts(typeId, milestones?) → 5 paliers d'actions (zéro hardcode des paliers)
+ *   - getAlerts(fuelType, milestones?) → actions par palier (paliers par défaut = défaut de la RPC)
  *
  * `getCalendar(typeId, currentKm)` agrège ces intervalles et les contrôles wiki.
  * Sans historique par opération, aucun statut personnel ne peut être calculé.
@@ -30,6 +30,8 @@ import { DiagnosticContentService } from './diagnostic-content.service';
 import {
   MaintenanceScheduleSchema,
   MaintenanceAlertsSchema,
+  ControlesMensuelsSchema,
+  type ControleMensuel,
   type MaintenanceScheduleItem,
   type MaintenanceAlertMilestone,
 } from '../types/maintenance-calendar.schema';
@@ -47,20 +49,16 @@ export type {
  */
 export interface MaintenanceCalendar {
   type_id: number | null;
-  current_km: number;
+  /** Kilométrage fourni par l'appelant ; `null` s'il n'en a fourni aucun. */
+  current_km: number | null;
   fuel_type: string | null;
   assessment_basis: 'generic_intervals';
   applicability: 'unverified';
   schedule: MaintenanceScheduleItem[];
   alerts: MaintenanceAlertMilestone[];
-  controles_mensuels: Array<{
-    element: string;
-    icon: string;
-    detail: string;
-  }>;
+  /** `null` = contenu wiki absent ou invalide, distinct d'une liste vide. */
+  controles_mensuels: ControleMensuel[] | null;
 }
-
-const DEFAULT_MILESTONES = [10000, 30000, 60000, 100000, 150000];
 
 @Injectable()
 export class MaintenanceCalculatorService extends SupabaseBaseService {
@@ -74,12 +72,12 @@ export class MaintenanceCalculatorService extends SupabaseBaseService {
    * une applicabilité constructeur. Son statut sans historique est neutralisé.
    *
    * @param typeId    auto_type.type_id (résolu en fuel_type côté RPC)
-   * @param currentKm kilométrage actuel du véhicule
+   * @param currentKm kilométrage actuel du véhicule, `null` s'il est inconnu
    * @param fuelType  override explicite (optionnel)
    */
   async getSchedule(
     typeId: number | null,
-    currentKm: number,
+    currentKm: number | null,
     fuelType?: string | null,
   ): Promise<MaintenanceScheduleItem[]> {
     try {
@@ -87,7 +85,7 @@ export class MaintenanceCalculatorService extends SupabaseBaseService {
         'kg_get_smart_maintenance_schedule',
         {
           p_type_id: typeId,
-          p_current_km: currentKm,
+          ...(currentKm !== null && { p_current_km: currentKm }),
           p_fuel_type: fuelType ?? null,
         },
         { source: 'internal' },
@@ -109,19 +107,24 @@ export class MaintenanceCalculatorService extends SupabaseBaseService {
 
   /**
    * Alertes regroupées par palier kilométrique.
-   * Zéro hardcode des paliers — la RPC dérive depuis kg_nodes (ADR-032 D7).
+   * Les actions de chaque palier viennent de kg_nodes (ADR-032 D7). Sans
+   * paliers explicites, ceux par défaut de la RPC s'appliquent : ils ne sont
+   * pas recopiés ici.
    *
    * @param fuelType   filtre fuel-aware optionnel
-   * @param milestones paliers personnalisés (default: 10k/30k/60k/100k/150k)
+   * @param milestones paliers personnalisés (optionnel)
    */
   async getAlerts(
     fuelType?: string | null,
-    milestones: number[] = DEFAULT_MILESTONES,
+    milestones?: number[],
   ): Promise<MaintenanceAlertMilestone[]> {
     try {
       const { data, error } = await this.callRpc<unknown>(
         'kg_get_maintenance_alerts_by_milestone',
-        { p_milestones: milestones, p_fuel_type: fuelType ?? null },
+        {
+          ...(milestones && { p_milestones: milestones }),
+          p_fuel_type: fuelType ?? null,
+        },
         { source: 'internal' },
       );
       const parsed = MaintenanceAlertsSchema.safeParse(data);
@@ -152,19 +155,13 @@ export class MaintenanceCalculatorService extends SupabaseBaseService {
    */
   async getCalendar(
     typeId: number | null,
-    currentKm: number,
+    currentKm: number | null,
     fuelType?: string | null,
   ): Promise<MaintenanceCalendar> {
     const [schedule, alerts] = await Promise.all([
       this.getSchedule(typeId, currentKm, fuelType),
       this.getAlerts(fuelType),
     ]);
-    const controlesEntry = this.diagnosticContent.getControlesMensuels();
-    const controlesItems = (controlesEntry?.entity_data?.items ?? []) as Array<{
-      element: string;
-      icon: string;
-      detail: string;
-    }>;
     return {
       type_id: typeId,
       current_km: currentKm,
@@ -173,7 +170,24 @@ export class MaintenanceCalculatorService extends SupabaseBaseService {
       applicability: 'unverified',
       schedule,
       alerts,
-      controles_mensuels: controlesItems,
+      controles_mensuels: this.getControlesMensuels(),
     };
+  }
+
+  /**
+   * Les contrôles mensuels sont une section distincte des intervalles : leur
+   * absence ne rend pas le calendrier indisponible, mais elle est renvoyée
+   * comme `null`, jamais comme une liste vide.
+   */
+  private getControlesMensuels(): ControleMensuel[] | null {
+    // A missing or unparseable file is already logged by DiagnosticContentService.
+    const entry = this.diagnosticContent.getControlesMensuels();
+    if (!entry) return null;
+    const parsed = ControlesMensuelsSchema.safeParse(entry.entity_data.items);
+    if (!parsed.success) {
+      this.logger.error('Monthly checks content is malformed');
+      return null;
+    }
+    return parsed.data;
   }
 }

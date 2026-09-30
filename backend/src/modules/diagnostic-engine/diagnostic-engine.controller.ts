@@ -161,7 +161,7 @@ export class DiagnosticEngineController {
         "Paramètres du calendrier d'entretien invalides.",
       );
     const tid = parsed.data.type_id ?? null;
-    const km = parsed.data.current_km ?? 0;
+    const km = parsed.data.current_km ?? null;
     const items = await this.maintenanceCalculator.getSchedule(
       tid,
       km,
@@ -170,11 +170,6 @@ export class DiagnosticEngineController {
     return { success: true, type_id: tid, current_km: km, items };
   }
 
-  /**
-   * GET /api/diagnostic-engine/maintenance-alerts
-   *
-   * ADR-032 D7 — alertes regroupées par palier km (zéro hardcode des paliers).
-   */
   /**
    * GET /api/diagnostic-engine/calendar
    *
@@ -198,7 +193,7 @@ export class DiagnosticEngineController {
         "Paramètres du calendrier d'entretien invalides.",
       );
     const tid = parsed.data.type_id ?? null;
-    const km = parsed.data.current_km ?? 0;
+    const km = parsed.data.current_km ?? null;
     return this.maintenanceCalculator.getCalendar(
       tid,
       km,
@@ -206,6 +201,12 @@ export class DiagnosticEngineController {
     );
   }
 
+  /**
+   * GET /api/diagnostic-engine/maintenance-alerts
+   *
+   * ADR-032 D7 — alertes regroupées par palier km ; sans `milestones`, les
+   * paliers par défaut de la RPC s'appliquent.
+   */
   @Get('maintenance-alerts')
   async maintenanceAlerts(
     @Query('fuel_type') fuelType?: string,
