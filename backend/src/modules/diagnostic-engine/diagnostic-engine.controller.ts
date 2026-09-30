@@ -4,7 +4,7 @@
  * POST /api/diagnostic-engine/analyze      → Evidence Pack
  * GET  /api/diagnostic-engine/systems      → Systemes actifs
  * GET  /api/diagnostic-engine/symptoms     → Symptomes par systeme
- * GET  /api/diagnostic-engine/sessions     → Historique sessions
+ * GET  /api/diagnostic-engine/sessions     → Historique sessions (admin)
  * GET  /api/diagnostic-engine/sessions/:id → Session par UUID
  */
 import {
@@ -19,8 +19,11 @@ import {
   Res,
   Inject,
   Logger,
+  UseGuards,
 } from '@nestjs/common';
 import type { Response } from 'express';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { DiagnosticEngineOrchestrator } from './diagnostic-engine.orchestrator';
 import { DiagnosticEngineDataService } from './diagnostic-engine.data-service';
 import { MaintenanceCalculatorService } from './services/maintenance-calculator.service';
@@ -473,9 +476,10 @@ export class DiagnosticEngineController {
   /**
    * GET /api/diagnostic-engine/stats
    *
-   * Dashboard stats (session counts, system coverage, knowledge base)
+   * Dashboard stats (session counts, system coverage, knowledge base) — admin
    */
   @Get('stats')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async getStats() {
     const stats = await this.dataService.getStats();
     return { success: true, ...stats };
@@ -484,9 +488,10 @@ export class DiagnosticEngineController {
   /**
    * GET /api/diagnostic-engine/sessions
    *
-   * List recent diagnostic sessions
+   * List recent diagnostic sessions of every visitor — admin
    */
   @Get('sessions')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async listSessions(@Query('limit') limit?: string) {
     const parsedLimit = Math.min(
       Math.max(parseInt(limit || '20', 10) || 20, 1),

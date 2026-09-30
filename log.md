@@ -550,6 +550,12 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Décision** : docs(skills): aligner skills et procédures agent sur l'état réel du dépôt
 - **Sortie** : PR aucune | commits f307cf3a8
 
+## 2026-09-30 — fix/db-drop-duplicate-unique-keys (auto)
+
+- **Branche** : `fix/db-drop-duplicate-unique-keys`
+- **Décision** : chore(registry): régénérer les projections pour 20260930_drop_duplicate_unique_keys (+2 other commits)
+- **Sortie** : PR #1641 | commits 733c545cc 213f60109 d40297c3c
+
 ## 2026-09-30 — fix/db-pin-mark-order-paid-atomic-search-path (auto)
 
 - **Branche** : `fix/db-pin-mark-order-paid-atomic-search-path`
