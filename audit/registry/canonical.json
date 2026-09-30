@@ -19618,6 +19618,7 @@
           "backend/src/modules/catalog/controllers/pieces-diagnostic.controller.ts",
           "backend/src/modules/catalog/controllers/vehicle-hierarchy.controller.ts",
           "backend/src/modules/catalog/services/compatibility.service.ts",
+          "backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts",
           "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.ts",
           "backend/src/modules/seo/r2/services/r2-r8-gate-status.service.ts",
           "backend/src/modules/seo/r2/services/r8-parent-enrichment.service.ts",
@@ -43181,7 +43182,7 @@
         "backend/src/modules/diagnostic-engine/types/maintenance-calendar.schema.ts"
       ],
       "kind": "service",
-      "loc": 194,
+      "loc": 235,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts",
       "risk": "medium",
@@ -67228,7 +67229,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 148,
+      "loc": 230,
       "owner": "@ak125",
       "path": "backend/tests/unit/maintenance-calendar-endpoint.test.ts",
       "risk": "medium",
@@ -101191,13 +101192,13 @@
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
       ".spec/00-canon/repository-registry/ownership.yaml": "35f33dc0f7e4d4d6f1e67906816e6a8bfbb6b70794e60e9ea4b4148dca2c0f28",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
-      "audit/registry/db.json": "7c35439bb913f5b738577b09c86b7c5784884ba0907fcffb6173d864593ac0a6",
+      "audit/registry/db.json": "d7a47c08718ad1fd1246f203ad2d8ae809b3ffe03b5d1710fb1466756bca7ec2",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "9004bcfd8adeed0e15fdfa1503e1367467c2f8836e0ab92c548abe0c23c4c126",
+      "audit/registry/files.json": "13603fd5c2319c849c375cf9c72924d41bddf7647c23a014590607b5321479dd",
       "audit/registry/rpc.json": "86d0c24b102036512a9f7b11d9ac04754288049a8b061981b19f0db0a8c86263",
       "audit/registry/runtime.json": "67dc8fe02246ff5d7cf25668af7409b32ea66bc575d4ae23455b57f94d111174"
     },
-    "sotFingerprint": "faa0367db3d8"
+    "sotFingerprint": "86ee59ec5dfc"
   },
   "runtime": [
     {

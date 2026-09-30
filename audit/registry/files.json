@@ -15018,7 +15018,7 @@
         "backend/src/modules/diagnostic-engine/types/maintenance-calendar.schema.ts"
       ],
       "kind": "service",
-      "loc": 194,
+      "loc": 235,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts",
       "risk": "low",
@@ -38255,7 +38255,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 148,
+      "loc": 230,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/maintenance-calendar-endpoint.test.ts",
       "risk": "low",
