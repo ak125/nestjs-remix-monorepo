@@ -567,3 +567,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/db-pin-mark-order-paid-atomic-search-path`
 - **Décision** : chore(registry): régénérer les projections pour 20260930_pin_mark_order_paid_atomic_search_path (+4 other commits)
 - **Sortie** : PR #1643 | commits e427eab4d b2ce1a3d0 c2af88e77 f54f272f1 fd1009783
+
+## 2026-10-01 — fix/db-cron-job-run-details-retention (auto)
+
+- **Branche** : `fix/db-cron-job-run-details-retention`
+- **Décision** : docs(db): chiffrer le coût mesuré de la rétention de cron.job_run_details (+2 other commits)
+- **Sortie** : PR #1651 | commits 40fa3aeca 9767f3443 27a22c3d4
