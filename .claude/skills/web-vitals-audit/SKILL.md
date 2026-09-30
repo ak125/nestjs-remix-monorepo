@@ -53,7 +53,7 @@ instrumentation web-vitals + Playwright + analyse manuelle.
 
 ### EXCLUS explicitement
 - ❌ Lighthouse complet (déjà couvert par `responsive-audit` + CI
-  Lighthouse PREPROD `.github/workflows/lighthouse-preprod.yml`)
+  Lighthouse PREPROD : job `lighthouse` de `.github/workflows/ci.yml`)
 - ❌ SEO global, meta-tags, canonical URLs (couvert par `seo-gamme-audit`)
 - ❌ Accessibility WCAG, touch targets 44×44 (couvert par `responsive-audit`)
 - ❌ Bundle size analyzer (chantier séparé)

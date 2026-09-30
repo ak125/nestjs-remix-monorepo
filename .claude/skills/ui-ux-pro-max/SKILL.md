@@ -186,24 +186,21 @@ Si l'utilisateur demande les corrections :
 
 ## Tokens Automecanik
 
-**Source de verite :** `packages/design-tokens/src/tokens/design-tokens.json`
+**Source de verite :** `packages/design-tokens/src/tokens.json` — seule autorite hex / typographie
+(pieges de chemin : [`.claude/skills/frontend-design/references/canon-links.md`](../frontend-design/references/canon-links.md)).
+Palette verifiee et roles : skill `frontend-design`, section « Design System Integration (SoT) ».
+Ne pas recopier de hex ici : relire le JSON avant d'en citer un.
 
-| Token | Valeur | Usage Tailwind | Contexte |
-|-------|--------|---------------|----------|
-| `primary` | `#e8590c` (orange) | `bg-primary`, `text-primary` | CTA, prix, urgence, accents |
-| `secondary` | `#0d1b3e` (dark blue) | `bg-secondary`, `text-secondary` | Headers, navigation, confiance |
-| `background` | `#ffffff` | `bg-background` | Fond principal |
-| `surface` | `#f8f9fa` | `bg-surface` | Cartes, zones secondaires |
-| `border` | `#e2e8f0` | `border-border` | Separateurs, contours |
-| `success` | vert | `text-green-*` | Stock disponible, validations |
-| `warning` | amber | `text-amber-*` | Alertes, stock faible |
-| `danger` | rouge | `text-red-*` | Erreurs, rupture stock |
+**Classes Tailwind** (`frontend/tailwind.config.cjs`) — a ne pas confondre :
+- `bg-cta` (+ `hover:bg-cta-hover`) = orange `color.semantic.action` — CTA, boutons d'achat, urgence
+- `bg-primary` / `bg-navy` = navy `color.primary.500` — confiance, navigation, fonds sombres
+- `#e8590c` n'est pas un token du design system (ancienne valeur) : ne jamais le prendre pour reference
 
 **Regles tokens :**
-- Utiliser les classes Tailwind semantic (`bg-primary`) en priorite
-- Ne JAMAIS hardcoder `#e8590c` directement — utiliser le token
+- Utiliser les classes Tailwind semantiques en priorite
+- Ne JAMAIS hardcoder un hex — utiliser le token correspondant
 - Si extension necessaire, justifier et documenter dans le design system
-- Importer depuis `packages/design-tokens/src/tokens/generated.ts` ou CSS vars
+- Importer depuis `packages/design-tokens/src/tokens/generated.ts` ou les CSS vars de `packages/design-tokens/src/styles/tokens.css`
 
 ---
 

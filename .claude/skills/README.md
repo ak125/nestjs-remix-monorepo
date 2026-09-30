@@ -80,7 +80,7 @@ La `description` est le seul champ que Claude lit pour décider de charger le sk
 3. **Pas de résumé de workflow** (« generates X », « produces Y ») — ça crée le workflow-summary trap où Claude suit la description et zappe le body
 4. Multilingue OK (FR + EN) — cohérent avec le contenu
 
-Cf. mémoire [`feedback_skill_sot_drift_audit_pattern`](../../../home/deploy/.claude/projects/-opt-automecanik-app/memory/feedback_skill_sot_drift_audit_pattern.md) pour le pattern audit.
+Cf. mémoire agent `feedback_skill_sot_drift_audit_pattern` (hors dépôt, non liable) pour le pattern audit.
 
 ## Validation locale (avant de commit)
 
@@ -110,16 +110,9 @@ Modèle de séquençage : ADR-058 PR-G (Repository Control Plane). Validé empir
 
 ## Skills existants
 
-| Skill | Type | Status | Runtime | LLM-safe | Domain |
-|---|---|---|---|---|---|
-| `code-review` | technique | stable | read-only | ✓ | D15 |
-| `db-migration` | discipline | stable | privileged | ✗ | D15 |
-| `frontend-design` | technique | stable | mutating | ✓ | D15 |
-| `governance-vault-ops` | discipline | stable | privileged | ✗ | D15 |
-| `responsive-audit` | technique | stable | read-only | ✓ | D15 |
-| `session-log` | technique | stable | mutating | ✓ | D15 |
-| `ui-ux-pro-max` | reference | stable | read-only | ✓ | D15 |
-| `vehicle-ops` | technique | stable | mutating | ✗ | D15 |
+Pas de tableau recopié ici : il périmait au premier skill ajouté (8 lignes pour 12 skills le
+2026-09-30). Liste : `node scripts/governance/validate-skills-frontmatter.js` (une ligne par
+skill). Métadonnées (type, status, runtime_class, llm_safe, domain) : la projection ci-dessous.
 
 Source-of-truth machine-readable : [`.spec/00-canon/ai-registry/skills.registry.json`](../../.spec/00-canon/ai-registry/skills.registry.json) (généré).
 

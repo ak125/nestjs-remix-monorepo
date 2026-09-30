@@ -59,13 +59,21 @@ Supabase migration patterns, RLS audit, schema validation. Guides safe DDL opera
 1. **Ecrire le SQL** de migration dans `backend/supabase/migrations/YYYYMMDD_description.sql`
 2. **Ecrire le SQL de rollback** (voir section Rollback ci-dessous)
 3. **Preparer les validations** before/after (voir section Data Validation)
-4. **Verifier les safe patterns** (IF NOT EXISTS, BEGIN/COMMIT, etc.)
+4. **Verifier les safe patterns** (IF NOT EXISTS, timeouts, **pas** de BEGIN/COMMIT — cf. Safe Patterns)
 
 ### Phase 3 — Execute
 
 1. Executer les queries de validation BEFORE
-2. Appliquer la migration via `mcp__claude_ai_Supabase__apply_migration`
-3. Verifier le succes dans `mcp__supabase__list_migrations`
+2. Appliquer = **decision owner** (zone STOP DB), par le seul canal gouverne : le workflow manuel
+   `.github/workflows/apply-supabase-migrations.yml` (`dry_run=true` d'abord, puis `confirm=APPLY` ;
+   `only_ids` pour viser un fichier). Moteur `scripts/ci/apply-supabase-migration.py`, ledger
+   `infra.schema_migrations` — procedure : `backend/supabase/migrations/README.md`.
+   **Jamais** `mcp__claude_ai_Supabase__apply_migration` : il ecrit dans un autre ledger
+   (`supabase_migrations.schema_migrations`) que le moteur ne lit pas — le fichier reste `pending`
+   et le moteur le rejouera (le README range ce canal parmi ceux qui imposent un `--baseline`).
+3. Verifier l'etat au ledger : workflow en `status_only=true` (sort non-zero sur drift / applying / failed).
+   Exit 0 ne prouve pas l'application — un fichier encore `pending` sort aussi 0 : lire la ligne de l'id
+   (`applied`, checksum = sha256 du fichier sur `main`)
 4. Executer les queries de validation AFTER
 
 ### Phase 4 — Verify
@@ -172,7 +180,10 @@ SELECT polname, polcmd, polroles FROM pg_policy WHERE polrelid = 'my_table'::reg
 
 ## Pre-Migration Checklist
 
-1. **Test SQL** in dev environment first (use `mcp__claude_ai_Supabase__execute_sql`)
+1. **Lint local, sans base** — il n'y a pas de base de dev separee (DB partagee, `.claude/rules/deployment.md`
+   axe 4) : aucun DDL « d'essai » via `execute_sql`. `node_modules/.bin/squawk --config .squawk.toml <fichier>`
+   (gate CI `Migration Safety`) + `python3 scripts/ci/apply-supabase-migration.py --lint-markers <fichier>`,
+   puis le `dry_run=true` de la Phase 3
 2. **Verify no breaking changes** to existing RPC functions
 3. **Check RLS impact** on existing queries
 4. **Verify key access patterns** — service_role (backend) vs anon (frontend)
@@ -181,20 +192,24 @@ SELECT polname, polcmd, polroles FROM pg_policy WHERE polrelid = 'my_table'::reg
 ## Safe Patterns
 
 ```sql
--- Always use IF NOT EXISTS / IF EXISTS
-CREATE TABLE IF NOT EXISTS my_table (...);
-CREATE INDEX IF NOT EXISTS idx_name ON my_table (column);
-DROP TABLE IF EXISTS old_table;
+-- Pas de BEGIN; / COMMIT; : le moteur enveloppe deja chaque fichier dans une transaction
+-- (squawk `assume_in_transaction = true` -> `transaction-nesting`, la CI echoue).
+-- Timeouts explicites en tete (squawk `require-timeout-settings`).
+SET lock_timeout = '5s';
+SET statement_timeout = '60s';
 
--- Wrap multi-statement migrations
-BEGIN;
-  ALTER TABLE my_table ADD COLUMN new_col TEXT;
-  CREATE INDEX idx_new ON my_table (new_col);
-COMMIT;
+-- Always use IF NOT EXISTS / IF EXISTS
+CREATE TABLE IF NOT EXISTS my_table (id bigint);
+ALTER TABLE my_table ADD COLUMN IF NOT EXISTS new_col TEXT;
+CREATE INDEX IF NOT EXISTS idx_new ON my_table (new_col);
 
 -- Add comments explaining purpose
 COMMENT ON TABLE my_table IS 'Description of table purpose';
 ```
+
+Ce bloc passe squawk a 0 issue ; l'ancien (BEGIN/COMMIT, sans timeouts) en levait 4. Index
+`CONCURRENTLY` sur une table existante : il refuse la transaction -> marqueur `-- @non_transactional`,
+cf. `backend/supabase/migrations/README.md` §Non-transactional migrations.
 
 ## RLS Audit Patterns
 
@@ -269,28 +284,29 @@ la command (`now() AT TIME ZONE 'UTC'`), jamais un fuseau implicite.
   (repeatables Redis) sinon **double orchestrateur** silencieux. Auditer via
   `runtime-truth-audit` → `scheduled-orchestrator-drift`.
 
-### DDL via apply_migration, jamais execute_sql
+### DDL via fichier de migration + workflow a ledger, jamais execute_sql
 
 `cron.schedule`/`cron.alter_job`/`cron.unschedule` + `CREATE OR REPLACE FUNCTION` = DDL →
-`apply_migration` (trace d'audit). `execute_sql` reste pour les SELECT de validation /
-backfill DML one-shot.
+fichier dans `backend/supabase/migrations/`, applique par `apply-supabase-migrations.yml`
+(trace d'audit = `infra.schema_migrations`, cf. Phase 3). `execute_sql` reste pour les SELECT
+de validation / backfill DML one-shot.
 
 ## MCP Tools Available
 
 | Tool | Use |
 |------|-----|
-| `mcp__claude_ai_Supabase__apply_migration` | DDL operations (CREATE, ALTER, DROP) |
+| `mcp__claude_ai_Supabase__apply_migration` | **Ne pas utiliser** pour les migrations du depot — contourne le ledger (Phase 3) |
 | `mcp__claude_ai_Supabase__execute_sql` | DML/queries (SELECT, INSERT, UPDATE) |
 | `mcp__supabase__list_tables` | Verify schema after changes |
 | `mcp__supabase__get_advisors` | Security + performance check |
-| `mcp__supabase__list_migrations` | Check existing migrations |
+| `mcp__supabase__list_migrations` | Lit `supabase_migrations.schema_migrations`, pas le ledger du moteur — etat reel : `status_only=true` |
 
 ## Anti-Patterns (BLOCK)
 
 - `DROP TABLE` without backup/confirmation
 - `ALTER TABLE` with data loss potential (dropping columns with data)
 - Disabling RLS on tables with user data
-- Running DDL directly via `execute_sql` (use `apply_migration` for audit trail)
+- Running DDL directly via `execute_sql` or MCP `apply_migration` — both bypass the `infra.schema_migrations` ledger (use a migration file + `apply-supabase-migrations.yml`)
 - Missing `IF NOT EXISTS` on CREATE statements
 - Forgetting to add RLS policies on new tables
 

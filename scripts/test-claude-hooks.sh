@@ -125,6 +125,16 @@ assert_contains "sessionstart contient ## DO NOT start" "## DO NOT start" "$OUT"
 SIZE=$(echo -n "$OUT" | wc -c)
 assert_size_lt "sessionstart output bounded" "2000" "$SIZE"
 
+# Cas 2b : la surface annoncée = les skills présents sur disque, pas une liste recopiée
+ROOT_SKILLS=$(find .claude/skills -mindepth 2 -maxdepth 2 -name SKILL.md | wc -l)
+assert_contains "sessionstart racine → surface = $ROOT_SKILLS skills sur disque" "^Surface : $ROOT_SKILLS skills" "$OUT"
+
+# Cas 2c : workspaces/* n'a pas de package.json — le workspace est détecté par son .claude/
+WS_SKILLS=$(find workspaces/seo-batch/.claude/skills -mindepth 2 -maxdepth 2 -name SKILL.md | wc -l)
+OUT_WS=$(cd workspaces/seo-batch && bash ../../scripts/claude-hooks/sessionstart-workspace-context.sh 2>/dev/null)
+assert_contains "sessionstart workspaces/seo-batch → workspace détecté" "^workspaces/seo-batch" "$OUT_WS"
+assert_contains "sessionstart workspaces/seo-batch → surface = $WS_SKILLS skills sur disque" "^Surface : $WS_SKILLS skills" "$OUT_WS"
+
 # Cas 3 : rollback CLAUDE_HOOKS_DISABLE=1 → output vide, exit 0
 OUT=$(CLAUDE_HOOKS_DISABLE=1 bash scripts/claude-hooks/sessionstart-workspace-context.sh 2>/tmp/h2c-err)
 EXIT=$?
