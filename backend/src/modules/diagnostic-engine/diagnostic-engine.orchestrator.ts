@@ -26,6 +26,7 @@ import { RiskSafetyEngine } from './engines/risk-safety.engine';
 import { CatalogOrientationEngine } from './engines/catalog-orientation.engine';
 import { MaintenanceIntelligenceEngine } from './engines/maintenance-intelligence.engine';
 import { KgShadowService } from './services/kg-shadow.service';
+import { CAUSE_GAMME_MAP } from './constants/gamme-map.constants';
 
 // Wording shown to the user; same labels as the wizard's usage step
 // (frontend StepVehicle USAGE_PROFILES).
@@ -480,7 +481,12 @@ export class DiagnosticEngineOrchestrator {
       ...new Set(
         hypotheses
           .filter((h) => h.total_score >= 15)
-          .flatMap((h) => h.related_gamme_slugs || [h.label]),
+          .flatMap(
+            (h) =>
+              CAUSE_GAMME_MAP[h.hypothesis_id]?.map((g) => g.label) ?? [
+                h.label,
+              ],
+          ),
       ),
     ];
 
