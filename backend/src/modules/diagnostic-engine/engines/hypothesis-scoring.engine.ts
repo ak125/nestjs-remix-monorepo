@@ -3,8 +3,8 @@
  * HypothesisScoringEngine
  *
  * Scoring multi-couches des hypotheses :
- *   signal_match (0-30) + vehicle_fit (0-20) + lifecycle_fit (0-15) +
- *   maintenance_history (0-15) + plausibility (0-10) + context (0-10) = 0-100
+ *   signal_match (0-30) + vehicle_fit (0-20) + lifecycle_fit (0-7) +
+ *   maintenance_history (0-15) + plausibility (2-5) + context (0-10)
  *
  * Chaque couche est calculee independamment puis combinee. Une couche sans
  * donnee sourcee par cause reste neutre : elle ne doit ni gonfler la
@@ -28,9 +28,9 @@ export interface ScoredHypothesis {
   // Multi-layer scores
   signal_match_score: number; // 0-30
   vehicle_fit_score: number; // 0-20
-  lifecycle_fit_score: number; // 0-15
+  lifecycle_fit_score: number; // 0-7
   maintenance_history_score: number; // 0-15
-  plausibility_score: number; // 0-10
+  plausibility_score: number; // 2-5
   context_score: number; // 0-10
   total_score: number; // 0-100
   // Metadata
@@ -115,7 +115,10 @@ export class HypothesisScoringEngine {
   }
 
   /**
-   * Lifecycle fit: is the vehicle age/mileage consistent with this cause?
+   * Lifecycle fit: is the vehicle too young for this cause?
+   * Mileage/age ranges are declared for some causes only; a matching range
+   * must not rank a cause above one with no declared range (data presence
+   * is not evidence). Only a vehicle clearly below the range lowers it.
    */
   private scoreLifecycleFit(cause: any, vehicle?: VehicleContextInput): number {
     if (!vehicle?.mileage_km && !vehicle?.year) return 7; // neutral
@@ -131,25 +134,18 @@ export class HypothesisScoringEngine {
 
     let score = 7;
 
-    if (km && kmMin && kmMax) {
-      if (km >= kmMin && km <= kmMax) {
-        score = 15; // sweet spot
-      } else if (km > kmMax) {
-        score = 12; // overdue, very plausible
-      } else if (km < kmMin * 0.5) {
-        score = 3; // too early, unlikely
-      } else {
-        score = 8; // approaching range
-      }
+    if (km && kmMin && kmMax && km < kmMin * 0.5) {
+      score = 3; // too early, unlikely
     }
 
-    // Age bonus/penalty
-    if (age && cause.plausible_age_min && cause.plausible_age_max) {
-      if (age >= cause.plausible_age_min && age <= cause.plausible_age_max) {
-        score = Math.min(score + 2, 15);
-      } else if (age < cause.plausible_age_min) {
-        score = Math.max(score - 2, 0);
-      }
+    // Age penalty
+    if (
+      age &&
+      cause.plausible_age_min &&
+      cause.plausible_age_max &&
+      age < cause.plausible_age_min
+    ) {
+      score = Math.max(score - 2, 0);
     }
 
     return score;
@@ -165,7 +161,8 @@ export class HypothesisScoringEngine {
   }
 
   /**
-   * Plausibility: general reality check
+   * Plausibility: general reality check. Like lifecycle fit, a declared
+   * mileage range can only lower a cause, never raise it above neutral.
    */
   private scorePlausibility(cause: any, vehicle?: VehicleContextInput): number {
     if (!vehicle?.mileage_km) return 5; // neutral
@@ -177,10 +174,7 @@ export class HypothesisScoringEngine {
 
     // Very low mileage for this type of issue → less plausible
     if (km < kmMin * 0.3) return 2;
-    // Normal range → full plausibility
-    if (km >= kmMin) return 10;
-    // Approaching → moderate
-    return 6;
+    return 5; // neutral
   }
 
   /**
