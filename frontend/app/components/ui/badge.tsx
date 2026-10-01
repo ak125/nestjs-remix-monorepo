@@ -14,7 +14,7 @@ type BadgeVariant =
   | "subtle";
 type BadgeSize = "xs" | "sm" | "md" | "lg";
 
-export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   variant?: BadgeVariant;
   size?: BadgeSize;
   icon?: React.ReactNode;
@@ -60,13 +60,13 @@ function Badge({
     "inline-flex items-center gap-1 rounded-full border font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2";
 
   return (
-    <div
+    <span
       className={`${baseClasses} ${sizeClasses[size]} ${variantClasses[variant]} ${className}`}
       {...props}
     >
       {icon && <span className="shrink-0">{icon}</span>}
       {children}
-    </div>
+    </span>
   );
 }
 
