@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 import {
   headers,
@@ -137,6 +137,51 @@ describe("guide d'achat loader — succès inchangés", () => {
     const result = (await run()) as { guide: { sourceType: string } };
     expect(result.guide.sourceType).toBe("manual");
     expect(logger.error).not.toHaveBeenCalled();
+  });
+});
+
+describe("guide d'achat loader — délai d'abandon de 12 s", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("R6 sans guide R6, blog muet → abandon à 12 s, 503, minuteur libéré", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    fetchMock.mockImplementation(
+      (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+        if (url.includes("/api/blog/guides/slug/")) {
+          // Ne répond jamais : seul l'abandon du loader peut conclure.
+          return new Promise((_, reject) => {
+            init?.signal?.addEventListener("abort", () =>
+              reject(new DOMException("aborted", "AbortError")),
+            );
+          });
+        }
+        const body = url.includes("/api/r6-guide/redirect/")
+          ? { redirect_to: null, robots: null }
+          : { data: null };
+        return Promise.resolve(
+          new Response(JSON.stringify(body), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          }),
+        );
+      },
+    );
+
+    const settled = thrownBy(run);
+    await vi.advanceTimersByTimeAsync(12_000);
+    const outcome = await Promise.race([
+      settled,
+      new Promise<"en attente">((resolve) =>
+        setImmediate(() => resolve("en attente")),
+      ),
+    ]);
+
+    expect(outcome).not.toBe("en attente");
+    expect((outcome as Thrown).init?.status).toBe(503);
+    expect(vi.getTimerCount()).toBe(0);
   });
 });
 

@@ -198,7 +198,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     let r6Absent = r6Response.status === 404;
 
     if (r6Response.ok) {
-      clearTimeout(timeoutId);
       const result = await r6Response.json();
 
       // Handle slug redirect (e.g. "disque-frein" → "disque-de-frein")
@@ -225,7 +224,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       request,
     );
     const blogResponse = await fetch(blogUrl, { signal: controller.signal });
-    clearTimeout(timeoutId);
 
     if (!blogResponse.ok) {
       if (blogResponse.status === 404 && r6Absent) {
@@ -292,7 +290,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const r4Reference = await fetchR4Reference(guide.page.pg_id, request);
     return { guide, pg_alias, r4Reference, robots };
   } catch (error) {
-    clearTimeout(timeoutId);
     if (error instanceof Response) throw error;
 
     // Genuine absence — the only case that legitimately answers 404.
@@ -309,6 +306,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       { message: `Erreur chargement guide "${pg_alias}"` },
       { status: 503, headers: { "Retry-After": "60" } },
     );
+  } finally {
+    // One owner for the timer: the 12 s budget spans the R6 fetch AND the blog
+    // fetch (bodies included) and is released on every exit.
+    clearTimeout(timeoutId);
   }
 }
 
