@@ -42232,6 +42232,7 @@
       "domain": "D4",
       "id": "backend/src/modules/diagnostic-engine/constants/gamme-map.constants.ts",
       "importedBy": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
         "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts"
@@ -42441,6 +42442,7 @@
         "backend/src/modules/diagnostic-engine/maintenance-flow.test.ts"
       ],
       "imports": [
+        "backend/src/modules/diagnostic-engine/constants/gamme-map.constants.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
         "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
         "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
@@ -42452,7 +42454,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "service",
-      "loc": 607,
+      "loc": 613,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
       "risk": "medium",
@@ -42563,7 +42565,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "test",
-      "loc": 884,
+      "loc": 892,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-source-integrity.test.ts",
       "risk": "medium",
@@ -101406,11 +101408,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "81ca2c5c93fe8bb73daa870dbc5ec47c9b4868cad3c7519f9ecb0279cf629bda",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "2700cdfce34e437d19dab84ea6b8ce938276b4ae54949bf520708ea556e5aa25",
+      "audit/registry/files.json": "8850d7dc72af9a04bfe3a22a908c72c9ed997e148b92bd34aaf172bc5a8b4970",
       "audit/registry/rpc.json": "86d0c24b102036512a9f7b11d9ac04754288049a8b061981b19f0db0a8c86263",
       "audit/registry/runtime.json": "7aea32278a4ba6803e45b32cc9ea0915b266a4d5a2c8aa5d07bd115d373c1ec2"
     },
-    "sotFingerprint": "d4f2492bb3ae"
+    "sotFingerprint": "ea45941fd29d"
   },
   "runtime": [
     {
