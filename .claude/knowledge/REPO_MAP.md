@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 239cddcdffe9f5dafe3ba412f575919d82227f126c4bc4947a9921df541a5b3b
+source_sha256: d0e9a8e87a52e79c1f5c34ec655b04734400687c717ad7d97d3cec69a61607c9
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 2957 |
+| Files (Layer 1) | 2954 |
 | DB tables (Layer 1) | 313 |
 | DB RPC (Layer 1) | 253 |
 | Dependencies (Layer 1) | 237 |
-| Runtime entrypoints (Layer 1) | 1000 |
+| Runtime entrypoints (Layer 1) | 999 |
 
-Source sotFingerprint: `20cc40f73697`.
+Source sotFingerprint: `bb4928faf349`.
 
 ## Comment l'utiliser
 
@@ -53,11 +53,11 @@ Source sotFingerprint: `20cc40f73697`.
 
 ### D3 — SEO & Sitemap
 
-- **Files**: 427 (service=219, test=120, controller=34, config=28, script=26)
-- **Runtime entrypoints**: 169
-- **Top owners**: @ak125/seo-team (427)
+- **Files**: 425 (service=218, test=119, controller=34, config=28, script=26)
+- **Runtime entrypoints**: 168
+- **Top owners**: @ak125/seo-team (425)
 - **Knowledge prose**: [`merchant-center`](modules/merchant-center.md), [`seo`](modules/seo.md), [`seo-control-plane`](modules/seo-control-plane.md), [`seo-logs`](modules/seo-logs.md), [`seo-monitoring`](modules/seo-monitoring.md), [`seo-shadow-observatory`](modules/seo-shadow-observatory.md)
-- **Status**: LIVE=220, UNKNOWN=207
+- **Status**: LIVE=219, UNKNOWN=206
 
 ### D4 — Vehicle / Compatibility
 
@@ -69,11 +69,11 @@ Source sotFingerprint: `20cc40f73697`.
 
 ### D5 — Blog / Content
 
-- **Files**: 37 (service=26, controller=6, test=5)
+- **Files**: 36 (service=26, controller=6, test=4)
 - **Runtime entrypoints**: 26
-- **Top owners**: @ak125/content-team (37)
+- **Top owners**: @ak125/content-team (36)
 - **Knowledge prose**: [`blog`](modules/blog.md)
-- **Status**: LIVE=32, UNKNOWN=5
+- **Status**: LIVE=32, UNKNOWN=4
 
 ### D6 — RAG & AI Engine
 
