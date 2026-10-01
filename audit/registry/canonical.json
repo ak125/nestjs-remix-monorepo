@@ -42302,7 +42302,7 @@
         "backend/src/modules/diagnostic-engine/vehicle-context-mapping.ts"
       ],
       "kind": "controller",
-      "loc": 574,
+      "loc": 575,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
       "risk": "medium",
@@ -42727,7 +42727,7 @@
         "backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts"
       ],
       "kind": "test",
-      "loc": 184,
+      "loc": 236,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/maintenance-calendar-integrity.test.ts",
       "risk": "medium",
@@ -43216,7 +43216,7 @@
         "backend/src/modules/diagnostic-engine/types/maintenance-calendar.schema.ts"
       ],
       "kind": "service",
-      "loc": 180,
+      "loc": 194,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts",
       "risk": "medium",
@@ -43545,7 +43545,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 79,
+      "loc": 90,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/types/maintenance-calendar.schema.ts",
       "risk": "medium",
@@ -67282,7 +67282,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 188,
+      "loc": 187,
       "owner": "@ak125",
       "path": "backend/tests/unit/maintenance-calculator.service.test.ts",
       "risk": "medium",
@@ -72519,7 +72519,7 @@
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 184,
+      "loc": 182,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/results/ResultMaintenance.tsx",
       "risk": "low",
@@ -84817,7 +84817,7 @@
         "~/components/ui/table"
       ],
       "kind": "route",
-      "loc": 516,
+      "loc": 523,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/blog-pieces-auto.calendrier-entretien.tsx",
       "risk": "medium",
@@ -91495,7 +91495,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 311,
+      "loc": 349,
       "owner": "@ak125",
       "path": "frontend/tests/unit/diagnostic-legacy-navigation.test.tsx",
       "risk": "medium",
@@ -91515,7 +91515,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 224,
+      "loc": 262,
       "owner": "@ak125",
       "path": "frontend/tests/unit/diagnostic-maintenance-flow.test.tsx",
       "risk": "medium",
@@ -101312,11 +101312,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "8a9a7f70490c00f57d748796e4a1c5a98addcc079a4ba569b96ad275dc246d37",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "593552d01752443dd08d1f49ab00c7eccbc49e9b18d486080a8653b27d082674",
+      "audit/registry/files.json": "9740559a8613e8511084730237501fed4121c4788f65c4a4cf810767aa3a549f",
       "audit/registry/rpc.json": "86d0c24b102036512a9f7b11d9ac04754288049a8b061981b19f0db0a8c86263",
       "audit/registry/runtime.json": "985798dace4be166f55b789fa35550a097179907eaa572143c5d3b9565f17a32"
     },
-    "sotFingerprint": "32954bd6e3bd"
+    "sotFingerprint": "09aa92672b08"
   },
   "runtime": [
     {
