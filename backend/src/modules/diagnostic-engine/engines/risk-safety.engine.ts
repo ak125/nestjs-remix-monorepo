@@ -61,7 +61,7 @@ export class RiskSafetyEngine {
       (r) => r.urgency === 'haute' && r.blocks_catalog,
     );
     const hasHighUrgencyHypothesis = hypotheses.some(
-      (h) => h.urgency === 'haute' && h.total_score >= 40,
+      (h) => h.urgency === 'haute',
     );
     const hasBlockingRule = activeRules.some((r) => r.blocks_catalog);
 
@@ -97,57 +97,43 @@ export class RiskSafetyEngine {
   }
 
   /**
-   * Cause slugs associated with specific safety rules.
-   * When a rule_slug maps to cause slugs here, the rule is only relevant
-   * if one of those causes appears in the hypotheses with score >= threshold.
+   * Cause slugs associated with specific safety rules. A mapped rule is
+   * relevant when one of its causes is linked to the reported symptoms.
+   *
+   * Relevance is structural on purpose: the hypothesis score blends
+   * heuristic layers (mileage, age, usage), and a safety warning must never
+   * be withheld because a car looks young or lightly used.
    */
-  private static readonly RULE_CAUSE_MAP: Record<
-    string,
-    { causes: string[]; threshold: number }
-  > = {
+  private static readonly RULE_CAUSE_MAP: Record<string, string[]> = {
     // Freinage
-    brake_metal_on_metal: { causes: ['brake_pads_worn'], threshold: 30 },
-    brake_disc_damage_risk: { causes: ['brake_pads_worn'], threshold: 30 },
-    brake_fluid_critical: { causes: ['brake_fluid_low'], threshold: 20 },
+    brake_metal_on_metal: ['brake_pads_worn'],
+    brake_disc_damage_risk: ['brake_pads_worn'],
+    brake_fluid_critical: ['brake_fluid_low'],
     // Distribution
-    timing_belt_snap_risk: {
-      causes: ['courroie_distribution_usee', 'galet_tendeur_defaillant'],
-      threshold: 25,
-    },
+    timing_belt_snap_risk: [
+      'courroie_distribution_usee',
+      'galet_tendeur_defaillant',
+    ],
     // Échappement
-    exhaust_fumes_cabin_risk: {
-      causes: ['silencieux_perce', 'joint_collecteur_hs'],
-      threshold: 20,
-    },
+    exhaust_fumes_cabin_risk: ['silencieux_perce', 'joint_collecteur_hs'],
     // Injection
-    fuel_leak_fire_risk: {
-      causes: ['injecteur_encrasse', 'pompe_injection_hs'],
-      threshold: 25,
-    },
+    fuel_leak_fire_risk: ['injecteur_encrasse', 'pompe_injection_hs'],
     // Direction
-    steering_loss_risk: {
-      causes: [
-        'cremaillere_usee',
-        'pompe_direction_hs',
-        'rotule_direction_usee',
-      ],
-      threshold: 20,
-    },
+    steering_loss_risk: [
+      'cremaillere_usee',
+      'pompe_direction_hs',
+      'rotule_direction_usee',
+    ],
     // Suspension
-    suspension_stability_risk: {
-      causes: ['amortisseur_use', 'rotule_suspension_hs'],
-      threshold: 25,
-    },
+    suspension_stability_risk: ['amortisseur_use', 'rotule_suspension_hs'],
     // Filtration
-    oil_pressure_critical: {
-      causes: ['filtre_huile_colmate'],
-      threshold: 20,
-    },
+    oil_pressure_critical: ['filtre_huile_colmate'],
   };
 
   /**
    * Check if a safety rule is relevant given current hypotheses and symptoms.
-   * Uses RULE_CAUSE_MAP for cause-specific matching, falls back to urgency-based.
+   * Rules without a cause mapping apply to every analysis of their system
+   * (haute/critique, moyenne); basse rules never raise a flag.
    */
   private isRuleRelevant(
     rule: DiagSafetyRule,
@@ -161,22 +147,15 @@ export class RiskSafetyEngine {
       return symptomSlugs.length > 0;
     }
 
-    // Cause-specific matching via RULE_CAUSE_MAP
-    const mapping = RiskSafetyEngine.RULE_CAUSE_MAP[ruleSlug];
-    if (mapping) {
-      return hypotheses.some(
-        (h) =>
-          mapping.causes.includes(h.hypothesis_id) &&
-          h.total_score >= mapping.threshold,
-      );
+    const causes = RiskSafetyEngine.RULE_CAUSE_MAP[ruleSlug];
+    if (causes) {
+      return hypotheses.some((h) => causes.includes(h.hypothesis_id));
     }
 
-    // Keep existing relevance thresholds for high/critical safety rules.
     if (rule.urgency === 'haute' || rule.urgency === 'critique') {
-      return hypotheses.some((h) => h.total_score >= 30);
+      return hypotheses.length > 0;
     }
 
-    // Moyenne urgency: relevant if symptoms present
     if (rule.urgency === 'moyenne') {
       return symptomSlugs.length > 0;
     }

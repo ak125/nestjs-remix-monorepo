@@ -10,7 +10,10 @@ import {
   RiskSafetyEngine,
   type RiskAssessment,
 } from './engines/risk-safety.engine';
-import { AnalyzeDiagnosticInputSchema } from './types/diagnostic-input.schema';
+import {
+  AnalyzeDiagnosticInputSchema,
+  type VehicleContextInput,
+} from './types/diagnostic-input.schema';
 import { ActionRecommenderService } from './services/action-recommender.service';
 import { CAUSE_GAMME_MAP } from './constants/gamme-map.constants';
 import type { EvidencePack } from './types/evidence-pack.schema';
@@ -103,11 +106,7 @@ describe('diagnostic safety and deterministic scoring regressions', () => {
   test.each([false, true])(
     'an explicit catalogue block wins even when immediate=%s',
     (immediate) => {
-      const hypotheses = new HypothesisScoringEngine().score(
-        [link()],
-        vehicle,
-        undefined,
-      );
+      const hypotheses = new HypothesisScoringEngine().score([link()], vehicle);
       hypotheses[0].total_score = 95;
       const result = new CatalogOrientationEngine().evaluate(
         hypotheses,
@@ -155,20 +154,51 @@ describe('diagnostic safety and deterministic scoring regressions', () => {
       ).toEqual([]);
     },
   );
-  test('maintenance score measures distance since service, including zero', () => {
-    const engine = new HypothesisScoringEngine();
-    const score = (km: number, current = 100000) =>
-      engine.score(
-        [link()],
-        { ...vehicle, mileage_km: current },
-        { last_service_km: km },
-      )[0].maintenance_history_score;
-    expect(score(99000)).toBe(7);
-    expect(score(10000)).toBe(10);
-    expect(score(0)).toBe(10);
-    expect(score(120000)).toBe(7);
-    expect(score(10000, 20000)).toBe(7);
+  test.each<[string, VehicleContextInput | undefined]>([
+    ['no vehicle', undefined],
+    ['brand and model', { brand: 'Test', model: 'Test' }],
+    [
+      'a complete form',
+      {
+        brand: 'Test',
+        model: 'Test',
+        year: 2015,
+        mileage_km: 100000,
+        fuel: 'diesel',
+      },
+    ],
+  ])('vehicle and maintenance layers stay neutral with %s', (_, context) => {
+    const [scored] = new HypothesisScoringEngine().score([link()], context);
+    expect(scored.vehicle_fit_score).toBe(10);
+    expect(scored.maintenance_history_score).toBe(7);
   });
+  test.each([0, 95])(
+    'a mapped safety rule follows its linked cause, not its score (%i)',
+    (total_score) => {
+      const [scored] = new HypothesisScoringEngine().score([link()], vehicle);
+      const metal = {
+        ...rule,
+        rule_slug: 'brake_metal_on_metal',
+        urgency: 'haute',
+      };
+      const assess = (hypothesis_id: string) =>
+        new RiskSafetyEngine().assess(
+          [{ ...scored, hypothesis_id, urgency: 'haute', total_score }],
+          [metal],
+          ['noise'],
+        );
+      expect(assess('brake_pads_worn')).toMatchObject({
+        risk_level: 'critical',
+        blocks_catalog: true,
+        active_rules: [metal],
+      });
+      expect(assess('brake_disc_warped')).toMatchObject({
+        risk_level: 'high',
+        blocks_catalog: false,
+        active_rules: [],
+      });
+    },
+  );
   test('unique symptom evidence has an arithmetic mean, invariant under permutation and duplicates', async () => {
     const service = Object.create(
       DiagnosticEngineDataService.prototype,
