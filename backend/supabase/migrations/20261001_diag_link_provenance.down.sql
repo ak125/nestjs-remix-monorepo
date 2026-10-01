@@ -5,10 +5,13 @@
 -- forward-only : ce fichier se lance à la main.
 -- Couper d'abord DIAGNOSTIC_PROJECTION_ENABLED : un run en cours tiendrait les
 -- verrous que les DROP attendent (lock_timeout borné, jamais hérité du rôle).
-SET lock_timeout = '5s';
-SET statement_timeout = '30s';
+-- Auto-transactionnel : BEGIN / COMMIT portés par le fichier, SET LOCAL bornés à lui.
+BEGIN;
+SET LOCAL lock_timeout = '5s';
+SET LOCAL statement_timeout = '30s';
 
 DROP FUNCTION IF EXISTS public.__diag_projection_apply(jsonb);
 DROP TABLE IF EXISTS public.__diag_link_provenance;
 DROP TABLE IF EXISTS public.__diag_projection_conflicts;
 DROP TABLE IF EXISTS public.__diag_projection_runs;
+COMMIT;

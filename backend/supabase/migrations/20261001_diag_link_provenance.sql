@@ -296,6 +296,9 @@ BEGIN
   FROM jsonb_array_elements(p_run -> 'conflicts') AS c;
   GET DIAGNOSTICS v_recorded = ROW_COUNT;
 
+  -- Garde défensive, inatteignable par construction aujourd'hui : la re-vérification
+  -- sous verrou et le CHECK de complétude imposent déjà ces égalités. Elle reste pour
+  -- échouer fermé si une édition future affaiblit l'une de ces deux gardes.
   IF v_upserted <> v_projected OR v_recorded <> v_conflicts THEN
     RAISE EXCEPTION '__diag_projection_apply: écrit % projection(s) / % conflit(s), déclaré % / %',
       v_upserted, v_recorded, v_projected, v_conflicts;

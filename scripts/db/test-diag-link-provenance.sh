@@ -110,14 +110,14 @@ assert_err() {
 # ── Charges utiles ───────────────────────────────────────────────────────────
 COMMIT40=$(printf 'a%.0s' $(seq 1 40))
 HASH64=$(printf 'b%.0s' $(seq 1 64))
-# proj <link_id> <gamme_slug> [sources_json]
+# proj <link_id> <gamme_slug> [sources_json] ; PROJ_REVIEWED / PROJ_SAFE (défaut false)
 proj() {
   local sources
   if [[ $# -ge 3 ]]; then sources="$3"
   else sources=$(printf '[{"slug":"src_%s","catalog_slug":"src_%s","type":"web","status":"active","raw_ref":"raw/src_%s","raw_proven":true}]' "$2" "$2" "$2")
   fi
-  printf '{"link_id":%s,"wiki_path":"wiki/gamme/%s.md","gamme_slug":"%s","wiki_commit":"%s","content_hash":"sha256:%s","relation_to_part":"possible_cause","part_role":"Piece en cause pour ce symptome (fixture de test).","confidence":"medium","source_policy":"2_medium_concordant","confidence_score_computed":0.6,"reviewed":false,"diagnostic_safe":false,"sources":%s}' \
-    "$1" "$2" "$2" "$COMMIT40" "$HASH64" "$sources"
+  printf '{"link_id":%s,"wiki_path":"wiki/gamme/%s.md","gamme_slug":"%s","wiki_commit":"%s","content_hash":"sha256:%s","relation_to_part":"possible_cause","part_role":"Piece en cause pour ce symptome (fixture de test).","confidence":"medium","source_policy":"2_medium_concordant","confidence_score_computed":0.6,"reviewed":%s,"diagnostic_safe":%s,"sources":%s}' \
+    "$1" "$2" "$2" "$COMMIT40" "$HASH64" "${PROJ_REVIEWED:-false}" "${PROJ_SAFE:-false}" "$sources"
 }
 # conf <gamme_slug> <relation_index> <symptom_slug> <reason>
 conf() {
@@ -131,7 +131,7 @@ payload() {
 }
 apply_sql() { printf 'SELECT public.__diag_projection_apply($j$%s$j$::jsonb);' "$1"; }
 
-P113=$(proj 113 filtre-a-air); P114=$(proj 114 filtre-a-carburant); P117=$(proj 117 filtre-d-habitacle)
+P113=$(proj 113 filtre-a-air); P114=$(proj 114 filtre-a-carburant); P117=$(PROJ_REVIEWED=true PROJ_SAFE=true proj 117 filtre-d-habitacle '[{"slug":"src_x","catalog_slug":"src_x","type":"web","status":"active","raw_ref":"raw/src_x","raw_proven":false}]')
 runs()  { q "SELECT count(*) FROM public.__diag_projection_runs"; }
 live()  { q "SELECT count(*) FROM public.__diag_link_provenance WHERE retired_at IS NULL"; }
 total() { q "SELECT count(*) FROM public.__diag_link_provenance"; }
@@ -173,7 +173,9 @@ assert "run appliqué" 0 "$rc"
 R2=$(q "SELECT max(id) FROM public.__diag_projection_runs")
 assert "3 lignes vivantes" 3 "$(live)"
 assert "first_run_id = last_run_id = run courant" 3 "$(q "SELECT count(*) FROM public.__diag_link_provenance WHERE first_run_id = $R2 AND last_run_id = $R2")"
-assert "reviewed / diagnostic_safe copiés tels quels" "f|f" "$(q "SELECT DISTINCT concat_ws('|', reviewed, diagnostic_safe) FROM public.__diag_link_provenance")"
+assert "reviewed / diagnostic_safe copiés tels quels (false)" "f|f" "$(q "SELECT DISTINCT concat_ws('|', reviewed, diagnostic_safe) FROM public.__diag_link_provenance WHERE link_id IN (113, 114)")"
+assert "reviewed / diagnostic_safe copiés tels quels (true)" "t|t" "$(q "SELECT concat_ws('|', reviewed, diagnostic_safe) FROM public.__diag_link_provenance WHERE link_id = 117")"
+assert "raw_proven copié tel quel dans sources (true / false)" "t|f" "$(q "SELECT concat_ws('|', (SELECT (sources -> 0 ->> 'raw_proven')::boolean FROM public.__diag_link_provenance WHERE link_id = 113), (SELECT (sources -> 0 ->> 'raw_proven')::boolean FROM public.__diag_link_provenance WHERE link_id = 117))")"
 assert "retour de la RPC" "{\"run_id\": $R2, \"retired_count\": 0, \"conflict_count\": 0, \"projected_count\": 3}" "$out"
 PA113=$(q "SELECT projected_at FROM public.__diag_link_provenance WHERE link_id = 113")
 
@@ -217,6 +219,10 @@ out=$(sr "$(apply_sql "$(payload 1 "$(proj 113 filtre-a-air '[]')" '')")"); rc=$
 assert_err "sources vides" "__diag_link_provenance_sources_check" "$out" "$rc"
 out=$(sr "$(apply_sql "$(payload 1 '' "$(conf filtre-a-air 0 perte_puissance_filtration raison_inventee)")")"); rc=$?
 assert_err "raison hors vocabulaire" "__diag_projection_conflicts_reason_check" "$out" "$rc"
+out=$(sr "$(apply_sql "$(payload 1 '' "$(conf filtre-a-air -1 perte_puissance_filtration duplicate_relation)")")"); rc=$?
+assert_err "relation_index négatif" "__diag_projection_conflicts_relation_index_check" "$out" "$rc"
+out=$(sr "INSERT INTO public.__diag_projection_runs (triggered_by, runtime_env, status, error, exported_count) VALUES ('admin', 'test', 'failed', 'x', -1);"); rc=$?
+assert_err "compteur de run négatif (exported_count)" "__diag_projection_runs_exported_count_check" "$out" "$rc"
 q "UPDATE public.__diag_symptom_cause_link SET active = false WHERE id = 117" >/dev/null
 out=$(sr "$(apply_sql "$(payload 2 "$P113,$P117" '')")"); rc=$?
 assert_err "lien désactivé (active = false)" "encore actif" "$out" "$rc"
@@ -281,16 +287,20 @@ assert "0 ligne vivante" 0 "$(live)"
 
 echo
 echo "11. Idempotence : rejouer la migration"
+total_before=$(total)
 docker exec -i "$CT" psql -U postgres -d test -v ON_ERROR_STOP=1 -q -1 -f - < "$MIGRATION" >/dev/null 2>&1; rc=$?
 assert "rejeu sans erreur" 0 "$rc"
 assert "3 politiques service_role" 3 "$(q "SELECT count(*) FROM pg_policies WHERE schemaname = 'public' AND policyname LIKE '\_\_diag\_%\_service\_role\_all' AND tablename IN ('__diag_projection_runs', '__diag_projection_conflicts', '__diag_link_provenance')")"
 assert "anon EXECUTE toujours refusé après rejeu" REFUSE_FONCTION "$(probe anon "$EMPTY")"
-assert "historique conservé après rejeu" "$(total)" "$(q "SELECT count(*) FROM public.__diag_link_provenance")"
+assert "historique conservé après rejeu" "$total_before" "$(q "SELECT count(*) FROM public.__diag_link_provenance")"
 
 echo
 echo "12. Rollback : le .down.sql retire les 4 objets, la migration se rejoue ensuite"
 links_before=$(q "SELECT count(*) FROM public.__diag_symptom_cause_link")
-docker exec -i "$CT" psql -U postgres -d test -v ON_ERROR_STOP=1 -q -1 -f - < "$DOWN" >/dev/null 2>&1; rc=$?
+# Le rollback tourne SANS -1 (comme à la main) : il doit porter sa propre transaction,
+# sinon les SET LOCAL ne bornent rien et les DROP ne sont pas atomiques.
+assert "rollback auto-transactionnel (BEGIN / SET LOCAL / COMMIT)" "1|1|2" "$(printf '%s|%s|%s' "$(grep -c '^BEGIN;$' "$DOWN")" "$(grep -c '^COMMIT;$' "$DOWN")" "$(grep -c '^SET LOCAL ' "$DOWN")")"
+docker exec -i "$CT" psql -U postgres -d test -v ON_ERROR_STOP=1 -q -f - < "$DOWN" >/dev/null 2>&1; rc=$?
 assert "rollback sans erreur" 0 "$rc"
 assert "0 table de provenance restante" 0 "$(q "SELECT count(*) FROM pg_tables WHERE schemaname = 'public' AND tablename IN ('__diag_projection_runs', '__diag_projection_conflicts', '__diag_link_provenance')")"
 assert "fonction retirée" 0 "$(q "SELECT count(*) FROM pg_proc WHERE proname = '__diag_projection_apply'")"
