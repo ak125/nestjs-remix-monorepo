@@ -5148,7 +5148,7 @@
         }
       ],
       "definedInMigrations": [
-        "20260429_diag_maintenance_via_kg.sql"
+        "20260930_kg_maintenance_schedule_fuel_filter_aligned.sql"
       ],
       "domain": "UNKNOWN",
       "id": "public.kg_get_smart_maintenance_schedule#sig:1b4233d0",
@@ -5167,6 +5167,58 @@
       ],
       "securityDefiner": false,
       "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_engine_family_code",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_current_km",
+          "type": "integer"
+        },
+        {
+          "mode": "IN",
+          "name": "p_profile_id",
+          "type": "uuid"
+        },
+        {
+          "mode": "IN",
+          "name": "p_last_maintenance_records",
+          "type": "jsonb"
+        },
+        {
+          "mode": "IN",
+          "name": "p_type_id",
+          "type": "integer"
+        },
+        {
+          "mode": "IN",
+          "name": "p_fuel_type",
+          "type": "text"
+        }
+      ],
+      "definedInMigrations": [
+        "20260930_kg_maintenance_schedule_fuel_filter_aligned.down.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_get_smart_maintenance_schedule#sig:5d15ecda",
+      "language": "plpgsql",
+      "name": "kg_get_smart_maintenance_schedule",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "TABLE(rule_alias text, rule_label text, km_interval integer, month_interval integer, maintenance_priority text, applies_to_fuel text, km_remaining integer, status text)",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
       "status": "UNKNOWN",
       "usedBy": []
     },

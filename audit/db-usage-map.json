@@ -21,7 +21,7 @@
     "dynamic_rpc_callsites": 1,
     "unresolved_callsites": 0,
     "dropped_call_sites": 5,
-    "migrations_scanned": 390,
+    "migrations_scanned": 392,
     "backend_files_scanned": 1431
   },
   "tables": {
@@ -4849,7 +4849,9 @@
       "called_by_count": 0,
       "defined_in_migrations": [
         "20260125_kg_v3_maintenance_risk.sql",
-        "20260429_diag_maintenance_via_kg.sql"
+        "20260429_diag_maintenance_via_kg.sql",
+        "20260930_kg_maintenance_schedule_fuel_filter_aligned.down.sql",
+        "20260930_kg_maintenance_schedule_fuel_filter_aligned.sql"
       ],
       "is_trigger_function": false
     },
@@ -9385,7 +9387,9 @@
       ],
       "defined_in_migrations": [
         "20260125_kg_v3_maintenance_risk.sql",
-        "20260429_diag_maintenance_via_kg.sql"
+        "20260429_diag_maintenance_via_kg.sql",
+        "20260930_kg_maintenance_schedule_fuel_filter_aligned.down.sql",
+        "20260930_kg_maintenance_schedule_fuel_filter_aligned.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
