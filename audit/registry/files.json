@@ -55283,7 +55283,7 @@
         "~/utils/seo/canonical"
       ],
       "kind": "route",
-      "loc": 1096,
+      "loc": 1097,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/blog-pieces-auto.guide-achat.$pg_alias.tsx",
       "risk": "low",
@@ -61885,7 +61885,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 166,
+      "loc": 211,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/guide-achat-loader-status.test.ts",
       "risk": "low",

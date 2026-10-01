@@ -84966,7 +84966,7 @@
         "~/utils/seo/canonical"
       ],
       "kind": "route",
-      "loc": 1096,
+      "loc": 1097,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/blog-pieces-auto.guide-achat.$pg_alias.tsx",
       "risk": "medium",
@@ -91796,7 +91796,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 166,
+      "loc": 211,
       "owner": "@ak125",
       "path": "frontend/tests/unit/guide-achat-loader-status.test.ts",
       "risk": "medium",
@@ -101333,11 +101333,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "8a9a7f70490c00f57d748796e4a1c5a98addcc079a4ba569b96ad275dc246d37",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "a5c80bbc5c9ff1d61b5613db8e4515e043b196501f79e4fbafb6a126854c8ce5",
+      "audit/registry/files.json": "8ddfee6def1e03652d56f252e8d02426a1a8b32c39cce2eac419642e83cefd1b",
       "audit/registry/rpc.json": "86d0c24b102036512a9f7b11d9ac04754288049a8b061981b19f0db0a8c86263",
       "audit/registry/runtime.json": "985798dace4be166f55b789fa35550a097179907eaa572143c5d3b9565f17a32"
     },
-    "sotFingerprint": "e64b4e043f71"
+    "sotFingerprint": "f02e1ae39fa1"
   },
   "runtime": [
     {
