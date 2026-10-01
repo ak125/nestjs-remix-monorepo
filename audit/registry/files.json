@@ -43211,7 +43211,7 @@
         "~/components/ui/progress"
       ],
       "kind": "config",
-      "loc": 214,
+      "loc": 216,
       "owner": "__unassigned__",
       "path": "frontend/app/components/diagnostic-wizard/results/ResultHypotheses.tsx",
       "risk": "low",
@@ -48738,7 +48738,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 48,
+      "loc": 74,
       "owner": "__unassigned__",
       "path": "frontend/app/components/ui/badge.tsx",
       "risk": "low",
@@ -61119,6 +61119,25 @@
       "loc": 127,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/beacon.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/button-phrasing-content.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 106,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/button-phrasing-content.test.tsx",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
