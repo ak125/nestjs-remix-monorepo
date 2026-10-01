@@ -1,6 +1,6 @@
 {
   "schemaVersion": "v1",
-  "createdAt": "2026-09-29",
+  "createdAt": "2026-10-01",
   "createdOnCommit": null,
   "sourcePr": null,
   "mode": "block-new-only",
@@ -8,7 +8,7 @@
     "direct_literal": 8,
     "const_map": 7,
     "rpc_publisher": 1,
-    "sql_migration": 44
+    "sql_migration": 45
   },
   "findings": [
     {
@@ -310,6 +310,11 @@
       "mechanism": "sql_migration",
       "id": "backend/supabase/migrations/20260502_diag_brake_signals_distance_warning.sql::__diag_symptom",
       "count": 1
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20261001_diag_link_provenance.sql::__diag_link_provenance",
+      "count": 2
     }
   ],
   "notes": [

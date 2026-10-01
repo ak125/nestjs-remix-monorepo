@@ -50,6 +50,16 @@ test("rpc_publisher: governed callRpc<Generic>('__seo_r8_publish_snapshot') is a
   );
 });
 
+test("sql_migration: the provenance RPC body (INSERT INTO … DO UPDATE SET + UPDATE) counts 2", () => {
+  assert.deepEqual(
+    detectSqlSinks(
+      "p.sql",
+      `INSERT INTO __diag_link_provenance AS lp (link_id) VALUES (1)\n  ON CONFLICT (link_id, wiki_path) WHERE retired_at IS NULL DO UPDATE SET part_role = 'x';\nUPDATE __diag_link_provenance SET retired_at = now();`,
+    ),
+    [F("sql_migration", "p.sql::__diag_link_provenance", 2)],
+  );
+});
+
 test("direct_literal: a READ (.select) is NOT a sink", () => {
   assert.deepEqual(detectTsSinks("x.ts", `.from('__seo_r7_pages').select('*')`), []);
 });

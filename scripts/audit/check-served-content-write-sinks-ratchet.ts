@@ -63,6 +63,7 @@ export const SERVED_TABLES: readonly string[] = [
   "__diag_cause",
   "__diag_system",
   "__diag_safety_rule",
+  "__diag_link_provenance",
   "___meta_tags_ariane",
   "__seo_reference",
   "__seo_observable",
