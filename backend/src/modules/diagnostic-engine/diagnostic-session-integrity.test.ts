@@ -34,7 +34,6 @@ function session() {
           reason: 'Sécurité',
         },
         allowed_claims: [],
-        forbidden_claims_runtime: [],
         ui_block_inputs: {},
         urgency_timeline: { immediate: ['Contrôle'] },
       },
@@ -77,6 +76,14 @@ describe('saved diagnostic lookup', () => {
     expect(output).toMatchObject({ success: true, session: stored });
     expect(output.session?.result).toBe(stored.result);
     expect(f.query.eq).toHaveBeenCalledWith('id', id.toUpperCase());
+  });
+  test('returns a session saved with the retired forbidden_claims_runtime field', async () => {
+    const stored = session();
+    Object.assign(stored.result.evidence_pack, {
+      forbidden_claims_runtime: ['Remplacement nécessaire.'],
+    });
+    const output = await fixture(stored).controller.getSession(id);
+    expect(output).toMatchObject({ success: true, session: stored });
   });
   test('rejects an invalid UUID before the database', async () => {
     const f = fixture();

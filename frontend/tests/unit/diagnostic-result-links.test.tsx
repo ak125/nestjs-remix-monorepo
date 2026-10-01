@@ -29,7 +29,6 @@ function renderResults(
         maintenance_links: [],
         risk_flags: [],
         allowed_claims: [],
-        forbidden_claims_runtime: [],
         ui_block_inputs: {},
         catalog_guard: {
           ready_for_catalog: false,
