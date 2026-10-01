@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { promises as fs } from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
+import { ExportRelationSchema } from './diagnostic-projection.types';
 import {
   DiagnosticExportsInvalidError,
   loadDiagnosticExports,
@@ -207,5 +208,114 @@ describe('loadDiagnosticExports', () => {
   it('envelope_mismatch: relation_count', async () => {
     await writeExports([{ slug: 'filtre-a-air', relationCount: 2 }]);
     await expectCode('envelope_mismatch');
+  });
+});
+
+describe('ExportRelationSchema (contrat WIKI frontmatter.schema.json)', () => {
+  const relation = {
+    symptom_slug: 'bruit_moteur',
+    system_slug: 'freinage',
+    relation_to_part: 'possible_cause',
+    part_role: 'Filtre colmaté qui réduit le débit.',
+    evidence: {
+      confidence: 'high',
+      source_policy: '1_high',
+      reviewed: false,
+      diagnostic_safe: false,
+    },
+    confidence_score_computed: 0.5,
+    sources: [{ slug: 'src-a', raw_proven: true }],
+  };
+  const withEvidence = (evidence: Record<string, unknown>) => ({
+    ...relation,
+    evidence: { ...relation.evidence, ...evidence },
+  });
+
+  it('accepts a valid relation', () => {
+    expect(ExportRelationSchema.safeParse(relation).success).toBe(true);
+  });
+  it('accepts a hyphenated symptom_slug', () => {
+    expect(
+      ExportRelationSchema.safeParse({
+        ...relation,
+        symptom_slug: 'bruit-moteur',
+      }).success,
+    ).toBe(true);
+  });
+  it('rejects a symptom_slug starting with a digit', () => {
+    expect(
+      ExportRelationSchema.safeParse({ ...relation, symptom_slug: '1bruit' })
+        .success,
+    ).toBe(false);
+  });
+  it('rejects an unknown confidence', () => {
+    expect(
+      ExportRelationSchema.safeParse(withEvidence({ confidence: 'bogus' }))
+        .success,
+    ).toBe(false);
+  });
+  it('rejects an unknown source_policy and accepts 2_medium_concordant', () => {
+    expect(
+      ExportRelationSchema.safeParse(
+        withEvidence({ source_policy: 'oem_or_two_independent' }),
+      ).success,
+    ).toBe(false);
+    expect(
+      ExportRelationSchema.safeParse(
+        withEvidence({ source_policy: '2_medium_concordant' }),
+      ).success,
+    ).toBe(true);
+  });
+});
+
+describe('loadDiagnosticExports: additional branches', () => {
+  it('envelope_invalid when a listed file is not JSON', async () => {
+    await fs.mkdir(path.join(root, 'gamme'), { recursive: true });
+    const text = 'pas du json\n';
+    await fs.writeFile(path.join(root, 'gamme', 'filtre-a-air.json'), text);
+    await fs.writeFile(
+      path.join(root, '_index.json'),
+      serialize({
+        schema_version: '1.0.0',
+        builder_version: '1.0.0',
+        export_kind: 'diagnostic_index',
+        source_catalog_commit: CATALOG_COMMIT,
+        files: [
+          {
+            path: 'gamme/filtre-a-air.json',
+            sha256: sha256(text),
+            source_wiki_commit: WIKI_COMMIT,
+            relation_count: 1,
+          },
+        ],
+      }),
+    );
+    await expectCode('envelope_invalid');
+  });
+
+  it('non_regular_file: a subdirectory inside gamme/', async () => {
+    await writeExports([{ slug: 'filtre-a-air' }]);
+    await fs.mkdir(path.join(root, 'gamme', 'sous-dossier'));
+    await expectCode('non_regular_file');
+  });
+
+  it('non_regular_file: gamme/ itself a symlink', async () => {
+    await writeExports([{ slug: 'filtre-a-air' }]);
+    const real = path.join(root, 'gamme-reel');
+    await fs.rename(path.join(root, 'gamme'), real);
+    await fs.symlink(real, path.join(root, 'gamme'));
+    await expectCode('non_regular_file');
+  });
+
+  it('index_invalid: an index entry path failing the path regex', async () => {
+    const { index } = await writeExports([{ slug: 'filtre-a-air' }]);
+    await fs.writeFile(
+      path.join(root, '_index.json'),
+      serialize({
+        ...index,
+        files: [{ ...index.files[0], path: '../evasion.json' }],
+      }),
+    );
+    await expectCode('index_invalid');
   });
 });

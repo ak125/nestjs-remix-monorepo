@@ -39,7 +39,8 @@ export const CONFLICT_REASONS = [
 export type ConflictReason = (typeof CONFLICT_REASONS)[number];
 
 const SLUG_RE = /^[a-z0-9][a-z0-9-]*[a-z0-9]$/;
-const DIAG_SLUG_RE = /^[a-z0-9][a-z0-9_]*[a-z0-9]$/;
+// Motif WIKI : frontmatter.schema.json#/properties/diagnostic_relations/items/properties/{symptom_slug,system_slug}
+const DIAG_SLUG_RE = /^[a-z][a-z0-9_-]*[a-z0-9]$/;
 const COMMIT_RE = /^[0-9a-f]{40}$/;
 const SHA256_RE = /^sha256:[0-9a-f]{64}$/;
 const SEMVER_RE = /^\d+\.\d+\.\d+$/;
@@ -91,8 +92,8 @@ export const ExportRelationSchema = z.object({
   ]),
   part_role: z.string().min(10).max(280),
   evidence: z.object({
-    confidence: nonEmpty,
-    source_policy: nonEmpty,
+    confidence: z.enum(['low', 'medium', 'high']),
+    source_policy: z.enum(['1_high', '2_medium_concordant', 'manual_review']),
     reviewed: z.boolean(),
     diagnostic_safe: z.boolean(),
   }),
@@ -124,8 +125,8 @@ export interface ProjectionRow {
   content_hash: string;
   relation_to_part: 'possible_cause';
   part_role: string;
-  confidence: string;
-  source_policy: string;
+  confidence: ExportRelation['evidence']['confidence'];
+  source_policy: ExportRelation['evidence']['source_policy'];
   confidence_score_computed: number;
   reviewed: boolean;
   diagnostic_safe: boolean;
