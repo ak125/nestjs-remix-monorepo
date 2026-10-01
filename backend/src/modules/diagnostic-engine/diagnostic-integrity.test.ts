@@ -153,7 +153,6 @@ describe('diagnostic safety and deterministic scoring regressions', () => {
       const hypotheses = new HypothesisScoringEngine().score(
         [link(), disc],
         vehicle,
-        undefined,
       );
       hypotheses.forEach((h, i) => (h.total_score = scores[i]));
       const result = new CatalogOrientationEngine().evaluate(
