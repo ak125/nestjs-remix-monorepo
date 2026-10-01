@@ -86,7 +86,21 @@ export class CatalogOrientationEngine {
       };
     }
 
-    // ── Gate 5: Medium+ confidence ──────────────────────
+    // ── Gate 5: Dominant hypothesis without a part family ─
+    // Readiness rests on the dominant hypothesis. When it names no catalogue
+    // family, every listed family belongs to a lower-ranked hypothesis.
+    if (!CAUSE_GAMME_MAP[topHypothesis.hypothesis_id]?.length) {
+      return {
+        ready_for_catalog: false,
+        confidence_before_purchase: 'low',
+        allowed_output_mode: 'catalog_family_only',
+        reason:
+          "La cause la plus probable ne correspond à aucune famille de pièces : les familles listées concernent d'autres hypothèses. Vérification recommandée avant achat.",
+        suggested_gammes: this.buildSuggestedGammes(hypotheses, 'low'),
+      };
+    }
+
+    // ── Gate 6: Medium+ confidence ──────────────────────
     const readyForCatalog =
       confidence === 'high' || (confidence === 'medium' && hasVehicle);
     const outputMode = readyForCatalog

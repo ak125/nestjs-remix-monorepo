@@ -14351,7 +14351,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "test",
-      "loc": 675,
+      "loc": 768,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
       "risk": "low",
@@ -14454,7 +14454,7 @@
         "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts"
       ],
       "kind": "service",
-      "loc": 174,
+      "loc": 188,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
       "risk": "low",
