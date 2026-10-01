@@ -8,12 +8,15 @@
  *
  *   1. the verdict is `success` ×3 or nothing: failure, skipped, cancelled,
  *      in-progress, absent (renamed) or duplicated jobs all block;
- *   2. the latest ci.yml run of the exact commit is the one judged;
- *   3. end-to-end against a REAL local HTTP server: the query is scoped to the
- *      commit / push / main / latest execution, and every API or config
- *      failure exits non-zero;
+ *   2. the latest ci.yml push run on main of the exact commit is the one
+ *      judged: another workflow, event, branch or commit never stands in;
+ *   3. end-to-end against a REAL local HTTP server: the run is found from the
+ *      commit's check runs, never from the workflow-run listing (which returned
+ *      nothing for a validated commit on 2026-09-30), and every API, config or
+ *      consistency failure exits non-zero;
  *   4. the job names the gate requires are the ones ci.yml defines, and
- *      deploy-prod.yml runs the gate before any Docker step with `actions: read`.
+ *      deploy-prod.yml runs the gate before any Docker step with `actions: read`
+ *      and `checks: read`.
  *
  * Run: node --test scripts/ci/prod-preprod-evidence.test.mjs
  */
@@ -114,23 +117,42 @@ describe("verdict", () => {
   });
 });
 
+// A ci.yml push run on main; `over` changes one field of its scope.
+function ciRun(id, created_at, over = {}) {
+  return {
+    id,
+    head_sha: SHA,
+    path: ".github/workflows/ci.yml",
+    event: "push",
+    head_branch: "main",
+    created_at,
+    html_url: `https://example.test/runs/${id}`,
+    ...over,
+  };
+}
+
 describe("run selection", () => {
   test("the most recent run of the exact commit is judged", () => {
     const runs = [
-      { id: 1, head_sha: SHA, created_at: "2026-09-28T22:49:11Z" },
-      { id: 2, head_sha: SHA, created_at: "2026-09-29T08:00:00Z" },
-      { id: 3, head_sha: OTHER_SHA, created_at: "2026-09-30T00:00:00Z" },
+      ciRun(1, "2026-09-28T22:49:11Z"),
+      ciRun(2, "2026-09-29T08:00:00Z"),
+      ciRun(3, "2026-09-30T00:00:00Z", { head_sha: OTHER_SHA }),
     ];
     assert.equal(selectRun(SHA, runs).id, 2);
   });
 
-  test("a run of another commit never stands in for the tagged one", () => {
-    assert.equal(
-      selectRun(SHA, [
-        { id: 3, head_sha: OTHER_SHA, created_at: "2026-09-30T00:00:00Z" },
-      ]),
-      null,
-    );
+  for (const [what, over] of [
+    ["another commit", { head_sha: OTHER_SHA }],
+    ["another workflow", { path: ".github/workflows/build.yml" }],
+    ["a pull_request run", { event: "pull_request" }],
+    ["another branch", { head_branch: "feat/x" }],
+  ]) {
+    test(`a run of ${what} never stands in for the tagged one`, () => {
+      assert.equal(selectRun(SHA, [ciRun(3, "2026-09-30T00:00:00Z", over)]), null);
+    });
+  }
+
+  test("no run, no verdict", () => {
     assert.equal(selectRun(SHA, []), null);
   });
 });
@@ -139,8 +161,15 @@ describe("end-to-end against a local GitHub API", () => {
   let server;
   let apiUrl;
   let requests;
-  // Per-test answers: runs list, jobs list, and an optional forced status.
+  // Per-test answers: the commit's check runs (each naming the run of its job),
+  // the runs by id, the judged run's jobs, and an optional forced status.
+  // `jobCheckRunUrl` overrides what the job endpoint says about its check run.
   let scenario;
+
+  const send = (res, body) =>
+    res
+      .writeHead(200, { "Content-Type": "application/json" })
+      .end(JSON.stringify(body));
 
   before(async () => {
     server = createServer((req, res) => {
@@ -151,12 +180,39 @@ describe("end-to-end against a local GitHub API", () => {
         auth: req.headers.authorization,
       });
       if (scenario.status) return res.writeHead(scenario.status).end("{}");
-      res.writeHead(200, { "Content-Type": "application/json" });
+      let match;
       if (url.pathname.endsWith("/actions/workflows/ci.yml/runs")) {
-        return res.end(JSON.stringify({ workflow_runs: scenario.runs }));
+        // The listing as it answered on 2026-09-30 for a validated commit.
+        return send(res, { total_count: 0, workflow_runs: [] });
       }
-      if (/\/actions\/runs\/\d+\/jobs$/.test(url.pathname)) {
-        return res.end(JSON.stringify({ jobs: scenario.jobs }));
+      if (url.pathname === `/repos/owner/repo/commits/${SHA}/check-runs`) {
+        const named = scenario.checkRuns.filter(
+          (run) => run.name === url.searchParams.get("check_name"),
+        );
+        return send(res, {
+          total_count: scenario.totalCount ?? named.length,
+          check_runs: named,
+        });
+      }
+      if ((match = url.pathname.match(/\/actions\/jobs\/(\d+)$/))) {
+        const checkRun = scenario.checkRuns.find(
+          (run) => String(run.id) === match[1],
+        );
+        if (!checkRun) return res.writeHead(404).end("{}");
+        return send(res, {
+          id: checkRun.id,
+          run_id: checkRun.run_id,
+          check_run_url:
+            scenario.jobCheckRunUrl ??
+            `https://api.github.com/repos/owner/repo/check-runs/${checkRun.id}`,
+        });
+      }
+      if ((match = url.pathname.match(/\/actions\/runs\/(\d+)\/jobs$/))) {
+        return send(res, { jobs: scenario.jobs });
+      }
+      if ((match = url.pathname.match(/\/actions\/runs\/(\d+)$/))) {
+        const run = scenario.runs.find((r) => String(r.id) === match[1]);
+        return run ? send(res, run) : res.writeHead(404).end("{}");
       }
       return res.writeHead(404).end("{}");
     });
@@ -185,27 +241,48 @@ describe("end-to-end against a local GitHub API", () => {
     }
   }
 
-  const RUN = {
-    id: 36494601192,
-    head_sha: SHA,
-    created_at: "2026-09-28T22:49:11Z",
-    html_url: "https://example.test/runs/36494601192",
-  };
+  const RUN = ciRun(36494601192, "2026-09-28T22:49:11Z");
 
-  test("a proven commit passes, with a query scoped to it", async () => {
-    scenario = { runs: [RUN], jobs: GREEN_JOBS };
+  // One check run per required job, recorded by `run` (ids as the API gives them:
+  // an Actions check-run id is its job id).
+  function checkRunsOf(run, app = "github-actions") {
+    return REQUIRED_JOBS.map(({ name }, i) => ({
+      id: run.id * 10 + i,
+      name,
+      app: { slug: app },
+      run_id: run.id,
+    }));
+  }
+
+  const proven = (jobs) => ({
+    checkRuns: checkRunsOf(RUN),
+    runs: [RUN],
+    jobs,
+  });
+
+  test("a proven commit passes from its check runs, without the run listing", async () => {
+    scenario = proven(GREEN_JOBS);
     const { code, output } = await runGate();
     assert.equal(code, 0, output);
     assert.match(output, /Validation PREPROD prouvée/);
 
-    const [runsCall, jobsCall] = requests;
-    assert.equal(
-      runsCall.path,
-      "/repos/owner/repo/actions/workflows/ci.yml/runs",
+    assert.ok(
+      requests.every((call) => !call.path.includes("/actions/workflows/")),
+      "the workflow-run listing must not be consulted",
     );
-    assert.equal(runsCall.query.get("head_sha"), SHA);
-    assert.equal(runsCall.query.get("event"), "push");
-    assert.equal(runsCall.query.get("branch"), "main");
+    const checkCalls = requests.filter((call) =>
+      call.path.endsWith(`/commits/${SHA}/check-runs`),
+    );
+    assert.deepEqual(
+      checkCalls.map((call) => call.query.get("check_name")),
+      REQUIRED_JOBS.map(({ name }) => name),
+    );
+    for (const call of checkCalls) assert.equal(call.query.get("filter"), "all");
+    assert.ok(
+      requests.some((call) => call.path === `/repos/owner/repo/actions/runs/${RUN.id}`),
+      "the run must be read by id",
+    );
+    const jobsCall = requests.at(-1);
     assert.equal(
       jobsCall.path,
       `/repos/owner/repo/actions/runs/${RUN.id}/jobs`,
@@ -214,8 +291,23 @@ describe("end-to-end against a local GitHub API", () => {
     for (const call of requests) assert.equal(call.auth, "Bearer test-token");
   });
 
+  test("the latest re-run of the commit is judged", async () => {
+    const rerun = ciRun(36600000000, "2026-09-29T08:00:00Z");
+    scenario = {
+      checkRuns: [...checkRunsOf(RUN), ...checkRunsOf(rerun)],
+      runs: [RUN, rerun],
+      jobs: GREEN_JOBS,
+    };
+    const { code, output } = await runGate();
+    assert.equal(code, 0, output);
+    assert.equal(
+      requests.at(-1).path,
+      `/repos/owner/repo/actions/runs/${rerun.id}/jobs`,
+    );
+  });
+
   test("f54aa333f is refused, with the failing job named", async () => {
-    scenario = { runs: [RUN], jobs: F54_JOBS };
+    scenario = proven(F54_JOBS);
     const { code, output } = await runGate();
     assert.equal(code, 1);
     assert.match(output, /❌ 🧪 Deploy PREPROD : failure/);
@@ -224,25 +316,69 @@ describe("end-to-end against a local GitHub API", () => {
   });
 
   test("an unfinished validation is refused and says to wait", async () => {
-    scenario = {
-      runs: [RUN],
-      jobs: [
-        GREEN_JOBS[0],
-        job(REQUIRED_JOBS[1].name, "in_progress", null),
-        job(REQUIRED_JOBS[2].name, "queued", null),
-      ],
-    };
+    scenario = proven([
+      GREEN_JOBS[0],
+      job(REQUIRED_JOBS[1].name, "in_progress", null),
+      job(REQUIRED_JOBS[2].name, "queued", null),
+    ]);
     const { code, output } = await runGate();
     assert.equal(code, 1);
     assert.match(output, /Attendre la fin du run ci\.yml/);
   });
 
   test("a commit with no ci.yml push run on main is refused", async () => {
-    scenario = { runs: [], jobs: [] };
+    scenario = { checkRuns: [], runs: [], jobs: [] };
     const { code, output } = await runGate();
     assert.equal(code, 1);
     assert.match(output, /aucun run ci\.yml/);
-    assert.equal(requests.length, 1, "jobs must not be fetched without a run");
+    assert.equal(
+      requests.length,
+      REQUIRED_JOBS.length,
+      "only the check runs are read without a run",
+    );
+  });
+
+  for (const [what, over] of [
+    ["another workflow", { path: ".github/workflows/build.yml" }],
+    ["a pull_request run", { event: "pull_request" }],
+    ["another branch", { head_branch: "feat/x" }],
+  ]) {
+    test(`green jobs of ${what} are refused`, async () => {
+      const run = ciRun(RUN.id, RUN.created_at, over);
+      scenario = { checkRuns: checkRunsOf(run), runs: [run], jobs: GREEN_JOBS };
+      const { code, output } = await runGate();
+      assert.equal(code, 1);
+      assert.match(output, /aucun run ci\.yml/);
+    });
+  }
+
+  test("check runs of another app are not evidence", async () => {
+    scenario = {
+      checkRuns: checkRunsOf(RUN, "some-other-app"),
+      runs: [RUN],
+      jobs: GREEN_JOBS,
+    };
+    const { code, output } = await runGate();
+    assert.equal(code, 1);
+    assert.match(output, /aucun run ci\.yml/);
+    assert.ok(requests.every((call) => !call.path.includes("/actions/")));
+  });
+
+  test("a job that does not match its check run is refused (fail-closed)", async () => {
+    scenario = {
+      ...proven(GREEN_JOBS),
+      jobCheckRunUrl: "https://api.github.com/repos/owner/repo/check-runs/1",
+    };
+    const { code, output } = await runGate();
+    assert.equal(code, 1);
+    assert.match(output, /preuve PREPROD impossible à établir/);
+  });
+
+  test("check runs beyond one page are refused (fail-closed)", async () => {
+    scenario = { ...proven(GREEN_JOBS), totalCount: 101 };
+    const { code, output } = await runGate();
+    assert.equal(code, 1);
+    assert.match(output, /preuve PREPROD impossible à établir/);
   });
 
   for (const status of [401, 403, 404, 500]) {
@@ -261,7 +397,7 @@ describe("end-to-end against a local GitHub API", () => {
     "GITHUB_API_URL",
   ]) {
     test(`a missing ${name} is refused before any request`, async () => {
-      scenario = { runs: [RUN], jobs: GREEN_JOBS };
+      scenario = proven(GREEN_JOBS);
       const { code, output } = await runGate({ [name]: "" });
       assert.equal(code, 1);
       assert.match(output, /variable requise absente/);
@@ -293,8 +429,9 @@ describe("workflow wiring", () => {
     assert.ok(gate < firstDocker, "the gate must run before any Docker step");
   });
 
-  test("the gate step can read Actions and cannot be skipped", () => {
+  test("the gate step can read Actions and checks and cannot be skipped", () => {
     assert.match(deploy, /\npermissions:\n(?: {2}\S.*\n)*? {2}actions: read\n/);
+    assert.match(deploy, /\npermissions:\n(?: {2}\S.*\n)*? {2}checks: read\n/);
     const start = deploy.lastIndexOf(
       "\n      - name:",
       deploy.indexOf("node scripts/ci/prod-preprod-evidence.mjs"),
