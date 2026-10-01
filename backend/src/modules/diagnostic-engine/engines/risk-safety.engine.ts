@@ -18,6 +18,11 @@ export interface RiskAssessment {
   active_rules: DiagSafetyRule[];
 }
 
+interface SafetyRuleTrigger {
+  causes?: string[];
+  symptoms?: string[];
+}
+
 @Injectable()
 export class RiskSafetyEngine {
   private readonly logger = new Logger(RiskSafetyEngine.name);
@@ -97,43 +102,69 @@ export class RiskSafetyEngine {
   }
 
   /**
-   * Cause slugs associated with specific safety rules. A mapped rule is
-   * relevant when one of its causes is linked to the reported symptoms.
+   * What makes each safety rule relevant: a linked cause among the
+   * hypotheses, or a reported symptom. Each trigger restates the rule's own
+   * condition_description — the alert shows that text as the current
+   * situation, so a rule must only fire when the analysis supports it.
    *
    * Relevance is structural on purpose: the hypothesis score blends
    * heuristic layers (mileage, age, usage), and a safety warning must never
    * be withheld because a car looks young or lightly used.
    */
-  private static readonly RULE_CAUSE_MAP: Record<string, string[]> = {
+  private static readonly RULE_TRIGGERS: Record<string, SafetyRuleTrigger> = {
     // Freinage
-    brake_metal_on_metal: ['brake_pads_worn'],
-    brake_disc_damage_risk: ['brake_pads_worn'],
-    brake_fluid_critical: ['brake_fluid_low'],
+    brake_metal_on_metal: { causes: ['brake_pads_worn'] },
+    brake_disc_damage_risk: { causes: ['brake_pads_worn'] },
+    brake_fluid_critical: { causes: ['brake_fluid_low'] },
     // Distribution
-    timing_belt_snap_risk: [
-      'courroie_distribution_usee',
-      'galet_tendeur_defaillant',
-    ],
+    timing_belt_snap_risk: {
+      causes: ['courroie_distribution_usee', 'galet_tendeur_defaillant'],
+    },
     // Échappement
-    exhaust_fumes_cabin_risk: ['silencieux_perce', 'joint_collecteur_hs'],
+    exhaust_fumes_cabin_risk: {
+      causes: ['silencieux_perce', 'joint_collecteur_hs'],
+    },
     // Injection
-    fuel_leak_fire_risk: ['injecteur_encrasse', 'pompe_injection_hs'],
+    fuel_leak_fire_risk: {
+      causes: ['injecteur_encrasse', 'pompe_injection_hs'],
+    },
     // Direction
-    steering_loss_risk: [
-      'cremaillere_usee',
-      'pompe_direction_hs',
-      'rotule_direction_usee',
-    ],
+    steering_loss_risk: {
+      causes: [
+        'cremaillere_usee',
+        'pompe_direction_hs',
+        'rotule_direction_usee',
+      ],
+    },
     // Suspension
-    suspension_stability_risk: ['amortisseur_use', 'rotule_suspension_hs'],
+    suspension_stability_risk: {
+      causes: ['amortisseur_use', 'rotule_suspension_hs'],
+    },
+    spring_break_risk: { causes: ['ressort_casse'] },
     // Filtration
-    oil_pressure_critical: ['filtre_huile_colmate'],
+    oil_pressure_critical: { causes: ['filtre_huile_colmate'] },
+    // Démarrage
+    battery_sudden_failure: { causes: ['battery_dead'] },
+    alternator_battery_drain: { causes: ['alternator_failing'] },
+    // Smoke or a burning smell at the starter is not a reportable
+    // symptom: the rule cannot be supported by an analysis.
+    starter_smoke_warning: {},
+    // Refroidissement
+    overheat_engine_stop: { symptoms: ['temp_warning_light'] },
+    coolant_leak_no_drive: { symptoms: ['coolant_leak_visible'] },
+    temp_instability_warning: { symptoms: ['temp_gauge_unstable'] },
+    // Embrayage
+    clutch_slip_hill_risk: { symptoms: ['patinage_embrayage'] },
+    // Transmission
+    cardan_snap_risk: { causes: ['soufflet_cardan_dechire', 'cardan_use'] },
+    // Éclairage
+    no_headlight_night_risk: { causes: ['feu_avant_defaillant'] },
   };
 
   /**
    * Check if a safety rule is relevant given current hypotheses and symptoms.
-   * Rules without a cause mapping apply to every analysis of their system
-   * (haute/critique, moyenne); basse rules never raise a flag.
+   * A rule without a declared trigger is logged and applies to every analysis
+   * of its system (haute/critique, moyenne); basse rules never raise a flag.
    */
   private isRuleRelevant(
     rule: DiagSafetyRule,
@@ -147,10 +178,18 @@ export class RiskSafetyEngine {
       return symptomSlugs.length > 0;
     }
 
-    const causes = RiskSafetyEngine.RULE_CAUSE_MAP[ruleSlug];
-    if (causes) {
-      return hypotheses.some((h) => causes.includes(h.hypothesis_id));
+    const trigger = RiskSafetyEngine.RULE_TRIGGERS[ruleSlug];
+    if (trigger) {
+      return (
+        hypotheses.some((h) => trigger.causes?.includes(h.hypothesis_id)) ||
+        symptomSlugs.some((s) => trigger.symptoms?.includes(s))
+      );
     }
+
+    if (rule.urgency === 'basse') {
+      return false;
+    }
+    this.logger.warn(`Safety rule without a declared trigger: ${ruleSlug}`);
 
     if (rule.urgency === 'haute' || rule.urgency === 'critique') {
       return hypotheses.length > 0;
