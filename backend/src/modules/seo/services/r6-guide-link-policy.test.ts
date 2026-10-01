@@ -8,15 +8,24 @@
  *   - drapeau éteint, aucun doublon n'est retiré : le seul effet est le retrait des
  *     liens vers un guide non publié ;
  *   - le hub, la page autonome du sélecteur et les autres URL ne sont pas touchés ;
- *   - HTML : le lien retiré garde son texte (balise <a> dépliée), rien d'autre ne change.
+ *   - HTML : le lien retiré garde son texte (balise <a> dépliée), rien d'autre ne change ;
+ *   - chargement : une seule lecture, la fonction DEFINER `get_r6_guide_link_snapshot`
+ *     (le rôle `anon` de PREPROD ne lit pas les tables sous RLS) ; réponse en erreur ou
+ *     mal formée → erreur marquée, jamais mise en cache, aucun ensemble de repli.
  *
- * Fonctions pures : aucune I/O.
+ * Fonctions pures, sauf le chargement : `callRpc` et le cache y sont des doubles
+ * (constructeur SupabaseBaseService contourné par Object.create).
  */
 
+import {
+  CACHE_STRATEGIES,
+  getCacheKey,
+} from '../../../config/cache-ttl.config';
 import {
   applyGuideLinkRuleToBlocks,
   applyGuideLinkRuleToHtml,
   guideAliasFromHref,
+  R6GuideLinkPolicyService,
   resolveGuideLink,
   type R6GuideLinkSnapshot,
 } from './r6-guide-link-policy.service';
@@ -305,4 +314,114 @@ describe('applyGuideLinkRuleToBlocks', () => {
     applyGuideLinkRuleToBlocks(input, snapshot(true), onGamme);
     expect(input).toEqual(blocks());
   });
+});
+
+describe('R6GuideLinkPolicyService.getSnapshot', () => {
+  type RpcOut = { data: unknown; error: { message: string } | null };
+
+  function makeService(rpcOut: RpcOut, cached: unknown = null) {
+    const calls: Array<{ name: string; params: unknown; ctx: unknown }> = [];
+    const cacheService = {
+      get: jest.fn().mockResolvedValue(cached),
+      set: jest.fn().mockResolvedValue(undefined),
+    };
+    const svc = Object.create(R6GuideLinkPolicyService.prototype) as Record<
+      string,
+      unknown
+    >;
+    svc.logger = { error: jest.fn(), warn: jest.fn(), log: jest.fn() };
+    svc.featureFlags = { seoR6ConsolidationEnabled: true };
+    svc.cacheService = cacheService;
+    svc.callRpc = (name: string, params: unknown, ctx: unknown) => {
+      calls.push({ name, params, ctx });
+      return Promise.resolve(rpcOut);
+    };
+    return {
+      service: svc as unknown as R6GuideLinkPolicyService,
+      calls,
+      cacheService,
+    };
+  }
+
+  const strategy = CACHE_STRATEGIES.BLOG.R6_GUIDE_LINKS;
+  const key = getCacheKey(strategy, 'snapshot');
+  const payload = {
+    published_guide_aliases: ['batterie', 'cardan', 'filtre-a-air'],
+    conseils_aliases: ['batterie', 'filtre-a-air'],
+  };
+
+  it('lit la fonction DEFINER via callRpc, source api, et met le résultat en cache', async () => {
+    const { service, calls, cacheService } = makeService({
+      data: payload,
+      error: null,
+    });
+    const s = await service.getSnapshot();
+    expect(calls).toEqual([
+      {
+        name: 'get_r6_guide_link_snapshot',
+        params: {},
+        ctx: { source: 'api', role: 'service_role' },
+      },
+    ]);
+    expect(s).toEqual(snapshot(true));
+    expect(cacheService.set).toHaveBeenCalledWith(
+      key,
+      {
+        publishedGuideAliases: payload.published_guide_aliases,
+        conseilsAliases: payload.conseils_aliases,
+      },
+      strategy.ttl,
+    );
+  });
+
+  it('cache présent → aucune lecture', async () => {
+    const { service, calls } = makeService(
+      { data: null, error: { message: 'inattendu' } },
+      {
+        publishedGuideAliases: ['cardan'],
+        conseilsAliases: [],
+      },
+    );
+    const s = await service.getSnapshot();
+    expect(calls).toHaveLength(0);
+    expect([...s.publishedGuideAliases]).toEqual(['cardan']);
+  });
+
+  it('erreur de la fonction → erreur marquée, rien en cache', async () => {
+    const { service, cacheService } = makeService({
+      data: null,
+      error: { message: 'permission denied' },
+    });
+    await expect(service.getSnapshot()).rejects.toThrow(
+      'R6_GUIDE_LINK_SNAPSHOT_FAILED: get_r6_guide_link_snapshot: permission denied',
+    );
+    expect(cacheService.set).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['null', null],
+    ['tableau au lieu d’objet', []],
+    ['clé absente', { published_guide_aliases: ['cardan'] }],
+    [
+      'pas un tableau',
+      { published_guide_aliases: 'cardan', conseils_aliases: [] },
+    ],
+    [
+      'élément non chaîne',
+      { published_guide_aliases: ['cardan', 7], conseils_aliases: [] },
+    ],
+    [
+      'chaîne vide',
+      { published_guide_aliases: ['cardan'], conseils_aliases: [''] },
+    ],
+  ])(
+    'réponse mal formée (%s) → erreur marquée, rien en cache',
+    async (_label, data) => {
+      const { service, cacheService } = makeService({ data, error: null });
+      await expect(service.getSnapshot()).rejects.toThrow(
+        /^R6_GUIDE_LINK_SNAPSHOT_FAILED: get_r6_guide_link_snapshot: réponse invalide/,
+      );
+      expect(cacheService.set).not.toHaveBeenCalled();
+    },
+  );
 });
