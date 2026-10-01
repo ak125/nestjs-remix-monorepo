@@ -97,6 +97,25 @@ function checkLineExcerpt(
   };
 }
 
+/**
+ * Step 2 — Zod schema check. Pure (input injected) so the failure path, the one
+ * that reports which field is invalid, is unit-tested without the real overlay.
+ */
+export function checkSchema(raw: unknown) {
+  const parsed = AutomationRealitySchema.safeParse(raw);
+  if (parsed.success) return { data: parsed.data, findings: [] as Finding[] };
+  return {
+    data: null,
+    findings: parsed.error.issues.map(
+      (issue): Finding => ({
+        level: "error",
+        entry: issue.path.join("."),
+        message: `Zod: ${issue.message}`,
+      }),
+    ),
+  };
+}
+
 export function validate(): 0 | 1 {
   const findings: Finding[] = [];
 
@@ -120,21 +139,15 @@ export function validate(): 0 | 1 {
   }
 
   // 2. Zod validate
-  const parsed = AutomationRealitySchema.safeParse(raw);
-  if (!parsed.success) {
-    for (const issue of parsed.error.issues) {
-      findings.push({
-        level: "error",
-        entry: issue.path.join("."),
-        message: `Zod: ${issue.message}`,
-      });
-    }
+  const schema = checkSchema(raw);
+  if (schema.data === null) {
+    findings.push(...schema.findings);
     // Without successful parse, skip path/excerpt checks
     emitFindings(findings);
     return 1;
   }
 
-  const { entries } = parsed.data;
+  const { entries } = schema.data;
   log(`parsed ${entries.length} entries`);
 
   // 3. Evidence path existence
