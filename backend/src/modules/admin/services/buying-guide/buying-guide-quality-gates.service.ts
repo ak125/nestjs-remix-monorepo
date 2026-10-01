@@ -290,7 +290,7 @@ export class BuyingGuideQualityGatesService {
    * JSONB `checks` column.
    *
    * Pure sync: never reads/writes DB. The caller merges the returned fields
-   * into the enricher payload passed to BuyingGuideDbService.upsertBuyingGuide.
+   * into the enricher payload passed to the WriteGate (persistBuyingGuide).
    */
   computeGatekeeperScore(input: {
     sectionResults: Record<string, SectionValidationResult>;

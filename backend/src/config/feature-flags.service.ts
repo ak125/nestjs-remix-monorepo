@@ -138,15 +138,19 @@ export class FeatureFlagsService {
   // ── R6 Consolidation (guide d'achat → R3 conseils, décision owner 2026-06-10) ──
 
   /**
-   * Gates the R6→R3 consolidation redirect path: when ON, R6 guide-achat
-   * detail pages 301-redirect to the gamme's R3 conseils page — ONLY for
-   * gammes whose R3 article exists (self-gated per gamme: no live R3 → no
-   * redirect, the standalone R6 page keeps serving — never a redirect-to-404).
+   * Gates the R6→R3 consolidation: when ON, the whole R6 guide-achat surface
+   * leaves the index.
+   *   - detail page whose gamme has a live R3 article → 301 to the R3
+   *     conseils page (self-gated per gamme — never a redirect-to-404);
+   *   - detail page without R3 → still served, but `noindex, follow`;
+   *   - hub /blog-pieces-auto/guide-achat → `noindex, follow`;
+   *   - sitemap-blog.xml and the editorial crawl hub drop every guide-achat
+   *     URL (effective at their next generation).
    * Mirrors the R5→R3 consolidation (diagnostic-auto sub-pages → conseils).
    *
    * Activation is owner-gated: requires the vault ADR amending role-matrix v5
-   * (R6 standalone page → R3 section) + smoke-test anchor swap (airlock) +
-   * sitemap exclusion of folded gammes. Default: false (inert — zero change).
+   * (R6 standalone page → R3 section) + smoke-test anchor swap (airlock).
+   * Default: false (inert — zero change).
    */
   get seoR6ConsolidationEnabled(): boolean {
     return this.bool('SEO_R6_CONSOLIDATION_ENABLED', false);
@@ -372,6 +376,16 @@ export class FeatureFlagsService {
     return this.bool('DIAGNOSTIC_KG_PRIMARY_ENABLED', false);
   }
 
+  /**
+   * V1A.0 Intent Resolution layer. Default `false` — rollout gated.
+   * ON : `/analyze` returns intent + recommended_actions + human_escalation
+   * and `/handoff` records clicks on them. OFF : no intent layer and
+   * `/handoff` answers 404 (no action can have been displayed).
+   */
+  get diagnosticPipelineV1Enabled(): boolean {
+    return this.bool('DIAGNOSTIC_PIPELINE_V1_ENABLED', false);
+  }
+
   // ── Write Guard flags (P1.5) ──
 
   get writeGuardEnabled(): boolean {
@@ -449,6 +463,7 @@ export class FeatureFlagsService {
     'VEHICLE_CTX_ENABLED',
     'DIAGNOSTIC_KG_SHADOW_ENABLED',
     'DIAGNOSTIC_KG_PRIMARY_ENABLED',
+    'DIAGNOSTIC_PIPELINE_V1_ENABLED',
     'SHOW_ACCESSORY_BLOCKS_ON_R2',
   ]);
 

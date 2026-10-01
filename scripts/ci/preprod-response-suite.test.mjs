@@ -309,3 +309,36 @@ describe("preprod-response-suite.sh — happy path and static guarantees", () =>
     assert.match(code, /\/pieces\/filtre-a-huile-7\.html\|R1 Gamme \(filtre-a-huile\)\|3000\|200/);
   });
 });
+
+describe("preprod-response-suite.sh — the R2 row times a real product page", () => {
+  // A status probe cannot tell an R2 product page from the soft-404 alternatives
+  // page: both answer 200. The row used to time gamme 402 × type 100413, a couple
+  // with no catalog data (page-v2 404) — PREPROD reported "✅ R2 Product Page —
+  // HTTP 200, 91ms" for a noindex "non référencé" page. The populated couple is not
+  // re-proven here: r2-golden.json already carries it (classification "ok", run as
+  // a BLOCKING PREPROD step), so the row must point at one of its page-v2 fixtures.
+  const src = readFileSync(SUITE_SH, "utf8");
+  const heredoc = src.match(/<<'SPEC'[^\n]*\n([\s\S]*?)\nSPEC\n/);
+  const golden = JSON.parse(readFileSync(join(SCRIPT_DIR, "r2-golden.json"), "utf8"));
+  const R2_PATH = /^\/pieces\/[a-z0-9-]+-(\d+)\/[a-z0-9-]+-\d+\/[a-z0-9-]+-\d+\/[a-z0-9-]+-(\d+)\.html$/;
+
+  test("every R2 row targets a populated page-v2 couple of the R2 golden", () => {
+    assert.ok(heredoc, "DEFAULT_SPEC heredoc not found");
+    const r2Rows = heredoc[1]
+      .split("\n")
+      .map((l) => l.split("|"))
+      .filter(([, label]) => /^R2\b/.test(label ?? ""));
+    assert.ok(r2Rows.length > 0, "expected at least one R2 row in the default spec");
+    for (const [path, label] of r2Rows) {
+      const m = path.match(R2_PATH);
+      assert.ok(m, `${label}: not an R2 URL (/pieces/<gamme>/<marque>/<modele>/<type>.html): ${path}`);
+      const [gammeId, typeId] = [Number(m[1]), Number(m[2])];
+      const fixture = golden.fixtures.find(
+        (f) => f.kind === "page-v2" && f.gamme_id === gammeId && f.vehicle_id === typeId,
+      );
+      assert.ok(fixture, `${label}: gamme ${gammeId} × type ${typeId} is not a page-v2 fixture of r2-golden.json`);
+      assert.equal(fixture.expected?.classification, "ok", `${label}: golden ${fixture.id} is not a populated couple`);
+      assert.ok(fixture.expected.count > 0, `${label}: golden ${fixture.id} has no product`);
+    }
+  });
+});

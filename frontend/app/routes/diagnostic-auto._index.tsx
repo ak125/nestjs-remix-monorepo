@@ -47,6 +47,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "~/components/ui/accordion";
+import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Input } from "~/components/ui/input";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
@@ -231,7 +232,12 @@ async function fetchWikiContent<T>(
     const res = await fetch(`${apiUrl}/api/diagnostic-engine/${endpoint}`, {
       headers: { Accept: "application/json" },
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      logger.error(
+        `[diagnostic-auto._index] fetch ${endpoint} failed: HTTP ${res.status}`,
+      );
+      return null;
+    }
     const json = (await res.json()) as WikiContentEntry<T> | null;
     return json?.entity_data ?? null;
   } catch (error) {
@@ -240,11 +246,17 @@ async function fetchWikiContent<T>(
   }
 }
 
+/** Absent or not a list: the section is unavailable, not empty. */
+function listOrNull<T>(value: T[] | undefined): T[] | null {
+  return Array.isArray(value) ? value : null;
+}
+
 export async function loader({ request: _request }: LoaderFunctionArgs) {
   const API_URL = process.env.VITE_API_URL || "http://127.0.0.1:3000";
 
   // Single Promise.all → 5 parallel fetches (featured SEO + 4 wiki endpoints).
-  // Graceful degradation: any failure returns empty data, page renders without crash.
+  // A wiki section that cannot be read is `null` and rendered as unavailable,
+  // never as an empty list; the rest of the page still renders.
   const [featuredJson, vocab, signsData, faqData, safetyData] =
     await Promise.all([
       fetch(`${API_URL}/api/seo/diagnostic/featured`, {
@@ -269,12 +281,20 @@ export async function loader({ request: _request }: LoaderFunctionArgs) {
 
   return {
     featured: (featuredJson?.data ?? []) as DiagnosticItem[],
-    clusters: vocab?.clusters ?? [],
+    clusters: listOrNull(vocab?.clusters),
     perceptionIcons: vocab?.perception_icons ?? {},
-    signs: signsData?.signs ?? [],
-    faq: faqData?.faq ?? [],
+    signs: listOrNull(signsData?.signs),
+    faq: listOrNull(faqData?.faq),
     riskLevels: safetyData?.risk_levels ?? {},
   };
+}
+
+function SectionUnavailable({ children }: { children: string }) {
+  return (
+    <Alert variant="warning" icon={<AlertTriangle className="h-4 w-4" />}>
+      <AlertDescription>{children}</AlertDescription>
+    </Alert>
+  );
 }
 
 export default function DiagnosticAutoIndex() {
@@ -291,7 +311,7 @@ export default function DiagnosticAutoIndex() {
     });
   }, []);
 
-  const filteredClusters = clusters.filter(
+  const filteredClusters = (clusters ?? []).filter(
     (c) =>
       c.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.description.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -314,7 +334,11 @@ export default function DiagnosticAutoIndex() {
     const query = searchQuery.trim();
     if (query.length < 3) return;
     void import("~/utils/analytics").then(({ trackSymptomSearch }) => {
-      trackSymptomSearch(query, "other", filteredClusters.length);
+      trackSymptomSearch(
+        query,
+        "other",
+        clusters === null ? undefined : filteredClusters.length,
+      );
     });
   };
 
@@ -385,39 +409,47 @@ export default function DiagnosticAutoIndex() {
           Sélectionnez la zone concernée pour affiner le diagnostic
         </p>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {filteredClusters.map((cluster) => {
-            const Icon = ICON_MAP[cluster.icon] ?? Disc3;
-            return (
-              <Link
-                key={cluster.id}
-                to={`/diagnostic-auto?cluster=${cluster.id}`}
-                className="group block"
-              >
-                <div
-                  className={`relative rounded-2xl p-5 bg-gradient-to-br ${cluster.color} text-white overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl`}
-                >
-                  <div
-                    className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-x-4 -translate-y-4"
-                    aria-hidden="true"
-                  />
-                  <Icon className="h-8 w-8 mb-3 relative z-10" />
-                  <p className="font-bold text-sm relative z-10">
-                    {cluster.label}
-                  </p>
-                  <p className="text-[11px] text-white/70 mt-1 leading-tight relative z-10">
-                    {cluster.description}
-                  </p>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+        {clusters === null ? (
+          <SectionUnavailable>
+            Catégories de diagnostic temporairement indisponibles.
+          </SectionUnavailable>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              {filteredClusters.map((cluster) => {
+                const Icon = ICON_MAP[cluster.icon] ?? Disc3;
+                return (
+                  <Link
+                    key={cluster.id}
+                    to={`/diagnostic-auto?cluster=${cluster.id}`}
+                    className="group block"
+                  >
+                    <div
+                      className={`relative rounded-2xl p-5 bg-gradient-to-br ${cluster.color} text-white overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl`}
+                    >
+                      <div
+                        className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -translate-x-4 -translate-y-4"
+                        aria-hidden="true"
+                      />
+                      <Icon className="h-8 w-8 mb-3 relative z-10" />
+                      <p className="font-bold text-sm relative z-10">
+                        {cluster.label}
+                      </p>
+                      <p className="text-[11px] text-white/70 mt-1 leading-tight relative z-10">
+                        {cluster.description}
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
 
-        {filteredClusters.length === 0 && searchQuery && (
-          <p className="text-center text-gray-500 py-8">
-            Aucune catégorie ne correspond à « {searchQuery} »
-          </p>
+            {filteredClusters.length === 0 && searchQuery && (
+              <p className="text-center text-gray-500 py-8">
+                Aucune catégorie ne correspond à « {searchQuery} »
+              </p>
+            )}
+          </>
         )}
       </Container>
       {/* ═══ GUIDE : COMMENT IDENTIFIER SA PANNE ═══ */}
@@ -593,7 +625,11 @@ export default function DiagnosticAutoIndex() {
             Reconnaître ces signaux tôt évite l'immobilisation et réduit le coût
             de réparation. Classés par fréquence d'apparition.
           </p>
-          {signs.length === 0 ? (
+          {signs === null ? (
+            <SectionUnavailable>
+              Signes avant-coureurs temporairement indisponibles.
+            </SectionUnavailable>
+          ) : signs.length === 0 ? (
             <p className="text-sm text-gray-500 italic">
               Liste de signes en cours de population.
             </p>
@@ -905,7 +941,11 @@ export default function DiagnosticAutoIndex() {
           </h2>
         </div>
         <div className="max-w-3xl">
-          {faq.length === 0 ? (
+          {faq === null ? (
+            <SectionUnavailable>
+              Questions fréquentes temporairement indisponibles.
+            </SectionUnavailable>
+          ) : faq.length === 0 ? (
             <p className="text-sm text-gray-500 italic">
               FAQ en cours de population.
             </p>
