@@ -1,0 +1,4 @@
+# Codex : ce skill touche une zone STOP (CLAUDE.md invariant 9) — jamais chargé de lui-même,
+# seulement sur invocation explicite ($nom). Pendant Claude Code : `disable-model-invocation: true`.
+policy:
+  allow_implicit_invocation: false

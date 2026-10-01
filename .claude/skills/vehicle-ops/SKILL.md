@@ -12,9 +12,9 @@ license: Internal - Automecanik
 compatibility: Designed for Claude Code in the AutoMecanik monorepo. Stack — NestJS + Supabase. Requires Supabase MCP read access to auto_type, pieces_gamme, v_compat_strict views. Uses RAG/vault as SoT for vehicle facts (no LLM hallucination).
 allowed-tools: Read Grep Glob Bash mcp__claude_ai_Supabase__execute_sql
 tags: [vehicle, vlevel, compatibility, supabase, adr-032, diagnostic]
+argument-hint: "[diagnose|vlevel|cache|quality|maintenance|dtc] [gamme-id or type-id]"
 metadata:
   version: "1.1"
-  argument-hint: "[diagnose|vlevel|cache|quality|maintenance|dtc] [gamme-id or type-id]"
   spec: agentskills.io/specification v1
 ---
 
@@ -231,7 +231,7 @@ Detection depuis `auto_type.type_fuel` ou patterns dans les keywords.
 - `backend/src/modules/vehicles/services/` — 13 services (brands, models, types, search, cache, enrichment, RPC, meta, motor codes, profile, bestsellers, SEO)
 - `backend/src/modules/admin/services/gamme-vlevel.service.ts` — Algo V-Level v5.0
 - `backend/src/modules/catalog/services/vehicle-pieces-compatibility.service.ts` — RPC compatibilite
-- `backend/src/modules/admin/controllers/admin-vehicle-resolve.controller.ts` — Bulk type resolution
+- Bulk type resolution : aucun contrôleur backend ne sert `/api/admin/vehicles/types/resolve`, pourtant appelé par `frontend/app/hooks/useVehicleEnrichment.ts` (constaté 2026-09-30 ; le fichier `admin-vehicle-resolve.controller.ts` jadis cité ici n'existe pas dans l'historique git)
 
 ### Frontend
 - `frontend/app/components/vehicle/VehicleSelector.tsx` — Selecteur vehicule (compact/full modes)
@@ -329,7 +329,7 @@ domaine diagnostic interactif + maintenance fuel-aware + DTC consolidation.
 |--------------|-------|----------|
 | Sessions / symptomes / causes interactifs | `__diag_*` (system, symptom, cause, symptom_cause_link, session) | `backend/src/modules/diagnostic-engine/` (slugs FR : freinage, batterie, embrayage, ...) |
 | Maintenance / intervalles / wear factors / risque | `kg_nodes` (`node_type='MaintenanceInterval'`) + RPCs `kg_*` | `MaintenanceCalculatorService` (PR ADR-032 PR-2) |
-| Safety rules cause-by-cause | `__diag_safety_rule` (21 rules) + `risk-safety.engine.ts` RULE_CAUSE_MAP | Diagnostic interactif uniquement |
+| Safety rules par cause ou symptôme | `__diag_safety_rule` (21 rules) + `risk-safety.engine.ts` RULE_TRIGGERS | Diagnostic interactif uniquement |
 | Safety triggers KG observable | `kg_safety_triggers` + RPC `kg_check_safety_gate(p_observable_ids uuid[])` | Knowledge graph (futur turbo/EGR) |
 | DTC codes consolidation | Vue `v_dtc_lookup` (source ENUM : kg / seo_only / merged) + RPC `kg_get_dtc_lookup(p_code)` | `kg_nodes.dtc_code` source primaire |
 | Cases learning corpus | `__diag_session.result jsonb` (deja alimente via `saveSession()`) | Diagnostic interactif |

@@ -144,14 +144,21 @@ export class CatalogOrientationEngine {
   }
 
   /**
-   * Build suggested gammes from hypotheses
+   * Build suggested gammes from hypotheses.
+   * A family never claims more confidence than the diagnosis as a whole: a
+   * high score without a dominant hypothesis or without a vehicle is not a
+   * strong purchase lead.
    */
   private buildSuggestedGammes(
     hypotheses: ScoredHypothesis[],
-    overallConfidence: string,
+    overallConfidence: CatalogGuardResult['confidence_before_purchase'],
   ): SuggestedGamme[] {
     const gammes: SuggestedGamme[] = [];
     const seen = new Set<string>();
+    const levels = ['low', 'medium', 'high'] as const;
+    const ceiling = levels.indexOf(
+      overallConfidence === 'insufficient' ? 'low' : overallConfidence,
+    );
 
     for (const h of hypotheses) {
       if (h.total_score < 15) continue;
@@ -161,10 +168,9 @@ export class CatalogOrientationEngine {
         if (seen.has(g.slug)) continue;
         seen.add(g.slug);
 
-        let confidence: 'high' | 'medium' | 'low' = 'low';
-        if (h.total_score >= 60 && overallConfidence !== 'low')
-          confidence = 'medium';
-        if (h.total_score >= 75) confidence = 'high';
+        const scoreLevel =
+          h.total_score >= 75 ? 2 : h.total_score >= 60 ? 1 : 0;
+        const confidence = levels[Math.min(scoreLevel, ceiling)];
 
         gammes.push({
           gamme_slug: g.slug,

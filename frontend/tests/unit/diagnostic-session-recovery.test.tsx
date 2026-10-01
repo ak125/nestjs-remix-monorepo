@@ -41,7 +41,6 @@ const stored = () => ({
           suggested_gammes: [],
         },
         allowed_claims: [],
-        forbidden_claims_runtime: [],
         ui_block_inputs: {},
       },
     },
@@ -135,7 +134,7 @@ describe("saved diagnostic links", () => {
       expect(await screen.findByRole("alert")).toBeTruthy();
       expect(screen.queryByText("Véhicule de la session")).toBeNull();
       expect(
-        screen.queryByRole("button", { name: "Réessayer l'analyse" }),
+        screen.queryByRole("button", { name: "Modifier la sélection" }),
       ).toBeNull();
       expect(
         screen.getByRole("button", { name: "Réessayer le chargement" }),
@@ -156,7 +155,11 @@ describe("saved diagnostic links", () => {
   ])(
     "rejects an invalid URL identifier %j without a session request",
     async (value) => {
-      window.history.replaceState({}, "", `/diagnostic-auto?session=${encodeURIComponent(value)}`);
+      window.history.replaceState(
+        {},
+        "",
+        `/diagnostic-auto?session=${encodeURIComponent(value)}`,
+      );
       render(<DiagnosticWizard />);
       await screen.findByRole("alert");
       expect(
@@ -178,6 +181,33 @@ describe("saved diagnostic links", () => {
       `${window.location.origin}/diagnostic-auto?session=${id}`,
     );
   });
+  it.each([
+    [
+      "denied",
+      {
+        clipboard: {
+          writeText: vi.fn().mockRejectedValue(new Error("denied")),
+        },
+      },
+    ],
+    ["unavailable", {}],
+  ])(
+    "shows the link for manual copy when the clipboard is %s",
+    async (_, nav) => {
+      vi.stubGlobal("navigator", nav);
+      render(<DiagnosticWizard />);
+      fireEvent.click(
+        await screen.findByRole("button", { name: "Copier le lien" }),
+      );
+      await screen.findByText(/Copie automatique impossible/);
+      expect(
+        screen.getByText(
+          `${window.location.origin}/diagnostic-auto?session=${id}`,
+        ),
+      ).toBeTruthy();
+      expect(screen.queryByText("Lien copie")).toBeNull();
+    },
+  );
   it("retries a failed read and preserves the stored result", async () => {
     load = async () => response({}, false);
     render(<DiagnosticWizard />);
