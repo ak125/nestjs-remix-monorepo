@@ -122,7 +122,7 @@ export function validate(): 0 | 1 {
   // 2. Zod validate
   const parsed = AutomationRealitySchema.safeParse(raw);
   if (!parsed.success) {
-    for (const issue of parsed.error.errors) {
+    for (const issue of parsed.error.issues) {
       findings.push({
         level: "error",
         entry: issue.path.join("."),
