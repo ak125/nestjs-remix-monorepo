@@ -452,36 +452,6 @@
   "db": {
     "rpc": [
       {
-        "args": [
-          {
-            "mode": "IN",
-            "name": "p_run",
-            "type": "jsonb"
-          }
-        ],
-        "definedInMigrations": [
-          "20261001_diag_link_provenance.sql"
-        ],
-        "domain": "UNKNOWN",
-        "id": "public.__diag_projection_apply",
-        "language": "plpgsql",
-        "name": "__diag_projection_apply",
-        "owner": "__unassigned__",
-        "parseMode": "parsed",
-        "parseWarnings": [],
-        "returnType": "jsonb",
-        "schema": "public",
-        "schemaVersion": "1.0.0",
-        "searchPath": [
-          "public",
-          "pg_temp"
-        ],
-        "securityDefiner": false,
-        "sourceConfidence": "high",
-        "status": "UNKNOWN",
-        "usedBy": []
-      },
-      {
         "args": [],
         "definedInMigrations": [
           "20260615_gov_m10_overload_ambiguity_rpc.sql"
@@ -10124,110 +10094,6 @@
         ]
       },
       {
-        "columns": [
-          {
-            "hasDefault": false,
-            "name": "id",
-            "nullable": true,
-            "type": "bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY"
-          },
-          {
-            "hasDefault": false,
-            "name": "wiki_path",
-            "nullable": false,
-            "type": "text"
-          },
-          {
-            "hasDefault": false,
-            "name": "gamme_slug",
-            "nullable": false,
-            "type": "text"
-          },
-          {
-            "hasDefault": false,
-            "name": "wiki_commit",
-            "nullable": false,
-            "type": "text"
-          },
-          {
-            "hasDefault": false,
-            "name": "content_hash",
-            "nullable": false,
-            "type": "text"
-          },
-          {
-            "hasDefault": false,
-            "name": "relation_to_part",
-            "nullable": false,
-            "type": "text"
-          },
-          {
-            "hasDefault": false,
-            "name": "part_role",
-            "nullable": false,
-            "type": "text"
-          },
-          {
-            "hasDefault": false,
-            "name": "confidence",
-            "nullable": false,
-            "type": "text"
-          },
-          {
-            "hasDefault": false,
-            "name": "source_policy",
-            "nullable": false,
-            "type": "text"
-          },
-          {
-            "hasDefault": false,
-            "name": "confidence_score_computed",
-            "nullable": false,
-            "type": "numeric"
-          },
-          {
-            "hasDefault": false,
-            "name": "reviewed",
-            "nullable": false,
-            "type": "boolean"
-          },
-          {
-            "hasDefault": false,
-            "name": "diagnostic_safe",
-            "nullable": false,
-            "type": "boolean"
-          },
-          {
-            "hasDefault": true,
-            "name": "projected_at",
-            "nullable": false,
-            "type": "timestamptz"
-          },
-          {
-            "hasDefault": false,
-            "name": "retired_at",
-            "nullable": true,
-            "type": "timestamptz"
-          }
-        ],
-        "deletePolicy": "ADR_REQUIRED",
-        "domain": "UNKNOWN",
-        "id": "__diag_link_provenance",
-        "inMigrations": [
-          "20261001_diag_link_provenance.sql"
-        ],
-        "indexes": [],
-        "name": "__diag_link_provenance",
-        "owner": "__unassigned__",
-        "risk": "low",
-        "rlsEnabled": true,
-        "schema": "public",
-        "schemaVersion": "1.0.0",
-        "sourceConfidence": "high",
-        "status": "UNKNOWN",
-        "usedBy": []
-      },
-      {
         "columns": [],
         "deletePolicy": "ADR_REQUIRED",
         "domain": "UNKNOWN",
@@ -10265,154 +10131,6 @@
         "usedBy": [
           "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts"
         ]
-      },
-      {
-        "columns": [
-          {
-            "hasDefault": false,
-            "name": "id",
-            "nullable": true,
-            "type": "bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY"
-          },
-          {
-            "hasDefault": false,
-            "name": "wiki_path",
-            "nullable": false,
-            "type": "text"
-          },
-          {
-            "hasDefault": false,
-            "name": "gamme_slug",
-            "nullable": false,
-            "type": "text"
-          },
-          {
-            "hasDefault": false,
-            "name": "symptom_slug",
-            "nullable": true,
-            "type": "text"
-          },
-          {
-            "hasDefault": false,
-            "name": "system_slug",
-            "nullable": true,
-            "type": "text"
-          },
-          {
-            "hasDefault": true,
-            "name": "detail",
-            "nullable": false,
-            "type": "jsonb"
-          },
-          {
-            "hasDefault": true,
-            "name": "created_at",
-            "nullable": false,
-            "type": "timestamptz"
-          }
-        ],
-        "deletePolicy": "ADR_REQUIRED",
-        "domain": "UNKNOWN",
-        "id": "__diag_projection_conflicts",
-        "inMigrations": [
-          "20261001_diag_link_provenance.sql"
-        ],
-        "indexes": [],
-        "name": "__diag_projection_conflicts",
-        "owner": "__unassigned__",
-        "risk": "low",
-        "rlsEnabled": true,
-        "schema": "public",
-        "schemaVersion": "1.0.0",
-        "sourceConfidence": "high",
-        "status": "UNKNOWN",
-        "usedBy": []
-      },
-      {
-        "columns": [
-          {
-            "hasDefault": false,
-            "name": "id",
-            "nullable": true,
-            "type": "bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY"
-          },
-          {
-            "hasDefault": false,
-            "name": "runtime_env",
-            "nullable": false,
-            "type": "text"
-          },
-          {
-            "hasDefault": false,
-            "name": "index_sha256",
-            "nullable": true,
-            "type": "text"
-          },
-          {
-            "hasDefault": false,
-            "name": "builder_version",
-            "nullable": true,
-            "type": "text"
-          },
-          {
-            "hasDefault": true,
-            "name": "exported_count",
-            "nullable": false,
-            "type": "bigint"
-          },
-          {
-            "hasDefault": true,
-            "name": "projected_count",
-            "nullable": false,
-            "type": "bigint"
-          },
-          {
-            "hasDefault": true,
-            "name": "conflict_count",
-            "nullable": false,
-            "type": "bigint"
-          },
-          {
-            "hasDefault": true,
-            "name": "retired_count",
-            "nullable": false,
-            "type": "bigint"
-          },
-          {
-            "hasDefault": false,
-            "name": "error",
-            "nullable": true,
-            "type": "text"
-          },
-          {
-            "hasDefault": true,
-            "name": "started_at",
-            "nullable": false,
-            "type": "timestamptz"
-          },
-          {
-            "hasDefault": false,
-            "name": "finished_at",
-            "nullable": true,
-            "type": "timestamptz"
-          }
-        ],
-        "deletePolicy": "ADR_REQUIRED",
-        "domain": "UNKNOWN",
-        "id": "__diag_projection_runs",
-        "inMigrations": [
-          "20261001_diag_link_provenance.sql"
-        ],
-        "indexes": [],
-        "name": "__diag_projection_runs",
-        "owner": "__unassigned__",
-        "risk": "low",
-        "rlsEnabled": true,
-        "schema": "public",
-        "schemaVersion": "1.0.0",
-        "sourceConfidence": "high",
-        "status": "UNKNOWN",
-        "usedBy": []
       },
       {
         "columns": [
@@ -91102,31 +90820,11 @@
         "manual"
       ],
       "domain": "D2",
-      "id": "frontend/tests/qa-audit/helpers/reporter.ts",
-      "importedBy": [],
-      "imports": [],
-      "kind": "service",
-      "loc": 257,
-      "owner": "@ak125",
-      "path": "frontend/tests/qa-audit/helpers/reporter.ts",
-      "risk": "medium",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "high",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D2",
       "id": "frontend/tests/qa-audit/playwright.qa.config.ts",
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 57,
+      "loc": 54,
       "owner": "@ak125",
       "path": "frontend/tests/qa-audit/playwright.qa.config.ts",
       "risk": "medium",
@@ -97562,7 +97260,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 154,
+      "loc": 144,
       "owner": "@ak125",
       "path": "scripts/audit/check-served-content-write-sinks-ratchet.test.ts",
       "risk": "medium",
@@ -97582,7 +97280,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 315,
+      "loc": 314,
       "owner": "@ak125",
       "path": "scripts/audit/check-served-content-write-sinks-ratchet.ts",
       "risk": "medium",
@@ -101479,15 +101177,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "0ab11576b27d12f8c90f4202282216a5271a3feb7791c4cca86a4ae575020a2f",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "8529da962fb0b045010cff13d5ffb8811af2f10838bd8d36750ba87d93de4921",
+      ".spec/00-canon/repository-registry/ownership.yaml": "52117babce15374c63bfa3aae0b02331f3c8015e56dad7767455697f4a7abdac",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
-      "audit/registry/db.json": "28a091692c63b0d39d7595e43b64c5ecdb2b73689c638b08f85174f7a5e1dfc6",
+      "audit/registry/db.json": "8a9a7f70490c00f57d748796e4a1c5a98addcc079a4ba569b96ad275dc246d37",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "5f8f6d0219645a59fb0b7148c0f0bed24d989628d03a9947163b95fbe8ebd381",
-      "audit/registry/rpc.json": "d3fc447326838c6e2624b390722c871dc86f55cf66e9322cbd5fdc9c5a86978a",
+      "audit/registry/files.json": "d283c6f8c0c1b8f7686e689d842ef1874eff80586db42f8cdc2761ff6ad5db63",
+      "audit/registry/rpc.json": "86d0c24b102036512a9f7b11d9ac04754288049a8b061981b19f0db0a8c86263",
       "audit/registry/runtime.json": "67dc8fe02246ff5d7cf25668af7409b32ea66bc575d4ae23455b57f94d111174"
     },
-    "sotFingerprint": "6785dee0c82b"
+    "sotFingerprint": "7533d38864fc"
   },
   "runtime": [
     {

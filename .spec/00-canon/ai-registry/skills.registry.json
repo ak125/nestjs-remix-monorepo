@@ -1,18 +1,44 @@
 {
-  "compliantCount": 12,
-  "generatedAt": "2026-09-30T15:53:10.730Z",
+  "compliantCount": 13,
+  "generatedAt": "2026-09-30T23:27:07.086Z",
   "issues": [],
   "schemaPath": ".spec/00-canon/ai-registry/skill.schema.json",
   "schemaVersion": "1.0.0",
   "skills": [
     {
-      "checksum": "sha256:887cd2d49cf43daf888ba8ebc614ef6fe254456ed2bf353469252c716798360a",
+      "checksum": "sha256:85fe0ca023100d72443e9411ed33c09a2f5c3841b2cb86eaf7118185236142da",
       "domain": "D15",
-      "last_verified": "2026-05-18",
+      "last_verified": "2026-09-30",
       "llm_safe": true,
       "metadata": {
         "spec": "agentskills.io/specification v1",
-        "version": "1.1"
+        "version": "1.0"
+      },
+      "name": "code-auto-review",
+      "owners": [
+        "@ak125"
+      ],
+      "path": ".claude/skills/code-auto-review/SKILL.md",
+      "runtime_class": "mutating",
+      "spec_compliant": true,
+      "status": "experimental",
+      "tags": [
+        "exit-contract",
+        "guards",
+        "review",
+        "scope",
+        "self-review"
+      ],
+      "type": "technique"
+    },
+    {
+      "checksum": "sha256:33f0adf8345a9d9258cce2779253ac5ddc764a2f6fbb40e5b4d13ed0127bba3b",
+      "domain": "D15",
+      "last_verified": "2026-09-30",
+      "llm_safe": true,
+      "metadata": {
+        "spec": "agentskills.io/specification v1",
+        "version": "1.2"
       },
       "name": "code-review",
       "owners": [
@@ -48,13 +74,13 @@
       "type": "technique"
     },
     {
-      "checksum": "sha256:8ef79dcfb4a68161a98262a770775d634428e23863e51ad52e523a26f7355a53",
+      "checksum": "sha256:8487b6fae121c39d87edc690bbd38260023819b099ac8ad0d78673629960b749",
       "domain": "D15",
-      "last_verified": "2026-05-18",
+      "last_verified": "2026-09-30",
       "llm_safe": false,
       "metadata": {
         "spec": "agentskills.io/specification v1",
-        "version": "1.2"
+        "version": "1.3"
       },
       "name": "db-migration",
       "owners": [
@@ -322,5 +348,5 @@
       "type": "technique"
     }
   ],
-  "totalSkills": 12
+  "totalSkills": 13
 }
