@@ -3657,7 +3657,9 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [],
+      "dependsOn": [
+        "runtime:backend/src/modules/marketing/services/brand-compliance-gate.service.ts"
+      ],
       "id": "runtime:backend/src/modules/marketing/services/marketing-briefs.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/marketing/services/marketing-briefs.service.ts",

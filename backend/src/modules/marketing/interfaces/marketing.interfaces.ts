@@ -1,3 +1,39 @@
+/** Stored marketing brief, shared by persistence and validation services. */
+export interface MarketingBriefRow {
+  id: string;
+  agent_id: string;
+  business_unit: 'ECOMMERCE' | 'LOCAL' | 'HYBRID';
+  channel: string;
+  conversion_goal: 'CALL' | 'VISIT' | 'QUOTE' | 'ORDER';
+  cta: string;
+  target_segment: string;
+  payload: Record<string, unknown>;
+  coverage_manifest: Record<string, unknown>;
+  brand_gate_level: 'PASS' | 'WARN' | 'FAIL' | null;
+  compliance_gate_level: 'PASS' | 'WARN' | 'FAIL' | null;
+  gate_summary: Record<string, unknown> | null;
+  status: 'draft' | 'reviewed' | 'approved' | 'published' | 'archived';
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  approved_by: string | null;
+  approved_at: string | null;
+  published_at: string | null;
+  social_post_id: number | null;
+  actual_impressions: number;
+  actual_clicks: number;
+  actual_calls: number;
+  actual_visits: number;
+  actual_quotes: number;
+  actual_orders: number;
+  actual_revenue_cents: number;
+  performance_updated_at: string | null;
+  ai_provider: string | null;
+  ai_model: string | null;
+  generation_prompt_hash: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface MarketingCampaign {
   id: number;
   name: string;

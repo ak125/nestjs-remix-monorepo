@@ -16875,7 +16875,7 @@
         "backend/src/modules/marketing/services/marketing-briefs.service.ts"
       ],
       "kind": "controller",
-      "loc": 100,
+      "loc": 106,
       "owner": "__unassigned__",
       "path": "backend/src/modules/marketing/controllers/marketing-briefs.controller.ts",
       "risk": "low",
@@ -16996,7 +16996,8 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/marketing/dto/marketing-brief.dto.ts",
       "importedBy": [
-        "backend/src/modules/marketing/controllers/marketing-briefs.controller.ts"
+        "backend/src/modules/marketing/controllers/marketing-briefs.controller.ts",
+        "backend/src/modules/marketing/services/brand-compliance-gate.service.ts"
       ],
       "imports": [
         "@config/marketing-matrix.types"
@@ -17050,13 +17051,15 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/marketing/interfaces/marketing.interfaces.ts",
       "importedBy": [
+        "backend/src/modules/marketing/services/brand-compliance-gate.service.ts",
         "backend/src/modules/marketing/services/marketing-backlinks.service.ts",
+        "backend/src/modules/marketing/services/marketing-briefs.service.ts",
         "backend/src/modules/marketing/services/marketing-content-roadmap.service.ts",
         "backend/src/modules/marketing/services/marketing-data.service.ts"
       ],
       "imports": [],
       "kind": "service",
-      "loc": 204,
+      "loc": 240,
       "owner": "__unassigned__",
       "path": "backend/src/modules/marketing/interfaces/marketing.interfaces.ts",
       "risk": "low",
@@ -17158,14 +17161,19 @@
       "importedBy": [
         "backend/src/modules/marketing/controllers/marketing-pipeline.controller.ts",
         "backend/src/modules/marketing/controllers/marketing-social-posts.controller.ts",
-        "backend/src/modules/marketing/marketing.module.ts"
+        "backend/src/modules/marketing/marketing.module.ts",
+        "backend/src/modules/marketing/services/marketing-briefs.service.ts"
       ],
       "imports": [
+        "backend/src/modules/marketing/dto/marketing-brief.dto.ts",
         "backend/src/modules/marketing/interfaces/marketing-hub.interfaces.ts",
-        "backend/src/modules/marketing/services/marketing-hub-data.service.ts"
+        "backend/src/modules/marketing/interfaces/marketing.interfaces.ts",
+        "backend/src/modules/marketing/services/marketing-hub-data.service.ts",
+        "fs",
+        "path"
       ],
       "kind": "service",
-      "loc": 410,
+      "loc": 532,
       "owner": "__unassigned__",
       "path": "backend/src/modules/marketing/services/brand-compliance-gate.service.ts",
       "risk": "low",
@@ -17212,10 +17220,12 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "@security/rpc-gate/rpc-gate.service"
+        "@security/rpc-gate/rpc-gate.service",
+        "backend/src/modules/marketing/interfaces/marketing.interfaces.ts",
+        "backend/src/modules/marketing/services/brand-compliance-gate.service.ts"
       ],
       "kind": "service",
-      "loc": 200,
+      "loc": 201,
       "owner": "__unassigned__",
       "path": "backend/src/modules/marketing/services/marketing-briefs.service.ts",
       "risk": "low",
@@ -38533,6 +38543,44 @@
       "loc": 239,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/maintenance-calendar-endpoint.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/marketing-brief-guards.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 400,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/marketing-brief-guards.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/marketing-brief-postgrest.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 94,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/marketing-brief-postgrest.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",

@@ -411,7 +411,7 @@
         "backend/src/modules/marketing/templates"
       ],
       "files_count": 25,
-      "loc_total": 4725,
+      "loc_total": 4890,
       "has_barrel": false
     },
     "mcp-validation": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 270,
-      "loc_total": 50689,
+      "files_count": 272,
+      "loc_total": 51183,
       "has_barrel": true
     },
     "upload": {

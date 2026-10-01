@@ -8,7 +8,7 @@ import { resolve } from 'path';
 import { JSON_SCHEMA, load } from 'js-yaml';
 import { z } from 'zod';
 import { CreateMarketingBriefSchema } from '../dto/marketing-brief.dto';
-import type { MarketingBriefRow } from './marketing-briefs.service';
+import type { MarketingBriefRow } from '../interfaces/marketing.interfaces';
 import { MarketingHubDataService } from './marketing-hub-data.service';
 import type {
   SocialPost,
