@@ -1,11 +1,11 @@
 {
   "schemaVersion": "v1",
-  "createdAt": "2026-07-25",
+  "createdAt": "2026-09-29",
   "createdOnCommit": null,
   "sourcePr": null,
   "mode": "block-new-only",
   "summary": {
-    "direct_literal": 9,
+    "direct_literal": 8,
     "const_map": 7,
     "rpc_publisher": 1,
     "sql_migration": 44
@@ -44,11 +44,6 @@
     {
       "mechanism": "const_map",
       "id": "backend/src/modules/blog/services/guide.service.ts::TABLES.blog_guide",
-      "count": 1
-    },
-    {
-      "mechanism": "direct_literal",
-      "id": "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts::__seo_gamme_purchase_guide",
       "count": 1
     },
     {

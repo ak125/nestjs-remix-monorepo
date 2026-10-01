@@ -4,7 +4,10 @@
  */
 
 import { Controller, Get, Header, Param, Logger } from '@nestjs/common';
-import { R6GuideService } from '../services/r6-guide.service';
+import {
+  R6GuideService,
+  type R6IndexingPosture,
+} from '../services/r6-guide.service';
 import {
   DomainNotFoundException,
   OperationFailedException,
@@ -18,19 +21,38 @@ export class R6GuideController {
   constructor(private readonly r6GuideService: R6GuideService) {}
 
   /**
-   * Cible de redirection 301 pour les pages R6 guide-achat → R3 conseils
-   * (consolidation R6→R3, flag-gated OFF — mirror de /api/seo/diagnostic/redirect).
+   * Posture d'indexation d'une page R6 guide-achat sous consolidation R6→R3
+   * (flag-gated OFF — mirror de /api/seo/diagnostic/redirect) : cible 301 vers
+   * R3 conseils, ou directive robots `noindex, follow` quand il n'y a pas de R3.
+   * Champs `redirect_to` / `pg_alias` inchangés (rétro-compatible).
    * Cache court : doit se propager vite quand l'owner active le flag.
    * IMPORTANT : doit rester déclaré AVANT @Get(':pg_alias') qui capture tout.
    * GET /api/r6-guide/redirect/:pg_alias
    */
   @Get('redirect/:pg_alias')
   @Header('Cache-Control', 'public, max-age=300')
-  async getRedirectTarget(
-    @Param('pg_alias') pgAlias: string,
-  ): Promise<{ redirect_to: string | null; pg_alias: string | null }> {
-    const result = await this.r6GuideService.getRedirectTarget(pgAlias);
-    return result ?? { redirect_to: null, pg_alias: null };
+  async getRedirectTarget(@Param('pg_alias') pgAlias: string): Promise<{
+    redirect_to: string | null;
+    pg_alias: string | null;
+    robots: R6IndexingPosture['robots'];
+  }> {
+    const posture = await this.r6GuideService.getIndexingPosture(pgAlias);
+    return {
+      redirect_to: posture.redirect_to,
+      pg_alias: posture.redirect_to ? pgAlias : null,
+      robots: posture.robots,
+    };
+  }
+
+  /**
+   * Posture d'indexation du hub /blog-pieces-auto/guide-achat.
+   * IMPORTANT : doit rester déclaré AVANT @Get(':pg_alias') qui capture tout.
+   * GET /api/r6-guide/hub-posture
+   */
+  @Get('hub-posture')
+  @Header('Cache-Control', 'public, max-age=300')
+  getHubPosture(): { robots: R6IndexingPosture['robots'] } {
+    return this.r6GuideService.getHubIndexingPosture();
   }
 
   /**

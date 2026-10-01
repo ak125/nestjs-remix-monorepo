@@ -27,7 +27,6 @@ describe("Diagnostic content authority", () => {
           suggested_gammes: [],
         },
         allowed_claims: ["Controle professionnel recommande"],
-        forbidden_claims_runtime: [],
         ui_block_inputs: {},
         rag_facts: [
           {
