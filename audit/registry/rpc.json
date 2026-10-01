@@ -1,6 +1,36 @@
 {
   "entries": [
     {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_run",
+          "type": "jsonb"
+        }
+      ],
+      "definedInMigrations": [
+        "20261001_diag_link_provenance.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.__diag_projection_apply",
+      "language": "plpgsql",
+      "name": "__diag_projection_apply",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "jsonb",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public",
+        "pg_temp"
+      ],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
       "args": [],
       "definedInMigrations": [
         "20260615_gov_m10_overload_ambiguity_rpc.sql"

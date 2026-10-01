@@ -1235,6 +1235,110 @@
       ]
     },
     {
+      "columns": [
+        {
+          "hasDefault": false,
+          "name": "id",
+          "nullable": true,
+          "type": "bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY"
+        },
+        {
+          "hasDefault": false,
+          "name": "wiki_path",
+          "nullable": false,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "gamme_slug",
+          "nullable": false,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "wiki_commit",
+          "nullable": false,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "content_hash",
+          "nullable": false,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "relation_to_part",
+          "nullable": false,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "part_role",
+          "nullable": false,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "confidence",
+          "nullable": false,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "source_policy",
+          "nullable": false,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "confidence_score_computed",
+          "nullable": false,
+          "type": "numeric"
+        },
+        {
+          "hasDefault": false,
+          "name": "reviewed",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "hasDefault": false,
+          "name": "diagnostic_safe",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "hasDefault": true,
+          "name": "projected_at",
+          "nullable": false,
+          "type": "timestamptz"
+        },
+        {
+          "hasDefault": false,
+          "name": "retired_at",
+          "nullable": true,
+          "type": "timestamptz"
+        }
+      ],
+      "deletePolicy": "ADR_REQUIRED",
+      "domain": "UNKNOWN",
+      "id": "__diag_link_provenance",
+      "inMigrations": [
+        "20261001_diag_link_provenance.sql"
+      ],
+      "indexes": [],
+      "name": "__diag_link_provenance",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": true,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
       "columns": [],
       "deletePolicy": "ADR_REQUIRED",
       "domain": "UNKNOWN",
@@ -1272,6 +1376,154 @@
       "usedBy": [
         "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts"
       ]
+    },
+    {
+      "columns": [
+        {
+          "hasDefault": false,
+          "name": "id",
+          "nullable": true,
+          "type": "bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY"
+        },
+        {
+          "hasDefault": false,
+          "name": "wiki_path",
+          "nullable": false,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "gamme_slug",
+          "nullable": false,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "symptom_slug",
+          "nullable": true,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "system_slug",
+          "nullable": true,
+          "type": "text"
+        },
+        {
+          "hasDefault": true,
+          "name": "detail",
+          "nullable": false,
+          "type": "jsonb"
+        },
+        {
+          "hasDefault": true,
+          "name": "created_at",
+          "nullable": false,
+          "type": "timestamptz"
+        }
+      ],
+      "deletePolicy": "ADR_REQUIRED",
+      "domain": "UNKNOWN",
+      "id": "__diag_projection_conflicts",
+      "inMigrations": [
+        "20261001_diag_link_provenance.sql"
+      ],
+      "indexes": [],
+      "name": "__diag_projection_conflicts",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": true,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "columns": [
+        {
+          "hasDefault": false,
+          "name": "id",
+          "nullable": true,
+          "type": "bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY"
+        },
+        {
+          "hasDefault": false,
+          "name": "runtime_env",
+          "nullable": false,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "index_sha256",
+          "nullable": true,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "builder_version",
+          "nullable": true,
+          "type": "text"
+        },
+        {
+          "hasDefault": true,
+          "name": "exported_count",
+          "nullable": false,
+          "type": "bigint"
+        },
+        {
+          "hasDefault": true,
+          "name": "projected_count",
+          "nullable": false,
+          "type": "bigint"
+        },
+        {
+          "hasDefault": true,
+          "name": "conflict_count",
+          "nullable": false,
+          "type": "bigint"
+        },
+        {
+          "hasDefault": true,
+          "name": "retired_count",
+          "nullable": false,
+          "type": "bigint"
+        },
+        {
+          "hasDefault": false,
+          "name": "error",
+          "nullable": true,
+          "type": "text"
+        },
+        {
+          "hasDefault": true,
+          "name": "started_at",
+          "nullable": false,
+          "type": "timestamptz"
+        },
+        {
+          "hasDefault": false,
+          "name": "finished_at",
+          "nullable": true,
+          "type": "timestamptz"
+        }
+      ],
+      "deletePolicy": "ADR_REQUIRED",
+      "domain": "UNKNOWN",
+      "id": "__diag_projection_runs",
+      "inMigrations": [
+        "20261001_diag_link_provenance.sql"
+      ],
+      "indexes": [],
+      "name": "__diag_projection_runs",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": true,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
     },
     {
       "columns": [
