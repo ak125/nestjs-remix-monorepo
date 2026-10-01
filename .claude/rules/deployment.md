@@ -92,7 +92,9 @@ Toute occurrence des patterns ci-dessous dans un fichier `.md` du repo (hors err
 
 ## Contrat env CI (preflight)
 
-Le `.env.preprod` heredoc-généré par le step `🧪 Deploy to PREPROD` (ci.yml) est validé **avant**
+Le `.env` de PREPROD est rendu par `scripts/ci/render-preprod-env.sh`, que lisent deux consommateurs :
+le step `🧪 Deploy to PREPROD` (ci.yml) et le boot smoke `scripts/ci/backend-boot-smoke.sh` (job
+core-build, à chaque PR). Il est validé **avant**
 `docker compose up` par `scripts/ci/preflight-env-contract.ts` contre le SoT Zod
 `backend/src/contract/env-contract/preprod.schema.ts` → CI fail immédiat lisible plutôt qu'un
 crash boot NestJS opaque. Vars couvertes (boot-crash si absentes/mal-formées) : `NODE_ENV`
