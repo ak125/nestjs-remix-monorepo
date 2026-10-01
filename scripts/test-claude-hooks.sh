@@ -706,6 +706,25 @@ assert_exit "sql-guard: INSERT pieces_price → allow (scope=UPDATE/DELETE)" "0"
 # Sanity : guard existant (Guard 1) toujours actif
 assert_exit "sql-guard: DROP TABLE foo (no IF EXISTS) → BLOCK (G1)" "2" "$(run_sql_guard 'DROP TABLE foo')"
 
+# Enveloppe illisible → BLOCK (échec fermé ; avant : exit 0, toutes les gardes muettes)
+run_sql_guard_raw() {
+  printf '%s' "$1" | bash scripts/claude-hooks/pretool-supabase-guard.sh >/dev/null 2>&1
+  echo $?
+}
+assert_exit "sql-guard: stdin vide → BLOCK"                         "2" "$(run_sql_guard_raw '')"
+assert_exit "sql-guard: JSON invalide → BLOCK"                      "2" "$(run_sql_guard_raw 'not json')"
+assert_exit "sql-guard: JSON non objet → BLOCK"                     "2" "$(run_sql_guard_raw '["TRUNCATE foo"]')"
+assert_exit "sql-guard: query à la racine (hors tool_input) → BLOCK" "2" "$(run_sql_guard_raw '{"tool_name":"mcp__supabase__execute_sql","query":"TRUNCATE foo"}')"
+assert_exit "sql-guard: tool_input non objet → BLOCK"               "2" "$(run_sql_guard_raw '{"tool_name":"mcp__supabase__execute_sql","tool_input":"TRUNCATE foo"}')"
+assert_exit "sql-guard: tool_input.query absent → BLOCK"            "2" "$(run_sql_guard_raw '{"tool_name":"mcp__supabase__execute_sql","tool_input":{"project_id":"p"}}')"
+assert_exit "sql-guard: tool_input.query non chaîne → BLOCK"        "2" "$(run_sql_guard_raw '{"tool_name":"mcp__supabase__execute_sql","tool_input":{"query":["SELECT 1"]}}')"
+assert_exit "sql-guard: tool_input.query blanc → BLOCK"             "2" "$(run_sql_guard_raw '{"tool_name":"mcp__supabase__execute_sql","tool_input":{"query":"  "}}')"
+assert_exit "sql-guard: deux enveloppes concaténées → BLOCK"        "2" "$(run_sql_guard_raw '{"tool_input":{"query":"SELECT 1"}}{"tool_input":{"query":"SELECT 1"}}')"
+assert_contains "sql-guard: motif de refus explicite" "enveloppe PreToolUse illisible" \
+  "$(printf 'not json' | bash scripts/claude-hooks/pretool-supabase-guard.sh 2>&1)"
+assert_exit "sql-guard: enveloppe execute_sql complète → allow"      "0" "$(run_sql_guard_raw '{"session_id":"s","cwd":"/tmp","hook_event_name":"PreToolUse","tool_name":"mcp__supabase__execute_sql","tool_input":{"project_id":"p","query":"SELECT 1"}}')"
+assert_exit "sql-guard: enveloppe apply_migration complète → allow"  "0" "$(run_sql_guard_raw '{"session_id":"s","cwd":"/tmp","hook_event_name":"PreToolUse","tool_name":"mcp__supabase__apply_migration","tool_input":{"project_id":"p","name":"add_idx","query":"CREATE INDEX IF NOT EXISTS i ON t (c)"}}')"
+
 # ============================================================
 # Guard : pretool-file-guard.sh — chemins protégés (format réel : tool_input.file_path)
 # ============================================================
