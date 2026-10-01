@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 84fdce414235240452f3cae1ea03682f909e985c664eea7232b29d4ad0248b80
+source_sha256: 3653eb9349049cbb7058125bd6c95049fa1aa7eae9a7f9a28485d62f51f5498e
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -24,7 +24,7 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 999 |
 
-Source sotFingerprint: `cfd7381335e5`.
+Source sotFingerprint: `3e4ab1483e96`.
 
 ## Comment l'utiliser
 
