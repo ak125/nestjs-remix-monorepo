@@ -35,6 +35,14 @@ import type {
   R6MediaSlotFrontend,
 } from '../interfaces/r6-guide.interfaces';
 
+/** Directive robots d'une surface R6 retirée de l'index (liens toujours suivis). */
+export const R6_RETIRED_ROBOTS = 'noindex, follow' as const;
+
+export interface R6IndexingPosture {
+  redirect_to: string | null;
+  robots: typeof R6_RETIRED_ROBOTS | null;
+}
+
 @Injectable()
 export class R6GuideService {
   private readonly logger = new Logger(R6GuideService.name);
@@ -63,25 +71,75 @@ export class R6GuideService {
   ): Promise<{ redirect_to: string; pg_alias: string } | null> {
     if (!this.featureFlags.seoR6ConsolidationEnabled) return null;
 
-    const { data: gamme } = await this.supabaseService.client
+    const { data: gamme, error: gammeError } = await this.supabaseService.client
       .from('pieces_gamme')
       .select('pg_id')
       .eq('pg_alias', pgAlias)
       .single();
-    if (!gamme) return null;
+    if (!gamme) {
+      this.warnLookupFailure(pgAlias, 'pieces_gamme', gammeError);
+      return null;
+    }
 
     // Self-gate : ne rediriger que si la page R3 de la gamme existe
-    const { data: advice } = await this.supabaseService.client
-      .from('__blog_advice')
-      .select('ba_pg_id')
-      .eq('ba_pg_id', gamme.pg_id)
-      .limit(1)
-      .single();
-    if (!advice) return null;
+    const { data: advice, error: adviceError } =
+      await this.supabaseService.client
+        .from('__blog_advice')
+        .select('ba_pg_id')
+        .eq('ba_pg_id', gamme.pg_id)
+        .limit(1)
+        .single();
+    if (!advice) {
+      this.warnLookupFailure(pgAlias, '__blog_advice', adviceError);
+      return null;
+    }
 
     return {
       redirect_to: `/blog-pieces-auto/conseils/${pgAlias}`,
       pg_alias: pgAlias,
+    };
+  }
+
+  /**
+   * Posture d'indexation d'une page détail R6 sous consolidation R6→R3.
+   *   - flag OFF (défaut) → { redirect_to: null, robots: null } : aucune
+   *     requête DB, la page garde son comportement actuel ;
+   *   - flag ON + article R3 vivant → 301 vers la page R3 conseils ;
+   *   - flag ON sans R3 (gamme inconnue, guide legacy, R3 absent) → la page
+   *     reste servie aux visiteurs mais sort de l'index (`noindex, follow`).
+   * Flag ON = la surface R6 n'est plus indexable : aucun cas ne rend `index`.
+   */
+  async getIndexingPosture(pgAlias: string): Promise<R6IndexingPosture> {
+    if (!this.featureFlags.seoR6ConsolidationEnabled) {
+      return { redirect_to: null, robots: null };
+    }
+    const target = await this.getRedirectTarget(pgAlias);
+    if (target) return { redirect_to: target.redirect_to, robots: null };
+    return { redirect_to: null, robots: R6_RETIRED_ROBOTS };
+  }
+
+  /**
+   * « Aucune ligne » (PGRST116) est une réponse normale. Toute autre erreur
+   * fait perdre la 301 au profit du noindex : on la journalise pour qu'elle
+   * ne soit jamais silencieuse.
+   */
+  private warnLookupFailure(
+    pgAlias: string,
+    table: string,
+    error: { code?: string; message?: string } | null,
+  ): void {
+    if (!error || error.code === 'PGRST116') return;
+    this.logger.warn(
+      `R6_CONSOLIDATION_LOOKUP_FAILED alias=${pgAlias} table=${table} code=${error.code ?? '?'}: ${error.message ?? ''}`,
+    );
+  }
+
+  /** Posture d'indexation du hub guide-achat (même règle, sans redirection). */
+  getHubIndexingPosture(): { robots: typeof R6_RETIRED_ROBOTS | null } {
+    return {
+      robots: this.featureFlags.seoR6ConsolidationEnabled
+        ? R6_RETIRED_ROBOTS
+        : null,
     };
   }
 

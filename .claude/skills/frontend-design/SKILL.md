@@ -11,10 +11,10 @@ last_verified: '2026-05-18'
 license: Internal - Automecanik. Inherits upstream MIT terms from anthropics/claude-plugins-official/frontend-design.
 compatibility: Designed for Claude Code in the AutoMecanik monorepo. Stack — React Router 8 + shadcn/ui + Tailwind CSS + lucide-react. Requires packages/design-tokens (SoT for colors, typography, spacing).
 tags: [frontend, react-router, shadcn, tailwind, design-tokens, a11y, wcag]
+argument-hint: "[component or page description]"
 metadata:
   version: "2.0"
   upstream: anthropics/claude-plugins-official/frontend-design@2026-05
-  argument-hint: "[component or page description]"
   spec: agentskills.io/specification v1
 ---
 
@@ -77,17 +77,17 @@ Apply the *Pre-Delivery Checklist*. **Any failing item → fix before delivery.*
 
 | Role | Token path | Hex (`500`) | Usage |
 |---|---|---|---|
-| Brand / trust | `colors.primary.500` | `#0F1E38` (navy) | Headers, navigation, surfaces signaling confiance |
-| Marine / info | `colors.secondary.500` | `#0F4C81` | Liens, info, accents secondaires |
-| **CTA / action** | `colors.semantic.action` | `#F97316` (orange) | Boutons CTA, accents urgence, prix, pulse |
-| Success | `colors.semantic.success` | `#1E8449` | Validation, états « OK » |
-| Danger | `colors.semantic.danger` | `#C0392B` | Erreurs, suppression, alertes critiques |
-| Warning | `colors.semantic.warning` | `#D68910` | Avertissements, états dégradés |
-| Surface | `colors.neutral.50` | `#F5F7FA` | Fond cartes, zones secondaires |
-| Border | `colors.neutral.100` | `#E5E7EB` | Séparateurs, contours |
-| Text default | `colors.neutral.800` | `#1F2937` | Corps de texte |
+| Brand / trust | `color.primary.500` | `#0F1E38` (navy) | Headers, navigation, surfaces signaling confiance |
+| Marine / info | `color.secondary.500` | `#0F4C81` | Liens, info, accents secondaires |
+| **CTA / action** | `color.semantic.action` | `#F97316` (orange) | Boutons CTA, accents urgence, prix, pulse |
+| Success | `color.semantic.success` | `#1E8449` | Validation, états « OK » |
+| Danger | `color.semantic.danger` | `#C0392B` | Erreurs, suppression, alertes critiques |
+| Warning | `color.semantic.warning` | `#D68910` | Avertissements, états dégradés |
+| Surface | `color.neutral.50` | `#F5F7FA` | Fond cartes, zones secondaires |
+| Border | `color.neutral.100` | `#E5E7EB` | Séparateurs, contours |
+| Text default | `color.neutral.800` | `#1F2937` | Corps de texte |
 
-> ⚠️ **Drift fix 2026-05** — anciennes versions de ce skill annonçaient `primary = #e8590c (orange)`. C'est faux : l'orange est dans `semantic.action`, le primary est navy. Toujours relire `design-tokens.json` avant de citer un hex.
+> ⚠️ **Drift fix 2026-05** — anciennes versions de ce skill annonçaient `primary = #e8590c (orange)`. C'est faux : l'orange est dans `semantic.action`, le primary est navy. Toujours relire `packages/design-tokens/src/tokens.json` avant de citer un hex.
 
 **Rules**:
 - Use existing tokens first
@@ -180,9 +180,9 @@ Pick one direction — do not blend. *Intentionnalité > intensité*.
 | « Inter goes faster, let me just use it » | Justify vs brand identity ; without a real reason → pick the SoT Outfit / DM Sans |
 | « Skipping the 8 states, the happy path is enough » | Pre-Delivery Checklist is non-negotiable. Don't ship without all states |
 | « Client just wants something that works » | Phase 1 brief is mandatory. No brief → no code |
-| « I'll hardcode this one hex, it's just here » | `design-tokens.json` is the SoT. Hardcode = future regression |
+| « I'll hardcode this one hex, it's just here » | `packages/design-tokens/src/tokens.json` is the SoT. Hardcode = future regression |
 | « Design is subjective, my taste suffices » | Five measurable axes — tokens, states, a11y, perf, motion. Verify, don't argue |
-| « Token says #e8590c orange primary » | **Stale**. Re-read `design-tokens.json` ; primary is navy, action is orange |
+| « Token says #e8590c orange primary » | **Stale**. Re-read `packages/design-tokens/src/tokens.json` ; primary is navy, action is orange |
 | « Montserrat / Archivo for headings » | **Stale**. SoT is Outfit. Verify before importing fonts |
 
 ---

@@ -16,15 +16,33 @@ import {
   AnalyzeInputSchema,
   type AnalyzeMaintenanceInput,
   type AnalyzeDiagnosticInput,
+  type UsageContextInput,
 } from './types/diagnostic-input.schema';
-import type { EvidencePack } from './types/evidence-pack.schema';
-import { DiagnosticEngineDataService } from './diagnostic-engine.data-service';
+import type { CatalogGuard, EvidencePack } from './types/evidence-pack.schema';
+import {
+  DiagnosticEngineDataService,
+  type DiagSystem,
+} from './diagnostic-engine.data-service';
 import { SignalInterpretationEngine } from './engines/signal-interpretation.engine';
 import { HypothesisScoringEngine } from './engines/hypothesis-scoring.engine';
 import { RiskSafetyEngine } from './engines/risk-safety.engine';
 import { CatalogOrientationEngine } from './engines/catalog-orientation.engine';
 import { MaintenanceIntelligenceEngine } from './engines/maintenance-intelligence.engine';
 import { KgShadowService } from './services/kg-shadow.service';
+import { CAUSE_GAMME_MAP } from './constants/gamme-map.constants';
+
+// Wording shown to the user; same labels as the wizard's usage step
+// (frontend StepVehicle USAGE_PROFILES).
+const USAGE_PROFILE_LABEL: Record<
+  NonNullable<UsageContextInput['usage_profile']>,
+  string
+> = {
+  urban_short_trips: 'Urbain / courts trajets',
+  mixed: 'Mixte quotidien',
+  highway: 'Autoroute fréquent',
+  professional: 'Usage professionnel',
+  occasional: 'Usage occasionnel',
+};
 
 @Injectable()
 export class DiagnosticEngineOrchestrator {
@@ -39,6 +57,23 @@ export class DiagnosticEngineOrchestrator {
     private readonly maintenanceEngine: MaintenanceIntelligenceEngine,
     private readonly kgShadow: KgShadowService, // PR-E — fire-and-forget shadow
   ) {}
+
+  /**
+   * Systems that can be analysed. analyze() refuses a system without an
+   * active safety rule, so such a system is not offered; the gap is logged.
+   */
+  async getAnalysableSystems(): Promise<DiagSystem[]> {
+    const [systems, covered] = await Promise.all([
+      this.dataService.getActiveSystems(),
+      this.dataService.getSystemIdsWithSafetyRules(),
+    ]);
+    const uncovered = systems.filter((s) => !covered.has(s.id));
+    if (uncovered.length)
+      this.logger.warn(
+        `Diagnostic systems without safety rules are not offered: ${uncovered.map((s) => s.slug).join(', ')}`,
+      );
+    return systems.filter((s) => covered.has(s.id));
+  }
 
   /**
    * Main entry point — produces a valid EvidencePack via 5 engines
@@ -64,6 +99,10 @@ export class DiagnosticEngineOrchestrator {
       inputLimitations.push(
         'Durée d’immobilisation non prise en compte dans cette analyse.',
       );
+    if (input.usage_context?.last_service_date !== undefined)
+      inputLimitations.push(
+        'Date du dernier entretien non prise en compte : seules les dates renseignées par opération sont utilisées.',
+      );
     if (input.usage_context?.recent_repairs?.length)
       inputLimitations.push(
         'Réparations récentes non prises en compte : elles ne prouvent ni la résolution du symptôme ni l’entretien des opérations concernées.',
@@ -81,7 +120,10 @@ export class DiagnosticEngineOrchestrator {
         inputLimitations.push(
           'Cette analyse ne reprend ni ne met à jour la session fournie.',
         );
-    }
+    } else if (input.usage_context.last_service_km !== undefined)
+      inputLimitations.push(
+        'Kilométrage du dernier entretien non pris en compte : seuls les kilométrages renseignés par opération sont utilisés.',
+      );
     if (inputLimitations.length)
       this.logger.warn(
         `Diagnostic input limitations: ${inputLimitations.length} supplied fields are not interpreted`,
@@ -109,7 +151,7 @@ export class DiagnosticEngineOrchestrator {
     }
     if (!signal.system_confirmed) {
       try {
-        const systems = await this.dataService.getActiveSystems();
+        const systems = await this.getAnalysableSystems();
         const available = systems.map((s) => s.slug).join(', ');
         return {
           success: false,
@@ -168,7 +210,6 @@ export class DiagnosticEngineOrchestrator {
     const hypotheses = this.scoringEngine.score(
       scoredLinks,
       input.vehicle_context,
-      input.usage_context,
     );
 
     if (!hypotheses.length) {
@@ -241,20 +282,6 @@ export class DiagnosticEngineOrchestrator {
       degraded.push(
         'Informations d’entretien indisponibles — aucune conclusion sur les échéances.',
       );
-    }
-
-    const pgIds = catalog.suggested_gammes.map((g) => g.pg_id);
-    if (pgIds.length) {
-      try {
-        const costRanges = await this.dataService.getCostRanges(pgIds);
-        for (const g of catalog.suggested_gammes) {
-          const cost = costRanges.get(g.pg_id);
-          if (cost) (g as unknown as Record<string, unknown>).cost_range = cost;
-        }
-      } catch (error) {
-        this.logger.warn('Diagnostic cost enrichment unavailable', error);
-        degraded.push('Estimations de coût indisponibles.');
-      }
     }
 
     // ADR-031: RAG is a chatbot consumer, never a diagnostic content authority.
@@ -389,11 +416,6 @@ export class DiagnosticEngineOrchestrator {
               allowed_claims: [
                 'Comparez ces estimations au carnet constructeur et aux justificatifs d’entretien.',
               ],
-              forbidden_claims_runtime: [
-                'Véhicule sans risque.',
-                'Remplacement nécessaire.',
-                'Préconisation constructeur vérifiée.',
-              ],
               ui_block_inputs: {},
             },
           },
@@ -441,29 +463,42 @@ export class DiagnosticEngineOrchestrator {
     }
 
     if (input.usage_context?.usage_profile) {
-      confirmed.push(`Profil d'usage: ${input.usage_context.usage_profile}`);
+      confirmed.push(
+        `Profil d'usage: ${USAGE_PROFILE_LABEL[input.usage_context.usage_profile]}`,
+      );
     } else {
       missing.push("Profil d'usage non renseigné");
     }
 
-    if (input.usage_context?.last_service_km !== undefined) {
+    const usage = input.usage_context;
+    if (usage?.last_service_km !== undefined) {
       confirmed.push(
-        `Dernier entretien: ${input.usage_context.last_service_km.toLocaleString('fr-FR')} km`,
+        `Dernier entretien: ${usage.last_service_km.toLocaleString('fr-FR')} km`,
       );
-    } else {
+    }
+    if (usage?.maintenance_records?.length) {
+      confirmed.push(
+        `Historique d'entretien déclaré pour ${usage.maintenance_records.length} opération(s)`,
+      );
+    }
+    // A supplied global date is disclosed as not taken into account instead.
+    if (
+      usage?.last_service_km === undefined &&
+      !usage?.maintenance_records?.length &&
+      usage?.last_service_date === undefined
+    ) {
       missing.push('Historique entretien non renseigné');
     }
 
+    // Every signal is resolved at this point: analysis stops otherwise.
+    const symptomLabel = (slug: string) => signal.symptom_labels[slug];
     confirmed.push(`Système: ${signal.system_label}`);
-    confirmed.push(`Symptôme principal: ${input.signal_input.primary_signal}`);
+    confirmed.push(
+      `Symptôme principal: ${symptomLabel(input.signal_input.primary_signal)}`,
+    );
     if (input.signal_input.secondary_signals?.length) {
       confirmed.push(
-        `Symptômes secondaires: ${input.signal_input.secondary_signals.join(', ')}`,
-      );
-    }
-    if (signal.unresolved_signals.length > 0) {
-      missing.push(
-        `Signaux non reconnus: ${signal.unresolved_signals.join(', ')}`,
+        `Symptômes secondaires: ${input.signal_input.secondary_signals.map(symptomLabel).join(', ')}`,
       );
     }
 
@@ -472,7 +507,12 @@ export class DiagnosticEngineOrchestrator {
       ...new Set(
         hypotheses
           .filter((h) => h.total_score >= 15)
-          .flatMap((h) => h.related_gamme_slugs || [h.label]),
+          .flatMap(
+            (h) =>
+              CAUSE_GAMME_MAP[h.hypothesis_id]?.map((g) => g.label) ?? [
+                h.label,
+              ],
+          ),
       ),
     ];
 
@@ -516,12 +556,6 @@ export class DiagnosticEngineOrchestrator {
       'Un contrôle visuel est recommandé pour confirmer le diagnostic.',
       'Plusieurs causes sont possibles — seul un contrôle permet de conclure.',
     ];
-    const forbiddenClaims = [
-      'Vos plaquettes sont usées.',
-      'Il faut changer les disques.',
-      'Le problème vient certainement de X.',
-      'Achetez des plaquettes maintenant.',
-    ];
 
     // ── Diagnostic confidence score ─────────────────────
     const signalQualityMultiplier =
@@ -541,6 +575,21 @@ export class DiagnosticEngineOrchestrator {
       ),
     );
 
+    // One catalogue verdict, within the contract, for every field that shows it.
+    const catalogGuard: CatalogGuard = {
+      ready_for_catalog: catalog.ready_for_catalog,
+      confidence_before_purchase:
+        catalog.confidence_before_purchase === 'insufficient'
+          ? 'low'
+          : catalog.confidence_before_purchase,
+      allowed_output_mode:
+        catalog.allowed_output_mode === 'catalog_reference_with_caution'
+          ? 'catalog_family_with_caution'
+          : catalog.allowed_output_mode,
+      reason: catalog.reason,
+      suggested_gammes: catalog.suggested_gammes,
+    };
+
     return {
       evidence_pack: {
         diagnostic_confidence: diagnosticConfidence,
@@ -553,26 +602,10 @@ export class DiagnosticEngineOrchestrator {
         safety_alert: risk.safety_alert,
         risk_level: risk.risk_level,
         signal_quality: signal.signal_quality,
-        catalog_guard: {
-          ready_for_catalog: catalog.ready_for_catalog,
-          confidence_before_purchase: (catalog.confidence_before_purchase ===
-          'insufficient'
-            ? 'low'
-            : catalog.confidence_before_purchase) as 'low' | 'medium' | 'high',
-          allowed_output_mode: (catalog.allowed_output_mode ===
-          'catalog_reference_with_caution'
-            ? 'catalog_family_with_caution'
-            : catalog.allowed_output_mode) as
-            | 'none'
-            | 'catalog_family_only'
-            | 'catalog_family_with_caution',
-          reason: catalog.reason,
-          suggested_gammes: catalog.suggested_gammes,
-        },
+        catalog_guard: catalogGuard,
         maintenance_recommendations: maintenance.recommendations,
         preventive_schedule: maintenance.preventive_schedule,
         allowed_claims: allowedClaims,
-        forbidden_claims_runtime: forbiddenClaims,
         ui_block_inputs: {
           VehicleContextCard: input.vehicle_context,
           SignalSummary: {
@@ -593,10 +626,10 @@ export class DiagnosticEngineOrchestrator {
             overdue_count: maintenance.overdue_count,
           },
           CatalogOrientationBox: {
-            ready_for_catalog: catalog.ready_for_catalog,
-            confidence_before_purchase: catalog.confidence_before_purchase,
-            allowed_output_mode: catalog.allowed_output_mode,
-            suggested_gammes: catalog.suggested_gammes,
+            ready_for_catalog: catalogGuard.ready_for_catalog,
+            confidence_before_purchase: catalogGuard.confidence_before_purchase,
+            allowed_output_mode: catalogGuard.allowed_output_mode,
+            suggested_gammes: catalogGuard.suggested_gammes,
           },
         },
       },

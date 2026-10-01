@@ -23,7 +23,8 @@ export class AdminBuyingGuideController {
    * Enrich buying guides using RAG-sourced professional content.
    *
    * dryRun=true (default) → preview with quality gates
-   * dryRun=false → write to DB
+   * dryRun=false → governed write, refused for RAG provenance (ADR-031/046):
+   *   0 rows, `updated: false`, `reason: 'rag_provenance_refused'`
    */
   @Post('enrich')
   async enrich(@Body() body: unknown) {
