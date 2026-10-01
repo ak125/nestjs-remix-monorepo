@@ -80,7 +80,7 @@ const RpcContractEntrySchema = z
     const idName = entry.id.split(".").slice(1).join(".");
     if (idName !== entry.name) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: `id-name mismatch: id="${entry.id}" decodes name="${idName}" but name field is "${entry.name}"`,
         path: ["id"],
       });
@@ -90,7 +90,7 @@ const RpcContractEntrySchema = z
     for (const s of entry.accessSurface) {
       if (seen.has(s)) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: "custom",
           message: `duplicate accessSurface value: "${s}"`,
           path: ["accessSurface"],
         });
@@ -115,7 +115,7 @@ export const RpcContractSchema = z
     const dupes = ids.filter((id, i) => ids.indexOf(id) !== i);
     if (dupes.length > 0) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: `Duplicate rpc.id: ${[...new Set(dupes)].join(", ")}`,
         path: ["rpcs"],
       });
