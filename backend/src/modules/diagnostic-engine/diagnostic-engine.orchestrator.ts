@@ -16,6 +16,7 @@ import {
   AnalyzeInputSchema,
   type AnalyzeMaintenanceInput,
   type AnalyzeDiagnosticInput,
+  type UsageContextInput,
 } from './types/diagnostic-input.schema';
 import type { EvidencePack } from './types/evidence-pack.schema';
 import { DiagnosticEngineDataService } from './diagnostic-engine.data-service';
@@ -25,6 +26,20 @@ import { RiskSafetyEngine } from './engines/risk-safety.engine';
 import { CatalogOrientationEngine } from './engines/catalog-orientation.engine';
 import { MaintenanceIntelligenceEngine } from './engines/maintenance-intelligence.engine';
 import { KgShadowService } from './services/kg-shadow.service';
+import { CAUSE_GAMME_MAP } from './constants/gamme-map.constants';
+
+// Wording shown to the user; same labels as the wizard's usage step
+// (frontend StepVehicle USAGE_PROFILES).
+const USAGE_PROFILE_LABEL: Record<
+  NonNullable<UsageContextInput['usage_profile']>,
+  string
+> = {
+  urban_short_trips: 'Urbain / courts trajets',
+  mixed: 'Mixte quotidien',
+  highway: 'Autoroute fréquent',
+  professional: 'Usage professionnel',
+  occasional: 'Usage occasionnel',
+};
 
 @Injectable()
 export class DiagnosticEngineOrchestrator {
@@ -64,6 +79,10 @@ export class DiagnosticEngineOrchestrator {
       inputLimitations.push(
         'Durée d’immobilisation non prise en compte dans cette analyse.',
       );
+    if (input.usage_context?.last_service_date !== undefined)
+      inputLimitations.push(
+        'Date du dernier entretien non prise en compte : seules les dates renseignées par opération sont utilisées.',
+      );
     if (input.usage_context?.recent_repairs?.length)
       inputLimitations.push(
         'Réparations récentes non prises en compte : elles ne prouvent ni la résolution du symptôme ni l’entretien des opérations concernées.',
@@ -81,7 +100,10 @@ export class DiagnosticEngineOrchestrator {
         inputLimitations.push(
           'Cette analyse ne reprend ni ne met à jour la session fournie.',
         );
-    }
+    } else if (input.usage_context.last_service_km !== undefined)
+      inputLimitations.push(
+        'Kilométrage du dernier entretien non pris en compte : seuls les kilométrages renseignés par opération sont utilisés.',
+      );
     if (inputLimitations.length)
       this.logger.warn(
         `Diagnostic input limitations: ${inputLimitations.length} supplied fields are not interpreted`,
@@ -415,29 +437,42 @@ export class DiagnosticEngineOrchestrator {
     }
 
     if (input.usage_context?.usage_profile) {
-      confirmed.push(`Profil d'usage: ${input.usage_context.usage_profile}`);
+      confirmed.push(
+        `Profil d'usage: ${USAGE_PROFILE_LABEL[input.usage_context.usage_profile]}`,
+      );
     } else {
       missing.push("Profil d'usage non renseigné");
     }
 
-    if (input.usage_context?.last_service_km !== undefined) {
+    const usage = input.usage_context;
+    if (usage?.last_service_km !== undefined) {
       confirmed.push(
-        `Dernier entretien: ${input.usage_context.last_service_km.toLocaleString('fr-FR')} km`,
+        `Dernier entretien: ${usage.last_service_km.toLocaleString('fr-FR')} km`,
       );
-    } else {
+    }
+    if (usage?.maintenance_records?.length) {
+      confirmed.push(
+        `Historique d'entretien déclaré pour ${usage.maintenance_records.length} opération(s)`,
+      );
+    }
+    // A supplied global date is disclosed as not taken into account instead.
+    if (
+      usage?.last_service_km === undefined &&
+      !usage?.maintenance_records?.length &&
+      usage?.last_service_date === undefined
+    ) {
       missing.push('Historique entretien non renseigné');
     }
 
+    // Every signal is resolved at this point: analysis stops otherwise.
+    const symptomLabel = (slug: string) => signal.symptom_labels[slug];
     confirmed.push(`Système: ${signal.system_label}`);
-    confirmed.push(`Symptôme principal: ${input.signal_input.primary_signal}`);
+    confirmed.push(
+      `Symptôme principal: ${symptomLabel(input.signal_input.primary_signal)}`,
+    );
     if (input.signal_input.secondary_signals?.length) {
       confirmed.push(
-        `Symptômes secondaires: ${input.signal_input.secondary_signals.join(', ')}`,
-      );
-    }
-    if (signal.unresolved_signals.length > 0) {
-      missing.push(
-        `Signaux non reconnus: ${signal.unresolved_signals.join(', ')}`,
+        `Symptômes secondaires: ${input.signal_input.secondary_signals.map(symptomLabel).join(', ')}`,
       );
     }
 
@@ -446,7 +481,12 @@ export class DiagnosticEngineOrchestrator {
       ...new Set(
         hypotheses
           .filter((h) => h.total_score >= 15)
-          .flatMap((h) => h.related_gamme_slugs || [h.label]),
+          .flatMap(
+            (h) =>
+              CAUSE_GAMME_MAP[h.hypothesis_id]?.map((g) => g.label) ?? [
+                h.label,
+              ],
+          ),
       ),
     ];
 
