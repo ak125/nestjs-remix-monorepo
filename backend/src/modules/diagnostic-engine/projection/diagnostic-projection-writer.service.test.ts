@@ -356,23 +356,34 @@ describe('DiagnosticProjectionWriterService.run', () => {
   });
 
   it('raw fs error from the loader: records a failed run, never calls the RPC', async () => {
-    await writeExports(true);
-    // Directory without search permission: lstat of gamme/filtre-a-air.json
-    // fails with a raw EACCES (not ENOENT), which the loader re-throws untyped.
-    await fs.chmod(path.join(root, 'gamme'), 0o000);
+    // Valid index whose single entry has a 300-char file name; the parent
+    // directory exists (empty), so lstat fails with a raw ENAMETOOLONG
+    // (not ENOENT, which the loader types).
+    await fs.mkdir(path.join(root, 'gamme'));
+    await fs.writeFile(
+      path.join(root, '_index.json'),
+      serialize({
+        schema_version: '1.0.0',
+        builder_version: '1.0.0',
+        export_kind: 'diagnostic_index',
+        source_catalog_commit: COMMIT,
+        files: [
+          {
+            path: `gamme/${'a'.repeat(300)}.json`,
+            sha256: HASH,
+            source_wiki_commit: COMMIT,
+            relation_count: 1,
+          },
+        ],
+      }),
+    );
     const { writer, rpc, insert } = makeWriter();
 
-    let result;
-    try {
-      result = await writer.run('admin');
-    } finally {
-      // Restore permissions so afterEach can remove the temp directory.
-      await fs.chmod(path.join(root, 'gamme'), 0o755);
-    }
+    const result = await writer.run('admin');
 
     expect(result).toEqual({
       status: 'failed',
-      error: expect.stringContaining('EACCES'),
+      error: expect.stringContaining('ENAMETOOLONG'),
     });
     expect(rpc).not.toHaveBeenCalled();
     expect(insert).toHaveBeenCalledTimes(1);
@@ -380,7 +391,37 @@ describe('DiagnosticProjectionWriterService.run', () => {
       expect.objectContaining({
         status: 'failed',
         index_sha256: null,
-        error: expect.stringMatching(/\S/),
+      }),
+    );
+  });
+
+  it('resolver integrity breach: records a failed run, never calls the RPC', async () => {
+    await writeExports(true);
+    const duplicatedPair = {
+      ...reference.links[0],
+      id: 114,
+    };
+    const { writer, rpc, insert } = makeWriter({
+      reference: jest.fn().mockResolvedValue({
+        ...reference,
+        links: [...reference.links, duplicatedPair],
+      }),
+    });
+
+    const result = await writer.run('admin');
+
+    expect(result).toEqual({
+      status: 'failed',
+      error: expect.stringContaining('dupliquée (liens 113 et 114)'),
+    });
+    expect(rpc).not.toHaveBeenCalled();
+    expect(insert).toHaveBeenCalledTimes(1);
+    // The loader succeeded before the resolver threw: its hash is recorded.
+    expect(insert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: 'failed',
+        index_sha256: sha256(indexText),
+        builder_version: '1.0.0',
       }),
     );
   });
