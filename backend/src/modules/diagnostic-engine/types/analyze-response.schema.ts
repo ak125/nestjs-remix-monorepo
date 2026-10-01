@@ -69,19 +69,30 @@ export type AnalyzeResponseV1A0 = z.infer<typeof AnalyzeResponseV1A0Schema>;
 /**
  * HandoffInput — POST /api/diagnostic-engine/handoff
  *
- * Reçu lorsque le user clique une action recommandée.
+ * Reçu lorsque le user clique une action recommandée ou l'escalade humaine.
  * Émet canonical event `diagnostic_resolution_outcome` avec outcome_type='action_clicked'
  * tagué `target_role` (anti double-truth — pas de event séparé `to_commerce`).
+ *
+ * Le client désigne seulement l'élément cliqué. Intent, confidence, codes et
+ * contexte véhicule sont re-dérivés côté serveur depuis la session stockée.
+ * `surface` distingue la carte d'escalade de l'action `human_resolution`
+ * (même type/rôle, codes différents).
  */
 import { ActionTypeEnum, TargetRoleEnum } from './recommended-action';
 
-export const HandoffInputSchema = z.object({
-  session_id: z.string().min(1),
-  action_type: ActionTypeEnum,
-  target_role: TargetRoleEnum,
-  /** Intent au moment du click (pour analytics retroactive) */
-  intent: DiagnosticIntentEnum,
-  /** Confidence au moment du click */
-  confidence: z.number().min(0).max(1),
-});
+export const HandoffInputSchema = z.discriminatedUnion('surface', [
+  z.object({
+    surface: z.literal('recommended_action'),
+    session_id: z.string().uuid(),
+    /** Identifie l'action dans la liste (priorités uniques 1..N) */
+    priority: z.number().int().min(1),
+    /** Contrôle de cohérence avec l'action re-dérivée */
+    action_type: ActionTypeEnum,
+    target_role: TargetRoleEnum,
+  }),
+  z.object({
+    surface: z.literal('human_escalation'),
+    session_id: z.string().uuid(),
+  }),
+]);
 export type HandoffInput = z.infer<typeof HandoffInputSchema>;

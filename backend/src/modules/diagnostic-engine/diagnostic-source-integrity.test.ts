@@ -74,7 +74,6 @@ type Reply = {
 type Tables = Record<string, Reply>;
 function fixture() {
   const tables: Tables = {
-    __seo_gamme_purchase_guide: { data: [], error: null },
     __diag_system: { data: [structuredClone(system)], error: null },
     __diag_symptom: { data: [structuredClone(symptom)], error: null },
     __diag_cause: { data: [structuredClone(cause)], error: null },
@@ -191,6 +190,14 @@ describe('diagnostic reference responses are checked before safety evaluation', 
     });
   });
 
+  test('suspected components are reported by gamme label, not catalogue slug', async () => {
+    const result = await pipeline(fixture().service).engine.analyze(input);
+    expect(result.success).toBe(true);
+    expect(result.data?.evidence.evidence_pack.system_suspects).toEqual([
+      'Plaquette de frein',
+    ]);
+  });
+
   test.each([
     ['__diag_safety_rule', { ...rule, urgency: null }],
     ['__diag_safety_rule', { ...rule, urgency: 'inconnue' }],
@@ -303,7 +310,7 @@ describe('diagnostic reference responses are checked before safety evaluation', 
         result.data?.evidence.evidence_pack.candidate_hypotheses[0];
       expect(hypothesis).toMatchObject({
         cause_type: category,
-        relative_score: 75,
+        relative_score: 57,
         urgency_timeline: 'Sous 48h — contrôle professionnel urgent',
         scoring_breakdown: expect.objectContaining({ signal_match: 21 }),
       });
@@ -337,7 +344,6 @@ describe('diagnostic reference responses are checked before safety evaluation', 
       expect(() =>
         new HypothesisScoringEngine().score(
           [{ ...link, cause: { ...cause, cause_type: category } }],
-          undefined,
           undefined,
         ),
       ).toThrow();
@@ -474,7 +480,6 @@ describe('critical urgency survives the reference-to-result path', () => {
     const scored = new HypothesisScoringEngine().score(
       [{ ...link, cause: { ...cause, urgency: 'critique' } }],
       undefined,
-      undefined,
     )[0];
     const assessment = new RiskSafetyEngine().assess(
       [
@@ -504,7 +509,6 @@ describe('critical urgency survives the reference-to-result path', () => {
         new HypothesisScoringEngine().score(
           [{ ...link, cause: { ...cause, urgency: urgency as string } }],
           undefined,
-          undefined,
         ),
       ).toThrow();
     },
@@ -514,7 +518,6 @@ describe('critical urgency survives the reference-to-result path', () => {
     (urgency) => {
       const scored = new HypothesisScoringEngine().score(
         [{ ...link, cause: { ...cause, urgency } }],
-        undefined,
         undefined,
       )[0];
       expect(scored.urgency).toBe(urgency);
@@ -642,6 +645,12 @@ describe('accepted but uninterpreted input is disclosed', () => {
       message: 'Durée d’immobilisation non prise en compte dans cette analyse.',
     },
     {
+      name: 'global_service_date',
+      extra: { usage_context: { last_service_date: '2026-01-15' } },
+      message:
+        'Date du dernier entretien non prise en compte : seules les dates renseignées par opération sont utilisées.',
+    },
+    {
       name: 'recent_repairs',
       extra: { usage_context: { recent_repairs: ['Plaquettes remplacées'] } },
       message:
@@ -711,6 +720,77 @@ describe('accepted but uninterpreted input is disclosed', () => {
       result.data!.evidence.evidence_pack.factual_inputs_missing,
     ).toContain(
       'Durée d’immobilisation non prise en compte dans cette analyse.',
+    );
+  });
+});
+
+describe('evidence pack facts are stated in user terms', () => {
+  test('names the symptom by its reference label, not its slug', async () => {
+    const result = await pipeline(fixture().service).engine.analyze(input);
+    const facts = result.data!.evidence.evidence_pack.factual_inputs_confirmed;
+    expect(facts).toContain('Symptôme principal: Bruit');
+    expect(facts.join(' ')).not.toMatch(/\bnoise\b/);
+  });
+  test('resolves a reference label for every recognised signal', async () => {
+    const f = fixture();
+    f.tables.__diag_symptom.data = [
+      structuredClone(symptom),
+      {
+        ...structuredClone(symptom),
+        id: 2,
+        slug: 'judder',
+        label: 'Vibrations',
+      },
+    ];
+    const signal = await new SignalInterpretationEngine(f.service).interpret({
+      ...input,
+      signal_input: { ...input.signal_input, secondary_signals: ['judder'] },
+    } as never);
+    expect(signal.symptom_labels).toEqual({
+      noise: 'Bruit',
+      judder: 'Vibrations',
+    });
+  });
+  test.each([
+    ['nothing', undefined, true],
+    ['a global mileage', { last_service_km: 40000 }, false],
+    [
+      'operation records',
+      { maintenance_records: [{ operation_slug: 'vidange' }] },
+      false,
+    ],
+    ['a global date', { last_service_date: '2026-01-15' }, false],
+  ])(
+    'declares maintenance history missing only when none is supplied (%s)',
+    async (_, usage_context, missing) => {
+      const result = await pipeline(fixture().service).engine.analyze({
+        ...input,
+        usage_context,
+      });
+      expect(result.success).toBe(true);
+      expect(
+        result.data!.evidence.evidence_pack.factual_inputs_missing.includes(
+          'Historique entretien non renseigné',
+        ),
+      ).toBe(missing);
+    },
+  );
+  test('confirms the declared history that the analysis receives', async () => {
+    const result = await pipeline(fixture().service).engine.analyze({
+      ...input,
+      usage_context: {
+        last_service_km: 40000,
+        maintenance_records: [
+          { operation_slug: 'vidange' },
+          { operation_slug: 'plaquettes' },
+        ],
+      },
+    });
+    const facts =
+      result.data!.evidence.evidence_pack.factual_inputs_confirmed.join('\n');
+    expect(facts).toMatch(/Dernier entretien: 40\s000 km/);
+    expect(facts).toMatch(
+      /Historique d'entretien déclaré pour 2 opération\(s\)/,
     );
   });
 });
@@ -805,6 +885,31 @@ describe('session write acknowledgement reaches the diagnostic result', () => {
     );
     expect(evidence?.factual_inputs_missing.join(' ')).not.toMatch(
       /Analyse non sauvegardée/,
+    );
+  });
+});
+
+describe('suggested families carry no purchase estimate', () => {
+  test('the purchase guide is never read and no cost range reaches the result', async () => {
+    const f = fixture();
+    f.tables.__diag_symptom.data = [{ ...symptom, urgency: 'basse' }];
+    f.tables.__diag_cause.data = [{ ...cause, urgency: 'basse' }];
+    f.tables.__diag_safety_rule.data = [
+      { ...rule, urgency: 'moyenne', blocks_catalog: false },
+    ];
+    // Ranges in this table are produced by the RAG pipeline (ADR-031).
+    f.tables.__seo_gamme_purchase_guide = {
+      data: [{ sgpg_pg_id: '402', sgpg_risk_cost_range: '40-120 €' }],
+      error: null,
+    };
+    const result = await pipeline(f.service).engine.analyze(input);
+    expect(result.success).toBe(true);
+    const gammes =
+      result.data?.evidence.evidence_pack.catalog_guard.suggested_gammes;
+    expect(gammes?.map((g) => g.pg_id)).toEqual([402]);
+    expect(JSON.stringify(result.data)).not.toMatch(/cost_range|40-120/);
+    expect(f.queries.map((q) => q.table)).not.toContain(
+      '__seo_gamme_purchase_guide',
     );
   });
 });

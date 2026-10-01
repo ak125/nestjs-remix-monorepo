@@ -42,7 +42,7 @@
 **Without skill** — Likely keeps existing shadcn/ui `<Card>` defaults, swaps a color or two, no aesthetic shift.
 
 **With skill (expected output)** —
-- ✅ Reads `packages/design-tokens/src/tokens/design-tokens.json` to confirm current SoT
+- ✅ Reads `packages/design-tokens/src/tokens.json` to confirm current SoT
 - ✅ Adopts **editorial / dense** tone — monospace OEM ref, copy button, high-density spec grid
 - ✅ Uses `font-data` (`ui-monospace`) for OEM codes
 - ✅ Reuses tokens (no new hex invented)
@@ -96,6 +96,6 @@ Future improvement — script `scripts/audit/skill-scenario-runner.sh` could spa
 
 ## Maintenance
 
-When `packages/design-tokens/src/tokens/design-tokens.json` changes — re-validate **Scenario 1** and **Scenario 2** to make sure SKILL.md still cites the correct token paths and hex values.
+When `packages/design-tokens/src/tokens.json` changes — re-validate **Scenario 1** and **Scenario 2** to make sure SKILL.md still cites the correct token paths and hex values.
 
 When upstream `anthropics/claude-plugins-official/frontend-design` releases a new version — re-run **Scenario 3** to detect any new scope additions that should propagate to the internal skill.
