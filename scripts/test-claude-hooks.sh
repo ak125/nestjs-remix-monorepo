@@ -664,6 +664,24 @@ assert_exit "bash-guard: git status → allow"               "0" "$(run_bash_gua
 # Sanity : guard existant (Guard 1) toujours actif
 assert_exit "bash-guard: git push origin main → BLOCK (G1)" "2" "$(run_bash_guard 'git push origin main')"
 
+# Enveloppe illisible → BLOCK (échec fermé ; avant : exit 0, toutes les gardes muettes)
+run_bash_guard_raw() {
+  printf '%s' "$1" | bash scripts/claude-hooks/pretool-bash-guard.sh >/dev/null 2>&1
+  echo $?
+}
+assert_exit "bash-guard: stdin vide → BLOCK"                        "2" "$(run_bash_guard_raw '')"
+assert_exit "bash-guard: JSON invalide → BLOCK"                     "2" "$(run_bash_guard_raw 'not json')"
+assert_exit "bash-guard: JSON non objet → BLOCK"                    "2" "$(run_bash_guard_raw '["git push origin main"]')"
+assert_exit "bash-guard: command à la racine (hors tool_input) → BLOCK" "2" "$(run_bash_guard_raw '{"tool_name":"Bash","command":"git status"}')"
+assert_exit "bash-guard: tool_input non objet → BLOCK"              "2" "$(run_bash_guard_raw '{"tool_name":"Bash","tool_input":"git status"}')"
+assert_exit "bash-guard: tool_input.command absent → BLOCK"         "2" "$(run_bash_guard_raw '{"tool_name":"Bash","tool_input":{}}')"
+assert_exit "bash-guard: tool_input.command non chaîne → BLOCK"     "2" "$(run_bash_guard_raw '{"tool_name":"Bash","tool_input":{"command":42}}')"
+assert_exit "bash-guard: tool_input.command blanc → BLOCK"          "2" "$(run_bash_guard_raw '{"tool_name":"Bash","tool_input":{"command":"  "}}')"
+assert_exit "bash-guard: deux enveloppes concaténées → BLOCK"       "2" "$(run_bash_guard_raw '{"tool_input":{"command":"ls"}}{"tool_input":{"command":"ls"}}')"
+assert_contains "bash-guard: motif de refus explicite" "enveloppe PreToolUse illisible" \
+  "$(printf 'not json' | bash scripts/claude-hooks/pretool-bash-guard.sh 2>&1)"
+assert_exit "bash-guard: enveloppe complète documentée → allow"     "0" "$(run_bash_guard_raw '{"session_id":"s","cwd":"/tmp","hook_event_name":"PreToolUse","tool_name":"Bash","tool_input":{"command":"git status","description":"d"}}')"
+
 # ============================================================
 # Guard : pretool-supabase-guard.sh — Guard 6 (DML direct sur tables gouvernées)
 # ============================================================
@@ -724,6 +742,22 @@ assert_exit "file-guard: package-lock.json → BLOCK"           "2" "$(run_file_
 assert_exit "file-guard: backend/tsconfig.json → BLOCK"       "2" "$(run_file_guard "$REPO_ROOT/backend/tsconfig.json")"
 assert_exit "file-guard: backend/src/app.module.ts → allow"   "0" "$(run_file_guard "$REPO_ROOT/backend/src/app.module.ts")"
 assert_exit "file-guard: modules/payments/ → allow (warn)"    "0" "$(run_file_guard "$REPO_ROOT/backend/src/modules/payments/x.ts")"
+
+# Enveloppe illisible → BLOCK (échec fermé ; avant : exit 0, toutes les gardes muettes)
+run_file_guard_raw() {
+  printf '%s' "$1" | bash scripts/claude-hooks/pretool-file-guard.sh >/dev/null 2>&1
+  echo $?
+}
+assert_exit "file-guard: stdin vide → BLOCK"                        "2" "$(run_file_guard_raw '')"
+assert_exit "file-guard: JSON invalide → BLOCK"                     "2" "$(run_file_guard_raw 'not json')"
+assert_exit "file-guard: JSON non objet → BLOCK"                    "2" "$(run_file_guard_raw '"package-lock.json"')"
+assert_exit "file-guard: file_path à la racine (hors tool_input) → BLOCK" "2" "$(run_file_guard_raw '{"tool_name":"Edit","file_path":"package-lock.json"}')"
+assert_exit "file-guard: tool_input.file_path absent → BLOCK"       "2" "$(run_file_guard_raw '{"tool_name":"Write","tool_input":{"content":"x"}}')"
+assert_exit "file-guard: tool_input.file_path non chaîne → BLOCK"   "2" "$(run_file_guard_raw '{"tool_name":"Edit","tool_input":{"file_path":["a"]}}')"
+assert_exit "file-guard: deux enveloppes concaténées → BLOCK"       "2" "$(run_file_guard_raw '{"tool_input":{"file_path":"a.ts"}}{"tool_input":{"file_path":"b.ts"}}')"
+assert_contains "file-guard: motif de refus explicite" "enveloppe PreToolUse illisible" \
+  "$(printf 'not json' | bash scripts/claude-hooks/pretool-file-guard.sh 2>&1)"
+assert_exit "file-guard: enveloppe complète documentée → allow"     "0" "$(run_file_guard_raw "{\"session_id\":\"s\",\"cwd\":\"/tmp\",\"hook_event_name\":\"PreToolUse\",\"tool_name\":\"Write\",\"tool_input\":{\"file_path\":\"$REPO_ROOT/backend/src/app.module.ts\",\"content\":\"x\"}}")"
 
 echo "=== pretool-agent-guard.sh ==="
 
