@@ -91,7 +91,7 @@
         "backend/src/utils"
       ],
       "files_count": 35,
-      "loc_total": 6110,
+      "loc_total": 6117,
       "has_barrel": true
     },
     "blog": {
@@ -250,7 +250,7 @@
         "backend/src/modules/errors/services"
       ],
       "files_count": 9,
-      "loc_total": 3055,
+      "loc_total": 3056,
       "has_barrel": false
     },
     "frontend-routes": {
@@ -711,7 +711,7 @@
         "backend/src/modules/search/services"
       ],
       "files_count": 17,
-      "loc_total": 6355,
+      "loc_total": 6359,
       "has_barrel": false
     },
     "seo": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 265,
-      "loc_total": 49434,
+      "files_count": 266,
+      "loc_total": 49719,
       "has_barrel": true
     },
     "upload": {

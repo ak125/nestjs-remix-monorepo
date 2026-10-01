@@ -682,6 +682,8 @@
         "backend/src/api/api.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "@common/exceptions",
         "backend/src/modules/errors/services/error-log.service.ts",
         "backend/src/modules/errors/services/error.service.ts",
@@ -689,7 +691,7 @@
         "backend/src/modules/seo/validation/url-compatibility.service.ts"
       ],
       "kind": "controller",
-      "loc": 267,
+      "loc": 274,
       "owner": "__unassigned__",
       "path": "backend/src/api/errors-api.controller.ts",
       "risk": "low",
@@ -15433,13 +15435,14 @@
         "backend/src/modules/errors/errors.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
         "@auth/is-admin.guard",
         "backend/src/modules/errors/services/error-log.service.ts",
         "backend/src/modules/errors/services/error.service.ts",
         "backend/src/modules/errors/services/redirect.service.ts"
       ],
       "kind": "controller",
-      "loc": 289,
+      "loc": 290,
       "owner": "__unassigned__",
       "path": "backend/src/modules/errors/controllers/error.controller.ts",
       "risk": "low",
@@ -23477,12 +23480,14 @@
         "backend/src/modules/search/search.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/common/decorators/rate-limit.decorator.ts",
         "backend/src/modules/search/services/search-monitoring.service.ts",
         "backend/src/modules/search/services/search-simple.service.ts"
       ],
       "kind": "controller",
-      "loc": 107,
+      "loc": 111,
       "owner": "__unassigned__",
       "path": "backend/src/modules/search/controllers/search.controller.ts",
       "risk": "low",
@@ -38167,6 +38172,25 @@
       "loc": 157,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/error-log-hardening.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/errors-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 285,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/errors-routes-authz.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
