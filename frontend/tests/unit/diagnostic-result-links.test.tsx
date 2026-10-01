@@ -64,6 +64,13 @@ function renderResults(
 }
 
 describe("Diagnostic results catalogue links", () => {
+  it("labels a family's confidence in French, not with the API value", () => {
+    renderResults("catalog_family_with_caution", 402);
+    const family = screen.getByRole("link", { name: /Plaquettes de frein/ });
+    expect(family.textContent).toContain("Confiance moyenne");
+    expect(family.textContent).not.toContain("medium");
+  });
+
   it("uses normalized aliases and IDs in both catalogue and maintenance links", () => {
     renderResults("catalog_family_with_caution", 402);
     expect(

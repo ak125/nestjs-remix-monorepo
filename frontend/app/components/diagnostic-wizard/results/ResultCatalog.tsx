@@ -84,6 +84,8 @@ export function ResultCatalog({ catalogGuard }: Props) {
               {catalogGuard.suggested_gammes.map((g) => {
                 const href = buildGammeUrl(g.gamme_slug, g.pg_id);
                 const Tag = href ? "a" : "div";
+                const gammeConfidence =
+                  CONFIDENCE_LABELS[g.confidence] || CONFIDENCE_LABELS.low;
                 return (
                   <Tag
                     key={g.gamme_slug}
@@ -96,15 +98,9 @@ export function ResultCatalog({ catalogGuard }: Props) {
                       </span>
                       <Badge
                         variant="outline"
-                        className={`text-[10px] px-1.5 py-0 ${
-                          g.confidence === "high"
-                            ? "bg-green-50 text-green-700"
-                            : g.confidence === "medium"
-                              ? "bg-amber-50 text-amber-700"
-                              : "bg-gray-50 text-green-900"
-                        }`}
+                        className={`text-[10px] px-1.5 py-0 ${gammeConfidence.color}`}
                       >
-                        {g.confidence}
+                        {gammeConfidence.label}
                       </Badge>
                     </div>
                     {href && (
