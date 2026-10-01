@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 90f3a7713058ddfb8d9103e4ed4f4220ae2c329d660649765b2490dd9acc9fc4
+source_sha256: ebefdf94e16fd8dec0e2c1adfa011afbaf2bf75c16f16438f053a446282e10d1
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -20,11 +20,11 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 |---|---|
 | Files (Layer 1) | 2960 |
 | DB tables (Layer 1) | 313 |
-| DB RPC (Layer 1) | 253 |
+| DB RPC (Layer 1) | 254 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1000 |
 
-Source sotFingerprint: `ffcf8512fcc7`.
+Source sotFingerprint: `bcb84d5c3b4c`.
 
 ## Comment l'utiliser
 
@@ -45,11 +45,11 @@ Source sotFingerprint: `ffcf8512fcc7`.
 
 ### D2 — Legacy / XTR Migration
 
-- **Files**: 130 (test=116, service=10, config=3, controller=1)
+- **Files**: 129 (test=115, service=10, config=3, controller=1)
 - **Runtime entrypoints**: 1
-- **Top owners**: @ak125 (115), __unassigned__ (15)
+- **Top owners**: @ak125 (114), __unassigned__ (15)
 - **Knowledge prose**: [`rm`](modules/rm.md)
-- **Status**: LEGACY=14, LIVE=1, UNKNOWN=115
+- **Status**: LEGACY=14, LIVE=1, UNKNOWN=114
 
 ### D3 — SEO & Sitemap
 
@@ -132,10 +132,10 @@ Source sotFingerprint: `ffcf8512fcc7`.
 
 ### D13 — Config & System
 
-- **Files**: 208 (service=70, script=63, config=54, test=21)
+- **Files**: 209 (service=70, script=63, config=54, test=22)
 - **Runtime entrypoints**: 15
-- **Top owners**: @ak125 (208)
-- **Status**: LIVE=84, UNKNOWN=124
+- **Top owners**: @ak125 (209)
+- **Status**: LIVE=84, UNKNOWN=125
 
 ### D14 — Gamme Aggregates & V-Level
 
@@ -157,7 +157,7 @@ Source sotFingerprint: `ffcf8512fcc7`.
 
 - **Files**: 245 (service=150, config=57, controller=21, script=14, test=3)
 - **DB tables**: 313
-- **DB RPC**: 253
+- **DB RPC**: 254
 - **Runtime entrypoints**: 84
 - **Top owners**: __unassigned__ (245)
 - **Knowledge prose**: [`config`](modules/config.md), [`layout`](modules/layout.md), [`mcp-validation`](modules/mcp-validation.md), [`metadata`](modules/metadata.md), [`navigation`](modules/navigation.md), [`search`](modules/search.md), [`shipping`](modules/shipping.md), [`suppliers`](modules/suppliers.md), [`system`](modules/system.md)

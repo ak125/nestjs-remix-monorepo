@@ -1499,11 +1499,14 @@
         "backend/src/auth/auth.module.ts",
         "backend/src/auth/github-oidc.guard.test.ts",
         "backend/src/auth/github-oidc.guard.ts",
-        "backend/src/auth/github-oidc.service.test.ts"
+        "backend/src/auth/github-oidc.service.test.ts",
+        "backend/src/config/redis-single-target.test.ts"
       ],
-      "imports": [],
+      "imports": [
+        "backend/src/config/app.config.ts"
+      ],
       "kind": "service",
-      "loc": 274,
+      "loc": 273,
       "owner": "__unassigned__",
       "path": "backend/src/auth/github-oidc.service.ts",
       "risk": "low",
@@ -2977,9 +2980,12 @@
       "domain": "UNKNOWN",
       "id": "backend/src/config/app.config.ts",
       "importedBy": [
+        "backend/src/auth/github-oidc.service.ts",
         "backend/src/cache/cache.service.ts",
         "backend/src/config/csp.config.ts",
         "backend/src/config/index.ts",
+        "backend/src/config/redis-single-target.test.ts",
+        "backend/src/config/write-guard-lock.service.ts",
         "backend/src/database/services/supabase-base.service.ts",
         "backend/src/main.ts",
         "backend/src/modules/admin/processors/seo-control-refresh.processor.test.ts",
@@ -2996,6 +3002,7 @@
         "backend/src/modules/seo-control-plane/collectors/runtime-logs/runtime-logs.processor.ts",
         "backend/src/modules/seo-control-plane/collectors/synthetic-crawler/synthetic-crawler.processor.ts",
         "backend/src/modules/seo-logs/services/crawl-budget-integrations.service.ts",
+        "backend/src/modules/seo-logs/services/seo-audit-scheduler.service.ts",
         "backend/src/modules/seo-logs/services/url-audit.service.ts",
         "backend/src/modules/seo-monitoring/processors/seo-daily-fetch.processor.ts",
         "backend/src/modules/seo-projection/seo-projection-feeder.service.ts",
@@ -3024,7 +3031,7 @@
         "backend/src/config/site.constants.ts"
       ],
       "kind": "config",
-      "loc": 98,
+      "loc": 199,
       "owner": "__unassigned__",
       "path": "backend/src/config/app.config.ts",
       "risk": "low",
@@ -4845,6 +4852,30 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/config/redis-single-target.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/auth/github-oidc.service.ts",
+        "backend/src/config/app.config.ts",
+        "backend/src/config/write-guard-lock.service.ts",
+        "backend/src/modules/seo-logs/services/seo-audit-scheduler.service.ts"
+      ],
+      "kind": "test",
+      "loc": 274,
+      "owner": "__unassigned__",
+      "path": "backend/src/config/redis-single-target.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/config/role-ids.test.ts",
       "importedBy": [],
       "imports": [
@@ -5308,15 +5339,17 @@
       "id": "backend/src/config/write-guard-lock.service.ts",
       "importedBy": [
         "backend/src/config/content-write-executor.service.ts",
+        "backend/src/config/redis-single-target.test.ts",
         "backend/src/config/write-guard.module.ts"
       ],
       "imports": [
+        "backend/src/config/app.config.ts",
         "backend/src/config/execution-registry.types.ts",
         "backend/src/config/role-ids.ts",
         "crypto"
       ],
       "kind": "service",
-      "loc": 176,
+      "loc": 178,
       "owner": "__unassigned__",
       "path": "backend/src/config/write-guard-lock.service.ts",
       "risk": "low",
@@ -24963,6 +24996,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/seo-logs/services/seo-audit-scheduler.service.ts",
       "importedBy": [
+        "backend/src/config/redis-single-target.test.ts",
         "backend/src/modules/seo-logs/controllers/seo-audit.controller.ts",
         "backend/src/modules/seo-logs/seo-logs.module.ts"
       ],
@@ -24970,13 +25004,14 @@
         "@common/exceptions",
         "@common/utils/error.utils",
         "@config/env-validation",
+        "backend/src/config/app.config.ts",
         "child_process",
         "fs/promises",
         "path",
         "util"
       ],
       "kind": "service",
-      "loc": 475,
+      "loc": 472,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-logs/services/seo-audit-scheduler.service.ts",
       "risk": "low",
