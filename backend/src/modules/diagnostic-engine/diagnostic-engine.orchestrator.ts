@@ -16,6 +16,7 @@ import {
   AnalyzeInputSchema,
   type AnalyzeMaintenanceInput,
   type AnalyzeDiagnosticInput,
+  type UsageContextInput,
 } from './types/diagnostic-input.schema';
 import type { EvidencePack } from './types/evidence-pack.schema';
 import { DiagnosticEngineDataService } from './diagnostic-engine.data-service';
@@ -25,6 +26,19 @@ import { RiskSafetyEngine } from './engines/risk-safety.engine';
 import { CatalogOrientationEngine } from './engines/catalog-orientation.engine';
 import { MaintenanceIntelligenceEngine } from './engines/maintenance-intelligence.engine';
 import { KgShadowService } from './services/kg-shadow.service';
+
+// Wording shown to the user; same labels as the wizard's usage step
+// (frontend StepVehicle USAGE_PROFILES).
+const USAGE_PROFILE_LABEL: Record<
+  NonNullable<UsageContextInput['usage_profile']>,
+  string
+> = {
+  urban_short_trips: 'Urbain / courts trajets',
+  mixed: 'Mixte quotidien',
+  highway: 'Autoroute fréquent',
+  professional: 'Usage professionnel',
+  occasional: 'Usage occasionnel',
+};
 
 @Injectable()
 export class DiagnosticEngineOrchestrator {
@@ -415,7 +429,9 @@ export class DiagnosticEngineOrchestrator {
     }
 
     if (input.usage_context?.usage_profile) {
-      confirmed.push(`Profil d'usage: ${input.usage_context.usage_profile}`);
+      confirmed.push(
+        `Profil d'usage: ${USAGE_PROFILE_LABEL[input.usage_context.usage_profile]}`,
+      );
     } else {
       missing.push("Profil d'usage non renseigné");
     }
@@ -433,11 +449,6 @@ export class DiagnosticEngineOrchestrator {
     if (input.signal_input.secondary_signals?.length) {
       confirmed.push(
         `Symptômes secondaires: ${input.signal_input.secondary_signals.join(', ')}`,
-      );
-    }
-    if (signal.unresolved_signals.length > 0) {
-      missing.push(
-        `Signaux non reconnus: ${signal.unresolved_signals.join(', ')}`,
       );
     }
 

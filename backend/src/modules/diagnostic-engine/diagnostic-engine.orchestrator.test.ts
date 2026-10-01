@@ -159,6 +159,24 @@ describe('Diagnostic without RAG content authority', () => {
     expect(parsed.evidence_pack.risk_flags).toEqual(['Risque de freinage']);
   });
 
+  it('shows the usage profile with its French label, not the raw value', async () => {
+    const result = await orchestrator.analyze({
+      ...input,
+      usage_context: { usage_profile: 'urban_short_trips' },
+    });
+    const { factual_inputs_confirmed, factual_inputs_missing } =
+      result.data!.evidence.evidence_pack;
+    expect(factual_inputs_confirmed).toContain(
+      "Profil d'usage: Urbain / courts trajets",
+    );
+    expect(factual_inputs_confirmed.join(' ')).not.toContain(
+      'urban_short_trips',
+    );
+    expect(factual_inputs_missing).not.toContain(
+      "Profil d'usage non renseigné",
+    );
+  });
+
   it('still rejects invalid input before any database access', async () => {
     const result = await orchestrator.analyze({});
     expect(result.success).toBe(false);
