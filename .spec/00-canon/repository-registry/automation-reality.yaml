@@ -402,3 +402,26 @@ entries:
     risk: "medium"
     related_pr: [1620]
     drift_note: "Purge = borne de stockage, sans lecteur aval : aucun code ne lit __soft_404_events ni v_soft_404_demand_30d (git grep main 2026-09-30). Runbook vault encore sur seo-routines."
+  # ──────────────────────────────────────────────────────────────────────────
+  # DRAFTED — pg_cron rétention 90 j de cron.job_run_details, dernière exécution
+  # de chaque job toujours conservée (preuve lue par ADR-045 et never_ran).
+  # Premier run : ~27 800 lignes de plus de 90 j supprimées (irréversible).
+  # Passe ACTIVE après apply + premier run 03:30 UTC prouvé.
+  # ──────────────────────────────────────────────────────────────────────────
+  - automation_id: "cron-job-run-details-retention"
+    domain: "D15"
+    intended_mode: "ACTIVE"
+    actual_mode: "DRAFTED"
+    executor: "pg_cron"
+    evidence:
+      - path: "backend/supabase/migrations/20261001_cron_job_run_details_retention.sql"
+        line: 93
+        excerpt: "PERFORM cron.schedule('cron-job-run-details-retention', '30 3 * * *', v_expected_command);"
+        note: "exact-match/fail-closed + provenance marker ; .down unschedules only this job ; max(runid) per jobid always kept"
+    last_verified_at: "2026-10-01"
+    last_verified_by: "@ak125"
+    last_verified_method: "manual-inspection"
+    missing_step: "merge + apply (only_ids) + prove first 03:30 UTC run: job_run_details succeeded 'DELETE n' and 0 rows older than 90 d outside max(runid) per jobid"
+    risk: "medium"
+    related_pr: [1651]
+    owner_action: "review + merge, then apply-supabase-migrations dry-run → APPLY"
