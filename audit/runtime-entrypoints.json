@@ -2766,6 +2766,8 @@
       "backend/supabase/migrations/20261001_cron_job_run_details_retention.sql",
       "backend/supabase/migrations/20261001_drop_pieces_price_unused_indexes.down.sql",
       "backend/supabase/migrations/20261001_drop_pieces_price_unused_indexes.sql",
+      "backend/supabase/migrations/20261001_get_r6_guide_link_snapshot_definer_rpc.down.sql",
+      "backend/supabase/migrations/20261001_get_r6_guide_link_snapshot_definer_rpc.sql",
       "backend/supabase/migrations/20261001_move_pg_trgm_unaccent_to_extensions_schema.down.sql",
       "backend/supabase/migrations/20261001_move_pg_trgm_unaccent_to_extensions_schema.sql",
       "backend/supabase/migrations/20261001_move_vector_extension_to_extensions_schema.down.sql",
@@ -2948,7 +2950,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1561,
+  "runtime_files_count": 1563,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4174,6 +4176,8 @@
     "backend/supabase/migrations/20261001_cron_job_run_details_retention.sql",
     "backend/supabase/migrations/20261001_drop_pieces_price_unused_indexes.down.sql",
     "backend/supabase/migrations/20261001_drop_pieces_price_unused_indexes.sql",
+    "backend/supabase/migrations/20261001_get_r6_guide_link_snapshot_definer_rpc.down.sql",
+    "backend/supabase/migrations/20261001_get_r6_guide_link_snapshot_definer_rpc.sql",
     "backend/supabase/migrations/20261001_move_pg_trgm_unaccent_to_extensions_schema.down.sql",
     "backend/supabase/migrations/20261001_move_pg_trgm_unaccent_to_extensions_schema.sql",
     "backend/supabase/migrations/20261001_move_vector_extension_to_extensions_schema.down.sql",
