@@ -1504,3 +1504,12 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: low
+  # Calendrier d'entretien : filtre carburant de kg_get_smart_maintenance_schedule
+  # aligné sur kg_get_maintenance_alerts_by_milestone (hybrides diesel) — PR #1632.
+  # Couvre .sql + .down.sql. Glob exact : les migrations ne sont pas auto-couvertes ;
+  # domaine / owner = ceux du consommateur (backend/src/modules/diagnostic-engine/**).
+  - glob: backend/supabase/migrations/20260930_kg_maintenance_schedule_fuel_filter_aligned*.sql
+    domain: D4
+    owner: '@ak125/vehicle-team'
+    sourceConfidence: high
+    risk: low
