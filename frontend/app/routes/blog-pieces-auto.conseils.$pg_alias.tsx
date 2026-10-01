@@ -631,7 +631,7 @@ export default function R3GuidePage() {
                       sections={bodySections.map(toConseil)}
                       pgAlias={pg_alias}
                       pgId={page.pg_id}
-                      hasR6Guide={page.hasR6Guide}
+                      buyingGuideHref={page.buyingGuideHref}
                     />
                   )}
 
@@ -663,22 +663,24 @@ export default function R3GuidePage() {
                     <MetaLinksSection sections={metaSections.map(toConseil)} />
                   )}
 
-                  {/* Cross-link R6 guide d'achat */}
-                  <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 p-4 mb-8">
-                    <div className="flex items-center gap-2">
-                      <ExternalLink className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <p className="text-sm text-gray-700">
-                        Choisir la bonne piece ?{" "}
-                        <Link
-                          to={`/blog-pieces-auto/guide-achat/${pg_alias}`}
-                          className="font-medium text-emerald-600 hover:text-emerald-800 underline"
-                          rel="noopener"
-                        >
-                          Consultez le guide d&apos;achat {page.title}
-                        </Link>
-                      </p>
+                  {/* Cross-link R6 guide d'achat (cible décidée par le backend, ADR-103 D5) */}
+                  {page.buyingGuideHref && (
+                    <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 p-4 mb-8">
+                      <div className="flex items-center gap-2">
+                        <ExternalLink className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <p className="text-sm text-gray-700">
+                          Choisir la bonne piece ?{" "}
+                          <Link
+                            to={page.buyingGuideHref}
+                            className="font-medium text-emerald-600 hover:text-emerald-800 underline"
+                            rel="noopener"
+                          >
+                            Consultez le guide d&apos;achat {page.title}
+                          </Link>
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Actions (partager + enregistrer) */}
                   <ArticleActionsBar

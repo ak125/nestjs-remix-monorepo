@@ -4,7 +4,8 @@
 import { Calendar, Clock, ExternalLink, Wrench } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { buildGammeUrl } from "~/utils/url-builder.utils";
+import { emitFunnel, getFunnelSessionId } from "~/utils/funnel-beacon";
+import { buildGammeUrl, normalizeAlias } from "~/utils/url-builder.utils";
 import { type MaintenanceRecommendation, type SuggestedGamme } from "../types";
 
 interface Props {
@@ -14,19 +15,24 @@ interface Props {
   catalogGammes: SuggestedGamme[];
 }
 
+// Every relevance is assessed against the same generic, unverified intervals,
+// so every badge carries the same cautious wording.
 const OVERDUE_STYLES: Record<string, { badge: string; label: string }> = {
   overdue: {
     badge: "bg-red-100 text-red-700 border-red-200",
-    label: "En retard",
+    label: "Seuil indicatif dépassé",
   },
   approaching: {
     badge: "bg-amber-100 text-amber-700 border-amber-200",
     label: "À vérifier",
   },
-  ok: { badge: "bg-green-100 text-green-700 border-green-200", label: "OK" },
+  ok: {
+    badge: "bg-green-100 text-green-700 border-green-200",
+    label: "Sous les seuils indicatifs",
+  },
   unknown: {
     badge: "bg-gray-100 text-gray-500 border-gray-200",
-    label: "Inconnu",
+    label: "Informations insuffisantes",
   },
 };
 
@@ -43,8 +49,11 @@ export function ResultMaintenance({
   catalogGammes,
   maintenanceLinks: _maintenanceLinks,
 }: Props) {
-  const allowedGammeUrls = new Set(
-    catalogGammes.map((gamme) => buildGammeUrl(gamme.gamme_slug, gamme.pg_id)),
+  const allowedGammes = new Map(
+    catalogGammes.map((gamme) => [
+      buildGammeUrl(gamme.gamme_slug, gamme.pg_id),
+      gamme,
+    ]),
   );
   return (
     <Card>
@@ -75,12 +84,11 @@ export function ResultMaintenance({
             rec.related_gamme_slug,
             rec.related_pg_id,
           );
-          const gammeUrl =
-            allowedOutputMode !== "none" &&
-            candidateUrl &&
-            allowedGammeUrls.has(candidateUrl)
-              ? candidateUrl
+          const catalogGamme =
+            allowedOutputMode !== "none" && candidateUrl
+              ? allowedGammes.get(candidateUrl)
               : undefined;
+          const gammeUrl = catalogGamme ? candidateUrl : undefined;
 
           return (
             <div
@@ -106,14 +114,7 @@ export function ResultMaintenance({
                     variant="outline"
                     className={`text-[10px] px-1.5 py-0 ${overdue.badge}`}
                   >
-                    {rec.relevance === "selected"
-                      ? {
-                          overdue: "Seuil indicatif dépassé",
-                          approaching: "À vérifier",
-                          ok: "Sous les seuils indicatifs",
-                          unknown: "Informations insuffisantes",
-                        }[rec.overdue_status ?? "unknown"]
-                      : overdue.label}
+                    {overdue.label}
                   </Badge>
                   {rec.relevance === "primary" && (
                     <Badge
@@ -163,9 +164,19 @@ export function ResultMaintenance({
                       {rec.interval_months}
                     </span>
                   )}
-                  {gammeUrl && (
+                  {gammeUrl && catalogGamme && (
                     <a
                       href={gammeUrl}
+                      onClick={() =>
+                        emitFunnel({
+                          event_type: "diag_gamme_cta_click",
+                          payload: {
+                            session_id: getFunnelSessionId(),
+                            gamme_slug: normalizeAlias(catalogGamme.gamme_slug),
+                            confidence: catalogGamme.confidence,
+                          },
+                        })
+                      }
                       className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline"
                     >
                       <ExternalLink className="w-3 h-3" />

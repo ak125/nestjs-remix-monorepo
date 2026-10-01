@@ -329,7 +329,7 @@ domaine diagnostic interactif + maintenance fuel-aware + DTC consolidation.
 |--------------|-------|----------|
 | Sessions / symptomes / causes interactifs | `__diag_*` (system, symptom, cause, symptom_cause_link, session) | `backend/src/modules/diagnostic-engine/` (slugs FR : freinage, batterie, embrayage, ...) |
 | Maintenance / intervalles / wear factors / risque | `kg_nodes` (`node_type='MaintenanceInterval'`) + RPCs `kg_*` | `MaintenanceCalculatorService` (PR ADR-032 PR-2) |
-| Safety rules cause-by-cause | `__diag_safety_rule` (21 rules) + `risk-safety.engine.ts` RULE_CAUSE_MAP | Diagnostic interactif uniquement |
+| Safety rules par cause ou symptôme | `__diag_safety_rule` (21 rules) + `risk-safety.engine.ts` RULE_TRIGGERS | Diagnostic interactif uniquement |
 | Safety triggers KG observable | `kg_safety_triggers` + RPC `kg_check_safety_gate(p_observable_ids uuid[])` | Knowledge graph (futur turbo/EGR) |
 | DTC codes consolidation | Vue `v_dtc_lookup` (source ENUM : kg / seo_only / merged) + RPC `kg_get_dtc_lookup(p_code)` | `kg_nodes.dtc_code` source primaire |
 | Cases learning corpus | `__diag_session.result jsonb` (deja alimente via `saveSession()`) | Diagnostic interactif |

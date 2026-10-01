@@ -23,6 +23,7 @@ import type { AnalyzeResponseV1A0 } from '../types/analyze-response.schema';
 import type { ActionType, TargetRole } from '../types/recommended-action';
 import type { DiagnosticIntent } from '../types/diagnostic-intent';
 import type { DiagnosticReasonCode } from '../types/diagnostic-reason-code';
+import type { HandoffTarget } from '../handoff-target';
 
 export type OutcomeType =
   | 'intent_resolved'
@@ -94,30 +95,29 @@ export class OutcomeEmitterService extends SupabaseBaseService {
   /**
    * Émet event lorsque user clique une action (POST /handoff).
    * `target_role` discrimine pour dérivations to_commerce / to_human.
+   *
+   * Tous les champs viennent de la résolution re-dérivée de la session
+   * stockée et de l'élément cliqué qu'elle contient — jamais du client.
    */
-  async emitActionClicked(params: {
-    sessionId: string;
-    actionType: ActionType;
-    targetRole: TargetRole;
-    intent: DiagnosticIntent;
-    confidence: number;
-    confidenceBucket: string;
-    pipelineVersion: string;
-  }): Promise<void> {
+  async emitActionClicked(
+    response: AnalyzeResponseV1A0,
+    clicked: HandoffTarget,
+    vehicleContextPresent: boolean,
+  ): Promise<void> {
     const payload: ActionClickedPayload = {
       outcome_type: 'action_clicked',
-      session_id: params.sessionId,
-      intent: params.intent,
-      confidence: params.confidence,
-      confidence_bucket: params.confidenceBucket,
-      reason_codes: ['DR_HANDOFF_TO_COMMERCE'], // top-level handoff marker; refined V1A.1
-      safety_rail: false,
-      vehicle_ctx_present: true, // handoff implies session context exists
-      human_escalation_priority_boost: params.targetRole === 'human',
-      pipeline_version: params.pipelineVersion,
-      mode: 'reactive',
-      action_type: params.actionType,
-      target_role: params.targetRole,
+      session_id: response.session_id,
+      intent: response.intent.value,
+      confidence: response.intent.confidence,
+      confidence_bucket: response.intent.confidence_bucket,
+      reason_codes: clicked.reason_codes,
+      safety_rail: response.intent.safety_rail,
+      vehicle_ctx_present: vehicleContextPresent,
+      human_escalation_priority_boost: response.human_escalation.priority_boost,
+      pipeline_version: response.versions.pipeline_version,
+      mode: response.mode,
+      action_type: clicked.action_type,
+      target_role: clicked.target_role,
     };
 
     await this.write(payload);

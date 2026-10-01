@@ -139,11 +139,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     throw data({ message: "Alias manquant" }, { status: 404 });
   }
 
+  // R6→R3 consolidation (flag-gated côté serveur, inerte par défaut) :
+  // 301 vers la page R3 conseils de la gamme quand le flag est ON ET que
+  // la page R3 existe (self-gate backend — jamais de redirect-vers-404) ;
+  // sinon, flag ON → la page reste servie mais sort de l'index (`robots`).
+  // Mirror du pattern R5 (diagnostic-auto.$slug → conseils).
+  let robots: string | null = null;
   try {
-    // R6→R3 consolidation (flag-gated côté serveur, inerte par défaut) :
-    // 301 vers la page R3 conseils de la gamme quand le flag est ON ET que
-    // la page R3 existe (self-gate backend — jamais de redirect-vers-404).
-    // Mirror du pattern R5 (diagnostic-auto.$slug → conseils).
     const redirectProbeUrl = getInternalApiUrlFromRequest(
       `/api/r6-guide/redirect/${pg_alias}`,
       request,
@@ -156,9 +158,17 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       if (target?.redirect_to) {
         return redirect(target.redirect_to, 301);
       }
+      robots = typeof target?.robots === "string" ? target.robots : null;
+    } else {
+      logger.warn(
+        `[R6 Guide] posture d'indexation indisponible (HTTP ${redirectRes.status}) pour ${pg_alias} — directive robots par défaut`,
+      );
     }
-  } catch {
-    // probe réseau en échec → rendu normal de la page R6 (comportement actuel)
+  } catch (error) {
+    logger.warn(
+      `[R6 Guide] posture d'indexation indisponible pour ${pg_alias} — directive robots par défaut`,
+      error,
+    );
   }
 
   const controller = new AbortController();
@@ -188,7 +198,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
       if (guide && (!guide.intentType || guide.intentType === "R6")) {
         const r4Reference = await fetchR4Reference(guide.page.pg_id, request);
-        return { guide, pg_alias, r4Reference };
+        return { guide, pg_alias, r4Reference, robots };
       }
     }
 
@@ -227,6 +237,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     // Convert BlogArticle → R6GuidePayload (V1 format for rendering)
     const guide: R6GuidePayload = {
       intentType: "R6",
+      // eslint-disable-next-line no-restricted-syntax -- verdict « Legacy SEO role literal in OUTPUT context » : valeur imposée par le contrat de page gouverné PageContractR6.pageRole (literal, backend page-contract-r6.schema.ts) = surface key R6_BUYING_GUIDE (@repo/seo-role-contracts, → R6_GUIDE_ACHAT via surfaceToRole). Migrer ce contrat sort du périmètre de cette PR.
       pageRole: "R6_BUYING_GUIDE",
       canonicalRoleUrl: `/blog-pieces-auto/guide-achat/${pg_alias}`,
       roleVersion: "v1",
@@ -259,7 +270,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     };
 
     const r4Reference = await fetchR4Reference(guide.page.pg_id, request);
-    return { guide, pg_alias, r4Reference };
+    return { guide, pg_alias, r4Reference, robots };
   } catch (error) {
     clearTimeout(timeoutId);
     if (error instanceof Response) throw error;
@@ -288,7 +299,10 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
 
 // ── Meta (noindex if no data) ───────────────────────────
 
-export const meta: MetaFunction<typeof loader> = ({ loaderData: data, location }) => {
+export const meta: MetaFunction<typeof loader> = ({
+  loaderData: data,
+  location,
+}) => {
   if (!data) {
     return [
       { title: "Guide non trouve" },
@@ -315,7 +329,7 @@ export const meta: MetaFunction<typeof loader> = ({ loaderData: data, location }
     { title },
     { name: "description", content: cleanDescription },
     { tagName: "link", rel: "canonical", href: canonicalUrl },
-    { name: "robots", content: "index, follow" },
+    { name: "robots", content: data.robots ?? "index, follow" },
     { name: "author", content: "Automecanik - Experts Automobile" },
     { property: "og:title", content: title },
     { property: "og:description", content: cleanDescription },
