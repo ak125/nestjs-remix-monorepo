@@ -93,7 +93,7 @@ EXPOSE="${EXPOSE:-false}"
 PRIMARY="${PRIMARY:-false}"
 
 if [ "$PRIMARY" = true ] && [ "$EXPOSE" != true ]; then
-  reject "DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED=true requires DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED=true (is $EXPOSE)"
+  reject "DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED=true requires DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED=true (is $(show "$EXPOSE"))"
 fi
 
 if [ "$ERRORS" -gt 0 ]; then

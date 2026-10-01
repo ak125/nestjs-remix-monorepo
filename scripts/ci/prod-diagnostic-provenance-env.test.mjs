@@ -20,7 +20,7 @@
  *
  * Run: node --test scripts/ci/prod-diagnostic-provenance-env.test.mjs
  */
-import { test, describe } from "node:test";
+import { test, describe, after } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import {
@@ -30,6 +30,7 @@ import {
   readdirSync,
   chmodSync,
   statSync,
+  rmSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
@@ -66,8 +67,16 @@ const BASE_ENV = [
   "",
 ].join("\n");
 
+// Every scratch dir is removed after the run: this test also runs on the
+// self-hosted PROD runner during deploy-prod.yml, where /tmp must not grow.
+const scratchDirs = [];
+after(() => {
+  for (const d of scratchDirs) rmSync(d, { recursive: true, force: true });
+});
+
 function scratch(content = BASE_ENV, mode = 0o600) {
   const dir = mkdtempSync(join(tmpdir(), "diagnostic-provenance-env-"));
+  scratchDirs.push(dir);
   const file = join(dir, ".env");
   writeFileSync(file, content);
   chmodSync(file, mode);
@@ -227,8 +236,19 @@ describe("refusals leave the .env byte-identical", () => {
     });
   }
 
+  test("a multi-line EXPOSE value cannot split the ::error:: annotation", () => {
+    const s = scratch();
+    const r = run(s.file, { [override(PRIMARY)]: "true", [override(EXPOSE)]: "x\n::notice::forged" });
+    assert.equal(r.code, 1, r.out);
+    for (const line of r.out.split("\n").filter(Boolean)) {
+      assert.match(line, /^::error::Diagnostic provenance: /, `stray line: ${line}`);
+    }
+    assertUntouched(s, BASE_ENV);
+  });
+
   test("missing .env fails", () => {
-    const r = run(join(tmpdir(), "does-not-exist", ".env"), { [override(EXPOSE)]: "true" });
+    const { dir } = scratch();
+    const r = run(join(dir, "does-not-exist", ".env"), { [override(EXPOSE)]: "true" });
     assert.equal(r.code, 1);
     assert.match(r.out, /::error::Diagnostic provenance: .* not found/);
   });
@@ -236,6 +256,25 @@ describe("refusals leave the .env byte-identical", () => {
 
 describe("deploy-prod.yml wiring", () => {
   const wf = readFileSync(DEPLOY_WORKFLOW, "utf8");
+
+  // The step that writes .env: from its header to the next step header. Both the
+  // variable mappings and the script call must live in THIS step, otherwise the
+  // script would silently write false (variables unset in its environment).
+  const header = "      - name: 🚀 Deploy to PROD";
+  const start = wf.indexOf(header);
+  const end = start < 0 ? -1 : wf.indexOf("\n      - name:", start + header.length);
+  const deployStep = start < 0 ? "" : wf.slice(start, end < 0 ? undefined : end);
+
+  test("the deploy step is found", () => {
+    assert.ok(deployStep.length > 0, "step '🚀 Deploy to PROD' not found in deploy-prod.yml");
+  });
+
+  test("the script call lives in the deploy step", () => {
+    assert.ok(
+      deployStep.includes('scripts/ci/prod-diagnostic-provenance-env.sh" .env'),
+      "the script must be called inside the '🚀 Deploy to PROD' step",
+    );
+  });
 
   test("the script runs on .env before the point of no return", () => {
     const call = wf.indexOf('scripts/ci/prod-diagnostic-provenance-env.sh" .env');
@@ -255,7 +294,7 @@ describe("deploy-prod.yml wiring", () => {
   test("every contract input is mapped from a GitHub variable, never a secret", () => {
     for (const name of KEYS) {
       const mapping = `${name}_OVERRIDE: \${{ vars.PROD_${name} }}`;
-      assert.ok(wf.includes(mapping), `${mapping} missing`);
+      assert.ok(deployStep.includes(mapping), `${mapping} missing from the deploy step`);
       assert.ok(
         !wf.includes(`${name}_OVERRIDE: \${{ secrets.`),
         `${name} must be a variable (not a credential, readable with gh variable list)`,
