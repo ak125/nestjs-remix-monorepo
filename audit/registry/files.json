@@ -67904,6 +67904,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "scripts/ci/backend-boot-smoke.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 424,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/backend-boot-smoke.test.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "scripts/ci/lighthouse-report-quality.mjs",
       "importedBy": [],
       "imports": [],
@@ -68022,7 +68041,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 43,
+      "loc": 44,
       "owner": "__unassigned__",
       "path": "scripts/ci/preflight-env-contract.ts",
       "risk": "low",
