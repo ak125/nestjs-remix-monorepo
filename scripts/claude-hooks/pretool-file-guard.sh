@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # PreToolUse hook for Edit/Write tools
-# Blocks editing of protected system files (Airlock forbidden paths)
+# Blocks editing of protected system files (owner-only paths)
 # Warns on payment module changes
 # Exit 0 = allow, Exit 2 = block (stderr shown to user)
 
@@ -25,7 +25,7 @@ fi
 
 # Guard 1: Block editing blast-radius / system files
 if echo "$FILE_PATH" | grep -qE '(^|/)\.env($|/)|\.github/|docker-compose|Caddyfile$|Dockerfile$|\.dockerignore$'; then
-  echo "BLOCKED: Fichier protege ($FILE_PATH). Ces fichiers necessitent une review Airlock." >&2
+  echo "BLOCKED: Fichier protege ($FILE_PATH). Modification reservee a l'owner : fournir le diff, il l'applique." >&2
   exit 2
 fi
 
