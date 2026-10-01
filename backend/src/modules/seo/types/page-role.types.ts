@@ -356,6 +356,24 @@ export function getPageRoleFromUrl(url: string): PageRole | null {
 }
 
 /**
+ * Hub des guides d'achat. Classé R3_BLOG par URL_ROLE_PATTERNS (pas de slash
+ * final), mais il appartient à la surface R6 : il n'existe que pour lister les
+ * pages guide-achat.
+ */
+export const R6_GUIDE_ACHAT_HUB_PATH = '/blog-pieces-auto/guide-achat';
+
+/**
+ * Surface R6 guide d'achat = le hub + toutes les pages détail. Seule définition
+ * partagée par les producteurs d'URL (sitemap, crawl hub) pour retirer la
+ * surface R6 de l'index quand la consolidation R6→R3 est activée.
+ * @param path - chemin relatif (ex: /blog-pieces-auto/guide-achat/filtre-a-air)
+ */
+export function isR6GuideAchatSurface(path: string): boolean {
+  if (path === R6_GUIDE_ACHAT_HUB_PATH) return true;
+  return getPageRoleFromUrl(path) === PageRole.R6_GUIDE_ACHAT;
+}
+
+/**
  * Vérifie si un lien de sourceRole vers targetRole est autorisé
  * @param sourceRole - Le rôle de la page source
  * @param targetRole - Le rôle de la page cible

@@ -160,16 +160,10 @@ support    ← policy
 
 ---
 
-## Sections RAG disponibles
+## Sections RAG
 
-Les sections sont utilisees dans `GET /api/rag/section/:section` pour filtrer le retrieval :
-
-| Section | Mapping page |
-|---------|-------------|
-| `diagnostic` | R5_DIAGNOSTIC |
-| `guide-achat` | R6_GUIDE_ACHAT |
-| `reference` | R4_REFERENCE |
-| `entretien` | R3_CONSEILS |
+`GET /api/rag/section/:section` n'existe plus : `rag-proxy.controller.ts` n'expose aucune
+route de section. La recherche passe par `POST /api/rag/search` (`dto/search.dto.ts`).
 
 ---
 

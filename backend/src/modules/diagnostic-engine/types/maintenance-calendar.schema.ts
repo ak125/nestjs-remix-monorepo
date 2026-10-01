@@ -76,3 +76,14 @@ export type MaintenanceAlertAction = z.infer<typeof RuleIdentity>;
 export type MaintenanceAlertMilestone = z.infer<
   typeof MaintenanceAlertsSchema
 >[number];
+
+// `entity_data.items` of wiki/support/controles-mensuels.md, validated like the
+// RPC payloads above instead of being cast.
+export const ControlesMensuelsSchema = z.array(
+  z.object({
+    element: z.string().trim().min(1),
+    icon: z.string(),
+    detail: z.string(),
+  }),
+);
+export type ControleMensuel = z.infer<typeof ControlesMensuelsSchema>[number];
