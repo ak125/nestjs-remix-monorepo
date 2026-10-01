@@ -585,3 +585,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/db-drop-pieces-price-unused-indexes`
 - **Décision** : Merge remote-tracking branch 'origin/main' into fix/db-drop-pieces-price-unused-indexes (+7 other commits)
 - **Sortie** : PR #1649 | commits 09cf27fe9 a5e4e4b64 cb1f5605c 4d1ba50e1 db3e2e2cc 6732ed805 7a575a5d9 a8683258e
+
+## 2026-10-01 — fix/db-drop-pieces-price-unused-indexes (auto)
+
+- **Branche** : `fix/db-drop-pieces-price-unused-indexes`
+- **Décision** : Merge remote-tracking branch 'origin/main' into fix/db-drop-pieces-price-unused-indexes (+9 other commits)
+- **Sortie** : PR #1649 | commits 4cbd9fdd2 17668ff66 09cf27fe9 a5e4e4b64 cb1f5605c 4d1ba50e1 db3e2e2cc 6732ed805 7a575a5d9 a8683258e
