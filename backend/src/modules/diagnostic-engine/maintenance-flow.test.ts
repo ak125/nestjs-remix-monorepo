@@ -211,23 +211,16 @@ describe('maintenance analysis without a symptom', () => {
       DiagnosticEngineController.prototype,
     ) as DiagnosticEngineController;
     const compute = jest.fn();
-    const previous = process.env.DIAGNOSTIC_PIPELINE_V1_ENABLED;
-    process.env.DIAGNOSTIC_PIPELINE_V1_ENABLED = 'true';
     Object.assign(controller, {
       logger: { log: jest.fn() },
       orchestrator: fixture().engine,
       persistVehicleContextIfPresent: jest.fn(),
       computeIntentLayer: compute,
+      featureFlags: { diagnosticPipelineV1Enabled: true },
     });
-    try {
-      const result = await controller.analyze(request, {} as never);
-      expect(result.success).toBe(true);
-      expect(compute).not.toHaveBeenCalled();
-    } finally {
-      if (previous === undefined)
-        delete process.env.DIAGNOSTIC_PIPELINE_V1_ENABLED;
-      else process.env.DIAGNOSTIC_PIPELINE_V1_ENABLED = previous;
-    }
+    const result = await controller.analyze(request, {} as never);
+    expect(result.success).toBe(true);
+    expect(compute).not.toHaveBeenCalled();
   });
 });
 

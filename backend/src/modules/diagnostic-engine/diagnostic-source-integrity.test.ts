@@ -303,7 +303,7 @@ describe('diagnostic reference responses are checked before safety evaluation', 
         result.data?.evidence.evidence_pack.candidate_hypotheses[0];
       expect(hypothesis).toMatchObject({
         cause_type: category,
-        relative_score: 75,
+        relative_score: 57,
         urgency_timeline: 'Sous 48h — contrôle professionnel urgent',
         scoring_breakdown: expect.objectContaining({ signal_match: 21 }),
       });
@@ -337,7 +337,6 @@ describe('diagnostic reference responses are checked before safety evaluation', 
       expect(() =>
         new HypothesisScoringEngine().score(
           [{ ...link, cause: { ...cause, cause_type: category } }],
-          undefined,
           undefined,
         ),
       ).toThrow();
@@ -474,7 +473,6 @@ describe('critical urgency survives the reference-to-result path', () => {
     const scored = new HypothesisScoringEngine().score(
       [{ ...link, cause: { ...cause, urgency: 'critique' } }],
       undefined,
-      undefined,
     )[0];
     const assessment = new RiskSafetyEngine().assess(
       [
@@ -504,7 +502,6 @@ describe('critical urgency survives the reference-to-result path', () => {
         new HypothesisScoringEngine().score(
           [{ ...link, cause: { ...cause, urgency: urgency as string } }],
           undefined,
-          undefined,
         ),
       ).toThrow();
     },
@@ -514,7 +511,6 @@ describe('critical urgency survives the reference-to-result path', () => {
     (urgency) => {
       const scored = new HypothesisScoringEngine().score(
         [{ ...link, cause: { ...cause, urgency } }],
-        undefined,
         undefined,
       )[0];
       expect(scored.urgency).toBe(urgency);

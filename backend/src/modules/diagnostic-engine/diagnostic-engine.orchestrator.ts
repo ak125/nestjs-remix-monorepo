@@ -16,6 +16,7 @@ import {
   AnalyzeInputSchema,
   type AnalyzeMaintenanceInput,
   type AnalyzeDiagnosticInput,
+  type UsageContextInput,
 } from './types/diagnostic-input.schema';
 import type { EvidencePack } from './types/evidence-pack.schema';
 import { DiagnosticEngineDataService } from './diagnostic-engine.data-service';
@@ -25,6 +26,19 @@ import { RiskSafetyEngine } from './engines/risk-safety.engine';
 import { CatalogOrientationEngine } from './engines/catalog-orientation.engine';
 import { MaintenanceIntelligenceEngine } from './engines/maintenance-intelligence.engine';
 import { KgShadowService } from './services/kg-shadow.service';
+
+// Wording shown to the user; same labels as the wizard's usage step
+// (frontend StepVehicle USAGE_PROFILES).
+const USAGE_PROFILE_LABEL: Record<
+  NonNullable<UsageContextInput['usage_profile']>,
+  string
+> = {
+  urban_short_trips: 'Urbain / courts trajets',
+  mixed: 'Mixte quotidien',
+  highway: 'Autoroute fréquent',
+  professional: 'Usage professionnel',
+  occasional: 'Usage occasionnel',
+};
 
 @Injectable()
 export class DiagnosticEngineOrchestrator {
@@ -175,7 +189,6 @@ export class DiagnosticEngineOrchestrator {
     const hypotheses = this.scoringEngine.score(
       scoredLinks,
       input.vehicle_context,
-      input.usage_context,
     );
 
     if (!hypotheses.length) {
@@ -376,11 +389,6 @@ export class DiagnosticEngineOrchestrator {
               allowed_claims: [
                 'Comparez ces estimations au carnet constructeur et aux justificatifs d’entretien.',
               ],
-              forbidden_claims_runtime: [
-                'Véhicule sans risque.',
-                'Remplacement nécessaire.',
-                'Préconisation constructeur vérifiée.',
-              ],
               ui_block_inputs: {},
             },
           },
@@ -428,7 +436,9 @@ export class DiagnosticEngineOrchestrator {
     }
 
     if (input.usage_context?.usage_profile) {
-      confirmed.push(`Profil d'usage: ${input.usage_context.usage_profile}`);
+      confirmed.push(
+        `Profil d'usage: ${USAGE_PROFILE_LABEL[input.usage_context.usage_profile]}`,
+      );
     } else {
       missing.push("Profil d'usage non renseigné");
     }
@@ -462,11 +472,6 @@ export class DiagnosticEngineOrchestrator {
     if (input.signal_input.secondary_signals?.length) {
       confirmed.push(
         `Symptômes secondaires: ${input.signal_input.secondary_signals.map(symptomLabel).join(', ')}`,
-      );
-    }
-    if (signal.unresolved_signals.length > 0) {
-      missing.push(
-        `Signaux non reconnus: ${signal.unresolved_signals.join(', ')}`,
       );
     }
 
@@ -519,12 +524,6 @@ export class DiagnosticEngineOrchestrator {
       'Un contrôle visuel est recommandé pour confirmer le diagnostic.',
       'Plusieurs causes sont possibles — seul un contrôle permet de conclure.',
     ];
-    const forbiddenClaims = [
-      'Vos plaquettes sont usées.',
-      'Il faut changer les disques.',
-      'Le problème vient certainement de X.',
-      'Achetez des plaquettes maintenant.',
-    ];
 
     // ── Diagnostic confidence score ─────────────────────
     const signalQualityMultiplier =
@@ -575,7 +574,6 @@ export class DiagnosticEngineOrchestrator {
         maintenance_recommendations: maintenance.recommendations,
         preventive_schedule: maintenance.preventive_schedule,
         allowed_claims: allowedClaims,
-        forbidden_claims_runtime: forbiddenClaims,
         ui_block_inputs: {
           VehicleContextCard: input.vehicle_context,
           SignalSummary: {
