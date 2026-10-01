@@ -3359,6 +3359,8 @@
       "importedBy": [
         "backend/src/config/content-write-gate.service.test.ts",
         "backend/src/config/write-guard.module.ts",
+        "backend/src/modules/admin/services/buying-guide-enricher.service.test.ts",
+        "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
         "backend/src/modules/admin/services/r2-enricher.service.test.ts",
         "backend/src/modules/admin/services/r2-enricher.service.ts",
         "backend/src/modules/admin/services/r4-content-enricher.service.ts",
@@ -3702,8 +3704,6 @@
         "backend/src/config/feature-flags.module.ts",
         "backend/src/modules/admin/controllers/admin-feature-flags.controller.ts",
         "backend/src/modules/admin/controllers/seo-control.controller.ts",
-        "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
-        "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts",
         "backend/src/modules/admin/services/execution-router.service.ts",
         "backend/src/modules/admin/services/keyword-density-gate.service.ts",
         "backend/src/modules/admin/services/r4-content-enricher.service.ts",
@@ -3748,8 +3748,7 @@
         "backend/src/config/content-write-gate.service.ts",
         "backend/src/config/execution-registry.constants.ts",
         "backend/src/config/operating-matrix.service.ts",
-        "backend/src/config/write-guard-cas.service.ts",
-        "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts"
+        "backend/src/config/write-guard-cas.service.ts"
       ],
       "imports": [
         "backend/src/config/execution-registry.types.ts",
@@ -4884,8 +4883,8 @@
         "backend/src/config/scoring-profiles.config.ts",
         "backend/src/config/write-guard-cas.service.ts",
         "backend/src/config/write-guard-lock.service.ts",
+        "backend/src/modules/admin/services/buying-guide-enricher.service.test.ts",
         "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
-        "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts",
         "backend/src/modules/admin/services/execution-router.service.test.ts",
         "backend/src/modules/admin/services/execution-router.service.ts",
         "backend/src/modules/admin/services/r2-enricher.service.ts",
@@ -5061,6 +5060,8 @@
       "importedBy": [
         "backend/src/config/content-write-gate.service.test.ts",
         "backend/src/config/content-write-gate.service.ts",
+        "backend/src/modules/admin/services/buying-guide-enricher.service.test.ts",
+        "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
         "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts",
         "backend/src/modules/admin/services/r2-enricher.service.ts",
         "backend/src/modules/blog/utils/source-provenance.util.ts"
@@ -5250,8 +5251,7 @@
       "importedBy": [
         "backend/src/config/content-write-executor.service.ts",
         "backend/src/config/content-write-gate.service.ts",
-        "backend/src/config/write-guard.module.ts",
-        "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts"
+        "backend/src/config/write-guard.module.ts"
       ],
       "imports": [
         "@common/utils",
@@ -5279,8 +5279,7 @@
       "id": "backend/src/config/write-guard-ledger.service.ts",
       "importedBy": [
         "backend/src/config/content-write-executor.service.ts",
-        "backend/src/config/write-guard.module.ts",
-        "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts"
+        "backend/src/config/write-guard.module.ts"
       ],
       "imports": [
         "@common/utils",
@@ -6242,7 +6241,7 @@
         "backend/src/modules/admin/services/buying-guide-enricher.service.ts"
       ],
       "kind": "controller",
-      "loc": 46,
+      "loc": 47,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/controllers/admin-buying-guide.controller.ts",
       "risk": "low",
@@ -7250,6 +7249,7 @@
       "importedBy": [
         "backend/src/modules/admin/controllers/admin-buying-guide.controller.ts",
         "backend/src/modules/admin/controllers/internal-enrich.controller.ts",
+        "backend/src/modules/admin/services/buying-guide-enricher.service.test.ts",
         "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
         "backend/src/modules/admin/services/buying-guide/buying-guide-rag-fetcher.service.ts",
         "backend/src/modules/admin/services/buying-guide/buying-guide-section-extractor.service.ts"
@@ -7258,7 +7258,7 @@
         "backend/src/workers/types/content-refresh.types.ts"
       ],
       "kind": "service",
-      "loc": 74,
+      "loc": 76,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/dto/buying-guide-enrich.dto.ts",
       "risk": "low",
@@ -7625,25 +7625,52 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/admin/services/buying-guide-enricher.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/config/content-write-gate.service.ts",
+        "backend/src/config/role-ids.ts",
+        "backend/src/config/source-provenance.constants.ts",
+        "backend/src/modules/admin/dto/buying-guide-enrich.dto.ts",
+        "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
+        "backend/src/modules/admin/services/buying-guide/index.ts"
+      ],
+      "kind": "test",
+      "loc": 170,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/admin/services/buying-guide-enricher.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
         "backend/src/modules/admin/controllers/admin-buying-guide.controller.ts",
         "backend/src/modules/admin/controllers/internal-enrich.controller.ts",
+        "backend/src/modules/admin/services/buying-guide-enricher.service.test.ts",
         "backend/src/modules/admin/services/execution-router.service.ts"
       ],
       "imports": [
         "backend/src/config/buying-guide-quality.constants.ts",
-        "backend/src/config/feature-flags.service.ts",
+        "backend/src/config/content-write-gate.service.ts",
         "backend/src/config/role-ids.ts",
+        "backend/src/config/source-provenance.constants.ts",
         "backend/src/modules/admin/dto/buying-guide-enrich.dto.ts",
-        "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts",
         "backend/src/modules/admin/services/buying-guide/index.ts",
         "backend/src/modules/admin/services/page-brief.service.ts",
         "backend/src/modules/rag-proxy/services/rag-foundation-gate.service.ts"
       ],
       "kind": "service",
-      "loc": 367,
+      "loc": 398,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
       "risk": "low",
@@ -7660,23 +7687,17 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts",
       "importedBy": [
-        "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
         "backend/src/modules/admin/services/buying-guide/index.ts"
       ],
       "imports": [
         "@database/services/supabase-base.service",
         "backend/src/config/buying-guide-quality.constants.ts",
-        "backend/src/config/feature-flags.service.ts",
-        "backend/src/config/field-catalog.constants.ts",
-        "backend/src/config/role-ids.ts",
         "backend/src/config/source-provenance.constants.ts",
-        "backend/src/config/write-guard-cas.service.ts",
-        "backend/src/config/write-guard-ledger.service.ts",
         "backend/src/modules/admin/services/buying-guide/buying-guide-section-extractor.service.ts",
         "backend/src/modules/admin/services/buying-guide/buying-guide.types.ts"
       ],
       "kind": "service",
-      "loc": 468,
+      "loc": 150,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts",
       "risk": "low",
@@ -7838,6 +7859,7 @@
       "id": "backend/src/modules/admin/services/buying-guide/index.ts",
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
+        "backend/src/modules/admin/services/buying-guide-enricher.service.test.ts",
         "backend/src/modules/admin/services/buying-guide-enricher.service.ts"
       ],
       "imports": [
@@ -8372,7 +8394,7 @@
         "backend/src/modules/admin/services/execution-router.service.ts"
       ],
       "kind": "test",
-      "loc": 604,
+      "loc": 710,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/execution-router.service.test.ts",
       "risk": "low",
@@ -8411,7 +8433,7 @@
         "backend/src/modules/seo/validation/diagnostic.service.ts"
       ],
       "kind": "service",
-      "loc": 820,
+      "loc": 831,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/execution-router.service.ts",
       "risk": "low",
@@ -14105,6 +14127,8 @@
         "backend/src/modules/diagnostic-engine/maintenance-flow.test.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
         "backend/src/modules/diagnostic-engine/ports/vehicle-context.port.ts",
@@ -14120,7 +14144,7 @@
         "backend/src/modules/diagnostic-engine/vehicle-context-mapping.ts"
       ],
       "kind": "controller",
-      "loc": 555,
+      "loc": 560,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
       "risk": "low",
@@ -14155,7 +14179,7 @@
         "backend/src/modules/diagnostic-engine/types/diagnostic-reference.schema.ts"
       ],
       "kind": "service",
-      "loc": 501,
+      "loc": 519,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
       "risk": "low",
@@ -14308,11 +14332,13 @@
       "id": "backend/src/modules/diagnostic-engine/diagnostic-session-integrity.test.ts",
       "importedBy": [],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts"
       ],
       "kind": "test",
-      "loc": 124,
+      "loc": 273,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-session-integrity.test.ts",
       "risk": "low",
@@ -39814,6 +39840,7 @@
         "frontend/app/routes/admin.commercial._index.tsx",
         "frontend/app/routes/admin.control-plane.tsx",
         "frontend/app/routes/admin.debug.tsx",
+        "frontend/app/routes/admin.diagnostic-engine.tsx",
         "frontend/app/routes/admin.invoices._index.tsx",
         "frontend/app/routes/admin.menu.tsx",
         "frontend/app/routes/admin.messages.tsx",
@@ -52269,12 +52296,15 @@
       "id": "frontend/app/routes/admin.diagnostic-engine.tsx",
       "importedBy": [],
       "imports": [
+        "frontend/app/auth/unified.server.ts",
+        "~/components/ui/alert",
         "~/components/ui/badge",
         "~/components/ui/card",
-        "~/utils/internal-api.server"
+        "~/utils/internal-api.server",
+        "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 269,
+      "loc": 310,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.diagnostic-engine.tsx",
       "risk": "low",
@@ -68020,7 +68050,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 95,
+      "loc": 127,
       "owner": "__unassigned__",
       "path": "scripts/ci/preprod-e2e-rate-budget.mjs",
       "risk": "low",
@@ -68039,7 +68069,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 56,
+      "loc": 106,
       "owner": "__unassigned__",
       "path": "scripts/ci/preprod-e2e-rate-budget.storage.test.mjs",
       "risk": "low",
@@ -68058,7 +68088,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 156,
+      "loc": 183,
       "owner": "__unassigned__",
       "path": "scripts/ci/preprod-e2e-rate-budget.test.mjs",
       "risk": "low",
@@ -68096,7 +68126,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 312,
+      "loc": 345,
       "owner": "__unassigned__",
       "path": "scripts/ci/preprod-response-suite.test.mjs",
       "risk": "low",
@@ -68153,7 +68183,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 184,
+      "loc": 239,
       "owner": "__unassigned__",
       "path": "scripts/ci/prod-preprod-evidence.mjs",
       "risk": "low",
@@ -68172,7 +68202,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 308,
+      "loc": 445,
       "owner": "__unassigned__",
       "path": "scripts/ci/prod-preprod-evidence.test.mjs",
       "risk": "low",

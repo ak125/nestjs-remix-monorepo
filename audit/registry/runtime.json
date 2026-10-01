@@ -1205,8 +1205,7 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/config/feature-flags.service.ts",
-        "runtime:backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts",
+        "runtime:backend/src/config/content-write-gate.service.ts",
         "runtime:backend/src/modules/admin/services/page-brief.service.ts",
         "runtime:backend/src/modules/rag-proxy/services/rag-foundation-gate.service.ts"
       ],
@@ -1219,9 +1218,6 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/config/feature-flags.service.ts",
-        "runtime:backend/src/config/write-guard-cas.service.ts",
-        "runtime:backend/src/config/write-guard-ledger.service.ts",
         "runtime:backend/src/modules/admin/services/buying-guide/buying-guide-section-extractor.service.ts"
       ],
       "id": "runtime:backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts",
