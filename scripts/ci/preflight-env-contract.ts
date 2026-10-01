@@ -2,10 +2,11 @@
  * Preflight env contract check — fail-fast CI before `docker compose up`.
  *
  * Pattern:
- *   1. The CI step has sourced the real `.env.preprod` via
- *      `set -a; . "$PREPROD_DIR/.env"; set +a` in a fresh subshell BEFORE
- *      invoking this script. `process.env` reflects exactly what will be
- *      injected into the preprod container.
+ *   1. The caller has sourced the `.env` printed by
+ *      `scripts/ci/render-preprod-env.sh` in a fresh subshell BEFORE invoking
+ *      this script (`🧪 Deploy to PREPROD` in ci.yml, and the PR-time boot
+ *      smoke `scripts/ci/backend-boot-smoke.sh`). `process.env` reflects
+ *      exactly what will be injected into the preprod container.
  *   2. safeParse(process.env) against PreprodEnvContractSchema (SoT Zod).
  *   3. Exit 1 + structured GHA error log if validation fails.
  *
@@ -33,7 +34,7 @@ if (!result.success) {
     "SoT contrat : backend/src/contract/env-contract/preprod.schema.ts",
   );
   console.error(
-    'Fix : compléter le heredoc .env.preprod du step "🧪 Deploy to PREPROD".',
+    "Fix : compléter scripts/ci/render-preprod-env.sh (le .env de PREPROD et du boot smoke).",
   );
   process.exit(1);
 }

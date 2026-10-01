@@ -1,0 +1,45 @@
+# Boot smoke overlay — layered on docker-compose.preprod.yml by
+# scripts/ci/backend-boot-smoke.sh (read its header for WHY and CONTRACT).
+#
+# The base file stays the source of truth for everything the backend boots
+# with: env_file, environment, network name, Redis image and the healthcheck
+# test. This overlay only replaces what cannot exist on a CI runner, and
+# makes the run hermetic. Every replacement is pinned by
+# scripts/ci/backend-boot-smoke.test.mjs.
+services:
+  monorepo_preprod:
+    # No image exists at PR time (build.yml runs on refs/heads/main only):
+    # boot the tree core-build compiled, mounted at the image's WORKDIR.
+    # bookworm, not alpine: the runner installs glibc native addons (sharp),
+    # and the full variant ships the wget the base healthcheck calls.
+    image: node:24-bookworm@sha256:64af3819f9275802414d7cdc38c27e9d82bd564dec4d4da87d008255d36c63b4
+    container_name: boot-smoke-backend
+    restart: "no"
+    user: "${BOOT_SMOKE_UID:?}:${BOOT_SMOKE_GID:?}"
+    working_dir: /app
+    # Same as the Dockerfile runner stage ENTRYPOINT.
+    entrypoint: ["/bin/sh", "./backend/start.sh"]
+    environment:
+      # Runner-stage ENV the image would carry (Dockerfile), NODE_ENV aside:
+      # the base compose already sets it.
+      - TZ=Europe/Paris
+      - REGISTRY_DIR=/app/audit/registry
+      # The runner uid has no passwd entry; npm needs a writable HOME.
+      - HOME=/tmp
+    ports: !reset []
+    volumes: !override
+      - ${BOOT_SMOKE_TREE:?}:/app
+    healthcheck:
+      # Probe often during start_period instead of waiting a full interval.
+      start_interval: 2s
+
+  redis_preprod:
+    container_name: boot-smoke-redis
+    restart: "no"
+    # Never bind the PREPROD Redis data directory from a smoke run.
+    volumes: !reset []
+
+networks:
+  automecanik-preprod:
+    # No egress: the boot must not depend on any remote service.
+    internal: true
