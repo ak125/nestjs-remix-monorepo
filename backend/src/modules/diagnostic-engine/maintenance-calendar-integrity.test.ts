@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  NotFoundException,
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { DiagnosticEngineController } from './diagnostic-engine.controller';
@@ -16,13 +17,23 @@ const interval = {
   status: 'overdue',
 };
 function fixture() {
-  // Only the remote RPC boundary is replaced; calculation and controller run.
+  // Only the remote boundaries (RPCs, auto_type row) are replaced;
+  // calculation and controller run.
   const service = Object.create(
     MaintenanceCalculatorService.prototype,
   ) as MaintenanceCalculatorService;
   const rpc = jest.fn().mockResolvedValue({ data: [], error: null });
+  const typeRow = jest
+    .fn()
+    .mockResolvedValue({ data: { type_fuel: 'Essence' }, error: null });
+  const typeQuery = {
+    select: () => typeQuery,
+    eq: () => typeQuery,
+    maybeSingle: typeRow,
+  };
   Object.assign(service, {
     callRpc: rpc,
+    supabase: { from: () => typeQuery },
     logger: { error: jest.fn() },
     diagnosticContent: { getControlesMensuels: () => null },
   });
@@ -36,7 +47,7 @@ function fixture() {
     {} as never,
     {} as never,
   );
-  return { service, controller, rpc };
+  return { service, controller, rpc, typeRow };
 }
 
 describe('calendar does not infer maintenance history from the odometer', () => {
@@ -70,6 +81,60 @@ describe('calendar does not infer maintenance history from the odometer', () => 
       applicability: 'unverified',
       schedule: [{ status: 'unknown', km_remaining: null }],
     });
+  });
+  test.each(['maintenanceSchedule', 'maintenanceCalendar'] as const)(
+    '%s reports an absent mileage as unknown instead of zero',
+    async (endpoint) => {
+      const { controller, rpc } = fixture();
+      const result = await controller[endpoint]();
+      expect(result.current_km).toBeNull();
+      expect(rpc).toHaveBeenCalledWith(
+        'kg_get_smart_maintenance_schedule',
+        { p_type_id: null, p_fuel_type: null },
+        { source: 'internal' },
+      );
+    },
+  );
+});
+
+describe('monthly checks distinguish unavailable content from an empty list', () => {
+  const item = { element: 'Pneus', icon: 'Gauge', detail: 'Pression' };
+  test.each([
+    ['a valid list', { entity_data: { items: [item] } }, [item]],
+    ['an empty list', { entity_data: { items: [] } }, []],
+  ])('returns %s as provided', async (_, entry, expected) => {
+    const { service } = fixture();
+    Object.assign(service, {
+      diagnosticContent: { getControlesMensuels: () => entry },
+    });
+    const calendar = await service.getCalendar(null, null);
+    expect(calendar.controles_mensuels).toEqual(expected);
+  });
+  test('returns null for a missing file, which the content service logs', async () => {
+    const { service } = fixture();
+    const calendar = await service.getCalendar(null, null);
+    expect(calendar.controles_mensuels).toBeNull();
+    expect(calendar.schedule).toEqual([]);
+  });
+  test.each([
+    ['without items', { entity_data: {} }],
+    [
+      'with a malformed item',
+      { entity_data: { items: [{ element: '', icon: 'x', detail: 'y' }] } },
+    ],
+  ])('returns null and logs when the content is %s', async (_, entry) => {
+    const { service } = fixture();
+    const logger = { error: jest.fn() };
+    Object.assign(service, {
+      logger,
+      diagnosticContent: { getControlesMensuels: () => entry },
+    });
+    const calendar = await service.getCalendar(null, null);
+    expect(calendar.controles_mensuels).toBeNull();
+    expect(calendar.schedule).toEqual([]);
+    expect(logger.error).toHaveBeenCalledWith(
+      'Monthly checks content is malformed',
+    );
   });
 });
 
@@ -140,6 +205,17 @@ describe.each(['maintenanceSchedule', 'maintenanceCalendar'] as const)(
         expect(rpc).not.toHaveBeenCalled();
       },
     );
+    test.each([undefined, 'diesel'])(
+      'rejects a type_id absent from auto_type (fuel %j) as not found',
+      async (fuel) => {
+        const { controller, rpc, typeRow } = fixture();
+        typeRow.mockResolvedValue({ data: null, error: null });
+        await expect(
+          controller[endpoint]('999999', undefined, fuel),
+        ).rejects.toBeInstanceOf(NotFoundException);
+        expect(rpc).not.toHaveBeenCalled();
+      },
+    );
   },
 );
 
@@ -171,13 +247,11 @@ describe('milestone query validation', () => {
       { p_fuel_type: 'diesel', p_milestones: [30000, 10000] },
       { source: 'internal' },
     );
+    // Without explicit milestones the RPC default applies; it is not copied here.
     await controller.maintenanceAlerts();
     expect(rpc).toHaveBeenLastCalledWith(
       'kg_get_maintenance_alerts_by_milestone',
-      {
-        p_fuel_type: null,
-        p_milestones: [10000, 30000, 60000, 100000, 150000],
-      },
+      { p_fuel_type: null },
       { source: 'internal' },
     );
   });

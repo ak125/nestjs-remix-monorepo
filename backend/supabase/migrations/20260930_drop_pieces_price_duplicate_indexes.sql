@@ -1,0 +1,74 @@
+-- @non_transactional
+--   DROP INDEX CONCURRENTLY est interdit DANS une transaction : le marqueur ci-dessus
+--   fait exécuter ce fichier en autocommit par l'engine, une instruction à la fois.
+--
+-- Migration: retirer les 2 index strictement dupliqués de `pieces_price`
+--
+-- Suite de `20260929_drop_exact_duplicate_indexes` (PR #1619), qui laissait ces deux
+-- groupes hors périmètre : `pieces_price` est en zone STOP prix. Leur retrait est une
+-- décision owner nominative du 2026-09-30 (« pieces_price : 2 doublons »), limitée à
+-- ces 2 index. Les ~25 autres index de la table à 0 parcours restent hors lot.
+--
+-- Détecteur : l'advisor de performance Supabase `duplicate_index` (lint 0009), le
+-- seul détecteur de doublons du projet. Même critère que #1619, vérifié en lecture
+-- seule le 2026-09-30, compteurs figés à 13:47:13Z AVANT toute lecture de la table :
+--
+--   1. définition identique au jumeau conservé, relevée dans `pg_index` : même
+--      colonne, btree, classe d'opérateurs `text_ops`, collation par défaut, mêmes
+--      options, sans prédicat ni expression, ni l'un ni l'autre UNIQUE ;
+--   2. l'index retiré n'a servi à AUCUN parcours (`idx_scan = 0`) depuis le démarrage
+--      de l'instance re-provisionnée (`pg_postmaster_start_time()` = 2026-09-17
+--      01:14Z, `stats_reset` nul) : treize jours de trafic réel ;
+--   3. valide et prêt, ni identité de réplication ni CLUSTER, ne porte aucune
+--      contrainte, aucune dépendance `pg_depend`, cité par aucun corps de fonction,
+--      aucune vue, aucun job pg_cron, aucun code du dépôt (seules deux notes d'audit
+--      de `.spec/00-canon/db-governance/` les nomment ; celle qui relève un plan
+--      cite `idx_pprice_piece_id`, le jumeau conservé).
+--
+--   index retiré                    taille   jumeau conservé     parcours du jumeau
+--   idx_pieces_price_pri_piece_id   19 MB    idx_pprice_piece_id 351 (dernier 12:47Z)
+--   idx_pieces_price_pri_pm_id      8,4 MB   idx_pprice_pm_id    0
+--
+-- Pour `pri_pm_id`, aucun des deux n'a servi : on garde `idx_pprice_pm_id`, celui que
+-- le planificateur choisit déjà et du même lot que le jumeau de `pri_piece_id`.
+--
+-- Preuve par masquage (hypopg, session de mesure seule, 2026-09-30 ~13:53Z, EXPLAIN
+-- sans ANALYZE, compteurs relus inchangés à 13:54:07Z) : égalité sur `pri_piece_id`,
+-- `= ANY` + `pri_dispo = '1'`, égalité sur `pri_pm_id` (Index Only Scan et Index
+-- Scan) donnent le même plan nœud pour nœud avec et sans les 2 index, sur les
+-- jumeaux conservés. Les 2 index retirés ne sont choisis par aucune de ces requêtes.
+-- La charge dominante de la table passe par `idx_pieces_price_piece_id_int_expr`
+-- (9,1 M parcours au scellé), index d'expression que ce lot ne touche pas.
+--
+-- Gain : ≈ 27 Mo de disque. Aucun gain d'écriture mesuré : 0 insertion, mise à jour
+-- ou suppression sur la table depuis le 2026-09-17 ; à l'import suivant, deux index
+-- de moins à maintenir.
+--
+-- Timeouts EXPLICITES à 0 : un GUC omis hérite des 60 s du rôle `postgres` (incident
+-- 20260529, PR #1395). DROP INDEX CONCURRENTLY ne relit pas la heap, mais il attend la
+-- fin des transactions qui voient la table ; ces attentes comptent contre
+-- lock_timeout. Il ne bloque ni les lectures ni les écritures. Le job CI borne le run.
+-- `IF EXISTS` rend le fichier rejouable : un DROP CONCURRENTLY interrompu laisse un
+-- index INVALIDE, qu'une seconde exécution retire.
+--
+-- Effet de bord attendu : chaque DROP déclenche l'event trigger `pgrst_drop_watch`
+-- (`sql_drop`), qui recharge le cache de schéma de PostgREST — 2 rechargements, sans
+-- changement de l'API exposée (un index n'y figure pas).
+--
+-- Retour arrière : `20260930_drop_pieces_price_duplicate_indexes.down.sql` recrée les
+-- 2 index à l'identique (CONCURRENTLY). L'engine est forward-only : ce fichier se
+-- lance à la main.
+--
+-- Vérification après application (lecture seule) :
+--   SELECT n, to_regclass('public.' || n) FROM unnest(ARRAY[
+--     'idx_pieces_price_pri_piece_id','idx_pieces_price_pri_pm_id']) AS n;  -- 2 × NULL
+--   SELECT c.relname, i.indisvalid, i.indisready FROM pg_index i
+--     JOIN pg_class c ON c.oid = i.indexrelid
+--    WHERE c.relname IN ('idx_pprice_piece_id','idx_pprice_pm_id');       -- 2 × t, t
+--   Advisor performance `duplicate_index` : 11 → 9.
+SET lock_timeout = 0;
+SET statement_timeout = 0;
+
+DROP INDEX CONCURRENTLY IF EXISTS public.idx_pieces_price_pri_piece_id;
+
+DROP INDEX CONCURRENTLY IF EXISTS public.idx_pieces_price_pri_pm_id;

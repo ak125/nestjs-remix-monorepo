@@ -119,7 +119,6 @@ export const EvidencePackSchema = z.object({
       )
       .optional(),
     allowed_claims: z.array(z.string()),
-    forbidden_claims_runtime: z.array(z.string()),
     // v1: permissif. v2: union typee par bloc (VehicleContextCardInput, etc.)
     ui_block_inputs: z.record(z.string(), z.unknown()),
   }),
