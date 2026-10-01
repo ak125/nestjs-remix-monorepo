@@ -10,9 +10,12 @@ import { PROMETHEUS_REGISTRY } from './observability.tokens';
  * format and a stable, unauthenticated URL. Path scoped under
  * `/api/observability/` to make the contract explicit.
  *
- * Anonymous by design (canon : metrics endpoints must be cheap to scrape ;
- * authn would force the scraper to carry credentials and is not required —
- * the surface only exposes counters, never PII).
+ * Anonymous for the scraper, which reaches the container on the internal
+ * network (metrics endpoints must be cheap to scrape ; the surface only
+ * exposes counters, never PII). It is not public: the edge answers
+ * `/api/observability/*` with a 404 before any route that proxies to the
+ * application (config/caddy/Caddyfile), checked on every PROD deploy by
+ * `assertCaddyConfig` (scripts/ci/prod-client-ip-probe.mjs).
  */
 @Controller('api/observability')
 export class PrometheusController {

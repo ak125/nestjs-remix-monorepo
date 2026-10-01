@@ -47499,7 +47499,7 @@
         "backend/src/modules/observability/observability.tokens.ts"
       ],
       "kind": "controller",
-      "loc": 30,
+      "loc": 33,
       "owner": "@ak125",
       "path": "backend/src/modules/observability/prometheus.controller.ts",
       "risk": "medium",
@@ -98300,7 +98300,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 141,
+      "loc": 203,
       "owner": "@ak125",
       "path": "scripts/ci/prod-client-ip-probe.mjs",
       "risk": "medium",
@@ -98320,7 +98320,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 143,
+      "loc": 316,
       "owner": "@ak125",
       "path": "scripts/ci/prod-client-ip-probe.test.mjs",
       "risk": "medium",
@@ -101181,11 +101181,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "8a9a7f70490c00f57d748796e4a1c5a98addcc079a4ba569b96ad275dc246d37",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "d283c6f8c0c1b8f7686e689d842ef1874eff80586db42f8cdc2761ff6ad5db63",
+      "audit/registry/files.json": "527f4266e6ee0c9ea4ca93bfbf9c5e935e04f6c6dff503c0c6d726b24996d99b",
       "audit/registry/rpc.json": "86d0c24b102036512a9f7b11d9ac04754288049a8b061981b19f0db0a8c86263",
       "audit/registry/runtime.json": "67dc8fe02246ff5d7cf25668af7409b32ea66bc575d4ae23455b57f94d111174"
     },
-    "sotFingerprint": "7533d38864fc"
+    "sotFingerprint": "5d1966ee4d59"
   },
   "runtime": [
     {
