@@ -248,6 +248,31 @@ describe('unused maintenance context remains explicit', () => {
     );
     expect(pack.catalog_guard.allowed_output_mode).toBe('none');
   });
+  test('discloses global service history that no operation deadline uses', async () => {
+    const base = await fixture().engine.analyze(request);
+    expect(
+      base.data!.evidence.evidence_pack.factual_inputs_missing.join(' '),
+    ).not.toMatch(/dernier entretien non pris/);
+    const result = await fixture().engine.analyze({
+      ...request,
+      usage_context: {
+        ...request.usage_context,
+        last_service_km: 25000,
+        last_service_date: '2026-01-15',
+      },
+    });
+    expect(result.success).toBe(true);
+    const pack = result.data!.evidence.evidence_pack;
+    expect(pack.factual_inputs_missing).toEqual(
+      expect.arrayContaining([
+        'Kilométrage du dernier entretien non pris en compte : seuls les kilométrages renseignés par opération sont utilisés.',
+        'Date du dernier entretien non prise en compte : seules les dates renseignées par opération sont utilisées.',
+      ]),
+    );
+    expect(pack.maintenance_recommendations).toEqual(
+      base.data!.evidence.evidence_pack.maintenance_recommendations,
+    );
+  });
   test('rejects negative immobilization before reading maintenance operations', async () => {
     const f = fixture();
     const result = await f.engine.analyze({

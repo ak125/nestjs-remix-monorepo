@@ -6,7 +6,10 @@ import {
 } from './diagnostic-engine.data-service';
 import { DiagnosticEngineOrchestrator } from './diagnostic-engine.orchestrator';
 import { HypothesisScoringEngine } from './engines/hypothesis-scoring.engine';
-import { CatalogOrientationEngine } from './engines/catalog-orientation.engine';
+import {
+  CatalogOrientationEngine,
+  type CatalogGuardResult,
+} from './engines/catalog-orientation.engine';
 import {
   RiskSafetyEngine,
   type RiskAssessment,
@@ -69,7 +72,9 @@ function orchestrator() {
   const data = {
     getScoredCausesForSymptoms: jest.fn().mockResolvedValue([link()]),
     getSafetyRules: jest.fn().mockResolvedValue([rule]),
-    getCostRanges: jest.fn().mockResolvedValue(new Map()),
+    getGammeIdsWithCataloguePage: jest.fn(
+      async (ids: number[]) => new Set(ids),
+    ),
     saveSession: jest.fn().mockResolvedValue(null),
     getActiveSystems: jest.fn().mockResolvedValue([]),
   };
@@ -79,6 +84,7 @@ function orchestrator() {
       system_slug: 'freinage',
       system_label: 'Freinage',
       resolved_symptom_slugs: ['noise'],
+      symptom_labels: { noise: 'Bruit' },
       unresolved_signals: [],
       signal_quality: 'high',
     }),
@@ -123,6 +129,45 @@ describe('diagnostic safety and deterministic scoring regressions', () => {
         allowed_output_mode: 'none',
         suggested_gammes: [],
       });
+    },
+  );
+  test.each([
+    {
+      scores: [95, 90],
+      withVehicle: true,
+      overall: 'low',
+      gammes: ['low', 'low'],
+    },
+    {
+      scores: [95, 40],
+      withVehicle: false,
+      overall: 'medium',
+      gammes: ['medium', 'low'],
+    },
+    {
+      scores: [95, 40],
+      withVehicle: true,
+      overall: 'high',
+      gammes: ['high', 'low'],
+    },
+  ])(
+    'a part family never claims more confidence than the diagnosis ($overall)',
+    ({ scores, withVehicle, overall, gammes }) => {
+      const disc = link(90, 2);
+      disc.cause_id = 2;
+      disc.cause = { ...disc.cause, id: 2, slug: 'brake_disc_warped' };
+      const hypotheses = new HypothesisScoringEngine().score(
+        [link(), disc],
+        vehicle,
+      );
+      hypotheses.forEach((h, i) => (h.total_score = scores[i]));
+      const result = new CatalogOrientationEngine().evaluate(
+        hypotheses,
+        baselineRisk,
+        withVehicle ? vehicle : undefined,
+      );
+      expect(result.confidence_before_purchase).toBe(overall);
+      expect(result.suggested_gammes.map((g) => g.confidence)).toEqual(gammes);
     },
   );
   test.each(['maintenance', 'commerce', 'reassurance', 'devis'] as const)(
@@ -370,6 +415,18 @@ describe('diagnostic safety and deterministic scoring regressions', () => {
       { slug: 'liquide-de-frein', label: 'Liquide de frein', pg_id: 71 },
     ]);
   });
+  test.each([
+    ['bobine_allumage_hs', [689]],
+    ['courroie_accessoires_usee', [10]],
+    ['disque_embrayage_use', [479]],
+    ['coupelle_amortisseur_hs', [1632]],
+    ['biellette_direction_usee', [285]],
+    ['joint_collecteur_hs', [40, 3191]],
+    ['courroie_distribution_usee', [307, 3096, 306]],
+    ['cremaillere_usee', [286]],
+  ])('%s maps to the family that sells the part it names', (cause, ids) => {
+    expect(CAUSE_GAMME_MAP[cause].map((g) => g.pg_id)).toEqual(ids);
+  });
   test.each([{ resolved: [] }, { resolved: ['noise'] }])(
     'unresolved diagnostic coverage is explicit (%j)',
     async ({ resolved }) => {
@@ -386,6 +443,30 @@ describe('diagnostic safety and deterministic scoring regressions', () => {
       expect(f.data.saveSession).not.toHaveBeenCalled();
     },
   );
+  test('names secondary symptoms by their reference labels', async () => {
+    const f = orchestrator();
+    f.signal.interpret.mockResolvedValue({
+      system_confirmed: true,
+      system_slug: 'freinage',
+      system_label: 'Freinage',
+      resolved_symptom_slugs: ['noise', 'judder'],
+      symptom_labels: { noise: 'Bruit', judder: 'Vibrations' },
+      unresolved_signals: [],
+      signal_quality: 'high',
+    });
+    const result = await f.engine.analyze({
+      ...input,
+      signal_input: { ...input.signal_input, secondary_signals: ['judder'] },
+    });
+    expect(
+      result.data?.evidence.evidence_pack.factual_inputs_confirmed,
+    ).toEqual(
+      expect.arrayContaining([
+        'Symptôme principal: Bruit',
+        'Symptômes secondaires: Vibrations',
+      ]),
+    );
+  });
   test('no candidate causes cannot produce a reassuring low risk result', async () => {
     const f = orchestrator();
     f.data.getScoredCausesForSymptoms.mockResolvedValue([]);
@@ -408,7 +489,7 @@ describe('diagnostic safety and deterministic scoring regressions', () => {
     expect(result.error).toMatch(/indisponible/i);
     expect(f.data.saveSession).not.toHaveBeenCalled();
   });
-  test.each(['cost', 'maintenance', 'session'])(
+  test.each(['maintenance', 'session'])(
     'an optional %s failure preserves known critical safety',
     async (dependency) => {
       const f = orchestrator();
@@ -416,8 +497,6 @@ describe('diagnostic safety and deterministic scoring regressions', () => {
         { ...link(), cause: { ...link().cause!, urgency: 'haute' } },
       ]);
       f.data.getSafetyRules.mockResolvedValue([{ ...rule, urgency: 'haute' }]);
-      if (dependency === 'cost')
-        f.data.getCostRanges.mockRejectedValue(new Error('optional'));
       if (dependency === 'maintenance')
         f.maintenance.assess.mockRejectedValue(new Error('optional'));
       if (dependency === 'session')
@@ -461,6 +540,215 @@ describe('diagnostic safety and deterministic scoring regressions', () => {
       expect(result.error).toMatch(/mode|charge/i);
     },
   );
+});
+
+describe('catalogue readiness rests on the dominant hypothesis', () => {
+  // Live __diag_* rows (2026-09-30) for craquement_passage_vitesse: the dominant
+  // cause names no catalogue family, the lower-ranked one does.
+  const live = (
+    [
+      slug,
+      cause_type,
+      urgency,
+      relative_score,
+      km_min,
+      km_max,
+      evidence,
+    ]: readonly [string, string, string, number, number, number, number],
+    id: number,
+  ): DiagSymptomCauseLink => ({
+    id,
+    symptom_id: 1,
+    cause_id: id,
+    relative_score,
+    evidence_for: Array.from({ length: evidence }, (_, i) => `e${i}`),
+    evidence_against: [],
+    requires_verification: true,
+    active: true,
+    cause: {
+      id,
+      slug,
+      label: slug,
+      system_id: 1,
+      cause_type,
+      description: null,
+      verification_method: null,
+      urgency,
+      active: true,
+      plausible_km_min: km_min,
+      plausible_km_max: km_max,
+    } as DiagSymptomCauseLink['cause'],
+  });
+  const gearboxCrack = [
+    ['boite_vitesses_usee', 'mechanical', 'moyenne', 70, 150000, 350000, 2],
+    ['cardan_use', 'wear', 'haute', 20, 100000, 250000, 1],
+  ] as const;
+
+  test.each([90000, 180000])(
+    'a gearbox crack at %i km is not ready for the catalogue through the CV joint',
+    (mileage_km) => {
+      const car = { brand: 'Test', model: 'Test', mileage_km };
+      const hypotheses = new HypothesisScoringEngine().score(
+        gearboxCrack.map((c, i) => live(c, i + 1)),
+        car,
+      );
+      const [top, second] = hypotheses;
+      expect(top.hypothesis_id).toBe('boite_vitesses_usee');
+      expect(CAUSE_GAMME_MAP[top.hypothesis_id]).toEqual([]);
+      expect(top.total_score - second.total_score).toBeGreaterThanOrEqual(15);
+
+      const result = new CatalogOrientationEngine().evaluate(
+        hypotheses,
+        baselineRisk,
+        car,
+      );
+      expect(result).toMatchObject({
+        ready_for_catalog: false,
+        confidence_before_purchase: 'low',
+        allowed_output_mode: 'catalog_family_only',
+        suggested_gammes: [
+          { gamme_slug: 'cardan', from_hypothesis: 'cardan_use' },
+        ],
+      });
+      expect(result.reason).toMatch(/cause la plus probable/);
+    },
+  );
+
+  test('a dominant hypothesis with its own family stays ready', () => {
+    const hypotheses = new HypothesisScoringEngine().score([link()], vehicle);
+    expect(
+      new CatalogOrientationEngine().evaluate(
+        hypotheses,
+        baselineRisk,
+        vehicle,
+      ),
+    ).toMatchObject({
+      ready_for_catalog: true,
+      allowed_output_mode: 'catalog_family_with_caution',
+      suggested_gammes: [
+        {
+          gamme_slug: 'plaquette-de-frein',
+          from_hypothesis: 'brake_pads_worn',
+        },
+      ],
+    });
+  });
+});
+
+const guard = (ready: boolean, pgIds: number[]): CatalogGuardResult => ({
+  ready_for_catalog: ready,
+  confidence_before_purchase: 'high',
+  allowed_output_mode: ready
+    ? 'catalog_reference_with_caution'
+    : 'catalog_family_only',
+  reason: 'Motif initial',
+  suggested_gammes: pgIds.map((pg_id) => ({
+    gamme_slug: `gamme-${pg_id}`,
+    gamme_label: 'Gamme',
+    pg_id,
+    confidence: 'high',
+    from_hypothesis: 'brake_pads_worn',
+  })),
+});
+
+describe('suggested families are linked only when they have a catalogue page', () => {
+  const engine = new CatalogOrientationEngine();
+
+  test('a family without a page is dropped, the others keep the orientation', () => {
+    const result = engine.restrictToCataloguePages(
+      guard(true, [402, 71]),
+      new Set([402]),
+    );
+    expect(result).toMatchObject({
+      ready_for_catalog: true,
+      allowed_output_mode: 'catalog_reference_with_caution',
+      reason: 'Motif initial',
+    });
+    expect(result.suggested_gammes.map((g) => g.pg_id)).toEqual([402]);
+  });
+  test.each([[[71]], [[]]])(
+    'a ready result with no family page left (%j) is not ready',
+    (pgIds) => {
+      expect(
+        engine.restrictToCataloguePages(guard(true, pgIds), new Set()),
+      ).toMatchObject({
+        ready_for_catalog: false,
+        allowed_output_mode: 'none',
+        reason: expect.stringMatching(/Aucune famille de pièces du catalogue/),
+        suggested_gammes: [],
+      });
+    },
+  );
+  test('a result that was not ready keeps its reason when no family is left', () => {
+    expect(
+      engine.restrictToCataloguePages(guard(false, [71]), new Set()),
+    ).toMatchObject({
+      ready_for_catalog: false,
+      allowed_output_mode: 'none',
+      reason: 'Motif initial',
+      suggested_gammes: [],
+    });
+  });
+  test('an unchecked catalogue suggests nothing', () => {
+    expect(
+      engine.restrictToCataloguePages(guard(true, [402]), null),
+    ).toMatchObject({
+      ready_for_catalog: false,
+      allowed_output_mode: 'none',
+      reason: expect.stringMatching(/indisponible/),
+      suggested_gammes: [],
+    });
+  });
+  test('an unchecked catalogue does not replace a safety block reason', () => {
+    const blocked = {
+      ...guard(false, []),
+      allowed_output_mode: 'none' as const,
+    };
+    expect(engine.restrictToCataloguePages(blocked, null)).toEqual(blocked);
+  });
+
+  function openCatalogue() {
+    const f = orchestrator();
+    f.data.getSafetyRules.mockResolvedValue([
+      { ...rule, blocks_catalog: false },
+    ]);
+    return f;
+  }
+  test('the analysis links a family that has a page', async () => {
+    const f = openCatalogue();
+    const result = await f.engine.analyze(input);
+    expect(f.data.getGammeIdsWithCataloguePage).toHaveBeenCalledWith([402]);
+    expect(result.data?.evidence.evidence_pack.catalog_guard).toMatchObject({
+      ready_for_catalog: true,
+      suggested_gammes: [expect.objectContaining({ pg_id: 402 })],
+    });
+  });
+  test('the analysis never links a family without a page', async () => {
+    const f = openCatalogue();
+    f.data.getGammeIdsWithCataloguePage.mockResolvedValue(new Set());
+    const result = await f.engine.analyze(input);
+    expect(result.success).toBe(true);
+    expect(result.data?.evidence.evidence_pack.catalog_guard).toMatchObject({
+      ready_for_catalog: false,
+      allowed_output_mode: 'none',
+      suggested_gammes: [],
+    });
+  });
+  test('a failed catalogue check is reported and suggests nothing', async () => {
+    const f = openCatalogue();
+    f.data.getGammeIdsWithCataloguePage.mockRejectedValue(new Error('down'));
+    const result = await f.engine.analyze(input);
+    expect(result.success).toBe(true);
+    const pack = result.data!.evidence.evidence_pack;
+    expect(pack.catalog_guard).toMatchObject({
+      ready_for_catalog: false,
+      allowed_output_mode: 'none',
+      suggested_gammes: [],
+    });
+    expect(pack.factual_inputs_missing).toContainEqual(
+      expect.stringMatching(/catalogue indisponible/),
+    );
+  });
 });
 
 describe('maintenance input integrity', () => {

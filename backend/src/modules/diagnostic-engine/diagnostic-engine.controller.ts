@@ -2,7 +2,7 @@
  * DiagnosticEngine Controller — API REST
  *
  * POST /api/diagnostic-engine/analyze      → Evidence Pack
- * GET  /api/diagnostic-engine/systems      → Systemes actifs
+ * GET  /api/diagnostic-engine/systems      → Systemes analysables
  * GET  /api/diagnostic-engine/symptoms     → Symptomes par systeme
  * GET  /api/diagnostic-engine/sessions     → Historique sessions (admin)
  * GET  /api/diagnostic-engine/sessions/:id → Session par UUID
@@ -433,9 +433,11 @@ export class DiagnosticEngineController {
    * POST /api/diagnostic-engine/breakdown
    *
    * ADR-032 — endpoint urgence routière (panne immobilisante).
-   * Force `intent_type: 'breakdown'` et délègue à l'orchestrator standard
-   * (le `RiskSafetyEngine` priorise les rules safety_gate=stop_immediate
-   * via la priority haute du flag breakdown).
+   * Alias de /analyze qui force `intent_type: 'breakdown'`. La valeur est
+   * seulement enregistrée dans la session : aucun moteur ne la lit, donc
+   * aucune priorisation de risque propre à la panne n'existe. Contrairement
+   * à /analyze : pas de persistance du contexte véhicule ni de couche
+   * d'intention V1A.
    */
   @Post('breakdown')
   async breakdown(@Body() body: unknown) {
@@ -468,11 +470,11 @@ export class DiagnosticEngineController {
   /**
    * GET /api/diagnostic-engine/systems
    *
-   * List active diagnostic systems
+   * List the diagnostic systems that can be analysed
    */
   @Get('systems')
   async getSystems() {
-    const systems = await this.dataService.getActiveSystems();
+    const systems = await this.orchestrator.getAnalysableSystems();
     return {
       success: true,
       count: systems.length,
@@ -487,15 +489,21 @@ export class DiagnosticEngineController {
   /**
    * GET /api/diagnostic-engine/symptoms?system=freinage
    *
-   * List available symptoms for a system
+   * List available symptoms for a system. A missing parameter is a 400 and an
+   * unknown or inactive system a 404, so an empty list only ever means an
+   * active system without active symptoms.
    */
   @Get('symptoms')
   async getSymptoms(@Query('system') systemSlug?: string) {
     if (!systemSlug) {
-      return {
-        success: false,
-        error: 'Paramètre "system" requis (ex: ?system=freinage)',
-      };
+      throw new BadRequestException(
+        'Paramètre "system" requis (ex: ?system=freinage)',
+      );
+    }
+
+    const system = await this.dataService.getSystemBySlug(systemSlug);
+    if (!system) {
+      throw new NotFoundException('Système de diagnostic inconnu ou inactif.');
     }
 
     const symptoms = await this.dataService.getSymptomsBySystem(systemSlug);

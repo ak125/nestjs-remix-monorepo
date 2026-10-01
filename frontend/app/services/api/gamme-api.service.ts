@@ -35,6 +35,8 @@ export interface GammeApiResponse {
     famille_info?: GammePageFamille;
     pg_name?: string;
     pg_alias?: string;
+    /** Cible du lien « Guide d'achat », décidée par le backend (ADR-103 D5) ; null = pas de lien. */
+    buyingGuideHref?: string | null;
   };
   motorisations?: {
     title: string;

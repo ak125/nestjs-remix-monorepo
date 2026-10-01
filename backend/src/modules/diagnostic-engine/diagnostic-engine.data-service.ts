@@ -19,6 +19,7 @@ import {
   DiagCauseLinksSchema,
   DiagCausesSchema,
   DiagSafetyRulesSchema,
+  DiagSafetyRuleCoverageSchema,
 } from './types/diagnostic-reference.schema';
 
 // ── DB Row types (aligned on migration schema) ──────────
@@ -341,23 +342,41 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
   }
 
   /**
-   * Get cost ranges for a list of pg_ids from __seo_gamme_purchase_guide
+   * Which of these gammes have their own catalogue page. Only main gammes
+   * (pg_level 1/2) are served; level-4/5 accessory gammes are hidden by
+   * design and their URL answers 404. pg_display does not decide it: level-1
+   * gammes such as Batterie are served with pg_display = 0.
    */
-  async getCostRanges(pgIds: number[]): Promise<Map<number, string>> {
-    if (!pgIds.length) return new Map();
+  async getGammeIdsWithCataloguePage(pgIds: number[]): Promise<Set<number>> {
+    if (!pgIds.length) return new Set();
     const { data, error } = await this.supabase
-      .from('__seo_gamme_purchase_guide')
-      .select('sgpg_pg_id, sgpg_risk_cost_range')
-      .in('sgpg_pg_id', pgIds.map(String));
+      .from('pieces_gamme')
+      .select('pg_id')
+      .in('pg_id', pgIds)
+      .in('pg_level', ['1', '2']);
 
-    if (error || !data) return new Map();
-    const map = new Map<number, string>();
-    for (const row of data) {
-      if (row.sgpg_risk_cost_range) {
-        map.set(Number(row.sgpg_pg_id), row.sgpg_risk_cost_range);
-      }
+    if (error || !Array.isArray(data)) {
+      this.logger.error('Failed to fetch catalogue gammes', error?.message);
+      throw new Error('Catalogue gammes unavailable');
     }
-    return map;
+    return new Set(data.map((row) => Number(row.pg_id)));
+  }
+
+  /**
+   * Systems that have at least one active safety rule.
+   */
+  async getSystemIdsWithSafetyRules(): Promise<Set<number>> {
+    const { data, error } = await this.supabase
+      .from('__diag_safety_rule')
+      .select('system_id, active')
+      .eq('active', true);
+
+    if (error) {
+      this.logger.error('Failed to fetch safety rule coverage', error.message);
+      throw new Error('Safety rules unavailable');
+    }
+    DiagSafetyRuleCoverageSchema.parse(data);
+    return new Set(data.map((row) => row.system_id));
   }
 
   /**
