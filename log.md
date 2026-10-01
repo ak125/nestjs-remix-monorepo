@@ -573,3 +573,27 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/db-pin-order-functions-search-path`
 - **Décision** : Merge remote-tracking branch 'origin/main' into fix/db-pin-order-functions-search-path (+5 other commits)
 - **Sortie** : PR #1648 | commits 21f3973c5 43ebaabad 4b299c317 f79054304 442b371ce 0c0c9571a
+
+## 2026-10-01 — fix/db-drop-pieces-price-unused-indexes (auto)
+
+- **Branche** : `fix/db-drop-pieces-price-unused-indexes`
+- **Décision** : chore(ownership): glob de 20261001_drop_pieces_price_unused_indexes (owner-directed override) (+4 other commits)
+- **Sortie** : PR #1649 | commits 4d1ba50e1 db3e2e2cc 6732ed805 7a575a5d9 a8683258e
+
+## 2026-10-01 — fix/db-drop-pieces-price-unused-indexes (auto)
+
+- **Branche** : `fix/db-drop-pieces-price-unused-indexes`
+- **Décision** : Merge remote-tracking branch 'origin/main' into fix/db-drop-pieces-price-unused-indexes (+7 other commits)
+- **Sortie** : PR #1649 | commits 09cf27fe9 a5e4e4b64 cb1f5605c 4d1ba50e1 db3e2e2cc 6732ed805 7a575a5d9 a8683258e
+
+## 2026-10-01 — fix/db-drop-pieces-price-unused-indexes (auto)
+
+- **Branche** : `fix/db-drop-pieces-price-unused-indexes`
+- **Décision** : Merge remote-tracking branch 'origin/main' into fix/db-drop-pieces-price-unused-indexes (+9 other commits)
+- **Sortie** : PR #1649 | commits 4cbd9fdd2 17668ff66 09cf27fe9 a5e4e4b64 cb1f5605c 4d1ba50e1 db3e2e2cc 6732ed805 7a575a5d9 a8683258e
+
+## 2026-10-01 — fix/db-drop-pieces-price-unused-indexes (auto)
+
+- **Branche** : `fix/db-drop-pieces-price-unused-indexes`
+- **Décision** : Merge remote-tracking branch 'origin/main' into fix/db-drop-pieces-price-unused-indexes (+11 other commits)
+- **Sortie** : PR #1649 | commits b6c5f011f a9350f73a 4cbd9fdd2 17668ff66 09cf27fe9 a5e4e4b64 cb1f5605c 4d1ba50e1 db3e2e2cc 6732ed805 7a575a5d9 a8683258e
