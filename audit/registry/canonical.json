@@ -84958,6 +84958,7 @@
         "~/components/ui/badge",
         "~/components/ui/card",
         "~/types/r6-guide.types",
+        "~/utils/cache-control",
         "~/utils/internal-api.server",
         "~/utils/logger",
         "~/utils/page-role.types",
@@ -84965,7 +84966,7 @@
         "~/utils/seo/canonical"
       ],
       "kind": "route",
-      "loc": 1065,
+      "loc": 1096,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/blog-pieces-auto.guide-achat.$pg_alias.tsx",
       "risk": "medium",
@@ -91778,6 +91779,26 @@
       "loc": 362,
       "owner": "@ak125",
       "path": "frontend/tests/unit/gamme-autolink.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/guide-achat-loader-status.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 166,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/guide-achat-loader-status.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -101312,11 +101333,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "8a9a7f70490c00f57d748796e4a1c5a98addcc079a4ba569b96ad275dc246d37",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "0e8498a4693574035450f11dfc50857441cd3d8a9ecbc91c41551f63b5b40f54",
+      "audit/registry/files.json": "a5c80bbc5c9ff1d61b5613db8e4515e043b196501f79e4fbafb6a126854c8ce5",
       "audit/registry/rpc.json": "86d0c24b102036512a9f7b11d9ac04754288049a8b061981b19f0db0a8c86263",
       "audit/registry/runtime.json": "985798dace4be166f55b789fa35550a097179907eaa572143c5d3b9565f17a32"
     },
-    "sotFingerprint": "0657815e5770"
+    "sotFingerprint": "e64b4e043f71"
   },
   "runtime": [
     {
