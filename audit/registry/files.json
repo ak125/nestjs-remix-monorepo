@@ -14969,7 +14969,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "service",
-      "loc": 179,
+      "loc": 170,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/services/intent-classifier.service.ts",
       "risk": "low",
@@ -14991,7 +14991,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "test",
-      "loc": 157,
+      "loc": 189,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/services/intent-classifier.test.ts",
       "risk": "low",
