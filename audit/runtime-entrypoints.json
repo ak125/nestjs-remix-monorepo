@@ -2758,6 +2758,8 @@
       "backend/supabase/migrations/20260930_rls_align_service_role_only_policies.sql",
       "backend/supabase/migrations/20261001_archive_dead_tables_lot_d.down.sql",
       "backend/supabase/migrations/20261001_archive_dead_tables_lot_d.sql",
+      "backend/supabase/migrations/20261001_cron_job_run_details_retention.down.sql",
+      "backend/supabase/migrations/20261001_cron_job_run_details_retention.sql",
       "backend/supabase/migrations/20261001_drop_pieces_price_unused_indexes.down.sql",
       "backend/supabase/migrations/20261001_drop_pieces_price_unused_indexes.sql",
       "backend/supabase/migrations/20261001_pin_order_functions_search_path.down.sql",
@@ -2915,7 +2917,6 @@
       "scripts/registry/build-runtime-registry.js",
       "scripts/registry/check-new-files.js",
       "scripts/registry/seed-ownership.js",
-      "scripts/registry/validate-automation-overlay.test.ts",
       "scripts/registry/validate-automation-overlay.ts",
       "scripts/registry/validate-invariants.test.ts",
       "scripts/registry/validate-invariants.ts",
@@ -2938,7 +2939,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1552,
+  "runtime_files_count": 1553,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4157,6 +4158,8 @@
     "backend/supabase/migrations/20260930_rls_align_service_role_only_policies.sql",
     "backend/supabase/migrations/20261001_archive_dead_tables_lot_d.down.sql",
     "backend/supabase/migrations/20261001_archive_dead_tables_lot_d.sql",
+    "backend/supabase/migrations/20261001_cron_job_run_details_retention.down.sql",
+    "backend/supabase/migrations/20261001_cron_job_run_details_retention.sql",
     "backend/supabase/migrations/20261001_drop_pieces_price_unused_indexes.down.sql",
     "backend/supabase/migrations/20261001_drop_pieces_price_unused_indexes.sql",
     "backend/supabase/migrations/20261001_pin_order_functions_search_path.down.sql",
@@ -4470,7 +4473,6 @@
     "scripts/registry/build-runtime-registry.js",
     "scripts/registry/check-new-files.js",
     "scripts/registry/seed-ownership.js",
-    "scripts/registry/validate-automation-overlay.test.ts",
     "scripts/registry/validate-automation-overlay.ts",
     "scripts/registry/validate-invariants.test.ts",
     "scripts/registry/validate-invariants.ts",
