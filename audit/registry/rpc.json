@@ -2986,6 +2986,30 @@
       "usedBy": []
     },
     {
+      "args": [],
+      "definedInMigrations": [
+        "20261001_get_r6_guide_link_snapshot_definer_rpc.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_r6_guide_link_snapshot",
+      "language": "sql",
+      "name": "get_r6_guide_link_snapshot",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "jsonb",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public",
+        "pg_temp"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
       "args": [
         {
           "mode": "IN",
