@@ -437,8 +437,10 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
       .limit(limit);
 
     if (error) {
-      this.logger.warn('Failed to list sessions', error.message);
-      return [];
+      this.logger.error('Failed to list sessions', error.message);
+      throw new ServiceUnavailableException(
+        'Historique des diagnostics indisponible.',
+      );
     }
     return data || [];
   }
@@ -476,11 +478,27 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
       ]);
 
     // Sessions by system (manual grouping from recent 500)
-    const { data: recentSessions } = await this.supabase
+    const recentRes = await this.supabase
       .from('__diag_session')
       .select('system_scope')
       .order('created_at', { ascending: false })
       .limit(500);
+
+    const failed = [
+      sessionsRes,
+      systemsRes,
+      symptomsRes,
+      causesRes,
+      rulesRes,
+      recentRes,
+    ].find((res) => res.error);
+    if (failed?.error) {
+      this.logger.error('Failed to compute stats', failed.error.message);
+      throw new ServiceUnavailableException(
+        'Statistiques du diagnostic indisponibles.',
+      );
+    }
+    const recentSessions = recentRes.data;
 
     const bySystem = new Map<string, number>();
     for (const s of recentSessions || []) {

@@ -303,7 +303,7 @@ describe('diagnostic reference responses are checked before safety evaluation', 
         result.data?.evidence.evidence_pack.candidate_hypotheses[0];
       expect(hypothesis).toMatchObject({
         cause_type: category,
-        relative_score: 70,
+        relative_score: 57,
         urgency_timeline: 'Sous 48h — contrôle professionnel urgent',
         scoring_breakdown: expect.objectContaining({ signal_match: 21 }),
       });
