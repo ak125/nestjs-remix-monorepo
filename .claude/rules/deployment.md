@@ -1,3 +1,23 @@
+---
+# Chargée à la demande : quand l'agent lit un fichier qui correspond à ces chemins.
+# Hors de ces chemins, CLAUDE.md (invariant 8, §Vocabulaire déploiement) pointe ici
+# avant toute action infra. Le lint check-preprod-vocabulary.sh reste la garde mécanique.
+paths:
+  - ".github/workflows/**"
+  - "docker/**"
+  - "docker-compose*.yml"
+  - "Dockerfile*"
+  - ".sops.yaml"
+  - "secrets/**"
+  - "scripts/ops/**"
+  - "scripts/ci/**"
+  - "scripts/lint/check-preprod-vocabulary.sh"
+  - "scripts/claude-hooks/pretool-bash-guard.sh"
+  - ".husky/pre-push"
+  - "backend/src/contract/env-contract/**"
+  - ".spec/runbooks/**"
+---
+
 # Deployment — VOCABULAIRE STRICT (canon)
 
 > **Charger ce fichier AVANT toute action sur l'infra de déploiement.**
@@ -57,6 +77,7 @@ feature (sinon DEV:3000 sert du code périmé).
 - Le tag `:preprod` est **réécrit à chaque merge sur `main`** (workflow `ci.yml` → step `build`).
 - Il est **promu vers `:production`** par push d'un tag git `v*` (workflow `deploy-prod.yml`).
 - Ce n'est **pas une référence stable** — pour debug historique ou rollback, utiliser un SHA git ou un tag semver explicite.
+- Le label SHA de `:preprod` prouve la **provenance**, pas la **validation** : `deploy-prod.yml` refuse aussi, avant toute mutation, un commit dont le run `ci.yml` (push `main`) n'a pas `🧪 Deploy PREPROD`, `🎭 E2E Smoke Tests` et `🔦 Lighthouse Performance Audit` en `success` (`scripts/ci/prod-preprod-evidence.mjs`). Un commit dont le run a été annulé par un merge suivant n'est pas validé : taguer le dernier commit vert.
 
 ## Pièges de nommage INTERDITS (CI lint enforcé)
 

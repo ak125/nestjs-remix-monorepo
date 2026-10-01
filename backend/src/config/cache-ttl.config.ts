@@ -233,6 +233,13 @@ export const CACHE_STRATEGIES = {
       adaptive: true,
       description: 'Low-traffic articles (<100 views)',
     },
+    R6_GUIDE_LINKS: {
+      ttl: CacheTTL.TEN_MINUTES,
+      prefix: 'r6-guide-links:',
+      keyVersion: 'v1',
+      description:
+        'Guides d’achat publiés + gammes avec page conseils (règle des liens ADR-103 D5) — sans le drapeau, lu à chaque appel',
+    },
   },
 
   // ═══════════════════════════════════════════════════════════════
@@ -411,9 +418,9 @@ export const CACHE_STRATEGIES = {
     PAGE_V2: {
       ttl: CacheTTL.ONE_HOUR,
       prefix: 'rm:page-v2:',
-      // v1 (2026-09-02, A3) : première version explicite de la forme cachée
-      // (RmPageCompleteV2Response entière au limit canonique).
-      keyVersion: 'v1',
+      // v2 (2026-09-28) : ne plus relire les réponses v1 pouvant contenir
+      // des templates bruts ou un repli SEO publiés à tort comme succès.
+      keyVersion: 'v2',
       generation: 'catalog',
       description:
         'rm_get_page_complete_v2 — résultat plein (classification ok)',
@@ -421,7 +428,7 @@ export const CACHE_STRATEGIES = {
     PAGE_V2_EMPTY: {
       ttl: CacheTTL.FIFTEEN_MINUTES,
       prefix: 'rm:page-v2:',
-      keyVersion: 'v1',
+      keyVersion: 'v2',
       generation: 'catalog',
       description:
         'rm_get_page_complete_v2 — 0 produit (classification empty) : population soft-404, TTL court',
@@ -434,7 +441,8 @@ export const CACHE_STRATEGIES = {
       //   tournée (chaque RPC rendait 'Invalid API key', caché vide 5 min).
       // v3 → v4 (2026-09-02, A2) : la valeur change de forme — payload RPC brut
       //   au limit canonique (tranché à la lecture) au lieu de la réponse construite.
-      keyVersion: 'v4',
+      // v5 : distinguer les erreurs mises en cache des vrais résultats vides.
+      keyVersion: 'v5',
       generation: 'catalog',
       description:
         'get_soft_404_alternatives — dérivé de compatibilité TecDoc, stable entre imports catalogue',
@@ -442,10 +450,10 @@ export const CACHE_STRATEGIES = {
     ALTERNATIVES_ERROR: {
       ttl: 30,
       prefix: 'alt:',
-      keyVersion: 'v4',
+      keyVersion: 'v5',
       generation: 'catalog',
       description:
-        'get_soft_404_alternatives — échec RPC : réponse vide à TTL court, anti-poisoning (incident 2026-05-19)',
+        'get_soft_404_alternatives — échec RPC : indisponibilité explicite à TTL court, anti-poisoning (incident 2026-05-19)',
     },
   },
 

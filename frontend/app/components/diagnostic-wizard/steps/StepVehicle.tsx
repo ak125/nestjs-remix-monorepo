@@ -89,8 +89,9 @@ export function StepVehicle({ state, dispatch, vehicleSelector }: Props) {
           Identifiez votre véhicule
         </h2>
         <p className="text-sm text-gray-500">
-          Plus vous êtes précis, plus le diagnostic sera pertinent. Tous les
-          champs sont optionnels.
+          {state.analysisMode === "maintenance"
+            ? "Le compteur actuel permet de calculer les kilomètres depuis chaque entretien. Les champs sont optionnels ; les intervalles restent génériques."
+            : "Plus vous êtes précis, plus le diagnostic sera pertinent. Tous les champs sont optionnels."}
         </p>
       </div>
 
@@ -178,7 +179,7 @@ export function StepVehicle({ state, dispatch, vehicleSelector }: Props) {
                 type="number"
                 placeholder="ex: 95000"
                 min={0}
-                value={state.vehicle.mileage_km || ""}
+                value={state.vehicle.mileage_km ?? ""}
                 onChange={(e) =>
                   dispatch({
                     type: "SET_VEHICLE",
@@ -197,65 +198,67 @@ export function StepVehicle({ state, dispatch, vehicleSelector }: Props) {
       </Card>
 
       {/* Usage profile */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Route className="w-5 h-5 text-blue-600" />
-            Profil d'utilisation
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {USAGE_PROFILES.map((p) => (
-              <button
-                key={p.value}
-                type="button"
-                onClick={() =>
+      {state.analysisMode !== "maintenance" && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Route className="w-5 h-5 text-blue-600" />
+              Profil d'utilisation
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {USAGE_PROFILES.map((p) => (
+                <button
+                  key={p.value}
+                  type="button"
+                  onClick={() =>
+                    dispatch({
+                      type: "SET_USAGE",
+                      payload: {
+                        profile:
+                          state.usageProfile === p.value ? undefined : p.value,
+                        lastServiceKm: state.lastServiceKm,
+                      },
+                    })
+                  }
+                  className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border text-sm transition-colors ${
+                    state.usageProfile === p.value
+                      ? "border-blue-500 bg-blue-50 text-blue-700 font-medium"
+                      : "border-gray-200 hover:border-gray-300 text-blue-900"
+                  }`}
+                >
+                  <span>{p.icon}</span>
+                  <span>{p.label}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-4 space-y-1.5">
+              <Label htmlFor="lastService">
+                Dernier entretien (km au compteur)
+              </Label>
+              <Input
+                id="lastService"
+                type="number"
+                placeholder="ex: 75000"
+                value={state.lastServiceKm ?? ""}
+                onChange={(e) =>
                   dispatch({
                     type: "SET_USAGE",
                     payload: {
-                      profile:
-                        state.usageProfile === p.value ? undefined : p.value,
-                      lastServiceKm: state.lastServiceKm,
+                      profile: state.usageProfile,
+                      lastServiceKm: e.target.value
+                        ? parseInt(e.target.value)
+                        : undefined,
                     },
                   })
                 }
-                className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border text-sm transition-colors ${
-                  state.usageProfile === p.value
-                    ? "border-blue-500 bg-blue-50 text-blue-700 font-medium"
-                    : "border-gray-200 hover:border-gray-300 text-blue-900"
-                }`}
-              >
-                <span>{p.icon}</span>
-                <span>{p.label}</span>
-              </button>
-            ))}
-          </div>
-
-          <div className="mt-4 space-y-1.5">
-            <Label htmlFor="lastService">
-              Dernier entretien (km au compteur)
-            </Label>
-            <Input
-              id="lastService"
-              type="number"
-              placeholder="ex: 75000"
-              value={state.lastServiceKm || ""}
-              onChange={(e) =>
-                dispatch({
-                  type: "SET_USAGE",
-                  payload: {
-                    profile: state.usageProfile,
-                    lastServiceKm: e.target.value
-                      ? parseInt(e.target.value)
-                      : undefined,
-                  },
-                })
-              }
-            />
-          </div>
-        </CardContent>
-      </Card>
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

@@ -27,6 +27,10 @@ concurrency:
 
 permissions:
   contents: read
+  # Read-only: the PREPROD evidence gate reads the ci.yml run of the tagged commit.
+  actions: read
+  # Read-only: the gate finds that run from the commit's check runs.
+  checks: read
 
 jobs:
   deploy-prod:
@@ -47,6 +51,17 @@ jobs:
 
       - name: Verify SEO env writers (collector, projection flags) before any PROD mutation
         run: node --test scripts/ci/prod-seo-collector-env.test.mjs scripts/ci/prod-seo-projection-env.test.mjs
+
+      - name: Verify PREPROD evidence gate before any PROD mutation
+        run: node --test scripts/ci/prod-preprod-evidence.test.mjs
+
+      - name: 🧪 PREPROD evidence gate — Deploy PREPROD + E2E Smoke + Lighthouse green for this commit
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        # The SHA gate below proves :preprod was BUILT from this commit, not that it
+        # passed PREPROD: build.yml publishes :preprod before ci.yml runs the smokes
+        # (f54aa333f, 2026-09-28). Fail-closed, read-only, before any Docker step.
+        run: node scripts/ci/prod-preprod-evidence.mjs
 
       - name: Login to Docker Hub
         uses: docker/login-action@v4

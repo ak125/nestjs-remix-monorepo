@@ -19,7 +19,8 @@ interface Props {
   hypotheses: Hypothesis[];
 }
 
-const URGENCY_BADGE: Record<string, string> = {
+const URGENCY_BADGE: Record<Hypothesis["urgency"], string> = {
+  critique: "bg-red-100 text-red-800 border-red-300",
   haute: "bg-red-100 text-red-700 border-red-200",
   moyenne: "bg-amber-100 text-amber-700 border-amber-200",
   basse: "bg-green-100 text-green-700 border-green-200",
@@ -75,7 +76,7 @@ export function ResultHypotheses({ hypotheses }: Props) {
                   className={`flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold shrink-0 ${
                     isTop
                       ? "bg-blue-600 text-white"
-                      : "bg-gray-100 text-white border border-gray-200"
+                      : "bg-gray-100 text-gray-600 border border-gray-200"
                   }`}
                 >
                   {i + 1}

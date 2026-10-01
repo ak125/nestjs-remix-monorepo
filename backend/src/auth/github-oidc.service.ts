@@ -37,6 +37,7 @@ import {
   type JWTVerifyGetKey,
 } from 'jose';
 import Redis from 'ioredis';
+import { redisConnectionOptions } from '../config/app.config';
 
 export interface GithubOidcClaims extends JWTPayload {
   repository: string;
@@ -153,9 +154,7 @@ export class GithubOidcService implements OnModuleInit, OnModuleDestroy {
    */
   protected createRedis(): Redis {
     return new Redis({
-      host: this.config.get<string>('REDIS_HOST', 'localhost'),
-      port: parseInt(this.config.get<string>('REDIS_PORT', '6379'), 10),
-      password: this.config.get<string>('REDIS_PASSWORD') || undefined,
+      ...redisConnectionOptions((key) => this.config.get<string>(key)),
       db: GithubOidcService.REDIS_DB_INDEX,
       lazyConnect: true,
       maxRetriesPerRequest: 3,

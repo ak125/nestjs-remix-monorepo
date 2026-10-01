@@ -27,6 +27,11 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: high
+  - glob: .agents/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
   - glob: .claude/skills/**
     domain: D15
     owner: '@ak125'
@@ -690,6 +695,22 @@ entries:
     owner: '@ak125'
     sourceConfidence: medium
     risk: low
+  # Diagnostic audit evidence and MCP input contract share the diagnostic owner.
+  - glob: docs/audits/diagnostic-*/**
+    domain: D4
+    owner: '@ak125/vehicle-team'
+    sourceConfidence: high
+    risk: low
+  - glob: backend/src/modules/mcp-validation/services/mcp-query-diagnostic.test.ts
+    domain: D4
+    owner: '@ak125/vehicle-team'
+    sourceConfidence: high
+    risk: low
+  - glob: backend/src/modules/mcp-validation/types/mcp-diagnose.schema.ts
+    domain: D4
+    owner: '@ak125/vehicle-team'
+    sourceConfidence: high
+    risk: medium
   - glob: backend/src/modules/diagnostic-engine/**
     domain: D4
     owner: '@ak125/vehicle-team'
@@ -890,6 +911,13 @@ entries:
   - glob: backend/supabase/migrations/20260621_get_homepage_families_definer_rpc.sql
     domain: D3
     owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
+  # Retrait à authenticated d'EXECUTE sur 72 RPC SECURITY DEFINER (PR #1606,
+  # suite de #1503). Glob exact volontaire.
+  - glob: backend/supabase/migrations/20260929_definer_rpc_authenticated_lockdown.sql
+    domain: D15
+    owner: '@ak125'
     sourceConfidence: high
     risk: medium
   - glob: backend/supabase/migrations/*seo_admin_job*
@@ -1370,3 +1398,127 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: medium
+  # Extensions d'outillage DB (plpgsql_check, hypopg, pgstattuple) dans le schéma
+  # extensions (PR #1604). Couvre .sql + .down.sql. Glob exact volontaire.
+  - glob: backend/supabase/migrations/20260929_db_ops_extensions_plpgsql_check_hypopg_pgstattuple*.sql
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  # Retrait des 2 index strictement dupliqués de pieces_price (zone STOP prix,
+  # GO owner nominatif 2026-09-30) — PR #1623. Couvre .sql + .down.sql. Glob exact
+  # volontaire ; domaine / owner = ceux de l'autorité du tarif (piece-price-data).
+  - glob: backend/supabase/migrations/20260930_drop_pieces_price_duplicate_indexes*.sql
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: high
+    risk: medium
+
+  # Migrations DB fusionnées du 2026-09-17 au 2026-09-30 restées sans glob (Block-new rouge
+  # sur chaque PR). Un glob exact par migration, `*.sql` couvre .sql + .down.sql ; les
+  # migrations ne sont PAS auto-couvertes. Domaine / owner = ceux de la table ou de la
+  # fonction ciblée ; D15 / @ak125 pour les lots transverses (précédents #1604, #1606).
+  # Retrait à anon d'EXECUTE sur les RPC SECURITY DEFINER (même famille que #1606).
+  - glob: backend/supabase/migrations/20260917_definer_rpc_anon_lockdown.sql
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  # 7 index strictement dupliqués, tables catalogue / véhicule / blog / SEO (PR #1619).
+  - glob: backend/supabase/migrations/20260929_drop_exact_duplicate_indexes*.sql
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  # Index d'expression type_id::integer sur auto_type_motor_code / auto_type_number_code (PR #1628).
+  - glob: backend/supabase/migrations/20260930_auto_type_codes_type_id_int_expr_indexes*.sql
+    domain: D4
+    owner: '@ak125/vehicle-team'
+    sourceConfidence: high
+    risk: medium
+  # 6 index dupliqués des tables archivées _archive.__agentic_* (PR #1627).
+  - glob: backend/supabase/migrations/20260930_drop_archive_agentic_duplicate_indexes*.sql
+    domain: D6
+    owner: '@ak125/rag-team'
+    sourceConfidence: high
+    risk: low
+  # PK auto_type_motor_code promue sur l'index unique utilisé + UNIQUE en double de rm_rebuild_queue retirée (PR #1641).
+  - glob: backend/supabase/migrations/20260930_drop_duplicate_unique_keys*.sql
+    domain: D4
+    owner: '@ak125/vehicle-team'
+    sourceConfidence: high
+    risk: medium
+  # search_path épinglé (public, pg_temp) de mark_order_paid_atomic, zone paiement, GO owner nominatif (PR #1643).
+  - glob: backend/supabase/migrations/20260930_pin_mark_order_paid_atomic_search_path*.sql
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: high
+    risk: high
+  # 17 politiques RLS « service_role seul » alignées sur la convention du projet (PR #1639).
+  - glob: backend/supabase/migrations/20260930_rls_align_service_role_only_policies*.sql
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  # search_path épinglé (public, pg_temp) de create_order_atomic, append_order_event et
+  # check_payment_tunnel_health, zone commande / paiement, GO owner nominatif (PR #1648).
+  - glob: backend/supabase/migrations/20261001_pin_order_functions_search_path*.sql
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: high
+    risk: high
+  # Retrait de 26 index jamais utilisés sur pieces_price, zone STOP prix, GO owner
+  # nominatif ; domaine / owner = ceux de l'autorité du tarif, comme #1623 (PR #1649).
+  - glob: backend/supabase/migrations/20261001_drop_pieces_price_unused_indexes*.sql
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: high
+    risk: high
+  # Lot D : 7 tables mortes déplacées dans _archive (SET SCHEMA, aucune ligne supprimée)
+  # et une vue sans consommateur retirée ; lot transverse (PR #1650).
+  - glob: backend/supabase/migrations/20261001_archive_dead_tables_lot_d*.sql
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  # Rétention 90 jours de cron.job_run_details par pg_cron, dernière exécution de chaque
+  # job conservée ; lot transverse (PR #1651).
+  - glob: backend/supabase/migrations/20261001_cron_job_run_details_retention*.sql
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  # Extension vector déplacée du schéma public vers extensions (advisor
+  # extension_in_public), précédent #1604 (PR #1657). Couvre .sql + .down.sql.
+  # Glob exact volontaire.
+  - glob: backend/supabase/migrations/20261001_move_vector_extension_to_extensions_schema*.sql
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  # Extensions pg_trgm et unaccent déplacées du schéma public vers extensions (advisor
+  # extension_in_public), avec le search_path des 8 fonctions qui les appellent sans
+  # qualification ; suite de #1657. Couvre .sql + .down.sql. Glob exact volontaire.
+  - glob: backend/supabase/migrations/20261001_move_pg_trgm_unaccent_to_extensions_schema*.sql
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  # Calendrier d'entretien : filtre carburant de kg_get_smart_maintenance_schedule
+  # aligné sur kg_get_maintenance_alerts_by_milestone (hybrides diesel) — PR #1632.
+  # Couvre .sql + .down.sql. Glob exact : les migrations ne sont pas auto-couvertes ;
+  # domaine / owner = ceux du consommateur (backend/src/modules/diagnostic-engine/**).
+  - glob: backend/supabase/migrations/20260930_kg_maintenance_schedule_fuel_filter_aligned*.sql
+    domain: D4
+    owner: '@ak125/vehicle-team'
+    sourceConfidence: high
+    risk: low
+  # Lecture SECURITY DEFINER de la politique de liens vers les guides d'achat (ADR-103 D5) :
+  # le container PREPROD READ_ONLY (anon) ne peut pas lire en direct les 4 tables sous RLS ;
+  # consommateur R6GuideLinkPolicyService (D3, seo-team). Couvre .sql + .down.sql. Glob exact
+  # volontaire.
+  - glob: backend/supabase/migrations/20261001_get_r6_guide_link_snapshot_definer_rpc*.sql
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low

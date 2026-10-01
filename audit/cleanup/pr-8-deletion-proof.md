@@ -8,23 +8,23 @@
 - Schema version: `1.0.0`
 - Cleanup policy version: `pr8-v1`
 - Validation mode: `snapshot-only` (active runtime check deferred to PR-8b)
-- Generated at: `2026-09-28T04:59:36.031Z`
+- Generated at: `2026-10-01T21:38:11.247Z`
 - Toolchain: `v24.21.0` on `linux/x64`
 
 ## Input Fingerprint (sha256)
 
-- `deadCodeCandidates`: `9f844bd461169ca70bd4b5496838d3819d824df399f51ef512003bdfd63848e2`
-- `canonical`: `e3b31f1abfcfed35df2e832b215a36891de93ea7a90d209bf4c36d1a761f95c3`
-- `ownershipYaml`: `64c090a596ce2c0cb2973219ccd66b45e071166fdfbf0d903a547f4786d84c68`
+- `deadCodeCandidates`: `7635be73b0f094a7989c8810eee6426517ebd8326bc5be0d0da5661c5141e2f4`
+- `canonical`: `1c32be83253c3517a4aa07a692f73233eb55f71e66f9d88dfadb8ab79d851844`
+- `ownershipYaml`: `3eacc33ec5225732cd5fc363cef80b53ed17f43e8f6bb0616a168f5ac4bdb976`
 - `contractHealth`: `<none>`
 - `validateScript`: `0f5224c9823ce6de8d3bf9686c9eb445b0adc343296c68cf5b0e91f4aaac7f21`
 - `unreachableModules`: `75f4f5946d480ab8244e853aa25ffedb5d198bb4e7aee837cdb80e04e9e75e94`
 
 ## Counts
 
-- Total: **262**
-- By confidence: high=12 · medium=166 · low=84
-- By decision: candidate=178 · blocked=84 · excluded=0
+- Total: **258**
+- By confidence: high=12 · medium=166 · low=80
+- By decision: candidate=178 · blocked=80 · excluded=0
 
 ## candidate (178)
 
@@ -220,7 +220,7 @@
 
 _(empty)_
 
-## blocked (84)
+## blocked (80)
 
 ### blocked · high (0)
 
@@ -230,7 +230,7 @@ _(empty)_
 
 _(empty)_
 
-### blocked · low (84)
+### blocked · low (80)
 
 | Path | Domain | Kind | Confidence | Status | importedBy | Rationale |
 |---|---|---|---|---|---:|---|
@@ -256,7 +256,6 @@ _(empty)_
 | `backend/src/modules/mcp-validation/interceptors/mcp-shadow.interceptor.ts` | mcp-validation | interceptor | low | LIVE | 2 | snapshot c1 failed (static import); canonical.importedBy=2 |
 | `backend/src/modules/mcp-validation/interceptors/mcp-verify.interceptor.ts` | mcp-validation | interceptor | low | LIVE | 2 | snapshot c1 failed (static import); canonical.importedBy=2 |
 | `backend/src/modules/mcp-validation/mcp-validation.service.ts` | mcp-validation | service | low | LIVE | 4 | snapshot c1 failed (static import); canonical.importedBy=4 |
-| `backend/src/modules/mcp-validation/mcp-validation.types.ts` | mcp-validation | type | low | LIVE | 6 | snapshot c1 failed (static import); canonical.importedBy=6 |
 | `backend/src/modules/mcp-validation/services/chrome-devtools-client.service.ts` | mcp-validation | service | low | LIVE | 4 | snapshot c1 failed (static import); canonical.importedBy=4 |
 | `backend/src/modules/mcp-validation/services/external-compatibility-cache.service.ts` | mcp-validation | service | low | LIVE | 2 | snapshot c1 failed (static import); canonical.importedBy=2 |
 | `backend/src/modules/mcp-validation/services/external-compatibility-consensus.service.ts` | mcp-validation | service | low | LIVE | 2 | snapshot c1 failed (static import); canonical.importedBy=2 |
@@ -265,8 +264,6 @@ _(empty)_
 | `backend/src/modules/mcp-validation/services/external-compatibility.service.ts` | mcp-validation | service | low | LIVE | 2 | snapshot c1 failed (static import); canonical.importedBy=2 |
 | `backend/src/modules/mcp-validation/services/external-compatibility.types.ts` | mcp-validation | type | low | LIVE | 6 | snapshot c1 failed (static import); canonical.importedBy=6 |
 | `backend/src/modules/mcp-validation/services/mcp-alerting.service.ts` | mcp-validation | service | low | LIVE | 3 | snapshot c1 failed (static import); canonical.importedBy=3 |
-| `backend/src/modules/mcp-validation/services/mcp-query.service.ts` | mcp-validation | service | low | LIVE | 3 | snapshot c1 failed (static import); canonical.importedBy=3 |
-| `backend/src/modules/mcp-validation/types/mcp-verify.types.ts` | mcp-validation | type | low | LIVE | 5 | snapshot c1 failed (static import); canonical.importedBy=5 |
 | `backend/src/modules/messages/dto/message.schemas.ts` | messages | other | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/modules/payments/dto/payment-response.dto.ts` | payments | dto | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `backend/src/modules/seo/dto/r2-page-response.dto.ts` | seo | dto | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
@@ -315,7 +312,6 @@ _(empty)_
 | `frontend/app/components/ui/pagination.tsx` | frontend-shared | component | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `frontend/app/components/ui/popover.tsx` | frontend-shared | component | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `frontend/app/hooks/useProductSearch.ts` | frontend-shared | hook | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
-| `frontend/app/services/common/errors.ts` | frontend-shared | frontend-service | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `frontend/app/types/navigation.ts` | frontend-shared | other | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `frontend/app/utils/performance.utils.ts` | frontend-shared | other | low | UNKNOWN | 3 | snapshot c1 failed (static import); canonical.importedBy=3 |
 

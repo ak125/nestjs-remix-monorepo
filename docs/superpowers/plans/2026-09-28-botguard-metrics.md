@@ -8,14 +8,14 @@ Design/spec: reuse CacheService's existing Redis connection, native HINCRBY and 
 
 Files: backend/src/cache/cache.service.ts (strict native primitives), backend/src/config/cache-ttl.config.ts (key/retention ownership), backend/src/modules/bot-guard/bot-guard.service.ts (measurement semantics), backend/src/modules/bot-guard/bot-guard.metrics.test.ts (behavioral regression proof). Existing middleware, session handling, crawler/synthetic exemptions, threshold and country policy unchanged.
 
-Constraints: no new dependency, no second Redis connection at runtime, no paid service, no SQL or PROD mutation. Same draft PR #1582; no merge, release tag or deployment. Redis transactions do not roll back command-level errors: inspect every result and surface unavailable telemetry. Tests use ioredis-mock by default and the same assertions against a dedicated Unix-socket Redis fixture when explicitly selected; never use application REDIS_URL or flush shared data.
+Constraints: no new dependency, no second Redis connection at runtime, no paid service, no SQL or PROD mutation. Same draft PR #1582; no PR merge, release tag or deployment. Redis transactions do not roll back command-level errors: inspect every result and surface unavailable telemetry. Tests use ioredis-mock by default and the same assertions against a dedicated Unix-socket Redis fixture when explicitly selected; never use application REDIS_URL or flush shared data.
 
-Review focus: concurrent allowed/blocked requests; exact window boundaries across midnight; absence vs failure/corrupt Redis counters; bounded recent history; retention and failure observability. Counters cover only requests evaluated by BotGuard, not all origin requests, visitors, verified crawlers or synthetic probes. Version 2 needs new observations; historical legacy counters cannot be recovered.
+Review focus: concurrent allowed/blocked requests; exact window boundaries across midnight; absence vs failure/corrupt Redis counters; bounded recent history; retention and failure observability. Counters cover requests reaching BotGuard accounting, including allowed verified crawlers and synthetic probes; they are not all origin requests or visitors. Version 2 needs new observations; historical legacy counters cannot be recovered.
 
 - [x] Reproduce counter loss, aging and recent-list loss before implementation.
 - [x] Add strict native Redis helpers and versioned minute-window measurements.
 - [x] Run targeted existing and new tests, types and lint; repeat the behavioral suite against isolated real Redis.
-- [ ] Refresh canonical generated projections, push the existing draft PR, verify CI, and send the concrete result/limitations to Hermes.
+- [x] Refresh canonical generated projections, push the existing draft PR, verify CI, and send the concrete result/limitations to Hermes (completed on 28 September; later integration evidence below).
 
 Evidence ledger: baseline 5da6b96a73892e44b2eb38e2113fdee5b0c4443b; main 4fca2ef26f6af27451e7bb31945982258c904ede. Prior CI 38 success / 9 skipped applies only to that baseline. Consumer search found no repository frontend consumer of stats24h; external consumers must honor status and window metadata.
 
@@ -39,3 +39,18 @@ BOT_GUARD_TEST_REDIS_SOCKET="$fixture_dir/redis.sock" npx jest --runInBand src/m
 ```
 
 The runtime primitives follow Redis' native transaction semantics: https://redis.io/docs/latest/develop/using-commands/transactions/ and https://redis.io/docs/latest/commands/hincrby/ . Pipeline/transaction command errors are inspected, not treated as complete success. No runtime metric retry is attempted after an ambiguous write.
+
+
+## Integration qualification — 1 October 2026
+
+The previous worktree path is now used by `codex/seo-maintenance-auth-20260928`; it must not be reset for this PR. Integration is isolated in the existing BotGuard branch at `/opt/automecanik/app/.claude/worktrees/bot-guard-delivery-20261001`.
+
+The candidate `de546afc7e49a217249bdb6a849ef47fe2ca34c9` conflicts with main `571118e380ebb9f8a61106ce8921e4ed91022ab2` only in seven generated registry/inventory projections. Merge main without rewriting the candidate history, regenerate from merged sources with the official builders, and preserve the new cache policies from main. Application BotGuard/cache primitives are unchanged by this integration. Dependencies come from a clean `npm ci`; no shared dependency directory or local package build is reused for generation.
+
+Fresh DEV check: backend TypeScript passes; 130 tests in eight suites pass, including BotGuard, cache, cache TTL policies, single-target Redis configuration, cache-store factory and synthetic probe identity. The 17 isolated real-Redis cases from 28 September remain historical evidence for unchanged metric primitives; they are not a new production verification.
+
+Read-only PROD observation on 1 October: image revision `4cb25b2c85f9a549e9e2ca68576df63986fea313`; BotGuard enabled, environment threshold 80, blocked country CN, no persisted `bot-guard:config` override. Compiled code still lacks the three candidate markers (configured threshold, authenticated-session scoring and V2 metrics). This configuration observation must be repeated just before delivery; it is not an authenticated read of live in-memory admin state.
+
+Delivery gates: PR checks at the final candidate SHA, then an approved integration onto main. The exact main SHA must pass the existing `ci.yml` push run's Deploy PREPROD, E2E Smoke and Lighthouse jobs. These jobs require a push to main, regardless of draft status; changing the PR to ready does not produce PREPROD evidence. Use the maintained `scripts/ci/prod-preprod-evidence.mjs` gate. A floating preprod image or unrelated healthy container is insufficient.
+
+Only Marwane performs application PROD deployment. Before a release, retain the currently served immutable image and repeat the config check; afterward validate the authenticated BotGuard stats contract and legitimate visitor/admin/crawler paths without manufacturing traffic in production. The first 24 hours of V2 history remain incomplete. Rollback restores the retained application image, without Redis migration or purge. This integration does not change Cloudflare rules or prove the automated-browsing cohort is blocked.

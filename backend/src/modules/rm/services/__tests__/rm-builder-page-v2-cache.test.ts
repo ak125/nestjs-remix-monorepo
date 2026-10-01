@@ -34,7 +34,7 @@ import { CACHE_STRATEGIES } from '../../../../config/cache-ttl.config';
 const GENERATION = 7;
 // Clé A3 : `{prefix}{keyVersion}:g{génération}:{gamme}:{véhicule}` — la
 // génération vient de Redis `cache:gen:catalog` (bump à l'activation pricing).
-const KEY = `rm:page-v2:v1:g${GENERATION}:402:100413`;
+const KEY = `rm:page-v2:v2:g${GENERATION}:402:100413`;
 
 type CacheMock = { get: jest.Mock; set: jest.Mock; getGeneration: jest.Mock };
 
@@ -107,8 +107,8 @@ describe('RmBuilderService.getPageCompleteV2 — contrat de cache', () => {
     cache.getGeneration.mockResolvedValue(GENERATION + 1);
     await service.getPageCompleteV2({ gamme_id: 402, vehicle_id: 100413 });
 
-    expect(cache.get).toHaveBeenNthCalledWith(1, 'rm:page-v2:v1:g7:402:100413');
-    expect(cache.get).toHaveBeenNthCalledWith(2, 'rm:page-v2:v1:g8:402:100413');
+    expect(cache.get).toHaveBeenNthCalledWith(1, 'rm:page-v2:v2:g7:402:100413');
+    expect(cache.get).toHaveBeenNthCalledWith(2, 'rm:page-v2:v2:g8:402:100413');
   });
 
   it('limit non canonique : ni lecture de génération ni accès Redis (A3)', async () => {
@@ -169,7 +169,7 @@ describe('RmBuilderService.getPageCompleteV2 — contrat de cache', () => {
     await service.getPageCompleteV2({ gamme_id: 3859, vehicle_id: 11836 });
 
     expect(cache.set).toHaveBeenCalledWith(
-      'rm:page-v2:v1:g7:3859:11836',
+      'rm:page-v2:v2:g7:3859:11836',
       expect.objectContaining({ success: true, count: 0 }),
       CACHE_STRATEGIES.RM.PAGE_V2_EMPTY.ttl,
     );
@@ -269,5 +269,44 @@ describe('RmBuilderService.getPageCompleteV2 — contrat de cache', () => {
 
     expect(cache.get).toHaveBeenCalledWith(KEY);
     expect(cache.set).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('RmBuilderService — migration du contrat de cache SEO R2', () => {
+  it('ignore une ancienne entrée v1 potentiellement dégradée et régénère en v2', async () => {
+    const degraded = {
+      ...okResult,
+      seo: { h1: '#Gamme# #VMarque#', description: 'fallback' },
+    };
+    const cache: CacheMock = {
+      getGeneration: jest.fn().mockResolvedValue(GENERATION),
+      get: jest.fn(async (key: string) =>
+        key === `rm:page-v2:v1:g${GENERATION}:402:100413` ? degraded : null,
+      ),
+      set: jest.fn(),
+    };
+    const { service, callRpc } = buildService(cache);
+    callRpc.mockResolvedValue({
+      data: { ...okResult, seo: { h1: 'Plaquette de frein Renault Clio' } },
+      error: null,
+    });
+
+    const result = await service.getPageCompleteV2({
+      gamme_id: 402,
+      vehicle_id: 100413,
+    });
+
+    expect(result.cacheHit).toBe(false);
+    expect(result.seo.h1).toBe('Plaquette de frein Renault Clio');
+    expect(callRpc).toHaveBeenCalledTimes(1);
+    expect(cache.get).toHaveBeenCalledWith(KEY);
+    expect(cache.set).toHaveBeenCalledWith(
+      KEY,
+      expect.objectContaining({ success: true }),
+      CACHE_STRATEGIES.RM.PAGE_V2.ttl,
+    );
+    expect(CACHE_STRATEGIES.RM.PAGE_V2_EMPTY.keyVersion).toBe(
+      CACHE_STRATEGIES.RM.PAGE_V2.keyVersion,
+    );
   });
 });

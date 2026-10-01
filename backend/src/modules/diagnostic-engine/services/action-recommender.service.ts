@@ -18,9 +18,10 @@
  *
  * Overrides déterministes :
  *   - vehicle_ctx.absent → demote `piece` après `assistant_diagnostic`
- *   - catalog allowed_output_mode = 'none' → drop `piece` entirely
+ *   - catalog allowed_output_mode = 'none' → drop `piece` and `entretien_pack`
  */
 import { Injectable } from '@nestjs/common';
+import { buildGammeUrl } from '../../../common/utils/url-builder.utils';
 import type { EvidencePack } from '../types/evidence-pack.schema';
 import type { DiagnosticIntent } from '../types/diagnostic-intent';
 import type {
@@ -88,9 +89,11 @@ export class ActionRecommenderService {
       sequence = this.demotePieceWhenVehicleAbsent(sequence);
     }
 
-    // Override #2 : si catalog allowed_output_mode = 'none', drop `piece` complètement
+    // Override #2 : si catalog allowed_output_mode = 'none', drop `piece` et `entretien_pack`
     if (pack.catalog_guard.allowed_output_mode === 'none') {
-      sequence = sequence.filter((a) => a !== 'piece');
+      sequence = sequence.filter(
+        (a) => a !== 'piece' && a !== 'entretien_pack',
+      );
     }
 
     return sequence.map((type, idx) =>
@@ -163,10 +166,10 @@ export class ActionRecommenderService {
       case 'piece': {
         const gamme = pack.catalog_guard.suggested_gammes?.[0];
         if (gamme?.pg_id && gamme.gamme_slug) {
-          return `/pieces/${gamme.gamme_slug}/${gamme.pg_id}`;
+          return buildGammeUrl(gamme.gamme_slug, gamme.pg_id);
         }
-        // Fallback dégradé : page gamme générique (jamais hardcodé slug)
-        return '/pieces';
+        // No resolved gamme: use the existing home catalogue section.
+        return '/#catalogue';
       }
       case 'devis':
         return '/devis';

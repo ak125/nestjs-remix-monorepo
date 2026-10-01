@@ -2,23 +2,30 @@
  * DiagnosticEngine Controller — API REST
  *
  * POST /api/diagnostic-engine/analyze      → Evidence Pack
- * GET  /api/diagnostic-engine/systems      → Systemes actifs
+ * GET  /api/diagnostic-engine/systems      → Systemes analysables
  * GET  /api/diagnostic-engine/symptoms     → Symptomes par systeme
- * GET  /api/diagnostic-engine/sessions     → Historique sessions
+ * GET  /api/diagnostic-engine/sessions     → Historique sessions (admin)
  * GET  /api/diagnostic-engine/sessions/:id → Session par UUID
  */
 import {
   Controller,
+  BadRequestException,
+  NotFoundException,
+  ServiceUnavailableException,
   Post,
   Get,
   Body,
+  ConflictException,
   Query,
   Param,
   Res,
   Inject,
   Logger,
+  UseGuards,
 } from '@nestjs/common';
 import type { Response } from 'express';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { DiagnosticEngineOrchestrator } from './diagnostic-engine.orchestrator';
 import { DiagnosticEngineDataService } from './diagnostic-engine.data-service';
 import { MaintenanceCalculatorService } from './services/maintenance-calculator.service';
@@ -28,16 +35,31 @@ import {
   type VehicleContextPort,
 } from './ports/vehicle-context.port';
 import { mapAnalyzeInputToVehicleContextPayload } from './vehicle-context-mapping';
+import { FeatureFlagsService } from '../../config/feature-flags.service';
 // V1A.0 — Intent Resolution layer
 import { DiagnosticResolutionPipelineService } from './services/diagnostic-resolution-pipeline.service';
 import { OutcomeEmitterService } from './services/outcome-emitter.service';
-import { PIPELINE_VERSION } from './services/version-registry';
-import { getConfidenceBucket } from './services/confidence-policy';
+import { hasVehicleContext, resolveHandoffTarget } from './handoff-target';
 import {
   HandoffInputSchema,
   type AnalyzeResponseV1A0,
 } from './types/analyze-response.schema';
-import type { EvidencePack } from './types/evidence-pack.schema';
+import {
+  MaintenanceCalendarQuerySchema,
+  MaintenanceAlertsQuerySchema,
+} from './types/maintenance-calendar.schema';
+import { z } from 'zod';
+import {
+  EvidencePackSchema,
+  type EvidencePack,
+} from './types/evidence-pack.schema';
+
+// Check the stored contract without projecting away historical metadata.
+const SavedDiagnosticSessionSchema = z.object({
+  id: z.string().uuid(),
+  created_at: z.string().datetime({ offset: true }),
+  result: EvidencePackSchema,
+});
 
 @Controller('api/diagnostic-engine')
 export class DiagnosticEngineController {
@@ -53,15 +75,8 @@ export class DiagnosticEngineController {
     // V1A.0 — Intent Resolution layer (composition pure)
     private readonly intentPipeline: DiagnosticResolutionPipelineService,
     private readonly outcomeEmitter: OutcomeEmitterService,
+    private readonly featureFlags: FeatureFlagsService,
   ) {}
-
-  /**
-   * V1A.0 feature flag check (env var). Default false = rollout gated.
-   * Frontend reçoit le payload enrichi uniquement si flag ON.
-   */
-  private isIntentLayerEnabled(): boolean {
-    return process.env.DIAGNOSTIC_PIPELINE_V1_ENABLED === 'true';
-  }
 
   /**
    * GET /api/diagnostic-engine/wizard-steps
@@ -76,32 +91,46 @@ export class DiagnosticEngineController {
    */
   @Get('wizard-steps')
   getWizardSteps() {
-    return this.diagnosticContent.getWizardSteps();
+    return this.wikiContent(this.diagnosticContent.getWizardSteps());
   }
 
   @Get('safety-config')
   getSafetyConfig() {
-    return this.diagnosticContent.getSafetyConfig();
+    return this.wikiContent(this.diagnosticContent.getSafetyConfig());
   }
 
   @Get('vocab-clusters')
   getVocabClusters() {
-    return this.diagnosticContent.getVocabClusters();
+    return this.wikiContent(this.diagnosticContent.getVocabClusters());
   }
 
   @Get('signs')
   getSigns() {
-    return this.diagnosticContent.getSigns();
+    return this.wikiContent(this.diagnosticContent.getSigns());
   }
 
   @Get('faq')
   getFaq() {
-    return this.diagnosticContent.getFaq();
+    return this.wikiContent(this.diagnosticContent.getFaq());
   }
 
   @Get('controles-mensuels')
   getControlesMensuels() {
-    return this.diagnosticContent.getControlesMensuels();
+    return this.wikiContent(this.diagnosticContent.getControlesMensuels());
+  }
+
+  /**
+   * Un contenu wiki absent ou illisible (déjà journalisé par
+   * DiagnosticContentService) est une 503 : renvoyé tel quel, `null`
+   * devenait une réponse 200 au corps vide, indiscernable d'un succès.
+   */
+  private wikiContent<T>(entry: T | null): T {
+    if (entry === null) {
+      throw new ServiceUnavailableException(
+        'Ce contenu est temporairement indisponible.',
+      );
+    }
+    return entry;
   }
 
   /**
@@ -109,27 +138,50 @@ export class DiagnosticEngineController {
    *
    * ADR-032 D2/D3 — schedule fuel-aware par véhicule.
    */
+  @Get('maintenance-operations')
+  async getMaintenanceOperations() {
+    try {
+      const operations = await this.dataService.getMaintenanceOperations();
+      return {
+        success: true,
+        operations: operations.map(({ slug, label, description }) => ({
+          slug,
+          label,
+          description,
+        })),
+      };
+    } catch {
+      throw new ServiceUnavailableException(
+        'Liste des opérations d’entretien indisponible',
+      );
+    }
+  }
+
   @Get('maintenance-schedule')
   async maintenanceSchedule(
     @Query('type_id') typeId?: string,
     @Query('current_km') currentKm?: string,
     @Query('fuel_type') fuelType?: string,
   ) {
-    const tid = typeId ? parseInt(typeId, 10) : null;
-    const km = currentKm ? parseInt(currentKm, 10) : 0;
+    const parsed = MaintenanceCalendarQuerySchema.safeParse({
+      type_id: typeId,
+      current_km: currentKm,
+      fuel_type: fuelType,
+    });
+    if (!parsed.success)
+      throw new BadRequestException(
+        "Paramètres du calendrier d'entretien invalides.",
+      );
+    const tid = parsed.data.type_id ?? null;
+    const km = parsed.data.current_km ?? null;
     const items = await this.maintenanceCalculator.getSchedule(
       tid,
       km,
-      fuelType ?? null,
+      parsed.data.fuel_type ?? null,
     );
     return { success: true, type_id: tid, current_km: km, items };
   }
 
-  /**
-   * GET /api/diagnostic-engine/maintenance-alerts
-   *
-   * ADR-032 D7 — alertes regroupées par palier km (zéro hardcode des paliers).
-   */
   /**
    * GET /api/diagnostic-engine/calendar
    *
@@ -143,25 +195,46 @@ export class DiagnosticEngineController {
     @Query('current_km') currentKm?: string,
     @Query('fuel_type') fuelType?: string,
   ) {
-    const tid = typeId ? parseInt(typeId, 10) : null;
-    const km = currentKm ? parseInt(currentKm, 10) : 0;
-    return this.maintenanceCalculator.getCalendar(tid, km, fuelType ?? null);
+    const parsed = MaintenanceCalendarQuerySchema.safeParse({
+      type_id: typeId,
+      current_km: currentKm,
+      fuel_type: fuelType,
+    });
+    if (!parsed.success)
+      throw new BadRequestException(
+        "Paramètres du calendrier d'entretien invalides.",
+      );
+    const tid = parsed.data.type_id ?? null;
+    const km = parsed.data.current_km ?? null;
+    return this.maintenanceCalculator.getCalendar(
+      tid,
+      km,
+      parsed.data.fuel_type ?? null,
+    );
   }
 
+  /**
+   * GET /api/diagnostic-engine/maintenance-alerts
+   *
+   * ADR-032 D7 — alertes regroupées par palier km ; sans `milestones`, les
+   * paliers par défaut de la RPC s'appliquent.
+   */
   @Get('maintenance-alerts')
   async maintenanceAlerts(
     @Query('fuel_type') fuelType?: string,
     @Query('milestones') milestones?: string,
   ) {
-    const list = milestones
-      ? milestones
-          .split(',')
-          .map((s) => parseInt(s.trim(), 10))
-          .filter((n) => Number.isFinite(n))
-      : undefined;
+    const parsed = MaintenanceAlertsQuerySchema.safeParse({
+      fuel_type: fuelType,
+      milestones,
+    });
+    if (!parsed.success)
+      throw new BadRequestException(
+        "Paramètres des paliers d'entretien invalides.",
+      );
     const result = await this.maintenanceCalculator.getAlerts(
-      fuelType ?? null,
-      list,
+      parsed.data.fuel_type ?? null,
+      parsed.data.milestones,
     );
     return { success: true, milestones: result };
   }
@@ -190,7 +263,7 @@ export class DiagnosticEngineController {
       return {
         success: false,
         error: result.error,
-        hint: 'Voir le schema AnalyzeDiagnosticInput pour le format attendu.',
+        hint: 'Voir le schema AnalyzeInputSchema pour le format attendu.',
       };
     }
 
@@ -203,7 +276,10 @@ export class DiagnosticEngineController {
     };
 
     // V1A.0 — Intent Resolution layer (additif, feature-flag gated)
-    if (this.isIntentLayerEnabled()) {
+    if (
+      this.featureFlags.diagnosticPipelineV1Enabled &&
+      result.data!.evidence.evidence_pack.analysis_kind !== 'maintenance'
+    ) {
       const intentLayer = await this.computeIntentLayer(
         body,
         result.data!.session_id,
@@ -226,8 +302,10 @@ export class DiagnosticEngineController {
     sessionId: string | null,
     evidence: EvidencePack,
   ): Promise<Omit<AnalyzeResponseV1A0, 'session_id'> | null> {
-    const vehicleContext = this.extractVehicleContext(body);
-    const vehicleContextPresent = vehicleContext !== null;
+    const vehicleContextPresent =
+      typeof body === 'object' &&
+      body !== null &&
+      hasVehicleContext((body as Record<string, unknown>).vehicle_context);
     const symptomSlug = this.extractSymptomSlug(body);
 
     try {
@@ -250,17 +328,6 @@ export class DiagnosticEngineController {
     }
   }
 
-  private extractVehicleContext(body: unknown): Record<string, unknown> | null {
-    if (!body || typeof body !== 'object') return null;
-    const vc = (body as Record<string, unknown>).vehicle_context;
-    if (!vc || typeof vc !== 'object') return null;
-    const obj = vc as Record<string, unknown>;
-    const hasContent = Object.values(obj).some(
-      (v) => v !== null && v !== undefined && v !== '',
-    );
-    return hasContent ? obj : null;
-  }
-
   private extractSymptomSlug(body: unknown): string | undefined {
     if (!body || typeof body !== 'object') return undefined;
     const si = (body as Record<string, unknown>).signal_input as
@@ -278,27 +345,65 @@ export class DiagnosticEngineController {
    *
    * Anti double-truth : pas d'event séparé `to_commerce` ou `to_human`,
    * dérivations runtime via `payload->>'target_role'`.
+   *
+   * Le client désigne l'élément cliqué ; la résolution est re-dérivée de la
+   * session stockée et l'élément doit y figurer, sinon aucun event n'est écrit.
    */
   @Post('handoff')
   async handoff(@Body() body: unknown) {
+    if (!this.featureFlags.diagnosticPipelineV1Enabled) {
+      throw new NotFoundException();
+    }
     const parse = HandoffInputSchema.safeParse(body);
     if (!parse.success) {
-      return {
-        success: false,
-        error: `Validation error: ${parse.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join(', ')}`,
-      };
+      throw new BadRequestException('Paramètres de handoff invalides.');
     }
     const input = parse.data;
 
-    await this.outcomeEmitter.emitActionClicked({
-      sessionId: input.session_id,
-      actionType: input.action_type,
-      targetRole: input.target_role,
-      intent: input.intent,
-      confidence: input.confidence,
-      confidenceBucket: getConfidenceBucket(input.confidence),
-      pipelineVersion: PIPELINE_VERSION,
-    });
+    const session = await this.dataService.getSession(input.session_id);
+    if (!session) {
+      throw new NotFoundException('Session introuvable.');
+    }
+
+    const saved = SavedDiagnosticSessionSchema.safeParse(session);
+    if (
+      !saved.success ||
+      saved.data.result.evidence_pack.analysis_kind === 'maintenance'
+    ) {
+      this.logger.warn('Handoff rejected: session has no intent resolution');
+      throw new ConflictException(
+        'Cette session n’a pas d’actions recommandées.',
+      );
+    }
+
+    const vehicleContextPresent = hasVehicleContext(session.vehicle_context);
+    let response: AnalyzeResponseV1A0;
+    try {
+      response = this.intentPipeline.compose({
+        sessionId: saved.data.id,
+        pack: saved.data.result.evidence_pack,
+        vehicleContextPresent,
+      });
+    } catch (err) {
+      this.logger.warn(`Handoff rejected: ${(err as Error).message}`);
+      throw new ConflictException(
+        'Cette session n’a pas d’actions recommandées.',
+      );
+    }
+
+    const clicked = resolveHandoffTarget(response, input);
+    if (!clicked) {
+      this.logger.warn('Handoff rejected: element absent from the resolution');
+      throw new ConflictException(
+        'Action absente des recommandations de cette session.',
+      );
+    }
+
+    await this.outcomeEmitter.emitActionClicked(
+      response,
+      clicked,
+      vehicleContextPresent,
+    );
 
     return { success: true };
   }
@@ -328,9 +433,11 @@ export class DiagnosticEngineController {
    * POST /api/diagnostic-engine/breakdown
    *
    * ADR-032 — endpoint urgence routière (panne immobilisante).
-   * Force `intent_type: 'breakdown'` et délègue à l'orchestrator standard
-   * (le `RiskSafetyEngine` priorise les rules safety_gate=stop_immediate
-   * via la priority haute du flag breakdown).
+   * Alias de /analyze qui force `intent_type: 'breakdown'`. La valeur est
+   * seulement enregistrée dans la session : aucun moteur ne la lit, donc
+   * aucune priorisation de risque propre à la panne n'existe. Contrairement
+   * à /analyze : pas de persistance du contexte véhicule ni de couche
+   * d'intention V1A.
    */
   @Post('breakdown')
   async breakdown(@Body() body: unknown) {
@@ -363,11 +470,11 @@ export class DiagnosticEngineController {
   /**
    * GET /api/diagnostic-engine/systems
    *
-   * List active diagnostic systems
+   * List the diagnostic systems that can be analysed
    */
   @Get('systems')
   async getSystems() {
-    const systems = await this.dataService.getActiveSystems();
+    const systems = await this.orchestrator.getAnalysableSystems();
     return {
       success: true,
       count: systems.length,
@@ -382,15 +489,21 @@ export class DiagnosticEngineController {
   /**
    * GET /api/diagnostic-engine/symptoms?system=freinage
    *
-   * List available symptoms for a system
+   * List available symptoms for a system. A missing parameter is a 400 and an
+   * unknown or inactive system a 404, so an empty list only ever means an
+   * active system without active symptoms.
    */
   @Get('symptoms')
   async getSymptoms(@Query('system') systemSlug?: string) {
     if (!systemSlug) {
-      return {
-        success: false,
-        error: 'Paramètre "system" requis (ex: ?system=freinage)',
-      };
+      throw new BadRequestException(
+        'Paramètre "system" requis (ex: ?system=freinage)',
+      );
+    }
+
+    const system = await this.dataService.getSystemBySlug(systemSlug);
+    if (!system) {
+      throw new NotFoundException('Système de diagnostic inconnu ou inactif.');
     }
 
     const symptoms = await this.dataService.getSymptomsBySystem(systemSlug);
@@ -410,9 +523,10 @@ export class DiagnosticEngineController {
   /**
    * GET /api/diagnostic-engine/stats
    *
-   * Dashboard stats (session counts, system coverage, knowledge base)
+   * Dashboard stats (session counts, system coverage, knowledge base) — admin
    */
   @Get('stats')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async getStats() {
     const stats = await this.dataService.getStats();
     return { success: true, ...stats };
@@ -421,9 +535,10 @@ export class DiagnosticEngineController {
   /**
    * GET /api/diagnostic-engine/sessions
    *
-   * List recent diagnostic sessions
+   * List recent diagnostic sessions of every visitor — admin
    */
   @Get('sessions')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async listSessions(@Query('limit') limit?: string) {
     const parsedLimit = Math.min(
       Math.max(parseInt(limit || '20', 10) || 20, 1),
@@ -461,6 +576,19 @@ export class DiagnosticEngineController {
     const session = await this.dataService.getSession(id);
     if (!session) {
       return { success: false, error: 'Session introuvable.' };
+    }
+
+    if (
+      !SavedDiagnosticSessionSchema.safeParse(session).success ||
+      session.id.toLowerCase() !== id.toLowerCase()
+    ) {
+      this.logger.warn(
+        'Saved diagnostic session rejected: invalid result or metadata',
+      );
+      return {
+        success: false,
+        error: 'Résultat sauvegardé illisible. Relancez une analyse.',
+      };
     }
 
     return {

@@ -8,8 +8,8 @@
  * 4. Véhicules par marque (~30 files)
  * 5. Blog (~109 URLs)
  * 6. Pages statiques (~9 URLs)
- * 7. Diagnostic R5 Observable Pro
- * 8. Référence R4
+ * 7. sitemap-diagnostic.xml
+ * 8. sitemap-reference.xml
  */
 
 import { Injectable, Logger } from '@nestjs/common';
@@ -18,9 +18,23 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
+import { FeatureFlagsService } from '../../../config/feature-flags.service';
+import { isR6GuideAchatSurface } from '../types/page-role.types';
 import { SitemapV10DataService } from './sitemap-v10-data.service';
 import { SitemapV10XmlService } from './sitemap-v10-xml.service';
 import { type SitemapUrl, STATIC_PAGES } from './sitemap-v10.types';
+
+/**
+ * Retire la surface R6 guide-achat (hub + pages détail) d'une liste d'URLs de
+ * sitemap. Fonction pure : la décision vient de `isR6GuideAchatSurface`.
+ */
+export function excludeR6GuideAchatUrls(urls: SitemapUrl[]): {
+  kept: SitemapUrl[];
+  excludedCount: number;
+} {
+  const kept = urls.filter((u) => !isR6GuideAchatSurface(u.url));
+  return { kept, excludedCount: urls.length - kept.length };
+}
 
 @Injectable()
 export class SitemapV10StaticService extends SupabaseBaseService {
@@ -31,6 +45,7 @@ export class SitemapV10StaticService extends SupabaseBaseService {
     rpcGate: RpcGateService,
     private readonly dataService: SitemapV10DataService,
     private readonly xmlService: SitemapV10XmlService,
+    private readonly featureFlags: FeatureFlagsService,
   ) {
     super(configService);
     this.rpcGate = rpcGate;
@@ -296,13 +311,23 @@ export class SitemapV10StaticService extends SupabaseBaseService {
         return null;
       }
 
-      const urls: SitemapUrl[] = articles.map((a) => ({
+      const allUrls: SitemapUrl[] = articles.map((a) => ({
         url: `/blog-pieces-auto/${a.map_alias}`,
         page_type: 'blog',
         changefreq: 'monthly',
         priority: '0.6',
         last_modified_at: a.map_date || null,
       }));
+
+      // Consolidation R6→R3 : la surface guide-achat (hub + pages) sort de l'index
+      let urls = allUrls;
+      if (this.featureFlags.seoR6ConsolidationEnabled) {
+        const { kept, excludedCount } = excludeR6GuideAchatUrls(allUrls);
+        urls = kept;
+        this.logger.log(
+          `   🔀 R6 consolidation ON: ${excludedCount} URL(s) guide-achat exclue(s) de sitemap-blog.xml`,
+        );
+      }
 
       const filePath = path.join(
         this.xmlService.OUTPUT_DIR,

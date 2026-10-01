@@ -5,8 +5,26 @@
 
 // Alias normalization is owned by the shared SoT package (ADR-062).
 // Imported for local use AND re-exported so existing callers keep working.
-import { normalizeAlias, normalizeTypeAlias } from "@repo/seo-url-contract";
+import {
+  detectMalformedSegment,
+  normalizeAlias,
+  normalizeTypeAlias,
+} from "@repo/seo-url-contract";
 export { normalizeAlias, normalizeTypeAlias };
+
+/** Build a canonical gamme destination only from a usable alias and ID. */
+export function buildGammeUrl(
+  pgAlias: string | null | undefined,
+  pgId: number | null | undefined,
+): string | undefined {
+  if (typeof pgId !== "number" || !Number.isSafeInteger(pgId) || pgId <= 0) {
+    return undefined;
+  }
+  const alias = normalizeAlias(pgAlias);
+  const segment = `${alias}-${pgId}`;
+  if (!alias || detectMalformedSegment(segment)) return undefined;
+  return `/pieces/${segment}.html`;
+}
 
 /**
  * Interface pour les liens "Voir aussi"
@@ -41,7 +59,11 @@ export function buildTypeSlug(type: {
   type_name?: string | null;
   type_id: number | string;
 }): string {
-  const alias = normalizeTypeAlias(type.type_alias, type.type_name, type.type_id);
+  const alias = normalizeTypeAlias(
+    type.type_alias,
+    type.type_name,
+    type.type_id,
+  );
   return `${alias}-${type.type_id}`;
 }
 

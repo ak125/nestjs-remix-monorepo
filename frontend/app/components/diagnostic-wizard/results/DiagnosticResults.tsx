@@ -4,7 +4,7 @@
  * Renders EvidencePack from API into visual blocks.
  * Order: Safety → Summary → Hypotheses → RAG Facts → Maintenance → Catalog → Missing → Disclaimer
  */
-import { Loader2, RefreshCw } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { type WizardState, type WizardAction } from "../types";
 import { IntentResolutionBlock } from "./IntentResolutionBlock";
@@ -13,7 +13,6 @@ import { ResultDisclaimer } from "./ResultDisclaimer";
 import { ResultHypotheses } from "./ResultHypotheses";
 import { ResultMaintenance } from "./ResultMaintenance";
 import { ResultMissing } from "./ResultMissing";
-import { ResultRagFacts } from "./ResultRagFacts";
 import { ResultSafety } from "./ResultSafety";
 import { ResultSummary } from "./ResultSummary";
 // V1A.0 — Intent Resolution renderer (additif, conditionné par présence des champs)
@@ -58,7 +57,11 @@ export function DiagnosticResults({
         className="rounded-lg border border-red-200 bg-red-50 p-6 text-center space-y-3"
         role="alert"
       >
-        <p className="text-red-700 font-medium">Erreur de diagnostic</p>
+        <p className="text-red-700 font-medium">
+          {state.analysisMode === "maintenance"
+            ? "Bilan entretien indisponible"
+            : "Résultat indisponible"}
+        </p>
         <p className="text-sm text-red-600">{state.error}</p>
         {onRetry && (
           <Button
@@ -67,8 +70,8 @@ export function DiagnosticResults({
             onClick={onRetry}
             className="gap-1.5 mt-2"
           >
-            <RefreshCw className="w-3.5 h-3.5" />
-            Réessayer l&apos;analyse
+            <ArrowLeft className="w-3.5 h-3.5" />
+            Modifier la sélection
           </Button>
         )}
       </div>
@@ -84,10 +87,43 @@ export function DiagnosticResults({
     );
   }
 
+  if (ep.analysis_kind === "maintenance") {
+    return (
+      <div className="space-y-4" aria-live="polite">
+        <h2 className="text-xl font-semibold">Votre bilan entretien</h2>
+        <p className="text-sm text-gray-600">
+          Estimations génériques pour les opérations choisies. Vérifiez les
+          préconisations du carnet constructeur. Ce bilan ne détermine ni
+          l’usure réelle ni la sécurité du véhicule.
+        </p>
+        {ep.factual_inputs_confirmed.map((fact) => (
+          <p key={fact} className="text-sm">
+            {fact}
+          </p>
+        ))}
+        <ResultMaintenance
+          recommendations={ep.maintenance_recommendations ?? []}
+          maintenanceLinks={ep.maintenance_links}
+          catalogGammes={[]}
+          allowedOutputMode="none"
+        />
+        {ep.factual_inputs_missing.length > 0 && (
+          <ResultMissing
+            missing={ep.factual_inputs_missing}
+            title="Limites et informations manquantes"
+            description="À vérifier pour interpréter ces estimations :"
+          />
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4" aria-live="polite">
-      {/* Block 1: Safety alert (only if risk_flags present) */}
-      {ep.risk_flags.length > 0 && (
+      {/* Safety also remains visible when an alert has no detail flags. */}
+      {(ep.risk_flags.length > 0 ||
+        ep.safety_alert ||
+        ep.risk_level === "critical") && (
         <ResultSafety
           riskLevel={ep.risk_level}
           riskFlags={ep.risk_flags}
@@ -109,7 +145,6 @@ export function DiagnosticResults({
         state.result?.human_escalation && (
           <IntentResolutionBlock
             sessionId={state.result.session_id ?? null}
-            intent={state.result.intent}
             recommendedActions={state.result.recommended_actions}
             humanEscalation={state.result.human_escalation}
           />
@@ -120,29 +155,32 @@ export function DiagnosticResults({
         <ResultHypotheses hypotheses={ep.candidate_hypotheses} />
       )}
 
-      {/* Block 4: RAG documentation facts */}
-      {ep.rag_facts && ep.rag_facts.length > 0 && (
-        <ResultRagFacts facts={ep.rag_facts} />
-      )}
+      {/* ADR-031: historical rag_facts are not diagnostic evidence. */}
 
-      {/* Block 5: Maintenance */}
+      {/* Block 4: Maintenance */}
       {ep.maintenance_recommendations &&
         ep.maintenance_recommendations.length > 0 && (
           <ResultMaintenance
+            catalogGammes={ep.catalog_guard?.suggested_gammes ?? []}
             recommendations={ep.maintenance_recommendations}
             maintenanceLinks={ep.maintenance_links}
+            allowedOutputMode={ep.catalog_guard.allowed_output_mode}
           />
         )}
 
-      {/* Block 6: Catalog orientation */}
+      {/* Block 5: Catalog orientation */}
       <ResultCatalog catalogGuard={ep.catalog_guard} />
 
-      {/* Block 7: Missing data */}
+      {/* Block 6: Missing data */}
       {ep.factual_inputs_missing.length > 0 && (
-        <ResultMissing missing={ep.factual_inputs_missing} />
+        <ResultMissing
+          missing={ep.factual_inputs_missing}
+          title="Limites et informations manquantes"
+          description="À vérifier pour interpréter ce diagnostic :"
+        />
       )}
 
-      {/* Block 8: Disclaimer */}
+      {/* Block 7: Disclaimer */}
       <ResultDisclaimer claims={ep.allowed_claims} />
     </div>
   );

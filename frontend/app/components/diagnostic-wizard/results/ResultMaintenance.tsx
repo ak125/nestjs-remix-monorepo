@@ -4,26 +4,35 @@
 import { Calendar, Clock, ExternalLink, Wrench } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { type MaintenanceRecommendation } from "../types";
+import { emitFunnel, getFunnelSessionId } from "~/utils/funnel-beacon";
+import { buildGammeUrl, normalizeAlias } from "~/utils/url-builder.utils";
+import { type MaintenanceRecommendation, type SuggestedGamme } from "../types";
 
 interface Props {
   recommendations: MaintenanceRecommendation[];
   maintenanceLinks: string[];
+  allowedOutputMode: string;
+  catalogGammes: SuggestedGamme[];
 }
 
+// Every relevance is assessed against the same generic, unverified intervals,
+// so every badge carries the same cautious wording.
 const OVERDUE_STYLES: Record<string, { badge: string; label: string }> = {
   overdue: {
     badge: "bg-red-100 text-red-700 border-red-200",
-    label: "En retard",
+    label: "Seuil indicatif dépassé",
   },
   approaching: {
     badge: "bg-amber-100 text-amber-700 border-amber-200",
     label: "À vérifier",
   },
-  ok: { badge: "bg-green-100 text-green-700 border-green-200", label: "OK" },
+  ok: {
+    badge: "bg-green-100 text-green-700 border-green-200",
+    label: "Sous les seuils indicatifs",
+  },
   unknown: {
     badge: "bg-gray-100 text-gray-500 border-gray-200",
-    label: "Inconnu",
+    label: "Informations insuffisantes",
   },
 };
 
@@ -36,21 +45,50 @@ const SEVERITY_ICONS: Record<string, string> = {
 
 export function ResultMaintenance({
   recommendations,
+  allowedOutputMode,
+  catalogGammes,
   maintenanceLinks: _maintenanceLinks,
 }: Props) {
+  const allowedGammes = new Map(
+    catalogGammes.map((gamme) => [
+      buildGammeUrl(gamme.gamme_slug, gamme.pg_id),
+      gamme,
+    ]),
+  );
   return (
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
           <Wrench className="w-5 h-5 text-blue-600" />
-          Entretien associé
+          {recommendations.some((r) => r.relevance === "selected")
+            ? "Échéances estimées"
+            : "Entretien associé"}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
+        {recommendations.some((r) => r.applicability === "unverified") && (
+          <p className="text-xs text-gray-600">
+            Intervalles génériques ; applicabilité au véhicule non vérifiée. Un
+            seuil dépassé appelle une vérification, pas un remplacement
+            automatique.
+          </p>
+        )}
         {recommendations.map((rec) => {
           const overdue =
             OVERDUE_STYLES[rec.overdue_status || "unknown"] ||
             OVERDUE_STYLES.unknown;
+
+          // Operation metadata can retain stale gamme IDs. Only expose a
+          // destination already authorized by the catalogue guard.
+          const candidateUrl = buildGammeUrl(
+            rec.related_gamme_slug,
+            rec.related_pg_id,
+          );
+          const catalogGamme =
+            allowedOutputMode !== "none" && candidateUrl
+              ? allowedGammes.get(candidateUrl)
+              : undefined;
+          const gammeUrl = catalogGamme ? candidateUrl : undefined;
 
           return (
             <div
@@ -61,9 +99,11 @@ export function ResultMaintenance({
                   : "border-gray-200"
               }`}
             >
-              <span className="text-lg mt-0.5">
-                {SEVERITY_ICONS[rec.severity_if_overdue] || "🔵"}
-              </span>
+              {rec.relevance !== "selected" && (
+                <span className="text-lg mt-0.5">
+                  {SEVERITY_ICONS[rec.severity_if_overdue] || "🔵"}
+                </span>
+              )}
 
               <div className="flex-1 min-w-0 space-y-1.5">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -90,6 +130,27 @@ export function ResultMaintenance({
                   <p className="text-xs text-gray-500">{rec.description}</p>
                 )}
 
+                {rec.applicability === "unverified" && (
+                  <div className="space-y-1 text-xs text-gray-600">
+                    <p>
+                      Dernière intervention déclarée :{" "}
+                      {rec.last_service_km !== undefined
+                        ? `${rec.last_service_km.toLocaleString("fr-FR")} km`
+                        : "kilométrage inconnu"}{" "}
+                      · {rec.last_service_date ?? "date inconnue"}
+                    </p>
+                    {rec.interval_km && rec.next_at_km && (
+                      <p>
+                        Compteur estimé : <span>{rec.next_at_km}</span>
+                      </p>
+                    )}
+                    {rec.interval_months && rec.next_at_date && (
+                      <p>
+                        Date estimée : <span>{rec.next_at_date}</span>
+                      </p>
+                    )}
+                  </div>
+                )}
                 <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600">
                   {rec.interval_km && (
                     <span className="flex items-center gap-1">
@@ -103,9 +164,19 @@ export function ResultMaintenance({
                       {rec.interval_months}
                     </span>
                   )}
-                  {rec.related_gamme_slug && (
+                  {gammeUrl && catalogGamme && (
                     <a
-                      href={`/pieces/${rec.related_gamme_slug}`}
+                      href={gammeUrl}
+                      onClick={() =>
+                        emitFunnel({
+                          event_type: "diag_gamme_cta_click",
+                          payload: {
+                            session_id: getFunnelSessionId(),
+                            gamme_slug: normalizeAlias(catalogGamme.gamme_slug),
+                            confidence: catalogGamme.confidence,
+                          },
+                        })
+                      }
                       className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline"
                     >
                       <ExternalLink className="w-3 h-3" />
