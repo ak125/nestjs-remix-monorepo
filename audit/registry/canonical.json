@@ -9816,6 +9816,7 @@
           "backend/src/modules/blog/services/r6-guide.service.ts",
           "backend/src/modules/catalog/services/homepage-rpc.service.ts",
           "backend/src/modules/marketing/services/marketing-data.service.ts",
+          "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
           "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts"
         ]
       },
@@ -9836,6 +9837,7 @@
         "status": "LIVE",
         "usedBy": [
           "backend/src/modules/blog/services/blog-article-data.service.ts",
+          "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
           "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts"
         ]
       },
@@ -13976,7 +13978,6 @@
           "backend/src/modules/admin/services/conseil-priority.service.ts",
           "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts",
           "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-          "backend/src/modules/blog/services/blog-seo.service.ts",
           "backend/src/modules/blog/services/guide.service.ts",
           "backend/src/modules/blog/services/r6-guide.service.ts",
           "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
@@ -13984,6 +13985,7 @@
           "backend/src/modules/gamme-rest/services/purchase-guide-data.service.ts",
           "backend/src/modules/marketing/services/marketing-data.service.ts",
           "backend/src/modules/seo-monitoring/services/r-content-auditor.service.ts",
+          "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
           "backend/src/modules/seo/validation/purchase-guide-validator.service.ts"
         ]
       },
@@ -21578,6 +21580,7 @@
           "backend/src/modules/search/controllers/search-debug.controller.ts",
           "backend/src/modules/search/controllers/search-enhanced-existing.controller.ts",
           "backend/src/modules/seo/r2/services/r1-gamme-completeness-audit.service.ts",
+          "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
           "backend/src/modules/seo/services/reference.service.ts",
           "backend/src/modules/seo/services/sitemap-v10-data.service.ts",
           "backend/src/modules/seo/services/sitemap-v10-hubs-cluster.service.ts",
@@ -30943,13 +30946,14 @@
         "backend/src/config/index.ts",
         "backend/src/modules/admin/services/r1-keyword-plan-batch.service.test.ts",
         "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
+        "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "backend/src/modules/vehicles/services/brand-bestsellers.service.ts",
         "backend/src/modules/vehicles/services/vehicle-motor-codes.service.ts",
         "backend/src/modules/vehicles/services/vehicle-profile.service.ts"
       ],
       "imports": [],
       "kind": "config",
-      "loc": 511,
+      "loc": 518,
       "owner": "@ak125",
       "path": "backend/src/config/cache-ttl.config.ts",
       "risk": "medium",
@@ -31506,6 +31510,7 @@
         "backend/src/modules/diagnostic-engine/services/kg-shadow.service.ts",
         "backend/src/modules/seo-projection/seo-projection-feeder.service.ts",
         "backend/src/modules/seo-projection/seo-projection-feeder.test.ts",
+        "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
         "backend/src/modules/vehicle-context/vehicle-context.middleware.test.ts",
@@ -39246,6 +39251,7 @@
         "backend/src/modules/blog/services/blog-article-data.service.ts",
         "backend/src/modules/blog/services/blog-article-transform.service.ts",
         "backend/src/modules/blog/services/blog-statistics.service.ts",
+        "backend/src/modules/blog/services/blog.service.test.ts",
         "backend/src/modules/blog/services/blog.service.ts",
         "backend/src/modules/blog/services/constructeur-search.service.ts",
         "backend/src/modules/blog/services/constructeur-transform.service.ts",
@@ -39282,7 +39288,7 @@
         "backend/src/modules/blog/services/r3-projection-decision.service.ts"
       ],
       "kind": "service",
-      "loc": 94,
+      "loc": 95,
       "owner": "@ak125/content-team",
       "path": "backend/src/modules/blog/interfaces/r3-guide.interfaces.ts",
       "risk": "medium",
@@ -39420,6 +39426,7 @@
       "id": "backend/src/modules/blog/services/blog-article-data.service.ts",
       "importedBy": [
         "backend/src/modules/blog/blog.module.ts",
+        "backend/src/modules/blog/services/blog.service.test.ts",
         "backend/src/modules/blog/services/blog.service.ts",
         "backend/src/modules/blog/services/r3-guide.service.test.ts",
         "backend/src/modules/blog/services/r3-guide.service.ts"
@@ -39475,6 +39482,7 @@
       "importedBy": [
         "backend/src/modules/blog/blog.module.ts",
         "backend/src/modules/blog/services/blog-article-relation.service.test.ts",
+        "backend/src/modules/blog/services/blog.service.test.ts",
         "backend/src/modules/blog/services/blog.service.ts",
         "backend/src/modules/blog/services/r3-guide.service.test.ts",
         "backend/src/modules/blog/services/r3-guide.service.ts"
@@ -39509,6 +39517,7 @@
         "backend/src/modules/blog/services/blog-article-data.service.ts",
         "backend/src/modules/blog/services/blog-article-relation.service.ts",
         "backend/src/modules/blog/services/blog-statistics.service.ts",
+        "backend/src/modules/blog/services/blog.service.test.ts",
         "backend/src/modules/blog/services/blog.service.ts",
         "backend/src/modules/blog/services/r6-guide.service.ts"
       ],
@@ -39543,6 +39552,7 @@
         "backend/src/modules/blog/services/advice.service.ts",
         "backend/src/modules/blog/services/blog-article-data.service.ts",
         "backend/src/modules/blog/services/blog-statistics.service.ts",
+        "backend/src/modules/blog/services/blog.service.test.ts",
         "backend/src/modules/blog/services/blog.service.ts",
         "backend/src/modules/blog/services/constructeur-search.service.ts",
         "backend/src/modules/blog/services/constructeur.service.ts"
@@ -39568,6 +39578,7 @@
       "id": "backend/src/modules/blog/services/blog-seo.service.ts",
       "importedBy": [
         "backend/src/modules/blog/blog.module.ts",
+        "backend/src/modules/blog/services/blog.service.test.ts",
         "backend/src/modules/blog/services/blog.service.ts",
         "backend/src/modules/blog/services/r3-guide.service.test.ts",
         "backend/src/modules/blog/services/r3-guide.service.ts"
@@ -39582,7 +39593,7 @@
         "backend/src/modules/seo/internal-linking.service.ts"
       ],
       "kind": "service",
-      "loc": 454,
+      "loc": 438,
       "owner": "@ak125/content-team",
       "path": "backend/src/modules/blog/services/blog-seo.service.ts",
       "risk": "medium",
@@ -39602,6 +39613,7 @@
       "importedBy": [
         "backend/src/modules/blog/blog.module.ts",
         "backend/src/modules/blog/controllers/blog.controller.ts",
+        "backend/src/modules/blog/services/blog.service.test.ts",
         "backend/src/modules/blog/services/blog.service.ts"
       ],
       "imports": [
@@ -39628,11 +39640,42 @@
         "manual"
       ],
       "domain": "D5",
+      "id": "backend/src/modules/blog/services/blog.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/blog/interfaces/blog.interfaces.ts",
+        "backend/src/modules/blog/services/blog-article-data.service.ts",
+        "backend/src/modules/blog/services/blog-article-relation.service.ts",
+        "backend/src/modules/blog/services/blog-article-transform.service.ts",
+        "backend/src/modules/blog/services/blog-cache.service.ts",
+        "backend/src/modules/blog/services/blog-seo.service.ts",
+        "backend/src/modules/blog/services/blog-statistics.service.ts",
+        "backend/src/modules/blog/services/blog.service.ts",
+        "backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
+      ],
+      "kind": "test",
+      "loc": 165,
+      "owner": "@ak125/content-team",
+      "path": "backend/src/modules/blog/services/blog.service.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D5",
       "id": "backend/src/modules/blog/services/blog.service.ts",
       "importedBy": [
         "backend/src/modules/blog/blog.module.ts",
         "backend/src/modules/blog/controllers/blog.controller.ts",
-        "backend/src/modules/blog/services/advice.service.ts"
+        "backend/src/modules/blog/services/advice.service.ts",
+        "backend/src/modules/blog/services/blog.service.test.ts"
       ],
       "imports": [
         "backend/src/modules/blog/interfaces/blog.interfaces.ts",
@@ -39642,10 +39685,11 @@
         "backend/src/modules/blog/services/blog-cache.service.ts",
         "backend/src/modules/blog/services/blog-seo.service.ts",
         "backend/src/modules/blog/services/blog-statistics.service.ts",
-        "backend/src/modules/seo/internal-linking.service.ts"
+        "backend/src/modules/seo/internal-linking.service.ts",
+        "backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "kind": "service",
-      "loc": 337,
+      "loc": 369,
       "owner": "@ak125/content-team",
       "path": "backend/src/modules/blog/services/blog.service.ts",
       "risk": "medium",
@@ -39839,10 +39883,11 @@
         "backend/src/modules/blog/services/blog-seo.service.ts",
         "backend/src/modules/blog/services/r3-guide.service.ts",
         "backend/src/modules/blog/services/r3-projection-decision.service.ts",
-        "backend/src/modules/seo/internal-linking.service.ts"
+        "backend/src/modules/seo/internal-linking.service.ts",
+        "backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "kind": "test",
-      "loc": 586,
+      "loc": 733,
       "owner": "@ak125/content-team",
       "path": "backend/src/modules/blog/services/r3-guide.service.test.ts",
       "risk": "medium",
@@ -39874,10 +39919,11 @@
         "backend/src/modules/blog/services/r3-projection-decision.service.ts",
         "backend/src/modules/blog/utils/html-normalize.utils.ts",
         "backend/src/modules/seo/internal-linking.service.ts",
-        "backend/src/modules/seo/seo-v4.types.ts"
+        "backend/src/modules/seo/seo-v4.types.ts",
+        "backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "kind": "service",
-      "loc": 548,
+      "loc": 595,
       "owner": "@ak125/content-team",
       "path": "backend/src/modules/blog/services/r3-guide.service.ts",
       "risk": "medium",
@@ -43971,10 +44017,11 @@
       "imports": [
         "@cache/cache.service",
         "backend/src/modules/gamme-rest/services/gamme-rpc.service.ts",
-        "backend/src/modules/gamme-rest/services/index.ts"
+        "backend/src/modules/gamme-rest/services/index.ts",
+        "backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "kind": "controller",
-      "loc": 158,
+      "loc": 172,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/gamme-rest/gamme-rest-rpc-v2.controller.ts",
       "risk": "medium",
@@ -44026,7 +44073,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 219,
+      "loc": 220,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-seo-shadow.test.ts",
       "risk": "medium",
@@ -44133,7 +44180,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 1178,
+      "loc": 1225,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
       "risk": "medium",
@@ -55808,10 +55855,11 @@
       "imports": [
         "@auth/is-admin.guard",
         "backend/src/modules/catalog/utils/image-urls.utils.ts",
+        "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "backend/src/modules/seo/services/reference.service.ts"
       ],
       "kind": "controller",
-      "loc": 364,
+      "loc": 395,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/controllers/reference.controller.ts",
       "risk": "high",
@@ -58174,6 +58222,7 @@
         "backend/src/modules/seo/services/policies/seo-indexability-policy.service.ts",
         "backend/src/modules/seo/services/policies/seo-unavailable-policy.service.ts",
         "backend/src/modules/seo/services/product-image.service.ts",
+        "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "backend/src/modules/seo/services/reference.service.ts",
         "backend/src/modules/seo/services/risk-flags-engine.service.ts",
         "backend/src/modules/seo/services/seo-generator.service.ts",
@@ -58208,7 +58257,7 @@
         "backend/src/workers/worker.module.ts"
       ],
       "kind": "service",
-      "loc": 388,
+      "loc": 391,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/seo.module.ts",
       "risk": "high",
@@ -59175,6 +59224,62 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D3",
+      "id": "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
+      "importedBy": [
+        "backend/src/modules/blog/services/blog.service.test.ts",
+        "backend/src/modules/blog/services/blog.service.ts",
+        "backend/src/modules/blog/services/r3-guide.service.test.ts",
+        "backend/src/modules/blog/services/r3-guide.service.ts",
+        "backend/src/modules/gamme-rest/gamme-rest-rpc-v2.controller.ts",
+        "backend/src/modules/seo/controllers/reference.controller.ts",
+        "backend/src/modules/seo/seo.module.ts",
+        "backend/src/modules/seo/services/r6-guide-link-policy.test.ts"
+      ],
+      "imports": [
+        "@cache/cache.service",
+        "@database/services/supabase-base.service",
+        "backend/src/config/cache-ttl.config.ts",
+        "backend/src/config/feature-flags.service.ts"
+      ],
+      "kind": "service",
+      "loc": 329,
+      "owner": "@ak125/seo-team",
+      "path": "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
+      "risk": "high",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D3",
+      "id": "backend/src/modules/seo/services/r6-guide-link-policy.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
+      ],
+      "kind": "test",
+      "loc": 309,
+      "owner": "@ak125/seo-team",
+      "path": "backend/src/modules/seo/services/r6-guide-link-policy.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -67242,7 +67347,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 310,
+      "loc": 334,
       "owner": "@ak125",
       "path": "backend/tests/unit/gamme-response-builder.service.test.ts",
       "risk": "medium",
@@ -70858,7 +70963,7 @@
         "~/components/ui/card"
       ],
       "kind": "config",
-      "loc": 173,
+      "loc": 174,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/blog/conseil/ConseilSections.tsx",
       "risk": "low",
@@ -84865,7 +84970,7 @@
         "~/utils/seo/canonical"
       ],
       "kind": "route",
-      "loc": 836,
+      "loc": 838,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/blog-pieces-auto.conseils.$pg_alias.tsx",
       "risk": "medium",
@@ -86581,7 +86686,7 @@
         "~/utils/seo/canonical"
       ],
       "kind": "route",
-      "loc": 1150,
+      "loc": 1149,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/pieces.$slug.tsx",
       "risk": "medium",
@@ -87917,7 +88022,7 @@
         "~/utils/logger"
       ],
       "kind": "service",
-      "loc": 205,
+      "loc": 207,
       "owner": "__unassigned__",
       "path": "frontend/app/services/api/gamme-api.service.ts",
       "risk": "low",
@@ -88503,7 +88608,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "config",
-      "loc": 731,
+      "loc": 734,
       "owner": "__unassigned__",
       "path": "frontend/app/types/gamme-page-contract.types.ts",
       "risk": "low",
@@ -88728,7 +88833,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 86,
+      "loc": 87,
       "owner": "__unassigned__",
       "path": "frontend/app/types/r3-guide.types.ts",
       "risk": "low",
@@ -101310,13 +101415,13 @@
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
       ".spec/00-canon/repository-registry/ownership.yaml": "14105f6fc831d6b7e6246b2d7b787ec6d3446839914bf68e79c2f4b70703d09b",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
-      "audit/registry/db.json": "8a9a7f70490c00f57d748796e4a1c5a98addcc079a4ba569b96ad275dc246d37",
+      "audit/registry/db.json": "1cc7ce7c36303ed87e21eafb5f22db45efcbff0653afcefec869a329bd44dc1b",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "9740559a8613e8511084730237501fed4121c4788f65c4a4cf810767aa3a549f",
+      "audit/registry/files.json": "c80a4fd98814c63c1352e7aeae369afb30f69df7f3dd1f4249da5a5d9b8c08db",
       "audit/registry/rpc.json": "86d0c24b102036512a9f7b11d9ac04754288049a8b061981b19f0db0a8c86263",
-      "audit/registry/runtime.json": "985798dace4be166f55b789fa35550a097179907eaa572143c5d3b9565f17a32"
+      "audit/registry/runtime.json": "f80b408ca887619a4a140cc1e7b62bf25cc1cede62611878c4d45bff66580b57"
     },
-    "sotFingerprint": "09aa92672b08"
+    "sotFingerprint": "36e8c890db5c"
   },
   "runtime": [
     {
@@ -103500,7 +103605,8 @@
         "runtime:backend/src/modules/blog/services/blog-cache.service.ts",
         "runtime:backend/src/modules/blog/services/blog-seo.service.ts",
         "runtime:backend/src/modules/blog/services/blog-statistics.service.ts",
-        "runtime:backend/src/modules/seo/internal-linking.service.ts"
+        "runtime:backend/src/modules/seo/internal-linking.service.ts",
+        "runtime:backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "id": "runtime:backend/src/modules/blog/services/blog.service.ts",
       "kind": "nestjs-service",
@@ -103584,7 +103690,8 @@
         "runtime:backend/src/modules/blog/services/blog-article-relation.service.ts",
         "runtime:backend/src/modules/blog/services/blog-seo.service.ts",
         "runtime:backend/src/modules/blog/services/r3-projection-decision.service.ts",
-        "runtime:backend/src/modules/seo/internal-linking.service.ts"
+        "runtime:backend/src/modules/seo/internal-linking.service.ts",
+        "runtime:backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "id": "runtime:backend/src/modules/blog/services/r3-guide.service.ts",
       "kind": "nestjs-service",
@@ -104594,7 +104701,8 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/modules/gamme-rest/services/gamme-rpc.service.ts"
+        "runtime:backend/src/modules/gamme-rest/services/gamme-rpc.service.ts",
+        "runtime:backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "id": "runtime:backend/src/modules/gamme-rest/gamme-rest-rpc-v2.controller.ts",
       "kind": "nestjs-controller",
@@ -107568,6 +107676,7 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "runtime:backend/src/modules/seo/services/reference.service.ts"
       ],
       "id": "runtime:backend/src/modules/seo/controllers/reference.controller.ts",
@@ -108183,6 +108292,7 @@
         "runtime:backend/src/modules/seo/services/policies/seo-indexability-policy.service.ts",
         "runtime:backend/src/modules/seo/services/policies/seo-unavailable-policy.service.ts",
         "runtime:backend/src/modules/seo/services/product-image.service.ts",
+        "runtime:backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "runtime:backend/src/modules/seo/services/reference.service.ts",
         "runtime:backend/src/modules/seo/services/risk-flags-engine.service.ts",
         "runtime:backend/src/modules/seo/services/seo-generator.service.ts",
@@ -108388,6 +108498,17 @@
       "id": "runtime:backend/src/modules/seo/services/product-image.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/seo/services/product-image.service.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/config/feature-flags.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
