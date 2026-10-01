@@ -7,14 +7,14 @@ owners: ['@ak125']
 domain: D15
 runtime_class: privileged
 llm_safe: false
-last_verified: '2026-05-18'
+last_verified: '2026-09-30'
 license: Internal - Automecanik
 compatibility: Designed for Claude Code in the AutoMecanik monorepo. Stack — Supabase + PostgreSQL. Touches backend/supabase/migrations/ and __* canonical tables. Privileged because DDL is irreversible on prod.
 tags: [supabase, postgres, ddl, rls, migration, governance]
 argument-hint: "[migration-name]"
 disable-model-invocation: true
 metadata:
-  version: "1.2"
+  version: "1.3"
   spec: agentskills.io/specification v1
 ---
 
@@ -142,7 +142,8 @@ BEGIN
 END $$;
 ```
 
-**Index sur tables larges** : toujours utiliser `CONCURRENTLY` :
+**Index sur tables larges** : toujours utiliser `CONCURRENTLY` (fichier `-- @non_transactional`,
+timeouts a `0` — cf. Safe Patterns) :
 ```sql
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_name ON my_table (column);
 ```
@@ -208,8 +209,9 @@ COMMENT ON TABLE my_table IS 'Description of table purpose';
 ```
 
 Ce bloc passe squawk a 0 issue ; l'ancien (BEGIN/COMMIT, sans timeouts) en levait 4. Index
-`CONCURRENTLY` sur une table existante : il refuse la transaction -> marqueur `-- @non_transactional`,
-cf. `backend/supabase/migrations/README.md` §Non-transactional migrations.
+`CONCURRENTLY` sur une table existante : il refuse la transaction -> marqueur `-- @non_transactional`
+et les deux timeouts a `0` explicites (les 60 s ci-dessus tuent le build : incident du 2026-09-04,
+`.claude/rules/guardrails.md`), cf. `backend/supabase/migrations/README.md` §Non-transactional migrations.
 
 ## RLS Audit Patterns
 
