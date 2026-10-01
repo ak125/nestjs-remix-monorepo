@@ -90820,31 +90820,11 @@
         "manual"
       ],
       "domain": "D2",
-      "id": "frontend/tests/qa-audit/helpers/reporter.ts",
-      "importedBy": [],
-      "imports": [],
-      "kind": "service",
-      "loc": 257,
-      "owner": "@ak125",
-      "path": "frontend/tests/qa-audit/helpers/reporter.ts",
-      "risk": "medium",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "high",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D2",
       "id": "frontend/tests/qa-audit/playwright.qa.config.ts",
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 57,
+      "loc": 54,
       "owner": "@ak125",
       "path": "frontend/tests/qa-audit/playwright.qa.config.ts",
       "risk": "medium",
@@ -101197,15 +101177,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "0ab11576b27d12f8c90f4202282216a5271a3feb7791c4cca86a4ae575020a2f",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "bb3bb2dfd166865d9f2e5c5eb3ca0b1df417df566af33884bd95e7e94f4de05d",
+      ".spec/00-canon/repository-registry/ownership.yaml": "58b2385e3eb5370df631a1bed9d4698d71c31a971d6eb9564df91f39c86a00d9",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "8a9a7f70490c00f57d748796e4a1c5a98addcc079a4ba569b96ad275dc246d37",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "0f4eea051a243d53c9c1678ef1ed77b3cf722c40381ca18fe7687a22d4eb13a7",
+      "audit/registry/files.json": "d283c6f8c0c1b8f7686e689d842ef1874eff80586db42f8cdc2761ff6ad5db63",
       "audit/registry/rpc.json": "86d0c24b102036512a9f7b11d9ac04754288049a8b061981b19f0db0a8c86263",
       "audit/registry/runtime.json": "67dc8fe02246ff5d7cf25668af7409b32ea66bc575d4ae23455b57f94d111174"
     },
-    "sotFingerprint": "05bca66f535d"
+    "sotFingerprint": "4c6d04b542cd"
   },
   "runtime": [
     {
