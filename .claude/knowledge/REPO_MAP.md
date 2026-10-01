@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 8a128d637265de0dccdcd6474ab88edcb9187bdcf4fe2955d441b43f085642a7
+source_sha256: 2779522fbf1dae5283ba7386f316f918e88663e12757d98bc638b44417937340
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 2956 |
+| Files (Layer 1) | 2954 |
 | DB tables (Layer 1) | 313 |
 | DB RPC (Layer 1) | 253 |
 | Dependencies (Layer 1) | 237 |
-| Runtime entrypoints (Layer 1) | 1000 |
+| Runtime entrypoints (Layer 1) | 999 |
 
-Source sotFingerprint: `878ff0ffd340`.
+Source sotFingerprint: `3dab43f04974`.
 
 ## Comment l'utiliser
 
@@ -53,27 +53,27 @@ Source sotFingerprint: `878ff0ffd340`.
 
 ### D3 — SEO & Sitemap
 
-- **Files**: 427 (service=219, test=120, controller=34, config=28, script=26)
-- **Runtime entrypoints**: 169
-- **Top owners**: @ak125/seo-team (427)
+- **Files**: 425 (service=218, test=119, controller=34, config=28, script=26)
+- **Runtime entrypoints**: 168
+- **Top owners**: @ak125/seo-team (425)
 - **Knowledge prose**: [`merchant-center`](modules/merchant-center.md), [`seo`](modules/seo.md), [`seo-control-plane`](modules/seo-control-plane.md), [`seo-logs`](modules/seo-logs.md), [`seo-monitoring`](modules/seo-monitoring.md), [`seo-shadow-observatory`](modules/seo-shadow-observatory.md)
-- **Status**: LIVE=220, UNKNOWN=207
+- **Status**: LIVE=219, UNKNOWN=206
 
 ### D4 — Vehicle / Compatibility
 
-- **Files**: 94 (service=60, test=18, config=11, controller=5)
+- **Files**: 95 (service=60, test=19, config=11, controller=5)
 - **Runtime entrypoints**: 41
-- **Top owners**: @ak125/vehicle-team (55), @ak125 (39)
+- **Top owners**: @ak125/vehicle-team (56), @ak125 (39)
 - **Knowledge prose**: [`diagnostic-engine`](modules/diagnostic-engine.md), [`mcp-validation`](modules/mcp-validation.md), [`vehicle-context`](modules/vehicle-context.md), [`vehicles`](modules/vehicles.md)
-- **Status**: LIVE=62, UNKNOWN=32
+- **Status**: LIVE=62, UNKNOWN=33
 
 ### D5 — Blog / Content
 
-- **Files**: 37 (service=26, controller=6, test=5)
+- **Files**: 36 (service=26, controller=6, test=4)
 - **Runtime entrypoints**: 26
-- **Top owners**: @ak125/content-team (37)
+- **Top owners**: @ak125/content-team (36)
 - **Knowledge prose**: [`blog`](modules/blog.md)
-- **Status**: LIVE=32, UNKNOWN=5
+- **Status**: LIVE=32, UNKNOWN=4
 
 ### D6 — RAG & AI Engine
 
