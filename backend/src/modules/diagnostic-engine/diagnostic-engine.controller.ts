@@ -433,9 +433,11 @@ export class DiagnosticEngineController {
    * POST /api/diagnostic-engine/breakdown
    *
    * ADR-032 — endpoint urgence routière (panne immobilisante).
-   * Force `intent_type: 'breakdown'` et délègue à l'orchestrator standard
-   * (le `RiskSafetyEngine` priorise les rules safety_gate=stop_immediate
-   * via la priority haute du flag breakdown).
+   * Alias de /analyze qui force `intent_type: 'breakdown'`. La valeur est
+   * seulement enregistrée dans la session : aucun moteur ne la lit, donc
+   * aucune priorisation de risque propre à la panne n'existe. Contrairement
+   * à /analyze : pas de persistance du contexte véhicule ni de couche
+   * d'intention V1A.
    */
   @Post('breakdown')
   async breakdown(@Body() body: unknown) {
