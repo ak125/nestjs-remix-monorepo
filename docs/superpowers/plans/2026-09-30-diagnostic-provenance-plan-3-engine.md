@@ -246,6 +246,7 @@ Attendu : dernière ligne `ENV_OK SCRATCH=<chemin> shellcheck=0.11.0`. Chaque t�
 | Monorepo | `frontend/app/components/diagnostic-wizard/results/ResultHypotheses.tsx` | 8 | Rang sans score, badge à 3 libellés |
 | Monorepo | `frontend/app/components/diagnostic-wizard/results/DiagnosticResults.tsx` | 8 | Transmet `provenance_summary` aux cartes |
 | Monorepo | `frontend/tests/unit/diagnostic-hypothesis-provenance.test.tsx` | 8 | Cartes et page de résultats (5 tests) |
+| Monorepo | `frontend/tests/unit/button-phrasing-content.test.tsx` | 8 | Cas 3 : badge de provenance dans l'en-tête, plus de score |
 
 `…/` = `backend/src/modules/diagnostic-engine/`. Le script de mutants (`mut_p3.py`) reste dans `$SCRATCH`, jamais dans un dépôt.
 
@@ -254,7 +255,7 @@ Attendu : dernière ligne `ENV_OK SCRATCH=<chemin> shellcheck=0.11.0`. Chaque t�
 ```text
 Tâche 1 (PR-C : script PROD, 3 drapeaux écrits false) → fusion humaine — indépendante ; dans un tag v* avant toute activation (Tâche 9)
 Tâches 2 → 3 → 4 → 5 → 6 → 7 (PR-D : moteur + métriques) — après fusion de #1607, #1624, #1626, #1608, #1618 et des PR-A, PR-B du Plan 2
-Tâche 8 (PR-E : frontend) — après fusion de #1592 et acceptation d'ADR-035 ; indépendante de PR-D
+Tâche 8 (PR-E : frontend) — après fusion de #1592 et de #1665 et acceptation d'ADR-035 ; indépendante de PR-D
 Tâche 9 (activation PROD, GO owner à chaque étape) : (a) préconditions → (b) projection ON → (c) EXPOSE ON → (d) PR-E dans un tag → (e) PRIMARY, seulement si un lien est diagnostic_safe
 ```
 
@@ -3554,27 +3555,29 @@ Attendu : run présent et vert, jobs `🧪 Deploy PREPROD`, `🎭 E2E Smoke Test
 
 ### Tâche 8 : rang sans score et badge de provenance (PR-E)
 
-Les cartes d'hypothèses affichent aujourd'hui un score `/100`, une barre de progression et, pour la première, une grille de sous-scores. Elles montrent désormais le rang seul et, quand la provenance a été lue (`provenance_summary.status === "available"`), un badge à trois libellés. Pas de badge sans résumé (drapeau OFF, session enregistrée) ni avec un résumé `unavailable`. La page de résultats transmet le résumé du pack aux cartes.
+Les cartes d'hypothèses affichent aujourd'hui un score `/100`, une barre de progression et, pour la première, une grille de sous-scores. Elles montrent désormais le rang seul et, quand la provenance a été lue (`provenance_summary.status === "available"`), un badge à trois libellés. Pas de badge sans résumé (drapeau OFF, session enregistrée) ni avec un résumé `unavailable`. La page de résultats transmet le résumé du pack aux cartes. Depuis #1665, `Badge` rend un `<span>` et l'en-tête cliquable de chaque carte ne contient que du contenu phrasé : le badge de provenance y entre, et la ligne de score que #1665 avait sortie du bouton (`<Progress>` rend des `<div>`) disparaît avec le score. Le cas 3 du test de contenu phrasé de #1665 vérifiait le score ; il vérifie désormais le badge dans l'en-tête.
 
 **Files:**
 - Modify: `frontend/app/components/diagnostic-wizard/types.ts` (`ProvenanceState`, `HypothesisProvenance`, `ProvenanceSummary`, `Hypothesis.provenance?`, `EvidencePack.provenance_summary?` ; retrait de `ScoringBreakdown`)
 - Modify: `frontend/app/components/diagnostic-wizard/results/ResultHypotheses.tsx`
 - Modify: `frontend/app/components/diagnostic-wizard/results/DiagnosticResults.tsx`
 - Create: `frontend/tests/unit/diagnostic-hypothesis-provenance.test.tsx`
+- Modify: `frontend/tests/unit/button-phrasing-content.test.tsx` (cas 3 : le badge de provenance dans l'en-tête, à la place du score)
 
 **Interfaces:**
-- Consumes : champs `provenance: {state}` des hypothèses et `provenance_summary` du pack, servis par PR-D (absents tant qu'EXPOSE est OFF) ; `Badge` de `~/components/ui/badge`.
+- Consumes : champs `provenance: {state}` des hypothèses et `provenance_summary` du pack, servis par PR-D (absents tant qu'EXPOSE est OFF) ; `Badge` de `~/components/ui/badge`, racine `<span>` depuis #1665.
 - Produces : prop `provenanceSummary?: ProvenanceSummary` de `ResultHypotheses` ; libellés `sourced` « Relation documentée (sources techniques archivées) », `partial` « Relation partiellement documentée », `unsourced` « Relation non encore documentée — à confirmer par un contrôle ».
 
 - [ ] **Étape 1 : préconditions**
 
 ```bash
 gh pr view 1592 --repo ak125/nestjs-remix-monorepo --json state -q .state
+gh pr view 1665 --repo ak125/nestjs-remix-monorepo --json state -q .state
 gh api -H 'Accept: application/vnd.github.raw' 'repos/ak125/governance-vault/contents/ledger/decisions/adr/ADR-035-diagnostic-tool-source-trust-flag.md?ref=main' \
   | awk 'NR==1 && /^---$/ {f=1; next} f && /^---$/ {exit} f' | grep -E '^(status|superseded_by):'
 ```
 
-Attendu : `MERGED` ; `status: accepted` et `superseded_by: []` (au 2026-10-01 : `status: proposed`). Sinon s'arrêter.
+Attendu : `MERGED` deux fois (les diffs de l'Étape 5 ont pour contexte `main` après #1665) ; `status: accepted` et `superseded_by: []` (au 2026-10-01 : `status: proposed`). Sinon s'arrêter.
 
 - [ ] **Étape 2 : créer le worktree et mesurer la référence**
 
@@ -3588,7 +3591,7 @@ git status --porcelain
 (cd frontend && npx vitest run --root . 2>&1 | grep -E '^ *(Test Files|Tests) ' | tee "$SCRATCH/p3-fe-ref.txt")
 ```
 
-Attendu : `git status` vide ; référence sans échec (`Test Files  F passed (F)`, `Tests  T passed (T)` ; 94 / 918 au 2026-10-01). Vitest se lance seul, jamais en parallèle d'une autre suite.
+Attendu : `git status` vide ; référence sans échec (`Test Files  F passed (F)`, `Tests  T passed (T)` ; 94 / 920 au 2026-10-01, #1665 fusionnée). Vitest se lance seul, jamais en parallèle d'une autre suite.
 
 - [ ] **Étape 3 : écrire le test qui échoue**
 
@@ -3700,6 +3703,7 @@ describe("hypothesis cards", () => {
         suggested_gammes: [],
       },
       allowed_claims: [],
+      forbidden_claims_runtime: [],
       ui_block_inputs: {},
       provenance_summary: AVAILABLE,
     };
@@ -3718,10 +3722,67 @@ describe("hypothesis cards", () => {
 });
 ```
 
+Écrire ce diff dans `$SCRATCH/fe-phrasing-test.diff`, puis `git apply "$SCRATCH/fe-phrasing-test.diff"` :
+
+```diff
+diff --git a/frontend/tests/unit/button-phrasing-content.test.tsx b/frontend/tests/unit/button-phrasing-content.test.tsx
+index e684d1cdd..8f24fb4c0 100644
+--- a/frontend/tests/unit/button-phrasing-content.test.tsx
++++ b/frontend/tests/unit/button-phrasing-content.test.tsx
+@@ -9,6 +9,7 @@ import { ResultHypotheses } from "~/components/diagnostic-wizard/results/ResultH
+ import { StepSymptom } from "~/components/diagnostic-wizard/steps/StepSymptom";
+ import {
+   type Hypothesis,
++  type ProvenanceState,
+   type WizardState,
+ } from "~/components/diagnostic-wizard/types";
+ import { Badge } from "~/components/ui/badge";
+@@ -81,25 +82,32 @@ describe("phrasing content inside buttons", () => {
+     expect(blockInsideButtons(container)).toEqual([]);
+   });
+ 
+-  it("hypothesis headers hold no div or p, and still show the score", () => {
+-    const hypothesis = (id: string, score: number): Hypothesis => ({
++  it("hypothesis headers hold no div or p, provenance badge included", () => {
++    const hypothesis = (id: string, state: ProvenanceState): Hypothesis => ({
+       hypothesis_id: id,
+       label: `Cause ${id}`,
+       cause_type: "wear",
+-      relative_score: score,
++      relative_score: 50,
+       urgency: "moyenne",
+       evidence_for: ["Symptôme déclaré"],
+       evidence_against: [],
+       requires_verification: true,
++      provenance: { state },
+     });
+     const { container } = render(
+       <ResultHypotheses
+-        hypotheses={[hypothesis("a", 73), hypothesis("b", 41)]}
++        hypotheses={[hypothesis("a", "sourced"), hypothesis("b", "unsourced")]}
++        provenanceSummary={{
++          status: "available",
++          counts: { sourced: 1, partial: 0, unsourced: 1 },
++        }}
+       />,
+     );
+-    expect(screen.getAllByRole("button")).toHaveLength(2);
+-    expect(screen.getByText("73/100")).toBeTruthy();
+-    expect(screen.getByText("41/100")).toBeTruthy();
++    const buttons = screen.getAllByRole("button");
++    expect(buttons).toHaveLength(2);
++    // The provenance badge sits in the header, inside the button.
++    expect(buttons[0].textContent).toContain("Relation documentée");
++    expect(buttons[1].textContent).toContain("à confirmer par un contrôle");
+     expect(blockInsideButtons(container)).toEqual([]);
+   });
+ });
+```
+
 - [ ] **Étape 4 : vérifier l'échec**
 
-Run : `(cd frontend && npx vitest run --root . tests/unit/diagnostic-hypothesis-provenance.test.tsx)`
-Attendu : 3 tests rouges (`show the rank and no score, in any form`, `label each hypothesis with its provenance when it was read`, `receive the summary of the evidence pack from the results page`) et 2 verts (les deux cas `show no provenance badge with …`, vrais aujourd'hui).
+Run : `(cd frontend && npx vitest run --root . tests/unit/diagnostic-hypothesis-provenance.test.tsx tests/unit/button-phrasing-content.test.tsx)`
+Attendu : `Tests  4 failed | 4 passed (8)`. Rouges : `show the rank and no score, in any form` (le texte contient `73/100`), `label each hypothesis with its provenance when it was read`, `receive the summary of the evidence pack from the results page`, `hypothesis headers hold no div or p, provenance badge included` (l'en-tête ne contient pas `Relation documentée`). Verts : les deux cas `show no provenance badge with …` et les deux premiers cas du test de contenu phrasé, vrais aujourd'hui.
 
 - [ ] **Étape 5 : implémenter**
 
@@ -3729,9 +3790,15 @@ Attendu : 3 tests rouges (`show the rank and no score, in any form`, `label each
 
 ```diff
 diff --git a/frontend/app/components/diagnostic-wizard/types.ts b/frontend/app/components/diagnostic-wizard/types.ts
-index b4446ba00..60541bd64 100644
+index 039e4d569..e09dbc961 100644
 --- a/frontend/app/components/diagnostic-wizard/types.ts
 +++ b/frontend/app/components/diagnostic-wizard/types.ts
+@@ -1,4 +1,4 @@
+-import  {
++import {
+   type IntentLayer,
+   type RecommendedAction,
+   type HumanEscalation,
 @@ -50,15 +50,22 @@ export type WizardAction =
  
  // ── API Response types (from backend EvidencePack) ──
@@ -3772,8 +3839,8 @@ index b4446ba00..60541bd64 100644
  }
  
  export interface SuggestedGamme {
-@@ -121,6 +129,8 @@ export interface EvidencePack {
-   allowed_claims: string[];
+@@ -122,6 +130,8 @@ export interface EvidencePack {
+   forbidden_claims_runtime: string[];
    signal_quality?: string;
    ui_block_inputs: Record<string, unknown>;
 +  /** Absent when the provenance is not exposed (flag OFF) or on older sessions. */
@@ -3783,11 +3850,13 @@ index b4446ba00..60541bd64 100644
  export interface DiagnosticApiResponse {
 ```
 
+Le premier hunk corrige l'espace double de `import  {` présent sur `main` : sans lui, `prettier --check` de l'Étape 8 échoue sur ce fichier (et lint-staged le réécrirait au commit).
+
 Écrire ce diff dans `$SCRATCH/fe-hypotheses.diff`, puis `git apply "$SCRATCH/fe-hypotheses.diff"` :
 
 ```diff
 diff --git a/frontend/app/components/diagnostic-wizard/results/ResultHypotheses.tsx b/frontend/app/components/diagnostic-wizard/results/ResultHypotheses.tsx
-index 8a611ec3c..9c220ca5d 100644
+index 02e9d573f..93e7470f1 100644
 --- a/frontend/app/components/diagnostic-wizard/results/ResultHypotheses.tsx
 +++ b/frontend/app/components/diagnostic-wizard/results/ResultHypotheses.tsx
 @@ -1,5 +1,9 @@
@@ -3851,42 +3920,57 @@ index 8a611ec3c..9c220ca5d 100644
  
    return (
      <Card>
+@@ -69,7 +71,7 @@ export function ResultHypotheses({ hypotheses }: Props) {
+               <button
+                 type="button"
+                 onClick={() => setExpandedId(expanded ? null : h.hypothesis_id)}
+-                className="w-full flex items-center gap-3 px-3 pt-3 pb-1 text-left"
++                className="w-full flex items-center gap-3 p-3 text-left"
+               >
+                 {/* Rank */}
+                 <span
 @@ -82,7 +84,7 @@ export function ResultHypotheses({ hypotheses }: Props) {
                    {i + 1}
                  </span>
  
--                {/* Label + score */}
+-                {/* Label */}
 +                {/* Label + provenance */}
-                 <div className="flex-1 min-w-0">
-                   <div className="flex items-center gap-2 flex-wrap">
+                 <span className="flex-1 min-w-0">
+                   <span className="flex items-center gap-2 flex-wrap">
                      <span className="font-medium text-sm text-gray-900 truncate">
-@@ -97,17 +99,15 @@ export function ResultHypotheses({ hypotheses }: Props) {
+@@ -97,6 +99,15 @@ export function ResultHypotheses({ hypotheses }: Props) {
                        {h.urgency}
                      </Badge>
-                   </div>
--                  <div className="flex items-center gap-2 mt-1">
--                    <Progress
--                      value={h.relative_score}
--                      className={`h-1.5 flex-1 max-w-[120px] ${PROGRESS_COLOR(h.relative_score)}`}
--                    />
--                    <span
--                      className={`text-xs font-semibold ${SCORE_COLOR(h.relative_score)}`}
+                   </span>
 +                  {showProvenance && h.provenance && (
 +                    <Badge
 +                      variant="outline"
 +                      size="xs"
 +                      className="mt-1 font-normal text-gray-600"
-                     >
--                      {h.relative_score}/100
--                    </span>
--                  </div>
++                    >
 +                      {PROVENANCE_LABEL[h.provenance.state]}
 +                    </Badge>
 +                  )}
-                 </div>
+                 </span>
  
                  {expanded ? (
-@@ -120,25 +120,6 @@ export function ResultHypotheses({ hypotheses }: Props) {
+@@ -106,41 +117,9 @@ export function ResultHypotheses({ hypotheses }: Props) {
+                 )}
+               </button>
+ 
+-              {/* Score — outside the button: <Progress> renders divs */}
+-              <div className="flex items-center gap-2 px-3 pb-3 ml-10">
+-                <Progress
+-                  value={h.relative_score}
+-                  className={`h-1.5 flex-1 max-w-[120px] ${PROGRESS_COLOR(h.relative_score)}`}
+-                />
+-                <span
+-                  className={`text-xs font-semibold ${SCORE_COLOR(h.relative_score)}`}
+-                >
+-                  {h.relative_score}/100
+-                </span>
+-              </div>
+-
                {/* Expanded details */}
                {expanded && (
                  <div className="px-3 pb-3 space-y-3 border-t border-gray-100 pt-3 ml-10">
@@ -3912,7 +3996,7 @@ index 8a611ec3c..9c220ca5d 100644
                    {/* Evidence for */}
                    {h.evidence_for.length > 0 && (
                      <div className="space-y-1">
-@@ -202,12 +183,3 @@ export function ResultHypotheses({ hypotheses }: Props) {
+@@ -204,12 +183,3 @@ export function ResultHypotheses({ hypotheses }: Props) {
      </Card>
    );
  }
@@ -3926,6 +4010,8 @@ index 8a611ec3c..9c220ca5d 100644
 -  context: "Contexte",
 -};
 ```
+
+Le badge, `inline-flex`, suit la rangée libellé + urgence (`flex`, de niveau bloc) dans un `<span>` devenu bloc comme élément flex : il passe à la ligne, comme dans l'ancienne mise en page en `<div>`. Le bouton retrouve `p-3` puisque la ligne de score disparaît.
 
 Écrire ce diff dans `$SCRATCH/fe-results.diff`, puis `git apply "$SCRATCH/fe-results.diff"` :
 
@@ -3951,22 +4037,22 @@ index ed4607dcd..fbf0a87a4 100644
 - [ ] **Étape 6 : vérifier que tout passe**
 
 ```bash
-(cd frontend && npx vitest run --root . tests/unit/diagnostic-hypothesis-provenance.test.tsx 2>&1 | grep -E '^ *Tests ')
+(cd frontend && npx vitest run --root . tests/unit/diagnostic-hypothesis-provenance.test.tsx tests/unit/button-phrasing-content.test.tsx 2>&1 | grep -E '^ *Tests ')
 (cd frontend && npx vitest run --root . 2>&1 | grep -E '^ *(Test Files|Tests) ')
 ```
 
-Attendu : `Tests  5 passed (5)` ; suite complète sans échec, référence + 1 fichier et + 5 tests (95 / 923 au 2026-10-01).
+Attendu : `Tests  8 passed (8)` ; suite complète sans échec, référence + 1 fichier et + 5 tests (95 / 925 au 2026-10-01).
 
 - [ ] **Étape 7 : mutants frontend**
 
 Run : `python3 "$SCRATCH/mut_p3.py" frontend; git status --porcelain` (depuis la racine du worktree)
-Attendu : 2 lignes `KILLED` (`badge-shown-when-unavailable`, `summary-not-passed-to-cards`), `survivors: []`, puis `git status --porcelain` ne montre que les 3 fichiers modifiés et le test non suivi.
+Attendu : 2 lignes `KILLED` (`badge-shown-when-unavailable`, `summary-not-passed-to-cards`), `survivors: []`, puis `git status --porcelain` ne montre que les 4 fichiers modifiés et le test non suivi.
 
 - [ ] **Étape 8 : contrôles**
 
 ```bash
 (cd frontend && npx react-router typegen && NODE_OPTIONS='--max-old-space-size=4096' npx tsc && echo TSC_OK)
-FE='app/components/diagnostic-wizard/types.ts app/components/diagnostic-wizard/results/ResultHypotheses.tsx app/components/diagnostic-wizard/results/DiagnosticResults.tsx tests/unit/diagnostic-hypothesis-provenance.test.tsx'
+FE='app/components/diagnostic-wizard/types.ts app/components/diagnostic-wizard/results/ResultHypotheses.tsx app/components/diagnostic-wizard/results/DiagnosticResults.tsx tests/unit/diagnostic-hypothesis-provenance.test.tsx tests/unit/button-phrasing-content.test.tsx'
 (cd frontend && ESLINT_USE_FLAT_CONFIG=true npx eslint $FE && echo ESLINT_OK)
 node_modules/.bin/prettier --check $(printf 'frontend/%s ' $FE) && echo PRETTIER_OK
 git status --porcelain
@@ -3980,7 +4066,8 @@ Attendu : `TSC_OK`, `ESLINT_OK`, `PRETTIER_OK` ; `status` inchangé (les types g
 git add frontend/app/components/diagnostic-wizard/types.ts \
   frontend/app/components/diagnostic-wizard/results/ResultHypotheses.tsx \
   frontend/app/components/diagnostic-wizard/results/DiagnosticResults.tsx \
-  frontend/tests/unit/diagnostic-hypothesis-provenance.test.tsx
+  frontend/tests/unit/diagnostic-hypothesis-provenance.test.tsx \
+  frontend/tests/unit/button-phrasing-content.test.tsx
 git commit -F - <<'EOF'
 feat(diagnostic-ui): rang sans score et badge de provenance WIKI des hypothèses
 
@@ -3988,6 +4075,7 @@ Les cartes n'affichent plus de score (ni /100, ni barre, ni sous-scores) : le
 rang seul. Quand la provenance a été lue, un badge dit si la relation est
 documentée, partiellement documentée ou à confirmer par un contrôle ; aucun
 badge sans résumé (drapeau OFF, session enregistrée) ni si elle est illisible.
+Le badge, un <span>, reste dans l'en-tête cliquable (contenu phrasé, #1665).
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 EOF
@@ -4017,6 +4105,7 @@ Aucune URL, meta, H1 ni JSON-LD touché ; `diagnostic-auto.$slug.tsx` hors péri
 ## Preuve
 - `tests/unit/diagnostic-hypothesis-provenance.test.tsx` : 5 tests (aucun score sous aucune forme,
   3 libellés, aucun badge sans résumé ou illisible, résumé transmis par la page de résultats) ;
+- `tests/unit/button-phrasing-content.test.tsx`, cas 3 : le badge dans l'en-tête, aucun `div`/`p` dans les boutons ;
 - 2 mutants tués ; tsc, ESLint, Prettier verts ; suite Vitest complète verte.
 
 ## Après fusion
