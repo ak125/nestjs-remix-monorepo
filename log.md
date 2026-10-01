@@ -526,3 +526,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `docs/diagnostic-wiki-provenance-spec`
 - **Décision** : docs(diagnostic): spec provenance WIKI des relations diagnostic (WIKI → DB → moteur)
 - **Sortie** : PR aucune | commits e7023efde
+
+## 2026-10-01 — docs/diagnostic-wiki-provenance-spec (auto)
+
+- **Branche** : `docs/diagnostic-wiki-provenance-spec`
+- **Décision** : docs(diagnostic): auto-revue des plans provenance (couverture plan 3, attentes de dispatch bornées, enveloppe admin, ve (+7 other commits)
+- **Sortie** : PR aucune | commits 81dc3e150 0d05b4ada 2301a6571 887b49292 c26b2ee84 230852a1f 1b17f743b e7023efde
