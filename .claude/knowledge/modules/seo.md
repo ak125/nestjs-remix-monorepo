@@ -2,7 +2,7 @@
 module: seo
 sources:
 - backend/src/modules/seo
-last_scan: '2026-09-29'
+last_scan: '2026-10-01'
 primary_files:
 - backend/src/modules/seo/__tests__/dynamic-seo-v4-via-chain.test.ts
 - backend/src/modules/seo/__tests__/seo-balise-collision-gate.test.ts
@@ -57,6 +57,7 @@ _Section à rédiger._
 - `SitemapStreamingService`
 - `SitemapHygieneService`
 - `ReferenceService`
+- `R6GuideLinkPolicyService`
 - `DiagnosticService`
 - `SeoGeneratorService`
 - `SeoTitleEngineService`

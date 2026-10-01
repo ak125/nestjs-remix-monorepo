@@ -15,6 +15,10 @@ import {
   VehicleContext,
   LinkInjectionResult,
 } from '../../seo/internal-linking.service';
+import {
+  applyGuideLinkRuleToHtml,
+  R6GuideLinkPolicyService,
+} from '../../seo/services/r6-guide-link-policy.service';
 
 /**
  * 📰 BlogService - Orchestrateur principal du module blog
@@ -42,6 +46,7 @@ export class BlogService {
     private readonly statisticsService: BlogStatisticsService,
     private readonly seoService: BlogSeoService,
     private readonly relationService: BlogArticleRelationService,
+    private readonly guideLinkPolicy: R6GuideLinkPolicyService,
   ) {}
 
   // =====================================================
@@ -140,7 +145,34 @@ export class BlogService {
   // =====================================================
 
   async getArticleBySlug(slug: string): Promise<BlogArticle | null> {
-    return this.dataService.getArticleBySlug(slug);
+    const article = await this.dataService.getArticleBySlug(slug);
+    if (!article || article.type === 'guide') return article;
+    return this.applyGuideLinkRule(article);
+  }
+
+  /**
+   * Liens vers les guides d'achat du contenu (ADR-103 D5), dans l'ordre de
+   * rendu : contenu puis sections. Un guide est servi sur sa propre page, d'où
+   * l'exclusion des articles `guide`.
+   */
+  private async applyGuideLinkRule(article: BlogArticle): Promise<BlogArticle> {
+    const snapshot = await this.guideLinkPolicy.getSnapshot();
+    const ctx = {
+      currentPath: `/blog-pieces-auto/article/${article.slug}`,
+      linkedPaths: new Set<string>(),
+    };
+    const content = applyGuideLinkRuleToHtml(article.content, snapshot, ctx);
+    let changed = content.changed;
+    const sections = article.sections.map((section) => {
+      const r = applyGuideLinkRuleToHtml(section.content, snapshot, ctx);
+      changed += r.changed;
+      return r.changed === 0 ? section : { ...section, content: r.html };
+    });
+    if (changed === 0) return article;
+    this.logger.log(
+      `[R6-LINKS] article=${article.slug} consolidation=${snapshot.consolidationEnabled} contenu=${changed} lien(s) modifié(s)`,
+    );
+    return { ...article, content: content.html, sections };
   }
 
   async getArticleById(id: number): Promise<BlogArticle | null> {

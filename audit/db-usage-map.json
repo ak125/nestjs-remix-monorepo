@@ -22,7 +22,7 @@
     "unresolved_callsites": 0,
     "dropped_call_sites": 5,
     "migrations_scanned": 390,
-    "backend_files_scanned": 1427
+    "backend_files_scanned": 1430
   },
   "tables": {
     "___config": {
@@ -257,9 +257,10 @@
         "backend/src/modules/blog/services/r6-guide.service.ts",
         "backend/src/modules/catalog/services/homepage-rpc.service.ts",
         "backend/src/modules/marketing/services/marketing-data.service.ts",
+        "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts"
       ],
-      "used_by_count": 7,
+      "used_by_count": 8,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": true,
@@ -268,9 +269,10 @@
     "__blog_guide": {
       "used_by": [
         "backend/src/modules/blog/services/blog-article-data.service.ts",
+        "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts"
       ],
-      "used_by_count": 2,
+      "used_by_count": 3,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false,
@@ -1222,13 +1224,13 @@
         "backend/src/modules/admin/services/conseil-priority.service.ts",
         "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-        "backend/src/modules/blog/services/blog-seo.service.ts",
         "backend/src/modules/blog/services/guide.service.ts",
         "backend/src/modules/blog/services/r6-guide.service.ts",
         "backend/src/modules/gamme-rest/services/buying-guide-data.service.ts",
         "backend/src/modules/gamme-rest/services/purchase-guide-data.service.ts",
         "backend/src/modules/marketing/services/marketing-data.service.ts",
         "backend/src/modules/seo-monitoring/services/r-content-auditor.service.ts",
+        "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "backend/src/modules/seo/validation/purchase-guide-validator.service.ts"
       ],
       "used_by_count": 12,
@@ -2940,6 +2942,7 @@
         "backend/src/modules/search/controllers/search-debug.controller.ts",
         "backend/src/modules/search/controllers/search-enhanced-existing.controller.ts",
         "backend/src/modules/seo/r2/services/r1-gamme-completeness-audit.service.ts",
+        "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "backend/src/modules/seo/services/reference.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-data.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-cluster.service.ts",
@@ -2947,7 +2950,7 @@
         "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-static.service.ts"
       ],
-      "used_by_count": 39,
+      "used_by_count": 40,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false,
