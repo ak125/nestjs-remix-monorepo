@@ -913,3 +913,60 @@ describe('suggested families carry no purchase estimate', () => {
     );
   });
 });
+
+describe('the catalogue verdict is the same wherever the result shows it', () => {
+  // The engine's scale is wider than the contract (`insufficient`,
+  // `catalog_reference_with_caution`): whatever it returns, every field
+  // shows the same verdict, within the contract.
+  test.each([
+    {
+      raw: {
+        ready_for_catalog: true,
+        confidence_before_purchase: 'high',
+        allowed_output_mode: 'catalog_reference_with_caution',
+      },
+      contract: {
+        ready_for_catalog: true,
+        confidence_before_purchase: 'high',
+        allowed_output_mode: 'catalog_family_with_caution',
+      },
+    },
+    {
+      raw: {
+        ready_for_catalog: false,
+        confidence_before_purchase: 'insufficient',
+        allowed_output_mode: 'none',
+        suggested_gammes: [],
+      },
+      contract: {
+        ready_for_catalog: false,
+        confidence_before_purchase: 'low',
+        allowed_output_mode: 'none',
+      },
+    },
+  ] as const)(
+    'the orientation block repeats the contract verdict, never the raw engine mode ($raw.allowed_output_mode)',
+    async ({ raw, contract }) => {
+      const f = fixture();
+      f.tables.__diag_symptom.data = [{ ...symptom, urgency: 'basse' }];
+      f.tables.__diag_cause.data = [{ ...cause, urgency: 'basse' }];
+      f.tables.__diag_safety_rule.data = [
+        { ...rule, urgency: 'moyenne', blocks_catalog: false },
+      ];
+      const { engine } = pipeline(f.service);
+      const catalog = engine['catalogEngine'];
+      const evaluate = catalog.evaluate.bind(catalog);
+      jest
+        .spyOn(catalog, 'evaluate')
+        .mockImplementation((...args) => ({ ...evaluate(...args), ...raw }));
+      const result = await engine.analyze(input);
+      expect(result.success).toBe(true);
+      const evidence = result.data!.evidence;
+      expect(EvidencePackSchema.safeParse(evidence).error).toBeUndefined();
+      const pack = evidence.evidence_pack;
+      const { reason: _reason, ...verdict } = pack.catalog_guard;
+      expect(verdict).toMatchObject(contract);
+      expect(pack.ui_block_inputs.CatalogOrientationBox).toEqual(verdict);
+    },
+  );
+});
