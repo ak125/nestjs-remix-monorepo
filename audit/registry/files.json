@@ -43128,15 +43128,18 @@
       "imports": [
         "frontend/app/components/diagnostic-wizard/hooks/use-diagnostic-vehicle-selector.ts",
         "frontend/app/components/diagnostic-wizard/results/DiagnosticResults.tsx",
+        "frontend/app/components/diagnostic-wizard/results/ResultCatalog.tsx",
         "frontend/app/components/diagnostic-wizard/steps/StepMaintenance.tsx",
         "frontend/app/components/diagnostic-wizard/steps/StepSymptom.tsx",
         "frontend/app/components/diagnostic-wizard/steps/StepVehicle.tsx",
         "frontend/app/components/diagnostic-wizard/types.ts",
         "~/components/ui/button",
-        "~/components/ui/progress"
+        "~/components/ui/progress",
+        "~/utils/analytics",
+        "~/utils/funnel-beacon"
       ],
       "kind": "config",
-      "loc": 811,
+      "loc": 859,
       "owner": "__unassigned__",
       "path": "frontend/app/components/diagnostic-wizard/DiagnosticWizard.tsx",
       "risk": "low",
@@ -43311,16 +43314,18 @@
       "domain": "UNKNOWN",
       "id": "frontend/app/components/diagnostic-wizard/results/ResultCatalog.tsx",
       "importedBy": [
+        "frontend/app/components/diagnostic-wizard/DiagnosticWizard.tsx",
         "frontend/app/components/diagnostic-wizard/results/DiagnosticResults.tsx"
       ],
       "imports": [
         "frontend/app/components/diagnostic-wizard/types.ts",
         "~/components/ui/badge",
         "~/components/ui/card",
+        "~/utils/funnel-beacon",
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 119,
+      "loc": 137,
       "owner": "__unassigned__",
       "path": "frontend/app/components/diagnostic-wizard/results/ResultCatalog.tsx",
       "risk": "low",
@@ -43390,10 +43395,11 @@
         "frontend/app/components/diagnostic-wizard/types.ts",
         "~/components/ui/badge",
         "~/components/ui/card",
+        "~/utils/funnel-beacon",
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 182,
+      "loc": 195,
       "owner": "__unassigned__",
       "path": "frontend/app/components/diagnostic-wizard/results/ResultMaintenance.tsx",
       "risk": "low",
@@ -61656,6 +61662,25 @@
       "loc": 151,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/diagnostic-critical-urgency.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/diagnostic-funnel-events.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 309,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/diagnostic-funnel-events.test.tsx",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
