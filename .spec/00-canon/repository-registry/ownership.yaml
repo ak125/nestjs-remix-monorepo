@@ -1460,3 +1460,10 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: medium
+  # search_path épinglé (public, pg_temp) de create_order_atomic, append_order_event et
+  # check_payment_tunnel_health, zone commande / paiement, GO owner nominatif (PR #1648).
+  - glob: backend/supabase/migrations/20261001_pin_order_functions_search_path*.sql
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: high
+    risk: high
