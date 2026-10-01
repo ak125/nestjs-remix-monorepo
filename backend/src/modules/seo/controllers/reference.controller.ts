@@ -18,6 +18,10 @@ import {
   ReferenceAuditResult,
 } from '../services/reference.service';
 import { buildGammeImageUrl } from '../../catalog/utils/image-urls.utils';
+import {
+  R6GuideLinkPolicyService,
+  applyGuideLinkRuleToHtml,
+} from '../services/r6-guide-link-policy.service';
 
 /**
  * Interface de réponse API pour une référence
@@ -86,7 +90,10 @@ interface ReferenceListResponse {
 export class ReferenceController {
   private readonly logger = new Logger(ReferenceController.name);
 
-  constructor(private readonly referenceService: ReferenceService) {}
+  constructor(
+    private readonly referenceService: ReferenceService,
+    private readonly guideLinkPolicy: R6GuideLinkPolicyService,
+  ) {}
 
   // ============================================
   // ROUTES STATIQUES (AVANT les routes avec :slug)
@@ -306,6 +313,30 @@ export class ReferenceController {
     }
 
     const response = this.mapToResponse(reference);
+
+    // Liens vers les guides d'achat (ADR-103 D5). Les liens conseils de la
+    // carte « Guides et articles » sont toujours rendus : ils comptent comme liés.
+    if (response.contentHtml) {
+      const snapshot = await this.guideLinkPolicy.getSnapshot();
+      const guideLinks = applyGuideLinkRuleToHtml(
+        response.contentHtml,
+        snapshot,
+        {
+          currentPath: `/reference-auto/${reference.slug}`,
+          linkedPaths: new Set(
+            (reference.blogSlugs ?? []).map(
+              (s) => `/blog-pieces-auto/conseils/${s}`,
+            ),
+          ),
+        },
+      );
+      response.contentHtml = guideLinks.html;
+      if (guideLinks.changed > 0) {
+        this.logger.log(
+          `[R6-LINKS] reference=${reference.slug} consolidation=${snapshot.consolidationEnabled} contenu=${guideLinks.changed} lien(s) modifié(s)`,
+        );
+      }
+    }
 
     // Enrich with product count (non-blocking)
     if (reference.pgId) {
