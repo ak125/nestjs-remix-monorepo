@@ -74,6 +74,11 @@ ai-agents-python/
 
 # Claude Code skills
 .claude/
+!.claude/
+.claude/*
+!.claude/canon-mirrors/
+.claude/canon-mirrors/*
+!.claude/canon-mirrors/marketing-voice.md
 
 # Specs et documentation interne
 .spec/

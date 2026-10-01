@@ -2,7 +2,7 @@
 module: marketing
 sources:
 - backend/src/modules/marketing
-last_scan: '2026-07-02'
+last_scan: '2026-10-01'
 primary_files:
 - backend/src/modules/marketing/controllers/marketing-backlinks.controller.ts
 - backend/src/modules/marketing/controllers/marketing-briefs.controller.ts
@@ -41,16 +41,17 @@ _Section à rédiger._
 - `MultiChannelCopywriterService`
 - `BrandComplianceGateService`
 - `PublishQueueService`
+- `MarketingBriefsService`
 
 ### Fichiers primaires
 - [backend/src/modules/marketing/controllers/marketing-backlinks.controller.ts](../../../backend/src/modules/marketing/controllers/marketing-backlinks.controller.ts)
+- [backend/src/modules/marketing/controllers/marketing-briefs.controller.ts](../../../backend/src/modules/marketing/controllers/marketing-briefs.controller.ts)
 - [backend/src/modules/marketing/controllers/marketing-content-roadmap.controller.ts](../../../backend/src/modules/marketing/controllers/marketing-content-roadmap.controller.ts)
 - [backend/src/modules/marketing/controllers/marketing-dashboard.controller.ts](../../../backend/src/modules/marketing/controllers/marketing-dashboard.controller.ts)
 - [backend/src/modules/marketing/controllers/marketing-pipeline.controller.ts](../../../backend/src/modules/marketing/controllers/marketing-pipeline.controller.ts)
 - [backend/src/modules/marketing/controllers/marketing-social-posts.controller.ts](../../../backend/src/modules/marketing/controllers/marketing-social-posts.controller.ts)
+- [backend/src/modules/marketing/dto/marketing-brief.dto.ts](../../../backend/src/modules/marketing/dto/marketing-brief.dto.ts)
 - [backend/src/modules/marketing/interfaces/marketing-hub.interfaces.ts](../../../backend/src/modules/marketing/interfaces/marketing-hub.interfaces.ts)
-- [backend/src/modules/marketing/interfaces/marketing.interfaces.ts](../../../backend/src/modules/marketing/interfaces/marketing.interfaces.ts)
-- [backend/src/modules/marketing/marketing.module.ts](../../../backend/src/modules/marketing/marketing.module.ts)
 
 <!-- END AUTO-GENERATED -->
 

@@ -15,9 +15,11 @@
  */
 
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
+  ForbiddenException,
   Param,
   Patch,
   Query,
@@ -71,15 +73,19 @@ export class MarketingBriefsController {
     @Req() req: Request,
   ) {
     // Validation Zod (DTO PR-1.3)
-    const parsed = UpdateBriefStatusSchema.parse(body);
+    const result = UpdateBriefStatusSchema.safeParse(body);
+    if (!result.success) {
+      throw new BadRequestException('Invalid brief status request');
+    }
+    const parsed = result.data;
 
     // Acteur = utilisateur authentifié (admin via IsAdminGuard).
     const user = (req as Request & { user?: { email?: string } }).user;
-    const actor =
-      parsed.reviewed_by ||
-      parsed.approved_by ||
-      user?.email ||
-      'admin-unknown';
+    // Legacy actor fields in the body are deliberately ignored.
+    const actor = typeof user?.email === 'string' ? user.email.trim() : '';
+    if (!actor) {
+      throw new ForbiddenException('Authenticated reviewer identity required');
+    }
 
     if (
       parsed.status !== 'reviewed' &&
@@ -88,7 +94,7 @@ export class MarketingBriefsController {
       parsed.status !== 'archived'
     ) {
       // 'draft' n'est pas une transition admin (status initial agent).
-      throw new Error(
+      throw new BadRequestException(
         `Status transition '${parsed.status}' not allowed via admin UI`,
       );
     }

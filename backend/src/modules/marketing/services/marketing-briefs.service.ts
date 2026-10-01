@@ -7,16 +7,24 @@
  *   - updateBriefStatus(id, status, reviewer) : workflow validation humaine
  *
  * Pattern miroir de MarketingDataService (extends SupabaseBaseService) +
- * RPC Gate. Pas de validation métier ici (DTO Zod côté controller s'en charge).
+ * RPC Gate. Le service impose le workflow et ses préconditions métier.
  *
  * RGPD : pas de filtre cst_marketing_consent_at ici (briefs ne contiennent pas
  * de PII utilisateur — juste agent_id + payload). Le filtre RGPD s'applique
  * côté agent quand il query __orders/users pour bâtir le brief, pas ici.
  */
 
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
+import { BrandComplianceGateService } from './brand-compliance-gate.service';
 
 export interface MarketingBriefRow {
   id: string;
@@ -72,7 +80,10 @@ export interface PaginatedBriefs {
 export class MarketingBriefsService extends SupabaseBaseService {
   protected override readonly logger = new Logger(MarketingBriefsService.name);
 
-  constructor(rpcGate: RpcGateService) {
+  constructor(
+    rpcGate: RpcGateService,
+    private readonly brandGate: BrandComplianceGateService,
+  ) {
     super();
     this.rpcGate = rpcGate;
   }
@@ -120,25 +131,44 @@ export class MarketingBriefsService extends SupabaseBaseService {
       .from('__marketing_brief')
       .select('*')
       .eq('id', id)
-      .single();
+      .maybeSingle();
 
     if (error) {
-      this.logger.warn(`getBriefById ${id} not found: ${error.message}`);
-      throw new NotFoundException(`Brief ${id} not found`);
+      this.logger.error(`getBriefById failed: ${error.message}`);
+      throw new ServiceUnavailableException('Brief storage unavailable');
     }
+    if (!data) throw new NotFoundException(`Brief ${id} not found`);
 
     return data as unknown as MarketingBriefRow;
   }
 
   /**
    * Update le status (workflow validation humaine).
-   * Phase 1 — pas de transition strict checking (admin UI gère la cohérence).
+   * Server-side state machine; published records a manual declaration only.
+   * Compare-and-set prevents overwriting a concurrent review/content update.
    */
   async updateBriefStatus(
     id: string,
     nextStatus: 'reviewed' | 'approved' | 'published' | 'archived',
     actor: string,
   ): Promise<MarketingBriefRow> {
+    if (typeof actor !== 'string' || !actor.trim()) {
+      throw new ForbiddenException('Authenticated reviewer identity required');
+    }
+    const brief = await this.getBriefById(id);
+    const allowed: Record<MarketingBriefRow['status'], readonly string[]> = {
+      draft: ['reviewed', 'archived'],
+      reviewed: ['approved', 'archived'],
+      approved: ['published', 'archived'],
+      published: ['archived'],
+      archived: [],
+    };
+    if (!allowed[brief.status]?.includes(nextStatus)) {
+      throw new ConflictException('Invalid brief status transition');
+    }
+    if (nextStatus !== 'archived') {
+      await this.brandGate.assertBriefCanProgress(brief);
+    }
     const update: Record<string, unknown> = { status: nextStatus };
 
     if (nextStatus === 'reviewed') {
@@ -155,13 +185,17 @@ export class MarketingBriefsService extends SupabaseBaseService {
       .from('__marketing_brief')
       .update(update)
       .eq('id', id)
+      .eq('status', brief.status)
+      .eq('updated_at', brief.updated_at)
       .select('*')
-      .single();
+      .maybeSingle();
 
     if (error) {
       this.logger.error(`updateBriefStatus ${id} failed: ${error.message}`);
-      throw new Error(`Failed to update brief: ${error.message}`);
+      throw new ServiceUnavailableException('Brief storage unavailable');
     }
+    if (!data)
+      throw new ConflictException('Brief changed; reload before retrying');
 
     return data as unknown as MarketingBriefRow;
   }

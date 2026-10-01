@@ -1,4 +1,14 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  UnprocessableEntityException,
+} from '@nestjs/common';
+import { promises as fs } from 'fs';
+import { resolve } from 'path';
+import { JSON_SCHEMA, load } from 'js-yaml';
+import { z } from 'zod';
+import { CreateMarketingBriefSchema } from '../dto/marketing-brief.dto';
+import type { MarketingBriefRow } from './marketing-briefs.service';
 import { MarketingHubDataService } from './marketing-hub-data.service';
 import type {
   SocialPost,
@@ -11,6 +21,40 @@ import type {
   GateLevel,
   BrandRule,
 } from '../interfaces/marketing-hub.interfaces';
+
+const canonText = z
+  .string()
+  .trim()
+  .min(1)
+  .refine((value) => !/\bTBD\b/i.test(value));
+const openingTime = z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/);
+const localCanonSchema = z.object({
+  validated: z.literal(true),
+  legal_name: canonText,
+  trade_name: canonText,
+  address: z.object({
+    street: canonText,
+    postal_code: canonText,
+    city: canonText,
+    country: canonText,
+  }),
+  phone: canonText,
+  opening_hours: z.record(
+    z.enum([
+      'monday',
+      'tuesday',
+      'wednesday',
+      'thursday',
+      'friday',
+      'saturday',
+      'sunday',
+    ]),
+    z.union([
+      z.literal('closed'),
+      z.object({ opens: openingTime, closes: openingTime }),
+    ]),
+  ),
+});
 
 /**
  * Brand & Compliance Gate Service.
@@ -26,6 +70,84 @@ export class BrandComplianceGateService {
   private readonly logger = new Logger(BrandComplianceGateService.name);
 
   constructor(private readonly hubData: MarketingHubDataService) {}
+
+  /** Validate a stored brief before review, approval or a manual publication record.
+   * Existing gate results are prerequisites, not evidence of external publication.
+   * Never manufacture PASS when the upstream brief evaluator has not run.
+   */
+  async assertBriefCanProgress(brief: MarketingBriefRow): Promise<void> {
+    const {
+      agent_id,
+      business_unit,
+      channel,
+      conversion_goal,
+      cta,
+      target_segment,
+      payload,
+      coverage_manifest,
+    } = brief;
+    if (
+      !CreateMarketingBriefSchema.safeParse({
+        agent_id,
+        business_unit,
+        channel,
+        conversion_goal,
+        cta,
+        target_segment,
+        payload,
+        coverage_manifest,
+      }).success
+    ) {
+      throw new UnprocessableEntityException('marketing_brief_invalid');
+    }
+
+    if (business_unit === 'LOCAL' || business_unit === 'HYBRID') {
+      // Identical relative layout for backend/src and backend/dist. No cwd guessing,
+      // no vault access, no cached validation surviving a canon revocation.
+      let validated = false;
+      try {
+        const document = await fs.readFile(
+          resolve(
+            __dirname,
+            '../../../../../.claude/canon-mirrors/marketing-voice.md',
+          ),
+          'utf8',
+        );
+        const candidates: unknown[] = [];
+        for (const match of document.matchAll(
+          /^```ya?ml[^\S\r\n]*\r?\n([\s\S]*?)^```[^\S\r\n]*$/gm,
+        )) {
+          const section = load(match[1], { schema: JSON_SCHEMA });
+          if (
+            section &&
+            typeof section === 'object' &&
+            'local_canon' in section
+          ) {
+            candidates.push(section.local_canon);
+          }
+        }
+        validated =
+          candidates.length === 1 &&
+          localCanonSchema.safeParse(candidates[0]).success;
+      } catch {
+        this.logger.warn('Marketing local canon unavailable or malformed');
+      }
+      if (!validated)
+        throw new UnprocessableEntityException('local_canon_unvalidated');
+    }
+
+    const acceptable = (level: string | null) =>
+      level === 'PASS' || level === 'WARN';
+    if (
+      !acceptable(brief.brand_gate_level) ||
+      !acceptable(brief.compliance_gate_level) ||
+      brief.gate_summary?.can_approve === false ||
+      (Array.isArray(brief.gate_summary?.blocking_issues) &&
+        brief.gate_summary.blocking_issues.length > 0)
+    ) {
+      throw new UnprocessableEntityException('marketing_gates_not_passed');
+    }
+  }
 
   /**
    * Run full gate evaluation on a social post.
