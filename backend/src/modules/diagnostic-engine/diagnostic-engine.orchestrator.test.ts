@@ -4,7 +4,10 @@ import {
   DiagnosticEngineDataService,
   type DiagSafetyRule,
 } from './diagnostic-engine.data-service';
-import { SignalInterpretationEngine } from './engines/signal-interpretation.engine';
+import {
+  SignalInterpretationEngine,
+  type SignalInterpretation,
+} from './engines/signal-interpretation.engine';
 import { HypothesisScoringEngine } from './engines/hypothesis-scoring.engine';
 import { RiskSafetyEngine } from './engines/risk-safety.engine';
 import { CatalogOrientationEngine } from './engines/catalog-orientation.engine';
@@ -65,11 +68,13 @@ describe('Diagnostic without RAG content authority', () => {
           useValue: {
             interpret: jest.fn().mockResolvedValue({
               system_confirmed: true,
+              system_slug: 'freinage',
               system_label: 'Freinage',
               resolved_symptom_slugs: ['bruit'],
+              symptom_labels: { bruit: 'Bruit au freinage' },
               unresolved_signals: [],
               signal_quality: 'high',
-            }),
+            } satisfies SignalInterpretation),
           },
         },
         {
