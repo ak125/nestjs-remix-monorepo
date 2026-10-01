@@ -85992,6 +85992,7 @@
         "frontend/app/types/brand.types.ts",
         "~/components/errors/ErrorGeneric",
         "~/styles/brand-colors.css?url",
+        "~/utils/cache-control",
         "~/utils/logger",
         "~/utils/page-role.types"
       ],
@@ -90980,6 +90981,26 @@
       "loc": 77,
       "owner": "@ak125",
       "path": "frontend/tests/unit/array-at-polyfill.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/ast-grep-rule-globs-match-language.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 199,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/ast-grep-rule-globs-match-language.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -101274,11 +101295,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "8a9a7f70490c00f57d748796e4a1c5a98addcc079a4ba569b96ad275dc246d37",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "0eae50d119e2da1af155f01046f77015c9199b942ab2a0bdc1b86234abcd5adf",
+      "audit/registry/files.json": "a6611579c5f103ba4fddb76e21fd3e87b33a99f7759a9886178d2e2b489f29be",
       "audit/registry/rpc.json": "86d0c24b102036512a9f7b11d9ac04754288049a8b061981b19f0db0a8c86263",
       "audit/registry/runtime.json": "67dc8fe02246ff5d7cf25668af7409b32ea66bc575d4ae23455b57f94d111174"
     },
-    "sotFingerprint": "0a9b3a481dd7"
+    "sotFingerprint": "577db1aa942a"
   },
   "runtime": [
     {

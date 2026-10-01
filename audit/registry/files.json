@@ -56272,6 +56272,7 @@
         "frontend/app/types/brand.types.ts",
         "~/components/errors/ErrorGeneric",
         "~/styles/brand-colors.css?url",
+        "~/utils/cache-control",
         "~/utils/logger",
         "~/utils/page-role.types"
       ],
@@ -61109,6 +61110,25 @@
       "loc": 77,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/array-at-polyfill.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/ast-grep-rule-globs-match-language.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 199,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/ast-grep-rule-globs-match-language.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
