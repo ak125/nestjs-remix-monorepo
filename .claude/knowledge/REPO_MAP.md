@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 90d42032c7fd72597610870f1048465b5717d32005ecd316235d1a21f3c78520
+source_sha256: 9e00d4657a5b2e0acdc06f69fb6768d6d1749aeba03a48783dd895deb6fa2787
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -20,11 +20,11 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 |---|---|
 | Files (Layer 1) | 2959 |
 | DB tables (Layer 1) | 313 |
-| DB RPC (Layer 1) | 253 |
+| DB RPC (Layer 1) | 254 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1000 |
 
-Source sotFingerprint: `949a2eb23344`.
+Source sotFingerprint: `5f00adcd045a`.
 
 ## Comment l'utiliser
 
@@ -157,7 +157,7 @@ Source sotFingerprint: `949a2eb23344`.
 
 - **Files**: 245 (service=150, config=57, controller=21, script=14, test=3)
 - **DB tables**: 313
-- **DB RPC**: 253
+- **DB RPC**: 254
 - **Runtime entrypoints**: 84
 - **Top owners**: __unassigned__ (245)
 - **Knowledge prose**: [`config`](modules/config.md), [`layout`](modules/layout.md), [`mcp-validation`](modules/mcp-validation.md), [`metadata`](modules/metadata.md), [`navigation`](modules/navigation.md), [`search`](modules/search.md), [`shipping`](modules/shipping.md), [`suppliers`](modules/suppliers.md), [`system`](modules/system.md)
