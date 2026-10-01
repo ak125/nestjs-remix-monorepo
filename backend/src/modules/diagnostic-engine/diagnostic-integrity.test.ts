@@ -344,7 +344,6 @@ describe('catalogue readiness rests on the dominant hypothesis', () => {
       const hypotheses = new HypothesisScoringEngine().score(
         gearboxCrack.map((c, i) => live(c, i + 1)),
         car,
-        undefined,
       );
       const [top, second] = hypotheses;
       expect(top.hypothesis_id).toBe('boite_vitesses_usee');
@@ -369,11 +368,7 @@ describe('catalogue readiness rests on the dominant hypothesis', () => {
   );
 
   test('a dominant hypothesis with its own family stays ready', () => {
-    const hypotheses = new HypothesisScoringEngine().score(
-      [link()],
-      vehicle,
-      undefined,
-    );
+    const hypotheses = new HypothesisScoringEngine().score([link()], vehicle);
     expect(
       new CatalogOrientationEngine().evaluate(
         hypotheses,
