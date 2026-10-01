@@ -24,7 +24,7 @@ fi
 
 # Guard 1: Block git push to main
 if echo "$COMMAND" | grep -qE 'git\s+push\s+.*\b(origin\s+main|main)\b'; then
-  echo "BLOCKED: git push origin main est interdit. Utilise le workflow Airlock (gov airlock) ou cree une PR." >&2
+  echo "BLOCKED: git push origin main est interdit. Pousse une branche et ouvre une PR." >&2
   exit 2
 fi
 

@@ -45,7 +45,7 @@ jobs:
           cache: "npm"
 
       - name: Restore Turbo cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .turbo
           key: turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -111,7 +111,7 @@ jobs:
           cache: "npm"
 
       - name: Restore Turbo cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .turbo
           key: turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -131,7 +131,7 @@ jobs:
       # Key on lockfile + turbo.json + every tsconfig — a config change alters the compile
       # graph and must start a fresh buildinfo. Saves only on job success (first GREEN run).
       - name: Restore TypeScript incremental buildinfo
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             **/node_modules/.cache/tsc/
@@ -200,7 +200,7 @@ jobs:
           cache: "npm"
 
       - name: Restore Turbo cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .turbo
           key: turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -269,7 +269,7 @@ jobs:
           cache: "npm"
 
       - name: Restore Turbo cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .turbo
           key: turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -345,7 +345,7 @@ jobs:
           cache: "npm"
 
       - name: Restore Turbo cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .turbo
           key: turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
