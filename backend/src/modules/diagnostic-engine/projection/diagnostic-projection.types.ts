@@ -60,7 +60,6 @@ export const ExportIndexSchema = z.object({
     }),
   ),
 });
-export type ExportIndex = z.infer<typeof ExportIndexSchema>;
 
 /** Enveloppe d'un export de gamme ; les relations sont validées une à une. */
 export const GammeExportEnvelopeSchema = z.object({
@@ -168,7 +167,7 @@ export const ApplyResultSchema = z.object({
   conflict_count: z.number().int().min(0),
   retired_count: z.number().int().min(0),
 });
-export type ApplyResult = z.infer<typeof ApplyResultSchema>;
+type ApplyResult = z.infer<typeof ApplyResultSchema>;
 
 export type DiagnosticProjectionRunResult =
   | { status: 'skipped'; reason: 'READ_ONLY' | 'FLAG_OFF' }

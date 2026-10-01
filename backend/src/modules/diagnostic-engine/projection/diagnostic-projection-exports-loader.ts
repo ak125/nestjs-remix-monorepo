@@ -15,8 +15,8 @@ import {
   type LoadedGammeExport,
 } from './diagnostic-projection.types';
 
-export const DIAGNOSTIC_EXPORTS_INDEX_FILE = '_index.json';
-export const DIAGNOSTIC_EXPORTS_GAMME_DIR = 'gamme';
+const DIAGNOSTIC_EXPORTS_INDEX_FILE = '_index.json';
+const DIAGNOSTIC_EXPORTS_GAMME_DIR = 'gamme';
 
 export type DiagnosticExportsErrorCode =
   | 'exports_root_missing'

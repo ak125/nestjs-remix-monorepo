@@ -27,10 +27,10 @@ import {
   type LoadedDiagnosticExports,
 } from './diagnostic-projection.types';
 
-export const DIAGNOSTIC_PROJECTION_EXPORTS_ROOT_ENV =
+const DIAGNOSTIC_PROJECTION_EXPORTS_ROOT_ENV =
   'DIAGNOSTIC_PROJECTION_EXPORTS_ROOT';
 /** Même base que `exports/seo` : pin du sous-module, résolu depuis cwd=backend. */
-export const DEFAULT_DIAGNOSTIC_EXPORTS_ROOT =
+const DEFAULT_DIAGNOSTIC_EXPORTS_ROOT =
   'content/automecanik-wiki/exports/diagnostic';
 const MAX_ERROR_LENGTH = 2000;
 

@@ -23,9 +23,9 @@ import {
   type DiagnosticProjectionJobData,
 } from './diagnostic-projection.types';
 
-export const DIAGNOSTIC_PROJECTION_CRON_ENV = 'DIAGNOSTIC_PROJECTION_CRON';
+const DIAGNOSTIC_PROJECTION_CRON_ENV = 'DIAGNOSTIC_PROJECTION_CRON';
 /** 02:00 UTC, même créneau que le feeder SEO : exports du pin courant. */
-export const DEFAULT_DIAGNOSTIC_PROJECTION_CRON = '0 2 * * *';
+const DEFAULT_DIAGNOSTIC_PROJECTION_CRON = '0 2 * * *';
 
 @Injectable()
 export class DiagnosticProjectionSchedulerService implements OnModuleInit {
