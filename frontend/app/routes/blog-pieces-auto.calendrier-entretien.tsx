@@ -117,6 +117,12 @@ const CalendarPayloadSchema = z.object({
 const API_BASE =
   process.env.BACKEND_API_URL ?? "http://localhost:3000/api/diagnostic-engine";
 
+// A rejected request is not an outage: retrying later would not help.
+const REQUEST_ERRORS: Partial<Record<number, string>> = {
+  400: "Paramètres du calendrier invalides : vérifiez le véhicule, le kilométrage et le carburant indiqués dans l'adresse.",
+  404: "Véhicule introuvable : vérifiez l'identifiant du véhicule indiqué dans l'adresse.",
+};
+
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const params = new URLSearchParams();
@@ -128,6 +134,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   try {
     const res = await fetch(apiUrl);
+    const requestError = REQUEST_ERRORS[res.status];
+    if (requestError) return { calendar: null, error: requestError };
     if (!res.ok) throw new Error(`API ${res.status}`);
     const calendar = CalendarPayloadSchema.parse(await res.json());
     return { calendar, error: null };

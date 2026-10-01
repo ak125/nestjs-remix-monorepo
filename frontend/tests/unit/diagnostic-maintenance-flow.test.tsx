@@ -176,7 +176,6 @@ describe("maintenance wizard integration", () => {
         risk_flags: [],
         maintenance_links: [],
         allowed_claims: [],
-        forbidden_claims_runtime: [],
         ui_block_inputs: {},
         catalog_guard: {
           allowed_output_mode: "none",

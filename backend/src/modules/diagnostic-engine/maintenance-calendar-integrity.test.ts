@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  NotFoundException,
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { DiagnosticEngineController } from './diagnostic-engine.controller';
@@ -16,13 +17,23 @@ const interval = {
   status: 'overdue',
 };
 function fixture() {
-  // Only the remote RPC boundary is replaced; calculation and controller run.
+  // Only the remote boundaries (RPCs, auto_type row) are replaced;
+  // calculation and controller run.
   const service = Object.create(
     MaintenanceCalculatorService.prototype,
   ) as MaintenanceCalculatorService;
   const rpc = jest.fn().mockResolvedValue({ data: [], error: null });
+  const typeRow = jest
+    .fn()
+    .mockResolvedValue({ data: { type_fuel: 'Essence' }, error: null });
+  const typeQuery = {
+    select: () => typeQuery,
+    eq: () => typeQuery,
+    maybeSingle: typeRow,
+  };
   Object.assign(service, {
     callRpc: rpc,
+    supabase: { from: () => typeQuery },
     logger: { error: jest.fn() },
     diagnosticContent: { getControlesMensuels: () => null },
   });
@@ -34,8 +45,9 @@ function fixture() {
     {} as never,
     {} as never,
     {} as never,
+    {} as never,
   );
-  return { service, controller, rpc };
+  return { service, controller, rpc, typeRow };
 }
 
 describe('calendar does not infer maintenance history from the odometer', () => {
@@ -190,6 +202,17 @@ describe.each(['maintenanceSchedule', 'maintenanceCalendar'] as const)(
         await expect(controller[endpoint](id as string)).rejects.toBeInstanceOf(
           BadRequestException,
         );
+        expect(rpc).not.toHaveBeenCalled();
+      },
+    );
+    test.each([undefined, 'diesel'])(
+      'rejects a type_id absent from auto_type (fuel %j) as not found',
+      async (fuel) => {
+        const { controller, rpc, typeRow } = fixture();
+        typeRow.mockResolvedValue({ data: null, error: null });
+        await expect(
+          controller[endpoint]('999999', undefined, fuel),
+        ).rejects.toBeInstanceOf(NotFoundException);
         expect(rpc).not.toHaveBeenCalled();
       },
     );

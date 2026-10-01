@@ -2940,6 +2940,7 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/config/feature-flags.service.ts",
         "runtime:backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
         "runtime:backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
         "runtime:backend/src/modules/diagnostic-engine/services/diagnostic-content.service.ts",

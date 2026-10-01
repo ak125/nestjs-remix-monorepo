@@ -6,7 +6,10 @@
  *
  * @see backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts
  */
-import { ServiceUnavailableException } from '@nestjs/common';
+import {
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { MaintenanceCalculatorService } from '../../src/modules/diagnostic-engine/services/maintenance-calculator.service';
@@ -16,10 +19,24 @@ describe('MaintenanceCalculatorService.getCalendar() (ADR-032 D9)', () => {
   let service: MaintenanceCalculatorService;
   let mockRpc: jest.Mock;
   let mockGetControles: jest.Mock;
+  let mockFrom: jest.Mock;
+  let mockEq: jest.Mock;
+  let mockTypeRow: jest.Mock;
 
   beforeEach(async () => {
     mockRpc = jest.fn();
     mockGetControles = jest.fn();
+    // Only the auto_type row read is replaced: resolution runs as in prod.
+    mockTypeRow = jest
+      .fn()
+      .mockResolvedValue({ data: { type_fuel: 'Essence' }, error: null });
+    const typeQuery = {
+      select: jest.fn(() => typeQuery),
+      eq: jest.fn(() => typeQuery),
+      maybeSingle: mockTypeRow,
+    };
+    mockEq = typeQuery.eq;
+    mockFrom = jest.fn(() => typeQuery);
 
     const mockConfig = {
       getOrThrow: jest.fn(() => 'mock'),
@@ -45,6 +62,9 @@ describe('MaintenanceCalculatorService.getCalendar() (ADR-032 D9)', () => {
 
     service = module.get(MaintenanceCalculatorService);
     (service as unknown as { callRpc: typeof mockRpc }).callRpc = mockRpc;
+    (service as unknown as { supabase: unknown }).supabase = {
+      from: mockFrom,
+    };
   });
 
   it('aggregates schedule + alerts + controles_mensuels into one payload', async () => {
@@ -124,6 +144,77 @@ describe('MaintenanceCalculatorService.getCalendar() (ADR-032 D9)', () => {
       expect.objectContaining({ p_fuel_type: 'diesel' }),
       expect.any(Object),
     );
+  });
+
+  describe('schedule and milestones filter on one resolved fuel', () => {
+    const fuelSentTo = (rpc: string) =>
+      mockRpc.mock.calls.find(([name]) => name === rpc)?.[1]?.p_fuel_type;
+
+    beforeEach(() => {
+      mockRpc.mockResolvedValue({ data: [], error: null });
+      mockGetControles.mockReturnValue(null);
+    });
+
+    it('uses the fuel of the type when the caller gives none', async () => {
+      mockTypeRow.mockResolvedValue({
+        data: { type_fuel: 'Diesel-Électrique' },
+        error: null,
+      });
+
+      const calendar = await service.getCalendar(42, null);
+
+      expect(mockFrom).toHaveBeenCalledWith('auto_type');
+      expect(mockEq).toHaveBeenCalledWith('type_id', '42');
+      expect(fuelSentTo('kg_get_smart_maintenance_schedule')).toBe(
+        'Diesel-Électrique',
+      );
+      expect(fuelSentTo('kg_get_maintenance_alerts_by_milestone')).toBe(
+        'Diesel-Électrique',
+      );
+      expect(calendar.fuel_type).toBe('Diesel-Électrique');
+    });
+
+    it('lets an explicit fuel win over the fuel of the type it validates', async () => {
+      const calendar = await service.getCalendar(42, null, 'diesel');
+
+      expect(mockEq).toHaveBeenCalledWith('type_id', '42');
+      expect(fuelSentTo('kg_get_smart_maintenance_schedule')).toBe('diesel');
+      expect(fuelSentTo('kg_get_maintenance_alerts_by_milestone')).toBe(
+        'diesel',
+      );
+      expect(calendar.fuel_type).toBe('diesel');
+    });
+
+    it('rejects a type absent from auto_type instead of a generic calendar', async () => {
+      mockTypeRow.mockResolvedValue({ data: null, error: null });
+
+      await expect(service.getCalendar(999999, null)).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+      expect(mockRpc).not.toHaveBeenCalled();
+      expect(mockGetControles).not.toHaveBeenCalled();
+    });
+
+    it('reads the type once for the schedule and the milestones', async () => {
+      await service.getCalendar(42, 80000);
+
+      expect(mockTypeRow).toHaveBeenCalledTimes(1);
+    });
+
+    it('is unavailable, not unfiltered, when the type cannot be read', async () => {
+      mockTypeRow.mockResolvedValue({
+        data: null,
+        error: { message: 'private database detail' },
+      });
+
+      const error = await service
+        .getCalendar(42, null)
+        .catch((e: unknown) => e);
+
+      expect(error).toBeInstanceOf(ServiceUnavailableException);
+      expect(JSON.stringify(error)).not.toContain('private database detail');
+      expect(mockRpc).not.toHaveBeenCalled();
+    });
   });
 
   it.each([
