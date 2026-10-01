@@ -19,6 +19,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { CacheService } from '@cache/cache.service';
+import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import {
   CACHE_STRATEGIES,
   getCacheKey,
@@ -211,6 +212,18 @@ interface StoredSnapshot {
   conseilsAliases: string[];
 }
 
+const SNAPSHOT_RPC = 'get_r6_guide_link_snapshot';
+
+/** Tableau de chaînes non vides sous `key`, sinon null. */
+function aliasesAt(data: unknown, key: string): string[] | null {
+  if (typeof data !== 'object' || data === null) return null;
+  const value = (data as Record<string, unknown>)[key];
+  return Array.isArray(value) &&
+    value.every((a) => typeof a === 'string' && a !== '')
+    ? value
+    : null;
+}
+
 /**
  * Charge les ensembles de la règle (guides publiés, gammes avec page conseils),
  * en cache Redis court. Un échec de chargement lève une erreur marquée
@@ -226,8 +239,10 @@ export class R6GuideLinkPolicyService extends SupabaseBaseService {
   constructor(
     private readonly featureFlags: FeatureFlagsService,
     private readonly cacheService: CacheService,
+    rpcGate: RpcGateService,
   ) {
     super();
+    this.rpcGate = rpcGate;
   }
 
   /** Segment de clé des caches de page dont le contenu dépend du drapeau. */
@@ -256,73 +271,37 @@ export class R6GuideLinkPolicyService extends SupabaseBaseService {
     };
   }
 
+  /**
+   * Une seule lecture : la fonction SECURITY DEFINER `get_r6_guide_link_snapshot()`
+   * (migration 20261001), et non des `.from()` directs. Le container PREPROD tourne
+   * en rôle `anon` (ADR-028 Option D) et la base a `row_security=off` : `anon` ne
+   * peut pas lire en direct une table sous RLS, Postgres lève 42501 au lieu de
+   * filtrer. La fonction renvoie les deux listes dans un seul scalaire jsonb, donc
+   * sans plafond de lignes supabase-js : pas d'ensemble tronqué possible.
+   */
   private async loadSnapshot(): Promise<StoredSnapshot> {
-    const [guides, legacyGuides, advice] = await Promise.all([
-      this.supabase
-        .from('__seo_gamme_purchase_guide')
-        .select('sgpg_pg_id', { count: 'exact' })
-        .eq('sgpg_is_draft', false),
-      this.supabase
-        .from('__blog_guide')
-        .select('bg_alias, bg_deprecated', { count: 'exact' }),
-      this.supabase
-        .from('__blog_advice')
-        .select('ba_pg_id', { count: 'exact' }),
-    ]);
-    const guideRows = this.rowsOrThrow('__seo_gamme_purchase_guide', guides);
-    const legacyRows = this.rowsOrThrow('__blog_guide', legacyGuides);
-    const adviceRows = this.rowsOrThrow('__blog_advice', advice);
-
-    const guidePgIds = new Set(guideRows.map((r) => String(r.sgpg_pg_id)));
-    const advicePgIds = new Set(adviceRows.map((r) => String(r.ba_pg_id)));
-    const pgIds = [...new Set([...guidePgIds, ...advicePgIds])]
-      .map(Number)
-      .filter(Number.isInteger);
-
-    const gammes = await this.supabase
-      .from('pieces_gamme')
-      .select('pg_id, pg_alias', { count: 'exact' })
-      .in('pg_id', pgIds);
-    const gammeRows = this.rowsOrThrow('pieces_gamme', gammes);
-
-    const published = new Set<string>();
-    const conseils = new Set<string>();
-    for (const g of gammeRows) {
-      const id = String(g.pg_id);
-      if (!g.pg_alias) continue;
-      if (guidePgIds.has(id)) published.add(g.pg_alias);
-      if (advicePgIds.has(id)) conseils.add(g.pg_alias);
+    const { data, error } = await this.callRpc<unknown>(
+      SNAPSHOT_RPC,
+      {},
+      { source: 'api', role: 'service_role' },
+    );
+    if (error) this.fail(error.message);
+    const publishedGuideAliases = aliasesAt(data, 'published_guide_aliases');
+    const conseilsAliases = aliasesAt(data, 'conseils_aliases');
+    if (!publishedGuideAliases || !conseilsAliases) {
+      this.fail(
+        'réponse invalide (published_guide_aliases et conseils_aliases : tableaux de chaînes attendus)',
+      );
     }
-    for (const g of legacyRows) {
-      if (g.bg_alias && g.bg_deprecated !== true) published.add(g.bg_alias);
-    }
-    return {
-      publishedGuideAliases: [...published].sort(),
-      conseilsAliases: [...conseils].sort(),
-    };
+    return { publishedGuideAliases, conseilsAliases };
   }
 
-  /**
-   * Lignes d'une lecture, ou erreur marquée si la lecture a échoué ou a été
-   * tronquée (plafond de lignes supabase-js) : un ensemble partiel retirerait
-   * des liens valides sans le dire.
-   */
-  private rowsOrThrow<T>(
-    table: string,
-    res: {
-      data: T[] | null;
-      error: { message: string } | null;
-      count: number | null;
-    },
-  ): T[] {
-    const rows = res.data ?? [];
-    if (res.error || res.count === null || rows.length !== res.count) {
-      const reason = res.error
-        ? res.error.message
-        : `lignes reçues ${rows.length} ≠ total ${res.count}`;
-      this.logger.error(`${R6_GUIDE_LINK_SNAPSHOT_FAILED} ${table}: ${reason}`);
-      throw new Error(`${R6_GUIDE_LINK_SNAPSHOT_FAILED}: ${table}: ${reason}`);
-    }
-    return rows;
+  private fail(reason: string): never {
+    this.logger.error(
+      `${R6_GUIDE_LINK_SNAPSHOT_FAILED} ${SNAPSHOT_RPC}: ${reason}`,
+    );
+    throw new Error(
+      `${R6_GUIDE_LINK_SNAPSHOT_FAILED}: ${SNAPSHOT_RPC}: ${reason}`,
+    );
   }
 }

@@ -768,7 +768,7 @@
         "scripts/seo/lib"
       ],
       "files_count": 279,
-      "loc_total": 59322,
+      "loc_total": 59420,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -1964,7 +1964,7 @@
     {
       "from": "seo",
       "to": "config",
-      "count": 38
+      "count": 39
     },
     {
       "from": "seo",
