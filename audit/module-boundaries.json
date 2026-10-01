@@ -238,7 +238,7 @@
         "backend/src/modules/diagnostic-engine/types"
       ],
       "files_count": 54,
-      "loc_total": 10693,
+      "loc_total": 10713,
       "has_barrel": false
     },
     "errors": {
