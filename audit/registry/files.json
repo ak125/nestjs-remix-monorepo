@@ -14351,7 +14351,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "test",
-      "loc": 624,
+      "loc": 663,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
       "risk": "low",
@@ -14454,7 +14454,7 @@
         "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts"
       ],
       "kind": "service",
-      "loc": 168,
+      "loc": 174,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
       "risk": "low",
@@ -43320,7 +43320,7 @@
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 123,
+      "loc": 119,
       "owner": "__unassigned__",
       "path": "frontend/app/components/diagnostic-wizard/results/ResultCatalog.tsx",
       "risk": "low",
@@ -61748,7 +61748,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 130,
+      "loc": 137,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/diagnostic-result-links.test.tsx",
       "risk": "low",
