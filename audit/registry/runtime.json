@@ -7211,7 +7211,9 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [],
+      "dependsOn": [
+        "runtime:backend/src/config/feature-flags.service.ts"
+      ],
       "id": "runtime:backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
@@ -7273,6 +7275,7 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/config/feature-flags.service.ts",
         "runtime:backend/src/modules/seo/services/sitemap-v10-data.service.ts",
         "runtime:backend/src/modules/seo/services/sitemap-v10-xml.service.ts"
       ],
