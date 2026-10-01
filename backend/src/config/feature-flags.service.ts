@@ -372,6 +372,15 @@ export class FeatureFlagsService {
     return this.bool('DIAGNOSTIC_KG_PRIMARY_ENABLED', false);
   }
 
+  /**
+   * Projection WIKI `exports/diagnostic/` → `__diag_link_provenance`.
+   * Default `false` : l'activation d'un environnement est une décision owner.
+   * Revérifié à chaque job (un override OFF arrête aussi un repeatable vivant).
+   */
+  get diagnosticProjectionEnabled(): boolean {
+    return this.bool('DIAGNOSTIC_PROJECTION_ENABLED', false);
+  }
+
   // ── Write Guard flags (P1.5) ──
 
   get writeGuardEnabled(): boolean {
@@ -449,6 +458,7 @@ export class FeatureFlagsService {
     'VEHICLE_CTX_ENABLED',
     'DIAGNOSTIC_KG_SHADOW_ENABLED',
     'DIAGNOSTIC_KG_PRIMARY_ENABLED',
+    'DIAGNOSTIC_PROJECTION_ENABLED',
     'SHOW_ACCESSORY_BLOCKS_ON_R2',
   ]);
 
