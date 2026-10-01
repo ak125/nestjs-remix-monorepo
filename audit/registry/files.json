@@ -55510,6 +55510,7 @@
         "~/components/ui/badge",
         "~/components/ui/card",
         "~/types/r6-guide.types",
+        "~/utils/cache-control",
         "~/utils/internal-api.server",
         "~/utils/logger",
         "~/utils/page-role.types",
@@ -55517,7 +55518,7 @@
         "~/utils/seo/canonical"
       ],
       "kind": "route",
-      "loc": 1065,
+      "loc": 1097,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/blog-pieces-auto.guide-achat.$pg_alias.tsx",
       "risk": "low",
@@ -62141,6 +62142,25 @@
       "loc": 362,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/gamme-autolink.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/guide-achat-loader-status.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 211,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/guide-achat-loader-status.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
