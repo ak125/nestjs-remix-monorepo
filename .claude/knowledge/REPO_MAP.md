@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: ae1d053d5a8dc362f9a14f6c44b7e99af46a5ff937ec5961c0702a89705d7a84
+source_sha256: 6840cb1c17c47187becfd66c7b4fc6defb14774779cd07d48cb24b59d54f9879
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -19,12 +19,12 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 | Layer | Count |
 |---|---|
 | Files (Layer 1) | 2947 |
-| DB tables (Layer 1) | 313 |
-| DB RPC (Layer 1) | 253 |
+| DB tables (Layer 1) | 316 |
+| DB RPC (Layer 1) | 254 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 999 |
 
-Source sotFingerprint: `7533d38864fc`.
+Source sotFingerprint: `87fa9421e253`.
 
 ## Comment l'utiliser
 
@@ -156,8 +156,8 @@ Source sotFingerprint: `7533d38864fc`.
 ### UNKNOWN — Unknown (overlay non résolu)
 
 - **Files**: 245 (service=150, config=57, controller=21, script=14, test=3)
-- **DB tables**: 313
-- **DB RPC**: 253
+- **DB tables**: 316
+- **DB RPC**: 254
 - **Runtime entrypoints**: 84
 - **Top owners**: __unassigned__ (245)
 - **Knowledge prose**: [`config`](modules/config.md), [`layout`](modules/layout.md), [`mcp-validation`](modules/mcp-validation.md), [`metadata`](modules/metadata.md), [`navigation`](modules/navigation.md), [`search`](modules/search.md), [`shipping`](modules/shipping.md), [`suppliers`](modules/suppliers.md), [`system`](modules/system.md)
