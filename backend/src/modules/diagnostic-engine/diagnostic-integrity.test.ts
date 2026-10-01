@@ -343,6 +343,28 @@ describe('diagnostic safety and deterministic scoring regressions', () => {
     expect(a[0].requires_verification).toBe(true);
     expect(values.primary.relative_score).toBe(90);
   });
+  test('a cause linked to only some selected symptoms is not credited for the others', async () => {
+    const service = Object.create(
+      DiagnosticEngineDataService.prototype,
+    ) as DiagnosticEngineDataService;
+    const partial = {
+      ...link(90, 3),
+      cause_id: 2,
+      cause: { ...link().cause!, id: 2, slug: 'partial_cause' },
+    };
+    const values = { first: [link(60, 1), partial], second: [link(60, 2)] };
+    service.getScoredCausesForSymptom = jest.fn(
+      async (slug: keyof typeof values) => values[slug],
+    );
+    const scored = await service.getScoredCausesForSymptoms([
+      'first',
+      'second',
+    ]);
+    expect(scored.map((l) => [l.cause_id, l.relative_score])).toEqual([
+      [1, 60],
+      [2, 45],
+    ]);
+  });
   test('brake fluid maps to the verified fluid family, not clutch kit', () => {
     expect(CAUSE_GAMME_MAP.brake_fluid_low).toEqual([
       { slug: 'liquide-de-frein', label: 'Liquide de frein', pg_id: 71 },
