@@ -6,7 +6,10 @@ import {
 } from './diagnostic-engine.data-service';
 import { DiagnosticEngineOrchestrator } from './diagnostic-engine.orchestrator';
 import { HypothesisScoringEngine } from './engines/hypothesis-scoring.engine';
-import { CatalogOrientationEngine } from './engines/catalog-orientation.engine';
+import {
+  CatalogOrientationEngine,
+  type CatalogGuardResult,
+} from './engines/catalog-orientation.engine';
 import {
   RiskSafetyEngine,
   type RiskAssessment,
@@ -69,6 +72,9 @@ function orchestrator() {
   const data = {
     getScoredCausesForSymptoms: jest.fn().mockResolvedValue([link()]),
     getSafetyRules: jest.fn().mockResolvedValue([rule]),
+    getGammeIdsWithCataloguePage: jest.fn(
+      async (ids: number[]) => new Set(ids),
+    ),
     saveSession: jest.fn().mockResolvedValue(null),
     getActiveSystems: jest.fn().mockResolvedValue([]),
   };
@@ -626,6 +632,122 @@ describe('catalogue readiness rests on the dominant hypothesis', () => {
         },
       ],
     });
+  });
+});
+
+const guard = (ready: boolean, pgIds: number[]): CatalogGuardResult => ({
+  ready_for_catalog: ready,
+  confidence_before_purchase: 'high',
+  allowed_output_mode: ready
+    ? 'catalog_reference_with_caution'
+    : 'catalog_family_only',
+  reason: 'Motif initial',
+  suggested_gammes: pgIds.map((pg_id) => ({
+    gamme_slug: `gamme-${pg_id}`,
+    gamme_label: 'Gamme',
+    pg_id,
+    confidence: 'high',
+    from_hypothesis: 'brake_pads_worn',
+  })),
+});
+
+describe('suggested families are linked only when they have a catalogue page', () => {
+  const engine = new CatalogOrientationEngine();
+
+  test('a family without a page is dropped, the others keep the orientation', () => {
+    const result = engine.restrictToCataloguePages(
+      guard(true, [402, 71]),
+      new Set([402]),
+    );
+    expect(result).toMatchObject({
+      ready_for_catalog: true,
+      allowed_output_mode: 'catalog_reference_with_caution',
+      reason: 'Motif initial',
+    });
+    expect(result.suggested_gammes.map((g) => g.pg_id)).toEqual([402]);
+  });
+  test.each([[[71]], [[]]])(
+    'a ready result with no family page left (%j) is not ready',
+    (pgIds) => {
+      expect(
+        engine.restrictToCataloguePages(guard(true, pgIds), new Set()),
+      ).toMatchObject({
+        ready_for_catalog: false,
+        allowed_output_mode: 'none',
+        reason: expect.stringMatching(/Aucune famille de pièces du catalogue/),
+        suggested_gammes: [],
+      });
+    },
+  );
+  test('a result that was not ready keeps its reason when no family is left', () => {
+    expect(
+      engine.restrictToCataloguePages(guard(false, [71]), new Set()),
+    ).toMatchObject({
+      ready_for_catalog: false,
+      allowed_output_mode: 'none',
+      reason: 'Motif initial',
+      suggested_gammes: [],
+    });
+  });
+  test('an unchecked catalogue suggests nothing', () => {
+    expect(
+      engine.restrictToCataloguePages(guard(true, [402]), null),
+    ).toMatchObject({
+      ready_for_catalog: false,
+      allowed_output_mode: 'none',
+      reason: expect.stringMatching(/indisponible/),
+      suggested_gammes: [],
+    });
+  });
+  test('an unchecked catalogue does not replace a safety block reason', () => {
+    const blocked = {
+      ...guard(false, []),
+      allowed_output_mode: 'none' as const,
+    };
+    expect(engine.restrictToCataloguePages(blocked, null)).toEqual(blocked);
+  });
+
+  function openCatalogue() {
+    const f = orchestrator();
+    f.data.getSafetyRules.mockResolvedValue([
+      { ...rule, blocks_catalog: false },
+    ]);
+    return f;
+  }
+  test('the analysis links a family that has a page', async () => {
+    const f = openCatalogue();
+    const result = await f.engine.analyze(input);
+    expect(f.data.getGammeIdsWithCataloguePage).toHaveBeenCalledWith([402]);
+    expect(result.data?.evidence.evidence_pack.catalog_guard).toMatchObject({
+      ready_for_catalog: true,
+      suggested_gammes: [expect.objectContaining({ pg_id: 402 })],
+    });
+  });
+  test('the analysis never links a family without a page', async () => {
+    const f = openCatalogue();
+    f.data.getGammeIdsWithCataloguePage.mockResolvedValue(new Set());
+    const result = await f.engine.analyze(input);
+    expect(result.success).toBe(true);
+    expect(result.data?.evidence.evidence_pack.catalog_guard).toMatchObject({
+      ready_for_catalog: false,
+      allowed_output_mode: 'none',
+      suggested_gammes: [],
+    });
+  });
+  test('a failed catalogue check is reported and suggests nothing', async () => {
+    const f = openCatalogue();
+    f.data.getGammeIdsWithCataloguePage.mockRejectedValue(new Error('down'));
+    const result = await f.engine.analyze(input);
+    expect(result.success).toBe(true);
+    const pack = result.data!.evidence.evidence_pack;
+    expect(pack.catalog_guard).toMatchObject({
+      ready_for_catalog: false,
+      allowed_output_mode: 'none',
+      suggested_gammes: [],
+    });
+    expect(pack.factual_inputs_missing).toContainEqual(
+      expect.stringMatching(/catalogue indisponible/),
+    );
   });
 });
 

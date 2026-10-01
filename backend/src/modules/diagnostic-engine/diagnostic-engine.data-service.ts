@@ -342,6 +342,27 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
   }
 
   /**
+   * Which of these gammes have their own catalogue page. Only main gammes
+   * (pg_level 1/2) are served; level-4/5 accessory gammes are hidden by
+   * design and their URL answers 404. pg_display does not decide it: level-1
+   * gammes such as Batterie are served with pg_display = 0.
+   */
+  async getGammeIdsWithCataloguePage(pgIds: number[]): Promise<Set<number>> {
+    if (!pgIds.length) return new Set();
+    const { data, error } = await this.supabase
+      .from('pieces_gamme')
+      .select('pg_id')
+      .in('pg_id', pgIds)
+      .in('pg_level', ['1', '2']);
+
+    if (error || !Array.isArray(data)) {
+      this.logger.error('Failed to fetch catalogue gammes', error?.message);
+      throw new Error('Catalogue gammes unavailable');
+    }
+    return new Set(data.map((row) => Number(row.pg_id)));
+  }
+
+  /**
    * Systems that have at least one active safety rule.
    */
   async getSystemIdsWithSafetyRules(): Promise<Set<number>> {
