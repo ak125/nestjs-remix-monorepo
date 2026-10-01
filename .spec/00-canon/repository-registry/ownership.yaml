@@ -1481,3 +1481,10 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: medium
+  # Rétention 90 jours de cron.job_run_details par pg_cron, dernière exécution de chaque
+  # job conservée ; lot transverse (PR #1651).
+  - glob: backend/supabase/migrations/20261001_cron_job_run_details_retention*.sql
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
