@@ -259,7 +259,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115626,
+      "loc_total": 115627,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -958,7 +958,7 @@
         "tests/registry"
       ],
       "files_count": 268,
-      "loc_total": 49983,
+      "loc_total": 50028,
       "has_barrel": true
     },
     "upload": {
