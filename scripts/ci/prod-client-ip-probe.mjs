@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
+import { isDeepStrictEqual } from "node:util";
 
 // Kept self-contained: this exact function also runs inside the live app
 // container, using its Node runtime, without copying files or installing tools.
@@ -41,6 +42,72 @@ export async function probeRateLimit(url, fetchRequest = fetch) {
   return { requests: 2, limit: 100, remaining };
 }
 
+const isApplicationProxy = (value) =>
+  value.handler === "reverse_proxy" &&
+  value.upstreams?.some((upstream) => upstream.dial === "monorepo_prod:3000");
+
+// /api/observability/* is the Prometheus exposition, anonymous by design for
+// the scraper that reaches the container on the internal network. The edge
+// answers it itself, with a bare 404 (`handle @observability { respond 404 }`
+// or `respond @observability 404`).
+const OBSERVABILITY_MATCH = [
+  { path: ["/api/observability", "/api/observability/*"] },
+];
+const NOT_FOUND = { handler: "static_response", status_code: 404 };
+const isObservabilityRoute = (route) =>
+  isDeepStrictEqual(route.match, OBSERVABILITY_MATCH) &&
+  [
+    [NOT_FOUND],
+    [{ handler: "subroute", routes: [{ handle: [NOT_FOUND] }] }],
+  ].some((handle) => isDeepStrictEqual(route.handle, handle));
+
+// Route lists run in order, and a handle group runs only its first matching
+// route: the 404 must lead its group and every application proxy of the
+// server routes must live in a later route of the same list. Error routes
+// never run for that path (a static 404 is a response, not an error).
+function assertObservabilityNotServed(servers) {
+  const found = [];
+  const proxies = [];
+  function visit(value, ancestry) {
+    if (!value || typeof value !== "object") return;
+    if (isApplicationProxy(value)) proxies.push(ancestry);
+    for (const [key, child] of Object.entries(value)) {
+      if (key === "routes" && Array.isArray(child)) {
+        child.forEach((route, index) => {
+          const step = { routes: child, index };
+          if (isObservabilityRoute(route)) found.push(step);
+          visit(route, [...ancestry, step]);
+        });
+      } else visit(child, ancestry);
+    }
+  }
+  for (const server of servers) visit({ routes: server.routes }, []);
+  if (found.length !== 1) {
+    throw new Error(
+      `Caddy must answer /api/observability/* with exactly one bare 404 route (found ${found.length})`,
+    );
+  }
+  const [{ routes, index }] = found;
+  const { group } = routes[index];
+  if (
+    group !== undefined &&
+    routes.slice(0, index).some((route) => route.group === group)
+  ) {
+    throw new Error(
+      "The /api/observability/* 404 must come first in its handle group",
+    );
+  }
+  if (
+    !proxies.every((ancestry) =>
+      ancestry.some((step) => step.routes === routes && step.index > index),
+    )
+  ) {
+    throw new Error(
+      "Every application proxy must come after the /api/observability/* 404",
+    );
+  }
+}
+
 export function assertCaddyConfig(expectedBytes, runtimeHash, adapted) {
   const expectedHash = createHash("sha256").update(expectedBytes).digest("hex");
   if (runtimeHash.trim().split(/\s+/)[0] !== expectedHash) {
@@ -60,13 +127,7 @@ export function assertCaddyConfig(expectedBytes, runtimeHash, adapted) {
   const proxies = [];
   function visit(value) {
     if (!value || typeof value !== "object") return;
-    if (
-      value.handler === "reverse_proxy" &&
-      value.upstreams?.some(
-        (upstream) => upstream.dial === "monorepo_prod:3000",
-      )
-    )
-      proxies.push(value);
+    if (isApplicationProxy(value)) proxies.push(value);
     for (const child of Object.values(value)) visit(child);
   }
   visit(adapted);
@@ -84,6 +145,7 @@ export function assertCaddyConfig(expectedBytes, runtimeHash, adapted) {
       "Every application proxy must normalize all three client IP headers",
     );
   }
+  assertObservabilityNotServed(servers);
   return expectedHash;
 }
 
@@ -123,7 +185,7 @@ function main() {
     "caddyfile",
   ]);
   console.log(
-    `Caddy configuration verified: sha256=${hash}; client source=CF-Connecting-IP`,
+    `Caddy configuration verified: sha256=${hash}; client source=CF-Connecting-IP; /api/observability/* answered 404 at the edge`,
   );
   const source = `(${probeRateLimit.toString()})('http://127.0.0.1:3000/api/catalog/families').then(result => console.log(JSON.stringify(result))).catch(error => { console.error(error.message); process.exitCode = 1; });`;
   const result = docker(
