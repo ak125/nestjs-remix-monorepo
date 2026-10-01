@@ -487,7 +487,7 @@
         "backend/src/modules/observability"
       ],
       "files_count": 9,
-      "loc_total": 551,
+      "loc_total": 554,
       "has_barrel": false
     },
     "orders": {
@@ -701,7 +701,7 @@
         "scripts/wiki-generators/__tests__"
       ],
       "files_count": 187,
-      "loc_total": 40429,
+      "loc_total": 40664,
       "has_barrel": true
     },
     "search": {
