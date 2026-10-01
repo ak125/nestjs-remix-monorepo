@@ -1488,6 +1488,14 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: medium
+  # Extension vector déplacée du schéma public vers extensions (advisor
+  # extension_in_public), précédent #1604 (PR #1657). Couvre .sql + .down.sql.
+  # Glob exact volontaire.
+  - glob: backend/supabase/migrations/20261001_move_vector_extension_to_extensions_schema*.sql
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
   # Extensions pg_trgm et unaccent déplacées du schéma public vers extensions (advisor
   # extension_in_public), avec le search_path des 8 fonctions qui les appellent sans
   # qualification ; suite de #1657. Couvre .sql + .down.sql. Glob exact volontaire.

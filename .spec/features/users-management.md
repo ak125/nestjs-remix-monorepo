@@ -826,8 +826,8 @@ Un utilisateur peut avoir plusieurs sessions actives simultanées :
 | DELETE | `/api/addresses/delivery/:id` | Supprimer adresse livraison | JWT |
 | PATCH | `/api/addresses/delivery/:id/set-default` | Définir adresse par défaut | JWT |
 | POST | `/api/password/change` | Changer son mot de passe | JWT |
-| GET | `/api/users/:userId/shipments` | Mes expéditions | JWT |
-| GET | `/api/users/:userId/shipments/stats` | Stats expéditions | JWT |
+| GET | `/api/users/:userId/shipments` | Mes expéditions (`:userId` = compte de la session, sinon 404) | JWT |
+| GET | `/api/users/:userId/shipments/stats` | Stats expéditions (`:userId` = compte de la session, sinon 404) | JWT |
 
 ### Endpoints Admin
 
