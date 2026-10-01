@@ -1,6 +1,10 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { RagFoundationGateService } from '../../rag-proxy/services/rag-foundation-gate.service';
-import { FeatureFlagsService } from '../../../config/feature-flags.service';
+import {
+  ContentWriteGateService,
+  type WriteGateResult,
+} from '../../../config/content-write-gate.service';
+import { SOURCE_TIER } from '../../../config/source-provenance.constants';
 import { PageBriefService } from './page-brief.service';
 import type {
   SectionResult,
@@ -19,7 +23,6 @@ import {
   type EnrichDryRunSection,
   type EnrichDryRunResult,
 } from './buying-guide';
-import type { WriteGuardContext } from './buying-guide/buying-guide-db.service';
 import { RoleId } from '../../../config/role-ids';
 
 // Re-export types for backward compatibility
@@ -30,8 +33,9 @@ export type { EnrichDryRunSection, EnrichDryRunResult } from './buying-guide';
  * Delegates heavy work to specialized sub-services:
  * - BuyingGuideRagFetcherService: RAG content fetching + parsing
  * - BuyingGuideQualityGatesService: quality validation gates
- * - BuyingGuideDbService: DB read/write operations
+ * - BuyingGuideDbService: DB reads + payload shaping
  * - ClaimExtractor: static claims/evidence extraction
+ * Writes go through ContentWriteGateService only (see persistBuyingGuide).
  */
 @Injectable()
 export class BuyingGuideEnricherService {
@@ -41,7 +45,7 @@ export class BuyingGuideEnricherService {
     private readonly ragFetcher: BuyingGuideRagFetcherService,
     private readonly qualityGates: BuyingGuideQualityGatesService,
     private readonly dbService: BuyingGuideDbService,
-    private readonly flags: FeatureFlagsService,
+    private readonly writeGate: ContentWriteGateService,
     @Optional() private readonly pageBriefService?: PageBriefService,
     @Optional()
     private readonly foundationGate?: RagFoundationGateService,
@@ -50,7 +54,8 @@ export class BuyingGuideEnricherService {
   /**
    * Enrich one or more buying guides using RAG-sourced content.
    * dryRun=true → returns preview with quality gates
-   * dryRun=false → writes to DB
+   * dryRun=false → governed write, refused for RAG provenance (0 rows,
+   *   `updated: false`, `reason: 'rag_provenance_refused'`)
    */
   async enrich(
     pgIds: string[],
@@ -210,7 +215,7 @@ export class BuyingGuideEnricherService {
       } satisfies EnrichDryRunResult;
     }
 
-    // 7. Write to DB
+    // 7. Governed write (refused for RAG provenance — see persistBuyingGuide)
     const okSections = Object.entries(sectionResults).filter(([, r]) => r.ok);
     const skippedSections = Object.entries(sectionResults)
       .filter(([, r]) => !r.ok)
@@ -219,10 +224,8 @@ export class BuyingGuideEnricherService {
     if (okSections.length === 0) {
       // ── Metadata-only gatekeeper write ──
       // Even when all RAG sections are skipped (anti-wiki / anti-dup / pollution),
-      // write the gate verdict so the row stops being NULL. NULL = "we don't know"
-      // is worse than {score, flags: [ALL_SECTIONS_SKIPPED]} = "known RAG-incomplete".
-      // The fn_invalidate_sgpg_gatekeeper trigger only fires on content changes,
-      // so this metadata-only write is safe.
+      // the gate verdict is still computed from those RAG sections, so it goes
+      // through the same governed write as content (RAG provenance → refused).
       const gatekeeper = this.qualityGates.computeGatekeeperScore({
         sectionResults,
         qualityFlags: uniqueFlags,
@@ -240,28 +243,11 @@ export class BuyingGuideEnricherService {
         sgpg_source_verified_by: 'pipeline:rag-enrich-skipped',
         sgpg_source_verified_at: new Date().toISOString(),
       };
-      const writeContext: WriteGuardContext | undefined = this.flags
-        .writeGuardEnabled
-        ? {
-            roleId: RoleId.R6_GUIDE_ACHAT,
-            correlationId: `enrich-skipped-${pgId}-${Date.now().toString(36)}`,
-          }
-        : undefined;
-      try {
-        await this.dbService.upsertBuyingGuide(
-          pgId,
-          gateOnlyPayload,
-          writeContext,
-        );
-        this.logger.log(
-          `Gatekeeper-only write for pgId=${pgId} (all sections skipped, RAG-incomplete cluster)`,
-        );
-      } catch (err) {
-        this.logger.error(
-          `Gatekeeper-only write failed for pgId=${pgId}: ${err instanceof Error ? err.message : err}`,
-        );
-        // Non-blocking: fall through to the early-return result
-      }
+      const gateOnlyWrite = await this.persistBuyingGuide(
+        pgId,
+        gateOnlyPayload,
+        `enrich-skipped-${pgId}-${Date.now().toString(36)}`,
+      );
 
       return {
         pgId,
@@ -269,7 +255,13 @@ export class BuyingGuideEnricherService {
         averageConfidence: 0,
         updated: false,
         sectionsUpdated: 0,
-        skippedSections: Object.keys(sectionResults),
+        skippedSections: gateOnlyWrite.written
+          ? Object.keys(sectionResults)
+          : [
+              ...Object.keys(sectionResults),
+              writeRefusalFlag(gateOnlyWrite.reason),
+            ],
+        reason: gateOnlyWrite.written ? undefined : gateOnlyWrite.reason,
         evidencePack: evidenceEntries,
       };
     }
@@ -324,16 +316,23 @@ export class BuyingGuideEnricherService {
       delete updatePayload.sgpg_intro_role;
     }
 
-    // P1.5 v2.1: pass WriteGuard context for ownership check + CAS + receipt
-    const writeContext: WriteGuardContext | undefined = this.flags
-      .writeGuardEnabled
-      ? {
-          roleId: RoleId.R6_GUIDE_ACHAT,
-          correlationId: `enrich-${pgId}-${Date.now().toString(36)}`,
-        }
-      : undefined;
-
-    await this.dbService.upsertBuyingGuide(pgId, updatePayload, writeContext);
+    const write = await this.persistBuyingGuide(
+      pgId,
+      updatePayload,
+      `enrich-${pgId}-${Date.now().toString(36)}`,
+    );
+    if (!write.written) {
+      return {
+        pgId,
+        sections: {},
+        averageConfidence: avgConfidence,
+        updated: false,
+        sectionsUpdated: 0,
+        skippedSections: [...skippedSections, writeRefusalFlag(write.reason)],
+        reason: write.reason,
+        evidencePack: evidenceEntries,
+      };
+    }
 
     // Architecture: BuyingGuideEnricher (R6) must NOT write sg_content_draft to __seo_gamme (R1).
     // R1 content is exclusively managed by R1ContentPipelineService.
@@ -363,4 +362,36 @@ export class BuyingGuideEnricherService {
       claims,
     };
   }
+
+  /**
+   * Persist a buying-guide payload through the governed write gate.
+   *
+   * Buying-guide sections — and the gatekeeper verdict computed from them — are
+   * sourced from legacy RAG gamme docs (ADR-031/046): they must never reach the
+   * served `__seo_gamme_purchase_guide` table. The write is stamped
+   * `provenance = RAG_LEGACY`, which the gate refuses (0 rows) — there is no
+   * direct-update fallback (writeGate is a required dependency). Same shape as
+   * R2EnricherService.persistR2KeywordPlan.
+   */
+  private persistBuyingGuide(
+    pgId: string,
+    payload: Record<string, unknown>,
+    correlationId: string,
+  ): Promise<WriteGateResult> {
+    return this.writeGate.writeToTarget({
+      roleId: RoleId.R6_GUIDE_ACHAT,
+      target: 'purchase_guide_main',
+      pkValue: pgId,
+      payload,
+      correlationId,
+      provenance: SOURCE_TIER.RAG_LEGACY,
+    });
+  }
+}
+
+/** skippedSections marker for a refused write (same flags as the R2 enricher). */
+function writeRefusalFlag(reason: string | undefined): string {
+  return reason === 'rag_provenance_refused'
+    ? 'RAG_SOURCE_REFUSED'
+    : 'WRITE_GATE_BLOCKED';
 }

@@ -161,6 +161,24 @@ describe("Maintenance calendar source availability", () => {
   );
 
   it.each([
+    [404, /Véhicule introuvable/],
+    [400, /Paramètres du calendrier invalides/],
+  ])(
+    "reports a rejected request (HTTP %i) without calling it an outage",
+    async (status, message) => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue(new Response(null, { status })),
+      );
+      renderWithRealLoader();
+      const error = await screen.findByText(message);
+      expect(error.closest('[role="alert"]')).not.toBeNull();
+      expect(screen.queryByText(/temporairement indisponible/)).toBeNull();
+      expect(screen.queryByRole("table")).toBeNull();
+    },
+  );
+
+  it.each([
     null,
     {},
     { schedule: [], alerts: null, controles_mensuels: [] },
@@ -280,6 +298,43 @@ describe("Maintenance calendar source availability", () => {
     expect(result.calendar).toBeNull();
   });
 
+  it("reports unavailable monthly checks and an unknown mileage without hiding the intervals", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            type_id: null,
+            current_km: null,
+            fuel_type: null,
+            schedule: [
+              {
+                rule_alias: "oil",
+                rule_label: "Vidange indicative",
+                km_interval: 15000,
+                month_interval: 12,
+                maintenance_priority: "important",
+                applies_to_fuel: null,
+              },
+            ],
+            alerts: [],
+            controles_mensuels: null,
+          }),
+          { status: 200 },
+        ),
+      ),
+    );
+    renderWithRealLoader();
+    expect(await screen.findByText("Vidange indicative")).toBeTruthy();
+    expect(
+      screen.getByText("Contrôles mensuels indisponibles pour le moment."),
+    ).toBeTruthy();
+    expect(screen.queryByText("Aucun contrôle mensuel disponible.")).toBeNull();
+    expect(
+      screen.queryByText(/Calendrier temporairement indisponible/),
+    ).toBeNull();
+  });
+
   it("distinguishes a valid empty response without claiming no maintenance is necessary", async () => {
     vi.stubGlobal(
       "fetch",
@@ -302,6 +357,7 @@ describe("Maintenance calendar source availability", () => {
       await screen.findByText(/Aucun intervalle d.entretien disponible/),
     ).toBeTruthy();
     expect(screen.getByText(/Cela ne permet pas de conclure/)).toBeTruthy();
+    expect(screen.getByText("Aucun contrôle mensuel disponible.")).toBeTruthy();
     expect(
       screen.queryByText(/Calendrier temporairement indisponible/),
     ).toBeNull();

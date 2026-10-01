@@ -145,7 +145,6 @@ export function DiagnosticResults({
         state.result?.human_escalation && (
           <IntentResolutionBlock
             sessionId={state.result.session_id ?? null}
-            intent={state.result.intent}
             recommendedActions={state.result.recommended_actions}
             humanEscalation={state.result.human_escalation}
           />

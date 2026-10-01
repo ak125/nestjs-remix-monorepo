@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import {
   DiagnosticEngineDataService,
   type DiagSymptomCauseLink,
@@ -10,7 +11,10 @@ import {
   RiskSafetyEngine,
   type RiskAssessment,
 } from './engines/risk-safety.engine';
-import { AnalyzeDiagnosticInputSchema } from './types/diagnostic-input.schema';
+import {
+  AnalyzeDiagnosticInputSchema,
+  type VehicleContextInput,
+} from './types/diagnostic-input.schema';
 import { ActionRecommenderService } from './services/action-recommender.service';
 import { CAUSE_GAMME_MAP } from './constants/gamme-map.constants';
 import type { EvidencePack } from './types/evidence-pack.schema';
@@ -75,6 +79,7 @@ function orchestrator() {
       system_slug: 'freinage',
       system_label: 'Freinage',
       resolved_symptom_slugs: ['noise'],
+      symptom_labels: { noise: 'Bruit' },
       unresolved_signals: [],
       signal_quality: 'high',
     }),
@@ -103,11 +108,7 @@ describe('diagnostic safety and deterministic scoring regressions', () => {
   test.each([false, true])(
     'an explicit catalogue block wins even when immediate=%s',
     (immediate) => {
-      const hypotheses = new HypothesisScoringEngine().score(
-        [link()],
-        vehicle,
-        undefined,
-      );
+      const hypotheses = new HypothesisScoringEngine().score([link()], vehicle);
       hypotheses[0].total_score = 95;
       const result = new CatalogOrientationEngine().evaluate(
         hypotheses,
@@ -194,19 +195,165 @@ describe('diagnostic safety and deterministic scoring regressions', () => {
       ).toEqual([]);
     },
   );
-  test('maintenance score measures distance since service, including zero', () => {
+  test.each<[string, VehicleContextInput | undefined]>([
+    ['no vehicle', undefined],
+    ['brand and model', { brand: 'Test', model: 'Test' }],
+    [
+      'a complete form',
+      {
+        brand: 'Test',
+        model: 'Test',
+        year: 2015,
+        mileage_km: 100000,
+        fuel: 'diesel',
+      },
+    ],
+  ])('vehicle and maintenance layers stay neutral with %s', (_, context) => {
+    const [scored] = new HypothesisScoringEngine().score([link()], context);
+    expect(scored.vehicle_fit_score).toBe(10);
+    expect(scored.maintenance_history_score).toBe(7);
+  });
+  const ranged = (score: number, id: number): DiagSymptomCauseLink => {
+    const base = link(score, id);
+    return {
+      ...base,
+      cause_id: id,
+      cause: {
+        ...base.cause!,
+        id,
+        slug: `ranged_${id}`,
+        ...{
+          plausible_km_min: 20000,
+          plausible_km_max: 120000,
+          plausible_age_min: 2,
+          plausible_age_max: 15,
+        },
+      },
+    };
+  };
+  test.each([15000, 100000, 200000])(
+    'a declared mileage range never promotes a cause (%i km)',
+    (mileage_km) => {
+      const context = { brand: 'Test', model: 'Test', year: 2015, mileage_km };
+      const scores = new HypothesisScoringEngine().score(
+        [ranged(40, 2), link(60, 1)],
+        context,
+      );
+      expect(scores[0].hypothesis_id).toBe('brake_pads_worn');
+      const [withRange, without] = [ranged(60, 2), link(60, 1)].map(
+        (l) => new HypothesisScoringEngine().score([l], context)[0],
+      );
+      expect(withRange.total_score).toBe(without.total_score);
+    },
+  );
+  test('a vehicle clearly below the declared range still lowers the cause', () => {
     const engine = new HypothesisScoringEngine();
-    const score = (km: number, current = 100000) =>
-      engine.score(
-        [link()],
-        { ...vehicle, mileage_km: current },
-        { last_service_km: km },
-      )[0].maintenance_history_score;
-    expect(score(99000)).toBe(7);
-    expect(score(10000)).toBe(10);
-    expect(score(0)).toBe(10);
-    expect(score(120000)).toBe(7);
-    expect(score(10000, 20000)).toBe(7);
+    const young = new Date().getFullYear() - 1;
+    const [early] = engine.score([ranged(60, 2)], {
+      brand: 'Test',
+      model: 'Test',
+      year: 2015,
+      mileage_km: 5000,
+    });
+    const [recent] = engine.score([ranged(60, 2)], {
+      brand: 'Test',
+      model: 'Test',
+      year: young,
+      mileage_km: 100000,
+    });
+    expect(early).toMatchObject({
+      lifecycle_fit_score: 3,
+      plausibility_score: 2,
+    });
+    expect(recent).toMatchObject({
+      lifecycle_fit_score: 5,
+      plausibility_score: 5,
+    });
+  });
+  test.each([0, 95])(
+    'a mapped safety rule follows its linked cause, not its score (%i)',
+    (total_score) => {
+      const [scored] = new HypothesisScoringEngine().score([link()], vehicle);
+      const metal = {
+        ...rule,
+        rule_slug: 'brake_metal_on_metal',
+        urgency: 'haute',
+      };
+      const assess = (hypothesis_id: string) =>
+        new RiskSafetyEngine().assess(
+          [{ ...scored, hypothesis_id, urgency: 'haute', total_score }],
+          [metal],
+          ['noise'],
+        );
+      expect(assess('brake_pads_worn')).toMatchObject({
+        risk_level: 'critical',
+        blocks_catalog: true,
+        active_rules: [metal],
+      });
+      expect(assess('brake_disc_warped')).toMatchObject({
+        risk_level: 'high',
+        blocks_catalog: false,
+        active_rules: [],
+      });
+    },
+  );
+  const raises = (
+    rule_slug: string,
+    hypothesisIds: string[],
+    symptoms: string[],
+  ) => {
+    const [scored] = new HypothesisScoringEngine().score([link()], vehicle);
+    const safety = { ...rule, rule_slug, urgency: 'haute' };
+    const hypotheses = hypothesisIds.map((hypothesis_id) => ({
+      ...scored,
+      hypothesis_id,
+    }));
+    return (
+      new RiskSafetyEngine().assess(hypotheses, [safety], symptoms).active_rules
+        .length > 0
+    );
+  };
+  test('a safety rule follows its own cause, not any cause of its system', () => {
+    const signal = ['battery_warning_light'];
+    expect(
+      raises('alternator_battery_drain', ['alternator_failing'], signal),
+    ).toBe(true);
+    expect(raises('alternator_battery_drain', ['battery_dead'], signal)).toBe(
+      false,
+    );
+  });
+  test('a symptom-triggered safety rule needs the symptom it describes', () => {
+    const causes = ['thermostat_stuck_closed'];
+    expect(raises('overheat_engine_stop', causes, ['temp_warning_light'])).toBe(
+      true,
+    );
+    expect(raises('overheat_engine_stop', causes, ['engine_slow_warmup'])).toBe(
+      false,
+    );
+  });
+  test('a condition no symptom can report is never raised', () => {
+    expect(
+      raises(
+        'starter_smoke_warning',
+        ['battery_dead', 'starter_solenoid_worn', 'alternator_failing'],
+        ['start_click_no_crank'],
+      ),
+    ).toBe(false);
+  });
+  test('a rule without a declared trigger keeps the system fallback and is logged', () => {
+    const warn = jest
+      .spyOn(Logger.prototype, 'warn')
+      .mockImplementation(() => undefined);
+    try {
+      expect(raises('undeclared_rule', ['brake_pads_worn'], ['noise'])).toBe(
+        true,
+      );
+      expect(warn).toHaveBeenCalledWith(
+        'Safety rule without a declared trigger: undeclared_rule',
+      );
+    } finally {
+      warn.mockRestore();
+    }
   });
   test('unique symptom evidence has an arithmetic mean, invariant under permutation and duplicates', async () => {
     const service = Object.create(
@@ -236,6 +383,28 @@ describe('diagnostic safety and deterministic scoring regressions', () => {
     expect(a[0].requires_verification).toBe(true);
     expect(values.primary.relative_score).toBe(90);
   });
+  test('a cause linked to only some selected symptoms is not credited for the others', async () => {
+    const service = Object.create(
+      DiagnosticEngineDataService.prototype,
+    ) as DiagnosticEngineDataService;
+    const partial = {
+      ...link(90, 3),
+      cause_id: 2,
+      cause: { ...link().cause!, id: 2, slug: 'partial_cause' },
+    };
+    const values = { first: [link(60, 1), partial], second: [link(60, 2)] };
+    service.getScoredCausesForSymptom = jest.fn(
+      async (slug: keyof typeof values) => values[slug],
+    );
+    const scored = await service.getScoredCausesForSymptoms([
+      'first',
+      'second',
+    ]);
+    expect(scored.map((l) => [l.cause_id, l.relative_score])).toEqual([
+      [1, 60],
+      [2, 45],
+    ]);
+  });
   test('brake fluid maps to the verified fluid family, not clutch kit', () => {
     expect(CAUSE_GAMME_MAP.brake_fluid_low).toEqual([
       { slug: 'liquide-de-frein', label: 'Liquide de frein', pg_id: 71 },
@@ -257,6 +426,30 @@ describe('diagnostic safety and deterministic scoring regressions', () => {
       expect(f.data.saveSession).not.toHaveBeenCalled();
     },
   );
+  test('names secondary symptoms by their reference labels', async () => {
+    const f = orchestrator();
+    f.signal.interpret.mockResolvedValue({
+      system_confirmed: true,
+      system_slug: 'freinage',
+      system_label: 'Freinage',
+      resolved_symptom_slugs: ['noise', 'judder'],
+      symptom_labels: { noise: 'Bruit', judder: 'Vibrations' },
+      unresolved_signals: [],
+      signal_quality: 'high',
+    });
+    const result = await f.engine.analyze({
+      ...input,
+      signal_input: { ...input.signal_input, secondary_signals: ['judder'] },
+    });
+    expect(
+      result.data?.evidence.evidence_pack.factual_inputs_confirmed,
+    ).toEqual(
+      expect.arrayContaining([
+        'Symptôme principal: Bruit',
+        'Symptômes secondaires: Vibrations',
+      ]),
+    );
+  });
   test('no candidate causes cannot produce a reassuring low risk result', async () => {
     const f = orchestrator();
     f.data.getScoredCausesForSymptoms.mockResolvedValue([]);

@@ -8,22 +8,19 @@
  */
 import { HumanEscalationCard } from "./HumanEscalationCard";
 import { RecommendedActionList } from "./RecommendedActionList";
-import  {
-  type IntentLayer,
+import {
   type RecommendedAction,
   type HumanEscalation,
 } from "./v1a-intent-types";
 
 interface Props {
   sessionId: string | null;
-  intent: IntentLayer;
   recommendedActions: RecommendedAction[];
   humanEscalation: HumanEscalation;
 }
 
 export function IntentResolutionBlock({
   sessionId,
-  intent,
   recommendedActions,
   humanEscalation,
 }: Props) {
@@ -36,23 +33,18 @@ export function IntentResolutionBlock({
         <HumanEscalationCard
           escalation={humanEscalation}
           sessionId={sessionId}
-          intent={intent.value}
-          confidence={intent.confidence}
         />
       )}
 
       <RecommendedActionList
         actions={recommendedActions}
         sessionId={sessionId}
-        intent={intent.value}
       />
 
       {!humanEscalation.priority_boost && (
         <HumanEscalationCard
           escalation={humanEscalation}
           sessionId={sessionId}
-          intent={intent.value}
-          confidence={intent.confidence}
         />
       )}
     </section>

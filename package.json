@@ -116,6 +116,7 @@
     "registry:test:runtime-excludes": "tsx --test tests/registry/runtime-excludes-tests.test.ts",
     "registry:test:invariants": "tsx --test scripts/registry/validate-invariants.test.ts",
     "registry:test:files-reachability": "tsx --test scripts/registry/build-files-registry.test.ts",
+    "registry:test:automation-overlay": "tsx --test scripts/registry/validate-automation-overlay.test.ts",
     "registry:test:planning": "tsx --test tests/registry/planning-builder.test.ts",
     "registry:test:dependency-graph": "tsx --test tests/registry/dependency-graph-builder.test.ts",
     "registry:test:db-status": "tsx --test tests/registry/db-registry-status.test.ts",
