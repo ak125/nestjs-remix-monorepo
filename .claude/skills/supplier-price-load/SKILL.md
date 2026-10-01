@@ -11,10 +11,10 @@ last_verified: '2026-06-10'
 license: Internal - Automecanik
 compatibility: Designed for Claude Code in the AutoMecanik monorepo. Stack — Supabase + PostgreSQL + Playwright supplier connectors + the governed PricingModule (Pricing Control Plane V1). Touches pieces_price (live client cost) via the governed import API only. Privileged — drives prod price writes + does real supplier-portal logins.
 tags: [pricing, supplier, pieces_price, tariff, import, pricing-control-plane, dca, governance]
+argument-hint: "[brand] [supplier]"
+disable-model-invocation: true
 metadata:
   version: "2.1"
-  argument-hint: "[brand] [supplier]"
-  disable-model-invocation: true
   spec: agentskills.io/specification v1
 ---
 

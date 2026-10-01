@@ -1,3 +1,9 @@
+---
+# Chargée à la demande : quand l'agent lit un fichier qui correspond à ces chemins.
+paths:
+  - "frontend/**"
+---
+
 # Frontend Architecture (React Router 8)
 
 ## Stack
