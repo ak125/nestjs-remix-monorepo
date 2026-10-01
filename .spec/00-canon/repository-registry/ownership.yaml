@@ -1413,3 +1413,50 @@ entries:
     owner: '@ak125/payments-team'
     sourceConfidence: high
     risk: medium
+
+  # Migrations DB fusionnées du 2026-09-17 au 2026-09-30 restées sans glob (Block-new rouge
+  # sur chaque PR). Un glob exact par migration, `*.sql` couvre .sql + .down.sql ; les
+  # migrations ne sont PAS auto-couvertes. Domaine / owner = ceux de la table ou de la
+  # fonction ciblée ; D15 / @ak125 pour les lots transverses (précédents #1604, #1606).
+  # Retrait à anon d'EXECUTE sur les RPC SECURITY DEFINER (même famille que #1606).
+  - glob: backend/supabase/migrations/20260917_definer_rpc_anon_lockdown.sql
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  # 7 index strictement dupliqués, tables catalogue / véhicule / blog / SEO (PR #1619).
+  - glob: backend/supabase/migrations/20260929_drop_exact_duplicate_indexes*.sql
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  # Index d'expression type_id::integer sur auto_type_motor_code / auto_type_number_code (PR #1628).
+  - glob: backend/supabase/migrations/20260930_auto_type_codes_type_id_int_expr_indexes*.sql
+    domain: D4
+    owner: '@ak125/vehicle-team'
+    sourceConfidence: high
+    risk: medium
+  # 6 index dupliqués des tables archivées _archive.__agentic_* (PR #1627).
+  - glob: backend/supabase/migrations/20260930_drop_archive_agentic_duplicate_indexes*.sql
+    domain: D6
+    owner: '@ak125/rag-team'
+    sourceConfidence: high
+    risk: low
+  # PK auto_type_motor_code promue sur l'index unique utilisé + UNIQUE en double de rm_rebuild_queue retirée (PR #1641).
+  - glob: backend/supabase/migrations/20260930_drop_duplicate_unique_keys*.sql
+    domain: D4
+    owner: '@ak125/vehicle-team'
+    sourceConfidence: high
+    risk: medium
+  # search_path épinglé (public, pg_temp) de mark_order_paid_atomic, zone paiement, GO owner nominatif (PR #1643).
+  - glob: backend/supabase/migrations/20260930_pin_mark_order_paid_atomic_search_path*.sql
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: high
+    risk: high
+  # 17 politiques RLS « service_role seul » alignées sur la convention du projet (PR #1639).
+  - glob: backend/supabase/migrations/20260930_rls_align_service_role_only_policies*.sql
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
