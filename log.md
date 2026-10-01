@@ -597,3 +597,15 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/db-drop-pieces-price-unused-indexes`
 - **Décision** : Merge remote-tracking branch 'origin/main' into fix/db-drop-pieces-price-unused-indexes (+11 other commits)
 - **Sortie** : PR #1649 | commits b6c5f011f a9350f73a 4cbd9fdd2 17668ff66 09cf27fe9 a5e4e4b64 cb1f5605c 4d1ba50e1 db3e2e2cc 6732ed805 7a575a5d9 a8683258e
+
+## 2026-10-01 — fix/db-cron-job-run-details-retention (auto)
+
+- **Branche** : `fix/db-cron-job-run-details-retention`
+- **Décision** : docs(db): chiffrer le coût mesuré de la rétention de cron.job_run_details (+2 other commits)
+- **Sortie** : PR #1651 | commits 40fa3aeca 9767f3443 27a22c3d4
+
+## 2026-10-01 — fix/db-cron-job-run-details-retention (auto)
+
+- **Branche** : `fix/db-cron-job-run-details-retention`
+- **Décision** : Merge remote-tracking branch 'origin/main' into fix/db-cron-job-run-details-retention (+4 other commits)
+- **Sortie** : PR #1651 | commits 96283800a 6da7bd003 40fa3aeca 9767f3443 27a22c3d4
