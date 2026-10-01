@@ -3284,8 +3284,8 @@ index c58dd214b..33a2720a2 100644
    'Observability.DiagnosticKgShadowCounter',
  );
 +
-+// Diagnostic WIKI provenance counter (flags DIAGNOSTIC_PROVENANCE_EXPOSE /
-+// _PRIMARY), distinct for the same reason.
++// Diagnostic WIKI provenance counter, distinct for the same reason (flags
++// DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED, DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED).
 +export const DIAGNOSTIC_PROVENANCE_COUNTER = Symbol.for(
 +  'Observability.DiagnosticProvenanceCounter',
 +);
@@ -4193,3 +4193,26 @@ curl -fsS -X PATCH -H "Cookie: $ADMIN_COOKIE" -H 'Content-Type: application/json
 ```
 
 Attendu : une réponse `"success":true` dont `data` vaut `{"key":"DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED","value":"false","volatile":true}` (enveloppe de `AdminResponseInterceptor`) ; la série du compteur cesse d'augmenter. Coupure durable : `gh variable delete PROD_DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED --repo ak125/nestjs-remix-monorepo` (idem pour `…_PRIMARY_…` et `…_PROJECTION_…`), puis un tag de redéploiement (le script réécrit `false`) ; une fois ce tag en PROD, retirer la surcharge par `curl -fsS -X DELETE -H "Cookie: $ADMIN_COOKIE" "$PROD_ORIGIN/api/admin/feature-flags/DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED"`. Frontend : revert de PR-E par PR, puis tag. Projection : drapeau OFF suffit ; le `.down.sql` du Plan 2 reste réservé à une décision de l'owner.
+
+## Couverture spec → tâches
+
+| Spec | Exigence | Tâche |
+|---|---|---|
+| §4.6 | Fusion multi-symptômes : `contributions[]` conservées, `relative_score` fusionné inchangé, provenance lue pour tous les liens contributeurs | 2 |
+| §4.6 | Lecture à compte exact des lignes vivantes ; lève sur erreur, compte inexact ou absent, ligne invalide, doublon lien / fiche, lien non demandé | 2 |
+| §4.6 | Pack : `provenance` par hypothèse, `provenance_summary`, `superRefine` de cohérence, champs optionnels (sessions historiques) | 3 |
+| §4.6 | Drapeaux EXPOSE / PRIMARY OFF par défaut ; PRIMARY binaire sur `diagnostic_safe` ; `unavailable`, jamais `unsourced` ; PRIMARY sans EXPOSE ignoré, avertissement une fois par processus | 4 |
+| §4.6 | Branchement : 8ᵉ paramètre, `rank(links, score)`, tout l'aval lit `rank`, risque identique drapeaux ON / OFF, sites `new DiagnosticEngineOrchestrator(` | 5 |
+| §4.6 | Télémétrie : événement → `diagnostic_provenance_evaluated_total`, labels bornés (`none` / `unknown`) | 6 |
+| §4.7 | Rang sans score, retrait de `ScoringBreakdown`, 3 libellés de badge, aucun badge sans résumé ou `unavailable`, résumé transmis par `DiagnosticResults.tsx` | 8 |
+| §4.7 | Aucun `part_role` : absent par construction (5 colonnes lues, `WikiRefSchema` à 4 champs) | 2, 3 |
+| §4.8 | Script PROD à 3 drapeaux : `vars.*` seules, refus octet-identiques, PRIMARY sans EXPOSE refusé, exemption `SC1090` citée, insertions seules dans `deploy-prod.yml` | 1 |
+| §4.8 | `ALLOWED_KEYS` des 2 drapeaux ; avertissement au boot par `onModuleInit` synchrone (ast-grep `backend-no-remote-io-in-onmoduleinit`) | 4 |
+| §6 | Lecture échouée (avec et sans PRIMARY), PRIMARY sans EXPOSE, variable PROD mal orthographiée, backend `anon`, session historique | 1, 3, 4, 5, 8 |
+| §7 | Script : 36 tests, 3 mutants ; backend : 46 tests (5 suites), 11 mutants ; frontend : 5 tests, 2 mutants | 1, 2-7, 8 |
+| §7 | E2E : le container PREPROD (`anon`) ne couvre que l'état « aucun badge » ; jobs PREPROD, E2E et Lighthouse verts après fusion | 7, 8 (Après fusion) |
+| §8 étapes 2 (partie PROD) à 5 | Variables GitHub et tags `v*`, GO owner nominatif par étape, préconditions d'EXPOSE, rollback par drapeau | 9 |
+| §9 étape 7 | PR-C (script, dans un tag avant toute activation) ; PR-D empilée après #1607, #1624, #1626, #1608, #1618 et PR-A, PR-B | 1, 2-7 |
+| §9 étape 8 | PR-E après #1592 et l'acceptation d'ADR-035 | 8 |
+| §10 | Aucune hypothèse `unsourced` sur lecture échouée ; provenance de chaque lien contributeur ; plus aucun score affiché | 2, 4, 5, 8 |
+| §4.1-§4.5, §4.8 (ratchet des sinks, registre L2), §4.9, §8 étapes 1 et 2 (DEV:3000), §9 étapes 1 à 6 | Export, garde, DB, writer, registres, révision d'ADR-035 | Plans 1 et 2 |

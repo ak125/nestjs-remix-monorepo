@@ -1927,11 +1927,18 @@ EOF
 
 - [ ] **Étape 10 : premier run réel (après fusion humaine ET confirmation explicite de l'utilisateur)**
 
+Le run est identifié par un id strictement supérieur au dernier dispatch connu avant le déclenchement : un `--limit 1` lu juste après `gh workflow run` peut renvoyer le run précédent (l'API met quelques secondes à lister le nouveau).
+
 ```bash
-gh workflow run wiki-exports-diagnostic-generate.yml --repo ak125/nestjs-remix-monorepo --ref main
-sleep 5
-RUN=$(gh run list --repo ak125/nestjs-remix-monorepo --workflow wiki-exports-diagnostic-generate.yml --event workflow_dispatch --limit 1 --json databaseId -q '.[0].databaseId')
-gh run watch "$RUN" --repo ak125/nestjs-remix-monorepo --exit-status
+W=wiki-exports-diagnostic-generate.yml R=ak125/nestjs-remix-monorepo
+PREV=$(gh run list --repo "$R" --workflow "$W" --event workflow_dispatch --limit 1 --json databaseId -q '.[0].databaseId // 0')
+gh workflow run "$W" --repo "$R" --ref main
+RUN=; for _ in $(seq 1 30); do
+  RUN=$(gh run list --repo "$R" --workflow "$W" --event workflow_dispatch --limit 1 --json databaseId -q ".[0].databaseId // empty | select(. > $PREV)")
+  test -n "$RUN" && break; sleep 10
+done
+test -n "$RUN" || { echo "aucun nouveau run en 5 min : s'arrêter"; false; }
+gh run watch "$RUN" --repo "$R" --exit-status
 git -C /opt/automecanik/automecanik-wiki fetch origin
 BOT=$(git -C /opt/automecanik/automecanik-wiki log -1 --format=%H origin/main -- exports/diagnostic)
 git -C /opt/automecanik/automecanik-wiki show --format='%an | %s' --name-only "$BOT"
@@ -1943,10 +1950,15 @@ Attendu : run `success` ; commit de `automecanik-bot`, sujet `chore(exports-diag
 - [ ] **Étape 11 : idempotence en réel (après confirmation explicite de l'utilisateur)**
 
 ```bash
-gh workflow run wiki-exports-diagnostic-generate.yml --repo ak125/nestjs-remix-monorepo --ref main
-sleep 5
-RUN=$(gh run list --repo ak125/nestjs-remix-monorepo --workflow wiki-exports-diagnostic-generate.yml --event workflow_dispatch --limit 1 --json databaseId -q '.[0].databaseId')
-gh run watch "$RUN" --repo ak125/nestjs-remix-monorepo --exit-status
+W=wiki-exports-diagnostic-generate.yml R=ak125/nestjs-remix-monorepo
+PREV=$(gh run list --repo "$R" --workflow "$W" --event workflow_dispatch --limit 1 --json databaseId -q '.[0].databaseId // 0')
+gh workflow run "$W" --repo "$R" --ref main
+RUN=; for _ in $(seq 1 30); do
+  RUN=$(gh run list --repo "$R" --workflow "$W" --event workflow_dispatch --limit 1 --json databaseId -q ".[0].databaseId // empty | select(. > $PREV)")
+  test -n "$RUN" && break; sleep 10
+done
+test -n "$RUN" || { echo "aucun nouveau run en 5 min : s'arrêter"; false; }
+gh run watch "$RUN" --repo "$R" --exit-status
 gh run view "$RUN" --repo ak125/nestjs-remix-monorepo --log | grep -o '\[diff\] exports/diagnostic/ identical — idempotent no-op'
 git -C /opt/automecanik/automecanik-wiki fetch origin && git -C /opt/automecanik/automecanik-wiki log -1 --format=%H origin/main -- exports/diagnostic
 ```
@@ -2199,5 +2211,5 @@ L'owner passe `actual_mode` à `ACTIVE`, retire `missing_step`, ajoute `runtime_
 | §4.8 | automation-reality + pipelines L2 | 6 |
 | §7 | 42 tests WIKI + 4 tests de garde ; simulation 5 scénarios + mutation ; mutations du builder | 1, 2, 4 |
 | §9 étapes 2 (partie pipeline), 3, 4 | Découpage | 1-6 |
-| §4.4-§4.7, §9 étapes 1, 5, 6 | DB, writer, drapeaux | Plan 2 |
-| §9 étapes 7, 8 | Moteur, frontend | Plan 3 (différé) |
+| §4.4, §4.5, §4.9, §9 étapes 1, 5, 6 | DB, writer, drapeau de projection, révision d'ADR-035 | Plan 2 |
+| §4.6, §4.7, §9 étapes 7, 8 | Moteur, frontend, script d'environnement PROD | Plan 3 |

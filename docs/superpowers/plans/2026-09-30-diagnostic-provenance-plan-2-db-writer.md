@@ -678,7 +678,15 @@ SELECT pg_sleep(4);
 ROLLBACK;
 SQL
 holder=$!
-sleep 1.5
+# Attente déterministe, pas un délai fixe : sur un runner chargé, l'UPDATE
+# passerait avant les verrous. Le run concurrent est prêt quand il a rendu la
+# main (pg_sleep) en tenant toujours son verrou consultatif.
+held=0
+for _ in $(seq 1 50); do
+  held=$(q "SELECT count(*) FROM pg_stat_activity a WHERE a.wait_event = 'PgSleep' AND EXISTS (SELECT 1 FROM pg_locks l WHERE l.pid = a.pid AND l.locktype = 'advisory' AND l.granted)")
+  [[ "$held" == 1 ]] && break; sleep 0.1
+done
+[[ "$held" == 1 ]] || { echo "FATAL: le run concurrent n'a pas pris ses verrous"; wait "$holder"; exit 2; }
 out=$(q "SET lock_timeout = '1s'; UPDATE public.__diag_symptom_cause_link SET active = false WHERE id = 113;" 2>&1); rc=$?
 assert_err "désactivation concurrente d'un lien projeté bloquée" "lock timeout" "$out" "$rc"
 wait "$holder"
@@ -4552,12 +4560,19 @@ Attendu : run présent et vert, jobs `🧪 Deploy PREPROD`, `🎭 E2E Smoke Test
 
 - [ ] **Étape 1 : dry-run (après confirmation explicite de l'utilisateur)**
 
+Le run est identifié par un id strictement supérieur au dernier dispatch connu avant le déclenchement : un `--limit 1` lu juste après `gh workflow run` peut renvoyer le run précédent, et regarder un ancien `APPLY` vert à la place du dry-run passerait à tort.
+
 ```bash
-gh workflow run apply-supabase-migrations.yml --repo ak125/nestjs-remix-monorepo --ref main \
+W=apply-supabase-migrations.yml R=ak125/nestjs-remix-monorepo
+PREV=$(gh run list --repo "$R" --workflow "$W" --event workflow_dispatch --limit 1 --json databaseId -q '.[0].databaseId // 0')
+gh workflow run "$W" --repo "$R" --ref main \
   -f confirm=DRY_RUN -f dry_run=true -f only_ids=20261001_diag_link_provenance
-sleep 5
-RUN=$(gh run list --repo ak125/nestjs-remix-monorepo --workflow apply-supabase-migrations.yml --event workflow_dispatch --limit 1 --json databaseId -q '.[0].databaseId')
-gh run watch "$RUN" --repo ak125/nestjs-remix-monorepo --exit-status
+RUN=; for _ in $(seq 1 30); do
+  RUN=$(gh run list --repo "$R" --workflow "$W" --event workflow_dispatch --limit 1 --json databaseId -q ".[0].databaseId // empty | select(. > $PREV)")
+  test -n "$RUN" && break; sleep 10
+done
+test -n "$RUN" || { echo "aucun nouveau run en 5 min : s'arrêter"; false; }
+gh run watch "$RUN" --repo "$R" --exit-status
 gh run view "$RUN" --repo ak125/nestjs-remix-monorepo --log | grep -n '20261001_diag_link_provenance'
 ```
 
@@ -4566,11 +4581,16 @@ Attendu : run `success` ; la migration apparaît comme en attente et aucune autr
 - [ ] **Étape 2 : application (GO nominatif de l'owner, puis confirmation explicite de l'utilisateur)**
 
 ```bash
-gh workflow run apply-supabase-migrations.yml --repo ak125/nestjs-remix-monorepo --ref main \
+W=apply-supabase-migrations.yml R=ak125/nestjs-remix-monorepo
+PREV=$(gh run list --repo "$R" --workflow "$W" --event workflow_dispatch --limit 1 --json databaseId -q '.[0].databaseId // 0')
+gh workflow run "$W" --repo "$R" --ref main \
   -f confirm=APPLY -f dry_run=false -f only_ids=20261001_diag_link_provenance
-sleep 5
-RUN=$(gh run list --repo ak125/nestjs-remix-monorepo --workflow apply-supabase-migrations.yml --event workflow_dispatch --limit 1 --json databaseId -q '.[0].databaseId')
-gh run watch "$RUN" --repo ak125/nestjs-remix-monorepo --exit-status
+RUN=; for _ in $(seq 1 30); do
+  RUN=$(gh run list --repo "$R" --workflow "$W" --event workflow_dispatch --limit 1 --json databaseId -q ".[0].databaseId // empty | select(. > $PREV)")
+  test -n "$RUN" && break; sleep 10
+done
+test -n "$RUN" || { echo "aucun nouveau run en 5 min : s'arrêter (ne pas relancer l'APPLY à l'aveugle)"; false; }
+gh run watch "$RUN" --repo "$R" --exit-status
 ```
 
 Attendu : run `success`.
@@ -4617,25 +4637,41 @@ Attendu : `DEV_HAS_PR_B`, `PIN_HAS_EXPORTS`, `DEV_UP`, `applied`. Sinon attendre
 
 L'opérateur exporte dans son shell `ADMIN_COOKIE='connect.sid=<valeur>'`, cookie d'une session admin ouverte dans son navigateur sur DEV:3000. Le cookie n'est écrit dans aucun fichier, commit ni message.
 
+Le processor relit le drapeau au moment du job : la surcharge doit rester active jusqu'à ce que le job ait écrit sa ligne. La ligne `__diag_projection_runs` n'est écrite qu'en fin de run (`applied` ou `failed`, jamais d'état intermédiaire) ; l'attente porte donc sur un id strictement supérieur au maximum lu avant le déclenchement, bornée à 5 min. Le bloc ne contient ni `set -e` ni `exit` : le `DELETE` s'exécute toujours, même si une commande précédente a échoué ou si l'attente a expiré.
+
 ```bash
+PREV=$("$SWEEP" -qtAc "SELECT coalesce(max(id), 0) FROM public.__diag_projection_runs;")
 curl -fsS -X PATCH -H "Cookie: $ADMIN_COOKIE" -H 'Content-Type: application/json' \
-  -d '{"value":"true"}' http://localhost:3000/api/admin/feature-flags/DIAGNOSTIC_PROJECTION_ENABLED
-curl -fsS -X POST -H "Cookie: $ADMIN_COOKIE" http://localhost:3000/api/admin/diagnostic-projection/trigger
-sleep 30
-curl -fsS -X DELETE -H "Cookie: $ADMIN_COOKIE" http://localhost:3000/api/admin/feature-flags/DIAGNOSTIC_PROJECTION_ENABLED
+  -d '{"value":"true"}' http://localhost:3000/api/admin/feature-flags/DIAGNOSTIC_PROJECTION_ENABLED; echo
+curl -fsS -X POST -H "Cookie: $ADMIN_COOKIE" http://localhost:3000/api/admin/diagnostic-projection/trigger; echo
+NEW=; for _ in $(seq 1 30); do
+  NEW=$("$SWEEP" -qtAc "SELECT id FROM public.__diag_projection_runs WHERE id > ${PREV:-0} ORDER BY id LIMIT 1;")
+  test -n "$NEW" && break; sleep 10
+done
+echo "run=${NEW:-AUCUN}"
+curl -fsS -X DELETE -H "Cookie: $ADMIN_COOKIE" http://localhost:3000/api/admin/feature-flags/DIAGNOSTIC_PROJECTION_ENABLED; echo
 ```
 
-Attendu : `{"key":"DIAGNOSTIC_PROJECTION_ENABLED","value":"true","volatile":true}` ; `{"ok":true,"jobId":"…","message":"Projection diagnostic enqueue (one-off) — …"}` ; la surcharge retirée. Le `DELETE` est exécuté même si une commande précédente a échoué.
+Attendu, dans l'ordre (le contrôleur feature-flags porte `AdminResponseInterceptor`, qui enveloppe la réponse ; le contrôleur de projection ne le porte pas) :
+- `{"success":true,"data":{"key":"DIAGNOSTIC_PROJECTION_ENABLED","value":"true","volatile":true},"meta":{"timestamp":"…"}}` ;
+- `{"ok":true,"jobId":"…","message":"Projection diagnostic enqueue (one-off) — …"}` ;
+- `run=<id>` ;
+- `{"success":true,"data":{"key":"DIAGNOSTIC_PROJECTION_ENABLED","cleared":true},"meta":{"timestamp":"…"}}`.
+
+`run=AUCUN` : ne pas relancer ; passer à l'Étape 3, qui lit les logs.
 
 - [ ] **Étape 3 : lecture du run**
 
+La base est partagée avec PREPROD et PROD : on lit le run `$NEW` identifié à l'Étape 2, jamais « le dernier ».
+
 ```bash
-"$SWEEP" -c "SELECT id, triggered_by, runtime_env, status, exported_count, projected_count, conflict_count, retired_count, error FROM public.__diag_projection_runs ORDER BY id DESC LIMIT 1;"
-"$SWEEP" -c "SELECT gamme_slug, symptom_slug, reason, detail->'unproven_sources' AS unproven FROM public.__diag_projection_conflicts WHERE run_id = (SELECT max(id) FROM public.__diag_projection_runs) ORDER BY gamme_slug;"
+test -n "$NEW" || { echo "aucun run identifié à l'Étape 2 : voir le cas « aucun run » ci-dessous"; false; }
+"$SWEEP" -c "SELECT id, triggered_by, runtime_env, status, exported_count, projected_count, conflict_count, retired_count, error FROM public.__diag_projection_runs WHERE id = $NEW;"
+"$SWEEP" -c "SELECT gamme_slug, symptom_slug, reason, detail->'unproven_sources' AS unproven FROM public.__diag_projection_conflicts WHERE run_id = $NEW ORDER BY gamme_slug;"
 "$SWEEP" -c "SELECT count(*) AS provenance FROM public.__diag_link_provenance;"
 ```
 
-Attendu : `admin | development | applied | 3 | 0 | 3 | 0 |` (erreur vide) ; 3 conflits `source_not_raw_proven` pour `filtre-a-air`, `filtre-a-carburant`, `filtre-d-habitacle`, chacun listant ses sources non prouvées ; `0` provenance. Un run `failed` : lire `error`, corriger la cause dans une PR, jamais dans la base. Aucun run : lire les logs `DiagnosticProjectionProcessor` de DEV:3000 (un `skipped` signifie que la surcharge n'était pas active au moment du job).
+Attendu : `admin | development | applied | 3 | 0 | 3 | 0 |` (erreur vide) ; 3 conflits `source_not_raw_proven` pour `filtre-a-air`, `filtre-a-carburant`, `filtre-d-habitacle`, chacun listant ses sources non prouvées ; `0` provenance. Un run `failed` : lire `error`, corriger la cause dans une PR, jamais dans la base. Aucun run (`run=AUCUN`) : le writer écrit une ligne `failed` pour toute erreur qu'il attrape, donc le job a été ignoré, n'a pas été traité, ou n'a pas pu enregistrer son échec. Chercher dans la sortie du processus DEV:3000 (le terminal qui l'a lancé) : `diagnostic_projection.skipped` (surcharge inactive au moment du job : relire la réponse du `PATCH`), `readonly.skipped` (`READ_ONLY` actif sur DEV), ou `diagnostic-projection job … failed` (dont `could not be recorded`). Rien de tout cela : le job n'a pas été consommé (worker BullMQ). Ne pas relancer avant d'avoir trouvé la cause.
 
 ---
 
@@ -4800,4 +4836,4 @@ Attendu avant suppression : uniquement les fichiers L2 modifiés (trois, plus ce
 | §4.9 | Révision d'ADR-035 (brouillon vault) | 0 |
 | §7 | Harnais SQL + 5 mutants ; 59 tests TS + 13 mutants ; ratchet 19 tests | 1-7 |
 | §9 étapes 1, 2 (partie projection), 5, 6 | Découpage PR-A / PR-B, application, preuve | 0-10 |
-| §4.6, §4.7, §9 étapes 7, 8 | Moteur, drapeaux EXPOSE / PRIMARY, frontend, activation PROD | Plan 3 (différé) |
+| §4.6, §4.7, §9 étapes 7, 8 | Moteur, drapeaux EXPOSE / PRIMARY, frontend, activation PROD | Plan 3 |
