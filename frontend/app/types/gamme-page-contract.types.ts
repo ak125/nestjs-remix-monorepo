@@ -37,6 +37,8 @@ export interface GammePageContent {
   content: string;
   pg_name: string;
   pg_alias: string;
+  /** Cible du lien « Guide d'achat », décidée par le backend (ADR-103 D5) ; null = pas de lien. */
+  buyingGuideHref: string | null;
   pg_pic: string;
   pg_wall: string;
 }
@@ -348,6 +350,7 @@ export const GammePageContentSchema = z.object({
   content: z.string(),
   pg_name: z.string().min(1),
   pg_alias: z.string().min(1),
+  buyingGuideHref: z.string().min(1).nullable(),
   pg_pic: z.string(),
   pg_wall: z.string(),
 });

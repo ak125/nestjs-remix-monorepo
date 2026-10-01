@@ -7,6 +7,8 @@
  *   - Invalidation event-driven (`@OnEvent('article.published'|'article.updated')`)
  *   - Cache write best-effort : `cacheService.set` qui throw ne masque pas le payload
  *   - `onArticleChanged` log warn quand le payload n'a pas de pg_alias
+ *   - liens vers les guides d'achat (ADR-103 D5) : clé de cache par drapeau,
+ *     encart et contenu décidés par la règle unique
  *
  * Pas d'I/O réseau ; mocks minimaux. CacheService est mocké via une Map
  * en mémoire avec TTL relatif émulé (Date.now()).
@@ -20,6 +22,10 @@ import { BlogArticleRelationService } from './blog-article-relation.service';
 import { InternalLinkingService } from '../../seo/internal-linking.service';
 import { R3ProjectionDecisionService } from './r3-projection-decision.service';
 import { R3GuideService } from './r3-guide.service';
+import {
+  R6GuideLinkPolicyService,
+  type R6GuideLinkSnapshot,
+} from '../../seo/services/r6-guide-link-policy.service';
 
 interface CacheEntry {
   value: unknown;
@@ -75,6 +81,18 @@ const articleStub = {
 
 const gammeDataStub = { pg_id: PG_ID, pg_alias: PG_ALIAS };
 
+function guideLinkSnapshot(
+  consolidationEnabled: boolean,
+  published: string[] = [PG_ALIAS],
+  conseils: string[] = [PG_ALIAS],
+): R6GuideLinkSnapshot {
+  return {
+    consolidationEnabled,
+    publishedGuideAliases: new Set(published),
+    conseilsAliases: new Set(conseils),
+  };
+}
+
 function makeMocks() {
   const dataService = {
     getArticleByGamme: jest
@@ -89,7 +107,6 @@ function makeMocks() {
     getGammeConseil: jest.fn().mockResolvedValue([]),
     getSeoItemSwitches: jest.fn().mockResolvedValue([]),
     getSeoBrief: jest.fn().mockResolvedValue(null),
-    hasPublishedR6Guide: jest.fn().mockResolvedValue(false),
     getApprovedImages: jest.fn().mockResolvedValue([]),
   };
   const relationService = {
@@ -103,12 +120,18 @@ function makeMocks() {
     isTargeted: jest.fn().mockReturnValue(false),
     decide: jest.fn(),
   };
+  // Par défaut : drapeau R6 éteint, guide de la gamme publié.
+  const guideLinkPolicy = {
+    cacheKeySegment: jest.fn().mockReturnValue('r6c0'),
+    getSnapshot: jest.fn().mockResolvedValue(guideLinkSnapshot(false)),
+  };
   return {
     dataService,
     seoService,
     relationService,
     internalLinkingService,
     projectionDecision,
+    guideLinkPolicy,
   };
 }
 
@@ -122,6 +145,7 @@ async function buildService(): Promise<{
   >['internalLinkingService'];
   relationService: ReturnType<typeof makeMocks>['relationService'];
   projectionDecision: ReturnType<typeof makeMocks>['projectionDecision'];
+  guideLinkPolicy: ReturnType<typeof makeMocks>['guideLinkPolicy'];
 }> {
   const cache = new InMemoryCacheServiceStub();
   const mocks = makeMocks();
@@ -141,6 +165,7 @@ async function buildService(): Promise<{
         provide: R3ProjectionDecisionService,
         useValue: mocks.projectionDecision,
       },
+      { provide: R6GuideLinkPolicyService, useValue: mocks.guideLinkPolicy },
     ],
   }).compile();
 
@@ -153,6 +178,7 @@ async function buildService(): Promise<{
     internalLinkingService: mocks.internalLinkingService,
     relationService: mocks.relationService,
     projectionDecision: mocks.projectionDecision,
+    guideLinkPolicy: mocks.guideLinkPolicy,
   };
 }
 
@@ -181,7 +207,7 @@ describe('R3GuideService — cache + single-flight + invalidation (PR-A)', () =>
       const result = await service.getR3GuidePayload('inconnu');
 
       expect(result).toBeNull();
-      expect(await cache.get('r3-guide:v3:inconnu')).toBeNull();
+      expect(await cache.get('r3-guide:v3:r6c0:inconnu')).toBeNull();
     });
   });
 
@@ -577,9 +603,130 @@ describe('R3GuideService — sections META servies seulement si conformes au con
     await service.getR3GuidePayload(PG_ALIAS);
 
     const cached = await cache.get<{ metaSections: unknown[] }>(
-      `r3-guide:v3:${PG_ALIAS}`,
+      `r3-guide:v3:r6c0:${PG_ALIAS}`,
     );
     expect(cached?.metaSections).toEqual([]);
     expect(await cache.get(`r3-guide:v2:${PG_ALIAS}`)).toBeNull();
+  });
+});
+
+/**
+ * Liens vers les guides d'achat sur la page conseils (ADR-103 D5, vault).
+ * Mesure du 2026-10-01 : 56 sections S3 sur 73 pages conseils lient le guide de
+ * leur propre gamme — drapeau allumé, ce lien reviendrait par 301 sur la page.
+ */
+describe("R3GuideService — liens vers les guides d'achat (ADR-103 D5)", () => {
+  const GUIDE = (a: string) => `/blog-pieces-auto/guide-achat/${a}`;
+  const CONSEILS = (a: string) => `/blog-pieces-auto/conseils/${a}`;
+  const section = (sectionType: string, content: string) => ({
+    title: `Section ${sectionType}`,
+    content,
+    sectionType,
+    order: 3,
+    qualityScore: null,
+    sources: [],
+  });
+  const S3_OWN_GUIDE = section(
+    'S3',
+    `<p>Pour bien choisir, lisez <a href="${GUIDE(PG_ALIAS)}">notre guide d'achat</a>.</p>`,
+  );
+  const S2_OTHER_GUIDE = section(
+    'S2',
+    `<p>Voir aussi <a href="${GUIDE('maitre-cylindre')}">le guide du maître-cylindre</a>.</p>`,
+  );
+  const META_OWN_GUIDE_ONLY = section(
+    'META',
+    `<a href="${GUIDE(PG_ALIAS)}">Guide d'achat</a>`,
+  );
+
+  it('drapeau éteint, guide publié : encart vers le guide, contenu inchangé', async () => {
+    const { service, seoService } = await buildService();
+    seoService.getGammeConseil.mockResolvedValue([S3_OWN_GUIDE]);
+
+    const payload = await service.getR3GuidePayload(PG_ALIAS);
+
+    expect(payload?.page.buyingGuideHref).toBe(GUIDE(PG_ALIAS));
+    expect(payload?.bodySections[0].html).toBe(S3_OWN_GUIDE.content);
+  });
+
+  it('drapeau éteint, guide non publié : pas d’encart, lien du contenu déplié', async () => {
+    const { service, seoService, guideLinkPolicy } = await buildService();
+    guideLinkPolicy.getSnapshot.mockResolvedValue(guideLinkSnapshot(false, []));
+    seoService.getGammeConseil.mockResolvedValue([S3_OWN_GUIDE]);
+
+    const payload = await service.getR3GuidePayload(PG_ALIAS);
+
+    expect(payload?.page.buyingGuideHref).toBeNull();
+    expect(payload?.bodySections[0].html).toBe(
+      "<p>Pour bien choisir, lisez notre guide d'achat.</p>",
+    );
+  });
+
+  it('drapeau allumé : pas d’encart, lien vers son propre guide déplié, autre guide → conseils', async () => {
+    const { service, seoService, guideLinkPolicy } = await buildService();
+    guideLinkPolicy.cacheKeySegment.mockReturnValue('r6c1');
+    guideLinkPolicy.getSnapshot.mockResolvedValue(
+      guideLinkSnapshot(
+        true,
+        [PG_ALIAS, 'maitre-cylindre'],
+        [PG_ALIAS, 'maitre-cylindre'],
+      ),
+    );
+    seoService.getGammeConseil.mockResolvedValue([
+      S2_OTHER_GUIDE,
+      S3_OWN_GUIDE,
+    ]);
+
+    const payload = await service.getR3GuidePayload(PG_ALIAS);
+
+    expect(payload?.page.buyingGuideHref).toBeNull();
+    const html = payload!.bodySections.map((s) => s.html).join('\n');
+    expect(html).not.toContain('/guide-achat/');
+    expect(html).toContain(`<a href="${CONSEILS('maitre-cylindre')}">`);
+    expect(html).toContain("lisez notre guide d'achat.");
+  });
+
+  it('drapeau allumé : une section META dont le seul lien est retiré n’est plus servie', async () => {
+    const { service, seoService, guideLinkPolicy } = await buildService();
+    guideLinkPolicy.getSnapshot.mockResolvedValue(guideLinkSnapshot(true));
+    seoService.getGammeConseil.mockResolvedValue([
+      S3_OWN_GUIDE,
+      META_OWN_GUIDE_ONLY,
+    ]);
+    const warn = jest.spyOn((service as any).logger, 'warn');
+
+    const payload = await service.getR3GuidePayload(PG_ALIAS);
+
+    expect(payload?.metaSections).toEqual([]);
+    expect(warn).toHaveBeenCalledWith(
+      `[r3-meta] pg_id=${PG_ID} sections META non servies=1 motifs=no_link`,
+    );
+  });
+
+  it('la clé de cache porte le drapeau : une bascule ne sert pas le payload de l’autre règle', async () => {
+    const { service, cache, dataService, guideLinkPolicy } =
+      await buildService();
+
+    await service.getR3GuidePayload(PG_ALIAS);
+    expect(await cache.get(`r3-guide:v3:r6c0:${PG_ALIAS}`)).not.toBeNull();
+
+    guideLinkPolicy.cacheKeySegment.mockReturnValue('r6c1');
+    guideLinkPolicy.getSnapshot.mockResolvedValue(guideLinkSnapshot(true));
+    const flipped = await service.getR3GuidePayload(PG_ALIAS);
+
+    expect(dataService.getArticleByGamme).toHaveBeenCalledTimes(2);
+    expect(flipped?.page.buyingGuideHref).toBeNull();
+    expect(await cache.get(`r3-guide:v3:r6c1:${PG_ALIAS}`)).not.toBeNull();
+  });
+
+  it('un événement article invalide la clé des deux règles', async () => {
+    const { service, cache } = await buildService();
+    await cache.set(`r3-guide:v3:r6c0:${PG_ALIAS}`, { x: 1 }, 60);
+    await cache.set(`r3-guide:v3:r6c1:${PG_ALIAS}`, { x: 1 }, 60);
+
+    await service.onArticleChanged({ pg_alias: PG_ALIAS });
+
+    expect(await cache.get(`r3-guide:v3:r6c0:${PG_ALIAS}`)).toBeNull();
+    expect(await cache.get(`r3-guide:v3:r6c1:${PG_ALIAS}`)).toBeNull();
   });
 });

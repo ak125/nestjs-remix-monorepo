@@ -933,6 +933,7 @@
         "backend/src/modules/blog/services/r6-guide.service.ts",
         "backend/src/modules/catalog/services/homepage-rpc.service.ts",
         "backend/src/modules/marketing/services/marketing-data.service.ts",
+        "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts"
       ]
     },
@@ -953,6 +954,7 @@
       "status": "LIVE",
       "usedBy": [
         "backend/src/modules/blog/services/blog-article-data.service.ts",
+        "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts"
       ]
     },
@@ -5093,14 +5095,13 @@
         "backend/src/modules/admin/services/conseil-priority.service.ts",
         "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-        "backend/src/modules/blog/services/blog-seo.service.ts",
         "backend/src/modules/blog/services/guide.service.ts",
         "backend/src/modules/blog/services/r6-guide.service.ts",
-        "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
         "backend/src/modules/gamme-rest/services/buying-guide-data.service.ts",
         "backend/src/modules/gamme-rest/services/purchase-guide-data.service.ts",
         "backend/src/modules/marketing/services/marketing-data.service.ts",
         "backend/src/modules/seo-monitoring/services/r-content-auditor.service.ts",
+        "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "backend/src/modules/seo/validation/purchase-guide-validator.service.ts"
       ]
     },
@@ -10759,6 +10760,7 @@
         "backend/src/modules/catalog/controllers/pieces-diagnostic.controller.ts",
         "backend/src/modules/catalog/controllers/vehicle-hierarchy.controller.ts",
         "backend/src/modules/catalog/services/compatibility.service.ts",
+        "backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts",
         "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.ts",
         "backend/src/modules/seo/r2/services/r2-r8-gate-status.service.ts",
         "backend/src/modules/seo/r2/services/r8-parent-enrichment.service.ts",
@@ -12687,6 +12689,7 @@
         "backend/src/modules/blog/services/r6-guide.service.ts",
         "backend/src/modules/catalog/services/accessory-products.service.ts",
         "backend/src/modules/catalog/services/homepage-rpc.service.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
         "backend/src/modules/marketing/services/marketing-data.service.ts",
         "backend/src/modules/marketing/services/marketing-hub-data.service.ts",
         "backend/src/modules/media-factory/services/script-generator.service.ts",
@@ -12695,6 +12698,7 @@
         "backend/src/modules/search/controllers/search-debug.controller.ts",
         "backend/src/modules/search/controllers/search-enhanced-existing.controller.ts",
         "backend/src/modules/seo/r2/services/r1-gamme-completeness-audit.service.ts",
+        "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "backend/src/modules/seo/services/reference.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-data.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-cluster.service.ts",

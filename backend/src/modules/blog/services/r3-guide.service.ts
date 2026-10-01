@@ -34,11 +34,19 @@ import {
 } from '../utils/html-normalize.utils';
 import { PRIX_PAS_CHER } from '../../seo/seo-v4.types';
 import { InternalLinkingService } from '../../seo/internal-linking.service';
+import {
+  applyGuideLinkRuleToHtml,
+  R6_GUIDE_LINK_CACHE_SEGMENTS,
+  R6GuideLinkPolicyService,
+  resolveGuideLink,
+} from '../../seo/services/r6-guide-link-policy.service';
 
 /** Cache key prefix versionnée — bump v1→v2 invalide tous les payloads.
  *  v2 (2026-05-24) : compatible vehicles capped à 24 (LCP /blog-pieces-auto/conseils/* — voir PR LCP-R3-PR1).
  *  v3 (2026-09-11) : sections META hors contrat « liens » retirées du payload
- *  (sinon les payloads v2 cachés continueraient de servir le JSON 24 h). */
+ *  (sinon les payloads v2 cachés continueraient de servir le JSON 24 h).
+ *  La clé porte ensuite le segment du drapeau R6 (`r6c0`/`r6c1`, ADR-103 D5) :
+ *  les liens vers les guides dépendent du drapeau. */
 const R3_CACHE_PREFIX = 'r3-guide:v3:';
 
 /** Motif de rejet d'une section META hors contrat « liens ». */
@@ -95,6 +103,7 @@ export class R3GuideService {
     private readonly relationService: BlogArticleRelationService,
     private readonly internalLinkingService: InternalLinkingService,
     private readonly projectionDecision: R3ProjectionDecisionService,
+    private readonly guideLinkPolicy: R6GuideLinkPolicyService,
   ) {}
 
   /**
@@ -123,14 +132,14 @@ export class R3GuideService {
    */
   async getR3GuidePayload(pg_alias: string): Promise<R3GuidePayload | null> {
     // Canary ciblée → bypass TOTAL du cache (lecture ET écriture). Sans cela, la clé partagée
-    // `r3-guide:v3:<alias>` pourrait contenir alternativement un payload ciblé et un payload
+    // `r3-guide:v3:<segment>:<alias>` pourrait contenir alternativement un payload ciblé et un payload
     // hors-canary selon qui l'a peuplée en premier — empoisonnement croisé. Décision synchrone,
     // 0 RPC : hors canary, le chemin ci-dessous reste strictement inchangé.
     if (this.projectionDecision.isTargeted(pg_alias)) {
       return this.computeTargetedPayload(pg_alias);
     }
 
-    const cacheKey = `${R3_CACHE_PREFIX}${pg_alias}`;
+    const cacheKey = `${R3_CACHE_PREFIX}${this.guideLinkPolicy.cacheKeySegment()}:${pg_alias}`;
     const startedAt = Date.now();
 
     const cached = await this.cacheService.get<R3GuidePayload | null>(cacheKey);
@@ -231,9 +240,13 @@ export class R3GuideService {
       );
       return;
     }
-    const cacheKey = `${R3_CACHE_PREFIX}${pg_alias}`;
-    await this.cacheService.del(cacheKey);
-    this.logger.log(`[r3-cache] invalidated key=${cacheKey} on article event`);
+    for (const segment of R6_GUIDE_LINK_CACHE_SEGMENTS) {
+      const cacheKey = `${R3_CACHE_PREFIX}${segment}:${pg_alias}`;
+      await this.cacheService.del(cacheKey);
+      this.logger.log(
+        `[r3-cache] invalidated key=${cacheKey} on article event`,
+      );
+    }
   }
 
   /**
@@ -265,7 +278,7 @@ export class R3GuideService {
       vehicles,
       adjacent,
       seoBrief,
-      hasR6Guide,
+      guideLinkSnapshot,
     ] = await Promise.all([
       this.seoService.getGammeConseil(gammeData.pg_id),
       this.seoService.getSeoItemSwitches(gammeData.pg_id),
@@ -277,17 +290,45 @@ export class R3GuideService {
       this.relationService.getCompatibleVehicles(gammeData.pg_id, 24, pg_alias),
       this.dataService.getAdjacentArticles(article.slug),
       this.seoService.getSeoBrief(gammeData.pg_id),
-      this.seoService.hasPublishedR6Guide(gammeData.pg_id),
+      this.guideLinkPolicy.getSnapshot(),
     ]);
 
     // Step 3 — Resolve canonical sections (port of frontend resolveCanonicalSections)
-    const { s1Sections, bodySections, metaSections, sourceType } =
-      await this.resolveCanonicalSections(
-        conseil,
-        article.sections,
-        article,
-        gammeData.pg_id,
+    const {
+      s1Sections,
+      bodySections,
+      metaSections: mappedMeta,
+      sourceType,
+    } = await this.resolveCanonicalSections(conseil, article.sections, article);
+
+    // Step 3a — Liens vers les guides d'achat (ADR-103 D5), dans l'ordre de rendu :
+    // S1 → corps → META, puis l'encart « guide d'achat » de la page.
+    const guideLinkCtx = {
+      currentPath: `/blog-pieces-auto/conseils/${pg_alias}`,
+      linkedPaths: new Set<string>(),
+    };
+    let guideLinksChanged = 0;
+    for (const section of [...s1Sections, ...bodySections, ...mappedMeta]) {
+      const out = applyGuideLinkRuleToHtml(
+        section.html,
+        guideLinkSnapshot,
+        guideLinkCtx,
       );
+      section.html = out.html;
+      guideLinksChanged += out.changed;
+    }
+    const buyingGuideHref = resolveGuideLink(
+      pg_alias,
+      guideLinkSnapshot,
+      guideLinkCtx,
+    );
+    if (guideLinksChanged > 0) {
+      this.logger.log(
+        `[R6-LINKS] pg_alias=${pg_alias} consolidation=${guideLinkSnapshot.consolidationEnabled} contenu=${guideLinksChanged} lien(s) modifié(s)`,
+      );
+    }
+    // Après la règle : une section META dont le lien a été retiré sort du contrat.
+    const metaSections = this.filterMetaSections(mappedMeta, gammeData.pg_id);
 
     // Step 3b — Inject approved images into sections
     const approvedImages = await this.seoService.getApprovedImages(
@@ -345,7 +386,7 @@ export class R3GuideService {
       tags: article.tags || [],
       cta_link: article.cta_link || null,
       cta_anchor: article.cta_anchor || null,
-      hasR6Guide,
+      buyingGuideHref,
     };
 
     return {
@@ -376,7 +417,6 @@ export class R3GuideService {
     }>,
     articleSections: BlogSection[],
     _article: BlogArticle,
-    pgId: number,
   ): Promise<{
     s1Sections: R3GuideSection[];
     bodySections: R3GuideSection[];
@@ -389,7 +429,7 @@ export class R3GuideService {
     );
 
     if (hasConseil) {
-      return this.resolveConseilMode(conseil, pgId);
+      return this.resolveConseilMode(conseil);
     }
 
     return this.resolveArticleMode(articleSections, conseil);
@@ -404,7 +444,6 @@ export class R3GuideService {
       qualityScore: number | null;
       sources: string[];
     }>,
-    pgId: number,
   ): Promise<{
     s1Sections: R3GuideSection[];
     bodySections: R3GuideSection[];
@@ -424,15 +463,24 @@ export class R3GuideService {
         return oa - ob;
       });
 
-    const [s1Sections, bodySections, mappedMeta] = await Promise.all([
+    const [s1Sections, bodySections, metaSections] = await Promise.all([
       Promise.all(s1.map((s, i) => this.mapConseilSection(s, i))),
       Promise.all(body.map((s, i) => this.mapConseilSection(s, i))),
       Promise.all(meta.map((s, i) => this.mapConseilSection(s, i))),
     ]);
 
-    // Sections META hors contrat « liens » : non servies (donc ni rendues, ni
-    // dans le JSON-LD, ni comptées dans le temps de lecture) et journalisées.
-    // Aucune réécriture : la donnée reste à corriger à la source.
+    return { s1Sections, bodySections, metaSections, sourceType: 'conseil' };
+  }
+
+  /**
+   * Sections META hors contrat « liens » : non servies (donc ni rendues, ni
+   * dans le JSON-LD, ni comptées dans le temps de lecture) et journalisées.
+   * Aucune réécriture : la donnée reste à corriger à la source.
+   */
+  private filterMetaSections(
+    mappedMeta: R3GuideSection[],
+    pgId: number,
+  ): R3GuideSection[] {
     const metaSections: R3GuideSection[] = [];
     const rejected: string[] = [];
     for (const section of mappedMeta) {
@@ -445,8 +493,7 @@ export class R3GuideService {
         `[r3-meta] pg_id=${pgId} sections META non servies=${rejected.length} motifs=${rejected.join(',')}`,
       );
     }
-
-    return { s1Sections, bodySections, metaSections, sourceType: 'conseil' };
+    return metaSections;
   }
 
   private async resolveArticleMode(

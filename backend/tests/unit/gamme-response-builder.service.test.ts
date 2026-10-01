@@ -166,6 +166,13 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
     const relatedResources = { getRelatedResources: jest.fn(() => Promise.resolve({ links: [], blocks: [] })) } as any;
     const chainOrchestrator = { run: jest.fn() } as any;
     const chainFlags = { mode: jest.fn(() => 'off') } as any;
+    const guideLinkPolicy = {
+      getSnapshot: jest.fn(async () => ({
+        consolidationEnabled: false,
+        publishedGuideAliases: new Set<string>(),
+        conseilsAliases: new Set<string>(),
+      })),
+    } as any;
     const service = new GammeResponseBuilderService(
       transformer,
       rpcService,
@@ -175,6 +182,7 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       relatedResources,
       chainOrchestrator,
       chainFlags,
+      guideLinkPolicy,
     );
 
     const result = await service.buildRpcV2Response('479');
@@ -223,6 +231,13 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
     const relatedResources = { getRelatedResources: jest.fn(() => Promise.resolve({ links: [], blocks: [] })) } as any;
     const chainOrchestrator = { run: jest.fn() } as any;
     const chainFlags = { mode: jest.fn(() => 'off') } as any;
+    const guideLinkPolicy = {
+      getSnapshot: jest.fn(async () => ({
+        consolidationEnabled: false,
+        publishedGuideAliases: new Set<string>(),
+        conseilsAliases: new Set<string>(),
+      })),
+    } as any;
     const service = new GammeResponseBuilderService(
       transformer,
       rpcService,
@@ -232,6 +247,7 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       relatedResources,
       chainOrchestrator,
       chainFlags,
+      guideLinkPolicy,
     );
 
     const result = await service.buildRpcV2Response('479');
@@ -280,6 +296,13 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
     const relatedResources = { getRelatedResources: jest.fn(() => Promise.resolve({ links: [], blocks: [] })) } as any;
     const chainOrchestrator = { run: jest.fn() } as any;
     const chainFlags = { mode: jest.fn(() => 'off') } as any;
+    const guideLinkPolicy = {
+      getSnapshot: jest.fn(async () => ({
+        consolidationEnabled: false,
+        publishedGuideAliases: new Set<string>(),
+        conseilsAliases: new Set<string>(),
+      })),
+    } as any;
     const service = new GammeResponseBuilderService(
       transformer,
       rpcService,
@@ -289,6 +312,7 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       relatedResources,
       chainOrchestrator,
       chainFlags,
+      guideLinkPolicy,
     );
 
     const result = await service.buildRpcV2Response('479');

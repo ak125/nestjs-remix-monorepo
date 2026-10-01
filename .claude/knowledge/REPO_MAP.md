@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 79f82f3db074e72173a630af44966f305a08c0c5bd392e5dd44a7bb02e4cef1e
+source_sha256: 90d42032c7fd72597610870f1048465b5717d32005ecd316235d1a21f3c78520
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 2952 |
+| Files (Layer 1) | 2959 |
 | DB tables (Layer 1) | 313 |
 | DB RPC (Layer 1) | 253 |
 | Dependencies (Layer 1) | 237 |
-| Runtime entrypoints (Layer 1) | 999 |
+| Runtime entrypoints (Layer 1) | 1000 |
 
-Source sotFingerprint: `f02e1ae39fa1`.
+Source sotFingerprint: `949a2eb23344`.
 
 ## Comment l'utiliser
 
@@ -45,35 +45,35 @@ Source sotFingerprint: `f02e1ae39fa1`.
 
 ### D2 — Legacy / XTR Migration
 
-- **Files**: 128 (test=114, service=10, config=3, controller=1)
+- **Files**: 129 (test=115, service=10, config=3, controller=1)
 - **Runtime entrypoints**: 1
-- **Top owners**: @ak125 (113), __unassigned__ (15)
+- **Top owners**: @ak125 (114), __unassigned__ (15)
 - **Knowledge prose**: [`rm`](modules/rm.md)
-- **Status**: LEGACY=14, LIVE=1, UNKNOWN=113
+- **Status**: LEGACY=14, LIVE=1, UNKNOWN=114
 
 ### D3 — SEO & Sitemap
 
-- **Files**: 425 (service=218, test=119, controller=34, config=28, script=26)
-- **Runtime entrypoints**: 168
-- **Top owners**: @ak125/seo-team (425)
+- **Files**: 427 (service=219, test=120, controller=34, config=28, script=26)
+- **Runtime entrypoints**: 169
+- **Top owners**: @ak125/seo-team (427)
 - **Knowledge prose**: [`merchant-center`](modules/merchant-center.md), [`seo`](modules/seo.md), [`seo-control-plane`](modules/seo-control-plane.md), [`seo-logs`](modules/seo-logs.md), [`seo-monitoring`](modules/seo-monitoring.md), [`seo-shadow-observatory`](modules/seo-shadow-observatory.md)
-- **Status**: LIVE=219, UNKNOWN=206
+- **Status**: LIVE=220, UNKNOWN=207
 
 ### D4 — Vehicle / Compatibility
 
-- **Files**: 92 (service=59, test=17, config=11, controller=5)
+- **Files**: 95 (service=60, test=19, config=11, controller=5)
 - **Runtime entrypoints**: 41
-- **Top owners**: @ak125/vehicle-team (53), @ak125 (39)
+- **Top owners**: @ak125/vehicle-team (56), @ak125 (39)
 - **Knowledge prose**: [`diagnostic-engine`](modules/diagnostic-engine.md), [`mcp-validation`](modules/mcp-validation.md), [`vehicle-context`](modules/vehicle-context.md), [`vehicles`](modules/vehicles.md)
-- **Status**: LIVE=61, UNKNOWN=31
+- **Status**: LIVE=62, UNKNOWN=33
 
 ### D5 — Blog / Content
 
-- **Files**: 36 (service=26, controller=6, test=4)
+- **Files**: 37 (service=26, controller=6, test=5)
 - **Runtime entrypoints**: 26
-- **Top owners**: @ak125/content-team (36)
+- **Top owners**: @ak125/content-team (37)
 - **Knowledge prose**: [`blog`](modules/blog.md)
-- **Status**: LIVE=32, UNKNOWN=4
+- **Status**: LIVE=32, UNKNOWN=5
 
 ### D6 — RAG & AI Engine
 
