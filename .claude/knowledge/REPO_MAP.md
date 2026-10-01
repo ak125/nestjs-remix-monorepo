@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 9fac3a6e0a81d6777780182dbaf36d01fc715e86e60aa337e7704cb42a95c600
+source_sha256: 2779522fbf1dae5283ba7386f316f918e88663e12757d98bc638b44417937340
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 2953 |
+| Files (Layer 1) | 2954 |
 | DB tables (Layer 1) | 313 |
 | DB RPC (Layer 1) | 253 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 999 |
 
-Source sotFingerprint: `ecb12d2620bd`.
+Source sotFingerprint: `3dab43f04974`.
 
 ## Comment l'utiliser
 
@@ -61,11 +61,11 @@ Source sotFingerprint: `ecb12d2620bd`.
 
 ### D4 — Vehicle / Compatibility
 
-- **Files**: 94 (service=60, test=18, config=11, controller=5)
+- **Files**: 95 (service=60, test=19, config=11, controller=5)
 - **Runtime entrypoints**: 41
-- **Top owners**: @ak125/vehicle-team (55), @ak125 (39)
+- **Top owners**: @ak125/vehicle-team (56), @ak125 (39)
 - **Knowledge prose**: [`diagnostic-engine`](modules/diagnostic-engine.md), [`mcp-validation`](modules/mcp-validation.md), [`vehicle-context`](modules/vehicle-context.md), [`vehicles`](modules/vehicles.md)
-- **Status**: LIVE=62, UNKNOWN=32
+- **Status**: LIVE=62, UNKNOWN=33
 
 ### D5 — Blog / Content
 
