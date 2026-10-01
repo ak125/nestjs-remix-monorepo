@@ -263,13 +263,16 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
   ): Promise<DiagSymptomCauseLink[]> {
     if (!symptomSlugs.length) return [];
 
-    // Equal-weight arithmetic mean of unique symptom contributions. Sort input
-    // and evidence for deterministic results; round once after aggregation.
+    // Equal-weight arithmetic mean over the unique selected symptoms. A symptom
+    // not linked to a cause contributes 0: no evidence is imputed for it.
+    // Sort input and evidence for deterministic results; round once after
+    // aggregation.
+    const slugs = [...new Set(symptomSlugs)].sort();
     const merged = new Map<
       number,
-      { link: DiagSymptomCauseLink; sum: number; count: number }
+      { link: DiagSymptomCauseLink; sum: number }
     >();
-    for (const slug of [...new Set(symptomSlugs)].sort()) {
+    for (const slug of slugs) {
       const links = await this.getScoredCausesForSymptom(slug);
       if (!links.length)
         throw new Error('Diagnostic cause coverage incomplete');
@@ -277,7 +280,6 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
         const existing = merged.get(link.cause_id);
         if (existing) {
           existing.sum += link.relative_score;
-          existing.count += 1;
           existing.link.evidence_for = [
             ...new Set([...existing.link.evidence_for, ...link.evidence_for]),
           ].sort();
@@ -296,15 +298,14 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
               evidence_against: [...new Set(link.evidence_against)].sort(),
             },
             sum: link.relative_score,
-            count: 1,
           });
         }
       }
     }
     return [...merged.values()]
-      .map(({ link, sum, count }) => ({
+      .map(({ link, sum }) => ({
         ...link,
-        relative_score: Math.round(sum / count),
+        relative_score: Math.round(sum / slugs.length),
       }))
       .sort(
         (a, b) =>
@@ -436,8 +437,10 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
       .limit(limit);
 
     if (error) {
-      this.logger.warn('Failed to list sessions', error.message);
-      return [];
+      this.logger.error('Failed to list sessions', error.message);
+      throw new ServiceUnavailableException(
+        'Historique des diagnostics indisponible.',
+      );
     }
     return data || [];
   }
@@ -475,11 +478,27 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
       ]);
 
     // Sessions by system (manual grouping from recent 500)
-    const { data: recentSessions } = await this.supabase
+    const recentRes = await this.supabase
       .from('__diag_session')
       .select('system_scope')
       .order('created_at', { ascending: false })
       .limit(500);
+
+    const failed = [
+      sessionsRes,
+      systemsRes,
+      symptomsRes,
+      causesRes,
+      rulesRes,
+      recentRes,
+    ].find((res) => res.error);
+    if (failed?.error) {
+      this.logger.error('Failed to compute stats', failed.error.message);
+      throw new ServiceUnavailableException(
+        'Statistiques du diagnostic indisponibles.',
+      );
+    }
+    const recentSessions = recentRes.data;
 
     const bySystem = new Map<string, number>();
     for (const s of recentSessions || []) {

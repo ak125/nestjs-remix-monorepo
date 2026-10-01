@@ -103,7 +103,7 @@
         "backend/src/modules/blog/utils"
       ],
       "files_count": 36,
-      "loc_total": 13420,
+      "loc_total": 13591,
       "has_barrel": false
     },
     "bot-guard": {
@@ -186,7 +186,7 @@
         "backend/src/modules/config/validators"
       ],
       "files_count": 101,
-      "loc_total": 24495,
+      "loc_total": 24499,
       "has_barrel": true
     },
     "customers": {
@@ -238,7 +238,7 @@
         "backend/src/modules/diagnostic-engine/types"
       ],
       "files_count": 51,
-      "loc_total": 9465,
+      "loc_total": 9784,
       "has_barrel": false
     },
     "errors": {
@@ -259,7 +259,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115484,
+      "loc_total": 115595,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 597,
-      "loc_total": 114377,
+      "loc_total": 114379,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -700,8 +700,8 @@
         "scripts/wiki-generators",
         "scripts/wiki-generators/__tests__"
       ],
-      "files_count": 187,
-      "loc_total": 40287,
+      "files_count": 188,
+      "loc_total": 40500,
       "has_barrel": true
     },
     "search": {
@@ -767,8 +767,8 @@
         "scripts/seo/__tests__/fixtures/r-seo-09/positive/05-loader-non-canonical",
         "scripts/seo/lib"
       ],
-      "files_count": 276,
-      "loc_total": 58441,
+      "files_count": 277,
+      "loc_total": 58650,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 266,
-      "loc_total": 49769,
+      "files_count": 267,
+      "loc_total": 49817,
       "has_barrel": true
     },
     "upload": {
@@ -980,7 +980,7 @@
         "backend/src/modules/users/services"
       ],
       "files_count": 27,
-      "loc_total": 5184,
+      "loc_total": 5216,
       "has_barrel": true
     },
     "vehicle-context": {
@@ -1684,7 +1684,7 @@
     {
       "from": "frontend-routes",
       "to": "frontend-shared",
-      "count": 352
+      "count": 353
     },
     {
       "from": "gamme-rest",
@@ -1949,7 +1949,7 @@
     {
       "from": "seo",
       "to": "config",
-      "count": 34
+      "count": 36
     },
     {
       "from": "seo",
@@ -2079,7 +2079,7 @@
     {
       "from": "users",
       "to": "common",
-      "count": 2
+      "count": 3
     },
     {
       "from": "users",

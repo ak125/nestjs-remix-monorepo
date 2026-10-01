@@ -182,7 +182,7 @@ vit dans un **repo séparé** : runtime DEV `/opt/automecanik/governance-vault/`
 3. **Ne jamais dupliquer une rule canon** (`.spec/`, `docs/governance/`, README) — **linker** le
    vault, ne pas réécrire.
 4. **3-VPS** (ADR-012) : DEV = SoT canonique (write), PROD = mirror read-only, AI-COS = lit via
-   HTTPS GitHub. Kill-switch `AI_VAULT_WRITE=false`.
+   HTTPS GitHub. Écriture vault = PR signée ; un agent prépare, un humain fusionne (G4, ADR-102).
 5. **Normativité ADR** : normative seulement si `status: accepted` ET sans `superseded_by` actif.
    `deprecated` / `superseded` = contexte historique (audit trail, chaînes `amends` / `supersedes`),
    jamais justification d'implémentation courante. Statut via `ops/moc/MOC-Decisions.md` (vault,

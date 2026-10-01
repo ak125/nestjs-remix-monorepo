@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename);
 /**
  * QA Audit H24 — Playwright Configuration
  *
- * 3 viewports, sequential execution, custom Supabase reporter.
+ * 3 viewports, sequential execution.
  *
  * Usage:
  *   QA_AUDIT_BASE_URL=https://www.automecanik.com npx playwright test \
@@ -23,10 +23,7 @@ export default defineConfig({
   workers: 1,
   retries: 1,
 
-  reporter: [
-    ['list'],
-    [path.join(__dirname, 'helpers', 'reporter.ts')],
-  ],
+  reporter: [['list']],
 
   use: {
     baseURL: process.env.QA_AUDIT_BASE_URL || 'https://www.automecanik.com',
