@@ -2950,7 +2950,7 @@
         "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-static.service.ts"
       ],
-      "used_by_count": 39,
+      "used_by_count": 40,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false,
