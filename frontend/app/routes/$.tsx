@@ -10,6 +10,7 @@ import {
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { buildCacheHeaders } from "~/utils/cache-control";
 import { logger } from "~/utils/logger";
+import { getProxyHeaders } from "~/utils/proxy-headers.server";
 import { stripSingleFetchSuffix } from "~/utils/single-fetch";
 
 export const meta: MetaFunction = () => [
@@ -63,10 +64,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
       code: 404,
       url: pathname,
       userAgent: request.headers.get("user-agent") || undefined,
-      ipAddress:
-        request.headers.get("x-forwarded-for") ||
-        request.headers.get("x-real-ip") ||
-        undefined,
       referrer: request.headers.get("referer") || undefined,
       metadata: {
         method: request.method,
@@ -76,19 +73,24 @@ export async function loader({ request }: LoaderFunctionArgs) {
       },
     };
 
-    // Log via l'API interne optimisée
+    // Log via l'API interne optimisée — l'adresse du visiteur est résolue
+    // côté backend à partir des en-têtes de proxy relayés.
     try {
-      await fetch(
+      const logResponse = await fetch(
         `${process.env.INTERNAL_API_BASE_URL || "http://127.0.0.1:3000"}/api/errors/log`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "Internal-Call": "true",
+            ...getProxyHeaders(request),
           },
           body: JSON.stringify(errorData),
         },
       );
+      if (!logResponse.ok) {
+        logger.error("Échec du logging 404:", logResponse.status);
+      }
     } catch (logError) {
       logger.error("Erreur lors du logging 404:", logError);
       // Continue malgré l'erreur de logging
