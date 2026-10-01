@@ -4,7 +4,8 @@
 import { Calendar, Clock, ExternalLink, Wrench } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { buildGammeUrl } from "~/utils/url-builder.utils";
+import { emitFunnel, getFunnelSessionId } from "~/utils/funnel-beacon";
+import { buildGammeUrl, normalizeAlias } from "~/utils/url-builder.utils";
 import { type MaintenanceRecommendation, type SuggestedGamme } from "../types";
 
 interface Props {
@@ -48,8 +49,11 @@ export function ResultMaintenance({
   catalogGammes,
   maintenanceLinks: _maintenanceLinks,
 }: Props) {
-  const allowedGammeUrls = new Set(
-    catalogGammes.map((gamme) => buildGammeUrl(gamme.gamme_slug, gamme.pg_id)),
+  const allowedGammes = new Map(
+    catalogGammes.map((gamme) => [
+      buildGammeUrl(gamme.gamme_slug, gamme.pg_id),
+      gamme,
+    ]),
   );
   return (
     <Card>
@@ -80,12 +84,11 @@ export function ResultMaintenance({
             rec.related_gamme_slug,
             rec.related_pg_id,
           );
-          const gammeUrl =
-            allowedOutputMode !== "none" &&
-            candidateUrl &&
-            allowedGammeUrls.has(candidateUrl)
-              ? candidateUrl
+          const catalogGamme =
+            allowedOutputMode !== "none" && candidateUrl
+              ? allowedGammes.get(candidateUrl)
               : undefined;
+          const gammeUrl = catalogGamme ? candidateUrl : undefined;
 
           return (
             <div
@@ -161,9 +164,19 @@ export function ResultMaintenance({
                       {rec.interval_months}
                     </span>
                   )}
-                  {gammeUrl && (
+                  {gammeUrl && catalogGamme && (
                     <a
                       href={gammeUrl}
+                      onClick={() =>
+                        emitFunnel({
+                          event_type: "diag_gamme_cta_click",
+                          payload: {
+                            session_id: getFunnelSessionId(),
+                            gamme_slug: normalizeAlias(catalogGamme.gamme_slug),
+                            confidence: catalogGamme.confidence,
+                          },
+                        })
+                      }
                       className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline"
                     >
                       <ExternalLink className="w-3 h-3" />

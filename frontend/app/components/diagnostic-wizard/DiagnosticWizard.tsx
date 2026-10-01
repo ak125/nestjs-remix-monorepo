@@ -20,8 +20,15 @@ import { useReducer, useCallback, useEffect, useState, useRef } from "react";
 import { z } from "zod";
 import { Button } from "~/components/ui/button";
 import { Progress } from "~/components/ui/progress";
+import { trackDiagnosticCompleted } from "~/utils/analytics";
+import {
+  emitFunnel,
+  getFunnelDevice,
+  getFunnelSessionId,
+} from "~/utils/funnel-beacon";
 import { useDiagnosticVehicleSelector } from "./hooks/use-diagnostic-vehicle-selector";
 import { DiagnosticResults } from "./results/DiagnosticResults";
+import { hasSuggestedGammes } from "./results/ResultCatalog";
 import { StepMaintenance } from "./steps/StepMaintenance";
 import { StepSymptom } from "./steps/StepSymptom";
 import { StepVehicle } from "./steps/StepVehicle";
@@ -29,6 +36,7 @@ import {
   type WizardState,
   type WizardAction,
   type DiagnosticApiResponse,
+  type EvidencePack,
 } from "./types";
 
 const STORAGE_KEY = "diag-wizard-draft";
@@ -209,6 +217,29 @@ function wizardReducer(state: WizardState, action: WizardAction): WizardState {
   }
 }
 
+// Funnel step 3 (internal event log) and the GA4 `diagnostic_completed`
+// event (ADR-027 Phase B), sent only for an analysis run now — never for a
+// reopened session. GA4 needs an identified system, which maintenance lacks.
+function reportAnalysis(state: WizardState, pack: EvidencePack) {
+  const hypothesisCount = pack.candidate_hypotheses.length;
+  emitFunnel({
+    event_type: "diag_analyze_complete",
+    payload: {
+      session_id: getFunnelSessionId(),
+      hypothesis_count: hypothesisCount,
+      has_suggested_gammes: hasSuggestedGammes(pack.catalog_guard),
+      vehicle_known: Boolean(state.vehicle.brand && state.vehicle.model),
+    },
+  });
+  if (state.analysisMode !== "maintenance") {
+    trackDiagnosticCompleted({
+      systemId: state.systemScope,
+      symptomId: state.symptomSlugs[0],
+      resultsCount: hypothesisCount,
+    });
+  }
+}
+
 export function DiagnosticWizard() {
   const [state, dispatch] = useReducer(wizardReducer, initialState);
   const [linkCopied, setLinkCopied] = useState(false);
@@ -226,6 +257,7 @@ export function DiagnosticWizard() {
   const transitionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [maintenanceAvailable, setMaintenanceAvailable] = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
+  const wizardStartSent = useRef(false);
 
   // Vehicle selector (lifted from StepVehicle for draft restore)
   const vehicleSelector = useDiagnosticVehicleSelector();
@@ -450,6 +482,21 @@ export function DiagnosticWizard() {
     }, 150);
   }, []);
 
+  // Funnel step 2: the visitor leaves the vehicle step (once per mount).
+  const startWizard = useCallback(() => {
+    if (!wizardStartSent.current) {
+      wizardStartSent.current = true;
+      emitFunnel({
+        event_type: "diag_wizard_start",
+        payload: {
+          session_id: getFunnelSessionId(),
+          device: getFunnelDevice(),
+        },
+      });
+    }
+    handleStepChange({ type: "NEXT_STEP" });
+  }, [handleStepChange]);
+
   const submitDiagnostic = useCallback(async () => {
     dispatch({ type: "SET_LOADING", payload: true });
     dispatch({ type: "NEXT_STEP" });
@@ -503,6 +550,7 @@ export function DiagnosticWizard() {
 
       if (response.ok && data.success) {
         dispatch({ type: "SET_RESULT", payload: data });
+        if (data.evidence_pack) reportAnalysis(state, data.evidence_pack);
       } else {
         dispatch({
           type: "SET_ERROR",
@@ -748,7 +796,7 @@ export function DiagnosticWizard() {
             </Button>
           ) : (
             <Button
-              onClick={() => handleStepChange({ type: "NEXT_STEP" })}
+              onClick={startWizard}
               disabled={!canGoNext || transitioning}
               className="gap-2"
             >
