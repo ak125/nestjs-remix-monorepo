@@ -168,7 +168,6 @@ export class DiagnosticEngineOrchestrator {
     const hypotheses = this.scoringEngine.score(
       scoredLinks,
       input.vehicle_context,
-      input.usage_context,
     );
 
     if (!hypotheses.length) {
