@@ -102,8 +102,8 @@
         "backend/src/modules/blog/services",
         "backend/src/modules/blog/utils"
       ],
-      "files_count": 36,
-      "loc_total": 13420,
+      "files_count": 37,
+      "loc_total": 13967,
       "has_barrel": false
     },
     "bot-guard": {
@@ -186,7 +186,7 @@
         "backend/src/modules/config/validators"
       ],
       "files_count": 102,
-      "loc_total": 24872,
+      "loc_total": 24894,
       "has_barrel": true
     },
     "customers": {
@@ -237,8 +237,8 @@
         "backend/src/modules/diagnostic-engine/services",
         "backend/src/modules/diagnostic-engine/types"
       ],
-      "files_count": 51,
-      "loc_total": 9645,
+      "files_count": 54,
+      "loc_total": 11165,
       "has_barrel": false
     },
     "errors": {
@@ -259,7 +259,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115558,
+      "loc_total": 115611,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 597,
-      "loc_total": 114379,
+      "loc_total": 114439,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -356,7 +356,7 @@
         "backend/src/modules/gamme-rest/utils/__tests__"
       ],
       "files_count": 18,
-      "loc_total": 6198,
+      "loc_total": 6260,
       "has_barrel": true
     },
     "health": {
@@ -767,8 +767,8 @@
         "scripts/seo/__tests__/fixtures/r-seo-09/positive/05-loader-non-canonical",
         "scripts/seo/lib"
       ],
-      "files_count": 276,
-      "loc_total": 58441,
+      "files_count": 279,
+      "loc_total": 59322,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 267,
-      "loc_total": 49817,
+      "files_count": 269,
+      "loc_total": 50478,
       "has_barrel": true
     },
     "upload": {
@@ -1509,7 +1509,7 @@
     {
       "from": "blog",
       "to": "seo",
-      "count": 8
+      "count": 12
     },
     {
       "from": "blog",
@@ -1679,7 +1679,7 @@
     {
       "from": "diagnostic-engine",
       "to": "config",
-      "count": 1
+      "count": 2
     },
     {
       "from": "diagnostic-engine",
@@ -1729,7 +1729,7 @@
     {
       "from": "gamme-rest",
       "to": "seo",
-      "count": 2
+      "count": 3
     },
     {
       "from": "health",
@@ -1964,7 +1964,7 @@
     {
       "from": "seo",
       "to": "config",
-      "count": 34
+      "count": 38
     },
     {
       "from": "seo",
@@ -2374,8 +2374,18 @@
       "rule": "no-deep-module-access"
     },
     {
+      "from": "backend/src/modules/blog/services/blog.service.test.ts",
+      "to": "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
       "from": "backend/src/modules/blog/services/blog.service.ts",
       "to": "backend/src/modules/seo/internal-linking.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/blog/services/blog.service.ts",
+      "to": "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
       "rule": "no-deep-module-access"
     },
     {
@@ -2409,6 +2419,11 @@
       "rule": "no-deep-module-access"
     },
     {
+      "from": "backend/src/modules/blog/services/r3-guide.service.test.ts",
+      "to": "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
       "from": "backend/src/modules/blog/services/r3-guide.service.ts",
       "to": "backend/src/modules/seo/internal-linking.service.ts",
       "rule": "no-deep-module-access"
@@ -2416,6 +2431,11 @@
     {
       "from": "backend/src/modules/blog/services/r3-guide.service.ts",
       "to": "backend/src/modules/seo/seo-v4.types.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/blog/services/r3-guide.service.ts",
+      "to": "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
       "rule": "no-deep-module-access"
     },
     {
@@ -2471,6 +2491,11 @@
     {
       "from": "backend/src/modules/catalog/services/seo-template.service.ts",
       "to": "backend/src/modules/seo/services/seo-placeholder-events.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/gamme-rest/gamme-rest-rpc-v2.controller.ts",
+      "to": "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
       "rule": "no-deep-module-access"
     },
     {
