@@ -21,8 +21,8 @@
     "dynamic_rpc_callsites": 1,
     "unresolved_callsites": 0,
     "dropped_call_sites": 5,
-    "migrations_scanned": 359,
-    "backend_files_scanned": 1422
+    "migrations_scanned": 386,
+    "backend_files_scanned": 1423
   },
   "tables": {
     "___config": {
@@ -151,7 +151,7 @@
       ],
       "used_by_count": 2,
       "in_migrations": [],
-      "rls_present": false,
+      "rls_present": true,
       "in_knowledge_db": false,
       "partition_of": null
     },
@@ -590,7 +590,7 @@
       ],
       "used_by_count": 2,
       "in_migrations": [],
-      "rls_present": false,
+      "rls_present": true,
       "in_knowledge_db": false,
       "partition_of": null
     },
@@ -747,7 +747,7 @@
       ],
       "used_by_count": 1,
       "in_migrations": [],
-      "rls_present": false,
+      "rls_present": true,
       "in_knowledge_db": false,
       "partition_of": null
     },
@@ -1219,7 +1219,6 @@
     "__seo_gamme_purchase_guide": {
       "used_by": [
         "backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts",
-        "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts",
         "backend/src/modules/admin/services/conseil-priority.service.ts",
         "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
@@ -1233,7 +1232,7 @@
         "backend/src/modules/seo-monitoring/services/r-content-auditor.service.ts",
         "backend/src/modules/seo/validation/purchase-guide-validator.service.ts"
       ],
-      "used_by_count": 14,
+      "used_by_count": 13,
       "in_migrations": [],
       "rls_present": false,
       "in_knowledge_db": true,
@@ -2297,7 +2296,7 @@
       ],
       "used_by_count": 3,
       "in_migrations": [],
-      "rls_present": false,
+      "rls_present": true,
       "in_knowledge_db": false,
       "partition_of": null
     },

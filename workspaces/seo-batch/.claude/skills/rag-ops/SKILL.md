@@ -610,7 +610,9 @@ Le workflow Diagnose et l'audit `--score` produisent un rapport structure :
 
 6. **JAMAIS utiliser `psql` via Bash pour interroger Supabase**
    - Toujours MCP: `mcp__claude_ai_Supabase__execute_sql` (project: `cxpojprgwgubzjyqzmoq`)
-   - Pour DDL: `mcp__claude_ai_Supabase__apply_migration`
+   - Pour DDL : fichier dans `backend/supabase/migrations/`, applique par le workflow owner
+     `apply-supabase-migrations.yml` (skill `db-migration`, Phase 3) — jamais
+     `mcp__claude_ai_Supabase__apply_migration`, qui contourne le ledger `infra.schema_migrations`
 
 7. **JAMAIS modifier `content_tsv` manuellement**
    - Genere automatiquement par trigger: `to_tsvector('french', content)`

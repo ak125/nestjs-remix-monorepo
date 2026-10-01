@@ -4,7 +4,7 @@
  * POST /api/diagnostic-engine/analyze      → Evidence Pack
  * GET  /api/diagnostic-engine/systems      → Systemes actifs
  * GET  /api/diagnostic-engine/symptoms     → Symptomes par systeme
- * GET  /api/diagnostic-engine/sessions     → Historique sessions
+ * GET  /api/diagnostic-engine/sessions     → Historique sessions (admin)
  * GET  /api/diagnostic-engine/sessions/:id → Session par UUID
  */
 import {
@@ -19,8 +19,11 @@ import {
   Res,
   Inject,
   Logger,
+  UseGuards,
 } from '@nestjs/common';
 import type { Response } from 'express';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { DiagnosticEngineOrchestrator } from './diagnostic-engine.orchestrator';
 import { DiagnosticEngineDataService } from './diagnostic-engine.data-service';
 import { MaintenanceCalculatorService } from './services/maintenance-calculator.service';
@@ -93,32 +96,46 @@ export class DiagnosticEngineController {
    */
   @Get('wizard-steps')
   getWizardSteps() {
-    return this.diagnosticContent.getWizardSteps();
+    return this.wikiContent(this.diagnosticContent.getWizardSteps());
   }
 
   @Get('safety-config')
   getSafetyConfig() {
-    return this.diagnosticContent.getSafetyConfig();
+    return this.wikiContent(this.diagnosticContent.getSafetyConfig());
   }
 
   @Get('vocab-clusters')
   getVocabClusters() {
-    return this.diagnosticContent.getVocabClusters();
+    return this.wikiContent(this.diagnosticContent.getVocabClusters());
   }
 
   @Get('signs')
   getSigns() {
-    return this.diagnosticContent.getSigns();
+    return this.wikiContent(this.diagnosticContent.getSigns());
   }
 
   @Get('faq')
   getFaq() {
-    return this.diagnosticContent.getFaq();
+    return this.wikiContent(this.diagnosticContent.getFaq());
   }
 
   @Get('controles-mensuels')
   getControlesMensuels() {
-    return this.diagnosticContent.getControlesMensuels();
+    return this.wikiContent(this.diagnosticContent.getControlesMensuels());
+  }
+
+  /**
+   * Un contenu wiki absent ou illisible (déjà journalisé par
+   * DiagnosticContentService) est une 503 : renvoyé tel quel, `null`
+   * devenait une réponse 200 au corps vide, indiscernable d'un succès.
+   */
+  private wikiContent<T>(entry: T | null): T {
+    if (entry === null) {
+      throw new ServiceUnavailableException(
+        'Ce contenu est temporairement indisponible.',
+      );
+    }
+    return entry;
   }
 
   /**
@@ -473,9 +490,10 @@ export class DiagnosticEngineController {
   /**
    * GET /api/diagnostic-engine/stats
    *
-   * Dashboard stats (session counts, system coverage, knowledge base)
+   * Dashboard stats (session counts, system coverage, knowledge base) — admin
    */
   @Get('stats')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async getStats() {
     const stats = await this.dataService.getStats();
     return { success: true, ...stats };
@@ -484,9 +502,10 @@ export class DiagnosticEngineController {
   /**
    * GET /api/diagnostic-engine/sessions
    *
-   * List recent diagnostic sessions
+   * List recent diagnostic sessions of every visitor — admin
    */
   @Get('sessions')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async listSessions(@Query('limit') limit?: string) {
     const parsedLimit = Math.min(
       Math.max(parseInt(limit || '20', 10) || 20, 1),
