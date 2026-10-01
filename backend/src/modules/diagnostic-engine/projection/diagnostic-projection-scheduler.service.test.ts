@@ -144,15 +144,18 @@ describe('DiagnosticProjectionSchedulerService', () => {
     );
   });
 
-  it('ON: an unreadable repeatable list is warned, then registration still proceeds', async () => {
+  it('ON: an unreadable repeatable list is an error with a metric, then registration still proceeds', async () => {
     const { scheduler, queue } = makeScheduler({ enabled: true });
     queue.getRepeatableJobs.mockRejectedValue(new Error('redis down'));
     expect(() => scheduler.onModuleInit()).not.toThrow();
     await flush();
-    expect(warnSpy).toHaveBeenCalledTimes(1);
-    expect(String(warnSpy.mock.calls[0][0])).toContain('redis down');
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+    expect(errorSpy.mock.calls[0][0]).toMatchObject({
+      metric: 'diagnostic_projection.repeatable_cleanup_failed',
+      error: 'redis down',
+    });
     expect(queue.add).toHaveBeenCalledTimes(1);
-    expect(errorSpy).not.toHaveBeenCalled();
+    expect(warnSpy).not.toHaveBeenCalled();
   });
 
   it('triggerNow propagates an enqueue failure to its caller (admin endpoint)', async () => {

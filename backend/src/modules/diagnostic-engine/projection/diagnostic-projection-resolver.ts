@@ -90,6 +90,16 @@ export function resolveDiagnosticProjection(
         return;
       }
       const relation = parsed.data;
+      // `relation_index` est lu, pas déduit : un écart avec la position signale
+      // une dérive de l'export (spec §4.2). La ligne garde la position.
+      if (relation.relation_index !== relationIndex) {
+        conflict('schema_invalid', {
+          field: 'relation_index',
+          exported: relation.relation_index,
+          position: relationIndex,
+        });
+        return;
+      }
 
       if (relation.relation_to_part !== 'possible_cause') {
         conflict(
@@ -116,20 +126,28 @@ export function resolveDiagnosticProjection(
         return;
       }
 
-      const candidates = (causesBySystem.get(system.id) ?? []).flatMap(
-        (cause) => {
-          // Clé propre uniquement : `constructor` / `__proto__` ne sont pas un mapping.
-          const mapsToGamme =
-            Object.hasOwn(gammeMap, cause.slug) &&
-            gammeMap[cause.slug].some(
-              (gamme) => gamme.slug === envelope.gamme_slug,
-            );
-          const link = linksByPair.get(`${symptom.id}:${cause.id}`);
-          return mapsToGamme && link ? [{ cause, link }] : [];
-        },
+      const mappedCauses = (causesBySystem.get(system.id) ?? []).filter(
+        // Clé propre uniquement : `constructor` / `__proto__` ne sont pas un mapping.
+        (cause) =>
+          Object.hasOwn(gammeMap, cause.slug) &&
+          gammeMap[cause.slug].some(
+            (gamme) => gamme.slug === envelope.gamme_slug,
+          ),
       );
+      const candidates = mappedCauses.flatMap((cause) => {
+        const link = linksByPair.get(`${symptom.id}:${cause.id}`);
+        return link ? [{ cause, link }] : [];
+      });
       if (candidates.length === 0) {
-        conflict('no_matching_link', {}, relation);
+        conflict(
+          'no_matching_link',
+          {
+            leg:
+              mappedCauses.length === 0 ? 'no_gamme_mapping' : 'no_active_link',
+            mapped_cause_slugs: mappedCauses.map((cause) => cause.slug).sort(),
+          },
+          relation,
+        );
         return;
       }
       if (candidates.length > 1) {

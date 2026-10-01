@@ -42,9 +42,10 @@ export class DiagnosticExportsInvalidError extends Error {
 const sha256 = (bytes: Buffer) =>
   `sha256:${createHash('sha256').update(bytes).digest('hex')}`;
 
-async function lstatOrNull(target: string) {
+/** `stat` (suit les liens) ou `lstat` ; seul ENOENT vaut « absent ». */
+async function lstatOrNull(target: string, followLinks = false) {
   try {
-    return await fs.lstat(target);
+    return await (followLinks ? fs.stat(target) : fs.lstat(target));
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') return null;
     throw error;
@@ -72,7 +73,9 @@ function parseJson(bytes: Buffer): unknown {
 export async function loadDiagnosticExports(
   root: string,
 ): Promise<LoadedDiagnosticExports> {
-  const rootStat = await fs.stat(root).catch(() => null);
+  // Seul ENOENT signifie « racine absente » ; EACCES, ENOTDIR, EIO… remontent
+  // telles quelles (le writer les trace en run `failed`).
+  const rootStat = await lstatOrNull(root, true);
   if (!rootStat?.isDirectory()) {
     throw new DiagnosticExportsInvalidError('exports_root_missing', root);
   }

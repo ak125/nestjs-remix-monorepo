@@ -376,6 +376,8 @@ export class FeatureFlagsService {
    * Projection WIKI `exports/diagnostic/` → `__diag_link_provenance`.
    * Default `false` : l'activation d'un environnement est une décision owner.
    * Revérifié à chaque job (un override OFF arrête aussi un repeatable vivant).
+   * Passer ON à chaud ouvre le déclenchement admin immédiatement ; le repeatable
+   * nocturne n'est enregistré qu'au prochain boot (lu une fois par le scheduler).
    */
   get diagnosticProjectionEnabled(): boolean {
     return this.bool('DIAGNOSTIC_PROJECTION_ENABLED', false);

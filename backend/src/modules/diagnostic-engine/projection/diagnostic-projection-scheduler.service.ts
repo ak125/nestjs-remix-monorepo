@@ -39,6 +39,11 @@ export class DiagnosticProjectionSchedulerService implements OnModuleInit {
     private readonly featureFlags: FeatureFlagsService,
   ) {}
 
+  /**
+   * Le drapeau est lu UNE fois, au boot : l'activer à chaud ouvre le
+   * déclenchement admin immédiatement, mais le repeatable nocturne n'est
+   * enregistré qu'au prochain démarrage (pas de machinerie d'événements).
+   */
   onModuleInit(): void {
     if (!this.featureFlags.diagnosticProjectionEnabled) {
       this.logger.log(
@@ -118,8 +123,16 @@ export class DiagnosticProjectionSchedulerService implements OnModuleInit {
         }
       }
     } catch (err) {
-      this.logger.warn(
-        `Énumération des repeatables de projection diagnostic impossible: ${getErrorMessage(err)}`,
+      // On continue (l'appelant planifie quand même) : les runs sont idempotents
+      // et sérialisés par le verrou advisory ; ne pas planifier laisserait la
+      // provenance périmée jusqu'au prochain boot. Un repeatable en double est le
+      // coût accepté — d'où l'erreur observable plutôt qu'un simple warn.
+      this.logger.error(
+        {
+          metric: 'diagnostic_projection.repeatable_cleanup_failed',
+          error: getErrorMessage(err),
+        },
+        'Énumération des repeatables de projection diagnostic impossible — un repeatable en double est possible.',
       );
     }
     return removed;

@@ -116,6 +116,17 @@ describe('loadDiagnosticExports', () => {
     await expectCode('exports_root_missing');
   });
 
+  it('a stat failure other than ENOENT propagates, never "exports_root_missing"', async () => {
+    const blocker = path.join(root, '_index.json');
+    await fs.writeFile(blocker, '{}');
+    // Un fichier au milieu du chemin → ENOTDIR, pas ENOENT.
+    const failure = await loadDiagnosticExports(
+      path.join(blocker, 'diagnostic'),
+    ).catch((error: unknown) => error);
+    expect(failure).not.toBeInstanceOf(DiagnosticExportsInvalidError);
+    expect((failure as NodeJS.ErrnoException).code).toBe('ENOTDIR');
+  });
+
   it('index_invalid: missing, unreadable JSON, other major version', async () => {
     await expectCode('index_invalid');
     await fs.writeFile(path.join(root, '_index.json'), '{');
@@ -213,6 +224,7 @@ describe('loadDiagnosticExports', () => {
 
 describe('ExportRelationSchema (contrat WIKI frontmatter.schema.json)', () => {
   const relation = {
+    relation_index: 0,
     symptom_slug: 'bruit_moteur',
     system_slug: 'freinage',
     relation_to_part: 'possible_cause',
@@ -233,6 +245,15 @@ describe('ExportRelationSchema (contrat WIKI frontmatter.schema.json)', () => {
 
   it('accepts a valid relation', () => {
     expect(ExportRelationSchema.safeParse(relation).success).toBe(true);
+  });
+
+  it('requires relation_index as a non-negative integer', () => {
+    const { relation_index: _omit, ...without } = relation;
+    expect(ExportRelationSchema.safeParse(without).success).toBe(false);
+    expect(
+      ExportRelationSchema.safeParse({ ...relation, relation_index: -1 })
+        .success,
+    ).toBe(false);
   });
   it('accepts a hyphenated symptom_slug', () => {
     expect(

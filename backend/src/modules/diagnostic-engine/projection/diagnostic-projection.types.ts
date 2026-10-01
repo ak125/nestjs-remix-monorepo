@@ -83,6 +83,7 @@ const nonEmpty = z
 
 /** Une relation — ne lit que les champs projetés ; `sources[]` est conservé tel quel. */
 export const ExportRelationSchema = z.object({
+  relation_index: z.number().int().min(0),
   symptom_slug: z.string().max(80).regex(DIAG_SLUG_RE),
   system_slug: z.string().max(60).regex(DIAG_SLUG_RE),
   relation_to_part: z.enum([

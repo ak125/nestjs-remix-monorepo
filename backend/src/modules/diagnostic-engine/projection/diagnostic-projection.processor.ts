@@ -4,13 +4,18 @@
  * Adaptateur fin : valide les données du job, revérifie le drapeau (un override
  * admin OFF arrête aussi un repeatable déjà enregistré), puis délègue au writer.
  * READ_ONLY est appliqué par le writer (`guardReadOnly`). Une exception du
- * writer fait échouer le job, visiblement (`@OnQueueFailed`).
+ * writer fait échouer le job, visiblement (`@OnQueueFailed`) ; une dérive de
+ * contrat post-commit (`DiagnosticProjectionContractError`) le fait échouer UNE
+ * fois (`job.discard()`, bull v4 : aucune nouvelle tentative).
  */
 import { OnQueueFailed, Process, Processor } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { Job } from 'bull';
 import { FeatureFlagsService } from '../../../config/feature-flags.service';
-import { DiagnosticProjectionWriterService } from './diagnostic-projection-writer.service';
+import {
+  DiagnosticProjectionContractError,
+  DiagnosticProjectionWriterService,
+} from './diagnostic-projection-writer.service';
 import {
   DIAGNOSTIC_PROJECTION_JOB,
   DIAGNOSTIC_PROJECTION_QUEUE,
@@ -37,7 +42,14 @@ export class DiagnosticProjectionProcessor {
       );
       return { status: 'skipped', reason: 'FLAG_OFF' };
     }
-    return this.writer.run(triggeredBy);
+    try {
+      return await this.writer.run(triggeredBy);
+    } catch (error) {
+      // Dérive de contrat APRÈS commit : un retry rejouerait une projection déjà
+      // appliquée et échouerait à l'identique → un seul échec, visible.
+      if (error instanceof DiagnosticProjectionContractError) job.discard();
+      throw error;
+    }
   }
 
   @OnQueueFailed()

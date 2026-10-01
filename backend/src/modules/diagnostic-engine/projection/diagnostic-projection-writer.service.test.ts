@@ -3,7 +3,10 @@ import { promises as fs } from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import type { DiagnosticProjectionReference } from '../diagnostic-engine.data-service';
-import { DiagnosticProjectionWriterService } from './diagnostic-projection-writer.service';
+import {
+  DiagnosticProjectionContractError,
+  DiagnosticProjectionWriterService,
+} from './diagnostic-projection-writer.service';
 
 const COMMIT = 'a'.repeat(40);
 const HASH = `sha256:${'b'.repeat(64)}`;
@@ -231,7 +234,17 @@ describe('DiagnosticProjectionWriterService.run', () => {
 
   it('launch state: sends the unproven relation as a conflict, never as a projection', async () => {
     await writeExports(false);
-    const { writer, rpc } = makeWriter();
+    const { writer, rpc } = makeWriter({
+      rpc: jest.fn().mockResolvedValue({
+        data: {
+          run_id: 7,
+          projected_count: 0,
+          conflict_count: 1,
+          retired_count: 0,
+        },
+        error: null,
+      }),
+    });
     await writer.run('admin');
     const payload = rpc.mock.calls[0][1].p_run;
     expect(payload.projections).toEqual([]);
@@ -320,8 +333,29 @@ describe('DiagnosticProjectionWriterService.run', () => {
     const { writer } = makeWriter({
       rpc: jest.fn().mockResolvedValue({ data: { run_id: 'x' }, error: null }),
     });
-    await expect(writer.run('admin')).rejects.toThrow();
+    await expect(writer.run('admin')).rejects.toBeInstanceOf(
+      DiagnosticProjectionContractError,
+    );
   });
+
+  it.each([
+    ['projected_count', { projected_count: 2, conflict_count: 0 }],
+    ['conflict_count', { projected_count: 1, conflict_count: 1 }],
+  ])(
+    'throws DiagnosticProjectionContractError when the committed %s disagrees with the payload',
+    async (_field, counts) => {
+      await writeExports(true);
+      const { writer } = makeWriter({
+        rpc: jest.fn().mockResolvedValue({
+          data: { run_id: 7, retired_count: 0, ...counts },
+          error: null,
+        }),
+      });
+      await expect(writer.run('admin')).rejects.toBeInstanceOf(
+        DiagnosticProjectionContractError,
+      );
+    },
+  );
 
   it('empty index: warns with the retired count', async () => {
     await fs.writeFile(

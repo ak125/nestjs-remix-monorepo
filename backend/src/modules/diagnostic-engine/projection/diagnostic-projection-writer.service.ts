@@ -34,6 +34,17 @@ export const DEFAULT_DIAGNOSTIC_EXPORTS_ROOT =
   'content/automecanik-wiki/exports/diagnostic';
 const MAX_ERROR_LENGTH = 2000;
 
+/**
+ * Dérive du contrat SQL APRÈS commit (retour illisible ou comptes ≠ payload).
+ * Le job ne doit pas être rejoué : la transaction est déjà validée.
+ */
+export class DiagnosticProjectionContractError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'DiagnosticProjectionContractError';
+  }
+}
+
 @Injectable()
 export class DiagnosticProjectionWriterService extends SupabaseBaseService {
   protected readonly logger = new Logger(
@@ -112,8 +123,26 @@ export class DiagnosticProjectionWriterService extends SupabaseBaseService {
     }
 
     // La transaction est validée : un retour inattendu est une dérive du
-    // contrat SQL, pas un échec du run → exception (job en échec, visible).
-    const applied = ApplyResultSchema.parse(data);
+    // contrat SQL, pas un échec du run → exception typée (job en échec, visible,
+    // sans nouvelle tentative — le processor le discard).
+    const parsedResult = ApplyResultSchema.safeParse(data);
+    if (!parsedResult.success) {
+      throw new DiagnosticProjectionContractError(
+        `__diag_projection_apply a répondu hors contrat après commit: ${parsedResult.error.issues
+          .slice(0, 5)
+          .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+          .join('; ')}`,
+      );
+    }
+    const applied = parsedResult.data;
+    if (
+      applied.projected_count !== payload.projections.length ||
+      applied.conflict_count !== payload.conflicts.length
+    ) {
+      throw new DiagnosticProjectionContractError(
+        `__diag_projection_apply: comptes validés (${applied.projected_count} projection(s), ${applied.conflict_count} conflit(s)) ≠ payload (${payload.projections.length}, ${payload.conflicts.length})`,
+      );
+    }
     const summary = {
       metric: 'diagnostic_projection.applied',
       triggered_by: triggeredBy,

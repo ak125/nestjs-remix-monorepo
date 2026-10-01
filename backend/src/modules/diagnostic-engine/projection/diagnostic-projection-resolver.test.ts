@@ -247,8 +247,12 @@ describe('resolveDiagnosticProjection', () => {
       relation({ system_slug: 'injection' }),
       { symptom_system_slug: 'filtration' },
     ],
-    // odeur_habitacle n'a aucun lien vers la seule cause « filtre-a-air » du système.
-    ['no_matching_link', relation({ symptom_slug: 'odeur_habitacle' }), {}],
+    // odeur_habitacle : la cause mappée sur filtre-a-air (20) n'a aucun lien actif avec lui.
+    [
+      'no_matching_link',
+      relation({ symptom_slug: 'odeur_habitacle' }),
+      { leg: 'no_active_link', mapped_cause_slugs: ['filtre_air_colmate'] },
+    ],
   ])('%s', (reason, input, detail) => {
     const result = resolveDiagnosticProjection(
       [gammeFile('filtre-a-air', [input])],
@@ -306,7 +310,7 @@ describe('resolveDiagnosticProjection', () => {
       [
         gammeFile('filtre-a-air', [
           relation({ sources: [unproven] }),
-          relation(),
+          relation({ relation_index: 1 }),
         ]),
       ],
       reference,
@@ -368,7 +372,7 @@ describe('resolveDiagnosticProjection', () => {
       [
         gammeFile('filtre-a-air', [
           relation(),
-          relation({ symptom_slug: 'bruit_inconnu' }),
+          relation({ symptom_slug: 'bruit_inconnu', relation_index: 1 }),
           { not: 'a relation' },
         ]),
         gammeFile('filtre-d-habitacle', [
@@ -391,7 +395,7 @@ describe('resolveDiagnosticProjection', () => {
       [
         gammeFile('filtre-a-air', [
           relation({ relation_to_part: 'symptom_amplifier' }),
-          relation(),
+          relation({ relation_index: 1 }),
         ]),
       ],
       reference,
@@ -429,7 +433,68 @@ describe('resolveDiagnosticProjection', () => {
     expect(result.projections).toEqual([]);
     expect(result.conflicts).toHaveLength(1);
     expect(result.conflicts[0].reason).toBe('no_matching_link');
-    expect(result.conflicts[0].detail).toEqual({});
+    expect(result.conflicts[0].detail).toEqual({
+      leg: 'no_gamme_mapping',
+      mapped_cause_slugs: [],
+    });
+  });
+
+  it('no_matching_link: a mapped cause whose link is absent reports no_active_link with sorted mapped slugs', () => {
+    const gammeMap = {
+      filtre_huile_colmate: [
+        { slug: 'filtre-a-air', label: 'Filtre à air', pg_id: 8 },
+      ],
+      filtre_air_colmate: [
+        { slug: 'filtre-a-air', label: 'Filtre à air', pg_id: 8 },
+      ],
+    };
+    const result = resolveDiagnosticProjection(
+      [
+        gammeFile('filtre-a-air', [
+          relation({ symptom_slug: 'odeur_habitacle' }),
+        ]),
+      ],
+      reference,
+      gammeMap,
+    );
+    expect(result.conflicts[0]).toMatchObject({
+      reason: 'no_matching_link',
+      detail: {
+        leg: 'no_active_link',
+        mapped_cause_slugs: ['filtre_air_colmate', 'filtre_huile_colmate'],
+      },
+    });
+  });
+
+  it('relation_index exported different from the array position is schema_invalid', () => {
+    const result = resolveDiagnosticProjection(
+      [
+        gammeFile('filtre-a-air', [
+          relation(),
+          relation({ symptom_slug: 'odeur_habitacle', relation_index: 7 }),
+        ]),
+      ],
+      reference,
+    );
+    expect(result.conflicts).toHaveLength(1);
+    expect(result.conflicts[0]).toMatchObject({
+      reason: 'schema_invalid',
+      relation_index: 1,
+      symptom_slug: null,
+      detail: { field: 'relation_index', exported: 7, position: 1 },
+    });
+  });
+
+  it('a relation without relation_index is schema_invalid', () => {
+    const { relation_index: _omit, ...withoutIndex } = relation();
+    const result = resolveDiagnosticProjection(
+      [gammeFile('filtre-a-air', [withoutIndex])],
+      reference,
+    );
+    expect(result.conflicts[0]).toMatchObject({
+      reason: 'schema_invalid',
+      detail: { issues: [{ path: 'relation_index', code: 'invalid_type' }] },
+    });
   });
 
   it('throws naming the duplicated (link_id, wiki_path) when a fiche is listed twice', () => {

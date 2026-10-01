@@ -1,6 +1,7 @@
 import type { Job } from 'bull';
 import type { FeatureFlagsService } from '../../../config/feature-flags.service';
 import type { DiagnosticProjectionWriterService } from './diagnostic-projection-writer.service';
+import { DiagnosticProjectionContractError } from './diagnostic-projection-writer.service';
 import { DiagnosticProjectionProcessor } from './diagnostic-projection.processor';
 
 function makeProcessor(enabled: boolean) {
@@ -21,7 +22,8 @@ function makeProcessor(enabled: boolean) {
   return { processor, writer };
 }
 
-const job = (data: unknown) => ({ id: 1, data }) as unknown as Job<unknown>;
+const job = (data: unknown) =>
+  ({ id: 1, data, discard: jest.fn() }) as unknown as Job<unknown>;
 
 describe('DiagnosticProjectionProcessor', () => {
   it('flag ON: delegates to the writer with the job trigger', async () => {
@@ -51,4 +53,21 @@ describe('DiagnosticProjectionProcessor', () => {
       expect(writer.run).not.toHaveBeenCalled();
     },
   );
+
+  it('post-commit contract drift: discards the job (no retry) and rethrows', async () => {
+    const { processor, writer } = makeProcessor(true);
+    const drift = new DiagnosticProjectionContractError('dérive');
+    writer.run.mockRejectedValue(drift);
+    const failing = job({ triggeredBy: 'repeatable' });
+    await expect(processor.handle(failing)).rejects.toBe(drift);
+    expect(failing.discard).toHaveBeenCalledTimes(1);
+  });
+
+  it('any other writer error keeps the retry behaviour (no discard)', async () => {
+    const { processor, writer } = makeProcessor(true);
+    writer.run.mockRejectedValue(new Error('boom'));
+    const failing = job({ triggeredBy: 'repeatable' });
+    await expect(processor.handle(failing)).rejects.toThrow('boom');
+    expect(failing.discard).not.toHaveBeenCalled();
+  });
 });
