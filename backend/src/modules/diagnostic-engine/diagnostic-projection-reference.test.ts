@@ -1,3 +1,4 @@
+import { ZodError } from 'zod';
 import { DiagnosticEngineDataService } from './diagnostic-engine.data-service';
 
 type Reply = {
@@ -245,13 +246,43 @@ describe('DiagnosticEngineDataService.getProjectionReference', () => {
         error: null,
       },
     });
-    await expect(service.getProjectionReference()).rejects.toThrow();
+    const error = await service.getProjectionReference().catch((e) => e);
+    // Le refine d'unicité (sans message propre) porte sur le tableau entier.
+    expect(error).toBeInstanceOf(ZodError);
+    expect(
+      (error as ZodError).issues.map((i) => [i.code, i.path, i.message]),
+    ).toEqual([['custom', [], 'Invalid input']]);
   });
 
   it('rejects a row that is not active', async () => {
     const { service } = makeService({
       __diag_symptom: { data: [{ ...symptom, active: null }], error: null },
     });
-    await expect(service.getProjectionReference()).rejects.toThrow();
+    const error = await service.getProjectionReference().catch((e) => e);
+    // z.literal(true) sur la colonne `active` de la ligne 0.
+    expect(error).toBeInstanceOf(ZodError);
+    expect(
+      (error as ZodError).issues.map((i) => [i.code, i.path]),
+    ).toEqual([['invalid_value', [0, 'active']]]);
+  });
+
+  it('reads exactly one full page of 1000 links, then an empty page', async () => {
+    const { service, calls } = makeService({
+      __diag_symptom_cause_link: {
+        data: manyLinks.slice(0, 1000),
+        error: null,
+      },
+    });
+    const reference = await service.getProjectionReference();
+
+    expect(reference.links).toHaveLength(1000);
+    expect(
+      calls
+        .filter((call) => call.table === '__diag_symptom_cause_link')
+        .map((call) => [call.from, call.to]),
+    ).toEqual([
+      [0, 999],
+      [1000, 1999],
+    ]);
   });
 });
