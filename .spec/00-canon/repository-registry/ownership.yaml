@@ -1513,3 +1513,12 @@ entries:
     owner: '@ak125/vehicle-team'
     sourceConfidence: high
     risk: low
+  # Lecture SECURITY DEFINER de la politique de liens vers les guides d'achat (ADR-103 D5) :
+  # le container PREPROD READ_ONLY (anon) ne peut pas lire en direct les 4 tables sous RLS ;
+  # consommateur R6GuideLinkPolicyService (D3, seo-team). Couvre .sql + .down.sql. Glob exact
+  # volontaire.
+  - glob: backend/supabase/migrations/20261001_get_r6_guide_link_snapshot_definer_rpc*.sql
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
