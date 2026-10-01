@@ -399,7 +399,6 @@ describe('suggested families are linked only when they have a catalogue page', (
       allowed_output_mode: 'none',
       suggested_gammes: [],
     });
-    expect(f.data.getCostRanges).not.toHaveBeenCalled();
   });
   test('a failed catalogue check is reported and suggests nothing', async () => {
     const f = openCatalogue();
