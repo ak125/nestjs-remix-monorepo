@@ -2088,7 +2088,8 @@
         "backend/src/common/decorators/index.ts",
         "backend/src/modules/admin/controllers/command-center.controller.ts",
         "backend/src/modules/admin/controllers/user-management.controller.ts",
-        "backend/src/modules/users/controllers/addresses.controller.ts"
+        "backend/src/modules/users/controllers/addresses.controller.ts",
+        "backend/src/modules/users/controllers/user-shipment.controller.ts"
       ],
       "imports": [],
       "kind": "service",
@@ -14132,10 +14133,12 @@
       "id": "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.test.ts",
       "importedBy": [],
       "imports": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
+        "backend/src/modules/diagnostic-engine/services/diagnostic-content.service.ts",
         "backend/src/modules/diagnostic-engine/vehicle-context-mapping.ts"
       ],
       "kind": "test",
-      "loc": 144,
+      "loc": 214,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.test.ts",
       "risk": "low",
@@ -14152,6 +14155,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
       "importedBy": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-session-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/maintenance-calendar-integrity.test.ts",
@@ -14175,7 +14179,7 @@
         "backend/src/modules/diagnostic-engine/vehicle-context-mapping.ts"
       ],
       "kind": "controller",
-      "loc": 560,
+      "loc": 574,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
       "risk": "low",
@@ -14818,6 +14822,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/diagnostic-engine/services/diagnostic-content.service.ts",
       "importedBy": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
         "backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts"
@@ -14827,7 +14832,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 126,
+      "loc": 128,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/services/diagnostic-content.service.ts",
       "risk": "low",
@@ -35151,10 +35156,13 @@
         "backend/src/modules/users/users.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@common/exceptions",
+        "backend/src/common/decorators/user.decorator.ts",
         "backend/src/modules/users/services/user-shipment.service.ts"
       ],
       "kind": "controller",
-      "loc": 81,
+      "loc": 113,
       "owner": "__unassigned__",
       "path": "backend/src/modules/users/controllers/user-shipment.controller.ts",
       "risk": "low",
@@ -39513,6 +39521,25 @@
       "loc": 40,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/trend-signals/rappels-gouv-fr.fetcher.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/user-shipment-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 212,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/user-shipment-authz.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -56416,6 +56443,7 @@
         "~/components/layout/Container",
         "~/components/ui/PublicBreadcrumb",
         "~/components/ui/accordion",
+        "~/components/ui/alert",
         "~/components/ui/badge",
         "~/components/ui/input",
         "~/components/ui/separator",
@@ -56424,7 +56452,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 1002,
+      "loc": 1042,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/diagnostic-auto._index.tsx",
       "risk": "low",
@@ -61014,30 +61042,11 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
-      "id": "frontend/tests/qa-audit/helpers/reporter.ts",
-      "importedBy": [],
-      "imports": [],
-      "kind": "service",
-      "loc": 257,
-      "owner": "__unassigned__",
-      "path": "frontend/tests/qa-audit/helpers/reporter.ts",
-      "risk": "low",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise"
-      ],
-      "domain": "UNKNOWN",
       "id": "frontend/tests/qa-audit/playwright.qa.config.ts",
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 57,
+      "loc": 54,
       "owner": "__unassigned__",
       "path": "frontend/tests/qa-audit/playwright.qa.config.ts",
       "risk": "low",
@@ -61553,6 +61562,25 @@
       "loc": 152,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/diagnostic-critical-urgency.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/diagnostic-hub-wiki-content.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 171,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/diagnostic-hub-wiki-content.test.tsx",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -69032,11 +69060,30 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "scripts/registry/validate-automation-overlay.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 58,
+      "owner": "__unassigned__",
+      "path": "scripts/registry/validate-automation-overlay.test.ts",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "scripts/registry/validate-automation-overlay.ts",
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 227,
+      "loc": 240,
       "owner": "__unassigned__",
       "path": "scripts/registry/validate-automation-overlay.ts",
       "risk": "low",
