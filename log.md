@@ -411,3 +411,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/automation-validator-zod4-issues`
 - **Décision** : fix(registry): le validateur d'automation-reality nomme le champ invalide (zod 4)
 - **Sortie** : PR aucune | commits d200b3d35
+
+## 2026-10-01 — fix/guide-achat-status-swallowed (auto)
+
+- **Branche** : `fix/guide-achat-status-swallowed`
+- **Décision** : chore(audit): régénérer les candidats de nettoyage PR-8 (empreinte canonical) (+8 other commits)
+- **Sortie** : PR #1682 | commits 9496edab9 0c83415e3 0cfd80c3d 76cbfe839 63547a62b 6b4a9a2ee 78d24c87c d9dbdeabc 8244826b2
