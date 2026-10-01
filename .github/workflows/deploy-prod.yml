@@ -52,6 +52,9 @@ jobs:
       - name: Verify SEO env writers (collector, projection flags) before any PROD mutation
         run: node --test scripts/ci/prod-seo-collector-env.test.mjs scripts/ci/prod-seo-projection-env.test.mjs
 
+      - name: Verify diagnostic provenance flags writer before any PROD mutation
+        run: node --test scripts/ci/prod-diagnostic-provenance-env.test.mjs
+
       - name: Verify PREPROD evidence gate before any PROD mutation
         run: node --test scripts/ci/prod-preprod-evidence.test.mjs
 
@@ -246,6 +249,15 @@ jobs:
           SEO_PROJECTION_R1_FEED_ENABLED_OVERRIDE: ${{ vars.PROD_SEO_PROJECTION_R1_FEED_ENABLED }}
           SEO_PROJECTION_READ_V1_OVERRIDE: ${{ vars.PROD_SEO_PROJECTION_READ_V1 }}
           SEO_PROJECTION_READ_CANARY_OVERRIDE: ${{ vars.PROD_SEO_PROJECTION_READ_CANARY }}
+          # Diagnostic provenance rollout flags (WIKI → __diag_link_provenance →
+          # evidence pack). Written by scripts/ci/prod-diagnostic-provenance-env.sh
+          # (contract in its header): unset → OFF, written explicitly (deleting the
+          # variable and redeploying IS the rollback); a spelling the code would
+          # read as false, or PRIMARY true without EXPOSE true → deploy aborts
+          # before any PROD mutation. Variables, not secrets.
+          DIAGNOSTIC_PROJECTION_ENABLED_OVERRIDE: ${{ vars.PROD_DIAGNOSTIC_PROJECTION_ENABLED }}
+          DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED_OVERRIDE: ${{ vars.PROD_DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED }}
+          DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED_OVERRIDE: ${{ vars.PROD_DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED }}
         run: |
           docker pull massdoc/nestjs-remix-monorepo:production
 
@@ -350,6 +362,10 @@ jobs:
           # every input is validated before any write, and a refusal fails the
           # deploy before the point of no return, running container untouched.
           bash "$GITHUB_WORKSPACE/scripts/ci/prod-seo-projection-env.sh" .env
+          # Diagnostic provenance rollout flags (see the env block above). Same
+          # contract: validated before any write, refusal before the point of no
+          # return, running container untouched.
+          bash "$GITHUB_WORKSPACE/scripts/ci/prod-diagnostic-provenance-env.sh" .env
 
           docker network create automecanik-prod 2>/dev/null || true
 
