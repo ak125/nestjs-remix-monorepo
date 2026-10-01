@@ -27,7 +27,6 @@ const mkPack = (overrides: Partial<Inner> = {}): Inner => ({
     ],
   },
   allowed_claims: [],
-  forbidden_claims_runtime: [],
   ui_block_inputs: {},
   risk_level: 'moderate',
   ...overrides,

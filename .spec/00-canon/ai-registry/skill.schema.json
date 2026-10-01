@@ -84,6 +84,14 @@
       "description": "Space-separated pre-approved tool names (agentskills.io v1 experimental). Example: 'Read Grep Bash(npm:*)'.",
       "type": "string"
     },
+    "argument-hint": {
+      "description": "Claude Code: hint shown in slash-command autocomplete. Read only at the top level — ignored under `metadata`.",
+      "type": "string"
+    },
+    "disable-model-invocation": {
+      "description": "Claude Code: true = the model does not load this skill on its own; explicit /name invocation only. Read only at the top level — ignored under `metadata`.",
+      "type": "boolean"
+    },
     "tags": {
       "description": "Free-form discovery tags (stack, scope, role, ADR refs). Indexed by skills.registry.json for searchability.",
       "type": "array",
@@ -95,7 +103,7 @@
       }
     },
     "metadata": {
-      "description": "Free-form metadata map (agentskills.io v1). Recommended slots: version, upstream, argument-hint, spec.",
+      "description": "Free-form metadata map (agentskills.io v1). Recommended slots: version, upstream, spec. Not read by the runtime — Claude Code keys (argument-hint, disable-model-invocation) go at the top level.",
       "type": "object",
       "additionalProperties": {
         "type": ["string", "number", "boolean"]

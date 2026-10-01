@@ -75,7 +75,7 @@ const rule = z.object({
 });
 const CalendarPayloadSchema = z.object({
   type_id: z.number().int().positive().nullable(),
-  current_km: z.number().int().nonnegative(),
+  current_km: z.number().int().nonnegative().nullable(),
   fuel_type: z.string().nullable(),
   schedule: z
     .array(
@@ -98,13 +98,16 @@ const CalendarPayloadSchema = z.object({
       actions: z.array(rule),
     }),
   ),
-  controles_mensuels: z.array(
-    z.object({
-      element: z.string().trim().min(1),
-      icon: z.string(),
-      detail: z.string(),
-    }),
-  ),
+  // null = source unavailable, distinct from a valid empty list.
+  controles_mensuels: z
+    .array(
+      z.object({
+        element: z.string().trim().min(1),
+        icon: z.string(),
+        detail: z.string(),
+      }),
+    )
+    .nullable(),
 });
 
 /* ===========================================================================
@@ -113,6 +116,12 @@ const CalendarPayloadSchema = z.object({
 
 const API_BASE =
   process.env.BACKEND_API_URL ?? "http://localhost:3000/api/diagnostic-engine";
+
+// A rejected request is not an outage: retrying later would not help.
+const REQUEST_ERRORS: Partial<Record<number, string>> = {
+  400: "Paramètres du calendrier invalides : vérifiez le véhicule, le kilométrage et le carburant indiqués dans l'adresse.",
+  404: "Véhicule introuvable : vérifiez l'identifiant du véhicule indiqué dans l'adresse.",
+};
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
@@ -125,6 +134,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   try {
     const res = await fetch(apiUrl);
+    const requestError = REQUEST_ERRORS[res.status];
+    if (requestError) return { calendar: null, error: requestError };
     if (!res.ok) throw new Error(`API ${res.status}`);
     const calendar = CalendarPayloadSchema.parse(await res.json());
     return { calendar, error: null };
@@ -383,7 +394,11 @@ export default function CalendrierEntretienPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {calendar.controles_mensuels.length === 0 ? (
+              {calendar.controles_mensuels === null ? (
+                <p className="text-sm text-gray-500 italic">
+                  Contrôles mensuels indisponibles pour le moment.
+                </p>
+              ) : calendar.controles_mensuels.length === 0 ? (
                 <p className="text-sm text-gray-500 italic">
                   Aucun contrôle mensuel disponible.
                 </p>

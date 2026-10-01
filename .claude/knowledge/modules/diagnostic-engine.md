@@ -2,7 +2,7 @@
 module: diagnostic-engine
 sources:
 - backend/src/modules/diagnostic-engine
-last_scan: '2026-09-28'
+last_scan: '2026-09-29'
 primary_files:
 - backend/src/modules/diagnostic-engine/constants/gamme-map.constants.ts
 - backend/src/modules/diagnostic-engine/diagnostic-engine.controller.test.ts
@@ -11,7 +11,7 @@ primary_files:
 - backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts
 - backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts
 - backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts
-- backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts
+- backend/src/modules/diagnostic-engine/diagnostic-handoff-integrity.test.ts
 depends_on:
 - DatabaseModule
 - VehicleContextModule
@@ -53,7 +53,7 @@ ADR-031 : aucun enrichissement RAG ne produit de faits diagnostic. La voie `RagE
 - [backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts](../../../backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts)
 - [backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts](../../../backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.test.ts)
 - [backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts](../../../backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts)
-- [backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts](../../../backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts)
+- [backend/src/modules/diagnostic-engine/diagnostic-handoff-integrity.test.ts](../../../backend/src/modules/diagnostic-engine/diagnostic-handoff-integrity.test.ts)
 
 <!-- END AUTO-GENERATED -->
 

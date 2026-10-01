@@ -296,11 +296,6 @@ validate('Evidence Pack freinage', EvidencePackSchema, {
       'Un bruit metallique au freinage peut indiquer une usure des plaquettes.',
       'Plusieurs causes sont possibles — seul un controle permet de conclure.',
     ],
-    forbidden_claims_runtime: [
-      'Vos plaquettes sont usees.',
-      'Il faut changer les disques.',
-      'Achetez des plaquettes maintenant.',
-    ],
     ui_block_inputs: {
       VehicleContextCard: {
         brand: 'Peugeot',
@@ -389,10 +384,6 @@ validate('Evidence Pack demarrage', EvidencePackSchema, {
     allowed_claims: [
       'Un demarrage difficile a froid sur diesel peut indiquer un probleme de prechauffage.',
     ],
-    forbidden_claims_runtime: [
-      'Votre batterie est morte.',
-      'Changez vos bougies de prechauffage.',
-    ],
     ui_block_inputs: {},
   },
 });
@@ -436,10 +427,6 @@ validate('Evidence Pack donnees manquantes', EvidencePackSchema, {
     },
     allowed_claims: [
       "Sans plus d'informations, nous ne pouvons que suggerer un controle professionnel.",
-    ],
-    forbidden_claims_runtime: [
-      'Vos plaquettes sont usees.',
-      'Il faut remplacer vos freins.',
     ],
     ui_block_inputs: {},
   },
