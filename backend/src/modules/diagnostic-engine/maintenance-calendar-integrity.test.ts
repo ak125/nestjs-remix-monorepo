@@ -70,6 +70,60 @@ describe('calendar does not infer maintenance history from the odometer', () => 
       schedule: [{ status: 'unknown', km_remaining: null }],
     });
   });
+  test.each(['maintenanceSchedule', 'maintenanceCalendar'] as const)(
+    '%s reports an absent mileage as unknown instead of zero',
+    async (endpoint) => {
+      const { controller, rpc } = fixture();
+      const result = await controller[endpoint]();
+      expect(result.current_km).toBeNull();
+      expect(rpc).toHaveBeenCalledWith(
+        'kg_get_smart_maintenance_schedule',
+        { p_type_id: null, p_fuel_type: null },
+        { source: 'internal' },
+      );
+    },
+  );
+});
+
+describe('monthly checks distinguish unavailable content from an empty list', () => {
+  const item = { element: 'Pneus', icon: 'Gauge', detail: 'Pression' };
+  test.each([
+    ['a valid list', { entity_data: { items: [item] } }, [item]],
+    ['an empty list', { entity_data: { items: [] } }, []],
+  ])('returns %s as provided', async (_, entry, expected) => {
+    const { service } = fixture();
+    Object.assign(service, {
+      diagnosticContent: { getControlesMensuels: () => entry },
+    });
+    const calendar = await service.getCalendar(null, null);
+    expect(calendar.controles_mensuels).toEqual(expected);
+  });
+  test('returns null for a missing file, which the content service logs', async () => {
+    const { service } = fixture();
+    const calendar = await service.getCalendar(null, null);
+    expect(calendar.controles_mensuels).toBeNull();
+    expect(calendar.schedule).toEqual([]);
+  });
+  test.each([
+    ['without items', { entity_data: {} }],
+    [
+      'with a malformed item',
+      { entity_data: { items: [{ element: '', icon: 'x', detail: 'y' }] } },
+    ],
+  ])('returns null and logs when the content is %s', async (_, entry) => {
+    const { service } = fixture();
+    const logger = { error: jest.fn() };
+    Object.assign(service, {
+      logger,
+      diagnosticContent: { getControlesMensuels: () => entry },
+    });
+    const calendar = await service.getCalendar(null, null);
+    expect(calendar.controles_mensuels).toBeNull();
+    expect(calendar.schedule).toEqual([]);
+    expect(logger.error).toHaveBeenCalledWith(
+      'Monthly checks content is malformed',
+    );
+  });
 });
 
 describe('calendar rejects corrupt sources instead of producing plausible output', () => {
@@ -170,13 +224,11 @@ describe('milestone query validation', () => {
       { p_fuel_type: 'diesel', p_milestones: [30000, 10000] },
       { source: 'internal' },
     );
+    // Without explicit milestones the RPC default applies; it is not copied here.
     await controller.maintenanceAlerts();
     expect(rpc).toHaveBeenLastCalledWith(
       'kg_get_maintenance_alerts_by_milestone',
-      {
-        p_fuel_type: null,
-        p_milestones: [10000, 30000, 60000, 100000, 150000],
-      },
+      { p_fuel_type: null },
       { source: 'internal' },
     );
   });
