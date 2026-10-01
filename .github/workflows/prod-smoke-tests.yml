@@ -429,7 +429,11 @@ jobs:
 
           check_size "$TEST_R1_URL" 20000 "R1 gamme"
           check_size "/blog-pieces-auto/conseils/amortisseur" 10000 "R3 conseil"
-          check_size "/blog-pieces-auto/guide-achat/roulement-de-roue" 10000 "R6 guide"
+          # volant-moteur, not roulement-de-roue: a guide with a conseils article is
+          # 301'd to it once SEO_R6_CONSOLIDATION_ENABLED is on, and wget would then
+          # measure the R3 page. A guide without one stays served in both states
+          # (see the R6 posture step below).
+          check_size "/blog-pieces-auto/guide-achat/volant-moteur" 10000 "R6 guide"
 
           if [ "$FAILED" = "1" ]; then exit 1; fi
 
@@ -579,6 +583,96 @@ jobs:
 
           if [ "$FAILED" = "1" ]; then exit 1; fi
           echo "✅ All 404/410 checks passed"
+
+      - name: 🧭 R6 guides — served posture matches the deployed flag (ADR-103)
+        id: r6-posture-check
+        # SEO_R6_CONSOLIDATION_ENABLED is written into the PROD .env by
+        # deploy-prod.yml (scripts/ci/prod-seo-projection-env.sh, ADR-103 D6). The
+        # value the container really runs with is read here, and the pages must
+        # match it. The code reads only the literal `true` as on (bool(),
+        # feature-flags.service.ts); unset = off.
+        #   ON  — a guide whose gamme has a conseils article answers 301 to it,
+        #         a guide without one answers 200 + noindex (r6-guide.service.ts),
+        #         and a conseils page links no guide (r6-guide-link-policy.service.ts)
+        #   OFF — both guides answer 200, indexable
+        # The guide route falls back to `index, follow` when its posture lookup
+        # fails: with the flag on, this step is what turns that into a failure.
+        # Aliases (read-only SQL, 2026-10-01):
+        #   roulement-de-roue  pg_id 655, has a conseils article
+        #   volant-moteur      pg_id 577, published guide, no conseils article
+        #   amortisseur        pg_id 854, conseils page checked for guide links
+        # If volant-moteur ever gets a conseils article, the ON branch fails on its
+        # 301. Pick another published guide without one:
+        #   SELECT pg.pg_alias FROM __seo_gamme_purchase_guide g
+        #   JOIN pieces_gamme pg ON pg.pg_id::text = g.sgpg_pg_id
+        #   WHERE g.sgpg_is_draft IS NOT TRUE AND NOT EXISTS (SELECT 1 FROM
+        #   __blog_advice a WHERE a.ba_pg_id = pg.pg_id::text) ORDER BY 1;
+        run: |
+          FAILED=0
+          BASE="https://www.automecanik.com"
+          FLAG_LINE=$(docker inspect --format '{{range .Config.Env}}{{println .}}{{end}}' $CONTAINER | grep '^SEO_R6_CONSOLIDATION_ENABLED=' || true)
+          FLAG_RAW="${FLAG_LINE#SEO_R6_CONSOLIDATION_ENABLED=}"
+          if [ -z "$FLAG_LINE" ]; then
+            FLAG=off
+            echo "ℹ️ SEO_R6_CONSOLIDATION_ENABLED not set in $CONTAINER → R6 consolidation off (code default)"
+          else
+            if [ "$FLAG_RAW" = "true" ]; then FLAG=on; else FLAG=off; fi
+            echo "ℹ️ SEO_R6_CONSOLIDATION_ENABLED='${FLAG_RAW}' in $CONTAINER → R6 consolidation ${FLAG}"
+          fi
+
+          robots_of() {
+            $CADDY_CURL "$BASE$1" | grep -oP 'name="robots" content="\K[^"]+' | head -1 || true
+          }
+
+          if [ "$FLAG" = "on" ]; then
+            GOT=$($CADDY_CURL -o /dev/null -w "%{http_code} %{redirect_url}" "$BASE/blog-pieces-auto/guide-achat/roulement-de-roue")
+            WANT="301 $BASE/blog-pieces-auto/conseils/roulement-de-roue"
+            if [ "$GOT" = "$WANT" ]; then
+              echo "✅ guide roulement-de-roue -> $GOT"
+            else
+              echo "❌ guide roulement-de-roue -> '$GOT' (expected '$WANT')"
+              FAILED=1
+            fi
+            STATUS=$($CADDY_CURL -o /dev/null -w "%{http_code}" "$BASE/blog-pieces-auto/conseils/roulement-de-roue")
+            if [ "$STATUS" = "200" ]; then
+              echo "✅ redirect target conseils/roulement-de-roue -> 200"
+            else
+              echo "❌ redirect target conseils/roulement-de-roue -> HTTP $STATUS (expected 200)"
+              FAILED=1
+            fi
+
+            STATUS=$($CADDY_CURL -o /dev/null -w "%{http_code}" "$BASE/blog-pieces-auto/guide-achat/volant-moteur")
+            ROBOTS=$(robots_of "/blog-pieces-auto/guide-achat/volant-moteur")
+            if [ "$STATUS" = "200" ] && echo "$ROBOTS" | grep -qi "noindex"; then
+              echo "✅ guide volant-moteur -> 200, robots '$ROBOTS'"
+            else
+              echo "❌ guide volant-moteur -> HTTP $STATUS, robots '${ROBOTS}' (expected 200 + noindex)"
+              FAILED=1
+            fi
+
+            LINKS=$($CADDY_CURL "$BASE/blog-pieces-auto/conseils/amortisseur" | grep -oP 'href="/blog-pieces-auto/guide-achat/[^"]+"' | sort -u || true)
+            if [ -z "$LINKS" ]; then
+              echo "✅ conseils/amortisseur links no guide"
+            else
+              echo "❌ conseils/amortisseur still links guides:"
+              echo "$LINKS"
+              FAILED=1
+            fi
+          else
+            for ALIAS in roulement-de-roue volant-moteur; do
+              STATUS=$($CADDY_CURL -o /dev/null -w "%{http_code}" "$BASE/blog-pieces-auto/guide-achat/$ALIAS")
+              ROBOTS=$(robots_of "/blog-pieces-auto/guide-achat/$ALIAS")
+              if [ "$STATUS" = "200" ] && ! echo "$ROBOTS" | grep -qi "noindex"; then
+                echo "✅ guide $ALIAS -> 200, robots '${ROBOTS}'"
+              else
+                echo "❌ guide $ALIAS -> HTTP $STATUS, robots '${ROBOTS}' (flag off: expected 200, indexable)"
+                FAILED=1
+              fi
+            done
+          fi
+
+          if [ "$FAILED" = "1" ]; then exit 1; fi
+          echo "✅ R6 posture matches the deployed flag (${FLAG})"
 
       - name: ⚡ LCP proxy checks
         id: lcp-check
@@ -756,6 +850,7 @@ jobs:
           echo "| Response size | ${{ steps.response-size-check.outcome == 'success' && '✅' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| SEO avance | ${{ steps.seo-advanced-check.outcome == 'success' && '✅' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| 404/410 | ${{ steps.error-handling-check.outcome == 'success' && '✅' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| R6 posture vs flag | ${{ steps.r6-posture-check.outcome == 'success' && '✅' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
           echo "### Performance (soft fail)" >> $GITHUB_STEP_SUMMARY

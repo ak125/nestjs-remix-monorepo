@@ -1,14 +1,16 @@
 /**
- * Behavioural proof of the PROD SEO Projection flags writer (2026-09-24).
+ * Behavioural proof of the PROD SEO rollout flags writer (2026-09-24; R6
+ * consolidation flag added 2026-10-01, ADR-103 D6).
  *
  * `prod-seo-projection-env.sh` writes the three SEO Projection rollout flags
- * into ~/production/.env during the PROD deploy. The code never fails on a bad
+ * and SEO_R6_CONSOLIDATION_ENABLED into ~/production/.env during the PROD
+ * deploy. The code never fails on a bad
  * value (`bool()` reads anything but `true` as false; the canary is an
  * exact-match allowlist), so a wrong value must stop the deploy BEFORE the
  * running container is touched. These tests EXECUTE the script against scratch
  * .env files and assert:
  *
- *   1. unset config writes the three keys explicitly OFF / empty (rollback path);
+ *   1. unset config writes every key explicitly OFF / empty (rollback path);
  *   2. true/false are written as is, existing lines are replaced (never
  *      duplicated), absent keys appended, every other line kept byte-for-byte;
  *   3. a valid canary list is trimmed and normalised, and reads back identically
@@ -46,6 +48,7 @@ const KEYS = [
   "SEO_PROJECTION_R1_FEED_ENABLED",
   "SEO_PROJECTION_READ_V1",
   "SEO_PROJECTION_READ_CANARY",
+  "SEO_R6_CONSOLIDATION_ENABLED",
 ];
 const R3_TOKEN = "R3_CONSEILS@gamme:filtre-a-huile";
 
@@ -99,7 +102,7 @@ function linesStartingWith(file, key) {
     .filter((l) => l.startsWith(`${key}=`));
 }
 
-/** Every line that is not one of the three keys, in order. */
+/** Every line that is not one of the KEYS, in order. */
 function otherLines(file) {
   return readFileSync(file, "utf8")
     .split("\n")
@@ -112,7 +115,7 @@ function assertUntouched({ dir, file }, before) {
 }
 
 describe("unset config", () => {
-  test("writes the three keys explicitly OFF / empty and keeps every other line", () => {
+  test("writes every key explicitly OFF / empty and keeps every other line", () => {
     const s = scratch();
     const r = run(s.file);
     assert.equal(r.code, 0, r.out);
@@ -125,13 +128,18 @@ describe("unset config", () => {
     assert.deepEqual(linesStartingWith(s.file, "SEO_PROJECTION_READ_CANARY"), [
       "SEO_PROJECTION_READ_CANARY=''",
     ]);
+    assert.deepEqual(linesStartingWith(s.file, "SEO_R6_CONSOLIDATION_ENABLED"), [
+      "SEO_R6_CONSOLIDATION_ENABLED='false'",
+    ]);
     assert.deepEqual(otherLines(s.file), UNRELATED, "other lines must be kept, in order");
     assert.deepEqual(bashRead(s.file, KEYS), {
       SEO_PROJECTION_R1_FEED_ENABLED: "false",
       SEO_PROJECTION_READ_V1: "false",
       SEO_PROJECTION_READ_CANARY: "",
+      SEO_R6_CONSOLIDATION_ENABLED: "false",
     });
     assert.match(r.out, /SEO_PROJECTION_READ_CANARY=\(empty — fail-closed/);
+    assert.match(r.out, /SEO_R6_CONSOLIDATION_ENABLED=false/);
     assert.doesNotMatch(r.out, /::notice::/);
   });
 
@@ -141,12 +149,14 @@ describe("unset config", () => {
       SEO_PROJECTION_R1_FEED_ENABLED_OVERRIDE: "",
       SEO_PROJECTION_READ_V1_OVERRIDE: "",
       SEO_PROJECTION_READ_CANARY_OVERRIDE: "",
+      SEO_R6_CONSOLIDATION_ENABLED_OVERRIDE: "",
     });
     assert.equal(r.code, 0, r.out);
     assert.deepEqual(bashRead(s.file, KEYS), {
       SEO_PROJECTION_R1_FEED_ENABLED: "false",
       SEO_PROJECTION_READ_V1: "false",
       SEO_PROJECTION_READ_CANARY: "",
+      SEO_R6_CONSOLIDATION_ENABLED: "false",
     });
   });
 });
@@ -158,6 +168,7 @@ describe("values written", () => {
       SEO_PROJECTION_R1_FEED_ENABLED_OVERRIDE: "false",
       SEO_PROJECTION_READ_V1_OVERRIDE: "true",
       SEO_PROJECTION_READ_CANARY_OVERRIDE: R3_TOKEN,
+      SEO_R6_CONSOLIDATION_ENABLED_OVERRIDE: "true",
     });
     assert.equal(r.code, 0, r.out);
     for (const k of KEYS) {
@@ -167,10 +178,12 @@ describe("values written", () => {
       SEO_PROJECTION_R1_FEED_ENABLED: "false",
       SEO_PROJECTION_READ_V1: "true",
       SEO_PROJECTION_READ_CANARY: R3_TOKEN,
+      SEO_R6_CONSOLIDATION_ENABLED: "true",
       SESSION_SECRET: "keepme",
     });
     assert.deepEqual(otherLines(s.file), UNRELATED);
     assert.match(r.out, /SEO_PROJECTION_READ_V1=true/);
+    assert.match(r.out, /SEO_R6_CONSOLIDATION_ENABLED=true/);
     assert.doesNotMatch(r.out, /::notice::/);
   });
 
@@ -215,6 +228,7 @@ describe("values written", () => {
       run(s.file, {
         SEO_PROJECTION_R1_FEED_ENABLED_OVERRIDE: "true",
         SEO_PROJECTION_READ_CANARY_OVERRIDE: canary,
+        SEO_R6_CONSOLIDATION_ENABLED_OVERRIDE: "true",
       }).code,
       0,
     );
@@ -232,6 +246,7 @@ describe("values written", () => {
     assert.equal(env.SEO_PROJECTION_R1_FEED_ENABLED, "true");
     assert.equal(env.SEO_PROJECTION_READ_V1, "false");
     assert.equal(env.SEO_PROJECTION_READ_CANARY, canary);
+    assert.equal(env.SEO_R6_CONSOLIDATION_ENABLED, "true");
   });
 
   test("a canary set while READ_V1 is not true is written, with a notice", () => {
@@ -268,6 +283,10 @@ describe("refusals leave the .env byte-identical", () => {
     "READ_V1 'true\\n' (trailing newline)": { SEO_PROJECTION_READ_V1_OVERRIDE: "true\n" },
     "READ_V1 quoted \"'true'\"": { SEO_PROJECTION_READ_V1_OVERRIDE: "'true'" },
     "READ_V1 'off'": { SEO_PROJECTION_READ_V1_OVERRIDE: "off" },
+    "R6 'True'": { SEO_R6_CONSOLIDATION_ENABLED_OVERRIDE: "True" },
+    "R6 'yes'": { SEO_R6_CONSOLIDATION_ENABLED_OVERRIDE: "yes" },
+    "R6 '1'": { SEO_R6_CONSOLIDATION_ENABLED_OVERRIDE: "1" },
+    "R6 'true ' (trailing space)": { SEO_R6_CONSOLIDATION_ENABLED_OVERRIDE: "true " },
     // Canary: empty tokens.
     "canary empty token in the middle (a,,b)": {
       SEO_PROJECTION_READ_CANARY_OVERRIDE: `${R3_TOKEN},,R4_REFERENCE@gamme:x`,
@@ -299,6 +318,12 @@ describe("refusals leave the .env byte-identical", () => {
       SEO_PROJECTION_R1_FEED_ENABLED_OVERRIDE: "true",
       SEO_PROJECTION_READ_V1_OVERRIDE: "true",
       SEO_PROJECTION_READ_CANARY_OVERRIDE: `${R3_TOKEN},R4_REFERENCE@gamme:Bad`,
+    },
+    "a bad R6 value among valid projection flags": {
+      SEO_PROJECTION_R1_FEED_ENABLED_OVERRIDE: "true",
+      SEO_PROJECTION_READ_V1_OVERRIDE: "true",
+      SEO_PROJECTION_READ_CANARY_OVERRIDE: R3_TOKEN,
+      SEO_R6_CONSOLIDATION_ENABLED_OVERRIDE: "on",
     },
   };
   for (const [name, overrides] of Object.entries(cases)) {
