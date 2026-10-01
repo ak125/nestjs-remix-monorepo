@@ -45,7 +45,7 @@ jobs:
           cache: "npm"
 
       - name: Restore Turbo cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .turbo
           key: turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -111,7 +111,7 @@ jobs:
           cache: "npm"
 
       - name: Restore Turbo cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .turbo
           key: turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -131,7 +131,7 @@ jobs:
       # Key on lockfile + turbo.json + every tsconfig — a config change alters the compile
       # graph and must start a fresh buildinfo. Saves only on job success (first GREEN run).
       - name: Restore TypeScript incremental buildinfo
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             **/node_modules/.cache/tsc/
@@ -200,7 +200,7 @@ jobs:
           cache: "npm"
 
       - name: Restore Turbo cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .turbo
           key: turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -269,7 +269,7 @@ jobs:
           cache: "npm"
 
       - name: Restore Turbo cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .turbo
           key: turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -345,7 +345,7 @@ jobs:
           cache: "npm"
 
       - name: Restore Turbo cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .turbo
           key: turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -1067,8 +1067,10 @@ jobs:
             sleep "$SSR_BURST_WINDOW_SECONDS"
             HTTP_OUT=$(curl -s -i --max-time 15 "$BASE$url")
             CURL_RC=$?
-            REMAINING_SHORT=$(printf '%s\n' "$HTTP_OUT" | tr -d '\r' | awk 'NF == 0 { exit } tolower($1) == "x-ratelimit-remaining-short:" { print $2; exit }')
-            echo "🔎 $url (x-ratelimit-remaining-short=${REMAINING_SHORT:-absent})"
+            # Same parser as remaining_short() in warm-soft-404-fixtures.sh: awk
+            # reads the whole response so the writer never hits a closed pipe.
+            REMAINING_SHORT=$(printf '%s\n' "$HTTP_OUT" | awk '{ sub(/\r$/, "") } !done && NF == 0 { done = 1 } !done && tolower($1) == "x-ratelimit-remaining-short:" { value = $2; done = 1 } END { print (value == "" ? "absent" : value) }')
+            echo "🔎 $url (x-ratelimit-remaining-short=${REMAINING_SHORT})"
             if [ "$CURL_RC" != "0" ] || [ -z "$HTTP_OUT" ]; then
               echo "❌ curl failed for $url (rc=$CURL_RC)"
               echo "- $url: ❌ curl failed (rc=$CURL_RC)" >> $GITHUB_STEP_SUMMARY
