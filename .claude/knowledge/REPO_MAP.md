@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 84fdce414235240452f3cae1ea03682f909e985c664eea7232b29d4ad0248b80
+source_sha256: 4e5815edc2cd559d93c596d39beb0f7664594d0580e01d3d0f66bf016258b716
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 2950 |
+| Files (Layer 1) | 2952 |
 | DB tables (Layer 1) | 313 |
 | DB RPC (Layer 1) | 253 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 999 |
 
-Source sotFingerprint: `cfd7381335e5`.
+Source sotFingerprint: `85663172b00c`.
 
 ## Comment l'utiliser
 
@@ -45,11 +45,11 @@ Source sotFingerprint: `cfd7381335e5`.
 
 ### D2 — Legacy / XTR Migration
 
-- **Files**: 127 (test=113, service=10, config=3, controller=1)
+- **Files**: 128 (test=114, service=10, config=3, controller=1)
 - **Runtime entrypoints**: 1
-- **Top owners**: @ak125 (112), __unassigned__ (15)
+- **Top owners**: @ak125 (113), __unassigned__ (15)
 - **Knowledge prose**: [`rm`](modules/rm.md)
-- **Status**: LEGACY=14, LIVE=1, UNKNOWN=112
+- **Status**: LEGACY=14, LIVE=1, UNKNOWN=113
 
 ### D3 — SEO & Sitemap
 
@@ -155,13 +155,13 @@ Source sotFingerprint: `cfd7381335e5`.
 
 ### UNKNOWN — Unknown (overlay non résolu)
 
-- **Files**: 245 (service=150, config=57, controller=21, script=14, test=3)
+- **Files**: 246 (service=150, config=57, controller=21, script=14, test=4)
 - **DB tables**: 313
 - **DB RPC**: 253
 - **Runtime entrypoints**: 84
-- **Top owners**: __unassigned__ (245)
+- **Top owners**: __unassigned__ (246)
 - **Knowledge prose**: [`config`](modules/config.md), [`layout`](modules/layout.md), [`mcp-validation`](modules/mcp-validation.md), [`metadata`](modules/metadata.md), [`navigation`](modules/navigation.md), [`search`](modules/search.md), [`shipping`](modules/shipping.md), [`suppliers`](modules/suppliers.md), [`system`](modules/system.md)
-- **Status**: LIVE=141, UNKNOWN=104
+- **Status**: LIVE=141, UNKNOWN=105
 
 ## Voir aussi
 
