@@ -2758,6 +2758,8 @@
       "backend/supabase/migrations/20260930_rls_align_service_role_only_policies.sql",
       "backend/supabase/migrations/20261001_diag_capture_maintenance_schema.down.sql",
       "backend/supabase/migrations/20261001_diag_capture_maintenance_schema.sql",
+      "backend/supabase/migrations/20261001_drop_pieces_price_unused_indexes.down.sql",
+      "backend/supabase/migrations/20261001_drop_pieces_price_unused_indexes.sql",
       "backend/supabase/migrations/20261001_pin_order_functions_search_path.down.sql",
       "backend/supabase/migrations/20261001_pin_order_functions_search_path.sql",
       "backend/supabase/migrations/README.md"
@@ -2935,7 +2937,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1549,
+  "runtime_files_count": 1551,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4154,6 +4156,8 @@
     "backend/supabase/migrations/20260930_rls_align_service_role_only_policies.sql",
     "backend/supabase/migrations/20261001_diag_capture_maintenance_schema.down.sql",
     "backend/supabase/migrations/20261001_diag_capture_maintenance_schema.sql",
+    "backend/supabase/migrations/20261001_drop_pieces_price_unused_indexes.down.sql",
+    "backend/supabase/migrations/20261001_drop_pieces_price_unused_indexes.sql",
     "backend/supabase/migrations/20261001_pin_order_functions_search_path.down.sql",
     "backend/supabase/migrations/20261001_pin_order_functions_search_path.sql",
     "backend/supabase/migrations/README.md",

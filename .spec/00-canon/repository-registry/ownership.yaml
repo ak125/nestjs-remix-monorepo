@@ -1467,3 +1467,10 @@ entries:
     owner: '@ak125/payments-team'
     sourceConfidence: high
     risk: high
+  # Retrait de 26 index jamais utilisés sur pieces_price, zone STOP prix, GO owner
+  # nominatif ; domaine / owner = ceux de l'autorité du tarif, comme #1623 (PR #1649).
+  - glob: backend/supabase/migrations/20261001_drop_pieces_price_unused_indexes*.sql
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: high
+    risk: high
