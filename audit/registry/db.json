@@ -1235,11 +1235,104 @@
       ]
     },
     {
-      "columns": [],
+      "columns": [
+        {
+          "hasDefault": false,
+          "name": "id",
+          "nullable": true,
+          "type": "serial PRIMARY KEY"
+        },
+        {
+          "hasDefault": false,
+          "name": "slug",
+          "nullable": true,
+          "type": "text NOT NULL UNIQUE"
+        },
+        {
+          "hasDefault": false,
+          "name": "label",
+          "nullable": false,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "description",
+          "nullable": true,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "interval_km_min",
+          "nullable": true,
+          "type": "integer"
+        },
+        {
+          "hasDefault": false,
+          "name": "interval_km_max",
+          "nullable": true,
+          "type": "integer"
+        },
+        {
+          "hasDefault": false,
+          "name": "interval_months_min",
+          "nullable": true,
+          "type": "integer"
+        },
+        {
+          "hasDefault": false,
+          "name": "interval_months_max",
+          "nullable": true,
+          "type": "integer"
+        },
+        {
+          "hasDefault": true,
+          "name": "severity_if_overdue",
+          "nullable": true,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "normal_wear_km_min",
+          "nullable": true,
+          "type": "integer"
+        },
+        {
+          "hasDefault": false,
+          "name": "normal_wear_km_max",
+          "nullable": true,
+          "type": "integer"
+        },
+        {
+          "hasDefault": false,
+          "name": "related_gamme_slug",
+          "nullable": true,
+          "type": "text"
+        },
+        {
+          "hasDefault": false,
+          "name": "related_pg_id",
+          "nullable": true,
+          "type": "integer"
+        },
+        {
+          "hasDefault": true,
+          "name": "active",
+          "nullable": true,
+          "type": "boolean"
+        },
+        {
+          "hasDefault": true,
+          "name": "created_at",
+          "nullable": true,
+          "type": "timestamptz"
+        }
+      ],
       "deletePolicy": "ADR_REQUIRED",
       "domain": "UNKNOWN",
       "id": "__diag_maintenance_operation",
-      "inMigrations": [],
+      "inMigrations": [
+        "20261001_diag_capture_maintenance_schema.sql"
+      ],
       "indexes": [],
       "name": "__diag_maintenance_operation",
       "owner": "__unassigned__",
@@ -1247,7 +1340,7 @@
       "rlsEnabled": true,
       "schema": "public",
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "low",
+      "sourceConfidence": "high",
       "status": "LIVE",
       "usedBy": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
@@ -1255,11 +1348,38 @@
       ]
     },
     {
-      "columns": [],
+      "columns": [
+        {
+          "hasDefault": false,
+          "name": "id",
+          "nullable": true,
+          "type": "serial PRIMARY KEY"
+        },
+        {
+          "hasDefault": true,
+          "name": "relevance",
+          "nullable": true,
+          "type": "text"
+        },
+        {
+          "hasDefault": true,
+          "name": "active",
+          "nullable": true,
+          "type": "boolean"
+        },
+        {
+          "hasDefault": true,
+          "name": "created_at",
+          "nullable": true,
+          "type": "timestamptz"
+        }
+      ],
       "deletePolicy": "ADR_REQUIRED",
       "domain": "UNKNOWN",
       "id": "__diag_maintenance_symptom_link",
-      "inMigrations": [],
+      "inMigrations": [
+        "20261001_diag_capture_maintenance_schema.sql"
+      ],
       "indexes": [],
       "name": "__diag_maintenance_symptom_link",
       "owner": "__unassigned__",
@@ -1267,7 +1387,7 @@
       "rlsEnabled": true,
       "schema": "public",
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "low",
+      "sourceConfidence": "high",
       "status": "LIVE",
       "usedBy": [
         "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts"

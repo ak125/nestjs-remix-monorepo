@@ -21,7 +21,7 @@
     "dynamic_rpc_callsites": 1,
     "unresolved_callsites": 0,
     "dropped_call_sites": 5,
-    "migrations_scanned": 386,
+    "migrations_scanned": 388,
     "backend_files_scanned": 1423
   },
   "tables": {
@@ -329,7 +329,9 @@
         "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts"
       ],
       "used_by_count": 2,
-      "in_migrations": [],
+      "in_migrations": [
+        "20261001_diag_capture_maintenance_schema.sql"
+      ],
       "rls_present": true,
       "in_knowledge_db": false,
       "partition_of": null
@@ -339,7 +341,9 @@
         "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts"
       ],
       "used_by_count": 1,
-      "in_migrations": [],
+      "in_migrations": [
+        "20261001_diag_capture_maintenance_schema.sql"
+      ],
       "rls_present": true,
       "in_knowledge_db": false,
       "partition_of": null
