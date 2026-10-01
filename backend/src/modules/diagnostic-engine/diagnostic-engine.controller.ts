@@ -4,11 +4,13 @@
  * POST /api/diagnostic-engine/analyze      → Evidence Pack
  * GET  /api/diagnostic-engine/systems      → Systemes actifs
  * GET  /api/diagnostic-engine/symptoms     → Symptomes par systeme
- * GET  /api/diagnostic-engine/sessions     → Historique sessions
+ * GET  /api/diagnostic-engine/sessions     → Historique sessions (admin)
  * GET  /api/diagnostic-engine/sessions/:id → Session par UUID
  */
 import {
   Controller,
+  BadRequestException,
+  ServiceUnavailableException,
   Post,
   Get,
   Body,
@@ -17,8 +19,11 @@ import {
   Res,
   Inject,
   Logger,
+  UseGuards,
 } from '@nestjs/common';
 import type { Response } from 'express';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { DiagnosticEngineOrchestrator } from './diagnostic-engine.orchestrator';
 import { DiagnosticEngineDataService } from './diagnostic-engine.data-service';
 import { MaintenanceCalculatorService } from './services/maintenance-calculator.service';
@@ -37,7 +42,22 @@ import {
   HandoffInputSchema,
   type AnalyzeResponseV1A0,
 } from './types/analyze-response.schema';
-import type { EvidencePack } from './types/evidence-pack.schema';
+import {
+  MaintenanceCalendarQuerySchema,
+  MaintenanceAlertsQuerySchema,
+} from './types/maintenance-calendar.schema';
+import { z } from 'zod';
+import {
+  EvidencePackSchema,
+  type EvidencePack,
+} from './types/evidence-pack.schema';
+
+// Check the stored contract without projecting away historical metadata.
+const SavedDiagnosticSessionSchema = z.object({
+  id: z.string().uuid(),
+  created_at: z.string().datetime({ offset: true }),
+  result: EvidencePackSchema,
+});
 
 @Controller('api/diagnostic-engine')
 export class DiagnosticEngineController {
@@ -76,32 +96,46 @@ export class DiagnosticEngineController {
    */
   @Get('wizard-steps')
   getWizardSteps() {
-    return this.diagnosticContent.getWizardSteps();
+    return this.wikiContent(this.diagnosticContent.getWizardSteps());
   }
 
   @Get('safety-config')
   getSafetyConfig() {
-    return this.diagnosticContent.getSafetyConfig();
+    return this.wikiContent(this.diagnosticContent.getSafetyConfig());
   }
 
   @Get('vocab-clusters')
   getVocabClusters() {
-    return this.diagnosticContent.getVocabClusters();
+    return this.wikiContent(this.diagnosticContent.getVocabClusters());
   }
 
   @Get('signs')
   getSigns() {
-    return this.diagnosticContent.getSigns();
+    return this.wikiContent(this.diagnosticContent.getSigns());
   }
 
   @Get('faq')
   getFaq() {
-    return this.diagnosticContent.getFaq();
+    return this.wikiContent(this.diagnosticContent.getFaq());
   }
 
   @Get('controles-mensuels')
   getControlesMensuels() {
-    return this.diagnosticContent.getControlesMensuels();
+    return this.wikiContent(this.diagnosticContent.getControlesMensuels());
+  }
+
+  /**
+   * Un contenu wiki absent ou illisible (déjà journalisé par
+   * DiagnosticContentService) est une 503 : renvoyé tel quel, `null`
+   * devenait une réponse 200 au corps vide, indiscernable d'un succès.
+   */
+  private wikiContent<T>(entry: T | null): T {
+    if (entry === null) {
+      throw new ServiceUnavailableException(
+        'Ce contenu est temporairement indisponible.',
+      );
+    }
+    return entry;
   }
 
   /**
@@ -109,18 +143,46 @@ export class DiagnosticEngineController {
    *
    * ADR-032 D2/D3 — schedule fuel-aware par véhicule.
    */
+  @Get('maintenance-operations')
+  async getMaintenanceOperations() {
+    try {
+      const operations = await this.dataService.getMaintenanceOperations();
+      return {
+        success: true,
+        operations: operations.map(({ slug, label, description }) => ({
+          slug,
+          label,
+          description,
+        })),
+      };
+    } catch {
+      throw new ServiceUnavailableException(
+        'Liste des opérations d’entretien indisponible',
+      );
+    }
+  }
+
   @Get('maintenance-schedule')
   async maintenanceSchedule(
     @Query('type_id') typeId?: string,
     @Query('current_km') currentKm?: string,
     @Query('fuel_type') fuelType?: string,
   ) {
-    const tid = typeId ? parseInt(typeId, 10) : null;
-    const km = currentKm ? parseInt(currentKm, 10) : 0;
+    const parsed = MaintenanceCalendarQuerySchema.safeParse({
+      type_id: typeId,
+      current_km: currentKm,
+      fuel_type: fuelType,
+    });
+    if (!parsed.success)
+      throw new BadRequestException(
+        "Paramètres du calendrier d'entretien invalides.",
+      );
+    const tid = parsed.data.type_id ?? null;
+    const km = parsed.data.current_km ?? 0;
     const items = await this.maintenanceCalculator.getSchedule(
       tid,
       km,
-      fuelType ?? null,
+      parsed.data.fuel_type ?? null,
     );
     return { success: true, type_id: tid, current_km: km, items };
   }
@@ -143,9 +205,22 @@ export class DiagnosticEngineController {
     @Query('current_km') currentKm?: string,
     @Query('fuel_type') fuelType?: string,
   ) {
-    const tid = typeId ? parseInt(typeId, 10) : null;
-    const km = currentKm ? parseInt(currentKm, 10) : 0;
-    return this.maintenanceCalculator.getCalendar(tid, km, fuelType ?? null);
+    const parsed = MaintenanceCalendarQuerySchema.safeParse({
+      type_id: typeId,
+      current_km: currentKm,
+      fuel_type: fuelType,
+    });
+    if (!parsed.success)
+      throw new BadRequestException(
+        "Paramètres du calendrier d'entretien invalides.",
+      );
+    const tid = parsed.data.type_id ?? null;
+    const km = parsed.data.current_km ?? 0;
+    return this.maintenanceCalculator.getCalendar(
+      tid,
+      km,
+      parsed.data.fuel_type ?? null,
+    );
   }
 
   @Get('maintenance-alerts')
@@ -153,15 +228,17 @@ export class DiagnosticEngineController {
     @Query('fuel_type') fuelType?: string,
     @Query('milestones') milestones?: string,
   ) {
-    const list = milestones
-      ? milestones
-          .split(',')
-          .map((s) => parseInt(s.trim(), 10))
-          .filter((n) => Number.isFinite(n))
-      : undefined;
+    const parsed = MaintenanceAlertsQuerySchema.safeParse({
+      fuel_type: fuelType,
+      milestones,
+    });
+    if (!parsed.success)
+      throw new BadRequestException(
+        "Paramètres des paliers d'entretien invalides.",
+      );
     const result = await this.maintenanceCalculator.getAlerts(
-      fuelType ?? null,
-      list,
+      parsed.data.fuel_type ?? null,
+      parsed.data.milestones,
     );
     return { success: true, milestones: result };
   }
@@ -190,7 +267,7 @@ export class DiagnosticEngineController {
       return {
         success: false,
         error: result.error,
-        hint: 'Voir le schema AnalyzeDiagnosticInput pour le format attendu.',
+        hint: 'Voir le schema AnalyzeInputSchema pour le format attendu.',
       };
     }
 
@@ -203,7 +280,10 @@ export class DiagnosticEngineController {
     };
 
     // V1A.0 — Intent Resolution layer (additif, feature-flag gated)
-    if (this.isIntentLayerEnabled()) {
+    if (
+      this.isIntentLayerEnabled() &&
+      result.data!.evidence.evidence_pack.analysis_kind !== 'maintenance'
+    ) {
       const intentLayer = await this.computeIntentLayer(
         body,
         result.data!.session_id,
@@ -410,9 +490,10 @@ export class DiagnosticEngineController {
   /**
    * GET /api/diagnostic-engine/stats
    *
-   * Dashboard stats (session counts, system coverage, knowledge base)
+   * Dashboard stats (session counts, system coverage, knowledge base) — admin
    */
   @Get('stats')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async getStats() {
     const stats = await this.dataService.getStats();
     return { success: true, ...stats };
@@ -421,9 +502,10 @@ export class DiagnosticEngineController {
   /**
    * GET /api/diagnostic-engine/sessions
    *
-   * List recent diagnostic sessions
+   * List recent diagnostic sessions of every visitor — admin
    */
   @Get('sessions')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async listSessions(@Query('limit') limit?: string) {
     const parsedLimit = Math.min(
       Math.max(parseInt(limit || '20', 10) || 20, 1),
@@ -461,6 +543,19 @@ export class DiagnosticEngineController {
     const session = await this.dataService.getSession(id);
     if (!session) {
       return { success: false, error: 'Session introuvable.' };
+    }
+
+    if (
+      !SavedDiagnosticSessionSchema.safeParse(session).success ||
+      session.id.toLowerCase() !== id.toLowerCase()
+    ) {
+      this.logger.warn(
+        'Saved diagnostic session rejected: invalid result or metadata',
+      );
+      return {
+        success: false,
+        error: 'Résultat sauvegardé illisible. Relancez une analyse.',
+      };
     }
 
     return {

@@ -8,6 +8,8 @@ process.env.SUPABASE_SERVICE_KEY =
 process.env.SUPABASE_SERVICE_ROLE_KEY =
   process.env.SUPABASE_SERVICE_ROLE_KEY || 'test-service-role-key';
 
+import { ServiceUnavailableException } from '@nestjs/common';
+import { RmController } from '../../controllers/rm.controller';
 import { RmAlternativesService } from '../rm-alternatives.service';
 import type { CacheService } from '@cache/cache.service';
 import { CACHE_STRATEGIES } from '../../../../config/cache-ttl.config';
@@ -18,7 +20,7 @@ import { CACHE_STRATEGIES } from '../../../../config/cache-ttl.config';
  * ranking vit dans Postgres SECURITY DEFINER (bypass RLS, ADR-076).
  *
  * Contrat de cache (A2, 2026-09-02) :
- *   - clé `alt:v4:g{génération}:{type_id}:{pg_id}` — SANS `limit`
+ *   - clé `alt:v5:g{génération}:{type_id}:{pg_id}` — SANS `limit`
  *     (cardinalité = type×pg) ; génération = jeton Redis `cache:gen:catalog`
  *     (A3), bumpé à l'activation pricing → invalidation O(1)
  *   - la RPC est toujours appelée au `limit` canonique maximal (24) ; la
@@ -27,7 +29,7 @@ import { CACHE_STRATEGIES } from '../../../../config/cache-ttl.config';
  *   - TTL succès = CACHE_STRATEGIES.RM.ALTERNATIVES (24 h), erreur = 30 s
  */
 const GENERATION = 7;
-const KEY = `alt:v4:g${GENERATION}:11836:3859`;
+const KEY = `alt:v5:g${GENERATION}:11836:3859`;
 const CANONICAL_LIMIT = 24;
 
 type CacheMock = { get: jest.Mock; set: jest.Mock; getGeneration: jest.Mock };
@@ -91,8 +93,8 @@ describe('RmAlternativesService (RPC canon)', () => {
       cacheMock.getGeneration.mockResolvedValue(GENERATION + 1);
       await service.compute(11836, 3859, 12);
 
-      expect(cacheMock.get).toHaveBeenNthCalledWith(1, 'alt:v4:g7:11836:3859');
-      expect(cacheMock.get).toHaveBeenNthCalledWith(2, 'alt:v4:g8:11836:3859');
+      expect(cacheMock.get).toHaveBeenNthCalledWith(1, 'alt:v5:g7:11836:3859');
+      expect(cacheMock.get).toHaveBeenNthCalledWith(2, 'alt:v5:g8:11836:3859');
     });
   });
 
@@ -188,22 +190,28 @@ describe('RmAlternativesService (RPC canon)', () => {
   });
 
   describe('compute() — chemin erreur', () => {
-    it('fallback gracieux sur RPC error : payload vide + cache short-TTL (anti-poisoning)', async () => {
+    it('RPC error reste indisponible au premier appel et depuis le cache court', async () => {
       cacheMock.get!.mockResolvedValue(null);
       callRpcMock.mockResolvedValue({
         data: null,
         error: { message: 'permission denied', name: 'SupabaseRpcError' },
       });
 
-      const result = await service.compute(11836, 3859, 12);
-
-      expect(result.version).toBe('v2');
-      expect(result.alternativeVehicles).toEqual([]);
-      expect(result.alternativeGammes).toEqual([]);
-      expect(result.relatedModels).toEqual([]);
-      // Error path uses CACHE_TTL_ERROR_SECONDS=30, not the 24 h success TTL,
-      // so a transient failure does not poison the cache (regression 2026-05-19).
+      await expect(service.compute(11836, 3859, 12)).rejects.toBeInstanceOf(
+        ServiceUnavailableException,
+      );
       expect(cacheMock.set).toHaveBeenCalledWith(KEY, expect.any(String), 30);
+      cacheMock.get.mockResolvedValue(cacheMock.set.mock.calls[0][1]);
+      await expect(service.compute(11836, 3859, 12)).rejects.toBeInstanceOf(
+        ServiceUnavailableException,
+      );
+      expect(callRpcMock).toHaveBeenCalledTimes(1);
+      // After expiry the same request recovers from the real RPC result.
+      cacheMock.get.mockResolvedValue(null);
+      callRpcMock.mockResolvedValue({ data: fullPayload, error: null });
+      expect(
+        (await service.compute(11836, 3859, 12)).alternativeGammes,
+      ).toHaveLength(8);
     });
 
     it('auth failure (Invalid API key) is logged at ERROR not WARN', async () => {
@@ -219,11 +227,59 @@ describe('RmAlternativesService (RPC canon)', () => {
         .spyOn((service as any).logger, 'warn')
         .mockImplementation(() => {});
 
-      await service.compute(11836, 3859, 12);
+      await expect(service.compute(11836, 3859, 12)).rejects.toBeInstanceOf(
+        ServiceUnavailableException,
+      );
 
       expect(errorSpy).toHaveBeenCalledTimes(1);
       expect(warnSpy).not.toHaveBeenCalled();
       expect(errorSpy.mock.calls[0][0]).toMatch(/Invalid API key/);
+    });
+
+    it.each([
+      null,
+      {},
+      { alternativeVehicles: [], alternativeGammes: null, relatedModels: [] },
+    ])(
+      'payload RPC invalide %# : jamais stocké comme succès 24h',
+      async (data) => {
+        callRpcMock.mockResolvedValue({ data, error: null });
+        await expect(service.compute(11836, 3859, 12)).rejects.toBeInstanceOf(
+          ServiceUnavailableException,
+        );
+        expect(cacheMock.set).toHaveBeenCalledWith(KEY, expect.any(String), 30);
+      },
+    );
+
+    it('le contrôleur propage une indisponibilité sans divulguer la cause interne', async () => {
+      callRpcMock.mockRejectedValue(new Error('internal-rpc-secret-detail'));
+      const controller = new RmController({} as never, service, {} as never);
+      await expect(
+        controller.getAlternatives(3859, 11836, 12),
+      ).rejects.toMatchObject({
+        status: 503,
+        message: 'Alternatives temporairement indisponibles',
+      });
+    });
+
+    it('un vrai résultat vide reste un succès, y compris depuis le cache', async () => {
+      const empty = {
+        alternativeVehicles: [],
+        alternativeGammes: [],
+        relatedModels: [],
+      };
+      callRpcMock.mockResolvedValue({ data: empty, error: null });
+      const controller = new RmController({} as never, service, {} as never);
+      expect(await controller.getAlternatives(3859, 11836, 12)).toMatchObject({
+        success: true,
+        ...empty,
+      });
+      cacheMock.get.mockResolvedValue(cacheMock.set.mock.calls[0][1]);
+      expect(await controller.getAlternatives(3859, 11836, 12)).toMatchObject({
+        success: true,
+        ...empty,
+      });
+      expect(callRpcMock).toHaveBeenCalledTimes(1);
     });
 
     it('une entrée de cache illisible est ignorée et recalculée', async () => {

@@ -6,6 +6,7 @@
  *
  * @see backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts
  */
+import { ServiceUnavailableException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { MaintenanceCalculatorService } from '../../src/modules/diagnostic-engine/services/maintenance-calculator.service';
@@ -22,7 +23,13 @@ describe('MaintenanceCalculatorService.getCalendar() (ADR-032 D9)', () => {
 
     const mockConfig = {
       getOrThrow: jest.fn(() => 'mock'),
-      get: jest.fn(),
+      get: jest.fn(
+        (key: string) =>
+          ({
+            SUPABASE_URL: 'http://mock',
+            SUPABASE_SERVICE_ROLE_KEY: 'mock-key',
+          })[key],
+      ),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -61,7 +68,7 @@ describe('MaintenanceCalculatorService.getCalendar() (ADR-032 D9)', () => {
     mockRpc.mockResolvedValueOnce({
       data: [
         { milestone_km: 10000, actions: [] },
-        { milestone_km: 30000, actions: [{ rule_alias: 'vidange-essence' }] },
+        { milestone_km: 30000, actions: [{ rule_alias: 'vidange-essence', rule_label: 'Vidange moteur essence', maintenance_priority: 'important', km_interval: 15000 }] },
         { milestone_km: 60000, actions: [] },
         { milestone_km: 100000, actions: [] },
         { milestone_km: 150000, actions: [] },
@@ -73,7 +80,7 @@ describe('MaintenanceCalculatorService.getCalendar() (ADR-032 D9)', () => {
       title: 'Contrôles mensuels',
       entity_data: {
         items: [
-          { element: 'Niveau d\'huile moteur', icon: 'Droplets', detail: '...' },
+          { element: "Niveau d'huile moteur", icon: 'Droplets', detail: '...' },
           { element: 'Pression des pneus', icon: 'Gauge', detail: '...' },
         ],
       },
@@ -118,4 +125,23 @@ describe('MaintenanceCalculatorService.getCalendar() (ADR-032 D9)', () => {
       expect.any(Object),
     );
   });
+
+  it.each([
+    'kg_get_smart_maintenance_schedule',
+    'kg_get_maintenance_alerts_by_milestone',
+  ])(
+    'propagates unavailability from %s instead of a partial calendar',
+    async (failedRpc) => {
+      mockRpc.mockImplementation(async (rpc: string) =>
+        rpc === failedRpc
+          ? { data: null, error: { message: 'private database detail' } }
+          : { data: [], error: null },
+      );
+
+      await expect(service.getCalendar(12345, 80000)).rejects.toBeInstanceOf(
+        ServiceUnavailableException,
+      );
+      expect(mockGetControles).not.toHaveBeenCalled();
+    },
+  );
 });

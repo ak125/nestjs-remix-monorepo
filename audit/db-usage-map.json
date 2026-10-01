@@ -9,8 +9,8 @@
     "0 call-site(s) non résolu(s) : récepteur ni prouvé DB ni rejeté — voir unresolved_callsites[]. Un nom non résolu ne peut pas être déclaré orphelin."
   ],
   "summary": {
-    "tables_seen": 314,
-    "tables_with_callsites": 214,
+    "tables_seen": 313,
+    "tables_with_callsites": 213,
     "candidate_orphan_tables": 73,
     "partitions": 27,
     "rpc_seen": 248,
@@ -21,8 +21,8 @@
     "dynamic_rpc_callsites": 1,
     "unresolved_callsites": 0,
     "dropped_call_sites": 5,
-    "migrations_scanned": 359,
-    "backend_files_scanned": 1409
+    "migrations_scanned": 386,
+    "backend_files_scanned": 1423
   },
   "tables": {
     "___config": {
@@ -151,7 +151,7 @@
       ],
       "used_by_count": 2,
       "in_migrations": [],
-      "rls_present": false,
+      "rls_present": true,
       "in_knowledge_db": false,
       "partition_of": null
     },
@@ -325,9 +325,10 @@
     },
     "__diag_maintenance_operation": {
       "used_by": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
         "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts"
       ],
-      "used_by_count": 1,
+      "used_by_count": 2,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false,
@@ -589,7 +590,7 @@
       ],
       "used_by_count": 2,
       "in_migrations": [],
-      "rls_present": false,
+      "rls_present": true,
       "in_knowledge_db": false,
       "partition_of": null
     },
@@ -746,7 +747,7 @@
       ],
       "used_by_count": 1,
       "in_migrations": [],
-      "rls_present": false,
+      "rls_present": true,
       "in_knowledge_db": false,
       "partition_of": null
     },
@@ -1218,7 +1219,6 @@
     "__seo_gamme_purchase_guide": {
       "used_by": [
         "backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts",
-        "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts",
         "backend/src/modules/admin/services/conseil-priority.service.ts",
         "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
@@ -1232,7 +1232,7 @@
         "backend/src/modules/seo-monitoring/services/r-content-auditor.service.ts",
         "backend/src/modules/seo/validation/purchase-guide-validator.service.ts"
       ],
-      "used_by_count": 14,
+      "used_by_count": 13,
       "in_migrations": [],
       "rls_present": false,
       "in_knowledge_db": true,
@@ -1674,16 +1674,6 @@
       ],
       "rls_present": true,
       "in_knowledge_db": false,
-      "partition_of": null
-    },
-    "__seo_r2_keyword_plan": {
-      "used_by": [
-        "backend/src/modules/admin/services/r2-enricher.service.ts"
-      ],
-      "used_by_count": 1,
-      "in_migrations": [],
-      "rls_present": true,
-      "in_knowledge_db": true,
       "partition_of": null
     },
     "__seo_r2_metrics": {
@@ -2306,7 +2296,7 @@
       ],
       "used_by_count": 3,
       "in_migrations": [],
-      "rls_present": false,
+      "rls_present": true,
       "in_knowledge_db": false,
       "partition_of": null
     },
@@ -10637,7 +10627,7 @@
     },
     {
       "file": "backend/src/config/content-write-gate.service.ts",
-      "line": 127,
+      "line": 156,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "binding-not-literal"
@@ -11078,63 +11068,63 @@
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 665,
+      "line": 662,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_pages",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1300,
+      "line": 1294,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_pages",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1375,
+      "line": 1369,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_pages",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1412,
+      "line": 1406,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_page_versions",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1420,
+      "line": 1414,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_page_versions",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1445,
+      "line": 1439,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_fingerprints",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1487,
+      "line": 1481,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_similarity_index",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1507,
+      "line": 1501,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_regeneration_queue",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1518,
+      "line": 1512,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_qa_reviews",
       "refusal": null

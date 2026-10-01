@@ -1,0 +1,256 @@
+{
+  "scope_requested": "Verifier le rapport et corriger le code ; continue",
+  "scope_actually_scanned": "C03 MCP diagnose: declared context/history, validation, response integrity; targeted caller search and live SQL semantics. Other MCP methods not audited.",
+  "files_read_count": 28,
+  "files_read": [
+    ".claude/canon-mirrors/agent-exit-contract.md",
+    ".claude/knowledge/REPO_MAP.md",
+    ".claude/knowledge/modules/mcp-validation.md",
+    ".claude/rules/backend.md",
+    ".claude/rules/security-hooks.md",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "audit/registry/canonical.json",
+    "backend/jest.config.js",
+    "backend/src/modules/diagnostic-engine/maintenance-calendar-integrity.test.ts",
+    "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts",
+    "backend/src/modules/knowledge-graph/kg.controller.ts",
+    "backend/src/modules/knowledge-graph/kg.service.ts",
+    "backend/src/modules/mcp-validation/config/mcp-route-map.config.ts",
+    "backend/src/modules/mcp-validation/decorators/mcp-verify.decorator.ts",
+    "backend/src/modules/mcp-validation/interceptors/mcp-shadow.interceptor.ts",
+    "backend/src/modules/mcp-validation/interceptors/mcp-verify.interceptor.ts",
+    "backend/src/modules/mcp-validation/services/mcp-query-diagnostic.test.ts",
+    "backend/src/modules/mcp-validation/services/mcp-query.service.ts",
+    "backend/src/modules/mcp-validation/types/mcp-diagnose.schema.ts",
+    "backend/src/modules/mcp-validation/types/mcp-verify.types.ts",
+    "backend/supabase/migrations/20260125_kg_v3_observable_pro.sql",
+    "backend/tsconfig.json",
+    "docs/audits/diagnostic-calendar-20260927/CHECKPOINT.md",
+    "docs/audits/diagnostic-calendar-20260927/coverage-manifest.json",
+    "docs/audits/diagnostic-integrity-20260927/AUDIT.md",
+    "frontend/app/routes/admin.diagnostic.$id.edit.tsx",
+    "log.md"
+  ],
+  "read_scope_note": "Targeted excerpts and searches, including bounded read-only delegate; not exhaustive reads of all listed files.",
+  "base": "4a2871dc4d19067c3ae077d6a79021b49cc60237",
+  "previous_candidate_tree": "99292f8ee3a33e8f157df8222469f9b7f54f0cb2",
+  "latest_observed_main": "4fca2ef26f6af27451e7bb31945982258c904ede",
+  "branch": "codex/diagnostic-integrity-20260926",
+  "changed_code_test_files_this_lot": [
+    "backend/src/modules/mcp-validation/services/mcp-query.service.ts",
+    "backend/src/modules/mcp-validation/services/mcp-query-diagnostic.test.ts",
+    "backend/src/modules/mcp-validation/types/mcp-verify.types.ts",
+    "backend/src/modules/mcp-validation/types/mcp-diagnose.schema.ts"
+  ],
+  "cumulative_changed_code_test_files": [
+    {
+      "path": "backend/src/modules/diagnostic-engine/constants/gamme-map.constants.ts",
+      "sha256": "f5246d9713a1ba83141818edb331b5124a4bc0be4f3ff65460126fe08b20e002"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
+      "sha256": "af59dc41e722503a2706c476e79647b4668bb259cb411b318a6785e0e807ef7f"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
+      "sha256": "7e246d5c3c636df0c38e32ad61098801a1019c73d7e52b60274fc27b4c99354e"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
+      "sha256": "991361a9491ae4c00c7a7b904b79aa563f745fdc71b71e92e7e64ba88069ea75"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
+      "sha256": "e61e7e0eb118d29e58d196efd92da4af4c00cadbb373df2bbf90fd8a36e6c67b"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
+      "sha256": "9ec5e306a89a092b348c7fb8676b59502383367a74ccf0982a124152861b963e"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
+      "sha256": "f080b75dd15fde693a7dfdcf13209f6b18311d606156c2ede138eec8a28b0ad7"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.test.ts",
+      "sha256": "22243a4b7cc4edfac1808e2bc77943326d8ed734a00f06f7ab06385b0cfa2c2a"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
+      "sha256": "56eba4aa244052f44929927e82378622e6ee86237b2770a560cefc1639113c24"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/maintenance-calendar-integrity.test.ts",
+      "sha256": "560741f9714b9c976116defe98500987b188aa9623a4a7276e6ee6ea6074c243"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/maintenance-flow.test.ts",
+      "sha256": "397eff003109bc9c7c02f71acbcbf23ab21e3019c2640b57b7cbf712298ecf39"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
+      "sha256": "6315cfc8d6700aa85ae7c380f15ab35a43dbe3b9c86d1099f69b8201775f1131"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/services/action-recommender.test.ts",
+      "sha256": "1637cff54deec17db72c8b6f69792b138d00cb6d32a187ce5cfe48d4eab8864e"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/services/kg-shadow.service.test.ts",
+      "sha256": "ef0d3a207a5bd7115adc1162775f66ffb04a9e837d0d37987f5653a287ea3d54"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/services/kg-shadow.service.ts",
+      "sha256": "fc9923ee28e0cbd1e45b9ee158c0b104ea034fe90c1ffa4d163256169d27984a"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts",
+      "sha256": "b55e42e603bbe2b5f4f141e5226f8d8fde7d3d9c85517c6a823b69d9730d5f42"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts",
+      "sha256": "63f667c8a977f9cbcadd94f419f612451646d2a6fc18be5351cf04e0d9e88077"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts",
+      "sha256": "b8e308ecf1832c810cff386dd585a769a7ad24f59a7164cbcd65c3e9c4db49e5"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/types/maintenance-calendar.schema.ts",
+      "sha256": "ecd4a8a113b3b0316ef250a8a4e341fcb77f92bb7ab86905f9689779c9594356"
+    },
+    {
+      "path": "backend/src/modules/mcp-validation/services/mcp-query-diagnostic.test.ts",
+      "sha256": "732ee2cdce0b02abfa5fc548e48a3f7b1cac7732fbf0f24fda224b391175bcd0"
+    },
+    {
+      "path": "backend/src/modules/mcp-validation/services/mcp-query.service.ts",
+      "sha256": "38c0323aa7447e611f4522bb8cb16b413e9b6252850e065e4d241add1bda1b4e"
+    },
+    {
+      "path": "backend/src/modules/mcp-validation/types/mcp-diagnose.schema.ts",
+      "sha256": "5a945610a8da904cde9b5423ed394bd1905496963b64d4c3efc561b886588fa8"
+    },
+    {
+      "path": "backend/src/modules/mcp-validation/types/mcp-verify.types.ts",
+      "sha256": "f3e454c61001139a9cd98a3b701b5f0174fe6ba68079a9e8dea68d5094999f18"
+    },
+    {
+      "path": "backend/tests/unit/maintenance-calculator.service.test.ts",
+      "sha256": "02b9d8967376161e37b38338ea80ec51ad5daf4ed4a2f3a16e9aef2e82f9d504"
+    },
+    {
+      "path": "backend/tests/unit/maintenance-calendar-endpoint.test.ts",
+      "sha256": "e760a9d71cdfbfece3bbb79ae6001fca781b550510f8e3b7ef36abdbf3ecb250"
+    },
+    {
+      "path": "frontend/app/components/diagnostic-wizard/DiagnosticWizard.tsx",
+      "sha256": "1cb7e18f9de0ce0bf08bc611b15c90e992121c487ca9324c6bd8e7649e21817f"
+    },
+    {
+      "path": "frontend/app/components/diagnostic-wizard/results/DiagnosticResults.tsx",
+      "sha256": "6f6c04cf165bdf9daa93f2c9f40a98e58710df239f3a137e22538b995e738a8e"
+    },
+    {
+      "path": "frontend/app/components/diagnostic-wizard/results/ResultCatalog.tsx",
+      "sha256": "b472563732c01b7497fd10ada171f6c3a13cf0f8e4f8d70d2ac2afbea63a3379"
+    },
+    {
+      "path": "frontend/app/components/diagnostic-wizard/results/ResultMaintenance.tsx",
+      "sha256": "703cef5fc1585619682ee989837329168bf6d0168c85e7d4127a35ef10608c38"
+    },
+    {
+      "path": "frontend/app/components/diagnostic-wizard/results/ResultMissing.tsx",
+      "sha256": "77772cd9a9e0ad81074f243cefc5af892555d6754452889247eab8febea9d5c0"
+    },
+    {
+      "path": "frontend/app/components/diagnostic-wizard/steps/StepMaintenance.tsx",
+      "sha256": "00af60e449095353c3769af764486a35719f8a04c38e890509f1c53d340b6413"
+    },
+    {
+      "path": "frontend/app/components/diagnostic-wizard/steps/StepVehicle.tsx",
+      "sha256": "1462c42218439f7d99b5a01d5541548dbef08f07a1b6fceb7d919e99a5e83a4b"
+    },
+    {
+      "path": "frontend/app/components/diagnostic-wizard/types.ts",
+      "sha256": "d579b85fee32eac7f03979e3a28f858362a92e9f4b89ac28326e9b8692c774d6"
+    },
+    {
+      "path": "frontend/app/routes/blog-pieces-auto.calendrier-entretien.tsx",
+      "sha256": "0cb7cae340a52d8a86f42c1972bfdd1d44eb2d58ded06b7636d7af96791ae92a"
+    },
+    {
+      "path": "frontend/app/routes/diagnostic.tsx",
+      "sha256": "1da5d63869dcf97d47251dc9b38facb16e12b66165c92d92e48f2f2d072db892"
+    },
+    {
+      "path": "frontend/app/utils/url-builder.utils.ts",
+      "sha256": "e497d9a119ba002b78ff33921d2c15437ff893f043c52e97d9cd056b202a4ff1"
+    },
+    {
+      "path": "frontend/tests/unit/diagnostic-legacy-navigation.test.tsx",
+      "sha256": "33ad31d69a33a43207779e04fcd634ed060b81cf5ba58f49cbdf2c1d0494ab6c"
+    },
+    {
+      "path": "frontend/tests/unit/diagnostic-maintenance-flow.test.tsx",
+      "sha256": "239fae12f8078742b920210ca7009caebb13dd600e440e9c00b45929ad9e7511"
+    },
+    {
+      "path": "frontend/tests/unit/diagnostic-maintenance-step.test.tsx",
+      "sha256": "6fd4bcdb8dddedc490d984ed03c4e96180ab743608483802c61b8811a812fe58"
+    },
+    {
+      "path": "frontend/tests/unit/diagnostic-result-links.test.tsx",
+      "sha256": "2aa7d5a8b0051f4b793fbd33338275ca2084cad59e898badb22da168eefc1e32"
+    },
+    {
+      "path": "frontend/tests/unit/diagnostic-wizard-submission.test.tsx",
+      "sha256": "ac9990b214e6a399f634837afb24fd429319469914ca65a03ebc12dc2333ecc5"
+    }
+  ],
+  "excluded_paths": [
+    "node_modules",
+    ".env contents",
+    "auth/payment/price/stock/SEO changes",
+    "runtime/deployment config"
+  ],
+  "unscanned_zones": [
+    "full repository",
+    "all MCP functions",
+    "external callers",
+    "connected HTTP application",
+    "browser",
+    "CI/PREPROD/PROD",
+    "KG identity mapping and mechanical validity"
+  ],
+  "corrections_proposed": [],
+  "corrections_applied": {
+    "authorization": "Verifier le rapport et corriger le code, puis continue",
+    "scope": "isolated DEV worktree; no DB mutation",
+    "code_test_count": 4
+  },
+  "validation_executed": {
+    "backend": {
+      "tests": 277,
+      "suites": 15,
+      "new_mcp_cases": 54
+    },
+    "red_proof": "46 failed / 8 passed before implementation",
+    "backend_typecheck": "passed",
+    "lint": "passed: 0 errors, 8 pre-existing warnings outside changed diagnostic logic",
+    "database": "2 READ ONLY transactions: definitions and 3-case comparison",
+    "live_snapshot_schema_replay": "12 rows / 3 cases passed; offline, not HTTP",
+    "frontend_browser": "not rerun; previous calendar lot evidence is historical"
+  },
+  "prior_evidence_reuse": "All 37 previous code/test hashes identical at start and packaging. Frontend/dependencies/config not changed. Prior 223 backend tests rerun within 277.",
+  "remaining_unknowns": [
+    "Actual HTTP wiring absent in targeted search",
+    "Wizard/KG/vehicle/operation identity mapping",
+    "Score remains completeness, not causal precision",
+    "Independent safety evaluation",
+    "Connected HTTP/CI"
+  ],
+  "final_status": "VALIDATED_FOR_SCOPE_ONLY",
+  "overall_audit_status": "PARTIAL_COVERAGE"
+}

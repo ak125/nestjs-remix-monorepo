@@ -25,7 +25,7 @@ export const CAUSE_GAMME_MAP: Record<string, GammeMapping[]> = {
     { slug: 'etrier-de-frein', label: 'Étrier de frein', pg_id: 78 },
   ],
   brake_fluid_low: [
-    { slug: 'liquide-de-frein', label: 'Liquide de frein', pg_id: 479 },
+    { slug: 'liquide-de-frein', label: 'Liquide de frein', pg_id: 71 },
   ],
 
   // ── Démarrage / Charge ────────────────────────────

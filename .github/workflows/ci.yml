@@ -45,7 +45,7 @@ jobs:
           cache: "npm"
 
       - name: Restore Turbo cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .turbo
           key: turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -111,7 +111,7 @@ jobs:
           cache: "npm"
 
       - name: Restore Turbo cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .turbo
           key: turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -131,7 +131,7 @@ jobs:
       # Key on lockfile + turbo.json + every tsconfig — a config change alters the compile
       # graph and must start a fresh buildinfo. Saves only on job success (first GREEN run).
       - name: Restore TypeScript incremental buildinfo
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             **/node_modules/.cache/tsc/
@@ -200,7 +200,7 @@ jobs:
           cache: "npm"
 
       - name: Restore Turbo cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .turbo
           key: turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -215,6 +215,11 @@ jobs:
 
       - name: Test client-IP deployment probe
         run: node --test scripts/ci/prod-client-ip-probe.test.mjs
+
+      # deploy-prod.yml refuses a commit unless the deploy / e2e-smoke / lighthouse
+      # jobs below passed; this catches a rename of those jobs at PR time.
+      - name: Test PREPROD evidence gate (deploy-prod)
+        run: node --test scripts/ci/prod-preprod-evidence.test.mjs
 
       - name: Test E2E rate-budget admission
         run: node --test scripts/ci/preprod-e2e-rate-budget.test.mjs scripts/ci/preprod-e2e-rate-budget.storage.test.mjs
@@ -264,7 +269,7 @@ jobs:
           cache: "npm"
 
       - name: Restore Turbo cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .turbo
           key: turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -340,7 +345,7 @@ jobs:
           cache: "npm"
 
       - name: Restore Turbo cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .turbo
           key: turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -1036,18 +1041,36 @@ jobs:
         run: |
           BASE="http://localhost:3200"
           FAILED=0
+          # All SSR pages of this runner share one throttler bucket; each page
+          # below waits one `short` TTL (from THROTTLER_TIERS) so it starts in an
+          # empty burst window and can only be throttled by its own cost — see
+          # the PACING note of warm-soft-404-fixtures.sh. No default: fail closed.
+          SSR_BURST_WINDOW_SECONDS=$(node scripts/ci/preprod-e2e-rate-budget.mjs --burst-window-seconds)
+          if ! [[ "$SSR_BURST_WINDOW_SECONDS" =~ ^[1-9][0-9]*$ ]]; then
+            echo "::error::Burst window unavailable from THROTTLER_TIERS (got '${SSR_BURST_WINDOW_SECONDS}')"
+            exit 1
+          fi
+          export SSR_BURST_WINDOW_SECONDS
           # Warm per-URL vehicle-alternatives cache before asserting — kills the
           # cold-start flake seen on #798/#800/#799 (deterministic pre-pass, not a retry).
-          bash scripts/ci/warm-soft-404-fixtures.sh "$BASE"
+          # Warming itself is non-fatal; its exit code only reports a setup error.
+          if ! bash scripts/ci/warm-soft-404-fixtures.sh "$BASE"; then
+            echo "::error::Soft-404 warm pre-pass could not start"
+            exit 1
+          fi
           echo "## 🩹 Soft-404 R2 Smoke" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           while IFS= read -r url || [ -n "$url" ]; do
             # skip blank lines + comments
             [[ -z "${url// }" ]] && continue
             case "$url" in \#*) continue ;; esac
-            echo "🔎 $url"
+            sleep "$SSR_BURST_WINDOW_SECONDS"
             HTTP_OUT=$(curl -s -i --max-time 15 "$BASE$url")
             CURL_RC=$?
+            # Same parser as remaining_short() in warm-soft-404-fixtures.sh: awk
+            # reads the whole response so the writer never hits a closed pipe.
+            REMAINING_SHORT=$(printf '%s\n' "$HTTP_OUT" | awk '{ sub(/\r$/, "") } !done && NF == 0 { done = 1 } !done && tolower($1) == "x-ratelimit-remaining-short:" { value = $2; done = 1 } END { print (value == "" ? "absent" : value) }')
+            echo "🔎 $url (x-ratelimit-remaining-short=${REMAINING_SHORT})"
             if [ "$CURL_RC" != "0" ] || [ -z "$HTTP_OUT" ]; then
               echo "❌ curl failed for $url (rc=$CURL_RC)"
               echo "- $url: ❌ curl failed (rc=$CURL_RC)" >> $GITHUB_STEP_SUMMARY

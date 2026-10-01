@@ -308,14 +308,9 @@ export class RmController {
       this.logger.warn(
         `Alternatives v2 endpoint error gamme=${gamme_id} type=${type_id}: ${err instanceof Error ? err.message : err}`,
       );
-      return {
-        success: true,
-        version: 'v2',
-        etag: 'sha256-empty',
-        alternativeVehicles: [],
-        alternativeGammes: [],
-        relatedModels: [],
-      };
+      throw new ServiceUnavailableException(
+        'Alternatives temporairement indisponibles',
+      );
     }
   }
 

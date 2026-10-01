@@ -68,6 +68,8 @@ export interface EnrichmentResult {
   updated: boolean;
   sectionsUpdated: number;
   skippedSections: string[];
+  /** WriteGate refusal reason when nothing was written (e.g. `rag_provenance_refused`). */
+  reason?: string;
   evidencePack?: EvidenceEntry[];
   claims?: ClaimEntry[];
 }

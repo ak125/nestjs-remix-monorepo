@@ -7,6 +7,7 @@
  */
 
 import {
+  KgShadowService,
   compareTopN,
   TOP_N_DEFAULT,
   type CanonicalCauseRef,
@@ -36,7 +37,7 @@ describe('compareTopN (PR-E)', () => {
     expect(verdict.jaccard_overlap).toBe(1);
   });
 
-  test('same set different order → reason "set_diff" (top1 still matches)', () => {
+  test('same set with top1 unchanged → reason "match"', () => {
     const verdict = compareTopN(
       canonical(['a', 'b', 'c']),
       kg(['a', 'c', 'b']),
@@ -109,5 +110,40 @@ describe('compareTopN (PR-E)', () => {
       5,
     );
     expect(verdict.jaccard_overlap).toBeCloseTo(1 / 5);
+  });
+});
+
+describe('KG identity and ranking integrity', () => {
+  test('same set with a different top result is a top1 divergence', () => {
+    expect(compareTopN(canonical(['a', 'b']), kg(['b', 'a']), 5)).toMatchObject(
+      { has_divergence: true, reason: 'top1_diff', jaccard_overlap: 1 },
+    );
+  });
+  test('valid mapped UUIDs still reach the RPC and compare normally', async () => {
+    const service = Object.create(KgShadowService.prototype) as KgShadowService;
+    const id = 'ad7d6d12-0eb3-4fbf-bda3-e542d2353a11';
+    const callRpc = jest
+      .fn()
+      .mockResolvedValue({ data: kg([id]), error: null });
+    Object.assign(service, { callRpc });
+    const verdict = await service.runShadow({
+      observable_ids: [id],
+      vehicle_id: id,
+      canonical_hypotheses: canonical([id]),
+    });
+    expect(callRpc).toHaveBeenCalled();
+    expect(verdict.reason).toBe('match');
+  });
+  test('unmapped symptom slugs never reach the UUID RPC', async () => {
+    const service = Object.create(KgShadowService.prototype) as KgShadowService;
+    const callRpc = jest.fn().mockResolvedValue({ data: [], error: null });
+    Object.assign(service, { callRpc });
+    const verdict = await service.runShadow({
+      observable_ids: ['brake-noise'],
+      vehicle_id: '123',
+      canonical_hypotheses: canonical(['brake_pads_worn']),
+    });
+    expect(callRpc).not.toHaveBeenCalled();
+    expect(verdict.reason).toBe('kg_error');
   });
 });

@@ -32,7 +32,7 @@ export const VehicleContextInputSchema = z.object({
   engine: z.string().optional(),
   fuel: FuelTypeEnum.optional(),
   year: z.number().min(1970).max(2030).optional(),
-  mileage_km: z.number().min(0).optional(),
+  mileage_km: z.number().finite().min(0).optional(),
 });
 export type VehicleContextInput = z.infer<typeof VehicleContextInputSchema>;
 
@@ -46,12 +46,32 @@ export const UsageProfileEnum = z.enum([
   'occasional',
 ]);
 
+const ServiceDateSchema = z.string().refine((value) => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(`${value}T00:00:00Z`);
+  return (
+    Number.isFinite(date.getTime()) &&
+    date.toISOString().slice(0, 10) === value &&
+    value <= new Date().toISOString().slice(0, 10)
+  );
+}, 'Date d’entretien invalide ou future (AAAA-MM-JJ attendu)');
+
+export const MaintenanceRecordInputSchema = z.object({
+  operation_slug: z.string().trim().min(1),
+  last_service_km: z.number().finite().min(0).optional(),
+  last_service_date: ServiceDateSchema.optional(),
+});
+export type MaintenanceRecordInput = z.infer<
+  typeof MaintenanceRecordInputSchema
+>;
+
 export const UsageContextInputSchema = z.object({
   usage_profile: UsageProfileEnum.optional(),
-  last_service_km: z.number().optional(),
-  last_service_date: z.string().optional(),
-  immobilized_days: z.number().optional(),
+  last_service_km: z.number().finite().min(0).optional(),
+  last_service_date: ServiceDateSchema.optional(),
+  immobilized_days: z.number().finite().min(0).optional(),
   recent_repairs: z.array(z.string()).optional(),
+  maintenance_records: z.array(MaintenanceRecordInputSchema).optional(),
 });
 export type UsageContextInput = z.infer<typeof UsageContextInputSchema>;
 
@@ -85,15 +105,87 @@ export type SignalInput = z.infer<typeof SignalInputSchema>;
 
 // ── Main Input ──────────────────────────────────────────
 
-export const AnalyzeDiagnosticInputSchema = z.object({
-  intent_type: DiagnosticIntentEnum,
-  system_scope: z.string().min(1),
-  vehicle_context: VehicleContextInputSchema,
-  usage_context: UsageContextInputSchema.optional(),
-  signal_input: SignalInputSchema,
-  answers: z.record(z.string(), z.string()).optional(),
-  session_id: z.string().uuid().optional(),
-});
+function validateHistory(
+  input: {
+    vehicle_context: VehicleContextInput;
+    usage_context?: UsageContextInput;
+  },
+  ctx: z.RefinementCtx,
+) {
+  const currentKm = input.vehicle_context.mileage_km;
+  const checkKm = (km: number | undefined, path: (string | number)[]) => {
+    if (km !== undefined && currentKm !== undefined && km > currentKm) {
+      ctx.addIssue({
+        code: 'custom',
+        path,
+        message: 'Le kilométrage d’entretien dépasse le compteur actuel',
+      });
+    }
+  };
+  checkKm(input.usage_context?.last_service_km, [
+    'usage_context',
+    'last_service_km',
+  ]);
+  const seen = new Set<string>();
+  input.usage_context?.maintenance_records?.forEach((record, index) => {
+    checkKm(record.last_service_km, [
+      'usage_context',
+      'maintenance_records',
+      index,
+      'last_service_km',
+    ]);
+    if (seen.has(record.operation_slug))
+      ctx.addIssue({
+        code: 'custom',
+        path: ['usage_context', 'maintenance_records', index, 'operation_slug'],
+        message: 'Historique dupliqué pour cette opération',
+      });
+    seen.add(record.operation_slug);
+  });
+}
+
+export const AnalyzeDiagnosticInputSchema = z
+  .object({
+    intent_type: DiagnosticIntentEnum.exclude([
+      'maintenance_check',
+      'revision_check',
+      'preventive_check',
+    ]),
+    system_scope: z.string().min(1),
+    vehicle_context: VehicleContextInputSchema,
+    usage_context: UsageContextInputSchema.optional(),
+    signal_input: SignalInputSchema,
+    answers: z.record(z.string(), z.string()).optional(),
+    session_id: z.string().uuid().optional(),
+  })
+  .superRefine(validateHistory);
 export type AnalyzeDiagnosticInput = z.infer<
   typeof AnalyzeDiagnosticInputSchema
 >;
+
+// A selected operation is represented by its history record, even when both
+// dates and mileage are unknown. Mixed symptom/preventive input is rejected.
+export const AnalyzeMaintenanceInputSchema = z
+  .object({
+    intent_type: z.enum([
+      'maintenance_check',
+      'revision_check',
+      'preventive_check',
+    ]),
+    vehicle_context: VehicleContextInputSchema,
+    usage_context: UsageContextInputSchema.extend({
+      maintenance_records: z
+        .array(MaintenanceRecordInputSchema)
+        .min(1)
+        .max(100),
+    }),
+  })
+  .strict()
+  .superRefine(validateHistory);
+export type AnalyzeMaintenanceInput = z.infer<
+  typeof AnalyzeMaintenanceInputSchema
+>;
+export const AnalyzeInputSchema = z.union([
+  AnalyzeDiagnosticInputSchema,
+  AnalyzeMaintenanceInputSchema,
+]);

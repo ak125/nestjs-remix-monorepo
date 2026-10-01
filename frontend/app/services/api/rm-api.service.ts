@@ -3,6 +3,8 @@
  * Performance: ~200ms (single RPC with Redis cache)
  */
 
+import { ApiError } from "../common/errors";
+
 export interface RmProduct {
   piece_id: number;
   piece_reference: string;
@@ -274,7 +276,12 @@ export async function fetchRmPageV2(
   });
 
   if (!response.ok) {
-    throw new Error(`RM Page V2 API failed: ${response.status}`);
+    // Le code HTTP porte le contrat page-v2 (#690) : 404 = combinaison absente
+    // du catalogue, 503 = panne. L'appelant en dépend pour choisir le statut.
+    throw new ApiError(
+      `RM Page V2 API failed: ${response.status}`,
+      response.status,
+    );
   }
 
   return response.json();

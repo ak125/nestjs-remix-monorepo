@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: d88cc983d8a82a18b051b0649b68ac09a7ce2e5b666310d9930709616b551b12
+source_sha256: b3c94de73c04b53dd1605d46b6452d51aa8efcfd274335c14cbc5c05a5ba3130
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 2918 |
-| DB tables (Layer 1) | 314 |
+| Files (Layer 1) | 2949 |
+| DB tables (Layer 1) | 313 |
 | DB RPC (Layer 1) | 253 |
 | Dependencies (Layer 1) | 237 |
-| Runtime entrypoints (Layer 1) | 1000 |
+| Runtime entrypoints (Layer 1) | 999 |
 
-Source sotFingerprint: `d2c390ac5601`.
+Source sotFingerprint: `bca8f2862e39`.
 
 ## Comment l'utiliser
 
@@ -45,11 +45,11 @@ Source sotFingerprint: `d2c390ac5601`.
 
 ### D2 — Legacy / XTR Migration
 
-- **Files**: 113 (test=98, service=11, config=3, controller=1)
+- **Files**: 127 (test=113, service=10, config=3, controller=1)
 - **Runtime entrypoints**: 1
-- **Top owners**: @ak125 (98), __unassigned__ (15)
+- **Top owners**: @ak125 (112), __unassigned__ (15)
 - **Knowledge prose**: [`rm`](modules/rm.md)
-- **Status**: LEGACY=14, LIVE=1, UNKNOWN=98
+- **Status**: LEGACY=14, LIVE=1, UNKNOWN=112
 
 ### D3 — SEO & Sitemap
 
@@ -61,11 +61,11 @@ Source sotFingerprint: `d2c390ac5601`.
 
 ### D4 — Vehicle / Compatibility
 
-- **Files**: 82 (service=60, test=9, config=8, controller=5)
-- **Runtime entrypoints**: 42
-- **Top owners**: @ak125/vehicle-team (43), @ak125 (39)
-- **Knowledge prose**: [`diagnostic-engine`](modules/diagnostic-engine.md), [`vehicle-context`](modules/vehicle-context.md), [`vehicles`](modules/vehicles.md)
-- **Status**: LIVE=59, UNKNOWN=23
+- **Files**: 92 (service=59, test=17, config=11, controller=5)
+- **Runtime entrypoints**: 41
+- **Top owners**: @ak125/vehicle-team (53), @ak125 (39)
+- **Knowledge prose**: [`diagnostic-engine`](modules/diagnostic-engine.md), [`mcp-validation`](modules/mcp-validation.md), [`vehicle-context`](modules/vehicle-context.md), [`vehicles`](modules/vehicles.md)
+- **Status**: LIVE=61, UNKNOWN=31
 
 ### D5 — Blog / Content
 
@@ -93,11 +93,11 @@ Source sotFingerprint: `d2c390ac5601`.
 
 ### D8 — Read Model / Serving (RM)
 
-- **Files**: 944 (config=466, route=246, service=176, controller=38, test=18)
+- **Files**: 947 (config=466, route=246, service=176, controller=38, test=21)
 - **Runtime entrypoints**: 347
-- **Top owners**: @ak125/frontend-team (686), @ak125/admin-team (258)
+- **Top owners**: @ak125/frontend-team (686), @ak125/admin-team (261)
 - **Knowledge prose**: [`admin`](modules/admin.md), [`staff`](modules/staff.md)
-- **Status**: LIVE=498, UNKNOWN=446
+- **Status**: LIVE=498, UNKNOWN=449
 
 ### D9 — Import / ETL / Normalisation
 
@@ -132,10 +132,10 @@ Source sotFingerprint: `d2c390ac5601`.
 
 ### D13 — Config & System
 
-- **Files**: 205 (service=70, script=61, config=54, test=20)
+- **Files**: 208 (service=70, script=63, config=54, test=21)
 - **Runtime entrypoints**: 15
-- **Top owners**: @ak125 (205)
-- **Status**: LIVE=84, UNKNOWN=121
+- **Top owners**: @ak125 (208)
+- **Status**: LIVE=84, UNKNOWN=124
 
 ### D14 — Gamme Aggregates & V-Level
 
@@ -147,16 +147,16 @@ Source sotFingerprint: `d2c390ac5601`.
 
 ### D15 — Security & Governance
 
-- **Files**: 266 (test=156, script=62, service=45, config=2, controller=1)
+- **Files**: 267 (test=157, script=62, service=45, config=2, controller=1)
 - **Runtime entrypoints**: 3
-- **Top owners**: @ak125 (266)
+- **Top owners**: @ak125 (267)
 - **Knowledge prose**: [`bot-guard`](modules/bot-guard.md)
-- **Status**: LIVE=55, UNKNOWN=211
+- **Status**: LIVE=56, UNKNOWN=211
 
 ### UNKNOWN — Unknown (overlay non résolu)
 
 - **Files**: 245 (service=150, config=57, controller=21, script=14, test=3)
-- **DB tables**: 314
+- **DB tables**: 313
 - **DB RPC**: 253
 - **Runtime entrypoints**: 84
 - **Top owners**: __unassigned__ (245)

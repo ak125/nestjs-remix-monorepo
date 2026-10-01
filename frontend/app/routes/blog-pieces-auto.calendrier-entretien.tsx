@@ -6,7 +6,8 @@
  * retourne schedule (kg_*) + alerts paliers (kg_*) + controles_mensuels (wiki/support/).
  *
  * Query string : ?type_id=X&current_km=Y&fuel_type=Z (tous optionnels).
- * Si pas fournis : calendrier générique (sans personnalisation véhicule).
+ * Intervalles génériques : ces paramètres ne remplacent pas un historique
+ * par opération et ne vérifient pas une applicabilité constructeur.
  */
 
 import {
@@ -28,6 +29,8 @@ import {
   Link,
   useLoaderData,
 } from "react-router";
+
+import { z } from "zod";
 
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";
@@ -61,43 +64,48 @@ export const meta: MetaFunction = () => [
    API SHAPE (mirror backend MaintenanceCalendar — ADR-032 D9)
    =========================================================================== */
 
-interface ScheduleItem {
-  rule_alias: string;
-  rule_label: string;
-  km_interval: number | null;
-  month_interval: number | null;
-  maintenance_priority: "critique" | "important" | "normal" | null;
-  applies_to_fuel: "essence" | "diesel" | null;
-  km_remaining: number;
-  status: "ok" | "due_soon" | "overdue" | "time_only";
-}
-
-interface AlertAction {
-  rule_alias: string;
-  rule_label: string;
-  maintenance_priority: "critique" | "important" | "normal" | null;
-  km_interval: number | null;
-}
-
-interface AlertMilestone {
-  milestone_km: number;
-  actions: AlertAction[];
-}
-
-interface ControleMensuel {
-  element: string;
-  icon: string;
-  detail: string;
-}
-
-interface CalendarPayload {
-  type_id: number | null;
-  current_km: number;
-  fuel_type: string | null;
-  schedule: ScheduleItem[];
-  alerts: AlertMilestone[];
-  controles_mensuels: ControleMensuel[];
-}
+// Validate the fields rendered by this page before accessing nested arrays.
+// A successful HTTP status alone does not establish usable calendar data.
+const interval = z.number().int().positive().nullable();
+const rule = z.object({
+  rule_alias: z.string().trim().min(1),
+  rule_label: z.string().trim().min(1),
+  km_interval: interval,
+  maintenance_priority: z.enum(["critique", "important", "normal"]).nullable(),
+});
+const CalendarPayloadSchema = z.object({
+  type_id: z.number().int().positive().nullable(),
+  current_km: z.number().int().nonnegative(),
+  fuel_type: z.string().nullable(),
+  schedule: z
+    .array(
+      rule
+        .extend({
+          month_interval: interval,
+          applies_to_fuel: z.enum(["essence", "diesel"]).nullable(),
+        })
+        .refine(
+          (item) => item.km_interval !== null || item.month_interval !== null,
+        ),
+    )
+    .refine(
+      (items) =>
+        new Set(items.map((item) => item.rule_alias)).size === items.length,
+    ),
+  alerts: z.array(
+    z.object({
+      milestone_km: z.number().int().positive(),
+      actions: z.array(rule),
+    }),
+  ),
+  controles_mensuels: z.array(
+    z.object({
+      element: z.string().trim().min(1),
+      icon: z.string(),
+      detail: z.string(),
+    }),
+  ),
+});
 
 /* ===========================================================================
    LOADER — single fetch /api/diagnostic-engine/calendar
@@ -110,8 +118,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const params = new URLSearchParams();
   for (const k of ["type_id", "current_km", "fuel_type"]) {
-    const v = url.searchParams.get(k);
-    if (v) params.set(k, v);
+    for (const value of url.searchParams.getAll(k)) params.append(k, value);
   }
   const qs = params.toString();
   const apiUrl = `${API_BASE}/calendar${qs ? `?${qs}` : ""}`;
@@ -119,18 +126,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
   try {
     const res = await fetch(apiUrl);
     if (!res.ok) throw new Error(`API ${res.status}`);
-    const calendar = (await res.json()) as CalendarPayload;
-    return { calendar };
+    const calendar = CalendarPayloadSchema.parse(await res.json());
+    return { calendar, error: null };
   } catch {
     return {
-      calendar: {
-        type_id: null,
-        current_km: 0,
-        fuel_type: null,
-        schedule: [],
-        alerts: [],
-        controles_mensuels: [],
-      } as CalendarPayload,
+      calendar: null,
+      error:
+        "Calendrier temporairement indisponible. Réessayez ultérieurement ; les échéances d'entretien n'ont pas pu être vérifiées.",
     };
   }
 }
@@ -184,16 +186,29 @@ function formatMonthInterval(months: number | null): string {
   return `${months} mois`;
 }
 
-function pieceLinkFromSlug(slug: string): string {
-  return `/pieces/${slug}`;
-}
-
 /* ===========================================================================
    PAGE
    =========================================================================== */
 
 export default function CalendrierEntretienPage() {
-  const { calendar } = useLoaderData<typeof loader>();
+  const { calendar, error } = useLoaderData<typeof loader>();
+
+  if (!calendar) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <BlogPiecesAutoNavigation />
+        <div className="container mx-auto px-4 py-8 max-w-5xl space-y-6">
+          <h1 className="text-2xl font-bold">
+            Calendrier d'entretien automobile
+          </h1>
+          <Alert variant="destructive">
+            <AlertTriangle className="w-4 h-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -201,7 +216,7 @@ export default function CalendrierEntretienPage() {
 
       <CompactBlogHeader
         title="Calendrier d'entretien automobile"
-        description="Tous les intervalles de remplacement pour maintenir votre vehicule en parfait etat. Adapte aux recommandations constructeur les plus courantes."
+        description="Repères génériques de remplacement en kilomètres et en mois, à vérifier dans le carnet d’entretien de votre véhicule."
         gradientFrom="from-orange-600"
         gradientTo="to-amber-500"
         breadcrumb={[
@@ -236,16 +251,19 @@ export default function CalendrierEntretienPage() {
               <Alert className="mb-6 bg-amber-50">
                 <AlertTriangle className="w-4 h-4 text-amber-600" />
                 <AlertDescription className="text-amber-800">
-                  Ces intervalles sont des moyennes. Consultez toujours le
-                  carnet d&apos;entretien de votre vehicule pour les
-                  preconisations exactes du constructeur.
+                  Sans historique des interventions, le compteur total ne permet
+                  pas de savoir si une opération est à jour ou en retard. Ces
+                  intervalles sont génériques : leur applicabilité à votre
+                  véhicule n&apos;est pas vérifiée. Consultez le carnet
+                  d&apos;entretien pour les préconisations du constructeur.
                 </AlertDescription>
               </Alert>
 
               {calendar.schedule.length === 0 ? (
                 <p className="text-sm text-gray-500 italic">
-                  Calendrier en cours de population. Reessayez avec
-                  ?type_id=X&amp;current_km=Y dans l&apos;URL.
+                  Aucun intervalle d&apos;entretien disponible pour ces
+                  paramètres. Cela ne permet pas de conclure qu&apos;aucun
+                  entretien n&apos;est nécessaire.
                 </p>
               ) : (
                 <div className="overflow-x-auto">
@@ -265,12 +283,7 @@ export default function CalendrierEntretienPage() {
                       {calendar.schedule.map((item) => (
                         <TableRow key={item.rule_alias}>
                           <TableCell className="font-medium">
-                            <Link
-                              to={pieceLinkFromSlug(item.rule_alias)}
-                              className="text-blue-600 hover:underline"
-                            >
-                              {item.rule_label}
-                            </Link>
+                            {item.rule_label}
                           </TableCell>
                           <TableCell>
                             <Badge variant="secondary">
@@ -288,7 +301,7 @@ export default function CalendrierEntretienPage() {
                             />
                           </TableCell>
                           <TableCell className="hidden md:table-cell text-sm text-gray-600">
-                            {item.applies_to_fuel ?? "tous"}
+                            {item.applies_to_fuel ?? "non précisé"}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -372,7 +385,7 @@ export default function CalendrierEntretienPage() {
             <CardContent>
               {calendar.controles_mensuels.length === 0 ? (
                 <p className="text-sm text-gray-500 italic">
-                  Liste en cours de population.
+                  Aucun contrôle mensuel disponible.
                 </p>
               ) : (
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -405,13 +418,18 @@ export default function CalendrierEntretienPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl">
                 <Gauge className="w-5 h-5 text-foreground" />
-                Alertes par palier kilometrique
+                Repères par palier kilométrique
               </CardTitle>
             </CardHeader>
             <CardContent>
+              <p className="mb-4 text-sm text-gray-600">
+                Ces paliers regroupent des intervalles génériques. Ils ne
+                tiennent pas compte des interventions déjà réalisées et ne
+                constituent pas une liste de remplacements à effectuer.
+              </p>
               {calendar.alerts.length === 0 ? (
                 <p className="text-sm text-gray-500 italic">
-                  Paliers en cours de population.
+                  Aucun palier kilométrique disponible.
                 </p>
               ) : (
                 <div className="space-y-6">
@@ -455,28 +473,27 @@ export default function CalendrierEntretienPage() {
                 </p>
                 <div className="flex flex-wrap justify-center gap-3 pt-2">
                   {[
-                    {
-                      label: "Vidange & filtres",
-                      href: "/pieces/huile-moteur",
-                    },
-                    { label: "Freinage", href: "/pieces/plaquettes-de-frein" },
-                    {
-                      label: "Distribution",
-                      href: "/pieces/kit-de-distribution",
-                    },
-                    { label: "Batterie", href: "/pieces/batterie" },
-                    { label: "Amortisseurs", href: "/pieces/amortisseur" },
-                  ].map((cta) => (
-                    <Link
-                      key={cta.href}
-                      to={cta.href}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-orange-200 rounded-full text-sm font-medium text-orange-700 hover:bg-orange-100 transition-colors"
+                    "Vidange & filtres",
+                    "Freinage",
+                    "Distribution",
+                    "Batterie",
+                    "Amortisseurs",
+                  ].map((label) => (
+                    <span
+                      key={label}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-orange-200 rounded-full text-sm font-medium text-orange-700"
                     >
                       <Battery className="w-3.5 h-3.5" />
-                      {cta.label}
-                    </Link>
+                      {label}
+                    </span>
                   ))}
                 </div>
+                <Link
+                  to="/#catalogue"
+                  className="inline-flex px-4 py-2 bg-white border border-orange-200 rounded-full text-sm font-medium text-orange-700 hover:bg-orange-100 transition-colors"
+                >
+                  Voir le catalogue de pièces
+                </Link>
               </div>
             </CardContent>
           </Card>
