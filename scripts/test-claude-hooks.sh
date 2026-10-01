@@ -342,7 +342,7 @@ assert_contains "sonde : runtime à terre → issue warn « runtime DOWN »" '"w
 spawn_titled "$SB/app/backend" "npm run dev" "$SB/root1.pid" "npm run dev:watch" &
 ROOT1=$(wait_pid "$SB/root1.pid")
 assert_contains "sonde : le faux stack porte le titre exact de npm" "^npm run dev$" "$(ps -o args= -p "$ROOT1")"
-assert_not_contains "sonde : pgrep '^npm run dev\$' ne voit pas cette racine (octets nuls de npm)" "^$ROOT1$" "$(pgrep -f '^npm run dev$')"
+assert_contains "sonde : le faux stack complète son titre d'octets nuls, comme npm" "^npm run dev@@*$" "$(tr '\0' '@' < "/proc/$ROOT1/cmdline")"
 run_sync
 assert_contains "sonde : stack sain (1 racine + sa tâche) → ok" '"ok"' "$(sync_state '.status')"
 
