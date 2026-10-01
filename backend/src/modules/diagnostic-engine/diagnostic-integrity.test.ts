@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import {
   DiagnosticEngineDataService,
   type DiagSymptomCauseLink,
@@ -199,6 +200,64 @@ describe('diagnostic safety and deterministic scoring regressions', () => {
       });
     },
   );
+  const raises = (
+    rule_slug: string,
+    hypothesisIds: string[],
+    symptoms: string[],
+  ) => {
+    const [scored] = new HypothesisScoringEngine().score([link()], vehicle);
+    const safety = { ...rule, rule_slug, urgency: 'haute' };
+    const hypotheses = hypothesisIds.map((hypothesis_id) => ({
+      ...scored,
+      hypothesis_id,
+    }));
+    return (
+      new RiskSafetyEngine().assess(hypotheses, [safety], symptoms).active_rules
+        .length > 0
+    );
+  };
+  test('a safety rule follows its own cause, not any cause of its system', () => {
+    const signal = ['battery_warning_light'];
+    expect(
+      raises('alternator_battery_drain', ['alternator_failing'], signal),
+    ).toBe(true);
+    expect(raises('alternator_battery_drain', ['battery_dead'], signal)).toBe(
+      false,
+    );
+  });
+  test('a symptom-triggered safety rule needs the symptom it describes', () => {
+    const causes = ['thermostat_stuck_closed'];
+    expect(raises('overheat_engine_stop', causes, ['temp_warning_light'])).toBe(
+      true,
+    );
+    expect(raises('overheat_engine_stop', causes, ['engine_slow_warmup'])).toBe(
+      false,
+    );
+  });
+  test('a condition no symptom can report is never raised', () => {
+    expect(
+      raises(
+        'starter_smoke_warning',
+        ['battery_dead', 'starter_solenoid_worn', 'alternator_failing'],
+        ['start_click_no_crank'],
+      ),
+    ).toBe(false);
+  });
+  test('a rule without a declared trigger keeps the system fallback and is logged', () => {
+    const warn = jest
+      .spyOn(Logger.prototype, 'warn')
+      .mockImplementation(() => undefined);
+    try {
+      expect(raises('undeclared_rule', ['brake_pads_worn'], ['noise'])).toBe(
+        true,
+      );
+      expect(warn).toHaveBeenCalledWith(
+        'Safety rule without a declared trigger: undeclared_rule',
+      );
+    } finally {
+      warn.mockRestore();
+    }
+  });
   test('unique symptom evidence has an arithmetic mean, invariant under permutation and duplicates', async () => {
     const service = Object.create(
       DiagnosticEngineDataService.prototype,
