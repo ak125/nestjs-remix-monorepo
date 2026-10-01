@@ -1,3 +1,10 @@
+---
+# Chargée à la demande : quand l'agent lit un fichier qui correspond à ces chemins.
+paths:
+  - "backend/**"
+  - "packages/**"
+---
+
 # Backend Architecture (NestJS)
 
 ## Monorepo Structure

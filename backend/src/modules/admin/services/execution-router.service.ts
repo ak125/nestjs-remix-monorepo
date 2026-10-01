@@ -268,9 +268,17 @@ export class ExecutionRouterService extends SupabaseBaseService {
       // before ever reaching this switch — same surface as R3_GUIDE.
 
       case RoleId.R3_GUIDE:
-      case RoleId.R6_GUIDE_ACHAT:
-        // BuyingGuideEnricherService natively supports dryRun
-        return enricher.enrich!([targetId], dryRun);
+      case RoleId.R6_GUIDE_ACHAT: {
+        // BuyingGuideEnricherService natively supports dryRun. One target in →
+        // one result out: unwrapped so inferStatus reads it. enrich() never
+        // throws — on error it logs and returns no result for the target
+        // (non-dryRun), which becomes `undefined` here → `failed`, not success.
+        const [result] = (await enricher.enrich!(
+          [targetId],
+          dryRun,
+        )) as unknown[];
+        return result;
+      }
 
       case RoleId.R4_REFERENCE:
         // Single-target: check if reference exists for this pgAlias, or generate for single gamme
@@ -782,6 +790,9 @@ export class ExecutionRouterService extends SupabaseBaseService {
       // R8 : refus du WriteGate (written=false) — la page n'a pas été écrite.
       // Un refus de garde n'est pas une erreur, mais jamais un succès.
       if (d.status === 'write_gate_blocked') return 'skipped';
+      // R6 : guide non écrit (refus RAG du WriteGate, F1-gate, aucune section
+      // retenue) — `updated: false`, jamais un succès.
+      if (d.updated === false) return 'skipped';
       if (d.status === 'failed') return 'failed';
       if (d.status === 'ready') return 'success'; // dryRun preview
       if (
