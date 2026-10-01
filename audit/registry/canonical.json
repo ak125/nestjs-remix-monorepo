@@ -81,30 +81,6 @@
       "risk": "low"
     },
     {
-      "actual_mode": "DRAFTED",
-      "automation_id": "cron-job-run-details-retention",
-      "domain": "D15",
-      "evidence": [
-        {
-          "excerpt": "PERFORM cron.schedule('cron-job-run-details-retention', '30 3 * * *', v_expected_command);",
-          "line": 93,
-          "note": "exact-match/fail-closed + provenance marker ; .down unschedules only this job ; max(runid) per jobid always kept",
-          "path": "backend/supabase/migrations/20261001_cron_job_run_details_retention.sql"
-        }
-      ],
-      "executor": "pg_cron",
-      "intended_mode": "ACTIVE",
-      "last_verified_at": "2026-10-01",
-      "last_verified_by": "@ak125",
-      "last_verified_method": "manual-inspection",
-      "missing_step": "merge + apply (only_ids) + prove first 03:30 UTC run: job_run_details succeeded 'DELETE n' and 0 rows older than 90 d outside max(runid) per jobid",
-      "owner_action": "review + merge, then apply-supabase-migrations dry-run → APPLY",
-      "related_pr": [
-        1651
-      ],
-      "risk": "medium"
-    },
-    {
       "actual_mode": "ACTIVE",
       "automation_id": "cwv-rum-aggregation",
       "domain": "D3",
@@ -99285,11 +99261,31 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "scripts/registry/validate-automation-overlay.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 58,
+      "owner": "@ak125",
+      "path": "scripts/registry/validate-automation-overlay.test.ts",
+      "risk": "high",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "scripts/registry/validate-automation-overlay.ts",
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 227,
+      "loc": 240,
       "owner": "@ak125",
       "path": "scripts/registry/validate-automation-overlay.ts",
       "risk": "high",
@@ -101223,18 +101219,18 @@
     "generatedAt": "1970-01-01T00:00:00.000Z",
     "generatorVersion": "1.0.0",
     "inputHashes": {
-      ".spec/00-canon/repository-registry/automation-reality.yaml": "2eeff25269dfc884ba4f8ab1f19dd9322962e4a311c0b73a1e1a40deba1b9c0a",
+      ".spec/00-canon/repository-registry/automation-reality.yaml": "0ab11576b27d12f8c90f4202282216a5271a3feb7791c4cca86a4ae575020a2f",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
       ".spec/00-canon/repository-registry/ownership.yaml": "52117babce15374c63bfa3aae0b02331f3c8015e56dad7767455697f4a7abdac",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "8a9a7f70490c00f57d748796e4a1c5a98addcc079a4ba569b96ad275dc246d37",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "0d1d80d212da78f0d07931d40670f1eedb81b53dad748ff4289ecfac1586d8ff",
+      "audit/registry/files.json": "551c959f5eac5e142297f3701994d49ffd80fb7ccf0d25cdc5ea7a7e947002e2",
       "audit/registry/rpc.json": "86d0c24b102036512a9f7b11d9ac04754288049a8b061981b19f0db0a8c86263",
       "audit/registry/runtime.json": "67dc8fe02246ff5d7cf25668af7409b32ea66bc575d4ae23455b57f94d111174"
     },
-    "sotFingerprint": "87239e3645c3"
+    "sotFingerprint": "bca8f2862e39"
   },
   "runtime": [
     {
