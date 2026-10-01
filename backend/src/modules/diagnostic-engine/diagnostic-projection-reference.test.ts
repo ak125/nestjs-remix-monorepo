@@ -261,9 +261,9 @@ describe('DiagnosticEngineDataService.getProjectionReference', () => {
     const error = await service.getProjectionReference().catch((e) => e);
     // z.literal(true) sur la colonne `active` de la ligne 0.
     expect(error).toBeInstanceOf(ZodError);
-    expect(
-      (error as ZodError).issues.map((i) => [i.code, i.path]),
-    ).toEqual([['invalid_value', [0, 'active']]]);
+    expect((error as ZodError).issues.map((i) => [i.code, i.path])).toEqual([
+      ['invalid_value', [0, 'active']],
+    ]);
   });
 
   it('reads exactly one full page of 1000 links, then an empty page', async () => {
