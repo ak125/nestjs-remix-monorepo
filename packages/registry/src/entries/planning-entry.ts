@@ -10,10 +10,11 @@ import { SchemaVersionSchema } from "../shared/schema-version";
  * files/db/rpc/deps/runtime. It is therefore kept OUT of the determinism-gated
  * `registry:build` group and carries a `meta.generatedAt`.
  *
- * **SoT note** : the canonical source of chantiers/EPICs is the vault
- * MOC-Planning-Live (ADR-053). This file is a monorepo-local PR projection used
- * by the control-plane dashboard + dependency graph. It is subordinate to the
- * vault SoT — `meta.sot` declares this explicitly.
+ * **SoT note** : PR state is read on GitHub. This file is a monorepo-local PR
+ * projection used by the control-plane dashboard + dependency graph — `meta.sot`
+ * declares this explicitly. The vault MOC-Planning-Live (ADR-053) is no longer a
+ * live chantier/EPIC source: ADR-104 retired its writer and froze it as a
+ * snapshot of 2026-08-14.
  *
  * V1 scope : open/recent PRs of the monorepo. work_type + priority are read from
  * PR labels (per .spec/00-canon/planning/planning-worktype.yml + planning-priority.yml).
@@ -83,7 +84,7 @@ export const PlanningRegistrySchema = z
     meta: z.object({
       generatedAt: z.string().datetime(),
       source: z.string(), // "github_pulls"
-      sot: z.string(), // pointer to vault MOC-Planning-Live (ADR-053)
+      sot: z.string(), // provenance pointer: GitHub PRs (MOC-Planning-Live frozen, ADR-104)
       repo: z.string(),
       degraded: z.boolean(), // true if gh fetch failed → empty entries
       prCount: z.number().int().nonnegative(),
