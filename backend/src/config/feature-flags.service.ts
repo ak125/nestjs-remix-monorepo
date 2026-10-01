@@ -376,6 +376,16 @@ export class FeatureFlagsService {
     return this.bool('DIAGNOSTIC_KG_PRIMARY_ENABLED', false);
   }
 
+  /**
+   * V1A.0 Intent Resolution layer. Default `false` — rollout gated.
+   * ON : `/analyze` returns intent + recommended_actions + human_escalation
+   * and `/handoff` records clicks on them. OFF : no intent layer and
+   * `/handoff` answers 404 (no action can have been displayed).
+   */
+  get diagnosticPipelineV1Enabled(): boolean {
+    return this.bool('DIAGNOSTIC_PIPELINE_V1_ENABLED', false);
+  }
+
   // ── Write Guard flags (P1.5) ──
 
   get writeGuardEnabled(): boolean {
@@ -453,6 +463,7 @@ export class FeatureFlagsService {
     'VEHICLE_CTX_ENABLED',
     'DIAGNOSTIC_KG_SHADOW_ENABLED',
     'DIAGNOSTIC_KG_PRIMARY_ENABLED',
+    'DIAGNOSTIC_PIPELINE_V1_ENABLED',
     'SHOW_ACCESSORY_BLOCKS_ON_R2',
   ]);
 
