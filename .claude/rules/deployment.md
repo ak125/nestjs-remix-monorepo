@@ -133,6 +133,10 @@ Voir `feedback_rollback_via_revert_pr_branch_protected.md` : main est branch-pro
 - **PREPROD + PROD (49.12.233.2)** : `ssh deploy@49.12.233.2` → `docker ps`,
   `docker logs nestjs-remix-monorepo-preprod` (3200, READ_ONLY) / `nestjs-remix-monorepo-prod` (80/443)
 - **Machine DEV (46.224.118.55)** : poste SSH — aucun container deploy attendu.
+  Logs : la sortie du backend (`npm run dev` → nodemon → `node dist/main.js`, cwd `backend/`) va dans
+  le terminal qui l'a lancé, **non persistée** (aucun transport fichier) ; resync cron
+  `/tmp/sync-dev-runtime-cron.log` ; `npm ci`/build du resync `${TMPDIR:-/tmp}/sync-dev-runtime-npm-{install,build}-<pid>.log` ;
+  dumps `/var/crash` (axe 6).
 - **Health** : local `curl http://localhost:3000/health` (46.224.118.55, si `npm run dev` tourne) ·
   PREPROD `curl http://localhost:3200/health` (sur 49.12.233.2 uniquement, non exposé) ·
   PROD `curl https://www.automecanik.com/health`
