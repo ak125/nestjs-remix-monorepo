@@ -19,10 +19,13 @@ import { InvariantAsserterService } from './invariant-asserter.service';
 import { OutcomeEmitterService } from './outcome-emitter.service';
 import { PIPELINE_VERSION } from './version-registry';
 
-export interface ResolveInput {
+export interface ComposeInput {
   sessionId: string | null;
   pack: EvidencePack['evidence_pack'];
   vehicleContextPresent: boolean;
+}
+
+export interface ResolveInput extends ComposeInput {
   symptomSlug?: string;
 }
 
@@ -40,6 +43,23 @@ export class DiagnosticResolutionPipelineService {
    * Pure composition. Delegate, compose, assert, emit. No business logic here.
    */
   async resolve(input: ResolveInput): Promise<AnalyzeResponseV1A0> {
+    const response = this.compose(input);
+
+    // Fire-and-forget emission ; ne block pas le response path
+    void this.outcomeEmitter.emitResolution(
+      response,
+      input.vehicleContextPresent,
+      input.symptomSlug,
+    );
+
+    return response;
+  }
+
+  /**
+   * Delegate, compose, assert — no emission. Same input → same response,
+   * so /handoff re-derives the resolution a stored session received.
+   */
+  compose(input: ComposeInput): AnalyzeResponseV1A0 {
     const intent = this.intentClassifier.classify(
       input.pack,
       input.vehicleContextPresent,
@@ -61,13 +81,6 @@ export class DiagnosticResolutionPipelineService {
     };
 
     this.invariantAsserter.assert(response, input.vehicleContextPresent);
-
-    // Fire-and-forget emission ; ne block pas le response path
-    void this.outcomeEmitter.emitResolution(
-      response,
-      input.vehicleContextPresent,
-      input.symptomSlug,
-    );
 
     return response;
   }

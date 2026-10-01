@@ -2181,7 +2181,8 @@
         "runtime:backend/src/modules/blog/services/blog-cache.service.ts",
         "runtime:backend/src/modules/blog/services/blog-seo.service.ts",
         "runtime:backend/src/modules/blog/services/blog-statistics.service.ts",
-        "runtime:backend/src/modules/seo/internal-linking.service.ts"
+        "runtime:backend/src/modules/seo/internal-linking.service.ts",
+        "runtime:backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "id": "runtime:backend/src/modules/blog/services/blog.service.ts",
       "kind": "nestjs-service",
@@ -2265,7 +2266,8 @@
         "runtime:backend/src/modules/blog/services/blog-article-relation.service.ts",
         "runtime:backend/src/modules/blog/services/blog-seo.service.ts",
         "runtime:backend/src/modules/blog/services/r3-projection-decision.service.ts",
-        "runtime:backend/src/modules/seo/internal-linking.service.ts"
+        "runtime:backend/src/modules/seo/internal-linking.service.ts",
+        "runtime:backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "id": "runtime:backend/src/modules/blog/services/r3-guide.service.ts",
       "kind": "nestjs-service",
@@ -2938,6 +2940,7 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/config/feature-flags.service.ts",
         "runtime:backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
         "runtime:backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
         "runtime:backend/src/modules/diagnostic-engine/services/diagnostic-content.service.ts",
@@ -3275,7 +3278,8 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/modules/gamme-rest/services/gamme-rpc.service.ts"
+        "runtime:backend/src/modules/gamme-rest/services/gamme-rpc.service.ts",
+        "runtime:backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "id": "runtime:backend/src/modules/gamme-rest/gamme-rest-rpc-v2.controller.ts",
       "kind": "nestjs-controller",
@@ -6249,6 +6253,7 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "runtime:backend/src/modules/seo/services/reference.service.ts"
       ],
       "id": "runtime:backend/src/modules/seo/controllers/reference.controller.ts",
@@ -6864,6 +6869,7 @@
         "runtime:backend/src/modules/seo/services/policies/seo-indexability-policy.service.ts",
         "runtime:backend/src/modules/seo/services/policies/seo-unavailable-policy.service.ts",
         "runtime:backend/src/modules/seo/services/product-image.service.ts",
+        "runtime:backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "runtime:backend/src/modules/seo/services/reference.service.ts",
         "runtime:backend/src/modules/seo/services/risk-flags-engine.service.ts",
         "runtime:backend/src/modules/seo/services/seo-generator.service.ts",
@@ -7074,6 +7080,17 @@
       "status": "LIVE"
     },
     {
+      "dependsOn": [
+        "runtime:backend/src/config/feature-flags.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
       "dependsOn": [],
       "id": "runtime:backend/src/modules/seo/services/reference.service.ts",
       "kind": "nestjs-service",
@@ -7211,7 +7228,9 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [],
+      "dependsOn": [
+        "runtime:backend/src/config/feature-flags.service.ts"
+      ],
       "id": "runtime:backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
@@ -7273,6 +7292,7 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/config/feature-flags.service.ts",
         "runtime:backend/src/modules/seo/services/sitemap-v10-data.service.ts",
         "runtime:backend/src/modules/seo/services/sitemap-v10-xml.service.ts"
       ],

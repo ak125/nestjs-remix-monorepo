@@ -24,6 +24,7 @@ on:
       - ".claude/skills/**"
       - ".spec/00-canon/ai-registry/**"
       - "scripts/governance/validate-skills-frontmatter.js"
+      - "scripts/governance/build-skills-registry.js"
       - "scripts/governance/validate-agent-operating-map.js"
       - "scripts/governance/build-command-center-snapshot.js"
       - "scripts/governance/__tests__/build-command-center-snapshot.test.ts"
@@ -59,6 +60,16 @@ jobs:
           set -e
           node scripts/governance/validate-skills-frontmatter.js --json > /tmp/skills-report.json
           cat /tmp/skills-report.json | jq -c '{ok, totalSkills, failureCount}'
+
+      # skills.registry.json porte un sha256 de chaque SKILL.md ; sans ce step, rien ne
+      # signale qu'une édition de skill l'a rendu faux. Lecture seule (--check ne réécrit rien).
+      - name: 🔒 Skills registry — committed file is fresh (warn-only)
+        if: always()
+        continue-on-error: true
+        run: |
+          node scripts/governance/build-skills-registry.js --check || {
+            echo "::warning::skills.registry.json is stale — run node scripts/governance/build-skills-registry.js"; exit 1;
+          }
 
       - name: Surface findings
         if: always()

@@ -21,8 +21,8 @@
     "dynamic_rpc_callsites": 1,
     "unresolved_callsites": 0,
     "dropped_call_sites": 5,
-    "migrations_scanned": 374,
-    "backend_files_scanned": 1423
+    "migrations_scanned": 390,
+    "backend_files_scanned": 1430
   },
   "tables": {
     "___config": {
@@ -151,7 +151,7 @@
       ],
       "used_by_count": 2,
       "in_migrations": [],
-      "rls_present": false,
+      "rls_present": true,
       "in_knowledge_db": false,
       "partition_of": null
     },
@@ -257,9 +257,10 @@
         "backend/src/modules/blog/services/r6-guide.service.ts",
         "backend/src/modules/catalog/services/homepage-rpc.service.ts",
         "backend/src/modules/marketing/services/marketing-data.service.ts",
+        "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts"
       ],
-      "used_by_count": 7,
+      "used_by_count": 8,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": true,
@@ -268,9 +269,10 @@
     "__blog_guide": {
       "used_by": [
         "backend/src/modules/blog/services/blog-article-data.service.ts",
+        "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts"
       ],
-      "used_by_count": 2,
+      "used_by_count": 3,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false,
@@ -590,7 +592,7 @@
       ],
       "used_by_count": 2,
       "in_migrations": [],
-      "rls_present": false,
+      "rls_present": true,
       "in_knowledge_db": false,
       "partition_of": null
     },
@@ -747,7 +749,7 @@
       ],
       "used_by_count": 1,
       "in_migrations": [],
-      "rls_present": false,
+      "rls_present": true,
       "in_knowledge_db": false,
       "partition_of": null
     },
@@ -1222,17 +1224,16 @@
         "backend/src/modules/admin/services/conseil-priority.service.ts",
         "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-        "backend/src/modules/blog/services/blog-seo.service.ts",
         "backend/src/modules/blog/services/guide.service.ts",
         "backend/src/modules/blog/services/r6-guide.service.ts",
-        "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
         "backend/src/modules/gamme-rest/services/buying-guide-data.service.ts",
         "backend/src/modules/gamme-rest/services/purchase-guide-data.service.ts",
         "backend/src/modules/marketing/services/marketing-data.service.ts",
         "backend/src/modules/seo-monitoring/services/r-content-auditor.service.ts",
+        "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "backend/src/modules/seo/validation/purchase-guide-validator.service.ts"
       ],
-      "used_by_count": 13,
+      "used_by_count": 12,
       "in_migrations": [],
       "rls_present": false,
       "in_knowledge_db": true,
@@ -2296,7 +2297,7 @@
       ],
       "used_by_count": 3,
       "in_migrations": [],
-      "rls_present": false,
+      "rls_present": true,
       "in_knowledge_db": false,
       "partition_of": null
     },
@@ -2435,12 +2436,13 @@
         "backend/src/modules/catalog/controllers/pieces-diagnostic.controller.ts",
         "backend/src/modules/catalog/controllers/vehicle-hierarchy.controller.ts",
         "backend/src/modules/catalog/services/compatibility.service.ts",
+        "backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts",
         "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.ts",
         "backend/src/modules/seo/r2/services/r2-r8-gate-status.service.ts",
         "backend/src/modules/seo/r2/services/r8-parent-enrichment.service.ts",
         "backend/src/modules/seo/r2/services/r8-snapshot-seed.service.ts"
       ],
-      "used_by_count": 10,
+      "used_by_count": 11,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false,
@@ -2931,6 +2933,7 @@
         "backend/src/modules/blog/services/r6-guide.service.ts",
         "backend/src/modules/catalog/services/accessory-products.service.ts",
         "backend/src/modules/catalog/services/homepage-rpc.service.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
         "backend/src/modules/marketing/services/marketing-data.service.ts",
         "backend/src/modules/marketing/services/marketing-hub-data.service.ts",
         "backend/src/modules/media-factory/services/script-generator.service.ts",
@@ -2939,6 +2942,7 @@
         "backend/src/modules/search/controllers/search-debug.controller.ts",
         "backend/src/modules/search/controllers/search-enhanced-existing.controller.ts",
         "backend/src/modules/seo/r2/services/r1-gamme-completeness-audit.service.ts",
+        "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "backend/src/modules/seo/services/reference.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-data.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-cluster.service.ts",
@@ -2946,7 +2950,7 @@
         "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-static.service.ts"
       ],
-      "used_by_count": 38,
+      "used_by_count": 40,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false,
@@ -4845,9 +4849,7 @@
       "called_by_count": 0,
       "defined_in_migrations": [
         "20260125_kg_v3_maintenance_risk.sql",
-        "20260429_diag_maintenance_via_kg.sql",
-        "20260930_kg_maintenance_schedule_fuel_filter_aligned.down.sql",
-        "20260930_kg_maintenance_schedule_fuel_filter_aligned.sql"
+        "20260429_diag_maintenance_via_kg.sql"
       ],
       "is_trigger_function": false
     },
@@ -9383,9 +9385,7 @@
       ],
       "defined_in_migrations": [
         "20260125_kg_v3_maintenance_risk.sql",
-        "20260429_diag_maintenance_via_kg.sql",
-        "20260930_kg_maintenance_schedule_fuel_filter_aligned.down.sql",
-        "20260930_kg_maintenance_schedule_fuel_filter_aligned.sql"
+        "20260429_diag_maintenance_via_kg.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",

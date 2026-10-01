@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: fe9266755192d8a6db3c265ef22f781613f1c680b176428414d5b908cef4a8bf
+source_sha256: 90d42032c7fd72597610870f1048465b5717d32005ecd316235d1a21f3c78520
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 2948 |
+| Files (Layer 1) | 2959 |
 | DB tables (Layer 1) | 313 |
-| DB RPC (Layer 1) | 254 |
+| DB RPC (Layer 1) | 253 |
 | Dependencies (Layer 1) | 237 |
-| Runtime entrypoints (Layer 1) | 999 |
+| Runtime entrypoints (Layer 1) | 1000 |
 
-Source sotFingerprint: `149bad390c80`.
+Source sotFingerprint: `949a2eb23344`.
 
 ## Comment l'utiliser
 
@@ -45,35 +45,35 @@ Source sotFingerprint: `149bad390c80`.
 
 ### D2 — Legacy / XTR Migration
 
-- **Files**: 127 (test=112, service=11, config=3, controller=1)
+- **Files**: 129 (test=115, service=10, config=3, controller=1)
 - **Runtime entrypoints**: 1
-- **Top owners**: @ak125 (112), __unassigned__ (15)
+- **Top owners**: @ak125 (114), __unassigned__ (15)
 - **Knowledge prose**: [`rm`](modules/rm.md)
-- **Status**: LEGACY=14, LIVE=1, UNKNOWN=112
+- **Status**: LEGACY=14, LIVE=1, UNKNOWN=114
 
 ### D3 — SEO & Sitemap
 
-- **Files**: 424 (service=218, test=118, controller=34, config=28, script=26)
-- **Runtime entrypoints**: 168
-- **Top owners**: @ak125/seo-team (424)
+- **Files**: 427 (service=219, test=120, controller=34, config=28, script=26)
+- **Runtime entrypoints**: 169
+- **Top owners**: @ak125/seo-team (427)
 - **Knowledge prose**: [`merchant-center`](modules/merchant-center.md), [`seo`](modules/seo.md), [`seo-control-plane`](modules/seo-control-plane.md), [`seo-logs`](modules/seo-logs.md), [`seo-monitoring`](modules/seo-monitoring.md), [`seo-shadow-observatory`](modules/seo-shadow-observatory.md)
-- **Status**: LIVE=219, UNKNOWN=205
+- **Status**: LIVE=220, UNKNOWN=207
 
 ### D4 — Vehicle / Compatibility
 
-- **Files**: 92 (service=59, test=17, config=11, controller=5)
+- **Files**: 95 (service=60, test=19, config=11, controller=5)
 - **Runtime entrypoints**: 41
-- **Top owners**: @ak125/vehicle-team (53), @ak125 (39)
+- **Top owners**: @ak125/vehicle-team (56), @ak125 (39)
 - **Knowledge prose**: [`diagnostic-engine`](modules/diagnostic-engine.md), [`mcp-validation`](modules/mcp-validation.md), [`vehicle-context`](modules/vehicle-context.md), [`vehicles`](modules/vehicles.md)
-- **Status**: LIVE=61, UNKNOWN=31
+- **Status**: LIVE=62, UNKNOWN=33
 
 ### D5 — Blog / Content
 
-- **Files**: 36 (service=26, controller=6, test=4)
+- **Files**: 37 (service=26, controller=6, test=5)
 - **Runtime entrypoints**: 26
-- **Top owners**: @ak125/content-team (36)
+- **Top owners**: @ak125/content-team (37)
 - **Knowledge prose**: [`blog`](modules/blog.md)
-- **Status**: LIVE=32, UNKNOWN=4
+- **Status**: LIVE=32, UNKNOWN=5
 
 ### D6 — RAG & AI Engine
 
@@ -147,17 +147,17 @@ Source sotFingerprint: `149bad390c80`.
 
 ### D15 — Security & Governance
 
-- **Files**: 266 (test=156, script=62, service=45, config=2, controller=1)
+- **Files**: 268 (test=158, script=62, service=45, config=2, controller=1)
 - **Runtime entrypoints**: 3
-- **Top owners**: @ak125 (266)
+- **Top owners**: @ak125 (268)
 - **Knowledge prose**: [`bot-guard`](modules/bot-guard.md)
-- **Status**: LIVE=55, UNKNOWN=211
+- **Status**: LIVE=56, UNKNOWN=212
 
 ### UNKNOWN — Unknown (overlay non résolu)
 
 - **Files**: 245 (service=150, config=57, controller=21, script=14, test=3)
 - **DB tables**: 313
-- **DB RPC**: 254
+- **DB RPC**: 253
 - **Runtime entrypoints**: 84
 - **Top owners**: __unassigned__ (245)
 - **Knowledge prose**: [`config`](modules/config.md), [`layout`](modules/layout.md), [`mcp-validation`](modules/mcp-validation.md), [`metadata`](modules/metadata.md), [`navigation`](modules/navigation.md), [`search`](modules/search.md), [`shipping`](modules/shipping.md), [`suppliers`](modules/suppliers.md), [`system`](modules/system.md)

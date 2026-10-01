@@ -221,6 +221,13 @@ export const CACHE_STRATEGIES = {
       adaptive: true,
       description: 'Low-traffic articles (<100 views)',
     },
+    R6_GUIDE_LINKS: {
+      ttl: CacheTTL.TEN_MINUTES,
+      prefix: 'r6-guide-links:',
+      keyVersion: 'v1',
+      description:
+        'Guides d’achat publiés + gammes avec page conseils (règle des liens ADR-103 D5) — sans le drapeau, lu à chaque appel',
+    },
   },
 
   // ═══════════════════════════════════════════════════════════════

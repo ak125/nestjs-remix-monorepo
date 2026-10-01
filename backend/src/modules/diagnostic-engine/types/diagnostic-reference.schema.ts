@@ -78,3 +78,6 @@ export const DiagCauseLinksSchema = z
 export const DiagSafetyRulesSchema = z
   .array(DiagSafetyRuleRowSchema)
   .refine((rows) => unique(rows, 'id') && unique(rows, 'rule_slug'));
+export const DiagSafetyRuleCoverageSchema = z.array(
+  DiagSafetyRuleRowSchema.pick({ system_id: true, active: true }),
+);

@@ -1,20 +1,20 @@
 ---
 name: code-review
-description: Use when reviewing a PR, diff, or recent changes for security, architecture, performance, and business compliance against AutoMecanik monorepo checklists (HMAC payment safety, RLS, RPC contracts, ADR adherence, no-bricolage). Triggers — "review PR #N", "code review this branch", "audit this diff for production readiness", or before merging any non-trivial PR.
+description: Use when reviewing a PR, diff, or recent changes for security, architecture, performance, and business compliance against AutoMecanik monorepo checklists (HMAC payment safety, RLS, RPC contracts, ADR adherence, no-bricolage). Triggers — "review PR #N", "code review this branch", "audit this diff for production readiness", or before merging any non-trivial PR. For your own change before commit/push, use code-auto-review instead.
 type: technique
 status: stable
 owners: ['@ak125']
 domain: D15
 runtime_class: read-only
 llm_safe: true
-last_verified: '2026-05-18'
+last_verified: '2026-09-30'
 license: Internal - Automecanik
 compatibility: Designed for Claude Code in the AutoMecanik monorepo. Read-only audit + analysis. Does NOT mutate code.
 allowed-tools: Read Grep Glob Bash
 tags: [review, security, hmac, rls, governance, adr]
+argument-hint: "[PR-number or file-path]"
 metadata:
-  version: "1.1"
-  argument-hint: "[PR-number or file-path]"
+  version: "1.2"
   spec: agentskills.io/specification v1
 ---
 
@@ -29,7 +29,7 @@ Revue systématique de code ou PR couvrant sécurité, architecture, performance
 | PR ouverte ou diff avec 5+ fichiers | `/code-review [PR-number]` |
 | Avant push sur main (validation) | `/code-review` |
 | Refactor touchant 3+ modules | `/code-review [fichier]` |
-| Modification `modules/payments/` | `/code-review` + `/payment-review` (chaine securite) |
+| Modification `modules/payments/` | `/code-review` + `.claude/rules/payments.md` (zone STOP : GO owner nominatif) |
 
 ---
 
@@ -112,7 +112,6 @@ Appliquer les checklists pertinentes selon la Phase 1.
 ## Checklist Universelle (tous fichiers)
 
 - [ ] Pas de secrets hardcodes (.env values, API keys, tokens)
-- [ ] Pas d'import depuis module rm/ (BANNI — incident 2026-01-11)
 - [ ] Pas de `console.log` oublie (sauf debug intentionnel)
 - [ ] TypeScript strict : pas de `any` injustifie, pas de `@ts-ignore`
 - [ ] Imports resolus dans Docker (pas de @monorepo/* non lie)
@@ -144,7 +143,7 @@ Appliquer les checklists pertinentes selon la Phase 1.
 ## Checklist Migrations SQL
 
 - [ ] `IF NOT EXISTS` sur CREATE TABLE/INDEX
-- [ ] `BEGIN/COMMIT` pour multi-statements
+- [ ] Conventions du skill `db-migration` + squawk vert sur les migrations modifiées, hors `.down.sql` (`npx --no-install squawk --config .squawk.toml <fichiers>` ; `assume_in_transaction` : pas de `BEGIN/COMMIT`)
 - [ ] RLS active sur nouvelles tables
 - [ ] Pas de DROP sans IF EXISTS
 - [ ] Pas de perte de données (ALTER DROP COLUMN vérifié)
@@ -197,6 +196,5 @@ Appliquer les checklists pertinentes selon la Phase 1.
 
 | Skill | Direction | Declencheur |
 |-------|-----------|-------------|
-| `payment-review` | → propose | Si diff touche `modules/payments/` → proposer `/payment-review` |
-| `backend-test` | → propose | Apres review, proposer `/backend-test` pour validation curl |
+| `code-auto-review` | ↔ complementaire | Relecture de SA propre modification avant commit/push (celui-ci : PR ou branche d'un tiers, lecture seule) |
 | `db-migration` | → verifie | Si diff contient des fichiers `.sql`, verifier les patterns migration |

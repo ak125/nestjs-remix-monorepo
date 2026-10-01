@@ -28,6 +28,12 @@ import {
   type NormalizeResult,
 } from '../utils/r1-image-normalizer';
 import { R1RelatedResourcesService } from './r1-related-resources.service';
+import {
+  R6GuideLinkPolicyService,
+  applyGuideLinkRuleToBlocks,
+  applyGuideLinkRuleToHtml,
+  resolveGuideLink,
+} from '../../seo/services/r6-guide-link-policy.service';
 
 interface MotorizationRow {
   type_id: number;
@@ -83,6 +89,7 @@ export class GammeResponseBuilderService {
     private readonly relatedResources: R1RelatedResourcesService,
     private readonly chainOrchestrator: SeoChainOrchestratorService,
     private readonly chainFlags: SeoFeatureFlagRegistry,
+    private readonly guideLinkPolicy: R6GuideLinkPolicyService,
   ) {}
 
   /**
@@ -319,6 +326,45 @@ export class GammeResponseBuilderService {
     } catch (e) {
       this.logger.warn(
         `[R1-LINKS] related blocks failed pg_id=${pgIdNum}: ${e}`,
+      );
+    }
+
+    // ── Liens vers les guides d'achat (ADR-103 D5) ──
+    // Ordre de rendu : « Liens utiles » (conseils toujours lié, puis guide) →
+    // contenu éditorial → blocs de maillage. Les liens servis s'accumulent.
+    const guideLinkSnapshot = await this.guideLinkPolicy.getSnapshot();
+    const guideLinkCtx = {
+      currentPath: `/pieces/${pgAlias}-${pgIdNum}.html`,
+      linkedPaths: new Set<string>(
+        pgAlias ? [`/blog-pieces-auto/conseils/${pgAlias}`] : [],
+      ),
+    };
+    const buyingGuideHref = pgAlias
+      ? resolveGuideLink(pgAlias, guideLinkSnapshot, guideLinkCtx)
+      : null;
+    if (buyingGuideHref) guideLinkCtx.linkedPaths.add(buyingGuideHref);
+    let guideLinksChanged = 0;
+    if (pageContent) {
+      const out = applyGuideLinkRuleToHtml(
+        pageContent,
+        guideLinkSnapshot,
+        guideLinkCtx,
+      );
+      pageContent = out.html;
+      guideLinksChanged += out.changed;
+    }
+    const countItems = (p: typeof relatedResources) =>
+      p.blocks.reduce((n, b) => n + b.items.length, 0);
+    const itemsBefore = countItems(relatedResources);
+    relatedResources = applyGuideLinkRuleToBlocks(
+      relatedResources,
+      guideLinkSnapshot,
+      guideLinkCtx,
+    );
+    const itemsRemoved = itemsBefore - countItems(relatedResources);
+    if (guideLinksChanged > 0 || itemsRemoved > 0) {
+      this.logger.log(
+        `[R6-LINKS] pg_id=${pgIdNum} consolidation=${guideLinkSnapshot.consolidationEnabled} contenu=${guideLinksChanged} lien(s) modifié(s), maillage=${itemsRemoved} lien(s) retiré(s)`,
       );
     }
 
@@ -906,6 +952,7 @@ export class GammeResponseBuilderService {
         content: pageContent,
         pg_name: pgNameSite,
         pg_alias: pgAlias,
+        buyingGuideHref,
         image: r1HeroImageUrl
           ? buildProxyImageUrl(IMAGE_CONFIG.BUCKETS.UPLOADS, r1HeroImageUrl)
           : imageUrl,
