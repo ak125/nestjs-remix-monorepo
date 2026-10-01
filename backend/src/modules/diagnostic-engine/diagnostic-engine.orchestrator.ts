@@ -244,20 +244,6 @@ export class DiagnosticEngineOrchestrator {
       );
     }
 
-    const pgIds = catalog.suggested_gammes.map((g) => g.pg_id);
-    if (pgIds.length) {
-      try {
-        const costRanges = await this.dataService.getCostRanges(pgIds);
-        for (const g of catalog.suggested_gammes) {
-          const cost = costRanges.get(g.pg_id);
-          if (cost) (g as unknown as Record<string, unknown>).cost_range = cost;
-        }
-      } catch (error) {
-        this.logger.warn('Diagnostic cost enrichment unavailable', error);
-        degraded.push('Estimations de coût indisponibles.');
-      }
-    }
-
     // ADR-031: RAG is a chatbot consumer, never a diagnostic content authority.
     // ── 9. Assemble EvidencePack ───────────────────────
     const evidencePack = this.assembleEvidencePack(

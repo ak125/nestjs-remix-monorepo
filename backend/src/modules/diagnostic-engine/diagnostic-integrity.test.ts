@@ -69,7 +69,6 @@ function orchestrator() {
   const data = {
     getScoredCausesForSymptoms: jest.fn().mockResolvedValue([link()]),
     getSafetyRules: jest.fn().mockResolvedValue([rule]),
-    getCostRanges: jest.fn().mockResolvedValue(new Map()),
     saveSession: jest.fn().mockResolvedValue(null),
     getActiveSystems: jest.fn().mockResolvedValue([]),
   };
@@ -484,7 +483,7 @@ describe('diagnostic safety and deterministic scoring regressions', () => {
     expect(result.error).toMatch(/indisponible/i);
     expect(f.data.saveSession).not.toHaveBeenCalled();
   });
-  test.each(['cost', 'maintenance', 'session'])(
+  test.each(['maintenance', 'session'])(
     'an optional %s failure preserves known critical safety',
     async (dependency) => {
       const f = orchestrator();
@@ -492,8 +491,6 @@ describe('diagnostic safety and deterministic scoring regressions', () => {
         { ...link(), cause: { ...link().cause!, urgency: 'haute' } },
       ]);
       f.data.getSafetyRules.mockResolvedValue([{ ...rule, urgency: 'haute' }]);
-      if (dependency === 'cost')
-        f.data.getCostRanges.mockRejectedValue(new Error('optional'));
       if (dependency === 'maintenance')
         f.maintenance.assess.mockRejectedValue(new Error('optional'));
       if (dependency === 'session')
