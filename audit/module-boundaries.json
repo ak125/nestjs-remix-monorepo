@@ -74,7 +74,7 @@
         "backend/src/modules/auth/dto"
       ],
       "files_count": 44,
-      "loc_total": 5888,
+      "loc_total": 5887,
       "has_barrel": true
     },
     "backend-core": {
@@ -185,8 +185,8 @@
         "backend/src/modules/config/services",
         "backend/src/modules/config/validators"
       ],
-      "files_count": 101,
-      "loc_total": 24517,
+      "files_count": 102,
+      "loc_total": 24894,
       "has_barrel": true
     },
     "customers": {
@@ -792,7 +792,7 @@
         "backend/src/modules/seo-logs/services"
       ],
       "files_count": 12,
-      "loc_total": 3646,
+      "loc_total": 3643,
       "has_barrel": false
     },
     "seo-monitoring": {
@@ -1180,6 +1180,11 @@
       "from": "auth",
       "to": "common",
       "count": 2
+    },
+    {
+      "from": "auth",
+      "to": "config",
+      "count": 1
     },
     {
       "from": "auth",
@@ -1593,6 +1598,11 @@
     },
     {
       "from": "config",
+      "to": "auth",
+      "count": 1
+    },
+    {
+      "from": "config",
       "to": "backend-core",
       "count": 1
     },
@@ -1619,6 +1629,11 @@
     {
       "from": "config",
       "to": "seo-control-plane",
+      "count": 1
+    },
+    {
+      "from": "config",
+      "to": "seo-logs",
       "count": 1
     },
     {
@@ -1984,7 +1999,7 @@
     {
       "from": "seo-logs",
       "to": "config",
-      "count": 2
+      "count": 3
     },
     {
       "from": "seo-monitoring",
