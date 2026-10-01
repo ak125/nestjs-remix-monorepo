@@ -52,6 +52,7 @@ function fixture(
     {} as never,
     {} as never,
     {} as never,
+    {} as never,
   );
   return { controller, from };
 }
