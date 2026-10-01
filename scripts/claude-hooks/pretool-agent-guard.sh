@@ -14,10 +14,14 @@ set -euo pipefail
 INPUT=$(cat)
 
 # Extract subagent type for informational message
-SUBAGENT_TYPE=$(echo "$INPUT" | jq -r '.subagent_type // "unknown"' 2>/dev/null || echo "unknown")
+SUBAGENT_TYPE=$(echo "$INPUT" | jq -r '.tool_input.subagent_type // "unknown"' 2>/dev/null || echo "unknown")
 
-# Session identifier = Claude main process PID (stable for entire session)
-SESSION_ID="$PPID"
+# Session identifier = `session_id` fourni par le runtime sur stdin. `$PPID` n'est pas stable :
+# le runtime lance chaque hook depuis un processus éphémère (2026-09-30 : compteur écrit sous
+# un PID déjà mort, valeur 1) → le compteur repartait de 0 à chaque subagent. `$PPID` ne reste
+# qu'en repli pour une entrée sans session_id (appel manuel), comportement antérieur inchangé.
+SESSION_ID=$(echo "$INPUT" | jq -r '.session_id // empty' 2>/dev/null | tr -cd 'A-Za-z0-9_-' || true)
+SESSION_ID="${SESSION_ID:-$PPID}"
 COUNTER_FILE="/tmp/claude-agent-count-${SESSION_ID}"
 MAX_AGENTS="${CLAUDE_MAX_SUBAGENTS:-10}"
 

@@ -12,9 +12,9 @@ license: Internal - Automecanik
 compatibility: Designed for Claude Code in the AutoMecanik monorepo. Stack — React Router 8 + shadcn/ui + Tailwind CSS. Read-only audit, no code mutations.
 allowed-tools: Read Grep Glob
 tags: [responsive, mobile-first, wcag, viewport, shadcn]
+argument-hint: "[/url-path or file-pattern]"
 metadata:
   version: "1.1"
-  argument-hint: "[/url-path or file-pattern]"
   spec: agentskills.io/specification v1
 ---
 
@@ -60,7 +60,7 @@ Quand l'argument commence par `/`, c'est une URL de route. Résoudre vers le fic
 | `/reference-auto/<slug>` | `routes/reference-auto.$slug.tsx` | — |
 | `/products/<id>` | `routes/products.$id.tsx` | ProductCard, ConversionButton |
 | `/plan-du-site` | `routes/plan-du-site.tsx` | — |
-| `/` | `routes/_index.tsx` | HeroSection, HomeBlogSection, ConseilsDiagnosticSection |
+| `/` | `routes/_index.tsx` | HeroSection, CatalogueSection, BlogCarousel… (barrel `~/components/home`) |
 
 **Procédure :**
 1. Identifier le pattern URL → trouver le fichier route
@@ -281,17 +281,12 @@ className="gap-3 sm:gap-4 lg:gap-6"
 - `font-size:` inline → utiliser `text-sm`, `text-base`, etc.
 - Couleurs inconsistantes pour le même élément (ex: CTA bleu dans un composant, orange dans un autre)
 
-**Tokens disponibles (design-tokens.json) :**
-```
-primary (500): #e8590c (orange — CTA, boutons principaux)
-secondary (500): #0d1b3e (bleu foncé — fond hero, navbar, footer)
-semantic.success: vert (stock, validations)
-semantic.warning: amber (alertes, avertissements)
-semantic.danger: rouge (erreurs, destructif)
-semantic.action: bleu (liens, actions secondaires)
-neutral: slate-* (échelle 50-950, neutres)
-accent: khmerCurry, persianIndigo, vert, bleu (couleurs nommées)
-```
+**Tokens disponibles :** source unique `packages/design-tokens/src/tokens.json` (palette vérifiée et
+rôles : skill `frontend-design`, section « Design System Integration (SoT) »). Classes Tailwind
+(`frontend/tailwind.config.cjs`) à ne pas confondre :
+- `bg-cta` (+ `hover:bg-cta-hover`) = orange `color.semantic.action` — CTA, boutons principaux
+- `bg-primary` / `bg-navy` = navy `color.primary.500` — fond hero, navbar, footer, confiance
+- `#e8590c` n'est pas un token (ancienne valeur) : ne jamais le prendre pour référence
 
 **Exceptions autorisées :**
 - Couleurs de marque tierces (logos constructeurs)
@@ -308,7 +303,7 @@ accent: khmerCurry, persianIndigo, vert, bleu (couleurs nommées)
 
 ### 8a — CTA Buttons
 **Standard :** `<Button>` shadcn avec variants (`default`, `destructive`, `outline`, `ghost`). Mêmes `rounded-xl`, `font-bold`, `min-h-[44px]`.
-**Antipatterns :** Mix `bg-[#e8590c]` / `bg-primary` / gradients custom sur des CTAs identiques. Rounding variable (`rounded-lg` vs `rounded-xl` vs `rounded-2xl`).
+**Antipatterns :** Mix hex hardcodé (`bg-[#...]`) / `bg-cta` / gradients custom sur des CTAs identiques. Rounding variable (`rounded-lg` vs `rounded-xl` vs `rounded-2xl`).
 
 ### 8b — Cards
 **Standard :** `rounded-xl border border-slate-200 shadow-sm hover:shadow-lg`. SEO cards = fond sémantique (`amber-50/50` warnings, `orange-50/50` diagnostics).
@@ -321,11 +316,11 @@ accent: khmerCurry, persianIndigo, vert, bleu (couleurs nommées)
 ### 8d — Couleurs sémantiques
 **Standard :**
 - Neutres : `slate-*` uniquement (pas `gray-*` ni `neutral-*`)
-- CTA principal : `primary` (token = orange #e8590c) ou `bg-[#e8590c]` → migrer vers `bg-primary`
+- CTA principal : `bg-cta` (orange, `color.semantic.action`) ; hex orange hardcodé → migrer vers `bg-cta`, jamais vers `bg-primary` (navy)
 - Warnings : `amber-*` (semantic.warning)
 - Diagnostics : `orange-*`
 - Succès/stock : `semantic.success` ou `green-*`
-- Fond sombre : `secondary` (token = bleu #0d1b3e) ou `bg-[#0d1b3e]` → migrer vers `bg-secondary`
+- Fond sombre : `bg-navy` / `bg-primary` (navy `color.primary.500`) ; hex navy hardcodé → migrer vers `bg-navy`
 
 **Antipatterns :** Mix `gray-*` / `neutral-*` / `slate-*`. Hex hardcodés là où un token existe.
 
@@ -424,33 +419,29 @@ accent: khmerCurry, persianIndigo, vert, bleu (couleurs nommées)
 
 ## Checklist 10 : Fluid Tokens (spacing & typography)
 
-**Règle :** Le design system fournit des tokens fluides basés sur `clamp()` dans `design-tokens.json`. Préférer ces tokens aux valeurs fixes quand disponibles.
+**Règle :** Le design system fournit des tokens fluides basés sur `clamp()` (`spacingFluid` et typographie fluide de `packages/design-tokens/src/tokens.json`). Préférer ces tokens aux valeurs fixes quand disponibles.
 
-**Tokens fluides disponibles :**
+**Tokens fluides disponibles :** CSS vars générées dans `packages/design-tokens/src/styles/tokens.css`
+(ne pas éditer, ne pas recopier les valeurs ici — les relire avant de choisir un palier) :
+- `--am-spacing-fluid-section-{xs,sm,md,lg,xl,2xl}` — padding vertical des sections
+- `--am-spacing-fluid-gap-{xs,sm,md,lg,xl}` — gaps
+- `--am-font-size-fluid-{xs,sm,base,lg,xl,2xl … 6xl}` — tailles de texte
 
-| Token | Valeur | Usage |
-|-------|--------|-------|
-| `--spacing-section-xs` | `clamp(1rem, 2vw, 1.5rem)` | Micro-sections |
-| `--spacing-section-sm` | `clamp(1.5rem, 3vw, 2.5rem)` | Sections compactes |
-| `--spacing-section-md` | `clamp(2rem, 4vw, 4rem)` | Sections standard |
-| `--spacing-section-lg` | `clamp(3rem, 6vw, 6rem)` | Sections hero |
-| `--spacing-gap-sm` | `clamp(0.5rem, 1vw, 0.75rem)` | Gaps compacts |
-| `--spacing-gap-md` | `clamp(0.75rem, 1.5vw, 1.25rem)` | Gaps standard |
-| `--font-size-hero` | `clamp(2rem, 4vw, 3.5rem)` | Titres hero |
-| `--font-size-section` | `clamp(1.25rem, 2.5vw, 2rem)` | Titres section |
+Préfixe `--am-` obligatoire depuis #1175 : un `var(--spacing-section-md)` ou `var(--font-size-hero)` ne résout vers rien.
 
 **Antipatterns à détecter :**
-- `py-6 sm:py-8 lg:py-12` quand `var(--spacing-section-md)` est disponible
+- `py-6 sm:py-8 lg:py-12` quand un `var(--am-spacing-fluid-section-*)` couvre la même plage
 - Breakpoints manuels pour du spacing qui pourrait être fluide
-- `text-2xl sm:text-3xl lg:text-4xl` quand `var(--font-size-hero)` est disponible
+- `text-2xl sm:text-3xl lg:text-4xl` quand un `var(--am-font-size-fluid-*)` couvre la même plage
+- `var(--…)` sans préfixe `--am-` (variable inexistante)
 
 **Pattern valide :**
 ```tsx
-// Spacing fluide (remplace py-6 sm:py-8 lg:py-12)
-className="py-[var(--spacing-section-md)]"
+// Spacing fluide (palier à choisir d'après tokens.css)
+className="py-[var(--am-spacing-fluid-section-md)]"
 
-// Font fluide (remplace text-2xl sm:text-3xl lg:text-4xl)
-className="text-[var(--font-size-hero)]"
+// Font fluide (palier à choisir d'après tokens.css)
+className="text-[var(--am-font-size-fluid-3xl)]"
 ```
 
 **Sévérité :** BASSE (fonctionnel avec breakpoints, mais tokens fluides = code plus propre).
@@ -472,14 +463,12 @@ Composants ajoutés récemment, pas encore validés contre les checklists :
 
 | Composant | À auditer pour |
 |-----------|---------------|
-| `components/home/ConseilsDiagnosticSection.tsx` | CK1 Grid, CK3 Touch, CK8 Alignement |
 | `components/layout/DarkSection.tsx` | CK7 Tokens, CK5 Spacing |
 | `components/layout/GlassCard.tsx` | CK7 Tokens, CK8b Cards |
 | `components/layout/PageSection.tsx` | CK5 Spacing, CK10 Fluid |
 | `components/layout/Reveal.tsx` | CK1 Mobile-first animations |
 | `components/layout/SectionHeader.tsx` | CK8c Headers, CK9 Typo |
 | `components/pieces/R2TransactionGuide.tsx` | CK2 shadcn, CK3 Touch |
-| `components/ui/navigation-menu.tsx` | CK3 Touch, CK6 A11y |
 
 ---
 

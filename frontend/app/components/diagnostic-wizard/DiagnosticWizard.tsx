@@ -20,8 +20,15 @@ import { useReducer, useCallback, useEffect, useState, useRef } from "react";
 import { z } from "zod";
 import { Button } from "~/components/ui/button";
 import { Progress } from "~/components/ui/progress";
+import { trackDiagnosticCompleted } from "~/utils/analytics";
+import {
+  emitFunnel,
+  getFunnelDevice,
+  getFunnelSessionId,
+} from "~/utils/funnel-beacon";
 import { useDiagnosticVehicleSelector } from "./hooks/use-diagnostic-vehicle-selector";
 import { DiagnosticResults } from "./results/DiagnosticResults";
+import { hasSuggestedGammes } from "./results/ResultCatalog";
 import { StepMaintenance } from "./steps/StepMaintenance";
 import { StepSymptom } from "./steps/StepSymptom";
 import { StepVehicle } from "./steps/StepVehicle";
@@ -29,6 +36,7 @@ import {
   type WizardState,
   type WizardAction,
   type DiagnosticApiResponse,
+  type EvidencePack,
 } from "./types";
 
 const STORAGE_KEY = "diag-wizard-draft";
@@ -209,9 +217,34 @@ function wizardReducer(state: WizardState, action: WizardAction): WizardState {
   }
 }
 
+// Funnel step 3 (internal event log) and the GA4 `diagnostic_completed`
+// event (ADR-027 Phase B), sent only for an analysis run now — never for a
+// reopened session. GA4 needs an identified system, which maintenance lacks.
+function reportAnalysis(state: WizardState, pack: EvidencePack) {
+  const hypothesisCount = pack.candidate_hypotheses.length;
+  emitFunnel({
+    event_type: "diag_analyze_complete",
+    payload: {
+      session_id: getFunnelSessionId(),
+      hypothesis_count: hypothesisCount,
+      has_suggested_gammes: hasSuggestedGammes(pack.catalog_guard),
+      vehicle_known: Boolean(state.vehicle.brand && state.vehicle.model),
+    },
+  });
+  if (state.analysisMode !== "maintenance") {
+    trackDiagnosticCompleted({
+      systemId: state.systemScope,
+      symptomId: state.symptomSlugs[0],
+      resultsCount: hypothesisCount,
+    });
+  }
+}
+
 export function DiagnosticWizard() {
   const [state, dispatch] = useReducer(wizardReducer, initialState);
-  const [linkCopied, setLinkCopied] = useState(false);
+  const [linkCopy, setLinkCopy] = useState<
+    { status: "copied" } | { status: "failed"; url: string } | null
+  >(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sessionDate, setSessionDate] = useState<string | null>(null);
   const [sessionAttempt, setSessionAttempt] = useState(0);
@@ -226,6 +259,7 @@ export function DiagnosticWizard() {
   const transitionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [maintenanceAvailable, setMaintenanceAvailable] = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
+  const wizardStartSent = useRef(false);
 
   // Vehicle selector (lifted from StepVehicle for draft restore)
   const vehicleSelector = useDiagnosticVehicleSelector();
@@ -392,6 +426,7 @@ export function DiagnosticWizard() {
     );
     setSessionId(null);
     setSessionDate(null);
+    setLinkCopy(null);
     dispatch({ type: "RESET" });
     setDraftReady(true);
   }, []);
@@ -450,6 +485,21 @@ export function DiagnosticWizard() {
     }, 150);
   }, []);
 
+  // Funnel step 2: the visitor leaves the vehicle step (once per mount).
+  const startWizard = useCallback(() => {
+    if (!wizardStartSent.current) {
+      wizardStartSent.current = true;
+      emitFunnel({
+        event_type: "diag_wizard_start",
+        payload: {
+          session_id: getFunnelSessionId(),
+          device: getFunnelDevice(),
+        },
+      });
+    }
+    handleStepChange({ type: "NEXT_STEP" });
+  }, [handleStepChange]);
+
   const submitDiagnostic = useCallback(async () => {
     dispatch({ type: "SET_LOADING", payload: true });
     dispatch({ type: "NEXT_STEP" });
@@ -499,14 +549,24 @@ export function DiagnosticWizard() {
         body: JSON.stringify(body),
       });
 
-      const data: DiagnosticApiResponse = await response.json();
+      // A non-JSON body (proxy error page) is a server failure, not a
+      // connection failure. HTTP error bodies carry a technical `error` code
+      // (GlobalErrorFilter), so only a 2xx refusal's `error` text is shown.
+      const data = (await response
+        .json()
+        .catch(() => null)) as DiagnosticApiResponse | null;
 
-      if (response.ok && data.success) {
+      if (response.ok && data?.success) {
         dispatch({ type: "SET_RESULT", payload: data });
+        if (data.evidence_pack) reportAnalysis(state, data.evidence_pack);
       } else {
         dispatch({
           type: "SET_ERROR",
-          payload: data.error || "Erreur inconnue",
+          payload: response.ok
+            ? data?.error || "Réponse du service de diagnostic illisible."
+            : response.status === 429
+              ? "Trop de demandes en peu de temps. Patientez une minute puis relancez l’analyse."
+              : `Service de diagnostic indisponible (erreur ${response.status}). Relancez l’analyse dans quelques instants.`,
         });
       }
     } catch {
@@ -521,10 +581,17 @@ export function DiagnosticWizard() {
     const sessionId = state.result?.session_id;
     if (!sessionId) return;
     const url = `${window.location.origin}/diagnostic-auto?session=${sessionId}`;
-    navigator.clipboard.writeText(url).then(() => {
-      setLinkCopied(true);
-      setTimeout(() => setLinkCopied(false), 2000);
-    });
+    // `navigator.clipboard` is absent outside a secure context and writeText
+    // rejects when permission is denied: the link is then shown for manual copy.
+    Promise.resolve()
+      .then(() => navigator.clipboard.writeText(url))
+      .then(
+        () => {
+          setLinkCopy({ status: "copied" });
+          setTimeout(() => setLinkCopy(null), 2000);
+        },
+        () => setLinkCopy({ status: "failed", url }),
+      );
   }, [state.result?.session_id]);
 
   const handlePrint = useCallback(() => {
@@ -748,7 +815,7 @@ export function DiagnosticWizard() {
             </Button>
           ) : (
             <Button
-              onClick={() => handleStepChange({ type: "NEXT_STEP" })}
+              onClick={startWizard}
               disabled={!canGoNext || transitioning}
               className="gap-2"
             >
@@ -760,7 +827,7 @@ export function DiagnosticWizard() {
       )}
 
       {state.step === 3 && (!state.loading || sessionId !== null) && (
-        <div className="flex items-center justify-center gap-3 pt-4 border-t border-gray-200 print:hidden">
+        <div className="flex flex-wrap items-center justify-center gap-3 pt-4 border-t border-gray-200 print:hidden">
           <Button
             variant="outline"
             onClick={startNewDiagnostic}
@@ -790,7 +857,7 @@ export function DiagnosticWizard() {
               onClick={copySessionLink}
               className="gap-1.5 text-gray-500 hover:text-gray-700"
             >
-              {linkCopied ? (
+              {linkCopy?.status === "copied" ? (
                 <>
                   <Check className="w-3.5 h-3.5 text-green-600" />
                   <span className="text-green-600">Lien copie</span>
@@ -802,6 +869,14 @@ export function DiagnosticWizard() {
                 </>
               )}
             </Button>
+          )}
+          {linkCopy?.status === "failed" && (
+            <p role="status" className="w-full text-xs text-gray-600">
+              Copie automatique impossible. Copiez ce lien :{" "}
+              <span className="select-all break-all font-mono">
+                {linkCopy.url}
+              </span>
+            </p>
           )}
         </div>
       )}

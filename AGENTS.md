@@ -32,6 +32,15 @@ ailleurs, et les lire est ta première action — pas une option.
 
 `Grep` et `Glob` viennent **après** cette cartographie, jamais avant.
 
+## Procédures (skills)
+
+Les procédures du repo sont écrites dans `.claude/skills/<nom>/SKILL.md` (et, par workspace,
+`workspaces/<ws>/.claude/skills/`). `.agents/skills` est un lien vers `.claude/skills` : Codex
+voit les skills racine, sans copie. Ceux qui touchent une zone STOP ne partent que sur invocation
+explicite (`agents/openai.yaml` du skill). Les skills de workspace ne sont pas exposés : quand ta
+tâche correspond à leur champ `description` (« Use when … »), lis ce `SKILL.md` en entier avant
+d'agir. Un skill décrit une procédure ; il ne lève aucune zone STOP.
+
 ## Zones STOP
 
 Elles sont définies par l'**invariant 9 de `CLAUDE.md`**, et **volontairement pas recopiées
