@@ -6,6 +6,7 @@
  */
 import {
   Activity,
+  AlertTriangle,
   Brain,
   Clock,
   Database,
@@ -14,9 +15,12 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { type LoaderFunctionArgs, useLoaderData } from "react-router";
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { requireAdmin } from "../auth/unified.server";
 
 interface Stats {
   total_sessions: number;
@@ -34,30 +38,42 @@ interface Session {
   created_at: string;
 }
 
-export const loader = async ({ request: _request }: LoaderFunctionArgs) => {
-  const [statsRes, sessionsRes] = await Promise.all([
-    fetch(getInternalApiUrl("/api/diagnostic-engine/stats")).catch(() => null),
-    fetch(getInternalApiUrl("/api/diagnostic-engine/sessions?limit=10")).catch(
-      () => null,
+/**
+ * Admin-only API (AuthenticatedGuard + IsAdminGuard): the session cookie is
+ * forwarded. A failed call yields `null` — shown as unavailable, never as
+ * zero counts or an empty history.
+ */
+async function fetchAdminApi<T>(
+  request: Request,
+  path: string,
+): Promise<T | null> {
+  try {
+    const res = await fetch(getInternalApiUrlFromRequest(path, request), {
+      headers: { Cookie: request.headers.get("Cookie") || "" },
+    });
+    if (!res.ok) {
+      logger.error(`[admin.diagnostic-engine] ${path} → HTTP ${res.status}`);
+      return null;
+    }
+    return (await res.json()) as T;
+  } catch (error) {
+    logger.error(`[admin.diagnostic-engine] ${path} → unreachable`, error);
+    return null;
+  }
+}
+
+export const loader = async ({ request, context }: LoaderFunctionArgs) => {
+  await requireAdmin({ context });
+
+  const [stats, sessionsData] = await Promise.all([
+    fetchAdminApi<Stats>(request, "/api/diagnostic-engine/stats"),
+    fetchAdminApi<{ sessions: Session[] }>(
+      request,
+      "/api/diagnostic-engine/sessions?limit=10",
     ),
   ]);
 
-  const stats: Stats = statsRes?.ok
-    ? await statsRes.json()
-    : {
-        total_sessions: 0,
-        sessions_by_system: [],
-        systems_count: 0,
-        symptoms_count: 0,
-        causes_count: 0,
-        safety_rules_count: 0,
-      };
-
-  const sessionsData = sessionsRes?.ok
-    ? await sessionsRes.json()
-    : { sessions: [] };
-
-  return { stats, sessions: sessionsData.sessions || [] };
+  return { stats, sessions: sessionsData?.sessions ?? null };
 };
 
 const SYSTEM_LABELS: Record<string, string> = {
@@ -68,9 +84,13 @@ const SYSTEM_LABELS: Record<string, string> = {
 
 export default function AdminDiagnosticEngine() {
   const { stats, sessions } = useLoaderData<{
-    stats: Stats;
-    sessions: Session[];
+    stats: Stats | null;
+    sessions: Session[] | null;
   }>();
+  // Percentages over the sample the backend grouped (most recent sessions),
+  // not over the all-time total.
+  const groupedSessions =
+    stats?.sessions_by_system.reduce((sum, s) => sum + s.count, 0) ?? 0;
 
   return (
     <div className="space-y-6 p-6">
@@ -84,32 +104,47 @@ export default function AdminDiagnosticEngine() {
         </p>
       </div>
 
+      {stats === null || sessions === null ? (
+        <Alert>
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Données indisponibles</AlertTitle>
+          <AlertDescription>
+            {stats === null && sessions === null
+              ? "Statistiques et sessions n'ont pas pu être chargées."
+              : stats === null
+                ? "Les statistiques n'ont pas pu être chargées."
+                : "Les sessions récentes n'ont pas pu être chargées."}{" "}
+            Les valeurs affichées « — » sont inconnues, pas nulles.
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
       {/* Stats grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <StatCard
           icon={<Activity className="w-4 h-4 text-blue-600" />}
           label="Sessions"
-          value={stats.total_sessions}
+          value={stats?.total_sessions ?? null}
         />
         <StatCard
           icon={<Stethoscope className="w-4 h-4 text-green-600" />}
           label="Systemes"
-          value={stats.systems_count}
+          value={stats?.systems_count ?? null}
         />
         <StatCard
           icon={<Database className="w-4 h-4 text-foreground" />}
           label="Symptomes"
-          value={stats.symptoms_count}
+          value={stats?.symptoms_count ?? null}
         />
         <StatCard
           icon={<TrendingUp className="w-4 h-4 text-orange-600" />}
           label="Causes"
-          value={stats.causes_count}
+          value={stats?.causes_count ?? null}
         />
         <StatCard
           icon={<ShieldCheck className="w-4 h-4 text-red-600" />}
           label="Regles securite"
-          value={stats.safety_rules_count}
+          value={stats?.safety_rules_count ?? null}
         />
         <StatCard
           icon={<Brain className="w-4 h-4 text-foreground" />}
@@ -123,16 +158,20 @@ export default function AdminDiagnosticEngine() {
         {/* Sessions by system */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Repartition par systeme</CardTitle>
+            <CardTitle className="text-base">
+              Repartition par systeme (sessions recentes)
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {stats.sessions_by_system.length === 0 ? (
+            {stats === null ? (
+              <p className="text-sm text-gray-400">Indisponible</p>
+            ) : stats.sessions_by_system.length === 0 ? (
               <p className="text-sm text-gray-400">Aucune session</p>
             ) : (
               stats.sessions_by_system.map((s) => {
                 const pct =
-                  stats.total_sessions > 0
-                    ? Math.round((s.count / stats.total_sessions) * 100)
+                  groupedSessions > 0
+                    ? Math.round((s.count / groupedSessions) * 100)
                     : 0;
                 return (
                   <div key={s.system_scope} className="space-y-1">
@@ -166,7 +205,9 @@ export default function AdminDiagnosticEngine() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {sessions.length === 0 ? (
+            {sessions === null ? (
+              <p className="text-sm text-gray-400">Indisponible</p>
+            ) : sessions.length === 0 ? (
               <p className="text-sm text-gray-400">Aucune session</p>
             ) : (
               <div className="overflow-x-auto">
@@ -252,7 +293,7 @@ function StatCard({
 }: {
   icon: React.ReactNode;
   label: string;
-  value: number;
+  value: number | null;
 }) {
   return (
     <Card>
@@ -261,7 +302,7 @@ function StatCard({
           {icon}
           <span className="text-xs text-gray-500">{label}</span>
         </div>
-        <p className="text-2xl font-bold text-gray-900">{value}</p>
+        <p className="text-2xl font-bold text-gray-900">{value ?? "—"}</p>
       </CardContent>
     </Card>
   );

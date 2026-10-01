@@ -385,28 +385,42 @@
       }
     },
     {
-      "actual_mode": "DRAFTED",
+      "actual_mode": "ACTIVE",
       "automation_id": "soft-404-events-retention",
       "domain": "D3",
+      "drift_note": "Purge = borne de stockage, sans lecteur aval : aucun code ne lit __soft_404_events ni v_soft_404_demand_30d (git grep main 2026-09-30). Runbook vault encore sur seo-routines.",
       "evidence": [
         {
           "excerpt": "PERFORM cron.schedule('soft-404-events-retention', '20 3 * * *', v_expected_command);",
           "line": 73,
-          "note": "exact-match/fail-closed + provenance marker ; .down unschedules only this job ; first run deletes ~159k rows > 90 d (irreversible)",
+          "note": "exact-match/fail-closed + provenance marker ; .down unschedules only this job ; applied 2026-09-29 (run 36608269299)",
           "path": "backend/supabase/migrations/20260929_soft_404_events_retention_cron.sql"
         }
       ],
       "executor": "pg_cron",
       "intended_mode": "ACTIVE",
-      "last_verified_at": "2026-09-29",
+      "last_verified_at": "2026-09-30",
       "last_verified_by": "@ak125",
-      "last_verified_method": "manual-inspection",
-      "missing_step": "merge PR #1620 + apply (only_ids) + prove first 03:20 UTC run: job_run_details succeeded 'DELETE n' and 0 rows older than 90 d",
-      "owner_action": "review + merge #1620, then apply-supabase-migrations dry-run → APPLY",
+      "last_verified_method": "runtime-probe",
       "related_pr": [
         1620
       ],
-      "risk": "medium"
+      "risk": "medium",
+      "runtime_evidence": {
+        "consumer": "no-consumer-by-design",
+        "output": {
+          "kind": "db_row",
+          "observed_at": "2026-09-30",
+          "query_or_url": "WITH r AS (SELECT d.start_time FROM cron.job_run_details d JOIN cron.job j USING (jobid) WHERE j.jobname='soft-404-events-retention' AND d.status='succeeded' ORDER BY d.start_time DESC LIMIT 1) SELECT (SELECT min(ts) FROM public.__soft_404_events) >= r.start_time - interval '90 days' FROM r  -- = true ; min(ts) 2026-07-02 03:20:25Z, borne 03:20:00Z",
+          "source": "public.__soft_404_events"
+        },
+        "trigger": {
+          "kind": "db_row",
+          "observed_at": "2026-09-30",
+          "query_or_url": "SELECT j.schedule, j.active, r.status, r.return_message, r.start_time FROM cron.job j JOIN LATERAL (SELECT * FROM cron.job_run_details d WHERE d.jobid=j.jobid ORDER BY d.start_time DESC LIMIT 1) r ON true WHERE j.jobname='soft-404-events-retention'  -- '20 3 * * *', active, succeeded 'DELETE 160060' @2026-09-30 03:20:00Z (0.57 s)",
+          "source": "cron.job_run_details"
+        }
+      }
     },
     {
       "actual_mode": "SCRIPT_ONLY",
@@ -9231,7 +9245,7 @@
         "name": "__admin_audit_log",
         "owner": "__unassigned__",
         "risk": "low",
-        "rlsEnabled": false,
+        "rlsEnabled": true,
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "low",
@@ -11290,7 +11304,7 @@
         "name": "__pipeline_chain_queue",
         "owner": "__unassigned__",
         "risk": "low",
-        "rlsEnabled": false,
+        "rlsEnabled": true,
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "low",
@@ -12086,7 +12100,7 @@
         "name": "__refunds",
         "owner": "__unassigned__",
         "risk": "low",
-        "rlsEnabled": false,
+        "rlsEnabled": true,
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "low",
@@ -19241,7 +19255,7 @@
         "name": "__video_execution_log",
         "owner": "__unassigned__",
         "risk": "low",
-        "rlsEnabled": false,
+        "rlsEnabled": true,
         "schema": "public",
         "schemaVersion": "1.0.0",
         "sourceConfidence": "low",
@@ -42241,6 +42255,8 @@
         "backend/src/modules/diagnostic-engine/maintenance-flow.test.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
         "backend/src/modules/diagnostic-engine/ports/vehicle-context.port.ts",
@@ -42256,7 +42272,7 @@
         "backend/src/modules/diagnostic-engine/vehicle-context-mapping.ts"
       ],
       "kind": "controller",
-      "loc": 555,
+      "loc": 560,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
       "risk": "medium",
@@ -42292,7 +42308,7 @@
         "backend/src/modules/diagnostic-engine/types/diagnostic-reference.schema.ts"
       ],
       "kind": "service",
-      "loc": 501,
+      "loc": 519,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
       "risk": "medium",
@@ -42450,11 +42466,13 @@
       "id": "backend/src/modules/diagnostic-engine/diagnostic-session-integrity.test.ts",
       "importedBy": [],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts"
       ],
       "kind": "test",
-      "loc": 124,
+      "loc": 273,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-session-integrity.test.ts",
       "risk": "medium",
@@ -68835,6 +68853,7 @@
         "frontend/app/routes/admin.commercial._index.tsx",
         "frontend/app/routes/admin.control-plane.tsx",
         "frontend/app/routes/admin.debug.tsx",
+        "frontend/app/routes/admin.diagnostic-engine.tsx",
         "frontend/app/routes/admin.invoices._index.tsx",
         "frontend/app/routes/admin.menu.tsx",
         "frontend/app/routes/admin.messages.tsx",
@@ -81785,12 +81804,15 @@
       "id": "frontend/app/routes/admin.diagnostic-engine.tsx",
       "importedBy": [],
       "imports": [
+        "frontend/app/auth/unified.server.ts",
+        "~/components/ui/alert",
         "~/components/ui/badge",
         "~/components/ui/card",
-        "~/utils/internal-api.server"
+        "~/utils/internal-api.server",
+        "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 269,
+      "loc": 310,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.diagnostic-engine.tsx",
       "risk": "medium",
@@ -98198,7 +98220,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 95,
+      "loc": 127,
       "owner": "@ak125",
       "path": "scripts/ci/preprod-e2e-rate-budget.mjs",
       "risk": "medium",
@@ -98218,7 +98240,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 56,
+      "loc": 106,
       "owner": "@ak125",
       "path": "scripts/ci/preprod-e2e-rate-budget.storage.test.mjs",
       "risk": "medium",
@@ -98238,7 +98260,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 156,
+      "loc": 183,
       "owner": "@ak125",
       "path": "scripts/ci/preprod-e2e-rate-budget.test.mjs",
       "risk": "medium",
@@ -98278,7 +98300,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 312,
+      "loc": 345,
       "owner": "@ak125",
       "path": "scripts/ci/preprod-response-suite.test.mjs",
       "risk": "medium",
@@ -101172,18 +101194,18 @@
     "generatedAt": "1970-01-01T00:00:00.000Z",
     "generatorVersion": "1.0.0",
     "inputHashes": {
-      ".spec/00-canon/repository-registry/automation-reality.yaml": "03fea67f80c0783ae5a137d2a47952bd4abef0295d10c1cea4ea7b06ccc11eba",
+      ".spec/00-canon/repository-registry/automation-reality.yaml": "0ab11576b27d12f8c90f4202282216a5271a3feb7791c4cca86a4ae575020a2f",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "35f33dc0f7e4d4d6f1e67906816e6a8bfbb6b70794e60e9ea4b4148dca2c0f28",
+      ".spec/00-canon/repository-registry/ownership.yaml": "8529da962fb0b045010cff13d5ffb8811af2f10838bd8d36750ba87d93de4921",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
-      "audit/registry/db.json": "7c35439bb913f5b738577b09c86b7c5784884ba0907fcffb6173d864593ac0a6",
+      "audit/registry/db.json": "8a9a7f70490c00f57d748796e4a1c5a98addcc079a4ba569b96ad275dc246d37",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "a82946d2cc234cf2f33bd3ed0536554661814a18066b8c1c1fa603fda58a9c75",
+      "audit/registry/files.json": "0f4eea051a243d53c9c1678ef1ed77b3cf722c40381ca18fe7687a22d4eb13a7",
       "audit/registry/rpc.json": "86d0c24b102036512a9f7b11d9ac04754288049a8b061981b19f0db0a8c86263",
       "audit/registry/runtime.json": "67dc8fe02246ff5d7cf25668af7409b32ea66bc575d4ae23455b57f94d111174"
     },
-    "sotFingerprint": "8e2a34bebbb1"
+    "sotFingerprint": "52c742d3d03e"
   },
   "runtime": [
     {

@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { waitForRateBudget } from "./preprod-e2e-rate-budget.mjs";
+import {
+  burstWindowSeconds,
+  waitForRateBudget,
+} from "./preprod-e2e-rate-budget.mjs";
 
 const tiers = [
   { name: "short", ttl: 1000 },
@@ -152,4 +155,28 @@ test("the idle duration follows the supplied policy instead of a copied minute c
   );
   await waitForRateBudget(h.options);
   assert.deepEqual(h.waits, [5000, 1000]);
+});
+
+test("the pacing interval is the short TTL, rounded up to whole seconds", () => {
+  assert.equal(burstWindowSeconds(tiers), 1);
+  assert.equal(
+    burstWindowSeconds(
+      tiers.map((tier) =>
+        tier.name === "short" ? { ...tier, ttl: 1500 } : tier,
+      ),
+    ),
+    2,
+  );
+});
+
+test("a pacing interval cannot be derived without a valid short tier", () => {
+  for (const broken of [
+    tiers.filter(({ name }) => name !== "short"),
+    tiers.map((tier) => (tier.name === "short" ? { ...tier, ttl: 0 } : tier)),
+    tiers.map((tier) =>
+      tier.name === "short" ? { ...tier, ttl: Number.NaN } : tier,
+    ),
+  ]) {
+    assert.throws(() => burstWindowSeconds(broken), /configured numeric TTLs/);
+  }
 });

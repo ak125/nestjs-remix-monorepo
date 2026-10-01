@@ -238,7 +238,7 @@
         "backend/src/modules/diagnostic-engine/types"
       ],
       "files_count": 51,
-      "loc_total": 9387,
+      "loc_total": 9559,
       "has_barrel": false
     },
     "errors": {
@@ -259,7 +259,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115477,
+      "loc_total": 115518,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -701,7 +701,7 @@
         "scripts/wiki-generators/__tests__"
       ],
       "files_count": 187,
-      "loc_total": 40287,
+      "loc_total": 40429,
       "has_barrel": true
     },
     "search": {
@@ -1684,7 +1684,7 @@
     {
       "from": "frontend-routes",
       "to": "frontend-shared",
-      "count": 352
+      "count": 353
     },
     {
       "from": "gamme-rest",
