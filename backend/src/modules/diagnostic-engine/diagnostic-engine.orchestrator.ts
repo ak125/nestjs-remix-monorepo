@@ -19,7 +19,10 @@ import {
   type UsageContextInput,
 } from './types/diagnostic-input.schema';
 import type { CatalogGuard, EvidencePack } from './types/evidence-pack.schema';
-import { DiagnosticEngineDataService } from './diagnostic-engine.data-service';
+import {
+  DiagnosticEngineDataService,
+  type DiagSystem,
+} from './diagnostic-engine.data-service';
 import { SignalInterpretationEngine } from './engines/signal-interpretation.engine';
 import { HypothesisScoringEngine } from './engines/hypothesis-scoring.engine';
 import { RiskSafetyEngine } from './engines/risk-safety.engine';
@@ -54,6 +57,23 @@ export class DiagnosticEngineOrchestrator {
     private readonly maintenanceEngine: MaintenanceIntelligenceEngine,
     private readonly kgShadow: KgShadowService, // PR-E — fire-and-forget shadow
   ) {}
+
+  /**
+   * Systems that can be analysed. analyze() refuses a system without an
+   * active safety rule, so such a system is not offered; the gap is logged.
+   */
+  async getAnalysableSystems(): Promise<DiagSystem[]> {
+    const [systems, covered] = await Promise.all([
+      this.dataService.getActiveSystems(),
+      this.dataService.getSystemIdsWithSafetyRules(),
+    ]);
+    const uncovered = systems.filter((s) => !covered.has(s.id));
+    if (uncovered.length)
+      this.logger.warn(
+        `Diagnostic systems without safety rules are not offered: ${uncovered.map((s) => s.slug).join(', ')}`,
+      );
+    return systems.filter((s) => covered.has(s.id));
+  }
 
   /**
    * Main entry point — produces a valid EvidencePack via 5 engines
@@ -131,7 +151,7 @@ export class DiagnosticEngineOrchestrator {
     }
     if (!signal.system_confirmed) {
       try {
-        const systems = await this.dataService.getActiveSystems();
+        const systems = await this.getAnalysableSystems();
         const available = systems.map((s) => s.slug).join(', ');
         return {
           success: false,

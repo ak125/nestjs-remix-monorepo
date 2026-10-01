@@ -19,6 +19,7 @@ import {
   DiagCauseLinksSchema,
   DiagCausesSchema,
   DiagSafetyRulesSchema,
+  DiagSafetyRuleCoverageSchema,
 } from './types/diagnostic-reference.schema';
 
 // ── DB Row types (aligned on migration schema) ──────────
@@ -338,6 +339,23 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
     if (data.some((row) => row.system_id !== system.id))
       throw new Error('Diagnostic safety rule system mismatch');
     return data;
+  }
+
+  /**
+   * Systems that have at least one active safety rule.
+   */
+  async getSystemIdsWithSafetyRules(): Promise<Set<number>> {
+    const { data, error } = await this.supabase
+      .from('__diag_safety_rule')
+      .select('system_id, active')
+      .eq('active', true);
+
+    if (error) {
+      this.logger.error('Failed to fetch safety rule coverage', error.message);
+      throw new Error('Safety rules unavailable');
+    }
+    DiagSafetyRuleCoverageSchema.parse(data);
+    return new Set(data.map((row) => row.system_id));
   }
 
   /**
