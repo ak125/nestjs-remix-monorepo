@@ -1,3 +1,8 @@
+# Deux documents pour une même règle. ast-grep choisit les fichiers d'après
+# `language` AVANT d'appliquer `files` : un document `typescript` ne lit
+# jamais un .tsx, et un glob en .tsx dans ses `files` ne correspond à rien,
+# sans erreur. Le document `-tsx` porte la même `rule` et le même `message`
+# (égalité vérifiée par frontend/tests/unit/ast-grep-rule-globs-match-language.test.ts).
 id: seo-no-bare-role-literal
 language: typescript
 severity: error
@@ -23,6 +28,9 @@ note: |
   clean observation : `ast-grep scan` returned 0 findings on the full
   corpus for the bare-form patterns below. No code change needed
   beyond this severity flip.
+  Ce « 0 findings » ne couvrait pas les .tsx : ce document `typescript`
+  ne les lit pas (glob mort jusqu'au 2026-10-01). Les .tsx relèvent du
+  document `seo-no-bare-role-literal-tsx` ci-dessous.
 
   Note : the eslint `no-restricted-syntax` selector that catches the
   *suffixed* legacy forms (R3_BLOG, R6_BUYING_GUIDE, …) remains at
@@ -33,7 +41,6 @@ files:
   # ── Apply to frontend + backend TypeScript ──
   - backend/src/**/*.ts
   - frontend/app/**/*.ts
-  - frontend/app/**/*.tsx
   # ── Regression test scope : the rule MUST trigger here when the fixture
   # is renamed from .ts.disabled → .ts (validates ast-grep coverage). ──
   - __regression__/**/*.ts
@@ -43,7 +50,6 @@ ignores:
   - "**/page-role.types.ts"
   # ── Tests + fixtures : legacy literals are legitimate inputs ──
   - "**/*.test.ts"
-  - "**/*.test.tsx"
   - "**/*.spec.ts"
   - "**/__tests__/**"
   - "**/__fixtures__/**"
@@ -109,6 +115,54 @@ ignores:
   - "**/rag-proxy/dto/search.dto.ts"
   # NB : __regression__/ NOT excluded — that's where the regression
   # fixture lives, the rule MUST trigger there to verify it works.
+rule:
+  all:
+    - any:
+        - pattern: '"R3"'
+        - pattern: "'R3'"
+        - pattern: '"R6"'
+        - pattern: "'R6'"
+        - pattern: '"R9"'
+        - pattern: "'R9'"
+        - pattern: '"R3_GUIDE"'
+        - pattern: "'R3_GUIDE'"
+---
+id: seo-no-bare-role-literal-tsx
+language: tsx
+severity: warning
+message: |
+  Bare SEO role literal in OUTPUT context. Use canonical full name
+  (R3_CONSEILS, R6_GUIDE_ACHAT, R6_SUPPORT, etc.) or call normalizeRoleId()
+  first. Bare R3 / R6 / R9 / R3_GUIDE are FORBIDDEN_ROLE_IDS — they are
+  ambiguous (R6 = R6_GUIDE_ACHAT or R6_SUPPORT?) or deprecated (R9).
+
+  See .spec/00-canon/db-governance/legacy-canon-map.md and
+  packages/seo-roles/README.md.
+
+  If this is a legacy DB filter, test fixture, or mapping reference, add
+  the file to the `ignores:` list below with a comment explaining why.
+note: |
+  Replace  '"R3"'  with  PageRole.R3_CONSEILS
+       or  normalizeRoleId(input)  if input is dynamic.
+
+  Document `tsx` de seo-no-bare-role-literal. Jusqu'au 2026-10-01, la règle
+  listait les .tsx dans les `files` de son document `typescript`, qui ne les
+  lit jamais : la promotion PR-3b (« 0 findings ») ne les avait pas mesurés.
+  Mesure à l'ouverture de ce document : 16 littéraux nus —
+  admin.keyword-planner.tsx (12), GammeActionBar.tsx (2),
+  blog-pieces-auto.guide-achat.$pg_alias.tsx (2).
+  `severity: warning` selon la convention de sgconfig.yml (une règle nouvelle
+  démarre en warning, promue en error une fois le code propre). Les deux
+  occurrences du guide d'achat sont des types littéraux stricts du contrat
+  R6GuidePayload (cf. `ignores` du document typescript) : elles migrent avec
+  ce contrat, pas isolément.
+files:
+  - frontend/app/**/*.tsx
+ignores:
+  # ── Tests + fixtures : legacy literals are legitimate inputs ──
+  - "**/*.test.tsx"
+  - "**/__tests__/**"
+  - "**/__fixtures__/**"
 rule:
   all:
     - any:

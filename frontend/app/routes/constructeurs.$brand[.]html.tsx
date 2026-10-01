@@ -15,7 +15,6 @@ import {
   Package,
 } from "lucide-react";
 import {
-  type HeadersFunction,
   type LinksFunction,
   type LoaderFunctionArgs,
   type MetaFunction,
@@ -28,6 +27,7 @@ import {
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import brandColorsStyles from "~/styles/brand-colors.css?url";
+import { buildCacheHeaders } from "~/utils/cache-control";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { PopularGammesSection } from "../components/constructeurs/PopularGammesSection";
@@ -85,9 +85,9 @@ interface BrandDescription {
 // 📦 CACHE — 5min browser + 1h stale
 // ==========================================
 
-export const headers: HeadersFunction = () => ({
-  "Cache-Control": "public, max-age=300, stale-while-revalidate=3600",
-});
+export const headers = buildCacheHeaders(
+  "public, max-age=300, stale-while-revalidate=3600",
+);
 
 // ==========================================
 // 🔄 META
