@@ -1,0 +1,16 @@
+-- ============================================================================
+-- DOWN — 20261001_diag_capture_maintenance_schema
+-- ----------------------------------------------------------------------------
+-- VOLONTAIREMENT NON DESTRUCTIF.
+--
+-- Cette migration ne fait que VERSIONNER des objets qui PRÉ-EXISTENT en base
+-- live (__diag_maintenance_operation, __diag_maintenance_symptom_link et 5
+-- colonnes de __diag_cause). En live elle ne change aucun schéma : chaque
+-- instruction est IF NOT EXISTS et le COMMENT ON réécrit le texte identique.
+-- Un down qui DROP supprimerait des tables et des colonnes lues par le moteur
+-- de diagnostic (data-service, moteur maintenance-intelligence, calculateur
+-- d'entretien), avec leurs 30 + 75 lignes → interdit.
+--
+-- Il n'y a donc rien à défaire. Aucune action ici.
+-- ============================================================================
+SELECT 1; -- no-op intentionnel (voir en-tête)
