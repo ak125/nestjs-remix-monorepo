@@ -81,6 +81,30 @@
       "risk": "low"
     },
     {
+      "actual_mode": "DRAFTED",
+      "automation_id": "cron-job-run-details-retention",
+      "domain": "D15",
+      "evidence": [
+        {
+          "excerpt": "PERFORM cron.schedule('cron-job-run-details-retention', '30 3 * * *', v_expected_command);",
+          "line": 93,
+          "note": "exact-match/fail-closed + provenance marker ; .down unschedules only this job ; max(runid) per jobid always kept",
+          "path": "backend/supabase/migrations/20261001_cron_job_run_details_retention.sql"
+        }
+      ],
+      "executor": "pg_cron",
+      "intended_mode": "ACTIVE",
+      "last_verified_at": "2026-10-01",
+      "last_verified_by": "@ak125",
+      "last_verified_method": "manual-inspection",
+      "missing_step": "merge + apply (only_ids) + prove first 03:30 UTC run: job_run_details succeeded 'DELETE n' and 0 rows older than 90 d outside max(runid) per jobid",
+      "owner_action": "review + merge, then apply-supabase-migrations dry-run → APPLY",
+      "related_pr": [
+        1651
+      ],
+      "risk": "medium"
+    },
+    {
       "actual_mode": "ACTIVE",
       "automation_id": "cwv-rum-aggregation",
       "domain": "D3",
@@ -29802,7 +29826,8 @@
         "backend/src/common/decorators/index.ts",
         "backend/src/modules/admin/controllers/command-center.controller.ts",
         "backend/src/modules/admin/controllers/user-management.controller.ts",
-        "backend/src/modules/users/controllers/addresses.controller.ts"
+        "backend/src/modules/users/controllers/addresses.controller.ts",
+        "backend/src/modules/users/controllers/user-shipment.controller.ts"
       ],
       "imports": [],
       "kind": "service",
@@ -42228,10 +42253,12 @@
       "id": "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.test.ts",
       "importedBy": [],
       "imports": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
+        "backend/src/modules/diagnostic-engine/services/diagnostic-content.service.ts",
         "backend/src/modules/diagnostic-engine/vehicle-context-mapping.ts"
       ],
       "kind": "test",
-      "loc": 144,
+      "loc": 214,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.test.ts",
       "risk": "medium",
@@ -42249,6 +42276,7 @@
       "domain": "D4",
       "id": "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
       "importedBy": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-session-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/maintenance-calendar-integrity.test.ts",
@@ -42272,7 +42300,7 @@
         "backend/src/modules/diagnostic-engine/vehicle-context-mapping.ts"
       ],
       "kind": "controller",
-      "loc": 560,
+      "loc": 574,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
       "risk": "medium",
@@ -42939,6 +42967,7 @@
       "domain": "D4",
       "id": "backend/src/modules/diagnostic-engine/services/diagnostic-content.service.ts",
       "importedBy": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
         "backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts"
@@ -42948,7 +42977,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 126,
+      "loc": 128,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/services/diagnostic-content.service.ts",
       "risk": "medium",
@@ -63980,10 +64009,13 @@
         "backend/src/modules/users/users.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@common/exceptions",
+        "backend/src/common/decorators/user.decorator.ts",
         "backend/src/modules/users/services/user-shipment.service.ts"
       ],
       "kind": "controller",
-      "loc": 81,
+      "loc": 113,
       "owner": "@ak125/auth-team",
       "path": "backend/src/modules/users/controllers/user-shipment.controller.ts",
       "risk": "high",
@@ -68515,6 +68547,26 @@
       "loc": 40,
       "owner": "@ak125",
       "path": "backend/tests/unit/trend-signals/rappels-gouv-fr.fetcher.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/user-shipment-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 212,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/user-shipment-authz.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -86081,6 +86133,7 @@
         "~/components/layout/Container",
         "~/components/ui/PublicBreadcrumb",
         "~/components/ui/accordion",
+        "~/components/ui/alert",
         "~/components/ui/badge",
         "~/components/ui/input",
         "~/components/ui/separator",
@@ -86089,7 +86142,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 1002,
+      "loc": 1042,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/diagnostic-auto._index.tsx",
       "risk": "medium",
@@ -90820,31 +90873,11 @@
         "manual"
       ],
       "domain": "D2",
-      "id": "frontend/tests/qa-audit/helpers/reporter.ts",
-      "importedBy": [],
-      "imports": [],
-      "kind": "service",
-      "loc": 257,
-      "owner": "@ak125",
-      "path": "frontend/tests/qa-audit/helpers/reporter.ts",
-      "risk": "medium",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "high",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D2",
       "id": "frontend/tests/qa-audit/playwright.qa.config.ts",
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 57,
+      "loc": 54,
       "owner": "@ak125",
       "path": "frontend/tests/qa-audit/playwright.qa.config.ts",
       "risk": "medium",
@@ -91387,6 +91420,26 @@
       "loc": 152,
       "owner": "@ak125",
       "path": "frontend/tests/unit/diagnostic-critical-urgency.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/diagnostic-hub-wiki-content.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 171,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/diagnostic-hub-wiki-content.test.tsx",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -99256,11 +99309,31 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "scripts/registry/validate-automation-overlay.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 58,
+      "owner": "@ak125",
+      "path": "scripts/registry/validate-automation-overlay.test.ts",
+      "risk": "high",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "scripts/registry/validate-automation-overlay.ts",
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 227,
+      "loc": 240,
       "owner": "@ak125",
       "path": "scripts/registry/validate-automation-overlay.ts",
       "risk": "high",
@@ -101194,18 +101267,18 @@
     "generatedAt": "1970-01-01T00:00:00.000Z",
     "generatorVersion": "1.0.0",
     "inputHashes": {
-      ".spec/00-canon/repository-registry/automation-reality.yaml": "0ab11576b27d12f8c90f4202282216a5271a3feb7791c4cca86a4ae575020a2f",
+      ".spec/00-canon/repository-registry/automation-reality.yaml": "2eeff25269dfc884ba4f8ab1f19dd9322962e4a311c0b73a1e1a40deba1b9c0a",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "8529da962fb0b045010cff13d5ffb8811af2f10838bd8d36750ba87d93de4921",
+      ".spec/00-canon/repository-registry/ownership.yaml": "14105f6fc831d6b7e6246b2d7b787ec6d3446839914bf68e79c2f4b70703d09b",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "8a9a7f70490c00f57d748796e4a1c5a98addcc079a4ba569b96ad275dc246d37",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "0f4eea051a243d53c9c1678ef1ed77b3cf722c40381ca18fe7687a22d4eb13a7",
+      "audit/registry/files.json": "0eae50d119e2da1af155f01046f77015c9199b942ab2a0bdc1b86234abcd5adf",
       "audit/registry/rpc.json": "86d0c24b102036512a9f7b11d9ac04754288049a8b061981b19f0db0a8c86263",
       "audit/registry/runtime.json": "67dc8fe02246ff5d7cf25668af7409b32ea66bc575d4ae23455b57f94d111174"
     },
-    "sotFingerprint": "52c742d3d03e"
+    "sotFingerprint": "cfd7381335e5"
   },
   "runtime": [
     {
