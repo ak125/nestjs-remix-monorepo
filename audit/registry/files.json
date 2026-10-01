@@ -14099,10 +14099,12 @@
       "id": "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.test.ts",
       "importedBy": [],
       "imports": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
+        "backend/src/modules/diagnostic-engine/services/diagnostic-content.service.ts",
         "backend/src/modules/diagnostic-engine/vehicle-context-mapping.ts"
       ],
       "kind": "test",
-      "loc": 144,
+      "loc": 214,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.test.ts",
       "risk": "low",
@@ -14119,6 +14121,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
       "importedBy": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-session-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/maintenance-calendar-integrity.test.ts",
@@ -14142,7 +14145,7 @@
         "backend/src/modules/diagnostic-engine/vehicle-context-mapping.ts"
       ],
       "kind": "controller",
-      "loc": 560,
+      "loc": 574,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
       "risk": "low",
@@ -14785,6 +14788,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/diagnostic-engine/services/diagnostic-content.service.ts",
       "importedBy": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.test.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
         "backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts"
@@ -14794,7 +14798,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 126,
+      "loc": 128,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/services/diagnostic-content.service.ts",
       "risk": "low",
@@ -56381,6 +56385,7 @@
         "~/components/layout/Container",
         "~/components/ui/PublicBreadcrumb",
         "~/components/ui/accordion",
+        "~/components/ui/alert",
         "~/components/ui/badge",
         "~/components/ui/input",
         "~/components/ui/separator",
@@ -56389,7 +56394,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 1002,
+      "loc": 1042,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/diagnostic-auto._index.tsx",
       "risk": "low",
@@ -61499,6 +61504,25 @@
       "loc": 152,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/diagnostic-critical-urgency.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/diagnostic-hub-wiki-content.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 171,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/diagnostic-hub-wiki-content.test.tsx",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -68978,11 +69002,30 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "scripts/registry/validate-automation-overlay.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 58,
+      "owner": "__unassigned__",
+      "path": "scripts/registry/validate-automation-overlay.test.ts",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "scripts/registry/validate-automation-overlay.ts",
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 227,
+      "loc": 240,
       "owner": "__unassigned__",
       "path": "scripts/registry/validate-automation-overlay.ts",
       "risk": "low",
