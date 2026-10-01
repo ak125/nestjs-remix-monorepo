@@ -256,6 +256,7 @@ describe('resolveDiagnosticProjection', () => {
     );
     expect(result.projections).toEqual([]);
     expect(result.conflicts).toHaveLength(1);
+    expect(result.conflicts[0].detail).toEqual(detail);
     expect(result.conflicts[0]).toMatchObject({
       reason,
       detail,
@@ -383,5 +384,58 @@ describe('resolveDiagnosticProjection', () => {
       'schema_invalid',
     ]);
     expect(result.conflicts.map((row) => row.relation_index)).toEqual([1, 2]);
+  });
+
+  it('a conflict before the reservation step does not consume the link', () => {
+    const result = resolveDiagnosticProjection(
+      [
+        gammeFile('filtre-a-air', [
+          relation({ relation_to_part: 'symptom_amplifier' }),
+          relation(),
+        ]),
+      ],
+      reference,
+    );
+    expect(result.conflicts).toHaveLength(1);
+    expect(result.conflicts[0]).toMatchObject({
+      reason: 'not_a_cause_relation',
+      relation_index: 0,
+      detail: { relation_to_part: 'symptom_amplifier' },
+    });
+    expect(
+      result.projections.map((row) => [row.link_id, row.wiki_path]),
+    ).toEqual([[113, 'wiki/gamme/filtre-a-air.md']]);
+  });
+
+  it('throws on two links sharing the same (symptom_id, cause_id) pair', () => {
+    expect(() =>
+      resolveDiagnosticProjection([gammeFile('filtre-a-air', [relation()])], {
+        ...reference,
+        links: [...reference.links, link(900, 10, 20)],
+      }),
+    ).toThrow(/10:20.*113.*900/);
+  });
+
+  it('a cause slug such as "constructor" is never a gamme mapping (no TypeError)', () => {
+    const result = resolveDiagnosticProjection(
+      [gammeFile('filtre-a-air', [relation()])],
+      {
+        ...reference,
+        causes: [cause(26, 'constructor', 1)],
+        links: [link(300, 10, 26)],
+      },
+      {},
+    );
+    expect(result.projections).toEqual([]);
+    expect(result.conflicts).toHaveLength(1);
+    expect(result.conflicts[0].reason).toBe('no_matching_link');
+    expect(result.conflicts[0].detail).toEqual({});
+  });
+
+  it('throws naming the duplicated (link_id, wiki_path) when a fiche is listed twice', () => {
+    const file = gammeFile('filtre-a-air', [relation()]);
+    expect(() => resolveDiagnosticProjection([file, file], reference)).toThrow(
+      /113.*wiki\/gamme\/filtre-a-air\.md/,
+    );
   });
 });

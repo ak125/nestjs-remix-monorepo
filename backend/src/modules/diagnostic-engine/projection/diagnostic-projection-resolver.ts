@@ -33,9 +33,19 @@ export function resolveDiagnosticProjection(
   const symptomsBySlug = new Map(
     reference.symptoms.map((row) => [row.slug, row]),
   );
-  const linksByPair = new Map(
-    reference.links.map((row) => [`${row.symptom_id}:${row.cause_id}`, row]),
-  );
+  // __diag_symptom_cause_link porte UNIQUE (symptom_id, cause_id) : une paire
+  // dupliquée est une violation du contrat de référence, jamais un choix silencieux.
+  const linksByPair = new Map<string, (typeof reference.links)[number]>();
+  for (const row of reference.links) {
+    const pair = `${row.symptom_id}:${row.cause_id}`;
+    const existing = linksByPair.get(pair);
+    if (existing) {
+      throw new Error(
+        `diagnostic projection: paire de lien (symptom_id:cause_id) ${pair} dupliquée (liens ${existing.id} et ${row.id})`,
+      );
+    }
+    linksByPair.set(pair, row);
+  }
   const causesBySystem = new Map<number, DiagCause[]>();
   for (const cause of [...reference.causes].sort((a, b) => a.id - b.id)) {
     const list = causesBySystem.get(cause.system_id) ?? [];
@@ -108,9 +118,12 @@ export function resolveDiagnosticProjection(
 
       const candidates = (causesBySystem.get(system.id) ?? []).flatMap(
         (cause) => {
-          const mapsToGamme = (gammeMap[cause.slug] ?? []).some(
-            (gamme) => gamme.slug === envelope.gamme_slug,
-          );
+          // Clé propre uniquement : `constructor` / `__proto__` ne sont pas un mapping.
+          const mapsToGamme =
+            Object.hasOwn(gammeMap, cause.slug) &&
+            gammeMap[cause.slug].some(
+              (gamme) => gamme.slug === envelope.gamme_slug,
+            );
           const link = linksByPair.get(`${symptom.id}:${cause.id}`);
           return mapsToGamme && link ? [{ cause, link }] : [];
         },
@@ -179,7 +192,16 @@ export function resolveDiagnosticProjection(
     projections.map((row) => `${row.link_id}\u0000${row.wiki_path}`),
   );
   if (keys.size !== projections.length) {
-    throw new Error('diagnostic projection: (link_id, wiki_path) non unique');
+    const seen = new Set<string>();
+    const duplicate = projections.find((row) => {
+      const key = `${row.link_id}\u0000${row.wiki_path}`;
+      if (seen.has(key)) return true;
+      seen.add(key);
+      return false;
+    });
+    throw new Error(
+      `diagnostic projection: (link_id, wiki_path) non unique : (${duplicate?.link_id}, ${duplicate?.wiki_path})`,
+    );
   }
   if (projections.length + conflicts.length !== exportedCount) {
     throw new Error(
