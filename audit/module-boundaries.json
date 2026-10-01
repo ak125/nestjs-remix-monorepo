@@ -103,7 +103,7 @@
         "backend/src/modules/blog/utils"
       ],
       "files_count": 36,
-      "loc_total": 13420,
+      "loc_total": 13591,
       "has_barrel": false
     },
     "bot-guard": {
@@ -186,7 +186,7 @@
         "backend/src/modules/config/validators"
       ],
       "files_count": 101,
-      "loc_total": 24495,
+      "loc_total": 24499,
       "has_barrel": true
     },
     "customers": {
@@ -259,7 +259,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115558,
+      "loc_total": 115595,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -767,8 +767,8 @@
         "scripts/seo/__tests__/fixtures/r-seo-09/positive/05-loader-non-canonical",
         "scripts/seo/lib"
       ],
-      "files_count": 276,
-      "loc_total": 58441,
+      "files_count": 277,
+      "loc_total": 58650,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -1949,7 +1949,7 @@
     {
       "from": "seo",
       "to": "config",
-      "count": 34
+      "count": 36
     },
     {
       "from": "seo",
