@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
 import type { Queue } from 'bull';
 import type { FeatureFlagsService } from '../../../config/feature-flags.service';
@@ -40,6 +41,21 @@ function makeScheduler(options: {
 }
 
 describe('DiagnosticProjectionSchedulerService', () => {
+  let errorSpy: jest.SpyInstance;
+  let warnSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    jest.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
+    warnSpy = jest
+      .spyOn(Logger.prototype, 'warn')
+      .mockImplementation(() => undefined);
+    errorSpy = jest
+      .spyOn(Logger.prototype, 'error')
+      .mockImplementation(() => undefined);
+  });
+
+  afterEach(() => jest.restoreAllMocks());
+
   it('OFF: returns synchronously, removes a residual repeatable, never registers one', async () => {
     const { scheduler, queue } = makeScheduler({
       enabled: false,
@@ -99,5 +115,49 @@ describe('DiagnosticProjectionSchedulerService', () => {
       { triggeredBy: 'admin' },
       { removeOnComplete: 14, removeOnFail: 30, attempts: 1 },
     );
+  });
+
+  it('ON: a failing registration is logged with its cause and never escapes onModuleInit', async () => {
+    const { scheduler, queue } = makeScheduler({ enabled: true });
+    queue.add.mockRejectedValue(new Error('Invalid repeat pattern xyz'));
+    expect(() => scheduler.onModuleInit()).not.toThrow();
+    await flush();
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+    expect(String(errorSpy.mock.calls[0][0])).toContain(
+      'Invalid repeat pattern xyz',
+    );
+  });
+
+  it('ON: a blank DIAGNOSTIC_PROJECTION_CRON is rejected, never replaced by the default', async () => {
+    const { scheduler, queue } = makeScheduler({
+      enabled: true,
+      cron: '   ',
+      repeatables: [RESIDUAL],
+    });
+    scheduler.onModuleInit();
+    await flush();
+    expect(queue.add).not.toHaveBeenCalled();
+    expect(queue.removeRepeatableByKey).toHaveBeenCalledWith(RESIDUAL.key);
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+    expect(String(errorSpy.mock.calls[0][0])).toContain(
+      'DIAGNOSTIC_PROJECTION_CRON',
+    );
+  });
+
+  it('ON: an unreadable repeatable list is warned, then registration still proceeds', async () => {
+    const { scheduler, queue } = makeScheduler({ enabled: true });
+    queue.getRepeatableJobs.mockRejectedValue(new Error('redis down'));
+    expect(() => scheduler.onModuleInit()).not.toThrow();
+    await flush();
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(String(warnSpy.mock.calls[0][0])).toContain('redis down');
+    expect(queue.add).toHaveBeenCalledTimes(1);
+    expect(errorSpy).not.toHaveBeenCalled();
+  });
+
+  it('triggerNow propagates an enqueue failure to its caller (admin endpoint)', async () => {
+    const { scheduler, queue } = makeScheduler({ enabled: false });
+    queue.add.mockRejectedValue(new Error('queue unavailable'));
+    await expect(scheduler.triggerNow()).rejects.toThrow('queue unavailable');
   });
 });

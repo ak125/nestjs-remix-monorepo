@@ -66,11 +66,13 @@ export class DiagnosticProjectionSchedulerService implements OnModuleInit {
   private async configureRepeatableJob(): Promise<void> {
     try {
       await this.removeStaleRepeatableJobs();
+      // Lu une seule fois : la valeur enregistrée est celle journalisée.
+      const cron = this.readCron();
       await this.queue.add(
         DIAGNOSTIC_PROJECTION_JOB,
         { triggeredBy: 'repeatable' } satisfies DiagnosticProjectionJobData,
         {
-          repeat: { cron: this.getCron(), tz: 'UTC' },
+          repeat: { cron, tz: 'UTC' },
           jobId: DIAGNOSTIC_PROJECTION_REPEATABLE_JOB_ID,
           removeOnComplete: 14,
           removeOnFail: 30,
@@ -79,7 +81,7 @@ export class DiagnosticProjectionSchedulerService implements OnModuleInit {
         },
       );
       this.logger.log(
-        `✅ Projection diagnostic planifiée (cron="${this.getCron()}" UTC).`,
+        `✅ Projection diagnostic planifiée (cron="${cron}" UTC).`,
       );
     } catch (err) {
       this.logger.error(
@@ -123,10 +125,20 @@ export class DiagnosticProjectionSchedulerService implements OnModuleInit {
     return removed;
   }
 
-  private getCron(): string {
-    return this.configService.get<string>(
+  /**
+   * Un override vide est une erreur de configuration, jamais remplacé par le
+   * défaut (pas de repli silencieux). La syntaxe est validée par BullMQ à `add`.
+   */
+  private readCron(): string {
+    const cron = this.configService.get<string>(
       DIAGNOSTIC_PROJECTION_CRON_ENV,
       DEFAULT_DIAGNOSTIC_PROJECTION_CRON,
     );
+    if (cron.trim() === '') {
+      throw new Error(
+        `${DIAGNOSTIC_PROJECTION_CRON_ENV} est vide — retirer la variable pour le défaut ou fournir une expression cron.`,
+      );
+    }
+    return cron;
   }
 }
