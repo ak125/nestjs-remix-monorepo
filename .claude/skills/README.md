@@ -35,10 +35,13 @@ compatibility: Designed for Claude Code in AutoMecanik monorepo. Stack — …
 allowed-tools: Read Grep Glob             # space-separated, agentskills.io v1 experimental
 tags: [scope, role, stack, ...]
 
-# === METADATA libre ===
+# === CLAUDE CODE (lus au top-level uniquement — ignorés sous metadata:) ===
+argument-hint: "[args]"                   # autocomplétion de /nom
+# disable-model-invocation: true          # décommenter seulement si le skill ne doit partir que sur /nom
+
+# === METADATA libre (non lu par le runtime) ===
 metadata:
   version: "1.0"
-  argument-hint: "[args]"
   spec: agentskills.io/specification v1
 ---
 ```
@@ -80,7 +83,7 @@ La `description` est le seul champ que Claude lit pour décider de charger le sk
 3. **Pas de résumé de workflow** (« generates X », « produces Y ») — ça crée le workflow-summary trap où Claude suit la description et zappe le body
 4. Multilingue OK (FR + EN) — cohérent avec le contenu
 
-Cf. mémoire [`feedback_skill_sot_drift_audit_pattern`](../../../home/deploy/.claude/projects/-opt-automecanik-app/memory/feedback_skill_sot_drift_audit_pattern.md) pour le pattern audit.
+Cf. mémoire agent `feedback_skill_sot_drift_audit_pattern` (hors dépôt, non liable) pour le pattern audit.
 
 ## Validation locale (avant de commit)
 
@@ -110,22 +113,15 @@ Modèle de séquençage : ADR-058 PR-G (Repository Control Plane). Validé empir
 
 ## Skills existants
 
-| Skill | Type | Status | Runtime | LLM-safe | Domain |
-|---|---|---|---|---|---|
-| `code-review` | technique | stable | read-only | ✓ | D15 |
-| `db-migration` | discipline | stable | privileged | ✗ | D15 |
-| `frontend-design` | technique | stable | mutating | ✓ | D15 |
-| `governance-vault-ops` | discipline | stable | privileged | ✗ | D15 |
-| `responsive-audit` | technique | stable | read-only | ✓ | D15 |
-| `session-log` | technique | stable | mutating | ✓ | D15 |
-| `ui-ux-pro-max` | reference | stable | read-only | ✓ | D15 |
-| `vehicle-ops` | technique | stable | mutating | ✗ | D15 |
+Pas de tableau recopié ici : il périmait au premier skill ajouté (8 lignes pour 12 skills le
+2026-09-30). Liste : `node scripts/governance/validate-skills-frontmatter.js` (une ligne par
+skill). Métadonnées (type, status, runtime_class, llm_safe, domain) : la projection ci-dessous.
 
 Source-of-truth machine-readable : [`.spec/00-canon/ai-registry/skills.registry.json`](../../.spec/00-canon/ai-registry/skills.registry.json) (généré).
 
 ## Anti-patterns à éviter
 
-- ❌ Frontmatter au top-level pour `version` / `argument-hint` → mettre sous `metadata:`
+- ❌ `version` au top-level → le mettre sous `metadata:` ; ❌ `argument-hint` / `disable-model-invocation` sous `metadata:` → le runtime ne les lit qu'au top-level (sous `metadata:` ils sont inertes)
 - ❌ Description sans « Use when » → CSO trigger manquant, skill jamais invoqué
 - ❌ Description qui résume le workflow → workflow-summary trap
 - ❌ Body sans frontmatter du tout → spec broken silently (cf. `governance-vault-ops` pré-PR-V2)
