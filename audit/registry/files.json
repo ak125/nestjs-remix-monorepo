@@ -68978,11 +68978,30 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "scripts/registry/validate-automation-overlay.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 58,
+      "owner": "__unassigned__",
+      "path": "scripts/registry/validate-automation-overlay.test.ts",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "scripts/registry/validate-automation-overlay.ts",
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 227,
+      "loc": 240,
       "owner": "__unassigned__",
       "path": "scripts/registry/validate-automation-overlay.ts",
       "risk": "low",
