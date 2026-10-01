@@ -12,9 +12,9 @@ license: Internal - Automecanik
 compatibility: Claude Code in the AutoMecanik monorepo. Reads audit/registry/canonical.json + pg_proc/cron.job(_run_details) via supabase MCP + the bull-repeatable-drift probe. No mutations.
 allowed-tools: Read Grep Glob Bash
 tags: [audit, runtime, governance, adr-058, prevention]
+argument-hint: "[check-name or 'all']"
 metadata:
   version: "0.2"
-  argument-hint: "[check-name or 'all']"
   spec: agentskills.io/specification v1
 ---
 

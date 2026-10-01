@@ -11,8 +11,10 @@
  * `update --init --recursive --depth 1`). PAS de table DB, PAS de CI sync,
  * PAS d'exports JSON séparés.
  *
- * Graceful degradation : si fichier absent (submodule pas init, fichier
- * pas encore mergé sur main wiki), retourne `null` + log error sans crash.
+ * Contenu indisponible : retourne `null`, jamais une entrée vide — fichier
+ * absent (submodule pas init, fichier pas encore mergé sur main wiki, ou
+ * non livré dans l'image) journalisé en warn, fichier illisible en error.
+ * Les endpoints HTTP du contrôleur rendent ce `null` en 503.
  *
  * @see governance-vault/ledger/decisions/adr/ADR-032-diagnostic-maintenance-unification.md
  * @see automecanik-wiki/wiki/diagnostic/*.md (source canon)

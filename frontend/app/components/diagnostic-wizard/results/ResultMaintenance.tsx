@@ -15,19 +15,24 @@ interface Props {
   catalogGammes: SuggestedGamme[];
 }
 
+// Every relevance is assessed against the same generic, unverified intervals,
+// so every badge carries the same cautious wording.
 const OVERDUE_STYLES: Record<string, { badge: string; label: string }> = {
   overdue: {
     badge: "bg-red-100 text-red-700 border-red-200",
-    label: "En retard",
+    label: "Seuil indicatif dépassé",
   },
   approaching: {
     badge: "bg-amber-100 text-amber-700 border-amber-200",
     label: "À vérifier",
   },
-  ok: { badge: "bg-green-100 text-green-700 border-green-200", label: "OK" },
+  ok: {
+    badge: "bg-green-100 text-green-700 border-green-200",
+    label: "Sous les seuils indicatifs",
+  },
   unknown: {
     badge: "bg-gray-100 text-gray-500 border-gray-200",
-    label: "Inconnu",
+    label: "Informations insuffisantes",
   },
 };
 
@@ -109,14 +114,7 @@ export function ResultMaintenance({
                     variant="outline"
                     className={`text-[10px] px-1.5 py-0 ${overdue.badge}`}
                   >
-                    {rec.relevance === "selected"
-                      ? {
-                          overdue: "Seuil indicatif dépassé",
-                          approaching: "À vérifier",
-                          ok: "Sous les seuils indicatifs",
-                          unknown: "Informations insuffisantes",
-                        }[rec.overdue_status ?? "unknown"]
-                      : overdue.label}
+                    {overdue.label}
                   </Badge>
                   {rec.relevance === "primary" && (
                     <Badge

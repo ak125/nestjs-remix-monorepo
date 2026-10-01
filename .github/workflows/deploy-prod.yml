@@ -29,6 +29,8 @@ permissions:
   contents: read
   # Read-only: the PREPROD evidence gate reads the ci.yml run of the tagged commit.
   actions: read
+  # Read-only: the gate finds that run from the commit's check runs.
+  checks: read
 
 jobs:
   deploy-prod:
