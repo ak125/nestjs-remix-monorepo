@@ -52586,7 +52586,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 424,
+      "loc": 439,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.leads.$id.tsx",
       "risk": "low",
@@ -52612,7 +52612,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 439,
+      "loc": 449,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.leads._index.tsx",
       "risk": "low",
@@ -61127,6 +61127,25 @@
       "loc": 191,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/account-profile-edit.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/admin-leads-loader-status.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 140,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/admin-leads-loader-status.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",

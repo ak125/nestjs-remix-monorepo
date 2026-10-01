@@ -82166,7 +82166,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 424,
+      "loc": 439,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.leads.$id.tsx",
       "risk": "medium",
@@ -82193,7 +82193,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 439,
+      "loc": 449,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.leads._index.tsx",
       "risk": "medium",
@@ -90998,6 +90998,26 @@
       "loc": 191,
       "owner": "@ak125",
       "path": "frontend/tests/unit/account-profile-edit.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/admin-leads-loader-status.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 140,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/admin-leads-loader-status.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -101312,11 +101332,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "8a9a7f70490c00f57d748796e4a1c5a98addcc079a4ba569b96ad275dc246d37",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "8e8bcc9976cd48ec98e0859eafc9a7bdb06cb2c5609ccc7c5a714f56a0fea054",
+      "audit/registry/files.json": "8b181ea8009e8a7c878ef9cc49843eaf69fd87e996f21e4397d609646678d33d",
       "audit/registry/rpc.json": "86d0c24b102036512a9f7b11d9ac04754288049a8b061981b19f0db0a8c86263",
       "audit/registry/runtime.json": "985798dace4be166f55b789fa35550a097179907eaa572143c5d3b9565f17a32"
     },
-    "sotFingerprint": "cfc579634e37"
+    "sotFingerprint": "ad42ead8ccef"
   },
   "runtime": [
     {
