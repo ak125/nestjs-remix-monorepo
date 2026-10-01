@@ -41,7 +41,6 @@ const stored = () => ({
           suggested_gammes: [],
         },
         allowed_claims: [],
-        forbidden_claims_runtime: [],
         ui_block_inputs: {},
       },
     },
