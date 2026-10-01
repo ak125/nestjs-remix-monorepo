@@ -12,7 +12,10 @@
  *   - getSchedule(typeId, currentKm) → MaintenanceInterval intervalles génériques (filtre carburant indicatif)
  *   - getAlerts(fuelType, milestones?) → actions par palier (paliers par défaut = défaut de la RPC)
  *
- * `getCalendar(typeId, currentKm)` agrège ces intervalles et les contrôles wiki.
+ * `getCalendar(typeId, currentKm)` agrège ces intervalles et les contrôles wiki,
+ * filtrés sur un même carburant résolu une fois (voir `resolveFuelType`).
+ * Un type_id fourni doit désigner un type existant : sinon 404, jamais un
+ * calendrier générique attribué à un véhicule inexistant.
  * Sans historique par opération, aucun statut personnel ne peut être calculé.
  *
  * @see governance-vault/ledger/decisions/adr/ADR-032-diagnostic-maintenance-unification.md
@@ -22,6 +25,7 @@ import {
   Injectable,
   Inject,
   Logger,
+  NotFoundException,
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
@@ -51,6 +55,10 @@ export interface MaintenanceCalendar {
   type_id: number | null;
   /** Kilométrage fourni par l'appelant ; `null` s'il n'en a fourni aucun. */
   current_km: number | null;
+  /**
+   * Carburant qui a filtré `schedule` et `alerts` : celui fourni par
+   * l'appelant, sinon celui du type ; `null` = aucun filtre carburant.
+   */
   fuel_type: string | null;
   assessment_basis: 'generic_intervals';
   applicability: 'unverified';
@@ -71,7 +79,7 @@ export class MaintenanceCalculatorService extends SupabaseBaseService {
    * Intervalles génériques ; le filtre carburant de la RPC ne prouve pas
    * une applicabilité constructeur. Son statut sans historique est neutralisé.
    *
-   * @param typeId    auto_type.type_id (résolu en fuel_type côté RPC)
+   * @param typeId    auto_type.type_id ; un type inconnu est une 404
    * @param currentKm kilométrage actuel du véhicule, `null` s'il est inconnu
    * @param fuelType  override explicite (optionnel)
    */
@@ -80,13 +88,22 @@ export class MaintenanceCalculatorService extends SupabaseBaseService {
     currentKm: number | null,
     fuelType?: string | null,
   ): Promise<MaintenanceScheduleItem[]> {
+    const fuel = await this.resolveFuelType(typeId, fuelType);
+    return this.fetchSchedule(typeId, currentKm, fuel);
+  }
+
+  private async fetchSchedule(
+    typeId: number | null,
+    currentKm: number | null,
+    fuelType: string | null,
+  ): Promise<MaintenanceScheduleItem[]> {
     try {
       const { data, error } = await this.callRpc<unknown>(
         'kg_get_smart_maintenance_schedule',
         {
           p_type_id: typeId,
           ...(currentKm !== null && { p_current_km: currentKm }),
-          p_fuel_type: fuelType ?? null,
+          p_fuel_type: fuelType,
         },
         { source: 'internal' },
       );
@@ -158,20 +175,61 @@ export class MaintenanceCalculatorService extends SupabaseBaseService {
     currentKm: number | null,
     fuelType?: string | null,
   ): Promise<MaintenanceCalendar> {
+    const fuel = await this.resolveFuelType(typeId, fuelType);
     const [schedule, alerts] = await Promise.all([
-      this.getSchedule(typeId, currentKm, fuelType),
-      this.getAlerts(fuelType),
+      this.fetchSchedule(typeId, currentKm, fuel),
+      this.getAlerts(fuel),
     ]);
     return {
       type_id: typeId,
       current_km: currentKm,
-      fuel_type: fuelType ?? null,
+      fuel_type: fuel,
       assessment_basis: 'generic_intervals',
       applicability: 'unverified',
       schedule,
       alerts,
       controles_mensuels: this.getControlesMensuels(),
     };
+  }
+
+  /**
+   * Carburant du calendrier : l'override explicite prime, sinon celui du type
+   * (auto_type.type_fuel), sinon aucun filtre — l'ordre de
+   * kg_get_smart_maintenance_schedule. Résolu une seule fois ici parce que
+   * kg_get_maintenance_alerts_by_milestone ne reçoit pas le type : sans cela,
+   * un véhicule désigné par son seul type_id avait un calendrier filtré et des
+   * paliers listant les opérations des deux carburants.
+   *
+   * Un type_id fourni est lu même avec un override : absent d'auto_type, il
+   * rend une 404 au lieu d'un calendrier générique qui le citerait. Une
+   * lecture en échec rend le calendrier indisponible plutôt que non filtré.
+   */
+  private async resolveFuelType(
+    typeId: number | null,
+    fuelType?: string | null,
+  ): Promise<string | null> {
+    if (typeId === null) return fuelType || null;
+    let vehicle: { type_fuel: string | null } | null;
+    try {
+      const { data, error } = await this.supabase
+        .from('auto_type')
+        .select('type_fuel')
+        .eq('type_id', String(typeId))
+        .maybeSingle<{ type_fuel: string | null }>();
+      if (error) throw new Error(error.message);
+      vehicle = data;
+    } catch (error) {
+      this.logger.error(
+        `Vehicle fuel unavailable: ${error instanceof Error ? error.message : 'query failure'}`,
+      );
+      throw new ServiceUnavailableException(
+        "Les données d'entretien sont temporairement indisponibles.",
+      );
+    }
+    if (!vehicle) {
+      throw new NotFoundException('Véhicule introuvable.');
+    }
+    return fuelType || vehicle.type_fuel;
   }
 
   /**
