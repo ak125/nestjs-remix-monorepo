@@ -18,6 +18,7 @@ import {
   DiagSymptomsSchema,
   DiagCauseLinksSchema,
   DiagCausesSchema,
+  DiagProjectionLinksSchema,
   DiagSafetyRulesSchema,
 } from './types/diagnostic-reference.schema';
 
@@ -93,6 +94,14 @@ export interface MaintenanceOperation {
   normal_wear_km_max: number | null;
   related_gamme_slug: string | null;
   related_pg_id: number | null;
+}
+
+/** Référentiel actif complet lu par la projection WIKI → DB (ordre : id croissant). */
+export interface DiagnosticProjectionReference {
+  systems: DiagSystem[];
+  symptoms: DiagSymptom[];
+  causes: DiagCause[];
+  links: DiagSymptomCauseLink[];
 }
 
 @Injectable()
@@ -442,6 +451,68 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
       );
     }
     return data || [];
+  }
+
+  /**
+   * Référentiel actif complet (systèmes, symptômes, causes, liens) pour la
+   * projection WIKI → DB. Une table lue partiellement donnerait des conflits
+   * `no_matching_link` erronés : lecture paginée + `count` exact contrôlé.
+   */
+  async getProjectionReference(): Promise<DiagnosticProjectionReference> {
+    const [systems, symptoms, causes, links] = await Promise.all([
+      this.readActiveTable('__diag_system'),
+      this.readActiveTable('__diag_symptom'),
+      this.readActiveTable('__diag_cause'),
+      this.readActiveTable('__diag_symptom_cause_link'),
+    ]);
+    DiagSystemsSchema.parse(systems);
+    DiagSymptomsSchema.parse(symptoms);
+    DiagCausesSchema.parse(causes);
+    DiagProjectionLinksSchema.parse(links);
+    return {
+      systems: systems as DiagSystem[],
+      symptoms: symptoms as DiagSymptom[],
+      causes: causes as DiagCause[],
+      links: links as DiagSymptomCauseLink[],
+    };
+  }
+
+  /**
+   * Toutes les lignes actives d'une table, par pages de 1000 (plafond PostgREST).
+   * Le `count` exact de chaque page doit rester celui de la première et égaler
+   * le total lu : un plafond serveur plus bas ou une écriture concurrente lève.
+   */
+  private async readActiveTable(table: string): Promise<unknown[]> {
+    const pageSize = 1000;
+    const rows: unknown[] = [];
+    let expected: number | null = null;
+    for (let from = 0; ; from += pageSize) {
+      const { data, error, count } = await this.supabase
+        .from(table)
+        .select('*', { count: 'exact' })
+        .eq('active', true)
+        .order('id', { ascending: true })
+        .range(from, from + pageSize - 1);
+      if (error || !Array.isArray(data)) {
+        throw new Error(
+          `${table} unavailable at offset ${from}: ${error?.message ?? 'no rows'}`,
+        );
+      }
+      expected ??= count;
+      if (count !== expected) {
+        throw new Error(
+          `${table} changed during read: ${count} active, ${expected} at offset 0`,
+        );
+      }
+      rows.push(...data);
+      if (data.length < pageSize) break;
+    }
+    if (rows.length !== expected) {
+      throw new Error(
+        `${table} incomplete: ${rows.length} row(s) read, ${expected} active`,
+      );
+    }
+    return rows;
   }
 
   /**

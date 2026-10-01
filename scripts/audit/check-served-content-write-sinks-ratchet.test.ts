@@ -50,6 +50,13 @@ test("rpc_publisher: governed callRpc<Generic>('__seo_r8_publish_snapshot') is a
   );
 });
 
+test("rpc_publisher: the diagnostic WIKI projection callRpc<unknown>('__diag_projection_apply') is a sink", () => {
+  assert.deepEqual(
+    detectTsSinks("w.ts", `await this.callRpc<unknown>(\n      '__diag_projection_apply',\n      { p_run: payload },`),
+    [F("rpc_publisher", "w.ts::__diag_projection_apply", 1)],
+  );
+});
+
 test("sql_migration: the provenance RPC body (INSERT INTO … DO UPDATE SET + UPDATE) counts 2", () => {
   assert.deepEqual(
     detectSqlSinks(

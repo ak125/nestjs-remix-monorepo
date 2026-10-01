@@ -7,7 +7,7 @@
   "summary": {
     "direct_literal": 8,
     "const_map": 7,
-    "rpc_publisher": 1,
+    "rpc_publisher": 2,
     "sql_migration": 45
   },
   "findings": [
@@ -85,6 +85,11 @@
       "mechanism": "direct_literal",
       "id": "backend/src/modules/seo/validation/diagnostic.service.ts::__seo_observable",
       "count": 3
+    },
+    {
+      "mechanism": "rpc_publisher",
+      "id": "backend/src/modules/diagnostic-engine/projection/diagnostic-projection-writer.service.ts::__diag_projection_apply",
+      "count": 1
     },
     {
       "mechanism": "rpc_publisher",
