@@ -91613,6 +91613,26 @@
         "manual"
       ],
       "domain": "D2",
+      "id": "frontend/tests/unit/diagnostic-hypothesis-rank.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 34,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/diagnostic-hypothesis-rank.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
       "id": "frontend/tests/unit/diagnostic-legacy-navigation.test.tsx",
       "importedBy": [],
       "imports": [],
@@ -101434,11 +101454,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "81ca2c5c93fe8bb73daa870dbc5ec47c9b4868cad3c7519f9ecb0279cf629bda",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "973f75b3c3499473a6babb061b5f74fab19d453a1488e1e11ed3759ad83595ff",
+      "audit/registry/files.json": "fb0b5d2daf2820240f92344813e10f8e24b4e2fb8916b63b1dab0b54ff751177",
       "audit/registry/rpc.json": "86d0c24b102036512a9f7b11d9ac04754288049a8b061981b19f0db0a8c86263",
       "audit/registry/runtime.json": "7aea32278a4ba6803e45b32cc9ea0915b266a4d5a2c8aa5d07bd115d373c1ec2"
     },
-    "sotFingerprint": "7d3a875aae62"
+    "sotFingerprint": "e30400ad9686"
   },
   "runtime": [
     {
