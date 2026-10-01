@@ -256,7 +256,7 @@ export class RunManagerService {
     if (!this.featureFlags.agenticAirlockEnabled) {
       return 'apply'; // Bypass — phase disabled
     }
-    // Future: produce signed bundle, validate via airlock.sh
+    // Bundle channel retired (vault ADR-102 D2): a run's output reaches a repo only as a PR there.
     this.logger.log(`Airlock check for run ${runId} — stub mode`);
     return 'apply';
   }
