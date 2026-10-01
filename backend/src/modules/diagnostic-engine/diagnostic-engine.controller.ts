@@ -2,7 +2,7 @@
  * DiagnosticEngine Controller — API REST
  *
  * POST /api/diagnostic-engine/analyze      → Evidence Pack
- * GET  /api/diagnostic-engine/systems      → Systemes actifs
+ * GET  /api/diagnostic-engine/systems      → Systemes analysables
  * GET  /api/diagnostic-engine/symptoms     → Symptomes par systeme
  * GET  /api/diagnostic-engine/sessions     → Historique sessions (admin)
  * GET  /api/diagnostic-engine/sessions/:id → Session par UUID
@@ -470,11 +470,11 @@ export class DiagnosticEngineController {
   /**
    * GET /api/diagnostic-engine/systems
    *
-   * List active diagnostic systems
+   * List the diagnostic systems that can be analysed
    */
   @Get('systems')
   async getSystems() {
-    const systems = await this.dataService.getActiveSystems();
+    const systems = await this.orchestrator.getAnalysableSystems();
     return {
       success: true,
       count: systems.length,

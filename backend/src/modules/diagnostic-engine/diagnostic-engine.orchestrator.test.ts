@@ -40,7 +40,6 @@ describe('Diagnostic without RAG content authority', () => {
   const data = {
     getScoredCausesForSymptoms: jest.fn().mockResolvedValue([]),
     getSafetyRules: jest.fn().mockResolvedValue([safetyRule]),
-    getCostRanges: jest.fn().mockResolvedValue(new Map()),
     saveSession: jest.fn().mockResolvedValue('session-fixture'),
   };
   const hypothesis = {
@@ -96,7 +95,7 @@ describe('Diagnostic without RAG content authority', () => {
         },
         {
           provide: CatalogOrientationEngine,
-          useValue: {
+          useValue: Object.assign(new CatalogOrientationEngine(), {
             evaluate: jest.fn().mockReturnValue({
               ready_for_catalog: false,
               confidence_before_purchase: 'insufficient',
@@ -104,7 +103,7 @@ describe('Diagnostic without RAG content authority', () => {
               reason: 'Controle requis',
               suggested_gammes: [],
             }),
-          },
+          }),
         },
         {
           provide: MaintenanceIntelligenceEngine,

@@ -18,8 +18,11 @@ import {
   type AnalyzeDiagnosticInput,
   type UsageContextInput,
 } from './types/diagnostic-input.schema';
-import type { EvidencePack } from './types/evidence-pack.schema';
-import { DiagnosticEngineDataService } from './diagnostic-engine.data-service';
+import type { CatalogGuard, EvidencePack } from './types/evidence-pack.schema';
+import {
+  DiagnosticEngineDataService,
+  type DiagSystem,
+} from './diagnostic-engine.data-service';
 import { SignalInterpretationEngine } from './engines/signal-interpretation.engine';
 import { HypothesisScoringEngine } from './engines/hypothesis-scoring.engine';
 import { RiskSafetyEngine } from './engines/risk-safety.engine';
@@ -54,6 +57,23 @@ export class DiagnosticEngineOrchestrator {
     private readonly maintenanceEngine: MaintenanceIntelligenceEngine,
     private readonly kgShadow: KgShadowService, // PR-E — fire-and-forget shadow
   ) {}
+
+  /**
+   * Systems that can be analysed. analyze() refuses a system without an
+   * active safety rule, so such a system is not offered; the gap is logged.
+   */
+  async getAnalysableSystems(): Promise<DiagSystem[]> {
+    const [systems, covered] = await Promise.all([
+      this.dataService.getActiveSystems(),
+      this.dataService.getSystemIdsWithSafetyRules(),
+    ]);
+    const uncovered = systems.filter((s) => !covered.has(s.id));
+    if (uncovered.length)
+      this.logger.warn(
+        `Diagnostic systems without safety rules are not offered: ${uncovered.map((s) => s.slug).join(', ')}`,
+      );
+    return systems.filter((s) => covered.has(s.id));
+  }
 
   /**
    * Main entry point — produces a valid EvidencePack via 5 engines
@@ -131,7 +151,7 @@ export class DiagnosticEngineOrchestrator {
     }
     if (!signal.system_confirmed) {
       try {
-        const systems = await this.dataService.getActiveSystems();
+        const systems = await this.getAnalysableSystems();
         const available = systems.map((s) => s.slug).join(', ');
         return {
           success: false,
@@ -209,7 +229,7 @@ export class DiagnosticEngineOrchestrator {
     );
 
     // ── 6. Catalog Orientation Engine ──────────────────
-    const catalog = this.catalogEngine.evaluate(
+    const orientation = this.catalogEngine.evaluate(
       hypotheses,
       risk,
       input.vehicle_context,
@@ -224,6 +244,26 @@ export class DiagnosticEngineOrchestrator {
         'Réponses complémentaires non interprétées : elles ne modifient ni les hypothèses ni le niveau de risque de cette analyse.',
       );
     }
+
+    // A suggested family is only linked when it has its own catalogue page.
+    let cataloguePageIds: ReadonlySet<number> | null = new Set();
+    const candidateIds = orientation.suggested_gammes.map((g) => g.pg_id);
+    if (candidateIds.length) {
+      try {
+        cataloguePageIds =
+          await this.dataService.getGammeIdsWithCataloguePage(candidateIds);
+      } catch (error) {
+        this.logger.warn('Diagnostic catalogue check unavailable', error);
+        cataloguePageIds = null;
+        degraded.push(
+          'Orientation vers le catalogue indisponible : les familles de pièces ne peuvent pas être vérifiées.',
+        );
+      }
+    }
+    const catalog = this.catalogEngine.restrictToCataloguePages(
+      orientation,
+      cataloguePageIds,
+    );
     let maintenance: Awaited<
       ReturnType<MaintenanceIntelligenceEngine['assess']>
     > = {
@@ -242,20 +282,6 @@ export class DiagnosticEngineOrchestrator {
       degraded.push(
         'Informations d’entretien indisponibles — aucune conclusion sur les échéances.',
       );
-    }
-
-    const pgIds = catalog.suggested_gammes.map((g) => g.pg_id);
-    if (pgIds.length) {
-      try {
-        const costRanges = await this.dataService.getCostRanges(pgIds);
-        for (const g of catalog.suggested_gammes) {
-          const cost = costRanges.get(g.pg_id);
-          if (cost) (g as unknown as Record<string, unknown>).cost_range = cost;
-        }
-      } catch (error) {
-        this.logger.warn('Diagnostic cost enrichment unavailable', error);
-        degraded.push('Estimations de coût indisponibles.');
-      }
     }
 
     // ADR-031: RAG is a chatbot consumer, never a diagnostic content authority.
@@ -549,6 +575,21 @@ export class DiagnosticEngineOrchestrator {
       ),
     );
 
+    // One catalogue verdict, within the contract, for every field that shows it.
+    const catalogGuard: CatalogGuard = {
+      ready_for_catalog: catalog.ready_for_catalog,
+      confidence_before_purchase:
+        catalog.confidence_before_purchase === 'insufficient'
+          ? 'low'
+          : catalog.confidence_before_purchase,
+      allowed_output_mode:
+        catalog.allowed_output_mode === 'catalog_reference_with_caution'
+          ? 'catalog_family_with_caution'
+          : catalog.allowed_output_mode,
+      reason: catalog.reason,
+      suggested_gammes: catalog.suggested_gammes,
+    };
+
     return {
       evidence_pack: {
         diagnostic_confidence: diagnosticConfidence,
@@ -561,22 +602,7 @@ export class DiagnosticEngineOrchestrator {
         safety_alert: risk.safety_alert,
         risk_level: risk.risk_level,
         signal_quality: signal.signal_quality,
-        catalog_guard: {
-          ready_for_catalog: catalog.ready_for_catalog,
-          confidence_before_purchase: (catalog.confidence_before_purchase ===
-          'insufficient'
-            ? 'low'
-            : catalog.confidence_before_purchase) as 'low' | 'medium' | 'high',
-          allowed_output_mode: (catalog.allowed_output_mode ===
-          'catalog_reference_with_caution'
-            ? 'catalog_family_with_caution'
-            : catalog.allowed_output_mode) as
-            | 'none'
-            | 'catalog_family_only'
-            | 'catalog_family_with_caution',
-          reason: catalog.reason,
-          suggested_gammes: catalog.suggested_gammes,
-        },
+        catalog_guard: catalogGuard,
         maintenance_recommendations: maintenance.recommendations,
         preventive_schedule: maintenance.preventive_schedule,
         allowed_claims: allowedClaims,
@@ -600,10 +626,10 @@ export class DiagnosticEngineOrchestrator {
             overdue_count: maintenance.overdue_count,
           },
           CatalogOrientationBox: {
-            ready_for_catalog: catalog.ready_for_catalog,
-            confidence_before_purchase: catalog.confidence_before_purchase,
-            allowed_output_mode: catalog.allowed_output_mode,
-            suggested_gammes: catalog.suggested_gammes,
+            ready_for_catalog: catalogGuard.ready_for_catalog,
+            confidence_before_purchase: catalogGuard.confidence_before_purchase,
+            allowed_output_mode: catalogGuard.allowed_output_mode,
+            suggested_gammes: catalogGuard.suggested_gammes,
           },
         },
       },

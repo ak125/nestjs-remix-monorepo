@@ -74,12 +74,13 @@ type Reply = {
 type Tables = Record<string, Reply>;
 function fixture() {
   const tables: Tables = {
-    __seo_gamme_purchase_guide: { data: [], error: null },
     __diag_system: { data: [structuredClone(system)], error: null },
     __diag_symptom: { data: [structuredClone(symptom)], error: null },
     __diag_cause: { data: [structuredClone(cause)], error: null },
     __diag_symptom_cause_link: { data: [structuredClone(link)], error: null },
     __diag_safety_rule: { data: [structuredClone(rule)], error: null },
+    // The family suggested for `cause` has its own catalogue page.
+    pieces_gamme: { data: [{ pg_id: '402' }], error: null },
   };
   const service = Object.create(
     DiagnosticEngineDataService.prototype,
@@ -372,6 +373,45 @@ describe('diagnostic reference responses are checked before safety evaluation', 
       f.tables.__diag_system.data = data;
       await expect(f.service.getActiveSystems()).rejects.toThrow();
     }
+  });
+  test('a system the analysis would refuse for lack of safety rules is not offered', async () => {
+    const f = fixture();
+    const uncovered = { ...system, id: 2, slug: 'climatisation' };
+    f.tables.__diag_system.data = [system, uncovered];
+    const { engine } = pipeline(f.service);
+    const warn = jest
+      .spyOn(engine['logger'], 'warn')
+      .mockImplementation(() => undefined);
+
+    const offered = await engine.getAnalysableSystems();
+    expect(offered.map((s) => s.slug)).toEqual(['freinage']);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('climatisation'));
+
+    // The listed alternatives follow the same rule.
+    jest.spyOn(f.service, 'getSystemBySlug').mockResolvedValue(null);
+    const unknown = await engine.analyze({ ...input, system_scope: 'absent' });
+    expect(unknown.error).toMatch(/Systèmes disponibles: freinage$/);
+
+    // What is offered can indeed be analysed, and what is not, cannot.
+    jest.restoreAllMocks();
+    expect((await pipeline(f.service).engine.analyze(input)).success).toBe(
+      true,
+    );
+    f.tables.__diag_safety_rule.data = [];
+    expect(await pipeline(f.service).engine.analyze(input)).toMatchObject({
+      success: false,
+      error: expect.stringMatching(/règles de sécurité est absente/),
+    });
+  });
+  test('safety rule coverage that cannot be read or is inactive is not an empty coverage', async () => {
+    const f = fixture();
+    f.tables.__diag_safety_rule.data = [{ ...rule, active: false }];
+    await expect(f.service.getSystemIdsWithSafetyRules()).rejects.toThrow();
+    f.tables.__diag_safety_rule = { data: null, error: { message: 'offline' } };
+    await expect(f.service.getSystemIdsWithSafetyRules()).rejects.toThrow();
+    await expect(
+      pipeline(f.service).engine.getAnalysableSystems(),
+    ).rejects.toThrow();
   });
   test('an absent single row with the existing not-found error remains absent', async () => {
     const f = fixture();
@@ -886,6 +926,112 @@ describe('session write acknowledgement reaches the diagnostic result', () => {
     );
     expect(evidence?.factual_inputs_missing.join(' ')).not.toMatch(
       /Analyse non sauvegardée/,
+    );
+  });
+});
+
+describe('suggested families carry no purchase estimate', () => {
+  test('the purchase guide is never read and no cost range reaches the result', async () => {
+    const f = fixture();
+    f.tables.__diag_symptom.data = [{ ...symptom, urgency: 'basse' }];
+    f.tables.__diag_cause.data = [{ ...cause, urgency: 'basse' }];
+    f.tables.__diag_safety_rule.data = [
+      { ...rule, urgency: 'moyenne', blocks_catalog: false },
+    ];
+    // Ranges in this table are produced by the RAG pipeline (ADR-031).
+    f.tables.__seo_gamme_purchase_guide = {
+      data: [{ sgpg_pg_id: '402', sgpg_risk_cost_range: '40-120 €' }],
+      error: null,
+    };
+    const result = await pipeline(f.service).engine.analyze(input);
+    expect(result.success).toBe(true);
+    const gammes =
+      result.data?.evidence.evidence_pack.catalog_guard.suggested_gammes;
+    expect(gammes?.map((g) => g.pg_id)).toEqual([402]);
+    expect(JSON.stringify(result.data)).not.toMatch(/cost_range|40-120/);
+    expect(f.queries.map((q) => q.table)).not.toContain(
+      '__seo_gamme_purchase_guide',
+    );
+  });
+});
+
+describe('the catalogue verdict is the same wherever the result shows it', () => {
+  // The engine's scale is wider than the contract (`insufficient`,
+  // `catalog_reference_with_caution`): whatever it returns, every field
+  // shows the same verdict, within the contract.
+  test.each([
+    {
+      raw: {
+        ready_for_catalog: true,
+        confidence_before_purchase: 'high',
+        allowed_output_mode: 'catalog_reference_with_caution',
+      },
+      contract: {
+        ready_for_catalog: true,
+        confidence_before_purchase: 'high',
+        allowed_output_mode: 'catalog_family_with_caution',
+      },
+    },
+    {
+      raw: {
+        ready_for_catalog: false,
+        confidence_before_purchase: 'insufficient',
+        allowed_output_mode: 'none',
+        suggested_gammes: [],
+      },
+      contract: {
+        ready_for_catalog: false,
+        confidence_before_purchase: 'low',
+        allowed_output_mode: 'none',
+      },
+    },
+  ] as const)(
+    'the orientation block repeats the contract verdict, never the raw engine mode ($raw.allowed_output_mode)',
+    async ({ raw, contract }) => {
+      const f = fixture();
+      f.tables.__diag_symptom.data = [{ ...symptom, urgency: 'basse' }];
+      f.tables.__diag_cause.data = [{ ...cause, urgency: 'basse' }];
+      f.tables.__diag_safety_rule.data = [
+        { ...rule, urgency: 'moyenne', blocks_catalog: false },
+      ];
+      const { engine } = pipeline(f.service);
+      const catalog = engine['catalogEngine'];
+      const evaluate = catalog.evaluate.bind(catalog);
+      jest
+        .spyOn(catalog, 'evaluate')
+        .mockImplementation((...args) => ({ ...evaluate(...args), ...raw }));
+      const result = await engine.analyze(input);
+      expect(result.success).toBe(true);
+      const evidence = result.data!.evidence;
+      expect(EvidencePackSchema.safeParse(evidence).error).toBeUndefined();
+      const pack = evidence.evidence_pack;
+      const { reason: _reason, ...verdict } = pack.catalog_guard;
+      expect(verdict).toMatchObject(contract);
+      expect(pack.ui_block_inputs.CatalogOrientationBox).toEqual(verdict);
+    },
+  );
+});
+
+describe('catalogue family pages are read from the gamme level', () => {
+  test('only main gammes have their own page', async () => {
+    const f = fixture();
+    f.tables.pieces_gamme = { data: [{ pg_id: '402' }], error: null };
+    await expect(
+      f.service.getGammeIdsWithCataloguePage([402, 71]),
+    ).resolves.toEqual(new Set([402]));
+    expect(f.queries.at(-1)).toEqual({
+      table: 'pieces_gamme',
+      filters: [
+        ['pg_id', [402, 71]],
+        ['pg_level', ['1', '2']],
+      ],
+    });
+  });
+  test('a failed read is not an empty catalogue', async () => {
+    const f = fixture();
+    f.tables.pieces_gamme = { data: null, error: { message: 'down' } };
+    await expect(f.service.getGammeIdsWithCataloguePage([402])).rejects.toThrow(
+      /unavailable/,
     );
   });
 });

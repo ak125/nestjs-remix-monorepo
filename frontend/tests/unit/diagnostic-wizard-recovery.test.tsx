@@ -29,8 +29,8 @@ const storeDraft = (extra = {}) =>
   localStorage.setItem(key, JSON.stringify({ ...initialDraft(), ...extra }));
 let analyzeResponse: () => Promise<unknown>;
 let symptomsResponse: () => Promise<unknown>;
-function response(data: unknown, ok = true) {
-  return { ok, json: async () => data };
+function response(data: unknown, ok = true, status = ok ? 200 : 500) {
+  return { ok, status, json: async () => data };
 }
 const symptomPayload = {
   success: true,
@@ -154,6 +154,73 @@ describe("diagnostic draft survives failed and interrupted analysis", () => {
     fireEvent.click(await submitButton());
     await screen.findByRole("button", { name: "Nouveau diagnostic" });
     await waitFor(() => expect(localStorage.getItem(key)).toBeNull());
+  });
+});
+describe("analysis failures are explained without technical codes", () => {
+  it.each([
+    [
+      "an HTTP 500",
+      () => response({ error: "InternalServerError" }, false),
+      /erreur 500/,
+    ],
+    [
+      "a throttled request",
+      () => response({ error: "ThrottlerException" }, false, 429),
+      /Trop de demandes/,
+    ],
+    [
+      "a non-JSON error page",
+      () => ({
+        ok: false,
+        status: 502,
+        json: async () => {
+          throw new SyntaxError("Unexpected token <");
+        },
+      }),
+      /erreur 502/,
+    ],
+    [
+      "an unreadable success body",
+      () => ({
+        ok: true,
+        status: 200,
+        json: async () => {
+          throw new SyntaxError("Unexpected token <");
+        },
+      }),
+      /illisible/,
+    ],
+    [
+      "a refusal",
+      () => response({ success: false, error: "Symptôme hors périmètre" }),
+      /Symptôme hors périmètre/,
+    ],
+  ])("explains %s", async (_, reply, message) => {
+    analyzeResponse = async () => reply();
+    storeDraft();
+    render(<DiagnosticWizard />);
+    fireEvent.click(await submitButton());
+    const alert = await screen.findByRole("alert");
+    expect(alert.textContent).toMatch(message);
+    expect(alert.textContent).not.toMatch(/Exception|InternalServerError/);
+    expect(alert.textContent).not.toMatch(/connexion/);
+    expect(alert.textContent).toMatch(/Résultat indisponible/);
+  });
+  it("returns to the preserved selection from a failed analysis", async () => {
+    storeDraft();
+    render(<DiagnosticWizard />);
+    fireEvent.click(await submitButton());
+    await screen.findByRole("alert");
+    fireEvent.click(
+      screen.getByRole("button", { name: "Modifier la sélection" }),
+    );
+    expect(await submitButton()).not.toBeNull();
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(
+      screen
+        .getByRole("checkbox", { name: /Bruit/ })
+        .getAttribute("aria-checked"),
+    ).toBe("true");
   });
 });
 function initialDraftFields() {
