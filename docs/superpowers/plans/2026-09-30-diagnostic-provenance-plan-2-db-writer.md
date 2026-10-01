@@ -186,7 +186,7 @@ Pourquoi pas des colonnes : un booléen `is_trusted` est un état sans sa preuve
 - Le seul writer est `DiagnosticProjectionModule` (monorepo), par la RPC `__diag_projection_apply(jsonb)` : une transaction, verrou consultatif, droits `service_role` seuls. Il lit `exports/diagnostic/`, vue dérivée déterministe du WIKI publiée par le builder du WIKI ; il ne lit jamais RAW ni RAG ([[ADR-031-four-layer-content-architecture]]).
 - Il ne crée aucun symptôme, cause ni lien. Une relation se résout vers un lien existant par une règle déterministe ; zéro ou plusieurs candidats donnent un conflit, jamais un choix.
 - Une relation n'est projetée que si toutes ses sources sont `raw_proven` (prédicat G1 : source `active` au catalogue avec `raw_ref.manifest_id`), calculé par le builder du WIKI et recopié tel quel. Sinon : conflit `source_not_raw_proven`.
-- Il ne modifie jamais `reviewed` ni `diagnostic_safe` (ADR-033 D4). Aucun flip manuel, par script ou par session IA.
+- Il ne modifie jamais `reviewed` ni `diagnostic_safe`. Leur passage à `true` reste « strictement manuel ou couvert par règle ADR explicite, jamais en automatique » (ADR-033 D4) et se fait dans le WIKI : ni le writer, ni un script, ni une session IA ne le décident.
 
 ### D3 — Aucun nombre affiché pour un lien
 
@@ -195,7 +195,7 @@ Pourquoi pas des colonnes : un booléen `is_trusted` est un état sans sa preuve
 
 ### D4 — Seuls les liens `diagnostic_safe: true` pondèrent le rang
 
-- En mode primaire, une contribution pèse 100 si son lien a une ligne vivante avec `diagnostic_safe: true`, 0 sinon (ADR-033 : « autorisée à influencer le moteur diagnostic LIVE »).
+- En mode primaire (drapeau `PRIMARY`, D5), une contribution pèse 100 si son lien a une ligne vivante avec `diagnostic_safe: true`, 0 sinon (ADR-033, champ `diagnostic_safe` : « autorisé à influencer le moteur diagnostic live »).
 - Un lien documenté mais non `diagnostic_safe` est affiché comme documenté, sans jamais peser sur le rang.
 - `confidence_score_computed` n'est pas une probabilité et ne pondère pas le rang.
 
@@ -275,7 +275,7 @@ D1-D7. Additive, observable par run, recalculée depuis le WIKI, sans aucune bas
 *Proposé le : 2026-05-02*
 *Révisé le : 2026-09-30 (D1-D7 remplacent la proposition d'origine)*
 *Accepté le : TBD*
-*Dernière revue : 2026-09-30*
+*Dernière revue : TBD*
 ```
 
 - [ ] **Étape 2 : diff contre la version publiée et contrôle du frontmatter**
