@@ -10,12 +10,16 @@ fi
 
 set -euo pipefail
 
-# Read tool input from stdin (JSON)
+# Read tool input from stdin (JSON): exactly one object, argument in tool_input.
+# Unreadable envelope → block (fail closed): allowing it would silence every guard
+# below on the first envelope format change.
 INPUT=$(cat)
-QUERY=$(echo "$INPUT" | jq -r '.tool_input.query // empty' 2>/dev/null || echo "")
-
-if [ -z "$QUERY" ]; then
-  exit 0
+if ! QUERY=$(jq -ers '
+    if length == 1 and (.[0] | type) == "object" and (.[0].tool_input | type) == "object"
+    then .[0].tool_input.query else error("envelope") end
+    | select(type == "string" and test("\\S"))' <<<"$INPUT" 2>/dev/null); then
+  echo "BLOCKED: enveloppe PreToolUse illisible (objet JSON avec tool_input.query non vide attendu). Garde en echec ferme." >&2
+  exit 2
 fi
 
 # Normalize to uppercase for matching
