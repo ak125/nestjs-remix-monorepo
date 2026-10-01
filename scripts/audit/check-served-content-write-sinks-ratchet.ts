@@ -81,7 +81,10 @@ export const SERVED_CONST_CHANNELS: readonly string[] = [
   "TABLES.blog_guide", // __blog_guide (served blog)
 ];
 // DEFINER/publish RPCs that mutate a served row (B0 §1 R8, B1a Owner ③).
-export const SERVED_PUBLISH_RPCS: readonly string[] = ["__seo_r8_publish_snapshot"];
+export const SERVED_PUBLISH_RPCS: readonly string[] = [
+  "__seo_r8_publish_snapshot",
+  "__diag_projection_apply", // writer WIKI → __diag_link_provenance (INVOKER, EXECUTE service_role seul)
+];
 
 const WRITE_VERBS = "insert|update|upsert|delete";
 const CHAIN = "[\\s\\S]{0,300}?"; // bounded window across a fluent .from(...).verb(...) chain
