@@ -92561,7 +92561,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 522,
+      "loc": 521,
       "owner": "@ak125",
       "path": "frontend/tests/unit/marketing-brief-detail.test.tsx",
       "risk": "medium",
@@ -102138,11 +102138,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "06762d36694187f95afe05f89fddf30b7d9e1c39208d2837744cc6b5aeb1c792",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "42a92fb99eac0e2ad82a6e31db8184bc9854f4b041c9ea7a5d6a54c40029436c",
+      "audit/registry/files.json": "c2234a69c407e55f56a126aa1c678fa666a739a607d5f630bbedcb6c63225fc7",
       "audit/registry/rpc.json": "2b1e02eccb6da1cb24d66d4507afae699c1d5708c25bd610a0aadf57519fa4fc",
       "audit/registry/runtime.json": "edc836c508bc0644d3a7b13e50f404f19650cc75d6a8646a28d6f7124d7bfc7f"
     },
-    "sotFingerprint": "07812ec0240e"
+    "sotFingerprint": "4296a12209cf"
   },
   "runtime": [
     {

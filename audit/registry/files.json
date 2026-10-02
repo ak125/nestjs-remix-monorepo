@@ -62527,7 +62527,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 522,
+      "loc": 521,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/marketing-brief-detail.test.tsx",
       "risk": "low",
