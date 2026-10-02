@@ -18,9 +18,11 @@ jest.mock('@database/services/supabase-base.service', () => ({
 
 let row: Record<string, unknown> | null;
 let writes: number;
+let queries: number;
 let beforeWrite: (() => void) | undefined;
 let databaseError: boolean;
 function mockQuery(table: string) {
+  queries++;
   if (table !== '__marketing_brief')
     throw new Error(`Unexpected table ${table}`);
   let patch: Record<string, unknown> | undefined;
@@ -87,7 +89,9 @@ describe('Marketing brief HTTP workflow guards', () => {
   let app: INestApplication;
   let canonRead: jest.SpyInstance;
   let user: { isAdmin?: boolean; email?: string } | undefined;
-  const url = '/api/admin/marketing/briefs/brief-1/status';
+  const briefId = '00000000-0000-4000-8000-000000000001';
+  const briefUrl = `/api/admin/marketing/briefs/${briefId}`;
+  const url = `${briefUrl}/status`;
   const transition = (status: string, body = {}) =>
     request(app.getHttpServer())
       .patch(url)
@@ -115,7 +119,7 @@ describe('Marketing brief HTTP workflow guards', () => {
   });
   beforeEach(() => {
     row = {
-      id: 'brief-1',
+      id: briefId,
       agent_id: 'customer-retention-agent',
       business_unit: 'ECOMMERCE',
       channel: 'email',
@@ -144,6 +148,7 @@ describe('Marketing brief HTTP workflow guards', () => {
       updated_at: '2026-10-01T12:00:00.000Z',
     };
     writes = 0;
+    queries = 0;
     databaseError = false;
     beforeWrite = undefined;
     user = { isAdmin: true, email: 'real-admin@example.test' };
@@ -153,6 +158,34 @@ describe('Marketing brief HTTP workflow guards', () => {
   });
   afterEach(() => {
     canonRead.mockRestore();
+  });
+
+  it.each(['not-a-uuid', '00000000-0000-4000-8000-00000000000z'])(
+    'rejects malformed UUID %s on both routes before persistence',
+    async (id) => {
+      databaseError = true;
+      await request(app.getHttpServer())
+        .get(`/api/admin/marketing/briefs/${id}`)
+        .expect(400);
+      await request(app.getHttpServer())
+        .patch(`/api/admin/marketing/briefs/${id}/status`)
+        .send({ status: 'reviewed' })
+        .expect(400);
+      expect(queries).toBe(0);
+      expect(writes).toBe(0);
+    },
+  );
+  it('returns a brief for a valid UUID', async () => {
+    const response = await request(app.getHttpServer()).get(briefUrl).expect(200);
+    expect(response.body.data.id).toBe(briefId);
+  });
+  it('keeps 404 for a valid UUID without a matching brief on GET', async () => {
+    row = null;
+    await request(app.getHttpServer()).get(briefUrl).expect(404);
+  });
+  it('keeps 503 for persistence unavailability on GET with a valid UUID', async () => {
+    databaseError = true;
+    await request(app.getHttpServer()).get(briefUrl).expect(503);
   });
 
   it.each([undefined, { isAdmin: false, email: 'reader@example.test' }])(

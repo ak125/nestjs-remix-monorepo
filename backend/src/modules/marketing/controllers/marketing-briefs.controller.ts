@@ -21,6 +21,7 @@ import {
   Get,
   ForbiddenException,
   Param,
+  ParseUUIDPipe,
   Patch,
   Query,
   Req,
@@ -61,14 +62,14 @@ export class MarketingBriefsController {
   }
 
   @Get(':id')
-  async getById(@Param('id') id: string) {
+  async getById(@Param('id', ParseUUIDPipe) id: string) {
     const data = await this.service.getBriefById(id);
     return { success: true, data };
   }
 
   @Patch(':id/status')
   async updateStatus(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() body: unknown,
     @Req() req: Request,
   ) {
