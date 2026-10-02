@@ -29,6 +29,7 @@ import { CacheService } from '@cache/cache.service';
 
 describe('RagProxyService', () => {
   let service: RagProxyService;
+  let moduleRef: TestingModule;
   let chatService: RagChatService;
   let mockFetch: jest.Mock;
 
@@ -70,7 +71,7 @@ describe('RagProxyService', () => {
     mockFetch = jest.fn();
     global.fetch = mockFetch;
 
-    const module: TestingModule = await Test.createTestingModule({
+    moduleRef = await Test.createTestingModule({
       providers: [
         // Infrastructure mocks
         { provide: ConfigService, useValue: mockConfigService },
@@ -99,11 +100,12 @@ describe('RagProxyService', () => {
       ],
     }).compile();
 
-    service = module.get<RagProxyService>(RagProxyService);
-    chatService = module.get<RagChatService>(RagChatService);
+    service = moduleRef.get<RagProxyService>(RagProxyService);
+    chatService = moduleRef.get<RagChatService>(RagChatService);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    await moduleRef.close();
     jest.restoreAllMocks();
   });
 

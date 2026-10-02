@@ -24,6 +24,14 @@ const NO_STORE = "no-cache, no-store, must-revalidate";
  * (`new Response("Not Found", { status: 404 })` with no headers): the directive
  * is then asserted on the error response instead of relying on the absence-of-
  * header default — without overriding an explicit X-Robots-Tag when present.
+ *
+ * Precondition: React Router 8 only fills `errorHeaders` when the thrown value
+ * carries headers — always for a thrown `Response`, but for a thrown `data()`
+ * only when its init has `headers` (router.js: `headers: result.init?.headers
+ * ? new Headers(result.init.headers) : void 0`). A bare
+ * `throw data(x, { status: 404 })` or an unexpected `Error` reaches this
+ * function with `errorHeaders` undefined and gets the success policy. Throw
+ * errors with headers, e.g. `{ "Cache-Control": NO_STORE_CACHE_CONTROL }`.
  */
 export function buildCacheHeaders(
   successPolicy: string,
@@ -37,6 +45,8 @@ export function buildCacheHeaders(
       const xRobots =
         errorHeaders.get("X-Robots-Tag") ?? opts?.defaultErrorRobots;
       if (xRobots) out["X-Robots-Tag"] = xRobots;
+      const retryAfter = errorHeaders.get("Retry-After");
+      if (retryAfter) out["Retry-After"] = retryAfter;
       return out;
     }
 

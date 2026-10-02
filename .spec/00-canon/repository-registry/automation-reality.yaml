@@ -368,3 +368,75 @@ entries:
     risk: "high"
     related_pr: [1165, 1166]
     drift_note: "Hourly leg live (succeeded '48 rows' @16:05, missing_complete_hours=0, daily_rum J-1). Daily cron first fire 00:15 UTC 2026-06-27. Bull v4 retired #1166; coverage detector @35 auto-resolves."
+  # ──────────────────────────────────────────────────────────────────────────
+  # ACTIVE — pg_cron rétention 90 j de __soft_404_events (ADR-076 accepted,
+  # « Rétention 90j »). Le runbook renvoyait à un cron `seo-routines` qui n'a
+  # jamais existé : aucune purge du 2026-05-19 au 2026-09-30. Premier run
+  # 2026-09-30 03:20 UTC prouvé : DELETE 160060, borne J-90 exacte.
+  # ──────────────────────────────────────────────────────────────────────────
+  - automation_id: "soft-404-events-retention"
+    domain: "D3"
+    intended_mode: "ACTIVE"
+    actual_mode: "ACTIVE"
+    executor: "pg_cron"
+    evidence:
+      - path: "backend/supabase/migrations/20260929_soft_404_events_retention_cron.sql"
+        line: 73
+        excerpt: "PERFORM cron.schedule('soft-404-events-retention', '20 3 * * *', v_expected_command);"
+        note: "exact-match/fail-closed + provenance marker ; .down unschedules only this job ; applied 2026-09-29 (run 36608269299)"
+    runtime_evidence:
+      trigger:
+        kind: "db_row"
+        source: "cron.job_run_details"
+        observed_at: "2026-09-30"
+        query_or_url: "SELECT j.schedule, j.active, r.status, r.return_message, r.start_time FROM cron.job j JOIN LATERAL (SELECT * FROM cron.job_run_details d WHERE d.jobid=j.jobid ORDER BY d.start_time DESC LIMIT 1) r ON true WHERE j.jobname='soft-404-events-retention'  -- '20 3 * * *', active, succeeded 'DELETE 160060' @2026-09-30 03:20:00Z (0.57 s)"
+      output:
+        kind: "db_row"
+        source: "public.__soft_404_events"
+        observed_at: "2026-09-30"
+        query_or_url: "WITH r AS (SELECT d.start_time FROM cron.job_run_details d JOIN cron.job j USING (jobid) WHERE j.jobname='soft-404-events-retention' AND d.status='succeeded' ORDER BY d.start_time DESC LIMIT 1) SELECT (SELECT min(ts) FROM public.__soft_404_events) >= r.start_time - interval '90 days' FROM r  -- = true ; min(ts) 2026-07-02 03:20:25Z, borne 03:20:00Z"
+      consumer: "no-consumer-by-design"
+    last_verified_at: "2026-09-30"
+    last_verified_by: "@ak125"
+    last_verified_method: "runtime-probe"
+    risk: "medium"
+    related_pr: [1620]
+    drift_note: "Purge = borne de stockage, sans lecteur aval : aucun code ne lit __soft_404_events ni v_soft_404_demand_30d (git grep main 2026-09-30). Runbook vault encore sur seo-routines."
+  # ──────────────────────────────────────────────────────────────────────────
+  # ACTIVE — pg_cron rétention 90 j de cron.job_run_details, dernière exécution
+  # de chaque job toujours conservée (preuve lue par ADR-045 et never_ran).
+  # Premier run 2026-10-02 03:30 UTC prouvé : DELETE 28189, borne J-90 exacte,
+  # aucun job actif sans ligne.
+  # ──────────────────────────────────────────────────────────────────────────
+  - automation_id: "cron-job-run-details-retention"
+    domain: "D15"
+    intended_mode: "ACTIVE"
+    actual_mode: "ACTIVE"
+    executor: "pg_cron"
+    evidence:
+      - path: "backend/supabase/migrations/20261001_cron_job_run_details_retention.sql"
+        line: 93
+        excerpt: "PERFORM cron.schedule('cron-job-run-details-retention', '30 3 * * *', v_expected_command);"
+        note: "exact-match/fail-closed + provenance marker ; .down unschedules only this job ; max(runid) per jobid always kept"
+    runtime_evidence:
+      trigger:
+        kind: "db_row"
+        source: "cron.job_run_details"
+        observed_at: "2026-10-02"
+        query_or_url: "SELECT j.schedule, j.active, r.status, r.return_message, r.start_time FROM cron.job j JOIN LATERAL (SELECT * FROM cron.job_run_details d WHERE d.jobid=j.jobid ORDER BY d.start_time DESC LIMIT 1) r ON true WHERE j.jobname='cron-job-run-details-retention'  -- '30 3 * * *', active, succeeded 'DELETE 28189' @2026-10-02 03:30:00Z (0.237 s)"
+      output:
+        kind: "db_row"
+        source: "cron.job_run_details"
+        observed_at: "2026-10-02"
+        query_or_url: "WITH r AS (SELECT d.runid, d.start_time FROM cron.job_run_details d JOIN cron.job j USING (jobid) WHERE j.jobname='cron-job-run-details-retention' AND d.status='succeeded' ORDER BY d.start_time DESC LIMIT 1) SELECT count(*) FROM cron.job_run_details d, r WHERE d.start_time < r.start_time - interval '90 days' AND d.runid NOT IN (SELECT max(runid) FROM cron.job_run_details WHERE runid <= r.runid GROUP BY jobid)  -- = 0 ; DELETE 28189 = prévision exacte ; 11 dernières exécutions > 90 j conservées (jobs 2-10, 12, 13 absents de cron.job)"
+      consumer:
+        kind: "db_row"
+        source: "runtime-truth-audit scheduled-orchestrator-drift (never_ran) over cron.job_run_details"
+        observed_at: "2026-10-02"
+        query_or_url: "SELECT count(*) FROM cron.job j WHERE j.active AND NOT EXISTS (SELECT 1 FROM cron.job_run_details d WHERE d.jobid=j.jobid)  -- = 0 sur 20 jobs actifs : aucun faux never_ran, mensuel seo-ensure-monthly-partitions compris"
+    last_verified_at: "2026-10-02"
+    last_verified_by: "@ak125"
+    last_verified_method: "runtime-probe"
+    risk: "medium"
+    related_pr: [1651, 1678]
+    drift_note: "Borne de stockage : 90 j + dernière exécution de chaque jobid. Lecteurs = preuves d'exécution (never_ran, ADR-045, ce registre) ; aucun code applicatif ne lit la table."

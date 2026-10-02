@@ -6,14 +6,18 @@ import {
   Body,
   Param,
   Query,
+  UseGuards,
   HttpCode,
   HttpStatus,
   Logger,
 } from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { QuoteService, QuoteRequest, Quote } from '../services/quote.service';
 import { DomainNotFoundException, ErrorCodes } from '@common/exceptions';
 
 @Controller('api/support/quotes')
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class QuoteController {
   private readonly logger = new Logger(QuoteController.name);
 

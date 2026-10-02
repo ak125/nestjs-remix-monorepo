@@ -4,48 +4,46 @@
  * ADR-032 D2/D3/D7/D9 (Phase 2 PR-2 ex-PR-3).
  *
  * Wraps les RPCs `kg_*` créées en PR-1 (migration 20260429_diag_maintenance_via_kg.sql).
- * Single point of access pour le calendrier maintenance — supprime les queries
- * directes vers `__diag_maintenance_*` (tables ghost qui n'existaient pas en DB).
+ * Source du calendrier : intervalles MaintenanceInterval du KG, distincts des
+ * opérations `__diag_maintenance_operation` et de leurs liens, présents en DB
+ * et utilisés par le moteur d'entretien du parcours diagnostic.
  *
  * Méthodes :
- *   - getSchedule(typeId, currentKm) → MaintenanceInterval items personnalisés (fuel-aware)
- *   - getAlerts(typeId, milestones?) → 5 paliers d'actions (zéro hardcode des paliers)
+ *   - getSchedule(typeId, currentKm) → MaintenanceInterval intervalles génériques (filtre carburant indicatif)
+ *   - getAlerts(fuelType, milestones?) → actions par palier (paliers par défaut = défaut de la RPC)
  *
- * `getCalendar(typeId, currentKm)` agrégé (D9) sera implémenté en Phase 4 PR-6
- * (dépend de `DiagnosticContentService` qui lit `controles-mensuels.md` via
- * submodule git wiki). Découplage scope cohérent.
+ * `getCalendar(typeId, currentKm)` agrège ces intervalles et les contrôles wiki,
+ * filtrés sur un même carburant résolu une fois (voir `resolveFuelType`).
+ * Un type_id fourni doit désigner un type existant : sinon 404, jamais un
+ * calendrier générique attribué à un véhicule inexistant.
+ * Sans historique par opération, aucun statut personnel ne peut être calculé.
  *
  * @see governance-vault/ledger/decisions/adr/ADR-032-diagnostic-maintenance-unification.md
  * @see backend/supabase/migrations/20260429_diag_maintenance_via_kg.sql
  */
-import { Injectable, Inject, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  Logger,
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { DiagnosticContentService } from './diagnostic-content.service';
 
-// ── DTOs (aligned on RPC return shapes) ─────────────────
-
-export interface MaintenanceScheduleItem {
-  rule_alias: string;
-  rule_label: string;
-  km_interval: number | null;
-  month_interval: number | null;
-  maintenance_priority: 'critique' | 'important' | 'normal' | null;
-  applies_to_fuel: 'essence' | 'diesel' | null;
-  km_remaining: number;
-  status: 'ok' | 'due_soon' | 'overdue' | 'time_only';
-}
-
-export interface MaintenanceAlertAction {
-  rule_alias: string;
-  rule_label: string;
-  maintenance_priority: 'critique' | 'important' | 'normal' | null;
-  km_interval: number | null;
-}
-
-export interface MaintenanceAlertMilestone {
-  milestone_km: number;
-  actions: MaintenanceAlertAction[];
-}
+import {
+  MaintenanceScheduleSchema,
+  MaintenanceAlertsSchema,
+  ControlesMensuelsSchema,
+  type ControleMensuel,
+  type MaintenanceScheduleItem,
+  type MaintenanceAlertMilestone,
+} from '../types/maintenance-calendar.schema';
+export type {
+  MaintenanceScheduleItem,
+  MaintenanceAlertAction,
+  MaintenanceAlertMilestone,
+} from '../types/maintenance-calendar.schema';
 
 /**
  * Calendrier d'entretien agrégé (ADR-032 D9).
@@ -55,18 +53,20 @@ export interface MaintenanceAlertMilestone {
  */
 export interface MaintenanceCalendar {
   type_id: number | null;
-  current_km: number;
+  /** Kilométrage fourni par l'appelant ; `null` s'il n'en a fourni aucun. */
+  current_km: number | null;
+  /**
+   * Carburant qui a filtré `schedule` et `alerts` : celui fourni par
+   * l'appelant, sinon celui du type ; `null` = aucun filtre carburant.
+   */
   fuel_type: string | null;
+  assessment_basis: 'generic_intervals';
+  applicability: 'unverified';
   schedule: MaintenanceScheduleItem[];
   alerts: MaintenanceAlertMilestone[];
-  controles_mensuels: Array<{
-    element: string;
-    icon: string;
-    detail: string;
-  }>;
+  /** `null` = contenu wiki absent ou invalide, distinct d'une liste vide. */
+  controles_mensuels: ControleMensuel[] | null;
 }
-
-const DEFAULT_MILESTONES = [10000, 30000, 60000, 100000, 150000];
 
 @Injectable()
 export class MaintenanceCalculatorService extends SupabaseBaseService {
@@ -76,64 +76,87 @@ export class MaintenanceCalculatorService extends SupabaseBaseService {
   protected readonly diagnosticContent!: DiagnosticContentService;
 
   /**
-   * Schedule entretien périodique pour un véhicule donné.
-   * Fuel-aware automatique via auto_type.type_fuel (ADR-032 D2).
+   * Intervalles génériques ; le filtre carburant de la RPC ne prouve pas
+   * une applicabilité constructeur. Son statut sans historique est neutralisé.
    *
-   * @param typeId    auto_type.type_id (résolu en fuel_type côté RPC)
-   * @param currentKm kilométrage actuel du véhicule
+   * @param typeId    auto_type.type_id ; un type inconnu est une 404
+   * @param currentKm kilométrage actuel du véhicule, `null` s'il est inconnu
    * @param fuelType  override explicite (optionnel)
    */
   async getSchedule(
     typeId: number | null,
-    currentKm: number,
+    currentKm: number | null,
     fuelType?: string | null,
   ): Promise<MaintenanceScheduleItem[]> {
-    const { data, error } = await this.callRpc<MaintenanceScheduleItem[]>(
-      'kg_get_smart_maintenance_schedule',
-      {
-        p_type_id: typeId,
-        p_current_km: currentKm,
-        p_fuel_type: fuelType ?? null,
-      },
-      { source: 'internal' },
-    );
+    const fuel = await this.resolveFuelType(typeId, fuelType);
+    return this.fetchSchedule(typeId, currentKm, fuel);
+  }
 
-    if (error) {
-      this.logger.error(
-        `kg_get_smart_maintenance_schedule failed for type_id=${typeId}: ${error.message}`,
+  private async fetchSchedule(
+    typeId: number | null,
+    currentKm: number | null,
+    fuelType: string | null,
+  ): Promise<MaintenanceScheduleItem[]> {
+    try {
+      const { data, error } = await this.callRpc<unknown>(
+        'kg_get_smart_maintenance_schedule',
+        {
+          p_type_id: typeId,
+          ...(currentKm !== null && { p_current_km: currentKm }),
+          p_fuel_type: fuelType,
+        },
+        { source: 'internal' },
       );
-      return [];
+      const parsed = MaintenanceScheduleSchema.safeParse(data);
+      if (error || !parsed.success) {
+        throw new Error(error?.message ?? 'Invalid schedule response');
+      }
+      return parsed.data;
+    } catch (error) {
+      this.logger.error(
+        `Maintenance schedule unavailable: ${error instanceof Error ? error.message : 'RPC failure'}`,
+      );
+      throw new ServiceUnavailableException(
+        "Les données d'entretien sont temporairement indisponibles.",
+      );
     }
-    return data ?? [];
   }
 
   /**
    * Alertes regroupées par palier kilométrique.
-   * Zéro hardcode des paliers — la RPC dérive depuis kg_nodes (ADR-032 D7).
+   * Les actions de chaque palier viennent de kg_nodes (ADR-032 D7). Sans
+   * paliers explicites, ceux par défaut de la RPC s'appliquent : ils ne sont
+   * pas recopiés ici.
    *
    * @param fuelType   filtre fuel-aware optionnel
-   * @param milestones paliers personnalisés (default: 10k/30k/60k/100k/150k)
+   * @param milestones paliers personnalisés (optionnel)
    */
   async getAlerts(
     fuelType?: string | null,
-    milestones: number[] = DEFAULT_MILESTONES,
+    milestones?: number[],
   ): Promise<MaintenanceAlertMilestone[]> {
-    const { data, error } = await this.callRpc<MaintenanceAlertMilestone[]>(
-      'kg_get_maintenance_alerts_by_milestone',
-      {
-        p_milestones: milestones,
-        p_fuel_type: fuelType ?? null,
-      },
-      { source: 'internal' },
-    );
-
-    if (error) {
-      this.logger.error(
-        `kg_get_maintenance_alerts_by_milestone failed: ${error.message}`,
+    try {
+      const { data, error } = await this.callRpc<unknown>(
+        'kg_get_maintenance_alerts_by_milestone',
+        {
+          ...(milestones && { p_milestones: milestones }),
+          p_fuel_type: fuelType ?? null,
+        },
+        { source: 'internal' },
       );
-      return [];
+      const parsed = MaintenanceAlertsSchema.safeParse(data);
+      if (error || !parsed.success) {
+        throw new Error(error?.message ?? 'Invalid milestone response');
+      }
+      return parsed.data;
+    } catch (error) {
+      this.logger.error(
+        `Maintenance milestones unavailable: ${error instanceof Error ? error.message : 'RPC failure'}`,
+      );
+      throw new ServiceUnavailableException(
+        "Les données d'entretien sont temporairement indisponibles.",
+      );
     }
-    return data ?? [];
   }
 
   /**
@@ -149,26 +172,80 @@ export class MaintenanceCalculatorService extends SupabaseBaseService {
    */
   async getCalendar(
     typeId: number | null,
-    currentKm: number,
+    currentKm: number | null,
     fuelType?: string | null,
   ): Promise<MaintenanceCalendar> {
+    const fuel = await this.resolveFuelType(typeId, fuelType);
     const [schedule, alerts] = await Promise.all([
-      this.getSchedule(typeId, currentKm, fuelType),
-      this.getAlerts(fuelType),
+      this.fetchSchedule(typeId, currentKm, fuel),
+      this.getAlerts(fuel),
     ]);
-    const controlesEntry = this.diagnosticContent.getControlesMensuels();
-    const controlesItems = (controlesEntry?.entity_data?.items ?? []) as Array<{
-      element: string;
-      icon: string;
-      detail: string;
-    }>;
     return {
       type_id: typeId,
       current_km: currentKm,
-      fuel_type: fuelType ?? null,
+      fuel_type: fuel,
+      assessment_basis: 'generic_intervals',
+      applicability: 'unverified',
       schedule,
       alerts,
-      controles_mensuels: controlesItems,
+      controles_mensuels: this.getControlesMensuels(),
     };
+  }
+
+  /**
+   * Carburant du calendrier : l'override explicite prime, sinon celui du type
+   * (auto_type.type_fuel), sinon aucun filtre — l'ordre de
+   * kg_get_smart_maintenance_schedule. Résolu une seule fois ici parce que
+   * kg_get_maintenance_alerts_by_milestone ne reçoit pas le type : sans cela,
+   * un véhicule désigné par son seul type_id avait un calendrier filtré et des
+   * paliers listant les opérations des deux carburants.
+   *
+   * Un type_id fourni est lu même avec un override : absent d'auto_type, il
+   * rend une 404 au lieu d'un calendrier générique qui le citerait. Une
+   * lecture en échec rend le calendrier indisponible plutôt que non filtré.
+   */
+  private async resolveFuelType(
+    typeId: number | null,
+    fuelType?: string | null,
+  ): Promise<string | null> {
+    if (typeId === null) return fuelType || null;
+    let vehicle: { type_fuel: string | null } | null;
+    try {
+      const { data, error } = await this.supabase
+        .from('auto_type')
+        .select('type_fuel')
+        .eq('type_id', String(typeId))
+        .maybeSingle<{ type_fuel: string | null }>();
+      if (error) throw new Error(error.message);
+      vehicle = data;
+    } catch (error) {
+      this.logger.error(
+        `Vehicle fuel unavailable: ${error instanceof Error ? error.message : 'query failure'}`,
+      );
+      throw new ServiceUnavailableException(
+        "Les données d'entretien sont temporairement indisponibles.",
+      );
+    }
+    if (!vehicle) {
+      throw new NotFoundException('Véhicule introuvable.');
+    }
+    return fuelType || vehicle.type_fuel;
+  }
+
+  /**
+   * Les contrôles mensuels sont une section distincte des intervalles : leur
+   * absence ne rend pas le calendrier indisponible, mais elle est renvoyée
+   * comme `null`, jamais comme une liste vide.
+   */
+  private getControlesMensuels(): ControleMensuel[] | null {
+    // A missing or unparseable file is already logged by DiagnosticContentService.
+    const entry = this.diagnosticContent.getControlesMensuels();
+    if (!entry) return null;
+    const parsed = ControlesMensuelsSchema.safeParse(entry.entity_data.items);
+    if (!parsed.success) {
+      this.logger.error('Monthly checks content is malformed');
+      return null;
+    }
+    return parsed.data;
   }
 }

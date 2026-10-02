@@ -107,17 +107,19 @@ export class BotGuardMiddleware implements NestMiddleware {
         return;
       }
 
-      // 8. Behavioral scoring
+      // 8. Request fingerprint scoring (not proof of human identity)
       const suspicionScore = this.botGuardService.calculateSuspicionScore({
         ip,
         country,
         userAgent,
         path: req.path,
         acceptLanguage: req.headers['accept-language'] as string,
-        hasSession: !!req.headers.cookie?.includes('connect.sid'),
+        // Passport has already restored the session in main.ts. A raw cookie
+        // (including cf_clearance) is never an application-verified identity.
+        hasAuthenticatedSession: req.isAuthenticated?.() === true,
       });
 
-      if (suspicionScore >= 80) {
+      if (suspicionScore >= this.botGuardService.getSuspicionThreshold()) {
         await this.botGuardService.logBlocked(
           ip,
           country,

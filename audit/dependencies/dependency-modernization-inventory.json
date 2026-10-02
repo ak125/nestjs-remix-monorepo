@@ -1,5 +1,5 @@
 {
-  "artifact_immutability_hash": "sha256:c947904c784aa2cfd9495be327087177347be1a8fda151a1a713dc18a7ebe01d",
+  "artifact_immutability_hash": "sha256:e422cbc762376e1fd59ac77ec61351dd1b5f6259733912eab50cfdcadda26b3f",
   "divergences": [
     {
       "kind": "resolved",
@@ -24,6 +24,11 @@
           "declaredIn": "backend/package.json",
           "specifier": "^4.0.9",
           "workspace": "@fafa/backend"
+        },
+        {
+          "declaredIn": "frontend/package.json",
+          "specifier": "^4.0.9",
+          "workspace": "@fafa/frontend"
         },
         {
           "declaredIn": "packages/registry/package.json",
@@ -243,6 +248,11 @@
           "declaredIn": "backend/package.json",
           "specifier": "^4.1.1",
           "workspace": "@fafa/backend"
+        },
+        {
+          "declaredIn": "frontend/package.json",
+          "specifier": "^4.1.1",
+          "workspace": "@fafa/frontend"
         },
         {
           "declaredIn": "packages/registry/package.json",
@@ -3723,9 +3733,9 @@
   ],
   "generatedFrom": {
     "deps_registry": "audit/registry/deps.json",
-    "deps_registry_sha": "sha256:28f63bf4383ddec90e009095ddc11db9298b7cd92b52ceb234a3e6a2fd996f90",
+    "deps_registry_sha": "sha256:eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
     "lockfile": "package-lock.json",
-    "lockfile_sha": "sha256:f62a068bc6f91861880091b28013c6d98c47c91ada60bcc6f828baf43739b690",
+    "lockfile_sha": "sha256:e3143ef4e520e5553a54cc4b95e32c82a9261dba74e1f5d43782c48a6f7996cc",
     "overlay": "audit/dependencies/family-overlay.yaml",
     "overlay_sha": "sha256:f5b19e7c0c73a75b55e4c0a620e0d01c6665dfcfffe8b00a77d5c8928bb05117"
   },
@@ -3756,7 +3766,7 @@
     },
     "divergent_packages_count": 27,
     "families_count": 12,
-    "total_occurrences": 334,
+    "total_occurrences": 336,
     "total_packages": 227,
     "unassigned_count": 160
   },
@@ -4663,6 +4673,11 @@
           "workspace": "@fafa/backend"
         },
         {
+          "declaredIn": "frontend/package.json",
+          "specifier": "^4.0.9",
+          "workspace": "@fafa/frontend"
+        },
+        {
           "declaredIn": "packages/registry/package.json",
           "specifier": "4.0.9",
           "workspace": "@repo/registry"
@@ -5549,6 +5564,11 @@
           "declaredIn": "backend/package.json",
           "specifier": "^4.1.1",
           "workspace": "@fafa/backend"
+        },
+        {
+          "declaredIn": "frontend/package.json",
+          "specifier": "^4.1.1",
+          "workspace": "@fafa/frontend"
         },
         {
           "declaredIn": "packages/registry/package.json",

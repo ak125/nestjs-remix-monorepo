@@ -77,6 +77,17 @@ describe("buildCacheHeaders — error path (anti cache-poisoning)", () => {
     expect(out["Cache-Control"]).not.toContain("s-maxage");
   });
 
+  it("propagates Retry-After from a temporary error without adding a robots directive", () => {
+    const out = invoke(buildCacheHeaders(SUCCESS), {
+      error: {
+        "Retry-After": "300",
+        "Cache-Control": "no-store, must-revalidate",
+      },
+    });
+    expect(out["Retry-After"]).toBe("300");
+    expect(out["X-Robots-Tag"]).toBeUndefined();
+  });
+
   it("honours an explicit Cache-Control the error Response carried", () => {
     const out = invoke(buildCacheHeaders(SUCCESS), {
       error: { "Cache-Control": "public, max-age=300, must-revalidate" },
@@ -104,6 +115,14 @@ describe("buildCacheHeaders — error path (anti cache-poisoning)", () => {
   it("emits no X-Robots-Tag key when neither the error nor a default provides one", () => {
     const out = invoke(buildCacheHeaders(SUCCESS), { error: {} });
     expect("X-Robots-Tag" in out).toBe(false);
+  });
+
+  // Precondition, not a wish: React Router 8 leaves `errorHeaders` undefined
+  // for a thrown data() without init.headers, so the helper cannot tell it
+  // from a success. Routes must throw errors with headers.
+  it("cannot see an error thrown without headers: it gets the success policy", () => {
+    const out = invoke(buildCacheHeaders(SUCCESS));
+    expect(out["Cache-Control"]).toBe(SUCCESS);
   });
 });
 

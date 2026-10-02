@@ -1,3 +1,5 @@
+import type { McpDiagnoseInput } from './mcp-diagnose.schema';
+
 /**
  * MCP Verify Types - Phase 2: Verification Mode
  *
@@ -403,16 +405,7 @@ export interface VerifyVehicleOutput {
 }
 
 /** Diagnostic verification */
-export interface DiagnoseInput {
-  observable_ids: string[];
-  vehicle_context?: {
-    ktypnr?: number;
-    mileage_km?: number;
-    vehicle_age_years?: number;
-    vehicle_id?: string;
-    engine_family_code?: string;
-  };
-}
+export type DiagnoseInput = McpDiagnoseInput;
 
 export interface DiagnoseOutput {
   faults: Array<{

@@ -16,7 +16,7 @@ fi
 set -euo pipefail
 
 INPUT=$(cat)
-FILE_PATH=$(echo "$INPUT" | jq -r '.file_path // empty' 2>/dev/null || echo "")
+FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null || echo "")
 
 if [ -z "$FILE_PATH" ]; then
   exit 0
@@ -25,11 +25,18 @@ fi
 REPO_ROOT="/opt/automecanik/app"
 
 # .claude/skills/**/*.md → validate-skills-frontmatter.js
-# Branche le validateur existant au PostToolUse pour feedback immédiat (sinon le validateur
-# ne tourne qu'en pre-commit + CI). Validators existants réutilisés tels quels — no wrapper.
-if echo "$FILE_PATH" | grep -qE '/\.claude/skills/.*\.md$'; then
-  if [ -f "$FILE_PATH" ] && [ -f "$REPO_ROOT/scripts/governance/validate-skills-frontmatter.js" ]; then
-    if ! node "$REPO_ROOT/scripts/governance/validate-skills-frontmatter.js" "$FILE_PATH" >/tmp/skills-frontmatter.log 2>&1; then
+# Branche le validateur existant au PostToolUse pour feedback immédiat (sinon il ne tourne
+# qu'en CI : skills-canon-gate.yml ; ni .husky/pre-commit ni lint-staged ne l'appellent).
+# Validators existants réutilisés tels quels — no wrapper.
+# Le validateur ignore tout argument positionnel : il prend `--skill <nom>` et résout
+# `.claude/skills/` depuis son propre emplacement. Racine et nom sont donc lus dans le
+# chemin édité (worktree compris) ; les skills de workspace n'ont pas de validateur → sautés.
+if [[ "$FILE_PATH" =~ ^(.*)/\.claude/skills/([^/]+)/.*\.md$ ]]; then
+  SKILL_ROOT="${BASH_REMATCH[1]}"
+  SKILL_NAME="${BASH_REMATCH[2]}"
+  VALIDATOR="$SKILL_ROOT/scripts/governance/validate-skills-frontmatter.js"
+  if [ -f "$FILE_PATH" ] && [ -f "$VALIDATOR" ]; then
+    if ! node "$VALIDATOR" --skill "$SKILL_NAME" >/tmp/skills-frontmatter.log 2>&1; then
       echo "WARN skill frontmatter: $FILE_PATH" >&2
       tail -5 /tmp/skills-frontmatter.log >&2
       echo "→ corriger avant pre-commit (validate-skills-frontmatter.js)" >&2

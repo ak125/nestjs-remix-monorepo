@@ -4,8 +4,23 @@
  * Lecture des tables __diag_* pour alimenter le moteur deterministe.
  * Pas de logique metier ici — juste des queries.
  */
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { z } from 'zod';
+import {
+  DiagSystemsSchema,
+  DiagSystemRowSchema,
+  DiagSymptomRowSchema,
+  DiagSymptomsSchema,
+  DiagCauseLinksSchema,
+  DiagCausesSchema,
+  DiagSafetyRulesSchema,
+  DiagSafetyRuleCoverageSchema,
+} from './types/diagnostic-reference.schema';
 
 // ── DB Row types (aligned on migration schema) ──────────
 
@@ -65,9 +80,39 @@ export interface DiagSafetyRule {
   active: boolean;
 }
 
+export interface MaintenanceOperation {
+  id: number;
+  slug: string;
+  label: string;
+  description: string | null;
+  interval_km_min: number | null;
+  interval_km_max: number | null;
+  interval_months_min: number | null;
+  interval_months_max: number | null;
+  severity_if_overdue: string;
+  normal_wear_km_min: number | null;
+  normal_wear_km_max: number | null;
+  related_gamme_slug: string | null;
+  related_pg_id: number | null;
+}
+
 @Injectable()
 export class DiagnosticEngineDataService extends SupabaseBaseService {
   protected readonly logger = new Logger(DiagnosticEngineDataService.name);
+
+  /** Existing diagnostic maintenance reference; no vehicle applicability is implied. */
+  async getMaintenanceOperations(): Promise<MaintenanceOperation[]> {
+    const { data, error } = await this.supabase
+      .from('__diag_maintenance_operation')
+      .select(
+        'id,slug,label,description,interval_km_min,interval_km_max,interval_months_min,interval_months_max,severity_if_overdue,normal_wear_km_min,normal_wear_km_max,related_gamme_slug,related_pg_id',
+      )
+      .eq('active', true)
+      .order('label', { ascending: true });
+    if (error || !Array.isArray(data))
+      throw new Error('Maintenance operations unavailable');
+    return data;
+  }
 
   /**
    * Get all active systems ordered by display_order
@@ -81,9 +126,10 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
 
     if (error) {
       this.logger.warn('Failed to fetch systems', error.message);
-      return [];
+      throw new Error('Diagnostic systems unavailable');
     }
-    return data || [];
+    DiagSystemsSchema.parse(data);
+    return data;
   }
 
   /**
@@ -98,9 +144,13 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
       .single();
 
     if (error) {
-      this.logger.warn(`System not found: ${slug}`, error.message);
-      return null;
+      if (error.code === 'PGRST116') return null;
+      this.logger.error(`Failed to fetch system: ${slug}`, error.message);
+      throw new Error('Diagnostic system unavailable');
     }
+    DiagSystemRowSchema.parse(data);
+    if (data.slug !== slug)
+      throw new Error('Diagnostic system identity mismatch');
     return data;
   }
 
@@ -115,7 +165,13 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
       .eq('active', true)
       .single();
 
-    if (error) return null;
+    if (error) {
+      if (error.code === 'PGRST116') return null;
+      throw new Error('Diagnostic symptom unavailable');
+    }
+    DiagSymptomRowSchema.parse(data);
+    if (data.slug !== slug)
+      throw new Error('Diagnostic symptom identity mismatch');
     return data;
   }
 
@@ -138,9 +194,12 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
         `Failed to fetch symptoms for ${systemSlug}`,
         error.message,
       );
-      return [];
+      throw new Error('Diagnostic symptoms unavailable');
     }
-    return data || [];
+    DiagSymptomsSchema.parse(data);
+    if (data.some((row) => row.system_id !== system.id))
+      throw new Error('Diagnostic symptom system mismatch');
+    return data;
   }
 
   /**
@@ -161,7 +220,11 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
       .eq('active', true)
       .order('relative_score', { ascending: false });
 
-    if (linksError || !links?.length) return [];
+    if (linksError) throw new Error('Diagnostic cause links unavailable');
+    DiagCauseLinksSchema.parse(links);
+    if (links.some((row) => row.symptom_id !== symptom.id))
+      throw new Error('Diagnostic cause link symptom mismatch');
+    if (!links.length) return [];
 
     // Step 3: fetch causes for these links, filtered to same system as symptom
     const causeIds = links.map((l) => l.cause_id);
@@ -172,16 +235,25 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
       .eq('system_id', symptom.system_id) // Guard: only same-system causes
       .eq('active', true);
 
-    if (causesError || !causes) return links;
+    if (causesError) throw new Error('Diagnostic causes unavailable');
+    DiagCausesSchema.parse(causes);
+    if (
+      causes.some(
+        (row) =>
+          row.system_id !== symptom.system_id || !causeIds.includes(row.id),
+      )
+    )
+      throw new Error('Diagnostic cause identity mismatch');
 
-    // Join causes onto links (skip cross-system causes that were filtered out)
+    // Every active link must resolve. Silently dropping a missing, inactive or
+    // cross-system cause could remove a critical hypothesis from the diagnosis.
     const causeMap = new Map(causes.map((c) => [c.id, c]));
-    return links
-      .filter((link) => causeMap.has(link.cause_id))
-      .map((link) => ({
-        ...link,
-        cause: causeMap.get(link.cause_id) || undefined,
-      }));
+    if (links.some((link) => !causeMap.has(link.cause_id)))
+      throw new Error('Diagnostic cause coverage incomplete');
+    return links.map((link) => ({
+      ...link,
+      cause: causeMap.get(link.cause_id)!,
+    }));
   }
 
   /**
@@ -192,37 +264,54 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
   ): Promise<DiagSymptomCauseLink[]> {
     if (!symptomSlugs.length) return [];
 
-    // Fetch links for all symptoms
-    const allLinks: DiagSymptomCauseLink[] = [];
-    for (const slug of symptomSlugs) {
+    // Equal-weight arithmetic mean over the unique selected symptoms. A symptom
+    // not linked to a cause contributes 0: no evidence is imputed for it.
+    // Sort input and evidence for deterministic results; round once after
+    // aggregation.
+    const slugs = [...new Set(symptomSlugs)].sort();
+    const merged = new Map<
+      number,
+      { link: DiagSymptomCauseLink; sum: number }
+    >();
+    for (const slug of slugs) {
       const links = await this.getScoredCausesForSymptom(slug);
-      allLinks.push(...links);
-    }
-
-    // Merge: if same cause appears for multiple symptoms, combine evidence and average score
-    const mergedMap = new Map<number, DiagSymptomCauseLink>();
-    for (const link of allLinks) {
-      const existing = mergedMap.get(link.cause_id);
-      if (existing) {
-        // Average scores, merge evidence
-        existing.relative_score = Math.round(
-          (existing.relative_score + link.relative_score) / 2,
-        );
-        existing.evidence_for = [
-          ...new Set([...existing.evidence_for, ...link.evidence_for]),
-        ];
-        existing.evidence_against = [
-          ...new Set([...existing.evidence_against, ...link.evidence_against]),
-        ];
-      } else {
-        mergedMap.set(link.cause_id, { ...link });
+      if (!links.length)
+        throw new Error('Diagnostic cause coverage incomplete');
+      for (const link of links) {
+        const existing = merged.get(link.cause_id);
+        if (existing) {
+          existing.sum += link.relative_score;
+          existing.link.evidence_for = [
+            ...new Set([...existing.link.evidence_for, ...link.evidence_for]),
+          ].sort();
+          existing.link.evidence_against = [
+            ...new Set([
+              ...existing.link.evidence_against,
+              ...link.evidence_against,
+            ]),
+          ].sort();
+          existing.link.requires_verification ||= link.requires_verification;
+        } else {
+          merged.set(link.cause_id, {
+            link: {
+              ...link,
+              evidence_for: [...new Set(link.evidence_for)].sort(),
+              evidence_against: [...new Set(link.evidence_against)].sort(),
+            },
+            sum: link.relative_score,
+          });
+        }
       }
     }
-
-    // Sort by score descending
-    return Array.from(mergedMap.values()).sort(
-      (a, b) => b.relative_score - a.relative_score,
-    );
+    return [...merged.values()]
+      .map(({ link, sum }) => ({
+        ...link,
+        relative_score: Math.round(sum / slugs.length),
+      }))
+      .sort(
+        (a, b) =>
+          b.relative_score - a.relative_score || a.cause_id - b.cause_id,
+      );
   }
 
   /**
@@ -230,7 +319,7 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
    */
   async getSafetyRules(systemSlug: string): Promise<DiagSafetyRule[]> {
     const system = await this.getSystemBySlug(systemSlug);
-    if (!system) return [];
+    if (!system) throw new Error('Safety system unavailable');
 
     const { data, error } = await this.supabase
       .from('__diag_safety_rule')
@@ -244,29 +333,50 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
         `Failed to fetch safety rules for ${systemSlug}`,
         error.message,
       );
-      return [];
+      throw new Error('Safety rules unavailable');
     }
-    return data || [];
+    DiagSafetyRulesSchema.parse(data);
+    if (data.some((row) => row.system_id !== system.id))
+      throw new Error('Diagnostic safety rule system mismatch');
+    return data;
   }
 
   /**
-   * Get cost ranges for a list of pg_ids from __seo_gamme_purchase_guide
+   * Which of these gammes have their own catalogue page. Only main gammes
+   * (pg_level 1/2) are served; level-4/5 accessory gammes are hidden by
+   * design and their URL answers 404. pg_display does not decide it: level-1
+   * gammes such as Batterie are served with pg_display = 0.
    */
-  async getCostRanges(pgIds: number[]): Promise<Map<number, string>> {
-    if (!pgIds.length) return new Map();
+  async getGammeIdsWithCataloguePage(pgIds: number[]): Promise<Set<number>> {
+    if (!pgIds.length) return new Set();
     const { data, error } = await this.supabase
-      .from('__seo_gamme_purchase_guide')
-      .select('sgpg_pg_id, sgpg_risk_cost_range')
-      .in('sgpg_pg_id', pgIds.map(String));
+      .from('pieces_gamme')
+      .select('pg_id')
+      .in('pg_id', pgIds)
+      .in('pg_level', ['1', '2']);
 
-    if (error || !data) return new Map();
-    const map = new Map<number, string>();
-    for (const row of data) {
-      if (row.sgpg_risk_cost_range) {
-        map.set(Number(row.sgpg_pg_id), row.sgpg_risk_cost_range);
-      }
+    if (error || !Array.isArray(data)) {
+      this.logger.error('Failed to fetch catalogue gammes', error?.message);
+      throw new Error('Catalogue gammes unavailable');
     }
-    return map;
+    return new Set(data.map((row) => Number(row.pg_id)));
+  }
+
+  /**
+   * Systems that have at least one active safety rule.
+   */
+  async getSystemIdsWithSafetyRules(): Promise<Set<number>> {
+    const { data, error } = await this.supabase
+      .from('__diag_safety_rule')
+      .select('system_id, active')
+      .eq('active', true);
+
+    if (error) {
+      this.logger.error('Failed to fetch safety rule coverage', error.message);
+      throw new Error('Safety rules unavailable');
+    }
+    DiagSafetyRuleCoverageSchema.parse(data);
+    return new Set(data.map((row) => row.system_id));
   }
 
   /**
@@ -290,7 +400,12 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
       this.logger.error('Failed to save session', error.message);
       return null;
     }
-    return data?.id || null;
+    const acknowledgement = z.string().uuid().safeParse(data?.id);
+    if (!acknowledgement.success) {
+      this.logger.warn('Diagnostic session write acknowledgement invalid');
+      return null;
+    }
+    return acknowledgement.data;
   }
 
   /**
@@ -314,8 +429,11 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
       .single();
 
     if (error) {
-      this.logger.warn(`Session not found: ${id}`, error.message);
-      return null;
+      if (error.code === 'PGRST116') return null;
+      this.logger.warn('Diagnostic session lookup unavailable');
+      throw new ServiceUnavailableException(
+        'Chargement de la session indisponible.',
+      );
     }
     return data;
   }
@@ -338,8 +456,10 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
       .limit(limit);
 
     if (error) {
-      this.logger.warn('Failed to list sessions', error.message);
-      return [];
+      this.logger.error('Failed to list sessions', error.message);
+      throw new ServiceUnavailableException(
+        'Historique des diagnostics indisponible.',
+      );
     }
     return data || [];
   }
@@ -377,11 +497,27 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
       ]);
 
     // Sessions by system (manual grouping from recent 500)
-    const { data: recentSessions } = await this.supabase
+    const recentRes = await this.supabase
       .from('__diag_session')
       .select('system_scope')
       .order('created_at', { ascending: false })
       .limit(500);
+
+    const failed = [
+      sessionsRes,
+      systemsRes,
+      symptomsRes,
+      causesRes,
+      rulesRes,
+      recentRes,
+    ].find((res) => res.error);
+    if (failed?.error) {
+      this.logger.error('Failed to compute stats', failed.error.message);
+      throw new ServiceUnavailableException(
+        'Statistiques du diagnostic indisponibles.',
+      );
+    }
+    const recentSessions = recentRes.data;
 
     const bySystem = new Map<string, number>();
     for (const s of recentSessions || []) {

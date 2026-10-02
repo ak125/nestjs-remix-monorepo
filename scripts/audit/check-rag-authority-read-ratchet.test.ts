@@ -108,20 +108,26 @@ test("closure done right → refreshed baseline matches new scan → ok", () => 
   assert.equal(ok, true);
 });
 
-// ── Integration: the committed baseline matches the live scan (21/8) ───────────
-// Frozen at 21/8 after Tranche-B R1 removed the R1EnricherService RAG reads (the
-// r1-enricher.service.ts entry dropped 2→0, so the debt fell 23/9 → 21/8 via an
-// explicit same-PR baseline refresh — the only sanctioned way to reduce it).
-// (Prior step: B5 removed r3-image-prompt.service.ts 2→0, 25/10 → 23/9.)
-test("committed baseline totals 21 findings across 8 files", () => {
+// ── Integration: the committed baseline freezes the remaining debt (18/7) ─────
+// R8 no longer reads RAG files as an editorial source. Its last two findings
+// were removed with an explicit same-PR baseline refresh (20/8 → 18/7).
+test("committed baseline totals 18 findings across 7 files without R8", () => {
   const p = join(
     process.cwd(),
     "audit/baselines/rag-authority-read-baseline.json",
   );
   const b = JSON.parse(readFileSync(p, "utf-8")) as Baseline;
   assert.equal(b.rule, "seo-no-rag-as-content-source");
-  assert.equal(b.total, 21);
-  assert.equal(Object.keys(b.files).length, 8);
+  assert.equal(b.total, 18);
+  assert.equal(Object.keys(b.files).length, 7);
+  assert.equal(
+    Object.hasOwn(
+      b.files,
+      "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
+    ),
+    false,
+    "R8 must not regain editorial authority from RAG",
+  );
   assert.equal(
     Object.values(b.files).reduce((a, c) => a + c, 0),
     b.total,

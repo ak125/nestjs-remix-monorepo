@@ -55,13 +55,13 @@ export class CatalogOrientationEngine {
     }
 
     // ── Gate 2: Critical risk → block catalog, show safety ─
-    if (risk.requires_immediate_action) {
+    if (risk.blocks_catalog || risk.requires_immediate_action) {
       return {
         ready_for_catalog: false,
         confidence_before_purchase: 'low',
-        allowed_output_mode: 'catalog_family_only',
+        allowed_output_mode: 'none',
         reason: `Alerte sécurité active — contrôle professionnel requis avant tout achat.`,
-        suggested_gammes: this.buildSuggestedGammes(hypotheses, 'low'),
+        suggested_gammes: [],
       };
     }
 
@@ -86,7 +86,21 @@ export class CatalogOrientationEngine {
       };
     }
 
-    // ── Gate 5: Medium+ confidence ──────────────────────
+    // ── Gate 5: Dominant hypothesis without a part family ─
+    // Readiness rests on the dominant hypothesis. When it names no catalogue
+    // family, every listed family belongs to a lower-ranked hypothesis.
+    if (!CAUSE_GAMME_MAP[topHypothesis.hypothesis_id]?.length) {
+      return {
+        ready_for_catalog: false,
+        confidence_before_purchase: 'low',
+        allowed_output_mode: 'catalog_family_only',
+        reason:
+          "La cause la plus probable ne correspond à aucune famille de pièces : les familles listées concernent d'autres hypothèses. Vérification recommandée avant achat.",
+        suggested_gammes: this.buildSuggestedGammes(hypotheses, 'low'),
+      };
+    }
+
+    // ── Gate 6: Medium+ confidence ──────────────────────
     const readyForCatalog =
       confidence === 'high' || (confidence === 'medium' && hasVehicle);
     const outputMode = readyForCatalog
@@ -103,6 +117,39 @@ export class CatalogOrientationEngine {
         ? 'Hypothèse dominante identifiée — orientation avec prudence.'
         : 'Vérification recommandée avant achat.',
       suggested_gammes: this.buildSuggestedGammes(hypotheses, confidence),
+    };
+  }
+
+  /**
+   * Keep only the families that have their own catalogue page. A result is
+   * ready for the catalogue only while at least one such family remains.
+   * `null` means the catalogue could not be checked: nothing is suggested.
+   */
+  restrictToCataloguePages(
+    result: CatalogGuardResult,
+    cataloguePageIds: ReadonlySet<number> | null,
+  ): CatalogGuardResult {
+    const suggested = result.suggested_gammes.filter(
+      (g) => cataloguePageIds?.has(g.pg_id) === true,
+    );
+    if (suggested.length > 0) {
+      return { ...result, suggested_gammes: suggested };
+    }
+
+    let reason = result.reason;
+    if (cataloguePageIds === null && result.suggested_gammes.length > 0) {
+      reason =
+        'Orientation catalogue indisponible — les familles de pièces ne peuvent pas être vérifiées.';
+    } else if (result.ready_for_catalog) {
+      reason =
+        'Aucune famille de pièces du catalogue ne correspond à ces hypothèses — vérification recommandée avant achat.';
+    }
+    return {
+      ...result,
+      ready_for_catalog: false,
+      allowed_output_mode: 'none',
+      reason,
+      suggested_gammes: [],
     };
   }
 
@@ -130,14 +177,21 @@ export class CatalogOrientationEngine {
   }
 
   /**
-   * Build suggested gammes from hypotheses
+   * Build suggested gammes from hypotheses.
+   * A family never claims more confidence than the diagnosis as a whole: a
+   * high score without a dominant hypothesis or without a vehicle is not a
+   * strong purchase lead.
    */
   private buildSuggestedGammes(
     hypotheses: ScoredHypothesis[],
-    overallConfidence: string,
+    overallConfidence: CatalogGuardResult['confidence_before_purchase'],
   ): SuggestedGamme[] {
     const gammes: SuggestedGamme[] = [];
     const seen = new Set<string>();
+    const levels = ['low', 'medium', 'high'] as const;
+    const ceiling = levels.indexOf(
+      overallConfidence === 'insufficient' ? 'low' : overallConfidence,
+    );
 
     for (const h of hypotheses) {
       if (h.total_score < 15) continue;
@@ -147,10 +201,9 @@ export class CatalogOrientationEngine {
         if (seen.has(g.slug)) continue;
         seen.add(g.slug);
 
-        let confidence: 'high' | 'medium' | 'low' = 'low';
-        if (h.total_score >= 60 && overallConfidence !== 'low')
-          confidence = 'medium';
-        if (h.total_score >= 75) confidence = 'high';
+        const scoreLevel =
+          h.total_score >= 75 ? 2 : h.total_score >= 60 ? 1 : 0;
+        const confidence = levels[Math.min(scoreLevel, ceiling)];
 
         gammes.push({
           gamme_slug: g.slug,

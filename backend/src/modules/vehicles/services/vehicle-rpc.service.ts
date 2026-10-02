@@ -180,6 +180,14 @@ export class VehicleRpcService extends SupabaseBaseService {
   /**
    * 🚗 Récupère le contenu R8 enrichi pour un véhicule (si INDEX).
    * Retourne null si pas de contenu R8 ou si seo_decision != INDEX.
+   * REVIEW_REQUIRED ne peut pas remplacer le contenu de la page publique.
+   *
+   * Replis (retour inchangé : null → la page sert le gabarit SEO du payload) :
+   *  - aucune ligne : null normal, non journalisé ;
+   *  - timeout (> R8_TIMEOUT_MS) : warn « R8 overlay timeout » ;
+   *  - toute autre erreur renvoyée par la requête (permission refusée 42501
+   *    sous la clé anon en READ_ONLY, colonne inconnue 42703, erreur réseau…) :
+   *    warn « R8 overlay error » avec code, message et typeId. Jamais silencieux.
    */
   async getR8Content(typeId: number): Promise<{
     h1: string;
@@ -201,7 +209,7 @@ export class VehicleRpcService extends SupabaseBaseService {
         'h1, meta_title, meta_description, rendered_json, seo_decision, diversity_score',
       )
       .eq('type_id', String(typeId))
-      .in('seo_decision', ['INDEX', 'REVIEW_REQUIRED'])
+      .eq('seo_decision', 'INDEX')
       .filter('rendered_json->blocks', 'not.is', null)
       .order('diversity_score', { ascending: false })
       .limit(1)
@@ -222,6 +230,11 @@ export class VehicleRpcService extends SupabaseBaseService {
       if ((error as Error).message === 'R8_OVERLAY_TIMEOUT') {
         this.logger.warn(
           `⏱️ R8 overlay timeout (>${this.R8_TIMEOUT_MS}ms) pour vehicle ${typeId}`,
+        );
+      } else {
+        const { code, message } = error as { code?: string; message?: string };
+        this.logger.warn(
+          `R8 overlay error pour vehicle ${typeId} (code=${code || '?'}): ${message} → gabarit servi`,
         );
       }
       return null;

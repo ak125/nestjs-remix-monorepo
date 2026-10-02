@@ -53,6 +53,8 @@ export interface Order {
   deliveryMethod?: string;
   hasReview?: boolean;
   canReturn?: boolean;
+  /** Annulation client autorisée (drapeau `customer_can_cancel` du backend) */
+  canCancel?: boolean;
   statusHistory?: Array<{ status: number; date: string; comment?: string }>;
   subtotalHT?: number;
   subtotalPrice?: number;

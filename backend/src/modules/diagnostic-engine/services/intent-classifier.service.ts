@@ -9,7 +9,7 @@
  * Pipeline de décision (priority-ordered, first-match) :
  *   1. Safety rail triggers (vehicle absent / confidence insufficient / contradictory)
  *   2. urgence    (risk_level ∈ {critical, high})
- *   3. garage     (catalog non-ready + multi-system OR repair difficulty high)
+ *   3. garage     (non-activé V1A.0 — multi-système / difficulté non mesurables)
  *   4. maintenance (maintenance_links present)
  *   5. commerce   (catalog ready + suggested_gammes + vehicle_ctx + confidence ≥ plausible)
  *   6. reassurance (risk_level = low + symptome bénin)
@@ -75,21 +75,12 @@ export class IntentClassifierService {
       };
     }
 
-    // 3. garage — catalog non-ready + multi-system OR allowed_output_mode = none
-    const multiSystem = pack.system_suspects.length >= 2;
-    const catalogClosed =
-      pack.catalog_guard.allowed_output_mode === 'none' ||
-      !pack.catalog_guard.ready_for_catalog;
-    if (catalogClosed && multiSystem) {
-      const confidence = Math.min(0.9, 0.5 + 0.1 * pack.system_suspects.length);
-      return {
-        value: 'garage',
-        confidence,
-        confidence_bucket: getConfidenceBucket(confidence),
-        reason_codes: ['DR_INTENT_REPAIR_DIFFICULTY_HIGH'],
-        safety_rail: false,
-      };
-    }
+    // 3. garage — non-activé V1A.0 : aucun de ses deux déclencheurs n'est
+    // mesurable. Multi-système : une analyse porte sur un seul system_scope
+    // et les causes sont gardées au même système (data-service). Difficulté
+    // de réparation : aucune mesure gouvernée dans l'EvidencePack. Plusieurs
+    // pièces suspectes d'un même système ne sont ni l'un ni l'autre — c'est
+    // une confiance catalogue insuffisante, classée en éducation (règle 6).
 
     // 4. maintenance — maintenance_links populés
     if (pack.maintenance_links.length > 0) {

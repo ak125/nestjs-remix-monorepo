@@ -19,11 +19,7 @@ import { Link } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { emitHandoff } from "./v1a-handoff-client";
-import {
-  type ActionType,
-  type RecommendedAction,
-  type DiagnosticIntent,
-} from "./v1a-intent-types";
+import { type ActionType, type RecommendedAction } from "./v1a-intent-types";
 
 const ICONS: Record<ActionType, React.ComponentType<{ className?: string }>> = {
   piece: ShoppingCart,
@@ -53,14 +49,12 @@ const DEFAULT_LABELS: Record<ActionType, string> = {
 interface Props {
   action: RecommendedAction;
   sessionId: string | null;
-  intent: DiagnosticIntent;
   variant?: "primary" | "secondary";
 }
 
 export function ActionCard({
   action,
   sessionId,
-  intent,
   variant = "secondary",
 }: Props) {
   const Icon = ICONS[action.type];
@@ -69,11 +63,11 @@ export function ActionCard({
   const handleClick = () => {
     if (sessionId) {
       void emitHandoff({
+        surface: "recommended_action",
         session_id: sessionId,
+        priority: action.priority,
         action_type: action.type,
         target_role: action.target_role,
-        intent,
-        confidence: action.confidence,
       });
     }
   };

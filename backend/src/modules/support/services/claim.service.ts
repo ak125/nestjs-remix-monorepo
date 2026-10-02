@@ -69,13 +69,22 @@ export interface ClaimResolution {
   followUpDate?: Date;
 }
 
+/** Qui voit une entrée de l'historique : l'équipe, le client, ou les deux. */
+export const CLAIM_TIMELINE_VISIBILITIES = [
+  'internal',
+  'customer',
+  'both',
+] as const;
+export type ClaimTimelineVisibility =
+  (typeof CLAIM_TIMELINE_VISIBILITIES)[number];
+
 export interface ClaimTimelineEntry {
   id: string;
   action: string;
   description: string;
   performedBy: string;
   performedAt: Date;
-  visibility: 'internal' | 'customer' | 'both';
+  visibility: ClaimTimelineVisibility;
   attachments?: string[];
 }
 
@@ -367,7 +376,11 @@ export class ClaimService extends SupabaseBaseService {
     return claim;
   }
 
-  async assignClaim(claimId: string, staffId: string): Promise<Claim> {
+  async assignClaim(
+    claimId: string,
+    staffId: string,
+    assignedBy: string,
+  ): Promise<Claim> {
     const claim = await this.getClaim(claimId);
     if (!claim) {
       throw new DomainNotFoundException({
@@ -391,7 +404,7 @@ export class ClaimService extends SupabaseBaseService {
       description: oldAssignee
         ? `Réassigné de ${oldAssignee} à ${staffId}`
         : `Assigné à ${staffId}`,
-      performedBy: staffId,
+      performedBy: assignedBy,
       performedAt: new Date(),
       visibility: 'internal',
     });

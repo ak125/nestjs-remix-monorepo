@@ -47,9 +47,9 @@ describe('VehicleRpcService', () => {
         { provide: RpcGateService, useValue: mockRpcGate },
         { provide: ConfigService, useValue: mockConfigService },
         {
-          provide: (await import(
-            '../../src/modules/seo-shadow-observatory/seo-shadow-observatory.service'
-          )).SeoShadowObservatory,
+          provide: (
+            await import('../../src/modules/seo-shadow-observatory/seo-shadow-observatory.service')
+          ).SeoShadowObservatory,
           useValue: mockShadowObservatory,
         },
       ],
@@ -126,9 +126,9 @@ describe('VehicleRpcService', () => {
       error: null,
     });
 
-    await expect(
-      service.getVehiclePageDataOptimized(99999),
-    ).rejects.toThrow(DomainNotFoundException);
+    await expect(service.getVehiclePageDataOptimized(99999)).rejects.toThrow(
+      DomainNotFoundException,
+    );
   });
 
   // ═══════════════════════════════════════════════════════════════
@@ -178,9 +178,141 @@ describe('VehicleRpcService', () => {
       .spyOn(service as any, 'callRpc')
       .mockRejectedValueOnce(new Error('DB_DOWN'));
 
-    await expect(
-      service.getVehiclePageDataOptimized(33302),
-    ).rejects.toThrow('DB_DOWN');
+    await expect(service.getVehiclePageDataOptimized(33302)).rejects.toThrow(
+      'DB_DOWN',
+    );
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // getR8Content — repli observable : erreur ≠ aucune ligne
+  // ═══════════════════════════════════════════════════════════════
+  describe('getR8Content — repli observable', () => {
+    interface PostgrestLikeError {
+      code: string;
+      message: string;
+      details: string | null;
+      hint: string | null;
+    }
+
+    /**
+     * Faux client PostgREST en mémoire : chaque filtre renvoie le builder,
+     * `maybeSingle()` résout comme postgrest-js (jamais de rejet) avec la
+     * première ligne restante ou l'erreur fournie. `pending` = requête qui ne
+     * répond jamais (cas timeout).
+     */
+    const usePostgrest = (opts: {
+      rows?: Array<Record<string, unknown>>;
+      error?: PostgrestLikeError;
+      pending?: boolean;
+    }) => {
+      const builder = {
+        select: () => builder,
+        eq: () => builder,
+        in: () => builder,
+        filter: () => builder,
+        order: () => builder,
+        limit: () => builder,
+        maybeSingle: () =>
+          opts.pending
+            ? new Promise(() => undefined)
+            : Promise.resolve(
+                opts.error
+                  ? { data: null, error: opts.error }
+                  : { data: opts.rows?.[0] ?? null, error: null },
+              ),
+      };
+      const from = jest.fn().mockReturnValue(builder);
+      Object.defineProperty(service, 'client', { get: () => ({ from }) });
+      return from;
+    };
+
+    const spyLogger = () => ({
+      warn: jest.spyOn(service['logger'], 'warn').mockImplementation(),
+      error: jest.spyOn(service['logger'], 'error').mockImplementation(),
+      log: jest.spyOn(service['logger'], 'log').mockImplementation(),
+    });
+
+    it('aucune ligne : renvoie null sans aucun log', async () => {
+      const from = usePostgrest({ rows: [] });
+      const logger = spyLogger();
+
+      await expect(service.getR8Content(19053)).resolves.toBeNull();
+
+      expect(from).toHaveBeenCalledWith('__seo_r8_pages');
+      expect(logger.warn).not.toHaveBeenCalled();
+      expect(logger.error).not.toHaveBeenCalled();
+      expect(logger.log).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      {
+        code: '42501',
+        message: 'permission denied for table __seo_r8_pages',
+        details: null,
+        hint: null,
+      },
+      {
+        code: '42703',
+        message: 'column __seo_r8_pages.diversity_score does not exist',
+        details: null,
+        hint: null,
+      },
+    ])(
+      'erreur PostgREST $code : renvoie null ET journalise code, message, typeId',
+      async (pgError) => {
+        usePostgrest({ error: pgError });
+        const logger = spyLogger();
+
+        await expect(service.getR8Content(19053)).resolves.toBeNull();
+
+        expect(logger.warn).toHaveBeenCalledTimes(1);
+        const line = String(logger.warn.mock.calls[0][0]);
+        expect(line).toContain('R8 overlay error');
+        expect(line).toContain('19053');
+        expect(line).toContain(`code=${pgError.code}`);
+        expect(line).toContain(pgError.message);
+        expect(line).not.toContain('timeout');
+      },
+    );
+
+    it('erreur réseau sans code (postgrest-js code vide) : journalisée avec code=?', async () => {
+      usePostgrest({
+        error: {
+          code: '',
+          message: 'TypeError: fetch failed',
+          details: null,
+          hint: null,
+        },
+      });
+      const logger = spyLogger();
+
+      await expect(service.getR8Content(33302)).resolves.toBeNull();
+
+      expect(logger.warn).toHaveBeenCalledTimes(1);
+      const line = String(logger.warn.mock.calls[0][0]);
+      expect(line).toContain('code=?');
+      expect(line).toContain('TypeError: fetch failed');
+      expect(line).toContain('33302');
+    });
+
+    it('timeout : conserve son warn dédié, sans le journaliser comme erreur', async () => {
+      jest.useFakeTimers();
+      try {
+        usePostgrest({ pending: true });
+        const logger = spyLogger();
+
+        const pending = service.getR8Content(19053);
+        jest.advanceTimersByTime(500);
+
+        await expect(pending).resolves.toBeNull();
+        expect(logger.warn).toHaveBeenCalledTimes(1);
+        const line = String(logger.warn.mock.calls[0][0]);
+        expect(line).toContain('R8 overlay timeout');
+        expect(line).not.toContain('R8 overlay error');
+      } finally {
+        jest.useRealTimers();
+      }
+    });
   });
 
   // ═══════════════════════════════════════════════════════════════
@@ -189,5 +321,138 @@ describe('VehicleRpcService', () => {
   it('should invalidate Redis L1 cache for a type_id', async () => {
     await service.invalidateCache(33302);
     expect(mockCacheService.del).toHaveBeenCalledWith('vehicle:rpc:v2:33302');
+  });
+  describe('getR8Content', () => {
+    interface R8Row {
+      type_id: string;
+      seo_decision: string;
+      diversity_score: number;
+      h1: string;
+      meta_title: string;
+      meta_description: string;
+      rendered_json: Record<string, unknown>;
+    }
+
+    const block = {
+      id: 'b1',
+      type: 'vehicle_identity',
+      title: 'Identité',
+      renderedText: 'texte',
+      specificityWeight: 0.7,
+    };
+
+    const row = (over: Partial<R8Row>): R8Row => ({
+      type_id: '19053',
+      seo_decision: 'INDEX',
+      diversity_score: 80,
+      h1: 'h1',
+      meta_title: 'meta title',
+      meta_description: 'meta description',
+      rendered_json: { blocks: [block] },
+      ...over,
+    });
+
+    /**
+     * Faux client PostgREST sur des lignes en mémoire : n'honore que les
+     * opérateurs utilisés par getR8Content, et échoue sur tout autre filtre.
+     * `rendered_json->blocks not.is null` suit la sémantique SQL : la clé
+     * `blocks` absente donne SQL NULL, donc la ligne est exclue.
+     */
+    const useRows = (rows: R8Row[]) => {
+      let current = [...rows];
+      const builder = {
+        select: () => builder,
+        eq: (col: keyof R8Row, val: unknown) => {
+          current = current.filter((r) => r[col] === val);
+          return builder;
+        },
+        in: (col: keyof R8Row, vals: unknown[]) => {
+          current = current.filter((r) => vals.includes(r[col]));
+          return builder;
+        },
+        filter: (col: string, op: string, val: unknown) => {
+          if (
+            col !== 'rendered_json->blocks' ||
+            op !== 'not.is' ||
+            val !== null
+          ) {
+            throw new Error(`filtre non simulé : ${col} ${op} ${String(val)}`);
+          }
+          current = current.filter((r) => 'blocks' in r.rendered_json);
+          return builder;
+        },
+        order: (col: keyof R8Row, opts: { ascending: boolean }) => {
+          current.sort((a, b) =>
+            opts.ascending
+              ? Number(a[col]) - Number(b[col])
+              : Number(b[col]) - Number(a[col]),
+          );
+          return builder;
+        },
+        limit: (n: number) => {
+          current = current.slice(0, n);
+          return builder;
+        },
+        maybeSingle: () =>
+          Promise.resolve({ data: current[0] ?? null, error: null }),
+      };
+      const from = jest.fn().mockReturnValue(builder);
+      Object.defineProperty(service, 'client', { get: () => ({ from }) });
+      return from;
+    };
+
+    it('ne sert pas une ligne REVIEW_REQUIRED, même avec des blocs (cas 19053 : INDEX sans blocs + REVIEW avec blocs)', async () => {
+      const from = useRows([
+        row({
+          seo_decision: 'INDEX',
+          diversity_score: 88,
+          rendered_json: { sections: [] },
+        }),
+        row({ seo_decision: 'REVIEW_REQUIRED', diversity_score: 58.38 }),
+      ]);
+
+      await expect(service.getR8Content(19053)).resolves.toBeNull();
+      expect(from).toHaveBeenCalledWith('__seo_r8_pages');
+    });
+
+    it('sert la ligne INDEX avec blocs de plus forte diversité', async () => {
+      useRows([
+        row({
+          seo_decision: 'REVIEW_REQUIRED',
+          diversity_score: 95,
+          meta_title: 'review',
+        }),
+        row({
+          seo_decision: 'INDEX',
+          diversity_score: 72,
+          meta_title: 'index faible',
+        }),
+        row({
+          seo_decision: 'INDEX',
+          diversity_score: 81,
+          meta_title: 'index fort',
+        }),
+      ]);
+
+      await expect(service.getR8Content(19053)).resolves.toEqual({
+        h1: 'h1',
+        metaTitle: 'index fort',
+        metaDescription: 'meta description',
+        blocks: [block],
+        seoDecision: 'INDEX',
+        diversityScore: 81,
+      });
+    });
+
+    it('ne sert pas une ligne INDEX sans blocs', async () => {
+      useRows([
+        row({
+          seo_decision: 'INDEX',
+          rendered_json: { sections: [], categoryRanking: [] },
+        }),
+      ]);
+
+      await expect(service.getR8Content(19053)).resolves.toBeNull();
+    });
   });
 });

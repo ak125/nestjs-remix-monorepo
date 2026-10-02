@@ -10,12 +10,20 @@ on:
 # Sans ça, des pushes `main` rapprochés lancent des `docker compose up` (job `deploy`)
 # qui se chevauchent et SIGTERM le container PENDANT le `e2e-smoke` d'un autre run
 # → "socket hang up" sur la homepage = gate rouge intermittent (ExitCode=0 = restart
-# infra, PAS un crash applicatif — diagnostic 2026-06-21). On sérialise par workflow+ref
-# et on annule le run superséded : seul le DERNIER commit se déploie/teste (sémantique
-# du tag flottant `:preprod` = dernier `main`). PROD (deploy-prod.yml) = workflow distinct, non affecté.
+# infra, PAS un crash applicatif — diagnostic 2026-06-21). On sérialise par workflow+ref.
+#
+# Sur un push (main, dev), le run EN COURS n'est jamais annulé : il va jusqu'au bout
+# (Deploy PREPROD → E2E → Lighthouse). GitHub garde au plus un run EN ATTENTE par groupe
+# et remplace l'attente plus ancienne : le dernier commit poussé passe ensuite, sans
+# empilement. Annuler le run en cours (comportement jusqu'au 2026-10-01) affamait la gate
+# PROD : le 2026-10-01, avec une fusion toutes les ~10 min et un cycle de ~32 min, les 19
+# commits fusionnés après #1667 ont tous vu leur run annulé avant Deploy PREPROD + E2E +
+# Lighthouse — aucun commit taguable.
+# Sur une pull_request, un nouveau push rend l'ancien run inutile : on l'annule.
+# PROD (deploy-prod.yml) = workflow distinct, non affecté.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   actions: write
@@ -34,18 +42,18 @@ jobs:
 
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 2
 
       - name: Setup Node.js environment
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: "npm"
 
       - name: Restore Turbo cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .turbo
           key: turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -98,20 +106,20 @@ jobs:
 
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           # Full history: `turbo typecheck --affected` (PR path below) compares base↔head,
           # and a shallow checkout makes turbo treat ALL packages as changed.
           fetch-depth: 0
 
       - name: Setup Node.js environment
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: "npm"
 
       - name: Restore Turbo cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .turbo
           key: turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -131,7 +139,7 @@ jobs:
       # Key on lockfile + turbo.json + every tsconfig — a config change alters the compile
       # graph and must start a fresh buildinfo. Saves only on job success (first GREEN run).
       - name: Restore TypeScript incremental buildinfo
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             **/node_modules/.cache/tsc/
@@ -189,18 +197,18 @@ jobs:
       NODE_OPTIONS: "--max-old-space-size=4096"
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 2
 
       - name: Setup Node.js environment
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: "npm"
 
       - name: Restore Turbo cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .turbo
           key: turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -215,6 +223,11 @@ jobs:
 
       - name: Test deployment probes
         run: node --test scripts/ci/prod-client-ip-probe.test.mjs scripts/ci/prod-admin-guard-probe.test.mjs
+
+      # deploy-prod.yml refuses a commit unless the deploy / e2e-smoke / lighthouse
+      # jobs below passed; this catches a rename of those jobs at PR time.
+      - name: Test PREPROD evidence gate (deploy-prod)
+        run: node --test scripts/ci/prod-preprod-evidence.test.mjs scripts/ci/prod-image-selection.test.mjs
 
       - name: Test E2E rate-budget admission
         run: node --test scripts/ci/preprod-e2e-rate-budget.test.mjs scripts/ci/preprod-e2e-rate-budget.storage.test.mjs
@@ -253,18 +266,18 @@ jobs:
       NODE_OPTIONS: "--max-old-space-size=4096"
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 2
 
       - name: Setup Node.js environment
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: "npm"
 
       - name: Restore Turbo cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .turbo
           key: turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -302,10 +315,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js environment
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: "npm"
@@ -331,16 +344,16 @@ jobs:
       NODE_OPTIONS: "--max-old-space-size=4096"
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: "npm"
 
       - name: Restore Turbo cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: .turbo
           key: turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -375,7 +388,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: 🛡️ Check forbidden imports
         run: |
@@ -448,7 +461,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: 🛡️ Check direct supabase.rpc() usage
         run: |
@@ -501,7 +514,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: 🛡️ Check RPC Gate Violations
         run: |
@@ -545,7 +558,7 @@ jobs:
       security-events: write
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -577,7 +590,7 @@ jobs:
       # Détection par forme + empreinte SHA-256 tronquée — jamais par valeur
       # (l'allowlist par valeur est l'anti-pattern que .gitleaksignore a tué).
       - name: Setup Node 24
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: "24"
           cache: "npm"
@@ -639,7 +652,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0   # Need history for git diff against base ref.
 
@@ -771,7 +784,7 @@ jobs:
 
     steps:
       - name: ⬇️ Checkout repo
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v7
 
       - name: Login to Docker Hub
         uses: docker/login-action@v4
@@ -787,7 +800,7 @@ jobs:
       # fallback — `npm install @latest` would be non-deterministic, see
       # memory feedback_ci_no_dynamic_latest_install).
       - name: Setup Node.js environment
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: "npm"
@@ -1036,18 +1049,36 @@ jobs:
         run: |
           BASE="http://localhost:3200"
           FAILED=0
+          # All SSR pages of this runner share one throttler bucket; each page
+          # below waits one `short` TTL (from THROTTLER_TIERS) so it starts in an
+          # empty burst window and can only be throttled by its own cost — see
+          # the PACING note of warm-soft-404-fixtures.sh. No default: fail closed.
+          SSR_BURST_WINDOW_SECONDS=$(node scripts/ci/preprod-e2e-rate-budget.mjs --burst-window-seconds)
+          if ! [[ "$SSR_BURST_WINDOW_SECONDS" =~ ^[1-9][0-9]*$ ]]; then
+            echo "::error::Burst window unavailable from THROTTLER_TIERS (got '${SSR_BURST_WINDOW_SECONDS}')"
+            exit 1
+          fi
+          export SSR_BURST_WINDOW_SECONDS
           # Warm per-URL vehicle-alternatives cache before asserting — kills the
           # cold-start flake seen on #798/#800/#799 (deterministic pre-pass, not a retry).
-          bash scripts/ci/warm-soft-404-fixtures.sh "$BASE"
+          # Warming itself is non-fatal; its exit code only reports a setup error.
+          if ! bash scripts/ci/warm-soft-404-fixtures.sh "$BASE"; then
+            echo "::error::Soft-404 warm pre-pass could not start"
+            exit 1
+          fi
           echo "## 🩹 Soft-404 R2 Smoke" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           while IFS= read -r url || [ -n "$url" ]; do
             # skip blank lines + comments
             [[ -z "${url// }" ]] && continue
             case "$url" in \#*) continue ;; esac
-            echo "🔎 $url"
+            sleep "$SSR_BURST_WINDOW_SECONDS"
             HTTP_OUT=$(curl -s -i --max-time 15 "$BASE$url")
             CURL_RC=$?
+            # Same parser as remaining_short() in warm-soft-404-fixtures.sh: awk
+            # reads the whole response so the writer never hits a closed pipe.
+            REMAINING_SHORT=$(printf '%s\n' "$HTTP_OUT" | awk '{ sub(/\r$/, "") } !done && NF == 0 { done = 1 } !done && tolower($1) == "x-ratelimit-remaining-short:" { value = $2; done = 1 } END { print (value == "" ? "absent" : value) }')
+            echo "🔎 $url (x-ratelimit-remaining-short=${REMAINING_SHORT})"
             if [ "$CURL_RC" != "0" ] || [ -z "$HTTP_OUT" ]; then
               echo "❌ curl failed for $url (rc=$CURL_RC)"
               echo "- $url: ❌ curl failed (rc=$CURL_RC)" >> $GITHUB_STEP_SUMMARY
@@ -1217,10 +1248,10 @@ jobs:
     if: ${{ (github.ref == 'refs/heads/main') && github.event_name == 'push' }}
     steps:
       - name: ⬇️ Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js environment
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: "npm"
@@ -1385,10 +1416,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: 24
 

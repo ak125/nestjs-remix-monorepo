@@ -1283,6 +1283,7 @@
     {
       "declaredIn": [
         "backend/package.json",
+        "frontend/package.json",
         "package.json"
       ],
       "id": "npm:@types/js-yaml@^4.0.9",
@@ -1295,6 +1296,7 @@
       "version": "^4.0.9",
       "workspaces": [
         "@fafa/backend",
+        "@fafa/frontend",
         "nestjs-remix-monorepo"
       ]
     },
@@ -2549,6 +2551,7 @@
     {
       "declaredIn": [
         "backend/package.json",
+        "frontend/package.json",
         "package.json"
       ],
       "id": "npm:js-yaml@^4.1.1",
@@ -2561,6 +2564,7 @@
       "version": "^4.1.1",
       "workspaces": [
         "@fafa/backend",
+        "@fafa/frontend",
         "nestjs-remix-monorepo"
       ]
     },

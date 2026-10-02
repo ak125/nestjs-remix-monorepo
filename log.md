@@ -40,210 +40,6 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 
 ---
 
-## 2026-06-26 — fix/visual-gate-recapture-preprod (auto)
-
-- **Branche** : `fix/visual-gate-recapture-preprod`
-- **Décision** : feat(tw4-gate-0): re-capture 11 visual baselines against PREPROD:3200 (gate env) (+3 other commits)
-- **Sortie** : PR #1170 | commits 023c2a43f d8bc28dad f94b7ad9d 9a7f2acc0
-
-## 2026-06-27 — feat/wiki-exports-seo-generate-ci (auto)
-
-- **Branche** : `feat/wiki-exports-seo-generate-ci`
-- **Décision** : feat(ci): generate exports/seo from wiki canon + commit back (ADR-059 PR-5a)
-- **Sortie** : PR #1174 | commits c7ee94b18
-
-## 2026-06-27 — feat/wiki-exports-seo-generate-ci (auto)
-
-- **Branche** : `feat/wiki-exports-seo-generate-ci`
-- **Décision** : fix(ci): exports-seo generator — ajv-formats, untracked+deletion gate, gitignore assert (review) (+2 other commits)
-- **Sortie** : PR #1174 | commits f84c8af9d ad8e84d0a c7ee94b18
-
-## 2026-06-27 — feat/tw2-tailwind4-engine (auto)
-
-- **Branche** : `feat/tw2-tailwind4-engine`
-- **Décision** : feat(tw-2): install Tailwind CSS v4.3.1 (engine swap, @config bridge, @tailwindcss/vite)
-- **Sortie** : PR #1181 | commits fe3aef3b8
-
-## 2026-06-27 — fix/home-translate-no-removechild (auto)
-
-- **Branche** : `fix/home-translate-no-removechild`
-- **Décision** : fix(home): translate="no" sur widgets interactifs — stoppe le crash removeChild dû à la traduction navigateur
-- **Sortie** : PR aucune | commits bda4ee6d5
-
-## 2026-07-01 — fix/lazy-rolldown-mixed-import (auto)
-
-- **Branche** : `fix/lazy-rolldown-mixed-import`
-- **Décision** : fix(lazy): stop Footer mixed static+dynamic import crashing R2 pages (Rolldown fulfill-undefined)
-- **Sortie** : PR #1200 | commits 4c536b958
-
-## 2026-07-04 — docs/claude-md-slim (auto)
-
-- **Branche** : `docs/claude-md-slim`
-- **Décision** : docs(claude-md): slim referential sections into pointers (P1/P3 token lever)
-- **Sortie** : PR aucune | commits e34d4ee5c
-
-## 2026-07-05 — fix/ios16-webkit-lookbehind-crash (auto)
-
-- **Branche** : `fix/ios16-webkit-lookbehind-crash`
-- **Décision** : fix(frontend): WebKit <16.4 regex lookbehind crash on iOS (Sentry PROD)
-- **Sortie** : PR aucune | commits c2fbda72e
-
-## 2026-07-05 — fix/ios16-webkit-lookbehind-crash (auto)
-
-- **Branche** : `fix/ios16-webkit-lookbehind-crash`
-- **Décision** : fix(frontend): harden gamme-autolink tokenizer (adversarial-verify findings) (+2 other commits)
-- **Sortie** : PR aucune | commits 08adf15c7 541181a61 c2fbda72e
-
-## 2026-07-06 — feat/tranche-b1b-no-new-unowned-served-write (auto)
-
-- **Branche** : `feat/tranche-b1b-no-new-unowned-served-write`
-- **Décision** : feat(audit): served-content write-sink ratchet — block-new gate (Tranche B1b)
-- **Sortie** : PR #1238 | commits 149bb3a10
-
-## 2026-07-06 — feat/tranche-b1b-no-new-unowned-served-write (auto)
-
-- **Branche** : `feat/tranche-b1b-no-new-unowned-served-write`
-- **Décision** : fix(audit): close 3 ratchet gaps — occurrence-count, removed=fail, SQL DELETE/TRUNCATE (Tranche B1b, #1238 review) (+2 other commits)
-- **Sortie** : PR #1238 | commits fe47346d4 a534d23b6 149bb3a10
-
-## 2026-07-14 — fix/payment-tunnel-guest-session (auto)
-
-- **Branche** : `fix/payment-tunnel-guest-session`
-- **Décision** : fix(checkout): redirect Paybox depuis la réponse du POST — plus de re-GET au cookie invalidé
-- **Sortie** : PR #1256 | commits 67833d2b5
-
-## 2026-07-14 — fix/payment-tunnel-guest-session (auto)
-
-- **Branche** : `fix/payment-tunnel-guest-session`
-- **Décision** : test(checkout): intégration action guest — invariant zéro re-GET après le POST (+2 other commits)
-- **Sortie** : PR #1256 | commits 0de18a874 6a877c503 67833d2b5
-
-## 2026-07-14 — fix/frontend-interactive-list-keys (auto)
-
-- **Branche** : `fix/frontend-interactive-list-keys`
-- **Décision** : fix(frontend): stable keys on interactive lists (admin.seo checklist + AI generator rows)
-- **Sortie** : PR #1263 | commits 6990bc13f
-
-## 2026-07-14 — feat/attribution-beacon-cache-cutover-prA (auto)
-
-- **Branche** : `feat/attribution-beacon-cache-cutover-prA`
-- **Décision** : feat(analytics): déplace l'attribution first-touch GET→POST beacon (cutover cache HTML, PR A)
-- **Sortie** : PR #1271 | commits 7f288d9da
-
-## 2026-07-15 — fix/substitution-fail-open-on-rpc-error (auto)
-
-- **Branche** : `fix/substitution-fail-open-on-rpc-error`
-- **Décision** : fix(migration): add statement_timeout + lock_timeout guards (squawk migration-safety) (+2 other commits)
-- **Sortie** : PR #1148 | commits d04a1b2e8 68b87e00b 9044444c4
-
-## 2026-07-15 — feat/p2r3b-producer (auto)
-
-- **Branche** : `feat/p2r3b-producer`
-- **Décision** : feat(seo-projection): durable reproducible snapshot producer + role-scoped writer (P2-R3-B)
-- **Sortie** : PR aucune | commits a5434bb61
-
-## 2026-07-15 — feat/p2r3b-producer (auto)
-
-- **Branche** : `feat/p2r3b-producer`
-- **Décision** : fix(seo-projection): idempotent regress-draft, per-run manifest, empty-export guard (+2 other commits)
-- **Sortie** : PR #1282 | commits b7f8c7601 18ae1a0ed 91d7a7dbd
-
-## 2026-07-16 — feat/c0-projection-read-module (auto)
-
-- **Branche** : `feat/c0-projection-read-module`
-- **Décision** : feat(seo-projection): extract dark projection reader (C0, behavior-identical)
-- **Sortie** : PR #1284 | commits 6c5d82c82
-
-## 2026-07-16 — feat/p2-r3c-projection-r3-mapper (auto)
-
-- **Branche** : `feat/p2-r3c-projection-r3-mapper`
-- **Décision** : feat(seo-projection): add dark r3 projection mapper (P2-R3-C, pure)
-- **Sortie** : PR #1286 | commits 645e33eea
-
-## 2026-07-18 — feat/runtime-verification-contract (auto)
-
-- **Branche** : `feat/runtime-verification-contract`
-- **Décision** : docs(agent-method): add thin runtime-verification proof contract (§9 + PR template)
-- **Sortie** : PR #1293 | commits b06e869a9
-
-## 2026-07-26 — chore/ts7-shadow-parity (auto)
-
-- **Branche** : `chore/ts7-shadow-parity`
-- **Décision** : chore(audit): ts6/ts7 shadow parity harness, observation-only, 0 lockfile mutation
-- **Sortie** : PR #1318 | commits 23a3e4e94
-
-## 2026-07-27 — chore/ts7-shadow-parity (auto)
-
-- **Branche** : `chore/ts7-shadow-parity`
-- **Décision** : docs(audit): matrix returns NO-GO for the node10 line removal (+4 other commits)
-- **Sortie** : PR #1318 | commits 03a7834fa 39330f86e 864633cc6 30381040c 23a3e4e94
-
-## 2026-07-27 — fix/size-limit-initial-load-globs (auto)
-
-- **Branche** : `fix/size-limit-initial-load-globs`
-- **Décision** : fix(perf): make the initial-load budget measure the real initial load
-- **Sortie** : PR #1319 | commits 056e886a6
-
-## 2026-07-27 — fix/size-limit-initial-load-globs (auto)
-
-- **Branche** : `fix/size-limit-initial-load-globs`
-- **Décision** : fix(perf): tolerate sub-KB initial-load chunk churn, keep the blind-spot check strict (+2 other commits)
-- **Sortie** : PR #1319 | commits a40f91283 17c644a5a 056e886a6
-
-## 2026-09-03 — fix+ledger-probe-truly-readonly (auto)
-
-- **Branche** : `fix+ledger-probe-truly-readonly`
-- **Décision** : fix(migrations): rendre la sonde de fraîcheur réellement en lecture seule + résumé exploitable
-- **Sortie** : PR #1387 | commits ac9227a4e
-
-## 2026-09-03 — feat+engine-reapply-drifted-migration (auto)
-
-- **Branche** : `feat+engine-reapply-drifted-migration`
-- **Décision** : feat(migrations): --reapply — réparer une ligne en drift par exécution, pas par affirmation
-- **Sortie** : PR #1389 | commits 9601898bf
-
-## 2026-09-04 — fix+migrations-preserve-search-path-and-acl (auto)
-
-- **Branche** : `fix+migrations-preserve-search-path-and-acl`
-- **Décision** : fix(migrations): désigner l'instruction par son nom, pas par son numéro de ligne (+2 other commits)
-- **Sortie** : PR #1391 | commits 04c4d72f1 e70ad7c79 6720119db
-
-## 2026-09-04 — chore/codex-agents-md-bootstrap (auto)
-
-- **Branche** : `chore/codex-agents-md-bootstrap`
-- **Décision** : docs(agents): amorcer Codex sur le canon via un AGENTS.md racine pointeur
-- **Sortie** : PR aucune | commits 64e534ecb
-
-## 2026-09-04 — fix/fabricated-rpc-safety-gate-reference (auto)
-
-- **Branche** : `fix/fabricated-rpc-safety-gate-reference`
-- **Décision** : docs(governance): retirer une référence de gate fabriquée, nommer les vrais carriers
-- **Sortie** : PR #1392 | commits 5ce3cc612
-
-## 2026-09-04 — fix/20260529-idempotent-concurrent-index (auto)
-
-- **Branche** : `fix/20260529-idempotent-concurrent-index`
-- **Décision** : fix(migrations): rendre 20260529 idempotent sur le SECOND index aussi
-- **Sortie** : PR #1393 | commits d238d79ec
-
-## 2026-09-04 — fix/engine-retry-failed-migration (auto)
-
-- **Branche** : `fix/engine-retry-failed-migration`
-- **Décision** : fix(migrations): --retry pour une migration en échec + lever le timeout hérité
-- **Sortie** : PR #1395 | commits 09dd81c97
-
-## 2026-09-07 — docs/guardrails-silenced-guard-mirror-case
-
-- **Branche** : `docs/guardrails-silenced-guard-mirror-case`
-- **Décision** : docs(guardrails): le cas miroir — une garde juste réduite au silence par un motif faux (passes 5–6) + entrées log.md #1392/#1393/#1395
-- **Sortie** : PR #1398 | commits 233a9e3a5
-
-## 2026-09-07 — fix/migration-engine-closure-gaps
-
-- **Branche** : `fix/migration-engine-closure-gaps`
-- **Décision** : clôture 20260529 — note de reprise avec `git_sha`, trace CI vivante (`PYTHONUNBUFFERED`), README projeté depuis l'engine
-- **Sortie** : PR #1399 | commits bf263d73d 1d84a4fbe 5357ac0c8 (+ correctifs revue)
-
 ## 2026-09-07 — chore/types-resync-supabase-generated (auto)
 
 - **Branche** : `chore/types-resync-supabase-generated`
@@ -411,3 +207,207 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `chore/secrets-detection-before-rotation`
 - **Décision** : détecter un secret de paiement AVANT publication — moteur par empreinte (inerte sans données) + 2 règles de FORME sur les LIGNES AJOUTÉES, câblées en pre-commit (bloquant) et en CI. Scan d'ajout et non d'état : aucun inventaire des porteurs, donc rien à publier sur un dépôt public avant rotation.
 - **Sortie** : PR #1511 | resync registry L1+L3 + ré-épinglage inventaire PR-8 (262 candidats inchangés, vérifié champ à champ)
+
+## 2026-09-23 — fix/cart-items-client-errors-4xx (auto)
+
+- **Branche** : `fix/cart-items-client-errors-4xx`
+- **Décision** : fix(cart): répondre 4xx aux erreurs du client sur /api/cart/items
+- **Sortie** : PR #1531 | commits 093a9ef9e
+
+## 2026-09-23 — fix/cart-items-client-errors-4xx (auto)
+
+- **Branche** : `fix/cart-items-client-errors-4xx`
+- **Décision** : chore(registry): resync L1+L3 projections (+2 other commits)
+- **Sortie** : PR #1531 | commits 160cb00fd 403523ded 093a9ef9e
+
+## 2026-09-23 — fix/og-imgproxy-supabase-source (auto)
+
+- **Branche** : `fix/og-imgproxy-supabase-source`
+- **Décision** : fix(seo): og:image imgproxy — source sur l'origine Supabase autorisée
+- **Sortie** : PR #1533 | commits 794de9716
+
+## 2026-09-23 — revert/ga4-explicit-consent-1524 (auto)
+
+- **Branche** : `revert/ga4-explicit-consent-1524`
+- **Décision** : chore(registry): resync L1+L3 projections (+1 other commit)
+- **Sortie** : PR #1535 | commits 4a0f90e2f bae442aec
+
+## 2026-09-23 — fix/account-order-cancel (auto)
+
+- **Branche** : `fix/account-order-cancel`
+- **Décision** : fix(orders): réparer le bouton « Annuler la commande » de l'espace client
+- **Sortie** : PR aucune | commits 57d984086
+
+## 2026-09-24 — fix/account-order-cancel (auto)
+
+- **Branche** : `fix/account-order-cancel`
+- **Décision** : Merge remote-tracking branch 'origin/main' into fix/account-order-cancel (+3 other commits)
+- **Sortie** : PR #1536 | commits 8d71e7fb0 2731f31ca 44a632308 57d984086
+
+## 2026-09-24 — feat/seo-collector-prod-secrets (auto)
+
+- **Branche** : `feat/seo-collector-prod-secrets`
+- **Décision** : merge: origin/main (15c66177a, #1536) dans feat/seo-collector-prod-secrets (+5 other commits)
+- **Sortie** : PR #1534 | commits bf8acdbf8 47d1dcbf9 3d82d3c38 47a655e37 c019558dc f52d20406
+
+## 2026-09-24 — fix/ga4-skip-automated-browsers (auto)
+
+- **Branche** : `fix/ga4-skip-automated-browsers`
+- **Décision** : chore(registry): resync L1+L3 projections (+1 other commit)
+- **Sortie** : PR #1538 | commits 2af384d09 ef2a1e977
+
+## 2026-09-24 — fix/auth-staff-session (auto)
+
+- **Branche** : `fix/auth-staff-session`
+- **Décision** : chore(registry): resync L1+L3 projections (+4 other commits)
+- **Sortie** : PR aucune | commits b6814b55e f1e2df4cb 391c458c5 05dd8c95f f74215a56
+
+## 2026-09-24 — fix/auth-staff-session (auto)
+
+- **Branche** : `fix/auth-staff-session`
+- **Décision** : chore(registry): resync L1+L3 projections (+7 other commits)
+- **Sortie** : PR #1561 | commits 796872024 1ba0da783 e015619ab b6814b55e f1e2df4cb 391c458c5 05dd8c95f f74215a56
+
+## 2026-09-29 — ci/deploy-prod-require-preprod-smokes (auto)
+
+- **Branche** : `ci/deploy-prod-require-preprod-smokes`
+- **Décision** : chore(registry): resync L1+L3 projections (+2 fichiers scripts/ci) (+1 other commit)
+- **Sortie** : PR #1598 | commits ef976d67e e6bfe2ddf
+
+## 2026-09-29 — Fermeture DEFINER authenticated + extensions ops
+
+- **Branche** : `fix/db-definer-authenticated-lockdown`
+- **Décision** : les 72 RPC SECURITY DEFINER exécutables par authenticated seul sont révoquées par migration forward répétée en transaction annulée (0 restante), et les extensions ops passent par une PR séparée ; application par workflow après fusion owner.
+- **Sortie** : PRs #1606 #1604 | commits 627496f3a a167474a0 | fichiers `backend/supabase/migrations/20260929_definer_rpc_authenticated_lockdown.sql`
+
+
+## 2026-09-29 — fix/db-definer-authenticated-lockdown (auto)
+
+- **Branche** : `fix/db-definer-authenticated-lockdown`
+- **Décision** : docs(log): consigner la fermeture DEFINER authenticated (+2 other commits)
+- **Sortie** : PR #1606 | commits fed13193f a167474a0 627496f3a
+
+## 2026-09-29 — fix/db-drop-exact-duplicate-indexes (auto)
+
+- **Branche** : `fix/db-drop-exact-duplicate-indexes`
+- **Décision** : fix(db): retirer 7 index strictement dupliqués que le planificateur n'utilise pas
+- **Sortie** : PR #1619 | commits 69b17b6d4
+
+## 2026-09-30 — fix/db-pieces-price-duplicate-indexes (auto)
+
+- **Branche** : `fix/db-pieces-price-duplicate-indexes`
+- **Décision** : chore(registry): régénérer les projections pour la migration des doublons pieces_price (+1 other commit)
+- **Sortie** : PR #1623 | commits f27dbb22e 3745a40da
+
+## 2026-09-30 — fix/db-pieces-price-duplicate-indexes (auto)
+
+- **Branche** : `fix/db-pieces-price-duplicate-indexes`
+- **Décision** : chore(registry): couvrir la migration des doublons pieces_price dans ownership.yaml (+3 other commits)
+- **Sortie** : PR #1623 | commits 723c42a30 af3b4c2cd f27dbb22e 3745a40da
+
+## 2026-09-29 — fix/r6-buying-guide-rag-write-gate (auto)
+
+- **Branche** : `fix/r6-buying-guide-rag-write-gate`
+- **Décision** : chore(audit): baseline served-content-write-sinks 61 → 60 (fermeture R6) (+3 other commits)
+- **Sortie** : PR #1615 | commits 729e5b178 fd26693a0 70208ce18 76de4e601
+
+## 2026-09-30 — fix/deploy-prod-evidence-commit-scoped (auto)
+
+- **Branche** : `fix/deploy-prod-evidence-commit-scoped`
+- **Décision** : chore(registry): resync L1+L3 projections (+1 other commit)
+- **Sortie** : PR #1625 | commits 7cfcb5a9f cabcecf98
+
+## 2026-09-29 — fix/ci-r2-timing-real-product-page (auto)
+
+- **Branche** : `fix/ci-r2-timing-real-product-page`
+- **Décision** : chore(registry): resync L1+L3 projections (+1 other commit)
+- **Sortie** : PR #1605 | commits f19027cf3 a89786344
+## 2026-09-30 — perf/db-auto-type-codes-int-expr-indexes (auto)
+
+- **Branche** : `perf/db-auto-type-codes-int-expr-indexes`
+- **Décision** : docs(db): heure réelle de la mesure dans l'en-tête de la migration (15:10Z, pas 15:30Z) (+2 other commits)
+- **Sortie** : PR #1628 | commits 47c12cda9 d8949a046 2def4654a
+
+## 2026-09-30 — perf/db-auto-type-codes-int-expr-indexes (auto)
+
+- **Branche** : `perf/db-auto-type-codes-int-expr-indexes`
+- **Décision** : Merge origin/main into perf/db-auto-type-codes-int-expr-indexes (+4 other commits)
+- **Sortie** : PR #1628 | commits ae753efc0 7f2063c85 47c12cda9 d8949a046 2def4654a
+
+## 2026-09-30 — perf/db-auto-type-codes-int-expr-indexes (auto)
+
+- **Branche** : `perf/db-auto-type-codes-int-expr-indexes`
+- **Décision** : Merge origin/main into perf/db-auto-type-codes-int-expr-indexes (+6 other commits)
+- **Sortie** : PR #1628 | commits 8f8b95fc4 eff332dc2 ae753efc0 7f2063c85 47c12cda9 d8949a046 2def4654a
+
+## 2026-09-30 — chore/skills-procedures-2026-09-30 (auto)
+
+- **Branche** : `chore/skills-procedures-2026-09-30`
+- **Décision** : docs(skills): aligner skills et procédures agent sur l'état réel du dépôt
+- **Sortie** : PR aucune | commits f307cf3a8
+
+## 2026-09-30 — fix/db-drop-duplicate-unique-keys (auto)
+
+- **Branche** : `fix/db-drop-duplicate-unique-keys`
+- **Décision** : chore(registry): régénérer les projections pour 20260930_drop_duplicate_unique_keys (+2 other commits)
+- **Sortie** : PR #1641 | commits 733c545cc 213f60109 d40297c3c
+
+## 2026-09-30 — fix/db-pin-mark-order-paid-atomic-search-path (auto)
+
+- **Branche** : `fix/db-pin-mark-order-paid-atomic-search-path`
+- **Décision** : fix(db): épingler le search_path de mark_order_paid_atomic (public, pg_temp)
+- **Sortie** : PR #1643 | commits fd1009783
+
+## 2026-10-01 — fix/db-pin-mark-order-paid-atomic-search-path (auto)
+
+- **Branche** : `fix/db-pin-mark-order-paid-atomic-search-path`
+- **Décision** : chore(registry): régénérer les projections pour 20260930_pin_mark_order_paid_atomic_search_path (+4 other commits)
+- **Sortie** : PR #1643 | commits e427eab4d b2ce1a3d0 c2af88e77 f54f272f1 fd1009783
+
+## 2026-10-01 — fix/db-pin-order-functions-search-path (auto)
+
+- **Branche** : `fix/db-pin-order-functions-search-path`
+- **Décision** : Merge remote-tracking branch 'origin/main' into fix/db-pin-order-functions-search-path (+5 other commits)
+- **Sortie** : PR #1648 | commits 21f3973c5 43ebaabad 4b299c317 f79054304 442b371ce 0c0c9571a
+
+## 2026-10-01 — fix/db-drop-pieces-price-unused-indexes (auto)
+
+- **Branche** : `fix/db-drop-pieces-price-unused-indexes`
+- **Décision** : chore(ownership): glob de 20261001_drop_pieces_price_unused_indexes (owner-directed override) (+4 other commits)
+- **Sortie** : PR #1649 | commits 4d1ba50e1 db3e2e2cc 6732ed805 7a575a5d9 a8683258e
+
+## 2026-10-01 — fix/db-drop-pieces-price-unused-indexes (auto)
+
+- **Branche** : `fix/db-drop-pieces-price-unused-indexes`
+- **Décision** : Merge remote-tracking branch 'origin/main' into fix/db-drop-pieces-price-unused-indexes (+7 other commits)
+- **Sortie** : PR #1649 | commits 09cf27fe9 a5e4e4b64 cb1f5605c 4d1ba50e1 db3e2e2cc 6732ed805 7a575a5d9 a8683258e
+
+## 2026-10-01 — fix/db-drop-pieces-price-unused-indexes (auto)
+
+- **Branche** : `fix/db-drop-pieces-price-unused-indexes`
+- **Décision** : Merge remote-tracking branch 'origin/main' into fix/db-drop-pieces-price-unused-indexes (+9 other commits)
+- **Sortie** : PR #1649 | commits 4cbd9fdd2 17668ff66 09cf27fe9 a5e4e4b64 cb1f5605c 4d1ba50e1 db3e2e2cc 6732ed805 7a575a5d9 a8683258e
+
+## 2026-10-01 — fix/db-drop-pieces-price-unused-indexes (auto)
+
+- **Branche** : `fix/db-drop-pieces-price-unused-indexes`
+- **Décision** : Merge remote-tracking branch 'origin/main' into fix/db-drop-pieces-price-unused-indexes (+11 other commits)
+- **Sortie** : PR #1649 | commits b6c5f011f a9350f73a 4cbd9fdd2 17668ff66 09cf27fe9 a5e4e4b64 cb1f5605c 4d1ba50e1 db3e2e2cc 6732ed805 7a575a5d9 a8683258e
+
+## 2026-10-01 — fix/db-cron-job-run-details-retention (auto)
+
+- **Branche** : `fix/db-cron-job-run-details-retention`
+- **Décision** : docs(db): chiffrer le coût mesuré de la rétention de cron.job_run_details (+2 other commits)
+- **Sortie** : PR #1651 | commits 40fa3aeca 9767f3443 27a22c3d4
+
+## 2026-10-01 — fix/db-cron-job-run-details-retention (auto)
+
+- **Branche** : `fix/db-cron-job-run-details-retention`
+- **Décision** : Merge remote-tracking branch 'origin/main' into fix/db-cron-job-run-details-retention (+4 other commits)
+- **Sortie** : PR #1651 | commits 96283800a 6da7bd003 40fa3aeca 9767f3443 27a22c3d4
+
+## 2026-10-01 — fix/automation-validator-zod4-issues (auto)
+
+- **Branche** : `fix/automation-validator-zod4-issues`
+- **Décision** : fix(registry): le validateur d'automation-reality nomme le champ invalide (zod 4)
+- **Sortie** : PR aucune | commits d200b3d35

@@ -10,7 +10,7 @@ import { ConfigModule } from '@nestjs/config';
 @Module({
   imports: [
     DatabaseModule,
-    AuthModule, // Pour ModulePermissionGuard et AuthService
+    AuthModule, // Pour PermissionsService (PermissionsGuard)
     ConfigModule, // Import du module Config pour utiliser ConfigService
     NestCacheModule.register(boundedMemoryCache(180, 50)), // Cache pour CacheInterceptor
   ],

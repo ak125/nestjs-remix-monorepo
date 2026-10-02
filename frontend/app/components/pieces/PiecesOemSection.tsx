@@ -3,7 +3,7 @@
  * Extrait de pieces.$gamme.$marque.$modele.$type[.]html.tsx
  *
  * Affiche les références OEM groupées par position (AV/AR)
- * avec contenu éducatif et conseils sécurité
+ * avec explication des références constructeur
  */
 
 import { memo } from "react";
@@ -29,7 +29,6 @@ interface PiecesOemSectionProps {
  * Section complète des références OEM avec :
  * - Groupage par position (avant/arrière)
  * - Explication éducative "Qu'est-ce qu'une ref OEM ?"
- * - Conseils équivalences et sécurité
  */
 export const PiecesOemSection = memo(function PiecesOemSection({
   groupedPieces,
@@ -220,62 +219,6 @@ export const PiecesOemSection = memo(function PiecesOemSection({
                 </div>
               );
             })}
-        </div>
-
-        {/* Équivalences et conseils */}
-        <div className="grid gap-4 md:grid-cols-2">
-          {/* Conseil équivalences */}
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <h4 className="font-medium text-green-900 mb-2 flex items-center gap-2">
-              <svg
-                className="w-5 h-5 text-green-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              Équivalences de qualité
-            </h4>
-            <p className="text-sm text-green-800">
-              Les grandes marques comme <strong>Bosch</strong>,{" "}
-              <strong>TRW</strong>, <strong>Brembo</strong> ou{" "}
-              <strong>Ferodo</strong> fabriquent des pièces équivalentes aux
-              références {vehicle.marque}. Elles offrent souvent le même niveau
-              de qualité (voire supérieur) à un prix plus compétitif.
-            </p>
-          </div>
-
-          {/* Conseil sécurité */}
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-            <h4 className="font-medium text-amber-900 mb-2 flex items-center gap-2">
-              <svg
-                className="w-5 h-5 text-amber-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                />
-              </svg>
-              Sécurité freinage
-            </h4>
-            <p className="text-sm text-amber-800">
-              Le système de freinage est un élément de sécurité critique.
-              Privilégiez toujours des pièces de qualité <strong>OES</strong>{" "}
-              (première monte) ou <strong>certifiées ECE R90</strong> pour
-              garantir des performances de freinage optimales.
-            </p>
-          </div>
         </div>
       </div>
     </section>

@@ -83,7 +83,7 @@ echo ""
 echo "=== posttool-lint-check.sh ==="
 
 # Cas 1 : édition CLAUDE.md → invoque validate-agents-md.sh (warn stderr possible)
-INPUT='{"tool_name":"Edit","file_path":"/opt/automecanik/app/CLAUDE.md"}'
+INPUT='{"tool_name":"Edit","tool_input":{"file_path":"/opt/automecanik/app/CLAUDE.md"}}'
 echo "$INPUT" | bash scripts/claude-hooks/posttool-lint-check.sh > /tmp/h1-out 2> /tmp/h1-err
 assert_exit "posttool CLAUDE.md edit → exit 0 (warn-only)" "0" "$?"
 
@@ -92,14 +92,22 @@ echo "" | bash scripts/claude-hooks/posttool-lint-check.sh > /tmp/h1b-out 2> /tm
 assert_exit "posttool empty input → exit 0" "0" "$?"
 
 # Cas 3 : rollback CLAUDE_HOOKS_DISABLE=1
-INPUT='{"tool_name":"Edit","file_path":"/opt/automecanik/app/CLAUDE.md"}'
+INPUT='{"tool_name":"Edit","tool_input":{"file_path":"/opt/automecanik/app/CLAUDE.md"}}'
 CLAUDE_HOOKS_DISABLE=1 bash scripts/claude-hooks/posttool-lint-check.sh <<<"$INPUT" > /tmp/h1c-out 2>&1
 assert_exit "posttool CLAUDE_HOOKS_DISABLE=1 → exit 0 silent" "0" "$?"
 
 # Cas 4 (sanity) : fichier non-matching → exit 0, no output
-echo '{"tool_name":"Edit","file_path":"/opt/automecanik/app/log.md"}' \
+echo '{"tool_name":"Edit","tool_input":{"file_path":"/opt/automecanik/app/log.md"}}' \
   | bash scripts/claude-hooks/posttool-lint-check.sh > /tmp/h1d-out 2> /tmp/h1d-err
 assert_exit "posttool non-matching file → exit 0" "0" "$?"
+
+# Cas 5 : édition d'un SKILL.md → le validateur tourne sur CE skill (`--skill <nom>`,
+# racine lue dans le chemin). Avant : argument positionnel ignoré, clé lue hors `tool_input`.
+rm -f /tmp/skills-frontmatter.log
+echo "{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"$REPO_ROOT/.claude/skills/db-migration/SKILL.md\"}}" \
+  | bash scripts/claude-hooks/posttool-lint-check.sh > /tmp/h1e-out 2> /tmp/h1e-err
+assert_exit "posttool SKILL.md edit → exit 0 (warn-only)" "0" "$?"
+assert_contains "posttool SKILL.md edit → validateur lancé sur 1 skill" "evaluating 1 skill" "$(cat /tmp/skills-frontmatter.log 2>/dev/null)"
 
 # ============================================================
 # Hook 2 : sessionstart-workspace-context.sh
@@ -124,6 +132,16 @@ assert_contains "sessionstart contient ## DO NOT start" "## DO NOT start" "$OUT"
 # Cas 2 : borne taille — output < 2000 bytes
 SIZE=$(echo -n "$OUT" | wc -c)
 assert_size_lt "sessionstart output bounded" "2000" "$SIZE"
+
+# Cas 2b : la surface annoncée = les skills présents sur disque, pas une liste recopiée
+ROOT_SKILLS=$(find .claude/skills -mindepth 2 -maxdepth 2 -name SKILL.md | wc -l)
+assert_contains "sessionstart racine → surface = $ROOT_SKILLS skills sur disque" "^Surface : $ROOT_SKILLS skills" "$OUT"
+
+# Cas 2c : workspaces/* n'a pas de package.json — le workspace est détecté par son .claude/
+WS_SKILLS=$(find workspaces/seo-batch/.claude/skills -mindepth 2 -maxdepth 2 -name SKILL.md | wc -l)
+OUT_WS=$(cd workspaces/seo-batch && bash ../../scripts/claude-hooks/sessionstart-workspace-context.sh 2>/dev/null)
+assert_contains "sessionstart workspaces/seo-batch → workspace détecté" "^workspaces/seo-batch" "$OUT_WS"
+assert_contains "sessionstart workspaces/seo-batch → surface = $WS_SKILLS skills sur disque" "^Surface : $WS_SKILLS skills" "$OUT_WS"
 
 # Cas 3 : rollback CLAUDE_HOOKS_DISABLE=1 → output vide, exit 0
 OUT=$(CLAUDE_HOOKS_DISABLE=1 bash scripts/claude-hooks/sessionstart-workspace-context.sh 2>/tmp/h2c-err)
@@ -254,9 +272,12 @@ mkdir -p "$SB/tmp" "$SB/crash"
 # TMPDIR : logs de build et sauvegardes untracked restent dans le bac à sable, jamais
 # mêlés à ceux des vrais ticks cron dans /tmp. CRASH_DIR : les dumps de la machine
 # n'influencent pas l'issue. SB_HEALTH_URL : santé simulée à terre (cas 4).
+# GIT_CONFIG_* : le sous-module du bac à sable (cas 10+) est un dépôt local, que git refuse
+# de cloner par défaut (protocol.file) — autorisé pour ces seuls ticks, jamais en config globale.
 run_sync() {
   APP_DIR="$SB/app" HEALTH_URL="${SB_HEALTH_URL:-file://$SB/app/package.json}" CRASH_DIR="$SB/crash" \
     CRON_STATE_DIR="$SB/state" TMPDIR="$SB/tmp" \
+    GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=protocol.file.allow GIT_CONFIG_VALUE_0=always \
     bash "$SB/app/scripts/ops/sync-dev-runtime.sh" >"$SB/out" 2>"$SB/err"
 }
 
@@ -321,7 +342,7 @@ assert_contains "sonde : runtime à terre → issue warn « runtime DOWN »" '"w
 spawn_titled "$SB/app/backend" "npm run dev" "$SB/root1.pid" "npm run dev:watch" &
 ROOT1=$(wait_pid "$SB/root1.pid")
 assert_contains "sonde : le faux stack porte le titre exact de npm" "^npm run dev$" "$(ps -o args= -p "$ROOT1")"
-assert_not_contains "sonde : pgrep '^npm run dev\$' ne voit pas cette racine (octets nuls de npm)" "^$ROOT1$" "$(pgrep -f '^npm run dev$')"
+assert_contains "sonde : le faux stack complète son titre d'octets nuls, comme npm" "^npm run dev@@*$" "$(tr '\0' '@' < "/proc/$ROOT1/cmdline")"
 run_sync
 assert_contains "sonde : stack sain (1 racine + sa tâche) → ok" '"ok"' "$(sync_state '.status')"
 
@@ -360,6 +381,87 @@ assert_contains "sonde : dump encore frais au tick suivant → toujours warn (s�
 touch -d '25 hours ago' "$SB/crash/_usr_bin_node.1000.crash"
 run_sync
 assert_contains "sonde : dump de plus de 24 h → ok" '"ok"' "$(sync_state '.status')"
+
+# Sous-modules (axe git). Le writer seo-projection et le moteur de diagnostic lisent le wiki
+# DEPUIS le sous-module de ce checkout ; le pin committé sur main en est l'unique autorité.
+# `git merge --ff-only` déplace le pin sans toucher au sous-module : sans alignement, le
+# contenu restait périmé et le tick suivant voyait le pin « modifié » → abort en boucle.
+sb_git() { git -c user.name=test -c user.email=test@example.invalid -c protocol.file.allow=always "$@"; }
+SM=content/wiki
+git init -q --bare "$SB/wiki.git"
+git clone -q "$SB/wiki.git" "$SB/wiki" 2>/dev/null
+( cd "$SB/wiki" && git checkout -q -B main && echo v1 > export.json && git add -A && commit_sb "wiki v1" && git push -q origin main )
+# Publie un commit wiki, puis épingle le sous-module dessus en amont (= PR de bump fusionnée).
+bump_pin() {
+  ( cd "$SB/wiki" && echo "$1" > export.json && git add -A && commit_sb "wiki $1" && git push -q origin main )
+  ( cd "$SB/up" && sb_git submodule update -q --remote -- "$SM" && git add "$SM" && commit_sb "pin wiki $1" && git push -q origin main )
+}
+pin_sha()  { git -C "$SB/app" ls-tree HEAD -- "$SM" | awk '{print $3}'; }
+head_sha() { git -C "$SB/app/$SM" rev-parse HEAD 2>/dev/null; }
+
+# 10. Sous-module introduit en amont → initialisé sur son pin au même tick
+#     (le même commit répare le build cassé au cas 3 : les cas suivants passent par le ff)
+( cd "$SB/up" && printf '{"name":"sandbox","private":true,"scripts":{"build":"true"}}\n' > package.json \
+  && sb_git submodule add -q -b main "$SB/wiki.git" "$SM" && git add -A && commit_sb "ajout sous-module wiki" && git push -q origin main )
+run_sync; EXIT=$?
+assert_exit "sous-module : introduit en amont → tick au bout (exit 0)" "0" "$EXIT"
+assert_contains "sous-module : introduit en amont → initialisé sur le pin" "^$(pin_sha)$" "$(head_sha)"
+assert_contains "sous-module : initialisation sans alerte → ok" '"ok"' "$(sync_state '.status')"
+
+# 11. Pin déplacé en amont → sous-module aligné au même tick, contenu du pin servi
+bump_pin v2
+run_sync; EXIT=$?
+assert_exit "sous-module : pin déplacé → tick au bout (exit 0)" "0" "$EXIT"
+assert_contains "sous-module : pin déplacé → aligné au même tick" "^$(pin_sha)$" "$(head_sha)"
+assert_contains "sous-module : le contenu lu est celui du pin" "^v2$" "$(cat "$SB/app/$SM/export.json")"
+assert_contains "sous-module : alignement journalisé" "sous-module $SM aligné sur le pin" "$(cat "$SB/out")"
+assert_contains "sous-module : alignement sans alerte → ok" '"ok"' "$(sync_state '.status')"
+
+# 12. Sous-module resté en retard (tick précédent en échec) → rattrapé au no-op suivant,
+#     sans abort « working tree sale » (le pin modifié n'est pas du travail local)
+git -C "$SB/app/$SM" checkout -q HEAD~1
+run_sync; EXIT=$?
+assert_exit "sous-module en retard sur le pin → pas d'abort working tree sale (exit 0)" "0" "$EXIT"
+assert_contains "sous-module en retard → rattrapé au tick no-op" "^$(pin_sha)$" "$(head_sha)"
+
+# 13. Contenu modifié dans le sous-module + pin déplacé → le code est synchronisé, le
+#     sous-module n'est pas touché (jamais de perte de travail), alerte à chaque tick
+echo local > "$SB/app/$SM/export.json"
+bump_pin v3
+run_sync; EXIT=$?
+assert_exit "sous-module modifié localement → le tick va au bout (exit 0)" "0" "$EXIT"
+assert_contains "sous-module modifié localement → le code est quand même synchronisé" \
+  "^$(git -C "$SB/up" rev-parse HEAD)$" "$(git -C "$SB/app" rev-parse HEAD)"
+assert_contains "sous-module modifié localement → warn « contenu modifié localement »" \
+  '"warn".*sous-module content/wiki : contenu modifié localement' "$(sync_state '[.status,.summary]')"
+assert_contains "sous-module modifié localement → modification conservée" "^local$" "$(cat "$SB/app/$SM/export.json")"
+git -C "$SB/app/$SM" checkout -q -- export.json
+run_sync
+assert_contains "sous-module rendu propre → aligné au tick suivant" "^$(pin_sha)$" "$(head_sha)"
+assert_contains "sous-module rendu propre → ok" '"ok"' "$(sync_state '.status')"
+
+# 14. HEAD du sous-module sur un commit non publié → jamais déplacé, alerte
+( cd "$SB/app/$SM" && echo wip > wip.md && git add wip.md && commit_sb "travail local" )
+LOCAL_SHA=$(head_sha)
+run_sync
+assert_contains "sous-module sur un commit non publié → warn « non publié »" \
+  '"warn".*sous-module content/wiki : HEAD .* non publié' "$(sync_state '[.status,.summary]')"
+assert_contains "sous-module sur un commit non publié → HEAD conservé" "^$LOCAL_SHA$" "$(head_sha)"
+git -C "$SB/app/$SM" checkout -q "$(pin_sha)"
+
+# 15. Dépôt wiki injoignable + pin déplacé → alerte, sous-module inchangé ; rattrapé ensuite
+PREV_SHA=$(head_sha)
+bump_pin v4
+mv "$SB/wiki.git" "$SB/wiki.git.off"
+run_sync; EXIT=$?
+assert_exit "dépôt wiki injoignable → le tick va au bout (exit 0)" "0" "$EXIT"
+assert_contains "dépôt wiki injoignable → warn « fetch échoué »" \
+  '"warn".*sous-module content/wiki : fetch échoué' "$(sync_state '[.status,.summary]')"
+assert_contains "dépôt wiki injoignable → sous-module inchangé" "^$PREV_SHA$" "$(head_sha)"
+mv "$SB/wiki.git.off" "$SB/wiki.git"
+run_sync
+assert_contains "dépôt wiki de retour → aligné au tick suivant" "^$(pin_sha)$" "$(head_sha)"
+assert_contains "dépôt wiki de retour → ok" '"ok"' "$(sync_state '.status')"
 
 rm -rf "$SB"
 
@@ -545,7 +647,7 @@ echo ""
 echo "=== pretool-bash-guard.sh (Guard 6 tag PROD) ==="
 
 run_bash_guard() {
-  echo "{\"command\":\"$1\"}" | bash scripts/claude-hooks/pretool-bash-guard.sh >/dev/null 2>&1
+  echo "{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"$1\"}}" | bash scripts/claude-hooks/pretool-bash-guard.sh >/dev/null 2>&1
   echo $?
 }
 
@@ -562,6 +664,24 @@ assert_exit "bash-guard: git status → allow"               "0" "$(run_bash_gua
 # Sanity : guard existant (Guard 1) toujours actif
 assert_exit "bash-guard: git push origin main → BLOCK (G1)" "2" "$(run_bash_guard 'git push origin main')"
 
+# Enveloppe illisible → BLOCK (échec fermé ; avant : exit 0, toutes les gardes muettes)
+run_bash_guard_raw() {
+  printf '%s' "$1" | bash scripts/claude-hooks/pretool-bash-guard.sh >/dev/null 2>&1
+  echo $?
+}
+assert_exit "bash-guard: stdin vide → BLOCK"                        "2" "$(run_bash_guard_raw '')"
+assert_exit "bash-guard: JSON invalide → BLOCK"                     "2" "$(run_bash_guard_raw 'not json')"
+assert_exit "bash-guard: JSON non objet → BLOCK"                    "2" "$(run_bash_guard_raw '["git push origin main"]')"
+assert_exit "bash-guard: command à la racine (hors tool_input) → BLOCK" "2" "$(run_bash_guard_raw '{"tool_name":"Bash","command":"git status"}')"
+assert_exit "bash-guard: tool_input non objet → BLOCK"              "2" "$(run_bash_guard_raw '{"tool_name":"Bash","tool_input":"git status"}')"
+assert_exit "bash-guard: tool_input.command absent → BLOCK"         "2" "$(run_bash_guard_raw '{"tool_name":"Bash","tool_input":{}}')"
+assert_exit "bash-guard: tool_input.command non chaîne → BLOCK"     "2" "$(run_bash_guard_raw '{"tool_name":"Bash","tool_input":{"command":42}}')"
+assert_exit "bash-guard: tool_input.command blanc → BLOCK"          "2" "$(run_bash_guard_raw '{"tool_name":"Bash","tool_input":{"command":"  "}}')"
+assert_exit "bash-guard: deux enveloppes concaténées → BLOCK"       "2" "$(run_bash_guard_raw '{"tool_input":{"command":"ls"}}{"tool_input":{"command":"ls"}}')"
+assert_contains "bash-guard: motif de refus explicite" "enveloppe PreToolUse illisible" \
+  "$(printf 'not json' | bash scripts/claude-hooks/pretool-bash-guard.sh 2>&1)"
+assert_exit "bash-guard: enveloppe complète documentée → allow"     "0" "$(run_bash_guard_raw '{"session_id":"s","cwd":"/tmp","hook_event_name":"PreToolUse","tool_name":"Bash","tool_input":{"command":"git status","description":"d"}}')"
+
 # ============================================================
 # Guard : pretool-supabase-guard.sh — Guard 6 (DML direct sur tables gouvernées)
 # ============================================================
@@ -570,7 +690,7 @@ echo ""
 echo "=== pretool-supabase-guard.sh (Guard 6 DML) ==="
 
 run_sql_guard() {
-  echo "{\"query\":\"$1\"}" | bash scripts/claude-hooks/pretool-supabase-guard.sh >/dev/null 2>&1
+  echo "{\"tool_name\":\"mcp__supabase__execute_sql\",\"tool_input\":{\"query\":\"$1\"}}" | bash scripts/claude-hooks/pretool-supabase-guard.sh >/dev/null 2>&1
   echo $?
 }
 
@@ -585,6 +705,76 @@ assert_exit "sql-guard: SELECT FROM pieces → allow"           "0" "$(run_sql_g
 assert_exit "sql-guard: INSERT pieces_price → allow (scope=UPDATE/DELETE)" "0" "$(run_sql_guard 'INSERT INTO pieces_price (id) VALUES (1)')"
 # Sanity : guard existant (Guard 1) toujours actif
 assert_exit "sql-guard: DROP TABLE foo (no IF EXISTS) → BLOCK (G1)" "2" "$(run_sql_guard 'DROP TABLE foo')"
+
+# Enveloppe illisible → BLOCK (échec fermé ; avant : exit 0, toutes les gardes muettes)
+run_sql_guard_raw() {
+  printf '%s' "$1" | bash scripts/claude-hooks/pretool-supabase-guard.sh >/dev/null 2>&1
+  echo $?
+}
+assert_exit "sql-guard: stdin vide → BLOCK"                         "2" "$(run_sql_guard_raw '')"
+assert_exit "sql-guard: JSON invalide → BLOCK"                      "2" "$(run_sql_guard_raw 'not json')"
+assert_exit "sql-guard: JSON non objet → BLOCK"                     "2" "$(run_sql_guard_raw '["TRUNCATE foo"]')"
+assert_exit "sql-guard: query à la racine (hors tool_input) → BLOCK" "2" "$(run_sql_guard_raw '{"tool_name":"mcp__supabase__execute_sql","query":"TRUNCATE foo"}')"
+assert_exit "sql-guard: tool_input non objet → BLOCK"               "2" "$(run_sql_guard_raw '{"tool_name":"mcp__supabase__execute_sql","tool_input":"TRUNCATE foo"}')"
+assert_exit "sql-guard: tool_input.query absent → BLOCK"            "2" "$(run_sql_guard_raw '{"tool_name":"mcp__supabase__execute_sql","tool_input":{"project_id":"p"}}')"
+assert_exit "sql-guard: tool_input.query non chaîne → BLOCK"        "2" "$(run_sql_guard_raw '{"tool_name":"mcp__supabase__execute_sql","tool_input":{"query":["SELECT 1"]}}')"
+assert_exit "sql-guard: tool_input.query blanc → BLOCK"             "2" "$(run_sql_guard_raw '{"tool_name":"mcp__supabase__execute_sql","tool_input":{"query":"  "}}')"
+assert_exit "sql-guard: deux enveloppes concaténées → BLOCK"        "2" "$(run_sql_guard_raw '{"tool_input":{"query":"SELECT 1"}}{"tool_input":{"query":"SELECT 1"}}')"
+assert_contains "sql-guard: motif de refus explicite" "enveloppe PreToolUse illisible" \
+  "$(printf 'not json' | bash scripts/claude-hooks/pretool-supabase-guard.sh 2>&1)"
+assert_exit "sql-guard: enveloppe execute_sql complète → allow"      "0" "$(run_sql_guard_raw '{"session_id":"s","cwd":"/tmp","hook_event_name":"PreToolUse","tool_name":"mcp__supabase__execute_sql","tool_input":{"project_id":"p","query":"SELECT 1"}}')"
+assert_exit "sql-guard: enveloppe apply_migration complète → allow"  "0" "$(run_sql_guard_raw '{"session_id":"s","cwd":"/tmp","hook_event_name":"PreToolUse","tool_name":"mcp__supabase__apply_migration","tool_input":{"project_id":"p","name":"add_idx","query":"CREATE INDEX IF NOT EXISTS i ON t (c)"}}')"
+
+# ============================================================
+# Guard : pretool-file-guard.sh — chemins protégés (format réel : tool_input.file_path)
+# ============================================================
+
+echo ""
+echo "=== pretool-file-guard.sh ==="
+
+run_file_guard() {
+  echo "{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"$1\"}}" | bash scripts/claude-hooks/pretool-file-guard.sh >/dev/null 2>&1
+  echo $?
+}
+
+assert_exit "file-guard: .github/workflows/ci.yml → BLOCK"    "2" "$(run_file_guard "$REPO_ROOT/.github/workflows/ci.yml")"
+assert_exit "file-guard: package-lock.json → BLOCK"           "2" "$(run_file_guard "$REPO_ROOT/package-lock.json")"
+assert_exit "file-guard: backend/tsconfig.json → BLOCK"       "2" "$(run_file_guard "$REPO_ROOT/backend/tsconfig.json")"
+assert_exit "file-guard: backend/src/app.module.ts → allow"   "0" "$(run_file_guard "$REPO_ROOT/backend/src/app.module.ts")"
+assert_exit "file-guard: modules/payments/ → allow (warn)"    "0" "$(run_file_guard "$REPO_ROOT/backend/src/modules/payments/x.ts")"
+
+# Enveloppe illisible → BLOCK (échec fermé ; avant : exit 0, toutes les gardes muettes)
+run_file_guard_raw() {
+  printf '%s' "$1" | bash scripts/claude-hooks/pretool-file-guard.sh >/dev/null 2>&1
+  echo $?
+}
+assert_exit "file-guard: stdin vide → BLOCK"                        "2" "$(run_file_guard_raw '')"
+assert_exit "file-guard: JSON invalide → BLOCK"                     "2" "$(run_file_guard_raw 'not json')"
+assert_exit "file-guard: JSON non objet → BLOCK"                    "2" "$(run_file_guard_raw '"package-lock.json"')"
+assert_exit "file-guard: file_path à la racine (hors tool_input) → BLOCK" "2" "$(run_file_guard_raw '{"tool_name":"Edit","file_path":"package-lock.json"}')"
+assert_exit "file-guard: tool_input.file_path absent → BLOCK"       "2" "$(run_file_guard_raw '{"tool_name":"Write","tool_input":{"content":"x"}}')"
+assert_exit "file-guard: tool_input.file_path non chaîne → BLOCK"   "2" "$(run_file_guard_raw '{"tool_name":"Edit","tool_input":{"file_path":["a"]}}')"
+assert_exit "file-guard: deux enveloppes concaténées → BLOCK"       "2" "$(run_file_guard_raw '{"tool_input":{"file_path":"a.ts"}}{"tool_input":{"file_path":"b.ts"}}')"
+assert_contains "file-guard: motif de refus explicite" "enveloppe PreToolUse illisible" \
+  "$(printf 'not json' | bash scripts/claude-hooks/pretool-file-guard.sh 2>&1)"
+assert_exit "file-guard: enveloppe complète documentée → allow"     "0" "$(run_file_guard_raw "{\"session_id\":\"s\",\"cwd\":\"/tmp\",\"hook_event_name\":\"PreToolUse\",\"tool_name\":\"Write\",\"tool_input\":{\"file_path\":\"$REPO_ROOT/backend/src/app.module.ts\",\"content\":\"x\"}}")"
+
+echo "=== pretool-agent-guard.sh ==="
+
+# Le runtime lance chaque hook depuis un processus parent éphémère : chaque `$(...)` ci-dessous
+# reproduit ce parent différent. Le compteur doit suivre la session (`session_id`), pas `$PPID`.
+AG_SID="hooktest-$$"
+AG_BEFORE=$(ls /tmp/claude-agent-count-* 2>/dev/null | sort)
+run_agent_guard() {
+  printf '{"session_id":"%s","tool_name":"Agent","tool_input":{"subagent_type":"Explore"}}' "$AG_SID" \
+    | CLAUDE_MAX_SUBAGENTS=1 bash scripts/claude-hooks/pretool-agent-guard.sh >/dev/null 2>&1
+  echo $?
+}
+
+assert_exit "agent-guard: 1er subagent de la session (limite 1) → allow"         "0" "$(run_agent_guard)"
+assert_exit "agent-guard: 2e subagent, même session, autre parent → BLOCK"       "2" "$(run_agent_guard)"
+# Nettoyage : uniquement les compteurs créés par ces deux cas
+comm -13 <(printf '%s\n' "$AG_BEFORE") <(ls /tmp/claude-agent-count-* 2>/dev/null | sort) | xargs -r rm -f
 
 # ============================================================
 # Résumé

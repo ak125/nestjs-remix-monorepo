@@ -1,11 +1,11 @@
 {
   "_generated_by": "scripts/audit/build-deep-inventory.js",
   "note": "Candidates only. Deletion requires the full conditions (#0–#8) incl. validate-before-delete.sh + build/tests + human review.",
-  "count": 262,
+  "count": 258,
   "by_confidence": {
     "high": 12,
     "medium": 166,
-    "low": 84
+    "low": 80
   },
   "candidates": [
     {
@@ -979,22 +979,6 @@
       "reason": "knip unused"
     },
     {
-      "path": "backend/src/modules/mcp-validation/mcp-validation.types.ts",
-      "domain": "mcp-validation",
-      "kind": "type",
-      "confidence": "low",
-      "derived_from": [
-        "knip"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": false,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
       "path": "backend/src/modules/mcp-validation/services/chrome-devtools-client.service.ts",
       "domain": "mcp-validation",
       "kind": "service",
@@ -1110,38 +1094,6 @@
       "path": "backend/src/modules/mcp-validation/services/mcp-alerting.service.ts",
       "domain": "mcp-validation",
       "kind": "service",
-      "confidence": "low",
-      "derived_from": [
-        "knip"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": false,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "backend/src/modules/mcp-validation/services/mcp-query.service.ts",
-      "domain": "mcp-validation",
-      "kind": "service",
-      "confidence": "low",
-      "derived_from": [
-        "knip"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": false,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "backend/src/modules/mcp-validation/types/mcp-verify.types.ts",
-      "domain": "mcp-validation",
-      "kind": "type",
       "confidence": "low",
       "derived_from": [
         "knip"
@@ -4181,22 +4133,6 @@
       "precheck_verdict": {
         "c0_not_never_auto_delete": true,
         "c1_zero_static_import": true,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "frontend/app/services/common/errors.ts",
-      "domain": "frontend-shared",
-      "kind": "frontend-service",
-      "confidence": "low",
-      "derived_from": [
-        "knip"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": false,
         "c2_zero_dynamic_import": true,
         "c3_zero_runtime_use": true
       },

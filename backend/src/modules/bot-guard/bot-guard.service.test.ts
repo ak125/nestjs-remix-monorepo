@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { BotGuardService } from './bot-guard.service';
 
 /**
@@ -48,7 +49,7 @@ describe('BotGuardService.calculateSuspicionScore — Googlebot headroom', () =>
       userAgent: GOOGLEBOT_UA,
       path: '/pieces/disque-de-frein-82/iveco-84/daily-iv/3-0-d-34297.html',
       acceptLanguage: undefined, // Googlebot sends none → +30
-      hasSession: false, // no session on a deep page → +15
+      hasAuthenticatedSession: false, // no authenticated session on a deep page → +15
     });
 
     // +30 (no Accept-Language) +15 (no session, deep page) +10 (non-target country)
@@ -208,5 +209,60 @@ describe('BotGuardService.isVerifiedSearchEngine (FCrDNS)', () => {
     expect(
       await service.isVerifiedSearchEngine('203.0.113.9', GOOGLEBOT_UA),
     ).toBe(false);
+  });
+});
+
+describe('BotGuardService threshold validation', () => {
+  it.each(['0', '-1', '101', '80.5', '80oops', 'NaN', ''])(
+    'keeps the default for invalid env threshold %s',
+    async (value) => {
+      const { service } = makeService({ BOT_GUARD_SUSPICION_THRESHOLD: value });
+      await service.onModuleInit();
+      expect(await service.getConfig()).toMatchObject({
+        suspicionThreshold: 80,
+      });
+    },
+  );
+
+  it.each([0, -1, 101, 80.5, NaN, '90', null])(
+    'rejects invalid operator threshold %s before any config mutation',
+    async (value) => {
+      const { service, store } = makeService();
+      await service.onModuleInit();
+      const before = await service.getConfig();
+      await expect(
+        service.updateConfig({
+          enabled: false,
+          suspicionThreshold: value as number,
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(await service.getConfig()).toEqual(before);
+      expect(store.has('bot-guard:config')).toBe(false);
+    },
+  );
+
+  it('retains the valid threshold when Redis contains an invalid value', async () => {
+    const { service, store } = makeService({
+      BOT_GUARD_SUSPICION_THRESHOLD: '90',
+    });
+    store.set('bot-guard:config', { suspicionThreshold: -1 });
+    await service.onModuleInit();
+    expect(await service.getConfig()).toMatchObject({ suspicionThreshold: 90 });
+  });
+
+  it('refreshes a valid stored threshold on the existing refresh interval', async () => {
+    jest.useFakeTimers();
+    try {
+      const { service, store } = makeService();
+      await service.onModuleInit();
+      store.set('bot-guard:config', { suspicionThreshold: 90 });
+      jest.advanceTimersByTime(60_001);
+      await service.isIpBlocked('203.0.113.50');
+      expect(await service.getConfig()).toMatchObject({
+        suspicionThreshold: 90,
+      });
+    } finally {
+      jest.useRealTimers();
+    }
   });
 });

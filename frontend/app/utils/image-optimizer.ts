@@ -70,6 +70,59 @@ const PROXY_BASE_URL = IMAGE_CONFIG.DOMAIN;
 const SUPABASE_STORAGE_URL = `${typeof process !== "undefined" && process.env?.VITE_SUPABASE_URL ? process.env.VITE_SUPABASE_URL : "https://cxpojprgwgubzjyqzmoq.supabase.co"}/storage/v1/object/public`;
 const DEFAULT_BUCKET = IMAGE_CONFIG.BUCKETS.UPLOADS;
 
+/**
+ * 🎯 Résout un chemin d'image applicatif en URL SOURCE pour imgproxy.
+ *
+ * imgproxy n'accepte comme source que les origines listées dans
+ * `IMGPROXY_ALLOWED_SOURCES` (docker-compose.imgproxy.yml), c'est-à-dire
+ * l'origine Supabase Storage. Une source construite sur NOTRE domaine est
+ * rejetée avec 404 `Invalid source URL` — d'où ce résolveur unique, partagé
+ * par les images de page et par l'OG image.
+ *
+ * Trois formes d'entrée :
+ *  - URL absolue (`https://…`)          → laissée intacte (déjà une origine)
+ *  - route proxy (`/img/{bucket}/{path}`) → réécrite comme le fait Caddy
+ *    (config/caddy/Caddyfile, `@img_proxy`) : `/storage/v1/object/public/{bucket}/{path}`.
+ *    `/img` est une route, jamais un segment de clé d'objet.
+ *  - chemin relatif au bucket            → bucket détecté, défaut `uploads`
+ */
+export function resolveImageSourceUrl(imagePath: string): string {
+  // Une URL absolue est déjà une origine : ne pas la normaliser.
+  // (le collapse des `//` ci-dessous écraserait `https://` en `https:/`)
+  if (/^https?:\/\//i.test(imagePath)) {
+    return imagePath;
+  }
+
+  // Fix: supprimer double slashes (pmi_folder vide → rack-images//file)
+  const collapse = (path: string) => path.replace(/\/\/+/g, "/");
+
+  // Route proxy : même réécriture que Caddy, le 1er segment EST le bucket
+  const proxyPrefix = `${IMAGE_CONFIG.PROXY_BASE}/`;
+  if (imagePath.startsWith(proxyPrefix)) {
+    return `${SUPABASE_STORAGE_URL}/${collapse(imagePath.slice(proxyPrefix.length))}`;
+  }
+
+  const cleanPath = collapse(
+    imagePath.startsWith("/") ? imagePath.slice(1) : imagePath,
+  );
+
+  // Détecter dynamiquement le bucket
+  let bucket: string = DEFAULT_BUCKET;
+  let actualPath = cleanPath;
+
+  if (cleanPath.startsWith(`${IMAGE_CONFIG.BUCKETS.RACK_IMAGES}/`)) {
+    bucket = IMAGE_CONFIG.BUCKETS.RACK_IMAGES;
+    actualPath = cleanPath.slice(bucket.length + 1);
+  } else if (cleanPath.startsWith(`${IMAGE_CONFIG.BUCKETS.UPLOADS}/`)) {
+    // ✅ FIX 2026-01-18: Gérer le prefix uploads/ pour éviter double bucket
+    // Quand l'URL Supabase complète est parsée, le path inclut déjà "uploads/"
+    bucket = IMAGE_CONFIG.BUCKETS.UPLOADS;
+    actualPath = cleanPath.slice(bucket.length + 1);
+  }
+
+  return `${SUPABASE_STORAGE_URL}/${bucket}/${actualPath}`;
+}
+
 export interface ImageOptimizationOptions {
   width?: number;
   height?: number;
@@ -132,35 +185,16 @@ export class ImageOptimizer {
       format = "webp",
     } = options;
 
-    // Nettoyer le chemin de l'image
-    // Fix: supprimer double slashes (pmi_folder vide → rack-images//file)
-    const cleanPath = (
-      imagePath.startsWith("/") ? imagePath.slice(1) : imagePath
-    ).replace(/\/\/+/g, "/");
+    // Source imgproxy — résolveur unique, partagé avec l'OG image
+    const sourceUrl = resolveImageSourceUrl(imagePath);
 
-    // Détecter dynamiquement le bucket
-    let bucket: string = DEFAULT_BUCKET;
-    let actualPath = cleanPath;
-
-    if (cleanPath.startsWith("rack-images/")) {
-      bucket = "rack-images";
-      actualPath = cleanPath.replace("rack-images/", "");
-    } else if (cleanPath.startsWith("uploads/")) {
-      // ✅ FIX 2026-01-18: Gérer le prefix uploads/ pour éviter double bucket
-      // Quand l'URL Supabase complète est parsée, le path inclut déjà "uploads/"
-      bucket = "uploads";
-      actualPath = cleanPath.replace("uploads/", "");
-    }
-
-    // Si imgproxy désactivé, utiliser proxy /img direct
+    // Si imgproxy désactivé, servir l'origine Supabase directement
     if (!USE_IMGPROXY_RUNTIME) {
-      return `${SUPABASE_STORAGE_URL}/${bucket}/${actualPath}`;
+      return sourceUrl;
     }
 
     // 🚀 Construire l'URL imgproxy
     // Format: /imgproxy/{processing_options}/plain/{source_url}@{format}
-    // Source via /img proxy (Caddy → Supabase)
-    const sourceUrl = `${SUPABASE_STORAGE_URL}/${bucket}/${actualPath}`;
 
     // Options de processing imgproxy
     const processingOptions: string[] = [];

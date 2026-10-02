@@ -1,0 +1,261 @@
+{
+  "scope_requested": "Vérifier le rapport et corriger le code ; continuer le lot entretien",
+  "scope_actually_scanned": "Contrat et parcours entretien, historique par opération, restitution, disponibilité du calendrier et sources associées. Lectures ciblées ; pas un audit exhaustif du dépôt.",
+  "files_read_count": 39,
+  "files_read": [
+    ".claude/canon-mirrors/agent-exit-contract.md",
+    ".claude/rules/backend.md",
+    ".claude/rules/frontend.md",
+    "AGENTS.md",
+    "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
+    "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
+    "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+    "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
+    "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
+    "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.test.ts",
+    "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
+    "backend/src/modules/diagnostic-engine/maintenance-flow.test.ts",
+    "backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts",
+    "backend/src/modules/diagnostic-engine/types/diagnostic-contract.schema.ts",
+    "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts",
+    "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts",
+    "backend/supabase/migrations/20260125_kg_v3_diagnose_vehicle_aware.sql",
+    "backend/supabase/migrations/20260125_kg_v3_maintenance_risk.sql",
+    "backend/supabase/migrations/20260321_diagnostic_engine_10_systems.sql",
+    "backend/supabase/migrations/20260429_diag_maintenance_via_kg.sql",
+    "backend/tests/unit/maintenance-calculator.service.test.ts",
+    "backend/tests/unit/maintenance-calendar-endpoint.test.ts",
+    "docs/audits/diagnostic-integrity-20260927/CHECKPOINT.md",
+    "docs/audits/diagnostic-integrity-20260927/coverage-manifest.json",
+    "docs/audits/diagnostic-integrity-20260927/sql-evidence.json",
+    "frontend/app/components/diagnostic-wizard/DiagnosticWizard.tsx",
+    "frontend/app/components/diagnostic-wizard/results/DiagnosticResults.tsx",
+    "frontend/app/components/diagnostic-wizard/results/ResultMaintenance.tsx",
+    "frontend/app/components/diagnostic-wizard/results/ResultMissing.tsx",
+    "frontend/app/components/diagnostic-wizard/steps/StepMaintenance.tsx",
+    "frontend/app/components/diagnostic-wizard/steps/StepVehicle.tsx",
+    "frontend/app/components/diagnostic-wizard/types.ts",
+    "frontend/app/global.css",
+    "frontend/tests/unit/diagnostic-maintenance-flow.test.tsx",
+    "frontend/tests/unit/diagnostic-maintenance-step.test.tsx",
+    "frontend/tests/unit/diagnostic-wizard-submission.test.tsx",
+    "frontend/tsconfig.json",
+    "frontend/vite.config.ts",
+    "packages/database-types/src/supabase-generated.types.ts"
+  ],
+  "base": "4a2871dc4d19067c3ae077d6a79021b49cc60237",
+  "previous_candidate_tree": "5ac12ea92494094fc9285f18da0eb0fd9d43ce18",
+  "latest_observed_main": "4fca2ef26f6af27451e7bb31945982258c904ede",
+  "branch": "codex/diagnostic-integrity-20260926",
+  "changed_code_test_files_this_lot": [
+    "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
+    "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
+    "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
+    "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
+    "backend/src/modules/diagnostic-engine/maintenance-flow.test.ts",
+    "backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts",
+    "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts",
+    "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts",
+    "backend/tests/unit/maintenance-calculator.service.test.ts",
+    "backend/tests/unit/maintenance-calendar-endpoint.test.ts",
+    "frontend/app/components/diagnostic-wizard/DiagnosticWizard.tsx",
+    "frontend/app/components/diagnostic-wizard/results/DiagnosticResults.tsx",
+    "frontend/app/components/diagnostic-wizard/results/ResultMaintenance.tsx",
+    "frontend/app/components/diagnostic-wizard/results/ResultMissing.tsx",
+    "frontend/app/components/diagnostic-wizard/steps/StepMaintenance.tsx",
+    "frontend/app/components/diagnostic-wizard/steps/StepVehicle.tsx",
+    "frontend/app/components/diagnostic-wizard/types.ts",
+    "frontend/tests/unit/diagnostic-maintenance-flow.test.tsx",
+    "frontend/tests/unit/diagnostic-maintenance-step.test.tsx"
+  ],
+  "cumulative_changed_code_test_files": [
+    {
+      "path": "backend/src/modules/diagnostic-engine/constants/gamme-map.constants.ts",
+      "sha256": "f5246d9713a1ba83141818edb331b5124a4bc0be4f3ff65460126fe08b20e002"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts",
+      "sha256": "05abe98ac4ffa5e0a3764a66056997234694e5249bb196d0f37af204285fef58"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
+      "sha256": "7e246d5c3c636df0c38e32ad61098801a1019c73d7e52b60274fc27b4c99354e"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
+      "sha256": "991361a9491ae4c00c7a7b904b79aa563f745fdc71b71e92e7e64ba88069ea75"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/diagnostic-integrity.test.ts",
+      "sha256": "e61e7e0eb118d29e58d196efd92da4af4c00cadbb373df2bbf90fd8a36e6c67b"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
+      "sha256": "9ec5e306a89a092b348c7fb8676b59502383367a74ccf0982a124152861b963e"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
+      "sha256": "f080b75dd15fde693a7dfdcf13209f6b18311d606156c2ede138eec8a28b0ad7"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.test.ts",
+      "sha256": "22243a4b7cc4edfac1808e2bc77943326d8ed734a00f06f7ab06385b0cfa2c2a"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
+      "sha256": "56eba4aa244052f44929927e82378622e6ee86237b2770a560cefc1639113c24"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/maintenance-flow.test.ts",
+      "sha256": "397eff003109bc9c7c02f71acbcbf23ab21e3019c2640b57b7cbf712298ecf39"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
+      "sha256": "6315cfc8d6700aa85ae7c380f15ab35a43dbe3b9c86d1099f69b8201775f1131"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/services/action-recommender.test.ts",
+      "sha256": "1637cff54deec17db72c8b6f69792b138d00cb6d32a187ce5cfe48d4eab8864e"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/services/kg-shadow.service.test.ts",
+      "sha256": "ef0d3a207a5bd7115adc1162775f66ffb04a9e837d0d37987f5653a287ea3d54"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/services/kg-shadow.service.ts",
+      "sha256": "fc9923ee28e0cbd1e45b9ee158c0b104ea034fe90c1ffa4d163256169d27984a"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts",
+      "sha256": "0e2cdaaf047327b03feef339d00c9c8ab9a9c2df0132379bbcd85953c859cde2"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts",
+      "sha256": "63f667c8a977f9cbcadd94f419f612451646d2a6fc18be5351cf04e0d9e88077"
+    },
+    {
+      "path": "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts",
+      "sha256": "b8e308ecf1832c810cff386dd585a769a7ad24f59a7164cbcd65c3e9c4db49e5"
+    },
+    {
+      "path": "backend/tests/unit/maintenance-calculator.service.test.ts",
+      "sha256": "dc6eb398b07a8ffd0abc0e060ed4bd0cdee14f7b83627c4d57068de794a95130"
+    },
+    {
+      "path": "backend/tests/unit/maintenance-calendar-endpoint.test.ts",
+      "sha256": "0a9af116a6540555687fd9f3259f8ed7dbec03c097ed60a740a5c8972d7652ea"
+    },
+    {
+      "path": "frontend/app/components/diagnostic-wizard/DiagnosticWizard.tsx",
+      "sha256": "1cb7e18f9de0ce0bf08bc611b15c90e992121c487ca9324c6bd8e7649e21817f"
+    },
+    {
+      "path": "frontend/app/components/diagnostic-wizard/results/DiagnosticResults.tsx",
+      "sha256": "d9a58b540551dad3fe4e065ba5b992a4d2e303608561704d8db71091302a71b9"
+    },
+    {
+      "path": "frontend/app/components/diagnostic-wizard/results/ResultCatalog.tsx",
+      "sha256": "b472563732c01b7497fd10ada171f6c3a13cf0f8e4f8d70d2ac2afbea63a3379"
+    },
+    {
+      "path": "frontend/app/components/diagnostic-wizard/results/ResultMaintenance.tsx",
+      "sha256": "13da9b7eee7b80348138521bed42c1abeeaf41132b786e5c7f108f11ad776834"
+    },
+    {
+      "path": "frontend/app/components/diagnostic-wizard/results/ResultMissing.tsx",
+      "sha256": "77772cd9a9e0ad81074f243cefc5af892555d6754452889247eab8febea9d5c0"
+    },
+    {
+      "path": "frontend/app/components/diagnostic-wizard/steps/StepMaintenance.tsx",
+      "sha256": "00af60e449095353c3769af764486a35719f8a04c38e890509f1c53d340b6413"
+    },
+    {
+      "path": "frontend/app/components/diagnostic-wizard/steps/StepVehicle.tsx",
+      "sha256": "1462c42218439f7d99b5a01d5541548dbef08f07a1b6fceb7d919e99a5e83a4b"
+    },
+    {
+      "path": "frontend/app/components/diagnostic-wizard/types.ts",
+      "sha256": "d579b85fee32eac7f03979e3a28f858362a92e9f4b89ac28326e9b8692c774d6"
+    },
+    {
+      "path": "frontend/app/routes/blog-pieces-auto.calendrier-entretien.tsx",
+      "sha256": "ed4dcae6a738e4e49cd5877c265d708e0ffc850b55cc1d2225af1f4a1326fbc5"
+    },
+    {
+      "path": "frontend/app/routes/diagnostic.tsx",
+      "sha256": "1da5d63869dcf97d47251dc9b38facb16e12b66165c92d92e48f2f2d072db892"
+    },
+    {
+      "path": "frontend/app/utils/url-builder.utils.ts",
+      "sha256": "e497d9a119ba002b78ff33921d2c15437ff893f043c52e97d9cd056b202a4ff1"
+    },
+    {
+      "path": "frontend/tests/unit/diagnostic-legacy-navigation.test.tsx",
+      "sha256": "d7ed0f7d0b2de2c3f0f15e0bc4614755b90a7a3da3fa7a7924dd0ae8e645afe9"
+    },
+    {
+      "path": "frontend/tests/unit/diagnostic-maintenance-flow.test.tsx",
+      "sha256": "239fae12f8078742b920210ca7009caebb13dd600e440e9c00b45929ad9e7511"
+    },
+    {
+      "path": "frontend/tests/unit/diagnostic-maintenance-step.test.tsx",
+      "sha256": "6fd4bcdb8dddedc490d984ed03c4e96180ab743608483802c61b8811a812fe58"
+    },
+    {
+      "path": "frontend/tests/unit/diagnostic-result-links.test.tsx",
+      "sha256": "609e5d941721d666d778a258e200128f1d6ca77fce80f8001a159fded16af54d"
+    },
+    {
+      "path": "frontend/tests/unit/diagnostic-wizard-submission.test.tsx",
+      "sha256": "ac9990b214e6a399f634837afb24fd429319469914ca65a03ebc12dc2333ecc5"
+    }
+  ],
+  "excluded_paths": [
+    "output/playwright",
+    "node_modules",
+    ".playwright-cli",
+    "application auth/payments/deployment runtime"
+  ],
+  "unscanned_zones": [
+    "repository-wide security",
+    "application runtime connected to database",
+    "CI/PREPROD/PROD",
+    "manufacturer applicability and vehicle mapping",
+    "full session replay",
+    "adaptive questions and DTC flow"
+  ],
+  "corrections_proposed": [],
+  "corrections_applied": {
+    "authorization": "Vérifier le rapport et corriger le code, puis continue",
+    "scope": "isolated DEV worktree only",
+    "count_code_and_test_files": 19
+  },
+  "validation_executed": {
+    "backend": {
+      "engine_tests": 153,
+      "engine_suites": 11,
+      "calculator_tests": 13,
+      "calculator_suites": 2
+    },
+    "frontend": {
+      "integration_tests": 19,
+      "component_tests": 9,
+      "legacy_unchanged_tests_reused": 6
+    },
+    "typecheck_backend": "passed",
+    "typecheck_frontend": "passed",
+    "react_router_typegen": "passed",
+    "lint": "passed targeted sources and applicable tests; two legacy backend tests excluded by existing parserOptions.project",
+    "browser": "Chromium isolated with simulated API; desktop and mobile screenshots inspected; width390=documentWidth390; server stopped",
+    "database": "READ ONLY source presence and interval checks"
+  },
+  "remaining_unknowns": [
+    "Applicability to exact engine/equipment and manufacturer references",
+    "Mapping between 30 operations and 19 KG intervals",
+    "KG calendar per-operation histories",
+    "Integration endpoint + real DB and full deployment proof",
+    "Replay and other findings from original audit"
+  ],
+  "final_status": "VALIDATED_FOR_SCOPE_ONLY",
+  "overall_audit_status": "PARTIAL_COVERAGE"
+}

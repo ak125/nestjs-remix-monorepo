@@ -1,3 +1,23 @@
+---
+# Chargée à la demande : quand l'agent lit un fichier qui correspond à ces chemins.
+# Hors de ces chemins, CLAUDE.md (invariant 8, §Vocabulaire déploiement) pointe ici
+# avant toute action infra. Le lint check-preprod-vocabulary.sh reste la garde mécanique.
+paths:
+  - ".github/workflows/**"
+  - "docker/**"
+  - "docker-compose*.yml"
+  - "Dockerfile*"
+  - ".sops.yaml"
+  - "secrets/**"
+  - "scripts/ops/**"
+  - "scripts/ci/**"
+  - "scripts/lint/check-preprod-vocabulary.sh"
+  - "scripts/claude-hooks/pretool-bash-guard.sh"
+  - ".husky/pre-push"
+  - "backend/src/contract/env-contract/**"
+  - ".spec/runbooks/**"
+---
+
 # Deployment — VOCABULAIRE STRICT (canon)
 
 > **Charger ce fichier AVANT toute action sur l'infra de déploiement.**
@@ -28,7 +48,9 @@ feature (sinon DEV:3000 sert du code périmé).
 
 **6 axes de dérive** vs `main` (le script garde 1-2, alerte sur 3-6 — jamais d'action destructive auto) :
 
-1. **Git** : checkout sur main + ff-pull `origin/main`. (auto)
+1. **Git** : checkout sur main + ff-pull `origin/main`, puis sous-modules alignés sur leur pin
+   (`sync_submodules()` : le ff déplace le pin sans toucher le contenu). Contenu modifié
+   localement, commit non publié ou dépôt injoignable → alerte, jamais d'écrasement. (auto)
 2. **`.env`** : `backend/.env` doit avoir toutes les vars REQUIRED de `env-validation.ts`
    (ex. `JWT_SECRET` depuis #606) ; manquante → boot crash. (alerte via health-check KO)
 3. **Node** : doit matcher `.nvmrc`/`engines` (≥22) ; sinon crash `@supabase/realtime-js` ;
@@ -53,8 +75,9 @@ feature (sinon DEV:3000 sert du code périmé).
 ## Mécanique du tag Docker `:preprod` (alias flottant)
 
 - Le tag `:preprod` est **réécrit à chaque merge sur `main`** (workflow `ci.yml` → step `build`).
-- Il est **promu vers `:production`** par push d'un tag git `v*` (workflow `deploy-prod.yml`).
+- Le push d'un tag git `v*` sélectionne **`:sha-<SHA complet du commit>`**, publié par le même build. Après contrôle du label de provenance, `deploy-prod.yml` promeut son **identifiant local immuable** vers `:production` et le tag de version. Un déplacement de `:preprod` ne change plus cette sélection.
 - Ce n'est **pas une référence stable** — pour debug historique ou rollback, utiliser un SHA git ou un tag semver explicite.
+- Le label SHA de l'image sélectionnée prouve la **provenance**, pas la **validation** : `deploy-prod.yml` refuse aussi, avant toute mutation, un commit dont le run `ci.yml` (push `main`) n'a pas `🧪 Deploy PREPROD`, `🎭 E2E Smoke Tests` et `🔦 Lighthouse Performance Audit` en `success` (`scripts/ci/prod-preprod-evidence.mjs`). Un commit dont le run a été annulé par un merge suivant n'est pas validé : taguer le dernier commit vert.
 
 ## Pièges de nommage INTERDITS (CI lint enforcé)
 
@@ -78,13 +101,13 @@ Toute occurrence des patterns ci-dessous dans un fichier `.md` du repo (hors err
 | Trigger git | Workflow | Image produite | Cible runtime | Latence | Validation humaine ? |
 |-------------|----------|----------------|---------------|---------|----------------------|
 | `push origin main` | `.github/workflows/ci.yml` job `deploy` | push `:preprod` sur DockerHub | container PREPROD (49.12.233.2:3200) redémarré | ~10 min | NON (E2E Smoke + Lighthouse CI automatiques) |
-| `push origin v*` (tag) | `.github/workflows/deploy-prod.yml` | promote `:preprod` → `:production` | container PROD (49.12.233.2:80/443) redémarré | ~5 min | OUI (tag manuel = décision opérateur) |
+| `push origin v*` (tag) | `.github/workflows/deploy-prod.yml` | promote l'image du commit → `:production` | container PROD (49.12.233.2:80/443) redémarré | ~5 min | OUI (tag manuel = décision opérateur) |
 | `workflow_dispatch` manuel sur `deploy-prod.yml` | idem `deploy-prod.yml` | idem | idem PROD | idem | OUI |
 
 **Règles mnémoniques** :
 
 - `git push main` = **build + push tag `:preprod` + redéploiement container PREPROD CI**. **Pas de redéploiement PROD.**
-- `git tag v… && git push --tags` = **promotion `:preprod` → `:production` + redéploiement container PROD**.
+- `git tag v… && git push --tags` = **promotion de l'image du commit → `:production` + redéploiement container PROD**.
 - Jamais annoncer "déployé en PROD" après un simple merge sur `main`.
 
 ## Contrat env CI (preflight)

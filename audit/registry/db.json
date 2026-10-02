@@ -158,7 +158,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -386,7 +386,7 @@
       "name": "__admin_audit_log",
       "owner": "__unassigned__",
       "risk": "low",
-      "rlsEnabled": false,
+      "rlsEnabled": true,
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "low",
@@ -1250,6 +1250,7 @@
       "sourceConfidence": "low",
       "status": "LIVE",
       "usedBy": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
         "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts"
       ]
     },
@@ -1888,7 +1889,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -1998,7 +1999,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -2444,7 +2445,7 @@
       "name": "__pipeline_chain_queue",
       "owner": "__unassigned__",
       "risk": "low",
-      "rlsEnabled": false,
+      "rlsEnabled": true,
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "low",
@@ -2507,7 +2508,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -2581,7 +2582,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -2673,7 +2674,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -3041,7 +3042,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -3240,7 +3241,7 @@
       "name": "__refunds",
       "owner": "__unassigned__",
       "risk": "low",
-      "rlsEnabled": false,
+      "rlsEnabled": true,
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "low",
@@ -3302,7 +3303,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -3528,7 +3529,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -3929,7 +3930,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -3948,7 +3949,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -3967,7 +3968,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -4021,7 +4022,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -4040,7 +4041,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -4059,7 +4060,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -4271,7 +4272,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -4646,7 +4647,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -4824,7 +4825,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -4843,7 +4844,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -4862,7 +4863,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -5089,14 +5090,11 @@
       "status": "LIVE",
       "usedBy": [
         "backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts",
-        "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts",
         "backend/src/modules/admin/services/conseil-priority.service.ts",
         "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-        "backend/src/modules/blog/services/blog-seo.service.ts",
         "backend/src/modules/blog/services/guide.service.ts",
         "backend/src/modules/blog/services/r6-guide.service.ts",
-        "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
         "backend/src/modules/gamme-rest/services/buying-guide-data.service.ts",
         "backend/src/modules/gamme-rest/services/purchase-guide-data.service.ts",
         "backend/src/modules/marketing/services/marketing-data.service.ts",
@@ -5304,7 +5302,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -5323,7 +5321,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -5342,7 +5340,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -5404,7 +5402,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -5478,7 +5476,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -5600,7 +5598,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -5656,7 +5654,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -5888,7 +5886,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -6101,7 +6099,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -6637,7 +6635,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -6656,7 +6654,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -6675,7 +6673,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -7104,7 +7102,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -7142,27 +7140,8 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
-    },
-    {
-      "columns": [],
-      "deletePolicy": "ADR_REQUIRED",
-      "domain": "UNKNOWN",
-      "id": "__seo_r2_keyword_plan",
-      "inMigrations": [],
-      "indexes": [],
-      "name": "__seo_r2_keyword_plan",
-      "owner": "__unassigned__",
-      "risk": "low",
-      "rlsEnabled": true,
-      "schema": "public",
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "low",
-      "status": "LIVE",
-      "usedBy": [
-        "backend/src/modules/admin/services/r2-enricher.service.ts"
-      ]
     },
     {
       "columns": [
@@ -7187,7 +7166,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -7219,7 +7198,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -7293,7 +7272,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -7361,7 +7340,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -7441,7 +7420,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -7485,7 +7464,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -7547,7 +7526,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -7597,7 +7576,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -7758,7 +7737,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -7913,7 +7892,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -8177,7 +8156,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -8823,7 +8802,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -8899,7 +8878,8 @@
       "domain": "UNKNOWN",
       "id": "__seo_role_template_pool",
       "inMigrations": [
-        "20260509_seo_role_template_pool_with_r8_meta_seed.sql"
+        "20260509_seo_role_template_pool_with_r8_meta_seed.sql",
+        "20260924_seo_role_template_pool_forward_apply.sql"
       ],
       "indexes": [],
       "name": "__seo_role_template_pool",
@@ -8909,7 +8889,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -8953,7 +8933,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -9445,7 +9425,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -9507,7 +9487,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -9653,7 +9633,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -9747,7 +9727,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -9808,7 +9788,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -9877,7 +9857,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -10028,7 +10008,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -10114,7 +10094,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -10248,7 +10228,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -10286,7 +10266,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -10414,7 +10394,7 @@
       "name": "__video_execution_log",
       "owner": "__unassigned__",
       "risk": "low",
-      "rlsEnabled": false,
+      "rlsEnabled": true,
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "low",
@@ -10602,7 +10582,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -10683,7 +10663,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -10777,6 +10757,7 @@
         "backend/src/modules/catalog/controllers/pieces-diagnostic.controller.ts",
         "backend/src/modules/catalog/controllers/vehicle-hierarchy.controller.ts",
         "backend/src/modules/catalog/services/compatibility.service.ts",
+        "backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts",
         "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.ts",
         "backend/src/modules/seo/r2/services/r2-r8-gate-status.service.ts",
         "backend/src/modules/seo/r2/services/r8-parent-enrichment.service.ts",
@@ -10934,7 +10915,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -10972,7 +10953,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -11294,7 +11275,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -11374,7 +11355,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -11454,7 +11435,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -11570,7 +11551,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -11632,7 +11613,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -11741,7 +11722,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -11785,7 +11766,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -11835,7 +11816,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -11891,7 +11872,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -11941,7 +11922,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -12025,7 +12006,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -12087,7 +12068,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -12172,7 +12153,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -12234,7 +12215,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -12284,7 +12265,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -12328,7 +12309,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -12555,7 +12536,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -12574,7 +12555,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -12662,7 +12643,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -12705,6 +12686,7 @@
         "backend/src/modules/blog/services/r6-guide.service.ts",
         "backend/src/modules/catalog/services/accessory-products.service.ts",
         "backend/src/modules/catalog/services/homepage-rpc.service.ts",
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
         "backend/src/modules/marketing/services/marketing-data.service.ts",
         "backend/src/modules/marketing/services/marketing-hub-data.service.ts",
         "backend/src/modules/media-factory/services/script-generator.service.ts",
@@ -12768,7 +12750,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -12812,7 +12794,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -13043,7 +13025,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -13062,7 +13044,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -13081,7 +13063,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -13100,7 +13082,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -13119,7 +13101,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -13452,7 +13434,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -13471,7 +13453,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -13490,7 +13472,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -13509,7 +13491,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -13528,7 +13510,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -13727,7 +13709,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -13931,7 +13913,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -14005,7 +13987,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -14439,7 +14421,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -14458,7 +14440,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -14477,7 +14459,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {
@@ -14496,7 +14478,7 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE",
+      "status": "UNKNOWN",
       "usedBy": []
     },
     {

@@ -12,6 +12,7 @@
 
 import { ChevronDown } from "lucide-react";
 import { useState, useCallback, useMemo, memo } from "react";
+import { type RmGroupedPiece } from "~/services/api/rm-api.service";
 import {
   type PieceData,
   type PiecesFilters,
@@ -27,9 +28,9 @@ const INITIAL_VISIBLE_COUNT = 20;
 const LOAD_MORE_INCREMENT = 20;
 
 interface GroupedPiece {
-  filtre_gamme: string;
-  filtre_side?: string; // Optional - can be null/undefined in RM V2 response
-  title_h2?: string;
+  filtre_gamme: RmGroupedPiece["filtre_gamme"];
+  filtre_side?: RmGroupedPiece["filtre_side"];
+  title_h2?: RmGroupedPiece["title_h2"];
   pieces?: any[];
   oemRefs?: string[]; // OEM refs per group from RM V2
   oemRefsCount?: number;
@@ -161,6 +162,16 @@ export const PiecesGroupedDisplay = memo(function PiecesGroupedDisplay({
   return (
     <div className="space-y-8">
       {filteredGroups.map(({ group, groupPieces }, idx) => {
+        // Catalog group labels are nullable (unclassified products). Keep the
+        // products, but never stringify absence or invent a catalog heading.
+        // Missing labels are reported by the server loader.
+        const groupTitle =
+          group.title_h2?.trim() ||
+          [group.filtre_gamme, group.filtre_side]
+            .map((label) => label?.trim())
+            .filter((label): label is string => Boolean(label))
+            .join(" ");
+
         // Clé unique pour ce groupe
         const groupKey = `${group.filtre_gamme}-${group.filtre_side}-${idx}`;
 
@@ -178,20 +189,20 @@ export const PiecesGroupedDisplay = memo(function PiecesGroupedDisplay({
             className="animate-in fade-in slide-in-from-top duration-500"
           >
             {/* Titre dynamique — H2 pour groupes riches, H3 compact pour groupes ≤ 1 */}
-            {groupPieces.length > 1 ? (
-              <h2 className="text-2xl font-bold text-gray-900 mb-4 pb-3 border-b-2 border-blue-500 flex items-center gap-3">
-                <span className="w-1.5 h-8 bg-gradient-to-b from-blue-500 rounded-full"></span>
-                {group.title_h2 || `${group.filtre_gamme} ${group.filtre_side}`}{" "}
-                {vehicleModele}
-                <span className="text-sm font-normal text-gray-500 ml-auto">
-                  ({groupPieces.length} articles)
-                </span>
-              </h2>
-            ) : (
-              <h3 className="text-lg font-semibold text-gray-700 mb-3 pb-2 border-b border-gray-200">
-                {group.title_h2 || `${group.filtre_gamme} ${group.filtre_side}`}
-              </h3>
-            )}
+            {groupTitle &&
+              (groupPieces.length > 1 ? (
+                <h2 className="text-2xl font-bold text-gray-900 mb-4 pb-3 border-b-2 border-blue-500 flex items-center gap-3">
+                  <span className="w-1.5 h-8 bg-gradient-to-b from-blue-500 rounded-full"></span>
+                  {groupTitle} {vehicleModele}
+                  <span className="text-sm font-normal text-gray-500 ml-auto">
+                    ({groupPieces.length} articles)
+                  </span>
+                </h2>
+              ) : (
+                <h3 className="text-lg font-semibold text-gray-700 mb-3 pb-2 border-b border-gray-200">
+                  {groupTitle}
+                </h3>
+              ))}
 
             {/* Grille ou liste de pièces (avec pagination) */}
             {viewMode === "grid" && (

@@ -11,7 +11,13 @@
 process.env.SUPABASE_URL ||= 'https://exemple.supabase.co';
 process.env.SUPABASE_SERVICE_ROLE_KEY ||= 'cle-de-service-factice';
 
+import type { HttpException } from '@nestjs/common';
 import type { CacheService } from '@cache/cache.service';
+import {
+  BusinessRuleException,
+  DomainNotFoundException,
+  ErrorCodes,
+} from '@common/exceptions';
 import { CartDataService } from './cart-data.service';
 import type {
   PiecePriceDataService,
@@ -60,7 +66,23 @@ function tarif(venteTtc: number): SellablePriceRow {
   };
 }
 
-function sujet(tarifRetenu: SellablePriceRow | null) {
+/** Client dont la lecture de la pièce renvoie l'erreur PostgREST donnée. */
+function clientEnErreur(error: { code: string; message: string }) {
+  return {
+    from: () => ({
+      select: () => ({
+        eq: () => ({
+          single: () => Promise.resolve({ data: null, error }),
+        }),
+      }),
+    }),
+  };
+}
+
+function sujet(
+  tarifRetenu: SellablePriceRow | null,
+  client: unknown = clientFactice,
+) {
   const piecePriceData = {
     findSellablePrice: jest.fn().mockResolvedValue(tarifRetenu),
     findSellablePrices: jest.fn().mockResolvedValue(new Map()),
@@ -73,7 +95,7 @@ function sujet(tarifRetenu: SellablePriceRow | null) {
   } as unknown as CacheService;
 
   const service = new CartDataService(cacheService, piecePriceData);
-  Object.defineProperty(service, 'client', { get: () => clientFactice });
+  Object.defineProperty(service, 'client', { get: () => client });
   return service;
 }
 
@@ -105,6 +127,15 @@ describe('CartDataService — refus d’un article sans tarif vendable', () => {
     ).rejects.toMatchObject({ code: 'CART.NOT_SELLABLE' });
   });
 
+  it('signale ce refus comme une règle métier (422), pas comme une panne (500)', async () => {
+    const erreur = await sujet(null)
+      .addCartItem('session-test', PIECE_ID, 1)
+      .catch((e: unknown) => e);
+
+    expect(erreur).toBeInstanceOf(BusinessRuleException);
+    expect((erreur as HttpException).getStatus()).toBe(422);
+  });
+
   it("n'ajoute pas l'article à 0 € ni à 99,99 € en repli", async () => {
     const service = sujet(null);
 
@@ -128,5 +159,44 @@ describe('CartDataService — refus d’un article sans tarif vendable', () => {
     await expect(
       service.addCartItem('session-test', PIECE_ID, -1, 29.36),
     ).resolves.toBeDefined();
+  });
+});
+
+describe('CartDataService — produit introuvable à l’ajout', () => {
+  it('répond 404 quand la base confirme qu’aucune pièce ne porte cet identifiant', async () => {
+    // PGRST116 : `.single()` n'a trouvé aucune ligne.
+    const service = sujet(
+      tarif(29.36),
+      clientEnErreur({ code: 'PGRST116', message: '0 rows' }),
+    );
+
+    const erreur = await service
+      .addCartItem('session-test', 999, 1)
+      .catch((e: unknown) => e);
+
+    expect(erreur).toBeInstanceOf(DomainNotFoundException);
+    expect((erreur as HttpException).getStatus()).toBe(404);
+    expect(erreur).toMatchObject({ code: ErrorCodes.CART.PRODUCT_NOT_FOUND });
+  });
+
+  it('ne déguise pas une panne de la base en « produit introuvable »', async () => {
+    // Une lecture interrompue ne prouve pas l'absence de la pièce : la
+    // présenter en 404 masquerait la panne et ferait croire au client que le
+    // produit n'existe pas.
+    const service = sujet(
+      tarif(29.36),
+      clientEnErreur({
+        code: '57014',
+        message: 'canceling statement due to statement timeout',
+      }),
+    );
+
+    const erreur = await service
+      .addCartItem('session-test', PIECE_ID, 1)
+      .catch((e: unknown) => e);
+
+    expect(erreur).toBeDefined();
+    expect(erreur).not.toBeInstanceOf(DomainNotFoundException);
+    expect(erreur).not.toBeInstanceOf(BusinessRuleException);
   });
 });
