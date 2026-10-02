@@ -12,12 +12,14 @@
  */
 import { Calendar, FileText, MapPin, ShoppingBag, Zap } from "lucide-react";
 import {
+  data,
   type LoaderFunctionArgs,
   useLoaderData,
   Link,
   Form,
   useSubmit,
 } from "react-router";
+import { z } from "zod";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import {
@@ -29,30 +31,31 @@ import {
 } from "~/components/ui/select";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 
-interface BriefRow {
-  id: string;
-  agent_id: string;
-  business_unit: "ECOMMERCE" | "LOCAL" | "HYBRID";
-  channel: string;
-  conversion_goal: "CALL" | "VISIT" | "QUOTE" | "ORDER";
-  cta: string;
-  target_segment: string;
-  brand_gate_level: "PASS" | "WARN" | "FAIL" | null;
-  status: "draft" | "reviewed" | "approved" | "published" | "archived";
-  created_at: string;
-  reviewed_by: string | null;
-  approved_by: string | null;
-}
+const briefRowSchema = z.object({
+  id: z.string(),
+  agent_id: z.string(),
+  business_unit: z.enum(["ECOMMERCE", "LOCAL", "HYBRID"]),
+  channel: z.string(),
+  conversion_goal: z.enum(["CALL", "VISIT", "QUOTE", "ORDER"]),
+  cta: z.string(),
+  target_segment: z.string(),
+  brand_gate_level: z.enum(["PASS", "WARN", "FAIL"]).nullable(),
+  status: z.enum(["draft", "reviewed", "approved", "published", "archived"]),
+  created_at: z.string(),
+  reviewed_by: z.string().nullable(),
+  approved_by: z.string().nullable(),
+});
+type BriefRow = z.infer<typeof briefRowSchema>;
 
-interface BriefsResponse {
-  success: boolean;
-  data: {
-    items: BriefRow[];
-    total: number;
-    page: number;
-    limit: number;
-  };
-}
+const briefsResponseSchema = z.object({
+  success: z.literal(true),
+  data: z.object({
+    items: z.array(briefRowSchema),
+    total: z.number().int().nonnegative(),
+    page: z.number().int().positive(),
+    limit: z.number().int().positive(),
+  }),
+});
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
@@ -69,47 +72,50 @@ export async function loader({ request }: LoaderFunctionArgs) {
   params.set("page", page);
   params.set("limit", "50");
 
+  const unavailable = (httpStatus: number) => {
+    const error =
+      httpStatus === 400
+        ? "Les filtres demandés sont invalides. Modifiez-les puis réessayez."
+        : httpStatus === 401
+          ? "Reconnectez-vous pour consulter les briefs."
+          : httpStatus === 403
+            ? "Vous n’avez pas accès aux briefs marketing."
+            : "Impossible de charger les briefs. Réessayez.";
+    return data(
+      { items: null, total: null, page: null, limit: 50, unit, status, error },
+      { status: httpStatus },
+    );
+  };
+
+  let res: Response;
   try {
     const apiUrl = getInternalApiUrlFromRequest(
       `/api/admin/marketing/briefs?${params.toString()}`,
       request,
     );
-    const res = await fetch(apiUrl, {
+    res = await fetch(apiUrl, {
       headers: { Cookie: request.headers.get("Cookie") || "" },
     });
-    if (!res.ok) {
-      return {
-        items: [] as BriefRow[],
-        total: 0,
-        page: 1,
-        limit: 50,
-        unit,
-        status,
-        error: `Backend ${res.status}`,
-      };
-    }
-    const result = (await res.json()) as BriefsResponse;
-    return {
-      items: result.data.items,
-      total: result.data.total,
-      page: result.data.page,
-      limit: result.data.limit,
-      unit,
-      status,
-      error: null,
-    };
-  } catch (e) {
-    const message = e instanceof Error ? e.message : "Unknown error";
-    return {
-      items: [] as BriefRow[],
-      total: 0,
-      page: 1,
-      limit: 50,
-      unit,
-      status,
-      error: message,
-    };
+  } catch {
+    return unavailable(503);
   }
+
+  if (!res.ok) {
+    return unavailable(
+      res.status >= 400 && res.status <= 599 ? res.status : 502,
+    );
+  }
+
+  let payload: unknown;
+  try {
+    payload = await res.json();
+  } catch {
+    return unavailable(502);
+  }
+  const result = briefsResponseSchema.safeParse(payload);
+  if (!result.success) return unavailable(502);
+
+  return { ...result.data.data, unit, status, error: null };
 }
 
 const businessUnitIcon: Record<BriefRow["business_unit"], typeof MapPin> = {
@@ -201,78 +207,78 @@ export default function MarketingBriefsList() {
         </div>
       </div>
 
-      {data.error && (
+      {data.error !== null ? (
         <Card>
           <CardContent className="p-6">
-            <p className="text-sm text-destructive">
-              Backend indisponible : {data.error}
-            </p>
-            <p className="text-xs text-muted-foreground mt-2">
-              Phase 1 ADR-036 — la table <code>__marketing_brief</code> est vide
-              tant que les agents (Phase 1.5) ne sont pas activés.
+            <p role="alert" className="text-sm text-destructive">
+              {data.error}
             </p>
           </CardContent>
         </Card>
-      )}
-
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            {data.total} brief{data.total > 1 ? "s" : ""}
-            {data.unit && ` · ${data.unit}`}
-            {data.status && ` · ${data.status}`}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {data.items.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              Aucun brief pour ce filtre. Les agents marketing (Phase 1.5)
-              produiront des briefs automatiquement une fois activés.
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {data.items.map((brief) => {
-                const Icon = businessUnitIcon[brief.business_unit];
-                return (
-                  <Link
-                    key={brief.id}
-                    to={`/admin/marketing/briefs/${brief.id}`}
-                    className="block p-4 border rounded-lg hover:bg-accent transition-colors"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <Icon className="h-4 w-4" />
-                        <Badge variant="outline">{brief.business_unit}</Badge>
-                        <Badge variant="outline">{brief.channel}</Badge>
-                        <Badge variant="outline">{brief.conversion_goal}</Badge>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {brief.brand_gate_level && (
-                          <Badge variant={gateVariant[brief.brand_gate_level]}>
-                            gate: {brief.brand_gate_level}
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              {data.total} brief{data.total > 1 ? "s" : ""}
+              {data.unit && ` · ${data.unit}`}
+              {data.status && ` · ${data.status}`}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {data.items.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                Aucun brief pour ce filtre. Les agents marketing (Phase 1.5)
+                produiront des briefs automatiquement une fois activés.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {data.items.map((brief) => {
+                  const Icon = businessUnitIcon[brief.business_unit];
+                  return (
+                    <Link
+                      key={brief.id}
+                      to={`/admin/marketing/briefs/${brief.id}`}
+                      className="block p-4 border rounded-lg hover:bg-accent transition-colors"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <Icon className="h-4 w-4" />
+                          <Badge variant="outline">{brief.business_unit}</Badge>
+                          <Badge variant="outline">{brief.channel}</Badge>
+                          <Badge variant="outline">
+                            {brief.conversion_goal}
                           </Badge>
-                        )}
-                        <Badge variant={statusVariant[brief.status]}>
-                          {brief.status}
-                        </Badge>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {brief.brand_gate_level && (
+                            <Badge
+                              variant={gateVariant[brief.brand_gate_level]}
+                            >
+                              gate: {brief.brand_gate_level}
+                            </Badge>
+                          )}
+                          <Badge variant={statusVariant[brief.status]}>
+                            {brief.status}
+                          </Badge>
+                        </div>
                       </div>
-                    </div>
-                    <p className="text-sm font-medium mb-1">{brief.cta}</p>
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                      <span>agent: {brief.agent_id}</span>
-                      <span>segment: {brief.target_segment}</span>
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {new Date(brief.created_at).toLocaleString("fr-FR")}
-                      </span>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                      <p className="text-sm font-medium mb-1">{brief.cta}</p>
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                        <span>agent: {brief.agent_id}</span>
+                        <span>segment: {brief.target_segment}</span>
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {new Date(brief.created_at).toLocaleString("fr-FR")}
+                        </span>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
