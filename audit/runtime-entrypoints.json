@@ -85,6 +85,7 @@
       "frontend/app/routes/admin.marketing._index.tsx",
       "frontend/app/routes/admin.marketing.backlinks.tsx",
       "frontend/app/routes/admin.marketing.briefs.tsx",
+      "frontend/app/routes/admin.marketing.briefs_.$id.tsx",
       "frontend/app/routes/admin.marketing.content-roadmap.tsx",
       "frontend/app/routes/admin.marketing.social-hub.posts.tsx",
       "frontend/app/routes/admin.marketing.tsx",
@@ -325,6 +326,7 @@
       "frontend/app/routes/admin.marketing._index.tsx",
       "frontend/app/routes/admin.marketing.backlinks.tsx",
       "frontend/app/routes/admin.marketing.briefs.tsx",
+      "frontend/app/routes/admin.marketing.briefs_.$id.tsx",
       "frontend/app/routes/admin.marketing.content-roadmap.tsx",
       "frontend/app/routes/admin.marketing.social-hub.posts.tsx",
       "frontend/app/routes/admin.menu.tsx",
@@ -2951,7 +2953,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1564,
+  "runtime_files_count": 1565,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4251,6 +4253,7 @@
     "frontend/app/routes/admin.marketing._index.tsx",
     "frontend/app/routes/admin.marketing.backlinks.tsx",
     "frontend/app/routes/admin.marketing.briefs.tsx",
+    "frontend/app/routes/admin.marketing.briefs_.$id.tsx",
     "frontend/app/routes/admin.marketing.content-roadmap.tsx",
     "frontend/app/routes/admin.marketing.social-hub.posts.tsx",
     "frontend/app/routes/admin.marketing.tsx",

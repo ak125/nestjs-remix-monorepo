@@ -9360,6 +9360,15 @@
     },
     {
       "dependsOn": [],
+      "id": "runtime:frontend/app/routes/admin.marketing.briefs_.$id.tsx",
+      "kind": "remix-route",
+      "path": "frontend/app/routes/admin.marketing.briefs_.$id.tsx",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
       "id": "runtime:frontend/app/routes/admin.marketing.content-roadmap.tsx",
       "kind": "remix-route",
       "path": "frontend/app/routes/admin.marketing.content-roadmap.tsx",

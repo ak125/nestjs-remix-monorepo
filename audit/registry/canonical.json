@@ -82761,6 +82761,31 @@
         "manual"
       ],
       "domain": "D8",
+      "id": "frontend/app/routes/admin.marketing.briefs_.$id.tsx",
+      "importedBy": [],
+      "imports": [
+        "~/components/ui/badge",
+        "~/components/ui/button",
+        "~/components/ui/card",
+        "~/utils/internal-api.server"
+      ],
+      "kind": "route",
+      "loc": 352,
+      "owner": "@ak125/admin-team",
+      "path": "frontend/app/routes/admin.marketing.briefs_.$id.tsx",
+      "risk": "medium",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
       "id": "frontend/app/routes/admin.marketing.content-roadmap.tsx",
       "importedBy": [],
       "imports": [
@@ -92512,6 +92537,46 @@
         "manual"
       ],
       "domain": "D2",
+      "id": "frontend/tests/unit/marketing-brief-detail-routing.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 46,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/marketing-brief-detail-routing.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/marketing-brief-detail.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 522,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/marketing-brief-detail.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
       "id": "frontend/tests/unit/marketing-briefs-list-errors.test.tsx",
       "importedBy": [],
       "imports": [],
@@ -102073,11 +102138,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "06762d36694187f95afe05f89fddf30b7d9e1c39208d2837744cc6b5aeb1c792",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "1969090df83e64566b8aa26a16e2d7c8e463ca6ac1b023a3472c1de604feaa9f",
+      "audit/registry/files.json": "42a92fb99eac0e2ad82a6e31db8184bc9854f4b041c9ea7a5d6a54c40029436c",
       "audit/registry/rpc.json": "2b1e02eccb6da1cb24d66d4507afae699c1d5708c25bd610a0aadf57519fa4fc",
-      "audit/registry/runtime.json": "6f971451554ed42363824973d8f605032f87b9af54ac9e29f757b9bf9bb548c6"
+      "audit/registry/runtime.json": "edc836c508bc0644d3a7b13e50f404f19650cc75d6a8646a28d6f7124d7bfc7f"
     },
-    "sotFingerprint": "056a8c2d384a"
+    "sotFingerprint": "07812ec0240e"
   },
   "runtime": [
     {
@@ -111434,6 +111499,15 @@
       "id": "runtime:frontend/app/routes/admin.marketing.briefs.tsx",
       "kind": "remix-route",
       "path": "frontend/app/routes/admin.marketing.briefs.tsx",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
+      "id": "runtime:frontend/app/routes/admin.marketing.briefs_.$id.tsx",
+      "kind": "remix-route",
+      "path": "frontend/app/routes/admin.marketing.briefs_.$id.tsx",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"

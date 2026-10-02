@@ -53067,6 +53067,30 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/app/routes/admin.marketing.briefs_.$id.tsx",
+      "importedBy": [],
+      "imports": [
+        "~/components/ui/badge",
+        "~/components/ui/button",
+        "~/components/ui/card",
+        "~/utils/internal-api.server"
+      ],
+      "kind": "route",
+      "loc": 352,
+      "owner": "__unassigned__",
+      "path": "frontend/app/routes/admin.marketing.briefs_.$id.tsx",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/app/routes/admin.marketing.content-roadmap.tsx",
       "importedBy": [],
       "imports": [
@@ -62468,6 +62492,44 @@
       "loc": 96,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/login-role-redirect.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/marketing-brief-detail-routing.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 46,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/marketing-brief-detail-routing.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/marketing-brief-detail.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 522,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/marketing-brief-detail.test.tsx",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
