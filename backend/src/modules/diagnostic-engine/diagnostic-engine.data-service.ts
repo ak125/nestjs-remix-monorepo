@@ -19,6 +19,7 @@ import {
   DiagCauseLinksSchema,
   DiagCausesSchema,
   DiagSafetyRulesSchema,
+  DiagSafetyRuleCoverageSchema,
 } from './types/diagnostic-reference.schema';
 
 // ── DB Row types (aligned on migration schema) ──────────
@@ -263,13 +264,16 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
   ): Promise<DiagSymptomCauseLink[]> {
     if (!symptomSlugs.length) return [];
 
-    // Equal-weight arithmetic mean of unique symptom contributions. Sort input
-    // and evidence for deterministic results; round once after aggregation.
+    // Equal-weight arithmetic mean over the unique selected symptoms. A symptom
+    // not linked to a cause contributes 0: no evidence is imputed for it.
+    // Sort input and evidence for deterministic results; round once after
+    // aggregation.
+    const slugs = [...new Set(symptomSlugs)].sort();
     const merged = new Map<
       number,
-      { link: DiagSymptomCauseLink; sum: number; count: number }
+      { link: DiagSymptomCauseLink; sum: number }
     >();
-    for (const slug of [...new Set(symptomSlugs)].sort()) {
+    for (const slug of slugs) {
       const links = await this.getScoredCausesForSymptom(slug);
       if (!links.length)
         throw new Error('Diagnostic cause coverage incomplete');
@@ -277,7 +281,6 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
         const existing = merged.get(link.cause_id);
         if (existing) {
           existing.sum += link.relative_score;
-          existing.count += 1;
           existing.link.evidence_for = [
             ...new Set([...existing.link.evidence_for, ...link.evidence_for]),
           ].sort();
@@ -296,15 +299,14 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
               evidence_against: [...new Set(link.evidence_against)].sort(),
             },
             sum: link.relative_score,
-            count: 1,
           });
         }
       }
     }
     return [...merged.values()]
-      .map(({ link, sum, count }) => ({
+      .map(({ link, sum }) => ({
         ...link,
-        relative_score: Math.round(sum / count),
+        relative_score: Math.round(sum / slugs.length),
       }))
       .sort(
         (a, b) =>
@@ -340,23 +342,41 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
   }
 
   /**
-   * Get cost ranges for a list of pg_ids from __seo_gamme_purchase_guide
+   * Which of these gammes have their own catalogue page. Only main gammes
+   * (pg_level 1/2) are served; level-4/5 accessory gammes are hidden by
+   * design and their URL answers 404. pg_display does not decide it: level-1
+   * gammes such as Batterie are served with pg_display = 0.
    */
-  async getCostRanges(pgIds: number[]): Promise<Map<number, string>> {
-    if (!pgIds.length) return new Map();
+  async getGammeIdsWithCataloguePage(pgIds: number[]): Promise<Set<number>> {
+    if (!pgIds.length) return new Set();
     const { data, error } = await this.supabase
-      .from('__seo_gamme_purchase_guide')
-      .select('sgpg_pg_id, sgpg_risk_cost_range')
-      .in('sgpg_pg_id', pgIds.map(String));
+      .from('pieces_gamme')
+      .select('pg_id')
+      .in('pg_id', pgIds)
+      .in('pg_level', ['1', '2']);
 
-    if (error || !data) return new Map();
-    const map = new Map<number, string>();
-    for (const row of data) {
-      if (row.sgpg_risk_cost_range) {
-        map.set(Number(row.sgpg_pg_id), row.sgpg_risk_cost_range);
-      }
+    if (error || !Array.isArray(data)) {
+      this.logger.error('Failed to fetch catalogue gammes', error?.message);
+      throw new Error('Catalogue gammes unavailable');
     }
-    return map;
+    return new Set(data.map((row) => Number(row.pg_id)));
+  }
+
+  /**
+   * Systems that have at least one active safety rule.
+   */
+  async getSystemIdsWithSafetyRules(): Promise<Set<number>> {
+    const { data, error } = await this.supabase
+      .from('__diag_safety_rule')
+      .select('system_id, active')
+      .eq('active', true);
+
+    if (error) {
+      this.logger.error('Failed to fetch safety rule coverage', error.message);
+      throw new Error('Safety rules unavailable');
+    }
+    DiagSafetyRuleCoverageSchema.parse(data);
+    return new Set(data.map((row) => row.system_id));
   }
 
   /**

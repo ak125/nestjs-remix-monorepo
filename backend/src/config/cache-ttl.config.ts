@@ -76,6 +76,18 @@ export interface CacheStrategy {
  * this.cacheService.set(getCacheKey(strategy, brandId), data, strategy.ttl);
  */
 export const CACHE_STRATEGIES = {
+  BOT_GUARD: {
+    MINUTE_STATS: {
+      ttl: CacheTTL.ONE_DAY + CacheTTL.ONE_HOUR,
+      prefix: 'bot-guard:stats:v2:minute:',
+      description: 'Atomic minute counters; 24 completed hours, 25h retention',
+    },
+    RECENT_BLOCKS: {
+      ttl: CacheTTL.ONE_DAY,
+      prefix: 'bot-guard:recent-blocks:v2',
+      description: 'Redis list capped at 100 blocks, filtered to the last 24h',
+    },
+  },
   // ═══════════════════════════════════════════════════════════════
   // AUTHENTICATION & SESSION
   // ═══════════════════════════════════════════════════════════════
@@ -220,6 +232,13 @@ export const CACHE_STRATEGIES = {
       prefix: 'blog:cold:',
       adaptive: true,
       description: 'Low-traffic articles (<100 views)',
+    },
+    R6_GUIDE_LINKS: {
+      ttl: CacheTTL.TEN_MINUTES,
+      prefix: 'r6-guide-links:',
+      keyVersion: 'v1',
+      description:
+        'Guides d’achat publiés + gammes avec page conseils (règle des liens ADR-103 D5) — sans le drapeau, lu à chaque appel',
     },
   },
 
