@@ -100,12 +100,24 @@ ENV REGISTRY_DIR=/app/audit/registry
 
 # 📚 Wiki SEO exports read by the SEO Projection feeder/writer (ADR-099 D2).
 # The embedded version is the submodule pin of the commit being built (build.yml
-# checks out with `submodules: true`); only `exports/seo` is copied, not the rest
-# of the wiki. Destination = the code default `content/automecanik-wiki/exports/seo`
+# checks out with `submodules: true`). Destination = the code default
+# `content/automecanik-wiki/exports/seo`
 # resolved from cwd=/app/backend (start.sh "cd backend"). An uninitialised submodule
 # leaves the source missing and FAILS the build: an image never ships an unknown
 # exports version. Copied from the builder stage (full source), like audit/registry.
 COPY --chown=remix-api:nodejs --from=builder /app/backend/content/automecanik-wiki/exports/seo ./backend/content/automecanik-wiki/exports/seo
+
+# Public diagnostic/support content read by DiagnosticContentService (ADR-032).
+# Keep the pinned wiki files at the reader's absolute runtime path. Explicit
+# sources make a missing required file fail the build instead of serving 503s.
+COPY --chown=remix-api:nodejs --from=builder \
+    /app/backend/content/automecanik-wiki/wiki/diagnostic/wizard-steps.md \
+    /app/backend/content/automecanik-wiki/wiki/diagnostic/safety-config.md \
+    /app/backend/content/automecanik-wiki/wiki/diagnostic/vocab-clusters.md \
+    /app/backend/content/automecanik-wiki/wiki/diagnostic/signs.md \
+    /app/backend/content/automecanik-wiki/wiki/diagnostic/faq.md \
+    ./backend/content/automecanik-wiki/wiki/diagnostic/
+COPY --chown=remix-api:nodejs --from=builder /app/backend/content/automecanik-wiki/wiki/support/controles-mensuels.md ./backend/content/automecanik-wiki/wiki/support/
 
 COPY --chown=remix-api:nodejs --from=builder /app/backend/start.sh ./backend/start.sh
 RUN chmod +x ./backend/start.sh
