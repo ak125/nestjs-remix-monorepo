@@ -182,9 +182,11 @@ check_dev_runtime_topology() {
   # Processus du stack dev de CE checkout, relevés en une passe (cwd dans le
   #     repo : un autre projet de la machine ne compte pas). Identification par
   #     titre exact : npm remplace son titre par « npm run <script> » complété
-  #     d'octets nuls, que `pgrep -f` rend en espaces de fin — un motif ancré
-  #     `^npm run dev$` n'y trouve JAMAIS la racine (mesuré le 2026-09-11 :
-  #     0 résultat, stack en marche). `ps args=` rend le titre sans remplissage.
+  #     d'octets nuls. `pgrep -f` de procps 3.3.17 les rendait en espaces de fin :
+  #     le motif ancré `^npm run dev$` n'y trouvait pas la racine (mesuré le
+  #     2026-09-11 : 0 résultat, stack en marche). procps 4.0.4, installé sur DEV
+  #     le 2026-09-14, la trouve. `ps args=` rend le titre sans remplissage et
+  #     fournit le ppid dans la même passe : le relevé ne dépend pas de la version.
   local -A parent_of=() in_stack=()
   local stack=() pid ppid cmd cwd
   while read -r pid ppid cmd; do

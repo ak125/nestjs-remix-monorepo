@@ -411,7 +411,7 @@
         "backend/src/modules/marketing/templates"
       ],
       "files_count": 25,
-      "loc_total": 4890,
+      "loc_total": 4891,
       "has_barrel": false
     },
     "mcp-validation": {
@@ -593,7 +593,7 @@
         "packages/registry/src/vehicle-context"
       ],
       "files_count": 56,
-      "loc_total": 6387,
+      "loc_total": 6388,
       "has_barrel": true
     },
     "pkg-seo-types": {
@@ -701,7 +701,7 @@
         "scripts/wiki-generators/__tests__"
       ],
       "files_count": 188,
-      "loc_total": 40500,
+      "loc_total": 40502,
       "has_barrel": true
     },
     "search": {
@@ -768,7 +768,7 @@
         "scripts/seo/lib"
       ],
       "files_count": 279,
-      "loc_total": 59322,
+      "loc_total": 59420,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -958,7 +958,7 @@
         "tests/registry"
       ],
       "files_count": 272,
-      "loc_total": 51183,
+      "loc_total": 51216,
       "has_barrel": true
     },
     "upload": {
@@ -1964,7 +1964,7 @@
     {
       "from": "seo",
       "to": "config",
-      "count": 38
+      "count": 39
     },
     {
       "from": "seo",
