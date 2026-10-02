@@ -12,9 +12,11 @@
  *   - degrades gracefully (V1-3): if `gh` is unavailable or unauthenticated,
  *     it writes an empty snapshot with `meta.degraded = true` instead of throwing.
  *
- * SoT note (ADR-053): the canonical chantier/EPIC source is the vault
- * MOC-Planning-Live. This file is a monorepo-local PR projection, subordinate to
- * that SoT (declared in meta.sot). It is NOT a competing chantier tracker.
+ * SoT note (ADR-053, amended by ADR-104): PR state is read on GitHub; this file
+ * is a monorepo-local projection of it (declared in meta.sot). The vault
+ * MOC-Planning-Live is no longer a live chantier/EPIC source: ADR-104 retired its
+ * writer and froze it as a snapshot of 2026-08-14. This file is NOT a chantier
+ * tracker either.
  *
  * work_type + priority are read from PR labels per the canonical vault schemas
  * (.spec/00-canon/planning/planning-worktype.yml + planning-priority.yml).
@@ -40,7 +42,7 @@ const log = makeLogger("planning");
 
 const REPO = "ak125/nestjs-remix-monorepo";
 const SOT_POINTER =
-  "vault:MOC-Planning-Live (ADR-053) — chantier/EPIC SoT; this file is a PR projection";
+  "github:pull-requests — this file is a PR projection; vault MOC-Planning-Live is a frozen 2026-08-14 snapshot (ADR-104)";
 const FETCH_LIMIT = 200;
 
 const VALID_WORKTYPES = new Set([
