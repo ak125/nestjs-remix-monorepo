@@ -46,20 +46,20 @@ jobs:
         with:
           node-version: 24
 
-      - name: Verify client-IP probe before any PROD mutation
-        run: node --test scripts/ci/prod-client-ip-probe.test.mjs
+      - name: Verify deployment probes before any PROD mutation
+        run: node --test scripts/ci/prod-client-ip-probe.test.mjs scripts/ci/prod-admin-guard-probe.test.mjs
 
       - name: Verify SEO env writers (collector, projection flags) before any PROD mutation
         run: node --test scripts/ci/prod-seo-collector-env.test.mjs scripts/ci/prod-seo-projection-env.test.mjs
 
       - name: Verify PREPROD evidence gate before any PROD mutation
-        run: node --test scripts/ci/prod-preprod-evidence.test.mjs
+        run: node --test scripts/ci/prod-preprod-evidence.test.mjs scripts/ci/prod-image-selection.test.mjs
 
       - name: 🧪 PREPROD evidence gate — Deploy PREPROD + E2E Smoke + Lighthouse green for this commit
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        # The SHA gate below proves :preprod was BUILT from this commit, not that it
-        # passed PREPROD: build.yml publishes :preprod before ci.yml runs the smokes
+        # The image gate below proves the selected image was BUILT from this commit,
+        # not that it passed PREPROD: build.yml publishes before the smokes
         # (f54aa333f, 2026-09-28). Fail-closed, read-only, before any Docker step.
         run: node scripts/ci/prod-preprod-evidence.mjs
 
@@ -131,75 +131,43 @@ jobs:
 
           echo "ROLLBACK_IMAGE_ID=$CURRENT_IMAGE" >> "$GITHUB_ENV"
 
-      - name: 🔒 Safety gate — SHA consistency (preprod image ↔ tag commit)
+      - name: 🔒 Safety gate — commit image provenance and promotion by immutable ID
         run: |
-          # Le tag git pointe sur un commit précis. L'image :preprod est un alias
-          # flottant qui peut encore contenir un build antérieur (cas typique :
-          # push main → tag v* avant que le build preprod post-merge ait terminé).
-          # Cette étape fail-fast si mismatch, pour empêcher la classe de bug
-          # "promote une image obsolète" (incident 2026-04-21 INC-2026-006).
+          # build.yml already publishes sha-<full commit> alongside :preprod.
+          # The shared :preprod alias can advance while this job starts, even
+          # after PREPROD evidence passed. Select the requested commit instead;
+          # never fall back to the shared alias or an unverified cached image.
           set -euo pipefail
-
-          echo "📦 Pulling preprod image..."
-          docker pull massdoc/nestjs-remix-monorepo:preprod
-
-          # Le commit pointé par le tag git
-          TAG_SHA="${GITHUB_SHA}"
-          echo "🏷️ Tag commit SHA      : $TAG_SHA"
-
-          # Le SHA inscrit par build.yml dans le label OCI de l'image :preprod
-          IMAGE_SHA=$(docker inspect massdoc/nestjs-remix-monorepo:preprod \
-            --format='{{ index .Config.Labels "org.opencontainers.image.revision" }}' \
-            2>/dev/null || echo "")
-          echo "🐳 Preprod image SHA    : ${IMAGE_SHA:-<unset>}"
-
-          if [ -z "$IMAGE_SHA" ]; then
-            # Was tolerated for images built before build.yml started labelling
-            # (pré 2026-04-21). That grace period self-declared its own expiry
-            # ("si ce message apparaît après le 2026-05-01, c'est un bug") and is
-            # now long past, so the tolerance is REMOVED: an unlabelled image is
-            # an image whose provenance cannot be proven, and promoting an
-            # unprovable image to PROD is exactly the class of bug this gate
-            # exists to stop (INC-2026-006).
-            echo ""
-            echo "❌ FATAL: l'image :preprod n'a AUCUN label OCI revision."
-            echo ""
-            echo "  Impossible de prouver que cette image correspond au commit du tag ($TAG_SHA)."
-            echo "  La tolérance historique (images pré-2026-04-21) est retirée — voir audit"
-            echo "  2026-07-16 : promouvoir une image de provenance non vérifiable = INC-2026-006."
-            echo ""
-            echo "Remède :"
-            echo "  1. Re-builder :preprod depuis le commit $TAG_SHA (merge/re-run du workflow PREPROD)"
-            echo "  2. OU promouvoir explicitement l'image :sha-$TAG_SHA"
-            echo ""
+          TAG_SHA="${GITHUB_SHA:-}"
+          RELEASE_TAG="${GITHUB_REF_NAME:-}"
+          if [[ ! "$TAG_SHA" =~ ^[a-f0-9]{40}$ ]] || \
+             [[ ! "$RELEASE_TAG" =~ ^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$ ]]; then
+            echo "FATAL: invalid commit SHA or Docker release tag" >&2
             exit 1
-          elif [ "$IMAGE_SHA" != "$TAG_SHA" ]; then
-            echo ""
-            echo "❌ FATAL: l'image :preprod ne correspond PAS au commit du tag."
-            echo ""
-            echo "  Tag $GITHUB_REF_NAME pointe sur $TAG_SHA"
-            echo "  Mais :preprod contient $IMAGE_SHA"
-            echo ""
-            echo "Cause probable :"
-            echo "  - Le build preprod déclenché par le merge de ce commit n'a pas encore terminé."
-            echo "  - OU un build préprod a échoué sans re-publier :preprod."
-            echo ""
-            echo "Remède :"
-            echo "  1. Attendre que le workflow 'Deploy PREPROD' pour le commit $TAG_SHA soit ✅"
-            echo "  2. OU supprimer ce tag et le re-créer après : git tag -d X && git push --delete origin X"
-            echo "  3. OU utiliser l'image explicite :sha-$TAG_SHA (prochaine étape de ce job)"
-            exit 1
-          else
-            echo "✅ SHA match — safe to promote"
           fi
 
-          echo "🏷️ Tagging as production..."
-          docker tag massdoc/nestjs-remix-monorepo:preprod massdoc/nestjs-remix-monorepo:production
-          docker tag massdoc/nestjs-remix-monorepo:preprod massdoc/nestjs-remix-monorepo:${{ github.ref_name }}
+          IMAGE_REPO=massdoc/nestjs-remix-monorepo
+          CANDIDATE_IMAGE="$IMAGE_REPO:sha-$TAG_SHA"
+          echo "Pulling commit image: $CANDIDATE_IMAGE"
+          docker pull "$CANDIDATE_IMAGE"
 
-          echo "📤 Pushing to registry..."
-          docker push massdoc/nestjs-remix-monorepo:production
-          docker push massdoc/nestjs-remix-monorepo:${{ github.ref_name }}
+          # Capture ID and revision together. All later tags use this immutable
+          # ID, so moving even the commit alias after inspection cannot substitute
+          # another image. The PREPROD evidence gate above remains mandatory.
+          IMAGE_METADATA=$(docker inspect "$CANDIDATE_IMAGE" \
+            --format '{{.Id}} {{ index .Config.Labels "org.opencontainers.image.revision" }}')
+          read -r IMAGE_ID IMAGE_SHA <<< "$IMAGE_METADATA"
+          if [[ ! "$IMAGE_ID" =~ ^sha256:[a-f0-9]{64}$ ]] || [[ "$IMAGE_SHA" != "$TAG_SHA" ]]; then
+            echo "FATAL: commit image has an invalid ID or mismatched revision" >&2
+            echo "Expected revision: $TAG_SHA; actual: ${IMAGE_SHA:-<unset>}" >&2
+            exit 1
+          fi
+          echo "Verified commit: $IMAGE_SHA; immutable image: $IMAGE_ID"
+
+          docker tag "$IMAGE_ID" "$IMAGE_REPO:production"
+          docker tag "$IMAGE_ID" "$IMAGE_REPO:$RELEASE_TAG"
+          docker push "$IMAGE_REPO:production"
+          docker push "$IMAGE_REPO:$RELEASE_TAG"
 
       - name: 🚀 Deploy to PROD
         env:
@@ -538,19 +506,10 @@ jobs:
           fi
 
           # Admin guard verification (warning only, non-blocking)
-          echo "🛡️ Testing admin guards..."
-          ADMIN_RESP=$($EXEC wget -q --server-response -O /dev/null http://localhost:3000/api/admin/content-refresh/dashboard 2>&1 | grep "HTTP/" | awk '{print $2}')
-          if [ "$ADMIN_RESP" = "403" ] || [ "$ADMIN_RESP" = "401" ]; then
-            echo "✅ admin guard /content-refresh -> $ADMIN_RESP"
-          else
-            echo "⚠️ admin guard /content-refresh -> ${ADMIN_RESP:-unknown} (expected 401/403)"
-          fi
-
-          ADMIN_RESP=$($EXEC wget -q --server-response -O /dev/null http://localhost:3000/api/admin/page-briefs 2>&1 | grep "HTTP/" | awk '{print $2}')
-          if [ "$ADMIN_RESP" = "403" ] || [ "$ADMIN_RESP" = "401" ]; then
-            echo "✅ admin guard /page-briefs -> $ADMIN_RESP"
-          else
-            echo "⚠️ admin guard /page-briefs -> ${ADMIN_RESP:-unknown} (expected 401/403)"
+          # Read a numeric HTTP status, never wget's human-readable error output.
+          # Keep the existing warning-only policy; no admin credentials are sent.
+          if ! node "$GITHUB_WORKSPACE/scripts/ci/prod-admin-guard-probe.mjs"; then
+            echo "::warning::Admin guard verification failed; see the probe error above (non-blocking)."
           fi
 
           if [ "$FAILED" = "1" ]; then
