@@ -24,7 +24,7 @@ on:
       - "package-lock.json"
       - "audit-reports/phase0-baseline.json"
       - ".github/workflows/audit.yml"
-      - ".github/workflows/deploy-prod.yml"   # prod-seo-collector-env.test.mjs asserts its wiring
+      - ".github/workflows/deploy-prod.yml"   # prod-seo-{collector,projection}-env.test.mjs assert its wiring
       - ".spec/00-canon/repository-registry/**"   # ALL L2 overlays the contract suite reads (was architecture+db only)
       - "audit/registry/**"                        # L1 projections the contract tests assert against
       - ".dependency-cruiser.generated.cjs"
@@ -93,6 +93,13 @@ jobs:
         # .env untouched, and the deploy step must call it before the point of no
         # return.
         run: npm run test:prod-seo-collector-env
+
+      - name: 🚩 PROD SEO rollout flags writer — behavioural proof on a scratch .env (BLOCKING)
+        # prod-seo-projection-env.sh writes the SEO Projection and R6 consolidation
+        # (ADR-103) flags into the real PROD .env, in deploy-prod.yml only. Until
+        # now its test also ran only there — at tag time. Running it on every PR
+        # surfaces a broken writer or wiring before merge, not on the PROD tag.
+        run: node --test scripts/ci/prod-seo-projection-env.test.mjs
 
       - name: ⏱️ PREPROD response probe — status vs latency proof (BLOCKING)
         # The step this backs used to time responses without asserting anything, so a
