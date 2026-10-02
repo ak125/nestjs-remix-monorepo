@@ -116,6 +116,14 @@ describe("buildCacheHeaders — error path (anti cache-poisoning)", () => {
     const out = invoke(buildCacheHeaders(SUCCESS), { error: {} });
     expect("X-Robots-Tag" in out).toBe(false);
   });
+
+  // Precondition, not a wish: React Router 8 leaves `errorHeaders` undefined
+  // for a thrown data() without init.headers, so the helper cannot tell it
+  // from a success. Routes must throw errors with headers.
+  it("cannot see an error thrown without headers: it gets the success policy", () => {
+    const out = invoke(buildCacheHeaders(SUCCESS));
+    expect(out["Cache-Control"]).toBe(SUCCESS);
+  });
 });
 
 describe("NO_STORE_CACHE_CONTROL", () => {
