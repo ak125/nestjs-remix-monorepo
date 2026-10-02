@@ -105,6 +105,7 @@ interface LoaderData {
   guides: BlogGuide[];
   relatedAdvice: AdviceSummary[];
   totalAdvice: number;
+  robots: string | null;
 }
 
 /* ===========================
@@ -113,12 +114,16 @@ interface LoaderData {
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const backendUrl = getInternalApiUrl("");
 
-  const [guidesResult, adviceResult] = await Promise.allSettled([
+  const [guidesResult, adviceResult, postureResult] = await Promise.allSettled([
     fetch(`${backendUrl}/api/blog/guides?limit=300&type=achat`, {
       headers: { "Content-Type": "application/json" },
     }),
     fetch(`${backendUrl}/api/blog/advice?limit=8&page=1`, {
       headers: { "Content-Type": "application/json" },
+    }),
+    // Consolidation R6→R3 (flag-gated côté serveur) : posture d'indexation du hub
+    fetch(`${backendUrl}/api/r6-guide/hub-posture`, {
+      headers: { Accept: "application/json" },
     }),
   ]);
 
@@ -150,6 +155,24 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     logger.error("Erreur parsing advice:", e);
   }
 
+  // Posture d'indexation — indisponible → directive par défaut, journalisée
+  let robots: string | null = null;
+  try {
+    if (postureResult.status === "fulfilled" && postureResult.value.ok) {
+      const posture = await postureResult.value.json();
+      robots = typeof posture?.robots === "string" ? posture.robots : null;
+    } else {
+      logger.warn(
+        "[R6 Hub] posture d'indexation indisponible — directive robots par défaut",
+        postureResult.status === "fulfilled"
+          ? `HTTP ${postureResult.value.status}`
+          : postureResult.reason,
+      );
+    }
+  } catch (e) {
+    logger.warn("[R6 Hub] posture d'indexation illisible:", e);
+  }
+
   // Tri par date la plus recente en premier
   guides.sort(
     (a, b) =>
@@ -163,7 +186,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   );
 
   return data(
-    { guides, relatedAdvice, totalAdvice },
+    { guides, relatedAdvice, totalAdvice, robots } satisfies LoaderData,
     {
       headers: {
         "Cache-Control":
@@ -312,7 +335,7 @@ export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
     },
     { name: "description", content: description },
     { tagName: "link", rel: "canonical", href: canonicalUrl },
-    { name: "robots", content: "index, follow" },
+    { name: "robots", content: data?.robots ?? "index, follow" },
     { property: "og:title", content: "Guides d'Achat Pieces Auto" },
     { property: "og:description", content: description },
     { property: "og:type", content: "website" },

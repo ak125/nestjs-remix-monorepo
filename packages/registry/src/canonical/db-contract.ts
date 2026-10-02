@@ -57,7 +57,7 @@ const TableSchema = z
     );
     if (overlap.length > 0) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: `allowed_access_surfaces and forbidden_access_surfaces overlap on "${t.name}": ${[...new Set(overlap)].join(', ')}`,
         path: ['allowed_access_surfaces'],
       });
@@ -76,7 +76,7 @@ export const DbContractSchema = z
     const dupes = names.filter((n, i) => names.indexOf(n) !== i);
     if (dupes.length > 0) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: `Duplicate table.name: ${[...new Set(dupes)].join(', ')}`,
         path: ['tables'],
       });

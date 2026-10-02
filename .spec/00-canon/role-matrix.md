@@ -157,6 +157,7 @@ La serie R* est ouverte : R9, R10, R11... peuvent etre ajoutes pour de futurs ro
 
 ### R6 — GUIDE D'ACHAT
 
+- **Statut (ADR-103, vault)** : consolide dans R3, derriere le drapeau `SEO_R6_CONSOLIDATION_ENABLED`. Drapeau allume, aucune page `R6_GUIDE_ACHAT` n'est indexable : 301 vers l'article conseils de la gamme s'il existe, sinon `noindex, follow`, URL inchangee. Hors de la surface guide, le backend decide seul du lien vers une page de guide : drapeau eteint, seulement si le guide est publie ; drapeau allume, jamais (le lien vise l'article conseils de la gamme, ou disparait). Le role reste une classification du code et du WIKI (sections `R6_GUIDE_ACHAT/*` inchangees).
 - **Promesse** : aider a choisir la bonne piece sans erreur avant commande
 - **Scope** : gamme
 - **Question** : "Comment choisir et commander la bonne piece sans me tromper ?"

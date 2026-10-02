@@ -2,7 +2,7 @@
 module: seo
 sources:
 - backend/src/modules/seo
-last_scan: '2026-07-02'
+last_scan: '2026-10-01'
 primary_files:
 - backend/src/modules/seo/__tests__/dynamic-seo-v4-via-chain.test.ts
 - backend/src/modules/seo/__tests__/seo-balise-collision-gate.test.ts
@@ -57,15 +57,23 @@ _Section à rédiger._
 - `SitemapStreamingService`
 - `SitemapHygieneService`
 - `ReferenceService`
+- `R6GuideLinkPolicyService`
 - `DiagnosticService`
 - `SeoGeneratorService`
 - `SeoTitleEngineService`
+- `SeoCanonicalService`
+- `SeoIndexabilityPolicyService`
+- `SeoSlugService`
+- `SeoArianeBreadcrumbService`
+- `SeoMetaRegistryService`
+- `SeoChainInternalLinkingService`
+- `SeoChainOrchestratorService`
 
 ### Providers (top 15)
 - `SeoService`
-- `SeoV4SwitchEngineService`
 - `SeoV4MonitoringService`
 - `DynamicSeoV4UltimateService`
+- `SeoPlaceholderEventsService`
 - `HreflangService`
 - `ProductImageService`
 - `RobotsTxtService`
@@ -79,14 +87,14 @@ _Section à rédiger._
 - `SeoMonitoringService`
 
 ### Fichiers primaires
+- [backend/src/modules/seo/__tests__/dynamic-seo-v4-via-chain.test.ts](../../../backend/src/modules/seo/__tests__/dynamic-seo-v4-via-chain.test.ts)
+- [backend/src/modules/seo/__tests__/seo-balise-collision-gate.test.ts](../../../backend/src/modules/seo/__tests__/seo-balise-collision-gate.test.ts)
+- [backend/src/modules/seo/__tests__/seo-field-gate.test.ts](../../../backend/src/modules/seo/__tests__/seo-field-gate.test.ts)
+- [backend/src/modules/seo/__tests__/seo-fingerprint-core.test.ts](../../../backend/src/modules/seo/__tests__/seo-fingerprint-core.test.ts)
+- [backend/src/modules/seo/__tests__/seo-placeholder-events.service.test.ts](../../../backend/src/modules/seo/__tests__/seo-placeholder-events.service.test.ts)
 - [backend/src/modules/seo/config/hreflang.config.ts](../../../backend/src/modules/seo/config/hreflang.config.ts)
 - [backend/src/modules/seo/config/sitemap.config.ts](../../../backend/src/modules/seo/config/sitemap.config.ts)
 - [backend/src/modules/seo/constants/seo-templates.constants.ts](../../../backend/src/modules/seo/constants/seo-templates.constants.ts)
-- [backend/src/modules/seo/controllers/diagnostic.controller.ts](../../../backend/src/modules/seo/controllers/diagnostic.controller.ts)
-- [backend/src/modules/seo/controllers/keywords-dashboard.controller.ts](../../../backend/src/modules/seo/controllers/keywords-dashboard.controller.ts)
-- [backend/src/modules/seo/controllers/r2-page.controller.ts](../../../backend/src/modules/seo/controllers/r2-page.controller.ts)
-- [backend/src/modules/seo/controllers/reference.controller.ts](../../../backend/src/modules/seo/controllers/reference.controller.ts)
-- [backend/src/modules/seo/controllers/robots-txt.controller.ts](../../../backend/src/modules/seo/controllers/robots-txt.controller.ts)
 
 <!-- END AUTO-GENERATED -->
 

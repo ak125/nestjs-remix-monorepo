@@ -54,8 +54,6 @@ Guide d'attribution des niveaux de confiance pour le corpus RAG AutoMecanik.
 - `metadata.verified_by` recommande
 - `metadata.source_url` ou `metadata.source_ref`
 
-**Defaut pour ingestion PDF.**
-
 ### L3 — Generique cure
 
 **Criteres :**
@@ -72,8 +70,6 @@ Guide d'attribution des niveaux de confiance pour le corpus RAG AutoMecanik.
 **Formulation requise dans le contenu :**
 - Utiliser des formulations conditionnelles ("selon le modele", "generalement")
 - Ne pas citer comme fait absolu
-
-**Defaut pour ingestion Web.**
 
 ### L4 — Non verifie
 
@@ -123,13 +119,10 @@ Guide d'attribution des niveaux de confiance pour le corpus RAG AutoMecanik.
 
 ---
 
-## Valeurs par Defaut dans le Code
+## Valeur par Defaut
 
-| Context | Default | Source |
-|---------|---------|--------|
-| PDF ingestion | `L2` | `pdf-ingest.dto.ts` → `truthLevel.default('L2')` |
-| Web ingestion | `L3` | `web-ingest.dto.ts` → `truthLevel.default('L3')` |
-| Manuel (sans precision) | `L3` | Regle conservative |
+Sans precision : `L3` (regle conservative). Les defauts codes de l'ingestion PDF (`L2`) et
+Web (`L3`) ont disparu avec elle (#1032, #1349).
 
 ---
 

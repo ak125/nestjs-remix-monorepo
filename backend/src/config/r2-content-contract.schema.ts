@@ -190,7 +190,7 @@ export const R2ContentContractSchema = z
 
     if (rules.selfCanonicalRequired && data.canonical.mode !== 'self') {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         path: ['canonical', 'mode'],
         message: 'Self canonical is required.',
       });
@@ -198,7 +198,7 @@ export const R2ContentContractSchema = z
 
     if (metrics.specificBlockCount < rules.minSpecificBlocks) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         path: ['metrics', 'specificBlockCount'],
         message: 'Not enough specific blocks.',
       });
@@ -206,7 +206,7 @@ export const R2ContentContractSchema = z
 
     if (metrics.boilerplateRatio > rules.maxBoilerplateRatio) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         path: ['metrics', 'boilerplateRatio'],
         message: 'Boilerplate ratio too high.',
       });
@@ -217,7 +217,7 @@ export const R2ContentContractSchema = z
       !metrics.hasCompatibilitySummary
     ) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         path: ['metrics', 'hasCompatibilitySummary'],
         message: 'Compatibility summary is required.',
       });
@@ -225,7 +225,7 @@ export const R2ContentContractSchema = z
 
     if (rules.mustHaveSelectionGuide && !metrics.hasSelectionGuide) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         path: ['metrics', 'hasSelectionGuide'],
         message: 'Selection guide is required.',
       });
@@ -233,7 +233,7 @@ export const R2ContentContractSchema = z
 
     if (rules.mustHaveCatalogSignals && !metrics.hasCatalogSignals) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         path: ['metrics', 'hasCatalogSignals'],
         message: 'Catalog signals are required.',
       });
@@ -243,7 +243,7 @@ export const R2ContentContractSchema = z
       metrics.productSetUniquenessScore < rules.minProductSetUniquenessScore
     ) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         path: ['metrics', 'productSetUniquenessScore'],
         message: 'Product set uniqueness score too low.',
       });
@@ -251,7 +251,7 @@ export const R2ContentContractSchema = z
 
     if (metrics.compatibilityDeltaScore < rules.minCompatibilityDeltaScore) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         path: ['metrics', 'compatibilityDeltaScore'],
         message: 'Compatibility delta score too low.',
       });
@@ -261,7 +261,7 @@ export const R2ContentContractSchema = z
       metrics.catalogStructureDeltaScore < rules.minCatalogStructureDeltaScore
     ) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         path: ['metrics', 'catalogStructureDeltaScore'],
         message: 'Catalog structure delta score too low.',
       });
@@ -269,7 +269,7 @@ export const R2ContentContractSchema = z
 
     if (metrics.semanticSimilarityScore > rules.maxSemanticSimilarityScore) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         path: ['metrics', 'semanticSimilarityScore'],
         message: 'Semantic similarity too high.',
       });
@@ -277,7 +277,7 @@ export const R2ContentContractSchema = z
 
     if (metrics.faqReuseRiskScore > rules.maxFaqReuseRiskScore) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         path: ['metrics', 'faqReuseRiskScore'],
         message: 'FAQ reuse risk too high.',
       });
@@ -288,7 +288,7 @@ export const R2ContentContractSchema = z
       rules.maxFingerprintCollisionRiskScore
     ) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         path: ['metrics', 'fingerprintCollisionRiskScore'],
         message: 'Fingerprint collision risk too high.',
       });
@@ -299,7 +299,7 @@ export const R2ContentContractSchema = z
       !pagePlan.orderedBlocks.includes('compatibilitySummary')
     ) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         path: ['pagePlan', 'orderedBlocks'],
         message: 'orderedBlocks must contain compatibilitySummary.',
       });
@@ -310,7 +310,7 @@ export const R2ContentContractSchema = z
       !pagePlan.orderedBlocks.includes('selectionGuide')
     ) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         path: ['pagePlan', 'orderedBlocks'],
         message: 'orderedBlocks must contain selectionGuide.',
       });

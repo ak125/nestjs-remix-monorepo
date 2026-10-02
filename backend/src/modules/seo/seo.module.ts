@@ -90,6 +90,7 @@ import { SitemapVehiclePiecesValidator } from './services/sitemap-vehicle-pieces
 // SERVICES CONTENT (ex seo-content)
 // ═══════════════════════════════════════════════════════════════════════════
 import { ReferenceService } from './services/reference.service';
+import { R6GuideLinkPolicyService } from './services/r6-guide-link-policy.service';
 import { DiagnosticService } from './validation/diagnostic.service';
 import { SeoGeneratorService } from './services/seo-generator.service';
 import { SeoTitleEngineService } from './services/seo-title-engine.service';
@@ -260,6 +261,7 @@ import { R2V2Module } from './r2/r2-v2.module';
     SitemapEventLogService,
     // Content
     ReferenceService,
+    R6GuideLinkPolicyService, // ADR-103 D5 — règle des liens vers les guides d'achat
     DiagnosticService,
     SeoGeneratorService,
     SeoTitleEngineService,
@@ -335,6 +337,7 @@ import { R2V2Module } from './r2/r2-v2.module';
     SitemapVehiclePiecesValidator,
     // Content
     ReferenceService,
+    R6GuideLinkPolicyService, // ADR-103 D5 — règle des liens vers les guides d'achat
     DiagnosticService,
     SeoGeneratorService,
     SeoTitleEngineService,
