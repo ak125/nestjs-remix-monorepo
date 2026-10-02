@@ -63,8 +63,23 @@ interface LeadDetail {
   } | null;
 }
 
-type LoaderData = { lead: LeadDetail };
 type ActionData = { success?: boolean; error?: string };
+
+/**
+ * Statut HTTP décidé dans le `try` du loader. `data()` renvoie un
+ * DataWithResponseInit, pas une Response : levé dans le `try`, il serait
+ * rattrapé par le `catch` et remplacé par la 502 de repli. Le `try` lève donc
+ * cette erreur, que le `catch` traduit en `data()` (même modèle que
+ * R3GuideNotFoundError, route conseils).
+ */
+class LeadApiStatusError extends Error {
+  constructor(
+    readonly status: number,
+    message: string,
+  ) {
+    super(message);
+  }
+}
 
 const STATUS_LABEL: Record<LeadStatus, string> = {
   new: "Nouveau",
@@ -101,16 +116,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
 
     if (res.status === 401 || res.status === 403) {
-      throw data(
-        { error: "Authentification admin requise" },
-        { status: res.status },
+      throw new LeadApiStatusError(
+        res.status,
+        "Authentification admin requise",
       );
     }
     if (res.status === 404) {
-      throw data(
-        { error: "Lead introuvable ou non-trackable" },
-        { status: 404 },
-      );
+      throw new LeadApiStatusError(404, "Lead introuvable ou non-trackable");
     }
     if (!res.ok) {
       const errText = await res.text().catch(() => "");
@@ -118,13 +130,16 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         status: res.status,
         errText,
       });
-      throw data({ error: `API leads failed: ${res.status}` }, { status: 502 });
+      throw new LeadApiStatusError(502, `API leads failed: ${res.status}`);
     }
 
     const lead = (await res.json()) as LeadDetail;
     return { lead };
   } catch (err) {
     if (err instanceof Response) throw err;
+    if (err instanceof LeadApiStatusError) {
+      throw data({ error: err.message }, { status: err.status });
+    }
     logger.error("admin.leads.$id loader exception", { err });
     throw data({ error: "API leads unreachable" }, { status: 502 });
   }
