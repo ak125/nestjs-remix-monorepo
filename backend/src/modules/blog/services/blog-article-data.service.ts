@@ -513,7 +513,7 @@ export class BlogArticleDataService {
         .from(TABLES.blog_advice)
         .select('*', { count: 'exact' })
         .or(
-          `ba_title.ilike.%${query}%,ba_content.ilike.%${query}%,ba_resume.ilike.%${query}%`,
+          `ba_title.ilike.%${query}%,ba_content.ilike.%${query}%,ba_preview.ilike.%${query}%`,
         )
         .range(offset, offset + limit - 1);
 
