@@ -63,6 +63,7 @@ ENV TZ=Europe/Paris
 ENV NODE_ENV="production"
 
 COPY --chown=remix-api:nodejs --from=installer /app/backend/package.json ./backend/package.json
+COPY --chown=remix-api:nodejs --from=builder /app/.claude/canon-mirrors/marketing-voice.md ./.claude/canon-mirrors/marketing-voice.md
 COPY --chown=remix-api:nodejs --from=installer /app/backend/dist ./backend/dist
 COPY --chown=remix-api:nodejs --from=installer /app/backend/node_modules ./backend/node_modules
 COPY --chown=remix-api:nodejs --from=installer /app/node_modules ./node_modules

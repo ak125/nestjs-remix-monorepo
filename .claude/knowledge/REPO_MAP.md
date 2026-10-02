@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: b3c0eeac94b28e91f5fe0cbfbd9086d4201cd10e8f57915c7d41094f979b3c30
+source_sha256: da53c761431dbb4ea6d29bf8d54e8ae3fbdb747e69bf90834778921b5666de0c
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 2974 |
+| Files (Layer 1) | 2980 |
 | DB tables (Layer 1) | 313 |
 | DB RPC (Layer 1) | 255 |
 | Dependencies (Layer 1) | 237 |
-| Runtime entrypoints (Layer 1) | 1000 |
+| Runtime entrypoints (Layer 1) | 1001 |
 
-Source sotFingerprint: `d41dcced0cb1`.
+Source sotFingerprint: `4296a12209cf`.
 
 ## Comment l'utiliser
 
@@ -45,11 +45,11 @@ Source sotFingerprint: `d41dcced0cb1`.
 
 ### D2 — Legacy / XTR Migration
 
-- **Files**: 135 (test=121, service=10, config=3, controller=1)
+- **Files**: 138 (test=124, service=10, config=3, controller=1)
 - **Runtime entrypoints**: 1
-- **Top owners**: @ak125 (120), __unassigned__ (15)
+- **Top owners**: @ak125 (123), __unassigned__ (15)
 - **Knowledge prose**: [`rm`](modules/rm.md)
-- **Status**: LEGACY=14, LIVE=1, UNKNOWN=120
+- **Status**: LEGACY=14, LIVE=1, UNKNOWN=123
 
 ### D3 — SEO & Sitemap
 
@@ -93,11 +93,11 @@ Source sotFingerprint: `d41dcced0cb1`.
 
 ### D8 — Read Model / Serving (RM)
 
-- **Files**: 947 (config=466, route=246, service=176, controller=38, test=21)
-- **Runtime entrypoints**: 347
-- **Top owners**: @ak125/frontend-team (686), @ak125/admin-team (261)
+- **Files**: 948 (config=466, route=247, service=176, controller=38, test=21)
+- **Runtime entrypoints**: 348
+- **Top owners**: @ak125/frontend-team (686), @ak125/admin-team (262)
 - **Knowledge prose**: [`admin`](modules/admin.md), [`staff`](modules/staff.md)
-- **Status**: LIVE=498, UNKNOWN=449
+- **Status**: LIVE=499, UNKNOWN=449
 
 ### D9 — Import / ETL / Normalisation
 
@@ -147,11 +147,11 @@ Source sotFingerprint: `d41dcced0cb1`.
 
 ### D15 — Security & Governance
 
-- **Files**: 270 (test=160, script=62, service=45, config=2, controller=1)
+- **Files**: 272 (test=162, script=62, service=45, config=2, controller=1)
 - **Runtime entrypoints**: 3
-- **Top owners**: @ak125 (270)
+- **Top owners**: @ak125 (272)
 - **Knowledge prose**: [`bot-guard`](modules/bot-guard.md)
-- **Status**: LIVE=56, UNKNOWN=214
+- **Status**: LIVE=56, UNKNOWN=216
 
 ### UNKNOWN — Unknown (overlay non résolu)
 

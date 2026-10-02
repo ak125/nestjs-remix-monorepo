@@ -258,8 +258,8 @@
         "frontend/app/routes",
         "frontend/app/routes/_public+"
       ],
-      "files_count": 246,
-      "loc_total": 115685,
+      "files_count": 247,
+      "loc_total": 116043,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -411,7 +411,7 @@
         "backend/src/modules/marketing/templates"
       ],
       "files_count": 25,
-      "loc_total": 4725,
+      "loc_total": 4916,
       "has_barrel": false
     },
     "mcp-validation": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 276,
-      "loc_total": 51669,
+      "files_count": 281,
+      "loc_total": 53098,
       "has_barrel": true
     },
     "upload": {
@@ -1755,6 +1755,11 @@
       "from": "marketing",
       "to": "ai-content",
       "count": 2
+    },
+    {
+      "from": "marketing",
+      "to": "common",
+      "count": 1
     },
     {
       "from": "marketing",

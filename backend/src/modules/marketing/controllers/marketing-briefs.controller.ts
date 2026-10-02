@@ -15,10 +15,13 @@
  */
 
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
+  ForbiddenException,
   Param,
+  ParseUUIDPipe,
   Patch,
   Query,
   Req,
@@ -27,7 +30,12 @@ import {
 import { IsAdminGuard } from '@auth/is-admin.guard';
 import { Request } from 'express';
 import { MarketingBriefsService } from '../services/marketing-briefs.service';
-import { UpdateBriefStatusSchema } from '../dto/marketing-brief.dto';
+import { StrictZodQueryValidationPipe } from '../../../common/pipes/strict-zod-query-validation.pipe';
+import {
+  ListMarketingBriefsQuerySchema,
+  UpdateBriefStatusSchema,
+} from '../dto/marketing-brief.dto';
+import type { ListMarketingBriefsQueryDto } from '../dto/marketing-brief.dto';
 
 @Controller('api/admin/marketing/briefs')
 @UseGuards(IsAdminGuard)
@@ -36,19 +44,10 @@ export class MarketingBriefsController {
 
   @Get()
   async list(
-    @Query('business_unit') businessUnit?: 'ECOMMERCE' | 'LOCAL' | 'HYBRID',
-    @Query('status') status?: string,
-    @Query('agent_id') agentId?: string,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
+    @Query(new StrictZodQueryValidationPipe(ListMarketingBriefsQuerySchema))
+    filters: ListMarketingBriefsQueryDto,
   ) {
-    const data = await this.service.listBriefs({
-      business_unit: businessUnit,
-      status,
-      agent_id: agentId,
-      page: page ? Number.parseInt(page, 10) : 1,
-      limit: limit ? Number.parseInt(limit, 10) : 20,
-    });
+    const data = await this.service.listBriefs(filters);
     return { success: true, data };
   }
 
@@ -59,27 +58,31 @@ export class MarketingBriefsController {
   }
 
   @Get(':id')
-  async getById(@Param('id') id: string) {
+  async getById(@Param('id', ParseUUIDPipe) id: string) {
     const data = await this.service.getBriefById(id);
     return { success: true, data };
   }
 
   @Patch(':id/status')
   async updateStatus(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() body: unknown,
     @Req() req: Request,
   ) {
     // Validation Zod (DTO PR-1.3)
-    const parsed = UpdateBriefStatusSchema.parse(body);
+    const result = UpdateBriefStatusSchema.safeParse(body);
+    if (!result.success) {
+      throw new BadRequestException('Invalid brief status request');
+    }
+    const parsed = result.data;
 
     // Acteur = utilisateur authentifié (admin via IsAdminGuard).
     const user = (req as Request & { user?: { email?: string } }).user;
-    const actor =
-      parsed.reviewed_by ||
-      parsed.approved_by ||
-      user?.email ||
-      'admin-unknown';
+    // Legacy actor fields in the body are deliberately ignored.
+    const actor = typeof user?.email === 'string' ? user.email.trim() : '';
+    if (!actor) {
+      throw new ForbiddenException('Authenticated reviewer identity required');
+    }
 
     if (
       parsed.status !== 'reviewed' &&
@@ -88,7 +91,7 @@ export class MarketingBriefsController {
       parsed.status !== 'archived'
     ) {
       // 'draft' n'est pas une transition admin (status initial agent).
-      throw new Error(
+      throw new BadRequestException(
         `Status transition '${parsed.status}' not allowed via admin UI`,
       );
     }

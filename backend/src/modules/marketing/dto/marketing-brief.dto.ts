@@ -199,6 +199,34 @@ export type CreateMarketingBriefDto = z.infer<
   typeof CreateMarketingBriefSchema
 >;
 
+export const MARKETING_BRIEF_MAX_PAGE_SIZE = 100;
+
+const PositiveIntegerQuerySchema = z
+  .string()
+  .regex(/^[0-9]+$/)
+  .transform(Number)
+  .pipe(z.number().int().positive().max(Number.MAX_SAFE_INTEGER));
+
+/** Validate raw query strings before conversion; preserve the existing page-size cap. */
+export const ListMarketingBriefsQuerySchema = z
+  .object({
+    business_unit: z.nativeEnum(MarketingBusinessUnit).optional(),
+    status: z.nativeEnum(MarketingBriefStatus).optional(),
+    agent_id: CreateMarketingBriefSchema.shape.agent_id.optional(),
+    page: PositiveIntegerQuerySchema.default(1),
+    limit: PositiveIntegerQuerySchema.transform((value) =>
+      Math.min(value, MARKETING_BRIEF_MAX_PAGE_SIZE),
+    ).default(20),
+  })
+  .refine(({ page, limit }) => Number.isSafeInteger(page * limit), {
+    path: ['page'],
+    message: 'Pagination range exceeds safe integer bounds',
+  });
+
+export type ListMarketingBriefsQueryDto = z.infer<
+  typeof ListMarketingBriefsQuerySchema
+>;
+
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 🔄 UpdateBriefStatusSchema — admin UI workflow
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

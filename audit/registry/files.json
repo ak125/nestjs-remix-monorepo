@@ -2702,6 +2702,7 @@
       "id": "backend/src/common/pipes/strict-zod-query-validation.pipe.ts",
       "importedBy": [
         "backend/src/common/pipes/index.ts",
+        "backend/src/modules/marketing/controllers/marketing-briefs.controller.ts",
         "backend/src/modules/vehicles/vehicles.controller.ts"
       ],
       "imports": [],
@@ -16932,11 +16933,12 @@
       ],
       "imports": [
         "@auth/is-admin.guard",
+        "backend/src/common/pipes/strict-zod-query-validation.pipe.ts",
         "backend/src/modules/marketing/dto/marketing-brief.dto.ts",
         "backend/src/modules/marketing/services/marketing-briefs.service.ts"
       ],
       "kind": "controller",
-      "loc": 100,
+      "loc": 103,
       "owner": "__unassigned__",
       "path": "backend/src/modules/marketing/controllers/marketing-briefs.controller.ts",
       "risk": "low",
@@ -17057,13 +17059,15 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/marketing/dto/marketing-brief.dto.ts",
       "importedBy": [
-        "backend/src/modules/marketing/controllers/marketing-briefs.controller.ts"
+        "backend/src/modules/marketing/controllers/marketing-briefs.controller.ts",
+        "backend/src/modules/marketing/services/brand-compliance-gate.service.ts",
+        "backend/src/modules/marketing/services/marketing-briefs.service.ts"
       ],
       "imports": [
         "@config/marketing-matrix.types"
       ],
       "kind": "service",
-      "loc": 254,
+      "loc": 282,
       "owner": "__unassigned__",
       "path": "backend/src/modules/marketing/dto/marketing-brief.dto.ts",
       "risk": "low",
@@ -17111,13 +17115,15 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/marketing/interfaces/marketing.interfaces.ts",
       "importedBy": [
+        "backend/src/modules/marketing/services/brand-compliance-gate.service.ts",
         "backend/src/modules/marketing/services/marketing-backlinks.service.ts",
+        "backend/src/modules/marketing/services/marketing-briefs.service.ts",
         "backend/src/modules/marketing/services/marketing-content-roadmap.service.ts",
         "backend/src/modules/marketing/services/marketing-data.service.ts"
       ],
       "imports": [],
       "kind": "service",
-      "loc": 204,
+      "loc": 240,
       "owner": "__unassigned__",
       "path": "backend/src/modules/marketing/interfaces/marketing.interfaces.ts",
       "risk": "low",
@@ -17219,14 +17225,19 @@
       "importedBy": [
         "backend/src/modules/marketing/controllers/marketing-pipeline.controller.ts",
         "backend/src/modules/marketing/controllers/marketing-social-posts.controller.ts",
-        "backend/src/modules/marketing/marketing.module.ts"
+        "backend/src/modules/marketing/marketing.module.ts",
+        "backend/src/modules/marketing/services/marketing-briefs.service.ts"
       ],
       "imports": [
+        "backend/src/modules/marketing/dto/marketing-brief.dto.ts",
         "backend/src/modules/marketing/interfaces/marketing-hub.interfaces.ts",
-        "backend/src/modules/marketing/services/marketing-hub-data.service.ts"
+        "backend/src/modules/marketing/interfaces/marketing.interfaces.ts",
+        "backend/src/modules/marketing/services/marketing-hub-data.service.ts",
+        "fs",
+        "path"
       ],
       "kind": "service",
-      "loc": 410,
+      "loc": 532,
       "owner": "__unassigned__",
       "path": "backend/src/modules/marketing/services/brand-compliance-gate.service.ts",
       "risk": "low",
@@ -17273,10 +17284,13 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "@security/rpc-gate/rpc-gate.service"
+        "@security/rpc-gate/rpc-gate.service",
+        "backend/src/modules/marketing/dto/marketing-brief.dto.ts",
+        "backend/src/modules/marketing/interfaces/marketing.interfaces.ts",
+        "backend/src/modules/marketing/services/brand-compliance-gate.service.ts"
       ],
       "kind": "service",
-      "loc": 200,
+      "loc": 202,
       "owner": "__unassigned__",
       "path": "backend/src/modules/marketing/services/marketing-briefs.service.ts",
       "risk": "low",
@@ -38629,6 +38643,44 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/tests/unit/marketing-brief-guards.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 433,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/marketing-brief-guards.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/marketing-brief-postgrest.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 277,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/marketing-brief-postgrest.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/tests/unit/media-factory-flag.test.ts",
       "importedBy": [],
       "imports": [],
@@ -53000,9 +53052,33 @@
         "~/utils/internal-api.server"
       ],
       "kind": "route",
-      "loc": 279,
+      "loc": 285,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.marketing.briefs.tsx",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/app/routes/admin.marketing.briefs_.$id.tsx",
+      "importedBy": [],
+      "imports": [
+        "~/components/ui/badge",
+        "~/components/ui/button",
+        "~/components/ui/card",
+        "~/utils/internal-api.server"
+      ],
+      "kind": "route",
+      "loc": 352,
+      "owner": "__unassigned__",
+      "path": "frontend/app/routes/admin.marketing.briefs_.$id.tsx",
       "risk": "low",
       "runtime": true,
       "schemaVersion": "1.0.0",
@@ -62416,6 +62492,63 @@
       "loc": 96,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/login-role-redirect.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/marketing-brief-detail-routing.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 46,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/marketing-brief-detail-routing.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/marketing-brief-detail.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 521,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/marketing-brief-detail.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/marketing-briefs-list-errors.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 152,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/marketing-briefs-list-errors.test.tsx",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",

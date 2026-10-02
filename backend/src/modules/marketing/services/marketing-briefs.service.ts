@@ -7,51 +7,27 @@
  *   - updateBriefStatus(id, status, reviewer) : workflow validation humaine
  *
  * Pattern miroir de MarketingDataService (extends SupabaseBaseService) +
- * RPC Gate. Pas de validation métier ici (DTO Zod côté controller s'en charge).
+ * RPC Gate. Le service impose le workflow et ses préconditions métier.
  *
  * RGPD : pas de filtre cst_marketing_consent_at ici (briefs ne contiennent pas
  * de PII utilisateur — juste agent_id + payload). Le filtre RGPD s'applique
  * côté agent quand il query __orders/users pour bâtir le brief, pas ici.
  */
 
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
-
-export interface MarketingBriefRow {
-  id: string;
-  agent_id: string;
-  business_unit: 'ECOMMERCE' | 'LOCAL' | 'HYBRID';
-  channel: string;
-  conversion_goal: 'CALL' | 'VISIT' | 'QUOTE' | 'ORDER';
-  cta: string;
-  target_segment: string;
-  payload: Record<string, unknown>;
-  coverage_manifest: Record<string, unknown>;
-  brand_gate_level: 'PASS' | 'WARN' | 'FAIL' | null;
-  compliance_gate_level: 'PASS' | 'WARN' | 'FAIL' | null;
-  gate_summary: Record<string, unknown> | null;
-  status: 'draft' | 'reviewed' | 'approved' | 'published' | 'archived';
-  reviewed_by: string | null;
-  reviewed_at: string | null;
-  approved_by: string | null;
-  approved_at: string | null;
-  published_at: string | null;
-  social_post_id: number | null;
-  actual_impressions: number;
-  actual_clicks: number;
-  actual_calls: number;
-  actual_visits: number;
-  actual_quotes: number;
-  actual_orders: number;
-  actual_revenue_cents: number;
-  performance_updated_at: string | null;
-  ai_provider: string | null;
-  ai_model: string | null;
-  generation_prompt_hash: string | null;
-  created_at: string;
-  updated_at: string;
-}
+import { BrandComplianceGateService } from './brand-compliance-gate.service';
+import type { MarketingBriefRow } from '../interfaces/marketing.interfaces';
+import { MARKETING_BRIEF_MAX_PAGE_SIZE } from '../dto/marketing-brief.dto';
+export type { MarketingBriefRow } from '../interfaces/marketing.interfaces';
 
 export interface BriefFilters {
   business_unit?: 'ECOMMERCE' | 'LOCAL' | 'HYBRID';
@@ -72,7 +48,10 @@ export interface PaginatedBriefs {
 export class MarketingBriefsService extends SupabaseBaseService {
   protected override readonly logger = new Logger(MarketingBriefsService.name);
 
-  constructor(rpcGate: RpcGateService) {
+  constructor(
+    rpcGate: RpcGateService,
+    private readonly brandGate: BrandComplianceGateService,
+  ) {
     super();
     this.rpcGate = rpcGate;
   }
@@ -80,7 +59,7 @@ export class MarketingBriefsService extends SupabaseBaseService {
   /** Liste paginée des briefs (admin UI). */
   async listBriefs(filters: BriefFilters): Promise<PaginatedBriefs> {
     const page = Math.max(1, filters.page || 1);
-    const limit = Math.min(filters.limit || 20, 100);
+    const limit = Math.min(filters.limit || 20, MARKETING_BRIEF_MAX_PAGE_SIZE);
     const offset = (page - 1) * limit;
 
     let query = this.supabase
@@ -103,7 +82,7 @@ export class MarketingBriefsService extends SupabaseBaseService {
 
     if (error) {
       this.logger.error(`listBriefs failed: ${error.message}`);
-      throw new Error(`Failed to list briefs: ${error.message}`);
+      throw new ServiceUnavailableException('Brief storage unavailable');
     }
 
     return {
@@ -120,25 +99,44 @@ export class MarketingBriefsService extends SupabaseBaseService {
       .from('__marketing_brief')
       .select('*')
       .eq('id', id)
-      .single();
+      .maybeSingle();
 
     if (error) {
-      this.logger.warn(`getBriefById ${id} not found: ${error.message}`);
-      throw new NotFoundException(`Brief ${id} not found`);
+      this.logger.error(`getBriefById failed: ${error.message}`);
+      throw new ServiceUnavailableException('Brief storage unavailable');
     }
+    if (!data) throw new NotFoundException(`Brief ${id} not found`);
 
     return data as unknown as MarketingBriefRow;
   }
 
   /**
    * Update le status (workflow validation humaine).
-   * Phase 1 — pas de transition strict checking (admin UI gère la cohérence).
+   * Server-side state machine; published records a manual declaration only.
+   * Compare-and-set prevents overwriting a concurrent review/content update.
    */
   async updateBriefStatus(
     id: string,
     nextStatus: 'reviewed' | 'approved' | 'published' | 'archived',
     actor: string,
   ): Promise<MarketingBriefRow> {
+    if (typeof actor !== 'string' || !actor.trim()) {
+      throw new ForbiddenException('Authenticated reviewer identity required');
+    }
+    const brief = await this.getBriefById(id);
+    const allowed: Record<MarketingBriefRow['status'], readonly string[]> = {
+      draft: ['reviewed', 'archived'],
+      reviewed: ['approved', 'archived'],
+      approved: ['published', 'archived'],
+      published: ['archived'],
+      archived: [],
+    };
+    if (!allowed[brief.status]?.includes(nextStatus)) {
+      throw new ConflictException('Invalid brief status transition');
+    }
+    if (nextStatus !== 'archived') {
+      await this.brandGate.assertBriefCanProgress(brief);
+    }
     const update: Record<string, unknown> = { status: nextStatus };
 
     if (nextStatus === 'reviewed') {
@@ -155,13 +153,17 @@ export class MarketingBriefsService extends SupabaseBaseService {
       .from('__marketing_brief')
       .update(update)
       .eq('id', id)
+      .eq('status', brief.status)
+      .eq('updated_at', brief.updated_at)
       .select('*')
-      .single();
+      .maybeSingle();
 
     if (error) {
       this.logger.error(`updateBriefStatus ${id} failed: ${error.message}`);
-      throw new Error(`Failed to update brief: ${error.message}`);
+      throw new ServiceUnavailableException('Brief storage unavailable');
     }
+    if (!data)
+      throw new ConflictException('Brief changed; reload before retrying');
 
     return data as unknown as MarketingBriefRow;
   }
@@ -178,7 +180,7 @@ export class MarketingBriefsService extends SupabaseBaseService {
 
     if (error) {
       this.logger.error(`getBriefStats failed: ${error.message}`);
-      return { by_status: {}, by_business_unit: {}, total: 0 };
+      throw new ServiceUnavailableException('Brief storage unavailable');
     }
 
     const rows = (data || []) as Array<{

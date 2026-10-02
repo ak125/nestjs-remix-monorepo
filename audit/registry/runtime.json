@@ -3657,7 +3657,9 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [],
+      "dependsOn": [
+        "runtime:backend/src/modules/marketing/services/brand-compliance-gate.service.ts"
+      ],
       "id": "runtime:backend/src/modules/marketing/services/marketing-briefs.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/marketing/services/marketing-briefs.service.ts",
@@ -9352,6 +9354,15 @@
       "id": "runtime:frontend/app/routes/admin.marketing.briefs.tsx",
       "kind": "remix-route",
       "path": "frontend/app/routes/admin.marketing.briefs.tsx",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
+      "id": "runtime:frontend/app/routes/admin.marketing.briefs_.$id.tsx",
+      "kind": "remix-route",
+      "path": "frontend/app/routes/admin.marketing.briefs_.$id.tsx",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"

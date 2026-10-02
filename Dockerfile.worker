@@ -53,6 +53,7 @@ COPY --from=installer /app/packages/database-types ./packages/database-types
 COPY --from=installer /app/packages/seo-roles ./packages/seo-roles
 
 # Copier fichiers de configuration
+COPY --from=builder /app/.claude/canon-mirrors/marketing-voice.md ./.claude/canon-mirrors/marketing-voice.md
 COPY config/cron/crontab ./crontab
 COPY scripts/start-worker.sh ./scripts/
 
