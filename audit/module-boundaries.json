@@ -91,7 +91,7 @@
         "backend/src/utils"
       ],
       "files_count": 35,
-      "loc_total": 6110,
+      "loc_total": 6117,
       "has_barrel": true
     },
     "blog": {
@@ -250,7 +250,7 @@
         "backend/src/modules/errors/services"
       ],
       "files_count": 9,
-      "loc_total": 3055,
+      "loc_total": 3056,
       "has_barrel": false
     },
     "frontend-routes": {
@@ -259,7 +259,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115660,
+      "loc_total": 115666,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 597,
-      "loc_total": 114447,
+      "loc_total": 114475,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -711,7 +711,7 @@
         "backend/src/modules/search/services"
       ],
       "files_count": 17,
-      "loc_total": 6355,
+      "loc_total": 6359,
       "has_barrel": false
     },
     "seo": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 273,
-      "loc_total": 51539,
+      "files_count": 276,
+      "loc_total": 52082,
       "has_barrel": true
     },
     "upload": {

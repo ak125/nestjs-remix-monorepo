@@ -682,6 +682,8 @@
         "backend/src/api/api.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "@common/exceptions",
         "backend/src/modules/errors/services/error-log.service.ts",
         "backend/src/modules/errors/services/error.service.ts",
@@ -689,7 +691,7 @@
         "backend/src/modules/seo/validation/url-compatibility.service.ts"
       ],
       "kind": "controller",
-      "loc": 267,
+      "loc": 274,
       "owner": "__unassigned__",
       "path": "backend/src/api/errors-api.controller.ts",
       "risk": "low",
@@ -15638,13 +15640,14 @@
         "backend/src/modules/errors/errors.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
         "@auth/is-admin.guard",
         "backend/src/modules/errors/services/error-log.service.ts",
         "backend/src/modules/errors/services/error.service.ts",
         "backend/src/modules/errors/services/redirect.service.ts"
       ],
       "kind": "controller",
-      "loc": 289,
+      "loc": 290,
       "owner": "__unassigned__",
       "path": "backend/src/modules/errors/controllers/error.controller.ts",
       "risk": "low",
@@ -23696,12 +23699,14 @@
         "backend/src/modules/search/search.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/common/decorators/rate-limit.decorator.ts",
         "backend/src/modules/search/services/search-monitoring.service.ts",
         "backend/src/modules/search/services/search-simple.service.ts"
       ],
       "kind": "controller",
-      "loc": 107,
+      "loc": 111,
       "owner": "__unassigned__",
       "path": "backend/src/modules/search/controllers/search.controller.ts",
       "risk": "low",
@@ -38496,6 +38501,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/tests/unit/errors-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 285,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/errors-routes-authz.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/tests/unit/execution-ledger.service.test.ts",
       "importedBy": [],
       "imports": [],
@@ -43590,7 +43614,7 @@
         "~/components/ui/progress"
       ],
       "kind": "config",
-      "loc": 214,
+      "loc": 216,
       "owner": "__unassigned__",
       "path": "frontend/app/components/diagnostic-wizard/results/ResultHypotheses.tsx",
       "risk": "low",
@@ -49118,7 +49142,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 48,
+      "loc": 74,
       "owner": "__unassigned__",
       "path": "frontend/app/components/ui/badge.tsx",
       "risk": "low",
@@ -52999,7 +53023,7 @@
         "~/utils/internal-api.server"
       ],
       "kind": "route",
-      "loc": 279,
+      "loc": 285,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.marketing.briefs.tsx",
       "risk": "low",
@@ -61513,6 +61537,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/button-phrasing-content.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 106,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/button-phrasing-content.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/tests/unit/cache-control.test.ts",
       "importedBy": [],
       "imports": [],
@@ -62337,6 +62380,25 @@
       "loc": 96,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/login-role-redirect.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/marketing-briefs-list-errors.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 152,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/marketing-briefs-list-errors.test.tsx",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",

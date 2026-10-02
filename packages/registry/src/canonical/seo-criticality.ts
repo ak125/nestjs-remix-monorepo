@@ -93,7 +93,7 @@ export const SeoCriticalitySchema = z
       c.tiers.tier2.sampling_weight;
     if (Math.abs(total - 1.0) > 0.01) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: `tiers.*.sampling_weight must sum to 1.0 ± 0.01 (got ${total.toFixed(3)})`,
         path: ['tiers'],
       });
@@ -105,7 +105,7 @@ export const SeoCriticalitySchema = z
       c.tiers.tier1.slo <= c.tiers.tier2.slo
     ) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: `SLO must be strictly decreasing: tier0 (${c.tiers.tier0.slo}) > tier1 (${c.tiers.tier1.slo}) > tier2 (${c.tiers.tier2.slo})`,
         path: ['tiers'],
       });
@@ -120,7 +120,7 @@ export const SeoCriticalitySchema = z
         c.tiers.tier2.alerting.breach_threshold_minutes
     ) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: `breach_threshold_minutes must be strictly increasing tier0 < tier1 < tier2`,
         path: ['tiers'],
       });
@@ -135,7 +135,7 @@ export const SeoCriticalitySchema = z
     const adminInTier = allTierRoutes.find((r) => r.includes('admin'));
     if (adminInTier) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: `admin/* routes must be in 'excluded', never in any tier (got: "${adminInTier}"). See feedback_seo_routes_need_criticality_tiers.`,
         path: ['tiers'],
       });
@@ -145,7 +145,7 @@ export const SeoCriticalitySchema = z
     const apiInTier = allTierRoutes.find((r) => /^api\//.test(r));
     if (apiInTier) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: `api/* routes must be in 'excluded', never in any tier (got: "${apiInTier}").`,
         path: ['tiers'],
       });

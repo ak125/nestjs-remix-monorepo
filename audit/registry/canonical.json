@@ -28468,6 +28468,8 @@
         "backend/src/api/api.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "@common/exceptions",
         "backend/src/modules/errors/services/error-log.service.ts",
         "backend/src/modules/errors/services/error.service.ts",
@@ -28475,7 +28477,7 @@
         "backend/src/modules/seo/validation/url-compatibility.service.ts"
       ],
       "kind": "controller",
-      "loc": 267,
+      "loc": 274,
       "owner": "__unassigned__",
       "path": "backend/src/api/errors-api.controller.ts",
       "risk": "low",
@@ -43943,13 +43945,14 @@
         "backend/src/modules/errors/errors.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
         "@auth/is-admin.guard",
         "backend/src/modules/errors/services/error-log.service.ts",
         "backend/src/modules/errors/services/error.service.ts",
         "backend/src/modules/errors/services/redirect.service.ts"
       ],
       "kind": "controller",
-      "loc": 289,
+      "loc": 290,
       "owner": "@ak125",
       "path": "backend/src/modules/errors/controllers/error.controller.ts",
       "risk": "medium",
@@ -52267,12 +52270,14 @@
         "backend/src/modules/search/search.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "backend/src/common/decorators/rate-limit.decorator.ts",
         "backend/src/modules/search/services/search-monitoring.service.ts",
         "backend/src/modules/search/services/search-simple.service.ts"
       ],
       "kind": "controller",
-      "loc": 107,
+      "loc": 111,
       "owner": "__unassigned__",
       "path": "backend/src/modules/search/controllers/search.controller.ts",
       "risk": "low",
@@ -67594,6 +67599,26 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "backend/tests/unit/errors-routes-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 285,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/errors-routes-authz.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "backend/tests/unit/execution-ledger.service.test.ts",
       "importedBy": [],
       "imports": [],
@@ -72913,7 +72938,7 @@
         "~/components/ui/progress"
       ],
       "kind": "config",
-      "loc": 214,
+      "loc": 216,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/results/ResultHypotheses.tsx",
       "risk": "low",
@@ -78670,7 +78695,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 48,
+      "loc": 74,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/ui/badge.tsx",
       "risk": "low",
@@ -82689,7 +82714,7 @@
         "~/utils/internal-api.server"
       ],
       "kind": "route",
-      "loc": 279,
+      "loc": 285,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.marketing.briefs.tsx",
       "risk": "medium",
@@ -91494,6 +91519,26 @@
         "manual"
       ],
       "domain": "D2",
+      "id": "frontend/tests/unit/button-phrasing-content.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 106,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/button-phrasing-content.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
       "id": "frontend/tests/unit/cache-control.test.ts",
       "importedBy": [],
       "imports": [],
@@ -92361,6 +92406,26 @@
       "loc": 96,
       "owner": "@ak125",
       "path": "frontend/tests/unit/login-role-redirect.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/marketing-briefs-list-errors.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 152,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/marketing-briefs-list-errors.test.tsx",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -101875,11 +101940,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "06762d36694187f95afe05f89fddf30b7d9e1c39208d2837744cc6b5aeb1c792",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "e65d6b1aa84577164cb040727eb4cddfb27b1936492b278344b20e338afd417f",
+      "audit/registry/files.json": "e74a6d1d7c06e191f63205cb8b98816b1b6e535ecb8c2c31a7aa15c27dc6ac5f",
       "audit/registry/rpc.json": "2b1e02eccb6da1cb24d66d4507afae699c1d5708c25bd610a0aadf57519fa4fc",
       "audit/registry/runtime.json": "6f971451554ed42363824973d8f605032f87b9af54ac9e29f757b9bf9bb548c6"
     },
-    "sotFingerprint": "39e885d95206"
+    "sotFingerprint": "0252599fbede"
   },
   "runtime": [
     {

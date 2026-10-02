@@ -623,7 +623,7 @@ export const R8V5PagePlanSchema = z
       plan.composition.minSpecificContentRatio
     ) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: 'specificContentRatio below threshold',
         path: ['metrics', 'specificContentRatio'],
       });
@@ -636,7 +636,7 @@ export const R8V5PagePlanSchema = z
     const highSpecBlocks = selected.filter((b) => b.specificityWeight >= 0.65);
     if (highSpecBlocks.length < plan.composition.minRequiredSpecificBlocks) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: `not enough high-specificity blocks: ${highSpecBlocks.length} < ${plan.composition.minRequiredSpecificBlocks}`,
         path: ['composition', 'selectedBlockIds'],
       });
@@ -647,7 +647,7 @@ export const R8V5PagePlanSchema = z
     for (const req of plan.composition.dynamicBlockTypesRequired) {
       if (!selectedTypes.has(req)) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           message: `missing required block type: ${req}`,
           path: ['composition', 'dynamicBlockTypesRequired'],
         });

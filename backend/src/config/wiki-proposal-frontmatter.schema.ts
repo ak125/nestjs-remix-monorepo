@@ -265,7 +265,7 @@ export const WikiProposalFrontmatterSchema =
       data.source_refs.length === 0
     ) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         path: ['source_refs'],
         message: `truth_level=${data.truth_level} requires at least 1 source_refs entry (canon ADR-031, anti-pattern AP-LLM-only-seed)`,
       });
@@ -279,28 +279,28 @@ export const WikiProposalFrontmatterSchema =
     if (isExported) {
       if (data.review_status !== 'approved') {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           path: ['review_status'],
           message: `exportable=true requires review_status="approved" (got "${data.review_status}")`,
         });
       }
       if (data.no_disputed_claims !== true) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           path: ['no_disputed_claims'],
           message: `exportable=true requires no_disputed_claims=true`,
         });
       }
       if (!data.reviewed_by) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           path: ['reviewed_by'],
           message: `exportable=true requires reviewed_by (non-null)`,
         });
       }
       if (!data.reviewed_at) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           path: ['reviewed_at'],
           message: `exportable=true requires reviewed_at (non-null)`,
         });
@@ -311,7 +311,7 @@ export const WikiProposalFrontmatterSchema =
     const expectedId = `${data.entity_type}:${data.slug}`;
     if (data.id !== expectedId) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         path: ['id'],
         message: `id "${data.id}" must equal "${expectedId}" (entity_type + ":" + slug)`,
       });

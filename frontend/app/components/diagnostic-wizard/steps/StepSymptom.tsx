@@ -244,7 +244,7 @@ export function StepSymptom({ state, dispatch, onAvailabilityChange }: Props) {
                     active ? "text-blue-600" : "text-gray-400"
                   }`}
                 />
-                <div>
+                <span>
                   <span
                     className={`font-medium text-sm ${
                       active ? "text-blue-900 font-semibold" : "text-gray-900"
@@ -252,10 +252,10 @@ export function StepSymptom({ state, dispatch, onAvailabilityChange }: Props) {
                   >
                     {sys.label}
                   </span>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <span className="block text-xs text-gray-500 mt-0.5">
                     {sys.description}
-                  </p>
-                </div>
+                  </span>
+                </span>
               </button>
             );
           })}
@@ -371,7 +371,7 @@ export function StepSymptom({ state, dispatch, onAvailabilityChange }: Props) {
                         : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                     }`}
                   >
-                    <div
+                    <span
                       className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
                         selected
                           ? "border-blue-500 bg-blue-500"
@@ -381,10 +381,10 @@ export function StepSymptom({ state, dispatch, onAvailabilityChange }: Props) {
                       {selected && (
                         <CheckCircle2 className="w-3 h-3 text-white" />
                       )}
-                    </div>
+                    </span>
 
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
+                    <span className="flex-1 min-w-0">
+                      <span className="flex items-center gap-2 flex-wrap">
                         <span
                           className={`font-medium text-sm ${
                             selected ? "text-blue-900" : "text-gray-900"
@@ -412,11 +412,11 @@ export function StepSymptom({ state, dispatch, onAvailabilityChange }: Props) {
                           )}
                           {URGENCY_LABELS[symptom.urgency] || symptom.urgency}
                         </Badge>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                      </span>
+                      <span className="block text-xs text-gray-500 mt-1 leading-relaxed">
                         {symptom.description}
-                      </p>
-                    </div>
+                      </span>
+                    </span>
                   </button>
                 );
               })}
