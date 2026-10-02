@@ -221,8 +221,8 @@ jobs:
       - name: Build packages
         run: npm run build
 
-      - name: Test client-IP deployment probe
-        run: node --test scripts/ci/prod-client-ip-probe.test.mjs
+      - name: Test deployment probes
+        run: node --test scripts/ci/prod-client-ip-probe.test.mjs scripts/ci/prod-admin-guard-probe.test.mjs
 
       # deploy-prod.yml refuses a commit unless the deploy / e2e-smoke / lighthouse
       # jobs below passed; this catches a rename of those jobs at PR time.
