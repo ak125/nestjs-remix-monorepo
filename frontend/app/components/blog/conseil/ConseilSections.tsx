@@ -30,14 +30,15 @@ interface ConseilSectionsProps {
   sections: GammeConseil[];
   pgAlias?: string;
   pgId?: number;
-  hasR6Guide?: boolean;
+  /** Cible de l'encart « guide d'achat », décidée par le backend (ADR-103 D5) ; null = pas d'encart. */
+  buyingGuideHref?: string | null;
 }
 
 export function ConseilSections({
   sections,
   pgAlias,
   pgId,
-  hasR6Guide,
+  buyingGuideHref,
 }: ConseilSectionsProps) {
   return (
     <>
@@ -154,10 +155,10 @@ export function ConseilSections({
                     href={`/pieces/${pgAlias}-${pgId}.html`}
                     variant="inline"
                   />
-                  {hasR6Guide && (
+                  {buyingGuideHref && (
                     <SoftCTA
                       label="Consulter notre guide d'achat complet"
-                      href={`/blog-pieces-auto/guide-achat/${pgAlias}`}
+                      href={buyingGuideHref}
                       variant="inline"
                     />
                   )}

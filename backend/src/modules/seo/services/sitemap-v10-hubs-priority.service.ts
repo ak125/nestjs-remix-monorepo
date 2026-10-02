@@ -18,6 +18,8 @@ import { DatabaseException, ErrorCodes } from '@common/exceptions';
 import { normalizeAlias } from '../../../common/utils/url-builder.utils';
 import { getValidTypeIds } from '../helpers/auto-type-valid-ids.helper';
 import { SITE_ORIGIN } from '../../../config/app.config';
+import { FeatureFlagsService } from '../../../config/feature-flags.service';
+import { isR6GuideAchatSurface } from '../types/page-role.types';
 import {
   HubGenerationResult,
   HubType,
@@ -31,7 +33,11 @@ export class HubsPriorityService extends SupabaseBaseService {
   private readonly BASE_URL: string;
   private readonly OUTPUT_DIR: string;
 
-  constructor(configService: ConfigService, rpcGate: RpcGateService) {
+  constructor(
+    configService: ConfigService,
+    rpcGate: RpcGateService,
+    private readonly featureFlags: FeatureFlagsService,
+  ) {
     super(configService);
     this.rpcGate = rpcGate;
 
@@ -384,21 +390,27 @@ ${links}
         this.logger.log(`   Found ${advices.length} blog advice pages`);
       }
 
-      // 2. Blog Guides - no display filter, column doesn't exist
-      const { data: guides } = await this.supabase
-        .from('__blog_guide')
-        .select('bg_alias')
-        .limit(1000);
+      // Consolidation R6→R3 : la surface guide-achat sort de l'index, donc du hub
+      const r6Retired = this.featureFlags.seoR6ConsolidationEnabled;
+      let r6Excluded = 0;
 
-      if (guides && guides.length > 0) {
-        for (const g of guides) {
-          if (g.bg_alias) {
-            urls.push(
-              `${this.BASE_URL}/blog-pieces-auto/guide-achat/${g.bg_alias}`,
-            );
+      // 2. Blog Guides - no display filter, column doesn't exist
+      if (!r6Retired) {
+        const { data: guides } = await this.supabase
+          .from('__blog_guide')
+          .select('bg_alias')
+          .limit(1000);
+
+        if (guides && guides.length > 0) {
+          for (const g of guides) {
+            if (g.bg_alias) {
+              urls.push(
+                `${this.BASE_URL}/blog-pieces-auto/guide-achat/${g.bg_alias}`,
+              );
+            }
           }
+          this.logger.log(`   Found ${guides.length} blog guide pages`);
         }
-        this.logger.log(`   Found ${guides.length} blog guide pages`);
       }
 
       // 3. SEO Gamme Conseil (conseils par gamme)
@@ -427,10 +439,20 @@ ${links}
       if (sitemapBlog && sitemapBlog.length > 0) {
         for (const b of sitemapBlog) {
           if (b.url) {
+            if (r6Retired && isR6GuideAchatSurface(b.url)) {
+              r6Excluded++;
+              continue;
+            }
             urls.push(`${this.BASE_URL}${b.url}`);
           }
         }
         this.logger.log(`   Found ${sitemapBlog.length} sitemap blog pages`);
+      }
+
+      if (r6Retired) {
+        this.logger.log(
+          `   🔀 R6 consolidation ON: section __blog_guide ignorée, ${r6Excluded} URL(s) guide-achat exclue(s) de __sitemap_blog`,
+        );
       }
 
       // Écrire le fichier

@@ -7,6 +7,7 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DiagnosticWizard } from "~/components/diagnostic-wizard/DiagnosticWizard";
+import { ResultMaintenance } from "~/components/diagnostic-wizard/results/ResultMaintenance";
 vi.mock("~/services/api/enhanced-vehicle.api", () => ({
   enhancedVehicleApi: {
     getBrands: vi.fn().mockResolvedValue([]),
@@ -175,7 +176,6 @@ describe("maintenance wizard integration", () => {
         risk_flags: [],
         maintenance_links: [],
         allowed_claims: [],
-        forbidden_claims_runtime: [],
         ui_block_inputs: {},
         catalog_guard: {
           allowed_output_mode: "none",
@@ -220,4 +220,41 @@ describe("maintenance wizard integration", () => {
     expect(screen.queryByRole("button", { name: "Copier le lien" })).toBeNull();
     expect(screen.queryByText(/hypothèse identifiée/i)).toBeNull();
   });
+});
+
+describe("maintenance status badges", () => {
+  // Symptom-linked and selected operations share the same generic intervals.
+  it.each([
+    ["primary", "overdue", "Seuil indicatif dépassé"],
+    ["related", "overdue", "Seuil indicatif dépassé"],
+    ["selected", "overdue", "Seuil indicatif dépassé"],
+    ["primary", "ok", "Sous les seuils indicatifs"],
+    ["related", "unknown", "Informations insuffisantes"],
+  ] as const)(
+    "words a %s %s assessment as %s",
+    (relevance, overdueStatus, label) => {
+      render(
+        <ResultMaintenance
+          recommendations={[
+            {
+              operation_slug: "oil",
+              operation_label: "Vidange",
+              description: "",
+              relevance,
+              interval_km: "20 000 km",
+              interval_months: "12 mois",
+              severity_if_overdue: "high",
+              overdue_status: overdueStatus,
+              applicability: "unverified",
+            },
+          ]}
+          maintenanceLinks={[]}
+          allowedOutputMode="none"
+          catalogGammes={[]}
+        />,
+      );
+      expect(screen.getByText(label)).toBeTruthy();
+      expect(screen.queryByText(/^(En retard|OK|Inconnu)$/)).toBeNull();
+    },
+  );
 });

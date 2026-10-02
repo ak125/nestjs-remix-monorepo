@@ -12,6 +12,10 @@ import {
 import { GammeResponseBuilderService } from './services';
 import { GammeRpcService } from './services/gamme-rpc.service';
 import { CacheService } from '@cache/cache.service';
+import {
+  R6GuideLinkPolicyService,
+  R6_GUIDE_LINK_CACHE_SEGMENTS,
+} from '../seo/services/r6-guide-link-policy.service';
 
 interface SupabaseRpcError {
   message?: string;
@@ -45,7 +49,13 @@ export class GammeRestRpcV2Controller {
     private readonly responseBuilder: GammeResponseBuilderService,
     private readonly rpcService: GammeRpcService,
     private readonly cacheService: CacheService,
+    private readonly guideLinkPolicy: R6GuideLinkPolicyService,
   ) {}
+
+  /** La réponse dépend du drapeau de consolidation R6 (liens guide, ADR-103 D5). */
+  private responseCacheKey(pgId: string, segment: string): string {
+    return `${this.RESPONSE_CACHE_PREFIX}${segment}:${pgId}`;
+  }
 
   /**
    * ⚡ RPC V2 - PostgreSQL Function ultra-optimisée
@@ -58,7 +68,10 @@ export class GammeRestRpcV2Controller {
 
     try {
       // 🚀 LCP V9: Check response cache (skips ~300-500ms builder processing)
-      const cacheKey = `${this.RESPONSE_CACHE_PREFIX}${pgId}`;
+      const cacheKey = this.responseCacheKey(
+        pgId,
+        this.guideLinkPolicy.cacheKeySegment(),
+      );
       const cached = await this.cacheService.get<Record<string, any>>(cacheKey);
       if (cached) {
         this.logger.log(`RPC V2 RESPONSE CACHE HIT pour gamme ${pgIdNum}`);
@@ -146,8 +159,9 @@ export class GammeRestRpcV2Controller {
   async invalidateCache(@Param('pgId') pgId: string) {
     await this.rpcService.invalidateCache(pgId);
     // Purger aussi le cache response-level (2e couche)
-    const responseCacheKey = `${this.RESPONSE_CACHE_PREFIX}${pgId}`;
-    await this.cacheService.del(responseCacheKey);
+    for (const segment of R6_GUIDE_LINK_CACHE_SEGMENTS) {
+      await this.cacheService.del(this.responseCacheKey(pgId, segment));
+    }
 
     return {
       status: 200,

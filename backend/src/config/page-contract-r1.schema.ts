@@ -218,7 +218,7 @@ export const PageContractR1Schema = PageContractR1BaseSchema.superRefine(
     if (data.allowed_subintents.includes('exchange_standard')) {
       if (data.allowed_subintents.length < 4) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           message:
             'allowed_subintents requires at least 4 items when exchange_standard is included',
           path: ['allowed_subintents'],
@@ -233,7 +233,7 @@ export const PageContractR1Schema = PageContractR1BaseSchema.superRefine(
     for (let i = 0; i < data.safe_table_plan.length; i++) {
       if (!libraryElements.has(data.safe_table_plan[i].element)) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           message: `safe_table_plan[${i}].element "${data.safe_table_plan[i].element}" not found in table_rows_library`,
           path: ['safe_table_plan', i, 'element'],
         });

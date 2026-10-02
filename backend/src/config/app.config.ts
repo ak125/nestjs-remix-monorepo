@@ -1,6 +1,7 @@
 // Configuration centralisée pour éviter les dépendances circulaires
 // Approche Context7 : centraliser la configuration
 
+import { Logger } from '@nestjs/common';
 import { ConfigurationException, ErrorCodes } from '@common/exceptions';
 
 // Re-export pour compatibilite — la source de verite est site.constants.ts
@@ -24,8 +25,108 @@ export interface AppConfig {
   };
 }
 
+/** Options de connexion ioredis / BullMQ de la cible Redis. */
+export interface RedisConnectionOptions {
+  host: string;
+  port: number;
+  username?: string;
+  password?: string;
+  db?: number;
+  tls?: Record<string, never>;
+}
+
+type EnvReader = (key: string) => string | undefined;
+
+const readProcessEnv: EnvReader = (key) => process.env[key];
+
+const redisConfigLogger = new Logger('RedisConfig');
+
+/**
+ * Cible Redis unique du backend.
+ *
+ * REDIS_URL est requis au boot (env-validation.ts) et fait autorité : hôte, port,
+ * identifiant, mot de passe, base et TLS en sont dérivés. Tout consommateur qui
+ * ouvre sa propre connexion passe par ici ; sinon une instance lancée avec son
+ * propre REDIS_URL partage encore, via REDIS_HOST||localhost, les files BullMQ,
+ * verrous et clés anti-rejeu d'une autre instance.
+ *
+ * - REDIS_HOST / REDIS_PORT ne servent qu'en l'absence de REDIS_URL (tests,
+ *   scripts hors boot). S'ils désignent une autre cible, ils sont ignorés et un
+ *   avertissement le dit.
+ * - REDIS_PASSWORD ne complète que si l'URL n'en porte pas (comportement
+ *   antérieur des consommateurs qui le lisaient).
+ * - REDIS_URL illisible ou hors redis:// / rediss:// → exception. Le message ne
+ *   reprend jamais l'URL, qui peut contenir un mot de passe.
+ *
+ * `read` permet à un service de lire via son ConfigService injecté.
+ */
+export function redisConnectionOptions(
+  read: EnvReader = readProcessEnv,
+): RedisConnectionOptions {
+  const envHost = read('REDIS_HOST') || undefined;
+  const envPort = read('REDIS_PORT') || undefined;
+  const envPassword = read('REDIS_PASSWORD') || undefined;
+  const url = read('REDIS_URL');
+
+  if (!url) {
+    return {
+      host: envHost ?? 'localhost',
+      port: parseInt(envPort ?? '6379', 10),
+      password: envPassword,
+    };
+  }
+
+  const target = parseRedisUrl(url);
+  if (
+    (envHost !== undefined && envHost !== target.host) ||
+    (envPort !== undefined && parseInt(envPort, 10) !== target.port)
+  ) {
+    redisConfigLogger.warn(
+      `REDIS_HOST/REDIS_PORT (${envHost ?? '-'}:${envPort ?? '-'}) ignorés : REDIS_URL désigne ${target.host}:${target.port}`,
+    );
+  }
+  return { ...target, password: target.password ?? envPassword };
+}
+
+function parseRedisUrl(url: string): RedisConnectionOptions {
+  const invalid = (detail: string) =>
+    new ConfigurationException({
+      code: ErrorCodes.CONFIG.LOAD_FAILED,
+      message: `REDIS_URL invalide (${detail}) : attendu redis://[utilisateur:motdepasse@]hote[:port][/base] ou rediss://…`,
+    });
+
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw invalid('illisible');
+  }
+  if (parsed.protocol !== 'redis:' && parsed.protocol !== 'rediss:') {
+    throw invalid('schéma');
+  }
+  const host = parsed.hostname.replace(/^\[(.*)\]$/, '$1');
+  if (!host) {
+    throw invalid('hôte absent');
+  }
+  const dbPath = parsed.pathname.replace(/^\//, '');
+  const db = dbPath === '' ? undefined : Number(dbPath);
+  if (db !== undefined && !(Number.isInteger(db) && db >= 0)) {
+    throw invalid('base');
+  }
+
+  return {
+    host,
+    port: parsed.port ? parseInt(parsed.port, 10) : 6379,
+    username: parsed.username ? decodeURIComponent(parsed.username) : undefined,
+    password: parsed.password ? decodeURIComponent(parsed.password) : undefined,
+    db,
+    ...(parsed.protocol === 'rediss:' ? { tls: {} } : {}),
+  };
+}
+
 // Factory pattern pour la configuration
 export function createAppConfig(): AppConfig {
+  const redisTarget = redisConnectionOptions();
   // Priorité Context7 : variables d'environnement direct d'abord
   const config: AppConfig = {
     supabase: {
@@ -36,8 +137,8 @@ export function createAppConfig(): AppConfig {
     },
     redis: {
       url: process.env.REDIS_URL,
-      host: process.env.REDIS_HOST || 'localhost',
-      port: parseInt(process.env.REDIS_PORT || '6379'),
+      host: redisTarget.host,
+      port: redisTarget.port,
     },
     app: {
       environment: process.env.NODE_ENV || 'development',
