@@ -59,10 +59,21 @@ describe('MaintenanceCalculatorService (ADR-032 PR-2)', () => {
     // Override the protected callRpc method (gate-aware wrapper from
     // SupabaseBaseService) — RPC Safety Gate compliant.
     (service as unknown as { callRpc: typeof mockRpc }).callRpc = mockRpc;
+    // The auto_type row read that resolves and validates the type.
+    const typeQuery = {
+      select: jest.fn(() => typeQuery),
+      eq: jest.fn(() => typeQuery),
+      maybeSingle: jest
+        .fn()
+        .mockResolvedValue({ data: { type_fuel: 'Essence' }, error: null }),
+    };
+    (service as unknown as { supabase: unknown }).supabase = {
+      from: jest.fn(() => typeQuery),
+    };
   });
 
   describe('getSchedule()', () => {
-    it('calls kg_get_smart_maintenance_schedule with type_id and current_km', async () => {
+    it('calls kg_get_smart_maintenance_schedule with type_id, current_km and the fuel of the type', async () => {
       mockRpc.mockResolvedValueOnce({
         data: [
           {
@@ -86,7 +97,7 @@ describe('MaintenanceCalculatorService (ADR-032 PR-2)', () => {
         expect.objectContaining({
           p_type_id: 12345,
           p_current_km: 80000,
-          p_fuel_type: null,
+          p_fuel_type: 'Essence',
         }),
         expect.objectContaining({ source: 'internal' }),
       );
@@ -108,7 +119,7 @@ describe('MaintenanceCalculatorService (ADR-032 PR-2)', () => {
   });
 
   describe('getAlerts()', () => {
-    it('uses default 5 milestones (10k/30k/60k/100k/150k) when none provided', async () => {
+    it('leaves the default milestones to the RPC when none provided', async () => {
       mockRpc.mockResolvedValueOnce({
         data: [
           { milestone_km: 10000, actions: [] },
@@ -122,12 +133,11 @@ describe('MaintenanceCalculatorService (ADR-032 PR-2)', () => {
 
       const alerts = await service.getAlerts();
 
+      // p_milestones is omitted so the RPC's own DEFAULT applies; the service
+      // keeps no copy of it.
       expect(mockRpc).toHaveBeenCalledWith(
         'kg_get_maintenance_alerts_by_milestone',
-        expect.objectContaining({
-          p_milestones: [10000, 30000, 60000, 100000, 150000],
-          p_fuel_type: null,
-        }),
+        { p_fuel_type: null },
         expect.objectContaining({ source: 'internal' }),
       );
       expect(alerts).toHaveLength(5);

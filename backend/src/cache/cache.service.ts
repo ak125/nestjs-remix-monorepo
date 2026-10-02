@@ -270,6 +270,86 @@ export class CacheService implements OnModuleInit {
     return newCount;
   }
 
+  // Strict telemetry operations: an unavailable/corrupt cache is not zero data.
+  private requireReadyRedis(): Redis {
+    if (
+      !this.redisClient ||
+      !this.redisReady ||
+      this.redisClient.status !== 'ready'
+    ) {
+      throw new Error('Redis unavailable for telemetry');
+    }
+    return this.redisClient;
+  }
+
+  private checkedRedisResults(
+    results: [Error | null, unknown][] | null,
+  ): unknown[] {
+    if (!results) throw new Error('Redis telemetry operation aborted');
+    return results.map(([error, value]) => {
+      if (error) throw error;
+      return value;
+    });
+  }
+
+  async incrementHashCounters(
+    key: string,
+    fields: string[],
+    ttlSeconds: number,
+  ): Promise<void> {
+    const transaction = this.requireReadyRedis().multi();
+    for (const field of fields) transaction.hincrby(key, field, 1);
+    transaction.expire(key, ttlSeconds);
+    this.checkedRedisResults(await transaction.exec());
+  }
+
+  async sumHashCounters(keys: string[], fields: string[]): Promise<number[]> {
+    const pipeline = this.requireReadyRedis().pipeline();
+    for (const key of keys) pipeline.hmget(key, ...fields);
+    const totals = fields.map(() => 0);
+    for (const values of this.checkedRedisResults(await pipeline.exec())) {
+      if (!Array.isArray(values) || values.length !== fields.length) {
+        throw new Error('Invalid Redis telemetry result');
+      }
+      values.forEach((value: unknown, index: number) => {
+        if (value === null) return;
+        if (typeof value !== 'string' || !/^\d+$/.test(value)) {
+          throw new Error('Invalid Redis telemetry counter');
+        }
+        const count = Number(value);
+        if (
+          !Number.isSafeInteger(count) ||
+          !Number.isSafeInteger(totals[index] + count)
+        ) {
+          throw new Error('Redis telemetry counter overflow');
+        }
+        totals[index] += count;
+      });
+    }
+    return totals;
+  }
+
+  async prependBoundedList<T>(
+    key: string,
+    value: T,
+    limit: number,
+    ttlSeconds: number,
+  ): Promise<void> {
+    this.checkedRedisResults(
+      await this.requireReadyRedis()
+        .multi()
+        .lpush(key, JSON.stringify(value))
+        .ltrim(key, 0, limit - 1)
+        .expire(key, ttlSeconds)
+        .exec(),
+    );
+  }
+
+  async getList<T>(key: string, limit: number): Promise<T[]> {
+    const values = await this.requireReadyRedis().lrange(key, 0, limit - 1);
+    return values.map((value) => JSON.parse(value) as T);
+  }
+
   async incrementLoginAttempts(email: string): Promise<number> {
     const key = `login_attempts:${email}`;
     if (!this.redisClient || !this.redisReady) return 1;

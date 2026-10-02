@@ -395,6 +395,11 @@
       "reason": "Homepage families read-path (SECURITY DEFINER) — replaces direct catalog_family/.from() reads broken under anon (ADR-028, DB row_security=off)"
     },
     {
+      "name": "get_r6_guide_link_snapshot",
+      "volatility": "STABLE",
+      "reason": "Guide-link policy read-path (SECURITY DEFINER, ADR-103 D5) — replaces direct .from() reads of 4 RLS tables broken under anon (ADR-028, DB row_security=off)"
+    },
+    {
       "name": "get_listing_products_extended",
       "volatility": "STABLE",
       "reason": "SELECT only"
