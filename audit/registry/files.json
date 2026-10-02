@@ -677,9 +677,34 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/api/errors-api.controller.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/api/errors-api.controller.ts",
+        "backend/src/modules/errors/services/error-log.service.ts",
+        "backend/src/modules/errors/services/error.service.ts",
+        "backend/src/modules/errors/services/redirect.service.ts"
+      ],
+      "kind": "test",
+      "loc": 68,
+      "owner": "__unassigned__",
+      "path": "backend/src/api/errors-api.controller.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/api/errors-api.controller.ts",
       "importedBy": [
-        "backend/src/api/api.module.ts"
+        "backend/src/api/api.module.ts",
+        "backend/src/api/errors-api.controller.test.ts"
       ],
       "imports": [
         "@auth/authenticated.guard",
@@ -691,7 +716,7 @@
         "backend/src/modules/seo/validation/url-compatibility.service.ts"
       ],
       "kind": "controller",
-      "loc": 274,
+      "loc": 276,
       "owner": "__unassigned__",
       "path": "backend/src/api/errors-api.controller.ts",
       "risk": "low",
@@ -15766,6 +15791,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/errors/services/error-log.service.ts",
       "importedBy": [
+        "backend/src/api/errors-api.controller.test.ts",
         "backend/src/api/errors-api.controller.ts",
         "backend/src/modules/errors/controllers/error.controller.ts",
         "backend/src/modules/errors/controllers/internal-error-log.controller.ts",
@@ -15815,6 +15841,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/errors/services/error.service.ts",
       "importedBy": [
+        "backend/src/api/errors-api.controller.test.ts",
         "backend/src/api/errors-api.controller.ts",
         "backend/src/modules/errors/controllers/error.controller.ts",
         "backend/src/modules/errors/errors.module.ts",
@@ -15844,6 +15871,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/errors/services/redirect.service.ts",
       "importedBy": [
+        "backend/src/api/errors-api.controller.test.ts",
         "backend/src/api/errors-api.controller.ts",
         "backend/src/modules/errors/controllers/error.controller.ts",
         "backend/src/modules/errors/errors.module.ts",
@@ -51563,10 +51591,11 @@
         "~/components/errors/ErrorGeneric",
         "~/utils/cache-control",
         "~/utils/logger",
+        "~/utils/proxy-headers.server",
         "~/utils/single-fetch"
       ],
       "kind": "route",
-      "loc": 524,
+      "loc": 526,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/$.tsx",
       "risk": "low",
@@ -55124,10 +55153,11 @@
       "id": "frontend/app/routes/api.errors.suggestions.tsx",
       "importedBy": [],
       "imports": [
-        "~/utils/logger"
+        "~/utils/logger",
+        "~/utils/proxy-headers.server"
       ],
       "kind": "route",
-      "loc": 98,
+      "loc": 96,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/api.errors.suggestions.tsx",
       "risk": "low",
@@ -62259,6 +62289,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/errors-log-client-address.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 110,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/errors-log-client-address.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/tests/unit/funnel-beacon.test.ts",
       "importedBy": [],
       "imports": [],
@@ -68408,6 +68457,44 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/ci/ci-test-wiring.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 96,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/ci-test-wiring.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/ci/ci-test-wiring.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 153,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/ci-test-wiring.test.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",

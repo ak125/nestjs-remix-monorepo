@@ -28460,12 +28460,39 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D10",
+      "id": "backend/src/api/errors-api.controller.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/api/errors-api.controller.ts",
+        "backend/src/modules/errors/services/error-log.service.ts",
+        "backend/src/modules/errors/services/error.service.ts",
+        "backend/src/modules/errors/services/redirect.service.ts"
+      ],
+      "kind": "test",
+      "loc": 68,
+      "owner": "@ak125",
+      "path": "backend/src/api/errors-api.controller.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D10",
       "id": "backend/src/api/errors-api.controller.ts",
       "importedBy": [
-        "backend/src/api/api.module.ts"
+        "backend/src/api/api.module.ts",
+        "backend/src/api/errors-api.controller.test.ts"
       ],
       "imports": [
         "@auth/authenticated.guard",
@@ -28477,10 +28504,10 @@
         "backend/src/modules/seo/validation/url-compatibility.service.ts"
       ],
       "kind": "controller",
-      "loc": 274,
-      "owner": "__unassigned__",
+      "loc": 276,
+      "owner": "@ak125",
       "path": "backend/src/api/errors-api.controller.ts",
-      "risk": "low",
+      "risk": "medium",
       "runtime": true,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
@@ -44076,6 +44103,7 @@
       "domain": "D10",
       "id": "backend/src/modules/errors/services/error-log.service.ts",
       "importedBy": [
+        "backend/src/api/errors-api.controller.test.ts",
         "backend/src/api/errors-api.controller.ts",
         "backend/src/modules/errors/controllers/error.controller.ts",
         "backend/src/modules/errors/controllers/internal-error-log.controller.ts",
@@ -44127,6 +44155,7 @@
       "domain": "D10",
       "id": "backend/src/modules/errors/services/error.service.ts",
       "importedBy": [
+        "backend/src/api/errors-api.controller.test.ts",
         "backend/src/api/errors-api.controller.ts",
         "backend/src/modules/errors/controllers/error.controller.ts",
         "backend/src/modules/errors/errors.module.ts",
@@ -44157,6 +44186,7 @@
       "domain": "D10",
       "id": "backend/src/modules/errors/services/redirect.service.ts",
       "importedBy": [
+        "backend/src/api/errors-api.controller.test.ts",
         "backend/src/api/errors-api.controller.ts",
         "backend/src/modules/errors/controllers/error.controller.ts",
         "backend/src/modules/errors/errors.module.ts",
@@ -81199,10 +81229,11 @@
         "~/components/errors/ErrorGeneric",
         "~/utils/cache-control",
         "~/utils/logger",
+        "~/utils/proxy-headers.server",
         "~/utils/single-fetch"
       ],
       "kind": "route",
-      "loc": 524,
+      "loc": 526,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/$.tsx",
       "risk": "medium",
@@ -84896,10 +84927,11 @@
       "id": "frontend/app/routes/api.errors.suggestions.tsx",
       "importedBy": [],
       "imports": [
-        "~/utils/logger"
+        "~/utils/logger",
+        "~/utils/proxy-headers.server"
       ],
       "kind": "route",
-      "loc": 98,
+      "loc": 96,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/api.errors.suggestions.tsx",
       "risk": "medium",
@@ -92279,6 +92311,26 @@
         "manual"
       ],
       "domain": "D2",
+      "id": "frontend/tests/unit/errors-log-client-address.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 110,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/errors-log-client-address.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
       "id": "frontend/tests/unit/funnel-beacon.test.ts",
       "importedBy": [],
       "imports": [],
@@ -98755,6 +98807,46 @@
         "manual"
       ],
       "domain": "D13",
+      "id": "scripts/ci/ci-test-wiring.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 96,
+      "owner": "@ak125",
+      "path": "scripts/ci/ci-test-wiring.mjs",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
+      "id": "scripts/ci/ci-test-wiring.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 153,
+      "owner": "@ak125",
+      "path": "scripts/ci/ci-test-wiring.test.mjs",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
       "id": "scripts/ci/lighthouse-report-quality.mjs",
       "importedBy": [],
       "imports": [],
@@ -101956,15 +102048,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "f712a655d9f22003e79dcfca8e1b40fa79901b8a60755de688f1431655d188e2",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "3eacc33ec5225732cd5fc363cef80b53ed17f43e8f6bb0616a168f5ac4bdb976",
+      ".spec/00-canon/repository-registry/ownership.yaml": "baebf9135dbece711f33b3039d0c7b4770a93f89e4e642cc72613dd9a8aaaa0a",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "06762d36694187f95afe05f89fddf30b7d9e1c39208d2837744cc6b5aeb1c792",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "d482416f55811a7891cf3a9041dd40df8a576492501d6ca99154a78257bccc2f",
+      "audit/registry/files.json": "34b322f9a9d52836344d7f9f102f230dde9751dbbfd177beae1025a9e013d537",
       "audit/registry/rpc.json": "2b1e02eccb6da1cb24d66d4507afae699c1d5708c25bd610a0aadf57519fa4fc",
       "audit/registry/runtime.json": "6f971451554ed42363824973d8f605032f87b9af54ac9e29f757b9bf9bb548c6"
     },
-    "sotFingerprint": "3146cc9a8e99"
+    "sotFingerprint": "58afe167297d"
   },
   "runtime": [
     {

@@ -23,8 +23,7 @@ on:
       - "**/package.json"   # root + backend/ + frontend/ + all workspaces (was root-only -> #1052 skip)
       - "package-lock.json"
       - "audit-reports/phase0-baseline.json"
-      - ".github/workflows/audit.yml"
-      - ".github/workflows/deploy-prod.yml"   # prod-seo-{collector,projection}-env.test.mjs assert its wiring
+      - ".github/workflows/**"   # ci-test-wiring reads EVERY workflow; prod-seo-*-env tests assert deploy-prod.yml wiring
       - ".spec/00-canon/repository-registry/**"   # ALL L2 overlays the contract suite reads (was architecture+db only)
       - "audit/registry/**"                        # L1 projections the contract tests assert against
       - ".dependency-cruiser.generated.cjs"
@@ -130,6 +129,29 @@ jobs:
         # always do; 404 = divergence never retried; transport retried once → exit 2;
         # a golden that evaluates nothing fails; --update is the only re-baseline.
         run: npm run test:r2-golden
+
+      - name: 🧾 PR Definition-of-Done gate — evaluateDoD() unit proof (BLOCKING)
+        # pr-dod-gate.yml cites this test as the proof of the gate's exit codes, but
+        # no workflow ran it: the citation was a YAML comment.
+        run: node --test scripts/ci/pr-dod-gate.test.mjs
+
+      - name: 📦 Initial-load size verifier — fails on the states it exists to catch (BLOCKING)
+        # The npm script existed; no workflow called it.
+        run: npm run size:verify-paths:test
+
+      - name: 🔌 scripts/ci test wiring — every *.test.mjs runs on pull requests (BLOCKING)
+        # Two tests above ran on no pull request at all. This fails when a
+        # scripts/ci/*.test.mjs is not run by a step of a pull_request workflow that
+        # can fail — directly or through ONE root npm script. Call new tests by name.
+        run: node --test scripts/ci/ci-test-wiring.test.mjs
+
+      - name: 🐚 ShellCheck — scripts/ci/*.sh (BLOCKING at warning)
+        # These scripts run inside the PROD deploy and the PREPROD gates. Severity
+        # `warning`, not `style`: style notes stay advisory. Uses the runner's
+        # preinstalled binary; the version is printed so a rule change is traceable.
+        run: |
+          shellcheck --version
+          shellcheck -S warning scripts/ci/*.sh
 
       - name: 🗂️ EDITORIAL_AUTHORITY_SINKS registry invariants (BLOCKING)
         # Pins the exact P0 sink set (audit §6): 2 served-tracked + 15 ratchet-blind,
