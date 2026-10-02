@@ -109,7 +109,7 @@ const RegisterSchemaBase = z.object({
 const RegisterSchema = RegisterSchemaBase.superRefine((data, ctx) => {
   if (data.password !== data.confirmPassword) {
     ctx.addIssue({
-      code: z.ZodIssueCode.custom,
+      code: "custom",
       path: ["confirmPassword"],
       message: "Les mots de passe ne correspondent pas",
     });

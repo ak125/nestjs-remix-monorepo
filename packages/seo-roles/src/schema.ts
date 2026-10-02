@@ -26,7 +26,7 @@ export const tolerantRoleSchema: z.ZodType<CanonicalRoleId, unknown> = z
     const normalized = normalizeRoleId(val);
     if (!normalized) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: `Unknown or forbidden role: "${val}". Bare R3/R6/R9 are ambiguous; use canonical RoleId or a known legacy alias.`,
       });
       return z.NEVER;
@@ -53,7 +53,7 @@ export const canonicalRoleSchema: z.ZodType<CanonicalRoleId, unknown> = z
       return assertCanonicalRoleStrict(val);
     } catch (e) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message:
           e instanceof Error
             ? e.message

@@ -53,14 +53,21 @@ interface Lead {
   } | null;
 }
 
-type LoaderData = {
-  rows: Lead[];
-  total: number;
-  page: number;
-  page_size: number;
-  filter_status: string;
-  filter_follow_up: string;
-};
+/**
+ * Statut HTTP décidé dans le `try` du loader. `data()` renvoie un
+ * DataWithResponseInit, pas une Response : levé dans le `try`, il serait
+ * rattrapé par le `catch` et remplacé par la 502 de repli. Le `try` lève donc
+ * cette erreur, que le `catch` traduit en `data()` (même modèle que
+ * R3GuideNotFoundError, route conseils).
+ */
+class LeadsApiStatusError extends Error {
+  constructor(
+    readonly status: number,
+    message: string,
+  ) {
+    super(message);
+  }
+}
 
 const STATUS_LABEL: Record<
   LeadStatus,
@@ -108,9 +115,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     });
 
     if (res.status === 401 || res.status === 403) {
-      throw data(
-        { error: "Authentification admin requise" },
-        { status: res.status },
+      throw new LeadsApiStatusError(
+        res.status,
+        "Authentification admin requise",
       );
     }
 
@@ -120,7 +127,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         status: res.status,
         errText,
       });
-      throw data({ error: `API leads failed: ${res.status}` }, { status: 502 });
+      throw new LeadsApiStatusError(502, `API leads failed: ${res.status}`);
     }
 
     const body = (await res.json()) as {
@@ -140,6 +147,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     };
   } catch (err) {
     if (err instanceof Response) throw err;
+    if (err instanceof LeadsApiStatusError) {
+      throw data({ error: err.message }, { status: err.status });
+    }
     logger.error("admin.leads loader exception", { err });
     throw data({ error: "API leads unreachable" }, { status: 502 });
   }

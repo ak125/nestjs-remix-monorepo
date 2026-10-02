@@ -209,7 +209,7 @@ export const DocumentStorageCanonSchema = z
     // R1: foundation_gate=false → business_pool must be false
     if (!doc.foundation_gate_passed && doc.business_pool_admissible) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         path: ['business_pool_admissible'],
         message:
           'business_pool_admissible doit etre false si foundation_gate_passed = false',
@@ -222,7 +222,7 @@ export const DocumentStorageCanonSchema = z
       !doc.allowed_usages.includes('retrieval_business')
     ) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         path: ['allowed_usages'],
         message:
           'retrieval_business doit etre present si business_pool_admissible = true',
@@ -242,7 +242,7 @@ export const DocumentStorageCanonSchema = z
       doc.business_pool_admissible
     ) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         path: ['business_pool_admissible'],
         message:
           'les sources secondaires/exploratoires ne doivent pas etre admissibles metier par defaut',

@@ -10,12 +10,20 @@ on:
 # Sans ça, des pushes `main` rapprochés lancent des `docker compose up` (job `deploy`)
 # qui se chevauchent et SIGTERM le container PENDANT le `e2e-smoke` d'un autre run
 # → "socket hang up" sur la homepage = gate rouge intermittent (ExitCode=0 = restart
-# infra, PAS un crash applicatif — diagnostic 2026-06-21). On sérialise par workflow+ref
-# et on annule le run superséded : seul le DERNIER commit se déploie/teste (sémantique
-# du tag flottant `:preprod` = dernier `main`). PROD (deploy-prod.yml) = workflow distinct, non affecté.
+# infra, PAS un crash applicatif — diagnostic 2026-06-21). On sérialise par workflow+ref.
+#
+# Sur un push (main, dev), le run EN COURS n'est jamais annulé : il va jusqu'au bout
+# (Deploy PREPROD → E2E → Lighthouse). GitHub garde au plus un run EN ATTENTE par groupe
+# et remplace l'attente plus ancienne : le dernier commit poussé passe ensuite, sans
+# empilement. Annuler le run en cours (comportement jusqu'au 2026-10-01) affamait la gate
+# PROD : le 2026-10-01, avec une fusion toutes les ~10 min et un cycle de ~32 min, les 19
+# commits fusionnés après #1667 ont tous vu leur run annulé avant Deploy PREPROD + E2E +
+# Lighthouse — aucun commit taguable.
+# Sur une pull_request, un nouveau push rend l'ancien run inutile : on l'annule.
+# PROD (deploy-prod.yml) = workflow distinct, non affecté.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   actions: write
@@ -213,13 +221,13 @@ jobs:
       - name: Build packages
         run: npm run build
 
-      - name: Test client-IP deployment probe
-        run: node --test scripts/ci/prod-client-ip-probe.test.mjs
+      - name: Test deployment probes
+        run: node --test scripts/ci/prod-client-ip-probe.test.mjs scripts/ci/prod-admin-guard-probe.test.mjs
 
       # deploy-prod.yml refuses a commit unless the deploy / e2e-smoke / lighthouse
       # jobs below passed; this catches a rename of those jobs at PR time.
       - name: Test PREPROD evidence gate (deploy-prod)
-        run: node --test scripts/ci/prod-preprod-evidence.test.mjs
+        run: node --test scripts/ci/prod-preprod-evidence.test.mjs scripts/ci/prod-image-selection.test.mjs
 
       - name: Test E2E rate-budget admission
         run: node --test scripts/ci/preprod-e2e-rate-budget.test.mjs scripts/ci/preprod-e2e-rate-budget.storage.test.mjs
