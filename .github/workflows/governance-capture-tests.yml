@@ -1,0 +1,37 @@
+name: Governance capture retirement
+
+# Offline regression tests only: no runtime probes, vault writes or deployment.
+on:
+  pull_request:
+    paths:
+      - 'scripts/governance/capture-verification.sh'
+      - 'scripts/governance/capture-health-check.sh'
+      - 'scripts/governance/generate-monthly-report.sh'
+      - 'scripts/test-governance-capture.py'
+      - '.github/workflows/governance-capture-tests.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/governance/capture-verification.sh'
+      - 'scripts/governance/capture-health-check.sh'
+      - 'scripts/governance/generate-monthly-report.sh'
+      - 'scripts/test-governance-capture.py'
+      - '.github/workflows/governance-capture-tests.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  retired-captures:
+    name: Legacy captures refuse without side effects
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Test all retired capture entrypoints
+        run: python3 -B scripts/test-governance-capture.py
