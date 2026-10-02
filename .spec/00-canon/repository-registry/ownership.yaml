@@ -1522,3 +1522,17 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: low
+  # api/errors-api.controller expose la journalisation d'erreurs (/api/errors :
+  # suggestions, redirections, __error_logs) et n'importe que des services de
+  # modules/errors/** : même préoccupation, donc D10. Son test suit le sujet.
+  # Chemins exacts : un test n'est jamais couvert par un motif *.test.ts.
+  - glob: backend/src/api/errors-api.controller.ts
+    domain: D10
+    owner: '@ak125'
+    sourceConfidence: medium
+    risk: medium
+  - glob: backend/src/api/errors-api.controller.test.ts
+    domain: D10
+    owner: '@ak125'
+    sourceConfidence: medium
+    risk: medium
