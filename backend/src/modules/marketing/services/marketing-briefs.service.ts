@@ -26,6 +26,7 @@ import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import { BrandComplianceGateService } from './brand-compliance-gate.service';
 import type { MarketingBriefRow } from '../interfaces/marketing.interfaces';
+import { MARKETING_BRIEF_MAX_PAGE_SIZE } from '../dto/marketing-brief.dto';
 export type { MarketingBriefRow } from '../interfaces/marketing.interfaces';
 
 export interface BriefFilters {
@@ -58,7 +59,7 @@ export class MarketingBriefsService extends SupabaseBaseService {
   /** Liste paginée des briefs (admin UI). */
   async listBriefs(filters: BriefFilters): Promise<PaginatedBriefs> {
     const page = Math.max(1, filters.page || 1);
-    const limit = Math.min(filters.limit || 20, 100);
+    const limit = Math.min(filters.limit || 20, MARKETING_BRIEF_MAX_PAGE_SIZE);
     const offset = (page - 1) * limit;
 
     let query = this.supabase
@@ -81,7 +82,7 @@ export class MarketingBriefsService extends SupabaseBaseService {
 
     if (error) {
       this.logger.error(`listBriefs failed: ${error.message}`);
-      throw new Error(`Failed to list briefs: ${error.message}`);
+      throw new ServiceUnavailableException('Brief storage unavailable');
     }
 
     return {
@@ -179,7 +180,7 @@ export class MarketingBriefsService extends SupabaseBaseService {
 
     if (error) {
       this.logger.error(`getBriefStats failed: ${error.message}`);
-      return { by_status: {}, by_business_unit: {}, total: 0 };
+      throw new ServiceUnavailableException('Brief storage unavailable');
     }
 
     const rows = (data || []) as Array<{

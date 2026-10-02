@@ -30,7 +30,12 @@ import {
 import { IsAdminGuard } from '@auth/is-admin.guard';
 import { Request } from 'express';
 import { MarketingBriefsService } from '../services/marketing-briefs.service';
-import { UpdateBriefStatusSchema } from '../dto/marketing-brief.dto';
+import { StrictZodQueryValidationPipe } from '../../../common/pipes/strict-zod-query-validation.pipe';
+import {
+  ListMarketingBriefsQuerySchema,
+  UpdateBriefStatusSchema,
+} from '../dto/marketing-brief.dto';
+import type { ListMarketingBriefsQueryDto } from '../dto/marketing-brief.dto';
 
 @Controller('api/admin/marketing/briefs')
 @UseGuards(IsAdminGuard)
@@ -39,19 +44,10 @@ export class MarketingBriefsController {
 
   @Get()
   async list(
-    @Query('business_unit') businessUnit?: 'ECOMMERCE' | 'LOCAL' | 'HYBRID',
-    @Query('status') status?: string,
-    @Query('agent_id') agentId?: string,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
+    @Query(new StrictZodQueryValidationPipe(ListMarketingBriefsQuerySchema))
+    filters: ListMarketingBriefsQueryDto,
   ) {
-    const data = await this.service.listBriefs({
-      business_unit: businessUnit,
-      status,
-      agent_id: agentId,
-      page: page ? Number.parseInt(page, 10) : 1,
-      limit: limit ? Number.parseInt(limit, 10) : 20,
-    });
+    const data = await this.service.listBriefs(filters);
     return { success: true, data };
   }
 
