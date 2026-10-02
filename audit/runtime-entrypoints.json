@@ -2774,6 +2774,8 @@
       "backend/supabase/migrations/20261001_move_vector_extension_to_extensions_schema.sql",
       "backend/supabase/migrations/20261001_pin_order_functions_search_path.down.sql",
       "backend/supabase/migrations/20261001_pin_order_functions_search_path.sql",
+      "backend/supabase/migrations/20261003_auto_modele_fill_empty_alias.down.sql",
+      "backend/supabase/migrations/20261003_auto_modele_fill_empty_alias.sql",
       "backend/supabase/migrations/README.md"
     ],
     "ci_workflows": [
@@ -2957,7 +2959,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1570,
+  "runtime_files_count": 1572,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4192,6 +4194,8 @@
     "backend/supabase/migrations/20261001_move_vector_extension_to_extensions_schema.sql",
     "backend/supabase/migrations/20261001_pin_order_functions_search_path.down.sql",
     "backend/supabase/migrations/20261001_pin_order_functions_search_path.sql",
+    "backend/supabase/migrations/20261003_auto_modele_fill_empty_alias.down.sql",
+    "backend/supabase/migrations/20261003_auto_modele_fill_empty_alias.sql",
     "backend/supabase/migrations/README.md",
     "docker/lighthouse/Dockerfile",
     "docker/lighthouse/crontab",
