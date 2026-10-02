@@ -420,7 +420,7 @@ export const R6SectionsMapSchema = z
       const min = R6_SECTION_TERM_MINIMUMS[sectionId as R6SectionId] ?? 1;
       if ((plan.include_terms?.length ?? 0) < min) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           message: `${sectionId}: include_terms requires at least ${min} items`,
           path: [sectionId, 'include_terms'],
         });
@@ -438,7 +438,7 @@ export const R6SectionsMapSchema = z
     }
     if (imageBudgetUsed > R6_MEDIA_BUDGET.maxInArticleImages) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: `GR7 budget exceeded: ${imageBudgetUsed} images > max ${R6_MEDIA_BUDGET.maxInArticleImages}`,
         path: ['_media_budget'],
       });
@@ -459,7 +459,7 @@ export const R6SectionsMapSchema = z
     for (const req of requiredSections) {
       if (!map[req]) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           message: `Required section '${req}' is missing`,
           path: [req],
         });

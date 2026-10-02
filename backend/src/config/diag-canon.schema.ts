@@ -58,7 +58,7 @@ export const DiagCanon = z
     for (const [symptomSlug, systemSlug] of Object.entries(canon.symptoms)) {
       if (!known.has(systemSlug)) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           path: ['symptoms', symptomSlug],
           message: `system_slug_unknown:${systemSlug}`,
         });

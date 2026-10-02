@@ -176,7 +176,7 @@ export const R3SectionTermsMapSchema = z
       const min = SECTION_TERM_MINIMUMS[sectionId] ?? 1;
       if ((plan.include_terms?.length ?? 0) < min) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           message: `${sectionId}: include_terms requires at least ${min} items`,
           path: [sectionId, 'include_terms'],
         });
@@ -194,7 +194,7 @@ export const R3SectionTermsMapSchema = z
     }
     if (imageBudgetUsed > MEDIA_BUDGET.maxInArticleImages) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: `G7 budget exceeded: ${imageBudgetUsed} images > max ${MEDIA_BUDGET.maxInArticleImages}`,
         path: ['_media_budget'],
       });

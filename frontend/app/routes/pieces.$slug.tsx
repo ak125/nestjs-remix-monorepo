@@ -238,6 +238,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           content: heroData.content,
           pg_name: heroData.pg_name || heroData.famille_info?.mf_name || "",
           pg_alias: heroData.pg_alias || normalizeAlias(heroData.pg_name || ""),
+          buyingGuideHref: heroData.buyingGuideHref ?? null,
           pg_pic: toProxyImageUrl(heroData.image) ?? "",
           pg_wall: toProxyImageUrl(heroData.wall) ?? "",
         }
@@ -806,16 +807,14 @@ export default function PiecesDetailPage() {
 
           {/* Liens utiles — compact inline */}
           <div className="flex items-center gap-4 text-xs font-medium">
-            <a
-              href={
-                data.content?.pg_alias
-                  ? `/blog-pieces-auto/guide-achat/${data.content.pg_alias}`
-                  : "/blog-pieces-auto"
-              }
-              className="text-blue-600 hover:text-blue-800 transition-colors"
-            >
-              Guide d&apos;achat
-            </a>
+            {data.content?.buyingGuideHref && (
+              <a
+                href={data.content.buyingGuideHref}
+                className="text-blue-600 hover:text-blue-800 transition-colors"
+              >
+                Guide d&apos;achat
+              </a>
+            )}
             <a
               href={
                 data.content?.pg_alias

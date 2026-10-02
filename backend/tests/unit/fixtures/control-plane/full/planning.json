@@ -4,7 +4,7 @@
   "meta": {
     "generatedAt": "2026-05-20T12:00:00.000Z",
     "source": "github_pulls",
-    "sot": "vault:MOC-Planning-Live (ADR-053)",
+    "sot": "github:pull-requests — this file is a PR projection; vault MOC-Planning-Live is a frozen 2026-08-14 snapshot (ADR-104)",
     "repo": "ak125/nestjs-remix-monorepo",
     "degraded": false,
     "prCount": 3

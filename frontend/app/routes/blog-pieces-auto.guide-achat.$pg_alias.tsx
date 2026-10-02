@@ -6,7 +6,7 @@
  * Intention : Choisir la bonne piece
  *
  * Redirect 301 vers le slug canonical si le backend résout une variante.
- * 404 noindex si aucun guide trouvé.
+ * 404 noindex si aucun guide n'existe ; 503 + Retry-After si indisponibilité passagère.
  * Dual-mode : V1 legacy rendering OU V2 buying-guide sections.
  */
 
@@ -24,7 +24,6 @@ import {
 } from "lucide-react";
 import {
   redirect,
-  type HeadersFunction,
   type LoaderFunctionArgs,
   type MetaFunction,
   data,
@@ -71,6 +70,10 @@ import { Card, CardContent } from "~/components/ui/card";
 
 // Utils
 import { type R6GuidePayload } from "~/types/r6-guide.types";
+import {
+  buildCacheHeaders,
+  NO_STORE_CACHE_CONTROL,
+} from "~/utils/cache-control";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
@@ -130,20 +133,37 @@ async function fetchR4Reference(
   }
 }
 
-// ── Loader (NO 301 — always 404 noindex on failure) ─────
+// ── Loader (404 noindex si absent, 503 si indisponibilité passagère) ─
+
+/**
+ * Marks a genuine "this guide does not exist" outcome: BOTH sources (the R6
+ * endpoint, then the blog guides) answered "no guide". Everything else that can
+ * go wrong on the way to the payload (429 from the app's own rate limiter, 5xx,
+ * abort/timeout, socket error) is TRANSIENT and must NOT be reported as 404:
+ * answering 404 on a transient fault invites deindexing a valid guide.
+ * Transient faults answer 503 + Retry-After instead. Thrown inside the `try`
+ * and translated to `data()` in the `catch` (same model as
+ * R3GuideNotFoundError, conseils route).
+ */
+class R6GuideNotFoundError extends Error {}
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const { pg_alias } = params;
 
   if (!pg_alias) {
-    throw data({ message: "Alias manquant" }, { status: 404 });
+    throw data(
+      { message: "Alias manquant" },
+      { status: 404, headers: { "Cache-Control": NO_STORE_CACHE_CONTROL } },
+    );
   }
 
+  // R6→R3 consolidation (flag-gated côté serveur, inerte par défaut) :
+  // 301 vers la page R3 conseils de la gamme quand le flag est ON ET que
+  // la page R3 existe (self-gate backend — jamais de redirect-vers-404) ;
+  // sinon, flag ON → la page reste servie mais sort de l'index (`robots`).
+  // Mirror du pattern R5 (diagnostic-auto.$slug → conseils).
+  let robots: string | null = null;
   try {
-    // R6→R3 consolidation (flag-gated côté serveur, inerte par défaut) :
-    // 301 vers la page R3 conseils de la gamme quand le flag est ON ET que
-    // la page R3 existe (self-gate backend — jamais de redirect-vers-404).
-    // Mirror du pattern R5 (diagnostic-auto.$slug → conseils).
     const redirectProbeUrl = getInternalApiUrlFromRequest(
       `/api/r6-guide/redirect/${pg_alias}`,
       request,
@@ -156,9 +176,17 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       if (target?.redirect_to) {
         return redirect(target.redirect_to, 301);
       }
+      robots = typeof target?.robots === "string" ? target.robots : null;
+    } else {
+      logger.warn(
+        `[R6 Guide] posture d'indexation indisponible (HTTP ${redirectRes.status}) pour ${pg_alias} — directive robots par défaut`,
+      );
     }
-  } catch {
-    // probe réseau en échec → rendu normal de la page R6 (comportement actuel)
+  } catch (error) {
+    logger.warn(
+      `[R6 Guide] posture d'indexation indisponible pour ${pg_alias} — directive robots par défaut`,
+      error,
+    );
   }
 
   const controller = new AbortController();
@@ -171,9 +199,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       request,
     );
     const r6Response = await fetch(r6Url, { signal: controller.signal });
+    // Only a 404, or a 200 without an R6 guide, proves R6 has none. A 429/5xx
+    // proves nothing: the guide may exist there.
+    let r6Absent = r6Response.status === 404;
 
     if (r6Response.ok) {
-      clearTimeout(timeoutId);
       const result = await r6Response.json();
 
       // Handle slug redirect (e.g. "disque-frein" → "disque-de-frein")
@@ -188,8 +218,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
       if (guide && (!guide.intentType || guide.intentType === "R6")) {
         const r4Reference = await fetchR4Reference(guide.page.pg_id, request);
-        return { guide, pg_alias, r4Reference };
+        return { guide, pg_alias, r4Reference, robots };
       }
+      r6Absent = true;
     }
 
     // 2) Fallback: blog guide endpoint (manual guides from __blog_guide)
@@ -199,12 +230,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       request,
     );
     const blogResponse = await fetch(blogUrl, { signal: controller.signal });
-    clearTimeout(timeoutId);
 
     if (!blogResponse.ok) {
-      throw data(
-        { message: `Guide "${pg_alias}" non trouve` },
-        { status: 404 },
+      if (blogResponse.status === 404 && r6Absent) {
+        throw new R6GuideNotFoundError(`Guide "${pg_alias}" non trouve`);
+      }
+      throw new Error(
+        `guide endpoints returned R6 ${r6Response.status}, blog ${blogResponse.status}`,
       );
     }
 
@@ -212,9 +244,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const blogGuide = blogResult?.data;
 
     if (!blogGuide) {
-      throw data(
-        { message: `Guide "${pg_alias}" non disponible` },
-        { status: 404 },
+      if (r6Absent) {
+        throw new R6GuideNotFoundError(`Guide "${pg_alias}" non disponible`);
+      }
+      throw new Error(
+        `blog guide empty while R6 endpoint returned ${r6Response.status}`,
       );
     }
 
@@ -227,6 +261,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     // Convert BlogArticle → R6GuidePayload (V1 format for rendering)
     const guide: R6GuidePayload = {
       intentType: "R6",
+      // eslint-disable-next-line no-restricted-syntax -- verdict « Legacy SEO role literal in OUTPUT context » : valeur imposée par le contrat de page gouverné PageContractR6.pageRole (literal, backend page-contract-r6.schema.ts) = surface key R6_BUYING_GUIDE (@repo/seo-role-contracts, → R6_GUIDE_ACHAT via surfaceToRole). Migrer ce contrat sort du périmètre de cette PR.
       pageRole: "R6_BUYING_GUIDE",
       canonicalRoleUrl: `/blog-pieces-auto/guide-achat/${pg_alias}`,
       roleVersion: "v1",
@@ -259,22 +294,39 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     };
 
     const r4Reference = await fetchR4Reference(guide.page.pg_id, request);
-    return { guide, pg_alias, r4Reference };
+    return { guide, pg_alias, r4Reference, robots };
   } catch (error) {
-    clearTimeout(timeoutId);
     if (error instanceof Response) throw error;
+
+    // Genuine absence — the only case that legitimately answers 404.
+    if (error instanceof R6GuideNotFoundError) {
+      throw data(
+        { message: error.message },
+        { status: 404, headers: { "Cache-Control": NO_STORE_CACHE_CONTROL } },
+      );
+    }
+
+    // Transient fault (429 / 5xx / abort / socket). Answer 503 so the URL stays
+    // indexable. Retry-After is what carries this error to `headers` below:
+    // React Router only hands a thrown data()'s init.headers to `errorHeaders`
+    // when there are some, and buildCacheHeaders then stamps no-store.
     logger.error(`[R6 Guide] Error loading guide for: ${pg_alias}`, error);
     throw data(
       { message: `Erreur chargement guide "${pg_alias}"` },
-      { status: 500 },
+      { status: 503, headers: { "Retry-After": "60" } },
     );
+  } finally {
+    // One owner for the timer: the 12 s budget spans the R6 fetch AND the blog
+    // fetch (bodies included) and is released on every exit.
+    clearTimeout(timeoutId);
   }
 }
 
-// Cache — 5min browser + 1h stale (contenu stable)
-export const headers: HeadersFunction = () => ({
-  "Cache-Control": "public, max-age=300, stale-while-revalidate=3600",
-});
+// Cache — 5min browser + 1h stale (contenu stable). The thrown 404/503 above
+// carry headers, so buildCacheHeaders sees them and never leaks this public TTL.
+export const headers = buildCacheHeaders(
+  "public, max-age=300, stale-while-revalidate=3600",
+);
 
 // Skip revalidation when navigating back to same guide
 export const shouldRevalidate: ShouldRevalidateFunction = ({
@@ -288,7 +340,10 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
 
 // ── Meta (noindex if no data) ───────────────────────────
 
-export const meta: MetaFunction<typeof loader> = ({ loaderData: data, location }) => {
+export const meta: MetaFunction<typeof loader> = ({
+  loaderData: data,
+  location,
+}) => {
   if (!data) {
     return [
       { title: "Guide non trouve" },
@@ -315,7 +370,7 @@ export const meta: MetaFunction<typeof loader> = ({ loaderData: data, location }
     { title },
     { name: "description", content: cleanDescription },
     { tagName: "link", rel: "canonical", href: canonicalUrl },
-    { name: "robots", content: "index, follow" },
+    { name: "robots", content: data.robots ?? "index, follow" },
     { name: "author", content: "Automecanik - Experts Automobile" },
     { property: "og:title", content: title },
     { property: "og:description", content: cleanDescription },

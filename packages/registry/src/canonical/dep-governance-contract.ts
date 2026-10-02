@@ -77,7 +77,7 @@ const DepGovernanceEntrySchema = z
     const idName = entry.id.replace(/^npm:/, "").replace(/@[^@]+$/, "");
     if (idName !== entry.name) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: `id-name mismatch: id="${entry.id}" decodes name="${idName}" but name field is "${entry.name}"`,
         path: ["id"],
       });
@@ -99,7 +99,7 @@ export const DepGovernanceContractSchema = z
     const dupes = ids.filter((id, i) => ids.indexOf(id) !== i);
     if (dupes.length > 0) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: `Duplicate dependency.id: ${[...new Set(dupes)].join(", ")}`,
         path: ["dependencies"],
       });
@@ -108,7 +108,7 @@ export const DepGovernanceContractSchema = z
     const nameDupes = names.filter((n, i) => names.indexOf(n) !== i);
     if (nameDupes.length > 0) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: `Duplicate dependency.name (different versions same package — choose one): ${[...new Set(nameDupes)].join(", ")}`,
         path: ["dependencies"],
       });

@@ -4,7 +4,10 @@ import {
   DiagnosticEngineDataService,
   type DiagSafetyRule,
 } from './diagnostic-engine.data-service';
-import { SignalInterpretationEngine } from './engines/signal-interpretation.engine';
+import {
+  SignalInterpretationEngine,
+  type SignalInterpretation,
+} from './engines/signal-interpretation.engine';
 import { HypothesisScoringEngine } from './engines/hypothesis-scoring.engine';
 import { RiskSafetyEngine } from './engines/risk-safety.engine';
 import { CatalogOrientationEngine } from './engines/catalog-orientation.engine';
@@ -37,7 +40,6 @@ describe('Diagnostic without RAG content authority', () => {
   const data = {
     getScoredCausesForSymptoms: jest.fn().mockResolvedValue([]),
     getSafetyRules: jest.fn().mockResolvedValue([safetyRule]),
-    getCostRanges: jest.fn().mockResolvedValue(new Map()),
     saveSession: jest.fn().mockResolvedValue('session-fixture'),
   };
   const hypothesis = {
@@ -65,11 +67,13 @@ describe('Diagnostic without RAG content authority', () => {
           useValue: {
             interpret: jest.fn().mockResolvedValue({
               system_confirmed: true,
+              system_slug: 'freinage',
               system_label: 'Freinage',
               resolved_symptom_slugs: ['bruit'],
+              symptom_labels: { bruit: 'Bruit au freinage' },
               unresolved_signals: [],
               signal_quality: 'high',
-            }),
+            } satisfies SignalInterpretation),
           },
         },
         {
@@ -91,7 +95,7 @@ describe('Diagnostic without RAG content authority', () => {
         },
         {
           provide: CatalogOrientationEngine,
-          useValue: {
+          useValue: Object.assign(new CatalogOrientationEngine(), {
             evaluate: jest.fn().mockReturnValue({
               ready_for_catalog: false,
               confidence_before_purchase: 'insufficient',
@@ -99,7 +103,7 @@ describe('Diagnostic without RAG content authority', () => {
               reason: 'Controle requis',
               suggested_gammes: [],
             }),
-          },
+          }),
         },
         {
           provide: MaintenanceIntelligenceEngine,
@@ -157,6 +161,24 @@ describe('Diagnostic without RAG content authority', () => {
     });
     expect(parsed.evidence_pack).not.toHaveProperty('rag_facts');
     expect(parsed.evidence_pack.risk_flags).toEqual(['Risque de freinage']);
+  });
+
+  it('shows the usage profile with its French label, not the raw value', async () => {
+    const result = await orchestrator.analyze({
+      ...input,
+      usage_context: { usage_profile: 'urban_short_trips' },
+    });
+    const { factual_inputs_confirmed, factual_inputs_missing } =
+      result.data!.evidence.evidence_pack;
+    expect(factual_inputs_confirmed).toContain(
+      "Profil d'usage: Urbain / courts trajets",
+    );
+    expect(factual_inputs_confirmed.join(' ')).not.toContain(
+      'urban_short_trips',
+    );
+    expect(factual_inputs_missing).not.toContain(
+      "Profil d'usage non renseigné",
+    );
   });
 
   it('still rejects invalid input before any database access', async () => {

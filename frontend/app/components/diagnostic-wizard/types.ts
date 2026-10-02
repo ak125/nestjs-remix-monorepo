@@ -1,4 +1,4 @@
-import  {
+import {
   type IntentLayer,
   type RecommendedAction,
   type HumanEscalation,
@@ -119,7 +119,6 @@ export interface EvidencePack {
   };
   maintenance_recommendations?: MaintenanceRecommendation[];
   allowed_claims: string[];
-  forbidden_claims_runtime: string[];
   signal_quality?: string;
   ui_block_inputs: Record<string, unknown>;
 }
