@@ -1,0 +1,19 @@
+{
+  "extends": "../../backend/tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "../..",
+    "noEmit": true,
+    "strict": true,
+    "incremental": false,
+    "types": ["node"]
+  },
+  "include": [
+    "./reactivation-pilot.ts",
+    "./run-reactivation-pilot.ts",
+    "./workbench-cli.ts",
+    "./reactivation-pilot.test.ts",
+    "./marketing-workbench.test.ts",
+    "./marketing-operations.test.ts",
+    "./marketing-measurement.test.ts"
+  ]
+}

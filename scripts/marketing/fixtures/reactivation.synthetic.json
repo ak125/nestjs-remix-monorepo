@@ -1,0 +1,116 @@
+{
+  "project": "automecanik",
+  "environment": "DEV",
+  "synthetic": true,
+  "run_id": "synthetic-reactivation-001",
+  "as_of": "2026-10-02T12:00:00Z",
+  "data_at": "2026-10-02T11:55:00Z",
+  "rules": {
+    "inactive_days": 180,
+    "recent_purchase_days": 30,
+    "history_days": 730,
+    "max_data_age_hours": 24,
+    "max_contacts": 100,
+    "max_per_contact": 1,
+    "max_total": 10
+  },
+  "contacts": [
+    {
+      "project": "automecanik",
+      "customer_id": "synthetic-001",
+      "identity_verified": true,
+      "consent": {
+        "brand": "automecanik",
+        "purpose": "marketing",
+        "channel": "email",
+        "granted_at": "2025-01-01T00:00:00Z"
+      },
+      "opposed": false,
+      "purchases": [
+        {
+          "at": "2025-12-01T00:00:00Z",
+          "net_minor": "12345",
+          "currency": "EUR"
+        }
+      ],
+      "sent_in_window": 0
+    },
+    {
+      "project": "other-project",
+      "customer_id": "synthetic-001",
+      "identity_verified": true,
+      "consent": null,
+      "opposed": false,
+      "purchases": [],
+      "sent_in_window": 0
+    },
+    {
+      "project": "automecanik",
+      "customer_id": "synthetic-002",
+      "identity_verified": true,
+      "consent": null,
+      "opposed": false,
+      "purchases": [
+        {
+          "at": "2025-12-01T00:00:00Z",
+          "net_minor": "6000",
+          "currency": "EUR"
+        }
+      ],
+      "sent_in_window": 0
+    },
+    {
+      "project": "automecanik",
+      "customer_id": "synthetic-003",
+      "identity_verified": true,
+      "consent": {
+        "brand": "automecanik",
+        "purpose": "marketing",
+        "channel": "email",
+        "granted_at": "2025-01-01T00:00:00Z"
+      },
+      "opposed": false,
+      "purchases": [
+        {
+          "at": "2026-10-01T00:00:00Z",
+          "net_minor": "9900",
+          "currency": "EUR"
+        }
+      ],
+      "sent_in_window": 0
+    }
+  ],
+  "sources": [
+    {
+      "id": "synthetic-wiki-001",
+      "kind": "wiki",
+      "validated": true,
+      "observed_at": "2026-10-02T11:55:00Z",
+      "valid_until": "2026-10-03T12:00:00Z",
+      "text": "Consultez le carnet d'entretien de votre véhicule avant de planifier une intervention.",
+      "url": "https://example.invalid/conseils"
+    }
+  ],
+  "content": {
+    "version": "1",
+    "language": "fr",
+    "subject": "Votre prochain entretien : préparez vos questions",
+    "intro": "Brouillon pédagogique fictif AutoMecanik — pièces neuves.",
+    "cta": "Préparez votre demande de vérification de compatibilité.",
+    "claims": [
+      {
+        "source_id": "synthetic-wiki-001",
+        "kind": "advice"
+      }
+    ]
+  },
+  "events": [
+    {
+      "project": "automecanik",
+      "event_id": "synthetic-event-001",
+      "message_id": "synthetic-message-001",
+      "kind": "uncertain",
+      "at": "2026-10-02T11:00:00Z"
+    }
+  ]
+}
