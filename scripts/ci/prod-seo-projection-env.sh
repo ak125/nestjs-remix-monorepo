@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 #
-# PROD SEO Projection flags — write the three SEO Projection rollout flags from
-# GitHub into ~/production/.env as ONE decision, BEFORE any PROD mutation.
+# PROD SEO rollout flags — write the three SEO Projection rollout flags and the
+# R6 consolidation flag from GitHub into ~/production/.env as ONE decision,
+# BEFORE any PROD mutation.
 #
 # WHY THIS EXISTS (2026-09-24)
 # ----------------------------
@@ -14,6 +15,18 @@
 # recreation. The deploy job is the existing writer of ~/production/.env
 # (JWT_SECRET, SEO_CP_*, the GSC/GA4 config in prod-seo-collector-env.sh); this
 # script is that writer for the SEO Projection flags.
+#
+# R6 CONSOLIDATION (ADR-103 D6, 2026-10-01)
+# -----------------------------------------
+# SEO_R6_CONSOLIDATION_ENABLED (feature-flags.service.ts seoR6ConsolidationEnabled)
+# switches the R6 buying guides on PROD: a guide whose gamme has a conseils
+# article answers 301 to it, any other guide answers noindex, follow
+# (r6-guide.service.ts), and no internal link points to /guide-achat/ any more
+# (r6-guide-link-policy.service.ts). It is not in the admin override allowlist,
+# so the container environment IS its only source. It is the same kind of value
+# as the three flags above — a boolean the code reads with `=== 'true'`, rolled
+# out on PROD and rolled back by redeploying — so it gets the same writer and
+# the same refusals rather than a second copy of them.
 #
 # WHY THIS IS A SCRIPT (not inline YAML)
 # --------------------------------------
@@ -28,6 +41,7 @@
 #   SEO_PROJECTION_R1_FEED_ENABLED_OVERRIDE  variable PROD_SEO_PROJECTION_R1_FEED_ENABLED
 #   SEO_PROJECTION_READ_V1_OVERRIDE          variable PROD_SEO_PROJECTION_READ_V1
 #   SEO_PROJECTION_READ_CANARY_OVERRIDE      variable PROD_SEO_PROJECTION_READ_CANARY
+#   SEO_R6_CONSOLIDATION_ENABLED_OVERRIDE    variable PROD_SEO_R6_CONSOLIDATION_ENABLED
 #   Variables, not secrets: none is a credential, and `gh variable list` shows
 #   what PROD will run with.
 #
@@ -85,6 +99,7 @@ fi
 R1_FEED="${SEO_PROJECTION_R1_FEED_ENABLED_OVERRIDE:-}"
 READ_V1="${SEO_PROJECTION_READ_V1_OVERRIDE:-}"
 CANARY_RAW="${SEO_PROJECTION_READ_CANARY_OVERRIDE:-}"
+R6="${SEO_R6_CONSOLIDATION_ENABLED_OVERRIDE:-}"
 
 # Messages quote the offending value with its line breaks visible: a stray
 # space or newline is the usual cause of a refusal.
@@ -110,8 +125,10 @@ check_bool() { # $1 = key name, $2 = value
 }
 check_bool SEO_PROJECTION_R1_FEED_ENABLED "$R1_FEED"
 check_bool SEO_PROJECTION_READ_V1 "$READ_V1"
+check_bool SEO_R6_CONSOLIDATION_ENABLED "$R6"
 R1_FEED="${R1_FEED:-false}"
 READ_V1="${READ_V1:-false}"
+R6="${R6:-false}"
 
 TOKEN_RE='^[A-Z][A-Z0-9_]*@(gamme|constructeur|vehicle):[a-z0-9][a-z0-9-]*$'
 trim() {
@@ -164,6 +181,7 @@ set_kv() { # $1 = key, $2 = value (already checked: no quote, no line break)
 set_kv SEO_PROJECTION_R1_FEED_ENABLED "$R1_FEED"
 set_kv SEO_PROJECTION_READ_V1 "$READ_V1"
 set_kv SEO_PROJECTION_READ_CANARY "$CANARY"
+set_kv SEO_R6_CONSOLIDATION_ENABLED "$R6"
 
 # Read-back through the same parser the deploy step uses (`set -a; . .env`).
 if ! (
@@ -186,7 +204,7 @@ fi
 mv "$TMP" "$ENV_FILE"
 trap - EXIT
 
-echo "✅ SEO Projection flags written to .env:"
+echo "✅ SEO rollout flags written to .env:"
 echo "   SEO_PROJECTION_R1_FEED_ENABLED=$R1_FEED"
 echo "   SEO_PROJECTION_READ_V1=$READ_V1"
 if [ -n "$CANARY" ]; then
@@ -194,6 +212,7 @@ if [ -n "$CANARY" ]; then
 else
   echo "   SEO_PROJECTION_READ_CANARY=(empty — fail-closed, no pair is read)"
 fi
+echo "   SEO_R6_CONSOLIDATION_ENABLED=$R6"
 if [ -n "$CANARY" ] && [ "$READ_V1" != true ]; then
   echo "::notice::SEO projection: canary set while SEO_PROJECTION_READ_V1=$READ_V1 — every listed pair stays inert until the master flag is true"
 fi

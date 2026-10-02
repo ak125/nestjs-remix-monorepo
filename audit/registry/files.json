@@ -2675,6 +2675,7 @@
       "id": "backend/src/common/pipes/strict-zod-query-validation.pipe.ts",
       "importedBy": [
         "backend/src/common/pipes/index.ts",
+        "backend/src/modules/marketing/controllers/marketing-briefs.controller.ts",
         "backend/src/modules/vehicles/vehicles.controller.ts"
       ],
       "imports": [],
@@ -16901,11 +16902,12 @@
       ],
       "imports": [
         "@auth/is-admin.guard",
+        "backend/src/common/pipes/strict-zod-query-validation.pipe.ts",
         "backend/src/modules/marketing/dto/marketing-brief.dto.ts",
         "backend/src/modules/marketing/services/marketing-briefs.service.ts"
       ],
       "kind": "controller",
-      "loc": 107,
+      "loc": 103,
       "owner": "__unassigned__",
       "path": "backend/src/modules/marketing/controllers/marketing-briefs.controller.ts",
       "risk": "low",
@@ -17027,13 +17029,14 @@
       "id": "backend/src/modules/marketing/dto/marketing-brief.dto.ts",
       "importedBy": [
         "backend/src/modules/marketing/controllers/marketing-briefs.controller.ts",
-        "backend/src/modules/marketing/services/brand-compliance-gate.service.ts"
+        "backend/src/modules/marketing/services/brand-compliance-gate.service.ts",
+        "backend/src/modules/marketing/services/marketing-briefs.service.ts"
       ],
       "imports": [
         "@config/marketing-matrix.types"
       ],
       "kind": "service",
-      "loc": 254,
+      "loc": 282,
       "owner": "__unassigned__",
       "path": "backend/src/modules/marketing/dto/marketing-brief.dto.ts",
       "risk": "low",
@@ -17251,11 +17254,12 @@
       "imports": [
         "@database/services/supabase-base.service",
         "@security/rpc-gate/rpc-gate.service",
+        "backend/src/modules/marketing/dto/marketing-brief.dto.ts",
         "backend/src/modules/marketing/interfaces/marketing.interfaces.ts",
         "backend/src/modules/marketing/services/brand-compliance-gate.service.ts"
       ],
       "kind": "service",
-      "loc": 201,
+      "loc": 202,
       "owner": "__unassigned__",
       "path": "backend/src/modules/marketing/services/marketing-briefs.service.ts",
       "risk": "low",
@@ -38610,7 +38614,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 94,
+      "loc": 277,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/marketing-brief-postgrest.test.ts",
       "risk": "low",
@@ -55497,7 +55501,7 @@
         "~/utils/seo/canonical"
       ],
       "kind": "route",
-      "loc": 838,
+      "loc": 846,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/blog-pieces-auto.conseils.$pg_alias.tsx",
       "risk": "low",
@@ -55595,7 +55599,7 @@
         "~/utils/seo/canonical"
       ],
       "kind": "route",
-      "loc": 1097,
+      "loc": 1106,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/blog-pieces-auto.guide-achat.$pg_alias.tsx",
       "risk": "low",
@@ -59459,7 +59463,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 58,
+      "loc": 66,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/cache-control.ts",
       "risk": "low",
@@ -61513,7 +61517,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 126,
+      "loc": 134,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/cache-control.test.ts",
       "risk": "low",
@@ -61725,6 +61729,25 @@
       "loc": 191,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/chunk-reload.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/conseils-loader-status.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 85,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/conseils-loader-status.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -62235,7 +62258,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 211,
+      "loc": 258,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/guide-achat-loader-status.test.ts",
       "risk": "low",
@@ -68539,6 +68562,44 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "scripts/ci/prod-admin-guard-probe.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 63,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/prod-admin-guard-probe.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/ci/prod-admin-guard-probe.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 177,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/prod-admin-guard-probe.test.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "scripts/ci/prod-client-ip-probe.mjs",
       "importedBy": [],
       "imports": [],
@@ -68565,6 +68626,25 @@
       "loc": 143,
       "owner": "__unassigned__",
       "path": "scripts/ci/prod-client-ip-probe.test.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/ci/prod-image-selection.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 191,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/prod-image-selection.test.mjs",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -68657,7 +68737,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 383,
+      "loc": 408,
       "owner": "__unassigned__",
       "path": "scripts/ci/prod-seo-projection-env.test.mjs",
       "risk": "low",

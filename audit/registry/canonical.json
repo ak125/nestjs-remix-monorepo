@@ -30521,6 +30521,7 @@
       "id": "backend/src/common/pipes/strict-zod-query-validation.pipe.ts",
       "importedBy": [
         "backend/src/common/pipes/index.ts",
+        "backend/src/modules/marketing/controllers/marketing-briefs.controller.ts",
         "backend/src/modules/vehicles/vehicles.controller.ts"
       ],
       "imports": [],
@@ -45245,11 +45246,12 @@
       ],
       "imports": [
         "@auth/is-admin.guard",
+        "backend/src/common/pipes/strict-zod-query-validation.pipe.ts",
         "backend/src/modules/marketing/dto/marketing-brief.dto.ts",
         "backend/src/modules/marketing/services/marketing-briefs.service.ts"
       ],
       "kind": "controller",
-      "loc": 107,
+      "loc": 103,
       "owner": "@ak125/marketing-team",
       "path": "backend/src/modules/marketing/controllers/marketing-briefs.controller.ts",
       "risk": "low",
@@ -45376,13 +45378,14 @@
       "id": "backend/src/modules/marketing/dto/marketing-brief.dto.ts",
       "importedBy": [
         "backend/src/modules/marketing/controllers/marketing-briefs.controller.ts",
-        "backend/src/modules/marketing/services/brand-compliance-gate.service.ts"
+        "backend/src/modules/marketing/services/brand-compliance-gate.service.ts",
+        "backend/src/modules/marketing/services/marketing-briefs.service.ts"
       ],
       "imports": [
         "@config/marketing-matrix.types"
       ],
       "kind": "service",
-      "loc": 254,
+      "loc": 282,
       "owner": "@ak125/marketing-team",
       "path": "backend/src/modules/marketing/dto/marketing-brief.dto.ts",
       "risk": "low",
@@ -45608,11 +45611,12 @@
       "imports": [
         "@database/services/supabase-base.service",
         "@security/rpc-gate/rpc-gate.service",
+        "backend/src/modules/marketing/dto/marketing-brief.dto.ts",
         "backend/src/modules/marketing/interfaces/marketing.interfaces.ts",
         "backend/src/modules/marketing/services/brand-compliance-gate.service.ts"
       ],
       "kind": "service",
-      "loc": 201,
+      "loc": 202,
       "owner": "@ak125/marketing-team",
       "path": "backend/src/modules/marketing/services/marketing-briefs.service.ts",
       "risk": "low",
@@ -67714,7 +67718,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 94,
+      "loc": 277,
       "owner": "@ak125",
       "path": "backend/tests/unit/marketing-brief-postgrest.test.ts",
       "risk": "medium",
@@ -85283,7 +85287,7 @@
         "~/utils/seo/canonical"
       ],
       "kind": "route",
-      "loc": 838,
+      "loc": 846,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/blog-pieces-auto.conseils.$pg_alias.tsx",
       "risk": "medium",
@@ -85384,7 +85388,7 @@
         "~/utils/seo/canonical"
       ],
       "kind": "route",
-      "loc": 1097,
+      "loc": 1106,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/blog-pieces-auto.guide-achat.$pg_alias.tsx",
       "risk": "medium",
@@ -89347,7 +89351,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 58,
+      "loc": 66,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/cache-control.ts",
       "risk": "medium",
@@ -91494,7 +91498,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 126,
+      "loc": 134,
       "owner": "@ak125",
       "path": "frontend/tests/unit/cache-control.test.ts",
       "risk": "medium",
@@ -91717,6 +91721,26 @@
       "loc": 191,
       "owner": "@ak125",
       "path": "frontend/tests/unit/chunk-reload.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/conseils-loader-status.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 85,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/conseils-loader-status.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -92254,7 +92278,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 211,
+      "loc": 258,
       "owner": "@ak125",
       "path": "frontend/tests/unit/guide-achat-loader-status.test.ts",
       "risk": "medium",
@@ -98886,6 +98910,46 @@
         "manual"
       ],
       "domain": "D13",
+      "id": "scripts/ci/prod-admin-guard-probe.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 63,
+      "owner": "@ak125",
+      "path": "scripts/ci/prod-admin-guard-probe.mjs",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
+      "id": "scripts/ci/prod-admin-guard-probe.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 177,
+      "owner": "@ak125",
+      "path": "scripts/ci/prod-admin-guard-probe.test.mjs",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
       "id": "scripts/ci/prod-client-ip-probe.mjs",
       "importedBy": [],
       "imports": [],
@@ -98913,6 +98977,26 @@
       "loc": 143,
       "owner": "@ak125",
       "path": "scripts/ci/prod-client-ip-probe.test.mjs",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
+      "id": "scripts/ci/prod-image-selection.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 191,
+      "owner": "@ak125",
+      "path": "scripts/ci/prod-image-selection.test.mjs",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -99010,7 +99094,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 383,
+      "loc": 408,
       "owner": "@ak125",
       "path": "scripts/ci/prod-seo-projection-env.test.mjs",
       "risk": "medium",
@@ -101791,11 +101875,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "06762d36694187f95afe05f89fddf30b7d9e1c39208d2837744cc6b5aeb1c792",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "2d9021fe42cda6918e63d666c9704d584138b551b41d7488c2f378717e0dbe71",
+      "audit/registry/files.json": "e65d6b1aa84577164cb040727eb4cddfb27b1936492b278344b20e338afd417f",
       "audit/registry/rpc.json": "2b1e02eccb6da1cb24d66d4507afae699c1d5708c25bd610a0aadf57519fa4fc",
       "audit/registry/runtime.json": "6f971451554ed42363824973d8f605032f87b9af54ac9e29f757b9bf9bb548c6"
     },
-    "sotFingerprint": "b50d5b24bb9e"
+    "sotFingerprint": "39e885d95206"
   },
   "runtime": [
     {

@@ -259,7 +259,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115643,
+      "loc_total": 115660,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 597,
-      "loc_total": 114439,
+      "loc_total": 114447,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -411,7 +411,7 @@
         "backend/src/modules/marketing/templates"
       ],
       "files_count": 25,
-      "loc_total": 4891,
+      "loc_total": 4916,
       "has_barrel": false
     },
     "mcp-validation": {
@@ -700,8 +700,8 @@
         "scripts/wiki-generators",
         "scripts/wiki-generators/__tests__"
       ],
-      "files_count": 188,
-      "loc_total": 40502,
+      "files_count": 191,
+      "loc_total": 40958,
       "has_barrel": true
     },
     "search": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 272,
-      "loc_total": 51216,
+      "files_count": 273,
+      "loc_total": 51539,
       "has_barrel": true
     },
     "upload": {
@@ -1755,6 +1755,11 @@
       "from": "marketing",
       "to": "ai-content",
       "count": 2
+    },
+    {
+      "from": "marketing",
+      "to": "common",
+      "count": 1
     },
     {
       "from": "marketing",

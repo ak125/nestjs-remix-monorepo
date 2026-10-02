@@ -208,3 +208,50 @@ describe("guide d'achat headers — une erreur n'est jamais mise en cache", () =
     });
   });
 });
+
+/**
+ * Chaîne complète loader → headers. React Router 8 ne transmet à `headers` les
+ * en-têtes d'une erreur levée que si `data()` en porte (router.js :
+ * `headers: result.init?.headers ? new Headers(…) : void 0`) ; sans eux,
+ * `errorHeaders` est absent et `buildCacheHeaders` applique la politique de
+ * SUCCÈS à l'erreur. Chaque erreur levée doit donc porter ses en-têtes.
+ */
+describe("guide d'achat loader → headers — aucune erreur levée n'est mise en cache", () => {
+  type Args = Parameters<typeof headers>[0];
+  const headersFor = (thrown: Thrown) =>
+    headers({
+      loaderHeaders: new Headers(),
+      parentHeaders: new Headers(),
+      actionHeaders: new Headers(),
+      errorHeaders: thrown.init?.headers
+        ? new Headers(thrown.init.headers)
+        : undefined,
+    } as unknown as Args) as Record<string, string>;
+
+  it.each([
+    ["R6 404, blog 404", { status: 404 }, { status: 404 }],
+    ["R6 500, blog 404", { status: 500 }, { status: 404 }],
+  ])("%s → no-store", async (_cas, r6, blog) => {
+    apiReplies(r6, blog);
+    const thrown = await thrownBy(run);
+    expect(headersFor(thrown)["Cache-Control"]).toBe(
+      "no-cache, no-store, must-revalidate",
+    );
+  });
+
+  it("alias manquant → 404 no-store", async () => {
+    const thrown = await thrownBy(() =>
+      loader({
+        request: new Request(
+          "https://www.automecanik.com/blog-pieces-auto/guide-achat/",
+        ),
+        params: {},
+        context: {},
+      } as never),
+    );
+    expect(thrown.init?.status).toBe(404);
+    expect(headersFor(thrown)["Cache-Control"]).toBe(
+      "no-cache, no-store, must-revalidate",
+    );
+  });
+});
