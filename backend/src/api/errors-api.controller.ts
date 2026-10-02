@@ -58,7 +58,9 @@ export class ErrorsApiController {
         code: errorData.code,
         url: errorData.url,
         userAgent: errorData.userAgent,
-        ipAddress: errorData.ipAddress || request.ip,
+        // Adresse résolue par `trust proxy` (main.ts), jamais lue du corps :
+        // les appelants SSR la relaient via getProxyHeaders().
+        ipAddress: request.ip,
         referrer: errorData.referrer,
         userId: errorData.userId,
         sessionId: errorData.sessionId,

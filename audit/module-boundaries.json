@@ -90,8 +90,8 @@
         "backend/src/types",
         "backend/src/utils"
       ],
-      "files_count": 35,
-      "loc_total": 6117,
+      "files_count": 36,
+      "loc_total": 6187,
       "has_barrel": true
     },
     "blog": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 274,
-      "loc_total": 51360,
+      "files_count": 275,
+      "loc_total": 51470,
       "has_barrel": true
     },
     "upload": {
@@ -1284,7 +1284,7 @@
     {
       "from": "backend-core",
       "to": "errors",
-      "count": 5
+      "count": 8
     },
     {
       "from": "backend-core",
