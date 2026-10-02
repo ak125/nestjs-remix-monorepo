@@ -1499,11 +1499,14 @@
         "backend/src/auth/auth.module.ts",
         "backend/src/auth/github-oidc.guard.test.ts",
         "backend/src/auth/github-oidc.guard.ts",
-        "backend/src/auth/github-oidc.service.test.ts"
+        "backend/src/auth/github-oidc.service.test.ts",
+        "backend/src/config/redis-single-target.test.ts"
       ],
-      "imports": [],
+      "imports": [
+        "backend/src/config/app.config.ts"
+      ],
       "kind": "service",
-      "loc": 274,
+      "loc": 273,
       "owner": "__unassigned__",
       "path": "backend/src/auth/github-oidc.service.ts",
       "risk": "low",
@@ -2977,9 +2980,12 @@
       "domain": "UNKNOWN",
       "id": "backend/src/config/app.config.ts",
       "importedBy": [
+        "backend/src/auth/github-oidc.service.ts",
         "backend/src/cache/cache.service.ts",
         "backend/src/config/csp.config.ts",
         "backend/src/config/index.ts",
+        "backend/src/config/redis-single-target.test.ts",
+        "backend/src/config/write-guard-lock.service.ts",
         "backend/src/database/services/supabase-base.service.ts",
         "backend/src/main.ts",
         "backend/src/modules/admin/processors/seo-control-refresh.processor.test.ts",
@@ -2996,6 +3002,7 @@
         "backend/src/modules/seo-control-plane/collectors/runtime-logs/runtime-logs.processor.ts",
         "backend/src/modules/seo-control-plane/collectors/synthetic-crawler/synthetic-crawler.processor.ts",
         "backend/src/modules/seo-logs/services/crawl-budget-integrations.service.ts",
+        "backend/src/modules/seo-logs/services/seo-audit-scheduler.service.ts",
         "backend/src/modules/seo-logs/services/url-audit.service.ts",
         "backend/src/modules/seo-monitoring/processors/seo-daily-fetch.processor.ts",
         "backend/src/modules/seo-projection/seo-projection-feeder.service.ts",
@@ -3024,7 +3031,7 @@
         "backend/src/config/site.constants.ts"
       ],
       "kind": "config",
-      "loc": 98,
+      "loc": 199,
       "owner": "__unassigned__",
       "path": "backend/src/config/app.config.ts",
       "risk": "low",
@@ -3176,6 +3183,7 @@
         "backend/src/modules/admin/services/r1-keyword-plan-batch.service.test.ts",
         "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
+        "backend/src/modules/seo/services/r6-guide-link-policy.test.ts",
         "backend/src/modules/vehicles/services/brand-bestsellers.service.ts",
         "backend/src/modules/vehicles/services/vehicle-motor-codes.service.ts",
         "backend/src/modules/vehicles/services/vehicle-profile.service.ts"
@@ -4845,6 +4853,30 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/config/redis-single-target.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/auth/github-oidc.service.ts",
+        "backend/src/config/app.config.ts",
+        "backend/src/config/write-guard-lock.service.ts",
+        "backend/src/modules/seo-logs/services/seo-audit-scheduler.service.ts"
+      ],
+      "kind": "test",
+      "loc": 274,
+      "owner": "__unassigned__",
+      "path": "backend/src/config/redis-single-target.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/config/role-ids.test.ts",
       "importedBy": [],
       "imports": [
@@ -5308,15 +5340,17 @@
       "id": "backend/src/config/write-guard-lock.service.ts",
       "importedBy": [
         "backend/src/config/content-write-executor.service.ts",
+        "backend/src/config/redis-single-target.test.ts",
         "backend/src/config/write-guard.module.ts"
       ],
       "imports": [
+        "backend/src/config/app.config.ts",
         "backend/src/config/execution-registry.types.ts",
         "backend/src/config/role-ids.ts",
         "crypto"
       ],
       "kind": "service",
-      "loc": 176,
+      "loc": 178,
       "owner": "__unassigned__",
       "path": "backend/src/config/write-guard-lock.service.ts",
       "risk": "low",
@@ -24963,6 +24997,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/seo-logs/services/seo-audit-scheduler.service.ts",
       "importedBy": [
+        "backend/src/config/redis-single-target.test.ts",
         "backend/src/modules/seo-logs/controllers/seo-audit.controller.ts",
         "backend/src/modules/seo-logs/seo-logs.module.ts"
       ],
@@ -24970,13 +25005,14 @@
         "@common/exceptions",
         "@common/utils/error.utils",
         "@config/env-validation",
+        "backend/src/config/app.config.ts",
         "child_process",
         "fs/promises",
         "path",
         "util"
       ],
       "kind": "service",
-      "loc": 475,
+      "loc": 472,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-logs/services/seo-audit-scheduler.service.ts",
       "risk": "low",
@@ -30605,11 +30641,12 @@
       "imports": [
         "@cache/cache.service",
         "@database/services/supabase-base.service",
+        "@security/rpc-gate/rpc-gate.service",
         "backend/src/config/cache-ttl.config.ts",
         "backend/src/config/feature-flags.service.ts"
       ],
       "kind": "service",
-      "loc": 329,
+      "loc": 308,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
       "risk": "low",
@@ -30627,10 +30664,11 @@
       "id": "backend/src/modules/seo/services/r6-guide-link-policy.test.ts",
       "importedBy": [],
       "imports": [
+        "backend/src/config/cache-ttl.config.ts",
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "kind": "test",
-      "loc": 309,
+      "loc": 428,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/r6-guide-link-policy.test.ts",
       "risk": "low",
@@ -55472,6 +55510,7 @@
         "~/components/ui/badge",
         "~/components/ui/card",
         "~/types/r6-guide.types",
+        "~/utils/cache-control",
         "~/utils/internal-api.server",
         "~/utils/logger",
         "~/utils/page-role.types",
@@ -55479,7 +55518,7 @@
         "~/utils/seo/canonical"
       ],
       "kind": "route",
-      "loc": 1065,
+      "loc": 1097,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/blog-pieces-auto.guide-achat.$pg_alias.tsx",
       "risk": "low",
@@ -62103,6 +62142,25 @@
       "loc": 362,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/gamme-autolink.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/guide-achat-loader-status.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 211,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/guide-achat-loader-status.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",

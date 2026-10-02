@@ -13,16 +13,16 @@
     "tables_with_callsites": 213,
     "candidate_orphan_tables": 73,
     "partitions": 27,
-    "rpc_seen": 248,
+    "rpc_seen": 249,
     "rpc_with_callsites": 14,
     "trigger_functions": 30,
-    "candidate_orphan_rpc": 204,
+    "candidate_orphan_rpc": 205,
     "dynamic_from_callsites": 771,
     "dynamic_rpc_callsites": 1,
     "unresolved_callsites": 0,
     "dropped_call_sites": 5,
-    "migrations_scanned": 390,
-    "backend_files_scanned": 1430
+    "migrations_scanned": 394,
+    "backend_files_scanned": 1431
   },
   "tables": {
     "___config": {
@@ -257,10 +257,9 @@
         "backend/src/modules/blog/services/r6-guide.service.ts",
         "backend/src/modules/catalog/services/homepage-rpc.service.ts",
         "backend/src/modules/marketing/services/marketing-data.service.ts",
-        "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts"
       ],
-      "used_by_count": 8,
+      "used_by_count": 7,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": true,
@@ -269,10 +268,9 @@
     "__blog_guide": {
       "used_by": [
         "backend/src/modules/blog/services/blog-article-data.service.ts",
-        "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts"
       ],
-      "used_by_count": 3,
+      "used_by_count": 2,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false,
@@ -1230,10 +1228,9 @@
         "backend/src/modules/gamme-rest/services/purchase-guide-data.service.ts",
         "backend/src/modules/marketing/services/marketing-data.service.ts",
         "backend/src/modules/seo-monitoring/services/r-content-auditor.service.ts",
-        "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "backend/src/modules/seo/validation/purchase-guide-validator.service.ts"
       ],
-      "used_by_count": 12,
+      "used_by_count": 11,
       "in_migrations": [],
       "rls_present": false,
       "in_knowledge_db": true,
@@ -2942,7 +2939,6 @@
         "backend/src/modules/search/controllers/search-debug.controller.ts",
         "backend/src/modules/search/controllers/search-enhanced-existing.controller.ts",
         "backend/src/modules/seo/r2/services/r1-gamme-completeness-audit.service.ts",
-        "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "backend/src/modules/seo/services/reference.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-data.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-cluster.service.ts",
@@ -2950,7 +2946,7 @@
         "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-static.service.ts"
       ],
-      "used_by_count": 40,
+      "used_by_count": 39,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false,
@@ -4385,6 +4381,14 @@
       ],
       "is_trigger_function": false
     },
+    "get_r6_guide_link_snapshot": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20261001_get_r6_guide_link_snapshot_definer_rpc.sql"
+      ],
+      "is_trigger_function": false
+    },
     "get_rm_listing": {
       "called_by": [],
       "called_by_count": 0,
@@ -4849,7 +4853,9 @@
       "called_by_count": 0,
       "defined_in_migrations": [
         "20260125_kg_v3_maintenance_risk.sql",
-        "20260429_diag_maintenance_via_kg.sql"
+        "20260429_diag_maintenance_via_kg.sql",
+        "20260930_kg_maintenance_schedule_fuel_filter_aligned.down.sql",
+        "20260930_kg_maintenance_schedule_fuel_filter_aligned.sql"
       ],
       "is_trigger_function": false
     },
@@ -8568,6 +8574,22 @@
       ]
     },
     {
+      "name": "get_r6_guide_link_snapshot",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20261001_get_r6_guide_link_snapshot_definer_rpc.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
       "name": "get_rm_listing",
       "confidence": "medium",
       "derived_from": [
@@ -9385,7 +9407,9 @@
       ],
       "defined_in_migrations": [
         "20260125_kg_v3_maintenance_risk.sql",
-        "20260429_diag_maintenance_via_kg.sql"
+        "20260429_diag_maintenance_via_kg.sql",
+        "20260930_kg_maintenance_schedule_fuel_filter_aligned.down.sql",
+        "20260930_kg_maintenance_schedule_fuel_filter_aligned.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",

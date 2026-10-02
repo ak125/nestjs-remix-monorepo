@@ -74,7 +74,7 @@
         "backend/src/modules/auth/dto"
       ],
       "files_count": 44,
-      "loc_total": 5888,
+      "loc_total": 5887,
       "has_barrel": true
     },
     "backend-core": {
@@ -185,8 +185,8 @@
         "backend/src/modules/config/services",
         "backend/src/modules/config/validators"
       ],
-      "files_count": 101,
-      "loc_total": 24517,
+      "files_count": 102,
+      "loc_total": 24894,
       "has_barrel": true
     },
     "customers": {
@@ -259,7 +259,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115611,
+      "loc_total": 115643,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -768,7 +768,7 @@
         "scripts/seo/lib"
       ],
       "files_count": 279,
-      "loc_total": 59322,
+      "loc_total": 59420,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -792,7 +792,7 @@
         "backend/src/modules/seo-logs/services"
       ],
       "files_count": 12,
-      "loc_total": 3646,
+      "loc_total": 3643,
       "has_barrel": false
     },
     "seo-monitoring": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 269,
-      "loc_total": 50478,
+      "files_count": 270,
+      "loc_total": 50689,
       "has_barrel": true
     },
     "upload": {
@@ -1180,6 +1180,11 @@
       "from": "auth",
       "to": "common",
       "count": 2
+    },
+    {
+      "from": "auth",
+      "to": "config",
+      "count": 1
     },
     {
       "from": "auth",
@@ -1593,6 +1598,11 @@
     },
     {
       "from": "config",
+      "to": "auth",
+      "count": 1
+    },
+    {
+      "from": "config",
       "to": "backend-core",
       "count": 1
     },
@@ -1619,6 +1629,11 @@
     {
       "from": "config",
       "to": "seo-control-plane",
+      "count": 1
+    },
+    {
+      "from": "config",
+      "to": "seo-logs",
       "count": 1
     },
     {
@@ -1949,7 +1964,7 @@
     {
       "from": "seo",
       "to": "config",
-      "count": 38
+      "count": 39
     },
     {
       "from": "seo",
@@ -1984,7 +1999,7 @@
     {
       "from": "seo-logs",
       "to": "config",
-      "count": 2
+      "count": 3
     },
     {
       "from": "seo-monitoring",
