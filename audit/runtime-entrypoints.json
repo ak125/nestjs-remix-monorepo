@@ -2807,6 +2807,7 @@
       ".github/workflows/deploy-prod.yml",
       ".github/workflows/diag-canon-slugs-export.yml",
       ".github/workflows/esm-package-smoke.yml",
+      ".github/workflows/governance-capture-tests.yml",
       ".github/workflows/governance-checks.yml",
       ".github/workflows/impeccable-ratchet.yml",
       ".github/workflows/marketing-voice-hash.yml",
@@ -2950,7 +2951,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1563,
+  "runtime_files_count": 1564,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -2984,6 +2985,7 @@
     ".github/workflows/deploy-prod.yml",
     ".github/workflows/diag-canon-slugs-export.yml",
     ".github/workflows/esm-package-smoke.yml",
+    ".github/workflows/governance-capture-tests.yml",
     ".github/workflows/governance-checks.yml",
     ".github/workflows/impeccable-ratchet.yml",
     ".github/workflows/marketing-voice-hash.yml",
