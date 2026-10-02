@@ -1965,7 +1965,7 @@
         "events"
       ],
       "kind": "service",
-      "loc": 515,
+      "loc": 595,
       "owner": "__unassigned__",
       "path": "backend/src/cache/cache.service.ts",
       "risk": "low",
@@ -3182,6 +3182,7 @@
         "backend/src/config/index.ts",
         "backend/src/modules/admin/services/r1-keyword-plan-batch.service.test.ts",
         "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
+        "backend/src/modules/bot-guard/bot-guard.service.ts",
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "backend/src/modules/seo/services/r6-guide-link-policy.test.ts",
         "backend/src/modules/vehicles/services/brand-bestsellers.service.ts",
@@ -3190,7 +3191,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 518,
+      "loc": 530,
       "owner": "__unassigned__",
       "path": "backend/src/config/cache-ttl.config.ts",
       "risk": "low",
@@ -12103,13 +12104,38 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/bot-guard/bot-guard.metrics.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@cache/cache.service",
+        "backend/src/modules/bot-guard/bot-guard.service.ts",
+        "crypto"
+      ],
+      "kind": "test",
+      "loc": 243,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/bot-guard/bot-guard.metrics.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/bot-guard/bot-guard.middleware.test.ts",
       "importedBy": [],
       "imports": [
-        "backend/src/modules/bot-guard/bot-guard.middleware.ts"
+        "backend/src/modules/bot-guard/bot-guard.middleware.ts",
+        "backend/src/modules/bot-guard/bot-guard.service.ts",
+        "crypto"
       ],
       "kind": "test",
-      "loc": 233,
+      "loc": 472,
       "owner": "__unassigned__",
       "path": "backend/src/modules/bot-guard/bot-guard.middleware.test.ts",
       "risk": "low",
@@ -12135,7 +12161,7 @@
         "backend/src/modules/seo-control-plane/synthetic-probe-credential.service.ts"
       ],
       "kind": "service",
-      "loc": 181,
+      "loc": 183,
       "owner": "__unassigned__",
       "path": "backend/src/modules/bot-guard/bot-guard.middleware.ts",
       "risk": "low",
@@ -12181,7 +12207,7 @@
         "backend/src/modules/bot-guard/bot-guard.service.ts"
       ],
       "kind": "test",
-      "loc": 213,
+      "loc": 269,
       "owner": "__unassigned__",
       "path": "backend/src/modules/bot-guard/bot-guard.service.test.ts",
       "risk": "low",
@@ -12199,16 +12225,19 @@
       "id": "backend/src/modules/bot-guard/bot-guard.service.ts",
       "importedBy": [
         "backend/src/modules/bot-guard/bot-guard.controller.ts",
+        "backend/src/modules/bot-guard/bot-guard.metrics.test.ts",
+        "backend/src/modules/bot-guard/bot-guard.middleware.test.ts",
         "backend/src/modules/bot-guard/bot-guard.middleware.ts",
         "backend/src/modules/bot-guard/bot-guard.module.ts",
         "backend/src/modules/bot-guard/bot-guard.service.test.ts"
       ],
       "imports": [
         "@cache/cache.service",
+        "backend/src/config/cache-ttl.config.ts",
         "dns"
       ],
       "kind": "service",
-      "loc": 569,
+      "loc": 639,
       "owner": "__unassigned__",
       "path": "backend/src/modules/bot-guard/bot-guard.service.ts",
       "risk": "low",
