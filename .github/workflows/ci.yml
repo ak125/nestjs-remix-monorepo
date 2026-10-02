@@ -221,6 +221,11 @@ jobs:
       - name: Build packages
         run: npm run build
 
+      - name: Validate offline marketing foundation
+        run: |
+          npm run typecheck:marketing
+          npm run test:marketing
+
       - name: Test deployment probes
         run: node --test scripts/ci/prod-client-ip-probe.test.mjs scripts/ci/prod-admin-guard-probe.test.mjs
 
