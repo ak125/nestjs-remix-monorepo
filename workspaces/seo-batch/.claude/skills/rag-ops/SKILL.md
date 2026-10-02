@@ -190,7 +190,7 @@ Produire le rapport au format defini dans "Format de sortie".
 | Symptome | Cause probable | Fix | Severite |
 |----------|---------------|-----|----------|
 | Toutes requetes 503 | Circuit breaker open | Redemarrer le service RAG externe | CRITIQUE |
-| Confidence < 0.5 système | Corpus insuffisant pour le domaine | Ajouter des docs L1/L2 via `/rag-ops ingest` | HAUTE |
+| Confidence < 0.5 système | Corpus insuffisant pour le domaine | Faire entrer des sources L1/L2 dans le WIKI (RAW → WIKI), puis synchroniser WIKI → RAG (voir « Workflow: Ingest ») | HAUTE |
 | Intent mal classifie | Regex manquant ou trop generique | Modifier patterns dans `rag-proxy.service.ts` + `chat-intent.utils.ts` | HAUTE |
 | Reponse >5s | RAG service lent | Verifier charge serveur, taille des embeddings | MOYENNE |
 | Sources vides | Pas de documents pertinents | Verifier le domaine du corpus, ajouter du contenu | HAUTE |
@@ -328,8 +328,8 @@ curl -s http://localhost:3000/api/rag/intents/stats | jq
 ### Endpoints Admin (auth requise)
 
 ```bash
-# Lister les documents knowledge
-curl -s http://localhost:3000/api/rag/admin/knowledge | jq '| length'
+# Compter les documents knowledge actifs (le service tronque la liste à 1000)
+curl -s http://localhost:3000/api/rag/admin/knowledge | jq 'length'
 
 # Document par ID
 curl -s http://localhost:3000/api/rag/admin/knowledge/doc/{docId} | jq
