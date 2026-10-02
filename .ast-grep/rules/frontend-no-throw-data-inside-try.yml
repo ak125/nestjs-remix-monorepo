@@ -49,8 +49,25 @@ message: |
   repli — le statut décidé (401/403/404/410…) devient 500 ou 502.
 
   Lever une erreur de domaine dans le `try` et la traduire en `data()` dans
-  le `catch` (même correctif que la règle sœur
-  `frontend-no-throw-data-inside-try`, document précédent de ce fichier).
+  le `catch` :
+
+      class LeadApiStatusError extends Error {
+        constructor(readonly status: number, message: string) { super(message); }
+      }
+      try {
+        if (res.status === 404) throw new LeadApiStatusError(404, "…");
+      } catch (err) {
+        if (err instanceof Response) throw err;
+        if (err instanceof LeadApiStatusError) {
+          throw data({ error: err.message }, { status: err.status });
+        }
+        // repli
+      }
+
+  Voir :
+    - frontend/app/routes/blog-pieces-auto.conseils.$pg_alias.tsx (R3GuideNotFoundError)
+    - frontend/app/routes/admin.leads.$id.tsx (LeadApiStatusError)
+    - frontend/tests/unit/admin-leads-loader-status.test.ts
 files:
   - frontend/app/**/*.tsx
 rule:
