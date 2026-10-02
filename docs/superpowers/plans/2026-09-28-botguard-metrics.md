@@ -54,3 +54,12 @@ Read-only PROD observation on 1 October: image revision `4cb25b2c85f9a549e9e2ca6
 Delivery gates: PR checks at the final candidate SHA, then an approved integration onto main. The exact main SHA must pass the existing `ci.yml` push run's Deploy PREPROD, E2E Smoke and Lighthouse jobs. These jobs require a push to main, regardless of draft status; changing the PR to ready does not produce PREPROD evidence. Use the maintained `scripts/ci/prod-preprod-evidence.mjs` gate. A floating preprod image or unrelated healthy container is insufficient.
 
 Only Marwane performs application PROD deployment. Before a release, retain the currently served immutable image and repeat the config check; afterward validate the authenticated BotGuard stats contract and legitimate visitor/admin/crawler paths without manufacturing traffic in production. The first 24 hours of V2 history remain incomplete. Rollback restores the retained application image, without Redis migration or purge. This integration does not change Cloudflare rules or prove the automated-browsing cohort is blocked.
+
+
+## Application authorised — 2 October 2026
+
+The owner asked to apply the prepared result after the 1 October checkpoint. Scope now includes updating the existing PR, making it ready, merging through GitHub's protected-branch checks and following the native PREPROD workflow. This supersedes the earlier draft-only/no-PR-merge preparation limit; PROD application delivery remains manual by Marwane.
+
+Main `63ee54116471c8a4cf45402cad6163958ff8df9e` adds three commits since the previously integrated base. Four conflicts are generated projections only. Rebuild with the official generators and preserve the main source changes. The inputs of the eight targeted BotGuard/cache/synthetic suites and dependency lockfiles are unchanged from the 130 passing tests. Reuse that scoped evidence and require a fresh complete CI result on the updated candidate. Keep branch protections intact: no administrator bypass, no force push, no production tag.
+
+After merge, record the exact main SHA and native CI run. Require its Deploy PREPROD, E2E Smoke and Lighthouse results before preparing the manual PROD command. A newer floating preprod image or an unrelated running container is not evidence for the merged candidate. The metrics need new history after activation; the traffic incident remains open until runtime measurements and false-positive checks support closure.

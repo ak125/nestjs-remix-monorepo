@@ -3184,6 +3184,7 @@
         "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
         "backend/src/modules/bot-guard/bot-guard.service.ts",
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
+        "backend/src/modules/seo/services/r6-guide-link-policy.test.ts",
         "backend/src/modules/vehicles/services/brand-bestsellers.service.ts",
         "backend/src/modules/vehicles/services/vehicle-motor-codes.service.ts",
         "backend/src/modules/vehicles/services/vehicle-profile.service.ts"
@@ -30669,11 +30670,12 @@
       "imports": [
         "@cache/cache.service",
         "@database/services/supabase-base.service",
+        "@security/rpc-gate/rpc-gate.service",
         "backend/src/config/cache-ttl.config.ts",
         "backend/src/config/feature-flags.service.ts"
       ],
       "kind": "service",
-      "loc": 329,
+      "loc": 308,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
       "risk": "low",
@@ -30691,10 +30693,11 @@
       "id": "backend/src/modules/seo/services/r6-guide-link-policy.test.ts",
       "importedBy": [],
       "imports": [
+        "backend/src/config/cache-ttl.config.ts",
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "kind": "test",
-      "loc": 309,
+      "loc": 428,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/r6-guide-link-policy.test.ts",
       "risk": "low",
