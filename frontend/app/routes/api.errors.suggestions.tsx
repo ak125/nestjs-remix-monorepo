@@ -1,5 +1,6 @@
 import { type ActionFunctionArgs, data } from "react-router";
 import { logger } from "~/utils/logger";
+import { getProxyHeaders } from "~/utils/proxy-headers.server";
 
 export async function action({ request }: ActionFunctionArgs) {
   try {
@@ -18,15 +19,12 @@ export async function action({ request }: ActionFunctionArgs) {
               "Content-Type": "application/json",
               "Internal-Call": "true",
               "X-User-Id": errorData.userId || "anonymous",
+              ...getProxyHeaders(request),
             },
             body: JSON.stringify({
               code: errorData.code,
               url: errorData.url,
               userAgent: errorData.userAgent,
-              ipAddress:
-                request.headers.get("x-forwarded-for") ||
-                request.headers.get("x-real-ip") ||
-                "unknown",
               referrer: errorData.referrer,
               userId: errorData.userId,
               sessionId: request.headers.get("x-session-id"),

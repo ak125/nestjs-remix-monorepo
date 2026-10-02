@@ -90,8 +90,8 @@
         "backend/src/types",
         "backend/src/utils"
       ],
-      "files_count": 35,
-      "loc_total": 6117,
+      "files_count": 36,
+      "loc_total": 6187,
       "has_barrel": true
     },
     "blog": {
@@ -259,7 +259,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115660,
+      "loc_total": 115685,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -700,8 +700,8 @@
         "scripts/wiki-generators",
         "scripts/wiki-generators/__tests__"
       ],
-      "files_count": 191,
-      "loc_total": 40958,
+      "files_count": 193,
+      "loc_total": 41207,
       "has_barrel": true
     },
     "search": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 273,
-      "loc_total": 51220,
+      "files_count": 276,
+      "loc_total": 51669,
       "has_barrel": true
     },
     "upload": {
@@ -1284,7 +1284,7 @@
     {
       "from": "backend-core",
       "to": "errors",
-      "count": 5
+      "count": 8
     },
     {
       "from": "backend-core",
