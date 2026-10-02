@@ -246,6 +246,12 @@ jobs:
           SEO_PROJECTION_R1_FEED_ENABLED_OVERRIDE: ${{ vars.PROD_SEO_PROJECTION_R1_FEED_ENABLED }}
           SEO_PROJECTION_READ_V1_OVERRIDE: ${{ vars.PROD_SEO_PROJECTION_READ_V1 }}
           SEO_PROJECTION_READ_CANARY_OVERRIDE: ${{ vars.PROD_SEO_PROJECTION_READ_CANARY }}
+          # R6 consolidation (ADR-103 D6): buying guides 301 to their conseils
+          # article or answer noindex, and no internal link points to them. Same
+          # writer and contract as above; not in the admin override allowlist, so
+          # this variable is the flag's only PROD source. Rollback = variable unset
+          # or false, then a new tag.
+          SEO_R6_CONSOLIDATION_ENABLED_OVERRIDE: ${{ vars.PROD_SEO_R6_CONSOLIDATION_ENABLED }}
         run: |
           docker pull massdoc/nestjs-remix-monorepo:production
 
@@ -346,7 +352,7 @@ jobs:
           # point of no return: a refused config fails the deploy with the
           # running container and the .env both untouched.
           bash "$GITHUB_WORKSPACE/scripts/ci/prod-seo-collector-env.sh" .env
-          # SEO Projection rollout flags (see the env block above). Same contract:
+          # SEO Projection + R6 consolidation flags (see the env block above). Same contract:
           # every input is validated before any write, and a refusal fails the
           # deploy before the point of no return, running container untouched.
           bash "$GITHUB_WORKSPACE/scripts/ci/prod-seo-projection-env.sh" .env
