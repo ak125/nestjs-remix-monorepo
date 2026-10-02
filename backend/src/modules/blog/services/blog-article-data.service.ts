@@ -8,6 +8,7 @@ import {
   BaRow,
   BaH2Row,
   BaH3Row,
+  BgRow,
 } from '../interfaces/blog.interfaces';
 import {
   DomainNotFoundException,
@@ -664,17 +665,21 @@ export class BlogArticleDataService {
         .limit(1)
         .single();
 
-      const previous = previousData
-        ? legacy_table === '__blog_advice'
-          ? this.transformService.transformAdviceToArticle(previousData)
-          : this.transformService.transformGuideToArticle(previousData)
-        : null;
+      const toArticle = (row: unknown): BlogArticle | null =>
+        row
+          ? legacy_table === '__blog_advice'
+            ? this.transformService.transformAdviceToArticle(row as BaRow)
+            : this.transformService.transformGuideToArticle(row as BgRow)
+          : null;
 
-      const next = nextData
-        ? legacy_table === '__blog_advice'
-          ? this.transformService.transformAdviceToArticle(nextData)
-          : this.transformService.transformGuideToArticle(nextData)
-        : null;
+      // pg_alias = clé de la route canonique /blog-pieces-auto/conseils/{pg_alias}.
+      // transformAdviceToArticle le laisse à null : sans cet enrichissement,
+      // ArticleNavigation ne connaît que ba_alias et lie vers une URL 404.
+      const [previous, next] = await Promise.all(
+        [toArticle(previousData), toArticle(nextData)].map(async (article) =>
+          article ? (await this.enrichWithPgAlias([article]))[0] : null,
+        ),
+      );
 
       this.logger.log(
         `✅ Articles adjacents: previous=${previous?.slug || 'none'}, next=${next?.slug || 'none'}`,
@@ -795,8 +800,9 @@ export class BlogArticleDataService {
         .select('pg_id, pg_alias')
         .in('pg_id', pgIds);
 
-      // Créer un map pour accès rapide
-      const pgAliasMap = new Map();
+      // Clé = pieces_gamme.pg_id (integer → number en JSON). ba_pg_id est du
+      // texte : chercher avec lui ne trouvait jamais rien (pg_alias toujours null).
+      const pgAliasMap = new Map<number, string>();
       gammes?.forEach((g) => pgAliasMap.set(g.pg_id, g.pg_alias));
 
       // Enrichir chaque article
@@ -807,7 +813,7 @@ export class BlogArticleDataService {
         return {
           ...article,
           pg_id: pg_id,
-          pg_alias: pgAliasMap.get(ba_pg_id) || null,
+          pg_alias: (pg_id !== null && pgAliasMap.get(pg_id)) || null,
           ba_pg_id: ba_pg_id,
         };
       });
