@@ -10,6 +10,8 @@ import type { AnalyzeDiagnosticInput } from '../types/diagnostic-input.schema';
 
 export interface SignalInterpretation {
   resolved_symptom_slugs: string[];
+  /** Reference label of each resolved symptom, keyed by slug. */
+  symptom_labels: Record<string, string>;
   system_slug: string;
   system_label: string;
   system_confirmed: boolean;
@@ -32,6 +34,7 @@ export class SignalInterpretationEngine {
     if (!system) {
       return {
         resolved_symptom_slugs: [],
+        symptom_labels: {},
         system_slug: input.system_scope,
         system_label: input.system_scope,
         system_confirmed: false,
@@ -77,6 +80,11 @@ export class SignalInterpretationEngine {
 
     return {
       resolved_symptom_slugs: resolved,
+      symptom_labels: Object.fromEntries(
+        availableSymptoms
+          .filter((symptom) => resolved.includes(symptom.slug))
+          .map((symptom) => [symptom.slug, symptom.label]),
+      ),
       system_slug: system.slug,
       system_label: system.label,
       system_confirmed: true,

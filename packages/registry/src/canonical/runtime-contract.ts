@@ -88,7 +88,7 @@ const RuntimeContractEntrypointSchema = z
     const expectedId = `runtime:${entry.path}`;
     if (entry.id !== expectedId) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: `id "${entry.id}" must equal "runtime:${entry.path}" (id encodes path)`,
         path: ["id"],
       });
@@ -111,7 +111,7 @@ export const RuntimeContractSchema = z
     const dupes = ids.filter((id, i) => ids.indexOf(id) !== i);
     if (dupes.length > 0) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: "custom",
         message: `Duplicate entrypoint.id: ${[...new Set(dupes)].join(", ")}`,
         path: ["entrypoints"],
       });

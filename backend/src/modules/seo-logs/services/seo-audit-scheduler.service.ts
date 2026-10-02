@@ -12,6 +12,7 @@ import * as path from 'path';
 import { ExternalServiceException, ErrorCodes } from '@common/exceptions';
 import { getErrorMessage } from '@common/utils/error.utils';
 import { isReadOnlyMode } from '@config/env-validation';
+import { redisConnectionOptions } from '../../../config/app.config';
 
 const execAsync = promisify(exec);
 
@@ -39,12 +40,8 @@ export class SeoAuditSchedulerService implements OnModuleInit, OnModuleDestroy {
   async onModuleInit() {
     this.logger.log('🚀 Initialisation BullMQ pour audits SEO...');
 
-    // Configuration Redis
-    const connection = {
-      host: process.env.REDIS_HOST || 'localhost',
-      port: parseInt(process.env.REDIS_PORT || '6379', 10),
-      password: process.env.REDIS_PASSWORD || undefined,
-    };
+    // Configuration Redis — même cible que cache, session et workers (REDIS_URL)
+    const connection = redisConnectionOptions();
 
     // Créer la queue
     this.auditQueue = new Queue('seo-audit', {
