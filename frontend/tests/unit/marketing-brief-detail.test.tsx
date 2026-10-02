@@ -61,7 +61,8 @@ const brief = {
   created_at: "2026-10-01T10:00:00Z",
   updated_at: "2026-10-01T10:00:00.123456Z",
 };
-const response = (value = brief) =>
+// The transport carries unknown JSON; the real loader/action validates it.
+const response = (value: unknown = brief) =>
   Response.json({ success: true, data: value });
 
 function routes() {
@@ -176,7 +177,7 @@ describe("brief detail reads", () => {
           brand_gate_level: null,
           compliance_gate_level: null,
           gate_summary: null,
-        } as unknown as typeof brief),
+        }),
       ),
     );
     await query();
@@ -307,9 +308,7 @@ describe("human workflow", () => {
   ])("offers only transitions from %s", async (status, labels) => {
     vi.stubGlobal(
       "fetch",
-      vi
-        .fn()
-        .mockResolvedValue(response({ ...brief, status: status as string })),
+      vi.fn().mockResolvedValue(response({ ...brief, status })),
     );
     await query();
     expect(screen.queryAllByRole("button").map((b) => b.textContent)).toEqual(

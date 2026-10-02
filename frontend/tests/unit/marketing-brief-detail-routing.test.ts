@@ -31,7 +31,7 @@ function matches(mode: string) {
 describe("native marketing brief routing", () => {
   it("serves detail under marketing, not inside the list without an Outlet", () => {
     const [list, detail] = matches("development");
-    expect(list.at(-1)).toBe("routes/admin.marketing.briefs.tsx");
+    expect(list[list.length - 1]).toBe("routes/admin.marketing.briefs.tsx");
     expect(detail).toEqual([
       "routes/admin.tsx",
       "routes/admin.marketing.tsx",
