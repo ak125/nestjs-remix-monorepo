@@ -1,0 +1,61 @@
+{
+  "from": "2026-09-01T00:00:00Z",
+  "to": "2026-10-02T11:55:00Z",
+  "orders": [
+    {
+      "id": "synthetic-order",
+      "contact_id": "synthetic-contact-1",
+      "at": "2026-09-30T12:00:00Z",
+      "currency": "EUR",
+      "revenue_ex_tax_minor": "10000",
+      "tax_minor": "2000",
+      "cost_ex_tax_minor": "4000",
+      "campaign_id": "synthetic-campaign",
+      "verified": true
+    },
+    {
+      "id": "synthetic-order",
+      "contact_id": "synthetic-contact-1",
+      "at": "2026-09-30T12:00:00Z",
+      "currency": "EUR",
+      "revenue_ex_tax_minor": "10000",
+      "tax_minor": "2000",
+      "cost_ex_tax_minor": "4000",
+      "campaign_id": "synthetic-campaign",
+      "verified": true
+    },
+    {
+      "id": "synthetic-order-two",
+      "contact_id": "synthetic-contact-1",
+      "at": "2026-10-01T12:00:00Z",
+      "currency": "EUR",
+      "revenue_ex_tax_minor": "5000",
+      "tax_minor": "1000",
+      "cost_ex_tax_minor": "2000",
+      "campaign_id": null,
+      "verified": true
+    }
+  ],
+  "refunds": [
+    {
+      "id": "synthetic-refund",
+      "order_id": "synthetic-order",
+      "at": "2026-10-01T10:00:00Z",
+      "revenue_ex_tax_minor": "2000",
+      "tax_minor": "400",
+      "cost_recovered_minor": "500",
+      "currency": "EUR"
+    }
+  ],
+  "marketing_costs": [
+    {
+      "id": "synthetic-cost",
+      "at": "2026-09-30T12:00:00Z",
+      "currency": "EUR",
+      "amount_ex_tax_minor": "1000"
+    }
+  ],
+  "costs_complete": true,
+  "eligible_contacts": 10,
+  "history_complete": true
+}

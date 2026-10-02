@@ -4075,7 +4075,8 @@
       "importedBy": [
         "backend/src/config/marketing-agent-frontmatter.schema.ts",
         "backend/src/config/marketing-matrix.service.test.ts",
-        "backend/src/config/marketing-matrix.service.ts"
+        "backend/src/config/marketing-matrix.service.ts",
+        "backend/src/modules/marketing/services/marketing-preparation.ts"
       ],
       "imports": [],
       "kind": "config",
@@ -17084,7 +17085,8 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/marketing/dto/marketing-brief.dto.ts",
       "importedBy": [
-        "backend/src/modules/marketing/controllers/marketing-briefs.controller.ts"
+        "backend/src/modules/marketing/controllers/marketing-briefs.controller.ts",
+        "backend/src/modules/marketing/services/marketing-preparation.ts"
       ],
       "imports": [
         "@config/marketing-matrix.types"
@@ -17098,6 +17100,29 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/marketing/dto/marketing-workbench.dto.ts",
+      "importedBy": [
+        "backend/src/modules/marketing/services/marketing-measurement.ts",
+        "backend/src/modules/marketing/services/marketing-operations.ts",
+        "backend/src/modules/marketing/services/marketing-preparation.ts"
+      ],
+      "imports": [],
+      "kind": "service",
+      "loc": 381,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/marketing/dto/marketing-workbench.dto.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -17426,6 +17451,78 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/marketing/services/marketing-measurement.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/marketing/dto/marketing-workbench.dto.ts",
+        "backend/src/modules/marketing/services/marketing-preparation.ts",
+        "crypto"
+      ],
+      "kind": "service",
+      "loc": 468,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/marketing/services/marketing-measurement.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/marketing/services/marketing-operations.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/marketing/dto/marketing-workbench.dto.ts",
+        "backend/src/modules/marketing/services/marketing-preparation.ts"
+      ],
+      "kind": "service",
+      "loc": 346,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/marketing/services/marketing-operations.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/marketing/services/marketing-preparation.ts",
+      "importedBy": [
+        "backend/src/modules/marketing/services/marketing-measurement.ts",
+        "backend/src/modules/marketing/services/marketing-operations.ts"
+      ],
+      "imports": [
+        "backend/src/config/marketing-matrix.types.ts",
+        "backend/src/modules/marketing/dto/marketing-brief.dto.ts",
+        "backend/src/modules/marketing/dto/marketing-workbench.dto.ts",
+        "backend/src/modules/marketing/templates/social-post-templates.ts"
+      ],
+      "kind": "service",
+      "loc": 1044,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/marketing/services/marketing-preparation.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/marketing/services/multi-channel-copywriter.service.ts",
       "importedBy": [
         "backend/src/modules/marketing/controllers/marketing-pipeline.controller.ts",
@@ -17555,6 +17652,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/marketing/templates/social-post-templates.ts",
       "importedBy": [
+        "backend/src/modules/marketing/services/marketing-preparation.ts",
         "backend/src/modules/marketing/services/multi-channel-copywriter.service.ts"
       ],
       "imports": [
@@ -69378,6 +69476,177 @@
       "loc": 94,
       "owner": "__unassigned__",
       "path": "scripts/marketing/generate-weekly-plan.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/marketing/marketing-measurement.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 395,
+      "owner": "__unassigned__",
+      "path": "scripts/marketing/marketing-measurement.test.ts",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/marketing/marketing-operations.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 350,
+      "owner": "__unassigned__",
+      "path": "scripts/marketing/marketing-operations.test.ts",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/marketing/marketing-workbench.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 1238,
+      "owner": "__unassigned__",
+      "path": "scripts/marketing/marketing-workbench.test.ts",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/marketing/reactivation-pilot.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 284,
+      "owner": "__unassigned__",
+      "path": "scripts/marketing/reactivation-pilot.test.ts",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/marketing/reactivation-pilot.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 590,
+      "owner": "__unassigned__",
+      "path": "scripts/marketing/reactivation-pilot.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/marketing/reactivation-runtime.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 426,
+      "owner": "__unassigned__",
+      "path": "scripts/marketing/reactivation-runtime.test.mjs",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/marketing/run-reactivation-pilot.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 128,
+      "owner": "__unassigned__",
+      "path": "scripts/marketing/run-reactivation-pilot.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/marketing/simulation-no-network.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 13,
+      "owner": "__unassigned__",
+      "path": "scripts/marketing/simulation-no-network.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/marketing/workbench-cli.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 218,
+      "owner": "__unassigned__",
+      "path": "scripts/marketing/workbench-cli.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
