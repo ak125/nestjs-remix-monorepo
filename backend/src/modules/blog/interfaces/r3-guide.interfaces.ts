@@ -30,7 +30,8 @@ export interface R3GuidePage {
   tags: string[];
   cta_link: string | null;
   cta_anchor: string | null;
-  hasR6Guide: boolean;
+  /** Cible de l'encart « guide d'achat », décidée par la règle ADR-103 D5 ; null = pas d'encart. */
+  buyingGuideHref: string | null;
 }
 
 export interface R3GuideSectionImage {

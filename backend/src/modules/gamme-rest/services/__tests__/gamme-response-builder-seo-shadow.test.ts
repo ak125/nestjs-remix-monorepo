@@ -68,6 +68,7 @@ describe('GammeResponseBuilderService — SEO chain shadow mode (PR-5)', () => {
       dummy, // R1RelatedResourcesService
       chainOrchestrator as never,
       chainFlags,
+      dummy, // R6GuideLinkPolicyService
     );
   }
 

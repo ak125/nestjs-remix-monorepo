@@ -15,6 +15,7 @@ import {
 import { ErrorService } from '../services/error.service';
 import { RedirectService } from '../services/redirect.service';
 import { ErrorLogService } from '../services/error-log.service';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
 import { IsAdminGuard } from '@auth/is-admin.guard';
 
 interface ErrorRecord {
@@ -32,6 +33,7 @@ interface CreateRedirectInput {
 }
 
 @Controller('api/errors')
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class ErrorController {
   constructor(
     private readonly errorService: ErrorService,
@@ -73,7 +75,6 @@ export class ErrorController {
    * Endpoint sécurisé pour monitoring des erreurs en temps réel
    */
   @Get('admin/dashboard')
-  @UseGuards(IsAdminGuard)
   async getAdminDashboard(@Query('hours') hours?: string) {
     const hoursNum = hours ? parseInt(hours, 10) : 24;
     const recentErrors = await this.errorLogService.getRecentErrors(500);

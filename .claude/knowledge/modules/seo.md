@@ -57,6 +57,7 @@ _Section à rédiger._
 - `SitemapStreamingService`
 - `SitemapHygieneService`
 - `ReferenceService`
+- `R6GuideLinkPolicyService`
 - `DiagnosticService`
 - `SeoGeneratorService`
 - `SeoTitleEngineService`

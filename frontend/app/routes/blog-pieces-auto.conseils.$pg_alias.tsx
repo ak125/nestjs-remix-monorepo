@@ -57,7 +57,10 @@ import {
   type R3GuidePage,
 } from "~/types/r3-guide.types";
 import { trackArticleView, trackReadingTime } from "~/utils/analytics";
-import { buildCacheHeaders } from "~/utils/cache-control";
+import {
+  buildCacheHeaders,
+  NO_STORE_CACHE_CONTROL,
+} from "~/utils/cache-control";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { getOgImageUrl } from "~/utils/og-image.utils";
@@ -152,7 +155,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const { pg_alias } = params;
 
   if (!pg_alias) {
-    throw data({ message: "Alias manquant" }, { status: 404 });
+    throw data(
+      { message: "Alias manquant" },
+      { status: 404, headers: { "Cache-Control": NO_STORE_CACHE_CONTROL } },
+    );
   }
 
   const controller = new AbortController();
@@ -266,14 +272,16 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
     // Genuine absence — the only case that legitimately answers 404.
     if (error instanceof R3GuideNotFoundError) {
-      throw data({ message: error.message }, { status: 404 });
+      throw data(
+        { message: error.message },
+        { status: 404, headers: { "Cache-Control": NO_STORE_CACHE_CONTROL } },
+      );
     }
 
     // Transient fault (429 / 5xx / abort / socket). Answer 503 so the URL stays
-    // indexable. Cache-Control is deliberately NOT set here: `headers` below
-    // (buildCacheHeaders) is this route's single owner and already stamps the
-    // canonical no-store on a thrown error — setting it here would override
-    // that with a weaker value.
+    // indexable. Retry-After is what carries this error to `headers` below:
+    // React Router only hands a thrown data()'s init.headers to `errorHeaders`
+    // when there are some, and buildCacheHeaders then stamps no-store.
     logger.error(`[R3 Guide] Error loading guide for: ${pg_alias}`, error);
     throw data(
       { message: `Erreur chargement guide R3: ${pg_alias}` },
@@ -282,8 +290,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   }
 }
 
-// Cache — 5min browser + 1h stale (contenu stable). buildCacheHeaders forces
-// no-store on the loader's thrown 404 instead of leaking this public TTL.
+// Cache — 5min browser + 1h stale (contenu stable). The thrown 404/503 above
+// carry headers, so buildCacheHeaders sees them and never leaks this public TTL.
 export const headers = buildCacheHeaders(
   "public, max-age=300, stale-while-revalidate=3600",
 );
@@ -631,7 +639,7 @@ export default function R3GuidePage() {
                       sections={bodySections.map(toConseil)}
                       pgAlias={pg_alias}
                       pgId={page.pg_id}
-                      hasR6Guide={page.hasR6Guide}
+                      buyingGuideHref={page.buyingGuideHref}
                     />
                   )}
 
@@ -663,22 +671,24 @@ export default function R3GuidePage() {
                     <MetaLinksSection sections={metaSections.map(toConseil)} />
                   )}
 
-                  {/* Cross-link R6 guide d'achat */}
-                  <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 p-4 mb-8">
-                    <div className="flex items-center gap-2">
-                      <ExternalLink className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <p className="text-sm text-gray-700">
-                        Choisir la bonne piece ?{" "}
-                        <Link
-                          to={`/blog-pieces-auto/guide-achat/${pg_alias}`}
-                          className="font-medium text-emerald-600 hover:text-emerald-800 underline"
-                          rel="noopener"
-                        >
-                          Consultez le guide d&apos;achat {page.title}
-                        </Link>
-                      </p>
+                  {/* Cross-link R6 guide d'achat (cible décidée par le backend, ADR-103 D5) */}
+                  {page.buyingGuideHref && (
+                    <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 p-4 mb-8">
+                      <div className="flex items-center gap-2">
+                        <ExternalLink className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <p className="text-sm text-gray-700">
+                          Choisir la bonne piece ?{" "}
+                          <Link
+                            to={page.buyingGuideHref}
+                            className="font-medium text-emerald-600 hover:text-emerald-800 underline"
+                            rel="noopener"
+                          >
+                            Consultez le guide d&apos;achat {page.title}
+                          </Link>
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Actions (partager + enregistrer) */}
                   <ArticleActionsBar

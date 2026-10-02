@@ -1,8 +1,10 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { SearchSimpleService } from '../services/search-simple.service';
 import { SearchMonitoringService } from '../services/search-monitoring.service';
 import { RateLimitSearch } from '../../../common/decorators/rate-limit.decorator';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 
 @ApiTags('search')
 @RateLimitSearch() // 🛡️ 20 req/min - Full-text search is resource-intensive
@@ -84,6 +86,7 @@ export class SearchController {
   // }
 
   @Get('metrics')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   @ApiOperation({ summary: 'Get search performance metrics' })
   @ApiResponse({ status: 200, description: 'Performance metrics' })
   async getMetrics() {
@@ -91,6 +94,7 @@ export class SearchController {
   }
 
   @Get('performance-report')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   @ApiOperation({ summary: 'Get detailed performance report' })
   @ApiResponse({ status: 200, description: 'Detailed performance report' })
   async getPerformanceReport() {

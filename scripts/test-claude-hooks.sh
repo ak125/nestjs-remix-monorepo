@@ -120,6 +120,8 @@ echo "=== sessionstart-workspace-context.sh ==="
 # la borne de taille du manifest mesurée ci-dessous.
 export CRON_STATE_DIR
 CRON_STATE_DIR=$(mktemp -d)
+# Utilisé jusqu'à la fin de la suite : supprimé à la sortie, quel que soit le code de retour.
+trap 'rm -rf -- "$CRON_STATE_DIR"' EXIT
 
 # Cas 1 : nominal depuis repo root → output contient sections attendues
 OUT=$(bash scripts/claude-hooks/sessionstart-workspace-context.sh 2>/tmp/h2-err)
@@ -342,7 +344,7 @@ assert_contains "sonde : runtime à terre → issue warn « runtime DOWN »" '"w
 spawn_titled "$SB/app/backend" "npm run dev" "$SB/root1.pid" "npm run dev:watch" &
 ROOT1=$(wait_pid "$SB/root1.pid")
 assert_contains "sonde : le faux stack porte le titre exact de npm" "^npm run dev$" "$(ps -o args= -p "$ROOT1")"
-assert_not_contains "sonde : pgrep '^npm run dev\$' ne voit pas cette racine (octets nuls de npm)" "^$ROOT1$" "$(pgrep -f '^npm run dev$')"
+assert_contains "sonde : le faux stack complète son titre d'octets nuls, comme npm" "^npm run dev@@*$" "$(tr '\0' '@' < "/proc/$ROOT1/cmdline")"
 run_sync
 assert_contains "sonde : stack sain (1 racine + sa tâche) → ok" '"ok"' "$(sync_state '.status')"
 
@@ -479,7 +481,8 @@ cp "$WS/bin/ps" "$WS/bin/ss"
 printf '#!/bin/sh\necho "Up 1 hour"\n' > "$WS/bin/docker"
 printf '#!/bin/sh\nexec node %s "$@"\n' "$(cd "$REPO_ROOT" && node -p 'require.resolve("nodemon/bin/nodemon.js")')" > "$WS/bin/nodemon"
 chmod +x "$WS/bin/"*
-boots() { wc -l < "$WS/boots.log" 2>/dev/null || echo 0; }
+# 2> avant < : sinon l'échec d'ouverture d'un boots.log encore absent s'affiche dans la sortie.
+boots() { wc -l 2>/dev/null < "$WS/boots.log" || echo 0; }
 wait_boots() { local i; for i in $(seq $(( $2 * 10 ))); do [ "$(boots)" -ge "$1" ] && return; sleep 0.1; done; }
 alive() { [ -n "$(ps -o stat= -p "$1" 2>/dev/null | grep -v Z)" ] && echo vivant || echo mort; }
 # stdin ouvert comme dans le terminal ; setsid : un groupe de processus à tuer d'un bloc.
