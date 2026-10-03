@@ -102,8 +102,8 @@
         "backend/src/modules/blog/services",
         "backend/src/modules/blog/utils"
       ],
-      "files_count": 37,
-      "loc_total": 13967,
+      "files_count": 38,
+      "loc_total": 14089,
       "has_barrel": false
     },
     "bot-guard": {
@@ -259,7 +259,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115685,
+      "loc_total": 115688,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 597,
-      "loc_total": 114475,
+      "loc_total": 114501,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 276,
-      "loc_total": 51669,
+      "files_count": 279,
+      "loc_total": 51877,
       "has_barrel": true
     },
     "upload": {

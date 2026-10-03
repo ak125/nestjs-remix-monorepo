@@ -361,10 +361,13 @@ function resolveKnownPattern(pathname: string): string | null {
     // decodeURIComponent peut échouer sur des URLs malformées — on continue
   }
 
-  // /blog-pieces-auto/comment-* → /blog-pieces-auto/conseils/* (slugs conseils gamme)
+  // /blog-pieces-auto/comment-* = ba_alias d'un conseil (ex-liens précédent/suivant).
+  // La route /conseils/ est indexée sur pg_alias (aucun ne commence par
+  // « comment- ») : déléguer au résolveur /article/{ba_alias}, qui 301 vers
+  // /conseils/{pg_alias}.
   if (pathname.startsWith("/blog-pieces-auto/comment-")) {
     const slug = pathname.replace("/blog-pieces-auto/", "");
-    return `/blog-pieces-auto/conseils/${slug}`;
+    return `/blog-pieces-auto/article/${slug}`;
   }
 
   // /blog-pieces-auto/guide/* → /blog-pieces-auto/guide-achat/* (manque le "-achat")
