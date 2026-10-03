@@ -15,7 +15,11 @@ import {
   type PerformanceInfo,
   type VehicleData,
 } from "../../types/pieces-route.types";
-import { ImageOptimizer, isValidImagePath } from "../../utils/image-optimizer";
+import {
+  ImageOptimizer,
+  isValidImagePath,
+  resolvePartImagePath,
+} from "../../utils/image-optimizer";
 import { PiecesHeroTrustStrip } from "./hero";
 
 interface PiecesHeaderProps {
@@ -153,11 +157,7 @@ export const PiecesHeader = memo(function PiecesHeader({
                           gamme.image &&
                           isValidImagePath(gamme.image)
                         ) {
-                          heroImagePath = gamme.image.startsWith("http")
-                            ? null // URL absolue gérée séparément
-                            : gamme.image.includes("/")
-                              ? gamme.image.replace(/^\/img\/uploads\//, "")
-                              : `articles/gammes-produits/catalogue/${gamme.image}`;
+                          heroImagePath = resolvePartImagePath(gamme.image);
                           heroAlt = `${gamme.name} - pièce auto`;
                           objectFit = "contain";
                         }
