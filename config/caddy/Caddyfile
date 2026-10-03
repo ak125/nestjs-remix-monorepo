@@ -65,7 +65,7 @@ automecanik.com, www.automecanik.com {
     # Documentation: https://docs.imgproxy.net/generating_the_url
     @imgproxy path /imgproxy/*
     handle @imgproxy {
-        # Cache 1 an par défaut (success). Overridden pour 4xx ci-dessous.
+        # Cache 1 an par défaut (success). Overridden pour 4xx/5xx ci-dessous.
         header Cache-Control "public, max-age=31536000, immutable"
         header Vary "Accept"
         header X-Robots-Tag "noindex, nofollow"
@@ -86,6 +86,13 @@ automecanik.com, www.automecanik.com {
                 # (source absente, fallback no.png servi par imgproxy) → cache
                 # court 5min, pas le 1 an immutable du parent (qui piégerait
                 # toute future ingestion sous le même nom).
+                # Never cache a transient imgproxy/server failure as immutable.
+                @upstream_5xx status 5xx
+                handle_response @upstream_5xx {
+                    header >Cache-Control "no-store"
+                    copy_response
+                }
+
                 @upstream_4xx status 4xx
                 handle_response @upstream_4xx {
                     header >Cache-Control "public, max-age=300, must-revalidate"
