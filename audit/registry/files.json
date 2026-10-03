@@ -3756,6 +3756,7 @@
         "backend/src/modules/diagnostic-engine/services/kg-shadow.service.ts",
         "backend/src/modules/seo-projection/seo-projection-feeder.service.ts",
         "backend/src/modules/seo-projection/seo-projection-feeder.test.ts",
+        "backend/src/modules/seo-projection/seo-projection-writer.service.ts",
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
@@ -26574,7 +26575,7 @@
         "backend/src/modules/seo-projection/seo-projection-feeder.service.ts"
       ],
       "kind": "controller",
-      "loc": 77,
+      "loc": 78,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-projection/seo-projection-admin.controller.ts",
       "risk": "low",
@@ -26629,7 +26630,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 389,
+      "loc": 430,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-projection/seo-projection-feeder.service.ts",
       "risk": "low",
@@ -26654,7 +26655,7 @@
         "fs"
       ],
       "kind": "test",
-      "loc": 284,
+      "loc": 342,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-projection/seo-projection-feeder.test.ts",
       "risk": "low",
@@ -26904,7 +26905,7 @@
         "path"
       ],
       "kind": "test",
-      "loc": 435,
+      "loc": 596,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-projection/seo-projection-writer-role-scope.test.ts",
       "risk": "low",
@@ -26930,6 +26931,7 @@
       "imports": [
         "@common/utils/error.utils",
         "backend/src/config/app.config.ts",
+        "backend/src/config/feature-flags.service.ts",
         "backend/src/database/services/supabase-base.service.ts",
         "backend/src/modules/seo-projection/seo-projection-gate.service.ts",
         "backend/src/modules/seo-projection/seo-projection-snapshot.ts",
@@ -26939,7 +26941,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 792,
+      "loc": 869,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-projection/seo-projection-writer.service.ts",
       "risk": "low",
@@ -27025,7 +27027,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 218,
+      "loc": 222,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-projection/seo-projection.types.ts",
       "risk": "low",

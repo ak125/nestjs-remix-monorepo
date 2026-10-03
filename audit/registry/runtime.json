@@ -6115,6 +6115,7 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/config/feature-flags.service.ts",
         "runtime:backend/src/modules/seo-projection/seo-projection-gate.service.ts"
       ],
       "id": "runtime:backend/src/modules/seo-projection/seo-projection-writer.service.ts",

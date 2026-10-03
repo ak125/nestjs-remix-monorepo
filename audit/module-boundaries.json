@@ -814,7 +814,7 @@
         "backend/src/modules/seo-projection"
       ],
       "files_count": 20,
-      "loc_total": 4380,
+      "loc_total": 4722,
       "has_barrel": false
     },
     "seo-shadow-observatory": {
@@ -2034,7 +2034,7 @@
     {
       "from": "seo-projection",
       "to": "config",
-      "count": 5
+      "count": 6
     },
     {
       "from": "seo-projection",
