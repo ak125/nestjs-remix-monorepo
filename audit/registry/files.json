@@ -59976,7 +59976,7 @@
         "~/utils/logger"
       ],
       "kind": "service",
-      "loc": 632,
+      "loc": 634,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/image-optimizer.ts",
       "risk": "low",
@@ -60905,7 +60905,7 @@
         "frontend/app/utils/seo/pieces-schema-commerce.constants.ts"
       ],
       "kind": "service",
-      "loc": 314,
+      "loc": 318,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/seo/pieces-schema.utils.ts",
       "risk": "low",
@@ -62864,6 +62864,25 @@
       "loc": 77,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/pieces-hero-fact-chip.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/pieces-hero-image-source.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 117,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/pieces-hero-image-source.test.tsx",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
