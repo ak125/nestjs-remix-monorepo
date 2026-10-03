@@ -2924,6 +2924,7 @@
       "scripts/marketing/marketing-workbench.test.ts",
       "scripts/marketing/reactivation-pilot.test.ts",
       "scripts/marketing/reactivation-runtime.test.mjs",
+      "scripts/marketing/summarize-reactivation-exclusions.test.ts",
       "scripts/marketing/tsconfig.json",
       "scripts/ops/dev-compile-watch.js",
       "scripts/registry/build-canonical-registry.js",
@@ -2961,7 +2962,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1574,
+  "runtime_files_count": 1575,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4501,6 +4502,7 @@
     "scripts/marketing/marketing-workbench.test.ts",
     "scripts/marketing/reactivation-pilot.test.ts",
     "scripts/marketing/reactivation-runtime.test.mjs",
+    "scripts/marketing/summarize-reactivation-exclusions.test.ts",
     "scripts/marketing/tsconfig.json",
     "scripts/ops/dev-compile-watch.js",
     "scripts/registry/build-canonical-registry.js",
