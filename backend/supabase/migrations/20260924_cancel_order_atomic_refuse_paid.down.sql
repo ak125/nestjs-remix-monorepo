@@ -16,6 +16,12 @@
 --
 -- Rien n'est supprimé : pas de DROP, create_order_atomic et append_order_event
 -- ne sont pas touchées. Les droits sont ré-affirmés à l'identique.
+--
+-- SEULE DIFFÉRENCE avec 20260523_002 : `SET search_path = public, pg_temp`
+-- (au lieu de `public`). Le rollback défait la règle « payée », pas
+-- l'épinglage de pg_temp posé par la migration montante ; la valeur reste
+-- celle des fonctions voisines du domaine commande. L'empreinte md5(prosrc)
+-- ne porte que sur le corps : elle reste celle du live.
 
 SET LOCAL lock_timeout = '5s';
 SET LOCAL statement_timeout = '60s';
@@ -29,7 +35,7 @@ CREATE OR REPLACE FUNCTION public.cancel_order_atomic(
 RETURNS VOID
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, pg_temp
 AS $function$
 DECLARE
   v_from_status TEXT;

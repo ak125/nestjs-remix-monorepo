@@ -20,7 +20,7 @@
 --   décision doit être prise là où la ligne est verrouillée, avec le même
 --   prédicat que l'application.
 --
--- CHANGEMENT (un seul objet touché : le corps de cancel_order_atomic)
+-- CHANGEMENT (un seul objet touché : cancel_order_atomic — corps et search_path)
 --   1. La ligne verrouillée fournit aussi ord_is_pay et ord_date_pay.
 --   2. Commande payée = ord_is_pay='1' OU ord_date_pay contenant au moins un
 --      caractère non blanc : MÊME prédicat que getCustomerCancelRefusal
@@ -38,10 +38,23 @@
 --   Ordre des contrôles : déjà annulée ('2') d'abord, puis payée, puis
 --   transition canonique. Une commande annulée qui avait été payée reste donc
 --   signalée comme « déjà annulée ».
+--   5. search_path = public, pg_temp (au lieu de public). CREATE OR REPLACE
+--      réécrit proconfig : sans cette valeur, cette migration figerait la
+--      fonction sans pg_temp en dernier. Un search_path qui ne liste pas
+--      pg_temp le parcourt implicitement EN PREMIER pour les relations et les
+--      types (documentation PostgreSQL, « Writing SECURITY DEFINER Functions
+--      Safely »). Même valeur que les fonctions voisines du domaine commande :
+--      mark_order_paid_atomic (20260930), create_order_atomic,
+--      append_order_event et check_payment_tunnel_health (20261001, qui
+--      renvoyait explicitement cancel_order_atomic à cette migration). Les
+--      relations du corps sont toutes qualifiées `public.` : seul le parcours
+--      des noms de type était exposé. pg_catalog reste parcouru implicitement
+--      en premier, les fonctions ne sont jamais cherchées dans pg_temp : le
+--      comportement ne change pas.
 --
 -- CE QUI N'EST PAS TOUCHÉ
---   - Signature, type de retour, SECURITY DEFINER, search_path=public : à
---     l'identique. Aucun DROP, aucun appelant à modifier.
+--   - Signature, type de retour, SECURITY DEFINER : à l'identique. Aucun
+--     DROP, aucun appelant à modifier.
 --   - Le chemin qui réussit : même UPDATE (statut '2', date et motif
 --     d'annulation, ord_updated_at), même événement ORDER_CANCELLED via
 --     append_order_event, dans la même transaction.
@@ -81,7 +94,7 @@ CREATE OR REPLACE FUNCTION public.cancel_order_atomic(
 RETURNS VOID
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public
+SET search_path = public, pg_temp
 AS $function$
 DECLARE
   v_from_status TEXT;
