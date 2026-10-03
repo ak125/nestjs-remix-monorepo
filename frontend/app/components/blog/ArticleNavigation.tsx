@@ -6,9 +6,23 @@ interface ArticlePreview {
   id: string;
   title: string;
   slug: string;
+  /** Alias de gamme (pieces_gamme.pg_alias) — clé de la route canonique des conseils. */
+  pg_alias?: string | null;
   excerpt: string;
   featuredImage?: string | null;
   publishedAt: string;
+}
+
+/**
+ * URL d'un article adjacent. `slug` = ba_alias (« comment-changer-… ») : la route
+ * des conseils est indexée sur pg_alias, donc `/blog-pieces-auto/{slug}` finit en 404.
+ * Sans pg_alias, `/blog-pieces-auto/article/{slug}` est le résolveur existant
+ * (301 vers /conseils/{pg_alias} ou /guide-achat/{slug}).
+ */
+export function articleHref(article: ArticlePreview): string {
+  return article.pg_alias
+    ? `/blog-pieces-auto/conseils/${article.pg_alias}`
+    : `/blog-pieces-auto/article/${article.slug}`;
 }
 
 interface ArticleNavigationProps {
@@ -46,9 +60,9 @@ export function ArticleNavigation({
       }
 
       if (e.key === "ArrowLeft" && previous) {
-        window.location.href = `/blog/${previous.slug}`;
+        window.location.href = articleHref(previous);
       } else if (e.key === "ArrowRight" && next) {
-        window.location.href = `/blog/${next.slug}`;
+        window.location.href = articleHref(next);
       }
     };
 
@@ -75,7 +89,7 @@ export function ArticleNavigation({
           {/* 🔙 Article précédent */}
           {previous ? (
             <Link
-              to={`/blog-pieces-auto/${previous.slug}`}
+              to={articleHref(previous)}
               className="group relative flex flex-col p-6 bg-gradient-to-br from-blue-50 hover:from-blue-100 hover: rounded-xl border border-blue-200 transition-all duration-300 hover:shadow-lg"
             >
               {/* Direction indicator */}
@@ -125,7 +139,7 @@ export function ArticleNavigation({
           {/* ▶️ Article suivant */}
           {next && (
             <Link
-              to={`/blog-pieces-auto/${next.slug}`}
+              to={articleHref(next)}
               className="group relative flex flex-col p-6 bg-gradient-to-br to-pink-50 hover: hover:to-pink-100 rounded-xl border border-purple-200 transition-all duration-300 hover:shadow-lg"
             >
               {/* Direction indicator */}

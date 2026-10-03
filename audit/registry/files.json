@@ -11259,6 +11259,7 @@
         "backend/src/modules/blog/services/advice-enrichment.service.ts",
         "backend/src/modules/blog/services/advice-transform.service.ts",
         "backend/src/modules/blog/services/advice.service.ts",
+        "backend/src/modules/blog/services/blog-article-data.service.adjacent.test.ts",
         "backend/src/modules/blog/services/blog-article-data.service.ts",
         "backend/src/modules/blog/services/blog-article-transform.service.ts",
         "backend/src/modules/blog/services/blog-statistics.service.ts",
@@ -11428,9 +11429,34 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/blog/services/blog-article-data.service.adjacent.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@repo/database-types",
+        "backend/src/modules/blog/interfaces/blog.interfaces.ts",
+        "backend/src/modules/blog/services/blog-article-data.service.ts",
+        "backend/src/modules/blog/services/blog-article-transform.service.ts"
+      ],
+      "kind": "test",
+      "loc": 116,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/blog/services/blog-article-data.service.adjacent.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/blog/services/blog-article-data.service.ts",
       "importedBy": [
         "backend/src/modules/blog/blog.module.ts",
+        "backend/src/modules/blog/services/blog-article-data.service.adjacent.test.ts",
         "backend/src/modules/blog/services/blog.service.test.ts",
         "backend/src/modules/blog/services/blog.service.ts",
         "backend/src/modules/blog/services/r3-guide.service.test.ts",
@@ -11445,7 +11471,7 @@
         "backend/src/modules/search/services/supabase-indexation.service.ts"
       ],
       "kind": "service",
-      "loc": 829,
+      "loc": 835,
       "owner": "__unassigned__",
       "path": "backend/src/modules/blog/services/blog-article-data.service.ts",
       "risk": "low",
@@ -11516,6 +11542,7 @@
       "id": "backend/src/modules/blog/services/blog-article-transform.service.ts",
       "importedBy": [
         "backend/src/modules/blog/blog.module.ts",
+        "backend/src/modules/blog/services/blog-article-data.service.adjacent.test.ts",
         "backend/src/modules/blog/services/blog-article-data.service.ts",
         "backend/src/modules/blog/services/blog-article-relation.service.ts",
         "backend/src/modules/blog/services/blog-statistics.service.ts",
@@ -41654,7 +41681,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 188,
+      "loc": 202,
       "owner": "__unassigned__",
       "path": "frontend/app/components/blog/ArticleNavigation.tsx",
       "risk": "low",
@@ -51660,7 +51687,7 @@
         "~/utils/single-fetch"
       ],
       "kind": "route",
-      "loc": 526,
+      "loc": 529,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/$.tsx",
       "risk": "low",
@@ -61614,6 +61641,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/article-navigation-canonical-links.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 56,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/article-navigation-canonical-links.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/tests/unit/ast-grep-rule-globs-match-language.test.ts",
       "importedBy": [],
       "imports": [],
@@ -61773,6 +61819,25 @@
       "loc": 132,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/catch-all-404-noindex.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/catch-all-blog-advice-alias-redirect.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 54,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/catch-all-blog-advice-alias-redirect.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
