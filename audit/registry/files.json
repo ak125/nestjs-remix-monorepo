@@ -59957,7 +59957,7 @@
         "~/utils/logger"
       ],
       "kind": "service",
-      "loc": 614,
+      "loc": 632,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/image-optimizer.ts",
       "risk": "low",
@@ -60296,7 +60296,7 @@
         "frontend/app/utils/pieces-route.utils.ts"
       ],
       "kind": "service",
-      "loc": 197,
+      "loc": 191,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/pieces-loader.utils.ts",
       "risk": "low",
@@ -61781,6 +61781,25 @@
       "loc": 84,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/catalogue-image-fallback.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/catalogue-image-source.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 98,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/catalogue-image-source.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
