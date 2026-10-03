@@ -21,7 +21,7 @@
     "dynamic_rpc_callsites": 1,
     "unresolved_callsites": 0,
     "dropped_call_sites": 5,
-    "migrations_scanned": 396,
+    "migrations_scanned": 398,
     "backend_files_scanned": 1437
   },
   "tables": {
@@ -3913,7 +3913,9 @@
       "called_by": [],
       "called_by_count": 0,
       "defined_in_migrations": [
-        "20260523_002_cancel_order_atomic.sql"
+        "20260523_002_cancel_order_atomic.sql",
+        "20260924_cancel_order_atomic_refuse_paid.down.sql",
+        "20260924_cancel_order_atomic_refuse_paid.sql"
       ],
       "is_trigger_function": false
     },
@@ -7861,7 +7863,9 @@
         "no-rpc-callsite"
       ],
       "defined_in_migrations": [
-        "20260523_002_cancel_order_atomic.sql"
+        "20260523_002_cancel_order_atomic.sql",
+        "20260924_cancel_order_atomic_refuse_paid.down.sql",
+        "20260924_cancel_order_atomic_refuse_paid.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
@@ -13154,7 +13158,7 @@
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 862,
+      "line": 874,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
