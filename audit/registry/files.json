@@ -69659,6 +69659,44 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "scripts/marketing/summarize-reactivation-exclusions.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 157,
+      "owner": "__unassigned__",
+      "path": "scripts/marketing/summarize-reactivation-exclusions.test.ts",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/marketing/summarize-reactivation-exclusions.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 105,
+      "owner": "__unassigned__",
+      "path": "scripts/marketing/summarize-reactivation-exclusions.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "scripts/marketing/workbench-cli.ts",
       "importedBy": [],
       "imports": [],
