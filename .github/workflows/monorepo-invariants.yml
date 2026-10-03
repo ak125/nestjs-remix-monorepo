@@ -21,7 +21,7 @@ jobs:
     name: "No Mini-Monorepo (ADR-061 §6)"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Check workspaces ne sont pas mini-monorepos
         run: |

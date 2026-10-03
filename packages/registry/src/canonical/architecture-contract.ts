@@ -39,7 +39,7 @@ const BoundarySchema = z
     const dupes = names.filter((n, i) => names.indexOf(n) !== i);
     if (dupes.length > 0) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: `Duplicate depcruise rule names in boundary "${b.id}": ${[...new Set(dupes)].join(', ')}`,
         path: ['emitDepcruise'],
       });
@@ -67,7 +67,7 @@ export const ArchitectureContractSchema = z
     const dupes = allNames.filter((n, i) => allNames.indexOf(n) !== i);
     if (dupes.length > 0) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: `Duplicate emitDepcruise.name across boundaries: ${[...new Set(dupes)].join(', ')}`,
         path: ['boundaries'],
       });

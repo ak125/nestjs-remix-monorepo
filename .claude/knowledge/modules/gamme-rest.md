@@ -2,7 +2,7 @@
 module: gamme-rest
 sources:
 - backend/src/modules/gamme-rest
-last_scan: '2026-07-02'
+last_scan: '2026-10-01'
 primary_files:
 - backend/src/modules/gamme-rest/controllers/admin-gamme-cache.controller.ts
 - backend/src/modules/gamme-rest/controllers/admin-r1-related-blocks-cache.controller.ts
@@ -38,14 +38,14 @@ _Section à rédiger._
 - `R1RelatedResourcesService`
 
 ### Fichiers primaires
+- [backend/src/modules/gamme-rest/controllers/admin-gamme-cache.controller.ts](../../../backend/src/modules/gamme-rest/controllers/admin-gamme-cache.controller.ts)
+- [backend/src/modules/gamme-rest/controllers/admin-r1-related-blocks-cache.controller.ts](../../../backend/src/modules/gamme-rest/controllers/admin-r1-related-blocks-cache.controller.ts)
 - [backend/src/modules/gamme-rest/gamme-rest-optimized.controller.ts](../../../backend/src/modules/gamme-rest/gamme-rest-optimized.controller.ts)
 - [backend/src/modules/gamme-rest/gamme-rest-rpc-v2.controller.ts](../../../backend/src/modules/gamme-rest/gamme-rest-rpc-v2.controller.ts)
 - [backend/src/modules/gamme-rest/gamme-rest.module.ts](../../../backend/src/modules/gamme-rest/gamme-rest.module.ts)
+- [backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-seo-shadow.test.ts](../../../backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-seo-shadow.test.ts)
 - [backend/src/modules/gamme-rest/services/buying-guide-data.service.ts](../../../backend/src/modules/gamme-rest/services/buying-guide-data.service.ts)
 - [backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts](../../../backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts)
-- [backend/src/modules/gamme-rest/services/gamme-page-data.service.ts](../../../backend/src/modules/gamme-rest/services/gamme-page-data.service.ts)
-- [backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts](../../../backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts)
-- [backend/src/modules/gamme-rest/services/gamme-rpc.schema.ts](../../../backend/src/modules/gamme-rest/services/gamme-rpc.schema.ts)
 
 <!-- END AUTO-GENERATED -->
 

@@ -6,12 +6,15 @@ import {
   Query,
   Req,
   Logger,
+  UseGuards,
 } from '@nestjs/common';
 import {
   DomainValidationException,
   OperationFailedException,
 } from '@common/exceptions';
 import { Request } from 'express';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { ErrorService } from '../modules/errors/services/error.service';
 import { RedirectService } from '../modules/errors/services/redirect.service';
 import { ErrorLogService } from '../modules/errors/services/error-log.service';
@@ -55,7 +58,9 @@ export class ErrorsApiController {
         code: errorData.code,
         url: errorData.url,
         userAgent: errorData.userAgent,
-        ipAddress: errorData.ipAddress || request.ip,
+        // Adresse résolue par `trust proxy` (main.ts), jamais lue du corps :
+        // les appelants SSR la relaient via getProxyHeaders().
+        ipAddress: request.ip,
         referrer: errorData.referrer,
         userId: errorData.userId,
         sessionId: errorData.sessionId,
@@ -70,6 +75,7 @@ export class ErrorsApiController {
   }
 
   @Get('statistics')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async getStatistics(
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
@@ -94,6 +100,7 @@ export class ErrorsApiController {
   }
 
   @Get('recent')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async getRecentErrors(@Query('limit') limit: string = '50') {
     try {
       const limitNum = Math.min(parseInt(limit) || 50, 200); // Maximum 200
@@ -225,6 +232,7 @@ export class RedirectsApiController {
   }
 
   @Post('add')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async addRedirect(
     @Body()
     redirectData: {
@@ -251,6 +259,7 @@ export class RedirectsApiController {
   }
 
   @Get('statistics')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async getRedirectStatistics() {
     try {
       // Utiliser getRedirectStats qui existe dans le service

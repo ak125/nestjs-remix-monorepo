@@ -1,14 +1,21 @@
 /**
  * PR-B.4 — Pure mapping coverage : analyze input → VehicleContext cookie
- * payload. Pure function tests live here rather than a controller-level
- * jest spec because importing the controller drags in transitive modules
- * (RagProxy, engines, content services) whose pre-existing TS errors break
- * ts-jest compilation.
+ * payload. These tests exercise the pure vehicle-context mapping;
+ * orchestration is covered by diagnostic-engine.orchestrator.test.ts.
  *
  * Controller behaviour (persist conditional on success, silent on port
  * throw) is covered by inspection — the controller body is now 5 lines.
+ *
+ * Wiki content endpoints: an unavailable entry is a 503, never a 200 with
+ * an empty body.
  */
 
+import { ServiceUnavailableException } from '@nestjs/common';
+import { DiagnosticEngineController } from './diagnostic-engine.controller';
+import type {
+  DiagnosticContentEntry,
+  DiagnosticContentService,
+} from './services/diagnostic-content.service';
 import { mapAnalyzeInputToVehicleContextPayload } from './vehicle-context-mapping';
 
 describe('mapAnalyzeInputToVehicleContextPayload (PR-B.4)', () => {
@@ -142,4 +149,65 @@ describe('mapAnalyzeInputToVehicleContextPayload (PR-B.4)', () => {
       model_slug: 'a3',
     });
   });
+});
+
+describe('DiagnosticEngineController — wiki content endpoints', () => {
+  // Each handler delegates to the service method of the same name.
+  const endpoints = [
+    ['wizard-steps', 'getWizardSteps'],
+    ['safety-config', 'getSafetyConfig'],
+    ['vocab-clusters', 'getVocabClusters'],
+    ['signs', 'getSigns'],
+    ['faq', 'getFaq'],
+    ['controles-mensuels', 'getControlesMensuels'],
+  ] as const;
+
+  /** Only `diagnosticContent` is read by these endpoints. */
+  function controllerReading(
+    method: (typeof endpoints)[number][1],
+    entry: DiagnosticContentEntry | null,
+  ): DiagnosticEngineController {
+    const diagnosticContent: Partial<DiagnosticContentService> = {
+      [method]: () => entry,
+    };
+    const controller = Object.create(
+      DiagnosticEngineController.prototype,
+    ) as DiagnosticEngineController;
+    Object.assign(controller, { diagnosticContent });
+    return controller;
+  }
+
+  test.each(endpoints)(
+    'GET %s — unavailable content is a 503, not an empty 200',
+    (_route, method) => {
+      const controller = controllerReading(method, null);
+
+      let thrown: unknown;
+      try {
+        controller[method]();
+      } catch (err) {
+        thrown = err;
+      }
+
+      expect(thrown).toBeInstanceOf(ServiceUnavailableException);
+      const response = (thrown as ServiceUnavailableException).getResponse();
+      // The client learns the content is unavailable, not where it lives.
+      expect(JSON.stringify(response)).not.toMatch(/wiki|\.md|\//);
+    },
+  );
+
+  test.each(endpoints)(
+    'GET %s — available content is returned unchanged',
+    (route, method) => {
+      const entry: DiagnosticContentEntry = {
+        slug: route,
+        title: route,
+        entity_data: { items: [] },
+        body: '',
+      };
+      const controller = controllerReading(method, entry);
+
+      expect(controller[method]()).toBe(entry);
+    },
+  );
 });

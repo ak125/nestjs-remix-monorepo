@@ -1,0 +1,317 @@
+{
+  "checked_date": "2026-09-27",
+  "project_id": "cxpojprgwgubzjyqzmoq",
+  "mode": "READ ONLY: no migration applied",
+  "gammes": [
+    {
+      "id": 71,
+      "name": "Liquide de frein",
+      "alias": "liquide-de-frein"
+    },
+    {
+      "id": 479,
+      "name": "Kit d'embrayage",
+      "alias": "kit-d-embrayage"
+    }
+  ],
+  "functions": [
+    {
+      "args": "p_observable_ids uuid[], p_vehicle_id uuid, p_engine_family_code text, p_confidence_threshold double precision, p_limit integer",
+      "name": "kg_diagnose_vehicle_aware",
+      "definition": "CREATE OR REPLACE FUNCTION public.kg_diagnose_vehicle_aware(p_observable_ids uuid[], p_vehicle_id uuid DEFAULT NULL::uuid, p_engine_family_code text DEFAULT NULL::text, p_confidence_threshold double precision DEFAULT 0.5, p_limit integer DEFAULT 10)\n RETURNS SETOF kg_diagnosis_result\n LANGUAGE plpgsql\n STABLE\n SET search_path TO 'public'\nAS $function$\nDECLARE\n  v_engine_family_code TEXT;\n  v_engine_family_id UUID;\nBEGIN\n  IF p_engine_family_code IS NOT NULL THEN\n    v_engine_family_code := p_engine_family_code;\n  ELSIF p_vehicle_id IS NOT NULL THEN\n    SELECT ef.family_code INTO v_engine_family_code\n    FROM kg_nodes v\n    JOIN kg_edges e ON e.source_node_id = v.node_id AND e.edge_type = 'HAS_ENGINE'\n    JOIN kg_engine_families ef ON ef.family_id = e.target_node_id::UUID\n    WHERE v.node_id = p_vehicle_id\n    LIMIT 1;\n  END IF;\n\n  IF v_engine_family_code IS NOT NULL THEN\n    SELECT family_id INTO v_engine_family_id\n    FROM kg_engine_families WHERE family_code = v_engine_family_code;\n  END IF;\n\n  RETURN QUERY\n  WITH observable_to_fault AS (\n    SELECT\n      f.node_id AS fault_id, f.node_label AS fault_label, o.node_id AS observable_id,\n      e.edge_type, e.weight, e.confidence, e.evidence,\n      kg_get_edge_type_weight_multiplier(e.edge_type) AS edge_type_multiplier,\n      CASE WHEN v_engine_family_code IS NOT NULL AND e.evidence->>'specific_to_engine_family' = v_engine_family_code\n        THEN COALESCE((e.evidence->>'boost_factor')::FLOAT, 1.3) ELSE 1.0 END AS engine_boost,\n      CASE WHEN e.evidence->>'specific_to_engine_family' = v_engine_family_code THEN TRUE ELSE FALSE END AS is_vehicle_specific\n    FROM kg_nodes o\n    JOIN kg_edges e ON e.source_node_id = o.node_id AND e.edge_type IN ('INDICATES', 'CONFIRMS', 'MANIFESTS_AS', 'CAUSES') AND e.status = 'active' AND e.valid_to IS NULL\n    JOIN kg_nodes f ON f.node_id = e.target_node_id AND f.node_type = 'Fault' AND f.status = 'active' AND f.valid_to IS NULL\n    WHERE o.node_id = ANY(p_observable_ids) AND o.status = 'active' AND o.valid_to IS NULL\n  ),\n  fault_scores AS (\n    SELECT otf.fault_id, otf.fault_label, COUNT(DISTINCT otf.observable_id) AS matched_observables,\n      SUM(otf.weight * otf.confidence * otf.edge_type_multiplier * otf.engine_boost) AS raw_score,\n      SUM(otf.confidence * otf.weight) / NULLIF(SUM(otf.weight), 0) AS avg_confidence,\n      BOOL_OR(otf.is_vehicle_specific) AS has_vehicle_specific, MAX(otf.engine_boost) AS max_engine_boost\n    FROM observable_to_fault otf GROUP BY otf.fault_id, otf.fault_label\n  ),\n  normalized_scores AS (\n    SELECT fs.*, LEAST(100, (fs.raw_score / (ARRAY_LENGTH(p_observable_ids, 1) * 10.0)) * 100) AS score\n    FROM fault_scores fs WHERE fs.avg_confidence >= p_confidence_threshold\n  ),\n  fault_with_family AS (\n    SELECT ns.*, ff.node_label AS fault_family\n    FROM normalized_scores ns\n    LEFT JOIN kg_edges e ON e.source_node_id = ns.fault_id AND e.edge_type = 'BELONGS_TO_FAMILY' AND e.status = 'active'\n    LEFT JOIN kg_nodes ff ON ff.node_id = e.target_node_id AND ff.node_type = 'FaultFamily'\n  ),\n  fault_root_causes AS (\n    SELECT fwf.fault_id, JSONB_AGG(JSONB_BUILD_OBJECT('root_cause_id', rc.node_id, 'label', rc.node_label, 'category', rc.root_cause_category, 'warranty_impact', rc.warranty_impact, 'frequency', rc.frequency, 'weight', e.weight, 'advice', rc.node_data->>'advice') ORDER BY e.weight DESC) AS root_causes\n    FROM fault_with_family fwf JOIN kg_edges e ON e.source_node_id = fwf.fault_id AND e.edge_type = 'HAS_ROOT_CAUSE' AND e.status = 'active'\n    JOIN kg_nodes rc ON rc.node_id = e.target_node_id AND rc.node_type = 'RootCause' AND rc.status = 'active'\n    GROUP BY fwf.fault_id\n  ),\n  fault_parts AS (\n    SELECT fwf.fault_id, JSONB_AGG(JSONB_BUILD_OBJECT('part_id', p.node_id, 'label', p.node_label, 'pg_id', p.node_data->>'pg_id', 'confidence', e.confidence) ORDER BY e.confidence DESC) AS parts\n    FROM fault_with_family fwf JOIN kg_edges e ON e.source_node_id = fwf.fault_id AND e.edge_type = 'FIXED_BY' AND e.status = 'active'\n    JOIN kg_nodes p ON p.node_id = e.target_node_id AND p.node_type = 'Part' AND p.status = 'active'\n    GROUP BY fwf.fault_id\n  ),\n  fault_actions AS (\n    SELECT fwf.fault_id, JSONB_AGG(JSONB_BUILD_OBJECT('action_id', a.node_id, 'label', a.node_label, 'category', a.node_category, 'confidence', e.confidence) ORDER BY e.confidence DESC) AS actions\n    FROM fault_with_family fwf JOIN kg_edges e ON e.source_node_id = fwf.fault_id AND e.edge_type = 'DIAGNOSED_BY' AND e.status = 'active'\n    JOIN kg_nodes a ON a.node_id = e.target_node_id AND a.node_type = 'Action' AND a.status = 'active'\n    GROUP BY fwf.fault_id\n  )\n  SELECT fwf.fault_id, fwf.fault_label, fwf.fault_family, fwf.score, fwf.avg_confidence AS confidence, fwf.matched_observables::INT,\n    fwf.has_vehicle_specific AS is_vehicle_specific, fwf.max_engine_boost AS engine_family_boost,\n    COALESCE(frc.root_causes, '[]'::JSONB) AS root_causes, COALESCE(fp.parts, '[]'::JSONB) AS parts, COALESCE(fa.actions, '[]'::JSONB) AS actions\n  FROM fault_with_family fwf\n  LEFT JOIN fault_root_causes frc ON frc.fault_id = fwf.fault_id\n  LEFT JOIN fault_parts fp ON fp.fault_id = fwf.fault_id\n  LEFT JOIN fault_actions fa ON fa.fault_id = fwf.fault_id\n  ORDER BY fwf.score DESC, fwf.avg_confidence DESC LIMIT p_limit;\nEND;\n$function$\n"
+    },
+    {
+      "args": "p_engine_family_code text, p_current_km integer, p_profile_id uuid, p_last_maintenance_records jsonb, p_type_id integer, p_fuel_type text",
+      "name": "kg_get_smart_maintenance_schedule",
+      "definition": "CREATE OR REPLACE FUNCTION public.kg_get_smart_maintenance_schedule(p_engine_family_code text DEFAULT NULL::text, p_current_km integer DEFAULT 0, p_profile_id uuid DEFAULT NULL::uuid, p_last_maintenance_records jsonb DEFAULT '[]'::jsonb, p_type_id integer DEFAULT NULL::integer, p_fuel_type text DEFAULT NULL::text)\n RETURNS TABLE(rule_alias text, rule_label text, km_interval integer, month_interval integer, maintenance_priority text, applies_to_fuel text, km_remaining integer, status text)\n LANGUAGE plpgsql\n STABLE\n SET search_path TO 'public'\nAS $function$\nDECLARE\n  v_fuel_type TEXT;\nBEGIN\n  -- Résolution fuel_type : explicite > dérivé du type_id > NULL (pas de filtre)\n  IF p_fuel_type IS NOT NULL THEN\n    v_fuel_type := lower(p_fuel_type);\n  ELSIF p_type_id IS NOT NULL THEN\n    SELECT lower(at.type_fuel) INTO v_fuel_type\n    FROM public.auto_type at\n    WHERE at.type_id = p_type_id::text\n    LIMIT 1;\n  ELSE\n    v_fuel_type := NULL;\n  END IF;\n\n  -- Normalisation fuel : \"essence-électrique\"/\"essence-electrique\" → \"essence-hybride\"\n  IF v_fuel_type IS NOT NULL THEN\n    v_fuel_type := regexp_replace(v_fuel_type, 'é', 'e', 'g');\n    IF v_fuel_type LIKE '%essence%electrique%'\n       OR v_fuel_type LIKE '%diesel%electrique%' THEN\n      v_fuel_type := 'hybride';\n    END IF;\n  END IF;\n\n  RETURN QUERY\n  SELECT\n    n.node_alias::TEXT AS rule_alias,\n    n.node_label::TEXT AS rule_label,\n    n.km_interval,\n    n.month_interval,\n    -- maintenance_priority : mapping canon anglais (kg_v3_maintenance) → contrat\n    -- TS/frontend français 3 niveaux (recommended+optional collapse → normal).\n    CASE n.maintenance_priority\n      WHEN 'critical'    THEN 'critique'\n      WHEN 'important'   THEN 'important'\n      WHEN 'recommended' THEN 'normal'\n      WHEN 'optional'    THEN 'normal'\n      ELSE NULL\n    END AS maintenance_priority,\n    -- détecte fuel-aware nodes par convention de nommage\n    CASE\n      WHEN n.node_alias LIKE '%-essence%' THEN 'essence'\n      WHEN n.node_alias LIKE '%-diesel%' THEN 'diesel'\n      WHEN n.node_alias LIKE 'bougies-prechauffage' THEN 'diesel'\n      ELSE NULL\n    END AS applies_to_fuel,\n    GREATEST(n.km_interval - p_current_km, 0) AS km_remaining,\n    CASE\n      WHEN n.km_interval IS NULL THEN 'time_only'\n      WHEN p_current_km >= n.km_interval THEN 'overdue'\n      WHEN p_current_km >= (n.km_interval * 0.9) THEN 'due_soon'\n      ELSE 'ok'\n    END AS status\n  FROM public.kg_nodes n\n  WHERE n.node_type = 'MaintenanceInterval'\n    AND n.is_active = TRUE\n    AND (\n      v_fuel_type IS NULL\n      OR n.node_alias NOT LIKE '%-essence%' AND n.node_alias NOT LIKE '%-diesel%'\n         AND n.node_alias <> 'bougies-prechauffage'\n      OR (v_fuel_type LIKE '%essence%' AND\n          (n.node_alias LIKE '%-essence%' OR n.node_alias = 'bougies-essence'))\n      OR (v_fuel_type LIKE '%diesel%' AND\n          (n.node_alias LIKE '%-diesel%' OR n.node_alias = 'bougies-prechauffage'))\n      OR (v_fuel_type = 'hybride' AND n.node_alias LIKE '%-essence%')\n    )\n  ORDER BY\n    CASE n.maintenance_priority\n      WHEN 'critical'    THEN 1\n      WHEN 'important'   THEN 2\n      WHEN 'recommended' THEN 3\n      WHEN 'optional'    THEN 4\n      ELSE 5\n    END,\n    n.node_label;\nEND;\n$function$\n"
+    },
+    {
+      "args": "p_engine_family_code text, p_current_km integer, p_vehicle_age_months integer, p_last_maintenance_km integer, p_last_maintenance_date date",
+      "name": "kg_get_vehicle_maintenance_schedule",
+      "definition": "CREATE OR REPLACE FUNCTION public.kg_get_vehicle_maintenance_schedule(p_engine_family_code text, p_current_km integer, p_vehicle_age_months integer DEFAULT 36, p_last_maintenance_km integer DEFAULT 0, p_last_maintenance_date date DEFAULT NULL::date)\n RETURNS SETOF kg_maintenance_item\n LANGUAGE plpgsql\n STABLE\n SET search_path TO 'public'\nAS $function$\nDECLARE v_last_date DATE;\nBEGIN\n  v_last_date := COALESCE(p_last_maintenance_date, CURRENT_DATE - (p_vehicle_age_months || ' months')::INTERVAL);\n  RETURN QUERY\n  WITH maintenance_intervals AS (\n    SELECT mi.node_id AS maintenance_id, mi.node_label AS label, mi.node_category AS category,\n      mi.maintenance_priority AS priority, mi.km_interval, mi.month_interval,\n      mi.estimated_cost_min, mi.estimated_cost_max, mi.node_data AS operations_data,\n      p_current_km - p_last_maintenance_km AS km_since_last,\n      EXTRACT(MONTH FROM AGE(CURRENT_DATE, v_last_date))::INT AS months_since_last,\n      COALESCE(mi.km_interval - (p_current_km - p_last_maintenance_km), 999999) AS km_remaining,\n      COALESCE(mi.month_interval - EXTRACT(MONTH FROM AGE(CURRENT_DATE, v_last_date))::INT, 999) AS months_remaining\n    FROM kg_nodes mi\n    LEFT JOIN kg_edges e ON e.source_node_id = mi.node_id AND e.edge_type = 'SCHEDULED_FOR' AND e.status = 'active'\n    LEFT JOIN kg_engine_families ef ON ef.family_id = e.target_node_id::UUID\n    WHERE mi.node_type = 'MaintenanceInterval' AND mi.status = 'active'\n      AND (ef.family_code = p_engine_family_code OR e.edge_id IS NULL)\n  ),\n  with_status AS (\n    SELECT mi.*,\n      CASE WHEN mi.km_remaining < 0 OR mi.months_remaining < 0 THEN 'overdue'\n        WHEN mi.km_remaining < 3000 OR mi.months_remaining < 1 THEN 'due'\n        WHEN mi.km_remaining < 5000 OR mi.months_remaining < 3 THEN 'upcoming'\n        ELSE 'ok' END AS status,\n      p_last_maintenance_km + COALESCE(mi.km_interval, 999999) AS due_at_km,\n      v_last_date + (COALESCE(mi.month_interval, 999) || ' months')::INTERVAL AS due_at_date\n    FROM maintenance_intervals mi\n  )\n  SELECT ws.maintenance_id, ws.label, ws.category, ws.priority, ws.status, ws.km_interval, ws.month_interval,\n    ws.km_since_last, ws.months_since_last, GREATEST(0, ws.km_remaining)::INT, GREATEST(0, ws.months_remaining)::INT,\n    ws.due_at_km::INT, ws.due_at_date::DATE, ws.estimated_cost_min, ws.estimated_cost_max, ws.operations_data,\n    (SELECT JSONB_AGG(JSONB_BUILD_OBJECT('part_id', p.node_id, 'label', p.node_label, 'pg_id', p.node_data->>'pg_id'))\n     FROM kg_edges e JOIN kg_nodes p ON p.node_id = e.target_node_id AND p.node_type = 'Part'\n     WHERE e.source_node_id = ws.maintenance_id AND e.edge_type = 'REQUIRES_PART' AND e.status = 'active')\n  FROM with_status ws\n  ORDER BY\n    CASE ws.status WHEN 'overdue' THEN 1 WHEN 'due' THEN 2 WHEN 'upcoming' THEN 3 ELSE 4 END,\n    CASE ws.priority WHEN 'critical' THEN 1 WHEN 'important' THEN 2 WHEN 'recommended' THEN 3 ELSE 4 END,\n    ws.km_remaining;\nEND;\n$function$\n"
+    }
+  ],
+  "catalog_families": [
+    {
+      "pg_id": 1,
+      "pg_alias": "batterie",
+      "pg_name": "Batterie"
+    },
+    {
+      "pg_id": 2,
+      "pg_alias": "demarreur",
+      "pg_name": "Démarreur"
+    },
+    {
+      "pg_id": 4,
+      "pg_alias": "alternateur",
+      "pg_name": "Alternateur"
+    },
+    {
+      "pg_id": 7,
+      "pg_alias": "filtre-a-huile",
+      "pg_name": "Filtre à huile"
+    },
+    {
+      "pg_id": 8,
+      "pg_alias": "filtre-a-air",
+      "pg_name": "Filtre à air"
+    },
+    {
+      "pg_id": 9,
+      "pg_alias": "filtre-a-carburant",
+      "pg_name": "Filtre à carburant"
+    },
+    {
+      "pg_id": 12,
+      "pg_alias": "pompe-de-direction-assistee",
+      "pg_name": "Pompe de direction assistée"
+    },
+    {
+      "pg_id": 13,
+      "pg_alias": "cardan",
+      "pg_name": "Cardan"
+    },
+    {
+      "pg_id": 26,
+      "pg_alias": "silencieux",
+      "pg_name": "Silencieux"
+    },
+    {
+      "pg_id": 48,
+      "pg_alias": "butee-d-embrayage",
+      "pg_name": "Butée d'embrayage"
+    },
+    {
+      "pg_id": 71,
+      "pg_alias": "liquide-de-frein",
+      "pg_name": "Liquide de frein"
+    },
+    {
+      "pg_id": 78,
+      "pg_alias": "etrier-de-frein",
+      "pg_name": "Étrier de frein"
+    },
+    {
+      "pg_id": 82,
+      "pg_alias": "disque-de-frein",
+      "pg_name": "Disque de frein"
+    },
+    {
+      "pg_id": 188,
+      "pg_alias": "ressort-de-suspension",
+      "pg_name": "Ressort de suspension"
+    },
+    {
+      "pg_id": 193,
+      "pg_alias": "soufflet-de-cardan",
+      "pg_name": "Soufflet de Cardan"
+    },
+    {
+      "pg_id": 234,
+      "pg_alias": "emetteur-d-embrayage",
+      "pg_name": "Emetteur d'embrayage"
+    },
+    {
+      "pg_id": 243,
+      "pg_alias": "bougie-de-prechauffage",
+      "pg_name": "Bougie de préchauffage"
+    },
+    {
+      "pg_id": 251,
+      "pg_alias": "silentbloc-de-bras-de-suspension",
+      "pg_name": "Silentbloc de bras de suspension"
+    },
+    {
+      "pg_id": 259,
+      "pg_alias": "feu-avant",
+      "pg_name": "Feu avant"
+    },
+    {
+      "pg_id": 290,
+      "pg_alias": "feu-arriere",
+      "pg_name": "Feu arrière"
+    },
+    {
+      "pg_id": 305,
+      "pg_alias": "courroie-trapezoidale-a-nervures",
+      "pg_name": "Courroie trapézoïdale à nervures"
+    },
+    {
+      "pg_id": 307,
+      "pg_alias": "kit-de-distribution",
+      "pg_name": "Kit de distribution"
+    },
+    {
+      "pg_id": 308,
+      "pg_alias": "galet-tendeur-de-courroie-de-distribution",
+      "pg_name": "Galet tendeur de courroie de distribution"
+    },
+    {
+      "pg_id": 316,
+      "pg_alias": "thermostat",
+      "pg_name": "Thermostat"
+    },
+    {
+      "pg_id": 397,
+      "pg_alias": "vase-d-expansion",
+      "pg_name": "Vase d'expansion"
+    },
+    {
+      "pg_id": 402,
+      "pg_alias": "plaquette-de-frein",
+      "pg_name": "Plaquette de frein"
+    },
+    {
+      "pg_id": 424,
+      "pg_alias": "filtre-d-habitacle",
+      "pg_name": "Filtre d'habitacle"
+    },
+    {
+      "pg_id": 429,
+      "pg_alias": "catalyseur",
+      "pg_name": "Catalyseur"
+    },
+    {
+      "pg_id": 447,
+      "pg_alias": "compresseur-de-climatisation",
+      "pg_name": "Compresseur de climatisation"
+    },
+    {
+      "pg_id": 448,
+      "pg_alias": "condenseur-de-climatisation",
+      "pg_name": "Condenseur de climatisation"
+    },
+    {
+      "pg_id": 470,
+      "pg_alias": "radiateur-de-refroidissement",
+      "pg_name": "Radiateur de refroidissement"
+    },
+    {
+      "pg_id": 475,
+      "pg_alias": "durite-de-refroidissement",
+      "pg_name": "Durite de refroidissement"
+    },
+    {
+      "pg_id": 508,
+      "pg_alias": "ventilateur-de-refroidissement",
+      "pg_name": "Ventilateur de refroidissement"
+    },
+    {
+      "pg_id": 577,
+      "pg_alias": "volant-moteur",
+      "pg_name": "Volant moteur"
+    },
+    {
+      "pg_id": 620,
+      "pg_alias": "recepteur-d-embrayage",
+      "pg_name": "Récepteur d'embrayage"
+    },
+    {
+      "pg_id": 686,
+      "pg_alias": "bougie-d-allumage",
+      "pg_name": "Bougie d'allumage"
+    },
+    {
+      "pg_id": 851,
+      "pg_alias": "bouteille-deshydratante",
+      "pg_name": "Bouteille déshydratante"
+    },
+    {
+      "pg_id": 854,
+      "pg_alias": "amortisseur",
+      "pg_name": "Amortisseur"
+    },
+    {
+      "pg_id": 1180,
+      "pg_alias": "coupelle-de-suspension",
+      "pg_name": "Coupelle de suspension"
+    },
+    {
+      "pg_id": 1260,
+      "pg_alias": "pompe-a-eau",
+      "pg_name": "Pompe à eau"
+    },
+    {
+      "pg_id": 1457,
+      "pg_alias": "ampoule",
+      "pg_name": "Ampoule"
+    },
+    {
+      "pg_id": 2066,
+      "pg_alias": "rotule-de-direction",
+      "pg_name": "Rotule de direction"
+    },
+    {
+      "pg_id": 2462,
+      "pg_alias": "rotule-de-suspension",
+      "pg_name": "Rotule de suspension"
+    },
+    {
+      "pg_id": 3096,
+      "pg_alias": "kit-de-distribution-avec-pompe-a-eau",
+      "pg_name": "Kit de distribution avec pompe à eau"
+    },
+    {
+      "pg_id": 3191,
+      "pg_alias": "tuyau-flexible-echappement",
+      "pg_name": "Tuyau flexible échappement"
+    },
+    {
+      "pg_id": 3230,
+      "pg_alias": "biellette-de-barre-stabilisatrice",
+      "pg_name": "Biellette de barre stabilisatrice"
+    },
+    {
+      "pg_id": 3825,
+      "pg_alias": "embrayage",
+      "pg_name": "Embrayage"
+    },
+    {
+      "pg_id": 3902,
+      "pg_alias": "injecteur",
+      "pg_name": "Injecteur"
+    },
+    {
+      "pg_id": 3904,
+      "pg_alias": "pompe-a-injection",
+      "pg_name": "Pompe à injection"
+    },
+    {
+      "pg_id": 3922,
+      "pg_alias": "sonde-lambda",
+      "pg_name": "Sonde lambda"
+    }
+  ],
+  "month_cases": [
+    {
+      "last_date": "2024-03-26",
+      "checked_at": "2026-09-26",
+      "expected_months": 30,
+      "previous_value": 6,
+      "corrected_value": 30
+    },
+    {
+      "last_date": "2025-09-26",
+      "checked_at": "2026-09-26",
+      "expected_months": 12,
+      "previous_value": 0,
+      "corrected_value": 12
+    },
+    {
+      "last_date": "2026-03-26",
+      "checked_at": "2026-09-26",
+      "expected_months": 6,
+      "previous_value": 6,
+      "corrected_value": 6
+    },
+    {
+      "last_date": "2024-02-29",
+      "checked_at": "2026-03-01",
+      "expected_months": 24,
+      "previous_value": 0,
+      "corrected_value": 24
+    }
+  ],
+  "month_query": "BEGIN READ ONLY; WITH examples(last_date, checked_at, expected_months) AS (VALUES ('2024-03-26'::date, '2026-09-26'::date, 30), ('2025-09-26'::date, '2026-09-26'::date, 12), ('2026-03-26'::date, '2026-09-26'::date, 6), ('2024-02-29'::date, '2026-03-01'::date, 24)) SELECT last_date, checked_at, expected_months, EXTRACT(MONTH FROM AGE(checked_at,last_date))::integer AS previous_value, (12 * EXTRACT(YEAR FROM AGE(checked_at,last_date)) + EXTRACT(MONTH FROM AGE(checked_at,last_date)))::integer AS corrected_value FROM examples; COMMIT;"
+}

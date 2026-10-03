@@ -12,8 +12,12 @@
  *   - `sourceConfidence: 'high'` when columns + RLS info both available
  *   - `sourceConfidence: 'medium'` when usage map present but columns missing
  *   - `sourceConfidence: 'low'` when only the table name was inferred
- *   - `status: 'LIVE'` if has callsites OR present in migrations ; `'UNKNOWN'`
- *     otherwise (candidate orphan — never force 'LEGACY').
+ *   - `status` : see `classifyTableStatus()` — 'LIVE' only when the usage
+ *     map records at least one code callsite (`used_by_count > 0`) ;
+ *     'UNKNOWN' otherwise, including a table that is only DECLARED by a
+ *     migration (never force 'LIVE' nor 'LEGACY'). A migration is a
+ *     declaration of intent, not proof that the table exists or is used :
+ *     this producer is an offline scan and does not know the database.
  *
  * Usage:
  *   node scripts/registry/build-db-registry.js [--quiet]
@@ -100,6 +104,32 @@ function loadAllMigrationsSql() {
   return buffers.join("\n\n");
 }
 
+/**
+ * Statut L1 d'une table, dérivé du SEUL signal « référencée par le code »
+ * (`StatusSchema` : LIVE = inbound references) dont dispose ce producteur
+ * hors-ligne.
+ *
+ * Prédicat exact : `used_by_count > 0` dans `audit/db-usage-map.json`, soit au
+ * moins un `.from()` de `backend/src/**` dont l'argument est un littéral ou un
+ * identifiant que le scan résout en 1 saut. Un `.from(<variable>)` que le scan
+ * ne résout pas (clé de registre, paramètre, import hors corpus) n'accorde
+ * AUCUN usage : une table lue ou écrite seulement par ce biais sort `UNKNOWN`.
+ * C'est une sous-détection connue du scan, pas un verdict de mort ;
+ * l'élargir relève du résolveur de `build-db-usage-map.js`, pas d'ici.
+ *
+ * L'ancienne règle `hasUsage || hasMigrations` rendait l'UNKNOWN inatteignable :
+ * les tables publiées sont l'UNION (callsites ∪ migrations), chacune avait donc
+ * l'un ou l'autre (314/314 en LIVE). L'existence réelle en base est portée par
+ * le ratchet ledger ↔ catalogue (scripts/audit/check-ledger-catalog-ratchet.py),
+ * pas par ce registre.
+ *
+ * @param {{ used_by_count?: number }} info entrée `tables[<nom>]` de la usage map
+ * @returns {"LIVE" | "UNKNOWN"}
+ */
+function classifyTableStatus(info) {
+  return (info.used_by_count || 0) > 0 ? "LIVE" : "UNKNOWN";
+}
+
 function main() {
   const usageMap = readJsonSafe(path.join(AUDIT_DIR, "db-usage-map.json"));
   if (!usageMap) {
@@ -114,14 +144,13 @@ function main() {
 
   for (const [tableName, info] of Object.entries(tables)) {
     const { columns, parsed } = parseCreateTable(sql, tableName);
-    const hasUsage = (info.used_by_count || 0) > 0;
     const hasMigrations = Array.isArray(info.in_migrations) && info.in_migrations.length > 0;
 
     let sourceConfidence = "low";
     if (parsed && info.rls_present !== undefined) sourceConfidence = "high";
     else if (parsed || hasMigrations) sourceConfidence = "medium";
 
-    const status = hasUsage || hasMigrations ? "LIVE" : "UNKNOWN";
+    const status = classifyTableStatus(info);
 
     entries.push({
       schemaVersion: SCHEMA_VERSION,
@@ -171,4 +200,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { main, parseCreateTable };
+module.exports = { main, parseCreateTable, classifyTableStatus };

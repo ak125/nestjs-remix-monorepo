@@ -5,13 +5,10 @@ import { ContentWriteGateService } from '../../../config/content-write-gate.serv
 import { FeatureFlagsService } from '../../../config/feature-flags.service';
 import { RoleId } from '../../../config/role-ids';
 import type { ResourceGroup } from '../../../config/execution-registry.types';
-import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
-import * as yaml from 'js-yaml';
-import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { DatabaseException, ErrorCodes } from '@common/exceptions';
+import { SupabaseRpcError } from '../../../security/rpc-gate/rpc-gate.errors';
 import { EnricherTextUtils } from './enricher-text-utils.service';
-import { VehicleRagGeneratorService } from './vehicle-rag-generator.service';
 import {
   R8_TABLES,
   R8_HARD_GATES,
@@ -45,49 +42,40 @@ import {
   buildOwnedEntretien,
   buildOwnedFaq,
   extractGammeSourceFromRpc,
+  extractCatalogFamiliesFromRpc,
+  extractVehicleCodesFromRpc,
   type GammeEditorial,
+  type RpcCatalogFamily,
   type MotorisationFacts,
 } from './r8-owned-editorial.composer';
 
 // ── Result ──
 
 export interface R8EnrichResult {
-  status: 'draft' | 'failed' | 'skipped';
+  /**
+   * `write_gate_blocked` : contenu calculé mais écriture refusée par le
+   * WriteGate (`written=false`). Un refus de garde n'est pas une erreur :
+   * la page reste telle quelle et aucune version n'est enregistrée.
+   */
+  status: 'draft' | 'failed' | 'skipped' | 'write_gate_blocked';
   seoDecision: R8SeoDecision;
   diversityScore: number;
   warnings: string[];
   reasons: R8ReasonCode[];
   pageKey: string;
-}
-
-// ── RAG vehicle frontmatter ──
-
-interface VehicleRagData {
-  motorisations?: Array<{ moteur: string; puissance: string; code: string }>;
-  problemes_connus?: string[];
-  pieces_usure?: string[];
-  entretien?: string[];
-  faq?: Array<{ q: string; a: string }>;
-  specs_techniques?: {
-    longueur?: string;
-    largeur?: string;
-    hauteur?: string;
-    empattement?: string;
-    poids?: string;
-    coffre?: string;
-    reservoir?: string;
-    vitesse_max?: string;
-    zero_a_cent?: string;
-    conso_mixte?: string;
-    co2?: string;
-    couple?: string;
-    cylindree?: string;
-    boite?: string;
-    transmission?: string;
-    pneus?: string;
-    diam_braquage?: string;
-    norme_euro?: string;
-    source_url?: string;
+  /**
+   * Motif d'un résultat non abouti (`failed` ou `write_gate_blocked`), préfixé
+   * par son code (`DB_ERROR: …`, `WRITE_GATE_BLOCKED: …`, `CONTENT_BROKEN: …`).
+   * C'est le champ `data.reason` que `ExecutionRouterService` recopie dans
+   * `__pipeline_chain_queue.pcq_error` : sans lui, le rapport d'exécution ne
+   * distingue pas une panne DB d'un refus de garde. Absent sur `draft`.
+   */
+  reason?: string;
+  /** Détail du refus — présent uniquement avec `status: 'write_gate_blocked'`. */
+  writeGate?: {
+    reason: string;
+    fieldsSkipped: string[];
+    fieldsStripped: string[];
   };
 }
 
@@ -123,18 +111,33 @@ interface R8Neighbor {
   } | null;
 }
 
+// ── Page write outcome ──
+
+/**
+ * Issue de l'écriture de `__seo_r8_pages`. Seul `written` autorise les
+ * écritures dépendantes (version, fingerprints, similarité, files).
+ * `gate_refused` = refus du WriteGate (pas une erreur) ; `db_error` = panne DB.
+ */
+type R8PageWriteOutcome =
+  | { kind: 'written'; pageId: string }
+  | {
+      kind: 'gate_refused';
+      pageId: string;
+      reason: string;
+      fieldsSkipped: string[];
+      fieldsStripped: string[];
+    }
+  | { kind: 'db_error'; operation: string; code?: string; message: string };
+
 @Injectable()
 export class R8VehicleEnricherService extends SupabaseBaseService {
   protected override readonly logger = new Logger(
     R8VehicleEnricherService.name,
   );
-  private readonly RAG_VEHICLES_DIR = `${RAG_KNOWLEDGE_PATH}/vehicles`;
-  private readonly RAG_GAMMES_DIR = `${RAG_KNOWLEDGE_PATH}/gammes`;
 
   constructor(
     configService: ConfigService,
     private readonly textUtils: EnricherTextUtils,
-    private readonly vehicleRagGenerator: VehicleRagGeneratorService,
     private readonly seoRoleTemplate: SeoRoleTemplateSelector,
     @Optional() private readonly writeGate?: ContentWriteGateService,
     @Optional() private readonly featureFlags?: FeatureFlagsService,
@@ -154,10 +157,37 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       { p_type_id: typeId },
       { source: 'api' },
     );
+    // Panne DB de la RPC ≠ véhicule introuvable : explicite, jamais un `null`.
+    // (RpcBlockedError = refus de politique, pas une panne DB → chemin inchangé.)
+    if (error instanceof SupabaseRpcError) {
+      this.logger.error(
+        `[R8_DB_ERROR] op=fetch_vehicle_data type_id=${typeId} code=${error.code ?? 'unknown'} message=${error.message}`,
+      );
+      throw new DatabaseException({
+        code: ErrorCodes.DATABASE.RPC_FAILED,
+        message: `R8 fetchVehicleData failed (code=${error.code ?? 'unknown'}): ${error.message}`,
+        context: {
+          operation: 'fetch_vehicle_data',
+          pgCode: error.code,
+          typeId,
+        },
+      });
+    }
     if (error || !data?.vehicle) return null;
 
     // Normalize French RPC field names → English field names expected by composeBlocks
     const v = data.vehicle;
+    const codes = extractVehicleCodesFromRpc(data);
+    if (codes.engineCodes === null) {
+      this.logger.warn(
+        `R8_PAYLOAD_KEY_MISSING key=motor_codes typeId=${typeId} — engine codes unavailable`,
+      );
+    }
+    if (codes.cnitCodes === null) {
+      this.logger.warn(
+        `R8_PAYLOAD_KEY_MISSING key=cnit_codes typeId=${typeId} — CNIT codes unavailable`,
+      );
+    }
     data.vehicle = {
       ...v,
       brand_name: v.brand_name || v.marque_name || '',
@@ -173,6 +203,15 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       year_to: v.year_to || v.type_year_to || '',
       liter: v.liter || v.type_liter || '',
       type_name: v.type_name || '',
+      // Engine / CNIT codes live at the payload TOP level (`motor_codes`,
+      // `cnit_codes`), never under `vehicle` — read through the single
+      // payload-shape reader. A missing key is warned, never silently emptied.
+      engine_codes: codes.engineCodes ?? [],
+      cnit_codes: codes.cnitCodes ?? [],
+      // `mine_codes` deliberately NOT mapped: payload `mine_codes` holds
+      // DISTINCT auto_type_number_code.tnc_code (sampled values ["D","F"]),
+      // whose meaning vs the R8 `mine_codes` column is unverified. `v.mine_codes`
+      // stays unset → `[]` at upsert (behaviour unchanged).
     };
 
     return data;
@@ -196,71 +235,43 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
           diversityScore: 0,
           warnings: ['vehicle not found'],
           reasons: ['CONTENT_BROKEN'],
+          reason: 'CONTENT_BROKEN: vehicle not found',
           pageKey,
         };
       }
 
       const v = vehicleData.vehicle;
-      const families: Array<{
-        pg_id: number;
-        pg_alias: string;
-        pg_name: string;
-        family_name: string;
-        product_count: number;
-      }> = vehicleData.compatible_families || vehicleData.families || [];
+      // Parts families = `catalog.families` of the cache payload (the former
+      // `compatible_families` / `families` keys never existed → always []).
+      const catalogFamilies = extractCatalogFamiliesFromRpc(vehicleData);
+      if (catalogFamilies === null) {
+        this.logger.warn(
+          `R8_PAYLOAD_KEY_MISSING key=catalog.families typeId=${typeId} — 0 families used`,
+        );
+      }
+      const families: RpcCatalogFamily[] = catalogFamilies ?? [];
       const bestsellers: Array<{
         piece_id: number;
         piece_name: string;
         price: number;
       }> = vehicleData.bestsellers || [];
 
-      // RAG: vehicle model file — auto-generate if missing
-      const brandSlug = (v.brand_alias || '')
-        .toLowerCase()
-        .replace(/\s+/g, '-')
-        .replace(/[^a-z0-9-]/g, '');
-      const modelSlug = (v.model_alias || v.model_name || '')
-        .toLowerCase()
-        .replace(/\s+/g, '-')
-        .replace(/[^a-z0-9-]/g, '');
-      const ragPath = join(
-        this.RAG_VEHICLES_DIR,
-        `${brandSlug}-${modelSlug}.md`,
-      );
-      const ragFallback = join(this.RAG_VEHICLES_DIR, `${modelSlug}.md`);
-      if (!existsSync(ragPath) && !existsSync(ragFallback) && v.model_id) {
-        const modeleId =
-          typeof v.model_id === 'string'
-            ? parseInt(v.model_id, 10)
-            : v.model_id;
-        if (modeleId > 0) {
-          this.logger.log(
-            `Auto-generating vehicle RAG for ${brandSlug}-${modelSlug} (modele_id=${modeleId})`,
-          );
-          await this.vehicleRagGenerator.generateForModel(modeleId);
-        }
-      }
-      const vehicleRag = this.loadVehicleRag(
-        v.model_alias || v.model_name || '',
-        v.brand_alias || v.brand_name || '',
-      );
-
-      // RAG: top 5 gammes
-      const topGammes = families.slice(0, 5);
-      const gammeRags = topGammes.map((g) => this.loadGammeRag(g.pg_alias));
+      // RAG is a retrieval consumer, not an editorial source (ADR-031/046).
+      // Real catalogue families must not reactivate the removed RAG FAQ feed.
+      const gammeRags: Array<{
+        faq: Array<{ q: string; a: string }>;
+        symptoms: string[];
+      }> = [];
 
       // Fix B (flag R8_OWNED_EDITORIAL_ENABLED) — owned, quality-gated gamme
       // editorial from the OWNED DB tables. OFF (default) → [] → existing path.
       const useOwnedEditorial =
         this.featureFlags?.r8OwnedEditorialEnabled ?? false;
-      // The cache RPC exposes compatible gammes under popular_parts /
-      // catalog.families[].gammes (NOT compatible_families), so legacy
-      // `families` is often empty. When so, source owned-editorial gammes from
-      // the RPC. Flag-gated only — never touches the legacy families/catalog block.
-      const ownedGammeSource =
-        useOwnedEditorial && topGammes.length === 0
-          ? extractGammeSourceFromRpc(vehicleData)
-          : topGammes;
+      // Owned-editorial gammes come from the RPC gamme rows (popular_parts,
+      // else catalog.families[].gammes). Flag-gated only.
+      const ownedGammeSource = useOwnedEditorial
+        ? extractGammeSourceFromRpc(vehicleData)
+        : [];
       const gammeEditorials: GammeEditorial[] = useOwnedEditorial
         ? (
             await Promise.all(
@@ -285,7 +296,6 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
         v,
         families,
         bestsellers,
-        vehicleRag,
         gammeRags,
         neighbors,
         useOwnedEditorial,
@@ -428,7 +438,7 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       }));
 
       // 5a. UPSERT __seo_r8_pages
-      const pageId = await this.upsertPage({
+      const write = await this.upsertPage({
         pageKey,
         vehicle: v,
         typeId: String(typeId),
@@ -449,16 +459,40 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
         variantSignature,
       });
 
-      if (!pageId) {
+      if (write.kind === 'db_error') {
+        const detail = `op=${write.operation} code=${write.code ?? 'unknown'} ${write.message}`;
         return {
           status: 'failed',
           seoDecision: 'REJECT',
           diversityScore: 0,
-          warnings: ['DB write failed'],
-          reasons: ['CONTENT_BROKEN'],
+          warnings: ['DB write failed', detail],
+          reasons: ['DB_ERROR'],
+          reason: `DB_ERROR: ${detail}`,
           pageKey,
         };
       }
+
+      // Refus du WriteGate (written=false) : la page n'a PAS été écrite.
+      // Aucune version / empreinte / similarité / file / QA n'est enregistrée
+      // pour un contenu qui n'existe pas en base ; statut distinct remonté.
+      if (write.kind === 'gate_refused') {
+        return {
+          status: 'write_gate_blocked',
+          seoDecision: decision,
+          diversityScore: metrics.diversityScore,
+          warnings: [...warnings, `WRITE_GATE_BLOCKED: ${write.reason}`],
+          reasons,
+          reason: `WRITE_GATE_BLOCKED: ${write.reason}`,
+          pageKey,
+          writeGate: {
+            reason: write.reason,
+            fieldsSkipped: write.fieldsSkipped,
+            fieldsStripped: write.fieldsStripped,
+          },
+        };
+      }
+
+      const pageId = write.pageId;
 
       // 5b. INSERT __seo_r8_page_versions
       await this.insertVersion(
@@ -515,73 +549,22 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
         pageKey,
       };
     } catch (error) {
+      const message = (error as Error).message;
       this.logger.error(
-        `❌ R8 enrichment failed type_id=${typeId}: ${(error as Error).message}`,
+        `❌ R8 enrichment failed type_id=${typeId}: ${message}`,
       );
+      // Panne DB (lecture/écriture) ≠ contenu cassé.
+      const code: R8ReasonCode =
+        error instanceof DatabaseException ? 'DB_ERROR' : 'CONTENT_BROKEN';
       return {
         status: 'failed',
         seoDecision: 'REJECT',
         diversityScore: 0,
-        warnings: [(error as Error).message],
-        reasons: ['CONTENT_BROKEN'],
+        warnings: [message],
+        reasons: [code],
+        reason: `${code}: ${message}`,
         pageKey,
       };
-    }
-  }
-
-  // ── RAG Loaders ──
-
-  private loadVehicleRag(
-    modelName: string,
-    brandAlias?: string,
-  ): VehicleRagData {
-    const slug = modelName
-      .toLowerCase()
-      .replace(/\s+/g, '-')
-      .replace(/[^a-z0-9-]/g, '');
-    const brand = (brandAlias || '')
-      .toLowerCase()
-      .replace(/\s+/g, '-')
-      .replace(/[^a-z0-9-]/g, '');
-
-    // Try multiple slug patterns (brand-model first, model only as fallback)
-    const candidates = [brand ? `${brand}-${slug}` : '', slug].filter(Boolean);
-
-    for (const candidate of candidates) {
-      const filePath = join(this.RAG_VEHICLES_DIR, `${candidate}.md`);
-      if (!existsSync(filePath)) continue;
-      try {
-        const raw = readFileSync(filePath, 'utf-8');
-        const match = raw.match(/^---\n([\s\S]*?)\n---/);
-        if (match) {
-          const front = yaml.load(match[1]) as Record<string, unknown>;
-          return front as unknown as VehicleRagData;
-        }
-      } catch {
-        continue;
-      }
-    }
-    return {};
-  }
-
-  private loadGammeRag(pgAlias: string): {
-    faq: Array<{ q: string; a: string }>;
-    symptoms: string[];
-  } {
-    const filePath = join(this.RAG_GAMMES_DIR, `${pgAlias}.md`);
-    if (!existsSync(filePath)) return { faq: [], symptoms: [] };
-    try {
-      const raw = readFileSync(filePath, 'utf-8');
-      const match = raw.match(/^---\n([\s\S]*?)\n---/);
-      if (!match) return { faq: [], symptoms: [] };
-      const front = yaml.load(match[1]) as Record<string, unknown>;
-      const contract = (front as any)?.page_contract || {};
-      return {
-        faq: Array.isArray(contract.faq) ? contract.faq : [],
-        symptoms: Array.isArray(contract.symptoms) ? contract.symptoms : [],
-      };
-    } catch {
-      return { faq: [], symptoms: [] };
     }
   }
 
@@ -685,23 +668,27 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       .neq('page_key', excludePageKey)
       .order('published_at', { ascending: false, nullsFirst: false })
       .limit(5);
-    if (error || !data) return [];
-    return data as R8Neighbor[];
+    // Une erreur DB (ex. colonne absente, 42703) n'est PAS « aucun voisin » :
+    // un [] silencieux gonfle le score de diversité et peut ouvrir le gate INDEX.
+    if (error) {
+      this.logger.error(
+        `[R8_DB_ERROR] op=fetch_neighbors neighbor_family_key=${neighborFamilyKey} code=${error.code ?? 'unknown'} message=${error.message}`,
+      );
+      throw new DatabaseException({
+        code: ErrorCodes.DATABASE.OPERATION_FAILED,
+        message: `R8 fetchNeighbors failed (code=${error.code ?? 'unknown'}): ${error.message}`,
+        context: { operation: 'fetch_neighbors', pgCode: error.code },
+      });
+    }
+    return (data ?? []) as R8Neighbor[];
   }
 
   // ── Compose Blocks ──
 
   private composeBlocks(
     v: any,
-    families: Array<{
-      pg_id: number;
-      pg_alias: string;
-      pg_name: string;
-      family_name: string;
-      product_count: number;
-    }>,
+    families: RpcCatalogFamily[],
     bestsellers: Array<{ piece_id: number; piece_name: string; price: number }>,
-    vehicleRag: VehicleRagData,
     gammeRags: Array<{
       faq: Array<{ q: string; a: string }>;
       symptoms: string[];
@@ -794,68 +781,23 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       semanticPayload: [...engineCodes, ...cnitCodes],
     });
 
-    // S_TECH_SPECS — motorisation du type courant + web specs (dimensions, performances)
-    const specs = vehicleRag.specs_techniques;
-    const hasSpecs =
-      specs && Object.keys(specs).filter((k) => k !== 'source_url').length > 0;
-    if (type || hasSpecs) {
-      const parts: string[] = [];
-
-      // Web specs table (dimensions, performances)
-      if (hasSpecs) {
-        const specRows: string[] = [];
-        if (specs.longueur) specRows.push(`| Longueur | ${specs.longueur} |`);
-        if (specs.largeur) specRows.push(`| Largeur | ${specs.largeur} |`);
-        if (specs.hauteur) specRows.push(`| Hauteur | ${specs.hauteur} |`);
-        if (specs.empattement)
-          specRows.push(`| Empattement | ${specs.empattement} |`);
-        if (specs.poids) specRows.push(`| Poids à vide | ${specs.poids} |`);
-        if (specs.coffre) specRows.push(`| Coffre | ${specs.coffre} |`);
-        if (specs.reservoir)
-          specRows.push(`| Réservoir | ${specs.reservoir} |`);
-        if (specs.cylindree)
-          specRows.push(`| Cylindrée | ${specs.cylindree} |`);
-        if (specs.couple) specRows.push(`| Couple | ${specs.couple} |`);
-        if (specs.boite) specRows.push(`| Boîte | ${specs.boite} |`);
-        if (specs.transmission)
-          specRows.push(`| Transmission | ${specs.transmission} |`);
-        if (specs.vitesse_max)
-          specRows.push(`| Vitesse max | ${specs.vitesse_max} |`);
-        if (specs.zero_a_cent)
-          specRows.push(`| 0 à 100 km/h | ${specs.zero_a_cent} |`);
-        if (specs.conso_mixte)
-          specRows.push(`| Consommation mixte | ${specs.conso_mixte} |`);
-        if (specs.co2) specRows.push(`| Émissions CO₂ | ${specs.co2} |`);
-        if (specs.pneus) specRows.push(`| Pneumatiques | ${specs.pneus} |`);
-        if (specs.norme_euro)
-          specRows.push(`| Norme Euro | ${specs.norme_euro} |`);
-        if (specRows.length > 0) {
-          parts.push(
-            `| Caractéristique | Valeur |\n|---|---|\n${specRows.join('\n')}`,
-          );
-        }
-      }
-
-      // Motorisation unique du type courant (1 type = 1 motorisation)
-      if (type) {
-        parts.push(
-          `**Motorisation** : ${type} ${power ? power + ' ch' : ''} (${fuel || 'N/C'})`,
-        );
-      }
-
+    // S_TECH_SPECS — motorisation du type courant, depuis auto_type uniquement.
+    // Le tableau `specs_techniques` du fichier RAG véhicule n'est plus rendu :
+    // RAG = couche chatbot, zéro autorité d'écriture contenu (CLAUDE.md
+    // invariant 4, ADR-031/046). Cette fiche vient d'une seule page web non
+    // vérifiée, niveau modèle, et était recopiée sur tous les types du modèle
+    // (cylindrée diesel 1 461 cm3 affichée sur un 1.2 essence).
+    if (type) {
       blocks.push({
         id: 'S_TECH_SPECS',
         type: 'technical_specs',
         title: `Fiche technique ${brand} ${model} ${type}`,
-        renderedText: parts.join('\n\n'),
-        specificityWeight: hasSpecs ? 0.95 : 0.9,
+        renderedText: `**Motorisation** : ${type} ${power ? power + ' ch' : ''} (${fuel || 'N/C'})`,
+        specificityWeight: 0.9,
         boilerplateRisk: 0.05,
-        semanticPayload: [
-          type,
-          fuel,
-          power ? `${power}ch` : '',
-          ...(hasSpecs ? ['dimensions', 'performances', 'specs'] : []),
-        ].filter(Boolean),
+        semanticPayload: [type, fuel, power ? `${power}ch` : ''].filter(
+          Boolean,
+        ),
       });
     }
 
@@ -884,62 +826,42 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       ],
     });
 
-    // S_SELECTION_GUIDE — owned editorial (Fix B) × facts, else pieces_usure path
+    // S_SELECTION_GUIDE — owned editorial (Fix B) × facts only. The former
+    // fallback copied `pieces_usure` of the vehicle RAG file: RAG = chatbot
+    // layer, zero content-write authority (CLAUDE.md invariant 4, ADR-031/046).
+    // No owned editorial → no block; the gate records MISSING_HELP_BLOCK.
     const ownedSelection =
       useOwnedEditorial && anchorEditorial
         ? buildOwnedSelectionGuide(anchorEditorial, facts)
         : null;
     if (ownedSelection) {
       blocks.push(ownedSelection);
-    } else {
-      if (useOwnedEditorial) {
-        this.logger.log(
-          `R8_OWNED_EDITORIAL_FALLBACK section=S_SELECTION_GUIDE page=${pageKey} reason=${anchorEditorial ? 'no_owned_selection' : 'no_anchor_editorial'}`,
-        );
-      }
-      const usurePieces = vehicleRag.pieces_usure || [];
-      if (usurePieces.length > 0) {
-        blocks.push({
-          id: 'S_SELECTION_GUIDE',
-          type: 'selection_help',
-          title: `Pièces d'usure courantes`,
-          renderedText: usurePieces.map((p) => `- ${p}`).join('\n'),
-          specificityWeight: 0.85,
-          boilerplateRisk: 0.1,
-          semanticPayload: usurePieces.slice(0, 5),
-        });
-      }
+    } else if (useOwnedEditorial) {
+      this.logger.log(
+        `R8_OWNED_EDITORIAL_FALLBACK section=S_SELECTION_GUIDE page=${pageKey} reason=${anchorEditorial ? 'no_owned_selection' : 'no_anchor_editorial'}`,
+      );
     }
 
-    // S_ENTRETIEN_CONTEXT — owned editorial (Fix B) × facts, else problemes_connus path
+    // S_ENTRETIEN_CONTEXT — owned editorial (Fix B) × facts only. The former
+    // fallback copied `problemes_connus` of the vehicle RAG file, i.e. generic
+    // gamme symptoms identical across vehicles, under a "Problèmes connus
+    // <marque> <modèle>" H2 (same rule as S_SELECTION_GUIDE above).
     const ownedEntretien =
       useOwnedEditorial && anchorEditorial
         ? buildOwnedEntretien(anchorEditorial, facts)
         : null;
     if (ownedEntretien) {
       blocks.push(ownedEntretien);
-    } else {
-      if (useOwnedEditorial) {
-        this.logger.log(
-          `R8_OWNED_EDITORIAL_FALLBACK section=S_ENTRETIEN_CONTEXT page=${pageKey} reason=${anchorEditorial ? 'no_owned_entretien' : 'no_anchor_editorial'}`,
-        );
-      }
-      const problemes = vehicleRag.problemes_connus || [];
-      if (problemes.length > 0) {
-        blocks.push({
-          id: 'S_ENTRETIEN_CONTEXT',
-          type: 'maintenance_context',
-          title: `Problèmes connus ${brand} ${model}`,
-          renderedText: problemes.map((p) => `- ${p}`).join('\n'),
-          specificityWeight: 0.85,
-          boilerplateRisk: 0.1,
-          semanticPayload: problemes.slice(0, 3),
-        });
-      }
+    } else if (useOwnedEditorial) {
+      this.logger.log(
+        `R8_OWNED_EDITORIAL_FALLBACK section=S_ENTRETIEN_CONTEXT page=${pageKey} reason=${anchorEditorial ? 'no_owned_entretien' : 'no_anchor_editorial'}`,
+      );
     }
 
-    // S_CATALOG_ACCESS (dynamic ranking + ADR-022 P2d variation opener)
-    const topFamilies = families.slice(0, 10);
+    // S_CATALOG_ACCESS (dynamic ranking + ADR-022 P2d variation opener).
+    // Families in payload order; the payload carries no product count, so
+    // each line states the real number of gammes of the family.
+    const topFamilies = families.filter((f) => f.family_name).slice(0, 10);
     if (topFamilies.length >= 3) {
       const catalogOpener = renderTemplate(
         selectVariation(
@@ -950,7 +872,8 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
         ),
       );
       const catalogLines = topFamilies.map(
-        (f, i) => `${i + 1}. **${f.pg_name}** — ${f.product_count} références`,
+        (f, i) =>
+          `${i + 1}. **${f.family_name}** — ${f.gammes_count} gamme${f.gammes_count > 1 ? 's' : ''}`,
       );
       blocks.push({
         id: 'S_CATALOG_ACCESS',
@@ -959,7 +882,7 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
         renderedText: `${catalogOpener}\n\n${catalogLines.join('\n')}`,
         specificityWeight: 0.75,
         boilerplateRisk: 0.15,
-        semanticPayload: topFamilies.map((f) => f.pg_alias),
+        semanticPayload: topFamilies.map((f) => f.family_name),
       });
     }
 
@@ -1041,7 +964,7 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
   private computeMetrics(
     blocks: R8Block[],
     neighbors: R8Neighbor[],
-    families: Array<{ pg_id: number; pg_alias: string; pg_name: string }>,
+    families: RpcCatalogFamily[],
   ) {
     const total = blocks.length;
     const specificBlocks = blocks.filter((b) => b.specificityWeight >= 0.65);
@@ -1312,7 +1235,7 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
     decision: R8SeoDecision;
     sitemapRules: { sitemap: boolean; robots: string };
     variantSignature: R8VariantSignature;
-  }): Promise<string | null> {
+  }): Promise<R8PageWriteOutcome> {
     const v = params.vehicle;
     const row = {
       page_key: params.pageKey,
@@ -1368,26 +1291,76 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
     // For new pages (insert), we still need the direct upsert path.
     if (this.writeGate && this.featureFlags?.writeGuardEnabled) {
       // Check if page already exists
-      const { data: existingPage } = await this.client
+      const { data: existingPage, error: lookupError } = await this.client
         .from(R8_TABLES.pages)
         .select('id')
         .eq('page_key', row.page_key)
         .maybeSingle();
 
+      // Lecture en échec ≠ « page absente » : sans ce garde, une page existante
+      // retomberait sur l'upsert direct et contournerait le WriteGate.
+      if (lookupError) {
+        this.logger.error(
+          `[R8_DB_ERROR] op=page_lookup page_key=${row.page_key} code=${lookupError.code ?? 'unknown'} message=${lookupError.message}`,
+        );
+        return {
+          kind: 'db_error',
+          operation: 'page_lookup',
+          code: lookupError.code,
+          message: lookupError.message,
+        };
+      }
+
       if (existingPage) {
         // Update existing — route through WriteGate
+        const correlationId = `r8-${row.page_key}-${Date.now().toString(36)}`;
         const result = await this.writeGate.writeToTarget({
           roleId: RoleId.R8_VEHICLE,
           target: 'r8_vehicle_main' as ResourceGroup,
           pkValue: existingPage.id,
           payload: row,
-          correlationId: `r8-${row.page_key}-${Date.now().toString(36)}`,
+          correlationId,
         });
         this.logger.log(
           `R8 page via WriteGate: ${row.page_key} written=${result.written} ` +
             `fields=${result.fieldsWritten.length} skipped=${result.fieldsSkipped.length}`,
         );
-        return existingPage.id;
+        if (!result.written) {
+          const reason = result.reason ?? 'unknown';
+          // Le WriteGate encode ses propres pannes DB en `db_error…` : ce n'est
+          // pas un refus de garde, c'est une panne d'écriture. Contrat du
+          // préfixe = ContentWriteExecutor.execute, étape H
+          // (config/content-write-executor.service.ts) : `db_error: <message>`
+          // si l'UPDATE échoue (l.208) et `db_error_insert: <message>` si
+          // l'INSERT de repli échoue (l.230) ; ContentWriteGateService recopie
+          // ce `reason` tel quel. Épinglé par le test C2 de
+          // r8-vehicle-enricher.write-gate.test.ts (motif produit par le vrai
+          // exécuteur) : pas d'énumération parallèle ici.
+          if (reason.startsWith('db_error')) {
+            this.logger.error(
+              `[R8_DB_ERROR] op=write_gate page_key=${row.page_key} page_id=${existingPage.id} ` +
+                `reason=${reason} correlation_id=${correlationId}`,
+            );
+            return {
+              kind: 'db_error',
+              operation: 'write_gate',
+              message: reason,
+            };
+          }
+          this.logger.warn(
+            `[R8_WRITE_GATE_REFUSED] page_key=${row.page_key} page_id=${existingPage.id} ` +
+              `reason=${reason} fields_skipped=${result.fieldsSkipped.join(',') || '-'} ` +
+              `fields_stripped=${result.fieldsStripped.join(',') || '-'} correlation_id=${correlationId}`,
+          );
+          return {
+            kind: 'gate_refused',
+            pageId: existingPage.id,
+            reason,
+            fieldsSkipped: result.fieldsSkipped,
+            fieldsStripped: result.fieldsStripped,
+          };
+        }
+        return { kind: 'written', pageId: existingPage.id };
       }
       // New page — fall through to upsert (insert)
     }
@@ -1400,10 +1373,24 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       .single();
 
     if (error) {
-      this.logger.error(`UPSERT __seo_r8_pages failed: ${error.message}`);
-      return null;
+      this.logger.error(
+        `[R8_DB_ERROR] op=upsert UPSERT __seo_r8_pages failed: code=${error.code ?? 'unknown'} message=${error.message}`,
+      );
+      return {
+        kind: 'db_error',
+        operation: 'upsert',
+        code: error.code,
+        message: error.message,
+      };
     }
-    return data?.id || null;
+    if (!data?.id) {
+      return {
+        kind: 'db_error',
+        operation: 'upsert',
+        message: 'upsert returned no id',
+      };
+    }
+    return { kind: 'written', pageId: data.id };
   }
 
   private async insertVersion(

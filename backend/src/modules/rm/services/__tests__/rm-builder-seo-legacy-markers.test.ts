@@ -6,6 +6,9 @@ process.env.SUPABASE_SERVICE_KEY =
 process.env.SUPABASE_SERVICE_ROLE_KEY =
   process.env.SUPABASE_SERVICE_ROLE_KEY || 'test-service-role-key';
 
+import { ServiceUnavailableException } from '@nestjs/common';
+import { RmController } from '../../controllers/rm.controller';
+import { SeoTemplateService } from '../../../catalog/services/seo-template.service';
 import { RmBuilderService } from '../rm-builder.service';
 import type { CacheService } from '@cache/cache.service';
 
@@ -33,8 +36,9 @@ function buildService(processTemplates: jest.Mock) {
   const callRpc = jest.fn();
   (service as any).callRpc = callRpc;
   (service as any).loadSeoCtxSwitches = jest.fn().mockResolvedValue({});
-  (service as any).fireShadowObservation = jest.fn();
-  return { service, callRpc };
+  const fireShadowObservation = jest.fn();
+  (service as any).fireShadowObservation = fireShadowObservation;
+  return { service, callRpc, cache, fireShadowObservation };
 }
 
 const seoRaw = {
@@ -128,5 +132,135 @@ describe('RmBuilderService.getPageCompleteV2 — valeurs des marqueurs legacy', 
       expect(ctx.legacy_marker_motorisation).toBeUndefined();
       expect(ctx.legacy_marker_code_moteur).toBeUndefined();
     }
+  });
+});
+
+describe('RmBuilderService.getPageCompleteV2 — échec SEO sans contenu de repli', () => {
+  const params = { gamme_id: 1795, vehicle_id: 19354 };
+
+  it.each(['exception', 'success:false'])(
+    '%s ne publie ni modèle brut ni résultat dégradé et ne remplit pas le cache RM',
+    async (failure) => {
+      const processTemplates =
+        failure === 'exception'
+          ? jest
+              .fn()
+              .mockRejectedValue(new Error('template dependency unavailable'))
+          : jest.fn().mockResolvedValue({
+              ...processedSeo,
+              success: false,
+              description: 'Texte de secours non validé',
+            });
+      const { service, callRpc, cache, fireShadowObservation } =
+        buildService(processTemplates);
+      callRpc.mockImplementation(async () => ({
+        data: rpcData({}),
+        error: null,
+      }));
+
+      const result = await service.getPageCompleteV2(params);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBeDefined();
+      expect(result.cacheHit).toBe(false);
+      expect(result.seo).toEqual({
+        h1: '',
+        title: '',
+        description: '',
+        content: '',
+        preview: '',
+      });
+      expect(result).not.toHaveProperty('seo_raw');
+      expect(result).not.toHaveProperty('seo_context');
+      expect(cache.set).not.toHaveBeenCalled();
+      expect(fireShadowObservation).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(['exception', 'success:false'])(
+    'le contrôleur traduit %s en 503, sans exposer les détails internes',
+    async (failure) => {
+      const processTemplates =
+        failure === 'exception'
+          ? jest
+              .fn()
+              .mockRejectedValue(new Error('private-template-dependency'))
+          : jest.fn().mockResolvedValue({ ...processedSeo, success: false });
+      const { service, callRpc } = buildService(processTemplates);
+      callRpc.mockResolvedValue({ data: rpcData({}), error: null });
+      const controller = new RmController(service, {} as never, {} as never);
+
+      const error = await controller
+        .getPageV2(params.gamme_id, params.vehicle_id, 200)
+        .then(
+          () => {
+            throw new Error(
+              'La préparation SEO invalide aurait dû répondre 503',
+            );
+          },
+          (e: unknown) => e,
+        );
+      expect(error).toBeInstanceOf(ServiceUnavailableException);
+      expect((error as ServiceUnavailableException).getStatus()).toBe(503);
+      const body = JSON.stringify(
+        (error as ServiceUnavailableException).getResponse(),
+      );
+      expect(body).not.toMatch(
+        /private-template-dependency|#Gamme#|seo_raw|Texte de secours/,
+      );
+    },
+  );
+
+  it('reprend le traitement après une panne sans figer le résultat dégradé en cache', async () => {
+    const processTemplates = jest
+      .fn()
+      .mockResolvedValueOnce({ ...processedSeo, success: false })
+      .mockResolvedValueOnce(processedSeo);
+    const { service, callRpc, cache } = buildService(processTemplates);
+    const entries = new Map<string, unknown>();
+    cache.get.mockImplementation(async (key: string) => entries.get(key));
+    cache.set.mockImplementation(async (key: string, value: unknown) => {
+      entries.set(key, value);
+    });
+    callRpc.mockImplementation(async () => ({
+      data: rpcData({}),
+      error: null,
+    }));
+
+    const failed = await service.getPageCompleteV2(params);
+    expect(failed.success).toBe(false);
+    expect(entries.size).toBe(0);
+    const recovered = await service.getPageCompleteV2(params);
+    expect(recovered.success).toBe(true);
+    expect(recovered.seo.description).toBe(processedSeo.description);
+    expect(recovered.cacheHit).toBe(false);
+    const cached = await service.getPageCompleteV2(params);
+    expect(cached.cacheHit).toBe(true);
+    expect(cached.seo).toEqual(recovered.seo);
+    expect(processTemplates).toHaveBeenCalledTimes(2);
+    expect(callRpc).toHaveBeenCalledTimes(2);
+    expect(cache.set).toHaveBeenCalledTimes(1);
+  });
+
+  it('respecte le vrai signal d’échec du moteur SEO lorsque son cache est indisponible', async () => {
+    const templateCache = {
+      get: jest.fn().mockRejectedValue(new Error('cache unavailable')),
+      set: jest.fn(),
+    };
+    const templates = new SeoTemplateService(
+      templateCache as unknown as CacheService,
+      {} as never,
+    );
+    const { service, callRpc, cache } = buildService(
+      jest.fn(templates.processTemplates.bind(templates)),
+    );
+    callRpc.mockResolvedValue({ data: rpcData({}), error: null });
+
+    const result = await service.getPageCompleteV2(params);
+
+    expect(result.success).toBe(false);
+    expect(result.seo.description).toBe('');
+    expect(cache.set).not.toHaveBeenCalled();
+    expect(templateCache.get).toHaveBeenCalledTimes(1);
   });
 });

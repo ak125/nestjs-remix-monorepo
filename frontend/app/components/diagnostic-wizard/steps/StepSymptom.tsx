@@ -5,7 +5,8 @@
  * Error handling with retry on fetch failures.
  */
 import { AlertTriangle, CheckCircle2, Cog, RefreshCw, X } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { z } from "zod";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -24,21 +25,54 @@ interface SystemOption {
 interface Props {
   state: WizardState;
   dispatch: React.Dispatch<WizardAction>;
+  onAvailabilityChange?: (ready: boolean) => void;
 }
 
+const OptionSchema = z.object({
+  slug: z.string().trim().min(1),
+  label: z.string().trim().min(1),
+  description: z
+    .string()
+    .nullable()
+    .transform((value) => value ?? ""),
+});
+const SystemsResponseSchema = z.object({
+  success: z.literal(true),
+  systems: z
+    .array(OptionSchema)
+    .min(1)
+    .refine(
+      (items) => new Set(items.map((item) => item.slug)).size === items.length,
+    ),
+});
+const SymptomsResponseSchema = z.object({
+  success: z.literal(true),
+  symptoms: z
+    .array(
+      OptionSchema.extend({
+        urgency: z.enum(["critique", "haute", "moyenne", "basse"]),
+      }),
+    )
+    .refine(
+      (items) => new Set(items.map((item) => item.slug)).size === items.length,
+    ),
+});
+
 const URGENCY_COLORS: Record<string, string> = {
+  critique: "bg-red-100 text-red-800 border-red-300",
   haute: "bg-red-100 text-red-700 border-red-200",
   moyenne: "bg-amber-100 text-amber-700 border-amber-200",
   basse: "bg-green-100 text-green-700 border-green-200",
 };
 
 const URGENCY_LABELS: Record<string, string> = {
+  critique: "Urgence critique",
   haute: "Urgence haute",
   moyenne: "Urgence moyenne",
   basse: "Urgence basse",
 };
 
-export function StepSymptom({ state, dispatch }: Props) {
+export function StepSymptom({ state, dispatch, onAvailabilityChange }: Props) {
   const [systems, setSystems] = useState<SystemOption[]>([]);
   const [loadingSystems, setLoadingSystems] = useState(true);
   const [systemsError, setSystemsError] = useState(false);
@@ -47,55 +81,97 @@ export function StepSymptom({ state, dispatch }: Props) {
   const [loadingSymptoms, setLoadingSymptoms] = useState(true);
   const [symptomsError, setSymptomsError] = useState(false);
 
+  const [symptomsSystem, setSymptomsSystem] = useState<string | null>(null);
+  const systemsRequest = useRef<AbortController | null>(null);
+  const symptomsRequest = useRef<AbortController | null>(null);
+
   const fetchSystems = useCallback(async () => {
+    systemsRequest.current?.abort();
+    const controller = new AbortController();
+    systemsRequest.current = controller;
     setLoadingSystems(true);
     setSystemsError(false);
+    setSystems([]);
     try {
-      const res = await fetch("/api/diagnostic-engine/systems");
-      const data = await res.json();
-      if (data.success && data.systems.length > 0) {
-        setSystems(data.systems);
-        // If current systemScope not in list, select first
-        if (
-          !data.systems.some((s: SystemOption) => s.slug === state.systemScope)
-        ) {
-          dispatch({ type: "SET_SYSTEM", payload: data.systems[0].slug });
-        }
-      } else {
-        setSystemsError(true);
+      const res = await fetch("/api/diagnostic-engine/systems", {
+        signal: controller.signal,
+      });
+      if (!res.ok) throw new Error("Systems unavailable");
+      const data = SystemsResponseSchema.parse(await res.json());
+      if (controller.signal.aborted) return;
+      setSystems(data.systems);
+      if (!data.systems.some((item) => item.slug === state.systemScope)) {
+        dispatch({ type: "SET_SYSTEM", payload: data.systems[0].slug });
       }
     } catch {
-      setSystemsError(true);
+      if (!controller.signal.aborted) setSystemsError(true);
+    } finally {
+      if (!controller.signal.aborted) setLoadingSystems(false);
     }
-    setLoadingSystems(false);
   }, [state.systemScope, dispatch]);
 
   const fetchSymptoms = useCallback(async () => {
+    symptomsRequest.current?.abort();
+    const controller = new AbortController();
+    symptomsRequest.current = controller;
     setLoadingSymptoms(true);
     setSymptomsError(false);
+    setSymptoms([]);
+    setSymptomsSystem(null);
     try {
       const res = await fetch(
-        `/api/diagnostic-engine/symptoms?system=${state.systemScope}`,
+        `/api/diagnostic-engine/symptoms?system=${encodeURIComponent(state.systemScope)}`,
+        { signal: controller.signal },
       );
-      const data = await res.json();
-      if (data.success) {
-        setSymptoms(data.symptoms);
-      } else {
-        setSymptomsError(true);
-      }
+      if (!res.ok) throw new Error("Symptoms unavailable");
+      const data = SymptomsResponseSchema.parse(await res.json());
+      if (controller.signal.aborted) return;
+      setSymptoms(data.symptoms);
+      setSymptomsSystem(state.systemScope);
     } catch {
-      setSymptomsError(true);
+      if (!controller.signal.aborted) setSymptomsError(true);
+    } finally {
+      if (!controller.signal.aborted) setLoadingSymptoms(false);
     }
-    setLoadingSymptoms(false);
   }, [state.systemScope]);
 
   useEffect(() => {
-    fetchSystems();
+    void fetchSystems();
+    return () => systemsRequest.current?.abort();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    fetchSymptoms();
+    void fetchSymptoms();
+    return () => symptomsRequest.current?.abort();
   }, [fetchSymptoms]);
+
+  useEffect(() => {
+    onAvailabilityChange?.(
+      !loadingSystems &&
+        !systemsError &&
+        systems.some((system) => system.slug === state.systemScope) &&
+        !loadingSymptoms &&
+        !symptomsError &&
+        symptomsSystem === state.systemScope &&
+        symptoms.length > 0 &&
+        state.symptomSlugs.every((slug) =>
+          symptoms.some((item) => item.slug === slug),
+        ),
+    );
+  }, [
+    loadingSystems,
+    systemsError,
+    systems,
+    loadingSymptoms,
+    symptomsError,
+    symptomsSystem,
+    symptoms,
+    state.systemScope,
+    state.symptomSlugs,
+    onAvailabilityChange,
+  ]);
+
+  useEffect(() => () => onAvailabilityChange?.(false), [onAvailabilityChange]);
 
   const isSelected = (slug: string) => state.symptomSlugs.includes(slug);
   const primarySymptom = state.symptomSlugs[0];
@@ -168,7 +244,7 @@ export function StepSymptom({ state, dispatch }: Props) {
                     active ? "text-blue-600" : "text-gray-400"
                   }`}
                 />
-                <div>
+                <span>
                   <span
                     className={`font-medium text-sm ${
                       active ? "text-blue-900 font-semibold" : "text-gray-900"
@@ -176,10 +252,10 @@ export function StepSymptom({ state, dispatch }: Props) {
                   >
                     {sys.label}
                   </span>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <span className="block text-xs text-gray-500 mt-0.5">
                     {sys.description}
-                  </p>
-                </div>
+                  </span>
+                </span>
               </button>
             );
           })}
@@ -228,7 +304,8 @@ export function StepSymptom({ state, dispatch }: Props) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {loadingSymptoms ? (
+          {loadingSymptoms ||
+          (!symptomsError && symptomsSystem !== state.systemScope) ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
                 <div
@@ -294,7 +371,7 @@ export function StepSymptom({ state, dispatch }: Props) {
                         : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                     }`}
                   >
-                    <div
+                    <span
                       className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
                         selected
                           ? "border-blue-500 bg-blue-500"
@@ -304,10 +381,10 @@ export function StepSymptom({ state, dispatch }: Props) {
                       {selected && (
                         <CheckCircle2 className="w-3 h-3 text-white" />
                       )}
-                    </div>
+                    </span>
 
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
+                    <span className="flex-1 min-w-0">
+                      <span className="flex items-center gap-2 flex-wrap">
                         <span
                           className={`font-medium text-sm ${
                             selected ? "text-blue-900" : "text-gray-900"
@@ -329,16 +406,17 @@ export function StepSymptom({ state, dispatch }: Props) {
                             URGENCY_COLORS[symptom.urgency] || ""
                           }`}
                         >
-                          {symptom.urgency === "haute" && (
+                          {(symptom.urgency === "haute" ||
+                            symptom.urgency === "critique") && (
                             <AlertTriangle className="w-2.5 h-2.5 mr-0.5" />
                           )}
                           {URGENCY_LABELS[symptom.urgency] || symptom.urgency}
                         </Badge>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                      </span>
+                      <span className="block text-xs text-gray-500 mt-1 leading-relaxed">
                         {symptom.description}
-                      </p>
-                    </div>
+                      </span>
+                    </span>
                   </button>
                 );
               })}

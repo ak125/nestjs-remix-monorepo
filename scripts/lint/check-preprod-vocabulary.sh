@@ -78,7 +78,7 @@ if [ "$violations" -gt 0 ]; then
 ────────────────────────────────────────────────────────────────────────────
 $violations forbidden vocabulary occurrence(s) detected.
 
-Canon (charged at session start) : .claude/rules/deployment.md
+Canon : .claude/rules/deployment.md
 Vocabulary STRICT :
   - DEV     = machine 46.224.118.55 (poste opérateur, no deploy container)
   - PREPROD = container CI éphémère 49.12.233.2:3200 (READ_ONLY, no human access)

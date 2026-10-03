@@ -14,6 +14,7 @@
 // by ts-jest preset. Pattern aligned on tests/unit/rag-proxy.service.test.ts.
 // Do NOT import from '@jest/globals' (strict typing breaks
 // mockResolvedValueOnce<T>() inference).
+import { ServiceUnavailableException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { MaintenanceCalculatorService } from '../../src/modules/diagnostic-engine/services/maintenance-calculator.service';
@@ -34,7 +35,13 @@ describe('MaintenanceCalculatorService (ADR-032 PR-2)', () => {
         };
         return config[key] ?? '';
       }),
-      get: jest.fn(),
+      get: jest.fn(
+        (key: string) =>
+          ({
+            SUPABASE_URL: 'http://mock',
+            SUPABASE_SERVICE_ROLE_KEY: 'mock-key',
+          })[key],
+      ),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -52,10 +59,21 @@ describe('MaintenanceCalculatorService (ADR-032 PR-2)', () => {
     // Override the protected callRpc method (gate-aware wrapper from
     // SupabaseBaseService) — RPC Safety Gate compliant.
     (service as unknown as { callRpc: typeof mockRpc }).callRpc = mockRpc;
+    // The auto_type row read that resolves and validates the type.
+    const typeQuery = {
+      select: jest.fn(() => typeQuery),
+      eq: jest.fn(() => typeQuery),
+      maybeSingle: jest
+        .fn()
+        .mockResolvedValue({ data: { type_fuel: 'Essence' }, error: null }),
+    };
+    (service as unknown as { supabase: unknown }).supabase = {
+      from: jest.fn(() => typeQuery),
+    };
   });
 
   describe('getSchedule()', () => {
-    it('calls kg_get_smart_maintenance_schedule with type_id and current_km', async () => {
+    it('calls kg_get_smart_maintenance_schedule with type_id, current_km and the fuel of the type', async () => {
       mockRpc.mockResolvedValueOnce({
         data: [
           {
@@ -79,7 +97,7 @@ describe('MaintenanceCalculatorService (ADR-032 PR-2)', () => {
         expect.objectContaining({
           p_type_id: 12345,
           p_current_km: 80000,
-          p_fuel_type: null,
+          p_fuel_type: 'Essence',
         }),
         expect.objectContaining({ source: 'internal' }),
       );
@@ -90,7 +108,7 @@ describe('MaintenanceCalculatorService (ADR-032 PR-2)', () => {
     it('passes fuel_type override when provided', async () => {
       mockRpc.mockResolvedValueOnce({ data: [], error: null });
 
-      await service.getSchedule(null, 0, 'diesel');
+      await expect(service.getSchedule(null, 0, 'diesel')).resolves.toEqual([]);
 
       expect(mockRpc).toHaveBeenCalledWith(
         'kg_get_smart_maintenance_schedule',
@@ -98,27 +116,16 @@ describe('MaintenanceCalculatorService (ADR-032 PR-2)', () => {
         expect.objectContaining({ source: 'internal' }),
       );
     });
-
-    it('returns empty array on RPC error (graceful degradation)', async () => {
-      mockRpc.mockResolvedValueOnce({
-        data: null,
-        error: { message: 'rpc failed' },
-      });
-
-      const items = await service.getSchedule(12345, 80000);
-
-      expect(items).toEqual([]);
-    });
   });
 
   describe('getAlerts()', () => {
-    it('uses default 5 milestones (10k/30k/60k/100k/150k) when none provided', async () => {
+    it('leaves the default milestones to the RPC when none provided', async () => {
       mockRpc.mockResolvedValueOnce({
         data: [
           { milestone_km: 10000, actions: [] },
-          { milestone_km: 30000, actions: [{ rule_alias: 'vidange-essence' }] },
+          { milestone_km: 30000, actions: [{ rule_alias: 'vidange-essence', rule_label: 'Vidange moteur essence', maintenance_priority: 'important', km_interval: 15000 }] },
           { milestone_km: 60000, actions: [] },
-          { milestone_km: 100000, actions: [{ rule_alias: 'distribution' }] },
+          { milestone_km: 100000, actions: [{ rule_alias: 'distribution', rule_label: 'Distribution', maintenance_priority: 'important', km_interval: 100000 }] },
           { milestone_km: 150000, actions: [] },
         ],
         error: null,
@@ -126,12 +133,11 @@ describe('MaintenanceCalculatorService (ADR-032 PR-2)', () => {
 
       const alerts = await service.getAlerts();
 
+      // p_milestones is omitted so the RPC's own DEFAULT applies; the service
+      // keeps no copy of it.
       expect(mockRpc).toHaveBeenCalledWith(
         'kg_get_maintenance_alerts_by_milestone',
-        expect.objectContaining({
-          p_milestones: [10000, 30000, 60000, 100000, 150000],
-          p_fuel_type: null,
-        }),
+        { p_fuel_type: null },
         expect.objectContaining({ source: 'internal' }),
       );
       expect(alerts).toHaveLength(5);
@@ -140,7 +146,7 @@ describe('MaintenanceCalculatorService (ADR-032 PR-2)', () => {
     it('accepts custom milestones array', async () => {
       mockRpc.mockResolvedValueOnce({ data: [], error: null });
 
-      await service.getAlerts('essence', [50000]);
+      await expect(service.getAlerts('essence', [50000])).resolves.toEqual([]);
 
       expect(mockRpc).toHaveBeenCalledWith(
         'kg_get_maintenance_alerts_by_milestone',
@@ -152,4 +158,40 @@ describe('MaintenanceCalculatorService (ADR-032 PR-2)', () => {
       );
     });
   });
+
+  describe.each(['schedule', 'alerts'] as const)(
+    '%s availability',
+    (source) => {
+      it.each([
+        [
+          'RPC error',
+          { data: null, error: { message: 'private database detail' } },
+        ],
+        ['absent data without RPC error', { data: null, error: null }],
+      ])(
+        'rejects %s with a public HTTP 503 error',
+        async (_reason, response) => {
+          mockRpc.mockResolvedValueOnce(response);
+
+          const request =
+            source === 'schedule'
+              ? service.getSchedule(12345, 80000)
+              : service.getAlerts();
+          const failure = await request.catch((error: unknown) => error);
+
+          expect(failure).toBeInstanceOf(ServiceUnavailableException);
+          if (!(failure instanceof ServiceUnavailableException)) {
+            throw new Error('Expected an unavailable maintenance source');
+          }
+          expect(failure.getStatus()).toBe(503);
+          expect(JSON.stringify(failure.getResponse())).not.toContain(
+            'private database detail',
+          );
+          expect(JSON.stringify(failure.getResponse())).not.toContain(
+            'kg_get_',
+          );
+        },
+      );
+    },
+  );
 });

@@ -3,33 +3,38 @@
  * HypothesisScoringEngine
  *
  * Scoring multi-couches des hypotheses :
- *   signal_match (0-30) + vehicle_fit (0-20) + lifecycle_fit (0-15) +
- *   maintenance_history (0-15) + plausibility (0-10) + context (0-10) = 0-100
+ *   signal_match (0-30) + vehicle_fit (0-20) + lifecycle_fit (0-7) +
+ *   maintenance_history (0-15) + plausibility (2-5) + context (0-10)
  *
- * Chaque couche est calculee independamment puis combinee.
+ * Chaque couche est calculee independamment puis combinee. Une couche sans
+ * donnee sourcee par cause reste neutre : elle ne doit ni gonfler la
+ * confiance ni reordonner les causes.
  */
 import { Injectable, Logger } from '@nestjs/common';
 import type { DiagSymptomCauseLink } from '../diagnostic-engine.data-service';
-import type {
-  VehicleContextInput,
-  UsageContextInput,
-} from '../types/diagnostic-input.schema';
+import type { VehicleContextInput } from '../types/diagnostic-input.schema';
 import { CAUSE_GAMME_MAP } from '../constants/gamme-map.constants';
+import {
+  CauseTypeEnum,
+  UrgencyLevelEnum,
+  type CauseType,
+  type UrgencyLevel,
+} from '../types/evidence-pack.schema';
 
 export interface ScoredHypothesis {
   hypothesis_id: string;
   label: string;
-  cause_type: string;
+  cause_type: CauseType;
   // Multi-layer scores
   signal_match_score: number; // 0-30
   vehicle_fit_score: number; // 0-20
-  lifecycle_fit_score: number; // 0-15
+  lifecycle_fit_score: number; // 0-7
   maintenance_history_score: number; // 0-15
-  plausibility_score: number; // 0-10
+  plausibility_score: number; // 2-5
   context_score: number; // 0-10
   total_score: number; // 0-100
   // Metadata
-  urgency: 'haute' | 'moyenne' | 'basse';
+  urgency: UrgencyLevel;
   evidence_for: string[];
   evidence_against: string[];
   verification_method?: string;
@@ -47,16 +52,15 @@ export class HypothesisScoringEngine {
   score(
     links: DiagSymptomCauseLink[],
     vehicle: VehicleContextInput | undefined,
-    usage: UsageContextInput | undefined,
   ): ScoredHypothesis[] {
     return links
       .filter((link) => link.cause)
       .map((link) => {
         const cause = link.cause!;
         const signalMatch = this.scoreSignalMatch(link.relative_score);
-        const vehicleFit = this.scoreVehicleFit(cause, vehicle);
+        const vehicleFit = this.scoreVehicleFit();
         const lifecycleFit = this.scoreLifecycleFit(cause, vehicle);
-        const maintenanceHistory = this.scoreMaintenanceHistory(cause, usage);
+        const maintenanceHistory = this.scoreMaintenanceHistory();
         const plausibility = this.scorePlausibility(cause, vehicle);
         const context = this.scoreContext(link);
 
@@ -71,7 +75,7 @@ export class HypothesisScoringEngine {
         return {
           hypothesis_id: cause.slug,
           label: cause.label,
-          cause_type: cause.cause_type,
+          cause_type: CauseTypeEnum.parse(cause.cause_type),
           signal_match_score: signalMatch,
           vehicle_fit_score: vehicleFit,
           lifecycle_fit_score: lifecycleFit,
@@ -102,22 +106,19 @@ export class HypothesisScoringEngine {
 
   /**
    * Vehicle fit: does the cause make sense for this vehicle type?
-   * Without specific vehicle data, give a neutral score.
+   * No cause carries vehicle applicability data, so the layer stays neutral
+   * for every vehicle. Rewarding form completeness here would raise every
+   * hypothesis alike and inflate catalogue confidence without evidence.
    */
-  private scoreVehicleFit(cause: any, vehicle?: VehicleContextInput): number {
-    if (!vehicle?.brand || !vehicle?.model) return 10; // neutral
-
-    // Higher score if we have full vehicle info
-    let score = 12;
-    if (vehicle.year) score += 2;
-    if (vehicle.mileage_km) score += 3;
-    if (vehicle.fuel) score += 3;
-
-    return Math.min(score, 20);
+  private scoreVehicleFit(): number {
+    return 10; // neutral
   }
 
   /**
-   * Lifecycle fit: is the vehicle age/mileage consistent with this cause?
+   * Lifecycle fit: is the vehicle too young for this cause?
+   * Mileage/age ranges are declared for some causes only; a matching range
+   * must not rank a cause above one with no declared range (data presence
+   * is not evidence). Only a vehicle clearly below the range lowers it.
    */
   private scoreLifecycleFit(cause: any, vehicle?: VehicleContextInput): number {
     if (!vehicle?.mileage_km && !vehicle?.year) return 7; // neutral
@@ -133,54 +134,35 @@ export class HypothesisScoringEngine {
 
     let score = 7;
 
-    if (km && kmMin && kmMax) {
-      if (km >= kmMin && km <= kmMax) {
-        score = 15; // sweet spot
-      } else if (km > kmMax) {
-        score = 12; // overdue, very plausible
-      } else if (km < kmMin * 0.5) {
-        score = 3; // too early, unlikely
-      } else {
-        score = 8; // approaching range
-      }
+    if (km && kmMin && kmMax && km < kmMin * 0.5) {
+      score = 3; // too early, unlikely
     }
 
-    // Age bonus/penalty
-    if (age && cause.plausible_age_min && cause.plausible_age_max) {
-      if (age >= cause.plausible_age_min && age <= cause.plausible_age_max) {
-        score = Math.min(score + 2, 15);
-      } else if (age < cause.plausible_age_min) {
-        score = Math.max(score - 2, 0);
-      }
+    // Age penalty
+    if (
+      age &&
+      cause.plausible_age_min &&
+      cause.plausible_age_max &&
+      age < cause.plausible_age_min
+    ) {
+      score = Math.max(score - 2, 0);
     }
 
     return score;
   }
 
   /**
-   * Maintenance history: does the usage pattern suggest this cause?
+   * Maintenance history: no cause carries a sourced relation to usage profile
+   * or service interval, so the layer stays neutral. Weighting causes by usage
+   * without that relation would reorder diagnoses on invented weights.
    */
-  private scoreMaintenanceHistory(
-    _cause: any,
-    usage?: UsageContextInput,
-  ): number {
-    if (!usage) return 7; // neutral
-
-    let score = 7;
-
-    // Severe usage profiles increase maintenance-related causes
-    if (usage.usage_profile === 'urban_short_trips') score += 4;
-    else if (usage.usage_profile === 'professional') score += 3;
-    else if (usage.usage_profile === 'mixed') score += 1;
-
-    // Long time since last service → higher maintenance risk
-    if (usage.last_service_km && usage.last_service_km > 30000) score += 3;
-
-    return Math.min(score, 15);
+  private scoreMaintenanceHistory(): number {
+    return 7; // neutral
   }
 
   /**
-   * Plausibility: general reality check
+   * Plausibility: general reality check. Like lifecycle fit, a declared
+   * mileage range can only lower a cause, never raise it above neutral.
    */
   private scorePlausibility(cause: any, vehicle?: VehicleContextInput): number {
     if (!vehicle?.mileage_km) return 5; // neutral
@@ -192,10 +174,7 @@ export class HypothesisScoringEngine {
 
     // Very low mileage for this type of issue → less plausible
     if (km < kmMin * 0.3) return 2;
-    // Normal range → full plausibility
-    if (km >= kmMin) return 10;
-    // Approaching → moderate
-    return 6;
+    return 5; // neutral
   }
 
   /**
@@ -209,7 +188,7 @@ export class HypothesisScoringEngine {
     return Math.min(score, 10);
   }
 
-  private mapUrgency(u: string): 'haute' | 'moyenne' | 'basse' {
-    return (['haute', 'moyenne', 'basse'].includes(u) ? u : 'moyenne') as any;
+  private mapUrgency(u: string): UrgencyLevel {
+    return UrgencyLevelEnum.parse(u);
   }
 }

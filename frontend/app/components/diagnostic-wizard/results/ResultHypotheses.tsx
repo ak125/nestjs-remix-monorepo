@@ -19,7 +19,8 @@ interface Props {
   hypotheses: Hypothesis[];
 }
 
-const URGENCY_BADGE: Record<string, string> = {
+const URGENCY_BADGE: Record<Hypothesis["urgency"], string> = {
+  critique: "bg-red-100 text-red-800 border-red-300",
   haute: "bg-red-100 text-red-700 border-red-200",
   moyenne: "bg-amber-100 text-amber-700 border-amber-200",
   basse: "bg-green-100 text-green-700 border-green-200",
@@ -68,22 +69,22 @@ export function ResultHypotheses({ hypotheses }: Props) {
               <button
                 type="button"
                 onClick={() => setExpandedId(expanded ? null : h.hypothesis_id)}
-                className="w-full flex items-center gap-3 p-3 text-left"
+                className="w-full flex items-center gap-3 px-3 pt-3 pb-1 text-left"
               >
                 {/* Rank */}
                 <span
                   className={`flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold shrink-0 ${
                     isTop
                       ? "bg-blue-600 text-white"
-                      : "bg-gray-100 text-white border border-gray-200"
+                      : "bg-gray-100 text-gray-600 border border-gray-200"
                   }`}
                 >
                   {i + 1}
                 </span>
 
-                {/* Label + score */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
+                {/* Label */}
+                <span className="flex-1 min-w-0">
+                  <span className="flex items-center gap-2 flex-wrap">
                     <span className="font-medium text-sm text-gray-900 truncate">
                       {h.label}
                     </span>
@@ -95,19 +96,8 @@ export function ResultHypotheses({ hypotheses }: Props) {
                     >
                       {h.urgency}
                     </Badge>
-                  </div>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Progress
-                      value={h.relative_score}
-                      className={`h-1.5 flex-1 max-w-[120px] ${PROGRESS_COLOR(h.relative_score)}`}
-                    />
-                    <span
-                      className={`text-xs font-semibold ${SCORE_COLOR(h.relative_score)}`}
-                    >
-                      {h.relative_score}/100
-                    </span>
-                  </div>
-                </div>
+                  </span>
+                </span>
 
                 {expanded ? (
                   <ChevronUp className="w-4 h-4 text-gray-400" />
@@ -115,6 +105,19 @@ export function ResultHypotheses({ hypotheses }: Props) {
                   <ChevronDown className="w-4 h-4 text-gray-400" />
                 )}
               </button>
+
+              {/* Score — outside the button: <Progress> renders divs */}
+              <div className="flex items-center gap-2 px-3 pb-3 ml-10">
+                <Progress
+                  value={h.relative_score}
+                  className={`h-1.5 flex-1 max-w-[120px] ${PROGRESS_COLOR(h.relative_score)}`}
+                />
+                <span
+                  className={`text-xs font-semibold ${SCORE_COLOR(h.relative_score)}`}
+                >
+                  {h.relative_score}/100
+                </span>
+              </div>
 
               {/* Expanded details */}
               {expanded && (

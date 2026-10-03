@@ -55,7 +55,7 @@ Skill opérationnel pour le système RAG AutoMecanik. Gère le debug, l'ingestio
 | Couche | Fichiers | Responsabilite |
 |--------|----------|----------------|
 | Frontend Chat | `components/rag/ChatWidget.tsx`, `ChatMessage.tsx` | SSE streaming, vehicle context, UI |
-| Frontend Admin | `routes/admin.rag*.tsx` (6 routes) | Dashboard, documents, ingestion, jobs |
+| Frontend Admin | `routes/admin.rag*.tsx` (layout + 6 routes) | Dashboard, documents, images, outil PDF → RAG Merge, webhook monitor |
 | Frontend Utils | `utils/chat-intent.utils.ts` | Classification intent cote client |
 | Backend Proxy | `modules/rag-proxy/` (controller, service, DTOs) | Circuit breaker, intent, ingestion |
 | External RAG | FastAPI sur serveur separe | Embeddings, vector search, LLM, guardrails |
@@ -69,7 +69,7 @@ Skill opérationnel pour le système RAG AutoMecanik. Gère le debug, l'ingestio
 | Commande | Usage | Workflow |
 |----------|-------|----------|
 | `/rag-ops diagnose` | Service down, reponses fausses, low confidence | Auto-sequentiel : Health → CB → Intent → Corpus → Sync → Score |
-| `/rag-ops ingest` | Ajouter un PDF ou URL au corpus | Staging → Truth level → Trigger → Monitor → Verify |
+| `/rag-ops ingest` | Comprendre comment le corpus est alimenté (ingestion PDF/URL retirée) | Source → WIKI → sync WIKI → RAG → Verify |
 | `/rag-ops monitor` | Verifier l'etat du corpus et des metriques | Stats → Coverage → Intents → Sync errors |
 | `/rag-ops test` | Tester les endpoints RAG | curl templates pour tous les endpoints |
 | `/rag-ops audit` | Audit complet du corpus + score | Script Python : gaps, fichiers vides, frontmatter, score /5 |
@@ -190,74 +190,47 @@ Produire le rapport au format defini dans "Format de sortie".
 | Symptome | Cause probable | Fix | Severite |
 |----------|---------------|-----|----------|
 | Toutes requetes 503 | Circuit breaker open | Redemarrer le service RAG externe | CRITIQUE |
-| Confidence < 0.5 système | Corpus insuffisant pour le domaine | Ajouter des docs L1/L2 via `/rag-ops ingest` | HAUTE |
+| Confidence < 0.5 système | Corpus insuffisant pour le domaine | Faire entrer des sources L1/L2 dans le WIKI (RAW → WIKI), puis synchroniser WIKI → RAG (voir « Workflow: Ingest ») | HAUTE |
 | Intent mal classifie | Regex manquant ou trop generique | Modifier patterns dans `rag-proxy.service.ts` + `chat-intent.utils.ts` | HAUTE |
 | Reponse >5s | RAG service lent | Verifier charge serveur, taille des embeddings | MOYENNE |
 | Sources vides | Pas de documents pertinents | Verifier le domaine du corpus, ajouter du contenu | HAUTE |
 | Off-topic reponse | Guardrails bypasses ou mal configures | Verifier `queryType` et `passedGuardrails` dans la reponse | HAUTE |
 | SSE stream coupe | Timeout cote proxy ou client | Verifier `Connection: keep-alive` headers | MOYENNE |
-| Ingestion job stuck | Container Docker inaccessible | `docker ps | grep rag-api-prod`, vérifier staging dir | MOYENNE |
 
 ---
 
 ## Workflow: Ingest
 
-> Utiliser quand : ajouter un nouveau document au corpus RAG.
+> Utiliser quand : un document doit entrer dans le corpus RAG du chatbot.
 
-### Ingestion PDF
+### Ingestion PDF / Web : retirée
 
-**Pre-requis :** Le fichier PDF doit etre accessible sur le serveur.
+Les routes `POST /api/rag/admin/ingest/pdf/single`, `POST /api/rag/admin/ingest/web/single`
+et le suivi des jobs (`/api/rag/admin/ingest/{pdf,web}/jobs…`) ont été retirés du backend
+(#1032, rag-purge B9) ; leurs DTO et services aussi (#1349). Ne pas les appeler.
 
-```bash
-# 1. Verifier que le fichier existe
-ls -la /opt/automecanik/rag/pdfs/inbox/mon-document.pdf
+### Alimentation du corpus : WIKI → RAG
 
-# 2. Declencher l'ingestion (admin auth requise)
-curl -X POST http://localhost:3000/api/rag/admin/ingest/pdf/single \
-  -H "Content-Type: application/json" \
-  -H "Cookie: connect.sid=..." \
-  -d '{
-    "pdfPath": "/opt/automecanik/rag/pdfs/inbox/mon-document.pdf",
-    "truthLevel": "L2",
-    "maxRetries": 1,
-    "timeoutSeconds": 1800
-  }'
+Le corpus chatbot s'alimente uniquement par la synchronisation WIKI → RAG (ADR-031 §D20) :
+`scripts/rag-sync/sync-wiki-exports-to-rag.py` copie `automecanik-wiki/exports/rag/` vers le
+corpus. Simulation par défaut, `--apply` explicite — invocation et garanties dans
+`scripts/rag-sync/README.md`.
 
-# 3. Suivre le job
-curl -s http://localhost:3000/api/rag/admin/ingest/pdf/jobs/{jobId} | jq
-```
-
-**Pipeline d'ingestion :**
-1. PDF copie dans `/opt/automecanik/rag/pdfs/_single/{runId}/`
-2. `docker exec rag-api-prod python scripts/ingest_pdfs.py --input {dir} --truth-level {L1-L4}`
-3. Knowledge files generes dans `/tmp/knowledge-import/{runId}/` (container)
-4. `docker cp` vers `/opt/automecanik/rag/knowledge/`
-5. Nettoyage des dirs temporaires
-
-### Ingestion Web
-
-```bash
-curl -X POST http://localhost:3000/api/rag/admin/ingest/web/single \
-  -H "Content-Type: application/json" \
-  -H "Cookie: connect.sid=..." \
-  -d '{
-    "url": "https://www.brembo.com/fr/voitures/disques-frein",
-    "truthLevel": "L3"
-  }'
-```
+Une nouvelle source entre donc d'abord dans le WIKI (RAW → WIKI → exports,
+`workspaces/wiki/`), jamais directement dans le corpus.
 
 ### Regles Truth Level
 
-| Level | Default pour | Quand l'utiliser |
-|-------|-------------|-----------------|
-| L1 | Jamais par défaut | Normes ECE, manuels OEM avec provenance vérifiée |
-| L2 | PDF ingestion | Guides techniques Bosch, ATE, Brembo, docs internes vérifiés |
-| L3 | Web ingestion | Articles web, FAQ communaute, sources curees |
-| L4 | Jamais recommande | Forums non vérifiés, contenus bruts |
+| Level | Quand l'utiliser |
+|-------|-----------------|
+| L1 | Normes ECE, manuels OEM avec provenance vérifiée — jamais par défaut |
+| L2 | Guides techniques Bosch, ATE, Brembo, docs internes vérifiés |
+| L3 | Articles web, FAQ communaute, sources curees |
+| L4 | Forums non vérifiés, contenus bruts — jamais recommandé |
 
 > Guide detaille : `references/truth-levels.md`
 
-### Verification post-ingestion
+### Verification apres synchronisation
 
 ```bash
 # Verifier que le document apparait dans le corpus
@@ -348,12 +321,6 @@ curl -s -X POST http://localhost:3000/api/rag/search \
   -H "Content-Type: application/json" \
   -d '{"query": "plaquettes de frein ceramique", "limit": 5}' | jq
 
-# Recherche par section
-curl -s "http://localhost:3000/api/rag/section/diagnostic?q=bruit+freinage&limit=5" | jq
-curl -s "http://localhost:3000/api/rag/section/guide-achat?q=disque+frein&limit=5" | jq
-curl -s "http://localhost:3000/api/rag/section/reference?q=plaquettes&limit=5" | jq
-curl -s "http://localhost:3000/api/rag/section/entretien?q=courroie+distribution&limit=5" | jq
-
 # Intent stats
 curl -s http://localhost:3000/api/rag/intents/stats | jq
 ```
@@ -361,20 +328,14 @@ curl -s http://localhost:3000/api/rag/intents/stats | jq
 ### Endpoints Admin (auth requise)
 
 ```bash
-# Lister les documents knowledge
-curl -s http://localhost:3000/api/rag/admin/knowledge | jq '| length'
+# Compter les documents knowledge actifs (le service tronque la liste à 1000)
+curl -s http://localhost:3000/api/rag/admin/knowledge | jq 'length'
 
 # Document par ID
 curl -s http://localhost:3000/api/rag/admin/knowledge/doc/{docId} | jq
 
 # Corpus stats
 curl -s http://localhost:3000/api/rag/admin/corpus/stats | jq
-
-# Lister les jobs d'ingestion
-curl -s http://localhost:3000/api/rag/admin/ingest/pdf/jobs | jq
-
-# Status d'un job
-curl -s http://localhost:3000/api/rag/admin/ingest/pdf/jobs/{jobId} | jq
 ```
 
 ### Validation des reponses
@@ -610,7 +571,9 @@ Le workflow Diagnose et l'audit `--score` produisent un rapport structure :
 
 6. **JAMAIS utiliser `psql` via Bash pour interroger Supabase**
    - Toujours MCP: `mcp__claude_ai_Supabase__execute_sql` (project: `cxpojprgwgubzjyqzmoq`)
-   - Pour DDL: `mcp__claude_ai_Supabase__apply_migration`
+   - Pour DDL : fichier dans `backend/supabase/migrations/`, applique par le workflow owner
+     `apply-supabase-migrations.yml` (skill `db-migration`, Phase 3) — jamais
+     `mcp__claude_ai_Supabase__apply_migration`, qui contourne le ledger `infra.schema_migrations`
 
 7. **JAMAIS modifier `content_tsv` manuellement**
    - Genere automatiquement par trigger: `to_tsvector('french', content)`
@@ -639,17 +602,14 @@ Le workflow Diagnose et l'audit `--score` produisent un rapport structure :
 - `backend/src/modules/rag-proxy/rag-proxy.module.ts` — Module registration
 - `backend/src/modules/rag-proxy/dto/chat.dto.ts` — Zod: ChatRequest (message 1-2000, sessionId?, context?)
 - `backend/src/modules/rag-proxy/dto/search.dto.ts` — Zod: SearchRequest (query 1-500, limit 1-50, filters?)
-- `backend/src/modules/rag-proxy/dto/pdf-ingest.dto.ts` — Zod: pdfPath, truthLevel L1-L4 (défaut L2)
-- `backend/src/modules/rag-proxy/dto/web-ingest.dto.ts` — Zod: url, truthLevel L1-L4 (défaut L3)
 - `backend/tests/unit/rag-proxy.service.test.ts` — 10 tests (chat, search, stream, health)
 
 ### Frontend (Remix)
 - `frontend/app/routes/admin.rag.tsx` — Layout admin RAG
-- `frontend/app/routes/admin.rag._index.tsx` — Dashboard: KPIs, truth levels, families, intents, jobs
+- `frontend/app/routes/admin.rag._index.tsx` — Dashboard: KPIs, truth levels, families, intents
 - `frontend/app/routes/admin.rag.documents.tsx` — Browser documents avec filtres
 - `frontend/app/routes/admin.rag.documents.$docId.tsx` — Detail document (Preview, Source, Metadata)
-- `frontend/app/routes/admin.rag.ingest.tsx` — Formulaires ingestion PDF + Web
-- `frontend/app/routes/admin.rag.ingest.$jobId.tsx` — Logs job (terminal-style, auto-refresh)
+- `frontend/app/routes/admin.rag.ingest.tsx` — Outil PDF → RAG Merge (`/api/admin/rag/pdf-merge`) ; plus aucun formulaire d'ingestion
 - `frontend/app/components/rag/ChatWidget.tsx` — Widget flottant, SSE streaming, vehicle context
 - `frontend/app/components/rag/ChatMessage.tsx` — Bulles messages, confidence bar, sources
 - `frontend/app/utils/chat-intent.utils.ts` — 9 intents, regex patterns, fallback: choose
@@ -673,9 +633,8 @@ Le workflow Diagnose et l'audit `--score` produisent un rapport structure :
 - `kg_rag_sync_stats` — Stats agregees par categorie
 
 ### Configuration
-- `backend/.env` — `RAG_SERVICE_URL`, `RAG_API_KEY`, `RAG_CONTAINER_NAME`, `RAG_PDF_DROP_HOST_ROOT`
+- `backend/.env` — `RAG_SERVICE_URL`, `RAG_API_KEY`
 - Container Docker: `rag-api-prod` (défaut)
-- Staging PDF: `/opt/automecanik/rag/pdfs/_single/{runId}/`
 
 ---
 
@@ -683,11 +642,10 @@ Le workflow Diagnose et l'audit `--score` produisent un rapport structure :
 
 | Skill | Relation avec rag-ops |
 |-------|----------------------|
-| `content-audit` | Vérifie B8 (Preuves & confiance) — si preuves faibles → `/rag-ops ingest` pour enrichir le corpus |
-| `seo-content-architect` | Consomme le corpus RAG (Phase 1b vérification) — rag-ops alimente le contenu vérifié |
-| `backend-test` | Tests curl generiques — rag-ops fournit les templates RAG specifiques |
+| `content-audit` | Vérifie B8 (Preuves & confiance) — si preuves faibles, la source manquante entre par le WIKI, pas par rag-ops |
+| `seo-content-architect` | Neutralisé (PR-C, 2026-07-02) → `/seo-content-loop` ; ne lit plus le corpus RAG |
 | `db-migration` | Modifications schema `__rag_knowledge` — rag-ops reference les tables |
 
-**Flux :** `content-audit` detecte un manque de preuves → `/rag-ops ingest` enrichit le corpus → `seo-content-architect` produit le contenu vérifié.
+**Flux :** `content-audit` detecte un manque de preuves → la source entre dans le WIKI (RAW → WIKI → exports) → `/seo-content-loop` produit le contenu ; la sync WIKI → RAG met à jour le corpus du chatbot. rag-ops n'alimente aucun contenu (ADR-031/046).
 
 Ne jamais fusionner les roles.

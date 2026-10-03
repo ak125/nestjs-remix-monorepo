@@ -160,7 +160,7 @@ export const R2ContentContractV2Schema = z
     if (data.status.decision === 'suppressed') {
       if (!data.status.canonicalTargetTypeId) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           message:
             "decision='suppressed' requires canonicalTargetTypeId (sibling type_id with decision='index'). Anti-chain enforced by Rego.",
           path: ['status', 'canonicalTargetTypeId'],
@@ -168,7 +168,7 @@ export const R2ContentContractV2Schema = z
       }
       if (data.status.sitemapEligible) {
         ctx.addIssue({
-          code: z.ZodIssueCode.custom,
+          code: 'custom',
           message:
             "decision='suppressed' MUST have sitemapEligible=false (excluded from sitemap, canonical link only).",
           path: ['status', 'sitemapEligible'],
@@ -179,7 +179,7 @@ export const R2ContentContractV2Schema = z
     // ── Invariant : decision='index' → contentHash non-null ───────────────────
     if (data.status.decision === 'index' && !data.contentHash) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message:
           "decision='index' requires contentHash (sha256 of content_main).",
         path: ['contentHash'],
@@ -189,7 +189,7 @@ export const R2ContentContractV2Schema = z
     // ── Invariant : decision='reject' → sitemapEligible=false ─────────────────
     if (data.status.decision === 'reject' && data.status.sitemapEligible) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: "decision='reject' MUST have sitemapEligible=false.",
         path: ['status', 'sitemapEligible'],
       });

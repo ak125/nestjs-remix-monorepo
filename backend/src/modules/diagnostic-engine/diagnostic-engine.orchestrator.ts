@@ -1,31 +1,48 @@
 /**
  * DiagnosticEngine Orchestrator — Slice 2 + Slice 8
  *
- * Delegue a 6 engines :
+ * Delegue a 5 engines :
  *   1. SignalInterpretation    → resout les signaux
  *   2. HypothesisScoring       → scoring multi-couches (6 axes)
  *   3. RiskSafety              → court-circuit securite
  *   4. CatalogOrientation      → CatalogGuard
  *   5. MaintenanceIntelligence → entretien lie
- *   6. RagEnrichment           → faits documentes (degradation gracieuse)
  *
  * Pipeline :
- *   Input → Validation → Signal → Scoring → Risk → Catalog → Maintenance → RAG → EvidencePack
+ *   Input → Validation → Signal → Scoring → Risk → Catalog → Maintenance → EvidencePack
  */
 import { Injectable, Logger } from '@nestjs/common';
 import {
-  AnalyzeDiagnosticInputSchema,
+  AnalyzeInputSchema,
+  type AnalyzeMaintenanceInput,
   type AnalyzeDiagnosticInput,
+  type UsageContextInput,
 } from './types/diagnostic-input.schema';
-import type { EvidencePack, RagFact } from './types/evidence-pack.schema';
-import { DiagnosticEngineDataService } from './diagnostic-engine.data-service';
+import type { CatalogGuard, EvidencePack } from './types/evidence-pack.schema';
+import {
+  DiagnosticEngineDataService,
+  type DiagSystem,
+} from './diagnostic-engine.data-service';
 import { SignalInterpretationEngine } from './engines/signal-interpretation.engine';
 import { HypothesisScoringEngine } from './engines/hypothesis-scoring.engine';
 import { RiskSafetyEngine } from './engines/risk-safety.engine';
 import { CatalogOrientationEngine } from './engines/catalog-orientation.engine';
 import { MaintenanceIntelligenceEngine } from './engines/maintenance-intelligence.engine';
-import { RagEnrichmentEngine } from './engines/rag-enrichment.engine';
 import { KgShadowService } from './services/kg-shadow.service';
+import { CAUSE_GAMME_MAP } from './constants/gamme-map.constants';
+
+// Wording shown to the user; same labels as the wizard's usage step
+// (frontend StepVehicle USAGE_PROFILES).
+const USAGE_PROFILE_LABEL: Record<
+  NonNullable<UsageContextInput['usage_profile']>,
+  string
+> = {
+  urban_short_trips: 'Urbain / courts trajets',
+  mixed: 'Mixte quotidien',
+  highway: 'Autoroute fréquent',
+  professional: 'Usage professionnel',
+  occasional: 'Usage occasionnel',
+};
 
 @Injectable()
 export class DiagnosticEngineOrchestrator {
@@ -38,9 +55,25 @@ export class DiagnosticEngineOrchestrator {
     private readonly riskEngine: RiskSafetyEngine,
     private readonly catalogEngine: CatalogOrientationEngine,
     private readonly maintenanceEngine: MaintenanceIntelligenceEngine,
-    private readonly ragEngine: RagEnrichmentEngine,
     private readonly kgShadow: KgShadowService, // PR-E — fire-and-forget shadow
   ) {}
+
+  /**
+   * Systems that can be analysed. analyze() refuses a system without an
+   * active safety rule, so such a system is not offered; the gap is logged.
+   */
+  async getAnalysableSystems(): Promise<DiagSystem[]> {
+    const [systems, covered] = await Promise.all([
+      this.dataService.getActiveSystems(),
+      this.dataService.getSystemIdsWithSafetyRules(),
+    ]);
+    const uncovered = systems.filter((s) => !covered.has(s.id));
+    if (uncovered.length)
+      this.logger.warn(
+        `Diagnostic systems without safety rules are not offered: ${uncovered.map((s) => s.slug).join(', ')}`,
+      );
+    return systems.filter((s) => covered.has(s.id));
+  }
 
   /**
    * Main entry point — produces a valid EvidencePack via 5 engines
@@ -53,7 +86,7 @@ export class DiagnosticEngineOrchestrator {
     const startTime = Date.now();
 
     // ── 1. Validate input ──────────────────────────────
-    const parseResult = AnalyzeDiagnosticInputSchema.safeParse(rawInput);
+    const parseResult = AnalyzeInputSchema.safeParse(rawInput);
     if (!parseResult.success) {
       return {
         success: false,
@@ -61,69 +94,197 @@ export class DiagnosticEngineOrchestrator {
       };
     }
     const input = parseResult.data;
-
-    // ── 2. Signal Interpretation Engine ─────────────────
-    const signal = await this.signalEngine.interpret(input);
-    if (!signal.system_confirmed) {
-      const systems = await this.dataService.getActiveSystems();
-      const available = systems.map((s) => s.slug).join(', ');
+    const inputLimitations: string[] = [];
+    if (input.usage_context?.immobilized_days !== undefined)
+      inputLimitations.push(
+        'Durée d’immobilisation non prise en compte dans cette analyse.',
+      );
+    if (input.usage_context?.last_service_date !== undefined)
+      inputLimitations.push(
+        'Date du dernier entretien non prise en compte : seules les dates renseignées par opération sont utilisées.',
+      );
+    if (input.usage_context?.recent_repairs?.length)
+      inputLimitations.push(
+        'Réparations récentes non prises en compte : elles ne prouvent ni la résolution du symptôme ni l’entretien des opérations concernées.',
+      );
+    if ('signal_input' in input) {
+      if (
+        Object.values(input.signal_input.context ?? {}).some((value) =>
+          Array.isArray(value) ? value.length > 0 : value !== undefined,
+        )
+      )
+        inputLimitations.push(
+          'Contexte du symptôme non interprété : il ne modifie ni les hypothèses ni le niveau de risque.',
+        );
+      if (input.session_id)
+        inputLimitations.push(
+          'Cette analyse ne reprend ni ne met à jour la session fournie.',
+        );
+    } else if (input.usage_context.last_service_km !== undefined)
+      inputLimitations.push(
+        'Kilométrage du dernier entretien non pris en compte : seuls les kilométrages renseignés par opération sont utilisés.',
+      );
+    if (inputLimitations.length)
+      this.logger.warn(
+        `Diagnostic input limitations: ${inputLimitations.length} supplied fields are not interpreted`,
+      );
+    if (!('signal_input' in input))
+      return this.analyzeMaintenance(input, inputLimitations);
+    if (input.signal_input.signal_mode !== 'symptom_slugs') {
       return {
         success: false,
-        error: `Système inconnu: ${input.system_scope}. Systèmes disponibles: ${available}`,
+        error:
+          'Ce mode de signal n’est pas encore pris en charge par cette analyse. Sélectionnez un symptôme reconnu.',
+      };
+    }
+    // ── 2. Signal Interpretation Engine ─────────────────
+    let signal: Awaited<ReturnType<SignalInterpretationEngine['interpret']>>;
+    try {
+      signal = await this.signalEngine.interpret(input);
+    } catch (error) {
+      this.logger.error('Diagnostic signal data unavailable', error);
+      return {
+        success: false,
+        error:
+          'Analyse indisponible : les signaux ne peuvent pas être vérifiés. Aucun niveau de risque ne peut être établi.',
+      };
+    }
+    if (!signal.system_confirmed) {
+      try {
+        const systems = await this.getAnalysableSystems();
+        const available = systems.map((s) => s.slug).join(', ');
+        return {
+          success: false,
+          error: `Système inconnu: ${input.system_scope}. Systèmes disponibles: ${available}`,
+        };
+      } catch (error) {
+        this.logger.error('Diagnostic system catalog unavailable', error);
+        return {
+          success: false,
+          error:
+            'Analyse indisponible : les systèmes ne peuvent pas être vérifiés.',
+        };
+      }
+    }
+
+    if (
+      !signal.resolved_symptom_slugs.length ||
+      signal.unresolved_signals.length
+    ) {
+      return {
+        success: false,
+        error:
+          'Diagnostic insuffisant : un ou plusieurs signaux ne sont pas reconnus. Le niveau de risque ne peut pas être établi ; un contrôle professionnel est nécessaire.',
       };
     }
 
     // ── 3. Fetch raw data from DB ──────────────────────
-    const scoredLinks = await this.dataService.getScoredCausesForSymptoms(
-      signal.resolved_symptom_slugs,
-    );
-    const safetyRules = await this.dataService.getSafetyRules(
-      input.system_scope,
-    );
+    let scoredLinks: Awaited<
+      ReturnType<DiagnosticEngineDataService['getScoredCausesForSymptoms']>
+    >;
+    let safetyRules: Awaited<
+      ReturnType<DiagnosticEngineDataService['getSafetyRules']>
+    >;
+    try {
+      scoredLinks = await this.dataService.getScoredCausesForSymptoms(
+        signal.resolved_symptom_slugs,
+      );
+      safetyRules = await this.dataService.getSafetyRules(input.system_scope);
+    } catch (error) {
+      this.logger.error('Diagnostic safety data unavailable', error);
+      return {
+        success: false,
+        error:
+          'Analyse indisponible : les données de sécurité ne sont pas accessibles. Aucun niveau de risque ne peut être établi.',
+      };
+    }
+    if (!safetyRules.length) {
+      return {
+        success: false,
+        error:
+          'Diagnostic insuffisant : la couverture des règles de sécurité est absente. Aucun niveau de risque ne peut être établi.',
+      };
+    }
 
     // ── 4. Hypothesis Scoring Engine (multi-couches) ───
     const hypotheses = this.scoringEngine.score(
       scoredLinks,
       input.vehicle_context,
-      input.usage_context,
     );
+
+    if (!hypotheses.length) {
+      return {
+        success: false,
+        error:
+          'Diagnostic insuffisant : aucune hypothèse couverte pour ces signaux. Le niveau de risque ne peut pas être établi.',
+      };
+    }
 
     // ── 5. Risk Safety Engine ──────────────────────────
     const risk = this.riskEngine.assess(
       hypotheses,
       safetyRules,
       signal.resolved_symptom_slugs,
+      signal.critical_symptom_labels,
     );
 
     // ── 6. Catalog Orientation Engine ──────────────────
-    const catalog = this.catalogEngine.evaluate(
+    const orientation = this.catalogEngine.evaluate(
       hypotheses,
       risk,
       input.vehicle_context,
     );
 
-    // ── 7. Maintenance Intelligence Engine ─────────────
-    const maintenance = await this.maintenanceEngine.assess(
-      signal.resolved_symptom_slugs,
-      input.vehicle_context,
-      input.usage_context,
-    );
-
-    // ── 7b. Enrich catalog gammes with cost ranges ─────
-    const pgIds = catalog.suggested_gammes.map((g) => g.pg_id);
-    const costRanges = await this.dataService.getCostRanges(pgIds);
-    for (const g of catalog.suggested_gammes) {
-      const cost = costRanges.get(g.pg_id);
-      if (cost) (g as unknown as Record<string, unknown>).cost_range = cost;
+    // Optional enrichment must not suppress an already determined safety
+    // alert. Degradation is logged and included in the returned missing facts.
+    const degraded: string[] = [...inputLimitations];
+    if (Object.keys(input.answers ?? {}).length > 0) {
+      this.logger.warn('Diagnostic questionnaire answers not interpreted');
+      degraded.push(
+        'Réponses complémentaires non interprétées : elles ne modifient ni les hypothèses ni le niveau de risque de cette analyse.',
+      );
     }
 
-    // ── 8. RAG Enrichment Engine (graceful degradation) ─
-    const ragFacts = await this.ragEngine.enrich(
-      input.system_scope,
-      signal.resolved_symptom_slugs,
-      hypotheses,
+    // A suggested family is only linked when it has its own catalogue page.
+    let cataloguePageIds: ReadonlySet<number> | null = new Set();
+    const candidateIds = orientation.suggested_gammes.map((g) => g.pg_id);
+    if (candidateIds.length) {
+      try {
+        cataloguePageIds =
+          await this.dataService.getGammeIdsWithCataloguePage(candidateIds);
+      } catch (error) {
+        this.logger.warn('Diagnostic catalogue check unavailable', error);
+        cataloguePageIds = null;
+        degraded.push(
+          'Orientation vers le catalogue indisponible : les familles de pièces ne peuvent pas être vérifiées.',
+        );
+      }
+    }
+    const catalog = this.catalogEngine.restrictToCataloguePages(
+      orientation,
+      cataloguePageIds,
     );
+    let maintenance: Awaited<
+      ReturnType<MaintenanceIntelligenceEngine['assess']>
+    > = {
+      recommendations: [],
+      maintenance_links: [],
+      overdue_count: 0,
+    };
+    try {
+      maintenance = await this.maintenanceEngine.assess(
+        signal.resolved_symptom_slugs,
+        input.vehicle_context,
+        input.usage_context,
+      );
+    } catch (error) {
+      this.logger.warn('Diagnostic maintenance enrichment unavailable', error);
+      degraded.push(
+        'Informations d’entretien indisponibles — aucune conclusion sur les échéances.',
+      );
+    }
 
+    // ADR-031: RAG is a chatbot consumer, never a diagnostic content authority.
     // ── 9. Assemble EvidencePack ───────────────────────
     const evidencePack = this.assembleEvidencePack(
       input,
@@ -132,14 +293,13 @@ export class DiagnosticEngineOrchestrator {
       risk,
       catalog,
       maintenance,
-      ragFacts,
     );
 
+    evidencePack.evidence_pack.factual_inputs_missing.push(...degraded);
     const elapsed = Date.now() - startTime;
     this.logger.log(
       `Diagnostic completed in ${elapsed}ms — ${hypotheses.length} hypotheses, ` +
-        `risk=${risk.risk_level}, catalog=${catalog.ready_for_catalog}, ` +
-        `rag_facts=${ragFacts.length}`,
+        `risk=${risk.risk_level}, catalog=${catalog.ready_for_catalog}`,
     );
 
     // ── 9b. KG shadow comparison (PR-E, fire-and-forget) ────
@@ -148,8 +308,8 @@ export class DiagnosticEngineOrchestrator {
     // event. NEVER blocks the response ; failures are swallowed.
     // Identifier-mapping note : signal.resolved_symptom_slugs are slugs,
     // the RPC expects observable UUIDs. When the data layer can resolve
-    // slugs→UUIDs the shadow runs ; today it gracefully skips if the
-    // mapping is empty (the service guards on `observable_ids.length === 0`).
+    // slugs→UUIDs the shadow can compare. Until then, the service rejects
+    // invalid identities before any RPC and emits an observable kg_error.
     this.kgShadow.shadowCompare({
       observable_ids: signal.resolved_symptom_slugs,
       vehicle_id:
@@ -164,14 +324,23 @@ export class DiagnosticEngineOrchestrator {
     });
 
     // ── 10. Save session ───────────────────────────────
-    const sessionId = await this.dataService.saveSession({
-      intent_type: input.intent_type,
-      system_scope: input.system_scope,
-      vehicle_context: input.vehicle_context || {},
-      signal_input: input.signal_input as Record<string, unknown>,
-      answers: input.answers || {},
-      result: evidencePack as unknown as Record<string, unknown>,
-    });
+    let sessionId: string | null = null;
+    try {
+      sessionId = await this.dataService.saveSession({
+        intent_type: input.intent_type,
+        system_scope: input.system_scope,
+        vehicle_context: input.vehicle_context || {},
+        signal_input: input.signal_input as Record<string, unknown>,
+        answers: input.answers || {},
+        result: evidencePack as unknown as Record<string, unknown>,
+      });
+    } catch (error) {
+      this.logger.warn('Diagnostic session persistence unavailable', error);
+    }
+    if (!sessionId)
+      evidencePack.evidence_pack.factual_inputs_missing.push(
+        'Sauvegarde non confirmée — le lien de reprise est indisponible.',
+      );
 
     return {
       success: true,
@@ -180,8 +349,88 @@ export class DiagnosticEngineOrchestrator {
   }
 
   /**
-   * Assemble final EvidencePack from all engine outputs
+   * Assess selected maintenance operations without invoking the symptom pipeline.
    */
+  private async analyzeMaintenance(
+    input: AnalyzeMaintenanceInput,
+    inputLimitations: string[],
+  ): Promise<{
+    success: boolean;
+    data?: { evidence: EvidencePack; session_id: string | null };
+    error?: string;
+  }> {
+    try {
+      const maintenance = await this.maintenanceEngine.assessSelected(
+        input.vehicle_context,
+        input.usage_context,
+      );
+      const missing = [
+        ...inputLimitations,
+        'Applicabilité au véhicule et préconisations constructeur non vérifiées : intervalles génériques.',
+        'Le profil d’usage ne modifie pas ces intervalles.',
+        'Ce bilan ne détermine ni l’usure réelle ni la sécurité du véhicule.',
+        'Bilan non enregistré sur le serveur : vous pouvez l’imprimer.',
+      ];
+      if (input.vehicle_context.mileage_km === undefined)
+        missing.push('Kilométrage actuel non renseigné.');
+      for (const rec of maintenance.recommendations) {
+        if (rec.interval_km && rec.last_service_km === undefined)
+          missing.push(
+            `${rec.operation_label} : kilométrage d’intervention inconnu.`,
+          );
+        if (rec.interval_months && !rec.last_service_date)
+          missing.push(
+            `${rec.operation_label} : date d’intervention inconnue.`,
+          );
+      }
+      return {
+        success: true,
+        data: {
+          session_id: null,
+          evidence: {
+            evidence_pack: {
+              analysis_kind: 'maintenance',
+              factual_inputs_confirmed: [
+                'Opérations sélectionnées par l’utilisateur ; historique déclaré.',
+                ...(input.vehicle_context.mileage_km !== undefined
+                  ? [
+                      `Compteur actuel : ${input.vehicle_context.mileage_km.toLocaleString('fr-FR')} km`,
+                    ]
+                  : []),
+              ],
+              factual_inputs_missing: missing,
+              system_suspects: [],
+              candidate_hypotheses: [],
+              risk_flags: [],
+              maintenance_links: maintenance.maintenance_links,
+              maintenance_recommendations: maintenance.recommendations,
+              preventive_schedule: maintenance.preventive_schedule,
+              catalog_guard: {
+                ready_for_catalog: false,
+                confidence_before_purchase: 'low',
+                allowed_output_mode: 'none',
+                suggested_gammes: [],
+                reason:
+                  'Une estimation d’échéance ne justifie pas un achat ; applicabilité et état réel à vérifier.',
+              },
+              allowed_claims: [
+                'Comparez ces estimations au carnet constructeur et aux justificatifs d’entretien.',
+              ],
+              ui_block_inputs: {},
+            },
+          },
+        },
+      };
+    } catch (error) {
+      this.logger.warn('Maintenance assessment unavailable', error);
+      return {
+        success: false,
+        error:
+          'Bilan entretien indisponible : une opération ou ses intervalles ne peuvent pas être vérifiés. Aucune conclusion sur les échéances.',
+      };
+    }
+  }
+
   private assembleEvidencePack(
     input: AnalyzeDiagnosticInput,
     signal: Awaited<ReturnType<SignalInterpretationEngine['interpret']>>,
@@ -189,7 +438,6 @@ export class DiagnosticEngineOrchestrator {
     risk: ReturnType<RiskSafetyEngine['assess']>,
     catalog: ReturnType<CatalogOrientationEngine['evaluate']>,
     maintenance: Awaited<ReturnType<MaintenanceIntelligenceEngine['assess']>>,
-    ragFacts: RagFact[],
   ): EvidencePack {
     // ── Factual inputs ─────────────────────────────────
     const confirmed: string[] = [];
@@ -206,7 +454,7 @@ export class DiagnosticEngineOrchestrator {
       missing.push('Véhicule non identifié — diagnostic générique');
     }
 
-    if (vc.mileage_km) {
+    if (vc.mileage_km !== undefined) {
       confirmed.push(
         `Kilométrage: ${vc.mileage_km.toLocaleString('fr-FR')} km`,
       );
@@ -215,29 +463,42 @@ export class DiagnosticEngineOrchestrator {
     }
 
     if (input.usage_context?.usage_profile) {
-      confirmed.push(`Profil d'usage: ${input.usage_context.usage_profile}`);
+      confirmed.push(
+        `Profil d'usage: ${USAGE_PROFILE_LABEL[input.usage_context.usage_profile]}`,
+      );
     } else {
       missing.push("Profil d'usage non renseigné");
     }
 
-    if (input.usage_context?.last_service_km) {
+    const usage = input.usage_context;
+    if (usage?.last_service_km !== undefined) {
       confirmed.push(
-        `Dernier entretien: ${input.usage_context.last_service_km.toLocaleString('fr-FR')} km`,
+        `Dernier entretien: ${usage.last_service_km.toLocaleString('fr-FR')} km`,
       );
-    } else {
+    }
+    if (usage?.maintenance_records?.length) {
+      confirmed.push(
+        `Historique d'entretien déclaré pour ${usage.maintenance_records.length} opération(s)`,
+      );
+    }
+    // A supplied global date is disclosed as not taken into account instead.
+    if (
+      usage?.last_service_km === undefined &&
+      !usage?.maintenance_records?.length &&
+      usage?.last_service_date === undefined
+    ) {
       missing.push('Historique entretien non renseigné');
     }
 
+    // Every signal is resolved at this point: analysis stops otherwise.
+    const symptomLabel = (slug: string) => signal.symptom_labels[slug];
     confirmed.push(`Système: ${signal.system_label}`);
-    confirmed.push(`Symptôme principal: ${input.signal_input.primary_signal}`);
+    confirmed.push(
+      `Symptôme principal: ${symptomLabel(input.signal_input.primary_signal)}`,
+    );
     if (input.signal_input.secondary_signals?.length) {
       confirmed.push(
-        `Symptômes secondaires: ${input.signal_input.secondary_signals.join(', ')}`,
-      );
-    }
-    if (signal.unresolved_signals.length > 0) {
-      missing.push(
-        `Signaux non reconnus: ${signal.unresolved_signals.join(', ')}`,
+        `Symptômes secondaires: ${input.signal_input.secondary_signals.map(symptomLabel).join(', ')}`,
       );
     }
 
@@ -246,12 +507,20 @@ export class DiagnosticEngineOrchestrator {
       ...new Set(
         hypotheses
           .filter((h) => h.total_score >= 15)
-          .flatMap((h) => h.related_gamme_slugs || [h.label]),
+          .flatMap(
+            (h) =>
+              CAUSE_GAMME_MAP[h.hypothesis_id]?.map((g) => g.label) ?? [
+                h.label,
+              ],
+          ),
       ),
     ];
 
     // ── Urgency timeline mapping ───────────────────────
-    const urgencyTimeline: Record<string, string> = {
+    const urgencyTimeline: Record<
+      ReturnType<HypothesisScoringEngine['score']>[number]['urgency'],
+      string
+    > = {
       critique: 'Immédiat — ne pas rouler',
       haute: 'Sous 48h — contrôle professionnel urgent',
       moyenne: 'Sous 2 semaines — planifier un contrôle',
@@ -262,12 +531,10 @@ export class DiagnosticEngineOrchestrator {
     const contractHypotheses = hypotheses.map((h) => ({
       hypothesis_id: h.hypothesis_id,
       label: h.label,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      cause_type: h.cause_type as any,
+      cause_type: h.cause_type,
       relative_score: h.total_score,
       urgency: h.urgency,
-      urgency_timeline:
-        urgencyTimeline[h.urgency] || urgencyTimeline['moyenne'],
+      urgency_timeline: urgencyTimeline[h.urgency],
       evidence_for: h.evidence_for,
       evidence_against: h.evidence_against,
       verification_method: h.verification_method,
@@ -289,12 +556,6 @@ export class DiagnosticEngineOrchestrator {
       'Un contrôle visuel est recommandé pour confirmer le diagnostic.',
       'Plusieurs causes sont possibles — seul un contrôle permet de conclure.',
     ];
-    const forbiddenClaims = [
-      'Vos plaquettes sont usées.',
-      'Il faut changer les disques.',
-      'Le problème vient certainement de X.',
-      'Achetez des plaquettes maintenant.',
-    ];
 
     // ── Diagnostic confidence score ─────────────────────
     const signalQualityMultiplier =
@@ -314,6 +575,21 @@ export class DiagnosticEngineOrchestrator {
       ),
     );
 
+    // One catalogue verdict, within the contract, for every field that shows it.
+    const catalogGuard: CatalogGuard = {
+      ready_for_catalog: catalog.ready_for_catalog,
+      confidence_before_purchase:
+        catalog.confidence_before_purchase === 'insufficient'
+          ? 'low'
+          : catalog.confidence_before_purchase,
+      allowed_output_mode:
+        catalog.allowed_output_mode === 'catalog_reference_with_caution'
+          ? 'catalog_family_with_caution'
+          : catalog.allowed_output_mode,
+      reason: catalog.reason,
+      suggested_gammes: catalog.suggested_gammes,
+    };
+
     return {
       evidence_pack: {
         diagnostic_confidence: diagnosticConfidence,
@@ -326,27 +602,10 @@ export class DiagnosticEngineOrchestrator {
         safety_alert: risk.safety_alert,
         risk_level: risk.risk_level,
         signal_quality: signal.signal_quality,
-        catalog_guard: {
-          ready_for_catalog: catalog.ready_for_catalog,
-          confidence_before_purchase: (catalog.confidence_before_purchase ===
-          'insufficient'
-            ? 'low'
-            : catalog.confidence_before_purchase) as 'low' | 'medium' | 'high',
-          allowed_output_mode: (catalog.allowed_output_mode ===
-          'catalog_reference_with_caution'
-            ? 'catalog_family_with_caution'
-            : catalog.allowed_output_mode) as
-            | 'none'
-            | 'catalog_family_only'
-            | 'catalog_family_with_caution',
-          reason: catalog.reason,
-          suggested_gammes: catalog.suggested_gammes,
-        },
+        catalog_guard: catalogGuard,
         maintenance_recommendations: maintenance.recommendations,
         preventive_schedule: maintenance.preventive_schedule,
-        rag_facts: ragFacts.length > 0 ? ragFacts : undefined,
         allowed_claims: allowedClaims,
-        forbidden_claims_runtime: forbiddenClaims,
         ui_block_inputs: {
           VehicleContextCard: input.vehicle_context,
           SignalSummary: {
@@ -367,10 +626,10 @@ export class DiagnosticEngineOrchestrator {
             overdue_count: maintenance.overdue_count,
           },
           CatalogOrientationBox: {
-            ready_for_catalog: catalog.ready_for_catalog,
-            confidence_before_purchase: catalog.confidence_before_purchase,
-            allowed_output_mode: catalog.allowed_output_mode,
-            suggested_gammes: catalog.suggested_gammes,
+            ready_for_catalog: catalogGuard.ready_for_catalog,
+            confidence_before_purchase: catalogGuard.confidence_before_purchase,
+            allowed_output_mode: catalogGuard.allowed_output_mode,
+            suggested_gammes: catalogGuard.suggested_gammes,
           },
         },
       },

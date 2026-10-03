@@ -12,16 +12,19 @@
  *
  * Hierarchie : DiagnosticContract → EvidencePack → DiagnosticResult (UI)
  *
- * Aligne sur le corpus RAG reel :
- * - diagnostic/*.md : probabilites (70%, 15%), urgence (Haute/Moyenne/Basse), verifications
- * - gammes/*.md : pg_id, slug, related_parts, domain.role
- * - canonical/*.md : regles condensees L4
+ * Produit par les moteurs metier et leurs donnees DB.
+ * ADR-031 : les extraits RAG ne constituent pas des preuves diagnostic.
  */
 import { z } from 'zod';
 
-// ── Urgency (aligne sur le RAG diagnostic : Haute/Moyenne/Basse) ──
+// ── Urgency (reference data + existing immediate-action timeline) ──
 
-export const UrgencyLevelEnum = z.enum(['haute', 'moyenne', 'basse']);
+export const UrgencyLevelEnum = z.enum([
+  'critique',
+  'haute',
+  'moyenne',
+  'basse',
+]);
 export type UrgencyLevel = z.infer<typeof UrgencyLevelEnum>;
 
 // ── Candidate Hypothesis ────────────────────────────────
@@ -31,6 +34,15 @@ export const CauseTypeEnum = z.enum([
   'wear_related',
   'component_fault',
   'contextual_factor',
+  // Additional reference categories introduced by the 20260321 migration.
+  // Preserve their identity; there is no documented mapping to MVP categories.
+  'wear',
+  'mechanical',
+  'hydraulic',
+  'electrical',
+  'corrosion',
+  'blockage',
+  'leak',
 ]);
 export type CauseType = z.infer<typeof CauseTypeEnum>;
 
@@ -38,16 +50,16 @@ export const CandidateHypothesisSchema = z.object({
   hypothesis_id: z.string().min(1),
   label: z.string().min(1),
   cause_type: CauseTypeEnum,
-  // Score relatif 0-100 (aligne sur les probabilites RAG : 70%, 15%, 10%, 5%)
+  // Score relatif 0-100 calcule par les moteurs metier
   relative_score: z.number().min(0).max(100),
-  // Urgence securite (aligne sur le RAG : Haute - Securite, Moyenne, Basse)
+  // Urgence securite
   urgency: UrgencyLevelEnum,
   evidence_for: z.array(z.string()).min(1),
   evidence_against: z.array(z.string()),
-  // Verification recommandee (aligne sur le champ "Verification" du RAG)
+  // Verification recommandee issue des donnees metier
   verification_method: z.string().optional(),
   requires_verification: z.boolean(),
-  // Mapping vers les gammes RAG (slug from gammes/*.md)
+  // Mapping vers les gammes du catalogue
   related_gamme_slugs: z.array(z.string()).optional(),
 });
 export type CandidateHypothesis = z.infer<typeof CandidateHypothesisSchema>;
@@ -80,32 +92,11 @@ export const CatalogGuardSchema = z.object({
 });
 export type CatalogGuard = z.infer<typeof CatalogGuardSchema>;
 
-// ── RAG Evidence (typage des faits RAG) ─────────────────
-
-export const RagEvidenceTypeEnum = z.enum([
-  'weak_point_evidence',
-  'symptom_nuance_evidence',
-  'cause_support_evidence',
-  'verification_support_evidence',
-  'maintenance_support_evidence',
-  'pedagogical_support_evidence',
-  'repair_tip',
-  'cost_evidence',
-  'obd_code_evidence',
-]);
-
-export const RagFactSchema = z.object({
-  evidence_type: RagEvidenceTypeEnum,
-  content: z.string().min(1),
-  source_file: z.string().optional(), // ex: 'diagnostic/bruits-freinage.md'
-  truth_level: z.enum(['L1', 'L2', 'L3', 'L4']).optional(),
-});
-export type RagFact = z.infer<typeof RagFactSchema>;
-
 // ── Evidence Pack ───────────────────────────────────────
 
 export const EvidencePackSchema = z.object({
   evidence_pack: z.object({
+    analysis_kind: z.enum(['diagnostic', 'maintenance']).optional(),
     diagnostic_confidence: z.number().min(0).max(100).optional(),
     factual_inputs_confirmed: z.array(z.string()),
     factual_inputs_missing: z.array(z.string()),
@@ -128,9 +119,6 @@ export const EvidencePackSchema = z.object({
       )
       .optional(),
     allowed_claims: z.array(z.string()),
-    forbidden_claims_runtime: z.array(z.string()),
-    // v1: liste plate. v2: fully typed per block (voir roadmap)
-    rag_facts: z.array(RagFactSchema).optional(),
     // v1: permissif. v2: union typee par bloc (VehicleContextCardInput, etc.)
     ui_block_inputs: z.record(z.string(), z.unknown()),
   }),

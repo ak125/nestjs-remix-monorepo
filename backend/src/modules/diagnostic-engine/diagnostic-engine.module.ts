@@ -9,8 +9,6 @@
  */
 import { Module, Logger } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module';
-// Conditional import — RagProxyModule may not be loaded (RAG_ENABLED=false)
-import { RagProxyModule } from '../rag-proxy/rag-proxy.module';
 // PR-B.4 — depends on VehicleContextPort to persist the cookie on diagnostic
 // completion. Imported as a Module (not raw service) to keep the cross-domain
 // boundary explicit and symbol-token-mediated (canon ddd-bounded-contexts).
@@ -23,7 +21,6 @@ import { HypothesisScoringEngine } from './engines/hypothesis-scoring.engine';
 import { RiskSafetyEngine } from './engines/risk-safety.engine';
 import { CatalogOrientationEngine } from './engines/catalog-orientation.engine';
 import { MaintenanceIntelligenceEngine } from './engines/maintenance-intelligence.engine';
-import { RagEnrichmentEngine } from './engines/rag-enrichment.engine';
 import { MaintenanceCalculatorService } from './services/maintenance-calculator.service';
 import { DiagnosticContentService } from './services/diagnostic-content.service';
 import { KgShadowService } from './services/kg-shadow.service';
@@ -39,7 +36,6 @@ import { DiagnosticResolutionPipelineService } from './services/diagnostic-resol
   imports: [
     DatabaseModule,
     VehicleContextModule, // PR-B.4 — VEHICLE_CONTEXT_PORT for cookie persist on analyze
-    ...(process.env.RAG_ENABLED === 'true' ? [RagProxyModule] : []),
   ],
   controllers: [DiagnosticEngineController],
   providers: [
@@ -50,7 +46,6 @@ import { DiagnosticResolutionPipelineService } from './services/diagnostic-resol
     RiskSafetyEngine,
     CatalogOrientationEngine,
     MaintenanceIntelligenceEngine,
-    RagEnrichmentEngine,
     MaintenanceCalculatorService,
     DiagnosticContentService,
     KgShadowService, // PR-E — shadow KG comparison (fire-and-forget)
@@ -77,7 +72,7 @@ export class DiagnosticEngineModule {
 
   constructor() {
     this.logger.log(
-      'DiagnosticEngine Module actif (Slice 2+8 — 6 engines + V1A.0 Intent Resolution pipeline)',
+      'DiagnosticEngine Module actif (Slice 2+8 — 5 engines + V1A.0 Intent Resolution pipeline)',
     );
   }
 }

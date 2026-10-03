@@ -56,12 +56,16 @@ STABLE_SLEEP="${STABLE_SLEEP:-3}"
 # ADR-024 R1 gamme perf gate (parity R2): backed by __gamme_page_cache (Phase 1) +
 # SSR cache-first read path (Phase 5a); cold-path/legacy ceiling 3000ms. Top 5 G1
 # gammes covering the bulk of indexed traffic.
+# The R2 row times the populated couple of the R2 golden (fixture plaquettes-402-x-57414,
+# classification "ok"): a status probe cannot tell a product page from the soft-404
+# alternatives page (both 200), and the former fixture 402 × 100413 had no catalog data.
+# The coupling is pinned by preprod-response-suite.test.mjs; the golden step guards the data.
 read -r -d '' DEFAULT_SPEC <<'SPEC' || true
 /health|/health|200|200
 /api/catalog/families|/api/catalog/families|1000|200
 /|Homepage|2000|200
 /pieces/catalogue|/pieces/catalogue (legacy 301→/)|2000|301
-/pieces/plaquette-de-frein-402/renault-140/megane-iii-140049/1-5-dci-100413.html|R2 Product Page|3000|200
+/pieces/plaquette-de-frein-402/chevrolet-44/cruze-iii-j305-44088/1-6-57414.html|R2 Product Page (plaquette-de-frein × Cruze III 1.6)|3000|200
 /pieces/plaquette-de-frein-402.html|R1 Gamme (plaquette-de-frein)|3000|200
 /pieces/disque-de-frein-82.html|R1 Gamme (disque-de-frein)|3000|200
 /pieces/filtre-a-huile-7.html|R1 Gamme (filtre-a-huile)|3000|200
