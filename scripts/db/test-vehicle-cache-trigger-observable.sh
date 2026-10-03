@@ -120,7 +120,9 @@ CREATE ROLE service_role NOLOGIN BYPASSRLS;
 CREATE TYPE public.seo_event_type AS ENUM ('anomaly_detected', 'alert_sent', 'ingestion_run_failed');
 CREATE TYPE public.seo_severity AS ENUM ('critical', 'high', 'medium', 'low', 'info');
 
--- Miroir de 20260425_seo_event_log.sql (colonnes) + index GIN live.
+-- Miroir de 20260425_seo_event_log.sql (colonnes) + l'index que le planificateur
+-- choisit en base pour les deux requêtes du trigger (EXPLAIN du 2026-10-03). Le GIN
+-- sur payload est retiré par 20261003_drop_seo_event_log_unread_indexes (ADR-105).
 CREATE TABLE public.__seo_event_log (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   event_type  public.seo_event_type NOT NULL,
@@ -131,7 +133,7 @@ CREATE TABLE public.__seo_event_log (
   ack_at      TIMESTAMPTZ,
   resolved_at TIMESTAMPTZ
 );
-CREATE INDEX idx_seo_event_log_payload_gin ON public.__seo_event_log USING gin (payload);
+CREATE INDEX idx_seo_event_log_type_created ON public.__seo_event_log USING btree (event_type, created_at DESC);
 
 -- Miroir de 20260420_vehicle_page_cache_schema.sql.
 CREATE TABLE public.__vehicle_page_cache (
