@@ -139,12 +139,37 @@ interface TestWriter {
   }>;
 }
 
-function makeWriter(client: { from: (t: string) => unknown }): TestWriter {
+/** Allowlist d'écriture — miroir des défauts de `FeatureFlagsService` (gamme roles overridable). */
+function makeFeatureFlags(gammeRoles?: string[]) {
+  return {
+    seoProjectionWritableTypes: ['gamme', 'constructeur', 'vehicle'],
+    seoProjectionWritableRoles: (entityType: string): string[] => {
+      switch (entityType) {
+        case 'gamme':
+          return (
+            gammeRoles ?? ['R3_CONSEILS', 'R4_REFERENCE', 'R6_GUIDE_ACHAT']
+          );
+        case 'constructeur':
+          return ['R7_BRAND'];
+        case 'vehicle':
+          return ['R8_VEHICLE'];
+        default:
+          return [];
+      }
+    },
+  };
+}
+
+function makeWriter(
+  client: { from: (t: string) => unknown },
+  opts: { gammeRoles?: string[] } = {},
+): TestWriter {
   // Bypass du constructeur SupabaseBaseService (I/O lourde) : on greffe supabase + log sur le proto.
   const writer = Object.create(SeoProjectionWriterService.prototype);
   writer.supabase = client;
   writer.log = { warn() {}, error() {}, log() {} };
   writer.readOnly = false;
+  writer.featureFlags = makeFeatureFlags(opts.gammeRoles);
   return writer as TestWriter;
 }
 
@@ -430,5 +455,141 @@ describe('writeEntity — facts/role decouple + role-scoping (non-negotiable)', 
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
+  });
+});
+
+// Allowlist d'écriture gouvernée (`seoProjectionWritableTypes` / `seoProjectionWritableRoles`)
+// appliquée AU WRITER, quel que soit le déclencheur. Régression corrigée : le slurp nocturne écrivait
+// tout export découvert, avec tous ses rôles — l'allowlist n'était vérifiée que par le trigger
+// single-entity du feeder.
+describe('allowlist d’écriture — appliquée au seul point d’écriture (writer)', () => {
+  type ProjectOneFn = (
+    p: string,
+    r: string | null,
+    role?: string,
+  ) => Promise<{
+    roleOutcome: string;
+    factsOutcome: string;
+    reasons?: string[];
+  }>;
+
+  async function projectOneFromFile(
+    exp: SeoProjectionExport,
+    role?: string,
+  ): Promise<{
+    out: Awaited<ReturnType<ProjectOneFn>>;
+    ops: RecordedOp[];
+  }> {
+    const dir = mkdtempSync(join(tmpdir(), 'seo-proj-scope-'));
+    const exportPath = join(dir, 'export.json');
+    writeFileSync(exportPath, JSON.stringify(exp), 'utf-8');
+    try {
+      const { client, ops } = makeSupabase({
+        factsActive: new Map(),
+        blocksActive: new Map(),
+      });
+      const writer = makeWriter(client) as unknown as {
+        gate: { evaluate: () => { ok: boolean; verdicts: [] } };
+        projectOne: ProjectOneFn;
+      };
+      writer.gate = { evaluate: () => ({ ok: true, verdicts: [] }) };
+      const out = await writer.projectOne(exportPath, 'run-scope', role);
+      return { out, ops };
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }
+
+  it('slurp avec rôles gamme restreints (R3 seul) → SEULS les blocs R3 écrits, R4 jamais', async () => {
+    const { client, ops } = makeSupabase({
+      factsActive: new Map(),
+      blocksActive: new Map(),
+    });
+    const writer = makeWriter(client, { gammeRoles: ['R3_CONSEILS'] });
+    const out = await writer.writeEntity(exportFixture(), 'run-s1');
+    expect(out.roleOutcome).toBe('written');
+    const bvi = blockVersionInserts(ops);
+    expect(bvi).toHaveLength(1);
+    expect(bvi[0].payload.block_id).toContain('R3_CONSEILS');
+    expect(
+      ops.some(
+        (o) =>
+          o.table === '__seo_content_blocks' &&
+          o.payload.role === 'R4_REFERENCE',
+      ),
+    ).toBe(false);
+  });
+
+  it('slurp d’un export vehicle portant un bloc R3 → bloc R3 NON écrit (R8 seul autorisé)', async () => {
+    const { client, ops } = makeSupabase({
+      factsActive: new Map(),
+      blocksActive: new Map(),
+    });
+    const writer = makeWriter(client);
+    const exp: SeoProjectionExport = {
+      ...exportFixture(),
+      entity_id: 'vehicle:renault-clio-3',
+      entity_type: 'vehicle',
+      roles_allowed: ['R8_VEHICLE', 'R3_CONSEILS'],
+      blocks: [
+        {
+          role: 'R8_VEHICLE',
+          content_md: 'r8',
+          source_ids: [],
+          truth_level: 'sourced',
+          section: 'Presentation',
+          content_hash: 'R8_H1',
+        },
+        {
+          role: 'R3_CONSEILS',
+          content_md: 'r3',
+          source_ids: [],
+          truth_level: 'sourced',
+          section: 'Diagnostic',
+          content_hash: 'R3_H1',
+        },
+      ],
+    };
+    await writer.writeEntity(exp, 'run-s2');
+    const bvi = blockVersionInserts(ops);
+    expect(bvi).toHaveLength(1);
+    expect(bvi[0].payload.block_id).toContain('R8_VEHICLE');
+  });
+
+  it('type hors allowlist (diagnostic) → conflit type_not_writable, rien écrit', async () => {
+    const { out, ops } = await projectOneFromFile({
+      ...exportFixture(),
+      entity_id: 'diagnostic:bruit-freinage',
+      entity_type: 'diagnostic',
+    });
+    expect(out.roleOutcome).toBe('blocked');
+    expect(out.factsOutcome).toBe('noop');
+    expect(factVersionInserts(ops)).toHaveLength(0);
+    expect(blockVersionInserts(ops)).toHaveLength(0);
+    const conflicts = inserts(ops, '__seo_projection_conflicts');
+    expect(conflicts).toHaveLength(1);
+    expect(conflicts[0].payload.conflict_kind).toBe('type_not_writable');
+  });
+
+  it('rôle demandé non autorisé pour le type (R7 sur gamme) → conflit role_not_writable, rien écrit', async () => {
+    const { out, ops } = await projectOneFromFile(
+      { ...exportFixture(), roles_allowed: ['R3_CONSEILS', 'R7_BRAND'] },
+      'R7_BRAND',
+    );
+    expect(out.roleOutcome).toBe('blocked');
+    expect(factVersionInserts(ops)).toHaveLength(0);
+    expect(blockVersionInserts(ops)).toHaveLength(0);
+    const conflicts = inserts(ops, '__seo_projection_conflicts');
+    expect(conflicts).toHaveLength(1);
+    expect(conflicts[0].payload.conflict_kind).toBe('role_not_writable');
+  });
+
+  it('type + rôle autorisés → la garde laisse passer (écriture R3)', async () => {
+    const { out, ops } = await projectOneFromFile(
+      exportFixture(),
+      'R3_CONSEILS',
+    );
+    expect(out.roleOutcome).toBe('written');
+    expect(inserts(ops, '__seo_projection_conflicts')).toHaveLength(0);
   });
 });
