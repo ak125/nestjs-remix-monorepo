@@ -21,8 +21,8 @@
     "dynamic_rpc_callsites": 1,
     "unresolved_callsites": 0,
     "dropped_call_sites": 5,
-    "migrations_scanned": 394,
-    "backend_files_scanned": 1438
+    "migrations_scanned": 396,
+    "backend_files_scanned": 1437
   },
   "tables": {
     "___config": {
@@ -11341,154 +11341,154 @@
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 51,
+      "line": 50,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 55,
+      "line": 54,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 71,
+      "line": 70,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 113,
+      "line": 112,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 124,
+      "line": 123,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 135,
+      "line": 134,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 166,
+      "line": 165,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 182,
+      "line": 181,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 248,
+      "line": 247,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 296,
+      "line": 295,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 343,
+      "line": 342,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 459,
+      "line": 458,
       "form": "IDENT",
       "resolved_table": null,
       "refusal": "binding-not-found"
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 476,
+      "line": 475,
       "form": "IDENT",
       "resolved_table": null,
       "refusal": "binding-not-found"
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 513,
+      "line": 512,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 549,
+      "line": 548,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 568,
+      "line": 567,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 627,
+      "line": 626,
       "form": "IDENT",
       "resolved_table": null,
       "refusal": "binding-not-found"
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 652,
+      "line": 651,
       "form": "IDENT",
       "resolved_table": null,
       "refusal": "binding-not-found"
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 706,
+      "line": 701,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 718,
+      "line": 713,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 774,
+      "line": 769,
       "form": "IDENT",
       "resolved_table": null,
       "refusal": "binding-not-found"
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 798,
+      "line": 793,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"

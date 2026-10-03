@@ -411,3 +411,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/automation-validator-zod4-issues`
 - **Décision** : fix(registry): le validateur d'automation-reality nomme le champ invalide (zod 4)
 - **Sortie** : PR aucune | commits d200b3d35
+
+## 2026-10-03 — fix/auto-modele-empty-alias (auto)
+
+- **Branche** : `fix/auto-modele-empty-alias`
+- **Décision** : chore(registry): resync des projections L1 pour la migration 20261003 (+1 other commit)
+- **Sortie** : PR aucune | commits 2a7f0f274 45b759f06
