@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 2252e0b4e5be0f272eeebbddadda6fa8a072599f1756382d8a3b2135dd8d0fad
+source_sha256: 9f786f57f377b4461969f865b02970bb1c43838664d80c2e9e06d2ae592cf4eb
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,22 +18,22 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 2997 |
+| Files (Layer 1) | 2998 |
 | DB tables (Layer 1) | 313 |
 | DB RPC (Layer 1) | 255 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1000 |
 
-Source sotFingerprint: `fa31283c1a09`.
+Source sotFingerprint: `f099f781bddb`.
 
 ## Comment l'utiliser
 
-1. Identifier le **domaine** D1..D15 (voir ci-dessous)
+1. Identifier le **domaine** D1..D16 (voir ci-dessous)
 2. Lire `audit/registry/canonical.json` pour la query précise (programmatique)
 3. Lire `.claude/knowledge/modules/<module>.md` pour la prose détaillée
 4. Fall-back grep si question hors registry
 
-## Domaines (D1..D15 + UNKNOWN)
+## Domaines (D1..D16 + UNKNOWN)
 
 ### D1 — Catalog Core
 
@@ -43,7 +43,7 @@ Source sotFingerprint: `fa31283c1a09`.
 - **Knowledge prose**: [`catalog`](modules/catalog.md), [`gamme-rest`](modules/gamme-rest.md), [`products`](modules/products.md)
 - **Status**: LIVE=72, UNKNOWN=12
 
-### D2 — Legacy / XTR Migration
+### D2 — Legacy/XTR Migration
 
 - **Files**: 141 (test=127, service=10, config=3, controller=1)
 - **Runtime entrypoints**: 1
@@ -147,11 +147,19 @@ Source sotFingerprint: `fa31283c1a09`.
 
 ### D15 — Security & Governance
 
-- **Files**: 271 (test=161, script=62, service=45, config=2, controller=1)
+- **Files**: 272 (test=162, script=62, service=45, config=2, controller=1)
 - **Runtime entrypoints**: 3
-- **Top owners**: @ak125 (271)
+- **Top owners**: @ak125 (272)
 - **Knowledge prose**: [`bot-guard`](modules/bot-guard.md)
-- **Status**: LIVE=56, UNKNOWN=215
+- **Status**: LIVE=56, UNKNOWN=216
+
+### D16 — Maintenance
+
+- **Files**: 1 (service=1)
+- **Runtime entrypoints**: 1
+- **Top owners**: @ak125 (1)
+- **Knowledge prose**: [`maintenance`](modules/maintenance.md)
+- **Status**: LIVE=1
 
 ### UNKNOWN — Unknown (overlay non résolu)
 
