@@ -1684,7 +1684,7 @@
           }
         ],
         "definedInMigrations": [
-          "20260523_002_cancel_order_atomic.sql"
+          "20260924_cancel_order_atomic_refuse_paid.sql"
         ],
         "domain": "UNKNOWN",
         "id": "public.cancel_order_atomic",
@@ -1697,7 +1697,8 @@
         "schema": "public",
         "schemaVersion": "1.0.0",
         "searchPath": [
-          "public"
+          "public",
+          "pg_temp"
         ],
         "securityDefiner": true,
         "sourceConfidence": "high",
@@ -48567,7 +48568,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 912,
+      "loc": 924,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/orders/services/orders.service.ts",
       "risk": "high",
@@ -67947,6 +67948,26 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "backend/tests/unit/orders.service.cancel-order-rpc-contract.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 173,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/orders.service.cancel-order-rpc-contract.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "backend/tests/unit/orders.service.create-correlation-id.test.ts",
       "importedBy": [],
       "imports": [],
@@ -76777,7 +76798,7 @@
         "~/components/ui/scroll-area"
       ],
       "kind": "config",
-      "loc": 593,
+      "loc": 595,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/pieces/PiecesFilterSidebar.tsx",
       "risk": "low",
@@ -77130,7 +77151,7 @@
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 619,
+      "loc": 621,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/pieces/PiecesVehicleContent.tsx",
       "risk": "low",
@@ -78396,7 +78417,7 @@
         "~/utils/image-optimizer"
       ],
       "kind": "config",
-      "loc": 116,
+      "loc": 112,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/ui/BrandLogo.tsx",
       "risk": "low",
@@ -80528,10 +80549,11 @@
       ],
       "imports": [
         "frontend/app/types/pieces-route.types.ts",
+        "frontend/app/utils/image-optimizer.ts",
         "frontend/app/utils/pieces-filters.utils.ts"
       ],
       "kind": "config",
-      "loc": 405,
+      "loc": 414,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/hooks/use-pieces-filters.ts",
       "risk": "low",
@@ -87853,7 +87875,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 1109,
+      "loc": 1111,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/search.tsx",
       "risk": "medium",
@@ -89861,6 +89883,7 @@
         "frontend/app/components/cart/CartItem.tsx",
         "frontend/app/components/pieces/PieceDetailModal.tsx",
         "frontend/app/components/pieces/PiecesHeader.tsx",
+        "frontend/app/hooks/use-pieces-filters.ts",
         "frontend/app/routes/constructeurs.$brand.$model.$type.tsx",
         "frontend/app/services/api/brand.api.ts",
         "frontend/app/utils/pieces-loader.utils.ts",
@@ -91677,6 +91700,26 @@
       "loc": 127,
       "owner": "@ak125",
       "path": "frontend/tests/unit/beacon.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/brand-logo-provenance.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 192,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/brand-logo-provenance.test.tsx",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -102431,11 +102474,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "06762d36694187f95afe05f89fddf30b7d9e1c39208d2837744cc6b5aeb1c792",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "cc71d11d4956f725aa418439147359e5ed50254d38e04d88a40e6a25e20165c4",
-      "audit/registry/rpc.json": "2b1e02eccb6da1cb24d66d4507afae699c1d5708c25bd610a0aadf57519fa4fc",
+      "audit/registry/files.json": "a5cbe94cf98ab46fe905f0cb400ec7c7d489dd2b9c171fc95d1cf2627802dcbc",
+      "audit/registry/rpc.json": "5df65b395357c216373bb73667da9f058af5cb63f6fbd53b41d8d917b8bf0b3f",
       "audit/registry/runtime.json": "cdcb461fdb93aa228e25ba3c00f4f2bc247ac1d6acca60fad21220a7bcdfa84f"
     },
-    "sotFingerprint": "b46be9c0cdc2"
+    "sotFingerprint": "a0835fc102ce"
   },
   "runtime": [
     {

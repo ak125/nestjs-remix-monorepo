@@ -1,6 +1,6 @@
 import { type CSSProperties } from "react";
 import { cn } from "~/lib/utils";
-import { getOptimizedLogoUrl } from "~/utils/image-optimizer";
+import { getOptimizedLogoUrl, isValidImagePath } from "~/utils/image-optimizer";
 import { Avatar, AvatarImage, AvatarFallback } from "./avatar";
 
 type BrandType = "constructeur" | "equipementier";
@@ -46,18 +46,15 @@ export function BrandLogo({
       ? "equipementiers-automobiles"
       : "constructeurs-automobiles/marques-logos";
 
-  // Extraire le nom de fichier si logoPath contient un chemin complet
-  const extractFilename = (path: string | null): string => {
-    if (!path) return `${brandName.toLowerCase().replace(/\s+/g, "-")}.webp`;
-    // Si c'est déjà une URL complète, extraire juste le basename
-    const parts = path.split("/");
-    return (
-      parts[parts.length - 1] ||
-      `${brandName.toLowerCase().replace(/\s+/g, "-")}.webp`
-    );
-  };
-
-  const filename = extractFilename(logoPath);
+  // Ne jamais inventer une cle d'objet depuis le nom commercial.
+  // Un chemin complet garde sa provenance ; seul un filename utilise le dossier.
+  const source = logoPath?.trim();
+  const logoUrl =
+    source && isValidImagePath(source)
+      ? getOptimizedLogoUrl(
+          source.includes("/") ? source : `${folder}/${source}`,
+        )
+      : undefined;
 
   // Calculer la taille en pixels (conservé pour référence future)
   const _pixelSize =
@@ -70,9 +67,6 @@ export function BrandLogo({
           lg: 40,
           xl: 48,
         }[size];
-
-  // URL via imgproxy (WebP optimisé)
-  const logoUrl = getOptimizedLogoUrl(`${folder}/${filename}`);
 
   // Initiales pour le fallback (2 premières lettres)
   const initials = brandName.substring(0, 2).toUpperCase();
@@ -99,14 +93,16 @@ export function BrandLogo({
       )}
       style={customSizeStyle}
     >
-      <AvatarImage
-        src={logoUrl}
-        alt={`Logo ${brandName}`}
-        className="object-contain p-0.5"
-      />
+      {logoUrl && (
+        <AvatarImage
+          src={logoUrl}
+          alt={`Logo ${brandName}`}
+          className="object-contain p-0.5"
+        />
+      )}
       <AvatarFallback
         className={cn("bg-slate-100 text-slate-600 font-bold", textClass)}
-        delayMs={100}
+        delayMs={logoUrl ? 100 : 0}
       >
         {initials}
       </AvatarFallback>
