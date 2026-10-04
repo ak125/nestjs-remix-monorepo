@@ -1491,6 +1491,14 @@ entries:
     owner: '@ak125/payments-team'
     sourceConfidence: high
     risk: high
+  # 24 index ordinaires doublés par la clé primaire ou la contrainte UNIQUE de même
+  # définition, tables commande / client / facture / livraison / ic_postback (lot 2/3),
+  # zone STOP, GO owner nominatif ; domaine / owner de la zone commande, comme #1648.
+  - glob: backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_commerce*.sql
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: high
+    risk: high
   # Retrait de 26 index jamais utilisés sur pieces_price, zone STOP prix, GO owner
   # nominatif ; domaine / owner = ceux de l'autorité du tarif, comme #1623 (PR #1649).
   - glob: backend/supabase/migrations/20261001_drop_pieces_price_unused_indexes*.sql
