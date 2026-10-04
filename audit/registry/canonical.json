@@ -45877,7 +45877,7 @@
         "backend/src/modules/marketing/templates/social-post-templates.ts"
       ],
       "kind": "service",
-      "loc": 1044,
+      "loc": 1071,
       "owner": "@ak125/marketing-team",
       "path": "backend/src/modules/marketing/services/marketing-preparation.ts",
       "risk": "low",
@@ -74415,7 +74415,7 @@
         "~/components/seo/HtmlContent"
       ],
       "kind": "config",
-      "loc": 38,
+      "loc": 53,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/guide/MiniDiagnosticTable.tsx",
       "risk": "low",
@@ -86778,17 +86778,11 @@
       "id": "frontend/app/routes/diagnostic.tsx",
       "importedBy": [],
       "imports": [
-        "~/components/layout/Container",
-        "~/components/ui/LoadingSpinner",
-        "~/components/ui/alert",
-        "~/components/ui/badge",
-        "~/components/ui/button",
-        "~/components/ui/card",
-        "~/components/ui/checkbox",
-        "~/utils/logger"
+        "~/components/diagnostic-wizard/DiagnosticWizard",
+        "~/components/layout/Container"
       ],
       "kind": "route",
-      "loc": 413,
+      "loc": 57,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/diagnostic.tsx",
       "risk": "medium",
@@ -92275,7 +92269,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 367,
+      "loc": 310,
       "owner": "@ak125",
       "path": "frontend/tests/unit/diagnostic-legacy-navigation.test.tsx",
       "risk": "medium",
@@ -92318,6 +92312,26 @@
       "loc": 229,
       "owner": "@ak125",
       "path": "frontend/tests/unit/diagnostic-maintenance-step.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/diagnostic-page-wizard.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 76,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/diagnostic-page-wizard.test.tsx",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -92678,6 +92692,26 @@
       "loc": 96,
       "owner": "@ak125",
       "path": "frontend/tests/unit/login-role-redirect.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/mini-diagnostic-table-anchor.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 58,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/mini-diagnostic-table-anchor.test.tsx",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -100031,7 +100065,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 1238,
+      "loc": 1510,
       "owner": "@ak125",
       "path": "scripts/marketing/marketing-workbench.test.ts",
       "risk": "low",
@@ -100191,7 +100225,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 218,
+      "loc": 223,
       "owner": "@ak125",
       "path": "scripts/marketing/workbench-cli.ts",
       "risk": "low",
@@ -102488,15 +102522,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "f712a655d9f22003e79dcfca8e1b40fa79901b8a60755de688f1431655d188e2",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "1423f8a8040689353bb4c6fb0dca3481139be0c55cf4b31fb57a154eed48f772",
+      ".spec/00-canon/repository-registry/ownership.yaml": "b141e7bcc0ec9a33b345139eebc738e54466f580d89bc24a6052b010c60ef735",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "06762d36694187f95afe05f89fddf30b7d9e1c39208d2837744cc6b5aeb1c792",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "454fc41505fd4be3df803bd222e45cef6dc7079d49a87702c4f4ebfbf57f48bc",
+      "audit/registry/files.json": "94d4ae5a71faebcb98a1a16891c30a29e8a2feec6c17cdda9ef8ec223942a5d1",
       "audit/registry/rpc.json": "5df65b395357c216373bb73667da9f058af5cb63f6fbd53b41d8d917b8bf0b3f",
       "audit/registry/runtime.json": "9163a837bd2d87ba5f856dfd407b9c28a5fc34869d32c77a14bc3b3713aad5f1"
     },
-    "sotFingerprint": "66499d24f7c8"
+    "sotFingerprint": "c3cd03691416"
   },
   "runtime": [
     {
