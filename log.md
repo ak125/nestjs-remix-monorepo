@@ -417,3 +417,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/auto-modele-empty-alias`
 - **Décision** : chore(registry): resync des projections L1 pour la migration 20261003 (+1 other commit)
 - **Sortie** : PR aucune | commits 2a7f0f274 45b759f06
+
+## 2026-10-04 — fix/r5-redirect-advice-gate (auto)
+
+- **Branche** : `fix/r5-redirect-advice-gate`
+- **Décision** : chore: intègre main (#1549, #1712) dans la branche (+4 other commits)
+- **Sortie** : PR #1711 | commits e5b84d4a3 2513fd2d7 d1dcb70bd e55abcccb 73fb8f291
