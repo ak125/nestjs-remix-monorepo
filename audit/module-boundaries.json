@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 598,
-      "loc_total": 114619,
+      "loc_total": 114623,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -701,7 +701,7 @@
         "scripts/wiki-generators/__tests__"
       ],
       "files_count": 204,
-      "loc_total": 45388,
+      "loc_total": 45487,
       "has_barrel": true
     },
     "search": {
@@ -877,7 +877,7 @@
         "backend/src/modules/supplier-truth/domain"
       ],
       "files_count": 50,
-      "loc_total": 5437,
+      "loc_total": 5536,
       "has_barrel": false
     },
     "suppliers": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 286,
-      "loc_total": 52824,
+      "files_count": 287,
+      "loc_total": 52958,
       "has_barrel": true
     },
     "upload": {
