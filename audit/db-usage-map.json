@@ -21,7 +21,7 @@
     "dynamic_rpc_callsites": 1,
     "unresolved_callsites": 0,
     "dropped_call_sites": 5,
-    "migrations_scanned": 398,
+    "migrations_scanned": 400,
     "backend_files_scanned": 1438
   },
   "tables": {
