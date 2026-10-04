@@ -417,3 +417,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/auto-modele-empty-alias`
 - **Décision** : chore(registry): resync des projections L1 pour la migration 20261003 (+1 other commit)
 - **Sortie** : PR aucune | commits 2a7f0f274 45b759f06
+
+## 2026-10-04 — worktree-departments-operational (auto)
+
+- **Branche** : `worktree-departments-operational`
+- **Décision** : chore(audit): régénérer inventaire et candidats PR-8 sur le canonical resynchronisé (+6 other commits)
+- **Sortie** : PR aucune | commits f5f50adc1 69bac0de6 bd48d22e0 2391c7d75 afdd7320c e7763f2b2 b42fe3882
