@@ -102,8 +102,8 @@
         "backend/src/modules/blog/services",
         "backend/src/modules/blog/utils"
       ],
-      "files_count": 37,
-      "loc_total": 13967,
+      "files_count": 38,
+      "loc_total": 14089,
       "has_barrel": false
     },
     "bot-guard": {
@@ -259,7 +259,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115685,
+      "loc_total": 115334,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 597,
-      "loc_total": 114475,
+      "loc_total": 114531,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -411,7 +411,7 @@
         "backend/src/modules/marketing/templates"
       ],
       "files_count": 29,
-      "loc_total": 6964,
+      "loc_total": 6991,
       "has_barrel": false
     },
     "mcp-validation": {
@@ -502,7 +502,7 @@
         "backend/src/modules/orders/types"
       ],
       "files_count": 21,
-      "loc_total": 6201,
+      "loc_total": 6213,
       "has_barrel": true
     },
     "payments": {
@@ -700,8 +700,8 @@
         "scripts/wiki-generators",
         "scripts/wiki-generators/__tests__"
       ],
-      "files_count": 202,
-      "loc_total": 44849,
+      "files_count": 204,
+      "loc_total": 45388,
       "has_barrel": true
     },
     "search": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 276,
-      "loc_total": 51669,
+      "files_count": 284,
+      "loc_total": 52436,
       "has_barrel": true
     },
     "upload": {

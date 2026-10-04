@@ -11259,6 +11259,7 @@
         "backend/src/modules/blog/services/advice-enrichment.service.ts",
         "backend/src/modules/blog/services/advice-transform.service.ts",
         "backend/src/modules/blog/services/advice.service.ts",
+        "backend/src/modules/blog/services/blog-article-data.service.adjacent.test.ts",
         "backend/src/modules/blog/services/blog-article-data.service.ts",
         "backend/src/modules/blog/services/blog-article-transform.service.ts",
         "backend/src/modules/blog/services/blog-statistics.service.ts",
@@ -11428,9 +11429,34 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/blog/services/blog-article-data.service.adjacent.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@repo/database-types",
+        "backend/src/modules/blog/interfaces/blog.interfaces.ts",
+        "backend/src/modules/blog/services/blog-article-data.service.ts",
+        "backend/src/modules/blog/services/blog-article-transform.service.ts"
+      ],
+      "kind": "test",
+      "loc": 116,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/blog/services/blog-article-data.service.adjacent.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/blog/services/blog-article-data.service.ts",
       "importedBy": [
         "backend/src/modules/blog/blog.module.ts",
+        "backend/src/modules/blog/services/blog-article-data.service.adjacent.test.ts",
         "backend/src/modules/blog/services/blog.service.test.ts",
         "backend/src/modules/blog/services/blog.service.ts",
         "backend/src/modules/blog/services/r3-guide.service.test.ts",
@@ -11445,7 +11471,7 @@
         "backend/src/modules/search/services/supabase-indexation.service.ts"
       ],
       "kind": "service",
-      "loc": 829,
+      "loc": 835,
       "owner": "__unassigned__",
       "path": "backend/src/modules/blog/services/blog-article-data.service.ts",
       "risk": "low",
@@ -11516,6 +11542,7 @@
       "id": "backend/src/modules/blog/services/blog-article-transform.service.ts",
       "importedBy": [
         "backend/src/modules/blog/blog.module.ts",
+        "backend/src/modules/blog/services/blog-article-data.service.adjacent.test.ts",
         "backend/src/modules/blog/services/blog-article-data.service.ts",
         "backend/src/modules/blog/services/blog-article-relation.service.ts",
         "backend/src/modules/blog/services/blog-statistics.service.ts",
@@ -17481,7 +17508,7 @@
         "backend/src/modules/marketing/templates/social-post-templates.ts"
       ],
       "kind": "service",
-      "loc": 1044,
+      "loc": 1071,
       "owner": "__unassigned__",
       "path": "backend/src/modules/marketing/services/marketing-preparation.ts",
       "risk": "low",
@@ -20101,7 +20128,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 912,
+      "loc": 924,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/services/orders.service.ts",
       "risk": "low",
@@ -38803,6 +38830,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/tests/unit/orders.service.cancel-order-rpc-contract.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 173,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/orders.service.cancel-order-rpc-contract.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/tests/unit/orders.service.create-correlation-id.test.ts",
       "importedBy": [],
       "imports": [],
@@ -41635,7 +41681,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 188,
+      "loc": 202,
       "owner": "__unassigned__",
       "path": "frontend/app/components/blog/ArticleNavigation.tsx",
       "risk": "low",
@@ -44984,7 +45030,7 @@
         "~/components/seo/HtmlContent"
       ],
       "kind": "config",
-      "loc": 38,
+      "loc": 53,
       "owner": "__unassigned__",
       "path": "frontend/app/components/guide/MiniDiagnosticTable.tsx",
       "risk": "low",
@@ -47269,7 +47315,7 @@
         "~/components/ui/scroll-area"
       ],
       "kind": "config",
-      "loc": 593,
+      "loc": 595,
       "owner": "__unassigned__",
       "path": "frontend/app/components/pieces/PiecesFilterSidebar.tsx",
       "risk": "low",
@@ -47609,7 +47655,7 @@
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 619,
+      "loc": 621,
       "owner": "__unassigned__",
       "path": "frontend/app/components/pieces/PiecesVehicleContent.tsx",
       "risk": "low",
@@ -48823,7 +48869,7 @@
         "~/utils/image-optimizer"
       ],
       "kind": "config",
-      "loc": 116,
+      "loc": 112,
       "owner": "__unassigned__",
       "path": "frontend/app/components/ui/BrandLogo.tsx",
       "risk": "low",
@@ -50885,10 +50931,11 @@
       ],
       "imports": [
         "frontend/app/types/pieces-route.types.ts",
+        "frontend/app/utils/image-optimizer.ts",
         "frontend/app/utils/pieces-filters.utils.ts"
       ],
       "kind": "config",
-      "loc": 405,
+      "loc": 414,
       "owner": "__unassigned__",
       "path": "frontend/app/hooks/use-pieces-filters.ts",
       "risk": "low",
@@ -51641,7 +51688,7 @@
         "~/utils/single-fetch"
       ],
       "kind": "route",
-      "loc": 526,
+      "loc": 529,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/$.tsx",
       "risk": "low",
@@ -56890,17 +56937,11 @@
       "id": "frontend/app/routes/diagnostic.tsx",
       "importedBy": [],
       "imports": [
-        "~/components/layout/Container",
-        "~/components/ui/LoadingSpinner",
-        "~/components/ui/alert",
-        "~/components/ui/badge",
-        "~/components/ui/button",
-        "~/components/ui/card",
-        "~/components/ui/checkbox",
-        "~/utils/logger"
+        "~/components/diagnostic-wizard/DiagnosticWizard",
+        "~/components/layout/Container"
       ],
       "kind": "route",
-      "loc": 413,
+      "loc": 57,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/diagnostic.tsx",
       "risk": "low",
@@ -57946,7 +57987,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 1109,
+      "loc": 1111,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/search.tsx",
       "risk": "low",
@@ -59921,6 +59962,7 @@
         "frontend/app/components/cart/CartItem.tsx",
         "frontend/app/components/pieces/PieceDetailModal.tsx",
         "frontend/app/components/pieces/PiecesHeader.tsx",
+        "frontend/app/hooks/use-pieces-filters.ts",
         "frontend/app/routes/constructeurs.$brand.$model.$type.tsx",
         "frontend/app/services/api/brand.api.ts",
         "frontend/app/utils/pieces-loader.utils.ts",
@@ -59930,7 +59972,7 @@
         "~/utils/logger"
       ],
       "kind": "service",
-      "loc": 614,
+      "loc": 634,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/image-optimizer.ts",
       "risk": "low",
@@ -60269,7 +60311,7 @@
         "frontend/app/utils/pieces-route.utils.ts"
       ],
       "kind": "service",
-      "loc": 197,
+      "loc": 191,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/pieces-loader.utils.ts",
       "risk": "low",
@@ -60859,7 +60901,7 @@
         "frontend/app/utils/seo/pieces-schema-commerce.constants.ts"
       ],
       "kind": "service",
-      "loc": 314,
+      "loc": 318,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/seo/pieces-schema.utils.ts",
       "risk": "low",
@@ -61595,6 +61637,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/article-navigation-canonical-links.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 56,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/article-navigation-canonical-links.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/tests/unit/ast-grep-rule-globs-match-language.test.ts",
       "importedBy": [],
       "imports": [],
@@ -61640,6 +61701,25 @@
       "loc": 127,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/beacon.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/brand-logo-provenance.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 192,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/brand-logo-provenance.test.tsx",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -61747,6 +61827,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/catalogue-image-source.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 98,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/catalogue-image-source.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/tests/unit/catch-all-404-noindex.test.ts",
       "importedBy": [],
       "imports": [],
@@ -61754,6 +61853,25 @@
       "loc": 132,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/catch-all-404-noindex.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/catch-all-blog-advice-alias-redirect.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 54,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/catch-all-blog-advice-alias-redirect.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -62131,7 +62249,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 367,
+      "loc": 310,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/diagnostic-legacy-navigation.test.tsx",
       "risk": "low",
@@ -62172,6 +62290,25 @@
       "loc": 229,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/diagnostic-maintenance-step.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/diagnostic-page-wizard.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 76,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/diagnostic-page-wizard.test.tsx",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -62526,6 +62663,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/mini-diagnostic-table-anchor.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 58,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/mini-diagnostic-table-anchor.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/tests/unit/no-ios16-incompatible-regex.test.ts",
       "importedBy": [],
       "imports": [],
@@ -62761,6 +62917,25 @@
       "loc": 77,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/pieces-hero-fact-chip.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/pieces-hero-image-source.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 117,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/pieces-hero-image-source.test.tsx",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -69465,7 +69640,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 1238,
+      "loc": 1510,
       "owner": "__unassigned__",
       "path": "scripts/marketing/marketing-workbench.test.ts",
       "risk": "low",
@@ -69575,11 +69750,49 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "scripts/marketing/summarize-reactivation-exclusions.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 157,
+      "owner": "__unassigned__",
+      "path": "scripts/marketing/summarize-reactivation-exclusions.test.ts",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/marketing/summarize-reactivation-exclusions.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 105,
+      "owner": "__unassigned__",
+      "path": "scripts/marketing/summarize-reactivation-exclusions.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "scripts/marketing/workbench-cli.ts",
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 218,
+      "loc": 223,
       "owner": "__unassigned__",
       "path": "scripts/marketing/workbench-cli.ts",
       "risk": "low",

@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import {
   prepareScenario,
   explainSegment,
+  summarizeSegment,
   planOpportunities,
   importPreview,
   prepareMediaPlan,
@@ -21,6 +22,15 @@ import {
   scoreContacts,
   engagementReport,
 } from "../../backend/src/modules/marketing/services/marketing-measurement";
+import type { SegmentRule } from "../../backend/src/modules/marketing/dto/marketing-workbench.dto";
+
+const reactivationSegment: SegmentRule = {
+  op: "all",
+  rules: [
+    { op: "inactive", days: 180 },
+    { op: "not", rule: { op: "audience", value: "professional" } },
+  ],
+};
 
 export function runWorkbench(args: string[]) {
   const w = JSON.parse(
@@ -60,13 +70,7 @@ export function runWorkbench(args: string[]) {
     case "--all-scenarios":
       return w.scenarios.map((s: { id: string }) => prepareScenario(w, s.id));
     case "--segment":
-      return explainSegment(w, {
-        op: "all",
-        rules: [
-          { op: "inactive", days: 180 },
-          { op: "not", rule: { op: "audience", value: "professional" } },
-        ],
-      });
+      return explainSegment(w, reactivationSegment);
     case "--opportunities":
       return {
         opportunities: planOpportunities(w, [
@@ -187,6 +191,7 @@ export function runWorkbench(args: string[]) {
         Array.from({ length: 60 }, (_, i) => `synthetic-unit-${i}`),
       );
       return {
+        audience: summarizeSegment(w, reactivationSegment),
         economics: economicReport(w.context, d),
         engagement: engagementReport(w),
         scores: scoreContacts(w, {

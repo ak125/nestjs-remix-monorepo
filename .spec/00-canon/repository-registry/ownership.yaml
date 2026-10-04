@@ -17,6 +17,11 @@
 
 schemaVersion: 1.0.0
 entries:
+  - glob: scripts/marketing/summarize-reactivation-exclusions{,.test}.ts
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
   - glob: .claude/governance/**
     domain: D15
     owner: '@ak125'
@@ -1431,6 +1436,14 @@ entries:
     risk: medium
   # 7 index strictement dupliqués, tables catalogue / véhicule / blog / SEO (PR #1619).
   - glob: backend/supabase/migrations/20260929_drop_exact_duplicate_indexes*.sql
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  # 37 index ordinaires doublés par la clé primaire ou la contrainte UNIQUE de même
+  # définition, tables contenu / blog / SEO / sitemap / KG (lot 1/3). Couvre .sql +
+  # .down.sql. D15 / @ak125 pour les lots transverses, comme #1619.
+  - glob: backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_content*.sql
     domain: D15
     owner: '@ak125'
     sourceConfidence: high

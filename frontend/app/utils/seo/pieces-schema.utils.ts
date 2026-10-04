@@ -8,7 +8,11 @@ import {
   type PieceData,
   type VehicleData,
 } from "../../types/pieces-route.types";
-import { ImageOptimizer } from "../image-optimizer";
+import {
+  ImageOptimizer,
+  isValidImagePath,
+  resolvePartImagePath,
+} from "../image-optimizer";
 import {
   DEFAULT_RETURN_POLICY_FR,
   DEFAULT_SELLER,
@@ -219,12 +223,12 @@ export function buildHeroImagePreload(
 ): HeroImagePreloadMeta[] {
   let imagePath: string;
 
-  if (vehicle.modelePic && vehicle.modelePic !== "no.webp") {
+  if (vehicle.modelePic && isValidImagePath(vehicle.modelePic)) {
     const marqueSlug = vehicle.marqueAlias || vehicle.marque.toLowerCase();
     imagePath = `constructeurs-automobiles/marques-modeles/${marqueSlug}/${vehicle.modelePic}`;
-  } else if (gamme?.image && gamme.image !== "no.webp") {
+  } else if (gamme?.image && isValidImagePath(gamme.image)) {
     // Fallback tier 2 : image gamme (pg_pic)
-    imagePath = `articles/gammes-produits/catalogue/${gamme.image}`;
+    imagePath = resolvePartImagePath(gamme.image);
   } else {
     return [];
   }
