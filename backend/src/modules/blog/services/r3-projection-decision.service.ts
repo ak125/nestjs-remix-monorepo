@@ -1,15 +1,14 @@
 /**
- * R3ProjectionDecisionService — chaîne de décision DARK du consumer R3 (P2-R3-D, ADR-059).
+ * R3ProjectionDecisionService — chaîne de décision du consumer R3 (P2-R3-D/E, ADR-059, ADR-106).
  *
- * Évalue, pour une gamme, si la projection (RAW → WIKI → exports → projection) est **prête à être
- * rendue**. Ne rend RIEN et ne sert RIEN : le rendu md→HTML gouverné est le périmètre de P2-R3-E.
+ * Décide, pour une gamme, si le corps de la page conseil est servi depuis la projection
+ * (RAW → WIKI → exports → projection) ou depuis le legacy. Ne rend rien lui-même : le rendu des
+ * slots est fait par le service de page (presenter + renderer Markdown gouverné, ADR-106 D6).
  *
- * **Deux notions distinctes, jamais confondues** (le mapper émet du Markdown, la surface servie
- * attend du HTML, et aucun renderer gouverné n'existe encore) :
- *   - `projectionStatus` — état de PRÉPARATION : `READY_FOR_RENDER` | `FALLBACK` ;
- *   - `servedBodySource` — source RÉELLEMENT rendue. En D, littéralement `'legacy'`, TOUJOURS.
- * `READY_FOR_RENDER` signifie « le mapper a produit un DTO complet » — jamais « c'est servi ».
- * Seule P2-R3-E, après renderer + sanitization, pourra élargir `servedBodySource` à `'projection'`.
+ * **Deux champs, couplés par le type** (union discriminée sur `projectionStatus`) :
+ *   - `READY_FOR_RENDER` ⇒ `servedBodySource: 'projection'`, `slots` non nuls, aucune cause ;
+ *   - `FALLBACK` ⇒ `servedBodySource: 'legacy'`, `slots: null`, cause typée obligatoire.
+ * Aucun état intermédiaire n'est représentable (prête mais non servie, servie sans slots…).
  *
  * Ordre imposé — chaque étape est un gate fail-closed franchi AVANT la suivante :
  *   1. résoudre l'`entityKey` canonique (`gamme:<alias>`, forme namespacée attendue par la RPC) ;
@@ -43,17 +42,13 @@ import { SeoProjectionReaderService } from '@modules/seo-projection/seo-projecti
 export const R3_PROJECTION_ROLE = R3_MAPPER_ROLE;
 
 /**
- * État de PRÉPARATION de la projection — **pas** la source servie.
- * `READY_FOR_RENDER` = le mapper a produit un DTO complet et conforme, rendable par P2-R3-E.
+ * Verdict de la chaîne. `READY_FOR_RENDER` = le mapper a produit un DTO complet et conforme au
+ * contrat de rendu ADR-106 ; le corps de la page est alors servi depuis la projection.
  */
 export type R3ProjectionStatus = 'READY_FOR_RENDER' | 'FALLBACK';
 
-/**
- * Source RÉELLEMENT rendue. Volontairement figée au littéral `'legacy'` en P2-R3-D : aucun
- * renderer md→HTML gouverné n'existe, donc aucune valeur `'projection'` ne peut être honnête ici.
- * L'élargissement de ce type est le livrable central de P2-R3-E.
- */
-export type R3ServedBodySource = 'legacy';
+/** Source RÉELLEMENT rendue — `'projection'` si et seulement si `READY_FOR_RENDER`. */
+export type R3ServedBodySource = 'legacy' | 'projection';
 
 /** Causes de repli — toutes observables, aucune muette. */
 export type R3FallbackReason =
@@ -65,24 +60,33 @@ export type R3FallbackReason =
   | 'MAPPER_INVALID'
   | 'MAPPER_INCOMPLETE';
 
-export interface R3ProjectionDecision {
+interface R3ProjectionDecisionBase {
   entityKey: string;
   projectionRole: typeof R3_PROJECTION_ROLE;
-  /** Préparation seulement. `READY_FOR_RENDER` ≠ « servi ». */
-  projectionStatus: R3ProjectionStatus;
-  /** Toujours `'legacy'` en D — le BODY servi ne dépend pas encore de `projectionStatus`. */
-  servedBodySource: R3ServedBodySource;
-  /** `null` seulement si `projectionStatus === 'READY_FOR_RENDER'`. */
-  fallbackReason: R3FallbackReason | null;
   mappedCount: number;
   invalidCount: number;
-  /**
-   * Slots projetés — présents UNIQUEMENT si `projectionStatus === 'READY_FOR_RENDER'`. Transportés
-   * verbatim depuis le mapper (aucune reformulation intermédiaire). `null` sur tout `FALLBACK`,
-   * pour qu'aucune projection partielle ne puisse fuiter.
-   */
-  slots: Partial<Record<PlannableSection, R3Slot>> | null;
 }
+
+/** Projection prête : le corps est servi depuis les slots (verbatim du mapper). */
+export interface R3ProjectionReady extends R3ProjectionDecisionBase {
+  projectionStatus: 'READY_FOR_RENDER';
+  servedBodySource: 'projection';
+  fallbackReason: null;
+  slots: Partial<Record<PlannableSection, R3Slot>>;
+}
+
+/**
+ * Repli : corps legacy. `slots: null` — aucune projection partielle ne peut fuiter (atomicité
+ * BODY : une projection incomplète ou invalide est écartée en entier).
+ */
+export interface R3ProjectionFallback extends R3ProjectionDecisionBase {
+  projectionStatus: 'FALLBACK';
+  servedBodySource: 'legacy';
+  fallbackReason: R3FallbackReason;
+  slots: null;
+}
+
+export type R3ProjectionDecision = R3ProjectionReady | R3ProjectionFallback;
 
 /** `entity_id` canonique namespacé — même forme que la clé d'écriture et le `p_entity_id` de la RPC. */
 function toEntityKey(pgAlias: string): string {
@@ -163,7 +167,7 @@ export class R3ProjectionDecisionService {
     // 5. Mapping + complétude jugée par le contrat de rendu ADR-106 (table unique du mapper).
     const result = mapR3Projection(envelope);
 
-    // 6/7. Atomicité : ready ⇒ DTO rendable ; sinon FALLBACK (la projection ENTIÈRE est écartée).
+    // 6/7. Atomicité : ready ⇒ corps projeté ; sinon FALLBACK (la projection ENTIÈRE est écartée).
     if (!result.ready) {
       return this.fallback(
         entityKey,
@@ -177,8 +181,7 @@ export class R3ProjectionDecisionService {
       entityKey,
       projectionRole: R3_PROJECTION_ROLE,
       projectionStatus: 'READY_FOR_RENDER',
-      // Prête, mais PAS servie : D n'a pas de renderer. Cf. P2-R3-E.
-      servedBodySource: 'legacy',
+      servedBodySource: 'projection',
       fallbackReason: null,
       mappedCount: result.mapped.length,
       invalidCount: result.invalid.length,

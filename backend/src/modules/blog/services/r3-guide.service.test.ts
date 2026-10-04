@@ -9,6 +9,8 @@
  *   - `onArticleChanged` log warn quand le payload n'a pas de pg_alias
  *   - liens vers les guides d'achat (ADR-103 D5) : clé de cache par drapeau,
  *     encart et contenu décidés par la règle unique
+ *   - canary projection (ADR-106) : corps projeté sur READY_FOR_RENDER, legacy
+ *     sur FALLBACK, HEAD inchangé dans les deux cas
  *
  * Pas d'I/O réseau ; mocks minimaux. CacheService est mocké via une Map
  * en mémoire avec TTL relatif émulé (Date.now()).
@@ -22,6 +24,11 @@ import { BlogArticleRelationService } from './blog-article-relation.service';
 import { InternalLinkingService } from '../../seo/internal-linking.service';
 import { R3ProjectionDecisionService } from './r3-projection-decision.service';
 import { R3GuideService } from './r3-guide.service';
+import {
+  mapR3Projection,
+  R3_MAPPER_ROLE,
+} from '@modules/seo-projection/projection-r3.mapper';
+import type { ProjectionEnvelope } from '@modules/seo-projection/seo-projection-reader.service';
 import {
   R6GuideLinkPolicyService,
   type R6GuideLinkSnapshot,
@@ -357,17 +364,77 @@ describe('R3GuideService — cache + single-flight + invalidation (PR-A)', () =>
   });
 });
 
-describe('R3GuideService — canary projection (P2-R3-D, dark)', () => {
-  const TARGETED_DECISION = {
+/** Slots d'une décision prête, produits par le VRAI mapper (jamais un DTO fabriqué à la main). */
+function readySlots(extra: Array<[string, string]> = []) {
+  const blocks = [
+    ['function', 'Le récepteur transmet la pression.'],
+    ['maintenance_interval', 'Contrôler à chaque vidange du liquide.'],
+    ['failure_symptoms', 'Pédale molle ou qui reste au plancher.'],
+    ...extra,
+  ].map(([section, content_md]) => ({
+    role: R3_MAPPER_ROLE,
+    content: {
+      content_md,
+      source_ids: ['raw:web/x.md'],
+      truth_level: 'sourced',
+      section,
+      usefulness_target: null,
+    },
+  }));
+  const result = mapR3Projection({
+    entity_id: `gamme:${PG_ALIAS}`,
+    entity_type: 'gamme',
+    slug: PG_ALIAS,
+    facts: [],
+    blocks: blocks as ProjectionEnvelope['blocks'],
+  });
+  if (!result.ready) throw new Error('fixture : projection non prête');
+  return result.slots;
+}
+
+function readyDecision(slots = readySlots()) {
+  return {
     entityKey: `gamme:${PG_ALIAS}`,
     projectionRole: 'R3_CONSEILS' as const,
     projectionStatus: 'READY_FOR_RENDER' as const,
-    servedBodySource: 'legacy' as const,
+    servedBodySource: 'projection' as const,
     fallbackReason: null,
-    mappedCount: 7,
+    mappedCount: Object.keys(slots).length,
     invalidCount: 0,
-    slots: {},
+    slots,
   };
+}
+
+/** Contenu legacy reconnaissable : il ne doit JAMAIS apparaître sur le chemin projeté (D3). */
+const LEGACY_CONSEIL = [
+  {
+    title: 'Avant (legacy)',
+    content: '<p>LEGACY_S1 #LinkGamme_7#</p>',
+    sectionType: 'S1',
+    order: 1,
+    qualityScore: 0.9,
+    sources: ['rag://legacy'],
+  },
+  {
+    title: 'Quand (legacy)',
+    content: '<p>LEGACY_S2</p>',
+    sectionType: 'S2',
+    order: 2,
+    qualityScore: 0.9,
+    sources: ['rag://legacy'],
+  },
+  {
+    title: 'Liens (legacy)',
+    content: '<a href="/blog/x.html">LEGACY_META</a>',
+    sectionType: 'META',
+    order: 99,
+    qualityScore: null,
+    sources: [],
+  },
+];
+
+describe('R3GuideService — canary projection (ADR-106)', () => {
+  const TARGETED_DECISION = readyDecision();
 
   it('hors canary : aucune décision projetée, aucun appel à decide(), payload legacy intact', async () => {
     const { service, projectionDecision } = await buildService();
@@ -413,7 +480,7 @@ describe('R3GuideService — canary projection (P2-R3-D, dark)', () => {
     expect(dataService.getArticleByGamme).toHaveBeenCalledTimes(2);
   });
 
-  it('canary ciblée : attache projectionMeta (signal de ciblage) sans toucher le HEAD', async () => {
+  it('projection prête : projectionMeta annonce un corps servi depuis la projection', async () => {
     const { service, projectionDecision } = await buildService();
     projectionDecision.isTargeted.mockReturnValue(true);
     projectionDecision.decide.mockResolvedValue(TARGETED_DECISION);
@@ -422,15 +489,155 @@ describe('R3GuideService — canary projection (P2-R3-D, dark)', () => {
 
     expect(payload?.projectionMeta).toEqual({
       projectionStatus: 'READY_FOR_RENDER',
-      // Prête à être rendue, mais le BODY servi reste legacy : D n'a pas de renderer.
-      servedBodySource: 'legacy',
+      servedBodySource: 'projection',
       fallbackReason: null,
-      mappedCount: 7,
+      mappedCount: 2,
       invalidCount: 0,
     });
-    // HEAD (autorité SEO) strictement inchangé par la canary.
-    expect(payload?.page.sourceType).toBe('article');
-    expect(payload?.page.metaTitle).toBe(articleStub.title);
+  });
+
+  it('projection prête : corps = sections projetées, rien du contenu legacy (ni META, ni repli)', async () => {
+    const { service, seoService, internalLinkingService, projectionDecision } =
+      await buildService();
+    seoService.getGammeConseil.mockResolvedValue(LEGACY_CONSEIL);
+    projectionDecision.isTargeted.mockReturnValue(true);
+    projectionDecision.decide.mockResolvedValue(TARGETED_DECISION);
+
+    const payload = await service.getR3GuidePayload(PG_ALIAS);
+
+    expect(payload?.s1Sections).toEqual([
+      {
+        sectionType: 'S1',
+        title: 'Rôle de la pièce',
+        anchor: 'role-de-la-piece',
+        order: 0,
+        html: '<p>Le récepteur transmet la pression.</p>',
+        sources: [],
+        qualityScore: null,
+      },
+    ]);
+    expect(payload?.bodySections.map((s) => [s.sectionType, s.html])).toEqual([
+      [
+        'S2',
+        '<p>Contrôler à chaque vidange du liquide.</p><p>Pédale molle ou qui reste au plancher.</p>',
+      ],
+    ]);
+    expect(payload?.metaSections).toEqual([]);
+    expect(payload?.page.sourceType).toBe('conseil');
+    expect(JSON.stringify(payload)).not.toMatch(/LEGACY_|rag:\/\//);
+    expect(internalLinkingService.processLinkGamme).not.toHaveBeenCalled();
+  });
+
+  it('projection prête : HEAD et blocs hors corps identiques au legacy', async () => {
+    const targeted = await buildService();
+    targeted.seoService.getGammeConseil.mockResolvedValue(LEGACY_CONSEIL);
+    targeted.seoService.getSeoBrief.mockResolvedValue({
+      meta_title: 'Titre SEO',
+      meta_description: 'Description SEO',
+    });
+    targeted.projectionDecision.isTargeted.mockReturnValue(true);
+    targeted.projectionDecision.decide.mockResolvedValue(TARGETED_DECISION);
+    const legacy = await buildService();
+    legacy.seoService.getGammeConseil.mockResolvedValue(LEGACY_CONSEIL);
+    legacy.seoService.getSeoBrief.mockResolvedValue({
+      meta_title: 'Titre SEO',
+      meta_description: 'Description SEO',
+    });
+
+    const p = (await targeted.service.getR3GuidePayload(PG_ALIAS))!;
+    const l = (await legacy.service.getR3GuidePayload(PG_ALIAS))!;
+
+    const head = (x: typeof p) => ({
+      pg_alias: x.page.pg_alias,
+      pg_id: x.page.pg_id,
+      title: x.page.title,
+      metaTitle: x.page.metaTitle,
+      metaDescription: x.page.metaDescription,
+      excerpt: x.page.excerpt,
+      keywords: x.page.keywords,
+      publishedAt: x.page.publishedAt,
+      updatedAt: x.page.updatedAt,
+      featuredImage: x.page.featuredImage,
+      tags: x.page.tags,
+      cta_link: x.page.cta_link,
+      cta_anchor: x.page.cta_anchor,
+      buyingGuideHref: x.page.buyingGuideHref,
+    });
+    expect(head(p)).toEqual(head(l));
+    expect(p.page.metaTitle).toBe('Titre SEO');
+    expect([p.related, p.vehicles, p.seoSwitches, p.adjacent]).toEqual([
+      l.related,
+      l.vehicles,
+      l.seoSwitches,
+      l.adjacent,
+    ]);
+  });
+
+  it('projection prête : images, temps de lecture et difficulté calculés sur le corps projeté', async () => {
+    const { service, seoService, projectionDecision } = await buildService();
+    seoService.getApprovedImages.mockResolvedValue([
+      {
+        sectionId: 'S1',
+        src: '/s1.webp',
+        alt: 'a',
+        caption: null,
+        aspectRatio: '4:3',
+      },
+      {
+        sectionId: 'S2',
+        src: '/s2.webp',
+        alt: 'b',
+        caption: 'c',
+        aspectRatio: '16:9',
+      },
+    ]);
+    projectionDecision.isTargeted.mockReturnValue(true);
+    projectionDecision.decide.mockResolvedValue(TARGETED_DECISION);
+
+    const payload = await service.getR3GuidePayload(PG_ALIAS);
+
+    expect(payload?.s1Sections[0].image).toEqual({
+      src: '/s1.webp',
+      alt: 'a',
+      caption: undefined,
+      aspectRatio: '4:3',
+      loading: 'eager',
+    });
+    expect(payload?.bodySections[0].image?.loading).toBe('lazy');
+    expect(payload?.page.readingTime).toBe(1);
+    // Aucune procédure projetée : ni difficulté ni durée déduites.
+    expect(payload?.page.difficulty).toBeNull();
+    expect(payload?.page.durationMin).toBeNull();
+  });
+
+  it('projection prête : la règle des liens guides (ADR-103 D5) s’applique au contenu projeté', async () => {
+    const { service, guideLinkPolicy, projectionDecision } =
+      await buildService();
+    guideLinkPolicy.getSnapshot.mockResolvedValue(
+      guideLinkSnapshot(
+        true,
+        [PG_ALIAS, 'maitre-cylindre'],
+        [PG_ALIAS, 'maitre-cylindre'],
+      ),
+    );
+    projectionDecision.isTargeted.mockReturnValue(true);
+    projectionDecision.decide.mockResolvedValue(
+      readyDecision(
+        readySlots([
+          [
+            'faq',
+            'Voir [le guide](/blog-pieces-auto/guide-achat/maitre-cylindre).',
+          ],
+        ]),
+      ),
+    );
+
+    const payload = await service.getR3GuidePayload(PG_ALIAS);
+
+    const faq = payload?.bodySections.find((s) => s.sectionType === 'S8');
+    expect(faq?.html).toBe(
+      '<p>Voir <a href="/blog-pieces-auto/conseils/maitre-cylindre">le guide</a>.</p>',
+    );
   });
 
   it('canary ciblée + repli : projectionMeta expose la cause, BODY legacy servi', async () => {
@@ -439,6 +646,7 @@ describe('R3GuideService — canary projection (P2-R3-D, dark)', () => {
     projectionDecision.decide.mockResolvedValue({
       ...TARGETED_DECISION,
       projectionStatus: 'FALLBACK',
+      servedBodySource: 'legacy',
       fallbackReason: 'PROJECTION_ABSENT',
       mappedCount: 0,
       slots: null,

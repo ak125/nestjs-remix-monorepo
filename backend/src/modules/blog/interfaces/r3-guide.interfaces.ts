@@ -61,11 +61,10 @@ export interface R3GuideSection {
  * présence EST le signal de ciblage (elle commande le bypass de cache backend et le `no-store`
  * côté loader). Absent = hors canary = chemin legacy strictement inchangé.
  *
- * **P2-R3-D est une chaîne de décision, pas un rendu.** Les deux champs sont distincts :
- * `projectionStatus` = état de PRÉPARATION (`READY_FOR_RENDER` = DTO complet produit par le
- * mapper) ; `servedBodySource` = source RÉELLEMENT rendue, figée au littéral `'legacy'` tant que
- * le renderer md→HTML gouverné n'existe pas (P2-R3-E). `READY_FOR_RENDER` ne signifie JAMAIS
- * « le BODY ci-joint vient de la projection ».
+ * `projectionStatus === 'READY_FOR_RENDER'` ⇔ `servedBodySource === 'projection'` : le corps
+ * ci-joint (S1 + sections du corps, sans META) vient alors de la projection, rendue par le
+ * renderer gouverné d'ADR-106. Sur `FALLBACK`, le corps est celui du chemin legacy et
+ * `fallbackReason` en donne la cause.
  */
 export interface R3ProjectionMeta {
   projectionStatus: R3ProjectionStatus;
