@@ -35,6 +35,7 @@ export interface RmProduct {
   piece_name: string;
   pm_id: number;
   pm_name: string;
+  pm_logo?: string | null;
   price_ttc: number;
   quality: RmQuality;
   stock_status: RmStockStatus;
@@ -157,6 +158,7 @@ export interface RmGroupedPiece {
     reference: string;
     marque: string;
     marque_id: number;
+    marque_logo?: string | null;
     prix_unitaire: number;
     prix_ttc: number;
     image: string;
