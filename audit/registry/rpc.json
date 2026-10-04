@@ -2967,7 +2967,7 @@
         }
       ],
       "definedInMigrations": [
-        "20260610_fix_r5_redirect_target_align_reference_rpcs.sql"
+        "20261003_r5_redirect_target_require_conseils_article.sql"
       ],
       "domain": "UNKNOWN",
       "id": "public.get_r5_redirect_target",
