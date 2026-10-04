@@ -1,16 +1,17 @@
 # AutoMecanik — Tableau de pilotage (24 départements)
 
 > Doc d'analyse/pilotage (pas un registre, pas du canon). Pointe vers l'existant — ne
-> duplique pas `canonical.json`. Maj : 2026-06-02. Voir le tunnel : [sales-funnel-scorecard.md](./sales-funnel-scorecard.md) (sous-funnel `/pieces`) + le funnel site GA4/GSC : [data-top-of-funnel-report.md](./data-top-of-funnel-report.md).
+> duplique pas `canonical.json`. Maj : 2026-06-02 ; corrections de cohérence 2026-10-04 (bilan, ligne 12 / Vue 6 / fiche Achats sur l'état réel de `supplier-truth`, fiche Catalogue alignée sur la ligne 10, [réconciliation 24 ↔ 20](#réconciliation-24-départements--20-slugs-yaml)). Voir le tunnel : [sales-funnel-scorecard.md](./sales-funnel-scorecard.md) (sous-funnel `/pieces`) + le funnel site GA4/GSC : [data-top-of-funnel-report.md](./data-top-of-funnel-report.md).
 > **Règle d'or : existant d'abord → mesurer → améliorer → créer seulement si le scoring prouve le manque → pause sinon.**
 
 > **Ce document ne crée aucun agent, aucun registre, aucun module et aucune infrastructure de reporting.
 > Il route les capacités existantes vers les départements, clarifie leur mode de maturité, et définit le
 > rapport attendu pour permettre le pilotage par scoring.**
 
-> **Projection machine-readable (warn-only, PR #787).** Un sous-ensemble *commerce-loop* de ces départements
+> **Projection machine-readable (warn-only, PR #787).** Introduite pour un sous-ensemble *commerce-loop*
 > (Achats & Fournisseurs → `supplier`, Commercial & Ventes → `sales`, Pricing → `pricing`) + leurs handoffs
-> métier (`supplier→sales` dispo, `pricing→sales` marge) est formalisé, en **slugs**, dans
+> métier (`supplier→sales` dispo, `pricing→sales` marge), elle porte aujourd'hui **20 slugs** pour ces 24 lignes
+> (correspondance exhaustive : [réconciliation 24 ↔ 20](#réconciliation-24-départements--20-slugs-yaml)). Formalisée, en **slugs**, dans
 > [`agent-operating-map.yaml`](../.spec/00-canon/ai-registry/agent-operating-map.yaml) (blocs `departments:` /
 > `department_handoffs:`, ai-registry). Pont vers les domaines techniques D1-D16 via `repo_domains`.
 > **Autorité par champ** : ce markdown reste la **SoT narrative** (Vue 1/5/6 + format rapport) ; le yaml est la
@@ -43,7 +44,7 @@
 | 9 | Knowledge RAW & WIKI | fiches WIKI validées | `rag-*` + `wiki-proposal-writer` + `rag-check` | SUPPORT | wiki readiness report | Fort | readiness chain ADR-033 | IMPROVE |
 | 10 | Catalogue & Compatibilité | erreurs compat ↓ + dispo affichée vs réelle | `catalog`/`vehicles` + `vehicle-ops` + catalog-integrity | LIVE | catalog integrity report | **Moyen** | mesuré 06-01 : **~11,7k pièces embrayage affichées vendables** (épicentre rupture). Quarantaine **reportée → APRÈS sentinelle dispo (cf #12)**, jamais hide aveugle | **IMPROVE** |
 | 11 | Diagnostic & Assistance | demandes issues diagnostic | `diagnostic-engine` + `vehicle-ops` | LIVE | diagnostic report | Moyen | diag→produit (5/196) | REUSE |
-| 12 | **Achats & Fournisseurs** | dispo réelle / remb. rupture | tarif `price-import`(LIVE) + `suppliers.service`+`___xtr_supplier`(LIVE) + connecteur `reconcile`(contrat) + DistriCash spl_id 26 (worktree) + `pri_dispo`/`pri_marge_n` | LIVE + WORKTREE | supplier availability report | **Critique** | **ORDRE = tarif→config tous fournisseurs→sentinelle dispo→quarantaine**. **Méthode vérif dispo EXISTE** : module `supplier-truth` (worktree `feat/supplier-cal-connector`, 18 tests, **0 PR, 123 commits derrière main**) — connecteurs inoshop→DistriCash(26)+CAL, truth-engine, sync scheduler (=sentinelle), `OrderAvailabilityService→NOMINAL/REVIEW/EQUIVALENCE`. Chantier = **rebase+merge read-only + câbler flux panier/commande**, PAS construire. Quarantaine en dernier | IMPROVE |
+| 12 | **Achats & Fournisseurs** | dispo réelle / remb. rupture | tarif `price-import`(LIVE) + `suppliers.service`+`___xtr_supplier`(LIVE) + connecteur `reconcile`(contrat) + module `supplier-truth` (fusionné, inerte par flag) + `pri_dispo`/`pri_marge_n` | LIVE + DORMANT | supplier availability report | **Critique** | **ORDRE = tarif→config tous fournisseurs→sentinelle dispo→quarantaine**. `supplier-truth` (connecteurs inoshop→DistriCash **spl_id 71** « DCA » — réconciliation 06-01, pas 26 — + CAL spl_id 19, truth-engine, sync = sentinelle). **Niveaux de preuve au 2026-10-04 (`main` 27da20f66)** : code présent **oui** · branché **oui** (`AppModule` : `GET api/admin/supplier-truth/status`, admin, lecture seule ; `WorkerModule` : runner + scheduler Bull 4 h + job processor) · activé **seulement si** `SUPPLIER_TRUTH_SYNC_ENABLED` vaut exactement `true` (DEV : absent ; `.env.example` : `false` ; PREPROD/PROD : non vérifié) · exécution observée **non vérifiable** (lecture base PROD non autorisée) · dispo fournisseur vérifiée **non**. Désactivation désormais totale : le flag à `false` désarme le repeatable persistant dans Redis et le job processor refuse tout job résiduel (recette #9, 2026-10-04). `OrderAvailabilityService` n'a **aucun** consommateur panier/commande et lit les tables de consensus H3 qu'aucune migration ne déclare. Chantier = activation owner-gated + H3 + câblage panier/commande, PAS construire. Quarantaine en dernier | IMPROVE |
 | 13 | **Commercial & Ventes** | paiement **gardé** | `orders`/`cart` + funnel `__seo_event_log` | LIVE | sales funnel report | **Critique** | panier→checkout→payé | IMPROVE |
 | 14 | Service Client & Fidélisation | relances / satisfaction | `support` + retention agent + abandoned-cart | DORMANT | retention report | Faible | 0 panier abandonné capturé | IMPROVE |
 | 15 | Logistique & Opérations | délais / retours | `shipping`/`orders` (physique externe) | SUPPORT / NO-CODE | délais/retours report | Moyen | délai réel expédition | IMPROVE / NO-CODE |
@@ -59,7 +60,49 @@
 
 **Types Team Topologies** — Stream : Marketing · Pages&SEO · Commercial · Service Client · Fafa · Produit · | Platform : IT · Data · IA/Agents · | Enabling : Gouvernance · Stratégie&Scoring · Risk&Audit · People/Doc · Brand · | Complicated-subsystem : Catalogue · Pricing · Diagnostic · Knowledge · Achats.
 
-**Bilan : 16 REUSE · 6 IMPROVE · 2 NO-CODE.** Rien à construire — voir le backlog parké dans le scorecard tunnel.
+**Bilan : 12 REUSE (dont #23 « PAUSE création ») · 9 IMPROVE · 2 NO-CODE · 1 mixte IMPROVE / NO-CODE (#15) = 24**, chaque ligne comptée une seule fois (REUSE : 1-6, 11, 16, 19, 21, 23, 24 · IMPROVE : 7-10, 12-14, 20, 22 · NO-CODE : 17, 18). Rien à construire — voir le backlog parké dans le scorecard tunnel.
+
+### Réconciliation 24 départements ↔ 20 slugs YAML
+
+Les **24 lignes** ci-dessus sont la carte narrative ; `agent-operating-map.yaml` (`departments:`) porte **20 slugs**.
+Correspondance exhaustive (aucun id inventé). Le numéro de ligne n'est **pas** un domaine technique : la ligne #16
+« Pricing » n'a rien à voir avec le domaine D16 « Maintenance » de `domains.yaml`.
+
+| # | Département (narratif) | Slug YAML | Écart |
+|---|---|---|---|
+| 1 | Direction générale | — | aucun slug |
+| 2 | Gouvernance | `governance` | — |
+| 3 | Stratégie & Scoring | `strategy` | — |
+| 4 | Marketing & Acquisition | `marketing` | — |
+| 5 | Brand & Communication | `brand` | — |
+| 6 | Contenu éditorial | `content` | — |
+| 7 | Production Pages & SEO | `seo` | — |
+| 8 | Media & Fafa | `media` | — |
+| 9 | Knowledge RAW & WIKI | `wiki` | — |
+| 10 | Catalogue & Compatibilité | `catalog` | — |
+| 11 | Diagnostic & Assistance | `diagnostic` | — |
+| 12 | Achats & Fournisseurs | `supplier` | état/preuve YAML périmés (citent la branche `feat/supplier-truth-runtime-wiring` « not merged ») |
+| 13 | Commercial & Ventes | `sales` | — |
+| 14 | Service Client & Fidélisation | `support` | — |
+| 15 | Logistique & Opérations | `logistics` | — |
+| 16 | Pricing | `pricing` | — |
+| 17 | Finance & Comptabilité | `finance` | libellé YAML « Finance & Facturation » |
+| 18 | Juridique & Assurances | — | aucun slug |
+| 19 | Risk & Audit | — | aucun slug |
+| 20 | Produit & Expérience Client | — | aucun slug |
+| 21 | IT & Runtime | `runtime` | libellé YAML « Runtime & Observability » |
+| 22 | Data & Analytics | `data` | — |
+| 23 | IA, Agents & Automatisation | `ia-agents` | — |
+| 24 | People, Formation & Doc | `people` | **homonymie seule** : le slug est « People & Staff » (capacité `staff`, `repo_domains` D11+D13), alors que la ligne #24 désigne la doc et la connaissance (`.claude/knowledge`, REPO_MAP, `.claude/rules`). Le module `backend/src/modules/staff/` (gestion admin du personnel) est classé **D8** dans `canonical.json`. Périmètres disjoints. |
+
+**20 slugs = 24 − 4 lignes sans slug (#1, #18, #19, #20)** ; aucun slug sans ligne. Conséquence : le Command
+Center (`scripts/governance/build-command-center-snapshot.js` → `audit/registry/command-center-snapshot.json` →
+`/admin/command-center`) affiche ces **20** slugs, pas les 4 autres. Le YAML n'est **pas** étendu ici. Il faudrait
+créer 4 ids nouveaux et leur attribuer des `repo_domains` (le schéma en exige au moins un, et un `state` parmi
+`live/partial/dormant/broken/duplicate`). Or Juridique est NO-CODE et Direction générale est hors repo : ce serait
+inventer, dans `.spec/00-canon/**`, qui est owner-only. **Décision owner.** D'ici là, ces 4 lignes ne sont suivies
+que dans ce document. Les écarts de la ligne 12 et de `people` relèvent du même fichier : correctif proposé à
+l'owner, non appliqué ici.
 
 ---
 
@@ -118,7 +161,7 @@
 ## Vue 6 — Structure de pilotage (départements critiques)
 | Département | Agents / skills / capacités | Modules | KPI | Rapport |
 |---|---|---|---|---|
-| Achats & Fournisseurs | Supplier-Truth engine (WORKTREE) + `pri_dispo`/`pri_marge_n` | suppliers / pricing | dispo réelle | supplier availability report |
+| Achats & Fournisseurs | Supplier-Truth engine (fusionné, inerte par flag — cf. ligne 12) + `pri_dispo`/`pri_marge_n` | suppliers / pricing | dispo réelle | supplier availability report |
 | Commercial & Ventes | funnel checker `__seo_event_log` | orders / cart | paiement gardé | sales funnel report |
 | Pages & SEO | R-agents SEO + `seo-gamme-audit` | seo / wiki | vue→ATC | page report |
 | Media & Fafa | `fafa-*` skills | Fafa factory | demande issue vidéo | media performance report |
@@ -153,10 +196,10 @@
 
 ## Fiches courtes — départements critiques
 **Commercial & Ventes** — Mission : transformer demandes en paiements gardés · Existant : `orders`+`cart`+funnel · Score : Critique · KPI : paiements gardés · Problème : 0 vente gardée/30j · Action : mesurer panier→checkout→payé (fait : 9→3→0) · Décision : IMPROVE.
-**Achats & Fournisseurs** — Mission : la bonne pièce dispo au bon délai · Existant : `suppliers` + Supplier-Truth (worktree) · Score : Critique · KPI : disponibilité réelle · Problème : 3/3 paiements annulés rupture · Action : projection lecture seule `supplier_availability` → gate dispo avant vente (owner-GO) · Décision : IMPROVE.
+**Achats & Fournisseurs** — Mission : la bonne pièce dispo au bon délai · Existant : `suppliers` + Supplier-Truth (fusionné, inerte par flag — niveaux de preuve en ligne 12) · Score : Critique · KPI : disponibilité réelle · Problème : 3/3 paiements annulés rupture · Action : activation owner-GO de la sentinelle, puis projection consensus H3 (la route `projection/:pieceId` a été retirée le 2026-09-10 : sa table n'a jamais existé) → gate dispo avant vente (owner-GO) · Décision : IMPROVE.
 **Produit & Expérience Client** — Mission : simplifier le parcours d'achat · Existant : skills front + design-tokens · Score : Faible/Moyen · KPI : conversion/abandon · Problème : vue→panier 4 % · Action : auditer pages vues sans ATC (Apple Trust : compat/prix/CTA) · Décision : IMPROVE.
 **Data & Analytics** — Mission : dire où le tunnel bloque · Existant : RCOP + `__seo_event_log` · Score : Moyen · KPI : tracking fiable · Problème : haut & panier→paiement aveugles, attribution 0 % · Action : requêtes lecture seule (faites) + brancher trafic total · Décision : IMPROVE.
-**Catalogue & Compatibilité** — Mission : bonne pièce/bon véhicule · Existant : `catalog`+`vehicles` · Score : Fort · KPI : erreurs compat ↓ · Problème : compat affichée vs réelle non mesurée · Action : croiser dispo fournisseur × compat · Décision : REUSE.
+**Catalogue & Compatibilité** — Mission : bonne pièce/bon véhicule · Existant : `catalog`+`vehicles` · Score : Moyen (mesure 06-01, ligne 10) · KPI : erreurs compat ↓ + dispo affichée vs réelle · Problème : ~11,7k pièces embrayage affichées vendables ; compat affichée vs réelle non mesurée · Action : croiser dispo fournisseur × compat, quarantaine seulement après la sentinelle dispo (#12) · Décision : IMPROVE.
 **IT & Runtime** — Mission : site fiable & mesuré · Existant : NestJS/Remix/Supabase · Score : Fort · KPI : site fiable + events tunnel · Problème : segment panier→paiement non instrumenté · Action : backlog events (owner-GO, payment-adjacent) · Décision : REUSE.
 
 ---
