@@ -1539,6 +1539,13 @@ entries:
     owner: '@ak125/vehicle-team'
     sourceConfidence: high
     risk: medium
+  # Rattache 12 conseils orphelins (ba_pg_id pendant) à leur gamme, rapport GSC 404.
+  # Couvre .sql + .down.sql. Glob exact : les migrations ne sont pas auto-couvertes.
+  - glob: backend/supabase/migrations/20261004_blog_advice_repair_dangling_pg_id*.sql
+    domain: D5
+    owner: '@ak125/content-team'
+    sourceConfidence: high
+    risk: medium
   # api/errors-api.controller expose la journalisation d'erreurs (/api/errors :
   # suggestions, redirections, __error_logs) et n'importe que des services de
   # modules/errors/** : même préoccupation, donc D10. Son test suit le sujet.
