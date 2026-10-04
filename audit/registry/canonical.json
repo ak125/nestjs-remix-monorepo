@@ -74417,7 +74417,7 @@
         "~/components/seo/HtmlContent"
       ],
       "kind": "config",
-      "loc": 38,
+      "loc": 53,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/guide/MiniDiagnosticTable.tsx",
       "risk": "low",
@@ -92707,6 +92707,26 @@
         "manual"
       ],
       "domain": "D2",
+      "id": "frontend/tests/unit/mini-diagnostic-table-anchor.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 58,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/mini-diagnostic-table-anchor.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
       "id": "frontend/tests/unit/no-ios16-incompatible-regex.test.ts",
       "importedBy": [],
       "imports": [],
@@ -102488,11 +102508,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "06762d36694187f95afe05f89fddf30b7d9e1c39208d2837744cc6b5aeb1c792",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "f4e6e70339095b196fe93e3d544285d35cce93f807cf8584fb93d535e7faff0b",
+      "audit/registry/files.json": "91c98af84f1956e9d8f3ed6d92d906ef0e305b1d7f605aabdfa85a7ea0bdf288",
       "audit/registry/rpc.json": "5df65b395357c216373bb73667da9f058af5cb63f6fbd53b41d8d917b8bf0b3f",
       "audit/registry/runtime.json": "cdcb461fdb93aa228e25ba3c00f4f2bc247ac1d6acca60fad21220a7bcdfa84f"
     },
-    "sotFingerprint": "f85c71f5629a"
+    "sotFingerprint": "ea00f32ba05c"
   },
   "runtime": [
     {
