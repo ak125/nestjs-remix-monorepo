@@ -105,6 +105,12 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: low
+  # Garde « article conseils existe » sur get_r5_redirect_target (ADR-027/ADR-103), GO owner 10-03 (« tout »).
+  - glob: backend/supabase/migrations/20261003_r5_redirect_target_require_conseils_article*.sql
+    domain: D14
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
   # Fix get_page_quality_features 22023 (jsonb_array_length sur jsonb non-array) — débloque
   # le recompute du quality-scoring (de-RAG v2.2 #935). Owner GO session 2026-06-11. Glob exact.
   - glob: backend/supabase/migrations/20260611_fix_get_page_quality_features_jsonb_array_length_guard.sql
@@ -1466,6 +1472,14 @@ entries:
     owner: '@ak125/vehicle-team'
     sourceConfidence: high
     risk: medium
+  # 13 index ordinaires doublés par la clé primaire de même définition, tables
+  # catalogue (pieces, pieces_gamme, pieces_marque, auto_type…) (lot 3/3), dont
+  # idx_pieces_id ; zone catalogue protégée, décision explicite de l'owner.
+  - glob: backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_catalog*.sql
+    domain: D1
+    owner: '@ak125/catalog-team'
+    sourceConfidence: high
+    risk: high
   # search_path épinglé (public, pg_temp) de mark_order_paid_atomic, zone paiement, GO owner nominatif (PR #1643).
   - glob: backend/supabase/migrations/20260930_pin_mark_order_paid_atomic_search_path*.sql
     domain: D11

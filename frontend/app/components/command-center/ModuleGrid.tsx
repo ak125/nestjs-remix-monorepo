@@ -1,7 +1,8 @@
 /**
  * Command Center — Department/Module grid, grouped into the 4 families
  * (Business / Growth / Operations / AI-Governance). Each card shows the live
- * health score (base + live caps), worst-case certification, KPI, and its
+ * health score (base + live caps), worst-case certification, declared lead and
+ * state (as written in the operating map, not verified), KPI, and its
  * capabilities with per-capability certification (OVERCLAIM highlight when a
  * live capability has no evidence).
  */
@@ -60,6 +61,9 @@ export function ModuleGrid({ data }: { data: CommandCenterResponse }) {
                           <CertBadge value={d.certification} />
                         </div>
                       </div>
+                      <p className="text-xs text-muted-foreground">
+                        Owner déclaré : {d.lead} · état : {d.state}
+                      </p>
                       {d.kpi_primary ? (
                         <p className="text-xs text-muted-foreground">
                           KPI : {d.kpi_primary}

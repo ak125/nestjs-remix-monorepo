@@ -430,6 +430,24 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Décision** : chore(audit): régénérer l'inventaire PR-8 après la fusion de main (+9 other commits)
 - **Sortie** : PR #1719 | commits 3e02d26b8 28ebb7d11 2d482e5c3 3adb701ac 4912b4a9d 2b2caf1da 3c7046cec 2c9b69834 e05399bab 1d2ea06f6
 
+## 2026-10-04 — worktree-departments-operational (auto)
+
+- **Branche** : `worktree-departments-operational`
+- **Décision** : chore(audit): régénérer inventaire et candidats PR-8 sur le canonical resynchronisé (+6 other commits)
+- **Sortie** : PR aucune | commits f5f50adc1 69bac0de6 bd48d22e0 2391c7d75 afdd7320c e7763f2b2 b42fe3882
+
+## 2026-10-04 — worktree-departments-operational (auto)
+
+- **Branche** : `worktree-departments-operational`
+- **Décision** : chore(audit): régénérer inventaire et candidats PR-8 sur le canonical resynchronisé (+10 other commits)
+- **Sortie** : PR #1721 | commits 685164ee0 e3010c147 547227d5c 3dfa64d3a f5f50adc1 69bac0de6 bd48d22e0 2391c7d75 afdd7320c e7763f2b2 b42fe3882
+
+## 2026-10-04 — worktree-departments-operational (auto)
+
+- **Branche** : `worktree-departments-operational`
+- **Décision** : chore(audit): régénérer inventaire et candidats PR-8 sur le canonical resynchronisé (+14 other commits)
+- **Sortie** : PR #1721 | commits 592d8da1b 46c8776bf cb77845c5 1ff490d6c 685164ee0 e3010c147 547227d5c 3dfa64d3a f5f50adc1 69bac0de6 bd48d22e0 2391c7d75 afdd7320c e7763f2b2 b42fe3882
+
 ## 2026-10-04 — feat/sales-payments-kept-kpi (auto)
 
 - **Branche** : `feat/sales-payments-kept-kpi`
