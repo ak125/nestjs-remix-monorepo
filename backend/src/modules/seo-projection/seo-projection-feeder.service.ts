@@ -1,9 +1,13 @@
 /**
  * SeoProjectionFeederService — déclencheur R1 du forward-writer (ADR-059 PR-6c / ADR-090 §C2).
  *
- * Rôle : fermer la boucle « exports wiki → writer ». Découvre les `exports/seo/gamme/*.json`
- * (déjà TIER A côté wiki) et enqueue un write-job sur PROJECTION_WRITE_QUEUE → le write-processor
- * existant (PR-6b) projette + enqueue le refresh débouncé. Aucune logique d'écriture ici.
+ * Rôle : fermer la boucle « exports wiki → writer » pour TOUTES les entités projetables. Découvre les
+ * `exports/seo/<type>/*.json` (déjà TIER A côté wiki) de chaque type de l'allowlist d'écriture
+ * gouvernée (`seoProjectionWritableTypes` : gamme, constructeur, vehicle par défaut) et enqueue un
+ * write-job sur PROJECTION_WRITE_QUEUE → le write-processor existant (PR-6b) projette + enqueue le
+ * refresh débouncé. Aucune logique d'écriture ici ; l'allowlist de rôles par type est appliquée par
+ * le writer, seul point d'écriture. (« R1 » dans le nom du flag et du job est historique : le premier
+ * déclencheur ne couvrait que les gammes.)
  *
  * Choix BullMQ repeatable plutôt que `@Cron` : `@nestjs/schedule` est désactivé monorepo
  * (conflit de versions, cf. app.module.ts) → tous les `@Cron` sont inertes. Pattern canon =
@@ -44,6 +48,14 @@ import {
 /** Slug d'entité valide (rejette `/`, `..`, majuscules — sanitize AVANT construction du chemin). */
 const ENTITY_ID_SLUG_RE = /^[a-z0-9][a-z0-9-]{0,80}$/;
 
+/** Décompte par type, ordre stable (journaux). */
+function formatByType(byType: Record<string, number>): string {
+  return Object.keys(byType)
+    .sort()
+    .map((type) => `${type}=${byType[type]}`)
+    .join(', ');
+}
+
 /** jobId stable du repeatable → pas de doublon au redeploy (BullMQ stocke les anciens cron sinon). */
 const R1_FEED_REPEATABLE_JOB_ID = 'seo-projection-r1-nightly-feed';
 
@@ -77,7 +89,8 @@ export class SeoProjectionFeederService implements OnModuleInit {
       return;
     }
     this.logger.log(
-      `🚀 Feeder R1 planifié (cron="${this.getCron()}" UTC, exportsDir="${this.getExportsDir()}").`,
+      `🚀 Feeder R1 planifié (cron="${this.getCron()}" UTC, exportsRoot="${this.getExportsRoot()}", ` +
+        `types=[${this.featureFlags.seoProjectionWritableTypes.join(', ')}]).`,
     );
     void this.configureRepeatableJob();
   }
@@ -210,8 +223,8 @@ export class SeoProjectionFeederService implements OnModuleInit {
   }
 
   /**
-   * Racine `exports/seo` (base du chemin single-entity `<root>/<entityType>/<slug>.json`). Distincte
-   * de `getExportsDir()` qui pointe le sous-dossier `gamme/` du slurp cron R1.
+   * Racine `exports/seo` — base commune des deux déclencheurs : `<root>/<entityType>/<slug>.json`
+   * (single-entity) et `<root>/<entityType>/*.json` (découverte nocturne).
    */
   private getExportsRoot(): string {
     const configured = this.configService.get<string>(
@@ -224,51 +237,84 @@ export class SeoProjectionFeederService implements OnModuleInit {
   }
 
   /**
-   * Cœur du feed : découvre les exports gamme et enqueue UN write-job (le write-processor
-   * projette + déclenche le refresh débouncé). Fail-closed observable, jamais de throw fatal.
+   * Cœur du feed : découvre les exports de CHAQUE type de l'allowlist d'écriture
+   * (`<root>/<type>/*.json`) et enqueue UN write-job (le writer applique l'allowlist de rôles par
+   * type, projette, et le processor déclenche le refresh débouncé). Fail-closed observable, jamais
+   * de throw fatal. Un type sans dossier = 0 export pour ce type (`byType`), pas une erreur : le wiki
+   * ne produit pas encore d'export pour toutes les entités.
    */
   async discoverAndEnqueue(
     triggeredBy: ProjectionFeedJobData['triggeredBy'],
   ): Promise<ProjectionFeedResult> {
-    const exportsDir = this.getExportsDir();
+    const exportsRoot = this.getExportsRoot();
+    const types = [...this.featureFlags.seoProjectionWritableTypes].sort();
 
     if (getAppConfig().supabase.readOnly) {
       this.logger.log(
-        `[READ_ONLY] feeder R1 skip (aucun enqueue) — exportsDir=${exportsDir}.`,
+        `[READ_ONLY] feeder R1 skip (aucun enqueue) — exportsRoot=${exportsRoot}.`,
       );
       return {
         discovered: 0,
         enqueued: false,
-        exportsDir,
+        exportsRoot,
+        byType: {},
         reason: 'READ_ONLY',
       };
     }
 
-    let exportPaths: string[];
-    try {
-      const entries = await fs.readdir(exportsDir);
-      exportPaths = entries
+    const byType: Record<string, number> = {};
+    const exportPaths: string[] = [];
+    let readableDirs = 0;
+    for (const type of types) {
+      // Le type sert à construire un chemin : même garde que l'entityId (allowlist CSV éditable).
+      if (!ENTITY_ID_SLUG_RE.test(type)) {
+        this.logger.error(
+          `Feeder R1 : type '${type}' invalide dans SEO_PROJECTION_WRITABLE_TYPES — ignoré.`,
+        );
+        continue;
+      }
+      const dir = path.join(exportsRoot, type);
+      let entries: string[];
+      try {
+        entries = await fs.readdir(dir);
+      } catch (err) {
+        // Dossier absent/illisible = 0 pour ce type (le wiki peut ne pas encore l'avoir produit).
+        this.logger.warn(
+          `Feeder R1 : dossier d'exports '${type}' absent/illisible (${dir}) — 0 export. (${getErrorMessage(err)})`,
+        );
+        byType[type] = 0;
+        continue;
+      }
+      readableDirs += 1;
+      const files = entries
         .filter((f) => f.endsWith('.json'))
-        .map((f) => path.join(exportsDir, f))
-        .sort();
-    } catch (err) {
-      // Dossier absent/illisible = no-op observable (les exports peuvent ne pas exister encore).
-      this.logger.warn(
-        `Feeder R1 : dossier d'exports absent/illisible (${exportsDir}) — 0 export, skip. (${getErrorMessage(err)})`,
-      );
+        .map((f) => path.join(dir, f));
+      byType[type] = files.length;
+      exportPaths.push(...files);
+    }
+    exportPaths.sort();
+
+    if (readableDirs === 0) {
       return {
         discovered: 0,
         enqueued: false,
-        exportsDir,
+        exportsRoot,
+        byType,
         reason: 'NO_EXPORTS_DIR',
       };
     }
 
     if (exportPaths.length === 0) {
       this.logger.log(
-        `Feeder R1 : 0 export dans ${exportsDir} — rien à projeter.`,
+        `Feeder R1 : 0 export sous ${exportsRoot} (${formatByType(byType)}) — rien à projeter.`,
       );
-      return { discovered: 0, enqueued: false, exportsDir, reason: 'EMPTY' };
+      return {
+        discovered: 0,
+        enqueued: false,
+        exportsRoot,
+        byType,
+        reason: 'EMPTY',
+      };
     }
 
     await this.writeQueue.add(
@@ -288,9 +334,14 @@ export class SeoProjectionFeederService implements OnModuleInit {
     );
 
     this.logger.log(
-      `Feeder R1 : ${exportPaths.length} export(s) gamme découvert(s) → 1 write-job enqueue (${triggeredBy}).`,
+      `Feeder R1 : ${exportPaths.length} export(s) découvert(s) (${formatByType(byType)}) → 1 write-job enqueue (${triggeredBy}).`,
     );
-    return { discovered: exportPaths.length, enqueued: true, exportsDir };
+    return {
+      discovered: exportPaths.length,
+      enqueued: true,
+      exportsRoot,
+      byType,
+    };
   }
 
   private async configureRepeatableJob(): Promise<void> {
@@ -374,15 +425,5 @@ export class SeoProjectionFeederService implements OnModuleInit {
       this.configService.get<string>('SEO_PROJECTION_R1_FEED_ENABLED') ===
       'true'
     );
-  }
-
-  private getExportsDir(): string {
-    const configured = this.configService.get<string>(
-      'SEO_PROJECTION_R1_EXPORTS_DIR',
-      'content/automecanik-wiki/exports/seo/gamme',
-    );
-    return path.isAbsolute(configured)
-      ? configured
-      : path.resolve(process.cwd(), configured);
   }
 }
