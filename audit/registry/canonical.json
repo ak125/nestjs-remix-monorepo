@@ -89870,7 +89870,7 @@
         "~/utils/logger"
       ],
       "kind": "service",
-      "loc": 614,
+      "loc": 634,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/image-optimizer.ts",
       "risk": "medium",
@@ -90224,7 +90224,7 @@
         "frontend/app/utils/pieces-route.utils.ts"
       ],
       "kind": "service",
-      "loc": 197,
+      "loc": 191,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/pieces-loader.utils.ts",
       "risk": "medium",
@@ -90841,7 +90841,7 @@
         "frontend/app/utils/seo/pieces-schema-commerce.constants.ts"
       ],
       "kind": "service",
-      "loc": 314,
+      "loc": 318,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/seo/pieces-schema.utils.ts",
       "risk": "medium",
@@ -91777,6 +91777,26 @@
       "loc": 84,
       "owner": "@ak125",
       "path": "frontend/tests/unit/catalogue-image-fallback.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/catalogue-image-source.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 98,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/catalogue-image-source.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -92877,6 +92897,26 @@
       "loc": 77,
       "owner": "@ak125",
       "path": "frontend/tests/unit/pieces-hero-fact-chip.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/pieces-hero-image-source.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 117,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/pieces-hero-image-source.test.tsx",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -100046,6 +100086,46 @@
         "manual"
       ],
       "domain": "D13",
+      "id": "scripts/marketing/summarize-reactivation-exclusions.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 157,
+      "owner": "@ak125",
+      "path": "scripts/marketing/summarize-reactivation-exclusions.test.ts",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
+      "id": "scripts/marketing/summarize-reactivation-exclusions.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 105,
+      "owner": "@ak125",
+      "path": "scripts/marketing/summarize-reactivation-exclusions.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
       "id": "scripts/marketing/workbench-cli.ts",
       "importedBy": [],
       "imports": [],
@@ -102347,15 +102427,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "f712a655d9f22003e79dcfca8e1b40fa79901b8a60755de688f1431655d188e2",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "0da93bcb5c9c104750ba348debd0bca025f98ffb50a68f6d6ad8958aa7857c16",
+      ".spec/00-canon/repository-registry/ownership.yaml": "1423f8a8040689353bb4c6fb0dca3481139be0c55cf4b31fb57a154eed48f772",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "06762d36694187f95afe05f89fddf30b7d9e1c39208d2837744cc6b5aeb1c792",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "22a511d5609552c86591f33828eb0b5819af9c7c275df3afe6f61883b7d5f2b1",
+      "audit/registry/files.json": "cc71d11d4956f725aa418439147359e5ed50254d38e04d88a40e6a25e20165c4",
       "audit/registry/rpc.json": "2b1e02eccb6da1cb24d66d4507afae699c1d5708c25bd610a0aadf57519fa4fc",
       "audit/registry/runtime.json": "cdcb461fdb93aa228e25ba3c00f4f2bc247ac1d6acca60fad21220a7bcdfa84f"
     },
-    "sotFingerprint": "8a87b1b13f22"
+    "sotFingerprint": "b46be9c0cdc2"
   },
   "runtime": [
     {
