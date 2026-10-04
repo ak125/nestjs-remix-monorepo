@@ -2781,6 +2781,8 @@
       "backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_commerce.sql",
       "backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_content.down.sql",
       "backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_content.sql",
+      "backend/supabase/migrations/20261003_r5_redirect_target_require_conseils_article.down.sql",
+      "backend/supabase/migrations/20261003_r5_redirect_target_require_conseils_article.sql",
       "backend/supabase/migrations/20261004_blog_advice_repair_dangling_pg_id.down.sql",
       "backend/supabase/migrations/20261004_blog_advice_repair_dangling_pg_id.sql",
       "backend/supabase/migrations/README.md"
@@ -2967,7 +2969,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1581,
+  "runtime_files_count": 1583,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4210,6 +4212,8 @@
     "backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_commerce.sql",
     "backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_content.down.sql",
     "backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_content.sql",
+    "backend/supabase/migrations/20261003_r5_redirect_target_require_conseils_article.down.sql",
+    "backend/supabase/migrations/20261003_r5_redirect_target_require_conseils_article.sql",
     "backend/supabase/migrations/20261004_blog_advice_repair_dangling_pg_id.down.sql",
     "backend/supabase/migrations/20261004_blog_advice_repair_dangling_pg_id.sql",
     "backend/supabase/migrations/README.md",
