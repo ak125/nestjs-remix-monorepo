@@ -16062,6 +16062,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-guide-achat.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 60,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-guide-achat.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-seo-shadow.test.ts",
       "importedBy": [],
       "imports": [],
@@ -16169,7 +16188,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 1225,
+      "loc": 1236,
       "owner": "__unassigned__",
       "path": "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
       "risk": "low",
@@ -51682,13 +51701,14 @@
       "importedBy": [],
       "imports": [
         "~/components/errors/ErrorGeneric",
+        "~/utils/blog-article-redirect.server",
         "~/utils/cache-control",
         "~/utils/logger",
         "~/utils/proxy-headers.server",
         "~/utils/single-fetch"
       ],
       "kind": "route",
-      "loc": 529,
+      "loc": 557,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/$.tsx",
       "risk": "low",
@@ -55483,13 +55503,14 @@
         "~/components/ui/badge",
         "~/components/ui/button",
         "~/components/ui/card",
+        "~/utils/blog-article-redirect.server",
         "~/utils/cache-control",
         "~/utils/internal-api.server",
         "~/utils/logger",
         "~/utils/seo-clean.utils"
       ],
       "kind": "route",
-      "loc": 633,
+      "loc": 634,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/blog-pieces-auto.article.$slug.tsx",
       "risk": "low",
@@ -55639,6 +55660,7 @@
         "~/config/visual-intent",
         "~/types/r3-guide.types",
         "~/utils/analytics",
+        "~/utils/blog-article-redirect.server",
         "~/utils/cache-control",
         "~/utils/internal-api.server",
         "~/utils/logger",
@@ -55648,7 +55670,7 @@
         "~/utils/seo/canonical"
       ],
       "kind": "route",
-      "loc": 846,
+      "loc": 868,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/blog-pieces-auto.conseils.$pg_alias.tsx",
       "risk": "low",
@@ -59601,6 +59623,27 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/app/utils/blog-article-redirect.server.ts",
+      "importedBy": [],
+      "imports": [
+        "~/utils/internal-api.server"
+      ],
+      "kind": "config",
+      "loc": 84,
+      "owner": "__unassigned__",
+      "path": "frontend/app/utils/blog-article-redirect.server.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
         "depcruise",
         "reachability"
       ],
@@ -61875,7 +61918,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 54,
+      "loc": 216,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/catch-all-blog-advice-alias-redirect.test.ts",
       "risk": "low",
@@ -62023,11 +62066,30 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/conseils-ba-alias-fallback.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 145,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/conseils-ba-alias-fallback.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/tests/unit/conseils-loader-status.test.ts",
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 85,
+      "loc": 87,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/conseils-loader-status.test.ts",
       "risk": "low",
