@@ -194,20 +194,27 @@ export default function PaymentReturnPage() {
         // contient ni totalQuantity ni items[], le loader Paybox transmet
         // seulement status/transactionId/orderId/amount. À enrichir si un
         // futur loader expose la quantité totale (follow-up).
-        emitFunnel({
-          event_type: "r2_order_placed",
-          payload: {
-            session_id: getFunnelSessionId() || null,
-            order_id: String(txId),
-            item_count: 1,
-            revenue_cents:
-              typeof result.amount === "number" &&
-              Number.isFinite(result.amount)
-                ? Math.round(result.amount * 100)
-                : null,
-            referrer: classifyReferrer(),
-          },
-        });
+        // order_id = ord_id (`Ref` Paybox = PBX_CMD), jamais le n° d'autorisation
+        // (`Auto`) : c'est la clé de jointure du verdict tracking-integrity-verdict.v1
+        // et de l'index unique `uq_seo_event_log_r2_order_placed_order_id`, qui
+        // dédoublonne cet événement avec celui de l'émetteur serveur. Sans ord_id,
+        // aucun événement : la commande non couverte reste visible au verdict.
+        if (result.orderId) {
+          emitFunnel({
+            event_type: "r2_order_placed",
+            payload: {
+              session_id: getFunnelSessionId() || null,
+              order_id: result.orderId,
+              item_count: 1,
+              revenue_cents:
+                typeof result.amount === "number" &&
+                Number.isFinite(result.amount)
+                  ? Math.round(result.amount * 100)
+                  : null,
+              referrer: classifyReferrer(),
+            },
+          });
+        }
         sessionStorage.setItem(key, "1");
       }
     }

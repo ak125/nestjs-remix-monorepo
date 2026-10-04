@@ -56194,7 +56194,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 546,
+      "loc": 553,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/checkout-payment-return.tsx",
       "risk": "low",
@@ -62172,6 +62172,25 @@
       "loc": 73,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/chat-widget-sse.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/checkout-payment-return-order-event.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 106,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/checkout-payment-return-order-event.test.tsx",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
