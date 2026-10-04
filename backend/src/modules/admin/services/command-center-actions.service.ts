@@ -5,8 +5,10 @@ import { existsSync, readFileSync, readdirSync } from 'fs';
 import { basename, join } from 'path';
 import { gzipSync } from 'zlib';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { TrackingIntegrityVerdictV1Schema } from '../../analytics/tracking-integrity/tracking-integrity-verdict.schema';
-import { TrackingIntegrityService } from '../../analytics/tracking-integrity/tracking-integrity.service';
+import {
+  TrackingIntegrityService,
+  TrackingIntegrityVerdictV1Schema,
+} from '../../analytics';
 import {
   buildCertificationActions,
   type ChainView,

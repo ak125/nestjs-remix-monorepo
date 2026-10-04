@@ -9,7 +9,7 @@
 import type {
   TrackingIntegrityCheck,
   TrackingIntegrityVerdictV1,
-} from '../../../analytics/tracking-integrity/tracking-integrity-verdict.schema';
+} from '../../../analytics';
 import { CONFIDENCE_BY_CERT, type RawAction } from './score-action';
 
 /** Ce que corrige chaque contrôle en échec, et où regarder ses échantillons. */
