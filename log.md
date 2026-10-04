@@ -429,3 +429,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/blog-legacy-advice-alias`
 - **Décision** : chore(audit): régénérer l'inventaire PR-8 après la fusion de main (+9 other commits)
 - **Sortie** : PR #1719 | commits 3e02d26b8 28ebb7d11 2d482e5c3 3adb701ac 4912b4a9d 2b2caf1da 3c7046cec 2c9b69834 e05399bab 1d2ea06f6
+
+## 2026-10-04 — feat/data-tracking-integrity-verdict (auto)
+
+- **Branche** : `feat/data-tracking-integrity-verdict`
+- **Décision** : chore(audit): régénérer inventaire + candidats de nettoyage (tracking-integrity) (+4 other commits)
+- **Sortie** : PR aucune | commits 759879f22 3b7ee7f71 d65b80a9d 30aa0240b ec66a922d
