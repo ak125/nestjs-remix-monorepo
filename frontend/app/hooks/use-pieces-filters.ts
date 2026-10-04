@@ -15,6 +15,7 @@ import {
   type SortBy,
   type ViewMode,
 } from "../types/pieces-route.types";
+import { isValidImagePath } from "../utils/image-optimizer";
 import { convertStarsToNote } from "../utils/pieces-filters.utils";
 
 // ⚡ Helper functions pré-définies (évite recréation à chaque render)
@@ -70,6 +71,7 @@ export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
     filteredProducts,
     dynamicFilterCounts,
     brandAverageNotes,
+    brandLogos,
     uniqueBrands,
   } = useMemo(() => {
     // Pré-calculer la recherche une seule fois
@@ -96,6 +98,7 @@ export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
 
     // Marques uniques
     const uniqueBrandsSet = new Set<string>();
+    const logos = new Map<string, string>();
 
     // ⚡ UNE SEULE BOUCLE pour tout calculer
     for (let i = 0; i < pieces.length; i++) {
@@ -108,6 +111,10 @@ export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
       // Collecter marques uniques (toujours)
       if (brand) {
         uniqueBrandsSet.add(brand);
+        const logo = piece.marque_logo?.trim();
+        if (logo && isValidImagePath(logo) && !logos.has(brand)) {
+          logos.set(brand, logo);
+        }
       }
 
       // Calculer notes moyennes par marque (toujours, pour affichage sidebar)
@@ -224,6 +231,7 @@ export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
       filteredProducts: filtered,
       dynamicFilterCounts: { brandCounts, qualityCounts, priceCounts },
       brandAverageNotes: averages,
+      brandLogos: logos,
       uniqueBrands: sortedBrands,
     };
   }, [pieces, activeFilters, brandsSet, sortBy]);
@@ -388,6 +396,7 @@ export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
     selectedPiecesData,
     dynamicFilterCounts,
     brandAverageNotes,
+    brandLogos,
 
     // Actions
     setActiveFilters: setActiveFiltersTransitioned,
