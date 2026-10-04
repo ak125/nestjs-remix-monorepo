@@ -1440,6 +1440,14 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: medium
+  # 37 index ordinaires doublés par la clé primaire ou la contrainte UNIQUE de même
+  # définition, tables contenu / blog / SEO / sitemap / KG (lot 1/3). Couvre .sql +
+  # .down.sql. D15 / @ak125 pour les lots transverses, comme #1619.
+  - glob: backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_content*.sql
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
   # Index d'expression type_id::integer sur auto_type_motor_code / auto_type_number_code (PR #1628).
   - glob: backend/supabase/migrations/20260930_auto_type_codes_type_id_int_expr_indexes*.sql
     domain: D4
