@@ -20128,7 +20128,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 912,
+      "loc": 924,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/services/orders.service.ts",
       "risk": "low",
@@ -38830,6 +38830,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/tests/unit/orders.service.cancel-order-rpc-contract.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 173,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/orders.service.cancel-order-rpc-contract.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/tests/unit/orders.service.create-correlation-id.test.ts",
       "importedBy": [],
       "imports": [],
@@ -47296,7 +47315,7 @@
         "~/components/ui/scroll-area"
       ],
       "kind": "config",
-      "loc": 593,
+      "loc": 595,
       "owner": "__unassigned__",
       "path": "frontend/app/components/pieces/PiecesFilterSidebar.tsx",
       "risk": "low",
@@ -47636,7 +47655,7 @@
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 619,
+      "loc": 621,
       "owner": "__unassigned__",
       "path": "frontend/app/components/pieces/PiecesVehicleContent.tsx",
       "risk": "low",
@@ -48850,7 +48869,7 @@
         "~/utils/image-optimizer"
       ],
       "kind": "config",
-      "loc": 116,
+      "loc": 112,
       "owner": "__unassigned__",
       "path": "frontend/app/components/ui/BrandLogo.tsx",
       "risk": "low",
@@ -50912,10 +50931,11 @@
       ],
       "imports": [
         "frontend/app/types/pieces-route.types.ts",
+        "frontend/app/utils/image-optimizer.ts",
         "frontend/app/utils/pieces-filters.utils.ts"
       ],
       "kind": "config",
-      "loc": 405,
+      "loc": 414,
       "owner": "__unassigned__",
       "path": "frontend/app/hooks/use-pieces-filters.ts",
       "risk": "low",
@@ -57973,7 +57993,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 1109,
+      "loc": 1111,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/search.tsx",
       "risk": "low",
@@ -59948,6 +59968,7 @@
         "frontend/app/components/cart/CartItem.tsx",
         "frontend/app/components/pieces/PieceDetailModal.tsx",
         "frontend/app/components/pieces/PiecesHeader.tsx",
+        "frontend/app/hooks/use-pieces-filters.ts",
         "frontend/app/routes/constructeurs.$brand.$model.$type.tsx",
         "frontend/app/services/api/brand.api.ts",
         "frontend/app/utils/pieces-loader.utils.ts",
@@ -59957,7 +59978,7 @@
         "~/utils/logger"
       ],
       "kind": "service",
-      "loc": 614,
+      "loc": 634,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/image-optimizer.ts",
       "risk": "low",
@@ -60296,7 +60317,7 @@
         "frontend/app/utils/pieces-route.utils.ts"
       ],
       "kind": "service",
-      "loc": 197,
+      "loc": 191,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/pieces-loader.utils.ts",
       "risk": "low",
@@ -60886,7 +60907,7 @@
         "frontend/app/utils/seo/pieces-schema-commerce.constants.ts"
       ],
       "kind": "service",
-      "loc": 314,
+      "loc": 318,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/seo/pieces-schema.utils.ts",
       "risk": "low",
@@ -61698,6 +61719,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/brand-logo-provenance.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 192,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/brand-logo-provenance.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/tests/unit/button-phrasing-content.test.tsx",
       "importedBy": [],
       "imports": [],
@@ -61781,6 +61821,25 @@
       "loc": 84,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/catalogue-image-fallback.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/catalogue-image-source.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 98,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/catalogue-image-source.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -62826,6 +62885,25 @@
       "loc": 77,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/pieces-hero-fact-chip.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/pieces-hero-image-source.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 117,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/pieces-hero-image-source.test.tsx",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -69628,6 +69706,44 @@
       "loc": 13,
       "owner": "__unassigned__",
       "path": "scripts/marketing/simulation-no-network.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/marketing/summarize-reactivation-exclusions.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 157,
+      "owner": "__unassigned__",
+      "path": "scripts/marketing/summarize-reactivation-exclusions.test.ts",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/marketing/summarize-reactivation-exclusions.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 105,
+      "owner": "__unassigned__",
+      "path": "scripts/marketing/summarize-reactivation-exclusions.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",

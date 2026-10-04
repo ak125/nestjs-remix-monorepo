@@ -783,14 +783,21 @@ export class OrdersService extends SupabaseBaseService {
   /**
    * Annuler une commande via cancel_order_atomic RPC (Vault #301 fix).
    *
-   * IMPORTANT V1: refuse HTTP 409 si commande payée (ord_ords_id='5') —
-   * annulation requiert workflow refund manuel (payments/ module off-limits,
+   * IMPORTANT V1: refuse HTTP 409 si commande payée — annulation requiert
+   * workflow refund manuel (payments/ module off-limits,
    * cf. feedback_no_payment_module_changes_ever). V1.7+: Human Override Authority
    * permettra de réouvrir cette transition couplée à un refund manuel.
    *
    * La RPC est composite (UPDATE + append_order_event en une tx) — atomicité audit
-   * garantie côté DB. Reject mécaniquement enforced via canonical_transition_valid
-   * (matérialise ORDER_STATUS_TRANSITIONS de @repo/domain-commerce).
+   * garantie côté DB. Elle décide sur la ligne verrouillée (FOR UPDATE), depuis
+   * 20260924_cancel_order_atomic_refuse_paid.sql :
+   * - payée = ord_is_pay='1' OU ord_date_pay non vide, quel que soit le statut
+   *   (même prédicat que getCustomerCancelRefusal) → « refund workflow required » ;
+   * - déjà annulée ('2') → « already cancelled » ;
+   * - seules les transitions canoniques 1|3|4 → 2 (ORDER_STATUS_TRANSITIONS de
+   *   @repo/domain-commerce) passent ; statut absent ou hors canon → « invalid
+   *   transition ».
+   * Ces messages sont traduits en 409 ci-dessous ; « not found » en 404.
    */
   async cancelOrder(
     orderId: string,
@@ -823,6 +830,11 @@ export class OrdersService extends SupabaseBaseService {
         }
         if (message.includes('already cancelled')) {
           throw new ConflictException(`Commande ${orderId} déjà annulée.`);
+        }
+        if (message.includes('invalid transition')) {
+          throw new ConflictException(
+            'Cette commande ne peut plus être annulée.',
+          );
         }
         if (message.includes('not found')) {
           throw new NotFoundException(`Commande ${orderId} introuvable.`);
