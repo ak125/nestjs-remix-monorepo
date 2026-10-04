@@ -417,3 +417,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/auto-modele-empty-alias`
 - **Décision** : chore(registry): resync des projections L1 pour la migration 20261003 (+1 other commit)
 - **Sortie** : PR aucune | commits 2a7f0f274 45b759f06
+
+## 2026-10-04 — fix/blog-legacy-advice-alias (auto)
+
+- **Branche** : `fix/blog-legacy-advice-alias`
+- **Décision** : chore(registry): resync L1+L3 projections (+1 other commit)
+- **Sortie** : PR aucune | commits e05399bab 1d2ea06f6
