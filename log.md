@@ -441,3 +441,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `worktree-departments-operational`
 - **Décision** : chore(audit): régénérer inventaire et candidats PR-8 sur le canonical resynchronisé (+10 other commits)
 - **Sortie** : PR #1721 | commits 685164ee0 e3010c147 547227d5c 3dfa64d3a f5f50adc1 69bac0de6 bd48d22e0 2391c7d75 afdd7320c e7763f2b2 b42fe3882
+
+## 2026-10-04 — worktree-departments-operational (auto)
+
+- **Branche** : `worktree-departments-operational`
+- **Décision** : chore(audit): régénérer inventaire et candidats PR-8 sur le canonical resynchronisé (+14 other commits)
+- **Sortie** : PR #1721 | commits 592d8da1b 46c8776bf cb77845c5 1ff490d6c 685164ee0 e3010c147 547227d5c 3dfa64d3a f5f50adc1 69bac0de6 bd48d22e0 2391c7d75 afdd7320c e7763f2b2 b42fe3882
