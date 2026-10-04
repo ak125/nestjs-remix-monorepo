@@ -2,7 +2,7 @@
 module: admin
 sources:
 - backend/src/modules/admin
-last_scan: '2026-09-24'
+last_scan: '2026-10-04'
 primary_files:
 - backend/src/modules/admin/admin.module.ts
 - backend/src/modules/admin/constants/seo-control.constants.ts
@@ -61,6 +61,7 @@ _Section à rédiger._
 - `RegistryReaderService`
 - `CommandCenterReaderService`
 - `CommandCenterActionsService`
+- `CommandCenterKpiService`
 - `CommandCenterOrchestratorService`
 
 ### Fichiers primaires

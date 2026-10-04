@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 9985f21ad03303fbc1ff7d4e58a3e90c8466190778d3873d1ddc389abbb89f8b
+source_sha256: 6e0395eb2cd88daa76950a195e915e5750ca968cbfa893809c9287329579a7f2
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,22 +18,22 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3007 |
+| Files (Layer 1) | 3005 |
 | DB tables (Layer 1) | 313 |
 | DB RPC (Layer 1) | 255 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1001 |
 
-Source sotFingerprint: `e9680ef80f06`.
+Source sotFingerprint: `759e694d6be0`.
 
 ## Comment l'utiliser
 
-1. Identifier le **domaine** D1..D15 (voir ci-dessous)
+1. Identifier le **domaine** D1..D16 (voir ci-dessous)
 2. Lire `audit/registry/canonical.json` pour la query précise (programmatique)
 3. Lire `.claude/knowledge/modules/<module>.md` pour la prose détaillée
 4. Fall-back grep si question hors registry
 
-## Domaines (D1..D15 + UNKNOWN)
+## Domaines (D1..D16 + UNKNOWN)
 
 ### D1 — Catalog Core
 
@@ -43,7 +43,7 @@ Source sotFingerprint: `e9680ef80f06`.
 - **Knowledge prose**: [`catalog`](modules/catalog.md), [`gamme-rest`](modules/gamme-rest.md), [`products`](modules/products.md)
 - **Status**: LIVE=72, UNKNOWN=13
 
-### D2 — Legacy / XTR Migration
+### D2 — Legacy/XTR Migration
 
 - **Files**: 144 (test=130, service=10, config=3, controller=1)
 - **Runtime entrypoints**: 1
@@ -94,7 +94,7 @@ Source sotFingerprint: `e9680ef80f06`.
 ### D8 — Read Model / Serving (RM)
 
 - **Files**: 949 (config=467, route=246, service=177, controller=38, test=21)
-- **Runtime entrypoints**: 347
+- **Runtime entrypoints**: 348
 - **Top owners**: @ak125/frontend-team (687), @ak125/admin-team (262)
 - **Knowledge prose**: [`admin`](modules/admin.md), [`staff`](modules/staff.md)
 - **Status**: LIVE=499, UNKNOWN=450
@@ -108,11 +108,11 @@ Source sotFingerprint: `e9680ef80f06`.
 
 ### D10 — Quality, Monitoring & Observabilité
 
-- **Files**: 39 (service=22, test=9, controller=7, config=1)
-- **Runtime entrypoints**: 23
-- **Top owners**: @ak125 (39)
+- **Files**: 35 (service=20, test=8, controller=7)
+- **Runtime entrypoints**: 22
+- **Top owners**: @ak125 (35)
 - **Knowledge prose**: [`analytics`](modules/analytics.md), [`dashboard`](modules/dashboard.md), [`errors`](modules/errors.md), [`health`](modules/health.md), [`observability`](modules/observability.md)
-- **Status**: LIVE=30, UNKNOWN=9
+- **Status**: LIVE=27, UNKNOWN=8
 
 ### D11 — Commerce & Users
 
@@ -147,11 +147,19 @@ Source sotFingerprint: `e9680ef80f06`.
 
 ### D15 — Security & Governance
 
-- **Files**: 271 (test=161, script=62, service=45, config=2, controller=1)
+- **Files**: 273 (test=163, script=62, service=45, config=2, controller=1)
 - **Runtime entrypoints**: 3
-- **Top owners**: @ak125 (271)
+- **Top owners**: @ak125 (273)
 - **Knowledge prose**: [`bot-guard`](modules/bot-guard.md)
-- **Status**: LIVE=56, UNKNOWN=215
+- **Status**: LIVE=56, UNKNOWN=217
+
+### D16 — Maintenance
+
+- **Files**: 1 (service=1)
+- **Runtime entrypoints**: 1
+- **Top owners**: @ak125 (1)
+- **Knowledge prose**: [`maintenance`](modules/maintenance.md)
+- **Status**: LIVE=1
 
 ### UNKNOWN — Unknown (overlay non résolu)
 

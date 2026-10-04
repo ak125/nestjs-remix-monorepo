@@ -3,6 +3,10 @@ import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { CacheService } from '../../../cache/cache.service';
 import { CommandCenterActionsService } from './command-center-actions.service';
+import {
+  CommandCenterKpiService,
+  type LiveExecutiveKpi,
+} from './command-center-kpi.service';
 import { type OwnerActionV2 } from './command-center-action-rules/score-action';
 
 /**
@@ -23,6 +27,8 @@ import { type OwnerActionV2 } from './command-center-action-rules/score-action';
  *   - per-department health_score_current (LIVE caps applied: source stale → 79,
  *     cross-module upstream-unreliable → 69, derived from the chains graph)
  *   - global_status (pessimism verdict + reasons[])
+ *   - executive_kpis measured in DB (source `db`, full mode only), appended to the
+ *     structural ones (CommandCenterKpiService)
  *
  * Path is env-overridable (`REGISTRY_DIR`); the Docker image sets it to the
  * absolute /app/audit/registry so the cwd=/app/backend trap (start.sh `cd backend`)
@@ -59,6 +65,7 @@ export class CommandCenterReaderService {
   constructor(
     private readonly cacheService: CacheService,
     private readonly actions: CommandCenterActionsService,
+    private readonly kpis: CommandCenterKpiService,
   ) {}
 
   private readJson<T>(filePath: string): T | null {
@@ -88,14 +95,23 @@ export class CommandCenterReaderService {
     if (mode === 'light') {
       result = toLightResponse(built);
     } else {
-      const action_queue = built.degraded
-        ? []
-        : await this.actions.computeActionQueue(
-            built.departments,
-            built.chains,
-            mode,
-          );
-      result = { ...built, mode, action_queue };
+      const [action_queue, liveKpis]: [OwnerActionV2[], LiveExecutiveKpi[]] =
+        built.degraded
+          ? [[], []]
+          : await Promise.all([
+              this.actions.computeActionQueue(
+                built.departments,
+                built.chains,
+                mode,
+              ),
+              this.kpis.computeLiveKpis(mode),
+            ]);
+      result = {
+        ...built,
+        mode,
+        action_queue,
+        executive_kpis: [...built.executive_kpis, ...liveKpis],
+      };
     }
     await this.cacheService.set(
       cacheKey,

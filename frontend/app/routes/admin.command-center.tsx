@@ -17,6 +17,7 @@ import {
   Boxes,
   GitBranch,
   FileWarning,
+  ShoppingCart,
   Workflow,
 } from "lucide-react";
 import {
@@ -27,6 +28,7 @@ import {
   useActionData,
   useLoaderData,
 } from "react-router";
+import { KpiCard } from "~/components/admin/patterns/KpiCard";
 import { CertBadge } from "~/components/command-center/badges";
 import { GlobalHealthBar } from "~/components/command-center/GlobalHealthBar";
 import { ModuleGrid } from "~/components/command-center/ModuleGrid";
@@ -307,6 +309,8 @@ export default function AdminCommandCenter() {
         <>
           <GlobalHealthBar data={cc} />
 
+          <MeasuredKpis data={cc} />
+
           {cc.mode === "light" ? (
             <p className="text-sm text-muted-foreground">
               Mode light — synthèse de cartographie uniquement. Le détail
@@ -349,6 +353,37 @@ export default function AdminCommandCenter() {
           )}
         </>
       )}
+    </div>
+  );
+}
+
+const KPI_VARIANT = {
+  OK: "success",
+  WARNING: "warning",
+  CRITICAL: "danger",
+  UNKNOWN: "default",
+} as const;
+
+/**
+ * Indicateurs mesurés en base (source ≠ canon), ajoutés par le backend en mode
+ * full. Valeur absente = source illisible (ex. PREPROD en lecture anon) : « — »,
+ * jamais un zéro.
+ */
+function MeasuredKpis({ data }: { data: CommandCenterResponse }) {
+  const kpis = data.executive_kpis.filter((k) => k.source !== "canon");
+  if (kpis.length === 0) return null;
+  return (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {kpis.map((k) => (
+        <KpiCard
+          key={k.id}
+          title={k.label}
+          value={k.value === null ? "—" : `${k.value}${k.unit ?? ""}`}
+          icon={ShoppingCart}
+          variant={KPI_VARIANT[k.status]}
+          subtitle={k.value === null ? "Indisponible" : "Mesuré en base"}
+        />
+      ))}
     </div>
   );
 }
