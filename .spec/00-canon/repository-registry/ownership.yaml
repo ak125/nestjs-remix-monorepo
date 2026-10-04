@@ -1466,6 +1466,14 @@ entries:
     owner: '@ak125/vehicle-team'
     sourceConfidence: high
     risk: medium
+  # 13 index ordinaires doublés par la clé primaire de même définition, tables
+  # catalogue (pieces, pieces_gamme, pieces_marque, auto_type…) (lot 3/3), dont
+  # idx_pieces_id ; zone catalogue protégée, décision explicite de l'owner.
+  - glob: backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_catalog*.sql
+    domain: D1
+    owner: '@ak125/catalog-team'
+    sourceConfidence: high
+    risk: high
   # search_path épinglé (public, pg_temp) de mark_order_paid_atomic, zone paiement, GO owner nominatif (PR #1643).
   - glob: backend/supabase/migrations/20260930_pin_mark_order_paid_atomic_search_path*.sql
     domain: D11
