@@ -1,0 +1,55 @@
+# Intentionally invalid — used by --self-test (department_handoffs cross-checks).
+# Schema-VALID on purpose: the schema cannot express id uniqueness nor that
+# from/to name a declared department, so these defects must be caught by
+# checkMap section 7, not by the schema.
+#   - handoff id "a-to-b" declared twice   → DEPT_HANDOFF_DUPLICATE_ID
+#   - handoff "a-to-ghost" targets "ghost" → DEPT_HANDOFF_DEPT_UNRESOLVED
+version: 1
+last_verified: "2026-10-04"
+surfaces:
+  - id: root
+    cwd: .
+    role: dev
+    purpose: "self-test fixture surface"
+    capabilities:
+      can_mutate: false
+      can_open_pr: false
+      can_trigger_pipeline: false
+    loads:
+      skills: []
+      agents: []
+nodes: []
+handoffs: []
+departments:
+  - id: a
+    label: "Fixture A"
+    lead: a-lead
+    repo_domains: [D1]
+    state: partial
+  - id: b
+    label: "Fixture B"
+    lead: b-lead
+    repo_domains: [D1]
+    state: partial
+department_handoffs:
+  - id: a-to-b
+    from: a
+    to: b
+    contract_ref: "fixture"
+    contract_status: planned
+    gate: "fixture"
+    state: ASPIRATIONAL
+  - id: a-to-b
+    from: a
+    to: b
+    contract_ref: "fixture duplicate"
+    contract_status: planned
+    gate: "fixture"
+    state: ASPIRATIONAL
+  - id: a-to-ghost
+    from: a
+    to: ghost
+    contract_ref: "fixture"
+    contract_status: planned
+    gate: "fixture"
+    state: ASPIRATIONAL
