@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 9f786f57f377b4461969f865b02970bb1c43838664d80c2e9e06d2ae592cf4eb
+source_sha256: 5d522385d2afaeba8e314930699a23ad0a0726927493a7ba2730a2601fc169ec
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -24,16 +24,16 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1000 |
 
-Source sotFingerprint: `f099f781bddb`.
+Source sotFingerprint: `41c06f3c031d`.
 
 ## Comment l'utiliser
 
-1. Identifier le **domaine** D1..D16 (voir ci-dessous)
+1. Identifier le **domaine** D1..D15 (voir ci-dessous)
 2. Lire `audit/registry/canonical.json` pour la query précise (programmatique)
 3. Lire `.claude/knowledge/modules/<module>.md` pour la prose détaillée
 4. Fall-back grep si question hors registry
 
-## Domaines (D1..D16 + UNKNOWN)
+## Domaines (D1..D15 + UNKNOWN)
 
 ### D1 — Catalog Core
 
@@ -43,13 +43,13 @@ Source sotFingerprint: `f099f781bddb`.
 - **Knowledge prose**: [`catalog`](modules/catalog.md), [`gamme-rest`](modules/gamme-rest.md), [`products`](modules/products.md)
 - **Status**: LIVE=72, UNKNOWN=12
 
-### D2 — Legacy/XTR Migration
+### D2 — Legacy / XTR Migration
 
-- **Files**: 141 (test=127, service=10, config=3, controller=1)
+- **Files**: 142 (test=128, service=10, config=3, controller=1)
 - **Runtime entrypoints**: 1
-- **Top owners**: @ak125 (126), __unassigned__ (15)
+- **Top owners**: @ak125 (127), __unassigned__ (15)
 - **Knowledge prose**: [`rm`](modules/rm.md)
-- **Status**: LEGACY=14, LIVE=1, UNKNOWN=126
+- **Status**: LEGACY=14, LIVE=1, UNKNOWN=127
 
 ### D3 — SEO & Sitemap
 
@@ -147,19 +147,11 @@ Source sotFingerprint: `f099f781bddb`.
 
 ### D15 — Security & Governance
 
-- **Files**: 272 (test=162, script=62, service=45, config=2, controller=1)
+- **Files**: 271 (test=161, script=62, service=45, config=2, controller=1)
 - **Runtime entrypoints**: 3
-- **Top owners**: @ak125 (272)
+- **Top owners**: @ak125 (271)
 - **Knowledge prose**: [`bot-guard`](modules/bot-guard.md)
-- **Status**: LIVE=56, UNKNOWN=216
-
-### D16 — Maintenance
-
-- **Files**: 1 (service=1)
-- **Runtime entrypoints**: 1
-- **Top owners**: @ak125 (1)
-- **Knowledge prose**: [`maintenance`](modules/maintenance.md)
-- **Status**: LIVE=1
+- **Status**: LIVE=56, UNKNOWN=215
 
 ### UNKNOWN — Unknown (overlay non résolu)
 
