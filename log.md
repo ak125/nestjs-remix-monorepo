@@ -477,3 +477,21 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/data-tracking-integrity-verdict`
 - **Décision** : chore(audit): régénérer inventaire et candidats PR-8 après la fusion de main (+8 other commits)
 - **Sortie** : PR aucune | commits 0bbb4f576 477bc5cd6 382443d04 8944453cd 759879f22 3b7ee7f71 d65b80a9d 30aa0240b ec66a922d
+
+## 2026-10-04 — fix/return-page-order-event-ord-id (auto)
+
+- **Branche** : `fix/return-page-order-event-ord-id`
+- **Décision** : chore(audit): resync module-boundaries + PR-8 cleanup snapshot (+2 other commits)
+- **Sortie** : PR aucune | commits 04f9278dd a89c7426f 975975127
+
+## 2026-10-04 — fix/return-page-order-event-ord-id (auto)
+
+- **Branche** : `fix/return-page-order-event-ord-id`
+- **Décision** : chore(audit): resync module-boundaries + PR-8 cleanup snapshot après la fusion de main (+6 other commits)
+- **Sortie** : PR #1728 | commits 8e76dc3e2 56b9e2172 1fe467be7 9fe97b7f5 04f9278dd a89c7426f 975975127
+
+## 2026-10-04 — fix/return-page-order-event-ord-id (auto)
+
+- **Branche** : `fix/return-page-order-event-ord-id`
+- **Décision** : Merge remote-tracking branch 'origin/main' into fix/return-page-order-event-ord-id (+8 other commits)
+- **Sortie** : PR #1728 | commits efa7af710 fd08ec155 8e76dc3e2 56b9e2172 1fe467be7 9fe97b7f5 04f9278dd a89c7426f 975975127
