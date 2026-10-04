@@ -8108,7 +8108,7 @@
       ],
       "imports": [
         "backend/src/modules/admin/services/command-center-action-rules/score-action.ts",
-        "backend/src/modules/analytics/tracking-integrity/tracking-integrity-verdict.schema.ts"
+        "backend/src/modules/analytics/index.ts"
       ],
       "kind": "service",
       "loc": 95,
@@ -8140,15 +8140,14 @@
         "backend/src/modules/admin/services/command-center-action-rules/seo-action.rules.ts",
         "backend/src/modules/admin/services/command-center-action-rules/tracking-integrity-action.rules.ts",
         "backend/src/modules/admin/services/command-center-orchestrator/executable-action.contract.ts",
-        "backend/src/modules/analytics/tracking-integrity/tracking-integrity-verdict.schema.ts",
-        "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts",
+        "backend/src/modules/analytics/index.ts",
         "fs",
         "packages/seo-types/dist/index.d.ts",
         "path",
         "zlib"
       ],
       "kind": "service",
-      "loc": 481,
+      "loc": 483,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/command-center-actions.service.ts",
       "risk": "low",
@@ -10927,6 +10926,32 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
+        "depcruise",
+        "reachability"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/analytics/index.ts",
+      "importedBy": [
+        "backend/src/modules/admin/services/command-center-action-rules/tracking-integrity-action.rules.ts",
+        "backend/src/modules/admin/services/command-center-actions.service.ts"
+      ],
+      "imports": [
+        "backend/src/modules/analytics/tracking-integrity/tracking-integrity-verdict.schema.ts",
+        "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts"
+      ],
+      "kind": "service",
+      "loc": 16,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/analytics/index.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
         "depcruise"
       ],
       "domain": "UNKNOWN",
@@ -11024,8 +11049,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/analytics/tracking-integrity/tracking-integrity-verdict.schema.ts",
       "importedBy": [
-        "backend/src/modules/admin/services/command-center-action-rules/tracking-integrity-action.rules.ts",
-        "backend/src/modules/admin/services/command-center-actions.service.ts",
+        "backend/src/modules/analytics/index.ts",
         "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.test.ts",
         "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts"
       ],
@@ -11071,8 +11095,8 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts",
       "importedBy": [
-        "backend/src/modules/admin/services/command-center-actions.service.ts",
         "backend/src/modules/analytics/analytics.module.ts",
+        "backend/src/modules/analytics/index.ts",
         "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.test.ts"
       ],
       "imports": [

@@ -1273,9 +1273,7 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [
-        "runtime:backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts"
-      ],
+      "dependsOn": [],
       "id": "runtime:backend/src/modules/admin/services/command-center-actions.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/admin/services/command-center-actions.service.ts",
