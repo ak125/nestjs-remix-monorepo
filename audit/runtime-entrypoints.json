@@ -974,6 +974,7 @@
       "CommandCenterActionsService",
       "CommandCenterController",
       "CommandCenterExecutionLedgerService",
+      "CommandCenterKpiService",
       "CommandCenterOrchestratorService",
       "CommandCenterReaderService",
       "CommercialArchivesController",
@@ -1705,6 +1706,7 @@
       "backend/src/modules/admin/services/buying-guide/buying-guide-section-extractor.service.ts",
       "backend/src/modules/admin/services/canon-observability.service.ts",
       "backend/src/modules/admin/services/command-center-actions.service.ts",
+      "backend/src/modules/admin/services/command-center-kpi.service.ts",
       "backend/src/modules/admin/services/command-center-orchestrator/execution-ledger.service.ts",
       "backend/src/modules/admin/services/command-center-orchestrator/orchestrator.service.ts",
       "backend/src/modules/admin/services/command-center-orchestrator/regen-artifact.executor.ts",
@@ -2967,7 +2969,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1581,
+  "runtime_files_count": 1582,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -3156,6 +3158,7 @@
     "backend/src/modules/admin/services/buying-guide/buying-guide-section-extractor.service.ts",
     "backend/src/modules/admin/services/canon-observability.service.ts",
     "backend/src/modules/admin/services/command-center-actions.service.ts",
+    "backend/src/modules/admin/services/command-center-kpi.service.ts",
     "backend/src/modules/admin/services/command-center-orchestrator/execution-ledger.service.ts",
     "backend/src/modules/admin/services/command-center-orchestrator/orchestrator.service.ts",
     "backend/src/modules/admin/services/command-center-orchestrator/regen-artifact.executor.ts",
