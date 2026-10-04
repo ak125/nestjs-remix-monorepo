@@ -4718,6 +4718,7 @@
       "status": "LIVE",
       "usedBy": [
         "backend/src/modules/admin/services/seo-control.service.ts",
+        "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts",
         "backend/src/modules/diagnostic-engine/services/outcome-emitter.service.ts",
         "backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts",
         "backend/src/modules/seo-monitoring/services/cwv-beacon.service.ts",

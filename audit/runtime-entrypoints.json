@@ -1549,6 +1549,7 @@
       "ThrottlerModule",
       "TicketsController",
       "TicketsService",
+      "TrackingIntegrityService",
       "TrendSignalsModule",
       "TrendSignalsProcessor",
       "TrendSignalsService",
@@ -1769,6 +1770,7 @@
       "backend/src/modules/analytics/controllers/landing-attribution.controller.ts",
       "backend/src/modules/analytics/controllers/simple-analytics.controller.ts",
       "backend/src/modules/analytics/services/simple-analytics.service.ts",
+      "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts",
       "backend/src/modules/api.module.ts",
       "backend/src/modules/blog/blog.module.ts",
       "backend/src/modules/blog/controllers/advice-hierarchy.controller.ts",
@@ -2973,7 +2975,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1586,
+  "runtime_files_count": 1587,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -3225,6 +3227,7 @@
     "backend/src/modules/analytics/controllers/landing-attribution.controller.ts",
     "backend/src/modules/analytics/controllers/simple-analytics.controller.ts",
     "backend/src/modules/analytics/services/simple-analytics.service.ts",
+    "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts",
     "backend/src/modules/api.module.ts",
     "backend/src/modules/blog/blog.module.ts",
     "backend/src/modules/blog/controllers/advice-hierarchy.controller.ts",

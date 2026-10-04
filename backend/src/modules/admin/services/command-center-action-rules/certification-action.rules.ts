@@ -57,7 +57,7 @@ const REPAIR_PLAYBOOK: Record<
     urgency: 7,
     effort: 4,
     risk: 2,
-    step: 'Définir le verdict de fiabilité data (tracking-integrity) — la data conditionne sales & SEO.',
+    step: 'Amener le verdict tracking-integrity (action « data:tracking-integrity ») à CERTIFIED, puis certifier le département au canon — la data conditionne sales & SEO.',
   },
   runtime: {
     source: 'runtime',

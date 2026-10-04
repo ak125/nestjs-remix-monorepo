@@ -466,6 +466,18 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Décision** : chore(audit): régénérer les candidats PR-8 sur le canonical reconstruit sans dist (+9 other commits)
 - **Sortie** : PR #1725 | commits aae2c6506 880195243 b0df83906 3fb5dead7 d480db38b 4d20847ec 7cfe405a0 a120f3169 f56ca82a4 c0f0d2923
 
+## 2026-10-04 — feat/data-tracking-integrity-verdict (auto)
+
+- **Branche** : `feat/data-tracking-integrity-verdict`
+- **Décision** : chore(audit): régénérer inventaire + candidats de nettoyage (tracking-integrity) (+4 other commits)
+- **Sortie** : PR aucune | commits 759879f22 3b7ee7f71 d65b80a9d 30aa0240b ec66a922d
+
+## 2026-10-04 — feat/data-tracking-integrity-verdict (auto)
+
+- **Branche** : `feat/data-tracking-integrity-verdict`
+- **Décision** : chore(audit): régénérer inventaire et candidats PR-8 après la fusion de main (+8 other commits)
+- **Sortie** : PR aucune | commits 0bbb4f576 477bc5cd6 382443d04 8944453cd 759879f22 3b7ee7f71 d65b80a9d 30aa0240b ec66a922d
+
 ## 2026-10-04 — fix/return-page-order-event-ord-id (auto)
 
 - **Branche** : `fix/return-page-order-event-ord-id`

@@ -9,6 +9,8 @@
  * `{ error }` (it does not throw), so the mock returns errors, not rejections.
  */
 import { CommandCenterActionsService } from '../../src/modules/admin/services/command-center-actions.service';
+import { TrackingIntegrityService } from '../../src/modules/analytics/tracking-integrity/tracking-integrity.service';
+import type { TrackingIntegrityVerdictV1 } from '../../src/modules/analytics/tracking-integrity/tracking-integrity-verdict.schema';
 
 const mockConfigService = {
   get: jest.fn().mockImplementation((key: string) => {
@@ -34,6 +36,9 @@ function brokenSupabase() {
     'limit',
     'order',
     'gte',
+    'lte',
+    'lt',
+    'in',
   ]) {
     chain[m] = jest.fn().mockReturnValue(chain);
   }
@@ -45,15 +50,37 @@ function brokenSupabase() {
   return chain;
 }
 
-function makeService(supabase: ReturnType<typeof brokenSupabase>) {
-  const service = new (CommandCenterActionsService as unknown as new (
-    c: unknown,
-  ) => CommandCenterActionsService)(mockConfigService);
-  Object.defineProperty(service, 'supabase', {
+function withSupabase<T extends object>(target: T, supabase: unknown): T {
+  Object.defineProperty(target, 'supabase', {
     get: () => supabase,
     configurable: true,
   });
-  return service;
+  return target;
+}
+
+/**
+ * By default the REAL tracking-integrity producer reads the same mocked supabase,
+ * so a broken source is proven end-to-end; a test may inject a stub producer.
+ */
+function makeService(
+  supabase: ReturnType<typeof brokenSupabase>,
+  trackingIntegrity?: Pick<TrackingIntegrityService, 'evaluate'>,
+) {
+  const producer =
+    trackingIntegrity ??
+    withSupabase(
+      new (TrackingIntegrityService as unknown as new (
+        c: unknown,
+      ) => TrackingIntegrityService)(mockConfigService),
+      supabase,
+    );
+  return withSupabase(
+    new (CommandCenterActionsService as unknown as new (
+      c: unknown,
+      t: unknown,
+    ) => CommandCenterActionsService)(mockConfigService, producer),
+    supabase,
+  );
 }
 
 describe('CommandCenterActionsService — honest by construction', () => {
@@ -74,6 +101,11 @@ describe('CommandCenterActionsService — honest by construction', () => {
     // honest LOW confidence (UNKNOWN), not fake-green
     expect(seo?.data_confidence).toBe(25);
     expect(pricing?.data_confidence).toBe(25);
+    // Data → Sales verdict: unreadable source → UNKNOWN → certification, never CERTIFIED
+    const tracking = queue.find((a) => a.id === 'data:tracking-integrity');
+    expect(tracking?.action_type).toBe('certification');
+    expect(tracking?.data_confidence).toBe(25);
+    expect(tracking?.reason).toMatch(/Lecture impossible/);
   });
 
   it('certification dept + broken sources still yields zero business/risk actions', async () => {
@@ -102,6 +134,91 @@ describe('CommandCenterActionsService — honest by construction', () => {
   });
 });
 
+describe('CommandCenterActionsService — tracking-integrity-verdict.v1 (Data → Ventes)', () => {
+  const window = {
+    from: '2026-09-04T12:00:00.000Z',
+    to: '2026-10-04T12:00:00.000Z',
+    days: 30,
+  };
+  const stub = (verdict: unknown) => ({
+    evaluate: jest.fn().mockResolvedValue(verdict),
+  });
+
+  it('NOT_CERTIFIED → repair action carrying the failed checks', async () => {
+    const verdict: TrackingIntegrityVerdictV1 = {
+      contract: 'tracking-integrity-verdict.v1',
+      producer: 'data',
+      consumer: 'sales',
+      status: 'NOT_CERTIFIED',
+      window,
+      checks: [
+        {
+          id: 'order_event_key',
+          status: 'FAIL',
+          observed: 0,
+          expected: 2,
+          detail: 'clé',
+          samples: ['evt-1'],
+        },
+        {
+          id: 'order_event_coverage',
+          status: 'FAIL',
+          observed: 0,
+          expected: 2,
+          detail: 'couverture',
+          samples: ['ORD-1'],
+        },
+      ],
+      reason: null,
+    };
+    const queue = await makeService(
+      brokenSupabase(),
+      stub(verdict),
+    ).computeActionQueue([], [], 'full');
+    const action = queue.find((a) => a.id === 'data:tracking-integrity');
+    expect(action?.action_type).toBe('repair');
+    expect(action?.data_confidence).toBe(90);
+    expect(action?.evidence).toContain('order_event_key : 0/2');
+  });
+
+  it('a verdict that breaks its contract → unavailable:data, never interpreted', async () => {
+    // CERTIFIED without any check: forbidden by the contract
+    const forged = {
+      contract: 'tracking-integrity-verdict.v1',
+      producer: 'data',
+      consumer: 'sales',
+      status: 'CERTIFIED',
+      window,
+      checks: [],
+      reason: null,
+    };
+    const queue = await makeService(
+      brokenSupabase(),
+      stub(forged),
+    ).computeActionQueue([], [], 'full');
+    expect(queue.find((a) => a.id === 'data:tracking-integrity')).toBe(
+      undefined,
+    );
+    const unavailable = queue.find((a) => a.id === 'unavailable:data');
+    expect(unavailable?.action_type).toBe('certification');
+    expect(unavailable?.data_confidence).toBe(25);
+  });
+
+  it('a producer that throws → unavailable:data', async () => {
+    const queue = await makeService(brokenSupabase(), {
+      evaluate: jest.fn().mockRejectedValue(new Error('down')),
+    }).computeActionQueue([], [], 'full');
+    expect(queue.some((a) => a.id === 'unavailable:data')).toBe(true);
+  });
+
+  it('non-full modes never ask the producer', async () => {
+    const producer = stub(null);
+    const service = makeService(brokenSupabase(), producer);
+    expect(await service.computeActionQueue([], [], 'light')).toEqual([]);
+    expect(producer.evaluate).not.toHaveBeenCalled();
+  });
+});
+
 /**
  * A supabase whose table reads succeed (empty pricing) and whose rpc() is
  * driven per-function — isolates the SEO v2/v1 path.
@@ -120,6 +237,9 @@ function seoSupabase(
     'limit',
     'order',
     'gte',
+    'lte',
+    'lt',
+    'in',
   ]) {
     chain[m] = jest.fn().mockReturnValue(chain);
   }
