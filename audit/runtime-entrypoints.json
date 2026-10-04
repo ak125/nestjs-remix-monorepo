@@ -2781,6 +2781,8 @@
       "backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_commerce.sql",
       "backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_content.down.sql",
       "backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_content.sql",
+      "backend/supabase/migrations/20261004_blog_advice_repair_dangling_pg_id.down.sql",
+      "backend/supabase/migrations/20261004_blog_advice_repair_dangling_pg_id.sql",
       "backend/supabase/migrations/README.md"
     ],
     "ci_workflows": [
@@ -4208,6 +4210,8 @@
     "backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_commerce.sql",
     "backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_content.down.sql",
     "backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_content.sql",
+    "backend/supabase/migrations/20261004_blog_advice_repair_dangling_pg_id.down.sql",
+    "backend/supabase/migrations/20261004_blog_advice_repair_dangling_pg_id.sql",
     "backend/supabase/migrations/README.md",
     "docker/lighthouse/Dockerfile",
     "docker/lighthouse/crontab",

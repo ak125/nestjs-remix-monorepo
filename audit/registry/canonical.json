@@ -44386,6 +44386,26 @@
         "manual"
       ],
       "domain": "D1",
+      "id": "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-guide-achat.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 60,
+      "owner": "@ak125/catalog-team",
+      "path": "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-guide-achat.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D1",
       "id": "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-seo-shadow.test.ts",
       "importedBy": [],
       "imports": [],
@@ -44497,7 +44517,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 1225,
+      "loc": 1236,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
       "risk": "medium",
@@ -81327,13 +81347,14 @@
       "importedBy": [],
       "imports": [
         "~/components/errors/ErrorGeneric",
+        "~/utils/blog-article-redirect.server",
         "~/utils/cache-control",
         "~/utils/logger",
         "~/utils/proxy-headers.server",
         "~/utils/single-fetch"
       ],
       "kind": "route",
-      "loc": 529,
+      "loc": 557,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/$.tsx",
       "risk": "medium",
@@ -85274,13 +85295,14 @@
         "~/components/ui/badge",
         "~/components/ui/button",
         "~/components/ui/card",
+        "~/utils/blog-article-redirect.server",
         "~/utils/cache-control",
         "~/utils/internal-api.server",
         "~/utils/logger",
         "~/utils/seo-clean.utils"
       ],
       "kind": "route",
-      "loc": 633,
+      "loc": 634,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/blog-pieces-auto.article.$slug.tsx",
       "risk": "medium",
@@ -85435,6 +85457,7 @@
         "~/config/visual-intent",
         "~/types/r3-guide.types",
         "~/utils/analytics",
+        "~/utils/blog-article-redirect.server",
         "~/utils/cache-control",
         "~/utils/internal-api.server",
         "~/utils/logger",
@@ -85444,7 +85467,7 @@
         "~/utils/seo/canonical"
       ],
       "kind": "route",
-      "loc": 846,
+      "loc": 868,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/blog-pieces-auto.conseils.$pg_alias.tsx",
       "risk": "medium",
@@ -89493,6 +89516,28 @@
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
+      "id": "frontend/app/utils/blog-article-redirect.server.ts",
+      "importedBy": [],
+      "imports": [
+        "~/utils/internal-api.server"
+      ],
+      "kind": "config",
+      "loc": 84,
+      "owner": "@ak125/frontend-team",
+      "path": "frontend/app/utils/blog-article-redirect.server.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
         "manual",
         "reachability"
       ],
@@ -91871,7 +91916,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 54,
+      "loc": 216,
       "owner": "@ak125",
       "path": "frontend/tests/unit/catch-all-blog-advice-alias-redirect.test.ts",
       "risk": "medium",
@@ -92027,11 +92072,31 @@
         "manual"
       ],
       "domain": "D2",
+      "id": "frontend/tests/unit/conseils-ba-alias-fallback.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 145,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/conseils-ba-alias-fallback.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
       "id": "frontend/tests/unit/conseils-loader-status.test.ts",
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 85,
+      "loc": 87,
       "owner": "@ak125",
       "path": "frontend/tests/unit/conseils-loader-status.test.ts",
       "risk": "medium",
@@ -102504,15 +102569,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "f712a655d9f22003e79dcfca8e1b40fa79901b8a60755de688f1431655d188e2",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "8973ce411d1c3f4bdb10d7ec983299dce5c808b39bf1e01ea2e711663021eed1",
+      ".spec/00-canon/repository-registry/ownership.yaml": "c8fad895f0e766e742f80ccbd094105fabc1313a3b2f05fef57f39e7ea482c77",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "06762d36694187f95afe05f89fddf30b7d9e1c39208d2837744cc6b5aeb1c792",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "91c98af84f1956e9d8f3ed6d92d906ef0e305b1d7f605aabdfa85a7ea0bdf288",
+      "audit/registry/files.json": "417a3127c3c3dd74461eac985734370940cbb85aaad546203a7601535197526a",
       "audit/registry/rpc.json": "5df65b395357c216373bb73667da9f058af5cb63f6fbd53b41d8d917b8bf0b3f",
       "audit/registry/runtime.json": "cdcb461fdb93aa228e25ba3c00f4f2bc247ac1d6acca60fad21220a7bcdfa84f"
     },
-    "sotFingerprint": "b7fb97ea7805"
+    "sotFingerprint": "4a44afed3c37"
   },
   "runtime": [
     {
