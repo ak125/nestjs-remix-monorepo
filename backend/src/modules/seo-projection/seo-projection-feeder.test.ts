@@ -1,5 +1,6 @@
 /**
- * Tests SeoProjectionFeederService : discoverAndEnqueue + triggerNow (slurp cron R1) ET triggerEntity
+ * Tests SeoProjectionFeederService : discoverAndEnqueue + triggerNow (slurp nocturne, tous les types
+ * de l'allowlist d'écriture) ET triggerEntity
  * (single-entity role-scoped P2-B). fs + app.config mockés ; queues + FeatureFlags = stubs jest.
  */
 import type { ConfigService } from '@nestjs/config';
@@ -28,8 +29,8 @@ const EXPORTS_ROOT = '/abs/seo';
 
 function makeService(
   opts: {
-    exportsDir?: string;
     enabled?: boolean;
+    writableTypes?: string[];
     repeatables?: Array<{ name: string; key: string }>;
   } = {},
 ) {
@@ -43,14 +44,16 @@ function makeService(
     get: jest.fn((key: string, def?: string) => {
       if (key === 'SEO_PROJECTION_R1_FEED_ENABLED')
         return opts.enabled ? 'true' : def;
-      if (key === 'SEO_PROJECTION_R1_EXPORTS_DIR')
-        return opts.exportsDir ?? '/abs/exports';
       if (key === 'SEO_PROJECTION_EXPORTS_ROOT') return EXPORTS_ROOT;
       return def;
     }),
   };
   const featureFlags = {
-    seoProjectionWritableTypes: ['gamme', 'constructeur', 'vehicle'],
+    seoProjectionWritableTypes: opts.writableTypes ?? [
+      'gamme',
+      'constructeur',
+      'vehicle',
+    ],
     seoProjectionWritableRoles: (type: string) =>
       type === 'gamme'
         ? ['R3_CONSEILS', 'R4_REFERENCE', 'R6_GUIDE_ACHAT']
@@ -84,17 +87,30 @@ describe('SeoProjectionFeederService — slurp cron (discoverAndEnqueue / trigge
     expect(writeQueue.add).not.toHaveBeenCalled();
   });
 
-  it('dossier absent → NO_EXPORTS_DIR, no-op (pas une erreur fatale)', async () => {
+  it('aucun dossier de type → NO_EXPORTS_DIR, no-op (pas une erreur fatale)', async () => {
     mockReaddir.mockRejectedValue(new Error('ENOENT'));
     const { svc, writeQueue } = makeService();
     const r = await svc.discoverAndEnqueue('scheduler');
     expect(r.reason).toBe('NO_EXPORTS_DIR');
+    expect(r.byType).toEqual({ constructeur: 0, gamme: 0, vehicle: 0 });
+    expect(writeQueue.add).not.toHaveBeenCalled();
+  });
+
+  it('dossiers lisibles mais 0 export → EMPTY, aucun enqueue', async () => {
+    mockReaddir.mockResolvedValue(['README.md']);
+    const { svc, writeQueue } = makeService();
+    const r = await svc.discoverAndEnqueue('scheduler');
+    expect(r.reason).toBe('EMPTY');
     expect(writeQueue.add).not.toHaveBeenCalled();
   });
 
   it('exports présents → 1 write-job (cron) triés, SANS pipeline_version non-semver', async () => {
-    mockReaddir.mockResolvedValue(['b.json', 'a.json', 'note.md']);
-    const { svc, writeQueue } = makeService({ exportsDir: '/abs/exports' });
+    mockReaddir.mockImplementation((dir: string) =>
+      dir === `${EXPORTS_ROOT}/gamme`
+        ? Promise.resolve(['b.json', 'a.json', 'note.md'])
+        : Promise.reject(new Error('ENOENT')),
+    );
+    const { svc, writeQueue } = makeService();
     const r = await svc.discoverAndEnqueue('manual');
     expect(r.enqueued).toBe(true);
     expect(r.discovered).toBe(2);
@@ -102,12 +118,54 @@ describe('SeoProjectionFeederService — slurp cron (discoverAndEnqueue / trigge
     expect(jobName).toBe('seo-projection-write');
     expect(data.triggeredBy).toBe('cron');
     expect(data.exportPaths).toEqual([
-      '/abs/exports/a.json',
-      '/abs/exports/b.json',
+      `${EXPORTS_ROOT}/gamme/a.json`,
+      `${EXPORTS_ROOT}/gamme/b.json`,
     ]);
     // Le feeder ne pose PLUS de runMeta.pipeline_version (le writer résout les versions semver).
     expect(data.runMeta?.pipeline_version).toBeUndefined();
     expect(data.projectionRole).toBeUndefined();
+  });
+
+  it('découvre TOUS les types de l’allowlist (gamme + constructeur + vehicle) en 1 seul job trié', async () => {
+    const dirs: Record<string, string[]> = {
+      [`${EXPORTS_ROOT}/gamme`]: ['filtre-a-huile.json'],
+      [`${EXPORTS_ROOT}/constructeur`]: ['dacia.json'],
+      [`${EXPORTS_ROOT}/vehicle`]: ['renault-clio-3.json', 'audi-a3.json'],
+    };
+    mockReaddir.mockImplementation((dir: string) =>
+      dir in dirs
+        ? Promise.resolve(dirs[dir])
+        : Promise.reject(new Error('ENOENT')),
+    );
+    const { svc, writeQueue } = makeService();
+    const r = await svc.discoverAndEnqueue('scheduler');
+    expect(r.discovered).toBe(4);
+    expect(r.byType).toEqual({ constructeur: 1, gamme: 1, vehicle: 2 });
+    expect(writeQueue.add).toHaveBeenCalledTimes(1);
+    expect(writeQueue.add.mock.calls[0][1].exportPaths).toEqual([
+      `${EXPORTS_ROOT}/constructeur/dacia.json`,
+      `${EXPORTS_ROOT}/gamme/filtre-a-huile.json`,
+      `${EXPORTS_ROOT}/vehicle/audi-a3.json`,
+      `${EXPORTS_ROOT}/vehicle/renault-clio-3.json`,
+    ]);
+  });
+
+  it('un type HORS allowlist (diagnostic) n’est jamais lu, même si son dossier existe', async () => {
+    mockReaddir.mockResolvedValue(['x.json']);
+    const { svc } = makeService({ writableTypes: ['gamme'] });
+    const r = await svc.discoverAndEnqueue('scheduler');
+    expect(mockReaddir).toHaveBeenCalledTimes(1);
+    expect(mockReaddir).toHaveBeenCalledWith(`${EXPORTS_ROOT}/gamme`);
+    expect(r.byType).toEqual({ gamme: 1 });
+  });
+
+  it('type de l’allowlist non conforme au slug (traversal) → ignoré, jamais lu', async () => {
+    mockReaddir.mockResolvedValue(['x.json']);
+    const { svc } = makeService({ writableTypes: ['../secrets', 'gamme'] });
+    const r = await svc.discoverAndEnqueue('scheduler');
+    expect(mockReaddir).toHaveBeenCalledTimes(1);
+    expect(mockReaddir).toHaveBeenCalledWith(`${EXPORTS_ROOT}/gamme`);
+    expect(r.byType).toEqual({ gamme: 1 });
   });
 
   it('triggerNow → enqueue one-off sur la feed queue', async () => {
