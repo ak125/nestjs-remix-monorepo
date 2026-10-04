@@ -323,6 +323,33 @@ export function explainSegment(input: unknown, rawRule: unknown) {
   });
 }
 
+/** Aggregate the validated preview; reasons describe exclusions, not consent violations. */
+export function summarizeSegment(input: unknown, rawRule: unknown) {
+  // explainSegment validates uniqueness by project:id before producing one row per identity.
+  const rows = explainSegment(input, rawRule);
+  const reasons = new Map<string, number>();
+  let included = 0;
+  for (const row of rows) {
+    if (row.included) {
+      included++;
+      continue;
+    }
+    for (const reason of new Set(row.reasons))
+      reasons.set(reason, (reasons.get(reason) ?? 0) + 1);
+  }
+  return {
+    mode: 'snapshot',
+    counting_unit: 'project:id',
+    total: rows.length,
+    included,
+    excluded: rows.length - included,
+    reason_counts_exclusive: false,
+    exclusion_reasons: [...reasons.keys()]
+      .sort()
+      .map((reason) => ({ reason, count: reasons.get(reason)! })),
+  };
+}
+
 export function recommendProducts(
   input: unknown,
   contactId: string,
