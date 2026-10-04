@@ -33426,6 +33426,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/supplier-truth/supplier-sync.flag.ts",
       "importedBy": [
+        "backend/src/modules/supplier-truth/supplier-sync.job.processor.ts",
         "backend/src/modules/supplier-truth/supplier-sync.scheduler.ts",
         "backend/src/modules/supplier-truth/supplier-truth.controller.ts"
       ],
@@ -33452,11 +33453,12 @@
         "backend/src/workers/worker.module.ts"
       ],
       "imports": [
+        "backend/src/modules/supplier-truth/supplier-sync.flag.ts",
         "backend/src/modules/supplier-truth/supplier-sync.runner.ts",
         "backend/src/modules/supplier-truth/supplier-sync.scheduler.ts"
       ],
       "kind": "service",
-      "loc": 31,
+      "loc": 52,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-sync.job.processor.ts",
       "risk": "low",
@@ -33591,7 +33593,7 @@
         "backend/src/modules/supplier-truth/supplier-sync.scheduler.ts"
       ],
       "kind": "test",
-      "loc": 102,
+      "loc": 149,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-sync.scheduler.test.ts",
       "risk": "low",
@@ -33616,7 +33618,7 @@
         "backend/src/modules/supplier-truth/supplier-sync.flag.ts"
       ],
       "kind": "service",
-      "loc": 80,
+      "loc": 111,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-sync.scheduler.ts",
       "risk": "low",
@@ -43131,7 +43133,7 @@
         "~/components/ui/progress"
       ],
       "kind": "config",
-      "loc": 136,
+      "loc": 140,
       "owner": "__unassigned__",
       "path": "frontend/app/components/command-center/ModuleGrid.tsx",
       "risk": "low",
@@ -69495,7 +69497,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 428,
+      "loc": 484,
       "owner": "__unassigned__",
       "path": "scripts/governance/validate-agent-operating-map.js",
       "risk": "low",
@@ -70046,7 +70048,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 290,
+      "loc": 333,
       "owner": "__unassigned__",
       "path": "scripts/registry/build-llm-repo-map.js",
       "risk": "low",
@@ -71949,6 +71951,25 @@
       "loc": 264,
       "owner": "__unassigned__",
       "path": "tests/registry/inventory-cache-freshness.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "tests/registry/llm-repo-map.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 134,
+      "owner": "__unassigned__",
+      "path": "tests/registry/llm-repo-map.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
