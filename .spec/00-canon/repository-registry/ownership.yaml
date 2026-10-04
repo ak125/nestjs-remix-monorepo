@@ -17,6 +17,11 @@
 
 schemaVersion: 1.0.0
 entries:
+  - glob: scripts/marketing/summarize-reactivation-exclusions{,.test}.ts
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
   - glob: .claude/governance/**
     domain: D15
     owner: '@ak125'
@@ -1435,6 +1440,14 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: medium
+  # 37 index ordinaires doublés par la clé primaire ou la contrainte UNIQUE de même
+  # définition, tables contenu / blog / SEO / sitemap / KG (lot 1/3). Couvre .sql +
+  # .down.sql. D15 / @ak125 pour les lots transverses, comme #1619.
+  - glob: backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_content*.sql
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
   # Index d'expression type_id::integer sur auto_type_motor_code / auto_type_number_code (PR #1628).
   - glob: backend/supabase/migrations/20260930_auto_type_codes_type_id_int_expr_indexes*.sql
     domain: D4
@@ -1476,6 +1489,14 @@ entries:
   # search_path épinglé (public, pg_temp) de create_order_atomic, append_order_event et
   # check_payment_tunnel_health, zone commande / paiement, GO owner nominatif (PR #1648).
   - glob: backend/supabase/migrations/20261001_pin_order_functions_search_path*.sql
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: high
+    risk: high
+  # 24 index ordinaires doublés par la clé primaire ou la contrainte UNIQUE de même
+  # définition, tables commande / client / facture / livraison / ic_postback (lot 2/3),
+  # zone STOP, GO owner nominatif ; domaine / owner de la zone commande, comme #1648.
+  - glob: backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_commerce*.sql
     domain: D11
     owner: '@ak125/payments-team'
     sourceConfidence: high
@@ -1540,6 +1561,13 @@ entries:
   - glob: backend/supabase/migrations/20261003_auto_modele_fill_empty_alias*.sql
     domain: D4
     owner: '@ak125/vehicle-team'
+    sourceConfidence: high
+    risk: medium
+  # Rattache 12 conseils orphelins (ba_pg_id pendant) à leur gamme, rapport GSC 404.
+  # Couvre .sql + .down.sql. Glob exact : les migrations ne sont pas auto-couvertes.
+  - glob: backend/supabase/migrations/20261004_blog_advice_repair_dangling_pg_id*.sql
+    domain: D5
+    owner: '@ak125/content-team'
     sourceConfidence: high
     risk: medium
   # api/errors-api.controller expose la journalisation d'erreurs (/api/errors :

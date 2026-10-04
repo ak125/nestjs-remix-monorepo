@@ -4,19 +4,30 @@
  */
 
 import { Stethoscope } from "lucide-react";
-import { type GammeConseil } from "~/components/blog/conseil/section-config";
+import {
+  type GammeConseil,
+  slugifyTitle,
+} from "~/components/blog/conseil/section-config";
 import { HtmlContent } from "~/components/seo/HtmlContent";
 import { GuideCard } from "./GuideCard";
+
+/**
+ * Ancre stable ADR-027 : cible des 301 R5 (get_r5_redirect_target →
+ * /blog-pieces-auto/conseils/<alias>#diagnostic-rapide). L'id de la carte reste
+ * l'ancre serveur (TOC), dérivée du H2 et donc variable selon la gamme.
+ */
+const DIAGNOSTIC_RAPIDE_ANCHOR = "diagnostic-rapide";
 
 interface MiniDiagnosticTableProps {
   section: GammeConseil;
 }
 
 export function MiniDiagnosticTable({ section }: MiniDiagnosticTableProps) {
-  return (
+  const cardAnchor = section.anchor ?? slugifyTitle(section.title);
+  const card = (
     <GuideCard
       title={section.title}
-      anchor={section.anchor}
+      anchor={cardAnchor}
       icon={Stethoscope}
       label="Diagnostic rapide"
       gradient=""
@@ -34,4 +45,8 @@ export function MiniDiagnosticTable({ section }: MiniDiagnosticTableProps) {
       </div>
     </GuideCard>
   );
+
+  // Titre déjà slugifié en « diagnostic-rapide » : la carte porte l'ancre, pas de doublon d'id.
+  if (cardAnchor === DIAGNOSTIC_RAPIDE_ANCHOR) return card;
+  return <div id={DIAGNOSTIC_RAPIDE_ANCHOR}>{card}</div>;
 }

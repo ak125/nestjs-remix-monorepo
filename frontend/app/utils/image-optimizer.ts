@@ -506,13 +506,33 @@ export function isValidImagePath(path?: string | null): boolean {
   return true;
 }
 
-export function getOptimizedPartImageUrl(partImg?: string): string {
+export function resolvePartImagePath(partImg: string): string {
+  // Les images générées peuvent déjà être une source Storage ou une route
+  // /img. Seuls les noms de fichiers legacy sont relatifs au catalogue.
+  const objectPath = partImg.replace(/^\//, "");
+  const isSourcePath =
+    /^https?:\/\//i.test(partImg) ||
+    partImg.startsWith(`${IMAGE_CONFIG.PROXY_BASE}/`) ||
+    objectPath.startsWith(`${IMAGE_CONFIG.BUCKETS.UPLOADS}/`) ||
+    objectPath.startsWith(`${IMAGE_CONFIG.BUCKETS.RACK_IMAGES}/`) ||
+    objectPath.startsWith("articles/");
+  return isSourcePath ? partImg : `${IMAGE_CONFIG.PATHS.GAMMES}/${partImg}`;
+}
+
+export function getOptimizedPartImageUrl(
+  partImg?: string,
+  options: ImageOptimizationOptions = {},
+): string {
   if (!partImg) {
     return "/images/categories/default.svg"; // FIX: utiliser placeholder existant
   }
 
-  const path = `articles/gammes-produits/catalogue/${partImg}`;
-  return ImageOptimizer.getOptimizedUrl(path, { width: 600, quality: 85 });
+  const path = resolvePartImagePath(partImg);
+  return ImageOptimizer.getOptimizedUrl(path, {
+    width: 600,
+    quality: 85,
+    ...options,
+  });
 }
 
 /**

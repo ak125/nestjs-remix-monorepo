@@ -259,7 +259,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115688,
+      "loc_total": 115385,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -341,8 +341,8 @@
         "frontend/app/utils",
         "frontend/app/utils/seo"
       ],
-      "files_count": 597,
-      "loc_total": 114489,
+      "files_count": 598,
+      "loc_total": 114615,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -355,8 +355,8 @@
         "backend/src/modules/gamme-rest/utils",
         "backend/src/modules/gamme-rest/utils/__tests__"
       ],
-      "files_count": 18,
-      "loc_total": 6260,
+      "files_count": 19,
+      "loc_total": 6331,
       "has_barrel": true
     },
     "health": {
@@ -411,7 +411,7 @@
         "backend/src/modules/marketing/templates"
       ],
       "files_count": 29,
-      "loc_total": 6964,
+      "loc_total": 6991,
       "has_barrel": false
     },
     "mcp-validation": {
@@ -502,7 +502,7 @@
         "backend/src/modules/orders/types"
       ],
       "files_count": 21,
-      "loc_total": 6201,
+      "loc_total": 6213,
       "has_barrel": true
     },
     "payments": {
@@ -700,8 +700,8 @@
         "scripts/wiki-generators",
         "scripts/wiki-generators/__tests__"
       ],
-      "files_count": 202,
-      "loc_total": 44849,
+      "files_count": 204,
+      "loc_total": 45388,
       "has_barrel": true
     },
     "search": {
@@ -814,7 +814,7 @@
         "backend/src/modules/seo-projection"
       ],
       "files_count": 20,
-      "loc_total": 4380,
+      "loc_total": 4722,
       "has_barrel": false
     },
     "seo-shadow-observatory": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 278,
-      "loc_total": 51779,
+      "files_count": 285,
+      "loc_total": 52745,
       "has_barrel": true
     },
     "upload": {
@@ -2034,7 +2034,7 @@
     {
       "from": "seo-projection",
       "to": "config",
-      "count": 5
+      "count": 6
     },
     {
       "from": "seo-projection",
