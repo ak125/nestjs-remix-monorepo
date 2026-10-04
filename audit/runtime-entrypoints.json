@@ -453,7 +453,6 @@
       "frontend/app/routes/dashboard.tsx",
       "frontend/app/routes/diagnostic-auto.$slug.tsx",
       "frontend/app/routes/diagnostic-auto._index.tsx",
-      "frontend/app/routes/diagnostic.tsx",
       "frontend/app/routes/enhanced-vehicle-catalog.$brand.$model.$type.tsx",
       "frontend/app/routes/forgot-password.tsx",
       "frontend/app/routes/gammes.$.tsx",
@@ -2736,6 +2735,8 @@
       "backend/supabase/migrations/20260916_seo_cwv_trend_detector_vacancy_signal.down.sql",
       "backend/supabase/migrations/20260916_seo_cwv_trend_detector_vacancy_signal.sql",
       "backend/supabase/migrations/20260917_definer_rpc_anon_lockdown.sql",
+      "backend/supabase/migrations/20260924_cancel_order_atomic_refuse_paid.down.sql",
+      "backend/supabase/migrations/20260924_cancel_order_atomic_refuse_paid.sql",
       "backend/supabase/migrations/20260924_seo_role_template_pool_forward_apply.sql",
       "backend/supabase/migrations/20260924_vehicle_cache_trigger_rebuild_failure_observable.down.sql",
       "backend/supabase/migrations/20260924_vehicle_cache_trigger_rebuild_failure_observable.sql",
@@ -2776,6 +2777,8 @@
       "backend/supabase/migrations/20261001_pin_order_functions_search_path.sql",
       "backend/supabase/migrations/20261003_auto_modele_fill_empty_alias.down.sql",
       "backend/supabase/migrations/20261003_auto_modele_fill_empty_alias.sql",
+      "backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_content.down.sql",
+      "backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_content.sql",
       "backend/supabase/migrations/README.md"
     ],
     "ci_workflows": [
@@ -2922,6 +2925,7 @@
       "scripts/marketing/marketing-workbench.test.ts",
       "scripts/marketing/reactivation-pilot.test.ts",
       "scripts/marketing/reactivation-runtime.test.mjs",
+      "scripts/marketing/summarize-reactivation-exclusions.test.ts",
       "scripts/marketing/tsconfig.json",
       "scripts/ops/dev-compile-watch.js",
       "scripts/registry/build-canonical-registry.js",
@@ -2959,7 +2963,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1572,
+  "runtime_files_count": 1577,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4156,6 +4160,8 @@
     "backend/supabase/migrations/20260916_seo_cwv_trend_detector_vacancy_signal.down.sql",
     "backend/supabase/migrations/20260916_seo_cwv_trend_detector_vacancy_signal.sql",
     "backend/supabase/migrations/20260917_definer_rpc_anon_lockdown.sql",
+    "backend/supabase/migrations/20260924_cancel_order_atomic_refuse_paid.down.sql",
+    "backend/supabase/migrations/20260924_cancel_order_atomic_refuse_paid.sql",
     "backend/supabase/migrations/20260924_seo_role_template_pool_forward_apply.sql",
     "backend/supabase/migrations/20260924_vehicle_cache_trigger_rebuild_failure_observable.down.sql",
     "backend/supabase/migrations/20260924_vehicle_cache_trigger_rebuild_failure_observable.sql",
@@ -4196,6 +4202,8 @@
     "backend/supabase/migrations/20261001_pin_order_functions_search_path.sql",
     "backend/supabase/migrations/20261003_auto_modele_fill_empty_alias.down.sql",
     "backend/supabase/migrations/20261003_auto_modele_fill_empty_alias.sql",
+    "backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_content.down.sql",
+    "backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_content.sql",
     "backend/supabase/migrations/README.md",
     "docker/lighthouse/Dockerfile",
     "docker/lighthouse/crontab",
@@ -4497,6 +4505,7 @@
     "scripts/marketing/marketing-workbench.test.ts",
     "scripts/marketing/reactivation-pilot.test.ts",
     "scripts/marketing/reactivation-runtime.test.mjs",
+    "scripts/marketing/summarize-reactivation-exclusions.test.ts",
     "scripts/marketing/tsconfig.json",
     "scripts/ops/dev-compile-watch.js",
     "scripts/registry/build-canonical-registry.js",

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test:marketing": "tsx --tsconfig scripts/marketing/tsconfig.json --test scripts/marketing/reactivation-pilot.test.ts scripts/marketing/marketing-workbench.test.ts scripts/marketing/marketing-operations.test.ts scripts/marketing/marketing-measurement.test.ts && node --test scripts/marketing/reactivation-runtime.test.mjs",
+    "test:marketing": "tsx --tsconfig scripts/marketing/tsconfig.json --test scripts/marketing/reactivation-pilot.test.ts scripts/marketing/marketing-workbench.test.ts scripts/marketing/marketing-operations.test.ts scripts/marketing/marketing-measurement.test.ts scripts/marketing/summarize-reactivation-exclusions.test.ts && node --test scripts/marketing/reactivation-runtime.test.mjs",
     "typecheck:marketing": "tsc -p scripts/marketing/tsconfig.json",
     "test": "turbo test",
     "dev": "turbo dev",
