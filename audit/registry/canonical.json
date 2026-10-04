@@ -73270,11 +73270,10 @@
       "imports": [
         "frontend/app/components/diagnostic-wizard/types.ts",
         "~/components/ui/badge",
-        "~/components/ui/card",
-        "~/components/ui/progress"
+        "~/components/ui/card"
       ],
       "kind": "config",
-      "loc": 216,
+      "loc": 163,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/results/ResultHypotheses.tsx",
       "risk": "low",
@@ -91964,7 +91963,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 106,
+      "loc": 105,
       "owner": "@ak125",
       "path": "frontend/tests/unit/button-phrasing-content.test.tsx",
       "risk": "medium",
@@ -92504,7 +92503,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 34,
+      "loc": 62,
       "owner": "@ak125",
       "path": "frontend/tests/unit/diagnostic-hypothesis-rank.test.tsx",
       "risk": "medium",
@@ -102801,11 +102800,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "4516d35aa9c99283dc75cbba2227314020531a72cca2acd4513571dd6ca7d208",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "1aac432ae4fedb0d4a4ea51c483e1a9f353ef68d687ac463a9fce41f7eb3f02b",
+      "audit/registry/files.json": "decb51b0ac277f8abe3593d4ba51b0dedd656cf8b0567777a4f5483371fff7b6",
       "audit/registry/rpc.json": "5ee2a4b80a43764dda2c436d7b7b49e09ba4b1bd2e746864e869ecc7ac556049",
       "audit/registry/runtime.json": "6be3a4960e4d4d9048eb530ffbf3a1588ed108663b568a27391f989ef08ef437"
     },
-    "sotFingerprint": "6f7776e79246"
+    "sotFingerprint": "e75386093986"
   },
   "runtime": [
     {

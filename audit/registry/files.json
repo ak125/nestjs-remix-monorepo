@@ -43930,11 +43930,10 @@
       "imports": [
         "frontend/app/components/diagnostic-wizard/types.ts",
         "~/components/ui/badge",
-        "~/components/ui/card",
-        "~/components/ui/progress"
+        "~/components/ui/card"
       ],
       "kind": "config",
-      "loc": 216,
+      "loc": 163,
       "owner": "__unassigned__",
       "path": "frontend/app/components/diagnostic-wizard/results/ResultHypotheses.tsx",
       "risk": "low",
@@ -61961,7 +61960,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 106,
+      "loc": 105,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/button-phrasing-content.test.tsx",
       "risk": "low",
@@ -62474,7 +62473,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 34,
+      "loc": 62,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/diagnostic-hypothesis-rank.test.tsx",
       "risk": "low",
