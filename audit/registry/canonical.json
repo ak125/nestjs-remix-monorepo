@@ -62364,6 +62364,7 @@
       "domain": "D11",
       "id": "backend/src/modules/supplier-truth/supplier-sync.flag.ts",
       "importedBy": [
+        "backend/src/modules/supplier-truth/supplier-sync.job.processor.ts",
         "backend/src/modules/supplier-truth/supplier-sync.scheduler.ts",
         "backend/src/modules/supplier-truth/supplier-truth.controller.ts"
       ],
@@ -62391,11 +62392,12 @@
         "backend/src/workers/worker.module.ts"
       ],
       "imports": [
+        "backend/src/modules/supplier-truth/supplier-sync.flag.ts",
         "backend/src/modules/supplier-truth/supplier-sync.runner.ts",
         "backend/src/modules/supplier-truth/supplier-sync.scheduler.ts"
       ],
       "kind": "service",
-      "loc": 31,
+      "loc": 52,
       "owner": "@ak125",
       "path": "backend/src/modules/supplier-truth/supplier-sync.job.processor.ts",
       "risk": "high",
@@ -62535,7 +62537,7 @@
         "backend/src/modules/supplier-truth/supplier-sync.scheduler.ts"
       ],
       "kind": "test",
-      "loc": 102,
+      "loc": 149,
       "owner": "@ak125",
       "path": "backend/src/modules/supplier-truth/supplier-sync.scheduler.test.ts",
       "risk": "high",
@@ -62561,7 +62563,7 @@
         "backend/src/modules/supplier-truth/supplier-sync.flag.ts"
       ],
       "kind": "service",
-      "loc": 80,
+      "loc": 111,
       "owner": "@ak125",
       "path": "backend/src/modules/supplier-truth/supplier-sync.scheduler.ts",
       "risk": "high",
@@ -72438,7 +72440,7 @@
         "~/components/ui/progress"
       ],
       "kind": "config",
-      "loc": 136,
+      "loc": 140,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/command-center/ModuleGrid.tsx",
       "risk": "low",
@@ -99892,7 +99894,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 428,
+      "loc": 484,
       "owner": "@ak125",
       "path": "scripts/governance/validate-agent-operating-map.js",
       "risk": "low",
@@ -100472,7 +100474,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 290,
+      "loc": 333,
       "owner": "@ak125",
       "path": "scripts/registry/build-llm-repo-map.js",
       "risk": "high",
@@ -102488,6 +102490,26 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "tests/registry/llm-repo-map.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 134,
+      "owner": "@ak125",
+      "path": "tests/registry/llm-repo-map.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "tests/registry/overlay-pre-commit.test.ts",
       "importedBy": [],
       "imports": [],
@@ -102593,11 +102615,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "06762d36694187f95afe05f89fddf30b7d9e1c39208d2837744cc6b5aeb1c792",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "2530ab5c9cb389081a906e208591d46ae01bfa92b87bf11ba8a71abc65af6d9b",
+      "audit/registry/files.json": "34004b9713ca3f6011c5fbee3ab7adac985f1cc56a9cfde284d70b50ee9b8d5d",
       "audit/registry/rpc.json": "5ee2a4b80a43764dda2c436d7b7b49e09ba4b1bd2e746864e869ecc7ac556049",
       "audit/registry/runtime.json": "cdcb461fdb93aa228e25ba3c00f4f2bc247ac1d6acca60fad21220a7bcdfa84f"
     },
-    "sotFingerprint": "880cbdfe7b06"
+    "sotFingerprint": "b62dfef96b2b"
   },
   "runtime": [
     {
