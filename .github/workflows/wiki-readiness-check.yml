@@ -29,12 +29,21 @@ on:
   pull_request:
     paths:
       - 'scripts/wiki/wiki-readiness-check.py'
+      - 'scripts/wiki/test_wiki_readiness_check.py'
       - '.github/workflows/wiki-readiness-check.yml'
   workflow_dispatch:
 
 permissions:
   contents: read
   actions: read  # C3 liveness queries diag-canon-slugs-export.yml run-history via GITHUB_TOKEN
+
+# Every `run:` step executes as `bash --noprofile --norc -eo pipefail {0}`.
+# Without it, Actions uses `bash -e {0}` (no pipefail): in "Run readiness check",
+# `$?` after `… | tee readiness-output.txt` was tee's status (always 0), so a
+# NOT_READY never failed the job. Set at workflow level so new steps inherit it.
+defaults:
+  run:
+    shell: bash
 
 jobs:
   readiness-check:
@@ -126,3 +135,22 @@ jobs:
             readiness-output.txt
             readiness-report.json
           retention-days: 90
+
+  unit-tests:
+    name: 🧪 wiki-readiness-check unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'  # same interpreter as the readiness-check job
+
+      - name: Install pytest
+        run: |
+          python3 -m pip install --quiet 'pytest>=7.4,<9'
+
+      - name: Run pytest
+        run: |
+          python3 -m pytest scripts/wiki/test_wiki_readiness_check.py -v --tb=short
