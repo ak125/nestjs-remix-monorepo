@@ -453,7 +453,6 @@
       "frontend/app/routes/dashboard.tsx",
       "frontend/app/routes/diagnostic-auto.$slug.tsx",
       "frontend/app/routes/diagnostic-auto._index.tsx",
-      "frontend/app/routes/diagnostic.tsx",
       "frontend/app/routes/enhanced-vehicle-catalog.$brand.$model.$type.tsx",
       "frontend/app/routes/forgot-password.tsx",
       "frontend/app/routes/gammes.$.tsx",
