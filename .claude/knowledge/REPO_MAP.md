@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: d055dbfa24ee506f550c8e938a965fc94dc32d169f83f398773e02299e10c4c6
+source_sha256: 1855ce7de42eb5f2d81f07263b438617424dfaceb96b929472a373fdbe3539e8
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 2999 |
+| Files (Layer 1) | 3002 |
 | DB tables (Layer 1) | 313 |
 | DB RPC (Layer 1) | 255 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1000 |
 
-Source sotFingerprint: `9432bd18140a`.
+Source sotFingerprint: `418407846e61`.
 
 ## Comment l'utiliser
 
@@ -37,19 +37,19 @@ Source sotFingerprint: `9432bd18140a`.
 
 ### D1 — Catalog Core
 
-- **Files**: 84 (service=51, controller=21, test=8, config=4)
+- **Files**: 85 (service=51, controller=21, test=9, config=4)
 - **Runtime entrypoints**: 58
-- **Top owners**: @ak125/catalog-team (84)
+- **Top owners**: @ak125/catalog-team (85)
 - **Knowledge prose**: [`catalog`](modules/catalog.md), [`gamme-rest`](modules/gamme-rest.md), [`products`](modules/products.md)
-- **Status**: LIVE=72, UNKNOWN=12
+- **Status**: LIVE=72, UNKNOWN=13
 
 ### D2 — Legacy / XTR Migration
 
-- **Files**: 143 (test=129, service=10, config=3, controller=1)
+- **Files**: 144 (test=130, service=10, config=3, controller=1)
 - **Runtime entrypoints**: 1
-- **Top owners**: @ak125 (128), __unassigned__ (15)
+- **Top owners**: @ak125 (129), __unassigned__ (15)
 - **Knowledge prose**: [`rm`](modules/rm.md)
-- **Status**: LEGACY=14, LIVE=1, UNKNOWN=128
+- **Status**: LEGACY=14, LIVE=1, UNKNOWN=129
 
 ### D3 — SEO & Sitemap
 
@@ -93,11 +93,11 @@ Source sotFingerprint: `9432bd18140a`.
 
 ### D8 — Read Model / Serving (RM)
 
-- **Files**: 947 (config=466, route=246, service=176, controller=38, test=21)
+- **Files**: 948 (config=467, route=246, service=176, controller=38, test=21)
 - **Runtime entrypoints**: 347
-- **Top owners**: @ak125/frontend-team (686), @ak125/admin-team (261)
+- **Top owners**: @ak125/frontend-team (687), @ak125/admin-team (261)
 - **Knowledge prose**: [`admin`](modules/admin.md), [`staff`](modules/staff.md)
-- **Status**: LIVE=498, UNKNOWN=449
+- **Status**: LIVE=498, UNKNOWN=450
 
 ### D9 — Import / ETL / Normalisation
 
