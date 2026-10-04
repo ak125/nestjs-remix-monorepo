@@ -16,6 +16,11 @@ import {
   buildImprovementCandidateActions,
   CANDIDATE_HEADROOM_THRESHOLD,
 } from '../../src/modules/admin/services/command-center-action-rules/improvement-candidate.rules';
+import { buildTrackingIntegrityActions } from '../../src/modules/admin/services/command-center-action-rules/tracking-integrity-action.rules';
+import type {
+  TrackingIntegrityCheck,
+  TrackingIntegrityVerdictV1,
+} from '../../src/modules/analytics/tracking-integrity/tracking-integrity-verdict.schema';
 
 function biz(confidence: number): RawAction {
   return {
@@ -676,5 +681,107 @@ describe('improvement-candidate rules — read-only perf ranking, headroom-drive
         { name: 'Z, gzip', measuredBytes: 10, limitBytes: 0 },
       ]),
     ).toHaveLength(0);
+  });
+});
+
+describe('tracking-integrity rule — consommateur Ventes du verdict Data', () => {
+  const WINDOW = {
+    from: '2026-09-04T12:00:00.000Z',
+    to: '2026-10-04T12:00:00.000Z',
+    days: 30,
+  };
+  function chk(
+    id: TrackingIntegrityCheck['id'],
+    status: TrackingIntegrityCheck['status'],
+    observed: number,
+    expected: number,
+    samples: string[] = [],
+  ): TrackingIntegrityCheck {
+    return { id, status, observed, expected, detail: `${id} detail`, samples };
+  }
+  function v(
+    status: TrackingIntegrityVerdictV1['status'],
+    checks: TrackingIntegrityCheck[],
+    reason: string | null = null,
+  ): TrackingIntegrityVerdictV1 {
+    return {
+      contract: 'tracking-integrity-verdict.v1',
+      producer: 'data',
+      consumer: 'sales',
+      status,
+      window: WINDOW,
+      checks,
+      reason,
+    };
+  }
+
+  it('CERTIFIED → aucune action (mesure fiable, rien à réparer)', () => {
+    expect(
+      buildTrackingIntegrityActions(
+        v('CERTIFIED', [
+          chk('order_event_key', 'PASS', 2, 2),
+          chk('order_event_coverage', 'PASS', 2, 2),
+        ]),
+      ),
+    ).toEqual([]);
+  });
+
+  it('UNKNOWN → certification à confiance basse, la raison du producteur est transmise', () => {
+    const [a] = buildTrackingIntegrityActions(
+      v('UNKNOWN', [], 'Lecture impossible : __seo_event_log (42501) denied'),
+    );
+    expect(a).toMatchObject({
+      id: 'data:tracking-integrity',
+      department: 'data',
+      source: 'data',
+      action_type: 'certification',
+      data_confidence: 25,
+      reason: 'Lecture impossible : __seo_event_log (42501) denied',
+    });
+    expect(a.evidence).toEqual([
+      'tracking-integrity-verdict.v1 · 2026-09-04T12:00:00.000Z → 2026-10-04T12:00:00.000Z',
+    ]);
+    // jamais promue en action business sur une mesure non vérifiée
+    expect(finalizeAction(a).action_type).toBe('certification');
+  });
+
+  it('NOT_CERTIFIED (clé) → réparation : échantillons référencés, interdiction du flag serveur avant correction', () => {
+    const [a] = buildTrackingIntegrityActions(
+      v('NOT_CERTIFIED', [
+        chk('order_event_key', 'FAIL', 0, 2, ['evt-1', 'evt-2']),
+        chk('order_event_coverage', 'PASS', 1, 1),
+      ]),
+    );
+    expect(a).toMatchObject({
+      id: 'data:tracking-integrity',
+      action_type: 'repair',
+      data_confidence: 90,
+      title: 'Mesure des commandes non fiable — 1 contrôle(s) en échec',
+    });
+    expect(a.evidence).toEqual([
+      expect.stringContaining('tracking-integrity-verdict.v1'),
+      'order_event_key : 0/2',
+      '__seo_event_log.id=evt-1',
+      '__seo_event_log.id=evt-2',
+    ]);
+    expect(a.reason).toContain('order_event_key detail');
+    expect(a.reason).not.toContain('order_event_coverage detail');
+    expect(a.next_step).toMatch(/ord_id/);
+    expect(a.next_step).toMatch(/Ne pas activer FUNNEL_SERVER_EMIT_ENABLED/);
+  });
+
+  it('NOT_CERTIFIED (les deux) → étapes ordonnées : corriger la clé PUIS activer le serveur', () => {
+    const [a] = buildTrackingIntegrityActions(
+      v('NOT_CERTIFIED', [
+        chk('order_event_key', 'FAIL', 0, 1, ['evt-1']),
+        chk('order_event_coverage', 'FAIL', 0, 1, ['ORD-1']),
+      ]),
+    );
+    expect(a.title).toContain('2 contrôle(s)');
+    expect(a.evidence).toContain('___xtr_order.ord_id=ORD-1');
+    const keyStep = a.next_step.indexOf('Ne pas activer');
+    const enableStep = a.next_step.indexOf("Puis : Activer l'émission serveur");
+    expect(keyStep).toBeGreaterThan(-1);
+    expect(enableStep).toBeGreaterThan(keyStep);
   });
 });
