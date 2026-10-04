@@ -471,3 +471,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/data-tracking-integrity-verdict`
 - **Décision** : chore(audit): régénérer inventaire + candidats de nettoyage (tracking-integrity) (+4 other commits)
 - **Sortie** : PR aucune | commits 759879f22 3b7ee7f71 d65b80a9d 30aa0240b ec66a922d
+
+## 2026-10-04 — feat/data-tracking-integrity-verdict (auto)
+
+- **Branche** : `feat/data-tracking-integrity-verdict`
+- **Décision** : chore(audit): régénérer inventaire et candidats PR-8 après la fusion de main (+8 other commits)
+- **Sortie** : PR aucune | commits 0bbb4f576 477bc5cd6 382443d04 8944453cd 759879f22 3b7ee7f71 d65b80a9d 30aa0240b ec66a922d
