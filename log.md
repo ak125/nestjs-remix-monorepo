@@ -423,3 +423,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/blog-legacy-advice-alias`
 - **Décision** : chore(registry): resync L1+L3 projections (+1 other commit)
 - **Sortie** : PR aucune | commits e05399bab 1d2ea06f6
+
+## 2026-10-04 — fix/blog-legacy-advice-alias (auto)
+
+- **Branche** : `fix/blog-legacy-advice-alias`
+- **Décision** : chore(audit): régénérer l'inventaire PR-8 après la fusion de main (+9 other commits)
+- **Sortie** : PR #1719 | commits 3e02d26b8 28ebb7d11 2d482e5c3 3adb701ac 4912b4a9d 2b2caf1da 3c7046cec 2c9b69834 e05399bab 1d2ea06f6
