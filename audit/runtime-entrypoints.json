@@ -2778,6 +2778,8 @@
       "backend/supabase/migrations/20261001_pin_order_functions_search_path.sql",
       "backend/supabase/migrations/20261003_auto_modele_fill_empty_alias.down.sql",
       "backend/supabase/migrations/20261003_auto_modele_fill_empty_alias.sql",
+      "backend/supabase/migrations/20261004_blog_advice_repair_dangling_pg_id.down.sql",
+      "backend/supabase/migrations/20261004_blog_advice_repair_dangling_pg_id.sql",
       "backend/supabase/migrations/README.md"
     ],
     "ci_workflows": [
@@ -2962,7 +2964,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1575,
+  "runtime_files_count": 1577,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4201,6 +4203,8 @@
     "backend/supabase/migrations/20261001_pin_order_functions_search_path.sql",
     "backend/supabase/migrations/20261003_auto_modele_fill_empty_alias.down.sql",
     "backend/supabase/migrations/20261003_auto_modele_fill_empty_alias.sql",
+    "backend/supabase/migrations/20261004_blog_advice_repair_dangling_pg_id.down.sql",
+    "backend/supabase/migrations/20261004_blog_advice_repair_dangling_pg_id.sql",
     "backend/supabase/migrations/README.md",
     "docker/lighthouse/Dockerfile",
     "docker/lighthouse/crontab",
