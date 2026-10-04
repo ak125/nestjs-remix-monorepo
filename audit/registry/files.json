@@ -45011,7 +45011,7 @@
         "~/components/seo/HtmlContent"
       ],
       "kind": "config",
-      "loc": 38,
+      "loc": 53,
       "owner": "__unassigned__",
       "path": "frontend/app/components/guide/MiniDiagnosticTable.tsx",
       "risk": "low",
@@ -62598,6 +62598,25 @@
       "loc": 96,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/login-role-redirect.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/mini-diagnostic-table-anchor.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 58,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/mini-diagnostic-table-anchor.test.tsx",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
