@@ -102,8 +102,8 @@
         "backend/src/modules/blog/services",
         "backend/src/modules/blog/utils"
       ],
-      "files_count": 38,
-      "loc_total": 14112,
+      "files_count": 40,
+      "loc_total": 14720,
       "has_barrel": false
     },
     "bot-guard": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 597,
-      "loc_total": 114507,
+      "loc_total": 114506,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -813,8 +813,8 @@
       "dirs": [
         "backend/src/modules/seo-projection"
       ],
-      "files_count": 20,
-      "loc_total": 4604,
+      "files_count": 22,
+      "loc_total": 5010,
       "has_barrel": false
     },
     "seo-shadow-observatory": {
