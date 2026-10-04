@@ -52144,7 +52144,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 314,
+      "loc": 316,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/rm.types.ts",
       "risk": "medium",
@@ -88592,7 +88592,7 @@
         "frontend/app/services/common/errors.ts"
       ],
       "kind": "service",
-      "loc": 289,
+      "loc": 291,
       "owner": "__unassigned__",
       "path": "frontend/app/services/api/rm-api.service.ts",
       "risk": "low",
@@ -90634,7 +90634,7 @@
         "~/utils/image-optimizer"
       ],
       "kind": "service",
-      "loc": 317,
+      "loc": 319,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/rm-mapper.ts",
       "risk": "medium",
@@ -93479,6 +93479,26 @@
       "loc": 130,
       "owner": "@ak125",
       "path": "frontend/tests/unit/resilient-lazy.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/rm-logo-provenance.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 79,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/rm-logo-provenance.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -102573,11 +102593,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "06762d36694187f95afe05f89fddf30b7d9e1c39208d2837744cc6b5aeb1c792",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "417a3127c3c3dd74461eac985734370940cbb85aaad546203a7601535197526a",
+      "audit/registry/files.json": "2530ab5c9cb389081a906e208591d46ae01bfa92b87bf11ba8a71abc65af6d9b",
       "audit/registry/rpc.json": "5df65b395357c216373bb73667da9f058af5cb63f6fbd53b41d8d917b8bf0b3f",
       "audit/registry/runtime.json": "cdcb461fdb93aa228e25ba3c00f4f2bc247ac1d6acca60fad21220a7bcdfa84f"
     },
-    "sotFingerprint": "f114fe4da98c"
+    "sotFingerprint": "233ed3a9b9ba"
   },
   "runtime": [
     {

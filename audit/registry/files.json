@@ -23574,7 +23574,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 314,
+      "loc": 316,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/rm.types.ts",
       "risk": "low",
@@ -58702,7 +58702,7 @@
         "frontend/app/services/common/errors.ts"
       ],
       "kind": "service",
-      "loc": 289,
+      "loc": 291,
       "owner": "__unassigned__",
       "path": "frontend/app/services/api/rm-api.service.ts",
       "risk": "low",
@@ -60689,7 +60689,7 @@
         "~/utils/image-optimizer"
       ],
       "kind": "service",
-      "loc": 317,
+      "loc": 319,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/rm-mapper.ts",
       "risk": "low",
@@ -63399,6 +63399,25 @@
       "loc": 130,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/resilient-lazy.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/rm-logo-provenance.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 79,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/rm-logo-provenance.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
