@@ -1,7 +1,7 @@
 # AutoMecanik — Tableau de pilotage (24 départements)
 
 > Doc d'analyse/pilotage (pas un registre, pas du canon). Pointe vers l'existant — ne
-> duplique pas `canonical.json`. Maj : 2026-06-02 ; corrections de cohérence 2026-10-04 (bilan, ligne 12 / Vue 6 / fiche Achats sur l'état réel de `supplier-truth`, fiche Catalogue alignée sur la ligne 10, [réconciliation 24 ↔ 20](#réconciliation-24-départements--20-slugs-yaml)). Voir le tunnel : [sales-funnel-scorecard.md](./sales-funnel-scorecard.md) (sous-funnel `/pieces`) + le funnel site GA4/GSC : [data-top-of-funnel-report.md](./data-top-of-funnel-report.md).
+> duplique pas `canonical.json`. Maj : 2026-06-02 ; corrections de cohérence 2026-10-04 (bilan, ligne 12 / Vue 6 / fiche Achats sur l'état réel de `supplier-truth`, fiche Catalogue alignée sur la ligne 10, [réconciliation 24 ↔ 20](#réconciliation-24-départements--20-slugs-yaml), [état opérationnel](#état-opérationnel-au-2026-10-04-recette-départementale)). Voir le tunnel : [sales-funnel-scorecard.md](./sales-funnel-scorecard.md) (sous-funnel `/pieces`) + le funnel site GA4/GSC : [data-top-of-funnel-report.md](./data-top-of-funnel-report.md).
 > **Règle d'or : existant d'abord → mesurer → améliorer → créer seulement si le scoring prouve le manque → pause sinon.**
 
 > **Ce document ne crée aucun agent, aucun registre, aucun module et aucune infrastructure de reporting.
@@ -103,6 +103,79 @@ créer 4 ids nouveaux et leur attribuer des `repo_domains` (le schéma en exige 
 inventer, dans `.spec/00-canon/**`, qui est owner-only. **Décision owner.** D'ici là, ces 4 lignes ne sont suivies
 que dans ce document. Les écarts de la ligne 12 et de `people` relèvent du même fichier : correctif proposé à
 l'owner, non appliqué ici.
+
+### État opérationnel au 2026-10-04 (recette départementale)
+
+**Base** : `main` f1c601170 + branche `worktree-departments-operational`, non fusionnée.
+
+**Environnement** : DEV uniquement. Les tests tournent sous jest. Les destinations base, Redis, stockage objet et
+recherche pointent vers `127.0.0.1:1`, une adresse injoignable. Aucune application n'a été démarrée, faute d'isolation
+prouvée des destinations du `.env` DEV. Aucune transaction, publication, campagne ni écriture distante.
+
+**Lecture des colonnes**
+
+- **Owner déclaré** : le `lead` du YAML. C'est un **rôle**, aucune personne n'est nommée.
+- **Résultat observé** : ce que la recette a constaté en DEV. Rien n'a été observé en PREPROD ou en PROD : la lecture
+  de la base PROD n'est pas autorisée.
+- **Certification** du Command Center : `CERTIFIED` est **structurel** (cartographie et preuves déclarées). Ce n'est
+  pas une certification métier.
+- **Suites marquées (r)** : rejouées sur la base f1c601170. Les autres ont tourné sur la base 27da20f66. Le delta
+  27da20f66→f1c601170 ne touche pas leur code (images frontend, annulation de commande, migration SQL associée), et
+  la partie commande a été rejouée.
+
+**KPI** : aucun des 20 `kpi_primary` n'a de producteur. Le KPI de chaque ligne est donc **indisponible**, ce qui ne
+veut pas dire zéro. Unité, fenêtre et fraîcheur sont sans objet tant qu'aucun producteur n'existe.
+
+**Proxys existants, non promus KPI**
+
+- Pricing : contrôle `VENTE_BELOW_ACHAT` à l'import.
+- Wiki : `scripts/wiki/wiki-readiness-check.py`, non lancé dans cette recette.
+- Ventes : la définition de « paiement gardé » existe dans [sales-funnel-scorecard.md](./sales-funnel-scorecard.md)
+  (payée et non annulée), sans producteur automatique.
+
+| # | Département | Périmètre validé | Mode | Env. | Owner déclaré | Résultat observé | Preuve | Difficulté restante | Prochaine action |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | Direction générale | aucun | DORMANT | hors dépôt | aucun (pas de slug) | non exercé | — | ni slug ni KPI | owner : slug ou suivi narratif seul |
+| 2 | Gouvernance | validateur de la carte opérationnelle + auto-tests | LIVE | DEV | `governance-lead` | 0 erreur, 0 avertissement ; auto-tests schéma et handoffs PASS ; snapshot à jour | `validate-agent-operating-map.js --self-test` + `governance:command-center:check` (r) | section 7 warn-only (durcir exige une ADR vault) | owner : patch 03 (déclencheur CI de la fixture) |
+| 3 | Stratégie & Scoring | aucun exercice | LIVE (déclaré) | — | `strategy-lead` | non exercé | certification structurelle seule | KPI indisponible | lancer le skill sur demande owner |
+| 4 | Marketing & Acquisition | module `marketing` | SUPPORT | DEV | `marketing-lead` | 1 suite / 12 tests verts | jest isolé | handoff vers Ventes ASPIRATIONAL ; KPI indisponible | owner : contrat du handoff, ou statut documenté |
+| 5 | Brand & Communication | aucun exercice | LIVE (déclaré) | — | `brand-lead` | non exercé | — | KPI indisponible | gate brand à la prochaine publication (humain) |
+| 6 | Contenu éditorial | module `blog` | LIVE | DEV | `content-lead` | 6 suites / 84 tests verts | jest isolé | handoff vers SEO PARTIAL ; KPI indisponible | chantier contenu existant (hors mission) |
+| 7 | Production Pages & SEO | `seo`, `seo-control-plane`, `seo-monitoring`, `seo-projection`, robots | LIVE | DEV | `seo-lead` | 39/379, 7/61, 14/165 (+7/73), 7/76, 73 verts | jest isolé | SEO indexé = zone STOP ; KPI indisponible | aucune dans cette mission |
+| 8 | Media & Fafa | tests `video-*`, flag media-factory | MANUAL | DEV | `media-lead` | environ 9 suites + 10 tests de flag, verts | jest isolé | aucune publication (hors mandat) ; KPI indisponible | owner |
+| 9 | Knowledge RAW & WIKI | proxy et webhook RAG | SUPPORT | DEV | `wiki-lead` | 2 suites / 14 tests + 10 verts | jest isolé | proxy readiness non branché en KPI | lancer `wiki-readiness-check.py` (lecture seule) |
+| 10 | Catalogue & Compatibilité | `catalog`, `gamme-rest`, RPC véhicule, validation véhicule | LIVE | DEV | `catalog-lead` | 6/81, 2/19, 16, 16 verts | jest isolé | dispo affichée dépend de #12 (inactif) | après activation owner de #12 |
+| 11 | Diagnostic & Assistance | `diagnostic-engine` | LIVE | DEV | `diagnostic-lead` | 15 suites / 459 tests verts | jest isolé | chantier en pause (doctrine) ; KPI indisponible | aucune |
+| 12 | Achats & Fournisseurs | désactivation totale de `supplier-truth` (recette #9) | LIVE + DORMANT (inerte par flag) | DEV | `supplier-lead` | **corrigé** : flag ≠ `true` désarme le repeatable et refuse les jobs résiduels | jest 22/224 (r) + preuve Bull sur Redis local | activation = décision owner ; aucun consommateur panier/commande ; YAML périmé | owner : patch 02, puis décision d'activation |
+| 13 | Commercial & Ventes | panier, commande, callbacks (recette #1-#10) | LIVE, critique | DEV | `sales-lead` | Zone STOP owner — résultat de recette tenu hors dépôt public | suites parcours argent 25/278 vertes (r) | Zone STOP owner | revue owner de la note remise hors dépôt |
+| 14 | Service Client & Fidélisation | `support`, autorisation des routes support | DORMANT | DEV | `support-lead` | 2/22 + 300 verts | jest isolé | certification UNKNOWN ; KPI indisponible | owner |
+| 15 | Logistique & Opérations | autorisation des expéditions, poids de livraison | SUPPORT / NO-CODE | DEV | `logistics-lead` | 11 verts + suite poids (r) | jest isolé | opérations physiques externes | aucune (manuel) |
+| 16 | Pricing | `pricing` | LIVE | DEV | `pricing-lead` | Zone STOP owner — résultat de recette tenu hors dépôt public | 12 suites vertes (r) | Zone STOP owner | revue owner de la note remise hors dépôt |
+| 17 | Finance & Comptabilité | aucun exercice (compta externe) | NO-CODE | hors dépôt | `finance-lead` | non exercé | — | vérité paiement = #13 | owner |
+| 18 | Juridique & Assurances | aucun | NO-CODE | hors dépôt | aucun (pas de slug) | non exercé | — | — | aucune |
+| 19 | Risk & Audit | invariants registry, projections, candidats PR-8 | LIVE | DEV | aucun (pas de slug) | invariants 6/6 ; deux régénérations identiques (hors horodatage par conception) ; `--check` rc=0 | `registry:validate-invariants` (r), `audit:cleanup-candidates --check` | avertissement I3 préexistant (cycle cross-selling) | owner : slug ou suivi narratif seul |
+| 20 | Produit & Expérience Client | aucun | MANUAL | — | aucun (pas de slug) | non exercé | — | — | owner |
+| 21 | IT & Runtime | `observability`, `src/config`, `src/auth`, santé des jobs admin | LIVE | DEV | `runtime-lead` | 2/12, 13/227, 9/230, 10 verts | jest isolé | démarrage applicatif non lancé : isolation des destinations non prouvée | owner : environnement DEV isolé pour une recette de bout en bout |
+| 22 | Data & Analytics | module `analytics` | LIVE | DEV | `data-lead` | 3 suites / 31 tests verts | jest isolé | segment panier→paiement aveugle ; KPI indisponible | owner |
+| 23 | IA, Agents & Automatisation | carte opérationnelle, snapshot Command Center, lecteur registry, MCP | LIVE (PAUSE création) | DEV | `ia-agents-lead` | doublons et orphelins de handoff désormais signalés (warn) ; snapshot environ 120, lecteur 23, MCP 54 verts | auto-test handoffs (r) | 10/10 handoffs `planned` ; aucun chemin d'exécution ne consomme `department_handoffs`, ni refus ni reprise | owner : contrat d'un premier handoff avant tout câblage |
+| 24 | People, Formation & Doc | REPO_MAP (D16 rendu), staff | LIVE | DEV | `people-lead` (homonyme) | test REPO_MAP 7/7 (r) ; staff 1/3 | `tsx --test tests/registry/llm-repo-map.test.ts` | test non câblé en CI ; homonymie de slug | owner : patch 01, et décider d'un second slug |
+
+**Usage du Command Center** (réutilisé ; aucun cron, aucun coût, pas de « run all »)
+
+- `npm run governance:command-center` : régénère le snapshot depuis le YAML.
+- `npm run governance:command-center:check` : vérifie la fraîcheur du snapshot (pre-commit).
+- `npm run governance:test:command-center` : lance les tests du builder.
+- `node scripts/governance/validate-agent-operating-map.js [--self-test|--strict|--json]` : valide la carte.
+- Route admin `/admin/command-center`, exposition réglée par `COMMAND_CENTER_MODE` :
+  - par défaut, `full` hors production et `disabled` en production ;
+  - `light` retire les départements.
+
+**Ce que le Command Center affiche et n'affiche pas**
+
+- Il affiche les **20 slugs**, pas les 4 lignes sans slug.
+- Depuis le 2026-10-04, chaque carte montre aussi l'owner déclaré et l'état.
+- La prochaine action owner se lit dans la file d'actions, les handoffs dans l'onglet chaînes.
+- La « dernière preuve » par département n'est pas portée par le snapshot : elle reste dans le tableau ci-dessus.
 
 ---
 
