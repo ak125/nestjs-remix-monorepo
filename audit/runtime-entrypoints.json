@@ -2777,6 +2777,8 @@
       "backend/supabase/migrations/20261001_pin_order_functions_search_path.sql",
       "backend/supabase/migrations/20261003_auto_modele_fill_empty_alias.down.sql",
       "backend/supabase/migrations/20261003_auto_modele_fill_empty_alias.sql",
+      "backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_catalog.down.sql",
+      "backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_catalog.sql",
       "backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_commerce.down.sql",
       "backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_commerce.sql",
       "backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_content.down.sql",
@@ -2967,7 +2969,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1581,
+  "runtime_files_count": 1583,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4206,6 +4208,8 @@
     "backend/supabase/migrations/20261001_pin_order_functions_search_path.sql",
     "backend/supabase/migrations/20261003_auto_modele_fill_empty_alias.down.sql",
     "backend/supabase/migrations/20261003_auto_modele_fill_empty_alias.sql",
+    "backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_catalog.down.sql",
+    "backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_catalog.sql",
     "backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_commerce.down.sql",
     "backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_commerce.sql",
     "backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_content.down.sql",
