@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 958f4053ed64e1ac50fb99701ff8198c12b513e0ec7d8cd80a7eb8ddb35d9cb9
+source_sha256: 1b523482db066740029ac0d82e44d616bf2b0667e0a815df65dd477c97ff5285
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3001 |
+| Files (Layer 1) | 3003 |
 | DB tables (Layer 1) | 313 |
 | DB RPC (Layer 1) | 255 |
 | Dependencies (Layer 1) | 237 |
-| Runtime entrypoints (Layer 1) | 1000 |
+| Runtime entrypoints (Layer 1) | 1001 |
 
-Source sotFingerprint: `66e07c423694`.
+Source sotFingerprint: `5ee4ccee9e0f`.
 
 ## Comment l'utiliser
 
@@ -93,11 +93,11 @@ Source sotFingerprint: `66e07c423694`.
 
 ### D8 — Read Model / Serving (RM)
 
-- **Files**: 948 (config=467, route=246, service=176, controller=38, test=21)
-- **Runtime entrypoints**: 347
-- **Top owners**: @ak125/frontend-team (687), @ak125/admin-team (261)
+- **Files**: 949 (config=467, route=246, service=177, controller=38, test=21)
+- **Runtime entrypoints**: 348
+- **Top owners**: @ak125/frontend-team (687), @ak125/admin-team (262)
 - **Knowledge prose**: [`admin`](modules/admin.md), [`staff`](modules/staff.md)
-- **Status**: LIVE=498, UNKNOWN=450
+- **Status**: LIVE=499, UNKNOWN=450
 
 ### D9 — Import / ETL / Normalisation
 
@@ -147,11 +147,11 @@ Source sotFingerprint: `66e07c423694`.
 
 ### D15 — Security & Governance
 
-- **Files**: 271 (test=161, script=62, service=45, config=2, controller=1)
+- **Files**: 272 (test=162, script=62, service=45, config=2, controller=1)
 - **Runtime entrypoints**: 3
-- **Top owners**: @ak125 (271)
+- **Top owners**: @ak125 (272)
 - **Knowledge prose**: [`bot-guard`](modules/bot-guard.md)
-- **Status**: LIVE=56, UNKNOWN=215
+- **Status**: LIVE=56, UNKNOWN=216
 
 ### UNKNOWN — Unknown (overlay non résolu)
 

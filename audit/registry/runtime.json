@@ -660,6 +660,7 @@
         "runtime:backend/src/modules/admin/services/buying-guide-enricher.service.ts",
         "runtime:backend/src/modules/admin/services/canon-observability.service.ts",
         "runtime:backend/src/modules/admin/services/command-center-actions.service.ts",
+        "runtime:backend/src/modules/admin/services/command-center-kpi.service.ts",
         "runtime:backend/src/modules/admin/services/command-center-orchestrator/execution-ledger.service.ts",
         "runtime:backend/src/modules/admin/services/command-center-orchestrator/orchestrator.service.ts",
         "runtime:backend/src/modules/admin/services/command-center-orchestrator/regen-artifact.executor.ts",
@@ -1283,6 +1284,15 @@
     },
     {
       "dependsOn": [],
+      "id": "runtime:backend/src/modules/admin/services/command-center-kpi.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/admin/services/command-center-kpi.service.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
       "id": "runtime:backend/src/modules/admin/services/command-center-orchestrator/execution-ledger.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/admin/services/command-center-orchestrator/execution-ledger.service.ts",
@@ -1323,7 +1333,8 @@
     {
       "dependsOn": [
         "runtime:backend/src/cache/cache.service.ts",
-        "runtime:backend/src/modules/admin/services/command-center-actions.service.ts"
+        "runtime:backend/src/modules/admin/services/command-center-actions.service.ts",
+        "runtime:backend/src/modules/admin/services/command-center-kpi.service.ts"
       ],
       "id": "runtime:backend/src/modules/admin/services/command-center-reader.service.ts",
       "kind": "nestjs-service",
