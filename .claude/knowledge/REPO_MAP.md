@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 1f28f1f4fd807df724bd3fef46f98b16c6fa668c5b857617a80910097abc36fb
+source_sha256: ff4c18c23d510054fec6544093a4db80a13b74bd235cd03dc20943f7db2691c3
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3003 |
+| Files (Layer 1) | 3005 |
 | DB tables (Layer 1) | 313 |
 | DB RPC (Layer 1) | 255 |
 | Dependencies (Layer 1) | 237 |
-| Runtime entrypoints (Layer 1) | 1000 |
+| Runtime entrypoints (Layer 1) | 1001 |
 
-Source sotFingerprint: `b62dfef96b2b`.
+Source sotFingerprint: `c8f64528b36e`.
 
 ## Comment l'utiliser
 
@@ -93,11 +93,11 @@ Source sotFingerprint: `b62dfef96b2b`.
 
 ### D8 — Read Model / Serving (RM)
 
-- **Files**: 948 (config=467, route=246, service=176, controller=38, test=21)
-- **Runtime entrypoints**: 347
-- **Top owners**: @ak125/frontend-team (687), @ak125/admin-team (261)
+- **Files**: 949 (config=467, route=246, service=177, controller=38, test=21)
+- **Runtime entrypoints**: 348
+- **Top owners**: @ak125/frontend-team (687), @ak125/admin-team (262)
 - **Knowledge prose**: [`admin`](modules/admin.md), [`staff`](modules/staff.md)
-- **Status**: LIVE=498, UNKNOWN=450
+- **Status**: LIVE=499, UNKNOWN=450
 
 ### D9 — Import / ETL / Normalisation
 
@@ -147,11 +147,11 @@ Source sotFingerprint: `b62dfef96b2b`.
 
 ### D15 — Security & Governance
 
-- **Files**: 272 (test=162, script=62, service=45, config=2, controller=1)
+- **Files**: 273 (test=163, script=62, service=45, config=2, controller=1)
 - **Runtime entrypoints**: 3
-- **Top owners**: @ak125 (272)
+- **Top owners**: @ak125 (273)
 - **Knowledge prose**: [`bot-guard`](modules/bot-guard.md)
-- **Status**: LIVE=56, UNKNOWN=216
+- **Status**: LIVE=56, UNKNOWN=217
 
 ### D16 — Maintenance
 
