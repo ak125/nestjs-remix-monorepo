@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 6e0395eb2cd88daa76950a195e915e5750ca968cbfa893809c9287329579a7f2
+source_sha256: e1d7641f31ea2ddbf1377212ba0051a545386a65b297d5ee2463ada17f49ab06
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3005 |
+| Files (Layer 1) | 3010 |
 | DB tables (Layer 1) | 313 |
 | DB RPC (Layer 1) | 255 |
 | Dependencies (Layer 1) | 237 |
-| Runtime entrypoints (Layer 1) | 1001 |
+| Runtime entrypoints (Layer 1) | 1002 |
 
-Source sotFingerprint: `759e694d6be0`.
+Source sotFingerprint: `6f7776e79246`.
 
 ## Comment l'utiliser
 
@@ -93,11 +93,11 @@ Source sotFingerprint: `759e694d6be0`.
 
 ### D8 — Read Model / Serving (RM)
 
-- **Files**: 949 (config=467, route=246, service=177, controller=38, test=21)
+- **Files**: 950 (config=467, route=246, service=178, controller=38, test=21)
 - **Runtime entrypoints**: 348
-- **Top owners**: @ak125/frontend-team (687), @ak125/admin-team (262)
+- **Top owners**: @ak125/frontend-team (687), @ak125/admin-team (263)
 - **Knowledge prose**: [`admin`](modules/admin.md), [`staff`](modules/staff.md)
-- **Status**: LIVE=499, UNKNOWN=450
+- **Status**: LIVE=500, UNKNOWN=450
 
 ### D9 — Import / ETL / Normalisation
 
@@ -108,11 +108,11 @@ Source sotFingerprint: `759e694d6be0`.
 
 ### D10 — Quality, Monitoring & Observabilité
 
-- **Files**: 35 (service=20, test=8, controller=7)
-- **Runtime entrypoints**: 22
-- **Top owners**: @ak125 (35)
+- **Files**: 39 (service=22, test=9, controller=7, config=1)
+- **Runtime entrypoints**: 23
+- **Top owners**: @ak125 (39)
 - **Knowledge prose**: [`analytics`](modules/analytics.md), [`dashboard`](modules/dashboard.md), [`errors`](modules/errors.md), [`health`](modules/health.md), [`observability`](modules/observability.md)
-- **Status**: LIVE=27, UNKNOWN=8
+- **Status**: LIVE=30, UNKNOWN=9
 
 ### D11 — Commerce & Users
 

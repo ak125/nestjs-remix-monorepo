@@ -13698,6 +13698,7 @@
         "status": "LIVE",
         "usedBy": [
           "backend/src/modules/admin/services/seo-control.service.ts",
+          "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts",
           "backend/src/modules/diagnostic-engine/services/outcome-emitter.service.ts",
           "backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts",
           "backend/src/modules/seo-monitoring/services/cwv-beacon.service.ts",
@@ -36084,6 +36085,7 @@
         "backend/src/modules/admin/services/command-center-action-rules/improvement-candidate.rules.ts",
         "backend/src/modules/admin/services/command-center-action-rules/pricing-action.rules.ts",
         "backend/src/modules/admin/services/command-center-action-rules/seo-action.rules.ts",
+        "backend/src/modules/admin/services/command-center-action-rules/tracking-integrity-action.rules.ts",
         "backend/src/modules/admin/services/command-center-actions.service.ts",
         "backend/src/modules/admin/services/command-center-reader.service.ts"
       ],
@@ -36129,6 +36131,32 @@
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D8",
+      "id": "backend/src/modules/admin/services/command-center-action-rules/tracking-integrity-action.rules.ts",
+      "importedBy": [
+        "backend/src/modules/admin/services/command-center-actions.service.ts"
+      ],
+      "imports": [
+        "backend/src/modules/admin/services/command-center-action-rules/score-action.ts",
+        "backend/src/modules/analytics/index.ts"
+      ],
+      "kind": "service",
+      "loc": 95,
+      "owner": "@ak125/admin-team",
+      "path": "backend/src/modules/admin/services/command-center-action-rules/tracking-integrity-action.rules.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
         "manual"
       ],
       "domain": "D8",
@@ -36145,13 +36173,15 @@
         "backend/src/modules/admin/services/command-center-action-rules/pricing-action.rules.ts",
         "backend/src/modules/admin/services/command-center-action-rules/score-action.ts",
         "backend/src/modules/admin/services/command-center-action-rules/seo-action.rules.ts",
+        "backend/src/modules/admin/services/command-center-action-rules/tracking-integrity-action.rules.ts",
         "backend/src/modules/admin/services/command-center-orchestrator/executable-action.contract.ts",
+        "backend/src/modules/analytics/index.ts",
         "fs",
         "path",
         "zlib"
       ],
       "kind": "service",
-      "loc": 442,
+      "loc": 483,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/command-center-actions.service.ts",
       "risk": "medium",
@@ -38976,10 +39006,11 @@
         "backend/src/database/database.module.ts",
         "backend/src/modules/analytics/controllers/landing-attribution.controller.ts",
         "backend/src/modules/analytics/controllers/simple-analytics.controller.ts",
-        "backend/src/modules/analytics/services/simple-analytics.service.ts"
+        "backend/src/modules/analytics/services/simple-analytics.service.ts",
+        "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts"
       ],
       "kind": "service",
-      "loc": 60,
+      "loc": 61,
       "owner": "@ak125",
       "path": "backend/src/modules/analytics/analytics.module.ts",
       "risk": "medium",
@@ -39058,6 +39089,33 @@
       "path": "backend/src/modules/analytics/controllers/simple-analytics.controller.ts",
       "risk": "medium",
       "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D10",
+      "id": "backend/src/modules/analytics/index.ts",
+      "importedBy": [
+        "backend/src/modules/admin/services/command-center-action-rules/tracking-integrity-action.rules.ts",
+        "backend/src/modules/admin/services/command-center-actions.service.ts"
+      ],
+      "imports": [
+        "backend/src/modules/analytics/tracking-integrity/tracking-integrity-verdict.schema.ts",
+        "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts"
+      ],
+      "kind": "service",
+      "loc": 16,
+      "owner": "@ak125",
+      "path": "backend/src/modules/analytics/index.ts",
+      "risk": "medium",
+      "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
@@ -39151,6 +39209,83 @@
       "loc": 510,
       "owner": "@ak125",
       "path": "backend/src/modules/analytics/services/simple-analytics.service.ts",
+      "risk": "medium",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D10",
+      "id": "backend/src/modules/analytics/tracking-integrity/tracking-integrity-verdict.schema.ts",
+      "importedBy": [
+        "backend/src/modules/analytics/index.ts",
+        "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.test.ts",
+        "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts"
+      ],
+      "imports": [],
+      "kind": "config",
+      "loc": 90,
+      "owner": "@ak125",
+      "path": "backend/src/modules/analytics/tracking-integrity/tracking-integrity-verdict.schema.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D10",
+      "id": "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@repo/database-types",
+        "backend/src/modules/analytics/tracking-integrity/tracking-integrity-verdict.schema.ts",
+        "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts"
+      ],
+      "kind": "test",
+      "loc": 446,
+      "owner": "@ak125",
+      "path": "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D10",
+      "id": "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts",
+      "importedBy": [
+        "backend/src/modules/analytics/analytics.module.ts",
+        "backend/src/modules/analytics/index.ts",
+        "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.test.ts"
+      ],
+      "imports": [
+        "@database/services/supabase-base.service",
+        "@repo/database-types",
+        "backend/src/modules/analytics/tracking-integrity/tracking-integrity-verdict.schema.ts"
+      ],
+      "kind": "service",
+      "loc": 287,
+      "owner": "@ak125",
+      "path": "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts",
       "risk": "medium",
       "runtime": true,
       "schemaVersion": "1.0.0",
@@ -67544,7 +67679,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 681,
+      "loc": 788,
       "owner": "@ak125",
       "path": "backend/tests/unit/command-center-action-rules.test.ts",
       "risk": "medium",
@@ -67564,7 +67699,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 533,
+      "loc": 653,
       "owner": "@ak125",
       "path": "backend/tests/unit/command-center-actions.service.test.ts",
       "risk": "medium",
@@ -102664,13 +102799,13 @@
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
       ".spec/00-canon/repository-registry/ownership.yaml": "a00338123d8784d10c6421d7079e2e9f09af11a15f419920131174e3a0c7f3da",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
-      "audit/registry/db.json": "06762d36694187f95afe05f89fddf30b7d9e1c39208d2837744cc6b5aeb1c792",
+      "audit/registry/db.json": "4516d35aa9c99283dc75cbba2227314020531a72cca2acd4513571dd6ca7d208",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "63f35d59ace2486c751706e969520b6e38278e06777af1b7e7e2f3defb65d65e",
+      "audit/registry/files.json": "1aac432ae4fedb0d4a4ea51c483e1a9f353ef68d687ac463a9fce41f7eb3f02b",
       "audit/registry/rpc.json": "5ee2a4b80a43764dda2c436d7b7b49e09ba4b1bd2e746864e869ecc7ac556049",
-      "audit/registry/runtime.json": "076a936ec6436e2c7c5b5c5c045216de7c68ba0a8b19815b4cba61aa7f6d64d1"
+      "audit/registry/runtime.json": "6be3a4960e4d4d9048eb530ffbf3a1588ed108663b568a27391f989ef08ef437"
     },
-    "sotFingerprint": "759e694d6be0"
+    "sotFingerprint": "6f7776e79246"
   },
   "runtime": [
     {
@@ -104582,7 +104717,8 @@
         "runtime:backend/src/database/database.module.ts",
         "runtime:backend/src/modules/analytics/controllers/landing-attribution.controller.ts",
         "runtime:backend/src/modules/analytics/controllers/simple-analytics.controller.ts",
-        "runtime:backend/src/modules/analytics/services/simple-analytics.service.ts"
+        "runtime:backend/src/modules/analytics/services/simple-analytics.service.ts",
+        "runtime:backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts"
       ],
       "id": "runtime:backend/src/modules/analytics/analytics.module.ts",
       "kind": "nestjs-module",
@@ -104616,6 +104752,15 @@
       "id": "runtime:backend/src/modules/analytics/services/simple-analytics.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/analytics/services/simple-analytics.service.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
+      "id": "runtime:backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"

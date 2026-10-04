@@ -1909,7 +1909,8 @@
         "runtime:backend/src/database/database.module.ts",
         "runtime:backend/src/modules/analytics/controllers/landing-attribution.controller.ts",
         "runtime:backend/src/modules/analytics/controllers/simple-analytics.controller.ts",
-        "runtime:backend/src/modules/analytics/services/simple-analytics.service.ts"
+        "runtime:backend/src/modules/analytics/services/simple-analytics.service.ts",
+        "runtime:backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts"
       ],
       "id": "runtime:backend/src/modules/analytics/analytics.module.ts",
       "kind": "nestjs-module",
@@ -1943,6 +1944,15 @@
       "id": "runtime:backend/src/modules/analytics/services/simple-analytics.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/analytics/services/simple-analytics.service.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
+      "id": "runtime:backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
