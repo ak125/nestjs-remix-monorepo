@@ -23,6 +23,7 @@ import { RegistryReaderService } from './services/registry-reader.service';
 import { CommandCenterController } from './controllers/command-center.controller';
 import { CommandCenterReaderService } from './services/command-center-reader.service';
 import { CommandCenterActionsService } from './services/command-center-actions.service';
+import { CommandCenterKpiService } from './services/command-center-kpi.service';
 import {
   CommandCenterOrchestratorService,
   SHADOW_PLANNERS,
@@ -221,6 +222,7 @@ import { SeoControlRefreshProcessor } from './processors/seo-control-refresh.pro
     RegistryReaderService,
     CommandCenterReaderService,
     CommandCenterActionsService,
+    CommandCenterKpiService,
     CommandCenterOrchestratorService,
     RegenArtifactExecutor, // Phase 2b : executor PR-based (double-gardé, inerte par défaut)
     RegenArtifactShadowPlanner, // shadow-2 ① planner regen-artifact (ADR-087)

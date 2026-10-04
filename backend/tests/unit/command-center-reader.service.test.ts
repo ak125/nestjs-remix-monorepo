@@ -25,10 +25,19 @@ function makeService(scenario: 'full' | 'missing') {
   const actions = {
     computeActionQueue: jest.fn().mockResolvedValue([]),
   };
+  // Same for the DB-measured KPIs: the reader only appends what the service returns.
+  const kpis = {
+    computeLiveKpis: jest.fn().mockResolvedValue([]),
+  };
   return {
-    service: new CommandCenterReaderService(cache as never, actions as never),
+    service: new CommandCenterReaderService(
+      cache as never,
+      actions as never,
+      kpis as never,
+    ),
     cache,
     actions,
+    kpis,
   };
 }
 
@@ -119,14 +128,17 @@ describe('CommandCenterReaderService', () => {
         set: jest.fn(),
       };
       const actions = { computeActionQueue: jest.fn().mockResolvedValue([]) };
+      const kpis = { computeLiveKpis: jest.fn().mockResolvedValue([]) };
       const service = new CommandCenterReaderService(
         cache as never,
         actions as never,
+        kpis as never,
       );
       const result = await service.getCommandCenter();
       expect(result).toBe(cached);
       expect(cache.set).not.toHaveBeenCalled();
       expect(actions.computeActionQueue).not.toHaveBeenCalled();
+      expect(kpis.computeLiveKpis).not.toHaveBeenCalled();
     });
   });
 
@@ -167,6 +179,48 @@ describe('CommandCenterReaderService', () => {
       const res = await service.getCommandCenter();
       expect(res.action_queue).toEqual([]);
       expect(actions.computeActionQueue).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('executive_kpis wiring (measured in DB)', () => {
+    const LIVE = [
+      {
+        id: 'payments_kept',
+        label: 'Ventes — paiements gardés / payés (30 j)',
+        value: 0,
+        unit: '/2',
+        status: 'CRITICAL',
+        source: 'db',
+        certified: true,
+      },
+    ];
+
+    it('full + non-degraded: measured KPIs are appended to the snapshot ones', async () => {
+      const { service, kpis } = makeService('full');
+      (kpis.computeLiveKpis as jest.Mock).mockResolvedValue(LIVE);
+      const res = await service.getCommandCenter();
+      expect(kpis.computeLiveKpis).toHaveBeenCalledWith('full');
+      expect(res.executive_kpis).toEqual(LIVE);
+    });
+
+    it('degraded: no DB read, executive_kpis stays []', async () => {
+      const { service, kpis } = makeService('missing');
+      const res = await service.getCommandCenter();
+      expect(kpis.computeLiveKpis).not.toHaveBeenCalled();
+      expect(res.executive_kpis).toEqual([]);
+    });
+
+    it('light: no DB read, executive_kpis stays []', async () => {
+      const previous = process.env.COMMAND_CENTER_MODE;
+      process.env.COMMAND_CENTER_MODE = 'light';
+      try {
+        const { service, kpis } = makeService('full');
+        const res = await service.getCommandCenter();
+        expect(kpis.computeLiveKpis).not.toHaveBeenCalled();
+        expect(res.executive_kpis).toEqual([]);
+      } finally {
+        process.env.COMMAND_CENTER_MODE = previous;
+      }
     });
   });
 

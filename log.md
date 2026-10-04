@@ -447,3 +447,21 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `worktree-departments-operational`
 - **Décision** : chore(audit): régénérer inventaire et candidats PR-8 sur le canonical resynchronisé (+14 other commits)
 - **Sortie** : PR #1721 | commits 592d8da1b 46c8776bf cb77845c5 1ff490d6c 685164ee0 e3010c147 547227d5c 3dfa64d3a f5f50adc1 69bac0de6 bd48d22e0 2391c7d75 afdd7320c e7763f2b2 b42fe3882
+
+## 2026-10-04 — feat/sales-payments-kept-kpi (auto)
+
+- **Branche** : `feat/sales-payments-kept-kpi`
+- **Décision** : chore(audit): régénérer inventaire et candidats PR-8 (nouveau service KPI) (+2 other commits)
+- **Sortie** : PR aucune | commits a120f3169 f56ca82a4 c0f0d2923
+
+## 2026-10-04 — feat/sales-payments-kept-kpi (auto)
+
+- **Branche** : `feat/sales-payments-kept-kpi`
+- **Décision** : chore(audit): régénérer inventaire et candidats PR-8 sur le canonical resynchronisé (+6 other commits)
+- **Sortie** : PR #1725 | commits 3fb5dead7 d480db38b 4d20847ec 7cfe405a0 a120f3169 f56ca82a4 c0f0d2923
+
+## 2026-10-04 — feat/sales-payments-kept-kpi (auto)
+
+- **Branche** : `feat/sales-payments-kept-kpi`
+- **Décision** : chore(audit): régénérer les candidats PR-8 sur le canonical reconstruit sans dist (+9 other commits)
+- **Sortie** : PR #1725 | commits aae2c6506 880195243 b0df83906 3fb5dead7 d480db38b 4d20847ec 7cfe405a0 a120f3169 f56ca82a4 c0f0d2923

@@ -5933,6 +5933,7 @@
         "backend/src/database/services/promo-data.service.ts",
         "backend/src/database/services/shipping-data.service.ts",
         "backend/src/modules/admin/services/command-center-actions.service.ts",
+        "backend/src/modules/admin/services/command-center-kpi.service.ts",
         "backend/src/modules/admin/services/seo-control.service.ts",
         "backend/src/modules/diagnostic-engine/services/kg-shadow.service.ts",
         "backend/src/modules/media-factory/services/audio-cache.service.ts",
@@ -6175,6 +6176,7 @@
         "backend/src/modules/admin/services/buying-guide/index.ts",
         "backend/src/modules/admin/services/canon-observability.service.ts",
         "backend/src/modules/admin/services/command-center-actions.service.ts",
+        "backend/src/modules/admin/services/command-center-kpi.service.ts",
         "backend/src/modules/admin/services/command-center-orchestrator/execution-ledger.service.ts",
         "backend/src/modules/admin/services/command-center-orchestrator/orchestrator.service.ts",
         "backend/src/modules/admin/services/command-center-orchestrator/pr-proposition.planner.ts",
@@ -6235,7 +6237,7 @@
         "backend/src/workers/worker.module.ts"
       ],
       "kind": "service",
-      "loc": 332,
+      "loc": 334,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/admin.module.ts",
       "risk": "low",
@@ -8131,6 +8133,32 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/admin/services/command-center-kpi.service.ts",
+      "importedBy": [
+        "backend/src/modules/admin/admin.module.ts",
+        "backend/src/modules/admin/services/command-center-reader.service.ts"
+      ],
+      "imports": [
+        "@repo/database-types",
+        "@repo/domain-commerce",
+        "backend/src/database/services/supabase-base.service.ts"
+      ],
+      "kind": "service",
+      "loc": 193,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/admin/services/command-center-kpi.service.ts",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
         "depcruise",
         "reachability"
       ],
@@ -8309,11 +8337,12 @@
         "backend/src/cache/cache.service.ts",
         "backend/src/modules/admin/services/command-center-action-rules/score-action.ts",
         "backend/src/modules/admin/services/command-center-actions.service.ts",
+        "backend/src/modules/admin/services/command-center-kpi.service.ts",
         "fs",
         "path"
       ],
       "kind": "service",
-      "loc": 431,
+      "loc": 447,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/command-center-reader.service.ts",
       "risk": "low",
@@ -38454,6 +38483,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/tests/unit/command-center-kpi.service.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 257,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/command-center-kpi.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/tests/unit/command-center-orchestrator.service.test.ts",
       "importedBy": [],
       "imports": [],
@@ -38477,7 +38525,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 223,
+      "loc": 277,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/command-center-reader.service.test.ts",
       "risk": "low",
@@ -52605,6 +52653,7 @@
       "imports": [
         "@repo/registry",
         "frontend/app/auth/unified.server.ts",
+        "~/components/admin/patterns/KpiCard",
         "~/components/command-center/GlobalHealthBar",
         "~/components/command-center/ModuleGrid",
         "~/components/command-center/OrchestrationPanel",
@@ -52620,7 +52669,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 468,
+      "loc": 503,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.command-center.tsx",
       "risk": "low",
