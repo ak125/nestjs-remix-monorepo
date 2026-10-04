@@ -1548,3 +1548,10 @@ entries:
     owner: '@ak125'
     sourceConfidence: medium
     risk: medium
+  # Retrait de idx_pieces_price_pri_type et idx_pieces_price_pri_qte_cond, zone STOP prix,
+  # GO owner nominatif ; domaine / owner = ceux de l'autorité du tarif, comme #1649.
+  - glob: backend/supabase/migrations/20261003_drop_pieces_price_pri_type_qte_cond_indexes*.sql
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: high
+    risk: high
