@@ -418,8 +418,14 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Décision** : chore(registry): resync des projections L1 pour la migration 20261003 (+1 other commit)
 - **Sortie** : PR aucune | commits 2a7f0f274 45b759f06
 
-## 2026-10-04 — fix/r5-redirect-advice-gate (auto)
+## 2026-10-04 — fix/blog-legacy-advice-alias (auto)
 
-- **Branche** : `fix/r5-redirect-advice-gate`
-- **Décision** : chore: intègre main (#1549, #1712) dans la branche (+4 other commits)
-- **Sortie** : PR #1711 | commits e5b84d4a3 2513fd2d7 d1dcb70bd e55abcccb 73fb8f291
+- **Branche** : `fix/blog-legacy-advice-alias`
+- **Décision** : chore(registry): resync L1+L3 projections (+1 other commit)
+- **Sortie** : PR aucune | commits e05399bab 1d2ea06f6
+
+## 2026-10-04 — fix/blog-legacy-advice-alias (auto)
+
+- **Branche** : `fix/blog-legacy-advice-alias`
+- **Décision** : chore(audit): régénérer l'inventaire PR-8 après la fusion de main (+9 other commits)
+- **Sortie** : PR #1719 | commits 3e02d26b8 28ebb7d11 2d482e5c3 3adb701ac 4912b4a9d 2b2caf1da 3c7046cec 2c9b69834 e05399bab 1d2ea06f6

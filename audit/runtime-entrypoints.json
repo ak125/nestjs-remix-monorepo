@@ -453,7 +453,6 @@
       "frontend/app/routes/dashboard.tsx",
       "frontend/app/routes/diagnostic-auto.$slug.tsx",
       "frontend/app/routes/diagnostic-auto._index.tsx",
-      "frontend/app/routes/diagnostic.tsx",
       "frontend/app/routes/enhanced-vehicle-catalog.$brand.$model.$type.tsx",
       "frontend/app/routes/forgot-password.tsx",
       "frontend/app/routes/gammes.$.tsx",
@@ -2778,8 +2777,10 @@
       "backend/supabase/migrations/20261001_pin_order_functions_search_path.sql",
       "backend/supabase/migrations/20261003_auto_modele_fill_empty_alias.down.sql",
       "backend/supabase/migrations/20261003_auto_modele_fill_empty_alias.sql",
-      "backend/supabase/migrations/20261003_r5_redirect_target_require_conseils_article.down.sql",
-      "backend/supabase/migrations/20261003_r5_redirect_target_require_conseils_article.sql",
+      "backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_content.down.sql",
+      "backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_content.sql",
+      "backend/supabase/migrations/20261004_blog_advice_repair_dangling_pg_id.down.sql",
+      "backend/supabase/migrations/20261004_blog_advice_repair_dangling_pg_id.sql",
       "backend/supabase/migrations/README.md"
     ],
     "ci_workflows": [
@@ -2964,7 +2965,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1577,
+  "runtime_files_count": 1579,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4203,8 +4204,10 @@
     "backend/supabase/migrations/20261001_pin_order_functions_search_path.sql",
     "backend/supabase/migrations/20261003_auto_modele_fill_empty_alias.down.sql",
     "backend/supabase/migrations/20261003_auto_modele_fill_empty_alias.sql",
-    "backend/supabase/migrations/20261003_r5_redirect_target_require_conseils_article.down.sql",
-    "backend/supabase/migrations/20261003_r5_redirect_target_require_conseils_article.sql",
+    "backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_content.down.sql",
+    "backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_content.sql",
+    "backend/supabase/migrations/20261004_blog_advice_repair_dangling_pg_id.down.sql",
+    "backend/supabase/migrations/20261004_blog_advice_repair_dangling_pg_id.sql",
     "backend/supabase/migrations/README.md",
     "docker/lighthouse/Dockerfile",
     "docker/lighthouse/crontab",

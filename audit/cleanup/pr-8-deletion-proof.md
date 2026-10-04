@@ -8,23 +8,23 @@
 - Schema version: `1.0.0`
 - Cleanup policy version: `pr8-v1`
 - Validation mode: `snapshot-only` (active runtime check deferred to PR-8b)
-- Generated at: `2026-10-04T06:39:08.156Z`
+- Generated at: `2026-10-04T12:28:13.708Z`
 - Toolchain: `v24.21.0` on `linux/x64`
 
 ## Input Fingerprint (sha256)
 
-- `deadCodeCandidates`: `7635be73b0f094a7989c8810eee6426517ebd8326bc5be0d0da5661c5141e2f4`
-- `canonical`: `cc505386415368acb968d0d2483fc790e2e831bb9f892f579dd32f73af4c95b4`
-- `ownershipYaml`: `1423f8a8040689353bb4c6fb0dca3481139be0c55cf4b31fb57a154eed48f772`
+- `deadCodeCandidates`: `95e1d35b9e7824670645fa8e41afb95b5c777fd12aba678d2f257cfa66f15ebf`
+- `canonical`: `63b88687a48f82aee4a6d5c8f7fed68efc1b338dc037fc7d3b090b98491ccade`
+- `ownershipYaml`: `c8fad895f0e766e742f80ccbd094105fabc1313a3b2f05fef57f39e7ea482c77`
 - `contractHealth`: `<none>`
 - `validateScript`: `0f5224c9823ce6de8d3bf9686c9eb445b0adc343296c68cf5b0e91f4aaac7f21`
 - `unreachableModules`: `75f4f5946d480ab8244e853aa25ffedb5d198bb4e7aee837cdb80e04e9e75e94`
 
 ## Counts
 
-- Total: **258**
-- By confidence: high=12 · medium=166 · low=80
-- By decision: candidate=178 · blocked=80 · excluded=0
+- Total: **259**
+- By confidence: high=12 · medium=166 · low=81
+- By decision: candidate=178 · blocked=81 · excluded=0
 
 ## candidate (178)
 
@@ -220,7 +220,7 @@
 
 _(empty)_
 
-## blocked (80)
+## blocked (81)
 
 ### blocked · high (0)
 
@@ -230,7 +230,7 @@ _(empty)_
 
 _(empty)_
 
-### blocked · low (80)
+### blocked · low (81)
 
 | Path | Domain | Kind | Confidence | Status | importedBy | Rationale |
 |---|---|---|---|---|---:|---|
@@ -304,6 +304,7 @@ _(empty)_
 | `frontend/app/components/pieces/types.ts` | frontend-shared | component | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `frontend/app/components/ui/DynamicMenu.tsx` | frontend-shared | component | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `frontend/app/components/ui/ErrorBoundary.tsx` | frontend-shared | component | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
+| `frontend/app/components/ui/LoadingSpinner.tsx` | frontend-shared | component | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `frontend/app/components/ui/MultiCarousel.tsx` | frontend-shared | component | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `frontend/app/components/ui/OptimizedSearchBar.tsx` | frontend-shared | component | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |
 | `frontend/app/components/ui/PerformanceMetrics.tsx` | frontend-shared | component | low | UNKNOWN | 1 | snapshot c1 failed (static import); canonical.importedBy=1 |

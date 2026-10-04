@@ -2,16 +2,16 @@
 module: gamme-rest
 sources:
 - backend/src/modules/gamme-rest
-last_scan: '2026-10-01'
+last_scan: '2026-10-04'
 primary_files:
 - backend/src/modules/gamme-rest/controllers/admin-gamme-cache.controller.ts
 - backend/src/modules/gamme-rest/controllers/admin-r1-related-blocks-cache.controller.ts
 - backend/src/modules/gamme-rest/gamme-rest-optimized.controller.ts
 - backend/src/modules/gamme-rest/gamme-rest-rpc-v2.controller.ts
 - backend/src/modules/gamme-rest/gamme-rest.module.ts
+- backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-guide-achat.test.ts
 - backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-seo-shadow.test.ts
 - backend/src/modules/gamme-rest/services/buying-guide-data.service.ts
-- backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts
 depends_on:
 - CatalogModule
 - DatabaseModule
@@ -43,9 +43,9 @@ _Section à rédiger._
 - [backend/src/modules/gamme-rest/gamme-rest-optimized.controller.ts](../../../backend/src/modules/gamme-rest/gamme-rest-optimized.controller.ts)
 - [backend/src/modules/gamme-rest/gamme-rest-rpc-v2.controller.ts](../../../backend/src/modules/gamme-rest/gamme-rest-rpc-v2.controller.ts)
 - [backend/src/modules/gamme-rest/gamme-rest.module.ts](../../../backend/src/modules/gamme-rest/gamme-rest.module.ts)
+- [backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-guide-achat.test.ts](../../../backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-guide-achat.test.ts)
 - [backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-seo-shadow.test.ts](../../../backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-seo-shadow.test.ts)
 - [backend/src/modules/gamme-rest/services/buying-guide-data.service.ts](../../../backend/src/modules/gamme-rest/services/buying-guide-data.service.ts)
-- [backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts](../../../backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts)
 
 <!-- END AUTO-GENERATED -->
 
