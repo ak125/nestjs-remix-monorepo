@@ -21,8 +21,8 @@
     "dynamic_rpc_callsites": 1,
     "unresolved_callsites": 0,
     "dropped_call_sites": 5,
-    "migrations_scanned": 400,
-    "backend_files_scanned": 1438
+    "migrations_scanned": 408,
+    "backend_files_scanned": 1439
   },
   "tables": {
     "___config": {
@@ -4379,7 +4379,9 @@
       "called_by": [],
       "called_by_count": 0,
       "defined_in_migrations": [
-        "20260610_fix_r5_redirect_target_align_reference_rpcs.sql"
+        "20260610_fix_r5_redirect_target_align_reference_rpcs.sql",
+        "20261003_r5_redirect_target_require_conseils_article.down.sql",
+        "20261003_r5_redirect_target_require_conseils_article.sql"
       ],
       "is_trigger_function": false
     },
@@ -8569,7 +8571,9 @@
         "no-rpc-callsite"
       ],
       "defined_in_migrations": [
-        "20260610_fix_r5_redirect_target_align_reference_rpcs.sql"
+        "20260610_fix_r5_redirect_target_align_reference_rpcs.sql",
+        "20261003_r5_redirect_target_require_conseils_article.down.sql",
+        "20261003_r5_redirect_target_require_conseils_article.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",

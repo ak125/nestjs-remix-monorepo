@@ -105,6 +105,12 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: low
+  # Garde « article conseils existe » sur get_r5_redirect_target (ADR-027/ADR-103), GO owner 10-03 (« tout »).
+  - glob: backend/supabase/migrations/20261003_r5_redirect_target_require_conseils_article*.sql
+    domain: D14
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
   # Fix get_page_quality_features 22023 (jsonb_array_length sur jsonb non-array) — débloque
   # le recompute du quality-scoring (de-RAG v2.2 #935). Owner GO session 2026-06-11. Glob exact.
   - glob: backend/supabase/migrations/20260611_fix_get_page_quality_features_jsonb_array_length_guard.sql
@@ -1466,6 +1472,14 @@ entries:
     owner: '@ak125/vehicle-team'
     sourceConfidence: high
     risk: medium
+  # 13 index ordinaires doublés par la clé primaire de même définition, tables
+  # catalogue (pieces, pieces_gamme, pieces_marque, auto_type…) (lot 3/3), dont
+  # idx_pieces_id ; zone catalogue protégée, décision explicite de l'owner.
+  - glob: backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_catalog*.sql
+    domain: D1
+    owner: '@ak125/catalog-team'
+    sourceConfidence: high
+    risk: high
   # search_path épinglé (public, pg_temp) de mark_order_paid_atomic, zone paiement, GO owner nominatif (PR #1643).
   - glob: backend/supabase/migrations/20260930_pin_mark_order_paid_atomic_search_path*.sql
     domain: D11
@@ -1481,6 +1495,14 @@ entries:
   # search_path épinglé (public, pg_temp) de create_order_atomic, append_order_event et
   # check_payment_tunnel_health, zone commande / paiement, GO owner nominatif (PR #1648).
   - glob: backend/supabase/migrations/20261001_pin_order_functions_search_path*.sql
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: high
+    risk: high
+  # 24 index ordinaires doublés par la clé primaire ou la contrainte UNIQUE de même
+  # définition, tables commande / client / facture / livraison / ic_postback (lot 2/3),
+  # zone STOP, GO owner nominatif ; domaine / owner de la zone commande, comme #1648.
+  - glob: backend/supabase/migrations/20261003_drop_indexes_shadowed_by_unique_commerce*.sql
     domain: D11
     owner: '@ak125/payments-team'
     sourceConfidence: high
@@ -1545,6 +1567,13 @@ entries:
   - glob: backend/supabase/migrations/20261003_auto_modele_fill_empty_alias*.sql
     domain: D4
     owner: '@ak125/vehicle-team'
+    sourceConfidence: high
+    risk: medium
+  # Rattache 12 conseils orphelins (ba_pg_id pendant) à leur gamme, rapport GSC 404.
+  # Couvre .sql + .down.sql. Glob exact : les migrations ne sont pas auto-couvertes.
+  - glob: backend/supabase/migrations/20261004_blog_advice_repair_dangling_pg_id*.sql
+    domain: D5
+    owner: '@ak125/content-team'
     sourceConfidence: high
     risk: medium
   # api/errors-api.controller expose la journalisation d'erreurs (/api/errors :

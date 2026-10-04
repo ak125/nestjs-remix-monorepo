@@ -57,6 +57,7 @@ export function mapRmProductsToPieceData(rmProducts: RmProduct[]): PieceData[] {
     quality: p.quality,
     stars: getStarsFromQuality(p.quality),
     marque_id: p.pm_id,
+    marque_logo: p.pm_logo ?? undefined,
     // ✅ FIX v2: Utiliser pmi_folder et pmi_name de la BDD (pas hardcodé "260")
     image:
       p.has_image && p.pmi_folder && p.pmi_name
@@ -95,6 +96,7 @@ function mapRmV2ProductsToPieceData(products: RmProductV2[]): PieceData[] {
     quality: p.quality,
     stars: getStarsFromQuality(p.quality),
     marque_id: p.pm_id,
+    marque_logo: p.pm_logo ?? undefined,
     side: p.piece_position || undefined,
     image: p.image || undefined,
     matchKind: 0,

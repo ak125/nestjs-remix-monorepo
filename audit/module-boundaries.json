@@ -225,7 +225,7 @@
         "backend/src/modules/rm/utils"
       ],
       "files_count": 15,
-      "loc_total": 3530,
+      "loc_total": 3532,
       "has_barrel": false
     },
     "diagnostic-engine": {
@@ -259,7 +259,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115334,
+      "loc_total": 115385,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -341,8 +341,8 @@
         "frontend/app/utils",
         "frontend/app/utils/seo"
       ],
-      "files_count": 597,
-      "loc_total": 114535,
+      "files_count": 598,
+      "loc_total": 114619,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -355,8 +355,8 @@
         "backend/src/modules/gamme-rest/utils",
         "backend/src/modules/gamme-rest/utils/__tests__"
       ],
-      "files_count": 18,
-      "loc_total": 6260,
+      "files_count": 19,
+      "loc_total": 6331,
       "has_barrel": true
     },
     "health": {
@@ -701,7 +701,7 @@
         "scripts/wiki-generators/__tests__"
       ],
       "files_count": 204,
-      "loc_total": 45487,
+      "loc_total": 45388,
       "has_barrel": true
     },
     "search": {
@@ -814,7 +814,7 @@
         "backend/src/modules/seo-projection"
       ],
       "files_count": 20,
-      "loc_total": 4380,
+      "loc_total": 4722,
       "has_barrel": false
     },
     "seo-shadow-observatory": {
@@ -877,7 +877,7 @@
         "backend/src/modules/supplier-truth/domain"
       ],
       "files_count": 50,
-      "loc_total": 5536,
+      "loc_total": 5437,
       "has_barrel": false
     },
     "suppliers": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 285,
-      "loc_total": 52570,
+      "files_count": 286,
+      "loc_total": 52824,
       "has_barrel": true
     },
     "upload": {
@@ -2034,7 +2034,7 @@
     {
       "from": "seo-projection",
       "to": "config",
-      "count": 5
+      "count": 6
     },
     {
       "from": "seo-projection",

@@ -3756,6 +3756,7 @@
         "backend/src/modules/diagnostic-engine/services/kg-shadow.service.ts",
         "backend/src/modules/seo-projection/seo-projection-feeder.service.ts",
         "backend/src/modules/seo-projection/seo-projection-feeder.test.ts",
+        "backend/src/modules/seo-projection/seo-projection-writer.service.ts",
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
@@ -16062,6 +16063,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-guide-achat.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 60,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-guide-achat.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-seo-shadow.test.ts",
       "importedBy": [],
       "imports": [],
@@ -16169,7 +16189,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 1225,
+      "loc": 1236,
       "owner": "__unassigned__",
       "path": "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
       "risk": "low",
@@ -23554,7 +23574,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 314,
+      "loc": 316,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/rm.types.ts",
       "risk": "low",
@@ -26574,7 +26594,7 @@
         "backend/src/modules/seo-projection/seo-projection-feeder.service.ts"
       ],
       "kind": "controller",
-      "loc": 77,
+      "loc": 78,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-projection/seo-projection-admin.controller.ts",
       "risk": "low",
@@ -26629,7 +26649,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 389,
+      "loc": 430,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-projection/seo-projection-feeder.service.ts",
       "risk": "low",
@@ -26654,7 +26674,7 @@
         "fs"
       ],
       "kind": "test",
-      "loc": 284,
+      "loc": 342,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-projection/seo-projection-feeder.test.ts",
       "risk": "low",
@@ -26904,7 +26924,7 @@
         "path"
       ],
       "kind": "test",
-      "loc": 435,
+      "loc": 596,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-projection/seo-projection-writer-role-scope.test.ts",
       "risk": "low",
@@ -26930,6 +26950,7 @@
       "imports": [
         "@common/utils/error.utils",
         "backend/src/config/app.config.ts",
+        "backend/src/config/feature-flags.service.ts",
         "backend/src/database/services/supabase-base.service.ts",
         "backend/src/modules/seo-projection/seo-projection-gate.service.ts",
         "backend/src/modules/seo-projection/seo-projection-snapshot.ts",
@@ -26939,7 +26960,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 792,
+      "loc": 869,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-projection/seo-projection-writer.service.ts",
       "risk": "low",
@@ -27025,7 +27046,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 218,
+      "loc": 222,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-projection/seo-projection.types.ts",
       "risk": "low",
@@ -33405,7 +33426,6 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/supplier-truth/supplier-sync.flag.ts",
       "importedBy": [
-        "backend/src/modules/supplier-truth/supplier-sync.job.processor.ts",
         "backend/src/modules/supplier-truth/supplier-sync.scheduler.ts",
         "backend/src/modules/supplier-truth/supplier-truth.controller.ts"
       ],
@@ -33432,12 +33452,11 @@
         "backend/src/workers/worker.module.ts"
       ],
       "imports": [
-        "backend/src/modules/supplier-truth/supplier-sync.flag.ts",
         "backend/src/modules/supplier-truth/supplier-sync.runner.ts",
         "backend/src/modules/supplier-truth/supplier-sync.scheduler.ts"
       ],
       "kind": "service",
-      "loc": 52,
+      "loc": 31,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-sync.job.processor.ts",
       "risk": "low",
@@ -33572,7 +33591,7 @@
         "backend/src/modules/supplier-truth/supplier-sync.scheduler.ts"
       ],
       "kind": "test",
-      "loc": 149,
+      "loc": 102,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-sync.scheduler.test.ts",
       "risk": "low",
@@ -33597,7 +33616,7 @@
         "backend/src/modules/supplier-truth/supplier-sync.flag.ts"
       ],
       "kind": "service",
-      "loc": 111,
+      "loc": 80,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/supplier-sync.scheduler.ts",
       "risk": "low",
@@ -43112,7 +43131,7 @@
         "~/components/ui/progress"
       ],
       "kind": "config",
-      "loc": 140,
+      "loc": 136,
       "owner": "__unassigned__",
       "path": "frontend/app/components/command-center/ModuleGrid.tsx",
       "risk": "low",
@@ -51684,13 +51703,14 @@
       "importedBy": [],
       "imports": [
         "~/components/errors/ErrorGeneric",
+        "~/utils/blog-article-redirect.server",
         "~/utils/cache-control",
         "~/utils/logger",
         "~/utils/proxy-headers.server",
         "~/utils/single-fetch"
       ],
       "kind": "route",
-      "loc": 529,
+      "loc": 557,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/$.tsx",
       "risk": "low",
@@ -55485,13 +55505,14 @@
         "~/components/ui/badge",
         "~/components/ui/button",
         "~/components/ui/card",
+        "~/utils/blog-article-redirect.server",
         "~/utils/cache-control",
         "~/utils/internal-api.server",
         "~/utils/logger",
         "~/utils/seo-clean.utils"
       ],
       "kind": "route",
-      "loc": 633,
+      "loc": 634,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/blog-pieces-auto.article.$slug.tsx",
       "risk": "low",
@@ -55641,6 +55662,7 @@
         "~/config/visual-intent",
         "~/types/r3-guide.types",
         "~/utils/analytics",
+        "~/utils/blog-article-redirect.server",
         "~/utils/cache-control",
         "~/utils/internal-api.server",
         "~/utils/logger",
@@ -55650,7 +55672,7 @@
         "~/utils/seo/canonical"
       ],
       "kind": "route",
-      "loc": 846,
+      "loc": 868,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/blog-pieces-auto.conseils.$pg_alias.tsx",
       "risk": "low",
@@ -58680,7 +58702,7 @@
         "frontend/app/services/common/errors.ts"
       ],
       "kind": "service",
-      "loc": 289,
+      "loc": 291,
       "owner": "__unassigned__",
       "path": "frontend/app/services/api/rm-api.service.ts",
       "risk": "low",
@@ -59588,6 +59610,27 @@
       "loc": 33,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/beacon.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/app/utils/blog-article-redirect.server.ts",
+      "importedBy": [],
+      "imports": [
+        "~/utils/internal-api.server"
+      ],
+      "kind": "config",
+      "loc": 84,
+      "owner": "__unassigned__",
+      "path": "frontend/app/utils/blog-article-redirect.server.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -60646,7 +60689,7 @@
         "~/utils/image-optimizer"
       ],
       "kind": "service",
-      "loc": 317,
+      "loc": 319,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/rm-mapper.ts",
       "risk": "low",
@@ -61871,7 +61914,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 54,
+      "loc": 216,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/catch-all-blog-advice-alias-redirect.test.ts",
       "risk": "low",
@@ -62019,11 +62062,30 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/conseils-ba-alias-fallback.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 145,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/conseils-ba-alias-fallback.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/tests/unit/conseils-loader-status.test.ts",
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 85,
+      "loc": 87,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/conseils-loader-status.test.ts",
       "risk": "low",
@@ -63337,6 +63399,25 @@
       "loc": 130,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/resilient-lazy.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/rm-logo-provenance.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 79,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/rm-logo-provenance.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -69414,7 +69495,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 484,
+      "loc": 428,
       "owner": "__unassigned__",
       "path": "scripts/governance/validate-agent-operating-map.js",
       "risk": "low",
@@ -69965,7 +70046,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 333,
+      "loc": 290,
       "owner": "__unassigned__",
       "path": "scripts/registry/build-llm-repo-map.js",
       "risk": "low",
@@ -71868,25 +71949,6 @@
       "loc": 264,
       "owner": "__unassigned__",
       "path": "tests/registry/inventory-cache-freshness.test.ts",
-      "risk": "low",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise"
-      ],
-      "domain": "UNKNOWN",
-      "id": "tests/registry/llm-repo-map.test.ts",
-      "importedBy": [],
-      "imports": [],
-      "kind": "test",
-      "loc": 134,
-      "owner": "__unassigned__",
-      "path": "tests/registry/llm-repo-map.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
