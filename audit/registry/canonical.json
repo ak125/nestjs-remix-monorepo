@@ -86009,7 +86009,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 546,
+      "loc": 553,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/checkout-payment-return.tsx",
       "risk": "medium",
@@ -92187,6 +92187,26 @@
       "loc": 73,
       "owner": "@ak125",
       "path": "frontend/tests/unit/chat-widget-sse.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/checkout-payment-return-order-event.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 106,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/checkout-payment-return-order-event.test.tsx",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -102821,11 +102841,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "4516d35aa9c99283dc75cbba2227314020531a72cca2acd4513571dd6ca7d208",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "a2fb8ab446eca52418ba418a2527401dd87582478c9e99bd680c118b988d4fa6",
+      "audit/registry/files.json": "c6a6f8a245a4dc2ea01b7a241a65790bdb908902f36e87b60f127e7167628035",
       "audit/registry/rpc.json": "5ee2a4b80a43764dda2c436d7b7b49e09ba4b1bd2e746864e869ecc7ac556049",
       "audit/registry/runtime.json": "6be3a4960e4d4d9048eb530ffbf3a1588ed108663b568a27391f989ef08ef437"
     },
-    "sotFingerprint": "fa7446ebc6e1"
+    "sotFingerprint": "edb557ba4f51"
   },
   "runtime": [
     {
