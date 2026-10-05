@@ -495,3 +495,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/return-page-order-event-ord-id`
 - **Décision** : Merge remote-tracking branch 'origin/main' into fix/return-page-order-event-ord-id (+8 other commits)
 - **Sortie** : PR #1728 | commits efa7af710 fd08ec155 8e76dc3e2 56b9e2172 1fe467be7 9fe97b7f5 04f9278dd a89c7426f 975975127
+
+## 2026-10-05 — feat/command-center-department-reports (auto)
+
+- **Branche** : `feat/command-center-department-reports`
+- **Décision** : chore(registry): resync L1+L3 projections (+1 other commit)
+- **Sortie** : PR aucune | commits 0edb6c9fd e30e9a3ae
