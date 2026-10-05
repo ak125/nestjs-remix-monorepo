@@ -14,7 +14,11 @@ import type { LiveKpiMeasure } from '../../src/modules/admin/services/command-ce
 
 const AS_OF = '2026-10-05T10:00:00.000Z';
 
-function dept(id: string, priority: string | null, kpi: string | null = `${id}_kpi`) {
+function dept(
+  id: string,
+  priority: string | null,
+  kpi: string | null = `${id}_kpi`,
+) {
   return { id, label: id.toUpperCase(), priority, kpi_primary: kpi };
 }
 
@@ -83,18 +87,28 @@ function one(
 describe('buildDepartmentReports — Vue 5', () => {
   it('chaque rapport respecte le contrat @repo/registry', () => {
     const reports = buildDepartmentReports({
-      departments: [dept('sales', 'P0'), dept('seo', 'P1'), dept('x', null, null)],
+      departments: [
+        dept('sales', 'P0'),
+        dept('seo', 'P1'),
+        dept('x', null, null),
+      ],
       actions: [action('repair:sales', 'sales')],
       measures: [measure('sales_kpi', 2, 'WARNING', 1)],
       as_of: AS_OF,
     });
-    for (const r of reports) expect(CcDepartmentReportSchema.parse(r)).toEqual(r);
+    for (const r of reports)
+      expect(CcDepartmentReportSchema.parse(r)).toEqual(r);
   });
 
   it('KPI sans producteur → SANS_PRODUCTEUR, NON_MESURE, aucun chiffre', () => {
     const r = one(dept('seo', 'P1'));
     expect(r).toMatchObject({
-      kpi: { id: 'seo_kpi', measure: 'SANS_PRODUCTEUR', value: null, previous_value: null },
+      kpi: {
+        id: 'seo_kpi',
+        measure: 'SANS_PRODUCTEUR',
+        value: null,
+        previous_value: null,
+      },
       score: 'NON_MESURE',
       evolution: 'INCONNUE',
       period: { as_of: AS_OF, window_days: null },
@@ -102,12 +116,22 @@ describe('buildDepartmentReports — Vue 5', () => {
       owner_go_required: false,
     });
     expect(r.gap).toContain('aucun producteur');
-    expect(r.evidence).toEqual(['.spec/00-canon/ai-registry/agent-operating-map.yaml#seo']);
+    expect(r.evidence).toEqual([
+      '.spec/00-canon/ai-registry/agent-operating-map.yaml#seo',
+    ]);
   });
 
   it('KPI illisible → ILLISIBLE, NON_MESURE, cause = lecture en échec', () => {
-    const r = one(dept('sales', 'P0'), [], [measure('sales_kpi', null, 'UNKNOWN', 3)]);
-    expect(r.kpi).toMatchObject({ measure: 'ILLISIBLE', value: null, previous_value: null });
+    const r = one(
+      dept('sales', 'P0'),
+      [],
+      [measure('sales_kpi', null, 'UNKNOWN', 3)],
+    );
+    expect(r.kpi).toMatchObject({
+      measure: 'ILLISIBLE',
+      value: null,
+      previous_value: null,
+    });
     expect(r.score).toBe('NON_MESURE');
     expect(r.gap).toContain('illisible');
     expect(r.probable_cause).toContain('[command-center-kpi]');
@@ -118,7 +142,9 @@ describe('buildDepartmentReports — Vue 5', () => {
     ['WARNING', 'MOYEN'],
     ['CRITICAL', 'CRITIQUE'],
   ] as const)('statut %s → score %s', (status, score) => {
-    expect(one(dept('sales', 'P0'), [], [measure('sales_kpi', 1, status)]).score).toBe(score);
+    expect(
+      one(dept('sales', 'P0'), [], [measure('sales_kpi', 1, status)]).score,
+    ).toBe(score);
   });
 
   it.each([
@@ -128,7 +154,11 @@ describe('buildDepartmentReports — Vue 5', () => {
     [2, null, 'INCONNUE'],
   ] as const)('valeur %s contre %s → %s', (value, previous, evolution) => {
     expect(
-      one(dept('sales', 'P0'), [], [measure('sales_kpi', value, 'OK', previous)]).evolution,
+      one(
+        dept('sales', 'P0'),
+        [],
+        [measure('sales_kpi', value, 'OK', previous)],
+      ).evolution,
     ).toBe(evolution);
   });
 
@@ -138,14 +168,14 @@ describe('buildDepartmentReports — Vue 5', () => {
   });
 
   it('action ouverte → IMPROVE, trou/cause/étape = action la mieux classée, feu vert repris', () => {
-    const r = one(
-      dept('pricing', 'P0'),
-      [
-        action('pricing:sell-at-loss', 'pricing', { risk: 5, owner_go_required: true }),
-        action('pricing:wire-margin-thresholds', 'pricing'),
-        action('repair:other', 'other'),
-      ],
-    );
+    const r = one(dept('pricing', 'P0'), [
+      action('pricing:sell-at-loss', 'pricing', {
+        risk: 5,
+        owner_go_required: true,
+      }),
+      action('pricing:wire-margin-thresholds', 'pricing'),
+      action('repair:other', 'other'),
+    ]);
     expect(r).toMatchObject({
       decision: 'IMPROVE',
       gap: 'titre pricing:sell-at-loss',
@@ -153,7 +183,10 @@ describe('buildDepartmentReports — Vue 5', () => {
       next_evidence: 'étape pricing:sell-at-loss',
       risk: 'MOYEN',
       owner_go_required: true,
-      open_action_ids: ['pricing:sell-at-loss', 'pricing:wire-margin-thresholds'],
+      open_action_ids: [
+        'pricing:sell-at-loss',
+        'pricing:wire-margin-thresholds',
+      ],
     });
     expect(r.evidence).toEqual(['preuve pricing:sell-at-loss']);
   });
@@ -165,26 +198,46 @@ describe('buildDepartmentReports — Vue 5', () => {
     [6, 'MOYEN'],
     [7, 'HAUT'],
   ] as const)('risque d’action %s → %s', (risk, expected) => {
-    expect(one(dept('a', 'P1'), [action('x', 'a', { risk })]).risk).toBe(expected);
+    expect(one(dept('a', 'P1'), [action('x', 'a', { risk })]).risk).toBe(
+      expected,
+    );
   });
 
   it('KPI mesuré + action : la mesure figure en tête des preuves, sans doublon, 5 max', () => {
     const r = one(
       dept('sales', 'P0'),
-      [action('repair:sales', 'sales', { evidence: ['a', 'a', 'b', 'c', 'd', 'e', 'f'] })],
+      [
+        action('repair:sales', 'sales', {
+          evidence: ['a', 'a', 'b', 'c', 'd', 'e', 'f'],
+        }),
+      ],
       [measure('sales_kpi', 0, 'CRITICAL', 1)],
     );
-    expect(r.evidence).toEqual(['sales_kpi = 0/5 (base, 30 j)', 'a', 'b', 'c', 'd']);
+    expect(r.evidence).toEqual([
+      'sales_kpi = 0/5 (base, 30 j)',
+      'a',
+      'b',
+      'c',
+      'd',
+    ]);
     expect(r.period.window_days).toBe(30);
   });
 
   it('KPI mesuré fort, aucune action → REUSE', () => {
     const r = one(dept('sales', 'P0'), [], [measure('sales_kpi', 4, 'OK', 4)]);
-    expect(r).toMatchObject({ decision: 'REUSE', gap: null, owner_go_required: false });
+    expect(r).toMatchObject({
+      decision: 'REUSE',
+      gap: null,
+      owner_go_required: false,
+    });
   });
 
   it('KPI mesuré faible, aucune action → IMPROVE, cause non inventée', () => {
-    const r = one(dept('sales', 'P0'), [], [measure('sales_kpi', 0, 'CRITICAL')]);
+    const r = one(
+      dept('sales', 'P0'),
+      [],
+      [measure('sales_kpi', 0, 'CRITICAL')],
+    );
     expect(r.decision).toBe('IMPROVE');
     expect(r.gap).toBe('KPI « libellé sales_kpi » à 0/5.');
     expect(r.probable_cause).toBeNull();
@@ -203,7 +256,11 @@ describe('buildDepartmentReports — Vue 5', () => {
       measures: [measure('c_kpi', 5, 'OK', 5)],
       as_of: AS_OF,
     });
-    expect(reports.map((r) => r.decision).sort()).toEqual(['IMPROVE', 'IMPROVE', 'REUSE']);
+    expect(reports.map((r) => r.decision).sort()).toEqual([
+      'IMPROVE',
+      'IMPROVE',
+      'REUSE',
+    ]);
   });
 
   it('tri : priorité, puis score le plus préoccupant, puis id ; sans priorité en dernier', () => {
@@ -216,9 +273,18 @@ describe('buildDepartmentReports — Vue 5', () => {
         dept('a', 'P1'),
       ],
       actions: [],
-      measures: [measure('ok_kpi', 3, 'OK'), measure('crit_kpi', 0, 'CRITICAL')],
+      measures: [
+        measure('ok_kpi', 3, 'OK'),
+        measure('crit_kpi', 0, 'CRITICAL'),
+      ],
       as_of: AS_OF,
     });
-    expect(reports.map((r) => r.department)).toEqual(['crit', 'ok', 'a', 'b', 'z']);
+    expect(reports.map((r) => r.department)).toEqual([
+      'crit',
+      'ok',
+      'a',
+      'b',
+      'z',
+    ]);
   });
 });

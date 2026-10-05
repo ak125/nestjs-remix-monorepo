@@ -95,7 +95,9 @@ export function buildTrackingIntegrityActions(
       next_step: failed
         .map((c) => FAILED_CHECK_PLAYBOOK[c.id].step)
         .join(' Puis : '),
-      owner_go_required: failed.some((c) => FAILED_CHECK_PLAYBOOK[c.id].ownerGo),
+      owner_go_required: failed.some(
+        (c) => FAILED_CHECK_PLAYBOOK[c.id].ownerGo,
+      ),
     },
   ];
 }

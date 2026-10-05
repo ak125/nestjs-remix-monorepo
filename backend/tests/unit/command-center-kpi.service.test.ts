@@ -252,7 +252,11 @@ describe('CommandCenterKpiService.computeLiveKpis', () => {
   it('relit la fenêtre précédente de même durée pour l’évolution', async () => {
     const supabase = fakeSupabase(
       // fenêtre courante : 1 gardée sur 1 payée
-      { data: [row({ ord_ords_id: '5', ord_is_pay: '1' })], count: 1, error: null },
+      {
+        data: [row({ ord_ords_id: '5', ord_is_pay: '1' })],
+        count: 1,
+        error: null,
+      },
       // fenêtre précédente : 2 gardées
       {
         data: [
@@ -265,9 +269,15 @@ describe('CommandCenterKpiService.computeLiveKpis', () => {
     );
     const [measure] = await makeService(supabase).computeLiveKpis('full', NOW);
 
-    expect(supabase.gte).toHaveBeenCalledWith('ord_date', '2026-08-05T12:00:00.000Z');
+    expect(supabase.gte).toHaveBeenCalledWith(
+      'ord_date',
+      '2026-08-05T12:00:00.000Z',
+    );
     expect(supabase.lt).toHaveBeenCalledTimes(1);
-    expect(supabase.lt).toHaveBeenCalledWith('ord_date', '2026-09-04T12:00:00.000Z');
+    expect(supabase.lt).toHaveBeenCalledWith(
+      'ord_date',
+      '2026-09-04T12:00:00.000Z',
+    );
     expect(measure).toMatchObject({
       window_days: 30,
       previous_value: 2,
@@ -279,7 +289,11 @@ describe('CommandCenterKpiService.computeLiveKpis', () => {
   it('fenêtre précédente illisible → previous_value null, pas zéro', async () => {
     const [measure] = await makeService(
       fakeSupabase(
-        { data: [row({ ord_ords_id: '5', ord_is_pay: '1' })], count: 1, error: null },
+        {
+          data: [row({ ord_ords_id: '5', ord_is_pay: '1' })],
+          count: 1,
+          error: null,
+        },
         { data: null, count: null, error: { message: 'timeout' } },
       ),
     ).computeLiveKpis('full', NOW);
@@ -291,7 +305,11 @@ describe('CommandCenterKpiService.computeLiveKpis', () => {
     const [measure] = await makeService(
       fakeSupabase(
         { data: null, count: null, error: { message: 'timeout' } },
-        { data: [row({ ord_ords_id: '5', ord_is_pay: '1' })], count: 1, error: null },
+        {
+          data: [row({ ord_ords_id: '5', ord_is_pay: '1' })],
+          count: 1,
+          error: null,
+        },
       ),
     ).computeLiveKpis('full', NOW);
     expect(measure.kpi.value).toBeNull();

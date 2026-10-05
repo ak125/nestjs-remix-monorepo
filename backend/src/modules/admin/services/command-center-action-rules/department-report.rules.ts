@@ -89,11 +89,15 @@ export function buildDepartmentReports(input: {
       unit: measured ? (m.kpi.unit ?? null) : null,
       previous_value: measured ? m.previous_value : null,
     };
-    const score: Score = measured ? SCORE_BY_STATUS[m.kpi.status] : 'NON_MESURE';
+    const score: Score = measured
+      ? SCORE_BY_STATUS[m.kpi.status]
+      : 'NON_MESURE';
 
     const evidence = [
       ...(measured
-        ? [`${m.kpi.id} = ${m.kpi.value}${m.kpi.unit ?? ''} (base, ${m.window_days} j)`]
+        ? [
+            `${m.kpi.id} = ${m.kpi.value}${m.kpi.unit ?? ''} (base, ${m.window_days} j)`,
+          ]
         : []),
       ...(top?.evidence ?? []),
     ];
@@ -103,7 +107,10 @@ export function buildDepartmentReports(input: {
       department: d.id,
       label: d.label,
       priority: toPriority(d.priority),
-      period: { as_of: input.as_of, window_days: measured ? m.window_days : null },
+      period: {
+        as_of: input.as_of,
+        window_days: measured ? m.window_days : null,
+      },
       kpi,
       score,
       evolution: measured ? evolutionOf(m) : ('INCONNUE' as const),
@@ -159,7 +166,8 @@ export function buildDepartmentReports(input: {
         decision: 'IMPROVE',
         risk: 'FAIBLE',
         owner_go_required: false,
-        next_evidence: 'Analyser l’écart sur la prochaine fenêtre avant toute action.',
+        next_evidence:
+          'Analyser l’écart sur la prochaine fenêtre avant toute action.',
       };
     }
     return {
@@ -175,7 +183,8 @@ export function buildDepartmentReports(input: {
 
   return reports.sort(
     (x, y) =>
-      (PRIORITY_RANK[x.priority ?? ''] ?? 9) - (PRIORITY_RANK[y.priority ?? ''] ?? 9) ||
+      (PRIORITY_RANK[x.priority ?? ''] ?? 9) -
+        (PRIORITY_RANK[y.priority ?? ''] ?? 9) ||
       SCORE_RANK[x.score] - SCORE_RANK[y.score] ||
       (x.department < y.department ? -1 : x.department > y.department ? 1 : 0),
   );

@@ -279,7 +279,9 @@ describe('CommandCenterReaderService', () => {
         kpi: { measure: 'MESURE', value: 0, previous_value: 1 },
         period: { as_of: res.generated_at, window_days: 30 },
       });
-      expect(res.department_reports[2].open_action_ids).toEqual(['repair:data']);
+      expect(res.department_reports[2].open_action_ids).toEqual([
+        'repair:data',
+      ]);
     });
 
     it('degraded: department_reports is []', async () => {
@@ -292,7 +294,9 @@ describe('CommandCenterReaderService', () => {
       process.env.COMMAND_CENTER_MODE = 'light';
       try {
         const { service } = makeService('full');
-        expect((await service.getCommandCenter()).department_reports).toEqual([]);
+        expect((await service.getCommandCenter()).department_reports).toEqual(
+          [],
+        );
       } finally {
         process.env.COMMAND_CENTER_MODE = previous;
       }
