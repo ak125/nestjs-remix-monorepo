@@ -3,6 +3,7 @@ import * as path from 'node:path';
 
 import {
   DiagCanon,
+  DIAG_CANON_PREVIOUS_VERSION,
   DIAG_CANON_VERSION,
   checkDiagnosticRelation,
 } from './diag-canon.schema';
@@ -15,6 +16,18 @@ const fixture = {
     brake_noise_metallic: 'freinage',
     filter_clogged_diesel: 'filtration',
   },
+  causes: {
+    plaquettes_usees: 'freinage',
+    filtre_colmate: 'filtration',
+  },
+};
+
+// Canon 1.0.0 (no causes) : still accepted until the contract PR (expand/contract).
+const fixtureV1_0 = {
+  version: DIAG_CANON_PREVIOUS_VERSION,
+  generated_at: fixture.generated_at,
+  systems: fixture.systems,
+  symptoms: fixture.symptoms,
 };
 
 describe('DiagCanon Zod (forme + cross-validation)', () => {
@@ -34,6 +47,42 @@ describe('DiagCanon Zod (forme + cross-validation)', () => {
     expect(() =>
       DiagCanon.parse({ ...fixture, symptoms: { Brake: 'freinage' } }),
     ).toThrow();
+  });
+
+  it('parses a 1.0.0 canon without causes (expand/contract)', () => {
+    expect(() => DiagCanon.parse(fixtureV1_0)).not.toThrow();
+  });
+
+  it('rejects a 1.0.0 canon carrying causes (.strict)', () => {
+    expect(() =>
+      DiagCanon.parse({ ...fixture, version: DIAG_CANON_PREVIOUS_VERSION }),
+    ).toThrow();
+  });
+
+  it('rejects a 1.1.0 canon without causes', () => {
+    expect(() =>
+      DiagCanon.parse({ ...fixtureV1_0, version: DIAG_CANON_VERSION }),
+    ).toThrow();
+  });
+
+  it('rejects cause slug with uppercase', () => {
+    expect(() =>
+      DiagCanon.parse({ ...fixture, causes: { Plaquettes: 'freinage' } }),
+    ).toThrow();
+  });
+
+  it('rejects cause mapped to unknown system (superRefine)', () => {
+    const result = DiagCanon.safeParse({
+      ...fixture,
+      causes: { ghost_cause: 'unknown_system' },
+    });
+    expect(result.success).toBe(false);
+    expect(result.error?.issues).toEqual([
+      expect.objectContaining({
+        path: ['causes', 'ghost_cause'],
+        message: 'system_slug_unknown:unknown_system',
+      }),
+    ]);
   });
 
   it('rejects symptom mapped to unknown system (superRefine)', () => {
@@ -99,6 +148,74 @@ describe('checkDiagnosticRelation — parity with Python validator', () => {
       blockedReason:
         'symptom_system_mismatch:brake_noise_metallic:filtration:freinage',
     });
+  });
+
+  it('accepts a relation with a cause of the same system', () => {
+    expect(
+      checkDiagnosticRelation(canon, {
+        symptom_slug: 'brake_noise_metallic',
+        system_slug: 'freinage',
+        cause_slug: 'plaquettes_usees',
+      }),
+    ).toEqual({ ok: true });
+  });
+
+  it('emits cause_slug_unknown:<cause>', () => {
+    expect(
+      checkDiagnosticRelation(canon, {
+        symptom_slug: 'brake_noise_metallic',
+        system_slug: 'freinage',
+        cause_slug: 'cause_inventee',
+      }),
+    ).toEqual({
+      ok: false,
+      blockedReason: 'cause_slug_unknown:cause_inventee',
+    });
+  });
+
+  it('emits cause_system_mismatch:<cause>:<declared>:<canon>', () => {
+    expect(
+      checkDiagnosticRelation(canon, {
+        symptom_slug: 'brake_noise_metallic',
+        system_slug: 'freinage',
+        cause_slug: 'filtre_colmate',
+      }),
+    ).toEqual({
+      ok: false,
+      blockedReason: 'cause_system_mismatch:filtre_colmate:freinage:filtration',
+    });
+  });
+
+  it('emits canon_causes_missing:<cause> on a 1.0.0 canon', () => {
+    expect(
+      checkDiagnosticRelation(DiagCanon.parse(fixtureV1_0), {
+        symptom_slug: 'brake_noise_metallic',
+        system_slug: 'freinage',
+        cause_slug: 'plaquettes_usees',
+      }),
+    ).toEqual({
+      ok: false,
+      blockedReason: 'canon_causes_missing:plaquettes_usees',
+    });
+  });
+
+  it('accepts a relation without cause on a 1.0.0 canon', () => {
+    expect(
+      checkDiagnosticRelation(DiagCanon.parse(fixtureV1_0), {
+        symptom_slug: 'brake_noise_metallic',
+        system_slug: 'freinage',
+      }),
+    ).toEqual({ ok: true });
+  });
+
+  it('does not treat inherited object keys as causes', () => {
+    expect(
+      checkDiagnosticRelation(canon, {
+        symptom_slug: 'brake_noise_metallic',
+        system_slug: 'freinage',
+        cause_slug: 'constructor',
+      }),
+    ).toEqual({ ok: false, blockedReason: 'cause_slug_unknown:constructor' });
   });
 });
 

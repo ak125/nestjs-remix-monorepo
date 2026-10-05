@@ -3460,10 +3460,11 @@
       "id": "backend/src/config/diag-canon-jsonschema.test.ts",
       "importedBy": [],
       "imports": [
-        "backend/src/config/diag-canon-jsonschema.ts"
+        "backend/src/config/diag-canon-jsonschema.ts",
+        "backend/src/config/diag-canon.schema.ts"
       ],
       "kind": "test",
-      "loc": 20,
+      "loc": 44,
       "owner": "__unassigned__",
       "path": "backend/src/config/diag-canon-jsonschema.test.ts",
       "risk": "low",
@@ -3486,7 +3487,7 @@
         "backend/src/config/diag-canon.schema.ts"
       ],
       "kind": "service",
-      "loc": 43,
+      "loc": 45,
       "owner": "__unassigned__",
       "path": "backend/src/config/diag-canon-jsonschema.ts",
       "risk": "low",
@@ -3509,7 +3510,7 @@
         "path"
       ],
       "kind": "test",
-      "loc": 129,
+      "loc": 246,
       "owner": "__unassigned__",
       "path": "backend/src/config/diag-canon.schema.test.ts",
       "risk": "low",
@@ -3526,12 +3527,13 @@
       "domain": "UNKNOWN",
       "id": "backend/src/config/diag-canon.schema.ts",
       "importedBy": [
+        "backend/src/config/diag-canon-jsonschema.test.ts",
         "backend/src/config/diag-canon-jsonschema.ts",
         "backend/src/config/diag-canon.schema.test.ts"
       ],
       "imports": [],
       "kind": "config",
-      "loc": 112,
+      "loc": 169,
       "owner": "__unassigned__",
       "path": "backend/src/config/diag-canon.schema.ts",
       "risk": "low",
