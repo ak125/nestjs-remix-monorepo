@@ -30,6 +30,7 @@ import {
 } from "react-router";
 import { KpiCard } from "~/components/admin/patterns/KpiCard";
 import { CertBadge } from "~/components/command-center/badges";
+import { DepartmentReports } from "~/components/command-center/DepartmentReports";
 import { GlobalHealthBar } from "~/components/command-center/GlobalHealthBar";
 import { ModuleGrid } from "~/components/command-center/ModuleGrid";
 import {
@@ -91,6 +92,7 @@ function degraded(
     validation_status: "UNKNOWN",
     global_status: { level: "WARNING", verdict: "BLOCKED", reasons: [reason] },
     action_queue: [],
+    department_reports: [],
   };
 }
 
@@ -321,6 +323,7 @@ export default function AdminCommandCenter() {
             <Tabs defaultValue="actions">
               <TabsList className="flex flex-wrap">
                 <TabsTrigger value="actions">Actions</TabsTrigger>
+                <TabsTrigger value="reports">Rapports</TabsTrigger>
                 <TabsTrigger value="departments">Départements</TabsTrigger>
                 <TabsTrigger value="handoffs">Handoffs</TabsTrigger>
                 <TabsTrigger value="capabilities">Capacités</TabsTrigger>
@@ -332,6 +335,10 @@ export default function AdminCommandCenter() {
 
               <TabsContent value="actions" className="mt-4">
                 <OwnerActionQueue data={cc} />
+              </TabsContent>
+
+              <TabsContent value="reports" className="mt-4">
+                <DepartmentReports data={cc} />
               </TabsContent>
 
               <TabsContent value="departments" className="mt-4">

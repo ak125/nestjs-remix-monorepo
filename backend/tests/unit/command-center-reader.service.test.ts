@@ -159,6 +159,8 @@ describe('CommandCenterReaderService', () => {
         reason: 'r',
         evidence: [],
         next_step: 'n',
+        owner_go_required: true,
+        details: null,
       },
     ];
 
@@ -183,24 +185,25 @@ describe('CommandCenterReaderService', () => {
   });
 
   describe('executive_kpis wiring (measured in DB)', () => {
-    const LIVE = [
-      {
-        id: 'payments_kept',
-        label: 'Ventes — paiements gardés / payés (30 j)',
-        value: 0,
-        unit: '/2',
-        status: 'CRITICAL',
-        source: 'db',
-        certified: true,
-      },
+    const LIVE = {
+      id: 'payments_kept',
+      label: 'Ventes — paiements gardés / payés (30 j)',
+      value: 0,
+      unit: '/2',
+      status: 'CRITICAL',
+      source: 'db',
+      certified: true,
+    };
+    const MEASURES = [
+      { kpi: LIVE, window_days: 30, previous_value: 1, better: 'higher' },
     ];
 
     it('full + non-degraded: measured KPIs are appended to the snapshot ones', async () => {
       const { service, kpis } = makeService('full');
-      (kpis.computeLiveKpis as jest.Mock).mockResolvedValue(LIVE);
+      (kpis.computeLiveKpis as jest.Mock).mockResolvedValue(MEASURES);
       const res = await service.getCommandCenter();
       expect(kpis.computeLiveKpis).toHaveBeenCalledWith('full');
-      expect(res.executive_kpis).toEqual(LIVE);
+      expect(res.executive_kpis).toEqual([LIVE]);
     });
 
     it('degraded: no DB read, executive_kpis stays []', async () => {
@@ -218,6 +221,82 @@ describe('CommandCenterReaderService', () => {
         const res = await service.getCommandCenter();
         expect(kpis.computeLiveKpis).not.toHaveBeenCalled();
         expect(res.executive_kpis).toEqual([]);
+      } finally {
+        process.env.COMMAND_CENTER_MODE = previous;
+      }
+    });
+  });
+
+  describe('department_reports wiring (Vue 5)', () => {
+    it('full: one report per department, fed by the queue and the measures', async () => {
+      const { service, actions, kpis } = makeService('full');
+      (actions.computeActionQueue as jest.Mock).mockResolvedValue([
+        {
+          id: 'repair:data',
+          title: 'Fiabiliser « Data »',
+          department: 'data',
+          source: 'data',
+          action_type: 'certification',
+          impact: 8,
+          urgency: 7,
+          data_confidence: 90,
+          effort: 4,
+          risk: 2,
+          score: 13,
+          reason: 'r',
+          evidence: ['dept:data'],
+          next_step: 'n',
+          owner_go_required: false,
+          details: null,
+        },
+      ]);
+      (kpis.computeLiveKpis as jest.Mock).mockResolvedValue([
+        {
+          kpi: {
+            id: 'payments_kept',
+            label: 'Ventes',
+            value: 0,
+            unit: '/2',
+            status: 'CRITICAL',
+            source: 'db',
+            certified: true,
+          },
+          window_days: 30,
+          previous_value: 1,
+          better: 'higher',
+        },
+      ]);
+      const res = await service.getCommandCenter();
+      expect(res.department_reports.map((r) => r.department)).toEqual([
+        'sales', // P0, CRITIQUE
+        'ops', // P0, non mesuré
+        'data', // P1
+      ]);
+      const sales = res.department_reports[0];
+      expect(sales).toMatchObject({
+        score: 'CRITIQUE',
+        evolution: 'PIRE',
+        kpi: { measure: 'MESURE', value: 0, previous_value: 1 },
+        period: { as_of: res.generated_at, window_days: 30 },
+      });
+      expect(res.department_reports[2].open_action_ids).toEqual([
+        'repair:data',
+      ]);
+    });
+
+    it('degraded: department_reports is []', async () => {
+      const { service } = makeService('missing');
+      expect((await service.getCommandCenter()).department_reports).toEqual([]);
+    });
+
+    it('light: department_reports is [] (no detail exposed)', async () => {
+      const previous = process.env.COMMAND_CENTER_MODE;
+      process.env.COMMAND_CENTER_MODE = 'light';
+      try {
+        const { service } = makeService('full');
+        expect((await service.getCommandCenter()).department_reports).toEqual(
+          [],
+        );
       } finally {
         process.env.COMMAND_CENTER_MODE = previous;
       }

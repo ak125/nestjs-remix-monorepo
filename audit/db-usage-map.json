@@ -22,7 +22,7 @@
     "unresolved_callsites": 0,
     "dropped_call_sites": 5,
     "migrations_scanned": 410,
-    "backend_files_scanned": 1445
+    "backend_files_scanned": 1447
   },
   "tables": {
     "___config": {
@@ -11028,7 +11028,7 @@
     },
     {
       "file": "backend/src/modules/admin/services/command-center-kpi.service.ts",
-      "line": 169,
+      "line": 197,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"

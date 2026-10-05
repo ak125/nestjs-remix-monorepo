@@ -47,14 +47,20 @@ type ReadResult = {
   error: { code?: string; message: string } | null;
 };
 
-/** Chaîne supabase thenable : `await from().select().gte().limit()` → `result`. */
-function fakeSupabase(result: ReadResult) {
+/**
+ * Chaîne supabase thenable : `await from().select().gte()[.lt()].limit()`.
+ * Chaque lecture consomme le résultat suivant (fenêtre courante puis précédente) ;
+ * le dernier est rejoué s'il en manque.
+ */
+function fakeSupabase(...results: ReadResult[]) {
   const chain: Record<string, jest.Mock | unknown> = {};
-  for (const m of ['from', 'select', 'gte', 'limit']) {
+  for (const m of ['from', 'select', 'gte', 'lt', 'limit']) {
     chain[m] = jest.fn().mockReturnValue(chain);
   }
-  chain.then = (resolve: (v: ReadResult) => unknown) => resolve(result);
-  return chain as Record<'from' | 'select' | 'gte' | 'limit', jest.Mock>;
+  let read = 0;
+  chain.then = (resolve: (v: ReadResult) => unknown) =>
+    resolve(results[Math.min(read++, results.length - 1)]);
+  return chain as Record<'from' | 'select' | 'gte' | 'lt' | 'limit', jest.Mock>;
 }
 
 function makeService(supabase: ReturnType<typeof fakeSupabase>) {
@@ -202,7 +208,7 @@ describe('CommandCenterKpiService.computeLiveKpis', () => {
       count: 2,
       error: null,
     });
-    const [kpi] = await makeService(supabase).computeLiveKpis('full', NOW);
+    const [{ kpi }] = await makeService(supabase).computeLiveKpis('full', NOW);
 
     expect(supabase.from).toHaveBeenCalledWith(TABLES.xtr_order);
     expect(supabase.select).toHaveBeenCalledWith(
@@ -228,7 +234,7 @@ describe('CommandCenterKpiService.computeLiveKpis', () => {
       (service as unknown as { logger: { warn: () => void } }).logger,
       'warn',
     );
-    const [kpi] = await service.computeLiveKpis('full', NOW);
+    const [{ kpi }] = await service.computeLiveKpis('full', NOW);
     expect(kpi.status).toBe('UNKNOWN');
     expect(kpi.value).toBeNull();
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('42501'));
@@ -238,9 +244,76 @@ describe('CommandCenterKpiService.computeLiveKpis', () => {
     const service = makeService(
       fakeSupabase({ data: [UNPAID], count: 1500, error: null }),
     );
-    const [kpi] = await service.computeLiveKpis('full', NOW);
+    const [{ kpi }] = await service.computeLiveKpis('full', NOW);
     expect(kpi.status).toBe('UNKNOWN');
     expect(kpi.value).toBeNull();
+  });
+
+  it('relit la fenêtre précédente de même durée pour l’évolution', async () => {
+    const supabase = fakeSupabase(
+      // fenêtre courante : 1 gardée sur 1 payée
+      {
+        data: [row({ ord_ords_id: '5', ord_is_pay: '1' })],
+        count: 1,
+        error: null,
+      },
+      // fenêtre précédente : 2 gardées
+      {
+        data: [
+          row({ ord_ords_id: '5', ord_is_pay: '1' }),
+          row({ ord_ords_id: '3', ord_date_pay: '2026-08-20T10:00:00Z' }),
+        ],
+        count: 2,
+        error: null,
+      },
+    );
+    const [measure] = await makeService(supabase).computeLiveKpis('full', NOW);
+
+    expect(supabase.gte).toHaveBeenCalledWith(
+      'ord_date',
+      '2026-08-05T12:00:00.000Z',
+    );
+    expect(supabase.lt).toHaveBeenCalledTimes(1);
+    expect(supabase.lt).toHaveBeenCalledWith(
+      'ord_date',
+      '2026-09-04T12:00:00.000Z',
+    );
+    expect(measure).toMatchObject({
+      window_days: 30,
+      previous_value: 2,
+      better: 'higher',
+    });
+    expect(measure.kpi.value).toBe(1);
+  });
+
+  it('fenêtre précédente illisible → previous_value null, pas zéro', async () => {
+    const [measure] = await makeService(
+      fakeSupabase(
+        {
+          data: [row({ ord_ords_id: '5', ord_is_pay: '1' })],
+          count: 1,
+          error: null,
+        },
+        { data: null, count: null, error: { message: 'timeout' } },
+      ),
+    ).computeLiveKpis('full', NOW);
+    expect(measure.kpi.value).toBe(1);
+    expect(measure.previous_value).toBeNull();
+  });
+
+  it('fenêtre courante illisible → aucune comparaison', async () => {
+    const [measure] = await makeService(
+      fakeSupabase(
+        { data: null, count: null, error: { message: 'timeout' } },
+        {
+          data: [row({ ord_ords_id: '5', ord_is_pay: '1' })],
+          count: 1,
+          error: null,
+        },
+      ),
+    ).computeLiveKpis('full', NOW);
+    expect(measure.kpi.value).toBeNull();
+    expect(measure.previous_value).toBeNull();
   });
 
   it.each(['light', 'disabled'] as const)(
