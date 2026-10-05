@@ -643,6 +643,7 @@
         "runtime:backend/src/modules/admin/controllers/configuration.controller.ts",
         "runtime:backend/src/modules/admin/controllers/control-plane.controller.ts",
         "runtime:backend/src/modules/admin/controllers/governance-matrix.controller.ts",
+        "runtime:backend/src/modules/admin/controllers/internal-command-center.controller.ts",
         "runtime:backend/src/modules/admin/controllers/internal-enrich.controller.ts",
         "runtime:backend/src/modules/admin/controllers/internal-pipeline.controller.ts",
         "runtime:backend/src/modules/admin/controllers/internal-seo-audit.controller.ts",
@@ -1036,6 +1037,18 @@
       "id": "runtime:backend/src/modules/admin/controllers/governance-matrix.controller.ts",
       "kind": "nestjs-controller",
       "path": "backend/src/modules/admin/controllers/governance-matrix.controller.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/auth/internal-api-key.guard.ts",
+        "runtime:backend/src/modules/admin/services/command-center-reader.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/admin/controllers/internal-command-center.controller.ts",
+      "kind": "nestjs-controller",
+      "path": "backend/src/modules/admin/controllers/internal-command-center.controller.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"

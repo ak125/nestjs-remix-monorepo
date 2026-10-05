@@ -4,9 +4,15 @@ import { join } from 'path';
 import { CacheService } from '../../../cache/cache.service';
 import { CommandCenterActionsService } from './command-center-actions.service';
 import {
+  DIGEST_MAX_OWNER_GO_ACTIONS,
+  type CcDepartmentReport,
+  type CommandCenterDigest,
+} from '@repo/registry';
+import {
   CommandCenterKpiService,
-  type LiveExecutiveKpi,
+  type LiveKpiMeasure,
 } from './command-center-kpi.service';
+import { buildDepartmentReports } from './command-center-action-rules/department-report.rules';
 import { type OwnerActionV2 } from './command-center-action-rules/score-action';
 
 /**
@@ -29,6 +35,8 @@ import { type OwnerActionV2 } from './command-center-action-rules/score-action';
  *   - global_status (pessimism verdict + reasons[])
  *   - executive_kpis measured in DB (source `db`, full mode only), appended to the
  *     structural ones (CommandCenterKpiService)
+ *   - department_reports (Vue 5, full mode only): one report per department,
+ *     recomposed from the action queue + measured KPIs (department-report.rules)
  *
  * Path is env-overridable (`REGISTRY_DIR`); the Docker image sets it to the
  * absolute /app/audit/registry so the cwd=/app/backend trap (start.sh `cd backend`)
@@ -95,7 +103,7 @@ export class CommandCenterReaderService {
     if (mode === 'light') {
       result = toLightResponse(built);
     } else {
-      const [action_queue, liveKpis]: [OwnerActionV2[], LiveExecutiveKpi[]] =
+      const [action_queue, measures]: [OwnerActionV2[], LiveKpiMeasure[]] =
         built.degraded
           ? [[], []]
           : await Promise.all([
@@ -106,11 +114,25 @@ export class CommandCenterReaderService {
               ),
               this.kpis.computeLiveKpis(mode),
             ]);
+      // full mode only, like the action queue: disabled/degraded expose no detail.
+      const department_reports =
+        built.degraded || mode !== 'full'
+          ? []
+          : buildDepartmentReports({
+              departments: built.departments,
+              actions: action_queue,
+              measures,
+              as_of: built.generated_at,
+            });
       result = {
         ...built,
         mode,
         action_queue,
-        executive_kpis: [...built.executive_kpis, ...liveKpis],
+        executive_kpis: [
+          ...built.executive_kpis,
+          ...measures.map((m) => m.kpi),
+        ],
+        department_reports,
       };
     }
     await this.cacheService.set(
@@ -123,7 +145,10 @@ export class CommandCenterReaderService {
     return result;
   }
 
-  private build(): Omit<CommandCenterResponse, 'mode' | 'action_queue'> {
+  private build(): Omit<
+    CommandCenterResponse,
+    'mode' | 'action_queue' | 'department_reports'
+  > {
     const now = new Date();
     const gitSha = process.env.GIT_SHA || process.env.SOURCE_COMMIT || null;
     const snapshot = this.readJson<SnapshotFile>(
@@ -395,7 +420,10 @@ export function resolveCommandCenterMode(): CommandCenterMode {
  * (numbers, no internal identifiers).
  */
 function toLightResponse(
-  full: Omit<CommandCenterResponse, 'mode' | 'action_queue'>,
+  full: Omit<
+    CommandCenterResponse,
+    'mode' | 'action_queue' | 'department_reports'
+  >,
 ): CommandCenterResponse {
   return {
     degraded: full.degraded,
@@ -422,6 +450,32 @@ function toLightResponse(
     },
     mode: 'light',
     action_queue: [],
+    department_reports: [],
+  };
+}
+
+/**
+ * Digest for the Hermes supervisor (GET /api/internal/command-center/digest): a
+ * bounded projection of the cockpit response — never a second computation, so it
+ * inherits the mode stripping above (light/degraded → no reports, no actions).
+ */
+export function toCommandCenterDigest(
+  cc: CommandCenterResponse,
+): CommandCenterDigest {
+  const waiting = cc.action_queue.filter((a) => a.owner_go_required);
+  return {
+    schema_version: 'command-center-digest.v1',
+    generated_at: cc.generated_at,
+    git_sha: cc.git_sha,
+    mode: cc.mode,
+    degraded: cc.degraded,
+    stale_status: cc.stale_status,
+    global_status: cc.global_status,
+    department_reports: cc.department_reports,
+    owner_go_actions_total: waiting.length,
+    owner_go_actions: waiting
+      .slice(0, DIGEST_MAX_OWNER_GO_ACTIONS)
+      .map(({ details: _details, ...action }) => action),
   };
 }
 
@@ -432,6 +486,7 @@ export interface CommandCenterResponse extends Omit<
   degraded: boolean;
   mode: CommandCenterMode;
   action_queue: OwnerActionV2[];
+  department_reports: CcDepartmentReport[];
   departments: Array<
     SnapshotFile['departments'][number] & {
       health_score_current: number;

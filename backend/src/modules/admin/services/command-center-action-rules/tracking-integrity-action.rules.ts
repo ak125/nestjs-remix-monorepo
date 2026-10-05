@@ -12,13 +12,17 @@ import type {
 } from '../../../analytics';
 import { CONFIDENCE_BY_CERT, type RawAction } from './score-action';
 
-/** Ce que corrige chaque contrôle en échec, et où regarder ses échantillons. */
+/**
+ * Ce que corrige chaque contrôle en échec, où regarder ses échantillons, et si
+ * la correction attend l'accord owner (page adjacente au paiement, flag owner).
+ */
 const FAILED_CHECK_PLAYBOOK: Record<
   TrackingIntegrityCheck['id'],
-  { sampleRef: string; step: string }
+  { sampleRef: string; step: string; ownerGo: boolean }
 > = {
   order_event_key: {
     sampleRef: '__seo_event_log.id',
+    ownerGo: true,
     step:
       "Faire porter le n° de commande (ord_id) à l'événement « commande passée » envoyé par la page de retour de paiement " +
       '(page adjacente au paiement : accord owner). Ne pas activer FUNNEL_SERVER_EMIT_ENABLED avant : ' +
@@ -26,6 +30,7 @@ const FAILED_CHECK_PLAYBOOK: Record<
   },
   order_event_coverage: {
     sampleRef: '___xtr_order.ord_id',
+    ownerGo: true,
     step:
       "Activer l'émission serveur de « commande passée » (FUNNEL_SERVER_EMIT_ENABLED, décision owner) : " +
       'la page de retour de paiement ne voit pas toutes les commandes payées.',
@@ -56,6 +61,7 @@ export function buildTrackingIntegrityActions(
         evidence: [window],
         next_step:
           'Rendre la mesure vérifiable (lecture des événements et des commandes) avant toute décision commerciale fondée sur le tunnel.',
+        owner_go_required: false,
       },
     ];
   }
@@ -89,6 +95,9 @@ export function buildTrackingIntegrityActions(
       next_step: failed
         .map((c) => FAILED_CHECK_PLAYBOOK[c.id].step)
         .join(' Puis : '),
+      owner_go_required: failed.some(
+        (c) => FAILED_CHECK_PLAYBOOK[c.id].ownerGo,
+      ),
     },
   ];
 }

@@ -33,6 +33,8 @@ const REPAIR_PLAYBOOK: Record<
     effort: number;
     risk: number;
     step: string;
+    /** true = the repair touches a STOP zone or an owner flag (cart/order, supplier-truth). */
+    ownerGo: boolean;
   }
 > = {
   sales: {
@@ -42,6 +44,7 @@ const REPAIR_PLAYBOOK: Record<
     effort: 4,
     risk: 2,
     step: "Réparer l'instrumentation funnel (events panier→commande→paiement) avant toute analyse conversion.",
+    ownerGo: true, // panier/commande = zone STOP ; FUNNEL_SERVER_EMIT_ENABLED = décision owner
   },
   supplier: {
     source: 'suppliers',
@@ -50,6 +53,7 @@ const REPAIR_PLAYBOOK: Record<
     effort: 5,
     risk: 3,
     step: 'Activer/certifier supplier-truth (dispo live vs fichier) avant tout signal de rupture fournisseur.',
+    ownerGo: true, // SUPPLIER_TRUTH_SYNC_ENABLED = décision owner
   },
   data: {
     source: 'data',
@@ -58,6 +62,7 @@ const REPAIR_PLAYBOOK: Record<
     effort: 4,
     risk: 2,
     step: 'Amener le verdict tracking-integrity (action « data:tracking-integrity ») à CERTIFIED, puis certifier le département au canon — la data conditionne sales & SEO.',
+    ownerGo: false,
   },
   runtime: {
     source: 'runtime',
@@ -66,6 +71,7 @@ const REPAIR_PLAYBOOK: Record<
     effort: 3,
     risk: 2,
     step: 'Définir un SLA runtime/data unifié (health + RPC alerts + fraîcheur).',
+    ownerGo: false,
   },
 };
 
@@ -122,6 +128,8 @@ export function buildCertificationActions(
       next_step:
         pb?.step ??
         `Définir le verdict de fiabilité de « ${d.label} » (preuve + certification au canon) avant d'exploiter ses signaux.`,
+      // generic P0: defining a verdict is measurement work, not a STOP-zone change
+      owner_go_required: pb?.ownerGo ?? false,
     });
   }
 
@@ -147,6 +155,7 @@ export function buildCertificationActions(
         `chain:${c.id}`,
       ],
       next_step: `Définir/valider le contrat ${c.id} (gate + preuve) pour fermer la chaîne.`,
+      owner_go_required: false,
     });
   }
 

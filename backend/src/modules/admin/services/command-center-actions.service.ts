@@ -477,6 +477,7 @@ export class CommandCenterActionsService extends SupabaseBaseService {
       reason,
       evidence: [],
       next_step: `Vérifier la connectivité/le schéma de la source ${source}.`,
+      owner_go_required: false,
     };
   }
 }

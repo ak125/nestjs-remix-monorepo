@@ -695,6 +695,7 @@
       "backend/src/modules/admin/controllers/configuration.controller.ts",
       "backend/src/modules/admin/controllers/control-plane.controller.ts",
       "backend/src/modules/admin/controllers/governance-matrix.controller.ts",
+      "backend/src/modules/admin/controllers/internal-command-center.controller.ts",
       "backend/src/modules/admin/controllers/internal-enrich.controller.ts",
       "backend/src/modules/admin/controllers/internal-pipeline.controller.ts",
       "backend/src/modules/admin/controllers/internal-seo-audit.controller.ts",
@@ -1119,6 +1120,7 @@
       "IntentClassifierService",
       "IntentExtractorService",
       "InternalApiKeyGuard",
+      "InternalCommandCenterController",
       "InternalEnrichController",
       "InternalErrorLogController",
       "InternalLinkingService",
@@ -1686,6 +1688,7 @@
       "backend/src/modules/admin/controllers/configuration.controller.ts",
       "backend/src/modules/admin/controllers/control-plane.controller.ts",
       "backend/src/modules/admin/controllers/governance-matrix.controller.ts",
+      "backend/src/modules/admin/controllers/internal-command-center.controller.ts",
       "backend/src/modules/admin/controllers/internal-enrich.controller.ts",
       "backend/src/modules/admin/controllers/internal-pipeline.controller.ts",
       "backend/src/modules/admin/controllers/internal-seo-audit.controller.ts",
@@ -2977,7 +2980,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1589,
+  "runtime_files_count": 1590,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -3145,6 +3148,7 @@
     "backend/src/modules/admin/controllers/configuration.controller.ts",
     "backend/src/modules/admin/controllers/control-plane.controller.ts",
     "backend/src/modules/admin/controllers/governance-matrix.controller.ts",
+    "backend/src/modules/admin/controllers/internal-command-center.controller.ts",
     "backend/src/modules/admin/controllers/internal-enrich.controller.ts",
     "backend/src/modules/admin/controllers/internal-pipeline.controller.ts",
     "backend/src/modules/admin/controllers/internal-seo-audit.controller.ts",
