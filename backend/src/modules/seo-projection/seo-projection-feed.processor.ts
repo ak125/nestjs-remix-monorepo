@@ -29,7 +29,7 @@ export class SeoProjectionFeedProcessor {
     this.logger.log(
       `r1-feed (${triggeredBy}) → discovered=${res.discovered} enqueued=${res.enqueued}` +
         (res.reason ? ` reason=${res.reason}` : '') +
-        ` dir=${res.exportsDir}`,
+        ` root=${res.exportsRoot} byType=${JSON.stringify(res.byType)}`,
     );
     return res;
   }

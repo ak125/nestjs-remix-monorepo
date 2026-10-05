@@ -285,6 +285,33 @@ function checkMap(map, ajvValidate) {
         }
       }
     }
+
+    // 7d) department_handoffs: unique ids, from/to name a declared department.
+    //     The schema expresses neither; consumers key handoffs by id, so a
+    //     duplicate collides silently instead of failing.
+    const deptIds = new Set(departments.map((d) => d.id));
+    const seenHandoffIds = new Set();
+    for (const h of map.department_handoffs || []) {
+      if (seenHandoffIds.has(h.id)) {
+        add(
+          "warn",
+          "DEPT_HANDOFF_DUPLICATE_ID",
+          `department handoff id "${h.id}" is declared more than once`,
+          h.id,
+        );
+      }
+      seenHandoffIds.add(h.id);
+      for (const end of ["from", "to"]) {
+        if (!deptIds.has(h[end])) {
+          add(
+            "warn",
+            "DEPT_HANDOFF_DEPT_UNRESOLVED",
+            `department handoff ${h.id} ${end} "${h[end]}" is not a declared department`,
+            h.id,
+          );
+        }
+      }
+    }
   }
 
   return findings;
@@ -326,6 +353,35 @@ function runSchemaSelfTest() {
     process.exit(EXIT_VALIDATION);
   }
   console.log("schema self-test: PASS (schema validation error detected)");
+
+  // department_handoffs cross-checks: a schema-valid fixture whose defects the
+  // schema cannot express (duplicate id, from/to naming no declared department).
+  const handoffFixturePath = path.join(
+    REPO_ROOT,
+    "scripts/governance/__fixtures__/agent-operating-map.dept-handoffs.invalid.yaml",
+  );
+  let handoffFixture;
+  try {
+    handoffFixture = loadYaml(handoffFixturePath);
+  } catch (e) {
+    console.error(`[FATAL] handoff self-test setup failed: ${e.message}`);
+    process.exit(EXIT_OP_ERROR);
+  }
+  const handoffFindings = checkMap(handoffFixture, ajvValidate);
+  const expected = ["DEPT_HANDOFF_DUPLICATE_ID", "DEPT_HANDOFF_DEPT_UNRESOLVED"];
+  const missing = expected.filter(
+    (code) =>
+      !handoffFindings.some((f) => f.code === code && f.severity === "warn"),
+  );
+  if (handoffFindings.some((f) => f.code === "SCHEMA") || missing.length > 0) {
+    console.error(
+      `handoff self-test: FAIL — expected warn findings ${expected.join(", ")}; missing: ${missing.join(", ") || "none"}; got: ${handoffFindings.map((f) => f.code).join(", ") || "none"}`,
+    );
+    process.exit(EXIT_VALIDATION);
+  }
+  console.log(
+    "handoff self-test: PASS (duplicate id + unresolved department detected)",
+  );
   process.exit(EXIT_OK);
 }
 

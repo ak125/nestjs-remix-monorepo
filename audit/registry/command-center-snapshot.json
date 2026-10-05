@@ -9,13 +9,6 @@
     },
     {
       "code": "HANDOFF_INCOMPLETE",
-      "message": "Handoff data→sales is PARTIAL (contract planned).",
-      "severity": "info",
-      "target_id": "data-to-sales-tracking-integrity",
-      "target_kind": "handoff"
-    },
-    {
-      "code": "HANDOFF_INCOMPLETE",
       "message": "Handoff diagnostic→catalog is PARTIAL (contract planned).",
       "severity": "info",
       "target_id": "diagnostic-to-catalog-part",
@@ -689,12 +682,12 @@
     },
     {
       "contract_ref": "tracking-integrity-verdict.v1",
-      "contract_status": "planned",
+      "contract_status": "defined",
       "from": "data",
       "gate": "human_review_or_owner_go",
       "id": "data-to-sales-tracking-integrity",
-      "incomplete": true,
-      "state": "PARTIAL",
+      "incomplete": false,
+      "state": "EXISTS",
       "to": "sales"
     },
     {
@@ -1140,7 +1133,7 @@
       "source": "canon",
       "status": "WARNING",
       "unit": "/10",
-      "value": 10
+      "value": 9
     }
   ],
   "owner_actions": [
@@ -1151,14 +1144,6 @@
       "from_alert": "HANDOFF_INCOMPLETE",
       "owner": "content",
       "target_id": "content-to-seo-supply"
-    },
-    {
-      "action": "Wire the contract or document why it stays PARTIAL/ASPIRATIONAL",
-      "decision": "Promote data-to-sales-tracking-integrity to EXISTS or keep with evidence.",
-      "file": ".spec/00-canon/ai-registry/agent-operating-map.yaml",
-      "from_alert": "HANDOFF_INCOMPLETE",
-      "owner": "data",
-      "target_id": "data-to-sales-tracking-integrity"
     },
     {
       "action": "Wire the contract or document why it stays PARTIAL/ASPIRATIONAL",
@@ -1248,7 +1233,7 @@
     "capabilities_total": 41,
     "capabilities_without_evidence": 4,
     "departments_total": 20,
-    "handoffs_incomplete": 10,
+    "handoffs_incomplete": 9,
     "handoffs_total": 10
   }
 }

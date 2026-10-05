@@ -3,7 +3,8 @@
  *
  * Projette des exports/seo/*.json (déjà TIER A côté wiki) dans la DB versionnée :
  *   1. ouvre un run (__seo_projection_runs, status=running) ;
- *   2. par entité : 2 portes (CanonGate→QualityGate) → si KO, conflit observable (jamais d'écriture) ;
+ *   2. par entité : allowlist d'écriture gouvernée (type + rôles, FeatureFlags) puis 2 portes
+ *      (CanonGate→QualityGate) → si KO, conflit observable (jamais d'écriture) ;
  *   3. si OK : INSERT-new-version (facts + blocks) puis flip active_version_id (JAMAIS UPDATE en place) ;
  *      no-op si content_hash identique ; no-rétro-régression par bloc (version "pire" insérée en draft) ;
  *   4. ferme le run (succeeded/failed) ; enqueue un refresh (débounce, hors-tx).
@@ -19,6 +20,7 @@ import * as path from 'node:path';
 import stableStringify from 'fast-json-stable-stringify';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
 import { getAppConfig } from '../../config/app.config';
+import { FeatureFlagsService } from '../../config/feature-flags.service';
 import { getErrorMessage } from '@common/utils/error.utils';
 import { SeoProjectionGateService } from './seo-projection-gate.service';
 import {
@@ -139,6 +141,7 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
   constructor(
     configService: ConfigService,
     private readonly gate: SeoProjectionGateService,
+    private readonly featureFlags: FeatureFlagsService,
   ) {
     super(configService);
   }
@@ -351,6 +354,28 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
       };
     }
 
+    // Allowlist d'écriture gouvernée — appliquée ICI, au seul point d'écriture, quel que soit le
+    // déclencheur. Le feeder la pré-vérifie sur le trigger single-entity (400 précoce), mais c'est
+    // cette garde qui fait foi : sans elle, le slurp nocturne écrivait tout export découvert, quel
+    // que soit son type, avec tous ses rôles.
+    const scopeViolation = this.writeScopeViolation(exp.entity_type, role);
+    if (scopeViolation) {
+      await this.recordConflict(
+        exp.entity_id,
+        null,
+        scopeViolation.kind,
+        scopeViolation.detail,
+        runId,
+      );
+      return {
+        entity_id: exp.entity_id,
+        role: role ?? null,
+        factsOutcome: 'noop',
+        roleOutcome: 'blocked',
+        reasons: [scopeViolation.reason],
+      };
+    }
+
     const { ok, verdicts } = this.gate.evaluate(exp);
     if (!ok) {
       const reasons = verdicts.flatMap((v) => v.reasons);
@@ -487,11 +512,49 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
   }
 
   /**
+   * Allowlist d'écriture gouvernée (`seoProjectionWritableTypes` / `seoProjectionWritableRoles`) :
+   * le type de l'export doit être projetable et, en mode single-role, le rôle demandé doit être
+   * autorisé POUR CE TYPE. `null` = dans le périmètre. Une seule source (FeatureFlags), lue ici.
+   */
+  private writeScopeViolation(
+    entityType: string,
+    role?: string,
+  ): {
+    kind: 'type_not_writable' | 'role_not_writable';
+    reason: string;
+    detail: Record<string, unknown>;
+  } | null {
+    const writableTypes = this.featureFlags.seoProjectionWritableTypes;
+    if (!writableTypes.includes(entityType)) {
+      return {
+        kind: 'type_not_writable',
+        reason: `entity_type '${entityType}' hors allowlist d'écriture`,
+        detail: { entity_type: entityType, writable_types: writableTypes },
+      };
+    }
+    const writableRoles =
+      this.featureFlags.seoProjectionWritableRoles(entityType);
+    if (role && !writableRoles.includes(role)) {
+      return {
+        kind: 'role_not_writable',
+        reason: `role '${role}' non autorisé pour '${entityType}'`,
+        detail: {
+          entity_type: entityType,
+          role,
+          writable_roles: writableRoles,
+        },
+      };
+    }
+    return null;
+  }
+
+  /**
    * Écrit les blocs — **role-scoped** (P2-B) : si `role` fourni, ne projette QUE ses blocs (les autres
-   * rôles de l'entité restent intacts) ; sinon tous (slurp legacy). L'INDEX POSITIONNEL est celui du
-   * tableau COMPLET (pas du filtré) → `block_kind` fallback `b<index>` STABLE quel que soit le rôle
-   * demandé (sinon un même bloc obtiendrait 2 block_id selon slurp vs role-scoped → no-op cassé).
-   * No-rétro-régression PAR BLOC (version "pire" → draft, jamais active).
+   * rôles de l'entité restent intacts) ; sinon (slurp nocturne) les blocs des rôles AUTORISÉS pour le
+   * type de l'export (`seoProjectionWritableRoles`), jamais un rôle hors allowlist. L'INDEX POSITIONNEL
+   * est celui du tableau COMPLET (pas du filtré) → `block_kind` fallback `b<index>` STABLE quel que
+   * soit le rôle demandé (sinon un même bloc obtiendrait 2 block_id selon slurp vs role-scoped →
+   * no-op cassé). No-rétro-régression PAR BLOC (version "pire" → draft, jamais active).
    */
   private async writeBlocks(
     exp: SeoProjectionExport,
@@ -502,9 +565,17 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
     let regressed = 0;
     let noop = 0;
     const blocks = exp.blocks ?? [];
+    const writableRoles = this.featureFlags.seoProjectionWritableRoles(
+      exp.entity_type,
+    );
+    const outOfScopeRoles = new Set<string>();
     for (let index = 0; index < blocks.length; index += 1) {
       const b = blocks[index];
       if (role && b?.role !== role) continue; // role-scoped : ignore les autres rôles (index préservé)
+      if (!role && !writableRoles.includes(b?.role)) {
+        outOfScopeRoles.add(String(b?.role)); // slurp : rôle hors allowlist du type (index préservé)
+        continue;
+      }
       // Adapte le bloc FLAT (builder) → forme DB (block_kind + content jsonb NOT NULL). Sans perte.
       const row = mapExportBlockToDbBlock(exp.entity_id, b, index);
       if (row.kindFallback) {
@@ -606,6 +677,12 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
         })
         .eq('block_id', row.blockId);
       written += 1;
+    }
+    if (outOfScopeRoles.size > 0) {
+      this.log.log(
+        `${exp.entity_id} : blocs des rôles [${[...outOfScopeRoles].sort().join(', ')}] non écrits — ` +
+          `hors allowlist '${exp.entity_type}' [${writableRoles.join(', ')}] (SEO_PROJECTION_*_ROLES)`,
+      );
     }
     return { written, regressed, noop };
   }

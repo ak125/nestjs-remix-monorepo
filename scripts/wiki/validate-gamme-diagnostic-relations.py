@@ -11,10 +11,28 @@ Validates wiki gamme fiches against the ADR-033 v2.0.0 frontmatter contract :
   - diagnostic_relations[] composite : symptom_slug must belong to declared system_slug (P3)
   - diagnostic_relations[].sources[] ∈ _meta/source-catalog.yaml
   - relation_to_part required per entry (§D1 → relation_to_part_missing)
+  - diagnostic_relations[].cause_slug ∈ canon causes, and the cause belongs to the declared
+    system_slug (ADR-112 §Amendements ADR-033 → cause_slug_unknown / cause_system_mismatch).
+    Same rule as the engine : a symptom's causes are read in its own system only
+    (backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts,
+    `.eq('system_id', symptom.system_id) // Guard: only same-system causes`), and a
+    cross-system link makes it throw "Diagnostic cause coverage incomplete".
+  - diagnostic.quick_checks[].cause_slug ∈ canon causes (ADR-112 D1)
+  - safety_rules[].system_slug ∈ canon systems (ADR-112 D1)
+  - diagnostic_not_applicable and a non-empty diagnostic_relations[] are mutually exclusive
+    (ADR-113 §Amendements ADR-033 → diagnostic_not_applicable_with_relations ; same condition
+    as the wiki gate gate_diagnostic_not_applicable, ADR-033 D5 = wiki CI + monorepo CI)
+
+Causes come from `causes` in exports/diag-canon.json (canon version 1.1.0). An export without
+`causes` (1.0.0, legacy array) cannot vouch for a cause : any declared cause_slug is then
+blocked (canon_causes_missing), never accepted unchecked.
 
 Complementary to the wiki repo's _scripts/quality-gates.py (which has 9 gates including
 overclaim, source policy, maintenance advice). This monorepo-side validator is a
 narrower contract enforcer focused on FK validation and the 3 anti-patterns figés §D3.
+The source slugs, evidence and RAW anchors of quick_checks[] / safety_rules[] / citations[]
+stay wiki-side (they depend on wiki data only) ; this validator adds only what depends on
+the DB canon export.
 The wiki repo CI runs the full 9 gates ; this monorepo CI runs the FK-strict subset
 to catch regressions when monorepo changes (skill updates, content/ embed changes)
 would invalidate wiki fiches.
@@ -78,17 +96,24 @@ BLOCKED_REASONS = (
     "symptom_system_mismatch",     # P3 — composite FK violation
     "source_slug_unknown",
     "canon_export_missing",        # P3 — fail-fast si cron PR-D mort
+    "cause_slug_unknown",          # ADR-112 — cause absente du canon (__diag_cause actives)
+    "cause_system_mismatch",       # ADR-112 — cause d'un autre système que system_slug
+    "canon_causes_missing",        # ADR-112 — export sans `causes` : cause_slug invérifiable
+    "diagnostic_not_applicable_with_relations",  # ADR-113
 )
 
 
 # ── Canon loaders ────────────────────────────────────────────────────────────
 
 
-def load_canon(wiki_path: Path) -> tuple[set[str], set[str], dict[str, str], str]:
+def load_canon(wiki_path: Path) -> tuple[set[str], set[str], dict[str, str], dict[str, str] | None, str]:
     """Plan P3 — charge le flat map exports/diag-canon.json.
 
     Returns:
-        (symptom_slugs, system_slugs, symptom_to_system, source_msg)
+        (symptom_slugs, system_slugs, symptom_to_system, cause_to_system, source_msg)
+
+    cause_to_system vaut None quand l'export ne porte pas `causes` (version 1.0.0 ou
+    format legacy) : les cause_slug déclarés sont alors bloqués (canon_causes_missing).
 
     Fallback transition : si diag-canon.json absent, lit l'ancien diag-canon-slugs.json
     (array format) pendant la cohabitation. Si AUCUN export n'existe, fail-fast
@@ -102,12 +127,18 @@ def load_canon(wiki_path: Path) -> tuple[set[str], set[str], dict[str, str], str
             systems_set = set(data.get("systems") or [])
             if not isinstance(symptoms_map, dict) or not isinstance(systems_set, set):
                 raise ValueError("diag-canon.json malformed: symptoms must be object, systems must be array")
+            causes_map = data.get("causes")
+            if causes_map is not None and not isinstance(causes_map, dict):
+                raise ValueError("diag-canon.json malformed: causes must be object")
+            cause_to_system = dict(causes_map) if causes_map is not None else None
             symptom_slugs = set(symptoms_map.keys())
+            causes_msg = f"{len(cause_to_system)} causes" if cause_to_system is not None else "no causes"
             return (
                 symptom_slugs,
                 systems_set,
                 dict(symptoms_map),
-                f"loaded flat map from {flat_path} ({len(symptom_slugs)} symptoms, {len(systems_set)} systems)",
+                cause_to_system,
+                f"loaded flat map from {flat_path} ({len(symptom_slugs)} symptoms, {len(systems_set)} systems, {causes_msg})",
             )
         except (json.JSONDecodeError, KeyError, TypeError, ValueError) as e:
             sys.stderr.write(f"FATAL: cannot parse {flat_path}: {e}\n")
@@ -138,6 +169,7 @@ def load_canon(wiki_path: Path) -> tuple[set[str], set[str], dict[str, str], str
                 symptom_slugs,
                 systems_set,
                 mapping,
+                None,
                 f"loaded legacy array from {legacy_path} ({len(symptom_slugs)} symptoms, {len(systems_set)} systems) — transition mode, prefer diag-canon.json",
             )
         except (json.JSONDecodeError, KeyError, TypeError, ValueError) as e:
@@ -215,11 +247,33 @@ def gate_schema_version(fm: dict) -> list[str]:
     return []
 
 
+def check_cause_slug(
+    cause: object,
+    sys_declared: object,
+    canon_systems: set[str],
+    cause_to_system: dict[str, str] | None,
+) -> list[str]:
+    """ADR-112 §Amendements (ADR-033) — cause_slug FK against the exported __diag_cause canon.
+
+    The system check runs only when the declared system is itself canon (otherwise
+    system_slug_unknown is already reported — same no-double-noise rule as the symptom).
+    """
+    if cause_to_system is None:
+        return [f"canon_causes_missing:{cause}"]
+    if not isinstance(cause, str) or cause not in cause_to_system:
+        return [f"cause_slug_unknown:{cause}"]
+    sys_canon = cause_to_system[cause]
+    if isinstance(sys_declared, str) and sys_declared in canon_systems and sys_canon != sys_declared:
+        return [f"cause_system_mismatch:{cause}:{sys_declared}:{sys_canon}"]
+    return []
+
+
 def gate_diagnostic_relations_fk(
     fm: dict,
     canon_symptoms: set[str],
     canon_systems: set[str],
     symptom_to_system: dict[str, str],
+    cause_to_system: dict[str, str] | None,
     catalog_slugs: set[str],
 ) -> list[str]:
     """Validate diagnostic_relations[] FK + composite + relation_to_part presence.
@@ -253,10 +307,61 @@ def gate_diagnostic_relations_fk(
             sys_canon = symptom_to_system.get(sym)
             if sys_canon and sys_canon != sys_declared:
                 reasons.append(f"symptom_system_mismatch:{sym}:{sys_declared}:{sys_canon}")
+        if "cause_slug" in rel:
+            reasons.extend(check_cause_slug(rel["cause_slug"], sys_declared, canon_systems, cause_to_system))
         for src in rel.get("sources") or []:
             if src not in catalog_slugs:
                 reasons.append(f"source_slug_unknown:{src}")
     return reasons
+
+
+def gate_quick_checks_fk(fm: dict, canon_systems: set[str], cause_to_system: dict[str, str] | None) -> list[str]:
+    """ADR-112 D1 — diagnostic.quick_checks[].cause_slug ∈ canon causes.
+
+    The link to a cause_slug of the same fiche (quick_check_cause_unlinked) is checked
+    wiki-side ; this gate checks the DB canon FK only."""
+    diagnostic = fm.get("diagnostic")
+    if not isinstance(diagnostic, dict) or "quick_checks" not in diagnostic:
+        return []
+    checks = diagnostic["quick_checks"]
+    if not isinstance(checks, list):
+        return ["quick_checks_not_array"]
+    reasons = []
+    for i, qc in enumerate(checks):
+        if not isinstance(qc, dict):
+            reasons.append(f"quick_checks[{i}]_not_object")
+            continue
+        if "cause_slug" in qc:
+            reasons.extend(check_cause_slug(qc["cause_slug"], None, canon_systems, cause_to_system))
+    return reasons
+
+
+def gate_safety_rules_fk(fm: dict, canon_systems: set[str]) -> list[str]:
+    """ADR-112 D1 — safety_rules[].system_slug ∈ canon systems.
+
+    The fixed path and rule_slug uniqueness are checked wiki-side."""
+    rules = fm.get("safety_rules")
+    if rules is None:
+        return []
+    if not isinstance(rules, list):
+        return ["safety_rules_not_array"]
+    reasons = []
+    for i, rule in enumerate(rules):
+        if not isinstance(rule, dict):
+            reasons.append(f"safety_rules[{i}]_not_object")
+            continue
+        if "system_slug" in rule:
+            sys_slug = rule["system_slug"]
+            if not isinstance(sys_slug, str) or sys_slug not in canon_systems:
+                reasons.append(f"system_slug_unknown:{sys_slug}")
+    return reasons
+
+
+def gate_diagnostic_not_applicable(fm: dict) -> list[str]:
+    """ADR-113 — « aucune relation » and diagnostic_relations[] are mutually exclusive."""
+    if "diagnostic_not_applicable" in fm and (fm.get("diagnostic_relations") or []):
+        return ["diagnostic_not_applicable_with_relations"]
+    return []
 
 
 # ── Main ─────────────────────────────────────────────────────────────────────
@@ -279,6 +384,7 @@ def process_file(
     canon_symptoms: set[str],
     canon_systems: set[str],
     symptom_to_system: dict[str, str],
+    cause_to_system: dict[str, str] | None,
     catalog_slugs: set[str],
 ) -> tuple[bool, list[str]]:
     """Returns (passed, blocked_reasons)."""
@@ -295,7 +401,14 @@ def process_file(
     reasons.extend(gate_schema_version(fm))
     # Only run FK strict validation if schema_version 2.0.0 (cohabitation)
     if str(fm.get("schema_version") or "") == "2.0.0":
-        reasons.extend(gate_diagnostic_relations_fk(fm, canon_symptoms, canon_systems, symptom_to_system, catalog_slugs))
+        reasons.extend(
+            gate_diagnostic_relations_fk(fm, canon_symptoms, canon_systems, symptom_to_system, cause_to_system, catalog_slugs)
+        )
+    # ADR-112 / ADR-113 blocks : new fields, no 1.0.0 cohabitation to protect → checked
+    # whatever the schema_version (fail-closed).
+    reasons.extend(gate_quick_checks_fk(fm, canon_systems, cause_to_system))
+    reasons.extend(gate_safety_rules_fk(fm, canon_systems))
+    reasons.extend(gate_diagnostic_not_applicable(fm))
     return (len(reasons) == 0), reasons
 
 
@@ -316,7 +429,7 @@ def main() -> int:
         sys.stderr.write(f"FATAL: wiki path {wiki_path} does not exist\n")
         return 2
 
-    canon_symptoms, canon_systems, symptom_to_system, canon_msg = load_canon(wiki_path)
+    canon_symptoms, canon_systems, symptom_to_system, cause_to_system, canon_msg = load_canon(wiki_path)
     catalog_slugs = load_source_catalog(wiki_path)
 
     if not args.json:
@@ -332,7 +445,9 @@ def main() -> int:
     results = []
     failed = 0
     for f in files:
-        passed, reasons = process_file(f, wiki_path, canon_symptoms, canon_systems, symptom_to_system, catalog_slugs)
+        passed, reasons = process_file(
+            f, wiki_path, canon_symptoms, canon_systems, symptom_to_system, cause_to_system, catalog_slugs
+        )
         rel = str(f.relative_to(wiki_path)) if wiki_path in f.parents else str(f)
         results.append({"file": rel, "passed": passed, "blocked_reasons": reasons})
         if not passed:
