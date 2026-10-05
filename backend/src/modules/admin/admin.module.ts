@@ -143,6 +143,7 @@ import { R4ContentEnricherService } from './services/r4-content-enricher.service
 import { R4LintGatesService } from './services/r4-lint-gates.service'; // 🚦 R4 content lint gates LG1-LG8
 import { InternalPipelineController } from './controllers/internal-pipeline.controller'; // 🚀 Internal pipeline (X-Internal-Key auth)
 import { InternalSeoAuditController } from './controllers/internal-seo-audit.controller'; // 📊 Internal SEO audit (X-Internal-Key auth)
+import { InternalCommandCenterController } from './controllers/internal-command-center.controller'; // 🛰️ Command Center digest for Hermes (X-Internal-Key auth)
 
 // PR-SBD-1 Task 4 — SEO Business Control Dashboard (Phase A)
 import { BullModule } from '@nestjs/bull';
@@ -215,6 +216,7 @@ import { SeoControlRefreshProcessor } from './processors/seo-control-refresh.pro
     AdminPipelineController, // 🚀 Unified pipeline execution - /api/admin/pipeline/*
     InternalPipelineController, // 🚀 Internal pipeline (X-Internal-Key) - /api/internal/pipeline/*
     InternalSeoAuditController, // 📊 Internal SEO audit (X-Internal-Key) - /api/internal/seo/audit/*
+    InternalCommandCenterController, // 🛰️ Command Center digest (X-Internal-Key) - /api/internal/command-center/digest
     GovernanceMatrixController, // 🛡️ SEO Operating Matrix - /api/admin/governance/seo-operating-matrix
     SeoControlController, // 📊 PR-SBD-1 — SEO Business Control Dashboard - /api/admin/seo-control/*
   ],

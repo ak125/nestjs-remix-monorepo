@@ -3,7 +3,11 @@ import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { CacheService } from '../../../cache/cache.service';
 import { CommandCenterActionsService } from './command-center-actions.service';
-import type { CcDepartmentReport } from '@repo/registry';
+import {
+  DIGEST_MAX_OWNER_GO_ACTIONS,
+  type CcDepartmentReport,
+  type CommandCenterDigest,
+} from '@repo/registry';
 import {
   CommandCenterKpiService,
   type LiveKpiMeasure,
@@ -447,6 +451,31 @@ function toLightResponse(
     mode: 'light',
     action_queue: [],
     department_reports: [],
+  };
+}
+
+/**
+ * Digest for the Hermes supervisor (GET /api/internal/command-center/digest): a
+ * bounded projection of the cockpit response — never a second computation, so it
+ * inherits the mode stripping above (light/degraded → no reports, no actions).
+ */
+export function toCommandCenterDigest(
+  cc: CommandCenterResponse,
+): CommandCenterDigest {
+  const waiting = cc.action_queue.filter((a) => a.owner_go_required);
+  return {
+    schema_version: 'command-center-digest.v1',
+    generated_at: cc.generated_at,
+    git_sha: cc.git_sha,
+    mode: cc.mode,
+    degraded: cc.degraded,
+    stale_status: cc.stale_status,
+    global_status: cc.global_status,
+    department_reports: cc.department_reports,
+    owner_go_actions_total: waiting.length,
+    owner_go_actions: waiting
+      .slice(0, DIGEST_MAX_OWNER_GO_ACTIONS)
+      .map(({ details: _details, ...action }) => action),
   };
 }
 

@@ -370,3 +370,30 @@ export const CommandCenterResponseSchema = CommandCenterSnapshotSchema.extend({
   departments: z.array(CcDepartmentLiveSchema),
 }).strict();
 export type CommandCenterResponse = z.infer<typeof CommandCenterResponseSchema>;
+
+/** Bound of `owner_go_actions` in the digest (highest score first). */
+export const DIGEST_MAX_OWNER_GO_ACTIONS = 10;
+
+/**
+ * Command Center digest — what GET /api/internal/command-center/digest returns to a
+ * machine consumer outside the admin session (the Hermes supervisor). A bounded
+ * projection of CommandCenterResponse, never a second computation: same exposure
+ * mode, same cache, same rules. Per-URL SEO `details` are dropped to stay bounded.
+ */
+export const CommandCenterDigestSchema = z
+  .object({
+    schema_version: z.literal("command-center-digest.v1"),
+    generated_at: z.string(),
+    git_sha: z.string().nullable(),
+    mode: CommandCenterModeSchema,
+    degraded: z.boolean(),
+    stale_status: StaleStatusSchema,
+    global_status: GlobalStatusSchema,
+    department_reports: z.array(CcDepartmentReportSchema), // full mode only, else []
+    owner_go_actions_total: z.number().int().min(0), // before the bound below
+    owner_go_actions: z
+      .array(CcActionV2Schema.omit({ details: true }))
+      .max(DIGEST_MAX_OWNER_GO_ACTIONS),
+  })
+  .strict();
+export type CommandCenterDigest = z.infer<typeof CommandCenterDigestSchema>;
