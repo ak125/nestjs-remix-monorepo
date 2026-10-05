@@ -7988,9 +7988,35 @@
         "backend/src/modules/admin/services/command-center-action-rules/score-action.ts"
       ],
       "kind": "service",
-      "loc": 157,
+      "loc": 166,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/command-center-action-rules/certification-action.rules.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "reachability"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/admin/services/command-center-action-rules/department-report.rules.ts",
+      "importedBy": [
+        "backend/src/modules/admin/services/command-center-reader.service.ts"
+      ],
+      "imports": [
+        "@repo/registry",
+        "backend/src/modules/admin/services/command-center-action-rules/score-action.ts",
+        "backend/src/modules/admin/services/command-center-kpi.service.ts"
+      ],
+      "kind": "service",
+      "loc": 185,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/admin/services/command-center-action-rules/department-report.rules.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -8012,7 +8038,7 @@
         "backend/src/modules/admin/services/command-center-action-rules/score-action.ts"
       ],
       "kind": "service",
-      "loc": 95,
+      "loc": 96,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/command-center-action-rules/improvement-candidate.rules.ts",
       "risk": "low",
@@ -8036,7 +8062,7 @@
         "backend/src/modules/admin/services/command-center-action-rules/score-action.ts"
       ],
       "kind": "service",
-      "loc": 91,
+      "loc": 94,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/command-center-action-rules/pricing-action.rules.ts",
       "risk": "low",
@@ -8055,6 +8081,7 @@
       "id": "backend/src/modules/admin/services/command-center-action-rules/score-action.ts",
       "importedBy": [
         "backend/src/modules/admin/services/command-center-action-rules/certification-action.rules.ts",
+        "backend/src/modules/admin/services/command-center-action-rules/department-report.rules.ts",
         "backend/src/modules/admin/services/command-center-action-rules/improvement-candidate.rules.ts",
         "backend/src/modules/admin/services/command-center-action-rules/pricing-action.rules.ts",
         "backend/src/modules/admin/services/command-center-action-rules/seo-action.rules.ts",
@@ -8066,7 +8093,7 @@
         "@repo/registry"
       ],
       "kind": "service",
-      "loc": 117,
+      "loc": 120,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/command-center-action-rules/score-action.ts",
       "risk": "low",
@@ -8090,7 +8117,7 @@
         "backend/src/modules/admin/services/command-center-action-rules/score-action.ts"
       ],
       "kind": "service",
-      "loc": 308,
+      "loc": 310,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/command-center-action-rules/seo-action.rules.ts",
       "risk": "low",
@@ -8115,7 +8142,7 @@
         "backend/src/modules/analytics/index.ts"
       ],
       "kind": "service",
-      "loc": 95,
+      "loc": 102,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/command-center-action-rules/tracking-integrity-action.rules.ts",
       "risk": "low",
@@ -8151,7 +8178,7 @@
         "zlib"
       ],
       "kind": "service",
-      "loc": 483,
+      "loc": 484,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/command-center-actions.service.ts",
       "risk": "low",
@@ -8169,6 +8196,7 @@
       "id": "backend/src/modules/admin/services/command-center-kpi.service.ts",
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
+        "backend/src/modules/admin/services/command-center-action-rules/department-report.rules.ts",
         "backend/src/modules/admin/services/command-center-reader.service.ts"
       ],
       "imports": [
@@ -8177,7 +8205,7 @@
         "backend/src/database/services/supabase-base.service.ts"
       ],
       "kind": "service",
-      "loc": 193,
+      "loc": 224,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/command-center-kpi.service.ts",
       "risk": "low",
@@ -8364,7 +8392,9 @@
         "backend/src/modules/admin/controllers/command-center.controller.ts"
       ],
       "imports": [
+        "@repo/registry",
         "backend/src/cache/cache.service.ts",
+        "backend/src/modules/admin/services/command-center-action-rules/department-report.rules.ts",
         "backend/src/modules/admin/services/command-center-action-rules/score-action.ts",
         "backend/src/modules/admin/services/command-center-actions.service.ts",
         "backend/src/modules/admin/services/command-center-kpi.service.ts",
@@ -8372,7 +8402,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 447,
+      "loc": 473,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/command-center-reader.service.ts",
       "risk": "low",
@@ -38580,7 +38610,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 788,
+      "loc": 899,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/command-center-action-rules.test.ts",
       "risk": "low",
@@ -38614,11 +38644,30 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/tests/unit/command-center-department-report.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 225,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/command-center-department-report.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/tests/unit/command-center-kpi.service.test.ts",
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 257,
+      "loc": 312,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/command-center-kpi.service.test.ts",
       "risk": "low",
@@ -38656,7 +38705,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 277,
+      "loc": 352,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/command-center-reader.service.test.ts",
       "risk": "low",
@@ -43277,6 +43326,30 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/app/components/command-center/DepartmentReports.tsx",
+      "importedBy": [],
+      "imports": [
+        "@repo/registry",
+        "~/components/ui/badge",
+        "~/components/ui/button",
+        "~/components/ui/card"
+      ],
+      "kind": "config",
+      "loc": 188,
+      "owner": "__unassigned__",
+      "path": "frontend/app/components/command-center/DepartmentReports.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/app/components/command-center/GlobalHealthBar.tsx",
       "importedBy": [],
       "imports": [
@@ -43360,7 +43433,7 @@
         "~/components/ui/card"
       ],
       "kind": "config",
-      "loc": 261,
+      "loc": 272,
       "owner": "__unassigned__",
       "path": "frontend/app/components/command-center/OwnerActionQueue.tsx",
       "risk": "low",
@@ -52784,6 +52857,7 @@
         "@repo/registry",
         "frontend/app/auth/unified.server.ts",
         "~/components/admin/patterns/KpiCard",
+        "~/components/command-center/DepartmentReports",
         "~/components/command-center/GlobalHealthBar",
         "~/components/command-center/ModuleGrid",
         "~/components/command-center/OrchestrationPanel",
@@ -52799,7 +52873,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 503,
+      "loc": 510,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.command-center.tsx",
       "risk": "low",
@@ -65629,7 +65703,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 299,
+      "loc": 373,
       "owner": "__unassigned__",
       "path": "packages/registry/src/command-center/snapshot.ts",
       "risk": "low",
@@ -65781,7 +65855,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 204,
+      "loc": 210,
       "owner": "__unassigned__",
       "path": "packages/registry/src/index.ts",
       "risk": "low",
