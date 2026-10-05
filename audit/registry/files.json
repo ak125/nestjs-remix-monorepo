@@ -8031,14 +8031,40 @@
         "reachability"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/admin/services/command-center-action-rules/department-kpi.rules.ts",
+      "importedBy": [
+        "backend/src/modules/admin/services/command-center-kpi.service.ts"
+      ],
+      "imports": [
+        "backend/src/modules/admin/services/command-center-action-rules/live-kpi.ts",
+        "backend/src/modules/analytics/index.ts",
+        "backend/src/modules/seo/types/page-role.types.ts"
+      ],
+      "kind": "service",
+      "loc": 158,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/admin/services/command-center-action-rules/department-kpi.rules.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "reachability"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/admin/services/command-center-action-rules/department-report.rules.ts",
       "importedBy": [
         "backend/src/modules/admin/services/command-center-reader.service.ts"
       ],
       "imports": [
         "@repo/registry",
-        "backend/src/modules/admin/services/command-center-action-rules/score-action.ts",
-        "backend/src/modules/admin/services/command-center-kpi.service.ts"
+        "backend/src/modules/admin/services/command-center-action-rules/live-kpi.ts",
+        "backend/src/modules/admin/services/command-center-action-rules/score-action.ts"
       ],
       "kind": "service",
       "loc": 194,
@@ -8068,6 +8094,31 @@
       "loc": 96,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/command-center-action-rules/improvement-candidate.rules.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "reachability"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/admin/services/command-center-action-rules/live-kpi.ts",
+      "importedBy": [
+        "backend/src/modules/admin/services/command-center-action-rules/department-kpi.rules.ts",
+        "backend/src/modules/admin/services/command-center-action-rules/department-report.rules.ts",
+        "backend/src/modules/admin/services/command-center-kpi.service.ts",
+        "backend/src/modules/admin/services/command-center-reader.service.ts"
+      ],
+      "imports": [],
+      "kind": "service",
+      "loc": 30,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/admin/services/command-center-action-rules/live-kpi.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -8223,16 +8274,18 @@
       "id": "backend/src/modules/admin/services/command-center-kpi.service.ts",
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
-        "backend/src/modules/admin/services/command-center-action-rules/department-report.rules.ts",
         "backend/src/modules/admin/services/command-center-reader.service.ts"
       ],
       "imports": [
         "@repo/database-types",
         "@repo/domain-commerce",
-        "backend/src/database/services/supabase-base.service.ts"
+        "backend/src/database/services/supabase-base.service.ts",
+        "backend/src/modules/admin/services/command-center-action-rules/department-kpi.rules.ts",
+        "backend/src/modules/admin/services/command-center-action-rules/live-kpi.ts",
+        "backend/src/modules/analytics/index.ts"
       ],
       "kind": "service",
-      "loc": 224,
+      "loc": 384,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/command-center-kpi.service.ts",
       "risk": "low",
@@ -8423,6 +8476,7 @@
         "@repo/registry",
         "backend/src/cache/cache.service.ts",
         "backend/src/modules/admin/services/command-center-action-rules/department-report.rules.ts",
+        "backend/src/modules/admin/services/command-center-action-rules/live-kpi.ts",
         "backend/src/modules/admin/services/command-center-action-rules/score-action.ts",
         "backend/src/modules/admin/services/command-center-actions.service.ts",
         "backend/src/modules/admin/services/command-center-kpi.service.ts",
@@ -8430,7 +8484,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 502,
+      "loc": 500,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/command-center-reader.service.ts",
       "risk": "low",
@@ -11021,8 +11075,10 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/analytics/index.ts",
       "importedBy": [
+        "backend/src/modules/admin/services/command-center-action-rules/department-kpi.rules.ts",
         "backend/src/modules/admin/services/command-center-action-rules/tracking-integrity-action.rules.ts",
-        "backend/src/modules/admin/services/command-center-actions.service.ts"
+        "backend/src/modules/admin/services/command-center-actions.service.ts",
+        "backend/src/modules/admin/services/command-center-kpi.service.ts"
       ],
       "imports": [
         "backend/src/modules/analytics/tracking-integrity/tracking-integrity-verdict.schema.ts",
@@ -31945,6 +32001,7 @@
       "id": "backend/src/modules/seo/types/page-role.types.ts",
       "importedBy": [
         "backend/src/modules/admin/services/brand-editorial.service.ts",
+        "backend/src/modules/admin/services/command-center-action-rules/department-kpi.rules.ts",
         "backend/src/modules/seo/interceptors/page-role-validation.interceptor.ts",
         "backend/src/modules/seo/internal-linking.service.ts",
         "backend/src/modules/seo/seo.module.ts",
@@ -38672,6 +38729,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/tests/unit/command-center-department-kpi.rules.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 195,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/command-center-department-kpi.rules.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/tests/unit/command-center-department-report.test.ts",
       "importedBy": [],
       "imports": [],
@@ -38714,7 +38790,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 330,
+      "loc": 629,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/command-center-kpi.service.test.ts",
       "risk": "low",

@@ -17,8 +17,8 @@
         "backend/src/modules/admin/services/r1-image-prompt-builders",
         "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__"
       ],
-      "files_count": 155,
-      "loc_total": 43371,
+      "files_count": 157,
+      "loc_total": 43717,
       "has_barrel": true
     },
     "agentic-engine": {
@@ -958,8 +958,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 292,
-      "loc_total": 54497,
+      "files_count": 293,
+      "loc_total": 54991,
       "has_barrel": true
     },
     "upload": {
@@ -1040,7 +1040,7 @@
     {
       "from": "admin",
       "to": "analytics",
-      "count": 2
+      "count": 4
     },
     {
       "from": "admin",
@@ -1095,7 +1095,7 @@
     {
       "from": "admin",
       "to": "seo",
-      "count": 10
+      "count": 11
     },
     {
       "from": "admin",
@@ -2282,6 +2282,11 @@
     {
       "from": "backend/src/modules/admin/services/buying-guide/buying-guide-rag-fetcher.service.ts",
       "to": "backend/src/modules/rag-proxy/rag-proxy.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/services/command-center-action-rules/department-kpi.rules.ts",
+      "to": "backend/src/modules/seo/types/page-role.types.ts",
       "rule": "no-deep-module-access"
     },
     {
