@@ -44896,7 +44896,7 @@
         "~/components/layout"
       ],
       "kind": "config",
-      "loc": 41,
+      "loc": 39,
       "owner": "__unassigned__",
       "path": "frontend/app/components/gamme/GammeGuideCTA.tsx",
       "risk": "low",
@@ -57504,7 +57504,7 @@
         "~/utils/seo/canonical"
       ],
       "kind": "route",
-      "loc": 1149,
+      "loc": 1142,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/pieces.$slug.tsx",
       "risk": "low",
@@ -59392,7 +59392,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "config",
-      "loc": 734,
+      "loc": 737,
       "owner": "__unassigned__",
       "path": "frontend/app/types/gamme-page-contract.types.ts",
       "risk": "low",
@@ -63276,6 +63276,25 @@
       "loc": 90,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/pieces-oem-section.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/pieces-slug-conseils-link-gating.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 128,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/pieces-slug-conseils-link-gating.test.tsx",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
