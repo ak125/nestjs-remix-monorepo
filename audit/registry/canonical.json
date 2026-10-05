@@ -31337,10 +31337,11 @@
       "id": "backend/src/config/diag-canon-jsonschema.test.ts",
       "importedBy": [],
       "imports": [
-        "backend/src/config/diag-canon-jsonschema.ts"
+        "backend/src/config/diag-canon-jsonschema.ts",
+        "backend/src/config/diag-canon.schema.ts"
       ],
       "kind": "test",
-      "loc": 20,
+      "loc": 44,
       "owner": "@ak125",
       "path": "backend/src/config/diag-canon-jsonschema.test.ts",
       "risk": "medium",
@@ -31364,7 +31365,7 @@
         "backend/src/config/diag-canon.schema.ts"
       ],
       "kind": "service",
-      "loc": 43,
+      "loc": 45,
       "owner": "@ak125",
       "path": "backend/src/config/diag-canon-jsonschema.ts",
       "risk": "medium",
@@ -31388,7 +31389,7 @@
         "path"
       ],
       "kind": "test",
-      "loc": 129,
+      "loc": 246,
       "owner": "@ak125",
       "path": "backend/src/config/diag-canon.schema.test.ts",
       "risk": "medium",
@@ -31406,12 +31407,13 @@
       "domain": "D13",
       "id": "backend/src/config/diag-canon.schema.ts",
       "importedBy": [
+        "backend/src/config/diag-canon-jsonschema.test.ts",
         "backend/src/config/diag-canon-jsonschema.ts",
         "backend/src/config/diag-canon.schema.test.ts"
       ],
       "imports": [],
       "kind": "config",
-      "loc": 112,
+      "loc": 169,
       "owner": "@ak125",
       "path": "backend/src/config/diag-canon.schema.ts",
       "risk": "medium",
@@ -102816,15 +102818,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "f712a655d9f22003e79dcfca8e1b40fa79901b8a60755de688f1431655d188e2",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "a00338123d8784d10c6421d7079e2e9f09af11a15f419920131174e3a0c7f3da",
+      ".spec/00-canon/repository-registry/ownership.yaml": "8dc19620a5a1a71b9af2ed25f08b8db71bf77aefc482a8dc03f952ee5f5be46b",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "4516d35aa9c99283dc75cbba2227314020531a72cca2acd4513571dd6ca7d208",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "24710ece42791da141239f76feed3c166086420f0831f93f98c756fcccec7df2",
+      "audit/registry/files.json": "742926921def8f331ae6f47f5501747179903bf7ffed80feede9d69c5051030b",
       "audit/registry/rpc.json": "5ee2a4b80a43764dda2c436d7b7b49e09ba4b1bd2e746864e869ecc7ac556049",
       "audit/registry/runtime.json": "6be3a4960e4d4d9048eb530ffbf3a1588ed108663b568a27391f989ef08ef437"
     },
-    "sotFingerprint": "99673c4acb89"
+    "sotFingerprint": "2e1435739425"
   },
   "runtime": [
     {
