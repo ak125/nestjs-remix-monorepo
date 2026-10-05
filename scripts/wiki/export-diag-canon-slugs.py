@@ -26,16 +26,23 @@ deux fois (Python `build_flat_schema()` + Zod TS) — single SoT respecté.
 2. `automecanik-wiki/exports/diag-canon.json` (flat map cible, P3) :
 
    {
-     "version": "1.0.0",
+     "version": "1.1.0",
      "generated_at": "2026-05-01T02:00:00Z",
      "systems": ["freinage", "filtration", ...],
-     "symptoms": {"brake_noise_metallic": "freinage", ...}
+     "symptoms": {"brake_noise_metallic": "freinage", ...},
+     "causes": {"plaquettes_usees": "freinage", ...}
    }
 
    Structure plate (Principe 1 — schema-first, lisible, scalable 62-65
    symptômes). Consommé par validateur composite (validate-gamme-
    diagnostic-relations.py P3) qui peut détecter `system_slug_unknown` et
    `symptom_system_mismatch` en O(1) lookup.
+
+   Version 1.1.0 (ADR-112 phase 0) : ajoute `causes` (__diag_cause actives →
+   slug de leur système), clé de `cause_slug` dans les fiches WIKI. Le canon Zod
+   accepte encore 1.0.0 le temps que l'export nocturne publie 1.1.0
+   (expand/contract, voir `diag-canon.schema.ts`). Une cause sans slug ou sans
+   système fait échouer l'export (exit 1) : aucune cause n'est écartée en silence.
 
 Le 3e artefact `diag-canon.schema.json` est produit par le workflow
 `.github/workflows/diag-canon-slugs-export.yml` via un step
@@ -73,7 +80,7 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
-CANON_VERSION = "1.0.0"
+CANON_VERSION = "1.1.0"
 
 
 def get_supabase_config() -> tuple[str, str]:
@@ -106,9 +113,19 @@ QUERY_PATH = (
 )
 
 
-def fetch_canon_slugs(supabase_url: str, service_role_key: str) -> list[dict]:
-    """GET via PostgREST embedded resource. service_role bypasses RLS."""
-    url = supabase_url + QUERY_PATH
+# ADR-112 phase 0 — même forme pour les causes. Seules les causes actives : le moteur
+# ne lit que celles-là (diagnostic-engine.data-service.ts, `.eq('active', true)`).
+CAUSES_QUERY_PATH = (
+    "/rest/v1/__diag_cause"
+    "?select=slug,active,__diag_system(slug)"
+    "&active=eq.true"
+    "&order=slug.asc"
+)
+
+
+def _get_json_array(supabase_url: str, service_role_key: str, path: str) -> list:
+    """GET via PostgREST. service_role bypasses RLS. Exits 1 on HTTP/parse error."""
+    url = supabase_url + path
     req = urllib.request.Request(
         url,
         headers={
@@ -118,7 +135,7 @@ def fetch_canon_slugs(supabase_url: str, service_role_key: str) -> list[dict]:
         },
         method="GET",
     )
-    print(f"[fetch] GET {supabase_url}/rest/v1/__diag_symptom?...&order=slug.asc")
+    print(f"[fetch] GET {supabase_url}{path.split('?', 1)[0]}?...&order=slug.asc")
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
             payload = resp.read().decode("utf-8")
@@ -134,6 +151,12 @@ def fetch_canon_slugs(supabase_url: str, service_role_key: str) -> list[dict]:
     if not isinstance(raw, list):
         sys.stderr.write(f"FATAL: PostgREST returned non-array payload: {type(raw)}\n")
         sys.exit(1)
+    return raw
+
+
+def fetch_canon_slugs(supabase_url: str, service_role_key: str) -> list[dict]:
+    """Active __diag_symptom rows, flattened (system_slug at top level)."""
+    raw = _get_json_array(supabase_url, service_role_key, QUERY_PATH)
 
     # Flatten embedded __diag_system into system_slug at top level
     # + rename slug → symptom_slug for output schema clarity
@@ -151,13 +174,29 @@ def fetch_canon_slugs(supabase_url: str, service_role_key: str) -> list[dict]:
     return flattened
 
 
+def fetch_canon_causes(supabase_url: str, service_role_key: str) -> dict[str, str]:
+    """Active __diag_cause rows → {cause_slug: system_slug}. Fail-closed on any incomplete row."""
+    raw = _get_json_array(supabase_url, service_role_key, CAUSES_QUERY_PATH)
+    causes: dict[str, str] = {}
+    for row in raw:
+        sys_obj = row.get("__diag_system") if isinstance(row, dict) else None
+        cause_slug = row.get("slug") if isinstance(row, dict) else None
+        sys_slug = sys_obj.get("slug") if isinstance(sys_obj, dict) else None
+        if not cause_slug or not sys_slug:
+            sys.stderr.write(f"FATAL: __diag_cause row without slug or system: {row!r}\n")
+            sys.exit(1)
+        causes[cause_slug] = sys_slug
+    print(f"[fetch] {len(causes)} active __diag_cause rows")
+    return dict(sorted(causes.items()))
+
+
 def serialize_canonical(rows: list[dict]) -> str:
     """Deterministic JSON : sorted keys, indent 2, trailing newline."""
     return json.dumps(rows, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
 
 
-def build_flat_map(rows: list[dict], generated_at: str) -> dict:
-    """Plan humble-cuddling-scott P3 — flat map cible (Principe 1)."""
+def build_flat_map(rows: list[dict], causes: dict[str, str], generated_at: str) -> dict:
+    """Plan humble-cuddling-scott P3 — flat map cible (Principe 1) ; `causes` depuis 1.1.0."""
     systems = sorted({r["system_slug"] for r in rows if r.get("system_slug")})
     symptoms: dict[str, str] = {}
     for r in rows:
@@ -170,6 +209,7 @@ def build_flat_map(rows: list[dict], generated_at: str) -> dict:
         "generated_at": generated_at,
         "systems": systems,
         "symptoms": dict(sorted(symptoms.items())),
+        "causes": dict(sorted(causes.items())),
     }
 
 
@@ -183,15 +223,16 @@ def main() -> int:
 
     supabase_url, service_role_key = get_supabase_config()
     rows = fetch_canon_slugs(supabase_url, service_role_key)
+    causes = fetch_canon_causes(supabase_url, service_role_key)
     generated_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     legacy_payload = serialize_canonical(rows)
-    flat_map = build_flat_map(rows, generated_at)
+    flat_map = build_flat_map(rows, causes, generated_at)
     flat_payload = json.dumps(flat_map, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
 
     if args.dry_run:
         print(f"[dry-run] {len(rows)} symptoms — would write 2 data files (legacy + flat map). Schema is generated by TS step downstream.")
-        print(f"[dry-run] flat map sample: systems={len(flat_map['systems'])}, symptoms={len(flat_map['symptoms'])}")
+        print(f"[dry-run] flat map sample: systems={len(flat_map['systems'])}, symptoms={len(flat_map['symptoms'])}, causes={len(flat_map['causes'])}")
         if rows:
             print(f"[dry-run] first row sample: {rows[0]}")
         return 0
@@ -213,7 +254,7 @@ def main() -> int:
 
     if flat_path is not None:
         flat_path.write_text(flat_payload, encoding="utf-8")
-        print(f"[write] {flat_path} ({len(flat_payload)} bytes, {len(flat_map['systems'])} systems, {len(flat_map['symptoms'])} symptoms) [flat map P3]")
+        print(f"[write] {flat_path} ({len(flat_payload)} bytes, {len(flat_map['systems'])} systems, {len(flat_map['symptoms'])} symptoms, {len(flat_map['causes'])} causes) [flat map P3]")
 
     return 0
 
