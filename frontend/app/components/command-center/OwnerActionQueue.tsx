@@ -6,6 +6,7 @@
  * its score, its source, and a "prudence" flag when the data is only partial.
  * PR2: seo:opportunity:* actions carry a per-URL drill-down (`details`) shown in a
  * collapsible table (URL · page kind · impressions · clicks · CTR).
+ * « feu vert owner » = `owner_go_required`, declared by the rule (STOP zone or owner flag).
  */
 import { useState } from "react";
 import { type CommandCenterResponse } from "@repo/registry";
@@ -18,6 +19,7 @@ import {
   TrendingUp,
   ChevronDown,
   ChevronRight,
+  Hand,
 } from "lucide-react";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
@@ -240,6 +242,15 @@ export function OwnerActionQueue({ data }: { data: CommandCenterResponse }) {
                       {TYPE_LABEL[a.action_type]}
                     </Badge>
                     <Badge variant="subtle">{a.source}</Badge>
+                    {a.owner_go_required ? (
+                      <Badge
+                        variant="orange"
+                        aria-label="Cette action attend le feu vert de l'owner"
+                      >
+                        <Hand className="mr-1 h-3 w-3" aria-hidden />
+                        feu vert owner
+                      </Badge>
+                    ) : null}
                     {prudence ? (
                       <Badge
                         variant="warning"

@@ -7,6 +7,7 @@ import { LandingAttributionController } from './controllers/landing-attribution.
 
 // Services
 import { SimpleAnalyticsService } from './services/simple-analytics.service';
+import { TrackingIntegrityService } from './tracking-integrity/tracking-integrity.service';
 
 // Modules externes
 import { DatabaseModule } from '../../database/database.module';
@@ -29,8 +30,8 @@ import { DatabaseModule } from '../../database/database.module';
 @Module({
   imports: [ConfigModule, DatabaseModule],
   controllers: [SimpleAnalyticsController, LandingAttributionController],
-  providers: [SimpleAnalyticsService],
-  exports: [SimpleAnalyticsService],
+  providers: [SimpleAnalyticsService, TrackingIntegrityService],
+  exports: [SimpleAnalyticsService, TrackingIntegrityService],
 })
 export class AnalyticsModule {
   /**

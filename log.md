@@ -418,6 +418,96 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Décision** : chore(registry): resync des projections L1 pour la migration 20261003 (+1 other commit)
 - **Sortie** : PR aucune | commits 2a7f0f274 45b759f06
 
+## 2026-10-04 — fix/blog-legacy-advice-alias (auto)
+
+- **Branche** : `fix/blog-legacy-advice-alias`
+- **Décision** : chore(registry): resync L1+L3 projections (+1 other commit)
+- **Sortie** : PR aucune | commits e05399bab 1d2ea06f6
+
+## 2026-10-04 — fix/blog-legacy-advice-alias (auto)
+
+- **Branche** : `fix/blog-legacy-advice-alias`
+- **Décision** : chore(audit): régénérer l'inventaire PR-8 après la fusion de main (+9 other commits)
+- **Sortie** : PR #1719 | commits 3e02d26b8 28ebb7d11 2d482e5c3 3adb701ac 4912b4a9d 2b2caf1da 3c7046cec 2c9b69834 e05399bab 1d2ea06f6
+
+## 2026-10-04 — worktree-departments-operational (auto)
+
+- **Branche** : `worktree-departments-operational`
+- **Décision** : chore(audit): régénérer inventaire et candidats PR-8 sur le canonical resynchronisé (+6 other commits)
+- **Sortie** : PR aucune | commits f5f50adc1 69bac0de6 bd48d22e0 2391c7d75 afdd7320c e7763f2b2 b42fe3882
+
+## 2026-10-04 — worktree-departments-operational (auto)
+
+- **Branche** : `worktree-departments-operational`
+- **Décision** : chore(audit): régénérer inventaire et candidats PR-8 sur le canonical resynchronisé (+10 other commits)
+- **Sortie** : PR #1721 | commits 685164ee0 e3010c147 547227d5c 3dfa64d3a f5f50adc1 69bac0de6 bd48d22e0 2391c7d75 afdd7320c e7763f2b2 b42fe3882
+
+## 2026-10-04 — worktree-departments-operational (auto)
+
+- **Branche** : `worktree-departments-operational`
+- **Décision** : chore(audit): régénérer inventaire et candidats PR-8 sur le canonical resynchronisé (+14 other commits)
+- **Sortie** : PR #1721 | commits 592d8da1b 46c8776bf cb77845c5 1ff490d6c 685164ee0 e3010c147 547227d5c 3dfa64d3a f5f50adc1 69bac0de6 bd48d22e0 2391c7d75 afdd7320c e7763f2b2 b42fe3882
+
+## 2026-10-04 — feat/sales-payments-kept-kpi (auto)
+
+- **Branche** : `feat/sales-payments-kept-kpi`
+- **Décision** : chore(audit): régénérer inventaire et candidats PR-8 (nouveau service KPI) (+2 other commits)
+- **Sortie** : PR aucune | commits a120f3169 f56ca82a4 c0f0d2923
+
+## 2026-10-04 — feat/sales-payments-kept-kpi (auto)
+
+- **Branche** : `feat/sales-payments-kept-kpi`
+- **Décision** : chore(audit): régénérer inventaire et candidats PR-8 sur le canonical resynchronisé (+6 other commits)
+- **Sortie** : PR #1725 | commits 3fb5dead7 d480db38b 4d20847ec 7cfe405a0 a120f3169 f56ca82a4 c0f0d2923
+
+## 2026-10-04 — feat/sales-payments-kept-kpi (auto)
+
+- **Branche** : `feat/sales-payments-kept-kpi`
+- **Décision** : chore(audit): régénérer les candidats PR-8 sur le canonical reconstruit sans dist (+9 other commits)
+- **Sortie** : PR #1725 | commits aae2c6506 880195243 b0df83906 3fb5dead7 d480db38b 4d20847ec 7cfe405a0 a120f3169 f56ca82a4 c0f0d2923
+
+## 2026-10-04 — feat/data-tracking-integrity-verdict (auto)
+
+- **Branche** : `feat/data-tracking-integrity-verdict`
+- **Décision** : chore(audit): régénérer inventaire + candidats de nettoyage (tracking-integrity) (+4 other commits)
+- **Sortie** : PR aucune | commits 759879f22 3b7ee7f71 d65b80a9d 30aa0240b ec66a922d
+
+## 2026-10-04 — feat/data-tracking-integrity-verdict (auto)
+
+- **Branche** : `feat/data-tracking-integrity-verdict`
+- **Décision** : chore(audit): régénérer inventaire et candidats PR-8 après la fusion de main (+8 other commits)
+- **Sortie** : PR aucune | commits 0bbb4f576 477bc5cd6 382443d04 8944453cd 759879f22 3b7ee7f71 d65b80a9d 30aa0240b ec66a922d
+
+## 2026-10-04 — fix/return-page-order-event-ord-id (auto)
+
+- **Branche** : `fix/return-page-order-event-ord-id`
+- **Décision** : chore(audit): resync module-boundaries + PR-8 cleanup snapshot (+2 other commits)
+- **Sortie** : PR aucune | commits 04f9278dd a89c7426f 975975127
+
+## 2026-10-04 — fix/return-page-order-event-ord-id (auto)
+
+- **Branche** : `fix/return-page-order-event-ord-id`
+- **Décision** : chore(audit): resync module-boundaries + PR-8 cleanup snapshot après la fusion de main (+6 other commits)
+- **Sortie** : PR #1728 | commits 8e76dc3e2 56b9e2172 1fe467be7 9fe97b7f5 04f9278dd a89c7426f 975975127
+
+## 2026-10-04 — fix/return-page-order-event-ord-id (auto)
+
+- **Branche** : `fix/return-page-order-event-ord-id`
+- **Décision** : Merge remote-tracking branch 'origin/main' into fix/return-page-order-event-ord-id (+8 other commits)
+- **Sortie** : PR #1728 | commits efa7af710 fd08ec155 8e76dc3e2 56b9e2172 1fe467be7 9fe97b7f5 04f9278dd a89c7426f 975975127
+
+## 2026-10-05 — feat/command-center-department-reports (auto)
+
+- **Branche** : `feat/command-center-department-reports`
+- **Décision** : chore(registry): resync L1+L3 projections (+1 other commit)
+- **Sortie** : PR aucune | commits 0edb6c9fd e30e9a3ae
+
+## 2026-10-05 — feat/command-center-department-reports (auto)
+
+- **Branche** : `feat/command-center-department-reports`
+- **Décision** : chore(registry): resync L1+L3 projections (+5 other commits)
+- **Sortie** : PR #1735 | commits 0d7c3c0d2 32549c07f 9fb7279bc 4af8f3f97 0edb6c9fd e30e9a3ae
+
 ## 2026-10-04 — feat/seo-projection-r3-renderer (auto)
 
 - **Branche** : `feat/seo-projection-r3-renderer`

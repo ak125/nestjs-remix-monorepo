@@ -91,11 +91,15 @@ export interface ProjectionFeedJobData {
   triggeredBy: 'scheduler' | 'manual';
 }
 
-/** Résultat observable d'un cycle de feed R1 (découverte + enqueue). Jamais silencieux. */
+/** Résultat observable d'un cycle de feed (découverte + enqueue). Jamais silencieux. */
 export interface ProjectionFeedResult {
   discovered: number;
   enqueued: boolean;
-  exportsDir: string;
+  /** Racine `exports/seo` explorée (`<root>/<type>/*.json`). */
+  exportsRoot: string;
+  /** Exports découverts par type de l'allowlist d'écriture (0 = dossier absent ou vide). */
+  byType: Record<string, number>;
+  /** `NO_EXPORTS_DIR` = aucun dossier de type lisible ; `EMPTY` = dossiers lisibles mais 0 export. */
   reason?: 'READ_ONLY' | 'NO_EXPORTS_DIR' | 'EMPTY';
 }
 

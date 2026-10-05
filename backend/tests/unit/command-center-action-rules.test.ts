@@ -16,6 +16,11 @@ import {
   buildImprovementCandidateActions,
   CANDIDATE_HEADROOM_THRESHOLD,
 } from '../../src/modules/admin/services/command-center-action-rules/improvement-candidate.rules';
+import { buildTrackingIntegrityActions } from '../../src/modules/admin/services/command-center-action-rules/tracking-integrity-action.rules';
+import type {
+  TrackingIntegrityCheck,
+  TrackingIntegrityVerdictV1,
+} from '../../src/modules/analytics/tracking-integrity/tracking-integrity-verdict.schema';
 
 function biz(confidence: number): RawAction {
   return {
@@ -32,6 +37,7 @@ function biz(confidence: number): RawAction {
     reason: 'r',
     evidence: [],
     next_step: 'n',
+    owner_go_required: true,
   };
 }
 
@@ -676,5 +682,217 @@ describe('improvement-candidate rules — read-only perf ranking, headroom-drive
         { name: 'Z, gzip', measuredBytes: 10, limitBytes: 0 },
       ]),
     ).toHaveLength(0);
+  });
+});
+
+describe('tracking-integrity rule — consommateur Ventes du verdict Data', () => {
+  const WINDOW = {
+    from: '2026-09-04T12:00:00.000Z',
+    to: '2026-10-04T12:00:00.000Z',
+    days: 30,
+  };
+  function chk(
+    id: TrackingIntegrityCheck['id'],
+    status: TrackingIntegrityCheck['status'],
+    observed: number,
+    expected: number,
+    samples: string[] = [],
+  ): TrackingIntegrityCheck {
+    return { id, status, observed, expected, detail: `${id} detail`, samples };
+  }
+  function v(
+    status: TrackingIntegrityVerdictV1['status'],
+    checks: TrackingIntegrityCheck[],
+    reason: string | null = null,
+  ): TrackingIntegrityVerdictV1 {
+    return {
+      contract: 'tracking-integrity-verdict.v1',
+      producer: 'data',
+      consumer: 'sales',
+      status,
+      window: WINDOW,
+      checks,
+      reason,
+    };
+  }
+
+  it('CERTIFIED → aucune action (mesure fiable, rien à réparer)', () => {
+    expect(
+      buildTrackingIntegrityActions(
+        v('CERTIFIED', [
+          chk('order_event_key', 'PASS', 2, 2),
+          chk('order_event_coverage', 'PASS', 2, 2),
+        ]),
+      ),
+    ).toEqual([]);
+  });
+
+  it('UNKNOWN → certification à confiance basse, la raison du producteur est transmise', () => {
+    const [a] = buildTrackingIntegrityActions(
+      v('UNKNOWN', [], 'Lecture impossible : __seo_event_log (42501) denied'),
+    );
+    expect(a).toMatchObject({
+      id: 'data:tracking-integrity',
+      department: 'data',
+      source: 'data',
+      action_type: 'certification',
+      data_confidence: 25,
+      reason: 'Lecture impossible : __seo_event_log (42501) denied',
+    });
+    expect(a.evidence).toEqual([
+      'tracking-integrity-verdict.v1 · 2026-09-04T12:00:00.000Z → 2026-10-04T12:00:00.000Z',
+    ]);
+    // jamais promue en action business sur une mesure non vérifiée
+    expect(finalizeAction(a).action_type).toBe('certification');
+  });
+
+  it('NOT_CERTIFIED (clé) → réparation : échantillons référencés, interdiction du flag serveur avant correction', () => {
+    const [a] = buildTrackingIntegrityActions(
+      v('NOT_CERTIFIED', [
+        chk('order_event_key', 'FAIL', 0, 2, ['evt-1', 'evt-2']),
+        chk('order_event_coverage', 'PASS', 1, 1),
+      ]),
+    );
+    expect(a).toMatchObject({
+      id: 'data:tracking-integrity',
+      action_type: 'repair',
+      data_confidence: 90,
+      title: 'Mesure des commandes non fiable — 1 contrôle(s) en échec',
+    });
+    expect(a.evidence).toEqual([
+      expect.stringContaining('tracking-integrity-verdict.v1'),
+      'order_event_key : 0/2',
+      '__seo_event_log.id=evt-1',
+      '__seo_event_log.id=evt-2',
+    ]);
+    expect(a.reason).toContain('order_event_key detail');
+    expect(a.reason).not.toContain('order_event_coverage detail');
+    expect(a.next_step).toMatch(/ord_id/);
+    expect(a.next_step).toMatch(/Ne pas activer FUNNEL_SERVER_EMIT_ENABLED/);
+  });
+
+  it('NOT_CERTIFIED (les deux) → étapes ordonnées : corriger la clé PUIS activer le serveur', () => {
+    const [a] = buildTrackingIntegrityActions(
+      v('NOT_CERTIFIED', [
+        chk('order_event_key', 'FAIL', 0, 1, ['evt-1']),
+        chk('order_event_coverage', 'FAIL', 0, 1, ['ORD-1']),
+      ]),
+    );
+    expect(a.title).toContain('2 contrôle(s)');
+    expect(a.evidence).toContain('___xtr_order.ord_id=ORD-1');
+    const keyStep = a.next_step.indexOf('Ne pas activer');
+    const enableStep = a.next_step.indexOf("Puis : Activer l'émission serveur");
+    expect(keyStep).toBeGreaterThan(-1);
+    expect(enableStep).toBeGreaterThan(keyStep);
+  });
+});
+
+describe('owner GO — declared by each rule, never inferred from action_type', () => {
+  const goOf = (actions: RawAction[]) =>
+    Object.fromEntries(
+      actions.map(finalizeAction).map((a) => [a.id, a.owner_go_required]),
+    );
+
+  it('a downgrade to certification clears it (the step becomes measurement work)', () => {
+    expect(finalizeAction(biz(90)).owner_go_required).toBe(true);
+    expect(
+      finalizeAction(biz(BUSINESS_CONFIDENCE_FLOOR - 1)).owner_go_required,
+    ).toBe(false);
+  });
+
+  it('repairs: cart/order and supplier flag → yes; data, runtime, generic, wiring → no', () => {
+    const go = goOf(
+      buildCertificationActions(
+        ['sales', 'supplier', 'data', 'runtime', 'finance'].map((id) => ({
+          id,
+          label: id,
+          certification: 'PARTIAL',
+          kpi_primary: 'k',
+          priority: 'P0',
+        })),
+        [
+          {
+            id: 'data-to-sales',
+            from: 'data',
+            to: 'sales',
+            state: 'PARTIAL',
+            incomplete: true,
+          },
+        ],
+      ),
+    );
+    expect(go).toEqual({
+      'repair:sales': true,
+      'repair:supplier': true,
+      'repair:data': false,
+      'repair:runtime': false,
+      'repair:finance': false,
+      'wire:data-to-sales': false,
+    });
+  });
+
+  it('pricing: every action is a price decision → yes', () => {
+    const go = goOf(
+      buildPricingRiskActions({
+        available_total: 100,
+        sell_at_loss: 1,
+        missing_purchase: 1,
+        sell_at_loss_samples: ['a'],
+        missing_samples: ['b'],
+      }),
+    );
+    expect(Object.values(go)).toEqual([true, true, true]);
+  });
+
+  it('SEO: rewriting indexed pages → yes; fixing GSC ingestion → no', () => {
+    const [opportunity] = buildSeoOpportunityActions([
+      { page: 'https://x/pieces/a.html', impressions: 2277, clicks: 0 },
+    ]).map(finalizeAction);
+    expect(opportunity.owner_go_required).toBe(true);
+    const [gap] = buildSeoOpportunityActions([]).map(finalizeAction);
+    expect(gap.id).toBe('seo:gsc-data-gap');
+    expect(gap.owner_go_required).toBe(false);
+  });
+
+  it('bundle weight → no (outside every STOP zone)', () => {
+    const [c] = buildImprovementCandidateActions([
+      { name: 'Tight chunk, gzip', measuredBytes: 30766, limitBytes: 34000 },
+    ]);
+    expect(c.owner_go_required).toBe(false);
+  });
+
+  it('order tracking: unverifiable → no; failed check → yes (payment-adjacent page / owner flag)', () => {
+    const window = {
+      from: '2026-09-04T12:00:00.000Z',
+      to: '2026-10-04T12:00:00.000Z',
+      days: 30,
+    };
+    const verdict = (
+      status: TrackingIntegrityVerdictV1['status'],
+      checks: TrackingIntegrityCheck[],
+    ): TrackingIntegrityVerdictV1 => ({
+      contract: 'tracking-integrity-verdict.v1',
+      producer: 'data',
+      consumer: 'sales',
+      status,
+      window,
+      checks,
+      reason: status === 'UNKNOWN' ? 'r' : null,
+    });
+    const [unknown] = buildTrackingIntegrityActions(verdict('UNKNOWN', []));
+    expect(unknown.owner_go_required).toBe(false);
+    const [failed] = buildTrackingIntegrityActions(
+      verdict('NOT_CERTIFIED', [
+        {
+          id: 'order_event_coverage',
+          status: 'FAIL',
+          observed: 0,
+          expected: 1,
+          detail: 'd',
+          samples: [],
+        },
+      ]),
+    );
+    expect(failed.owner_go_required).toBe(true);
   });
 });

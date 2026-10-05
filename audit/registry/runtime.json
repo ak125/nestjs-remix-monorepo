@@ -643,6 +643,7 @@
         "runtime:backend/src/modules/admin/controllers/configuration.controller.ts",
         "runtime:backend/src/modules/admin/controllers/control-plane.controller.ts",
         "runtime:backend/src/modules/admin/controllers/governance-matrix.controller.ts",
+        "runtime:backend/src/modules/admin/controllers/internal-command-center.controller.ts",
         "runtime:backend/src/modules/admin/controllers/internal-enrich.controller.ts",
         "runtime:backend/src/modules/admin/controllers/internal-pipeline.controller.ts",
         "runtime:backend/src/modules/admin/controllers/internal-seo-audit.controller.ts",
@@ -660,6 +661,7 @@
         "runtime:backend/src/modules/admin/services/buying-guide-enricher.service.ts",
         "runtime:backend/src/modules/admin/services/canon-observability.service.ts",
         "runtime:backend/src/modules/admin/services/command-center-actions.service.ts",
+        "runtime:backend/src/modules/admin/services/command-center-kpi.service.ts",
         "runtime:backend/src/modules/admin/services/command-center-orchestrator/execution-ledger.service.ts",
         "runtime:backend/src/modules/admin/services/command-center-orchestrator/orchestrator.service.ts",
         "runtime:backend/src/modules/admin/services/command-center-orchestrator/regen-artifact.executor.ts",
@@ -1042,6 +1044,18 @@
     {
       "dependsOn": [
         "runtime:backend/src/auth/internal-api-key.guard.ts",
+        "runtime:backend/src/modules/admin/services/command-center-reader.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/admin/controllers/internal-command-center.controller.ts",
+      "kind": "nestjs-controller",
+      "path": "backend/src/modules/admin/controllers/internal-command-center.controller.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/auth/internal-api-key.guard.ts",
         "runtime:backend/src/modules/admin/services/buying-guide-enricher.service.ts",
         "runtime:backend/src/modules/admin/services/gamme-aggregator.service.ts",
         "runtime:backend/src/modules/admin/services/quality-scoring-engine.service.ts"
@@ -1283,6 +1297,15 @@
     },
     {
       "dependsOn": [],
+      "id": "runtime:backend/src/modules/admin/services/command-center-kpi.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/admin/services/command-center-kpi.service.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
       "id": "runtime:backend/src/modules/admin/services/command-center-orchestrator/execution-ledger.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/admin/services/command-center-orchestrator/execution-ledger.service.ts",
@@ -1323,7 +1346,8 @@
     {
       "dependsOn": [
         "runtime:backend/src/cache/cache.service.ts",
-        "runtime:backend/src/modules/admin/services/command-center-actions.service.ts"
+        "runtime:backend/src/modules/admin/services/command-center-actions.service.ts",
+        "runtime:backend/src/modules/admin/services/command-center-kpi.service.ts"
       ],
       "id": "runtime:backend/src/modules/admin/services/command-center-reader.service.ts",
       "kind": "nestjs-service",
@@ -1898,7 +1922,8 @@
         "runtime:backend/src/database/database.module.ts",
         "runtime:backend/src/modules/analytics/controllers/landing-attribution.controller.ts",
         "runtime:backend/src/modules/analytics/controllers/simple-analytics.controller.ts",
-        "runtime:backend/src/modules/analytics/services/simple-analytics.service.ts"
+        "runtime:backend/src/modules/analytics/services/simple-analytics.service.ts",
+        "runtime:backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts"
       ],
       "id": "runtime:backend/src/modules/analytics/analytics.module.ts",
       "kind": "nestjs-module",
@@ -1932,6 +1957,15 @@
       "id": "runtime:backend/src/modules/analytics/services/simple-analytics.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/analytics/services/simple-analytics.service.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
+      "id": "runtime:backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
@@ -6115,6 +6149,7 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/config/feature-flags.service.ts",
         "runtime:backend/src/modules/seo-projection/seo-projection-gate.service.ts"
       ],
       "id": "runtime:backend/src/modules/seo-projection/seo-projection-writer.service.ts",

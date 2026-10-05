@@ -81,7 +81,7 @@ describe("phrasing content inside buttons", () => {
     expect(blockInsideButtons(container)).toEqual([]);
   });
 
-  it("hypothesis headers hold no div or p, and still show the score", () => {
+  it("hypothesis headers hold no div or p, and show no score", () => {
     const hypothesis = (id: string, score: number): Hypothesis => ({
       hypothesis_id: id,
       label: `Cause ${id}`,
@@ -98,8 +98,7 @@ describe("phrasing content inside buttons", () => {
       />,
     );
     expect(screen.getAllByRole("button")).toHaveLength(2);
-    expect(screen.getByText("73/100")).toBeTruthy();
-    expect(screen.getByText("41/100")).toBeTruthy();
+    expect(screen.queryByText(/\/100/)).toBeNull();
     expect(blockInsideButtons(container)).toEqual([]);
   });
 });

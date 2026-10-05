@@ -65,7 +65,9 @@ describe("conseils loader → headers — aucune erreur levée n'est mise en cac
     ["endpoint R3 sans guide", 200, { data: null }, 404],
     ["endpoint R3 500", 500, {}, 503],
   ])("%s → no-store", async (_cas, status, body, expected) => {
-    fetchMock.mockResolvedValue(
+    // Une réponse neuve par appel : un guide absent déclenche aussi la
+    // recherche du ba_alias (2e fetch), qui ne peut pas relire un corps consommé.
+    fetchMock.mockImplementation(async () =>
       new Response(JSON.stringify(body), {
         status,
         headers: { "Content-Type": "application/json" },

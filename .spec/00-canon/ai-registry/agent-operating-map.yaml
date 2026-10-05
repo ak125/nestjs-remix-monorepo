@@ -425,17 +425,27 @@ department_handoffs:
       scripts:
         - backend/src/modules/health/health.module.ts
 
+  # defined: Zod contract + producer + consumer (Command Center safeParse) in main.
+  # Served where the Command Center runs with service_role (DEV); PREPROD reads as
+  # anon → verdict UNKNOWN (observable, never green); PROD Command Center disabled.
+  # `state` describes the wiring, not the verdict: NOT_CERTIFIED stays a live action.
   - id: data-to-sales-tracking-integrity
     from: data
     to: sales
     contract_ref: tracking-integrity-verdict.v1
-    contract_status: planned
+    contract_status: defined
     purpose: "Certifier la fiabilité des métriques funnel avant décision commerciale (data conditionne les autres leads)"
     gate: human_review_or_owner_go
-    state: PARTIAL
+    state: EXISTS
     evidence:
       scripts:
+        - backend/src/modules/analytics/tracking-integrity/tracking-integrity-verdict.schema.ts
+        - backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts
+        - backend/src/modules/admin/services/command-center-action-rules/tracking-integrity-action.rules.ts
         - backend/src/modules/seo-monitoring/services/funnel-events.service.ts
+      tables:
+        - __seo_event_log
+        - ___xtr_order
 
   # wiki produces validated knowledge; seo (next seed) is its consumer (ADR-031/033).
   - id: wiki-to-seo-readiness
