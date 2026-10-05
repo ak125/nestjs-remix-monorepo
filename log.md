@@ -501,3 +501,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/command-center-department-reports`
 - **Décision** : chore(registry): resync L1+L3 projections (+1 other commit)
 - **Sortie** : PR aucune | commits 0edb6c9fd e30e9a3ae
+
+## 2026-10-05 — feat/command-center-department-reports (auto)
+
+- **Branche** : `feat/command-center-department-reports`
+- **Décision** : chore(registry): resync L1+L3 projections (+5 other commits)
+- **Sortie** : PR #1735 | commits 0d7c3c0d2 32549c07f 9fb7279bc 4af8f3f97 0edb6c9fd e30e9a3ae
