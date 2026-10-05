@@ -1632,6 +1632,7 @@
         "backend/src/auth/auth.module.ts",
         "backend/src/auth/legacy-internal-key.guard.test.ts",
         "backend/src/auth/legacy-internal-key.guard.ts",
+        "backend/src/modules/admin/controllers/internal-command-center.controller.ts",
         "backend/src/modules/admin/controllers/internal-enrich.controller.ts",
         "backend/src/modules/admin/controllers/internal-pipeline.controller.ts",
         "backend/src/modules/admin/controllers/internal-seo-audit.controller.ts",
@@ -6160,6 +6161,7 @@
         "backend/src/modules/admin/controllers/configuration.controller.ts",
         "backend/src/modules/admin/controllers/control-plane.controller.ts",
         "backend/src/modules/admin/controllers/governance-matrix.controller.ts",
+        "backend/src/modules/admin/controllers/internal-command-center.controller.ts",
         "backend/src/modules/admin/controllers/internal-enrich.controller.ts",
         "backend/src/modules/admin/controllers/internal-pipeline.controller.ts",
         "backend/src/modules/admin/controllers/internal-seo-audit.controller.ts",
@@ -6239,7 +6241,7 @@
         "backend/src/workers/worker.module.ts"
       ],
       "kind": "service",
-      "loc": 334,
+      "loc": 336,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/admin.module.ts",
       "risk": "low",
@@ -7055,6 +7057,31 @@
       "loc": 43,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/controllers/governance-matrix.controller.ts",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/admin/controllers/internal-command-center.controller.ts",
+      "importedBy": [
+        "backend/src/modules/admin/admin.module.ts"
+      ],
+      "imports": [
+        "@repo/registry",
+        "backend/src/auth/internal-api-key.guard.ts",
+        "backend/src/modules/admin/services/command-center-reader.service.ts"
+      ],
+      "kind": "controller",
+      "loc": 35,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/admin/controllers/internal-command-center.controller.ts",
       "risk": "low",
       "runtime": true,
       "schemaVersion": "1.0.0",
@@ -8014,7 +8041,7 @@
         "backend/src/modules/admin/services/command-center-kpi.service.ts"
       ],
       "kind": "service",
-      "loc": 185,
+      "loc": 194,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/command-center-action-rules/department-report.rules.ts",
       "risk": "low",
@@ -8142,7 +8169,7 @@
         "backend/src/modules/analytics/index.ts"
       ],
       "kind": "service",
-      "loc": 102,
+      "loc": 104,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/command-center-action-rules/tracking-integrity-action.rules.ts",
       "risk": "low",
@@ -8389,7 +8416,8 @@
       "id": "backend/src/modules/admin/services/command-center-reader.service.ts",
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
-        "backend/src/modules/admin/controllers/command-center.controller.ts"
+        "backend/src/modules/admin/controllers/command-center.controller.ts",
+        "backend/src/modules/admin/controllers/internal-command-center.controller.ts"
       ],
       "imports": [
         "@repo/registry",
@@ -8402,7 +8430,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 473,
+      "loc": 502,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/command-center-reader.service.ts",
       "risk": "low",
@@ -38648,9 +38676,28 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 225,
+      "loc": 291,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/command-center-department-report.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/command-center-digest.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 186,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/command-center-digest.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -38667,7 +38714,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 312,
+      "loc": 330,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/command-center-kpi.service.test.ts",
       "risk": "low",
@@ -38705,7 +38752,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 352,
+      "loc": 356,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/command-center-reader.service.test.ts",
       "risk": "low",
@@ -65703,7 +65750,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 373,
+      "loc": 400,
       "owner": "__unassigned__",
       "path": "packages/registry/src/command-center/snapshot.ts",
       "risk": "low",
@@ -65855,7 +65902,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 210,
+      "loc": 213,
       "owner": "__unassigned__",
       "path": "packages/registry/src/index.ts",
       "risk": "low",

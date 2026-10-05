@@ -29454,6 +29454,7 @@
         "backend/src/auth/auth.module.ts",
         "backend/src/auth/legacy-internal-key.guard.test.ts",
         "backend/src/auth/legacy-internal-key.guard.ts",
+        "backend/src/modules/admin/controllers/internal-command-center.controller.ts",
         "backend/src/modules/admin/controllers/internal-enrich.controller.ts",
         "backend/src/modules/admin/controllers/internal-pipeline.controller.ts",
         "backend/src/modules/admin/controllers/internal-seo-audit.controller.ts",
@@ -34119,6 +34120,7 @@
         "backend/src/modules/admin/controllers/configuration.controller.ts",
         "backend/src/modules/admin/controllers/control-plane.controller.ts",
         "backend/src/modules/admin/controllers/governance-matrix.controller.ts",
+        "backend/src/modules/admin/controllers/internal-command-center.controller.ts",
         "backend/src/modules/admin/controllers/internal-enrich.controller.ts",
         "backend/src/modules/admin/controllers/internal-pipeline.controller.ts",
         "backend/src/modules/admin/controllers/internal-seo-audit.controller.ts",
@@ -34198,7 +34200,7 @@
         "backend/src/workers/worker.module.ts"
       ],
       "kind": "service",
-      "loc": 334,
+      "loc": 336,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/admin.module.ts",
       "risk": "medium",
@@ -35045,6 +35047,32 @@
       "loc": 43,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/controllers/governance-matrix.controller.ts",
+      "risk": "medium",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
+      "id": "backend/src/modules/admin/controllers/internal-command-center.controller.ts",
+      "importedBy": [
+        "backend/src/modules/admin/admin.module.ts"
+      ],
+      "imports": [
+        "@repo/registry",
+        "backend/src/auth/internal-api-key.guard.ts",
+        "backend/src/modules/admin/services/command-center-reader.service.ts"
+      ],
+      "kind": "controller",
+      "loc": 35,
+      "owner": "@ak125/admin-team",
+      "path": "backend/src/modules/admin/controllers/internal-command-center.controller.ts",
       "risk": "medium",
       "runtime": true,
       "schemaVersion": "1.0.0",
@@ -36041,7 +36069,7 @@
         "backend/src/modules/admin/services/command-center-kpi.service.ts"
       ],
       "kind": "service",
-      "loc": 185,
+      "loc": 194,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/command-center-action-rules/department-report.rules.ts",
       "risk": "medium",
@@ -36174,7 +36202,7 @@
         "backend/src/modules/analytics/index.ts"
       ],
       "kind": "service",
-      "loc": 102,
+      "loc": 104,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/command-center-action-rules/tracking-integrity-action.rules.ts",
       "risk": "medium",
@@ -36430,7 +36458,8 @@
       "id": "backend/src/modules/admin/services/command-center-reader.service.ts",
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
-        "backend/src/modules/admin/controllers/command-center.controller.ts"
+        "backend/src/modules/admin/controllers/command-center.controller.ts",
+        "backend/src/modules/admin/controllers/internal-command-center.controller.ts"
       ],
       "imports": [
         "@repo/registry",
@@ -36443,7 +36472,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 473,
+      "loc": 502,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/command-center-reader.service.ts",
       "risk": "medium",
@@ -67752,9 +67781,29 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 225,
+      "loc": 291,
       "owner": "@ak125",
       "path": "backend/tests/unit/command-center-department-report.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/command-center-digest.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 186,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/command-center-digest.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -67772,7 +67821,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 312,
+      "loc": 330,
       "owner": "@ak125",
       "path": "backend/tests/unit/command-center-kpi.service.test.ts",
       "risk": "medium",
@@ -67812,7 +67861,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 352,
+      "loc": 356,
       "owner": "@ak125",
       "path": "backend/tests/unit/command-center-reader.service.test.ts",
       "risk": "medium",
@@ -95898,7 +95947,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 373,
+      "loc": 400,
       "owner": "@ak125",
       "path": "packages/registry/src/command-center/snapshot.ts",
       "risk": "high",
@@ -96058,7 +96107,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 210,
+      "loc": 213,
       "owner": "@ak125",
       "path": "packages/registry/src/index.ts",
       "risk": "high",
@@ -102919,11 +102968,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "4516d35aa9c99283dc75cbba2227314020531a72cca2acd4513571dd6ca7d208",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "e2f95995df95c08d352ea1508bbe97346a3d63ad2b89407eddb2700b96638059",
+      "audit/registry/files.json": "1f4ba7d330b3a32d5a1777a24def389482e283f718f8df1c4a553799364e799c",
       "audit/registry/rpc.json": "5ee2a4b80a43764dda2c436d7b7b49e09ba4b1bd2e746864e869ecc7ac556049",
-      "audit/registry/runtime.json": "6be3a4960e4d4d9048eb530ffbf3a1588ed108663b568a27391f989ef08ef437"
+      "audit/registry/runtime.json": "aa553d2735271a86c3a725e0faf19b5a65a1da071a3ad7c95eb843e3a9e2492e"
     },
-    "sotFingerprint": "733721189bdb"
+    "sotFingerprint": "a780a6df48ea"
   },
   "runtime": [
     {
@@ -103569,6 +103618,7 @@
         "runtime:backend/src/modules/admin/controllers/configuration.controller.ts",
         "runtime:backend/src/modules/admin/controllers/control-plane.controller.ts",
         "runtime:backend/src/modules/admin/controllers/governance-matrix.controller.ts",
+        "runtime:backend/src/modules/admin/controllers/internal-command-center.controller.ts",
         "runtime:backend/src/modules/admin/controllers/internal-enrich.controller.ts",
         "runtime:backend/src/modules/admin/controllers/internal-pipeline.controller.ts",
         "runtime:backend/src/modules/admin/controllers/internal-seo-audit.controller.ts",
@@ -103962,6 +104012,18 @@
       "id": "runtime:backend/src/modules/admin/controllers/governance-matrix.controller.ts",
       "kind": "nestjs-controller",
       "path": "backend/src/modules/admin/controllers/governance-matrix.controller.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/auth/internal-api-key.guard.ts",
+        "runtime:backend/src/modules/admin/services/command-center-reader.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/admin/controllers/internal-command-center.controller.ts",
+      "kind": "nestjs-controller",
+      "path": "backend/src/modules/admin/controllers/internal-command-center.controller.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
