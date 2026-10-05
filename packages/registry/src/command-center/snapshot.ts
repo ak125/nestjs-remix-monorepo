@@ -280,14 +280,88 @@ export const CcActionV2Schema = z
     evidence: z.array(z.string()),
     next_step: z.string(),
     details: z.array(CcSeoDetailSchema).nullable(), // PR2 drill-down (SEO only)
+    // true = the next step is the owner's decision (STOP zone: price/stock, cart/order,
+    // indexed SEO, or an owner flag such as SUPPLIER_TRUTH_SYNC_ENABLED); false =
+    // measurement/reliability work. Declared by each rule, never inferred from action_type.
+    owner_go_required: z.boolean(),
   })
   .strict();
 export type CcActionV2 = z.infer<typeof CcActionV2Schema>;
+
+/**
+ * Department report — the 12-field "Vue 5" format of
+ * audit/automecanik-departments-map.md (narrative SoT of the format), computed by
+ * the backend at request time from data the Command Center already reads: the
+ * department's measured KPI (if a producer exists) and its open actions.
+ * An unmeasurable field is explicit (NON_MESURE / INCONNUE / null), never invented.
+ * Enum values are the Vue 5 vocabulary (Fort/Moyen/Faible/Critique, mieux/stable/pire,
+ * REUSE/IMPROVE/CREATE/PAUSE, faible/moyen/haut). The machine emits REUSE or
+ * IMPROVE only: CREATE needs a proven gap score (Vue 4) and PAUSE an owner
+ * decision — both stay in the enum for human-written reports.
+ */
+export const DeptReportScoreSchema = z.enum([
+  "FORT",
+  "MOYEN",
+  "FAIBLE",
+  "CRITIQUE",
+  "NON_MESURE",
+]);
+export const DeptReportEvolutionSchema = z.enum([
+  "MIEUX",
+  "STABLE",
+  "PIRE",
+  "INCONNUE",
+]);
+export const DeptReportDecisionSchema = z.enum([
+  "REUSE",
+  "IMPROVE",
+  "CREATE",
+  "PAUSE",
+]);
+export const DeptReportRiskSchema = z.enum(["FAIBLE", "MOYEN", "HAUT"]);
+
+export const CcDepartmentReportSchema = z
+  .object({
+    department: z.string(),
+    label: z.string(),
+    priority: z.enum(["P0", "P1", "P2", "P3"]).nullable(),
+    period: z
+      .object({
+        as_of: z.string(), // = generated_at of the response
+        window_days: z.number().int().positive().nullable(), // null = no measured KPI
+      })
+      .strict(),
+    kpi: z
+      .object({
+        id: z.string().nullable(), // kpi_primary of the operating map
+        label: z.string().nullable(), // label of the measured KPI, null if unmeasured
+        // MESURE = value read; ILLISIBLE = producer exists but its source failed;
+        // SANS_PRODUCTEUR = nothing measures this KPI yet.
+        measure: z.enum(["MESURE", "ILLISIBLE", "SANS_PRODUCTEUR"]),
+        value: z.number().nullable(),
+        unit: z.string().nullable(),
+        previous_value: z.number().nullable(), // same KPI on the previous window
+      })
+      .strict(),
+    score: DeptReportScoreSchema,
+    evolution: DeptReportEvolutionSchema,
+    evidence: z.array(z.string()),
+    gap: z.string().nullable(),
+    probable_cause: z.string().nullable(),
+    decision: DeptReportDecisionSchema,
+    risk: DeptReportRiskSchema,
+    owner_go_required: z.boolean(),
+    next_evidence: z.string(),
+    open_action_ids: z.array(z.string()), // ids in action_queue, highest score first
+  })
+  .strict();
+export type CcDepartmentReport = z.infer<typeof CcDepartmentReportSchema>;
 
 export const CommandCenterResponseSchema = CommandCenterSnapshotSchema.extend({
   degraded: z.boolean(),
   mode: CommandCenterModeSchema,
   action_queue: z.array(CcActionV2Schema),
+  department_reports: z.array(CcDepartmentReportSchema), // full mode only, else []
   generated_at: z.string(),
   git_sha: z.string().nullable(),
   stale_status: StaleStatusSchema,

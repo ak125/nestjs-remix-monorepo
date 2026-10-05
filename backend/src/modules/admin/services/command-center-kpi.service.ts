@@ -33,6 +33,20 @@ export interface LiveExecutiveKpi {
   certified: boolean;
 }
 
+/**
+ * Un indicateur mesuré + sa valeur sur la fenêtre précédente de même durée.
+ * Alimente le rapport de département (Vue 5, champ « Évolution ») sans rien
+ * persister : la fenêtre précédente est relue en base à chaque requête.
+ * `previous_value` null = pas de comparaison possible (lecture en échec), jamais 0.
+ */
+export interface LiveKpiMeasure {
+  kpi: LiveExecutiveKpi;
+  window_days: number;
+  previous_value: number | null;
+  /** Sens d'amélioration : `higher` = une hausse de `value` est un progrès. */
+  better: 'higher' | 'lower';
+}
+
 /** Les seules colonnes lues. */
 export interface OrderPaymentRow {
   ord_ords_id: string | null;
@@ -153,27 +167,44 @@ export class CommandCenterKpiService extends SupabaseBaseService {
   async computeLiveKpis(
     mode: string,
     now: Date = new Date(),
-  ): Promise<LiveExecutiveKpi[]> {
+  ): Promise<LiveKpiMeasure[]> {
     if (mode !== 'full') return [];
-    return [toPaymentsKeptKpi(await this.readPaymentsKept(now))];
+    const windowMs = CommandCenterKpiService.WINDOW_DAYS * 86_400_000;
+    const since = new Date(now.getTime() - windowMs).toISOString();
+    const previousSince = new Date(now.getTime() - 2 * windowMs).toISOString();
+    const [current, previous] = await Promise.all([
+      this.readPaymentsKept(since),
+      this.readPaymentsKept(previousSince, since),
+    ]);
+    const kpi = toPaymentsKeptKpi(current);
+    return [
+      {
+        kpi,
+        window_days: CommandCenterKpiService.WINDOW_DAYS,
+        previous_value: kpi.value == null ? null : (previous?.kept ?? null),
+        better: 'higher',
+      },
+    ];
   }
 
+  /** Commandes passées dans [from, to) ; `to` absent = jusqu'à maintenant. */
   private async readPaymentsKept(
-    now: Date,
+    from: string,
+    to?: string,
   ): Promise<PaymentsKeptCounts | null> {
-    const since = new Date(
-      now.getTime() - CommandCenterKpiService.WINDOW_DAYS * 86_400_000,
-    ).toISOString();
     // ord_date est un texte ISO-8601 UTC (100 % des lignes au 2026-10-04) : l'ordre
     // lexical est l'ordre chronologique.
-    const { data, error, count } = await this.supabase
+    let query = this.supabase
       .from(TABLES.xtr_order)
       .select(
         'ord_ords_id, ord_is_pay, ord_date_pay, payment_confirmed, ord_cancel_date',
         { count: 'exact' },
       )
-      .gte('ord_date', since)
-      .limit(CommandCenterKpiService.MAX_ROWS);
+      .gte('ord_date', from);
+    if (to) query = query.lt('ord_date', to);
+    const { data, error, count } = await query.limit(
+      CommandCenterKpiService.MAX_ROWS,
+    );
     if (error) {
       this.logger.warn(
         `[command-center-kpi] payments_kept indisponible — lecture ___xtr_order en échec (${error.code ?? 'sans code'} : ${error.message})`,

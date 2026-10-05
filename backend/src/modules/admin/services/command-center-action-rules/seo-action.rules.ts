@@ -197,6 +197,7 @@ export function buildSeoOpportunityActions(
         ],
         next_step:
           "Vérifier l'ingestion GSC (gsc-daily-fetcher, rattrapage des jours manquants) et appliquer les migrations rpc_seo_low_ctr_v4 si absentes.",
+        owner_go_required: false,
       },
     ];
   }
@@ -300,6 +301,7 @@ export function buildSeoOpportunityActions(
         .slice(0, 3)
         .map((r) => `${r.page} (${r.impressions} imp, ${r.clicks} clic)`),
       next_step: m.step,
+      owner_go_required: true, // réécrire title/meta/H1 de pages indexées = zone STOP SEO
       details,
     });
   }
