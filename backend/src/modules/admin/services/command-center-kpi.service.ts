@@ -3,6 +3,25 @@ import { ConfigService } from '@nestjs/config';
 import { TABLES } from '@repo/database-types';
 import { OrderStatus } from '@repo/domain-commerce';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import {
+  TrackingIntegrityService,
+  TrackingIntegrityVerdictV1Schema,
+  type TrackingIntegrityVerdictV1,
+} from '../../analytics';
+import {
+  countDiagnosticToProduct,
+  countPagesGeneratingAtc,
+  firstVisitBySession,
+  toDiagnosticToProductKpi,
+  toMetricReliabilityKpi,
+  toPagesGeneratingAtcKpi,
+  type DiagnosticToProductCounts,
+  type SessionEventRow,
+} from './command-center-action-rules/department-kpi.rules';
+import type {
+  LiveExecutiveKpi,
+  LiveKpiMeasure,
+} from './command-center-action-rules/live-kpi';
 
 /**
  * Indicateurs MESURÉS en base pour le Command Center (`executive_kpis`, source `db`).
@@ -11,41 +30,20 @@ import { SupabaseBaseService } from '../../../database/services/supabase-base.se
  * CommandCenterReaderService ajoute ceux-ci à la requête, en mode `full` seulement
  * (même règle que CommandCenterActionsService : light/disabled n'exposent rien).
  *
- * Premier indicateur : `payments_kept`, KPI primaire du département Ventes
- * (.spec/00-canon/ai-registry/agent-operating-map.yaml, `sales.kpi_primary`).
- * Définition reprise de audit/sales-funnel-scorecard.md : commandes passées sur
- * 30 jours glissants, payées puis non annulées.
+ * KPI primaires de département (.spec/00-canon/ai-registry/agent-operating-map.yaml,
+ * `kpi_primary`), chacun sur 30 jours glissants + la fenêtre précédente :
+ *   - `payments_kept` (Ventes) : définition reprise de audit/sales-funnel-scorecard.md,
+ *     commandes passées, payées puis non annulées. Lecture seule de ___xtr_order,
+ *     cinq colonnes d'état (ni montant, ni client) ;
+ *   - `metric_reliability` (Data), `pages_generating_atc` (Pages & SEO),
+ *     `diagnostic_to_product` (Diagnostic) : règles et définitions dans
+ *     command-center-action-rules/department-kpi.rules.ts. Lecture seule du verdict
+ *     TrackingIntegrityService et de __seo_event_log (session, date, page source).
  *
- * Lecture seule de ___xtr_order, cinq colonnes d'état (ni montant, ni client).
  * Source indisponible → value null + status UNKNOWN + avertissement journalisé,
  * jamais un zéro fabriqué. En PREPROD le backend lit en anon (ADR-028) et
  * ___xtr_order n'a qu'une policy service_role : la lecture lève 42501 → UNKNOWN.
  */
-
-/** Forme d'un indicateur exécutif — miroir de CcExecutiveKpiSchema (@repo/registry). */
-export interface LiveExecutiveKpi {
-  id: string;
-  label: string;
-  value: number | null;
-  unit?: string;
-  status: 'OK' | 'WARNING' | 'CRITICAL' | 'UNKNOWN';
-  source: 'db';
-  certified: boolean;
-}
-
-/**
- * Un indicateur mesuré + sa valeur sur la fenêtre précédente de même durée.
- * Alimente le rapport de département (Vue 5, champ « Évolution ») sans rien
- * persister : la fenêtre précédente est relue en base à chaque requête.
- * `previous_value` null = pas de comparaison possible (lecture en échec), jamais 0.
- */
-export interface LiveKpiMeasure {
-  kpi: LiveExecutiveKpi;
-  window_days: number;
-  previous_value: number | null;
-  /** Sens d'amélioration : `higher` = une hausse de `value` est un progrès. */
-  better: 'higher' | 'lower';
-}
 
 /** Les seules colonnes lues. */
 export interface OrderPaymentRow {
@@ -150,6 +148,26 @@ export function toPaymentsKeptKpi(
   };
 }
 
+/** Réponse PostgREST réduite à ce que readAll contrôle. */
+interface ReadResponse {
+  data: unknown;
+  error: { code?: string; message: string } | null;
+  count: number | null;
+}
+
+function measure(
+  kpi: LiveExecutiveKpi,
+  previous: number | null,
+  windowDays: number,
+): LiveKpiMeasure {
+  return {
+    kpi,
+    window_days: windowDays,
+    previous_value: kpi.value == null ? null : previous,
+    better: 'higher',
+  };
+}
+
 @Injectable()
 export class CommandCenterKpiService extends SupabaseBaseService {
   protected readonly logger = new Logger(CommandCenterKpiService.name);
@@ -157,8 +175,15 @@ export class CommandCenterKpiService extends SupabaseBaseService {
   static readonly WINDOW_DAYS = 30;
   /** Plafond PostgREST : au-delà, la lecture serait tronquée et la mesure fausse. */
   private static readonly MAX_ROWS = 1000;
+  /** Lots `in(session_id, …)` : un UUID ≈ 37 caractères, l'URL PostgREST est bornée. */
+  private static readonly SESSION_CHUNK = 100;
+  private static readonly SESSION_COLUMNS =
+    'session_id:payload->>session_id, created_at';
 
-  constructor(configService: ConfigService) {
+  constructor(
+    configService: ConfigService,
+    private readonly trackingIntegrity: TrackingIntegrityService,
+  ) {
     super(configService);
   }
 
@@ -169,21 +194,52 @@ export class CommandCenterKpiService extends SupabaseBaseService {
     now: Date = new Date(),
   ): Promise<LiveKpiMeasure[]> {
     if (mode !== 'full') return [];
-    const windowMs = CommandCenterKpiService.WINDOW_DAYS * 86_400_000;
-    const since = new Date(now.getTime() - windowMs).toISOString();
+    const days = CommandCenterKpiService.WINDOW_DAYS;
+    const windowMs = days * 86_400_000;
+    const sinceDate = new Date(now.getTime() - windowMs);
+    const since = sinceDate.toISOString();
     const previousSince = new Date(now.getTime() - 2 * windowMs).toISOString();
-    const [current, previous] = await Promise.all([
+    const [
+      payments,
+      paymentsBefore,
+      verdict,
+      verdictBefore,
+      pages,
+      pagesBefore,
+      diagnostic,
+      diagnosticBefore,
+    ] = await Promise.all([
       this.readPaymentsKept(since),
       this.readPaymentsKept(previousSince, since),
+      this.readTrackingVerdict(now),
+      this.readTrackingVerdict(sinceDate),
+      this.readPagesGeneratingAtc(since),
+      this.readPagesGeneratingAtc(previousSince, since),
+      this.readDiagnosticToProduct(since),
+      this.readDiagnosticToProduct(previousSince, since),
     ]);
-    const kpi = toPaymentsKeptKpi(current);
+
+    // Le verdict porte sa propre fenêtre : la comparaison n'a de sens que si la
+    // précédente s'arrête exactement où commence la courante.
+    const verdictDays = verdict?.window.days ?? days;
+    const verdictsContiguous =
+      verdict != null && verdictBefore?.window.to === verdict.window.from;
+
     return [
-      {
-        kpi,
-        window_days: CommandCenterKpiService.WINDOW_DAYS,
-        previous_value: kpi.value == null ? null : (previous?.kept ?? null),
-        better: 'higher',
-      },
+      measure(toPaymentsKeptKpi(payments), paymentsBefore?.kept ?? null, days),
+      measure(
+        toMetricReliabilityKpi(verdict, verdictDays),
+        verdictsContiguous
+          ? toMetricReliabilityKpi(verdictBefore, verdictDays).value
+          : null,
+        verdictDays,
+      ),
+      measure(toPagesGeneratingAtcKpi(pages, days), pagesBefore, days),
+      measure(
+        toDiagnosticToProductKpi(diagnostic, days),
+        diagnosticBefore?.reachedProduct ?? null,
+        days,
+      ),
     ];
   }
 
@@ -202,22 +258,126 @@ export class CommandCenterKpiService extends SupabaseBaseService {
       )
       .gte('ord_date', from);
     if (to) query = query.lt('ord_date', to);
-    const { data, error, count } = await query.limit(
-      CommandCenterKpiService.MAX_ROWS,
+    const rows = await this.readAll<OrderPaymentRow>(
+      'payments_kept',
+      TABLES.xtr_order,
+      query.limit(CommandCenterKpiService.MAX_ROWS),
     );
+    return rows && countPaymentsKept(rows);
+  }
+
+  /** Verdict Data → Ventes à la date `at` ; hors contrat ou en échec → null. */
+  private async readTrackingVerdict(
+    at: Date,
+  ): Promise<TrackingIntegrityVerdictV1 | null> {
+    try {
+      const parsed = TrackingIntegrityVerdictV1Schema.safeParse(
+        await this.trackingIntegrity.evaluate(at),
+      );
+      if (parsed.success) return parsed.data;
+      this.logger.warn(
+        `[command-center-kpi] metric_reliability indisponible — verdict hors contrat (${parsed.error.issues.map((i) => i.message).join(' ; ')})`,
+      );
+    } catch (e) {
+      this.logger.warn(
+        `[command-center-kpi] metric_reliability indisponible — ${e instanceof Error ? e.message : String(e)}`,
+      );
+    }
+    return null;
+  }
+
+  private async readPagesGeneratingAtc(
+    from: string,
+    to?: string,
+  ): Promise<number | null> {
+    const rows = await this.readEvents<{ source_url: string | null }>(
+      'pages_generating_atc',
+      'r2_add_to_cart',
+      'source_url:payload->>source_url',
+      from,
+      to,
+    );
+    return rows && countPagesGeneratingAtc(rows);
+  }
+
+  private async readDiagnosticToProduct(
+    from: string,
+    to?: string,
+  ): Promise<DiagnosticToProductCounts | null> {
+    const visits = await this.readEvents<SessionEventRow>(
+      'diagnostic_to_product',
+      'diag_hub_view',
+      CommandCenterKpiService.SESSION_COLUMNS,
+      from,
+      to,
+    );
+    if (!visits) return null;
+    const firstVisit = firstVisitBySession(visits);
+    const sessions = [...firstVisit.keys()];
+    const views: SessionEventRow[] = [];
+    const chunk = CommandCenterKpiService.SESSION_CHUNK;
+    for (let i = 0; i < sessions.length; i += chunk) {
+      const rows = await this.readEvents<SessionEventRow>(
+        'diagnostic_to_product',
+        'r2_view',
+        CommandCenterKpiService.SESSION_COLUMNS,
+        from,
+        to,
+        sessions.slice(i, i + chunk),
+      );
+      if (!rows) return null;
+      views.push(...rows);
+    }
+    return countDiagnosticToProduct(firstVisit, views);
+  }
+
+  /** Événements `eventType` créés dans [from, to), éventuellement restreints à des sessions. */
+  private readEvents<T>(
+    kpi: string,
+    eventType: string,
+    columns: string,
+    from: string,
+    to?: string,
+    sessions?: string[],
+  ): Promise<T[] | null> {
+    let query = this.supabase
+      // Nom littéral : l'inventaire db-usage (build-db-usage-map.js) le rattache à ce service.
+      .from('__seo_event_log')
+      .select(columns, { count: 'exact' })
+      .eq('event_type', eventType)
+      .gte('created_at', from);
+    if (to) query = query.lt('created_at', to);
+    if (sessions) query = query.in('payload->>session_id', sessions);
+    return this.readAll<T>(
+      kpi,
+      `__seo_event_log (${eventType})`,
+      query.limit(CommandCenterKpiService.MAX_ROWS),
+    );
+  }
+
+  /**
+   * Lecture complète ou rien : erreur, ou `count` exact ≠ lignes reçues (plafond
+   * PostgREST) → null et avertissement. Jamais de mesure sur une lecture partielle.
+   */
+  private async readAll<T>(
+    kpi: string,
+    source: string,
+    query: PromiseLike<ReadResponse>,
+  ): Promise<T[] | null> {
+    const { data, error, count } = await query;
     if (error) {
       this.logger.warn(
-        `[command-center-kpi] payments_kept indisponible — lecture ___xtr_order en échec (${error.code ?? 'sans code'} : ${error.message})`,
+        `[command-center-kpi] ${kpi} indisponible — lecture ${source} en échec (${error.code ?? 'sans code'} : ${error.message})`,
       );
       return null;
     }
-    const rows = (data ?? []) as OrderPaymentRow[];
+    const rows = (data ?? []) as T[];
     if (count !== rows.length) {
       this.logger.warn(
-        `[command-center-kpi] payments_kept indisponible — lecture incomplète (${rows.length} lignes reçues sur ${count ?? 'un total inconnu'})`,
+        `[command-center-kpi] ${kpi} indisponible — lecture ${source} incomplète (${rows.length} lignes reçues sur ${count ?? 'un total inconnu'})`,
       );
       return null;
     }
-    return countPaymentsKept(rows);
+    return rows;
   }
 }

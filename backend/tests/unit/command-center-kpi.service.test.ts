@@ -1,5 +1,7 @@
 /**
- * CommandCenterKpiService — `payments_kept` (KPI primaire du département Ventes).
+ * CommandCenterKpiService — `payments_kept` (KPI primaire du département Ventes)
+ * et lectures des KPI Data / Pages & SEO / Diagnostic (règles pures testées dans
+ * command-center-department-kpi.rules.test.ts).
  *
  * Deux garanties :
  *   1. la classification reproduit les cas réels relevés en base le 2026-10-04
@@ -11,12 +13,18 @@
  */
 import { TABLES } from '@repo/database-types';
 import {
+  evaluateTrackingIntegrity,
+  trackingWindow,
+  unknownVerdict,
+} from '../../src/modules/analytics/tracking-integrity/tracking-integrity.service';
+import {
   CommandCenterKpiService,
   classifyOrderPayment,
   countPaymentsKept,
   toPaymentsKeptKpi,
   type OrderPaymentRow,
 } from '../../src/modules/admin/services/command-center-kpi.service';
+import type { LiveKpiMeasure } from '../../src/modules/admin/services/command-center-action-rules/live-kpi';
 
 const mockConfigService = {
   get: jest.fn().mockImplementation((key: string) => {
@@ -42,31 +50,84 @@ function row(overrides: Partial<OrderPaymentRow>): OrderPaymentRow {
 }
 
 type ReadResult = {
-  data: OrderPaymentRow[] | null;
+  data: unknown[] | null;
   count: number | null;
   error: { code?: string; message: string } | null;
 };
 
-/**
- * Chaîne supabase thenable : `await from().select().gte()[.lt()].limit()`.
- * Chaque lecture consomme le résultat suivant (fenêtre courante puis précédente) ;
- * le dernier est rejoué s'il en manque.
- */
-function fakeSupabase(...results: ReadResult[]) {
-  const chain: Record<string, jest.Mock | unknown> = {};
-  for (const m of ['from', 'select', 'gte', 'lt', 'limit']) {
-    chain[m] = jest.fn().mockReturnValue(chain);
-  }
-  let read = 0;
-  chain.then = (resolve: (v: ReadResult) => unknown) =>
-    resolve(results[Math.min(read++, results.length - 1)]);
-  return chain as Record<'from' | 'select' | 'gte' | 'lt' | 'limit', jest.Mock>;
+const EMPTY: ReadResult = { data: [], count: 0, error: null };
+const METHODS = ['select', 'eq', 'gte', 'lt', 'in', 'limit'] as const;
+type Method = (typeof METHODS)[number];
+
+/** Ce qu'une lecture de __seo_event_log a demandé. */
+interface EventQuery {
+  eventType: unknown;
+  gte?: unknown;
+  lt?: unknown;
+  sessions?: string[];
 }
 
-function makeService(supabase: ReturnType<typeof fakeSupabase>) {
+/**
+ * Supabase simulé, une chaîne thenable par `from()`. ___xtr_order : chaque
+ * lecture consomme le résultat suivant de `orders` (fenêtre courante puis
+ * précédente), le dernier est rejoué. __seo_event_log : `events(query)` répond,
+ * vide par défaut. Les méthodes sont des espions partagés par toutes les chaînes.
+ */
+function fakeDb({
+  orders = [EMPTY],
+  events = () => EMPTY,
+}: {
+  orders?: ReadResult[];
+  events?: (q: EventQuery) => ReadResult;
+}) {
+  const spies = Object.fromEntries(
+    METHODS.map((m) => [m, jest.fn()]),
+  ) as Record<Method, jest.Mock>;
+  let orderReads = 0;
+  const from = jest.fn((table: string) => {
+    const q: EventQuery = { eventType: undefined };
+    const chain: Record<string, unknown> = {
+      then: (resolve: (r: ReadResult) => unknown) =>
+        resolve(
+          table === TABLES.xtr_order
+            ? orders[Math.min(orderReads++, orders.length - 1)]
+            : events(q),
+        ),
+    };
+    for (const m of METHODS) {
+      chain[m] = (...args: unknown[]) => {
+        spies[m](...args);
+        if (m === 'eq' && args[0] === 'event_type') q.eventType = args[1];
+        if (m === 'gte') q.gte = args[1];
+        if (m === 'lt') q.lt = args[1];
+        if (m === 'in') q.sessions = args[1] as string[];
+        return chain;
+      };
+    }
+    return chain;
+  });
+  return { from, ...spies };
+}
+
+/** Raccourci : seules les lectures ___xtr_order comptent. */
+function fakeSupabase(...orders: ReadResult[]) {
+  return fakeDb({ orders });
+}
+
+type FakeDb = ReturnType<typeof fakeDb>;
+
+function makeService(
+  supabase: FakeDb,
+  trackingIntegrity: { evaluate: jest.Mock } = {
+    evaluate: jest.fn(async (at: Date) =>
+      unknownVerdict(trackingWindow(at), 'aucune donnée'),
+    ),
+  },
+) {
   const service = new (CommandCenterKpiService as unknown as new (
     c: unknown,
-  ) => CommandCenterKpiService)(mockConfigService);
+    t: unknown,
+  ) => CommandCenterKpiService)(mockConfigService, trackingIntegrity);
   Object.defineProperty(service, 'supabase', {
     get: () => supabase,
     configurable: true,
@@ -273,11 +334,9 @@ describe('CommandCenterKpiService.computeLiveKpis', () => {
       'ord_date',
       '2026-08-05T12:00:00.000Z',
     );
-    expect(supabase.lt).toHaveBeenCalledTimes(1);
-    expect(supabase.lt).toHaveBeenCalledWith(
-      'ord_date',
-      '2026-09-04T12:00:00.000Z',
-    );
+    expect(
+      supabase.lt.mock.calls.filter(([column]) => column === 'ord_date'),
+    ).toEqual([['ord_date', '2026-09-04T12:00:00.000Z']]);
     expect(measure).toMatchObject({
       window_days: 30,
       previous_value: 2,
@@ -326,4 +385,244 @@ describe('CommandCenterKpiService.computeLiveKpis', () => {
       expect(supabase.from).not.toHaveBeenCalled();
     },
   );
+});
+
+describe('CommandCenterKpiService — Data, Pages & SEO, Diagnostic', () => {
+  const NOW = new Date('2026-10-04T12:00:00.000Z');
+  const SINCE = '2026-09-04T12:00:00.000Z';
+  const PREVIOUS_SINCE = '2026-08-05T12:00:00.000Z';
+
+  /** Verdict réel produit par la règle de TrackingIntegrity. */
+  function verdictAt(at: Date, keyed: number, events: number) {
+    return evaluateTrackingIntegrity({
+      window: trackingWindow(at),
+      events: Array.from({ length: events }, (_, i) => ({
+        id: `e${i}`,
+        order_id: `o${i}`,
+      })),
+      confirmedOrders: [{ ord_id: 'o0' }],
+      knownOrderIds: new Set(Array.from({ length: keyed }, (_, i) => `o${i}`)),
+    });
+  }
+
+  function ok(data: unknown[]): ReadResult {
+    return { data, count: data.length, error: null };
+  }
+
+  function byId(measures: LiveKpiMeasure[], id: string) {
+    const found = measures.find((m) => m.kpi.id === id);
+    if (!found) throw new Error(`KPI ${id} absent`);
+    return found;
+  }
+
+  it('renvoie les quatre KPI primaires dans un ordre stable', async () => {
+    const measures = await makeService(fakeDb({})).computeLiveKpis('full', NOW);
+    expect(measures.map((m) => m.kpi.id)).toEqual([
+      'payments_kept',
+      'metric_reliability',
+      'pages_generating_atc',
+      'diagnostic_to_product',
+    ]);
+  });
+
+  describe('metric_reliability', () => {
+    it('reprend le verdict Data et le compare à la fenêtre contiguë précédente', async () => {
+      const evaluate = jest.fn(
+        async (at: Date) =>
+          at.getTime() === NOW.getTime()
+            ? verdictAt(at, 1, 2) // 1 événement sur 2 rattaché : NOT_CERTIFIED
+            : verdictAt(at, 1, 1), // CERTIFIED
+      );
+      const measures = await makeService(fakeDb({}), {
+        evaluate,
+      }).computeLiveKpis('full', NOW);
+
+      expect(evaluate.mock.calls.map(([at]) => at.toISOString())).toEqual([
+        NOW.toISOString(),
+        SINCE,
+      ]);
+      const m = byId(measures, 'metric_reliability');
+      expect(m.kpi).toMatchObject({
+        value: 1,
+        unit: '/2',
+        status: 'WARNING',
+        certified: true,
+      });
+      expect(m).toMatchObject({ window_days: 30, previous_value: 2 });
+    });
+
+    it('verdict hors contrat → UNKNOWN, avertissement, pas de valeur', async () => {
+      const service = makeService(fakeDb({}), {
+        evaluate: jest.fn(async (at: Date) => ({
+          ...verdictAt(at, 1, 1),
+          status: 'NOT_CERTIFIED', // aucun contrôle FAIL : viole le contrat
+        })),
+      });
+      const warn = jest.spyOn(
+        (service as unknown as { logger: { warn: () => void } }).logger,
+        'warn',
+      );
+      const m = byId(
+        await service.computeLiveKpis('full', NOW),
+        'metric_reliability',
+      );
+      expect(m.kpi).toMatchObject({ value: null, status: 'UNKNOWN' });
+      expect(m.previous_value).toBeNull();
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('verdict hors contrat'),
+      );
+    });
+
+    it('évaluation en échec → UNKNOWN, jamais un zéro', async () => {
+      const m = byId(
+        await makeService(fakeDb({}), {
+          evaluate: jest.fn().mockRejectedValue(new Error('boom')),
+        }).computeLiveKpis('full', NOW),
+        'metric_reliability',
+      );
+      expect(m.kpi).toMatchObject({ value: null, status: 'UNKNOWN' });
+    });
+
+    it('fenêtres non contiguës → aucune comparaison', async () => {
+      const evaluate = jest.fn(async (at: Date) =>
+        verdictAt(
+          at.getTime() === NOW.getTime() ? at : new Date(at.getTime() - 1),
+          1,
+          1,
+        ),
+      );
+      const m = byId(
+        await makeService(fakeDb({}), { evaluate }).computeLiveKpis(
+          'full',
+          NOW,
+        ),
+        'metric_reliability',
+      );
+      expect(m.kpi.value).toBe(2);
+      expect(m.previous_value).toBeNull();
+    });
+  });
+
+  describe('pages_generating_atc', () => {
+    it('compte les pages SEO distinctes, fenêtre courante puis précédente', async () => {
+      const supabase = fakeDb({
+        events: (q) =>
+          q.eventType !== 'r2_add_to_cart'
+            ? EMPTY
+            : q.gte === SINCE
+              ? ok([
+                  { source_url: '/pieces/plaquette-de-frein-402.html' },
+                  { source_url: '/pieces/plaquette-de-frein-402.html?r=x' },
+                  { source_url: '/search?q=filtre' },
+                ])
+              : ok([]),
+      });
+      const measures = await makeService(supabase).computeLiveKpis('full', NOW);
+
+      expect(supabase.from).toHaveBeenCalledWith('__seo_event_log');
+      expect(supabase.select).toHaveBeenCalledWith(
+        'source_url:payload->>source_url',
+        { count: 'exact' },
+      );
+      expect(supabase.gte).toHaveBeenCalledWith('created_at', PREVIOUS_SINCE);
+      expect(supabase.lt).toHaveBeenCalledWith('created_at', SINCE);
+      const m = byId(measures, 'pages_generating_atc');
+      expect(m.kpi).toMatchObject({ value: 1, status: 'OK' });
+      expect(m.previous_value).toBe(0);
+    });
+
+    it('lecture tronquée → UNKNOWN, avertissement nommant la source', async () => {
+      const service = makeService(
+        fakeDb({
+          events: (q) =>
+            q.eventType === 'r2_add_to_cart'
+              ? {
+                  data: [{ source_url: '/pieces/x-1.html' }],
+                  count: 1200,
+                  error: null,
+                }
+              : EMPTY,
+        }),
+      );
+      const warn = jest.spyOn(
+        (service as unknown as { logger: { warn: () => void } }).logger,
+        'warn',
+      );
+      const m = byId(
+        await service.computeLiveKpis('full', NOW),
+        'pages_generating_atc',
+      );
+      expect(m.kpi).toMatchObject({ value: null, status: 'UNKNOWN' });
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('__seo_event_log (r2_add_to_cart) incomplète'),
+      );
+    });
+  });
+
+  describe('diagnostic_to_product', () => {
+    it('relie diag_hub_view → r2_view par session, en lots de 100 sessions', async () => {
+      const visits = Array.from({ length: 150 }, (_, i) => ({
+        session_id: `s${i}`,
+        created_at: '2026-09-10T10:00:00.000Z',
+      }));
+      const supabase = fakeDb({
+        events: (q) => {
+          if (q.gte !== SINCE) return EMPTY;
+          if (q.eventType === 'diag_hub_view') return ok(visits);
+          if (q.eventType !== 'r2_view') return EMPTY;
+          return ok(
+            (q.sessions ?? [])
+              .filter((s) => s === 's1' || s === 's120' || s === 's7')
+              .map((s) => ({
+                session_id: s,
+                // s7 voit le produit AVANT le diagnostic : ne compte pas
+                created_at:
+                  s === 's7'
+                    ? '2026-09-10T09:00:00.000Z'
+                    : '2026-09-10T10:05:00.000Z',
+              })),
+          );
+        },
+      });
+      const measures = await makeService(supabase).computeLiveKpis('full', NOW);
+
+      const lots = supabase.in.mock.calls.map(
+        ([column, ids]) => [column, (ids as string[]).length] as const,
+      );
+      expect(lots).toEqual([
+        ['payload->>session_id', 100],
+        ['payload->>session_id', 50],
+      ]);
+      const m = byId(measures, 'diagnostic_to_product');
+      expect(m.kpi).toMatchObject({ value: 2, unit: '/150', status: 'OK' });
+      expect(m.previous_value).toBe(0);
+    });
+
+    it('un lot illisible → UNKNOWN pour toute la fenêtre', async () => {
+      const m = byId(
+        await makeService(
+          fakeDb({
+            events: (q) =>
+              q.eventType === 'diag_hub_view'
+                ? ok([{ session_id: 's1', created_at: SINCE }])
+                : q.eventType === 'r2_view'
+                  ? { data: null, count: null, error: { message: 'timeout' } }
+                  : EMPTY,
+          }),
+        ).computeLiveKpis('full', NOW),
+        'diagnostic_to_product',
+      );
+      expect(m.kpi).toMatchObject({ value: null, status: 'UNKNOWN' });
+    });
+
+    it('aucune visite du diagnostic → aucune lecture r2_view, 0 → CRITICAL', async () => {
+      const supabase = fakeDb({});
+      const m = byId(
+        await makeService(supabase).computeLiveKpis('full', NOW),
+        'diagnostic_to_product',
+      );
+      expect(supabase.in).not.toHaveBeenCalled();
+      expect(m.kpi).toMatchObject({ value: 0, unit: '/0', status: 'CRITICAL' });
+    });
+  });
 });
