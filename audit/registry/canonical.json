@@ -31342,7 +31342,7 @@
         "backend/src/config/diag-canon.schema.ts"
       ],
       "kind": "test",
-      "loc": 44,
+      "loc": 27,
       "owner": "@ak125",
       "path": "backend/src/config/diag-canon-jsonschema.test.ts",
       "risk": "medium",
@@ -31366,7 +31366,7 @@
         "backend/src/config/diag-canon.schema.ts"
       ],
       "kind": "service",
-      "loc": 45,
+      "loc": 43,
       "owner": "@ak125",
       "path": "backend/src/config/diag-canon-jsonschema.ts",
       "risk": "medium",
@@ -31390,7 +31390,7 @@
         "path"
       ],
       "kind": "test",
-      "loc": 246,
+      "loc": 218,
       "owner": "@ak125",
       "path": "backend/src/config/diag-canon.schema.test.ts",
       "risk": "medium",
@@ -31414,7 +31414,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 169,
+      "loc": 143,
       "owner": "@ak125",
       "path": "backend/src/config/diag-canon.schema.ts",
       "risk": "medium",
@@ -102968,11 +102968,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "4516d35aa9c99283dc75cbba2227314020531a72cca2acd4513571dd6ca7d208",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "fae3c04ce9c818c559c95050401aff7f2d9eb155b464b9615c46c8b7a8c27ca6",
+      "audit/registry/files.json": "5f554349bacf37058f4813f466f2794dc5182f62410620cf5b6b59c605d051a2",
       "audit/registry/rpc.json": "5ee2a4b80a43764dda2c436d7b7b49e09ba4b1bd2e746864e869ecc7ac556049",
       "audit/registry/runtime.json": "aa553d2735271a86c3a725e0faf19b5a65a1da071a3ad7c95eb843e3a9e2492e"
     },
-    "sotFingerprint": "d4ab73084730"
+    "sotFingerprint": "144bd4dc8152"
   },
   "runtime": [
     {
