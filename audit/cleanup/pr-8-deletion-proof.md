@@ -8,7 +8,7 @@
 - Schema version: `1.0.0`
 - Cleanup policy version: `pr8-v1`
 - Validation mode: `snapshot-only` (active runtime check deferred to PR-8b)
-- Generated at: `2026-10-07T22:48:04.748Z`
+- Generated at: `2026-10-07T22:56:08.036Z`
 - Toolchain: `v24.21.0` on `linux/x64`
 
 ## Input Fingerprint (sha256)
