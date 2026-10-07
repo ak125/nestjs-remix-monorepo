@@ -13697,6 +13697,7 @@
         "sourceConfidence": "high",
         "status": "LIVE",
         "usedBy": [
+          "backend/src/modules/admin/services/command-center-kpi.service.ts",
           "backend/src/modules/admin/services/seo-control.service.ts",
           "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts",
           "backend/src/modules/diagnostic-engine/services/outcome-emitter.service.ts",
@@ -31342,7 +31343,7 @@
         "backend/src/config/diag-canon.schema.ts"
       ],
       "kind": "test",
-      "loc": 27,
+      "loc": 44,
       "owner": "@ak125",
       "path": "backend/src/config/diag-canon-jsonschema.test.ts",
       "risk": "medium",
@@ -31366,7 +31367,7 @@
         "backend/src/config/diag-canon.schema.ts"
       ],
       "kind": "service",
-      "loc": 43,
+      "loc": 45,
       "owner": "@ak125",
       "path": "backend/src/config/diag-canon-jsonschema.ts",
       "risk": "medium",
@@ -31390,7 +31391,7 @@
         "path"
       ],
       "kind": "test",
-      "loc": 218,
+      "loc": 246,
       "owner": "@ak125",
       "path": "backend/src/config/diag-canon.schema.test.ts",
       "risk": "medium",
@@ -31414,7 +31415,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 143,
+      "loc": 169,
       "owner": "@ak125",
       "path": "backend/src/config/diag-canon.schema.ts",
       "risk": "medium",
@@ -36059,14 +36060,41 @@
         "reachability"
       ],
       "domain": "D8",
+      "id": "backend/src/modules/admin/services/command-center-action-rules/department-kpi.rules.ts",
+      "importedBy": [
+        "backend/src/modules/admin/services/command-center-kpi.service.ts"
+      ],
+      "imports": [
+        "backend/src/modules/admin/services/command-center-action-rules/live-kpi.ts",
+        "backend/src/modules/analytics/index.ts",
+        "backend/src/modules/seo/types/page-role.types.ts"
+      ],
+      "kind": "service",
+      "loc": 181,
+      "owner": "@ak125/admin-team",
+      "path": "backend/src/modules/admin/services/command-center-action-rules/department-kpi.rules.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D8",
       "id": "backend/src/modules/admin/services/command-center-action-rules/department-report.rules.ts",
       "importedBy": [
         "backend/src/modules/admin/services/command-center-reader.service.ts"
       ],
       "imports": [
         "@repo/registry",
-        "backend/src/modules/admin/services/command-center-action-rules/score-action.ts",
-        "backend/src/modules/admin/services/command-center-kpi.service.ts"
+        "backend/src/modules/admin/services/command-center-action-rules/live-kpi.ts",
+        "backend/src/modules/admin/services/command-center-action-rules/score-action.ts"
       ],
       "kind": "service",
       "loc": 194,
@@ -36097,6 +36125,32 @@
       "loc": 96,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/command-center-action-rules/improvement-candidate.rules.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D8",
+      "id": "backend/src/modules/admin/services/command-center-action-rules/live-kpi.ts",
+      "importedBy": [
+        "backend/src/modules/admin/services/command-center-action-rules/department-kpi.rules.ts",
+        "backend/src/modules/admin/services/command-center-action-rules/department-report.rules.ts",
+        "backend/src/modules/admin/services/command-center-kpi.service.ts",
+        "backend/src/modules/admin/services/command-center-reader.service.ts"
+      ],
+      "imports": [],
+      "kind": "service",
+      "loc": 30,
+      "owner": "@ak125/admin-team",
+      "path": "backend/src/modules/admin/services/command-center-action-rules/live-kpi.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -36258,16 +36312,18 @@
       "id": "backend/src/modules/admin/services/command-center-kpi.service.ts",
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
-        "backend/src/modules/admin/services/command-center-action-rules/department-report.rules.ts",
         "backend/src/modules/admin/services/command-center-reader.service.ts"
       ],
       "imports": [
         "@repo/database-types",
         "@repo/domain-commerce",
-        "backend/src/database/services/supabase-base.service.ts"
+        "backend/src/database/services/supabase-base.service.ts",
+        "backend/src/modules/admin/services/command-center-action-rules/department-kpi.rules.ts",
+        "backend/src/modules/admin/services/command-center-action-rules/live-kpi.ts",
+        "backend/src/modules/analytics/index.ts"
       ],
       "kind": "service",
-      "loc": 224,
+      "loc": 399,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/command-center-kpi.service.ts",
       "risk": "medium",
@@ -36465,6 +36521,7 @@
         "@repo/registry",
         "backend/src/cache/cache.service.ts",
         "backend/src/modules/admin/services/command-center-action-rules/department-report.rules.ts",
+        "backend/src/modules/admin/services/command-center-action-rules/live-kpi.ts",
         "backend/src/modules/admin/services/command-center-action-rules/score-action.ts",
         "backend/src/modules/admin/services/command-center-actions.service.ts",
         "backend/src/modules/admin/services/command-center-kpi.service.ts",
@@ -36472,7 +36529,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 502,
+      "loc": 500,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/command-center-reader.service.ts",
       "risk": "medium",
@@ -39165,8 +39222,10 @@
       "domain": "D10",
       "id": "backend/src/modules/analytics/index.ts",
       "importedBy": [
+        "backend/src/modules/admin/services/command-center-action-rules/department-kpi.rules.ts",
         "backend/src/modules/admin/services/command-center-action-rules/tracking-integrity-action.rules.ts",
-        "backend/src/modules/admin/services/command-center-actions.service.ts"
+        "backend/src/modules/admin/services/command-center-actions.service.ts",
+        "backend/src/modules/admin/services/command-center-kpi.service.ts"
       ],
       "imports": [
         "backend/src/modules/analytics/tracking-integrity/tracking-integrity-verdict.schema.ts",
@@ -60826,6 +60885,7 @@
       "id": "backend/src/modules/seo/types/page-role.types.ts",
       "importedBy": [
         "backend/src/modules/admin/services/brand-editorial.service.ts",
+        "backend/src/modules/admin/services/command-center-action-rules/department-kpi.rules.ts",
         "backend/src/modules/seo/interceptors/page-role-validation.interceptor.ts",
         "backend/src/modules/seo/internal-linking.service.ts",
         "backend/src/modules/seo/seo.module.ts",
@@ -67777,6 +67837,26 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "backend/tests/unit/command-center-department-kpi.rules.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 221,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/command-center-department-kpi.rules.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "backend/tests/unit/command-center-department-report.test.ts",
       "importedBy": [],
       "imports": [],
@@ -67821,7 +67901,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 330,
+      "loc": 704,
       "owner": "@ak125",
       "path": "backend/tests/unit/command-center-kpi.service.test.ts",
       "risk": "medium",
@@ -102966,13 +103046,13 @@
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
       ".spec/00-canon/repository-registry/ownership.yaml": "8dc19620a5a1a71b9af2ed25f08b8db71bf77aefc482a8dc03f952ee5f5be46b",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
-      "audit/registry/db.json": "4516d35aa9c99283dc75cbba2227314020531a72cca2acd4513571dd6ca7d208",
+      "audit/registry/db.json": "91299196c9df3b8945f2622f53257ace34d97767d8bd28ace198ab72a62df409",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "5f554349bacf37058f4813f466f2794dc5182f62410620cf5b6b59c605d051a2",
+      "audit/registry/files.json": "c625467517de6f892a98eb9840ce4d5b464542dd74bb740d906520bd5045378b",
       "audit/registry/rpc.json": "5ee2a4b80a43764dda2c436d7b7b49e09ba4b1bd2e746864e869ecc7ac556049",
       "audit/registry/runtime.json": "aa553d2735271a86c3a725e0faf19b5a65a1da071a3ad7c95eb843e3a9e2492e"
     },
-    "sotFingerprint": "144bd4dc8152"
+    "sotFingerprint": "5a7ebf1704a9"
   },
   "runtime": [
     {
