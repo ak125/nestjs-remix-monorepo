@@ -22,18 +22,13 @@
  */
 import { z } from 'zod';
 
-/** Canon version emitted by the exporter. Bump = explicit change + version literal update. */
-export const DIAG_CANON_VERSION = '1.1.0' as const;
-
 /**
- * Previous canon version, still accepted while the nightly export catches up
- * (expand/contract). 1.1.0 adds `causes` (ADR-112 phase 0). Until the first
- * nightly run after merge, the live wiki export is still 1.0.0, and
- * `wiki-canon-shape-check.yml` parses it on push to main : rejecting it would
- * turn that check red for a correct state. Contract step = a later PR that
- * removes `DiagCanonV1_0` once the live export is 1.1.0.
+ * Exact canon version. Bump = explicit breaking change + version literal update.
+ * 1.1.0 adds `causes` (ADR-112 phase 0). 1.0.0 (no causes) was accepted alongside
+ * it until the nightly export published 1.1.0 (wiki commit 9ad98a89, 2026-10-06),
+ * then removed (expand/contract).
  */
-export const DIAG_CANON_PREVIOUS_VERSION = '1.0.0' as const;
+export const DIAG_CANON_VERSION = '1.1.0' as const;
 
 /** Slug pattern: lowercase ASCII + digits + underscore, must start with a letter. */
 export const DIAG_SLUG_PATTERN = /^[a-z][a-z0-9_]*$/;
@@ -44,34 +39,12 @@ export type DiagCanonSlug = z.infer<typeof DiagCanonSlug>;
 /** `slug → system slug` map, shared by `symptoms` and `causes`. */
 const DiagCanonSystemMap = z.record(DiagCanonSlug, DiagCanonSlug).readonly();
 
-const diagCanonBaseShape = {
-  generated_at: z.string().datetime({ offset: true }),
-  systems: z.array(DiagCanonSlug).readonly(),
-  symptoms: DiagCanonSystemMap,
-};
-
-const DiagCanonV1_0 = z
-  .object({
-    version: z.literal(DIAG_CANON_PREVIOUS_VERSION),
-    ...diagCanonBaseShape,
-  })
-  .strict();
-
-const DiagCanonV1_1 = z
-  .object({
-    version: z.literal(DIAG_CANON_VERSION),
-    ...diagCanonBaseShape,
-    /** Active `__diag_cause` slug → its system slug (key of WIKI `cause_slug`). */
-    causes: DiagCanonSystemMap,
-  })
-  .strict();
-
 /**
  * The canon shape published nightly by `diag-canon-slugs-export.yml`.
  *
  * Invariants enforced at parse time:
- *  - `.strict()` on each version rejects any unknown top-level key (drift detection layer 1)
- *  - `version` discriminates the accepted versions ; any other value is rejected
+ *  - `.strict()` rejects any unknown top-level key (drift detection layer 1)
+ *  - `version: z.literal(...)` rejects any version drift without explicit bump
  *  - `.superRefine()` enforces composite FK : `symptoms[*]` and `causes[*]` values must be
  *    in `systems[]`
  *
@@ -82,16 +55,19 @@ const DiagCanonV1_1 = z
  * benefit from the full validation surface.
  */
 export const DiagCanon = z
-  .discriminatedUnion('version', [DiagCanonV1_0, DiagCanonV1_1])
+  .object({
+    version: z.literal(DIAG_CANON_VERSION),
+    generated_at: z.string().datetime({ offset: true }),
+    systems: z.array(DiagCanonSlug).readonly(),
+    symptoms: DiagCanonSystemMap,
+    /** Active `__diag_cause` slug → its system slug (key of WIKI `cause_slug`). */
+    causes: DiagCanonSystemMap,
+  })
+  .strict()
   .superRefine((canon, ctx) => {
     const known = new Set(canon.systems);
-    const maps: Array<
-      ['symptoms' | 'causes', Readonly<Record<string, string>>]
-    > = [['symptoms', canon.symptoms]];
-    if (canon.version === DIAG_CANON_VERSION)
-      maps.push(['causes', canon.causes]);
-    for (const [key, map] of maps) {
-      for (const [slug, systemSlug] of Object.entries(map)) {
+    for (const key of ['symptoms', 'causes'] as const) {
+      for (const [slug, systemSlug] of Object.entries(canon[key])) {
         if (!known.has(systemSlug)) {
           ctx.addIssue({
             code: 'custom',
@@ -124,7 +100,6 @@ type RelationCheckResult = { ok: true } | { ok: false; blockedReason: string };
  *   2. `system_slug_unknown:<slug>`          — system not in canon
  *   3. `symptom_system_mismatch:<sym>:<declared>:<canon>` — composite FK violation
  *   4. when `cause_slug` is given (ADR-112 §Amendements ADR-033) :
- *      - `canon_causes_missing:<cause>`      — canon 1.0.0 carries no causes
  *      - `cause_slug_unknown:<cause>`        — cause not in canon
  *      - `cause_system_mismatch:<cause>:<declared>:<canon>` — cause of another
  *        system (the engine reads a symptom's causes in its own system only)
@@ -132,7 +107,9 @@ type RelationCheckResult = { ok: true } | { ok: false; blockedReason: string };
  * Priority order matters : if the symptom is unknown we cannot make any further
  * statement about its system mapping, so we short-circuit. The Python validator
  * reports every reason of a relation instead of the first one ; for a relation
- * with a single defect both emit the same string.
+ * with a single defect both emit the same string. The Python validator also
+ * emits `canon_causes_missing:<cause>` for an export without `causes` ;
+ * `DiagCanon.parse()` rejects such an export, so it never reaches this function.
  */
 export function checkDiagnosticRelation(
   canon: DiagCanon,
@@ -152,9 +129,6 @@ export function checkDiagnosticRelation(
     };
   }
   if (cause_slug === undefined) return { ok: true };
-  if (canon.version !== DIAG_CANON_VERSION) {
-    return { ok: false, blockedReason: `canon_causes_missing:${cause_slug}` };
-  }
   if (!Object.hasOwn(canon.causes, cause_slug)) {
     return { ok: false, blockedReason: `cause_slug_unknown:${cause_slug}` };
   }

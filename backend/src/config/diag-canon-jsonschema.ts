@@ -19,9 +19,7 @@
  *
  * The builder uses no `name`/registry — emitting an inline schema rather than
  * a `$ref` wrapper around `definitions/DiagCanon`. The inline form is what
- * consumer tooling (linters, IDE autocomplete) expects. While two canon
- * versions are accepted (expand/contract, see `DIAG_CANON_PREVIOUS_VERSION`),
- * the root is a `oneOf` of one strict `type: 'object'` branch per version.
+ * consumer tooling (linters, IDE autocomplete) expects.
  *
  * Dialect: native `z.toJSONSchema` supports draft-7 / draft-2020-12 /
  * draft-4 / openapi-3.0. The former `jsonSchema2019-09` target (legacy
