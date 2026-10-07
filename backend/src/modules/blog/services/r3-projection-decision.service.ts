@@ -16,7 +16,8 @@
  *   2. master flag `SEO_PROJECTION_READ_V1` ;
  *   3. allowlist EXACTE `<ROLE>@<entity_id>` (rôle + entité, jamais l'entité seule) ;
  *   4. seulement alors, appeler le reader ;
- *   5. mapper avec les sections requises du pack `standard` ;
+ *   5. mapper sous le contrat de rendu ADR-106 (requis = tier M d'ADR-086, portés par la table du
+ *      mapper — jamais par le pack conseil, règle du chemin d'écriture historique) ;
  *   6. `READY_FOR_RENDER` UNIQUEMENT si le mapper est `ready` ;
  *   7. sinon `FALLBACK` avec cause observable.
  *
@@ -27,11 +28,12 @@
  * une projection incomplète ou invalide disqualifie la projection ENTIÈRE.
  */
 import { Injectable, Logger } from '@nestjs/common';
-import { PACK_DEFINITIONS } from '@config/conseil-pack.constants';
+import type { PlannableSection } from '@config/keyword-plan.constants';
 import { FeatureFlagsService } from '@config/feature-flags.service';
 import {
   mapR3Projection,
   R3_MAPPER_ROLE,
+  R3_RENDER_CONTRACT_VERSION,
   type R3InvalidEntry,
   type R3Slot,
 } from '@modules/seo-projection/projection-r3.mapper';
@@ -39,9 +41,6 @@ import { SeoProjectionReaderService } from '@modules/seo-projection/seo-projecti
 
 /** Rôle de projection servant les pages conseil R3. */
 export const R3_PROJECTION_ROLE = R3_MAPPER_ROLE;
-
-/** Pack de complétude du pilote R3 (résolu SERVEUR — jamais depuis la requête publique). */
-const R3_PACK = PACK_DEFINITIONS.standard;
 
 /**
  * État de PRÉPARATION de la projection — **pas** la source servie.
@@ -82,7 +81,7 @@ export interface R3ProjectionDecision {
    * verbatim depuis le mapper (aucune reformulation intermédiaire). `null` sur tout `FALLBACK`,
    * pour qu'aucune projection partielle ne puisse fuiter.
    */
-  slots: Record<string, R3Slot> | null;
+  slots: Partial<Record<PlannableSection, R3Slot>> | null;
 }
 
 /** `entity_id` canonique namespacé — même forme que la clé d'écriture et le `p_entity_id` de la RPC. */
@@ -98,16 +97,12 @@ function toCanaryToken(entityKey: string): string {
 /**
  * Classe un verdict `ready: false` du mapper — **fail-closed par construction**.
  *
- * Seul un manque de CONTENU (`required_slot_missing` exclusivement) est une projection
- * « incomplète ». Tout le reste est un contrat INVALIDE :
+ * Seul un manque de CONTENU (`required_slot_missing` exclusivement : composant obligatoire non
+ * livré par le WIKI) est une projection « incomplète ». Tout le reste est un contrat INVALIDE :
  *   - `block_contract_invalid` / `slot_collision` — données hors contrat ;
- *   - `required_section_unknown` — **faute de configuration** (ex. `S2_DIAGNOSTIC` au lieu de
- *     `S2_DIAG`) : la présenter comme « contenu manquant » masquerait un bug de config derrière
- *     un état d'attente légitime, et on attendrait indéfiniment un contenu impossible ;
  *   - toute invalidité FUTURE ajoutée au mapper — inconnue ⇒ INVALID, jamais absorbée en silence.
  *
- * Pure et exportée : testable sans monter le service ni contourner le typage `PlannableSection[]`
- * de `requiredSections` (qui rend `required_section_unknown` inatteignable via le pack canonique).
+ * Pure et exportée : testable sans monter le service ni fabriquer une enveloppe par cas.
  */
 export function classifyMapperFallback(
   invalid: readonly R3InvalidEntry[],
@@ -165,10 +160,8 @@ export class R3ProjectionDecisionService {
       return this.fallback(entityKey, this.toReaderFallback(degradeReason));
     }
 
-    // 5. Mapping + complétude jugée sur le pack résolu côté serveur.
-    const result = mapR3Projection(envelope, {
-      requiredSections: R3_PACK.requiredSections,
-    });
+    // 5. Mapping + complétude jugée par le contrat de rendu ADR-106 (table unique du mapper).
+    const result = mapR3Projection(envelope);
 
     // 6/7. Atomicité : ready ⇒ DTO rendable ; sinon FALLBACK (la projection ENTIÈRE est écartée).
     if (!result.ready) {
@@ -238,6 +231,7 @@ export class R3ProjectionDecisionService {
       fallback_reason: decision.fallbackReason,
       mapped_count: decision.mappedCount,
       invalid_count: decision.invalidCount,
+      render_contract_version: R3_RENDER_CONTRACT_VERSION,
     });
     return decision;
   }

@@ -41,14 +41,21 @@ function r3Block(
   };
 }
 
-/** Enveloppe couvrant TOUTES les sections requises du pack `standard`. */
+/** Sections WIKI obligatoires (tier M ADR-086) → S1 + S2 sous le contrat de rendu ADR-106. */
+const TIER_M_SECTIONS = [
+  'function',
+  'maintenance_interval',
+  'failure_symptoms',
+];
+
+/** Enveloppe prête à servir sous ADR-106 : les trois sections obligatoires du WIKI. */
 function completeEnvelope(): ProjectionEnvelope {
   return {
     entity_id: PILOT_ENTITY_KEY,
     entity_type: 'gamme',
     slug: PILOT_ALIAS,
     facts: [],
-    blocks: PACK_DEFINITIONS.standard.requiredSections.map((s) =>
+    blocks: TIER_M_SECTIONS.map((s) =>
       r3Block(s, `# ${s}\n\nContenu **verbatim** de ${s}.`),
     ) as ProjectionEnvelope['blocks'],
   };
@@ -196,7 +203,7 @@ describe('R3ProjectionDecisionService (P2-R3-D, dark)', () => {
     // content_md absent → block_contract_invalid côté mapper
     (envelope.blocks as unknown[])[0] = {
       role: R3_PROJECTION_ROLE,
-      content: { section: 'S1', source_ids: [], truth_level: 'db_owned' },
+      content: { section: 'function', source_ids: [], truth_level: 'db_owned' },
     };
     reader.readActiveProjection.mockResolvedValue({
       envelope,
@@ -211,13 +218,13 @@ describe('R3ProjectionDecisionService (P2-R3-D, dark)', () => {
     expect(decision.invalidCount).toBeGreaterThan(0);
   });
 
-  it('section requise du pack absente → legacy + MAPPER_INCOMPLETE', async () => {
+  it('section obligatoire du WIKI absente → legacy + MAPPER_INCOMPLETE', async () => {
     flags.seoProjectionReadV1 = true;
     flags.seoProjectionReadCanary = [PILOT_TOKEN];
     const envelope = completeEnvelope();
     envelope.blocks = (envelope.blocks as unknown[]).slice(
       1,
-    ) as ProjectionEnvelope['blocks']; // retire S1 (requis)
+    ) as ProjectionEnvelope['blocks']; // retire `function` (→ S1, obligatoire)
     reader.readActiveProjection.mockResolvedValue({
       envelope,
       degradeReason: null,
@@ -245,9 +252,9 @@ describe('R3ProjectionDecisionService (P2-R3-D, dark)', () => {
     expect(decision.fallbackReason).toBe('MAPPER_INCOMPLETE');
   });
 
-  // ── 6. Chemin nominal + complétude via le pack `standard` ─────────────────
+  // ── 6. Chemin nominal + complétude via le contrat de rendu ADR-106 ────────
 
-  it('projection complète (pack standard satisfait) → READY_FOR_RENDER, 0 fallback', async () => {
+  it('projection complète (tier M ADR-086 livré) → READY_FOR_RENDER, 0 fallback', async () => {
     flags.seoProjectionReadV1 = true;
     flags.seoProjectionReadCanary = [PILOT_TOKEN];
     reader.readActiveProjection.mockResolvedValue({
@@ -262,19 +269,40 @@ describe('R3ProjectionDecisionService (P2-R3-D, dark)', () => {
     // Prête ≠ servie : D n'a pas de renderer, le BODY reste legacy.
     expect(decision.servedBodySource).toBe('legacy');
     expect(decision.invalidCount).toBe(0);
-    expect(decision.mappedCount).toBe(
-      PACK_DEFINITIONS.standard.requiredSections.length,
-    );
+    expect(decision.mappedCount).toBe(2); // S1 + S2
   });
 
-  it('la complétude est jugée sur les sections requises du pack `standard`', async () => {
+  it("le pack `standard` ne s'applique PAS au chemin projeté (ADR-106 D5)", async () => {
     flags.seoProjectionReadV1 = true;
     flags.seoProjectionReadCanary = [PILOT_TOKEN];
-    // Une seule section présente : suffisant pour le mapper, PAS pour le pack.
+    // Toutes les sections servies du pack, nommées comme le chemin historique : hors table.
     reader.readActiveProjection.mockResolvedValue({
       envelope: {
         ...completeEnvelope(),
-        blocks: [r3Block('S1', '# S1')] as never,
+        blocks: PACK_DEFINITIONS.standard.requiredSections.map((s) =>
+          r3Block(s, `# ${s}`),
+        ) as never,
+      },
+      degradeReason: null,
+    });
+
+    const decision = await service.decide(PILOT_ALIAS);
+
+    expect(decision.fallbackReason).toBe('MAPPER_INCOMPLETE');
+    expect(decision.projectionStatus).toBe('FALLBACK');
+    expect(decision.mappedCount).toBe(0);
+  });
+
+  it('S2 exige ses deux composants : sans `failure_symptoms`, la page reste en repli', async () => {
+    flags.seoProjectionReadV1 = true;
+    flags.seoProjectionReadCanary = [PILOT_TOKEN];
+    reader.readActiveProjection.mockResolvedValue({
+      envelope: {
+        ...completeEnvelope(),
+        blocks: [
+          r3Block('function', '# f'),
+          r3Block('maintenance_interval', '# m'),
+        ] as never,
       },
       degradeReason: null,
     });
@@ -300,12 +328,16 @@ describe('R3ProjectionDecisionService (P2-R3-D, dark)', () => {
     const decision = await service.decide(PILOT_ALIAS);
 
     expect(decision.slots).not.toBeNull();
+    const components = Object.values(decision.slots ?? {}).flatMap(
+      (slot) => slot?.components ?? [],
+    );
     for (const block of envelope.blocks as unknown as Array<{
       content: { section: string; content_md: string };
     }>) {
-      expect(decision.slots?.[block.content.section].content_md).toBe(
-        block.content.content_md,
-      );
+      expect(
+        components.find((c) => c.wiki_section === block.content.section)
+          ?.content_md,
+      ).toBe(block.content.content_md);
     }
   });
 
@@ -364,6 +396,7 @@ describe('R3ProjectionDecisionService (P2-R3-D, dark)', () => {
         fallback_reason: 'PROJECTION_ABSENT',
         mapped_count: 0,
         invalid_count: 0,
+        render_contract_version: '1.0.0',
       }),
     );
     logSpy.mockRestore();
@@ -372,13 +405,12 @@ describe('R3ProjectionDecisionService (P2-R3-D, dark)', () => {
 
 // ── 10. Classification fail-closed des verdicts mapper (fonction pure) ──────
 //
-// Testée directement : `requiredSections` est typé `PlannableSection[]`, donc un
-// `required_section_unknown` est INATTEIGNABLE via le pack canonique — le prouver au niveau du
-// service exigerait de casser le typage. La fonction pure est le vrai point de contrat.
+// Testée directement : la fonction pure est le vrai point de contrat, sans enveloppe par cas.
 describe('classifyMapperFallback (fail-closed)', () => {
   const entry = (kind: R3InvalidEntry['kind']): R3InvalidEntry => ({
     kind,
-    section: 'S1',
+    section: 'function',
+    slot: 'S1',
     detail: 'peu importe',
   });
 
@@ -394,19 +426,15 @@ describe('classifyMapperFallback (fail-closed)', () => {
   it.each<[R3InvalidEntry['kind']]>([
     ['block_contract_invalid'],
     ['slot_collision'],
-    ['required_section_unknown'],
   ])('%s → MAPPER_INVALID', (kind) => {
     expect(classifyMapperFallback([entry(kind)])).toBe('MAPPER_INVALID');
   });
 
-  it('required_section_unknown = faute de CONFIGURATION, jamais un contenu manquant', () => {
-    // Mélangé à de vrais manques de contenu, il doit continuer de dominer : sinon un
-    // S2_DIAGNOSTIC mal orthographié se lirait comme « en attente de rédaction », et on
-    // attendrait indéfiniment un contenu impossible à produire.
+  it('un contrat invalide domine les manques de contenu (jamais lu comme « en attente »)', () => {
     expect(
       classifyMapperFallback([
         entry('required_slot_missing'),
-        entry('required_section_unknown'),
+        entry('slot_collision'),
       ]),
     ).toBe('MAPPER_INVALID');
   });
@@ -418,7 +446,8 @@ describe('classifyMapperFallback (fail-closed)', () => {
   it('invalidité FUTURE inconnue → MAPPER_INVALID (fail-closed par défaut)', () => {
     const future = {
       kind: 'some_future_kind',
-      section: 'S1',
+      section: 'function',
+      slot: 'S1',
       detail: '',
     } as unknown as R3InvalidEntry;
     expect(classifyMapperFallback([future])).toBe('MAPPER_INVALID');
