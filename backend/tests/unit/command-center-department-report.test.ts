@@ -10,7 +10,7 @@
 import { CcDepartmentReportSchema } from '@repo/registry';
 import { buildDepartmentReports } from '../../src/modules/admin/services/command-center-action-rules/department-report.rules';
 import type { OwnerActionV2 } from '../../src/modules/admin/services/command-center-action-rules/score-action';
-import type { LiveKpiMeasure } from '../../src/modules/admin/services/command-center-kpi.service';
+import type { LiveKpiMeasure } from '../../src/modules/admin/services/command-center-action-rules/live-kpi';
 
 const AS_OF = '2026-10-05T10:00:00.000Z';
 

@@ -12,7 +12,7 @@
  *   - « feu vert owner » vient de la règle qui a émis l'action, jamais déduit.
  */
 import type { CcDepartmentReport } from '@repo/registry';
-import type { LiveKpiMeasure } from '../command-center-kpi.service';
+import type { LiveKpiMeasure } from './live-kpi';
 import type { OwnerActionV2 } from './score-action';
 
 interface ReportDeptView {
