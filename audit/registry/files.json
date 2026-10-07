@@ -12183,7 +12183,7 @@
         "backend/src/modules/blog/services/r3-projection-decision.service.ts"
       ],
       "kind": "test",
-      "loc": 427,
+      "loc": 456,
       "owner": "__unassigned__",
       "path": "backend/src/modules/blog/services/r3-projection-decision.service.test.ts",
       "risk": "low",
@@ -12207,13 +12207,13 @@
         "backend/src/modules/blog/services/r3-projection-decision.service.test.ts"
       ],
       "imports": [
-        "@config/conseil-pack.constants",
         "@config/feature-flags.service",
+        "@config/keyword-plan.constants",
         "@modules/seo-projection/projection-r3.mapper",
         "@modules/seo-projection/seo-projection-reader.service"
       ],
       "kind": "service",
-      "loc": 245,
+      "loc": 239,
       "owner": "__unassigned__",
       "path": "backend/src/modules/blog/services/r3-projection-decision.service.ts",
       "risk": "low",
@@ -26762,7 +26762,7 @@
         "backend/src/modules/seo-projection/seo-projection-reader.service.ts"
       ],
       "kind": "test",
-      "loc": 425,
+      "loc": 547,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-projection/projection-r3.mapper.test.ts",
       "risk": "low",
@@ -26787,7 +26787,7 @@
         "backend/src/modules/seo-projection/seo-projection.types.ts"
       ],
       "kind": "service",
-      "loc": 328,
+      "loc": 430,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-projection/projection-r3.mapper.ts",
       "risk": "low",

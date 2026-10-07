@@ -104,7 +104,7 @@
         "backend/src/modules/blog/utils"
       ],
       "files_count": 38,
-      "loc_total": 14089,
+      "loc_total": 14112,
       "has_barrel": false
     },
     "bot-guard": {
@@ -815,7 +815,7 @@
         "backend/src/modules/seo-projection"
       ],
       "files_count": 20,
-      "loc_total": 4722,
+      "loc_total": 4946,
       "has_barrel": false
     },
     "seo-shadow-observatory": {
