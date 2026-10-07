@@ -40366,7 +40366,7 @@
         "backend/src/modules/blog/services/r3-projection-decision.service.ts"
       ],
       "kind": "test",
-      "loc": 427,
+      "loc": 456,
       "owner": "@ak125/content-team",
       "path": "backend/src/modules/blog/services/r3-projection-decision.service.test.ts",
       "risk": "medium",
@@ -40391,13 +40391,13 @@
         "backend/src/modules/blog/services/r3-projection-decision.service.test.ts"
       ],
       "imports": [
-        "@config/conseil-pack.constants",
         "@config/feature-flags.service",
+        "@config/keyword-plan.constants",
         "@modules/seo-projection/projection-r3.mapper",
         "@modules/seo-projection/seo-projection-reader.service"
       ],
       "kind": "service",
-      "loc": 245,
+      "loc": 239,
       "owner": "@ak125/content-team",
       "path": "backend/src/modules/blog/services/r3-projection-decision.service.ts",
       "risk": "medium",
@@ -55441,7 +55441,7 @@
         "backend/src/modules/seo-projection/seo-projection-reader.service.ts"
       ],
       "kind": "test",
-      "loc": 425,
+      "loc": 547,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo-projection/projection-r3.mapper.test.ts",
       "risk": "medium",
@@ -55467,7 +55467,7 @@
         "backend/src/modules/seo-projection/seo-projection.types.ts"
       ],
       "kind": "service",
-      "loc": 328,
+      "loc": 430,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo-projection/projection-r3.mapper.ts",
       "risk": "medium",
@@ -102968,11 +102968,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "4516d35aa9c99283dc75cbba2227314020531a72cca2acd4513571dd6ca7d208",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "1f4ba7d330b3a32d5a1777a24def389482e283f718f8df1c4a553799364e799c",
+      "audit/registry/files.json": "fae3c04ce9c818c559c95050401aff7f2d9eb155b464b9615c46c8b7a8c27ca6",
       "audit/registry/rpc.json": "5ee2a4b80a43764dda2c436d7b7b49e09ba4b1bd2e746864e869ecc7ac556049",
       "audit/registry/runtime.json": "aa553d2735271a86c3a725e0faf19b5a65a1da071a3ad7c95eb843e3a9e2492e"
     },
-    "sotFingerprint": "a780a6df48ea"
+    "sotFingerprint": "d4ab73084730"
   },
   "runtime": [
     {
