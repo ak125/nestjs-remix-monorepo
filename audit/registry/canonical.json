@@ -36070,7 +36070,7 @@
         "backend/src/modules/seo/types/page-role.types.ts"
       ],
       "kind": "service",
-      "loc": 158,
+      "loc": 181,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/command-center-action-rules/department-kpi.rules.ts",
       "risk": "medium",
@@ -36323,7 +36323,7 @@
         "backend/src/modules/analytics/index.ts"
       ],
       "kind": "service",
-      "loc": 384,
+      "loc": 399,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/command-center-kpi.service.ts",
       "risk": "medium",
@@ -67841,7 +67841,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 195,
+      "loc": 221,
       "owner": "@ak125",
       "path": "backend/tests/unit/command-center-department-kpi.rules.test.ts",
       "risk": "medium",
@@ -67901,7 +67901,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 629,
+      "loc": 704,
       "owner": "@ak125",
       "path": "backend/tests/unit/command-center-kpi.service.test.ts",
       "risk": "medium",
@@ -103048,11 +103048,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "91299196c9df3b8945f2622f53257ace34d97767d8bd28ace198ab72a62df409",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "71dc064dfcaa3ca1eb47a8e5b01614be20d5bf1ae685b96400e57f9ddd16b397",
+      "audit/registry/files.json": "f5a1e6f914c284853171297b11ada3486414c30e257ebc7be9070289a7cabd98",
       "audit/registry/rpc.json": "5ee2a4b80a43764dda2c436d7b7b49e09ba4b1bd2e746864e869ecc7ac556049",
       "audit/registry/runtime.json": "aa553d2735271a86c3a725e0faf19b5a65a1da071a3ad7c95eb843e3a9e2492e"
     },
-    "sotFingerprint": "b7376fc4d3ca"
+    "sotFingerprint": "c97b5b253be4"
   },
   "runtime": [
     {
