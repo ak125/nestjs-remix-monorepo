@@ -135,7 +135,7 @@ describe('countPagesGeneratingAtc + toPagesGeneratingAtcKpi', () => {
 });
 
 describe('firstVisitBySession + countDiagnosticToProduct', () => {
-  const visits = firstVisitBySession([
+  const { firstVisit: visits, malformedSessions } = firstVisitBySession([
     { session_id: 'a', created_at: '2026-09-10T10:00:00.000Z' },
     { session_id: 'a', created_at: '2026-09-10T09:00:00.000Z' },
     { session_id: 'b', created_at: '2026-09-11T10:00:00.000Z' },
@@ -148,6 +148,32 @@ describe('firstVisitBySession + countDiagnosticToProduct', () => {
       ['a', Date.parse('2026-09-10T09:00:00.000Z')],
       ['b', Date.parse('2026-09-11T10:00:00.000Z')],
     ]);
+    expect(malformedSessions).toBe(0);
+  });
+
+  it.each([
+    ['UUID', '3f2b8c1e-9d4a-4e7b-8a6f-1c2d3e4f5a6b'],
+    ['32 hexadécimaux', '0123456789abcdef0123456789abcdef'],
+    ['horodatage sans crypto', 's_1759831200000'],
+  ])("format de l'émetteur (%s) → retenu", (_, id) => {
+    const { firstVisit } = firstVisitBySession([
+      { session_id: id, created_at: '2026-09-10T10:00:00.000Z' },
+    ]);
+    expect([...firstVisit.keys()]).toEqual([id]);
+  });
+
+  it.each([
+    ['guillemet et virgule (liste in(...) détournée)', 'a","b'],
+    ['parenthèse', 'a)'],
+    ['espace', 'a b'],
+    ['plus de 64 caractères', 'x'.repeat(65)],
+  ])('identifiant hors format (%s) → écarté et compté', (_, id) => {
+    expect(
+      firstVisitBySession([
+        { session_id: id, created_at: '2026-09-10T10:00:00.000Z' },
+        { session_id: id, created_at: '2026-09-10T11:00:00.000Z' },
+      ]),
+    ).toEqual({ firstVisit: new Map(), malformedSessions: 1 });
   });
 
   it('ne compte une session que si une vue produit suit sa première visite', () => {

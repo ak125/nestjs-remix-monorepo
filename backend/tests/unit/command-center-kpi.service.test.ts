@@ -65,6 +65,7 @@ interface EventQuery {
   gte?: unknown;
   lt?: unknown;
   sessions?: string[];
+  limit?: number;
 }
 
 /**
@@ -101,6 +102,7 @@ function fakeDb({
         if (m === 'gte') q.gte = args[1];
         if (m === 'lt') q.lt = args[1];
         if (m === 'in') q.sessions = args[1] as string[];
+        if (m === 'limit') q.limit = args[0] as number;
         return chain;
       };
     }
@@ -613,6 +615,79 @@ describe('CommandCenterKpiService — Data, Pages & SEO, Diagnostic', () => {
         'diagnostic_to_product',
       );
       expect(m.kpi).toMatchObject({ value: null, status: 'UNKNOWN' });
+    });
+
+    it('budget de lignes cumulé sur les lots, pas par lot', async () => {
+      const visits = Array.from({ length: 150 }, (_, i) => ({
+        session_id: `s${i}`,
+        created_at: '2026-09-10T10:00:00.000Z',
+      }));
+      const limits: number[] = [];
+      const service = makeService(
+        fakeDb({
+          events: (q) => {
+            if (q.gte !== SINCE) return EMPTY;
+            if (q.eventType === 'diag_hub_view') return ok(visits);
+            if (q.eventType !== 'r2_view') return EMPTY;
+            limits.push(q.limit as number);
+            // 7 vues par session : 700 au 1er lot, 350 au 2e pour 300 restantes
+            const rows = (q.sessions ?? []).flatMap((s) =>
+              Array.from({ length: 7 }, () => ({
+                session_id: s,
+                created_at: '2026-09-10T10:05:00.000Z',
+              })),
+            );
+            return {
+              data: rows.slice(0, q.limit),
+              count: rows.length,
+              error: null,
+            };
+          },
+        }),
+      );
+      const warn = jest.spyOn(
+        (service as unknown as { logger: { warn: () => void } }).logger,
+        'warn',
+      );
+      const m = byId(
+        await service.computeLiveKpis('full', NOW),
+        'diagnostic_to_product',
+      );
+      expect(limits).toEqual([1000, 300]);
+      expect(m.kpi).toMatchObject({ value: null, status: 'UNKNOWN' });
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining(
+          '__seo_event_log (r2_view) incomplète (300 lignes reçues sur 350)',
+        ),
+      );
+    });
+
+    it('identifiant hors format : écarté avec avertissement, jamais dans le filtre', async () => {
+      const supabase = fakeDb({
+        events: (q) =>
+          q.gte === SINCE && q.eventType === 'diag_hub_view'
+            ? ok([
+                { session_id: 's1', created_at: '2026-09-10T10:00:00.000Z' },
+                { session_id: 'x","y', created_at: '2026-09-10T10:00:00.000Z' },
+              ])
+            : EMPTY,
+      });
+      const service = makeService(supabase);
+      const warn = jest.spyOn(
+        (service as unknown as { logger: { warn: () => void } }).logger,
+        'warn',
+      );
+      const m = byId(
+        await service.computeLiveKpis('full', NOW),
+        'diagnostic_to_product',
+      );
+      expect(supabase.in.mock.calls).toEqual([
+        ['payload->>session_id', ['s1']],
+      ]);
+      expect(m.kpi).toMatchObject({ value: 0, unit: '/1' });
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('1 session(s) écartée(s)'),
+      );
     });
 
     it('aucune visite du diagnostic → aucune lecture r2_view, 0 → CRITICAL', async () => {

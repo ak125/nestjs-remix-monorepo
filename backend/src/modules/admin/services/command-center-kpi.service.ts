@@ -312,10 +312,19 @@ export class CommandCenterKpiService extends SupabaseBaseService {
       to,
     );
     if (!visits) return null;
-    const firstVisit = firstVisitBySession(visits);
+    const { firstVisit, malformedSessions } = firstVisitBySession(visits);
+    if (malformedSessions > 0) {
+      this.logger.warn(
+        `[command-center-kpi] diagnostic_to_product — ${malformedSessions} session(s) écartée(s) : identifiant hors du format de l'émetteur`,
+      );
+    }
     const sessions = [...firstVisit.keys()];
     const views: SessionEventRow[] = [];
     const chunk = CommandCenterKpiService.SESSION_CHUNK;
+    // Budget cumulé, pas par lot : chaque lecture n'a droit qu'aux lignes
+    // restantes ; au-delà elle est incomplète, donc UNKNOWN (readAll). Les
+    // sessions viennent d'une lecture bornée à MAX_ROWS : au plus
+    // MAX_ROWS / SESSION_CHUNK lectures.
     for (let i = 0; i < sessions.length; i += chunk) {
       const rows = await this.readEvents<SessionEventRow>(
         'diagnostic_to_product',
@@ -323,7 +332,10 @@ export class CommandCenterKpiService extends SupabaseBaseService {
         CommandCenterKpiService.SESSION_COLUMNS,
         from,
         to,
-        sessions.slice(i, i + chunk),
+        {
+          sessions: sessions.slice(i, i + chunk),
+          budget: CommandCenterKpiService.MAX_ROWS - views.length,
+        },
       );
       if (!rows) return null;
       views.push(...rows);
@@ -331,14 +343,17 @@ export class CommandCenterKpiService extends SupabaseBaseService {
     return countDiagnosticToProduct(firstVisit, views);
   }
 
-  /** Événements `eventType` créés dans [from, to), éventuellement restreints à des sessions. */
+  /**
+   * Événements `eventType` créés dans [from, to). `bySession` restreint aux
+   * sessions données, dans la limite du budget de lignes restant.
+   */
   private readEvents<T>(
     kpi: string,
     eventType: string,
     columns: string,
     from: string,
     to?: string,
-    sessions?: string[],
+    bySession?: { sessions: string[]; budget: number },
   ): Promise<T[] | null> {
     let query = this.supabase
       // Nom littéral : l'inventaire db-usage (build-db-usage-map.js) le rattache à ce service.
@@ -347,11 +362,11 @@ export class CommandCenterKpiService extends SupabaseBaseService {
       .eq('event_type', eventType)
       .gte('created_at', from);
     if (to) query = query.lt('created_at', to);
-    if (sessions) query = query.in('payload->>session_id', sessions);
+    if (bySession) query = query.in('payload->>session_id', bySession.sessions);
     return this.readAll<T>(
       kpi,
       `__seo_event_log (${eventType})`,
-      query.limit(CommandCenterKpiService.MAX_ROWS),
+      query.limit(bySession?.budget ?? CommandCenterKpiService.MAX_ROWS),
     );
   }
 

@@ -37,6 +37,24 @@ export interface DiagnosticToProductCounts {
   reachedProduct: number;
 }
 
+export interface DiagnosticVisits {
+  /** Première visite du diagnostic de chaque session (ms epoch). */
+  firstVisit: Map<string, number>;
+  /** Sessions distinctes écartées : identifiant hors du format de l'émetteur. */
+  malformedSessions: number;
+}
+
+/**
+ * Format des identifiants que produit l'émetteur (generateSessionId,
+ * frontend/app/utils/funnel-beacon.ts) : UUID, 32 hexadécimaux ou
+ * `s_<horodatage>`. L'ingestion n'exige qu'une chaîne non vide
+ * (FunnelEventInputSchema) : un autre format vient d'un client hors émetteur.
+ * Il n'entre ni dans la mesure ni dans un filtre `in(...)`, où postgrest-js
+ * entoure de guillemets les valeurs à `,()` sans échapper `"`. Relevé du
+ * 2026-10-07 sur 60 jours : aucun identifiant hors format.
+ */
+const SESSION_ID_FORMAT = /^[A-Za-z0-9_-]{1,64}$/;
+
 function unknownKpi(id: string, label: string): LiveExecutiveKpi {
   return {
     id,
@@ -108,18 +126,23 @@ export function toPagesGeneratingAtcKpi(
   };
 }
 
-/** Première visite du diagnostic de chaque session (ms epoch). */
+/** Première visite du diagnostic de chaque session au format de l'émetteur. */
 export function firstVisitBySession(
   rows: readonly SessionEventRow[],
-): Map<string, number> {
+): DiagnosticVisits {
   const first = new Map<string, number>();
+  const malformed = new Set<string>();
   for (const row of rows) {
     const at = Date.parse(row.created_at);
     if (!row.session_id || Number.isNaN(at)) continue;
+    if (!SESSION_ID_FORMAT.test(row.session_id)) {
+      malformed.add(row.session_id);
+      continue;
+    }
     const known = first.get(row.session_id);
     if (known == null || at < known) first.set(row.session_id, at);
   }
-  return first;
+  return { firstVisit: first, malformedSessions: malformed.size };
 }
 
 export function countDiagnosticToProduct(
