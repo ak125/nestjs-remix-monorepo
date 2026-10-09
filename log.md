@@ -519,3 +519,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-projection-r3-renderer`
 - **Décision** : Merge origin/main (#1737, #1742, #1741) into feat/seo-projection-r3-renderer (+13 other commits)
 - **Sortie** : PR #1713 | commits 03344c26b 56418bd5f 4eeedea5b e2ac7c490 76e1e951e e22ae0585 02828e60b a74af3801 2ae38c9a0 20cf5ea30 ce713494e 3d161283a 24330ef8d addf1c7c6
+
+## 2026-10-10 — feat/diag-link-provenance-migration (auto)
+
+- **Branche** : `feat/diag-link-provenance-migration`
+- **Décision** : chore(registry): resync L1+L3 projections (+1 other commit)
+- **Sortie** : PR aucune | commits 29ae12199 0b54d32db
