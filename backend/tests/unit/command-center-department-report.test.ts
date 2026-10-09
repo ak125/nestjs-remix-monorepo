@@ -5,7 +5,8 @@
  *   1. un KPI sans producteur ou illisible n'a jamais de valeur ni de score ;
  *   2. l'évolution suit le sens d'amélioration déclaré, INCONNUE sans fenêtre précédente ;
  *   3. la décision machine est REUSE ou IMPROVE, jamais CREATE ni PAUSE ;
- *   4. « feu vert owner » est celui de l'action qui a produit le trou, jamais déduit.
+ *   4. « feu vert owner » est celui de l'action qui a produit le trou, jamais déduit ;
+ *   5. la cause probable vient de l'action ou d'un constat lu en base, jamais devinée.
  */
 import { CcDepartmentReportSchema } from '@repo/registry';
 import { buildDepartmentReports } from '../../src/modules/admin/services/command-center-action-rules/department-report.rules';
@@ -241,6 +242,49 @@ describe('buildDepartmentReports — Vue 5', () => {
     expect(r.decision).toBe('IMPROVE');
     expect(r.gap).toBe('KPI « libellé sales_kpi » à 0/5.');
     expect(r.probable_cause).toBeNull();
+  });
+
+  const CONSTAT = 'Annulations après paiement — motif saisi : « pas dispo » ×2';
+  const observed = (m: LiveKpiMeasure): LiveKpiMeasure => ({
+    ...m,
+    observed_cause: CONSTAT,
+  });
+
+  it('constat lu en base : suit la mesure, donc parmi les trois preuves affichées', () => {
+    const r = one(
+      dept('sales', 'P0'),
+      [action('repair:sales', 'sales', { evidence: ['a', 'b'] })],
+      [observed(measure('sales_kpi', 0, 'CRITICAL', 2))],
+    );
+    expect(r.evidence).toEqual([
+      'sales_kpi = 0/5 (base, 30 j)',
+      CONSTAT,
+      'a',
+      'b',
+    ]);
+    // l'action ouverte garde la main sur trou / cause / étape
+    expect(r.probable_cause).toBe('raison repair:sales');
+    expect(CcDepartmentReportSchema.parse(r)).toEqual(r);
+  });
+
+  it('KPI mesuré faible, aucune action, constat → cause probable = constat', () => {
+    const r = one(
+      dept('sales', 'P0'),
+      [],
+      [observed(measure('sales_kpi', 0, 'CRITICAL'))],
+    );
+    expect(r.probable_cause).toBe(CONSTAT);
+    expect(r.evidence).toEqual(['sales_kpi = 0/5 (base, 30 j)', CONSTAT]);
+  });
+
+  it('KPI illisible : un constat éventuel n’est pas repris', () => {
+    const r = one(
+      dept('sales', 'P0'),
+      [],
+      [observed(measure('sales_kpi', null, 'UNKNOWN'))],
+    );
+    expect(r.evidence).not.toContain(CONSTAT);
+    expect(r.probable_cause).not.toBe(CONSTAT);
   });
 
   it('aucun KPI primaire déclaré → IMPROVE, la carte est à compléter par l’owner', () => {

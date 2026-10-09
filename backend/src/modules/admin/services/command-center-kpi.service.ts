@@ -34,7 +34,9 @@ import type {
  * `kpi_primary`), chacun sur 30 jours glissants + la fenêtre précédente :
  *   - `payments_kept` (Ventes) : définition reprise de audit/sales-funnel-scorecard.md,
  *     commandes passées, payées puis non annulées. Lecture seule de ___xtr_order,
- *     cinq colonnes d'état (ni montant, ni client) ;
+ *     cinq colonnes d'état + le motif d'annulation (ni montant, ni client) ; les
+ *     motifs des annulations après paiement deviennent le constat du rapport
+ *     (summarizeCancelReasons) ;
  *   - `metric_reliability` (Data), `pages_generating_atc` (Pages & SEO),
  *     `diagnostic_to_product` (Diagnostic) : règles et définitions dans
  *     command-center-action-rules/department-kpi.rules.ts. Lecture seule du verdict
@@ -52,6 +54,11 @@ export interface OrderPaymentRow {
   ord_date_pay: string | null;
   payment_confirmed: boolean | null;
   ord_cancel_date: string | null;
+  /**
+   * Texte libre : saisi par l'admin (order-actions.service.ts) ou posé quand le
+   * client annule depuis son espace (orders.controller.ts).
+   */
+  ord_cancel_reason: string | null;
 }
 
 export type OrderPaymentOutcome = 'unpaid' | 'kept' | 'cancelled_after_payment';
@@ -148,6 +155,65 @@ export function toPaymentsKeptKpi(
   };
 }
 
+/** Motifs montrés au plus ; les suivants sont comptés, jamais tus. */
+const MAX_CANCEL_REASONS = 3;
+
+/**
+ * Motif montrable : lettres, espaces, apostrophes, traits d'union, 60 caractères
+ * au plus. Le motif est un texte libre et le rapport part dans le digest Hermes :
+ * un chiffre, un « @ », un « / » ou toute autre ponctuation (numéro de commande,
+ * téléphone, e-mail, lien) le rend non montrable — il est compté, pas montré.
+ */
+const SHOWABLE_REASON = /^[\p{L}'’ -]{1,60}$/u;
+
+/** Regroupe les saisies qui ne diffèrent que par les espaces, la casse ou le point final. */
+function normalizeCancelReason(raw: string | null): string {
+  return (raw ?? '')
+    .normalize('NFC')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/[.!…]+$/u, '')
+    .trim()
+    .toLowerCase();
+}
+
+/**
+ * Motifs saisis sur les commandes annulées après paiement, du plus fréquent au
+ * moins fréquent : « Annulations après paiement — motif saisi : « pas dispo » ×2,
+ * sans motif ×1 ». null s'il n'y a aucune annulation après paiement. C'est un
+ * constat (le motif tel que saisi), jamais une cause déduite.
+ */
+export function summarizeCancelReasons(
+  rows: readonly OrderPaymentRow[],
+): string | null {
+  const counts = new Map<string, number>();
+  let empty = 0;
+  let masked = 0;
+  for (const row of rows) {
+    if (classifyOrderPayment(row) !== 'cancelled_after_payment') continue;
+    const reason = normalizeCancelReason(row.ord_cancel_reason);
+    if (reason === '') empty += 1;
+    else if (!SHOWABLE_REASON.test(reason)) masked += 1;
+    else counts.set(reason, (counts.get(reason) ?? 0) + 1);
+  }
+  if (counts.size === 0 && empty === 0 && masked === 0) return null;
+  const ranked = [...counts].sort(
+    ([a, x], [b, y]) => y - x || (a < b ? -1 : a > b ? 1 : 0),
+  );
+  const others = ranked
+    .slice(MAX_CANCEL_REASONS)
+    .reduce((sum, [, n]) => sum + n, 0);
+  const parts = [
+    ...ranked
+      .slice(0, MAX_CANCEL_REASONS)
+      .map(([reason, n]) => `« ${reason} » ×${n}`),
+    ...(others ? [`autres motifs ×${others}`] : []),
+    ...(empty ? [`sans motif ×${empty}`] : []),
+    ...(masked ? [`motif masqué ×${masked}`] : []),
+  ];
+  return `Annulations après paiement — motif saisi : ${parts.join(', ')}`;
+}
+
 /** Réponse PostgREST réduite à ce que readAll contrôle. */
 interface ReadResponse {
   data: unknown;
@@ -159,12 +225,16 @@ function measure(
   kpi: LiveExecutiveKpi,
   previous: number | null,
   windowDays: number,
+  observedCause: string | null = null,
 ): LiveKpiMeasure {
   return {
     kpi,
     window_days: windowDays,
     previous_value: kpi.value == null ? null : previous,
     better: 'higher',
+    ...(kpi.value != null && observedCause
+      ? { observed_cause: observedCause }
+      : {}),
   };
 }
 
@@ -226,7 +296,12 @@ export class CommandCenterKpiService extends SupabaseBaseService {
       verdict != null && verdictBefore?.window.to === verdict.window.from;
 
     return [
-      measure(toPaymentsKeptKpi(payments), paymentsBefore?.kept ?? null, days),
+      measure(
+        toPaymentsKeptKpi(payments && countPaymentsKept(payments)),
+        paymentsBefore ? countPaymentsKept(paymentsBefore).kept : null,
+        days,
+        payments && summarizeCancelReasons(payments),
+      ),
       measure(
         toMetricReliabilityKpi(verdict, verdictDays),
         verdictsContiguous
@@ -244,26 +319,25 @@ export class CommandCenterKpiService extends SupabaseBaseService {
   }
 
   /** Commandes passées dans [from, to) ; `to` absent = jusqu'à maintenant. */
-  private async readPaymentsKept(
+  private readPaymentsKept(
     from: string,
     to?: string,
-  ): Promise<PaymentsKeptCounts | null> {
+  ): Promise<OrderPaymentRow[] | null> {
     // ord_date est un texte ISO-8601 UTC (100 % des lignes au 2026-10-04) : l'ordre
     // lexical est l'ordre chronologique.
     let query = this.supabase
       .from(TABLES.xtr_order)
       .select(
-        'ord_ords_id, ord_is_pay, ord_date_pay, payment_confirmed, ord_cancel_date',
+        'ord_ords_id, ord_is_pay, ord_date_pay, payment_confirmed, ord_cancel_date, ord_cancel_reason',
         { count: 'exact' },
       )
       .gte('ord_date', from);
     if (to) query = query.lt('ord_date', to);
-    const rows = await this.readAll<OrderPaymentRow>(
+    return this.readAll<OrderPaymentRow>(
       'payments_kept',
       TABLES.xtr_order,
       query.limit(CommandCenterKpiService.MAX_ROWS),
     );
-    return rows && countPaymentsKept(rows);
   }
 
   /** Verdict Data → Ventes à la date `at` ; hors contrat ou en échec → null. */
