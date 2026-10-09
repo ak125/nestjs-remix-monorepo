@@ -609,7 +609,7 @@ export default function DiagnosticAutoIndex() {
               </p>
               <p className="text-xs text-amber-700">
                 Entrez votre code OBD (P0300...) dans l'outil ci-dessus pour
-                identifier la panne avec 95% de fiabilité.
+                identifier la panne.
               </p>
             </div>
           </div>
@@ -992,8 +992,7 @@ export default function DiagnosticAutoIndex() {
               Votre tableau de bord affiche un voyant ?
             </h3>
             <p className="text-white/60">
-              Entrez le code OBD (P0XXX, C1XXX...) pour un diagnostic précis à
-              95% de fiabilité.
+              Entrez le code OBD (P0XXX, C1XXX...) pour un diagnostic précis.
             </p>
           </div>
           <form onSubmit={handleDtcSubmit} className="flex gap-2 shrink-0">
