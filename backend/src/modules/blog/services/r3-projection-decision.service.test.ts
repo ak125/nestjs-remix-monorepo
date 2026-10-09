@@ -266,8 +266,8 @@ describe('R3ProjectionDecisionService (P2-R3-D, dark)', () => {
 
     expect(decision.projectionStatus).toBe('READY_FOR_RENDER');
     expect(decision.fallbackReason).toBeNull();
-    // Prête ≠ servie : D n'a pas de renderer, le BODY reste legacy.
-    expect(decision.servedBodySource).toBe('legacy');
+    // Prête ⇔ servie : le BODY vient de la projection (ADR-106 D6).
+    expect(decision.servedBodySource).toBe('projection');
     expect(decision.invalidCount).toBe(0);
     expect(decision.mappedCount).toBe(2); // S1 + S2
   });
@@ -397,6 +397,30 @@ describe('R3ProjectionDecisionService (P2-R3-D, dark)', () => {
         mapped_count: 0,
         invalid_count: 0,
         render_contract_version: '1.0.0',
+      }),
+    );
+    logSpy.mockRestore();
+  });
+
+  it('journalise une décision prête comme servie depuis la projection', async () => {
+    flags.seoProjectionReadV1 = true;
+    flags.seoProjectionReadCanary = [PILOT_TOKEN];
+    reader.readActiveProjection.mockResolvedValue({
+      envelope: completeEnvelope(),
+      degradeReason: null,
+    });
+    const logSpy = jest
+      .spyOn(Logger.prototype, 'log')
+      .mockImplementation(() => undefined);
+
+    await service.decide(PILOT_ALIAS);
+
+    expect(logSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        projection_status: 'READY_FOR_RENDER',
+        served_body_source: 'projection',
+        fallback_reason: null,
+        mapped_count: 2,
       }),
     );
     logSpy.mockRestore();

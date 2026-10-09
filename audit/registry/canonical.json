@@ -39730,14 +39730,15 @@
       "domain": "D5",
       "id": "backend/src/modules/blog/interfaces/r3-guide.interfaces.ts",
       "importedBy": [
-        "backend/src/modules/blog/services/r3-guide.service.ts"
+        "backend/src/modules/blog/services/r3-guide.service.ts",
+        "backend/src/modules/blog/utils/projection-r3-section-presenter.ts"
       ],
       "imports": [
         "backend/src/modules/blog/interfaces/blog.interfaces.ts",
         "backend/src/modules/blog/services/r3-projection-decision.service.ts"
       ],
       "kind": "service",
-      "loc": 95,
+      "loc": 94,
       "owner": "@ak125/content-team",
       "path": "backend/src/modules/blog/interfaces/r3-guide.interfaces.ts",
       "risk": "medium",
@@ -40353,6 +40354,8 @@
       "id": "backend/src/modules/blog/services/r3-guide.service.test.ts",
       "importedBy": [],
       "imports": [
+        "@modules/seo-projection/projection-r3.mapper",
+        "@modules/seo-projection/seo-projection-reader.service",
         "backend/src/cache/cache.service.ts",
         "backend/src/modules/blog/services/blog-article-data.service.ts",
         "backend/src/modules/blog/services/blog-article-relation.service.ts",
@@ -40363,7 +40366,7 @@
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "kind": "test",
-      "loc": 733,
+      "loc": 941,
       "owner": "@ak125/content-team",
       "path": "backend/src/modules/blog/services/r3-guide.service.test.ts",
       "risk": "medium",
@@ -40394,12 +40397,13 @@
         "backend/src/modules/blog/services/blog-seo.service.ts",
         "backend/src/modules/blog/services/r3-projection-decision.service.ts",
         "backend/src/modules/blog/utils/html-normalize.utils.ts",
+        "backend/src/modules/blog/utils/projection-r3-section-presenter.ts",
         "backend/src/modules/seo/internal-linking.service.ts",
         "backend/src/modules/seo/seo-v4.types.ts",
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "kind": "service",
-      "loc": 595,
+      "loc": 687,
       "owner": "@ak125/content-team",
       "path": "backend/src/modules/blog/services/r3-guide.service.ts",
       "risk": "medium",
@@ -40425,7 +40429,7 @@
         "backend/src/modules/blog/services/r3-projection-decision.service.ts"
       ],
       "kind": "test",
-      "loc": 456,
+      "loc": 480,
       "owner": "@ak125/content-team",
       "path": "backend/src/modules/blog/services/r3-projection-decision.service.test.ts",
       "risk": "medium",
@@ -40456,7 +40460,7 @@
         "@modules/seo-projection/seo-projection-reader.service"
       ],
       "kind": "service",
-      "loc": 239,
+      "loc": 242,
       "owner": "@ak125/content-team",
       "path": "backend/src/modules/blog/services/r3-projection-decision.service.ts",
       "risk": "medium",
@@ -40557,13 +40561,68 @@
       "id": "backend/src/modules/blog/utils/html-normalize.utils.ts",
       "importedBy": [
         "backend/src/modules/blog/services/r3-guide.service.ts",
-        "backend/src/modules/blog/services/r6-guide.service.ts"
+        "backend/src/modules/blog/services/r6-guide.service.ts",
+        "backend/src/modules/blog/utils/projection-r3-section-presenter.ts"
       ],
       "imports": [],
       "kind": "service",
       "loc": 145,
       "owner": "@ak125/content-team",
       "path": "backend/src/modules/blog/utils/html-normalize.utils.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D5",
+      "id": "backend/src/modules/blog/utils/projection-r3-section-presenter.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@modules/seo-projection/projection-r3.mapper",
+        "@modules/seo-projection/seo-projection-reader.service",
+        "backend/src/modules/blog/utils/projection-r3-section-presenter.ts"
+      ],
+      "kind": "test",
+      "loc": 181,
+      "owner": "@ak125/content-team",
+      "path": "backend/src/modules/blog/utils/projection-r3-section-presenter.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D5",
+      "id": "backend/src/modules/blog/utils/projection-r3-section-presenter.ts",
+      "importedBy": [
+        "backend/src/modules/blog/services/r3-guide.service.ts",
+        "backend/src/modules/blog/utils/projection-r3-section-presenter.test.ts"
+      ],
+      "imports": [
+        "@config/keyword-plan.constants",
+        "@modules/seo-projection/projection-markdown.renderer",
+        "@modules/seo-projection/projection-r3.mapper",
+        "backend/src/modules/blog/interfaces/r3-guide.interfaces.ts",
+        "backend/src/modules/blog/utils/html-normalize.utils.ts"
+      ],
+      "kind": "service",
+      "loc": 101,
+      "owner": "@ak125/content-team",
+      "path": "backend/src/modules/blog/utils/projection-r3-section-presenter.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -55484,6 +55543,50 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D14",
+      "id": "backend/src/modules/seo-projection/projection-markdown.renderer.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/seo-projection/projection-markdown.renderer.ts"
+      ],
+      "kind": "test",
+      "loc": 189,
+      "owner": "@ak125/seo-team",
+      "path": "backend/src/modules/seo-projection/projection-markdown.renderer.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D14",
+      "id": "backend/src/modules/seo-projection/projection-markdown.renderer.ts",
+      "importedBy": [
+        "backend/src/modules/seo-projection/projection-markdown.renderer.test.ts"
+      ],
+      "imports": [],
+      "kind": "service",
+      "loc": 217,
+      "owner": "@ak125/seo-team",
+      "path": "backend/src/modules/seo-projection/projection-markdown.renderer.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -89721,7 +89824,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 87,
+      "loc": 86,
       "owner": "__unassigned__",
       "path": "frontend/app/types/r3-guide.types.ts",
       "risk": "low",
@@ -100567,7 +100670,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 1510,
+      "loc": 1588,
       "owner": "@ak125",
       "path": "scripts/marketing/marketing-workbench.test.ts",
       "risk": "low",
@@ -100627,7 +100730,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 426,
+      "loc": 492,
       "owner": "@ak125",
       "path": "scripts/marketing/reactivation-runtime.test.mjs",
       "risk": "low",
@@ -100727,7 +100830,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 223,
+      "loc": 231,
       "owner": "@ak125",
       "path": "scripts/marketing/workbench-cli.ts",
       "risk": "low",
@@ -103048,11 +103151,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "91299196c9df3b8945f2622f53257ace34d97767d8bd28ace198ab72a62df409",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "efc4221abac6a15101e40c29b4cae0faa259c0e0e290f8c5177f70c0d8340b54",
+      "audit/registry/files.json": "ffc08515b62f1cb9bbfaa1deece4312079843fb29becf2180df74b340bc90bcf",
       "audit/registry/rpc.json": "5ee2a4b80a43764dda2c436d7b7b49e09ba4b1bd2e746864e869ecc7ac556049",
       "audit/registry/runtime.json": "aa553d2735271a86c3a725e0faf19b5a65a1da071a3ad7c95eb843e3a9e2492e"
     },
-    "sotFingerprint": "76ceeab948be"
+    "sotFingerprint": "8d89745b3303"
   },
   "runtime": [
     {

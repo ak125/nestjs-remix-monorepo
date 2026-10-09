@@ -23,6 +23,7 @@ import type {
   R3GuideSection,
 } from '../interfaces/r3-guide.interfaces';
 import { R3ProjectionDecisionService } from './r3-projection-decision.service';
+import { presentR3Projection } from '../utils/projection-r3-section-presenter';
 import {
   slugifyTitle,
   normalizeStepHtml,
@@ -68,6 +69,34 @@ function metaSectionRejection(html: string): MetaSectionRejection | null {
   if (/<meta[\s/>]/i.test(text)) return 'meta_tag';
   if (!/<a\s[^>]*href\s*=/i.test(text)) return 'no_link';
   return null;
+}
+
+/** Données d'une page conseil, communes aux deux sources de corps (legacy, projection). */
+interface R3GuideContext {
+  pg_alias: string;
+  article: BlogArticle;
+  pgId: number;
+  conseil: Awaited<ReturnType<BlogSeoService['getGammeConseil']>>;
+  seoSwitches: Awaited<ReturnType<BlogSeoService['getSeoItemSwitches']>>;
+  relatedArticles: Awaited<
+    ReturnType<BlogArticleDataService['getRelatedArticles']>
+  >;
+  vehicles: Awaited<
+    ReturnType<BlogArticleRelationService['getCompatibleVehicles']>
+  >;
+  adjacent: Awaited<ReturnType<BlogArticleDataService['getAdjacentArticles']>>;
+  seoBrief: Awaited<ReturnType<BlogSeoService['getSeoBrief']>>;
+  guideLinkSnapshot: Awaited<
+    ReturnType<R6GuideLinkPolicyService['getSnapshot']>
+  >;
+}
+
+/** Corps servi d'une page conseil : sections + mode de rendu. */
+interface R3GuideBody {
+  s1Sections: R3GuideSection[];
+  bodySections: R3GuideSection[];
+  metaSections: R3GuideSection[];
+  sourceType: 'conseil' | 'article';
 }
 
 /** TTL fresh window (seconds) — CacheService utilise ioredis SETEX en secondes.
@@ -199,18 +228,35 @@ export class R3GuideService {
   /**
    * Chemin canary ciblé — hors cache Redis (ni lecture, ni écriture, ni single-flight partagé).
    *
-   * Compose le BODY **legacy** puis attache le verdict de la chaîne de décision. En P2-R3-D le
-   * BODY servi reste legacy même quand `projectionStatus === 'READY_FOR_RENDER'` : cette PR prouve
-   * le câblage gouverné (flag → allowlist → reader → mapper → ready) et l'observabilité du repli,
-   * pas le rendu — le rendu md→HTML de la projection est le périmètre de P2-R3-E.
+   * Même contexte et même assemblage que le chemin legacy ; seule la source du CORPS change, et
+   * uniquement sur verdict `READY_FOR_RENDER` (ADR-106 D7) : les sections projetées remplacent
+   * alors les sections legacy EN BLOC — jamais une page mi-projection, mi-legacy. Sur tout
+   * `FALLBACK`, le corps est celui du chemin legacy et la cause est exposée dans `projectionMeta`.
+   * Un article introuvable renvoie `null` sans interroger la projection.
    */
   private async computeTargetedPayload(
     pg_alias: string,
   ): Promise<R3GuidePayload | null> {
-    const payload = await this.computeLegacyPayload(pg_alias);
-    if (payload === null) return null;
+    const ctx = await this.loadGuideContext(pg_alias);
+    if (ctx === null) return null;
 
     const decision = await this.projectionDecision.decide(pg_alias);
+    const body: R3GuideBody =
+      decision.projectionStatus === 'READY_FOR_RENDER'
+        ? {
+            ...presentR3Projection(decision.slots),
+            // Aucune section META sur le chemin projeté (ADR-106 D8) : le bloc « Pour aller
+            // plus loin » est un contenu legacy, hors contrat WIKI.
+            metaSections: [],
+            sourceType: 'conseil',
+          }
+        : await this.resolveCanonicalSections(
+            ctx.conseil,
+            ctx.article.sections,
+            ctx.article,
+          );
+
+    const payload = await this.assemblePayload(ctx, body);
     return {
       ...payload,
       projectionMeta: {
@@ -250,13 +296,29 @@ export class R3GuideService {
   }
 
   /**
-   * Original implementation extracted intact — composes 9 Supabase round-trips.
-   * Structural debt to be addressed in a separate plan
+   * Chemin legacy (caché) : contexte → sections legacy → assemblage.
+   * 9 round-trips Supabase ; dette structurelle à traiter dans un plan distinct
    * (R3GuideService fanout reduction via PostgreSQL RPC).
    */
   private async computeLegacyPayload(
     pg_alias: string,
   ): Promise<R3GuidePayload | null> {
+    const ctx = await this.loadGuideContext(pg_alias);
+    if (ctx === null) return null;
+
+    // Step 3 — Resolve canonical sections (port of frontend resolveCanonicalSections)
+    const body = await this.resolveCanonicalSections(
+      ctx.conseil,
+      ctx.article.sections,
+      ctx.article,
+    );
+    return this.assemblePayload(ctx, body);
+  }
+
+  /** Steps 1-2 — article + données de page, communs aux deux sources de corps. */
+  private async loadGuideContext(
+    pg_alias: string,
+  ): Promise<R3GuideContext | null> {
     // Step 1 — Resolve article by gamme (blocking)
     const { article, gammeData } =
       await this.dataService.getArticleByGamme(pg_alias);
@@ -293,13 +355,45 @@ export class R3GuideService {
       this.guideLinkPolicy.getSnapshot(),
     ]);
 
-    // Step 3 — Resolve canonical sections (port of frontend resolveCanonicalSections)
+    return {
+      pg_alias,
+      article,
+      pgId: gammeData.pg_id,
+      conseil,
+      seoSwitches,
+      relatedArticles,
+      vehicles,
+      adjacent,
+      seoBrief,
+      guideLinkSnapshot,
+    };
+  }
+
+  /**
+   * Steps 3a-5 — assemblage commun : règle des liens guides, filtre META, images, métriques,
+   * métadonnées de page. Indépendant de la source du corps (legacy ou projection).
+   */
+  private async assemblePayload(
+    ctx: R3GuideContext,
+    body: R3GuideBody,
+  ): Promise<R3GuidePayload> {
+    const {
+      pg_alias,
+      article,
+      pgId,
+      seoSwitches,
+      relatedArticles,
+      vehicles,
+      adjacent,
+      seoBrief,
+      guideLinkSnapshot,
+    } = ctx;
     const {
       s1Sections,
       bodySections,
       metaSections: mappedMeta,
       sourceType,
-    } = await this.resolveCanonicalSections(conseil, article.sections, article);
+    } = body;
 
     // Step 3a — Liens vers les guides d'achat (ADR-103 D5), dans l'ordre de rendu :
     // S1 → corps → META, puis l'encart « guide d'achat » de la page.
@@ -328,12 +422,10 @@ export class R3GuideService {
       );
     }
     // Après la règle : une section META dont le lien a été retiré sort du contrat.
-    const metaSections = this.filterMetaSections(mappedMeta, gammeData.pg_id);
+    const metaSections = this.filterMetaSections(mappedMeta, pgId);
 
     // Step 3b — Inject approved images into sections
-    const approvedImages = await this.seoService.getApprovedImages(
-      gammeData.pg_id,
-    );
+    const approvedImages = await this.seoService.getApprovedImages(pgId);
     const imageMap = new Map(approvedImages.map((img) => [img.sectionId, img]));
     const heroImg = imageMap.get('HERO');
 
@@ -360,7 +452,7 @@ export class R3GuideService {
     // Priority chain: pipeline seo_brief > legacy seo_data > h1/excerpt fallback
     const page: R3GuidePage = {
       pg_alias,
-      pg_id: gammeData.pg_id,
+      pg_id: pgId,
       title: article.h1 || article.title,
       metaTitle:
         seoBrief?.meta_title ||

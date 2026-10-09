@@ -11567,14 +11567,15 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/blog/interfaces/r3-guide.interfaces.ts",
       "importedBy": [
-        "backend/src/modules/blog/services/r3-guide.service.ts"
+        "backend/src/modules/blog/services/r3-guide.service.ts",
+        "backend/src/modules/blog/utils/projection-r3-section-presenter.ts"
       ],
       "imports": [
         "backend/src/modules/blog/interfaces/blog.interfaces.ts",
         "backend/src/modules/blog/services/r3-projection-decision.service.ts"
       ],
       "kind": "service",
-      "loc": 95,
+      "loc": 94,
       "owner": "__unassigned__",
       "path": "backend/src/modules/blog/interfaces/r3-guide.interfaces.ts",
       "risk": "low",
@@ -12169,6 +12170,8 @@
       "id": "backend/src/modules/blog/services/r3-guide.service.test.ts",
       "importedBy": [],
       "imports": [
+        "@modules/seo-projection/projection-r3.mapper",
+        "@modules/seo-projection/seo-projection-reader.service",
         "backend/src/cache/cache.service.ts",
         "backend/src/modules/blog/services/blog-article-data.service.ts",
         "backend/src/modules/blog/services/blog-article-relation.service.ts",
@@ -12179,7 +12182,7 @@
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "kind": "test",
-      "loc": 733,
+      "loc": 941,
       "owner": "__unassigned__",
       "path": "backend/src/modules/blog/services/r3-guide.service.test.ts",
       "risk": "low",
@@ -12209,12 +12212,13 @@
         "backend/src/modules/blog/services/blog-seo.service.ts",
         "backend/src/modules/blog/services/r3-projection-decision.service.ts",
         "backend/src/modules/blog/utils/html-normalize.utils.ts",
+        "backend/src/modules/blog/utils/projection-r3-section-presenter.ts",
         "backend/src/modules/seo/internal-linking.service.ts",
         "backend/src/modules/seo/seo-v4.types.ts",
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts"
       ],
       "kind": "service",
-      "loc": 595,
+      "loc": 687,
       "owner": "__unassigned__",
       "path": "backend/src/modules/blog/services/r3-guide.service.ts",
       "risk": "low",
@@ -12239,7 +12243,7 @@
         "backend/src/modules/blog/services/r3-projection-decision.service.ts"
       ],
       "kind": "test",
-      "loc": 456,
+      "loc": 480,
       "owner": "__unassigned__",
       "path": "backend/src/modules/blog/services/r3-projection-decision.service.test.ts",
       "risk": "low",
@@ -12269,7 +12273,7 @@
         "@modules/seo-projection/seo-projection-reader.service"
       ],
       "kind": "service",
-      "loc": 239,
+      "loc": 242,
       "owner": "__unassigned__",
       "path": "backend/src/modules/blog/services/r3-projection-decision.service.ts",
       "risk": "low",
@@ -12366,13 +12370,66 @@
       "id": "backend/src/modules/blog/utils/html-normalize.utils.ts",
       "importedBy": [
         "backend/src/modules/blog/services/r3-guide.service.ts",
-        "backend/src/modules/blog/services/r6-guide.service.ts"
+        "backend/src/modules/blog/services/r6-guide.service.ts",
+        "backend/src/modules/blog/utils/projection-r3-section-presenter.ts"
       ],
       "imports": [],
       "kind": "service",
       "loc": 145,
       "owner": "__unassigned__",
       "path": "backend/src/modules/blog/utils/html-normalize.utils.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/blog/utils/projection-r3-section-presenter.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@modules/seo-projection/projection-r3.mapper",
+        "@modules/seo-projection/seo-projection-reader.service",
+        "backend/src/modules/blog/utils/projection-r3-section-presenter.ts"
+      ],
+      "kind": "test",
+      "loc": 181,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/blog/utils/projection-r3-section-presenter.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "reachability"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/blog/utils/projection-r3-section-presenter.ts",
+      "importedBy": [
+        "backend/src/modules/blog/services/r3-guide.service.ts",
+        "backend/src/modules/blog/utils/projection-r3-section-presenter.test.ts"
+      ],
+      "imports": [
+        "@config/keyword-plan.constants",
+        "@modules/seo-projection/projection-markdown.renderer",
+        "@modules/seo-projection/projection-r3.mapper",
+        "backend/src/modules/blog/interfaces/r3-guide.interfaces.ts",
+        "backend/src/modules/blog/utils/html-normalize.utils.ts"
+      ],
+      "kind": "service",
+      "loc": 101,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/blog/utils/projection-r3-section-presenter.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -26803,6 +26860,48 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/seo-projection/projection-markdown.renderer.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/seo-projection/projection-markdown.renderer.ts"
+      ],
+      "kind": "test",
+      "loc": 189,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/seo-projection/projection-markdown.renderer.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/seo-projection/projection-markdown.renderer.ts",
+      "importedBy": [
+        "backend/src/modules/seo-projection/projection-markdown.renderer.test.ts"
+      ],
+      "imports": [],
+      "kind": "service",
+      "loc": 217,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/seo-projection/projection-markdown.renderer.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -59814,7 +59913,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 87,
+      "loc": 86,
       "owner": "__unassigned__",
       "path": "frontend/app/types/r3-guide.types.ts",
       "risk": "low",
@@ -70139,7 +70238,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 1510,
+      "loc": 1588,
       "owner": "__unassigned__",
       "path": "scripts/marketing/marketing-workbench.test.ts",
       "risk": "low",
@@ -70196,7 +70295,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 426,
+      "loc": 492,
       "owner": "__unassigned__",
       "path": "scripts/marketing/reactivation-runtime.test.mjs",
       "risk": "low",
@@ -70291,7 +70390,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 223,
+      "loc": 231,
       "owner": "__unassigned__",
       "path": "scripts/marketing/workbench-cli.ts",
       "risk": "low",

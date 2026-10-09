@@ -51,17 +51,16 @@ type AnyArticle = any;
 
 /**
  * Miroir de `R3ProjectionMeta` (backend `r3-guide.interfaces.ts`) — verdict de la chaîne de
- * décision projection (P2-R3-D). **Présent uniquement si la paire R3_CONSEILS@gamme:<alias> est
+ * décision projection (ADR-106). **Présent uniquement si la paire R3_CONSEILS@gamme:<alias> est
  * ciblée par la canary** : sa présence EST le signal de ciblage (le loader impose alors
  * `private, no-store`). Absent hors canary — donc absent partout tant que les flags sont OFF.
  *
- * `projectionStatus` = PRÉPARATION (`READY_FOR_RENDER` = DTO complet côté mapper).
- * `servedBodySource` = source RÉELLEMENT rendue — littéralement `"legacy"` tant que le renderer
- * md→HTML gouverné n'existe pas (P2-R3-E). `READY_FOR_RENDER` ne veut PAS dire « projection servie ».
+ * `READY_FOR_RENDER` ⇔ `servedBodySource === "projection"` : le corps (S1 + sections, sans META)
+ * vient de la projection, déjà rendu en HTML côté backend. Sur `FALLBACK`, corps legacy.
  */
 export interface R3ProjectionMeta {
   projectionStatus: "READY_FOR_RENDER" | "FALLBACK";
-  servedBodySource: "legacy";
+  servedBodySource: "legacy" | "projection";
   fallbackReason: string | null;
   mappedCount: number;
   invalidCount: number;
