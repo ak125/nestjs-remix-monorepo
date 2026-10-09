@@ -36097,7 +36097,7 @@
         "backend/src/modules/admin/services/command-center-action-rules/score-action.ts"
       ],
       "kind": "service",
-      "loc": 194,
+      "loc": 199,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/command-center-action-rules/department-report.rules.ts",
       "risk": "medium",
@@ -36148,7 +36148,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 30,
+      "loc": 37,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/command-center-action-rules/live-kpi.ts",
       "risk": "medium",
@@ -36323,7 +36323,7 @@
         "backend/src/modules/analytics/index.ts"
       ],
       "kind": "service",
-      "loc": 399,
+      "loc": 473,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/command-center-kpi.service.ts",
       "risk": "medium",
@@ -67964,7 +67964,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 291,
+      "loc": 335,
       "owner": "@ak125",
       "path": "backend/tests/unit/command-center-department-report.test.ts",
       "risk": "medium",
@@ -68004,7 +68004,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 704,
+      "loc": 838,
       "owner": "@ak125",
       "path": "backend/tests/unit/command-center-kpi.service.test.ts",
       "risk": "medium",
@@ -103151,11 +103151,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "91299196c9df3b8945f2622f53257ace34d97767d8bd28ace198ab72a62df409",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "1143c31fee95458267c925c55c5103d47f40d4c67eef5283a496ef963c4d423c",
+      "audit/registry/files.json": "07940ca348b77fb2146543299571dfac0722ed93fdc28c317766be6d1319de91",
       "audit/registry/rpc.json": "5ee2a4b80a43764dda2c436d7b7b49e09ba4b1bd2e746864e869ecc7ac556049",
       "audit/registry/runtime.json": "aa553d2735271a86c3a725e0faf19b5a65a1da071a3ad7c95eb843e3a9e2492e"
     },
-    "sotFingerprint": "0b6cb6d4cb2b"
+    "sotFingerprint": "398852f56755"
   },
   "runtime": [
     {
