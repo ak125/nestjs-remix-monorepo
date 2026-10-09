@@ -1404,6 +1404,84 @@ test("A1 exclusions reject unknown fields, invalid rules and non-synthetic conte
     assert.throws(() => summarizeSegment(w, rule), /INVALID_WORKBENCH_INPUT/);
 });
 
+test("V2 inactivity compares 180/365 on the same five identities without changing other indicators", () => {
+  const baseline = runWorkbench(["--report"]);
+  assert.deepEqual(
+    runWorkbench(["--report", "--inactive-days", "180"]),
+    baseline,
+  );
+  assert.ok("audience" in baseline && "economics" in baseline);
+  for (const [days, included] of [
+    [180, 1],
+    [365, 0],
+  ] as const) {
+    const report = runWorkbench(["--report", "--inactive-days", String(days)]);
+    assert.ok("audience" in report && "economics" in report);
+    assert.equal(report.audience.total, 5);
+    assert.equal(report.audience.included, included);
+    assert.equal(report.audience.excluded, 5 - included);
+    for (const key of [
+      "economics",
+      "engagement",
+      "scores",
+      "experiment",
+      "capacity",
+    ] as const)
+      assert.deepEqual(report[key], baseline[key], key);
+    const rows = runWorkbench(["--segment", "--inactive-days", String(days)]);
+    assert.ok(Array.isArray(rows) && rows.every((row) => "included" in row));
+    const selected = rows.filter((row) => "included" in row && row.included);
+    assert.deepEqual(
+      selected.map((row) => ("id" in row ? row.id : null)),
+      days === 180 ? ["synthetic-contact-inactive"] : [],
+    );
+    assert.equal(rows.length, 5);
+  }
+});
+
+test("V2 inactivity validates its bounds and rejects ambiguous or unrelated options", () => {
+  for (const command of ["--segment", "--report"]) {
+    for (const value of ["1", "3650"])
+      assert.doesNotThrow(() =>
+        runWorkbench([command, "--inactive-days", value]),
+      );
+    for (const value of [
+      "0",
+      "3651",
+      "-1",
+      "1.5",
+      "1e2",
+      "Infinity",
+      "",
+      " 180",
+      "180x",
+      "01",
+      "9999999999999999999999999",
+    ])
+      assert.throws(
+        () => runWorkbench([command, "--inactive-days", value]),
+        /INVALID_ARGUMENT/,
+      );
+    for (const tail of [
+      ["--inactive-days"],
+      ["--inactive-days", "180", "--inactive-days", "365"],
+      ["--inactive-days", "180", "--send"],
+      ["--days", "180"],
+    ])
+      assert.throws(() => runWorkbench([command, ...tail]), /INVALID_ARGUMENT/);
+  }
+  for (const command of [
+    "--help",
+    "--operations",
+    "--capabilities",
+    "--all-scenarios",
+  ])
+    assert.throws(
+      () => runWorkbench([command, "--inactive-days", "365"]),
+      /INVALID_ARGUMENT/,
+    );
+});
+
 test("A1 report adds aggregate audience and preserves the five existing indicators", () => {
   const report = runWorkbench(["--report"]);
   assert.ok("economics" in report && "audience" in report);

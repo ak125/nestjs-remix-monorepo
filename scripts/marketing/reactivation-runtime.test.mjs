@@ -7,6 +7,72 @@ import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 const root = path.resolve(import.meta.dirname, "../..");
 
+test("CLI keeps parameterized V2 audiences separate from the V1 inactivity pilot", () => {
+  const run = (args) =>
+    spawnSync(
+      process.execPath,
+      [
+        "--require",
+        path.join(root, "scripts/marketing/simulation-no-network.cjs"),
+        "--import",
+        "tsx",
+        path.join(root, "scripts/marketing/run-reactivation-pilot.ts"),
+        ...args,
+      ],
+      {
+        cwd: root,
+        env: {
+          PATH: process.env.PATH,
+          SystemRoot: process.env.SystemRoot,
+          TSX_TSCONFIG_PATH: path.join(root, "scripts/marketing/tsconfig.json"),
+        },
+        encoding: "utf8",
+        timeout: 30000,
+        windowsHide: true,
+      },
+    );
+  for (const [args, version, total, included] of [
+    [["--report", "--inactive-days", "180"], "2.0.0", 5, 1],
+    [["--report", "--inactive-days", "365"], "2.0.0", 5, 0],
+    [["--segment", "--inactive-days", "365"], "2.0.0", 5, 0],
+    [["--inactive-days", "365"], "1.0.0", 4, 0],
+  ]) {
+    const p = run(args);
+    assert.equal(p.status, 0, p.stderr);
+    assert.equal(p.stderr, "");
+    const r = JSON.parse(p.stdout);
+    assert.equal(r.schema_version, version);
+    if (version === "2.0.0") {
+      assert.equal(r.synthetic, true);
+      assert.equal(r.real_execution, false);
+      if (args[0] === "--report") {
+        assert.equal(r.result.audience.total, total);
+        assert.equal(r.result.audience.included, included);
+      } else {
+        assert.equal(r.result.length, total);
+        assert.equal(r.result.filter((row) => row.included).length, included);
+      }
+    } else {
+      assert.equal(r.audience.length, total);
+      assert.equal(r.audience.filter((row) => row.included).length, included);
+      assert.equal(r.simulation.real_sends, 0);
+    }
+  }
+  for (const args of [
+    ["--report", "--inactive-days", "3651"],
+    ["--segment", "--inactive-days", "180", "--send"],
+  ]) {
+    const p = run(args);
+    assert.equal(p.status, 1);
+    assert.equal(p.stdout, "");
+    assert.deepEqual(JSON.parse(p.stderr), {
+      schema_version: "2.0.0",
+      error: { code: "INVALID_ARGUMENT" },
+      real_execution: false,
+    });
+  }
+});
+
 test("CLI accepts canonical checkout origins and rejects other repositories", () => {
   const configured = spawnSync(
     "git",
