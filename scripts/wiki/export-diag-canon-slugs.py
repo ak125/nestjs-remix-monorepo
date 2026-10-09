@@ -40,8 +40,8 @@ deux fois (Python `build_flat_schema()` + Zod TS) — single SoT respecté.
 
    Version 1.1.0 (ADR-112 phase 0) : ajoute `causes` (__diag_cause actives →
    slug de leur système), clé de `cause_slug` dans les fiches WIKI. Le canon Zod
-   accepte encore 1.0.0 le temps que l'export nocturne publie 1.1.0
-   (expand/contract, voir `diag-canon.schema.ts`). Une cause sans slug ou sans
+   n'accepte que 1.1.0 (1.0.0 retiré une fois l'export en ligne passé en 1.1.0,
+   expand/contract, voir `diag-canon.schema.ts`). Une cause sans slug ou sans
    système fait échouer l'export (exit 1) : aucune cause n'est écartée en silence.
 
 Le 3e artefact `diag-canon.schema.json` est produit par le workflow

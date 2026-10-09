@@ -4717,6 +4717,7 @@
       "sourceConfidence": "high",
       "status": "LIVE",
       "usedBy": [
+        "backend/src/modules/admin/services/command-center-kpi.service.ts",
         "backend/src/modules/admin/services/seo-control.service.ts",
         "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts",
         "backend/src/modules/diagnostic-engine/services/outcome-emitter.service.ts",

@@ -22,7 +22,7 @@
     "unresolved_callsites": 0,
     "dropped_call_sites": 5,
     "migrations_scanned": 410,
-    "backend_files_scanned": 1451
+    "backend_files_scanned": 1453
   },
   "tables": {
     "___config": {
@@ -1086,6 +1086,7 @@
     },
     "__seo_event_log": {
       "used_by": [
+        "backend/src/modules/admin/services/command-center-kpi.service.ts",
         "backend/src/modules/admin/services/seo-control.service.ts",
         "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts",
         "backend/src/modules/diagnostic-engine/services/outcome-emitter.service.ts",
@@ -1098,7 +1099,7 @@
         "backend/src/modules/seo/services/seo-placeholder-events.service.ts",
         "backend/src/modules/seo/services/sitemap-event-log.service.ts"
       ],
-      "used_by_count": 11,
+      "used_by_count": 12,
       "in_migrations": [
         "20260425_seo_event_log.sql"
       ],
@@ -11028,7 +11029,7 @@
     },
     {
       "file": "backend/src/modules/admin/services/command-center-kpi.service.ts",
-      "line": 197,
+      "line": 253,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"

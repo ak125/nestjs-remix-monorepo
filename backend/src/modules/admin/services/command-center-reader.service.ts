@@ -8,11 +8,9 @@ import {
   type CcDepartmentReport,
   type CommandCenterDigest,
 } from '@repo/registry';
-import {
-  CommandCenterKpiService,
-  type LiveKpiMeasure,
-} from './command-center-kpi.service';
+import { CommandCenterKpiService } from './command-center-kpi.service';
 import { buildDepartmentReports } from './command-center-action-rules/department-report.rules';
+import type { LiveKpiMeasure } from './command-center-action-rules/live-kpi';
 import { type OwnerActionV2 } from './command-center-action-rules/score-action';
 
 /**
