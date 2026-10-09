@@ -76908,7 +76908,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 124,
+      "loc": 155,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/pieces/EquipementiersSection.tsx",
       "risk": "low",
@@ -81850,7 +81850,7 @@
         "~/utils/single-fetch"
       ],
       "kind": "route",
-      "loc": 579,
+      "loc": 557,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/$.tsx",
       "risk": "medium",
@@ -87248,7 +87248,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 932,
+      "loc": 926,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/diagnostic-auto.$slug.tsx",
       "risk": "medium",
@@ -87282,7 +87282,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 1042,
+      "loc": 1041,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/diagnostic-auto._index.tsx",
       "risk": "medium",
@@ -92354,7 +92354,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 85,
+      "loc": 84,
       "owner": "@ak125",
       "path": "frontend/tests/unit/catalogue-image-fallback.test.tsx",
       "risk": "medium",
@@ -92457,26 +92457,6 @@
       "loc": 49,
       "owner": "@ak125",
       "path": "frontend/tests/unit/catch-all-data-suffix-redirect.test.ts",
-      "risk": "medium",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "high",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D2",
-      "id": "frontend/tests/unit/catch-all-old-link-410.test.ts",
-      "importedBy": [],
-      "imports": [],
-      "kind": "test",
-      "loc": 95,
-      "owner": "@ak125",
-      "path": "frontend/tests/unit/catch-all-old-link-410.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -92834,7 +92814,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 171,
+      "loc": 179,
       "owner": "@ak125",
       "path": "frontend/tests/unit/diagnostic-hub-wiki-content.test.tsx",
       "risk": "medium",
@@ -93117,26 +93097,6 @@
       "loc": 72,
       "owner": "@ak125",
       "path": "frontend/tests/unit/entry-server-session-privacy.test.ts",
-      "risk": "medium",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "high",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D2",
-      "id": "frontend/tests/unit/equipementiers-section-no-invented-url.test.tsx",
-      "importedBy": [],
-      "imports": [],
-      "kind": "test",
-      "loc": 62,
-      "owner": "@ak125",
-      "path": "frontend/tests/unit/equipementiers-section-no-invented-url.test.tsx",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -103191,11 +103151,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "91299196c9df3b8945f2622f53257ace34d97767d8bd28ace198ab72a62df409",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "f963149dbccd943b257d691c4757f03b8bb6878075a5d8ef10c42956c41c8a5b",
+      "audit/registry/files.json": "1143c31fee95458267c925c55c5103d47f40d4c67eef5283a496ef963c4d423c",
       "audit/registry/rpc.json": "5ee2a4b80a43764dda2c436d7b7b49e09ba4b1bd2e746864e869ecc7ac556049",
       "audit/registry/runtime.json": "aa553d2735271a86c3a725e0faf19b5a65a1da071a3ad7c95eb843e3a9e2492e"
     },
-    "sotFingerprint": "def3f6b85010"
+    "sotFingerprint": "0b6cb6d4cb2b"
   },
   "runtime": [
     {
