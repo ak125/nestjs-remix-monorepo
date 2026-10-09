@@ -61,7 +61,8 @@ describe("catalogue image failure is bounded", () => {
       const { container } = render(<MemoryRouter>{component}</MemoryRouter>);
       const image = container.querySelector("img")!;
       const alt = image.alt;
-      const link = image.closest("a")!.getAttribute("href");
+      // La carte équipementier n'est pas un lien (aucune page marque) : null.
+      const link = image.closest("a")?.getAttribute("href") ?? null;
       const setSource = vi.spyOn(HTMLImageElement.prototype, "src", "set");
       fireEvent.error(image);
       const fallback = image.getAttribute("src")!;
@@ -77,7 +78,7 @@ describe("catalogue image failure is bounded", () => {
         ),
       ).toBe(true);
       expect(image.alt).toBe(alt);
-      expect(image.closest("a")!.getAttribute("href")).toBe(link);
+      expect(image.closest("a")?.getAttribute("href") ?? null).toBe(link);
     },
   );
 });

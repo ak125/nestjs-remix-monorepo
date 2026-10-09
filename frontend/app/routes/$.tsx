@@ -33,6 +33,22 @@ export const meta: MetaFunction = () => [
 // la suppression du défaut `index, follow` côté SeoHeadersInterceptor (fallthrough).
 export const headers = buildCacheHeaders("no-cache");
 
+/**
+ * Statut décidé dans le `try` du loader (410 d'ancien lien, 404 enrichie).
+ * `data()` renvoie un DataWithResponseInit, pas une Response : levé dans le
+ * `try`, il était rattrapé par le `catch` et remplacé par la 404 de repli —
+ * aucun de ces 410 ne sortait. Le `try` lève donc cette erreur, que le `catch`
+ * traduit en `data()` (même modèle que LeadApiStatusError, #1681).
+ */
+class CatchAllStatusError extends Error {
+  constructor(
+    readonly body: Record<string, unknown>,
+    readonly init: ResponseInit,
+  ) {
+    super(`catch-all ${init.status}`);
+  }
+}
+
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   // 🛡️ RR8 single-fetch (navigation client) garde le suffixe `.data` sur
@@ -169,7 +185,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
             logger.log(
               `[SEO] Legacy URL not resolved, returning 410: ${pathname}`,
             );
-            throw data(
+            throw new CatchAllStatusError(
               {
                 url: pathname,
                 message:
@@ -188,7 +204,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
           }
         }
       } catch (legacyError) {
-        if (legacyError instanceof Response) {
+        if (
+          legacyError instanceof Response ||
+          legacyError instanceof CatchAllStatusError
+        ) {
           throw legacyError;
         }
         logger.error("Erreur résolution URL legacy:", legacyError);
@@ -266,7 +285,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     // 5. Vérifier si c'est un ancien lien connu (logique 410)
     if (errorResponseData.isOldLink) {
-      throw data(
+      throw new CatchAllStatusError(
         {
           ...errorResponseData,
           message: "Ce contenu a été définitivement supprimé ou déplacé",
@@ -285,7 +304,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // X-Robots-Tag obligatoire : sans ce header, SeoHeadersInterceptor.intercept()
     // applique le default `index, follow` pour les paths non-matchés (ex /wp-admin/,
     // /panier inexistant). Canon SEO : un 404 ne s'indexe jamais.
-    throw data(
+    throw new CatchAllStatusError(
       {
         ...errorResponseData,
         message: "Page non trouvée",
@@ -302,6 +321,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // Si c'est une Response (redirection ou erreur JSON), la re-lancer
     if (error instanceof Response) {
       throw error;
+    }
+    if (error instanceof CatchAllStatusError) {
+      throw data(error.body, error.init);
     }
 
     // Pour toute autre erreur, fallback vers 404 basique
