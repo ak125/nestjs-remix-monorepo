@@ -21,6 +21,7 @@ import {
   CommandCenterKpiService,
   classifyOrderPayment,
   countPaymentsKept,
+  summarizeCancelReasons,
   toPaymentsKeptKpi,
   type OrderPaymentRow,
 } from '../../src/modules/admin/services/command-center-kpi.service';
@@ -43,6 +44,7 @@ const UNPAID: OrderPaymentRow = {
   ord_date_pay: null,
   payment_confirmed: false,
   ord_cancel_date: null,
+  ord_cancel_reason: null,
 };
 
 function row(overrides: Partial<OrderPaymentRow>): OrderPaymentRow {
@@ -262,6 +264,86 @@ describe('countPaymentsKept + toPaymentsKeptKpi', () => {
   });
 });
 
+describe('summarizeCancelReasons', () => {
+  /** Commande payée puis annulée par l'admin, avec le motif saisi. */
+  const cancelled = (reason: string | null) =>
+    row({ ord_ords_id: '6', ord_is_pay: '1', ord_cancel_reason: reason });
+
+  it('aucune annulation après paiement → null, rien à constater', () => {
+    expect(
+      summarizeCancelReasons([
+        UNPAID,
+        row({ ord_ords_id: '5', ord_is_pay: '1' }),
+        // annulée sans avoir été payée : pas une fuite, son motif est ignoré
+        row({ ord_ords_id: '2', ord_cancel_reason: 'doublon' }),
+      ]),
+    ).toBeNull();
+  });
+
+  it('regroupe les saisies qui ne diffèrent que par les espaces, la casse ou le point final', () => {
+    expect(
+      summarizeCancelReasons([
+        cancelled('pas   dispo'),
+        cancelled(' Pas dispo.'),
+        cancelled('pas\tdispo'),
+        row({ ord_ords_id: '5', ord_is_pay: '1' }),
+      ]),
+    ).toBe('Annulations après paiement — motif saisi : « pas dispo » ×3');
+  });
+
+  it('garde accents et apostrophes', () => {
+    expect(
+      summarizeCancelReasons([
+        cancelled('Annulée par le client depuis son espace'),
+        cancelled('n’est plus fabriqué'),
+      ]),
+    ).toBe(
+      'Annulations après paiement — motif saisi : « annulée par le client depuis son espace » ×1, « n’est plus fabriqué » ×1',
+    );
+  });
+
+  it('chiffres, @, lien, ponctuation ou texte trop long → compté comme masqué, jamais montré', () => {
+    const summary = summarizeCancelReasons([
+      cancelled('commande 123456 en double'),
+      cancelled('voir client@example.com'),
+      cancelled('cf https://example.com/x'),
+      cancelled('appeler (urgent)'),
+      cancelled('a'.repeat(61)),
+      cancelled('pas dispo'),
+    ]);
+    expect(summary).toBe(
+      'Annulations après paiement — motif saisi : « pas dispo » ×1, motif masqué ×5',
+    );
+    for (const leak of ['123456', '@', 'http', 'urgent', 'aaaa']) {
+      expect(summary).not.toContain(leak);
+    }
+  });
+
+  it('motif vide ou absent → « sans motif »', () => {
+    expect(summarizeCancelReasons([cancelled(null), cancelled('  ')])).toBe(
+      'Annulations après paiement — motif saisi : sans motif ×2',
+    );
+  });
+
+  it('trois motifs au plus, du plus fréquent au moins fréquent, le reste compté', () => {
+    expect(
+      summarizeCancelReasons([
+        cancelled('rupture'),
+        cancelled('erreur de prix'),
+        cancelled('erreur de prix'),
+        cancelled('client injoignable'),
+        cancelled('pas dispo'),
+        cancelled('pas dispo'),
+        cancelled('pas dispo'),
+        cancelled('doublon'),
+        cancelled(null),
+      ]),
+    ).toBe(
+      'Annulations après paiement — motif saisi : « pas dispo » ×3, « erreur de prix » ×2, « client injoignable » ×1, autres motifs ×2, sans motif ×1',
+    );
+  });
+});
+
 describe('CommandCenterKpiService.computeLiveKpis', () => {
   const NOW = new Date('2026-10-04T12:00:00.000Z');
 
@@ -275,7 +357,7 @@ describe('CommandCenterKpiService.computeLiveKpis', () => {
 
     expect(supabase.from).toHaveBeenCalledWith(TABLES.xtr_order);
     expect(supabase.select).toHaveBeenCalledWith(
-      'ord_ords_id, ord_is_pay, ord_date_pay, payment_confirmed, ord_cancel_date',
+      'ord_ords_id, ord_is_pay, ord_date_pay, payment_confirmed, ord_cancel_date, ord_cancel_reason',
       { count: 'exact' },
     );
     expect(supabase.gte).toHaveBeenCalledWith(
@@ -283,6 +365,57 @@ describe('CommandCenterKpiService.computeLiveKpis', () => {
       '2026-09-04T12:00:00.000Z',
     );
     expect(kpi).toMatchObject({ value: 1, unit: '/1', status: 'OK' });
+  });
+
+  it('motifs des annulations après paiement de la fenêtre courante → constat de la mesure', async () => {
+    const [measure, ...others] = await makeService(
+      fakeSupabase(
+        {
+          data: [
+            row({
+              ord_ords_id: '6',
+              ord_is_pay: '1',
+              ord_cancel_reason: 'pas dispo',
+            }),
+            row({ ord_ords_id: '5', ord_is_pay: '1' }),
+          ],
+          count: 2,
+          error: null,
+        },
+        // fenêtre précédente : son motif ne sert qu'à la comparaison, pas au constat
+        {
+          data: [
+            row({
+              ord_ords_id: '6',
+              ord_is_pay: '1',
+              ord_cancel_reason: 'rupture',
+            }),
+          ],
+          count: 1,
+          error: null,
+        },
+      ),
+    ).computeLiveKpis('full', NOW);
+    expect(measure.kpi).toMatchObject({
+      value: 1,
+      unit: '/2',
+      status: 'WARNING',
+    });
+    expect(measure.observed_cause).toBe(
+      'Annulations après paiement — motif saisi : « pas dispo » ×1',
+    );
+    for (const m of others) expect(m).not.toHaveProperty('observed_cause');
+  });
+
+  it('aucune annulation après paiement → aucun constat', async () => {
+    const [measure] = await makeService(
+      fakeSupabase({
+        data: [row({ ord_ords_id: '5', ord_is_pay: '1' })],
+        count: 1,
+        error: null,
+      }),
+    ).computeLiveKpis('full', NOW);
+    expect(measure).not.toHaveProperty('observed_cause');
   });
 
   it('erreur de lecture (ex. 42501 en PREPROD, rôle anon) → UNKNOWN, pas zéro', async () => {
@@ -375,6 +508,7 @@ describe('CommandCenterKpiService.computeLiveKpis', () => {
     ).computeLiveKpis('full', NOW);
     expect(measure.kpi.value).toBeNull();
     expect(measure.previous_value).toBeNull();
+    expect(measure).not.toHaveProperty('observed_cause');
   });
 
   it.each(['light', 'disabled'] as const)(
