@@ -9,7 +9,9 @@
  *   - la décision machine est REUSE ou IMPROVE uniquement : CREATE exige un trou
  *     prouvé (Vue 4) et PAUSE une décision owner — le schéma les garde pour les
  *     rapports écrits par un humain ;
- *   - « feu vert owner » vient de la règle qui a émis l'action, jamais déduit.
+ *   - « feu vert owner » vient de la règle qui a émis l'action, jamais déduit ;
+ *   - la cause probable vient de l'action ouverte ou d'un constat lu en base
+ *     (`observed_cause`, ex. motifs saisis à l'annulation), jamais devinée.
  */
 import type { CcDepartmentReport } from '@repo/registry';
 import type { LiveKpiMeasure } from './live-kpi';
@@ -93,10 +95,12 @@ export function buildDepartmentReports(input: {
       ? SCORE_BY_STATUS[m.kpi.status]
       : 'NON_MESURE';
 
+    // Le constat suit la mesure : l'écran ne montre que les trois premières preuves.
     const evidence = [
       ...(measured
         ? [
             `${m.kpi.id} = ${m.kpi.value}${m.kpi.unit ?? ''} (base, ${m.window_days} j)`,
+            ...(m.observed_cause ? [m.observed_cause] : []),
           ]
         : []),
       ...(top?.evidence ?? []),
@@ -162,7 +166,8 @@ export function buildDepartmentReports(input: {
       return {
         ...base,
         gap: `KPI « ${m.kpi.label} » à ${m.kpi.value}${m.kpi.unit ?? ''}.`,
-        probable_cause: null,
+        // constat lu en base, sinon rien : la cause n'est jamais devinée
+        probable_cause: m.observed_cause ?? null,
         decision: 'IMPROVE',
         risk: 'FAIBLE',
         owner_go_required: false,

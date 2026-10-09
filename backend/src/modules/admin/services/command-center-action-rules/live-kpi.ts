@@ -26,4 +26,11 @@ export interface LiveKpiMeasure {
   previous_value: number | null;
   /** Sens d'amélioration : `higher` = une hausse de `value` est un progrès. */
   better: 'higher' | 'lower';
+  /**
+   * Constat lu en base sur la fenêtre courante qui éclaire la valeur (ex. motifs
+   * saisis à l'annulation), jamais une cause déduite. Absent = rien à constater.
+   * Le rapport le reprend tel quel et il part dans le digest Hermes : texte
+   * borné et filtré par son producteur.
+   */
+  observed_cause?: string;
 }
