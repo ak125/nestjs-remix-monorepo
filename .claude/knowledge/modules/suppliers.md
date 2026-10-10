@@ -55,7 +55,7 @@ celle qui correspond, **jamais en créer une parallèle** :
 
 | Surface | Fichier | Métier | Sortie | Cadence | Plateformes |
 |---|---|---|---|---|---|
-| **classify** | `backend/src/workers/supplier-availability-classify.ts` | full-feed pré-activation : quels refs peuvent devenir vendables | JSONL/CSV + **buckets d'activation** (CONFIRMED/BLOCK/REVIEW), read-only | on-demand (ops CLI) | **inoshop only** (route bulk `POST /search`) |
+| **classify** | `backend/src/workers/supplier-availability-classify.ts` | full-feed pré-activation : quels refs peuvent devenir vendables | JSONL/CSV + **buckets d'activation** (CONFIRMED/BLOCK/REVIEW), read-only | on-demand (ops CLI) | **inoshop** (bulk `POST /search`) + **CAL** (1 réf/appel) |
 | **supplier-sync** | `backend/src/modules/supplier-truth/supplier-sync.runner.ts` (+ scheduler/processor, `worker.module.ts`) | **observatoire** continu prix+dispo | écrit `supplier_offer_snapshot` (observations brutes + `parse_confidence`) | cron 4h, **DORMANT par défaut** (flag `SUPPLIER_TRUTH_SYNC_ENABLED`) | **DCA + CAL** (générique registry) |
 | **supplier-price-verify** | `backend/src/workers/supplier-price-verify.ts` | spot-check prix N-échantillon risque-pondéré avant import | verdict CONFIRMED/FIX_FEED/REVIEW/BLOCK | on-demand (ops CLI) | **inoshop + CAL** |
 
@@ -63,15 +63,17 @@ celle qui correspond, **jamais en créer une parallèle** :
 - **Connecteurs** = couche portail unique : `connectors/supplier-registry.ts`
   (générique par `spl_id`/platform/creds) + `inoshop.connector.ts` + `cal.connector.ts`
   (login, token, jitter anti-ban, `fetchSearchRaw` bulk / `fetchAvailability` per-ref, close).
-- **Classification** : `connectors/inoshop-search-parse.ts` (`verdictForRef`/`ActivationBucket`) — pure, unique.
+- **Classification** : `connectors/inoshop-search-parse.ts` (`verdictForRef`/`ActivationBucket`/`withTariffStatus`) — pure, unique ;
+  CAL y mappe ses verdicts via `connectors/cal-parse.ts` (`matchCalItem`/`calVerdictForRef`), mêmes buckets.
 - **Résilience** : `connectors/portal-classify-resilience.ts` (#960) — module **pur testé**
   (bisection + budget par-ref + circuit-breaker + dead-letter `REVIEW_PORTAL_TIMEOUT`).
   Réutilisable par classify **et** un futur supplier-sync.
 
 ### Pourquoi classify ≠ DCA-only
-Générique via `SUPPLIER_SPL`+`BRAND_TOKENS`+registry. La limite `cfg.platform === 'inoshop'`
-est une **contrainte portail** (seul inoshop expose le bulk `/search`), **pas un hardcode** ;
-la dispo CAL passe par supplier-sync (per-ref) / supplier-price-verify.
+Générique via `SUPPLIER_SPL`+`BRAND_TOKENS`+registry. Plateformes `inoshop` (bulk `/search`)
+et `cal` (depuis 2026-10 : 1 réf par appel, faute de route bulk côté CAL — appariement exact
+réf + marque, ligne article contrôlée, rouge/J+1 = REVIEW). Une autre plateforme = erreur
+explicite, jamais un repli. Détail opératoire : `ops/supplier-brand-price-load-procedure.md` §2.
 
 ## Gotchas
 <!-- À compléter à la main : pièges connus, bugs célèbres, invariants non évidents. -->
