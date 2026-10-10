@@ -57,6 +57,8 @@ export class InoshopConnector implements SupplierConnector {
   }
 
   async login(creds: SupplierCredentials): Promise<void> {
+    // A re-login (classifier session recovery) must not leak the previous browser.
+    await this.close();
     const { chromium } = await import('playwright');
     this.browser = await chromium.launch({ headless: true });
     this.context = await this.browser.newContext({
@@ -292,9 +294,14 @@ export class InoshopConnector implements SupplierConnector {
   }
 
   async close(): Promise<void> {
-    await this.context?.close();
-    await this.browser?.close();
-    this.loggedIn = false;
+    try {
+      await this.context?.close();
+    } finally {
+      await this.browser?.close();
+      this.browser = undefined;
+      this.context = undefined;
+      this.loggedIn = false;
+    }
   }
 }
 

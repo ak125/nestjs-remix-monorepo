@@ -5,6 +5,8 @@ import {
   matchBrandRow,
   classifyForActivation,
   verdictForRef,
+  withTariffStatus,
+  type RefVerdict,
   type SearchRow,
 } from './inoshop-search-parse';
 
@@ -330,4 +332,45 @@ describe('verdictForRef (end-to-end)', () => {
     );
     expect(verdictForRef(rows, '1', 'E1', NK).bucket).toBe('BLOCK_NONE');
   });
+});
+
+describe('withTariffStatus (supplier tariff marks the ref discontinued)', () => {
+  const v = (bucket: RefVerdict['bucket'], reason = 'r'): RefVerdict => ({
+    ref: '1',
+    ean: null,
+    bucket,
+    matchKind: 'REF_BRAND',
+    reason,
+    code: 'C1',
+    marque: 'NK',
+    dispoType: null,
+    icon: null,
+    portalPrix: null,
+  });
+
+  it('not discontinued → verdict unchanged', () => {
+    const x = v('CONFIRMED_AG');
+    expect(withTariffStatus(x, false)).toBe(x);
+  });
+
+  it.each([
+    'BLOCK_NONE',
+    'REVIEW_NO_SIGNAL',
+    'REVIEW_ON_ORDER_OR_OUT',
+    'REVIEW_NOT_FOUND',
+    'REVIEW_PORTAL_TIMEOUT',
+  ] as const)('discontinued + %s → BLOCK_DISCONTINUED', (bucket) => {
+    const out = withTariffStatus(v(bucket, 'why'), true);
+    expect(out.bucket).toBe('BLOCK_DISCONTINUED');
+    expect(out.reason).toBe('discontinued|why');
+  });
+
+  it.each(['CONFIRMED_AG', 'CONFIRMED_GRP'] as const)(
+    'discontinued + %s (stock left) → REVIEW_CONTRADICTION, never sold or blocked silently',
+    (bucket) => {
+      const out = withTariffStatus(v(bucket, 'vert'), true);
+      expect(out.bucket).toBe('REVIEW_CONTRADICTION');
+      expect(out.reason).toBe('discontinued+vert');
+    },
+  );
 });

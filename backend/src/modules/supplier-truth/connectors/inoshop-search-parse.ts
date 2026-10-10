@@ -159,6 +159,7 @@ export function isBrandRow(row: SearchRow, tokens: Set<string>): boolean {
 export type MatchKind =
   | 'EAN'
   | 'REF_BRAND'
+  | 'REF_ONLY' // CAL connector called without brand tokens — never auto-sells
   | 'REF_BRAND_AMBIGUOUS'
   | 'FALSE_MATCH'
   | 'NOT_FOUND';
@@ -202,16 +203,19 @@ export function matchBrandRow(
 }
 
 export type ActivationBucket =
-  | 'CONFIRMED_AG' // ag / vert  → future pri_dispo='1'
+  | 'CONFIRMED_AG' // ag / vert (CAL: ico_dispo1 "Disponible") → future pri_dispo='1'
   | 'CONFIRMED_GRP' // grp / vert+ → future pri_dispo='2'
   | 'REVIEW_ARRIVAGE' // transit — NOT auto-PREORDER
+  | 'REVIEW_MANUAL_ORDER' // CAL J+1 "Contacter le Call Center" — orderable only by phone
+  | 'REVIEW_ON_ORDER_OR_OUT' // CAL red "Sur commande/Indisponible" — back-order OR rupture, never proof of rupture
   | 'REVIEW_NO_SIGNAL' // missing/unknown dispo-type or non-corroborated icon
   | 'REVIEW_NO_EAN' // ref+brand match w/o EAN lock AND several SKUs share the ref
   | 'REVIEW_CONTRADICTION' // dispo says stock but icon disagrees
   | 'REVIEW_FALSE_MATCH' // ref matched only other brands
   | 'REVIEW_NOT_FOUND' // ref absent from portal results
   | 'REVIEW_PORTAL_TIMEOUT' // ref persistently fails its OWN search (504s) while the portal is healthy → portal-side problem / irrelevant ref. Terminal skip, NEVER a stock signal.
-  | 'BLOCK_NONE'; // none / rouge → future pri_dispo='0'
+  | 'BLOCK_NONE' // none / rouge → future pri_dispo='0'
+  | 'BLOCK_DISCONTINUED'; // supplier tariff marks the ref discontinued → withdrawal candidate ('0')
 
 export interface RefVerdict {
   ref: string;
@@ -221,7 +225,9 @@ export interface RefVerdict {
   reason: string;
   code: string | null;
   marque: string | null;
+  /** inoshop data-dispo-type; for CAL, the stock-icon state (CalStockIcon). */
   dispoType: string | null;
+  /** inoshop icon; always null for CAL (its icon state is in dispoType). */
   icon: StockIcon | null;
   portalPrix: number | null;
 }
@@ -319,5 +325,30 @@ export function verdictForRef(
     dispoType: row.dispoType,
     icon: c.icon,
     portalPrix: row.prix,
+  };
+}
+
+/**
+ * Tariff-status overlay (any platform). A ref the supplier tariff marks
+ * discontinued is a withdrawal candidate on that evidence alone, whatever the
+ * portal shows — except a CONFIRMED line (remaining stock), which goes to human
+ * review. Discontinued refs therefore stay in the feed: dropping them upstream
+ * left them sellable with no verdict at all.
+ */
+export function withTariffStatus(
+  v: RefVerdict,
+  discontinued: boolean,
+): RefVerdict {
+  if (!discontinued) return v;
+  if (v.bucket.startsWith('CONFIRMED'))
+    return {
+      ...v,
+      bucket: 'REVIEW_CONTRADICTION',
+      reason: `discontinued+${v.reason}`,
+    };
+  return {
+    ...v,
+    bucket: 'BLOCK_DISCONTINUED',
+    reason: `discontinued|${v.reason}`,
   };
 }
