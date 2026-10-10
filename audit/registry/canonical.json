@@ -50108,12 +50108,13 @@
         "backend/src/modules/pricing/services/catalog-display-activation.service.ts",
         "backend/src/modules/pricing/services/catalog-display-quarantine.service.ts",
         "backend/src/modules/pricing/services/price-activation.service.ts",
+        "backend/src/modules/pricing/services/price-deactivation.service.ts",
         "backend/src/modules/pricing/services/price-import.service.ts",
         "backend/src/modules/pricing/services/pricing-simulation.service.ts",
         "backend/src/modules/pricing/services/pricing-strategy.service.ts"
       ],
       "kind": "controller",
-      "loc": 208,
+      "loc": 233,
       "owner": "@ak125",
       "path": "backend/src/modules/pricing/controllers/pricing-import.controller.ts",
       "risk": "high",
@@ -50138,6 +50139,7 @@
         "backend/src/modules/pricing/services/catalog-display-activation.service.ts",
         "backend/src/modules/pricing/services/catalog-display-quarantine.service.ts",
         "backend/src/modules/pricing/services/price-activation.service.ts",
+        "backend/src/modules/pricing/services/price-deactivation.service.ts",
         "backend/src/modules/pricing/services/price-import.service.ts",
         "backend/src/modules/pricing/services/pricing-formula.service.ts",
         "backend/src/modules/pricing/services/pricing-invariants.service.ts",
@@ -50147,7 +50149,7 @@
         "backend/src/modules/pricing/services/supplier-profile.service.ts"
       ],
       "kind": "service",
-      "loc": 43,
+      "loc": 45,
       "owner": "@ak125",
       "path": "backend/src/modules/pricing/pricing.module.ts",
       "risk": "high",
@@ -50172,6 +50174,29 @@
       "loc": 53,
       "owner": "@ak125",
       "path": "backend/src/modules/pricing/services/__tests__/price-activation.service.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
+      "id": "backend/src/modules/pricing/services/__tests__/price-deactivation.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/pricing/services/price-deactivation.service.ts",
+        "backend/src/modules/pricing/services/pricing.repository.ts"
+      ],
+      "kind": "test",
+      "loc": 400,
+      "owner": "@ak125",
+      "path": "backend/src/modules/pricing/services/__tests__/price-deactivation.service.test.ts",
       "risk": "high",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -50486,6 +50511,32 @@
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
+      "id": "backend/src/modules/pricing/services/price-deactivation.service.ts",
+      "importedBy": [
+        "backend/src/modules/pricing/controllers/pricing-import.controller.ts",
+        "backend/src/modules/pricing/pricing.module.ts",
+        "backend/src/modules/pricing/services/__tests__/price-deactivation.service.test.ts"
+      ],
+      "imports": [
+        "backend/src/modules/pricing/services/pricing.repository.ts"
+      ],
+      "kind": "service",
+      "loc": 368,
+      "owner": "@ak125",
+      "path": "backend/src/modules/pricing/services/price-deactivation.service.ts",
+      "risk": "high",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
         "manual",
         "reachability"
       ],
@@ -50719,11 +50770,13 @@
       "id": "backend/src/modules/pricing/services/pricing.repository.ts",
       "importedBy": [
         "backend/src/modules/pricing/pricing.module.ts",
+        "backend/src/modules/pricing/services/__tests__/price-deactivation.service.test.ts",
         "backend/src/modules/pricing/services/catalog-display-activation.service.test.ts",
         "backend/src/modules/pricing/services/catalog-display-activation.service.ts",
         "backend/src/modules/pricing/services/catalog-display-quarantine.service.test.ts",
         "backend/src/modules/pricing/services/catalog-display-quarantine.service.ts",
         "backend/src/modules/pricing/services/price-activation.service.ts",
+        "backend/src/modules/pricing/services/price-deactivation.service.ts",
         "backend/src/modules/pricing/services/price-import.service.ts",
         "backend/src/modules/pricing/services/pricing-simulation.service.ts"
       ],
@@ -50737,7 +50790,7 @@
         "backend/src/modules/pricing/utils/normalize-supplier-reference.ts"
       ],
       "kind": "service",
-      "loc": 642,
+      "loc": 831,
       "owner": "@ak125",
       "path": "backend/src/modules/pricing/services/pricing.repository.ts",
       "risk": "high",
@@ -103509,11 +103562,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "a18c5c97f4b23c9c64f9993491f63cbf920b856a24cb5b51152d9cb6bbaac94e",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "846809d0fc8b021ad6e71fc8e3293034d3356788b3f71014a105bdb07f865e80",
+      "audit/registry/files.json": "95b251f2372b176ac0536b86134f41cb8c7731bd55f7da5a598ccdf2ce52b17c",
       "audit/registry/rpc.json": "68f3b21f7aa0b2ef7da9b488c657c3b6b5bdde0476bf7d617f1e346cc26b4449",
-      "audit/registry/runtime.json": "aa553d2735271a86c3a725e0faf19b5a65a1da071a3ad7c95eb843e3a9e2492e"
+      "audit/registry/runtime.json": "49c5493b510d57439770a9b2cfc60cdba4eb550bc09f7afdb3a101ab30b511ab"
     },
-    "sotFingerprint": "1a91180e278f"
+    "sotFingerprint": "7940585ae396"
   },
   "runtime": [
     {
@@ -108087,6 +108140,7 @@
         "runtime:backend/src/modules/pricing/services/catalog-display-activation.service.ts",
         "runtime:backend/src/modules/pricing/services/catalog-display-quarantine.service.ts",
         "runtime:backend/src/modules/pricing/services/price-activation.service.ts",
+        "runtime:backend/src/modules/pricing/services/price-deactivation.service.ts",
         "runtime:backend/src/modules/pricing/services/price-import.service.ts",
         "runtime:backend/src/modules/pricing/services/pricing-simulation.service.ts",
         "runtime:backend/src/modules/pricing/services/pricing-strategy.service.ts"
@@ -108104,6 +108158,7 @@
         "runtime:backend/src/modules/pricing/services/catalog-display-activation.service.ts",
         "runtime:backend/src/modules/pricing/services/catalog-display-quarantine.service.ts",
         "runtime:backend/src/modules/pricing/services/price-activation.service.ts",
+        "runtime:backend/src/modules/pricing/services/price-deactivation.service.ts",
         "runtime:backend/src/modules/pricing/services/price-import.service.ts",
         "runtime:backend/src/modules/pricing/services/pricing-formula.service.ts",
         "runtime:backend/src/modules/pricing/services/pricing-invariants.service.ts",
@@ -108148,6 +108203,17 @@
       "id": "runtime:backend/src/modules/pricing/services/price-activation.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/pricing/services/price-activation.service.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/modules/pricing/services/pricing.repository.ts"
+      ],
+      "id": "runtime:backend/src/modules/pricing/services/price-deactivation.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/pricing/services/price-deactivation.service.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"

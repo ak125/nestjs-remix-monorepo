@@ -1253,6 +1253,7 @@
       "PopularGammesService",
       "PostprocessService",
       "PriceActivationService",
+      "PriceDeactivationService",
       "PriceImportService",
       "PricingFormulaService",
       "PricingImportController",
@@ -1997,6 +1998,7 @@
       "backend/src/modules/pricing/services/catalog-display-activation.service.ts",
       "backend/src/modules/pricing/services/catalog-display-quarantine.service.ts",
       "backend/src/modules/pricing/services/price-activation.service.ts",
+      "backend/src/modules/pricing/services/price-deactivation.service.ts",
       "backend/src/modules/pricing/services/price-import.service.ts",
       "backend/src/modules/pricing/services/pricing-formula.service.ts",
       "backend/src/modules/pricing/services/pricing-invariants.service.ts",
@@ -2983,7 +2985,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1593,
+  "runtime_files_count": 1594,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -3461,6 +3463,7 @@
     "backend/src/modules/pricing/services/catalog-display-activation.service.ts",
     "backend/src/modules/pricing/services/catalog-display-quarantine.service.ts",
     "backend/src/modules/pricing/services/price-activation.service.ts",
+    "backend/src/modules/pricing/services/price-deactivation.service.ts",
     "backend/src/modules/pricing/services/price-import.service.ts",
     "backend/src/modules/pricing/services/pricing-formula.service.ts",
     "backend/src/modules/pricing/services/pricing-invariants.service.ts",
