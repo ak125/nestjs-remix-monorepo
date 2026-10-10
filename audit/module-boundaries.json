@@ -877,8 +877,8 @@
         "backend/src/modules/supplier-truth/connectors",
         "backend/src/modules/supplier-truth/domain"
       ],
-      "files_count": 50,
-      "loc_total": 5536,
+      "files_count": 51,
+      "loc_total": 6204,
       "has_barrel": false
     },
     "suppliers": {
@@ -1027,7 +1027,7 @@
         "backend/src/workers/types"
       ],
       "files_count": 18,
-      "loc_total": 3892,
+      "loc_total": 4026,
       "has_barrel": false
     }
   },
@@ -2200,7 +2200,7 @@
     {
       "from": "workers",
       "to": "supplier-truth",
-      "count": 17
+      "count": 19
     }
   ],
   "deep_access_violations": [
