@@ -9,19 +9,19 @@
     "0 call-site(s) non résolu(s) : récepteur ni prouvé DB ni rejeté — voir unresolved_callsites[]. Un nom non résolu ne peut pas être déclaré orphelin."
   ],
   "summary": {
-    "tables_seen": 313,
+    "tables_seen": 316,
     "tables_with_callsites": 213,
-    "candidate_orphan_tables": 73,
+    "candidate_orphan_tables": 76,
     "partitions": 27,
-    "rpc_seen": 249,
+    "rpc_seen": 251,
     "rpc_with_callsites": 14,
     "trigger_functions": 30,
-    "candidate_orphan_rpc": 205,
+    "candidate_orphan_rpc": 207,
     "dynamic_from_callsites": 774,
     "dynamic_rpc_callsites": 1,
     "unresolved_callsites": 0,
     "dropped_call_sites": 5,
-    "migrations_scanned": 410,
+    "migrations_scanned": 412,
     "backend_files_scanned": 1453
   },
   "tables": {
@@ -323,6 +323,16 @@
       "in_knowledge_db": false,
       "partition_of": null
     },
+    "__diag_link_provenance": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20261010_diag_link_provenance.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false,
+      "partition_of": null
+    },
     "__diag_maintenance_operation": {
       "used_by": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
@@ -341,6 +351,26 @@
       "used_by_count": 1,
       "in_migrations": [],
       "rls_present": true,
+      "in_knowledge_db": false,
+      "partition_of": null
+    },
+    "__diag_projection_conflicts": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20261010_diag_link_provenance.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false,
+      "partition_of": null
+    },
+    "__diag_projection_runs": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20261010_diag_link_provenance.sql"
+      ],
+      "rls_present": false,
       "in_knowledge_db": false,
       "partition_of": null
     },
@@ -3589,6 +3619,22 @@
       "defined_in_migrations": [],
       "is_trigger_function": false
     },
+    "__diag_projection_apply": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20261010_diag_link_provenance.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "__diag_projection_record_failure": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20261010_diag_link_provenance.sql"
+      ],
+      "is_trigger_function": false
+    },
     "__gov_m10_overload_ambiguity": {
       "called_by": [],
       "called_by_count": 0,
@@ -5856,6 +5902,66 @@
       ]
     },
     {
+      "name": "__diag_link_provenance",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20261010_diag_link_provenance.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "__diag_projection_conflicts",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20261010_diag_link_provenance.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "__diag_projection_runs",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20261010_diag_link_provenance.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
       "name": "__lighthouse_alerts",
       "confidence": "low",
       "derived_from": [
@@ -7305,6 +7411,38 @@
     }
   ],
   "candidate_orphan_rpc": [
+    {
+      "name": "__diag_projection_apply",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20261010_diag_link_provenance.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "__diag_projection_record_failure",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20261010_diag_link_provenance.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
     {
       "name": "__gov_m10_overload_ambiguity",
       "confidence": "medium",

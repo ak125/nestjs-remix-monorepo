@@ -1,6 +1,66 @@
 {
   "entries": [
     {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_run",
+          "type": "jsonb"
+        }
+      ],
+      "definedInMigrations": [
+        "20261010_diag_link_provenance.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.__diag_projection_apply",
+      "language": "plpgsql",
+      "name": "__diag_projection_apply",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "jsonb",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "pg_catalog",
+        "pg_temp"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_run",
+          "type": "jsonb"
+        }
+      ],
+      "definedInMigrations": [
+        "20261010_diag_link_provenance.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.__diag_projection_record_failure",
+      "language": "plpgsql",
+      "name": "__diag_projection_record_failure",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "jsonb",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "pg_catalog",
+        "pg_temp"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
       "args": [],
       "definedInMigrations": [
         "20260615_gov_m10_overload_ambiguity_rpc.sql"

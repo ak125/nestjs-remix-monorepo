@@ -1562,6 +1562,16 @@ entries:
     owner: '@ak125/vehicle-team'
     sourceConfidence: high
     risk: low
+  # Provenance WIKI des liens symptôme → cause et application atomique d'un run (ADR-035
+  # D1/D2/D7) : 3 tables, 2 fonctions SECURITY DEFINER exécutables par service_role seul,
+  # unique chemin d'écriture de la provenance. Couvre .sql + .down.sql. Glob exact : les
+  # migrations ne sont pas auto-couvertes ; domaine / owner = ceux du consommateur
+  # (backend/src/modules/diagnostic-engine/**).
+  - glob: backend/supabase/migrations/20261010_diag_link_provenance*.sql
+    domain: D4
+    owner: '@ak125/vehicle-team'
+    sourceConfidence: high
+    risk: medium
   # Lecture SECURITY DEFINER de la politique de liens vers les guides d'achat (ADR-103 D5) :
   # le container PREPROD READ_ONLY (anon) ne peut pas lire en direct les 4 tables sous RLS ;
   # consommateur R6GuideLinkPolicyService (D3, seo-team). Couvre .sql + .down.sql. Glob exact
