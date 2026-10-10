@@ -61973,7 +61973,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 193,
+      "loc": 229,
       "owner": "__unassigned__",
       "path": "frontend/tests/e2e/url-validation.spec.ts",
       "risk": "low",
