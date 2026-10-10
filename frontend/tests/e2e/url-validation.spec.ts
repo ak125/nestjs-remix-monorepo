@@ -40,6 +40,18 @@ const EXPECTED_ERROR_URLS: UrlTestCase[] = [
   { url: '/nonexistent-page', name: '404 - Page inexistante', expectedStatus: 404 },
 ];
 
+// Anciens liens connus : la page ne doit PAS exister. Le catch-all ($.tsx) les
+// sert en 410 Gone + noindex (PR #133). Statut EXACT : un « 4xx quelconque »
+// laissait passer le 410 avalé en 404 de repli (#1750). /pieces-{marque}.html
+// se décide sans appel backend (motif de checkIfOldLink).
+const GONE_URLS: UrlTestCase[] = [
+  { url: '/pieces-monroe.html', name: 'Gone - Ancien lien équipementier', expectedStatus: 410 },
+];
+
+// Page gamme (R1) témoin, déjà sondée sur PREPROD par Lighthouse, dont la
+// section équipementiers fabriquait des liens /pieces-{marque}.html (#1750).
+const R1_WITH_EQUIPEMENTIERS = '/pieces/plaquette-de-frein-402.html';
+
 // URLs de redirection (anciennes URLs qui doivent rediriger)
 const REDIRECT_URLS: UrlTestCase[] = [
   // Les anciennes URLs avec .html doivent soit rediriger (301/302) soit retourner 404
@@ -86,6 +98,30 @@ test.describe('URL Validation - Expected Errors', () => {
       }
     });
   }
+});
+
+test.describe('URL Validation - Gone (410)', () => {
+  for (const { url, name, expectedStatus } of GONE_URLS) {
+    test(`${name} - ${url} returns ${expectedStatus} noindex`, async ({ request }) => {
+      const response = await request.get(url, { maxRedirects: 0 });
+
+      expect(response.status(), `${name} should return ${expectedStatus}`).toBe(expectedStatus);
+      expect(response.headers()['x-robots-tag']).toBe('noindex, follow');
+    });
+  }
+});
+
+test.describe('URL Validation - No link to a gone URL', () => {
+  test(`R1 ${R1_WITH_EQUIPEMENTIERS} emits no /pieces-{marque}.html link`, async ({ request }) => {
+    const response = await request.get(R1_WITH_EQUIPEMENTIERS);
+    expect(response.status()).toBe(200);
+    const html = await response.text();
+
+    // Non vacuité : la section équipementiers est rendue, sinon « 0 lien » ne
+    // prouverait rien.
+    expect(html).toContain('Nous sélectionnons des équipementiers reconnus');
+    expect(html.match(/href="\/pieces-[^"/]+\.html"/g) ?? []).toEqual([]);
+  });
 });
 
 // ============================================
