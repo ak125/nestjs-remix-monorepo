@@ -622,8 +622,8 @@
         "backend/src/modules/pricing/utils",
         "backend/src/modules/pricing/utils/__tests__"
       ],
-      "files_count": 29,
-      "loc_total": 5750,
+      "files_count": 31,
+      "loc_total": 6734,
       "has_barrel": false
     },
     "products": {

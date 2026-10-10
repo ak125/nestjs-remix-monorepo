@@ -3,7 +3,7 @@
  * orchestration (dry-run/commit) stays pure and testable. Untyped SupabaseClient
  * (SupabaseBaseService) → new control-plane tables addressed by string name.
  */
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { eurToCents } from './pricing-formula.service';
@@ -14,6 +14,26 @@ import type { PricingRule } from './pricing-strategy.service';
 import type { CostBucketAggregate } from './pricing-simulation.core';
 
 const PAGE = 1000; // supabase-js caps a single select at 1000 rows → paginate
+const SCOPE_CHUNK = 200; // ids per `.in()` so a multi-row scope stays under PAGE
+
+/** `price_import_batches.operation` marker of a dispo-withdrawal batch. */
+export const DISPO_DEACTIVATION_OPERATION = 'DISPO_DEACTIVATION';
+
+/** One pieces_price row in a withdrawal scope (see resolveDeactivationRows). */
+export interface DeactivationScopeRow {
+  pieceId: number | null;
+  priType: string;
+  dispo: string | null;
+  state: string;
+  stateReason: string | null;
+}
+
+/** The storefront isSellable inputs of one pieces_price row. */
+export interface SellabilityRow {
+  priType: string;
+  dispo: string | null;
+  venteTtc: number | null;
+}
 
 export interface CommitRowPayload {
   piece_id_i: number;
@@ -254,7 +274,176 @@ export class PricingRepository extends SupabaseBaseService {
     batchId: string,
     supplier: string,
   ): Promise<{ restored: number; superseded: number }> {
+    // A dispo-withdrawal batch must never go through the generic rollback: it
+    // rewrites the text price columns from the numeric ones, which erases the
+    // displayed price wherever a numeric column is empty. It has its own
+    // dispo-only rollback — see rollbackDeactivationBatch.
+    if (
+      (await this.getBatchOperation(batchId)) === DISPO_DEACTIVATION_OPERATION
+    ) {
+      throw new BadRequestException(
+        `batch ${batchId} is a ${DISPO_DEACTIVATION_OPERATION} batch — use POST /api/admin/pricing/deactivate/rollback`,
+      );
+    }
     const { data, error } = await this.callRpc('pricing_rollback_batch', {
+      p_batch_id: batchId,
+      p_supplier: supplier,
+    });
+    if (error) throw error;
+    return data as { restored: number; superseded: number };
+  }
+
+  /** The batch's self-describing `operation` marker (null = legacy/unspecified or unknown batch). */
+  async getBatchOperation(batchId: string): Promise<string | null> {
+    const { data, error } = await this.supabase
+      .from('price_import_batches')
+      .select('operation')
+      .eq('batch_id', batchId)
+      .maybeSingle();
+    if (error) throw error;
+    return (data?.operation as string | null) ?? null;
+  }
+
+  /**
+   * Read EVERY pieces_price row (brand-locked) of a set of supplier refs — the
+   * withdrawal scope resolver. Unlike {@link resolveActivationRows} (one row per
+   * ref), a withdrawal must reach all rows of a ref (pri_type 0/1, or several
+   * pieces), or the piece stays sellable through the row left behind. Fails loud
+   * on the 1000-row cap instead of truncating.
+   */
+  async resolveDeactivationRows(
+    supplier: string,
+    refs: string[],
+  ): Promise<Map<string, DeactivationScopeRow[]>> {
+    const out = new Map<string, DeactivationScopeRow[]>();
+    for (let i = 0; i < refs.length; i += SCOPE_CHUNK) {
+      const chunk = refs.slice(i, i + SCOPE_CHUNK);
+      const { data, error } = await this.supabase
+        .from('pieces_price')
+        .select(
+          'pri_ref, pri_piece_id_i, pri_type, pri_dispo, pricing_state, pricing_state_reason',
+        )
+        .eq('pri_pm_id', supplier)
+        .in('pri_ref', chunk);
+      if (error) throw error;
+      const rows = (data ?? []) as Array<Record<string, unknown>>;
+      if (rows.length >= PAGE) {
+        throw new Error(
+          `resolveDeactivationRows: ${rows.length} rows for ${chunk.length} refs hit the ${PAGE}-row cap`,
+        );
+      }
+      for (const r of rows) {
+        const ref = String(r.pri_ref);
+        const list = out.get(ref) ?? [];
+        list.push({
+          pieceId: (r.pri_piece_id_i as number | null) ?? null,
+          priType: String(r.pri_type ?? '0'),
+          dispo: (r.pri_dispo as string | null) ?? null,
+          state: String(r.pricing_state ?? ''),
+          stateReason: (r.pricing_state_reason as string | null) ?? null,
+        });
+        out.set(ref, list);
+      }
+    }
+    return out;
+  }
+
+  /**
+   * Current sellability + visibility of a set of pieces (brand-locked) — input of
+   * the withdrawal dry-run's projection of what catalog_display_quarantine would
+   * then hide. Reads only; same predicates as that function (pri_pm_id rows,
+   * pieces.piece_pm_id brand-lock, piece_display).
+   */
+  async fetchSellabilityScope(
+    supplier: string,
+    pieceIds: number[],
+  ): Promise<{
+    rows: Map<number, SellabilityRow[]>;
+    visibleBrand: Map<number, boolean>;
+  }> {
+    const rows = new Map<number, SellabilityRow[]>();
+    const visibleBrand = new Map<number, boolean>();
+    for (let i = 0; i < pieceIds.length; i += SCOPE_CHUNK) {
+      const chunk = pieceIds.slice(i, i + SCOPE_CHUNK);
+      const { data, error } = await this.supabase
+        .from('pieces_price')
+        .select('pri_piece_id_i, pri_type, pri_dispo, pri_vente_ttc_n')
+        .eq('pri_pm_id', supplier)
+        .in('pri_piece_id_i', chunk);
+      if (error) throw error;
+      const priceRows = (data ?? []) as Array<Record<string, unknown>>;
+      if (priceRows.length >= PAGE) {
+        throw new Error(
+          `fetchSellabilityScope: ${priceRows.length} rows for ${chunk.length} pieces hit the ${PAGE}-row cap`,
+        );
+      }
+      for (const r of priceRows) {
+        const pieceId = Number(r.pri_piece_id_i);
+        const list = rows.get(pieceId) ?? [];
+        list.push({
+          priType: String(r.pri_type ?? '0'),
+          dispo: (r.pri_dispo as string | null) ?? null,
+          venteTtc:
+            r.pri_vente_ttc_n == null ? null : Number(r.pri_vente_ttc_n),
+        });
+        rows.set(pieceId, list);
+      }
+      const { data: pieces, error: piecesError } = await this.supabase
+        .from('pieces')
+        .select('piece_id, piece_display, piece_pm_id')
+        .in('piece_id', chunk);
+      if (piecesError) throw piecesError;
+      for (const p of (pieces ?? []) as Array<Record<string, unknown>>) {
+        visibleBrand.set(
+          Number(p.piece_id),
+          p.piece_display === true && String(p.piece_pm_id) === supplier,
+        );
+      }
+    }
+    return { rows, visibleBrand };
+  }
+
+  /**
+   * Dispo-only WITHDRAWAL via the governed server-side function: flips pri_dispo
+   * '1'/'2'/'3' -> '0' PER ROW, brand-locked, skipping FROZEN/MANUAL, rows already
+   * unsellable and rows carrying a state reason; stamps the reason and journals to
+   * pieces_price_history. Prices are never mutated. Reversible via
+   * {@link rollbackDeactivationBatch} only.
+   */
+  async deactivateChunk(input: {
+    batchId: string;
+    chunkId: string;
+    supplier: string; // pri_pm_id (brand-lock)
+    operator: string | null;
+    rows: { piece_id_i: number; pri_type: string; reason: string }[];
+  }): Promise<{
+    deactivated: number;
+    skipped: number;
+    missing: number;
+    rejected: number;
+  }> {
+    const { data, error } = await this.callRpc('pricing_deactivate_chunk', {
+      p_batch_id: input.batchId,
+      p_chunk_id: input.chunkId,
+      p_supplier: input.supplier,
+      p_operator: input.operator,
+      p_rows: input.rows,
+    });
+    if (error) throw error;
+    return data as {
+      deactivated: number;
+      skipped: number;
+      missing: number;
+      rejected: number;
+    };
+  }
+
+  /** LIFO, dispo-only rollback of a withdrawal batch (restores pri_dispo + clears the reason; never touches prices). */
+  async rollbackDeactivationBatch(
+    batchId: string,
+    supplier: string,
+  ): Promise<{ restored: number; superseded: number }> {
+    const { data, error } = await this.callRpc('pricing_deactivate_rollback', {
       p_batch_id: batchId,
       p_supplier: supplier,
     });

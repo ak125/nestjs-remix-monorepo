@@ -6,6 +6,9 @@
  *   POST /api/admin/pricing/activate/dry-run   → dispo-only projection (no writes)
  *   POST /api/admin/pricing/activate/commit    → flip pri_dispo 1/2 (confirm:true)
  *   POST /api/admin/pricing/activate/rollback  → LIFO restore of an activation batch
+ *   POST /api/admin/pricing/deactivate/dry-run   → dispo withdrawal + catalog-effect projection (no writes)
+ *   POST /api/admin/pricing/deactivate/commit    → flip pri_dispo 1/2/3→0 on positive proof (confirm:true)
+ *   POST /api/admin/pricing/deactivate/rollback  → dispo-only LIFO restore of a withdrawal batch
  *   POST /api/admin/pricing/display/dry-run     → piece_display projection (no writes)
  *   POST /api/admin/pricing/display/commit      → flip piece_display false→true (confirm:true)
  *   POST /api/admin/pricing/display/rollback    → restore piece_display for a batch
@@ -30,6 +33,10 @@ import {
   type ActivationRequest,
 } from '../services/price-activation.service';
 import {
+  PriceDeactivationService,
+  type DeactivationRequest,
+} from '../services/price-deactivation.service';
+import {
   CatalogDisplayActivationService,
   type DisplayActivationRequest,
 } from '../services/catalog-display-activation.service';
@@ -49,6 +56,7 @@ export class PricingImportController {
   constructor(
     private readonly importService: PriceImportService,
     private readonly activationService: PriceActivationService,
+    private readonly deactivationService: PriceDeactivationService,
     private readonly displayActivationService: CatalogDisplayActivationService,
     private readonly displayQuarantineService: CatalogDisplayQuarantineService,
     private readonly simulationService: PricingSimulationService,
@@ -96,6 +104,23 @@ export class PricingImportController {
   @Post('activate/rollback')
   activateRollback(@Body() body: { batchId: string; supplierId: string }) {
     return this.activationService.rollback(body.batchId, body.supplierId);
+  }
+
+  /** Read-only withdrawal projection, incl. what the quarantine would then hide (no writes). */
+  @Post('deactivate/dry-run')
+  deactivateDryRun(@Body() body: DeactivationRequest) {
+    return this.deactivationService.dryRun(body);
+  }
+
+  /** Apply the dispo-only withdrawal — requires `confirm: true` (owner-gated). */
+  @Post('deactivate/commit')
+  deactivateCommit(@Body() body: DeactivationRequest & { confirm?: boolean }) {
+    return this.deactivationService.commit(body);
+  }
+
+  @Post('deactivate/rollback')
+  deactivateRollback(@Body() body: { batchId: string; supplierId: string }) {
+    return this.deactivationService.rollback(body.batchId, body.supplierId);
   }
 
   /** Read-only visibility projection — how many hidden-but-sellable refs (no writes). */
