@@ -10,9 +10,11 @@
  *
  * Registered in ExecutionRouter via source='r4_batch'.
  */
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { FeatureFlagsService } from '../../../config/feature-flags.service';
+import { ContentWriteGateService } from '../../../config/content-write-gate.service';
 import { R4LintGatesService, R4LintInput } from './r4-lint-gates.service';
 import {
   R4_CONTENT_TABLE,
@@ -80,6 +82,8 @@ export class R4ContentEnricherService extends SupabaseBaseService {
   constructor(
     configService: ConfigService,
     private readonly lintGates: R4LintGatesService,
+    private readonly flags: FeatureFlagsService,
+    @Optional() private readonly writeGate?: ContentWriteGateService,
   ) {
     super(configService);
   }
