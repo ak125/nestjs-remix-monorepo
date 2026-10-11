@@ -70357,7 +70357,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 408,
+      "loc": 442,
       "owner": "__unassigned__",
       "path": "scripts/ci/prod-seo-projection-env.test.mjs",
       "risk": "low",
