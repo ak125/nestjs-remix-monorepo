@@ -47,12 +47,14 @@ for f in "$FIXTURE" "$MIGRATION" "$DOWN" "$MVP" "$SEED" "$RLS"; do
 done
 
 TMP="$(mktemp -d)"
-cleanup() { docker rm -f "$CT" >/dev/null 2>&1 || true; rm -rf "$TMP"; }
+# Only remove the container created by this invocation and its anonymous data.
+CT_ID=""
+cleanup() { if [[ -n "$CT_ID" ]]; then docker rm -fv "$CT_ID" >/dev/null 2>&1 || true; fi; rm -rf "$TMP"; }
 trap cleanup EXIT
 
 echo "Image     : $IMAGE"
 echo "Migration : ${MIGRATION#"$ROOT"/}"
-docker run -d --network none --memory 512m --memory-swap 512m --cpus 1 --pids-limit 128 --name "$CT" -e POSTGRES_PASSWORD=test "$IMAGE" >/dev/null || exit 2
+CT_ID="$(docker run -d --network none --memory 512m --memory-swap 512m --cpus 1 --pids-limit 128 --name "$CT" -e POSTGRES_PASSWORD=test "$IMAGE")" || exit 2
 # Prêt = le serveur DÉFINITIF répond sur TCP. Le serveur temporaire que l'image
 # lance pour son initialisation n'écoute que la socket Unix : sonder la socket
 # rend la main pendant l'init, puis le serveur s'arrête sous la fixture.
