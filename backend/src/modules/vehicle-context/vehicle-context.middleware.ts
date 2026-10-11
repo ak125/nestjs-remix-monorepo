@@ -1,4 +1,4 @@
-import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
+import { Injectable, NestMiddleware } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import type { NextFunction, Request, Response } from 'express';
 import { VEHICLE_CTX_COOKIE_NAME } from '@repo/registry';
@@ -19,8 +19,6 @@ import { VehicleContextService } from './vehicle-context.service';
  */
 @Injectable()
 export class VehicleContextMiddleware implements NestMiddleware {
-  private readonly logger = new Logger(VehicleContextMiddleware.name);
-
   constructor(
     private readonly service: VehicleContextService,
     private readonly events: EventEmitter2,

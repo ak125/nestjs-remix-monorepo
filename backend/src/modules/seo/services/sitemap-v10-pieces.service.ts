@@ -398,7 +398,6 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
    */
   async generateByFamily(familyKey: string): Promise<GenerationResult> {
     const startTime = Date.now();
-    const _runId = crypto.randomUUID();
 
     this.logger.log(`Generating sitemap for family: ${familyKey}...`);
 

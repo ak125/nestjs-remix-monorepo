@@ -8,7 +8,7 @@
  * for all roles and field types.
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 /** Result of a single field merge decision */
 export interface MergeFieldResult {
@@ -36,8 +36,6 @@ const MARKER_PATTERN = /#LinkGamme_\d+#/g;
 
 @Injectable()
 export class ContentMergeEngine {
-  private readonly logger = new Logger(ContentMergeEngine.name);
-
   // ═══════════════════════════════════════════════════════════════
   // TEXT MERGE (paragraph-level, extracted from BuyingGuideDbService)
   // ═══════════════════════════════════════════════════════════════

@@ -203,17 +203,6 @@ export class LayoutService {
   }
 
   /**
-   * Configuration par défaut pour les meta tags
-   */
-  private async getMetaTagsConfig(context: string): Promise<MetaTagsConfig> {
-    return {
-      title: `${context.charAt(0).toUpperCase() + context.slice(1)} - Automecanik`,
-      description: `Interface ${context} de Automecanik`,
-      robots: context === 'admin' ? 'noindex, nofollow' : 'index, follow',
-    };
-  }
-
-  /**
    * Invalide le cache pour un contexte donné
    */
   async invalidateCache(context: string, userId?: string): Promise<void> {
@@ -274,32 +263,6 @@ export class LayoutService {
     }
 
     return layoutData;
-  }
-
-  /**
-   * Récupérer les widgets pour une page spécifique
-   */
-  private async getWidgets(): Promise<Record<string, unknown>[]> {
-    // Pour l'instant retournons un tableau vide,
-    // cette méthode peut être étendue avec des vraies données
-    return [];
-  }
-
-  /**
-   * Déterminer la version par défaut selon le type
-   */
-  private getDefaultVersion(type: string): string {
-    const versionMap: Record<string, string> = {
-      main: 'v8',
-      core: 'v8',
-      massdoc: 'v8',
-      v2: 'v2',
-      v7: 'v7',
-      admin: 'v8',
-      commercial: 'v8',
-      public: 'v8',
-    };
-    return versionMap[type] || 'v8';
   }
 
   /**

@@ -17,7 +17,7 @@
  * Rego policy r2-content-write.rego enforces this at write time.
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type {
   Cluster,
   MotorDelta,
@@ -28,8 +28,6 @@ import type { R2PagePlanV2 } from '../schemas/r2-v2-contract.schema';
 
 @Injectable()
 export class R2CompositionService {
-  private readonly logger = new Logger(R2CompositionService.name);
-
   /**
    * Build the structural page plan (sections + ordering + scaffolding).
    * Pure : no I/O. Idempotent : same input always yields same output.

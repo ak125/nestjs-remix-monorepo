@@ -12,15 +12,6 @@ import { Response } from 'express';
 import { Request as ExpressRequest } from 'express';
 import { AuthService } from '../auth/auth.service';
 
-// Guard simple pour vérifier si l'utilisateur est authentifié
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const AuthenticatedGuard = (req: ExpressRequest, res: Response, next: any) => {
-  if (req.isAuthenticated()) {
-    return next();
-  }
-  return res.redirect('/auth/login');
-};
-
 @Controller('profile')
 export class ProfileController {
   private readonly logger = new Logger(ProfileController.name);

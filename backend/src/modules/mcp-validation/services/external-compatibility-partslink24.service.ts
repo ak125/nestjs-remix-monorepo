@@ -101,7 +101,7 @@ export class ExternalCompatibilityPartsLink24Service {
       }
 
       // 2. Take snapshot to understand the form
-      const _snapshot = await this.chromeClient.takeSnapshot();
+      await this.chromeClient.takeSnapshot();
 
       // 3. Fill account ID (look for the field by label or common patterns)
       await this.chromeClient.fillByLabel(

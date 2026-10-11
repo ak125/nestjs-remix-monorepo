@@ -36,35 +36,6 @@ export class SuppliersService extends SupabaseBaseService {
 
   // ===== INTERFACES =====
 
-  // Interface principale Supplier
-  private readonly supplierSchema = {
-    id: 'number',
-    code: 'string',
-    name: 'string',
-    companyName: 'string?',
-    siret: 'string?',
-    vatNumber: 'string?',
-    address1: 'string?',
-    address2: 'string?',
-    postalCode: 'string?',
-    city: 'string?',
-    country: 'string?',
-    phone: 'string?',
-    email: 'string?',
-    website: 'string?',
-    contactName: 'string?',
-    contactPhone: 'string?',
-    contactEmail: 'string?',
-    paymentTerms: 'string?',
-    deliveryDelay: 'number?',
-    minimumOrder: 'number?',
-    discountRate: 'number?',
-    isActive: 'boolean',
-    notes: 'string?',
-    createdAt: 'Date',
-    updatedAt: 'Date',
-  };
-
   // ===== MÉTHODES CRUD PRINCIPALES =====
 
   /**
@@ -150,24 +121,6 @@ export class SuppliersService extends SupabaseBaseService {
 
   // ===== MÉTHODES PRIVÉES =====
 
-  /**
-   * Vérifier l'existence d'un code fournisseur
-   */
-  private async checkSupplierCodeExists(code: string): Promise<boolean> {
-    try {
-      const { data, error } = await this.supabase
-        .from(TABLES.xtr_supplier)
-        .select('id')
-        .eq('code', code)
-        .limit(1);
-
-      if (error) throw error;
-      return (data?.length || 0) > 0;
-    } catch (error) {
-      this.logger.error('Erreur vérification code fournisseur:', error);
-      return false;
-    }
-  }
   /**
    * Transformer les données Supabase en objet Supplier formaté
    */

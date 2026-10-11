@@ -538,30 +538,6 @@ export class SearchEnhancedExistingService extends SupabaseBaseService {
   }
 
   /**
-   * 🔄 RECHERCHE FALLBACK - Si pieces_ref_search échoue
-   * Retourne un résultat vide pour éviter une erreur complète
-   */
-  private async fallbackDirectSearch(
-    cleanQuery: string,
-    filters?: Record<string, unknown>,
-    pagination?: { page?: number; limit?: number },
-  ) {
-    this.logger.warn(`⚠️ Utilisation du fallback pour "${cleanQuery}"`);
-    return {
-      success: true,
-      data: {
-        items: [],
-        total: 0,
-        page: pagination?.page || 1,
-        limit: pagination?.limit || 100,
-        executionTime: 0,
-        features: ['fallback-search', 'no-results'],
-        facets: [],
-      },
-    };
-  }
-
-  /**
    * 🧹 NETTOYAGE de la requête de recherche
    */
   private cleanSearchQuery(query: string): string {
@@ -573,72 +549,6 @@ export class SearchEnhancedExistingService extends SupabaseBaseService {
       .replace(/[^a-z0-9àáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ\s\-\.]/g, '') // Garder accents, points et tirets
       .replace(/\s+/g, ' ')
       .trim();
-  }
-
-  /**
-   * 🎯 GÉNÉRATION des termes de recherche
-   */
-  private generateSearchTerms(cleanQuery: string): string[] {
-    if (!cleanQuery) return [];
-
-    // Détection plus précise des références - doit avoir beaucoup de chiffres et peu de mots
-    const hasDigits = /[0-9]/.test(cleanQuery);
-    const hasSpecialChars = /[.-]/.test(cleanQuery);
-    const wordCount = cleanQuery.split(' ').length;
-    const digitRatio =
-      (cleanQuery.match(/[0-9]/g) || []).length / cleanQuery.length;
-
-    // C'est une référence si : beaucoup de chiffres, caractères spéciaux, et peu de mots
-    const isReferencePattern =
-      hasDigits && hasSpecialChars && wordCount <= 2 && digitRatio > 0.3;
-
-    if (isReferencePattern) {
-      // Pour les références, garder la query entière ET les fragments
-      const terms = [cleanQuery]; // Référence complète
-      const fragments = cleanQuery
-        .split(/[\s.-]+/)
-        .filter((term) => term.length >= 2);
-      terms.push(...fragments);
-      return [...new Set(terms)];
-    }
-
-    // Pour le texte normal, diviser en mots
-    const terms = cleanQuery.split(' ').filter((term) => term.length >= 2);
-
-    // Ajouter des variantes pour les recherches courantes
-    const expandedTerms = [...terms];
-
-    // Expansions courantes
-    terms.forEach((term) => {
-      if (term === 'filtre') expandedTerms.push('filter');
-      if (term === 'huile') expandedTerms.push('oil');
-      if (term === 'frein') expandedTerms.push('brake');
-      if (term === 'amortisseur') expandedTerms.push('shock');
-    });
-
-    return [...new Set(expandedTerms)];
-  }
-
-  /**
-   * 📊 CALCUL du score de pertinence
-   */
-  private calculateRelevanceScore(piece: any, searchTerms: string[]): number {
-    let score = 0;
-    const pieceName = piece.piece_name?.toLowerCase() || '';
-    const pieceRef = piece.piece_ref?.toLowerCase() || '';
-
-    searchTerms.forEach((term) => {
-      // Score pour correspondance exacte dans le nom
-      if (pieceName.includes(term)) score += 10;
-
-      // Score pour correspondance dans la référence
-      if (pieceRef.includes(term)) score += 15;
-
-      // Score pour correspondance au début
-      if (pieceName.startsWith(term)) score += 5;
-    });
-
-    return score;
   }
 
   /**

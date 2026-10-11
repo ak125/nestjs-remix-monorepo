@@ -461,10 +461,6 @@ export class BreadcrumbAdminController {
     }
   }
 
-  private hasCustomBreadcrumb(breadcrumbData: any): boolean {
-    return this.countBreadcrumbItems(breadcrumbData) > 0;
-  }
-
   private generateBreadcrumbHTML(breadcrumbs: BreadcrumbItem[]): string {
     return `
       <nav aria-label="breadcrumb" class="breadcrumb-nav">

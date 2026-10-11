@@ -502,20 +502,6 @@ L'équipe {companyName}`;
     }
   }
 
-  private shouldPublishResponse(
-    rating: number,
-    sentiment?: SentimentAnalysis,
-  ): boolean {
-    // Publier automatiquement pour les avis positifs
-    if (rating >= 4) return true;
-
-    // Ne pas publier automatiquement pour les avis très négatifs
-    if (rating <= 2) return false;
-
-    // Pour les avis neutres, dépend du sentiment
-    return sentiment?.sentiment !== 'negative';
-  }
-
   private getFallbackResponse(): SmartResponse {
     return {
       response: `Bonjour,

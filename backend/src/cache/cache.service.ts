@@ -5,9 +5,7 @@ import { once } from 'events';
 import { getAppConfig } from '../config/app.config';
 import {
   CACHE_GENERATIONS,
-  CACHE_STRATEGIES,
   CacheGenerationScope,
-  CacheStrategy,
 } from '../config/cache-ttl.config';
 
 @Injectable()
@@ -561,34 +559,5 @@ export class CacheService implements OnModuleInit {
     } catch {
       return { status: 'unhealthy', pingMs: null, lastCheck: now };
     }
-  }
-
-  /**
-   * Smart TTL based on key prefix — delegates to CACHE_STRATEGIES
-   */
-  private static ttlEntries: [string, number][] | null = null;
-
-  private getSmartTTL(key: string): number {
-    if (!CacheService.ttlEntries) {
-      CacheService.ttlEntries = [];
-      for (const domain of Object.values(CACHE_STRATEGIES)) {
-        for (const strategy of Object.values(domain)) {
-          const s = strategy as CacheStrategy;
-          if (s.prefix && s.ttl) {
-            CacheService.ttlEntries.push([s.prefix, s.ttl]);
-          }
-        }
-      }
-      // Sort by prefix length descending for most specific match first
-      CacheService.ttlEntries.sort((a, b) => b[0].length - a[0].length);
-    }
-
-    for (const [prefix, ttl] of CacheService.ttlEntries) {
-      if (key.startsWith(prefix)) {
-        return ttl;
-      }
-    }
-
-    return 300; // 5 min default
   }
 }

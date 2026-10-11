@@ -10,7 +10,7 @@
  * Remix loader-fetched). Discipline V1 : table view, pas de Recharts complet
  * (gardé pour V1.1 si owner confirme valeur).
  */
-import { Controller, Get, Logger, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { IsAdminGuard } from '../../../auth/is-admin.guard';
 import {
   CwvDashboardService,
@@ -21,8 +21,6 @@ import {
 
 @Controller('api/seo/cwv')
 export class CwvDashboardController {
-  private readonly logger = new Logger(CwvDashboardController.name);
-
   constructor(private readonly dashboard: CwvDashboardService) {}
 
   @Get('dashboard')

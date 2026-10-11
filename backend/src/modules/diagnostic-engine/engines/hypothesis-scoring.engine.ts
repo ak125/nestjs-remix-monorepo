@@ -10,7 +10,7 @@
  * donnee sourcee par cause reste neutre : elle ne doit ni gonfler la
  * confiance ni reordonner les causes.
  */
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { DiagSymptomCauseLink } from '../diagnostic-engine.data-service';
 import type { VehicleContextInput } from '../types/diagnostic-input.schema';
 import { CAUSE_GAMME_MAP } from '../constants/gamme-map.constants';
@@ -47,8 +47,6 @@ export interface ScoredHypothesis {
 
 @Injectable()
 export class HypothesisScoringEngine {
-  private readonly logger = new Logger(HypothesisScoringEngine.name);
-
   score(
     links: DiagSymptomCauseLink[],
     vehicle: VehicleContextInput | undefined,

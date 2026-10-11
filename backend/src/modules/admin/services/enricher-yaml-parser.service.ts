@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 /**
  * Shared YAML / frontmatter parsing utilities extracted from conseil-enricher
@@ -14,8 +14,6 @@ import { Injectable, Logger } from '@nestjs/common';
  */
 @Injectable()
 export class EnricherYamlParser {
-  private readonly logger = new Logger(EnricherYamlParser.name);
-
   /**
    * Extract the raw YAML frontmatter block (between the leading --- delimiters).
    * Returns the inner content (without the --- lines), or null if no frontmatter found.

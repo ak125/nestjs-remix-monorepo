@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { restoreAccents as restoreAccentsFn } from '../../../config/fr-accent-map';
 
 /**
@@ -13,8 +13,6 @@ import { restoreAccents as restoreAccentsFn } from '../../../config/fr-accent-ma
  */
 @Injectable()
 export class EnricherTextUtils {
-  private readonly logger = new Logger(EnricherTextUtils.name);
-
   /**
    * Merged OEM brand list from both enrichers.
    * conseil-enricher adds: Mahle, Mann, Behr, Pierburg, Hengst, Bilstein, Monroe, KYB, Febi, Meyle, Lemförder, Corteco, Elring

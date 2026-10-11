@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type {
   QualityGateResult,
   ValidationReport,
@@ -15,8 +15,6 @@ import type {
  */
 @Injectable()
 export class RagValidationService {
-  private readonly logger = new Logger(RagValidationService.name);
-
   /** Minimum content length to pass blocking gate (aligned with THIN_CONTENT_THRESHOLD). */
   private static readonly MIN_CONTENT_LENGTH = 500;
 

@@ -1,4 +1,4 @@
-import { Controller, Get, Logger, Query, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, Res, UseGuards } from '@nestjs/common';
 import type { Response } from 'express';
 import { AuthenticatedGuard } from '@auth/authenticated.guard';
 import { IsAdminGuard } from '@auth/is-admin.guard';
@@ -22,8 +22,6 @@ import { OperatingMatrixService } from '@config/operating-matrix.service';
 @Controller('api/admin/governance')
 @UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class GovernanceMatrixController {
-  private readonly logger = new Logger(GovernanceMatrixController.name);
-
   constructor(private readonly matrix: OperatingMatrixService) {}
 
   @Get('seo-operating-matrix')

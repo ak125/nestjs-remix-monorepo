@@ -764,23 +764,6 @@ export class BlogArticleDataService {
   }
 
   /**
-   * ✅ Vérifier si un slug existe
-   */
-  private async checkSlugExists(
-    tableName: string,
-    columnName: string,
-    slug: string,
-  ): Promise<boolean> {
-    const { data } = await this.supabaseService.client
-      .from(tableName)
-      .select('id')
-      .eq(columnName, slug)
-      .maybeSingle();
-
-    return !!data;
-  }
-
-  /**
    * 🔄 Enrichir les articles avec pg_alias depuis pieces_gamme
    */
   async enrichWithPgAlias(articles: BlogArticle[]): Promise<BlogArticle[]> {

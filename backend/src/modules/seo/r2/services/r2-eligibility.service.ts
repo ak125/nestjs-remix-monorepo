@@ -17,7 +17,7 @@
  * to motor/commercial/catalog services for sub-computations.
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
   ELIGIBILITY_WEIGHTS,
   THRESHOLD_V1,
@@ -51,8 +51,6 @@ export interface EligibilityRunInputs {
 
 @Injectable()
 export class R2EligibilityService {
-  private readonly logger = new Logger(R2EligibilityService.name);
-
   constructor(
     private readonly commercialService: R2CommercialDistinctivenessService,
   ) {}

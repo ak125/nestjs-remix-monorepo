@@ -4,7 +4,7 @@
  * Interprete le signal d'entree → systemes suspects → symptomes candidats.
  * Premier maillon de la chaine : normalise et resout les slugs.
  */
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { DiagnosticEngineDataService } from '../diagnostic-engine.data-service';
 import type { AnalyzeDiagnosticInput } from '../types/diagnostic-input.schema';
 
@@ -22,8 +22,6 @@ export interface SignalInterpretation {
 
 @Injectable()
 export class SignalInterpretationEngine {
-  private readonly logger = new Logger(SignalInterpretationEngine.name);
-
   constructor(private readonly dataService: DiagnosticEngineDataService) {}
 
   async interpret(

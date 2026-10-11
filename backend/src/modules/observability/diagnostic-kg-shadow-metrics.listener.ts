@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import type { DiagnosticKgShadowCounter } from './diagnostic-kg-shadow.metrics';
 import { DIAGNOSTIC_KG_SHADOW_COUNTER } from './observability.tokens';
@@ -11,8 +11,6 @@ import { DIAGNOSTIC_KG_SHADOW_COUNTER } from './observability.tokens';
  */
 @Injectable()
 export class DiagnosticKgShadowMetricsListener {
-  private readonly logger = new Logger(DiagnosticKgShadowMetricsListener.name);
-
   constructor(
     @Inject(DIAGNOSTIC_KG_SHADOW_COUNTER)
     private readonly counter: DiagnosticKgShadowCounter,
