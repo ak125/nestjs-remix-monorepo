@@ -41,37 +41,6 @@ import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
-interface Reference {
-  slug: string;
-  title: string;
-  metaDescription: string | null;
-  definition: string;
-  roleMecanique: string | null;
-  composition: string[] | null;
-  confusionsCourantes: string[] | null;
-  symptomesAssocies: string[] | null;
-  contentHtml: string | null;
-  gamme: {
-    pgId: number | null;
-    name: string | null;
-  };
-  blogSlugs: string[] | null;
-  isPublished?: boolean;
-  updatedAt: string;
-}
-
-interface Gamme {
-  pgId: number;
-  name: string;
-  slug: string;
-}
-
-interface LoaderData {
-  reference: Reference | null;
-  gammes: Gamme[];
-  error: string | null;
-}
-
 // Action data type union (discriminates the success/error shapes returned below)
 type ActionData =
   | { success: boolean; action: "publish" }

@@ -37,12 +37,6 @@ interface VehicleStats {
   lastUpdate: string;
 }
 
-interface LoaderData {
-  user: any;
-  stats: VehicleStats | null;
-  error?: string;
-}
-
 export async function loader({ context }: LoaderFunctionArgs) {
   // Vérifier l'authentification
   const user = await requireUser({ context });

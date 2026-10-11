@@ -43,32 +43,6 @@ import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
-interface Diagnostic {
-  slug: string;
-  title: string;
-  metaDescription: string | null;
-  observableType: string;
-  perceptionChannel: string;
-  riskLevel: string;
-  safetyGate: string;
-  clusterId: string | null;
-  symptomDescription: string;
-  signDescription: string | null;
-  dtcCodes: string[] | null;
-  relatedGammes: number[] | null;
-  relatedReferences: string[] | null;
-  recommendedActions: Array<{ action: string; urgency: string }> | null;
-  estimatedRepairCostMin: number | null;
-  estimatedRepairCostMax: number | null;
-  isPublished?: boolean;
-  updatedAt: string;
-}
-
-interface LoaderData {
-  diagnostic: Diagnostic | null;
-  error: string | null;
-}
-
 type ActionData =
   | { success: boolean; action: "publish" }
   | { success: true; action: "update" }

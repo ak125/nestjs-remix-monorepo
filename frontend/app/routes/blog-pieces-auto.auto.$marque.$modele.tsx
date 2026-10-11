@@ -19,58 +19,6 @@ import { CompactBlogHeader } from "../components/blog/CompactBlogHeader";
 import { HtmlContent } from "../components/seo/HtmlContent";
 import { Card, CardContent } from "../components/ui/card";
 
-/* ===========================
-   Types
-=========================== */
-interface VehicleType {
-  id: string | number;
-  designation: string;
-  kw: string | number;
-  ch: string | number;
-  carburant: string;
-  engineCode?: string | null;
-  monthFrom?: string;
-  yearFrom?: string;
-  monthTo?: string;
-  yearTo?: string;
-  carosserie?: string;
-  cylindre?: string;
-  slug?: string;
-}
-
-interface ModelGroup {
-  id: number;
-  name: string;
-  alias: string;
-  types: VehicleType[];
-}
-
-interface LoaderData {
-  brand: {
-    id: number;
-    name: string;
-    alias: string;
-    logo: string | null;
-  };
-  modelGroup: {
-    id: number;
-    name: string;
-    alias: string;
-    yearFrom: number;
-    yearTo: number | null;
-    imageUrl: string | null;
-    body: string | null;
-  };
-  models: ModelGroup[];
-  metadata: {
-    title: string;
-    description: string;
-    keywords: string;
-    h1: string;
-    content: string;
-  } | null;
-}
-
 export const headers = buildCacheHeaders(
   "public, max-age=1800, stale-while-revalidate=3600",
 );

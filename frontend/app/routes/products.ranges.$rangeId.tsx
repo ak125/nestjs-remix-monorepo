@@ -76,41 +76,6 @@ interface Product {
   category?: string;
 }
 
-interface ProductsByRangeData {
-  user: {
-    id: string;
-    name: string;
-    level: number;
-    role: "pro" | "commercial";
-  };
-  range: {
-    id: string;
-    name: string;
-    description: string;
-  };
-  products: Product[];
-  stats: {
-    total: number;
-    active: number;
-    inStock: number;
-    filtered: number;
-  };
-  pagination: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-  filters: {
-    search: string;
-    status: string;
-    sort: string;
-    view: "grid" | "list";
-  };
-  enhanced: boolean;
-  error?: string;
-}
-
 export async function loader({ request, params, context }: LoaderFunctionArgs) {
   try {
     // Authentification utilisateur

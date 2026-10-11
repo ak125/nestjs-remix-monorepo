@@ -50,15 +50,6 @@ interface SearchResult {
   relevanceScore: number;
 }
 
-interface SearchResultsData {
-  query: string;
-  results: SearchResult[];
-  totalCount: number;
-  searchTime: number;
-  version: "v7" | "v8";
-  suggestions?: string[];
-}
-
 // Loader pour récupérer les résultats
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);

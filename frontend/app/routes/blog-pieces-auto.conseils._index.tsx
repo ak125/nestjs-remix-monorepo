@@ -66,13 +66,6 @@ interface CategoryGroup {
   gammeLinks: Array<{ slug: string; name: string; pgId: number }>;
 }
 
-interface LoaderData {
-  groupedArticles: CategoryGroup[];
-  allArticles: BlogArticle[];
-  totalArticles: number;
-  stats: { totalViews: number; totalCategories: number };
-}
-
 // gammeLinks sont maintenant servies par le backend (advice-hierarchy API)
 
 /** Lookup emoji par nom de famille via FAMILY_REGISTRY */

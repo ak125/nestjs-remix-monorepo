@@ -7,7 +7,7 @@
 
 import { buildR2H1Emitted } from "@repo/seo-types";
 import { Car } from "lucide-react";
-import React, { useState, memo } from "react";
+import { useState, memo } from "react";
 
 import { brandColorsService } from "../../services/brand-colors.service";
 import {

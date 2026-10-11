@@ -51,10 +51,6 @@ export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   ];
 };
 
-interface LoaderData {
-  review: any;
-}
-
 interface ActionData {
   error?: string;
   success?: boolean;

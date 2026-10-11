@@ -74,48 +74,6 @@ interface AdminProduct {
   last_updated?: string;
 }
 
-interface AdminGamme {
-  id: string;
-  name: string;
-  alias?: string;
-  image?: string;
-  is_active: boolean;
-  total_products?: number;
-  active_products?: number;
-}
-
-interface AdminGammeData {
-  user: {
-    id: string;
-    name: string;
-    level: number;
-    role: "pro" | "commercial";
-  };
-  gamme: AdminGamme;
-  products: AdminProduct[];
-  pagination: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-  filters: {
-    search: string;
-    sortBy: string;
-    sortOrder: string;
-    status?: string;
-  };
-  enhanced: boolean;
-  error?: string;
-  stats: {
-    total: number;
-    active: number;
-    inactive: number;
-    with_images: number;
-    low_stock: number;
-  };
-}
-
 export async function loader({ request, params, context }: LoaderFunctionArgs) {
   try {
     // Authentification OBLIGATOIRE pour l'admin
@@ -234,8 +192,6 @@ export default function AdminProductsGammeManagement() {
   const { user, gamme, products, pagination, filters, enhanced, error, stats } =
     data;
   const [searchParams] = useSearchParams();
-
-  const _viewMode = searchParams.get("view") || "grid";
 
   if (error) {
     return (

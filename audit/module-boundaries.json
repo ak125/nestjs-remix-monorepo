@@ -261,7 +261,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115442,
+      "loc_total": 114822,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -344,7 +344,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 599,
-      "loc_total": 114738,
+      "loc_total": 114612,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -960,7 +960,7 @@
         "tests/registry"
       ],
       "files_count": 295,
-      "loc_total": 55472,
+      "loc_total": 55463,
       "has_barrel": true
     },
     "upload": {

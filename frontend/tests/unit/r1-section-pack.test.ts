@@ -1,8 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  buildR1SectionPack,
-  type R1SectionPack,
-} from "~/utils/r1-section-pack";
+import { buildR1SectionPack } from "~/utils/r1-section-pack";
 import type { R1PurchaseGuideData } from "~/utils/r1-builders";
 
 const SELECTOR_FAQ = [

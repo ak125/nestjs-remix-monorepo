@@ -48,17 +48,6 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-interface LoaderData {
-  reviews: any[];
-  stats: any;
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
-
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const page = parseInt(url.searchParams.get("page") || "1");
@@ -136,7 +125,7 @@ export async function action({ request }: ActionFunctionArgs) {
     try {
       await updateReviewStatus(Number(reviewId), status, request);
       return { success: true };
-    } catch (error) {
+    } catch {
       return data(
         { error: "Erreur lors de la mise à jour du statut" },
         { status: 500 },

@@ -24,11 +24,7 @@ import {
   type RelatedBrand,
   type PopularGamme,
 } from "../../types/brand.types";
-import {
-  getOptimizedLogoUrl,
-  getOptimizedModelImageUrl,
-  getOptimizedFamilyImageUrl,
-} from "../../utils/image-optimizer";
+import { getOptimizedLogoUrl } from "../../utils/image-optimizer";
 import { toBooleanFlag } from "../../utils/type-guards";
 
 // Configuration de l'API
@@ -165,42 +161,6 @@ class BrandApiService {
     return getOptimizedLogoUrl(
       `constructeurs-automobiles/marques-logos/${finalLogo}`,
     );
-  }
-
-  /**
-   * Génère l'URL de l'image de modèle via imgproxy
-   * ✅ OPTIMISÉ WEBP - Transformation automatique via imgproxy
-   */
-  private generateModelImageUrl(brandAlias: string, modelPic?: string): string {
-    if (!modelPic) {
-      return `${PHP_LEGACY_CONFIG.domain}/upload/constructeurs-automobiles/marques-modeles/no.png`;
-    }
-
-    const finalImage = PHP_LEGACY_CONFIG.is_mac_version
-      ? modelPic.replace(".webp", ".jpg")
-      : modelPic;
-
-    // 🚀 Via imgproxy pour transformation WebP automatique
-    return getOptimizedModelImageUrl(
-      `constructeurs-automobiles/marques-modeles/${brandAlias}/${finalImage}`,
-    );
-  }
-
-  /**
-   * Génère l'URL de l'image de pièce via imgproxy
-   * ✅ OPTIMISÉ WEBP - Transformation automatique via imgproxy
-   */
-  private generatePartImageUrl(partImg?: string): string {
-    if (!partImg) {
-      return `${PHP_LEGACY_CONFIG.domain}/upload/articles/gammes-produits/catalogue/no.png`;
-    }
-
-    const finalImage = PHP_LEGACY_CONFIG.is_mac_version
-      ? partImg.replace(".webp", ".jpg")
-      : partImg;
-
-    // 🚀 Via imgproxy pour transformation WebP automatique
-    return getOptimizedFamilyImageUrl(finalImage);
   }
 
   /**

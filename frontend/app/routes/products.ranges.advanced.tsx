@@ -80,37 +80,6 @@ interface ProductRange {
   last_updated?: string;
 }
 
-interface RangesAdvancedData {
-  user: {
-    id: string;
-    name: string;
-    level: number;
-    role: "pro" | "commercial";
-  };
-  ranges: ProductRange[];
-  stats: {
-    total: number;
-    active: number;
-    top: number;
-    totalProducts: number;
-    filtered: number;
-  };
-  pagination: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-  filters: {
-    search: string;
-    status: string;
-    sort: string;
-    view: "grid" | "list";
-  };
-  enhanced: boolean;
-  error?: string;
-}
-
 export async function loader({ request, context }: LoaderFunctionArgs) {
   try {
     // Authentification utilisateur
@@ -285,18 +254,6 @@ export default function ProductsRangesAdvanced() {
   const data = useLoaderData<typeof loader>();
   const { user, ranges, stats, pagination, filters, enhanced, error } = data;
   const [searchParams, setSearchParams] = useSearchParams();
-
-  // Gestion des filtres
-  const _handleSearch = (search: string) => {
-    const newParams = new URLSearchParams(searchParams);
-    if (search) {
-      newParams.set("search", search);
-    } else {
-      newParams.delete("search");
-    }
-    newParams.set("page", "1"); // Retour à la première page
-    setSearchParams(newParams);
-  };
 
   const handleFilter = (key: string, value: string) => {
     const newParams = new URLSearchParams(searchParams);

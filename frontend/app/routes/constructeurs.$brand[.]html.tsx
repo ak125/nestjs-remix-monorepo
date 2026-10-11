@@ -63,18 +63,6 @@ export const links: LinksFunction = () => [
 // 🛠️ INTERFACES
 // ==========================================
 
-interface _PopularPart {
-  category: string;
-  icon: string;
-  name: string;
-  description: string;
-  symptoms: string[];
-  maintenance: string;
-  benefit: string;
-  compatibility: string;
-  ctaText: string;
-}
-
 interface BrandDescription {
   history: string;
   strengths: string[];

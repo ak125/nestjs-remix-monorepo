@@ -52,12 +52,6 @@ const GONE_URLS: UrlTestCase[] = [
 // section équipementiers fabriquait des liens /pieces-{marque}.html (#1750).
 const R1_WITH_EQUIPEMENTIERS = '/pieces/plaquette-de-frein-402.html';
 
-// URLs de redirection (anciennes URLs qui doivent rediriger)
-const REDIRECT_URLS: UrlTestCase[] = [
-  // Les anciennes URLs avec .html doivent soit rediriger (301/302) soit retourner 404
-  // Ne pas échouer si le backend gère la migration
-];
-
 // ============================================
 // TESTS DE VALIDATION HTTP STATUS
 // ============================================

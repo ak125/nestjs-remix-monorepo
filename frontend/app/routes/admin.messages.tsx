@@ -27,7 +27,6 @@ import {
   useLoaderData,
   Link,
   Form,
-  useNavigation,
 } from "react-router";
 import { Alert } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
@@ -228,7 +227,6 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 export default function AdminMessages() {
   const { messages, total, page, totalPages, stats, error, fallbackMode } =
     useLoaderData<MessageData>();
-  const _navigation = useNavigation();
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [showFilters, setShowFilters] = useState(false);
 

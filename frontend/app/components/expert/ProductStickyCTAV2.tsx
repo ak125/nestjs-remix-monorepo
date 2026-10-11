@@ -29,41 +29,6 @@ import { Skeleton } from "~/components/ui/skeleton";
 import { cn } from "~/lib/utils";
 
 // ============================================================================
-// Design System Tokens
-// ============================================================================
-
-const _TOKENS = {
-  colors: {
-    cta: {
-      bg: "#0369A1", // Professional Blue
-      hover: "#075985",
-      active: "#0C4A6E",
-      shadow: "rgb(3 105 161 / 0.25)",
-    },
-    verified: {
-      bg: "#059669",
-      light: "#D1FAE5",
-      text: "#065F46",
-    },
-    trust: {
-      primary: "#0F766E", // Trust Teal
-      light: "#F0FDFA",
-      text: "#134E4A",
-    },
-    urgency: {
-      bg: "#DC2626",
-      light: "#FEE2E2",
-      text: "#991B1B",
-    },
-    warning: {
-      bg: "#D97706",
-      light: "#FEF3C7",
-      text: "#92400E",
-    },
-  },
-} as const;
-
-// ============================================================================
 // Types
 // ============================================================================
 

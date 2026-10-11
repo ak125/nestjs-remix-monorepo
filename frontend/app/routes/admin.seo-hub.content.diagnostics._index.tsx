@@ -89,14 +89,6 @@ interface Diagnostic {
   updatedAt: string;
 }
 
-interface LoaderData {
-  diagnostics: Diagnostic[];
-  total: number;
-  clusters: string[];
-  error: string | null;
-  authError?: boolean;
-}
-
 // --- Constants ---
 
 const SAFETY_GATE_COLORS: Record<string, string> = {

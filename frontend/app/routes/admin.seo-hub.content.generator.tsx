@@ -105,11 +105,6 @@ interface GeneratedContent {
   keywordsMatched: string[];
 }
 
-interface LoaderData {
-  gammes: Gamme[];
-  error: string | null;
-}
-
 // Action data type union
 type ActionData =
   | { success: true; ragSources: RagSource[]; intent: "fetch_rag" }
@@ -212,7 +207,7 @@ export async function action({ request }: ActionFunctionArgs) {
       ];
 
       return { success: true, ragSources, intent: "fetch_rag" };
-    } catch (error) {
+    } catch {
       return {
         success: false,
         error: "Erreur lecture RAG",
@@ -299,7 +294,7 @@ export async function action({ request }: ActionFunctionArgs) {
         },
         intent: "generate",
       };
-    } catch (error) {
+    } catch {
       return {
         success: false,
         error: "Erreur génération",
@@ -343,7 +338,7 @@ export async function action({ request }: ActionFunctionArgs) {
       }
 
       return { success: true, intent: "save_r4", slug: r4Data.slug };
-    } catch (error) {
+    } catch {
       return {
         success: false,
         error: "Erreur serveur",
@@ -389,7 +384,7 @@ export async function action({ request }: ActionFunctionArgs) {
       }
 
       return { success: true, intent: "save_r5", slug: r5Data.slug };
-    } catch (error) {
+    } catch {
       return {
         success: false,
         error: "Erreur serveur",

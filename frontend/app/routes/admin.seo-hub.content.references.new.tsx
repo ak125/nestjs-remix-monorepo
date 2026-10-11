@@ -41,22 +41,6 @@ import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
-interface Gamme {
-  pgId: number;
-  name: string;
-  slug: string;
-}
-
-interface R5Slug {
-  slug: string;
-  title: string;
-}
-
-interface LoaderData {
-  gammes: Gamme[];
-  r5Slugs: R5Slug[];
-}
-
 export const meta: MetaFunction = () =>
   createNoIndexMeta("Nouvelle Référence - Admin");
 
