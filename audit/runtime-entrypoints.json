@@ -2798,6 +2798,8 @@
       "backend/supabase/migrations/20261005_diag_symptom_label_aliases.sql",
       "backend/supabase/migrations/20261010_diag_link_provenance.down.sql",
       "backend/supabase/migrations/20261010_diag_link_provenance.sql",
+      "backend/supabase/migrations/20261011_diag_capture_maintenance_schema.down.sql",
+      "backend/supabase/migrations/20261011_diag_capture_maintenance_schema.sql",
       "backend/supabase/migrations/README.md"
     ],
     "ci_workflows": [
@@ -2983,7 +2985,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1593,
+  "runtime_files_count": 1595,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4240,6 +4242,8 @@
     "backend/supabase/migrations/20261005_diag_symptom_label_aliases.sql",
     "backend/supabase/migrations/20261010_diag_link_provenance.down.sql",
     "backend/supabase/migrations/20261010_diag_link_provenance.sql",
+    "backend/supabase/migrations/20261011_diag_capture_maintenance_schema.down.sql",
+    "backend/supabase/migrations/20261011_diag_capture_maintenance_schema.sql",
     "backend/supabase/migrations/README.md",
     "docker/lighthouse/Dockerfile",
     "docker/lighthouse/crontab",
