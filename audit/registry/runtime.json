@@ -1404,7 +1404,6 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/config/feature-flags.service.ts",
         "runtime:backend/src/modules/admin/services/buying-guide-enricher.service.ts",
         "runtime:backend/src/modules/admin/services/r2-enricher.service.ts",
         "runtime:backend/src/modules/admin/services/r4-content-enricher.service.ts",
@@ -1589,8 +1588,6 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/config/content-write-gate.service.ts",
-        "runtime:backend/src/config/feature-flags.service.ts",
         "runtime:backend/src/modules/admin/services/r4-lint-gates.service.ts"
       ],
       "id": "runtime:backend/src/modules/admin/services/r4-content-enricher.service.ts",
@@ -3423,8 +3420,7 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/modules/catalog/services/unified-page-data.service.ts",
-        "runtime:backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts"
+        "runtime:backend/src/modules/catalog/services/unified-page-data.service.ts"
       ],
       "id": "runtime:backend/src/modules/gamme-rest/services/gamme-page-data.service.ts",
       "kind": "nestjs-service",
@@ -3838,8 +3834,7 @@
     {
       "dependsOn": [
         "runtime:backend/src/modules/marketing/services/marketing-data.service.ts",
-        "runtime:backend/src/modules/marketing/services/marketing-hub-data.service.ts",
-        "runtime:backend/src/modules/marketing/services/utm-builder.service.ts"
+        "runtime:backend/src/modules/marketing/services/marketing-hub-data.service.ts"
       ],
       "id": "runtime:backend/src/modules/marketing/services/weekly-plan-generator.service.ts",
       "kind": "nestjs-service",
@@ -5147,9 +5142,7 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [
-        "runtime:backend/src/modules/rag-proxy/services/rag-foundation-gate.service.ts"
-      ],
+      "dependsOn": [],
       "id": "runtime:backend/src/modules/rag-proxy/services/rag-admissibility-gate.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/rag-proxy/services/rag-admissibility-gate.service.ts",
@@ -5258,7 +5251,6 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/modules/rag-proxy/services/frontmatter-validator.service.ts",
         "runtime:backend/src/modules/rag-proxy/services/rag-fingerprint.service.ts",
         "runtime:backend/src/modules/rag-proxy/services/rag-foundation-gate.service.ts",
         "runtime:backend/src/modules/rag-proxy/services/rag-gamme-detection.service.ts"

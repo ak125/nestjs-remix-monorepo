@@ -28945,7 +28945,7 @@
         "backend/src/modules/seo/validation/url-compatibility.service.ts"
       ],
       "kind": "controller",
-      "loc": 276,
+      "loc": 275,
       "owner": "@ak125",
       "path": "backend/src/api/errors-api.controller.ts",
       "risk": "medium",
@@ -31696,7 +31696,7 @@
         "backend/src/config/source-provenance.constants.ts"
       ],
       "kind": "test",
-      "loc": 92,
+      "loc": 91,
       "owner": "@ak125",
       "path": "backend/src/config/content-write-gate.service.test.ts",
       "risk": "medium",
@@ -31720,7 +31720,6 @@
         "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
         "backend/src/modules/admin/services/r2-enricher.service.test.ts",
         "backend/src/modules/admin/services/r2-enricher.service.ts",
-        "backend/src/modules/admin/services/r4-content-enricher.service.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
       ],
       "imports": [
@@ -31736,7 +31735,7 @@
         "backend/src/config/write-guard-cas.service.ts"
       ],
       "kind": "service",
-      "loc": 247,
+      "loc": 245,
       "owner": "@ak125",
       "path": "backend/src/config/content-write-gate.service.ts",
       "risk": "medium",
@@ -32100,9 +32099,7 @@
         "backend/src/config/feature-flags.service.test.ts",
         "backend/src/modules/admin/controllers/admin-feature-flags.controller.ts",
         "backend/src/modules/admin/controllers/seo-control.controller.ts",
-        "backend/src/modules/admin/services/execution-router.service.ts",
         "backend/src/modules/admin/services/keyword-density-gate.service.ts",
-        "backend/src/modules/admin/services/r4-content-enricher.service.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
         "backend/src/modules/admin/services/rag-gamme-reader.service.ts",
         "backend/src/modules/agentic-engine/services/run-manager.service.ts",
@@ -36226,7 +36223,7 @@
         "backend/src/modules/admin/services/buying-guide/index.ts"
       ],
       "kind": "test",
-      "loc": 170,
+      "loc": 169,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/buying-guide-enricher.service.test.ts",
       "risk": "medium",
@@ -37157,7 +37154,7 @@
         "backend/src/modules/admin/services/execution-router.service.ts"
       ],
       "kind": "test",
-      "loc": 710,
+      "loc": 709,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/execution-router.service.test.ts",
       "risk": "medium",
@@ -37185,7 +37182,6 @@
       "imports": [
         "@database/services/supabase-base.service",
         "backend/src/config/execution-registry.constants.ts",
-        "backend/src/config/feature-flags.service.ts",
         "backend/src/config/rag.config.ts",
         "backend/src/config/role-ids.ts",
         "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
@@ -37197,7 +37193,7 @@
         "backend/src/modules/seo/validation/diagnostic.service.ts"
       ],
       "kind": "service",
-      "loc": 831,
+      "loc": 829,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/execution-router.service.ts",
       "risk": "medium",
@@ -37438,7 +37434,7 @@
         "backend/src/modules/admin/services/page-brief.service.ts"
       ],
       "kind": "service",
-      "loc": 213,
+      "loc": 209,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/keyword-density-gate.service.ts",
       "risk": "medium",
@@ -37942,7 +37938,7 @@
         "backend/src/modules/admin/services/r2-enricher.service.ts"
       ],
       "kind": "test",
-      "loc": 84,
+      "loc": 83,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/r2-enricher.service.test.ts",
       "risk": "medium",
@@ -38047,8 +38043,6 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "backend/src/config/content-write-gate.service.ts",
-        "backend/src/config/feature-flags.service.ts",
         "backend/src/config/r4-keyword-plan.constants.ts",
         "backend/src/config/rag.config.ts",
         "backend/src/modules/admin/services/r4-lint-gates.service.ts",
@@ -38056,7 +38050,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 571,
+      "loc": 567,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/r4-content-enricher.service.ts",
       "risk": "medium",
@@ -42633,13 +42627,12 @@
         "backend/src/modules/catalog/controllers/gamme-unified.controller.ts"
       ],
       "imports": [
-        "@cache/cache.service",
         "@database/services/supabase-base.service",
         "@repo/database-types",
         "backend/src/modules/catalog/types/gamme.types.ts"
       ],
       "kind": "service",
-      "loc": 166,
+      "loc": 165,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/catalog/services/gamme-unified.service.ts",
       "risk": "high",
@@ -45755,7 +45748,6 @@
       "domain": "D1",
       "id": "backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts",
       "importedBy": [
-        "backend/src/modules/gamme-rest/services/gamme-page-data.service.ts",
         "backend/src/modules/gamme-rest/services/gamme-rpc.service.ts",
         "backend/src/modules/gamme-rest/services/index.ts"
       ],
@@ -45787,14 +45779,12 @@
         "backend/src/modules/gamme-rest/services/index.ts"
       ],
       "imports": [
-        "@cache/cache.service",
         "@database/services/supabase-base.service",
         "@repo/database-types",
-        "backend/src/modules/catalog/services/unified-page-data.service.ts",
-        "backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts"
+        "backend/src/modules/catalog/services/unified-page-data.service.ts"
       ],
       "kind": "service",
-      "loc": 113,
+      "loc": 107,
       "owner": "@ak125/catalog-team",
       "path": "backend/src/modules/gamme-rest/services/gamme-page-data.service.ts",
       "risk": "medium",
@@ -47272,8 +47262,7 @@
       "id": "backend/src/modules/marketing/services/utm-builder.service.ts",
       "importedBy": [
         "backend/src/modules/marketing/marketing.module.ts",
-        "backend/src/modules/marketing/services/multi-channel-copywriter.service.ts",
-        "backend/src/modules/marketing/services/weekly-plan-generator.service.ts"
+        "backend/src/modules/marketing/services/multi-channel-copywriter.service.ts"
       ],
       "imports": [],
       "kind": "service",
@@ -47302,11 +47291,10 @@
         "backend/src/config/app.config.ts",
         "backend/src/modules/marketing/interfaces/marketing-hub.interfaces.ts",
         "backend/src/modules/marketing/services/marketing-data.service.ts",
-        "backend/src/modules/marketing/services/marketing-hub-data.service.ts",
-        "backend/src/modules/marketing/services/utm-builder.service.ts"
+        "backend/src/modules/marketing/services/marketing-hub-data.service.ts"
       ],
       "kind": "service",
-      "loc": 226,
+      "loc": 224,
       "owner": "@ak125/marketing-team",
       "path": "backend/src/modules/marketing/services/weekly-plan-generator.service.ts",
       "risk": "low",
@@ -47770,7 +47758,7 @@
         "backend/src/modules/mcp-validation/services/external-compatibility.types.ts"
       ],
       "kind": "service",
-      "loc": 406,
+      "loc": 404,
       "owner": "__unassigned__",
       "path": "backend/src/modules/mcp-validation/services/external-compatibility.service.ts",
       "risk": "low",
@@ -52588,8 +52576,7 @@
       "importedBy": [
         "backend/src/modules/rag-proxy/rag-proxy.module.ts",
         "backend/src/modules/rag-proxy/services/rag-cleanup.service.ts",
-        "backend/src/modules/rag-proxy/services/rag-gamme-detection.service.ts",
-        "backend/src/modules/rag-proxy/services/rag-normalization.service.ts"
+        "backend/src/modules/rag-proxy/services/rag-gamme-detection.service.ts"
       ],
       "imports": [
         "backend/src/modules/rag-proxy/types/knowledge-doc.types.ts",
@@ -52677,12 +52664,11 @@
         "backend/src/config/admissibility-gate.constants.ts",
         "backend/src/config/keyword-plan.constants.ts",
         "backend/src/config/role-ids.ts",
-        "backend/src/modules/rag-proxy/services/rag-foundation-gate.service.ts",
         "backend/src/modules/rag-proxy/types/rag-readiness.types.ts",
         "crypto"
       ],
       "kind": "service",
-      "loc": 900,
+      "loc": 895,
       "owner": "@ak125/rag-team",
       "path": "backend/src/modules/rag-proxy/services/rag-admissibility-gate.service.ts",
       "risk": "high",
@@ -52824,7 +52810,6 @@
       "importedBy": [
         "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
         "backend/src/modules/rag-proxy/rag-proxy.module.ts",
-        "backend/src/modules/rag-proxy/services/rag-admissibility-gate.service.ts",
         "backend/src/modules/rag-proxy/services/rag-normalization.service.ts"
       ],
       "imports": [
@@ -52866,7 +52851,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 1395,
+      "loc": 1393,
       "owner": "@ak125/rag-team",
       "path": "backend/src/modules/rag-proxy/services/rag-gamme-detection.service.ts",
       "risk": "high",
@@ -52980,7 +52965,6 @@
       "imports": [
         "@database/services/supabase-base.service",
         "backend/src/config/rag.config.ts",
-        "backend/src/modules/rag-proxy/services/frontmatter-validator.service.ts",
         "backend/src/modules/rag-proxy/services/rag-fingerprint.service.ts",
         "backend/src/modules/rag-proxy/services/rag-foundation-gate.service.ts",
         "backend/src/modules/rag-proxy/services/rag-gamme-detection.service.ts",
@@ -52990,7 +52974,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 685,
+      "loc": 682,
       "owner": "@ak125/rag-team",
       "path": "backend/src/modules/rag-proxy/services/rag-normalization.service.ts",
       "risk": "high",
@@ -53136,7 +53120,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 175,
+      "loc": 173,
       "owner": "@ak125/rag-team",
       "path": "backend/src/modules/rag-proxy/services/rag-webhook-completion.service.ts",
       "risk": "high",
@@ -53983,7 +53967,7 @@
         "@cache/cache.service"
       ],
       "kind": "service",
-      "loc": 440,
+      "loc": 436,
       "owner": "__unassigned__",
       "path": "backend/src/modules/search/services/search-monitoring.service.ts",
       "risk": "low",
@@ -61361,7 +61345,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 409,
+      "loc": 405,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/services/sitemap-delta.service.ts",
       "risk": "high",
@@ -65672,7 +65656,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 493,
+      "loc": 492,
       "owner": "@ak125/rag-team",
       "path": "backend/src/modules/upload/services/file-validation.service.ts",
       "risk": "medium",
@@ -65697,7 +65681,7 @@
         "@common/exceptions"
       ],
       "kind": "service",
-      "loc": 663,
+      "loc": 662,
       "owner": "@ak125/rag-team",
       "path": "backend/src/modules/upload/services/image-processing.service.ts",
       "risk": "medium",
@@ -65779,7 +65763,7 @@
         "backend/src/modules/upload/dto/upload.dto.ts"
       ],
       "kind": "service",
-      "loc": 570,
+      "loc": 569,
       "owner": "@ak125/rag-team",
       "path": "backend/src/modules/upload/services/upload-optimization.service.ts",
       "risk": "medium",
@@ -65809,7 +65793,7 @@
         "backend/src/modules/upload/services/upload-analytics.service.ts"
       ],
       "kind": "service",
-      "loc": 549,
+      "loc": 547,
       "owner": "@ak125/rag-team",
       "path": "backend/src/modules/upload/services/upload.service.ts",
       "risk": "medium",
@@ -104145,11 +104129,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "7bec88c8e8b454869e284e28fdde34ca05a32d3fdbbdfe0820cdee50a66f5f3a",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "0b74965a77768f5a02e4909f2bd20f5fb6040457fe600c7715c592899c3d2247",
+      "audit/registry/files.json": "44d1fcc258a5df18bdabe67b97859d3d39b17e24856ce2e83ca4cb415d1ed577",
       "audit/registry/rpc.json": "68f3b21f7aa0b2ef7da9b488c657c3b6b5bdde0476bf7d617f1e346cc26b4449",
-      "audit/registry/runtime.json": "1537c0f3bfbfb3eec888d674e290f14eb9df56e9f816220210a8b7298eaeeb44"
+      "audit/registry/runtime.json": "c37ff536ee955b5801c4bcb8e5069acc318f6a21e97585c37cd7845352fa7f29"
     },
-    "sotFingerprint": "f5cb63a2e225"
+    "sotFingerprint": "114f3e981546"
   },
   "runtime": [
     {
@@ -105556,7 +105540,6 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/config/feature-flags.service.ts",
         "runtime:backend/src/modules/admin/services/buying-guide-enricher.service.ts",
         "runtime:backend/src/modules/admin/services/r2-enricher.service.ts",
         "runtime:backend/src/modules/admin/services/r4-content-enricher.service.ts",
@@ -105741,8 +105724,6 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/config/content-write-gate.service.ts",
-        "runtime:backend/src/config/feature-flags.service.ts",
         "runtime:backend/src/modules/admin/services/r4-lint-gates.service.ts"
       ],
       "id": "runtime:backend/src/modules/admin/services/r4-content-enricher.service.ts",
@@ -107575,8 +107556,7 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/modules/catalog/services/unified-page-data.service.ts",
-        "runtime:backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts"
+        "runtime:backend/src/modules/catalog/services/unified-page-data.service.ts"
       ],
       "id": "runtime:backend/src/modules/gamme-rest/services/gamme-page-data.service.ts",
       "kind": "nestjs-service",
@@ -107990,8 +107970,7 @@
     {
       "dependsOn": [
         "runtime:backend/src/modules/marketing/services/marketing-data.service.ts",
-        "runtime:backend/src/modules/marketing/services/marketing-hub-data.service.ts",
-        "runtime:backend/src/modules/marketing/services/utm-builder.service.ts"
+        "runtime:backend/src/modules/marketing/services/marketing-hub-data.service.ts"
       ],
       "id": "runtime:backend/src/modules/marketing/services/weekly-plan-generator.service.ts",
       "kind": "nestjs-service",
@@ -109299,9 +109278,7 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [
-        "runtime:backend/src/modules/rag-proxy/services/rag-foundation-gate.service.ts"
-      ],
+      "dependsOn": [],
       "id": "runtime:backend/src/modules/rag-proxy/services/rag-admissibility-gate.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/rag-proxy/services/rag-admissibility-gate.service.ts",
@@ -109410,7 +109387,6 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/modules/rag-proxy/services/frontmatter-validator.service.ts",
         "runtime:backend/src/modules/rag-proxy/services/rag-fingerprint.service.ts",
         "runtime:backend/src/modules/rag-proxy/services/rag-foundation-gate.service.ts",
         "runtime:backend/src/modules/rag-proxy/services/rag-gamme-detection.service.ts"
