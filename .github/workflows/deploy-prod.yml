@@ -220,6 +220,12 @@ jobs:
           # this variable is the flag's only PROD source. Rollback = variable unset
           # or false, then a new tag.
           SEO_R6_CONSOLIDATION_ENABLED_OVERRIDE: ${{ vars.PROD_SEO_R6_CONSOLIDATION_ENABLED }}
+          # Diagnostic projection (ADR-035 D5): nightly WIKI → DB projection of the
+          # diagnostic links, from the exports/diagnostic baked into the image. Same
+          # writer and contract as above; not in the admin override allowlist, so
+          # this variable is the flag's only PROD source. Rollback = variable unset
+          # or false, then a new tag.
+          DIAGNOSTIC_PROJECTION_ENABLED_OVERRIDE: ${{ vars.PROD_DIAGNOSTIC_PROJECTION_ENABLED }}
         run: |
           docker pull massdoc/nestjs-remix-monorepo:production
 
@@ -320,7 +326,8 @@ jobs:
           # point of no return: a refused config fails the deploy with the
           # running container and the .env both untouched.
           bash "$GITHUB_WORKSPACE/scripts/ci/prod-seo-collector-env.sh" .env
-          # SEO Projection + R6 consolidation flags (see the env block above). Same contract:
+          # SEO Projection, R6 consolidation and diagnostic projection flags (see the
+          # env block above). Same contract:
           # every input is validated before any write, and a refusal fails the
           # deploy before the point of no return, running container untouched.
           bash "$GITHUB_WORKSPACE/scripts/ci/prod-seo-projection-env.sh" .env
