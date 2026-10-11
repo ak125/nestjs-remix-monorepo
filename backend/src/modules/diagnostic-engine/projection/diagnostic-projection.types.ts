@@ -29,8 +29,10 @@ export type DiagnosticProjectionTrigger =
 
 /**
  * Ordre = ordre d'évaluation (le premier contrôle en échec donne la raison).
- * Même ensemble que le CHECK `__diag_projection_conflicts.reason` de la
- * migration 20261010_diag_link_provenance.sql (test d'alignement à côté).
+ * Même ensemble que le CHECK `__diag_projection_conflicts.reason` dans sa
+ * définition la plus récente, la migration
+ * 20261012_diag_projection_requires_review.sql (test d'alignement à côté).
+ * `not_reviewed` est évalué en dernier (ADR-115 D1).
  */
 export const CONFLICT_REASONS = [
   'schema_invalid',
@@ -43,6 +45,7 @@ export const CONFLICT_REASONS = [
   'cause_slug_mismatch',
   'duplicate_relation',
   'source_not_raw_proven',
+  'not_reviewed',
 ] as const;
 export type ConflictReason = (typeof CONFLICT_REASONS)[number];
 
@@ -170,7 +173,8 @@ export interface ProjectionRow {
   confidence: ExportRelation['evidence']['confidence'];
   source_policy: ExportRelation['evidence']['source_policy'];
   confidence_score_computed: number;
-  reviewed: boolean;
+  /** Une relation non relue est un conflit `not_reviewed` (ADR-115 D1). */
+  reviewed: true;
   diagnostic_safe: boolean;
   sources: Array<Record<string, unknown>>;
 }
