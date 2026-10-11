@@ -1588,6 +1588,8 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/config/content-write-gate.service.ts",
+        "runtime:backend/src/config/feature-flags.service.ts",
         "runtime:backend/src/modules/admin/services/r4-lint-gates.service.ts"
       ],
       "id": "runtime:backend/src/modules/admin/services/r4-content-enricher.service.ts",

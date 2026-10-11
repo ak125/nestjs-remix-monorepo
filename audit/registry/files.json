@@ -3406,6 +3406,7 @@
         "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
         "backend/src/modules/admin/services/r2-enricher.service.test.ts",
         "backend/src/modules/admin/services/r2-enricher.service.ts",
+        "backend/src/modules/admin/services/r4-content-enricher.service.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
       ],
       "imports": [
@@ -3772,6 +3773,7 @@
         "backend/src/modules/admin/controllers/admin-feature-flags.controller.ts",
         "backend/src/modules/admin/controllers/seo-control.controller.ts",
         "backend/src/modules/admin/services/keyword-density-gate.service.ts",
+        "backend/src/modules/admin/services/r4-content-enricher.service.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
         "backend/src/modules/admin/services/rag-gamme-reader.service.ts",
         "backend/src/modules/agentic-engine/services/run-manager.service.ts",
@@ -9517,6 +9519,8 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
+        "backend/src/config/content-write-gate.service.ts",
+        "backend/src/config/feature-flags.service.ts",
         "backend/src/config/r4-keyword-plan.constants.ts",
         "backend/src/config/rag.config.ts",
         "backend/src/modules/admin/services/r4-lint-gates.service.ts",
@@ -9524,7 +9528,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 567,
+      "loc": 571,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/r4-content-enricher.service.ts",
       "risk": "low",
