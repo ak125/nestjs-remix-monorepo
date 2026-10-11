@@ -8339,7 +8339,7 @@
         "backend/src/modules/analytics/index.ts"
       ],
       "kind": "service",
-      "loc": 513,
+      "loc": 530,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/command-center-kpi.service.ts",
       "risk": "low",
@@ -39407,7 +39407,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 1048,
+      "loc": 1106,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/command-center-kpi.service.test.ts",
       "risk": "low",

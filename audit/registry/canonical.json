@@ -36817,7 +36817,7 @@
         "backend/src/modules/analytics/index.ts"
       ],
       "kind": "service",
-      "loc": 513,
+      "loc": 530,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/command-center-kpi.service.ts",
       "risk": "medium",
@@ -68979,7 +68979,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 1048,
+      "loc": 1106,
       "owner": "@ak125",
       "path": "backend/tests/unit/command-center-kpi.service.test.ts",
       "risk": "medium",
@@ -104266,11 +104266,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "7bec88c8e8b454869e284e28fdde34ca05a32d3fdbbdfe0820cdee50a66f5f3a",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "60e6b877a27e9dc3c2c374e0832ba942682b7b33c75464192b5e655c452e854a",
+      "audit/registry/files.json": "adf6bcbb9ab65f19b76a06702f02f3ef2006210daa37eaa4bfdfd45e34b157ff",
       "audit/registry/rpc.json": "68f3b21f7aa0b2ef7da9b488c657c3b6b5bdde0476bf7d617f1e346cc26b4449",
       "audit/registry/runtime.json": "1537c0f3bfbfb3eec888d674e290f14eb9df56e9f816220210a8b7298eaeeb44"
     },
-    "sotFingerprint": "4a19eac615d8"
+    "sotFingerprint": "b048817167ec"
   },
   "runtime": [
     {
