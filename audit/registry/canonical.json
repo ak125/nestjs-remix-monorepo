@@ -10385,11 +10385,104 @@
         "usedBy": []
       },
       {
-        "columns": [],
+        "columns": [
+          {
+            "hasDefault": false,
+            "name": "id",
+            "nullable": true,
+            "type": "serial PRIMARY KEY"
+          },
+          {
+            "hasDefault": false,
+            "name": "slug",
+            "nullable": true,
+            "type": "text NOT NULL UNIQUE"
+          },
+          {
+            "hasDefault": false,
+            "name": "label",
+            "nullable": false,
+            "type": "text"
+          },
+          {
+            "hasDefault": false,
+            "name": "description",
+            "nullable": true,
+            "type": "text"
+          },
+          {
+            "hasDefault": false,
+            "name": "interval_km_min",
+            "nullable": true,
+            "type": "integer"
+          },
+          {
+            "hasDefault": false,
+            "name": "interval_km_max",
+            "nullable": true,
+            "type": "integer"
+          },
+          {
+            "hasDefault": false,
+            "name": "interval_months_min",
+            "nullable": true,
+            "type": "integer"
+          },
+          {
+            "hasDefault": false,
+            "name": "interval_months_max",
+            "nullable": true,
+            "type": "integer"
+          },
+          {
+            "hasDefault": true,
+            "name": "severity_if_overdue",
+            "nullable": true,
+            "type": "text"
+          },
+          {
+            "hasDefault": false,
+            "name": "normal_wear_km_min",
+            "nullable": true,
+            "type": "integer"
+          },
+          {
+            "hasDefault": false,
+            "name": "normal_wear_km_max",
+            "nullable": true,
+            "type": "integer"
+          },
+          {
+            "hasDefault": false,
+            "name": "related_gamme_slug",
+            "nullable": true,
+            "type": "text"
+          },
+          {
+            "hasDefault": false,
+            "name": "related_pg_id",
+            "nullable": true,
+            "type": "integer"
+          },
+          {
+            "hasDefault": true,
+            "name": "active",
+            "nullable": true,
+            "type": "boolean"
+          },
+          {
+            "hasDefault": true,
+            "name": "created_at",
+            "nullable": true,
+            "type": "timestamptz"
+          }
+        ],
         "deletePolicy": "ADR_REQUIRED",
         "domain": "UNKNOWN",
         "id": "__diag_maintenance_operation",
-        "inMigrations": [],
+        "inMigrations": [
+          "20261011_diag_capture_maintenance_schema.sql"
+        ],
         "indexes": [],
         "name": "__diag_maintenance_operation",
         "owner": "__unassigned__",
@@ -10397,7 +10490,7 @@
         "rlsEnabled": true,
         "schema": "public",
         "schemaVersion": "1.0.0",
-        "sourceConfidence": "low",
+        "sourceConfidence": "high",
         "status": "LIVE",
         "usedBy": [
           "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
@@ -10405,11 +10498,38 @@
         ]
       },
       {
-        "columns": [],
+        "columns": [
+          {
+            "hasDefault": false,
+            "name": "id",
+            "nullable": true,
+            "type": "serial PRIMARY KEY"
+          },
+          {
+            "hasDefault": true,
+            "name": "relevance",
+            "nullable": true,
+            "type": "text"
+          },
+          {
+            "hasDefault": true,
+            "name": "active",
+            "nullable": true,
+            "type": "boolean"
+          },
+          {
+            "hasDefault": true,
+            "name": "created_at",
+            "nullable": true,
+            "type": "timestamptz"
+          }
+        ],
         "deletePolicy": "ADR_REQUIRED",
         "domain": "UNKNOWN",
         "id": "__diag_maintenance_symptom_link",
-        "inMigrations": [],
+        "inMigrations": [
+          "20261011_diag_capture_maintenance_schema.sql"
+        ],
         "indexes": [],
         "name": "__diag_maintenance_symptom_link",
         "owner": "__unassigned__",
@@ -10417,7 +10537,7 @@
         "rlsEnabled": true,
         "schema": "public",
         "schemaVersion": "1.0.0",
-        "sourceConfidence": "low",
+        "sourceConfidence": "high",
         "status": "LIVE",
         "usedBy": [
           "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts"
@@ -103505,15 +103625,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "f712a655d9f22003e79dcfca8e1b40fa79901b8a60755de688f1431655d188e2",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "c244f632277e9b99bc80522559688ab09ec1997050a5035f8d53028386f64897",
+      ".spec/00-canon/repository-registry/ownership.yaml": "a73100651896937152a33fb3319da31791adeff01c2ce777676a7a8bc8a58ce6",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
-      "audit/registry/db.json": "a18c5c97f4b23c9c64f9993491f63cbf920b856a24cb5b51152d9cb6bbaac94e",
+      "audit/registry/db.json": "7bec88c8e8b454869e284e28fdde34ca05a32d3fdbbdfe0820cdee50a66f5f3a",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
       "audit/registry/files.json": "846809d0fc8b021ad6e71fc8e3293034d3356788b3f71014a105bdb07f865e80",
       "audit/registry/rpc.json": "68f3b21f7aa0b2ef7da9b488c657c3b6b5bdde0476bf7d617f1e346cc26b4449",
       "audit/registry/runtime.json": "aa553d2735271a86c3a725e0faf19b5a65a1da071a3ad7c95eb843e3a9e2492e"
     },
-    "sotFingerprint": "1a91180e278f"
+    "sotFingerprint": "daa720479439"
   },
   "runtime": [
     {
