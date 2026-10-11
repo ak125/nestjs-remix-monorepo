@@ -945,6 +945,64 @@ describe('R8 — cause de lecture du service au rapport', () => {
         as_of: now.toISOString(),
       })[0];
     }
+    it.each([
+      ['current', new Error('SECRET transport detail'), 'read_failed'],
+      ['previous', new Error('SECRET transport detail'), 'read_failed'],
+      ['current', { code: '42501', message: 'SECRET' }, 'access_denied'],
+      ['current', null, 'read_failed'],
+    ] as const)(
+      'rejet de lecture %s : conserve les autres mesures et une cause explicite',
+      async (period, rejection, failure) => {
+        const service = makeService(
+          fakeDb({
+            events: (q) => {
+              if (q.eventType !== eventType) return EMPTY;
+              if ((q.gte === since) === (period === 'current')) throw rejection;
+              return { data: rows, count: rows.length, error: null };
+            },
+          }),
+        );
+        const warn = jest.spyOn(service['logger'], 'warn').mockImplementation();
+        try {
+          const measures = await service.computeLiveKpis('full', now);
+          expect(measures).toHaveLength(4);
+          expect(
+            measures.find((m) => m.kpi.id === 'payments_kept')?.kpi,
+          ).toMatchObject({ value: 0, certified: true });
+          const m = measures.find((m) => m.kpi.id === id)!;
+          const r = report(measures);
+          expect(m.previous_value).toBeNull();
+          expect(r.evolution).toBe('INCONNUE');
+          if (period === 'current') {
+            expect(m).toMatchObject({
+              read_failure: failure,
+              kpi: { value: null, status: 'UNKNOWN', certified: false },
+            });
+            expect(m).not.toHaveProperty('previous_read_failure');
+            expect(r.kpi.measure).toBe('ILLISIBLE');
+          } else {
+            expect(m).toMatchObject({
+              previous_read_failure: failure,
+              kpi: {
+                value: id === 'pages_generating_atc' ? 1 : 0,
+                certified: true,
+              },
+            });
+            expect(m).not.toHaveProperty('read_failure');
+            expect(r.kpi.measure).toBe('MESURE');
+          }
+          expect(r.evidence.join(' ')).toMatch(
+            failure === 'access_denied' ? /accès refusé/i : /lecture.*échec/i,
+          );
+          expect(warn).toHaveBeenCalled();
+          expect(
+            JSON.stringify({ measures, r, logs: warn.mock.calls }),
+          ).not.toContain('SECRET');
+        } finally {
+          warn.mockRestore();
+        }
+      },
+    );
     it.each(cases)(
       '$name : valeur indisponible et cause exacte sans texte brut',
       async ({ response, text, next }) => {

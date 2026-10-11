@@ -484,7 +484,24 @@ export class CommandCenterKpiService extends SupabaseBaseService {
     source: string,
     query: PromiseLike<ReadResponse>,
   ): Promise<ReadOutcome<T[]>> {
-    const { data, error, count } = await query;
+    let response: ReadResponse;
+    try {
+      response = await query;
+    } catch (cause: unknown) {
+      // A rejected read must not discard the other KPI/window results.
+      const failure: KpiReadFailure =
+        cause !== null &&
+        typeof cause === 'object' &&
+        'code' in cause &&
+        cause.code === '42501'
+          ? 'access_denied'
+          : 'read_failed';
+      this.logger.warn(
+        `[command-center-kpi] ${kpi} indisponible — lecture ${source} rejetée (${failure})`,
+      );
+      return { data: null, failure };
+    }
+    const { data, error, count } = response;
     if (error) {
       this.logger.warn(
         `[command-center-kpi] ${kpi} indisponible — lecture ${source} en échec (${error.code ?? 'sans code'} : ${error.message})`,
