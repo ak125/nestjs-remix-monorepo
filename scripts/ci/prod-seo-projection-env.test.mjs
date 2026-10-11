@@ -1,10 +1,11 @@
 /**
- * Behavioural proof of the PROD SEO rollout flags writer (2026-09-24; R6
- * consolidation flag added 2026-10-01, ADR-103 D6).
+ * Behavioural proof of the PROD rollout flags writer (2026-09-24; R6
+ * consolidation flag added 2026-10-01, ADR-103 D6; diagnostic projection flag
+ * added 2026-10-11, ADR-035 D5).
  *
- * `prod-seo-projection-env.sh` writes the three SEO Projection rollout flags
- * and SEO_R6_CONSOLIDATION_ENABLED into ~/production/.env during the PROD
- * deploy. The code never fails on a bad
+ * `prod-seo-projection-env.sh` writes the three SEO Projection rollout flags,
+ * SEO_R6_CONSOLIDATION_ENABLED and DIAGNOSTIC_PROJECTION_ENABLED into
+ * ~/production/.env during the PROD deploy. The code never fails on a bad
  * value (`bool()` reads anything but `true` as false; the canary is an
  * exact-match allowlist), so a wrong value must stop the deploy BEFORE the
  * running container is touched. These tests EXECUTE the script against scratch
@@ -49,6 +50,7 @@ const KEYS = [
   "SEO_PROJECTION_READ_V1",
   "SEO_PROJECTION_READ_CANARY",
   "SEO_R6_CONSOLIDATION_ENABLED",
+  "DIAGNOSTIC_PROJECTION_ENABLED",
 ];
 const R3_TOKEN = "R3_CONSEILS@gamme:filtre-a-huile";
 
@@ -131,16 +133,31 @@ describe("unset config", () => {
     assert.deepEqual(linesStartingWith(s.file, "SEO_R6_CONSOLIDATION_ENABLED"), [
       "SEO_R6_CONSOLIDATION_ENABLED='false'",
     ]);
+    assert.deepEqual(linesStartingWith(s.file, "DIAGNOSTIC_PROJECTION_ENABLED"), [
+      "DIAGNOSTIC_PROJECTION_ENABLED='false'",
+    ]);
     assert.deepEqual(otherLines(s.file), UNRELATED, "other lines must be kept, in order");
     assert.deepEqual(bashRead(s.file, KEYS), {
       SEO_PROJECTION_R1_FEED_ENABLED: "false",
       SEO_PROJECTION_READ_V1: "false",
       SEO_PROJECTION_READ_CANARY: "",
       SEO_R6_CONSOLIDATION_ENABLED: "false",
+      DIAGNOSTIC_PROJECTION_ENABLED: "false",
     });
     assert.match(r.out, /SEO_PROJECTION_READ_CANARY=\(empty — fail-closed/);
     assert.match(r.out, /SEO_R6_CONSOLIDATION_ENABLED=false/);
+    assert.match(r.out, /DIAGNOSTIC_PROJECTION_ENABLED=false/);
     assert.doesNotMatch(r.out, /::notice::/);
+  });
+
+  test("rollback: a stale DIAGNOSTIC_PROJECTION_ENABLED=true is replaced by false", () => {
+    const s = scratch(`${BASE_ENV}DIAGNOSTIC_PROJECTION_ENABLED=true\n`);
+    const r = run(s.file);
+    assert.equal(r.code, 0, r.out);
+    assert.deepEqual(linesStartingWith(s.file, "DIAGNOSTIC_PROJECTION_ENABLED"), [
+      "DIAGNOSTIC_PROJECTION_ENABLED='false'",
+    ]);
+    assert.deepEqual(otherLines(s.file), UNRELATED);
   });
 
   test("empty strings (GitHub renders an unset variable as '') behave as unset", () => {
@@ -150,6 +167,7 @@ describe("unset config", () => {
       SEO_PROJECTION_READ_V1_OVERRIDE: "",
       SEO_PROJECTION_READ_CANARY_OVERRIDE: "",
       SEO_R6_CONSOLIDATION_ENABLED_OVERRIDE: "",
+      DIAGNOSTIC_PROJECTION_ENABLED_OVERRIDE: "",
     });
     assert.equal(r.code, 0, r.out);
     assert.deepEqual(bashRead(s.file, KEYS), {
@@ -157,6 +175,7 @@ describe("unset config", () => {
       SEO_PROJECTION_READ_V1: "false",
       SEO_PROJECTION_READ_CANARY: "",
       SEO_R6_CONSOLIDATION_ENABLED: "false",
+      DIAGNOSTIC_PROJECTION_ENABLED: "false",
     });
   });
 });
@@ -169,6 +188,7 @@ describe("values written", () => {
       SEO_PROJECTION_READ_V1_OVERRIDE: "true",
       SEO_PROJECTION_READ_CANARY_OVERRIDE: R3_TOKEN,
       SEO_R6_CONSOLIDATION_ENABLED_OVERRIDE: "true",
+      DIAGNOSTIC_PROJECTION_ENABLED_OVERRIDE: "true",
     });
     assert.equal(r.code, 0, r.out);
     for (const k of KEYS) {
@@ -179,11 +199,13 @@ describe("values written", () => {
       SEO_PROJECTION_READ_V1: "true",
       SEO_PROJECTION_READ_CANARY: R3_TOKEN,
       SEO_R6_CONSOLIDATION_ENABLED: "true",
+      DIAGNOSTIC_PROJECTION_ENABLED: "true",
       SESSION_SECRET: "keepme",
     });
     assert.deepEqual(otherLines(s.file), UNRELATED);
     assert.match(r.out, /SEO_PROJECTION_READ_V1=true/);
     assert.match(r.out, /SEO_R6_CONSOLIDATION_ENABLED=true/);
+    assert.match(r.out, /DIAGNOSTIC_PROJECTION_ENABLED=true/);
     assert.doesNotMatch(r.out, /::notice::/);
   });
 
@@ -229,6 +251,7 @@ describe("values written", () => {
         SEO_PROJECTION_R1_FEED_ENABLED_OVERRIDE: "true",
         SEO_PROJECTION_READ_CANARY_OVERRIDE: canary,
         SEO_R6_CONSOLIDATION_ENABLED_OVERRIDE: "true",
+        DIAGNOSTIC_PROJECTION_ENABLED_OVERRIDE: "true",
       }).code,
       0,
     );
@@ -247,6 +270,7 @@ describe("values written", () => {
     assert.equal(env.SEO_PROJECTION_READ_V1, "false");
     assert.equal(env.SEO_PROJECTION_READ_CANARY, canary);
     assert.equal(env.SEO_R6_CONSOLIDATION_ENABLED, "true");
+    assert.equal(env.DIAGNOSTIC_PROJECTION_ENABLED, "true");
   });
 
   test("a canary set while READ_V1 is not true is written, with a notice", () => {
@@ -287,6 +311,11 @@ describe("refusals leave the .env byte-identical", () => {
     "R6 'yes'": { SEO_R6_CONSOLIDATION_ENABLED_OVERRIDE: "yes" },
     "R6 '1'": { SEO_R6_CONSOLIDATION_ENABLED_OVERRIDE: "1" },
     "R6 'true ' (trailing space)": { SEO_R6_CONSOLIDATION_ENABLED_OVERRIDE: "true " },
+    "diagnostic 'True'": { DIAGNOSTIC_PROJECTION_ENABLED_OVERRIDE: "True" },
+    "diagnostic 'yes'": { DIAGNOSTIC_PROJECTION_ENABLED_OVERRIDE: "yes" },
+    "diagnostic '1'": { DIAGNOSTIC_PROJECTION_ENABLED_OVERRIDE: "1" },
+    "diagnostic ' true' (leading space)": { DIAGNOSTIC_PROJECTION_ENABLED_OVERRIDE: " true" },
+    "diagnostic 'on'": { DIAGNOSTIC_PROJECTION_ENABLED_OVERRIDE: "on" },
     // Canary: empty tokens.
     "canary empty token in the middle (a,,b)": {
       SEO_PROJECTION_READ_CANARY_OVERRIDE: `${R3_TOKEN},,R4_REFERENCE@gamme:x`,
@@ -324,6 +353,11 @@ describe("refusals leave the .env byte-identical", () => {
       SEO_PROJECTION_READ_V1_OVERRIDE: "true",
       SEO_PROJECTION_READ_CANARY_OVERRIDE: R3_TOKEN,
       SEO_R6_CONSOLIDATION_ENABLED_OVERRIDE: "on",
+    },
+    "a bad diagnostic value among valid flags": {
+      SEO_PROJECTION_READ_V1_OVERRIDE: "true",
+      SEO_R6_CONSOLIDATION_ENABLED_OVERRIDE: "true",
+      DIAGNOSTIC_PROJECTION_ENABLED_OVERRIDE: "TRUE",
     },
   };
   for (const [name, overrides] of Object.entries(cases)) {
