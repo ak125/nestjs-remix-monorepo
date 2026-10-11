@@ -91,8 +91,8 @@
         "backend/src/types",
         "backend/src/utils"
       ],
-      "files_count": 36,
-      "loc_total": 6187,
+      "files_count": 35,
+      "loc_total": 6178,
       "has_barrel": true
     },
     "blog": {
@@ -301,7 +301,6 @@
         "frontend/app/components/heroes",
         "frontend/app/components/home",
         "frontend/app/components/layout",
-        "frontend/app/components/layout/templates",
         "frontend/app/components/manufacturers",
         "frontend/app/components/model",
         "frontend/app/components/navbar",
@@ -319,7 +318,6 @@
         "frontend/app/components/shipping",
         "frontend/app/components/trust",
         "frontend/app/components/ui",
-        "frontend/app/components/users",
         "frontend/app/components/vehicle",
         "frontend/app/components/vehicle/r8",
         "frontend/app/components/vehicle/r8/sections",
@@ -342,8 +340,8 @@
         "frontend/app/utils",
         "frontend/app/utils/seo"
       ],
-      "files_count": 599,
-      "loc_total": 114738,
+      "files_count": 585,
+      "loc_total": 110433,
       "has_barrel": true
     },
     "gamme-rest": {
