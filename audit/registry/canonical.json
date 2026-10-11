@@ -44179,7 +44179,7 @@
         "backend/src/modules/diagnostic-engine/projection/diagnostic-projection.types.ts"
       ],
       "kind": "test",
-      "loc": 727,
+      "loc": 805,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/projection/diagnostic-projection-resolver.test.ts",
       "risk": "medium",
@@ -44207,7 +44207,7 @@
         "backend/src/modules/diagnostic-engine/projection/diagnostic-projection.types.ts"
       ],
       "kind": "service",
-      "loc": 264,
+      "loc": 274,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/projection/diagnostic-projection-resolver.ts",
       "risk": "medium",
@@ -44463,7 +44463,7 @@
         "path"
       ],
       "kind": "test",
-      "loc": 43,
+      "loc": 62,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/projection/diagnostic-projection.types.test.ts",
       "risk": "medium",
@@ -44496,7 +44496,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 245,
+      "loc": 249,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/projection/diagnostic-projection.types.ts",
       "risk": "medium",
@@ -104145,11 +104145,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "7bec88c8e8b454869e284e28fdde34ca05a32d3fdbbdfe0820cdee50a66f5f3a",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "bdc2b5d304e054cd9691bb2cb5ea523d2dcbe9b04fc225038cd77fcea3c1f8e5",
+      "audit/registry/files.json": "16386dfea298c1e4a5122005d20a87497b03d89215abca262a257afeb4be4209",
       "audit/registry/rpc.json": "68f3b21f7aa0b2ef7da9b488c657c3b6b5bdde0476bf7d617f1e346cc26b4449",
       "audit/registry/runtime.json": "1537c0f3bfbfb3eec888d674e290f14eb9df56e9f816220210a8b7298eaeeb44"
     },
-    "sotFingerprint": "cf06ca73a127"
+    "sotFingerprint": "ab0b93611630"
   },
   "runtime": [
     {
