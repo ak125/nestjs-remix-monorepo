@@ -107,6 +107,12 @@ ENV REGISTRY_DIR=/app/audit/registry
 # exports version. Copied from the builder stage (full source), like audit/registry.
 COPY --chown=remix-api:nodejs --from=builder /app/backend/content/automecanik-wiki/exports/seo ./backend/content/automecanik-wiki/exports/seo
 
+# Diagnostic exports read by the diagnostic projection writer (ADR-035 D2/D5):
+# same pinned submodule and cwd as exports/seo above. Destination = the writer's
+# default `content/automecanik-wiki/exports/diagnostic`. A pin without
+# diagnostic exports FAILS the build, before any activation of the flag.
+COPY --chown=remix-api:nodejs --from=builder /app/backend/content/automecanik-wiki/exports/diagnostic ./backend/content/automecanik-wiki/exports/diagnostic
+
 # Public diagnostic/support content read by DiagnosticContentService (ADR-032).
 # Keep the pinned wiki files at the reader's absolute runtime path. Explicit
 # sources make a missing required file fail the build instead of serving 503s.
