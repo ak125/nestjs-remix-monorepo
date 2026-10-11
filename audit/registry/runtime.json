@@ -49,6 +49,7 @@
         "runtime:backend/src/modules/config/config.module.ts",
         "runtime:backend/src/modules/dashboard/dashboard.module.ts",
         "runtime:backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+        "runtime:backend/src/modules/diagnostic-engine/projection/diagnostic-projection.module.ts",
         "runtime:backend/src/modules/errors/errors.module.ts",
         "runtime:backend/src/modules/gamme-rest/gamme-rest.module.ts",
         "runtime:backend/src/modules/health/health.module.ts",
@@ -3097,6 +3098,68 @@
       "id": "runtime:backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
       "kind": "other",
       "path": "backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/config/feature-flags.service.ts",
+        "runtime:backend/src/modules/diagnostic-engine/projection/diagnostic-projection-scheduler.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/diagnostic-engine/projection/diagnostic-projection-admin.controller.ts",
+      "kind": "nestjs-controller",
+      "path": "backend/src/modules/diagnostic-engine/projection/diagnostic-projection-admin.controller.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/config/feature-flags.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/diagnostic-engine/projection/diagnostic-projection-scheduler.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/diagnostic-engine/projection/diagnostic-projection-scheduler.service.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts"
+      ],
+      "id": "runtime:backend/src/modules/diagnostic-engine/projection/diagnostic-projection-writer.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/diagnostic-engine/projection/diagnostic-projection-writer.service.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/database/database.module.ts",
+        "runtime:backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+        "runtime:backend/src/modules/diagnostic-engine/projection/diagnostic-projection-admin.controller.ts",
+        "runtime:backend/src/modules/diagnostic-engine/projection/diagnostic-projection-scheduler.service.ts",
+        "runtime:backend/src/modules/diagnostic-engine/projection/diagnostic-projection-writer.service.ts",
+        "runtime:backend/src/modules/diagnostic-engine/projection/diagnostic-projection.processor.ts"
+      ],
+      "id": "runtime:backend/src/modules/diagnostic-engine/projection/diagnostic-projection.module.ts",
+      "kind": "nestjs-module",
+      "path": "backend/src/modules/diagnostic-engine/projection/diagnostic-projection.module.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/config/feature-flags.service.ts",
+        "runtime:backend/src/modules/diagnostic-engine/projection/diagnostic-projection-writer.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/diagnostic-engine/projection/diagnostic-projection.processor.ts",
+      "kind": "worker",
+      "path": "backend/src/modules/diagnostic-engine/projection/diagnostic-projection.processor.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"

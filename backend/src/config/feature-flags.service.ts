@@ -386,6 +386,17 @@ export class FeatureFlagsService {
     return this.bool('DIAGNOSTIC_PIPELINE_V1_ENABLED', false);
   }
 
+  /**
+   * Projection WIKI `exports/diagnostic/` → `__diag_link_provenance` (ADR-035 D5).
+   * Default `false` : l'activation d'un environnement est une décision owner.
+   * Environnement seulement : la clé n'est pas dans `ALLOWED_KEYS`, aucun
+   * override admin ne l'allume. Lue au boot par le scheduler (enregistre ou
+   * retire le repeatable nocturne) et revérifiée à chaque job.
+   */
+  get diagnosticProjectionEnabled(): boolean {
+    return this.bool('DIAGNOSTIC_PROJECTION_ENABLED', false);
+  }
+
   // ── Write Guard flags (P1.5) ──
 
   get writeGuardEnabled(): boolean {
