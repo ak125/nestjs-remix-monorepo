@@ -57,7 +57,7 @@ Wired in [`.github/workflows/registry-fresh.yml`](../../.github/workflows/regist
 
 | Step | Runs | Proves |
 |------|------|--------|
-| `PR-8 cleanup guard — unit tests` | `npm run audit:cleanup-candidates:test` | the generator's own design decisions still hold (20 tests on fixtures) **and** the act-time guard's verdicts hold (`scripts/cleanup/validate-before-delete.test.ts`, 43 tests on throwaway git repos) |
+| `PR-8 cleanup guard — unit tests` | `npm run audit:cleanup-candidates:test` | the generator's own design decisions still hold (20 tests on fixtures) **and** the act-time guard's verdicts hold (`scripts/cleanup/validate-before-delete.test.ts`, 56 tests on throwaway git repos) |
 | `PR-8 inventory freshness` | `npm run audit:cleanup-candidates:check` | the **committed** inventory matches the **committed** inputs |
 
 Order matters. Placed after the rebuilds, the freshness step would compare against freshly regenerated inputs and report a PR-8 drift *caused by* an upstream drift — conflating two signals the `Deep-inventory freshness` step deliberately keeps apart. Non-blocking today via the job's `continue-on-error` (Phase 1); promote alongside the Deep-inventory step.

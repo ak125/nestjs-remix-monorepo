@@ -196,6 +196,56 @@ test("framework: NestJS module file whose subtree controller is fetched over HTT
   expectCode(runGuard(fx, "backend/src/modules/legacy/legacy.helper.ts"), 1, /\[HTTP-ROUTE-CALLER\]/);
 });
 
+test("path run by a package.json script → BLOCKED [CI/SCRIPT]", () => {
+  const fx = makeRepo({
+    files: {
+      "scripts/tools/gen-report.ts": "export {};\n",
+      "package.json": '{\n  "name": "fixture",\n  "scripts": { "report": "tsx scripts/tools/gen-report.ts" }\n}\n',
+    },
+  });
+  expectCode(runGuard(fx, "scripts/tools/gen-report.ts"), 1, /\[CI\/SCRIPT\] path\/basename referenced in: package\.json/);
+  // a package.json that has scripts but never names the target is not a use of it
+  expectCode(runGuard(fx, ISOLATED), 0, /VERDICT: SAFE TO DELETE/);
+});
+
+test("script run by a workflow step → BLOCKED [CI/SCRIPT]", () => {
+  const fx = makeRepo({
+    files: {
+      "scripts/tools/sync.sh": "#!/bin/sh\n",
+      ".github/workflows/sync.yml": "name: sync\non: push\njobs:\n  s:\n    steps:\n      - run: bash scripts/tools/sync.sh\n",
+    },
+  });
+  expectCode(runGuard(fx, "scripts/tools/sync.sh"), 1, /\[CI\/SCRIPT\] path\/basename referenced in: \.github\/workflows\/sync\.yml/);
+});
+
+test("framework: provider registered in a multi-line @Module array → BLOCKED [NESTJS-DI]", () => {
+  const fx = makeRepo({
+    files: {
+      "backend/src/things/thing.service.ts": "export class ThingService {}\n",
+      "backend/src/things/index.ts": "export * from './thing.service';\n",
+      "backend/src/things/thing.module.ts":
+        "import { Module } from '@nestjs/common';\nimport { ThingService } from './index';\n\n" +
+        "@Module({\n  providers: [\n    ThingService,\n  ],\n  exports: [\n    ThingService,\n  ],\n})\n" +
+        "export class ThingModule {}\n",
+    },
+  });
+  expectCode(runGuard(fx, "backend/src/things/thing.service.ts"), 1,
+    /\[NESTJS-DI\] ThingService .*backend\/src\/things\/thing\.module\.ts/);
+});
+
+test("framework: a longer identifier sharing the class name (ThingServiceFactory) is not a DI use → SAFE", () => {
+  const fx = makeRepo({
+    files: {
+      "backend/src/solo/thing.service.ts": "export class ThingService {}\n",
+      "backend/src/other/factory.ts": "export class ThingServiceFactory {}\n",
+      "backend/src/other/other.module.ts":
+        "import { Module } from '@nestjs/common';\nimport { ThingServiceFactory } from './factory';\n\n" +
+        "@Module({\n  providers: [\n    ThingServiceFactory,\n  ],\n})\nexport class OtherModule {}\n",
+    },
+  });
+  expectCode(runGuard(fx, "backend/src/solo/thing.service.ts"), 0, /VERDICT: SAFE TO DELETE/);
+});
+
 // ---------------------------------------------------------------------------
 // Path normalisation — every spelling of a protected path gets the protection.
 // ---------------------------------------------------------------------------
@@ -351,10 +401,40 @@ test("node probe crashes → exit 2, not SAFE", () => {
   expectCode(runGuard(fx, ISOLATED, { ...process.env, PATH: `${dir}${delimiter}${process.env.PATH}` }), 2);
 });
 
-test("grep fails (exit 2) → exit 2, not SAFE", () => {
+// Every search goes through `git grep` (see "Search surface" below); the guard runs
+// no standalone grep, so a failing search is simulated on git itself.
+test("git grep fails (exit 128) → exit 2, not SAFE", () => {
   const fx = makeRepo();
-  const dir = shimDir(fx, { grep: 'echo "grep: simulated read error" >&2\nexit 2' });
-  expectCode(runGuard(fx, ISOLATED, { ...process.env, PATH: `${dir}${delimiter}${process.env.PATH}` }), 2);
+  const realGit = resolveBin("git");
+  assert.ok(realGit, "git not found on PATH");
+  const dir = shimDir(fx, {
+    git: 'for a in "$@"; do\n  if [ "$a" = grep ]; then echo "fatal: simulated git grep failure" >&2; exit 128; fi\ndone\n' +
+      `exec '${realGit}' "$@"`,
+  });
+  expectCode(runGuard(fx, ISOLATED, { ...process.env, PATH: `${dir}${delimiter}${process.env.PATH}` }), 2, /search failed/);
+});
+
+test("listing untracked work fails (git ls-files --others, exit 128) → exit 2, not SAFE", () => {
+  const fx = makeRepo();
+  const realGit = resolveBin("git");
+  assert.ok(realGit, "git not found on PATH");
+  const dir = shimDir(fx, {
+    git: 'for a in "$@"; do\n  if [ "$a" = --others ]; then echo "fatal: simulated ls-files failure" >&2; exit 128; fi\ndone\n' +
+      `exec '${realGit}' "$@"`,
+  });
+  expectCode(runGuard(fx, ISOLATED, { ...process.env, PATH: `${dir}${delimiter}${process.env.PATH}` }), 2, /search failed/);
+});
+
+test("searching untracked work fails (git grep --untracked, exit 128) while the index pass succeeds → exit 2, not SAFE", () => {
+  const fx = makeRepo();
+  writeFileSync(join(fx.root, "frontend/app/components/draft.tsx"), "export const D = 1;\n");
+  const realGit = resolveBin("git");
+  assert.ok(realGit, "git not found on PATH");
+  const dir = shimDir(fx, {
+    git: 'for a in "$@"; do\n  if [ "$a" = --untracked ]; then echo "fatal: simulated git grep failure" >&2; exit 128; fi\ndone\n' +
+      `exec '${realGit}' "$@"`,
+  });
+  expectCode(runGuard(fx, ISOLATED, { ...process.env, PATH: `${dir}${delimiter}${process.env.PATH}` }), 2, /search failed/);
 });
 
 test("a protection still wins when another check fails: protected worker + node absent → BLOCKED", () => {
@@ -429,6 +509,100 @@ test("TypeScript declaration file (.d.ts) → refused (exit 2): tsc loads it wit
     },
   });
   expectCode(runGuard(fx, "backend/src/types/express.d.ts"), 2, /declaration file/);
+});
+
+// ---------------------------------------------------------------------------
+// Search surface — the repository's sources as git sees them: tracked files and
+// untracked work in progress, never what .gitignore excludes. Until 2026-10-11 the
+// searches also read build outputs and dependencies (12 of the 108 PR-8 candidates
+// had a hit from the git-ignored packages/database-types/dist/), so a verdict
+// depended on what happened to be built in the checkout.
+// ---------------------------------------------------------------------------
+test("references only in git-ignored outputs (build/, dist/, node_modules/) → SAFE", () => {
+  const fx = makeRepo({
+    files: {
+      ".gitignore": "build/\ndist/\nnode_modules/\n",
+      "frontend/build/server/index.js": "import { isolatedHelper } from '../../app/utils/isolated-helper.js';\n",
+      "packages/kit/dist/index.js": "module.exports = require('../../../frontend/app/utils/isolated-helper');\n",
+      "frontend/node_modules/some-lib/index.js": "module.exports = 'isolated-helper.ts';\n",
+    },
+  });
+  const tracked = execFileSync("git", ["ls-files", "--", "frontend/build", "packages/kit", "frontend/node_modules"],
+    { cwd: fx.root, encoding: "utf8", env: GIT_ENV });
+  assert.equal(tracked, "", "fixture premise: the outputs are git-ignored");
+  expectCode(runGuard(fx, ISOLATED), 0, /VERDICT: SAFE TO DELETE/);
+});
+
+test("user git config that reshapes git grep output (color.grep, submodule.recurse) changes no verdict", () => {
+  const fx = makeRepo();
+  const env = {
+    ...process.env, GIT_CONFIG_COUNT: "3",
+    GIT_CONFIG_KEY_0: "color.grep", GIT_CONFIG_VALUE_0: "always",
+    GIT_CONFIG_KEY_1: "submodule.recurse", GIT_CONFIG_VALUE_1: "true",
+    GIT_CONFIG_KEY_2: "grep.lineNumber", GIT_CONFIG_VALUE_2: "true",
+  };
+  expectCode(runGuard(fx, "frontend/app/utils/used-helper.ts", env), 1,
+    /\[IMPORT\] imported by: frontend\/app\/components\/consumer\.tsx\n/);
+  expectCode(runGuard(fx, ISOLATED, env), 0, /VERDICT: SAFE TO DELETE/);
+});
+
+test("reference in an untracked, not-ignored source (work in progress) → BLOCKED [IMPORT]", () => {
+  const fx = makeRepo();
+  writeFileSync(join(fx.root, "frontend/app/components/draft.tsx"),
+    "import { isolatedHelper } from '../utils/isolated-helper';\nexport const D = () => isolatedHelper;\n");
+  expectCode(runGuard(fx, ISOLATED), 1, /\[IMPORT\] imported by: frontend\/app\/components\/draft\.tsx/);
+});
+
+/** Track `rel` although a .gitignore pattern matches it (`git add -f`), as the repo does for archives/ and data/. */
+function trackIgnored(fx: Fixture, rel: string, content: string): void {
+  mkdirSync(dirname(join(fx.root, rel)), { recursive: true });
+  writeFileSync(join(fx.root, rel), content);
+  git(fx.root, "add", "-f", "--", rel);
+  git(fx.root, "commit", "-q", "-m", "track an ignored path");
+  assert.equal(execFileSync("git", ["ls-files", "--", rel], { cwd: fx.root, encoding: "utf8", env: GIT_ENV }), `${rel}\n`,
+    "fixture premise: the file is tracked");
+  assert.match(execFileSync("git", ["check-ignore", "--no-index", "--", rel], { cwd: fx.root, encoding: "utf8", env: GIT_ENV }),
+    new RegExp(rel.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), "fixture premise: a .gitignore pattern matches it");
+}
+
+// `git grep --untracked` walks the working tree and applies .gitignore to every file,
+// tracked ones included: backend/src/modules/commercial/archives/ (pattern `archives/`) and
+// backend/src/modules/vehicles/services/data/ (pattern `data/`) are tracked sources it skips.
+test("tracked importer under a .gitignore'd pattern (archives/) → BLOCKED [IMPORT]", () => {
+  const fx = makeRepo({ files: { ".gitignore": "archives/\n" } });
+  trackIgnored(fx, "frontend/app/archives/viewer.tsx",
+    "import { isolatedHelper } from '../utils/isolated-helper';\nexport const V = () => isolatedHelper;\n");
+  expectCode(runGuard(fx, ISOLATED), 1, /\[IMPORT\] imported by: frontend\/app\/archives\/viewer\.tsx/);
+});
+
+test("controller in a tracked directory under a .gitignore'd pattern, fetched over HTTP → BLOCKED [HTTP-ROUTE-CALLER]", () => {
+  const fx = makeRepo({
+    files: {
+      ".gitignore": "archives/\n",
+      "frontend/app/services/archives.client.ts": "export const list = () => fetch('/api/archives-x/list');\n",
+    },
+  });
+  trackIgnored(fx, "backend/src/modules/archives/archives.controller.ts",
+    "@Controller('api/archives-x')\nexport class ArchivesController {}\n");
+  trackIgnored(fx, "backend/src/modules/archives/archives.helper.ts", "export const h = 1;\n");
+  expectCode(runGuard(fx, "backend/src/modules/archives/archives.helper.ts"), 1, /\[HTTP-ROUTE-CALLER\]/);
+});
+
+test("importer deleted from the working tree (bottom-up removal in progress) → SAFE: files are read, not index blobs", () => {
+  const fx = makeRepo();
+  rmSync(join(fx.root, "frontend/app/components/consumer.tsx"));
+  expectCode(runGuard(fx, "frontend/app/utils/used-helper.ts"), 0, /VERDICT: SAFE TO DELETE/);
+});
+
+test("index file in a directory named with glob metacharacters (w[id]gets), imported as '.' → BLOCKED [IMPORT]", () => {
+  const fx = makeRepo({
+    files: {
+      "frontend/app/lib/w[id]gets/index.ts": "export const w = 1;\n",
+      "frontend/app/lib/w[id]gets/panel.tsx": "import { w } from '.';\nexport const P = () => w;\n",
+    },
+  });
+  expectCode(runGuard(fx, "frontend/app/lib/w[id]gets/index.ts"), 1,
+    /\[IMPORT\] imported by: frontend\/app\/lib\/w\[id\]gets\/panel\.tsx/);
 });
 
 // ---------------------------------------------------------------------------

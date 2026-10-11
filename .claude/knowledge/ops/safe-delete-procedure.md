@@ -93,7 +93,22 @@ Depuis PR #449, le refresh affiche aussi un **warning stderr** listant toute mé
 
 **Détecte depuis 2026-10-11** (répondaient SAFE à tort) : import avec suffixe de requête Vite
 (`./styles/animations.css?url`, importé par `root.tsx`), fichier `index.*` importé par son dossier
-(`~/lib/widgets`, `../widgets/`) ou par `'.'` / `'../'` depuis ce dossier.
+(`~/lib/widgets`, `../widgets/`) ou par `'.'` / `'../'` depuis ce dossier ; classe enregistrée dans
+un tableau `@Module` écrit sur plusieurs lignes (130 des 270 tableaux, 52 des 76 fichiers
+`*.module.ts`) — `[NESTJS-DI]` cherche le nom de classe deviné en **mot entier** dans les
+`*.module.ts` (`ThingServiceFactory` n'est pas `ThingService`). Bruit assumé, jamais un faux SAFE :
+le nom deviné d'un fichier frontend peut coïncider avec une classe backend (`orders.service.ts`
+→ `OrdersService`).
+
+**Surface de recherche** (depuis 2026-10-11) : toutes les recherches passent par `git grep` et
+lisent les sources telles que git les voit — **tout fichier suivi**, même sous un motif
+`.gitignore` (`backend/src/modules/commercial/archives/` relève de `archives/`,
+`…/services/data/` de `data/`), plus le travail en cours non suivi et non ignoré. Jamais les
+fichiers non suivis ignorés (`node_modules/`, `build/`, `dist/`) : un verdict ne dépend plus de ce
+qui est compilé ou installé dans le checkout (12 des 108 candidats PR-8 avaient un hit venu du
+seul `packages/database-types/dist/`). `git grep --untracked` n'est **pas** cette surface : il
+applique `.gitignore` aux fichiers suivis aussi — d'où deux passes disjointes (l'index, puis
+`git ls-files --others --exclude-standard`).
 
 **Refuse (exit 2, jamais SAFE)** — depuis 2026-10-11, tests `scripts/cleanup/validate-before-delete.test.ts` :
 - cible hors dépôt (y compris via `..` ou un répertoire symlinké), symlink, fichier de sous-module,
@@ -101,7 +116,7 @@ Depuis PR #449, le refresh affiche aussi un **warning stderr** listant toute mé
 - fichier de déclaration TypeScript (`*.d.ts`, `.d.mts`, `.d.cts`) : tsc le charge par `include`/`types`
   du tsconfig (`declare module`, `declare global`), jamais par un import — seule la condition #7 le juge ;
 - `audit/runtime-entrypoints.json` / `audit/dynamic-import-edges.json` absents, non commités ou
-  mal formés, `node` absent, recherche `grep` en échec → `VERDICT: INCONCLUSIVE`.
+  mal formés, `node` absent, recherche `git grep` / `git ls-files` en échec → `VERDICT: INCONCLUSIVE`.
 
 Un hit l'emporte toujours (exit 1), même si un autre contrôle n'a pas pu tourner.
 

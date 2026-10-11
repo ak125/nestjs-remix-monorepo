@@ -23,7 +23,13 @@
 # inside a submodule, not a TypeScript declaration file), and both audit/ manifests must be tracked, committed and
 # well-formed. A check that cannot run (missing/invalid evidence, absent `node`,
 # search error) is never read as "no use found". Names are data: they are escaped
-# before reaching a regex and never parsed as an option.
+# before reaching a regex or a pathspec and never parsed as an option.
+#
+# Search surface: every search reads the repository's sources as git sees them —
+# every tracked file, even one a .gitignore pattern matches, plus untracked work in
+# progress — through `git grep`. Untracked files .gitignore excludes (node_modules/,
+# build/, dist/) are never read: a verdict does not depend on what happens to be built
+# or installed in the checkout.
 #
 # Usage:
 #   ./scripts/cleanup/validate-before-delete.sh <relative_or_absolute_path>
@@ -66,6 +72,10 @@ glob_match() { # glob_match <glob> <path>
 
 ere_escape() { # ere_escape <text> — <text> as a literal inside an ERE
   printf '%s' "$1" | sed -e 's/[][\.*^$(){}+?|/]/\\&/g'
+}
+
+glob_escape() { # glob_escape <text> — <text> as a literal inside a git `:(glob)` pathspec
+  printf '%s' "$1" | sed -e 's/[][*?\\]/\\&/g'
 }
 
 refuse() { # refuse <message> — the target cannot be judged
@@ -148,7 +158,6 @@ CLASS_GUESS="$(printf '%s\n' "$STEM" | awk -F'[-.]' '{ for (i=1;i<=NF;i++) print
 STEM_RE="$(ere_escape "$STEM")"
 REL_RE="$(ere_escape "$REL")"
 BASENAME_RE="$(ere_escape "$BASENAME")"
-CLASS_RE="$(ere_escape "$CLASS_GUESS")"
 
 echo "=== validate-before-delete ==="
 echo "File     : $REL"
@@ -172,21 +181,82 @@ report_error() { # a check that could not run — never counted as "no use"
   ERROR_LINES+=("$1")
 }
 
-# search <tag> <self|all> <grep args...> — files matching, as SEARCH_RESULT (NUL-safe).
-# `self` drops the target itself. grep exit 1 = no match; > 1 = the search failed,
-# recorded as an error (return 1) instead of being read as "no reference".
+# The search surface (see header). Options that user git config could otherwise flip
+# (color.grep, submodule.recurse) are pinned so the output stays a plain path list.
+GIT=(git -C "$REPO_ROOT")
+GIT_GREP=("${GIT[@]}" grep --no-recurse-submodules --no-color --full-name)
+CODE_EXTS="ts tsx js mjs cjs"
+
+# pathspecs <exts> <dir>... — PATHSPECS = the files with one of <exts> (space-separated
+# suffixes; '' = every file) at any depth under each repo-relative <dir>.
+PATHSPECS=()
+pathspecs() {
+  local exts="$1" d e
+  shift
+  PATHSPECS=()
+  for d in "$@"; do
+    if [[ -z "$exts" ]]; then
+      PATHSPECS+=(":(literal)$d")
+      continue
+    fi
+    for e in $exts; do
+      PATHSPECS+=(":(glob)$(glob_escape "$d")/**/*.$e")
+    done
+  done
+}
+
+# surface_grep <out> <err> <git grep options...> — git grep over PATHSPECS on the search
+# surface: matches to <out>, diagnostics to <err>, git grep's exit convention (0 = match,
+# 1 = none, > 1 = failure). Two passes over disjoint sets of files:
+#   1. the index — every tracked file, read from the working tree (one deleted there is
+#      gone, its blob is not read). Never `git grep --untracked` for this: that mode walks
+#      the working tree and applies .gitignore to tracked files too, skipping tracked
+#      sources such as backend/src/modules/commercial/archives/ (pattern `archives/`);
+#   2. untracked files .gitignore does not exclude (`git ls-files --others
+#      --exclude-standard`), each searched by its literal name, when there are any.
+surface_grep() {
+  local out="$1" err="$2" rc1 rc2=1 f
+  shift 2
+  local -a wip=()
+  "${GIT_GREP[@]}" "$@" -- "${PATHSPECS[@]}" >"$out" 2>"$err"
+  rc1=$?
+  "${GIT[@]}" ls-files -z --others --exclude-standard -- "${PATHSPECS[@]}" >"$out.wip" 2>>"$err"
+  rc2=$?
+  if [[ $rc2 -ne 0 ]]; then
+    return $((rc2 > 1 ? rc2 : 2))
+  fi
+  rc2=1
+  while IFS= read -r -d '' f; do
+    wip+=(":(literal)$f")
+  done <"$out.wip"
+  if [[ ${#wip[@]} -gt 0 ]]; then
+    "${GIT_GREP[@]}" --untracked "$@" -- "${wip[@]}" >>"$out" 2>>"$err"
+    rc2=$?
+  fi
+  if [[ $rc1 -gt 1 || $rc2 -gt 1 ]]; then
+    return $((rc1 > rc2 ? rc1 : rc2))
+  fi
+  [[ $rc1 -eq 0 || $rc2 -eq 0 ]] && return 0
+  return 1
+}
+
+# search <tag> <self|all> <git grep options...> — files matching on the search surface
+# (surface_grep), as SEARCH_RESULT (absolute paths, NUL-safe). `self` drops the target
+# itself. Exit > 1 = the search failed, recorded as an error (return 1) instead of being
+# read as "no reference".
 SEARCH_RESULT=()
 search() {
   local tag="$1" scope="$2" rc f
   shift 2
   SEARCH_RESULT=()
-  grep -Z "$@" >"$TMPD/search.out" 2>"$TMPD/search.err"
+  surface_grep "$TMPD/search.out" "$TMPD/search.err" -l -z "$@"
   rc=$?
   if [[ $rc -gt 1 ]]; then
-    report_error "$tag search failed (grep exit $rc): $(head -c 300 "$TMPD/search.err" | tr '\n' ' ')"
+    report_error "$tag search failed (git exit $rc): $(head -c 300 "$TMPD/search.err" | tr '\n' ' ')"
     return 1
   fi
   while IFS= read -r -d '' f; do
+    f="$REPO_ROOT/$f"
     [[ "$scope" == self && "$f" == "$ABS" ]] && continue
     SEARCH_RESULT+=("$f")
   done <"$TMPD/search.out"
@@ -286,13 +356,14 @@ if [[ "$REL" == frontend/app/routes/* ]]; then
 fi
 
 # ---- 2. NestJS DI registration (providers / imports / exports / controllers) ----
-#  Grep the class name in @Module({ ... }) arrays. NestJS loads by identifier, not file path.
+#  NestJS wires a class by its identifier, not by file path: a module file that names the
+#  class — in an @Module array (written on one line or across many), `useClass`,
+#  `forwardRef(() => …)` — uses it. Whole word: `ThingServiceFactory` is not `ThingService`.
 if [[ -n "$CLASS_GUESS" && ${#CLASS_GUESS} -gt 3 ]]; then
-  if search "[NESTJS-DI]" self -rl --include='*.module.ts' \
-    -E -e "(providers|imports|exports|controllers)\s*:\s*\[[^]]*\b${CLASS_RE}\b" \
-    -- "$REPO_ROOT/backend/src"; then
+  pathspecs "module.ts" backend/src
+  if search "[NESTJS-DI]" self -w -F -e "$CLASS_GUESS"; then
     for f in "${SEARCH_RESULT[@]}"; do
-      report_hit "[NESTJS-DI] ${CLASS_GUESS} referenced in @Module array: ${f#"$REPO_ROOT"/}"
+      report_hit "[NESTJS-DI] ${CLASS_GUESS} named in module file: ${f#"$REPO_ROOT"/}"
     done
   fi
 fi
@@ -319,25 +390,26 @@ collect_importers() {
     IMPORTERS+=("$f")
   done
 }
-if search "[IMPORT]" self -rl --include='*.ts' --include='*.tsx' --include='*.js' --include='*.mjs' --include='*.cjs' \
-  -E -e "(from|import|require)\s*\(?\s*['\"\`](${IMPORT_SPEC_RE})(\?[^'\"\`]*)?['\"\`]" \
-  -- "$REPO_ROOT/backend/src" "$REPO_ROOT/frontend/app" "$REPO_ROOT/packages" "$REPO_ROOT/scripts"; then
+pathspecs "$CODE_EXTS" backend/src frontend/app packages scripts
+if search "[IMPORT]" self \
+  -E -e "(from|import|require)\s*\(?\s*['\"\`](${IMPORT_SPEC_RE})(\?[^'\"\`]*)?['\"\`]"; then
   collect_importers
 fi
-if [[ -n "$INDEX_DIR" ]] \
-  && search "[IMPORT]" self -rl --include='*.ts' --include='*.tsx' --include='*.js' --include='*.mjs' --include='*.cjs' \
-    -E -e "(from|import|require)\s*\(?\s*['\"\`]\.\.?(\/\.\.)*\/?['\"\`]" \
-    -- "$REPO_ROOT/$INDEX_DIR"; then
-  collect_importers
+if [[ -n "$INDEX_DIR" ]]; then
+  pathspecs "$CODE_EXTS" "$INDEX_DIR"
+  if search "[IMPORT]" self \
+    -E -e "(from|import|require)\s*\(?\s*['\"\`]\.\.?(\/\.\.)*\/?['\"\`]"; then
+    collect_importers
+  fi
 fi
 for f in "${IMPORTERS[@]}"; do
   report_hit "[IMPORT] imported by: ${f#"$REPO_ROOT"/}"
 done
 
 # ---- 4. Dynamic/runtime string references (path or basename) ----
-if search "[STRING-REF]" self -rl --include='*.ts' --include='*.tsx' --include='*.js' --include='*.mjs' --include='*.cjs' --include='*.json' --include='*.yml' --include='*.yaml' \
-  -E -e "['\"\`][^'\"\`]*${REL_RE}['\"\`]|['\"\`]${BASENAME_RE}['\"\`]" \
-  -- "$REPO_ROOT/backend" "$REPO_ROOT/frontend" "$REPO_ROOT/packages" "$REPO_ROOT/scripts" "$REPO_ROOT/.github"; then
+pathspecs "$CODE_EXTS json yml yaml" backend frontend packages scripts .github
+if search "[STRING-REF]" self \
+  -E -e "['\"\`][^'\"\`]*${REL_RE}['\"\`]|['\"\`]${BASENAME_RE}['\"\`]"; then
   for f in "${SEARCH_RESULT[@]}"; do
     report_hit "[STRING-REF] path/basename appears as string in: ${f#"$REPO_ROOT"/}"
   done
@@ -364,10 +436,11 @@ fi
 if [[ -n "$SUBTREE_DIR" && -d "$REPO_ROOT/$SUBTREE_DIR" ]]; then
   # Extract route paths from @Controller('<path>') string-arg decorators in the subtree.
   CONTROLLER_PATHS=()
-  grep -rh -E -e "@Controller\s*\(\s*['\"\`]" -- "$REPO_ROOT/$SUBTREE_DIR" >"$TMPD/controllers" 2>"$TMPD/controllers.err"
+  PATHSPECS=(":(literal)$SUBTREE_DIR")
+  surface_grep "$TMPD/controllers" "$TMPD/controllers.err" -h -E -e "@Controller\s*\(\s*['\"\`]"
   rc=$?
   if [[ $rc -gt 1 ]]; then
-    report_error "[HTTP-ROUTE-CALLER] @Controller extraction failed (grep exit $rc): $(head -c 300 "$TMPD/controllers.err" | tr '\n' ' ')"
+    report_error "[HTTP-ROUTE-CALLER] @Controller extraction failed (git exit $rc): $(head -c 300 "$TMPD/controllers.err" | tr '\n' ' ')"
   elif sed -nE "s/.*@Controller\s*\(\s*['\"\`]([^'\"\`]+)['\"\`].*/\1/p" "$TMPD/controllers" >"$TMPD/routes.raw" \
     && sort -u "$TMPD/routes.raw" >"$TMPD/routes"; then
     mapfile -t CONTROLLER_PATHS <"$TMPD/routes"
@@ -375,62 +448,47 @@ if [[ -n "$SUBTREE_DIR" && -d "$REPO_ROOT/$SUBTREE_DIR" ]]; then
     report_error "[HTTP-ROUTE-CALLER] @Controller path extraction failed (sed/sort)."
   fi
   if [[ ${#CONTROLLER_PATHS[@]} -gt 0 ]]; then
-    # Resolve the search dirs that actually exist (e2e/ and tests/ are optional).
-    HTTP_SEARCH_DIRS=()
-    for d in frontend/app packages scripts e2e tests; do
-      [[ -d "$REPO_ROOT/$d" ]] && HTTP_SEARCH_DIRS+=("$REPO_ROOT/$d")
+    # e2e/ and tests/ are optional: a pathspec under an absent directory matches nothing.
+    for ROUTE_PATH in "${CONTROLLER_PATHS[@]}"; do
+      [[ -z "$ROUTE_PATH" ]] && continue
+      pathspecs "$CODE_EXTS" frontend/app packages scripts e2e tests
+      if search "[HTTP-ROUTE-CALLER]" self -F -e "$ROUTE_PATH"; then
+        for f in "${SEARCH_RESULT[@]}"; do
+          report_hit "[HTTP-ROUTE-CALLER] @Controller('$ROUTE_PATH') consumed by: ${f#"$REPO_ROOT"/}"
+        done
+      fi
     done
-    if [[ ${#HTTP_SEARCH_DIRS[@]} -gt 0 ]]; then
-      for ROUTE_PATH in "${CONTROLLER_PATHS[@]}"; do
-        [[ -z "$ROUTE_PATH" ]] && continue
-        if search "[HTTP-ROUTE-CALLER]" self -rl --include='*.ts' --include='*.tsx' --include='*.js' --include='*.mjs' --include='*.cjs' \
-          -F -e "$ROUTE_PATH" \
-          -- "${HTTP_SEARCH_DIRS[@]}"; then
-          for f in "${SEARCH_RESULT[@]}"; do
-            report_hit "[HTTP-ROUTE-CALLER] @Controller('$ROUTE_PATH') consumed by: ${f#"$REPO_ROOT"/}"
-          done
-        fi
-      done
-    fi
   fi
 fi
 
 # ---- 5. CI / npm scripts / git hooks (path or basename in workflows, package.json, husky) ----
-if search "[CI/SCRIPT]" all -rl -F -e "$REL" -e "$BASENAME" \
-  -- "$REPO_ROOT/.github/workflows" "$REPO_ROOT/.husky"; then
+pathspecs "" .github/workflows .husky
+if search "[CI/SCRIPT]" all -F -e "$REL" -e "$BASENAME"; then
   for f in "${SEARCH_RESULT[@]}"; do
     [[ "$f" == */_/* ]] && continue
     report_hit "[CI/SCRIPT] path/basename referenced in: ${f#"$REPO_ROOT"/}"
   done
 fi
-if git -C "$REPO_ROOT" ls-files -z -- '*package.json' >"$TMPD/pkgs" 2>"$TMPD/pkgs.err"; then
-  while IFS= read -r -d '' pj; do
-    grep -qE -e '"(scripts|bin)"' -- "$REPO_ROOT/$pj" 2>"$TMPD/pkg.err"
-    rc=$?
-    [[ $rc -eq 1 ]] && continue
-    if [[ $rc -eq 0 ]]; then
-      grep -qF -e "$REL" -e "$BASENAME" -- "$REPO_ROOT/$pj" 2>"$TMPD/pkg.err"
-      rc=$?
-      [[ $rc -eq 0 ]] && report_hit "[CI/SCRIPT] path/basename referenced in: $pj"
-    fi
-    if [[ $rc -gt 1 ]]; then
-      report_error "[CI/SCRIPT] search failed on $pj (grep exit $rc): $(head -c 300 "$TMPD/pkg.err" | tr '\n' ' ')"
-    fi
-  done <"$TMPD/pkgs"
-else
-  report_error "[CI/SCRIPT] git ls-files '*package.json' failed: $(head -c 300 "$TMPD/pkgs.err" | tr '\n' ' ')"
+# A package.json that declares "scripts" or "bin" and names the path/basename anywhere
+# (--all-match: the file must match both patterns, not one line).
+PATHSPECS=(':(glob)**/package.json')
+if search "[CI/SCRIPT]" all --all-match -E -e '"(scripts|bin)"' -e "${REL_RE}|${BASENAME_RE}"; then
+  for f in "${SEARCH_RESULT[@]}"; do
+    report_hit "[CI/SCRIPT] path/basename referenced in: ${f#"$REPO_ROOT"/}"
+  done
 fi
 
 # ---- 7. Knowledge / governance references ----
-if search "[KNOWLEDGE]" all -rl --include='*.md' -F -e "$STEM" \
-  -- "$REPO_ROOT/.claude/knowledge" "$REPO_ROOT/.claude/rules"; then
+pathspecs md .claude/knowledge .claude/rules
+if search "[KNOWLEDGE]" all -F -e "$STEM"; then
   for f in "${SEARCH_RESULT[@]}"; do
     report_hit "[KNOWLEDGE] referenced in: ${f#"$REPO_ROOT"/}"
   done
 fi
 
 # ---- 6. Supabase migrations / SQL ----
-if search "[SQL]" all -rl --include='*.sql' -F -e "$STEM" -- "$REPO_ROOT/backend/supabase"; then
+pathspecs sql backend/supabase
+if search "[SQL]" all -F -e "$STEM"; then
   for f in "${SEARCH_RESULT[@]}"; do
     report_hit "[SQL] name appears in migration: ${f#"$REPO_ROOT"/}"
   done
