@@ -363,6 +363,75 @@ test("a protection still wins when another check fails: protected worker + node 
 });
 
 // ---------------------------------------------------------------------------
+// Import specifiers that name the file without spelling `<dir>/<stem>` — each one
+// is a real use the resolver follows, and each one was answered SAFE until
+// 2026-10-11 (frontend/app/styles/animations.css, imported by root.tsx as
+// `./styles/animations.css?url`, came out SAFE TO DELETE).
+// ---------------------------------------------------------------------------
+test("asset imported with a Vite query suffix (?url) → BLOCKED [IMPORT]", () => {
+  const fx = makeRepo({
+    files: {
+      "frontend/app/styles/theme.css": ".a { color: red; }\n",
+      "frontend/app/components/theme-consumer.tsx": "import themeHref from '../styles/theme.css?url';\nexport const T = () => themeHref;\n",
+    },
+  });
+  expectCode(runGuard(fx, "frontend/app/styles/theme.css"), 1, /\[IMPORT\] imported by: frontend\/app\/components\/theme-consumer\.tsx/);
+});
+
+test("index file imported through its directory (~/lib/widgets) → BLOCKED [IMPORT]", () => {
+  const fx = makeRepo({
+    files: {
+      "frontend/app/lib/widgets/index.ts": "export const w = 1;\n",
+      "frontend/app/components/widgets-consumer.tsx": "import { w } from '~/lib/widgets';\nexport const W = () => w;\n",
+    },
+  });
+  expectCode(runGuard(fx, "frontend/app/lib/widgets/index.ts"), 1, /\[IMPORT\] imported by: frontend\/app\/components\/widgets-consumer\.tsx/);
+});
+
+test("index file imported as '.' by a sibling → BLOCKED [IMPORT]", () => {
+  const fx = makeRepo({
+    files: {
+      "frontend/app/lib/widgets/index.ts": "export const w = 1;\n",
+      "frontend/app/lib/widgets/panel.tsx": "import { w } from '.';\nexport const P = () => w;\n",
+    },
+  });
+  expectCode(runGuard(fx, "frontend/app/lib/widgets/index.ts"), 1, /\[IMPORT\] imported by: frontend\/app\/lib\/widgets\/panel\.tsx/);
+});
+
+test("index file imported as '../' from a child directory → BLOCKED [IMPORT]", () => {
+  const fx = makeRepo({
+    files: {
+      "frontend/app/lib/widgets/index.ts": "export const w = 1;\n",
+      "frontend/app/lib/widgets/parts/knob.tsx": "import { w } from '../';\nexport const K = () => w;\n",
+    },
+  });
+  expectCode(runGuard(fx, "frontend/app/lib/widgets/index.ts"), 1, /\[IMPORT\] imported by: frontend\/app\/lib\/widgets\/parts\/knob\.tsx/);
+});
+
+test("index file whose directory nobody imports → SAFE despite look-alike specifiers", () => {
+  const fx = makeRepo({
+    files: {
+      "frontend/app/lib/widgets/index.ts": "export const w = 1;\n",
+      "frontend/app/lib/widgets-extra/index.ts": "export const x = 1;\n",
+      "frontend/app/components/extra-consumer.tsx": "import { x } from '~/lib/widgets-extra';\nexport const E = () => x;\n",
+      "frontend/app/other/index.ts": "export const o = 1;\n",
+      "frontend/app/other/sibling.ts": "import { o } from '.';\nexport const s = o;\n",
+    },
+  });
+  expectCode(runGuard(fx, "frontend/app/lib/widgets/index.ts"), 0, /VERDICT: SAFE TO DELETE/);
+});
+
+test("TypeScript declaration file (.d.ts) → refused (exit 2): tsc loads it without any import", () => {
+  const fx = makeRepo({
+    files: {
+      "backend/src/types/express.d.ts":
+        "import 'express-session';\ndeclare module 'express-session' {\n  interface SessionData { nonce?: string }\n}\n",
+    },
+  });
+  expectCode(runGuard(fx, "backend/src/types/express.d.ts"), 2, /declaration file/);
+});
+
+// ---------------------------------------------------------------------------
 // Special characters — names are data, never regex or options.
 // ---------------------------------------------------------------------------
 test("regex metacharacter in the name ([) with an importer → BLOCKED, not a masked grep error", () => {

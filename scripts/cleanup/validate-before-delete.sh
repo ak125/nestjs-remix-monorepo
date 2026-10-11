@@ -20,7 +20,7 @@
 #
 # Fail-closed: SAFE is printed only when every check above actually ran. The target
 # must be a regular, tracked, committed file of this repository (not a symlink, not
-# inside a submodule), and both audit/ manifests must be tracked, committed and
+# inside a submodule, not a TypeScript declaration file), and both audit/ manifests must be tracked, committed and
 # well-formed. A check that cannot run (missing/invalid evidence, absent `node`,
 # search error) is never read as "no use found". Names are data: they are escaped
 # before reaching a regex and never parsed as an option.
@@ -127,6 +127,14 @@ git_state() {
 # Untracked: `git rm` cannot remove it and its references were never reviewed.
 # Uncommitted changes: the verdict would judge a state nobody committed.
 STATE="$(git_state "$REL")" || refuse "$STATE — commit or discard first; only a committed file can be judged."
+
+# Declaration files: tsc loads them through tsconfig include/types (ambient
+# `declare module` / `declare global`), not through an import — no check below sees that use.
+case "$NAME" in
+  *.d.ts | *.d.mts | *.d.cts)
+    refuse "'$REL' is a TypeScript declaration file — tsc loads it through tsconfig include/types, not through an import, so no check here can see its uses. Prove it unused with the type-check (condition #7) and delete it deliberately."
+    ;;
+esac
 
 TMPD="$(mktemp -d)" || refuse "mktemp failed"
 trap 'rm -rf -- "$TMPD"' EXIT
@@ -290,13 +298,41 @@ if [[ -n "$CLASS_GUESS" && ${#CLASS_GUESS} -gt 3 ]]; then
 fi
 
 # ---- 3. Static / relative imports (with or without extension) ----
-if search "[IMPORT]" self -rl --include='*.ts' --include='*.tsx' --include='*.js' --include='*.mjs' --include='*.cjs' \
-  -E -e "(from|import|require)\s*\(?\s*['\"\`][^'\"\`]*\/${STEM_RE}(\.[a-z]+)?['\"\`]" \
-  -- "$REPO_ROOT/backend/src" "$REPO_ROOT/frontend/app" "$REPO_ROOT/packages" "$REPO_ROOT/scripts"; then
-  for f in "${SEARCH_RESULT[@]}"; do
-    report_hit "[IMPORT] imported by: ${f#"$REPO_ROOT"/}"
-  done
+# A specifier names the file as `…/<stem>` or `…/<stem>.<ext>`, optionally followed by a
+# bundler query (`?url`, `?raw`, `?inline` — Vite). An index file is also named by its
+# directory (`…/<dir>`, `…/<dir>/`), and from inside that directory by a specifier made
+# only of `.`/`..` segments (`'.'`, `'../'`, `'../..'`) — every such specifier under the
+# directory counts (over-approximation: it may name an ancestor instead).
+IMPORT_SPEC_RE="[^'\"\`]*\/${STEM_RE}(\.[a-z]+)?"
+INDEX_DIR=""
+if [[ "$STEM" == index && "$REL" == */* ]]; then
+  INDEX_DIR="${REL%/*}"
+  IMPORT_SPEC_RE="${IMPORT_SPEC_RE}|[^'\"\`]*\/$(ere_escape "${INDEX_DIR##*/}")\/?"
 fi
+IMPORTERS=()
+declare -A IMPORTER_SEEN=()
+collect_importers() {
+  local f
+  for f in "${SEARCH_RESULT[@]}"; do
+    [[ -n "${IMPORTER_SEEN[$f]+x}" ]] && continue
+    IMPORTER_SEEN[$f]=1
+    IMPORTERS+=("$f")
+  done
+}
+if search "[IMPORT]" self -rl --include='*.ts' --include='*.tsx' --include='*.js' --include='*.mjs' --include='*.cjs' \
+  -E -e "(from|import|require)\s*\(?\s*['\"\`](${IMPORT_SPEC_RE})(\?[^'\"\`]*)?['\"\`]" \
+  -- "$REPO_ROOT/backend/src" "$REPO_ROOT/frontend/app" "$REPO_ROOT/packages" "$REPO_ROOT/scripts"; then
+  collect_importers
+fi
+if [[ -n "$INDEX_DIR" ]] \
+  && search "[IMPORT]" self -rl --include='*.ts' --include='*.tsx' --include='*.js' --include='*.mjs' --include='*.cjs' \
+    -E -e "(from|import|require)\s*\(?\s*['\"\`]\.\.?(\/\.\.)*\/?['\"\`]" \
+    -- "$REPO_ROOT/$INDEX_DIR"; then
+  collect_importers
+fi
+for f in "${IMPORTERS[@]}"; do
+  report_hit "[IMPORT] imported by: ${f#"$REPO_ROOT"/}"
+done
 
 # ---- 4. Dynamic/runtime string references (path or basename) ----
 if search "[STRING-REF]" self -rl --include='*.ts' --include='*.tsx' --include='*.js' --include='*.mjs' --include='*.cjs' --include='*.json' --include='*.yml' --include='*.yaml' \

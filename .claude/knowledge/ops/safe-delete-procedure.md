@@ -87,10 +87,19 @@ Depuis PR #449, le refresh affiche aussi un **warning stderr** listant toute mé
 - DI NestJS custom providers via `useFactory` / `useClass` passé par variable
 - Routes Angular / custom frameworks qui scannent le FS
 - Références dans Docker volumes / CI workflows tiers
+- `@import` / `url()` depuis une autre feuille de style (seuls les importeurs TS/JS sont lus)
+- Source d'un paquet importé par son nom (`@repo/x` → `dist/index.js` → `src/index.ts`)
+- Spécificateurs hors `import`/`from`/`require(` : `require.resolve('…')`, `vi.mock('…')`, `jest.mock('…')`
+
+**Détecte depuis 2026-10-11** (répondaient SAFE à tort) : import avec suffixe de requête Vite
+(`./styles/animations.css?url`, importé par `root.tsx`), fichier `index.*` importé par son dossier
+(`~/lib/widgets`, `../widgets/`) ou par `'.'` / `'../'` depuis ce dossier.
 
 **Refuse (exit 2, jamais SAFE)** — depuis 2026-10-11, tests `scripts/cleanup/validate-before-delete.test.ts` :
 - cible hors dépôt (y compris via `..` ou un répertoire symlinké), symlink, fichier de sous-module,
   fichier non suivi ou modifié non commité ;
+- fichier de déclaration TypeScript (`*.d.ts`, `.d.mts`, `.d.cts`) : tsc le charge par `include`/`types`
+  du tsconfig (`declare module`, `declare global`), jamais par un import — seule la condition #7 le juge ;
 - `audit/runtime-entrypoints.json` / `audit/dynamic-import-edges.json` absents, non commités ou
   mal formés, `node` absent, recherche `grep` en échec → `VERDICT: INCONCLUSIVE`.
 
