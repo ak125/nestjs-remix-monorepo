@@ -92,7 +92,7 @@
         "backend/src/utils"
       ],
       "files_count": 36,
-      "loc_total": 6187,
+      "loc_total": 6189,
       "has_barrel": true
     },
     "blog": {
@@ -186,8 +186,8 @@
         "backend/src/modules/config/services",
         "backend/src/modules/config/validators"
       ],
-      "files_count": 102,
-      "loc_total": 25033,
+      "files_count": 103,
+      "loc_total": 25082,
       "has_barrel": true
     },
     "customers": {
@@ -235,11 +235,12 @@
         "backend/src/modules/diagnostic-engine/constants",
         "backend/src/modules/diagnostic-engine/engines",
         "backend/src/modules/diagnostic-engine/ports",
+        "backend/src/modules/diagnostic-engine/projection",
         "backend/src/modules/diagnostic-engine/services",
         "backend/src/modules/diagnostic-engine/types"
       ],
-      "files_count": 54,
-      "loc_total": 11165,
+      "files_count": 71,
+      "loc_total": 15034,
       "has_barrel": false
     },
     "errors": {
@@ -1285,7 +1286,7 @@
     {
       "from": "backend-core",
       "to": "diagnostic-engine",
-      "count": 1
+      "count": 2
     },
     {
       "from": "backend-core",
@@ -1690,12 +1691,12 @@
     {
       "from": "diagnostic-engine",
       "to": "config",
-      "count": 2
+      "count": 12
     },
     {
       "from": "diagnostic-engine",
       "to": "database",
-      "count": 2
+      "count": 3
     },
     {
       "from": "diagnostic-engine",
