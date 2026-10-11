@@ -26,10 +26,9 @@ function makeGate(): ContentWriteGateService {
   const config = {
     get: () => 'https://example.supabase.co',
   } as unknown as ConfigService;
-  // The 5 collaborators are never touched on the refusal path.
+  // The 4 collaborators are never touched on the refusal path.
   return new ContentWriteGateService(
     config,
-    {} as never,
     {} as never,
     {} as never,
     {} as never,

@@ -18,7 +18,7 @@
         "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__"
       ],
       "files_count": 157,
-      "loc_total": 43827,
+      "loc_total": 43814,
       "has_barrel": true
     },
     "agentic-engine": {
@@ -92,7 +92,7 @@
         "backend/src/utils"
       ],
       "files_count": 36,
-      "loc_total": 6186,
+      "loc_total": 6185,
       "has_barrel": true
     },
     "blog": {
@@ -146,7 +146,7 @@
         "backend/src/modules/catalog/utils"
       ],
       "files_count": 39,
-      "loc_total": 10200,
+      "loc_total": 10199,
       "has_barrel": false
     },
     "commercial": {
@@ -187,7 +187,7 @@
         "backend/src/modules/config/validators"
       ],
       "files_count": 103,
-      "loc_total": 25053,
+      "loc_total": 25050,
       "has_barrel": true
     },
     "customers": {
@@ -358,7 +358,7 @@
         "backend/src/modules/gamme-rest/utils/__tests__"
       ],
       "files_count": 19,
-      "loc_total": 6331,
+      "loc_total": 6325,
       "has_barrel": true
     },
     "health": {
@@ -413,7 +413,7 @@
         "backend/src/modules/marketing/templates"
       ],
       "files_count": 29,
-      "loc_total": 6990,
+      "loc_total": 6988,
       "has_barrel": false
     },
     "mcp-validation": {
@@ -427,7 +427,7 @@
         "backend/src/modules/mcp-validation/types"
       ],
       "files_count": 21,
-      "loc_total": 7767,
+      "loc_total": 7765,
       "has_barrel": true
     },
     "media-factory": {
@@ -665,7 +665,7 @@
         "backend/src/modules/rag-proxy/types"
       ],
       "files_count": 34,
-      "loc_total": 12029,
+      "loc_total": 12017,
       "has_barrel": false
     },
     "scripts": {
@@ -713,7 +713,7 @@
         "backend/src/modules/search/services"
       ],
       "files_count": 17,
-      "loc_total": 6267,
+      "loc_total": 6263,
       "has_barrel": false
     },
     "seo": {
@@ -770,7 +770,7 @@
         "scripts/seo/lib"
       ],
       "files_count": 279,
-      "loc_total": 59410,
+      "loc_total": 59406,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -970,7 +970,7 @@
         "backend/src/modules/upload/services"
       ],
       "files_count": 10,
-      "loc_total": 3580,
+      "loc_total": 3575,
       "has_barrel": true
     },
     "users": {
@@ -1066,7 +1066,7 @@
     {
       "from": "admin",
       "to": "config",
-      "count": 74
+      "count": 71
     },
     {
       "from": "admin",

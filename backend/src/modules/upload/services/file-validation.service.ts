@@ -6,7 +6,6 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { UploadType } from '../dto/upload.dto';
 import { fileTypeFromBuffer } from 'file-type';
 import * as crypto from 'crypto';
@@ -94,7 +93,7 @@ export class FileValidationService {
     { name: 'ZIP with executable', signature: [0x50, 0x4b, 0x03, 0x04] },
   ];
 
-  constructor(private readonly configService: ConfigService) {
+  constructor() {
     this.logger.log('🛡️ FileValidationService initialized');
   }
 

@@ -25,7 +25,6 @@ import {
 } from './field-catalog.constants';
 import { isLegacyRagTier } from './source-provenance.constants';
 import type { SourceTier } from './source-provenance.constants';
-import { ContentMergeEngine } from './content-merge-engine.service';
 import type { MergeFieldResult } from './content-merge-engine.service';
 import { ContentRegressionGuard } from './content-regression-guard.service';
 import { ContentWriteExecutor } from './content-write-executor.service';
@@ -66,7 +65,6 @@ export class ContentWriteGateService {
 
   constructor(
     private readonly config: ConfigService,
-    private readonly mergeEngine: ContentMergeEngine,
     private readonly regressionGuard: ContentRegressionGuard,
     private readonly writeExecutor: ContentWriteExecutor,
     private readonly casService: WriteGuardCasService,

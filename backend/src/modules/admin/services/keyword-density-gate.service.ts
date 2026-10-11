@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { FeatureFlagsService } from '../../../config/feature-flags.service';
 import type { PageBrief } from './page-brief.service';
 
@@ -51,10 +50,7 @@ export class KeywordDensityGateService {
   /** Minimum token match ratio (tokens found / total keyword tokens) */
   private readonly MIN_TOKEN_RATIO = 0.66;
 
-  constructor(
-    private readonly configService: ConfigService,
-    private readonly flags: FeatureFlagsService,
-  ) {}
+  constructor(private readonly flags: FeatureFlagsService) {}
 
   /**
    * Expose current density rules/thresholds for API and reporting.

@@ -6,7 +6,6 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { UploadType } from '../dto/upload.dto';
 import sharp from 'sharp';
 
@@ -84,7 +83,7 @@ export class UploadOptimizationService {
     },
   };
 
-  constructor(private readonly configService: ConfigService) {
+  constructor() {
     this.logger.log('⚡ UploadOptimizationService initialized');
   }
 

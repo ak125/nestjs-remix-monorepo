@@ -10807,7 +10807,7 @@
     },
     {
       "file": "backend/src/config/content-write-gate.service.ts",
-      "line": 156,
+      "line": 154,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "binding-not-literal"
@@ -11206,7 +11206,7 @@
     },
     {
       "file": "backend/src/modules/admin/services/r4-content-enricher.service.ts",
-      "line": 197,
+      "line": 193,
       "form": "IDENT",
       "resolved_table": "__seo_reference",
       "refusal": null
@@ -12466,21 +12466,21 @@
     },
     {
       "file": "backend/src/modules/catalog/services/gamme-unified.service.ts",
-      "line": 26,
+      "line": 25,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/catalog/services/gamme-unified.service.ts",
-      "line": 120,
+      "line": 119,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/catalog/services/gamme-unified.service.ts",
-      "line": 151,
+      "line": 150,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -12858,7 +12858,7 @@
     },
     {
       "file": "backend/src/modules/gamme-rest/services/gamme-page-data.service.ts",
-      "line": 87,
+      "line": 81,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"

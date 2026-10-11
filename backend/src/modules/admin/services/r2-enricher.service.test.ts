@@ -23,7 +23,6 @@ describe('R2 public enrichment refuses legacy RAG at the real write gate', () =>
         {} as never,
         {} as never,
         {} as never,
-        {} as never,
         { writeGuardEnabled: enabled } as never,
       );
       const writes: string[] = [];

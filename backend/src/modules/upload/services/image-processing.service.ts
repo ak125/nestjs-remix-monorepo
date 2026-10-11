@@ -6,7 +6,6 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import sharp from 'sharp';
 import { OperationFailedException, ErrorCodes } from '@common/exceptions';
 
@@ -78,7 +77,7 @@ export interface ProcessingResult {
 export class ImageProcessingService {
   private readonly logger = new Logger(ImageProcessingService.name);
 
-  constructor(private readonly configService: ConfigService) {
+  constructor() {
     this.logger.log('🖼️ ImageProcessingService initialized');
   }
 

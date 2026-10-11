@@ -11,7 +11,6 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { createHash } from 'crypto';
 import {
   HashableUrlData,
@@ -29,10 +28,7 @@ export class SitemapDeltaService {
   private readonly logger = new Logger(SitemapDeltaService.name);
   private readonly config: DeltaConfig;
 
-  constructor(
-    private readonly configService: ConfigService,
-    private readonly cacheService: CacheService,
-  ) {
+  constructor(private readonly cacheService: CacheService) {
     this.config = {
       enabled: true,
       redisHashKey: 'sitemap:hashes',

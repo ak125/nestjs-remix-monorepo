@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { MarketingHubDataService } from './marketing-hub-data.service';
 import { MarketingDataService } from './marketing-data.service';
-import { UTMBuilderService } from './utm-builder.service';
 import { SITE_ORIGIN } from '../../../config/app.config';
 import type {
   WeeklyPlan,
@@ -37,7 +36,6 @@ export class WeeklyPlanGeneratorService {
   constructor(
     private readonly hubData: MarketingHubDataService,
     private readonly marketingData: MarketingDataService,
-    private readonly utmBuilder: UTMBuilderService,
   ) {}
 
   /**
