@@ -69892,6 +69892,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "scripts/cleanup/validate-before-delete.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 663,
+      "owner": "__unassigned__",
+      "path": "scripts/cleanup/validate-before-delete.test.ts",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "scripts/convert-logos.js",
       "importedBy": [],
       "imports": [],

@@ -100744,6 +100744,26 @@
         "manual"
       ],
       "domain": "D13",
+      "id": "scripts/cleanup/validate-before-delete.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 663,
+      "owner": "@ak125",
+      "path": "scripts/cleanup/validate-before-delete.test.ts",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
       "id": "scripts/convert-logos.js",
       "importedBy": [],
       "imports": [],
@@ -103629,11 +103649,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "7bec88c8e8b454869e284e28fdde34ca05a32d3fdbbdfe0820cdee50a66f5f3a",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "846809d0fc8b021ad6e71fc8e3293034d3356788b3f71014a105bdb07f865e80",
+      "audit/registry/files.json": "9d87403c6d6b2a56508c8504a4d9f40b482efa229344fd812b02fbb025f00075",
       "audit/registry/rpc.json": "68f3b21f7aa0b2ef7da9b488c657c3b6b5bdde0476bf7d617f1e346cc26b4449",
       "audit/registry/runtime.json": "aa553d2735271a86c3a725e0faf19b5a65a1da071a3ad7c95eb843e3a9e2492e"
     },
-    "sotFingerprint": "daa720479439"
+    "sotFingerprint": "e7b6b27679b7"
   },
   "runtime": [
     {
