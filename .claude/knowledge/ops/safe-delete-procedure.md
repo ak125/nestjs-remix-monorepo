@@ -88,6 +88,14 @@ Depuis PR #449, le refresh affiche aussi un **warning stderr** listant toute mé
 - Routes Angular / custom frameworks qui scannent le FS
 - Références dans Docker volumes / CI workflows tiers
 
+**Refuse (exit 2, jamais SAFE)** — depuis 2026-10-11, tests `scripts/cleanup/validate-before-delete.test.ts` :
+- cible hors dépôt (y compris via `..` ou un répertoire symlinké), symlink, fichier de sous-module,
+  fichier non suivi ou modifié non commité ;
+- `audit/runtime-entrypoints.json` / `audit/dynamic-import-edges.json` absents, non commités ou
+  mal formés, `node` absent, recherche `grep` en échec → `VERDICT: INCONCLUSIVE`.
+
+Un hit l'emporte toujours (exit 1), même si un autre contrôle n'a pas pu tourner.
+
 **Toujours** confirmer avec `npm run build` + `npm test` avant push. Le gate
 finale est le runtime, pas le grep.
 

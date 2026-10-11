@@ -36,7 +36,7 @@ At PR-8b creation time, for each file in the batch:
 
 1. Find the matching record in `pr-8-controlled-cleanup-candidates.json` — must have `decision === "candidate"` and `confidence === "high"`.
 2. **Target-scoped invariance check** (PR-8d): `npm run audit:cleanup-candidates:check -- --target <path>` — exits 0 iff the target's proof block is invariant (`canonical.owner/domain/status/deletePolicy/importedByCount/importedBy[]` unchanged, `validateScriptSha256` unchanged, snapshot precheck c0-c3 unchanged, `neverAutoDelete.{protected,matchedGlob}` unchanged, `unreachableModule.verdict` unchanged). Cosmetic global drift (e.g., `ownership.yaml` mutated on UNRELATED paths by concurrent PRs) is tolerated by design.
-3. Run `bash scripts/cleanup/validate-before-delete.sh <file>` — must exit 0 (`SAFE`).
+3. Run `bash scripts/cleanup/validate-before-delete.sh <file>` — must exit 0 (`SAFE`). Exit 1 = `BLOCKED`; exit 2 = the file cannot be judged (out of repo, symlink, submodule, untracked or uncommitted target) or `INCONCLUSIVE` (a check could not run). Only 0 authorises `git rm`.
 4. Embed the matching `proof.*` block + the `activeRuntimeCheck` result in the PR body.
 5. `git rm <file>`.
 
@@ -57,7 +57,7 @@ Wired in [`.github/workflows/registry-fresh.yml`](../../.github/workflows/regist
 
 | Step | Runs | Proves |
 |------|------|--------|
-| `PR-8 cleanup guard — unit tests` | `npm run audit:cleanup-candidates:test` | the generator's own design decisions still hold (19 tests on fixtures) |
+| `PR-8 cleanup guard — unit tests` | `npm run audit:cleanup-candidates:test` | the generator's own design decisions still hold (20 tests on fixtures) **and** the act-time guard's verdicts hold (`scripts/cleanup/validate-before-delete.test.ts`, 37 tests on throwaway git repos) |
 | `PR-8 inventory freshness` | `npm run audit:cleanup-candidates:check` | the **committed** inventory matches the **committed** inputs |
 
 Order matters. Placed after the rebuilds, the freshness step would compare against freshly regenerated inputs and report a PR-8 drift *caused by* an upstream drift — conflating two signals the `Deep-inventory freshness` step deliberately keeps apart. Non-blocking today via the job's `continue-on-error` (Phase 1); promote alongside the Deep-inventory step.
