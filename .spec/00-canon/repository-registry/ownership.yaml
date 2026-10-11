@@ -1572,6 +1572,16 @@ entries:
     owner: '@ak125/vehicle-team'
     sourceConfidence: high
     risk: medium
+  # Capture du schéma des 2 tables d'entretien du diagnostic et des 5 colonnes de __diag_cause,
+  # créés hors du dépôt le 2026-03-08 (ADR-112 D8) : aucune ligne modifiée ; post-condition
+  # forme réelle == forme capturée. Risk medium : ADD COLUMN IF NOT EXISTS verrouille
+  # __diag_cause (ACCESS EXCLUSIVE, lock_timeout 5s). Couvre .sql + .down.sql. Glob exact ;
+  # domaine / owner = ceux du consommateur (backend/src/modules/diagnostic-engine/**).
+  - glob: backend/supabase/migrations/20261011_diag_capture_maintenance_schema*.sql
+    domain: D4
+    owner: '@ak125/vehicle-team'
+    sourceConfidence: high
+    risk: medium
   # Lecture SECURITY DEFINER de la politique de liens vers les guides d'achat (ADR-103 D5) :
   # le container PREPROD READ_ONLY (anon) ne peut pas lire en direct les 4 tables sous RLS ;
   # consommateur R6GuideLinkPolicyService (D3, seo-team). Couvre .sql + .down.sql. Glob exact
