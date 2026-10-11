@@ -17,10 +17,12 @@
  *     (`diag_hub_view`) qui voient ensuite une page produit (`r2_view`, même
  *     `session_id`, après la première visite du diagnostic).
  *
- * Statut : la carte ne déclare aucune cible chiffrée. Comme pour `payments_kept`,
- * le statut ne juge que ce qui se constate sans cible : zéro = CRITICAL, contrôle
- * en échec = WARNING. Fort / Moyen / Faible au-delà exigerait une cible posée
- * par l'owner. La tendance passe par la fenêtre précédente (champ « Évolution »).
+ * Statut : Pages & SEO et Diagnostic n'ont aucune cible déclarée. Une mesure
+ * positive reste UNKNOWN avec sa valeur ; zéro conserve l'alerte CRITICAL,
+ * sauf Diagnostic sans session exploitable : UNKNOWN, échantillon vide.
+ * Qualifier leur performance exige un critère validé par l'owner. Data reste
+ * évalué par ses contrôles de fiabilité. `certified` qualifie la lecture, pas
+ * la performance. La tendance passe par la fenêtre précédente (« Évolution »).
  */
 import type { TrackingIntegrityVerdictV1 } from '../../../analytics';
 import { getPageRoleFromUrl } from '../../../seo/types/page-role.types';
@@ -120,7 +122,7 @@ export function toPagesGeneratingAtcKpi(
     id,
     label,
     value: pages,
-    status: pages === 0 ? 'CRITICAL' : 'OK',
+    status: pages === 0 ? 'CRITICAL' : 'UNKNOWN',
     source: 'db',
     certified: true,
   };
@@ -173,7 +175,10 @@ export function toDiagnosticToProductKpi(
     label,
     value: counts.reachedProduct,
     unit: `/${counts.sessions}`,
-    status: counts.reachedProduct === 0 ? 'CRITICAL' : 'OK',
+    status:
+      counts.sessions > 0 && counts.reachedProduct === 0
+        ? 'CRITICAL'
+        : 'UNKNOWN',
     source: 'db',
     certified: true,
   };

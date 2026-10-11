@@ -11,7 +11,10 @@
  * Onglet « Orchestration » (ADR-087) : statut read-only + preview d'un plan shadow
  * *would-be* (action POST → backend). 0 mutation d'artefact ; le backend valide.
  */
-import { type CommandCenterResponse } from "@repo/registry";
+import {
+  CommandCenterResponseV2Schema,
+  type CommandCenterResponseV2,
+} from "@repo/registry";
 import {
   AlertTriangle,
   Boxes,
@@ -64,11 +67,11 @@ export const meta: MetaFunction = () =>
 function degraded(
   reason: string,
   mode: "full" | "disabled" = "full",
-): CommandCenterResponse {
+): CommandCenterResponseV2 {
   return {
     degraded: true,
     mode,
-    schema_version: "command-center.v1",
+    schema_version: "command-center.v2",
     source_truth: { canon_path: "", last_verified: null },
     summary: {
       departments_total: 0,
@@ -129,7 +132,10 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
   try {
     const res = await fetch(
-      getInternalApiUrlFromRequest("/api/admin/command-center", request),
+      getInternalApiUrlFromRequest(
+        "/api/admin/command-center?contract_version=2",
+        request,
+      ),
       {
         headers: {
           "Content-Type": "application/json",
@@ -154,13 +160,23 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         orchestration: null as OrchestrationStatus | null,
       };
     }
-    const body = (await res.json()) as {
-      data?: CommandCenterResponse;
-    } & CommandCenterResponse;
+    const body: unknown = await res.json();
     // AdminResponseInterceptor wraps as { success, data, meta }.
-    const cc = body.data ?? (body as CommandCenterResponse);
+    const payload =
+      body && typeof body === "object" && "data" in body ? body.data : body;
+    const parsed = CommandCenterResponseV2Schema.safeParse(payload);
+    if (!parsed.success) {
+      logger.warn("[command-center] invalid v2 contract — rendering degraded");
+      return {
+        cc: degraded("backend contract invalid"),
+        orchestration: null as OrchestrationStatus | null,
+      };
+    }
+    const cc = parsed.data;
     const orchestration =
-      cc.mode === "disabled" ? null : await fetchOrchestration(request);
+      cc.mode === "disabled" || cc.degraded
+        ? null
+        : await fetchOrchestration(request);
     return { cc, orchestration };
   } catch (e) {
     logger.error(`[command-center] fetch failed: ${e}`);
@@ -376,7 +392,7 @@ const KPI_VARIANT = {
  * full. Valeur absente = source illisible (ex. PREPROD en lecture anon) : « — »,
  * jamais un zéro.
  */
-function MeasuredKpis({ data }: { data: CommandCenterResponse }) {
+function MeasuredKpis({ data }: { data: CommandCenterResponseV2 }) {
   const kpis = data.executive_kpis.filter((k) => k.source !== "canon");
   if (kpis.length === 0) return null;
   return (
@@ -395,7 +411,7 @@ function MeasuredKpis({ data }: { data: CommandCenterResponse }) {
   );
 }
 
-function HandoffList({ data }: { data: CommandCenterResponse }) {
+function HandoffList({ data }: { data: CommandCenterResponseV2 }) {
   return (
     <Card>
       <CardHeader>
@@ -435,7 +451,7 @@ function HandoffList({ data }: { data: CommandCenterResponse }) {
   );
 }
 
-function CapabilityTable({ data }: { data: CommandCenterResponse }) {
+function CapabilityTable({ data }: { data: CommandCenterResponseV2 }) {
   return (
     <Card>
       <CardHeader>

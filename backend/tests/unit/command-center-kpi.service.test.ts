@@ -1,3 +1,4 @@
+import { buildDepartmentReports } from '../../src/modules/admin/services/command-center-action-rules/department-report.rules';
 /**
  * CommandCenterKpiService — `payments_kept` (KPI primaire du département Ventes)
  * et lectures des KPI Data / Pages & SEO / Diagnostic (règles pures testées dans
@@ -663,7 +664,7 @@ describe('CommandCenterKpiService — Data, Pages & SEO, Diagnostic', () => {
       expect(supabase.gte).toHaveBeenCalledWith('created_at', PREVIOUS_SINCE);
       expect(supabase.lt).toHaveBeenCalledWith('created_at', SINCE);
       const m = byId(measures, 'pages_generating_atc');
-      expect(m.kpi).toMatchObject({ value: 1, status: 'OK' });
+      expect(m.kpi).toMatchObject({ value: 1, status: 'UNKNOWN' });
       expect(m.previous_value).toBe(0);
     });
 
@@ -730,8 +731,12 @@ describe('CommandCenterKpiService — Data, Pages & SEO, Diagnostic', () => {
         ['payload->>session_id', 50],
       ]);
       const m = byId(measures, 'diagnostic_to_product');
-      expect(m.kpi).toMatchObject({ value: 2, unit: '/150', status: 'OK' });
-      expect(m.previous_value).toBe(0);
+      expect(m.kpi).toMatchObject({
+        value: 2,
+        unit: '/150',
+        status: 'UNKNOWN',
+      });
+      expect(m.previous_value).toBeNull();
     });
 
     it('un lot illisible → UNKNOWN pour toute la fenêtre', async () => {
@@ -824,14 +829,219 @@ describe('CommandCenterKpiService — Data, Pages & SEO, Diagnostic', () => {
       );
     });
 
-    it('aucune visite du diagnostic → aucune lecture r2_view, 0 → CRITICAL', async () => {
+    it('aucune visite du diagnostic → aucune lecture r2_view, zéro non évalué', async () => {
       const supabase = fakeDb({});
       const m = byId(
         await makeService(supabase).computeLiveKpis('full', NOW),
         'diagnostic_to_product',
       );
       expect(supabase.in).not.toHaveBeenCalled();
-      expect(m.kpi).toMatchObject({ value: 0, unit: '/0', status: 'CRITICAL' });
+      expect(m.kpi).toMatchObject({
+        value: 0,
+        unit: '/0',
+        status: 'UNKNOWN',
+        certified: true,
+      });
+      expect(m).toMatchObject({ sample_size: 0, previous_value: null });
     });
+
+    it('sessions toutes inexploitables : ne pas assimiler leur exclusion à une conversion en échec', async () => {
+      const m = byId(
+        await makeService(
+          fakeDb({
+            events: (q) =>
+              q.eventType === 'diag_hub_view'
+                ? ok([
+                    { session_id: 'x","y', created_at: SINCE },
+                    { session_id: 's1', created_at: 'invalid' },
+                  ])
+                : EMPTY,
+          }),
+        ).computeLiveKpis('full', NOW),
+        'diagnostic_to_product',
+      );
+      expect(m.kpi).toMatchObject({ value: 0, unit: '/0', status: 'UNKNOWN' });
+      expect(m).toMatchObject({ sample_size: 0, previous_value: null });
+    });
+
+    it('une période précédente avec session et zéro conversion reste comparable', async () => {
+      const m = byId(
+        await makeService(
+          fakeDb({
+            events: (q) =>
+              q.eventType === 'diag_hub_view'
+                ? ok([{ session_id: 's1', created_at: q.gte }])
+                : EMPTY,
+          }),
+        ).computeLiveKpis('full', NOW),
+        'diagnostic_to_product',
+      );
+      expect(m.kpi).toMatchObject({ value: 0, unit: '/1', status: 'CRITICAL' });
+      expect(m).toMatchObject({ sample_size: 1, previous_value: 0 });
+    });
+  });
+});
+
+describe('R8 — cause de lecture du service au rapport', () => {
+  const now = new Date('2026-10-04T12:00:00.000Z');
+  const since = '2026-09-04T12:00:00.000Z';
+  const targets = [
+    ['pages_generating_atc', 'r2_add_to_cart'],
+    ['diagnostic_to_product', 'diag_hub_view'],
+  ] as const;
+  const rows = Array.from({ length: 1000 }, () => ({
+    source_url: '/pieces/plaquette-de-frein-402.html',
+    session_id: 's1',
+    created_at: since,
+  }));
+  const cases = [
+    {
+      name: '1000 lignes sur 1001',
+      response: { data: rows, count: 1001, error: null },
+      text: /lecture incomplète/i,
+      next: /complétude/i,
+    },
+    {
+      name: 'total inconnu',
+      response: { data: rows, count: null, error: null },
+      text: /complétude.*non vérifiable/i,
+      next: /comptage/i,
+    },
+    {
+      name: 'total incohérent',
+      response: { data: rows, count: 999, error: null },
+      text: /complétude.*non vérifiable/i,
+      next: /comptage/i,
+    },
+    {
+      name: 'accès refusé',
+      response: {
+        data: null,
+        count: null,
+        error: { code: '42501', message: 'private@example.test SECRET' },
+      },
+      text: /accès refusé/i,
+      next: /droits/i,
+    },
+    {
+      name: 'erreur de lecture',
+      response: {
+        data: null,
+        count: null,
+        error: { message: 'private@example.test SECRET' },
+      },
+      text: /lecture.*échec/i,
+      next: /journaux/i,
+    },
+  ];
+  describe.each(targets)('%s', (id, eventType) => {
+    function report(measures: LiveKpiMeasure[]) {
+      return buildDepartmentReports({
+        departments: [
+          { id: 'test', label: 'Test', priority: 'P1', kpi_primary: id },
+        ],
+        actions: [],
+        measures,
+        as_of: now.toISOString(),
+      })[0];
+    }
+    it.each(cases)(
+      '$name : valeur indisponible et cause exacte sans texte brut',
+      async ({ response, text, next }) => {
+        const measures = await makeService(
+          fakeDb({
+            events: (q) =>
+              q.eventType === eventType && q.gte === since ? response : EMPTY,
+          }),
+        ).computeLiveKpis('full', now);
+        const r = report(measures);
+        expect(r).toMatchObject({
+          kpi: { value: null, previous_value: null, measure: 'ILLISIBLE' },
+          score: 'NON_MESURE',
+          evolution: 'INCONNUE',
+          owner_go_required: false,
+        });
+        expect(r.gap).toMatch(text);
+        expect(r.probable_cause).toMatch(text);
+        expect(r.next_evidence).toMatch(next);
+        expect(r.evidence.join(' ')).toMatch(text);
+        expect(JSON.stringify({ measures, r })).not.toMatch(
+          /SECRET|private@example/,
+        );
+        expect(r.gap).not.toContain("la source n'a pas répondu");
+      },
+    );
+    it('1000 lignes complètes restent mesurables sans cause de lecture', async () => {
+      const measures = await makeService(
+        fakeDb({
+          events: (q) =>
+            q.eventType === eventType
+              ? { data: rows, count: 1000, error: null }
+              : EMPTY,
+        }),
+      ).computeLiveKpis('full', now);
+      const m = measures.find((m) => m.kpi.id === id)!;
+      expect(m.kpi).toMatchObject({
+        value: id === 'pages_generating_atc' ? 1 : 0,
+        certified: true,
+      });
+      expect(m).not.toHaveProperty('read_failure');
+      expect(m).not.toHaveProperty('previous_read_failure');
+      expect(report(measures).kpi.measure).toBe('MESURE');
+    });
+    it('seule la période précédente tronquée : valeur courante conservée, comparaison expliquée', async () => {
+      const measures = await makeService(
+        fakeDb({
+          events: (q) =>
+            q.eventType === eventType
+              ? {
+                  data: rows,
+                  count: q.gte === since ? 1000 : 1001,
+                  error: null,
+                }
+              : EMPTY,
+        }),
+      ).computeLiveKpis('full', now);
+      const r = report(measures);
+      expect(r.kpi).toMatchObject({ measure: 'MESURE', previous_value: null });
+      expect(r.kpi.value).not.toBeNull();
+      expect(r.evolution).toBe('INCONNUE');
+      expect(r.evidence.slice(0, 3).join(' ')).toMatch(
+        /période précédente.*lecture incomplète/i,
+      );
+      expect(r.evidence.join(' ')).toMatch(/complétude/i);
+      expect(measures.find((m) => m.kpi.id === id)).not.toHaveProperty(
+        'read_failure',
+      );
+    });
+  });
+  it('les causes des lectures concurrentes et des lots Diagnostic restent distinctes', async () => {
+    const measures = await makeService(
+      fakeDb({
+        events: (q) => {
+          if (q.eventType === 'r2_add_to_cart')
+            return { data: [], count: 1001, error: null };
+          if (q.eventType === 'diag_hub_view')
+            return { data: rows.slice(0, 1), count: 1, error: null };
+          return {
+            data: null,
+            count: null,
+            error: { code: '42501', message: 'denied' },
+          };
+        },
+      }),
+    ).computeLiveKpis('full', now);
+    expect(
+      measures.find((m) => m.kpi.id === 'pages_generating_atc'),
+    ).toMatchObject({ read_failure: 'incomplete' });
+    expect(
+      measures.find((m) => m.kpi.id === 'diagnostic_to_product'),
+    ).toMatchObject({
+      read_failure: 'access_denied',
+      previous_read_failure: 'access_denied',
+      kpi: { value: null },
+    });
+    for (const m of measures.slice(0, 2))
+      expect(m).not.toHaveProperty('read_failure');
   });
 });

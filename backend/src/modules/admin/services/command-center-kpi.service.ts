@@ -19,6 +19,7 @@ import {
   type SessionEventRow,
 } from './command-center-action-rules/department-kpi.rules';
 import type {
+  KpiReadFailure,
   LiveExecutiveKpi,
   LiveKpiMeasure,
 } from './command-center-action-rules/live-kpi';
@@ -221,6 +222,20 @@ interface ReadResponse {
   count: number | null;
 }
 
+type ReadOutcome<T> =
+  | { data: T; failure?: never }
+  | { data: null; failure: KpiReadFailure };
+
+function readFailures(
+  current: ReadOutcome<unknown>,
+  previous: ReadOutcome<unknown>,
+): Pick<LiveKpiMeasure, 'read_failure' | 'previous_read_failure'> {
+  return {
+    ...(current.failure ? { read_failure: current.failure } : {}),
+    ...(previous.failure ? { previous_read_failure: previous.failure } : {}),
+  };
+}
+
 function measure(
   kpi: LiveExecutiveKpi,
   previous: number | null,
@@ -309,17 +324,30 @@ export class CommandCenterKpiService extends SupabaseBaseService {
           : null,
         verdictDays,
       ),
-      measure(toPagesGeneratingAtcKpi(pages, days), pagesBefore, days),
-      measure(
-        toDiagnosticToProductKpi(diagnostic, days),
-        diagnosticBefore?.reachedProduct ?? null,
-        days,
-      ),
+      {
+        ...measure(
+          toPagesGeneratingAtcKpi(pages.data, days),
+          pagesBefore.data,
+          days,
+        ),
+        ...readFailures(pages, pagesBefore),
+      },
+      {
+        ...measure(
+          toDiagnosticToProductKpi(diagnostic.data, days),
+          diagnosticBefore.data && diagnosticBefore.data.sessions > 0
+            ? diagnosticBefore.data.reachedProduct
+            : null,
+          days,
+        ),
+        ...(diagnostic.data ? { sample_size: diagnostic.data.sessions } : {}),
+        ...readFailures(diagnostic, diagnosticBefore),
+      },
     ];
   }
 
   /** Commandes passées dans [from, to) ; `to` absent = jusqu'à maintenant. */
-  private readPaymentsKept(
+  private async readPaymentsKept(
     from: string,
     to?: string,
   ): Promise<OrderPaymentRow[] | null> {
@@ -333,11 +361,12 @@ export class CommandCenterKpiService extends SupabaseBaseService {
       )
       .gte('ord_date', from);
     if (to) query = query.lt('ord_date', to);
-    return this.readAll<OrderPaymentRow>(
+    const result = await this.readAll<OrderPaymentRow>(
       'payments_kept',
       TABLES.xtr_order,
       query.limit(CommandCenterKpiService.MAX_ROWS),
     );
+    return result.data;
   }
 
   /** Verdict Data → Ventes à la date `at` ; hors contrat ou en échec → null. */
@@ -363,7 +392,7 @@ export class CommandCenterKpiService extends SupabaseBaseService {
   private async readPagesGeneratingAtc(
     from: string,
     to?: string,
-  ): Promise<number | null> {
+  ): Promise<ReadOutcome<number>> {
     const rows = await this.readEvents<{ source_url: string | null }>(
       'pages_generating_atc',
       'r2_add_to_cart',
@@ -371,13 +400,15 @@ export class CommandCenterKpiService extends SupabaseBaseService {
       from,
       to,
     );
-    return rows && countPagesGeneratingAtc(rows);
+    return rows.data === null
+      ? { data: null, failure: rows.failure }
+      : { data: countPagesGeneratingAtc(rows.data) };
   }
 
   private async readDiagnosticToProduct(
     from: string,
     to?: string,
-  ): Promise<DiagnosticToProductCounts | null> {
+  ): Promise<ReadOutcome<DiagnosticToProductCounts>> {
     const visits = await this.readEvents<SessionEventRow>(
       'diagnostic_to_product',
       'diag_hub_view',
@@ -385,8 +416,8 @@ export class CommandCenterKpiService extends SupabaseBaseService {
       from,
       to,
     );
-    if (!visits) return null;
-    const { firstVisit, malformedSessions } = firstVisitBySession(visits);
+    if (visits.data === null) return { data: null, failure: visits.failure };
+    const { firstVisit, malformedSessions } = firstVisitBySession(visits.data);
     if (malformedSessions > 0) {
       this.logger.warn(
         `[command-center-kpi] diagnostic_to_product — ${malformedSessions} session(s) écartée(s) : identifiant hors du format de l'émetteur`,
@@ -411,10 +442,10 @@ export class CommandCenterKpiService extends SupabaseBaseService {
           budget: CommandCenterKpiService.MAX_ROWS - views.length,
         },
       );
-      if (!rows) return null;
-      views.push(...rows);
+      if (rows.data === null) return { data: null, failure: rows.failure };
+      views.push(...rows.data);
     }
-    return countDiagnosticToProduct(firstVisit, views);
+    return { data: countDiagnosticToProduct(firstVisit, views) };
   }
 
   /**
@@ -428,7 +459,7 @@ export class CommandCenterKpiService extends SupabaseBaseService {
     from: string,
     to?: string,
     bySession?: { sessions: string[]; budget: number },
-  ): Promise<T[] | null> {
+  ): Promise<ReadOutcome<T[]>> {
     let query = this.supabase
       // Nom littéral : l'inventaire db-usage (build-db-usage-map.js) le rattache à ce service.
       .from('__seo_event_log')
@@ -446,27 +477,36 @@ export class CommandCenterKpiService extends SupabaseBaseService {
 
   /**
    * Lecture complète ou rien : erreur, ou `count` exact ≠ lignes reçues (plafond
-   * PostgREST) → null et avertissement. Jamais de mesure sur une lecture partielle.
+   * PostgREST) → cause typée et avertissement, jamais une mesure partielle.
    */
   private async readAll<T>(
     kpi: string,
     source: string,
     query: PromiseLike<ReadResponse>,
-  ): Promise<T[] | null> {
+  ): Promise<ReadOutcome<T[]>> {
     const { data, error, count } = await query;
     if (error) {
       this.logger.warn(
         `[command-center-kpi] ${kpi} indisponible — lecture ${source} en échec (${error.code ?? 'sans code'} : ${error.message})`,
       );
-      return null;
+      return {
+        data: null,
+        failure: error.code === '42501' ? 'access_denied' : 'read_failed',
+      };
     }
     const rows = (data ?? []) as T[];
     if (count !== rows.length) {
       this.logger.warn(
         `[command-center-kpi] ${kpi} indisponible — lecture ${source} incomplète (${rows.length} lignes reçues sur ${count ?? 'un total inconnu'})`,
       );
-      return null;
+      return {
+        data: null,
+        failure:
+          count != null && Number.isSafeInteger(count) && count > rows.length
+            ? 'incomplete'
+            : 'completeness_unverified',
+      };
     }
-    return rows;
+    return { data: rows };
   }
 }
