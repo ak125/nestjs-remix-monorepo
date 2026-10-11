@@ -75178,7 +75178,7 @@
         "~/lib/utils"
       ],
       "kind": "config",
-      "loc": 701,
+      "loc": 664,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/expert/CompatibilitySheetV2.tsx",
       "risk": "low",
@@ -75204,7 +75204,7 @@
         "~/lib/utils"
       ],
       "kind": "config",
-      "loc": 509,
+      "loc": 474,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/expert/ProductStickyCTAV2.tsx",
       "risk": "low",
@@ -79887,7 +79887,7 @@
         "~/utils/image-optimizer"
       ],
       "kind": "config",
-      "loc": 112,
+      "loc": 100,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/ui/BrandLogo.tsx",
       "risk": "low",
@@ -80121,7 +80121,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 326,
+      "loc": 324,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/ui/SEOHelmet.tsx",
       "risk": "low",
@@ -83600,7 +83600,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 467,
+      "loc": 463,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.articles.tsx",
       "risk": "medium",
@@ -83852,7 +83852,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 270,
+      "loc": 266,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.couleurs-constructeurs.tsx",
       "risk": "medium",
@@ -84051,7 +84051,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 1134,
+      "loc": 1132,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.gammes-seo.$pgId.tsx",
       "risk": "medium",
@@ -84083,7 +84083,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 2075,
+      "loc": 2061,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.gammes-seo._index.tsx",
       "risk": "medium",
@@ -84457,7 +84457,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 706,
+      "loc": 704,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.messages.tsx",
       "risk": "medium",
@@ -84784,7 +84784,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 640,
+      "loc": 596,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.products.gammes.$gammeId.tsx",
       "risk": "medium",
@@ -85340,7 +85340,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 571,
+      "loc": 545,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.seo-hub.content.diagnostics.$slug.tsx",
       "risk": "medium",
@@ -85374,7 +85374,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 640,
+      "loc": 632,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.seo-hub.content.diagnostics._index.tsx",
       "risk": "medium",
@@ -85462,7 +85462,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 1162,
+      "loc": 1157,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.seo-hub.content.generator.tsx",
       "risk": "medium",
@@ -85494,7 +85494,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 549,
+      "loc": 518,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.seo-hub.content.references.$slug.tsx",
       "risk": "medium",
@@ -85526,7 +85526,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 559,
+      "loc": 551,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.seo-hub.content.references._index.tsx",
       "risk": "medium",
@@ -85559,7 +85559,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 445,
+      "loc": 429,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.seo-hub.content.references.new.tsx",
       "risk": "medium",
@@ -86074,7 +86074,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 800,
+      "loc": 799,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.system-config._index.tsx",
       "risk": "medium",
@@ -86783,7 +86783,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 964,
+      "loc": 912,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/blog-pieces-auto.auto.$marque.$modele.tsx",
       "risk": "medium",
@@ -86812,7 +86812,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 916,
+      "loc": 898,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/blog-pieces-auto.auto.$marque.index.tsx",
       "risk": "medium",
@@ -86952,7 +86952,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 984,
+      "loc": 977,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/blog-pieces-auto.conseils._index.tsx",
       "risk": "medium",
@@ -87745,7 +87745,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 308,
+      "loc": 302,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/commercial.vehicles._index.tsx",
       "risk": "medium",
@@ -87862,7 +87862,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 501,
+      "loc": 466,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/commercial.vehicles.compatibility.tsx",
       "risk": "medium",
@@ -88090,7 +88090,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 1208,
+      "loc": 1196,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/constructeurs.$brand[.]html.tsx",
       "risk": "medium",
@@ -88392,7 +88392,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 501,
+      "loc": 500,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/legal.$pageKey.tsx",
       "risk": "medium",
@@ -88556,7 +88556,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 231,
+      "loc": 214,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/pieces.$.tsx",
       "risk": "medium",
@@ -88890,7 +88890,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 844,
+      "loc": 768,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/products.gammes.$gammeId.tsx",
       "risk": "medium",
@@ -88921,7 +88921,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 792,
+      "loc": 757,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/products.ranges.$rangeId.tsx",
       "risk": "medium",
@@ -88952,7 +88952,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 798,
+      "loc": 755,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/products.ranges.advanced.tsx",
       "risk": "medium",
@@ -89072,7 +89072,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 525,
+      "loc": 520,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/reference-auto._index.tsx",
       "risk": "medium",
@@ -89125,7 +89125,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 489,
+      "loc": 485,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/reviews.$reviewId.tsx",
       "risk": "medium",
@@ -89151,7 +89151,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 660,
+      "loc": 649,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/reviews._index.tsx",
       "risk": "medium",
@@ -89176,7 +89176,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 534,
+      "loc": 522,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/reviews.analytics.tsx",
       "risk": "medium",
@@ -89253,7 +89253,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 356,
+      "loc": 325,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/search.cnit.tsx",
       "risk": "medium",
@@ -89281,7 +89281,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 331,
+      "loc": 300,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/search.mine.tsx",
       "risk": "medium",
@@ -89308,7 +89308,7 @@
         "~/components/ui/button"
       ],
       "kind": "route",
-      "loc": 351,
+      "loc": 342,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/search.results.tsx",
       "risk": "medium",
@@ -89422,7 +89422,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 741,
+      "loc": 729,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/support.ai.tsx",
       "risk": "medium",
@@ -89447,7 +89447,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 501,
+      "loc": 491,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/support.tsx",
       "risk": "medium",
@@ -89474,7 +89474,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 399,
+      "loc": 384,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/tickets.$ticketId.tsx",
       "risk": "medium",
@@ -89500,7 +89500,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 407,
+      "loc": 394,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/tickets._index.tsx",
       "risk": "medium",
@@ -89766,7 +89766,7 @@
         "~/utils/logger"
       ],
       "kind": "config",
-      "loc": 954,
+      "loc": 914,
       "owner": "__unassigned__",
       "path": "frontend/app/services/api/brand.api.ts",
       "risk": "low",
@@ -92928,7 +92928,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 229,
+      "loc": 223,
       "owner": "@ak125",
       "path": "frontend/tests/e2e/url-validation.spec.ts",
       "risk": "medium",
@@ -94868,7 +94868,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 157,
+      "loc": 154,
       "owner": "@ak125",
       "path": "frontend/tests/unit/r1-section-pack.test.ts",
       "risk": "medium",
@@ -104145,11 +104145,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "7bec88c8e8b454869e284e28fdde34ca05a32d3fdbbdfe0820cdee50a66f5f3a",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "073d7b685d385c456ec48caea8bbbc98f1ea85ce32557cd26dc103513ab69ce2",
+      "audit/registry/files.json": "309ef6b0a36da15e15d2fd330908fb3751fd98d90f27c4b01f5398dc04f0c64e",
       "audit/registry/rpc.json": "68f3b21f7aa0b2ef7da9b488c657c3b6b5bdde0476bf7d617f1e346cc26b4449",
       "audit/registry/runtime.json": "1537c0f3bfbfb3eec888d674e290f14eb9df56e9f816220210a8b7298eaeeb44"
     },
-    "sotFingerprint": "69738c088110"
+    "sotFingerprint": "2bb9fadc42fb"
   },
   "runtime": [
     {

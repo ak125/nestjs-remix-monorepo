@@ -45343,7 +45343,7 @@
         "~/lib/utils"
       ],
       "kind": "config",
-      "loc": 701,
+      "loc": 664,
       "owner": "__unassigned__",
       "path": "frontend/app/components/expert/CompatibilitySheetV2.tsx",
       "risk": "low",
@@ -45368,7 +45368,7 @@
         "~/lib/utils"
       ],
       "kind": "config",
-      "loc": 509,
+      "loc": 474,
       "owner": "__unassigned__",
       "path": "frontend/app/components/expert/ProductStickyCTAV2.tsx",
       "risk": "low",
@@ -49863,7 +49863,7 @@
         "~/utils/image-optimizer"
       ],
       "kind": "config",
-      "loc": 112,
+      "loc": 100,
       "owner": "__unassigned__",
       "path": "frontend/app/components/ui/BrandLogo.tsx",
       "risk": "low",
@@ -50088,7 +50088,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 326,
+      "loc": 324,
       "owner": "__unassigned__",
       "path": "frontend/app/components/ui/SEOHelmet.tsx",
       "risk": "low",
@@ -53450,7 +53450,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 467,
+      "loc": 463,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.articles.tsx",
       "risk": "low",
@@ -53693,7 +53693,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 270,
+      "loc": 266,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.couleurs-constructeurs.tsx",
       "risk": "low",
@@ -53885,7 +53885,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 1134,
+      "loc": 1132,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.gammes-seo.$pgId.tsx",
       "risk": "low",
@@ -53916,7 +53916,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 2075,
+      "loc": 2061,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.gammes-seo._index.tsx",
       "risk": "low",
@@ -54276,7 +54276,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 706,
+      "loc": 704,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.messages.tsx",
       "risk": "low",
@@ -54591,7 +54591,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 640,
+      "loc": 596,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.products.gammes.$gammeId.tsx",
       "risk": "low",
@@ -55127,7 +55127,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 571,
+      "loc": 545,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.seo-hub.content.diagnostics.$slug.tsx",
       "risk": "low",
@@ -55160,7 +55160,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 640,
+      "loc": 632,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.seo-hub.content.diagnostics._index.tsx",
       "risk": "low",
@@ -55245,7 +55245,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 1162,
+      "loc": 1157,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.seo-hub.content.generator.tsx",
       "risk": "low",
@@ -55276,7 +55276,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 549,
+      "loc": 518,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.seo-hub.content.references.$slug.tsx",
       "risk": "low",
@@ -55307,7 +55307,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 559,
+      "loc": 551,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.seo-hub.content.references._index.tsx",
       "risk": "low",
@@ -55339,7 +55339,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 445,
+      "loc": 429,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.seo-hub.content.references.new.tsx",
       "risk": "low",
@@ -55834,7 +55834,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 800,
+      "loc": 799,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/admin.system-config._index.tsx",
       "risk": "low",
@@ -56515,7 +56515,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 964,
+      "loc": 912,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/blog-pieces-auto.auto.$marque.$modele.tsx",
       "risk": "low",
@@ -56543,7 +56543,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 916,
+      "loc": 898,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/blog-pieces-auto.auto.$marque.index.tsx",
       "risk": "low",
@@ -56679,7 +56679,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 984,
+      "loc": 977,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/blog-pieces-auto.conseils._index.tsx",
       "risk": "low",
@@ -57444,7 +57444,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 308,
+      "loc": 302,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/commercial.vehicles._index.tsx",
       "risk": "low",
@@ -57557,7 +57557,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 501,
+      "loc": 466,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/commercial.vehicles.compatibility.tsx",
       "risk": "low",
@@ -57777,7 +57777,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 1208,
+      "loc": 1196,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/constructeurs.$brand[.]html.tsx",
       "risk": "low",
@@ -58068,7 +58068,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 501,
+      "loc": 500,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/legal.$pageKey.tsx",
       "risk": "low",
@@ -58225,7 +58225,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 231,
+      "loc": 214,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/pieces.$.tsx",
       "risk": "low",
@@ -58548,7 +58548,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 844,
+      "loc": 768,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/products.gammes.$gammeId.tsx",
       "risk": "low",
@@ -58578,7 +58578,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 792,
+      "loc": 757,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/products.ranges.$rangeId.tsx",
       "risk": "low",
@@ -58608,7 +58608,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 798,
+      "loc": 755,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/products.ranges.advanced.tsx",
       "risk": "low",
@@ -58724,7 +58724,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 525,
+      "loc": 520,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/reference-auto._index.tsx",
       "risk": "low",
@@ -58775,7 +58775,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 489,
+      "loc": 485,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/reviews.$reviewId.tsx",
       "risk": "low",
@@ -58800,7 +58800,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 660,
+      "loc": 649,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/reviews._index.tsx",
       "risk": "low",
@@ -58824,7 +58824,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 534,
+      "loc": 522,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/reviews.analytics.tsx",
       "risk": "low",
@@ -58898,7 +58898,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 356,
+      "loc": 325,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/search.cnit.tsx",
       "risk": "low",
@@ -58925,7 +58925,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 331,
+      "loc": 300,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/search.mine.tsx",
       "risk": "low",
@@ -58951,7 +58951,7 @@
         "~/components/ui/button"
       ],
       "kind": "route",
-      "loc": 351,
+      "loc": 342,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/search.results.tsx",
       "risk": "low",
@@ -59061,7 +59061,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 741,
+      "loc": 729,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/support.ai.tsx",
       "risk": "low",
@@ -59085,7 +59085,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 501,
+      "loc": 491,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/support.tsx",
       "risk": "low",
@@ -59111,7 +59111,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 399,
+      "loc": 384,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/tickets.$ticketId.tsx",
       "risk": "low",
@@ -59136,7 +59136,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 407,
+      "loc": 394,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/tickets._index.tsx",
       "risk": "low",
@@ -59399,7 +59399,7 @@
         "~/utils/logger"
       ],
       "kind": "config",
-      "loc": 954,
+      "loc": 914,
       "owner": "__unassigned__",
       "path": "frontend/app/services/api/brand.api.ts",
       "risk": "low",
@@ -62471,7 +62471,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 229,
+      "loc": 223,
       "owner": "__unassigned__",
       "path": "frontend/tests/e2e/url-validation.spec.ts",
       "risk": "low",
@@ -64314,7 +64314,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 157,
+      "loc": 154,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/r1-section-pack.test.ts",
       "risk": "low",
