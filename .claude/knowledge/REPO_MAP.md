@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 5ba13c099ec7363616fbee2045763becf96f851b808fefec89f090d582a9e0e2
+source_sha256: ca57b9496f61a4b903f2d29236aea0459dbc94ce750fc7bfa5b95cae64bca25e
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3026 |
+| Files (Layer 1) | 3044 |
 | DB tables (Layer 1) | 316 |
 | DB RPC (Layer 1) | 257 |
 | Dependencies (Layer 1) | 237 |
-| Runtime entrypoints (Layer 1) | 1003 |
+| Runtime entrypoints (Layer 1) | 1008 |
 
-Source sotFingerprint: `daa720479439`.
+Source sotFingerprint: `69738c088110`.
 
 ## Comment l'utiliser
 
@@ -61,11 +61,11 @@ Source sotFingerprint: `daa720479439`.
 
 ### D4 — Vehicle / Compatibility
 
-- **Files**: 95 (service=60, test=19, config=11, controller=5)
-- **Runtime entrypoints**: 41
-- **Top owners**: @ak125/vehicle-team (56), @ak125 (39)
+- **Files**: 112 (service=66, test=28, config=12, controller=6)
+- **Runtime entrypoints**: 46
+- **Top owners**: @ak125/vehicle-team (73), @ak125 (39)
 - **Knowledge prose**: [`diagnostic-engine`](modules/diagnostic-engine.md), [`mcp-validation`](modules/mcp-validation.md), [`vehicle-context`](modules/vehicle-context.md), [`vehicles`](modules/vehicles.md)
-- **Status**: LIVE=62, UNKNOWN=33
+- **Status**: LIVE=70, UNKNOWN=42
 
 ### D5 — Blog / Content
 
@@ -132,10 +132,10 @@ Source sotFingerprint: `daa720479439`.
 
 ### D13 — Config & System
 
-- **Files**: 225 (script=74, service=70, config=54, test=27)
+- **Files**: 226 (script=74, service=70, config=54, test=28)
 - **Runtime entrypoints**: 15
-- **Top owners**: @ak125 (225)
-- **Status**: LIVE=90, UNKNOWN=135
+- **Top owners**: @ak125 (226)
+- **Status**: LIVE=90, UNKNOWN=136
 
 ### D14 — Gamme Aggregates & V-Level
 
