@@ -77,6 +77,7 @@ import { MarketingModule } from './modules/marketing/marketing.module'; // 📊 
 import { MediaFactoryModule } from './modules/media-factory/media-factory.module'; // 🎬 REVIVE 2026-06-20 — fetch-only TTS (Azure REST), dé-RAG, flag-gated
 import { isMediaFactoryEnabled } from './modules/media-factory/media-factory.flag';
 import { DiagnosticEngineModule } from './modules/diagnostic-engine/diagnostic-engine.module'; // 🔧 NOUVEAU - Moteur diagnostic mecanique MVP !
+import { DiagnosticProjectionModule } from './modules/diagnostic-engine/projection/diagnostic-projection.module';
 import { TrendSignalsModule } from './modules/trend-signals/trend-signals.module'; // 📈 NOUVEAU - Middle-ground trend signals ingestion (Tasks 1.9-1.11 ai-additive-layer)
 
 /**
@@ -188,6 +189,7 @@ import { TrendSignalsModule } from './modules/trend-signals/trend-signals.module
     MarketingModule, // 📊 ACTIVÉ - Module marketing avec backlinks, content roadmap et KPIs !
     ...(isMediaFactoryEnabled() ? [MediaFactoryModule] : []), // 🎬 REVIVE flag-gated (MEDIA_FACTORY_ENABLED, off par défaut → 0 prod)
     DiagnosticEngineModule, // 🔧 ACTIVÉ - Moteur diagnostic mecanique MVP (Slice 1) !
+    DiagnosticProjectionModule, // Provenance WIKI des liens diagnostic (drapeau DIAGNOSTIC_PROJECTION_ENABLED, défaut OFF)
     TrendSignalsModule, // 📈 ACTIVÉ - Middle-ground trend signals ingestion (Tasks 1.9-1.11)
     // AgenticEngineModule — ARCHIVÉ 2026-04-02 (tables → _archive schema, remplacé par Paperclip)
 
