@@ -62336,6 +62336,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/tests/e2e/command-center-smoke.spec.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 18,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/e2e/command-center-smoke.spec.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/tests/e2e/critical-path.spec.ts",
       "importedBy": [],
       "imports": [],
