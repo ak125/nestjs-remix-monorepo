@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 133c97287db4f7c1212a78b3f75a771e3e2b4d35507520712da1506383280653
+source_sha256: 678df53436abb99b526dc8cc8c1959df690a275e0695b3f8a6e60cbd4a88f465
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3044 |
+| Files (Layer 1) | 3050 |
 | DB tables (Layer 1) | 316 |
 | DB RPC (Layer 1) | 257 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1008 |
 
-Source sotFingerprint: `f917322bfb08`.
+Source sotFingerprint: `77bd21e1ce43`.
 
 ## Comment l'utiliser
 
@@ -45,11 +45,11 @@ Source sotFingerprint: `f917322bfb08`.
 
 ### D2 — Legacy/XTR Migration
 
-- **Files**: 148 (test=134, service=10, config=3, controller=1)
+- **Files**: 151 (test=137, service=10, config=3, controller=1)
 - **Runtime entrypoints**: 1
-- **Top owners**: @ak125 (133), __unassigned__ (15)
+- **Top owners**: @ak125 (136), __unassigned__ (15)
 - **Knowledge prose**: [`rm`](modules/rm.md)
-- **Status**: LEGACY=14, LIVE=1, UNKNOWN=133
+- **Status**: LEGACY=14, LIVE=1, UNKNOWN=136
 
 ### D3 — SEO & Sitemap
 
@@ -132,10 +132,10 @@ Source sotFingerprint: `f917322bfb08`.
 
 ### D13 — Config & System
 
-- **Files**: 226 (script=74, service=70, config=54, test=28)
+- **Files**: 227 (script=74, service=70, config=54, test=29)
 - **Runtime entrypoints**: 15
-- **Top owners**: @ak125 (226)
-- **Status**: LIVE=90, UNKNOWN=136
+- **Top owners**: @ak125 (227)
+- **Status**: LIVE=90, UNKNOWN=137
 
 ### D14 — Gamme Aggregates & V-Level
 
@@ -147,11 +147,11 @@ Source sotFingerprint: `f917322bfb08`.
 
 ### D15 — Security & Governance
 
-- **Files**: 276 (test=166, script=62, service=45, config=2, controller=1)
+- **Files**: 278 (test=167, script=62, service=46, config=2, controller=1)
 - **Runtime entrypoints**: 3
-- **Top owners**: @ak125 (276)
+- **Top owners**: @ak125 (278)
 - **Knowledge prose**: [`bot-guard`](modules/bot-guard.md)
-- **Status**: LIVE=56, UNKNOWN=220
+- **Status**: LIVE=56, UNKNOWN=222
 
 ### D16 — Maintenance
 

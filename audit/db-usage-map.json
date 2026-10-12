@@ -11171,7 +11171,7 @@
     },
     {
       "file": "backend/src/modules/admin/services/command-center-kpi.service.ts",
-      "line": 328,
+      "line": 356,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
