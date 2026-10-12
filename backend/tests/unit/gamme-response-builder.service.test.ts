@@ -330,4 +330,68 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       'MISSING_SELECTION_CRITERIA',
     );
   });
+
+  // « Liens utiles » (ADR-103 D5, consolidation active) : le lien conseils
+  // (conseilsHref) n'est rendu que si la page sert guideAchat. Le compter comme
+  // déjà lié sans ce bloc retirait aussi le lien guide (doublon supposé).
+  describe('lien guide des « Liens utiles »', () => {
+    const conseilsPath = '/blog-pieces-auto/conseils/disque-de-frein';
+
+    const buildWithBlog = (blog: Record<string, string | null> | null) => {
+      const rpcService = makeRpcServiceMock();
+      rpcService.getPageDataRpcV2 = jest.fn(async () => {
+        const payload = makeBaseRpcPayload();
+        return { ...payload, aggregatedData: { ...payload.aggregatedData, blog } };
+      });
+      const buyingGuideService = {
+        getBuyingGuideContractV1: jest.fn(async () => null),
+        toBuyingGuideV1: jest.fn(),
+        passesBuyingGuideAntiWikiGate: jest.fn(() => ({ ok: false, reasons: [] })),
+        buildAutoBuyingGuideV1: jest.fn(() => makeAutoGuide()),
+      } as any;
+      const guideLinkPolicy = {
+        getSnapshot: jest.fn(async () => ({
+          consolidationEnabled: true,
+          publishedGuideAliases: new Set<string>(['disque-de-frein']),
+          conseilsAliases: new Set<string>(['disque-de-frein']),
+        })),
+      } as any;
+      return new GammeResponseBuilderService(
+        makeTransformerMock(),
+        rpcService,
+        buyingGuideService,
+        { getByPgId: jest.fn().mockResolvedValue(null) } as any,
+        {
+          resolve: jest.fn(() => ({
+            title: 'Test Title', description: 'Test Desc', keywords: '', h1: 'H1', content: '',
+          })),
+        } as any,
+        { getRelatedResources: jest.fn(() => Promise.resolve({ links: [], blocks: [] })) } as any,
+        { run: jest.fn() } as any,
+        { mode: jest.fn(() => 'off') } as any,
+        guideLinkPolicy,
+      );
+    };
+
+    it('conseils non servi par la page : le lien guide mène aux conseils', async () => {
+      const result = await buildWithBlog(null).buildRpcV2Response('479');
+
+      expect(result.guideAchat).toBeNull();
+      expect(result.hero.buyingGuideHref).toBe(conseilsPath);
+    });
+
+    it('conseils servi par la page : pas de second lien vers la même page', async () => {
+      const result = await buildWithBlog({
+        ba_id: '42',
+        ba_alias: 'comment-choisir-un-disque-de-frein',
+        ba_h1: 'Comment choisir un disque de frein',
+        ba_preview: '',
+        ba_wall: null,
+        ba_update: '2026-01-01',
+      }).buildRpcV2Response('479');
+
+      expect(result.guideAchat?.link).toBe(conseilsPath);
+      expect(result.hero.buyingGuideHref).toBeNull();
+    });
+  });
 });
