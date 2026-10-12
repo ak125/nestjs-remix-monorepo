@@ -2900,6 +2900,7 @@
       ".github/workflows/visual-gate.yml",
       ".github/workflows/weekly-pr-hygiene.yml",
       ".github/workflows/wiki-canon-shape-check.yml",
+      ".github/workflows/wiki-exports-diagnostic-generate.yml",
       ".github/workflows/wiki-exports-seo-generate.yml",
       ".github/workflows/wiki-generators-tests.yml",
       ".github/workflows/wiki-readiness-check.yml",
@@ -3013,7 +3014,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1608,
+  "runtime_files_count": 1609,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -3087,6 +3088,7 @@
     ".github/workflows/visual-gate.yml",
     ".github/workflows/weekly-pr-hygiene.yml",
     ".github/workflows/wiki-canon-shape-check.yml",
+    ".github/workflows/wiki-exports-diagnostic-generate.yml",
     ".github/workflows/wiki-exports-seo-generate.yml",
     ".github/workflows/wiki-generators-tests.yml",
     ".github/workflows/wiki-readiness-check.yml",

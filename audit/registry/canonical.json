@@ -467,6 +467,28 @@
       }
     },
     {
+      "actual_mode": "DRAFTED",
+      "automation_id": "wiki-exports-diagnostic-generate",
+      "domain": "D4",
+      "drift_note": "Couvre le segment WIKI de D6.2 seulement. L'écriture en base reste sous drapeau, défaut OFF (ADR-035 D5).",
+      "evidence": [
+        {
+          "excerpt": "- cron: '30 3 * * *'",
+          "line": 55,
+          "note": "Cron quotidien + workflow_dispatch : régénère exports/diagnostic/ du WIKI, pousse seulement si le diff change",
+          "path": ".github/workflows/wiki-exports-diagnostic-generate.yml"
+        }
+      ],
+      "executor": "github-actions-schedule",
+      "intended_mode": "ACTIVE",
+      "last_verified_at": "2026-10-12",
+      "last_verified_by": "@ak125",
+      "last_verified_method": "manual-inspection",
+      "missing_step": "Fusion de la PR, puis 1er run qui pousse sur le main du WIKI (contournement du ruleset par le compte du token, non prouvé). Servi après sous-module + tag PROD.",
+      "owner_action": "Après fusion : lancer le workflow (workflow_dispatch), puis passer actual_mode à ACTIVE avec la runtime_evidence de ce run.",
+      "risk": "medium"
+    },
+    {
       "actual_mode": "SCRIPT_ONLY",
       "automation_id": "worktree-prune-merged",
       "domain": "D13",
@@ -104575,7 +104597,7 @@
     "generatedAt": "1970-01-01T00:00:00.000Z",
     "generatorVersion": "1.0.0",
     "inputHashes": {
-      ".spec/00-canon/repository-registry/automation-reality.yaml": "f712a655d9f22003e79dcfca8e1b40fa79901b8a60755de688f1431655d188e2",
+      ".spec/00-canon/repository-registry/automation-reality.yaml": "b868ecd5962fd48da24c9c0050e54f618fbef68c28436392657a2851d04bca35",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
       ".spec/00-canon/repository-registry/ownership.yaml": "993f8a45491adc84d340b06a3c9186ad8ad5ea26fcbc53e1f31070aa1f9c64d6",
@@ -104586,7 +104608,7 @@
       "audit/registry/rpc.json": "68f3b21f7aa0b2ef7da9b488c657c3b6b5bdde0476bf7d617f1e346cc26b4449",
       "audit/registry/runtime.json": "77dce5def1f1d442e688287cc92b46732b2d34756dfd6a7fc09faf4f61ea2497"
     },
-    "sotFingerprint": "8fc4025b50bb"
+    "sotFingerprint": "84435f848b74"
   },
   "runtime": [
     {
