@@ -56,6 +56,7 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { useHydrated } from "~/hooks/useHydrated";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
@@ -284,6 +285,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
 }
 
 export default function AdminCommandCenter() {
+  const isHydrated = useHydrated();
   const { cc, orchestration } = useLoaderData<typeof loader>();
   const result = useActionData<typeof action>() as
     | OrchestrationActionData
@@ -338,12 +340,22 @@ export default function AdminCommandCenter() {
           ) : (
             <Tabs defaultValue="actions">
               <TabsList className="flex flex-wrap">
-                <TabsTrigger value="actions">Actions</TabsTrigger>
-                <TabsTrigger value="reports">Rapports</TabsTrigger>
-                <TabsTrigger value="departments">Départements</TabsTrigger>
-                <TabsTrigger value="handoffs">Handoffs</TabsTrigger>
-                <TabsTrigger value="capabilities">Capacités</TabsTrigger>
-                <TabsTrigger value="orchestration">
+                <TabsTrigger value="actions" disabled={!isHydrated}>
+                  Actions
+                </TabsTrigger>
+                <TabsTrigger value="reports" disabled={!isHydrated}>
+                  Rapports
+                </TabsTrigger>
+                <TabsTrigger value="departments" disabled={!isHydrated}>
+                  Départements
+                </TabsTrigger>
+                <TabsTrigger value="handoffs" disabled={!isHydrated}>
+                  Handoffs
+                </TabsTrigger>
+                <TabsTrigger value="capabilities" disabled={!isHydrated}>
+                  Capacités
+                </TabsTrigger>
+                <TabsTrigger value="orchestration" disabled={!isHydrated}>
                   <Workflow className="mr-1 h-4 w-4" aria-hidden />
                   Orchestration
                 </TabsTrigger>
