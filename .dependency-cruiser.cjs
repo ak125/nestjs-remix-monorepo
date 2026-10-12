@@ -136,28 +136,31 @@ module.exports = {
     },
   ],
   options: {
+    // Path patterns are unanchored regexes: a directory name must be anchored to a path
+    // segment, otherwise it also matches source files (`build` hit `url-builder.utils.ts`,
+    // `rm/` dropped the whole live `backend/src/modules/rm/` from the graph).
+    // Guarded by scripts/audit/__tests__/deep-inventory-reachability.test.ts.
     doNotFollow: {
       path: [
-        'node_modules',
-        'dist',
-        'build',
-        '\\.cache',
-        '\\.turbo',
-        'coverage',
-        '\\.next',
-        'public/build',
+        '(^|/)node_modules/',
+        '(^|/)dist/',
+        '(^|/)build/',
+        '(^|/)\\.cache/',
+        '(^|/)\\.turbo/',
+        '(^|/)coverage/',
+        '(^|/)\\.next/',
+        '(^|/)public/build/',
       ],
     },
     exclude: {
       path: [
-        '\\.spec/',
-        'audit-monorepo/',
-        '99-meta/',
-        'output/',
-        'gates/',
-        '\\.local/',
-        '\\.codex',
-        'rm/',
+        '(^|/)\\.spec/',
+        '(^|/)audit-monorepo/',
+        '(^|/)99-meta/',
+        '(^|/)output/',
+        '(^|/)gates/',
+        '(^|/)\\.local/',
+        '(^|/)\\.codex',
         '\\.spec\\.ts$',
         '\\.e2e-spec\\.ts$',
       ],
