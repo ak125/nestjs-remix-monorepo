@@ -68,6 +68,7 @@
         "runtime:backend/src/modules/promo/promo.module.ts",
         "runtime:backend/src/modules/rag-knowledge-bootstrap/rag-knowledge-bootstrap.module.ts",
         "runtime:backend/src/modules/rag-proxy/rag-proxy.module.ts",
+        "runtime:backend/src/modules/rm/rm.module.ts",
         "runtime:backend/src/modules/search/search.module.ts",
         "runtime:backend/src/modules/seo-control-plane/seo-control-plane.module.ts",
         "runtime:backend/src/modules/seo-control-plane/synthetic-probe-credential.module.ts",
@@ -340,10 +341,21 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [],
+      "dependsOn": [
+        "runtime:backend/src/common/pipes/params/positive-int-param.pipe.ts"
+      ],
       "id": "runtime:backend/src/common/pipes/params/params-pipes.module.ts",
       "kind": "nestjs-module",
       "path": "backend/src/common/pipes/params/params-pipes.module.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
+      "id": "runtime:backend/src/common/pipes/params/positive-int-param.pipe.ts",
+      "kind": "other",
+      "path": "backend/src/common/pipes/params/positive-int-param.pipe.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
@@ -3200,7 +3212,9 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [],
+      "dependsOn": [
+        "runtime:backend/src/modules/diagnostic-engine/services/intent-classifier.service.ts"
+      ],
       "id": "runtime:backend/src/modules/diagnostic-engine/services/human-escalation-builder.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/diagnostic-engine/services/human-escalation-builder.service.ts",
@@ -3434,7 +3448,17 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [],
+      "dependsOn": [
+        "runtime:backend/src/modules/gamme-rest/services/buying-guide-data.service.ts",
+        "runtime:backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts",
+        "runtime:backend/src/modules/gamme-rest/services/gamme-rpc.service.ts",
+        "runtime:backend/src/modules/gamme-rest/services/r1-related-resources.service.ts",
+        "runtime:backend/src/modules/seo/registries/seo-feature-flag.registry.ts",
+        "runtime:backend/src/modules/seo/services/chain/seo-chain-orchestrator.service.ts",
+        "runtime:backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
+        "runtime:backend/src/modules/seo/services/reference.service.ts",
+        "runtime:backend/src/modules/seo/services/seo-title-engine.service.ts"
+      ],
       "id": "runtime:backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
@@ -5333,10 +5357,61 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [],
+      "dependsOn": [
+        "runtime:backend/src/modules/rm/services/rm-alternatives.service.ts",
+        "runtime:backend/src/modules/rm/services/rm-builder.service.ts",
+        "runtime:backend/src/modules/rm/services/rm-soft404-tracker.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/rm/controllers/rm.controller.ts",
+      "kind": "nestjs-controller",
+      "path": "backend/src/modules/rm/controllers/rm.controller.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/database/database.module.ts",
+        "runtime:backend/src/modules/catalog/catalog.module.ts",
+        "runtime:backend/src/modules/rm/controllers/rm.controller.ts",
+        "runtime:backend/src/modules/rm/services/rm-alternatives.service.ts",
+        "runtime:backend/src/modules/rm/services/rm-builder.service.ts",
+        "runtime:backend/src/modules/rm/services/rm-soft404-tracker.service.ts",
+        "runtime:backend/src/modules/seo-shadow-observatory/seo-shadow-observatory.module.ts"
+      ],
       "id": "runtime:backend/src/modules/rm/rm.module.ts",
       "kind": "nestjs-module",
       "path": "backend/src/modules/rm/rm.module.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
+      "id": "runtime:backend/src/modules/rm/services/rm-alternatives.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/rm/services/rm-alternatives.service.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/modules/catalog/services/seo-template.service.ts",
+        "runtime:backend/src/modules/seo-shadow-observatory/seo-shadow-observatory.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/rm/services/rm-builder.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/rm/services/rm-builder.service.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
+      "id": "runtime:backend/src/modules/rm/services/rm-soft404-tracker.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/rm/services/rm-soft404-tracker.service.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
@@ -7045,7 +7120,10 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [],
+      "dependsOn": [
+        "runtime:backend/src/modules/seo/services/chain/seo-ariane-breadcrumb.service.ts",
+        "runtime:backend/src/modules/seo/services/chain/seo-switch-selector.service.ts"
+      ],
       "id": "runtime:backend/src/modules/seo/services/chain/seo-content-block-builder.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/seo/services/chain/seo-content-block-builder.service.ts",

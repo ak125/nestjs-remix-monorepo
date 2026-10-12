@@ -10,7 +10,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 178,
+      "loc": 181,
       "owner": "__unassigned__",
       "path": ".dependency-cruiser.cjs",
       "risk": "low",
@@ -781,6 +781,7 @@
         "backend/src/modules/promo/promo.module.ts",
         "backend/src/modules/rag-knowledge-bootstrap/rag-knowledge-bootstrap.module.ts",
         "backend/src/modules/rag-proxy/rag-proxy.module.ts",
+        "backend/src/modules/rm/rm.module.ts",
         "backend/src/modules/search/search.module.ts",
         "backend/src/modules/seo-control-plane/seo-control-plane.module.ts",
         "backend/src/modules/seo-control-plane/synthetic-probe-credential.module.ts",
@@ -2670,8 +2671,7 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise",
-        "reachability"
+        "depcruise"
       ],
       "domain": "UNKNOWN",
       "id": "backend/src/common/pipes/params/positive-int-param.pipe.ts",
@@ -2689,7 +2689,7 @@
       "owner": "__unassigned__",
       "path": "backend/src/common/pipes/params/positive-int-param.pipe.ts",
       "risk": "low",
-      "runtime": false,
+      "runtime": true,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
@@ -2926,6 +2926,7 @@
         "backend/src/modules/blog/services/blog-article-transform.service.ts",
         "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
         "backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts",
+        "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-cluster.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-vehicle.service.ts",
@@ -2934,7 +2935,9 @@
         "backend/src/modules/vehicles/services/brand-bestsellers.service.ts",
         "backend/src/modules/vehicles/services/vehicle-profile.service.ts"
       ],
-      "imports": [],
+      "imports": [
+        "@repo/seo-url-contract"
+      ],
       "kind": "service",
       "loc": 153,
       "owner": "__unassigned__",
@@ -3026,6 +3029,7 @@
         "backend/src/modules/diagnostic-engine/projection/diagnostic-projection-writer.service.ts",
         "backend/src/modules/layout/services/meta-tags.service.ts",
         "backend/src/modules/marketing/services/multi-channel-copywriter.service.ts",
+        "backend/src/modules/marketing/services/utm-builder.service.ts",
         "backend/src/modules/marketing/services/weekly-plan-generator.service.ts",
         "backend/src/modules/metadata/services/optimized-breadcrumb.service.ts",
         "backend/src/modules/payments/services/paybox.service.ts",
@@ -3215,6 +3219,10 @@
         "backend/src/modules/admin/services/r1-keyword-plan-batch.service.test.ts",
         "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
         "backend/src/modules/bot-guard/bot-guard.service.ts",
+        "backend/src/modules/rm/services/__tests__/rm-alternatives.service.test.ts",
+        "backend/src/modules/rm/services/__tests__/rm-builder-page-v2-cache.test.ts",
+        "backend/src/modules/rm/services/rm-alternatives.service.ts",
+        "backend/src/modules/rm/services/rm-builder.service.ts",
         "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
         "backend/src/modules/seo/services/r6-guide-link-policy.test.ts",
         "backend/src/modules/vehicles/services/brand-bestsellers.service.ts",
@@ -4403,7 +4411,8 @@
       "domain": "UNKNOWN",
       "id": "backend/src/config/page-contract-r8.schema.ts",
       "importedBy": [
-        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
+        "backend/src/modules/seo/services/chain/__tests__/r8-meta-distribution.test.ts"
       ],
       "imports": [
         "backend/src/config/r8-keyword-plan.constants.ts"
@@ -4596,6 +4605,7 @@
       "importedBy": [
         "backend/src/config/r2-content-contract.defaults.ts",
         "backend/src/config/r2-heading-policy.utils.ts",
+        "backend/src/config/r2-meta-builder.utils.ts",
         "backend/src/modules/seo/controllers/r2-page.controller.ts",
         "backend/src/modules/seo/dto/r2-page-response.dto.ts",
         "backend/src/modules/seo/r2/schemas/r2-composition.schema.ts",
@@ -4693,7 +4703,9 @@
       "importedBy": [
         "backend/src/modules/seo/controllers/r2-page.controller.ts"
       ],
-      "imports": [],
+      "imports": [
+        "backend/src/config/r2-content-contract.schema.ts"
+      ],
       "kind": "service",
       "loc": 20,
       "owner": "__unassigned__",
@@ -5602,6 +5614,7 @@
         "backend/src/modules/payments/payments.module.ts",
         "backend/src/modules/products/products.module.ts",
         "backend/src/modules/promo/promo.module.ts",
+        "backend/src/modules/rm/rm.module.ts",
         "backend/src/modules/search/search.module.ts",
         "backend/src/modules/seo-control-plane/seo-control-plane.module.ts",
         "backend/src/modules/seo-projection/seo-projection.module.ts",
@@ -9059,7 +9072,14 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__/builders.test.ts",
       "importedBy": [],
-      "imports": [],
+      "imports": [
+        "backend/src/modules/admin/services/r1-image-prompt-builders/hero.builder.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/location.builder.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/og.builder.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/price.builder.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/types.builder.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/types.ts"
+      ],
       "kind": "test",
       "loc": 241,
       "owner": "__unassigned__",
@@ -9078,7 +9098,14 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__/in-article-builders.test.ts",
       "importedBy": [],
-      "imports": [],
+      "imports": [
+        "backend/src/modules/admin/services/r1-image-prompt-builders/comparison-ab.builder.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/exploded-view.builder.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/in-article-selection.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/index.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/types.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/wear-macro.builder.ts"
+      ],
       "kind": "test",
       "loc": 206,
       "owner": "__unassigned__",
@@ -9092,12 +9119,19 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "reachability"
       ],
       "domain": "UNKNOWN",
       "id": "backend/src/modules/admin/services/r1-image-prompt-builders/comparison-ab.builder.ts",
-      "importedBy": [],
-      "imports": [],
+      "importedBy": [
+        "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__/in-article-builders.test.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/index.ts"
+      ],
+      "imports": [
+        "backend/src/modules/admin/services/r1-image-prompt-builders/in-article-selection.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/types.ts"
+      ],
       "kind": "service",
       "loc": 88,
       "owner": "__unassigned__",
@@ -9106,17 +9140,24 @@
       "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "UNKNOWN"
+      "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "reachability"
       ],
       "domain": "UNKNOWN",
       "id": "backend/src/modules/admin/services/r1-image-prompt-builders/exploded-view.builder.ts",
-      "importedBy": [],
-      "imports": [],
+      "importedBy": [
+        "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__/in-article-builders.test.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/index.ts"
+      ],
+      "imports": [
+        "backend/src/modules/admin/services/r1-image-prompt-builders/in-article-selection.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/types.ts"
+      ],
       "kind": "service",
       "loc": 62,
       "owner": "__unassigned__",
@@ -9125,17 +9166,23 @@
       "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "UNKNOWN"
+      "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "reachability"
       ],
       "domain": "UNKNOWN",
       "id": "backend/src/modules/admin/services/r1-image-prompt-builders/hero.builder.ts",
-      "importedBy": [],
-      "imports": [],
+      "importedBy": [
+        "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__/builders.test.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/index.ts"
+      ],
+      "imports": [
+        "backend/src/modules/admin/services/r1-image-prompt-builders/types.ts"
+      ],
       "kind": "service",
       "loc": 94,
       "owner": "__unassigned__",
@@ -9144,17 +9191,26 @@
       "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "UNKNOWN"
+      "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "reachability"
       ],
       "domain": "UNKNOWN",
       "id": "backend/src/modules/admin/services/r1-image-prompt-builders/in-article-selection.ts",
-      "importedBy": [],
-      "imports": [],
+      "importedBy": [
+        "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__/in-article-builders.test.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/comparison-ab.builder.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/exploded-view.builder.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/index.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/wear-macro.builder.ts"
+      ],
+      "imports": [
+        "backend/src/modules/admin/services/r1-image-prompt-builders/types.ts"
+      ],
       "kind": "service",
       "loc": 103,
       "owner": "__unassigned__",
@@ -9163,7 +9219,7 @@
       "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "UNKNOWN"
+      "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
@@ -9174,9 +9230,21 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/admin/services/r1-image-prompt-builders/index.ts",
       "importedBy": [
+        "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__/in-article-builders.test.ts",
         "backend/src/modules/admin/services/r1-image-prompt.service.ts"
       ],
-      "imports": [],
+      "imports": [
+        "backend/src/modules/admin/services/r1-image-prompt-builders/comparison-ab.builder.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/exploded-view.builder.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/hero.builder.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/in-article-selection.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/location.builder.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/og.builder.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/price.builder.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/types.builder.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/types.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/wear-macro.builder.ts"
+      ],
       "kind": "service",
       "loc": 127,
       "owner": "__unassigned__",
@@ -9190,12 +9258,18 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "reachability"
       ],
       "domain": "UNKNOWN",
       "id": "backend/src/modules/admin/services/r1-image-prompt-builders/location.builder.ts",
-      "importedBy": [],
-      "imports": [],
+      "importedBy": [
+        "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__/builders.test.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/index.ts"
+      ],
+      "imports": [
+        "backend/src/modules/admin/services/r1-image-prompt-builders/types.ts"
+      ],
       "kind": "service",
       "loc": 110,
       "owner": "__unassigned__",
@@ -9204,17 +9278,23 @@
       "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "UNKNOWN"
+      "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "reachability"
       ],
       "domain": "UNKNOWN",
       "id": "backend/src/modules/admin/services/r1-image-prompt-builders/og.builder.ts",
-      "importedBy": [],
-      "imports": [],
+      "importedBy": [
+        "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__/builders.test.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/index.ts"
+      ],
+      "imports": [
+        "backend/src/modules/admin/services/r1-image-prompt-builders/types.ts"
+      ],
       "kind": "service",
       "loc": 87,
       "owner": "__unassigned__",
@@ -9223,17 +9303,23 @@
       "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "UNKNOWN"
+      "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "reachability"
       ],
       "domain": "UNKNOWN",
       "id": "backend/src/modules/admin/services/r1-image-prompt-builders/price.builder.ts",
-      "importedBy": [],
-      "imports": [],
+      "importedBy": [
+        "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__/builders.test.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/index.ts"
+      ],
+      "imports": [
+        "backend/src/modules/admin/services/r1-image-prompt-builders/types.ts"
+      ],
       "kind": "service",
       "loc": 96,
       "owner": "__unassigned__",
@@ -9242,17 +9328,23 @@
       "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "UNKNOWN"
+      "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "reachability"
       ],
       "domain": "UNKNOWN",
       "id": "backend/src/modules/admin/services/r1-image-prompt-builders/types.builder.ts",
-      "importedBy": [],
-      "imports": [],
+      "importedBy": [
+        "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__/builders.test.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/index.ts"
+      ],
+      "imports": [
+        "backend/src/modules/admin/services/r1-image-prompt-builders/types.ts"
+      ],
       "kind": "service",
       "loc": 100,
       "owner": "__unassigned__",
@@ -9261,17 +9353,33 @@
       "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "UNKNOWN"
+      "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "reachability"
       ],
       "domain": "UNKNOWN",
       "id": "backend/src/modules/admin/services/r1-image-prompt-builders/types.ts",
-      "importedBy": [],
-      "imports": [],
+      "importedBy": [
+        "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__/builders.test.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__/in-article-builders.test.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/comparison-ab.builder.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/exploded-view.builder.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/hero.builder.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/in-article-selection.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/index.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/location.builder.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/og.builder.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/price.builder.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/types.builder.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/wear-macro.builder.ts"
+      ],
+      "imports": [
+        "backend/src/modules/admin/services/rag-data.types.ts"
+      ],
       "kind": "service",
       "loc": 221,
       "owner": "__unassigned__",
@@ -9280,17 +9388,24 @@
       "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "UNKNOWN"
+      "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "reachability"
       ],
       "domain": "UNKNOWN",
       "id": "backend/src/modules/admin/services/r1-image-prompt-builders/wear-macro.builder.ts",
-      "importedBy": [],
-      "imports": [],
+      "importedBy": [
+        "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__/in-article-builders.test.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/index.ts"
+      ],
+      "imports": [
+        "backend/src/modules/admin/services/r1-image-prompt-builders/in-article-selection.ts",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/types.ts"
+      ],
       "kind": "service",
       "loc": 58,
       "owner": "__unassigned__",
@@ -9299,7 +9414,7 @@
       "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "UNKNOWN"
+      "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
@@ -9783,6 +9898,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/admin/services/rag-data.types.ts",
       "importedBy": [
+        "backend/src/modules/admin/services/r1-image-prompt-builders/types.ts",
         "backend/src/modules/admin/services/rag-gamme-reader.service.ts"
       ],
       "imports": [],
@@ -13256,6 +13372,7 @@
         "backend/src/app.module.ts",
         "backend/src/modules/catalog/services/__tests__/seo-template-di.test.ts",
         "backend/src/modules/gamme-rest/gamme-rest.module.ts",
+        "backend/src/modules/rm/rm.module.ts",
         "backend/src/modules/seo/seo.module.ts",
         "backend/src/modules/vehicles/vehicles.module.ts",
         "backend/src/remix/remix.module.ts"
@@ -14045,7 +14162,9 @@
         "backend/src/modules/catalog/catalog.module.ts",
         "backend/src/modules/catalog/services/__tests__/seo-template-di.test.ts",
         "backend/src/modules/catalog/services/__tests__/seo-template-residual-markers.test.ts",
-        "backend/src/modules/catalog/services/__tests__/seo-template-switch.test.ts"
+        "backend/src/modules/catalog/services/__tests__/seo-template-switch.test.ts",
+        "backend/src/modules/rm/services/__tests__/rm-builder-seo-legacy-markers.test.ts",
+        "backend/src/modules/rm/services/rm-builder.service.ts"
       ],
       "imports": [
         "@cache/cache.service",
@@ -14106,7 +14225,8 @@
       "id": "backend/src/modules/catalog/services/vehicle-aware-description.composer.ts",
       "importedBy": [
         "backend/src/modules/catalog/services/__tests__/vehicle-aware-description.composer.test.ts",
-        "backend/src/modules/catalog/services/seo-template.service.ts"
+        "backend/src/modules/catalog/services/seo-template.service.ts",
+        "backend/src/modules/rm/services/rm-builder.service.ts"
       ],
       "imports": [],
       "kind": "service",
@@ -14211,6 +14331,7 @@
         "backend/src/modules/blog/services/guide.service.ts",
         "backend/src/modules/catalog/services/unified-page-data.service.ts",
         "backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts",
+        "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
         "backend/src/modules/search/services/search-simple.service.ts",
         "backend/src/modules/seo/controllers/reference.controller.ts",
         "backend/src/modules/seo/services/product-image.service.ts",
@@ -15928,7 +16049,11 @@
         "backend/src/modules/diagnostic-engine/diagnostic-handoff-integrity.test.ts",
         "backend/src/modules/diagnostic-engine/services/diagnostic-resolution-pipeline.service.ts"
       ],
-      "imports": [],
+      "imports": [
+        "backend/src/modules/diagnostic-engine/services/intent-classifier.service.ts",
+        "backend/src/modules/diagnostic-engine/types/diagnostic-reason-code.ts",
+        "backend/src/modules/diagnostic-engine/types/human-escalation.ts"
+      ],
       "kind": "service",
       "loc": 61,
       "owner": "__unassigned__",
@@ -15952,6 +16077,7 @@
         "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
         "backend/src/modules/diagnostic-engine/services/action-recommender.test.ts",
         "backend/src/modules/diagnostic-engine/services/diagnostic-resolution-pipeline.service.ts",
+        "backend/src/modules/diagnostic-engine/services/human-escalation-builder.service.ts",
         "backend/src/modules/diagnostic-engine/services/intent-classifier.test.ts"
       ],
       "imports": [
@@ -16312,6 +16438,7 @@
       "importedBy": [
         "backend/src/modules/diagnostic-engine/handoff-target.ts",
         "backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
+        "backend/src/modules/diagnostic-engine/services/human-escalation-builder.service.ts",
         "backend/src/modules/diagnostic-engine/services/intent-classifier.service.ts",
         "backend/src/modules/diagnostic-engine/services/invariant-asserter.service.ts",
         "backend/src/modules/diagnostic-engine/services/outcome-emitter.service.ts",
@@ -16398,6 +16525,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/diagnostic-engine/types/human-escalation.ts",
       "importedBy": [
+        "backend/src/modules/diagnostic-engine/services/human-escalation-builder.service.ts",
         "backend/src/modules/diagnostic-engine/types/analyze-response.schema.ts"
       ],
       "imports": [
@@ -16894,7 +17022,9 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-guide-achat.test.ts",
       "importedBy": [],
-      "imports": [],
+      "imports": [
+        "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts"
+      ],
       "kind": "test",
       "loc": 60,
       "owner": "__unassigned__",
@@ -16913,7 +17043,10 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-seo-shadow.test.ts",
       "importedBy": [],
-      "imports": [],
+      "imports": [
+        "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
+        "backend/src/modules/seo/registries/seo-feature-flag.registry.ts"
+      ],
       "kind": "test",
       "loc": 220,
       "owner": "__unassigned__",
@@ -16933,6 +17066,7 @@
       "id": "backend/src/modules/gamme-rest/services/buying-guide-data.service.ts",
       "importedBy": [
         "backend/src/modules/admin/controllers/admin-buying-guide-preview.controller.ts",
+        "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
         "backend/src/modules/gamme-rest/services/index.ts"
       ],
       "imports": [
@@ -16960,6 +17094,7 @@
       "id": "backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts",
       "importedBy": [
         "backend/src/modules/gamme-rest/services/gamme-page-data.service.ts",
+        "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
         "backend/src/modules/gamme-rest/services/gamme-rpc.service.ts",
         "backend/src/modules/gamme-rest/services/index.ts"
       ],
@@ -17014,9 +17149,26 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
       "importedBy": [
+        "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-guide-achat.test.ts",
+        "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-seo-shadow.test.ts",
         "backend/src/modules/gamme-rest/services/index.ts"
       ],
-      "imports": [],
+      "imports": [
+        "backend/src/common/utils/url-builder.utils.ts",
+        "backend/src/modules/catalog/utils/image-urls.utils.ts",
+        "backend/src/modules/gamme-rest/services/buying-guide-data.service.ts",
+        "backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts",
+        "backend/src/modules/gamme-rest/services/gamme-rpc.service.ts",
+        "backend/src/modules/gamme-rest/services/r1-related-resources.service.ts",
+        "backend/src/modules/gamme-rest/utils/r1-image-normalizer.ts",
+        "backend/src/modules/seo/registries/seo-feature-flag.registry.ts",
+        "backend/src/modules/seo/services/chain/seo-chain-orchestrator.service.ts",
+        "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
+        "backend/src/modules/seo/services/reference.service.ts",
+        "backend/src/modules/seo/services/seo-title-engine.service.ts",
+        "backend/src/modules/seo/types/resolved-seo-field.ts",
+        "backend/src/utils/html-entities.ts"
+      ],
       "kind": "service",
       "loc": 1236,
       "owner": "__unassigned__",
@@ -17059,6 +17211,7 @@
       "importedBy": [
         "backend/src/modules/gamme-rest/controllers/admin-gamme-cache.controller.ts",
         "backend/src/modules/gamme-rest/gamme-rest-rpc-v2.controller.ts",
+        "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
         "backend/src/modules/gamme-rest/services/index.ts"
       ],
       "imports": [
@@ -17138,7 +17291,8 @@
       "id": "backend/src/modules/gamme-rest/services/r1-related-resources.service.ts",
       "importedBy": [
         "backend/src/modules/gamme-rest/controllers/admin-r1-related-blocks-cache.controller.ts",
-        "backend/src/modules/gamme-rest/gamme-rest.module.ts"
+        "backend/src/modules/gamme-rest/gamme-rest.module.ts",
+        "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts"
       ],
       "imports": [
         "@database/services/supabase-base.service",
@@ -17200,11 +17354,13 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "reachability"
       ],
       "domain": "UNKNOWN",
       "id": "backend/src/modules/gamme-rest/utils/r1-image-normalizer.ts",
       "importedBy": [
+        "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
         "backend/src/modules/gamme-rest/utils/__tests__/r1-image-normalizer.test.ts"
       ],
       "imports": [],
@@ -17216,7 +17372,7 @@
       "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "UNKNOWN"
+      "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
@@ -17988,6 +18144,7 @@
         "backend/src/modules/marketing/services/marketing-hub-data.service.ts",
         "backend/src/modules/marketing/services/multi-channel-copywriter.service.ts",
         "backend/src/modules/marketing/services/publish-queue.service.ts",
+        "backend/src/modules/marketing/services/utm-builder.service.ts",
         "backend/src/modules/marketing/services/weekly-plan-generator.service.ts",
         "backend/src/modules/marketing/templates/brand-rules-seed.ts",
         "backend/src/modules/marketing/templates/social-post-templates.ts"
@@ -18432,7 +18589,11 @@
         "backend/src/modules/marketing/services/multi-channel-copywriter.service.ts",
         "backend/src/modules/marketing/services/weekly-plan-generator.service.ts"
       ],
-      "imports": [],
+      "imports": [
+        "backend/src/config/app.config.ts",
+        "backend/src/modules/marketing/interfaces/marketing-hub.interfaces.ts",
+        "crypto"
+      ],
       "kind": "service",
       "loc": 89,
       "owner": "__unassigned__",
@@ -24325,7 +24486,9 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/rm/controllers/rm-health.controller.test.ts",
       "importedBy": [],
-      "imports": [],
+      "imports": [
+        "backend/src/modules/rm/controllers/rm.controller.ts"
+      ],
       "kind": "test",
       "loc": 85,
       "owner": "__unassigned__",
@@ -24343,26 +24506,42 @@
       ],
       "domain": "UNKNOWN",
       "id": "backend/src/modules/rm/controllers/rm.controller.ts",
-      "importedBy": [],
-      "imports": [],
+      "importedBy": [
+        "backend/src/modules/rm/controllers/rm-health.controller.test.ts",
+        "backend/src/modules/rm/rm.module.ts",
+        "backend/src/modules/rm/services/__tests__/rm-alternatives.service.test.ts",
+        "backend/src/modules/rm/services/__tests__/rm-builder-seo-legacy-markers.test.ts"
+      ],
+      "imports": [
+        "@common/exceptions",
+        "backend/src/modules/rm/dto/alternatives-v2.dto.ts",
+        "backend/src/modules/rm/services/rm-alternatives.service.ts",
+        "backend/src/modules/rm/services/rm-builder.service.ts",
+        "backend/src/modules/rm/services/rm-soft404-tracker.service.ts",
+        "backend/src/modules/rm/utils/page-v2-response.ts"
+      ],
       "kind": "controller",
       "loc": 405,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/controllers/rm.controller.ts",
       "risk": "low",
-      "runtime": false,
+      "runtime": true,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "UNKNOWN"
+      "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "reachability"
       ],
       "domain": "UNKNOWN",
       "id": "backend/src/modules/rm/dto/alternatives-v2.dto.ts",
-      "importedBy": [],
+      "importedBy": [
+        "backend/src/modules/rm/controllers/rm.controller.ts",
+        "backend/src/modules/rm/services/rm-alternatives.service.ts"
+      ],
       "imports": [],
       "kind": "service",
       "loc": 68,
@@ -24372,7 +24551,7 @@
       "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "UNKNOWN"
+      "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
@@ -24381,8 +24560,18 @@
       ],
       "domain": "UNKNOWN",
       "id": "backend/src/modules/rm/rm.module.ts",
-      "importedBy": [],
-      "imports": [],
+      "importedBy": [
+        "backend/src/app.module.ts"
+      ],
+      "imports": [
+        "backend/src/database/database.module.ts",
+        "backend/src/modules/catalog/catalog.module.ts",
+        "backend/src/modules/rm/controllers/rm.controller.ts",
+        "backend/src/modules/rm/services/rm-alternatives.service.ts",
+        "backend/src/modules/rm/services/rm-builder.service.ts",
+        "backend/src/modules/rm/services/rm-soft404-tracker.service.ts",
+        "backend/src/modules/seo-shadow-observatory/seo-shadow-observatory.module.ts"
+      ],
       "kind": "service",
       "loc": 56,
       "owner": "__unassigned__",
@@ -24396,11 +24585,14 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "reachability"
       ],
       "domain": "UNKNOWN",
       "id": "backend/src/modules/rm/rm.types.ts",
-      "importedBy": [],
+      "importedBy": [
+        "backend/src/modules/rm/services/rm-builder.service.ts"
+      ],
       "imports": [],
       "kind": "config",
       "loc": 316,
@@ -24410,7 +24602,7 @@
       "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "UNKNOWN"
+      "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
@@ -24420,7 +24612,12 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/rm/services/__tests__/rm-alternatives.service.test.ts",
       "importedBy": [],
-      "imports": [],
+      "imports": [
+        "@cache/cache.service",
+        "backend/src/config/cache-ttl.config.ts",
+        "backend/src/modules/rm/controllers/rm.controller.ts",
+        "backend/src/modules/rm/services/rm-alternatives.service.ts"
+      ],
       "kind": "test",
       "loc": 361,
       "owner": "__unassigned__",
@@ -24439,7 +24636,11 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/rm/services/__tests__/rm-builder-page-v2-cache.test.ts",
       "importedBy": [],
-      "imports": [],
+      "imports": [
+        "@cache/cache.service",
+        "backend/src/config/cache-ttl.config.ts",
+        "backend/src/modules/rm/services/rm-builder.service.ts"
+      ],
       "kind": "test",
       "loc": 313,
       "owner": "__unassigned__",
@@ -24458,7 +24659,12 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/rm/services/__tests__/rm-builder-seo-legacy-markers.test.ts",
       "importedBy": [],
-      "imports": [],
+      "imports": [
+        "@cache/cache.service",
+        "backend/src/modules/catalog/services/seo-template.service.ts",
+        "backend/src/modules/rm/controllers/rm.controller.ts",
+        "backend/src/modules/rm/services/rm-builder.service.ts"
+      ],
       "kind": "test",
       "loc": 267,
       "owner": "__unassigned__",
@@ -24477,7 +24683,10 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/rm/services/__tests__/rm-builder-seo-shadow.test.ts",
       "importedBy": [],
-      "imports": [],
+      "imports": [
+        "backend/src/modules/rm/services/rm-builder.service.ts",
+        "backend/src/modules/seo-shadow-observatory/seo-shadow-observatory.service.ts"
+      ],
       "kind": "test",
       "loc": 161,
       "owner": "__unassigned__",
@@ -24496,7 +24705,10 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/rm/services/__tests__/rm-soft404-tracker.service.test.ts",
       "importedBy": [],
-      "imports": [],
+      "imports": [
+        "@cache/cache.service",
+        "backend/src/modules/rm/services/rm-soft404-tracker.service.ts"
+      ],
       "kind": "test",
       "loc": 111,
       "owner": "__unassigned__",
@@ -24533,17 +24745,27 @@
       ],
       "domain": "UNKNOWN",
       "id": "backend/src/modules/rm/services/rm-alternatives.service.ts",
-      "importedBy": [],
-      "imports": [],
+      "importedBy": [
+        "backend/src/modules/rm/controllers/rm.controller.ts",
+        "backend/src/modules/rm/rm.module.ts",
+        "backend/src/modules/rm/services/__tests__/rm-alternatives.service.test.ts"
+      ],
+      "imports": [
+        "@cache/cache.service",
+        "@database/services/supabase-base.service",
+        "backend/src/config/cache-ttl.config.ts",
+        "backend/src/modules/rm/dto/alternatives-v2.dto.ts",
+        "crypto"
+      ],
       "kind": "service",
       "loc": 213,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/services/rm-alternatives.service.ts",
       "risk": "low",
-      "runtime": false,
+      "runtime": true,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "UNKNOWN"
+      "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
@@ -24552,17 +24774,33 @@
       ],
       "domain": "UNKNOWN",
       "id": "backend/src/modules/rm/services/rm-builder.service.ts",
-      "importedBy": [],
-      "imports": [],
+      "importedBy": [
+        "backend/src/modules/rm/controllers/rm.controller.ts",
+        "backend/src/modules/rm/rm.module.ts",
+        "backend/src/modules/rm/services/__tests__/rm-builder-page-v2-cache.test.ts",
+        "backend/src/modules/rm/services/__tests__/rm-builder-seo-legacy-markers.test.ts",
+        "backend/src/modules/rm/services/__tests__/rm-builder-seo-shadow.test.ts"
+      ],
+      "imports": [
+        "@cache/cache.service",
+        "@database/services/supabase-base.service",
+        "@security/rpc-gate/rpc-gate.service",
+        "backend/src/config/cache-ttl.config.ts",
+        "backend/src/modules/catalog/services/seo-template.service.ts",
+        "backend/src/modules/catalog/services/vehicle-aware-description.composer.ts",
+        "backend/src/modules/rm/rm.types.ts",
+        "backend/src/modules/rm/utils/page-v2-response.ts",
+        "backend/src/modules/seo-shadow-observatory/seo-shadow-observatory.service.ts"
+      ],
       "kind": "service",
       "loc": 996,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/services/rm-builder.service.ts",
       "risk": "low",
-      "runtime": false,
+      "runtime": true,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "UNKNOWN"
+      "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
@@ -24571,26 +24809,37 @@
       ],
       "domain": "UNKNOWN",
       "id": "backend/src/modules/rm/services/rm-soft404-tracker.service.ts",
-      "importedBy": [],
-      "imports": [],
+      "importedBy": [
+        "backend/src/modules/rm/controllers/rm.controller.ts",
+        "backend/src/modules/rm/rm.module.ts",
+        "backend/src/modules/rm/services/__tests__/rm-soft404-tracker.service.test.ts"
+      ],
+      "imports": [
+        "@cache/cache.service",
+        "@database/services/supabase-base.service"
+      ],
       "kind": "service",
       "loc": 88,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/services/rm-soft404-tracker.service.ts",
       "risk": "low",
-      "runtime": false,
+      "runtime": true,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "UNKNOWN"
+      "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "reachability"
       ],
       "domain": "UNKNOWN",
       "id": "backend/src/modules/rm/utils/page-v2-response.ts",
-      "importedBy": [],
+      "importedBy": [
+        "backend/src/modules/rm/controllers/rm.controller.ts",
+        "backend/src/modules/rm/services/rm-builder.service.ts"
+      ],
       "imports": [],
       "kind": "service",
       "loc": 38,
@@ -24600,7 +24849,7 @@
       "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "UNKNOWN"
+      "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
@@ -26871,7 +27120,9 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/seo-monitoring/services/gsc-coverage.test.ts",
       "importedBy": [],
-      "imports": [],
+      "imports": [
+        "backend/src/modules/seo-monitoring/services/gsc-coverage.ts"
+      ],
       "kind": "test",
       "loc": 115,
       "owner": "__unassigned__",
@@ -26891,6 +27142,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/seo-monitoring/services/gsc-coverage.ts",
       "importedBy": [
+        "backend/src/modules/seo-monitoring/services/gsc-coverage.test.ts",
         "backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.ts"
       ],
       "imports": [],
@@ -28035,6 +28287,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/seo-shadow-observatory/seo-shadow-observatory.module.ts",
       "importedBy": [
+        "backend/src/modules/rm/rm.module.ts",
         "backend/src/modules/vehicles/vehicles.module.ts"
       ],
       "imports": [
@@ -28066,6 +28319,8 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/seo-shadow-observatory/seo-shadow-observatory.service.ts",
       "importedBy": [
+        "backend/src/modules/rm/services/__tests__/rm-builder-seo-shadow.test.ts",
+        "backend/src/modules/rm/services/rm-builder.service.ts",
         "backend/src/modules/seo-shadow-observatory/seo-shadow-observatory.module.ts"
       ],
       "imports": [
@@ -29266,6 +29521,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/seo/r2/constants/r2-eligibility.constants.ts",
       "importedBy": [
+        "backend/src/modules/seo/r2/services/r2-commercial-distinctiveness.service.ts",
         "backend/src/modules/seo/r2/services/r2-eligibility.service.ts",
         "backend/src/modules/seo/r2/services/r2-feature-flag.service.ts"
       ],
@@ -30045,7 +30301,9 @@
         "backend/src/modules/seo/r2/r2-v2.module.ts",
         "backend/src/modules/seo/r2/services/r2-eligibility.service.ts"
       ],
-      "imports": [],
+      "imports": [
+        "backend/src/modules/seo/r2/constants/r2-eligibility.constants.ts"
+      ],
       "kind": "service",
       "loc": 141,
       "owner": "__unassigned__",
@@ -30458,6 +30716,8 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/seo/registries/seo-feature-flag.registry.ts",
       "importedBy": [
+        "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-seo-shadow.test.ts",
+        "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
         "backend/src/modules/seo/registries/__tests__/seo-feature-flag.registry.test.ts",
         "backend/src/modules/seo/seo.module.ts"
       ],
@@ -30514,6 +30774,7 @@
         "backend/src/modules/seo/__tests__/dynamic-seo-v4-via-chain.test.ts",
         "backend/src/modules/seo/registries/__tests__/seo-variant-family.registry.test.ts",
         "backend/src/modules/seo/seo.module.ts",
+        "backend/src/modules/seo/services/chain/__tests__/r8-meta-distribution.test.ts",
         "backend/src/modules/seo/services/chain/__tests__/seo-chain-marketing-parity.test.ts",
         "backend/src/modules/seo/services/chain/__tests__/seo-chain-orchestrator.service.test.ts",
         "backend/src/modules/seo/services/chain/__tests__/seo-switch-selector.service.order.test.ts",
@@ -30813,7 +31074,11 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/seo/services/chain/__tests__/r8-meta-distribution.test.ts",
       "importedBy": [],
-      "imports": [],
+      "imports": [
+        "backend/src/config/page-contract-r8.schema.ts",
+        "backend/src/modules/seo/registries/seo-variant-family.registry.ts",
+        "backend/src/modules/seo/services/chain/seo-switch-selector.service.ts"
+      ],
       "kind": "test",
       "loc": 142,
       "owner": "__unassigned__",
@@ -30916,7 +31181,11 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/seo/services/chain/__tests__/seo-content-block-builder.service.test.ts",
       "importedBy": [],
-      "imports": [],
+      "imports": [
+        "backend/src/modules/seo/services/chain/seo-content-block-builder.service.ts",
+        "backend/src/modules/seo/services/chain/seo-internal-linking.service.ts",
+        "backend/src/modules/seo/services/chain/seo-switch-selector.service.ts"
+      ],
       "kind": "test",
       "loc": 224,
       "owner": "__unassigned__",
@@ -31090,7 +31359,8 @@
         "backend/src/modules/seo/services/chain/__tests__/seo-ariane-breadcrumb.service.test.ts",
         "backend/src/modules/seo/services/chain/__tests__/seo-chain-marketing-parity.test.ts",
         "backend/src/modules/seo/services/chain/__tests__/seo-chain-orchestrator.service.test.ts",
-        "backend/src/modules/seo/services/chain/seo-chain-orchestrator.service.ts"
+        "backend/src/modules/seo/services/chain/seo-chain-orchestrator.service.ts",
+        "backend/src/modules/seo/services/chain/seo-content-block-builder.service.ts"
       ],
       "imports": [
         "@repo/seo-role-contracts"
@@ -31113,6 +31383,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/seo/services/chain/seo-chain-orchestrator.service.ts",
       "importedBy": [
+        "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
         "backend/src/modules/seo/__tests__/dynamic-seo-v4-via-chain.test.ts",
         "backend/src/modules/seo/dynamic-seo-v4-ultimate.service.ts",
         "backend/src/modules/seo/seo.module.ts",
@@ -31152,9 +31423,15 @@
         "backend/src/modules/seo/seo.module.ts",
         "backend/src/modules/seo/services/chain/__tests__/seo-chain-marketing-parity.test.ts",
         "backend/src/modules/seo/services/chain/__tests__/seo-chain-orchestrator.service.test.ts",
+        "backend/src/modules/seo/services/chain/__tests__/seo-content-block-builder.service.test.ts",
         "backend/src/modules/seo/services/chain/seo-chain-orchestrator.service.ts"
       ],
-      "imports": [],
+      "imports": [
+        "@repo/seo-role-contracts",
+        "backend/src/modules/seo/services/chain/seo-ariane-breadcrumb.service.ts",
+        "backend/src/modules/seo/services/chain/seo-internal-linking.service.ts",
+        "backend/src/modules/seo/services/chain/seo-switch-selector.service.ts"
+      ],
       "kind": "service",
       "loc": 146,
       "owner": "__unassigned__",
@@ -31178,8 +31455,10 @@
         "backend/src/modules/seo/seo.module.ts",
         "backend/src/modules/seo/services/chain/__tests__/seo-chain-marketing-parity.test.ts",
         "backend/src/modules/seo/services/chain/__tests__/seo-chain-orchestrator.service.test.ts",
+        "backend/src/modules/seo/services/chain/__tests__/seo-content-block-builder.service.test.ts",
         "backend/src/modules/seo/services/chain/__tests__/seo-internal-linking.service.test.ts",
-        "backend/src/modules/seo/services/chain/seo-chain-orchestrator.service.ts"
+        "backend/src/modules/seo/services/chain/seo-chain-orchestrator.service.ts",
+        "backend/src/modules/seo/services/chain/seo-content-block-builder.service.ts"
       ],
       "imports": [
         "@database/services/supabase-base.service",
@@ -31281,12 +31560,15 @@
       "importedBy": [
         "backend/src/modules/seo/__tests__/dynamic-seo-v4-via-chain.test.ts",
         "backend/src/modules/seo/seo.module.ts",
+        "backend/src/modules/seo/services/chain/__tests__/r8-meta-distribution.test.ts",
         "backend/src/modules/seo/services/chain/__tests__/seo-chain-marketing-parity.test.ts",
         "backend/src/modules/seo/services/chain/__tests__/seo-chain-orchestrator.service.test.ts",
+        "backend/src/modules/seo/services/chain/__tests__/seo-content-block-builder.service.test.ts",
         "backend/src/modules/seo/services/chain/__tests__/seo-role-template-selector.service.test.ts",
         "backend/src/modules/seo/services/chain/__tests__/seo-switch-selector.service.order.test.ts",
         "backend/src/modules/seo/services/chain/__tests__/seo-switch-selector.service.test.ts",
         "backend/src/modules/seo/services/chain/seo-chain-orchestrator.service.ts",
+        "backend/src/modules/seo/services/chain/seo-content-block-builder.service.ts",
         "backend/src/modules/seo/services/chain/seo-role-template-selector.service.ts"
       ],
       "imports": [
@@ -31713,6 +31995,7 @@
         "backend/src/modules/blog/services/r3-guide.service.test.ts",
         "backend/src/modules/blog/services/r3-guide.service.ts",
         "backend/src/modules/gamme-rest/gamme-rest-rpc-v2.controller.ts",
+        "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
         "backend/src/modules/seo/controllers/reference.controller.ts",
         "backend/src/modules/seo/seo.module.ts",
         "backend/src/modules/seo/services/r6-guide-link-policy.test.ts"
@@ -31765,6 +32048,7 @@
       "id": "backend/src/modules/seo/services/reference.service.ts",
       "importedBy": [
         "backend/src/modules/admin/services/execution-router.service.ts",
+        "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
         "backend/src/modules/seo/controllers/reference.controller.ts",
         "backend/src/modules/seo/seo.module.ts"
       ],
@@ -31952,6 +32236,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/seo/services/seo-title-engine.service.ts",
       "importedBy": [
+        "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
         "backend/src/modules/seo/__tests__/seo-field-gate.test.ts",
         "backend/src/modules/seo/seo.module.ts"
       ],
@@ -32632,6 +32917,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/seo/types/resolved-seo-field.ts",
       "importedBy": [
+        "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
         "backend/src/modules/seo/__tests__/seo-balise-collision-gate.test.ts",
         "backend/src/modules/seo/__tests__/seo-fingerprint-core.test.ts",
         "backend/src/modules/seo/services/seo-title-engine.service.ts",
@@ -38571,6 +38857,7 @@
         "backend/src/modules/blog/utils/blog-text.utils.ts",
         "backend/src/modules/catalog/services/unified-page-data.service.ts",
         "backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts",
+        "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
         "backend/src/modules/products/services/cross-selling-seo.service.ts"
       ],
       "imports": [],
@@ -61454,7 +61741,13 @@
       "domain": "UNKNOWN",
       "id": "frontend/app/utils/r1-builders.ts",
       "importedBy": [],
-      "imports": [],
+      "imports": [
+        "~/types/gamme-page-contract.types",
+        "~/utils/dedupe-strings",
+        "~/utils/faq-validator",
+        "~/utils/r1-faq-merge",
+        "~/utils/seo/canonical"
+      ],
       "kind": "service",
       "loc": 283,
       "owner": "__unassigned__",
@@ -62069,7 +62362,9 @@
         "frontend/app/routes/pieces.$slug.tsx",
         "frontend/app/utils/vehicle-cookie.ts"
       ],
-      "imports": [],
+      "imports": [
+        "@repo/seo-url-contract"
+      ],
       "kind": "service",
       "loc": 161,
       "owner": "__unassigned__",
@@ -68528,6 +68823,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "scripts/audit/__tests__/deep-inventory-reachability.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 84,
+      "owner": "__unassigned__",
+      "path": "scripts/audit/__tests__/deep-inventory-reachability.test.ts",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "scripts/audit/__tests__/dependency-modernization.schema.test.ts",
       "importedBy": [],
       "imports": [],
@@ -68684,7 +68998,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 780,
+      "loc": 790,
       "owner": "__unassigned__",
       "path": "scripts/audit/build-deep-inventory.js",
       "risk": "low",
