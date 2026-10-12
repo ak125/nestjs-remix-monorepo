@@ -82798,7 +82798,7 @@
         "url"
       ],
       "kind": "service",
-      "loc": 42,
+      "loc": 48,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes.ts",
       "risk": "low",
@@ -92770,7 +92770,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 211,
+      "loc": 227,
       "owner": "@ak125",
       "path": "frontend/tests/e2e/command-center-l1.spec.ts",
       "risk": "medium",
@@ -93613,6 +93613,26 @@
       "loc": 93,
       "owner": "@ak125",
       "path": "frontend/tests/unit/command-center-loader.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/command-center-route-config.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 63,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/command-center-route-config.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -104267,11 +104287,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "7bec88c8e8b454869e284e28fdde34ca05a32d3fdbbdfe0820cdee50a66f5f3a",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "fa827325d9497522babfe52370d776f770ada395ae7301122a6e6957c86806ea",
+      "audit/registry/files.json": "99637b19409f7f88076aaeab863189971abad2052a919a3e0b8bd759820f52ed",
       "audit/registry/rpc.json": "68f3b21f7aa0b2ef7da9b488c657c3b6b5bdde0476bf7d617f1e346cc26b4449",
       "audit/registry/runtime.json": "1537c0f3bfbfb3eec888d674e290f14eb9df56e9f816220210a8b7298eaeeb44"
     },
-    "sotFingerprint": "dd187ca40b91"
+    "sotFingerprint": "d7ba6c2402c3"
   },
   "runtime": [
     {
