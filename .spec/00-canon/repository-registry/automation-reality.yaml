@@ -440,3 +440,23 @@ entries:
     risk: "medium"
     related_pr: [1651, 1678]
     drift_note: "Borne de stockage : 90 j + dernière exécution de chaque jobid. Lecteurs = preuves d'exécution (never_ran, ADR-045, ce registre) ; aucun code applicatif ne lit la table."
+
+  # ADR-035 D6.2 — exports diagnostic du WIKI régénérés après fusion et poussés sur son main.
+  # Domaine = celui du consommateur (backend/src/modules/diagnostic-engine/**, D4 dans domains.yaml).
+  - automation_id: "wiki-exports-diagnostic-generate"
+    domain: "D4"
+    intended_mode: "ACTIVE"
+    actual_mode: "DRAFTED"
+    executor: "github-actions-schedule"
+    evidence:
+      - path: ".github/workflows/wiki-exports-diagnostic-generate.yml"
+        line: 55
+        excerpt: "- cron: '30 3 * * *'"
+        note: "Cron quotidien + workflow_dispatch : régénère exports/diagnostic/ du WIKI, pousse seulement si le diff change"
+    last_verified_at: "2026-10-12"
+    last_verified_by: "@ak125"
+    last_verified_method: "manual-inspection"
+    missing_step: "Fusion de la PR, puis 1er run qui pousse sur le main du WIKI (contournement du ruleset par le compte du token, non prouvé). Servi après sous-module + tag PROD."
+    risk: "medium"
+    owner_action: "Après fusion : lancer le workflow (workflow_dispatch), puis passer actual_mode à ACTIVE avec la runtime_evidence de ce run."
+    drift_note: "Couvre le segment WIKI de D6.2 seulement. L'écriture en base reste sous drapeau, défaut OFF (ADR-035 D5)."
