@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "captured_at": "2026-10-02",
-  "captured_on_commit": "e76be4150",
+  "captured_at": "2026-10-12",
+  "captured_on_commit": "a780701f5",
   "thresholds": {
     "unused_files_delta": 5,
     "unused_exports_delta": 10,
@@ -15,12 +15,12 @@
     "ast_grep_errors_delta": 0
   },
   "knip": {
-    "unused_files": 268,
-    "unused_exports": 267,
-    "unused_types": 258,
+    "unused_files": 269,
+    "unused_exports": 270,
+    "unused_types": 260,
     "unused_dependencies": 4,
     "unused_dev_dependencies": 6,
-    "unlisted_dependencies": 36,
+    "unlisted_dependencies": 38,
     "unlisted_binaries": 20,
     "duplicate_exports": 41
   },
@@ -30,14 +30,14 @@
     "frontend_cycles": 1
   },
   "depcruise": {
-    "violations": 148,
+    "violations": 163,
     "errors": 0,
     "modules_cruised": 2101,
     "dependencies_cruised": 8425,
-    "warnings": 148
+    "warnings": 163
   },
   "ast_grep": {
-    "warnings": 72,
+    "warnings": 69,
     "errors": 0
   },
   "notes": [
