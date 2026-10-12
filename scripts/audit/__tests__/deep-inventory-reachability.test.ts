@@ -1,17 +1,19 @@
 // Ce que voit le graphe d'imports du deep-inventory, et ce qu'il en déduit.
 //
-// Deux défauts ont fait classer « injoignables » des modules NestJS vivants
-// (`audit/runtime-entrypoints.json#nestjs_unreachable_modules`, entrée de la
-// phase PR-3 Step B) :
+// Deux modules NestJS reliés à `app.module.ts` par des imports sans condition figuraient
+// dans `audit/runtime-entrypoints.json#nestjs_unreachable_modules` (entrée de la phase
+// PR-3 Step B) :
 //
-// 1. Les motifs `exclude` / `doNotFollow` de `.dependency-cruiser.cjs` étaient des
-//    regex non ancrées. `rm/` retirait du graphe tout `backend/src/modules/rm/`,
-//    module servi par `app.module.ts` ; `dist`, `build` et `coverage` coupaient les
-//    imports sortants de fichiers source comme `url-builder.utils.ts`,
-//    `gsc-coverage.ts` ou `r2-commercial-distinctiveness.service.ts`.
+// 1. `exclude: 'rm/'` (`.dependency-cruiser.cjs`) retirait du graphe tout
+//    `backend/src/modules/rm/`, que `app.module.ts` importe.
 // 2. La BFS DI ne suivait que les arêtes qui aboutissent à un `*.module.ts` : un
 //    module importé par son dossier (`index.ts` qui le ré-exporte) restait hors
 //    d'atteinte, alors que l'`@Module` qui l'importe est atteint.
+//
+// Les autres motifs `exclude` / `doNotFollow` étaient des regex non ancrées : `build`,
+// `dist` et `coverage` touchaient aussi des fichiers source. `url-builder.utils.ts` et
+// `r2-commercial-distinctiveness.service.ts` perdaient leurs imports sortants ;
+// `gsc-coverage.test.ts`, sans importeur, sortait du graphe.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";

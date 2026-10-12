@@ -137,8 +137,10 @@ module.exports = {
   ],
   options: {
     // Path patterns are unanchored regexes: a directory name must be anchored to a path
-    // segment, otherwise it also matches source files (`build` hit `url-builder.utils.ts`,
-    // `rm/` dropped the whole live `backend/src/modules/rm/` from the graph).
+    // segment, otherwise it also matches other paths (`build` hit `url-builder.utils.ts`,
+    // `dist` hit `r2-commercial-distinctiveness.service.ts`).
+    // `backend/src/modules/rm/` is not excluded: `app.module.ts` imports `RmModule`
+    // unconditionally, so the graph has to contain it.
     // Guarded by scripts/audit/__tests__/deep-inventory-reachability.test.ts.
     doNotFollow: {
       path: [
