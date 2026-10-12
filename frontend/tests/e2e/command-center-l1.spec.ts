@@ -16,6 +16,17 @@ test.skip(
 );
 test.use({ baseURL, storageState: adminState });
 
+test("cockpit still redirects anonymous visitors to login", async ({
+  page,
+}) => {
+  await page.context().clearCookies();
+  const response = await page.request.get("/admin/command-center", {
+    maxRedirects: 0,
+  });
+  expect(response.status()).toBe(302);
+  expect(response.headers().location).toBe("/login");
+});
+
 for (const viewport of [
   { width: 1280, height: 900 },
   { width: 390, height: 844 },
@@ -32,7 +43,8 @@ for (const viewport of [
       )
         writes.push(request.method());
     });
-    await page.goto("/admin/command-center");
+    const response = await page.goto("/admin/command-center");
+    expect(response?.status()).toBe(200);
     await page.getByRole("tab", { name: /Départements/ }).click();
     const cards = page.getByRole("article");
     await expect(cards).toHaveCount(24);
@@ -85,7 +97,10 @@ test("tabs wait for hydration before accepting the first click", async ({
   });
   const tabs = page.getByRole("tab");
   try {
-    await page.goto("/admin/command-center", { waitUntil: "commit" });
+    const response = await page.goto("/admin/command-center", {
+      waitUntil: "commit",
+    });
+    expect(response?.status()).toBe(200);
     await expect(tabs).toHaveCount(6);
     for (const tab of await tabs.all()) await expect(tab).toBeDisabled();
   } finally {
@@ -185,7 +200,8 @@ test("admin v1/v2, human report and machine digest remain consistent", async ({
       .map(({ details: _details, ...action }) => action),
   });
 
-  await page.goto("/admin/command-center");
+  const response = await page.goto("/admin/command-center");
+  expect(response?.status()).toBe(200);
   await page.getByRole("tab", { name: "Rapports", exact: true }).click();
   const reports = page.getByRole("tabpanel", { name: "Rapports", exact: true });
   await expect(
