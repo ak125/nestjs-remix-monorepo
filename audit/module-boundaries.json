@@ -960,7 +960,7 @@
         "tests/registry"
       ],
       "files_count": 295,
-      "loc_total": 55472,
+      "loc_total": 55536,
       "has_barrel": true
     },
     "upload": {
