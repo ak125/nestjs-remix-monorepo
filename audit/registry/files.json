@@ -15441,7 +15441,7 @@
         "backend/src/modules/diagnostic-engine/projection/diagnostic-projection.types.ts"
       ],
       "kind": "test",
-      "loc": 727,
+      "loc": 805,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/projection/diagnostic-projection-resolver.test.ts",
       "risk": "low",
@@ -15468,7 +15468,7 @@
         "backend/src/modules/diagnostic-engine/projection/diagnostic-projection.types.ts"
       ],
       "kind": "service",
-      "loc": 264,
+      "loc": 274,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/projection/diagnostic-projection-resolver.ts",
       "risk": "low",
@@ -15715,7 +15715,7 @@
         "path"
       ],
       "kind": "test",
-      "loc": 43,
+      "loc": 62,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/projection/diagnostic-projection.types.test.ts",
       "risk": "low",
@@ -15747,7 +15747,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 245,
+      "loc": 249,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/projection/diagnostic-projection.types.ts",
       "risk": "low",
