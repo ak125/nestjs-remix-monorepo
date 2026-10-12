@@ -44200,7 +44200,7 @@
         "backend/src/modules/diagnostic-engine/projection/diagnostic-projection.types.ts"
       ],
       "kind": "test",
-      "loc": 727,
+      "loc": 805,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/projection/diagnostic-projection-resolver.test.ts",
       "risk": "medium",
@@ -44228,7 +44228,7 @@
         "backend/src/modules/diagnostic-engine/projection/diagnostic-projection.types.ts"
       ],
       "kind": "service",
-      "loc": 264,
+      "loc": 274,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/projection/diagnostic-projection-resolver.ts",
       "risk": "medium",
@@ -44484,7 +44484,7 @@
         "path"
       ],
       "kind": "test",
-      "loc": 43,
+      "loc": 62,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/projection/diagnostic-projection.types.test.ts",
       "risk": "medium",
@@ -44517,7 +44517,7 @@
       ],
       "imports": [],
       "kind": "config",
-      "loc": 245,
+      "loc": 249,
       "owner": "@ak125/vehicle-team",
       "path": "backend/src/modules/diagnostic-engine/projection/diagnostic-projection.types.ts",
       "risk": "medium",
@@ -104263,15 +104263,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "f712a655d9f22003e79dcfca8e1b40fa79901b8a60755de688f1431655d188e2",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "a47b2b5476c609c3b01070ef3d4a4606c30dc3a3e1d267e06bfd92ed7fc0937e",
+      ".spec/00-canon/repository-registry/ownership.yaml": "993f8a45491adc84d340b06a3c9186ad8ad5ea26fcbc53e1f31070aa1f9c64d6",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "7bec88c8e8b454869e284e28fdde34ca05a32d3fdbbdfe0820cdee50a66f5f3a",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "c2102ceeee277475927ea8bcab7f01c7d61c1190136454f38d2328c494c0d361",
+      "audit/registry/files.json": "4d11a437ac829c36363a9f27fe3944af38237220fc423afe906cf8e92d0adc97",
       "audit/registry/rpc.json": "68f3b21f7aa0b2ef7da9b488c657c3b6b5bdde0476bf7d617f1e346cc26b4449",
       "audit/registry/runtime.json": "1537c0f3bfbfb3eec888d674e290f14eb9df56e9f816220210a8b7298eaeeb44"
     },
-    "sotFingerprint": "86c606a64aa0"
+    "sotFingerprint": "77bd21e1ce43"
   },
   "runtime": [
     {

@@ -8,6 +8,8 @@
  * relation n'est inventée ni devinée : zéro ou plusieurs candidats = conflit.
  * La résolution reste celle de `CAUSE_GAMME_MAP` ; un `cause_slug` WIKI la
  * vérifie et ne la fait jamais (il ne lève pas une ambiguïté).
+ * Seule une relation prouvée ET relue est projetée (ADR-115 D1) : `reviewed`
+ * est lu dans la fiche, jamais posé ici.
  */
 import {
   CAUSE_GAMME_MAP,
@@ -218,6 +220,14 @@ export function resolveDiagnosticProjection(
           { link_id: link.id, unproven_sources: unproven },
           relation,
         );
+        return;
+      }
+
+      // ADR-115 D1 : contrôle évalué en dernier. Une relation ni capturée ni
+      // relue reste `source_not_raw_proven` ; une relation qui repasse à
+      // `reviewed: false` n'est plus reprise et le run la retire.
+      if (relation.evidence.reviewed !== true) {
+        conflict('not_reviewed', { link_id: link.id }, relation);
         return;
       }
 
