@@ -5,7 +5,12 @@ import { CacheService } from '../../../cache/cache.service';
 import { CommandCenterActionsService } from './command-center-actions.service';
 import {
   DIGEST_MAX_OWNER_GO_ACTIONS,
-  type CcDepartmentReport,
+  CommandCenterSnapshotV2Schema,
+  CommandCenterResponseV2Schema,
+  type CommandCenterSnapshotV2,
+  type CommandCenterResponse as LegacyCommandCenterResponse,
+  type CommandCenterResponseV2,
+  type GlobalStatus,
   type CommandCenterDigest,
 } from '@repo/registry';
 import { CommandCenterKpiService } from './command-center-kpi.service';
@@ -57,7 +62,7 @@ export class CommandCenterReaderService {
     'agent-operating-map-report.json',
   );
 
-  private static readonly CACHE_KEY = 'admin:command-center:summary';
+  private static readonly CACHE_KEY = 'admin:command-center:summary:v2';
   private static readonly TTL_OK = 60;
   private static readonly TTL_DEGRADED = 15; // short TTL — poisoning guard
 
@@ -94,22 +99,27 @@ export class CommandCenterReaderService {
     const mode = resolveCommandCenterMode();
     const cacheKey = `${CommandCenterReaderService.CACHE_KEY}:${mode}`;
     const cached = await this.cacheService.get<CommandCenterResponse>(cacheKey);
-    if (cached) return cached;
+    const parsedCache = CommandCenterResponseV2Schema.safeParse(cached);
+    if (parsedCache.success && parsedCache.data.mode === mode)
+      return parsedCache.data;
 
     const built = this.build();
     let result: CommandCenterResponse;
-    if (mode === 'light') {
-      result = toLightResponse(built);
+    if (mode !== 'full') {
+      result = { ...toLightResponse(built), mode };
     } else {
+      // Backend strictNullChecks is disabled: materialize the nullable keys that
+      // Zod validates as required before passing them to existing rule views.
+      const departments = built.departments.map((d) => ({
+        ...d,
+        priority: d.priority ?? null,
+        kpi_primary: d.kpi_primary ?? null,
+      }));
       const [action_queue, measures]: [OwnerActionV2[], LiveKpiMeasure[]] =
         built.degraded
           ? [[], []]
           : await Promise.all([
-              this.actions.computeActionQueue(
-                built.departments,
-                built.chains,
-                mode,
-              ),
+              this.actions.computeActionQueue(departments, built.chains, mode),
               this.kpis.computeLiveKpis(mode),
             ]);
       // full mode only, like the action queue: disabled/degraded expose no detail.
@@ -117,7 +127,7 @@ export class CommandCenterReaderService {
         built.degraded || mode !== 'full'
           ? []
           : buildDepartmentReports({
-              departments: built.departments,
+              departments,
               actions: action_queue,
               measures,
               as_of: built.generated_at,
@@ -149,18 +159,29 @@ export class CommandCenterReaderService {
   > {
     const now = new Date();
     const gitSha = process.env.GIT_SHA || process.env.SOURCE_COMMIT || null;
-    const snapshot = this.readJson<SnapshotFile>(
-      join(this.registryDir, 'command-center-snapshot.json'),
-    );
-
-    if (!snapshot) {
-      // No silent green: degraded is explicit + pessimistic.
-      this.logger.warn(
-        `[command-center] snapshot absent at ${this.registryDir}/command-center-snapshot.json — degraded`,
-      );
+    const snapshotPath = join(this.registryDir, 'command-center-snapshot.json');
+    let raw: unknown;
+    let failure = 'snapshot_unavailable';
+    if (existsSync(snapshotPath)) {
+      try {
+        raw = JSON.parse(readFileSync(snapshotPath, 'utf-8'));
+        failure =
+          raw &&
+          typeof raw === 'object' &&
+          'schema_version' in raw &&
+          raw.schema_version !== 'command-center.v2'
+            ? 'snapshot_version_invalid'
+            : 'snapshot_shape_invalid';
+      } catch {
+        failure = 'snapshot_json_invalid';
+      }
+    }
+    const parsed = CommandCenterSnapshotV2Schema.safeParse(raw);
+    if (!parsed.success) {
+      this.logger.warn(`[command-center] ${failure} — degraded`);
       return {
         degraded: true,
-        schema_version: 'command-center.v1',
+        schema_version: 'command-center.v2',
         source_truth: { canon_path: '', last_verified: null },
         summary: this.emptySummary(),
         executive_kpis: [],
@@ -170,19 +191,18 @@ export class CommandCenterReaderService {
         alerts: [],
         owner_actions: [],
         generated_at: now.toISOString(),
-        git_sha: gitSha,
+        git_sha: null,
         stale_status: 'UNKNOWN',
         validation_status: 'UNKNOWN',
         global_status: {
           level: 'WARNING',
           verdict: 'BLOCKED',
-          reasons: [
-            'snapshot_unavailable — run `npm run governance:command-center` (and verify the Docker image COPYs audit/registry)',
-          ],
+          reasons: [failure],
         },
       };
     }
 
+    const snapshot = parsed.data;
     const staleStatus = this.computeStale(
       snapshot.source_truth?.last_verified,
       now,
@@ -273,11 +293,12 @@ export class CommandCenterReaderService {
 
   private computeGlobalStatus(
     snapshot: SnapshotFile,
-    departments: Array<{
-      id: string;
-      priority: string | null;
-      certification: string;
-    }>,
+    departments: Array<
+      Pick<
+        SnapshotFile['departments'][number],
+        'id' | 'priority' | 'certification'
+      >
+    >,
     stale: StaleStatus,
     validation: ValidationStatus,
   ): GlobalStatus {
@@ -336,66 +357,12 @@ export class CommandCenterReaderService {
   }
 }
 
-// ── Shapes (self-contained, mirrors registry-reader convention) ────────────────
-// The authoritative contract is .spec/00-canon/ai-registry/command-center-snapshot.schema.json
-// (AJV) + @repo/registry CommandCenterSnapshotSchema (Zod). These loose interfaces
-// mirror it for the reader; the frontend imports the Zod types from @repo/registry.
-
-type StaleStatus = 'FRESH' | 'WARNING' | 'STALE' | 'UNKNOWN';
-type ValidationStatus = 'VALIDATED' | 'WARN_ONLY' | 'STRICT_FAIL' | 'UNKNOWN';
-
-interface GlobalStatus {
-  level: 'OK' | 'WARNING' | 'CRITICAL';
-  verdict: 'OPERATIONAL' | 'PARTIAL_READY' | 'BLOCKED';
-  reasons: string[];
-}
-
-interface SnapshotFile {
-  schema_version: string;
-  source_truth: { canon_path: string; last_verified: string | null };
-  summary: {
-    departments_total: number;
-    by_priority: Record<string, number>;
-    by_state: Record<string, number>;
-    capabilities_total: number;
-    capabilities_certified: number;
-    capabilities_without_evidence: number;
-    handoffs_total: number;
-    handoffs_incomplete: number;
-  };
-  executive_kpis: unknown[];
-  departments: Array<{
-    id: string;
-    label: string;
-    lead: string;
-    priority: string | null;
-    kpi_primary: string | null;
-    state: string;
-    family: string;
-    capabilities: string[];
-    certification: string;
-    health_score_base: number;
-    structural_caps_applied: string[];
-  }>;
-  capabilities: unknown[];
-  chains: Array<{
-    id: string;
-    from: string;
-    to: string;
-    state: string;
-    incomplete: boolean;
-  }>;
-  alerts: Array<{
-    code: string;
-    severity: string;
-    target_kind: string;
-    target_id: string;
-    message: string;
-  }>;
-  owner_actions: unknown[];
-}
-
-export type CommandCenterMode = 'full' | 'light' | 'disabled';
+// Shared schemas are validated before computation and before cache reuse.
+type SnapshotFile = CommandCenterSnapshotV2;
+export type CommandCenterResponse = CommandCenterResponseV2;
+export type CommandCenterMode = CommandCenterResponseV2['mode'];
+type StaleStatus = CommandCenterResponseV2['stale_status'];
+type ValidationStatus = CommandCenterResponseV2['validation_status'];
 
 /**
  * Exposure mode for the Command Center cockpit (owner decision 2026-06-04):
@@ -458,7 +425,7 @@ function toLightResponse(
  * inherits the mode stripping above (light/degraded → no reports, no actions).
  */
 export function toCommandCenterDigest(
-  cc: CommandCenterResponse,
+  cc: LegacyCommandCenterResponse | CommandCenterResponseV2,
 ): CommandCenterDigest {
   const waiting = cc.action_queue.filter((a) => a.owner_go_required);
   return {
@@ -475,25 +442,4 @@ export function toCommandCenterDigest(
       .slice(0, DIGEST_MAX_OWNER_GO_ACTIONS)
       .map(({ details: _details, ...action }) => action),
   };
-}
-
-export interface CommandCenterResponse extends Omit<
-  SnapshotFile,
-  'departments'
-> {
-  degraded: boolean;
-  mode: CommandCenterMode;
-  action_queue: OwnerActionV2[];
-  department_reports: CcDepartmentReport[];
-  departments: Array<
-    SnapshotFile['departments'][number] & {
-      health_score_current: number;
-      live_caps_applied: string[];
-    }
-  >;
-  generated_at: string;
-  git_sha: string | null;
-  stale_status: StaleStatus;
-  validation_status: ValidationStatus;
-  global_status: GlobalStatus;
 }

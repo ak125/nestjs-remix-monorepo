@@ -172,6 +172,15 @@ export {
 
 // ── Command Center snapshot (admin cockpit projection of the AI Operating Map) ──
 export {
+  CommandCenterSnapshotV2Schema,
+  CommandCenterResponseV2Schema,
+  CcDepartmentV2Schema,
+  CcDepartmentLiveV2Schema,
+  toCommandCenterV1,
+  type CommandCenterSnapshotV2,
+  type CommandCenterResponseV2,
+  type CcDepartmentV2,
+  type CcDepartmentLiveV2,
   CommandCenterSnapshotSchema,
   CommandCenterResponseSchema,
   CommandCenterDigestSchema,
