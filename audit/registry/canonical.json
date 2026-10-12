@@ -83764,12 +83764,13 @@
         "~/components/ui/card",
         "~/components/ui/table",
         "~/components/ui/tabs",
+        "~/hooks/useHydrated",
         "~/utils/internal-api.server",
         "~/utils/logger",
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 526,
+      "loc": 538,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.command-center.tsx",
       "risk": "medium",
@@ -92671,7 +92672,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 83,
+      "loc": 91,
       "owner": "__unassigned__",
       "path": "frontend/index.cjs",
       "risk": "low",
@@ -92769,7 +92770,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 68,
+      "loc": 211,
       "owner": "@ak125",
       "path": "frontend/tests/e2e/command-center-l1.spec.ts",
       "risk": "medium",
@@ -95488,7 +95489,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 173,
+      "loc": 193,
       "owner": "__unassigned__",
       "path": "frontend/vite.config.ts",
       "risk": "low",
@@ -104266,11 +104267,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "7bec88c8e8b454869e284e28fdde34ca05a32d3fdbbdfe0820cdee50a66f5f3a",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "944a4799c34d060029d98d99245b2560fd0dfe33aa6a073d9ba7e24c5a7fca6d",
+      "audit/registry/files.json": "c2102ceeee277475927ea8bcab7f01c7d61c1190136454f38d2328c494c0d361",
       "audit/registry/rpc.json": "68f3b21f7aa0b2ef7da9b488c657c3b6b5bdde0476bf7d617f1e346cc26b4449",
       "audit/registry/runtime.json": "1537c0f3bfbfb3eec888d674e290f14eb9df56e9f816220210a8b7298eaeeb44"
     },
-    "sotFingerprint": "4786ab949ea6"
+    "sotFingerprint": "86c606a64aa0"
   },
   "runtime": [
     {
