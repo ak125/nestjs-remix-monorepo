@@ -17,6 +17,18 @@
 
 schemaVersion: 1.0.0
 entries:
+  # Command Center integration: inferred from the existing D15 documentation
+  # and backend/tests ownership; medium until explicitly ratified by the owner.
+  - glob: audit/command-center-l1-spec-2026-10-10.md
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: medium
+    risk: low
+  - glob: backend/jest.command-center.config.cjs
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: medium
+    risk: medium
   - glob: scripts/marketing/summarize-reactivation-exclusions{,.test}.ts
     domain: D13
     owner: '@ak125'
