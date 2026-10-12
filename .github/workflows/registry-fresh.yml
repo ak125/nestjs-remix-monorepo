@@ -16,6 +16,11 @@ on:
       # --- Builder + overlay : la CONFIG du registre ---
       - "scripts/registry/**"
       - "scripts/audit/build-deep-inventory.js"
+      # Configurations des deux outils que lance le deep-inventory : une PR qui
+      # ne modifie que l'une d'elles change toutes les projections sans
+      # déclencher ce job (constaté le 2026-10-12, motifs non ancrés).
+      - ".dependency-cruiser.cjs"
+      - "knip.json"
       - "scripts/audit/build-db-usage-map.js"
       - "scripts/audit/build-db-usage-map.test.ts"
       # Le job lance `registry:test:rpc-parser` (tests/registry/) sans qu'aucune
@@ -71,6 +76,8 @@ on:
       # --- Builder + overlay : la CONFIG du registre ---
       - "scripts/registry/**"
       - "scripts/audit/build-deep-inventory.js"
+      - ".dependency-cruiser.cjs"
+      - "knip.json"
       - "scripts/audit/build-db-usage-map.js"
       # Résidu d'alignement du 2026-09-17 : ces deux entrées existaient côté
       # `pull_request` et manquaient ici. `packages/registry/**` n'est pas repris,
