@@ -14,7 +14,7 @@ import re
 import stat
 import uuid
 
-COMMIT = "a221cf164b198978f2abf83788cf47212124c272"
+COMMIT = "992f63efeb4e4a01f062e2957273e91371436f2b"
 PROFILE = Path("/home/hermes/.hermes/profiles/orchestration-automecanik-pilot")
 RELEASE = Path("/opt/codex-project-tools/automecanik-marketing-skills-" + COMMIT)
 SKILLS = RELEASE / "workspaces/marketing/.claude/skills"

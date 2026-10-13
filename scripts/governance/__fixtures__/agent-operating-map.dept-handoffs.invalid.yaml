@@ -22,11 +22,19 @@ nodes: []
 handoffs: []
 departments:
   - id: a
+    business_number: 1
+    accountable_owner: null
+    operating_mode: hybrid
+    profile_ref: audit/automecanik-departments-map.md#department-a
     label: "Fixture A"
     lead: a-lead
     repo_domains: [D1]
     state: partial
   - id: b
+    business_number: 2
+    accountable_owner: null
+    operating_mode: hybrid
+    profile_ref: audit/automecanik-departments-map.md#department-b
     label: "Fixture B"
     lead: b-lead
     repo_domains: [D1]
