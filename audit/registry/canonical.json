@@ -62953,20 +62953,46 @@
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
+      "id": "backend/src/modules/supplier-truth/connectors/cal-parse.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/supplier-truth/connectors/cal-parse.ts",
+        "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts"
+      ],
+      "kind": "test",
+      "loc": 319,
+      "owner": "@ak125",
+      "path": "backend/src/modules/supplier-truth/connectors/cal-parse.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
         "manual",
         "reachability"
       ],
       "domain": "D11",
       "id": "backend/src/modules/supplier-truth/connectors/cal-parse.ts",
       "importedBy": [
+        "backend/src/modules/supplier-truth/connectors/cal-parse.test.ts",
         "backend/src/modules/supplier-truth/connectors/cal.connector.test.ts",
-        "backend/src/modules/supplier-truth/connectors/cal.connector.ts"
+        "backend/src/modules/supplier-truth/connectors/cal.connector.ts",
+        "backend/src/workers/supplier-availability-classify.ts"
       ],
       "imports": [
+        "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts",
         "backend/src/modules/supplier-truth/connectors/supplier-connector.interface.ts"
       ],
       "kind": "service",
-      "loc": 172,
+      "loc": 411,
       "owner": "@ak125",
       "path": "backend/src/modules/supplier-truth/connectors/cal-parse.ts",
       "risk": "high",
@@ -63010,14 +63036,16 @@
       "importedBy": [
         "backend/src/modules/supplier-truth/connectors/cal.connector.test.ts",
         "backend/src/modules/supplier-truth/supplier-sync.runner.ts",
+        "backend/src/workers/supplier-availability-classify.ts",
         "backend/src/workers/supplier-price-verify.ts"
       ],
       "imports": [
         "backend/src/modules/supplier-truth/connectors/cal-parse.ts",
+        "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts",
         "backend/src/modules/supplier-truth/connectors/supplier-connector.interface.ts"
       ],
       "kind": "service",
-      "loc": 322,
+      "loc": 351,
       "owner": "@ak125",
       "path": "backend/src/modules/supplier-truth/connectors/cal.connector.ts",
       "risk": "high",
@@ -63088,7 +63116,7 @@
         "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts"
       ],
       "kind": "test",
-      "loc": 334,
+      "loc": 377,
       "owner": "@ak125",
       "path": "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.test.ts",
       "risk": "high",
@@ -63107,6 +63135,9 @@
       "domain": "D11",
       "id": "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts",
       "importedBy": [
+        "backend/src/modules/supplier-truth/connectors/cal-parse.test.ts",
+        "backend/src/modules/supplier-truth/connectors/cal-parse.ts",
+        "backend/src/modules/supplier-truth/connectors/cal.connector.ts",
         "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.test.ts",
         "backend/src/modules/supplier-truth/connectors/inoshop.connector.ts",
         "backend/src/workers/supplier-availability-classify.ts"
@@ -63115,7 +63146,7 @@
         "backend/src/modules/supplier-truth/connectors/inoshop-parse.ts"
       ],
       "kind": "service",
-      "loc": 324,
+      "loc": 355,
       "owner": "@ak125",
       "path": "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts",
       "risk": "high",
@@ -63167,7 +63198,7 @@
         "backend/src/modules/supplier-truth/connectors/supplier-connector.interface.ts"
       ],
       "kind": "service",
-      "loc": 307,
+      "loc": 314,
       "owner": "@ak125",
       "path": "backend/src/modules/supplier-truth/connectors/inoshop.connector.ts",
       "risk": "high",
@@ -68536,15 +68567,18 @@
       "id": "backend/src/workers/supplier-availability-classify.ts",
       "importedBy": [],
       "imports": [
+        "backend/src/modules/supplier-truth/connectors/cal-parse.ts",
+        "backend/src/modules/supplier-truth/connectors/cal.connector.ts",
         "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts",
         "backend/src/modules/supplier-truth/connectors/inoshop.connector.ts",
         "backend/src/modules/supplier-truth/connectors/portal-classify-resilience.ts",
         "backend/src/modules/supplier-truth/connectors/supplier-registry.ts",
         "fs",
+        "path",
         "zlib"
       ],
       "kind": "service",
-      "loc": 389,
+      "loc": 523,
       "owner": "@ak125",
       "path": "backend/src/workers/supplier-availability-classify.ts",
       "risk": "medium",
@@ -104329,11 +104363,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "7bec88c8e8b454869e284e28fdde34ca05a32d3fdbbdfe0820cdee50a66f5f3a",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "acb5a28014de24ef7a19be9eaf989fdae57c869f127adf58bdce2469f8857b59",
+      "audit/registry/files.json": "933d58c46897b224be59203ac88b6ac60dc7a90bb80c276758ad07f86197ca4d",
       "audit/registry/rpc.json": "68f3b21f7aa0b2ef7da9b488c657c3b6b5bdde0476bf7d617f1e346cc26b4449",
       "audit/registry/runtime.json": "1537c0f3bfbfb3eec888d674e290f14eb9df56e9f816220210a8b7298eaeeb44"
     },
-    "sotFingerprint": "f66afea29350"
+    "sotFingerprint": "4f7160d002e4"
   },
   "runtime": [
     {
