@@ -33682,7 +33682,7 @@
         "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts"
       ],
       "kind": "test",
-      "loc": 334,
+      "loc": 681,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.test.ts",
       "risk": "low",
@@ -33705,10 +33705,11 @@
         "backend/src/workers/supplier-availability-classify.ts"
       ],
       "imports": [
-        "backend/src/modules/supplier-truth/connectors/inoshop-parse.ts"
+        "backend/src/modules/supplier-truth/connectors/inoshop-parse.ts",
+        "backend/src/utils/html-entities.ts"
       ],
       "kind": "service",
-      "loc": 324,
+      "loc": 558,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts",
       "risk": "low",
@@ -38591,7 +38592,8 @@
         "backend/src/modules/blog/utils/blog-text.utils.ts",
         "backend/src/modules/catalog/services/unified-page-data.service.ts",
         "backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts",
-        "backend/src/modules/products/services/cross-selling-seo.service.ts"
+        "backend/src/modules/products/services/cross-selling-seo.service.ts",
+        "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts"
       ],
       "imports": [],
       "kind": "service",
