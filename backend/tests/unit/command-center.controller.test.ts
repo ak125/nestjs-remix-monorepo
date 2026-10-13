@@ -1,3 +1,16 @@
+import { Test } from '@nestjs/testing';
+import type { INestApplication } from '@nestjs/common';
+import { CommandCenterReaderService } from '../../src/modules/admin/services/command-center-reader.service';
+import { CommandCenterOrchestratorService } from '../../src/modules/admin/services/command-center-orchestrator/orchestrator.service';
+jest.mock('../../src/cache/cache.service', () => ({ CacheService: class {} }));
+jest.mock(
+  '../../src/modules/admin/services/command-center-actions.service',
+  () => ({ CommandCenterActionsService: class {} }),
+);
+jest.mock(
+  '../../src/modules/admin/services/command-center-kpi.service',
+  () => ({ CommandCenterKpiService: class {} }),
+);
 /**
  * CommandCenterController — endpoints orchestration shadow (ADR-087, exposition read-only).
  * Prouve : gate COMMAND_CENTER_MODE disabled → 404 ; mapping HTTP explicite des erreurs
@@ -254,4 +267,140 @@ describe('CommandCenterController — approve (Phase 2a HITL)', () => {
       { actor: 'fafa@automecanik.com', plan_hash: 'h' },
     );
   });
+});
+
+describe('admin contract negotiation', () => {
+  const payload = {
+    schema_version: 'command-center.v2',
+    departments: [
+      {
+        id: 'legal',
+        business_number: 18,
+        accountable_owner: null,
+        operating_mode: 'human',
+        repo_domains: [],
+        profile_ref: 'audit/automecanik-departments-map.md#department-legal',
+      },
+    ],
+  };
+  function summary(mode = 'full') {
+    const reader = {
+      getMode: () => mode,
+      getCommandCenter: jest.fn().mockResolvedValue(payload),
+    };
+    return {
+      reader,
+      c: new CommandCenterController(reader as never, {} as never),
+    };
+  }
+  it.each([undefined, '1', '2'])('accepts %s', async (v) => {
+    const { c, reader } = summary();
+    const result = await c.getSummary(v);
+    expect(result.schema_version).toBe(
+      v === '2' ? 'command-center.v2' : 'command-center.v1',
+    );
+    expect(result.departments).toHaveLength(1);
+    expect('operating_mode' in result.departments[0]).toBe(v === '2');
+    expect(reader.getCommandCenter).toHaveBeenCalledTimes(1);
+  });
+  it.each(['', '3', ['2', '2'], {}, 1, null])(
+    'rejects invalid version %j without reading',
+    async (v) => {
+      const { c, reader } = summary();
+      await expect(c.getSummary(v)).rejects.toBeInstanceOf(BadRequestException);
+      expect(reader.getCommandCenter).not.toHaveBeenCalled();
+    },
+  );
+  it('disabled precedes negotiation', async () => {
+    const { c, reader } = summary('disabled');
+    await expect(c.getSummary('invalid')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+    expect(reader.getCommandCenter).not.toHaveBeenCalled();
+  });
+});
+
+describe('isolated HTTP version parsing and real guard order', () => {
+  let app: INestApplication;
+  let url: string;
+  let mode = 'full';
+  const read = jest
+    .fn()
+    .mockResolvedValue({
+      schema_version: 'command-center.v2',
+      departments: [],
+    });
+  beforeAll(async () => {
+    const m = await Test.createTestingModule({
+      controllers: [CommandCenterController],
+      providers: [
+        {
+          provide: CommandCenterReaderService,
+          useValue: { getMode: () => mode, getCommandCenter: read },
+        },
+        { provide: CommandCenterOrchestratorService, useValue: {} },
+      ],
+    }).compile();
+    app = m.createNestApplication({ logger: false });
+    app.use((req: any, _res: any, next: () => void) => {
+      req.isAuthenticated = () => req.headers['x-test-role'] !== 'anonymous';
+      req.user = { isAdmin: req.headers['x-test-role'] === 'admin' };
+      next();
+    });
+    await app.listen(0, '127.0.0.1');
+    url = await app.getUrl();
+  });
+  afterAll(async () => {
+    await app?.close();
+  });
+  beforeEach(() => {
+    mode = 'full';
+    read.mockClear();
+  });
+  it.each([
+    '?contract_version=',
+    '?contract_version=3',
+    '?contract_version=2&contract_version=2',
+    '?contract_version[x]=2',
+  ])('400 for %s before reader', async (query) => {
+    const res = await fetch(url + '/api/admin/command-center' + query, {
+      headers: { 'x-test-role': 'admin' },
+    });
+    expect(res.status).toBe(400);
+    expect(read).not.toHaveBeenCalled();
+  });
+  it.each(['anonymous', 'member'])(
+    'guards deny %s before version validation',
+    async (role) => {
+      const res = await fetch(
+        url + '/api/admin/command-center?contract_version=invalid',
+        { headers: { 'x-test-role': role } },
+      );
+      expect(res.status).toBe(403);
+      expect(read).not.toHaveBeenCalled();
+    },
+  );
+  it('disabled remains 404 ahead of version rejection', async () => {
+    mode = 'disabled';
+    const res = await fetch(
+      url + '/api/admin/command-center?contract_version=invalid',
+      { headers: { 'x-test-role': 'admin' } },
+    );
+    expect(res.status).toBe(404);
+    expect(read).not.toHaveBeenCalled();
+  });
+  it.each(['', '?contract_version=1', '?contract_version=2'])(
+    'wraps the selected contract for %s',
+    async (query) => {
+      const res = await fetch(url + '/api/admin/command-center' + query, {
+        headers: { 'x-test-role': 'admin' },
+      });
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.data.schema_version).toBe(
+        query.endsWith('2') ? 'command-center.v2' : 'command-center.v1',
+      );
+      expect(read).toHaveBeenCalledTimes(1);
+    },
+  );
 });

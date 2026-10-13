@@ -20,7 +20,7 @@
   {
     "name": "Total JS (all chunks), gzip",
     "path": "build/client/assets/*.js",
-    "limit": "1012 KB",
+    "limit": "1020 KB",
     "gzip": true
   },
   {
@@ -51,6 +51,12 @@
     "name": "Route R1 gamme (pieces/$slug) chunk, gzip",
     "path": "build/client/assets/pieces._slug-*.js",
     "limit": "16 KB",
+    "gzip": true
+  },
+  {
+    "name": "Command Center route chunk, gzip",
+    "path": "build/client/assets/admin.command-center-*.js",
+    "limit": "10 KB",
     "gzip": true
   }
 ]

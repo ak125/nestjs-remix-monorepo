@@ -1,9 +1,9 @@
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { type RouteConfig } from "@react-router/dev/routes";
 import { remixRoutesOptionAdapter } from "@react-router/remix-routes-option-adapter";
 import { flatRoutes } from "remix-flat-routes";
-import { type RouteConfig } from "@react-router/dev/routes";
 
 /**
  * Configuration des routes (React Router v7 framework mode, PR-9h Phase C).
@@ -12,8 +12,8 @@ import { type RouteConfig } from "@react-router/dev/routes";
  * `remix-flat-routes` (l'option `routes` de Remix v2 migrée 1:1). Parité URL prouvée
  * 147/147 vs Remix v2 ; `@react-router/fs-routes` casse 7 URLs (/aide /catalogue /home
  * /login /marques /register + index mangle) → NO-GO. Les `ignoredRouteFiles` sont
- * préservés à l'identique de l'ancien `vite.config.ts` (exclusion admin/ui-kit/design-system
- * en production uniquement).
+ * préservent les exclusions admin/ui-kit/design-system en production, avec les
+ * exceptions Video Hub et Command Center (toutes deux protégées côté serveur).
  */
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -32,9 +32,15 @@ export default remixRoutesOptionAdapter((defineRoutes) =>
       "**/*.css",
       "**/*.test.{js,jsx,ts,tsx}",
       "**/__*.*",
-      // Exclure admin, ui-kit et design-system en production
+      // Garder uniquement Video Hub et le cockpit Command Center parmi admin.*.
+      // Le mode runtime du Command Center et requireAdmin restent appliqués.
       ...(isProduction
-        ? ["**/admin.!(video-hub)*", "**/ui-kit.*", "**/ui-kit/**", "**/design-system.*"]
+        ? [
+            "**/admin.!(video-hub*|command-center.tsx)",
+            "**/ui-kit.*",
+            "**/ui-kit/**",
+            "**/design-system.*",
+          ]
         : []),
     ],
   }),

@@ -17,7 +17,7 @@
   ],
   "additionalProperties": false,
   "properties": {
-    "schema_version": { "const": "command-center.v1" },
+    "schema_version": { "enum": ["command-center.v1", "command-center.v2"] },
     "source_truth": {
       "type": "object",
       "required": ["canon_path", "last_verified"],
@@ -89,39 +89,7 @@
         }
       }
     },
-    "departments": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": [
-          "id",
-          "label",
-          "lead",
-          "priority",
-          "kpi_primary",
-          "state",
-          "family",
-          "capabilities",
-          "certification",
-          "health_score_base",
-          "structural_caps_applied"
-        ],
-        "additionalProperties": false,
-        "properties": {
-          "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
-          "label": { "type": "string", "minLength": 1 },
-          "lead": { "type": "string", "minLength": 1 },
-          "priority": { "type": ["string", "null"], "enum": ["P0", "P1", "P2", "P3", null] },
-          "kpi_primary": { "type": ["string", "null"] },
-          "state": { "enum": ["live", "partial", "dormant", "broken", "duplicate"] },
-          "family": { "enum": ["Business", "Growth", "Operations", "AI-Governance"] },
-          "capabilities": { "type": "array", "items": { "type": "string" } },
-          "certification": { "enum": ["CERTIFIED", "PARTIAL", "UNKNOWN", "BROKEN"] },
-          "health_score_base": { "type": "integer", "minimum": 0, "maximum": 100 },
-          "structural_caps_applied": { "type": "array", "items": { "type": "string" } }
-        }
-      }
-    },
+    "departments": { "type": "array" },
     "capabilities": {
       "type": "array",
       "items": {
@@ -199,5 +167,273 @@
         }
       }
     }
-  }
+  },
+  "$defs": {
+    "departmentV1": {
+      "type": "object",
+      "required": [
+        "id",
+        "label",
+        "lead",
+        "priority",
+        "kpi_primary",
+        "state",
+        "family",
+        "capabilities",
+        "certification",
+        "health_score_base",
+        "structural_caps_applied"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lead": {
+          "type": "string",
+          "minLength": 1
+        },
+        "priority": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "P0",
+            "P1",
+            "P2",
+            "P3",
+            null
+          ]
+        },
+        "kpi_primary": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "state": {
+          "enum": [
+            "live",
+            "partial",
+            "dormant",
+            "broken",
+            "duplicate"
+          ]
+        },
+        "family": {
+          "enum": [
+            "Business",
+            "Growth",
+            "Operations",
+            "AI-Governance"
+          ]
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "certification": {
+          "enum": [
+            "CERTIFIED",
+            "PARTIAL",
+            "UNKNOWN",
+            "BROKEN"
+          ]
+        },
+        "health_score_base": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "structural_caps_applied": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "departmentV2": {
+      "type": "object",
+      "required": [
+        "id",
+        "label",
+        "lead",
+        "priority",
+        "kpi_primary",
+        "state",
+        "family",
+        "capabilities",
+        "certification",
+        "health_score_base",
+        "structural_caps_applied",
+        "business_number",
+        "accountable_owner",
+        "operating_mode",
+        "profile_ref",
+        "repo_domains"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lead": {
+          "type": "string",
+          "minLength": 1
+        },
+        "priority": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "P0",
+            "P1",
+            "P2",
+            "P3",
+            null
+          ]
+        },
+        "kpi_primary": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "state": {
+          "enum": [
+            "live",
+            "partial",
+            "dormant",
+            "broken",
+            "duplicate"
+          ]
+        },
+        "family": {
+          "enum": [
+            "Business",
+            "Growth",
+            "Operations",
+            "AI-Governance"
+          ]
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "certification": {
+          "enum": [
+            "CERTIFIED",
+            "PARTIAL",
+            "UNKNOWN",
+            "BROKEN"
+          ]
+        },
+        "health_score_base": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "structural_caps_applied": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "business_number": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 24
+        },
+        "accountable_owner": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._:-]*$"
+        },
+        "operating_mode": {
+          "enum": [
+            "human",
+            "software",
+            "hybrid"
+          ]
+        },
+        "profile_ref": {
+          "type": "string",
+          "pattern": "^audit/automecanik-departments-map\\.md#department-[a-z0-9-]+$"
+        },
+        "repo_domains": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^D([1-9]|1[0-6])$"
+          }
+        }
+      },
+      "if": {
+        "properties": {
+          "operating_mode": {
+            "enum": [
+              "software",
+              "hybrid"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "repo_domains": {
+            "minItems": 1
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "schema_version": {
+            "const": "command-center.v2"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "departments": {
+            "items": {
+              "$ref": "#/$defs/departmentV2"
+            }
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "departments": {
+            "items": {
+              "$ref": "#/$defs/departmentV1"
+            }
+          }
+        }
+      }
+    }
+  ]
+
 }

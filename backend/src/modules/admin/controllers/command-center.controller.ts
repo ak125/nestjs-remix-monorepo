@@ -7,20 +7,23 @@ import {
   NotFoundException,
   NotImplementedException,
   Post,
+  Query,
   ServiceUnavailableException,
   UnprocessableEntityException,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { z, ZodError } from 'zod';
+import {
+  toCommandCenterV1,
+  type CommandCenterResponse,
+  type CommandCenterResponseV2,
+} from '@repo/registry';
 import { AuthenticatedGuard } from '@auth/authenticated.guard';
 import { IsAdminGuard } from '@auth/is-admin.guard';
 import { User } from '../../../common/decorators/user.decorator';
 import { AdminResponseInterceptor } from '../../../common/interceptors/admin-response.interceptor';
-import {
-  CommandCenterReaderService,
-  CommandCenterResponse,
-} from '../services/command-center-reader.service';
+import { CommandCenterReaderService } from '../services/command-center-reader.service';
 import {
   CommandCenterOrchestratorService,
   NoExecutorError,
@@ -110,9 +113,22 @@ export class CommandCenterController {
   }
 
   @Get()
-  async getSummary(): Promise<CommandCenterResponse> {
+  async getSummary(
+    @Query('contract_version') version?: unknown,
+    @Query() query?: Record<string, unknown>,
+  ): Promise<CommandCenterResponse | CommandCenterResponseV2> {
     this.assertExposed();
-    return this.reader.getCommandCenter();
+    // Express's simple query parser keeps bracket notation as a literal key.
+    if (
+      Object.keys(query ?? {}).some((key) =>
+        key.startsWith('contract_version['),
+      ) ||
+      (version !== undefined && version !== '1' && version !== '2')
+    ) {
+      throw new BadRequestException('contract_version must be 1 or 2');
+    }
+    const response = await this.reader.getCommandCenter();
+    return version === '2' ? response : toCommandCenterV1(response);
   }
 
   /**
