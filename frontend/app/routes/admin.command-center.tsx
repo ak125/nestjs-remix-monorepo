@@ -339,7 +339,7 @@ export default function AdminCommandCenter() {
             </p>
           ) : (
             <Tabs defaultValue="actions">
-              <TabsList className="flex flex-wrap">
+              <TabsList className="flex h-auto flex-wrap">
                 <TabsTrigger value="actions" disabled={!isHydrated}>
                   Actions
                 </TabsTrigger>

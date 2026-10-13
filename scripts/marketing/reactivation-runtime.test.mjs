@@ -383,9 +383,9 @@ test("workspace skill frontmatter uses the repository schema, names are unique a
         entry.name === "amk-reactivation"
           ? "1.0.0"
           : entry.name === "amk-marketing-validation"
-            ? "2.0.0"
+            ? "2.0.1"
             : entry.name === "amk-marketing-preparation"
-              ? "2.1.8"
+              ? "2.1.9"
               : "2.1.4",
       );
       for (const match of contents.matchAll(/\]\(([^)]+)\)/g))
