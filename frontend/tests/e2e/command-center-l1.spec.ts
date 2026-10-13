@@ -48,6 +48,32 @@ for (const viewport of [
     await page.getByRole("tab", { name: /Départements/ }).click();
     const cards = page.getByRole("article");
     await expect(cards).toHaveCount(24);
+    const tabList = page.getByRole("tablist");
+    await expect(tabList.getByRole("tab")).toHaveCount(6);
+    const layout = await tabList.evaluate((element) => ({
+      listBottom: element.getBoundingClientRect().bottom,
+      tabsBottom: Math.max(
+        ...Array.from(element.querySelectorAll('[role="tab"]')).map(
+          (tab) => tab.getBoundingClientRect().bottom,
+        ),
+      ),
+    }));
+    const panelTop = await page
+      .getByRole("tabpanel", { name: "Départements", exact: true })
+      .evaluate((element) => element.getBoundingClientRect().top);
+    await test.info().attach("tab-layout", {
+      body: JSON.stringify({ viewport, ...layout, panelTop }),
+      contentType: "application/json",
+    });
+    expect(
+      layout.tabsBottom,
+      "All tab rows fit inside the tab bar",
+    ).toBeLessThanOrEqual(layout.listBottom);
+    expect(
+      layout.tabsBottom,
+      "Tabs do not overlap the active panel",
+    ).toBeLessThanOrEqual(panelTop);
+    await page.screenshot({ path: test.info().outputPath("tabs.png") });
     const legal = page.getByRole("article", {
       name: "Juridique & Assurances",
       exact: true,
