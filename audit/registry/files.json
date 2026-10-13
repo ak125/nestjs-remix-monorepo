@@ -62321,7 +62321,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 227,
+      "loc": 253,
       "owner": "__unassigned__",
       "path": "frontend/tests/e2e/command-center-l1.spec.ts",
       "risk": "low",
