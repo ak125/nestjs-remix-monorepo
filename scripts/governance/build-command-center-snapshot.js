@@ -45,7 +45,7 @@ const {
 
 const log = makeLogger("command-center");
 
-const SCHEMA_VERSION = "command-center.v1";
+const SCHEMA_VERSION = "command-center.v2";
 const CANON_REL = ".spec/00-canon/ai-registry/agent-operating-map.yaml";
 const REPORT_REL = "audit-reports/agent-operating-map-report.json";
 // Skills registry (canon, built by build-skills-registry.js) — resolves the
@@ -62,6 +62,7 @@ const CERT_RANK = { BROKEN: 0, UNKNOWN: 1, PARTIAL: 2, CERTIFIED: 3 };
 // any certification/score logic. V1 lives here; can migrate to a canon `family`
 // field later without changing the contract.
 const DEPARTMENT_FAMILY = {
+  direction: "AI-Governance", legal: "AI-Governance", "risk-audit": "AI-Governance", product: "Business",
   sales: "Business", support: "Business", finance: "Business", logistics: "Business", people: "Business",
   seo: "Growth", marketing: "Growth", brand: "Growth", content: "Growth", media: "Growth", wiki: "Growth",
   supplier: "Operations", pricing: "Operations", catalog: "Operations", diagnostic: "Operations", runtime: "Operations", data: "Operations",
@@ -243,6 +244,11 @@ function buildSnapshot(canon, pathExists, skillsRegistry) {
       id: d.id,
       label: d.label,
       lead: d.lead,
+      business_number: d.business_number,
+      accountable_owner: d.accountable_owner,
+      operating_mode: d.operating_mode,
+      repo_domains: d.repo_domains,
+      profile_ref: d.profile_ref,
       priority: d.priority || null,
       kpi_primary: d.kpi_primary || null,
       state: d.state,
@@ -368,6 +374,12 @@ function makePathExists() {
 
 function build() {
   const canon = loadCanon();
+  const { checkDepartmentProfiles, makeAjv } = require("./validate-agent-operating-map");
+  const validateSource = makeAjv();
+  const referenceErrors = checkDepartmentProfiles(canon.departments || [], fs.readFileSync(path.join(MONOREPO_ROOT, "audit/automecanik-departments-map.md"), "utf8"));
+  if (!validateSource(canon) || canon.departments.length !== 24 || referenceErrors.length) {
+    throw new Error("Cannot generate the 24-responsibility contract: " + JSON.stringify(validateSource.errors || referenceErrors));
+  }
   const skillsRegistry = readJsonSafe(path.join(MONOREPO_ROOT, SKILLS_REGISTRY_REL)) || { skills: [] };
   const snapshot = buildSnapshot(canon, makePathExists(), skillsRegistry);
   // Note: validation report is consumed by the READER (live validation_status),

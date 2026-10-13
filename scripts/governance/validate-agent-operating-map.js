@@ -96,6 +96,21 @@ function skillNamesFromRegistry() {
   }
 }
 
+/** Pure reference checks, also used by the projection writer. No runtime authority. */
+function checkDepartmentProfiles(departments, profileText) {
+  const errors = [];
+  const ids = new Set();
+  const numbers = new Set();
+  for (const d of departments) {
+    if (ids.has(d.id)) errors.push(`duplicate department id: ${d.id}`);
+    if (!Number.isInteger(d.business_number) || d.business_number < 1 || d.business_number > 24 || numbers.has(d.business_number)) errors.push(`invalid or duplicate business number: ${d.id}`);
+    ids.add(d.id); numbers.add(d.business_number);
+    const expected = `audit/automecanik-departments-map.md#department-${d.id}`;
+    if (d.profile_ref !== expected || !profileText.includes(`<a id="department-${d.id}"></a>`)) errors.push(`unresolved department profile: ${d.id}`);
+  }
+  return errors;
+}
+
 /**
  * Run all validation checks against a map document.
  * Returns array of { severity: 'error'|'warn', code, message, where }.
@@ -236,6 +251,11 @@ function checkMap(map, ajvValidate) {
   //    hard-fail enforcement requires a vault ADR (same stance as the rest of the map).
   const departments = map.departments || [];
   if (departments.length > 0) {
+    const profilePath = path.join(REPO_ROOT, "audit/automecanik-departments-map.md");
+    const profileText = fs.existsSync(profilePath) ? fs.readFileSync(profilePath, "utf8") : "";
+    for (const message of checkDepartmentProfiles(departments, profileText)) {
+      add("warn", "DEPT_PROFILE_CONTRACT", message, "departments");
+    }
     const declaredCaps = new Set(
       (map.declared_capabilities || []).map((c) => c.id),
     );
@@ -480,4 +500,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { checkMap, makeAjv, loadYaml };
+module.exports = { checkMap, checkDepartmentProfiles, makeAjv, loadYaml };

@@ -1,3 +1,12 @@
+jest.mock('../../src/cache/cache.service', () => ({ CacheService: class {} }));
+jest.mock(
+  '../../src/modules/admin/services/command-center-actions.service',
+  () => ({ CommandCenterActionsService: class {} }),
+);
+jest.mock(
+  '../../src/modules/admin/services/command-center-kpi.service',
+  () => ({ CommandCenterKpiService: class {} }),
+);
 /**
  * Digest Command Center pour le superviseur Hermes — GET /api/internal/command-center/digest.
  *
