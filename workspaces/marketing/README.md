@@ -2,6 +2,14 @@
 
 Claude Code project root pour les agents marketing AutoMecanik (ADR-036). Charge uniquement les agents marketing G1 + skills marketing-relevant, sans charger les 39 agents R0-R8 SEO ni les 8 skills dev daily.
 
+## Référence des seuils V2 — 13 octobre 2026
+
+La [recette de préparation](.claude/skills/amk-marketing-preparation/references/workbench.md) décrit désormais `--segment` et `--report` avec `--inactive-days`, leur plage 1–3650 et le défaut 180. Les versions sources sont préparation **2.1.9** et validation **2.0.1** ; opérations et réactivation restent inchangées. La validation précise quand réutiliser des tests archivés et distingue les sources du dépôt des skills effectivement chargées dans Hermes. Les versions et résultats datés des sections suivantes restent des preuves historiques.
+
+Validation locale de ce lot : les quatre commandes documentées ont réussi. Sur les cinq identités V2, 180 jours donne 1 incluse/4 exclues et 365 jours donne 0 incluse/5 exclues ; chaque résumé du rapport correspond au segment et les cinq autres parties du rapport restent identiques. Le contrôle existant du schéma des skills, des noms uniques et des liens passe avec les versions mises à jour. Aucun code de calcul, dépendance ou fixture n'a changé ; la suite backend complète n'a pas été rejouée. Ces contrôles ne prouvent pas le chargement des nouvelles skills dans Hermes.
+
+Le pipeline du socle intégré par [PR #1747](https://github.com/ak125/nestjs-remix-monorepo/pull/1747), commit `2a392fddbf4b1d5fe2eae1aa1e063676301c15ab`, a été relu le 13 octobre : [run 37936930987 réussi](https://github.com/ak125/nestjs-remix-monorepo/actions/runs/37936930987), PREPROD, E2E et Lighthouse compris. Cette preuve porte sur ce commit, pas sur ce lot documentaire. Aucun déploiement PROD ni campagne réelle. Retour arrière du lot : annuler son commit de documentation et les deux versions attendues dans le test de métadonnées ; aucune donnée à restaurer.
+
 ## Résumé des exclusions du pilote synthétique
 
 `scripts/marketing/summarize-reactivation-exclusions.ts` transforme le JSON V1 du pilote en compteurs agrégés : identités incluses/exclues et nombre d'identités par motif. Il réutilise `validateResult`, refuse les identités projet/contact dupliquées et les comptes de simulation incohérents. Les motifs sont **non exclusifs** : quatre personnes exclues peuvent cumuler cinq motifs ; un motif répété sur une même identité compte une seule fois. Une annulation conserve le nombre d'identités éligibles mais ramène les candidats simulés à zéro.
