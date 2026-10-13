@@ -525,3 +525,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/diag-link-provenance-migration`
 - **Décision** : chore(registry): resync L1+L3 projections (+1 other commit)
 - **Sortie** : PR aucune | commits 29ae12199 0b54d32db
+
+## 2026-10-11 — fix/diag-maintenance-schema-capture (auto)
+
+- **Branche** : `fix/diag-maintenance-schema-capture`
+- **Décision** : fix(diagnostic): capturer le schéma des tables d'entretien, créées hors du dépôt (ADR-112 D8)
+- **Sortie** : PR aucune | commits 72634ebfe

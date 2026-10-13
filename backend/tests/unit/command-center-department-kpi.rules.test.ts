@@ -110,12 +110,12 @@ describe('countPagesGeneratingAtc + toPagesGeneratingAtcKpi', () => {
     expect(countPagesGeneratingAtc([{ source_url }])).toBe(0);
   });
 
-  it('au moins une page → OK, sans unité', () => {
+  it('pages mesurées sans cible → UNKNOWN, valeur conservée sans unité', () => {
     expect(toPagesGeneratingAtcKpi(48, 30)).toEqual({
       id: 'pages_generating_atc',
       label: 'Pages & SEO — pages SEO ayant généré un ajout au panier (30 j)',
       value: 48,
-      status: 'OK',
+      status: 'UNKNOWN',
       source: 'db',
       certified: true,
     });
@@ -198,7 +198,7 @@ describe('firstVisitBySession + countDiagnosticToProduct', () => {
         'Diagnostic — sessions du diagnostic qui voient ensuite un produit (30 j)',
       value: 16,
       unit: '/72',
-      status: 'OK',
+      status: 'UNKNOWN',
       source: 'db',
       certified: true,
     });

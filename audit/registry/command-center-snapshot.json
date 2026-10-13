@@ -773,6 +773,8 @@
   ],
   "departments": [
     {
+      "accountable_owner": null,
+      "business_number": 5,
       "capabilities": [
         "brand-compliance-gate",
         "fafa-brand-safety-reviewer"
@@ -784,13 +786,20 @@
       "kpi_primary": "brand_trust",
       "label": "Brand & Communication",
       "lead": "brand-lead",
+      "operating_mode": "hybrid",
       "priority": "P3",
+      "profile_ref": "audit/automecanik-departments-map.md#department-brand",
+      "repo_domains": [
+        "D12"
+      ],
       "state": "partial",
       "structural_caps_applied": [
         "no_evidence_max_49"
       ]
     },
     {
+      "accountable_owner": null,
+      "business_number": 10,
       "capabilities": [
         "catalog-core",
         "compatibility",
@@ -804,11 +813,19 @@
       "kpi_primary": "compat_and_displayed_availability",
       "label": "Catalogue & Compatibilité",
       "lead": "catalog-lead",
+      "operating_mode": "hybrid",
       "priority": "P0",
+      "profile_ref": "audit/automecanik-departments-map.md#department-catalog",
+      "repo_domains": [
+        "D1",
+        "D4"
+      ],
       "state": "partial",
       "structural_caps_applied": []
     },
     {
+      "accountable_owner": null,
+      "business_number": 6,
       "capabilities": [
         "blog",
         "ai-content"
@@ -820,11 +837,18 @@
       "kpi_primary": "reusable_validated_content",
       "label": "Contenu éditorial",
       "lead": "content-lead",
+      "operating_mode": "hybrid",
       "priority": "P2",
+      "profile_ref": "audit/automecanik-departments-map.md#department-content",
+      "repo_domains": [
+        "D5"
+      ],
       "state": "partial",
       "structural_caps_applied": []
     },
     {
+      "accountable_owner": null,
+      "business_number": 22,
       "capabilities": [
         "analytics",
         "cwv-beacon"
@@ -836,11 +860,18 @@
       "kpi_primary": "metric_reliability",
       "label": "Data & Analytics",
       "lead": "data-lead",
+      "operating_mode": "hybrid",
       "priority": "P1",
+      "profile_ref": "audit/automecanik-departments-map.md#department-data",
+      "repo_domains": [
+        "D10"
+      ],
       "state": "partial",
       "structural_caps_applied": []
     },
     {
+      "accountable_owner": null,
+      "business_number": 11,
       "capabilities": [
         "diagnostic-engine",
         "knowledge-graph",
@@ -853,11 +884,38 @@
       "kpi_primary": "diagnostic_to_product",
       "label": "Diagnostic & Assistance",
       "lead": "diagnostic-lead",
+      "operating_mode": "hybrid",
       "priority": "P2",
+      "profile_ref": "audit/automecanik-departments-map.md#department-diagnostic",
+      "repo_domains": [
+        "D7"
+      ],
       "state": "partial",
       "structural_caps_applied": []
     },
     {
+      "accountable_owner": null,
+      "business_number": 1,
+      "capabilities": [],
+      "certification": "UNKNOWN",
+      "family": "AI-Governance",
+      "health_score_base": 30,
+      "id": "direction",
+      "kpi_primary": null,
+      "label": "Direction générale",
+      "lead": "direction-lead",
+      "operating_mode": "human",
+      "priority": null,
+      "profile_ref": "audit/automecanik-departments-map.md#department-direction",
+      "repo_domains": [],
+      "state": "dormant",
+      "structural_caps_applied": [
+        "no_capabilities"
+      ]
+    },
+    {
+      "accountable_owner": null,
+      "business_number": 17,
       "capabilities": [
         "invoices"
       ],
@@ -868,11 +926,18 @@
       "kpi_primary": "billing_integrity",
       "label": "Finance & Facturation",
       "lead": "finance-lead",
+      "operating_mode": "hybrid",
       "priority": "P0",
+      "profile_ref": "audit/automecanik-departments-map.md#department-finance",
+      "repo_domains": [
+        "D11"
+      ],
       "state": "partial",
       "structural_caps_applied": []
     },
     {
+      "accountable_owner": null,
+      "business_number": 2,
       "capabilities": [
         "governance-vault-ops"
       ],
@@ -883,11 +948,18 @@
       "kpi_primary": "limits_respected",
       "label": "Gouvernance",
       "lead": "governance-lead",
+      "operating_mode": "hybrid",
       "priority": "P0",
+      "profile_ref": "audit/automecanik-departments-map.md#department-governance",
+      "repo_domains": [
+        "D15"
+      ],
       "state": "live",
       "structural_caps_applied": []
     },
     {
+      "accountable_owner": null,
+      "business_number": 23,
       "capabilities": [
         "agent-operating-map",
         "skills-registry"
@@ -899,11 +971,38 @@
       "kpi_primary": "useful_capabilities_not_complexity",
       "label": "IA, Agents & Automatisation",
       "lead": "ia-agents-lead",
+      "operating_mode": "hybrid",
       "priority": "P1",
+      "profile_ref": "audit/automecanik-departments-map.md#department-ia-agents",
+      "repo_domains": [
+        "D15"
+      ],
       "state": "live",
       "structural_caps_applied": []
     },
     {
+      "accountable_owner": null,
+      "business_number": 18,
+      "capabilities": [],
+      "certification": "UNKNOWN",
+      "family": "AI-Governance",
+      "health_score_base": 30,
+      "id": "legal",
+      "kpi_primary": null,
+      "label": "Juridique & Assurances",
+      "lead": "legal-lead",
+      "operating_mode": "human",
+      "priority": null,
+      "profile_ref": "audit/automecanik-departments-map.md#department-legal",
+      "repo_domains": [],
+      "state": "dormant",
+      "structural_caps_applied": [
+        "no_capabilities"
+      ]
+    },
+    {
+      "accountable_owner": null,
+      "business_number": 15,
       "capabilities": [
         "shipping"
       ],
@@ -914,11 +1013,18 @@
       "kpi_primary": "delays_and_returns",
       "label": "Logistique & Opérations",
       "lead": "logistics-lead",
+      "operating_mode": "hybrid",
       "priority": "P0",
+      "profile_ref": "audit/automecanik-departments-map.md#department-logistics",
+      "repo_domains": [
+        "D11"
+      ],
       "state": "partial",
       "structural_caps_applied": []
     },
     {
+      "accountable_owner": null,
+      "business_number": 4,
       "capabilities": [
         "marketing",
         "marketing-backlinks"
@@ -930,11 +1036,18 @@
       "kpi_primary": "qualified_demands",
       "label": "Marketing & Acquisition",
       "lead": "marketing-lead",
+      "operating_mode": "hybrid",
       "priority": "P3",
+      "profile_ref": "audit/automecanik-departments-map.md#department-marketing",
+      "repo_domains": [
+        "D12"
+      ],
       "state": "partial",
       "structural_caps_applied": []
     },
     {
+      "accountable_owner": null,
+      "business_number": 8,
       "capabilities": [
         "fafa-media-factory",
         "fafa-script-generator"
@@ -946,13 +1059,20 @@
       "kpi_primary": "demands_from_video",
       "label": "Media & Fafa",
       "lead": "media-lead",
+      "operating_mode": "hybrid",
       "priority": "P3",
+      "profile_ref": "audit/automecanik-departments-map.md#department-media",
+      "repo_domains": [
+        "D12"
+      ],
       "state": "partial",
       "structural_caps_applied": [
         "no_evidence_max_49"
       ]
     },
     {
+      "accountable_owner": null,
+      "business_number": 24,
       "capabilities": [
         "staff"
       ],
@@ -961,13 +1081,20 @@
       "health_score_base": 55,
       "id": "people",
       "kpi_primary": "staff_coverage",
-      "label": "People & Staff",
+      "label": "People, Formation & Doc",
       "lead": "people-lead",
+      "operating_mode": "hybrid",
       "priority": "P1",
+      "profile_ref": "audit/automecanik-departments-map.md#department-people",
+      "repo_domains": [
+        "D8"
+      ],
       "state": "partial",
       "structural_caps_applied": []
     },
     {
+      "accountable_owner": null,
+      "business_number": 16,
       "capabilities": [
         "pricing-invariants"
       ],
@@ -978,11 +1105,58 @@
       "kpi_primary": "margin_protected",
       "label": "Pricing",
       "lead": "pricing-lead",
+      "operating_mode": "hybrid",
       "priority": "P0",
+      "profile_ref": "audit/automecanik-departments-map.md#department-pricing",
+      "repo_domains": [
+        "D11"
+      ],
       "state": "partial",
       "structural_caps_applied": []
     },
     {
+      "accountable_owner": null,
+      "business_number": 20,
+      "capabilities": [],
+      "certification": "UNKNOWN",
+      "family": "Business",
+      "health_score_base": 30,
+      "id": "product",
+      "kpi_primary": null,
+      "label": "Produit & Expérience Client",
+      "lead": "product-lead",
+      "operating_mode": "human",
+      "priority": null,
+      "profile_ref": "audit/automecanik-departments-map.md#department-product",
+      "repo_domains": [],
+      "state": "dormant",
+      "structural_caps_applied": [
+        "no_capabilities"
+      ]
+    },
+    {
+      "accountable_owner": null,
+      "business_number": 19,
+      "capabilities": [],
+      "certification": "UNKNOWN",
+      "family": "AI-Governance",
+      "health_score_base": 30,
+      "id": "risk-audit",
+      "kpi_primary": null,
+      "label": "Risk & Audit",
+      "lead": "risk-audit-lead",
+      "operating_mode": "human",
+      "priority": null,
+      "profile_ref": "audit/automecanik-departments-map.md#department-risk-audit",
+      "repo_domains": [],
+      "state": "dormant",
+      "structural_caps_applied": [
+        "no_capabilities"
+      ]
+    },
+    {
+      "accountable_owner": null,
+      "business_number": 21,
       "capabilities": [
         "observability",
         "health",
@@ -995,11 +1169,19 @@
       "kpi_primary": "runtime_health",
       "label": "Runtime & Observability",
       "lead": "runtime-lead",
+      "operating_mode": "hybrid",
       "priority": "P1",
+      "profile_ref": "audit/automecanik-departments-map.md#department-runtime",
+      "repo_domains": [
+        "D10",
+        "D13"
+      ],
       "state": "partial",
       "structural_caps_applied": []
     },
     {
+      "accountable_owner": null,
+      "business_number": 13,
       "capabilities": [
         "cart",
         "orders",
@@ -1012,11 +1194,18 @@
       "kpi_primary": "payments_kept",
       "label": "Commercial & Ventes",
       "lead": "sales-lead",
+      "operating_mode": "hybrid",
       "priority": "P0",
+      "profile_ref": "audit/automecanik-departments-map.md#department-sales",
+      "repo_domains": [
+        "D11"
+      ],
       "state": "partial",
       "structural_caps_applied": []
     },
     {
+      "accountable_owner": null,
+      "business_number": 7,
       "capabilities": [
         "seo-pages",
         "seo-roles",
@@ -1030,13 +1219,20 @@
       "kpi_primary": "pages_generating_atc",
       "label": "Production Pages & SEO",
       "lead": "seo-lead",
+      "operating_mode": "hybrid",
       "priority": "P1",
+      "profile_ref": "audit/automecanik-departments-map.md#department-seo",
+      "repo_domains": [
+        "D3"
+      ],
       "state": "partial",
       "structural_caps_applied": [
         "no_evidence_max_49"
       ]
     },
     {
+      "accountable_owner": null,
+      "business_number": 3,
       "capabilities": [
         "continuous-improvement-global"
       ],
@@ -1047,11 +1243,18 @@
       "kpi_primary": "reuse_improve_create_verdicts",
       "label": "Stratégie & Scoring",
       "lead": "strategy-lead",
+      "operating_mode": "hybrid",
       "priority": "P1",
+      "profile_ref": "audit/automecanik-departments-map.md#department-strategy",
+      "repo_domains": [
+        "D10"
+      ],
       "state": "live",
       "structural_caps_applied": []
     },
     {
+      "accountable_owner": null,
+      "business_number": 12,
       "capabilities": [
         "suppliers-service",
         "supplier-truth"
@@ -1063,11 +1266,20 @@
       "kpi_primary": "supplier_unavailability_cancellations",
       "label": "Achats & Fournisseurs",
       "lead": "supplier-lead",
+      "operating_mode": "hybrid",
       "priority": "P0",
+      "profile_ref": "audit/automecanik-departments-map.md#department-supplier",
+      "repo_domains": [
+        "D11",
+        "D13",
+        "D15"
+      ],
       "state": "partial",
       "structural_caps_applied": []
     },
     {
+      "accountable_owner": null,
+      "business_number": 14,
       "capabilities": [
         "support",
         "customers"
@@ -1079,11 +1291,18 @@
       "kpi_primary": "reactivation_satisfaction",
       "label": "Service Client & Fidélisation",
       "lead": "support-lead",
+      "operating_mode": "hybrid",
       "priority": "P0",
+      "profile_ref": "audit/automecanik-departments-map.md#department-support",
+      "repo_domains": [
+        "D11"
+      ],
       "state": "dormant",
       "structural_caps_applied": []
     },
     {
+      "accountable_owner": null,
+      "business_number": 9,
       "capabilities": [
         "wiki-proposal-writer",
         "rag-knowledge-bootstrap"
@@ -1095,7 +1314,12 @@
       "kpi_primary": "wiki_readiness",
       "label": "Knowledge RAW & WIKI",
       "lead": "wiki-lead",
+      "operating_mode": "hybrid",
       "priority": "P1",
+      "profile_ref": "audit/automecanik-departments-map.md#department-wiki",
+      "repo_domains": [
+        "D6"
+      ],
       "state": "partial",
       "structural_caps_applied": []
     }
@@ -1107,7 +1331,7 @@
       "label": "Départements",
       "source": "canon",
       "status": "OK",
-      "value": 20
+      "value": 24
     },
     {
       "certified": true,
@@ -1210,7 +1434,7 @@
       "target_id": "wiki-to-seo-readiness"
     }
   ],
-  "schema_version": "command-center.v1",
+  "schema_version": "command-center.v2",
   "source_truth": {
     "canon_path": ".spec/00-canon/ai-registry/agent-operating-map.yaml",
     "last_verified": "2026-06-04"
@@ -1224,7 +1448,7 @@
     },
     "by_state": {
       "broken": 0,
-      "dormant": 1,
+      "dormant": 5,
       "duplicate": 0,
       "live": 3,
       "partial": 16
@@ -1232,7 +1456,7 @@
     "capabilities_certified": 22,
     "capabilities_total": 41,
     "capabilities_without_evidence": 4,
-    "departments_total": 20,
+    "departments_total": 24,
     "handoffs_incomplete": 9,
     "handoffs_total": 10
   }

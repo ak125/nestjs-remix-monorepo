@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
-# PROD SEO rollout flags — write the three SEO Projection rollout flags and the
-# R6 consolidation flag from GitHub into ~/production/.env as ONE decision,
-# BEFORE any PROD mutation.
+# PROD rollout flags — write the three SEO Projection rollout flags, the R6
+# consolidation flag and the diagnostic projection flag from GitHub into
+# ~/production/.env as ONE decision, BEFORE any PROD mutation.
 #
 # WHY THIS EXISTS (2026-09-24)
 # ----------------------------
@@ -28,6 +28,18 @@
 # out on PROD and rolled back by redeploying — so it gets the same writer and
 # the same refusals rather than a second copy of them.
 #
+# DIAGNOSTIC PROJECTION (ADR-035 D5, 2026-10-11)
+# ----------------------------------------------
+# DIAGNOSTIC_PROJECTION_ENABLED (feature-flags.service.ts diagnosticProjectionEnabled)
+# switches the WIKI → DB projection of the diagnostic links on PROD: at boot the
+# scheduler registers the nightly run, or removes a residual one when OFF
+# (diagnostic-projection-scheduler.service.ts), and the processor applies the
+# exports/diagnostic baked into the image (Dockerfile) through the service_role
+# RPCs (ADR-035 D2). It is not in the admin override allowlist either, so the
+# container environment IS its only source. Same kind of value as R6 — a boolean
+# read with `=== 'true'`, rolled back by redeploying — so same writer, same
+# refusals.
+#
 # WHY THIS IS A SCRIPT (not inline YAML)
 # --------------------------------------
 # The code never fails on a bad value: `bool()` reads anything but the literal
@@ -42,6 +54,7 @@
 #   SEO_PROJECTION_READ_V1_OVERRIDE          variable PROD_SEO_PROJECTION_READ_V1
 #   SEO_PROJECTION_READ_CANARY_OVERRIDE      variable PROD_SEO_PROJECTION_READ_CANARY
 #   SEO_R6_CONSOLIDATION_ENABLED_OVERRIDE    variable PROD_SEO_R6_CONSOLIDATION_ENABLED
+#   DIAGNOSTIC_PROJECTION_ENABLED_OVERRIDE   variable PROD_DIAGNOSTIC_PROJECTION_ENABLED
 #   Variables, not secrets: none is a credential, and `gh variable list` shows
 #   what PROD will run with.
 #
@@ -100,6 +113,7 @@ R1_FEED="${SEO_PROJECTION_R1_FEED_ENABLED_OVERRIDE:-}"
 READ_V1="${SEO_PROJECTION_READ_V1_OVERRIDE:-}"
 CANARY_RAW="${SEO_PROJECTION_READ_CANARY_OVERRIDE:-}"
 R6="${SEO_R6_CONSOLIDATION_ENABLED_OVERRIDE:-}"
+DIAG="${DIAGNOSTIC_PROJECTION_ENABLED_OVERRIDE:-}"
 
 # Messages quote the offending value with its line breaks visible: a stray
 # space or newline is the usual cause of a refusal.
@@ -126,9 +140,11 @@ check_bool() { # $1 = key name, $2 = value
 check_bool SEO_PROJECTION_R1_FEED_ENABLED "$R1_FEED"
 check_bool SEO_PROJECTION_READ_V1 "$READ_V1"
 check_bool SEO_R6_CONSOLIDATION_ENABLED "$R6"
+check_bool DIAGNOSTIC_PROJECTION_ENABLED "$DIAG"
 R1_FEED="${R1_FEED:-false}"
 READ_V1="${READ_V1:-false}"
 R6="${R6:-false}"
+DIAG="${DIAG:-false}"
 
 TOKEN_RE='^[A-Z][A-Z0-9_]*@(gamme|constructeur|vehicle):[a-z0-9][a-z0-9-]*$'
 trim() {
@@ -182,6 +198,7 @@ set_kv SEO_PROJECTION_R1_FEED_ENABLED "$R1_FEED"
 set_kv SEO_PROJECTION_READ_V1 "$READ_V1"
 set_kv SEO_PROJECTION_READ_CANARY "$CANARY"
 set_kv SEO_R6_CONSOLIDATION_ENABLED "$R6"
+set_kv DIAGNOSTIC_PROJECTION_ENABLED "$DIAG"
 
 # Read-back through the same parser the deploy step uses (`set -a; . .env`).
 if ! (
@@ -213,6 +230,7 @@ else
   echo "   SEO_PROJECTION_READ_CANARY=(empty — fail-closed, no pair is read)"
 fi
 echo "   SEO_R6_CONSOLIDATION_ENABLED=$R6"
+echo "   DIAGNOSTIC_PROJECTION_ENABLED=$DIAG"
 if [ -n "$CANARY" ] && [ "$READ_V1" != true ]; then
   echo "::notice::SEO projection: canary set while SEO_PROJECTION_READ_V1=$READ_V1 — every listed pair stays inert until the master flag is true"
 fi

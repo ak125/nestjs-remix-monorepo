@@ -75,6 +75,16 @@ export const DiagCausesSchema = z
 export const DiagCauseLinksSchema = z
   .array(DiagCauseLinkRowSchema)
   .refine((rows) => unique(rows, 'id') && unique(rows, 'cause_id'));
+// Toute la table des liens actifs (projection WIKI → DB) : un symptôme a
+// plusieurs causes, donc l'unicité porte sur la paire, pas sur `cause_id`.
+export const DiagProjectionLinksSchema = z
+  .array(DiagCauseLinkRowSchema)
+  .refine(
+    (rows) =>
+      unique(rows, 'id') &&
+      new Set(rows.map((row) => `${row.symptom_id}:${row.cause_id}`)).size ===
+        rows.length,
+  );
 export const DiagSafetyRulesSchema = z
   .array(DiagSafetyRuleRowSchema)
   .refine((rows) => unique(rows, 'id') && unique(rows, 'rule_slug'));

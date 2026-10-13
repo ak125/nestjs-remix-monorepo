@@ -152,15 +152,23 @@ handoffs:
 # enforcement requires a vault ADR (same stance as the rest of this file).
 departments:
   - id: supplier
+    business_number: 12
+    accountable_owner: null
+    operating_mode: hybrid
+    profile_ref: audit/automecanik-departments-map.md#department-supplier
     label: "Achats & Fournisseurs"
     lead: supplier-lead
     priority: P0                     # P0-P3 (V1 hand-set = max criticality of repo_domains; V1.5 derives it)
     kpi_primary: supplier_unavailability_cancellations
     repo_domains: [D11, D13, D15]
     capabilities: [suppliers-service, supplier-truth]
-    state: partial                   # supplier-truth runtime wiring not yet merged
+    state: partial                   # activation runtime non verifiee par cette projection
 
   - id: sales
+    business_number: 13
+    accountable_owner: null
+    operating_mode: hybrid
+    profile_ref: audit/automecanik-departments-map.md#department-sales
     label: "Commercial & Ventes"
     lead: sales-lead
     priority: P0
@@ -170,6 +178,10 @@ departments:
     state: partial                   # funnel instrumentation partial (not all events emitted)
 
   - id: pricing
+    business_number: 16
+    accountable_owner: null
+    operating_mode: hybrid
+    profile_ref: audit/automecanik-departments-map.md#department-pricing
     label: "Pricing"
     lead: pricing-lead
     priority: P0
@@ -179,6 +191,10 @@ departments:
     state: partial                   # economic-governance system; invariants live, CP partial
 
   - id: data
+    business_number: 22
+    accountable_owner: null
+    operating_mode: hybrid
+    profile_ref: audit/automecanik-departments-map.md#department-data
     label: "Data & Analytics"
     lead: data-lead
     priority: P1                     # max criticality of repo_domains (D10 = P1)
@@ -188,6 +204,10 @@ departments:
     state: partial                   # measurement exists; reliability gaps (funnel/CWV instrumentation)
 
   - id: runtime
+    business_number: 21
+    accountable_owner: null
+    operating_mode: hybrid
+    profile_ref: audit/automecanik-departments-map.md#department-runtime
     label: "Runtime & Observability"
     lead: runtime-lead
     priority: P1
@@ -197,6 +217,10 @@ departments:
     state: partial                   # observability live; commerce-runtime plane (RCOP) partial
 
   - id: wiki
+    business_number: 9
+    accountable_owner: null
+    operating_mode: hybrid
+    profile_ref: audit/automecanik-departments-map.md#department-wiki
     label: "Knowledge RAW & WIKI"
     lead: wiki-lead
     priority: P1                     # max criticality of repo_domains (D6 = P1)
@@ -206,6 +230,10 @@ departments:
     state: partial                   # ADR-033 Phase 2 sas; readiness chain partial (wiki produces, consumers read)
 
   - id: seo
+    business_number: 7
+    accountable_owner: null
+    operating_mode: hybrid
+    profile_ref: audit/automecanik-departments-map.md#department-seo
     label: "Production Pages & SEO"
     lead: seo-lead
     priority: P1                     # max criticality of repo_domains (D3 = P1)
@@ -215,6 +243,10 @@ departments:
     state: partial                   # pages live; ATC conversion gap (IMPROVE) — resolves wiki→seo handoff
 
   - id: catalog
+    business_number: 10
+    accountable_owner: null
+    operating_mode: hybrid
+    profile_ref: audit/automecanik-departments-map.md#department-catalog
     label: "Catalogue & Compatibilité"
     lead: catalog-lead
     priority: P0                     # max criticality of repo_domains (D1/D4 = P0)
@@ -224,6 +256,10 @@ departments:
     state: partial                   # catalog live; displayed-vs-real availability gap (epicentre rupture, IMPROVE)
 
   - id: diagnostic
+    business_number: 11
+    accountable_owner: null
+    operating_mode: hybrid
+    profile_ref: audit/automecanik-departments-map.md#department-diagnostic
     label: "Diagnostic & Assistance"
     lead: diagnostic-lead
     priority: P2                     # D7 = P2
@@ -233,6 +269,10 @@ departments:
     state: partial                   # V1A.0 OFF; __diag_* peuplé, kg_* vides
 
   - id: marketing
+    business_number: 4
+    accountable_owner: null
+    operating_mode: hybrid
+    profile_ref: audit/automecanik-departments-map.md#department-marketing
     label: "Marketing & Acquisition"
     lead: marketing-lead
     priority: P3                     # D12 = P3
@@ -242,6 +282,10 @@ departments:
     state: partial                   # ADR-036 Phase 1-2 (G1 agents)
 
   - id: brand
+    business_number: 5
+    accountable_owner: null
+    operating_mode: hybrid
+    profile_ref: audit/automecanik-departments-map.md#department-brand
     label: "Brand & Communication"
     lead: brand-lead
     priority: P3
@@ -251,6 +295,10 @@ departments:
     state: partial
 
   - id: content
+    business_number: 6
+    accountable_owner: null
+    operating_mode: hybrid
+    profile_ref: audit/automecanik-departments-map.md#department-content
     label: "Contenu éditorial"
     lead: content-lead
     priority: P2                     # D5 = P2
@@ -260,6 +308,10 @@ departments:
     state: partial
 
   - id: media
+    business_number: 8
+    accountable_owner: null
+    operating_mode: hybrid
+    profile_ref: audit/automecanik-departments-map.md#department-media
     label: "Media & Fafa"
     lead: media-lead
     priority: P3
@@ -269,6 +321,10 @@ departments:
     state: partial                   # MANUAL mode; pilot (#805/#806)
 
   - id: support
+    business_number: 14
+    accountable_owner: null
+    operating_mode: hybrid
+    profile_ref: audit/automecanik-departments-map.md#department-support
     label: "Service Client & Fidélisation"
     lead: support-lead
     priority: P0                     # D11 = P0
@@ -278,6 +334,10 @@ departments:
     state: dormant                   # 0 panier abandonné capturé
 
   - id: logistics
+    business_number: 15
+    accountable_owner: null
+    operating_mode: hybrid
+    profile_ref: audit/automecanik-departments-map.md#department-logistics
     label: "Logistique & Opérations"
     lead: logistics-lead
     priority: P0
@@ -287,6 +347,10 @@ departments:
     state: partial                   # physique externe
 
   - id: finance
+    business_number: 17
+    accountable_owner: null
+    operating_mode: hybrid
+    profile_ref: audit/automecanik-departments-map.md#department-finance
     label: "Finance & Facturation"
     lead: finance-lead
     priority: P0
@@ -296,15 +360,23 @@ departments:
     state: partial                   # distinct de pricing (Pricing ≠ Finance)
 
   - id: people
-    label: "People & Staff"
+    business_number: 24
+    accountable_owner: null
+    operating_mode: hybrid
+    profile_ref: audit/automecanik-departments-map.md#department-people
+    label: "People, Formation & Doc"
     lead: people-lead
-    priority: P1                     # max(D11 P0, D13 P1)
+    priority: P1                     # retained business priority; staff is classified D8 (Read Model / Serving)
     kpi_primary: staff_coverage
-    repo_domains: [D11, D13]
+    repo_domains: [D8]
     capabilities: [staff]
     state: partial
 
   - id: governance
+    business_number: 2
+    accountable_owner: null
+    operating_mode: hybrid
+    profile_ref: audit/automecanik-departments-map.md#department-governance
     label: "Gouvernance"
     lead: governance-lead
     priority: P0                     # D15 = P0
@@ -314,6 +386,10 @@ departments:
     state: live                      # governance-vault actif
 
   - id: strategy
+    business_number: 3
+    accountable_owner: null
+    operating_mode: hybrid
+    profile_ref: audit/automecanik-departments-map.md#department-strategy
     label: "Stratégie & Scoring"
     lead: strategy-lead
     priority: P1                     # D10 = P1
@@ -327,6 +403,10 @@ departments:
   # is concrete code, not aspirational. Distinct from `strategy` (scoring) and
   # `governance` (vault): this is the AI/agents interop & automation layer itself.
   - id: ia-agents
+    business_number: 23
+    accountable_owner: null
+    operating_mode: hybrid
+    profile_ref: audit/automecanik-departments-map.md#department-ia-agents
     label: "IA, Agents & Automatisation"
     lead: ia-agents-lead
     priority: P1                     # D15 governance/meta-operations = P1 stance
@@ -334,6 +414,50 @@ departments:
     repo_domains: [D15]
     capabilities: [agent-operating-map, skills-registry]
     state: live                      # operating-map validator + skills registry are live, evidence-backed
+
+  - id: direction
+    business_number: 1
+    accountable_owner: null
+    operating_mode: human
+    profile_ref: audit/automecanik-departments-map.md#department-direction
+    label: "Direction générale"
+    lead: direction-lead
+    repo_domains: []
+    capabilities: []
+    state: dormant
+
+  - id: legal
+    business_number: 18
+    accountable_owner: null
+    operating_mode: human
+    profile_ref: audit/automecanik-departments-map.md#department-legal
+    label: "Juridique & Assurances"
+    lead: legal-lead
+    repo_domains: []
+    capabilities: []
+    state: dormant
+
+  - id: risk-audit
+    business_number: 19
+    accountable_owner: null
+    operating_mode: human
+    profile_ref: audit/automecanik-departments-map.md#department-risk-audit
+    label: "Risk & Audit"
+    lead: risk-audit-lead
+    repo_domains: []
+    capabilities: []
+    state: dormant
+
+  - id: product
+    business_number: 20
+    accountable_owner: null
+    operating_mode: human
+    profile_ref: audit/automecanik-departments-map.md#department-product
+    label: "Produit & Expérience Client"
+    lead: product-lead
+    repo_domains: []
+    capabilities: []
+    state: dormant
 
 # Allowlist of capabilities that resolve to neither a registry skill nor a node
 # yet (modules/engines/services/signals). Keeps department.capabilities from being
@@ -345,7 +469,7 @@ declared_capabilities:
   # structured evidence it degrades to PARTIAL (pessimism, never faked green). Partial
   # skill-type caps resolve via skills.registry and intentionally omit a path here.
   - { id: suppliers-service,  type: service, owner: supplier, status: live,    evidence: { scripts: [backend/src/modules/suppliers/suppliers.service.ts] } }
-  - { id: supplier-truth,     type: engine,  owner: supplier, status: partial, evidence: { runtime: "feat/supplier-truth-runtime-wiring" } }  # not merged
+  - { id: supplier-truth,     type: engine,  owner: supplier, status: partial, evidence: { runtime: "feat/supplier-truth-runtime-wiring" } }  # activation runtime non verifiee
   - { id: cart,               type: module,  owner: sales,    status: live,    evidence: { scripts: [backend/src/modules/cart] } }
   - { id: orders,             type: module,  owner: sales,    status: live,    evidence: { scripts: [backend/src/modules/orders] } }
   - { id: funnel-events,      type: signal,  owner: sales,    status: partial, evidence: { scripts: [backend/src/modules/seo-monitoring/services/funnel-events.service.ts] } }
