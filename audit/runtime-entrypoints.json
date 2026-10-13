@@ -2814,6 +2814,8 @@
       "backend/supabase/migrations/20261010_diag_link_provenance.sql",
       "backend/supabase/migrations/20261011_diag_capture_maintenance_schema.down.sql",
       "backend/supabase/migrations/20261011_diag_capture_maintenance_schema.sql",
+      "backend/supabase/migrations/20261012_diag_projection_requires_review.down.sql",
+      "backend/supabase/migrations/20261012_diag_projection_requires_review.sql",
       "backend/supabase/migrations/README.md"
     ],
     "ci_workflows": [
@@ -2887,6 +2889,7 @@
       ".github/workflows/visual-gate.yml",
       ".github/workflows/weekly-pr-hygiene.yml",
       ".github/workflows/wiki-canon-shape-check.yml",
+      ".github/workflows/wiki-exports-diagnostic-generate.yml",
       ".github/workflows/wiki-exports-seo-generate.yml",
       ".github/workflows/wiki-generators-tests.yml",
       ".github/workflows/wiki-readiness-check.yml",
@@ -2999,7 +3002,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1600,
+  "runtime_files_count": 1603,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -3073,6 +3076,7 @@
     ".github/workflows/visual-gate.yml",
     ".github/workflows/weekly-pr-hygiene.yml",
     ".github/workflows/wiki-canon-shape-check.yml",
+    ".github/workflows/wiki-exports-diagnostic-generate.yml",
     ".github/workflows/wiki-exports-seo-generate.yml",
     ".github/workflows/wiki-generators-tests.yml",
     ".github/workflows/wiki-readiness-check.yml",
@@ -4263,6 +4267,8 @@
     "backend/supabase/migrations/20261010_diag_link_provenance.sql",
     "backend/supabase/migrations/20261011_diag_capture_maintenance_schema.down.sql",
     "backend/supabase/migrations/20261011_diag_capture_maintenance_schema.sql",
+    "backend/supabase/migrations/20261012_diag_projection_requires_review.down.sql",
+    "backend/supabase/migrations/20261012_diag_projection_requires_review.sql",
     "backend/supabase/migrations/README.md",
     "docker/lighthouse/Dockerfile",
     "docker/lighthouse/crontab",

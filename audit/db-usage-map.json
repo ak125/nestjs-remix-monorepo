@@ -21,7 +21,7 @@
     "dynamic_rpc_callsites": 1,
     "unresolved_callsites": 0,
     "dropped_call_sites": 5,
-    "migrations_scanned": 414,
+    "migrations_scanned": 416,
     "backend_files_scanned": 1471
   },
   "tables": {
@@ -11171,7 +11171,7 @@
     },
     {
       "file": "backend/src/modules/admin/services/command-center-kpi.service.ts",
-      "line": 328,
+      "line": 356,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"

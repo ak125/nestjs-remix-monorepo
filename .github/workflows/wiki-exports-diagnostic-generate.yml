@@ -1,0 +1,179 @@
+name: wiki-exports-diagnostic-generate
+
+# ADR-035 D6.2 — régénère après fusion la vue dérivée diagnostic du WIKI
+# (automecanik-wiki/exports/diagnostic/) et la pousse sur le main du WIKI.
+#
+# Pipeline gouverné (RAW → WIKI → exports → consommateurs) :
+#   wiki/gamme/<slug>.md (approuvée, diagnostic_relations) + _meta/source-catalog.yaml
+#     ↓ _scripts/build_exports_diagnostic.py  (filtre + transforme, 0 LLM / 0 DB / 0 enrichissement)
+#   exports/diagnostic/gamme/<slug>.json + exports/diagnostic/_index.json
+#     ↓ sous-module backend/content/automecanik-wiki, embarqué dans l'image (ADR-035 D5)
+#   DiagnosticProjectionModule, seul writer de la provenance (ADR-035 D2)
+#
+# Pourquoi après fusion : une PR WIKI qui modifie une fiche ou le catalogue ne régénère
+# pas les exports, car le commit qu'elle épinglerait disparaît à la fusion squash. Le job
+# WIKI validate-exports-diagnostic ne contrôle donc la fraîcheur que lorsqu'un push touche
+# exports/diagnostic/ ; il renvoie le reste à « la régénération après fusion » : ce job.
+#
+# Idempotent par construction : le builder n'écrit ni horodatage ni HEAD
+# (source_wiki_commit = dernier commit touchant la fiche ; source_catalog_commit = dernier
+# commit touchant le catalogue). Un canon inchangé reproduit les mêmes octets, le diff gate
+# ne commite rien, et le commit d'export (qui ne touche ni fiche ni catalogue) ne change
+# pas le run suivant.
+#
+# Modèle : wiki-exports-seo-generate.yml (même secret, même identité bot, même
+# diff-idempotent-puis-commit, même push direct sur le main du WIKI).
+# DELTA : builder diagnostic ; validation ajv avec les deux schémas référencés, comme le
+# job WIKI ; créneau propre (voir `on.schedule`) ; concurrency sur ce workflow.
+#
+# Après le push : le main du WIKI relance validate-exports-diagnostic sur ce push
+# (--check --require-commits-on origin/main), qui revérifie octet à octet le commit poussé.
+#
+# Ruleset « main — contrôles requis » du WIKI : le push direct passe par le contournement
+# du rôle admin, que porte le compte de WIKI_REPO_TOKEN. Sans ce contournement, le push
+# est refusé (GH013) et le job échoue de façon visible ; rien n'est réessayé ni forcé.
+#
+# OÙ ÇA TOURNE : `runs-on: ubuntu-latest` = runner GitHub cloud, pas la machine DEV.
+# Le seul runner self-hosted du dépôt n'a pas ce label.
+#
+# AVAL (hors de ce job) : le backend lit les exports du sous-module épinglé, embarqués dans
+# l'image. Une régénération n'est servie qu'après la mise à jour du sous-module (PR
+# Dependabot gitsubmodule), sa fusion, puis un tag PROD. Ce job couvre le segment WIKI de
+# D6.2, pas la chaîne entière.
+#
+# Secrets requis (monorepo Settings → Secrets and variables → Actions) :
+#   - WIKI_REPO_TOKEN : token avec contents:write sur ak125/automecanik-wiki.
+
+on:
+  schedule:
+    # Quotidien 03:30 UTC. Les deux autres écrivains du main WIKI (diag-canon-slugs-export
+    # 02:00, wiki-exports-seo-generate 02:15) poussent en pratique entre 02:26 et 02:49
+    # (relevé du 2026-10-05 au 2026-10-12) : ce créneau évite la course de push. Si elle
+    # survient quand même, le push est refusé (non fast-forward), le job échoue, et le run
+    # suivant rattrape : jamais de rebase, qui publierait des exports calculés sur un
+    # autre canon que le main poussé.
+    - cron: '30 3 * * *'
+  workflow_dispatch:
+  # Pas de trigger sur PR ni sur push : le job écrit dans un autre dépôt (WIKI).
+
+permissions:
+  contents: read
+
+concurrency:
+  # Un cron et un workflow_dispatch simultanés se succèdent au lieu de se disputer le push.
+  group: wiki-exports-diagnostic-generate
+  cancel-in-progress: false
+
+jobs:
+  generate-and-commit:
+    name: 🌙 Generate exports/diagnostic/ from wiki canon and commit back
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout automecanik-wiki (SOURCE canon AND commit target)
+        uses: actions/checkout@v7
+        with:
+          repository: ak125/automecanik-wiki
+          path: automecanik-wiki
+          token: ${{ secrets.WIKI_REPO_TOKEN }}
+          ref: main
+          # fetch-depth: 0 — le builder dérive source_wiki_commit et source_catalog_commit
+          # de `git log` ; il refuse un clone partiel (_assert_full_clone).
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Install builder deps (pure Python — pas de DB, pas de LLM)
+        # Imports du builder et de ce qu'il charge (build_exports_seo, gen_coverage_map,
+        # compute-symptom-confidence) : click et yaml, le reste est la bibliothèque standard.
+        run: pip install --quiet "click>=8.1,<9" "pyyaml>=6.0,<7"
+
+      - name: Run builder — filter + transform only (0 LLM / 0 DB / 0 enrichment)
+        run: |
+          set -eo pipefail
+          # AUCUNE purge préalable. Un export existant sans fiche éligible est rapporté
+          # UNRECONCILED : exit 1, rien n'est écrit, l'export publié est conservé. Son
+          # retrait est une PR WIKI qui supprime le fichier, jamais un effet de bord du job.
+          python3 automecanik-wiki/_scripts/build_exports_diagnostic.py \
+            --wiki-root "$GITHUB_WORKSPACE/automecanik-wiki" \
+            --format json | tee "$GITHUB_WORKSPACE/exports-diagnostic-build-report.json"
+          echo "---exports/diagnostic/ produits---"
+          find automecanik-wiki/exports/diagnostic -name '*.json' -printf '%p (%s bytes)\n' | sort
+
+      - name: Assert exports/diagnostic not gitignored (fail LOUD)
+        run: |
+          cd automecanik-wiki
+          # Un .json gitignored serait ignoré par `git add` : no-op invisible. On échoue
+          # plutôt que de ne rien publier en silence (git add -f masquerait la cause).
+          if git check-ignore -q exports/diagnostic/_index.json; then
+            echo "FATAL: exports/diagnostic/_index.json est gitignored sur le main du WIKI."
+            exit 1
+          fi
+
+      - name: ajv-validate exports/diagnostic/*.json (fail-fast avant commit)
+        run: |
+          # Même commande que le job WIKI validate-exports-diagnostic : draft 2020-12, le
+          # schéma d'export référence frontmatter et source-catalog-entry.
+          npm install -g ajv-cli@5 ajv-formats
+          set -e
+          shopt -s nullglob
+          cd automecanik-wiki
+          files=(exports/diagnostic/_index.json exports/diagnostic/gamme/*.json)
+          for f in "${files[@]}"; do
+            echo "=== ajv $f ==="
+            ajv validate --spec=draft2020 -c ajv-formats --strict=false \
+              -s _meta/schema/exports-diagnostic.schema.json \
+              -r _meta/schema/frontmatter.schema.json \
+              -r _meta/schema/source-catalog-entry.schema.json \
+              -d "$f"
+          done
+
+      - name: Stage + diff gate (catches new files AND deletions)
+        id: diff
+        run: |
+          cd automecanik-wiki
+          # --cached voit les fichiers neufs ; -A capture aussi les suppressions (le builder
+          # n'en produit pas : une suppression ne peut venir que d'un retrait déjà commité).
+          git add -A exports/diagnostic/
+          if git diff --cached --quiet -- exports/diagnostic/; then
+            echo "[diff] exports/diagnostic/ identical — idempotent no-op"
+            echo "diff_status=identical" >> "$GITHUB_OUTPUT"
+          else
+            echo "[diff] exports/diagnostic/ changed:"
+            git --no-pager diff --cached --stat -- exports/diagnostic/
+            echo "diff_status=changed" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit and push to wiki repo
+        if: steps.diff.outputs.diff_status == 'changed'
+        run: |
+          cd automecanik-wiki
+          git config user.name "automecanik-bot"
+          git config user.email "automecanik-bot@users.noreply.github.com"
+          # Déjà stagé (git add -A) à l'étape diff.
+          DATE=$(date -u +%Y-%m-%d)
+          git commit -m "chore(exports-diagnostic): projection ${DATE}" \
+            -m "Auto-generated by nestjs-remix-monorepo .github/workflows/wiki-exports-diagnostic-generate.yml" \
+            -m "Source : wiki/gamme/*.md (approuvées, diagnostic_relations) + _meta/source-catalog.yaml via _scripts/build_exports_diagnostic.py (ADR-035 D6.2)" \
+            -m "DO NOT EDIT manually — re-run the workflow to refresh."
+          git push origin main
+
+      - name: Upload exports/diagnostic as artifact
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: exports-diagnostic-${{ github.run_id }}
+          path: automecanik-wiki/exports/diagnostic/
+          retention-days: 30
+
+      - name: Upload builder report (observations UNRECONCILED incluses)
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: exports-diagnostic-build-report-${{ github.run_id }}
+          path: exports-diagnostic-build-report.json
+          if-no-files-found: warn
+          retention-days: 30

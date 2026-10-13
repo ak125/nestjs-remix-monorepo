@@ -5,14 +5,14 @@
  * fenêtre précédente, trou, cause, décision, risque, feu vert owner, prochaine preuve.
  * L'écran n'invente rien : une valeur absente reste « non mesuré » / « illisible ».
  */
-import { type CommandCenterResponse } from "@repo/registry";
+import { type CommandCenterResponseV2 } from "@repo/registry";
 import { ArrowRight, ClipboardList, Hand } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 
-type Report = CommandCenterResponse["department_reports"][number];
+type Report = CommandCenterResponseV2["department_reports"][number];
 type BadgeVariant = "success" | "warning" | "orange" | "destructive" | "subtle";
 
 const SCORE: Record<Report["score"], { label: string; variant: BadgeVariant }> =
@@ -56,11 +56,14 @@ function kpiLine(r: Report): string {
   return `${name} — ${value}${previous}`;
 }
 
-export function DepartmentReports({ data }: { data: CommandCenterResponse }) {
+export function DepartmentReports({ data }: { data: CommandCenterResponseV2 }) {
   const reports = data.department_reports; // déjà triés côté serveur
   const [onlyGo, setOnlyGo] = useState(false);
   const waitingGo = reports.filter((r) => r.owner_go_required).length;
-  const unmeasured = reports.filter((r) => r.score === "NON_MESURE").length;
+  const unmeasured = reports.filter((r) => r.kpi.measure !== "MESURE").length;
+  const unassessed = reports.filter(
+    (r) => r.kpi.measure === "MESURE" && r.score === "NON_MESURE",
+  ).length;
   const shown = onlyGo ? reports.filter((r) => r.owner_go_required) : reports;
 
   return (
@@ -73,6 +76,14 @@ export function DepartmentReports({ data }: { data: CommandCenterResponse }) {
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <Badge variant="orange">{waitingGo} attendent votre feu vert</Badge>
           <Badge variant="subtle">{unmeasured} non mesurés</Badge>
+          {unassessed > 0 ? (
+            <Badge variant="subtle">
+              {unassessed}{" "}
+              {unassessed === 1
+                ? "performance non évaluée"
+                : "performances non évaluées"}
+            </Badge>
+          ) : null}
           {waitingGo > 0 ? (
             <Button
               type="button"
@@ -113,7 +124,9 @@ export function DepartmentReports({ data }: { data: CommandCenterResponse }) {
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant={SCORE[r.score].variant}>
-                      {SCORE[r.score].label}
+                      {r.score === "NON_MESURE" && r.kpi.measure === "MESURE"
+                        ? "Performance non évaluée"
+                        : SCORE[r.score].label}
                     </Badge>
                     <Badge variant="outline">
                       {DECISION_LABEL[r.decision]}

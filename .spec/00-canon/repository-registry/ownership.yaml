@@ -17,6 +17,18 @@
 
 schemaVersion: 1.0.0
 entries:
+  # Command Center integration: inferred from the existing D15 documentation
+  # and backend/tests ownership; medium until explicitly ratified by the owner.
+  - glob: audit/command-center-l1-spec-2026-10-10.md
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: medium
+    risk: low
+  - glob: backend/jest.command-center.config.cjs
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: medium
+    risk: medium
   - glob: scripts/marketing/summarize-reactivation-exclusions{,.test}.ts
     domain: D13
     owner: '@ak125'
@@ -1582,6 +1594,15 @@ entries:
     owner: '@ak125/vehicle-team'
     sourceConfidence: high
     risk: medium
+  # Seule une relation relue est projetée (ADR-115 D1/D3) : raison `not_reviewed` admise par le
+  # CHECK de __diag_projection_conflicts, CHECK (reviewed) sur __diag_link_provenance ; 2
+  # contraintes NOT VALID sur des tables vides + garde finale fail-closed. Couvre .sql + .down.sql.
+  # Glob exact ; domaine / owner = ceux du consommateur (backend/src/modules/diagnostic-engine/**).
+  - glob: backend/supabase/migrations/20261012_diag_projection_requires_review*.sql
+    domain: D4
+    owner: '@ak125/vehicle-team'
+    sourceConfidence: high
+    risk: low
   # Lecture SECURITY DEFINER de la politique de liens vers les guides d'achat (ADR-103 D5) :
   # le container PREPROD READ_ONLY (anon) ne peut pas lire en direct les 4 tables sous RLS ;
   # consommateur R6GuideLinkPolicyService (D3, seo-team). Couvre .sql + .down.sql. Glob exact
