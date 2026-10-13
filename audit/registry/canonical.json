@@ -92445,7 +92445,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 227,
+      "loc": 253,
       "owner": "@ak125",
       "path": "frontend/tests/e2e/command-center-l1.spec.ts",
       "risk": "medium",
@@ -104002,11 +104002,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "7bec88c8e8b454869e284e28fdde34ca05a32d3fdbbdfe0820cdee50a66f5f3a",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "a8e4d2c4f3451aadb3100779d2afb1d931c279c246b6311096163d0fdb31dafa",
+      "audit/registry/files.json": "388618dca787dc2c03606fdafb78586a777b026a7f9f885be738063407b2d80a",
       "audit/registry/rpc.json": "68f3b21f7aa0b2ef7da9b488c657c3b6b5bdde0476bf7d617f1e346cc26b4449",
       "audit/registry/runtime.json": "1537c0f3bfbfb3eec888d674e290f14eb9df56e9f816220210a8b7298eaeeb44"
     },
-    "sotFingerprint": "5f33943c6cc8"
+    "sotFingerprint": "139d2d324ec4"
   },
   "runtime": [
     {
