@@ -879,7 +879,7 @@
         "backend/src/modules/supplier-truth/domain"
       ],
       "files_count": 50,
-      "loc_total": 5536,
+      "loc_total": 6117,
       "has_barrel": false
     },
     "suppliers": {
@@ -2057,6 +2057,11 @@
       "from": "shipping",
       "to": "cart",
       "count": 2
+    },
+    {
+      "from": "supplier-truth",
+      "to": "backend-core",
+      "count": 1
     },
     {
       "from": "supplier-truth",
