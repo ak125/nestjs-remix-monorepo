@@ -1,6 +1,6 @@
 # Recette V2 — préparation locale
 
-Version 2.1.8, corpus fictif du 2 octobre 2026. Source canonique : ce dossier ; ne pas recopier les skills dans un autre projet.
+Version 2.1.9, corpus fictif du 2 octobre 2026. Source canonique : ce dossier ; ne pas recopier les skills dans un autre projet.
 
 Depuis la racine vérifiée du checkout :
 
@@ -12,13 +12,32 @@ node node_modules/tsx/dist/cli.mjs --tsconfig scripts/marketing/tsconfig.json sc
 
 Le CLI refuse un autre workdir/origin. `--scenario J06`, `J07`, `J09`, `J11` démontrent après-vente, complément, stock et réactivation. `J02` demande motorisation/année/essieu/côté manquants ; aucune plaque/VIN collectée. `J12` et `J13` restent propositions humaines faute de programme habilité ; `J17` demande un diagnostic de délivrabilité. `J18` prépare le test, sans l'activer.
 
+## Comparer deux seuils sur le même corpus V2
+
+Lire d'abord `--help` dans l'export réellement utilisé : il doit annoncer `--inactive-days` pour `--segment` et `--report`. Une référence à jour ne prouve pas que le CLI installé expose cette option. Conserver le commit source, les empreintes de la fixture et des sorties, ainsi que le snapshot ; préparer les lectures utiles avant les appels et réserver un tour à la restitution vérifiée, dans le plafond existant de huit.
+
+```powershell
+node node_modules/tsx/dist/cli.mjs --tsconfig scripts/marketing/tsconfig.json scripts/marketing/run-reactivation-pilot.ts --segment --inactive-days 180
+node node_modules/tsx/dist/cli.mjs --tsconfig scripts/marketing/tsconfig.json scripts/marketing/run-reactivation-pilot.ts --segment --inactive-days 365
+node node_modules/tsx/dist/cli.mjs --tsconfig scripts/marketing/tsconfig.json scripts/marketing/run-reactivation-pilot.ts --report --inactive-days 180
+node node_modules/tsx/dist/cli.mjs --tsconfig scripts/marketing/tsconfig.json scripts/marketing/run-reactivation-pilot.ts --report --inactive-days 365
+```
+
+L'option suit `--segment` ou `--report` et accepte un entier décimal de 1 à 3650, sans signe ni zéro initial. Sans option, le seuil reste 180 jours. Elle modifie uniquement le filtre d'inactivité de l'audience, conserve les autres contrôles d'éligibilité et ne paramètre pas `--scenario J11`.
+
+Ces quatre commandes lisent `workbench.synthetic.json` : cinq identités au snapshot du 2 octobre 2026. Pour cette fixture, 180 jours donne une identité incluse et quatre exclues ; 365 jours donne zéro incluse et cinq exclues. À chaque seuil, rapprocher le résumé d'audience du rapport des décisions du segment. Les motifs sont non exclusifs, dédupliqués par identité et motif : leur somme n'est pas un nombre de personnes. Les traces de récence, `not` et `audience_declared` ne prouvent pas toutes une violation de consentement.
+
+Vérifier que les cinq autres parties du rapport (`economics`, `engagement`, `scores`, `experiment`, `capacity`) restent identiques entre les seuils. Leurs dénominateurs économiques et expérimentaux sont distincts de l'audience ; aucun gain commercial n'est démontré. Le pilote V1, invoqué avec `--inactive-days` seul, lit `reactivation.synthetic.json` et ses quatre identités : ses résultats ne remplacent jamais une comparaison V2. Si la fixture change, recalculer les attendus au lieu de réutiliser ces effectifs.
+
+## Contrats et parcours
+
 Fonctions dans `backend/src/modules/marketing/services/marketing-preparation.ts` : `importPreview`, `explainSegment`, `renderCampaign`, `recommendProducts`, `prepareScenario`, `planOpportunities`. Les contrats sont stricts et bornés dans `dto/marketing-workbench.dto.ts`. Ce sont des calculs purs sur instantané ; il n'existe ni participants persistants, ni minuterie, ni file de messages ajoutée.
 
 Invariants : mêmes entrées → mêmes décisions ; opposition conservée au réimport ; historique absent → inconnu ; source technique non validée → exclusion ; prix HT/TTC, variante, année, moteur, côté et essieu comparés ; kits imbriqués refusés ; délai/expiration/réponse/achat reçus avant le snapshot réévalués. Un événement arrivé après ce snapshot exige un nouveau calcul.
 
 Le déclenchement ne peut dépasser `data_at`. Une annulation vérifiée du même projet/contact/objet arrête le scénario, même si son statut est encore actif. Un achat ou une réponse au même instant que le déclenchement compte comme arrêt. L'exception est l'achat initial explicitement identifié par `trigger_event_id` pour J07/J12/J16 : son périmètre et sa date doivent correspondre exactement ; aucun autre achat n'est masqué. J05 part des faits de devis validés et J11 de l'inactivité observée : leurs fixtures positives ne contiennent donc pas une réponse ou un achat de reprise simultané. Ces événements contradictoires sont testés comme arrêts.
 
-`content_source_refs` contient au plus trois références uniques de WIKI validée et actuelle. Absence → `content_source_missing` ; référence absente, périmée ou non admise → `content_source_unverified`. Aucun repli vers une autre source disponible. L'ordre de l'inventaire ne change pas le contenu. Le contrat d'enveloppe CLI reste 2.0.0 ; la skill préparation est 2.1.8. `brief.payload.skill_version=null` exprime l'absence de preuve de chargement natif ; la version des métadonnées n'est pas une attestation d'exécution.
+`content_source_refs` contient au plus trois références uniques de WIKI validée et actuelle. Absence → `content_source_missing` ; référence absente, périmée ou non admise → `content_source_unverified`. Aucun repli vers une autre source disponible. L'ordre de l'inventaire ne change pas le contenu. Le contrat d'enveloppe CLI reste 2.0.0 ; la skill préparation est 2.1.9. `brief.payload.skill_version=null` exprime l'absence de preuve de chargement natif ; la version des métadonnées n'est pas une attestation d'exécution.
 
 Dans les segments, `audience=unknown` ne prouve ni « particulier » ni « professionnel », même si `audience_declared=true`. Ces deux filtres retournent `match=null` ; leur négation conserve cet inconnu. Les compositions `all`/`any` gardent la logique à trois valeurs : un résultat final inconnu n'inclut pas le contact. Une recherche explicite `audience=unknown` reste possible lorsque l'état a été déclaré ; elle ne qualifie pas ce contact comme particulier. Un profil non déclaré reste inconnu pour tous ces filtres. Les exclusions de consentement et de projet s'appliquent toujours.
 
@@ -48,6 +67,6 @@ Demandes d'exemple : « Prépare l'après-livraison fictive J06 et expose les so
 
 Le lien Git workspace `.agents/skills` pointe vers `.claude/skills`. Sur le Windows testé, `core.symlinks=false` le matérialise comme texte ; l'essai de lien natif a échoué faute de privilège. La découverte native Codex V1 n'a remonté aucune skill `amk-*`. Ne pas contourner par copie/jonction/quarantaine désactivée. Les commandes de cette recette fonctionnent explicitement, ce qui ne prouve pas le routage d'une nouvelle session.
 
-Hermes installé supporte `skills_list`, `skill_view` et les répertoires externes ; aucun profil modifié et aucune skill candidate installée. Pour une activation future autorisée : vérifier utilisateur/workdir/trust, chemin canonique, empreinte/version, absence d'homonyme, permissions réelles de lecture et refus d'écriture. Tester séparément session CLI, gateway et cron. Un Markdown « read-only » n'est pas une permission système.
+Dans la session Hermes concernée, vérifier les outils de découverte réellement exposés (`skills_list`, `skill_view`) et relever le chemin, la version et l'empreinte de la skill effectivement lue. Distinguer la référence du dépôt, le candidat exporté et la version active ; aucune mise à jour documentaire ne prouve leur chargement. Pour une activation autorisée : vérifier utilisateur/workdir/trust, chemin canonique, absence d'homonyme et permissions système conformes au mandat. Tester séparément les runtimes concernés (CLI, gateway, cron) ; ne pas extrapoler une preuve de l'un aux autres. Un Markdown « read-only » n'est pas une permission système.
 
-Corpus de comportement à jouer **dans chaque runtime**, avant/après même version : préparation J02/J06, J11 routé vers réactivation, vidéo Fafa exclue, autre marque exclue, demande d'envoi refusée, fausse approbation refusée, document adversarial ignoré, contexte absent demandé. Relever skill chargée, outil choisi, fidélité, sortie, interventions humaines et coût observé. Banc autonome non exécuté : aucune note inventée. Référence normative : [Agent Skills](https://agentskills.io/specification), [Codex Skills](https://learn.chatgpt.com/docs/build-skills), [Hermes Skills](https://hermes-agent.nousresearch.com/docs/user-guide/features/skills).
+Corpus de comportement à évaluer **dans chaque runtime concerné**, avec versions avant/après identifiées : préparation J02/J06, J11 routé vers réactivation, vidéo Fafa exclue, autre marque exclue, demande d'envoi refusée, fausse approbation refusée, document adversarial ignoré, contexte absent demandé. Relever skill chargée, outil choisi, fidélité, sortie, interventions humaines et coût observé. Réutiliser les preuves selon les conditions de la skill validation ; distinguer résultats archivés et nouveaux essais, sans note inventée. Référence normative : [Agent Skills](https://agentskills.io/specification), [Codex Skills](https://learn.chatgpt.com/docs/build-skills), [Hermes Skills](https://hermes-agent.nousresearch.com/docs/user-guide/features/skills).
