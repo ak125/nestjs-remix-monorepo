@@ -724,3 +724,81 @@ describe('proven source contract', () => {
     expect(result.conflicts[0].reason).toBe('source_not_raw_proven');
   });
 });
+
+describe('ADR-115 D1 : seule une relation relue est projetée', () => {
+  const notReviewed = (overrides: Record<string, unknown> = {}) =>
+    relation({
+      evidence: { ...relation().evidence, reviewed: false },
+      ...overrides,
+    });
+
+  it('proven but not reviewed: not_reviewed, nothing projected', () => {
+    const result = resolveDiagnosticProjection(
+      [gammeFile('filtre-a-air', [notReviewed()])],
+      reference,
+    );
+    expect(result.projections).toEqual([]);
+    expect(result.conflicts).toEqual([
+      {
+        wiki_path: 'wiki/gamme/filtre-a-air.md',
+        gamme_slug: 'filtre-a-air',
+        relation_index: 0,
+        symptom_slug: 'perte_puissance_filtration',
+        system_slug: 'filtration',
+        reason: 'not_reviewed',
+        detail: { link_id: 113 },
+      },
+    ]);
+  });
+
+  it('neither proven nor reviewed: source_not_raw_proven, evaluated first', () => {
+    const result = resolveDiagnosticProjection(
+      [gammeFile('filtre-a-air', [notReviewed({ sources: [unproven] })])],
+      reference,
+    );
+    expect(result.conflicts.map((row) => [row.reason, row.detail])).toEqual([
+      [
+        'source_not_raw_proven',
+        { link_id: 113, unproven_sources: ['oem_doc'] },
+      ],
+    ]);
+  });
+
+  it('a relation not reviewed still reserves its link: a later one is duplicate_relation', () => {
+    const result = resolveDiagnosticProjection(
+      [
+        gammeFile('filtre-a-air', [
+          notReviewed(),
+          relation({ relation_index: 1 }),
+        ]),
+      ],
+      reference,
+    );
+    expect(result.projections).toEqual([]);
+    expect(result.conflicts.map((row) => [row.reason, row.detail])).toEqual([
+      ['not_reviewed', { link_id: 113 }],
+      ['duplicate_relation', { link_id: 113, first_relation_index: 0 }],
+    ]);
+  });
+
+  it('only reviewed relations are projected, with reviewed copied as true', () => {
+    const result = resolveDiagnosticProjection(
+      [
+        gammeFile('filtre-a-air', [notReviewed()]),
+        gammeFile('filtre-a-carburant', [relation()]),
+      ],
+      reference,
+    );
+    expect(result.exportedCount).toBe(2);
+    expect(
+      result.projections.map((row) => [row.link_id, row.reviewed]),
+    ).toEqual([[114, true]]);
+    expect(result.conflicts.map((row) => row.reason)).toEqual(['not_reviewed']);
+  });
+
+  it('not_reviewed is the last reason in CONFLICT_REASONS', () => {
+    expect(CONFLICT_REASONS.indexOf('not_reviewed')).toBe(
+      CONFLICT_REASONS.length - 1,
+    );
+  });
+});
