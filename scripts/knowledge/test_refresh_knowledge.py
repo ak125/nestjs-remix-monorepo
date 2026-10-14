@@ -26,7 +26,7 @@ import tempfile
 import subprocess
 from unittest.mock import patch
 from datetime import date
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 
 import yaml
 
@@ -60,6 +60,25 @@ def existing_md(mod: "rk.ModuleInfo", last_scan: str) -> str:
 
 
 # ── Unit: pure-function last_scan logic ──────────────────────────────────────
+
+def test_generated_paths_are_portable() -> None:
+    """Git/Markdown paths stay POSIX on both hosts, including replacement text."""
+    for root in (PurePosixPath('/repo'), PureWindowsPath('C:/repo')):
+        with patch.object(rk, 'APP_ROOT', root):
+            folder = root / 'backend/src/modules/foo'
+            mod = rk.ModuleInfo(
+                name='foo', module_file=folder / 'foo.module.ts',
+                primary_files=[folder / 'foo.service.ts'],
+            )
+            expected = 'backend/src/modules/foo/foo.service.ts'
+            assert rk._rel(mod.primary_files[0]) == expected
+            frontmatter = yaml.safe_load(rk.build_frontmatter(mod, OLD))
+            assert frontmatter['primary_files'] == [expected]
+            assert frontmatter['sources'] == ['backend/src/modules/foo']
+            block = rk.build_auto_block(mod)
+            assert f'[{expected}](../../../{expected})' in block
+            existing = f'{rk.AUTO_GEN_BEGIN}\nold\n{rk.AUTO_GEN_END}'
+            assert rk.replace_auto_block(existing, mod) == block
 
 def test_case1_no_churn() -> None:
     """Derived content unchanged → last_scan preserved, file byte-identical."""
@@ -337,6 +356,7 @@ def test_fallback_descriptor_selection_matches_staged_check() -> None:
 
 
 ALL_TESTS = [
+    test_generated_paths_are_portable,
     test_case1_no_churn,
     test_case2_bump_on_change,
     test_default_path_still_bumps,
