@@ -161,7 +161,7 @@ def analyze_module(mod_dir: Path, module_file: Path) -> ModuleInfo:
 
 
 def _rel(p: Path) -> str:
-    return str(p.relative_to(APP_ROOT))
+    return p.relative_to(APP_ROOT).as_posix()
 
 
 _FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n", re.DOTALL)
