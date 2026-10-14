@@ -986,7 +986,11 @@ for (const kind of ["refusal", "support"] as const) {
         ...change,
       });
 
-      assert.deepEqual(prepareScenario(w, "J06"), before, JSON.stringify(change));
+      assert.deepEqual(
+        prepareScenario(w, "J06"),
+        before,
+        JSON.stringify(change),
+      );
     }
   });
 }
@@ -1136,6 +1140,55 @@ test("V2 rendering keeps evidence, two variants, plain text and inert source con
     /SOURCE_UNVERIFIED/,
   );
 });
+for (const language of ["fr", "en"] as const) {
+  test(`V2 complete variants preserve sourced bodies and their own titles (${language})`, () => {
+    const w = fixture();
+    w.sources[0].text = "Conseil {{vehicle}} & <script>untrusted</script>.";
+    const before = structuredClone(w);
+    const variables = { vehicle: '<img src=x onerror="alert(1)">' };
+    const r = renderCampaign(w, ["synthetic-wiki"], language, variables, "J07");
+    assert.deepEqual(
+      r.variants.map((v) => v.id),
+      ["A", "B"],
+    );
+    for (const variant of r.variants) {
+      assert.equal(typeof variant.html, "string");
+      assert.equal(typeof variant.text, "string");
+      assert.ok(
+        variant.html.startsWith(`<!doctype html><html lang="${language}"`),
+      );
+      assert.ok(variant.html.includes(`<title>${variant.subject}</title>`));
+      assert.ok(variant.html.includes(`<h1>${variant.subject}</h1>`));
+      assert.ok(variant.text.startsWith(variant.subject + "\n\n"));
+      assert.ok(variant.text.includes(variables.vehicle));
+      assert.ok(
+        variant.html.includes("&lt;img src=x onerror=&quot;alert(1)&quot;&gt;"),
+      );
+      assert.ok(
+        variant.html.includes("&amp; &lt;script&gt;untrusted&lt;/script&gt;"),
+      );
+      assert.ok(!variant.html.includes("<script>"));
+      assert.ok(!variant.html.includes("<img"));
+      assert.ok(variant.text.endsWith("Simulation — aucune offre réelle"));
+    }
+    const [a, b] = r.variants;
+    assert.notEqual(a.subject, b.subject);
+    assert.notEqual(a.html, b.html);
+    assert.notEqual(a.text, b.text);
+    assert.equal(a.preheader, b.preheader);
+    assert.deepEqual(
+      a.text.split("\n\n").slice(1),
+      b.text.split("\n\n").slice(1),
+    );
+    assert.equal(r.html, a.html);
+    assert.equal(r.text, a.text);
+    assert.deepEqual(r.source_refs, ["synthetic-wiki"]);
+    assert.equal(r.review_required, true);
+    assert.equal(r.email_client_tested, false);
+    assert.equal(r.unsubscribe, "not_connected");
+    assert.deepEqual(w, before);
+  });
+}
 test("V2 missing receipt and late purchase during waiting stop the right scenario", () => {
   const w = fixture();
   w.scenarios[0].facts.receipt_verified = false;
