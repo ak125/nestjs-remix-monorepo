@@ -47190,7 +47190,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 468,
+      "loc": 478,
       "owner": "@ak125/marketing-team",
       "path": "backend/src/modules/marketing/services/marketing-measurement.ts",
       "risk": "low",
@@ -47241,7 +47241,7 @@
         "backend/src/modules/marketing/templates/social-post-templates.ts"
       ],
       "kind": "service",
-      "loc": 1077,
+      "loc": 1079,
       "owner": "@ak125/marketing-team",
       "path": "backend/src/modules/marketing/services/marketing-preparation.ts",
       "risk": "low",
@@ -101839,7 +101839,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 395,
+      "loc": 451,
       "owner": "@ak125",
       "path": "scripts/marketing/marketing-measurement.test.ts",
       "risk": "low",
@@ -101879,7 +101879,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 1726,
+      "loc": 1915,
       "owner": "@ak125",
       "path": "scripts/marketing/marketing-workbench.test.ts",
       "risk": "low",
@@ -104360,11 +104360,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "7bec88c8e8b454869e284e28fdde34ca05a32d3fdbbdfe0820cdee50a66f5f3a",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "a6acd1344fb6168a8e5843b5ad20ec0902b48f233f9e5b65e3fe0843988fa0ea",
+      "audit/registry/files.json": "c92c5de678805ce69f83e7f16e1ef1c7d679a4c04461ecd3676ae24290794e61",
       "audit/registry/rpc.json": "68f3b21f7aa0b2ef7da9b488c657c3b6b5bdde0476bf7d617f1e346cc26b4449",
       "audit/registry/runtime.json": "3541b0816dc9fa5ec185cd524cb0e982b54e688b0f68d596cfaaa75973f3b0dc"
     },
-    "sotFingerprint": "682f3c390417"
+    "sotFingerprint": "da825ab9c256"
   },
   "runtime": [
     {
