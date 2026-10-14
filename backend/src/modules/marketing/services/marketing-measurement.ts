@@ -407,7 +407,17 @@ export function capacityProjection(input: unknown) {
   );
   return {
     scenarios: p.factors.map((f) => {
-      const demand = Math.floor(p.historical_units * f),
+      // Use the supplied number's decimal representation: binary multiplication
+      // can turn 100 * 0.29 into 28.999... before flooring. Inputs are nonnegative.
+      const [coefficient, exponent = '0'] = f.toString().split('e');
+      const [whole, fraction = ''] = coefficient.split('.');
+      const scale = fraction.length - Number(exponent);
+      const numerator = BigInt(p.historical_units) * BigInt(whole + fraction);
+      const demand = Number(
+          scale >= 0
+            ? numerator / 10n ** BigInt(scale)
+            : numerator * 10n ** BigInt(-scale),
+        ),
         served = Math.min(demand, p.capacity_units);
       return {
         factor_hypothesis: f,

@@ -298,15 +298,15 @@ export function explainSegment(input: unknown, rawRule: unknown) {
         const n = window.filter((e) => e.kind === r.kind).length;
         return { match: n >= r.min, reasons: [`event_count:${r.kind}:${n}`] };
       }
-      const match = window.some(
-        (a) =>
-          a.kind === r.first &&
-          window.some(
-            (b) =>
-              b.kind === r.then &&
-              Date.parse(b.occurred_at) > Date.parse(a.occurred_at),
-          ),
-      );
+      // uniqueEvents sorts by instant; filtering preserves that order.
+      // A later second event exists iff one follows the earliest first event.
+      const first = window.find((e) => e.kind === r.first);
+      const firstAt = first ? Date.parse(first.occurred_at) : null;
+      const match =
+        firstAt !== null &&
+        window.some(
+          (e) => e.kind === r.then && Date.parse(e.occurred_at) > firstAt,
+        );
       return { match, reasons: [`sequence:${r.first}:${r.then}:${match}`] };
     };
     const evaluation = evaluate(rule),
@@ -475,15 +475,17 @@ export function renderCampaign(
     sources.some((s) => !s || s.kind !== 'wiki' || !currentSource(s, w.context))
   )
     throw new Error('SOURCE_UNVERIFIED');
-  const blocks = sources.map((s) =>
-    s!.text.replace(/\{\{([a-z_]+)\}\}/g, (_, key: string) => {
+  const blocks = sources.map((s) => {
+    const placeholder = /\{\{([a-z_]+)\}\}/g;
+    // Validate the template itself; supplied values are literal, not templates.
+    if (/\{\{|\}\}/.test(s!.text.replace(placeholder, ' ')))
+      throw new Error('TEMPLATE_VARIABLE_MISSING');
+    return s!.text.replace(placeholder, (_, key: string) => {
       if (!Object.hasOwn(variables, key) || !variables[key].trim())
         throw new Error('TEMPLATE_VARIABLE_MISSING');
       return variables[key];
-    }),
-  );
-  if (blocks.some((s) => /\{\{|\}\}/.test(s)))
-    throw new Error('TEMPLATE_VARIABLE_MISSING');
+    });
+  });
   checked(z.string().regex(/^J(0[1-9]|1[0-8])$/), scenario);
   const copy: Record<string, [string, string, string, string]> = {
     J01: [
