@@ -158,6 +158,73 @@ test("T06 explicitly supplied template variables remain literal, escaped and unc
   assert.deepEqual(r.source_refs, ["synthetic-wiki"]);
 });
 
+test("T06 supplied braces remain literal data and are never expanded recursively", () => {
+  for (const vehicle of [
+    "{{missing}}",
+    "{{vehicle}}",
+    "prefix {{",
+    "suffix }}",
+    "<b>{{other}}</b> & literal",
+  ]) {
+    const w = fixture();
+    w.sources[0].text = "Conseil {{vehicle}} puis {{vehicle}}.";
+    const variables = { vehicle, other: "must not be substituted" };
+    const before = structuredClone({ w, variables });
+    const r = renderCampaign(w, ["synthetic-wiki"], "fr", variables);
+    const expected = `Conseil ${vehicle} puis ${vehicle}.`;
+    assert.equal(r.guide.checklist[0], expected);
+    const htmlValue = vehicle.startsWith("<b>")
+      ? "&lt;b&gt;{{other}}&lt;/b&gt; &amp; literal"
+      : vehicle;
+    for (const variant of r.variants) {
+      assert.ok(variant.text.includes(expected));
+      assert.ok(!variant.text.includes(variables.other));
+      assert.ok(
+        variant.html.includes(`Conseil ${htmlValue} puis ${htmlValue}.`),
+      );
+      assert.ok(!variant.html.includes("<b>"));
+    }
+    assert.deepEqual({ w, variables }, before);
+  }
+});
+
+test("T06 template checks do not join literal braces around valid placeholders", () => {
+  for (const [source, expected] of [
+    ["{{{vehicle}}{", "{literal{"],
+    ["}{{vehicle}}}", "}literal}"],
+    ["{{{vehicle}}}", "{literal}"],
+  ]) {
+    const w = fixture();
+    w.sources[0].text = source;
+    const r = renderCampaign(w, ["synthetic-wiki"], "fr", {
+      vehicle: "literal",
+    });
+    assert.equal(r.guide.checklist[0], expected);
+  }
+});
+
+test("T06 malformed source placeholders still refuse even when variables contain braces", () => {
+  for (const source of [
+    "{{vehicle",
+    "vehicle}}",
+    "{{}}",
+    "{{ vehicle }}",
+    "{{vehicle-name}}",
+    "{{{{vehicle}}}}",
+    "{{vehicle}} {{missing}}",
+    "{{vehicle}} }}{{",
+  ]) {
+    const w = fixture();
+    w.sources[0].text = source;
+    assert.throws(
+      () =>
+        renderCampaign(w, ["synthetic-wiki"], "fr", { vehicle: "{{literal}}" }),
+      /TEMPLATE_VARIABLE_MISSING/,
+      source,
+    );
+  }
+});
+
 for (const [id, ready] of [
   ["J01", "prepare"],
   ["J02", "ask"],

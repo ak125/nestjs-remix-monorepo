@@ -18377,7 +18377,7 @@
         "backend/src/modules/marketing/templates/social-post-templates.ts"
       ],
       "kind": "service",
-      "loc": 1077,
+      "loc": 1079,
       "owner": "__unassigned__",
       "path": "backend/src/modules/marketing/services/marketing-preparation.ts",
       "risk": "low",
@@ -70963,7 +70963,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 1726,
+      "loc": 1793,
       "owner": "__unassigned__",
       "path": "scripts/marketing/marketing-workbench.test.ts",
       "risk": "low",

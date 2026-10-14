@@ -475,15 +475,17 @@ export function renderCampaign(
     sources.some((s) => !s || s.kind !== 'wiki' || !currentSource(s, w.context))
   )
     throw new Error('SOURCE_UNVERIFIED');
-  const blocks = sources.map((s) =>
-    s!.text.replace(/\{\{([a-z_]+)\}\}/g, (_, key: string) => {
+  const blocks = sources.map((s) => {
+    const placeholder = /\{\{([a-z_]+)\}\}/g;
+    // Validate the template itself; supplied values are literal, not templates.
+    if (/\{\{|\}\}/.test(s!.text.replace(placeholder, ' ')))
+      throw new Error('TEMPLATE_VARIABLE_MISSING');
+    return s!.text.replace(placeholder, (_, key: string) => {
       if (!Object.hasOwn(variables, key) || !variables[key].trim())
         throw new Error('TEMPLATE_VARIABLE_MISSING');
       return variables[key];
-    }),
-  );
-  if (blocks.some((s) => /\{\{|\}\}/.test(s)))
-    throw new Error('TEMPLATE_VARIABLE_MISSING');
+    });
+  });
   checked(z.string().regex(/^J(0[1-9]|1[0-8])$/), scenario);
   const copy: Record<string, [string, string, string, string]> = {
     J01: [
