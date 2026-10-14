@@ -26,6 +26,18 @@ Rapport Hermes : `reports/comparaison-reactivation-v2-20261013.md`, écrit puis 
 
 ## Recettes comportementales complémentaires — 14 octobre 2026
 
+### Rendus A/B complets — candidat du 14 octobre 2026
+
+La recette native J07 (`20261014_090257_0b549b`, huit appels sur huit) a produit puis relu le dossier `reports/recette-j07-20261014.md`, SHA-256 `0a99af9c20246d7bf7e4671b464b9c04afc8c10dc7ec8178d61035d2b932dbe4`. Elle démontre une sélection et deux exclusions sur le corpus fictif, mais relevait deux objets A/B avec un seul rendu HTML/texte. Elle ne prouve pas la complémentarité commerciale de la pièce avec l'achat.
+
+Le candidat complète `renderCampaign` : chaque entrée de `variants` expose désormais `html` et `text`, dont le titre correspond à son `subject`. Les blocs sourcés, le CTA et la mention de simulation sont communs. Les champs racine `html` et `text` conservent exactement le rendu A précédent. `template_version` devient `2.1.0` ; l'enveloppe CLI reste `2.0.0`. Les sources et variables sont validées avant tous les rendus, et le texte fourni est échappé en HTML.
+
+Deux tests FR/EN couvrent les titres propres, les corps communs, l'échappement de contenu et de variables, la conservation de l'entrée et la compatibilité des champs racine. La comparaison CLI J07 avant/après vérifie que seules la version du template et les sorties ajoutées changent, y compris dans le brief. Les artefacts locaux sont sous `output/marketing-variants-20261014/` ; retour arrière limité au rendu, aux tests et à cette section.
+
+Cette évolution du dépôt ne promeut pas l'export Hermes actif issu de `992f63ef`. La recette native citée reste une preuve de la version précédente ; une qualification de l'export actualisé sera distincte. Les rendus ne sont pas testés dans un client mail, aucune expérimentation A/B n'est lancée et aucune autorisation d'envoi n'est acquise. Tout reste synthétique, brouillon à examiner, `can_execute=false`.
+
+### Couverture J02/J06 déjà vérifiée
+
 Cette couverture complète les preuves du socle ci-dessus ; elle ne valide pas tout le catalogue C/P/J. Les trois sessions natives **CLI**, distinctes de Telegram, ont terminé normalement en **8/8 appels** avec le plafond de huit maintenu. Les rapports restent **A1 synthétiques, brouillons non approuvés, `can_execute=false`** ; leur verdict métier est `REVIEW_REQUIRED`. La vérification des recettes est `VALIDATED_FOR_SCOPE_ONLY`.
 
 | Recette | Comportement observé | Limite de la preuve |
