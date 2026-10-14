@@ -463,11 +463,9 @@ export default function DiagnosticAutoIndex() {
               Comment identifier une panne auto : le guide complet
             </h2>
             <p className="text-gray-600 mb-6 leading-relaxed">
-              80 % des pannes automobiles présentent des signes avant-coureurs
-              pendant plusieurs semaines avant l'immobilisation. Savoir les
-              reconnaître vous permet d'agir avant la panne totale et d'arriver
-              chez le garagiste avec une hypothèse claire — ce qui réduit le
-              coût de réparation.
+              Savoir reconnaître les signes avant-coureurs d'une panne vous
+              permet d'agir avant la panne totale et d'arriver chez le garagiste
+              avec une hypothèse claire — ce qui réduit le coût de réparation.
             </p>
 
             {/* Methode 1 */}
@@ -583,13 +581,6 @@ export default function DiagnosticAutoIndex() {
 
           {/* Sidebar stats */}
           <div className="space-y-4">
-            <div className="rounded-2xl bg-navy text-white p-6">
-              <p className="text-4xl font-extrabold text-cta-light mb-1">80%</p>
-              <p className="text-sm text-white/70">
-                des pannes présentent des signes avant-coureurs avant
-                l'immobilisation
-              </p>
-            </div>
             <div className="rounded-2xl border p-6 bg-white">
               <p className="text-4xl font-extrabold text-gray-900 mb-1">193</p>
               <p className="text-sm text-gray-500">
