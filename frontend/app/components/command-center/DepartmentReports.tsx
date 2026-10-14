@@ -118,9 +118,6 @@ export function DepartmentReports({ data }: { data: CommandCenterResponseV2 }) {
                         </span>
                       ) : null}
                     </p>
-                    <p className="text-sm text-muted-foreground">
-                      {kpiLine(r)}
-                    </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant={SCORE[r.score].variant}>
@@ -140,46 +137,84 @@ export function DepartmentReports({ data }: { data: CommandCenterResponseV2 }) {
                   </div>
                 </div>
 
-                <dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-1 text-sm sm:grid-cols-[max-content_1fr]">
-                  <dt className="text-muted-foreground">Évolution</dt>
-                  <dd>
-                    {EVOLUTION_LABEL[r.evolution]}
-                    {r.period.window_days
-                      ? ` · ${r.period.window_days} derniers jours`
-                      : ""}
-                  </dd>
-                  {r.gap ? (
-                    <>
-                      <dt className="text-muted-foreground">Trou</dt>
-                      <dd>{r.gap}</dd>
-                    </>
-                  ) : null}
-                  {r.probable_cause ? (
-                    <>
-                      <dt className="text-muted-foreground">Cause probable</dt>
-                      <dd>{r.probable_cause}</dd>
-                    </>
-                  ) : null}
-                  <dt className="text-muted-foreground">Risque</dt>
-                  <dd>{RISK_LABEL[r.risk]}</dd>
-                  <dt className="text-muted-foreground">Prochaine preuve</dt>
-                  <dd className="flex items-start gap-1">
-                    <ArrowRight
-                      className="mt-1 h-3.5 w-3.5 shrink-0"
-                      aria-hidden
-                    />
-                    <span>{r.next_evidence}</span>
-                  </dd>
-                  {r.open_action_ids.length > 0 ? (
-                    <>
-                      <dt className="text-muted-foreground">Actions</dt>
-                      <dd>
-                        {r.open_action_ids.length} ouverte(s) dans l'onglet
-                        Actions
+                <div className="mt-3 space-y-3 text-sm">
+                  <section
+                    aria-label="Mesure"
+                    className="rounded-md bg-muted/40 p-3"
+                  >
+                    <h4 className="font-medium">Mesure</h4>
+                    <p className="mt-1">{kpiLine(r)}</p>
+                    <p className="mt-1 text-muted-foreground">
+                      Évolution de la mesure : {EVOLUTION_LABEL[r.evolution]}
+                      {r.period.window_days
+                        ? ` · ${r.period.window_days} derniers jours`
+                        : ""}
+                    </p>
+                  </section>
+                  <section
+                    aria-label="Cause du score"
+                    className="rounded-md border p-3"
+                  >
+                    <h4 className="font-medium">Cause du score</h4>
+                    <p className="mt-1">
+                      {r.score_reason ??
+                        "Explication du score indisponible pour ce rapport."}
+                    </p>
+                  </section>
+                  <section
+                    aria-label={
+                      r.open_action_ids.length
+                        ? "Action prioritaire"
+                        : "Prochaine preuve"
+                    }
+                    className="rounded-md border p-3"
+                  >
+                    <h4 className="font-medium">
+                      {r.open_action_ids.length
+                        ? "Action prioritaire"
+                        : "Prochaine preuve"}
+                    </h4>
+                    <dl className="mt-2 grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-[max-content_1fr]">
+                      {r.gap ? (
+                        <>
+                          <dt className="text-muted-foreground">
+                            {r.open_action_ids.length ? "Priorité" : "Constat"}
+                          </dt>
+                          <dd>{r.gap}</dd>
+                        </>
+                      ) : null}
+                      {r.probable_cause ? (
+                        <>
+                          <dt className="text-muted-foreground">
+                            {r.open_action_ids.length
+                              ? "Motif de l’action"
+                              : "Constat complémentaire"}
+                          </dt>
+                          <dd>{r.probable_cause}</dd>
+                        </>
+                      ) : null}
+                      <dt className="text-muted-foreground">Risque d’agir</dt>
+                      <dd>{RISK_LABEL[r.risk]}</dd>
+                      <dt className="text-muted-foreground">À vérifier</dt>
+                      <dd className="flex items-start gap-1">
+                        <ArrowRight
+                          className="mt-1 h-3.5 w-3.5 shrink-0"
+                          aria-hidden
+                        />
+                        <span>{r.next_evidence}</span>
                       </dd>
-                    </>
-                  ) : null}
-                </dl>
+                      {r.open_action_ids.length > 0 ? (
+                        <>
+                          <dt className="text-muted-foreground">Actions</dt>
+                          <dd>
+                            {r.open_action_ids.length} ouverte(s) dans l'onglet
+                            Actions
+                          </dd>
+                        </>
+                      ) : null}
+                    </dl>
+                  </section>
+                </div>
 
                 {r.evidence.length > 0 ? (
                   <ul className="mt-2 space-y-0.5">

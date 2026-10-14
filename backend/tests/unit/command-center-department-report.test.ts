@@ -90,6 +90,44 @@ function one(
 }
 
 describe('buildDepartmentReports — Vue 5', () => {
+  it('explique le score Ventes sans prendre le motif de son action pour cause', () => {
+    const r = one(
+      dept('sales', 'P0', 'payments_kept'),
+      [action('instrumentation', 'sales', { reason: 'Source PARTIAL' })],
+      [measure('payments_kept', 0, 'CRITICAL')],
+    );
+    expect(r.score_reason).toMatch(/aucun paiement gardé/i);
+    expect(r.score_reason).not.toContain('PARTIAL');
+    expect(r.probable_cause).toBe('Source PARTIAL');
+  });
+
+  it.each(['pages_generating_atc', 'diagnostic_to_product'])(
+    '%s : une action ne masque pas l’absence de cible',
+    (id) => {
+      const r = one(
+        dept('test', 'P1', id),
+        [action('repair', 'test')],
+        [measure(id, 8, 'UNKNOWN')],
+      );
+      expect(r.score_reason).toMatch(/aucune cible/i);
+      expect(r.score_reason).toMatch(/performance non évaluée/i);
+      expect(r).toMatchObject({
+        score: 'NON_MESURE',
+        gap: 'titre repair',
+        owner_go_required: false,
+      });
+    },
+  );
+
+  it('Data : le score vient des contrôles réussis, même sans action', () => {
+    const r = one(
+      dept('data', 'P0', 'metric_reliability'),
+      [],
+      [measure('metric_reliability', 0, 'CRITICAL')],
+    );
+    expect(r.score_reason).toMatch(/aucun contrôle.*réussi/i);
+  });
+
   it('sans session exploitable : zéro lisible, score neutre, comparaison inconnue', () => {
     const r = one(
       dept('diagnostic', 'P1', 'diagnostic_to_product'),
@@ -146,6 +184,8 @@ describe('buildDepartmentReports — Vue 5', () => {
         owner_go_required: owner,
       });
       expect(r.evidence.join(' ')).toMatch(/aucune session exploitable/i);
+      expect(r.score_reason).toMatch(/aucune session exploitable/i);
+      expect(r.score_reason).toMatch(/aucune cible/i);
     },
   );
 
@@ -180,6 +220,7 @@ describe('buildDepartmentReports — Vue 5', () => {
       owner_go_required: false,
     });
     expect(r.gap).toContain('aucun producteur');
+    expect(r.score_reason).toMatch(/aucun producteur/);
     expect(r.evidence).toEqual([
       '.spec/00-canon/ai-registry/agent-operating-map.yaml#seo',
     ]);
@@ -199,6 +240,7 @@ describe('buildDepartmentReports — Vue 5', () => {
     expect(r.score).toBe('NON_MESURE');
     expect(r.gap).toContain('illisible');
     expect(r.probable_cause).toContain('[command-center-kpi]');
+    expect(r.score_reason).toMatch(/source illisible/);
   });
 
   it.each([
@@ -358,6 +400,8 @@ describe('buildDepartmentReports — Vue 5', () => {
       decision: 'IMPROVE',
       owner_go_required: false,
     });
+    expect(r.score_reason).toMatch(/^Critique :/);
+    expect(r.score_reason).toMatch(/aucune cible/i);
   });
 
   it('KPI mesuré faible, aucune action → IMPROVE, cause non inventée', () => {
