@@ -36620,7 +36620,7 @@
         "backend/src/modules/admin/services/command-center-action-rules/score-action.ts"
       ],
       "kind": "service",
-      "loc": 278,
+      "loc": 329,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/command-center-action-rules/department-report.rules.ts",
       "risk": "medium",
@@ -36779,7 +36779,7 @@
         "backend/src/modules/analytics/index.ts"
       ],
       "kind": "service",
-      "loc": 104,
+      "loc": 107,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/command-center-action-rules/tracking-integrity-action.rules.ts",
       "risk": "medium",
@@ -37052,7 +37052,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 446,
+      "loc": 452,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/command-center-reader.service.ts",
       "risk": "medium",
@@ -68944,7 +68944,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 899,
+      "loc": 904,
       "owner": "@ak125",
       "path": "backend/tests/unit/command-center-action-rules.test.ts",
       "risk": "medium",
@@ -69004,7 +69004,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 527,
+      "loc": 571,
       "owner": "@ak125",
       "path": "backend/tests/unit/command-center-department-report.test.ts",
       "risk": "medium",
@@ -69024,7 +69024,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 195,
+      "loc": 215,
       "owner": "@ak125",
       "path": "backend/tests/unit/command-center-digest.test.ts",
       "risk": "medium",
@@ -69104,7 +69104,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 407,
+      "loc": 409,
       "owner": "@ak125",
       "path": "backend/tests/unit/command-center.controller.test.ts",
       "risk": "medium",
@@ -73923,7 +73923,7 @@
         "~/components/ui/card"
       ],
       "kind": "config",
-      "loc": 201,
+      "loc": 236,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/command-center/DepartmentReports.tsx",
       "risk": "low",
@@ -93735,7 +93735,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 248,
+      "loc": 340,
       "owner": "@ak125",
       "path": "frontend/tests/unit/command-center-view.test.tsx",
       "risk": "medium",
@@ -97331,7 +97331,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 535,
+      "loc": 545,
       "owner": "@ak125",
       "path": "packages/registry/src/command-center/snapshot.ts",
       "risk": "high",
@@ -104372,11 +104372,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "7bec88c8e8b454869e284e28fdde34ca05a32d3fdbbdfe0820cdee50a66f5f3a",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "8f8b17f2fb405a9cc6e9a4ed99080ac32baf242f9af0e006e2e1b6386947b070",
+      "audit/registry/files.json": "08de1d16bd44d53a6f39e1e7722a4133c34f884d14d3724abd415c580ef3dab1",
       "audit/registry/rpc.json": "68f3b21f7aa0b2ef7da9b488c657c3b6b5bdde0476bf7d617f1e346cc26b4449",
       "audit/registry/runtime.json": "1537c0f3bfbfb3eec888d674e290f14eb9df56e9f816220210a8b7298eaeeb44"
     },
-    "sotFingerprint": "25dc21218df7"
+    "sotFingerprint": "f6d06ee9febb"
   },
   "runtime": [
     {
