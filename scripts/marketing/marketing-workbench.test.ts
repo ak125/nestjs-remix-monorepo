@@ -1416,6 +1416,128 @@ test("C16 C21 a media plan preserves account, rights, budget and stop without pu
     false,
   );
 });
+test("T04 sequence preserves strict chronology, window bounds and equal event kinds", () => {
+  const cases = [
+    {
+      first: "view",
+      then: "click",
+      firstAt: "2026-10-01T10:00:00Z",
+      thenAt: "2026-10-01T10:00:00.001Z",
+      match: true,
+    },
+    {
+      first: "view",
+      then: "click",
+      firstAt: "2026-10-01T10:00:00Z",
+      thenAt: "2026-10-01T10:00:00.000Z",
+      match: false,
+    },
+    {
+      first: "view",
+      then: "click",
+      firstAt: "2026-10-01T10:00:00Z",
+      thenAt: "2026-10-01T09:00:00Z",
+      match: false,
+    },
+    {
+      first: "view",
+      then: "click",
+      firstAt: "2026-09-25T12:00:00Z",
+      thenAt: "2026-10-01T10:00:00Z",
+      match: true,
+    },
+    {
+      first: "view",
+      then: "click",
+      firstAt: "2026-09-25T11:59:59.999Z",
+      thenAt: "2026-10-01T10:00:00Z",
+      match: false,
+    },
+    {
+      first: "view",
+      then: "view",
+      firstAt: "2026-10-01T10:00:00Z",
+      thenAt: "2026-10-01T10:00:00.001Z",
+      match: true,
+    },
+    {
+      first: "view",
+      then: "view",
+      firstAt: "2026-10-01T10:00:00Z",
+      thenAt: "2026-10-01T10:00:00.000Z",
+      match: false,
+    },
+  ];
+  for (const c of cases)
+    for (const reverse of [false, true]) {
+      const w = fixture();
+      w.contacts = [w.contacts[0]];
+      w.events = [
+        {
+          ...w.events[0],
+          id: "synthetic-first",
+          kind: c.first,
+          occurred_at: c.firstAt,
+          received_at: w.context.data_at,
+        },
+        {
+          ...w.events[0],
+          id: "synthetic-then",
+          kind: c.then,
+          occurred_at: c.thenAt,
+          received_at: w.context.data_at,
+        },
+      ];
+      if (reverse) w.events.reverse();
+      const before = structuredClone(w);
+      const result = explainSegment(w, {
+        op: "sequence",
+        first: c.first,
+        then: c.then,
+        days: 7,
+      });
+      assert.equal(result[0].match, c.match, JSON.stringify(c));
+      assert.equal(result[0].included, c.match);
+      assert.deepEqual(w, before);
+    }
+});
+
+test("T04 concentrated sequence history stays within a bounded date evaluation budget", () => {
+  const parse = Date.parse;
+  let evaluations = 0;
+  // Count work without retaining a mock call record for each parsed date.
+  Date.parse = (value: string) => {
+    if (++evaluations > 1000000)
+      assert.fail("date evaluation budget exceeded for 10000 events");
+    return parse(value);
+  };
+  try {
+    for (const then of ["view", "click"]) {
+      evaluations = 0;
+      const w = fixture();
+      w.contacts = [w.contacts[0]];
+      w.events = Array.from({ length: 10000 }, (_, i) => ({
+        ...w.events[0],
+        id: `synthetic-event-${i}`,
+        kind: i % 2 ? then : "view",
+        occurred_at:
+          i % 2 ? "2026-10-01T10:00:00.000Z" : "2026-10-01T10:00:00Z",
+        received_at: w.context.data_at,
+      }));
+      const result = explainSegment(w, {
+        op: "sequence",
+        first: "view",
+        then,
+        days: 7,
+      });
+      assert.equal(result[0].match, false);
+      assert.equal(result[0].included, false);
+    }
+  } finally {
+    Date.parse = parse;
+  }
+});
+
 test("T04 sequence and bounded performance at 1000 contacts / 10000 events", () => {
   const w = fixture(),
     base = w.contacts[0],
