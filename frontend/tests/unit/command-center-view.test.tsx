@@ -3,6 +3,7 @@ import { afterEach, expect, it, vi } from "vitest";
 import snapshot from "../../../audit/registry/command-center-snapshot.json";
 import { CommandCenterResponseV2Schema } from "../../../packages/registry/src/command-center/snapshot";
 import { DepartmentReports } from "../../app/components/command-center/DepartmentReports";
+import { buildDepartmentReports } from "../../../backend/src/modules/admin/services/command-center-action-rules/department-report.rules";
 import { GlobalHealthBar } from "../../app/components/command-center/GlobalHealthBar";
 import { ModuleGrid } from "../../app/components/command-center/ModuleGrid";
 vi.mock(
@@ -29,6 +30,91 @@ function response() {
   });
 }
 afterEach(cleanup);
+it.each([
+  {
+    id: "payments_kept",
+    value: 0,
+    status: "CRITICAL" as const,
+    reason: /aucun paiement gardé/i,
+  },
+  {
+    id: "pages_generating_atc",
+    value: 44,
+    status: "UNKNOWN" as const,
+    reason: /aucune cible/i,
+  },
+  {
+    id: "diagnostic_to_product",
+    value: 8,
+    status: "UNKNOWN" as const,
+    reason: /aucune cible/i,
+  },
+])(
+  "separates the measured $id score from its priority action",
+  ({ id, value, status, reason }) => {
+    const data = response();
+    data.department_reports = buildDepartmentReports({
+      departments: [
+        { id: "test", label: "Département", priority: "P0", kpi_primary: id },
+      ],
+      measures: [
+        {
+          kpi: {
+            id,
+            label: "Indicateur",
+            value,
+            status,
+            source: "db",
+            certified: true,
+          },
+          window_days: 30,
+          previous_value: null,
+          better: "higher",
+        },
+      ],
+      actions: [
+        {
+          id: "test:repair",
+          department: "test",
+          title: "Fiabiliser la source",
+          reason: "Source PARTIAL",
+          next_step: "Vérifier les événements récents.",
+          source: "data",
+          action_type: "repair",
+          impact: 5,
+          urgency: 5,
+          data_confidence: 90,
+          effort: 2,
+          risk: 2,
+          score: 15,
+          evidence: [],
+          details: null,
+          owner_go_required: false,
+        },
+      ],
+      as_of: data.generated_at,
+    });
+    render(<DepartmentReports data={data} />);
+    expect(
+      within(screen.getByRole("region", { name: "Mesure" })).getByText(
+        `Indicateur — ${value}`,
+      ),
+    ).toBeTruthy();
+    const score = within(
+      screen.getByRole("region", { name: "Cause du score" }),
+    );
+    expect(score.getByText(reason)).toBeTruthy();
+    expect(score.queryByText("Source PARTIAL")).toBeNull();
+    const action = within(
+      screen.getByRole("region", { name: "Action prioritaire" }),
+    );
+    expect(action.getByText("Fiabiliser la source")).toBeTruthy();
+    expect(action.getByText("Source PARTIAL")).toBeTruthy();
+    expect(action.getByText("Vérifier les événements récents.")).toBeTruthy();
+    expect(screen.getByText("0 attendent votre feu vert")).toBeTruthy();
+  },
+);
+
 it("shows an empty diagnostic sample without a red score or an owner gate", () => {
   const data = response();
   data.department_reports = [
@@ -144,6 +230,12 @@ it("distinguishes absent and unreadable measurements from unassessed performance
   render(<DepartmentReports data={data} />);
   expect(screen.getByText("KPI — non mesuré")).toBeTruthy();
   expect(screen.getByText("KPI — source illisible")).toBeTruthy();
+  expect(
+    screen.getAllByText("Explication du score indisponible pour ce rapport."),
+  ).toHaveLength(2);
+  expect(
+    screen.queryByRole("region", { name: "Action prioritaire" }),
+  ).toBeNull();
   expect(screen.getByText("2 non mesurés")).toBeTruthy();
   expect(screen.queryByText("Performance non évaluée")).toBeNull();
 });

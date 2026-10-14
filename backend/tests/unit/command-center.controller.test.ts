@@ -272,6 +272,7 @@ describe('CommandCenterController — approve (Phase 2a HITL)', () => {
 describe('admin contract negotiation', () => {
   const payload = {
     schema_version: 'command-center.v2',
+    department_reports: [],
     departments: [
       {
         id: 'legal',
@@ -329,6 +330,7 @@ describe('isolated HTTP version parsing and real guard order', () => {
     .mockResolvedValue({
       schema_version: 'command-center.v2',
       departments: [],
+      department_reports: [],
     });
   beforeAll(async () => {
     const m = await Test.createTestingModule({

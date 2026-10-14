@@ -390,6 +390,8 @@ export const CcDepartmentReportSchema = z
       })
       .strict(),
     score: DeptReportScoreSchema,
+    // Explication du KPI indépendante de l’action prioritaire. Optionnel pour les anciennes réponses.
+    score_reason: z.string().optional(),
     evolution: DeptReportEvolutionSchema,
     evidence: z.array(z.string()),
     gap: z.string().nullable(),
@@ -473,6 +475,9 @@ function redactionIssues(
 
 export const CommandCenterResponseSchema = CommandCenterSnapshotSchema.extend({
   ...responseFields,
+  department_reports: z.array(
+    CcDepartmentReportSchema.omit({ score_reason: true }),
+  ),
   departments: z.array(CcDepartmentLiveSchema),
 }).superRefine(redactionIssues);
 export type CommandCenterResponse = z.infer<typeof CommandCenterResponseSchema>;
@@ -493,6 +498,9 @@ export function toCommandCenterV1(
   return {
     ...input,
     schema_version: "command-center.v1",
+    department_reports: input.department_reports.map(
+      ({ score_reason: _scoreReason, ...report }) => report,
+    ),
     departments: input.departments.map(
       ({
         business_number,
@@ -524,7 +532,9 @@ export const CommandCenterDigestSchema = z
     degraded: z.boolean(),
     stale_status: StaleStatusSchema,
     global_status: GlobalStatusSchema,
-    department_reports: z.array(CcDepartmentReportSchema), // full mode only, else []
+    department_reports: z.array(
+      CcDepartmentReportSchema.omit({ score_reason: true }),
+    ), // digest v1 stays unchanged
     owner_go_actions_total: z.number().int().min(0), // before the bound below
     owner_go_actions: z
       .array(CcActionV2Schema.omit({ details: true }))

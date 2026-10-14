@@ -24,16 +24,19 @@ const FAILED_CHECK_PLAYBOOK: Record<
     sampleRef: '__seo_event_log.id',
     ownerGo: true,
     step:
-      "Faire porter le n° de commande (ord_id) à l'événement « commande passée » envoyé par la page de retour de paiement " +
-      '(page adjacente au paiement : accord owner). Ne pas activer FUNNEL_SERVER_EMIT_ENABLED avant : ' +
-      "l'émetteur serveur écrit ord_id, chaque vente serait comptée deux fois.",
+      'Vérifier le correctif ord_id déjà présent dans le code de retour de paiement : confirmer la version servie ' +
+      'et contrôler les événements émis après son déploiement, séparément des anomalies historiques. ' +
+      'Si le défaut persiste sur cette version, qualifier la correction avec accord owner (page adjacente au paiement). ' +
+      'Ne pas activer FUNNEL_SERVER_EMIT_ENABLED avant validation de la clé et de la déduplication client/serveur.',
   },
   order_event_coverage: {
     sampleRef: '___xtr_order.ord_id',
     ownerGo: true,
     step:
-      "Activer l'émission serveur de « commande passée » (FUNNEL_SERVER_EMIT_ENABLED, décision owner) : " +
-      'la page de retour de paiement ne voit pas toutes les commandes payées.',
+      'Vérifier la couverture des commandes payées par les événements récents et l’état effectif de l’émetteur serveur ' +
+      '(FUNNEL_SERVER_EMIT_ENABLED). La page de retour de paiement peut manquer des commandes ; ' +
+      'si l’émetteur est désactivé et le défaut confirmé, préparer son activation avec accord owner, ' +
+      'après validation de la clé ord_id et de la déduplication client/serveur.',
   },
 };
 

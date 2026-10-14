@@ -768,10 +768,14 @@ describe('tracking-integrity rule — consommateur Ventes du verdict Data', () =
     expect(a.reason).toContain('order_event_key detail');
     expect(a.reason).not.toContain('order_event_coverage detail');
     expect(a.next_step).toMatch(/ord_id/);
+    expect(a.next_step).toMatch(/correctif.*déjà présent/);
+    expect(a.next_step).toMatch(/version servie/);
+    expect(a.next_step).toMatch(/événements.*après.*déploiement/);
+    expect(a.next_step).toMatch(/historique/);
     expect(a.next_step).toMatch(/Ne pas activer FUNNEL_SERVER_EMIT_ENABLED/);
   });
 
-  it('NOT_CERTIFIED (les deux) → étapes ordonnées : corriger la clé PUIS activer le serveur', () => {
+  it('NOT_CERTIFIED (les deux) → vérifier le correctif puis qualifier la couverture avant activation', () => {
     const [a] = buildTrackingIntegrityActions(
       v('NOT_CERTIFIED', [
         chk('order_event_key', 'FAIL', 0, 1, ['evt-1']),
@@ -781,9 +785,10 @@ describe('tracking-integrity rule — consommateur Ventes du verdict Data', () =
     expect(a.title).toContain('2 contrôle(s)');
     expect(a.evidence).toContain('___xtr_order.ord_id=ORD-1');
     const keyStep = a.next_step.indexOf('Ne pas activer');
-    const enableStep = a.next_step.indexOf("Puis : Activer l'émission serveur");
+    const enableStep = a.next_step.indexOf('Puis : Vérifier la couverture');
     expect(keyStep).toBeGreaterThan(-1);
     expect(enableStep).toBeGreaterThan(keyStep);
+    expect(a.next_step).toMatch(/si.*désactivé.*accord owner/);
   });
 });
 
