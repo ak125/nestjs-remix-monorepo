@@ -467,25 +467,32 @@
       }
     },
     {
-      "actual_mode": "DRAFTED",
+      "actual_mode": "SCRIPT_ONLY",
       "automation_id": "wiki-exports-diagnostic-generate",
       "domain": "D4",
-      "drift_note": "Couvre le segment WIKI de D6.2 seulement. L'écriture en base reste sous drapeau, défaut OFF (ADR-035 D5).",
+      "drift_note": "Segment WIKI prouvé : run 38321704586 (workflow_dispatch, 2026-10-12) a poussé 21b5abc5 sur le main du WIKI par contournement du ruleset (rule suite 4489045974).",
       "evidence": [
         {
           "excerpt": "- cron: '30 3 * * *'",
           "line": 55,
           "note": "Cron quotidien + workflow_dispatch : régénère exports/diagnostic/ du WIKI, pousse seulement si le diff change",
           "path": ".github/workflows/wiki-exports-diagnostic-generate.yml"
+        },
+        {
+          "note": "Consommateur prévu : lit exports/diagnostic/ du sous-module WIKI, trace ses runs applied/failed dans __diag_projection_runs",
+          "path": "backend/src/modules/diagnostic-engine/projection/diagnostic-projection-writer.service.ts"
         }
       ],
       "executor": "github-actions-schedule",
       "intended_mode": "ACTIVE",
       "last_verified_at": "2026-10-12",
       "last_verified_by": "@ak125",
-      "last_verified_method": "manual-inspection",
-      "missing_step": "Fusion de la PR, puis 1er run qui pousse sur le main du WIKI (contournement du ruleset par le compte du token, non prouvé). Servi après sous-module + tag PROD.",
-      "owner_action": "Après fusion : lancer le workflow (workflow_dispatch), puis passer actual_mode à ACTIVE avec la runtime_evidence de ce run.",
+      "last_verified_method": "runtime-probe",
+      "missing_step": "Aucun consommateur : sous-module WIKI du backend épinglé avant 21b5abc5. Reste : bump du sous-module (manuel ou Dependabot), fusion, variable PROD_DIAGNOSTIC_PROJECTION_ENABLED=true, puis tag PROD.",
+      "owner_action": "Passer à ACTIVE quand un run applied repeatable de __diag_projection_runs, sous un tag PROD cité en runtime_evidence, porte l'index_sha256 d'un _index.json poussé par ce workflow.",
+      "related_pr": [
+        1770
+      ],
       "risk": "medium"
     },
     {
@@ -36626,7 +36633,7 @@
         "backend/src/modules/admin/services/command-center-action-rules/score-action.ts"
       ],
       "kind": "service",
-      "loc": 278,
+      "loc": 329,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/command-center-action-rules/department-report.rules.ts",
       "risk": "medium",
@@ -36785,7 +36792,7 @@
         "backend/src/modules/analytics/index.ts"
       ],
       "kind": "service",
-      "loc": 104,
+      "loc": 107,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/command-center-action-rules/tracking-integrity-action.rules.ts",
       "risk": "medium",
@@ -37058,7 +37065,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 446,
+      "loc": 452,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/command-center-reader.service.ts",
       "risk": "medium",
@@ -47397,7 +47404,7 @@
         "backend/src/modules/marketing/templates/social-post-templates.ts"
       ],
       "kind": "service",
-      "loc": 1071,
+      "loc": 1077,
       "owner": "@ak125/marketing-team",
       "path": "backend/src/modules/marketing/services/marketing-preparation.ts",
       "risk": "low",
@@ -63239,20 +63246,46 @@
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
+      "id": "backend/src/modules/supplier-truth/connectors/cal-parse.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/supplier-truth/connectors/cal-parse.ts",
+        "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts"
+      ],
+      "kind": "test",
+      "loc": 319,
+      "owner": "@ak125",
+      "path": "backend/src/modules/supplier-truth/connectors/cal-parse.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
         "manual",
         "reachability"
       ],
       "domain": "D11",
       "id": "backend/src/modules/supplier-truth/connectors/cal-parse.ts",
       "importedBy": [
+        "backend/src/modules/supplier-truth/connectors/cal-parse.test.ts",
         "backend/src/modules/supplier-truth/connectors/cal.connector.test.ts",
-        "backend/src/modules/supplier-truth/connectors/cal.connector.ts"
+        "backend/src/modules/supplier-truth/connectors/cal.connector.ts",
+        "backend/src/workers/supplier-availability-classify.ts"
       ],
       "imports": [
+        "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts",
         "backend/src/modules/supplier-truth/connectors/supplier-connector.interface.ts"
       ],
       "kind": "service",
-      "loc": 172,
+      "loc": 411,
       "owner": "@ak125",
       "path": "backend/src/modules/supplier-truth/connectors/cal-parse.ts",
       "risk": "high",
@@ -63296,14 +63329,16 @@
       "importedBy": [
         "backend/src/modules/supplier-truth/connectors/cal.connector.test.ts",
         "backend/src/modules/supplier-truth/supplier-sync.runner.ts",
+        "backend/src/workers/supplier-availability-classify.ts",
         "backend/src/workers/supplier-price-verify.ts"
       ],
       "imports": [
         "backend/src/modules/supplier-truth/connectors/cal-parse.ts",
+        "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts",
         "backend/src/modules/supplier-truth/connectors/supplier-connector.interface.ts"
       ],
       "kind": "service",
-      "loc": 322,
+      "loc": 351,
       "owner": "@ak125",
       "path": "backend/src/modules/supplier-truth/connectors/cal.connector.ts",
       "risk": "high",
@@ -63374,7 +63409,7 @@
         "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts"
       ],
       "kind": "test",
-      "loc": 334,
+      "loc": 724,
       "owner": "@ak125",
       "path": "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.test.ts",
       "risk": "high",
@@ -63393,15 +63428,19 @@
       "domain": "D11",
       "id": "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts",
       "importedBy": [
+        "backend/src/modules/supplier-truth/connectors/cal-parse.test.ts",
+        "backend/src/modules/supplier-truth/connectors/cal-parse.ts",
+        "backend/src/modules/supplier-truth/connectors/cal.connector.ts",
         "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.test.ts",
         "backend/src/modules/supplier-truth/connectors/inoshop.connector.ts",
         "backend/src/workers/supplier-availability-classify.ts"
       ],
       "imports": [
-        "backend/src/modules/supplier-truth/connectors/inoshop-parse.ts"
+        "backend/src/modules/supplier-truth/connectors/inoshop-parse.ts",
+        "backend/src/utils/html-entities.ts"
       ],
       "kind": "service",
-      "loc": 324,
+      "loc": 589,
       "owner": "@ak125",
       "path": "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts",
       "risk": "high",
@@ -63453,7 +63492,7 @@
         "backend/src/modules/supplier-truth/connectors/supplier-connector.interface.ts"
       ],
       "kind": "service",
-      "loc": 307,
+      "loc": 314,
       "owner": "@ak125",
       "path": "backend/src/modules/supplier-truth/connectors/inoshop.connector.ts",
       "risk": "high",
@@ -68440,7 +68479,8 @@
         "backend/src/modules/catalog/services/unified-page-data.service.ts",
         "backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts",
         "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
-        "backend/src/modules/products/services/cross-selling-seo.service.ts"
+        "backend/src/modules/products/services/cross-selling-seo.service.ts",
+        "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts"
       ],
       "imports": [],
       "kind": "service",
@@ -68823,15 +68863,18 @@
       "id": "backend/src/workers/supplier-availability-classify.ts",
       "importedBy": [],
       "imports": [
+        "backend/src/modules/supplier-truth/connectors/cal-parse.ts",
+        "backend/src/modules/supplier-truth/connectors/cal.connector.ts",
         "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts",
         "backend/src/modules/supplier-truth/connectors/inoshop.connector.ts",
         "backend/src/modules/supplier-truth/connectors/portal-classify-resilience.ts",
         "backend/src/modules/supplier-truth/connectors/supplier-registry.ts",
         "fs",
+        "path",
         "zlib"
       ],
       "kind": "service",
-      "loc": 389,
+      "loc": 523,
       "owner": "@ak125",
       "path": "backend/src/workers/supplier-availability-classify.ts",
       "risk": "medium",
@@ -69188,7 +69231,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 899,
+      "loc": 904,
       "owner": "@ak125",
       "path": "backend/tests/unit/command-center-action-rules.test.ts",
       "risk": "medium",
@@ -69248,7 +69291,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 527,
+      "loc": 571,
       "owner": "@ak125",
       "path": "backend/tests/unit/command-center-department-report.test.ts",
       "risk": "medium",
@@ -69268,7 +69311,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 195,
+      "loc": 215,
       "owner": "@ak125",
       "path": "backend/tests/unit/command-center-digest.test.ts",
       "risk": "medium",
@@ -69348,7 +69391,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 407,
+      "loc": 409,
       "owner": "@ak125",
       "path": "backend/tests/unit/command-center.controller.test.ts",
       "risk": "medium",
@@ -74167,7 +74210,7 @@
         "~/components/ui/card"
       ],
       "kind": "config",
-      "loc": 201,
+      "loc": 236,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/command-center/DepartmentReports.tsx",
       "risk": "low",
@@ -93987,7 +94030,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 248,
+      "loc": 340,
       "owner": "@ak125",
       "path": "frontend/tests/unit/command-center-view.test.tsx",
       "risk": "medium",
@@ -97583,7 +97626,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 535,
+      "loc": 545,
       "owner": "@ak125",
       "path": "packages/registry/src/command-center/snapshot.ts",
       "risk": "high",
@@ -102163,7 +102206,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 1588,
+      "loc": 1726,
       "owner": "@ak125",
       "path": "scripts/marketing/marketing-workbench.test.ts",
       "risk": "low",
@@ -104637,18 +104680,18 @@
     "generatedAt": "1970-01-01T00:00:00.000Z",
     "generatorVersion": "1.0.0",
     "inputHashes": {
-      ".spec/00-canon/repository-registry/automation-reality.yaml": "b868ecd5962fd48da24c9c0050e54f618fbef68c28436392657a2851d04bca35",
+      ".spec/00-canon/repository-registry/automation-reality.yaml": "5ca91094428cc956799c31406f2c730d22e7557eca4996e6945b0e0c6969aa47",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
       ".spec/00-canon/repository-registry/ownership.yaml": "993f8a45491adc84d340b06a3c9186ad8ad5ea26fcbc53e1f31070aa1f9c64d6",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "7bec88c8e8b454869e284e28fdde34ca05a32d3fdbbdfe0820cdee50a66f5f3a",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "9c0ce91f4dd0568a759f70e2a98f6240462734c6c14c76f3d51b4d5ec6787211",
+      "audit/registry/files.json": "d28b4ef8d47237f62d3c131d6b0d89c52b62da7490e9d3e24a8567649baa2d43",
       "audit/registry/rpc.json": "68f3b21f7aa0b2ef7da9b488c657c3b6b5bdde0476bf7d617f1e346cc26b4449",
       "audit/registry/runtime.json": "77dce5def1f1d442e688287cc92b46732b2d34756dfd6a7fc09faf4f61ea2497"
     },
-    "sotFingerprint": "a413bb9ccdfa"
+    "sotFingerprint": "4d814084fac2"
   },
   "runtime": [
     {

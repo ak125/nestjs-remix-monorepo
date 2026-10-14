@@ -234,7 +234,7 @@
   },
   "lint-staged": {
     "backend/src/**/*.ts": [
-      "node --max-old-space-size=4096 node_modules/.bin/eslint --cache --fix",
+      "node --max-old-space-size=4096 node_modules/eslint/bin/eslint.js --cache --fix",
       "prettier --write"
     ]
   }
