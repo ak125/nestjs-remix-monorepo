@@ -443,20 +443,25 @@ entries:
 
   # ADR-035 D6.2 — exports diagnostic du WIKI régénérés après fusion et poussés sur son main.
   # Domaine = celui du consommateur (backend/src/modules/diagnostic-engine/**, D4 dans domains.yaml).
+  # SCRIPT_ONLY, pas ACTIVE : le workflow tourne et pousse, mais aucun consommateur ne lit encore
+  # sa sortie (« personne ne lit = SCRIPT_ONLY », automation-reality.ts).
   - automation_id: "wiki-exports-diagnostic-generate"
     domain: "D4"
     intended_mode: "ACTIVE"
-    actual_mode: "DRAFTED"
+    actual_mode: "SCRIPT_ONLY"
     executor: "github-actions-schedule"
     evidence:
       - path: ".github/workflows/wiki-exports-diagnostic-generate.yml"
         line: 55
         excerpt: "- cron: '30 3 * * *'"
         note: "Cron quotidien + workflow_dispatch : régénère exports/diagnostic/ du WIKI, pousse seulement si le diff change"
+      - path: "backend/src/modules/diagnostic-engine/projection/diagnostic-projection-writer.service.ts"
+        note: "Consommateur prévu : lit exports/diagnostic/ du sous-module WIKI, trace ses runs applied/failed dans __diag_projection_runs"
     last_verified_at: "2026-10-12"
     last_verified_by: "@ak125"
-    last_verified_method: "manual-inspection"
-    missing_step: "Fusion de la PR, puis 1er run qui pousse sur le main du WIKI (contournement du ruleset par le compte du token, non prouvé). Servi après sous-module + tag PROD."
+    last_verified_method: "runtime-probe"
+    missing_step: "Aucun consommateur : sous-module WIKI du backend épinglé avant 21b5abc5. Reste : bump du sous-module (manuel ou Dependabot), fusion, variable PROD_DIAGNOSTIC_PROJECTION_ENABLED=true, puis tag PROD."
     risk: "medium"
-    owner_action: "Après fusion : lancer le workflow (workflow_dispatch), puis passer actual_mode à ACTIVE avec la runtime_evidence de ce run."
-    drift_note: "Couvre le segment WIKI de D6.2 seulement. L'écriture en base reste sous drapeau, défaut OFF (ADR-035 D5)."
+    owner_action: "Passer à ACTIVE quand un run applied repeatable de __diag_projection_runs, sous un tag PROD cité en runtime_evidence, porte l'index_sha256 d'un _index.json poussé par ce workflow."
+    related_pr: [1770]
+    drift_note: "Segment WIKI prouvé : run 38321704586 (workflow_dispatch, 2026-10-12) a poussé 21b5abc5 sur le main du WIKI par contournement du ruleset (rule suite 4489045974)."
