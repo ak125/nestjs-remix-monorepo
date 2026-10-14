@@ -567,27 +567,33 @@ export function renderCampaign(
   ];
   const title = selected[language === 'fr' ? 0 : 2],
     cta = selected[language === 'fr' ? 1 : 3];
-  const text = [title, ...blocks, cta, 'Simulation — aucune offre réelle'].join(
-    '\n\n',
-  );
-  const html = `<!doctype html><html lang="${language}" dir="ltr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(title)}</title></head><body style="margin:0;background:#fff;color:#17202a;font:18px/1.6 Arial,sans-serif"><main style="max-width:600px;margin:auto;padding:20px"><h1>${escape(title)}</h1>${blocks.map((b) => `<p>${escape(b)}</p>`).join('')}<p>${escape(cta)}</p><p>Simulation — aucune offre réelle</p></main></body></html>`;
+  const variants = [
+    { id: 'A', subject: title, preheader: cta },
+    {
+      id: 'B',
+      subject:
+        language === 'fr'
+          ? 'Les informations à vérifier avant votre choix'
+          : 'Information to check before choosing',
+      preheader: cta,
+    },
+  ].map((variant) => ({
+    ...variant,
+    text: [
+      variant.subject,
+      ...blocks,
+      cta,
+      'Simulation — aucune offre réelle',
+    ].join('\n\n'),
+    html: `<!doctype html><html lang="${language}" dir="ltr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(variant.subject)}</title></head><body style="margin:0;background:#fff;color:#17202a;font:18px/1.6 Arial,sans-serif"><main style="max-width:600px;margin:auto;padding:20px"><h1>${escape(variant.subject)}</h1>${blocks.map((b) => `<p>${escape(b)}</p>`).join('')}<p>${escape(cta)}</p><p>Simulation — aucune offre réelle</p></main></body></html>`,
+  }));
   return {
-    html,
-    text,
+    html: variants[0].html,
+    text: variants[0].text,
     language,
     source_refs: refs,
-    template_version: '2.0.0',
-    variants: [
-      { id: 'A', subject: title, preheader: cta },
-      {
-        id: 'B',
-        subject:
-          language === 'fr'
-            ? 'Les informations à vérifier avant votre choix'
-            : 'Information to check before choosing',
-        preheader: cta,
-      },
-    ],
+    template_version: '2.1.0',
+    variants,
     social: {
       template: getSocialTemplate('conseil', 'facebook')?.key ?? null,
       text: blocks.join('\n'),
