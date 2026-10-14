@@ -77,12 +77,15 @@ def guidance(info):
         'Read result.returncode and output; command success alone is not a business validation. '
         'Save a review dossier with exclusions, variants, simulations, test evidence, missing data and approval limits '
         'using automecanik_marketing_workspace. Candidate tests and skill edits never promote themselves. '
-        'For an integration outside these writable paths, prepare a precise handoff with diff and reproduction; '
-        'a genuine new anomaly can use codex_automecanik_diagnostic when available; '
-        'existing automecanik_dev requests require an eligible diagnostic case from its context. '
-        'A new feature outside that contract needs a reviewable handoff, not a fabricated diagnostic. '
-        'Never claim that saving a handoff '
-        'started Codex. No new mission is needed for an already tracked case. No real send, publication or PROD.'
+        'For an integration outside these writable paths, prepare a precise handoff with diff and reproduction. '
+        'Check the tools available in this session: automecanik_dev action=marketing_request is the separate A1 '
+        'handoff contract when its schema exposes dossier and expected_sha256. Follow that schema; prepare and '
+        'reread the reports/*.json dossier through automecanik_marketing_workspace and use its returned SHA-256. '
+        'First look for an existing case via context; follow that same case via status/result after interruption '
+        'or timeout. Never rename a dossier to force a new request. If this contract is unavailable, preserve '
+        'the dossier and report the missing schema. Diagnostic request still needs an eligible diagnostic case; '
+        'never fabricate one for marketing. Saving a dossier is not submission; queued is not Codex execution '
+        'or test evidence. No real send, publication or PROD.'
     )
 
 
