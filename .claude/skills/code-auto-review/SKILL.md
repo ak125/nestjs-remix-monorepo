@@ -62,11 +62,20 @@ printf '%s\n' <fichiers> | grep -iE "$P"                      # chemin, tests in
 grep -lE "(TABLES\.|['\"\`])_*($T)\b" <fichiers de code>     # accès à une table commerce
 grep -lwE "_*($T)" <migrations>
 grep -lE 'PAYBOX_|SYSTEMPAY_|CYBERPLUS_|_HMAC_KEY|CERTIFICATE_' <fichiers>
-for f in <fichiers de statut M>; do git diff -U0 "$BASE" -- "$f" | grep -E '^[+-]' \
-  | grep -vE '^(\+\+\+|---) (a/|b/|/dev/null)' \
-  | grep -qiwE 'meta|h1|canonical|robots|sitemaps?' && echo "$f"; done   # SEO indexé
+G='^(audit/registry/(canonical|files|runtime|deps|db|rpc)\.json|\.claude/knowledge/REPO_MAP\.md'
+G="$G"'|\.spec/00-canon/ai-registry/skills\.registry\.json'
+G="$G"'|audit/cleanup/pr-8-(controlled-cleanup-candidates\.json|deletion-proof\.md))$'
+printf '%s\n' <fichiers de statut M> | grep -vE "$G" | while read -r f; do
+  git diff -U0 "$BASE" -- "$f" | grep -E '^[+-]' | grep -vE '^(\+\+\+|---) (a/|b/|/dev/null)' \
+    | grep -iwE 'meta|h1|canonical|robots|sitemaps?' | sed "s|^|$f: |"; done   # SEO indexé
 grep -liwE 'TRUNCATE|POLICY|ROW LEVEL SECURITY|GRANT|REVOKE|DROP' <migrations>
 ```
+
+La sonde SEO imprime chaque ligne qui la déclenche, préfixée de son fichier : le rapport
+(§7, partie 3) cite ces lignes et dit, pour chacune, ce que le mot désigne. Elle ne lit pas
+les artefacts générés de `$G` (cas 4 du §4) : ils ne servent aucune page, leur contenu dérive
+de fichiers sources que la sonde lit déjà, et l'inventaire PR-8 tient sur une seule ligne,
+que chaque régénération du registre réécrit en entier.
 
 La dernière sonde ne rend pas STOP un `DROP … IF EXISTS` visant un objet que le même fichier
 crée (reprise prescrite par `backend/supabase/migrations/README.md`). Sont aussi STOP : un
@@ -147,7 +156,7 @@ cause : un test existant qui échoue à cause de tes lignes est un finding sur t
 | 1 | Aucune preuve au sens du §3 | `REPORTED` « à vérifier », avec la sévérité qu'il aurait s'il était prouvé |
 | 2 | Le finding porte sur une ligne hors de tes lignes (diff figé au §1, étendu au §5) | réécrite par lint-staged dans un fichier STOP : `OWNER_DECISION` (hunk de format inclus ou PR de format séparée) ; sinon `REPORTED` (préexistant ; ré-indexée par lint-staged, elle part avec le commit) |
 | 3 | Le correctif ajoute une exemption (directive d'ignore d'un outil : `eslint-disable`, `prettier-ignore`, `squawk-ignore`, ignore ast-grep ; `it.skip`/`.only`, `--no-verify`, seuil ou baseline relevé, assertion existante affaiblie ou retirée) que la doc du dépôt ne prescrit pas pour ce cas précis (ex. prescrite : `backend/supabase/migrations/README.md` pour `CONCURRENTLY`) | `REPORTED` + verdict de la garde lancée sans l'exemption (`.claude/rules/guardrails.md` passe 5) |
-| 4 | Artefact généré (`canonical.json`, `skills.registry.json`, blocs `AUTO-GENERATED`, `REPO_MAP.md`, canon mirrors) | `FIXED` uniquement via son script générateur |
+| 4 | Artefact généré (fichiers de `$G` au §1, blocs `AUTO-GENERATED`, canon mirrors) | `FIXED` uniquement via son script générateur |
 | 5 | Fichier STOP, et le correctif fait autre chose que : retirer de tes lignes un élément que la demande ne contient pas, sans rien ajouter ; ou ajouter ce qu'un message de garde ou une règle écrite du dépôt exige mot pour mot (citer le message ou `fichier:ligne`) ; ou ajouter un test (nouveau fichier de test, ou lignes `+` seulement dans un fichier de test existant) | `OWNER_DECISION` |
 | 6 | Le correctif touche un fichier hors périmètre (fichiers de test exceptés), ou change le contrat ou le livrable : URL ou route, forme d'une API qui existe sur `BASE`, schéma DB, variable d'env, fichier créé ou supprimé (hors tests), assertion existante modifiée, élément demandé retiré | `OWNER_DECISION` — patch proposé, non appliqué |
 | 7 | Tous les autres cas | `FIXED` — correction minimale sur tes lignes ; ajouter ou étendre un test qui l'exerce est permis |
@@ -221,7 +230,8 @@ simplification closeout* de `continuous-improvement-global`, appliqué à ce que
 2. **Findings** — `fichier:ligne | BLOQUANT/HAUTE/SUGGESTION | mien/préexistant | disposition |
    preuve avant → après`, puis le nombre de findings préexistants BLOQUANT/HAUTE.
 3. **Gardes** — `commande | exit | ligne clé`, y compris les `NON EXÉCUTÉE` et chaque sonde
-   STOP du §1 avec les fichiers qu'elle sort ; chaque fichier STOP hors sonde avec la ligne de
+   STOP du §1 avec les fichiers qu'elle sort (sonde SEO : chaque ligne imprimée, et ce que
+   le mot y désigne ; « pas du SEO » ne lève pas le STOP) ; chaque fichier STOP hors sonde avec la ligne de
    l'invariant 9 qui le couvre ; l'arbre validé (§2) ; chaque exécution du §6 (commit, push) :
    `commande | exit | ligne clé | SHA` ; puis `git status --short`.
 4. **Coverage manifest** — remplir chaque champ listé par
