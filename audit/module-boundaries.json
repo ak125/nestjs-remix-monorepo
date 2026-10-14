@@ -18,7 +18,7 @@
         "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__"
       ],
       "files_count": 157,
-      "loc_total": 43959,
+      "loc_total": 44019,
       "has_barrel": true
     },
     "agentic-engine": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 585,
-      "loc_total": 110551,
+      "loc_total": 110586,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -411,7 +411,7 @@
         "backend/src/modules/marketing/templates"
       ],
       "files_count": 29,
-      "loc_total": 6991,
+      "loc_total": 6997,
       "has_barrel": false
     },
     "mcp-validation": {
@@ -593,7 +593,7 @@
         "packages/registry/src/vehicle-context"
       ],
       "files_count": 57,
-      "loc_total": 6858,
+      "loc_total": 6868,
       "has_barrel": true
     },
     "pkg-seo-types": {
@@ -701,7 +701,7 @@
         "scripts/wiki-generators/__tests__"
       ],
       "files_count": 206,
-      "loc_total": 46488,
+      "loc_total": 46626,
       "has_barrel": true
     },
     "search": {
@@ -876,8 +876,8 @@
         "backend/src/modules/supplier-truth/connectors",
         "backend/src/modules/supplier-truth/domain"
       ],
-      "files_count": 50,
-      "loc_total": 5536,
+      "files_count": 51,
+      "loc_total": 6785,
       "has_barrel": false
     },
     "suppliers": {
@@ -958,7 +958,7 @@
         "tests/registry"
       ],
       "files_count": 301,
-      "loc_total": 57192,
+      "loc_total": 57355,
       "has_barrel": true
     },
     "upload": {
@@ -1026,7 +1026,7 @@
         "backend/src/workers/types"
       ],
       "files_count": 18,
-      "loc_total": 3892,
+      "loc_total": 4026,
       "has_barrel": false
     }
   },
@@ -2058,6 +2058,11 @@
     },
     {
       "from": "supplier-truth",
+      "to": "backend-core",
+      "count": 1
+    },
+    {
+      "from": "supplier-truth",
       "to": "database",
       "count": 1
     },
@@ -2199,7 +2204,7 @@
     {
       "from": "workers",
       "to": "supplier-truth",
-      "count": 17
+      "count": 19
     }
   ],
   "deep_access_violations": [
