@@ -878,8 +878,8 @@
         "backend/src/modules/supplier-truth/connectors",
         "backend/src/modules/supplier-truth/domain"
       ],
-      "files_count": 50,
-      "loc_total": 5536,
+      "files_count": 51,
+      "loc_total": 6785,
       "has_barrel": false
     },
     "suppliers": {
@@ -1028,7 +1028,7 @@
         "backend/src/workers/types"
       ],
       "files_count": 18,
-      "loc_total": 3892,
+      "loc_total": 4026,
       "has_barrel": false
     }
   },
@@ -2060,6 +2060,11 @@
     },
     {
       "from": "supplier-truth",
+      "to": "backend-core",
+      "count": 1
+    },
+    {
+      "from": "supplier-truth",
       "to": "database",
       "count": 1
     },
@@ -2201,7 +2206,7 @@
     {
       "from": "workers",
       "to": "supplier-truth",
-      "count": 17
+      "count": 19
     }
   ],
   "deep_access_violations": [
