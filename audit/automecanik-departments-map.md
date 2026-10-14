@@ -12,8 +12,8 @@
 
 > **Projection machine-readable (warn-only, PR #787).** Introduite pour un sous-ensemble *commerce-loop*
 > (Achats & Fournisseurs → `supplier`, Commercial & Ventes → `sales`, Pricing → `pricing`) + leurs handoffs
-> métier (`supplier→sales` dispo, `pricing→sales` marge), elle porte aujourd'hui **20 slugs** pour ces 24 lignes
-> (correspondance exhaustive : [réconciliation 24 ↔ 20](#réconciliation-24-départements--20-slugs-yaml)). Formalisée, en **slugs**, dans
+> métier (`supplier→sales` dispo, `pricing→sales` marge), elle porte **24 identifiants** pour ces 24 lignes depuis #1761 (20 slugs au 2026-10-04 ;
+> correspondance historique : [réconciliation 24 ↔ 20](#réconciliation-24-départements--20-slugs-yaml)). Formalisée, en **slugs**, dans
 > [`agent-operating-map.yaml`](../.spec/00-canon/ai-registry/agent-operating-map.yaml) (blocs `departments:` /
 > `department_handoffs:`, ai-registry). Pont vers les domaines techniques D1-D16 via `repo_domains`.
 > **Autorité par champ** : ce markdown reste la **SoT narrative** (Vue 1/5/6 + format rapport) ; le yaml est la
@@ -65,6 +65,17 @@
 **Bilan : 12 REUSE (dont #23 « PAUSE création ») · 9 IMPROVE · 2 NO-CODE · 1 mixte IMPROVE / NO-CODE (#15) = 24**, chaque ligne comptée une seule fois (REUSE : 1-6, 11, 16, 19, 21, 23, 24 · IMPROVE : 7-10, 12-14, 20, 22 · NO-CODE : 17, 18). Rien à construire — voir le backlog parké dans le scorecard tunnel.
 
 ### Réconciliation 24 départements ↔ 20 slugs YAML
+
+> **Mise à jour du 2026-10-13.** Depuis #1761, `agent-operating-map.yaml` porte **24 identifiants**. Les quatre
+> lignes sans slug ci-dessous (#1, #18, #19, #20) y sont `direction`, `legal`, `risk-audit` et `product`
+> (`agent-operating-map.yaml:418`, `:429`, `:440`, `:451`). Ces quatre départements sont `state: dormant`,
+> `operating_mode: human`, sans `repo_domains` ni `kpi_primary`. Comme les vingt autres, ils portent
+> `accountable_owner: null`. Les « Aucun slug » de la section L0 du 2026-10-10 sont datés eux aussi, comme la
+> ligne #24 ci-dessous : `people` s'intitule désormais « People, Formation & Doc », `repo_domains: [D8]`
+> (`agent-operating-map.yaml:362-371`). Le
+> snapshot Command Center compte aussi 24 départements. Le tableau et le paragraphe qui suivent décrivent
+> l'état du 2026-10-04 et restent à titre d'historique. La phrase « Le YAML n'est pas étendu ici » ne vaut
+> plus. L'ajout de ces quatre identifiants ne crée aucun module, aucune capacité ni aucun responsable nommé.
 
 Les **24 lignes** ci-dessus sont la carte narrative ; `agent-operating-map.yaml` (`departments:`) porte **20 slugs**.
 Correspondance exhaustive (aucun id inventé). Le numéro de ligne n'est **pas** un domaine technique : la ligne #16
@@ -174,7 +185,8 @@ veut pas dire zéro. Unité, fenêtre et fraîcheur sont sans objet tant qu'aucu
 
 **Ce que le Command Center affiche et n'affiche pas**
 
-- Il affiche les **20 slugs**, pas les 4 lignes sans slug.
+- Au 2026-10-04, il affichait les **20 slugs**, pas les 4 lignes sans slug. Depuis #1761, il affiche 24 départements ;
+  les quatre ajoutés sont `dormant` et n'ont pas de KPI.
 - Depuis le 2026-10-04, chaque carte montre aussi l'owner déclaré et l'état.
 - La prochaine action owner se lit dans la file d'actions, les handoffs dans l'onglet chaînes.
 - La « dernière preuve » par département n'est pas portée par le snapshot : elle reste dans le tableau ci-dessus.
