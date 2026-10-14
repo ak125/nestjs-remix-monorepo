@@ -17,7 +17,10 @@ import {
   eligibility,
   uniqueEvents,
 } from "../../backend/src/modules/marketing/services/marketing-preparation";
-import { workspace } from "../../backend/src/modules/marketing/dto/marketing-workbench.dto";
+import {
+  workspace,
+  type WorkEvent,
+} from "../../backend/src/modules/marketing/dto/marketing-workbench.dto";
 import { runWorkbench } from "./workbench-cli";
 const fixture = () =>
   JSON.parse(
@@ -906,6 +909,88 @@ test("V2 acquisition, qualification, after-sales, recommendation, stock and reac
   assert.equal(q.decision, "ask");
   assert.ok(q.questions.includes("engine"));
 });
+test("J06 opposition suppresses after-delivery content and brief", () => {
+  const w = workspace(fixture());
+  const s = w.scenarios.find((s) => s.id === "J06");
+  assert.ok(s);
+  assert.equal(prepareScenario(w, "J06").decision, "prepare");
+  const contact = w.contacts.find((c) => c.id === s.contact_id);
+  assert.ok(contact);
+  contact.opposed = true;
+
+  const r = prepareScenario(w, "J06");
+  assert.equal(r.decision, "exclude");
+  assert.deepEqual(r.reasons, ["opposed"]);
+  assert.deepEqual(r.questions, []);
+  assert.equal(r.content, null);
+  assert.equal(r.brief, null);
+  assert.equal(r.real_execution, "unavailable");
+});
+
+for (const kind of ["refusal", "support"] as const) {
+  test(`J06 ${kind} stops after-delivery content from the trigger boundary`, () => {
+    for (const atTrigger of [true, false]) {
+      const w = workspace(fixture());
+      const s = w.scenarios.find((s) => s.id === "J06");
+      assert.ok(s);
+      assert.equal(prepareScenario(w, "J06").decision, "prepare");
+      w.events.push({
+        id: "synthetic-after-delivery-stop",
+        project: w.context.project,
+        contact_id: s.contact_id,
+        object_id: s.object_id,
+        kind,
+        occurred_at: atTrigger ? s.trigger_at : w.context.data_at,
+        received_at: w.context.data_at,
+        verified: true,
+        bot: false,
+      });
+
+      const r = prepareScenario(w, "J06");
+      assert.equal(r.decision, "exclude", `atTrigger=${atTrigger}`);
+      assert.deepEqual(r.reasons, ["human_or_service_stop"]);
+      assert.deepEqual(r.questions, []);
+      assert.equal(r.content, null);
+      assert.equal(r.brief, null);
+      assert.equal(r.real_execution, "unavailable");
+    }
+  });
+
+  test(`J06 ${kind} outside the verified journey does not suppress its draft`, () => {
+    const changes: Partial<WorkEvent>[] = [
+      { project: "other-project" },
+      { contact_id: "synthetic-other-contact" },
+      { object_id: "synthetic-other-order" },
+      { verified: false },
+      { bot: true },
+      { occurred_at: "2026-09-01T09:59:59.999Z" },
+    ];
+    for (const change of changes) {
+      const w = workspace(fixture());
+      const s = w.scenarios.find((s) => s.id === "J06");
+      assert.ok(s);
+      const before = prepareScenario(w, "J06");
+      assert.equal(before.decision, "prepare");
+      assert.ok(before.content?.text.length);
+      assert.equal(before.brief?.payload.status, "draft");
+      w.events.push({
+        id: "synthetic-unrelated-after-delivery-stop",
+        project: w.context.project,
+        contact_id: s.contact_id,
+        object_id: s.object_id,
+        kind,
+        occurred_at: s.trigger_at,
+        received_at: w.context.data_at,
+        verified: true,
+        bot: false,
+        ...change,
+      });
+
+      assert.deepEqual(prepareScenario(w, "J06"), before, JSON.stringify(change));
+    }
+  });
+}
+
 test("V2 different vehicle, side and audience never inherit another fitment or professional offer", () => {
   const w = fixture();
   const r = recommendProducts(w, "synthetic-contact-1", "synthetic-vehicle-1");
