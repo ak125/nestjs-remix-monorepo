@@ -375,6 +375,62 @@ test("C25 capacity projection bounds hypotheses and preserves unknown profitabil
   assert.equal(r.scheduled, false);
   assert.equal(r.revenue_forecast, null);
 });
+test("C25 decimal hypotheses preserve whole units and their exact contribution", () => {
+  for (const [factor, demand] of [
+    [0.29, 29],
+    [0.58, 58],
+    [1.13, 113],
+    [0.2899999999999999, 28],
+    [0.29000000000000004, 29],
+  ]) {
+    const r = capacityProjection({
+      historical_units: 100,
+      period_days: 30,
+      factors: [factor],
+      capacity_units: 30,
+      unit_contribution_minor: "999999999999999999",
+      verified_dates: false,
+    });
+    const served = Math.min(demand, 30);
+    assert.deepEqual(r.scenarios[0], {
+      factor_hypothesis: factor,
+      demand_units: demand,
+      served_units: served,
+      unserved_units: demand - served,
+      contribution_minor: (BigInt(served) * 999999999999999999n).toString(),
+    });
+    assert.equal(r.scheduled, false);
+    assert.equal(r.revenue_forecast, null);
+    assert.equal(r.confidence_interval, null);
+  }
+});
+
+test("C25 projection handles zero, decimal exponents and bounded maximum inputs", () => {
+  for (const [units, factor, demand] of [
+    [0, 10, 0],
+    [1000000, 0, 0],
+    [1000000, Number.MIN_VALUE, 0],
+    [1000000, 1e-7, 0],
+    [1000000, 0.000001, 1],
+    [1000000, 10, 10000000],
+  ]) {
+    const input = {
+      historical_units: units,
+      period_days: 30,
+      factors: [factor],
+      capacity_units: 1000000,
+      unit_contribution_minor: null,
+      verified_dates: false,
+    };
+    const before = structuredClone(input);
+    const r = capacityProjection(input);
+    assert.equal(r.scenarios[0].demand_units, demand);
+    assert.equal(r.scenarios[0].served_units, Math.min(demand, 1000000));
+    assert.equal(r.scenarios[0].contribution_minor, null);
+    assert.deepEqual(input, before);
+  }
+});
+
 test("C22 C26 bots and unreliable opens remain separate; duplicate alerts group by fact", () => {
   const w = fixture(),
     e = w.events[0];
