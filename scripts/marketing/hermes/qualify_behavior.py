@@ -3,8 +3,9 @@
 Run explicitly with Hermes' installed Python: script HERMES_SOURCE OUTPUT_DIR CASE.
 Uses the current profile's provider/model, high reasoning, no fallback and only
 the marketing toolset. Each case creates a fresh native session, at most four
-iterations by default. HERMES_MARKETING_TEST_ITERATIONS can raise this to eight,
-or sixteen for a1_campaign (720 seconds instead of 240). The A1 case executes
+iterations by default, or fewer when the profile sets a lower budget.
+HERMES_MARKETING_TEST_ITERATIONS may request at most eight iterations, never
+above the profile's max_turns. The A1 case executes
 candidate commands with synthetic data. a1_finalize reuses those records with
 a 480-second limit and at most eight iterations. This is not a Telegram test.
 """
@@ -28,10 +29,19 @@ CASES = {
 }
 
 
+def qualification_iterations(profile_limit):
+    """Respect the profile budget and the eight-turn qualification ceiling."""
+    if type(profile_limit) is not int or profile_limit < 1:
+        raise ValueError('agent.max_turns must be a positive integer')
+    ceiling = min(8, profile_limit)
+    iterations = int(os.environ.get('HERMES_MARKETING_TEST_ITERATIONS', str(min(4, ceiling))))
+    if not 1 <= iterations <= ceiling:
+        raise ValueError(f'Qualification iterations must be between 1 and {ceiling}')
+    return iterations
+
+
 def main():
     source, destination, case = sys.argv[1:]
-    iterations = int(os.environ.get("HERMES_MARKETING_TEST_ITERATIONS", "4"))
-    assert 1 <= iterations <= (16 if case == "a1_campaign" else 8)
     assert case in CASES
     assert os.environ.get("HERMES_HOME") == "/home/hermes/.hermes/profiles/orchestration-automecanik-pilot"
     assert os.environ.get("HERMES_YOLO_MODE", "").lower() not in {"1", "true"}
@@ -48,6 +58,7 @@ def main():
     from run_agent import AIAgent
 
     cfg = load_config()
+    iterations = qualification_iterations(cfg['agent']['max_turns'])
     choice = _resolve_model_and_provider(cfg, None, None)
     assert choice.model == "gpt-6-astra", "Configured model changed; requalify the test scope"
     reasoning = resolve_reasoning_config(cfg, choice.model)
