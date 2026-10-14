@@ -438,7 +438,10 @@ export function toCommandCenterDigest(
     global_status: cc.global_status,
     // Le détail de restitution du cockpit n’étend pas le contrat Hermes v1.
     department_reports: cc.department_reports.map(
-      ({ score_reason: _scoreReason, ...report }) => report,
+      ({
+        score_reason: _scoreReason,
+        ...report
+      }: CommandCenterResponseV2['department_reports'][number]) => report,
     ),
     owner_go_actions_total: waiting.length,
     owner_go_actions: waiting
