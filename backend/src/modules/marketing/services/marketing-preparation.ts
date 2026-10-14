@@ -298,15 +298,15 @@ export function explainSegment(input: unknown, rawRule: unknown) {
         const n = window.filter((e) => e.kind === r.kind).length;
         return { match: n >= r.min, reasons: [`event_count:${r.kind}:${n}`] };
       }
-      const match = window.some(
-        (a) =>
-          a.kind === r.first &&
-          window.some(
-            (b) =>
-              b.kind === r.then &&
-              Date.parse(b.occurred_at) > Date.parse(a.occurred_at),
-          ),
-      );
+      // uniqueEvents sorts by instant; filtering preserves that order.
+      // A later second event exists iff one follows the earliest first event.
+      const first = window.find((e) => e.kind === r.first);
+      const firstAt = first ? Date.parse(first.occurred_at) : null;
+      const match =
+        firstAt !== null &&
+        window.some(
+          (e) => e.kind === r.then && Date.parse(e.occurred_at) > firstAt,
+        );
       return { match, reasons: [`sequence:${r.first}:${r.then}:${match}`] };
     };
     const evaluation = evaluate(rule),
