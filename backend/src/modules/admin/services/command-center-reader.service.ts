@@ -436,7 +436,10 @@ export function toCommandCenterDigest(
     degraded: cc.degraded,
     stale_status: cc.stale_status,
     global_status: cc.global_status,
-    department_reports: cc.department_reports,
+    // Le détail de restitution du cockpit n’étend pas le contrat Hermes v1.
+    department_reports: cc.department_reports.map(
+      ({ score_reason: _scoreReason, ...report }) => report,
+    ),
     owner_go_actions_total: waiting.length,
     owner_go_actions: waiting
       .slice(0, DIGEST_MAX_OWNER_GO_ACTIONS)
