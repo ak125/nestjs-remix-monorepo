@@ -413,7 +413,7 @@
         "backend/src/modules/marketing/templates"
       ],
       "files_count": 29,
-      "loc_total": 6999,
+      "loc_total": 7009,
       "has_barrel": false
     },
     "mcp-validation": {
@@ -703,7 +703,7 @@
         "scripts/wiki-generators/__tests__"
       ],
       "files_count": 205,
-      "loc_total": 46030,
+      "loc_total": 46086,
       "has_barrel": true
     },
     "search": {
