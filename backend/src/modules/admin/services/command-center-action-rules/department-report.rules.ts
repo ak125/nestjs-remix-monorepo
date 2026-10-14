@@ -92,6 +92,56 @@ function evolutionOf(m: LiveKpiMeasure): CcDepartmentReport['evolution'] {
   return rose === (m.better === 'higher') ? 'MIEUX' : 'PIRE';
 }
 
+/** Explique le verdict du producteur, sans utiliser le motif d’une action. */
+function scoreReason(m: LiveKpiMeasure | undefined, declared: boolean): string {
+  if (!m)
+    return declared
+      ? 'Score non mesuré : aucun producteur branché.'
+      : 'Score non mesuré : aucun KPI primaire déclaré.';
+  if (m.kpi.value == null)
+    return `Score non mesuré : ${
+      m.read_failure
+        ? READ_FAILURE[m.read_failure].cause
+        : 'source illisible ou données insuffisantes pour évaluer le KPI.'
+    }`;
+  const noTarget =
+    m.kpi.id === 'pages_generating_atc' || m.kpi.id === 'diagnostic_to_product';
+  const targetNote = noTarget
+    ? ' Aucune cible définie ; sa validation relève de l’owner.'
+    : '';
+  if (m.sample_size === 0)
+    return `${NO_SAMPLE} Performance non évaluée.${targetNote}`;
+  if (m.kpi.status === 'UNKNOWN')
+    return `Performance non évaluée : la mesure ne dispose pas d’un critère de réussite qualifié.${targetNote}`;
+  const explanations: Record<
+    string,
+    Partial<Record<LiveKpiMeasure['kpi']['status'], string>>
+  > = {
+    payments_kept: {
+      CRITICAL:
+        'Critique : aucun paiement gardé sur la période selon les statuts de commande.',
+      WARNING:
+        'Moyen : des paiements sont gardés, mais des annulations après paiement sont relevées.',
+      OK: 'Fort : des paiements sont gardés et aucune annulation après paiement n’est relevée.',
+    },
+    metric_reliability: {
+      CRITICAL: 'Critique : aucun contrôle de fiabilité réussi sur la période.',
+      WARNING:
+        'Moyen : certains contrôles de fiabilité réussissent, mais la mesure reste non certifiée.',
+      OK: 'Fort : le verdict Data certifie la fiabilité de la mesure des commandes.',
+    },
+    pages_generating_atc: {
+      CRITICAL:
+        'Critique : aucune page SEO n’a généré d’ajout au panier sur la période.',
+    },
+    diagnostic_to_product: {
+      CRITICAL:
+        'Critique : aucune session exploitable du diagnostic n’a ensuite vu de produit.',
+    },
+  };
+  return `${explanations[m.kpi.id]?.[m.kpi.status] ?? `Score issu du statut ${m.kpi.status} du KPI mesuré.`}${targetNote}`;
+}
+
 export function buildDepartmentReports(input: {
   departments: readonly ReportDeptView[];
   actions: readonly OwnerActionV2[];
@@ -157,6 +207,7 @@ export function buildDepartmentReports(input: {
       },
       kpi,
       score,
+      score_reason: scoreReason(m, d.kpi_primary != null),
       evolution: measured ? evolutionOf(m) : ('INCONNUE' as const),
       evidence: dedup.length ? dedup : [`${OPERATING_MAP}#${d.id}`],
       open_action_ids: open.map((a) => a.id),

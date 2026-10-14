@@ -8121,7 +8121,7 @@
         "backend/src/modules/admin/services/command-center-action-rules/score-action.ts"
       ],
       "kind": "service",
-      "loc": 278,
+      "loc": 329,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/command-center-action-rules/department-report.rules.ts",
       "risk": "low",
@@ -8274,7 +8274,7 @@
         "backend/src/modules/analytics/index.ts"
       ],
       "kind": "service",
-      "loc": 104,
+      "loc": 107,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/command-center-action-rules/tracking-integrity-action.rules.ts",
       "risk": "low",
@@ -8538,7 +8538,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 446,
+      "loc": 452,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/command-center-reader.service.ts",
       "risk": "low",
@@ -18377,7 +18377,7 @@
         "backend/src/modules/marketing/templates/social-post-templates.ts"
       ],
       "kind": "service",
-      "loc": 1071,
+      "loc": 1077,
       "owner": "__unassigned__",
       "path": "backend/src/modules/marketing/services/marketing-preparation.ts",
       "risk": "low",
@@ -33552,20 +33552,45 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/supplier-truth/connectors/cal-parse.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/supplier-truth/connectors/cal-parse.ts",
+        "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts"
+      ],
+      "kind": "test",
+      "loc": 319,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/supplier-truth/connectors/cal-parse.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
         "depcruise",
         "reachability"
       ],
       "domain": "UNKNOWN",
       "id": "backend/src/modules/supplier-truth/connectors/cal-parse.ts",
       "importedBy": [
+        "backend/src/modules/supplier-truth/connectors/cal-parse.test.ts",
         "backend/src/modules/supplier-truth/connectors/cal.connector.test.ts",
-        "backend/src/modules/supplier-truth/connectors/cal.connector.ts"
+        "backend/src/modules/supplier-truth/connectors/cal.connector.ts",
+        "backend/src/workers/supplier-availability-classify.ts"
       ],
       "imports": [
+        "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts",
         "backend/src/modules/supplier-truth/connectors/supplier-connector.interface.ts"
       ],
       "kind": "service",
-      "loc": 172,
+      "loc": 411,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/connectors/cal-parse.ts",
       "risk": "low",
@@ -33607,14 +33632,16 @@
       "importedBy": [
         "backend/src/modules/supplier-truth/connectors/cal.connector.test.ts",
         "backend/src/modules/supplier-truth/supplier-sync.runner.ts",
+        "backend/src/workers/supplier-availability-classify.ts",
         "backend/src/workers/supplier-price-verify.ts"
       ],
       "imports": [
         "backend/src/modules/supplier-truth/connectors/cal-parse.ts",
+        "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts",
         "backend/src/modules/supplier-truth/connectors/supplier-connector.interface.ts"
       ],
       "kind": "service",
-      "loc": 322,
+      "loc": 351,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/connectors/cal.connector.ts",
       "risk": "low",
@@ -33682,7 +33709,7 @@
         "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts"
       ],
       "kind": "test",
-      "loc": 334,
+      "loc": 724,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.test.ts",
       "risk": "low",
@@ -33700,15 +33727,19 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts",
       "importedBy": [
+        "backend/src/modules/supplier-truth/connectors/cal-parse.test.ts",
+        "backend/src/modules/supplier-truth/connectors/cal-parse.ts",
+        "backend/src/modules/supplier-truth/connectors/cal.connector.ts",
         "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.test.ts",
         "backend/src/modules/supplier-truth/connectors/inoshop.connector.ts",
         "backend/src/workers/supplier-availability-classify.ts"
       ],
       "imports": [
-        "backend/src/modules/supplier-truth/connectors/inoshop-parse.ts"
+        "backend/src/modules/supplier-truth/connectors/inoshop-parse.ts",
+        "backend/src/utils/html-entities.ts"
       ],
       "kind": "service",
-      "loc": 324,
+      "loc": 589,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts",
       "risk": "low",
@@ -33758,7 +33789,7 @@
         "backend/src/modules/supplier-truth/connectors/supplier-connector.interface.ts"
       ],
       "kind": "service",
-      "loc": 307,
+      "loc": 314,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/connectors/inoshop.connector.ts",
       "risk": "low",
@@ -38591,7 +38622,8 @@
         "backend/src/modules/blog/utils/blog-text.utils.ts",
         "backend/src/modules/catalog/services/unified-page-data.service.ts",
         "backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts",
-        "backend/src/modules/products/services/cross-selling-seo.service.ts"
+        "backend/src/modules/products/services/cross-selling-seo.service.ts",
+        "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts"
       ],
       "imports": [],
       "kind": "service",
@@ -38960,15 +38992,18 @@
       "id": "backend/src/workers/supplier-availability-classify.ts",
       "importedBy": [],
       "imports": [
+        "backend/src/modules/supplier-truth/connectors/cal-parse.ts",
+        "backend/src/modules/supplier-truth/connectors/cal.connector.ts",
         "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts",
         "backend/src/modules/supplier-truth/connectors/inoshop.connector.ts",
         "backend/src/modules/supplier-truth/connectors/portal-classify-resilience.ts",
         "backend/src/modules/supplier-truth/connectors/supplier-registry.ts",
         "fs",
+        "path",
         "zlib"
       ],
       "kind": "service",
-      "loc": 389,
+      "loc": 523,
       "owner": "__unassigned__",
       "path": "backend/src/workers/supplier-availability-classify.ts",
       "risk": "low",
@@ -39312,7 +39347,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 899,
+      "loc": 904,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/command-center-action-rules.test.ts",
       "risk": "low",
@@ -39369,7 +39404,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 527,
+      "loc": 571,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/command-center-department-report.test.ts",
       "risk": "low",
@@ -39388,7 +39423,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 195,
+      "loc": 215,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/command-center-digest.test.ts",
       "risk": "low",
@@ -39464,7 +39499,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 407,
+      "loc": 409,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/command-center.controller.test.ts",
       "risk": "low",
@@ -44075,7 +44110,7 @@
         "~/components/ui/card"
       ],
       "kind": "config",
-      "loc": 201,
+      "loc": 236,
       "owner": "__unassigned__",
       "path": "frontend/app/components/command-center/DepartmentReports.tsx",
       "risk": "low",
@@ -63176,7 +63211,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 248,
+      "loc": 340,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/command-center-view.test.tsx",
       "risk": "low",
@@ -66596,7 +66631,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 535,
+      "loc": 545,
       "owner": "__unassigned__",
       "path": "packages/registry/src/command-center/snapshot.ts",
       "risk": "low",
@@ -70928,7 +70963,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 1588,
+      "loc": 1726,
       "owner": "__unassigned__",
       "path": "scripts/marketing/marketing-workbench.test.ts",
       "risk": "low",
