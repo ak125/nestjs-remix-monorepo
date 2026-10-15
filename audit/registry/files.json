@@ -5019,7 +5019,7 @@
         "backend/src/workers/types/content-refresh.types.ts"
       ],
       "imports": [
-        "packages/seo-roles/dist/index.d.ts"
+        "@repo/seo-roles"
       ],
       "kind": "service",
       "loc": 24,
@@ -8880,7 +8880,7 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "packages/seo-roles/dist/index.d.ts"
+        "@repo/seo-roles"
       ],
       "kind": "service",
       "loc": 680,
@@ -30618,8 +30618,8 @@
       "id": "backend/src/modules/seo/registries/__tests__/seo-surface.registry.test.ts",
       "importedBy": [],
       "imports": [
-        "backend/src/modules/seo/registries/seo-surface.registry.ts",
-        "packages/seo-roles/dist/index.d.ts"
+        "@repo/seo-roles",
+        "backend/src/modules/seo/registries/seo-surface.registry.ts"
       ],
       "kind": "test",
       "loc": 40,
@@ -30693,7 +30693,7 @@
       ],
       "imports": [
         "@repo/seo-role-contracts",
-        "packages/seo-roles/dist/index.d.ts"
+        "@repo/seo-roles"
       ],
       "kind": "service",
       "loc": 42,
@@ -31387,8 +31387,8 @@
         "@database/services/supabase-base.service",
         "@repo/database-types",
         "@repo/seo-role-contracts",
-        "crypto",
-        "packages/seo-roles/dist/index.d.ts"
+        "@repo/seo-roles",
+        "crypto"
       ],
       "kind": "service",
       "loc": 333,
@@ -33002,9 +33002,9 @@
         "backend/src/modules/seo/utils/seo-balise-collision-gate.ts"
       ],
       "imports": [
+        "@repo/seo-roles",
         "backend/src/modules/seo/types/resolved-seo-field.ts",
-        "crypto",
-        "packages/seo-roles/dist/index.d.ts"
+        "crypto"
       ],
       "kind": "service",
       "loc": 169,
@@ -55858,7 +55858,7 @@
       "id": "frontend/app/routes/admin.seo-hub.page-briefs.tsx",
       "importedBy": [],
       "imports": [
-        "packages/seo-roles/dist/index.d.ts",
+        "@repo/seo-roles",
         "~/components/ui/badge",
         "~/components/ui/card",
         "~/utils/internal-api.server",
