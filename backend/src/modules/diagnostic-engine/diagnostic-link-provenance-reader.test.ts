@@ -98,6 +98,11 @@ describe('DiagnosticEngineDataService.getLiveLinkProvenance', () => {
 
   const failures: Array<[string, Reply]> = [
     ['a query error', { data: null, error: { message: 'permission denied' } }],
+    // An error beside an empty array must not read as "nobody documented these links".
+    [
+      'a query error beside an empty array',
+      { data: [], error: { message: 'permission denied' } },
+    ],
     ['no data array', { data: null, error: null }],
     // A capped reply must never read as "these links are undocumented".
     [
