@@ -623,8 +623,8 @@
         "backend/src/modules/pricing/utils",
         "backend/src/modules/pricing/utils/__tests__"
       ],
-      "files_count": 31,
-      "loc_total": 7268,
+      "files_count": 37,
+      "loc_total": 9480,
       "has_barrel": false
     },
     "products": {
@@ -1027,8 +1027,8 @@
         "backend/src/workers/services",
         "backend/src/workers/types"
       ],
-      "files_count": 18,
-      "loc_total": 4026,
+      "files_count": 20,
+      "loc_total": 5136,
       "has_barrel": false
     }
   },
@@ -1889,6 +1889,11 @@
       "count": 2
     },
     {
+      "from": "pricing",
+      "to": "backend-core",
+      "count": 1
+    },
+    {
       "from": "products",
       "to": "backend-core",
       "count": 1
@@ -2192,6 +2197,11 @@
       "from": "workers",
       "to": "media-factory",
       "count": 9
+    },
+    {
+      "from": "workers",
+      "to": "pricing",
+      "count": 4
     },
     {
       "from": "workers",

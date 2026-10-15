@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 06428c4f09d0898f603e2b23daee686a44b331c45df280d283e9b6cb78ad0a18
+source_sha256: 768cc41b75d552708f7a7f942b9014061af9b547f6bac6f20375769bca32a209
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3056 |
+| Files (Layer 1) | 3064 |
 | DB tables (Layer 1) | 316 |
 | DB RPC (Layer 1) | 257 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1008 |
 
-Source sotFingerprint: `d5df3369683c`.
+Source sotFingerprint: `fa34be347734`.
 
 ## Comment l'utiliser
 
@@ -101,10 +101,10 @@ Source sotFingerprint: `d5df3369683c`.
 
 ### D9 — Import / ETL / Normalisation
 
-- **Files**: 16 (service=12, test=3, config=1)
+- **Files**: 18 (service=13, test=4, config=1)
 - **Runtime entrypoints**: 8
-- **Top owners**: @ak125 (16)
-- **Status**: LIVE=9, UNKNOWN=7
+- **Top owners**: @ak125 (18)
+- **Status**: LIVE=9, UNKNOWN=9
 
 ### D10 — Quality, Monitoring & Observabilité
 
@@ -116,11 +116,11 @@ Source sotFingerprint: `d5df3369683c`.
 
 ### D11 — Commerce & Users
 
-- **Files**: 288 (service=187, test=60, controller=40, config=1)
+- **Files**: 294 (service=190, test=63, controller=40, config=1)
 - **Runtime entrypoints**: 128
-- **Top owners**: @ak125 (120), @ak125/payments-team (82), @ak125/auth-team (74)
+- **Top owners**: @ak125 (126), @ak125/payments-team (82), @ak125/auth-team (74)
 - **Knowledge prose**: [`cart`](modules/cart.md), [`invoices`](modules/invoices.md), [`messages`](modules/messages.md), [`orders`](modules/orders.md), [`payments`](modules/payments.md), [`support`](modules/support.md), [`users`](modules/users.md)
-- **Status**: LIVE=177, UNKNOWN=111
+- **Status**: LIVE=177, UNKNOWN=117
 
 ### D12 — Marketing & Video
 
