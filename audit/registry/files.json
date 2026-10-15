@@ -21857,6 +21857,49 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/pricing/services/__tests__/golda-portal.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/pricing/services/golda-portal.ts"
+      ],
+      "kind": "test",
+      "loc": 635,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/pricing/services/__tests__/golda-portal.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/pricing/services/__tests__/golda-tariff-archive.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/pricing/services/golda-tariff-archive.ts",
+        "zlib"
+      ],
+      "kind": "test",
+      "loc": 346,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/pricing/services/__tests__/golda-tariff-archive.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/pricing/services/__tests__/golda-tariff-parse.test.ts",
       "importedBy": [],
       "imports": [
@@ -21866,6 +21909,28 @@
       "loc": 801,
       "owner": "__unassigned__",
       "path": "backend/src/modules/pricing/services/__tests__/golda-tariff-parse.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/pricing/services/__tests__/golda-tariff-store.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/pricing/services/golda-portal.ts",
+        "backend/src/modules/pricing/services/golda-tariff-store.ts"
+      ],
+      "kind": "test",
+      "loc": 408,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/pricing/services/__tests__/golda-tariff-store.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -22165,15 +22230,90 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/pricing/services/golda-portal.ts",
+      "importedBy": [
+        "backend/src/modules/pricing/services/__tests__/golda-portal.test.ts",
+        "backend/src/modules/pricing/services/__tests__/golda-tariff-store.test.ts",
+        "backend/src/modules/pricing/services/golda-tariff-store.ts",
+        "backend/src/workers/golda-tariff-fetch.ts"
+      ],
+      "imports": [
+        "backend/src/utils/html-entities.ts"
+      ],
+      "kind": "service",
+      "loc": 407,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/pricing/services/golda-portal.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/pricing/services/golda-tariff-archive.ts",
+      "importedBy": [
+        "backend/src/modules/pricing/services/__tests__/golda-tariff-archive.test.ts",
+        "backend/src/workers/golda-tariff-fetch.ts"
+      ],
+      "imports": [
+        "zlib"
+      ],
+      "kind": "service",
+      "loc": 168,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/pricing/services/golda-tariff-archive.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/pricing/services/golda-tariff-parse.ts",
       "importedBy": [
-        "backend/src/modules/pricing/services/__tests__/golda-tariff-parse.test.ts"
+        "backend/src/modules/pricing/services/__tests__/golda-tariff-parse.test.ts",
+        "backend/src/workers/golda-tariff-fetch.ts"
       ],
       "imports": [],
       "kind": "service",
       "loc": 717,
       "owner": "__unassigned__",
       "path": "backend/src/modules/pricing/services/golda-tariff-parse.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/pricing/services/golda-tariff-store.ts",
+      "importedBy": [
+        "backend/src/modules/pricing/services/__tests__/golda-tariff-store.test.ts",
+        "backend/src/workers/golda-tariff-fetch.ts"
+      ],
+      "imports": [
+        "backend/src/modules/pricing/services/golda-portal.ts"
+      ],
+      "kind": "service",
+      "loc": 248,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/pricing/services/golda-tariff-store.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -38645,6 +38785,7 @@
         "backend/src/modules/blog/utils/blog-text.utils.ts",
         "backend/src/modules/catalog/services/unified-page-data.service.ts",
         "backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts",
+        "backend/src/modules/pricing/services/golda-portal.ts",
         "backend/src/modules/products/services/cross-selling-seo.service.ts",
         "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts"
       ],
@@ -38690,6 +38831,56 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/workers/golda-tariff-fetch.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/workers/golda-tariff-fetch.ts"
+      ],
+      "kind": "test",
+      "loc": 162,
+      "owner": "__unassigned__",
+      "path": "backend/src/workers/golda-tariff-fetch.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/workers/golda-tariff-fetch.ts",
+      "importedBy": [
+        "backend/src/workers/golda-tariff-fetch.test.ts"
+      ],
+      "imports": [
+        "backend/src/modules/pricing/services/golda-portal.ts",
+        "backend/src/modules/pricing/services/golda-tariff-archive.ts",
+        "backend/src/modules/pricing/services/golda-tariff-parse.ts",
+        "backend/src/modules/pricing/services/golda-tariff-store.ts",
+        "crypto",
+        "fs",
+        "path"
+      ],
+      "kind": "service",
+      "loc": 948,
+      "owner": "__unassigned__",
+      "path": "backend/src/workers/golda-tariff-fetch.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
