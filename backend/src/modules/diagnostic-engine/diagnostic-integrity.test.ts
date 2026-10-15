@@ -1,10 +1,13 @@
 import { Logger } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { FeatureFlagsService } from '../../config/feature-flags.service';
 import {
   DiagnosticEngineDataService,
   type DiagSymptomCauseLink,
   type DiagSafetyRule,
 } from './diagnostic-engine.data-service';
 import { DiagnosticEngineOrchestrator } from './diagnostic-engine.orchestrator';
+import { DiagnosticProvenanceService } from './services/diagnostic-provenance.service';
 import { HypothesisScoringEngine } from './engines/hypothesis-scoring.engine';
 import {
   CatalogOrientationEngine,
@@ -105,6 +108,12 @@ function orchestrator() {
     new CatalogOrientationEngine(),
     maintenance as never,
     shadow as never,
+    // Flags OFF: the reference ranking, as before the WIKI provenance.
+    new DiagnosticProvenanceService(
+      data as unknown as DiagnosticEngineDataService,
+      new FeatureFlagsService({ get: () => undefined } as never),
+      new EventEmitter2(),
+    ),
   );
   return { engine, data, signal, maintenance };
 }
