@@ -210,6 +210,58 @@ test("T16 duplicate observations cannot hide missing participants", () => {
   assert.equal(r.groups.find((g) => g.group === "A")?.observed, 1);
 });
 
+test("T16 unknown participants, duplicate assignments and conflicting outcomes are rejected", () => {
+  const a = [{ id: "synthetic-a", group: "A" }];
+  const observation = { ...a[0], converted: true };
+  for (const [assignments, observations] of [
+    [a, [{ ...observation, id: "synthetic-unknown" }]],
+    [[...a, ...a], [observation]],
+    [[...a, { ...a[0], group: "B" }], [observation]],
+    [a, [observation, { ...observation, converted: false }]],
+    [a, [{ ...observation, group: "B" }]],
+  ]) {
+    assert.throws(
+      () => experimentReport(assignments, observations, 30),
+      /EXPERIMENT_CONTAMINATION/,
+    );
+  }
+});
+
+test("T16 maximum-size experiments preserve results regardless of observation order", () => {
+  const groups = ["holdout", "A", "B"];
+  const assignments = Array.from({ length: 10000 }, (_, i) => ({
+    id: `synthetic-unit-${i}`,
+    group: groups[i % groups.length],
+  }));
+  const observations = assignments.map((row, i) => ({
+    ...row,
+    converted: i % 5 === 0,
+  }));
+  const report = experimentReport(assignments, observations, 30);
+  assert.deepEqual(
+    experimentReport(assignments, [...observations].reverse(), 30),
+    report,
+  );
+  assert.deepEqual(
+    report.groups.map(({ assigned, observed, conversions }) => ({
+      assigned,
+      observed,
+      conversions,
+    })),
+    [
+      { assigned: 3334, observed: 3334, conversions: 667 },
+      { assigned: 3333, observed: 3333, conversions: 666 },
+      { assigned: 3333, observed: 3333, conversions: 667 },
+    ],
+  );
+  assert.equal(report.verdict, "inconclusive");
+  assert.equal(report.winner, null);
+  assert.equal(report.causal_claim, false);
+  assert.deepEqual(report.reasons, [
+    "approved_protocol_and_observation_window_not_connected",
+  ]);
+});
+
 test("T15 refunds outside the selected cohort are validated and uncovered report periods rejected", () => {
   const d = data(),
     c = fixture().context;
