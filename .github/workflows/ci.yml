@@ -169,9 +169,9 @@ jobs:
         # `--affected` is appended only here, via the existing npm script.
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            npm run typecheck --if-present -- --affected
+            npm run typecheck -- --affected
           else
-            npm run typecheck --if-present
+            npm run typecheck
           fi
         env:
           TURBO_SCM_BASE: ${{ github.event.pull_request.base.sha }}
