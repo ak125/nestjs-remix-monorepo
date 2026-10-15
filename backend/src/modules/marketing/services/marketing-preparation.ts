@@ -569,6 +569,10 @@ export function renderCampaign(
   ];
   const title = selected[language === 'fr' ? 0 : 2],
     cta = selected[language === 'fr' ? 1 : 3];
+  const simulationNotice =
+    language === 'fr'
+      ? 'Simulation — aucune offre réelle'
+      : 'Simulation — no real offer';
   const variants = [
     { id: 'A', subject: title, preheader: cta },
     {
@@ -581,20 +585,15 @@ export function renderCampaign(
     },
   ].map((variant) => ({
     ...variant,
-    text: [
-      variant.subject,
-      ...blocks,
-      cta,
-      'Simulation — aucune offre réelle',
-    ].join('\n\n'),
-    html: `<!doctype html><html lang="${language}" dir="ltr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(variant.subject)}</title></head><body style="margin:0;background:#fff;color:#17202a;font:18px/1.6 Arial,sans-serif"><main style="max-width:600px;margin:auto;padding:20px"><h1>${escape(variant.subject)}</h1>${blocks.map((b) => `<p>${escape(b)}</p>`).join('')}<p>${escape(cta)}</p><p>Simulation — aucune offre réelle</p></main></body></html>`,
+    text: [variant.subject, ...blocks, cta, simulationNotice].join('\n\n'),
+    html: `<!doctype html><html lang="${language}" dir="ltr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(variant.subject)}</title></head><body style="margin:0;background:#fff;color:#17202a;font:18px/1.6 Arial,sans-serif"><main style="max-width:600px;margin:auto;padding:20px"><h1>${escape(variant.subject)}</h1>${blocks.map((b) => `<p>${escape(b)}</p>`).join('')}<p>${escape(cta)}</p><p>${escape(simulationNotice)}</p></main></body></html>`,
   }));
   return {
     html: variants[0].html,
     text: variants[0].text,
     language,
     source_refs: refs,
-    template_version: '2.1.0',
+    template_version: '2.1.1',
     variants,
     social: {
       template: getSocialTemplate('conseil', 'facebook')?.key ?? null,
