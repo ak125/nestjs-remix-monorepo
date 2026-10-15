@@ -1,0 +1,3 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`BuyingGuideDataService section provenance (L2g) fige la FAQ de la fixture pg 7 avant correction, sans accepter les slots q/a 1`] = `"[{"question":"Comment choisir Filtre à huile compatible ?","answer":"Renseignez marque, modèle, type moteur et année, puis contrôlez la référence constructeur avant validation de la commande."},{"question":"Quand remplacer Filtre à huile ?","answer":"Remplacez la pièce dès qu’un contrôle atelier révèle une dégradation hors tolérance ou selon l’intervalle préconisé par le constructeur."},{"question":"Filtre à huile se remplace-t-il seul ?","answer":"L'installation peut nécessiter des contrôles de sécurité et de couple. En cas de doute, confiez l'intervention à un atelier qualifié."}]"`;

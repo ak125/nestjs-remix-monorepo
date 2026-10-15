@@ -156,6 +156,11 @@ export interface BuyingGuideContractV1 {
   antiMistakes: string[];
   faq: Array<{ question: string; answer: string }>;
   quality: GammeContentQuality;
+  /** Provenance after the section quality gate; absent on older contracts. */
+  sectionSources?: Record<
+    'faq' | 'symptoms' | 'antiMistakes',
+    'db' | 'fallback'
+  >;
   // RAG-enriched structured data (optional — used when DB columns are populated)
   enrichedSelectionCriteria?: GammeBuyingGuideSelectionCriterion[] | null;
   enrichedDecisionTree?: GammeBuyingGuideDecisionNode[] | null;
@@ -289,7 +294,7 @@ export class BuyingGuideDataService extends SupabaseBaseService {
     pgId: string,
   ): Promise<BuyingGuideContractV1 | null> {
     try {
-      // Use RPC that LEFT JOINs R1 slots (COALESCE: R1 > sgpg fallback)
+      // RPC with LEFT JOIN on R1 slots (COALESCE: R1 > sgpg fallback)
       const { data, error } = await this.client.rpc(
         'get_buying_guide_with_r1_slots',
         { p_pg_id: pgId },
@@ -522,9 +527,11 @@ export class BuyingGuideDataService extends SupabaseBaseService {
           ? 'db'
           : 'fallback',
         useCases: contract.enrichedUseCases?.length ? 'db' : 'fallback',
-        antiMistakes: contract.enrichedAntiMistakes?.length ? 'db' : 'fallback',
-        faq: 'db',
-        symptoms: 'db',
+        antiMistakes:
+          contract.sectionSources?.antiMistakes ??
+          (contract.enrichedAntiMistakes?.length ? 'db' : 'fallback'),
+        faq: contract.sectionSources?.faq ?? 'db',
+        symptoms: contract.sectionSources?.symptoms ?? 'db',
       },
     };
 
@@ -1503,6 +1510,7 @@ export class BuyingGuideDataService extends SupabaseBaseService {
     return {
       ...qualityGate.content,
       quality: this.buildQuality(qualityGate.content, qualityGate.flags, raw),
+      sectionSources: qualityGate.sectionSources,
     };
   }
 
@@ -2042,7 +2050,14 @@ export class BuyingGuideDataService extends SupabaseBaseService {
   ): {
     content: BuyingGuideContractWithoutQuality;
     flags: GammeContentQualityFlag[];
+    sectionSources: NonNullable<BuyingGuideContractV1['sectionSources']>;
   } {
+    const sectionSources: NonNullable<BuyingGuideContractV1['sectionSources']> =
+      {
+        faq: 'db',
+        symptoms: 'db',
+        antiMistakes: content.enrichedAntiMistakes?.length ? 'db' : 'fallback',
+      };
     const gated: BuyingGuideContractWithoutQuality = {
       ...content,
       intro: {
@@ -2201,6 +2216,7 @@ export class BuyingGuideDataService extends SupabaseBaseService {
     if (gated.symptoms.length < PURCHASE_GUIDE_VALIDATION.MIN_SYMPTOMS) {
       addFlag('SYMPTOMS_TOO_SMALL');
       gated.symptoms = this.fallbackSymptoms(familyKey);
+      sectionSources.symptoms = 'fallback';
     }
 
     // Anti-mistakes
@@ -2209,6 +2225,7 @@ export class BuyingGuideDataService extends SupabaseBaseService {
     if (dedupedAntiMistakes.hasDuplicates) addFlag('DUPLICATE_ITEMS');
     if (gated.antiMistakes.length < MIN_ANTI_MISTAKES) {
       gated.antiMistakes = this.fallbackAntiMistakes(gammeName, familyKey);
+      sectionSources.antiMistakes = 'fallback';
       addFlag('TOO_SHORT');
     }
 
@@ -2223,6 +2240,7 @@ export class BuyingGuideDataService extends SupabaseBaseService {
         return item;
       }
       addFlag('TOO_SHORT');
+      sectionSources.faq = 'fallback';
       return {
         question: item.question,
         answer:
@@ -2233,6 +2251,7 @@ export class BuyingGuideDataService extends SupabaseBaseService {
     if (gated.faq.length < PURCHASE_GUIDE_VALIDATION.MIN_FAQS) {
       addFlag('FAQ_TOO_SMALL');
       gated.faq = this.fallbackFaq(gammeName, familyKey);
+      sectionSources.faq = 'fallback';
     }
 
     // Required terms by family
@@ -2366,7 +2385,7 @@ export class BuyingGuideDataService extends SupabaseBaseService {
       addFlag('MISSING_SOURCE_PROVENANCE');
     }
 
-    return { content: gated, flags };
+    return { content: gated, flags, sectionSources };
   }
 
   private resolveQualitySource(raw: PurchaseGuideRow, pgId: string): string {
