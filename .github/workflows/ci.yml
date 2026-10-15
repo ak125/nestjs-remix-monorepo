@@ -226,6 +226,10 @@ jobs:
           npm run typecheck:marketing
           npm run test:marketing
 
+      # In-memory PostgreSQL only: no shared DB, secrets or output/ artifacts.
+      - name: Validate marketing SQL contracts
+        run: npm run test:marketing:sql
+
       - name: Test deployment probes
         run: node --test scripts/ci/prod-client-ip-probe.test.mjs scripts/ci/prod-admin-guard-probe.test.mjs
 

@@ -1,13 +1,29 @@
-// Isolated engine only. Pass the captured schema and prepared SQL artifact.
+// Isolated engine only. Defaults are versioned fixture + corrective migration.
 // The metadata fixture contains no shared data; no connection/env is consumed.
-import { PGlite } from "../../output/sql-test-runtime/node_modules/@electric-sql/pglite/dist/index.js";
+import { PGlite } from "@electric-sql/pglite";
 import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 const [schemaPath, planPath] = process.argv.slice(2);
-if (!schemaPath || !planPath)
+if (Boolean(schemaPath) !== Boolean(planPath))
   throw new Error("Usage: test captured-schema.sql prerequisite.sql");
-const schema = readFileSync(schemaPath, "utf8");
-const plan = readFileSync(planPath, "utf8");
+const schema = readFileSync(
+  schemaPath ??
+    new URL("./fixtures/brief-social-prerequisite.schema.sql", import.meta.url),
+  "utf8",
+);
+// Explicit paths retain the historical prepared-plan interface (already transactional).
+// Default execution follows the existing runner's transaction boundary.
+const plan = planPath
+  ? readFileSync(planPath, "utf8")
+  : "BEGIN;\n" +
+    readFileSync(
+      new URL(
+        "../../backend/supabase/migrations/20261014234956_marketing_brief_prerequisite_reconciliation.sql",
+        import.meta.url,
+      ),
+      "utf8",
+    ) +
+    "\nCOMMIT;";
 const db = new PGlite();
 let checks = 0;
 const check = async (name, fn) => {
@@ -29,6 +45,40 @@ const unchanged = async () => {
     true,
   );
 };
+// The canonical correction additionally checks the historical ledger. Explicit
+// prepared plans keep their original interface and may predate this admission check.
+if (!planPath) {
+  for (const [name, setup] of [
+    ["missing baseline", "DELETE FROM infra.schema_migrations"],
+    [
+      "changed checksum",
+      "UPDATE infra.schema_migrations SET checksum='unexpected'",
+    ],
+    ["failed baseline", "UPDATE infra.schema_migrations SET status='failed'"],
+    [
+      "changed runner",
+      "UPDATE infra.schema_migrations SET runner='unexpected'",
+    ],
+    [
+      "nonzero execution duration",
+      "UPDATE infra.schema_migrations SET execution_ms=1",
+    ],
+  ]) {
+    await check(`${name} refuses before schema mutation`, async () => {
+      // Both the altered ledger and corrective migration are in this disposable
+      // transaction; rollback restores the independent fixture for the next case.
+      try {
+        await assert.rejects(
+          db.exec(plan.replace("BEGIN;\n", `BEGIN;\n${setup};\n`)),
+          /Phase1 baseline differs/,
+        );
+      } finally {
+        await db.exec("ROLLBACK");
+      }
+      await unchanged();
+    });
+  }
+}
 // Each failure must rollback both the new table and the direct ACL revocation.
 for (const [name, setup, cleanup, error] of [
   [

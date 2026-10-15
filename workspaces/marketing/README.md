@@ -1,5 +1,30 @@
 # Marketing Workspace
 
+## Tests SQL reproductibles — candidat du 15 octobre 2026
+
+Après `npm ci`, `npm run test:marketing:sql` exécute les quatre suites existantes
+de revue par réseau, préparations de publication, raccordement brief → social et
+réconciliation des prérequis. Le workflow CI les raccorde au job Backend Tests. PGlite
+**0.3.14**, déjà utilisé pour les qualifications locales, est désormais épinglé
+comme dépendance de développement dans le lockfile. Aucun artefact `output/`,
+secret, connexion Supabase ou compte fournisseur n'est nécessaire.
+Le runner de tests Node exécute ces suites séquentiellement et précharge le
+blocage réseau existant `simulation-no-network.cjs`.
+
+La fixture `scripts/marketing/fixtures/brief-social-prerequisite.schema.sql`
+reproduit un schéma vide issu de la qualification du 14 octobre, avec un ledger
+synthétique et les droits historiques à corriger. Elle ne décrit pas l'état
+actuel d'une base partagée et ne doit jamais être appliquée à celle-ci. La suite
+de réconciliation sans argument lit directement la migration corrective
+versionnée ; ses anciens arguments explicites restent utilisables pour les
+preuves historiques. Les tests refusent aussi un baseline absent, modifié ou
+en échec et un ordre d'application incorrect, avec vérification du rollback.
+
+Ces tests couvrent des contrats SQL sur un PostgreSQL embarqué isolé. Ils ne
+remplacent pas les vérifications de concurrence entre sessions, de l'image
+complète, du schéma partagé ou de la CI distante. Les anciennes preuves d'image
+et de PostgreSQL natif conservent leurs propres fixtures datées dans `output/`.
+
 ## Registres et ordre d'application — qualification isolée du 15 octobre 2026
 
 La relecture des métadonnées distingue deux historiques : 474 entrées Supabase

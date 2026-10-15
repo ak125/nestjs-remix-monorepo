@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "test:marketing:sql": "node --require ./scripts/marketing/simulation-no-network.cjs --test --test-concurrency=1 scripts/marketing/social-reviews.sql-test.mjs scripts/marketing/publication-preparations.sql-test.mjs scripts/marketing/brief-social.sql-test.mjs scripts/marketing/brief-social-reconciliation.sql-test.mjs",
     "test:marketing": "tsx --tsconfig scripts/marketing/tsconfig.json --test scripts/marketing/reactivation-pilot.test.ts scripts/marketing/marketing-workbench.test.ts scripts/marketing/marketing-operations.test.ts scripts/marketing/marketing-measurement.test.ts scripts/marketing/summarize-reactivation-exclusions.test.ts && node --test scripts/marketing/reactivation-runtime.test.mjs",
     "typecheck:marketing": "tsc -p scripts/marketing/tsconfig.json",
     "test": "turbo test",
@@ -166,6 +167,7 @@
     "@changesets/cli": "^2.31.0",
     "@commitlint/cli": "^20.5.3",
     "@commitlint/config-conventional": "^20.5.3",
+    "@electric-sql/pglite": "0.3.14",
     "@nestjs/common": "^11.1.27",
     "@nestjs/core": "^11.1.27",
     "@react-router/dev": "8.0.1",

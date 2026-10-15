@@ -1,6 +1,6 @@
 // Ephemeral PostgreSQL (PGlite), never connects to Supabase or reads .env.
-// Install test-only runtime under output/sql-test-runtime; no app dependency.
-import { PGlite } from "../../output/sql-test-runtime/node_modules/@electric-sql/pglite/dist/index.js";
+// PGlite is a pinned development dependency; no app runtime dependency.
+import { PGlite } from "@electric-sql/pglite";
 import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 

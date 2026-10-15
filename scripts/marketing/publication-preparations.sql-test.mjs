@@ -1,5 +1,5 @@
 // Ephemeral PostgreSQL fixture. No .env, provider, Supabase or network access.
-import { PGlite } from '../../output/sql-test-runtime/node_modules/@electric-sql/pglite/dist/index.js';
+import { PGlite } from '@electric-sql/pglite';
 import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 const db = new PGlite();

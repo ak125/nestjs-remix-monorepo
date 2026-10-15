@@ -1,5 +1,5 @@
 // Ephemeral PostgreSQL only; no network, environment secrets or shared database.
-import { PGlite } from "../../output/sql-test-runtime/node_modules/@electric-sql/pglite/dist/index.js";
+import { PGlite } from "@electric-sql/pglite";
 import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 const sql = (name) =>
