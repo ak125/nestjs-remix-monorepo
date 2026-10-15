@@ -15,7 +15,9 @@
  * NOT_FOUND). Generic over supplier (SUPPLIER_SPL) and brand (BRAND_TOKENS) — nothing
  * is hardcoded to NK/DCA, so the same worker serves every future supplier/tariff.
  *
- * Platforms: `inoshop` (bulk `POST /search`, BATCH refs per call) and `cal` (no bulk
+ * Platforms: `inoshop` (bulk `POST /search`, BATCH refs per call; each ref is searched
+ * by its feed EAN, then the misses by ref — a bare-ref search is a prefix search that
+ * drops rows of the brand, see `searchTerm`) and `cal` (no bulk
  * route: one autocomplete + one article line per ref, so groups are single refs;
  * CAL red/J+1 icons go to REVIEW — see `calVerdictForRef`). CAL also writes every
  * line read (base, remise, net, icon) to `lookups.jsonl` in OUT_DIR.
@@ -55,10 +57,14 @@ import { CalConnector } from '../modules/supplier-truth/connectors/cal.connector
 import { calVerdictForRef } from '../modules/supplier-truth/connectors/cal-parse';
 import {
   brandTokenSet,
+  mergeRefPass,
+  needsRefPass,
+  searchTerm,
   verdictForRef,
   withTariffStatus,
   type ActivationBucket,
   type RefVerdict,
+  type SearchRow,
 } from '../modules/supplier-truth/connectors/inoshop-search-parse';
 import { runResilientClassify } from '../modules/supplier-truth/connectors/portal-classify-resilience';
 
@@ -251,24 +257,37 @@ async function main(): Promise<void> {
       token = await connector.getCsrfToken();
     };
     // up to 3 attempts; refresh token (re-login from attempt 2) + backoff between tries.
+    // Search by EAN (exact), then by ref for the refs the EAN search missed.
     fetchVerdicts = async (group) => {
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
-          const r = await connector.fetchSearchRaw(
-            group.map((b) => b.ref),
+          const byEan = await connector.fetchSearchRaw(
+            group.map(searchTerm),
             token,
           );
-          if (r.rows.length === 0) throw new Error('0 rows');
-          writeFileSync(
-            `${HTML_DIR}/${fsSafe(group[0].ref)}_${fsSafe(group[group.length - 1].ref)}.html.gz`,
-            gzipSync(r.html),
+          const first = group.map((b) =>
+            verdictForRef(byEan.rows, b.ref, b.ean, tokens),
           );
-          return {
-            verdicts: group.map((b) =>
-              verdictForRef(r.rows, b.ref, b.ean, tokens),
-            ),
-            rows: r.rows.length,
-          };
+          const missed = first.filter(needsRefPass);
+          let byRef: { html: string; rows: SearchRow[] } | null = null;
+          if (missed.length > 0) {
+            await sleep(2000 + Math.floor(Math.random() * 2000));
+            byRef = await connector.fetchSearchRaw(
+              missed.map((v) => v.ref),
+              token,
+            );
+          }
+          const rows = byRef ? [...byEan.rows, ...byRef.rows] : byEan.rows;
+          if (rows.length === 0) throw new Error('0 rows');
+          const stem = `${HTML_DIR}/${fsSafe(group[0].ref)}_${fsSafe(group[group.length - 1].ref)}`;
+          writeFileSync(`${stem}.html.gz`, gzipSync(byEan.html));
+          if (!byRef) return { verdicts: first, rows: rows.length };
+          writeFileSync(`${stem}_refpass.html.gz`, gzipSync(byRef.html));
+          const verdicts = mergeRefPass(first, rows, tokens);
+          console.log(
+            `    ref pass: ${missed.length} missed by EAN, ${missed.length - verdicts.filter(needsRefPass).length} found by ref`,
+          );
+          return { verdicts, rows: rows.length };
         } catch (e) {
           attemptErrors++;
           console.log(`    attempt ${attempt} failed: ${(e as Error).message}`);
