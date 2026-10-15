@@ -352,3 +352,66 @@ Refreshing the artifact is a separate observation task. Until then, its
 `packages/seo-url-contract` row (BLOCKED_CONFIG) describes the configuration before this
 change, and the 4–7 day estimate above remains a planning figure: this pilot covers the
 smallest project only.
+
+## `nodenext` on `packages/domain-commerce` — second project of the sequence
+
+Same scope rule as the pilot: one project. `node-cjs-legacy.json` is untouched, TS7 is
+still not a repo dependency (no `package.json` or lockfile change), and the PARKED
+decision above stands.
+
+`packages/domain-commerce` belongs to D11 (order and order-line statuses), owned by
+payments-team. The change is compile configuration only, the emitted `dist/` is
+byte-identical, and the package's sources, tests and `package.json` do not change. It was
+applied by a delivery script that only the owner runs: that run is the owner's GO for
+this project.
+
+### Change
+
+`packages/domain-commerce/tsconfig.json` becomes byte-identical to
+`packages/seo-url-contract/tsconfig.json`: it extends `base.json` and sets `module` and
+`moduleResolution` to `NodeNext`. The package has no `"type"` field, so its files stay
+**CommonJS**. The effective delta (`tsc --showConfig`, TS 6.0.3) is the pilot's:
+`ignoreDeprecations: "6.0"` removed; `module` commonjs → nodenext; `moduleResolution`
+node10 → nodenext; `moduleDetection` → force; `resolvePackageJsonExports` /
+`resolvePackageJsonImports` → true. Nothing else.
+
+### Evidence — TS 6.0.3, the repo compiler
+
+| Check | Before | After |
+|---|---|---|
+| `tsc --noEmit` | exit 0, 0 diagnostics | exit 0, 0 diagnostics |
+| `tsc` build | exit 0 | exit 0 |
+| Emit (`.js`, `.d.ts` and their maps) | 16 files | the same 16, byte-identical (sha256) |
+| Specifiers resolved (`--traceResolution`) | 3: `./order-status`, `./order-line-status`, `./order-events` → `src/*.ts` | identical |
+| Bare specifiers | 0 | 0 |
+| Program files (`--explainFiles`) | 49 (45 lib + 4 src) | the same 49 |
+| Package tests (`tsx --test`) | 22/22 | 22/22 |
+
+After the change, `--explainFiles` adds the *"File is CommonJS module"* line for each of
+the 4 source files.
+
+Consumers: the backend only (orders controller and services, the command-center KPI
+service, one unit test). It resolves the package through its unchanged `package.json`
+(`exports`, `main`, `types`) to `dist/`, and no `tsconfig` or Jest config maps it to
+`src/`. The emit is
+byte-identical, so the consumer delta is zero by construction.
+
+### Evidence — TS 7.0.2, observation
+
+Same method as the pilot: this project alone, the harness's own functions, TS6 exit code
+checked. The delivery script commits only if the run before the change is
+`BLOCKED_CONFIG` with `TS5108` and the run after is `PARITY` with TS6 and TS7 at exit 0
+and 0 diagnostics.
+
+| Configuration | Classification | TS6 | TS7 |
+|---|---|---|---|
+| Before (`node-cjs-legacy.json`) | BLOCKED_CONFIG | exit 0, 0 diagnostics | `TS5108` |
+| After (`NodeNext`) | PARITY | exit 0, 0 diagnostics | exit 0, 0 diagnostics |
+
+### Still `BLOCKED_CONFIG`
+
+Six projects remain on `node-cjs-legacy.json`: `packages/design-tokens`,
+`packages/cwv-taxonomy`, `packages/seo-role-contracts`, `packages/seo-roles`,
+`packages/registry` and `backend`. `ts7-shadow-parity.json` is still not regenerated, for
+the reasons given in the pilot section; its `packages/domain-commerce` row describes the
+configuration before this change.

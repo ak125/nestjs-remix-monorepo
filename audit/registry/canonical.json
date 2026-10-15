@@ -47177,7 +47177,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 478,
+      "loc": 479,
       "owner": "@ak125/marketing-team",
       "path": "backend/src/modules/marketing/services/marketing-measurement.ts",
       "risk": "low",
@@ -101767,7 +101767,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 451,
+      "loc": 503,
       "owner": "@ak125",
       "path": "scripts/marketing/marketing-measurement.test.ts",
       "risk": "low",
@@ -104288,11 +104288,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "7bec88c8e8b454869e284e28fdde34ca05a32d3fdbbdfe0820cdee50a66f5f3a",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "3261d6736a3d0230b32b256499999e7a3c04a190a36fee1df03b701f8e4f292d",
+      "audit/registry/files.json": "545143d7e4ece1a2f92b982078afd41015a32c1bf7824d4482913c368c26623f",
       "audit/registry/rpc.json": "68f3b21f7aa0b2ef7da9b488c657c3b6b5bdde0476bf7d617f1e346cc26b4449",
       "audit/registry/runtime.json": "1537c0f3bfbfb3eec888d674e290f14eb9df56e9f816220210a8b7298eaeeb44"
     },
-    "sotFingerprint": "b49b29c847be"
+    "sotFingerprint": "748c6df7aad1"
   },
   "runtime": [
     {
