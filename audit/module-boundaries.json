@@ -187,7 +187,7 @@
         "backend/src/modules/config/validators"
       ],
       "files_count": 103,
-      "loc_total": 25082,
+      "loc_total": 25102,
       "has_barrel": true
     },
     "customers": {
@@ -239,8 +239,8 @@
         "backend/src/modules/diagnostic-engine/services",
         "backend/src/modules/diagnostic-engine/types"
       ],
-      "files_count": 71,
-      "loc_total": 15145,
+      "files_count": 76,
+      "loc_total": 16670,
       "has_barrel": false
     },
     "errors": {
@@ -488,8 +488,8 @@
       "dirs": [
         "backend/src/modules/observability"
       ],
-      "files_count": 9,
-      "loc_total": 551,
+      "files_count": 12,
+      "loc_total": 757,
       "has_barrel": false
     },
     "orders": {
@@ -703,7 +703,7 @@
         "scripts/wiki-generators/__tests__"
       ],
       "files_count": 205,
-      "loc_total": 46208,
+      "loc_total": 46218,
       "has_barrel": true
     },
     "search": {
@@ -959,8 +959,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 301,
-      "loc_total": 57355,
+      "files_count": 302,
+      "loc_total": 57473,
       "has_barrel": true
     },
     "upload": {
@@ -1691,7 +1691,7 @@
     {
       "from": "diagnostic-engine",
       "to": "config",
-      "count": 12
+      "count": 19
     },
     {
       "from": "diagnostic-engine",
