@@ -5019,7 +5019,7 @@
         "backend/src/workers/types/content-refresh.types.ts"
       ],
       "imports": [
-        "@repo/seo-roles"
+        "packages/seo-roles/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 24,
@@ -8880,7 +8880,7 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "@repo/seo-roles"
+        "packages/seo-roles/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 680,
@@ -18328,7 +18328,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 478,
+      "loc": 479,
       "owner": "__unassigned__",
       "path": "backend/src/modules/marketing/services/marketing-measurement.ts",
       "risk": "low",
@@ -30618,8 +30618,8 @@
       "id": "backend/src/modules/seo/registries/__tests__/seo-surface.registry.test.ts",
       "importedBy": [],
       "imports": [
-        "@repo/seo-roles",
-        "backend/src/modules/seo/registries/seo-surface.registry.ts"
+        "backend/src/modules/seo/registries/seo-surface.registry.ts",
+        "packages/seo-roles/dist/index.d.ts"
       ],
       "kind": "test",
       "loc": 40,
@@ -30693,7 +30693,7 @@
       ],
       "imports": [
         "@repo/seo-role-contracts",
-        "@repo/seo-roles"
+        "packages/seo-roles/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 42,
@@ -31387,8 +31387,8 @@
         "@database/services/supabase-base.service",
         "@repo/database-types",
         "@repo/seo-role-contracts",
-        "@repo/seo-roles",
-        "crypto"
+        "crypto",
+        "packages/seo-roles/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 333,
@@ -33002,9 +33002,9 @@
         "backend/src/modules/seo/utils/seo-balise-collision-gate.ts"
       ],
       "imports": [
-        "@repo/seo-roles",
         "backend/src/modules/seo/types/resolved-seo-field.ts",
-        "crypto"
+        "crypto",
+        "packages/seo-roles/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 169,
@@ -55858,7 +55858,7 @@
       "id": "frontend/app/routes/admin.seo-hub.page-briefs.tsx",
       "importedBy": [],
       "imports": [
-        "@repo/seo-roles",
+        "packages/seo-roles/dist/index.d.ts",
         "~/components/ui/badge",
         "~/components/ui/card",
         "~/utils/internal-api.server",
@@ -71177,7 +71177,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 451,
+      "loc": 503,
       "owner": "__unassigned__",
       "path": "scripts/marketing/marketing-measurement.test.ts",
       "risk": "low",
