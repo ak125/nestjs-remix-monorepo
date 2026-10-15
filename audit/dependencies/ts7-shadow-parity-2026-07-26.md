@@ -235,7 +235,8 @@ than a CI saving, and TS7 appears in none of the five canonical priorities.
 Operationally, and until the reopening trigger below fires:
 
 - **Do not** modify `packages/typescript-config/node-cjs-legacy.json`.
-- **Do not** start the `nodenext` pilot on `packages/seo-url-contract`.
+- ~~**Do not** start the `nodenext` pilot on `packages/seo-url-contract`.~~ Lifted for
+  this one project by the owner on 2026-10-15 — see *Owner GO 2026-10-15* below.
 - **Do not** add TS7 to the repository (no dependency, no lockfile entry).
 - Keep **only** the observation harness (`npm run audit:ts7-shadow`).
 
@@ -279,3 +280,75 @@ commerce-loop-v1, the runtime truths, Web Vitals, and the content pipeline.
 Editing `packages/typescript-config/node-cjs-legacy.json` invalidates every turbo cache
 entry (it is in `turbo.json` `globalDependencies`) and the CI `.tsbuildinfo` cache key —
 one deliberate cold run, so it belongs in its own PR.
+
+## Owner GO 2026-10-15 — `nodenext` pilot on `packages/seo-url-contract` only
+
+The PARKED decision above stands. The owner lifted **one** of its lines, the pilot on
+`packages/seo-url-contract`, and nothing else: `node-cjs-legacy.json` is untouched, TS7
+is still not a repo dependency (no `package.json` or lockfile change), and no other
+project is migrated.
+
+The reopening trigger has **not** fired. Verified 2026-10-15: `typescript-eslint@8.71.2`
+(latest stable) still declares `typescript: ">=4.8.4 <6.1.0"`. TypeScript 7.0 also ships
+without a JS API (`typescript@7.0.2` exports `./lib/version.cjs` and `unstable/*` only),
+so tools that import `typescript` cannot move to 7.x whatever their peer range says.
+
+### Change
+
+`packages/seo-url-contract/tsconfig.json` extends `base.json` instead of
+`node-cjs-legacy.json` and sets `module` and `moduleResolution` to `NodeNext`. The file
+is byte-identical to `packages/seo-types/tsconfig.json`. The package has no `"type"`
+field, so its files stay **CommonJS** under `NodeNext`: the module format does not
+change, only the resolution algorithm.
+
+Effective delta (`tsc --showConfig`, TS 6.0.3): `ignoreDeprecations: "6.0"` removed;
+`module` commonjs → nodenext; `moduleResolution` node10 → nodenext; `moduleDetection`
+→ force; `resolvePackageJsonExports` / `resolvePackageJsonImports` → true (NodeNext
+defaults). Nothing else.
+
+### Evidence — TS 6.0.3, the repo compiler
+
+| Check | Before | After |
+|---|---|---|
+| `tsc --noEmit` | exit 0, 0 diagnostics | exit 0, 0 diagnostics |
+| `tsc` build | exit 0 | exit 0 |
+| Emit (`.js`, `.d.ts` and their maps) | 12 files | the same 12, byte-identical (sha256) |
+| Specifiers resolved (`--traceResolution`) | 1: `./url-rules` → `src/url-rules.ts` | identical |
+| Bare specifiers | 0 | 0 |
+| Program files (`--explainFiles`) | 48 (45 lib + 3 src) | the same 48 |
+| Package tests (`tsx --test`) | 5/5 | 5/5 |
+
+After the change, `--explainFiles` adds one line per source file — *"File is CommonJS
+module because 'package.json' does not have field "type""* — which confirms the format.
+
+Consumers: the backend Jest config maps `@repo/seo-url-contract` to `src/`, which is
+unchanged; every other consumer goes through the unchanged `package.json` `exports` to
+`dist/`, whose emit is byte-identical. The consumer delta is zero by construction.
+
+### Evidence — TS 7.0.2, observation
+
+Run before commit on this project alone, with the harness's own functions: the pinned
+`ensureTs7` installer, the `runCompiler` arguments, `parseDiagnostics` and `classify`.
+The TS6 exit code is checked as well, so a TS6 crash cannot pass as 0 diagnostics.
+
+| Configuration | Classification | TS6 | TS7 |
+|---|---|---|---|
+| Before (`node-cjs-legacy.json`) | BLOCKED_CONFIG | exit 0, 0 diagnostics | `TS5108` |
+| After (`NodeNext`) | PARITY | exit 0, 0 diagnostics | exit 0, 0 diagnostics |
+
+### `ts7-shadow-parity.json` is not regenerated here
+
+- It is already stale on `main`: its `inputHash` stopped matching when #1473 changed
+  `backend/tsconfig.json`.
+- A full run needs a checkout that passes the harness preflight, and a fresh `npm ci`
+  worktree does not. The preflight requires a `node_modules` directory inside every
+  workspace that declares dependencies; a hoisted install creates one only where versions
+  conflict, so 7 of the 11 workspace projects have none (`services/remotion-renderer` is
+  not a workspace and needs its own install). On the long-lived DEV checkout those 7
+  directories exist and are empty. The check tests for the directory, not for resolvable
+  dependencies.
+
+Refreshing the artifact is a separate observation task. Until then, its
+`packages/seo-url-contract` row (BLOCKED_CONFIG) describes the configuration before this
+change, and the 4–7 day estimate above remains a planning figure: this pilot covers the
+smallest project only.
