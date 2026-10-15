@@ -249,7 +249,8 @@ export function experimentReport(
       observations,
     );
   checked(z.number().int().min(30).max(1000000), minPerGroup);
-  if (new Set(a.map((x) => x.id)).size !== a.length)
+  const assignedGroups = new Map(a.map((x) => [x.id, x.group]));
+  if (assignedGroups.size !== a.length)
     throw new Error('EXPERIMENT_CONTAMINATION');
   const observed = new Map<
     string,
@@ -257,7 +258,7 @@ export function experimentReport(
   >();
   for (const row of o) {
     if (
-      !a.some((x) => x.id === row.id && x.group === row.group) ||
+      assignedGroups.get(row.id) !== row.group ||
       (observed.has(row.id) &&
         JSON.stringify(observed.get(row.id)) !== JSON.stringify(row))
     )
