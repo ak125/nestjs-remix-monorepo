@@ -32,6 +32,14 @@ TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
 USAGE=$(df / | awk 'NR==2 {gsub(/%/,"",$5); print $5}')
 FREE=$(df -h / | awk 'NR==2 {print $4}')
 
+# A non-numeric value makes the test below fail inside `if`, which set -e does not
+# catch: the script would fall into the OK branch. Report it as an error instead.
+if ! [[ "$THRESHOLD" =~ ^[0-9]+$ && "$USAGE" =~ ^[0-9]+$ ]]; then
+  echo "[$TIMESTAMP] ERROR: invalid threshold '${THRESHOLD}' or usage '${USAGE}'"
+  cron_report "disk-alert" "error" 0 '{}' "ERROR: invalid threshold '${THRESHOLD}' or usage '${USAGE}'"
+  exit 2
+fi
+
 if [ "$USAGE" -ge "$THRESHOLD" ]; then
   DOCKER_SIZE=$(docker system df --format '{{.Size}}' 2>/dev/null | head -1 || echo "unknown")
   echo "[$TIMESTAMP] ALERT: Disk at ${USAGE}% (>=${THRESHOLD}%), ${FREE} free. Docker images: ${DOCKER_SIZE}"
@@ -39,7 +47,7 @@ if [ "$USAGE" -ge "$THRESHOLD" ]; then
   if [ -n "${ALERT_WEBHOOK_URL:-}" ]; then
     curl -sf --max-time 5 -X POST "${ALERT_WEBHOOK_URL}" \
       -H "Content-Type: application/json" \
-      -d "{\"text\":\"[AutoMecanik] Disk ALERT: ${USAGE}% (>=${THRESHOLD}%), ${FREE} free. Docker: ${DOCKER_SIZE}\"}" \
+      -d "$(jq -nc --arg text "[AutoMecanik] Disk ALERT: ${USAGE}% (>=${THRESHOLD}%), ${FREE} free. Docker: ${DOCKER_SIZE}" '{text:$text}')" \
       >/dev/null 2>&1 || true
   fi
   cron_report "disk-alert" "error" 0 \
