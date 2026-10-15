@@ -1,6 +1,6 @@
 // @vitest-environment node
+import { type RouteConfigEntry } from "@react-router/dev/routes";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { RouteConfigEntry } from "@react-router/dev/routes";
 
 function flatten(
   routes: RouteConfigEntry[],
@@ -21,6 +21,26 @@ afterEach(() => {
 });
 
 describe("Command Center build routing", () => {
+  it.each(["production", "development"])(
+    "registers brief detail outside the list layout in %s",
+    async (environment) => {
+      vi.stubEnv("NODE_ENV", environment);
+      const { default: config } = await import("../../app/routes");
+      const routes = flatten(await config);
+      const detail = routes.find(
+        (route) => route.id === "routes/admin.marketing.briefs_.$id",
+      );
+      expect(detail).toMatchObject({
+        resolvedPath: "admin/marketing/briefs/:id",
+      });
+      const marketing = routes.find(
+        (route) => route.id === "routes/admin.marketing",
+      );
+      expect(
+        marketing?.children?.some((route) => route.id === detail?.id),
+      ).toBe(true);
+    },
+  );
   it.each(["production", "development"])(
     "registers the authenticated cockpit at its URL in %s",
     async (environment) => {
@@ -48,6 +68,15 @@ describe("Command Center build routing", () => {
         (route) =>
           route.id?.startsWith("routes/admin.") &&
           !route.id.startsWith("routes/admin.video-hub") &&
+          ![
+            "routes/admin.marketing",
+            "routes/admin.marketing._index",
+            "routes/admin.marketing.backlinks",
+            "routes/admin.marketing.briefs",
+            "routes/admin.marketing.briefs_.$id",
+            "routes/admin.marketing.content-roadmap",
+            "routes/admin.marketing.social-hub.posts",
+          ].includes(route.id) &&
           route.id !== "routes/admin.command-center",
       ),
     ).toEqual([]);

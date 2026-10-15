@@ -203,11 +203,12 @@ export type CreateMarketingBriefDto = z.infer<
 // 🔄 UpdateBriefStatusSchema — admin UI workflow
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-export const UpdateBriefStatusSchema = z.object({
-  status: z.nativeEnum(MarketingBriefStatus),
-  reviewed_by: z.string().optional(),
-  approved_by: z.string().optional(),
-});
+export const UpdateBriefStatusSchema = z
+  .object({
+    status: z.enum(['reviewed', 'approved', 'archived']),
+    expected_updated_at: z.string().datetime({ offset: true }),
+  })
+  .strict();
 
 export type UpdateBriefStatusDto = z.infer<typeof UpdateBriefStatusSchema>;
 
@@ -251,3 +252,13 @@ export const BrandGateVerdictSchema = z.object({
 });
 
 export type BrandGateVerdictDto = z.infer<typeof BrandGateVerdictSchema>;
+
+export const LinkBriefSocialSchema = z
+  .object({
+    post_id: z.number().int().positive().safe(),
+    expected_updated_at: z.string().datetime({ offset: true }),
+    content_revision: z.number().int().positive().safe(),
+    review_version: z.number().int().nonnegative().safe(),
+  })
+  .strict();
+export type LinkBriefSocialDto = z.infer<typeof LinkBriefSocialSchema>;

@@ -6,12 +6,13 @@
  *   GET    /api/admin/marketing/briefs/stats   — compteur status × business_unit
  *   GET    /api/admin/marketing/briefs/:id     — détail brief
  *   PATCH  /api/admin/marketing/briefs/:id/status  — workflow validation
+ *   POST   /api/admin/marketing/briefs/:id/social-content — approved source association
  *
  * Auth : IsAdminGuard (cohérent module marketing existant).
  *
  * Validation Zod via DTO de PR-1.3 (UpdateBriefStatusSchema). Phase 1 :
  * pas d'INSERT depuis l'admin UI (les briefs viennent des agents — Phase 1.5).
- * Donc pas de POST /briefs ici, juste lecture + update status.
+ * Aucun nouveau brief ici : lecture, revue et raccordement au contenu existant.
  */
 
 import {
@@ -20,14 +21,21 @@ import {
   Get,
   Param,
   Patch,
+  Post,
   Query,
   Req,
   UseGuards,
+  ParseUUIDPipe,
+  BadRequestException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { IsAdminGuard } from '@auth/is-admin.guard';
 import { Request } from 'express';
 import { MarketingBriefsService } from '../services/marketing-briefs.service';
-import { UpdateBriefStatusSchema } from '../dto/marketing-brief.dto';
+import {
+  UpdateBriefStatusSchema,
+  LinkBriefSocialSchema,
+} from '../dto/marketing-brief.dto';
 
 @Controller('api/admin/marketing/briefs')
 @UseGuards(IsAdminGuard)
@@ -59,41 +67,60 @@ export class MarketingBriefsController {
   }
 
   @Get(':id')
-  async getById(@Param('id') id: string) {
+  async getById(@Param('id', new ParseUUIDPipe()) id: string) {
     const data = await this.service.getBriefById(id);
-    return { success: true, data };
+    return { success: true, data, review: this.service.getReviewState(data) };
   }
 
   @Patch(':id/status')
   async updateStatus(
-    @Param('id') id: string,
+    @Param('id', new ParseUUIDPipe()) id: string,
     @Body() body: unknown,
     @Req() req: Request,
   ) {
-    // Validation Zod (DTO PR-1.3)
-    const parsed = UpdateBriefStatusSchema.parse(body);
-
-    // Acteur = utilisateur authentifié (admin via IsAdminGuard).
-    const user = (req as Request & { user?: { email?: string } }).user;
-    const actor =
-      parsed.reviewed_by ||
-      parsed.approved_by ||
-      user?.email ||
-      'admin-unknown';
-
+    const parsed = UpdateBriefStatusSchema.safeParse(body);
+    if (!parsed.success)
+      throw new BadRequestException('Invalid brief decision');
+    const actorId = req.user?.id;
     if (
-      parsed.status !== 'reviewed' &&
-      parsed.status !== 'approved' &&
-      parsed.status !== 'published' &&
-      parsed.status !== 'archived'
+      (typeof actorId !== 'string' && typeof actorId !== 'number') ||
+      !String(actorId).trim() ||
+      (typeof actorId === 'number' && !Number.isSafeInteger(actorId))
     ) {
-      // 'draft' n'est pas une transition admin (status initial agent).
-      throw new Error(
-        `Status transition '${parsed.status}' not allowed via admin UI`,
-      );
+      throw new UnauthorizedException('Authenticated reviewer required');
     }
-
-    const data = await this.service.updateBriefStatus(id, parsed.status, actor);
+    const data = await this.service.updateBriefStatus(
+      id,
+      parsed.data.status,
+      String(actorId),
+      parsed.data.expected_updated_at,
+    );
     return { success: true, data };
+  }
+
+  @Post(':id/social-content')
+  async linkSocialContent(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() body: unknown,
+    @Req() req: Request,
+  ) {
+    const parsed = LinkBriefSocialSchema.safeParse(body);
+    if (!parsed.success)
+      throw new BadRequestException('Invalid brief association');
+    const actor = req.user?.id;
+    if (
+      (typeof actor !== 'string' && typeof actor !== 'number') ||
+      !String(actor).trim() ||
+      (typeof actor === 'number' && !Number.isSafeInteger(actor))
+    )
+      throw new UnauthorizedException('Authenticated reviewer required');
+    return {
+      success: true,
+      data: await this.service.linkSocialContent(
+        id,
+        parsed.data,
+        String(actor),
+      ),
+    };
   }
 }

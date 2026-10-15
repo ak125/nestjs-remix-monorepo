@@ -1,5 +1,12 @@
+import {
+  parseSocialReview,
+  SocialReviewTarget,
+} from '../dto/social-review.dto';
+import { socialContentSchemas } from '../dto/social-content.dto';
+import { DomainValidationException } from '@common/exceptions';
 import { Injectable, Logger } from '@nestjs/common';
 import { MarketingHubDataService } from './marketing-hub-data.service';
+import { DomainConflictException } from '@common/exceptions';
 import type {
   SocialPost,
   SocialChannel,
@@ -58,30 +65,46 @@ export class BrandComplianceGateService {
   /**
    * Evaluate and persist gate results.
    */
-  async evaluateAndPersist(post: SocialPost): Promise<GateSummary> {
-    const summary = await this.evaluate(post);
-
-    // Calculate quality score (0-100)
-    const brandScore =
-      summary.brand.level === 'PASS'
-        ? 100
-        : summary.brand.level === 'WARN'
-          ? 70
-          : 0;
-    const complianceScore =
-      summary.compliance.level === 'PASS'
-        ? 100
-        : summary.compliance.level === 'WARN'
-          ? 70
-          : 0;
-    const qualityScore = (brandScore + complianceScore) / 2;
-
-    await this.hubData.updatePostGates(post.id, summary, qualityScore);
-
-    this.logger.log(
-      `Post ${post.id}: brand=${summary.brand.level} compliance=${summary.compliance.level} score=${qualityScore} approve=${summary.can_approve}`,
+  async evaluateAndPersist(
+    post: SocialPost,
+    target: SocialReviewTarget = {
+      channel: post.primary_channel,
+      content_revision: post.content_revision,
+      review_version: post.review_version,
+    },
+    actor = 'system:marketing-gate',
+  ): Promise<GateSummary> {
+    target = parseSocialReview(target);
+    if (
+      target.content_revision !== post.content_revision ||
+      target.review_version !== post.review_version
+    ) {
+      throw new DomainConflictException({
+        message: 'Content or review changed; reload before deciding',
+      });
+    }
+    if (
+      !post.channels_list?.includes(target.channel) ||
+      !socialContentSchemas[target.channel].safeParse(
+        post.channels?.[target.channel],
+      ).success
+    ) {
+      throw new DomainValidationException({
+        message: 'Valid content required for this channel',
+        field: 'channel',
+      });
+    }
+    const summary = await this.evaluate({
+      ...post,
+      primary_channel: target.channel,
+    });
+    await this.hubData.reviewSocialPost(
+      post.id,
+      target,
+      'gate',
+      actor,
+      summary,
     );
-
     return summary;
   }
 
@@ -97,7 +120,16 @@ export class BrandComplianceGateService {
       Record<string, string | string[] | boolean | undefined>
     >;
     const channelData = channels?.[post.primary_channel];
-    const caption = String(channelData?.caption || '');
+    const caption =
+      post.primary_channel === 'youtube'
+        ? [
+            channelData?.title,
+            channelData?.description,
+            channelData?.hook_script,
+          ]
+            .filter(Boolean)
+            .join('\n')
+        : String(channelData?.caption || '');
 
     // 1. Language check
     this.checkLanguage(caption, rules, violations, warnings, fixSuggestions);
@@ -135,8 +167,19 @@ export class BrandComplianceGateService {
       Record<string, string | string[] | boolean | undefined>
     >;
     const channelData = channels?.[post.primary_channel];
-    const caption = String(channelData?.caption || '');
-    const hashtags = (channelData?.hashtags || []) as string[];
+    const caption =
+      post.primary_channel === 'youtube'
+        ? [
+            channelData?.title,
+            channelData?.description,
+            channelData?.hook_script,
+          ]
+            .filter(Boolean)
+            .join('\n')
+        : String(channelData?.caption || '');
+    const hashtags = (channelData?.hashtags ||
+      channelData?.tags ||
+      []) as string[];
 
     // 1. UTM present
     checks.push(this.checkUTM(post));

@@ -720,6 +720,15 @@ jobs:
         if: steps.changed-sql.outputs.files != ''
         run: python3 scripts/ci/apply-supabase-migration.py --lint-markers ${{ steps.changed-sql.outputs.files }}
 
+      # Run even when only the generator/runner changes. These suites use the
+      # standard library and mocks: no DB driver, secret or database connection.
+      # Check the committed SQL before any regeneration can hide drift.
+      - name: Offline migration transaction and marketing contracts
+        run: |
+          python3 scripts/ci/test-migration-transactions.py
+          python3 scripts/db/test-marketing-brief-preparation.py
+          python3 scripts/db/test-marketing-phase1-inventory.py
+
       # Surface DEFINER/anon : ratchet sur les privilèges d'exécution, pas sur la
       # syntaxe — c'est pourquoi squawk ne le porte pas. Supabase octroie
       # `EXECUTE` à `anon` sur CHAQUE nouvelle fonction de `public` via

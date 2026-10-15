@@ -291,6 +291,51 @@ def _executable_text(stmt: str) -> str:
     return text.strip()
 
 
+def transaction_control_statements(sql: str) -> list[str]:
+    """Top-level transaction commands conflict with this runner's ownership.
+
+    Use the existing SQL splitter: BEGIN/END inside dollar-quoted function or
+    DO bodies are not commands of the migration connection.
+    """
+    pattern = re.compile(
+        r"^(?:BEGIN\b|START\s+TRANSACTION\b|COMMIT\b|END\b|ROLLBACK\b|ABORT\b|PREPARE\s+TRANSACTION\b)",
+        re.IGNORECASE,
+    )
+    def command_head(statement: str) -> str:
+        # Read only the first two SQL words, ignoring PostgreSQL's nested block
+        # comments and line comments, including comments BETWEEN the words.
+        # Never inspect literals or dollar-quoted function bodies.
+        position, words = 0, []
+        while position < len(statement) and len(words) < 2:
+            if statement[position].isspace():
+                position += 1
+            elif statement.startswith('--', position):
+                end = statement.find('\n', position)
+                position = len(statement) if end < 0 else end + 1
+            elif statement.startswith('/*', position):
+                depth = 1
+                position += 2
+                while position < len(statement) and depth:
+                    if statement.startswith('/*', position):
+                        depth += 1
+                        position += 2
+                    elif statement.startswith('*/', position):
+                        depth -= 1
+                        position += 2
+                    else:
+                        position += 1
+            else:
+                word = re.match(r'[A-Za-z_][A-Za-z_0-9$]*', statement[position:])
+                if not word:
+                    break
+                words.append(word.group())
+                position += len(word.group())
+        return ' '.join(words)
+
+    return [head for statement in split_sql_statements(sql)
+            if pattern.match(head := command_head(statement))]
+
+
 def non_transactional_statements(sql: str) -> list[str]:
     """Return a short preview of every statement that refuses BEGIN/COMMIT."""
     hits: list[str] = []
@@ -347,6 +392,10 @@ def reconcile_non_transactional(sql: str) -> list[str]:
             "without `-- @non_transactional` — the squawk rule was right: add "
             "the marker (and keep the ignore) or drop the ignore"
         )
+    violations.extend(
+        "top-level transaction control conflicts with migration runner: " + command
+        for command in transaction_control_statements(sql)
+    )
     return violations
 
 
@@ -630,6 +679,10 @@ def apply_migration(
     """
     if sql is None:
         sql = mig.path.read_text(encoding="utf-8")
+    controls = transaction_control_statements(sql)
+    if controls:
+        raise ValueError("top-level transaction control conflicts with migration runner: "
+                         + "; ".join(controls))
     start = time.monotonic()
 
     if mig.non_transactional:

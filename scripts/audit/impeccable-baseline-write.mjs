@@ -17,7 +17,7 @@
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { argv, cwd, exit, stderr, stdout } from "node:process";
-import { relative, sep } from "node:path";
+import { isAbsolute, relative, sep } from "node:path";
 import { execSync } from "node:child_process";
 
 const BASELINE_PATH = "audit/impeccable/baseline.json";
@@ -37,7 +37,7 @@ const ROOT = repoRoot();
 
 function toRepoRelative(file) {
   if (!file || typeof file !== "string") return "unknown";
-  if (!file.startsWith("/")) return file.split(sep).join("/");
+  if (!isAbsolute(file)) return file.split(sep).join("/");
   const rel = relative(ROOT, file);
   return rel.split(sep).join("/");
 }

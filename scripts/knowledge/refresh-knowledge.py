@@ -161,7 +161,7 @@ def analyze_module(mod_dir: Path, module_file: Path) -> ModuleInfo:
 
 
 def _rel(p: Path) -> str:
-    return str(p.relative_to(APP_ROOT))
+    return p.relative_to(APP_ROOT).as_posix()
 
 
 _FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n", re.DOTALL)
@@ -260,7 +260,7 @@ def replace_auto_block(existing: str, mod: ModuleInfo) -> str:
         re.DOTALL,
     )
     if pattern.search(existing):
-        return pattern.sub(new_block, existing, count=1)
+        return pattern.sub(lambda _: new_block, existing, count=1)
     # delimiters missing: append block at end (conservative — no prose overwrite)
     return existing.rstrip() + "\n\n" + new_block + "\n"
 

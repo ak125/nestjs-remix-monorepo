@@ -436,7 +436,7 @@ REGLES STRICTES :
 - JAMAIS mentionner de concurrents ni de claims non prouves
 - Si prix : uniquement si source DB fournie
 - Livraison : "Livraison gratuite des 150€" (formulation exacte)
-SORTIE : JSON {"caption":"...","hashtags":["#automecanik",...],"format":"carrousel|post|reel|story","visual_brief":"..."}`,
+SORTIE : JSON {"caption":"...","hashtags":["#automecanik",...],"format":"carrousel|post|reel|story","dimensions":"1080x1080|1080x1350|1080x1920","visual_brief":"..."}`,
     user: (ctx) => {
       const brief = ctx.brief || {};
       const gamme = sanitizeBriefField(brief.gamme_name || ctx.prompt || '');

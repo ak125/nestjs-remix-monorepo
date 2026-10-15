@@ -18,43 +18,18 @@ import {
   Form,
   useSubmit,
 } from "react-router";
+import { requireAdmin } from "~/auth/unified.server";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Select, SelectItem } from "~/components/ui/select";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
+  briefsResponseSchema,
+  type BriefRow,
+} from "~/services/api/marketing-briefs.api";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 
-interface BriefRow {
-  id: string;
-  agent_id: string;
-  business_unit: "ECOMMERCE" | "LOCAL" | "HYBRID";
-  channel: string;
-  conversion_goal: "CALL" | "VISIT" | "QUOTE" | "ORDER";
-  cta: string;
-  target_segment: string;
-  brand_gate_level: "PASS" | "WARN" | "FAIL" | null;
-  status: "draft" | "reviewed" | "approved" | "published" | "archived";
-  created_at: string;
-  reviewed_by: string | null;
-  approved_by: string | null;
-}
-
-interface BriefsResponse {
-  success: boolean;
-  data: {
-    items: BriefRow[];
-    total: number;
-    page: number;
-    limit: number;
-  };
-}
-
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request, context }: LoaderFunctionArgs) {
+  await requireAdmin({ context });
   const url = new URL(request.url);
   const params = new URLSearchParams();
 
@@ -69,6 +44,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
   params.set("page", page);
   params.set("limit", "50");
 
+  const unavailable = {
+    items: [] as BriefRow[],
+    total: null,
+    page: 1,
+    limit: 50,
+    unit,
+    status,
+    error:
+      "Données des briefs indisponibles. Réessayez le chargement ; aucun total ne peut être confirmé.",
+  };
   try {
     const apiUrl = getInternalApiUrlFromRequest(
       `/api/admin/marketing/briefs?${params.toString()}`,
@@ -77,18 +62,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const res = await fetch(apiUrl, {
       headers: { Cookie: request.headers.get("Cookie") || "" },
     });
-    if (!res.ok) {
-      return {
-        items: [] as BriefRow[],
-        total: 0,
-        page: 1,
-        limit: 50,
-        unit,
-        status,
-        error: `Backend ${res.status}`,
-      };
-    }
-    const result = (await res.json()) as BriefsResponse;
+    if (!res.ok) return unavailable;
+    const parsed = briefsResponseSchema.safeParse(await res.json());
+    if (!parsed.success) return unavailable;
+    const result = parsed.data;
     return {
       items: result.data.items,
       total: result.data.total,
@@ -98,17 +75,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
       status,
       error: null,
     };
-  } catch (e) {
-    const message = e instanceof Error ? e.message : "Unknown error";
-    return {
-      items: [] as BriefRow[],
-      total: 0,
-      page: 1,
-      limit: 50,
-      unit,
-      status,
-      error: message,
-    };
+  } catch {
+    return unavailable;
   }
 }
 
@@ -167,112 +135,106 @@ export default function MarketingBriefsList() {
           <Form method="get" className="flex gap-2">
             <Select
               name="unit"
+              aria-label="Unité commerciale"
+              className="w-[180px]"
               defaultValue={data.unit || "ALL"}
               onValueChange={onUnitChange}
             >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Business unit" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">Toutes unités</SelectItem>
-                <SelectItem value="ECOMMERCE">ECOMMERCE</SelectItem>
-                <SelectItem value="LOCAL">LOCAL</SelectItem>
-                <SelectItem value="HYBRID">HYBRID</SelectItem>
-              </SelectContent>
+              <SelectItem value="ALL">Toutes unités</SelectItem>
+              <SelectItem value="ECOMMERCE">ECOMMERCE</SelectItem>
+              <SelectItem value="LOCAL">LOCAL</SelectItem>
+              <SelectItem value="HYBRID">HYBRID</SelectItem>
             </Select>
             <Select
               name="status"
+              aria-label="Statut du brief"
+              className="w-[180px]"
               defaultValue={data.status || "ALL"}
               onValueChange={onStatusChange}
             >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">Tous statuts</SelectItem>
-                <SelectItem value="draft">draft</SelectItem>
-                <SelectItem value="reviewed">reviewed</SelectItem>
-                <SelectItem value="approved">approved</SelectItem>
-                <SelectItem value="published">published</SelectItem>
-                <SelectItem value="archived">archived</SelectItem>
-              </SelectContent>
+              <SelectItem value="ALL">Tous statuts</SelectItem>
+              <SelectItem value="draft">draft</SelectItem>
+              <SelectItem value="reviewed">reviewed</SelectItem>
+              <SelectItem value="approved">approved</SelectItem>
+              <SelectItem value="published">published</SelectItem>
+              <SelectItem value="archived">archived</SelectItem>
             </Select>
           </Form>
         </div>
       </div>
 
-      {data.error && (
+      {data.error ? (
         <Card>
           <CardContent className="p-6">
-            <p className="text-sm text-destructive">
-              Backend indisponible : {data.error}
-            </p>
-            <p className="text-xs text-muted-foreground mt-2">
-              Phase 1 ADR-036 — la table <code>__marketing_brief</code> est vide
-              tant que les agents (Phase 1.5) ne sont pas activés.
+            <p role="alert" className="text-sm text-destructive">
+              {data.error}
             </p>
           </CardContent>
         </Card>
-      )}
-
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            {data.total} brief{data.total > 1 ? "s" : ""}
-            {data.unit && ` · ${data.unit}`}
-            {data.status && ` · ${data.status}`}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {data.items.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              Aucun brief pour ce filtre. Les agents marketing (Phase 1.5)
-              produiront des briefs automatiquement une fois activés.
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {data.items.map((brief) => {
-                const Icon = businessUnitIcon[brief.business_unit];
-                return (
-                  <Link
-                    key={brief.id}
-                    to={`/admin/marketing/briefs/${brief.id}`}
-                    className="block p-4 border rounded-lg hover:bg-accent transition-colors"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <Icon className="h-4 w-4" />
-                        <Badge variant="outline">{brief.business_unit}</Badge>
-                        <Badge variant="outline">{brief.channel}</Badge>
-                        <Badge variant="outline">{brief.conversion_goal}</Badge>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {brief.brand_gate_level && (
-                          <Badge variant={gateVariant[brief.brand_gate_level]}>
-                            gate: {brief.brand_gate_level}
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              {data.total} brief
+              {data.total !== null && data.total > 1 ? "s" : ""}
+              {data.unit && ` · ${data.unit}`}
+              {data.status && ` · ${data.status}`}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {data.items.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                Aucun brief pour ce filtre.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {data.items.map((brief) => {
+                  const Icon = businessUnitIcon[brief.business_unit];
+                  return (
+                    <Link
+                      key={brief.id}
+                      to={`/admin/marketing/briefs/${brief.id}`}
+                      className="block p-4 border rounded-lg hover:bg-accent transition-colors"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <Icon className="h-4 w-4" />
+                          <Badge variant="outline">{brief.business_unit}</Badge>
+                          <Badge variant="outline">{brief.channel}</Badge>
+                          <Badge variant="outline">
+                            {brief.conversion_goal}
                           </Badge>
-                        )}
-                        <Badge variant={statusVariant[brief.status]}>
-                          {brief.status}
-                        </Badge>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {brief.brand_gate_level && (
+                            <Badge
+                              variant={gateVariant[brief.brand_gate_level]}
+                            >
+                              gate: {brief.brand_gate_level}
+                            </Badge>
+                          )}
+                          <Badge variant={statusVariant[brief.status]}>
+                            {brief.status}
+                          </Badge>
+                        </div>
                       </div>
-                    </div>
-                    <p className="text-sm font-medium mb-1">{brief.cta}</p>
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                      <span>agent: {brief.agent_id}</span>
-                      <span>segment: {brief.target_segment}</span>
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {new Date(brief.created_at).toLocaleString("fr-FR")}
-                      </span>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                      <p className="text-sm font-medium mb-1">{brief.cta}</p>
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                        <span>agent: {brief.agent_id}</span>
+                        <span>segment: {brief.target_segment}</span>
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {new Date(brief.created_at).toLocaleString("fr-FR")}
+                        </span>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { parseSocialReview } from '../dto/social-review.dto';
 import {
   Controller,
   Get,
@@ -8,9 +9,15 @@ import {
   Body,
   UseGuards,
   Res,
+  Req,
+  UnauthorizedException,
 } from '@nestjs/common';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 import { IsAdminGuard } from '@auth/is-admin.guard';
+import {
+  DomainNotFoundException,
+  DomainValidationException,
+} from '@common/exceptions';
 import { MarketingHubDataService } from '../services/marketing-hub-data.service';
 import { PublishQueueService } from '../services/publish-queue.service';
 import { BrandComplianceGateService } from '../services/brand-compliance-gate.service';
@@ -50,52 +57,133 @@ export class MarketingSocialPostsController {
   @Put('posts/:id/approve')
   async approvePost(
     @Param('id') id: string,
-    @Body('approved_by') approvedBy: string,
+    @Body() body: unknown,
+    @Req() req: Request,
   ) {
     const ok = await this.publishQueue.approvePost(
-      parseInt(id),
-      approvedBy || 'admin',
+      this.postId(id),
+      parseSocialReview(body),
+      this.actor(req),
     );
     return { success: ok };
   }
 
-  /**
-   * PUT /api/admin/marketing/social/posts/:id/reject
-   */
   @Put('posts/:id/reject')
-  async rejectPost(@Param('id') id: string) {
-    const ok = await this.publishQueue.rejectPost(parseInt(id));
+  async rejectPost(
+    @Param('id') id: string,
+    @Body() body: unknown,
+    @Req() req: Request,
+  ) {
+    const ok = await this.publishQueue.rejectPost(
+      this.postId(id),
+      parseSocialReview(body),
+      this.actor(req),
+    );
     return { success: ok };
   }
 
-  /**
-   * POST /api/admin/marketing/social/posts/bulk-approve
-   */
   @Post('posts/bulk-approve')
-  async bulkApprove(
-    @Body('post_ids') postIds: number[],
-    @Body('approved_by') approvedBy: string,
-  ) {
-    const result = await this.publishQueue.bulkApprove(
-      postIds,
-      approvedBy || 'admin',
-    );
-    return result;
+  async bulkApprove() {
+    throw new DomainValidationException({
+      message: 'Review each channel and revision before approval',
+      field: 'review',
+    });
   }
 
-  /**
-   * POST /api/admin/marketing/social/posts/:id/gate
-   * Run brand + compliance gate on a single post.
-   */
-  @Post('posts/:id/gate')
-  async runGate(@Param('id') id: string) {
-    const posts = await this.hubData.getPostsByWeek('', undefined);
-    // Get post by ID directly
-    const post = posts.find((p) => p.id === parseInt(id));
-    if (!post) return { error: 'Post not found' };
+  @Get('posts/:id/history')
+  async getHistory(@Param('id') id: string) {
+    return { data: await this.hubData.getPostHistory(this.postId(id)) };
+  }
 
-    const summary = await this.gateService.evaluateAndPersist(post);
+  @Get('posts/:id')
+  async getPost(@Param('id') id: string) {
+    const post = await this.hubData.getPostById(this.postId(id));
+    if (!post) throw new DomainNotFoundException({ message: 'Post not found' });
+    return { data: post };
+  }
+
+  @Post('posts/:id/preparations')
+  async preparePublication(
+    @Param('id') id: string,
+    @Body() body: unknown,
+    @Req() req: Request,
+  ) {
+    return this.publishQueue.preparePublication(
+      this.postId(id),
+      body,
+      this.actor(req),
+    );
+  }
+
+  @Get('posts/:id/preparations')
+  async getPreparations(@Param('id') id: string) {
+    return {
+      purpose: 'preparation_history',
+      publication_ready: false,
+      data: await this.hubData.getPublicationPreparations(this.postId(id)),
+    };
+  }
+
+  @Post('posts/:id/gate')
+  async runGate(
+    @Param('id') id: string,
+    @Body() body: unknown,
+    @Req() req: Request,
+  ) {
+    const postId = this.postId(id);
+    const target = parseSocialReview(body);
+    const actor = this.actor(req);
+    const post = await this.hubData.getPostById(postId);
+    if (!post) throw new DomainNotFoundException({ message: 'Post not found' });
+    const summary = await this.gateService.evaluateAndPersist(
+      post,
+      target,
+      actor,
+    );
     return { data: summary };
+  }
+
+  @Get('posts/:id/preparations/:requestId/export')
+  async exportPreparation(
+    @Param('id') id: string,
+    @Param('requestId') requestId: string,
+    @Res() res: Response,
+  ) {
+    // Errors, too, must not be reused after a decision or session changes.
+    res.setHeader('Cache-Control', 'private, no-store');
+    const result = await this.publishQueue.exportPreparation(
+      this.postId(id),
+      requestId,
+    );
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="preparation_${result.preparation.request_id}.json"`,
+    );
+    return res.json(result);
+  }
+
+  private postId(id: string): number {
+    if (!/^[1-9]\d*$/.test(id) || !Number.isSafeInteger(Number(id))) {
+      throw new DomainValidationException({
+        message: 'Invalid post ID',
+        field: 'id',
+      });
+    }
+    return Number(id);
+  }
+
+  private actor(req: Request): string {
+    const id: unknown = req?.user?.id;
+    if (
+      (typeof id !== 'string' && typeof id !== 'number') ||
+      !String(id).trim()
+    ) {
+      throw new UnauthorizedException(
+        'Authenticated reviewer identity required',
+      );
+    }
+    return String(id);
   }
 
   /**

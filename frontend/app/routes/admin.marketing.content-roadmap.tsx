@@ -15,6 +15,7 @@ import {
   useLoaderData,
   useSearchParams,
 } from "react-router";
+import { requireAdmin } from "~/auth/unified.server";
 import {
   DashboardShell,
   KpiGrid,
@@ -107,7 +108,8 @@ function pipelineStatusLabel(s: string | null): string {
 
 // ── Loader ──
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request, context }: LoaderFunctionArgs) {
+  await requireAdmin({ context });
   try {
     const url = new URL(request.url);
     const status = url.searchParams.get("status") || "";

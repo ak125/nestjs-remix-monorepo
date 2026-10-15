@@ -26,7 +26,7 @@ import tempfile
 import subprocess
 from unittest.mock import patch
 from datetime import date
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 
 import yaml
 
@@ -336,7 +336,22 @@ def test_fallback_descriptor_selection_matches_staged_check() -> None:
                 assert rk.check_staged() == 0, 'generator and checker disagree on fallback descriptor'
 
 
+def test_windows_paths_use_repository_slashes() -> None:
+    root = PureWindowsPath('C:/fixture/repo')
+    with patch.object(rk, 'APP_ROOT', root):
+        assert rk._rel(root / 'backend/src/modules/foo/foo.service.ts') == 'backend/src/modules/foo/foo.service.ts'
+
+
+def test_generated_block_is_literal_replacement_text() -> None:
+    old = rk.AUTO_GEN_BEGIN + '\nold\n' + rk.AUTO_GEN_END
+    new = rk.AUTO_GEN_BEGIN + '\n' + r'literal \src\1\name' + '\n' + rk.AUTO_GEN_END
+    with patch.object(rk, 'build_auto_block', return_value=new):
+        assert rk.replace_auto_block(old, make_mod([])) == new
+
+
 ALL_TESTS = [
+    test_windows_paths_use_repository_slashes,
+    test_generated_block_is_literal_replacement_text,
     test_case1_no_churn,
     test_case2_bump_on_change,
     test_default_path_still_bumps,

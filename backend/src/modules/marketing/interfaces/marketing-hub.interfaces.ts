@@ -206,11 +206,42 @@ export interface CalendarRules {
 // ── Publish Manifest ──
 
 export interface PublishManifest {
+  schema_version: 2;
+  purpose: 'editorial_preparation';
   week_iso: string;
   channel: SocialChannel;
   generated_at: string;
   posts: Array<{
+    export_id: string;
+    /** SHA-256 of JSON.stringify(content_snapshot), excluding review counters. */
+    content_sha256: string;
+    content_snapshot: {
+      post_id: number;
+      content_revision: number;
+      channel: SocialChannel;
+      week_iso: string;
+      scheduled_date: string;
+      scheduled_time: string;
+      channel_content: InstagramContent | FacebookContent | YouTubeContent;
+      link: string;
+    };
+    channel_content: InstagramContent | FacebookContent | YouTubeContent;
+    publication: {
+      ready: false;
+      account: null;
+      approval: null;
+      blockers: Array<
+        | 'account_not_bound'
+        | 'publication_approval_missing'
+        | 'final_media_not_bound'
+      >;
+    };
     post_id: number;
+    content_revision: number;
+    review_version: number;
+    approval: ChannelReview;
+    approval_scope: 'editorial';
+    title?: string;
     scheduled_date: string;
     scheduled_time: string;
     caption: string;
@@ -223,7 +254,26 @@ export interface PublishManifest {
 
 // ── Social Post (DB row) ──
 
+export interface ChannelReview {
+  content_revision: number;
+  state: 'gate_passed' | 'gate_failed' | 'approved' | 'rejected';
+  gate?: GateSummary;
+  actor: string;
+  decided_at: string;
+}
+
 export interface SocialPost {
+  source_brief?: {
+    brief: Record<string, unknown> & { id: string };
+    linked_content_revision: number;
+    linked_by: string;
+    linked_at: string;
+    input_content_revision: number;
+    input_review_version: number;
+  } | null;
+  content_revision: number;
+  review_version: number;
+  channel_reviews: Partial<Record<SocialChannel, ChannelReview>>;
   id: number;
   week_iso: string;
   day_of_week: number;

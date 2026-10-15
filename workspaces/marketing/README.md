@@ -1,5 +1,312 @@
 # Marketing Workspace
 
+## Registres et ordre d'application — qualification isolée du 15 octobre 2026
+
+La relecture des métadonnées distingue deux historiques : 474 entrées Supabase
+et 341 entrées `infra.schema_migrations`. Les 344 fichiers locaux correspondent
+aux 341 empreintes `infra` plus les trois migrations candidates marketing.
+Cette comparaison de fichiers ne vérifie pas les effets de chaque ancienne
+migration. Un seul identifiant complet est commun aux deux registres ; les noms
+ou dates différents ne prouvent ni équivalence ni absence d'exécution.
+
+**Correction du diagnostic précédent :** `20260430_marketing_layer_phase1` est
+bien déclarée `applied` dans `infra`, par `baseline-2026-05-16`, durée 0 ms.
+Le brief, les règles de rétention et la colonne de consentement sont pourtant
+absents du schéma interrogé. Un baseline enregistre une déclaration, pas une
+preuve d'exécution. Aucun historique n'a été effacé, recopié ou réparé sur la
+base partagée. Les fichiers et registres Supabase ne sont pas synchronisés
+automatiquement avec le moteur `infra`.
+
+L'environnement jetable a éprouvé l'ordre suivant avec les scripts existants :
+
+1. Préparation ciblée briefs / ACL produite par le script Phase 1.
+2. Exécution et vérification **complètes** de la migration Phase 1 par son script
+   historique, uniquement avec une table client fictive. Cela vérifie les trois
+   objets annoncés par le baseline, sans changer cette ancienne entrée. Le
+   consentement fictif reste NULL ; aucune campagne n'est exécutée.
+3. Moteur `scripts/ci/apply-supabase-migration.py --only` avec les trois identifiants
+   candidats : `20261014010000_marketing_social_reviews`, puis
+   `20261014091855_marketing_publication_preparations`, puis
+   `20261014172953_marketing_brief_social_link`. Le moteur trie même une liste
+   fournie à l'envers et inscrit les empreintes des SQL effectivement exécutés.
+
+Les deux dernières migrations vérifient désormais la présence des colonnes,
+fonctions et triggers actifs de revue sociale avant leurs propres DDL. Les
+`BEGIN/COMMIT` explicites ont été retirés des trois candidates : la transaction
+appartient au moteur, qui refuse les commandes de transaction dans le SQL avant
+exécution. Les tests SQL autonomes ouvrent leur propre transaction. Un échec
+d'inscription au registre annule aussi le schéma, et le rejeu d'une migration
+déjà enregistrée est refusé.
+
+Le garde-fou s'applique aux migrations sélectionnées pour exécution. L'inventaire
+hors ligne retrouve aussi 47 anciens fichiers avec des commandes transactionnelles ;
+ils sont déjà enregistrés dans `infra` et n'ont pas été modifiés. Une reconstruction
+complète depuis une base vide avec ce moteur reste à qualifier séparément.
+
+Preuves, inventaire comparé, ordre, codes retour et retour arrière :
+`output/brief-social-ledgers/`. La qualification ne vaut pas déploiement : le
+volet complet Phase 1 (rétention/consentement) reste hors application partagée
+autorisée. Si seule la partie briefs doit être livrée, la déclaration historique
+complète reste à traiter explicitement ; ne pas transformer la préparation
+partielle en preuve de toute la migration. Aucun changement de frontend ou
+backend applicatif dans ce lot ; leur validation HTTP précédente est historique.
+
+## Prérequis briefs / Social Hub — préparation isolée du 15 octobre 2026
+
+Le relevé partagé du 14 octobre indique une table `__marketing_brief` absente
+et des droits directs d'écriture `anon` / `authenticated` sur les posts sociaux,
+malgré une RLS réservée au service. Les migrations candidates refusent cet état.
+La migration historique `20260430_marketing_layer_phase1.sql` contient aussi
+de la rétention et du consentement client : l'appliquer intégralement pour
+débloquer ce parcours élargirait le périmètre.
+
+Le script existant propose désormais une préparation **hors ligne**, sans
+lecture de `.env`, sans dépendance DB et sans connexion :
+
+```bash
+python scripts/db/apply-migration-marketing-phase1.py --prepare-brief-social output/brief-social-prerequisite.sql
+```
+
+Le fichier de sortie doit être nouveau. Son SQL reprend exactement la section
+briefs de la migration canonique ; une empreinte de source empêche une extraction
+silencieuse après modification de cette migration. Il crée la table manquante et
+accorde `SELECT, INSERT, UPDATE` à `service_role`. Sur les posts, il révoque seulement
+les droits d'écriture directs des deux rôles publics, en conservant la lecture.
+Les permissions héritées et les permissions de colonne encore dangereuses
+provoquent un refus et l'annulation de toute la transaction.
+
+Le SQL refuse aussi une table ou fonction briefs déjà présente, une politique
+sociale différente et les permissions service manquantes. Il partage le verrou
+du moteur de migrations existant, limite les attentes et ne rejoue pas une
+préparation déjà appliquée. Aucun changement des plans hebdomadaires, aucune
+approbation, aucun contenu ni consentement client n'est produit.
+
+**Ce fichier est un artefact de revue, pas une migration complète ni une commande
+de déploiement autorisée.** Il ne modifie aucun ledger et ne permet pas de déclarer
+la migration historique entière appliquée. Avant toute application partagée,
+réconcilier les ledgers Supabase et `infra.schema_migrations`, vérifier les
+consommateurs des permissions ciblées et arrêter un ordre explicite avec les
+trois migrations candidates. Ne pas lancer toutes les migrations en attente.
+Les modes historiques `--apply`, `--verify`, `--test-negative` gardent leur portée
+globale et leur cible partagée : ils ne sont pas utilisés pour cette qualification.
+
+Tests ciblés : `python scripts/db/test-marketing-brief-preparation.py`, puis
+`node scripts/marketing/brief-social-reconciliation.sql-test.mjs <schema-capture.sql> <prerequis.sql>`.
+Le second demande le sous-ensemble de schéma capturé dans les preuves ; ce n'est
+pas un clone complet de Supabase. Les résultats PostgreSQL isolés, les empreintes,
+le diff limité et les limites figurent dans `output/brief-social-reconcile/`.
+En cas d'échec avant commit, la transaction annule table et permissions. Après
+une application autorisée, ne pas supprimer une table alimentée ni restaurer
+les droits publics dangereux : arrêter les mutations et préparer un correctif.
+
+## Candidat local — brief approuvé vers contenu social (14 octobre 2026)
+
+Le détail d'un brief approuvé Facebook ou Instagram permet de consulter les
+contenus existants d'une semaine, puis de raccorder explicitement le contenu
+correspondant. Le texte du post est présenté avant ce choix. Aucun scénario ni
+texte social n'est généré depuis le payload libre du brief. Le contrat historique
+des canaux du brief reste inchangé ; les autres réseaux du Social Hub conservent
+leurs propres validations.
+
+`POST /api/admin/marketing/briefs/:id/social-content` reçoit `post_id`,
+`expected_updated_at`, `content_revision`, `review_version`. L'acteur vient de la
+session admin. La migration candidate `20261014172953_marketing_brief_social_link.sql`
+ajoute un instantané `source_brief` au post existant et réutilise le lien
+`__marketing_brief.social_post_id`. La fonction SQL verrouille le brief puis le
+post, vérifie l'approbation documentée du brief, son réseau et les deux versions
+du contenu, et enregistre les deux côtés dans une même transaction.
+
+La provenance devient une modification éditoriale : la révision augmente, les
+anciennes décisions sociales sont invalidées et l'historique existant conserve
+l'instantané. Chaque réseau doit être contrôlé puis approuvé sur cette version.
+Un rejeu strictement identique retourne le post courant sans écriture et sans
+effacer des décisions ultérieures. Une autre association ou un autre acteur est
+refusé. Un lien historique sans instantané doit être confirmé explicitement sur
+un brief encore approuvé ; aucun backfill ne transforme un ancien lien en preuve.
+
+Le Social Hub résout `post_id` vers sa semaine réelle et ouvre la revue existante.
+Il affiche la source, l'approbateur du brief et la version du raccordement. Les
+modifications ultérieures du post gardent cet instantané et invalident normalement
+les approbations sociales. L'archivage ultérieur du brief ne révoque pas implicitement
+les décisions du post : la source décrit l'état au raccordement. Une révocation
+sociale passe par la revue du réseau. Les préparations durables conservent cette
+provenance avec leur décision sociale, sans autoriser une publication réelle.
+
+Validation reproductible : `scripts/marketing/brief-social.sql-test.mjs` exerce les
+trois migrations candidates sur PostgreSQL/PGlite isolé ; les tests HTTP, UI et
+`scripts/marketing/marketing-production-routes.test.mjs` couvrent les raccordements
+avec sessions et API synthétiques. Voir `output/brief-social-report.md` pour les
+résultats exacts et limites. Avant application partagée : réconcilier le ledger,
+le schéma et les permissions, puis tester une base et une image représentatives.
+Le code et les migrations sont un candidat local non déployé.
+
+## Candidat local — versions et revue sociale par réseau (14 octobre 2026)
+
+Le Social Hub existant porte la revue éditoriale d'Instagram, Facebook et YouTube.
+La migration candidate `20261014010000_marketing_social_reviews.sql` n'est pas une
+preuve d'application sur une base partagée. Elle exige `channels jsonb`,
+`channels_list text[]` et l'absence de droits d'écriture publics ; elle refuse
+un contrat différent sans modifier les politiques existantes.
+
+- `content_revision` est attribuée par PostgreSQL. Une modification éditoriale
+  (variantes, URL, UTM, gamme, calendrier, provenance) invalide toutes les décisions
+  du post. Les mises à jour de performance seules ne changent pas cette révision.
+- `channel_reviews` conserve la décision de chaque réseau. `review_version`
+  protège contre les décisions concurrentes, y compris sur des réseaux distincts.
+  Un conflit exige une relecture, jamais une relance automatique de l'approbation.
+- Les endpoints gate/approve/reject exigent `{channel, content_revision,
+  review_version}`. L'acteur humain provient de la session serveur. Un gate
+  automatique est identifié comme `system:marketing-gate`, sans approbation humaine.
+- L'approbation exige un gate passant du même réseau et de la même révision.
+  Les anciens champs globaux ne donnent aucun droit d'export. `approved` signifie
+  que tous les réseaux prévus sont approuvés ; une variante déjà approuvée peut
+  être exportée sans attendre les autres.
+- L'historique `__marketing_social_post_history` conserve les instantanés de contenu
+  et de décision. Le serveur peut les lire, mais pas les modifier. La revue affiche
+  les 50 derniers instantanés et une confirmation explicite réseau/version.
+- L'export porte la version et sa preuve d'approbation éditoriale. Il n'autorise
+  pas une publication sur un compte réel. L'ancien bulk-approve et la déclaration
+  mark-published sans preuve sont refusés ; aucun consommateur UI ne dépend du bulk.
+
+Avant activation : réconcilier ledger, types et permissions réels, tester sur le
+schéma isolé représentatif puis les sessions et l'image servie. Le test SQL local
+utilise PostgreSQL/PGlite sur un schéma fixture, sans connexions concurrentes ni
+PostgREST réel. La vérification des comptes, les packs finaux et les preuves
+distantes de publication restent à réaliser. Ne pas déployer l'interface et
+le backend indépendamment de cette migration. En retour arrière, désactiver les
+mutations marketing et conserver l'historique ; ne pas réouvrir les anciennes
+approbations globales.
+
+### Préparation d'export — suite locale du 14 octobre 2026
+
+`PublishQueueService.exportManifest` émet maintenant `schema_version: 2`,
+`purpose: editorial_preparation`. Les champs historiques restent présents pour
+les lecteurs existants, accompagnés de la variante complète `channel_content`
+validée avec les schémas de génération/revue. Les champs inconnus sont refusés,
+pas supprimés silencieusement. Une semaine ISO inexistante, une ligne approuvée
+incohérente ou un doublon provoque une erreur avant la livraison du manifeste.
+
+- `export_id = social:<post_id>:r<content_revision>:<channel>` identifie l'entrée.
+- `content_snapshot` contient le post, sa révision, le réseau, la semaine,
+  le calendrier suggéré, la variante et le lien UTM. `content_sha256` est le
+  SHA-256 UTF-8 de `JSON.stringify(content_snapshot)`, dans l'ordre des clés émis.
+  Il reste stable sur un réexport inchangé et ne dépend pas d'une décision sur un
+  autre réseau. C'est une empreinte de comparaison, pas une signature d'autorité.
+- `publication.ready` reste `false`. Le compte et l'autorisation de publication
+  restent `null` avec des blocages explicites. Les formats nécessitant un média
+  signalent également `final_media_not_bound` ; un post texte Facebook reste
+  bloqué par le compte et l'autorisation. Aucun média n'est inventé depuis un brief.
+- Un export est une lecture sans réservation durable. Son identité n'empêche pas
+  deux publications manuelles ; l'actualité de l'approbation devra être recontrôlée
+  au moment de préparer une publication réelle. Le calendrier reste une suggestion,
+  sans créneau réservé ni fuseau de compte confirmé.
+- Le CLI d'export charge uniquement `MarketingExportModule` (les trois services
+  existants nécessaires), sans `AppModule`, scheduler ou workers. Il exige la
+  configuration d'environnement existante, et ferme son contexte même si la file
+  est vide. Il n'a pas été exécuté contre la base partagée pour cette qualification.
+
+L'export éditorial hebdomadaire reste indépendant des préparations durables ci-dessous. Il ne
+sélectionne aucun compte ni média enregistré et ne réserve aucune publication.
+
+### Préparations durables — candidat API du 14 octobre 2026
+
+Le même contrôleur admin, `PublishQueueService` et `MarketingHubDataService`
+enregistrent désormais un rattachement déclaré, sans créer de publication :
+
+- `POST /api/admin/marketing/social/posts/:id/preparations` reçoit `request_id`
+  (UUID conservé lors d'un rejeu), `channel`, `content_revision`, `review_version`,
+  `account: {external_id, label}` et `media: [{bucket, path, sha256, role}]`.
+  Les rôles sont `image`, `video`, `thumbnail`, `subtitles`. La liste peut être
+  vide pour une préparation incomplète. Aucun token, URL signée ou chemin local
+  n'est accepté ; les références de stockage ne sont jamais téléchargées ici.
+- La migration candidate `20261014091855_marketing_publication_preparations.sql`
+  dépend de la migration de revue. Sous verrou du post, elle exige les compteurs
+  actuels et l'approbation du réseau. Le contenu éditorial complet, sa décision,
+  le compte déclaré, les médias déclarés et l'acteur serveur sont conservés dans
+  `__marketing_publication_preparations`. Les instantanés et la date sont calculés
+  par PostgreSQL et ne peuvent pas être fournis par le rôle API.
+- Un rejeu identique retourne le même enregistrement. Réutiliser son UUID avec
+  un autre contenu, compte, média ou acteur provoque un conflit. Après une
+  modification ou une révocation, l'ancien UUID ne réactive pas la préparation.
+  Pour corriger une déclaration, fournir un nouvel UUID : l'ancien instantané
+  reste dans l'historique. Aucun enregistrement n'est désigné « actif » ou autorisé.
+- `GET /api/admin/marketing/social/posts/:id/preparations` retourne les 50 derniers
+  instantanés, avec `purpose: preparation_history` et `publication_ready: false`.
+  Ce sont des preuves historiques, pas un contrôle d'actualité ou un compteur
+  de publications. Les deux routes exigent le garde administrateur existant.
+- La réponse d'enregistrement reste `publication.ready: false` : autorisation du
+  compte non vérifiée, disponibilité et droits des médias non vérifiés,
+  approbation de publication absente. Le SHA-256 fourni décrit le fichier attendu ;
+  il n'est pas une preuve que l'objet existe ou correspond à cette empreinte.
+
+Le formulaire Social Hub est raccordé dans le candidat local décrit ci-dessous.
+Il ne fournit pas de compte réel vérifié, de pack final, d'autorisation de
+publication ou de preuve distante.
+La migration est testée sur une fixture PGlite isolée, jamais appliquée en base
+partagée. Les sessions réelles, le schéma cible, PostgREST et la concurrence entre
+connexions restent à qualifier. Le rôle serveur a uniquement SELECT et INSERT
+sur les colonnes déclaratives ; RLS, déclencheur de validation et historique
+immuable protègent aussi l'insertion directe. La RPC est SECURITY INVOKER.
+
+### Formulaire de préparation — candidat UI du 14 octobre 2026
+
+Dans « Examiner par réseau », chaque variante approuvée pour la version courante
+donne accès au formulaire de préparation. Il réutilise les endpoints ci-dessus,
+les composants UI et React Hook Form du projet. Le nom et l'identifiant du compte
+sont déclaratifs ; les médias existants sont référencés par espace, chemin,
+SHA-256 et rôle. Aucun accès fournisseur ni téléchargement n'est déclenché.
+
+- « Relire la préparation » affiche le rattachement avant tout envoi ;
+  « Confirmer l'enregistrement » enregistre la version et le réseau présentés.
+- Un reçu de reprise est conservé dans le stockage de session du navigateur,
+  avant l'envoi et après le succès. Une fermeture du panneau ou une réponse perdue
+  permet de rejouer le même UUID. Ce reçu ne constitue pas une autorisation ;
+  le serveur recontrôle les décisions. Il ne couvre pas une autre session ou un
+  effacement du stockage : consulter alors l'historique avant une nouvelle demande.
+- Une indisponibilité du stockage empêche l'envoi ; un conflit ou un refus d'accès
+  exige de recharger le contenu. Une réponse incohérente ne produit jamais un succès.
+- « Corriger le rattachement » prépare une nouvelle demande en conservant l'ancien
+  instantané. L'historique du réseau reste consultable même sans approbation actuelle ;
+  une erreur de lecture est distinguée d'un historique vide.
+
+Preuves locales : tests d'intégration du panneau dans la route et du formulaire,
+recette navigateur du composant réel avec réponses fictives, contrôle TypeScript,
+lint et build frontend (résultats dans `output/preparation-ui-review.md`). Cette
+recette ne qualifie ni les sessions déployées ni une écriture sur la base cible.
+Les deux migrations et les contrats API doivent être qualifiés avec l'image
+servie avant activation. La publication reste explicitement non autorisée.
+
+### Export de la préparation sélectionnée — candidat du 14 octobre 2026
+
+« Exporter cette préparation (JSON) » est disponible sur le reçu et dans
+l'historique du même formulaire. Le bouton appelle
+`GET /api/admin/marketing/social/posts/:id/preparations/:requestId/export`, protégé
+par le garde administrateur existant. Le serveur lit cet UUID exact, y compris
+s'il ne figure plus parmi les 50 dernières préparations, puis relit le post.
+
+- Une modification du contenu, une révocation ou une nouvelle décision sur le
+  même réseau, un archivage ou une publication enregistrée empêchent l'export.
+  Une décision sur un autre réseau n'invalide pas à elle seule le rattachement.
+- Le constructeur de manifeste existant produit le contenu éditorial, le lien
+  UTM et son empreinte. Il compare aussi le contenu actuel à l'instantané conservé,
+  afin de refuser une incohérence même si la révision n'a pas changé.
+- Le JSON `purpose: bound_publication_preparation`, `schema_version: 1` conserve
+  le compte et les références de médias de cette préparation. Son `export_id`
+  est `preparation:<request_id>` ; un réexport inchangé conserve cette identité.
+  Aucun lien public ou signé n'est généré, aucun média n'est téléchargé.
+- Le navigateur vérifie le rattachement retourné avant de préparer le
+  téléchargement. Un conflit, un refus d'accès ou une réponse incohérente
+  n'entraîne aucun téléchargement de substitution.
+
+Ce JSON reste une préparation déclarative : `publication.ready: false`, compte
+non vérifié, disponibilité et droits des médias non vérifiés, approbation de
+publication absente. Le contrôle décrit l'état lu, sans verrou ni réservation
+durable ; il ne garantit pas une approbation future ou l'absence d'une publication
+manuelle en double. Le pack de fichiers vérifiés et la preuve distante restent
+à raccorder. Aucune migration supplémentaire n'est nécessaire pour cet export.
+Les preuves de ce lot sont dans `output/preparation-export-review.md` ; la recette
+navigateur du lot précédent ne constitue pas une recette de ce nouveau bouton.
+
 Claude Code project root pour les agents marketing AutoMecanik (ADR-036). Charge uniquement les agents marketing G1 + skills marketing-relevant, sans charger les 39 agents R0-R8 SEO ni les 8 skills dev daily.
 
 ## Résumé des exclusions du pilote synthétique
@@ -778,7 +1085,9 @@ cd /opt/automecanik/app && claude
 
 **Phase 0 (J+0 → J+5)** : scaffold workspace + canon brand voice + workflow CI hash check. ADR-036 mergé côté vault. Pré-requis Phase 1 = merge PR monorepo #222 (`feat/seo-agent-operating-matrix`).
 
-**Phase 1 (J+5 → J+15)** : pilote `local-business-agent` (10 communes 93, 1 GBP post/commune/semaine max). Scaffold backend (`__marketing_brief` + `__marketing_feedback` + `__retention_trigger_rules` + `users.marketing_consent_at`).
+**Phase 1 (J+5 → J+15, intention historique)** : pilote `local-business-agent` (10 communes 93, 1 GBP post/commune/semaine max). Le SQL livré `20260430_marketing_layer_phase1.sql` définit `__marketing_brief`, `__retention_trigger_rules` et `___xtr_customer.cst_marketing_consent_at`. Il ne crée ni `__marketing_feedback` ni `users.marketing_consent_at` : ces noms du scaffold ne décrivent pas le contrat SQL livré.
+
+**Réconciliation préparée le 15 octobre 2026** : le parcours briefs → Social Hub ne nécessite pas l'activation des relances clients. « Rétention » désigne ici la fidélisation, pas une durée de conservation des données. Les quatre règles initiales de Phase1 sont actives par défaut ; le timestamp de consentement ne démontre pas à lui seul un parcours de collecte/révocation opérationnel. Voir le [périmètre, contrôle préalable et conditions de réconciliation](../../backend/supabase/migrations/README.md#phase1--reconciliation-preparee-le-15-octobre-2026). Aucun statut de migration ne vaut preuve de déploiement ou autorisation d'envoi.
 
 **Phase 2 (J+15 → J+30)** : `marketing-lead-agent` + `customer-retention-agent`.
 

@@ -131,40 +131,30 @@ export class WeeklyPlanGeneratorService {
 
   private async autoDetectPriorityGammes(): Promise<PriorityGamme[]> {
     // 1. Try SEO gammes with existing content (best candidates)
-    try {
-      const seoGammes = await this.hubData.getTopSeoGammes(12);
-      if (seoGammes.length > 0) {
-        // Filter out recently posted gammes
-        const recentIds = await this.hubData.getRecentGammeIds(28);
-        const fresh = seoGammes.filter((g) => !recentIds.includes(g.pg_id));
-        if (fresh.length >= 4) {
-          this.logger.log(
-            `autoDetect: ${fresh.length} SEO gammes (${fresh.map((g) => g.pg_alias).join(', ')})`,
-          );
-          return fresh.slice(0, 8);
-        }
+    const seoGammes = await this.hubData.getTopSeoGammes(12);
+    if (seoGammes.length > 0) {
+      // Filter out recently posted gammes
+      const recentIds = await this.hubData.getRecentGammeIds(28);
+      const fresh = seoGammes.filter((g) => !recentIds.includes(g.pg_id));
+      if (fresh.length >= 4) {
+        this.logger.log(
+          `autoDetect: ${fresh.length} SEO gammes (${fresh.map((g) => g.pg_alias).join(', ')})`,
+        );
+        return fresh.slice(0, 8);
       }
-    } catch {
-      this.logger.warn('autoDetect: SEO gammes query failed');
     }
 
-    // 2. Fallback: coverage gaps
-    try {
-      const coverage = await this.marketingData.getContentCoverage();
-      if (coverage && coverage.gaps) {
-        return coverage.gaps
-          .slice(0, 8)
-          .map(
-            (gap: { pg_id: number; pg_alias?: string; pg_name?: string }) => ({
-              pg_id: gap.pg_id,
-              pg_alias: gap.pg_alias || '',
-              pg_name: gap.pg_name || '',
-              reason: 'low_coverage' as const,
-            }),
-          );
-      }
-    } catch {
-      this.logger.warn('autoDetect: coverage unavailable');
+    // 2. Fallback only after a successful source read, never after an outage.
+    const coverage = await this.marketingData.getContentCoverage();
+    if (coverage && coverage.gaps) {
+      return coverage.gaps
+        .slice(0, 8)
+        .map((gap: { pg_id: number; pg_alias?: string; pg_name?: string }) => ({
+          pg_id: gap.pg_id,
+          pg_alias: gap.pg_alias || '',
+          pg_name: gap.pg_name || '',
+          reason: 'low_coverage' as const,
+        }));
     }
     return [];
   }
@@ -215,12 +205,12 @@ export class WeeklyPlanGeneratorService {
     const year = parseInt(match[1]);
     const week = parseInt(match[2]);
     // Jan 4 is always in week 1
-    const jan4 = new Date(year, 0, 4);
-    const dayDiff = jan4.getDay() || 7; // Monday=1
+    const jan4 = new Date(Date.UTC(year, 0, 4));
+    const dayDiff = jan4.getUTCDay() || 7; // Monday=1
     const monday = new Date(jan4);
-    monday.setDate(jan4.getDate() - dayDiff + 1 + (week - 1) * 7);
+    monday.setUTCDate(jan4.getUTCDate() - dayDiff + 1 + (week - 1) * 7);
     const target = new Date(monday);
-    target.setDate(monday.getDate() + dayOfWeek - 1);
+    target.setUTCDate(monday.getUTCDate() + dayOfWeek - 1);
     return target.toISOString().split('T')[0];
   }
 }

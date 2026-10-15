@@ -12,9 +12,14 @@ Mode :
   --apply      : applique la migration en transaction unique (BEGIN/COMMIT du SQL)
   --verify     : vérifie post-apply (tables existent, indexes présents, seed inséré)
   --test-negative : lance les 5 tests négatifs (CHECK constraints) — doivent FAIL
+  --prepare-brief-social FILE : écrit un prérequis ciblé, hors ligne, sans appliquer
+  --prepare-brief-social-migration FILE : même contrat, transaction gérée par le runner
 
-Idempotent : la migration utilise IF NOT EXISTS / ON CONFLICT DO NOTHING / DROP IF EXISTS
-partout, donc relancer --apply ne casse rien.
+Attention : --apply rejoue TOUT Phase1, dont quatre règles de relance actives.
+IF NOT EXISTS ne vérifie pas la conformité d'un objet déjà présent. Ce runner
+historique ne réconcilie pas les deux registres et --test-negative écrit des
+fixtures : ne pas les utiliser comme contrôle en lecture seule du schéma partagé.
+Préparation ciblée : voir backend/supabase/migrations/README.md, section Phase1.
 
 Usage :
   python3 scripts/db/apply-migration-marketing-phase1.py --dry-run
@@ -25,33 +30,14 @@ Usage :
 from __future__ import annotations
 
 import argparse
+import hashlib
 import os
 import sys
 from pathlib import Path
 
-import psycopg2
-from psycopg2 import errors as pg_errors
-from dotenv import load_dotenv
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ENV_PATH = REPO_ROOT / "backend" / ".env"
-load_dotenv(ENV_PATH)
-
-DB_PASSWORD = os.environ.get("SUPABASE_DB_PASSWORD")
-if not DB_PASSWORD:
-    sys.stderr.write("[FATAL] SUPABASE_DB_PASSWORD missing in env\n")
-    sys.exit(2)
-
 PROJECT_REF = "cxpojprgwgubzjyqzmoq"
-DSN = (
-    f"host=db.{PROJECT_REF}.supabase.co "
-    f"port=5432 "
-    f"dbname=postgres "
-    f"user=postgres "
-    f"password={DB_PASSWORD} "
-    f"sslmode=require "
-    f"application_name=adr036-phase1-migration"
-)
 
 MIGRATION_PATH = (
     REPO_ROOT
@@ -63,9 +49,159 @@ MIGRATION_PATH = (
 
 
 def connect():
+    # Keep offline preparation/help independent from secrets and DB dependencies.
+    import psycopg2
+    from dotenv import load_dotenv
+
+    load_dotenv(ENV_PATH)
+    password = os.environ.get("SUPABASE_DB_PASSWORD")
+    if not password:
+        raise RuntimeError("SUPABASE_DB_PASSWORD missing in env")
     print(f"[connect] {PROJECT_REF}.supabase.co:5432 (direct, non-pooler)")
-    conn = psycopg2.connect(DSN, connect_timeout=10)
+    conn = psycopg2.connect(
+        host=f"db.{PROJECT_REF}.supabase.co", port=5432, dbname="postgres",
+        user="postgres", password=password, sslmode="require",
+        application_name="adr036-phase1-migration", connect_timeout=10,
+    )
     return conn
+
+
+def brief_social_sql(source: str) -> str:
+    """Prepare only the reviewed missing-brief case; never mark Phase 1 applied.
+
+    Hash UTF-8 text after universal-newline normalization so Git CRLF checkout
+    does not change the approved source. A source change requires fresh review.
+    """
+    digest = hashlib.sha256(source.encode("utf-8")).hexdigest()
+    if digest != "b498fd24ab534abfffe0c55011c1af14a1a675fda627a06db7a39a47b04a7e8b":
+        raise ValueError("Canonical Phase 1 source changed; review before preparing")
+    brief = source[source.index("CREATE TABLE IF NOT EXISTS public.__marketing_brief"):
+                   source.index("-- ── 2.")]
+    return f"""-- REVIEW ARTIFACT ONLY: missing brief + Social Hub ACL prerequisite.
+-- Source: 20260430_marketing_layer_phase1.sql (brief section only).
+-- Source SHA256 (UTF-8/LF): {digest}
+-- No migration ledger write: this is NOT the complete historical migration.
+-- Execute only with an approved target and a client that stops on error.
+BEGIN;
+SET LOCAL lock_timeout = '5s';
+SET LOCAL statement_timeout = '30s';
+DO $preflight$
+BEGIN
+  IF NOT pg_try_advisory_xact_lock(88442211) THEN
+    RAISE EXCEPTION 'Migration runner lock busy';
+  END IF;
+  IF to_regclass('public.__marketing_brief') IS NOT NULL
+     OR to_regprocedure('public.fn_marketing_brief_updated_at()') IS NOT NULL THEN
+    RAISE EXCEPTION 'Brief already exists or partial schema: inspect, do not replay';
+  END IF;
+  IF to_regclass('public.__marketing_social_posts') IS NULL THEN
+    RAISE EXCEPTION 'Social posts prerequisite missing';
+  END IF;
+END;
+$preflight$;
+LOCK TABLE public.__marketing_social_posts IN ACCESS EXCLUSIVE MODE;
+DO $social_contract$
+BEGIN
+  IF NOT (SELECT relrowsecurity FROM pg_class
+          WHERE oid = 'public.__marketing_social_posts'::regclass)
+     OR (SELECT count(*) FROM pg_policies WHERE schemaname='public'
+         AND tablename='__marketing_social_posts') <> 1
+     OR NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public'
+         AND tablename='__marketing_social_posts' AND policyname='service_role_all'
+         AND roles=ARRAY['service_role']::name[] AND cmd='ALL'
+         AND permissive='PERMISSIVE' AND qual='true' AND with_check='true') THEN
+    RAISE EXCEPTION 'Social RLS contract changed; inspect consumers';
+  END IF;
+  IF EXISTS (SELECT 1 FROM unnest(ARRAY['SELECT','INSERT','UPDATE']) AS p
+      WHERE NOT has_table_privilege('service_role','public.__marketing_social_posts',p)) THEN
+    RAISE EXCEPTION 'Social service_role privileges missing';
+  END IF;
+END;
+$social_contract$;
+{brief}
+-- Only the two reviewed roles on the existing social table. Do not revoke
+-- inherited/PUBLIC grants broadly: the postcondition rejects them atomically.
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER
+  ON public.__marketing_social_posts FROM anon, authenticated;
+REVOKE ALL ON public.__marketing_brief FROM PUBLIC;
+GRANT SELECT, INSERT, UPDATE ON public.__marketing_brief TO service_role;
+DO $postcondition$
+DECLARE r text; t text; p text;
+BEGIN
+  FOREACH r IN ARRAY ARRAY['anon','authenticated'] LOOP
+    FOREACH t IN ARRAY ARRAY['__marketing_social_posts','__marketing_brief'] LOOP
+      FOREACH p IN ARRAY ARRAY['INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER'] LOOP
+        IF has_table_privilege(r, 'public.' || t, p) THEN
+          RAISE EXCEPTION 'Residual public write privilege: %.% %', r, t, p;
+        END IF;
+      END LOOP;
+      IF has_any_column_privilege(r, 'public.' || t, 'INSERT,UPDATE,REFERENCES') THEN
+        RAISE EXCEPTION 'Residual public column write privilege: %.%', r, t;
+      END IF;
+    END LOOP;
+  END LOOP;
+END;
+$postcondition$;
+COMMIT;
+"""
+
+
+def brief_social_migration_sql(source: str) -> str:
+    """Registered form of the same contract; SQL and ledger commit together.
+
+    Keep the historical preparation entry point for existing isolated consumers.
+    The new file must be named by `supabase migration new`, never applied by this
+    generator. Its baseline guard restricts it to the observed reconciliation.
+    """
+    prepared = brief_social_sql(source)
+    _, separator, body = prepared.partition("BEGIN;\n")
+    if not separator or not body.endswith("COMMIT;\n"):
+        raise ValueError("Prepared transaction boundaries changed; review generator")
+    body = body.removesuffix("COMMIT;\n")
+    baseline = """DO $historical_baseline$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM infra.schema_migrations
+    WHERE id = '20260430_marketing_layer_phase1'
+      AND status = 'applied'
+      AND checksum = 'b498fd24ab534abfffe0c55011c1af14a1a675fda627a06db7a39a47b04a7e8b'
+      AND runner = 'baseline-2026-05-16' AND execution_ms = 0
+  ) THEN
+    RAISE EXCEPTION 'Phase1 baseline differs from reviewed reconciliation; inspect before applying';
+  END IF;
+END;
+$historical_baseline$;
+"""
+    body = body.replace('DO $preflight$\n', baseline + 'DO $preflight$\n', 1)
+    return """-- Generated by apply-migration-marketing-phase1.py --prepare-brief-social-migration.
+-- Corrective migration: missing brief + existing Social Hub ACL prerequisite only.
+-- Source: 20260430_marketing_layer_phase1.sql; SHA256 UTF-8/LF:
+-- b498fd24ab534abfffe0c55011c1af14a1a675fda627a06db7a39a47b04a7e8b
+-- Preserve the historical Phase1 baseline; this does NOT complete all its blocks.
+-- Runner owns transaction and checksum ledger write. No inline BEGIN/COMMIT.
+-- Select this correction ALONE before the three older pending Social Hub files.
+-- No customer changes, retention seeds, provider calls or publication activation.
+-- Squawk 2.52.1 reports prefer-bigint-over-int on six manual per-brief counters.
+-- Preserve the exact hash-pinned Phase1 types; widening needs consumer review.
+-- The generated-file identity test prevents unreviewed additions to this contract.
+-- squawk-ignore-file prefer-bigint-over-int
+""" + body
+
+
+def cmd_prepare_brief_social(path: Path, *, registered_migration: bool = False) -> int:
+    try:
+        source = MIGRATION_PATH.read_text(encoding="utf-8")
+        sql = brief_social_migration_sql(source) if registered_migration else brief_social_sql(source)
+        with path.open("x", encoding="utf-8", newline="\n") as output:
+            output.write(sql)
+    except FileExistsError:
+        sys.stderr.write("[FATAL] output already exists; preserve the reviewed artifact\n")
+        return 1
+    except (OSError, ValueError) as error:
+        sys.stderr.write(f"[FATAL] {error}\n")
+        return 1
+    print(f"[prepared] {path} (offline; not applied; no ledger updated)")
+    return 0
 
 
 def cmd_dry_run() -> int:
@@ -217,6 +353,8 @@ def cmd_test_negative() -> int:
     targeted CHECK. This makes regression-tracing trivial when a constraint
     is later loosened or tightened.
     """
+    from psycopg2 import errors as pg_errors
+
     # HYBRID payload missing only ONE key at a time — explicit isolation per test.
     HYBRID_BASE = {
         "hybrid_reason": "client zone 93 panier abandonné",
@@ -356,8 +494,14 @@ def main() -> int:
     g.add_argument("--apply", action="store_true")
     g.add_argument("--verify", action="store_true")
     g.add_argument("--test-negative", action="store_true")
+    g.add_argument("--prepare-brief-social", type=Path, metavar="FILE")
+    g.add_argument("--prepare-brief-social-migration", type=Path, metavar="FILE")
     args = ap.parse_args()
 
+    if args.prepare_brief_social:
+        return cmd_prepare_brief_social(args.prepare_brief_social)
+    if args.prepare_brief_social_migration:
+        return cmd_prepare_brief_social(args.prepare_brief_social_migration, registered_migration=True)
     if args.dry_run:
         return cmd_dry_run()
     if args.apply:

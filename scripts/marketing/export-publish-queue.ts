@@ -2,55 +2,63 @@
 /**
  * Export Publish Queue — CLI script
  *
- * Exports a JSON manifest for Meta Business Suite / YouTube Studio.
- * Idempotent: re-export does not create duplicates.
+ * Exports editorial preparation only; no account or publication authorization.
+ * Stable entry IDs support comparison, not remote publication deduplication.
  *
- * Usage:
- *   npx ts-node scripts/marketing/export-publish-queue.ts --week 2026-W09 --channel instagram
- *   npx ts-node scripts/marketing/export-publish-queue.ts --week 2026-W09 --channel facebook
- *   npx ts-node scripts/marketing/export-publish-queue.ts --week 2026-W09 --channel youtube
+ * From the repository root, set TS_NODE_PROJECT=backend/tsconfig.json, then:
+ *   node -r ts-node/register/transpile-only -r tsconfig-paths/register scripts/marketing/export-publish-queue.ts --week 2026-W09 --channel instagram
+ * Channels: instagram | facebook | youtube. Existing DB environment required.
  */
 
 import { writeFileSync } from 'fs';
 import { join } from 'path';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from '../../backend/src/app.module';
+import { Module } from '@nestjs/common';
 import { PublishQueueService } from '../../backend/src/modules/marketing/services/publish-queue.service';
-import type { SocialChannel } from '../../backend/src/modules/marketing/interfaces/marketing-hub.interfaces';
+import { MarketingHubDataService } from '../../backend/src/modules/marketing/services/marketing-hub-data.service';
+import { UTMBuilderService } from '../../backend/src/modules/marketing/services/utm-builder.service';
+import { parseSocialExport } from '../../backend/src/modules/marketing/dto/social-export.dto';
 
-const VALID_CHANNELS: SocialChannel[] = ['instagram', 'facebook', 'youtube'];
+// Deliberately excludes AppModule: no scheduler, worker or startup write.
+@Module({
+  providers: [PublishQueueService, MarketingHubDataService, UTMBuilderService],
+})
+export class MarketingExportModule {}
 
 async function main() {
   const args = process.argv.slice(2);
   const weekIdx = args.indexOf('--week');
   const channelIdx = args.indexOf('--channel');
 
-  if (weekIdx === -1 || !args[weekIdx + 1] || channelIdx === -1 || !args[channelIdx + 1]) {
-    console.error('Usage: --week 2026-W09 --channel instagram|facebook|youtube');
-    process.exit(1);
+  if (
+    weekIdx === -1 ||
+    !args[weekIdx + 1] ||
+    channelIdx === -1 ||
+    !args[channelIdx + 1]
+  ) {
+    console.error(
+      'Usage: --week 2026-W09 --channel instagram|facebook|youtube',
+    );
+    process.exitCode = 1;
+    return;
   }
 
-  const weekIso = args[weekIdx + 1];
-  const channel = args[channelIdx + 1] as SocialChannel;
-
-  if (!/^\d{4}-W\d{2}$/.test(weekIso)) {
-    console.error('Invalid week format. Expected: YYYY-WNN');
-    process.exit(1);
-  }
-
-  if (!VALID_CHANNELS.includes(channel)) {
-    console.error(`Invalid channel. Must be one of: ${VALID_CHANNELS.join(', ')}`);
-    process.exit(1);
-  }
+  const { week: weekIso, channel } = parseSocialExport({
+    week: args[weekIdx + 1],
+    channel: args[channelIdx + 1],
+  });
 
   console.log(`\n--- Marketing Hub: Export Publish Queue ---`);
   console.log(`Week: ${weekIso}`);
   console.log(`Channel: ${channel}`);
   console.log('');
 
-  const app = await NestFactory.createApplicationContext(AppModule, {
-    logger: ['error', 'warn'],
-  });
+  const app = await NestFactory.createApplicationContext(
+    MarketingExportModule,
+    {
+      logger: ['error', 'warn'],
+    },
+  );
 
   try {
     const publishQueue = app.get(PublishQueueService);
@@ -60,7 +68,7 @@ async function main() {
     if (manifest.posts.length === 0) {
       console.warn('No approved posts found for this week/channel.');
       console.warn('Make sure posts are approved in the admin UI first.');
-      process.exit(0);
+      return;
     }
 
     // Write manifest to file
@@ -81,16 +89,23 @@ async function main() {
       console.log('');
     }
 
-    console.log(`Next steps:`);
-    console.log(`  1. Open Meta Business Suite (FB/IG) or YouTube Studio`);
-    console.log(`  2. Copy captions and schedule at the specified times`);
-    console.log(`  3. After publishing, mark as published via admin UI or API`);
+    console.log(
+      'Editorial preparation only — publication is not authorized by this export.',
+    );
+    console.log(
+      'Next: bind the intended account, final media where required, and a separate publication approval.',
+    );
+    console.log(
+      'Keep the exported version and checksum; remote publication evidence remains a separate step.',
+    );
   } finally {
     await app.close();
   }
 }
 
-main().catch((err) => {
-  console.error('Fatal error:', err.message);
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch((err) => {
+    console.error('Fatal error:', err.message);
+    process.exitCode = 1;
+  });
+}

@@ -3,11 +3,8 @@ import {
   CheckCircle2,
   ShieldCheck,
   Send,
-  MoreHorizontal,
   Eye,
   ThumbsUp,
-  ThumbsDown,
-  ShieldAlert,
   Download,
   RefreshCw,
   Wand2,
@@ -15,14 +12,18 @@ import {
   Play,
   CalendarDays,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   type LoaderFunctionArgs,
   type MetaFunction,
   useLoaderData,
   useSearchParams,
+  Link,
+  redirect,
 } from "react-router";
 import { toast } from "sonner";
+import { requireAdmin } from "~/auth/unified.server";
+import { PublicationPreparationPanel } from "~/components/admin/marketing/PublicationPreparationPanel";
 import { AdminDataTable } from "~/components/admin/patterns/AdminDataTable";
 import {
   DashboardShell,
@@ -53,26 +54,40 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
+
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Select, SelectItem } from "~/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Textarea } from "~/components/ui/textarea";
+import {
+  socialLinkCandidateSchema,
+  socialBriefSourceSchema,
+  type SocialBriefSource,
+} from "~/services/api/marketing-briefs.api";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 export const meta: MetaFunction = () => createNoIndexMeta("Social Hub - Admin");
+export const headers = () => ({ "Cache-Control": "private, no-store" });
 
 // ── Types ──
 
 interface SocialPost {
+  source_brief?: SocialBriefSource | null;
+  content_revision: number;
+  review_version: number;
+  channel_reviews: Record<
+    string,
+    {
+      content_revision: number;
+      state: string;
+      actor: string;
+      decided_at: string;
+      gate?: { blocking_issues: string[] };
+    }
+  >;
+
   id: number;
   week_iso: string;
   day_of_week: number;
@@ -184,13 +199,44 @@ function getCurrentWeekISO(): string {
 
 // ── Loader ──
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request, context }: LoaderFunctionArgs) {
+  await requireAdmin({ context });
   const cookie = request.headers.get("Cookie") || "";
   const headers = { Cookie: cookie };
   const url = new URL(request.url);
 
   const week = url.searchParams.get("week") || getCurrentWeekISO();
   const status = url.searchParams.get("status") || "";
+
+  let selectedPostId: number | null = null;
+  const target = url.searchParams.get("post_id");
+  if (target !== null) {
+    if (!/^[1-9]\d*$/.test(target) || !Number.isSafeInteger(Number(target)))
+      throw new Response("Identifiant de contenu invalide", { status: 400 });
+    const response = await fetch(
+      getInternalApiUrlFromRequest(
+        `/api/admin/marketing/social/posts/${target}`,
+        request,
+      ),
+      { headers, cache: "no-store" },
+    ).catch(() => {
+      throw new Response("Contenu indisponible", { status: 503 });
+    });
+    if (response.status === 404)
+      throw new Response("Contenu introuvable", { status: 404 });
+    if (!response.ok)
+      throw new Response("Contenu indisponible", { status: 503 });
+    const body = await response.json().catch(() => null);
+    const parsed = socialLinkCandidateSchema.safeParse(body?.data);
+    if (!parsed.success || parsed.data.id !== Number(target))
+      throw new Response("Contenu indisponible", { status: 503 });
+    if (url.searchParams.get("week") !== parsed.data.week_iso || status) {
+      return redirect(
+        `/admin/marketing/social-hub/posts?${new URLSearchParams({ week: parsed.data.week_iso, post_id: target })}`,
+      );
+    }
+    selectedPostId = parsed.data.id;
+  }
 
   const params = new URLSearchParams({ week });
   if (status) params.set("status", status);
@@ -212,10 +258,19 @@ export async function loader({ request }: LoaderFunctionArgs) {
     ),
   ]);
 
-  const postsData =
-    postsRes.status === "fulfilled" && postsRes.value.ok
-      ? await postsRes.value.json()
-      : { data: [], total: 0 };
+  if (postsRes.status !== "fulfilled" || !postsRes.value.ok) {
+    throw new Response("La source des contenus marketing est indisponible", {
+      status: 503,
+    });
+  }
+  const postsData = await postsRes.value.json();
+  if (
+    selectedPostId &&
+    !postsData.data?.some((post: SocialPost) => post.id === selectedPostId)
+  )
+    throw new Response("Le contenu a changé de semaine. Rechargez la page.", {
+      status: 409,
+    });
 
   const pipelineData =
     statusRes.status === "fulfilled" && statusRes.value.ok
@@ -226,69 +281,41 @@ export async function loader({ request }: LoaderFunctionArgs) {
     posts: (postsData.data || []) as SocialPost[],
     total: postsData.total || 0,
     filters: { week, status },
-    pipeline: pipelineData as PipelineStatus | null,
+    pipeline: (pipelineData?.data ?? null) as PipelineStatus | null,
+    selectedPostId,
   };
 }
 
 // ── Post Actions ──
 
-function PostActions({
-  post,
-  onPreview,
-  onApprove,
-  onReject,
-  onRunGate,
-  disabled,
-}: {
-  post: SocialPost;
-  onPreview: () => void;
-  onApprove: () => void;
-  onReject: () => void;
-  onRunGate: () => void;
-  disabled: boolean;
-}) {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={onPreview}>
-          <Eye className="mr-2 h-4 w-4" />
-          Preview
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={onApprove}
-          disabled={post.status !== "gate_passed" || disabled}
-        >
-          <ThumbsUp className="mr-2 h-4 w-4" />
-          Approve
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={onReject} disabled={disabled}>
-          <ThumbsDown className="mr-2 h-4 w-4" />
-          Reject
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={onRunGate} disabled={disabled}>
-          <ShieldAlert className="mr-2 h-4 w-4" />
-          Run Gate
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
-
 // ── Component ──
 
 export default function SocialHubPostsPage() {
-  const { posts, total, filters, pipeline } = useLoaderData<typeof loader>();
+  const { posts, total, filters, pipeline, selectedPostId } =
+    useLoaderData<typeof loader>();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [previewPost, setPreviewPost] = useState<SocialPost | null>(null);
-  const [approvePost, setApprovePost] = useState<SocialPost | null>(null);
+  const [previewPostId, setPreviewPostId] = useState<number | null>(
+    selectedPostId ?? null,
+  );
+  useEffect(() => {
+    setPreviewPostId(selectedPostId ?? null);
+  }, [selectedPostId]);
+  // Always use the reloaded row, never a stale object held by an open dialog.
+  const previewPost = posts.find((post) => post.id === previewPostId) ?? null;
+  const setPreviewPost = (post: SocialPost | null) =>
+    setPreviewPostId(post?.id ?? null);
+  const source = socialBriefSourceSchema.safeParse(previewPost?.source_brief);
+  const [history, setHistory] = useState<Array<{
+    content_revision: number;
+    review_version: number;
+    snapshot: SocialPost;
+    recorded_at: string;
+  }> | null>(null);
+  const [approvePost, setApprovePost] = useState<{
+    post: SocialPost;
+    channel: string;
+  } | null>(null);
   const [loading, setLoading] = useState(false);
   const [planDialogOpen, setPlanDialogOpen] = useState(false);
   const [planWeek, setPlanWeek] = useState(filters.week);
@@ -306,90 +333,76 @@ export default function SocialHubPostsPage() {
   // ── Filters ──
   function updateFilter(key: string, value: string) {
     const params = new URLSearchParams(searchParams);
+    params.delete("post_id");
     if (value) params.set(key, value);
     else params.delete(key);
     setSearchParams(params);
   }
 
   // ── Actions ──
-  async function handleApprove(id: number) {
+  async function loadHistory(post: SocialPost) {
     setLoading(true);
     try {
       const res = await fetch(
-        `/api/admin/marketing/social/posts/${id}/approve`,
+        `/api/admin/marketing/social/posts/${post.id}/history`,
+      );
+      const data = await res.json();
+      if (!res.ok || !Array.isArray(data.data)) throw new Error();
+      setHistory(data.data);
+    } catch {
+      toast.error("Historique indisponible");
+    } finally {
+      setLoading(false);
+    }
+  }
+  async function reviewChannel(
+    post: SocialPost,
+    channel: string,
+    action: "approve" | "reject" | "gate",
+  ) {
+    setLoading(true);
+    try {
+      const res = await fetch(
+        `/api/admin/marketing/social/posts/${post.id}/${action}`,
         {
-          method: "PUT",
+          method: action === "gate" ? "POST" : "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ approved_by: "admin" }),
+          body: JSON.stringify({
+            channel,
+            content_revision: post.content_revision,
+            review_version: post.review_version,
+          }),
         },
       );
       const data = await res.json();
-      if (data.success) {
-        toast.success(`Post #${id} approuve`);
+      if (res.ok && (data.success || data.data)) {
+        toast.success(
+          `${channel} · version ${post.content_revision} : ${action === "approve" ? "approuvé" : action === "reject" ? "refusé" : "contrôlé"}`,
+        );
+        setPreviewPost(null);
         setSearchParams(new URLSearchParams(searchParams));
       } else {
-        toast.error("Echec de l'approbation");
+        toast.error(
+          res.status === 409
+            ? "Le contenu ou une décision a changé. Rechargez le post avant de valider."
+            : data.message || "Décision non enregistrée",
+        );
       }
     } catch {
-      toast.error("Erreur reseau");
+      toast.error("Erreur réseau : décision non confirmée");
     } finally {
       setLoading(false);
       setApprovePost(null);
     }
   }
 
-  async function handleReject(id: number) {
-    setLoading(true);
-    try {
-      const res = await fetch(
-        `/api/admin/marketing/social/posts/${id}/reject`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-        },
-      );
-      const data = await res.json();
-      if (data.success) {
-        toast.success(`Post #${id} rejete`);
-        setSearchParams(new URLSearchParams(searchParams));
-      } else {
-        toast.error("Echec du rejet");
-      }
-    } catch {
-      toast.error("Erreur reseau");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleRunGate(id: number) {
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/admin/marketing/social/posts/${id}/gate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-      const data = await res.json();
-      if (data.data) {
-        toast.success(
-          `Gate: brand=${data.data.brand.level} compliance=${data.data.compliance.level}`,
-        );
-        setSearchParams(new URLSearchParams(searchParams));
-      } else {
-        toast.error(data.error || "Echec du gate");
-      }
-    } catch {
-      toast.error("Erreur reseau");
-    } finally {
-      setLoading(false);
-    }
-  }
-
   function handleExport(channel: string) {
     const week = searchParams.get("week") || filters.week;
+    const query = new URLSearchParams({ week, channel });
     window.open(
-      `/api/admin/marketing/social/export?week=${week}&channel=${channel}`,
+      `/api/admin/marketing/social/export?${query.toString()}`,
       "_blank",
+      "noopener,noreferrer",
     );
   }
 
@@ -436,7 +449,8 @@ export default function SocialHubPostsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ week_iso: week }),
       });
-      const data = await res.json();
+      const response = await res.json();
+      const data = response.data ?? response;
       if (data.generated != null) {
         toast.success(
           `${data.generated} posts generes, ${data.errors} erreurs`,
@@ -461,7 +475,8 @@ export default function SocialHubPostsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ week_iso: week }),
       });
-      const data = await res.json();
+      const response = await res.json();
+      const data = response.data ?? response;
       if (data.passed != null) {
         toast.success(
           `Gates: ${data.passed} passed, ${data.warned} warned, ${data.failed} failed`,
@@ -556,14 +571,17 @@ export default function SocialHubPostsPage() {
       header: "",
       width: "40px",
       render: (_val, row) => (
-        <PostActions
-          post={row as SocialPost}
-          onPreview={() => setPreviewPost(row as SocialPost)}
-          onApprove={() => setApprovePost(row as SocialPost)}
-          onReject={() => handleReject((row as SocialPost).id)}
-          onRunGate={() => handleRunGate((row as SocialPost).id)}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            setHistory(null);
+            setPreviewPost(row as SocialPost);
+          }}
           disabled={loading}
-        />
+        >
+          <Eye className="mr-1 h-4 w-4" /> Examiner par réseau
+        </Button>
       ),
     },
   ];
@@ -697,6 +715,7 @@ export default function SocialHubPostsPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => handleExport("instagram")}
+                  aria-label="Exporter la préparation Instagram"
                 >
                   <Download className="mr-1.5 h-3.5 w-3.5" />
                   IG
@@ -705,6 +724,7 @@ export default function SocialHubPostsPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => handleExport("facebook")}
+                  aria-label="Exporter la préparation Facebook"
                 >
                   <Download className="mr-1.5 h-3.5 w-3.5" />
                   FB
@@ -713,12 +733,18 @@ export default function SocialHubPostsPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => handleExport("youtube")}
+                  aria-label="Exporter la préparation YouTube"
                 >
                   <Download className="mr-1.5 h-3.5 w-3.5" />
                   YT
                 </Button>
               </div>
             </div>
+            <p className="mt-3 text-sm text-muted-foreground">
+              Les exports contiennent les textes approuvés par réseau. Avant de
+              publier, il reste à confirmer le compte destinataire, les médias
+              nécessaires et une autorisation de publication distincte.
+            </p>
           </CardContent>
         </Card>
       }
@@ -746,10 +772,87 @@ export default function SocialHubPostsPage() {
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              Post #{previewPost?.id} — {previewPost?.slot_label} —{" "}
+              Post #{previewPost?.id} · version{" "}
+              {previewPost?.content_revision ?? "indisponible"} —{" "}
+              {previewPost?.slot_label} —{" "}
               {DAY_NAMES[previewPost?.day_of_week || 0]}
             </DialogTitle>
           </DialogHeader>
+          {source.success && (
+            <div className="space-y-1 rounded border p-3 text-sm">
+              <p>
+                Source :{" "}
+                <Link
+                  className="underline"
+                  to={`/admin/marketing/briefs/${source.data.brief.id}`}
+                >
+                  Consulter le brief approuvé
+                </Link>
+              </p>
+              <p>{source.data.brief.cta}</p>
+              <p>
+                Brief approuvé par{" "}
+                {source.data.brief.approved_by ?? "identité indisponible"} ·{" "}
+                {source.data.brief.approved_at ?? "date indisponible"}
+              </p>
+              <p>
+                Raccordé à la version {source.data.linked_content_revision} par{" "}
+                {source.data.linked_by ?? "identité indisponible"} ·{" "}
+                {source.data.linked_at ?? "date indisponible"}
+              </p>
+              <p>
+                Les décisions ci-dessous portent sur chaque réseau de la version
+                courante. La source conserve l’état du brief au raccordement.
+              </p>
+              <details>
+                <summary>Instantané du brief source</summary>
+                <pre className="whitespace-pre-wrap break-words">
+                  {JSON.stringify(source.data.brief, null, 2)}
+                </pre>
+              </details>
+            </div>
+          )}
+          {previewPost && (
+            <Button
+              variant="outline"
+              onClick={() => loadHistory(previewPost)}
+              disabled={loading}
+            >
+              Voir les 50 derniers instantanés
+            </Button>
+          )}
+          {history && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Historique en lecture seule</p>
+              {history.map((entry) => (
+                <details
+                  key={`${entry.content_revision}-${entry.review_version}`}
+                  className="rounded border p-2 text-sm"
+                >
+                  <summary>
+                    Version {entry.content_revision} · décision{" "}
+                    {entry.review_version} · {entry.recorded_at}
+                  </summary>
+                  {entry.snapshot.channels_list?.map((channel) => (
+                    <div key={channel} className="mt-2">
+                      <p className="font-medium">
+                        {channel} :{" "}
+                        {entry.snapshot.channel_reviews?.[channel]?.state ||
+                          "sans validation par réseau"}
+                      </p>
+                      <p className="whitespace-pre-wrap">
+                        {entry.snapshot.channels?.[channel]?.title}
+                      </p>
+                      <p className="whitespace-pre-wrap">
+                        {entry.snapshot.channels?.[channel]?.caption ||
+                          entry.snapshot.channels?.[channel]?.description}
+                      </p>
+                    </div>
+                  ))}
+                </details>
+              ))}
+            </div>
+          )}
           {previewPost && (
             <Tabs defaultValue={previewPost.primary_channel}>
               <TabsList>
@@ -761,8 +864,31 @@ export default function SocialHubPostsPage() {
               </TabsList>
               {previewPost.channels_list?.map((ch) => {
                 const data = previewPost.channels?.[ch];
+                const review = previewPost.channel_reviews?.[ch];
+                const current =
+                  !!review &&
+                  review.content_revision === previewPost.content_revision;
+                const reviewable =
+                  Number.isSafeInteger(previewPost.content_revision) &&
+                  Number.isSafeInteger(previewPost.review_version) &&
+                  !["published", "archived"].includes(previewPost.status);
                 return (
                   <TabsContent key={ch} value={ch} className="space-y-3 mt-3">
+                    <p className="text-sm">
+                      Validation éditoriale :{" "}
+                      {current ? review.state : "à contrôler"}
+                    </p>
+                    {current && (
+                      <p className="text-xs text-muted-foreground">
+                        Décision de {review.actor} · {review.decided_at}
+                      </p>
+                    )}
+                    {current &&
+                      review.gate?.blocking_issues?.map((issue, i) => (
+                        <p key={i} className="text-sm text-destructive">
+                          {issue}
+                        </p>
+                      ))}
                     {!data ? (
                       <p className="text-sm text-muted-foreground">
                         Pas de contenu pour {ch}
@@ -772,24 +898,64 @@ export default function SocialHubPostsPage() {
                     ) : (
                       <SocialPreview data={data} channel={ch} />
                     )}
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => reviewChannel(previewPost, ch, "gate")}
+                        disabled={loading || !reviewable || !data}
+                      >
+                        Contrôler {ch}
+                      </Button>
+                      <Button
+                        onClick={() =>
+                          setApprovePost({ post: previewPost, channel: ch })
+                        }
+                        disabled={
+                          loading ||
+                          !reviewable ||
+                          !current ||
+                          review.state !== "gate_passed"
+                        }
+                      >
+                        Approuver {ch}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => reviewChannel(previewPost, ch, "reject")}
+                        disabled={loading || !reviewable || !data}
+                      >
+                        Refuser {ch}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Toute modification du contenu impose une nouvelle
+                      validation. L'approbation éditoriale ne publie pas sur un
+                      compte social.
+                    </p>
+                    <PublicationPreparationPanel
+                      key={`${previewPost.id}:${ch}:${previewPost.content_revision}:${previewPost.review_version}`}
+                      target={{
+                        post_id: previewPost.id,
+                        channel: ch,
+                        content_revision: previewPost.content_revision,
+                        review_version: previewPost.review_version,
+                      }}
+                      canPrepare={
+                        reviewable &&
+                        current &&
+                        review.state === "approved" &&
+                        !!data
+                      }
+                      onReload={() => {
+                        setPreviewPost(null);
+                        setSearchParams(new URLSearchParams(searchParams));
+                      }}
+                    />
                   </TabsContent>
                 );
               })}
             </Tabs>
           )}
-          {previewPost?.gate_summary?.blocking_issues &&
-            previewPost.gate_summary.blocking_issues.length > 0 && (
-              <div className="mt-4 rounded-md border border-destructive/30 bg-destructive/5 p-3">
-                <p className="text-sm font-medium text-destructive mb-1">
-                  Issues bloquantes
-                </p>
-                <ul className="text-xs text-destructive space-y-0.5">
-                  {previewPost.gate_summary.blocking_issues.map((issue, i) => (
-                    <li key={i}>- {issue}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
         </DialogContent>
       </Dialog>
 
@@ -856,17 +1022,23 @@ export default function SocialHubPostsPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Approuver le post #{approvePost?.id} ?
+              Approuver {approvePost?.channel} · version{" "}
+              {approvePost?.post.content_revision} du post #
+              {approvePost?.post.id} ?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Ce post passera en statut &quot;approved&quot; et sera disponible
-              pour export dans le manifest de publication.
+              Cette décision concerne uniquement le contenu affiché pour ce
+              réseau et cette version. Elle autorise son export éditorial, sans
+              publication automatique.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => approvePost && handleApprove(approvePost.id)}
+              onClick={() =>
+                approvePost &&
+                reviewChannel(approvePost.post, approvePost.channel, "approve")
+              }
               disabled={loading}
             >
               {loading ? (

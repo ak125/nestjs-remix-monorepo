@@ -1,10 +1,12 @@
 import { Link2, TrendingUp, FileText, Target } from "lucide-react";
 import { type LoaderFunctionArgs, useLoaderData } from "react-router";
+import { requireAdmin } from "~/auth/unified.server";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request, context }: LoaderFunctionArgs) {
+  await requireAdmin({ context });
   try {
     const res = await fetch(
       getInternalApiUrlFromRequest("/api/admin/marketing/dashboard", request),

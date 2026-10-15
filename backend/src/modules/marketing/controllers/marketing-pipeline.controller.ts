@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
 import { IsAdminGuard } from '@auth/is-admin.guard';
+import { DomainConflictException } from '@common/exceptions';
 import { MarketingHubDataService } from '../services/marketing-hub-data.service';
 import { WeeklyPlanGeneratorService } from '../services/weekly-plan-generator.service';
 import { MultiChannelCopywriterService } from '../services/multi-channel-copywriter.service';
@@ -103,14 +104,23 @@ export class MarketingPipelineController {
 
     // Update plan status
     if (!body.dry_run && result.generated > 0) {
-      await this.hubData.upsertWeeklyPlan({
+      const saved = await this.hubData.upsertWeeklyPlan({
         week_iso: body.week_iso,
         status: 'in_progress',
         posts_generated: result.generated,
       });
+      if (!saved) {
+        throw new DomainConflictException({
+          message: 'Marketing plan progress was not persisted',
+        });
+      }
     }
 
-    return { success: true, data: result };
+    return {
+      success:
+        result.errors === 0 && (result.mode === 'plan' || result.generated > 0),
+      data: result,
+    };
   }
 
   /**
@@ -139,6 +149,7 @@ export class MarketingPipelineController {
     let failed = 0;
     const details: Array<{
       post_id: number;
+      channel: string;
       slot_label: string;
       brand: string;
       compliance: string;
@@ -146,35 +157,49 @@ export class MarketingPipelineController {
     }> = [];
 
     for (const post of posts) {
-      const summary = await this.gateService.evaluateAndPersist(post);
+      let reviewVersion = post.review_version;
+      for (const channel of post.channels_list) {
+        const summary = await this.gateService.evaluateAndPersist(
+          { ...post, review_version: reviewVersion },
+          {
+            channel,
+            content_revision: post.content_revision,
+            review_version: reviewVersion,
+          },
+        );
+        // Each successful RPC advances exactly once. A concurrent decision makes
+        // the following RPC conflict; never reload and overwrite it implicitly.
+        reviewVersion++;
 
-      const entry = {
-        post_id: post.id,
-        slot_label: post.slot_label,
-        brand: summary.brand.level,
-        compliance: summary.compliance.level,
-        blocking_issues: summary.blocking_issues,
-      };
-      details.push(entry);
+        const entry = {
+          post_id: post.id,
+          channel,
+          slot_label: post.slot_label,
+          brand: summary.brand.level,
+          compliance: summary.compliance.level,
+          blocking_issues: summary.blocking_issues,
+        };
+        details.push(entry);
 
-      if (
-        summary.brand.level === 'FAIL' ||
-        summary.compliance.level === 'FAIL'
-      ) {
-        failed++;
-      } else if (
-        summary.brand.level === 'WARN' ||
-        summary.compliance.level === 'WARN'
-      ) {
-        warned++;
-      } else {
-        passed++;
+        if (
+          summary.brand.level === 'FAIL' ||
+          summary.compliance.level === 'FAIL'
+        ) {
+          failed++;
+        } else if (
+          summary.brand.level === 'WARN' ||
+          summary.compliance.level === 'WARN'
+        ) {
+          warned++;
+        } else {
+          passed++;
+        }
       }
     }
 
     return {
       success: true,
-      data: { passed, warned, failed, total: posts.length, details },
+      data: { passed, warned, failed, total: details.length, details },
     };
   }
 

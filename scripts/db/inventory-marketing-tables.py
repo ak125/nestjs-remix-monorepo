@@ -2,17 +2,17 @@
 """
 ADR-036 Phase 1 — Inventory existing marketing tables before any CREATE.
 
-Pourquoi : 9 tables __marketing_* existent déjà dans la DB (vérifiées via grep
-backend/src/modules/marketing/), 0 migration dans backend/supabase/migrations/.
-Avant tout CREATE TABLE pour Phase 1, vérifier si les structures existantes
-peuvent être étendues plutôt que dupliquées (Q2 grep-first non-négociable).
+Inventaire historique étendu pour la réconciliation Phase1 : vérifier le schéma
+effectif et les deux registres avant de préparer un correctif. Le code local
+et un statut de migration ne prouvent pas la présence des objets en base.
 
 Tables ciblées :
   - 9 tables __marketing_* existantes (schéma + row_count)
   - ___xtr_customer (cherche cst_*marketing*|cst_*consent* déjà présents)
 
 Pourquoi Python et pas MCP : grep règle utilisateur "utiliser python au lieu de mcp".
-Mode : SELECT only, non-destructif, safe sur prod read-only mirror.
+Mode : transaction READ ONLY. Aucun changement de schema ni de registre.
+--prepare-phase1 FILE : prepare hors ligne le preflight cible, sans connexion.
 
 Usage :
   python3 scripts/db/inventory-marketing-tables.py
@@ -21,29 +21,42 @@ from __future__ import annotations
 
 import os
 import sys
+import argparse
+import hashlib
 from pathlib import Path
 
-import psycopg2
-from dotenv import load_dotenv
-
 ENV_PATH = Path(__file__).resolve().parents[2] / "backend" / ".env"
-load_dotenv(ENV_PATH)
-
-DB_PASSWORD = os.environ.get("SUPABASE_DB_PASSWORD")
-if not DB_PASSWORD:
-    sys.stderr.write("[FATAL] SUPABASE_DB_PASSWORD missing in env\n")
-    sys.exit(2)
-
 PROJECT_REF = "cxpojprgwgubzjyqzmoq"
-DSN = (
-    f"host=db.{PROJECT_REF}.supabase.co "
-    f"port=5432 "
-    f"dbname=postgres "
-    f"user=postgres "
-    f"password={DB_PASSWORD} "
-    f"sslmode=require "
-    f"application_name=adr036-inventory"
-)
+
+
+def connect():
+    import psycopg2
+    from dotenv import load_dotenv
+    load_dotenv(ENV_PATH)
+    password = os.environ.get("SUPABASE_DB_PASSWORD")
+    if not password:
+        raise RuntimeError("SUPABASE_DB_PASSWORD missing in env")
+    conn = psycopg2.connect(
+        host=f"db.{PROJECT_REF}.supabase.co", port=5432, dbname="postgres",
+        user="postgres", password=password, sslmode="require",
+        application_name="adr036-inventory", connect_timeout=10,
+    )
+    conn.set_session(readonly=True, autocommit=False, isolation_level="REPEATABLE READ")
+    return conn
+
+
+def prepare_phase1(path: Path) -> int:
+    source = Path(__file__).with_name("marketing-phase1-inventory.sql")
+    try:
+        sql = source.read_text(encoding="utf-8")
+        digest = hashlib.sha256(sql.encode()).hexdigest()
+        with path.open("x", encoding="utf-8", newline="\n") as out:
+            out.write(f"-- Source: {source.name}; SHA256 UTF-8/LF: {digest}\n" + sql)
+    except (OSError, ValueError) as error:
+        sys.stderr.write(f"[FATAL] {error}\n")
+        return 1
+    print(f"[prepared] {path}; offline, not executed")
+    return 0
 
 MARKETING_TABLES = [
     "__marketing_backlinks",
@@ -67,10 +80,16 @@ CUSTOMER_PATTERNS = [
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--prepare-phase1", type=Path, metavar="FILE")
+    args = parser.parse_args()
+    if args.prepare_phase1:
+        return prepare_phase1(args.prepare_phase1)
     print(f"[connect] {PROJECT_REF}.supabase.co:5432 (direct, non-pooler)")
-    conn = psycopg2.connect(DSN, connect_timeout=10)
-    conn.autocommit = True
+    conn = connect()
     cur = conn.cursor()
+    cur.execute("SET LOCAL statement_timeout = '15s'")
+    cur.execute("SET LOCAL lock_timeout = '2s'")
 
     # ── Section 1: existing __marketing_* table schemas ─────────────────────
     print("\n" + "=" * 80)
@@ -192,6 +211,7 @@ def main() -> int:
         print("  no match")
 
     cur.close()
+    conn.rollback()
     conn.close()
     print("\n[done]")
     return 0

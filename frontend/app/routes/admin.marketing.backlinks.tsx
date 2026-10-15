@@ -4,12 +4,14 @@ import {
   useLoaderData,
   useSearchParams,
 } from "react-router";
+import { requireAdmin } from "~/auth/unified.server";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request, context }: LoaderFunctionArgs) {
+  await requireAdmin({ context });
   try {
     const url = new URL(request.url);
     const status = url.searchParams.get("status") || "";
