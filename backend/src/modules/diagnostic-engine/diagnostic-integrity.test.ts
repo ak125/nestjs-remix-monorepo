@@ -387,6 +387,13 @@ describe('diagnostic safety and deterministic scoring regressions', () => {
     expect(b).toEqual(a);
     expect(a[0].requires_verification).toBe(true);
     expect(values.primary.relative_score).toBe(90);
+    // Every symptom's link is kept, not only the first: provenance is read per link.
+    expect(a[0].contributions).toEqual([
+      { link_id: 1, symptom_slug: 'primary', relative_score: 90 },
+      { link_id: 2, symptom_slug: 'second', relative_score: 50 },
+      { link_id: 3, symptom_slug: 'third', relative_score: 10 },
+    ]);
+    expect(a[0].symptom_count).toBe(3);
   });
   test('a cause linked to only some selected symptoms is not credited for the others', async () => {
     const service = Object.create(
@@ -409,6 +416,11 @@ describe('diagnostic safety and deterministic scoring regressions', () => {
       [1, 60],
       [2, 45],
     ]);
+    // The unlinked symptom has no contribution but stays in the denominator.
+    expect(scored[1].contributions).toEqual([
+      { link_id: 3, symptom_slug: 'first', relative_score: 90 },
+    ]);
+    expect(scored[1].symptom_count).toBe(2);
   });
   test('brake fluid maps to the verified fluid family, not clutch kit', () => {
     expect(CAUSE_GAMME_MAP.brake_fluid_low).toEqual([
