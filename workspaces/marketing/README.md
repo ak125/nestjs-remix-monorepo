@@ -69,6 +69,8 @@ Les trois rapports ont été écrits puis relus avec une empreinte identique. Le
 > hors dépôt ; ce dossier y renvoie sans la recopier.
 > **Complété le 14/10** (base `75ea70a48`) : consolidation V1–V7, risques §7 revalidés, lot L10a, décisions D17–D19 et chemin
 > court vers L1 — sous-section datée ci-dessous. Toujours rien d'approuvé ni d'activé.
+> **Complété le 16/10** (base `64cf08797`) : boucle par sujet, sujet pilote M1, planning de quatre semaines, constats C16-1 à C16-8
+> et lot L16 — sous-section datée ci-dessous. Toujours rien d'approuvé, de raccordé ni d'activé.
 
 - **Vocabulaire** : présent ≠ branché ≠ activé ≠ servi ; trouvée ≠ chargée ≠ exécutée ≠ réussie. Statut d'un lot : prêt pour revue →
   testé localement → vérifié sur environnement cible → activé. Fusion sur `main` = PREPROD ; tag `v*` = PROD, posé par l'owner.
@@ -153,6 +155,7 @@ Chaque lot livre : niveau d'effet atteint, commande de vérification, verdict Ro
 | L13 Preuve de publication | 4 | marketing-lead | Codex | L03, L07, L11, L12, D4, D6 | proposé |
 | L14 Attribution | 5 | data-lead, sales-lead | Codex | L12, L13, D6, D7 | proposé — commandes : préparation seulement |
 | L15 Recette Hermes | 6 | ia-agents-lead | Codex, Hermes | L11 (workflow) ; D14 (recette native) | proposé |
+| L16 Consignes des skills média | 3 | media-lead, content-lead | Claude | — | proposé (16/10) |
 
 - **L00** · Livré par cette PR documentaire (prêt pour revue) : `workspaces/marketing/README.md` (cette section) ; `audit/automecanik-departments-map.md` (24 identifiants depuis #1761, note datée, historique et ancre conservés). Proposé, non fait : `marketing-lead-agent.md` (table au pluriel et H17 = modification d'agent, effet > E0, non activée ; sortie = proposition en lecture seule ; aucune écriture en base sans acte owner) ; brouillon d'ADR des handoffs dans le vault (D6). Tests : `scripts/lint/check-preprod-vocabulary.sh`, diff limité à deux fichiers. Limites : ni YAML ni vault ; `local-business-agent` hors activation.
 - **L01** · Défaut de sécurité — détail hors dépôt public. Contrat « sécurité-correctifs v1 » (proposé) ; preuve hors dépôt, citée par empreinte ; GO owner nominatif avant toute PR ; PR à prose neutre. Retour : revert.
@@ -160,7 +163,12 @@ Chaque lot livre : niveau d'effet atteint, commande de vérification, verdict Ro
 - **L03** · `publish-queue.service.ts:39-51` ; `marketing-hub-data.service.ts:66-105` ; contrôleur des posts sociaux (lecture par id, H02). Contrat : approbation sur gate passé pour la même révision ; CAS sur `updated_at` posé côté serveur (null traité) ; avant L12, colonnes existantes seulement (`updated_at`, `gate_summary`, `generation_prompt_hash`). Tests : sans gate → 422 ; concurrence → un succès, un 409 ; post inexistant → 404. Limites : aucune migration ; D5.
 - **L04** · `publish-queue.service.ts:114-116,146-158` ; `utm-builder.service.ts:19,53-65` ; `multi-channel-copywriter.service.ts:72-101,159,166-173`. Contrat : Europe/Paris explicite (motif Intl de `marketing-operations.ts:44-62`) ; suivi ajouté sans casser une requête ; `utm_source` = canal ; `social_post_id` renseigné ; provenance IA persistée (colonnes existantes) ; longueur maximale définie pour chaque pilier. Tests : bornes de minuit (été, hiver, semaine ISO 1) ; URL déjà paramétrée ; provenance écrite. Limites : aucune URL changée.
 - **L05** · `weekly-plan-generator.service.ts:90-93,211-225` ; `buildGammeUrl` (`backend/src/common/utils/url-builder.utils.ts:59`) ; `scripts/deploy-phase1.sh:203-205` (cron hebdomadaire sans dry-run, semaine `%Y-W%V`). Contrat : URL servies seulement, jamais la forme servie en 410 ; année ISO correcte ; dry-run par défaut. Tests : URL = `buildGammeUrl` ; 29-31 décembre ; bornes de minuit. Limites : D12 ; installer la cron sur un hôte = acte owner (`.claude/rules/deployment.md`).
+  Ajout du 16/10 : le créneau porte le format du lot de sujet (long, court, carrousel) ; pilier promo non imposé à un sujet unique ;
+  réutilisation d'une gamme récente signalée dans le plan, jamais silencieuse (l.63-80, C16-7). Tests : un sujet sur quatre créneaux
+  → formats du lot, aucun créneau promo imposé ; gamme postée il y a moins de 28 jours → réutilisation visible.
 - **L06** · `marketing-hub.interfaces.ts:1-15` ; `marketing-matrix.types.ts:22-32` ; `scripts/marketing/export-publish-queue.ts:21` ; `video-brief.schema.json:44-52` ; `video-quality.constants.ts:42-47` ; `multi-channel-copywriter.service.ts:150`. Contrat : correspondance explicite des canaux, inconnu → 422 sans repli ; `gbp`, `local_landing`, `sms` refusés comme canaux de variante ; consentement social ≠ email ; consentement absent des types générés → UNKNOWN (avec `customer-retention-agent`). Tests : chaque valeur mappée ou refusée ; parité TS↔SQL du brief ; producteurs `youtube` rapprochés de l'indice « IG/FB only » (20260430 l.8). Limites : aucun CHECK modifié ; `:134` après D13.
+  Ajout du 16/10 : CTA YouTube selon le format — Short → vidéo associée ou profil de chaîne, vidéo longue → description
+  (`social-post-templates.ts:129,219`, C16-5). Test : format `short` avec « Lien en description » → refus motivé.
 - **L07** · `brand-compliance-gate.service.ts:34-51,99,137-148,179,208,218-222,233,285,349,376-390` ; `marketing-hub-data.service.ts:177-194` ; canon : brancher `MarketingMatrixModule` (importé nulle part) ou s'appuyer sur la lecture locale de #1690 (D11, D15). Contrat : `brand-variant-verdict` v1, fermé par défaut, chaque canal évalué ; canon absent → erreur observable, sans seconde copie. Tests : sévérité block → refus ; règles indisponibles → refus ; autre révision → 409 ; clés inconnues rejetées. Limites : D11, D15 ; sans D6, schéma local.
 - **L08** · Branche de #1690 (dont `Dockerfile`, `Dockerfile.worker`, `.dockerignore`, contrôleur, service et dto des briefs) ; nouvelle migration limitée au sous-ensemble brief (20260430 est enregistrée appliquée, objets absents : elle ne se rejoue pas) ; `audit/baselines/ledger-catalog-baseline.json` (`--refresh` dans la même PR, après application par acte owner : retire l.70 et l.387, garde l.401). Contrat : `marketing-brief` v1 (version périmée → 409, producteur explicite, LOCAL/HYBRID refusés) ; `coverage_manifest` et `aec_manifest` définis une fois, zod strict. Tests : points de la revue mode B ; clés inconnues rejetées ; ratchet vert après refresh seulement. Limites : charger `.claude/rules/deployment.md` (ou retirer ces fichiers de #1690) ; migration appliquée par acte owner ; DROP de retour = STOP.
 - **L09** · `frontend/app/routes.ts:18,37-44`. Contrat : aucune exposition hors DEV avant L02 et L03. Tests : build de production sans `admin.marketing*`. Limites : PROD = tag owner ; exposition PREPROD selon D3.
@@ -189,10 +197,20 @@ Chaque lot livre : niveau d'effet atteint, commande de vérification, verdict Ro
   Ajout du 14/10 : schéma `governance/claim-table.schema.json` aligné sur le vocabulaire du code (`verified`, `unverified`, `blocked`
   au lieu de `sourced`, `unsourced`) et dossier évalué par la règle de L10a, sans seconde règle ; pilote rouge attendu tant que D17 n'est
   pas tranchée ; manifeste recalculé sur le fichier rendu (C14-6). Le rendu sans avatar ni voix ne dépend pas de D8.
+  Ajout du 16/10 : second dossier en fichiers pour le sujet M1 `gamme:filtre-a-huile`, mêmes schémas. Claims = blocs de
+  `exports/seo/gamme/filtre-a-huile.json`, `source_wiki_commit` cité ; aucune relation diagnostic affirmée. `url_cible` =
+  `/diagnostic-auto` ou R1, jamais R3 tant qu'il est `NOT_READY`. Rendu local après D19. Tests : claim absent de l'export → rouge ;
+  `url_cible` R3 → rouge.
 - **L12** · Migration additive préparée (compte, empreinte de révision, preuve, réservation par `intent_id` avec bail, liaison au brief selon D16, journal d'approbations) ; `marketing-hub-data.service.ts:31-44` ; export du contrôleur des posts (validation de `week` et `channel`, variantes secondaires) ; `utm_content` = id de variante. Tests : Instagram publié ne publie pas Facebook ; second compte → 422 ; export des variantes secondaires. Limites : lecture autorisée du CHECK réel et réconciliation du ledger d'abord ; application = acte owner ; baseline du ratchet rafraîchie dans la même PR si elle change.
 - **L13** · `publish-queue.service.ts:135-144` ; marquage publié du contrôleur des posts ; `scripts/marketing/export-publish-queue.ts` ; `fafa-media-factory/manifests/publishing/` (`.gitkeep` seul). Contrat : `publication-proof` v1 sur ces deux surfaces ; revalidation juste avant l'effet. Tests : sans preuve → 422 ; même preuve → sans effet ; preuve différente → 409 ; approbation révoquée → refus ; délai dépassé → incertain, 0 nouvelle tentative. Limites : publication = acte owner.
 - **L14** · Contrôleur d'attribution d'atterrissage (capture `medium`, `campaign`, `content` en session) ; `marketing-measurement.ts:13-25` ; contrôleur des commandes : préparation seulement (STOP). Contrat : verdict v1 lu tel quel, usage restreint à `r2_order_placed`, UNKNOWN affiché hors DEV ; les colonnes de mesure des posts (`actual_*`, `ga4_*`, `performance_*`) n'ont aucun producteur : UNKNOWN jusqu'à un producteur unique ; `qualified-demand` reste à définir par sales et data (D6), jamais déduit ici. Tests : visite → variante → commande sur fixtures synthétiques ; non certifié → UNKNOWN ; jamais 0 faute de données. Limites : D6, D7 ; aucun chiffre de vente.
+  Ajout du 16/10 : l'URL d'événement du funnel est réduite à origine + chemin + paramètres d'attribution autorisés avant envoi
+  (`funnel-beacon.ts:114`, C16-3). Test : URL avec chaîne de requête arbitraire → seuls les paramètres autorisés subsistent.
 - **L15** · `scripts/marketing/hermes/*.py` ; job pytest ajouté au workflow de L11 ; découverte et routage #23 des skills et agents marketing (registre `build-skills-registry.js` ; carte via D6). Contrat : recette en 4 niveaux ; `assert` → contrôles explicites. Tests : suites pytest Hermes en CI ; routage testé. Limites : recette native après D14 ; profil épinglé après fusion humaine.
+- **L16** · Ajout du 16/10. Documents seuls, E0 : `fafa-media-factory/README.md:8` ; `fafa-remotion-template-planner/SKILL.md:21,51,63`
+  (chemin et noms alignés sur `services/remotion-renderer/src/types/contract.ts:13`) ; sortie de `fafa-script-generator/SKILL.md`
+  (accroches A/B/C préparées, sélection humaine, jamais présentée comme test). C16-6. `seo-content-loop` (borne d'itérations) est
+  signalé à seo-lead, sans modification. Tests : `scripts/lint/check-preprod-vocabulary.sh` ; diff limité à ces fichiers. Retour : revert.
 
 ### Décisions ouvertes (aucun nom ; « owner » = acte nominatif, non nommé ici)
 
@@ -267,6 +285,232 @@ Chemin court vers L1, sans avatar ni voix, backend éteint (D19), zéro effet fo
 7. **Preuve de disponibilité** : vérification locale (schémas, empreintes, URL 200, liens parsables) → `READY` ou `NOT_READY`
    motivé. Diffusion = L2, acte owner séparé.
 
+### Boucle par sujet — question → planning → WIKI → médias → diagnostic ou entretien → mesure — 16 octobre 2026
+
+Base relue : `main` à `64cf08797` (inchangé en fin de rédaction) ; WIKI `origin/main` à `37445d120` ; RAW `origin/main` à `8a4ddbb99` ;
+sous-module WIKI épinglé à `88017732d` (#1812, ouverte, propose `6bc00e7`). Lectures par `git show origin/main:<chemin>` et requêtes
+GET publiques du 16/10 ; aucune requête base, aucun appel fournisseur, aucun service démarré. Référence DEV hors dépôt, non suivie :
+`.claude/handoffs/reconciliation-chaine-2026-10-15.md` (sha256 `d346feda…`), dont le §5 donne le dossier de sujet repris ici sans
+recopie. La transcription de la vidéo « J'ai créé 30 posts VIRAUX et 1 BUSINESS en 1H (Claude + Higgsfield) ! » est introuvable : les
+dix idées ci-dessous sont celles du mandat ; aucun contenu du ZIP Skool n'est installé ni repris.
+
+**Verdict : couverture partielle.** Chaque étape a des composants présents ; aucune n'est raccordée à la suivante de façon
+opérationnelle. Ce dossier ne raccorde rien : il fixe le contrat, l'ordre et les critères.
+
+| Étape | Présent au `64cf08797` | Rupture constatée |
+|---|---|---|
+| Question, veille → planning | `__seo_keywords` (comptage seul), skill `seo-content-loop`, générateur hebdomadaire, feuille de route | aucune file d'entrée : `seo-content-loop` prend son sujet en argument ; détection automatique du générateur en erreur avalée (L02) |
+| Collecte → RAW → WIKI | `wiki/gamme/filtre-a-huile.md` `approved`, trois pages RAW actives, 17 claims capturés | aucune pour le sujet pilote |
+| WIKI → consumers SEO | `exports/seo/gamme/filtre-a-huile.json`, `exports/diagnostic/gamme/filtre-a-huile.json`, writer de projection | R1 et R3 servent des affirmations que le WIKI a retirées (C16-8) |
+| → médias | dossier Fafa en fichiers, renderer, module media-factory éteint | script du backend nourri par le contenu legacy ; ni composition longue ni rendu de carrousel (C16-4) |
+| → diagnostic ou entretien | `/diagnostic-auto`, modes `diagnostic` et `maintenance` (`DiagnosticWizard.tsx:90`), conclusions de refus | paramètres de lien profond non lus (C16-1) ; véhicule non transmis au catalogue (C16-2) |
+| → mesure → planning | verdict d'intégrité, attribution d'atterrissage, funnel `__seo_event_log` | mesure sociale sans producteur ; aucun retour vers le planning |
+
+#### Idées de la vidéo × existant × delta
+
+Colonne 1 : idée du mandat. Colonne 2 : fait du dépôt. Colonne 3 : proposition nouvelle, rattachée à un lot.
+
+| # | Idée | Existant | Delta proposé |
+|---|---|---|---|
+| 1 | Chercher la demande | `__seo_keywords` (contaminée : comptage seul, jamais un terme produit) ; GSC et `__seo_ga4_daily` ; recherche de `seo-content-loop` | signal d'audience = agrégat daté et sourcé dans le dossier ; aucun nouveau collecteur |
+| 2 | Questions et commentaires délaissés | aucun client YouTube ni social dans le dépôt | relevé manuel agrégé, sans texte ni pseudonyme ; pas de collecte automatique avant lecture des règles de la plateforme (« Non vérifiable ») ; un outil disponible n'est pas une autorisation |
+| 3 | Sujets durables et actualité | `content_type` de la feuille de route ; piliers du générateur | l'actualité n'entre que par une source RAW autorisée ; elle ne crée aucun fait technique sans WIKI |
+| 4 | Réserve mensuelle, sélection avant fabrication | `__marketing_content_roadmap` (`status` `planned`) ; `planOpportunities` (`scheduled: false`, `marketing-preparation.ts:1019`) | réserve = lignes `planned` ; sélection humaine avant toute génération |
+| 5 | Alterner explication, idée reçue corrigée, démonstration | `angle` du brief de créneau ; formats Fafa `piece-expliquee`, `ne-change-pas-trop-vite`, `symptome-3-causes` | l'angle reste un attribut du brief ; démonstration réelle = tournage humain, aucun outil |
+| 6 | Trois accroches A/B/C | `hook_variants` dans le pilote plaquette ; absent de la sortie de `fafa-script-generator` ; `experimentReport` (Wilson, ≥ 30 par groupe, `inconclusive`) | A/B/C = variantes préparées ; un choix humain n'est pas un test ; résultat UNKNOWN sans mesure certifiée (L16, L14) |
+| 7 | Tester la destination avant de produire | étapes 5 et 7 du chemin court (URL 200, `READY` / `NOT_READY`) | ajouter la cohérence du contenu servi avec la version WIKI citée ; R3 du pilote échoue au 16/10 |
+| 8 | Prototype validé, corrections de direction artistique conservées | étapes 3 et 4 du chemin court ; D18 | aucun : réutiliser D18 |
+| 9 | Médias livrés avec textes, liens et éléments de publication | étape 6 (`manifests/publishing/`) ; `export-publish-queue.ts` | pour YouTube : titre, description, chapitres, playlist, vidéo associée, écran de fin, dans le même pack (L13) |
+| 10 | Distinguer origines et intentions | `utm_source` = canal (L04) ; classifieur d'atterrissage fermé ; `conversion_goal` | les trois classes du dossier ; `intent` = mode existant de l'assistant |
+
+La valeur propre d'AutoMecanik est le diagnostic ou le bilan d'entretien, pas un tunnel d'e-mails. YouTube long, Shorts et réseaux
+sont complémentaires. Aucune promesse de viralité, de revenu, de gratuité ni d'auto-publication.
+
+#### Dossier de sujet — contrat minimal, sans table ni schéma nouveau
+
+Le dossier est logique : chaque champ pointe vers une ligne ou un fichier existant. Il reprend les champs du §5 de la référence
+(`subject`, `bases`, `knowledge`, `projection`, `briefs`, `served`, `catalog`, `diagnostic`, `media_social`, `verdicts`, `limits`) et en
+ajoute six :
+
+| Champ ajouté | Contenu | Classe | Justification |
+|---|---|---|---|
+| `question` | énoncé relevé, source, date ; jamais un mot-clé brut | signal d'audience | le mandat relie question et intention ; le §5 ne les porte pas |
+| `intent` | `diagnostic`, `maintenance` ou information seule | — | oriente le mode, ne pré-remplit aucune observation |
+| `audience_signals` | agrégats { source, compte, fenêtre, date } | signal d'audience | une demande, pas une vérité ; ni texte de commentaire, ni identité |
+| `creative_principles` | identifiants de motifs (`inspiration_pattern_id` du brief Fafa) | principe créatif | une structure abstraite, jamais la copie d'un actif tiers |
+| `destination` | URL, date, statut HTTP, cohérence avec la version WIKI citée → `READY` / `NOT_READY` motivé | — | idée 7 : une URL 200 qui contredit le WIKI n'est pas une destination |
+| `capacity` | formats prévus × formats productibles | — | la cadence pilote est une hypothèse de capacité |
+
+- **Faits techniques** : dans `knowledge` seulement — identifiants de blocs de l'export, `relation_sha256`, `source_wiki_commit`. Seule
+  la connaissance admise nourrit une sortie technique ; le RAG n'écrit aucun contenu (ADR-046). Signaux et principes n'entrent pas
+  dans le WIKI technique. Aucune donnée sociale ni aucun média dans Git (le `.gitignore` du dossier Fafa bloque déjà mp4, wav, srt).
+- **Identité** : `gamme:<alias>` (`backend/src/modules/seo-projection/seo-projection.types.ts:61-65`) ou `type_id` pour un véhicule ;
+  aucun `subject_key` n'est créé. Un sujet véhicule n'est ouvert que s'il a une utilité propre : pas de combinatoire gamme × véhicule.
+- **Instance** : non créée. Lieu prévu = rapport Hermes (§5 de la référence), après D14. D'ici là, seule la partie média peut
+  exister, dans le dossier Fafa. Son brief porte déjà `inspiration_pattern_id` et `url_cible`. Il est strict
+  (`video-brief.schema.json`, `additionalProperties: false`) et ce dossier ne l'étend pas.
+- **Recalcul ciblé** : si `source_wiki_commit`, un `relation_sha256` ou le statut d'une page RAW change, expire ou est révoqué, seuls
+  les claims qui les citent repassent la règle de L10a. Les approbations liées à l'ancienne empreinte tombent (409, contrat existant).
+  Une fiche acceptée n'autorise ni règle diagnostique ni validation humaine fictive ; un writer de provenance ne crée aucun lien
+  symptôme-cause.
+
+**Correspondance avec la référence** (aucune numérotation concurrente) : L4a ≈ L02 ; L4b ≈ L04 + L12 ; L4c ≈ L03 + L12 — sa migration
+additive est une option de D2, jamais appliquée sans D2 ; L4d ≈ L13 ; L4e ≈ L10 + L10a ; L5d ≈ L11 ; L5e ≈ L13 ; L5f ≈ L14 ; H1–H5 ≈ L15 ;
+R0–R7 = actes owner. L5a–L5c (chaîne #1796 → #1797 → #1798, puis ADR-116) relèvent de diagnostic-lead, hors des lots marketing.
+
+#### Sujet pilote M1 — `gamme:filtre-a-huile` (pg 7), intention entretien
+
+Choisi sur la couverture réelle : seule fiche `approved` dont toutes les sources sont des pages RAW actives, hors système de sécurité.
+La plaquette de frein reste le pilote média L11, bloqué par D17 (WIKI #118 ouverte au 16/10).
+
+| Consumer | État constaté le 16/10 | Verdict de destination |
+|---|---|---|
+| R1 `/pieces/filtre-a-huile-7.html` | 200 ; FAQ de gabarit ; « ISO 4548 » présent dans le HTML servi (retiré du WIKI) | orientation de famille seulement, jamais preuve technique |
+| R3 `/blog-pieces-auto/conseils/filtre-a-huile` | 200 ; « 3/4 de tour » et « ISO 4548 » présents (retirés du WIKI) | `NOT_READY` jusqu'à la séquence ADR-107 → R6 ; retoucher le legacy = second writer, exclu |
+| Diagnostic `/diagnostic-auto` | 200 ; mode « Vérifier mon entretien » choisi par l'utilisateur ; résultat sans lien catalogue | `READY` comme destination principale |
+| Relations diagnostic de l'export | deux relations `possible_cause`, « hypothèse non établie » ; `diagnostic_safe: false` | aucune vidéo ne les affirme ; « contrôle nécessaire » et « informations insuffisantes » restent les conclusions |
+| R2, R8 | sujet sans véhicule | non concernés ; prix, dispo et références viennent des autorités métier |
+| Médias | aucun dossier Fafa M1 | proposition : dossier en fichiers, backend éteint (D19) ; claims = blocs de l'export |
+
+Angle candidat, à valider contre les 17 claims de l'export avant écriture : idée reçue corrigée sur la périodicité, avec renvoi au
+carnet du constructeur. Aucune périodicité, aucun couple ni aucune pression chiffrés : la fiche les a retirés. La question publique
+reste à relever (`question` vide au 16/10).
+
+#### Planning — quatre semaines et lot hebdomadaire, sans troisième calendrier
+
+Horizon de quatre semaines = lignes `__marketing_content_roadmap` (`deadline` = date éditoriale prévue). Lot hebdomadaire =
+`__marketing_weekly_plans` (`week_iso`). Une date prévue n'est pas une tâche programmée : aucune cron n'est installée ni modifiée,
+et le dry-run reste le défaut (L05).
+
+Cadence pilote, hypothèse de capacité : un sujet par semaine = 1 vidéo YouTube de fond + 2 courts + 1 carrousel, si les ressources le
+permettent. Au `64cf08797`, seuls les courts sont productibles par l'outillage (C16-4). La vidéo longue et le carrousel sont fabriqués
+à la main ou reportés, jamais simulés. Trente posts ne sont pas un objectif.
+
+Le générateur raisonne en une gamme par créneau, avec des piliers fixes (catalogue, conseil, confiance, promo), des canaux fixes et
+le format `short` par défaut pour YouTube (`multi-channel-copywriter.service.ts:192-193`). Un seul sujet occupe déjà les quatre
+créneaux via l'option `priority_gammes` du service (exposition par un contrôleur non vérifiée), mais il y reçoit d'office un créneau
+promo. La réutilisation d'une gamme récente est silencieuse
+(C16-7). Extension proposée en L05 : le créneau porte le format du lot de sujet ; le pilier promo n'est pas imposé au sujet pilote.
+
+Priorisation explicable, par critères ordinaux sourcés, sans score composite ni nouveaux poids. `marketing-scoring.config.ts`
+n'est pas étalonné et ne classe rien ici. Critères :
+
+- besoin client (signal agrégé) ;
+- preuves (fiche `approved`, sources RAW actives) ;
+- valeur originale (angle Fafa) ;
+- capacité diagnostic ou entretien (mode existant, relations revues) ;
+- adéquation catalogue (R1 servie, comptes sans texte) ;
+- coût (zéro fournisseur) ;
+- capacité (formats productibles).
+
+Mesure indisponible = UNKNOWN. Aucun score de viralité, aucune boucle « jusqu'à ranker premier ».
+
+| Semaine | Sujet | Objet | Sortie, niveau d'effet | Condition |
+|---|---|---|---|---|
+| 2026-W43 (19–25/10) | M1 | dossier de sujet, claims tirés de l'export, test de destination | dossier en fichiers, E0–E1 | L10a fusionnée pour l'évaluation des claims |
+| 2026-W44 (26/10–01/11) | M1 | deux scripts courts, accroches A/B/C, sélection humaine | rendu local inspectable, E3 au mieux | D19 ; sans voix ni avatar (D8 hors chemin) |
+| 2026-W45 (02–08/11) | plaquette de frein si D17, sinon M1 | pack de publication préparé ; vidéo longue M1 si capacité | état « préparé », jamais « publié » | D17 ; L13 pour toute preuve de publication |
+| 2026-W46 (09–15/11) | revue | retour sur la réserve à partir des signaux disponibles | mesure UNKNOWN sauf verdict certifié | E4 = acte owner ; E6 non atteignable hors DEV au 16/10 |
+
+Séries, playlists, titres et miniatures restent cohérents par sujet. Une réponse publique à un commentaire est une publication,
+soumise à mandat. Jamais de faux engagement, de faux avis ni de messages commerciaux massifs.
+
+#### Parcours YouTube et liens
+
+Source : aide YouTube (`support.google.com/youtube/answer/13748639`), lue le 16/10 avec un rendu dégradé, statuts déduits du texte.
+Une URL n'est pas cliquable dans la description ni dans les commentaires d'un Short. Elle l'est dans les liens du profil de chaîne,
+la vidéo associée d'un Short, les écrans de fin, ainsi que la description et les commentaires d'une vidéo longue (fonctionnalités
+avancées requises). Parcours retenu : Short → vidéo associée (longue) → lien dans sa description, ou profil de chaîne. Les gabarits
+de prompt YouTube placent le lien dans la description quel que soit le format (`social-post-templates.ts:129` catalogue, `:219`
+conseil) : C16-5, L06. Politique des réponses par API : non lue.
+
+Liens autorisés : URL servies 200 et vérifiées le jour du pack — `/diagnostic-auto`, `/depannage`, R1 `/pieces/{alias}-{pg_id}.html`,
+calendrier d'entretien. Aucun paramètre de pré-remplissage (C16-1) ; un lien vers un résultat personnel n'apparaît jamais dans un
+contenu public, un UTM ou un commentaire. Une urgence de sécurité est dite en clair dans le contenu, jamais derrière un lien ou un
+formulaire. Une réponse utile vient avant le CTA.
+
+#### Critères de validation — parcours nominal et refus légitimes
+
+| Cas | Entrée | Attendu |
+|---|---|---|
+| Nominal | claims soutenus, destination `READY`, trois approbations sur la même révision × canal × compte | pack « préparé » ; publication = acte owner (E4) ; preuve (E5) après L13 |
+| Sécurité | sujet ou commentaire qui touche un symptôme de sécurité | consigne sourcée dite dans le contenu ; sans source → `NOT_READY` |
+| Informations insuffisantes | assistant sans conclusion | « Informations insuffisantes » est une issue valide ; le contenu ne promet aucune conclusion |
+| Aucun achat | résultat sans pièce | issue valide, jamais comptée comme échec |
+| Destination contradictoire | URL 200 qui contredit la version WIKI | `NOT_READY` motivé (R3 M1 au 16/10) |
+| Claim non soutenu | claim sans `sourceRef` ni `evidenceId` du pack | FAIL (L10a) |
+| Révision changée | approbation sur une autre empreinte | 409 |
+| Second compte | deuxième compte sur un canal | 422 (D10) |
+| Lien non cliquable | Short qui renvoie à sa description | `NOT_READY` |
+| Donnée personnelle | identifiant client, VIN ou réponse privée dans un UTM, un log public ou un prompt externe | refus à la préparation |
+| Instruction externe | commentaire, transcript ou actif qui demande une action | ignoré ; liste fermée d'actions et validation humaine, hors du modèle |
+| Source révoquée | page RAW ou version WIKI retirée | claims `blocked`, approbations caduques, recalcul ciblé |
+| Mesure | verdict non certifié ou absent | UNKNOWN, jamais 0 ni PASS |
+| Budget | appel payant demandé | refus sans prix ni quota vérifiés et réservation atomique ; zéro appel payant dans le pilote |
+
+#### Mesure — UNKNOWN par défaut
+
+| Indicateur | Source | Grain, dénominateur | Fenêtre, déduplication, fraîcheur | Limites | État au 16/10 |
+|---|---|---|---|---|---|
+| Audience vidéo | YouTube Studio, saisie manuelle `video-performance.csv` | vidéo × jour | J+7 ; par `video_id` ; manuelle | fichier absent ; ingestion automatique interdite | UNKNOWN |
+| Visites attribuables | attribution d'atterrissage (`landing-attribution.controller.ts:58-68`) ; `__seo_ga4_daily` | session ; sessions d'atterrissage | 30 j (session) ; par session | `campaign` et `content` non capturés (L14) ; GA4 sans UTM | partiel |
+| Analyses commencées et terminées | non identifiée | session d'assistant | — | aucun producteur de comptage trouvé | UNKNOWN |
+| Orientations pertinentes | `qualified-demand` (ASPIRATIONAL) | — | — | sans définition (D6) | UNKNOWN |
+| Commandes | `r2_order_placed` ; `___xtr_order.landing_*` sans lecteur | commande | index unique | émetteur serveur derrière un drapeau éteint ; zone STOP en lecture seule | UNKNOWN |
+| Contribution après coûts et remboursements | `economicReport` | — | — | fixtures synthétiques seulement | UNKNOWN |
+
+- Toute lecture passe par `tracking-integrity-verdict` v1 : seul CERTIFIED vaut mesure, sinon UNKNOWN.
+- Une commande attribuée ne prouve pas l'incrémentalité ; ne pas acheter n'est pas un échec.
+- Trois régimes distincts, classés ici sans changement :
+  - consentement marketing (`users.marketing_consent_at`, e-mail et SMS) ;
+  - traceurs analytiques (mode de consentement GA4, choix owner connu) ;
+  - stockage fonctionnel (`amk_funnel_sid`, `connect.sid`, `ab_test_*`, contexte véhicule).
+
+#### Constats du 16/10
+
+Environnement : `main` à `64cf08797` par lecture, sauf C16-8 (GET publics de PROD, 16/10 16:58). Rien n'a été exécuté dans un
+navigateur.
+
+| Id | Fichier, fonction | Preuve | Limite | Lot |
+|---|---|---|---|---|
+| C16-1 | `frontend/app/routes/diagnostic-auto._index.tsx:330` (`?dtc=`), `:424,557,599,655` (`?cluster=`) ; `DiagnosticWizard.tsx:288-298` | l'assistant ne lit que `session` ; aucun lecteur de paramètres dans ces deux fichiers | lecture | hors mandat : diagnostic-lead, frontend-team (page indexée) |
+| C16-2 | `diagnostic-engine.controller.ts:248` ; `frontend/app/components/diagnostic-wizard/` ; `frontend/app/utils/vehicle-cookie.ts:38` | `vehicle_ctx` n'est écrit que sur `type_id` ou marque + modèle ; aucun `type_id` dans l'assistant ; le catalogue lit `selected_vehicle` | envoi de marque + modèle non tracé | hors mandat : diagnostic-lead (VehicleContext option A inchangée) |
+| C16-3 | `frontend/app/utils/funnel-beacon.ts:114` | `entity_url` = `window.location.href`, chaîne de requête comprise | journal serveur non relu | L14 |
+| C16-4 | `template-registry.ts` (`test-card` 16:9 et deux compositions courtes) ; `video-brief.schema.json` (`mode` V1 = SHORT, `platforms` sans vidéo longue) ; carrousel en texte de prompt seulement | aucune vidéo longue ni carrousel productible | lecture | INFO (capacité) |
+| C16-5 | `social-post-templates.ts:129,219` ; `multi-channel-copywriter.service.ts:193` | lien en description pour un format `short` par défaut | aide YouTube lue avec un rendu dégradé | L06 |
+| C16-6 | `fafa-media-factory/README.md:8` contre `media-factory.flag.ts:7-10` ; `fafa-remotion-template-planner/SKILL.md:21,51,63` contre `services/remotion-renderer/src/types/contract.ts:13` ; `fafa-script-generator/SKILL.md:42` ; `seo-content-loop/SKILL.md:102-104` | backend dit supprimé mais rétabli le 20/06 ; `src/registry.ts` absent, `props` et `voiceUrl` au lieu de `compositionProps` ; une seule accroche ; boucle sans borne | lecture | L16 (`seo-content-loop` : signalé à seo-lead, non modifié) |
+| C16-7 | `weekly-plan-generator.service.ts:63-80` | repli de réutilisation ; `_isReused` calculé l.80, jamais lu ni persisté | lecture | L05 |
+| C16-8 | R1 `/pieces/filtre-a-huile-7.html`, R3 `/blog-pieces-auto/conseils/filtre-a-huile` ; `wiki/gamme/filtre-a-huile.md:337` | « ISO 4548 » (R1 10, R3 2) et la consigne de serrage « 3/4 de tour » (R3 3), retirées par la fiche | comptage brut du HTML, hydratation comprise | hors mandat : seo-lead (séquence ADR-107 → R6) |
+
+#### Coordination et transmission
+
+Départements de rattachement :
+
+- #6 content (planning éditorial) ;
+- #8 media (publication humaine) ;
+- #11 diagnostic (chantier en pause doctrinale) ;
+- #22 data (mesure) ;
+- #4 marketing (lot hebdomadaire).
+
+Leads = rôles, responsable humain non nommé. Claude réconcilie et révise. Codex implémente, une branche par lot. Hermes opère dans
+son mandat (préparation, recette native) ; son hôte reste injoignable depuis DEV (D14) et son installation N10 n'est pas relue ici.
+Aucun circuit à trois agents n'est obligatoire ; un seul écrivain par périmètre (ce dossier : Claude).
+
+| Élément | Valeur |
+|---|---|
+| Dépôt, branche | `ak125/nestjs-remix-monorepo`, `docs/marketing-boucle-sujet-20261016` |
+| Base | `64cf08797908ea36618e1d7086ff7167e8be305d` ; chaque chemin cité est relatif à la racine, ou un nom de fichier unique dans le dépôt (vérifié par `git ls-tree` le 16/10) ; contenus lus par `git show origin/main:<chemin>` |
+| Empreintes d'entrée | README avant ajout `6617f809…` ; WIKI `37445d120b8ed1e503cf7b7dc02b94e0198ed81c` ; RAW `8a4ddbb995b4e9ae75d99d6a14d55cb16a3bd0d7` ; pin `88017732dce485673463ca34ce9bee9f9ddd848e` ; export SEO `source_wiki_commit` `a47833486352626442939dd04b5a6fd3674cb0a7` (schéma 1.1.0) |
+| Transfert | PR de ce dépôt, après accord de push ; à défaut, `git bundle` remis par l'owner. Aucun chemin DEV n'est supposé lisible ailleurs ; la référence hors dépôt reste sur DEV et n'est pas requise |
+| Actions autorisées | Codex : L10a tel que décrit, puis L11 M1 en fichiers ; branche dédiée, PR, jamais de fusion. Hermes : lecture seule et préparation E1 ; ni publication, ni appel payant, ni cron |
+| Tests | `cd backend && npx jest tests/unit/video-gates.service.test.ts` (L10a, rouge puis vert) ; validation des schémas Fafa (L11) ; `bash scripts/lint/check-preprod-vocabulary.sh` |
+| Blocages | D19 (média M1) ; D17 (pilote plaquette) ; D12 (L05) ; D2 (L12, L13) ; D14 (instance Hermes) ; #1796–#1798 en conflit |
+
+**Premier lot réellement prêt : L10a** (Codex, E0, aucune décision owner, commande ci-dessus). L16 est prêt aussi, pour Claude, sur
+GO. **Décision minimale manquante : D19**, confirmer « fichiers seuls, backend éteint ». Elle ouvre le chemin média de M1 sans passer
+par le script du backend, qui lit le contenu legacy contredit par le WIKI. D2 ne devient nécessaire qu'à la première preuve de
+publication (W45).
+
 ### Couverture MECE
 
 Union des constats : 309 entrées = 301 constats + 8 tâches de vérification (traitées). Affectation unique par identifiant :
@@ -278,6 +522,9 @@ est traité en L10a, il reste compté en L10. Doublons fusionnés
 sous un identifiant (VF-*, N-A-V*, NF-* ↔ originaux). H05 est scindé (volet marketing compté en L02, volet video-hub exécuté en L10).
 Hors mandat : Command Center (ADR-087), mode lecture seule et RLS transverses, support, panier et désinscription (zones STOP,
 transmis à support-lead en préparation seulement), contenus et prompts RAG (ADR-046, D6).
+Ajout du 16/10 : 8 constats nouveaux (C16-7 → L05 ; C16-5 → L06 ; C16-3 → L14 ; C16-6 → L16 ; C16-4 → INFO ; C16-1, C16-2, C16-8 →
+hors mandat signalés), soit L05 9 · L06 14 · L14 14 · L16 1 · INFO sans lot 17 · hors mandat signalés 26. **sum_check : 315 = 315,
+0 orpheline, 0 double affectation.** Les divergences de la référence hors dépôt ne sont pas recomptées, sauf C16-8, re-mesuré le 16/10.
 
 ### Non vérifiable dans ce dossier
 
@@ -290,6 +537,16 @@ transmis à support-lead en préparation seulement), contenus et prompts RAG (AD
 - Empreinte du canon de voix en conteneur ; `presentation-de-automecanik` introuvable à `main`.
 - Ajout du 14/10 : valeur de `MEDIA_FACTORY_ENABLED` sur les hôtes ; existence des tables `__video_*` ; renderer déployé hors DEV ;
   tenue d'un rendu de 38 s dans le délai de 120 s du post-traitement.
+- Ajout du 16/10 :
+  - transcription de la vidéo de référence ;
+  - règles de YouTube sur les commentaires et les réponses par API ;
+  - compte YouTube existant et ses fonctionnalités avancées ;
+  - colonnes réelles en base de `__marketing_content_roadmap` et `__marketing_weekly_plans` (aucune requête base) ;
+  - producteur d'un comptage des analyses commencées et terminées ;
+  - collecte d'un VIN hors de l'assistant ;
+  - durée de conservation des médias et licences des fournisseurs (aucune règle trouvée) ;
+  - dossier juridique (#18 legal, NO-CODE) ;
+  - état de l'installation Hermes N10.
 
 ## Référence des seuils V2 — 13 octobre 2026
 
