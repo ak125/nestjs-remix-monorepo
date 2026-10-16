@@ -16962,7 +16962,7 @@
         "backend/src/modules/seo/validation/purchase-guide-validation.constants.ts"
       ],
       "kind": "service",
-      "loc": 2663,
+      "loc": 2721,
       "owner": "__unassigned__",
       "path": "backend/src/modules/gamme-rest/services/buying-guide-data.service.ts",
       "risk": "low",
@@ -39561,7 +39561,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 460,
+      "loc": 700,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/buying-guide-data.service.test.ts",
       "risk": "low",
