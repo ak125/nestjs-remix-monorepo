@@ -17,6 +17,44 @@
 
 schemaVersion: 1.0.0
 entries:
+  # Marketing approval candidate: same D12 responsibility as the existing
+  # marketing module. Exact migration paths keep future schema work gated.
+  # Ownership inferred from that module, not a new team ratification.
+  - glob: backend/jest.marketing.config.cjs
+    domain: D12
+    owner: '@ak125/marketing-team'
+    sourceConfidence: medium
+    risk: low
+  - glob: backend/supabase/migrations/20261014010000_marketing_social_reviews.sql
+    domain: D12
+    owner: '@ak125/marketing-team'
+    sourceConfidence: medium
+    risk: high
+  - glob: backend/supabase/migrations/20261014091855_marketing_publication_preparations.sql
+    domain: D12
+    owner: '@ak125/marketing-team'
+    sourceConfidence: medium
+    risk: high
+  - glob: backend/supabase/migrations/20261014172953_marketing_brief_social_link.sql
+    domain: D12
+    owner: '@ak125/marketing-team'
+    sourceConfidence: medium
+    risk: high
+  - glob: backend/supabase/migrations/20261014234956_marketing_brief_prerequisite_reconciliation.sql
+    domain: D12
+    owner: '@ak125/marketing-team'
+    sourceConfidence: medium
+    risk: high
+  - glob: frontend/app/services/api/marketing-briefs.api.ts
+    domain: D12
+    owner: '@ak125/marketing-team'
+    sourceConfidence: medium
+    risk: medium
+  - glob: frontend/app/services/api/marketing-publication.api.ts
+    domain: D12
+    owner: '@ak125/marketing-team'
+    sourceConfidence: medium
+    risk: medium
   # Command Center integration: inferred from the existing D15 documentation
   # and backend/tests ownership; medium until explicitly ratified by the owner.
   - glob: audit/command-center-l1-spec-2026-10-10.md
