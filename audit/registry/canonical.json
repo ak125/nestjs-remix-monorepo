@@ -96734,7 +96734,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 36,
+      "loc": 38,
       "owner": "@ak125/frontend-team",
       "path": "packages/design-tokens/tsup.config.ts",
       "risk": "low",
@@ -104635,11 +104635,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "7bec88c8e8b454869e284e28fdde34ca05a32d3fdbbdfe0820cdee50a66f5f3a",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "7be5ac186149691d14d605df7c6567eb8fd1f776979be68261bd7c663e2a35a6",
+      "audit/registry/files.json": "93cf558e33a96af4ce24c41bc6e1f6125a0f8cc48311f325f181c26dacc2465d",
       "audit/registry/rpc.json": "68f3b21f7aa0b2ef7da9b488c657c3b6b5bdde0476bf7d617f1e346cc26b4449",
       "audit/registry/runtime.json": "1537c0f3bfbfb3eec888d674e290f14eb9df56e9f816220210a8b7298eaeeb44"
     },
-    "sotFingerprint": "5f9aa1f2d8c7"
+    "sotFingerprint": "e1b9e0e2ab03"
   },
   "runtime": [
     {

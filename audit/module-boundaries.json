@@ -552,7 +552,7 @@
         "packages/design-tokens/tests"
       ],
       "files_count": 13,
-      "loc_total": 2005,
+      "loc_total": 2007,
       "has_barrel": true
     },
     "pkg-domain-commerce": {

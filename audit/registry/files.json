@@ -66066,7 +66066,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 36,
+      "loc": 38,
       "owner": "__unassigned__",
       "path": "packages/design-tokens/tsup.config.ts",
       "risk": "low",
