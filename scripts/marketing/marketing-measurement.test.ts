@@ -88,6 +88,87 @@ const data = () => ({
   history_complete: true,
 });
 
+test("T15 multiple refunds accumulate once per order and retain the selected cohort", () => {
+  const d = data();
+  d.orders.push(
+    { ...order(), id: "synthetic-second" },
+    {
+      ...order(),
+      id: "synthetic-outside",
+      contact_id: "synthetic-contact-2",
+      at: "2026-08-01T00:00:00Z",
+    },
+  );
+  d.refunds.push(
+    { ...d.refunds[0] },
+    {
+      ...d.refunds[0],
+      id: "synthetic-partial",
+      revenue_ex_tax_minor: "1000",
+      tax_minor: "200",
+      cost_recovered_minor: "250",
+    },
+    {
+      ...d.refunds[0],
+      id: "synthetic-full",
+      order_id: "synthetic-second",
+      revenue_ex_tax_minor: "10000",
+      tax_minor: "2000",
+      cost_recovered_minor: "4000",
+    },
+    {
+      ...d.refunds[0],
+      id: "synthetic-outside-refund",
+      order_id: "synthetic-outside",
+    },
+  );
+  const report = economicReport(fixture().context, d);
+  assert.deepEqual(report.currencies, [
+    {
+      currency: "EUR",
+      net_revenue_ex_tax_minor: "7000",
+      net_tax_minor: "1400",
+      marketing_cost_ex_tax_minor: "1000",
+      contribution_ex_tax_minor: "2750",
+      costs_complete: true,
+    },
+  ]);
+  assert.equal(report.distinct_orders, 2);
+  assert.equal(report.distinct_buyers, 1);
+  assert.equal(report.second_purchase_buyers, 1);
+  assert.deepEqual(report.positive_net_revenue, {
+    distinct_orders: 1,
+    distinct_buyers: 1,
+    conversion_rate: 0.1,
+    second_purchase_buyers: 0,
+    second_purchase_rate: 0,
+  });
+  assert.deepEqual(report.source_ids.refunds, [
+    "synthetic-full",
+    "synthetic-partial",
+    "synthetic-refund",
+  ]);
+  assert.deepEqual(
+    economicReport(fixture().context, {
+      ...d,
+      orders: [...d.orders].reverse(),
+      refunds: [...d.refunds].reverse(),
+    }),
+    report,
+  );
+});
+
+test("T15 a refund requires a verified order even outside the selected cohort", () => {
+  for (const at of [order().at, "2026-08-01T00:00:00Z"]) {
+    const d = data();
+    d.orders[0] = { ...d.orders[0], at, verified: false };
+    assert.throws(
+      () => economicReport(fixture().context, d),
+      /REFUND_UNRECONCILED/,
+    );
+  }
+});
+
 test("T15 costs are dated and restricted to the report period with exact boundaries", () => {
   const d = data();
   const dated = {
