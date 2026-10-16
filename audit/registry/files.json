@@ -33891,7 +33891,7 @@
         "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts"
       ],
       "kind": "test",
-      "loc": 724,
+      "loc": 810,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.test.ts",
       "risk": "low",
@@ -33921,7 +33921,7 @@
         "backend/src/utils/html-entities.ts"
       ],
       "kind": "service",
-      "loc": 589,
+      "loc": 624,
       "owner": "__unassigned__",
       "path": "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts",
       "risk": "low",
@@ -39236,7 +39236,7 @@
         "zlib"
       ],
       "kind": "service",
-      "loc": 523,
+      "loc": 542,
       "owner": "__unassigned__",
       "path": "backend/src/workers/supplier-availability-classify.ts",
       "risk": "low",
