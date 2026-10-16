@@ -61,30 +61,95 @@ describe('BuyingGuideDataService section provenance (L2g)', () => {
       );
       expect(guide.sectionSources?.faq).toBe('fallback');
       expect(guide.quality.flags).toContain('FAQ_TOO_SMALL');
+      expect(guide.faq).toEqual(template().faq);
     },
   );
 
-  it('conserve db pour trois paires valides malgré TOO_SHORT sur une autre section', () => {
+  const template = () => service.toBuyingGuideV1(transform(row));
+  const eightFaq = Array.from({ length: 8 }, (_, index) => ({
+    question: `Quelle référence catalogue numéro ${index + 1} vérifier ?`,
+    answer: dbFaq[0].answer,
+  }));
+
+  it('signale trois paires DB complétées par le gabarit', () => {
     const guide = service.toBuyingGuideV1(
       transform({ ...row, sgpg_faq: dbFaq }),
     );
     expect(guide.quality.flags).toContain('TOO_SHORT');
-    expect(guide.sectionSources?.faq).toBe('db');
-    expect(guide.faq.slice(0, 3)).toEqual(dbFaq);
+    expect(guide.sectionSources?.faq).toBe('mixed');
+    expect(guide.faq).toEqual([...dbFaq, ...template().faq]);
   });
 
-  it('signale une réponse trop courte remplacée même sans FAQ_TOO_SMALL', () => {
+  it('conserve db pour huit paires distinctes sans place pour le gabarit', () => {
+    const guide = service.toBuyingGuideV1(
+      transform({ ...row, sgpg_faq: eightFaq }),
+    );
+    expect(guide.sectionSources?.faq).toBe('db');
+    expect(guide.faq).toEqual(eightFaq);
+  });
+
+  it('signale une réponse remplacée parmi des réponses DB conservées', () => {
     const guide = service.toBuyingGuideV1(
       transform({
         ...row,
-        sgpg_faq: [{ ...dbFaq[0], answer: 'Oui.' }, ...dbFaq.slice(1)],
+        sgpg_faq: [{ ...dbFaq[0], answer: 'Oui.' }, dbFaq[1], dbFaq[2]],
       }),
     );
     expect(guide.quality.flags).not.toContain('FAQ_TOO_SMALL');
-    expect(guide.sectionSources?.faq).toBe('fallback');
-    expect(guide.faq[0].answer).toBe(
-      'Vérifiez la référence exacte selon le véhicule et suivez la procédure constructeur pour sécuriser le remplacement.',
+    expect(guide.sectionSources?.faq).toBe('mixed');
+    expect(guide.faq).toEqual([
+      {
+        ...dbFaq[0],
+        answer:
+          'Vérifiez la référence exacte selon le véhicule et suivez la procédure constructeur pour sécuriser le remplacement.',
+      },
+      dbFaq[1],
+      dbFaq[2],
+      ...template().faq,
+    ]);
+  });
+
+  it('signale fallback quand toutes les réponses sont remplacées', () => {
+    const guide = service.toBuyingGuideV1(
+      transform({
+        ...row,
+        sgpg_faq: dbFaq.map((item) => ({ ...item, answer: 'Oui.' })),
+      }),
     );
+    expect(guide.sectionSources?.faq).toBe('fallback');
+    expect(guide.faq).toEqual([
+      ...dbFaq.map((item) => ({
+        ...item,
+        answer:
+          'Vérifiez la référence exacte selon le véhicule et suivez la procédure constructeur pour sécuriser le remplacement.',
+      })),
+      ...template().faq,
+    ]);
+  });
+
+  it('compte seulement les réponses conservées après le filtre R1', () => {
+    const guide = service.toBuyingGuideV1(
+      transform({
+        ...row,
+        sgpg_faq: dbFaq.map((item) => ({
+          ...item,
+          answer: 'diagnostic '.repeat(20),
+        })),
+      }),
+    );
+    expect(guide.quality.flags).toContain('R3_BOUNDARY_VIOLATION');
+    expect(guide.sectionSources?.faq).toBe('fallback');
+    expect(guide.faq).toEqual(template().faq);
+  });
+
+  it('ne compte pas un gabarit écarté par déduplication comme une source servie', () => {
+    const faq = template().faq.map((item) => ({
+      ...item,
+      answer: dbFaq[0].answer,
+    }));
+    const guide = service.toBuyingGuideV1(transform({ ...row, sgpg_faq: faq }));
+    expect(guide.sectionSources?.faq).toBe('db');
+    expect(guide.faq).toEqual(faq);
   });
 
   it('signale les symptômes substitués', () => {
@@ -104,28 +169,70 @@ describe('BuyingGuideDataService section provenance (L2g)', () => {
     expect(guide.symptoms).toEqual(symptoms);
   });
 
-  it('signale les anti-erreurs remplacées par le contrôle qualité', () => {
+  const completionAntiMistakes = [
+    'Ne pas commander Filtre à huile sans vérifier la compatibilité véhicule/moteur.',
+    "Ne pas ignorer les préconisations constructeur d'installation.",
+    'Ne pas différer le remplacement en cas de dégradation persistante.',
+    'Ne pas valider le panier sans comparaison des références constructeur.',
+  ];
+  const tenAntiMistakes = Array.from(
+    { length: 10 },
+    (_, index) => `Vérifier la référence catalogue numéro ${index + 1}.`,
+  );
+
+  it.each([1, 4, 10])(
+    'décrit la liste enrichie servie de %i anti-erreurs',
+    (count) => {
+      const antiMistakes = tenAntiMistakes.filter((_, index) => index < count);
+      const guide = service.toBuyingGuideV1(
+        transform({ ...row, sgpg_anti_mistakes: antiMistakes }),
+      );
+      expect(guide.sectionSources?.antiMistakes).toBe(
+        count === 10 ? 'db' : 'mixed',
+      );
+      expect(guide.antiMistakes).toEqual(
+        count === 10
+          ? antiMistakes
+          : [...antiMistakes, ...completionAntiMistakes],
+      );
+    },
+  );
+
+  it('signale les anti-erreurs entièrement issues du gabarit', () => {
+    const guide = service.toBuyingGuideV1(
+      transform({ ...row, sgpg_anti_mistakes: [] }),
+    );
+    expect(guide.sectionSources?.antiMistakes).toBe('fallback');
+    expect(guide.antiMistakes).toEqual(template().antiMistakes);
+  });
+
+  it('déduplique les anti-erreurs avant de compter les sources retenues', () => {
     const guide = service.toBuyingGuideV1(
       transform({
         ...row,
-        sgpg_anti_mistakes: ['Vérifier la référence.'],
+        sgpg_anti_mistakes: Array(10).fill(tenAntiMistakes[0]),
       }),
     );
-    expect(guide.sectionSources?.antiMistakes).toBe('fallback');
+    expect(guide.sectionSources?.antiMistakes).toBe('mixed');
+    expect(guide.antiMistakes).toEqual([
+      tenAntiMistakes[0],
+      ...completionAntiMistakes,
+    ]);
   });
 
-  it('conserve db pour des anti-erreurs suffisantes', () => {
-    const antiMistakes = [
-      'Vérifier la référence.',
-      'Vérifier le véhicule.',
-      'Vérifier la date.',
-      'Vérifier la variante.',
-    ];
-    const guide = service.toBuyingGuideV1(
-      transform({ ...row, sgpg_anti_mistakes: antiMistakes }),
-    );
-    expect(guide.sectionSources?.antiMistakes).toBe('db');
-    expect(guide.antiMistakes.slice(0, 4)).toEqual(antiMistakes);
+  it('marque les trois sections du guide automatique comme fallback', () => {
+    const guide = service.buildAutoBuyingGuideV1({
+      pgId: '7',
+      pgName: 'Filtre à huile',
+    });
+    expect(guide.sectionSources).toMatchObject({
+      faq: 'fallback',
+      symptoms: 'fallback',
+      antiMistakes: 'fallback',
+    });
+    expect(guide.faq.length).toBeGreaterThan(0);
+    expect(guide.antiMistakes.length).toBeGreaterThan(0);
+    expect(guide.symptoms.length).toBeGreaterThan(0);
   });
 });
 
