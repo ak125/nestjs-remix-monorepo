@@ -18328,7 +18328,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 479,
+      "loc": 489,
       "owner": "__unassigned__",
       "path": "backend/src/modules/marketing/services/marketing-measurement.ts",
       "risk": "low",
@@ -71177,7 +71177,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 503,
+      "loc": 584,
       "owner": "__unassigned__",
       "path": "scripts/marketing/marketing-measurement.test.ts",
       "risk": "low",
