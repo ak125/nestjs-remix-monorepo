@@ -44,10 +44,11 @@ coverage/
 docs/
 
 # Development files
-*.spec.ts
-*.test.ts
-*.spec.tsx
-*.test.tsx
+# Docker patterns need **/ to exclude tests in nested workspace directories.
+**/*.spec.ts
+**/*.test.ts
+**/*.spec.tsx
+**/*.test.tsx
 
 # Cache
 .turbo/
