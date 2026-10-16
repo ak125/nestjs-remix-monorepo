@@ -47196,7 +47196,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 478,
+      "loc": 489,
       "owner": "@ak125/marketing-team",
       "path": "backend/src/modules/marketing/services/marketing-measurement.ts",
       "risk": "low",
@@ -63313,7 +63313,7 @@
         "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts"
       ],
       "kind": "test",
-      "loc": 724,
+      "loc": 810,
       "owner": "@ak125",
       "path": "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.test.ts",
       "risk": "high",
@@ -63344,7 +63344,7 @@
         "backend/src/utils/html-entities.ts"
       ],
       "kind": "service",
-      "loc": 589,
+      "loc": 624,
       "owner": "@ak125",
       "path": "backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts",
       "risk": "high",
@@ -68830,7 +68830,7 @@
         "zlib"
       ],
       "kind": "service",
-      "loc": 523,
+      "loc": 542,
       "owner": "@ak125",
       "path": "backend/src/workers/supplier-availability-classify.ts",
       "risk": "medium",
@@ -96734,7 +96734,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 36,
+      "loc": 38,
       "owner": "@ak125/frontend-team",
       "path": "packages/design-tokens/tsup.config.ts",
       "risk": "low",
@@ -102114,7 +102114,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 451,
+      "loc": 584,
       "owner": "@ak125",
       "path": "scripts/marketing/marketing-measurement.test.ts",
       "risk": "low",
@@ -104635,11 +104635,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "7bec88c8e8b454869e284e28fdde34ca05a32d3fdbbdfe0820cdee50a66f5f3a",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "8b60a4dde77623895a4ea5b29de0306ee02e46ed99562ecafdce9191d8bdf6a8",
+      "audit/registry/files.json": "93cf558e33a96af4ce24c41bc6e1f6125a0f8cc48311f325f181c26dacc2465d",
       "audit/registry/rpc.json": "68f3b21f7aa0b2ef7da9b488c657c3b6b5bdde0476bf7d617f1e346cc26b4449",
       "audit/registry/runtime.json": "1537c0f3bfbfb3eec888d674e290f14eb9df56e9f816220210a8b7298eaeeb44"
     },
-    "sotFingerprint": "951e43e97a29"
+    "sotFingerprint": "e1b9e0e2ab03"
   },
   "runtime": [
     {

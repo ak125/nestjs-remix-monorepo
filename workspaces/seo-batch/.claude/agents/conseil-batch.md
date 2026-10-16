@@ -40,14 +40,21 @@ polluées, **non-RAG**) restent intacts — ils ne violent pas ADR-031/046. Le s
 ## Remplacement (méthode canon)
 
 - **Successeur** : skill **`seo-content-loop`** (boucle gouvernée `RAW → WIKI → consumer`, NO-RAG).
-  La vérité contenu vient du **WIKI** (sourcée, lintée, validée humainement), **jamais** du RAG.
+  La vérité contenu vient du **WIKI** (sourcée, lintée, promotion décidée par
+  `_scripts/promotion_decision.py`, ADR-114), **jamais** du RAG. La relecture humaine porte
+  sur les cas renvoyés par le décideur ; une fiche déjà promue qui change de forme exige
+  la validation owner (ADR-107 D5).
 
-> **Le successeur WIKI→R3 existe mais est DARK — travail owner-séquencé :**
-> `backend/src/modules/seo-projection/projection-r3.mapper.ts` existe (P2-R3), mais (a) il écrit
-> `__seo_content_blocks` / `__seo_entity_facts` — **pas** `__seo_gamme_conseil` ; (b) le chemin servi
-> R3 ne lit **pas** la sortie de projection (`servedBodySource` figé `'legacy'`) ; (c) flags de lecture
-> OFF (`SEO_PROJECTION_READ_V1=false`, allowlist vide) ; (d) l'étape de rendu md→HTML (P2-R3-E) n'existe
-> pas. Donc rien du WIKI ne sert encore une page R3. Brancher la projection R3 = travail gouverné à part.
+> **Le successeur WIKI→R3 est câblé — activation owner-séquencée :**
+> `R3ProjectionDecisionService` sélectionne la projection si `SEO_PROJECTION_READ_V1` est vrai,
+> si `SEO_PROJECTION_READ_CANARY` contient `R3_CONSEILS@gamme:<alias>` et si le reader et le
+> mapper la déclarent prête. `R3GuideService` rend alors les sections projetées (Markdown→HTML),
+> avec `servedBodySource: 'projection'`. Sinon, il sert le legacy avec une `fallbackReason`
+> typée (`MASTER_OFF`, `NOT_ALLOWLISTED`, projection absente/invalide ou erreur du reader).
+> Le mapper transforme les blocs lus ; il n'écrit pas dans `__seo_gamme_conseil`.
+> Au 2026-10-15, la configuration de déploiement indique `MASTER_OFF` en PROD ; les éventuels
+> overrides runtime n'ont pas été vérifiés. L'activation de `filtre-a-huile` reste conditionnée
+> par ADR-107 D4/D5, puis ADR-111 : la présence du lecteur n'autorise pas le canary.
 >
 > Le fichier est **conservé** (non supprimé) pour ne pas casser les références (`agentic-planner.md`,
 > `AGENTS.md`, procédures) : elles pointent désormais vers un agent inerte qui **STOP + redirige**.

@@ -413,7 +413,7 @@
         "backend/src/modules/marketing/templates"
       ],
       "files_count": 29,
-      "loc_total": 7008,
+      "loc_total": 7019,
       "has_barrel": false
     },
     "mcp-validation": {
@@ -552,7 +552,7 @@
         "packages/design-tokens/tests"
       ],
       "files_count": 13,
-      "loc_total": 2005,
+      "loc_total": 2007,
       "has_barrel": true
     },
     "pkg-domain-commerce": {
@@ -703,7 +703,7 @@
         "scripts/wiki-generators/__tests__"
       ],
       "files_count": 206,
-      "loc_total": 46876,
+      "loc_total": 47009,
       "has_barrel": true
     },
     "search": {
@@ -879,7 +879,7 @@
         "backend/src/modules/supplier-truth/domain"
       ],
       "files_count": 51,
-      "loc_total": 6785,
+      "loc_total": 6906,
       "has_barrel": false
     },
     "suppliers": {
@@ -1028,7 +1028,7 @@
         "backend/src/workers/types"
       ],
       "files_count": 20,
-      "loc_total": 5136,
+      "loc_total": 5155,
       "has_barrel": false
     }
   },
