@@ -877,7 +877,7 @@
         "backend/src/modules/supplier-truth/domain"
       ],
       "files_count": 51,
-      "loc_total": 6785,
+      "loc_total": 6906,
       "has_barrel": false
     },
     "suppliers": {
@@ -1026,7 +1026,7 @@
         "backend/src/workers/types"
       ],
       "files_count": 20,
-      "loc_total": 5136,
+      "loc_total": 5155,
       "has_barrel": false
     }
   },
