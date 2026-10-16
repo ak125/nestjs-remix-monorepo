@@ -1,0 +1,52 @@
+name: Marketing isolated image (build only)
+
+# Bootstrap without merging into main. Publishing this dedicated branch is
+# an explicit operator action. Ordinary candidate pushes do not start this job.
+on:
+  push:
+    branches: [codex/marketing-image-isolated]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: marketing-image-isolated
+  cancel-in-progress: false
+
+jobs:
+  image:
+    if: github.repository == 'ak125/nestjs-remix-monorepo' && github.ref == 'refs/heads/codex/marketing-image-isolated'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      ISOLATED_IMAGE_OUTPUT: ${{ runner.temp }}/marketing-image-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: true
+          persist-credentials: false
+      - name: Verify build safeguards offline
+        run: python3 scripts/ci/test_isolated_image.py
+      - name: Build the complete existing Dockerfile and validate its export
+        run: python3 scripts/ci/isolated_image.py
+      - name: Preserve build evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: marketing-image-evidence-${{ github.sha }}-${{ github.run_attempt }}
+          path: |
+            ${{ env.ISOLATED_IMAGE_OUTPUT }}/evidence/*.json
+            ${{ env.ISOLATED_IMAGE_OUTPUT }}/evidence/*.log
+            ${{ env.ISOLATED_IMAGE_OUTPUT }}/evidence/*.sha256
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Preserve successful image without loading or pushing it
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: marketing-image-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ env.ISOLATED_IMAGE_OUTPUT }}/evidence/image.tar
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 3
