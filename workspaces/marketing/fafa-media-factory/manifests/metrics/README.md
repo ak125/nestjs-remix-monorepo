@@ -1,6 +1,9 @@
 # Metrics — CSV V1 only
 
 > **MVP V1 — outil de saisie/export temporaire, PAS source de vérité.**
+>
+> `video-performance.csv` est ignoré par git (`*.csv`, `.gitignore:211`) : absent du dépôt, il reste local à la machine de
+> l'owner. Ce README en décrit seulement les colonnes.
 
 ## Pourquoi CSV en V1
 
@@ -36,7 +39,18 @@ Pour V1, ce CSV est suffisant. Pour V2+ (volume scalé), migration obligatoire v
 
 ## Workflow
 
-1. Owner publie vidéo manuellement avec UTM (`utm_source=fafa&utm_medium=video&utm_campaign=<video_id>`)
+1. Owner publie vidéo manuellement avec UTM (`utm_source=<plateforme>&utm_medium=social&utm_campaign=<video_id>`), où
+   `<plateforme>` s'écrit sans suffixe : `tiktok`, `instagram`, `youtube`, `facebook`.
+   - `utm_source` (canal) et `utm_medium` suivent `UTMBuilderService`
+     (`backend/src/modules/marketing/services/utm-builder.service.ts:46-51`) ; l'ancien `utm_source=fafa` ne disait pas la
+     plateforme. `tiktok` n'est pas dans `SocialChannel` (`backend/src/modules/marketing/interfaces/marketing-hub.interfaces.ts:5`) :
+     le backend ne produit pas ce lien.
+   - L'attribution d'atterrissage du site ne lit que `utm_source` et `utm_medium`
+     (`backend/src/modules/analytics/controllers/landing-attribution.controller.ts:59-68`). Avec `utm_medium=social`, la visite
+     est classée `social` quel que soit le referer (`backend/src/modules/analytics/landing-source.classifier.ts:71`) ; l'ancienne
+     valeur `video` la classait selon le referer (`social`, `organic` ou `campaign`, l.72-79).
+   - `utm_campaign` n'y est pas capté : le détail par vidéo ne vient que de GA4. La convention de campagne commune relève du lot
+     L04 du dossier `workspaces/marketing/README.md`.
 2. J+7 minimum : owner remplit ligne CSV depuis :
    - Plateforme native (vues, retention)
    - GA4 (clics, sessions, ATC via UTM)

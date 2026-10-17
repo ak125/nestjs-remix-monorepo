@@ -9,7 +9,8 @@ description: Use when choosing the right Remotion composition (NeChangePasTropVi
 
 ## Quand invoquer
 
-- Après statut APPROVED + prompts générés (`fafa-video-prompt-builder` complété)
+- Après statut APPROVED et voix déposée (seul asset lu en V1) ; les prompts b-roll ou avatar de `fafa-video-prompt-builder` ne
+  sont pas requis
 - Pour smoke render (PR #2 livre les 3 compositions)
 - Pour itérer un render qui a FAIL render_approval
 
