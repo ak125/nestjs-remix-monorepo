@@ -32,23 +32,21 @@ describe("hypothesis ranks", () => {
   });
 
   it("shows no number per cause: no score, no bar, no sub-score (ADR-035 D3)", () => {
+    // The engine still serves the sub-scores; the frontend type no longer
+    // declares them, and the card must not show them.
+    const served = {
+      ...hypothesis("a", 73),
+      scoring_breakdown: {
+        signal_match: 31,
+        vehicle_fit: 12,
+        lifecycle_fit: 9,
+        maintenance_history: 8,
+        plausibility: 7,
+        context: 6,
+      },
+    };
     const { container } = render(
-      <ResultHypotheses
-        hypotheses={[
-          {
-            ...hypothesis("a", 73),
-            scoring_breakdown: {
-              signal_match: 31,
-              vehicle_fit: 12,
-              lifecycle_fit: 9,
-              maintenance_history: 8,
-              plausibility: 7,
-              context: 6,
-            },
-          },
-          hypothesis("b", 41),
-        ]}
-      />,
+      <ResultHypotheses hypotheses={[served, hypothesis("b", 41)]} />,
     );
     // The first cause opens by default: its details render too.
     expect(screen.getByText("Cause a")).toBeTruthy();

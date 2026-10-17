@@ -29,6 +29,10 @@ import { RiskSafetyEngine } from './engines/risk-safety.engine';
 import { CatalogOrientationEngine } from './engines/catalog-orientation.engine';
 import { MaintenanceIntelligenceEngine } from './engines/maintenance-intelligence.engine';
 import { KgShadowService } from './services/kg-shadow.service';
+import {
+  DiagnosticProvenanceService,
+  type RankedWithProvenance,
+} from './services/diagnostic-provenance.service';
 import { CAUSE_GAMME_MAP } from './constants/gamme-map.constants';
 
 // Wording shown to the user; same labels as the wizard's usage step
@@ -56,6 +60,7 @@ export class DiagnosticEngineOrchestrator {
     private readonly catalogEngine: CatalogOrientationEngine,
     private readonly maintenanceEngine: MaintenanceIntelligenceEngine,
     private readonly kgShadow: KgShadowService, // PR-E — fire-and-forget shadow
+    private readonly provenance: DiagnosticProvenanceService,
   ) {}
 
   /**
@@ -207,9 +212,13 @@ export class DiagnosticEngineOrchestrator {
     }
 
     // ── 4. Hypothesis Scoring Engine (multi-couches) ───
-    const hypotheses = this.scoringEngine.score(
+    // The provenance service returns THE ranking of this analysis: the
+    // reference one, or under PRIMARY the one weighed by diagnostic_safe.
+    // Everything below (risk, catalogue, confidence, KG shadow) reads it; the
+    // risk level depends on the set of causes, which no ranking changes.
+    const { hypotheses, provenance } = await this.provenance.rank(
       scoredLinks,
-      input.vehicle_context,
+      (links) => this.scoringEngine.score(links, input.vehicle_context),
     );
 
     if (!hypotheses.length) {
@@ -293,6 +302,7 @@ export class DiagnosticEngineOrchestrator {
       risk,
       catalog,
       maintenance,
+      provenance,
     );
 
     evidencePack.evidence_pack.factual_inputs_missing.push(...degraded);
@@ -438,6 +448,7 @@ export class DiagnosticEngineOrchestrator {
     risk: ReturnType<RiskSafetyEngine['assess']>,
     catalog: ReturnType<CatalogOrientationEngine['evaluate']>,
     maintenance: Awaited<ReturnType<MaintenanceIntelligenceEngine['assess']>>,
+    provenance: RankedWithProvenance<unknown>['provenance'],
   ): EvidencePack {
     // ── Factual inputs ─────────────────────────────────
     const confirmed: string[] = [];
@@ -528,6 +539,12 @@ export class DiagnosticEngineOrchestrator {
     };
 
     // ── Map hypotheses to contract format ──────────────
+    // The WIKI provenance of each hypothesis, when it was read (see
+    // DiagnosticProvenanceService): the same object for the pack and the cards.
+    const provenanceOf = (hypothesisId: string) => {
+      const p = provenance?.byHypothesis.get(hypothesisId);
+      return p ? { provenance: p } : {};
+    };
     const contractHypotheses = hypotheses.map((h) => ({
       hypothesis_id: h.hypothesis_id,
       label: h.label,
@@ -549,6 +566,7 @@ export class DiagnosticEngineOrchestrator {
         plausibility: h.plausibility_score,
         context: h.context_score,
       },
+      ...provenanceOf(h.hypothesis_id),
     }));
 
     // ── Claims ─────────────────────────────────────────
@@ -606,6 +624,7 @@ export class DiagnosticEngineOrchestrator {
         maintenance_recommendations: maintenance.recommendations,
         preventive_schedule: maintenance.preventive_schedule,
         allowed_claims: allowedClaims,
+        ...(provenance ? { provenance_summary: provenance.summary } : {}),
         ui_block_inputs: {
           VehicleContextCard: input.vehicle_context,
           SignalSummary: {

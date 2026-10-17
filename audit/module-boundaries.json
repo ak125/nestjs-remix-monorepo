@@ -187,7 +187,7 @@
         "backend/src/modules/config/validators"
       ],
       "files_count": 103,
-      "loc_total": 25082,
+      "loc_total": 25102,
       "has_barrel": true
     },
     "customers": {
@@ -239,8 +239,8 @@
         "backend/src/modules/diagnostic-engine/services",
         "backend/src/modules/diagnostic-engine/types"
       ],
-      "files_count": 71,
-      "loc_total": 15145,
+      "files_count": 76,
+      "loc_total": 16670,
       "has_barrel": false
     },
     "errors": {
@@ -261,7 +261,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115461,
+      "loc_total": 115470,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -344,7 +344,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 599,
-      "loc_total": 114891,
+      "loc_total": 114928,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -413,7 +413,7 @@
         "backend/src/modules/marketing/templates"
       ],
       "files_count": 29,
-      "loc_total": 7009,
+      "loc_total": 7019,
       "has_barrel": false
     },
     "mcp-validation": {
@@ -488,8 +488,8 @@
       "dirs": [
         "backend/src/modules/observability"
       ],
-      "files_count": 9,
-      "loc_total": 551,
+      "files_count": 12,
+      "loc_total": 757,
       "has_barrel": false
     },
     "orders": {
@@ -552,7 +552,7 @@
         "packages/design-tokens/tests"
       ],
       "files_count": 13,
-      "loc_total": 2005,
+      "loc_total": 2007,
       "has_barrel": true
     },
     "pkg-domain-commerce": {
@@ -623,8 +623,8 @@
         "backend/src/modules/pricing/utils",
         "backend/src/modules/pricing/utils/__tests__"
       ],
-      "files_count": 31,
-      "loc_total": 7268,
+      "files_count": 37,
+      "loc_total": 9480,
       "has_barrel": false
     },
     "products": {
@@ -702,8 +702,8 @@
         "scripts/wiki-generators",
         "scripts/wiki-generators/__tests__"
       ],
-      "files_count": 205,
-      "loc_total": 46208,
+      "files_count": 206,
+      "loc_total": 47108,
       "has_barrel": true
     },
     "search": {
@@ -879,7 +879,7 @@
         "backend/src/modules/supplier-truth/domain"
       ],
       "files_count": 51,
-      "loc_total": 6785,
+      "loc_total": 6906,
       "has_barrel": false
     },
     "suppliers": {
@@ -959,8 +959,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 301,
-      "loc_total": 57364,
+      "files_count": 303,
+      "loc_total": 57643,
       "has_barrel": true
     },
     "upload": {
@@ -1027,8 +1027,8 @@
         "backend/src/workers/services",
         "backend/src/workers/types"
       ],
-      "files_count": 18,
-      "loc_total": 4026,
+      "files_count": 20,
+      "loc_total": 5155,
       "has_barrel": false
     }
   },
@@ -1691,7 +1691,7 @@
     {
       "from": "diagnostic-engine",
       "to": "config",
-      "count": 12
+      "count": 19
     },
     {
       "from": "diagnostic-engine",
@@ -1887,6 +1887,11 @@
       "from": "payments",
       "to": "orders",
       "count": 2
+    },
+    {
+      "from": "pricing",
+      "to": "backend-core",
+      "count": 1
     },
     {
       "from": "products",
@@ -2192,6 +2197,11 @@
       "from": "workers",
       "to": "media-factory",
       "count": 9
+    },
+    {
+      "from": "workers",
+      "to": "pricing",
+      "count": 4
     },
     {
       "from": "workers",

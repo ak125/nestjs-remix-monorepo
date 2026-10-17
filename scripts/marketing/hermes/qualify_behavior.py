@@ -3,8 +3,9 @@
 Run explicitly with Hermes' installed Python: script HERMES_SOURCE OUTPUT_DIR CASE.
 Uses the current profile's provider/model, high reasoning, no fallback and only
 the marketing toolset. Each case creates a fresh native session, at most four
-iterations by default. HERMES_MARKETING_TEST_ITERATIONS can raise this to eight,
-or sixteen for a1_campaign (720 seconds instead of 240). The A1 case executes
+iterations by default, or fewer when the profile sets a lower budget.
+HERMES_MARKETING_TEST_ITERATIONS may request at most eight iterations, never
+above the profile's max_turns. The A1 case executes
 candidate commands with synthetic data. a1_finalize reuses those records with
 a 480-second limit and at most eight iterations. This is not a Telegram test.
 """
@@ -28,13 +29,25 @@ CASES = {
 }
 
 
+def qualification_iterations(profile_limit):
+    """Respect the profile budget and the eight-turn qualification ceiling."""
+    if type(profile_limit) is not int or profile_limit < 1:
+        raise ValueError('agent.max_turns must be a positive integer')
+    ceiling = min(8, profile_limit)
+    iterations = int(os.environ.get('HERMES_MARKETING_TEST_ITERATIONS', str(min(4, ceiling))))
+    if not 1 <= iterations <= ceiling:
+        raise ValueError(f'Qualification iterations must be between 1 and {ceiling}')
+    return iterations
+
+
 def main():
     source, destination, case = sys.argv[1:]
-    iterations = int(os.environ.get("HERMES_MARKETING_TEST_ITERATIONS", "4"))
-    assert 1 <= iterations <= (16 if case == "a1_campaign" else 8)
-    assert case in CASES
-    assert os.environ.get("HERMES_HOME") == "/home/hermes/.hermes/profiles/orchestration-automecanik-pilot"
-    assert os.environ.get("HERMES_YOLO_MODE", "").lower() not in {"1", "true"}
+    if case not in CASES:
+        raise ValueError("Unknown qualification case")
+    if os.environ.get("HERMES_HOME") != "/home/hermes/.hermes/profiles/orchestration-automecanik-pilot":
+        raise ValueError("Qualification requires the AutoMecanik pilot profile")
+    if os.environ.get("HERMES_YOLO_MODE", "").lower() in {"1", "true"}:
+        raise ValueError("Qualification cannot run in YOLO mode")
     sys.path.insert(0, source)
     # Match the native entry point: select the committed dependency environment
     # before importing configuration or provider modules.
@@ -48,8 +61,10 @@ def main():
     from run_agent import AIAgent
 
     cfg = load_config()
+    iterations = qualification_iterations(cfg['agent']['max_turns'])
     choice = _resolve_model_and_provider(cfg, None, None)
-    assert choice.model == "gpt-6-astra", "Configured model changed; requalify the test scope"
+    if choice.model != "gpt-6-astra":
+        raise ValueError("Configured model changed; requalify the test scope")
     reasoning = resolve_reasoning_config(cfg, choice.model)
     discover_plugins()
     disabled = cfg["agent"]["disabled_toolsets"]
@@ -58,16 +73,19 @@ def main():
     # The new executor is present only after its separately verified activation.
     if any(item["function"]["name"] == "automecanik_marketing_dev" for item in definitions):
         allowed.add("automecanik_marketing_dev")
-    if case.startswith("a1_"):
-        assert "automecanik_marketing_dev" in allowed
-    assert {item["function"]["name"] for item in definitions} == allowed
+    if case.startswith("a1_") and "automecanik_marketing_dev" not in allowed:
+        raise ValueError("A1 qualification requires the candidate executor")
+    if {item["function"]["name"] for item in definitions} != allowed:
+        raise ValueError("Qualification toolset changed; requalify the test scope")
     runtime, fallback = resolve_runtime_with_fallback(cfg, requested=choice.provider, target_model=choice.model,
                                                      explicit_base_url=choice.base_url, explicit_api_key=choice.api_key)
-    assert fallback is None, "Primary provider unavailable; no alternate model authorized by this test"
+    if fallback is not None:
+        raise ValueError("Primary provider unavailable; no alternate model authorized by this test")
     output = Path(destination)
     output.mkdir(parents=True, exist_ok=True)
     target = output / (case + ".json")
-    assert not target.exists(), "Preserve earlier evidence; choose a new output directory for another run"
+    if target.exists():
+        raise FileExistsError("Preserve earlier evidence; choose a new output directory for another run")
     prompt = CASES[case].replace("recette-reactivation-20261003.md", "recette-" + output.name + ".md")
     database = _create_session_db_for_oneshot()
     agent = None
@@ -91,7 +109,8 @@ def main():
         record["session_id"] = agent.session_id
         record["tool_calls"] = [call for message in result.get("messages", []) for call in (message.get("tool_calls") or [])]
         record["tool_results"] = [message.get("content") for message in result.get("messages", []) if message.get("role") == "tool"]
-        assert all(call["function"]["name"] in allowed for call in record["tool_calls"])
+        if any(call["function"]["name"] not in allowed for call in record["tool_calls"]):
+            raise RuntimeError("Qualification returned an out-of-scope tool call")
         if not record.get("completed"):
             raise RuntimeError("Case did not complete; retain the record as partial evidence")
     except (Exception, QualificationDeadline, KeyboardInterrupt) as error:
