@@ -1,6 +1,6 @@
 // @vitest-environment node
+import { type RouteConfigEntry } from "@react-router/dev/routes";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { RouteConfigEntry } from "@react-router/dev/routes";
 
 function flatten(
   routes: RouteConfigEntry[],
@@ -48,6 +48,14 @@ describe("Command Center build routing", () => {
         (route) =>
           route.id?.startsWith("routes/admin.") &&
           !route.id.startsWith("routes/admin.video-hub") &&
+          ![
+            "routes/admin.marketing",
+            "routes/admin.marketing._index",
+            "routes/admin.marketing.backlinks",
+            "routes/admin.marketing.briefs",
+            "routes/admin.marketing.content-roadmap",
+            "routes/admin.marketing.social-hub.posts",
+          ].includes(route.id) &&
           route.id !== "routes/admin.command-center",
       ),
     ).toEqual([]);

@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { MarketingHubDataService } from './marketing-hub-data.service';
+import { UTMBuilderService } from './utm-builder.service';
 import type {
   SocialPost,
   SocialChannel,
@@ -17,7 +18,10 @@ import type {
 export class PublishQueueService {
   private readonly logger = new Logger(PublishQueueService.name);
 
-  constructor(private readonly hubData: MarketingHubDataService) {}
+  constructor(
+    private readonly hubData: MarketingHubDataService,
+    private readonly utmBuilder: UTMBuilderService,
+  ) {}
 
   /**
    * Get posts ready for review (gate_passed).
@@ -112,7 +116,12 @@ export class PublishQueueService {
             channelData.tags ||
             []) as string[],
           link: post.source_url
-            ? `${post.source_url}?utm_source=${post.utm_source}&utm_medium=${post.utm_medium}&utm_campaign=${post.utm_campaign}${post.utm_content ? `&utm_content=${post.utm_content}` : ''}`
+            ? this.utmBuilder.appendParams(post.source_url, {
+                utm_source: channel,
+                utm_medium: 'social',
+                utm_campaign: post.utm_campaign,
+                utm_content: post.utm_content ?? undefined,
+              })
             : '',
           format: String(channelData.format || 'post'),
           visual_brief: String(
@@ -148,12 +157,12 @@ export class PublishQueueService {
     if (!match) return '';
     const year = parseInt(match[1]);
     const week = parseInt(match[2]);
-    const jan4 = new Date(year, 0, 4);
-    const dayDiff = jan4.getDay() || 7;
+    const jan4 = new Date(Date.UTC(year, 0, 4));
+    const dayDiff = jan4.getUTCDay() || 7;
     const monday = new Date(jan4);
-    monday.setDate(jan4.getDate() - dayDiff + 1 + (week - 1) * 7);
+    monday.setUTCDate(jan4.getUTCDate() - dayDiff + 1 + (week - 1) * 7);
     const target = new Date(monday);
-    target.setDate(monday.getDate() + dayOfWeek - 1);
+    target.setUTCDate(monday.getUTCDate() + dayOfWeek - 1);
     return target.toISOString().split('T')[0];
   }
 }

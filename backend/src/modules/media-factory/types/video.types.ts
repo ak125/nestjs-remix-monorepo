@@ -143,6 +143,16 @@ export interface VideoGateOutput {
 // Video Production (full record)
 // ─────────────────────────────────────────────────────────────
 
+/** Narrative fields are validated by the renderer's composition schema. */
+export interface VideoScenario {
+  schemaVersion: 1;
+  compositionId:
+    | 'NeChangePasTropVite'
+    | 'SymptomeTroisCauses'
+    | 'PieceExpliquee';
+  props: Record<string, unknown>;
+}
+
 export interface VideoProduction {
   id: number;
   briefId: string;
@@ -152,6 +162,7 @@ export interface VideoProduction {
   pgId?: number;
   status: VideoStatus;
   templateId?: string;
+  scenario: VideoScenario | null;
   knowledgeContract: Record<string, unknown> | null;
   claimTable: VideoClaimEntry[] | null;
   evidencePack: VideoEvidenceEntry[] | null;

@@ -7,7 +7,13 @@
  * Called from: POST /api/admin/video/productions/:briefId/derive
  */
 
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  BadRequestException,
+  ConflictException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { VideoDataService } from './video-data.service';
@@ -56,8 +62,16 @@ export class DerivativeEngineService extends SupabaseBaseService {
   async deriveFromMaster(
     masterBriefId: string,
     policyOverride?: Partial<DerivativePolicy>,
+    expectedUpdatedAt?: string,
   ): Promise<DeriveResult> {
+    if (
+      typeof expectedUpdatedAt !== 'string' ||
+      !Number.isFinite(Date.parse(expectedUpdatedAt))
+    )
+      throw new BadRequestException('Expected master version required');
     const master = await this.dataService.getProduction(masterBriefId);
+    if (master.updatedAt !== expectedUpdatedAt)
+      throw new ConflictException('Master revision conflict');
 
     if (master.contentRole !== 'master_truth') {
       throw new BadRequestException(
@@ -79,6 +93,12 @@ export class DerivativeEngineService extends SupabaseBaseService {
       ...storedPolicy,
       ...policyOverride,
     };
+    if (
+      !Number.isInteger(policy.maxDerivatives) ||
+      policy.maxDerivatives < 1 ||
+      policy.maxDerivatives > 100
+    )
+      throw new BadRequestException('Invalid derivative limit');
 
     // Filter eligible claims
     let eligibleClaims = master.claimTable.filter(
@@ -92,10 +112,37 @@ export class DerivativeEngineService extends SupabaseBaseService {
     }
 
     // Check existing derivatives to avoid duplicates
-    const { data: existing } = await this.client
+    const { data: existing, error: existingError } = await this.client
       .from('__video_productions')
       .select('derivative_index')
       .eq('parent_brief_id', masterBriefId);
+    if (existingError)
+      throw new ServiceUnavailableException(
+        'Unable to read existing derivatives',
+      );
+
+    // Accept the requested source snapshot before any child insert. Later master
+    // edits do not rewrite these pinned child snapshots; creation is not a batch transaction.
+    const { data: accepted, error: acceptError } = await this.client
+      .from('__video_productions')
+      .update({
+        derivative_policy: policy,
+        updated_at: new Date(
+          Math.max(Date.now(), Date.parse(expectedUpdatedAt) + 1),
+        ).toISOString(),
+      })
+      .eq('brief_id', masterBriefId)
+      .eq('id', master.id)
+      .eq('status', master.status)
+      .eq('updated_at', expectedUpdatedAt)
+      .select('id')
+      .maybeSingle();
+    if (acceptError)
+      throw new ServiceUnavailableException(
+        'Unable to persist derivative policy',
+      );
+    if (!accepted)
+      throw new ConflictException('Master changed before derivation');
 
     const existingIndices = new Set(
       (existing ?? []).map(
@@ -143,7 +190,14 @@ export class DerivativeEngineService extends SupabaseBaseService {
           claim_table: [claim],
           evidence_pack: master.evidencePack ?? [],
           disclaimer_plan: master.disclaimerPlan ?? { disclaimers: [] },
-          knowledge_contract: master.knowledgeContract ?? {},
+          knowledge_contract: {
+            ...master.knowledgeContract,
+            derivativeSource: {
+              briefId: masterBriefId,
+              productionVersion: expectedUpdatedAt,
+              claimId,
+            },
+          },
         })
         .select()
         .single();
@@ -158,15 +212,6 @@ export class DerivativeEngineService extends SupabaseBaseService {
 
       derivatives.push({ briefId, derivativeIndex, claimId, claimText });
     }
-
-    // Update master's derivative_policy with the resolved policy
-    await this.client
-      .from('__video_productions')
-      .update({
-        derivative_policy: policy as unknown as Record<string, unknown>,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('brief_id', masterBriefId);
 
     this.logger.log(
       `[DERIVE] ${masterBriefId}: created ${derivatives.length} derivatives, skipped ${skipped}`,

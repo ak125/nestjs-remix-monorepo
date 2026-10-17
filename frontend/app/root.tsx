@@ -400,7 +400,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
             bloquant. charSet/viewport restent en tête (parse encoding). Ne pas
             revenir à l'ordre RR par défaut Meta→Links.
             Ref: audit/lcp-cwv-mobile-3-groups-root-cause-2026-07-14.md §3A */}
-        <Links />
+        {/* Keep the loader nonce on both SSR and hydration: ServerRouter's
+            default nonce is not carried into HydratedRouter's context. */}
+        <Links nonce={nonce} />
         <Meta />
         {/* Runtime ENV exposed to the browser. Must run BEFORE entry.client.tsx
             so Sentry can pick up the DSN at hydration. JSON.stringify is safe

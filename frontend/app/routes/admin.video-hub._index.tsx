@@ -1,4 +1,3 @@
-import { type LoaderFunctionArgs, data, useLoaderData, useSearchParams } from "react-router";
 import {
   Film,
   CheckCircle,
@@ -15,10 +14,17 @@ import {
   ChevronRight,
   Shield,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  data,
+  useLoaderData,
+  useSearchParams,
+} from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { videoOutcomeLabel } from "~/utils/video-execution";
 
 // ── Interfaces ──
 
@@ -28,6 +34,7 @@ interface DashboardStats {
 }
 
 interface ExecutionStats {
+  byOutcome?: Record<string, number>;
   total: number;
   byStatus: Record<string, number>;
   avgDurationMs: number | null;
@@ -243,7 +250,7 @@ export default function VideoHubDashboard() {
         <h2 className="text-2xl font-bold text-gray-900">Video Dashboard</h2>
         <Card>
           <CardContent className="p-8 text-center text-gray-500">
-            Aucune production video pour le moment.
+            Statistiques vidéo indisponibles.
           </CardContent>
         </Card>
       </div>
@@ -359,6 +366,11 @@ export default function VideoHubDashboard() {
       </div>
 
       {/* Execution Stats Card */}
+      {!executionStats && (
+        <p role="status" className="text-sm text-amber-700">
+          Statistiques d’exécution indisponibles.
+        </p>
+      )}
       {executionStats && (
         <Card>
           <CardHeader>
@@ -372,7 +384,7 @@ export default function VideoHubDashboard() {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2 mb-3">
-              {Object.entries(executionStats.byStatus).map(
+              {Object.entries(executionStats.byOutcome ?? {}).map(
                 ([status, count]) => (
                   <Badge
                     key={status}
@@ -380,7 +392,7 @@ export default function VideoHubDashboard() {
                       EXEC_STATUS_COLORS[status] ?? "bg-gray-100 text-gray-700"
                     }
                   >
-                    {status}: {count}
+                    {videoOutcomeLabel(status)}: {count}
                   </Badge>
                 ),
               )}
@@ -389,7 +401,8 @@ export default function VideoHubDashboard() {
               )}
             </div>
             <div className="text-sm text-gray-600">
-              Duree moyenne : {formatDuration(executionStats.avgDurationMs)}
+              Les rendus déclarés restent à vérifier avant livraison. Duree
+              moyenne : {formatDuration(executionStats.avgDurationMs)}
             </div>
           </CardContent>
         </Card>

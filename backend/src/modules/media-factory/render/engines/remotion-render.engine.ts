@@ -12,6 +12,7 @@ import type { IRenderEngine } from './render-engine.interface';
 import { RenderErrorCode } from '../types/render.types';
 import type { RenderRequest, RenderResult } from '../types/render.types';
 import { RenderEngineUnavailableError } from '../types/canary.types';
+import { resolveTemplate } from '../templates/template-registry';
 
 export class RemotionRenderEngine implements IRenderEngine {
   readonly name = 'remotion';
@@ -31,6 +32,31 @@ export class RemotionRenderEngine implements IRenderEngine {
 
     if (!baseUrl) {
       throw new RenderEngineUnavailableError(this.name);
+    }
+
+    let template: ReturnType<typeof resolveTemplate>;
+    try {
+      template = resolveTemplate(request.templateId);
+      if (
+        template.compositionId !== request.resolvedCompositionId ||
+        !template.supportedVideoTypes.some((type) => type === request.videoType)
+      ) {
+        throw new Error(
+          'Resolved composition or video type does not match template',
+        );
+      }
+    } catch (error) {
+      return {
+        status: 'failed',
+        engineName: this.name,
+        engineVersion: this.version,
+        durationMs: Date.now() - start,
+        outputPath: null,
+        metadata: null,
+        errorMessage: (error as Error).message,
+        errorCode: RenderErrorCode.RENDER_PROCESS_FAILED,
+        retryable: false,
+      };
     }
 
     const renderUrl = baseUrl.endsWith('/render')
@@ -57,18 +83,24 @@ export class RemotionRenderEngine implements IRenderEngine {
           videoType: request.videoType,
           vertical: request.vertical,
           templateId: request.templateId ?? null,
-          composition: request.resolvedCompositionId ?? 'TestCard',
+          composition: template.compositionId,
           compositionProps: request.compositionProps ?? null,
           // P12b: Forward resolution and fps to renderer
-          resolution: request.compositionProps?.resolution ?? undefined,
-          fps: request.compositionProps?.fps ?? undefined,
+          resolution:
+            request.compositionProps?.resolution ?? template.defaultResolution,
+          fps: request.compositionProps?.fps ?? 30,
         }),
       });
 
       clearTimeout(timeoutId);
 
       // Parse response (works for both 200 and 4xx/5xx with JSON body)
-      const body = (await response.json()) as {
+      const rawBody: unknown = await response.json();
+      const body = (
+        rawBody && typeof rawBody === 'object' && !Array.isArray(rawBody)
+          ? rawBody
+          : {}
+      ) as {
         schemaVersion?: string;
         status?: string;
         outputPath?: string | null;
@@ -79,7 +111,10 @@ export class RemotionRenderEngine implements IRenderEngine {
       };
 
       const durationMs = Date.now() - start;
-      const outputPath = body.outputPath ?? null;
+      const outputPath =
+        typeof body.outputPath === 'string' && body.outputPath.trim()
+          ? body.outputPath
+          : null;
       const renderServiceDurationMs = body.durationMs ?? 0;
 
       // Map service error codes to backend error codes
@@ -100,7 +135,10 @@ export class RemotionRenderEngine implements IRenderEngine {
       }
 
       // Rule 3: No output = no success
-      if (body.status === 'success' && !outputPath) {
+      if (
+        body.status !== 'failed' &&
+        (body.status !== 'success' || !outputPath)
+      ) {
         return {
           status: 'failed',
           engineName: this.name,
@@ -112,13 +150,13 @@ export class RemotionRenderEngine implements IRenderEngine {
             canary: true,
             renderServiceDurationMs,
           },
-          errorMessage: 'Engine returned success but no output file',
+          errorMessage: 'Engine returned an invalid status or no output file',
           errorCode: RenderErrorCode.RENDER_OUTPUT_INVALID,
           retryable: true,
         };
       }
 
-      if (body.status === 'failed') {
+      if (!response.ok || body.status === 'failed') {
         return {
           status: 'failed',
           engineName: this.name,

@@ -1,5 +1,16 @@
 import { Megaphone, BarChart3, Link2, Map, Share2 } from "lucide-react";
-import { Outlet, Link, useLocation } from "react-router";
+import {
+  Outlet,
+  Link,
+  useLocation,
+  type LoaderFunctionArgs,
+} from "react-router";
+import { requireAdmin } from "~/auth/unified.server";
+
+export async function loader({ context }: LoaderFunctionArgs) {
+  await requireAdmin({ context });
+  return null;
+}
 
 export default function MarketingLayout() {
   const location = useLocation();

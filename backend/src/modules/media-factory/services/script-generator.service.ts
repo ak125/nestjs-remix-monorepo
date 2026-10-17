@@ -1,4 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import {
@@ -17,6 +24,7 @@ export interface GenerateScriptInput {
   vertical: string;
   gammeAlias?: string | null;
   regenerate?: boolean;
+  expectedUpdatedAt?: string;
 }
 
 export interface GenerateScriptResult {
@@ -98,19 +106,20 @@ export class ScriptGeneratorService extends SupabaseBaseService {
   ): Promise<GenerateScriptResult> {
     const { briefId, videoType, vertical, gammeAlias, regenerate } = input;
 
-    // Check if script already exists
-    if (!regenerate) {
-      const { data: existing } = await this.client
-        .from('__video_productions')
-        .select('script_text')
-        .eq('brief_id', briefId)
-        .single();
-
-      if (existing?.script_text) {
-        throw new Error(
-          `Script already exists for ${briefId}. Use regenerate=true to overwrite.`,
-        );
-      }
+    const current = await this.readEditable(briefId, input.expectedUpdatedAt, [
+      'draft',
+      'pending_review',
+    ]);
+    if (!regenerate && current.script_text)
+      throw new ConflictException(
+        'Script already exists; explicit regeneration required',
+      );
+    if (
+      current.video_type !== videoType ||
+      current.vertical !== vertical ||
+      (current.gamme_alias ?? null) !== (gammeAlias ?? null)
+    ) {
+      throw new ConflictException('Generation context changed');
     }
 
     // Load GOVERNED content context (DB __seo_*, NEVER RAG — canon ADR-031/046/086 : RAG=chatbot only).
@@ -142,6 +151,8 @@ export class ScriptGeneratorService extends SupabaseBaseService {
 
     // Extract artefacts from response
     const scriptText = parsed.script_text ?? '';
+    if (typeof scriptText !== 'string' || !scriptText.trim())
+      throw new BadRequestException('Generated narration is empty or invalid');
     const claimTable: VideoClaimEntry[] = (parsed.claim_table ?? []).map(
       (c: Record<string, unknown>, i: number) => ({
         id: c.id ?? `CLM-${String(i + 1).padStart(3, '0')}`,
@@ -178,29 +189,28 @@ export class ScriptGeneratorService extends SupabaseBaseService {
     const estimatedDurationSecs = parsed.estimated_duration_secs ?? 0;
 
     // Save all artefacts to __video_productions
-    const { error } = await this.client
-      .from('__video_productions')
-      .update({
-        script_text: scriptText,
-        script_generated_at: new Date().toISOString(),
-        script_model: `groq/${this.groqModel}`,
-        claim_table: claimTable,
-        evidence_pack: evidencePack,
-        disclaimer_plan: disclaimerPlan,
-        knowledge_contract: knowledgeContract,
-        narrative_style_pack: narrativeStylePack,
-        derivative_policy: derivativePolicy,
-        status: 'pending_review',
-        updated_at: new Date().toISOString(),
-      })
-      .eq('brief_id', briefId);
-
-    if (error) {
-      this.logger.error(
-        `Failed to save script for ${briefId}: ${error.message}`,
-      );
-      throw error;
-    }
+    const updatedAt = new Date(
+      Math.max(Date.now(), Date.parse(current.updated_at) + 1),
+    ).toISOString();
+    await this.persistRevision(briefId, current, {
+      script_text: scriptText,
+      script_generated_at: updatedAt,
+      script_model: `groq/${this.groqModel}`,
+      claim_table: claimTable,
+      evidence_pack: evidencePack,
+      disclaimer_plan: disclaimerPlan,
+      knowledge_contract: knowledgeContract,
+      narrative_style_pack: narrativeStylePack,
+      derivative_policy: derivativePolicy,
+      status: 'pending_review',
+      updated_at: updatedAt,
+      ...(scriptText.trim() !== current.script_text?.trim()
+        ? { master_audio_url: null }
+        : {}),
+      quality_score: null,
+      quality_flags: [],
+      gate_results: null,
+    });
 
     this.logger.log(
       `Script generated for ${briefId}: ${claimTable.length} claims, ${evidencePack.length} evidences, ~${estimatedDurationSecs}s`,
@@ -229,15 +239,49 @@ export class ScriptGeneratorService extends SupabaseBaseService {
       scriptText?: string;
       claimTable?: VideoClaimEntry[];
       disclaimerPlan?: DisclaimerPlan;
+      expectedUpdatedAt?: string;
     },
   ): Promise<{ updatedFields: string[] }> {
+    if (
+      Object.keys(updates).some(
+        (key) =>
+          ![
+            'scriptText',
+            'claimTable',
+            'disclaimerPlan',
+            'expectedUpdatedAt',
+          ].includes(key),
+      ) ||
+      !['scriptText', 'claimTable', 'disclaimerPlan'].some((key) =>
+        Object.hasOwn(updates, key),
+      ) ||
+      (updates.scriptText !== undefined &&
+        (typeof updates.scriptText !== 'string' || !updates.scriptText.trim()))
+    ) {
+      throw new BadRequestException('Invalid script edit');
+    }
+    const current = await this.readEditable(
+      briefId,
+      updates.expectedUpdatedAt,
+      ['draft'],
+    );
+    const updatedAt = new Date(
+      Math.max(Date.now(), Date.parse(current.updated_at) + 1),
+    ).toISOString();
     const dbUpdates: Record<string, unknown> = {
-      updated_at: new Date().toISOString(),
+      updated_at: updatedAt,
+      quality_score: null,
+      quality_flags: [],
+      gate_results: null,
     };
     const updatedFields: string[] = [];
 
     if (updates.scriptText !== undefined) {
       dbUpdates.script_text = updates.scriptText;
+      dbUpdates.script_model = 'manual';
+      dbUpdates.script_generated_at = updatedAt;
+      if (updates.scriptText.trim() !== current.script_text?.trim())
+        dbUpdates.master_audio_url = null;
       updatedFields.push('script_text');
     }
     if (updates.claimTable !== undefined) {
@@ -249,16 +293,55 @@ export class ScriptGeneratorService extends SupabaseBaseService {
       updatedFields.push('disclaimer_plan');
     }
 
-    const { error } = await this.client
-      .from('__video_productions')
-      .update(dbUpdates)
-      .eq('brief_id', briefId);
-
-    if (error) {
-      throw error;
-    }
+    await this.persistRevision(briefId, current, dbUpdates);
 
     return { updatedFields };
+  }
+
+  private async readEditable(
+    briefId: string,
+    expected: string | undefined,
+    statuses: string[],
+  ) {
+    if (typeof expected !== 'string' || !Number.isFinite(Date.parse(expected)))
+      throw new BadRequestException('Expected production version required');
+    const { data, error } = await this.client
+      .from('__video_productions')
+      .select('*')
+      .eq('brief_id', briefId)
+      .maybeSingle();
+    if (error)
+      throw new ServiceUnavailableException('Unable to read script production');
+    if (!data) throw new NotFoundException('Production not found');
+    if (
+      data.id == null ||
+      data.updated_at !== expected ||
+      !statuses.includes(data.status)
+    )
+      throw new ConflictException('Production revision conflict');
+    return data;
+  }
+
+  private async persistRevision(
+    briefId: string,
+    current: { id: number; status: string; updated_at: string },
+    updates: Record<string, unknown>,
+  ) {
+    const { data, error } = await this.client
+      .from('__video_productions')
+      .update(updates)
+      .eq('brief_id', briefId)
+      .eq('id', current.id)
+      .eq('status', current.status)
+      .eq('updated_at', current.updated_at)
+      .select('id')
+      .maybeSingle();
+    if (error)
+      throw new ServiceUnavailableException('Unable to persist script');
+    if (!data)
+      throw new ConflictException(
+        'Production changed during script preparation',
+      );
   }
 
   /**

@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { MarketingHubDataService } from './marketing-hub-data.service';
+import { DomainConflictException } from '@common/exceptions';
 import type {
   SocialPost,
   SocialChannel,
@@ -76,7 +77,11 @@ export class BrandComplianceGateService {
           : 0;
     const qualityScore = (brandScore + complianceScore) / 2;
 
-    await this.hubData.updatePostGates(post.id, summary, qualityScore);
+    if (!(await this.hubData.updatePostGates(post.id, summary, qualityScore))) {
+      throw new DomainConflictException({
+        message: 'Marketing gate was not persisted',
+      });
+    }
 
     this.logger.log(
       `Post ${post.id}: brand=${summary.brand.level} compliance=${summary.compliance.level} score=${qualityScore} approve=${summary.can_approve}`,

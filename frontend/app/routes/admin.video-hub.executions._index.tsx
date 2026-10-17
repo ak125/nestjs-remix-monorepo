@@ -1,12 +1,4 @@
 import {
-  type LoaderFunctionArgs,
-  data,
-  useLoaderData,
-  Link,
-  useSearchParams,
-  Form,
-} from "react-router";
-import {
   Activity,
   Search,
   ChevronLeft,
@@ -15,6 +7,14 @@ import {
   ExternalLink,
   Layers,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  data,
+  useLoaderData,
+  Link,
+  useSearchParams,
+  Form,
+} from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
@@ -27,8 +27,10 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { videoOutcomeLabel } from "~/utils/video-execution";
 
 interface Execution {
+  outcome?: string;
   id: number;
   briefId: string;
   videoType: string;
@@ -55,7 +57,7 @@ const STATUSES = [
   { value: "all", label: "Tous" },
   { value: "pending", label: "Pending" },
   { value: "processing", label: "Processing" },
-  { value: "completed", label: "Completed" },
+  { value: "completed", label: "Traitement terminé" },
   { value: "failed", label: "Failed" },
 ];
 
@@ -237,9 +239,9 @@ export default function ExecutionsIndex() {
                       </td>
                       <td className="p-3">
                         <Badge
-                          className={`text-xs ${STATUS_BADGE[exec.status] ?? STATUS_BADGE.pending}`}
+                          className={`text-xs ${STATUS_BADGE[exec.outcome ?? "pending"] ?? STATUS_BADGE.pending}`}
                         >
-                          {exec.status}
+                          {videoOutcomeLabel(exec.outcome)}
                         </Badge>
                       </td>
                       <td className="p-3 text-gray-600">

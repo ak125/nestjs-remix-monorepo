@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { DatabaseException } from '@common/exceptions';
 import type {
   SocialPost,
   PostStatus,
@@ -20,6 +21,20 @@ export class MarketingHubDataService extends SupabaseBaseService {
 
   // ── Social Posts ──
 
+  async getPostById(postId: number): Promise<SocialPost | null> {
+    const { data, error } = await this.supabase
+      .from('__marketing_social_posts')
+      .select('*')
+      .eq('id', postId)
+      .maybeSingle();
+    if (error)
+      throw new DatabaseException({
+        message: 'Unable to load marketing post',
+        context: { operation: 'getPostById', sourceCode: error.code },
+      });
+    return data as SocialPost | null;
+  }
+
   async upsertSocialPost(
     post: Partial<SocialPost> & {
       week_iso: string;
@@ -38,7 +53,10 @@ export class MarketingHubDataService extends SupabaseBaseService {
 
     if (error) {
       this.logger.error(`upsertSocialPost failed: ${error.message}`);
-      return null;
+      throw new DatabaseException({
+        message: 'Unable to persist marketing post',
+        context: { operation: 'upsertSocialPost', sourceCode: error.code },
+      });
     }
     return data as SocialPost;
   }
@@ -58,7 +76,10 @@ export class MarketingHubDataService extends SupabaseBaseService {
     const { data, error } = await query;
     if (error) {
       this.logger.error(`getPostsByWeek failed: ${error.message}`);
-      return [];
+      throw new DatabaseException({
+        message: 'Unable to load marketing posts',
+        context: { operation: 'getPostsByWeek', sourceCode: error.code },
+      });
     }
     return (data ?? []) as SocialPost[];
   }
@@ -68,16 +89,20 @@ export class MarketingHubDataService extends SupabaseBaseService {
     status: PostStatus,
     extra?: Partial<SocialPost>,
   ): Promise<boolean> {
-    const { error } = await this.supabase
+    const { data, error } = await this.supabase
       .from('__marketing_social_posts')
-      .update({ status, ...extra })
-      .eq('id', postId);
+      .update({ ...extra, status })
+      .eq('id', postId)
+      .select('id');
 
     if (error) {
       this.logger.error(`updatePostStatus failed: ${error.message}`);
-      return false;
+      throw new DatabaseException({
+        message: 'Unable to update marketing post',
+        context: { operation: 'updatePostStatus', sourceCode: error.code },
+      });
     }
-    return true;
+    return data?.length === 1;
   }
 
   async updatePostGates(
@@ -86,7 +111,7 @@ export class MarketingHubDataService extends SupabaseBaseService {
     qualityScore: number,
   ): Promise<boolean> {
     const newStatus = gateSummary.can_approve ? 'gate_passed' : 'gate_failed';
-    const { error } = await this.supabase
+    const { data, error } = await this.supabase
       .from('__marketing_social_posts')
       .update({
         brand_gate_level: gateSummary.brand.level,
@@ -95,13 +120,17 @@ export class MarketingHubDataService extends SupabaseBaseService {
         quality_score: qualityScore,
         status: newStatus,
       })
-      .eq('id', postId);
+      .eq('id', postId)
+      .select('id');
 
     if (error) {
       this.logger.error(`updatePostGates failed: ${error.message}`);
-      return false;
+      throw new DatabaseException({
+        message: 'Unable to persist marketing gates',
+        context: { operation: 'updatePostGates', sourceCode: error.code },
+      });
     }
-    return true;
+    return data?.length === 1;
   }
 
   async getApprovedPostsByChannel(
@@ -118,7 +147,13 @@ export class MarketingHubDataService extends SupabaseBaseService {
 
     if (error) {
       this.logger.error(`getApprovedPostsByChannel failed: ${error.message}`);
-      return [];
+      throw new DatabaseException({
+        message: 'Unable to load approved posts',
+        context: {
+          operation: 'getApprovedPostsByChannel',
+          sourceCode: error.code,
+        },
+      });
     }
     return (data ?? []) as SocialPost[];
   }
@@ -137,7 +172,10 @@ export class MarketingHubDataService extends SupabaseBaseService {
 
     if (error) {
       this.logger.error(`getRecentGammeIds failed: ${error.message}`);
-      return [];
+      throw new DatabaseException({
+        message: 'Unable to load marketing history',
+        context: { operation: 'getRecentGammeIds', sourceCode: error.code },
+      });
     }
     const ids = (data ?? []).map((r: { gamme_id: number }) => r.gamme_id);
     return Array.from(new Set(ids));
@@ -156,7 +194,10 @@ export class MarketingHubDataService extends SupabaseBaseService {
 
     if (error) {
       this.logger.error(`upsertWeeklyPlan failed: ${error.message}`);
-      return null;
+      throw new DatabaseException({
+        message: 'Unable to persist marketing plan',
+        context: { operation: 'upsertWeeklyPlan', sourceCode: error.code },
+      });
     }
     return data as WeeklyPlan;
   }
@@ -166,9 +207,13 @@ export class MarketingHubDataService extends SupabaseBaseService {
       .from('__marketing_weekly_plans')
       .select('*')
       .eq('week_iso', weekIso)
-      .single();
+      .maybeSingle();
 
-    if (error) return null;
+    if (error)
+      throw new DatabaseException({
+        message: 'Unable to load marketing plan',
+        context: { operation: 'getWeeklyPlan', sourceCode: error.code },
+      });
     return data as WeeklyPlan;
   }
 
@@ -188,7 +233,10 @@ export class MarketingHubDataService extends SupabaseBaseService {
     const { data, error } = await query;
     if (error) {
       this.logger.error(`getActiveBrandRules failed: ${error.message}`);
-      return [];
+      throw new DatabaseException({
+        message: 'Unable to load brand rules',
+        context: { operation: 'getActiveBrandRules', sourceCode: error.code },
+      });
     }
     return (data ?? []) as BrandRule[];
   }
@@ -202,9 +250,15 @@ export class MarketingHubDataService extends SupabaseBaseService {
       .eq('pg_alias', alias)
       .eq('pg_display', '1')
       .limit(1)
-      .single();
+      .maybeSingle();
 
-    if (error || !data) {
+    if (error) {
+      throw new DatabaseException({
+        message: 'Unable to resolve marketing gamme',
+        context: { operation: 'resolveGammeAlias', sourceCode: error.code },
+      });
+    }
+    if (!data) {
       this.logger.warn(`resolveGammeAlias: no gamme found for "${alias}"`);
       return null;
     }
@@ -224,7 +278,13 @@ export class MarketingHubDataService extends SupabaseBaseService {
       .not('sg_title', 'is', null)
       .limit(limit * 2);
 
-    if (error || !data || data.length === 0) {
+    if (error) {
+      throw new DatabaseException({
+        message: 'Unable to load marketing SEO sources',
+        context: { operation: 'getTopSeoGammes', sourceCode: error.code },
+      });
+    }
+    if (!data || data.length === 0) {
       return [];
     }
 
@@ -239,7 +299,16 @@ export class MarketingHubDataService extends SupabaseBaseService {
       .eq('pg_display', '1')
       .limit(limit);
 
-    if (gErr || !gammes) return [];
+    if (gErr) {
+      throw new DatabaseException({
+        message: 'Unable to load marketing catalogue sources',
+        context: {
+          operation: 'getTopSeoGammes.catalogue',
+          sourceCode: gErr.code,
+        },
+      });
+    }
+    if (!gammes) return [];
 
     return (
       gammes as Array<{ pg_id: number; pg_alias: string; pg_name: string }>

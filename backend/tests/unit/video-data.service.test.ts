@@ -181,6 +181,7 @@ describe('VideoDataService', () => {
       const result = await service.updateProduction('brief-001', {
         status: 'ready_for_publish',
         qualityScore: 4.5,
+        expectedUpdatedAt: row.updated_at,
       });
 
       expect(chain.update).toHaveBeenCalledWith(
@@ -198,7 +199,10 @@ describe('VideoDataService', () => {
       Object.defineProperty(service, 'client', { get: () => chain });
 
       await expect(
-        service.updateProduction('nonexistent', { status: 'ready_for_publish' }),
+        service.updateProduction('nonexistent', {
+          status: 'ready_for_publish',
+          expectedUpdatedAt: '2026-02-24T00:00:00Z',
+        }),
       ).rejects.toThrow(NotFoundException);
     });
   });
@@ -215,10 +219,7 @@ describe('VideoDataService', () => {
       });
       Object.defineProperty(service, 'client', { get: () => chain });
 
-      const result = await service.listProductions(
-        {},
-        { page: 1, limit: 10 },
-      );
+      const result = await service.listProductions({}, { page: 1, limit: 10 });
 
       expect(result.data).toHaveLength(2);
       expect(result.total).toBe(5);
@@ -373,7 +374,14 @@ describe('VideoDataService', () => {
 
       const result = await service.listTemplates();
 
-      expect(result).toHaveLength(3);
+      expect(result.map((template) => template.templateId).sort()).toEqual([
+        'ne-change-pas-trop-vite',
+        'piece-expliquee',
+        'short-braking-fact',
+        'short-product-highlight',
+        'symptome-3-causes',
+        'test-card',
+      ]);
       expect(result[0].templateId).toBeDefined();
       expect(result[0].structure).toHaveProperty('compositionId');
       expect(result[0].structure).toHaveProperty('source', 'code_registry');

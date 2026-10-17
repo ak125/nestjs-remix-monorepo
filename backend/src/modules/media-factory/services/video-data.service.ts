@@ -1,4 +1,11 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import type {
@@ -11,6 +18,7 @@ import type {
   VideoType,
   VideoStatus,
 } from '../../../config/video-quality.constants';
+import { validateVideoScenario } from '../render/video-scenario';
 import { listRegisteredTemplates } from '../render/templates/template-registry';
 
 // ─────────────────────────────────────────────────────────────
@@ -28,6 +36,8 @@ export interface CreateProductionDto {
 }
 
 export interface UpdateProductionDto {
+  scenario?: unknown;
+  expectedUpdatedAt?: string;
   status?: VideoStatus;
   scriptText?: string;
   knowledgeContract?: Record<string, unknown>;
@@ -158,16 +168,33 @@ export class VideoDataService extends SupabaseBaseService {
     briefId: string,
     updates: UpdateProductionDto,
   ): Promise<VideoProduction> {
+    if (updates.scenario !== undefined) {
+      return this.updateScenario(briefId, updates);
+    }
+    if (updates.scriptText !== undefined) {
+      return this.updateScript(briefId, updates);
+    }
+    const expected = updates.expectedUpdatedAt;
+    if (typeof expected !== 'string' || !Number.isFinite(Date.parse(expected)))
+      throw new BadRequestException('Expected production version required');
+    const { data: current, error: readError } = await this.client
+      .from('__video_productions')
+      .select('*')
+      .eq('brief_id', briefId)
+      .single();
+    if (readError && readError.code !== 'PGRST116')
+      throw new ServiceUnavailableException('Unable to read production');
+    if (!current)
+      throw new NotFoundException(`Production not found: ${briefId}`);
+    if (current.updated_at !== expected)
+      throw new ConflictException('Production revision conflict');
     const dbUpdates: Record<string, unknown> = {
-      updated_at: new Date().toISOString(),
+      updated_at: new Date(
+        Math.max(Date.now(), Date.parse(expected) + 1),
+      ).toISOString(),
     };
 
     if (updates.status !== undefined) dbUpdates.status = updates.status;
-    if (updates.scriptText !== undefined) {
-      dbUpdates.script_text = updates.scriptText;
-      dbUpdates.script_generated_at = new Date().toISOString();
-      dbUpdates.script_model = 'manual';
-    }
     if (updates.knowledgeContract !== undefined)
       dbUpdates.knowledge_contract = updates.knowledgeContract;
     if (updates.claimTable !== undefined)
@@ -185,17 +212,185 @@ export class VideoDataService extends SupabaseBaseService {
     if (updates.gateResults !== undefined)
       dbUpdates.gate_results = updates.gateResults;
 
+    if (
+      [
+        'knowledgeContract',
+        'claimTable',
+        'evidencePack',
+        'disclaimerPlan',
+      ].some((key) => Object.hasOwn(updates, key))
+    ) {
+      if (current.status !== 'draft')
+        throw new ConflictException('Content edits require a draft');
+      if (
+        [
+          'qualityScore',
+          'qualityFlags',
+          'gateResults',
+          'approvalRecord',
+          'status',
+        ].some((key) => Object.hasOwn(updates, key))
+      )
+        throw new BadRequestException(
+          'Submit content edits separately from validation',
+        );
+      Object.assign(dbUpdates, {
+        quality_score: null,
+        quality_flags: [],
+        gate_results: null,
+      });
+    }
+
     const { data, error } = await this.client
       .from('__video_productions')
       .update(dbUpdates)
       .eq('brief_id', briefId)
+      .eq('id', current.id)
+      .eq('status', current.status)
+      .eq('updated_at', expected)
       .select()
       .single();
 
-    if (error || !data) {
-      throw new NotFoundException(`Production not found: ${briefId}`);
-    }
+    if (error && error.code !== 'PGRST116')
+      throw new ServiceUnavailableException('Unable to persist production');
+    if (!data) throw new ConflictException('Production revision conflict');
 
+    return this.mapProduction(data);
+  }
+
+  /** Pin a manual correction to the revision the editor actually opened. */
+  private async updateScript(
+    briefId: string,
+    updates: UpdateProductionDto,
+  ): Promise<VideoProduction> {
+    const expected = updates.expectedUpdatedAt;
+    if (
+      typeof expected !== 'string' ||
+      !Number.isFinite(Date.parse(expected)) ||
+      typeof updates.scriptText !== 'string' ||
+      !updates.scriptText.trim() ||
+      Object.keys(updates).some(
+        (key) => key !== 'scriptText' && key !== 'expectedUpdatedAt',
+      )
+    ) {
+      throw new BadRequestException(
+        'Submit the script and its expected version separately',
+      );
+    }
+    const { data: current, error: readError } = await this.client
+      .from('__video_productions')
+      .select('*')
+      .eq('brief_id', briefId)
+      .single();
+    if (readError && readError.code !== 'PGRST116') {
+      throw new ServiceUnavailableException('Unable to read script production');
+    }
+    if (!current)
+      throw new NotFoundException(`Production not found: ${briefId}`);
+    if (current.status !== 'draft' || current.updated_at !== expected) {
+      throw new ConflictException('Script revision conflict');
+    }
+    // Advance even for two edits within the same millisecond or a fast clock.
+    const updatedAt = new Date(
+      Math.max(Date.now(), Date.parse(expected) + 1),
+    ).toISOString();
+    // TTS trims only surrounding whitespace before synthesis and cache lookup.
+    const narrationChanged =
+      updates.scriptText.trim() !== current.script_text?.trim();
+    const { data, error } = await this.client
+      .from('__video_productions')
+      .update({
+        script_text: updates.scriptText,
+        script_model: 'manual',
+        script_generated_at: updatedAt,
+        updated_at: updatedAt,
+        // Invalidate current derived state atomically with the text. Historical
+        // approvals, renders and cached audio remain available for review.
+        ...(narrationChanged
+          ? {
+              master_audio_url: null,
+              quality_score: null,
+              quality_flags: [],
+              gate_results: null,
+            }
+          : {}),
+      })
+      .eq('brief_id', briefId)
+      .eq('id', current.id)
+      .eq('status', 'draft')
+      .eq('updated_at', expected)
+      .select()
+      .single();
+    if (error && error.code !== 'PGRST116') {
+      throw new ServiceUnavailableException('Unable to persist script');
+    }
+    if (!data) throw new ConflictException('Script revision conflict');
+    return this.mapProduction(data);
+  }
+
+  /** Draft-only isolated edits preserve approval history; Fafa publication stays quarantined. */
+  private async updateScenario(
+    briefId: string,
+    updates: UpdateProductionDto,
+  ): Promise<VideoProduction> {
+    if (
+      Object.keys(updates).some(
+        (key) => key !== 'scenario' && key !== 'expectedUpdatedAt',
+      ) ||
+      typeof updates.expectedUpdatedAt !== 'string' ||
+      !Number.isFinite(Date.parse(updates.expectedUpdatedAt))
+    ) {
+      throw new BadRequestException(
+        'Scenario changes must be submitted separately',
+      );
+    }
+    // Do not turn a schema/read failure into an absent production.
+    const { data: current, error: readError } = await this.client
+      .from('__video_productions')
+      .select('*')
+      .eq('brief_id', briefId)
+      .single();
+    if (readError && readError.code !== 'PGRST116') {
+      throw new ServiceUnavailableException(
+        'Unable to read scenario production',
+      );
+    }
+    if (!current)
+      throw new NotFoundException(`Production not found: ${briefId}`);
+    if (
+      current.status !== 'draft' ||
+      current.updated_at !== updates.expectedUpdatedAt
+    ) {
+      throw new ConflictException(
+        'Scenario can only change on a versioned draft',
+      );
+    }
+    const scenario =
+      updates.scenario === null
+        ? null
+        : validateVideoScenario(updates.scenario, current.template_id);
+    const { data, error } = await this.client
+      .from('__video_productions')
+      .update({
+        scenario,
+        updated_at: new Date(
+          Math.max(Date.now(), Date.parse(current.updated_at) + 1),
+        ).toISOString(),
+        quality_score: null,
+        quality_flags: [],
+        gate_results: null,
+      })
+      .eq('brief_id', briefId)
+      .eq('id', current.id)
+      .eq('status', 'draft')
+      .eq('updated_at', current.updated_at)
+      .select()
+      .single();
+    if (error && error.code !== 'PGRST116') {
+      throw new ServiceUnavailableException('Unable to persist scenario');
+    }
+    if (!data)
+      throw new ConflictException('Production changed during scenario update');
     return this.mapProduction(data);
   }
 
@@ -339,6 +534,7 @@ export class VideoDataService extends SupabaseBaseService {
     pgId: row.pg_id as number | undefined,
     status: row.status as VideoStatus,
     templateId: row.template_id as string | undefined,
+    scenario: (row.scenario as VideoProduction['scenario']) ?? null,
     knowledgeContract: row.knowledge_contract as Record<string, unknown> | null,
     claimTable: row.claim_table as VideoProduction['claimTable'],
     evidencePack: row.evidence_pack as VideoProduction['evidencePack'],

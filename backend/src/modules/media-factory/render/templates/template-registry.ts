@@ -2,10 +2,11 @@
  * Template Registry — Code-level mapping from templateId to Remotion composition (P8).
  *
  * Code-first registry. DB table __video_templates is metadata/governance only.
- * Rule: Unknown templateId → fallback to TestCard.
+ * Rule: TestCard is explicit; unknown or absent templates must fail closed.
  */
 
 import type { VideoType } from '../../../../config/video-quality.constants';
+import { DomainValidationException } from '@common/exceptions';
 
 export interface TemplateRegistryEntry {
   /** The Remotion composition ID (must match <Composition id="..."> in renderer) */
@@ -15,11 +16,38 @@ export interface TemplateRegistryEntry {
   defaultDurationFrames: number;
   defaultResolution: { width: number; height: number };
   status: 'stable' | 'experimental';
+  /** Requires the versioned narrative envelope instead of generic claim props. */
+  requiresScenario?: boolean;
 }
 
-const FALLBACK_TEMPLATE_ID = 'test-card';
-
 const REGISTRY: Record<string, TemplateRegistryEntry> = {
+  'ne-change-pas-trop-vite': {
+    compositionId: 'NeChangePasTropVite',
+    requiresScenario: true,
+    displayName: 'Fafa — Ne change pas trop vite',
+    supportedVideoTypes: ['short'],
+    defaultDurationFrames: 1140,
+    defaultResolution: { width: 1080, height: 1920 },
+    status: 'experimental',
+  },
+  'symptome-3-causes': {
+    compositionId: 'SymptomeTroisCauses',
+    requiresScenario: true,
+    displayName: 'Fafa — Un symptôme, trois causes',
+    supportedVideoTypes: ['short'],
+    defaultDurationFrames: 990,
+    defaultResolution: { width: 1080, height: 1920 },
+    status: 'experimental',
+  },
+  'piece-expliquee': {
+    compositionId: 'PieceExpliquee',
+    requiresScenario: true,
+    displayName: 'Fafa — Pièce expliquée',
+    supportedVideoTypes: ['short'],
+    defaultDurationFrames: 1200,
+    defaultResolution: { width: 1080, height: 1920 },
+    status: 'experimental',
+  },
   'test-card': {
     compositionId: 'TestCard',
     displayName: 'Test Card (P6)',
@@ -46,12 +74,15 @@ const REGISTRY: Record<string, TemplateRegistryEntry> = {
   },
 };
 
-/** Resolve templateId to a registry entry. Falls back to TestCard for unknown. */
+/** Resolve an explicit registered template without substituting demo content. */
 export function resolveTemplate(
   templateId: string | null | undefined,
 ): TemplateRegistryEntry {
-  if (!templateId || !REGISTRY[templateId]) {
-    return REGISTRY[FALLBACK_TEMPLATE_ID];
+  if (!templateId || !Object.hasOwn(REGISTRY, templateId)) {
+    throw new DomainValidationException({
+      message: 'An explicit registered video template is required',
+      field: 'templateId',
+    });
   }
   return REGISTRY[templateId];
 }
@@ -59,7 +90,10 @@ export function resolveTemplate(
 /** Get default templateId for a given videoType (when production has no explicit templateId). */
 export function defaultTemplateForVideoType(videoType: VideoType): string {
   if (videoType === 'short') return 'short-product-highlight';
-  return FALLBACK_TEMPLATE_ID;
+  throw new DomainValidationException({
+    message: 'An explicit video template is required for this format',
+    field: 'templateId',
+  });
 }
 
 /** List all registered templates. */

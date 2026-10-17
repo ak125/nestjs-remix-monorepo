@@ -106,37 +106,54 @@ export class VideoGatesService {
   // ── G1: Truth Gate ──
 
   private g1Truth(input: VideoGateInput): VideoGateResult {
-    const { claims } = input;
+    const { claims, evidencePack } = input;
     const { warn, fail } = VIDEO_GATE_THRESHOLDS.truth_attribution;
 
     if (!claims || claims.length === 0) {
-      return this.makeResult('truth', 'PASS', 0, warn, fail, [
-        'No claims to verify',
-      ]);
+      return this.makeResult(
+        'truth',
+        'FAIL',
+        0,
+        warn,
+        fail,
+        ['Missing or empty claim table — truth cannot be evaluated'],
+        [{ location: 'claim_table', issue: 'At least one claim is required' }],
+      );
     }
 
-    const unsourced = claims.filter(
-      (c) =>
-        c.status === 'unverified' &&
-        c.kind !== 'procedure' &&
-        c.kind !== 'safety',
+    const evidenceIds = new Set(
+      (evidencePack ?? [])
+        .filter((e) => typeof e.docId === 'string' && e.docId.trim().length > 0)
+        .map((e) => e.docId),
     );
-    const ratio = unsourced.length / claims.length;
+    // Structural support only: source relevance is reviewed separately (L11/D17).
+    // Procedure/safety claims are subject to the human validation gate G2.
+    const unsupported = claims.filter(
+      (c) =>
+        c.kind !== 'procedure' &&
+        c.kind !== 'safety' &&
+        (c.status !== 'verified' ||
+          !(
+            (typeof c.sourceRef === 'string' &&
+              c.sourceRef.trim().length > 0) ||
+            (typeof c.evidenceId === 'string' && evidenceIds.has(c.evidenceId))
+          )),
+    );
 
-    const triggerItems = unsourced.map((c) => ({
-      location: `claim:${c.sectionKey}`,
-      issue: `Unsourced ${c.kind}: "${c.rawText}"`,
-      evidenceRef: c.sourceRef ?? undefined,
+    const triggerItems = unsupported.map((c) => ({
+      location: `claim:${c.id}`,
+      issue: `Unsupported ${c.kind}: "${c.rawText}" (requires verified status and a source reference or matching evidence)`,
+      evidenceRef: c.sourceRef ?? c.evidenceId ?? undefined,
     }));
 
     return this.makeResult(
       'truth',
-      this.thresholdVerdict(ratio, warn, fail),
-      ratio,
+      this.thresholdVerdict(unsupported.length, warn, fail),
+      unsupported.length,
       warn,
       fail,
       [
-        `${unsourced.length}/${claims.length} claims unsourced (ratio=${ratio.toFixed(2)})`,
+        `${unsupported.length} unsupported factual claim(s) — evaluated individually, not by ratio`,
       ],
       triggerItems,
     );
@@ -153,7 +170,7 @@ export class VideoGatesService {
     );
 
     const unvalidated = safetyClaims.filter(
-      (c) => c.requiresHumanValidation && !c.validatedBy,
+      (c) => typeof c.validatedBy !== 'string' || !c.validatedBy.trim(),
     );
 
     const triggerItems = unvalidated.map((c) => ({

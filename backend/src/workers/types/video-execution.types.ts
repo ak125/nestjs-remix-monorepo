@@ -25,7 +25,9 @@ export interface VideoExecutionJobData {
 // ─────────────────────────────────────────────────────────────
 
 export interface VideoExecutionResult {
+  /** Technical job status; completed does not imply that a video was delivered. */
   status: 'completed' | 'failed';
+  outcome?: import('../../modules/media-factory/render/execution-outcome').ExecutionOutcome;
   canPublish: boolean | null;
   qualityScore: number | null;
   qualityFlags: string[];

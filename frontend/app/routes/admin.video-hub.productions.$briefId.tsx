@@ -1,13 +1,4 @@
 import {
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  data,
-  redirect,
-  useLoaderData,
-  Link,
-  useFetcher,
-} from "react-router";
-import {
   ArrowLeft,
   CheckCircle,
   XCircle,
@@ -29,8 +20,21 @@ import {
   Eye,
   ChevronRight,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  data,
+  useLoaderData,
+  Link,
+  useFetcher,
+  useRevalidator,
+} from "react-router";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import {
+  canPreviewExecution,
+  videoOutcomeLabel,
+} from "~/utils/video-execution";
 
 // ─── Types ───────────────────────────────────────────────────
 
@@ -98,6 +102,7 @@ interface DerivativeRow {
 }
 
 interface ExecutionRow {
+  outcome?: string;
   id: number;
   status: string;
   engineName: string | null;
@@ -148,10 +153,10 @@ function getPipelineSteps(
     },
     {
       key: "render",
-      label: "Rendu",
+      label: "Rendu déclaré",
       shortLabel: "RND",
       icon: Clapperboard,
-      done: executions.some((e) => e.status === "completed"),
+      done: executions.some(canPreviewExecution),
     },
     {
       key: "derivatives",
@@ -234,6 +239,23 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const briefId = params.briefId!;
   const formData = await request.formData();
   const intent = formData.get("_intent") as string;
+  const expectedUpdatedAt = formData.get("expectedUpdatedAt");
+  if (
+    (intent === "generate-script" ||
+      intent === "generate-audio" ||
+      intent === "derive") &&
+    (typeof expectedUpdatedAt !== "string" ||
+      !Number.isFinite(Date.parse(expectedUpdatedAt)))
+  ) {
+    return data(
+      {
+        _intent: intent,
+        ok: false,
+        error: "Version manquante : rechargez la production.",
+      },
+      { status: 400 },
+    );
+  }
 
   if (intent === "dry-run") {
     try {
@@ -277,24 +299,46 @@ export async function action({ request, params }: ActionFunctionArgs) {
   }
 
   if (intent === "save-script") {
-    const scriptText = formData.get("scriptText") as string;
+    const scriptText = formData.get("scriptText");
+    const expectedUpdatedAt = formData.get("expectedUpdatedAt");
+    if (
+      typeof scriptText !== "string" ||
+      !scriptText.trim() ||
+      typeof expectedUpdatedAt !== "string" ||
+      !Number.isFinite(Date.parse(expectedUpdatedAt))
+    ) {
+      return data(
+        {
+          _intent: "save-script" as const,
+          ok: false,
+          error: "Le texte et sa version sont requis. Rouvrez l’éditeur.",
+        },
+        { status: 400 },
+      );
+    }
     try {
       const res = await fetch(
         `${backendUrl}/api/admin/video/productions/${briefId}`,
         {
           method: "PATCH",
           headers: { Cookie: cookieHeader, "Content-Type": "application/json" },
-          body: JSON.stringify({ scriptText }),
+          body: JSON.stringify({ scriptText, expectedUpdatedAt }),
         },
       );
       const payload = await res.json();
       if (!res.ok || !payload.success)
-        return data({
-          _intent: "save-script" as const,
-          ok: false,
-          error: payload.error ?? "Erreur sauvegarde",
-        });
-      return redirect(`/admin/video-hub/productions/${briefId}`);
+        return data(
+          {
+            _intent: "save-script" as const,
+            ok: false,
+            error:
+              res.status === 409
+                ? "Conflit de version : votre texte est conservé. Actualisez le script, puis comparez la version actuelle avec votre brouillon avant de l’utiliser."
+                : "Impossible de sauvegarder le script. Votre texte est conservé.",
+          },
+          { status: res.ok ? 502 : res.status },
+        );
+      return data({ _intent: "save-script" as const, ok: true });
     } catch {
       return data({
         _intent: "save-script" as const,
@@ -312,16 +356,22 @@ export async function action({ request, params }: ActionFunctionArgs) {
         {
           method: "POST",
           headers: { Cookie: cookieHeader, "Content-Type": "application/json" },
-          body: JSON.stringify({ regenerate }),
+          body: JSON.stringify({ regenerate, expectedUpdatedAt }),
         },
       );
       const payload = await res.json();
       if (!res.ok || !payload.success)
-        return data({
-          _intent: "generate-script" as const,
-          ok: false,
-          error: payload.error ?? payload.message ?? "Erreur generation",
-        });
+        return data(
+          {
+            _intent: "generate-script" as const,
+            ok: false,
+            error:
+              res.status === 409
+                ? "Version modifiée : rechargez avant de régénérer."
+                : (payload.error ?? payload.message ?? "Erreur generation"),
+          },
+          { status: res.ok ? 502 : res.status },
+        );
       return data({
         _intent: "generate-script" as const,
         ok: true,
@@ -344,16 +394,25 @@ export async function action({ request, params }: ActionFunctionArgs) {
         {
           method: "POST",
           headers: { Cookie: cookieHeader, "Content-Type": "application/json" },
-          body: JSON.stringify({ voice: voice || "onyx" }),
+          body: JSON.stringify({
+            voice: voice || undefined,
+            expectedUpdatedAt,
+          }),
         },
       );
       const payload = await res.json();
       if (!res.ok || !payload.success)
-        return data({
-          _intent: "generate-audio" as const,
-          ok: false,
-          error: payload.error ?? payload.message ?? "Erreur TTS",
-        });
+        return data(
+          {
+            _intent: "generate-audio" as const,
+            ok: false,
+            error:
+              res.status === 409
+                ? "Version modifiée : rechargez avant de préparer l’audio."
+                : (payload.error ?? payload.message ?? "Erreur TTS"),
+          },
+          { status: res.ok ? 502 : res.status },
+        );
       return data({
         _intent: "generate-audio" as const,
         ok: true,
@@ -375,16 +434,22 @@ export async function action({ request, params }: ActionFunctionArgs) {
         {
           method: "POST",
           headers: { Cookie: cookieHeader, "Content-Type": "application/json" },
-          body: JSON.stringify({}),
+          body: JSON.stringify({ expectedUpdatedAt }),
         },
       );
       const payload = await res.json();
       if (!res.ok || !payload.success)
-        return data({
-          _intent: "derive" as const,
-          ok: false,
-          error: payload.error ?? payload.message ?? "Erreur derivation",
-        });
+        return data(
+          {
+            _intent: "derive" as const,
+            ok: false,
+            error:
+              res.status === 409
+                ? "Version source modifiée : rechargez avant de créer les dérivés."
+                : (payload.error ?? payload.message ?? "Erreur derivation"),
+          },
+          { status: res.ok ? 502 : res.status },
+        );
       return data({ _intent: "derive" as const, ok: true, data: payload.data });
     } catch {
       return data({
@@ -585,8 +650,8 @@ export default function VideoProductionDetail() {
     executions,
     derivatives,
   );
-  const hasRender = executions.some((e) => e.status === "completed");
-  const completedExec = executions.find((e) => e.status === "completed");
+  const hasRender = executions.some(canPreviewExecution);
+  const completedExec = executions.find(canPreviewExecution);
   const streamUrl = completedExec
     ? `/api/admin/video/executions/${completedExec.id}/stream`
     : null;
@@ -770,12 +835,20 @@ export default function VideoProductionDetail() {
                 {/* Step 1: Script */}
                 <scriptFetcher.Form method="post">
                   <input type="hidden" name="_intent" value="generate-script" />
+                  <input
+                    type="hidden"
+                    name="expectedUpdatedAt"
+                    value={production.updatedAt}
+                  />
                   {production.scriptText && (
                     <input type="hidden" name="regenerate" value="true" />
                   )}
                   <button
                     type="submit"
-                    disabled={isGeneratingScript}
+                    disabled={
+                      isGeneratingScript ||
+                      !["draft", "pending_review"].includes(production.status)
+                    }
                     className={`
                       flex items-center gap-2 px-3 py-1.5 rounded text-xs font-mono transition-all
                       ${
@@ -804,7 +877,11 @@ export default function VideoProductionDetail() {
                 {/* Step 2: Audio */}
                 <audioFetcher.Form method="post">
                   <input type="hidden" name="_intent" value="generate-audio" />
-                  <input type="hidden" name="voice" value="onyx" />
+                  <input
+                    type="hidden"
+                    name="expectedUpdatedAt"
+                    value={production.updatedAt}
+                  />
                   <button
                     type="submit"
                     disabled={isGeneratingAudio || !production.scriptText}
@@ -874,6 +951,11 @@ export default function VideoProductionDetail() {
                 {/* Step 5: Derive */}
                 <deriveFetcher.Form method="post">
                   <input type="hidden" name="_intent" value="derive" />
+                  <input
+                    type="hidden"
+                    name="expectedUpdatedAt"
+                    value={production.updatedAt}
+                  />
                   <button
                     type="submit"
                     disabled={isDeriving || !hasRender}
@@ -973,12 +1055,14 @@ export default function VideoProductionDetail() {
                 currentIndex={currentIndex}
               />
             )}
-            {activePanel === "script" && (
+            {/* Keep drafts while inspecting other tabs, never across briefs. */}
+            <div hidden={activePanel !== "script"}>
               <InspectorScript
+                key={production.briefId}
                 production={production}
                 saveScriptFetcher={saveScriptFetcher}
               />
-            )}
+            </div>
             {activePanel === "claims" && (
               <InspectorClaims production={production} />
             )}
@@ -1113,6 +1197,7 @@ function InspectorOverview({
         <MetaRow
           label="SCORE"
           value={
+            executions.some(canPreviewExecution) &&
             production.qualityScore !== null
               ? String(production.qualityScore)
               : "--"
@@ -1205,9 +1290,23 @@ function InspectorScript({
     typeof useFetcher<{ _intent: "save-script"; ok: boolean; error?: string }>
   >;
 }) {
+  const revalidator = useRevalidator();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(production.scriptText ?? "");
-  const isSaving = saveScriptFetcher.state !== "idle";
+  const [expectedUpdatedAt, setExpectedUpdatedAt] = useState(
+    production.updatedAt,
+  );
+  const isSaving =
+    saveScriptFetcher.state !== "idle" || revalidator.state !== "idle";
+  const versionChanged = expectedUpdatedAt !== production.updatedAt;
+  useEffect(() => {
+    if (
+      saveScriptFetcher.state === "idle" &&
+      saveScriptFetcher.data?.ok === true
+    ) {
+      setEditing(false);
+    }
+  }, [saveScriptFetcher.state, saveScriptFetcher.data]);
 
   return (
     <div className="p-4 space-y-3">
@@ -1223,9 +1322,12 @@ function InspectorScript({
           )}
           <button
             onClick={() => {
+              saveScriptFetcher.reset();
               setEditing(!editing);
               setDraft(production.scriptText ?? "");
+              setExpectedUpdatedAt(production.updatedAt);
             }}
+            disabled={isSaving || (!editing && production.status !== "draft")}
             className="text-[9px] font-mono text-amber-400 hover:text-amber-300 bg-amber-900/20 px-1.5 py-0.5 rounded transition"
           >
             {editing ? "ANNULER" : "EDITER"}
@@ -1234,8 +1336,20 @@ function InspectorScript({
       </div>
 
       {editing ? (
-        <saveScriptFetcher.Form method="post" className="space-y-2">
+        <saveScriptFetcher.Form
+          method="post"
+          className="space-y-2"
+          onSubmit={(event) => {
+            if (isSaving || versionChanged || production.status !== "draft")
+              event.preventDefault();
+          }}
+        >
           <input type="hidden" name="_intent" value="save-script" />
+          <input
+            type="hidden"
+            name="expectedUpdatedAt"
+            value={expectedUpdatedAt}
+          />
           <textarea
             name="scriptText"
             value={draft}
@@ -1244,6 +1358,44 @@ function InspectorScript({
             className="w-full text-[11px] leading-relaxed text-neutral-200 bg-[#0a0a0a] rounded-lg p-3 border border-neutral-700 focus:border-amber-500 focus:outline-none resize-y font-mono placeholder:text-neutral-700"
             placeholder="Collez ou ecrivez le script de la video ici..."
           />
+          <button
+            type="button"
+            disabled={isSaving}
+            onClick={() => {
+              void revalidator.revalidate();
+            }}
+            className="text-xs underline"
+          >
+            Actualiser le script sans effacer mon brouillon
+          </button>
+          {versionChanged && (
+            <div className="space-y-2 text-xs">
+              <p>
+                Le script a changé. Comparez la version enregistrée ci-dessous
+                avec votre brouillon avant de l’utiliser.
+              </p>
+              <pre className="whitespace-pre-wrap">
+                {production.scriptText ?? ""}
+              </pre>
+              <button
+                type="button"
+                disabled={isSaving || production.status !== "draft"}
+                className="underline"
+                onClick={() => {
+                  setExpectedUpdatedAt(production.updatedAt);
+                  saveScriptFetcher.reset();
+                }}
+              >
+                Utiliser cette version en conservant mon brouillon
+              </button>
+            </div>
+          )}
+          {draft.trim() !== (production.scriptText ?? "").trim() && (
+            <p className="text-[10px] text-amber-400">
+              L’audio et les contrôles qualité devront être régénérés après
+              cette correction. Les rendus précédents restent dans l’historique.
+            </p>
+          )}
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-mono text-neutral-600">
               {draft.trim()
@@ -1252,7 +1404,12 @@ function InspectorScript({
             </span>
             <button
               type="submit"
-              disabled={isSaving || !draft.trim()}
+              disabled={
+                isSaving ||
+                versionChanged ||
+                !draft.trim() ||
+                production.status !== "draft"
+              }
               className="text-[10px] font-mono px-3 py-1.5 rounded bg-amber-600 hover:bg-amber-500 disabled:opacity-40 text-white transition"
             >
               {isSaving ? "SAUVEGARDE..." : "SAUVEGARDER"}
@@ -1499,7 +1656,7 @@ function InspectorExec({ executions }: { executions: ExecutionRow[] }) {
                 </span>
                 <span
                   className={`text-[9px] font-mono px-1.5 py-0.5 rounded uppercase font-bold ${
-                    exec.status === "completed"
+                    exec.outcome === "rendered_unverified"
                       ? "bg-emerald-900/30 text-emerald-400"
                       : exec.status === "failed"
                         ? "bg-red-900/30 text-red-400"
@@ -1508,7 +1665,7 @@ function InspectorExec({ executions }: { executions: ExecutionRow[] }) {
                           : "bg-neutral-800 text-neutral-500"
                   }`}
                 >
-                  {exec.status}
+                  {videoOutcomeLabel(exec.outcome)}
                 </span>
               </div>
               <div className="flex items-center gap-3 text-[9px] font-mono text-neutral-600">

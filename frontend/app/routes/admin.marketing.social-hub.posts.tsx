@@ -23,6 +23,7 @@ import {
   useSearchParams,
 } from "react-router";
 import { toast } from "sonner";
+import { requireAdmin } from "~/auth/unified.server";
 import { AdminDataTable } from "~/components/admin/patterns/AdminDataTable";
 import {
   DashboardShell,
@@ -184,7 +185,8 @@ function getCurrentWeekISO(): string {
 
 // ── Loader ──
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request, context }: LoaderFunctionArgs) {
+  await requireAdmin({ context });
   const cookie = request.headers.get("Cookie") || "";
   const headers = { Cookie: cookie };
   const url = new URL(request.url);

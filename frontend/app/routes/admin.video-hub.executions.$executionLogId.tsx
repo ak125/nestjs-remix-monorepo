@@ -1,12 +1,4 @@
 import {
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  data,
-  useLoaderData,
-  Link,
-  useFetcher,
-} from "react-router";
-import {
   ArrowLeft,
   CheckCircle,
   XCircle,
@@ -29,10 +21,26 @@ import {
   HardDrive,
 } from "lucide-react";
 import { useCallback, useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  data,
+  useLoaderData,
+  Link,
+  useFetcher,
+} from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import {
+  RenderReviewPanel,
+  type RenderReview,
+} from "~/components/video/RenderReviewPanel";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import {
+  canPreviewExecution,
+  videoOutcomeLabel,
+} from "~/utils/video-execution";
 
 interface ExecutionLog {
   id: number;
@@ -40,6 +48,7 @@ interface ExecutionLog {
   videoType: string;
   vertical: string;
   status: string;
+  outcome?: string;
   bullmqJobId: string | null;
   triggerSource: string;
   triggerJobId: string | null;
@@ -99,14 +108,20 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     );
 
     if (!res.ok)
-      return data({ execution: null, variants: [], error: "Not found" });
+      return data({
+        execution: null,
+        variants: [],
+        review: null,
+        reviewError: null,
+        error: "Not found",
+      });
 
     const body = await res.json();
     const execution = body.data as ExecutionLog;
 
     // Fetch variants if execution completed
     let variants: VariantRecord[] = [];
-    if (execution.status === "completed") {
+    if (canPreviewExecution(execution)) {
       try {
         const varRes = await fetch(
           `${backendUrl}/api/admin/video/executions/${executionLogId}/variants`,
@@ -121,9 +136,34 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       }
     }
 
-    return data({ execution, variants, error: null });
+    let review: RenderReview | null = null;
+    let reviewError: string | null = null;
+    if (canPreviewExecution(execution)) {
+      try {
+        const response = await fetch(
+          `${backendUrl}/api/admin/video/executions/${executionLogId}/review`,
+          { headers: { Cookie: cookieHeader } },
+        );
+        const result = await response.json();
+        if (response.ok && result.success) review = result.data;
+        else
+          reviewError =
+            response.status === 409
+              ? "Rendu historique : empreinte ou version de production insuffisante pour rattacher une revue."
+              : "Revue indisponible. Rechargez avant de saisir un commentaire.";
+      } catch {
+        reviewError = "Impossible de charger la revue persistante.";
+      }
+    }
+    return data({ execution, variants, review, reviewError, error: null });
   } catch {
-    return data({ execution: null, variants: [], error: "Erreur chargement" });
+    return data({
+      execution: null,
+      variants: [],
+      review: null,
+      reviewError: null,
+      error: "Erreur chargement",
+    });
   }
 }
 
@@ -131,6 +171,86 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const backendUrl = getInternalApiUrl("");
   const cookieHeader = request.headers.get("Cookie") || "";
   const executionLogId = params.executionLogId;
+
+  const form = await request.formData();
+  if (form.get("_intent") === "render-review") {
+    const operation = String(form.get("action") ?? "");
+    const integer = (name: string) => {
+      const value = form.get(name);
+      return typeof value === "string" &&
+        /^\d+$/.test(value) &&
+        Number.isSafeInteger(Number(value))
+        ? Number(value)
+        : null;
+    };
+    const revision = integer("expectedReviewRevision");
+    const startFrame = integer("startFrame");
+    const endFrame = integer("endFrame");
+    if (
+      revision === null ||
+      !["add", "resolve", "reopen"].includes(operation) ||
+      (operation === "add" &&
+        (startFrame === null || endFrame === null || startFrame >= endFrame))
+    ) {
+      return data(
+        { ok: false, error: "Version ou intervalle de frames invalide." },
+        { status: 400 },
+      );
+    }
+    const payload = {
+      action: operation,
+      expectedReviewRevision: revision,
+      expectedRenderHash: form.get("expectedRenderHash"),
+      expectedProductionVersion: form.get("expectedProductionVersion"),
+      ...(operation === "add"
+        ? {
+            startFrame,
+            endFrame,
+            target: form.get("target"),
+            preserve: form.get("preserve") ?? "",
+            request: form.get("request"),
+            ...(form.get("sourceExecutionId") || form.get("sourceCommentId")
+              ? {
+                  sourceExecutionId: integer("sourceExecutionId"),
+                  sourceCommentId: form.get("sourceCommentId"),
+                }
+              : {}),
+          }
+        : { commentId: form.get("commentId") }),
+    };
+    try {
+      const response = await fetch(
+        `${backendUrl}/api/admin/video/executions/${executionLogId}/review`,
+        {
+          method: "POST",
+          headers: { Cookie: cookieHeader, "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        },
+      );
+      const result = await response.json();
+      if (!response.ok || !result.success)
+        return data(
+          {
+            ok: false,
+            error:
+              response.status === 409
+                ? "Conflit de version : votre saisie est conservée. Actualisez la revue, comparez les commentaires puis choisissez explicitement la révision à utiliser."
+                : (result.message ?? "Commentaire non enregistré."),
+          },
+          { status: response.ok ? 502 : response.status },
+        );
+      return data({ ok: true });
+    } catch {
+      return data(
+        {
+          ok: false,
+          error:
+            "Enregistrement non confirmé. Vérifiez la revue après rechargement avant de réessayer.",
+        },
+        { status: 503 },
+      );
+    }
+  }
 
   try {
     const res = await fetch(
@@ -207,6 +327,7 @@ function formatDuration(ms: number | null): string {
 function formatDate(iso: string | null): string {
   if (!iso) return "\u2014";
   return new Date(iso).toLocaleString("fr-FR", {
+    timeZone: "Europe/Paris",
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -335,7 +456,8 @@ function VideoPreviewSection({
 }
 
 export default function ExecutionDetail() {
-  const { execution, variants, error } = useLoaderData<typeof loader>();
+  const { execution, variants, review, reviewError, error } =
+    useLoaderData<typeof loader>();
   const retryFetcher = useFetcher<{
     ok: boolean;
     error?: string;
@@ -360,7 +482,8 @@ export default function ExecutionDetail() {
     );
   }
 
-  const statusConf = STATUS_CONFIG[execution.status] ?? STATUS_CONFIG.pending;
+  const statusConf =
+    STATUS_CONFIG[execution.outcome ?? "pending"] ?? STATUS_CONFIG.pending;
   const StatusIcon = statusConf.icon;
 
   return (
@@ -441,7 +564,7 @@ export default function ExecutionDetail() {
           </Button>
           <Badge className={statusConf.bg}>
             <StatusIcon className={`h-3 w-3 mr-1 ${statusConf.color}`} />
-            {execution.status}
+            {videoOutcomeLabel(execution.outcome)}
           </Badge>
         </div>
       </div>
@@ -488,7 +611,7 @@ export default function ExecutionDetail() {
         <CardHeader>
           <CardTitle className="text-sm flex items-center gap-2">
             <Clock className="h-4 w-4" />
-            Timeline
+            Timeline (heure de Paris)
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -550,14 +673,14 @@ export default function ExecutionDetail() {
                 {execution.renderStatus ? (
                   <Badge
                     className={
-                      execution.renderStatus === "success"
-                        ? "bg-green-100 text-green-700"
+                      execution.outcome === "rendered_unverified"
+                        ? "bg-amber-100 text-amber-700"
                         : execution.renderStatus === "failed"
                           ? "bg-red-100 text-red-700"
                           : "bg-gray-100 text-gray-700"
                     }
                   >
-                    {execution.renderStatus}
+                    {videoOutcomeLabel(execution.outcome)}
                   </Badge>
                 ) : (
                   "\u2014"
@@ -590,7 +713,7 @@ export default function ExecutionDetail() {
                   <Badge
                     className={
                       execution.engineResolution === "requested"
-                        ? "bg-green-100 text-green-700"
+                        ? "bg-amber-100 text-amber-700"
                         : "bg-amber-100 text-amber-700"
                     }
                   >
@@ -639,7 +762,7 @@ export default function ExecutionDetail() {
               </div>
             )}
           </div>
-          {execution.renderOutputPath && (
+          {canPreviewExecution(execution) && execution.renderOutputPath && (
             <VideoPreviewSection
               executionLogId={execution.id}
               renderOutputPath={execution.renderOutputPath}
@@ -649,6 +772,9 @@ export default function ExecutionDetail() {
             Object.keys(execution.renderMetadata).length > 0 && (
               <RenderMetadataSection metadata={execution.renderMetadata} />
             )}
+          {canPreviewExecution(execution) && (
+            <RenderReviewPanel review={review} error={reviewError} />
+          )}
         </CardContent>
       </Card>
 
@@ -855,7 +981,7 @@ export default function ExecutionDetail() {
               <Badge
                 className={
                   execution.featureFlags.pipeline_enabled
-                    ? "bg-green-100 text-green-700"
+                    ? "bg-amber-100 text-amber-700"
                     : "bg-gray-100 text-gray-500"
                 }
               >

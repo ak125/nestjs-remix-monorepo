@@ -27,20 +27,24 @@ describe('Template Registry', () => {
       expect(entry.status).toBe('experimental');
     });
 
-    it('should fallback to TestCard for unknown templateId', () => {
-      const entry = resolveTemplate('unknown-template-xyz');
-      expect(entry.compositionId).toBe('TestCard');
+    it('rejects an unknown template instead of producing a TestCard', () => {
+      expect(() => resolveTemplate('unknown-template-xyz')).toThrow();
     });
 
-    it('should fallback to TestCard for null', () => {
-      const entry = resolveTemplate(null);
-      expect(entry.compositionId).toBe('TestCard');
+    it('rejects null instead of producing a TestCard', () => {
+      expect(() => resolveTemplate(null)).toThrow();
     });
 
-    it('should fallback to TestCard for undefined', () => {
-      const entry = resolveTemplate(undefined);
-      expect(entry.compositionId).toBe('TestCard');
+    it('rejects undefined instead of producing a TestCard', () => {
+      expect(() => resolveTemplate(undefined)).toThrow();
     });
+
+    it.each(['', 'constructor', '__proto__', 'toString'])(
+      'rejects invalid registry key %s',
+      (templateId) => {
+        expect(() => resolveTemplate(templateId)).toThrow();
+      },
+    );
   });
 
   describe('defaultTemplateForVideoType', () => {
@@ -50,22 +54,25 @@ describe('Template Registry', () => {
       );
     });
 
-    it('should return test-card for film_gamme', () => {
-      expect(defaultTemplateForVideoType('film_gamme')).toBe('test-card');
+    it('requires an explicit template for film_gamme', () => {
+      expect(() => defaultTemplateForVideoType('film_gamme')).toThrow();
     });
 
-    it('should return test-card for film_socle', () => {
-      expect(defaultTemplateForVideoType('film_socle')).toBe('test-card');
+    it('requires an explicit template for film_socle', () => {
+      expect(() => defaultTemplateForVideoType('film_socle')).toThrow();
     });
   });
 
   describe('listRegisteredTemplates', () => {
-    it('should return 3 registered templates', () => {
+    it('should return 6 registered templates including the existing Fafa formats', () => {
       const templates = listRegisteredTemplates();
-      expect(templates).toHaveLength(3);
+      expect(templates).toHaveLength(6);
       expect(templates.map((t) => t.templateId).sort()).toEqual([
+        'ne-change-pas-trop-vite',
+        'piece-expliquee',
         'short-braking-fact',
         'short-product-highlight',
+        'symptome-3-causes',
         'test-card',
       ]);
     });

@@ -151,6 +151,29 @@ describe('VideoExecutionController', () => {
   // ── Presigned URL ──
 
   describe('getPresignedUrl', () => {
+    it.each(['simulated', 'disabled', 'unknown'])(
+      'never signs or streams a historical path with outcome=%s',
+      async (outcome) => {
+        process.env.VIDEO_RENDER_BASE_URL = 'http://renderer.invalid';
+        const fetchMock = jest
+          .spyOn(global, 'fetch')
+          .mockRejectedValue(new Error('No external I/O in test'));
+        mockJobService.getExecutionStatus.mockResolvedValue({
+          id: 1,
+          outcome,
+          renderOutputPath: 's3://private/historical.mp4',
+        });
+        const signed = await controller.getPresignedUrl(1);
+        expect(signed.success).toBe(false);
+        const response = {
+          status: jest.fn().mockReturnThis(),
+          json: jest.fn(),
+        };
+        await controller.streamVideo(1, response as any);
+        expect(response.status).toHaveBeenCalledWith(404);
+        expect(fetchMock).not.toHaveBeenCalled();
+      },
+    );
     it('should return success=false when no renderOutputPath', async () => {
       mockJobService.getExecutionStatus.mockResolvedValue({
         id: 1,
@@ -164,6 +187,7 @@ describe('VideoExecutionController', () => {
     it('should return success=false when VIDEO_RENDER_BASE_URL missing', async () => {
       mockJobService.getExecutionStatus.mockResolvedValue({
         id: 1,
+        outcome: 'rendered_unverified',
         renderOutputPath:
           's3://automecanik-renders/renders/brief-001/1/output.mp4',
       });

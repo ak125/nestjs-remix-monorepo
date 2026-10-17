@@ -10,7 +10,10 @@
 import { RemotionRenderEngine } from '../../src/modules/media-factory/render/engines/remotion-render.engine';
 import { StubRenderEngine } from '../../src/modules/media-factory/render/engines/stub-render.engine';
 import { RenderEngineUnavailableError } from '../../src/modules/media-factory/render/types/canary.types';
-import { RenderErrorCode, RenderRequest } from '../../src/modules/media-factory/render/types/render.types';
+import {
+  RenderErrorCode,
+  RenderRequest,
+} from '../../src/modules/media-factory/render/types/render.types';
 
 // ─── Helpers ─────────────────────────────────────────────────
 
@@ -68,7 +71,9 @@ describe('RemotionRenderEngine', () => {
     fetchSpy = jest.spyOn(global, 'fetch').mockResolvedValue({
       ok: true,
       status: 200,
-      json: jest.fn().mockResolvedValue({ status: 'success', outputPath: '/out.mp4' }),
+      json: jest
+        .fn()
+        .mockResolvedValue({ status: 'success', outputPath: '/out.mp4' }),
     } as any);
   });
 
@@ -77,6 +82,54 @@ describe('RemotionRenderEngine', () => {
   });
 
   // ── Properties ──
+
+  describe('strict HTTP contract', () => {
+    let restore: () => void;
+    beforeEach(() => {
+      restore = withEnv({
+        VIDEO_RENDER_ENABLED: 'true',
+        VIDEO_RENDER_BASE_URL: 'http://renderer.invalid',
+      });
+    });
+    afterEach(() => restore());
+
+    it.each([
+      {},
+      { status: 'queued' },
+      { status: 'success', outputPath: '  ' },
+      { status: 'success', outputPath: 42 },
+    ])('rejects an invalid result %j', async (body) => {
+      fetchSpy.mockImplementation(mockFetchResponse(body));
+      expect((await engine.render(fakeRequest())).status).toBe('failed');
+    });
+    it('rejects HTTP failure even if its body claims success', async () => {
+      fetchSpy.mockImplementation(
+        mockFetchResponse({ status: 'success', outputPath: '/out.mp4' }, 500),
+      );
+      expect((await engine.render(fakeRequest())).status).toBe('failed');
+    });
+    it.each([undefined, 'OtherComposition'])(
+      'rejects absent or mismatched resolved composition %s before HTTP',
+      async (resolvedCompositionId) => {
+        expect(
+          (await engine.render(fakeRequest({ resolvedCompositionId }))).status,
+        ).toBe('failed');
+        expect(fetchSpy).not.toHaveBeenCalled();
+      },
+    );
+    it('forwards registry geometry when production props do not contain it', async () => {
+      await engine.render(
+        fakeRequest({
+          templateId: 'short-product-highlight',
+          resolvedCompositionId: 'ShortProductHighlight',
+        }),
+      );
+      expect(JSON.parse(fetchSpy.mock.calls[0][1].body).resolution).toEqual({
+        width: 1080,
+        height: 1920,
+      });
+    });
+  });
 
   it('should have name=remotion and version=1.0.0', () => {
     expect(engine.name).toBe('remotion');
@@ -290,10 +343,10 @@ describe('StubRenderEngine', () => {
     engine = new StubRenderEngine();
   });
 
-  it('should return success with stub metadata', async () => {
+  it('should return skipped with simulation metadata', async () => {
     const result = await engine.render(fakeRequest());
 
-    expect(result.status).toBe('success');
+    expect(result.status).toBe('skipped');
     expect(result.outputPath).toBeNull();
     expect(result.engineName).toBe('stub');
     expect(result.metadata).toMatchObject({ stub: true, briefId: 'brief-001' });

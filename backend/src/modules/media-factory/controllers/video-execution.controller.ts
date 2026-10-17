@@ -16,6 +16,7 @@ import {
   UseGuards,
   ParseIntPipe,
   Logger,
+  Req,
 } from '@nestjs/common';
 import { createHmac, createHash } from 'crypto';
 import type { Response } from 'express';
@@ -95,6 +96,29 @@ export class VideoExecutionController {
     private readonly jobService: VideoJobService,
     private readonly postprocessService: PostprocessService,
   ) {}
+
+  @Get('executions/:executionLogId/review')
+  async getReview(@Param('executionLogId', ParseIntPipe) id: number) {
+    return { success: true, data: await this.jobService.getRenderReview(id) };
+  }
+
+  @Post('executions/:executionLogId/review')
+  async mutateReview(
+    @Param('executionLogId', ParseIntPipe) id: number,
+    @Body() body: unknown,
+    @Req()
+    request: { user?: { id?: string | number; cst_id?: string | number } },
+  ) {
+    const identity = request.user?.cst_id ?? request.user?.id;
+    return {
+      success: true,
+      data: await this.jobService.mutateRenderReview(
+        id,
+        body,
+        identity == null ? '' : String(identity),
+      ),
+    };
+  }
 
   /**
    * POST /api/admin/video/batch-execute
@@ -307,7 +331,7 @@ export class VideoExecutionController {
   ) {
     const exec = await this.jobService.getExecutionStatus(executionLogId);
 
-    if (!exec.renderOutputPath) {
+    if (exec.outcome !== 'rendered_unverified' || !exec.renderOutputPath) {
       return {
         success: false,
         error: 'No render output path for this execution',
@@ -374,7 +398,7 @@ export class VideoExecutionController {
   ) {
     const exec = await this.jobService.getExecutionStatus(executionLogId);
 
-    if (!exec.renderOutputPath) {
+    if (exec.outcome !== 'rendered_unverified' || !exec.renderOutputPath) {
       res.status(404).json({ error: 'No render output for this execution' });
       return;
     }

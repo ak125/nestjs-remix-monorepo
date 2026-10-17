@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
 import { IsAdminGuard } from '@auth/is-admin.guard';
+import { DomainConflictException } from '@common/exceptions';
 import { MarketingHubDataService } from '../services/marketing-hub-data.service';
 import { WeeklyPlanGeneratorService } from '../services/weekly-plan-generator.service';
 import { MultiChannelCopywriterService } from '../services/multi-channel-copywriter.service';
@@ -103,14 +104,23 @@ export class MarketingPipelineController {
 
     // Update plan status
     if (!body.dry_run && result.generated > 0) {
-      await this.hubData.upsertWeeklyPlan({
+      const saved = await this.hubData.upsertWeeklyPlan({
         week_iso: body.week_iso,
         status: 'in_progress',
         posts_generated: result.generated,
       });
+      if (!saved) {
+        throw new DomainConflictException({
+          message: 'Marketing plan progress was not persisted',
+        });
+      }
     }
 
-    return { success: true, data: result };
+    return {
+      success:
+        result.errors === 0 && (result.mode === 'plan' || result.generated > 0),
+      data: result,
+    };
   }
 
   /**

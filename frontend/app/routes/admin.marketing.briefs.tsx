@@ -18,6 +18,7 @@ import {
   Form,
   useSubmit,
 } from "react-router";
+import { requireAdmin } from "~/auth/unified.server";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import {
@@ -54,7 +55,8 @@ interface BriefsResponse {
   };
 }
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request, context }: LoaderFunctionArgs) {
+  await requireAdmin({ context });
   const url = new URL(request.url);
   const params = new URLSearchParams();
 

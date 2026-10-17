@@ -1,15 +1,15 @@
 /**
- * VideoExecutionProcessor — BullMQ worker stub for video governance pipeline (P2).
+ * VideoExecutionProcessor — Bull worker for the video governance pipeline.
  *
  * Validates artefacts, runs 7 gates (G1-G7), logs results.
- * NO real rendering (Remotion/FFmpeg) — stub only.
+ * Rendering uses the configured adapter; simulation is never a deliverable.
  *
  * Pattern: content-refresh.processor.ts
  * @see backend/src/workers/processors/content-refresh.processor.ts
  */
 
 import { Processor, Process, OnQueueFailed, OnQueueError } from '@nestjs/bull';
-import { Logger } from '@nestjs/common';
+import { Logger, ConflictException } from '@nestjs/common';
 import type { Job } from 'bull';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
@@ -18,6 +18,11 @@ import type { VideoGateInput } from '../../modules/media-factory/services/video-
 import { VideoDataService } from '../../modules/media-factory/services/video-data.service';
 import { RenderAdapterService } from '../../modules/media-factory/render/render-adapter.service';
 import { RenderErrorCode } from '../../modules/media-factory/render/types/render.types';
+import {
+  scenarioCompositionProps,
+  validateVideoScenario,
+} from '../../modules/media-factory/render/video-scenario';
+import { executionOutcome } from '../../modules/media-factory/render/execution-outcome';
 import type { RenderRequest } from '../../modules/media-factory/render/types/render.types';
 import { VIDEO_FLAG_PENALTIES } from '../../config/video-quality.constants';
 import type {
@@ -109,7 +114,9 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
     // P7a: Idempotency guard — skip if already completed
     const currentLog = await this.client
       .from('__video_execution_log')
-      .select('status')
+      .select(
+        'status, engine_name, render_status, render_output_path, render_metadata, feature_flags, canary_fallback',
+      )
       .eq('id', executionLogId)
       .single();
 
@@ -119,7 +126,8 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
       );
       return {
         status: 'completed',
-        canPublish: null,
+        outcome: executionOutcome(currentLog.data),
+        canPublish: false,
         qualityScore: null,
         qualityFlags: [],
         durationMs: 0,
@@ -135,6 +143,12 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
       this.logger.warn('[VEP] VIDEO_PIPELINE_ENABLED is not true — skipping');
       await this.updateExecutionLog(executionLogId, {
         status: 'completed',
+        render_status: 'skipped',
+        render_output_path: null,
+        render_metadata: { executionMode: 'disabled' },
+        can_publish: false,
+        quality_score: null,
+        quality_flags: [],
         error_message: 'Pipeline disabled (VIDEO_PIPELINE_ENABLED=false)',
         completed_at: new Date().toISOString(),
         duration_ms: Date.now() - startTime,
@@ -142,7 +156,8 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
       });
       return {
         status: 'completed',
-        canPublish: null,
+        outcome: 'disabled',
+        canPublish: false,
         qualityScore: null,
         qualityFlags: [],
         errorMessage: 'Pipeline disabled',
@@ -210,33 +225,45 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
       const gateOutput = this.gatesService.runAllGates(gateInput);
 
       // ── Step 5b: P8 — Resolve template + build composition props ──
+      // A scenario cannot silently select a default template.
+      if (production.scenario != null) {
+        validateVideoScenario(production.scenario, production.templateId);
+      }
       const effectiveTemplateId =
         production.templateId ??
         defaultTemplateForVideoType(production.videoType as VideoType);
       const templateEntry = resolveTemplate(effectiveTemplateId);
 
-      const compositionProps: Record<string, unknown> = {
-        briefId,
-        executionLogId,
-        videoType: production.videoType,
-        vertical: production.vertical,
-        gammeAlias: production.gammeAlias ?? null,
-        templateId: effectiveTemplateId,
-        compositionId: templateEntry.compositionId,
-        claims: (production.claimTable ?? [])
-          .filter((c) => c.status === 'verified')
-          .slice(0, production.videoType === 'short' ? 3 : 6)
-          .map((c) => ({
-            kind: c.kind,
-            value: c.value,
-            unit: c.unit,
-            rawText: c.rawText,
-          })),
-        disclaimerText:
-          production.disclaimerPlan?.disclaimers?.[0]?.text ?? null,
-        brandName: process.env.VIDEO_BRAND_NAME || 'AutoMecanik',
-        tagline: process.env.VIDEO_BRAND_TAGLINE || 'Pièces auto de qualité',
-      };
+      const structuredScenario = templateEntry.requiresScenario === true;
+      const compositionProps: Record<string, unknown> = structuredScenario
+        ? scenarioCompositionProps(
+            production.scenario,
+            effectiveTemplateId,
+            production.masterAudioUrl,
+          )
+        : {
+            briefId,
+            executionLogId,
+            videoType: production.videoType,
+            vertical: production.vertical,
+            gammeAlias: production.gammeAlias ?? null,
+            templateId: effectiveTemplateId,
+            compositionId: templateEntry.compositionId,
+            claims: (production.claimTable ?? [])
+              .filter((c) => c.status === 'verified')
+              .slice(0, production.videoType === 'short' ? 3 : 6)
+              .map((c) => ({
+                kind: c.kind,
+                value: c.value,
+                unit: c.unit,
+                rawText: c.rawText,
+              })),
+            disclaimerText:
+              production.disclaimerPlan?.disclaimers?.[0]?.text ?? null,
+            brandName: process.env.VIDEO_BRAND_NAME || 'AutoMecanik',
+            tagline:
+              process.env.VIDEO_BRAND_TAGLINE || 'Pièces auto de qualité',
+          };
 
       // ── Step 5c: Render via adapter ──
       const renderRequest: RenderRequest = {
@@ -247,7 +274,7 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
         templateId: effectiveTemplateId,
         gateResults: gateOutput.gates,
         qualityScore: 0, // pre-score, computed next
-        canPublish: gateOutput.canPublish,
+        canPublish: structuredScenario ? false : gateOutput.canPublish,
         governanceSnapshot: {
           pipelineEnabled: process.env.VIDEO_PIPELINE_ENABLED === 'true',
           gatesBlocking: process.env.VIDEO_GATES_BLOCKING === 'true',
@@ -257,6 +284,77 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
         compositionProps,
       };
       const renderResult = await this.renderAdapter.render(renderRequest);
+      // Bind review to the exact production snapshot consumed, never a later read.
+      renderResult.metadata = {
+        ...renderResult.metadata,
+        productionVersion: production.updatedAt,
+      };
+      if (structuredScenario) {
+        renderResult.metadata = {
+          ...renderResult.metadata,
+          scenarioSchemaVersion: 1,
+          audioMode: production.masterAudioUrl
+            ? 'provided_unverified'
+            : 'silent_draft',
+          publicationBlock: 'SCENARIO_APPROVAL_UNBOUND',
+        };
+      }
+
+      // Preserve technical completion, without promoting a simulation to delivery.
+      if (
+        renderResult.status !== 'failed' &&
+        (renderResult.engineName === 'stub' ||
+          renderResult.metadata?.stub === true ||
+          renderResult.status === 'skipped' ||
+          renderResult.engineResolution === 'fallback_to_stub')
+      ) {
+        const simulated =
+          renderResult.engineName === 'stub' ||
+          renderResult.metadata?.stub === true ||
+          renderResult.engineResolution === 'fallback_to_stub';
+        const outcome = simulated ? 'simulated' : 'skipped';
+        const durationMs = Date.now() - startTime;
+        await this.updateExecutionLog(executionLogId, {
+          status: 'completed',
+          artefact_check: artefactCheck,
+          gate_results: gateOutput.gates,
+          engine_name: renderResult.engineName,
+          engine_version: renderResult.engineVersion,
+          engine_resolution: renderResult.engineResolution ?? null,
+          render_status: 'skipped',
+          render_output_path: null,
+          render_metadata: { ...renderResult.metadata, executionMode: outcome },
+          render_duration_ms: renderResult.durationMs,
+          can_publish: false,
+          quality_score: null,
+          quality_flags: [],
+          retryable: false,
+          is_canary: renderResult.metadata?.canary === true,
+          canary_fallback: renderResult.metadata?.fallback === true,
+          canary_error_code: renderResult.metadata?.canaryErrorCode ?? null,
+          canary_error_message: renderResult.metadata?.canaryError ?? null,
+          feature_flags: await this.captureFeatureFlags(),
+          completed_at: new Date().toISOString(),
+          duration_ms: durationMs,
+        });
+        return {
+          status: 'completed',
+          outcome,
+          canPublish: false,
+          qualityScore: null,
+          qualityFlags: [],
+          durationMs,
+        };
+      }
+
+      if (
+        renderResult.status === 'success' &&
+        !renderResult.outputPath?.trim()
+      ) {
+        renderResult.status = 'failed';
+        renderResult.errorCode = RenderErrorCode.RENDER_OUTPUT_INVALID;
+        renderResult.retryable = false;
+      }
 
       // ── P7d: Handle render failure ──
       if (renderResult.status === 'failed') {
@@ -315,7 +413,9 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
       }
 
       // ── Step 6: Compute quality score ──
-      const qualityFlags = gateOutput.flags;
+      const qualityFlags = structuredScenario
+        ? [...gateOutput.flags, 'SCENARIO_APPROVAL_UNBOUND']
+        : gateOutput.flags;
       let qualityScore = 100;
       for (const flag of qualityFlags) {
         const penalty = VIDEO_FLAG_PENALTIES[flag as VideoQualityFlag];
@@ -325,7 +425,11 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
 
       // ── Step 7: Observe-only mode ──
       const gatesBlocking = process.env.VIDEO_GATES_BLOCKING === 'true';
-      const canPublish = gatesBlocking ? gateOutput.canPublish : null;
+      const canPublish = structuredScenario
+        ? false
+        : gatesBlocking
+          ? gateOutput.canPublish
+          : null;
 
       if (!gatesBlocking && !gateOutput.canPublish) {
         this.logger.warn(
@@ -369,11 +473,18 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
       });
 
       // ── Step 9: Write-back to production ──
-      await this.dataService.updateProduction(briefId, {
-        gateResults: gateOutput.gates,
-        qualityScore,
-        qualityFlags,
-      });
+      try {
+        await this.dataService.updateProduction(briefId, {
+          expectedUpdatedAt: production.updatedAt,
+          gateResults: gateOutput.gates,
+          qualityScore,
+          qualityFlags,
+        });
+      } catch (error) {
+        // The historical render stays valid evidence; it must not validate new content.
+        if (!(error instanceof ConflictException)) throw error;
+        this.logger.warn(`[VEP] Skipped stale QA write-back for ${briefId}`);
+      }
 
       this.logger.log(
         `[VEP] Execution #${executionLogId} completed: canPublish=${canPublish}, score=${qualityScore}, duration=${durationMs}ms`,
@@ -383,6 +494,7 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
 
       return {
         status: 'completed',
+        outcome: 'rendered_unverified',
         canPublish,
         qualityScore,
         qualityFlags,

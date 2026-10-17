@@ -11,13 +11,26 @@ import {
   NotFoundException,
   ConflictException,
   BadRequestException,
+  ServiceUnavailableException,
+  ForbiddenException,
 } from '@nestjs/common';
+import { randomUUID } from 'crypto';
+import {
+  readRenderReview,
+  parseReviewMutation,
+  type RenderComment,
+} from '../render/render-review';
 import { InjectQueue } from '@nestjs/bull';
 import type { Queue } from 'bull';
 import { ConfigService } from '@nestjs/config';
+import { DatabaseException } from '@common/exceptions';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { VideoDataService } from './video-data.service';
 import { RenderAdapterService } from '../render/render-adapter.service';
+import {
+  executionOutcome,
+  type ExecutionOutcome,
+} from '../render/execution-outcome';
 import type { VideoExecutionJobData } from '../../../workers/types/video-execution.types';
 
 // ─────────────────────────────────────────────────────────────
@@ -30,6 +43,7 @@ export interface ExecutionLogRow {
   videoType: string;
   vertical: string;
   status: string;
+  outcome: ExecutionOutcome;
   bullmqJobId: string | null;
   triggerSource: string;
   triggerJobId: string | null;
@@ -72,6 +86,7 @@ export interface ExecutionLogRow {
 export interface ExecutionStats {
   total: number;
   byStatus: Record<string, number>;
+  byOutcome: Partial<Record<ExecutionOutcome, number>>;
   avgDurationMs: number | null;
   // P5.4: canary observability
   engineDistribution: Record<string, number>;
@@ -209,6 +224,126 @@ export class VideoJobService extends SupabaseBaseService {
     }
 
     return this.mapLogRow(data);
+  }
+
+  private async readReviewExecution(id: number) {
+    const { data, error } = await this.client
+      .from('__video_execution_log')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+    if (error)
+      throw new ServiceUnavailableException('Unable to read render review');
+    if (!data) throw new NotFoundException('Execution not found');
+    return data;
+  }
+
+  async getRenderReview(id: number) {
+    return readRenderReview(await this.readReviewExecution(id));
+  }
+
+  async mutateRenderReview(id: number, input: unknown, authorId: string) {
+    if (!authorId?.trim())
+      throw new ForbiddenException('Authenticated author required');
+    const mutation = parseReviewMutation(input);
+    const row = await this.readReviewExecution(id);
+    const review = readRenderReview(row);
+    if (
+      mutation.expectedReviewRevision !== review.revision ||
+      mutation.expectedRenderHash !== review.binding.renderHash ||
+      mutation.expectedProductionVersion !== review.binding.productionVersion
+    )
+      throw new ConflictException('Render review revision conflict');
+    const comments = [...review.comments];
+    const now = new Date().toISOString();
+    if (mutation.action === 'add') {
+      if (
+        mutation.endFrame > review.binding.totalFrames ||
+        comments.length >= 200
+      )
+        throw new BadRequestException(
+          'Interval outside render or review capacity reached',
+        );
+      let source: RenderComment['source'];
+      if (mutation.sourceExecutionId) {
+        if (mutation.sourceExecutionId === id)
+          throw new BadRequestException(
+            'Repositioning requires a different render',
+          );
+        const sourceRow = await this.readReviewExecution(
+          mutation.sourceExecutionId,
+        );
+        if (sourceRow.brief_id !== row.brief_id)
+          throw new ConflictException('Source belongs to another production');
+        const sourceComment = readRenderReview(sourceRow).comments.find(
+          (comment) => comment.id === mutation.sourceCommentId,
+        );
+        if (!sourceComment)
+          throw new NotFoundException('Source comment not found');
+        source = {
+          executionLogId: sourceRow.id,
+          commentId: sourceComment.id,
+          binding: sourceComment.binding,
+          startFrame: sourceComment.startFrame,
+          endFrame: sourceComment.endFrame,
+        };
+      }
+      comments.push({
+        id: randomUUID(),
+        authorId,
+        createdAt: now,
+        status: 'open',
+        binding: review.binding,
+        startFrame: mutation.startFrame,
+        endFrame: mutation.endFrame,
+        target: mutation.target,
+        preserve: mutation.preserve,
+        request: mutation.request,
+        ...(source ? { source } : {}),
+      });
+    } else {
+      const index = comments.findIndex(
+        (comment) => comment.id === mutation.commentId,
+      );
+      if (index < 0) throw new NotFoundException('Comment not found');
+      comments[index] = {
+        ...comments[index],
+        status: mutation.action === 'resolve' ? 'resolved' : 'open',
+        updatedBy: authorId,
+        updatedAt: now,
+      };
+    }
+    let query = this.client
+      .from('__video_execution_log')
+      .update({
+        render_metadata: {
+          ...row.render_metadata,
+          review: { revision: review.revision + 1, comments },
+        },
+      })
+      .eq('id', id)
+      .eq('status', 'completed')
+      .eq('render_status', 'success')
+      .eq('render_metadata->>checksumSha256', review.binding.renderHash)
+      .eq(
+        'render_metadata->>productionVersion',
+        review.binding.productionVersion,
+      );
+    query =
+      row.render_metadata.review == null
+        ? query.is('render_metadata->review', null)
+        : query.eq(
+            'render_metadata->review->>revision',
+            String(review.revision),
+          );
+    const { data, error } = await query.select('*').maybeSingle();
+    if (error)
+      throw new ServiceUnavailableException('Unable to persist render review');
+    if (!data)
+      throw new ConflictException(
+        'Review changed; reload and reconcile your comment',
+      );
+    return readRenderReview(data);
   }
 
   /**
@@ -372,7 +507,7 @@ export class VideoJobService extends SupabaseBaseService {
     let query = this.client
       .from('__video_execution_log')
       .select(
-        'status, duration_ms, engine_name, render_duration_ms, is_canary, canary_fallback, canary_error_code',
+        'status, duration_ms, engine_name, render_status, render_output_path, render_metadata, feature_flags, render_duration_ms, is_canary, canary_fallback, canary_error_code',
       );
 
     // P6.2: Time window filter
@@ -392,39 +527,28 @@ export class VideoJobService extends SupabaseBaseService {
 
     if (error) {
       this.logger.error(`getExecutionStats error: ${error.message}`);
-      return {
-        total: 0,
-        byStatus: {},
-        avgDurationMs: null,
-        engineDistribution: {},
-        canary: {
-          totalCanary: 0,
-          totalFallback: 0,
-          successRate: null,
-          fallbackRate: null,
-          topErrorCodes: {},
-        },
-        renderPerformance: {
-          p50RenderDurationMs: null,
-          p95RenderDurationMs: null,
-          byEngine: {},
-        },
-        timeWindow,
-      };
+      throw new DatabaseException({
+        message: 'Unable to load video execution statistics',
+        context: { sourceCode: error.code },
+      });
     }
 
     const rows = data ?? [];
     const byStatus: Record<string, number> = {};
+    const byOutcome: Partial<Record<ExecutionOutcome, number>> = {};
     let totalDuration = 0;
     let durationCount = 0;
 
     const engineDistribution: Record<string, number> = {};
     let totalCanary = 0;
+    let successfulCanary = 0;
     let totalFallback = 0;
     const canaryErrorCodes: Record<string, number> = {};
     const byEngine: Record<string, number[]> = {};
 
     for (const row of rows) {
+      const outcome = executionOutcome(row);
+      byOutcome[outcome] = (byOutcome[outcome] ?? 0) + 1;
       byStatus[row.status] = (byStatus[row.status] ?? 0) + 1;
       if (row.duration_ms != null) {
         totalDuration += row.duration_ms;
@@ -436,6 +560,7 @@ export class VideoJobService extends SupabaseBaseService {
 
       if (row.is_canary) {
         totalCanary++;
+        if (outcome === 'rendered_unverified') successfulCanary++;
         if (row.canary_fallback) {
           totalFallback++;
           const errCode = (row.canary_error_code as string) || 'UNKNOWN';
@@ -481,6 +606,7 @@ export class VideoJobService extends SupabaseBaseService {
     return {
       total: rows.length,
       byStatus,
+      byOutcome,
       avgDurationMs:
         durationCount > 0 ? Math.round(totalDuration / durationCount) : null,
       engineDistribution,
@@ -489,7 +615,7 @@ export class VideoJobService extends SupabaseBaseService {
         totalFallback,
         successRate:
           totalCanary > 0
-            ? Math.round(((totalCanary - totalFallback) / totalCanary) * 100)
+            ? Math.round((successfulCanary / totalCanary) * 100)
             : null,
         fallbackRate:
           totalCanary > 0
@@ -648,6 +774,7 @@ export class VideoJobService extends SupabaseBaseService {
     videoType: row.video_type as string,
     vertical: row.vertical as string,
     status: row.status as string,
+    outcome: executionOutcome(row),
     bullmqJobId: row.bullmq_job_id as string | null,
     triggerSource: row.trigger_source as string,
     triggerJobId: row.trigger_job_id as string | null,
@@ -656,8 +783,14 @@ export class VideoJobService extends SupabaseBaseService {
     completedAt: row.completed_at as string | null,
     artefactCheck: row.artefact_check,
     gateResults: row.gate_results,
-    canPublish: row.can_publish as boolean | null,
-    qualityScore: row.quality_score as number | null,
+    canPublish:
+      executionOutcome(row) === 'rendered_unverified'
+        ? (row.can_publish as boolean | null)
+        : false,
+    qualityScore:
+      executionOutcome(row) === 'rendered_unverified'
+        ? (row.quality_score as number | null)
+        : null,
     qualityFlags: row.quality_flags,
     errorMessage: row.error_message as string | null,
     durationMs: row.duration_ms as number | null,

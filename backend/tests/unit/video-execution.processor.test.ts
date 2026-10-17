@@ -10,6 +10,7 @@
 
 import { VideoExecutionProcessor } from '../../src/workers/processors/video-execution.processor';
 import { RenderErrorCode } from '../../src/modules/media-factory/render/types/render.types';
+import { ConflictException } from '@nestjs/common';
 
 // ─── Mock helpers ────────────────────────────────────────────
 
@@ -103,7 +104,7 @@ function fakeGateOutput(overrides: Record<string, unknown> = {}) {
 function fakeRenderResult(overrides: Record<string, unknown> = {}) {
   return {
     status: 'success',
-    engineName: 'stub',
+    engineName: 'remotion',
     engineVersion: '1.0.0',
     durationMs: 42,
     outputPath: '/tmp/output.mp4',
@@ -202,6 +203,113 @@ describe('VideoExecutionProcessor', () => {
     });
   }
 
+  describe('structured Fafa scenario', () => {
+    const pilot = require('../../../workspaces/marketing/fafa-media-factory/scripts/draft/fafa-plaquettes-frein-001/render-payload.json');
+    const { audioUrl, ...props } = pilot.compositionProps;
+    const scenario = {
+      schemaVersion: 1,
+      compositionId: pilot.composition,
+      props,
+    };
+    let restore: () => void;
+    beforeEach(() => {
+      restore = withEnv({
+        VIDEO_PIPELINE_ENABLED: 'true',
+        VIDEO_GATES_BLOCKING: 'true',
+      });
+      const chain = chainMock({ data: { status: 'pending' }, error: null });
+      chain.update = jest
+        .fn()
+        .mockReturnValue({ eq: jest.fn().mockResolvedValue({ error: null }) });
+      setClient(chain);
+      mocks.dataService.getProduction.mockResolvedValue(
+        fakeProduction({
+          briefId: pilot.briefId,
+          templateId: 'ne-change-pas-trop-vite',
+          scenario,
+          masterAudioUrl: audioUrl,
+        }),
+      );
+    });
+    afterEach(() => restore());
+
+    it('passes the exact scenario and production audio, without generic props or publication approval', async () => {
+      const result = await processor.handleVideoExecution(fakeJob());
+      expect(mocks.renderAdapter.render).toHaveBeenCalledWith(
+        expect.objectContaining({
+          compositionProps: pilot.compositionProps,
+          canPublish: false,
+        }),
+      );
+      expect(result.canPublish).toBe(false);
+      expect(result.qualityFlags).toContain('SCENARIO_APPROVAL_UNBOUND');
+    });
+
+    it.each([
+      ['missing', null],
+      ['wrong version', { ...scenario, schemaVersion: 2 }],
+      ['wrong composition', { ...scenario, compositionId: 'PieceExpliquee' }],
+      ['embedded audio', { ...scenario, props: { ...props, audioUrl } }],
+      ['generic props', { ...scenario, props: { ...props, claims: [] } }],
+    ])('refuses %s scenario before the adapter', async (_label, invalid) => {
+      mocks.dataService.getProduction.mockResolvedValue(
+        fakeProduction({
+          templateId: 'ne-change-pas-trop-vite',
+          scenario: invalid,
+          scriptText: JSON.stringify(scenario),
+          masterAudioUrl: audioUrl,
+        }),
+      );
+      const result = await processor.handleVideoExecution(fakeJob());
+      expect(result.status).toBe('failed');
+      expect(mocks.renderAdapter.render).not.toHaveBeenCalled();
+    });
+
+    it.each([null, audioUrl])(
+      'records the audio mode without claiming verification (%s)',
+      async (masterAudioUrl) => {
+        const chain = chainMock({ data: { status: 'pending' }, error: null });
+        chain.update.mockReturnValue({
+          eq: jest.fn().mockResolvedValue({ error: null }),
+        });
+        setClient(chain);
+        mocks.dataService.getProduction.mockResolvedValue(
+          fakeProduction({
+            templateId: 'ne-change-pas-trop-vite',
+            scenario,
+            masterAudioUrl,
+          }),
+        );
+        process.env.VIDEO_GATES_BLOCKING = 'false';
+        const result = await processor.handleVideoExecution(fakeJob());
+        expect(result.canPublish).toBe(false);
+        expect(chain.update).toHaveBeenCalledWith(
+          expect.objectContaining({
+            render_metadata: expect.objectContaining({
+              audioMode: masterAudioUrl
+                ? 'provided_unverified'
+                : 'silent_draft',
+              publicationBlock: 'SCENARIO_APPROVAL_UNBOUND',
+            }),
+          }),
+        );
+        const sent =
+          mocks.renderAdapter.render.mock.calls[0][0].compositionProps;
+        if (masterAudioUrl) expect(sent.audioUrl).toBe(masterAudioUrl);
+        else expect(sent).not.toHaveProperty('audioUrl');
+      },
+    );
+
+    it('refuses a scenario without an explicit template', async () => {
+      mocks.dataService.getProduction.mockResolvedValue(
+        fakeProduction({ scenario }),
+      );
+      const result = await processor.handleVideoExecution(fakeJob());
+      expect(result.status).toBe('failed');
+      expect(mocks.renderAdapter.render).not.toHaveBeenCalled();
+    });
+  });
+
   // ── Idempotency guard ──
 
   describe('idempotency guard', () => {
@@ -250,6 +358,62 @@ describe('VideoExecutionProcessor', () => {
 
   // ── Feature flag guard ──
 
+  describe('simulation is not a delivered render', () => {
+    it.each([
+      { engineName: 'stub', status: 'success', outputPath: null },
+      { engineName: 'stub', status: 'success', outputPath: '/fake.mp4' },
+      { engineName: 'stub', status: 'skipped', outputPath: null },
+      { engineName: 'remotion', status: 'skipped', outputPath: null },
+    ])('does not approve or score $engineName/$status', async (render) => {
+      const cleanup = withEnv({
+        VIDEO_PIPELINE_ENABLED: 'true',
+        VIDEO_GATES_BLOCKING: 'true',
+      });
+      try {
+        const chain = chainMock({ data: { status: 'pending' }, error: null });
+        chain.update.mockReturnValue({
+          eq: jest.fn().mockResolvedValue({ error: null }),
+        });
+        setClient(chain);
+        mocks.renderAdapter.render.mockResolvedValue(fakeRenderResult(render));
+        const result = await processor.handleVideoExecution(fakeJob());
+        expect(result.canPublish).toBe(false);
+        expect(result.qualityScore).toBeNull();
+        expect(chain.update).toHaveBeenCalledWith(
+          expect.objectContaining({
+            status: 'completed',
+            render_status: 'skipped',
+            can_publish: false,
+            quality_score: null,
+          }),
+        );
+        expect(mocks.dataService.updateProduction).not.toHaveBeenCalled();
+        expect(mocks.jobHealth.recordSuccess).not.toHaveBeenCalled();
+      } finally {
+        cleanup();
+      }
+    });
+
+    it('refuses a real engine success without an output reference', async () => {
+      const cleanup = withEnv({ VIDEO_PIPELINE_ENABLED: 'true' });
+      try {
+        const chain = chainMock({ data: { status: 'pending' }, error: null });
+        chain.update.mockReturnValue({
+          eq: jest.fn().mockResolvedValue({ error: null }),
+        });
+        setClient(chain);
+        mocks.renderAdapter.render.mockResolvedValue(
+          fakeRenderResult({ outputPath: null }),
+        );
+        const result = await processor.handleVideoExecution(fakeJob());
+        expect(result.status).toBe('failed');
+        expect(mocks.dataService.updateProduction).not.toHaveBeenCalled();
+      } finally {
+        cleanup();
+      }
+    });
+  });
+
   describe('feature flag guard', () => {
     it('should skip when VIDEO_PIPELINE_ENABLED is false', async () => {
       const cleanup = withEnv({ VIDEO_PIPELINE_ENABLED: 'false' });
@@ -263,7 +427,15 @@ describe('VideoExecutionProcessor', () => {
 
       expect(result.status).toBe('completed');
       expect(result.errorMessage).toBe('Pipeline disabled');
-      expect(result.canPublish).toBeNull();
+      expect(result.canPublish).toBe(false);
+      expect(chain.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          render_status: 'skipped',
+          can_publish: false,
+          quality_score: null,
+          render_metadata: { executionMode: 'disabled' },
+        }),
+      );
       expect(mocks.gatesService.runAllGates).not.toHaveBeenCalled();
       cleanup();
     });
@@ -568,6 +740,13 @@ describe('VideoExecutionProcessor', () => {
       expect(result.status).toBe('completed');
       // Should have called update multiple times: processing, phase1, phase2
       expect(chain.update).toHaveBeenCalledTimes(3);
+      expect(chain.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          render_metadata: expect.objectContaining({
+            productionVersion: '2026-02-24T00:00:00Z',
+          }),
+        }),
+      );
       // Production write-back
       expect(mocks.dataService.updateProduction).toHaveBeenCalledWith(
         'brief-001',
@@ -575,9 +754,36 @@ describe('VideoExecutionProcessor', () => {
           gateResults: expect.any(Array),
           qualityScore: expect.any(Number),
           qualityFlags: expect.any(Array),
+          expectedUpdatedAt: '2026-02-24T00:00:00Z',
         }),
       );
       cleanup();
+    });
+
+    it('preserves a completed historical render without writing QA onto a newer production', async () => {
+      const cleanup = withEnv({
+        VIDEO_PIPELINE_ENABLED: 'true',
+        VIDEO_GATES_BLOCKING: 'true',
+      });
+      try {
+        const chain = chainMock({ data: { status: 'pending' }, error: null });
+        chain.update = jest
+          .fn()
+          .mockReturnValue({
+            eq: jest.fn().mockResolvedValue({ error: null }),
+          });
+        setClient(chain);
+        mocks.dataService.updateProduction.mockRejectedValue(
+          new ConflictException('New production revision'),
+        );
+        const result = await (processor as any).handleVideoExecution(fakeJob());
+        expect(result.status).toBe('completed');
+        expect(chain.update).not.toHaveBeenCalledWith(
+          expect.objectContaining({ status: 'failed' }),
+        );
+      } finally {
+        cleanup();
+      }
     });
 
     it('should catch phase 1 DB failure in outer catch-all', async () => {

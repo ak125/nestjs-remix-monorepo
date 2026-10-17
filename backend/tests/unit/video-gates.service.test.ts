@@ -84,7 +84,7 @@ describe('VideoGatesService', () => {
   ): VideoGateInput {
     return {
       brief: makeBrief(),
-      claims: [],
+      claims: [makeClaim()],
       evidencePack: [],
       disclaimerPlan: { disclaimers: [] },
       approvalRecord: makeApproval(),
@@ -169,28 +169,30 @@ describe('VideoGatesService', () => {
       expect(result.flags).toContain('GATE_FAIL:safety');
     });
 
-    it('should allow canPublish=true with WARN flags', () => {
-      // G1 Truth: 15-30% unsourced → WARN (warn=0.15, fail=0.3)
-      const claims = Array.from({ length: 5 }, (_, i) =>
-        makeClaim({
-          id: `claim-${i}`,
-          status: i === 0 ? 'unverified' : 'verified',
+    it.each([4, 7])('blocks one unsupported claim among %i claims', (count) => {
+      const supported = Array.from({ length: count - 1 }, (_, i) =>
+        makeClaim({ id: `supported-${i}` }),
+      );
+      const result = service.runAllGates(
+        makeInput({
+          claims: [makeClaim({ status: 'unverified' }), ...supported],
         }),
       );
-      // 1/5 = 0.2 → between warn(0.15) and fail(0.3) → WARN
-      const result = service.runAllGates(makeInput({ claims }));
-      expect(result.canPublish).toBe(true);
-      expect(result.flags).toContain('GATE_WARN:truth');
+      expect(result.canPublish).toBe(false);
+      expect(result.flags).toContain('GATE_FAIL:truth');
+      expect(result.gates.find((g) => g.gate === 'truth')!.measured).toBe(1);
     });
   });
 
   // ── G1: Truth Gate ──
 
   describe('G1 Truth', () => {
-    it('should PASS with 0 claims', () => {
+    it('should FAIL with a reason when the claim table is empty', () => {
       const result = service.runAllGates(makeInput({ claims: [] }));
       const g1 = result.gates.find((g) => g.gate === 'truth')!;
-      expect(g1.verdict).toBe('PASS');
+      expect(g1.verdict).toBe('FAIL');
+      expect(result.canPublish).toBe(false);
+      expect(g1.details.join(' ')).toMatch(/empty|missing/i);
     });
 
     it('should PASS when all claims are verified', () => {
@@ -204,8 +206,7 @@ describe('VideoGatesService', () => {
       expect(g1.measured).toBe(0);
     });
 
-    it('should FAIL when >30% claims are unsourced', () => {
-      // 2/4 = 0.5 → > fail(0.3) → FAIL
+    it('counts every unsupported claim separately', () => {
       const claims = [
         makeClaim({ id: 'c1', status: 'unverified' }),
         makeClaim({ id: 'c2', status: 'unverified' }),
@@ -215,35 +216,142 @@ describe('VideoGatesService', () => {
       const result = service.runAllGates(makeInput({ claims }));
       const g1 = result.gates.find((g) => g.gate === 'truth')!;
       expect(g1.verdict).toBe('FAIL');
+      expect(g1.measured).toBe(2);
+      expect(g1.triggerItems?.map((item) => item.location)).toEqual([
+        'claim:c1',
+        'claim:c2',
+      ]);
     });
 
-    it('should WARN when 15-30% claims are unsourced', () => {
-      // 1/5 = 0.2 → between warn(0.15) and fail(0.3) → WARN
+    it('should FAIL even when only one of five claims is unsupported', () => {
       const claims = Array.from({ length: 5 }, (_, i) =>
         makeClaim({ id: `c${i}`, status: i === 0 ? 'unverified' : 'verified' }),
       );
       const result = service.runAllGates(makeInput({ claims }));
       const g1 = result.gates.find((g) => g.gate === 'truth')!;
-      expect(g1.verdict).toBe('WARN');
+      expect(g1.verdict).toBe('FAIL');
+      expect(g1.measured).toBe(1);
     });
 
     it('should exclude procedure/safety claims from unsourced count', () => {
       // 1 unverified procedure + 1 unverified mileage out of 2
-      // Only mileage counts → 1/2 = 0.5 → FAIL
+      // Only mileage counts here; G2 independently checks the procedure.
       const claims = [
         makeClaim({ id: 'c1', kind: 'procedure', status: 'unverified' }),
         makeClaim({ id: 'c2', kind: 'mileage', status: 'unverified' }),
       ];
       const result = service.runAllGates(makeInput({ claims }));
       const g1 = result.gates.find((g) => g.gate === 'truth')!;
-      // procedure excluded from unsourced, so 1 unsourced / 2 total = 0.5
-      expect(g1.measured).toBe(0.5);
+      // G1 reports a count; procedure and safety remain the responsibility of G2.
+      expect(g1.measured).toBe(1);
+    });
+
+    it.each([
+      { sourceRef: null, evidenceId: null },
+      { sourceRef: '  ', evidenceId: null },
+      { sourceRef: null, evidenceId: 'missing-document' },
+      { sourceRef: null, evidenceId: '   ' },
+      { status: 'blocked' as const },
+    ])('rejects a claim without support: %j', (overrides) => {
+      const result = service.runAllGates(
+        makeInput({ claims: [makeClaim(overrides)] }),
+      );
+      const truth = result.gates.find((g) => g.gate === 'truth')!;
+      expect(truth.verdict).toBe('FAIL');
+      expect(truth.measured).toBe(1);
+      expect(truth.triggerItems).toHaveLength(1);
+      expect(result.canPublish).toBe(false);
+    });
+
+    it('accepts verified evidence only when its exact docId is in the pack', () => {
+      const evidence = {
+        docId: 'ev-001',
+        heading: 'Synthetic fixture',
+        charRange: [0, 20] as [number, number],
+        rawExcerpt: 'Synthetic unit test evidence.',
+        confidence: 1,
+      };
+      const claims = [makeClaim({ sourceRef: null })];
+      const matching = service.runAllGates(
+        makeInput({ claims, evidencePack: [evidence] }),
+      );
+      expect(matching.gates.find((g) => g.gate === 'truth')!.verdict).toBe(
+        'PASS',
+      );
+      expect(matching.canPublish).toBe(true);
+      const foreign = service.runAllGates(
+        makeInput({
+          claims,
+          evidencePack: [{ ...evidence, docId: 'other-document' }],
+        }),
+      );
+      expect(foreign.gates.find((g) => g.gate === 'truth')!.verdict).toBe(
+        'FAIL',
+      );
+      expect(foreign.canPublish).toBe(false);
+    });
+
+    it('does not promote an unverified claim even with a matching evidence entry', () => {
+      const result = service.runAllGates(
+        makeInput({
+          claims: [makeClaim({ sourceRef: null, status: 'unverified' })],
+          evidencePack: [
+            {
+              docId: 'ev-001',
+              heading: 'Fixture',
+              charRange: [0, 10],
+              rawExcerpt: 'Test only.',
+              confidence: 1,
+            },
+          ],
+        }),
+      );
+      expect(result.gates.find((g) => g.gate === 'truth')!.verdict).toBe(
+        'FAIL',
+      );
     });
   });
 
   // ── G2: Safety Gate ──
 
   describe('G2 Safety', () => {
+    it.each(['procedure', 'safety'] as const)(
+      'requires a validator for %s even when the model flag is false',
+      (kind) => {
+        const result = service.runAllGates(
+          makeInput({
+            claims: [
+              makeClaim({
+                kind,
+                status: 'unverified',
+                requiresHumanValidation: false,
+              }),
+            ],
+          }),
+        );
+        expect(result.gates.find((g) => g.gate === 'safety')!.verdict).toBe(
+          'FAIL',
+        );
+        expect(result.canPublish).toBe(false);
+      },
+    );
+
+    it('rejects a blank validator identity', () => {
+      const result = service.runAllGates(
+        makeInput({
+          claims: [
+            makeClaim({
+              kind: 'safety',
+              requiresHumanValidation: true,
+              validatedBy: '   ',
+            }),
+          ],
+        }),
+      );
+      expect(result.gates.find((g) => g.gate === 'safety')!.verdict).toBe(
+        'FAIL',
+      );
+    });
     it('should WARN when no safety/procedure claims (warn=0 threshold)', () => {
       const result = service.runAllGates(
         makeInput({ claims: [makeClaim({ kind: 'mileage' })] }),

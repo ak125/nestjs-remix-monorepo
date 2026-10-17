@@ -19,6 +19,7 @@ import {
   Param,
   UseGuards,
   Logger,
+  BadRequestException,
 } from '@nestjs/common';
 import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
 import { IsAdminGuard } from '../../../auth/is-admin.guard';
@@ -47,9 +48,10 @@ export class VideoPipelineController {
   @Post('productions/:briefId/generate-script')
   async generateScript(
     @Param('briefId') briefId: string,
-    @Body() body: { regenerate?: boolean },
+    @Body() body: { regenerate?: boolean; expectedUpdatedAt: string },
   ) {
     this.logger.log(`[PIPELINE] generate-script for ${briefId}`);
+    this.requireVersion(body.expectedUpdatedAt);
 
     const production = await this.dataService.getProduction(briefId);
 
@@ -59,6 +61,7 @@ export class VideoPipelineController {
       vertical: production.vertical,
       gammeAlias: production.gammeAlias ?? null,
       regenerate: body.regenerate ?? false,
+      expectedUpdatedAt: body.expectedUpdatedAt,
     });
 
     return {
@@ -74,9 +77,16 @@ export class VideoPipelineController {
   @Post('productions/:briefId/generate-audio')
   async generateAudio(
     @Param('briefId') briefId: string,
-    @Body() body: { voice?: string; speed?: number; regenerate?: boolean },
+    @Body()
+    body: {
+      voice?: string;
+      speed?: number;
+      regenerate?: boolean;
+      expectedUpdatedAt: string;
+    },
   ) {
     this.logger.log(`[PIPELINE] generate-audio for ${briefId}`);
+    this.requireVersion(body.expectedUpdatedAt);
 
     const production = await this.dataService.getProduction(briefId);
 
@@ -94,6 +104,7 @@ export class VideoPipelineController {
       voice: (body.voice as TtsVoice) || undefined,
       speed: body.speed,
       regenerate: body.regenerate ?? false,
+      expectedUpdatedAt: body.expectedUpdatedAt,
     });
 
     return {
@@ -105,17 +116,24 @@ export class VideoPipelineController {
   }
 
   // ── Derivative Engine ──
+  private requireVersion(version: unknown) {
+    if (typeof version !== 'string' || !Number.isFinite(Date.parse(version)))
+      throw new BadRequestException('Expected production version required');
+  }
 
   @Post('productions/:briefId/derive')
   async deriveFromMaster(
     @Param('briefId') briefId: string,
-    @Body() body: { policy?: Partial<DerivativePolicy> },
+    @Body()
+    body: { policy?: Partial<DerivativePolicy>; expectedUpdatedAt: string },
   ) {
     this.logger.log(`[PIPELINE] derive from master ${briefId}`);
+    this.requireVersion(body.expectedUpdatedAt);
 
     const result = await this.derivativeEngine.deriveFromMaster(
       briefId,
       body.policy,
+      body.expectedUpdatedAt,
     );
 
     return {

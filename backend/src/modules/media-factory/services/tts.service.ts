@@ -12,7 +12,14 @@
  * Called from dashboard: POST /api/admin/video/productions/:briefId/generate-audio
  */
 
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHash, createHmac } from 'crypto';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
@@ -48,6 +55,7 @@ function escapeXml(text: string): string {
 }
 
 export interface GenerateAudioInput {
+  expectedUpdatedAt?: string;
   briefId: string;
   text: string;
   voice?: TtsVoice;
@@ -63,6 +71,13 @@ export interface GenerateAudioResult {
   voice: TtsVoice;
   speed: number;
   model: string;
+}
+
+interface AudioProductionSnapshot {
+  id: number;
+  script_text: string;
+  status: string;
+  updated_at: string;
 }
 
 @Injectable()
@@ -102,14 +117,32 @@ export class TtsService extends SupabaseBaseService {
       );
     }
 
-    const voice = input.voice || this.defaultVoice;
+    const voice = input.voice ?? this.defaultVoice;
     const speed = input.speed ?? this.defaultSpeed;
-    const text = input.text.trim();
+    if (
+      !Object.prototype.hasOwnProperty.call(VOICE_MAP, voice) ||
+      !Number.isFinite(speed) ||
+      speed < 0.5 ||
+      speed > 2 ||
+      typeof input.text !== 'string'
+    ) {
+      throw new BadRequestException(
+        'Invalid TTS text, voice or speed (0.5–2.0)',
+      );
+    }
 
+    const text = input.text.trim();
     if (!text) {
       throw new BadRequestException('Text is empty — cannot generate TTS');
     }
 
+    // Snapshot before cache/provider work; a late response must not replace newer content.
+    const production = await this.readAudioProduction(input.briefId, text);
+    if (
+      input.expectedUpdatedAt !== undefined &&
+      input.expectedUpdatedAt !== production.updated_at
+    )
+      throw new ConflictException('Audio production revision conflict');
     const costChars = text.length;
 
     // Compute cache key = SHA256(text + voice + speed)
@@ -128,6 +161,7 @@ export class TtsService extends SupabaseBaseService {
           cached.url,
           voice,
           speed,
+          production,
         );
 
         return {
@@ -143,7 +177,7 @@ export class TtsService extends SupabaseBaseService {
     }
 
     // Generate via Azure Speech REST (fetch, native — no axios / no WebSocket).
-    const azureVoice = VOICE_MAP[voice] || 'fr-FR-HenriNeural';
+    const azureVoice = VOICE_MAP[voice];
     const rate = speedToRate(speed);
 
     this.logger.log(
@@ -172,7 +206,13 @@ export class TtsService extends SupabaseBaseService {
       charCount: costChars,
     });
 
-    await this.updateProductionAudio(input.briefId, audioUrl, voice, speed);
+    await this.updateProductionAudio(
+      input.briefId,
+      audioUrl,
+      voice,
+      speed,
+      production,
+    );
 
     this.logger.log(
       `[TTS] Generated ${s3Path} (~${estimatedDurationSecs}s) for ${input.briefId}`,
@@ -240,24 +280,77 @@ export class TtsService extends SupabaseBaseService {
       .digest('hex');
   }
 
+  private async readAudioProduction(
+    briefId: string,
+    text: string,
+  ): Promise<AudioProductionSnapshot> {
+    const { data, error } = await this.client
+      .from('__video_productions')
+      .select('id, script_text, status, updated_at')
+      .eq('brief_id', briefId)
+      .maybeSingle();
+
+    if (error) {
+      throw new ServiceUnavailableException('Unable to read audio production');
+    }
+    if (!data) {
+      throw new NotFoundException(`Production not found: ${briefId}`);
+    }
+    if (
+      data.id == null ||
+      typeof data.updated_at !== 'string' ||
+      !Number.isFinite(Date.parse(data.updated_at)) ||
+      !['draft', 'pending_review', 'script_approved', 'storyboard'].includes(
+        data.status,
+      ) ||
+      typeof data.script_text !== 'string' ||
+      data.script_text.trim() !== text
+    ) {
+      throw new ConflictException(
+        'Audio requires unchanged narration on a versioned production before rendering',
+      );
+    }
+    return data;
+  }
+
   private async updateProductionAudio(
     briefId: string,
     audioUrl: string,
     voice: TtsVoice,
     speed: number,
+    production: AudioProductionSnapshot,
   ): Promise<void> {
-    const { error } = await this.client
+    // Advance even if two requests finish within the same millisecond.
+    const updatedAt = new Date(
+      Math.max(Date.now(), Date.parse(production.updated_at) + 1),
+    ).toISOString();
+    const { data, error } = await this.client
       .from('__video_productions')
       .update({
         master_audio_url: audioUrl,
         tts_voice: voice,
         tts_speed: speed,
-        updated_at: new Date().toISOString(),
+        updated_at: updatedAt,
+        quality_score: null,
+        quality_flags: [],
+        gate_results: null,
       })
-      .eq('brief_id', briefId);
+      .eq('brief_id', briefId)
+      .eq('id', production.id)
+      .eq('status', production.status)
+      .eq('updated_at', production.updated_at)
+      .select('id')
+      .maybeSingle();
 
     if (error) {
-      this.logger.error(`updateProductionAudio error: ${error.message}`);
+      throw new ServiceUnavailableException(
+        'Unable to persist production audio',
+      );
+    }
+    if (!data) {
+      throw new ConflictException(
+        'Production changed during audio preparation; reload before retrying',
+      );
     }
   }
 

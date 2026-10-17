@@ -11,6 +11,10 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import { IsAdminGuard } from '@auth/is-admin.guard';
+import {
+  DomainNotFoundException,
+  DomainValidationException,
+} from '@common/exceptions';
 import { MarketingHubDataService } from '../services/marketing-hub-data.service';
 import { PublishQueueService } from '../services/publish-queue.service';
 import { BrandComplianceGateService } from '../services/brand-compliance-gate.service';
@@ -89,10 +93,14 @@ export class MarketingSocialPostsController {
    */
   @Post('posts/:id/gate')
   async runGate(@Param('id') id: string) {
-    const posts = await this.hubData.getPostsByWeek('', undefined);
-    // Get post by ID directly
-    const post = posts.find((p) => p.id === parseInt(id));
-    if (!post) return { error: 'Post not found' };
+    if (!/^[1-9]\d*$/.test(id) || !Number.isSafeInteger(Number(id))) {
+      throw new DomainValidationException({
+        message: 'Invalid post ID',
+        field: 'id',
+      });
+    }
+    const post = await this.hubData.getPostById(Number(id));
+    if (!post) throw new DomainNotFoundException({ message: 'Post not found' });
 
     const summary = await this.gateService.evaluateAndPersist(post);
     return { data: summary };
