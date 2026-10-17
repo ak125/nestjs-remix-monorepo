@@ -19587,7 +19587,7 @@
         "backend/src/modules/media-factory/render/types/render.types.ts"
       ],
       "kind": "service",
-      "loc": 170,
+      "loc": 193,
       "owner": "__unassigned__",
       "path": "backend/src/modules/media-factory/render/engines/remotion-render.engine.ts",
       "risk": "low",
@@ -19670,7 +19670,7 @@
         "backend/src/modules/media-factory/render/types/render.types.ts"
       ],
       "kind": "service",
-      "loc": 393,
+      "loc": 413,
       "owner": "__unassigned__",
       "path": "backend/src/modules/media-factory/render/render-adapter.service.ts",
       "risk": "low",
@@ -19692,10 +19692,11 @@
         "backend/src/workers/processors/video-execution.processor.ts"
       ],
       "imports": [
+        "@common/exceptions",
         "backend/src/config/video-quality.constants.ts"
       ],
       "kind": "service",
-      "loc": 74,
+      "loc": 79,
       "owner": "__unassigned__",
       "path": "backend/src/modules/media-factory/render/templates/template-registry.ts",
       "risk": "low",
@@ -40958,7 +40959,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 590,
+      "loc": 619,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/render-adapter.service.test.ts",
       "risk": "low",
@@ -40977,7 +40978,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 314,
+      "loc": 338,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/render-engines.test.ts",
       "risk": "low",
@@ -41718,7 +41719,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 90,
+      "loc": 83,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/template-registry.test.ts",
       "risk": "low",
@@ -42275,7 +42276,9 @@
       "domain": "UNKNOWN",
       "id": "frontend/app/components/RichTextEditor.tsx",
       "importedBy": [],
-      "imports": [],
+      "imports": [
+        "@tiptap/react"
+      ],
       "kind": "config",
       "loc": 235,
       "owner": "__unassigned__",
