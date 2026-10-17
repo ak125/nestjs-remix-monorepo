@@ -3,7 +3,7 @@
  * scripts/registry/check-new-files.js — Phase 2 gate logic.
  *
  * Used by CI (`.github/workflows/registry-new-file-gate.yml`) and by
- * pre-push hook. For each newly-added file (since the PR base or last push),
+ * pre-push hook. For each newly-added file (since the common ancestor with the base),
  * verifies BOTH conditions per ADR-058 §PR-G :
  *
  *   1. **Owner resolved** : file path matches ≥ 1 glob in ownership.yaml
@@ -28,7 +28,7 @@
  * Usage :
  *   node scripts/registry/check-new-files.js [--base <ref>] [--quiet] [--json]
  *
- *   --base <ref>  : git ref to diff against (default: origin/main)
+ *   --base <ref>  : git ref whose common ancestor with HEAD is used (default: origin/main)
  *   --json        : emit JSON report on stdout instead of human summary
  *   --quiet       : suppress per-file log lines
  *
@@ -167,34 +167,21 @@ function getNewFiles(baseRef) {
   // Validate argv input BEFORE passing to child process — CodeQL command-injection guard
   const safeRef = validateRef(baseRef);
 
-  // execFileSync uses arg array (no shell), so even if validation slips,
-  // the ref would be a literal argv not a shell-interpreted string.
+  // Compare the branch changes since the common ancestor. A two-dot tree
+  // diff mistakes files deleted later on the base branch for new additions.
+  // Three-dot also fails closed when the base is missing or histories differ.
+  // execFileSync keeps the validated ref as a literal argument (no shell).
   try {
     const out = execFileSync(
       "git",
-      ["diff", "--diff-filter=A", "--name-only", `${safeRef}..HEAD`],
+      ["diff", "--diff-filter=A", "--name-only", `${safeRef}...HEAD`],
       { encoding: "utf8", cwd: MONOREPO_ROOT }
     );
     return out.split("\n").filter(Boolean);
   } catch (err) {
-    // Fallback : if baseRef inaccessible, try a merge-base
-    try {
-      const mb = execFileSync(
-        "git",
-        ["merge-base", "HEAD", safeRef],
-        { encoding: "utf8", cwd: MONOREPO_ROOT }
-      ).trim();
-      const out = execFileSync(
-        "git",
-        ["diff", "--diff-filter=A", "--name-only", `${mb}..HEAD`],
-        { encoding: "utf8", cwd: MONOREPO_ROOT }
-      );
-      return out.split("\n").filter(Boolean);
-    } catch (err2) {
-      throw new Error(
-        `Cannot compute new files diff vs ${safeRef}: ${err.message}`
-      );
-    }
+    throw new Error(
+      `Cannot compute new files diff vs ${safeRef}: ${err.message}`
+    );
   }
 }
 
@@ -204,7 +191,7 @@ function main() {
 
   const overlay = loadOverlay();
   const newFiles = getNewFiles(args.base);
-  log(`evaluating ${newFiles.length} new files (added since ${args.base})`);
+  log(`evaluating ${newFiles.length} new files (added since the common ancestor with ${args.base})`);
 
   const results = newFiles.map((f) => ({ path: f, ...classify(f, overlay) }));
 

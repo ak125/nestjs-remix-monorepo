@@ -2,7 +2,7 @@ name: Registry block-new gate (ADR-058 PR-G, Phase 2 BLOCKING)
 
 # Phase 2 block-new gate per ADR-058 §Acceptance V1 :
 #   - SEVERITY: ERROR (blocking, no continue-on-error)
-#   - For each newly-added file in the PR (diff-filter=A vs base), verify
+#   - For each newly-added file in the PR (diff-filter=A since merge-base), verify
 #     ownership.yaml glob matches AND domain resolved (D1..D15 via ownership
 #     entry's domain field OR domains.yaml fallback).
 #   - Exception globs (always pass) : audit/registry/**, **.test.ts,
@@ -29,7 +29,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
         with:
-          fetch-depth: 0 # needed for `git diff origin/main..HEAD`
+          fetch-depth: 0 # needed for `git diff origin/main...HEAD`
 
       - name: Setup Node 20
         uses: actions/setup-node@v7
@@ -39,6 +39,9 @@ jobs:
 
       - name: Install
         run: npm ci
+
+      - name: Test branch-diff gate regressions
+        run: node --test scripts/registry/check-new-files.test.cjs
 
       - name: Validate overlay first (precondition)
         # If overlay is malformed, abort early with a clear message.

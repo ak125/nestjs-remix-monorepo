@@ -592,6 +592,12 @@ entries:
     owner: '@ak125/marketing-team'
     sourceConfidence: high
     risk: medium
+  # Preserved video scenario migration: responsibility only, not approval to apply.
+  - glob: backend/supabase/migrations/20261013_video_scenario.sql
+    domain: D12
+    owner: '@ak125/marketing-team'
+    sourceConfidence: high
+    risk: high
   - glob: backend/src/workers/processors/video-execution.processor.ts
     domain: D12
     owner: '@ak125/marketing-team'
