@@ -42,37 +42,6 @@ export const meta: MetaFunction = () => [
   },
 ];
 
-interface LoaderData {
-  vehicle?: {
-    tnc_code: string;
-    tnc_cnit: string;
-    auto_type: {
-      type_id: string;
-      type_name: string;
-      type_fuel: string;
-      type_power_ps: string;
-      type_power_kw: string;
-      type_year_from: string;
-      type_year_to?: string;
-      type_engine?: string;
-      type_liter?: string;
-      type_body?: string;
-      auto_modele: {
-        modele_id: number;
-        modele_name: string;
-        modele_alias: string;
-        auto_marque: {
-          marque_id: number;
-          marque_name: string;
-          marque_logo?: string;
-        };
-      };
-    };
-  };
-  searchTerm?: string;
-  error?: string;
-}
-
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const mineCode = url.searchParams.get("code")?.trim();

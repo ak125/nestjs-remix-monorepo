@@ -147,7 +147,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       environment,
       currentModule: _module,
     };
-  } catch (error) {
+  } catch {
     throw new Response("Erreur lors du chargement des configurations", {
       status: 500,
     });
@@ -159,7 +159,6 @@ export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const action = formData.get("action") as string;
   const environment = (formData.get("environment") as string) || "production";
-  const _module = formData.get("module") as string;
 
   try {
     const baseUrl = getInternalApiUrl("");

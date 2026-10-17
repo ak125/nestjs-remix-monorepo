@@ -62,7 +62,7 @@ export const loader = async ({ context }: LoaderFunctionArgs) => {
 };
 
 export const action = async ({ request, context }: ActionFunctionArgs) => {
-  const _user = await requireUser({ context });
+  await requireUser({ context });
   const formData = await request.formData();
   const action = formData.get("_action");
 

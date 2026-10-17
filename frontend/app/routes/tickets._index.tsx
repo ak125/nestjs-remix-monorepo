@@ -20,8 +20,6 @@ import {
   getAllTickets,
   searchTickets,
   getContactStats,
-  type ContactTicket,
-  type ContactStats,
 } from "../services/api/contact.api";
 
 export const meta: MetaFunction = () => {
@@ -33,17 +31,6 @@ export const meta: MetaFunction = () => {
     },
   ];
 };
-
-interface LoaderData {
-  tickets: ContactTicket[];
-  stats: ContactStats;
-  pagination: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-}
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);

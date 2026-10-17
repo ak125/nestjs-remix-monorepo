@@ -136,28 +136,33 @@ module.exports = {
     },
   ],
   options: {
+    // Path patterns are unanchored regexes: a directory name must be anchored to a path
+    // segment, otherwise it also matches other paths (`build` hit `url-builder.utils.ts`,
+    // `dist` hit `r2-commercial-distinctiveness.service.ts`).
+    // `backend/src/modules/rm/` is not excluded: `app.module.ts` imports `RmModule`
+    // unconditionally, so the graph has to contain it.
+    // Guarded by scripts/audit/__tests__/deep-inventory-reachability.test.ts.
     doNotFollow: {
       path: [
-        'node_modules',
-        'dist',
-        'build',
-        '\\.cache',
-        '\\.turbo',
-        'coverage',
-        '\\.next',
-        'public/build',
+        '(^|/)node_modules/',
+        '(^|/)dist/',
+        '(^|/)build/',
+        '(^|/)\\.cache/',
+        '(^|/)\\.turbo/',
+        '(^|/)coverage/',
+        '(^|/)\\.next/',
+        '(^|/)public/build/',
       ],
     },
     exclude: {
       path: [
-        '\\.spec/',
-        'audit-monorepo/',
-        '99-meta/',
-        'output/',
-        'gates/',
-        '\\.local/',
-        '\\.codex',
-        'rm/',
+        '(^|/)\\.spec/',
+        '(^|/)audit-monorepo/',
+        '(^|/)99-meta/',
+        '(^|/)output/',
+        '(^|/)gates/',
+        '(^|/)\\.local/',
+        '(^|/)\\.codex',
         '\\.spec\\.ts$',
         '\\.e2e-spec\\.ts$',
       ],

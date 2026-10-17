@@ -261,7 +261,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115461,
+      "loc_total": 114841,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 585,
-      "loc_total": 110623,
+      "loc_total": 110497,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -356,7 +356,7 @@
         "backend/src/modules/gamme-rest/utils/__tests__"
       ],
       "files_count": 19,
-      "loc_total": 6383,
+      "loc_total": 6325,
       "has_barrel": true
     },
     "health": {
@@ -700,8 +700,8 @@
         "scripts/wiki-generators",
         "scripts/wiki-generators/__tests__"
       ],
-      "files_count": 206,
-      "loc_total": 47108,
+      "files_count": 207,
+      "loc_total": 47204,
       "has_barrel": true
     },
     "search": {
@@ -958,7 +958,7 @@
         "tests/registry"
       ],
       "files_count": 303,
-      "loc_total": 57892,
+      "loc_total": 57648,
       "has_barrel": true
     },
     "upload": {
@@ -1280,6 +1280,11 @@
       "from": "backend-core",
       "to": "database",
       "count": 5
+    },
+    {
+      "from": "backend-core",
+      "to": "dev-only",
+      "count": 1
     },
     {
       "from": "backend-core",
@@ -1682,6 +1687,26 @@
       "count": 1
     },
     {
+      "from": "dev-only",
+      "to": "catalog",
+      "count": 4
+    },
+    {
+      "from": "dev-only",
+      "to": "config",
+      "count": 4
+    },
+    {
+      "from": "dev-only",
+      "to": "database",
+      "count": 1
+    },
+    {
+      "from": "dev-only",
+      "to": "seo-shadow-observatory",
+      "count": 3
+    },
+    {
       "from": "diagnostic-engine",
       "to": "common",
       "count": 1
@@ -1714,17 +1739,17 @@
     {
       "from": "gamme-rest",
       "to": "backend-core",
-      "count": 1
+      "count": 2
     },
     {
       "from": "gamme-rest",
       "to": "catalog",
-      "count": 3
+      "count": 4
     },
     {
       "from": "gamme-rest",
       "to": "common",
-      "count": 3
+      "count": 4
     },
     {
       "from": "gamme-rest",
@@ -1739,7 +1764,7 @@
     {
       "from": "gamme-rest",
       "to": "seo",
-      "count": 3
+      "count": 10
     },
     {
       "from": "health",
@@ -1764,7 +1789,7 @@
     {
       "from": "marketing",
       "to": "config",
-      "count": 3
+      "count": 4
     },
     {
       "from": "marketing",
@@ -1979,7 +2004,7 @@
     {
       "from": "seo",
       "to": "config",
-      "count": 39
+      "count": 40
     },
     {
       "from": "seo",
@@ -2529,6 +2554,11 @@
       "rule": "no-deep-module-access"
     },
     {
+      "from": "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-seo-shadow.test.ts",
+      "to": "backend/src/modules/seo/registries/seo-feature-flag.registry.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
       "from": "backend/src/modules/gamme-rest/services/buying-guide-data.service.ts",
       "to": "backend/src/modules/seo/validation/purchase-guide-validation.constants.ts",
       "rule": "no-deep-module-access"
@@ -2541,6 +2571,41 @@
     {
       "from": "backend/src/modules/gamme-rest/services/gamme-page-data.service.ts",
       "to": "backend/src/modules/catalog/services/unified-page-data.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
+      "to": "backend/src/modules/catalog/utils/image-urls.utils.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
+      "to": "backend/src/modules/seo/registries/seo-feature-flag.registry.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
+      "to": "backend/src/modules/seo/services/chain/seo-chain-orchestrator.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
+      "to": "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
+      "to": "backend/src/modules/seo/services/reference.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
+      "to": "backend/src/modules/seo/services/seo-title-engine.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
+      "to": "backend/src/modules/seo/types/resolved-seo-field.ts",
       "rule": "no-deep-module-access"
     },
     {
@@ -2591,6 +2656,31 @@
     {
       "from": "backend/src/modules/rag-proxy/services/rag-image-management.service.ts",
       "to": "backend/src/modules/upload/services/supabase-storage.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/rm/services/__tests__/rm-builder-seo-legacy-markers.test.ts",
+      "to": "backend/src/modules/catalog/services/seo-template.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/rm/services/__tests__/rm-builder-seo-shadow.test.ts",
+      "to": "backend/src/modules/seo-shadow-observatory/seo-shadow-observatory.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/rm/services/rm-builder.service.ts",
+      "to": "backend/src/modules/catalog/services/seo-template.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/rm/services/rm-builder.service.ts",
+      "to": "backend/src/modules/catalog/services/vehicle-aware-description.composer.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/rm/services/rm-builder.service.ts",
+      "to": "backend/src/modules/seo-shadow-observatory/seo-shadow-observatory.service.ts",
       "rule": "no-deep-module-access"
     },
     {
