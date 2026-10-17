@@ -22,33 +22,40 @@ Fafa éduque le client sur le rôle d'une pièce avant qu'il commande — rédui
 
 ## Composition Remotion (V2)
 
-`PieceExpliquee.tsx` (1080×1920, 30fps, 30-50s)
+`PieceExpliquee.tsx` (1080×1920, 30fps, 40 s fixes : `durationInFrames={1200}`, `compositions/index.tsx:106-129`)
 
-Props attendues :
+Props lues par la composition (`services/remotion-renderer/src/compositions/PieceExpliquee.tsx:27-45`), passées dans
+`compositionProps` ; en cas d'écart avec cette page, la composition fait foi. `briefId`, `videoType` et `vertical` viennent de
+la requête `/render`.
 ```typescript
 interface PieceExpliqueeProps {
-  piece: string;                 // nom usuel <40 chars
-  function: string;              // rôle mécanique <200 chars
-  location: string;              // emplacement véhicule <80 chars
-  wearSigns: Array<{             // 2-3 signes observables
+  piece?: string;                // nom usuel <40 chars
+  pieceFunction?: string;        // rôle mécanique <200 chars
+  location?: string;             // emplacement véhicule <80 chars
+  wearSigns?: Array<{            // 2-3 signes observables
     sign: string;
-    severity: 'low' | 'medium' | 'high';
+    severity?: 'low' | 'medium' | 'high';  // absent → 'low'
   }>;
-  whenToChange: {
-    objectiveCriterion: string;  // km / années / signe critique
-    safetyImplication?: string;  // optionnel — si claim safety, evidence humaine obligatoire
-  };
-  cta: string;
-  disclaimer: string;
-  voiceUrl: string;
-  brollAssets: Array<{
-    s3_key: string;
-    visual_type: 'schema' | 'animation' | 'macro' | 'motion_text' | 'ambiance';
-    timestamp_sec: number;
-    truth_dependency: 'illustration' | 'reference';  // JAMAIS 'proof' (G6)
-  }>;
+  whenToChange?: string;         // critère objectif : km / années / signe critique
+  cta?: string;
+  disclaimer?: string;
+  audioUrl?: string;             // piste voix
+  brandName?: string;
 }
 ```
+
+Constaté dans le code, sans rendu lancé :
+
+- Le rôle de la pièce passe dans `pieceFunction`, pas `function`. `whenToChange` est un texte unique : une implication de
+  sécurité s'y écrit, et reste un claim `safety` (G2 ci-dessous).
+- Toute prop absente affiche une valeur de démonstration (vanne EGR, 120 000 km), tirée de `defaultProps` dans `index.tsx` ou
+  des valeurs par défaut du composant (l.53-67). Le moteur ne signale pas l'oubli : renseigner chaque champ.
+- Seuls les 3 premiers signes s'affichent (l.259) ; une gravité absente s'affiche comme `low` (l.286).
+- Découpage rendu (l.71-74) : intro 0-4 s, fonction 4-14 s, usure 14-24 s, quand changer 24-32 s, CTA 32-40 s. Le tableau
+  ci-dessus reste l'intention éditoriale ; la voix se cale sur ce découpage.
+- Sans `audioUrl`, le rendu est muet, sans erreur (l.86).
+- Aucune prop b-roll : l'ancien champ `brollAssets` de cette page n'est lu par aucune composition V1. G6 s'applique aux visuels
+  de la composition elle-même.
 
 ## Exemples Fafa V2+ (formats sibling pour batchs ultérieurs)
 
@@ -60,8 +67,8 @@ interface PieceExpliqueeProps {
 
 ## Gates critiques
 
-- **G1 Truth** : `function`, `wearSigns`, `whenToChange.objectiveCriterion` DOIVENT avoir evidence (wiki diagnostic, OEM, catalogue TecDoc). Sans evidence → ratio FAIL.
-- **G2 Safety** : si `safetyImplication` présent (ex: « plaquettes usées = freinage compromis »), claim de type `safety` → validation humaine obligatoire (G2 STRICT, 1 seul claim sans validation = FAIL).
+- **G1 Truth** : `pieceFunction`, `wearSigns`, `whenToChange` DOIVENT avoir evidence (wiki diagnostic, OEM, catalogue TecDoc). Sans evidence → ratio FAIL.
+- **G2 Safety** : si `whenToChange` porte une implication de sécurité (ex: « plaquettes usées = freinage compromis »), claim de type `safety` → validation humaine obligatoire (G2 STRICT, 1 seul claim sans validation = FAIL).
 - **G3 Brand** : aucun prix, aucune promo. CTA pédagogique uniquement.
 - **G4 Platform** : durée 30-50s ±10% (27-55s acceptable).
 - **G6 Visual Honesty** : photos pièces neuves OK (truth_dependency=`reference`), photos pièces usées en macro OK pour illustration. JAMAIS « voici l'usure de votre pièce » si pas photo client.

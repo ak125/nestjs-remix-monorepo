@@ -71,6 +71,9 @@ Les trois rapports ont été écrits puis relus avec une empreinte identique. Le
 > court vers L1 — sous-section datée ci-dessous. Toujours rien d'approuvé ni d'activé.
 > **Complété le 16/10** (base `64cf08797`) : boucle par sujet, sujet pilote M1, planning de quatre semaines, constats C16-1 à C16-8
 > et lot L16 — sous-section datée ci-dessous. Toujours rien d'approuvé, de raccordé ni d'activé.
+> **Complété le 17/10** (base `13971f4e1`) : lots fusionnés à ce jour, L00 en partie (#1779, `bb2c868d1` : ce dossier et la carte ;
+> agent et brouillon d'ADR non faits) et L16 (#1816, `45b524a0e`) ; complément L16 (`formats/*.md`, skill de rendu) et constats
+> C17-12 à C17-15. Aucun lot approuvé ni activé.
 
 - **Vocabulaire** : présent ≠ branché ≠ activé ≠ servi ; trouvée ≠ chargée ≠ exécutée ≠ réussie. Statut d'un lot : prêt pour revue →
   testé localement → vérifié sur environnement cible → activé. Fusion sur `main` = PREPROD ; tag `v*` = PROD, posé par l'owner.
@@ -138,7 +141,7 @@ Chaque lot livre : niveau d'effet atteint, commande de vérification, verdict Ro
 
 | Lot | Étape | Responsable (rôle) | Exécutant | Dépend de | Statut |
 |---|---|---|---|---|---|
-| L00 Dossier, carte, H17 | 0 | marketing-lead, ia-agents-lead | Claude | — | proposé |
+| L00 Dossier, carte, H17 | 0 | marketing-lead, ia-agents-lead | Claude | — | fusionné en partie (#1779) ; agent et ADR proposés |
 | L01 Correctifs transverses | 0 | ia-agents-lead | Codex (canal non public) | GO owner nominatif | proposé — conditionné |
 | L02 Écritures vérifiées | 1 | marketing-lead | Codex | — | proposé |
 | L03 Approbation conditionnée | 1 | marketing-lead, brand-lead | Codex | L02, D5 | proposé |
@@ -155,7 +158,7 @@ Chaque lot livre : niveau d'effet atteint, commande de vérification, verdict Ro
 | L13 Preuve de publication | 4 | marketing-lead | Codex | L03, L07, L11, L12, D4, D6 | proposé |
 | L14 Attribution | 5 | data-lead, sales-lead | Codex | L12, L13, D6, D7 | proposé — commandes : préparation seulement |
 | L15 Recette Hermes | 6 | ia-agents-lead | Codex, Hermes | L11 (workflow) ; D14 (recette native) | proposé |
-| L16 Consignes des skills média | 3 | media-lead, content-lead | Claude | — | proposé (16/10) |
+| L16 Consignes des skills média | 3 | media-lead, content-lead | Claude | — | fusionné (#1816, `45b524a0e`) ; complément du 17/10 prêt pour revue |
 
 - **L00** · Livré par cette PR documentaire (prêt pour revue) : `workspaces/marketing/README.md` (cette section) ; `audit/automecanik-departments-map.md` (24 identifiants depuis #1761, note datée, historique et ancre conservés). Proposé, non fait : `marketing-lead-agent.md` (table au pluriel et H17 = modification d'agent, effet > E0, non activée ; sortie = proposition en lecture seule ; aucune écriture en base sans acte owner) ; brouillon d'ADR des handoffs dans le vault (D6). Tests : `scripts/lint/check-preprod-vocabulary.sh`, diff limité à deux fichiers. Limites : ni YAML ni vault ; `local-business-agent` hors activation.
 - **L01** · Défaut de sécurité — détail hors dépôt public. Contrat « sécurité-correctifs v1 » (proposé) ; preuve hors dépôt, citée par empreinte ; GO owner nominatif avant toute PR ; PR à prose neutre. Retour : revert.
@@ -178,6 +181,11 @@ Chaque lot livre : niveau d'effet atteint, commande de vérification, verdict Ro
   `-shortest` (l.162-185, C14-2) ; normalisation qui renvoie son état (normalisée, sans audio, échec) au lieu d'un repli silencieux et
   d'une cible présentée comme mesure (l.89-157, C14-3). Tests : 0,9996 s → `00:00:01,000` ; vidéo 6 s avec musique + voix 3 s → 6 s
   ou refus motivé ; entrée sans audio → état `skipped_no_audio`, jamais « normalisée ».
+  Ajout du 17/10 : la règle « valeurs par défaut interdites en rendu réel » couvre aussi les trois compositions Fafa, qui affichent
+  un contenu de démonstration pour toute prop absente (C17-13) ; `resolution` (1920×1080 par défaut) et `fps` de la requête
+  remplacent ceux de la composition (`services/remotion-renderer/src/lib/render-video.ts:88-90,122`, C17-14). Tests : rendu réel
+  sans une prop de contenu → refus qui nomme la prop, jamais la valeur de démonstration ; requête 9:16 sans `resolution` → refus
+  motivé ou taille de la composition ; `fps` différent de celui de la composition → refus motivé.
 - **L10a** · Base `75ea70a48`. Fichiers : `backend/src/modules/media-factory/services/video-gates.service.ts:108-175` (G1, G2) ;
   `backend/src/config/video-quality.constants.ts:68-73` ; `backend/tests/unit/video-gates.service.test.ts` (blocs runAllGates
   l.146-187, G1 l.189-244, G2 l.246-286). Politique active : G1 mesure un ratio de claims `unverified` (warn 0,15, fail 0,3), sans règle vault trouvée (checkout du
@@ -201,6 +209,9 @@ Chaque lot livre : niveau d'effet atteint, commande de vérification, verdict Ro
   `exports/seo/gamme/filtre-a-huile.json`, `source_wiki_commit` cité ; aucune relation diagnostic affirmée. `url_cible` =
   `/diagnostic-auto` ou R1, jamais R3 tant qu'il est `NOT_READY`. Rendu local après D19. Tests : claim absent de l'export → rouge ;
   `url_cible` R3 → rouge.
+  Ajout du 17/10 : `script.json:29` du pilote (« hook_variants = test A/B sans refaire la vidéo ») et le commentaire
+  d'`approval.json:97` (« 3 hooks A/B ») décrivent comme un test ce qui reste des variantes préparées, à sélection humaine (C17-15).
+  Correction : la note du script, et une nouvelle entrée du journal d'approbation ; l'historique n'est pas réécrit.
 - **L12** · Migration additive préparée (compte, empreinte de révision, preuve, réservation par `intent_id` avec bail, liaison au brief selon D16, journal d'approbations) ; `marketing-hub-data.service.ts:31-44` ; export du contrôleur des posts (validation de `week` et `channel`, variantes secondaires) ; `utm_content` = id de variante. Tests : Instagram publié ne publie pas Facebook ; second compte → 422 ; export des variantes secondaires. Limites : lecture autorisée du CHECK réel et réconciliation du ledger d'abord ; application = acte owner ; baseline du ratchet rafraîchie dans la même PR si elle change.
 - **L13** · `publish-queue.service.ts:135-144` ; marquage publié du contrôleur des posts ; `scripts/marketing/export-publish-queue.ts` ; `fafa-media-factory/manifests/publishing/` (`.gitkeep` seul). Contrat : `publication-proof` v1 sur ces deux surfaces ; revalidation juste avant l'effet. Tests : sans preuve → 422 ; même preuve → sans effet ; preuve différente → 409 ; approbation révoquée → refus ; délai dépassé → incertain, 0 nouvelle tentative. Limites : publication = acte owner.
 - **L14** · Contrôleur d'attribution d'atterrissage (capture `medium`, `campaign`, `content` en session) ; `marketing-measurement.ts:13-25` ; contrôleur des commandes : préparation seulement (STOP). Contrat : verdict v1 lu tel quel, usage restreint à `r2_order_placed`, UNKNOWN affiché hors DEV ; les colonnes de mesure des posts (`actual_*`, `ga4_*`, `performance_*`) n'ont aucun producteur : UNKNOWN jusqu'à un producteur unique ; `qualified-demand` reste à définir par sales et data (D6), jamais déduit ici. Tests : visite → variante → commande sur fixtures synthétiques ; non certifié → UNKNOWN ; jamais 0 faute de données. Limites : D6, D7 ; aucun chiffre de vente.
@@ -211,6 +222,9 @@ Chaque lot livre : niveau d'effet atteint, commande de vérification, verdict Ro
   (chemin et noms alignés sur `services/remotion-renderer/src/types/contract.ts:13`) ; sortie de `fafa-script-generator/SKILL.md`
   (accroches A/B/C préparées, sélection humaine, jamais présentée comme test). C16-6. `seo-content-loop` (borne d'itérations) est
   signalé à seo-lead, sans modification. Tests : `scripts/lint/check-preprod-vocabulary.sh` ; diff limité à ces fichiers. Retour : revert.
+  Ajout du 17/10 : interfaces de `formats/*.md` recopiées des compositions, avec durée, découpage et valeurs de démonstration
+  constatés ; `fafa-remotion-template-planner/SKILL.md` (durée rendue, `resolution`, `fps`, props à renseigner) (C17-12). Le code des
+  compositions et du moteur n'est pas modifié ; le dossier du pilote reste à L11.
 
 ### Décisions ouvertes (aucun nom ; « owner » = acte nominatif, non nommé ici)
 
@@ -482,6 +496,17 @@ navigateur.
 | C16-7 | `weekly-plan-generator.service.ts:63-80` | repli de réutilisation ; `_isReused` calculé l.80, jamais lu ni persisté | lecture | L05 |
 | C16-8 | R1 `/pieces/filtre-a-huile-7.html`, R3 `/blog-pieces-auto/conseils/filtre-a-huile` ; `wiki/gamme/filtre-a-huile.md:337` | « ISO 4548 » (R1 10, R3 2) et la consigne de serrage « 3/4 de tour » (R3 3), retirées par la fiche | comptage brut du HTML, hydratation comprise | hors mandat : seo-lead (séquence ADR-107 → R6) |
 
+#### Constats du 17/10
+
+Environnement : `main` à `13971f4e1` par lecture (`git show`). Aucun rendu lancé, aucun appel au moteur.
+
+| Id | Fichier, fonction | Preuve | Limite | Lot |
+|---|---|---|---|---|
+| C17-12 | `workspaces/marketing/fafa-media-factory/formats/*.md` (avant ce complément) contre `NeChangePasTropVite.tsx:27-48`, `SymptomeTroisCauses.tsx:27-43`, `PieceExpliquee.tsx:27-45` | `function` au lieu de `pieceFunction` ; `whenToChange` décrit en objet, lu en texte ; `duration_sec` déclaré, jamais lu ; `problemText` absent ; props requises dans la spec, optionnelles dans le code ; découpage rendu différent du tableau éditorial | lecture | L16 |
+| C17-13 | `NeChangePasTropVite.tsx:50-65`, `SymptomeTroisCauses.tsx:45-56`, `PieceExpliquee.tsx:53-67` ; `defaultProps` de `compositions/index.tsx:65-129` | une prop absente rend un contenu de démonstration (vanne EGR, 120 000 km), sans erreur ni signal | lecture | L10 |
+| C17-14 | `services/remotion-renderer/src/types/contract.ts:15-21` ; `services/remotion-renderer/src/lib/render-video.ts:88-90,122` | `resolution` vaut 1920×1080 par défaut ; largeur, hauteur et fps de la requête remplacent ceux de la composition, dont le découpage est compté en images | lecture : image rendue non observée | L10 |
+| C17-15 | `workspaces/marketing/fafa-media-factory/scripts/draft/fafa-plaquettes-frein-001/script.json:29`, `approval.json:97` (même dossier) | « test A/B » pour des accroches choisies par un humain ; aucune répartition ni mesure n'existe | lecture | L11 |
+
 #### Coordination et transmission
 
 Départements de rattachement :
@@ -506,8 +531,8 @@ Aucun circuit à trois agents n'est obligatoire ; un seul écrivain par périmè
 | Tests | `cd backend && npx jest tests/unit/video-gates.service.test.ts` (L10a, rouge puis vert) ; validation des schémas Fafa (L11) ; `bash scripts/lint/check-preprod-vocabulary.sh` |
 | Blocages | D19 (média M1) ; D17 (pilote plaquette) ; D12 (L05) ; D2 (L12, L13) ; D14 (instance Hermes) ; #1796–#1798 en conflit |
 
-**Premier lot réellement prêt : L10a** (Codex, E0, aucune décision owner, commande ci-dessus). L16 est prêt aussi, pour Claude, sur
-GO. **Décision minimale manquante : D19**, confirmer « fichiers seuls, backend éteint ». Elle ouvre le chemin média de M1 sans passer
+**Premier lot réellement prêt : L10a** (Codex, E0, aucune décision owner, commande ci-dessus). L16 est fusionné (#1816, 17/10) ;
+son complément du 17/10 est prêt pour revue. **Décision minimale manquante : D19**, confirmer « fichiers seuls, backend éteint ». Elle ouvre le chemin média de M1 sans passer
 par le script du backend, qui lit le contenu legacy contredit par le WIKI. D2 ne devient nécessaire qu'à la première preuve de
 publication (W45).
 
@@ -525,6 +550,8 @@ transmis à support-lead en préparation seulement), contenus et prompts RAG (AD
 Ajout du 16/10 : 8 constats nouveaux (C16-7 → L05 ; C16-5 → L06 ; C16-3 → L14 ; C16-6 → L16 ; C16-4 → INFO ; C16-1, C16-2, C16-8 →
 hors mandat signalés), soit L05 9 · L06 14 · L14 14 · L16 1 · INFO sans lot 17 · hors mandat signalés 26. **sum_check : 315 = 315,
 0 orpheline, 0 double affectation.** Les divergences de la référence hors dépôt ne sont pas recomptées, sauf C16-8, re-mesuré le 16/10.
+Ajout du 17/10 : 4 constats nouveaux (C17-12 → L16 ; C17-13, C17-14 → L10 ; C17-15 → L11), soit L10 40 · L11 13 · L16 2.
+**sum_check : 319 = 319, 0 orpheline, 0 double affectation.**
 
 ### Non vérifiable dans ce dossier
 

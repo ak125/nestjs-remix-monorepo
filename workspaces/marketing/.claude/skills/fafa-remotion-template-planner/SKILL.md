@@ -22,11 +22,14 @@ description: Use when choosing the right Remotion composition (NeChangePasTropVi
 
 ## Décision template selon format
 
-| Format brief | Composition Remotion | Durée cible | Aspect |
-|---|---|---|---|
-| `ne-change-pas-trop-vite` | `NeChangePasTropVite` | 30-45 s | 9:16 (1080×1920) |
-| `symptome-3-causes` | `SymptomeTroisCauses` | 25-40 s | 9:16 (1080×1920) |
-| `piece-expliquee` | `PieceExpliquee` | 30-50 s | 9:16 (1080×1920) |
+| Format brief | Composition Remotion | Durée cible | Durée rendue | Aspect |
+|---|---|---|---|---|
+| `ne-change-pas-trop-vite` | `NeChangePasTropVite` | 30-45 s | 38 s (1140 images) | 9:16 (1080×1920) |
+| `symptome-3-causes` | `SymptomeTroisCauses` | 25-40 s | 33 s (990 images) | 9:16 (1080×1920) |
+| `piece-expliquee` | `PieceExpliquee` | 30-50 s | 40 s (1200 images) | 9:16 (1080×1920) |
+
+Durée rendue = `durationInFrames` de `compositions/index.tsx` à 30 fps. Elle ne dépend ni du script ni de la requête : la voix
+se cale sur le découpage décrit dans `formats/<format>.md`.
 
 ## Payload `/render` HTTP
 
@@ -36,10 +39,13 @@ curl -X POST http://localhost:3100/render \
   -d @payload.json
 ```
 
-`payload.json` suit `renderRequestSchema` (`services/remotion-renderer/src/types/contract.ts`). Les props de la composition passent dans `compositionProps`, dont les clés suivent l'interface `<Composition>Props` de `services/remotion-renderer/src/compositions/<Composition>.tsx` (les specs `formats/*.md` portent encore `voiceUrl` et `brollAssets` : la composition fait foi).
+`payload.json` suit `renderRequestSchema` (`services/remotion-renderer/src/types/contract.ts`). Les props de la composition passent dans `compositionProps`, dont les clés suivent l'interface `<Composition>Props` de `services/remotion-renderer/src/compositions/<Composition>.tsx`, recopiée dans `formats/<format>.md` (en cas d'écart, la composition fait foi).
 
 - `briefId`, `executionLogId` (entier ≥ 0 ; `0` pour un appel manuel hors backend), `videoType` et `vertical` (champ du brief) sont obligatoires : sans eux, 400 `INVALID_REQUEST`.
 - Un champ de premier niveau inconnu (par exemple `props`) est retiré sans erreur par la validation : la composition rend alors ses valeurs par défaut.
+- Une prop de contenu absente de `compositionProps` affiche la valeur de démonstration de la composition (vanne EGR), sans erreur : renseigner toutes les props listées dans `formats/<format>.md`.
+- `resolution` vaut 1920×1080 par défaut (`contract.ts:15-20`) et remplace la taille de la composition (`lib/render-video.ts:88-90,122`) : toujours passer `{ "width": 1080, "height": 1920 }` pour ces trois compositions.
+- `fps` remplace aussi celui de la composition, dont le découpage est compté en images : garder `30`, sinon la durée et le rythme changent.
 - `durationSecs` ne fixe pas la durée : elle vient de `durationInFrames` dans `compositions/index.tsx`.
 
 Exemple pour `NeChangePasTropVite` :
@@ -61,9 +67,9 @@ Exemple pour `NeChangePasTropVite` :
     "symptom": "Perte de puissance + fumée noire",
     "pieceWrong": "vanne EGR",
     "causes": [
-      { "cause": "Filtre à air bouché", "duration_sec": 8, "check_suggestion": "Inspection visuelle" },
-      { "cause": "Débitmètre fatigué", "duration_sec": 4, "check_suggestion": "Test multimètre" },
-      { "cause": "Durite percée", "duration_sec": 3, "check_suggestion": "Visuel + écoute" }
+      { "cause": "Filtre à air bouché", "check_suggestion": "Inspection visuelle" },
+      { "cause": "Débitmètre fatigué", "check_suggestion": "Test multimètre" },
+      { "cause": "Durite percée", "check_suggestion": "Visuel + écoute" }
     ],
     "advice": "Vérifie dans l'ordre : visuel → multimètre → atelier",
     "cta": "Sur AutoMecanik, sélectionne ton véhicule pour voir les pièces compatibles.",
