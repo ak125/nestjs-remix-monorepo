@@ -5,7 +5,9 @@ import { join } from 'path';
 export default defineConfig({
   entry: ['src/index.ts'],
   format: ['cjs', 'esm'],
-  dts: true,
+  // tsup 8.5.1 force `baseUrl: "."` dans sa compilation des déclarations, que TS 6
+  // refuse (TS5101, option dépréciée). Exemption limitée à ce build, pas au tsconfig.
+  dts: { compilerOptions: { ignoreDeprecations: '6.0' } },
   splitting: false,
   sourcemap: true,
   clean: true,
