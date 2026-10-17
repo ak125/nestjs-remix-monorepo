@@ -6,6 +6,9 @@ import {
   classifyForActivation,
   verdictForRef,
   withTariffStatus,
+  searchTerm,
+  needsRefPass,
+  mergeRefPass,
   type RefVerdict,
   type SearchRow,
 } from './inoshop-search-parse';
@@ -678,6 +681,89 @@ describe('verdictForRef (end-to-end)', () => {
       ),
     );
     expect(verdictForRef(rows, '1', 'E1', NK).bucket).toBe('BLOCK_NONE');
+  });
+});
+
+describe('search by EAN, then by ref for the misses', () => {
+  const html = (o: ArtOpts, icon: string): string =>
+    articleTr(o) + iconImg(o.code, icon);
+  const miss = (ean: string | null, kind: 'NOT_FOUND' | 'FALSE_MATCH') =>
+    verdictForRef(
+      kind === 'FALSE_MATCH'
+        ? parseSearchHtml(
+            html({ code: 'V1', ref: '1', marque: 'VALEO' }, 'vert'),
+          )
+        : [],
+      '1',
+      ean,
+      NK,
+    );
+
+  it('searches the EAN when the feed has one, else the ref', () => {
+    expect(searchTerm({ ref: '1', ean: 'E1' })).toBe('E1');
+    expect(searchTerm({ ref: '1', ean: null })).toBe('1');
+  });
+
+  it('only a miss searched by EAN gets a ref pass', () => {
+    expect(needsRefPass(miss('E1', 'NOT_FOUND'))).toBe(true);
+    expect(needsRefPass(miss('E1', 'FALSE_MATCH'))).toBe(true);
+    // already searched by ref: a second identical search adds nothing
+    expect(needsRefPass(miss(null, 'NOT_FOUND'))).toBe(false);
+    const found = verdictForRef(
+      parseSearchHtml(
+        html(
+          { code: 'SBS1', ref: '1', marque: 'NK', ean: 'E1', dispo: 'ag' },
+          'vert',
+        ),
+      ),
+      '1',
+      'E1',
+      NK,
+    );
+    expect(needsRefPass(found)).toBe(false);
+  });
+
+  it('re-resolves the misses on all rows read and keeps the resolved verdicts', () => {
+    // A: found by EAN. B: portal EAN differs from the feed, found by ref.
+    // C: EAN missed, the ref search returns the row carrying it. D: absent.
+    const byEan = parseSearchHtml(
+      html(
+        { code: 'SBSA', ref: 'A', marque: 'NK', ean: 'EA', dispo: 'ag' },
+        'vert',
+      ),
+    );
+    const feed = [
+      { ref: 'A', ean: 'EA' },
+      { ref: 'B', ean: 'EB' },
+      { ref: 'C', ean: 'EC' },
+      { ref: 'D', ean: 'ED' },
+    ];
+    const first = feed.map((f) => verdictForRef(byEan, f.ref, f.ean, NK));
+    expect(first.filter(needsRefPass).map((v) => v.ref)).toEqual([
+      'B',
+      'C',
+      'D',
+    ]);
+
+    const byRef = parseSearchHtml(
+      html(
+        { code: 'SBSB', ref: 'B', marque: 'NK', ean: 'EB2', dispo: 'none' },
+        'rouge',
+      ) +
+        html(
+          { code: 'SBSC', ref: 'C', marque: 'NK', ean: 'EC', dispo: 'grp' },
+          'vert+',
+        ) +
+        html({ code: 'VD', ref: 'D', marque: 'VALEO' }, 'vert'),
+    );
+    const out = mergeRefPass(first, [...byEan, ...byRef], NK);
+    expect(out[0]).toBe(first[0]);
+    expect(out.map((v) => [v.ref, v.matchKind, v.bucket])).toEqual([
+      ['A', 'EAN', 'CONFIRMED_AG'],
+      ['B', 'REF_BRAND', 'BLOCK_NONE'],
+      ['C', 'EAN', 'CONFIRMED_GRP'],
+      ['D', 'FALSE_MATCH', 'REVIEW_FALSE_MATCH'],
+    ]);
   });
 });
 

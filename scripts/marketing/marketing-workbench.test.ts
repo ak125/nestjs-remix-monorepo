@@ -1236,7 +1236,12 @@ for (const language of ["fr", "en"] as const) {
       );
       assert.ok(!variant.html.includes("<script>"));
       assert.ok(!variant.html.includes("<img"));
-      assert.ok(variant.text.endsWith("Simulation — aucune offre réelle"));
+      const notice =
+        language === "fr"
+          ? "Simulation — aucune offre réelle"
+          : "Simulation — no real offer";
+      assert.ok(variant.text.endsWith(notice));
+      assert.ok(variant.html.includes(`<p>${notice}</p>`));
     }
     const [a, b] = r.variants;
     assert.notEqual(a.subject, b.subject);

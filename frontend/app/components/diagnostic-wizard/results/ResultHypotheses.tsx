@@ -3,6 +3,8 @@
  *
  * No number is shown per cause (ADR-035 D3): no score out of 100, no bar,
  * no sub-score. The order still comes from the engine; only the rank shows.
+ * A neutral badge says what the WIKI documents behind each cause — only when
+ * the provenance was read, never a guessed state.
  */
 import {
   ChevronDown,
@@ -15,10 +17,15 @@ import {
 import { useState } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { type Hypothesis } from "../types";
+import {
+  type Hypothesis,
+  type ProvenanceState,
+  type ProvenanceSummary,
+} from "../types";
 
 interface Props {
   hypotheses: Hypothesis[];
+  provenanceSummary?: ProvenanceSummary;
 }
 
 const URGENCY_BADGE: Record<Hypothesis["urgency"], string> = {
@@ -28,10 +35,18 @@ const URGENCY_BADGE: Record<Hypothesis["urgency"], string> = {
   basse: "bg-green-100 text-green-700 border-green-200",
 };
 
-export function ResultHypotheses({ hypotheses }: Props) {
+const PROVENANCE_LABEL: Record<ProvenanceState, string> = {
+  sourced: "Relation documentée (relue, sources archivées)",
+  partial: "Relation partiellement documentée",
+  unsourced: "Relation non encore documentée — à confirmer par un contrôle",
+};
+
+export function ResultHypotheses({ hypotheses, provenanceSummary }: Props) {
   const [expandedId, setExpandedId] = useState<string | null>(
     hypotheses[0]?.hypothesis_id || null,
   );
+  // No badge rather than a false one: flag OFF, older session, unreadable.
+  const showProvenance = provenanceSummary?.status === "available";
 
   return (
     <Card>
@@ -70,7 +85,7 @@ export function ResultHypotheses({ hypotheses }: Props) {
                   {i + 1}
                 </span>
 
-                {/* Label */}
+                {/* Label + provenance */}
                 <span className="flex-1 min-w-0">
                   <span className="flex items-center gap-2 flex-wrap">
                     <span className="font-medium text-sm text-gray-900 truncate">
@@ -85,6 +100,15 @@ export function ResultHypotheses({ hypotheses }: Props) {
                       {h.urgency}
                     </Badge>
                   </span>
+                  {showProvenance && h.provenance && (
+                    <Badge
+                      variant="outline"
+                      size="xs"
+                      className="mt-1 font-normal text-gray-600"
+                    >
+                      {PROVENANCE_LABEL[h.provenance.state]}
+                    </Badge>
+                  )}
                 </span>
 
                 {expanded ? (

@@ -33,41 +33,6 @@ import { Input } from "../components/ui/input";
 export const meta: MetaFunction = () =>
   createNoIndexMeta("Compatibilite Vehicules - Commercial");
 
-interface CompatibilityData {
-  user: any;
-  compatibilityResult?: {
-    piece: {
-      piece_id: string;
-      piece_title: string;
-      piece_ref: string;
-      piece_marque: string;
-      piece_gamme: string;
-    };
-    compatibleBrands: Array<{
-      id: number;
-      name: string;
-      logo?: string;
-      code: string;
-    }>;
-  };
-  partsByVehicle?: Array<{
-    piece_id: string;
-    piece_title: string;
-    piece_ref: string;
-    piece_marque: string;
-    piece_gamme: string;
-    piece_price_public: number;
-    piece_stock: number;
-  }>;
-  vehicleInfo?: {
-    brandId: string;
-    modelId: string;
-    typeId?: string;
-  };
-  searchMode: "piece-to-vehicle" | "vehicle-to-parts" | null;
-  error?: string;
-}
-
 export async function loader({ context, request }: LoaderFunctionArgs) {
   // Vérifier l'authentification
   const user = await requireUser({ context });

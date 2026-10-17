@@ -1341,8 +1341,10 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "UNKNOWN",
-      "usedBy": []
+      "status": "LIVE",
+      "usedBy": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts"
+      ]
     },
     {
       "columns": [

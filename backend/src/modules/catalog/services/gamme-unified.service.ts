@@ -4,14 +4,13 @@ import { TABLES } from '@repo/database-types';
 
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
-import { CacheService } from '@cache/cache.service';
 import { Gamme } from '../types/gamme.types';
 
 @Injectable()
 export class GammeUnifiedService extends SupabaseBaseService {
   protected readonly logger = new Logger(GammeUnifiedService.name);
 
-  constructor(private readonly cacheService: CacheService) {
+  constructor() {
     super();
   }
 

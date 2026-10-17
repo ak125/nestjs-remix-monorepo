@@ -38,7 +38,6 @@ import {
   type ActionFunctionArgs,
   type MetaFunction,
   useLoaderData,
-  useNavigation,
   Link,
   useFetcher,
 } from "react-router";
@@ -254,7 +253,6 @@ export async function action({ request, params }: ActionFunctionArgs) {
 // Component
 export default function AdminGammeSeoDetail() {
   const { detail, freshness } = useLoaderData<typeof loader>();
-  const _navigation = useNavigation();
   const fetcher = useFetcher();
 
   // Local state for SEO form

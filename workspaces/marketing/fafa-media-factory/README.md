@@ -5,7 +5,7 @@
 
 ## Pourquoi cette zone
 
-Le moteur Remotion (`services/remotion-renderer/`) existe et fonctionne. Le backend orchestrateur `media-factory/` a été supprimé le 2026-04-10 (CVE axios SSRF). Plutôt que reconstruire un backend complexe avant d'avoir mesuré, V1 prouve le **système éditorial** (Fafa persona + creative intel + gouvernance + 10 pilotes DRAFT_ONLY) en mode fichiers + skills + Remotion appelé manuellement via HTTP.
+Le moteur Remotion (`services/remotion-renderer/`) existe et fonctionne. Le backend orchestrateur `media-factory/`, supprimé le 2026-04-10 (CVE axios transitive des dépendances TTS), a été rétabli le 2026-06-20 (#1043) derrière le drapeau `MEDIA_FACTORY_ENABLED`, OFF par défaut : tant qu'il est OFF, ni le module HTTP ni le processeur BullMQ ne sont enregistrés (`backend/src/modules/media-factory/media-factory.flag.ts`). Code présent ne veut pas dire activé : V1 n'en dépend pas et prouve le **système éditorial** (Fafa persona + creative intel + gouvernance + 10 pilotes DRAFT_ONLY) en mode fichiers + skills + Remotion appelé manuellement via HTTP.
 
 V2 (différée post-mesure) : recâblage backend + admin UI + DB matérialisée.
 

@@ -31,7 +31,6 @@ export interface SystemInsights {
 @Injectable()
 export class SystemService implements OnModuleDestroy {
   private readonly logger = new Logger(SystemService.name);
-  private systemStartTime = Date.now();
   private maintenanceInterval: ReturnType<typeof setInterval> | null = null;
 
   onModuleDestroy() {

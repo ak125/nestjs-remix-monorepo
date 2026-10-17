@@ -4,8 +4,6 @@ import { SystemService } from './services/system.service';
 
 @Injectable()
 export class SystemHealthService {
-  private readonly logger = new Logger(SystemHealthService.name);
-
   getQuickHealth() {
     return {
       success: true,

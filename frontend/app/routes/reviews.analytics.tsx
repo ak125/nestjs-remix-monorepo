@@ -56,18 +56,6 @@ interface TrendsData {
   growthRate: number;
 }
 
-interface RatingBreakdownItem {
-  rating: number;
-  count: number;
-  percentage: number;
-}
-
-interface LoaderData {
-  stats: ReviewStatsData;
-  trends: TrendsData;
-  ratingBreakdown: RatingBreakdownItem[];
-}
-
 export async function loader({ request }: LoaderFunctionArgs) {
   try {
     const rawStats = await getReviewStats(request).catch(() => null);

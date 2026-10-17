@@ -42,14 +42,12 @@ interface ErrorLogRow {
 @Injectable()
 export class RuntimeLogsCollectorService extends SupabaseBaseService {
   protected readonly logger = new Logger(RuntimeLogsCollectorService.name);
-  private readonly cfg: ConfigService;
 
   constructor(
     private readonly criticality: CriticalityLoaderService,
     configService: ConfigService,
   ) {
     super(configService);
-    this.cfg = configService;
   }
 
   async run(job: RuntimeLogsJobData): Promise<RuntimeLogsRunResult> {

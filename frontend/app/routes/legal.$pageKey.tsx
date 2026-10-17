@@ -1,7 +1,8 @@
 // app/routes/legal.$pageKey.tsx - Pages légales dynamiques
 // Fetches from ___META_TAGS_ARIANE via API with fallback to static content
-import { type LoaderFunctionArgs, type MetaFunction } from "react-router";
 import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
   Link,
   useLoaderData,
   useParams,
@@ -166,8 +167,6 @@ const infoPages = [
   { key: "about", title: "Qui sommes-nous", icon: "🏢" },
   { key: "contact", title: "Contact", icon: "📞" },
 ];
-
-const _availablePages = [...legalPages, ...helpPages, ...infoPages];
 
 // Pages qui ne doivent PAS être indexées (contenu juridique standard)
 const noIndexPages = ["cgv", "privacy", "terms", "cookies", "legal-notice"];

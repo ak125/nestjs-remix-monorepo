@@ -1,2 +1,2 @@
 // Re-export generated TypeScript types and tokens
-export * from './tokens/generated';
+export * from './tokens/generated.js';

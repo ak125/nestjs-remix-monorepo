@@ -43,24 +43,6 @@ interface VehicleModel {
   [key: string]: any; // Pour les autres colonnes dynamiques
 }
 
-interface LoaderData {
-  brand: {
-    id: number;
-    name: string;
-    alias: string;
-    logo: string | null;
-  } | null;
-  models: VehicleModel[];
-  metadata: {
-    title: string;
-    description: string;
-    keywords: string;
-    h1: string;
-    content: string;
-    relfollow: string;
-  } | null;
-}
-
 export const headers = buildCacheHeaders(
   "public, max-age=1800, stale-while-revalidate=3600",
 );

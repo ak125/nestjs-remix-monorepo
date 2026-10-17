@@ -18,7 +18,7 @@
         "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__"
       ],
       "files_count": 157,
-      "loc_total": 44019,
+      "loc_total": 43996,
       "has_barrel": true
     },
     "agentic-engine": {
@@ -30,7 +30,7 @@
         "backend/src/modules/agentic-engine/types"
       ],
       "files_count": 14,
-      "loc_total": 2391,
+      "loc_total": 2389,
       "has_barrel": false
     },
     "ai-content": {
@@ -75,7 +75,7 @@
         "backend/src/modules/auth/dto"
       ],
       "files_count": 44,
-      "loc_total": 5887,
+      "loc_total": 5878,
       "has_barrel": true
     },
     "backend-core": {
@@ -91,8 +91,8 @@
         "backend/src/types",
         "backend/src/utils"
       ],
-      "files_count": 36,
-      "loc_total": 6189,
+      "files_count": 35,
+      "loc_total": 6176,
       "has_barrel": true
     },
     "blog": {
@@ -104,7 +104,7 @@
         "backend/src/modules/blog/utils"
       ],
       "files_count": 40,
-      "loc_total": 14720,
+      "loc_total": 14701,
       "has_barrel": false
     },
     "bot-guard": {
@@ -120,7 +120,7 @@
         "backend/src/cache"
       ],
       "files_count": 3,
-      "loc_total": 700,
+      "loc_total": 669,
       "has_barrel": false
     },
     "cart": {
@@ -146,7 +146,7 @@
         "backend/src/modules/catalog/utils"
       ],
       "files_count": 39,
-      "loc_total": 10342,
+      "loc_total": 10199,
       "has_barrel": false
     },
     "commercial": {
@@ -187,7 +187,7 @@
         "backend/src/modules/config/validators"
       ],
       "files_count": 103,
-      "loc_total": 25082,
+      "loc_total": 25070,
       "has_barrel": true
     },
     "customers": {
@@ -239,8 +239,8 @@
         "backend/src/modules/diagnostic-engine/services",
         "backend/src/modules/diagnostic-engine/types"
       ],
-      "files_count": 71,
-      "loc_total": 15145,
+      "files_count": 76,
+      "loc_total": 16662,
       "has_barrel": false
     },
     "errors": {
@@ -252,7 +252,7 @@
         "backend/src/modules/errors/services"
       ],
       "files_count": 9,
-      "loc_total": 3056,
+      "loc_total": 3040,
       "has_barrel": false
     },
     "frontend-routes": {
@@ -261,7 +261,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115470,
+      "loc_total": 114841,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -302,7 +302,6 @@
         "frontend/app/components/heroes",
         "frontend/app/components/home",
         "frontend/app/components/layout",
-        "frontend/app/components/layout/templates",
         "frontend/app/components/manufacturers",
         "frontend/app/components/model",
         "frontend/app/components/navbar",
@@ -320,7 +319,6 @@
         "frontend/app/components/shipping",
         "frontend/app/components/trust",
         "frontend/app/components/ui",
-        "frontend/app/components/users",
         "frontend/app/components/vehicle",
         "frontend/app/components/vehicle/r8",
         "frontend/app/components/vehicle/r8/sections",
@@ -343,8 +341,8 @@
         "frontend/app/utils",
         "frontend/app/utils/seo"
       ],
-      "files_count": 599,
-      "loc_total": 114891,
+      "files_count": 585,
+      "loc_total": 110497,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -358,7 +356,7 @@
         "backend/src/modules/gamme-rest/utils/__tests__"
       ],
       "files_count": 19,
-      "loc_total": 6331,
+      "loc_total": 6325,
       "has_barrel": true
     },
     "health": {
@@ -392,7 +390,7 @@
         "backend/src/modules/layout/services"
       ],
       "files_count": 10,
-      "loc_total": 2723,
+      "loc_total": 2686,
       "has_barrel": true
     },
     "maintenance": {
@@ -413,7 +411,7 @@
         "backend/src/modules/marketing/templates"
       ],
       "files_count": 29,
-      "loc_total": 7009,
+      "loc_total": 7016,
       "has_barrel": false
     },
     "mcp-validation": {
@@ -427,7 +425,7 @@
         "backend/src/modules/mcp-validation/types"
       ],
       "files_count": 21,
-      "loc_total": 7771,
+      "loc_total": 7765,
       "has_barrel": true
     },
     "media-factory": {
@@ -472,7 +470,7 @@
         "backend/src/modules/metadata/services"
       ],
       "files_count": 6,
-      "loc_total": 1937,
+      "loc_total": 1918,
       "has_barrel": false
     },
     "navigation": {
@@ -488,8 +486,8 @@
       "dirs": [
         "backend/src/modules/observability"
       ],
-      "files_count": 9,
-      "loc_total": 551,
+      "files_count": 12,
+      "loc_total": 753,
       "has_barrel": false
     },
     "orders": {
@@ -552,7 +550,7 @@
         "packages/design-tokens/tests"
       ],
       "files_count": 13,
-      "loc_total": 2005,
+      "loc_total": 2007,
       "has_barrel": true
     },
     "pkg-domain-commerce": {
@@ -623,8 +621,8 @@
         "backend/src/modules/pricing/utils",
         "backend/src/modules/pricing/utils/__tests__"
       ],
-      "files_count": 31,
-      "loc_total": 7268,
+      "files_count": 37,
+      "loc_total": 9480,
       "has_barrel": false
     },
     "products": {
@@ -665,7 +663,7 @@
         "backend/src/modules/rag-proxy/types"
       ],
       "files_count": 34,
-      "loc_total": 12031,
+      "loc_total": 12017,
       "has_barrel": false
     },
     "scripts": {
@@ -703,7 +701,7 @@
         "scripts/wiki-generators/__tests__"
       ],
       "files_count": 206,
-      "loc_total": 46304,
+      "loc_total": 47108,
       "has_barrel": true
     },
     "search": {
@@ -713,7 +711,7 @@
         "backend/src/modules/search/services"
       ],
       "files_count": 17,
-      "loc_total": 6359,
+      "loc_total": 6263,
       "has_barrel": false
     },
     "seo": {
@@ -770,7 +768,7 @@
         "scripts/seo/lib"
       ],
       "files_count": 279,
-      "loc_total": 59420,
+      "loc_total": 59406,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -783,7 +781,7 @@
         "backend/src/modules/seo-control-plane/services"
       ],
       "files_count": 27,
-      "loc_total": 5549,
+      "loc_total": 5547,
       "has_barrel": false
     },
     "seo-logs": {
@@ -794,7 +792,7 @@
         "backend/src/modules/seo-logs/services"
       ],
       "files_count": 12,
-      "loc_total": 3643,
+      "loc_total": 3639,
       "has_barrel": false
     },
     "seo-monitoring": {
@@ -808,7 +806,7 @@
         "backend/src/modules/seo-monitoring/services"
       ],
       "files_count": 50,
-      "loc_total": 11245,
+      "loc_total": 11242,
       "has_barrel": false
     },
     "seo-projection": {
@@ -824,7 +822,7 @@
         "backend/src/modules/seo-shadow-observatory"
       ],
       "files_count": 10,
-      "loc_total": 969,
+      "loc_total": 968,
       "has_barrel": false
     },
     "session": {
@@ -879,7 +877,7 @@
         "backend/src/modules/supplier-truth/domain"
       ],
       "files_count": 51,
-      "loc_total": 6785,
+      "loc_total": 6906,
       "has_barrel": false
     },
     "suppliers": {
@@ -888,7 +886,7 @@
         "backend/src/modules/suppliers/dto"
       ],
       "files_count": 7,
-      "loc_total": 1333,
+      "loc_total": 1286,
       "has_barrel": true
     },
     "support": {
@@ -901,7 +899,7 @@
         "backend/src/modules/support/types"
       ],
       "files_count": 30,
-      "loc_total": 10453,
+      "loc_total": 10417,
       "has_barrel": true
     },
     "system": {
@@ -912,7 +910,7 @@
         "backend/src/modules/system/types"
       ],
       "files_count": 11,
-      "loc_total": 2499,
+      "loc_total": 2496,
       "has_barrel": false
     },
     "trend-signals": {
@@ -959,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 301,
-      "loc_total": 57360,
+      "files_count": 303,
+      "loc_total": 57643,
       "has_barrel": true
     },
     "upload": {
@@ -970,7 +968,7 @@
         "backend/src/modules/upload/services"
       ],
       "files_count": 10,
-      "loc_total": 3580,
+      "loc_total": 3575,
       "has_barrel": true
     },
     "users": {
@@ -990,7 +988,7 @@
         "backend/src/modules/vehicle-context"
       ],
       "files_count": 4,
-      "loc_total": 436,
+      "loc_total": 433,
       "has_barrel": false
     },
     "vehicles": {
@@ -1027,8 +1025,8 @@
         "backend/src/workers/services",
         "backend/src/workers/types"
       ],
-      "files_count": 18,
-      "loc_total": 4026,
+      "files_count": 20,
+      "loc_total": 5073,
       "has_barrel": false
     }
   },
@@ -1066,7 +1064,7 @@
     {
       "from": "admin",
       "to": "config",
-      "count": 74
+      "count": 73
     },
     {
       "from": "admin",
@@ -1282,11 +1280,6 @@
       "from": "backend-core",
       "to": "database",
       "count": 5
-    },
-    {
-      "from": "backend-core",
-      "to": "dev-only",
-      "count": 1
     },
     {
       "from": "backend-core",
@@ -1689,26 +1682,6 @@
       "count": 1
     },
     {
-      "from": "dev-only",
-      "to": "catalog",
-      "count": 4
-    },
-    {
-      "from": "dev-only",
-      "to": "config",
-      "count": 4
-    },
-    {
-      "from": "dev-only",
-      "to": "database",
-      "count": 1
-    },
-    {
-      "from": "dev-only",
-      "to": "seo-shadow-observatory",
-      "count": 3
-    },
-    {
       "from": "diagnostic-engine",
       "to": "common",
       "count": 1
@@ -1716,7 +1689,7 @@
     {
       "from": "diagnostic-engine",
       "to": "config",
-      "count": 12
+      "count": 19
     },
     {
       "from": "diagnostic-engine",
@@ -1741,17 +1714,17 @@
     {
       "from": "gamme-rest",
       "to": "backend-core",
-      "count": 2
+      "count": 1
     },
     {
       "from": "gamme-rest",
       "to": "catalog",
-      "count": 4
+      "count": 3
     },
     {
       "from": "gamme-rest",
       "to": "common",
-      "count": 4
+      "count": 3
     },
     {
       "from": "gamme-rest",
@@ -1766,7 +1739,7 @@
     {
       "from": "gamme-rest",
       "to": "seo",
-      "count": 10
+      "count": 3
     },
     {
       "from": "health",
@@ -1791,7 +1764,7 @@
     {
       "from": "marketing",
       "to": "config",
-      "count": 4
+      "count": 3
     },
     {
       "from": "marketing",
@@ -1914,6 +1887,11 @@
       "count": 2
     },
     {
+      "from": "pricing",
+      "to": "backend-core",
+      "count": 1
+    },
+    {
       "from": "products",
       "to": "backend-core",
       "count": 1
@@ -2001,7 +1979,7 @@
     {
       "from": "seo",
       "to": "config",
-      "count": 40
+      "count": 39
     },
     {
       "from": "seo",
@@ -2217,6 +2195,11 @@
       "from": "workers",
       "to": "media-factory",
       "count": 9
+    },
+    {
+      "from": "workers",
+      "to": "pricing",
+      "count": 4
     },
     {
       "from": "workers",
@@ -2546,11 +2529,6 @@
       "rule": "no-deep-module-access"
     },
     {
-      "from": "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-seo-shadow.test.ts",
-      "to": "backend/src/modules/seo/registries/seo-feature-flag.registry.ts",
-      "rule": "no-deep-module-access"
-    },
-    {
       "from": "backend/src/modules/gamme-rest/services/buying-guide-data.service.ts",
       "to": "backend/src/modules/seo/validation/purchase-guide-validation.constants.ts",
       "rule": "no-deep-module-access"
@@ -2563,41 +2541,6 @@
     {
       "from": "backend/src/modules/gamme-rest/services/gamme-page-data.service.ts",
       "to": "backend/src/modules/catalog/services/unified-page-data.service.ts",
-      "rule": "no-deep-module-access"
-    },
-    {
-      "from": "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
-      "to": "backend/src/modules/catalog/utils/image-urls.utils.ts",
-      "rule": "no-deep-module-access"
-    },
-    {
-      "from": "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
-      "to": "backend/src/modules/seo/registries/seo-feature-flag.registry.ts",
-      "rule": "no-deep-module-access"
-    },
-    {
-      "from": "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
-      "to": "backend/src/modules/seo/services/chain/seo-chain-orchestrator.service.ts",
-      "rule": "no-deep-module-access"
-    },
-    {
-      "from": "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
-      "to": "backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
-      "rule": "no-deep-module-access"
-    },
-    {
-      "from": "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
-      "to": "backend/src/modules/seo/services/reference.service.ts",
-      "rule": "no-deep-module-access"
-    },
-    {
-      "from": "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
-      "to": "backend/src/modules/seo/services/seo-title-engine.service.ts",
-      "rule": "no-deep-module-access"
-    },
-    {
-      "from": "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
-      "to": "backend/src/modules/seo/types/resolved-seo-field.ts",
       "rule": "no-deep-module-access"
     },
     {
@@ -2648,31 +2591,6 @@
     {
       "from": "backend/src/modules/rag-proxy/services/rag-image-management.service.ts",
       "to": "backend/src/modules/upload/services/supabase-storage.service.ts",
-      "rule": "no-deep-module-access"
-    },
-    {
-      "from": "backend/src/modules/rm/services/__tests__/rm-builder-seo-legacy-markers.test.ts",
-      "to": "backend/src/modules/catalog/services/seo-template.service.ts",
-      "rule": "no-deep-module-access"
-    },
-    {
-      "from": "backend/src/modules/rm/services/__tests__/rm-builder-seo-shadow.test.ts",
-      "to": "backend/src/modules/seo-shadow-observatory/seo-shadow-observatory.service.ts",
-      "rule": "no-deep-module-access"
-    },
-    {
-      "from": "backend/src/modules/rm/services/rm-builder.service.ts",
-      "to": "backend/src/modules/catalog/services/seo-template.service.ts",
-      "rule": "no-deep-module-access"
-    },
-    {
-      "from": "backend/src/modules/rm/services/rm-builder.service.ts",
-      "to": "backend/src/modules/catalog/services/vehicle-aware-description.composer.ts",
-      "rule": "no-deep-module-access"
-    },
-    {
-      "from": "backend/src/modules/rm/services/rm-builder.service.ts",
-      "to": "backend/src/modules/seo-shadow-observatory/seo-shadow-observatory.service.ts",
       "rule": "no-deep-module-access"
     },
     {

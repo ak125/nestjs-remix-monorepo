@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { ConfigService } from '@nestjs/config';
 import path from 'node:path';
 import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 import {
@@ -19,7 +18,6 @@ export class RagWebhookCompletionService {
   private readonly logger = new Logger(RagWebhookCompletionService.name);
 
   constructor(
-    private readonly configService: ConfigService,
     private readonly eventEmitter: EventEmitter2,
     private readonly webhookAuditService: WebhookAuditService,
     private readonly ragGammeDetectionService: RagGammeDetectionService,

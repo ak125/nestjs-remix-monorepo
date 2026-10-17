@@ -21,7 +21,7 @@
  * - Couplé à `scripts/ops/lock-rag-knowledge.sh` (PR-E.1) et ast-grep
  *   `no-direct-rag-knowledge-write.yml` (PR-A)
  */
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
@@ -51,7 +51,6 @@ export interface MirrorFreshnessResult {
 
 @Injectable()
 export class RagMirrorFreshnessService {
-  private readonly logger = new Logger(RagMirrorFreshnessService.name);
   private readonly ragKnowledgePath: string;
   private readonly staleThresholdHours: number;
 
