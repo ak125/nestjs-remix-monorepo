@@ -58124,7 +58124,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 1041,
+      "loc": 1032,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/diagnostic-auto._index.tsx",
       "risk": "low",
@@ -63587,7 +63587,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 179,
+      "loc": 188,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/diagnostic-hub-wiki-content.test.tsx",
       "risk": "low",
