@@ -181,7 +181,7 @@ Conforme a ADR-006 :
 - [ADR-006: Controle d'Acces RAG](./006-rag-write-access-control.md)
 - [CDC RAG System](../../features/rag-system.md)
 - [CDC AI-COS Operating System](../../features/ai-cos-operating-system.md)
-- [core/runner.py](../../../ai-agents-python/core/runner.py) - AgentRunner existant
+- `ai-agents-python/core/runner.py` - AgentRunner (prototype retiré le 2026-10-17, consultable dans l'historique Git)
 
 ## Historique
 

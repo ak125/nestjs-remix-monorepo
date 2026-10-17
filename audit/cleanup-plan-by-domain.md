@@ -18,7 +18,7 @@ knip does **not** flag `scripts/ui-audit/*` as unused (it's reachable via `knip.
 
 - `__regression__/seo-role-canon-guard.regression.ts.disabled` — explicit `.disabled` file; confirm nothing references it, then `git rm`.
 - `.claude/settings.local.json.bak` — already gitignored (`.claude/*.bak`); not tracked → nothing to do unless it got committed somewhere.
-- Old Python agents `ai-agents-python/agents/*.py` — the whole `ai-agents-python/` tree is **gitignored** (`.gitignore` line ~101), so it's not in the repo; nothing to delete. (If a stray `.py` is tracked, check for a runner/cron first.)
+- Old Python agents `ai-agents-python/` — **correction 2026-10-17**: the tree was gitignored but still tracked (55 files, force-added). No runner, cron, script, workflow or Docker use found (the image excludes it via `.dockerignore`); removed on 2026-10-17. History keeps the code.
 - Anything else surfacing as `confidence: high` under `scripts/` in a future `dead-code-candidates.json` (currently **0**).
 
 → PR-2 is essentially empty today. Skip it or fold the one `.disabled` file into PR-3.
