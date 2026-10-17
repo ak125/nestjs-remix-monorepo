@@ -3012,6 +3012,7 @@
         "runtime:backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
         "runtime:backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
         "runtime:backend/src/modules/diagnostic-engine/services/diagnostic-content.service.ts",
+        "runtime:backend/src/modules/diagnostic-engine/services/diagnostic-provenance.service.ts",
         "runtime:backend/src/modules/diagnostic-engine/services/diagnostic-resolution-pipeline.service.ts",
         "runtime:backend/src/modules/diagnostic-engine/services/human-escalation-builder.service.ts",
         "runtime:backend/src/modules/diagnostic-engine/services/intent-classifier.service.ts",
@@ -3036,6 +3037,7 @@
         "runtime:backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
         "runtime:backend/src/modules/diagnostic-engine/engines/risk-safety.engine.ts",
         "runtime:backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
+        "runtime:backend/src/modules/diagnostic-engine/services/diagnostic-provenance.service.ts",
         "runtime:backend/src/modules/diagnostic-engine/services/kg-shadow.service.ts"
       ],
       "id": "runtime:backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
@@ -3180,6 +3182,18 @@
       "id": "runtime:backend/src/modules/diagnostic-engine/services/diagnostic-content.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/diagnostic-engine/services/diagnostic-content.service.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/config/feature-flags.service.ts",
+        "runtime:backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts"
+      ],
+      "id": "runtime:backend/src/modules/diagnostic-engine/services/diagnostic-provenance.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/diagnostic-engine/services/diagnostic-provenance.service.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
@@ -4262,8 +4276,18 @@
       "status": "LIVE"
     },
     {
+      "dependsOn": [],
+      "id": "runtime:backend/src/modules/observability/diagnostic-provenance-metrics.listener.ts",
+      "kind": "other",
+      "path": "backend/src/modules/observability/diagnostic-provenance-metrics.listener.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
       "dependsOn": [
         "runtime:backend/src/modules/observability/diagnostic-kg-shadow-metrics.listener.ts",
+        "runtime:backend/src/modules/observability/diagnostic-provenance-metrics.listener.ts",
         "runtime:backend/src/modules/observability/prometheus.controller.ts",
         "runtime:backend/src/modules/observability/vehicle-context-metrics.listener.ts"
       ],

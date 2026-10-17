@@ -34,6 +34,7 @@ on:
       - "scripts/audit/__tests__/**"
       - "audit/cleanup/**"
       - "scripts/cleanup/validate-before-delete.sh"
+      - "scripts/cleanup/validate-before-delete.test.ts"
       - "packages/registry/**"
       - "audit/registry/**"
       - ".spec/00-canon/repository-registry/**"
@@ -84,6 +85,7 @@ on:
       - "scripts/audit/__tests__/**"
       - "audit/cleanup/**"
       - "scripts/cleanup/validate-before-delete.sh"
+      - "scripts/cleanup/validate-before-delete.test.ts"
       - "packages/**"
       - "audit/registry/**"
       - ".spec/00-canon/repository-registry/**"
@@ -190,6 +192,11 @@ jobs:
       # Les 17 préexistants encodent des décisions de conception : C8
       # snapshot-only, parité NEVER_AUTO_DELETE bash↔TS, tolérance
       # target-scoped.
+      #
+      # Le même script lance aussi les tests de comportement de la garde
+      # d'action (scripts/cleanup/validate-before-delete.test.ts, dépôts git
+      # jetables) : jusqu'au 2026-10-11 aucun test n'exerçait ses verdicts, et
+      # 30 cas sur 56 répondaient SAFE à tort.
       #
       # Ce step tourne AVANT le check ci-dessous : un générateur cassé doit se
       # voir sur ses fixtures, pas sur l'inventaire réel.

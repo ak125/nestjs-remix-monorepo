@@ -91,3 +91,19 @@ export const DiagSafetyRulesSchema = z
 export const DiagSafetyRuleCoverageSchema = z.array(
   DiagSafetyRuleRowSchema.pick({ system_id: true, active: true }),
 );
+// Provenance WIKI vivante lue par le moteur : une ligne par couple (lien, fiche),
+// l'index unique partiel de la migration, revérifié à la lecture.
+export const DiagLinkProvenanceRowSchema = z.object({
+  link_id: identity,
+  wiki_path: text,
+  gamme_slug: text,
+  relation_to_part: text,
+  diagnostic_safe: z.boolean(),
+});
+export const DiagLinkProvenanceRowsSchema = z
+  .array(DiagLinkProvenanceRowSchema)
+  .refine(
+    (rows) =>
+      new Set(rows.map((row) => `${row.link_id}:${row.wiki_path}`)).size ===
+      rows.length,
+  );
