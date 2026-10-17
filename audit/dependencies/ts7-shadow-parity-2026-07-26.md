@@ -616,3 +616,102 @@ Four projects remain on `node-cjs-legacy.json`: `packages/seo-role-contracts`,
 `packages/seo-roles`, `packages/registry` and `backend`. `ts7-shadow-parity.json` is still
 not regenerated, for the reasons given in the pilot section; its `packages/cwv-taxonomy`
 row describes the configuration before this change.
+
+## `nodenext` on `packages/seo-role-contracts` — fifth project of the sequence
+
+Same scope rule as the pilot: one project. `node-cjs-legacy.json` is untouched, TS7 is
+still not a repo dependency (no `package.json` or lockfile change), and the PARKED
+decision above stands.
+
+`packages/seo-role-contracts` belongs to D3, owned by seo-team. It holds the behavioural
+contracts of the R-stack: the zod `RoleContract` of each role, the surface keys, the
+robots verdict, the indexability composition and the noindex thresholds. Role identity
+stays in `@repo/seo-roles`. The change is compile configuration only, the emitted `dist/`
+is byte-identical, and the package's sources, tests and `package.json` do not change. It
+was applied by a delivery script that only the owner runs: that run is the owner's GO for
+this project.
+
+### What differs from the first four projects
+
+This is the first project of the sequence that imports another workspace package:
+`@repo/seo-roles`, from 11 source files; 5 source files import `zod`, as in
+`packages/cwv-taxonomy`. Both algorithms reach the same file for each bare specifier:
+
+- **`@repo/seo-roles`**: node10 (before) ignores `exports` and reads the `types` field of
+  its `package.json`, `./dist/index.d.ts`. NodeNext (after) resolves in CJS mode with the
+  conditions `require`, `types`, `node`, enters `exports` `"."` and matches `types`:
+  `./dist/index.d.ts`. Same file, same package ID (`@repo/seo-roles/dist/index.d.ts@0.7.0`).
+- **`zod`**: `node_modules/zod/index.d.cts` before and after, as in the fourth project.
+
+`@repo/seo-roles` exposes only its `dist/`, which is gitignored, so this project
+type-checks against the built declarations of `@repo/seo-roles`, never its sources. In
+CI, turbo's `dependsOn: ["^build"]` builds it first. The delivery script builds it in its
+own worktree with the package's `build` script before the first measurement, and checks
+that the build leaves every tracked file unchanged. `packages/seo-roles` itself stays on
+`node-cjs-legacy.json`.
+
+Neither package has a `"type"` field, so the files of both stay **CommonJS**.
+
+### Change
+
+`packages/seo-role-contracts/tsconfig.json` becomes byte-identical to
+`packages/seo-url-contract/tsconfig.json`: it extends `base.json` and sets `module` and
+`moduleResolution` to `NodeNext`. The two files differed only in those lines before. The
+effective delta (`tsc --showConfig`, TS 6.0.3) is the pilot's:
+
+- `ignoreDeprecations: "6.0"` is removed;
+- `module` goes from commonjs to nodenext, and `moduleResolution` from node10 to nodenext;
+- `moduleDetection` becomes force;
+- `resolvePackageJsonExports` / `resolvePackageJsonImports` are no longer forced to false
+  (the NodeNext default is true).
+
+Nothing else changes.
+
+### Evidence — TS 6.0.3, the repo compiler
+
+| Check | Before | After |
+|---|---|---|
+| `tsc --noEmit` | exit 0, 0 diagnostics | exit 0, 0 diagnostics |
+| `tsc` build | exit 0 | exit 0 |
+| Emit (`.js`, `.d.ts` and their maps) | 64 files | the same 64, byte-identical (sha256) |
+| Relative specifiers (`--traceResolution`) | 16 outcomes → 15 modules of `src/` (`./schema` and `../schema` both reach `src/schema.ts`) | identical |
+| Bare specifiers | 2: `@repo/seo-roles` → `packages/seo-roles/dist/index.d.ts`, `zod` → `node_modules/zod/index.d.cts` | identical |
+| Resolution outcomes, all files | 116 (16 in `src/`, 14 for `@repo/seo-roles` with the 13 inside its declarations, 86 for zod with the 85 inside its declarations), 0 unresolved | the same 116 |
+| Program files (`--listFilesOnly`, `--explainFiles`) | 155 (45 lib + 16 src + 14 `@repo/seo-roles` declarations + 80 zod) | the same 155 |
+| Package tests (`tsx --test`) | 140/140 | 140/140 |
+
+After the change, `--explainFiles` adds the line *"File is CommonJS module because
+'package.json' does not have field "type""* for each of the 16 source files, and *"File
+is CommonJS module because '../seo-roles/package.json' does not have field "type""* for
+each of the 14 `@repo/seo-roles` declaration files.
+
+Consumers:
+
+- the backend only: 16 files of the `seo` and `seo-shadow-observatory` modules (the
+  surface registry, the chain services, the indexability policies and the shadow
+  observatory), two of them Jest tests. `tsc`, the backend build and the runtime go
+  through the unchanged `package.json` (`exports`, `main`, `types`) to `dist/`. Jest maps
+  the package to `src/` (`moduleNameMapper`) and compiles it with ts-jest under the
+  backend's own `tsconfig.json`: the package's `tsconfig.json` is not read there.
+- the frontend does not import the package (one comment names it).
+
+The emit is byte-identical, so the consumer delta is zero by construction.
+
+### Evidence — TS 7.0.2, observation
+
+Same method as the pilot: this project alone, the harness's own functions, TS6 exit code
+checked. The delivery script commits only if the run before the change is
+`BLOCKED_CONFIG` with `TS5108` and the run after is `PARITY` with TS6 and TS7 at exit 0
+and 0 diagnostics.
+
+| Configuration | Classification | TS6 | TS7 |
+|---|---|---|---|
+| Before (`node-cjs-legacy.json`) | BLOCKED_CONFIG | exit 0, 0 diagnostics | `TS5108` |
+| After (`NodeNext`) | PARITY | exit 0, 0 diagnostics | exit 0, 0 diagnostics |
+
+### Still `BLOCKED_CONFIG` after the fifth project
+
+Three projects remain on `node-cjs-legacy.json`: `packages/seo-roles`, `packages/registry`
+and `backend`. `ts7-shadow-parity.json` is still not regenerated, for the reasons given in
+the pilot section; its `packages/seo-role-contracts` row describes the configuration
+before this change.
