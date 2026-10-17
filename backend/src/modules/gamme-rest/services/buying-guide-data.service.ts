@@ -156,6 +156,11 @@ export interface BuyingGuideContractV1 {
   antiMistakes: string[];
   faq: Array<{ question: string; answer: string }>;
   quality: GammeContentQuality;
+  /** Provenance after quality filtering, before the final template completion. */
+  sectionSources: Record<
+    'faq' | 'symptoms' | 'antiMistakes',
+    'db' | 'fallback' | 'mixed'
+  >;
   // RAG-enriched structured data (optional — used when DB columns are populated)
   enrichedSelectionCriteria?: GammeBuyingGuideSelectionCriterion[] | null;
   enrichedDecisionTree?: GammeBuyingGuideDecisionNode[] | null;
@@ -265,10 +270,13 @@ export interface GammeBuyingGuideV1 {
   symptoms: string[];
   trustArguments: GammeBuyingGuideTrustArgument[];
   quality: GammeBuyingGuideQuality;
-  sectionSources?: Record<string, 'db' | 'fallback'>;
+  sectionSources?: Record<string, 'db' | 'fallback' | 'mixed'>;
 }
 
-type BuyingGuideContractWithoutQuality = Omit<BuyingGuideContractV1, 'quality'>;
+type BuyingGuideContractWithoutQuality = Omit<
+  BuyingGuideContractV1,
+  'quality' | 'sectionSources'
+>;
 
 /**
  * Service pour récupérer et fabriquer le contrat buying guide.
@@ -289,7 +297,7 @@ export class BuyingGuideDataService extends SupabaseBaseService {
     pgId: string,
   ): Promise<BuyingGuideContractV1 | null> {
     try {
-      // Use RPC that LEFT JOINs R1 slots (COALESCE: R1 > sgpg fallback)
+      // RPC with LEFT JOIN on R1 slots (COALESCE: R1 > sgpg fallback)
       const { data, error } = await this.client.rpc(
         'get_buying_guide_with_r1_slots',
         { p_pg_id: pgId },
@@ -522,9 +530,11 @@ export class BuyingGuideDataService extends SupabaseBaseService {
           ? 'db'
           : 'fallback',
         useCases: contract.enrichedUseCases?.length ? 'db' : 'fallback',
-        antiMistakes: contract.enrichedAntiMistakes?.length ? 'db' : 'fallback',
-        faq: 'db',
-        symptoms: 'db',
+        antiMistakes: contract.enrichedAntiMistakes?.length
+          ? 'db'
+          : contract.sectionSources.antiMistakes,
+        faq: contract.sectionSources.faq,
+        symptoms: contract.sectionSources.symptoms,
       },
     };
 
@@ -1503,6 +1513,7 @@ export class BuyingGuideDataService extends SupabaseBaseService {
     return {
       ...qualityGate.content,
       quality: this.buildQuality(qualityGate.content, qualityGate.flags, raw),
+      sectionSources: qualityGate.sectionSources,
     };
   }
 
@@ -2042,7 +2053,13 @@ export class BuyingGuideDataService extends SupabaseBaseService {
   ): {
     content: BuyingGuideContractWithoutQuality;
     flags: GammeContentQualityFlag[];
+    sectionSources: BuyingGuideContractV1['sectionSources'];
   } {
+    const sectionSources: BuyingGuideContractV1['sectionSources'] = {
+      faq: 'db',
+      symptoms: 'db',
+      antiMistakes: content.enrichedAntiMistakes?.length ? 'db' : 'fallback',
+    };
     const gated: BuyingGuideContractWithoutQuality = {
       ...content,
       intro: {
@@ -2201,6 +2218,7 @@ export class BuyingGuideDataService extends SupabaseBaseService {
     if (gated.symptoms.length < PURCHASE_GUIDE_VALIDATION.MIN_SYMPTOMS) {
       addFlag('SYMPTOMS_TOO_SMALL');
       gated.symptoms = this.fallbackSymptoms(familyKey);
+      sectionSources.symptoms = 'fallback';
     }
 
     // Anti-mistakes
@@ -2209,6 +2227,9 @@ export class BuyingGuideDataService extends SupabaseBaseService {
     if (dedupedAntiMistakes.hasDuplicates) addFlag('DUPLICATE_ITEMS');
     if (gated.antiMistakes.length < MIN_ANTI_MISTAKES) {
       gated.antiMistakes = this.fallbackAntiMistakes(gammeName, familyKey);
+      if (!content.enrichedAntiMistakes?.length) {
+        sectionSources.antiMistakes = 'fallback';
+      }
       addFlag('TOO_SHORT');
     }
 
@@ -2217,6 +2238,9 @@ export class BuyingGuideDataService extends SupabaseBaseService {
     gated.faq = dedupedFaq.values.slice(0, 8);
     if (dedupedFaq.hasDuplicates) addFlag('DUPLICATE_ITEMS');
 
+    // Retain identity only for unchanged DB pairs. Replacements create new
+    // objects, and the R1 boundary filter below may remove either origin.
+    const dbFaqItems = new Set(gated.faq);
     gated.faq = gated.faq.map((item) => {
       const answer = this.cleanText(item.answer);
       if (answer.length >= PURCHASE_GUIDE_VALIDATION.MIN_FAQ_ANSWER_LENGTH) {
@@ -2366,7 +2390,14 @@ export class BuyingGuideDataService extends SupabaseBaseService {
       addFlag('MISSING_SOURCE_PROVENANCE');
     }
 
-    return { content: gated, flags };
+    const dbFaqCount = gated.faq.filter((item) => dbFaqItems.has(item)).length;
+    sectionSources.faq =
+      dbFaqCount === 0
+        ? 'fallback'
+        : dbFaqCount === gated.faq.length
+          ? 'db'
+          : 'mixed';
+    return { content: gated, flags, sectionSources };
   }
 
   private resolveQualitySource(raw: PurchaseGuideRow, pgId: string): string {
@@ -2538,6 +2569,11 @@ export class BuyingGuideDataService extends SupabaseBaseService {
       symptoms: this.fallbackSymptoms(familyKey),
       antiMistakes: this.fallbackAntiMistakes(gammeName, familyKey),
       faq: this.fallbackFaq(gammeName, familyKey),
+      sectionSources: {
+        faq: 'fallback',
+        symptoms: 'fallback',
+        antiMistakes: 'fallback',
+      },
       quality: {
         score: 95,
         flags: [],
@@ -2657,6 +2693,28 @@ export class BuyingGuideDataService extends SupabaseBaseService {
       next.output = this.buildOutput(gammeName, familyKey);
     }
 
+    // The existing merge keeps the cleaned, distinct input items first and
+    // only fills remaining slots. Count after deduplication and truncation:
+    // a template item discarded as a duplicate is not a served source.
+    const retainedFaqCount = this.dedupeFaq(guide.faq).values.length;
+    const retainedDbAntiMistakesCount = contract.enrichedAntiMistakes?.length
+      ? this.dedupeStrings(guide.antiMistakes).values.length
+      : 0;
+    next.sectionSources = {
+      ...guide.sectionSources,
+      faq:
+        contract.sectionSources.faq === 'db' &&
+        retainedFaqCount < next.faq.length
+          ? 'mixed'
+          : contract.sectionSources.faq,
+      symptoms: contract.sectionSources.symptoms,
+      antiMistakes:
+        retainedDbAntiMistakesCount === 0
+          ? 'fallback'
+          : retainedDbAntiMistakesCount === next.antiMistakes.length
+            ? 'db'
+            : 'mixed',
+    };
     return next;
   }
 }
