@@ -50,14 +50,21 @@ export type WizardAction =
 
 // ── API Response types (from backend EvidencePack) ──
 
-export interface ScoringBreakdown {
-  signal_match: number;
-  vehicle_fit: number;
-  lifecycle_fit: number;
-  maintenance_history: number;
-  plausibility: number;
-  context: number;
+/**
+ * What the WIKI documents behind a hypothesis: sourced = every symptom → cause
+ * link has a validated fiche, partial = some, unsourced = none. The pack also
+ * lists the links and fiches; the results page shows the state only.
+ */
+export type ProvenanceState = "sourced" | "partial" | "unsourced";
+
+export interface HypothesisProvenance {
+  state: ProvenanceState;
 }
+
+/** unavailable = the provenance could not be read: no state is shown. */
+export type ProvenanceSummary =
+  | { status: "available"; counts: Record<ProvenanceState, number> }
+  | { status: "unavailable" };
 
 export interface Hypothesis {
   hypothesis_id: string;
@@ -70,7 +77,8 @@ export interface Hypothesis {
   verification_method?: string;
   requires_verification: boolean;
   related_gamme_slugs?: string[];
-  scoring_breakdown?: ScoringBreakdown;
+  /** Absent when the provenance is not exposed or could not be read. */
+  provenance?: HypothesisProvenance;
 }
 
 export interface SuggestedGamme {
@@ -121,6 +129,8 @@ export interface EvidencePack {
   allowed_claims: string[];
   signal_quality?: string;
   ui_block_inputs: Record<string, unknown>;
+  /** Absent when the provenance is not exposed (flag OFF) or on older sessions. */
+  provenance_summary?: ProvenanceSummary;
 }
 
 export interface DiagnosticApiResponse {

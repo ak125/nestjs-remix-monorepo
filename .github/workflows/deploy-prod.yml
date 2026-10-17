@@ -226,6 +226,15 @@ jobs:
           # this variable is the flag's only PROD source. Rollback = variable unset
           # or false, then a new tag.
           DIAGNOSTIC_PROJECTION_ENABLED_OVERRIDE: ${{ vars.PROD_DIAGNOSTIC_PROJECTION_ENABLED }}
+          # Diagnostic provenance (ADR-035): EXPOSE adds what the WIKI documents
+          # behind each cause to the diagnostic answer; PRIMARY lets the documented
+          # causes lead, and is refused unless EXPOSE is true (the engine would
+          # ignore it). Same writer and contract as above. Both ARE in the admin
+          # override allowlist, which wins at runtime until the container restarts;
+          # these variables are what every new container starts with. Rollback =
+          # admin override false at once, then variable false and a new tag.
+          DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED_OVERRIDE: ${{ vars.PROD_DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED }}
+          DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED_OVERRIDE: ${{ vars.PROD_DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED }}
         run: |
           docker pull massdoc/nestjs-remix-monorepo:production
 

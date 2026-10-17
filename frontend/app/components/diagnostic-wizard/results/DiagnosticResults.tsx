@@ -152,7 +152,10 @@ export function DiagnosticResults({
 
       {/* Block 3: Hypotheses */}
       {ep.candidate_hypotheses.length > 0 && (
-        <ResultHypotheses hypotheses={ep.candidate_hypotheses} />
+        <ResultHypotheses
+          hypotheses={ep.candidate_hypotheses}
+          provenanceSummary={ep.provenance_summary}
+        />
       )}
 
       {/* ADR-031: historical rag_facts are not diagnostic evidence. */}

@@ -18,3 +18,9 @@ export const PROMETHEUS_REGISTRY = Symbol.for(
 export const DIAGNOSTIC_KG_SHADOW_COUNTER = Symbol.for(
   'Observability.DiagnosticKgShadowCounter',
 );
+
+// Diagnostic WIKI provenance counter, distinct for the same reason (flags
+// DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED, DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED).
+export const DIAGNOSTIC_PROVENANCE_COUNTER = Symbol.for(
+  'Observability.DiagnosticProvenanceCounter',
+);
