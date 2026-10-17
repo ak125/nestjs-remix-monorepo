@@ -1,15 +1,16 @@
 /**
  * Behavioural proof of the PROD rollout flags writer (2026-09-24; R6
  * consolidation flag added 2026-10-01, ADR-103 D6; diagnostic projection flag
- * added 2026-10-11, ADR-035 D5).
+ * added 2026-10-11, ADR-035 D5; diagnostic provenance flags added 2026-10-15,
+ * ADR-035).
  *
  * `prod-seo-projection-env.sh` writes the three SEO Projection rollout flags,
- * SEO_R6_CONSOLIDATION_ENABLED and DIAGNOSTIC_PROJECTION_ENABLED into
- * ~/production/.env during the PROD deploy. The code never fails on a bad
- * value (`bool()` reads anything but `true` as false; the canary is an
- * exact-match allowlist), so a wrong value must stop the deploy BEFORE the
- * running container is touched. These tests EXECUTE the script against scratch
- * .env files and assert:
+ * SEO_R6_CONSOLIDATION_ENABLED, DIAGNOSTIC_PROJECTION_ENABLED and the two
+ * diagnostic provenance flags into ~/production/.env during the PROD deploy.
+ * The code never fails on a bad value (`bool()` reads anything but `true` as
+ * false; the canary is an exact-match allowlist), so a wrong value must stop
+ * the deploy BEFORE the running container is touched. These tests EXECUTE the
+ * script against scratch .env files and assert:
  *
  *   1. unset config writes every key explicitly OFF / empty (rollback path);
  *   2. true/false are written as is, existing lines are replaced (never
@@ -18,7 +19,8 @@
  *      through bash `.` AND docker compose `env_file`;
  *   4. a boolean spelling the code would read as false, an empty canary token or
  *      a malformed one FAILS and leaves the .env byte-identical — also under a
- *      UTF-8 locale where bash regex ranges would let `à` / `É` through;
+ *      UTF-8 locale where bash regex ranges would let `à` / `É` through; so does
+ *      provenance PRIMARY true while EXPOSE is not true (the code would ignore it);
  *   5. a canary set while the master flag is OFF is written, with a notice;
  *   6. re-running is idempotent and the file mode is kept;
  *   7. deploy-prod.yml maps each input from a variable, verifies this test and
@@ -51,6 +53,8 @@ const KEYS = [
   "SEO_PROJECTION_READ_CANARY",
   "SEO_R6_CONSOLIDATION_ENABLED",
   "DIAGNOSTIC_PROJECTION_ENABLED",
+  "DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED",
+  "DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED",
 ];
 const R3_TOKEN = "R3_CONSEILS@gamme:filtre-a-huile";
 
@@ -136,6 +140,12 @@ describe("unset config", () => {
     assert.deepEqual(linesStartingWith(s.file, "DIAGNOSTIC_PROJECTION_ENABLED"), [
       "DIAGNOSTIC_PROJECTION_ENABLED='false'",
     ]);
+    assert.deepEqual(linesStartingWith(s.file, "DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED"), [
+      "DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED='false'",
+    ]);
+    assert.deepEqual(linesStartingWith(s.file, "DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED"), [
+      "DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED='false'",
+    ]);
     assert.deepEqual(otherLines(s.file), UNRELATED, "other lines must be kept, in order");
     assert.deepEqual(bashRead(s.file, KEYS), {
       SEO_PROJECTION_R1_FEED_ENABLED: "false",
@@ -143,10 +153,14 @@ describe("unset config", () => {
       SEO_PROJECTION_READ_CANARY: "",
       SEO_R6_CONSOLIDATION_ENABLED: "false",
       DIAGNOSTIC_PROJECTION_ENABLED: "false",
+      DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED: "false",
+      DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED: "false",
     });
     assert.match(r.out, /SEO_PROJECTION_READ_CANARY=\(empty — fail-closed/);
     assert.match(r.out, /SEO_R6_CONSOLIDATION_ENABLED=false/);
     assert.match(r.out, /DIAGNOSTIC_PROJECTION_ENABLED=false/);
+    assert.match(r.out, /DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED=false/);
+    assert.match(r.out, /DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED=false/);
     assert.doesNotMatch(r.out, /::notice::/);
   });
 
@@ -160,6 +174,21 @@ describe("unset config", () => {
     assert.deepEqual(otherLines(s.file), UNRELATED);
   });
 
+  test("rollback: stale provenance lines set to true are replaced by false", () => {
+    const s = scratch(
+      `${BASE_ENV}DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED=true\nDIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED=true\n`,
+    );
+    const r = run(s.file);
+    assert.equal(r.code, 0, r.out);
+    assert.deepEqual(linesStartingWith(s.file, "DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED"), [
+      "DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED='false'",
+    ]);
+    assert.deepEqual(linesStartingWith(s.file, "DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED"), [
+      "DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED='false'",
+    ]);
+    assert.deepEqual(otherLines(s.file), UNRELATED);
+  });
+
   test("empty strings (GitHub renders an unset variable as '') behave as unset", () => {
     const s = scratch();
     const r = run(s.file, {
@@ -168,6 +197,8 @@ describe("unset config", () => {
       SEO_PROJECTION_READ_CANARY_OVERRIDE: "",
       SEO_R6_CONSOLIDATION_ENABLED_OVERRIDE: "",
       DIAGNOSTIC_PROJECTION_ENABLED_OVERRIDE: "",
+      DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED_OVERRIDE: "",
+      DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED_OVERRIDE: "",
     });
     assert.equal(r.code, 0, r.out);
     assert.deepEqual(bashRead(s.file, KEYS), {
@@ -176,6 +207,8 @@ describe("unset config", () => {
       SEO_PROJECTION_READ_CANARY: "",
       SEO_R6_CONSOLIDATION_ENABLED: "false",
       DIAGNOSTIC_PROJECTION_ENABLED: "false",
+      DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED: "false",
+      DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED: "false",
     });
   });
 });
@@ -189,6 +222,8 @@ describe("values written", () => {
       SEO_PROJECTION_READ_CANARY_OVERRIDE: R3_TOKEN,
       SEO_R6_CONSOLIDATION_ENABLED_OVERRIDE: "true",
       DIAGNOSTIC_PROJECTION_ENABLED_OVERRIDE: "true",
+      DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED_OVERRIDE: "true",
+      DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED_OVERRIDE: "true",
     });
     assert.equal(r.code, 0, r.out);
     for (const k of KEYS) {
@@ -200,13 +235,27 @@ describe("values written", () => {
       SEO_PROJECTION_READ_CANARY: R3_TOKEN,
       SEO_R6_CONSOLIDATION_ENABLED: "true",
       DIAGNOSTIC_PROJECTION_ENABLED: "true",
+      DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED: "true",
+      DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED: "true",
       SESSION_SECRET: "keepme",
     });
     assert.deepEqual(otherLines(s.file), UNRELATED);
     assert.match(r.out, /SEO_PROJECTION_READ_V1=true/);
     assert.match(r.out, /SEO_R6_CONSOLIDATION_ENABLED=true/);
     assert.match(r.out, /DIAGNOSTIC_PROJECTION_ENABLED=true/);
+    assert.match(r.out, /DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED=true/);
+    assert.match(r.out, /DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED=true/);
     assert.doesNotMatch(r.out, /::notice::/);
+  });
+
+  test("EXPOSE alone is written ON with PRIMARY explicitly OFF", () => {
+    const s = scratch();
+    const r = run(s.file, { DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED_OVERRIDE: "true" });
+    assert.equal(r.code, 0, r.out);
+    const read = bashRead(s.file, KEYS);
+    assert.equal(read.DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED, "true");
+    assert.equal(read.DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED, "false");
+    assert.deepEqual(otherLines(s.file), UNRELATED);
   });
 
   test("appends to a .env that has none of the keys, and to one without a final newline", () => {
@@ -252,6 +301,8 @@ describe("values written", () => {
         SEO_PROJECTION_READ_CANARY_OVERRIDE: canary,
         SEO_R6_CONSOLIDATION_ENABLED_OVERRIDE: "true",
         DIAGNOSTIC_PROJECTION_ENABLED_OVERRIDE: "true",
+        DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED_OVERRIDE: "true",
+        DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED_OVERRIDE: "true",
       }).code,
       0,
     );
@@ -271,6 +322,8 @@ describe("values written", () => {
     assert.equal(env.SEO_PROJECTION_READ_CANARY, canary);
     assert.equal(env.SEO_R6_CONSOLIDATION_ENABLED, "true");
     assert.equal(env.DIAGNOSTIC_PROJECTION_ENABLED, "true");
+    assert.equal(env.DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED, "true");
+    assert.equal(env.DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED, "true");
   });
 
   test("a canary set while READ_V1 is not true is written, with a notice", () => {
@@ -316,6 +369,31 @@ describe("refusals leave the .env byte-identical", () => {
     "diagnostic '1'": { DIAGNOSTIC_PROJECTION_ENABLED_OVERRIDE: "1" },
     "diagnostic ' true' (leading space)": { DIAGNOSTIC_PROJECTION_ENABLED_OVERRIDE: " true" },
     "diagnostic 'on'": { DIAGNOSTIC_PROJECTION_ENABLED_OVERRIDE: "on" },
+    "provenance EXPOSE 'True'": { DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED_OVERRIDE: "True" },
+    "provenance EXPOSE '1'": { DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED_OVERRIDE: "1" },
+    "provenance EXPOSE 'true\\n' (trailing newline)": {
+      DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED_OVERRIDE: "true\n",
+    },
+    "provenance PRIMARY 'yes'": {
+      DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED_OVERRIDE: "true",
+      DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED_OVERRIDE: "yes",
+    },
+    "provenance PRIMARY ' true' (leading space)": {
+      DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED_OVERRIDE: "true",
+      DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED_OVERRIDE: " true",
+    },
+    // PRIMARY is effective only with EXPOSE: the code would ignore it, silently.
+    "provenance PRIMARY true with EXPOSE unset": {
+      DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED_OVERRIDE: "true",
+    },
+    "provenance PRIMARY true with EXPOSE false": {
+      DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED_OVERRIDE: "false",
+      DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED_OVERRIDE: "true",
+    },
+    "provenance PRIMARY true with EXPOSE 'True'": {
+      DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED_OVERRIDE: "True",
+      DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED_OVERRIDE: "true",
+    },
     // Canary: empty tokens.
     "canary empty token in the middle (a,,b)": {
       SEO_PROJECTION_READ_CANARY_OVERRIDE: `${R3_TOKEN},,R4_REFERENCE@gamme:x`,
@@ -370,6 +448,17 @@ describe("refusals leave the .env byte-identical", () => {
       assertUntouched(s, BASE_ENV);
     });
   }
+
+  test("PRIMARY without EXPOSE is named as such", () => {
+    const s = scratch();
+    const r = run(s.file, { DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED_OVERRIDE: "true" });
+    assert.equal(r.code, 1, r.out);
+    assert.match(
+      r.out,
+      /::error::SEO projection: DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED is true while DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED='false' — PRIMARY is effective only with EXPOSE true/,
+    );
+    assertUntouched(s, BASE_ENV);
+  });
 
   test("an empty token is named as such, with its position", () => {
     const s = scratch();

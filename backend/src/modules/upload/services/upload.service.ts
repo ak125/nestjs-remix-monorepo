@@ -7,7 +7,6 @@
 
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { OperationFailedException } from '@common/exceptions';
-import { ConfigService } from '@nestjs/config';
 import { SupabaseStorageService } from './supabase-storage.service';
 import { FileValidationService } from './file-validation.service';
 import { UploadAnalyticsService } from './upload-analytics.service';
@@ -40,7 +39,6 @@ export class UploadService {
   private readonly defaultFolder = 'uploads';
 
   constructor(
-    private readonly configService: ConfigService,
     private readonly supabaseStorageService: SupabaseStorageService,
     private readonly fileValidationService: FileValidationService,
     private readonly uploadAnalyticsService: UploadAnalyticsService,

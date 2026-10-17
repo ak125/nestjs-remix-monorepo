@@ -71,7 +71,7 @@ rebuild — run after it, the test would only inspect what the generator just wr
 7. Build + tests OK after removal (`npm run build` ×2, `npm test`).
 8. Human review (the PR).
 
-**Responsibility split (no god-script):** `audit/*.json` = source of truth for the analysis (conditions 0–6, computed here). [`scripts/cleanup/validate-before-delete.sh`](../scripts/cleanup/validate-before-delete.sh) = the *last local guard-rail before `git rm`* — it re-checks the simple conditions 0–6 mechanically on the targeted file (it consults `runtime-entrypoints.json` and `dynamic-import-edges.json` when present); it is **not** a re-run of the audit. Conditions 7–8 happen at PR time.
+**Responsibility split (no god-script):** `audit/*.json` = source of truth for the analysis (conditions 0–6, computed here). [`scripts/cleanup/validate-before-delete.sh`](../scripts/cleanup/validate-before-delete.sh) = the *last local guard-rail before `git rm`* — it re-checks the simple conditions 0–6 mechanically on the targeted file (it **requires** `runtime-entrypoints.json` and `dynamic-import-edges.json` — missing, uncommitted or malformed evidence, an absent `node` or a failed search exits `2`, never SAFE); it is **not** a re-run of the audit. Conditions 7–8 happen at PR time.
 
 ## Relationship to `audit-reports/`
 

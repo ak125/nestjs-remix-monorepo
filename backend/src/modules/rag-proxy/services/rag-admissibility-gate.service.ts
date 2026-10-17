@@ -1,9 +1,8 @@
-import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 import * as yaml from 'js-yaml';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
-import { RagFoundationGateService } from './rag-foundation-gate.service';
 import { RoleId } from '../../../config/role-ids';
 import {
   EVIDENCE_POLICY_MATRIX,
@@ -66,11 +65,7 @@ export class RagAdmissibilityGateService extends SupabaseBaseService {
     RagAdmissibilityGateService.name,
   );
 
-  constructor(
-    configService: ConfigService,
-    @Inject(forwardRef(() => RagFoundationGateService))
-    private readonly foundationGateService: RagFoundationGateService,
-  ) {
+  constructor(configService: ConfigService) {
     super(configService);
   }
 

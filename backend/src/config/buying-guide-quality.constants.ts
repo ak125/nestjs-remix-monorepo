@@ -174,19 +174,6 @@ export const BAN_ABSOLUTE_CLAIMS: readonly string[] = [
 // ─────────────────────────────────────────────────────────────
 import { FAMILY_REGISTRY } from '@repo/database-types';
 
-// Construit seoTerms par domaine en agrègeant depuis le registre
-const _buildDomainTerms = () => {
-  const map: Record<string, string[]> = {};
-  for (const meta of Object.values(FAMILY_REGISTRY)) {
-    const d = meta.domain === 'chassis' ? 'suspension' : meta.domain;
-    if (!map[d]) map[d] = [];
-    for (const t of meta.seoTerms) {
-      if (!map[d].includes(t)) map[d].push(t);
-    }
-  }
-  return map as Record<FamilyKey, string[]>;
-};
-
 export const FAMILY_REQUIRED_TERMS = {
   freinage: ['frein', 'freinage', 'distance', 'sécurité'],
   moteur: ['moteur', 'combustion', 'lubrification', 'fiabilité'],

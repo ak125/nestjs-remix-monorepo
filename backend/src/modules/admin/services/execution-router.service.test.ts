@@ -131,8 +131,7 @@ function makeService(
     get: jest.fn().mockReturnValue(''),
     getOrThrow: jest.fn().mockReturnValue(''),
   };
-  const flags = {} as any;
-  return new ExecutionRouterService(config as any, moduleRef as any, flags);
+  return new ExecutionRouterService(config as any, moduleRef as any);
 }
 
 // ── Tests ──

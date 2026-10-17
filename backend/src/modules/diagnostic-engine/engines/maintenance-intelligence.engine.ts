@@ -5,7 +5,7 @@
  * Relie symptomes → operations de maintenance avec intervalles.
  * Fournit des fourchettes (pas de km absolu) conformes au contrat.
  */
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
   DiagnosticEngineDataService,
   type MaintenanceOperation,
@@ -49,8 +49,6 @@ export interface MaintenanceAssessment {
 
 @Injectable()
 export class MaintenanceIntelligenceEngine {
-  private readonly logger = new Logger(MaintenanceIntelligenceEngine.name);
-
   constructor(private readonly dataService: DiagnosticEngineDataService) {}
 
   async assess(
