@@ -43,43 +43,6 @@ import {
 import { cn } from "~/lib/utils";
 
 // ============================================================================
-// Design System Tokens
-// ============================================================================
-
-const _COLORS = {
-  trust: {
-    primary: "#0F766E",
-    secondary: "#14B8A6",
-    light: "#F0FDFA",
-    border: "#99F6E4",
-    text: "#134E4A",
-  },
-  cta: {
-    DEFAULT: "#0369A1",
-    hover: "#075985",
-    light: "#E0F2FE",
-  },
-  verified: {
-    DEFAULT: "#059669",
-    light: "#ECFDF5",
-    border: "#A7F3D0",
-    text: "#065F46",
-  },
-  error: {
-    DEFAULT: "#DC2626",
-    light: "#FEF2F2",
-    border: "#FECACA",
-    text: "#991B1B",
-  },
-  neutral: {
-    bg: "#F8FAFC",
-    border: "#E2E8F0",
-    text: "#475569",
-    muted: "#94A3B8",
-  },
-} as const;
-
-// ============================================================================
 // Types
 // ============================================================================
 

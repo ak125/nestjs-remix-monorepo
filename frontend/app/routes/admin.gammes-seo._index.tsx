@@ -122,20 +122,6 @@ interface GammeSeoItem {
   content_words_total?: number;
 }
 
-interface _GammeSeoStats {
-  total: number;
-  indexed: number;
-  noindexed: number;
-  g1Count: number;
-  g2Count: number;
-  g3Count: number;
-  toPromoteIndex: number;
-  toPromoteG1: number;
-  toVerifyG1: number;
-  inSitemap: number;
-  avgTrends: number;
-}
-
 interface Family {
   id: number;
   name: string;
@@ -664,7 +650,7 @@ export default function AdminGammesSeo() {
       } else {
         toast.error(result.message || `Erreur ${response.status}`);
       }
-    } catch (error) {
+    } catch {
       toast.error("Erreur réseau");
     } finally {
       setIsSubmitting(false);

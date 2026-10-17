@@ -2,8 +2,9 @@
  * Dashboard Support - Vue d'ensemble des tickets et statistiques
  * Page principale pour la gestion du support client
  */
-import { type LoaderFunctionArgs, type MetaFunction } from "react-router";
 import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
   Link,
   useLoaderData,
   useRouteError,
@@ -12,12 +13,7 @@ import {
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Button } from "~/components/ui/button";
 import { logger } from "~/utils/logger";
-import {
-  getAllTickets,
-  getContactStats,
-  type ContactTicket,
-  type ContactStats,
-} from "../services/api/contact.api";
+import { getAllTickets, getContactStats } from "../services/api/contact.api";
 
 export const meta: MetaFunction = () => {
   return [
@@ -34,12 +30,6 @@ export const meta: MetaFunction = () => {
     { name: "robots", content: "noindex, follow" },
   ];
 };
-
-interface LoaderData {
-  stats: ContactStats;
-  recentTickets: ContactTicket[];
-  urgentTickets: ContactTicket[];
-}
 
 export async function loader({ request }: LoaderFunctionArgs) {
   try {
