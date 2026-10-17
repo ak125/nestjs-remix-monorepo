@@ -71642,7 +71642,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 512,
+      "loc": 529,
       "owner": "@ak125",
       "path": "backend/tests/unit/video-gates.service.test.ts",
       "risk": "medium",
@@ -104870,11 +104870,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "90163175840e44796908f793612d86b090e6efec04ed7053e3966b0e0c211728",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "3fe4ec9eb89bbadd1476b965156294df4a25624893a59206e12e4c0247dbc16b",
+      "audit/registry/files.json": "1defc661be726e6df7307fcdb721c5dd94c6fcb1da51fafb830b3cee06bcc295",
       "audit/registry/rpc.json": "68f3b21f7aa0b2ef7da9b488c657c3b6b5bdde0476bf7d617f1e346cc26b4449",
       "audit/registry/runtime.json": "db3c1293c1d26fff96e8f10d130e6ef2238b96d3fbbc099f9e074be14c26bbbf"
     },
-    "sotFingerprint": "ceef81df498d"
+    "sotFingerprint": "32ea47d8c2d1"
   },
   "runtime": [
     {
