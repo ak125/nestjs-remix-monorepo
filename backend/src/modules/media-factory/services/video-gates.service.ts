@@ -128,7 +128,7 @@ export class VideoGatesService {
     );
 
     const triggerItems = unsourced.map((c) => ({
-      location: `claim:${c.sectionKey}`,
+      location: `claim:${c.id}`,
       issue: `Unsourced ${c.kind}: "${c.rawText}"`,
       evidenceRef: c.sourceRef ?? undefined,
     }));

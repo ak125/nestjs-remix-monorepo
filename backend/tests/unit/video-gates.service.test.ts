@@ -186,6 +186,23 @@ describe('VideoGatesService', () => {
       expect(result.flags).toContain('GATE_FAIL:truth');
     });
 
+    it('counts every unsupported claim separately', () => {
+      const claims = [
+        makeClaim({ id: 'c1', status: 'unverified' }),
+        makeClaim({ id: 'c2', status: 'unverified' }),
+        makeClaim({ id: 'c3', status: 'verified' }),
+        makeClaim({ id: 'c4', status: 'verified' }),
+      ];
+      const result = service.runAllGates(makeInput({ claims }));
+      const g1 = result.gates.find((g) => g.gate === 'truth')!;
+      expect(g1.verdict).toBe('FAIL');
+      expect(g1.measured).toBe(2);
+      expect(g1.triggerItems?.map((item) => item.location)).toEqual([
+        'claim:c1',
+        'claim:c2',
+      ]);
+    });
+
     it.each([7, 4])(
       'rejects one unsupported claim among %i claims',
       (count) => {
