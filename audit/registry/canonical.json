@@ -33425,7 +33425,7 @@
         "backend/src/workers/types/content-refresh.types.ts"
       ],
       "imports": [
-        "packages/seo-roles/dist/index.d.ts"
+        "@repo/seo-roles"
       ],
       "kind": "service",
       "loc": 24,
@@ -37408,7 +37408,7 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "packages/seo-roles/dist/index.d.ts"
+        "@repo/seo-roles"
       ],
       "kind": "service",
       "loc": 680,
@@ -60386,8 +60386,8 @@
       "id": "backend/src/modules/seo/registries/__tests__/seo-surface.registry.test.ts",
       "importedBy": [],
       "imports": [
-        "backend/src/modules/seo/registries/seo-surface.registry.ts",
-        "packages/seo-roles/dist/index.d.ts"
+        "@repo/seo-roles",
+        "backend/src/modules/seo/registries/seo-surface.registry.ts"
       ],
       "kind": "test",
       "loc": 40,
@@ -60466,7 +60466,7 @@
       ],
       "imports": [
         "@repo/seo-role-contracts",
-        "packages/seo-roles/dist/index.d.ts"
+        "@repo/seo-roles"
       ],
       "kind": "service",
       "loc": 42,
@@ -61203,8 +61203,8 @@
         "@database/services/supabase-base.service",
         "@repo/database-types",
         "@repo/seo-role-contracts",
-        "crypto",
-        "packages/seo-roles/dist/index.d.ts"
+        "@repo/seo-roles",
+        "crypto"
       ],
       "kind": "service",
       "loc": 333,
@@ -62886,9 +62886,9 @@
         "backend/src/modules/seo/utils/seo-balise-collision-gate.ts"
       ],
       "imports": [
+        "@repo/seo-roles",
         "backend/src/modules/seo/types/resolved-seo-field.ts",
-        "crypto",
-        "packages/seo-roles/dist/index.d.ts"
+        "crypto"
       ],
       "kind": "service",
       "loc": 169,
@@ -86318,7 +86318,7 @@
       "id": "frontend/app/routes/admin.seo-hub.page-briefs.tsx",
       "importedBy": [],
       "imports": [
-        "packages/seo-roles/dist/index.d.ts",
+        "@repo/seo-roles",
         "~/components/ui/badge",
         "~/components/ui/card",
         "~/utils/internal-api.server",
@@ -104870,11 +104870,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "90163175840e44796908f793612d86b090e6efec04ed7053e3966b0e0c211728",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "3429c1cef61e4836bfd77ab504c8f9e00c1d002f76901f0a3708755e6f4f0c58",
+      "audit/registry/files.json": "bf721fa69faf51ebb398cfa1e0b34f98af6f79c95fbec2c2a6f4f5836bdac33a",
       "audit/registry/rpc.json": "68f3b21f7aa0b2ef7da9b488c657c3b6b5bdde0476bf7d617f1e346cc26b4449",
       "audit/registry/runtime.json": "db3c1293c1d26fff96e8f10d130e6ef2238b96d3fbbc099f9e074be14c26bbbf"
     },
-    "sotFingerprint": "7d58c865fc3e"
+    "sotFingerprint": "82b9350b881a"
   },
   "runtime": [
     {
