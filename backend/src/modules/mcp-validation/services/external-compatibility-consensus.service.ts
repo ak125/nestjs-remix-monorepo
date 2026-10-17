@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 import {
   CompatibilityComparisonResult,
@@ -20,10 +20,6 @@ import {
  */
 @Injectable()
 export class ExternalCompatibilityConsensusService {
-  private readonly logger = new Logger(
-    ExternalCompatibilityConsensusService.name,
-  );
-
   /**
    * Analyze consensus between internal and external results
    */

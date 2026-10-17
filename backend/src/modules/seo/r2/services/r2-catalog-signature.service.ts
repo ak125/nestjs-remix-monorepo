@@ -12,7 +12,7 @@
  * Pure : no I/O, deterministic, fast (~0ms hash compare).
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { createHash } from 'node:crypto';
 
 export interface CatalogInputs {
@@ -30,8 +30,6 @@ export interface CatalogSignatureResult {
 
 @Injectable()
 export class R2CatalogSignatureService {
-  private readonly logger = new Logger(R2CatalogSignatureService.name);
-
   /**
    * Compute the catalog signature : sha256(sorted_oem + sorted_subgroups + family_counts).
    *

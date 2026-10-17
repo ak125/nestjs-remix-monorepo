@@ -237,8 +237,6 @@ ${urlsXml}
  */
 @Injectable()
 export class CrawlBudgetOrchestratorService {
-  private readonly logger = new Logger(CrawlBudgetOrchestratorService.name);
-
   constructor(
     private readonly supabase: CrawlBudgetSupabaseService,
     private readonly gsc: GoogleSearchConsoleService,
