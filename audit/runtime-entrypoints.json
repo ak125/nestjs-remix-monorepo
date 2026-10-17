@@ -2934,7 +2934,6 @@
       "audit/registry/files.json",
       "audit/registry/rpc.json",
       "audit/registry/runtime.json",
-      "package-lock.json",
       "scripts/audit/__tests__/deep-inventory-determinism.test.ts",
       "scripts/audit/__tests__/deep-inventory-reachability.test.ts",
       "scripts/audit/build-automation-inventory.js",
@@ -3020,7 +3019,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1612,
+  "runtime_files_count": 1611,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4549,7 +4548,6 @@
     "frontend/app/routes/tickets._index.tsx",
     "frontend/app/routes/unauthorized.tsx",
     "frontend/app/routes/vehicles.tsx",
-    "package-lock.json",
     "scripts/audit/__tests__/deep-inventory-determinism.test.ts",
     "scripts/audit/__tests__/deep-inventory-reachability.test.ts",
     "scripts/audit/build-automation-inventory.js",
