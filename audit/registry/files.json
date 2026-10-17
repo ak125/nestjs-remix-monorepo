@@ -1838,7 +1838,7 @@
         "backend/src/auth/auth.service.ts"
       ],
       "kind": "controller",
-      "loc": 155,
+      "loc": 146,
       "owner": "__unassigned__",
       "path": "backend/src/auth/profile.controller.ts",
       "risk": "low",
@@ -1994,7 +1994,7 @@
         "events"
       ],
       "kind": "service",
-      "loc": 595,
+      "loc": 564,
       "owner": "__unassigned__",
       "path": "backend/src/cache/cache.service.ts",
       "risk": "low",
@@ -3116,7 +3116,7 @@
         "@repo/database-types"
       ],
       "kind": "config",
-      "loc": 366,
+      "loc": 353,
       "owner": "__unassigned__",
       "path": "backend/src/config/buying-guide-quality.constants.ts",
       "risk": "low",
@@ -3275,7 +3275,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 290,
+      "loc": 288,
       "owner": "__unassigned__",
       "path": "backend/src/config/content-merge-engine.service.ts",
       "risk": "low",
@@ -4228,7 +4228,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 690,
+      "loc": 679,
       "owner": "__unassigned__",
       "path": "backend/src/config/operating-matrix.service.ts",
       "risk": "low",
@@ -6780,7 +6780,7 @@
         "backend/src/modules/admin/services/r3-image-prompt.service.ts"
       ],
       "kind": "controller",
-      "loc": 141,
+      "loc": 138,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/controllers/admin-r3-image-prompts.controller.ts",
       "risk": "low",
@@ -7096,7 +7096,7 @@
         "@config/operating-matrix.service"
       ],
       "kind": "controller",
-      "loc": 43,
+      "loc": 41,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/controllers/governance-matrix.controller.ts",
       "risk": "low",
@@ -7278,7 +7278,7 @@
         "backend/src/modules/admin/services/seo-control.service.ts"
       ],
       "kind": "controller",
-      "loc": 73,
+      "loc": 70,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/controllers/seo-control.controller.ts",
       "risk": "low",
@@ -7620,7 +7620,7 @@
         "backend/src/modules/admin/services/admin-job-health.service.ts"
       ],
       "kind": "service",
-      "loc": 215,
+      "loc": 213,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/admin-health.service.ts",
       "risk": "low",
@@ -8628,7 +8628,7 @@
         "backend/src/config/fr-accent-map.ts"
       ],
       "kind": "service",
-      "loc": 199,
+      "loc": 197,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/enricher-text-utils.service.ts",
       "risk": "low",
@@ -8652,7 +8652,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 317,
+      "loc": 315,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/enricher-yaml-parser.service.ts",
       "risk": "low",
@@ -10531,7 +10531,7 @@
         "backend/src/modules/agentic-engine/types/run-state.schema.ts"
       ],
       "kind": "service",
-      "loc": 128,
+      "loc": 126,
       "owner": "__unassigned__",
       "path": "backend/src/modules/agentic-engine/services/evidence-ledger.service.ts",
       "risk": "low",
@@ -11789,7 +11789,7 @@
         "backend/src/modules/search/services/supabase-indexation.service.ts"
       ],
       "kind": "service",
-      "loc": 835,
+      "loc": 818,
       "owner": "__unassigned__",
       "path": "backend/src/modules/blog/services/blog-article-data.service.ts",
       "risk": "low",
@@ -11876,7 +11876,7 @@
         "backend/src/utils/html-entities.ts"
       ],
       "kind": "service",
-      "loc": 349,
+      "loc": 347,
       "owner": "__unassigned__",
       "path": "backend/src/modules/blog/services/blog-article-transform.service.ts",
       "risk": "low",
@@ -14146,7 +14146,7 @@
         "backend/src/utils/promise-helpers.ts"
       ],
       "kind": "service",
-      "loc": 887,
+      "loc": 745,
       "owner": "__unassigned__",
       "path": "backend/src/modules/catalog/services/vehicle-filtered-catalog-v4-hybrid.service.ts",
       "risk": "low",
@@ -14357,7 +14357,7 @@
         "backend/src/modules/config/services/simple-database-config.service.ts"
       ],
       "kind": "controller",
-      "loc": 129,
+      "loc": 126,
       "owner": "__unassigned__",
       "path": "backend/src/modules/config/controllers/simple-database-config.controller.ts",
       "risk": "low",
@@ -15079,7 +15079,7 @@
         "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts"
       ],
       "kind": "service",
-      "loc": 221,
+      "loc": 219,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/engines/catalog-orientation.engine.ts",
       "risk": "low",
@@ -15113,7 +15113,7 @@
         "backend/src/modules/diagnostic-engine/types/evidence-pack.schema.ts"
       ],
       "kind": "service",
-      "loc": 195,
+      "loc": 193,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/engines/hypothesis-scoring.engine.ts",
       "risk": "low",
@@ -15163,7 +15163,7 @@
         "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts"
       ],
       "kind": "service",
-      "loc": 392,
+      "loc": 390,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
       "risk": "low",
@@ -15220,7 +15220,7 @@
         "backend/src/modules/diagnostic-engine/types/diagnostic-input.schema.ts"
       ],
       "kind": "service",
-      "loc": 102,
+      "loc": 100,
       "owner": "__unassigned__",
       "path": "backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
       "risk": "low",
@@ -16896,7 +16896,7 @@
         "@repo/database-types"
       ],
       "kind": "service",
-      "loc": 598,
+      "loc": 582,
       "owner": "__unassigned__",
       "path": "backend/src/modules/errors/services/redirect.service.ts",
       "risk": "low",
@@ -17821,7 +17821,7 @@
         "backend/src/modules/layout/services/social-share.service.ts"
       ],
       "kind": "service",
-      "loc": 362,
+      "loc": 325,
       "owner": "__unassigned__",
       "path": "backend/src/modules/layout/services/layout.service.ts",
       "risk": "low",
@@ -18618,7 +18618,7 @@
         "backend/src/modules/marketing/services/utm-builder.service.ts"
       ],
       "kind": "service",
-      "loc": 227,
+      "loc": 226,
       "owner": "__unassigned__",
       "path": "backend/src/modules/marketing/services/weekly-plan-generator.service.ts",
       "risk": "low",
@@ -18995,7 +18995,7 @@
         "backend/src/modules/mcp-validation/services/external-compatibility.types.ts"
       ],
       "kind": "service",
-      "loc": 354,
+      "loc": 350,
       "owner": "__unassigned__",
       "path": "backend/src/modules/mcp-validation/services/external-compatibility-consensus.service.ts",
       "risk": "low",
@@ -20148,7 +20148,7 @@
         "backend/src/modules/metadata/services/optimized-metadata.service.ts"
       ],
       "kind": "controller",
-      "loc": 490,
+      "loc": 486,
       "owner": "__unassigned__",
       "path": "backend/src/modules/metadata/controllers/breadcrumb-admin.controller.ts",
       "risk": "low",
@@ -20257,7 +20257,7 @@
         "backend/src/database/services/meta-tags-ariane-data.service.ts"
       ],
       "kind": "service",
-      "loc": 596,
+      "loc": 581,
       "owner": "__unassigned__",
       "path": "backend/src/modules/metadata/services/optimized-breadcrumb.service.ts",
       "risk": "low",
@@ -20482,7 +20482,7 @@
         "backend/src/modules/observability/observability.tokens.ts"
       ],
       "kind": "service",
-      "loc": 43,
+      "loc": 41,
       "owner": "__unassigned__",
       "path": "backend/src/modules/observability/diagnostic-kg-shadow-metrics.listener.ts",
       "risk": "low",
@@ -20703,7 +20703,7 @@
         "backend/src/modules/observability/vehicle-context.metrics.ts"
       ],
       "kind": "service",
-      "loc": 63,
+      "loc": 61,
       "owner": "__unassigned__",
       "path": "backend/src/modules/observability/vehicle-context-metrics.listener.ts",
       "risk": "low",
@@ -24460,7 +24460,7 @@
         "backend/src/modules/rag-proxy/types/rag-contracts.types.ts"
       ],
       "kind": "service",
-      "loc": 239,
+      "loc": 237,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rag-proxy/services/rag-validation.service.ts",
       "risk": "low",
@@ -25056,7 +25056,7 @@
         "backend/src/modules/search/services/search-enhanced-existing.service.ts"
       ],
       "kind": "controller",
-      "loc": 163,
+      "loc": 161,
       "owner": "__unassigned__",
       "path": "backend/src/modules/search/controllers/search-debug.controller.ts",
       "risk": "low",
@@ -25297,7 +25297,7 @@
         "@repo/database-types"
       ],
       "kind": "service",
-      "loc": 907,
+      "loc": 817,
       "owner": "__unassigned__",
       "path": "backend/src/modules/search/services/search-enhanced-existing.service.ts",
       "risk": "low",
@@ -25813,7 +25813,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 259,
+      "loc": 257,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-control-plane/collectors/runtime-logs/runtime-logs.service.ts",
       "risk": "low",
@@ -26374,7 +26374,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 248,
+      "loc": 246,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-logs/services/crawl-budget-experiment.service.ts",
       "risk": "low",
@@ -26401,7 +26401,7 @@
         "backend/src/modules/seo-logs/services/crawl-budget-supabase.service.ts"
       ],
       "kind": "service",
-      "loc": 402,
+      "loc": 400,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-logs/services/crawl-budget-integrations.service.ts",
       "risk": "low",
@@ -26626,7 +26626,7 @@
         "backend/src/modules/seo-monitoring/services/cwv-dashboard.service.ts"
       ],
       "kind": "controller",
-      "loc": 90,
+      "loc": 88,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-monitoring/controllers/cwv-dashboard.controller.ts",
       "risk": "low",
@@ -27676,7 +27676,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 169,
+      "loc": 168,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-monitoring/services/rag-mirror-freshness.service.ts",
       "risk": "low",
@@ -28377,7 +28377,7 @@
         "backend/src/modules/seo-shadow-observatory/types.ts"
       ],
       "kind": "service",
-      "loc": 166,
+      "loc": 165,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-shadow-observatory/seo-shadow-chain-runner.service.ts",
       "risk": "low",
@@ -29216,7 +29216,7 @@
         "backend/src/modules/seo/dynamic-seo-v4-ultimate.service.ts"
       ],
       "kind": "controller",
-      "loc": 776,
+      "loc": 774,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/dynamic-seo.controller.ts",
       "risk": "low",
@@ -30437,7 +30437,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 97,
+      "loc": 95,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/r2/services/r2-catalog-signature.service.ts",
       "risk": "low",
@@ -30508,7 +30508,7 @@
         "backend/src/modules/seo/r2/schemas/r2-v2-contract.schema.ts"
       ],
       "kind": "service",
-      "loc": 181,
+      "loc": 179,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/r2/services/r2-composition.service.ts",
       "risk": "low",
@@ -30535,7 +30535,7 @@
         "backend/src/modules/seo/r2/services/r2-commercial-distinctiveness.service.ts"
       ],
       "kind": "service",
-      "loc": 181,
+      "loc": 179,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/r2/services/r2-eligibility.service.ts",
       "risk": "low",
@@ -32527,7 +32527,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 528,
+      "loc": 527,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/sitemap-streaming.service.ts",
       "risk": "low",
@@ -32745,7 +32745,7 @@
         "backend/src/modules/seo/services/sitemap-v10.types.ts"
       ],
       "kind": "service",
-      "loc": 601,
+      "loc": 600,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
       "risk": "low",
@@ -35347,7 +35347,7 @@
         "@repo/database-types"
       ],
       "kind": "service",
-      "loc": 699,
+      "loc": 652,
       "owner": "__unassigned__",
       "path": "backend/src/modules/suppliers/suppliers.service.ts",
       "risk": "low",
@@ -35629,7 +35629,7 @@
         "backend/src/modules/support/services/support-analytics.service.ts"
       ],
       "kind": "controller",
-      "loc": 70,
+      "loc": 68,
       "owner": "__unassigned__",
       "path": "backend/src/modules/support/controllers/support-analytics.controller.ts",
       "risk": "low",
@@ -35787,7 +35787,7 @@
         "backend/src/modules/support/services/review.service.ts"
       ],
       "kind": "service",
-      "loc": 871,
+      "loc": 857,
       "owner": "__unassigned__",
       "path": "backend/src/modules/support/services/ai-smart-response.service.ts",
       "risk": "low",
@@ -35848,7 +35848,7 @@
         "backend/src/services/mail.service.ts"
       ],
       "kind": "service",
-      "loc": 927,
+      "loc": 907,
       "owner": "__unassigned__",
       "path": "backend/src/modules/support/services/contact.service.ts",
       "risk": "low",
@@ -36359,7 +36359,7 @@
         "backend/src/modules/system/services/metrics.service.ts"
       ],
       "kind": "service",
-      "loc": 337,
+      "loc": 336,
       "owner": "__unassigned__",
       "path": "backend/src/modules/system/services/system.service.ts",
       "risk": "low",
@@ -36401,7 +36401,7 @@
         "backend/src/modules/system/services/system.service.ts"
       ],
       "kind": "controller",
-      "loc": 161,
+      "loc": 159,
       "owner": "__unassigned__",
       "path": "backend/src/modules/system/system-health.controller.ts",
       "risk": "low",
@@ -37574,7 +37574,7 @@
         "backend/src/modules/vehicle-context/vehicle-context.service.ts"
       ],
       "kind": "service",
-      "loc": 80,
+      "loc": 78,
       "owner": "__unassigned__",
       "path": "backend/src/modules/vehicle-context/vehicle-context.middleware.ts",
       "risk": "low",
@@ -37626,7 +37626,7 @@
         "backend/src/modules/diagnostic-engine/ports/vehicle-context.port.ts"
       ],
       "kind": "service",
-      "loc": 105,
+      "loc": 104,
       "owner": "__unassigned__",
       "path": "backend/src/modules/vehicle-context/vehicle-context.service.ts",
       "risk": "low",
@@ -38591,7 +38591,7 @@
         "frontend/index.cjs"
       ],
       "kind": "service",
-      "loc": 212,
+      "loc": 209,
       "owner": "__unassigned__",
       "path": "backend/src/remix/remix-api.service.ts",
       "risk": "low",
@@ -39194,7 +39194,7 @@
         "backend/src/modules/agentic-engine/types/job.types.ts"
       ],
       "kind": "service",
-      "loc": 445,
+      "loc": 363,
       "owner": "__unassigned__",
       "path": "backend/src/workers/processors/agentic.processor.ts",
       "risk": "low",

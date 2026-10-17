@@ -13,7 +13,6 @@ import {
   Injectable,
   Inject,
   forwardRef,
-  Logger,
   UnauthorizedException,
   ForbiddenException,
 } from '@nestjs/common';
@@ -48,8 +47,6 @@ function isAdminActor(actor: PortActor | null): boolean {
 
 @Injectable()
 export class RemixApiService {
-  private readonly logger = new Logger(RemixApiService.name);
-
   constructor(
     @Inject(forwardRef(() => OrdersService))
     private readonly ordersService: OrdersService,

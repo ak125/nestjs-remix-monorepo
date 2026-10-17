@@ -77,7 +77,6 @@ export class WeeklyPlanGeneratorService {
     const slots: DaySlot[] = calendar.posting_days.map((day, index) => {
       const pillar = calendar.pillar_schedule[day] as ContentPillar;
       const gamme = finalGammes[index % finalGammes.length];
-      const _isReused = recentIds.includes(gamme?.pg_id);
 
       const brief: PostBrief = {
         topic: gamme

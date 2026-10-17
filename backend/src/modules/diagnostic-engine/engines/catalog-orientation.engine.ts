@@ -4,7 +4,7 @@
  * CatalogGuard — decide si et comment orienter vers le catalogue.
  * Bloque si confiance insuffisante. Respecte le principe de prudence.
  */
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import type { ScoredHypothesis } from './hypothesis-scoring.engine';
 import type { RiskAssessment } from './risk-safety.engine';
 import type { VehicleContextInput } from '../types/diagnostic-input.schema';
@@ -32,8 +32,6 @@ export interface SuggestedGamme {
 
 @Injectable()
 export class CatalogOrientationEngine {
-  private readonly logger = new Logger(CatalogOrientationEngine.name);
-
   evaluate(
     hypotheses: ScoredHypothesis[],
     risk: RiskAssessment,
