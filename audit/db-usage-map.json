@@ -5,7 +5,7 @@
     "775 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
     "Migration parsing is regex-based and tracks last CREATE vs last DROP per object (date-prefixed filenames ≈ chronological); re-create-after-drop edge cases may slip through.",
     "RLS-only / dashboard / external-cron / RPC-internal usage is invisible here — see per-candidate caveats.",
-    "5 call-site(s) écarté(s) : le récepteur n'est pas un client PostgREST (Buffer/Array, ou bucket Supabase Storage) — voir dropped_call_sites[].",
+    "8 call-site(s) écarté(s) : le récepteur n'est pas un client PostgREST (Buffer/Array, ou bucket Supabase Storage) — voir dropped_call_sites[].",
     "0 call-site(s) non résolu(s) : récepteur ni prouvé DB ni rejeté — voir unresolved_callsites[]. Un nom non résolu ne peut pas être déclaré orphelin."
   ],
   "summary": {
@@ -20,7 +20,7 @@
     "dynamic_from_callsites": 775,
     "dynamic_rpc_callsites": 1,
     "unresolved_callsites": 0,
-    "dropped_call_sites": 5,
+    "dropped_call_sites": 8,
     "migrations_scanned": 416,
     "backend_files_scanned": 1482
   },
@@ -16231,6 +16231,30 @@
       "reason": "js-builtin-static-from",
       "file": "backend/src/modules/cart/controllers/cart-recovery.controller.ts",
       "line": 8,
+      "receiver": "Buffer"
+    },
+    {
+      "name": "Code_marque;Ref\r\nTSTA;X100\r\nTSTA;X200\r\n",
+      "method": "from",
+      "reason": "js-builtin-static-from",
+      "file": "backend/src/modules/pricing/services/__tests__/golda-tariff-archive.test.ts",
+      "line": 8,
+      "receiver": "Buffer"
+    },
+    {
+      "name": "xx",
+      "method": "from",
+      "reason": "js-builtin-static-from",
+      "file": "backend/src/modules/pricing/services/__tests__/golda-tariff-archive.test.ts",
+      "line": 153,
+      "receiver": "Buffer"
+    },
+    {
+      "name": "PK junk",
+      "method": "from",
+      "reason": "js-builtin-static-from",
+      "file": "backend/src/modules/pricing/services/__tests__/golda-tariff-archive.test.ts",
+      "line": 160,
       "receiver": "Buffer"
     },
     {

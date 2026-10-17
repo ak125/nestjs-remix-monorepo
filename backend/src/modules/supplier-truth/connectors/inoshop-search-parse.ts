@@ -563,6 +563,41 @@ export function verdictForRef(
 }
 
 /**
+ * What to search the portal for: the feed EAN when known, else the ref. A bare-ref
+ * search is a prefix search (`etoile:"*"`) whose candidate list the portal truncates
+ * depending on the batch: rows of the requested brand go missing (measured
+ * 2026-10-15, DCA). An EAN search returns exactly the product carrying that EAN.
+ */
+export function searchTerm(row: { ref: string; ean: string | null }): string {
+  return row.ean || row.ref;
+}
+
+/**
+ * A ref searched by its EAN and not resolved (EAN absent from the results, or
+ * carried only by another brand) gets a second search by its ref: the feed EAN
+ * may be wrong or missing at the supplier, and a miss is never proof of absence.
+ */
+export function needsRefPass(v: RefVerdict): boolean {
+  return (
+    !!v.ean && (v.matchKind === 'NOT_FOUND' || v.matchKind === 'FALSE_MATCH')
+  );
+}
+
+/**
+ * Re-resolve the refs flagged by {@link needsRefPass} against all rows read for
+ * the group (EAN search + ref search). Resolved verdicts are kept as they are.
+ */
+export function mergeRefPass(
+  verdicts: RefVerdict[],
+  rows: SearchRow[],
+  tokens: Set<string>,
+): RefVerdict[] {
+  return verdicts.map((v) =>
+    needsRefPass(v) ? verdictForRef(rows, v.ref, v.ean, tokens) : v,
+  );
+}
+
+/**
  * Tariff-status overlay (any platform). A ref the supplier tariff marks
  * discontinued is a withdrawal candidate on that evidence alone, whatever the
  * portal shows — except a CONFIRMED line (remaining stock), which goes to human
