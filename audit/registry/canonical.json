@@ -29098,6 +29098,25 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/app.service.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 9,
+      "owner": "__unassigned__",
+      "path": "backend/src/app.service.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
         "depcruise",
         "manual"
       ],
@@ -72071,6 +72090,29 @@
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
+      "id": "frontend/app/components/admin/RecentActivity.tsx",
+      "importedBy": [],
+      "imports": [
+        "~/components/ui/badge",
+        "~/components/ui/button"
+      ],
+      "kind": "config",
+      "loc": 376,
+      "owner": "@ak125/frontend-team",
+      "path": "frontend/app/components/admin/RecentActivity.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
         "manual",
         "reachability"
       ],
@@ -72089,6 +72131,29 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
+      "id": "frontend/app/components/admin/UserList.tsx",
+      "importedBy": [],
+      "imports": [
+        "~/components/ui/badge",
+        "~/components/ui/button"
+      ],
+      "kind": "config",
+      "loc": 234,
+      "owner": "@ak125/frontend-team",
+      "path": "frontend/app/components/admin/UserList.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -73858,7 +73923,9 @@
       ],
       "domain": "D8",
       "id": "frontend/app/components/cart/AddToCartButton.tsx",
-      "importedBy": [],
+      "importedBy": [
+        "frontend/app/components/search/SearchResultsEnhanced.tsx"
+      ],
       "imports": [
         "frontend/app/components/notifications/NotificationContainer.tsx",
         "~/components/ui/alert",
@@ -74903,7 +74970,7 @@
         "~/components/ui/button"
       ],
       "kind": "config",
-      "loc": 188,
+      "loc": 191,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/results/DiagnosticResults.tsx",
       "risk": "low",
@@ -75058,7 +75125,7 @@
         "~/components/ui/card"
       ],
       "kind": "config",
-      "loc": 163,
+      "loc": 187,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/results/ResultHypotheses.tsx",
       "risk": "low",
@@ -75326,7 +75393,7 @@
         "frontend/app/components/diagnostic-wizard/steps/StepMaintenance.tsx"
       ],
       "kind": "config",
-      "loc": 145,
+      "loc": 155,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/types.ts",
       "risk": "low",
@@ -77328,6 +77395,29 @@
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
+      "id": "frontend/app/components/layout/GlobalSearch.tsx",
+      "importedBy": [],
+      "imports": [
+        "~/components/ui/badge",
+        "~/utils/logger"
+      ],
+      "kind": "config",
+      "loc": 627,
+      "owner": "@ak125/frontend-team",
+      "path": "frontend/app/components/layout/GlobalSearch.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
         "manual",
         "reachability"
       ],
@@ -77402,6 +77492,26 @@
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
+      "id": "frontend/app/components/layout/NotificationCenter.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "config",
+      "loc": 562,
+      "owner": "@ak125/frontend-team",
+      "path": "frontend/app/components/layout/NotificationCenter.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
         "manual",
         "reachability"
       ],
@@ -77422,6 +77532,26 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
+      "id": "frontend/app/components/layout/QuickSearchTrigger.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "config",
+      "loc": 42,
+      "owner": "@ak125/frontend-team",
+      "path": "frontend/app/components/layout/QuickSearchTrigger.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -77525,6 +77655,28 @@
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
+      "id": "frontend/app/components/layout/UserMenu.tsx",
+      "importedBy": [],
+      "imports": [
+        "~/hooks/useRootData"
+      ],
+      "kind": "config",
+      "loc": 105,
+      "owner": "@ak125/frontend-team",
+      "path": "frontend/app/components/layout/UserMenu.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
         "manual",
         "reachability"
       ],
@@ -77558,6 +77710,46 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
+      "id": "frontend/app/components/layout/templates/Gallery.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "config",
+      "loc": 83,
+      "owner": "@ak125/frontend-team",
+      "path": "frontend/app/components/layout/templates/Gallery.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
+      "id": "frontend/app/components/layout/templates/Testimonials.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "config",
+      "loc": 90,
+      "owner": "@ak125/frontend-team",
+      "path": "frontend/app/components/layout/templates/Testimonials.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -79965,6 +80157,83 @@
         "manual"
       ],
       "domain": "D8",
+      "id": "frontend/app/components/search/SearchBarEnhancedHomepage.tsx",
+      "importedBy": [],
+      "imports": [
+        "frontend/app/hooks/useEnhancedSearch.ts",
+        "frontend/app/lib/utils.ts",
+        "frontend/app/utils/performance.utils.ts",
+        "~/utils/logger",
+        "~/utils/safe-storage"
+      ],
+      "kind": "config",
+      "loc": 494,
+      "owner": "@ak125/frontend-team",
+      "path": "frontend/app/components/search/SearchBarEnhancedHomepage.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
+      "id": "frontend/app/components/search/SearchFilters.tsx",
+      "importedBy": [],
+      "imports": [
+        "~/components/ui/badge",
+        "~/components/ui/filter-section",
+        "~/components/ui/scroll-area",
+        "~/utils/logger",
+        "~/utils/safe-storage"
+      ],
+      "kind": "config",
+      "loc": 884,
+      "owner": "@ak125/frontend-team",
+      "path": "frontend/app/components/search/SearchFilters.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
+      "id": "frontend/app/components/search/SearchResultsEnhanced.tsx",
+      "importedBy": [],
+      "imports": [
+        "frontend/app/components/cart/AddToCartButton.tsx",
+        "frontend/app/components/ui/badge.tsx",
+        "frontend/app/components/ui/card.tsx",
+        "~/utils/logger"
+      ],
+      "kind": "config",
+      "loc": 429,
+      "owner": "@ak125/frontend-team",
+      "path": "frontend/app/components/search/SearchResultsEnhanced.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
       "id": "frontend/app/components/seo/AntiMistakesSection.tsx",
       "importedBy": [],
       "imports": [
@@ -80577,8 +80846,10 @@
         "frontend/app/components/products/ProductHoverCard.tsx",
         "frontend/app/components/products/ProductsStatsCard.tsx",
         "frontend/app/components/profile/ActivityTimeline.tsx",
+        "frontend/app/components/search/SearchResultsEnhanced.tsx",
         "frontend/app/components/shipping/UserShipments.tsx",
         "frontend/app/components/ui/index.ts",
+        "frontend/app/components/users/UserHoverCard.tsx",
         "frontend/app/routes/account.addresses.tsx",
         "frontend/app/routes/account.claims.$claimId.tsx",
         "frontend/app/routes/account.claims.tsx",
@@ -80673,6 +80944,7 @@
         "frontend/app/components/products/ProductsQuickActions.tsx",
         "frontend/app/components/shipping/UserShipments.tsx",
         "frontend/app/components/ui/index.ts",
+        "frontend/app/components/users/UserHoverCard.tsx",
         "frontend/app/components/vehicle/VehicleSelector.tsx",
         "frontend/app/routes/account.addresses.tsx",
         "frontend/app/routes/account.claims.$claimId.tsx",
@@ -80753,6 +81025,7 @@
         "frontend/app/components/products/ProductsQuickActions.tsx",
         "frontend/app/components/products/ProductsStatsCard.tsx",
         "frontend/app/components/profile/ActivityTimeline.tsx",
+        "frontend/app/components/search/SearchResultsEnhanced.tsx",
         "frontend/app/components/shipping/UserShipments.tsx",
         "frontend/app/components/ui/index.ts",
         "frontend/app/components/vehicle/VehicleSelector.tsx",
@@ -80998,7 +81271,8 @@
       "id": "frontend/app/components/ui/hover-card.tsx",
       "importedBy": [
         "frontend/app/components/products/ProductHoverCard.tsx",
-        "frontend/app/components/ui/index.ts"
+        "frontend/app/components/ui/index.ts",
+        "frontend/app/components/users/UserHoverCard.tsx"
       ],
       "imports": [
         "frontend/app/lib/utils.ts"
@@ -81531,6 +81805,30 @@
       "loc": 29,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/ui/tooltip.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
+      "id": "frontend/app/components/users/UserHoverCard.tsx",
+      "importedBy": [],
+      "imports": [
+        "frontend/app/components/ui/badge.tsx",
+        "frontend/app/components/ui/button.tsx",
+        "frontend/app/components/ui/hover-card.tsx"
+      ],
+      "kind": "config",
+      "loc": 170,
+      "owner": "@ak125/frontend-team",
+      "path": "frontend/app/components/users/UserHoverCard.tsx",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -82445,6 +82743,29 @@
         "manual"
       ],
       "domain": "D8",
+      "id": "frontend/app/hooks/useCommandPalette.ts",
+      "importedBy": [],
+      "imports": [
+        "frontend/app/utils/performance.utils.ts",
+        "~/utils/logger"
+      ],
+      "kind": "config",
+      "loc": 156,
+      "owner": "@ak125/frontend-team",
+      "path": "frontend/app/hooks/useCommandPalette.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
       "id": "frontend/app/hooks/useContentLinkTracking.ts",
       "importedBy": [],
       "imports": [
@@ -82494,7 +82815,8 @@
       "domain": "D8",
       "id": "frontend/app/hooks/useEnhancedSearch.ts",
       "importedBy": [
-        "frontend/app/components/search/SearchBar.tsx"
+        "frontend/app/components/search/SearchBar.tsx",
+        "frontend/app/components/search/SearchBarEnhancedHomepage.tsx"
       ],
       "imports": [
         "~/utils/logger"
@@ -82745,6 +83067,28 @@
         "manual"
       ],
       "domain": "D8",
+      "id": "frontend/app/hooks/useSearchState.ts",
+      "importedBy": [],
+      "imports": [
+        "~/utils/logger"
+      ],
+      "kind": "config",
+      "loc": 53,
+      "owner": "@ak125/frontend-team",
+      "path": "frontend/app/hooks/useSearchState.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
       "id": "frontend/app/hooks/useSeoLinkTracking.ts",
       "importedBy": [
         "frontend/app/components/pieces/PiecesCrossSelling.tsx",
@@ -82949,6 +83293,7 @@
         "frontend/app/components/products/ProductsQuickActions.tsx",
         "frontend/app/components/products/ProductsStatsCard.tsx",
         "frontend/app/components/search/SearchBar.tsx",
+        "frontend/app/components/search/SearchBarEnhancedHomepage.tsx",
         "frontend/app/components/ui/accordion.tsx",
         "frontend/app/components/ui/button.tsx",
         "frontend/app/components/ui/hover-card.tsx",
@@ -91900,7 +92245,9 @@
       "domain": "D8",
       "id": "frontend/app/utils/performance.utils.ts",
       "importedBy": [
-        "frontend/app/components/catalog/FilterAccordion.tsx"
+        "frontend/app/components/catalog/FilterAccordion.tsx",
+        "frontend/app/components/search/SearchBarEnhancedHomepage.tsx",
+        "frontend/app/hooks/useCommandPalette.ts"
       ],
       "imports": [],
       "kind": "service",
@@ -93510,7 +93857,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 105,
+      "loc": 122,
       "owner": "@ak125",
       "path": "frontend/tests/unit/button-phrasing-content.test.tsx",
       "risk": "medium",
@@ -94146,11 +94493,31 @@
         "manual"
       ],
       "domain": "D2",
+      "id": "frontend/tests/unit/diagnostic-hypothesis-provenance.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 155,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/diagnostic-hypothesis-provenance.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
       "id": "frontend/tests/unit/diagnostic-hypothesis-rank.test.tsx",
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 62,
+      "loc": 60,
       "owner": "@ak125",
       "path": "frontend/tests/unit/diagnostic-hypothesis-rank.test.tsx",
       "risk": "medium",
@@ -101486,7 +101853,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 442,
+      "loc": 531,
       "owner": "@ak125",
       "path": "scripts/ci/prod-seo-projection-env.test.mjs",
       "risk": "medium",
@@ -104547,11 +104914,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "90163175840e44796908f793612d86b090e6efec04ed7053e3966b0e0c211728",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "c3de62e3b663207c6beddcd295db3b27fd48868d0bd2e84aa072f27d7e2dbc2f",
+      "audit/registry/files.json": "0dac29cd25d2535429b2ee4aa47af131ad3b17c53c9d115f29230eaf7fe20533",
       "audit/registry/rpc.json": "68f3b21f7aa0b2ef7da9b488c657c3b6b5bdde0476bf7d617f1e346cc26b4449",
       "audit/registry/runtime.json": "a8ac6584a8116d15b0ba1bcfda628ff95bef19507bc29b2f80d24dd831695582"
     },
-    "sotFingerprint": "ebeab456456b"
+    "sotFingerprint": "50f6d9875580"
   },
   "runtime": [
     {

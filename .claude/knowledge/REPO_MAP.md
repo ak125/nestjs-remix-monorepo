@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: b3269f5bd1d0a17bc198708a50c38c6d55c95f199606ff65d38d9a6359b51cc5
+source_sha256: 6c5b02a9002c8a14b63910af3df058ab58d201436b111a2311e649ea302da8b9
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3058 |
+| Files (Layer 1) | 3074 |
 | DB tables (Layer 1) | 316 |
 | DB RPC (Layer 1) | 257 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1010 |
 
-Source sotFingerprint: `ebeab456456b`.
+Source sotFingerprint: `50f6d9875580`.
 
 ## Comment l'utiliser
 
@@ -45,11 +45,11 @@ Source sotFingerprint: `ebeab456456b`.
 
 ### D2 — Legacy/XTR Migration
 
-- **Files**: 153 (test=139, service=10, config=3, controller=1)
+- **Files**: 154 (test=140, service=10, config=3, controller=1)
 - **Runtime entrypoints**: 1
-- **Top owners**: @ak125 (138), __unassigned__ (15)
+- **Top owners**: @ak125 (139), __unassigned__ (15)
 - **Knowledge prose**: [`rm`](modules/rm.md)
-- **Status**: LEGACY=14, LIVE=1, UNKNOWN=138
+- **Status**: LEGACY=14, LIVE=1, UNKNOWN=139
 
 ### D3 — SEO & Sitemap
 
@@ -93,11 +93,11 @@ Source sotFingerprint: `ebeab456456b`.
 
 ### D8 — Read Model / Serving (RM)
 
-- **Files**: 941 (config=454, route=246, service=181, controller=39, test=21)
+- **Files**: 955 (config=468, route=246, service=181, controller=39, test=21)
 - **Runtime entrypoints**: 349
-- **Top owners**: @ak125/frontend-team (674), @ak125/admin-team (267)
+- **Top owners**: @ak125/frontend-team (688), @ak125/admin-team (267)
 - **Knowledge prose**: [`admin`](modules/admin.md), [`staff`](modules/staff.md)
-- **Status**: LIVE=504, UNKNOWN=437
+- **Status**: LIVE=504, UNKNOWN=451
 
 ### D9 — Import / ETL / Normalisation
 
@@ -163,13 +163,13 @@ Source sotFingerprint: `ebeab456456b`.
 
 ### UNKNOWN — Unknown (overlay non résolu)
 
-- **Files**: 243 (service=149, config=57, controller=20, script=14, test=3)
+- **Files**: 244 (service=150, config=57, controller=20, script=14, test=3)
 - **DB tables**: 316
 - **DB RPC**: 257
 - **Runtime entrypoints**: 83
-- **Top owners**: __unassigned__ (243)
+- **Top owners**: __unassigned__ (244)
 - **Knowledge prose**: [`config`](modules/config.md), [`layout`](modules/layout.md), [`mcp-validation`](modules/mcp-validation.md), [`metadata`](modules/metadata.md), [`navigation`](modules/navigation.md), [`search`](modules/search.md), [`shipping`](modules/shipping.md), [`suppliers`](modules/suppliers.md), [`system`](modules/system.md)
-- **Status**: LIVE=140, UNKNOWN=103
+- **Status**: LIVE=140, UNKNOWN=104
 
 ## Voir aussi
 

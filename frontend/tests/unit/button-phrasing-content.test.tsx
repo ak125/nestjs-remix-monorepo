@@ -9,6 +9,7 @@ import { ResultHypotheses } from "~/components/diagnostic-wizard/results/ResultH
 import { StepSymptom } from "~/components/diagnostic-wizard/steps/StepSymptom";
 import {
   type Hypothesis,
+  type ProvenanceState,
   type WizardState,
 } from "~/components/diagnostic-wizard/types";
 import { Badge } from "~/components/ui/badge";
@@ -81,8 +82,12 @@ describe("phrasing content inside buttons", () => {
     expect(blockInsideButtons(container)).toEqual([]);
   });
 
-  it("hypothesis headers hold no div or p, and show no score", () => {
-    const hypothesis = (id: string, score: number): Hypothesis => ({
+  it("hypothesis headers hold no div or p, provenance badge included, and show no score", () => {
+    const hypothesis = (
+      id: string,
+      score: number,
+      state: ProvenanceState,
+    ): Hypothesis => ({
       hypothesis_id: id,
       label: `Cause ${id}`,
       cause_type: "wear",
@@ -91,13 +96,25 @@ describe("phrasing content inside buttons", () => {
       evidence_for: ["Symptôme déclaré"],
       evidence_against: [],
       requires_verification: true,
+      provenance: { state },
     });
     const { container } = render(
       <ResultHypotheses
-        hypotheses={[hypothesis("a", 73), hypothesis("b", 41)]}
+        hypotheses={[
+          hypothesis("a", 73, "sourced"),
+          hypothesis("b", 41, "unsourced"),
+        ]}
+        provenanceSummary={{
+          status: "available",
+          counts: { sourced: 1, partial: 0, unsourced: 1 },
+        }}
       />,
     );
-    expect(screen.getAllByRole("button")).toHaveLength(2);
+    const buttons = screen.getAllByRole("button");
+    expect(buttons).toHaveLength(2);
+    // The provenance badge sits in the header, inside the button.
+    expect(buttons[0].textContent).toContain("Relation documentée");
+    expect(buttons[1].textContent).toContain("à confirmer par un contrôle");
     expect(screen.queryByText(/\/100/)).toBeNull();
     expect(blockInsideButtons(container)).toEqual([]);
   });

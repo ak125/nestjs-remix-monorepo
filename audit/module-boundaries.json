@@ -91,8 +91,8 @@
         "backend/src/types",
         "backend/src/utils"
       ],
-      "files_count": 35,
-      "loc_total": 6180,
+      "files_count": 36,
+      "loc_total": 6189,
       "has_barrel": true
     },
     "blog": {
@@ -302,6 +302,7 @@
         "frontend/app/components/heroes",
         "frontend/app/components/home",
         "frontend/app/components/layout",
+        "frontend/app/components/layout/templates",
         "frontend/app/components/manufacturers",
         "frontend/app/components/model",
         "frontend/app/components/navbar",
@@ -319,6 +320,7 @@
         "frontend/app/components/shipping",
         "frontend/app/components/trust",
         "frontend/app/components/ui",
+        "frontend/app/components/users",
         "frontend/app/components/vehicle",
         "frontend/app/components/vehicle/r8",
         "frontend/app/components/vehicle/r8/sections",
@@ -341,8 +343,8 @@
         "frontend/app/utils",
         "frontend/app/utils/seo"
       ],
-      "files_count": 585,
-      "loc_total": 110586,
+      "files_count": 599,
+      "loc_total": 114928,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -701,7 +703,7 @@
         "scripts/wiki-generators/__tests__"
       ],
       "files_count": 206,
-      "loc_total": 47019,
+      "loc_total": 47108,
       "has_barrel": true
     },
     "search": {
@@ -957,8 +959,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 302,
-      "loc_total": 57473,
+      "files_count": 303,
+      "loc_total": 57643,
       "has_barrel": true
     },
     "upload": {
