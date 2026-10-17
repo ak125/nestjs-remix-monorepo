@@ -21,7 +21,8 @@ This directory holds the **machine-checkable inventory** + **human projection** 
 # Optional: refresh the Drift Observatory artifact (gitignored, used as corroborating signal).
 test -f audit-reports/contract-health.json || npm run audit:drift-dashboard
 
-# Generate (stamps generatedAt at wall-clock time).
+# Generate. `generatedAt` is a fixed placeholder (1970-01-01, as canonical.json — ADR-058 V1-2):
+# same inputs → same bytes; the version of the inputs is `meta.inputFingerprint`.
 npm run audit:cleanup-candidates
 
 # Verify the committed artifact still reproduces from current inputs.
