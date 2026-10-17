@@ -100069,7 +100069,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 291,
+      "loc": 306,
       "owner": "@ak125",
       "path": "scripts/audit/build-cleanup-candidates.test.ts",
       "risk": "medium",
@@ -100089,7 +100089,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 532,
+      "loc": 534,
       "owner": "@ak125",
       "path": "scripts/audit/build-cleanup-candidates.ts",
       "risk": "medium",
@@ -104870,11 +104870,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "90163175840e44796908f793612d86b090e6efec04ed7053e3966b0e0c211728",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "497601fc041fe05b192e60ae68cd9164c2ad5155c71d321cf78c73422a1f4416",
+      "audit/registry/files.json": "bf721fa69faf51ebb398cfa1e0b34f98af6f79c95fbec2c2a6f4f5836bdac33a",
       "audit/registry/rpc.json": "68f3b21f7aa0b2ef7da9b488c657c3b6b5bdde0476bf7d617f1e346cc26b4449",
       "audit/registry/runtime.json": "db3c1293c1d26fff96e8f10d130e6ef2238b96d3fbbc099f9e074be14c26bbbf"
     },
-    "sotFingerprint": "bbfd986b6edd"
+    "sotFingerprint": "82b9350b881a"
   },
   "runtime": [
     {
