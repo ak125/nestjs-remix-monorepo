@@ -523,3 +523,96 @@ Five projects remain on `node-cjs-legacy.json`: `packages/cwv-taxonomy`,
 `packages/seo-role-contracts`, `packages/seo-roles`, `packages/registry` and `backend`.
 `ts7-shadow-parity.json` is still not regenerated, for the reasons given in the pilot
 section; its `packages/design-tokens` row describes the configuration before this change.
+
+## `nodenext` on `packages/cwv-taxonomy` — fourth project of the sequence
+
+Same scope rule as the pilot: one project. `node-cjs-legacy.json` is untouched, TS7 is
+still not a repo dependency (no `package.json` or lockfile change), and the PARKED
+decision above stands.
+
+`packages/cwv-taxonomy` belongs to D11, owned by seo-team. It is the runtime taxonomy of
+the CWV beacon: surfaces, funnel steps, priority tiers, metrics, route groups, user-agent
+classes and the beacon's zod schemas. The change is compile configuration only, the
+emitted `dist/` is byte-identical, and the package's sources, tests and `package.json` do
+not change. It was applied by a delivery script that only the owner runs: that run is the
+owner's GO for this project.
+
+### What differs from the first three projects
+
+This is the first project of the sequence with a bare specifier: `src/schema.ts` imports
+`zod` (4.4.3). The two algorithms reach the same file by different paths:
+
+- **node10** (before) ignores `exports` and reads the `types` field of zod's
+  `package.json`: `./index.d.cts`.
+- **NodeNext** (after) resolves in CJS mode with the conditions `require`, `types`,
+  `node`, enters `exports` `"."`, skips `@zod/source`, and matches `types`:
+  `./index.d.cts`.
+
+Both resolve to `node_modules/zod/index.d.cts`, with the same package ID. The delivery
+script asserts that exact trace line after the change, as well as the full set of
+resolution outcomes and program files before and after.
+
+The package has no `"type"` field, so its files stay **CommonJS**. The canon file
+`.spec/00-canon/seo-runtime/cwv-taxonomy.yaml` says the package is CommonJS only, and that
+remains true.
+
+### Change
+
+`packages/cwv-taxonomy/tsconfig.json` becomes byte-identical to
+`packages/seo-url-contract/tsconfig.json`: it extends `base.json` and sets `module` and
+`moduleResolution` to `NodeNext`. The two files differed only in those lines before. The
+effective delta (`tsc --showConfig`, TS 6.0.3) is the pilot's:
+
+- `ignoreDeprecations: "6.0"` is removed;
+- `module` goes from commonjs to nodenext, and `moduleResolution` from node10 to nodenext;
+- `moduleDetection` becomes force;
+- `resolvePackageJsonExports` / `resolvePackageJsonImports` are no longer forced to false
+  (the NodeNext default is true).
+
+Nothing else changes.
+
+### Evidence — TS 6.0.3, the repo compiler
+
+| Check | Before | After |
+|---|---|---|
+| `tsc --noEmit` | exit 0, 0 diagnostics | exit 0, 0 diagnostics |
+| `tsc` build | exit 0 | exit 0 |
+| Emit (`.js`, `.d.ts` and their maps) | 32 files | the same 32, byte-identical (sha256) |
+| Relative specifiers (`--traceResolution`) | 7: `./surface`, `./funnel-step`, `./priority-tier`, `./metric`, `./route-group`, `./user-agent`, `./schema` → `src/*.ts` | identical |
+| Bare specifiers | 1: `zod` → `node_modules/zod/index.d.cts` | identical |
+| Resolution outcomes, all files (zod's declarations included) | 93, 0 unresolved | the same 93 |
+| Program files (`--listFilesOnly`, `--explainFiles`) | 133 (45 lib + 8 src + 80 zod) | the same 133 |
+| Package tests (`tsx --test`) | 68/68 | 68/68 |
+
+After the change, `--explainFiles` adds the line *"File is CommonJS module because
+'package.json' does not have field "type""* for each of the 8 source files.
+
+Consumers, all through the unchanged `package.json` (`exports`, `main`, `types`) to
+`dist/`:
+
+- the backend: the CWV beacon and runtime-events controllers, the beacon service, the
+  runtime-events schema, one Jest test. No Jest `moduleNameMapper` entry or `tsconfig`
+  path maps the package to `src/`.
+- the frontend: the web-vitals and runtime-errors client utilities, one vitest test. Vite
+  lists the package in `optimizeDeps.include`, which pre-bundles `dist/` in DEV only.
+
+The emit is byte-identical, so the consumer delta is zero by construction.
+
+### Evidence — TS 7.0.2, observation
+
+Same method as the pilot: this project alone, the harness's own functions, TS6 exit code
+checked. The delivery script commits only if the run before the change is
+`BLOCKED_CONFIG` with `TS5108` and the run after is `PARITY` with TS6 and TS7 at exit 0
+and 0 diagnostics.
+
+| Configuration | Classification | TS6 | TS7 |
+|---|---|---|---|
+| Before (`node-cjs-legacy.json`) | BLOCKED_CONFIG | exit 0, 0 diagnostics | `TS5108` |
+| After (`NodeNext`) | PARITY | exit 0, 0 diagnostics | exit 0, 0 diagnostics |
+
+### Still `BLOCKED_CONFIG` after the fourth project
+
+Four projects remain on `node-cjs-legacy.json`: `packages/seo-role-contracts`,
+`packages/seo-roles`, `packages/registry` and `backend`. `ts7-shadow-parity.json` is still
+not regenerated, for the reasons given in the pilot section; its `packages/cwv-taxonomy`
+row describes the configuration before this change.
