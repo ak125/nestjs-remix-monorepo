@@ -5,11 +5,14 @@ import {
   PROMETHEUS_REGISTRY,
   VEHICLE_CONTEXT_COUNTERS,
   DIAGNOSTIC_KG_SHADOW_COUNTER,
+  DIAGNOSTIC_PROVENANCE_COUNTER,
 } from './observability.tokens';
 import { buildVehicleContextCounters } from './vehicle-context.metrics';
 import { VehicleContextMetricsListener } from './vehicle-context-metrics.listener';
 import { buildDiagnosticKgShadowCounter } from './diagnostic-kg-shadow.metrics';
 import { DiagnosticKgShadowMetricsListener } from './diagnostic-kg-shadow-metrics.listener';
+import { buildDiagnosticProvenanceCounter } from './diagnostic-provenance.metrics';
+import { DiagnosticProvenanceMetricsListener } from './diagnostic-provenance-metrics.listener';
 import { PrometheusController } from './prometheus.controller';
 
 /**
@@ -51,13 +54,21 @@ import { PrometheusController } from './prometheus.controller';
         buildDiagnosticKgShadowCounter(registry),
       inject: [PROMETHEUS_REGISTRY],
     },
+    {
+      provide: DIAGNOSTIC_PROVENANCE_COUNTER,
+      useFactory: (registry: Registry) =>
+        buildDiagnosticProvenanceCounter(registry),
+      inject: [PROMETHEUS_REGISTRY],
+    },
     VehicleContextMetricsListener,
     DiagnosticKgShadowMetricsListener, // PR-E — counts diagnostic_kg_shadow_diverged events
+    DiagnosticProvenanceMetricsListener, // counts diagnostic_provenance_evaluated events
   ],
   exports: [
     PROMETHEUS_REGISTRY,
     VEHICLE_CONTEXT_COUNTERS,
     DIAGNOSTIC_KG_SHADOW_COUNTER,
+    DIAGNOSTIC_PROVENANCE_COUNTER,
   ],
 })
 export class ObservabilityModule {}

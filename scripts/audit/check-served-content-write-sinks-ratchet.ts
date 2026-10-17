@@ -66,6 +66,11 @@ export const SERVED_TABLES: readonly string[] = [
   "___meta_tags_ariane",
   "__seo_reference",
   "__seo_observable",
+  // Provenance WIKI des liens symptôme→cause : lue à chaque analyse et servie dans le pack de
+  // preuves du diagnostic (DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED, ADR-035). Les tables de journal
+  // de la projection (`__diag_projection_runs`, `__diag_projection_conflicts`) ne sont jamais lues
+  // au rendu et restent hors de cette liste.
+  "__diag_link_provenance",
 ];
 // Const channels whose target resolves to a served table — writers use these, NOT string literals
 // (B0/B1a). Bare maps (R7/R8/gate) whose members are all served R-page tables/satellites; plus
@@ -80,7 +85,12 @@ export const SERVED_CONST_CHANNELS: readonly string[] = [
   "TABLES.blog_guide", // __blog_guide (served blog)
 ];
 // DEFINER/publish RPCs that mutate a served row (B0 §1 R8, B1a Owner ③).
-export const SERVED_PUBLISH_RPCS: readonly string[] = ["__seo_r8_publish_snapshot"];
+export const SERVED_PUBLISH_RPCS: readonly string[] = [
+  "__seo_r8_publish_snapshot",
+  // Seul écrivain de `__diag_link_provenance` (insert + retrait). `__diag_projection_record_failure`
+  // n'écrit que `__diag_projection_runs`, jamais lue au rendu.
+  "__diag_projection_apply",
+];
 
 const WRITE_VERBS = "insert|update|upsert|delete";
 const CHAIN = "[\\s\\S]{0,300}?"; // bounded window across a fluent .from(...).verb(...) chain

@@ -1,4 +1,7 @@
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { FeatureFlagsService } from '../../config/feature-flags.service';
 import { DiagnosticEngineOrchestrator } from './diagnostic-engine.orchestrator';
+import { DiagnosticProvenanceService } from './services/diagnostic-provenance.service';
 import { DiagnosticEngineDataService } from './diagnostic-engine.data-service';
 import { DiagnosticEngineController } from './diagnostic-engine.controller';
 import { MaintenanceIntelligenceEngine } from './engines/maintenance-intelligence.engine';
@@ -53,6 +56,12 @@ function fixture() {
     catalog as never,
     new MaintenanceIntelligenceEngine(data as never),
     shadow as never,
+    // Flags OFF: the reference ranking, as before the WIKI provenance.
+    new DiagnosticProvenanceService(
+      data as never,
+      new FeatureFlagsService({ get: () => undefined } as never),
+      new EventEmitter2(),
+    ),
   );
   return { engine, data, signal, score, risk, catalog, shadow };
 }

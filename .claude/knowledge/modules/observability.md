@@ -2,16 +2,16 @@
 module: observability
 sources:
 - backend/src/modules/observability
-last_scan: '2026-07-02'
+last_scan: '2026-10-15'
 primary_files:
 - backend/src/modules/observability/diagnostic-kg-shadow-metrics.listener.test.ts
 - backend/src/modules/observability/diagnostic-kg-shadow-metrics.listener.ts
 - backend/src/modules/observability/diagnostic-kg-shadow.metrics.ts
+- backend/src/modules/observability/diagnostic-provenance-metrics.listener.test.ts
+- backend/src/modules/observability/diagnostic-provenance-metrics.listener.ts
+- backend/src/modules/observability/diagnostic-provenance.metrics.ts
 - backend/src/modules/observability/observability.module.ts
 - backend/src/modules/observability/observability.tokens.ts
-- backend/src/modules/observability/prometheus.controller.ts
-- backend/src/modules/observability/vehicle-context-metrics.listener.test.ts
-- backend/src/modules/observability/vehicle-context-metrics.listener.ts
 depends_on:
 - EventEmitterModule
 ---
@@ -34,11 +34,11 @@ _Section à rédiger._
 - [backend/src/modules/observability/diagnostic-kg-shadow-metrics.listener.test.ts](../../../backend/src/modules/observability/diagnostic-kg-shadow-metrics.listener.test.ts)
 - [backend/src/modules/observability/diagnostic-kg-shadow-metrics.listener.ts](../../../backend/src/modules/observability/diagnostic-kg-shadow-metrics.listener.ts)
 - [backend/src/modules/observability/diagnostic-kg-shadow.metrics.ts](../../../backend/src/modules/observability/diagnostic-kg-shadow.metrics.ts)
+- [backend/src/modules/observability/diagnostic-provenance-metrics.listener.test.ts](../../../backend/src/modules/observability/diagnostic-provenance-metrics.listener.test.ts)
+- [backend/src/modules/observability/diagnostic-provenance-metrics.listener.ts](../../../backend/src/modules/observability/diagnostic-provenance-metrics.listener.ts)
+- [backend/src/modules/observability/diagnostic-provenance.metrics.ts](../../../backend/src/modules/observability/diagnostic-provenance.metrics.ts)
 - [backend/src/modules/observability/observability.module.ts](../../../backend/src/modules/observability/observability.module.ts)
 - [backend/src/modules/observability/observability.tokens.ts](../../../backend/src/modules/observability/observability.tokens.ts)
-- [backend/src/modules/observability/prometheus.controller.ts](../../../backend/src/modules/observability/prometheus.controller.ts)
-- [backend/src/modules/observability/vehicle-context-metrics.listener.test.ts](../../../backend/src/modules/observability/vehicle-context-metrics.listener.test.ts)
-- [backend/src/modules/observability/vehicle-context-metrics.listener.ts](../../../backend/src/modules/observability/vehicle-context-metrics.listener.ts)
 
 <!-- END AUTO-GENERATED -->
 

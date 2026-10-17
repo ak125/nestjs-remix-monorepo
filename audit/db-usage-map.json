@@ -10,8 +10,8 @@
   ],
   "summary": {
     "tables_seen": 316,
-    "tables_with_callsites": 213,
-    "candidate_orphan_tables": 76,
+    "tables_with_callsites": 214,
+    "candidate_orphan_tables": 75,
     "partitions": 27,
     "rpc_seen": 251,
     "rpc_with_callsites": 14,
@@ -22,7 +22,7 @@
     "unresolved_callsites": 0,
     "dropped_call_sites": 8,
     "migrations_scanned": 416,
-    "backend_files_scanned": 1482
+    "backend_files_scanned": 1490
   },
   "tables": {
     "___config": {
@@ -324,8 +324,10 @@
       "partition_of": null
     },
     "__diag_link_provenance": {
-      "used_by": [],
-      "used_by_count": 0,
+      "used_by": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts"
+      ],
+      "used_by_count": 1,
       "in_migrations": [
         "20261010_diag_link_provenance.sql"
       ],
@@ -5895,26 +5897,6 @@
       "rls_present": true,
       "in_migrations": [
         "20260523_001_create_order_history.sql"
-      ],
-      "in_knowledge_db": false,
-      "caveats": [
-        "may be read/written by Supabase internals (auth, storage, realtime)",
-        "may be used by ad-hoc SQL / psql / dashboard",
-        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
-        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
-        "may be written by an external cron / ETL outside this repo"
-      ]
-    },
-    {
-      "name": "__diag_link_provenance",
-      "confidence": "low",
-      "derived_from": [
-        "migrations",
-        "no-literal-from-callsite"
-      ],
-      "rls_present": false,
-      "in_migrations": [
-        "20261010_diag_link_provenance.sql"
       ],
       "in_knowledge_db": false,
       "caveats": [
@@ -12767,7 +12749,7 @@
     },
     {
       "file": "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
-      "line": 510,
+      "line": 589,
       "form": "IDENT",
       "resolved_table": null,
       "refusal": "binding-not-found"

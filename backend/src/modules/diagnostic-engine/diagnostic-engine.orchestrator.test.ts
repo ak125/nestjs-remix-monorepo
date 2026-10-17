@@ -1,4 +1,6 @@
 import { Test } from '@nestjs/testing';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { FeatureFlagsService } from '../../config/feature-flags.service';
 import { DiagnosticEngineOrchestrator } from './diagnostic-engine.orchestrator';
 import {
   DiagnosticEngineDataService,
@@ -13,6 +15,7 @@ import { RiskSafetyEngine } from './engines/risk-safety.engine';
 import { CatalogOrientationEngine } from './engines/catalog-orientation.engine';
 import { MaintenanceIntelligenceEngine } from './engines/maintenance-intelligence.engine';
 import { KgShadowService } from './services/kg-shadow.service';
+import { DiagnosticProvenanceService } from './services/diagnostic-provenance.service';
 import { EvidencePackSchema } from './types/evidence-pack.schema';
 
 const input = {
@@ -117,6 +120,13 @@ describe('Diagnostic without RAG content authority', () => {
           },
         },
         { provide: KgShadowService, useValue: { shadowCompare: jest.fn() } },
+        // The real service, resolved by the container, with its flags OFF.
+        DiagnosticProvenanceService,
+        {
+          provide: FeatureFlagsService,
+          useValue: new FeatureFlagsService({ get: () => undefined } as never),
+        },
+        { provide: EventEmitter2, useValue: new EventEmitter2() },
       ],
     }).compile();
     orchestrator = module.get(DiagnosticEngineOrchestrator);

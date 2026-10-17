@@ -46,6 +46,75 @@ export const CauseTypeEnum = z.enum([
 ]);
 export type CauseType = z.infer<typeof CauseTypeEnum>;
 
+// ── WIKI provenance ─────────────────────────────────────
+// What the WIKI documents behind each symptom → cause link of an hypothesis
+// (__diag_link_provenance, projected from validated WIKI fiches). Information
+// only: it never carries a score, and `part_role` stays out of the pack.
+
+export const ProvenanceStateEnum = z.enum(['sourced', 'partial', 'unsourced']);
+export type ProvenanceState = z.infer<typeof ProvenanceStateEnum>;
+
+export const WikiRefSchema = z.object({
+  wiki_path: z.string().min(1),
+  gamme_slug: z.string().min(1),
+  relation_to_part: z.string().min(1),
+  diagnostic_safe: z.boolean(),
+});
+
+export const ProvenanceLinkSchema = z
+  .object({
+    link_id: z.number().int().positive(),
+    symptom_slug: z.string().min(1),
+    documented: z.boolean(),
+    wiki_refs: z.array(WikiRefSchema),
+  })
+  .refine((link) => link.documented === link.wiki_refs.length > 0, {
+    message: 'documented must say whether the link has a WIKI reference',
+  });
+
+/** sourced = every link documented, partial = some, unsourced = none. */
+export function provenanceStateOf(
+  links: ReadonlyArray<{ documented: boolean }>,
+): ProvenanceState {
+  const documented = links.filter((link) => link.documented).length;
+  if (documented === links.length) return 'sourced';
+  return documented > 0 ? 'partial' : 'unsourced';
+}
+
+export const HypothesisProvenanceSchema = z
+  .object({
+    state: ProvenanceStateEnum,
+    links: z.array(ProvenanceLinkSchema).min(1),
+  })
+  .refine(
+    (provenance) => provenance.state === provenanceStateOf(provenance.links),
+    {
+      message: 'state must follow from the documented links',
+    },
+  );
+export type HypothesisProvenance = z.infer<typeof HypothesisProvenanceSchema>;
+
+const ProvenanceCount = z.number().int().min(0);
+
+// `unavailable` = the provenance could not be read: it says nothing about the
+// links, so it carries no count and no hypothesis carries a state.
+export const ProvenanceSummarySchema = z.discriminatedUnion('status', [
+  z
+    .object({
+      status: z.literal('available'),
+      counts: z
+        .object({
+          sourced: ProvenanceCount,
+          partial: ProvenanceCount,
+          unsourced: ProvenanceCount,
+        })
+        .strict(),
+    })
+    .strict(),
+  z.object({ status: z.literal('unavailable') }).strict(),
+]);
+export type ProvenanceSummary = z.infer<typeof ProvenanceSummarySchema>;
+
 export const CandidateHypothesisSchema = z.object({
   hypothesis_id: z.string().min(1),
   label: z.string().min(1),
@@ -61,6 +130,9 @@ export const CandidateHypothesisSchema = z.object({
   requires_verification: z.boolean(),
   // Mapping vers les gammes du catalogue
   related_gamme_slugs: z.array(z.string()).optional(),
+  // Absent from packs stored before the WIKI provenance, and when it is not
+  // exposed or could not be read (see provenance_summary).
+  provenance: HypothesisProvenanceSchema.optional(),
 });
 export type CandidateHypothesis = z.infer<typeof CandidateHypothesisSchema>;
 
@@ -94,34 +166,82 @@ export type CatalogGuard = z.infer<typeof CatalogGuardSchema>;
 
 // ── Evidence Pack ───────────────────────────────────────
 
+/**
+ * The summary and the per-hypothesis states tell one story: a state is shown
+ * only when the provenance was read (`available`), then every hypothesis has
+ * one and the counts are their tally.
+ */
+function checkProvenanceConsistency(
+  pack: {
+    candidate_hypotheses: Array<{ provenance?: HypothesisProvenance }>;
+    provenance_summary?: ProvenanceSummary;
+  },
+  ctx: z.RefinementCtx,
+): void {
+  const summary = pack.provenance_summary;
+  const states = pack.candidate_hypotheses.map((h) => h.provenance?.state);
+  if (summary?.status !== 'available') {
+    if (states.some((state) => state !== undefined)) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['candidate_hypotheses'],
+        message: 'a provenance state requires an available provenance_summary',
+      });
+    }
+    return;
+  }
+  if (states.some((state) => state === undefined)) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['candidate_hypotheses'],
+      message:
+        'an available provenance_summary requires a state on every hypothesis',
+    });
+    return;
+  }
+  for (const state of ProvenanceStateEnum.options) {
+    if (summary.counts[state] !== states.filter((s) => s === state).length) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['provenance_summary', 'counts', state],
+        message: 'counts must tally the hypothesis states',
+      });
+    }
+  }
+}
+
 export const EvidencePackSchema = z.object({
-  evidence_pack: z.object({
-    analysis_kind: z.enum(['diagnostic', 'maintenance']).optional(),
-    diagnostic_confidence: z.number().min(0).max(100).optional(),
-    factual_inputs_confirmed: z.array(z.string()),
-    factual_inputs_missing: z.array(z.string()),
-    system_suspects: z.array(z.string()),
-    candidate_hypotheses: z.array(CandidateHypothesisSchema),
-    maintenance_links: z.array(z.string()),
-    risk_flags: z.array(z.string()),
-    safety_alert: z.string().optional(),
-    risk_level: z.enum(['critical', 'high', 'moderate', 'low']).optional(),
-    signal_quality: z.enum(['high', 'medium', 'low']).optional(),
-    catalog_guard: CatalogGuardSchema,
-    maintenance_recommendations: z.array(z.unknown()).optional(),
-    preventive_schedule: z
-      .array(
-        z.object({
-          operation: z.string(),
-          next_at_km: z.string(),
-          status: z.enum(['overdue', 'approaching', 'ok', 'unknown']),
-        }),
-      )
-      .optional(),
-    allowed_claims: z.array(z.string()),
-    // v1: permissif. v2: union typee par bloc (VehicleContextCardInput, etc.)
-    ui_block_inputs: z.record(z.string(), z.unknown()),
-  }),
+  evidence_pack: z
+    .object({
+      analysis_kind: z.enum(['diagnostic', 'maintenance']).optional(),
+      diagnostic_confidence: z.number().min(0).max(100).optional(),
+      factual_inputs_confirmed: z.array(z.string()),
+      factual_inputs_missing: z.array(z.string()),
+      system_suspects: z.array(z.string()),
+      candidate_hypotheses: z.array(CandidateHypothesisSchema),
+      maintenance_links: z.array(z.string()),
+      risk_flags: z.array(z.string()),
+      safety_alert: z.string().optional(),
+      risk_level: z.enum(['critical', 'high', 'moderate', 'low']).optional(),
+      signal_quality: z.enum(['high', 'medium', 'low']).optional(),
+      catalog_guard: CatalogGuardSchema,
+      maintenance_recommendations: z.array(z.unknown()).optional(),
+      preventive_schedule: z
+        .array(
+          z.object({
+            operation: z.string(),
+            next_at_km: z.string(),
+            status: z.enum(['overdue', 'approaching', 'ok', 'unknown']),
+          }),
+        )
+        .optional(),
+      allowed_claims: z.array(z.string()),
+      // v1: permissif. v2: union typee par bloc (VehicleContextCardInput, etc.)
+      ui_block_inputs: z.record(z.string(), z.unknown()),
+      // Absent = provenance not exposed (flag OFF) or pack stored before it.
+      provenance_summary: ProvenanceSummarySchema.optional(),
+    })
+    .superRefine(checkProvenanceConsistency),
 });
 export type EvidencePack = z.infer<typeof EvidencePackSchema>;
 
