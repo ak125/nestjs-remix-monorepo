@@ -1,6 +1,9 @@
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { FeatureFlagsService } from '../../config/feature-flags.service';
 import { EvidencePackSchema } from './types/evidence-pack.schema';
 import { DiagnosticEngineDataService } from './diagnostic-engine.data-service';
 import { DiagnosticEngineOrchestrator } from './diagnostic-engine.orchestrator';
+import { DiagnosticProvenanceService } from './services/diagnostic-provenance.service';
 import { SignalInterpretationEngine } from './engines/signal-interpretation.engine';
 import { HypothesisScoringEngine } from './engines/hypothesis-scoring.engine';
 import { RiskSafetyEngine } from './engines/risk-safety.engine';
@@ -160,6 +163,12 @@ function pipeline(service: DiagnosticEngineDataService) {
     new CatalogOrientationEngine(),
     { assess: enriched } as never,
     { shadowCompare: jest.fn() } as never,
+    // Flags OFF: the reference ranking, as before the WIKI provenance.
+    new DiagnosticProvenanceService(
+      service,
+      new FeatureFlagsService({ get: () => undefined } as never),
+      new EventEmitter2(),
+    ),
   );
   return { engine, saved, enriched };
 }
