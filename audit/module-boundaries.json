@@ -356,7 +356,7 @@
         "backend/src/modules/gamme-rest/utils/__tests__"
       ],
       "files_count": 19,
-      "loc_total": 6331,
+      "loc_total": 6389,
       "has_barrel": true
     },
     "health": {
@@ -958,7 +958,7 @@
         "tests/registry"
       ],
       "files_count": 303,
-      "loc_total": 57652,
+      "loc_total": 57892,
       "has_barrel": true
     },
     "upload": {
