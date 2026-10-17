@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 
 import { ExternalCompatibilityScrapingService } from './external-compatibility-scraping.service';
 import { ExternalCompatibilityConsensusService } from './external-compatibility-consensus.service';
@@ -54,7 +53,6 @@ export class ExternalCompatibilityService {
     private readonly consensusService: ExternalCompatibilityConsensusService,
     private readonly cacheService: ExternalCompatibilityCacheService,
     private readonly partslink24Service: ExternalCompatibilityPartsLink24Service,
-    private readonly configService: ConfigService,
   ) {}
 
   /**
