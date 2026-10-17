@@ -91,8 +91,8 @@
         "backend/src/types",
         "backend/src/utils"
       ],
-      "files_count": 36,
-      "loc_total": 6189,
+      "files_count": 35,
+      "loc_total": 6180,
       "has_barrel": true
     },
     "blog": {
@@ -187,7 +187,7 @@
         "backend/src/modules/config/validators"
       ],
       "files_count": 103,
-      "loc_total": 25082,
+      "loc_total": 25102,
       "has_barrel": true
     },
     "customers": {
@@ -239,8 +239,8 @@
         "backend/src/modules/diagnostic-engine/services",
         "backend/src/modules/diagnostic-engine/types"
       ],
-      "files_count": 71,
-      "loc_total": 15145,
+      "files_count": 76,
+      "loc_total": 16670,
       "has_barrel": false
     },
     "errors": {
@@ -261,7 +261,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115470,
+      "loc_total": 115461,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -302,7 +302,6 @@
         "frontend/app/components/heroes",
         "frontend/app/components/home",
         "frontend/app/components/layout",
-        "frontend/app/components/layout/templates",
         "frontend/app/components/manufacturers",
         "frontend/app/components/model",
         "frontend/app/components/navbar",
@@ -320,7 +319,6 @@
         "frontend/app/components/shipping",
         "frontend/app/components/trust",
         "frontend/app/components/ui",
-        "frontend/app/components/users",
         "frontend/app/components/vehicle",
         "frontend/app/components/vehicle/r8",
         "frontend/app/components/vehicle/r8/sections",
@@ -343,8 +341,8 @@
         "frontend/app/utils",
         "frontend/app/utils/seo"
       ],
-      "files_count": 599,
-      "loc_total": 114891,
+      "files_count": 585,
+      "loc_total": 110623,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -358,7 +356,7 @@
         "backend/src/modules/gamme-rest/utils/__tests__"
       ],
       "files_count": 19,
-      "loc_total": 6389,
+      "loc_total": 6331,
       "has_barrel": true
     },
     "health": {
@@ -413,7 +411,7 @@
         "backend/src/modules/marketing/templates"
       ],
       "files_count": 29,
-      "loc_total": 7009,
+      "loc_total": 7019,
       "has_barrel": false
     },
     "mcp-validation": {
@@ -488,8 +486,8 @@
       "dirs": [
         "backend/src/modules/observability"
       ],
-      "files_count": 9,
-      "loc_total": 551,
+      "files_count": 12,
+      "loc_total": 757,
       "has_barrel": false
     },
     "orders": {
@@ -552,7 +550,7 @@
         "packages/design-tokens/tests"
       ],
       "files_count": 13,
-      "loc_total": 2005,
+      "loc_total": 2007,
       "has_barrel": true
     },
     "pkg-domain-commerce": {
@@ -703,7 +701,7 @@
         "scripts/wiki-generators/__tests__"
       ],
       "files_count": 206,
-      "loc_total": 46928,
+      "loc_total": 47108,
       "has_barrel": true
     },
     "search": {
@@ -959,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 301,
-      "loc_total": 57595,
+      "files_count": 303,
+      "loc_total": 57652,
       "has_barrel": true
     },
     "upload": {
@@ -1691,7 +1689,7 @@
     {
       "from": "diagnostic-engine",
       "to": "config",
-      "count": 12
+      "count": 19
     },
     {
       "from": "diagnostic-engine",

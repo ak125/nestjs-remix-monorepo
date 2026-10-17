@@ -415,3 +415,204 @@ Six projects remain on `node-cjs-legacy.json`: `packages/design-tokens`,
 `packages/registry` and `backend`. `ts7-shadow-parity.json` is still not regenerated, for
 the reasons given in the pilot section; its `packages/domain-commerce` row describes the
 configuration before this change.
+
+## `nodenext` on `packages/design-tokens` — third project of the sequence
+
+Same scope rule as the pilot: one project. `node-cjs-legacy.json` is untouched, TS7 is
+still not a repo dependency (no `package.json` or lockfile change), and the PARKED
+decision above stands.
+
+`packages/design-tokens` belongs to D8, owned by frontend-team. The emitted `dist/` is
+byte-identical. The change was applied by a delivery script that only the owner runs:
+that run is the owner's GO for this project.
+
+### What differs from the first two projects
+
+- The package is `"type": "module"`. Under `NodeNext` its sources are **ECMAScript
+  modules**, so a relative specifier must carry its extension. With the configuration
+  change alone, `src/index.ts` fails with `TS2835` on `'./tokens/generated'`.
+- The build is tsup (an esbuild bundle, declarations through rollup-plugin-dts), not
+  `tsc`. tsup 8.5.1 adds `baseUrl: "."` to the options of its declaration build
+  (`node_modules/tsup/dist/rollup.js`: `baseUrl: compilerOptions.baseUrl || "."`), and
+  TS 6.0.3 rejects it: *TS5101: Option 'baseUrl' is deprecated and will stop functioning
+  in TypeScript 7.0. Specify compilerOption '"ignoreDeprecations": "6.0"' to silence this
+  error.* Until now, the `ignoreDeprecations: "6.0"` of `node-cjs-legacy.json` silenced
+  it, and nothing recorded that dependency.
+
+### Change
+
+Three files of the package:
+
+- `tsconfig.json` (+3 −1) extends `base.json` instead of `node-cjs-legacy.json`, and sets
+  `module` and `moduleResolution` to `NodeNext`. It is not a copy of
+  `packages/seo-url-contract/tsconfig.json`, because that file also sets `composite`, an
+  ES2020 `target` and `lib`, `isolatedModules` and more, which would change more than
+  module resolution. The effective delta (`tsc --showConfig`, TS 6.0.3) is the pilot's:
+  - `ignoreDeprecations: "6.0"` is removed;
+  - `module` goes from commonjs to nodenext, and `moduleResolution` from node10 to
+    nodenext;
+  - `moduleDetection` becomes force;
+  - `resolvePackageJsonExports` / `resolvePackageJsonImports` are no longer forced to
+    false (the NodeNext default is true).
+
+  Nothing else changes.
+- `src/index.ts` (+1 −1): `export * from './tokens/generated.js';`. This file is written
+  by hand; `scripts/build-tokens.mjs` generates only `src/tokens/generated.ts`. The new
+  specifier also compiles under the old configuration (0 diagnostics).
+- `tsup.config.ts` (+3 −1): `dts: { compilerOptions: { ignoreDeprecations: '6.0' } }`
+  instead of `dts: true`. For this package, the exemption no longer covers `tsc` or the
+  ESLint parser. It covers only the build that injects the option.
+
+### The tsup exemption, checked both ways
+
+- **Alive.** With the new `tsconfig.json` and `src/index.ts` but `dts: true`, the build
+  fails with `TS5101` on `baseUrl`. The delivery script re-runs this check and the next.
+- **Narrow.** With the exemption but the old specifier, the declaration build still fails
+  with `TS2835`: it silences the deprecation, not resolution errors.
+- **Exit.** tsup 9.0.0, published 2026-10-14, no longer sets `baseUrl` in that block.
+  This was read in the published tarball, which was not installed. Moving to tsup 9 is a
+  dependency change outside this scope. The change that does it must also remove the
+  exemption, which would then be dead.
+- **TS7.** `PARITY` below is measured on `tsc` only, as the harness does. With tsup 8.5.1,
+  the package's declaration build still relies on `baseUrl`, which TS 7.0 stops honouring.
+  This project's build is therefore not TS7-ready until tsup moves. No other workspace
+  declares tsup.
+
+### Evidence — TS 6.0.3, the repo compiler
+
+| Check | Before | After |
+|---|---|---|
+| `tsc --noEmit` | exit 0, 0 diagnostics | exit 0, 0 diagnostics |
+| Package build (`build-tokens.mjs`, then tsup) | exit 0 | exit 0 |
+| `dist/` (`index.js`, `index.cjs`, `index.d.ts`, `index.d.cts`, both maps, `tokens.css`) | 7 files | the same 7, byte-identical (sha256) |
+| Specifiers resolved (`--traceResolution`) | 1: `./tokens/generated` → `src/tokens/generated.ts` | 1: `./tokens/generated.js` → the same file |
+| Bare specifiers | 0 | 0 |
+| Program files (`--explainFiles`) | 65 (61 lib + 4 src) | the same 65 |
+| Package tests (vitest) | 17/17 | 17/17 |
+| `build:check`, `check:reserved-namespaces` | pass | pass |
+| ESLint (`eslint src`, type-aware parser on `tsconfig.json`) | 0 problems | 0 problems |
+
+After the change, `--explainFiles` adds the line *"File is ECMAScript module because
+'package.json' has field "type" with value "module""* for each of the 4 source files.
+
+The package tests read `src/tokens.json`, the scripts and the generated projections. They
+do not compile `src/*.ts`, so they guard against regressions but say nothing about module
+resolution.
+
+Consumers: the frontend only, through `@fafa/design-tokens/css` (`dist/tokens.css`, copied
+from `src/styles/tokens.css`) and `@fafa/design-tokens/tailwind-tokens`
+(`src/tailwind-tokens.cjs`, which is not compiled). Nothing in the repo imports the
+TypeScript entry point (`.`). `dist/` is byte-identical, so the consumer delta is zero by
+construction.
+
+### Evidence — TS 7.0.2, observation
+
+Same method as the pilot: this project alone, the harness's own functions, TS6 exit code
+checked. The delivery script commits only if the run before the change is
+`BLOCKED_CONFIG` with `TS5108` and the run after is `PARITY` with TS6 and TS7 at exit 0
+and 0 diagnostics.
+
+| Configuration | Classification | TS6 | TS7 |
+|---|---|---|---|
+| Before (`node-cjs-legacy.json`) | BLOCKED_CONFIG | exit 0, 0 diagnostics | `TS5108` |
+| After (`NodeNext`) | PARITY | exit 0, 0 diagnostics | exit 0, 0 diagnostics |
+
+### Still `BLOCKED_CONFIG` after the third project
+
+Five projects remain on `node-cjs-legacy.json`: `packages/cwv-taxonomy`,
+`packages/seo-role-contracts`, `packages/seo-roles`, `packages/registry` and `backend`.
+`ts7-shadow-parity.json` is still not regenerated, for the reasons given in the pilot
+section; its `packages/design-tokens` row describes the configuration before this change.
+
+## `nodenext` on `packages/cwv-taxonomy` — fourth project of the sequence
+
+Same scope rule as the pilot: one project. `node-cjs-legacy.json` is untouched, TS7 is
+still not a repo dependency (no `package.json` or lockfile change), and the PARKED
+decision above stands.
+
+`packages/cwv-taxonomy` belongs to D11, owned by seo-team. It is the runtime taxonomy of
+the CWV beacon: surfaces, funnel steps, priority tiers, metrics, route groups, user-agent
+classes and the beacon's zod schemas. The change is compile configuration only, the
+emitted `dist/` is byte-identical, and the package's sources, tests and `package.json` do
+not change. It was applied by a delivery script that only the owner runs: that run is the
+owner's GO for this project.
+
+### What differs from the first three projects
+
+This is the first project of the sequence with a bare specifier: `src/schema.ts` imports
+`zod` (4.4.3). The two algorithms reach the same file by different paths:
+
+- **node10** (before) ignores `exports` and reads the `types` field of zod's
+  `package.json`: `./index.d.cts`.
+- **NodeNext** (after) resolves in CJS mode with the conditions `require`, `types`,
+  `node`, enters `exports` `"."`, skips `@zod/source`, and matches `types`:
+  `./index.d.cts`.
+
+Both resolve to `node_modules/zod/index.d.cts`, with the same package ID. The delivery
+script asserts that exact trace line after the change, as well as the full set of
+resolution outcomes and program files before and after.
+
+The package has no `"type"` field, so its files stay **CommonJS**. The canon file
+`.spec/00-canon/seo-runtime/cwv-taxonomy.yaml` says the package is CommonJS only, and that
+remains true.
+
+### Change
+
+`packages/cwv-taxonomy/tsconfig.json` becomes byte-identical to
+`packages/seo-url-contract/tsconfig.json`: it extends `base.json` and sets `module` and
+`moduleResolution` to `NodeNext`. The two files differed only in those lines before. The
+effective delta (`tsc --showConfig`, TS 6.0.3) is the pilot's:
+
+- `ignoreDeprecations: "6.0"` is removed;
+- `module` goes from commonjs to nodenext, and `moduleResolution` from node10 to nodenext;
+- `moduleDetection` becomes force;
+- `resolvePackageJsonExports` / `resolvePackageJsonImports` are no longer forced to false
+  (the NodeNext default is true).
+
+Nothing else changes.
+
+### Evidence — TS 6.0.3, the repo compiler
+
+| Check | Before | After |
+|---|---|---|
+| `tsc --noEmit` | exit 0, 0 diagnostics | exit 0, 0 diagnostics |
+| `tsc` build | exit 0 | exit 0 |
+| Emit (`.js`, `.d.ts` and their maps) | 32 files | the same 32, byte-identical (sha256) |
+| Relative specifiers (`--traceResolution`) | 7: `./surface`, `./funnel-step`, `./priority-tier`, `./metric`, `./route-group`, `./user-agent`, `./schema` → `src/*.ts` | identical |
+| Bare specifiers | 1: `zod` → `node_modules/zod/index.d.cts` | identical |
+| Resolution outcomes, all files (zod's declarations included) | 93, 0 unresolved | the same 93 |
+| Program files (`--listFilesOnly`, `--explainFiles`) | 133 (45 lib + 8 src + 80 zod) | the same 133 |
+| Package tests (`tsx --test`) | 68/68 | 68/68 |
+
+After the change, `--explainFiles` adds the line *"File is CommonJS module because
+'package.json' does not have field "type""* for each of the 8 source files.
+
+Consumers, all through the unchanged `package.json` (`exports`, `main`, `types`) to
+`dist/`:
+
+- the backend: the CWV beacon and runtime-events controllers, the beacon service, the
+  runtime-events schema, one Jest test. No Jest `moduleNameMapper` entry or `tsconfig`
+  path maps the package to `src/`.
+- the frontend: the web-vitals and runtime-errors client utilities, one vitest test. Vite
+  lists the package in `optimizeDeps.include`, which pre-bundles `dist/` in DEV only.
+
+The emit is byte-identical, so the consumer delta is zero by construction.
+
+### Evidence — TS 7.0.2, observation
+
+Same method as the pilot: this project alone, the harness's own functions, TS6 exit code
+checked. The delivery script commits only if the run before the change is
+`BLOCKED_CONFIG` with `TS5108` and the run after is `PARITY` with TS6 and TS7 at exit 0
+and 0 diagnostics.
+
+| Configuration | Classification | TS6 | TS7 |
+|---|---|---|---|
+| Before (`node-cjs-legacy.json`) | BLOCKED_CONFIG | exit 0, 0 diagnostics | `TS5108` |
+| After (`NodeNext`) | PARITY | exit 0, 0 diagnostics | exit 0, 0 diagnostics |
+
+### Still `BLOCKED_CONFIG` after the fourth project
+
+Four projects remain on `node-cjs-legacy.json`: `packages/seo-role-contracts`,
+`packages/seo-roles`, `packages/registry` and `backend`. `ts7-shadow-parity.json` is still
+not regenerated, for the reasons given in the pilot section; its `packages/cwv-taxonomy`
+row describes the configuration before this change.

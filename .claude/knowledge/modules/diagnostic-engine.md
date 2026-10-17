@@ -2,7 +2,7 @@
 module: diagnostic-engine
 sources:
 - backend/src/modules/diagnostic-engine
-last_scan: '2026-09-29'
+last_scan: '2026-10-15'
 primary_files:
 - backend/src/modules/diagnostic-engine/constants/gamme-map.constants.ts
 - backend/src/modules/diagnostic-engine/diagnostic-engine.controller.test.ts
@@ -38,6 +38,7 @@ ADR-031 : aucun enrichissement RAG ne produit de faits diagnostic. La voie `RagE
 - `MaintenanceCalculatorService`
 - `DiagnosticContentService`
 - `KgShadowService`
+- `DiagnosticProvenanceService`
 - `IntentClassifierService`
 - `ActionRecommenderService`
 - `HumanEscalationBuilderService`
