@@ -31,7 +31,6 @@ function build(enabled: boolean, sectionOk: boolean) {
     {} as never,
     {} as never,
     {} as never,
-    {} as never,
     { writeGuardEnabled: enabled } as never,
   );
   const writeToTarget = jest.spyOn(gate, 'writeToTarget');
