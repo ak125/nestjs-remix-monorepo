@@ -72001,9 +72001,7 @@
       "domain": "D8",
       "id": "frontend/app/components/RichTextEditor.tsx",
       "importedBy": [],
-      "imports": [
-        "@tiptap/react"
-      ],
+      "imports": [],
       "kind": "config",
       "loc": 235,
       "owner": "@ak125/frontend-team",
@@ -104873,11 +104871,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "90163175840e44796908f793612d86b090e6efec04ed7053e3966b0e0c211728",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "b82b66232819e4301e0b68f0a48aa0243ce0e82608e63bbdecec2a1f2f9d81a5",
+      "audit/registry/files.json": "8a76647388239f17cba99924b6f61a8ebcd15ab09e2e62ba460e1adb6505b76c",
       "audit/registry/rpc.json": "68f3b21f7aa0b2ef7da9b488c657c3b6b5bdde0476bf7d617f1e346cc26b4449",
       "audit/registry/runtime.json": "db3c1293c1d26fff96e8f10d130e6ef2238b96d3fbbc099f9e074be14c26bbbf"
     },
-    "sotFingerprint": "1a1fee5e6e1e"
+    "sotFingerprint": "20c0056ccaf9"
   },
   "runtime": [
     {
