@@ -85,6 +85,21 @@ test("byte-for-byte deterministic across two runs (SOURCE_DATE_EPOCH frozen)", a
   assert.equal(stableStringify(inv1), stableStringify(inv2));
 });
 
+test("generatedAt without SOURCE_DATE_EPOCH: fixed placeholder, never wall-clock (ADR-058 V1-2, as canonical.json)", async () => {
+  // Horodaté à l'horloge, l'artefact changeait à chaque régénération même à entrées
+  // identiques : un commit de date seule à chaque resync de PR, puis un conflit sur ce
+  // JSON d'une seule ligne. La version des entrées est portée par meta.inputFingerprint.
+  const saved = process.env.SOURCE_DATE_EPOCH;
+  delete process.env.SOURCE_DATE_EPOCH;
+  try {
+    const inv = await buildInventory(inputs);
+    assert.equal(inv.meta.generatedAt, "1970-01-01T00:00:00.000Z");
+  } finally {
+    if (saved === undefined) delete process.env.SOURCE_DATE_EPOCH;
+    else process.env.SOURCE_DATE_EPOCH = saved;
+  }
+});
+
 test("toolchain captured in meta (replay safety)", async () => {
   const inv = await buildInventory(inputs);
   assert.equal(inv.meta.toolchain.node, process.version);
