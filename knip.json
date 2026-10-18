@@ -24,7 +24,6 @@
         "scripts/seo/build-keyword-clusters.ts",
         "scripts/seo/export-canon-forbidden.ts",
         "scripts/seo/gsc-5xx-evidence-batch.ts",
-        "scripts/seo/inject-agent-role.ts",
         "scripts/seo/r1-readiness.ts",
         "scripts/seo/seo-r3-consolidation-evidence.ts",
         "scripts/seo/seo-readiness.ts",
