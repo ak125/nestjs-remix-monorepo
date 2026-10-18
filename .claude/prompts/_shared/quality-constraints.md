@@ -33,3 +33,8 @@ Tout contenu produit doit respecter les 5 couches de gouvernance :
 - Aucune claim sans evidence source
 - Aucune extrapolation non prouvee
 - Aucun melange de sources contradictoires sans signalement
+
+## Relecture editoriale
+
+- Relecture ou reecriture de style d'un brouillon : `.claude/prompts/_shared/editorial-review.md`
+- G2 « varier le vocabulaire » porte sur les angles, jamais sur les termes techniques

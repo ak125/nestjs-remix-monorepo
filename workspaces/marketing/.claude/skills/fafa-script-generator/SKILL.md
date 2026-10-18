@@ -67,6 +67,7 @@ description: Use when transforming a video brief (gamme, symptom, format, URL ci
 - ✅ Disclaimer présent (G2 Safety + G6 Visual Honesty)
 - ❌ Aucun prix, code promo, urgence artificielle
 - ❌ Aucune promesse absolue (« certain », « garanti »)
+- ❌ Aucun essai, client, atelier, témoignage ni expérience vécue inventés : Fafa est une IA assumée (cf. `.claude/prompts/_shared/editorial-review.md` §8 ; depuis ce workspace : `../../.claude/prompts/_shared/editorial-review.md`)
 - ❌ Si dérivé d'un pattern, cosine cible <0.5 vs script source (G5 Reuse Risk)
 - ❌ Aucune référence à la source d'inspiration dans le script final (anonymisation)
 
