@@ -6,9 +6,10 @@
  */
 
 import { execSync, execFileSync } from 'child_process';
-import { existsSync, statSync, writeFileSync, unlinkSync } from 'fs';
+import { existsSync, writeFileSync, unlinkSync } from 'fs';
 import { join } from 'path';
 import pino from 'pino';
+import { inspectVideo, type MediaInspection } from './media-inspection';
 
 const logger = pino({ name: 'FFmpegPostprocess' });
 
@@ -27,7 +28,8 @@ export interface PostprocessResult {
   codec: string;
   resolution: string;
   fileSizeBytes: number;
-  durationSecs: number | null;
+  durationSecs: number;
+  inspection: MediaInspection;
 }
 
 /**
@@ -44,7 +46,11 @@ export function resizeVideo(
   inputPath: string,
   variant: VariantSpec,
   outputSuffix: string,
+  audioRequired?: boolean,
 ): PostprocessResult {
+  const source = inspectVideo(inputPath, {
+    audio: audioRequired === undefined ? 'optional' : audioRequired ? 'required' : 'forbidden',
+  });
   ensureWorkDir();
   const outputPath = join(WORK_DIR, `${outputSuffix}-${variant.name}.mp4`);
 
@@ -68,19 +74,23 @@ export function resizeVideo(
 
   logger.info({ variant: variant.name, resolution: `${variant.width}x${variant.height}` }, 'Resizing video');
 
-  execFileSync(cmd[0], cmd.slice(1), { timeout: 300_000, stdio: 'pipe' });
-
-  const stats = statSync(outputPath);
-  const durationSecs = probeDuration(outputPath);
-
-  return {
-    name: variant.name,
-    localPath: outputPath,
-    codec: variant.codec,
-    resolution: `${variant.width}x${variant.height}`,
-    fileSizeBytes: stats.size,
-    durationSecs,
-  };
+  try {
+    execFileSync(cmd[0], cmd.slice(1), { timeout: 300_000, stdio: 'pipe' });
+    const inspection = inspectVideo(outputPath, {
+      codec: variant.codec, width: variant.width, height: variant.height,
+      fps: source.video.fps, durationSecs: source.video.durationSecs,
+      frames: source.video.frames,
+      audio: source.audio.length ? 'required' : 'forbidden', audioCodec: 'aac',
+    });
+    return {
+      name: variant.name, localPath: outputPath, codec: inspection.video.codec,
+      resolution: `${inspection.video.width}x${inspection.video.height}`,
+      fileSizeBytes: inspection.fileSizeBytes, durationSecs: inspection.durationSecs, inspection,
+    };
+  } catch (error) {
+    cleanupPostprocessFiles([outputPath]);
+    throw error;
+  }
 }
 
 /**
@@ -263,25 +273,6 @@ export function writeSrtFile(srtContent: string, outputSuffix: string): string {
   const outputPath = join(WORK_DIR, `${outputSuffix}.srt`);
   writeFileSync(outputPath, srtContent, 'utf-8');
   return outputPath;
-}
-
-/**
- * Probe duration with ffprobe.
- */
-function probeDuration(filePath: string): number | null {
-  try {
-    const out = execFileSync(
-      'ffprobe', ['-v', 'quiet', '-print_format', 'json', '-show_format', filePath],
-      { timeout: 10_000, encoding: 'utf8' },
-    );
-    const data = JSON.parse(out);
-    const raw = data?.format?.duration;
-    const duration = typeof raw === 'number' ? raw
-      : typeof raw === 'string' && /^\d+(?:\.\d+)?$/.test(raw) ? Number(raw) : NaN;
-    return Number.isFinite(duration) && duration > 0 ? duration : null;
-  } catch {
-    return null;
-  }
 }
 
 /**

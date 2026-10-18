@@ -4,9 +4,8 @@ import {
   getCompositions,
   makeCancelSignal,
 } from '@remotion/renderer';
-import { statSync, unlinkSync, readFileSync } from 'fs';
-import { execFileSync } from 'child_process';
-import { createHash } from 'crypto';
+import { statSync, unlinkSync } from 'fs';
+import { inspectVideo, type MediaInspection } from './media-inspection';
 import { join } from 'path';
 import pino from 'pino';
 import type { RenderRequest } from '../types/contract';
@@ -47,6 +46,7 @@ export interface RenderVideoResult {
   remotionVersion: string;
   durationSecs: number | null;
   checksumSha256: string;
+  inspection: MediaInspection;
 }
 
 /**
@@ -156,39 +156,22 @@ export async function renderVideo(
     });
   }
 
-  // A probe failure must not turn an unverified output into a successful render.
-  let durationSecs: number;
+  let inspection: MediaInspection;
   try {
-    const probeOut = execFileSync(
-      'ffprobe',
-      ['-v', 'error', '-print_format', 'json', '-show_format', outputLocation],
-      { timeout: 10_000, encoding: 'utf8' },
-    );
-    const probeData = JSON.parse(probeOut);
-    const rawDuration: unknown = probeData?.format?.duration;
-    durationSecs =
-      typeof rawDuration === 'number'
-        ? rawDuration
-        : typeof rawDuration === 'string' && /^\d+(\.\d+)?$/.test(rawDuration)
-          ? Number(rawDuration)
-          : NaN;
-    if (!Number.isFinite(durationSecs) || durationSecs < 0.5) {
-      throw new Error('Render duration is missing, invalid or below 0.5 seconds');
-    }
+    inspection = inspectVideo(outputLocation, {
+      codec: 'h264', width, height, fps,
+      frames: composition.durationInFrames,
+      durationSecs: request.durationSecs ?? composition.durationInFrames / fps,
+      audio: request.compositionProps?.audioUrl ? 'required' : 'forbidden',
+      audioCodec: 'aac',
+    });
   } catch (err) {
-    // The route has no localPath until this function returns. Clean up here.
     cleanupRenderFile(outputLocation);
     logger.error({ err }, 'Render output validation failed');
     throw Object.assign(new Error('Render output could not be validated'), {
-      code: 'OUTPUT_INVALID',
-      cause: err,
+      code: 'OUTPUT_INVALID', cause: err,
     });
   }
-
-  // P7b: Compute SHA256 checksum
-  const checksumSha256 = createHash('sha256')
-    .update(readFileSync(outputLocation))
-    .digest('hex');
 
   // Read remotion version from package.json
   let remotionVersion = 'unknown';
@@ -202,14 +185,15 @@ export async function renderVideo(
 
   return {
     localPath: outputLocation,
-    codec: 'h264',
-    resolution: `${width}x${height}`,
-    fps,
+    codec: inspection.video.codec,
+    resolution: `${inspection.video.width}x${inspection.video.height}`,
+    fps: inspection.video.fps,
     fileSizeBytes: stats.size,
     compositionId: composition.id,
     remotionVersion,
-    durationSecs,
-    checksumSha256,
+    durationSecs: inspection.durationSecs,
+    checksumSha256: inspection.checksumSha256,
+    inspection,
   };
 }
 

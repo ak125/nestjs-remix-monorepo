@@ -37,12 +37,15 @@ const request = {
   variants: [{ name: 'portrait', width: 1080, height: 1920 }, { name: 'square', width: 1080, height: 1080 }],
   subtitleSegments: [cue(0, 2)],
 };
+const { probeFixture } = require("./probe-fixture.cjs");
+const realRead = fs.readFileSync;
 const realStat = fs.statSync;
 const realExists = fs.existsSync;
 const output = (p) => typeof p === 'string' && p.startsWith('/tmp/postprocess/');
-let durationFor, commands, uploads, removed, writes, events;
+let transformProbe, durationFor, commands, uploads, removed, writes, events;
 beforeEach(() => {
   durationFor = () => '2.000000';
+  transformProbe = data => data;
   events = [];
   commands = [];
   const execute = (name, args) => {
@@ -50,12 +53,16 @@ beforeEach(() => {
     commands.push(command);
     if (command.includes('ffprobe')) {
       events.push('probe');
-      return Buffer.from(JSON.stringify({ format: { duration: durationFor(command) } }));
+      const duration = durationFor(command);
+      const data = probeFixture({ duration, height: command.includes('square.mp4') ? 1080 : 1920 });
+      if (duration === undefined) { delete data.format.duration; delete data.streams[0].duration; }
+      return Buffer.from(JSON.stringify(transformProbe(data, command)));
     }
     return Buffer.from('');
   };
   mock.method(cp, 'execSync', execute);
   mock.method(cp, 'execFileSync', execute);
+  mock.method(fs, 'readFileSync', (p, ...args) => output(p) ? Buffer.from('fixture') : realRead(p, ...args));
   mock.method(fs, 'statSync', (p, ...args) => output(p) ? { size: 7 } : realStat(p, ...args));
   mock.method(fs, 'existsSync', (p) => output(p) || realExists(p));
   removed = mock.method(fs, 'unlinkSync', () => {});
@@ -129,7 +136,7 @@ test('HTTP exports exact-bound subtitles only after checking every variant', asy
   assert.match(response.json().srtS3Path, /subtitles\.srt$/);
   assert.equal(uploads.mock.callCount(), 3);
   assert.equal(removed.mock.callCount(), 4);
-  assert.deepEqual(events, ['probe', 'probe', 'write', 'upload', 'upload', 'upload']);
+  assert.deepEqual(events, ['probe', 'probe', 'probe', 'probe', 'probe', 'write', 'upload', 'upload', 'upload']);
   assert.equal(writes.mock.calls[0].arguments[1], '1\n00:00:00,000 --> 00:00:02,000\nBonjour\n');
 });
 for (const subtitleSegments of [undefined, null, []]) {
@@ -141,3 +148,30 @@ for (const subtitleSegments of [undefined, null, []]) {
     assert.equal(writes.mock.callCount(), 0);
   });
 }
+
+for (const [label, mutate] of [
+  ['wrong codec', p => {p.streams[0].codec_name='mpeg4';}],
+  ['wrong resolution', p => {p.streams[0].height=720;}],
+  ['unexpected audio', p => {p.streams.push(probeFixture({duration:'2',audio:true}).streams[1]);}],
+]) {
+  test(`postprocess rejects ${label} in the last variant before all uploads`, async()=>{
+    transformProbe=(data,command)=>{if(command.includes('square.mp4'))mutate(data);return data;};
+    const response=await post(request);
+    assert.equal(response.statusCode,500);assert.equal(uploads.mock.callCount(),0);
+    assert.equal(removed.mock.callCount(),3);
+  });
+}
+test('postprocess rejects a missing merged audio track',async()=>{
+  const response=await post({...request,audioS3Key:'s3://test/voice.mp3'});
+  assert.equal(response.statusCode,500);assert.equal(uploads.mock.callCount(),0);
+});
+test('postprocess returns a per-variant measured hash and stream record',async()=>{
+  const response=await post(request);assert.equal(response.statusCode,200);
+  for(const variant of response.json().variants){
+    assert.match(variant.inspection.checksumSha256,/^[a-f0-9]{64}$/);
+    assert.equal(variant.inspection.fileSizeBytes,variant.fileSizeBytes);
+    assert.equal(variant.inspection.video.codec,variant.codec);
+    assert.equal(`${variant.inspection.video.width}x${variant.inspection.video.height}`,variant.resolution);
+    assert.deepEqual(variant.inspection.audio,[]);
+  }
+});

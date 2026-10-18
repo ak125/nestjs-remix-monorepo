@@ -21,6 +21,7 @@ import {
   cleanupPostprocessFiles,
   type PostprocessResult,
 } from '../lib/ffmpeg-postprocess';
+import { inspectVideo, type MediaInspection } from '../lib/media-inspection';
 import { uploadToS3Generic } from '../lib/s3-upload';
 
 const logger = pino({ name: 'PostprocessRoute' });
@@ -69,7 +70,8 @@ interface VariantResult {
   codec: string;
   resolution: string;
   fileSizeBytes: number;
-  durationSecs: number | null;
+  durationSecs: number;
+  inspection: MediaInspection;
 }
 
 interface PostprocessResponse {
@@ -104,6 +106,8 @@ export async function postprocessRoute(app: FastifyInstance): Promise<void> {
       // Download source video from S3
       const inputLocalPath = await downloadFromS3(req.inputS3Key, `input-${req.executionLogId}`);
       filesToCleanup.push(inputLocalPath);
+      const inputInspection = inspectVideo(inputLocalPath);
+      const audioRequired = !!req.audioS3Key || inputInspection.audio.length > 0;
 
       // Download audio if provided (for film_socle/film_gamme audio merge)
       let mergedPath = inputLocalPath;
@@ -127,13 +131,10 @@ export async function postprocessRoute(app: FastifyInstance): Promise<void> {
       const results: PostprocessResult[] = [];
       const segments = req.subtitleSegments;
       for (const variantSpec of req.variants) {
-        const result = resizeVideo(processedPath, variantSpec, `exec-${req.executionLogId}`);
+        const result = resizeVideo(processedPath, variantSpec, `exec-${req.executionLogId}`, audioRequired);
         filesToCleanup.push(result.localPath);
         results.push(result);
         if (segments && segments.length > 0) {
-          if (result.durationSecs === null) {
-            throw new Error(`Cannot validate subtitles: missing duration for ${result.name}`);
-          }
           validateSubtitleSegments(segments, result.durationSecs);
         }
       }
@@ -159,6 +160,7 @@ export async function postprocessRoute(app: FastifyInstance): Promise<void> {
           resolution: result.resolution,
           fileSizeBytes: result.fileSizeBytes,
           durationSecs: result.durationSecs,
+          inspection: result.inspection,
         });
       }
 

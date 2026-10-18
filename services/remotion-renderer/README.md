@@ -1,0 +1,41 @@
+# Renderer: local technical validation
+
+`npm test` runs the isolated regression suite. `npm run test:media` requires
+FFmpeg/ffprobe (including libx264, libx265 and AAC) and generates tiny synthetic
+clips in temporary directories. It calls no provider, object storage or database.
+`npm run build` checks TypeScript.
+
+## Bind an existing manifest to an existing MP4
+
+```sh
+npm run verify:manifest -- /absolute/render-manifest.json /absolute/render.mp4
+```
+
+This read-only command validates the existing `render-manifest` **1.0.0** subset:
+codec, dimensions, frame rate/count, duration, audio intent, actual byte count and
+SHA-256. When present, `approvalBinding.boundSha256` must bind the same file.
+Exit 0 reports `TECHNICAL_MATCH` and `humanReview: NOT_ASSESSED`; exit 1 reports
+`TECHNICAL_MISMATCH`. It never edits the manifest or grants approval.
+
+The shared inspector is also used before `/render` upload and for every resized
+variant before `/postprocess` uploads any artifact. Response `inspection` records
+measurements and SHA-256 of the inspected file. `/render` accepts MP4 only; a WebM
+request is rejected rather than silently producing MP4. Supported video codecs
+are H264 and HEVC (exposed as `h265`), with AAC for expected audio. Exactly one
+video stream and at most one audio stream are accepted. A declared audio URL
+requires an audio track; a muted manifest forbids one.
+
+Timing tolerances are one frame for video and max(100 ms, two frames) for audio
+packet padding. Missing measurements, mismatched frames/dimensions/codecs,
+unexpected tracks and inconsistent timing reject the artifact.
+
+These checks inspect container/stream metadata; they do not decode every frame,
+detect silence, establish speech intelligibility or validate visual quality.
+The real-file tests use synthetic media, not the historical pilot. SHA-256 is
+checked before and after inspection, not atomically across an eventual upload.
+The existing audio merge uses `-shortest`; variant checks compare to its processed
+input. An original-duration requirement must also be checked against the manifest.
+
+The proposed manifest 1.1.0, content-addressed storage keys and D18/D19 approval
+workflow remain outside this change pending canonical contract/owner decisions.
+No historical manifest is rewritten and no backend is activated.
