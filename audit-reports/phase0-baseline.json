@@ -1,7 +1,7 @@
 {
   "version": 1,
   "captured_at": "2026-10-18",
-  "captured_on_commit": "3eb5447fe",
+  "captured_on_commit": "fada051a5",
   "thresholds": {
     "unused_files_delta": 5,
     "unused_exports_delta": 10,
@@ -15,14 +15,14 @@
     "ast_grep_errors_delta": 0
   },
   "knip": {
-    "unused_files": 308,
-    "unused_exports": 281,
-    "unused_types": 271,
+    "unused_files": 266,
+    "unused_exports": 291,
+    "unused_types": 272,
     "unused_dependencies": 4,
     "unused_dev_dependencies": 6,
-    "unlisted_dependencies": 33,
+    "unlisted_dependencies": 36,
     "unlisted_binaries": 17,
-    "duplicate_exports": 32
+    "duplicate_exports": 41
   },
   "madge": {
     "cycles": 15,
