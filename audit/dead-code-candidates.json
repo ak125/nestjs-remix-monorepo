@@ -1,10 +1,10 @@
 {
   "_generated_by": "scripts/audit/build-deep-inventory.js",
   "note": "Candidates only. Deletion requires the full conditions (#0–#8) incl. validate-before-delete.sh + build/tests + human review.",
-  "count": 244,
+  "count": 298,
   "by_confidence": {
     "high": 12,
-    "medium": 152,
+    "medium": 206,
     "low": 80
   },
   "candidates": [
@@ -4075,6 +4075,924 @@
       "path": "packages/design-tokens/src/types.ts",
       "domain": "pkg-design-tokens",
       "kind": "other",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/audit/__fixtures__/repo-broken/.dependency-cruiser.generated.cjs",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/audit/__fixtures__/repo-ok/.dependency-cruiser.generated.cjs",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/audit/codemod-ai-color-palette.mjs",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/audit/codemod-pure-black-white.mjs",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/audit/codemod-side-tab.mjs",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/audit/impeccable-baseline-write.mjs",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/audit/pricing-profitability-projection.ts",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/audit/r2-eligibility-calibration.ts",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/audit/r2-modele-family-audit.ts",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/audit/render-dependency-modernization-matrix.ts",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/auto-migrate-design-system.js",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/check-missing-vehicle-images.ts",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/ci/prod-admin-guard-probe.mjs",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/ci/sample-smoke-urls.ts",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/clean-seo-database.js",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/convert-logos.js",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/get-oem-audi.js",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/governance/validate-role-coherence.js",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/import-keyword-json.ts",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/import-keyword-volume.ts",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/insert-missing-keywords.ts",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/marketing/export-publish-queue.ts",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/marketing/generate-copy-batch.ts",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/marketing/generate-weekly-plan.ts",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/marketing/run-reactivation-pilot.ts",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/marketing/simulation-no-network.cjs",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/mcp-server/server.js",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/seo/audit-cross-gamme-overlap.ts",
+      "domain": "seo",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/seo/backfill-vehicle-page-cache.ts",
+      "domain": "seo",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/seo/build-keyword-clusters.ts",
+      "domain": "seo",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/seo/export-canon-forbidden.ts",
+      "domain": "seo",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/seo/gsc-5xx-evidence-batch.ts",
+      "domain": "seo",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/seo/inject-agent-role.ts",
+      "domain": "seo",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/seo/r1-readiness.ts",
+      "domain": "seo",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/seo/seo-r3-consolidation-evidence.ts",
+      "domain": "seo",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/seo/seo-readiness.ts",
+      "domain": "seo",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/testing/check-breadcrumb.js",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/ui-audit/analyzer/file-parser.ts",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/ui-audit/cli.ts",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/ui-audit/contracts.ts",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/ui-audit/evaluators/rule-evaluator.ts",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/ui-audit/evaluators/scoring-engine.ts",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/ui-audit/generators/audit-md.ts",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/ui-audit/generators/scores.ts",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/ui-audit/generators/tree-output.ts",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/ui-audit/index.ts",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/ui-audit/rules/hard-rules.ts",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/ui-audit/rules/soft-rules.ts",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/ui-governance/rules.ts",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/validate-gamme-schema.ts",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/verify-supabase-images.js",
+      "domain": "scripts",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/wiki/print-diag-canon-jsonschema.ts",
+      "domain": "wiki",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/wiki/validate-proposal.ts",
+      "domain": "wiki",
+      "kind": "script",
+      "confidence": "medium",
+      "derived_from": [
+        "knip",
+        "depcruise-no-dependents"
+      ],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "scripts/wiki/verify-diag-canon-parse.ts",
+      "domain": "wiki",
+      "kind": "script",
       "confidence": "medium",
       "derived_from": [
         "knip",

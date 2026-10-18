@@ -13,7 +13,7 @@
 
 ## Input Fingerprint (sha256)
 
-- `deadCodeCandidates`: `cca71e3f67a446bacec5cf7436fb6946f637fa9338f7337a2f6c1ed84fbc60c6`
+- `deadCodeCandidates`: `10670f6824d140c9da4666cf2aca1d366848c1c5e83096806ddbaa3b324aca97`
 - `canonical`: `a06ebd17c3081f59bb8c701c2b972efb75c10bafcfe1aa9d1b3bad041c70b8d1`
 - `ownershipYaml`: `f5e3af9f51963906b209979eab5ba317a31b0d7ecb78bf27af96eac2a1acad56`
 - `contractHealth`: `<none>`
@@ -22,11 +22,11 @@
 
 ## Counts
 
-- Total: **244**
-- By confidence: high=12 · medium=152 · low=80
-- By decision: candidate=164 · blocked=80 · excluded=0
+- Total: **298**
+- By confidence: high=12 · medium=206 · low=80
+- By decision: candidate=218 · blocked=80 · excluded=0
 
-## candidate (164)
+## candidate (218)
 
 ### candidate · high (12)
 
@@ -45,7 +45,7 @@
 | `frontend/app/utils/storage.ts` | frontend-shared | other | high | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `frontend/app/utils/supabase-storage.ts` | frontend-shared | other | high | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 
-### candidate · medium (152)
+### candidate · medium (206)
 
 | Path | Domain | Kind | Confidence | Status | importedBy | Rationale |
 |---|---|---|---|---|---:|---|
@@ -201,6 +201,60 @@
 | `frontend/app/utils/api.ts` | frontend-shared | other | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `packages/design-tokens/src/generated.ts` | pkg-design-tokens | other | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 | `packages/design-tokens/src/types.ts` | pkg-design-tokens | other | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/audit/__fixtures__/repo-broken/.dependency-cruiser.generated.cjs` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/audit/__fixtures__/repo-ok/.dependency-cruiser.generated.cjs` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/audit/codemod-ai-color-palette.mjs` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/audit/codemod-pure-black-white.mjs` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/audit/codemod-side-tab.mjs` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/audit/impeccable-baseline-write.mjs` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/audit/pricing-profitability-projection.ts` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/audit/r2-eligibility-calibration.ts` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/audit/r2-modele-family-audit.ts` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/audit/render-dependency-modernization-matrix.ts` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/auto-migrate-design-system.js` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/check-missing-vehicle-images.ts` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/ci/prod-admin-guard-probe.mjs` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/ci/sample-smoke-urls.ts` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/clean-seo-database.js` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/convert-logos.js` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/get-oem-audi.js` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/governance/validate-role-coherence.js` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/import-keyword-json.ts` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/import-keyword-volume.ts` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/insert-missing-keywords.ts` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/marketing/export-publish-queue.ts` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/marketing/generate-copy-batch.ts` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/marketing/generate-weekly-plan.ts` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/marketing/run-reactivation-pilot.ts` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/marketing/simulation-no-network.cjs` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/mcp-server/server.js` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/seo/audit-cross-gamme-overlap.ts` | seo | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/seo/backfill-vehicle-page-cache.ts` | seo | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/seo/build-keyword-clusters.ts` | seo | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/seo/export-canon-forbidden.ts` | seo | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/seo/gsc-5xx-evidence-batch.ts` | seo | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/seo/inject-agent-role.ts` | seo | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/seo/r1-readiness.ts` | seo | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/seo/seo-r3-consolidation-evidence.ts` | seo | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/seo/seo-readiness.ts` | seo | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/testing/check-breadcrumb.js` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/ui-audit/analyzer/file-parser.ts` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/ui-audit/cli.ts` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/ui-audit/contracts.ts` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/ui-audit/evaluators/rule-evaluator.ts` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/ui-audit/evaluators/scoring-engine.ts` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/ui-audit/generators/audit-md.ts` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/ui-audit/generators/scores.ts` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/ui-audit/generators/tree-output.ts` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/ui-audit/index.ts` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/ui-audit/rules/hard-rules.ts` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/ui-audit/rules/soft-rules.ts` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/ui-governance/rules.ts` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/validate-gamme-schema.ts` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/verify-supabase-images.js` | scripts | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/wiki/print-diag-canon-jsonschema.ts` | wiki | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/wiki/validate-proposal.ts` | wiki | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
+| `scripts/wiki/verify-diag-canon-parse.ts` | wiki | script | medium | UNKNOWN | 0 | Snapshot evidence: c0-c3 OK + importedBy=0 + deletePolicy!=LOCKED + not protected + no retain verdict. Active runtime check deferred to PR-8b. |
 
 ### candidate · low (0)
 
