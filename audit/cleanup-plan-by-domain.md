@@ -14,14 +14,14 @@ Each PR ends with `npm run audit:inventory` + `npm run audit:baseline:refresh` c
 
 ## PR-2 — Cleanup non ambigu hors runtime  *(small, do first)*
 
-knip does **not** flag `scripts/ui-audit/*` as unused (it's reachable via `knip.json`'s `scripts/**` entries), so the plan's original "scripts/ui-audit" target doesn't apply. What's left:
+**Correction 2026-10-18**: `knip.json` used to declare every root `scripts/**` file as an entry point, so no root script could ever look unused. That entry is gone: knip now lists the root scripts it cannot reach (54 on 2026-10-18, `scripts/ui-audit/*` included) in `dead-code-candidates.json`. They are `confidence: medium` at best, because dependency-cruiser only scans `backend/src` and `frontend/app`. knip does not see a script launched by a workflow, a test or an outside tool: condition #5 of `validate-before-delete.sh` blocks those before any `git rm`. What's left:
 
 - `__regression__/seo-role-canon-guard.regression.ts.disabled` — explicit `.disabled` file; confirm nothing references it, then `git rm`.
 - `.claude/settings.local.json.bak` — already gitignored (`.claude/*.bak`); not tracked → nothing to do unless it got committed somewhere.
 - Old Python agents `ai-agents-python/` — **correction 2026-10-17**: the tree was gitignored but still tracked (55 files, force-added). No runner, cron, script, workflow or Docker use found (the image excludes it via `.dockerignore`); removed on 2026-10-17. History keeps the code.
-- Anything else surfacing as `confidence: high` under `scripts/` in a future `dead-code-candidates.json` (currently **0**).
+- The root scripts listed under `scripts/` in `dead-code-candidates.json` (54 `medium`, 0 `high` on 2026-10-18). Review them one by one through conditions #0–#8: some are run by a workflow or a test and must stay.
 
-→ PR-2 is essentially empty today. Skip it or fold the one `.disabled` file into PR-3.
+→ PR-2 now has a real list: the unreachable root scripts above.
 
 ## PR-3 — Backend NestJS-aware
 
