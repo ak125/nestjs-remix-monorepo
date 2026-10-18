@@ -49,6 +49,7 @@
         "runtime:backend/src/modules/config/config.module.ts",
         "runtime:backend/src/modules/dashboard/dashboard.module.ts",
         "runtime:backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+        "runtime:backend/src/modules/diagnostic-engine/projection/diagnostic-projection.module.ts",
         "runtime:backend/src/modules/errors/errors.module.ts",
         "runtime:backend/src/modules/gamme-rest/gamme-rest.module.ts",
         "runtime:backend/src/modules/health/health.module.ts",
@@ -67,6 +68,7 @@
         "runtime:backend/src/modules/promo/promo.module.ts",
         "runtime:backend/src/modules/rag-knowledge-bootstrap/rag-knowledge-bootstrap.module.ts",
         "runtime:backend/src/modules/rag-proxy/rag-proxy.module.ts",
+        "runtime:backend/src/modules/rm/rm.module.ts",
         "runtime:backend/src/modules/search/search.module.ts",
         "runtime:backend/src/modules/seo-control-plane/seo-control-plane.module.ts",
         "runtime:backend/src/modules/seo-control-plane/synthetic-probe-credential.module.ts",
@@ -339,10 +341,21 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [],
+      "dependsOn": [
+        "runtime:backend/src/common/pipes/params/positive-int-param.pipe.ts"
+      ],
       "id": "runtime:backend/src/common/pipes/params/params-pipes.module.ts",
       "kind": "nestjs-module",
       "path": "backend/src/common/pipes/params/params-pipes.module.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
+      "id": "runtime:backend/src/common/pipes/params/positive-int-param.pipe.ts",
+      "kind": "other",
+      "path": "backend/src/common/pipes/params/positive-int-param.pipe.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
@@ -643,6 +656,7 @@
         "runtime:backend/src/modules/admin/controllers/configuration.controller.ts",
         "runtime:backend/src/modules/admin/controllers/control-plane.controller.ts",
         "runtime:backend/src/modules/admin/controllers/governance-matrix.controller.ts",
+        "runtime:backend/src/modules/admin/controllers/internal-command-center.controller.ts",
         "runtime:backend/src/modules/admin/controllers/internal-enrich.controller.ts",
         "runtime:backend/src/modules/admin/controllers/internal-pipeline.controller.ts",
         "runtime:backend/src/modules/admin/controllers/internal-seo-audit.controller.ts",
@@ -660,6 +674,7 @@
         "runtime:backend/src/modules/admin/services/buying-guide-enricher.service.ts",
         "runtime:backend/src/modules/admin/services/canon-observability.service.ts",
         "runtime:backend/src/modules/admin/services/command-center-actions.service.ts",
+        "runtime:backend/src/modules/admin/services/command-center-kpi.service.ts",
         "runtime:backend/src/modules/admin/services/command-center-orchestrator/execution-ledger.service.ts",
         "runtime:backend/src/modules/admin/services/command-center-orchestrator/orchestrator.service.ts",
         "runtime:backend/src/modules/admin/services/command-center-orchestrator/regen-artifact.executor.ts",
@@ -1042,6 +1057,18 @@
     {
       "dependsOn": [
         "runtime:backend/src/auth/internal-api-key.guard.ts",
+        "runtime:backend/src/modules/admin/services/command-center-reader.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/admin/controllers/internal-command-center.controller.ts",
+      "kind": "nestjs-controller",
+      "path": "backend/src/modules/admin/controllers/internal-command-center.controller.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/auth/internal-api-key.guard.ts",
         "runtime:backend/src/modules/admin/services/buying-guide-enricher.service.ts",
         "runtime:backend/src/modules/admin/services/gamme-aggregator.service.ts",
         "runtime:backend/src/modules/admin/services/quality-scoring-engine.service.ts"
@@ -1283,6 +1310,15 @@
     },
     {
       "dependsOn": [],
+      "id": "runtime:backend/src/modules/admin/services/command-center-kpi.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/admin/services/command-center-kpi.service.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
       "id": "runtime:backend/src/modules/admin/services/command-center-orchestrator/execution-ledger.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/admin/services/command-center-orchestrator/execution-ledger.service.ts",
@@ -1323,7 +1359,8 @@
     {
       "dependsOn": [
         "runtime:backend/src/cache/cache.service.ts",
-        "runtime:backend/src/modules/admin/services/command-center-actions.service.ts"
+        "runtime:backend/src/modules/admin/services/command-center-actions.service.ts",
+        "runtime:backend/src/modules/admin/services/command-center-kpi.service.ts"
       ],
       "id": "runtime:backend/src/modules/admin/services/command-center-reader.service.ts",
       "kind": "nestjs-service",
@@ -1379,7 +1416,6 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/config/feature-flags.service.ts",
         "runtime:backend/src/modules/admin/services/buying-guide-enricher.service.ts",
         "runtime:backend/src/modules/admin/services/r2-enricher.service.ts",
         "runtime:backend/src/modules/admin/services/r4-content-enricher.service.ts",
@@ -1898,7 +1934,8 @@
         "runtime:backend/src/database/database.module.ts",
         "runtime:backend/src/modules/analytics/controllers/landing-attribution.controller.ts",
         "runtime:backend/src/modules/analytics/controllers/simple-analytics.controller.ts",
-        "runtime:backend/src/modules/analytics/services/simple-analytics.service.ts"
+        "runtime:backend/src/modules/analytics/services/simple-analytics.service.ts",
+        "runtime:backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts"
       ],
       "id": "runtime:backend/src/modules/analytics/analytics.module.ts",
       "kind": "nestjs-module",
@@ -1932,6 +1969,15 @@
       "id": "runtime:backend/src/modules/analytics/services/simple-analytics.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/analytics/services/simple-analytics.service.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
+      "id": "runtime:backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
@@ -2977,6 +3023,7 @@
         "runtime:backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
         "runtime:backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
         "runtime:backend/src/modules/diagnostic-engine/services/diagnostic-content.service.ts",
+        "runtime:backend/src/modules/diagnostic-engine/services/diagnostic-provenance.service.ts",
         "runtime:backend/src/modules/diagnostic-engine/services/diagnostic-resolution-pipeline.service.ts",
         "runtime:backend/src/modules/diagnostic-engine/services/human-escalation-builder.service.ts",
         "runtime:backend/src/modules/diagnostic-engine/services/intent-classifier.service.ts",
@@ -3001,6 +3048,7 @@
         "runtime:backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts",
         "runtime:backend/src/modules/diagnostic-engine/engines/risk-safety.engine.ts",
         "runtime:backend/src/modules/diagnostic-engine/engines/signal-interpretation.engine.ts",
+        "runtime:backend/src/modules/diagnostic-engine/services/diagnostic-provenance.service.ts",
         "runtime:backend/src/modules/diagnostic-engine/services/kg-shadow.service.ts"
       ],
       "id": "runtime:backend/src/modules/diagnostic-engine/diagnostic-engine.orchestrator.ts",
@@ -3069,6 +3117,68 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/config/feature-flags.service.ts",
+        "runtime:backend/src/modules/diagnostic-engine/projection/diagnostic-projection-scheduler.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/diagnostic-engine/projection/diagnostic-projection-admin.controller.ts",
+      "kind": "nestjs-controller",
+      "path": "backend/src/modules/diagnostic-engine/projection/diagnostic-projection-admin.controller.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/config/feature-flags.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/diagnostic-engine/projection/diagnostic-projection-scheduler.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/diagnostic-engine/projection/diagnostic-projection-scheduler.service.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts"
+      ],
+      "id": "runtime:backend/src/modules/diagnostic-engine/projection/diagnostic-projection-writer.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/diagnostic-engine/projection/diagnostic-projection-writer.service.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/database/database.module.ts",
+        "runtime:backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts",
+        "runtime:backend/src/modules/diagnostic-engine/projection/diagnostic-projection-admin.controller.ts",
+        "runtime:backend/src/modules/diagnostic-engine/projection/diagnostic-projection-scheduler.service.ts",
+        "runtime:backend/src/modules/diagnostic-engine/projection/diagnostic-projection-writer.service.ts",
+        "runtime:backend/src/modules/diagnostic-engine/projection/diagnostic-projection.processor.ts"
+      ],
+      "id": "runtime:backend/src/modules/diagnostic-engine/projection/diagnostic-projection.module.ts",
+      "kind": "nestjs-module",
+      "path": "backend/src/modules/diagnostic-engine/projection/diagnostic-projection.module.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/config/feature-flags.service.ts",
+        "runtime:backend/src/modules/diagnostic-engine/projection/diagnostic-projection-writer.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/diagnostic-engine/projection/diagnostic-projection.processor.ts",
+      "kind": "worker",
+      "path": "backend/src/modules/diagnostic-engine/projection/diagnostic-projection.processor.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
         "runtime:backend/src/modules/diagnostic-engine/services/intent-classifier.service.ts"
       ],
       "id": "runtime:backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
@@ -3089,6 +3199,18 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/config/feature-flags.service.ts",
+        "runtime:backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts"
+      ],
+      "id": "runtime:backend/src/modules/diagnostic-engine/services/diagnostic-provenance.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/diagnostic-engine/services/diagnostic-provenance.service.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
         "runtime:backend/src/modules/diagnostic-engine/services/action-recommender.service.ts",
         "runtime:backend/src/modules/diagnostic-engine/services/human-escalation-builder.service.ts",
         "runtime:backend/src/modules/diagnostic-engine/services/intent-classifier.service.ts",
@@ -3103,7 +3225,9 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [],
+      "dependsOn": [
+        "runtime:backend/src/modules/diagnostic-engine/services/intent-classifier.service.ts"
+      ],
       "id": "runtime:backend/src/modules/diagnostic-engine/services/human-escalation-builder.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/diagnostic-engine/services/human-escalation-builder.service.ts",
@@ -3326,8 +3450,7 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/modules/catalog/services/unified-page-data.service.ts",
-        "runtime:backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts"
+        "runtime:backend/src/modules/catalog/services/unified-page-data.service.ts"
       ],
       "id": "runtime:backend/src/modules/gamme-rest/services/gamme-page-data.service.ts",
       "kind": "nestjs-service",
@@ -3337,7 +3460,17 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [],
+      "dependsOn": [
+        "runtime:backend/src/modules/gamme-rest/services/buying-guide-data.service.ts",
+        "runtime:backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts",
+        "runtime:backend/src/modules/gamme-rest/services/gamme-rpc.service.ts",
+        "runtime:backend/src/modules/gamme-rest/services/r1-related-resources.service.ts",
+        "runtime:backend/src/modules/seo/registries/seo-feature-flag.registry.ts",
+        "runtime:backend/src/modules/seo/services/chain/seo-chain-orchestrator.service.ts",
+        "runtime:backend/src/modules/seo/services/r6-guide-link-policy.service.ts",
+        "runtime:backend/src/modules/seo/services/reference.service.ts",
+        "runtime:backend/src/modules/seo/services/seo-title-engine.service.ts"
+      ],
       "id": "runtime:backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
@@ -3741,8 +3874,7 @@
     {
       "dependsOn": [
         "runtime:backend/src/modules/marketing/services/marketing-data.service.ts",
-        "runtime:backend/src/modules/marketing/services/marketing-hub-data.service.ts",
-        "runtime:backend/src/modules/marketing/services/utm-builder.service.ts"
+        "runtime:backend/src/modules/marketing/services/marketing-hub-data.service.ts"
       ],
       "id": "runtime:backend/src/modules/marketing/services/weekly-plan-generator.service.ts",
       "kind": "nestjs-service",
@@ -4165,8 +4297,18 @@
       "status": "LIVE"
     },
     {
+      "dependsOn": [],
+      "id": "runtime:backend/src/modules/observability/diagnostic-provenance-metrics.listener.ts",
+      "kind": "other",
+      "path": "backend/src/modules/observability/diagnostic-provenance-metrics.listener.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
       "dependsOn": [
         "runtime:backend/src/modules/observability/diagnostic-kg-shadow-metrics.listener.ts",
+        "runtime:backend/src/modules/observability/diagnostic-provenance-metrics.listener.ts",
         "runtime:backend/src/modules/observability/prometheus.controller.ts",
         "runtime:backend/src/modules/observability/vehicle-context-metrics.listener.ts"
       ],
@@ -5050,9 +5192,7 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [
-        "runtime:backend/src/modules/rag-proxy/services/rag-foundation-gate.service.ts"
-      ],
+      "dependsOn": [],
       "id": "runtime:backend/src/modules/rag-proxy/services/rag-admissibility-gate.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/rag-proxy/services/rag-admissibility-gate.service.ts",
@@ -5161,7 +5301,6 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/modules/rag-proxy/services/frontmatter-validator.service.ts",
         "runtime:backend/src/modules/rag-proxy/services/rag-fingerprint.service.ts",
         "runtime:backend/src/modules/rag-proxy/services/rag-foundation-gate.service.ts",
         "runtime:backend/src/modules/rag-proxy/services/rag-gamme-detection.service.ts"
@@ -5236,10 +5375,61 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [],
+      "dependsOn": [
+        "runtime:backend/src/modules/rm/services/rm-alternatives.service.ts",
+        "runtime:backend/src/modules/rm/services/rm-builder.service.ts",
+        "runtime:backend/src/modules/rm/services/rm-soft404-tracker.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/rm/controllers/rm.controller.ts",
+      "kind": "nestjs-controller",
+      "path": "backend/src/modules/rm/controllers/rm.controller.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/database/database.module.ts",
+        "runtime:backend/src/modules/catalog/catalog.module.ts",
+        "runtime:backend/src/modules/rm/controllers/rm.controller.ts",
+        "runtime:backend/src/modules/rm/services/rm-alternatives.service.ts",
+        "runtime:backend/src/modules/rm/services/rm-builder.service.ts",
+        "runtime:backend/src/modules/rm/services/rm-soft404-tracker.service.ts",
+        "runtime:backend/src/modules/seo-shadow-observatory/seo-shadow-observatory.module.ts"
+      ],
       "id": "runtime:backend/src/modules/rm/rm.module.ts",
       "kind": "nestjs-module",
       "path": "backend/src/modules/rm/rm.module.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
+      "id": "runtime:backend/src/modules/rm/services/rm-alternatives.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/rm/services/rm-alternatives.service.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/modules/catalog/services/seo-template.service.ts",
+        "runtime:backend/src/modules/seo-shadow-observatory/seo-shadow-observatory.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/rm/services/rm-builder.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/rm/services/rm-builder.service.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
+      "id": "runtime:backend/src/modules/rm/services/rm-soft404-tracker.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/rm/services/rm-soft404-tracker.service.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
@@ -6115,6 +6305,7 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/config/feature-flags.service.ts",
         "runtime:backend/src/modules/seo-projection/seo-projection-gate.service.ts"
       ],
       "id": "runtime:backend/src/modules/seo-projection/seo-projection-writer.service.ts",
@@ -6947,7 +7138,10 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [],
+      "dependsOn": [
+        "runtime:backend/src/modules/seo/services/chain/seo-ariane-breadcrumb.service.ts",
+        "runtime:backend/src/modules/seo/services/chain/seo-switch-selector.service.ts"
+      ],
       "id": "runtime:backend/src/modules/seo/services/chain/seo-content-block-builder.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/seo/services/chain/seo-content-block-builder.service.ts",

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 import type { SurfaceKey } from '@repo/seo-role-contracts';
 
@@ -37,7 +37,6 @@ export class SeoShadowChainTimeoutError extends Error {
  */
 @Injectable()
 export class SeoShadowChainRunner {
-  private readonly logger = new Logger(SeoShadowChainRunner.name);
   private static readonly TIMEOUT_MS = 2_000;
   private static readonly BASE_URL = 'https://www.automecanik.com';
 

@@ -386,6 +386,35 @@ export class FeatureFlagsService {
     return this.bool('DIAGNOSTIC_PIPELINE_V1_ENABLED', false);
   }
 
+  /**
+   * Projection WIKI `exports/diagnostic/` → `__diag_link_provenance` (ADR-035 D5).
+   * Default `false` : l'activation d'un environnement est une décision owner.
+   * Environnement seulement : la clé n'est pas dans `ALLOWED_KEYS`, aucun
+   * override admin ne l'allume. Lue au boot par le scheduler (enregistre ou
+   * retire le repeatable nocturne) et revérifiée à chaque job.
+   */
+  get diagnosticProjectionEnabled(): boolean {
+    return this.bool('DIAGNOSTIC_PROJECTION_ENABLED', false);
+  }
+
+  /**
+   * Lit la provenance WIKI des liens et l'expose dans le pack de preuves
+   * (information, pas pondération : le classement ne change pas). Calcule
+   * l'écart de rang du mode primaire sans l'appliquer. Default `false`.
+   */
+  get diagnosticProvenanceExposeEnabled(): boolean {
+    return this.bool('DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED', false);
+  }
+
+  /**
+   * Classe par `diagnostic_safe` (100 par contribution sûre, 0 sinon). Effectif
+   * seulement avec `DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED` : sans exposition, le
+   * rang dépendrait d'une information invisible. Default `false`.
+   */
+  get diagnosticProvenancePrimaryEnabled(): boolean {
+    return this.bool('DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED', false);
+  }
+
   // ── Write Guard flags (P1.5) ──
 
   get writeGuardEnabled(): boolean {
@@ -464,6 +493,8 @@ export class FeatureFlagsService {
     'DIAGNOSTIC_KG_SHADOW_ENABLED',
     'DIAGNOSTIC_KG_PRIMARY_ENABLED',
     'DIAGNOSTIC_PIPELINE_V1_ENABLED',
+    'DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED',
+    'DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED',
     'SHOW_ACCESSORY_BLOCKS_ON_R2',
   ]);
 

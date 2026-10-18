@@ -6,7 +6,7 @@
  * 📊 TRACKING: Intégration du hook useSeoLinkTracking pour analytics
  */
 
-import React, { useEffect, memo } from "react";
+import { useEffect, memo } from "react";
 import { Link } from "react-router";
 
 import { useSeoLinkTracking } from "../../hooks/useSeoLinkTracking";

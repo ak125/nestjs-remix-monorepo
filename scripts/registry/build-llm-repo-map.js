@@ -15,7 +15,8 @@
  * Structure of REPO_MAP.md :
  *   - Frontmatter YAML (title, kind=registry-index, source, source_sha256,
  *     schema_version, do_not_edit)
- *   - Section per domain D1..D15 (skip empty domains)
+ *   - Section per domain declared in domains.yaml or present in the data
+ *     (skip empty domains, listed by id), UNKNOWN last
  *   - Per domain : owners, file counts by kind, table counts, RPC counts,
  *     links to .claude/knowledge/modules/*.md when matching
  *
@@ -29,6 +30,7 @@
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
+const yaml = require("js-yaml");
 const {
   MONOREPO_ROOT,
   REGISTRY_DIR,
@@ -47,30 +49,57 @@ const KNOWLEDGE_MODULES_DIR = path.join(
   "modules"
 );
 
-// Human-readable names per domain (mirror .spec/00-canon/repository-registry/domains.yaml)
-const DOMAIN_NAMES = {
-  D1: "Catalog Core",
-  D2: "Legacy / XTR Migration",
-  D3: "SEO & Sitemap",
-  D4: "Vehicle / Compatibility",
-  D5: "Blog / Content",
-  D6: "RAG & AI Engine",
-  D7: "Knowledge Graph & Diagnostic",
-  D8: "Read Model / Serving (RM)",
-  D9: "Import / ETL / Normalisation",
-  D10: "Quality, Monitoring & Observabilité",
-  D11: "Commerce & Users",
-  D12: "Marketing & Video",
-  D13: "Config & System",
-  D14: "Gamme Aggregates & V-Level",
-  D15: "Security & Governance",
-  UNKNOWN: "Unknown (overlay non résolu)",
-};
+// Domain ids + names come from the Layer 2 overlay (single source). A hardcoded
+// D1..D15 mirror used to drop D16 silently: grouped, never rendered.
+const DOMAINS_YAML_PATH = path.join(
+  MONOREPO_ROOT,
+  ".spec",
+  "00-canon",
+  "repository-registry",
+  "domains.yaml"
+);
+const UNKNOWN_DOMAIN = "UNKNOWN";
+const UNKNOWN_NAME = "Unknown (overlay non résolu)";
 
-const DOMAIN_ORDER = [
-  "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8",
-  "D9", "D10", "D11", "D12", "D13", "D14", "D15", "UNKNOWN",
-];
+function loadDomainCatalog(filePath = DOMAINS_YAML_PATH) {
+  const doc = yaml.load(fs.readFileSync(filePath, "utf8"));
+  const entries = (doc && doc.entries) || [];
+  if (entries.length === 0) throw new Error(`${filePath}: no domain entries`);
+  return entries.map((e) => ({ id: String(e.id), name: String(e.name) }));
+}
+
+function domainRank(id) {
+  const m = /^D(\d+)$/.exec(id);
+  return m ? Number(m[1]) : Number.MAX_SAFE_INTEGER;
+}
+
+function compareDomainIds(a, b) {
+  return domainRank(a) - domainRank(b) || (a < b ? -1 : a > b ? 1 : 0);
+}
+
+// Total order over declared domains ∪ domains carrying data: declared first
+// (numeric), then ids absent from domains.yaml, UNKNOWN always last.
+function orderDomainIds(groups, catalog) {
+  const declared = new Set(catalog.map((d) => d.id));
+  const ids = new Set([...declared, ...Object.keys(groups)]);
+  ids.delete(UNKNOWN_DOMAIN);
+  const sorted = [...ids].sort(
+    (a, b) =>
+      Number(!declared.has(a)) - Number(!declared.has(b)) || compareDomainIds(a, b)
+  );
+  return [...sorted, UNKNOWN_DOMAIN];
+}
+
+function domainName(id, catalog) {
+  if (id === UNKNOWN_DOMAIN) return UNKNOWN_NAME;
+  const entry = catalog.find((d) => d.id === id);
+  return entry ? entry.name : `${id} (absent de domains.yaml)`;
+}
+
+function domainRangeLabel(catalog) {
+  const ids = catalog.map((d) => d.id).sort(compareDomainIds);
+  return ids.length > 1 ? `${ids[0]}..${ids[ids.length - 1]}` : ids[0];
+}
 
 function listKnowledgeModules() {
   if (!fs.existsSync(KNOWLEDGE_MODULES_DIR)) return new Set();
@@ -83,9 +112,6 @@ function listKnowledgeModules() {
 
 function groupByDomain(canonical) {
   const groups = {};
-  for (const id of DOMAIN_ORDER) {
-    groups[id] = { files: [], tables: [], rpc: [], runtime: [] };
-  }
   for (const f of canonical.files) {
     if (!groups[f.domain]) groups[f.domain] = { files: [], tables: [], rpc: [], runtime: [] };
     groups[f.domain].files.push(f);
@@ -146,8 +172,7 @@ function knowledgeLinkForDomain(domainId, files, knownModules) {
     .join(", ");
 }
 
-function renderDomainSection(domainId, group, knownModules) {
-  const name = DOMAIN_NAMES[domainId] || domainId;
+function renderDomainSection(domainId, name, group, knownModules) {
   const fileCount = group.files.length;
   const tableCount = group.tables.length;
   const rpcCount = group.rpc.length;
@@ -190,9 +215,10 @@ function renderDomainSection(domainId, group, knownModules) {
   return section + "\n";
 }
 
-function renderRepoMap(canonical, sourceSha) {
+function renderRepoMap(canonical, sourceSha, catalog = loadDomainCatalog()) {
   const knownModules = listKnowledgeModules();
   const groups = groupByDomain(canonical);
+  const range = domainRangeLabel(catalog);
 
   const totalFiles = canonical.files.length;
   const totalTables = canonical.db.tables.length;
@@ -230,15 +256,26 @@ function renderRepoMap(canonical, sourceSha) {
   body += `| Runtime entrypoints (Layer 1) | ${totalRuntime} |\n`;
   body += `\nSource sotFingerprint: \`${canonical.meta.sotFingerprint}\`.\n\n`;
   body += `## Comment l'utiliser\n\n`;
-  body += `1. Identifier le **domaine** D1..D15 (voir ci-dessous)\n`;
+  body += `1. Identifier le **domaine** ${range} (voir ci-dessous)\n`;
   body += `2. Lire \`audit/registry/canonical.json\` pour la query précise (programmatique)\n`;
   body += `3. Lire \`.claude/knowledge/modules/<module>.md\` pour la prose détaillée\n`;
   body += `4. Fall-back grep si question hors registry\n\n`;
-  body += `## Domaines (D1..D15 + UNKNOWN)\n\n`;
+  body += `## Domaines (${range} + UNKNOWN)\n\n`;
 
-  for (const domainId of DOMAIN_ORDER) {
+  const empty = [];
+  for (const domainId of orderDomainIds(groups, catalog)) {
     const group = groups[domainId] || { files: [], tables: [], rpc: [], runtime: [] };
-    body += renderDomainSection(domainId, group, knownModules);
+    const section = renderDomainSection(
+      domainId,
+      domainName(domainId, catalog),
+      group,
+      knownModules
+    );
+    if (!section && domainId !== UNKNOWN_DOMAIN) empty.push(domainId);
+    body += section;
+  }
+  if (empty.length > 0) {
+    body += `> Déclarés dans domains.yaml sans aucune entrée : ${empty.join(", ")}.\n\n`;
   }
 
   body += `## Voir aussi\n\n`;
@@ -286,4 +323,10 @@ if (require.main === module) {
   }
 }
 
-module.exports = { main, renderRepoMap, groupByDomain };
+module.exports = {
+  main,
+  renderRepoMap,
+  groupByDomain,
+  loadDomainCatalog,
+  orderDomainIds,
+};

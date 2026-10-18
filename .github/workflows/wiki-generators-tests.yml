@@ -1,0 +1,54 @@
+name: wiki-generators-tests
+
+# Tests pytest des générateurs RAW/WIKI (scripts/wiki-generators/).
+# Hors ligne : aucune base, aucun checkout RAW ni WIKI, aucune écriture.
+# Python 3.12 = celui qui exécute ces générateurs sur DEV.
+
+on:
+  pull_request:
+    paths:
+      - "scripts/wiki-generators/**/*.py"
+      - ".github/workflows/wiki-generators-tests.yml"
+  push:
+    branches: [main]
+    paths:
+      - "scripts/wiki-generators/**/*.py"
+      - ".github/workflows/wiki-generators-tests.yml"
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  pytest:
+    name: pytest wiki-generators (tests hermétiques)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Install deps
+        run: |
+          python -m pip install \
+            'pyyaml>=6.0,<7' \
+            'pytest>=7.4,<9'
+
+      # test_promote_raw_gammes_to_wiki.py n'est pas hermétique : il lit les fiches du checkout
+      # RAW privé (AUTOMECANIK_RAW_PATH) et importe jsonschema. Verdict sans exclusion, mesuré
+      # dans un environnement équivalent à ce runner (jsonschema ajouté) : 22 échecs, tous dus
+      # au checkout RAW absent (21 « FileNotFoundError: RAW gamme not found », 1 corpus web
+      # vide). Il passe sur DEV, où RAW est présent. Le rendre hermétique relève d'une PR
+      # séparée ; d'ici là il reste lancé sur DEV seulement.
+      - name: Run pytest
+        run: |
+          python -m pytest scripts/wiki-generators/ \
+            --ignore=scripts/wiki-generators/test_promote_raw_gammes_to_wiki.py \
+            -v --tb=short

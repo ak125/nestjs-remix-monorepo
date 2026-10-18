@@ -4,7 +4,7 @@
  * Immutable evidence recording. Once written, evidence is never modified.
  * Each fact, decision, and output is recorded with provenance metadata.
  */
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AgenticDataService } from './agentic-data.service';
 import { AGENTIC_EVENTS } from '../events/agentic.events';
@@ -13,8 +13,6 @@ import type { AgenticEvidence } from '../types/run-state.schema';
 
 @Injectable()
 export class EvidenceLedgerService {
-  private readonly logger = new Logger(EvidenceLedgerService.name);
-
   constructor(
     private readonly dataService: AgenticDataService,
     private readonly eventEmitter: EventEmitter2,

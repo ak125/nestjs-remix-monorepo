@@ -6,7 +6,7 @@
 #   EXPLORATION_BUDGET ≤ 3 (rolling, max 1 active — cf. ADR-081 G10)
 # Lecteurs : SessionStart hook, Stop hook, skills, CI dashboards, agents Paperclip
 # Mise à jour : édit manuel git tracké, max 1×/semaine (ou pivot business)
-# updated_at: 2026-06-12
+# updated_at: 2026-10-04
 
 ## TOP
 - commerce-loop-v1
@@ -16,7 +16,6 @@
 - r-content-pipeline-activation
 
 ## DO_NOT_START
-- r5-diagnostic-engine
 - claude-plugin-marketplace
 - new-control-plane
 - new-seo-platform

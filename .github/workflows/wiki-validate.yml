@@ -85,3 +85,25 @@ jobs:
           name: wiki-validate-report
           path: wiki-validate-report.json
           retention-days: 14
+
+  # Tests unitaires du validateur et de l'exporteur du canon diagnostic (ADR-112
+  # phase 0) : hors ligne (PostgREST simulé, fixtures en tmp_path), sans le WIKI.
+  unit-tests:
+    name: 🧪 pytest validateur + exporteur diag-canon
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout monorepo
+        uses: actions/checkout@v7
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Install Python deps
+        run: |
+          python3 -m pip install --quiet pyyaml 'pytest>=7.4,<9'
+
+      - name: Run pytest
+        run: |
+          python3 -m pytest scripts/wiki/test_validate_gamme_diagnostic_relations.py scripts/wiki/test_export_diag_canon_slugs.py -v --tb=short

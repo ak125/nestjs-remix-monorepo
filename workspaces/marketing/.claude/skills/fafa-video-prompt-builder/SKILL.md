@@ -22,6 +22,10 @@ description: Use when generating downstream tool prompts (Higgsfield MCP b-roll/
 
 Autres providers ajoutés à la demande seulement (voir `prompts/README.md`).
 
+En V1, aucune des trois compositions ne lit de b-roll, d'avatar ni de scène produit : seule la voix (`compositionProps.audioUrl`)
+entre dans le rendu (`formats/*.md`, `[[fafa-remotion-template-planner]]`). Un asset Higgsfield produit pour V1 n'apparaît dans
+aucune vidéo rendue ; l'exécuter consomme des crédits sans effet sur le rendu.
+
 ## Pré-requis
 
 - Script JSON validé + `approval.content_approved=true`
@@ -46,7 +50,8 @@ Autres providers ajoutés à la demande seulement (voir `prompts/README.md`).
 ## Workflow
 
 1. Charger script APPROVED + brief + format spec
-2. Identifier assets requis (b-roll, avatar, scenes produit, voix)
+2. Identifier assets requis : en V1, la voix seule ; b-roll, avatar et scènes produit seulement pour une composition qui les lit
+   (aucune en V1)
 3. Pour chaque asset : choisir template prompt + provider + modèle
 4. Personnaliser slots (`{{scene_type}}`, `{{piece_name}}`, etc.)
 5. Sauvegarder prompts dans `prompts/<provider>/<video_id>/<asset_id>.md`

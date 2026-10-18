@@ -31,6 +31,7 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import { canonicalBlogArticlePath } from "~/utils/blog-article-redirect.server";
 import { buildCacheHeaders } from "~/utils/cache-control";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
@@ -267,11 +268,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     }
 
     // 301 : les articles advice et guide ont leur propre route canonique
-    if (article?.type === "advice" && article?.pg_alias) {
-      return redirect(`/blog-pieces-auto/conseils/${article.pg_alias}`, 301);
-    }
-    if (article?.legacy_table === "__blog_guide") {
-      return redirect(`/blog-pieces-auto/guide-achat/${article.slug}`, 301);
+    if (article) {
+      const canonicalPath = canonicalBlogArticlePath(article);
+      if (canonicalPath !== `/blog-pieces-auto/article/${article.slug}`) {
+        return redirect(canonicalPath, 301);
+      }
     }
 
     let relatedArticles: RelatedArticle[] = [];

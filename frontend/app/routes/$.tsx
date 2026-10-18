@@ -8,7 +8,11 @@ import {
   isRouteErrorResponse,
 } from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
-import { buildCacheHeaders } from "~/utils/cache-control";
+import { resolveLegacyAdviceAlias } from "~/utils/blog-article-redirect.server";
+import {
+  buildCacheHeaders,
+  NO_STORE_CACHE_CONTROL,
+} from "~/utils/cache-control";
 import { logger } from "~/utils/logger";
 import { getProxyHeaders } from "~/utils/proxy-headers.server";
 import { stripSingleFetchSuffix } from "~/utils/single-fetch";
@@ -28,6 +32,22 @@ export const meta: MetaFunction = () => [
 // la 410 garbage ressortait `index, follow` via le défaut interceptor). Paire avec
 // la suppression du défaut `index, follow` côté SeoHeadersInterceptor (fallthrough).
 export const headers = buildCacheHeaders("no-cache");
+
+/**
+ * Statut décidé dans le `try` du loader (410 d'ancien lien, 404 enrichie).
+ * `data()` renvoie un DataWithResponseInit, pas une Response : levé dans le
+ * `try`, il était rattrapé par le `catch` et remplacé par la 404 de repli —
+ * aucun de ces 410 ne sortait. Le `try` lève donc cette erreur, que le `catch`
+ * traduit en `data()` (même modèle que LeadApiStatusError, #1681).
+ */
+class CatchAllStatusError extends Error {
+  constructor(
+    readonly body: Record<string, unknown>,
+    readonly init: ResponseInit,
+  ) {
+    super(`catch-all ${init.status}`);
+  }
+}
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
@@ -165,7 +185,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
             logger.log(
               `[SEO] Legacy URL not resolved, returning 410: ${pathname}`,
             );
-            throw data(
+            throw new CatchAllStatusError(
               {
                 url: pathname,
                 message:
@@ -184,11 +204,47 @@ export async function loader({ request }: LoaderFunctionArgs) {
           }
         }
       } catch (legacyError) {
-        if (legacyError instanceof Response) {
+        if (
+          legacyError instanceof Response ||
+          legacyError instanceof CatchAllStatusError
+        ) {
           throw legacyError;
         }
         logger.error("Erreur résolution URL legacy:", legacyError);
         // En cas d'erreur, continuer vers le 404 standard
+      }
+    }
+
+    // 2.6 Anciennes adresses d'un conseil : /blog-pieces-auto/{ba_alias}.
+    // L'article lui-même décide de la cible (conseils/{pg_alias} ou
+    // article/{ba_alias}) — aucun motif de slug n'est deviné ici. Un segment
+    // encodé (`%`) n'est jamais un ba_alias : il suit le 404 standard.
+    // Recherche impossible → 503 : un 404 n'est jamais déduit d'une panne.
+    const blogSegment = /^\/blog-pieces-auto\/([^/%]+)\/?$/.exec(pathname)?.[1];
+    if (blogSegment) {
+      const resolution = await resolveLegacyAdviceAlias(blogSegment, request);
+      if (resolution.status === "found") {
+        throw new Response(null, {
+          status: 301,
+          headers: {
+            Location: resolution.location,
+            "Cache-Control": "public, max-age=31536000",
+            "X-Redirect-Reason": "legacy-blog-advice-alias",
+          },
+        });
+      }
+      if (resolution.status === "unavailable") {
+        logger.error(
+          `[SEO] Résolution ba_alias impossible pour ${pathname}: ${resolution.reason}`,
+        );
+        throw new Response(null, {
+          status: 503,
+          headers: {
+            "Retry-After": "60",
+            "Cache-Control": NO_STORE_CACHE_CONTROL,
+            "X-Robots-Tag": "noindex, follow",
+          },
+        });
       }
     }
 
@@ -229,7 +285,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     // 5. Vérifier si c'est un ancien lien connu (logique 410)
     if (errorResponseData.isOldLink) {
-      throw data(
+      throw new CatchAllStatusError(
         {
           ...errorResponseData,
           message: "Ce contenu a été définitivement supprimé ou déplacé",
@@ -248,7 +304,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // X-Robots-Tag obligatoire : sans ce header, SeoHeadersInterceptor.intercept()
     // applique le default `index, follow` pour les paths non-matchés (ex /wp-admin/,
     // /panier inexistant). Canon SEO : un 404 ne s'indexe jamais.
-    throw data(
+    throw new CatchAllStatusError(
       {
         ...errorResponseData,
         message: "Page non trouvée",
@@ -265,6 +321,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // Si c'est une Response (redirection ou erreur JSON), la re-lancer
     if (error instanceof Response) {
       throw error;
+    }
+    if (error instanceof CatchAllStatusError) {
+      throw data(error.body, error.init);
     }
 
     // Pour toute autre erreur, fallback vers 404 basique
@@ -359,15 +418,6 @@ function resolveKnownPattern(pathname: string): string | null {
     }
   } catch {
     // decodeURIComponent peut échouer sur des URLs malformées — on continue
-  }
-
-  // /blog-pieces-auto/comment-* = ba_alias d'un conseil (ex-liens précédent/suivant).
-  // La route /conseils/ est indexée sur pg_alias (aucun ne commence par
-  // « comment- ») : déléguer au résolveur /article/{ba_alias}, qui 301 vers
-  // /conseils/{pg_alias}.
-  if (pathname.startsWith("/blog-pieces-auto/comment-")) {
-    const slug = pathname.replace("/blog-pieces-auto/", "");
-    return `/blog-pieces-auto/article/${slug}`;
   }
 
   // /blog-pieces-auto/guide/* → /blog-pieces-auto/guide-achat/* (manque le "-achat")

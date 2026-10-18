@@ -298,15 +298,15 @@ export function explainSegment(input: unknown, rawRule: unknown) {
         const n = window.filter((e) => e.kind === r.kind).length;
         return { match: n >= r.min, reasons: [`event_count:${r.kind}:${n}`] };
       }
-      const match = window.some(
-        (a) =>
-          a.kind === r.first &&
-          window.some(
-            (b) =>
-              b.kind === r.then &&
-              Date.parse(b.occurred_at) > Date.parse(a.occurred_at),
-          ),
-      );
+      // uniqueEvents sorts by instant; filtering preserves that order.
+      // A later second event exists iff one follows the earliest first event.
+      const first = window.find((e) => e.kind === r.first);
+      const firstAt = first ? Date.parse(first.occurred_at) : null;
+      const match =
+        firstAt !== null &&
+        window.some(
+          (e) => e.kind === r.then && Date.parse(e.occurred_at) > firstAt,
+        );
       return { match, reasons: [`sequence:${r.first}:${r.then}:${match}`] };
     };
     const evaluation = evaluate(rule),
@@ -475,15 +475,17 @@ export function renderCampaign(
     sources.some((s) => !s || s.kind !== 'wiki' || !currentSource(s, w.context))
   )
     throw new Error('SOURCE_UNVERIFIED');
-  const blocks = sources.map((s) =>
-    s!.text.replace(/\{\{([a-z_]+)\}\}/g, (_, key: string) => {
+  const blocks = sources.map((s) => {
+    const placeholder = /\{\{([a-z_]+)\}\}/g;
+    // Validate the template itself; supplied values are literal, not templates.
+    if (/\{\{|\}\}/.test(s!.text.replace(placeholder, ' ')))
+      throw new Error('TEMPLATE_VARIABLE_MISSING');
+    return s!.text.replace(placeholder, (_, key: string) => {
       if (!Object.hasOwn(variables, key) || !variables[key].trim())
         throw new Error('TEMPLATE_VARIABLE_MISSING');
       return variables[key];
-    }),
-  );
-  if (blocks.some((s) => /\{\{|\}\}/.test(s)))
-    throw new Error('TEMPLATE_VARIABLE_MISSING');
+    });
+  });
   checked(z.string().regex(/^J(0[1-9]|1[0-8])$/), scenario);
   const copy: Record<string, [string, string, string, string]> = {
     J01: [
@@ -567,27 +569,32 @@ export function renderCampaign(
   ];
   const title = selected[language === 'fr' ? 0 : 2],
     cta = selected[language === 'fr' ? 1 : 3];
-  const text = [title, ...blocks, cta, 'Simulation — aucune offre réelle'].join(
-    '\n\n',
-  );
-  const html = `<!doctype html><html lang="${language}" dir="ltr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(title)}</title></head><body style="margin:0;background:#fff;color:#17202a;font:18px/1.6 Arial,sans-serif"><main style="max-width:600px;margin:auto;padding:20px"><h1>${escape(title)}</h1>${blocks.map((b) => `<p>${escape(b)}</p>`).join('')}<p>${escape(cta)}</p><p>Simulation — aucune offre réelle</p></main></body></html>`;
+  const simulationNotice =
+    language === 'fr'
+      ? 'Simulation — aucune offre réelle'
+      : 'Simulation — no real offer';
+  const variants = [
+    { id: 'A', subject: title, preheader: cta },
+    {
+      id: 'B',
+      subject:
+        language === 'fr'
+          ? 'Les informations à vérifier avant votre choix'
+          : 'Information to check before choosing',
+      preheader: cta,
+    },
+  ].map((variant) => ({
+    ...variant,
+    text: [variant.subject, ...blocks, cta, simulationNotice].join('\n\n'),
+    html: `<!doctype html><html lang="${language}" dir="ltr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(variant.subject)}</title></head><body style="margin:0;background:#fff;color:#17202a;font:18px/1.6 Arial,sans-serif"><main style="max-width:600px;margin:auto;padding:20px"><h1>${escape(variant.subject)}</h1>${blocks.map((b) => `<p>${escape(b)}</p>`).join('')}<p>${escape(cta)}</p><p>${escape(simulationNotice)}</p></main></body></html>`,
+  }));
   return {
-    html,
-    text,
+    html: variants[0].html,
+    text: variants[0].text,
     language,
     source_refs: refs,
-    template_version: '2.0.0',
-    variants: [
-      { id: 'A', subject: title, preheader: cta },
-      {
-        id: 'B',
-        subject:
-          language === 'fr'
-            ? 'Les informations à vérifier avant votre choix'
-            : 'Information to check before choosing',
-        preheader: cta,
-      },
-    ],
+    template_version: '2.1.1',
+    variants,
     social: {
       template: getSocialTemplate('conseil', 'facebook')?.key ?? null,
       text: blocks.join('\n'),

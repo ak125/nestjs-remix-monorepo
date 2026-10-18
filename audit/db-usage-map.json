@@ -2,27 +2,27 @@
   "_generated_by": "scripts/audit/build-db-usage-map.js",
   "note": "Candidates only — never a \"dead\" verdict. A real DROP table/function goes through the RPC Gate + a vault ADR, never from this map.",
   "important_caveats": [
-    "771 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
+    "772 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
     "Migration parsing is regex-based and tracks last CREATE vs last DROP per object (date-prefixed filenames ≈ chronological); re-create-after-drop edge cases may slip through.",
     "RLS-only / dashboard / external-cron / RPC-internal usage is invisible here — see per-candidate caveats.",
-    "5 call-site(s) écarté(s) : le récepteur n'est pas un client PostgREST (Buffer/Array, ou bucket Supabase Storage) — voir dropped_call_sites[].",
+    "8 call-site(s) écarté(s) : le récepteur n'est pas un client PostgREST (Buffer/Array, ou bucket Supabase Storage) — voir dropped_call_sites[].",
     "0 call-site(s) non résolu(s) : récepteur ni prouvé DB ni rejeté — voir unresolved_callsites[]. Un nom non résolu ne peut pas être déclaré orphelin."
   ],
   "summary": {
-    "tables_seen": 313,
-    "tables_with_callsites": 213,
-    "candidate_orphan_tables": 73,
+    "tables_seen": 316,
+    "tables_with_callsites": 214,
+    "candidate_orphan_tables": 75,
     "partitions": 27,
-    "rpc_seen": 249,
+    "rpc_seen": 251,
     "rpc_with_callsites": 14,
     "trigger_functions": 30,
-    "candidate_orphan_rpc": 205,
-    "dynamic_from_callsites": 771,
+    "candidate_orphan_rpc": 207,
+    "dynamic_from_callsites": 772,
     "dynamic_rpc_callsites": 1,
     "unresolved_callsites": 0,
-    "dropped_call_sites": 5,
-    "migrations_scanned": 402,
-    "backend_files_scanned": 1438
+    "dropped_call_sites": 8,
+    "migrations_scanned": 418,
+    "backend_files_scanned": 1489
   },
   "tables": {
     "___config": {
@@ -323,13 +323,27 @@
       "in_knowledge_db": false,
       "partition_of": null
     },
+    "__diag_link_provenance": {
+      "used_by": [
+        "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts"
+      ],
+      "used_by_count": 1,
+      "in_migrations": [
+        "20261010_diag_link_provenance.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false,
+      "partition_of": null
+    },
     "__diag_maintenance_operation": {
       "used_by": [
         "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
         "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts"
       ],
       "used_by_count": 2,
-      "in_migrations": [],
+      "in_migrations": [
+        "20261011_diag_capture_maintenance_schema.sql"
+      ],
       "rls_present": true,
       "in_knowledge_db": false,
       "partition_of": null
@@ -339,8 +353,30 @@
         "backend/src/modules/diagnostic-engine/engines/maintenance-intelligence.engine.ts"
       ],
       "used_by_count": 1,
-      "in_migrations": [],
+      "in_migrations": [
+        "20261011_diag_capture_maintenance_schema.sql"
+      ],
       "rls_present": true,
+      "in_knowledge_db": false,
+      "partition_of": null
+    },
+    "__diag_projection_conflicts": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20261010_diag_link_provenance.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false,
+      "partition_of": null
+    },
+    "__diag_projection_runs": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20261010_diag_link_provenance.sql"
+      ],
+      "rls_present": false,
       "in_knowledge_db": false,
       "partition_of": null
     },
@@ -1086,7 +1122,9 @@
     },
     "__seo_event_log": {
       "used_by": [
+        "backend/src/modules/admin/services/command-center-kpi.service.ts",
         "backend/src/modules/admin/services/seo-control.service.ts",
+        "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts",
         "backend/src/modules/diagnostic-engine/services/outcome-emitter.service.ts",
         "backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts",
         "backend/src/modules/seo-monitoring/services/cwv-beacon.service.ts",
@@ -1097,7 +1135,7 @@
         "backend/src/modules/seo/services/seo-placeholder-events.service.ts",
         "backend/src/modules/seo/services/sitemap-event-log.service.ts"
       ],
-      "used_by_count": 10,
+      "used_by_count": 12,
       "in_migrations": [
         "20260425_seo_event_log.sql"
       ],
@@ -3587,6 +3625,22 @@
       "defined_in_migrations": [],
       "is_trigger_function": false
     },
+    "__diag_projection_apply": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20261010_diag_link_provenance.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "__diag_projection_record_failure": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20261010_diag_link_provenance.sql"
+      ],
+      "is_trigger_function": false
+    },
     "__gov_m10_overload_ambiguity": {
       "called_by": [],
       "called_by_count": 0,
@@ -4379,7 +4433,9 @@
       "called_by": [],
       "called_by_count": 0,
       "defined_in_migrations": [
-        "20260610_fix_r5_redirect_target_align_reference_rpcs.sql"
+        "20260610_fix_r5_redirect_target_align_reference_rpcs.sql",
+        "20261003_r5_redirect_target_require_conseils_article.down.sql",
+        "20261003_r5_redirect_target_require_conseils_article.sql"
       ],
       "is_trigger_function": false
     },
@@ -5852,6 +5908,46 @@
       ]
     },
     {
+      "name": "__diag_projection_conflicts",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20261010_diag_link_provenance.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "__diag_projection_runs",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20261010_diag_link_provenance.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
       "name": "__lighthouse_alerts",
       "confidence": "low",
       "derived_from": [
@@ -7302,6 +7398,38 @@
   ],
   "candidate_orphan_rpc": [
     {
+      "name": "__diag_projection_apply",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20261010_diag_link_provenance.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "__diag_projection_record_failure",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20261010_diag_link_provenance.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
       "name": "__gov_m10_overload_ambiguity",
       "confidence": "medium",
       "derived_from": [
@@ -8569,7 +8697,9 @@
         "no-rpc-callsite"
       ],
       "defined_in_migrations": [
-        "20260610_fix_r5_redirect_target_align_reference_rpcs.sql"
+        "20260610_fix_r5_redirect_target_align_reference_rpcs.sql",
+        "20261003_r5_redirect_target_require_conseils_article.down.sql",
+        "20261003_r5_redirect_target_require_conseils_article.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
@@ -10659,7 +10789,7 @@
     },
     {
       "file": "backend/src/config/content-write-gate.service.ts",
-      "line": 156,
+      "line": 154,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "binding-not-literal"
@@ -11022,6 +11152,13 @@
       "refusal": null
     },
     {
+      "file": "backend/src/modules/admin/services/command-center-kpi.service.ts",
+      "line": 356,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
       "file": "backend/src/modules/admin/services/gamme-seo-audit.service.ts",
       "line": 74,
       "form": "IDENT",
@@ -11234,6 +11371,20 @@
     {
       "file": "backend/src/modules/admin/services/working-stock.service.ts",
       "line": 240,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts",
+      "line": 232,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts",
+      "line": 273,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -11485,14 +11636,7 @@
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 774,
-      "form": "IDENT",
-      "resolved_table": null,
-      "refusal": "binding-not-found"
-    },
-    {
-      "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
-      "line": 798,
+      "line": 781,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -12304,21 +12448,21 @@
     },
     {
       "file": "backend/src/modules/catalog/services/gamme-unified.service.ts",
-      "line": 26,
+      "line": 25,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/catalog/services/gamme-unified.service.ts",
-      "line": 120,
+      "line": 119,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/catalog/services/gamme-unified.service.ts",
-      "line": 151,
+      "line": 150,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -12368,13 +12512,6 @@
     {
       "file": "backend/src/modules/catalog/services/vehicle-filtered-catalog-v4-hybrid.service.ts",
       "line": 544,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/catalog/services/vehicle-filtered-catalog-v4-hybrid.service.ts",
-      "line": 653,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -12597,6 +12734,13 @@
       "refusal": "import-outside-scanned-corpus"
     },
     {
+      "file": "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
+      "line": 589,
+      "form": "IDENT",
+      "resolved_table": null,
+      "refusal": "binding-not-found"
+    },
+    {
       "file": "backend/src/modules/errors/services/error-log.service.ts",
       "line": 235,
       "form": "IDENT",
@@ -12696,7 +12840,7 @@
     },
     {
       "file": "backend/src/modules/gamme-rest/services/gamme-page-data.service.ts",
-      "line": 87,
+      "line": 81,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -13830,7 +13974,7 @@
     },
     {
       "file": "backend/src/modules/search/controllers/search-debug.controller.ts",
-      "line": 32,
+      "line": 30,
       "form": "IDENT",
       "resolved_table": null,
       "refusal": "binding-not-found"
@@ -14047,28 +14191,28 @@
     },
     {
       "file": "backend/src/modules/search/services/search-enhanced-existing.service.ts",
-      "line": 662,
+      "line": 572,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/search/services/search-enhanced-existing.service.ts",
-      "line": 755,
+      "line": 665,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/search/services/search-enhanced-existing.service.ts",
-      "line": 764,
+      "line": 674,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/search/services/search-enhanced-existing.service.ts",
-      "line": 774,
+      "line": 684,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -14607,21 +14751,28 @@
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 85,
+      "line": 56,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 129,
+      "line": 100,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 158,
+      "line": 200,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/suppliers/suppliers.service.ts",
+      "line": 236,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -14635,84 +14786,70 @@
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 283,
+      "line": 272,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 294,
+      "line": 309,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 319,
+      "line": 333,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 356,
+      "line": 438,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 380,
+      "line": 472,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 485,
+      "line": 507,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 519,
+      "line": 527,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 554,
+      "line": 571,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 574,
+      "line": 624,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 618,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 671,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 681,
+      "line": 634,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -16073,6 +16210,30 @@
       "reason": "js-builtin-static-from",
       "file": "backend/src/modules/cart/controllers/cart-recovery.controller.ts",
       "line": 8,
+      "receiver": "Buffer"
+    },
+    {
+      "name": "Code_marque;Ref\r\nTSTA;X100\r\nTSTA;X200\r\n",
+      "method": "from",
+      "reason": "js-builtin-static-from",
+      "file": "backend/src/modules/pricing/services/__tests__/golda-tariff-archive.test.ts",
+      "line": 8,
+      "receiver": "Buffer"
+    },
+    {
+      "name": "xx",
+      "method": "from",
+      "reason": "js-builtin-static-from",
+      "file": "backend/src/modules/pricing/services/__tests__/golda-tariff-archive.test.ts",
+      "line": 153,
+      "receiver": "Buffer"
+    },
+    {
+      "name": "PK junk",
+      "method": "from",
+      "reason": "js-builtin-static-from",
+      "file": "backend/src/modules/pricing/services/__tests__/golda-tariff-archive.test.ts",
+      "line": 160,
       "receiver": "Buffer"
     },
     {

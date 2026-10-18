@@ -196,6 +196,30 @@ describe('RemotionRenderEngine', () => {
     });
   });
 
+  it.each([undefined, '', '   '])('rejects absent composition %s without HTTP rendering', async (composition) => {
+    const cleanup = withEnv({ VIDEO_RENDER_ENABLED: 'true', VIDEO_RENDER_BASE_URL: 'http://render:3001' });
+    try {
+      const result = await engine.render(fakeRequest({ resolvedCompositionId: composition }));
+      expect(result).toMatchObject({ status: 'failed', errorCode: RenderErrorCode.RENDER_ARTEFACTS_INCOMPLETE, retryable: false, outputPath: null });
+      expect(fetchSpy).not.toHaveBeenCalled();
+    } finally { cleanup(); }
+  });
+
+  it.each([
+    [{ status: 'success', outputPath: '   ' }, true],
+    [{ status: 'success', outputPath: 123 }, true],
+    [{ status: 'skipped', outputPath: '/out.mp4' }, true],
+    [{ outputPath: '/out.mp4' }, true],
+    [{ status: 'success', outputPath: '/out.mp4' }, false],
+  ])('rejects a renderer reply that does not establish success: %j HTTP ok=%s', async (body, ok) => {
+    const cleanup = withEnv({ VIDEO_RENDER_ENABLED: 'true', VIDEO_RENDER_BASE_URL: 'http://render:3001' });
+    fetchSpy.mockResolvedValue({ ok, status: ok ? 200 : 500, json: jest.fn().mockResolvedValue(body) });
+    try {
+      const result = await engine.render(fakeRequest());
+      expect(result).toMatchObject({ status: 'failed', errorCode: RenderErrorCode.RENDER_OUTPUT_INVALID, outputPath: null });
+    } finally { cleanup(); }
+  });
+
   // ── Error code mapping ──
 
   describe('error code mapping', () => {
@@ -290,13 +314,13 @@ describe('StubRenderEngine', () => {
     engine = new StubRenderEngine();
   });
 
-  it('should return success with stub metadata', async () => {
+  it('reports simulation as skipped, never as a successful render', async () => {
     const result = await engine.render(fakeRequest());
 
-    expect(result.status).toBe('success');
+    expect(result.status).toBe('skipped');
     expect(result.outputPath).toBeNull();
     expect(result.engineName).toBe('stub');
-    expect(result.metadata).toMatchObject({ stub: true, briefId: 'brief-001' });
+    expect(result.metadata).toMatchObject({ stub: true, executionMode: 'simulated', briefId: 'brief-001' });
     expect(result.retryable).toBe(false);
   });
 

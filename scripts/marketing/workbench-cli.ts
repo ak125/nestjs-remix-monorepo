@@ -24,14 +24,6 @@ import {
 } from "../../backend/src/modules/marketing/services/marketing-measurement";
 import type { SegmentRule } from "../../backend/src/modules/marketing/dto/marketing-workbench.dto";
 
-const reactivationSegment: SegmentRule = {
-  op: "all",
-  rules: [
-    { op: "inactive", days: 180 },
-    { op: "not", rule: { op: "audience", value: "professional" } },
-  ],
-};
-
 export function runWorkbench(args: string[]) {
   const w = JSON.parse(
     readFileSync(__dirname + "/fixtures/workbench.synthetic.json", "utf8"),
@@ -42,7 +34,23 @@ export function runWorkbench(args: string[]) {
       throw new Error("INVALID_ARGUMENT");
     return prepareScenario(w, args[1]);
   }
-  if (args.length !== 1) throw new Error("INVALID_ARGUMENT");
+  let inactiveDays = 180;
+  if (
+    (command === "--segment" || command === "--report") &&
+    args.length === 3 &&
+    args[1] === "--inactive-days" &&
+    /^[1-9][0-9]{0,3}$/.test(args[2]) &&
+    Number(args[2]) <= 3650
+  )
+    inactiveDays = Number(args[2]);
+  else if (args.length !== 1) throw new Error("INVALID_ARGUMENT");
+  const reactivationSegment: SegmentRule = {
+    op: "all",
+    rules: [
+      { op: "inactive", days: inactiveDays },
+      { op: "not", rule: { op: "audience", value: "professional" } },
+    ],
+  };
   switch (command) {
     case "--help":
       return {
@@ -52,11 +60,11 @@ export function runWorkbench(args: string[]) {
         commands: [
           "--scenario J01..J18",
           "--all-scenarios",
-          "--segment",
+          "--segment [--inactive-days N] (V2, default 180, integer 1..3650)",
           "--opportunities",
           "--import-preview",
           "--operations",
-          "--report",
+          "--report [--inactive-days N] (V2 audience only, default 180, integer 1..3650)",
           "--capabilities",
           "--inactive-days N (V1)",
           "--cancel (V1)",

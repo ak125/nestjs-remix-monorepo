@@ -27,20 +27,13 @@ describe('Template Registry', () => {
       expect(entry.status).toBe('experimental');
     });
 
-    it('should fallback to TestCard for unknown templateId', () => {
-      const entry = resolveTemplate('unknown-template-xyz');
-      expect(entry.compositionId).toBe('TestCard');
-    });
+    it.each(['unknown-template-xyz', '', '   ', 'constructor', 'toString', '__proto__', null, undefined])(
+      'rejects an absent or unregistered template %s instead of demo content',
+      (templateId) => {
+        expect(() => resolveTemplate(templateId)).toThrow('An explicit registered video template is required');
+      },
+    );
 
-    it('should fallback to TestCard for null', () => {
-      const entry = resolveTemplate(null);
-      expect(entry.compositionId).toBe('TestCard');
-    });
-
-    it('should fallback to TestCard for undefined', () => {
-      const entry = resolveTemplate(undefined);
-      expect(entry.compositionId).toBe('TestCard');
-    });
   });
 
   describe('defaultTemplateForVideoType', () => {
@@ -50,12 +43,12 @@ describe('Template Registry', () => {
       );
     });
 
-    it('should return test-card for film_gamme', () => {
-      expect(defaultTemplateForVideoType('film_gamme')).toBe('test-card');
+    it('rejects an implicit demo template for film_gamme', () => {
+      expect(() => defaultTemplateForVideoType('film_gamme')).toThrow('An explicit video template is required for this format');
     });
 
-    it('should return test-card for film_socle', () => {
-      expect(defaultTemplateForVideoType('film_socle')).toBe('test-card');
+    it('rejects an implicit demo template for film_socle', () => {
+      expect(() => defaultTemplateForVideoType('film_socle')).toThrow('An explicit video template is required for this format');
     });
   });
 

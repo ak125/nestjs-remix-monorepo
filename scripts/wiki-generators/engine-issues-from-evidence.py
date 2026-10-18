@@ -23,7 +23,17 @@ Position pipeline (PR-C) :
 DÉTERMINISTE : zéro réseau, zéro DB, zéro invention. Valide les liens contre le
 FILESYSTEM RAW (slugs gammes + diagnostic existants). Invariants identiques v1
 (multi-source, corroboration ADR-033 2_medium_concordant, structure-follows-
-evidence, fail-closed prescriptif, FR-only, additif byte-à-byte) + :
+evidence, fail-closed prescriptif, FR-only, hors blocs managés byte-à-byte) + :
+  - PROJECTION IDEMPOTENTE (v3) : les `issues` de `engine_family:<code>` sont
+    RECONSTRUITES depuis l'évidence (une évidence par famille) ; relancer donne le
+    même fichier. Refus du run entier, sans écriture, si une panne existante sous
+    cette clé porte `reviewed: true` (une relecture humaine n'est jamais écrasée).
+    `validation_notes` dédoublonnées dans l'ordre (les notes héritées restent).
+  - KG = PISTE, JAMAIS UNE PREUVE : une source `internal_kg` rejette le fait
+    (ADR-086, repris par ADR-112) ; la référence kg se porte en `seed_ref`, jamais
+    recopiée dans la fiche.
+  - `diagnostic_safe` TOUJOURS false en sortie : le flip est une revue humaine,
+    jamais une projection (ADR-033 §D4) ; un `true` en entrée est ignoré et noté.
   - FAN-OUT : applies_to_vehicles[] → chaque fiche RAW existante recevant ce moteur.
   - SANITY CARBURANT : refuse d'attacher un moteur diesel à une fiche sans
     motorisation diesel (lit le bloc motorizations DB ; no silent fallback → note).
@@ -37,6 +47,9 @@ Usage :
       --evidence audit/content/prc-evidence/engine-n47.yml --dry-run --out-dir /tmp/prc
   python3 scripts/wiki-generators/engine-issues-from-evidence.py --evidence <f.yml> --merge
 
+Sorties : 0 OK · 2 évidence invalide · 3 panne relue (`reviewed: true`) qui serait
+écrasée — rien n'est écrit.
+
 Config env : AUTOMECANIK_RAW_PATH (default /opt/automecanik/automecanik-raw)
 """
 from __future__ import annotations
@@ -49,7 +62,7 @@ from pathlib import Path
 
 import yaml
 
-SCRIPT_ID = "script:engine-issues-from-evidence@v2"
+SCRIPT_ID = "script:engine-issues-from-evidence@v3"
 RAW_REPO = Path(os.environ.get("AUTOMECANIK_RAW_PATH", "/opt/automecanik/automecanik-raw"))
 VEHICLES_SUBDIR = Path("recycled") / "rag-knowledge" / "vehicles"
 GAMMES_SUBDIR = Path("recycled") / "rag-knowledge" / "gammes"
@@ -57,10 +70,11 @@ DIAGNOSTIC_SUBDIR = Path("recycled") / "rag-knowledge" / "diagnostic"
 
 MANAGED_KEYS = ("known_issues_by_engine", "maintenance_by_engine", "recalls", "validation_notes")
 
-# internal_kg = connaissance INTERNE curée (kg_engine_families / kg_nodes) = Tier A
-# (Internal DB first). On la consomme comme source autoritaire ; l'éditorial enrichi
-# repart ALIMENTER le diagnostic engine (kg) via le flux gouverné RAW→WIKI→export.
-HIGH_TRUST_TYPES = {"internal_kg", "constructeur", "equipementier", "recall", "base_technique"}
+# kg (kg_engine_families / kg_nodes) = projection, jamais une source (ADR-086, repris
+# par ADR-112) : `internal_kg` n'est PAS un source_type valide. Une évidence qui le porte
+# encore voit le fait rejeté avec une note dédiée (la référence kg va en `seed_ref`).
+KG_SOURCE_TYPE = "internal_kg"
+HIGH_TRUST_TYPES = {"constructeur", "equipementier", "recall", "base_technique"}
 VALID_SOURCE_TYPES = HIGH_TRUST_TYPES | {"presse", "forum", "fournisseur"}
 CONF_ORDER = ("low", "medium", "high")
 
@@ -154,9 +168,14 @@ def validate_fault(fault: dict, engine_code: str, gammes: set[str], diags: set[s
         notes.append(f"fait '{slug}' rejeté : label/symptoms FR vides (FR-only).")
         return None
     if not sources:
-        notes.append(f"fait '{slug}' rejeté : aucune source (multi-source obligatoire).")
+        hint = f" — piste {fault['seed_ref']} à sourcer" if fault.get("seed_ref") else ""
+        notes.append(f"fait '{slug}' rejeté : aucune source (multi-source obligatoire){hint}.")
         return None
     for s in sources:
+        if s.get("source_type") == KG_SOURCE_TYPE:
+            notes.append(f"fait '{slug}' rejeté : source {KG_SOURCE_TYPE} = piste kg, pas une preuve "
+                         f"— à porter en `seed_ref` (ADR-086).")
+            return None
         if s.get("source_type") not in VALID_SOURCE_TYPES:
             notes.append(f"fait '{slug}' : source_type '{s.get('source_type')}' inconnu — rejeté.")
             return None
@@ -179,7 +198,10 @@ def validate_fault(fault: dict, engine_code: str, gammes: set[str], diags: set[s
     issue["sources"] = normalize_sources(sources)
     issue["corroboration"] = compute_corroboration(sources)
     issue["reviewed"] = False
-    issue["diagnostic_safe"] = bool(fault.get("diagnostic_safe", False))
+    # Jamais promu par projection (ADR-033 §D4) ; `seed_ref` n'est pas recopié non plus.
+    issue["diagnostic_safe"] = False
+    if fault.get("diagnostic_safe"):
+        notes.append(f"fait '{slug}' : `diagnostic_safe` vrai dans l'évidence ignoré — flip = revue humaine (ADR-033 §D4).")
     return issue
 
 
@@ -311,8 +333,13 @@ def build_recalls(ev: dict, valid_issues: list[dict]) -> list[dict]:
     return recalls
 
 
+class ReviewedIssueConflict(Exception):
+    """Une panne relue (`reviewed: true`) serait écrasée par la reconstruction — le run est refusé."""
+
+
 def inject_vehicle(existing: str, ev: dict, vehicle_slug: str, valid_issues: list[dict], valid_ops: list[dict],
-                   extra_notes: list[str]) -> tuple[str, int, int, int]:
+                   extra_notes: list[str]) -> tuple[str, list[str], bool, int]:
+    """Projette l'évidence sur une fiche. Retourne (contenu, slugs des pannes avant, clé créée, entretiens ajoutés)."""
     code = ev["engine_family"]
     key = f"engine_family:{code}"
     kibe = extract_block_value(existing, "known_issues_by_engine")
@@ -321,22 +348,16 @@ def inject_vehicle(existing: str, ev: dict, vehicle_slug: str, valid_issues: lis
         raise ValueError("bloc known_issues_by_engine absent — fiche non générée par vehicle-from-db ?")
 
     notes_existing = extract_block_value(existing, "validation_notes") or []
-    new_notes = list(extra_notes)
-    injected = created = ops_added = 0
+    ops_added = 0
 
-    # known_issues_by_engine
-    if key not in kibe:
-        kibe[key] = build_engine_entry(ev, "engine_family", vehicle_slug, [])
-        created = 1
-    kibe[key]["issues"] = kibe[key].get("issues", [])
-    seen = {i.get("issue") for i in kibe[key]["issues"]}
-    for issue in valid_issues:
-        if issue["issue"] in seen:
-            new_notes.append(f"fait '{issue['issue']}' déjà présent sous {key} — dédup.")
-            continue
-        kibe[key]["issues"].append(issue)
-        seen.add(issue["issue"])
-        injected += 1
+    # known_issues_by_engine : la clé est la projection de l'évidence, reconstruite à chaque run.
+    previous = (kibe.get(key) or {}).get("issues") or []
+    reviewed = [str(i.get("issue")) for i in previous if i.get("reviewed")]
+    if reviewed:
+        raise ReviewedIssueConflict(f"{vehicle_slug} : panne(s) relue(s) sous {key} ({', '.join(reviewed)}) "
+                                    "— reconstruction refusée, une relecture humaine n'est jamais écrasée.")
+    created = key not in kibe
+    kibe[key] = build_engine_entry(ev, "engine_family", vehicle_slug, list(valid_issues))
 
     # maintenance_by_engine
     if valid_ops:
@@ -364,10 +385,11 @@ def inject_vehicle(existing: str, ev: dict, vehicle_slug: str, valid_issues: lis
         seen_urls = {r.get("url") for r in existing_recalls}
         merged_recalls = existing_recalls + [r for r in new_recalls if r.get("url") not in seen_urls]
         updated["recalls"] = merged_recalls
-    merged_notes = list(notes_existing) + new_notes
+    # Dédoublonnées dans l'ordre : relancer n'empile plus les mêmes notes (les notes héritées restent).
+    merged_notes = list(dict.fromkeys(list(notes_existing) + list(extra_notes)))
     if merged_notes:
         updated["validation_notes"] = merged_notes
-    return merge_managed_blocks(existing, updated), injected, created, ops_added
+    return merge_managed_blocks(existing, updated), [str(i.get("issue")) for i in previous], created, ops_added
 
 
 # ==========================================================================
@@ -403,10 +425,13 @@ def main() -> int:
     rejected = (len(ev.get("faults", [])) - len(valid_issues)) + (len(ev.get("maintenance", [])) - len(valid_ops))
 
     out_base = Path(args.out_dir) / "vehicles" if args.dry_run else (RAW_REPO / VEHICLES_SUBDIR)
-    out_base.mkdir(parents=True, exist_ok=True)
+    mode = "dry" if args.dry_run else "merge"
+    after = [i["issue"] for i in valid_issues]
 
     targets = ev.get("applies_to_vehicles", [])
-    done = absent = skipped = 0
+    absent = skipped = 0
+    planned: list[tuple[Path, str]] = []   # tout est calculé avant la première écriture
+    conflicts: list[str] = []
     print(f"== moteur {code} ({fuel}) : {len(valid_issues)} panne(s) + {len(valid_ops)} entretien valides, "
           f"{rejected} rejetée(s) · fan-out {len(targets)} véhicule(s) ==")
     for vslug in targets:
@@ -422,16 +447,30 @@ def main() -> int:
             print(f"[skip  ] {vslug} — sanity carburant: pas de '{fuel}' (mis-attribution évitée)")
             continue
         try:
-            content, inj, cre, ops = inject_vehicle(existing, ev, vslug, valid_issues, valid_ops, shared_notes + per_notes)
+            content, before, cre, ops = inject_vehicle(existing, ev, vslug, valid_issues, valid_ops, shared_notes + per_notes)
+        except ReviewedIssueConflict as e:
+            conflicts.append(str(e))
+            continue
         except ValueError as e:
             skipped += 1
             print(f"[skip  ] {vslug} — {e}")
             continue
-        tgt = out_base / f"{vslug}.md"
-        tgt.write_text(content, encoding="utf-8")
-        done += 1
-        print(f"[{'dry' if args.dry_run else 'merge'}] {vslug} (issues +{inj}, clé {'créée' if cre else 'maj'}, entretien +{ops})")
+        planned.append((out_base / f"{vslug}.md", content))
+        removed = [s for s in before if s not in after]
+        print(f"[{mode}] {vslug} (issues {len(before)} → {len(after)}"
+              f"{', retirées : ' + ', '.join(removed) if removed else ''}, "
+              f"clé {'créée' if cre else 'maj'}, entretien +{ops})")
 
+    if conflicts:
+        for c in conflicts:
+            sys.stderr.write(f"REFUS : {c}\n")
+        sys.stderr.write(f"ERREUR : {len(conflicts)} fiche(s) portent une panne relue — aucune fiche écrite.\n")
+        return 3
+
+    out_base.mkdir(parents=True, exist_ok=True)
+    for tgt, content in planned:
+        tgt.write_text(content, encoding="utf-8")
+    done = len(planned)
     print(f"\n== {done} fiche(s) {'simulées' if args.dry_run else 'mergées'} · {absent} absente(s) · {skipped} skip carburant ==")
     if args.dry_run:
         print(f"[dry-run] sortie {out_base} — aucune écriture RAW/DB.")

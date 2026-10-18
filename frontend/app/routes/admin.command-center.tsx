@@ -11,12 +11,16 @@
  * Onglet « Orchestration » (ADR-087) : statut read-only + preview d'un plan shadow
  * *would-be* (action POST → backend). 0 mutation d'artefact ; le backend valide.
  */
-import { type CommandCenterResponse } from "@repo/registry";
+import {
+  CommandCenterResponseV2Schema,
+  type CommandCenterResponseV2,
+} from "@repo/registry";
 import {
   AlertTriangle,
   Boxes,
   GitBranch,
   FileWarning,
+  ShoppingCart,
   Workflow,
 } from "lucide-react";
 import {
@@ -27,7 +31,9 @@ import {
   useActionData,
   useLoaderData,
 } from "react-router";
+import { KpiCard } from "~/components/admin/patterns/KpiCard";
 import { CertBadge } from "~/components/command-center/badges";
+import { DepartmentReports } from "~/components/command-center/DepartmentReports";
 import { GlobalHealthBar } from "~/components/command-center/GlobalHealthBar";
 import { ModuleGrid } from "~/components/command-center/ModuleGrid";
 import {
@@ -50,6 +56,7 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { useHydrated } from "~/hooks/useHydrated";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
@@ -61,11 +68,11 @@ export const meta: MetaFunction = () =>
 function degraded(
   reason: string,
   mode: "full" | "disabled" = "full",
-): CommandCenterResponse {
+): CommandCenterResponseV2 {
   return {
     degraded: true,
     mode,
-    schema_version: "command-center.v1",
+    schema_version: "command-center.v2",
     source_truth: { canon_path: "", last_verified: null },
     summary: {
       departments_total: 0,
@@ -89,6 +96,7 @@ function degraded(
     validation_status: "UNKNOWN",
     global_status: { level: "WARNING", verdict: "BLOCKED", reasons: [reason] },
     action_queue: [],
+    department_reports: [],
   };
 }
 
@@ -125,7 +133,10 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
   try {
     const res = await fetch(
-      getInternalApiUrlFromRequest("/api/admin/command-center", request),
+      getInternalApiUrlFromRequest(
+        "/api/admin/command-center?contract_version=2",
+        request,
+      ),
       {
         headers: {
           "Content-Type": "application/json",
@@ -150,13 +161,23 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         orchestration: null as OrchestrationStatus | null,
       };
     }
-    const body = (await res.json()) as {
-      data?: CommandCenterResponse;
-    } & CommandCenterResponse;
+    const body: unknown = await res.json();
     // AdminResponseInterceptor wraps as { success, data, meta }.
-    const cc = body.data ?? (body as CommandCenterResponse);
+    const payload =
+      body && typeof body === "object" && "data" in body ? body.data : body;
+    const parsed = CommandCenterResponseV2Schema.safeParse(payload);
+    if (!parsed.success) {
+      logger.warn("[command-center] invalid v2 contract — rendering degraded");
+      return {
+        cc: degraded("backend contract invalid"),
+        orchestration: null as OrchestrationStatus | null,
+      };
+    }
+    const cc = parsed.data;
     const orchestration =
-      cc.mode === "disabled" ? null : await fetchOrchestration(request);
+      cc.mode === "disabled" || cc.degraded
+        ? null
+        : await fetchOrchestration(request);
     return { cc, orchestration };
   } catch (e) {
     logger.error(`[command-center] fetch failed: ${e}`);
@@ -264,6 +285,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
 }
 
 export default function AdminCommandCenter() {
+  const isHydrated = useHydrated();
   const { cc, orchestration } = useLoaderData<typeof loader>();
   const result = useActionData<typeof action>() as
     | OrchestrationActionData
@@ -307,6 +329,8 @@ export default function AdminCommandCenter() {
         <>
           <GlobalHealthBar data={cc} />
 
+          <MeasuredKpis data={cc} />
+
           {cc.mode === "light" ? (
             <p className="text-sm text-muted-foreground">
               Mode light — synthèse de cartographie uniquement. Le détail
@@ -315,12 +339,23 @@ export default function AdminCommandCenter() {
             </p>
           ) : (
             <Tabs defaultValue="actions">
-              <TabsList className="flex flex-wrap">
-                <TabsTrigger value="actions">Actions</TabsTrigger>
-                <TabsTrigger value="departments">Départements</TabsTrigger>
-                <TabsTrigger value="handoffs">Handoffs</TabsTrigger>
-                <TabsTrigger value="capabilities">Capacités</TabsTrigger>
-                <TabsTrigger value="orchestration">
+              <TabsList className="flex h-auto flex-wrap">
+                <TabsTrigger value="actions" disabled={!isHydrated}>
+                  Actions
+                </TabsTrigger>
+                <TabsTrigger value="reports" disabled={!isHydrated}>
+                  Rapports
+                </TabsTrigger>
+                <TabsTrigger value="departments" disabled={!isHydrated}>
+                  Départements
+                </TabsTrigger>
+                <TabsTrigger value="handoffs" disabled={!isHydrated}>
+                  Handoffs
+                </TabsTrigger>
+                <TabsTrigger value="capabilities" disabled={!isHydrated}>
+                  Capacités
+                </TabsTrigger>
+                <TabsTrigger value="orchestration" disabled={!isHydrated}>
                   <Workflow className="mr-1 h-4 w-4" aria-hidden />
                   Orchestration
                 </TabsTrigger>
@@ -328,6 +363,10 @@ export default function AdminCommandCenter() {
 
               <TabsContent value="actions" className="mt-4">
                 <OwnerActionQueue data={cc} />
+              </TabsContent>
+
+              <TabsContent value="reports" className="mt-4">
+                <DepartmentReports data={cc} />
               </TabsContent>
 
               <TabsContent value="departments" className="mt-4">
@@ -353,7 +392,38 @@ export default function AdminCommandCenter() {
   );
 }
 
-function HandoffList({ data }: { data: CommandCenterResponse }) {
+const KPI_VARIANT = {
+  OK: "success",
+  WARNING: "warning",
+  CRITICAL: "danger",
+  UNKNOWN: "default",
+} as const;
+
+/**
+ * Indicateurs mesurés en base (source ≠ canon), ajoutés par le backend en mode
+ * full. Valeur absente = source illisible (ex. PREPROD en lecture anon) : « — »,
+ * jamais un zéro.
+ */
+function MeasuredKpis({ data }: { data: CommandCenterResponseV2 }) {
+  const kpis = data.executive_kpis.filter((k) => k.source !== "canon");
+  if (kpis.length === 0) return null;
+  return (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {kpis.map((k) => (
+        <KpiCard
+          key={k.id}
+          title={k.label}
+          value={k.value === null ? "—" : `${k.value}${k.unit ?? ""}`}
+          icon={ShoppingCart}
+          variant={KPI_VARIANT[k.status]}
+          subtitle={k.value === null ? "Indisponible" : "Mesuré en base"}
+        />
+      ))}
+    </div>
+  );
+}
+
+function HandoffList({ data }: { data: CommandCenterResponseV2 }) {
   return (
     <Card>
       <CardHeader>
@@ -393,7 +463,7 @@ function HandoffList({ data }: { data: CommandCenterResponse }) {
   );
 }
 
-function CapabilityTable({ data }: { data: CommandCenterResponse }) {
+function CapabilityTable({ data }: { data: CommandCenterResponseV2 }) {
   return (
     <Card>
       <CardHeader>

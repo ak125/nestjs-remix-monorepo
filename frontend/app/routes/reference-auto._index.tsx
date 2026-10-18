@@ -50,11 +50,6 @@ interface ReferenceItem {
   };
 }
 
-interface LoaderData {
-  references: ReferenceItem[];
-  total: number;
-}
-
 // Gamme color: delegue a la source unique getFamilyTheme()
 function getGammeColor(gammeName: string | null) {
   const theme = getFamilyTheme(gammeName || "");

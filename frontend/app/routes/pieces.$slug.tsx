@@ -239,6 +239,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           pg_name: heroData.pg_name || heroData.famille_info?.mf_name || "",
           pg_alias: heroData.pg_alias || normalizeAlias(heroData.pg_name || ""),
           buyingGuideHref: heroData.buyingGuideHref ?? null,
+          // La page conseils répond 404 sans article de la gamme : ne la lier
+          // que si le backend a émis le bloc guide (même source, __blog_advice).
+          conseilsHref: apiData.guideAchat?.link || null,
           pg_pic: toProxyImageUrl(heroData.image) ?? "",
           pg_wall: toProxyImageUrl(heroData.wall) ?? "",
         }
@@ -309,12 +312,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       catalogueMameFamille: apiData.catalogueMameFamille,
       equipementiers: apiData.equipementiers,
       seoSwitches: apiData.seoSwitches,
-      guide: apiData.guideAchat
-        ? {
-            ...apiData.guideAchat,
-            date: (apiData.guideAchat as { updated?: string }).updated ?? "",
-          }
-        : undefined,
       purchaseGuideData: apiData.purchaseGuideData,
       // La réponse substitution ne sert qu'au routing 404/410 ci-dessus (le
       // 410 jette une Response nue — aucun consommateur client de
@@ -421,7 +418,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           pageData.catalogueMameFamille ?? null,
         ),
         seoSwitches: Promise.resolve(pageData.seoSwitches ?? null),
-        guide: Promise.resolve(pageData.guide ?? null),
       },
       { headers: responseHeaders },
     );
@@ -606,7 +602,6 @@ type PiecesPageLoaderData = PiecesPageSyncData & {
   equipementiers: Promise<GammePageDataV1["equipementiers"] | null>;
   catalogueMameFamille: Promise<GammePageDataV1["catalogueMameFamille"] | null>;
   seoSwitches: Promise<GammePageDataV1["seoSwitches"] | null>;
-  guide: Promise<GammePageDataV1["guide"] | null>;
 };
 
 export default function PiecesDetailPage() {
@@ -815,16 +810,14 @@ export default function PiecesDetailPage() {
                 Guide d&apos;achat
               </a>
             )}
-            <a
-              href={
-                data.content?.pg_alias
-                  ? `/blog-pieces-auto/conseils/${data.content.pg_alias}`
-                  : "/blog-pieces-auto"
-              }
-              className="text-emerald-600 hover:text-emerald-800 transition-colors"
-            >
-              Conseils entretien
-            </a>
+            {data.content?.conseilsHref && (
+              <a
+                href={data.content.conseilsHref}
+                className="text-emerald-600 hover:text-emerald-800 transition-colors"
+              >
+                Conseils entretien
+              </a>
+            )}
             <a
               href="/reference-auto"
               className="text-foreground hover:text-foreground transition-colors"
@@ -1114,7 +1107,7 @@ export default function PiecesDetailPage() {
           <div id="guide-link">
             <GammeGuideCTA
               gammeName={data.content?.pg_name || "Pièces auto"}
-              pgAlias={data.content?.pg_alias}
+              href={data.content?.conseilsHref}
             />
           </div>
 

@@ -7,11 +7,12 @@ sources:
   - backend/supabase/migrations/20260522_pricing_control_plane_v1_functions.sql
   - .claude/skills/supplier-price-load/SKILL.md        # canonical operator flow (PR #849)
   - backend/src/workers/supplier-price-verify.ts            # read-only portal price spot-check (N-sample)
-  - backend/src/workers/supplier-availability-classify.ts   # read-only full-feed availability classifier (bulk /search, generic)
-  - backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts  # bulk-search parser + activation classifier (brand-generic)
+  - backend/src/workers/supplier-availability-classify.ts   # read-only full-feed availability classifier (inoshop bulk /search + CAL per-ref)
+  - backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts  # bulk-search parser + activation classifier (brand-generic) + tariff overlay
+  - backend/src/modules/supplier-truth/connectors/cal-parse.ts            # CAL exact brand-locked match + CAL activation verdict
   - backend/src/modules/supplier-truth/connectors/supplier-registry.ts
   - /opt/automecanik/data/tecdoc/
-last_scan: 2026-06-10
+last_scan: 2026-10-10
 ---
 
 # Supplier Brand Price-Load Procedure
@@ -144,9 +145,15 @@ Règles feed CSV (le parser du worker est un `split(',')` naïf) :
   que `\copy` sort en `""` quoted, lu comme un EAN littéral de 2 chars).
 - `ORDER BY ref` (checkpoint resume stable). Gencode xlsx **prioritaire** quand un
   fichier fournisseur existe ; EAN DB reconstruit en complément des manquants.
-- Deux sources de feed : **xlsx fournisseur** (actives = `c_arret_gamme='N'` +
-  `px_base>0`, clé `c_art_fourn`, `gencode`=EAN-13) ou **catalogue DB** (pas de
-  fichier : `piece_ref` + EAN reconstruit, périmètre `piece_pm_id`).
+- Deux sources de feed : **xlsx fournisseur** (clé `c_art_fourn`, `gencode`=EAN-13)
+  ou **catalogue DB** (pas de fichier : `piece_ref` + EAN reconstruit, périmètre
+  `piece_pm_id`).
+- **Réfs arrêtées au tarif `[CRITICAL]`** (`c_arret_gamme='O'`) : les **garder** dans le
+  feed du classifier avec la colonne `discontinued=1` (`0` ou vide sinon ; toute autre
+  valeur = erreur avec n° de ligne). Les écarter, comme avant, laissait la pièce vendable
+  **sans aucun verdict** (cas du câble arrêté resté en vente, 2026-10). Elles sortent en
+  `BLOCK_DISCONTINUED`, ou `REVIEW_CONTRADICTION` si le portail montre encore du stock.
+  Le **feed d'import prix**, lui, reste limité aux actives (`c_arret_gamme='N'` + `px_base>0`).
 
 ## 2 — Vérif live portail (lecture seule, owner-gated)
 Deux outils complémentaires, **génériques** (tout `SUPPLIER_SPL` + `BRAND_TOKENS`),
@@ -172,6 +179,21 @@ read-only, ne touchent **jamais** `pieces_price` :
   connu-mauvais n'alimente PAS le breaker, sinon la queue de réfs fautives ouvrirait
   faussement le circuit). Réduire `BATCH` (ex. `BATCH=10`) allège les plages lourdes.
   Re-checker les `REVIEW_PORTAL_TIMEOUT` = retirer leurs réfs du checkpoint + `attempts.json` et relancer.
+  **CAL** (`SUPPLIER_SPL=19`, 2026-10) : pas de route bulk → **1 réf par appel** (autocomplete
+  + ligne article, ~5 s/réf avec le rythme anti-ban). La réf retenue est l'article dont la
+  réf normalisée est **exacte** ET la marque (`marq` ou `codemarq`) dans `BRAND_TOKENS` —
+  **jamais** le 1er résultat (même réf sous une autre marque = `REVIEW_FALSE_MATCH`, 2 articles
+  = `REVIEW_NO_EAN`). Prix et icône lus **sur la ligne de cet article seulement**, contrôlée
+  (marque + réf) ; icône encore en chargement après l'attente = `REVIEW_NO_SIGNAL`. Verdicts :
+  vert → `CONFIRMED_AG` ; J+1 → `REVIEW_MANUAL_ORDER` ; rouge (« sur commande/indisponible »)
+  → `REVIEW_ON_ORDER_OR_OUT`, **jamais** une preuve de rupture. `BRAND_TOKENS` CAL = le
+  libellé **et** le code court de la marque tels que l'autocomplete CAL les renvoie.
+  Chaque ligne lue (base, remise, net, icône) va dans `lookups.jsonl` (local, jamais commité).
+  **Arrêtées au tarif** : surcouche appliquée **au rapport** (le checkpoint garde le verdict
+  portail brut), donc un resume avec un feed mis à jour reprend les drapeaux courants.
+  **Verrou** : un run à la fois par fournisseur (session portail unique) =
+  `<parent de OUT_DIR>/.classify-spl<id>.lock` (pid + date), libéré en sortie (y c. Ctrl-C) ;
+  verrou présent = message clair, le supprimer **seulement** si le run indiqué est mort.
 - **`supplier-price-verify.ts`** *(spot-check prix rapide)* — compare `achat fichier`
   vs `achat portail` sur un **échantillon** risque-pondéré (gros montants). Verdict
   **CONFIRMED / FIX_FEED / REVIEW / BLOCK**. ⚠️ recherche réf **floue** → re-vérifier

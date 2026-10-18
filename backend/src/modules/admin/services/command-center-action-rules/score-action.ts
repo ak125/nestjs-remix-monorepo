@@ -90,6 +90,9 @@ export function finalizeAction(raw: RawAction): OwnerActionV2 {
         `Certifier / câbler la source ${a.source} (preuve + fraîcheur) avant toute optimisation.`,
       // a degraded source is high-leverage to fix → keep urgency, drop risk of acting
       risk: Math.min(a.risk, 2),
+      // the step is now "certify the source" (measurement work), no longer the
+      // owner-gated business change the rule had in mind.
+      owner_go_required: false,
       // a non-certified action must NOT carry presentational per-URL metrics —
       // keep "details only on a trusted/business action" structurally true.
       details: null,

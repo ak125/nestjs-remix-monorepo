@@ -98,6 +98,34 @@ export const CcDepartmentSchema = z
   .strict();
 export type CcDepartment = z.infer<typeof CcDepartmentSchema>;
 
+const responsibilityFields = {
+  business_number: z.number().int().min(1).max(24),
+  accountable_owner: z
+    .string()
+    .regex(/^[a-zA-Z0-9][a-zA-Z0-9._:-]*$/)
+    .nullable(),
+  operating_mode: z.enum(["human", "software", "hybrid"]),
+  repo_domains: z.array(z.string().regex(/^D(?:[1-9]|1[0-6])$/)),
+  profile_ref: z
+    .string()
+    .regex(/^audit\/automecanik-departments-map\.md#department-[a-z0-9-]+$/),
+};
+
+function validResponsibility(d: {
+  operating_mode: string;
+  repo_domains: string[];
+}) {
+  return d.operating_mode === "human" || d.repo_domains.length > 0;
+}
+
+export const CcDepartmentV2Schema = CcDepartmentSchema.extend(
+  responsibilityFields,
+).refine(validResponsibility, {
+  message: "Software and hybrid departments require a repository domain",
+  path: ["repo_domains"],
+});
+export type CcDepartmentV2 = z.infer<typeof CcDepartmentV2Schema>;
+
 export const CcChainSchema = z
   .object({
     id: z.string(),
@@ -205,6 +233,16 @@ export const CommandCenterSnapshotSchema = z
   .strict();
 export type CommandCenterSnapshot = z.infer<typeof CommandCenterSnapshotSchema>;
 
+export const CommandCenterSnapshotV2Schema = CommandCenterSnapshotSchema.extend(
+  {
+    schema_version: z.literal("command-center.v2"),
+    departments: z.array(CcDepartmentV2Schema),
+  },
+);
+export type CommandCenterSnapshotV2 = z.infer<
+  typeof CommandCenterSnapshotV2Schema
+>;
+
 // ── Live response envelope (computed by the backend reader at request time) ──
 
 export const StaleStatusSchema = z.enum([
@@ -236,6 +274,14 @@ export const CcDepartmentLiveSchema = CcDepartmentSchema.extend({
   live_caps_applied: z.array(z.string()),
 }).strict();
 export type CcDepartmentLive = z.infer<typeof CcDepartmentLiveSchema>;
+
+export const CcDepartmentLiveV2Schema = CcDepartmentLiveSchema.extend(
+  responsibilityFields,
+).refine(validResponsibility, {
+  message: "Software and hybrid departments require a repository domain",
+  path: ["repo_domains"],
+});
+export type CcDepartmentLiveV2 = z.infer<typeof CcDepartmentLiveV2Schema>;
 
 /** What GET /api/admin/command-center returns (data wrapped by AdminResponseInterceptor). */
 export const CommandCenterModeSchema = z.enum(["full", "light", "disabled"]);
@@ -280,19 +326,219 @@ export const CcActionV2Schema = z
     evidence: z.array(z.string()),
     next_step: z.string(),
     details: z.array(CcSeoDetailSchema).nullable(), // PR2 drill-down (SEO only)
+    // true = the next step is the owner's decision (STOP zone: price/stock, cart/order,
+    // indexed SEO, or an owner flag such as SUPPLIER_TRUTH_SYNC_ENABLED); false =
+    // measurement/reliability work. Declared by each rule, never inferred from action_type.
+    owner_go_required: z.boolean(),
   })
   .strict();
 export type CcActionV2 = z.infer<typeof CcActionV2Schema>;
 
-export const CommandCenterResponseSchema = CommandCenterSnapshotSchema.extend({
+/**
+ * Department report — the 12-field "Vue 5" format of
+ * audit/automecanik-departments-map.md (narrative SoT of the format), computed by
+ * the backend at request time from data the Command Center already reads: the
+ * department's measured KPI (if a producer exists) and its open actions.
+ * An unmeasurable field is explicit (NON_MESURE / INCONNUE / null), never invented.
+ * Enum values are the Vue 5 vocabulary (Fort/Moyen/Faible/Critique, mieux/stable/pire,
+ * REUSE/IMPROVE/CREATE/PAUSE, faible/moyen/haut). The machine emits REUSE or
+ * IMPROVE only: CREATE needs a proven gap score (Vue 4) and PAUSE an owner
+ * decision — both stay in the enum for human-written reports.
+ */
+export const DeptReportScoreSchema = z.enum([
+  "FORT",
+  "MOYEN",
+  "FAIBLE",
+  "CRITIQUE",
+  "NON_MESURE",
+]);
+export const DeptReportEvolutionSchema = z.enum([
+  "MIEUX",
+  "STABLE",
+  "PIRE",
+  "INCONNUE",
+]);
+export const DeptReportDecisionSchema = z.enum([
+  "REUSE",
+  "IMPROVE",
+  "CREATE",
+  "PAUSE",
+]);
+export const DeptReportRiskSchema = z.enum(["FAIBLE", "MOYEN", "HAUT"]);
+
+export const CcDepartmentReportSchema = z
+  .object({
+    department: z.string(),
+    label: z.string(),
+    priority: z.enum(["P0", "P1", "P2", "P3"]).nullable(),
+    period: z
+      .object({
+        as_of: z.string(), // = generated_at of the response
+        window_days: z.number().int().positive().nullable(), // null = no measured KPI
+      })
+      .strict(),
+    kpi: z
+      .object({
+        id: z.string().nullable(), // kpi_primary of the operating map
+        label: z.string().nullable(), // label of the measured KPI, null if unmeasured
+        // MESURE = value read; ILLISIBLE = producer exists but its source failed;
+        // SANS_PRODUCTEUR = nothing measures this KPI yet.
+        measure: z.enum(["MESURE", "ILLISIBLE", "SANS_PRODUCTEUR"]),
+        value: z.number().nullable(),
+        unit: z.string().nullable(),
+        previous_value: z.number().nullable(), // same KPI on the previous window
+      })
+      .strict(),
+    score: DeptReportScoreSchema,
+    // Explication du KPI indépendante de l’action prioritaire. Optionnel pour les anciennes réponses.
+    score_reason: z.string().optional(),
+    evolution: DeptReportEvolutionSchema,
+    evidence: z.array(z.string()),
+    gap: z.string().nullable(),
+    probable_cause: z.string().nullable(),
+    decision: DeptReportDecisionSchema,
+    risk: DeptReportRiskSchema,
+    owner_go_required: z.boolean(),
+    next_evidence: z.string(),
+    open_action_ids: z.array(z.string()), // ids in action_queue, highest score first
+  })
+  .strict();
+export type CcDepartmentReport = z.infer<typeof CcDepartmentReportSchema>;
+
+const responseFields = {
+  source_truth: z
+    .object({ canon_path: z.string(), last_verified: z.string().nullable() })
+    .strict(),
   degraded: z.boolean(),
   mode: CommandCenterModeSchema,
   action_queue: z.array(CcActionV2Schema),
+  department_reports: z.array(CcDepartmentReportSchema), // full mode only, else []
   generated_at: z.string(),
   git_sha: z.string().nullable(),
   stale_status: StaleStatusSchema,
   validation_status: ValidationStatusSchema,
   global_status: GlobalStatusSchema,
+};
+
+// Redacted API envelopes intentionally differ from the strict on-disk artifact.
+function redactionIssues(
+  r: {
+    mode: string;
+    degraded: boolean;
+    source_truth: { canon_path: string; last_verified: string | null };
+    git_sha: string | null;
+    global_status: { reasons: string[] };
+    departments: unknown[];
+    capabilities: unknown[];
+    chains: unknown[];
+    alerts: unknown[];
+    owner_actions: unknown[];
+    executive_kpis: unknown[];
+    action_queue: unknown[];
+    department_reports: unknown[];
+  },
+  ctx: z.RefinementCtx,
+) {
+  if (r.mode !== "full" || r.degraded) {
+    for (const key of [
+      "departments",
+      "capabilities",
+      "chains",
+      "alerts",
+      "owner_actions",
+      "executive_kpis",
+      "action_queue",
+      "department_reports",
+    ] as const) {
+      if (r[key].length)
+        ctx.addIssue({
+          code: "custom",
+          path: [key],
+          message: "Redacted response must not contain details",
+        });
+    }
+    if (r.source_truth.canon_path || r.git_sha !== null) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["source_truth"],
+        message: "Redacted response must not expose source provenance",
+      });
+    }
+  } else if (!r.source_truth.canon_path) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["source_truth", "canon_path"],
+      message: "Full response requires a canon path",
+    });
+  }
+}
+
+export const CommandCenterResponseSchema = CommandCenterSnapshotSchema.extend({
+  ...responseFields,
+  department_reports: z.array(
+    CcDepartmentReportSchema.omit({ score_reason: true }),
+  ),
   departments: z.array(CcDepartmentLiveSchema),
-}).strict();
+}).superRefine(redactionIssues);
 export type CommandCenterResponse = z.infer<typeof CommandCenterResponseSchema>;
+
+export const CommandCenterResponseV2Schema =
+  CommandCenterSnapshotV2Schema.extend({
+    ...responseFields,
+    departments: z.array(CcDepartmentLiveV2Schema),
+  }).superRefine(redactionIssues);
+export type CommandCenterResponseV2 = z.infer<
+  typeof CommandCenterResponseV2Schema
+>;
+
+/** Preserve the complete roster and existing fields for legacy admin consumers. */
+export function toCommandCenterV1(
+  input: CommandCenterResponseV2,
+): CommandCenterResponse {
+  return {
+    ...input,
+    schema_version: "command-center.v1",
+    department_reports: input.department_reports.map(
+      ({ score_reason: _scoreReason, ...report }) => report,
+    ),
+    departments: input.departments.map(
+      ({
+        business_number,
+        accountable_owner,
+        operating_mode,
+        repo_domains,
+        profile_ref,
+        ...legacy
+      }) => legacy,
+    ),
+  };
+}
+
+/** Bound of `owner_go_actions` in the digest (highest score first). */
+export const DIGEST_MAX_OWNER_GO_ACTIONS = 10;
+
+/**
+ * Command Center digest — what GET /api/internal/command-center/digest returns to a
+ * machine consumer outside the admin session (the Hermes supervisor). A bounded
+ * projection of CommandCenterResponse, never a second computation: same exposure
+ * mode, same cache, same rules. Per-URL SEO `details` are dropped to stay bounded.
+ */
+export const CommandCenterDigestSchema = z
+  .object({
+    schema_version: z.literal("command-center-digest.v1"),
+    generated_at: z.string(),
+    git_sha: z.string().nullable(),
+    mode: CommandCenterModeSchema,
+    degraded: z.boolean(),
+    stale_status: StaleStatusSchema,
+    global_status: GlobalStatusSchema,
+    department_reports: z.array(
+      CcDepartmentReportSchema.omit({ score_reason: true }),
+    ), // digest v1 stays unchanged
+    owner_go_actions_total: z.number().int().min(0), // before the bound below
+    owner_go_actions: z
+      .array(CcActionV2Schema.omit({ details: true }))
+      .max(DIGEST_MAX_OWNER_GO_ACTIONS),
+  })
+  .strict();
+export type CommandCenterDigest = z.infer<typeof CommandCenterDigestSchema>;

@@ -74,13 +74,15 @@ function sha256OfDirSorted(dir: string): string {
 }
 
 function resolveGeneratedAt(overrideIso?: string): string {
-  // Priority: explicit override (used by --check mode) > SOURCE_DATE_EPOCH > wall-clock.
+  // Priority: explicit override (used by --check mode) > SOURCE_DATE_EPOCH > fixed placeholder.
+  // Never wall-clock: same inputs → same bytes. The version of the inputs is carried by
+  // meta.inputFingerprint — same rule as canonical.json (ADR-058 V1-2 deterministic placeholder).
   if (overrideIso) return overrideIso;
   const epoch = process.env.SOURCE_DATE_EPOCH;
   if (epoch && /^\d+$/.test(epoch)) {
     return new Date(Number(epoch) * 1000).toISOString();
   }
-  return new Date().toISOString();
+  return "1970-01-01T00:00:00.000Z";
 }
 
 export interface BuildInputs {
@@ -508,7 +510,7 @@ async function main() {
       if (diff) console.error(`First divergence (committed → rebuilt): ${diff}`);
     } catch { /* diagnostic best-effort — ne doit jamais masquer l'échec réel */ }
     console.error("Cause: an input changed without regeneration (meta.toolchain is NOT compared — a different node/platform/arch is not a drift).");
-    console.error("To regenerate locally: `npm run audit:cleanup-candidates` (sets a fresh generatedAt; commit the result).");
+    console.error("To regenerate locally: `npm run audit:cleanup-candidates` (commit the result).");
     console.error("To authorize a single-file deletion despite drift: `npm run audit:cleanup-candidates:check -- --target <path>` (PR-8d target-scoped mode).");
     process.exit(1);
   }

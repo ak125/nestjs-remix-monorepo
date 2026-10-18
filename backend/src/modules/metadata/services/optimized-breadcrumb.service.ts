@@ -523,21 +523,6 @@ export class OptimizedBreadcrumbService {
   }
 
   /**
-   * Humaniser un segment d'URL pour créer un libellé lisible
-   * 🎯 Transforme "filtre-a-huile-7" en "Filtre à huile"
-   */
-  private humanizeSegment(segment: string): string {
-    return segment
-      .replace(/[-_]/g, ' ') // Remplacer tirets et underscores par espaces
-      .replace(/\d+/g, '') // Supprimer les chiffres
-      .replace(/\s+/g, ' ') // Normaliser les espaces
-      .trim()
-      .split(' ')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ');
-  }
-
-  /**
    * Générer un path depuis un index
    */
   private generatePathFromIndex(currentPath: string, index: number): string {

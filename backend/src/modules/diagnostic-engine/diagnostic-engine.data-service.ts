@@ -18,8 +18,11 @@ import {
   DiagSymptomsSchema,
   DiagCauseLinksSchema,
   DiagCausesSchema,
+  DiagProjectionLinksSchema,
   DiagSafetyRulesSchema,
   DiagSafetyRuleCoverageSchema,
+  DiagLinkProvenanceRowsSchema,
+  type DiagLinkProvenanceRowSchema,
 } from './types/diagnostic-reference.schema';
 
 // ── DB Row types (aligned on migration schema) ──────────
@@ -69,6 +72,26 @@ export interface DiagSymptomCauseLink {
   cause?: DiagCause;
 }
 
+/** Contribution d'un symptôme à une cause fusionnée : un lien par symptôme. */
+export interface DiagCauseContribution {
+  link_id: number;
+  symptom_slug: string;
+  relative_score: number;
+}
+
+/** Cause fusionnée multi-symptômes : score moyen et toutes ses contributions. */
+export interface DiagMergedCauseLink extends DiagSymptomCauseLink {
+  contributions: DiagCauseContribution[];
+  /**
+   * Symptômes sélectionnés uniques : le dénominateur de `relative_score`. Un
+   * symptôme sans lien vers cette cause n'a pas de contribution et compte 0.
+   */
+  symptom_count: number;
+}
+
+/** Ligne vivante (`retired_at IS NULL`) de `__diag_link_provenance`. */
+export type DiagLinkProvenance = z.infer<typeof DiagLinkProvenanceRowSchema>;
+
 export interface DiagSafetyRule {
   id: number;
   system_id: number;
@@ -94,6 +117,14 @@ export interface MaintenanceOperation {
   normal_wear_km_max: number | null;
   related_gamme_slug: string | null;
   related_pg_id: number | null;
+}
+
+/** Référentiel actif complet lu par la projection WIKI → DB (ordre : id croissant). */
+export interface DiagnosticProjectionReference {
+  systems: DiagSystem[];
+  symptoms: DiagSymptom[];
+  causes: DiagCause[];
+  links: DiagSymptomCauseLink[];
 }
 
 @Injectable()
@@ -261,26 +292,37 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
    */
   async getScoredCausesForSymptoms(
     symptomSlugs: string[],
-  ): Promise<DiagSymptomCauseLink[]> {
+  ): Promise<DiagMergedCauseLink[]> {
     if (!symptomSlugs.length) return [];
 
     // Equal-weight arithmetic mean over the unique selected symptoms. A symptom
     // not linked to a cause contributes 0: no evidence is imputed for it.
     // Sort input and evidence for deterministic results; round once after
-    // aggregation.
+    // aggregation. Every contribution is kept: provenance is read per link,
+    // not per cause.
     const slugs = [...new Set(symptomSlugs)].sort();
     const merged = new Map<
       number,
-      { link: DiagSymptomCauseLink; sum: number }
+      {
+        link: DiagSymptomCauseLink;
+        sum: number;
+        contributions: DiagCauseContribution[];
+      }
     >();
     for (const slug of slugs) {
       const links = await this.getScoredCausesForSymptom(slug);
       if (!links.length)
         throw new Error('Diagnostic cause coverage incomplete');
       for (const link of links) {
+        const contribution = {
+          link_id: link.id,
+          symptom_slug: slug,
+          relative_score: link.relative_score,
+        };
         const existing = merged.get(link.cause_id);
         if (existing) {
           existing.sum += link.relative_score;
+          existing.contributions.push(contribution);
           existing.link.evidence_for = [
             ...new Set([...existing.link.evidence_for, ...link.evidence_for]),
           ].sort();
@@ -299,14 +341,17 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
               evidence_against: [...new Set(link.evidence_against)].sort(),
             },
             sum: link.relative_score,
+            contributions: [contribution],
           });
         }
       }
     }
     return [...merged.values()]
-      .map(({ link, sum }) => ({
+      .map(({ link, sum, contributions }) => ({
         ...link,
         relative_score: Math.round(sum / slugs.length),
+        contributions,
+        symptom_count: slugs.length,
       }))
       .sort(
         (a, b) =>
@@ -462,6 +507,111 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
       );
     }
     return data || [];
+  }
+
+  /**
+   * Référentiel actif complet (systèmes, symptômes, causes, liens) pour la
+   * projection WIKI → DB. Une table lue partiellement donnerait des conflits
+   * `no_matching_link` erronés : lecture paginée + `count` exact contrôlé.
+   */
+  async getProjectionReference(): Promise<DiagnosticProjectionReference> {
+    const [systems, symptoms, causes, links] = await Promise.all([
+      this.readActiveTable('__diag_system'),
+      this.readActiveTable('__diag_symptom'),
+      this.readActiveTable('__diag_cause'),
+      this.readActiveTable('__diag_symptom_cause_link'),
+    ]);
+    DiagSystemsSchema.parse(systems);
+    DiagSymptomsSchema.parse(symptoms);
+    DiagCausesSchema.parse(causes);
+    DiagProjectionLinksSchema.parse(links);
+    return {
+      systems: systems as DiagSystem[],
+      symptoms: symptoms as DiagSymptom[],
+      causes: causes as DiagCause[],
+      links: links as DiagSymptomCauseLink[],
+    };
+  }
+
+  /**
+   * Provenance WIKI vivante des liens demandés. Une lecture partielle ferait
+   * passer des liens documentés pour non documentés : `count` exact contrôlé,
+   * et toute anomalie lève (le moteur rend alors la provenance `unavailable`,
+   * jamais `unsourced`). Une réponse au-delà du plafond PostgREST de 1000 lignes
+   * lève aussi : un diagnostic porte sur quelques dizaines de liens.
+   */
+  async getLiveLinkProvenance(
+    linkIds: number[],
+  ): Promise<DiagLinkProvenance[]> {
+    const ids = [...new Set(linkIds)].sort((a, b) => a - b);
+    if (!ids.length) return [];
+    const { data, error, count } = await this.supabase
+      .from('__diag_link_provenance')
+      .select(
+        'link_id, wiki_path, gamme_slug, relation_to_part, diagnostic_safe',
+        { count: 'exact' },
+      )
+      .in('link_id', ids)
+      .is('retired_at', null)
+      .order('link_id', { ascending: true })
+      .order('wiki_path', { ascending: true });
+    if (error || !Array.isArray(data)) {
+      throw new Error(
+        `__diag_link_provenance unavailable: ${error?.message ?? 'no rows'}`,
+      );
+    }
+    if (count !== data.length) {
+      throw new Error(
+        `__diag_link_provenance incomplete: ${data.length} row(s) read, ${count} live`,
+      );
+    }
+    const parsed = DiagLinkProvenanceRowsSchema.safeParse(data);
+    if (!parsed.success) {
+      throw new Error('__diag_link_provenance rows invalid');
+    }
+    const requested = new Set(ids);
+    if (parsed.data.some((row) => !requested.has(row.link_id))) {
+      throw new Error('__diag_link_provenance returned an unrequested link');
+    }
+    return parsed.data;
+  }
+
+  /**
+   * Toutes les lignes actives d'une table, par pages de 1000 (plafond PostgREST).
+   * Le `count` exact de chaque page doit rester celui de la première et égaler
+   * le total lu : un plafond serveur plus bas ou une écriture concurrente lève.
+   */
+  private async readActiveTable(table: string): Promise<unknown[]> {
+    const pageSize = 1000;
+    const rows: unknown[] = [];
+    let expected: number | null = null;
+    for (let from = 0; ; from += pageSize) {
+      const { data, error, count } = await this.supabase
+        .from(table)
+        .select('*', { count: 'exact' })
+        .eq('active', true)
+        .order('id', { ascending: true })
+        .range(from, from + pageSize - 1);
+      if (error || !Array.isArray(data)) {
+        throw new Error(
+          `${table} unavailable at offset ${from}: ${error?.message ?? 'no rows'}`,
+        );
+      }
+      expected ??= count;
+      if (count !== expected) {
+        throw new Error(
+          `${table} changed during read: ${count} active, ${expected} at offset 0`,
+        );
+      }
+      rows.push(...data);
+      if (data.length < pageSize) break;
+    }
+    if (rows.length !== expected) {
+      throw new Error(
+        `${table} incomplete: ${rows.length} row(s) read, ${expected} active`,
+      );
+    }
+    return rows;
   }
 
   /**

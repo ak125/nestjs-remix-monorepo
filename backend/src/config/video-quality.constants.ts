@@ -66,8 +66,8 @@ export type GateVerdict = 'PASS' | 'WARN' | 'FAIL';
 // ─────────────────────────────────────────────────────────────
 
 export const VIDEO_GATE_THRESHOLDS = {
-  /** G1 Truth: ratio of unsourced claims */
-  truth_attribution: { warn: 0.15, fail: 0.3 },
+  /** G1 Truth: count of unsupported factual claims — any unsupported fact fails */
+  truth_attribution: { warn: 1, fail: 1 },
   /** G2 Safety: count of unvalidated procedure/safety claims — STRICT */
   safety_unvalidated: { warn: 0, fail: 1 },
   /** G3 Brand: count of brand voice violations */

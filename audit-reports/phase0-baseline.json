@@ -30,11 +30,11 @@
     "frontend_cycles": 1
   },
   "depcruise": {
-    "violations": 148,
+    "violations": 163,
     "errors": 0,
     "modules_cruised": 2101,
     "dependencies_cruised": 8425,
-    "warnings": 148
+    "warnings": 163
   },
   "ast_grep": {
     "warnings": 72,

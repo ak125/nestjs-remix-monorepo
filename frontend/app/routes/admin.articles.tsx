@@ -12,8 +12,6 @@ import {
   useLoaderData,
   Link,
   Form,
-  useFetcher,
-  useNavigation,
 } from "react-router";
 import { toast } from "sonner";
 import { Alert } from "~/components/ui/alert";
@@ -260,8 +258,6 @@ export const meta: MetaFunction = () => {
 export default function AdminArticlesPage() {
   const { articles, totalCount, isError, errorMessage } =
     useLoaderData<LoaderData>();
-  const _fetcher = useFetcher();
-  const _navigation = useNavigation();
   const [selectedType, setSelectedType] = useState<string>("");
 
   const getTypeColor = (type: string) => {

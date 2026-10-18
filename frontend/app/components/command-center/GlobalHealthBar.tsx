@@ -2,10 +2,11 @@
  * Command Center — Global Health Bar.
  * Summarizes the operating map, not application execution: verdict + reasons + per-family
  * rollup + freshness/validation. Enforces "no green on broken source" — a family
- * with any non-CERTIFIED department is never shown green.
+ * with non-CERTIFIED software evidence is never shown green. Human responsibilities
+ * without software capabilities are counted separately and remain unassessed.
  */
 import {
-  type CommandCenterResponse,
+  type CommandCenterResponseV2,
   type Certification,
   type GlobalStatus,
 } from "@repo/registry";
@@ -34,7 +35,7 @@ const VERDICT_LABEL: Record<GlobalStatus["verdict"], string> = {
   BLOCKED: "Cartographie bloquée",
 };
 
-export function GlobalHealthBar({ data }: { data: CommandCenterResponse }) {
+export function GlobalHealthBar({ data }: { data: CommandCenterResponseV2 }) {
   const { global_status: g } = data;
   const Icon =
     g.level === "OK"
@@ -49,16 +50,25 @@ export function GlobalHealthBar({ data }: { data: CommandCenterResponse }) {
         ? "warning"
         : "success";
 
-  // per-family rollup = worst department certification in the family
+  // Presentation only: preserve technical certifications and separate human gaps.
   const families = FAMILIES.map((family) => {
     const depts = data.departments.filter((d) => d.family === family);
+    const software = depts.filter(
+      (d) => !(d.operating_mode === "human" && d.capabilities.length === 0),
+    );
     let worst: Certification = "CERTIFIED";
-    for (const d of depts) {
+    for (const d of software) {
       if (RANK[d.certification as Certification] < RANK[worst]) {
         worst = d.certification as Certification;
       }
     }
-    return { family, worst, count: depts.length };
+    return {
+      family,
+      worst,
+      count: depts.length,
+      softwareCount: software.length,
+      humanCount: depts.length - software.length,
+    };
   }).filter((f) => f.count > 0);
 
   return (
@@ -104,13 +114,32 @@ export function GlobalHealthBar({ data }: { data: CommandCenterResponse }) {
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {families.map((f) => (
-          <Card key={f.family}>
+          <Card key={f.family} role="group" aria-label={f.family}>
             <CardContent className="flex flex-wrap items-center justify-between gap-2 p-4">
               <div>
                 <p className="text-sm font-medium">{f.family}</p>
                 <p className="text-xs text-muted-foreground">{f.count} dépt.</p>
+                {f.humanCount > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    {f.humanCount}{" "}
+                    {f.humanCount === 1
+                      ? "responsabilité humaine non évaluée"
+                      : "responsabilités humaines non évaluées"}
+                  </p>
+                )}
               </div>
-              <CertBadge value={f.worst} />
+              {f.softwareCount > 0 ? (
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">
+                    Périmètre logiciel
+                  </p>
+                  <CertBadge value={f.worst} />
+                </div>
+              ) : (
+                <Badge variant="outline">
+                  Aucune capacité logicielle rattachée
+                </Badge>
+              )}
             </CardContent>
           </Card>
         ))}

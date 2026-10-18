@@ -56,18 +56,6 @@ export function BrandLogo({
         )
       : undefined;
 
-  // Calculer la taille en pixels (conservé pour référence future)
-  const _pixelSize =
-    typeof size === "number"
-      ? size
-      : {
-          xs: 20,
-          sm: 24,
-          md: 32,
-          lg: 40,
-          xl: 48,
-        }[size];
-
   // Initiales pour le fallback (2 premières lettres)
   const initials = brandName.substring(0, 2).toUpperCase();
 

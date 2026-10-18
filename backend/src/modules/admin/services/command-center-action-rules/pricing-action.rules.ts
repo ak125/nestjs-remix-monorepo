@@ -39,6 +39,7 @@ export function buildPricingRiskActions(s: PricingStats): RawAction[] {
         .map((id) => `pieces_price pri_piece_id=${id}`),
       next_step:
         "Contrôle pricing : corriger le prix de vente ou d'achat, ou geler la référence.",
+      owner_go_required: true, // prix runtime = zone STOP
     });
   }
 
@@ -61,6 +62,7 @@ export function buildPricingRiskActions(s: PricingStats): RawAction[] {
         .map((id) => `pieces_price pri_piece_id=${id}`),
       next_step:
         "Charger le prix d'achat (procédure supplier price-load) pour ces références.",
+      owner_go_required: true, // prix runtime = zone STOP
     });
   }
 
@@ -84,6 +86,7 @@ export function buildPricingRiskActions(s: PricingStats): RawAction[] {
     evidence: ['reference_pricing_canon_xls_archive (MARGE_NEW_2021.xls)'],
     next_step:
       'Définir les seuils de marge par sous-famille (SoT MARGE_NEW_2021) + RPC vente-à-perte → activer la règle "marge faible".',
+    owner_go_required: true, // seuils de marge = décision de prix owner (SoT MARGE_NEW_2021)
   });
 
   return out;

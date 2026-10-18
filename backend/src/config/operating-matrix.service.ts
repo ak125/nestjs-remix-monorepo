@@ -20,10 +20,7 @@ import { createHash } from 'node:crypto';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
-import {
-  parseAgentFrontmatter,
-  safeParseAgentFrontmatter,
-} from './agent-frontmatter.schema';
+import { safeParseAgentFrontmatter } from './agent-frontmatter.schema';
 import {
   EXECUTION_REGISTRY,
   EXECUTION_REGISTRY_VERSION,
@@ -400,14 +397,6 @@ export class OperatingMatrixService {
       error: null,
     };
   }
-
-  /**
-   * Strict variant used by the migration script and tests — parses an agent
-   * frontmatter raw object and throws on failure. Re-exports the Zod
-   * parser via the service so callers don't import the schema directly.
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private static _parseAgentFrontmatter = parseAgentFrontmatter;
 
   private groupAgentsByRole(agents: AgentFile[]): Map<RoleId, string[]> {
     const map = new Map<RoleId, string[]>();
