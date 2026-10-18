@@ -440,7 +440,7 @@
         "backend/src/modules/media-factory/types"
       ],
       "files_count": 23,
-      "loc_total": 4769,
+      "loc_total": 4817,
       "has_barrel": false
     },
     "merchant-center": {
@@ -958,7 +958,7 @@
         "tests/registry"
       ],
       "files_count": 303,
-      "loc_total": 57888,
+      "loc_total": 58049,
       "has_barrel": true
     },
     "upload": {

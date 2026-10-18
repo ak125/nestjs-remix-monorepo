@@ -103,13 +103,17 @@ export class RenderAdapterService {
       );
 
       // Rule 3: No output = no success (double-check at adapter level)
-      if (result.status === 'success' && !result.outputPath) {
+      if (
+        result.status === 'success' &&
+        (typeof result.outputPath !== 'string' || !result.outputPath.trim())
+      ) {
         this.logger.warn(
           `[RAS] brief=${request.briefId} exec=${request.executionLogId} Canary returned success but no outputPath — marking failed`,
         );
         return {
           ...result,
           status: 'failed',
+          outputPath: null,
           errorCode: RenderErrorCode.RENDER_OUTPUT_INVALID,
           engineResolution: 'requested',
           retryable: true,
@@ -182,6 +186,22 @@ export class RenderAdapterService {
         this.stubEngine.render(request),
         RENDER_TIMEOUT_MS,
       );
+
+      // Apply Rule 3 on the direct stub path and on canary fallback alike.
+      if (
+        result.status === 'success' &&
+        (typeof result.outputPath !== 'string' || !result.outputPath.trim())
+      ) {
+        return {
+          ...result,
+          status: 'failed',
+          outputPath: null,
+          errorMessage: 'Engine returned success but no output file',
+          errorCode: RenderErrorCode.RENDER_OUTPUT_INVALID,
+          engineResolution: isCanaryFallback ? 'fallback_to_stub' : 'requested',
+          retryable: false,
+        };
+      }
 
       return {
         ...result,
