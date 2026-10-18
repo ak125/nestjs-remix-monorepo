@@ -48479,7 +48479,7 @@
         "backend/src/modules/media-factory/render/types/render.types.ts"
       ],
       "kind": "service",
-      "loc": 193,
+      "loc": 170,
       "owner": "@ak125/marketing-team",
       "path": "backend/src/modules/media-factory/render/engines/remotion-render.engine.ts",
       "risk": "medium",
@@ -48565,7 +48565,7 @@
         "backend/src/modules/media-factory/render/types/render.types.ts"
       ],
       "kind": "service",
-      "loc": 413,
+      "loc": 393,
       "owner": "@ak125/marketing-team",
       "path": "backend/src/modules/media-factory/render/render-adapter.service.ts",
       "risk": "medium",
@@ -48588,11 +48588,10 @@
         "backend/src/workers/processors/video-execution.processor.ts"
       ],
       "imports": [
-        "@common/exceptions",
         "backend/src/config/video-quality.constants.ts"
       ],
       "kind": "service",
-      "loc": 79,
+      "loc": 74,
       "owner": "@ak125/marketing-team",
       "path": "backend/src/modules/media-factory/render/templates/template-registry.ts",
       "risk": "medium",
@@ -70623,7 +70622,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 619,
+      "loc": 590,
       "owner": "@ak125",
       "path": "backend/tests/unit/render-adapter.service.test.ts",
       "risk": "medium",
@@ -70643,7 +70642,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 338,
+      "loc": 314,
       "owner": "@ak125",
       "path": "backend/tests/unit/render-engines.test.ts",
       "risk": "medium",
@@ -71423,7 +71422,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 83,
+      "loc": 90,
       "owner": "@ak125",
       "path": "backend/tests/unit/template-registry.test.ts",
       "risk": "medium",
@@ -71643,7 +71642,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 414,
+      "loc": 529,
       "owner": "@ak125",
       "path": "backend/tests/unit/video-gates.service.test.ts",
       "risk": "medium",
@@ -104867,15 +104866,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "5ca91094428cc956799c31406f2c730d22e7557eca4996e6945b0e0c6969aa47",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "993f8a45491adc84d340b06a3c9186ad8ad5ea26fcbc53e1f31070aa1f9c64d6",
+      ".spec/00-canon/repository-registry/ownership.yaml": "f5e3af9f51963906b209979eab5ba317a31b0d7ecb78bf27af96eac2a1acad56",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "90163175840e44796908f793612d86b090e6efec04ed7053e3966b0e0c211728",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "8a76647388239f17cba99924b6f61a8ebcd15ab09e2e62ba460e1adb6505b76c",
+      "audit/registry/files.json": "64dff280d3ec57ea918d8e152677faea798552f845e77a75bd22f58c217cfda1",
       "audit/registry/rpc.json": "68f3b21f7aa0b2ef7da9b488c657c3b6b5bdde0476bf7d617f1e346cc26b4449",
       "audit/registry/runtime.json": "db3c1293c1d26fff96e8f10d130e6ef2238b96d3fbbc099f9e074be14c26bbbf"
     },
-    "sotFingerprint": "20c0056ccaf9"
+    "sotFingerprint": "a9247ec05d0e"
   },
   "runtime": [
     {

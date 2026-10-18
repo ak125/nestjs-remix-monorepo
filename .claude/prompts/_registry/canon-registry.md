@@ -149,6 +149,7 @@
 | Quality constraints | `.claude/prompts/_shared/quality-constraints.md` |
 | Upstream required | `.claude/prompts/_shared/upstream-required.md` |
 | Write/publish boundary | `.claude/prompts/_shared/write-publish-boundary.md` |
+| Editorial review | `.claude/prompts/_shared/editorial-review.md` |
 | Page roles canon | `.claude/skills/.../references/page-roles.md` |
 | Keyword planner orchestrator | `.claude/agents/keyword-planner.md` |
 

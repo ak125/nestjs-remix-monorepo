@@ -41,6 +41,10 @@ explicite (`agents/openai.yaml` du skill). Les skills de workspace ne sont pas e
 tâche correspond à leur champ `description` (« Use when … »), lis ce `SKILL.md` en entier avant
 d'agir. Un skill décrit une procédure ; il ne lève aucune zone STOP.
 
+Relecture ou réécriture de style d'un brouillon français : lire
+`.claude/prompts/_shared/editorial-review.md` en entier avant d'agir. Elle rend une proposition
+motivée ; elle ne publie rien et n'écrit ni dans RAW ni dans WIKI.
+
 ## Zones STOP
 
 Elles sont définies par l'**invariant 9 de `CLAUDE.md`**, et **volontairement pas recopiées
