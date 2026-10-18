@@ -1,4 +1,3 @@
-import { type LoaderFunctionArgs, data, useLoaderData, useSearchParams } from "react-router";
 import {
   Film,
   CheckCircle,
@@ -15,10 +14,18 @@ import {
   ChevronRight,
   Shield,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  data,
+  useLoaderData,
+  useSearchParams,
+} from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+
+import { executionPresentation } from "~/utils/video-execution";
 
 // ── Interfaces ──
 
@@ -29,7 +36,7 @@ interface DashboardStats {
 
 interface ExecutionStats {
   total: number;
-  byStatus: Record<string, number>;
+  byOutcome?: Record<string, number>;
   avgDurationMs: number | null;
   engineDistribution: Record<string, number>;
   canary: {
@@ -164,13 +171,6 @@ const STATUS_CONFIG: Record<
   },
 };
 
-const EXEC_STATUS_COLORS: Record<string, string> = {
-  success: "bg-green-100 text-green-700",
-  failed: "bg-red-100 text-red-700",
-  pending: "bg-yellow-100 text-yellow-700",
-  processing: "bg-blue-100 text-blue-700",
-};
-
 const HEALTH_STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   ok: { label: "Operationnel", color: "bg-green-100 text-green-700" },
   degraded: { label: "Degrade", color: "bg-yellow-100 text-yellow-700" },
@@ -282,7 +282,9 @@ export default function VideoHubDashboard() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card>
             <CardContent className="p-4 text-center">
-              <div className="text-xs text-gray-500 mb-1">Success Rate</div>
+              <div className="text-xs text-gray-500 mb-1">
+                Taux de rendus contrôlés
+              </div>
               <div
                 className={`text-2xl font-bold ${getSloColor("success", executionStats.canary.successRate)}`}
               >
@@ -372,18 +374,16 @@ export default function VideoHubDashboard() {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2 mb-3">
-              {Object.entries(executionStats.byStatus).map(
-                ([status, count]) => (
-                  <Badge
-                    key={status}
-                    className={
-                      EXEC_STATUS_COLORS[status] ?? "bg-gray-100 text-gray-700"
-                    }
-                  >
-                    {status}: {count}
-                  </Badge>
-                ),
-              )}
+              {Object.entries(
+                executionStats.byOutcome ?? { unknown: executionStats.total },
+              ).map(([status, count]) => (
+                <Badge
+                  key={status}
+                  className={executionPresentation(status).className}
+                >
+                  {executionPresentation(status).label}: {count}
+                </Badge>
+              ))}
               {executionStats.total === 0 && (
                 <span className="text-sm text-gray-400">Aucune execution</span>
               )}
@@ -448,7 +448,7 @@ export default function VideoHubDashboard() {
             {executionStats && executionStats.canary.totalCanary > 0 && (
               <div className="grid grid-cols-2 gap-4 text-sm pt-2 border-t">
                 <div>
-                  <div className="text-gray-500">Succes canary</div>
+                  <div className="text-gray-500">Rendus canary contrôlés</div>
                   <div
                     className={`font-medium ${getSloColor("success", executionStats.canary.successRate)}`}
                   >

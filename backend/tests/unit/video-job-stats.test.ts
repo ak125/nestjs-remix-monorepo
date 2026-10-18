@@ -41,9 +41,7 @@ function createMocks() {
   return { mockQueue, mockDataService, mockRenderAdapter, mockConfigService };
 }
 
-function createService(
-  mocks: ReturnType<typeof createMocks>,
-): VideoJobService {
+function createService(mocks: ReturnType<typeof createMocks>): VideoJobService {
   return new (VideoJobService as any)(
     mocks.mockConfigService,
     mocks.mockQueue,
@@ -238,7 +236,7 @@ describe('VideoJobService — stats/list/map (P18)', () => {
   // ── getExecutionStats ──
 
   describe('getExecutionStats', () => {
-    it('should return zero stats on DB error', async () => {
+    it('should reject unavailable stats instead of reporting an empty population', async () => {
       const chain = statsChain({
         data: null,
         error: { message: 'DB unreachable' },
@@ -248,11 +246,9 @@ describe('VideoJobService — stats/list/map (P18)', () => {
         configurable: true,
       });
 
-      const stats = await service.getExecutionStats('all');
-      expect(stats.total).toBe(0);
-      expect(stats.byStatus).toEqual({});
-      expect(stats.avgDurationMs).toBeNull();
-      expect(stats.timeWindow).toBe('all');
+      await expect(service.getExecutionStats('all')).rejects.toThrow(
+        'Execution statistics unavailable',
+      );
     });
 
     it('should return total=0 and null averages for empty data', async () => {
@@ -270,9 +266,33 @@ describe('VideoJobService — stats/list/map (P18)', () => {
 
     it('should compute byStatus correctly with mixed statuses', async () => {
       const rows = [
-        { status: 'completed', duration_ms: 100, engine_name: 'stub', render_duration_ms: null, is_canary: false, canary_fallback: false, canary_error_code: null },
-        { status: 'completed', duration_ms: 200, engine_name: 'stub', render_duration_ms: null, is_canary: false, canary_fallback: false, canary_error_code: null },
-        { status: 'failed', duration_ms: 300, engine_name: 'stub', render_duration_ms: null, is_canary: false, canary_fallback: false, canary_error_code: null },
+        {
+          status: 'completed',
+          duration_ms: 100,
+          engine_name: 'stub',
+          render_duration_ms: null,
+          is_canary: false,
+          canary_fallback: false,
+          canary_error_code: null,
+        },
+        {
+          status: 'completed',
+          duration_ms: 200,
+          engine_name: 'stub',
+          render_duration_ms: null,
+          is_canary: false,
+          canary_fallback: false,
+          canary_error_code: null,
+        },
+        {
+          status: 'failed',
+          duration_ms: 300,
+          engine_name: 'stub',
+          render_duration_ms: null,
+          is_canary: false,
+          canary_fallback: false,
+          canary_error_code: null,
+        },
       ];
       const chain = statsChain({ data: rows, error: null });
       Object.defineProperty(service, 'client', {
@@ -283,15 +303,48 @@ describe('VideoJobService — stats/list/map (P18)', () => {
       const stats = await service.getExecutionStats();
       expect(stats.total).toBe(3);
       expect(stats.byStatus).toEqual({ completed: 2, failed: 1 });
+      expect(stats.byOutcome).toEqual({ simulated: 2, failed: 1 });
       expect(stats.avgDurationMs).toBe(200); // (100+200+300)/3
     });
 
     it('should compute canary successRate and fallbackRate when totalCanary > 0', async () => {
       const rows = [
-        { status: 'completed', duration_ms: 100, engine_name: 'remotion', render_duration_ms: 80, is_canary: true, canary_fallback: false, canary_error_code: null },
-        { status: 'completed', duration_ms: 200, engine_name: 'remotion', render_duration_ms: 150, is_canary: true, canary_fallback: false, canary_error_code: null },
-        { status: 'completed', duration_ms: 300, engine_name: 'remotion', render_duration_ms: 250, is_canary: true, canary_fallback: false, canary_error_code: null },
-        { status: 'completed', duration_ms: 400, engine_name: 'stub', render_duration_ms: 50, is_canary: true, canary_fallback: true, canary_error_code: 'RENDER_ENGINE_TIMEOUT' },
+        {
+          status: 'completed',
+          duration_ms: 100,
+          engine_name: 'remotion',
+          render_duration_ms: 80,
+          is_canary: true,
+          canary_fallback: false,
+          canary_error_code: null,
+        },
+        {
+          status: 'completed',
+          duration_ms: 200,
+          engine_name: 'remotion',
+          render_duration_ms: 150,
+          is_canary: true,
+          canary_fallback: false,
+          canary_error_code: null,
+        },
+        {
+          status: 'completed',
+          duration_ms: 300,
+          engine_name: 'remotion',
+          render_duration_ms: 250,
+          is_canary: true,
+          canary_fallback: false,
+          canary_error_code: null,
+        },
+        {
+          status: 'completed',
+          duration_ms: 400,
+          engine_name: 'stub',
+          render_duration_ms: 50,
+          is_canary: true,
+          canary_fallback: true,
+          canary_error_code: 'RENDER_ENGINE_TIMEOUT',
+        },
       ];
       const chain = statsChain({ data: rows, error: null });
       Object.defineProperty(service, 'client', {
@@ -302,8 +355,8 @@ describe('VideoJobService — stats/list/map (P18)', () => {
       const stats = await service.getExecutionStats();
       expect(stats.canary.totalCanary).toBe(4);
       expect(stats.canary.totalFallback).toBe(1);
-      // successRate = Math.round(((4 - 1) / 4) * 100) = 75
-      expect(stats.canary.successRate).toBe(75);
+      // No artifact checks: absence of fallback is not success.
+      expect(stats.canary.successRate).toBe(0);
       // fallbackRate = Math.round((1 / 4) * 100) = 25
       expect(stats.canary.fallbackRate).toBe(25);
       expect(stats.canary.topErrorCodes).toEqual({
@@ -311,9 +364,56 @@ describe('VideoJobService — stats/list/map (P18)', () => {
       });
     });
 
+    it('does not count a real unchecked canary, an engine failure or claimed checks as success', async () => {
+      const chain = statsChain({
+        data: [
+          {
+            status: 'completed',
+            is_canary: true,
+            engine_name: 'remotion',
+            render_status: 'success',
+            render_output_path: 's3://renders/a.mp4',
+          },
+          {
+            status: 'completed',
+            is_canary: true,
+            engine_name: 'remotion',
+            render_status: 'failed',
+          },
+          {
+            status: 'completed',
+            is_canary: true,
+            engine_name: 'remotion',
+            render_status: 'success',
+            render_output_path: 's3://renders/b.mp4',
+            render_metadata: {
+              executionOutcome: 'rendered_checked',
+              checked: true,
+            },
+          },
+        ],
+        error: null,
+      });
+      Object.defineProperty(service, 'client', {
+        get: () => chain,
+        configurable: true,
+      });
+      const stats = await service.getExecutionStats();
+      expect(stats.canary.successRate).toBe(0);
+      expect(stats.byOutcome).toEqual({ rendered_unverified: 2, failed: 1 });
+    });
+
     it('should return successRate=null when totalCanary=0', async () => {
       const rows = [
-        { status: 'completed', duration_ms: 100, engine_name: 'stub', render_duration_ms: 50, is_canary: false, canary_fallback: false, canary_error_code: null },
+        {
+          status: 'completed',
+          duration_ms: 100,
+          engine_name: 'stub',
+          render_duration_ms: 50,
+          is_canary: false,
+          canary_fallback: false,
+          canary_error_code: null,
+        },
       ];
       const chain = statsChain({ data: rows, error: null });
       Object.defineProperty(service, 'client', {
@@ -376,7 +476,8 @@ describe('VideoJobService — stats/list/map (P18)', () => {
       expect(mapped.videoType).toBe('short');
       expect(mapped.bullmqJobId).toBe('bull-job-10');
       expect(mapped.triggerSource).toBe('manual');
-      expect(mapped.canPublish).toBe(true);
+      expect(mapped.canPublish).toBe(false);
+      expect(mapped.executionOutcome).toBe('simulated');
       expect(mapped.qualityScore).toBe(85);
       expect(mapped.engineName).toBe('stub');
       expect(mapped.renderDurationMs).toBe(3000);
