@@ -2322,6 +2322,66 @@
         "args": [
           {
             "mode": "IN",
+            "name": "p_post_id",
+            "type": "bigint"
+          },
+          {
+            "mode": "IN",
+            "name": "p_channel",
+            "type": "text"
+          },
+          {
+            "mode": "IN",
+            "name": "p_content_revision",
+            "type": "bigint"
+          },
+          {
+            "mode": "IN",
+            "name": "p_review_version",
+            "type": "bigint"
+          },
+          {
+            "mode": "IN",
+            "name": "p_content_hash",
+            "type": "text"
+          },
+          {
+            "mode": "IN",
+            "name": "p_url",
+            "type": "text"
+          },
+          {
+            "mode": "IN",
+            "name": "p_actor",
+            "type": "text"
+          }
+        ],
+        "definedInMigrations": [
+          "20261016010000_marketing_publication_proofs.sql"
+        ],
+        "domain": "UNKNOWN",
+        "id": "public.declare_marketing_social_publication",
+        "language": "plpgsql",
+        "name": "declare_marketing_social_publication",
+        "owner": "__unassigned__",
+        "parseMode": "parsed",
+        "parseWarnings": [],
+        "returnType": "jsonb",
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "searchPath": [
+          "pg_catalog",
+          "public"
+        ],
+        "securityDefiner": false,
+        "sourceConfidence": "high",
+        "status": "UNKNOWN",
+        "usedBy": []
+      },
+      {
+        "args": [
+          {
+            "mode": "IN",
             "name": "p_window_hours",
             "type": "INT"
           },
@@ -7072,6 +7132,141 @@
         "args": [
           {
             "mode": "IN",
+            "name": "p_row",
+            "type": "jsonb"
+          }
+        ],
+        "definedInMigrations": [
+          "20261016010000_marketing_publication_proofs.sql"
+        ],
+        "domain": "UNKNOWN",
+        "id": "public.marketing_social_editorial",
+        "language": "sql",
+        "name": "marketing_social_editorial",
+        "owner": "__unassigned__",
+        "parseMode": "parsed",
+        "parseWarnings": [],
+        "returnType": "jsonb",
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "searchPath": [
+          "pg_catalog",
+          "pg_catalog",
+          "public"
+        ],
+        "securityDefiner": false,
+        "sourceConfidence": "high",
+        "status": "UNKNOWN",
+        "usedBy": []
+      },
+      {
+        "args": [],
+        "definedInMigrations": [
+          "20261014010000_marketing_social_reviews.sql"
+        ],
+        "domain": "UNKNOWN",
+        "id": "public.marketing_social_history_immutable",
+        "language": "plpgsql",
+        "name": "marketing_social_history_immutable",
+        "owner": "__unassigned__",
+        "parseMode": "parsed",
+        "parseWarnings": [],
+        "returnType": "trigger",
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "searchPath": [
+          "pg_catalog"
+        ],
+        "securityDefiner": false,
+        "sourceConfidence": "high",
+        "status": "UNKNOWN",
+        "usedBy": []
+      },
+      {
+        "args": [
+          {
+            "mode": "IN",
+            "name": "p_url",
+            "type": "text"
+          }
+        ],
+        "definedInMigrations": [
+          "20261016010000_marketing_publication_proofs.sql"
+        ],
+        "domain": "UNKNOWN",
+        "id": "public.marketing_social_publication_url",
+        "language": "sql",
+        "name": "marketing_social_publication_url",
+        "owner": "__unassigned__",
+        "parseMode": "parsed",
+        "parseWarnings": [],
+        "returnType": "boolean",
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "searchPath": [
+          "pg_catalog",
+          "pg_catalog",
+          "pg_catalog",
+          "public"
+        ],
+        "securityDefiner": false,
+        "sourceConfidence": "high",
+        "status": "UNKNOWN",
+        "usedBy": []
+      },
+      {
+        "args": [],
+        "definedInMigrations": [
+          "20261014010000_marketing_social_reviews.sql"
+        ],
+        "domain": "UNKNOWN",
+        "id": "public.marketing_social_record_history",
+        "language": "plpgsql",
+        "name": "marketing_social_record_history",
+        "owner": "__unassigned__",
+        "parseMode": "parsed",
+        "parseWarnings": [],
+        "returnType": "trigger",
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "searchPath": [
+          "pg_catalog",
+          "public",
+          "pg_catalog"
+        ],
+        "securityDefiner": true,
+        "sourceConfidence": "high",
+        "status": "UNKNOWN",
+        "usedBy": []
+      },
+      {
+        "args": [],
+        "definedInMigrations": [
+          "20261016010000_marketing_publication_proofs.sql"
+        ],
+        "domain": "UNKNOWN",
+        "id": "public.marketing_social_revision_guard",
+        "language": "plpgsql",
+        "name": "marketing_social_revision_guard",
+        "owner": "__unassigned__",
+        "parseMode": "parsed",
+        "parseWarnings": [],
+        "returnType": "trigger",
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "searchPath": [
+          "pg_catalog",
+          "public"
+        ],
+        "securityDefiner": false,
+        "sourceConfidence": "high",
+        "status": "UNKNOWN",
+        "usedBy": []
+      },
+      {
+        "args": [
+          {
+            "mode": "IN",
             "name": "p_text",
             "type": "text"
           }
@@ -7923,6 +8118,66 @@
         "schemaVersion": "1.0.0",
         "searchPath": [],
         "securityDefiner": true,
+        "sourceConfidence": "high",
+        "status": "UNKNOWN",
+        "usedBy": []
+      },
+      {
+        "args": [
+          {
+            "mode": "IN",
+            "name": "p_post_id",
+            "type": "bigint"
+          },
+          {
+            "mode": "IN",
+            "name": "p_channel",
+            "type": "text"
+          },
+          {
+            "mode": "IN",
+            "name": "p_content_revision",
+            "type": "bigint"
+          },
+          {
+            "mode": "IN",
+            "name": "p_review_version",
+            "type": "bigint"
+          },
+          {
+            "mode": "IN",
+            "name": "p_action",
+            "type": "text"
+          },
+          {
+            "mode": "IN",
+            "name": "p_actor",
+            "type": "text"
+          },
+          {
+            "mode": "IN",
+            "name": "p_gate",
+            "type": "jsonb"
+          }
+        ],
+        "definedInMigrations": [
+          "20261016010000_marketing_publication_proofs.sql"
+        ],
+        "domain": "UNKNOWN",
+        "id": "public.review_marketing_social_post",
+        "language": "plpgsql",
+        "name": "review_marketing_social_post",
+        "owner": "__unassigned__",
+        "parseMode": "parsed",
+        "parseWarnings": [],
+        "returnType": "jsonb",
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "searchPath": [
+          "pg_catalog",
+          "public"
+        ],
+        "securityDefiner": false,
         "sourceConfidence": "high",
         "status": "UNKNOWN",
         "usedBy": []
@@ -11699,6 +11954,58 @@
         "status": "LIVE",
         "usedBy": [
           "backend/src/modules/marketing/services/marketing-data.service.ts"
+        ]
+      },
+      {
+        "columns": [
+          {
+            "hasDefault": false,
+            "name": "id",
+            "nullable": true,
+            "type": "bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY"
+          },
+          {
+            "hasDefault": false,
+            "name": "content_revision",
+            "nullable": false,
+            "type": "bigint"
+          },
+          {
+            "hasDefault": false,
+            "name": "review_version",
+            "nullable": false,
+            "type": "bigint"
+          },
+          {
+            "hasDefault": false,
+            "name": "snapshot",
+            "nullable": false,
+            "type": "jsonb"
+          },
+          {
+            "hasDefault": true,
+            "name": "recorded_at",
+            "nullable": false,
+            "type": "timestamptz"
+          }
+        ],
+        "deletePolicy": "FREE",
+        "domain": "UNKNOWN",
+        "id": "__marketing_social_post_history",
+        "inMigrations": [
+          "20261014010000_marketing_social_reviews.sql"
+        ],
+        "indexes": [],
+        "name": "__marketing_social_post_history",
+        "owner": "__unassigned__",
+        "risk": "low",
+        "rlsEnabled": false,
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "sourceConfidence": "high",
+        "status": "LIVE",
+        "usedBy": [
+          "backend/src/modules/marketing/services/marketing-hub-data.service.ts"
         ]
       },
       {
@@ -24350,6 +24657,22 @@
     },
     {
       "declaredIn": [
+        "package.json"
+      ],
+      "id": "npm:@electric-sql/pglite@0.3.14",
+      "name": "@electric-sql/pglite",
+      "owner": "__unassigned__",
+      "schemaVersion": "1.0.0",
+      "source": "npm",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "version": "0.3.14",
+      "workspaces": [
+        "nestjs-remix-monorepo"
+      ]
+    },
+    {
+      "declaredIn": [
         "frontend/package.json"
       ],
       "id": "npm:@fafa/design-tokens@^1.0.0",
@@ -28386,7 +28709,9 @@
       ],
       "domain": "UNKNOWN",
       "id": "backend/jest.config.js",
-      "importedBy": [],
+      "importedBy": [
+        "backend/src/modules/marketing/jest.config.cjs"
+      ],
       "imports": [],
       "kind": "service",
       "loc": 64,
@@ -29262,7 +29587,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 1136,
+      "loc": 1141,
       "owner": "@ak125/auth-team",
       "path": "backend/src/auth/auth.service.ts",
       "risk": "high",
@@ -30196,7 +30521,7 @@
         "backend/src/shared/crypto/password-crypto.service.ts"
       ],
       "kind": "test",
-      "loc": 408,
+      "loc": 469,
       "owner": "@ak125/auth-team",
       "path": "backend/src/auth/session-privilege.test.ts",
       "risk": "high",
@@ -31361,8 +31686,11 @@
         "backend/src/modules/diagnostic-engine/projection/diagnostic-projection-admin.controller.ts",
         "backend/src/modules/diagnostic-engine/projection/diagnostic-projection-writer.service.ts",
         "backend/src/modules/layout/services/meta-tags.service.ts",
-        "backend/src/modules/marketing/services/multi-channel-copywriter.service.ts",
+        "backend/src/modules/marketing/services/multi-channel-copywriter.service.test.ts",
+        "backend/src/modules/marketing/services/publish-queue.service.test.ts",
+        "backend/src/modules/marketing/services/utm-builder.service.test.ts",
         "backend/src/modules/marketing/services/utm-builder.service.ts",
+        "backend/src/modules/marketing/services/weekly-plan-generator.service.test.ts",
         "backend/src/modules/marketing/services/weekly-plan-generator.service.ts",
         "backend/src/modules/metadata/services/optimized-breadcrumb.service.ts",
         "backend/src/modules/payments/services/paybox.service.ts",
@@ -39514,6 +39842,8 @@
       "importedBy": [
         "backend/src/modules/ai-content/ai-content.controller.ts",
         "backend/src/modules/ai-content/ai-content.module.ts",
+        "backend/src/modules/marketing/services/copywriter-provenance.test.ts",
+        "backend/src/modules/marketing/services/multi-channel-copywriter.service.test.ts",
         "backend/src/modules/marketing/services/multi-channel-copywriter.service.ts"
       ],
       "imports": [
@@ -39528,7 +39858,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 528,
+      "loc": 532,
       "owner": "@ak125/rag-team",
       "path": "backend/src/modules/ai-content/ai-content.service.ts",
       "risk": "medium",
@@ -39573,11 +39903,12 @@
       "importedBy": [
         "backend/src/modules/ai-content/ai-content.controller.ts",
         "backend/src/modules/ai-content/ai-content.service.ts",
-        "backend/src/modules/ai-content/templates/content-templates.ts"
+        "backend/src/modules/ai-content/templates/content-templates.ts",
+        "backend/src/modules/marketing/services/copywriter-provenance.test.ts"
       ],
       "imports": [],
       "kind": "service",
-      "loc": 111,
+      "loc": 115,
       "owner": "@ak125/rag-team",
       "path": "backend/src/modules/ai-content/dto/generate-content.dto.ts",
       "risk": "medium",
@@ -39721,13 +40052,14 @@
       "domain": "D6",
       "id": "backend/src/modules/ai-content/templates/content-templates.ts",
       "importedBy": [
-        "backend/src/modules/ai-content/ai-content.service.ts"
+        "backend/src/modules/ai-content/ai-content.service.ts",
+        "backend/src/modules/marketing/services/copywriter-provenance.test.ts"
       ],
       "imports": [
         "backend/src/modules/ai-content/dto/generate-content.dto.ts"
       ],
       "kind": "service",
-      "loc": 1153,
+      "loc": 1172,
       "owner": "@ak125/rag-team",
       "path": "backend/src/modules/ai-content/templates/content-templates.ts",
       "risk": "medium",
@@ -47041,12 +47373,43 @@
         "manual"
       ],
       "domain": "D12",
+      "id": "backend/src/modules/marketing/controllers/marketing-pipeline.controller.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@common/exceptions",
+        "backend/src/modules/marketing/controllers/marketing-pipeline.controller.ts",
+        "backend/src/modules/marketing/services/brand-compliance-gate.service.ts",
+        "backend/src/modules/marketing/services/marketing-hub-data.service.ts",
+        "backend/src/modules/marketing/services/multi-channel-copywriter.service.ts",
+        "backend/src/modules/marketing/services/utm-builder.service.ts",
+        "backend/src/modules/marketing/services/weekly-plan-generator.service.ts"
+      ],
+      "kind": "test",
+      "loc": 194,
+      "owner": "@ak125/marketing-team",
+      "path": "backend/src/modules/marketing/controllers/marketing-pipeline.controller.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D12",
       "id": "backend/src/modules/marketing/controllers/marketing-pipeline.controller.ts",
       "importedBy": [
+        "backend/src/modules/marketing/controllers/marketing-pipeline.controller.test.ts",
         "backend/src/modules/marketing/marketing.module.ts"
       ],
       "imports": [
         "@auth/is-admin.guard",
+        "@common/exceptions",
+        "backend/src/modules/marketing/dto/marketing-pipeline.dto.ts",
         "backend/src/modules/marketing/interfaces/marketing-hub.interfaces.ts",
         "backend/src/modules/marketing/services/brand-compliance-gate.service.ts",
         "backend/src/modules/marketing/services/marketing-hub-data.service.ts",
@@ -47054,7 +47417,7 @@
         "backend/src/modules/marketing/services/weekly-plan-generator.service.ts"
       ],
       "kind": "controller",
-      "loc": 237,
+      "loc": 251,
       "owner": "@ak125/marketing-team",
       "path": "backend/src/modules/marketing/controllers/marketing-pipeline.controller.ts",
       "risk": "low",
@@ -47070,19 +47433,49 @@
         "manual"
       ],
       "domain": "D12",
+      "id": "backend/src/modules/marketing/controllers/marketing-social-posts.controller.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@auth/is-admin.guard",
+        "backend/src/modules/marketing/controllers/marketing-social-posts.controller.ts",
+        "backend/src/modules/marketing/services/brand-compliance-gate.service.ts",
+        "backend/src/modules/marketing/services/marketing-hub-data.service.ts",
+        "backend/src/modules/marketing/services/publish-queue.service.ts"
+      ],
+      "kind": "test",
+      "loc": 72,
+      "owner": "@ak125/marketing-team",
+      "path": "backend/src/modules/marketing/controllers/marketing-social-posts.controller.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D12",
       "id": "backend/src/modules/marketing/controllers/marketing-social-posts.controller.ts",
       "importedBy": [
-        "backend/src/modules/marketing/marketing.module.ts"
+        "backend/src/modules/marketing/controllers/marketing-social-posts.controller.test.ts",
+        "backend/src/modules/marketing/marketing.module.ts",
+        "backend/src/modules/marketing/services/social-review.test.ts"
       ],
       "imports": [
         "@auth/is-admin.guard",
+        "@common/exceptions",
+        "backend/src/modules/marketing/dto/social-review.dto.ts",
         "backend/src/modules/marketing/interfaces/marketing-hub.interfaces.ts",
         "backend/src/modules/marketing/services/brand-compliance-gate.service.ts",
         "backend/src/modules/marketing/services/marketing-hub-data.service.ts",
         "backend/src/modules/marketing/services/publish-queue.service.ts"
       ],
       "kind": "controller",
-      "loc": 139,
+      "loc": 195,
       "owner": "@ak125/marketing-team",
       "path": "backend/src/modules/marketing/controllers/marketing-social-posts.controller.ts",
       "risk": "low",
@@ -47121,6 +47514,32 @@
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D12",
+      "id": "backend/src/modules/marketing/dto/marketing-pipeline.dto.ts",
+      "importedBy": [
+        "backend/src/modules/marketing/controllers/marketing-pipeline.controller.ts"
+      ],
+      "imports": [
+        "@common/exceptions",
+        "backend/src/modules/marketing/dto/social-export.dto.ts"
+      ],
+      "kind": "service",
+      "loc": 33,
+      "owner": "@ak125/marketing-team",
+      "path": "backend/src/modules/marketing/dto/marketing-pipeline.dto.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
         "manual"
       ],
       "domain": "D12",
@@ -47149,22 +47568,137 @@
         "reachability"
       ],
       "domain": "D12",
+      "id": "backend/src/modules/marketing/dto/social-content.dto.ts",
+      "importedBy": [
+        "backend/src/modules/marketing/services/brand-compliance-gate.service.ts",
+        "backend/src/modules/marketing/services/multi-channel-copywriter.service.ts",
+        "backend/src/modules/marketing/services/publish-queue.service.ts"
+      ],
+      "imports": [
+        "backend/src/modules/marketing/interfaces/marketing-hub.interfaces.ts"
+      ],
+      "kind": "service",
+      "loc": 33,
+      "owner": "@ak125/marketing-team",
+      "path": "backend/src/modules/marketing/dto/social-content.dto.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D12",
+      "id": "backend/src/modules/marketing/dto/social-export.dto.ts",
+      "importedBy": [
+        "backend/src/modules/marketing/dto/marketing-pipeline.dto.ts",
+        "backend/src/modules/marketing/services/publish-queue.service.ts"
+      ],
+      "imports": [
+        "@common/exceptions"
+      ],
+      "kind": "service",
+      "loc": 33,
+      "owner": "@ak125/marketing-team",
+      "path": "backend/src/modules/marketing/dto/social-export.dto.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D12",
+      "id": "backend/src/modules/marketing/dto/social-publication.dto.ts",
+      "importedBy": [
+        "backend/src/modules/marketing/services/marketing-hub-data.service.ts",
+        "backend/src/modules/marketing/services/publish-queue.service.ts"
+      ],
+      "imports": [
+        "@common/exceptions",
+        "backend/src/modules/marketing/dto/social-review.dto.ts"
+      ],
+      "kind": "service",
+      "loc": 26,
+      "owner": "@ak125/marketing-team",
+      "path": "backend/src/modules/marketing/dto/social-publication.dto.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D12",
+      "id": "backend/src/modules/marketing/dto/social-review.dto.ts",
+      "importedBy": [
+        "backend/src/modules/marketing/controllers/marketing-social-posts.controller.ts",
+        "backend/src/modules/marketing/dto/social-publication.dto.ts",
+        "backend/src/modules/marketing/services/brand-compliance-gate.service.ts",
+        "backend/src/modules/marketing/services/marketing-hub-data.service.ts",
+        "backend/src/modules/marketing/services/publish-queue.service.ts"
+      ],
+      "imports": [
+        "@common/exceptions"
+      ],
+      "kind": "service",
+      "loc": 24,
+      "owner": "@ak125/marketing-team",
+      "path": "backend/src/modules/marketing/dto/social-review.dto.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D12",
       "id": "backend/src/modules/marketing/interfaces/marketing-hub.interfaces.ts",
       "importedBy": [
         "backend/src/modules/marketing/controllers/marketing-pipeline.controller.ts",
         "backend/src/modules/marketing/controllers/marketing-social-posts.controller.ts",
+        "backend/src/modules/marketing/dto/social-content.dto.ts",
+        "backend/src/modules/marketing/services/brand-compliance-gate.service.test.ts",
         "backend/src/modules/marketing/services/brand-compliance-gate.service.ts",
+        "backend/src/modules/marketing/services/marketing-hub-data.service.test.ts",
         "backend/src/modules/marketing/services/marketing-hub-data.service.ts",
+        "backend/src/modules/marketing/services/multi-channel-copywriter.service.test.ts",
         "backend/src/modules/marketing/services/multi-channel-copywriter.service.ts",
+        "backend/src/modules/marketing/services/publish-queue.service.test.ts",
         "backend/src/modules/marketing/services/publish-queue.service.ts",
         "backend/src/modules/marketing/services/utm-builder.service.ts",
+        "backend/src/modules/marketing/services/weekly-plan-generator.service.test.ts",
         "backend/src/modules/marketing/services/weekly-plan-generator.service.ts",
         "backend/src/modules/marketing/templates/brand-rules-seed.ts",
         "backend/src/modules/marketing/templates/social-post-templates.ts"
       ],
       "imports": [],
       "kind": "service",
-      "loc": 279,
+      "loc": 312,
       "owner": "@ak125/marketing-team",
       "path": "backend/src/modules/marketing/interfaces/marketing-hub.interfaces.ts",
       "risk": "low",
@@ -47197,6 +47731,29 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D12",
+      "id": "backend/src/modules/marketing/jest.config.cjs",
+      "importedBy": [],
+      "imports": [
+        "backend/jest.config.js",
+        "path"
+      ],
+      "kind": "service",
+      "loc": 31,
+      "owner": "@ak125/marketing-team",
+      "path": "backend/src/modules/marketing/jest.config.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -47291,18 +47848,49 @@
         "manual"
       ],
       "domain": "D12",
+      "id": "backend/src/modules/marketing/services/brand-compliance-gate.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/marketing/interfaces/marketing-hub.interfaces.ts",
+        "backend/src/modules/marketing/services/brand-compliance-gate.service.ts",
+        "backend/src/modules/marketing/services/marketing-hub-data.service.ts"
+      ],
+      "kind": "test",
+      "loc": 153,
+      "owner": "@ak125/marketing-team",
+      "path": "backend/src/modules/marketing/services/brand-compliance-gate.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D12",
       "id": "backend/src/modules/marketing/services/brand-compliance-gate.service.ts",
       "importedBy": [
+        "backend/src/modules/marketing/controllers/marketing-pipeline.controller.test.ts",
         "backend/src/modules/marketing/controllers/marketing-pipeline.controller.ts",
+        "backend/src/modules/marketing/controllers/marketing-social-posts.controller.test.ts",
         "backend/src/modules/marketing/controllers/marketing-social-posts.controller.ts",
-        "backend/src/modules/marketing/marketing.module.ts"
+        "backend/src/modules/marketing/marketing.module.ts",
+        "backend/src/modules/marketing/services/brand-compliance-gate.service.test.ts",
+        "backend/src/modules/marketing/services/social-review.test.ts"
       ],
       "imports": [
+        "@common/exceptions",
+        "backend/src/modules/marketing/dto/social-content.dto.ts",
+        "backend/src/modules/marketing/dto/social-review.dto.ts",
         "backend/src/modules/marketing/interfaces/marketing-hub.interfaces.ts",
         "backend/src/modules/marketing/services/marketing-hub-data.service.ts"
       ],
       "kind": "service",
-      "loc": 410,
+      "loc": 529,
       "owner": "@ak125/marketing-team",
       "path": "backend/src/modules/marketing/services/brand-compliance-gate.service.ts",
       "risk": "low",
@@ -47310,6 +47898,31 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D12",
+      "id": "backend/src/modules/marketing/services/copywriter-provenance.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/ai-content/ai-content.service.ts",
+        "backend/src/modules/ai-content/dto/generate-content.dto.ts",
+        "backend/src/modules/ai-content/templates/content-templates.ts",
+        "crypto"
+      ],
+      "kind": "test",
+      "loc": 108,
+      "owner": "@ak125/marketing-team",
+      "path": "backend/src/modules/marketing/services/copywriter-provenance.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -47421,21 +48034,46 @@
         "manual"
       ],
       "domain": "D12",
+      "id": "backend/src/modules/marketing/services/marketing-data.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/marketing/services/marketing-data.service.ts"
+      ],
+      "kind": "test",
+      "loc": 81,
+      "owner": "@ak125/marketing-team",
+      "path": "backend/src/modules/marketing/services/marketing-data.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D12",
       "id": "backend/src/modules/marketing/services/marketing-data.service.ts",
       "importedBy": [
         "backend/src/modules/marketing/marketing.module.ts",
         "backend/src/modules/marketing/services/marketing-backlinks.service.ts",
         "backend/src/modules/marketing/services/marketing-content-roadmap.service.ts",
         "backend/src/modules/marketing/services/marketing-dashboard.service.ts",
+        "backend/src/modules/marketing/services/marketing-data.service.test.ts",
+        "backend/src/modules/marketing/services/weekly-plan-generator.service.test.ts",
         "backend/src/modules/marketing/services/weekly-plan-generator.service.ts"
       ],
       "imports": [
+        "@common/exceptions",
         "@database/services/supabase-base.service",
         "@security/rpc-gate/rpc-gate.service",
         "backend/src/modules/marketing/interfaces/marketing.interfaces.ts"
       ],
       "kind": "service",
-      "loc": 619,
+      "loc": 642,
       "owner": "@ak125/marketing-team",
       "path": "backend/src/modules/marketing/services/marketing-data.service.ts",
       "risk": "low",
@@ -47451,22 +48089,58 @@
         "manual"
       ],
       "domain": "D12",
+      "id": "backend/src/modules/marketing/services/marketing-hub-data.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/marketing/interfaces/marketing-hub.interfaces.ts",
+        "backend/src/modules/marketing/services/marketing-hub-data.service.ts"
+      ],
+      "kind": "test",
+      "loc": 340,
+      "owner": "@ak125/marketing-team",
+      "path": "backend/src/modules/marketing/services/marketing-hub-data.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D12",
       "id": "backend/src/modules/marketing/services/marketing-hub-data.service.ts",
       "importedBy": [
+        "backend/src/modules/marketing/controllers/marketing-pipeline.controller.test.ts",
         "backend/src/modules/marketing/controllers/marketing-pipeline.controller.ts",
+        "backend/src/modules/marketing/controllers/marketing-social-posts.controller.test.ts",
         "backend/src/modules/marketing/controllers/marketing-social-posts.controller.ts",
         "backend/src/modules/marketing/marketing.module.ts",
+        "backend/src/modules/marketing/services/brand-compliance-gate.service.test.ts",
         "backend/src/modules/marketing/services/brand-compliance-gate.service.ts",
+        "backend/src/modules/marketing/services/marketing-hub-data.service.test.ts",
+        "backend/src/modules/marketing/services/multi-channel-copywriter.service.test.ts",
         "backend/src/modules/marketing/services/multi-channel-copywriter.service.ts",
+        "backend/src/modules/marketing/services/publish-queue.service.test.ts",
         "backend/src/modules/marketing/services/publish-queue.service.ts",
+        "backend/src/modules/marketing/services/social-review.test.ts",
+        "backend/src/modules/marketing/services/weekly-plan-generator.service.test.ts",
         "backend/src/modules/marketing/services/weekly-plan-generator.service.ts"
       ],
       "imports": [
+        "@common/exceptions",
         "@database/services/supabase-base.service",
+        "@security/rpc-gate/rpc-gate.service",
+        "@security/rpc-gate/rpc-gate.types",
+        "backend/src/modules/marketing/dto/social-publication.dto.ts",
+        "backend/src/modules/marketing/dto/social-review.dto.ts",
         "backend/src/modules/marketing/interfaces/marketing-hub.interfaces.ts"
       ],
       "kind": "service",
-      "loc": 280,
+      "loc": 516,
       "owner": "@ak125/marketing-team",
       "path": "backend/src/modules/marketing/services/marketing-hub-data.service.ts",
       "risk": "low",
@@ -47557,21 +48231,51 @@
         "manual"
       ],
       "domain": "D12",
-      "id": "backend/src/modules/marketing/services/multi-channel-copywriter.service.ts",
-      "importedBy": [
-        "backend/src/modules/marketing/controllers/marketing-pipeline.controller.ts",
-        "backend/src/modules/marketing/marketing.module.ts"
-      ],
+      "id": "backend/src/modules/marketing/services/multi-channel-copywriter.service.test.ts",
+      "importedBy": [],
       "imports": [
         "backend/src/config/app.config.ts",
         "backend/src/modules/ai-content/ai-content.service.ts",
         "backend/src/modules/marketing/interfaces/marketing-hub.interfaces.ts",
         "backend/src/modules/marketing/services/marketing-hub-data.service.ts",
+        "backend/src/modules/marketing/services/multi-channel-copywriter.service.ts",
+        "backend/src/modules/marketing/services/utm-builder.service.ts"
+      ],
+      "kind": "test",
+      "loc": 275,
+      "owner": "@ak125/marketing-team",
+      "path": "backend/src/modules/marketing/services/multi-channel-copywriter.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D12",
+      "id": "backend/src/modules/marketing/services/multi-channel-copywriter.service.ts",
+      "importedBy": [
+        "backend/src/modules/marketing/controllers/marketing-pipeline.controller.test.ts",
+        "backend/src/modules/marketing/controllers/marketing-pipeline.controller.ts",
+        "backend/src/modules/marketing/marketing.module.ts",
+        "backend/src/modules/marketing/services/multi-channel-copywriter.service.test.ts"
+      ],
+      "imports": [
+        "backend/src/modules/ai-content/ai-content.service.ts",
+        "backend/src/modules/marketing/dto/social-content.dto.ts",
+        "backend/src/modules/marketing/interfaces/marketing-hub.interfaces.ts",
+        "backend/src/modules/marketing/services/marketing-hub-data.service.ts",
         "backend/src/modules/marketing/services/utm-builder.service.ts",
-        "backend/src/modules/marketing/templates/social-post-templates.ts"
+        "backend/src/modules/marketing/templates/social-post-templates.ts",
+        "crypto"
       ],
       "kind": "service",
-      "loc": 199,
+      "loc": 342,
       "owner": "@ak125/marketing-team",
       "path": "backend/src/modules/marketing/services/multi-channel-copywriter.service.ts",
       "risk": "low",
@@ -47587,17 +48291,52 @@
         "manual"
       ],
       "domain": "D12",
+      "id": "backend/src/modules/marketing/services/publish-queue.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/config/app.config.ts",
+        "backend/src/modules/marketing/interfaces/marketing-hub.interfaces.ts",
+        "backend/src/modules/marketing/services/marketing-hub-data.service.ts",
+        "backend/src/modules/marketing/services/publish-queue.service.ts",
+        "backend/src/modules/marketing/services/utm-builder.service.ts"
+      ],
+      "kind": "test",
+      "loc": 113,
+      "owner": "@ak125/marketing-team",
+      "path": "backend/src/modules/marketing/services/publish-queue.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D12",
       "id": "backend/src/modules/marketing/services/publish-queue.service.ts",
       "importedBy": [
+        "backend/src/modules/marketing/controllers/marketing-social-posts.controller.test.ts",
         "backend/src/modules/marketing/controllers/marketing-social-posts.controller.ts",
-        "backend/src/modules/marketing/marketing.module.ts"
+        "backend/src/modules/marketing/marketing.module.ts",
+        "backend/src/modules/marketing/services/publish-queue.service.test.ts",
+        "backend/src/modules/marketing/services/social-review.test.ts"
       ],
       "imports": [
+        "@common/exceptions",
+        "backend/src/modules/marketing/dto/social-content.dto.ts",
+        "backend/src/modules/marketing/dto/social-export.dto.ts",
+        "backend/src/modules/marketing/dto/social-publication.dto.ts",
+        "backend/src/modules/marketing/dto/social-review.dto.ts",
         "backend/src/modules/marketing/interfaces/marketing-hub.interfaces.ts",
-        "backend/src/modules/marketing/services/marketing-hub-data.service.ts"
+        "backend/src/modules/marketing/services/marketing-hub-data.service.ts",
+        "backend/src/modules/marketing/services/utm-builder.service.ts"
       ],
       "kind": "service",
-      "loc": 160,
+      "loc": 241,
       "owner": "@ak125/marketing-team",
       "path": "backend/src/modules/marketing/services/publish-queue.service.ts",
       "risk": "low",
@@ -47613,18 +48352,74 @@
         "manual"
       ],
       "domain": "D12",
+      "id": "backend/src/modules/marketing/services/social-review.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/marketing/controllers/marketing-social-posts.controller.ts",
+        "backend/src/modules/marketing/services/brand-compliance-gate.service.ts",
+        "backend/src/modules/marketing/services/marketing-hub-data.service.ts",
+        "backend/src/modules/marketing/services/publish-queue.service.ts",
+        "backend/src/modules/marketing/services/utm-builder.service.ts"
+      ],
+      "kind": "test",
+      "loc": 184,
+      "owner": "@ak125/marketing-team",
+      "path": "backend/src/modules/marketing/services/social-review.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D12",
+      "id": "backend/src/modules/marketing/services/utm-builder.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/config/app.config.ts",
+        "backend/src/modules/marketing/services/utm-builder.service.ts"
+      ],
+      "kind": "test",
+      "loc": 51,
+      "owner": "@ak125/marketing-team",
+      "path": "backend/src/modules/marketing/services/utm-builder.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D12",
       "id": "backend/src/modules/marketing/services/utm-builder.service.ts",
       "importedBy": [
+        "backend/src/modules/marketing/controllers/marketing-pipeline.controller.test.ts",
         "backend/src/modules/marketing/marketing.module.ts",
-        "backend/src/modules/marketing/services/multi-channel-copywriter.service.ts"
+        "backend/src/modules/marketing/services/multi-channel-copywriter.service.test.ts",
+        "backend/src/modules/marketing/services/multi-channel-copywriter.service.ts",
+        "backend/src/modules/marketing/services/publish-queue.service.test.ts",
+        "backend/src/modules/marketing/services/publish-queue.service.ts",
+        "backend/src/modules/marketing/services/social-review.test.ts",
+        "backend/src/modules/marketing/services/utm-builder.service.test.ts"
       ],
       "imports": [
+        "@common/exceptions",
         "backend/src/config/app.config.ts",
         "backend/src/modules/marketing/interfaces/marketing-hub.interfaces.ts",
         "crypto"
       ],
       "kind": "service",
-      "loc": 89,
+      "loc": 123,
       "owner": "@ak125/marketing-team",
       "path": "backend/src/modules/marketing/services/utm-builder.service.ts",
       "risk": "low",
@@ -47640,19 +48435,49 @@
         "manual"
       ],
       "domain": "D12",
+      "id": "backend/src/modules/marketing/services/weekly-plan-generator.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "@common/utils/url-builder.utils",
+        "backend/src/config/app.config.ts",
+        "backend/src/modules/marketing/interfaces/marketing-hub.interfaces.ts",
+        "backend/src/modules/marketing/services/marketing-data.service.ts",
+        "backend/src/modules/marketing/services/marketing-hub-data.service.ts",
+        "backend/src/modules/marketing/services/weekly-plan-generator.service.ts"
+      ],
+      "kind": "test",
+      "loc": 110,
+      "owner": "@ak125/marketing-team",
+      "path": "backend/src/modules/marketing/services/weekly-plan-generator.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D12",
       "id": "backend/src/modules/marketing/services/weekly-plan-generator.service.ts",
       "importedBy": [
+        "backend/src/modules/marketing/controllers/marketing-pipeline.controller.test.ts",
         "backend/src/modules/marketing/controllers/marketing-pipeline.controller.ts",
-        "backend/src/modules/marketing/marketing.module.ts"
+        "backend/src/modules/marketing/marketing.module.ts",
+        "backend/src/modules/marketing/services/weekly-plan-generator.service.test.ts"
       ],
       "imports": [
+        "@common/utils/url-builder.utils",
         "backend/src/config/app.config.ts",
         "backend/src/modules/marketing/interfaces/marketing-hub.interfaces.ts",
         "backend/src/modules/marketing/services/marketing-data.service.ts",
         "backend/src/modules/marketing/services/marketing-hub-data.service.ts"
       ],
       "kind": "service",
-      "loc": 224,
+      "loc": 215,
       "owner": "@ak125/marketing-team",
       "path": "backend/src/modules/marketing/services/weekly-plan-generator.service.ts",
       "risk": "low",
@@ -67210,6 +68035,7 @@
         "backend/src/auth/session-privilege.test.ts",
         "backend/src/controllers/users.controller.ts",
         "backend/src/modules/users/services/profile.service.ts",
+        "backend/src/modules/users/services/user-data-consolidated.test.ts",
         "backend/src/modules/users/users-final.service.ts",
         "backend/src/modules/users/users.module.ts"
       ],
@@ -67219,7 +68045,7 @@
         "backend/src/modules/users/dto/user.dto.ts"
       ],
       "kind": "service",
-      "loc": 643,
+      "loc": 653,
       "owner": "@ak125/auth-team",
       "path": "backend/src/modules/users/services/user-data-consolidated.service.ts",
       "risk": "high",
@@ -67227,6 +68053,28 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
+      "id": "backend/src/modules/users/services/user-data-consolidated.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/users/services/user-data-consolidated.service.ts"
+      ],
+      "kind": "test",
+      "loc": 74,
+      "owner": "@ak125/auth-team",
+      "path": "backend/src/modules/users/services/user-data-consolidated.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -84890,12 +85738,12 @@
         "~/components/admin/patterns/KpiCard",
         "~/components/admin/patterns/ResponsiveDataTable",
         "~/components/admin/patterns/StatusBadge",
+        "~/components/errors",
         "~/components/ui/alert-dialog",
         "~/components/ui/badge",
         "~/components/ui/button",
         "~/components/ui/card",
         "~/components/ui/dialog",
-        "~/components/ui/dropdown-menu",
         "~/components/ui/input",
         "~/components/ui/label",
         "~/components/ui/select",
@@ -84905,7 +85753,7 @@
         "~/utils/meta-helpers"
       ],
       "kind": "route",
-      "loc": 1068,
+      "loc": 1312,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.marketing.social-hub.posts.tsx",
       "risk": "medium",
@@ -94153,7 +95001,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 63,
+      "loc": 79,
       "owner": "@ak125",
       "path": "frontend/tests/unit/command-center-route-config.test.ts",
       "risk": "medium",
@@ -95836,6 +96684,26 @@
       "loc": 57,
       "owner": "@ak125",
       "path": "frontend/tests/unit/site-trust-claims.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/social-channel-review.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 412,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/social-channel-review.test.tsx",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -99949,7 +100817,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 81,
+      "loc": 89,
       "owner": "@ak125",
       "path": "scripts/audit/__tests__/deep-inventory-determinism.test.ts",
       "risk": "medium",
@@ -100149,7 +101017,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 790,
+      "loc": 799,
       "owner": "@ak125",
       "path": "scripts/audit/build-deep-inventory.js",
       "risk": "medium",
@@ -102285,13 +103153,53 @@
         "manual"
       ],
       "domain": "D13",
+      "id": "scripts/marketing/export-publish-queue.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 182,
+      "owner": "@ak125",
+      "path": "scripts/marketing/export-publish-queue.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
       "id": "scripts/marketing/export-publish-queue.ts",
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 97,
+      "loc": 107,
       "owner": "@ak125",
       "path": "scripts/marketing/export-publish-queue.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
+      "id": "scripts/marketing/generate-copy-batch.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 212,
+      "owner": "@ak125",
+      "path": "scripts/marketing/generate-copy-batch.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -102309,9 +103217,29 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 127,
+      "loc": 183,
       "owner": "@ak125",
       "path": "scripts/marketing/generate-copy-batch.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
+      "id": "scripts/marketing/generate-weekly-plan.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 155,
+      "owner": "@ak125",
+      "path": "scripts/marketing/generate-weekly-plan.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -102329,7 +103257,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 94,
+      "loc": 135,
       "owner": "@ak125",
       "path": "scripts/marketing/generate-weekly-plan.ts",
       "risk": "low",
@@ -102492,6 +103420,46 @@
       "loc": 13,
       "owner": "@ak125",
       "path": "scripts/marketing/simulation-no-network.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
+      "id": "scripts/marketing/social-reviews.sql-test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 471,
+      "owner": "@ak125",
+      "path": "scripts/marketing/social-reviews.sql-test.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
+      "id": "scripts/marketing/social-target-schema.sql-test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 292,
+      "owner": "@ak125",
+      "path": "scripts/marketing/social-target-schema.sql-test.mjs",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -104866,15 +105834,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "5ca91094428cc956799c31406f2c730d22e7557eca4996e6945b0e0c6969aa47",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "993f8a45491adc84d340b06a3c9186ad8ad5ea26fcbc53e1f31070aa1f9c64d6",
+      ".spec/00-canon/repository-registry/ownership.yaml": "caef65237df1a4e5413d9fc57e59d6d61dbecca64d19a57358a64e34c1f3316e",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
-      "audit/registry/db.json": "90163175840e44796908f793612d86b090e6efec04ed7053e3966b0e0c211728",
-      "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "10aab4de996b54eb485fc8b882a568766d925eb30df5cb3f1eb9d4335e752afb",
-      "audit/registry/rpc.json": "68f3b21f7aa0b2ef7da9b488c657c3b6b5bdde0476bf7d617f1e346cc26b4449",
-      "audit/registry/runtime.json": "db3c1293c1d26fff96e8f10d130e6ef2238b96d3fbbc099f9e074be14c26bbbf"
+      "audit/registry/db.json": "549b08d74c5402946fb06e9ee3e9dbeb84ecbecbef24db7879748cca6efea4af",
+      "audit/registry/deps.json": "c6b55c81404c123787afdcfa14974847d7a56f7a46b70f50e13017be225b7825",
+      "audit/registry/files.json": "cc0069a6a7bf972c785c78a88eb3d1457b29900abd0386bbf03def56193b4357",
+      "audit/registry/rpc.json": "977a87e091f35ab565f5d758826641c20022e2e87fa02a368f2a125fbe1aeec6",
+      "audit/registry/runtime.json": "bfe0d3f27c3a68316a7177d3f805bc4e47174408f190e2e505d53e067b04653e"
     },
-    "sotFingerprint": "be87d7ff93ba"
+    "sotFingerprint": "978cf2d3c263"
   },
   "runtime": [
     {
@@ -108730,7 +109698,8 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/modules/marketing/services/marketing-hub-data.service.ts"
+        "runtime:backend/src/modules/marketing/services/marketing-hub-data.service.ts",
+        "runtime:backend/src/modules/marketing/services/utm-builder.service.ts"
       ],
       "id": "runtime:backend/src/modules/marketing/services/publish-queue.service.ts",
       "kind": "nestjs-service",

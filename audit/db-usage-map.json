@@ -9,20 +9,20 @@
     "0 call-site(s) non résolu(s) : récepteur ni prouvé DB ni rejeté — voir unresolved_callsites[]. Un nom non résolu ne peut pas être déclaré orphelin."
   ],
   "summary": {
-    "tables_seen": 316,
-    "tables_with_callsites": 214,
+    "tables_seen": 317,
+    "tables_with_callsites": 215,
     "candidate_orphan_tables": 75,
     "partitions": 27,
-    "rpc_seen": 251,
+    "rpc_seen": 258,
     "rpc_with_callsites": 14,
-    "trigger_functions": 30,
-    "candidate_orphan_rpc": 207,
+    "trigger_functions": 33,
+    "candidate_orphan_rpc": 211,
     "dynamic_from_callsites": 772,
     "dynamic_rpc_callsites": 1,
     "unresolved_callsites": 0,
     "dropped_call_sites": 8,
-    "migrations_scanned": 416,
-    "backend_files_scanned": 1489
+    "migrations_scanned": 420,
+    "backend_files_scanned": 1506
   },
   "tables": {
     "___config": {
@@ -553,6 +553,18 @@
       ],
       "used_by_count": 1,
       "in_migrations": [],
+      "rls_present": false,
+      "in_knowledge_db": false,
+      "partition_of": null
+    },
+    "__marketing_social_post_history": {
+      "used_by": [
+        "backend/src/modules/marketing/services/marketing-hub-data.service.ts"
+      ],
+      "used_by_count": 1,
+      "in_migrations": [
+        "20261014010000_marketing_social_reviews.sql"
+      ],
       "rls_present": false,
       "in_knowledge_db": false,
       "partition_of": null
@@ -4089,6 +4101,14 @@
       ],
       "is_trigger_function": false
     },
+    "declare_marketing_social_publication": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20261016010000_marketing_publication_proofs.sql"
+      ],
+      "is_trigger_function": false
+    },
     "detect_cwv_aggregation_coverage_gap": {
       "called_by": [],
       "called_by_count": 0,
@@ -5184,6 +5204,50 @@
       ],
       "is_trigger_function": false
     },
+    "marketing_social_editorial": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20261014010000_marketing_social_reviews.sql",
+        "20261016010000_marketing_publication_proofs.down.sql",
+        "20261016010000_marketing_publication_proofs.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "marketing_social_history_immutable": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20261014010000_marketing_social_reviews.sql"
+      ],
+      "is_trigger_function": true
+    },
+    "marketing_social_publication_url": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20261016010000_marketing_publication_proofs.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "marketing_social_record_history": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20261014010000_marketing_social_reviews.sql"
+      ],
+      "is_trigger_function": true
+    },
+    "marketing_social_revision_guard": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20261014010000_marketing_social_reviews.sql",
+        "20261016010000_marketing_publication_proofs.down.sql",
+        "20261016010000_marketing_publication_proofs.sql"
+      ],
+      "is_trigger_function": true
+    },
     "match_keyword_text_to_vehicle": {
       "called_by": [],
       "called_by_count": 0,
@@ -5387,6 +5451,16 @@
       "defined_in_migrations": [
         "20260327_resolve_type_id_remap.sql",
         "20260907_tecdoc_api_surface_lockdown.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "review_marketing_social_post": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20261014010000_marketing_social_reviews.sql",
+        "20261016010000_marketing_publication_proofs.down.sql",
+        "20261016010000_marketing_publication_proofs.sql"
       ],
       "is_trigger_function": false
     },
@@ -5797,6 +5871,26 @@
       "name": "kg_update_updated_at",
       "defined_in_migrations": [
         "20251230_knowledge_graph.sql"
+      ]
+    },
+    {
+      "name": "marketing_social_history_immutable",
+      "defined_in_migrations": [
+        "20261014010000_marketing_social_reviews.sql"
+      ]
+    },
+    {
+      "name": "marketing_social_record_history",
+      "defined_in_migrations": [
+        "20261014010000_marketing_social_reviews.sql"
+      ]
+    },
+    {
+      "name": "marketing_social_revision_guard",
+      "defined_in_migrations": [
+        "20261014010000_marketing_social_reviews.sql",
+        "20261016010000_marketing_publication_proofs.down.sql",
+        "20261016010000_marketing_publication_proofs.sql"
       ]
     },
     {
@@ -8214,6 +8308,22 @@
       ]
     },
     {
+      "name": "declare_marketing_social_publication",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20261016010000_marketing_publication_proofs.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
       "name": "detect_cwv_aggregation_coverage_gap",
       "confidence": "medium",
       "derived_from": [
@@ -10001,6 +10111,40 @@
       ]
     },
     {
+      "name": "marketing_social_editorial",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20261014010000_marketing_social_reviews.sql",
+        "20261016010000_marketing_publication_proofs.down.sql",
+        "20261016010000_marketing_publication_proofs.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "marketing_social_publication_url",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20261016010000_marketing_publication_proofs.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
       "name": "match_keyword_text_to_vehicle",
       "confidence": "medium",
       "derived_from": [
@@ -10383,6 +10527,24 @@
       "defined_in_migrations": [
         "20260327_resolve_type_id_remap.sql",
         "20260907_tecdoc_api_surface_lockdown.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "review_marketing_social_post",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20261014010000_marketing_social_reviews.sql",
+        "20261016010000_marketing_publication_proofs.down.sql",
+        "20261016010000_marketing_publication_proofs.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
@@ -15472,133 +15634,133 @@
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 35,
+      "line": 39,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 56,
+      "line": 63,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 90,
+      "line": 97,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 153,
+      "line": 160,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 176,
+      "line": 183,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 198,
+      "line": 205,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 219,
+      "line": 226,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 238,
+      "line": 245,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 261,
+      "line": 268,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 280,
+      "line": 287,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 299,
+      "line": 306,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 332,
+      "line": 339,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 359,
+      "line": 366,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 396,
+      "line": 403,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 435,
+      "line": 442,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 463,
+      "line": 473,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 483,
+      "line": 493,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 505,
+      "line": 515,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 530,
+      "line": 540,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"

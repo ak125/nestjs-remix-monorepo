@@ -3853,7 +3853,8 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/modules/marketing/services/marketing-hub-data.service.ts"
+        "runtime:backend/src/modules/marketing/services/marketing-hub-data.service.ts",
+        "runtime:backend/src/modules/marketing/services/utm-builder.service.ts"
       ],
       "id": "runtime:backend/src/modules/marketing/services/publish-queue.service.ts",
       "kind": "nestjs-service",
