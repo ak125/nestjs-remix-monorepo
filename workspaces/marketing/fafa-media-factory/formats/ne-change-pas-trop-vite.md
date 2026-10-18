@@ -69,10 +69,10 @@ Constaté dans le code, sans rendu lancé :
 
 ## Gates critiques
 
-- **G2 Safety** : si conseil = « diagnostic certain », FAIL. Garder « probable », « à vérifier ».
+- **Hors gates** : « diagnostic certain » est un interdit de la persona (`personas/fafa.md`), relu à part par `fafa-brand-safety-reviewer` ; aucun motif du code ne le détecte. Garder « probable », « à vérifier ».
 - **G3 Brand** : aucun prix, aucune promo, aucune urgence artificielle.
-- **G4 Platform** : durée 30-45s ±10% (27-49s acceptable).
-- **G6 Visual Honesty** : aucun visuel IA présenté comme preuve. Schémas/animations OK pour illustrer.
+- **G4 Platform** : le code lit la plage de `brief.type`, `short` = 15-60 s élargie de 10 % (13,5-66 s) ; la durée cible 30-45 s est éditoriale, aucune gate ne la mesure.
+- **G6 `visual_role`** : aucun visuel IA présenté comme preuve ; chaque visuel relevé comme preuve compte, un seul = FAIL. Schémas/animations OK pour illustrer.
 
 ## Voir aussi
 
