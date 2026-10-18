@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 1e2c220ff2c9444fc1db7f4591b5f662cef08299d529076bff25322afc317310
+source_sha256: 3e40c79bf5c8878389b6c6dce5b871387f4c853dc17943a9f2ea70dc0d2b904c
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3060 |
+| Files (Layer 1) | 3065 |
 | DB tables (Layer 1) | 316 |
 | DB RPC (Layer 1) | 257 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1015 |
 
-Source sotFingerprint: `c7a0281f3798`.
+Source sotFingerprint: `900b6a38cbca`.
 
 ## Comment l'utiliser
 
@@ -45,11 +45,11 @@ Source sotFingerprint: `c7a0281f3798`.
 
 ### D2 — Legacy/XTR Migration
 
-- **Files**: 154 (test=140, service=10, config=3, controller=1)
+- **Files**: 156 (test=142, service=10, config=3, controller=1)
 - **Runtime entrypoints**: 5
-- **Top owners**: @ak125 (139), __unassigned__ (15)
+- **Top owners**: @ak125 (141), __unassigned__ (15)
 - **Knowledge prose**: [`rm`](modules/rm.md)
-- **Status**: LEGACY=7, LIVE=8, UNKNOWN=139
+- **Status**: LEGACY=7, LIVE=8, UNKNOWN=141
 
 ### D3 — SEO & Sitemap
 
@@ -93,11 +93,11 @@ Source sotFingerprint: `c7a0281f3798`.
 
 ### D8 — Read Model / Serving (RM)
 
-- **Files**: 941 (config=454, route=246, service=181, controller=39, test=21)
+- **Files**: 942 (config=454, route=246, service=182, controller=39, test=21)
 - **Runtime entrypoints**: 349
-- **Top owners**: @ak125/frontend-team (674), @ak125/admin-team (267)
+- **Top owners**: @ak125/frontend-team (675), @ak125/admin-team (267)
 - **Knowledge prose**: [`admin`](modules/admin.md), [`staff`](modules/staff.md)
-- **Status**: LIVE=514, UNKNOWN=427
+- **Status**: LIVE=514, UNKNOWN=428
 
 ### D9 — Import / ETL / Normalisation
 
@@ -124,11 +124,11 @@ Source sotFingerprint: `c7a0281f3798`.
 
 ### D12 — Marketing & Video
 
-- **Files**: 79 (service=61, controller=12, config=5, test=1)
+- **Files**: 80 (service=62, controller=12, config=5, test=1)
 - **Runtime entrypoints**: 39
-- **Top owners**: @ak125/marketing-team (79)
+- **Top owners**: @ak125/marketing-team (80)
 - **Knowledge prose**: [`commercial`](modules/commercial.md), [`marketing`](modules/marketing.md), [`promo`](modules/promo.md)
-- **Status**: LIVE=53, UNKNOWN=26
+- **Status**: LIVE=54, UNKNOWN=26
 
 ### D13 — Config & System
 
@@ -147,11 +147,11 @@ Source sotFingerprint: `c7a0281f3798`.
 
 ### D15 — Security & Governance
 
-- **Files**: 280 (test=169, script=62, service=46, config=2, controller=1)
+- **Files**: 281 (test=170, script=62, service=46, config=2, controller=1)
 - **Runtime entrypoints**: 3
-- **Top owners**: @ak125 (280)
+- **Top owners**: @ak125 (281)
 - **Knowledge prose**: [`bot-guard`](modules/bot-guard.md)
-- **Status**: LIVE=57, UNKNOWN=223
+- **Status**: LIVE=57, UNKNOWN=224
 
 ### D16 — Maintenance
 
