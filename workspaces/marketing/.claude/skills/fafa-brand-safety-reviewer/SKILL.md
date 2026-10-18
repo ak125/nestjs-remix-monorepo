@@ -102,7 +102,8 @@ UNKNOWN n'est pas un PASS.
 - Au 18/10, `FORBIDDEN_PATTERNS_SHORT` ne reconnaît ni « Dépêchez-vous » (motif `depêchez`, l.243) ni « Dernière chance » (motif
   `dernier(e|s)?`, l.245) : le rapport compte ce que le code compte et signale ces formes à part, hors mesure.
 - Sans `scriptText` : UNKNOWN (le code rend PASS « No script text to check », l.183-187).
-- `trigger_items` : `line:<n>` du `scriptText` construit, suivi du champ de `script.json` d'où vient la ligne.
+- `trigger_items` : `line:<n>` du `scriptText` construit, suivi du champ de `script.json` d'où vient la ligne ; `script` pour
+  l'appel à l'action (l.214-217).
 
 ### G4 `platform` (l.233-269)
 
@@ -140,10 +141,11 @@ UNKNOWN n'est pas un PASS.
 
 - `verdict_overall` : `MISSING_ARTEFACTS` si l'étape 1 a échoué ; sinon FAIL si une gate est FAIL, puis UNKNOWN, puis WARN, puis
   PASS. Le code ne rend que `canPublish` (aucune gate FAIL), qui n'est pas une approbation.
-- Le rapport va à l'owner. Dans `approval.json`, le skill ajoute au plus une entrée `history` (`actor`
+- Le rapport va à l'owner. Dans `approval.json`, le skill ajoute au plus une entrée `history` (`timestamp` date-time, `actor`
   `skill:fafa-brand-safety-reviewer`, `action` `gates_evaluated`, `comment` de 500 caractères au plus : verdict d'ensemble, gates
-  UNKNOWN, manques) sans modifier les entrées précédentes. Il ne remplace `gate_results` que si les 7 gates ont un verdict du code :
-  le schéma n'admet pas UNKNOWN (`governance/approval-record.schema.json:117-124`).
+  UNKNOWN, manques) sans modifier les entrées précédentes. Il ne remplace `gate_results` que si les 7 gates ont un verdict du code,
+  au format `GateResult` sans `code_name` : le schéma n'admet ni UNKNOWN, ni `measured` nul, ni champ supplémentaire
+  (`governance/approval-record.schema.json:108-146`, entrée `history` l.148-151).
 - Il ne touche à aucun drapeau (`content_approved`, `render_approved`, `publish_approved`) ni au manifeste de rendu. Le passage à
   `scripts/review-ready/` (statut 5, `fafa-media-factory/scripts/README.md`) est un changement de fichiers revu, proposé quand
   aucune gate n'est FAIL ; les gates UNKNOWN y restent listées pour la relecture de l'owner.
