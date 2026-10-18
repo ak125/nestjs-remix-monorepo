@@ -1,5 +1,13 @@
 import { execFileSync } from "child_process";
-import { readFileSync, openSync, closeSync } from "fs";
+import {
+  readFileSync,
+  openSync,
+  closeSync,
+  readSync,
+  fstatSync,
+  lstatSync,
+  constants,
+} from "fs";
 import { createHash } from "crypto";
 import { z } from "zod";
 
@@ -94,8 +102,15 @@ export function inspectVideo(
 ): MediaInspection {
   // Keep ffprobe and the checksum on the same opened file, even if its path
   // is replaced. The renderer runs on Linux; child fd 3 is explicitly inherited.
-  const descriptor = openSync(path, "r");
+  // Read-only: no creation/chmod. Reject symlinks; mode is a defensive default.
+  const descriptor = openSync(
+    path,
+    constants.O_RDONLY | constants.O_NOFOLLOW,
+    0o600,
+  );
   try {
+    const identity = fstatSync(descriptor);
+    if (!identity.isFile()) throw new Error("Expected a regular media file");
     const bytes = readFileSync(descriptor);
     if (bytes.length === 0) throw new Error("Empty media file");
     const checksumSha256 = sha256(bytes);
@@ -190,7 +205,23 @@ export function inspectVideo(
         durationSecs: duration,
       };
     });
-    if (sha256(readFileSync(path)) !== checksumSha256)
+    // Re-read the same descriptor at explicit offsets; never reopen the path.
+    const finalHash = createHash("sha256");
+    const chunk = Buffer.alloc(64 * 1024);
+    let position = 0;
+    for (;;) {
+      const count = readSync(descriptor, chunk, 0, chunk.length, position);
+      if (count === 0) break;
+      finalHash.update(chunk.subarray(0, count));
+      position += count;
+    }
+    const finalIdentity = lstatSync(path);
+    if (
+      position !== bytes.length ||
+      finalHash.digest("hex") !== checksumSha256 ||
+      finalIdentity.dev !== identity.dev ||
+      finalIdentity.ino !== identity.ino
+    )
       throw new Error("Media changed during inspection");
     return {
       checksumSha256,

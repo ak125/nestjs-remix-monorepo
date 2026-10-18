@@ -35,7 +35,10 @@ The real-file tests use synthetic media, not the historical pilot. SHA-256 is
 checked before and after inspection, not atomically across an eventual upload.
 The Linux inspector passes an inherited open file descriptor to ffprobe, so
 renaming/replacing its path cannot switch the probed file away from the hashed
-one. The descriptor is closed on both success and failure.
+one. The descriptor is closed on both success and failure. Symlinks are rejected,
+checksums are read through the same descriptor, and device/inode identity is
+checked before returning. The read-only open creates no file and changes no
+permissions; its explicit mode 0600 is only a defensive creation default.
 The existing audio merge uses `-shortest`; variant checks compare to its processed
 input. An original-duration requirement must also be checked against the manifest.
 

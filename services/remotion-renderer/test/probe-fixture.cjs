@@ -56,6 +56,22 @@ function mockMediaDescriptors(mock) {
   mock.method(fs, "closeSync", (fd) => {
     if (!paths.delete(fd)) close(fd);
   });
+  mock.method(fs, "fstatSync", (fd) => ({
+    ...fs.statSync(paths.get(fd)),
+    dev: 1,
+    ino: fd,
+    isFile: () => true,
+  }));
+  mock.method(fs, "lstatSync", (path) => ({
+    dev: 1,
+    ino: [...paths].find(([, p]) => p === path)?.[0],
+  }));
+  mock.method(fs, "readSync", (fd, buffer, offset, length, position) => {
+    const content = read(paths.get(fd));
+    const count = Math.min(length, Math.max(0, content.length - position));
+    content.copy(buffer, offset, position, position + count);
+    return count;
+  });
   mock.method(cp, "execFileSync", (command, args, options) =>
     execute(
       command,

@@ -195,3 +195,31 @@ test("probe and hash stay bound to the opened file if its path is replaced", (t)
   });
   assert.equal(inspectVideo(silent, expected).audio.length, 0);
 });
+
+test("inspection rejects a symlink instead of following it", () => {
+  const fs = require("node:fs");
+  const link = join(dir, "link.mp4");
+  fs.symlinkSync(silent, link);
+  assert.throws(() => inspectVideo(link, expected));
+});
+test("inspection rejects permanent replacement even with identical bytes", (t) => {
+  const fs = require("node:fs");
+  const cp = require("node:child_process");
+  const original = join(dir, "replaced-original.mp4");
+  t.mock.method(cp, "execFileSync", (command, args, options) => {
+    const result = execFileSync(command, args, options);
+    if (command === "ffprobe") {
+      fs.renameSync(silent, original);
+      fs.copyFileSync(original, silent);
+    }
+    return result;
+  });
+  try {
+    assert.throws(
+      () => inspectVideo(silent, expected),
+      /changed during inspection/,
+    );
+  } finally {
+    fs.renameSync(original, silent);
+  }
+});
