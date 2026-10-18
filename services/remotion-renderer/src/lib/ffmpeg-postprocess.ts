@@ -197,12 +197,46 @@ export interface SubtitleSegment {
   text: string;
 }
 
+/** Validate a single sequential subtitle track at SRT millisecond precision. */
+export function validateSubtitleSegments(
+  segments: SubtitleSegment[],
+  durationSecs?: number,
+): void {
+  if (durationSecs !== undefined && (!Number.isFinite(durationSecs) || durationSecs <= 0)) {
+    throw new Error('Invalid subtitle media duration');
+  }
+  let previousEnd = 0;
+  for (const [index, segment] of segments.entries()) {
+    const startMs = Math.round(segment.startSecs * 1000);
+    const endMs = Math.round(segment.endSecs * 1000);
+    const text = segment.text.replace(/\r\n?/g, '\n').trim();
+    if (
+      !Number.isFinite(segment.startSecs) || !Number.isFinite(segment.endSecs) ||
+      !Number.isSafeInteger(startMs) || !Number.isSafeInteger(endMs) ||
+      segment.startSecs < 0 || segment.endSecs <= segment.startSecs || endMs <= startMs ||
+      segment.startSecs < previousEnd
+    ) {
+      throw new Error(`Invalid subtitle interval at segment ${index + 1}`);
+    }
+    if (!text || /\n[^\S\n]*\n/.test(text) || /[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/.test(text)) {
+      throw new Error(`Invalid subtitle text at segment ${index + 1}`);
+    }
+    // No tolerance: even the rounded SRT endpoint must fit the measured file.
+    if (durationSecs !== undefined &&
+        (segment.endSecs > durationSecs || endMs > Math.floor(durationSecs * 1000))) {
+      throw new Error(`Subtitle segment ${index + 1} exceeds media duration`);
+    }
+    previousEnd = segment.endSecs;
+  }
+}
+
 export function generateSrt(segments: SubtitleSegment[]): string {
+  validateSubtitleSegments(segments);
   return segments
     .map((seg, i) => {
       const start = formatSrtTime(seg.startSecs);
       const end = formatSrtTime(seg.endSecs);
-      return `${i + 1}\n${start} --> ${end}\n${seg.text}\n`;
+      return `${i + 1}\n${start} --> ${end}\n${seg.text.replace(/\r\n?/g, '\n').trim()}\n`;
     })
     .join('\n');
 }
@@ -236,12 +270,15 @@ export function writeSrtFile(srtContent: string, outputSuffix: string): string {
  */
 function probeDuration(filePath: string): number | null {
   try {
-    const out = execSync(
-      `ffprobe -v quiet -print_format json -show_format "${filePath}"`,
-      { timeout: 10_000 },
-    ).toString();
+    const out = execFileSync(
+      'ffprobe', ['-v', 'quiet', '-print_format', 'json', '-show_format', filePath],
+      { timeout: 10_000, encoding: 'utf8' },
+    );
     const data = JSON.parse(out);
-    return parseFloat(data.format?.duration ?? '0') || null;
+    const raw = data?.format?.duration;
+    const duration = typeof raw === 'number' ? raw
+      : typeof raw === 'string' && /^\d+(?:\.\d+)?$/.test(raw) ? Number(raw) : NaN;
+    return Number.isFinite(duration) && duration > 0 ? duration : null;
   } catch {
     return null;
   }

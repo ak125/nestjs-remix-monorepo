@@ -16,10 +16,10 @@ import {
   normalizeAudio,
   mergeAudio,
   generateSrt,
+  validateSubtitleSegments,
   writeSrtFile,
   cleanupPostprocessFiles,
-  type VariantSpec,
-  type SubtitleSegment,
+  type PostprocessResult,
 } from '../lib/ffmpeg-postprocess';
 import { uploadToS3Generic } from '../lib/s3-upload';
 
@@ -50,7 +50,13 @@ const postprocessRequestSchema = z.object({
   variants: z.array(variantSpecSchema).min(1),
   normalizeLoudness: z.boolean().default(true),
   loudnessTarget: z.number().default(-14),
-  subtitleSegments: z.array(subtitleSegmentSchema).nullish(),
+  subtitleSegments: z.array(subtitleSegmentSchema).superRefine((segments, ctx) => {
+    try {
+      validateSubtitleSegments(segments);
+    } catch (error) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: (error as Error).message });
+    }
+  }).nullish(),
 });
 
 type PostprocessRequest = z.infer<typeof postprocessRequestSchema>;
@@ -117,21 +123,35 @@ export async function postprocessRoute(app: FastifyInstance): Promise<void> {
         }
       }
 
-      // Generate variants
-      const variants: VariantResult[] = [];
-
+      // Prepare and validate every local artifact before the first upload.
+      const results: PostprocessResult[] = [];
+      const segments = req.subtitleSegments;
       for (const variantSpec of req.variants) {
         const result = resizeVideo(processedPath, variantSpec, `exec-${req.executionLogId}`);
         filesToCleanup.push(result.localPath);
+        results.push(result);
+        if (segments && segments.length > 0) {
+          if (result.durationSecs === null) {
+            throw new Error(`Cannot validate subtitles: missing duration for ${result.name}`);
+          }
+          validateSubtitleSegments(segments, result.durationSecs);
+        }
+      }
 
-        // Upload variant to S3
+      let srtLocalPath: string | null = null;
+      if (segments && segments.length > 0) {
+        srtLocalPath = writeSrtFile(generateSrt(segments), `exec-${req.executionLogId}`);
+        filesToCleanup.push(srtLocalPath);
+      }
+
+      const variants: VariantResult[] = [];
+      for (const result of results) {
         const s3Path = await uploadVariant(
           result.localPath,
           req.briefId,
           req.executionLogId,
-          variantSpec.name,
+          result.name,
         );
-
         variants.push({
           name: result.name,
           s3Path,
@@ -142,14 +162,9 @@ export async function postprocessRoute(app: FastifyInstance): Promise<void> {
         });
       }
 
-      // Generate SRT if subtitle segments provided
-      let srtS3Path: string | null = null;
-      if (req.subtitleSegments && req.subtitleSegments.length > 0) {
-        const srtContent = generateSrt(req.subtitleSegments);
-        const srtLocalPath = writeSrtFile(srtContent, `exec-${req.executionLogId}`);
-        filesToCleanup.push(srtLocalPath);
-        srtS3Path = await uploadSrt(srtLocalPath, req.briefId, req.executionLogId);
-      }
+      const srtS3Path = srtLocalPath
+        ? await uploadSrt(srtLocalPath, req.briefId, req.executionLogId)
+        : null;
 
       const response: PostprocessResponse = {
         status: 'success',
