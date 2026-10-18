@@ -42,6 +42,8 @@ description: Use when validating a video brief/script/render against the 7 gates
 5. Si ≥1 FAIL → produire rapport détaillé, rester en `scripts/draft/` pour itération
 6. Owner inspecte verdict + signe Approval Record (3 flags)
 
+Relecture de style du `script_voice` (facultative, distincte des 7 gates) : suivre `.claude/prompts/_shared/editorial-review.md` (racine monorepo ; depuis ce workspace : `../../.claude/prompts/_shared/editorial-review.md`). Elle rend une proposition sans modifier le script, ne change aucune mesure ni aucun seuil de gate, et la version retenue repasse les 7 gates.
+
 ## Détail par gate
 
 ### G1 Truth

@@ -23,6 +23,8 @@ Fichiers source : `.claude/agents/{marketing-lead-agent,local-business-agent,cus
 
 Le workspace ne charge **aucun skill local exclusif** au 2026-05-14. Les skills marketing-relevant (frontend-design, ui-ux-pro-max) restent dans `app/.claude/skills/` (DEV root) et sont disponibles via PATH d'inclusion natif Claude Code.
 
+État au 2026-10-17 : 11 skills locaux sous `.claude/skills/` (`fafa-*`, `amk-*`, `creative-pattern-extractor`). Relecture éditoriale d'un brouillon français (script, copie) : lire `../../.claude/prompts/_shared/editorial-review.md` avant d'agir.
+
 ## Outputs autorisés (conformité ADR-036 + ADR-060 + ADR-061)
 
 | Destination | Autorisé ? | Justification |

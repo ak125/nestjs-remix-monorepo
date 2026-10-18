@@ -3,11 +3,249 @@ import {
   type BuyingGuideContractV1,
 } from '../../src/modules/gamme-rest/services/buying-guide-data.service';
 
+describe('BuyingGuideDataService section provenance (L2g)', () => {
+  const service = Object.create(
+    BuyingGuideDataService.prototype,
+  ) as BuyingGuideDataService;
+  Object.assign(service, {
+    logger: {
+      warn: jest.fn(),
+      error: jest.fn(),
+      log: jest.fn(),
+      debug: jest.fn(),
+    },
+  });
+  const transform = (raw: Record<string, unknown>): BuyingGuideContractV1 =>
+    (
+      service as unknown as {
+        transformToV2(row: Record<string, unknown>): BuyingGuideContractV1;
+      }
+    ).transformToV2(raw);
+  const row = {
+    sgpg_id: 7,
+    sgpg_pg_id: '7',
+    sgpg_intro_title: 'Filtre à huile',
+    sgpg_faq: [{ q: 'Question legacy non admise ?', a: 'Réponse legacy.' }],
+  };
+  const dbFaq = [
+    {
+      question: 'Quelle référence vérifier ?',
+      answer:
+        'Comparez la référence constructeur indiquée dans le catalogue avec celle prévue pour votre véhicule avant de commander.',
+    },
+    {
+      question: 'Quelle motorisation sélectionner ?',
+      answer:
+        'Sélectionnez la motorisation exacte du véhicule dans le catalogue et vérifiez les caractéristiques de la référence proposée.',
+    },
+    {
+      question: 'Quelle date de fabrication renseigner ?',
+      answer:
+        'Renseignez la date de fabrication indiquée dans les documents du véhicule pour sélectionner sa variante dans le catalogue.',
+    },
+  ];
+
+  it('fige la FAQ de la fixture pg 7 avant correction, sans accepter les slots q/a', () => {
+    const guide = service.toBuyingGuideV1(transform(row));
+    expect(JSON.stringify(guide.faq)).toMatchSnapshot();
+    expect(guide.faq.some((item) => item.question.includes('legacy'))).toBe(
+      false,
+    );
+  });
+
+  it.each([row.sgpg_faq, JSON.stringify(row.sgpg_faq)])(
+    'signale le gabarit substitué aux slots q/a : %p',
+    (faq) => {
+      const guide = service.toBuyingGuideV1(
+        transform({ ...row, sgpg_faq: faq }),
+      );
+      expect(guide.sectionSources?.faq).toBe('fallback');
+      expect(guide.quality.flags).toContain('FAQ_TOO_SMALL');
+      expect(guide.faq).toEqual(template().faq);
+    },
+  );
+
+  const template = () => service.toBuyingGuideV1(transform(row));
+  const eightFaq = Array.from({ length: 8 }, (_, index) => ({
+    question: `Quelle référence catalogue numéro ${index + 1} vérifier ?`,
+    answer: dbFaq[0].answer,
+  }));
+
+  it('signale trois paires DB complétées par le gabarit', () => {
+    const guide = service.toBuyingGuideV1(
+      transform({ ...row, sgpg_faq: dbFaq }),
+    );
+    expect(guide.quality.flags).toContain('TOO_SHORT');
+    expect(guide.sectionSources?.faq).toBe('mixed');
+    expect(guide.faq).toEqual([...dbFaq, ...template().faq]);
+  });
+
+  it('conserve db pour huit paires distinctes sans place pour le gabarit', () => {
+    const guide = service.toBuyingGuideV1(
+      transform({ ...row, sgpg_faq: eightFaq }),
+    );
+    expect(guide.sectionSources?.faq).toBe('db');
+    expect(guide.faq).toEqual(eightFaq);
+  });
+
+  it('signale une réponse remplacée parmi des réponses DB conservées', () => {
+    const guide = service.toBuyingGuideV1(
+      transform({
+        ...row,
+        sgpg_faq: [{ ...dbFaq[0], answer: 'Oui.' }, dbFaq[1], dbFaq[2]],
+      }),
+    );
+    expect(guide.quality.flags).not.toContain('FAQ_TOO_SMALL');
+    expect(guide.sectionSources?.faq).toBe('mixed');
+    expect(guide.faq).toEqual([
+      {
+        ...dbFaq[0],
+        answer:
+          'Vérifiez la référence exacte selon le véhicule et suivez la procédure constructeur pour sécuriser le remplacement.',
+      },
+      dbFaq[1],
+      dbFaq[2],
+      ...template().faq,
+    ]);
+  });
+
+  it('signale fallback quand toutes les réponses sont remplacées', () => {
+    const guide = service.toBuyingGuideV1(
+      transform({
+        ...row,
+        sgpg_faq: dbFaq.map((item) => ({ ...item, answer: 'Oui.' })),
+      }),
+    );
+    expect(guide.sectionSources?.faq).toBe('fallback');
+    expect(guide.faq).toEqual([
+      ...dbFaq.map((item) => ({
+        ...item,
+        answer:
+          'Vérifiez la référence exacte selon le véhicule et suivez la procédure constructeur pour sécuriser le remplacement.',
+      })),
+      ...template().faq,
+    ]);
+  });
+
+  it('compte seulement les réponses conservées après le filtre R1', () => {
+    const guide = service.toBuyingGuideV1(
+      transform({
+        ...row,
+        sgpg_faq: dbFaq.map((item) => ({
+          ...item,
+          answer: 'diagnostic '.repeat(20),
+        })),
+      }),
+    );
+    expect(guide.quality.flags).toContain('R3_BOUNDARY_VIOLATION');
+    expect(guide.sectionSources?.faq).toBe('fallback');
+    expect(guide.faq).toEqual(template().faq);
+  });
+
+  it('ne compte pas un gabarit écarté par déduplication comme une source servie', () => {
+    const faq = template().faq.map((item) => ({
+      ...item,
+      answer: dbFaq[0].answer,
+    }));
+    const guide = service.toBuyingGuideV1(transform({ ...row, sgpg_faq: faq }));
+    expect(guide.sectionSources?.faq).toBe('db');
+    expect(guide.faq).toEqual(faq);
+  });
+
+  it('signale les symptômes substitués', () => {
+    const guide = service.toBuyingGuideV1(
+      transform({ ...row, sgpg_symptoms: [] }),
+    );
+    expect(guide.sectionSources?.symptoms).toBe('fallback');
+    expect(guide.quality.flags).toContain('SYMPTOMS_TOO_SMALL');
+  });
+
+  it('conserve db pour des symptômes suffisants', () => {
+    const symptoms = ['Élément endommagé', 'Élément usé', 'Élément déformé'];
+    const guide = service.toBuyingGuideV1(
+      transform({ ...row, sgpg_symptoms: symptoms }),
+    );
+    expect(guide.sectionSources?.symptoms).toBe('db');
+    expect(guide.symptoms).toEqual(symptoms);
+  });
+
+  const completionAntiMistakes = [
+    'Ne pas commander Filtre à huile sans vérifier la compatibilité véhicule/moteur.',
+    "Ne pas ignorer les préconisations constructeur d'installation.",
+    'Ne pas différer le remplacement en cas de dégradation persistante.',
+    'Ne pas valider le panier sans comparaison des références constructeur.',
+  ];
+  const tenAntiMistakes = Array.from(
+    { length: 10 },
+    (_, index) => `Vérifier la référence catalogue numéro ${index + 1}.`,
+  );
+
+  it.each([1, 4, 10])(
+    'décrit la liste enrichie servie de %i anti-erreurs',
+    (count) => {
+      const antiMistakes = tenAntiMistakes.filter((_, index) => index < count);
+      const guide = service.toBuyingGuideV1(
+        transform({ ...row, sgpg_anti_mistakes: antiMistakes }),
+      );
+      expect(guide.sectionSources?.antiMistakes).toBe(
+        count === 10 ? 'db' : 'mixed',
+      );
+      expect(guide.antiMistakes).toEqual(
+        count === 10
+          ? antiMistakes
+          : [...antiMistakes, ...completionAntiMistakes],
+      );
+    },
+  );
+
+  it('signale les anti-erreurs entièrement issues du gabarit', () => {
+    const guide = service.toBuyingGuideV1(
+      transform({ ...row, sgpg_anti_mistakes: [] }),
+    );
+    expect(guide.sectionSources?.antiMistakes).toBe('fallback');
+    expect(guide.antiMistakes).toEqual(template().antiMistakes);
+  });
+
+  it('déduplique les anti-erreurs avant de compter les sources retenues', () => {
+    const guide = service.toBuyingGuideV1(
+      transform({
+        ...row,
+        sgpg_anti_mistakes: Array(10).fill(tenAntiMistakes[0]),
+      }),
+    );
+    expect(guide.sectionSources?.antiMistakes).toBe('mixed');
+    expect(guide.antiMistakes).toEqual([
+      tenAntiMistakes[0],
+      ...completionAntiMistakes,
+    ]);
+  });
+
+  it('marque les trois sections du guide automatique comme fallback', () => {
+    const guide = service.buildAutoBuyingGuideV1({
+      pgId: '7',
+      pgName: 'Filtre à huile',
+    });
+    expect(guide.sectionSources).toMatchObject({
+      faq: 'fallback',
+      symptoms: 'fallback',
+      antiMistakes: 'fallback',
+    });
+    expect(guide.faq.length).toBeGreaterThan(0);
+    expect(guide.antiMistakes.length).toBeGreaterThan(0);
+    expect(guide.symptoms.length).toBeGreaterThan(0);
+  });
+});
+
 describe('BuyingGuideDataService quality gate', () => {
   const service = Object.create(
     BuyingGuideDataService.prototype,
   ) as BuyingGuideDataService;
-  (service as any).logger = { warn: jest.fn(), error: jest.fn(), log: jest.fn(), debug: jest.fn() };
+  (service as any).logger = {
+    warn: jest.fn(),
+    error: jest.fn(),
+    log: jest.fn(),
+    debug: jest.fn(),
+  };
 
   const transform = (raw: Record<string, unknown>): BuyingGuideContractV1 =>
     (service as any).transformToV2(raw) as BuyingGuideContractV1;
@@ -116,7 +354,7 @@ describe('BuyingGuideDataService quality gate', () => {
         'pulsations dans la pédale de frein',
         'bruit métallique au freinage',
         'rainures visibles sur la piste du disque',
-        "distance de freinage qui augmente",
+        'distance de freinage qui augmente',
       ],
       sgpg_faq: [
         {
@@ -127,7 +365,7 @@ describe('BuyingGuideDataService quality gate', () => {
         {
           question: 'Quand remplacer les disques ?',
           answer:
-            "En général entre 60 000 et 80 000 km, ou plus tôt en cas de vibration, rainures profondes ou usure hors tolérance.",
+            'En général entre 60 000 et 80 000 km, ou plus tôt en cas de vibration, rainures profondes ou usure hors tolérance.',
         },
         {
           question: 'Peut-on remplacer un seul disque ?',
@@ -238,11 +476,11 @@ describe('BuyingGuideDataService quality gate', () => {
       sgpg_pg_id: '82',
       sgpg_intro_title: 'Les disques de frein',
       sgpg_intro_role:
-        "Les disques de frein ralentissent le véhicule avec les plaquettes et participent directement à la sécurité de freinage.",
+        'Les disques de frein ralentissent le véhicule avec les plaquettes et participent directement à la sécurité de freinage.',
       sgpg_intro_sync_parts: ['les plaquettes de frein', 'les étriers'],
       sgpg_risk_title: 'Pourquoi remplacer à temps ?',
       sgpg_risk_explanation:
-        "Continuer à rouler avec des disques usés augmente la distance de freinage et le risque sécurité.",
+        'Continuer à rouler avec des disques usés augmente la distance de freinage et le risque sécurité.',
       sgpg_risk_consequences: [
         "distance de freinage allongée en situation d'urgence",
         'vibrations au volant et à la pédale',
@@ -265,7 +503,7 @@ describe('BuyingGuideDataService quality gate', () => {
       sgpg_arg3_content: 'Parcours d’achat orienté anti-erreur.',
       sgpg_arg3_icon: 'list-check',
       sgpg_how_to_choose:
-        "Vérifiez essieu, diamètre, épaisseur et référence constructeur avant validation.",
+        'Vérifiez essieu, diamètre, épaisseur et référence constructeur avant validation.',
       sgpg_symptoms: [
         'vibrations au volant lors du freinage',
         'pulsations dans la pédale de frein',
@@ -282,7 +520,8 @@ describe('BuyingGuideDataService quality gate', () => {
         },
         {
           question: 'Faut-il remplacer par paire ?',
-          answer: "Oui, toujours sur le même essieu pour l'équilibre de freinage.",
+          answer:
+            "Oui, toujours sur le même essieu pour l'équilibre de freinage.",
         },
       ],
       sgpg_source_uri: 'pdf://catalog/ate-brake-discs-2025.pdf',
@@ -304,7 +543,7 @@ describe('BuyingGuideDataService quality gate', () => {
       sgpg_intro_sync_parts: ['les plaquettes de frein', 'les étriers'],
       sgpg_risk_title: 'Pourquoi remplacer a temps ?',
       sgpg_risk_explanation:
-        "Des disques usés dégradent le freinage et augmentent le risque de vibration et de surcoût atelier.",
+        'Des disques usés dégradent le freinage et augmentent le risque de vibration et de surcoût atelier.',
       sgpg_risk_consequences: [
         "distance d'arrêt allongée",
         'vibrations au freinage',
@@ -338,7 +577,8 @@ describe('BuyingGuideDataService quality gate', () => {
         },
         {
           question: 'Faut-il remplacer par paire ?',
-          answer: 'Oui, toujours sur le meme essieu pour garder un freinage equilibre.',
+          answer:
+            'Oui, toujours sur le meme essieu pour garder un freinage equilibre.',
         },
       ],
       sgpg_source_type: 'pdf',

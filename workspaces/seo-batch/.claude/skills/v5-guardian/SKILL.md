@@ -13,6 +13,7 @@ allowed-tools: Read, mcp__claude_ai_Supabase__execute_sql, Glob
 - Pour la **GÉNÉRATION** de contenu → utiliser `content-gen`
 - Pour le **NETTOYAGE** des sections polluées → utiliser `surgical-cleaner` (chaîne : v5-guardian détecte → surgical-cleaner nettoie → content-gen regénère si besoin)
 - Pour l'**AUDIT ÉDITORIAL** approfondi (R2D2, E-E-A-T) → utiliser `content-audit`
+- Pour la **RELECTURE DE STYLE** d'un brouillon (proposition motivée, jamais d'écriture) → lire `.claude/prompts/_shared/editorial-review.md` (racine monorepo ; depuis ce workspace : `../../.claude/prompts/_shared/editorial-review.md`). Le texte relu repasse par ce skill comme un texte neuf
 - Pour l'**AUDIT SEO GLOBAL** (métriques R1-R8, maillage) → utiliser `seo-gamme-audit`
 - Pour la **MIGRATION** v4→v5 → utiliser `md-v5-migrator`
 - **Fusionne** : `pollution-scanner` (détection) + `content-quality-gate` (scoring) + guard pipeline-v5 (protection)
