@@ -23,31 +23,41 @@ Cas typique : symptôme commun (perte de puissance, fumée noire, batterie faibl
 
 ## Composition Remotion (V2)
 
-`NeChangePasTropVite.tsx` (1080×1920, 30fps, 30-45s)
+`NeChangePasTropVite.tsx` (1080×1920, 30fps, 38 s fixes : `durationInFrames={1140}`, `compositions/index.tsx:65-86`)
 
-Props attendues :
+Props lues par la composition (`services/remotion-renderer/src/compositions/NeChangePasTropVite.tsx:27-48`), passées dans
+`compositionProps` ; en cas d'écart avec cette page, la composition fait foi. `briefId`, `videoType` et `vertical` viennent de
+la requête `/render`.
 ```typescript
 interface NeChangePasTropViteProps {
-  hook: string;                  // <80 chars
-  symptom: string;               // <60 chars
-  pieceWrong: string;            // pièce que le client pense changer
-  causes: Array<{                // 3 causes ordonnées par probabilité
+  hook?: string;                 // <80 chars
+  symptom?: string;              // <60 chars
+  pieceWrong?: string;           // pièce que le client pense changer
+  problemText?: string;          // remplace le texte du bloc Problème (cadrage compatibilité du pilote plaquettes)
+  causes?: Array<{               // 3 causes ordonnées par probabilité
     cause: string;
-    duration_sec: number;
-    check_suggestion: string;
+    duration_sec?: number;       // déclaré, jamais lu
+    check_suggestion?: string;
   }>;
-  advice: string;                // conseil ordonné
-  cta: string;                   // <120 chars
-  disclaimer: string;            // overlay
-  voiceUrl: string;              // S3 key vers .wav voix
-  brollAssets: Array<{           // optionnel
-    s3_key: string;
-    visual_type: 'schema' | 'animation' | 'macro' | 'motion_text' | 'ambiance';
-    timestamp_sec: number;
-    truth_dependency: 'illustration' | 'reference';  // JAMAIS 'proof' (G6)
-  }>;
+  advice?: string;               // conseil ordonné
+  cta?: string;                  // <120 chars
+  disclaimer?: string;           // overlay
+  audioUrl?: string;             // piste voix
+  brandName?: string;
 }
 ```
+
+Constaté dans le code, sans rendu lancé :
+
+- Toute prop absente affiche une valeur de démonstration (vanne EGR, perte de puissance), tirée de `defaultProps` dans
+  `index.tsx` ou des valeurs par défaut du composant (l.50-65). Le moteur ne signale pas l'oubli : renseigner chaque champ.
+- Seules les 3 premières causes s'affichent (l.238), mais la section est partagée entre toutes les causes passées (l.222) :
+  en passer exactement 3. Leur durée ne se règle pas (`duration_sec` n'est pas lu).
+- Découpage rendu (l.69-72) : accroche 0-5 s, problème 5-11 s, causes 11-29 s, conseil 29-35 s, CTA 35-38 s. Le tableau
+  ci-dessus reste l'intention éditoriale ; la voix se cale sur ce découpage.
+- Sans `audioUrl`, le rendu est muet, sans erreur (l.84).
+- Aucune prop b-roll : l'ancien champ `brollAssets` de cette page n'est lu par aucune composition V1. G6 s'applique aux visuels
+  de la composition elle-même.
 
 ## Exemples Fafa V1 (5 pilotes Lot 1)
 

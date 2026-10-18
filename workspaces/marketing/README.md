@@ -71,6 +71,11 @@ Les trois rapports ont été écrits puis relus avec une empreinte identique. Le
 > court vers L1 — sous-section datée ci-dessous. Toujours rien d'approuvé ni d'activé.
 > **Complété le 16/10** (base `64cf08797`) : boucle par sujet, sujet pilote M1, planning de quatre semaines, constats C16-1 à C16-8
 > et lot L16 — sous-section datée ci-dessous. Toujours rien d'approuvé, de raccordé ni d'activé.
+> **Complété le 17/10** (base `13971f4e1`) : lots fusionnés à ce jour, L00 en partie (#1779, `bb2c868d1` : ce dossier et la carte ;
+> agent et brouillon d'ADR non faits) et L16 (#1816, `45b524a0e`) ; complément L16 (`formats/*.md`, skills de rendu, de mesure et
+> de prompts, README des métriques) et constats C17-12 à C17-21. Aucun lot approuvé ni activé.
+> **Complété le 18/10** (base `3d1d395a1`) : L16 étendu à la veille créative (`creative-pattern-extractor`, `inspiration/README.md`)
+> puis aux README de `fafa-media-factory/` et de `scripts/` ; constats C18-1 à C18-14. Aucun lot approuvé ni activé.
 
 - **Vocabulaire** : présent ≠ branché ≠ activé ≠ servi ; trouvée ≠ chargée ≠ exécutée ≠ réussie. Statut d'un lot : prêt pour revue →
   testé localement → vérifié sur environnement cible → activé. Fusion sur `main` = PREPROD ; tag `v*` = PROD, posé par l'owner.
@@ -138,7 +143,7 @@ Chaque lot livre : niveau d'effet atteint, commande de vérification, verdict Ro
 
 | Lot | Étape | Responsable (rôle) | Exécutant | Dépend de | Statut |
 |---|---|---|---|---|---|
-| L00 Dossier, carte, H17 | 0 | marketing-lead, ia-agents-lead | Claude | — | proposé |
+| L00 Dossier, carte, H17 | 0 | marketing-lead, ia-agents-lead | Claude | — | fusionné en partie (#1779) ; agent et ADR proposés |
 | L01 Correctifs transverses | 0 | ia-agents-lead | Codex (canal non public) | GO owner nominatif | proposé — conditionné |
 | L02 Écritures vérifiées | 1 | marketing-lead | Codex | — | proposé |
 | L03 Approbation conditionnée | 1 | marketing-lead, brand-lead | Codex | L02, D5 | proposé |
@@ -155,7 +160,7 @@ Chaque lot livre : niveau d'effet atteint, commande de vérification, verdict Ro
 | L13 Preuve de publication | 4 | marketing-lead | Codex | L03, L07, L11, L12, D4, D6 | proposé |
 | L14 Attribution | 5 | data-lead, sales-lead | Codex | L12, L13, D6, D7 | proposé — commandes : préparation seulement |
 | L15 Recette Hermes | 6 | ia-agents-lead | Codex, Hermes | L11 (workflow) ; D14 (recette native) | proposé |
-| L16 Consignes des skills média | 3 | media-lead, content-lead | Claude | — | proposé (16/10) |
+| L16 Consignes des skills média | 3 | media-lead, content-lead | Claude | — ; L10a pour `fafa-brand-safety-reviewer` | fusionné (#1816, `45b524a0e`) ; complément du 17/10 prêt pour revue |
 
 - **L00** · Livré par cette PR documentaire (prêt pour revue) : `workspaces/marketing/README.md` (cette section) ; `audit/automecanik-departments-map.md` (24 identifiants depuis #1761, note datée, historique et ancre conservés). Proposé, non fait : `marketing-lead-agent.md` (table au pluriel et H17 = modification d'agent, effet > E0, non activée ; sortie = proposition en lecture seule ; aucune écriture en base sans acte owner) ; brouillon d'ADR des handoffs dans le vault (D6). Tests : `scripts/lint/check-preprod-vocabulary.sh`, diff limité à deux fichiers. Limites : ni YAML ni vault ; `local-business-agent` hors activation.
 - **L01** · Défaut de sécurité — détail hors dépôt public. Contrat « sécurité-correctifs v1 » (proposé) ; preuve hors dépôt, citée par empreinte ; GO owner nominatif avant toute PR ; PR à prose neutre. Retour : revert.
@@ -166,6 +171,8 @@ Chaque lot livre : niveau d'effet atteint, commande de vérification, verdict Ro
   Ajout du 16/10 : le créneau porte le format du lot de sujet (long, court, carrousel) ; pilier promo non imposé à un sujet unique ;
   réutilisation d'une gamme récente signalée dans le plan, jamais silencieuse (l.63-80, C16-7). Tests : un sujet sur quatre créneaux
   → formats du lot, aucun créneau promo imposé ; gamme postée il y a moins de 28 jours → réutilisation visible.
+  Ajout du 17/10 : #1760 (`c9e44416f`) a retiré `_isReused`, jamais lu. Le repli (l.62-72 à `3ea5210b2`) réutilise toujours une
+  gamme récente sans la signaler ; contrat et test inchangés.
 - **L06** · `marketing-hub.interfaces.ts:1-15` ; `marketing-matrix.types.ts:22-32` ; `scripts/marketing/export-publish-queue.ts:21` ; `video-brief.schema.json:44-52` ; `video-quality.constants.ts:42-47` ; `multi-channel-copywriter.service.ts:150`. Contrat : correspondance explicite des canaux, inconnu → 422 sans repli ; `gbp`, `local_landing`, `sms` refusés comme canaux de variante ; consentement social ≠ email ; consentement absent des types générés → UNKNOWN (avec `customer-retention-agent`). Tests : chaque valeur mappée ou refusée ; parité TS↔SQL du brief ; producteurs `youtube` rapprochés de l'indice « IG/FB only » (20260430 l.8). Limites : aucun CHECK modifié ; `:134` après D13.
   Ajout du 16/10 : CTA YouTube selon le format — Short → vidéo associée ou profil de chaîne, vidéo longue → description
   (`social-post-templates.ts:129,219`, C16-5). Test : format `short` avec « Lien en description » → refus motivé.
@@ -178,6 +185,21 @@ Chaque lot livre : niveau d'effet atteint, commande de vérification, verdict Ro
   `-shortest` (l.162-185, C14-2) ; normalisation qui renvoie son état (normalisée, sans audio, échec) au lieu d'un repli silencieux et
   d'une cible présentée comme mesure (l.89-157, C14-3). Tests : 0,9996 s → `00:00:01,000` ; vidéo 6 s avec musique + voix 3 s → 6 s
   ou refus motivé ; entrée sans audio → état `skipped_no_audio`, jamais « normalisée ».
+  Ajout du 17/10 : la règle « valeurs par défaut interdites en rendu réel » couvre aussi les trois compositions Fafa, qui affichent
+  un contenu de démonstration pour toute prop absente (C17-13) ; `resolution` (1920×1080 par défaut) et `fps` de la requête
+  remplacent ceux de la composition (`services/remotion-renderer/src/lib/render-video.ts:88-90,122`, C17-14). Tests : rendu réel
+  sans une prop de contenu → refus qui nomme la prop, jamais la valeur de démonstration ; requête 9:16 sans `resolution` → refus
+  motivé ou taille de la composition ; `fps` différent de celui de la composition → refus motivé.
+  Ajout du 18/10 : la règle « score sans mesure = UNKNOWN » couvre G5. `similarityScore` absent y est compté 0
+  (`backend/src/modules/media-factory/services/video-gates.service.ts:277`) et aucun module ne le produit (seulement déclaré, l.398) :
+  G5 rend PASS à chaque exécution (C18-1). Test : score absent → ni PASS ni 0 (refus motivé ou UNKNOWN) ; les deux tests G5 existants
+  (`backend/tests/unit/video-gates.service.test.ts:351-365`) restent verts. Ni #1818 (L10a : G1 et G2) ni #1823 ne touchent G5.
+  Suite du 18/10 : même règle pour G4. Sans `actualDurationSec`, G4 rend PASS (« No duration data — skipping platform gate »,
+  `video-gates.service.ts:237-241`) ; ni le processeur (`backend/src/workers/processors/video-execution.processor.ts:201-207`), qui
+  exécute les gates avant le rendu (l.209-210, rendu l.241-259), ni l'écran de simulation
+  (`frontend/app/routes/admin.video-hub.productions.$briefId.tsx:252-262`) ne passent la durée (C18-12). Test : durée absente → ni
+  PASS ni 0 ; le test « should PASS when no duration data » (`video-gates.service.test.ts:328-332`) change d'attente avec le
+  correctif. #1818 et #1823 ne touchent pas G4.
 - **L10a** · Base `75ea70a48`. Fichiers : `backend/src/modules/media-factory/services/video-gates.service.ts:108-175` (G1, G2) ;
   `backend/src/config/video-quality.constants.ts:68-73` ; `backend/tests/unit/video-gates.service.test.ts` (blocs runAllGates
   l.146-187, G1 l.189-244, G2 l.246-286). Politique active : G1 mesure un ratio de claims `unverified` (warn 0,15, fail 0,3), sans règle vault trouvée (checkout du
@@ -201,6 +223,25 @@ Chaque lot livre : niveau d'effet atteint, commande de vérification, verdict Ro
   `exports/seo/gamme/filtre-a-huile.json`, `source_wiki_commit` cité ; aucune relation diagnostic affirmée. `url_cible` =
   `/diagnostic-auto` ou R1, jamais R3 tant qu'il est `NOT_READY`. Rendu local après D19. Tests : claim absent de l'export → rouge ;
   `url_cible` R3 → rouge.
+  Ajout du 17/10 : `script.json:29` du pilote (« hook_variants = test A/B sans refaire la vidéo ») et le commentaire
+  d'`approval.json:97` (« 3 hooks A/B ») décrivent comme un test ce qui reste des variantes préparées, à sélection humaine (C17-15).
+  Correction : la note du script, et une nouvelle entrée du journal d'approbation ; l'historique n'est pas réécrit.
+  Suite du 17/10 : `governance/evidence-pack.schema.json:35` accepte `wiki_proposal` comme source ; `fafa-persona-canon/SKILL.md`
+  (l.50-53) et `personas/fafa.md` (l.47-48), un schéma de données et des propositions WIKI comme preuve. Or `proposals/` contient des fiches en cours d'extraction ;
+  la base validée est `wiki/` (README du WIKI, l.26-27, à `37445d1`). Preuve = fiche `wiki/` ou export (`source_wiki_commit`
+  cité), ou Catalogue, comme le contrat ci-dessus (C17-19). `fafa-persona-canon` se déclare figé en V1 (l.80-81) : son texte
+  change par la voie qu'il prévoit, pas dans ce lot. Test : claim dont la seule preuve est `wiki_proposal` → rouge.
+  Ajout du 18/10 : le manifeste du pilote (`manifests/renders/fafa-plaquettes-frein-001.json:77`) et son `approval.json:56-62`
+  consignent G5 `PASS`, `measured: 0.0`, alors qu'aucun score n'a été calculé (corpus vide, aucun producteur : C18-1). Correction :
+  G5 inscrit comme non mesuré, par une nouvelle entrée du journal ; l'historique n'est pas réécrit (C18-8).
+  Suite du 18/10 : deux modèles d'approbation. Le code lit `approvalRecord.stages[]`
+  (`backend/src/modules/media-factory/types/video.types.ts:105-116`, étapes de
+  `backend/src/config/video-quality.constants.ts:168-174`) : G7 rend FAIL sans tableau `stages` ou sans étape `script_text`
+  approuvée (`video-gates.service.ts:86-87,93,322-329`), donc l'approbation du script y précède les gates. Le schéma et le pilote
+  portent trois drapeaux, sans `stages` (`governance/approval-record.schema.json:36-74`), et les gates y précèdent l'approbation. Le
+  pilote consigne G7 `PASS` (« approval record initialisé », `approval.json:76-82`) là où le code rendrait FAIL (C18-13). Contrat :
+  un seul modèle, celui des trois approbations retenu ci-dessus ; G7 le lit, ou `stages` en est dérivé, sans second modèle. Test :
+  dossier du pilote passé à `runAllGates` → verdict G7 identique à celui consigné.
 - **L12** · Migration additive préparée (compte, empreinte de révision, preuve, réservation par `intent_id` avec bail, liaison au brief selon D16, journal d'approbations) ; `marketing-hub-data.service.ts:31-44` ; export du contrôleur des posts (validation de `week` et `channel`, variantes secondaires) ; `utm_content` = id de variante. Tests : Instagram publié ne publie pas Facebook ; second compte → 422 ; export des variantes secondaires. Limites : lecture autorisée du CHECK réel et réconciliation du ledger d'abord ; application = acte owner ; baseline du ratchet rafraîchie dans la même PR si elle change.
 - **L13** · `publish-queue.service.ts:135-144` ; marquage publié du contrôleur des posts ; `scripts/marketing/export-publish-queue.ts` ; `fafa-media-factory/manifests/publishing/` (`.gitkeep` seul). Contrat : `publication-proof` v1 sur ces deux surfaces ; revalidation juste avant l'effet. Tests : sans preuve → 422 ; même preuve → sans effet ; preuve différente → 409 ; approbation révoquée → refus ; délai dépassé → incertain, 0 nouvelle tentative. Limites : publication = acte owner.
 - **L14** · Contrôleur d'attribution d'atterrissage (capture `medium`, `campaign`, `content` en session) ; `marketing-measurement.ts:13-25` ; contrôleur des commandes : préparation seulement (STOP). Contrat : verdict v1 lu tel quel, usage restreint à `r2_order_placed`, UNKNOWN affiché hors DEV ; les colonnes de mesure des posts (`actual_*`, `ga4_*`, `performance_*`) n'ont aucun producteur : UNKNOWN jusqu'à un producteur unique ; `qualified-demand` reste à définir par sales et data (D6), jamais déduit ici. Tests : visite → variante → commande sur fixtures synthétiques ; non certifié → UNKNOWN ; jamais 0 faute de données. Limites : D6, D7 ; aucun chiffre de vente.
@@ -211,6 +252,34 @@ Chaque lot livre : niveau d'effet atteint, commande de vérification, verdict Ro
   (chemin et noms alignés sur `services/remotion-renderer/src/types/contract.ts:13`) ; sortie de `fafa-script-generator/SKILL.md`
   (accroches A/B/C préparées, sélection humaine, jamais présentée comme test). C16-6. `seo-content-loop` (borne d'itérations) est
   signalé à seo-lead, sans modification. Tests : `scripts/lint/check-preprod-vocabulary.sh` ; diff limité à ces fichiers. Retour : revert.
+  Ajout du 17/10 : interfaces de `formats/*.md` recopiées des compositions, avec durée, découpage et valeurs de démonstration
+  constatés ; `fafa-remotion-template-planner/SKILL.md` (durée rendue, `resolution`, `fps`, props à renseigner) (C17-12). Le code des
+  compositions et du moteur n'est pas modifié ; le dossier du pilote reste à L11.
+  Suite du 17/10 : `fafa-performance-analyzer/SKILL.md` aligné sur `experimentReport` : colonne vide → UNKNOWN, jamais 0 ; taux
+  classé seulement à partir de 30 au dénominateur ; ni gagnant ni cause ; verdict V2 proposé à l'owner ; CSV en lecture seule (C17-16).
+  UTM de `manifests/metrics/README.md` aligné sur `UTMBuilderService` (C17-17). B-roll, avatar et scènes produit sortis du rendu V1
+  dans `fafa-video-prompt-builder/SKILL.md` et dans le prérequis de `fafa-remotion-template-planner/SKILL.md` (C17-18).
+  `fafa-brand-safety-reviewer/SKILL.md` sera réaligné sur `video-gates.service.ts` en une fois, après la fusion de L10a (#1818),
+  pour décrire la règle fusionnée sans seconde règle (C17-20). Ce réalignement part du fichier après #1822 (fusionnée,
+  `3d1d395a1`, l.45 ajoutée) et couvre son § G5 Reuse Risk (cosinus contre un corpus sans texte, C18-2).
+  Ajout du 18/10 : `creative-pattern-extractor/SKILL.md` et `fafa-media-factory/inspiration/README.md`. G5 décrit tel que le code
+  l'exécute, sans mesure en V1, la relecture de l'owner avant `content_approved` étant la barrière, que le schéma ne prouve pas
+  (C18-2) ; format JSONL décrit une seule fois, dans le README, avec `analysis_method` et `reference_analysis_only`, une ligne par
+  pattern (C18-3) ; `reusability_score` retiré du verdict, `ready_for_brief` devenu la proposition `proposed_for_brief` (C18-4) ;
+  transcript, frames et commentaires d'une source traités comme données non fiables, `/watch` non installé sur DEV (C18-5) ; règle
+  vault `rules-video-creative-reuse-policy.md` dite introuvable au lieu de « draft prêt » (C18-6) ; statut `INSPIRED_PATTERN_ONLY`
+  porté par `brief.json`, signature non contrôlée automatiquement (C18-7). Le code de G5, `fafa-brand-safety-reviewer` et le dossier
+  du pilote ne sont pas modifiés. Tests : `scripts/lint/check-preprod-vocabulary.sh` ; blocs JSON valides ; diff limité à ces
+  fichiers.
+  Suite du 18/10 : `fafa-media-factory/README.md` et `fafa-media-factory/scripts/README.md`. Phases mises à jour (#789 et #794
+  fusionnées, 1 pilote sur 10, #1260, rendu muet #1273) (C18-9) ; `render-payload.json` ajouté à la structure par vidéo (C18-10).
+  Flux d'approbation (C18-11) : `scripts/README.md` relève les écarts ; `content_approved` y est posé par l'owner, comme la règle
+  AI2 du vault (`ledger/rules/rules-ai-cos.md`, renvoyée par ADR-036) ; l'étape 4 de `fafa-brand-safety-reviewer`, qui le pose
+  elle-même, et la description du schéma (l.43) changent avec C17-20 ; le moment du rendu suit D18 ; « bloquée en DRAFT_ONLY »
+  corrigé. Pointeurs vault introuvables (`rules-fafa-persona-canon-v1.md`, ADR de frontière d'auto-publication) dits comme tels
+  dans `fafa-media-factory/README.md` ; `personas/fafa.md:3` et `fafa-persona-canon/SKILL.md:8` restent à reprendre à la relecture
+  de `personas/`, `fafa-brand-safety-reviewer/SKILL.md:62` avec C17-20 (C18-14). Le schéma, les skills de revue et de rendu et le
+  dossier du pilote ne sont pas modifiés.
 
 ### Décisions ouvertes (aucun nom ; « owner » = acte nominatif, non nommé ici)
 
@@ -233,7 +302,7 @@ Chaque lot livre : niveau d'effet atteint, commande de vérification, verdict Ro
 | D15 | Canon de voix au runtime | préemptée par #1690 (option a), à confirmer par acte owner | L07 |
 | D16 | Identité de brief faisant autorité (créneau ou table) | owner (marketing-lead, content-lead) | L08, L12 |
 | D17 | Source des 4 claims du pilote : ré-approbation humaine de la fiche WIKI `plaquette-de-frein` (brouillon, ré-approbation requise) ou preuve catalogue citée par claim | owner (catalog-lead, content-lead) | L11 vert ; étape 2 de L1 |
-| D18 | Stockage de la revue d'un rendu (fichier du dossier ou table) et identité de l'acteur (contexte d'authentification) | owner (media-lead, governance-lead) | étape 4 de L1 |
+| D18 | Stockage de la revue d'un rendu (fichier du dossier ou table) et identité de l'acteur (contexte d'authentification) ; place du rendu dans les 8 statuts : avant `APPROVED`, que le statut 6 exige, ou après, comme `fafa-remotion-template-planner` (C18-11) | owner (media-lead, governance-lead) | étape 4 de L1 |
 | D19 | L1 en fichiers seuls, backend éteint (recommandé), ou activation du backend media-factory (drapeau, tables `__video_*` sans DDL suivi) | owner (media-lead, runtime-lead) | ordre de L10 dans L1 |
 
 ### Consolidation V1–V7, risques §7 et chemin court vers L1 — 14 octobre 2026
@@ -482,6 +551,52 @@ navigateur.
 | C16-7 | `weekly-plan-generator.service.ts:63-80` | repli de réutilisation ; `_isReused` calculé l.80, jamais lu ni persisté | lecture | L05 |
 | C16-8 | R1 `/pieces/filtre-a-huile-7.html`, R3 `/blog-pieces-auto/conseils/filtre-a-huile` ; `wiki/gamme/filtre-a-huile.md:337` | « ISO 4548 » (R1 10, R3 2) et la consigne de serrage « 3/4 de tour » (R3 3), retirées par la fiche | comptage brut du HTML, hydratation comprise | hors mandat : seo-lead (séquence ADR-107 → R6) |
 
+#### Constats du 17/10
+
+Environnement : `main` à `13971f4e1` par lecture (`git show`) ; pour C17-16 à C17-21, fichiers cités relus à `3ea5210b2`, inchangés à `36c81a382`.
+À `3d1d395a1`, seul `fafa-brand-safety-reviewer/SKILL.md` a changé (#1822, deux lignes ajoutées l.45-46) : lignes de C17-20 recalées.
+Aucun rendu lancé, aucun appel au moteur.
+
+Numérotation : C17-1 à C17-11 appartiennent à la revue de la chaîne vidéo du même jour (candidat Codex, gates, renderer, vault),
+tenue hors dépôt ; ses constats ne sont ni recopiés ni comptés ici. Ceux de ce dossier commencent à C17-12.
+
+| Id | Fichier, fonction | Preuve | Limite | Lot |
+|---|---|---|---|---|
+| C17-12 | `workspaces/marketing/fafa-media-factory/formats/*.md` (avant ce complément) contre `NeChangePasTropVite.tsx:27-48`, `SymptomeTroisCauses.tsx:27-43`, `PieceExpliquee.tsx:27-45` | `function` au lieu de `pieceFunction` ; `whenToChange` décrit en objet, lu en texte ; `duration_sec` déclaré, jamais lu ; `problemText` absent ; props requises dans la spec, optionnelles dans le code ; découpage rendu différent du tableau éditorial | lecture | L16 |
+| C17-13 | `NeChangePasTropVite.tsx:50-65`, `SymptomeTroisCauses.tsx:45-56`, `PieceExpliquee.tsx:53-67` ; `defaultProps` de `compositions/index.tsx:65-129` | une prop absente rend un contenu de démonstration (vanne EGR, 120 000 km), sans erreur ni signal | lecture | L10 |
+| C17-14 | `services/remotion-renderer/src/types/contract.ts:15-21` ; `services/remotion-renderer/src/lib/render-video.ts:88-90,122` | `resolution` vaut 1920×1080 par défaut ; largeur, hauteur et fps de la requête remplacent ceux de la composition, dont le découpage est compté en images | lecture : image rendue non observée | L10 |
+| C17-15 | `workspaces/marketing/fafa-media-factory/scripts/draft/fafa-plaquettes-frein-001/script.json:29`, `approval.json:97` (même dossier) | « test A/B » pour des accroches choisies par un humain ; aucune répartition ni mesure n'existe | lecture | L11 |
+| C17-16 | `workspaces/marketing/.claude/skills/fafa-performance-analyzer/SKILL.md:22-46,55` (avant ce complément) contre `backend/src/modules/marketing/services/marketing-measurement.ts:251-318` | taux classés sans effectif minimal ; colonne vide non distinguée de 0 ; REPEAT et DROP tirés d'une comparaison sans témoin ; GO_V2 « autorise » un scope ; verdict écrit dans la colonne `notes` de l'owner | lecture ; CSV absent du dépôt (`.gitignore:211`) | L16 |
+| C17-17 | `workspaces/marketing/fafa-media-factory/manifests/metrics/README.md:39` (avant ce complément) contre `utm-builder.service.ts:46-51`, `landing-attribution.controller.ts:59-68`, `landing-source.classifier.ts:71-79` | `utm_source=fafa` sans la plateforme ; `utm_medium=video` : visite classée `social`, `organic` ou `campaign` selon le referer | lecture : aucune visite réelle observée | L16 |
+| C17-18 | `workspaces/marketing/.claude/skills/fafa-video-prompt-builder/SKILL.md:20,49` ; `fafa-remotion-template-planner/SKILL.md:12` (avant ce complément) | b-roll, avatar et scènes produit préparés pour V1, alors que les trois compositions ne lisent que `<Audio src={audioUrl}>` ; le prérequis de rendu attendait ces prompts | lecture | L16 |
+| C17-19 | `workspaces/marketing/fafa-media-factory/governance/evidence-pack.schema.json:35` ; `fafa-persona-canon/SKILL.md:50-53` ; `workspaces/marketing/fafa-media-factory/personas/fafa.md:47-48` | propositions WIKI et schéma de données acceptés comme preuve ; `proposals/` = fiches en cours d'extraction, `wiki/` = base validée (README du WIKI, l.26-27) | lecture ; skill figé en V1 (l.80-81), non modifié | L11 |
+| C17-20 | `workspaces/marketing/.claude/skills/fafa-brand-safety-reviewer/SKILL.md:49-58,74-77,85-106` (à `3d1d395a1` ; 47-56, 72-75, 83-104 avant #1822) contre `backend/src/modules/media-factory/services/video-gates.service.ts:108-175,291-313` | G1 et G2 décrits avec `evidence_refs` et `human_validated`, que le code ne lit pas (`status`, `requiresHumanValidation`, `validatedBy`) ; G6 compté sur `brollAssets`, le code sur `visualRoleViolations` ; bloc JSON invalide (commentaire `//`) | lecture ; G1 et G2 changent avec #1818, ouverte | L16 (après L10a) |
+| C17-21 | `.spec/00-canon/video-governance-p0.md` (« Spec Canonique », v1.0 du 2026-02-24), cité par `fafa-persona-canon`, `fafa-brand-safety-reviewer`, `fafa-media-factory/README.md`, `personas/*.md`, `prompts/higgsfield/broll-prompt-template.md` | document legacy de `.spec/00-canon` présenté comme canon par les documents Fafa | lecture | hors mandat : governance-lead (`.spec/00-canon/**`) |
+
+#### Constats du 18/10
+
+Environnement : `main` à `3d1d395a1` par lecture (`git show`) ; vault lu par l'API GitHub (`main` à `eb97222`) et par `git log --all`
+sur le checkout DEV, sans écriture ; ADR-036 et `ledger/rules/rules-ai-cos.md` lus, titres des 355 PR du vault listés. Aucun appel
+au moteur, aucun outil d'analyse vidéo lancé. Numéros vérifiés libres le 18/10 (dossier, branches marketing et vidéo, PR ouvertes,
+handoffs du jour).
+
+| Id | Fichier, fonction | Preuve | Limite | Lot |
+|---|---|---|---|---|
+| C18-1 | `backend/src/modules/media-factory/services/video-gates.service.ts:273-287` (`g5ReuseRisk`) ; seuils `backend/src/config/video-quality.constants.ts:78` | `similarityScore ?? 0` (l.277) ; champ déclaré l.398, aucun producteur dans `backend/`, `frontend/`, `scripts/`, `packages/` : G5 rend PASS à chaque exécution | lecture ; tests G5 lus, non lancés | L10 |
+| C18-2 | `workspaces/marketing/.claude/skills/creative-pattern-extractor/SKILL.md:24,27,45` ; `fafa-media-factory/inspiration/README.md:12` (avant ce complément) ; `fafa-brand-safety-reviewer/SKILL.md` § G5 Reuse Risk | le cosinus G5 (FAIL ≥ 0,7, cible < 0,5) présenté comme barrière ; aucun score produit (C18-1) et aucun texte de référence conservé (pattern structurel, source éphémère) | lecture | L16 |
+| C18-3 | `creative-pattern-extractor/SKILL.md:47-71` contre `inspiration/README.md:33-56` (avant ce complément) | deux descriptions du format ; celle dite « canon » sans `analysis_method` ni `reference_analysis_only` ; objet multi-ligne sous « un pattern par ligne » | lecture | L16 |
+| C18-4 | `creative-pattern-extractor/SKILL.md:73-84` (avant ce complément) | `reusability_score: 0.8` sans formule ni consommateur ; `ready_for_brief: true` posé par le skill | lecture | L16 |
+| C18-5 | `creative-pattern-extractor/SKILL.md:20,42` ; `inspiration/README.md:4,12,20` (avant ce complément) | transcript, frames et commentaires d'une source jamais dits non fiables ; `/watch` décrit depuis #804, absent des plugins, commandes et skills de DEV | lecture de la configuration DEV ; aucun outil lancé | L16 |
+| C18-6 | `creative-pattern-extractor/SKILL.md:92` ; `inspiration/README.md:78` (avant ce complément) | règle vault `rules-video-creative-reuse-policy.md` dite « draft prêt » ; absente de `main` du vault (`eb97222`, 904 chemins), et des branches du checkout DEV | lecture ; la rédaction de la règle relève du vault, hors mandat | L16 |
+| C18-7 | `inspiration/README.md:70,73` (avant ce complément) contre `governance/video-brief.schema.json:69-72,77-88`, `scripts/README.md:26,32`, `video-gates.service.ts:273-287` | statut dit enregistré dans `inspiration.json`, alors qu'il vit dans `brief.json.status` ; « sans signature → G5 FAIL » : ni le code ni le skill de revue ne lisent la signature | lecture | L16 |
+| C18-8 | `fafa-media-factory/manifests/renders/fafa-plaquettes-frein-001.json:77` (#1273) ; `scripts/draft/fafa-plaquettes-frein-001/approval.json:56-62` | G5 `PASS`, `measured: 0.0` consigné sans calcul ; corpus vide (`inspiration/patterns/.gitkeep` seul) | lecture | L11 |
+| C18-9 | `fafa-media-factory/README.md:18-19,94-98` ; `fafa-media-factory/scripts/README.md:35-38` (avant ce complément) | PR #2 et #3 dites en attente, PR #1 dite « actuelle », dossiers de statut dits vides ; or #789 et #794 fusionnées le 29/05/2026, pilote `draft/fafa-plaquettes-frein-001/` (#1260, 7 fichiers) rendu (#1273) : 1 pilote sur 10 | lecture (`gh pr view`, `git ls-tree` à `3d1d395a1`) | L16 |
+| C18-10 | `fafa-media-factory/scripts/README.md:18-27` (avant ce complément) | structure par vidéo sans `render-payload.json`, que porte le pilote et que son manifeste cite avec son empreinte (`manifests/renders/fafa-plaquettes-frein-001.json:12-13`) ; fichier sans schéma | lecture | L16 |
+| C18-11 | `fafa-brand-safety-reviewer/SKILL.md:41` ; `governance/approval-record.schema.json:43` ; `fafa-media-factory/README.md:36-38,50,56` (avant ce complément) contre `scripts/README.md:12`, `fafa-brand-safety-reviewer/SKILL.md:43`, `manifests/renders/fafa-plaquettes-frein-001.json:71` ; `fafa-remotion-template-planner/SKILL.md:12,19,114` | `content_approved` posé par le skill quand les 7 gates passent (l.41), alors que la table des statuts, l'étape 6 du même skill et le manifeste le réservent à l'owner, comme la règle AI2 du vault (`ledger/rules/rules-ai-cos.md`, renvoyée par ADR-036, `accepted`) ; rendu placé après `APPROVED` par le skill de rendu et le README, alors que le statut 6 exige `render_approved=true` et que le pilote a été rendu en `DRAFT_ONLY` (manifeste l.4, 8) ; « bloquée en DRAFT_ONLY » (README l.56) faux sous les deux lectures ; `content_approved_by` = chaîne non vide seulement (schéma l.77-84) | lecture ; vault lu sans écriture | L16 |
+| C18-12 | `backend/src/modules/media-factory/services/video-gates.service.ts:237-241` (`g4Platform`) ; appelants `backend/src/workers/processors/video-execution.processor.ts:201-210`, `frontend/app/routes/admin.video-hub.productions.$briefId.tsx:252-262` | sans `actualDurationSec`, G4 rend PASS ; aucun des deux appelants ne passe la durée, et le processeur exécute les gates avant le rendu (l.209-210, rendu l.241-259) : G4 rend PASS à chaque exécution par ces chemins ; `backend/tests/unit/video-gates.service.test.ts:328-332` attend ce PASS | lecture ; tests lus, non lancés ; appel direct de `POST /api/admin/video/validate-gates` avec une durée non exclu | L10 |
+| C18-13 | `backend/src/modules/media-factory/types/video.types.ts:105-116` ; `backend/src/config/video-quality.constants.ts:168-174` ; `video-gates.service.ts:86-87,93,322-329` contre `governance/approval-record.schema.json:36-74` ; `scripts/draft/fafa-plaquettes-frein-001/approval.json:76-82` | le code lit `approvalRecord.stages[]` (G7 FAIL sans tableau ou sans `script_text` approuvé) ; schéma et pilote portent trois drapeaux, sans `stages` ; le pilote consigne G7 `PASS` (« approval record initialisé ») là où le code rendrait FAIL | lecture ; dossier du pilote non passé au code | L11 |
+| C18-14 | `fafa-media-factory/README.md:79-80` (avant ce complément) ; `personas/fafa.md:3` ; `fafa-persona-canon/SKILL.md:8` ; `fafa-brand-safety-reviewer/SKILL.md:62` | règle vault `rules-fafa-persona-canon-v1.md` (« PR vault A en cours ») et « ADR vault dédiée » à la frontière d'auto-publication : absentes de `main` du vault (`eb97222`) ; aucune des 355 PR du vault ne cite Fafa, persona, media factory ou vidéo dans son titre | lecture ; titres seuls, contenu des PR non lu ; rédaction de ces règles hors mandat | L16 |
+
 #### Coordination et transmission
 
 Départements de rattachement :
@@ -506,8 +621,8 @@ Aucun circuit à trois agents n'est obligatoire ; un seul écrivain par périmè
 | Tests | `cd backend && npx jest tests/unit/video-gates.service.test.ts` (L10a, rouge puis vert) ; validation des schémas Fafa (L11) ; `bash scripts/lint/check-preprod-vocabulary.sh` |
 | Blocages | D19 (média M1) ; D17 (pilote plaquette) ; D12 (L05) ; D2 (L12, L13) ; D14 (instance Hermes) ; #1796–#1798 en conflit |
 
-**Premier lot réellement prêt : L10a** (Codex, E0, aucune décision owner, commande ci-dessus). L16 est prêt aussi, pour Claude, sur
-GO. **Décision minimale manquante : D19**, confirmer « fichiers seuls, backend éteint ». Elle ouvre le chemin média de M1 sans passer
+**Premier lot réellement prêt : L10a** (Codex, E0, aucune décision owner, commande ci-dessus). L16 est fusionné (#1816, 17/10) ;
+ses compléments du 17/10 et du 18/10 sont prêts pour revue. **Décision minimale manquante : D19**, confirmer « fichiers seuls, backend éteint ». Elle ouvre le chemin média de M1 sans passer
 par le script du backend, qui lit le contenu legacy contredit par le WIKI. D2 ne devient nécessaire qu'à la première preuve de
 publication (W45).
 
@@ -525,6 +640,14 @@ transmis à support-lead en préparation seulement), contenus et prompts RAG (AD
 Ajout du 16/10 : 8 constats nouveaux (C16-7 → L05 ; C16-5 → L06 ; C16-3 → L14 ; C16-6 → L16 ; C16-4 → INFO ; C16-1, C16-2, C16-8 →
 hors mandat signalés), soit L05 9 · L06 14 · L14 14 · L16 1 · INFO sans lot 17 · hors mandat signalés 26. **sum_check : 315 = 315,
 0 orpheline, 0 double affectation.** Les divergences de la référence hors dépôt ne sont pas recomptées, sauf C16-8, re-mesuré le 16/10.
+Ajout du 17/10 : 10 constats nouveaux (C17-12, C17-16, C17-17, C17-18, C17-20 → L16 ; C17-13, C17-14 → L10 ; C17-15, C17-19 → L11 ;
+C17-21 → hors mandat signalés), soit L10 40 · L11 14 · L16 6 · hors mandat signalés 27. **sum_check : 325 = 325, 0 orpheline,
+0 double affectation.** La relecture de C16-7 (L05) ne crée pas d'entrée ; C17-1 à C17-11 (revue vidéo, hors dépôt) n'entrent pas
+dans ce compte.
+Ajout du 18/10 : 8 constats nouveaux (C18-1 → L10 ; C18-8 → L11 ; C18-2 à C18-7 → L16), soit L10 41 · L11 15 · L16 12.
+**sum_check : 333 = 333, 0 orpheline, 0 double affectation.**
+Suite du 18/10 : 6 constats nouveaux (C18-12 → L10 ; C18-13 → L11 ; C18-9, C18-10, C18-11, C18-14 → L16), soit L10 42 · L11 16 ·
+L16 16. **sum_check : 339 = 339, 0 orpheline, 0 double affectation.**
 
 ### Non vérifiable dans ce dossier
 
