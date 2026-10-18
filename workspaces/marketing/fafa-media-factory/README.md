@@ -104,3 +104,28 @@ Sous `workspaces/marketing/.claude/skills/` (chargés uniquement en session `cd 
 - **PR #2 Remotion** : fusionnée (#794, 29/05/2026), 3 compositions.
 - **PR #3 Pilotes** : 1 pilote sur 10, `DRAFT_ONLY` (#1260, 14/07/2026), rendu muet sans voix ni avatar (#1273) ; aucun drapeau
   d'approbation posé.
+
+
+### Admission WIKI native pour le pilote
+
+Le validateur local `scripts/marketing/fafa-pilot-governance.cjs` reste hors connexion par défaut.
+Pour demander une admission native, utiliser `--wiki-authority` avec les chemins absolus
+`AUTOMECANIK_WIKI_PATH`, `AUTOMECANIK_RAW_PATH` et `AUTOMECANIK_WIKI_PYTHON` configurés par l'opérateur.
+L'API `evaluateDossier(dir, {wikiRoot, rawRoot, pythonExecutable})` utilise la même vérification.
+Ces paramètres ne sont jamais lus dans le dossier soumis. Python doit disposer des dépendances WIKI existantes.
+
+Le contrat et le programme viennent du checkout WIKI de confiance :
+`_meta/schema/exports-content.schema.json` et `_scripts/build_exports_content.py`.
+Le producteur vérifie sa décision native, les sources et le main distant, sans génération ni promotion.
+Fafa ne lit pas RAW ; il transmet son chemin au producteur. Un poste sans cette autorité reste bloqué.
+
+Chaque référence WIKI ajoute `export_path`, `export_sha256` et `section_sha256`, avec le chemin WIKI,
+le commit source, la section et son texte complet exact. Les anciennes références restent lisibles mais
+non admises tant que ces liens manquent. Le premier contrat ne prend pas de sous-extrait approximatif ;
+la limite existante de 1500 caractères de preuve reste applicable.
+
+`wikiAdmission` distingue admission, refus et indisponibilité. Aucun cache ne remplace une vérification
+échouée ; durée maximale de l'appel : 60 secondes, réponse maximale : 4 MiB.
+Une référence inutilisée ne bloque pas un claim catalogue valide. L'admission ne rend pas une vidéo
+publiable : `actorAuthenticated` reste false et les étapes contenu, rendu et publication restent séparées.
+Ce raccordement est un candidat testé ; aucune configuration partagée n'est activée par ces fichiers.

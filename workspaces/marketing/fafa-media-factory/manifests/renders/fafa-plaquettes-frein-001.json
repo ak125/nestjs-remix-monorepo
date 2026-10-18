@@ -17,7 +17,10 @@
   "composition": {
     "id": "NeChangePasTropVite",
     "engine": "remotion",
-    "resolution": { "width": 1080, "height": 1920 },
+    "resolution": {
+      "width": 1080,
+      "height": 1920
+    },
     "aspectRatio": "9:16",
     "fps": 30,
     "durationFrames": 1140,
@@ -48,11 +51,31 @@
   "visualControls": {
     "verifiedBy": "extraction ffmpeg de 4 frames du MP4 encodé + inspection",
     "results": [
-      { "section": "hook", "check": "palette charte navy #0F1E38 + accent orange #F97316 + kicker PLAQUETTES DE FREIN + hook", "verdict": "PASS" },
-      { "section": "problem", "check": "problemText custom (cadrage compatibilité, PAS le texte diagnostic par défaut)", "verdict": "PASS" },
-      { "section": "causes", "check": "carte facteur 1 Motorisation, panel bleu charte #0F4C81, bordure orange", "verdict": "PASS" },
-      { "section": "closer", "check": "brand AutoMecanik + CTA sélecteur véhicule", "verdict": "PASS" },
-      { "section": "transverse", "check": "disclaimer permanent (Fafa est un mécano IA) + aucun avatar + aucun claim safety/procedure", "verdict": "PASS" }
+      {
+        "section": "hook",
+        "check": "palette charte navy #0F1E38 + accent orange #F97316 + kicker PLAQUETTES DE FREIN + hook",
+        "verdict": "PASS"
+      },
+      {
+        "section": "problem",
+        "check": "problemText custom (cadrage compatibilité, PAS le texte diagnostic par défaut)",
+        "verdict": "PASS"
+      },
+      {
+        "section": "causes",
+        "check": "carte facteur 1 Motorisation, panel bleu charte #0F4C81, bordure orange",
+        "verdict": "PASS"
+      },
+      {
+        "section": "closer",
+        "check": "brand AutoMecanik + CTA sélecteur véhicule",
+        "verdict": "PASS"
+      },
+      {
+        "section": "transverse",
+        "check": "disclaimer permanent (Fafa est un mécano IA) + aucun avatar + aucun claim safety/procedure",
+        "verdict": "PASS"
+      }
     ],
     "technicalChecks": {
       "audioStreams": 0,
@@ -66,17 +89,71 @@
   "brandSafetyReview": {
     "reviewer": "skill:fafa-brand-safety-reviewer",
     "reviewedArtifact": "render réel motion-graphics (sha256 61671dca...), PAS le self-report du 2026-05-30",
-    "verdictOverall": "PASS",
-    "canPublishEligible": true,
-    "note": "Éligibilité gates ≠ approbation. Les 3 flags (content/render/publish) restent la signature owner dans approval.json.",
+    "verdictOverall": "FAIL",
+    "canPublishEligible": false,
+    "note": "NOT_READY : quatre affirmations sans preuve admise. G1/G2 recalculés sur le dossier courant ; les contrôles visuels et G3-G7 restent historiques. Ce manifeste ne valide pas le dossier corrigé. Retrouver le rendu et vérifier ses octets avant toute nouvelle revue.",
     "gateResults": [
-      { "gate": "G1", "name": "Truth", "verdict": "PASS", "measured": 0.0, "failThreshold": 0.30, "details": "0/4 claims non-sourcés (4/4 evidence_refs vers catalogue interne pg 402)" },
-      { "gate": "G2", "name": "Safety", "verdict": "PASS", "strict": true, "measured": 0, "details": "0 claim kind=procedure/safety (4/4 = dimension) — cadrage compatibilité, pas de conseil de sécurité" },
-      { "gate": "G3", "name": "Brand", "verdict": "PASS", "measured": 0, "details": "0 pattern interdit (aucun prix/promo/urgence/certitude/occasion dans hook+voix+screen_text+CTA+disclaimer)" },
-      { "gate": "G4", "name": "Platform", "verdict": "PASS", "measured": 0.0, "details": "38s dans la fenêtre 30-45s du format ne-change-pas-trop-vite (0% de déviation vs fenêtre)" },
-      { "gate": "G5", "name": "Reuse Risk", "verdict": "PASS", "measured": 0.0, "details": "inspired_from_pattern=null — script original, aucun corpus dérivé" },
-      { "gate": "G6", "name": "Visual Honesty", "verdict": "PASS", "strict": true, "measured": 0, "details": "render motion-graphics pur — 0 asset truth_dependency=proof, aucun avatar, aucune image IA présentée comme preuve" },
-      { "gate": "G7", "name": "Final QA", "verdict": "PASS", "measured": 0, "details": "5 artefacts P0 + approval record + manifest render présents" }
+      {
+        "gate": "G1",
+        "verdict": "FAIL",
+        "measured": 4,
+        "warn_threshold": 1,
+        "fail_threshold": 1,
+        "strict": true,
+        "details": "4 unsupported factual claim(s) — evaluated individually, not by ratio",
+        "trigger_items": [
+          "claim:claim-1",
+          "claim:claim-2",
+          "claim:claim-3",
+          "claim:claim-4"
+        ]
+      },
+      {
+        "gate": "G2",
+        "verdict": "WARN",
+        "measured": 0,
+        "warn_threshold": 0,
+        "fail_threshold": 1,
+        "strict": true,
+        "details": "0 procedure/safety claims without human validation",
+        "trigger_items": []
+      },
+      {
+        "gate": "G3",
+        "name": "Brand",
+        "verdict": "PASS",
+        "measured": 0,
+        "details": "0 pattern interdit (aucun prix/promo/urgence/certitude/occasion dans hook+voix+screen_text+CTA+disclaimer)"
+      },
+      {
+        "gate": "G4",
+        "name": "Platform",
+        "verdict": "PASS",
+        "measured": 0.0,
+        "details": "38s dans la fenêtre 30-45s du format ne-change-pas-trop-vite (0% de déviation vs fenêtre)"
+      },
+      {
+        "gate": "G5",
+        "name": "Reuse Risk",
+        "verdict": "PASS",
+        "measured": 0.0,
+        "details": "inspired_from_pattern=null — script original, aucun corpus dérivé"
+      },
+      {
+        "gate": "G6",
+        "name": "Visual Honesty",
+        "verdict": "PASS",
+        "strict": true,
+        "measured": 0,
+        "details": "render motion-graphics pur — 0 asset truth_dependency=proof, aucun avatar, aucune image IA présentée comme preuve"
+      },
+      {
+        "gate": "G7",
+        "name": "Final QA",
+        "verdict": "PASS",
+        "measured": 0,
+        "details": "5 artefacts P0 + approval record + manifest render présents"
+      }
     ]
   },
   "approvalBinding": {

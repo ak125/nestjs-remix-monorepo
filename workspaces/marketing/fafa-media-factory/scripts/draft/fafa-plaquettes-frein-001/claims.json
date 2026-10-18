@@ -3,10 +3,12 @@
   "claims": [
     {
       "claim_id": "claim-1",
-      "text": "La référence des plaquettes dépend de la motorisation du véhicule.",
+      "text": "Pour un même modèle, les références de plaquettes compatibles peuvent différer entre motorisations.",
       "kind": "dimension",
-      "source_status": "sourced",
-      "evidence_refs": ["catalogue-plaquette-pg402-compat"],
+      "source_status": "unverified",
+      "evidence_refs": [
+        "catalogue-plaquette-pg402-compat"
+      ],
       "human_validated": false,
       "human_validated_by": null,
       "human_validated_at": null,
@@ -14,10 +16,12 @@
     },
     {
       "claim_id": "claim-2",
-      "text": "La référence des plaquettes dépend du diamètre/type des disques de frein.",
+      "text": "Pour un même modèle, les références compatibles peuvent indiquer des diamètres de disque différents.",
       "kind": "dimension",
-      "source_status": "sourced",
-      "evidence_refs": ["catalogue-plaquette-pg402-compat"],
+      "source_status": "unverified",
+      "evidence_refs": [
+        "catalogue-plaquette-pg402-compat"
+      ],
       "human_validated": false,
       "human_validated_by": null,
       "human_validated_at": null,
@@ -25,10 +29,12 @@
     },
     {
       "claim_id": "claim-3",
-      "text": "Selon la finition/année, le véhicule a ou non un témoin d'usure, ce qui change la référence.",
+      "text": "Pour un même modèle de voiture, certaines plaquettes compatibles ont un témoin d'usure et d'autres non.",
       "kind": "dimension",
-      "source_status": "sourced",
-      "evidence_refs": ["catalogue-plaquette-pg402-compat"],
+      "source_status": "unverified",
+      "evidence_refs": [
+        "catalogue-plaquette-pg402-compat"
+      ],
       "human_validated": false,
       "human_validated_by": null,
       "human_validated_at": null,
@@ -36,10 +42,12 @@
     },
     {
       "claim_id": "claim-4",
-      "text": "Les plaquettes de frein se montent sur l'essieu avant ou arrière et se vendent généralement par jeu de 4.",
+      "text": "Les plaquettes de frein se montent sur l'essieu avant ou sur l'essieu arrière.",
       "kind": "dimension",
-      "source_status": "sourced",
-      "evidence_refs": ["catalogue-plaquette-pg402-intro"],
+      "source_status": "unverified",
+      "evidence_refs": [
+        "catalogue-plaquette-pg402-intro"
+      ],
       "human_validated": false,
       "human_validated_by": null,
       "human_validated_at": null,
