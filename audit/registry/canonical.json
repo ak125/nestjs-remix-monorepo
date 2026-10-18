@@ -48479,7 +48479,7 @@
         "backend/src/modules/media-factory/render/types/render.types.ts"
       ],
       "kind": "service",
-      "loc": 170,
+      "loc": 193,
       "owner": "@ak125/marketing-team",
       "path": "backend/src/modules/media-factory/render/engines/remotion-render.engine.ts",
       "risk": "medium",
@@ -48565,7 +48565,7 @@
         "backend/src/modules/media-factory/render/types/render.types.ts"
       ],
       "kind": "service",
-      "loc": 393,
+      "loc": 413,
       "owner": "@ak125/marketing-team",
       "path": "backend/src/modules/media-factory/render/render-adapter.service.ts",
       "risk": "medium",
@@ -48588,10 +48588,11 @@
         "backend/src/workers/processors/video-execution.processor.ts"
       ],
       "imports": [
+        "@common/exceptions",
         "backend/src/config/video-quality.constants.ts"
       ],
       "kind": "service",
-      "loc": 74,
+      "loc": 79,
       "owner": "@ak125/marketing-team",
       "path": "backend/src/modules/media-factory/render/templates/template-registry.ts",
       "risk": "medium",
@@ -70622,7 +70623,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 590,
+      "loc": 619,
       "owner": "@ak125",
       "path": "backend/tests/unit/render-adapter.service.test.ts",
       "risk": "medium",
@@ -70642,7 +70643,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 314,
+      "loc": 338,
       "owner": "@ak125",
       "path": "backend/tests/unit/render-engines.test.ts",
       "risk": "medium",
@@ -71422,7 +71423,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 90,
+      "loc": 83,
       "owner": "@ak125",
       "path": "backend/tests/unit/template-registry.test.ts",
       "risk": "medium",
@@ -104870,11 +104871,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "90163175840e44796908f793612d86b090e6efec04ed7053e3966b0e0c211728",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "64dff280d3ec57ea918d8e152677faea798552f845e77a75bd22f58c217cfda1",
+      "audit/registry/files.json": "05eb099d3fa29d6132cc28b34c84bdfeb07846a464af4b02e1c567a9dd8eb5b6",
       "audit/registry/rpc.json": "68f3b21f7aa0b2ef7da9b488c657c3b6b5bdde0476bf7d617f1e346cc26b4449",
       "audit/registry/runtime.json": "db3c1293c1d26fff96e8f10d130e6ef2238b96d3fbbc099f9e074be14c26bbbf"
     },
-    "sotFingerprint": "a9247ec05d0e"
+    "sotFingerprint": "b87e455a21de"
   },
   "runtime": [
     {
