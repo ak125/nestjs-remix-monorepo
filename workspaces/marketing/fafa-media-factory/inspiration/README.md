@@ -85,8 +85,8 @@ de commentateur ni un extrait de transcript.
 
 Aucun contrôle automatique ne vérifie cette signature : G5 du code ne lit que `similarityScore`
 (`video-gates.service.ts:273-287`), et la G5 de `fafa-brand-safety-reviewer` (§ G5 Reuse Risk) décrit un cosinus. Elle relève de
-la relecture humaine qui précède `content_approved`, signée par `content_approved_by`
-(`governance/approval-record.schema.json:41-44,77-81`).
+la relecture de l'owner avant qu'il pose `content_approved` (`governance/approval-record.schema.json:41-44`) ; le schéma ne
+contrôle que la présence d'un nom dans `content_approved_by` (l.77-84), pas qu'un humain a relu.
 
 ## Voir aussi
 

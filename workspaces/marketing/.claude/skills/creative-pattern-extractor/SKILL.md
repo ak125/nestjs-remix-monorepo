@@ -64,9 +64,10 @@ Ces interdits sont tenus par la relecture humaine ; G5 ne les détecte pas en V1
   `backend/src/config/video-quality.constants.ts:78`) ne s'appliquent à aucune mesure.
 - Il n'existe pas non plus de texte à comparer : un pattern ne garde que de la structure, et la source n'est vue qu'en analyse
   éphémère.
-- Un PASS G5 n'atteste donc pas l'originalité. La barrière V1 est la relecture humaine qui précède `content_approved`, signée
-  par `content_approved_by` (`workspaces/marketing/fafa-media-factory/governance/approval-record.schema.json:41-44,77-81`). Le
-  correctif du code (score absent → ni PASS ni 0) relève du lot L10 du dossier `workspaces/marketing/README.md`.
+- Un PASS G5 n'atteste donc pas l'originalité. La barrière V1 est la relecture de l'owner avant qu'il pose `content_approved`
+  (`workspaces/marketing/fafa-media-factory/governance/approval-record.schema.json:41-44`) ; le schéma ne contrôle que la présence
+  d'un nom dans `content_approved_by` (l.77-84), pas qu'un humain a relu. Le correctif du code (score absent → ni PASS ni 0)
+  relève du lot L10 du dossier `workspaces/marketing/README.md`.
 
 ## Format JSONL (un pattern par ligne)
 
