@@ -226,6 +226,12 @@ jobs:
           npm run typecheck:marketing
           npm run test:marketing
 
+      - name: Validate isolated marketing CLI and social SQL contracts
+        run: |
+          node node_modules/jest/bin/jest.js --config backend/src/modules/marketing/jest.config.cjs --runInBand --roots ../scripts/marketing
+          node --require ./scripts/marketing/simulation-no-network.cjs scripts/marketing/social-reviews.sql-test.mjs
+          node --require ./scripts/marketing/simulation-no-network.cjs scripts/marketing/social-target-schema.sql-test.mjs
+
       - name: Test deployment probes
         run: node --test scripts/ci/prod-client-ip-probe.test.mjs scripts/ci/prod-admin-guard-probe.test.mjs
 

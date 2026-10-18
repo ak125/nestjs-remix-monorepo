@@ -1,5 +1,14 @@
+import {
+  parseSocialReview,
+  type SocialReviewTarget,
+} from '../dto/social-review.dto';
+import { parseSocialPublication } from '../dto/social-publication.dto';
 import { Injectable, Logger } from '@nestjs/common';
+import { DomainValidationException } from '@common/exceptions';
 import { MarketingHubDataService } from './marketing-hub-data.service';
+import { UTMBuilderService } from './utm-builder.service';
+import { socialContentSchemas } from '../dto/social-content.dto';
+import { parseSocialExport } from '../dto/social-export.dto';
 import type {
   SocialPost,
   SocialChannel,
@@ -8,8 +17,7 @@ import type {
 
 /**
  * Publish Queue Service.
- * - CRUD for posts status IN ('gate_passed', 'approved')
- * - Bulk approve/reject
+ * - Version-bound per-channel review; legacy bulk transitions are refused.
  * - Export PublishManifest JSON per channel
  * - Idempotent: re-export does not create duplicates
  */
@@ -17,7 +25,10 @@ import type {
 export class PublishQueueService {
   private readonly logger = new Logger(PublishQueueService.name);
 
-  constructor(private readonly hubData: MarketingHubDataService) {}
+  constructor(
+    private readonly hubData: MarketingHubDataService,
+    private readonly utmBuilder: UTMBuilderService,
+  ) {}
 
   /**
    * Get posts ready for review (gate_passed).
@@ -34,40 +45,39 @@ export class PublishQueueService {
   }
 
   /**
-   * Approve a single post.
+   * Approve the displayed revision of one channel.
    */
-  async approvePost(postId: number, approvedBy: string): Promise<boolean> {
-    return this.hubData.updatePostStatus(postId, 'approved', {
-      approved_by: approvedBy,
-      approved_at: new Date().toISOString(),
-    } as Partial<SocialPost>);
+  async approvePost(
+    postId: number,
+    target: SocialReviewTarget,
+    actor: string,
+  ): Promise<SocialPost> {
+    return this.hubData.reviewSocialPost(
+      postId,
+      parseSocialReview(target),
+      'approve',
+      actor,
+    );
   }
 
-  /**
-   * Reject a post (back to draft for revision).
-   */
-  async rejectPost(postId: number): Promise<boolean> {
-    return this.hubData.updatePostStatus(postId, 'draft');
+  async rejectPost(
+    postId: number,
+    target: SocialReviewTarget,
+    actor: string,
+  ): Promise<SocialPost> {
+    return this.hubData.reviewSocialPost(
+      postId,
+      parseSocialReview(target),
+      'reject',
+      actor,
+    );
   }
 
-  /**
-   * Bulk approve multiple posts.
-   */
-  async bulkApprove(
-    postIds: number[],
-    approvedBy: string,
-  ): Promise<{ approved: number; failed: number }> {
-    let approved = 0;
-    let failed = 0;
-
-    for (const id of postIds) {
-      const ok = await this.approvePost(id, approvedBy);
-      if (ok) approved++;
-      else failed++;
-    }
-
-    this.logger.log(`Bulk approve: ${approved} approved, ${failed} failed`);
-    return { approved, failed };
+  async bulkApprove(): Promise<never> {
+    throw new DomainValidationException({
+      message: 'Review each channel and exact version before approval',
+      field: 'review',
+    });
   }
 
   /**
@@ -78,6 +88,7 @@ export class PublishQueueService {
     weekIso: string,
     channel: SocialChannel,
   ): Promise<PublishManifest> {
+    parseSocialExport({ week: weekIso, channel });
     const posts = await this.hubData.getApprovedPostsByChannel(
       weekIso,
       channel,
@@ -94,32 +105,93 @@ export class PublishQueueService {
       week_iso: weekIso,
       channel,
       generated_at: new Date().toISOString(),
-      posts: posts.map((post) => {
-        const channelData =
-          (
-            post.channels as Record<
-              string,
-              Record<string, string | string[] | boolean | undefined>
-            >
-          )?.[channel] || {};
+      timezone: 'Europe/Paris',
+      posts: posts
+        .filter((post) => {
+          const review = post.channel_reviews?.[channel];
+          return (
+            !['published', 'archived'].includes(post.status) &&
+            !post.publications?.[channel] &&
+            review?.state === 'approved' &&
+            review.content_revision === post.content_revision &&
+            /^[a-f0-9]{64}$/.test(review.approved_content_hash ?? '')
+          );
+        })
+        .map((post) => {
+          const approval = post.channel_reviews[channel]!;
+          if (
+            !Number.isSafeInteger(post.content_revision) ||
+            post.content_revision < 1 ||
+            !Number.isSafeInteger(post.review_version) ||
+            post.review_version < 0 ||
+            !approval.actor?.trim() ||
+            !Number.isFinite(Date.parse(approval.decided_at)) ||
+            !Number.isInteger(post.day_of_week) ||
+            post.day_of_week < 1 ||
+            post.day_of_week > 7
+          ) {
+            throw new DomainValidationException({
+              message: 'Invalid approved post metadata',
+              field: 'review',
+            });
+          }
+          const content = socialContentSchemas[channel]?.safeParse(
+            post.channels?.[channel],
+          );
+          if (!post.channels_list?.includes(channel) || !content?.success) {
+            throw new DomainValidationException({
+              message: `Post ${post.id}: missing or invalid ${channel} variant`,
+              field: 'channels',
+            });
+          }
+          const channelData =
+            (
+              post.channels as Record<
+                string,
+                Record<string, string | string[] | boolean | undefined>
+              >
+            )?.[channel] || {};
 
-        return {
-          post_id: post.id,
-          scheduled_date: this.getDateForWeekDay(weekIso, post.day_of_week),
-          scheduled_time: OPTIMAL_HOURS[post.day_of_week] || '12:00',
-          caption: String(channelData.caption || channelData.description || ''),
-          hashtags: (channelData.hashtags ||
-            channelData.tags ||
-            []) as string[],
-          link: post.source_url
-            ? `${post.source_url}?utm_source=${post.utm_source}&utm_medium=${post.utm_medium}&utm_campaign=${post.utm_campaign}${post.utm_content ? `&utm_content=${post.utm_content}` : ''}`
-            : '',
-          format: String(channelData.format || 'post'),
-          visual_brief: String(
-            channelData.visual_brief || channelData.thumbnail_brief || '',
-          ),
-        };
-      }),
+          return {
+            post_id: post.id,
+            content_revision: post.content_revision,
+            review_version: post.review_version,
+            approved_content_hash: approval.approved_content_hash!,
+            approval_scope: 'editorial',
+            approval: {
+              actor: approval.actor,
+              decided_at: approval.decided_at,
+            },
+            scheduled_date: this.getDateForWeekDay(weekIso, post.day_of_week),
+            scheduled_time: OPTIMAL_HOURS[post.day_of_week] || '12:00',
+            ...(channel === 'youtube'
+              ? { title: String(channelData.title) }
+              : {}),
+            caption: String(
+              channelData.caption || channelData.description || '',
+            ),
+            hashtags: (channelData.hashtags ||
+              channelData.tags ||
+              []) as string[],
+            link: post.source_url
+              ? this.utmBuilder.appendParams(post.source_url, {
+                  ...this.utmBuilder.buildUTMLink({
+                    path: post.source_url,
+                    week_iso: post.week_iso,
+                    pillar: post.slot_label,
+                    gamme_alias: post.gamme_alias || 'generic',
+                    channel,
+                    format: String(channelData.format),
+                  }).params,
+                  utm_campaign: post.utm_campaign,
+                })
+              : '',
+            format: String(channelData.format || 'post'),
+            visual_brief: String(
+              channelData.visual_brief || channelData.thumbnail_brief || '',
+            ),
+          };
+        }),
     };
 
     this.logger.log(
@@ -130,17 +202,25 @@ export class PublishQueueService {
   }
 
   /**
-   * Mark posts as published after manual Meta/YT publication.
+   * Refuse the legacy transition without channel publication evidence.
    */
-  async markAsPublished(postIds: number[]): Promise<number> {
-    let count = 0;
-    for (const id of postIds) {
-      const ok = await this.hubData.updatePostStatus(id, 'published', {
-        published_at: new Date().toISOString(),
-      } as Partial<SocialPost>);
-      if (ok) count++;
-    }
-    return count;
+  async markAsPublished(_legacyIds: number[]): Promise<never> {
+    throw new DomainValidationException({
+      message: 'Declare a HTTPS publication URL for each approved channel',
+      field: 'publication',
+    });
+  }
+
+  async declarePublication(
+    postId: number,
+    body: unknown,
+    actor: string,
+  ): Promise<SocialPost> {
+    return this.hubData.declarePublication(
+      postId,
+      parseSocialPublication(body),
+      actor,
+    );
   }
 
   private getDateForWeekDay(weekIso: string, dayOfWeek: number): string {
@@ -148,12 +228,13 @@ export class PublishQueueService {
     if (!match) return '';
     const year = parseInt(match[1]);
     const week = parseInt(match[2]);
-    const jan4 = new Date(year, 0, 4);
-    const dayDiff = jan4.getDay() || 7;
+    // Civil date only; scheduled_time remains local campaign time.
+    const jan4 = new Date(Date.UTC(year, 0, 4));
+    const dayDiff = jan4.getUTCDay() || 7;
     const monday = new Date(jan4);
-    monday.setDate(jan4.getDate() - dayDiff + 1 + (week - 1) * 7);
+    monday.setUTCDate(jan4.getUTCDate() - dayDiff + 1 + (week - 1) * 7);
     const target = new Date(monday);
-    target.setDate(monday.getDate() + dayOfWeek - 1);
+    target.setUTCDate(monday.getUTCDate() + dayOfWeek - 1);
     return target.toISOString().split('T')[0];
   }
 }

@@ -1,5 +1,15 @@
+import type { SocialReviewTarget } from '../dto/social-review.dto';
+import type { SocialPublicationTarget } from '../dto/social-publication.dto';
 import { Injectable, Logger } from '@nestjs/common';
+import {
+  DatabaseException,
+  DomainConflictException,
+  DomainNotFoundException,
+  DomainValidationException,
+} from '@common/exceptions';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
+import type { RpcGateContext } from '@security/rpc-gate/rpc-gate.types';
 import type {
   SocialPost,
   PostStatus,
@@ -14,11 +24,37 @@ import type {
 export class MarketingHubDataService extends SupabaseBaseService {
   protected override readonly logger = new Logger(MarketingHubDataService.name);
 
-  constructor() {
+  constructor(rpcGate: RpcGateService) {
     super();
+    this.rpcGate = rpcGate;
+  }
+
+  private reviewRpcContext(actor: string): RpcGateContext {
+    return {
+      source: 'admin',
+      userId: actor,
+      role: this.isReadOnlyMode
+        ? 'anon'
+        : this.isDevKillSwitchEnabled
+          ? 'dev_readonly'
+          : 'service_role',
+    };
   }
 
   // ── Social Posts ──
+
+  async getPostById(postId: number): Promise<SocialPost | null> {
+    const { data, error } = await this.supabase
+      .from('__marketing_social_posts')
+      .select('*')
+      .eq('id', postId)
+      .maybeSingle();
+    if (error) {
+      this.logger.error(`getPostById failed: ${error.message}`);
+      throw new DatabaseException({ message: 'Unable to read marketing post' });
+    }
+    return data as SocialPost | null;
+  }
 
   async upsertSocialPost(
     post: Partial<SocialPost> & {
@@ -58,7 +94,9 @@ export class MarketingHubDataService extends SupabaseBaseService {
     const { data, error } = await query;
     if (error) {
       this.logger.error(`getPostsByWeek failed: ${error.message}`);
-      return [];
+      throw new DatabaseException({
+        message: 'Unable to read marketing posts',
+      });
     }
     return (data ?? []) as SocialPost[];
   }
@@ -86,7 +124,7 @@ export class MarketingHubDataService extends SupabaseBaseService {
     qualityScore: number,
   ): Promise<boolean> {
     const newStatus = gateSummary.can_approve ? 'gate_passed' : 'gate_failed';
-    const { error } = await this.supabase
+    const { data, error } = await this.supabase
       .from('__marketing_social_posts')
       .update({
         brand_gate_level: gateSummary.brand.level,
@@ -95,13 +133,168 @@ export class MarketingHubDataService extends SupabaseBaseService {
         quality_score: qualityScore,
         status: newStatus,
       })
-      .eq('id', postId);
+      .eq('id', postId)
+      .select('id')
+      .maybeSingle();
 
     if (error) {
       this.logger.error(`updatePostGates failed: ${error.message}`);
       return false;
     }
-    return true;
+    return data?.id === postId;
+  }
+
+  async reviewSocialPost(
+    postId: number,
+    target: SocialReviewTarget,
+    action: 'gate' | 'approve' | 'reject',
+    actor: string,
+    gate?: GateSummary,
+  ): Promise<SocialPost> {
+    const { data, error } = await this.callRpc<SocialPost>(
+      'review_marketing_social_post',
+      {
+        p_post_id: postId,
+        p_channel: target.channel,
+        p_content_revision: target.content_revision,
+        p_review_version: target.review_version,
+        p_action: action,
+        p_actor: actor,
+        p_gate: gate ?? null,
+      },
+      this.reviewRpcContext(actor),
+    );
+    if (error) {
+      const code = 'code' in error ? error.code : undefined;
+      if (code === '40001')
+        throw new DomainConflictException({
+          message: 'Content or review changed; reload before deciding',
+        });
+      if (code === 'P0002')
+        throw new DomainNotFoundException({ message: 'Post not found' });
+      if (code === '23514')
+        throw new DomainValidationException({
+          message: 'Channel review requirements not satisfied',
+          field: 'review',
+        });
+      throw new DatabaseException({
+        message: 'Unable to persist channel review',
+        context: { operation: 'reviewSocialPost', sourceCode: code },
+      });
+    }
+    const expectedState =
+      action === 'approve'
+        ? 'approved'
+        : action === 'reject'
+          ? 'rejected'
+          : gate?.can_approve &&
+              gate.brand.level !== 'FAIL' &&
+              gate.compliance.level !== 'FAIL' &&
+              !gate.blocking_issues.length
+            ? 'gate_passed'
+            : 'gate_failed';
+    if (
+      !data ||
+      typeof data !== 'object' ||
+      data.id !== postId ||
+      data.content_revision !== target.content_revision ||
+      data.review_version !== target.review_version + 1 ||
+      !data.channel_reviews?.[target.channel] ||
+      (action === 'approve' &&
+        !/^[a-f0-9]{64}$/.test(
+          data.channel_reviews[target.channel].approved_content_hash ?? '',
+        )) ||
+      data.channel_reviews[target.channel].content_revision !==
+        target.content_revision ||
+      data.channel_reviews[target.channel].actor !== actor ||
+      (expectedState &&
+        data.channel_reviews[target.channel].state !== expectedState)
+    ) {
+      throw new DatabaseException({
+        message: 'Missing persisted channel review',
+      });
+    }
+    return data as SocialPost;
+  }
+
+  async getPostHistory(postId: number): Promise<
+    Array<{
+      content_revision: number;
+      review_version: number;
+      snapshot: SocialPost;
+      recorded_at: string;
+    }>
+  > {
+    const { data, error } = await this.supabase
+      .from('__marketing_social_post_history')
+      .select('content_revision,review_version,snapshot,recorded_at')
+      .eq('post_id', postId)
+      .order('content_revision', { ascending: false })
+      .order('review_version', { ascending: false })
+      .limit(50);
+    if (error)
+      throw new DatabaseException({
+        message: 'Unable to load content history',
+        context: { operation: 'getPostHistory', sourceCode: error.code },
+      });
+    return data ?? [];
+  }
+
+  async declarePublication(
+    postId: number,
+    target: SocialPublicationTarget,
+    actor: string,
+  ): Promise<SocialPost> {
+    const { data, error } = await this.callRpc<SocialPost>(
+      'declare_marketing_social_publication',
+      {
+        p_post_id: postId,
+        p_channel: target.channel,
+        p_content_revision: target.content_revision,
+        p_review_version: target.review_version,
+        p_content_hash: target.approved_content_hash,
+        p_url: target.url,
+        p_actor: actor,
+      },
+      this.reviewRpcContext(actor),
+    );
+    if (error) {
+      const code = 'code' in error ? error.code : undefined;
+      if (code === '40001')
+        throw new DomainConflictException({
+          message:
+            'Content, review or publication changed; reload before declaring',
+        });
+      if (code === 'P0002')
+        throw new DomainNotFoundException({ message: 'Post not found' });
+      if (code === '23514')
+        throw new DomainValidationException({
+          message: 'Current channel approval and publication evidence required',
+          field: 'publication',
+        });
+      throw new DatabaseException({
+        message: 'Unable to persist publication evidence',
+        context: { sourceCode: code },
+      });
+    }
+    const proof = data?.publications?.[target.channel];
+    if (
+      !data ||
+      data.id !== postId ||
+      data.content_revision !== target.content_revision ||
+      !Number.isSafeInteger(data.review_version) ||
+      data.review_version < target.review_version ||
+      proof?.content_revision !== target.content_revision ||
+      proof?.url !== target.url ||
+      proof?.content_hash !== target.approved_content_hash ||
+      !proof?.declared_by ||
+      !proof?.declared_at
+    ) {
+      throw new DatabaseException({
+        message: 'Missing persisted publication evidence',
+      });
+    }
+    return data as SocialPost;
   }
 
   async getApprovedPostsByChannel(
@@ -112,13 +305,15 @@ export class MarketingHubDataService extends SupabaseBaseService {
       .from('__marketing_social_posts')
       .select('*')
       .eq('week_iso', weekIso)
-      .eq('primary_channel', channel)
-      .eq('status', 'approved')
+      .contains('channels_list', [channel])
+      .in('status', ['gate_passed', 'approved'])
       .order('day_of_week', { ascending: true });
 
     if (error) {
       this.logger.error(`getApprovedPostsByChannel failed: ${error.message}`);
-      return [];
+      throw new DatabaseException({
+        message: 'Unable to read approved marketing posts',
+      });
     }
     return (data ?? []) as SocialPost[];
   }
@@ -137,7 +332,10 @@ export class MarketingHubDataService extends SupabaseBaseService {
 
     if (error) {
       this.logger.error(`getRecentGammeIds failed: ${error.message}`);
-      return [];
+      throw new DatabaseException({
+        message: 'Unable to load marketing history',
+        context: { operation: 'getRecentGammeIds', sourceCode: error.code },
+      });
     }
     const ids = (data ?? []).map((r: { gamme_id: number }) => r.gamme_id);
     return Array.from(new Set(ids));
@@ -147,7 +345,7 @@ export class MarketingHubDataService extends SupabaseBaseService {
 
   async upsertWeeklyPlan(
     plan: Partial<WeeklyPlan> & { week_iso: string },
-  ): Promise<WeeklyPlan | null> {
+  ): Promise<WeeklyPlan> {
     const { data, error } = await this.supabase
       .from('__marketing_weekly_plans')
       .upsert(plan, { onConflict: 'week_iso' })
@@ -156,7 +354,16 @@ export class MarketingHubDataService extends SupabaseBaseService {
 
     if (error) {
       this.logger.error(`upsertWeeklyPlan failed: ${error.message}`);
-      return null;
+      throw new DatabaseException({
+        message: 'Unable to persist marketing plan',
+        context: { operation: 'upsertWeeklyPlan', sourceCode: error.code },
+      });
+    }
+    if (data?.id == null || data.week_iso !== plan.week_iso) {
+      throw new DatabaseException({
+        message: 'Marketing plan write was not confirmed',
+        context: { operation: 'upsertWeeklyPlan', weekIso: plan.week_iso },
+      });
     }
     return data as WeeklyPlan;
   }
@@ -166,9 +373,12 @@ export class MarketingHubDataService extends SupabaseBaseService {
       .from('__marketing_weekly_plans')
       .select('*')
       .eq('week_iso', weekIso)
-      .single();
+      .maybeSingle();
 
-    if (error) return null;
+    if (error) {
+      this.logger.error(`getWeeklyPlan failed: ${error.message}`);
+      throw new DatabaseException({ message: 'Unable to read marketing plan' });
+    }
     return data as WeeklyPlan;
   }
 
@@ -188,7 +398,9 @@ export class MarketingHubDataService extends SupabaseBaseService {
     const { data, error } = await query;
     if (error) {
       this.logger.error(`getActiveBrandRules failed: ${error.message}`);
-      return [];
+      throw new DatabaseException({
+        message: 'Unable to read active brand rules',
+      });
     }
     return (data ?? []) as BrandRule[];
   }
@@ -202,9 +414,15 @@ export class MarketingHubDataService extends SupabaseBaseService {
       .eq('pg_alias', alias)
       .eq('pg_display', '1')
       .limit(1)
-      .single();
+      .maybeSingle();
 
-    if (error || !data) {
+    if (error) {
+      throw new DatabaseException({
+        message: 'Unable to resolve marketing gamme',
+        context: { operation: 'resolveGammeAlias', sourceCode: error.code },
+      });
+    }
+    if (!data) {
       this.logger.warn(`resolveGammeAlias: no gamme found for "${alias}"`);
       return null;
     }
@@ -217,6 +435,7 @@ export class MarketingHubDataService extends SupabaseBaseService {
     };
   }
 
+  /** Content presence only; this selection does not measure or rank traffic. */
   async getTopSeoGammes(limit: number = 8): Promise<PriorityGamme[]> {
     const { data, error } = await this.supabase
       .from('__seo_gamme')
@@ -224,7 +443,13 @@ export class MarketingHubDataService extends SupabaseBaseService {
       .not('sg_title', 'is', null)
       .limit(limit * 2);
 
-    if (error || !data || data.length === 0) {
+    if (error) {
+      throw new DatabaseException({
+        message: 'Unable to load marketing SEO sources',
+        context: { operation: 'getTopSeoGammes', sourceCode: error.code },
+      });
+    }
+    if (!data || data.length === 0) {
       return [];
     }
 
@@ -239,7 +464,16 @@ export class MarketingHubDataService extends SupabaseBaseService {
       .eq('pg_display', '1')
       .limit(limit);
 
-    if (gErr || !gammes) return [];
+    if (gErr) {
+      throw new DatabaseException({
+        message: 'Unable to load marketing catalogue sources',
+        context: {
+          operation: 'getTopSeoGammes.catalogue',
+          sourceCode: gErr.code,
+        },
+      });
+    }
+    if (!gammes) return [];
 
     return (
       gammes as Array<{ pg_id: number; pg_alias: string; pg_name: string }>
@@ -250,7 +484,7 @@ export class MarketingHubDataService extends SupabaseBaseService {
         pg_id: g.pg_id,
         pg_alias: g.pg_alias,
         pg_name: g.pg_name,
-        reason: 'high_traffic' as const,
+        reason: 'seo_content' as const,
       }));
   }
 
@@ -264,16 +498,18 @@ export class MarketingHubDataService extends SupabaseBaseService {
     social_post_id?: number;
     target_url: string;
   }): Promise<boolean> {
-    const { error } = await this.supabase
+    const { data, error } = await this.supabase
       .from('__marketing_utm_registry')
       .upsert(params, {
         onConflict: 'utm_campaign,utm_source,utm_medium,utm_content,target_url',
-      });
+      })
+      .select('id')
+      .maybeSingle();
 
     if (error) {
       this.logger.error(`registerUTM failed: ${error.message}`);
       return false;
     }
-    return true;
+    return data?.id != null;
   }
 }

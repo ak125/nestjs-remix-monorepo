@@ -277,6 +277,15 @@ function runJson(cmd, args, label) {
 // 3. Source: dependency-cruiser JSON (import graph, orphans, deep-access)
 // ---------------------------------------------------------------------------
 
+// Workspace package output is untracked and may exist only on a developer's
+// machine. Preserve the package specifier, as on a clean CI checkout.
+function dependencyTarget(dep) {
+  if (dep.module?.startsWith('@repo/') && /^packages\/[^/]+\/dist\//.test(dep.resolved || '')) {
+    return dep.module;
+  }
+  return dep.resolved;
+}
+
 function loadDepcruise() {
   const j = runJson(
     NPX,
@@ -291,7 +300,7 @@ function loadDepcruise() {
     const src = mod.source;
     if (mod.orphan) orphans.add(src);
     for (const dep of mod.dependencies || []) {
-      const to = dep.resolved;
+      const to = dependencyTarget(dep);
       if (!to || to.includes('node_modules')) continue;
       if (dep.dynamic) {
         if (!dynImports.has(src)) dynImports.set(src, new Set());
@@ -786,4 +795,4 @@ if (require.main === module) {
   main().catch((e) => die(e && e.stack ? e.stack : String(e)));
 }
 
-module.exports = { inventoryInputFingerprint, isTestPath, resolveDiLive, CRUISE_ROOTS };
+module.exports = { inventoryInputFingerprint, isTestPath, resolveDiLive, dependencyTarget, CRUISE_ROOTS };

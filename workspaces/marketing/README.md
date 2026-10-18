@@ -1342,7 +1342,596 @@ cd /opt/automecanik/app && claude
 
 ## Références
 
+### Jalon d'intégration local — 2026-10-16, L4a/L4b
+
+**État : `PARTIAL_COVERAGE`.** Les contrats de génération/gates/export ci-dessous sont
+`VALIDATED_FOR_SCOPE_ONLY` sur fixtures locales, sans recette de l'application DEV distante.
+Ce jalon complète le suivi précédent ; il ne transforme pas les lots proposés en lots déployés.
+
+- Candidat : `codex/reconciliation-l4a-20261016`, base `64cf08797908ea36618e1d7086ff7167e8be305d`,
+  modifications non committées dans `C:/Users/Marwane/.codex/worktrees/reconciliation-l1-20261016/nestjs-remix-monorepo`.
+- Suivi et preuves : `C:/Users/Marwane/.codex/reconciliation-chaine-20261016/coverage-l4.json`,
+  `candidate-l4.json`, `candidate-l4.patch`, journaux `l4-*.log` et `l4a-*.log`.
+  Le manifeste porte les SHA-256 du patch et de chaque fichier ; HEAD seul n'identifie pas ce candidat.
+- Handoff observé : révision 2.3, SHA-256 `04507ad411abdeeba8a694d2b3bf61f693d4b28f40e18fa5df69f580b6f545a7`.
+  L4 est inchangé depuis 2.2 ; la version 2.2 historique est conservée dans le suivi.
+- Les candidats `marketing-approvals` (`34f3fa6d0e9dc401730982ead60afbffacd10262`) et
+  `marketing-integration` (base `4988f7830bb990f7c9fee4af5724371749d6a7d9`, modifications locales)
+  ont été comparés et préservés. Les corrections compatibles copywriter/Zod/UTM ont été reprises sélectivement.
+  Le brief de #1690 et les lots diagnostic #1796–1798/#1794 ne sont pas modifiés.
+
+**Raccordements réalisés.** Le copywriter valide le JSON de chaque canal, refuse un format différent du brief,
+compte seulement les contenus persistés avec attribution enregistrée, expose les motifs d'échec et conserve
+les variantes partielles. Les métadonnées viennent du fournisseur effectif ; le hash porte sur les prompts
+exécutés, puis sur leurs hashes ordonnés par canal. Un ancien cache sans provenance reste inconnu.
+Le contexte éditorial passe dans les templates existants ; une URL source ne vaut pas admission WIKI.
+`dry_run: true` retourne avant toute lecture de plan, écriture, cache ou fournisseur.
+
+Les gates contrôlent chaque canal déclaré, y compris le titre et la description YouTube, respectent les
+sévérités bloquantes et vérifient la ligne écrite. Le contrôle par identifiant ne cherche plus une semaine vide.
+Les lectures concernées distinguent une erreur de stockage d'un résultat vide. L'export par canal sélectionne
+`channels_list`, utilise son UTM propre via `URL`, conserve query/fragment et titre YouTube, refuse les variantes
+invalides et les semaines ISO inexistantes. Les dates civiles restent stables ; le fuseau de campagne est
+`Europe/Paris`. Les nouveaux plans utilisent le builder d'URL canonique existant.
+L'écran social lit l'enveloppe `{success,data}` et affiche un avertissement pour les résultats partiels.
+
+**Vérifications réellement exécutées.**
+
+| Vérification | Résultat et limite |
+|---|---|
+| Jest marketing, preload réseau interdit | 93 tests, 10 suites, exit 0 ; fournisseurs et stockage simulés |
+| Calendrier UTC puis Europe/Paris | 13 tests par fuseau, exit 0 ; changements d'heure et année ISO |
+| TypeScript ciblé | exit 0 ; fichiers backend modifiés, tests, dépendances transitives et déclarations existantes |
+| TypeScript backend complet | interrompu, exit -1 : poste à environ 57 Mo de RAM libre ; pas de validation globale |
+| ESLint ciblé backend | exit 0, aucune erreur, un `any` historique dans AiContentService ; analyse syntaxique sans projet TS |
+| ESLint route frontend | exit 0 ; aucune recette navigateur ni typecheck frontend complet |
+| Registre | six invariants PASS, avertissement préexistant de cycle cross-selling ; pas de régénération globale |
+
+Commande de tests depuis la racine du candidat :
+`node node_modules/jest/bin/jest.js --config backend/src/modules/marketing/jest.config.cjs --runInBand`.
+Le suivi conserve les commandes exactes et les rouges antérieurs. Aucun fournisseur réel, migration partagée,
+rendu, publication, commit, push, merge, déploiement ou changement de drapeau n'a été exécuté pour ce jalon.
+
+### Suite L4c/L4d — décision du 2026-10-16
+
+L'owner a répondu « utiliser la meilleure approche ». Le contrat retenu reprend le noyau du candidat
+`marketing-approvals` à `34f3fa6d0e9dc401730982ead60afbffacd10262` : révision éditoriale, version de revue,
+décisions par canal et journal append-only. Sa migration du 14 octobre est reprise **octet pour octet**,
+sans importer ses workflows de préparation, briefs ou vidéo. Une migration complémentaire ajoute les
+hashes approuvés et preuves du handoff 2.3. Les worktrees historiques sont préservés.
+Cette réponse autorise l'implémentation locale, pas une migration partagée, un push ou une publication.
+
+**Raccordement.** Chaque décision porte canal et versions affichées ; l'acteur vient de la session admin.
+La RPC verrouille la ligne et compare les versions. L'approbation exige le gate de ce canal et de cette
+révision, puis enregistre le SHA-256 du JSONB éditorial canonique calculé en base. Toute modification
+éditoriale invalide les décisions ; métriques et métadonnées opérationnelles sont exclues du hash.
+L'export porte versions, hash et acteur, y compris pour un canal secondaire approuvé alors que les autres
+attendent leur revue. Les canaux déjà déclarés sont exclus. Les anciens endpoints en lot sont refusés.
+
+Une déclaration exige URL HTTPS, hash approuvé et révision courante. La répétition identique conserve
+l'acteur et l'heure initiaux sans nouvel historique ; une URL différente est un conflit. Le statut global
+passe à `published` lorsque tous les canaux déclarés ont leur preuve. Dès la première preuve, le contenu
+est figé et une correction nécessite un nouveau post ; les autres canaux peuvent encore être revus.
+L'écran « Revoir par canal » montre la variante, sa décision et ses blocages, puis permet la déclaration.
+Il recharge après chaque action ou conflit, sans relancer automatiquement une décision.
+La preuve reste une **déclaration manuelle**, sans contrôle du compte distant ni effet sur le réseau.
+
+**Delta du handoff assumé.** Le hash fait autorité dans `channel_reviews[channel]`, pas dans une colonne
+globale concurrente. Il couvre aussi destination et provenance. Le journal conserve les décisions invalidées.
+La migration initiale archive les affirmations existantes puis retire les approbations non versionnées :
+elle n'est donc pas « zéro ligne ». Les anciens posts publiés/archivés restent fermés sans preuve inventée.
+Avant activation : contrôler le ledger, les types réels (`jsonb`, `text[]`), droits, volume et consommateurs.
+Exécuter les deux montées transactionnellement. Aucun schéma ni jeu de données partagé n'a été migré.
+
+**Preuves locales.** 125 tests Jest / 11 suites, 30 contrôles SQL PGlite, 4 tests UI JSDOM.
+Les rouges conservés reproduisent 9 défauts de décisions/export et le hash SQL absent. Les tests SQL
+utilisent le preload interdisant le réseau, des rôles et un schéma de fixture. Ils couvrent versions
+périmées, privilèges RPC, immutabilité, preuves, idempotence et rollback. Les tests UI exercent les actions
+réelles du composant avec réponses simulées. Le guard est testé avec identités injectées.
+Le typecheck backend et les lints sont ciblés ; pas de compilation complète, CI ou recette DEV du candidat.
+Deux sessions PostgreSQL concurrentes, sessions authentifiées réelles et navigateur restent à vérifier.
+
+```sh
+# Racine du candidat
+node --require ./scripts/marketing/simulation-no-network.cjs scripts/marketing/social-reviews.sql-test.mjs
+# Depuis frontend/
+node ../node_modules/vitest/vitest.mjs run tests/unit/social-channel-review.test.tsx --maxWorkers=1
+```
+
+PGlite `0.3.14` reprend la dépendance de développement du candidat existant. Le lockfile ajoute seulement
+cette dépendance. Les avertissements engine du poste Node 24.11.1 / npm 11.6.2 restent documentés ; aucune
+modernisation de versions n'est incluse dans ce lot.
+
+**Attribution réservée à l'owner, acte R2 du handoff.** Le gate des nouveaux fichiers signale les quatre SQL
+`missing_both`. Le registre reste inchangé. Entrées proposées à appliquer par l'owner dans la future PR :
+
+```yaml
+- glob: backend/supabase/migrations/20261014010000_marketing_social_reviews{,.down}.sql
+  domain: D12
+  owner: '@ak125/marketing-team'
+  sourceConfidence: high
+  risk: medium
+- glob: backend/supabase/migrations/20261016010000_marketing_publication_proofs{,.down}.sql
+  domain: D12
+  owner: '@ak125/marketing-team'
+  sourceConfidence: high
+  risk: medium
+```
+
+**Rollback.** Les `.down.sql` verrouillent les tables puis refusent de supprimer preuves, décisions ou
+historique existants. Le retour complet est testé sur schéma vide, preuves puis revues, suivi d'une
+réapplication. Avec des données, conserver le journal et préparer une réparation en avant ; ne jamais
+vider les tables pour franchir ces gardes. Aucun rollback partagé n'est autorisé par ce jalon.
+
+**Limites.** Les gates enregistrent les règles observées au contrôle ; ce lot n'ajoute pas de versionnement
+atomique des règles, d'admission/révocation WIKI, de validation média ou d'autorisation de compte social.
+L'approbation éditoriale ne prouve donc ni admissibilité factuelle complète ni mandat de diffusion.
+Verdict global `PARTIAL_COVERAGE` ; scénarios locaux décrits `VALIDATED_FOR_SCOPE_ONLY`.
+Suivi : `C:/Users/Marwane/.codex/reconciliation-chaine-20261016/candidate-l4cd.json` et `coverage-l4cd.json`.
+Les artefacts L4a/b précédents sont conservés. Base locale `64cf08797908ea36618e1d7086ff7167e8be305d`.
+Main relu : `cb8dd530956e134ae53f02427e59e1d14f59d6df` (#1813), sans fichier commun avec le candidat.
+Aucune réécriture de base ni publication.
+
+**Autres limites ouvertes.**
+
+- L4e : le handoff demande G1/G4/G7 bloquants et gates avant rendu, mais G4 attend une durée réellement rendue.
+  Il faut fixer le partage entre contrôles préalables et contrôle du fichier final, reprendre le candidat Fafa
+  préservé, lier l'approbation au hash du script, supprimer les fallback TestCard implicites et raccorder la
+  projection SEO. Le stub actuel peut encore annoncer `success` sans fichier : aucun média n'est qualifié ici.
+- Admission des sources et budget : le chemin copywriter n'impose pas encore une admission technique WIKI ni
+  une réservation atomique de budget à la frontière de l'effet. Pas de génération payante ni d'autonomie réelle.
+- Mesure : le beacon d'attribution ne transmet pas encore `utm_campaign`/`utm_content` ; le beacon funnel
+  nécessite une décision et une vérification du consentement. Les colonnes statistiques ne prouvent aucun résultat.
+  Les définitions de demande qualifiée et d'attribution restent celles à arbitrer dans le suivi initial.
+- Diagnostic et catalogue : aucune nouvelle réponse utilisateur, compatibilité, causalité ou décision catalogue.
+  La provenance et les refus existants restent sous les lots de leurs propriétaires ; pas de recette bout en bout.
+- Planification : le classement annoncé `high_traffic` n'a pas été établi par des mesures dans ce lot.
+- DEV distant observé : environ 4,3 Gio libres sur 150 Gio (98 % occupés). Aucun bootstrap, conteneur ou nettoyage.
+  Les contrôles locaux ne prouvent ni DEV distant, ni CI du candidat, ni PREPROD/PROD, ni chargement par Hermes.
+
+**Retour arrière ciblé.** Conserver le manifeste et l'archive, vérifier d'abord
+`git apply --reverse --check C:/Users/Marwane/.codex/reconciliation-chaine-20261016/candidate-l4cd.patch`
+depuis ce seul worktree. Après vérification de l'absence de nouvelles modifications, appliquer l'inverse du
+patch uniquement ; arrêter sur tout conflit. Aucun reset global, suppression de worktree, DROP ou nettoyage.
+Prochaine action : intégrer les entrées owner, valider le ledger/schéma et le contrat pré/post-rendu, puis recetter le candidat exact dans un DEV isolé
+disposant des ressources nécessaires. La publication et toute mutation PROD restent des actes séparés de l'owner.
+
+
+### Suite locale L4 — fiabilité du Social Hub (2026-10-16)
+
+**Scan / analyse.** Périmètre borné à la route Social Hub et à ses tests ; réponses API des contrôleurs
+relues pour vérifier le contrat. Le loader interprétait l'enveloppe du pipeline comme ses données,
+masquait les erreurs de lecture derrière une liste vide et calculait la semaine dans le fuseau de
+l'hôte avec l'année civile. Une réponse de rechargement tardive pouvait rouvrir une fiche fermée ;
+après un résultat incertain, les actions redevenaient accessibles sans rapprochement.
+
+**Corrections autorisées par « continue corrections et améliorations ».** Le statut et son total sont
+lus dans `data` / `data.posts`. Une lecture des posts invalide échoue explicitement (503, ou statut
+401/403 conservé) ; une panne limitée au pipeline laisse les posts consultables avec un avertissement
+et ses actions désactivées. La semaine par défaut suit l'année ISO et le calendrier Europe/Paris.
+Une fiche fermée reste fermée après une réponse tardive. Une décision incertaine bloque les actions
+jusqu'à un rechargement explicite réussi, sans répétition automatique de la mutation. Une réponse
+HTTP 200 sans confirmation attendue ne déclenche plus de notification de réussite.
+
+**Validation.** 19 tests locaux JSDOM/Vitest réussis (les 4 précédents et 15 nouveaux), dont panne HTTP,
+réseau, JSON invalide, mauvaise enveloppe, fermeture pendant une requête, conflit suivi d'une panne de
+lecture, réponse incertaine et limites d'année/changement d'heure à Paris. Premier passage : 12 échecs
+reproduisant les défauts sur 18 cas ; dernier cas ajouté pour le rechargement impossible après conflit.
+Contrôle TypeScript ciblé de la route, des tests et de leurs dépendances réelles : code 0. Lint des deux
+fichiers : code 0. Les sources/configurations/dépendances backend et SQL sont identiques au manifeste
+L4c/d : les 125 tests Jest et 30 contrôles SQL de ce jalon sont réutilisés, non réexécutés ici.
+Aucun navigateur réel, serveur DEV ou compte social n'est qualifié par ces mocks.
+
+**Verdict et conservation.** `VALIDATED_FOR_SCOPE_ONLY`, objectif global `PARTIAL_COVERAGE`.
+Les quatre entrées SQL réservées à l'owner et les limites L4c/d ci-dessus restent ouvertes.
+Suivi courant : `C:/Users/Marwane/.codex/reconciliation-chaine-20261016/candidate-l4cd-ui.json`
+et `coverage-l4cd-ui.json`. Le jalon `candidate-l4cd.*` est conservé inchangé.
+Le patch `delta-l4-ui.patch` ne concerne que la route, son test et cette documentation :
+`git apply --reverse --check C:/Users/Marwane/.codex/reconciliation-chaine-20261016/delta-l4-ui.patch`,
+puis application inverse uniquement si l'état est encore identique. Arrêter sur toute divergence.
+Aucune migration, publication, CI distante ou intervention sur les autres worktrees.
+
 - ADR-036 : `governance-vault/ledger/decisions/adr/ADR-036-marketing-operating-layer.md`
 - Brand voice : `.claude/canon-mirrors/marketing-voice.md` (canon distribué depuis vault)
 - Runbook rollback : `governance-vault/ledger/knowledge/runbook-marketing-pilot-rollback.md`
 - Plan détaillé : `/home/deploy/.claude/plans/verifier-la-strategie-une-piped-hummingbird.md`
+
+
+### Reprise locale L4 — vérité du planning (2026-10-17)
+
+**Reprise et scan.** Après disparition du checkout pendant le déplacement signalé par
+l'owner, aucun emplacement de reprise n'a été retrouvé dans Git local, les pièces jointes
+Codex ou les checkouts DEV connus. Le candidat a été restauré dans le worktree géré
+`C:/Users/Marwane/.codex/worktrees/reconciliation-l4-reprise-20261017/nestjs-remix-monorepo`,
+branche `codex/reconciliation-l4a-20261016`, base `64cf08797908ea36618e1d7086ff7167e8be305d`.
+Les 37 fichiers restaurés sont identiques aux empreintes de `candidate-l4cd-ui.json`.
+Les trois fichiers de tests interrompus ont été récupérés du journal de cette conversation.
+Les dépendances installées du checkout principal sont réutilisées par jonctions locales ;
+aucune installation ni modification de ces dépendances. Les autres candidats sont préservés.
+
+**Analyse et corrections autorisées.** Les lectures historique, SEO, catalogue et alias
+masquaient des pannes ; la couverture interprétait ses sept sources indisponibles comme des
+absences de contenu. Le générateur poursuit désormais un repli seulement après des lectures
+réussies. Les traitements d'erreur existants de `marketing-approvals` ont été repris par
+méthode, puis complétés par le contrôle des sept lectures de couverture et de l'identité du
+plan retourné après écriture (`id` présent, semaine identique). Le motif `seo_content`
+décrit la présence de contenu SEO ; aucune mesure de trafic n'est revendiquée. Les anciennes
+valeurs du contrat restent lisibles. Aucun schéma SQL ni parcours vidéo modifié dans ce lot.
+
+**Validation.** Reproduction sur fixtures : 19 échecs métier et 33 réussites avant correctif ;
+après correction, 151 tests marketing réussis dans 12 suites, dont 26 nouveaux cas. Contrôle
+TypeScript sémantique ciblé réussi avec les dépendances transitives réelles. Les fixtures
+interdisent le réseau ; ce résultat ne prouve pas une base partagée, une session authentifiée,
+le navigateur, la CI ou un environnement déployé. Les anciennes preuves SQL/UI restent
+historiques ; les fichiers concernés sont préservés. Le premier essai interrompu (ENOENT,
+0 test) n'est pas compté comme reproduction métier.
+
+**Verdict et conservation.** `VALIDATED_FOR_SCOPE_ONLY` pour ce lot ; ensemble toujours
+`PARTIAL_COVERAGE`. Suivi `C:/Users/Marwane/.codex/reconciliation-chaine-20261016/`
+avec `candidate-l4-planning.json` et `coverage-l4-planning.json`. Le manifeste précédent et
+son archive restent inchangés. Retour arrière ciblé : vérifier d'abord l'état courant et
+`git apply --reverse --check C:/Users/Marwane/.codex/reconciliation-chaine-20261016/delta-l4-planning.patch`,
+puis appliquer uniquement l'inverse de ce delta si aucun travail ultérieur ne diverge.
+Prochaine étape : qualifier le candidat exact avec authentification et base isolée dans un
+environnement disposant de ressources, puis poursuivre les raccordements ouverts. Aucun
+push, merge, migration partagée, déploiement, appel fournisseur ni publication effectué.
+
+### Reprise locale L4 — entrées du pipeline (2026-10-17)
+
+**Périmètre et correction.** Les cinq routes du pipeline valident désormais la semaine
+ISO avec la règle existante des exports sociaux, avant leurs accès métier. Les semaines
+inexistantes sont rejetées, dont W00, W54 et W53 dans une année à 52 semaines. Les corps
+malformés et les valeurs non booléennes de `dry_run` produisent une erreur de validation.
+Les alias sont nettoyés et dédupliqués ; un alias demandé mais inconnu bloque la génération
+au lieu de disparaître silencieusement de la sélection. La simulation explicite reste sans
+lecture du plan ni accès fournisseur. Les requêtes du Social Hub restent compatibles.
+
+**Preuves.** Reproduction initiale : 16 échecs et 7 réussites dans les tests du contrôleur.
+Après correction : 168 tests marketing réussis dans 12 suites, dont 17 nouveaux cas ;
+TypeScript sémantique ciblé et lint des trois fichiers de code/tests réussis, sans erreur
+ni avertissement. Le nouveau DTO est couvert par D12 / `@ak125/marketing-team`.
+Les tests utilisent des fixtures avec réseau interdit ; aucune preuve HTTP authentifiée,
+base cible, navigateur ou CI supplémentaire n'est revendiquée. Le SQL et l'UI sont inchangés.
+
+**Conservation et suite.** `VALIDATED_FOR_SCOPE_ONLY`, ensemble `PARTIAL_COVERAGE`.
+Manifestes et archive : `C:/Users/Marwane/.codex/reconciliation-chaine-20261016/`,
+`candidate-l4-pipeline-input.json`, `coverage-l4-pipeline-input.json`.
+Le retour arrière de ce seul lot utilise `delta-l4-pipeline-input.patch`, après contrôle
+`git apply --reverse --check` et vérification de l'absence de modifications ultérieures.
+Prochaine correction identifiée : `scripts/marketing/generate-weekly-plan.ts` fabrique encore
+des `pg_id` par position dans la liste et ne valide la semaine que par expression régulière.
+Ce script n'est pas corrigé ni qualifié par ce lot API. La recette avec authentification et
+base isolée reste ouverte. Aucun push, merge, déploiement ni effet commercial effectué.
+
+### Reprise locale L4 — génération hebdomadaire CLI (2026-10-17)
+
+**Constat et correction.** Le script `scripts/marketing/generate-weekly-plan.ts`
+transmettait des identifiants calculés par position (`i + 1`) et inventait les noms
+depuis les alias. Il résout désormais chaque alias avec `MarketingHubDataService`
+et transmet l'identité catalogue retournée au générateur existant. Un alias inconnu
+ou une panne interrompt la génération. Sans sélection explicite, l'auto-sélection
+existante est conservée. Les contrôles ISO/alias réutilisent le DTO du pipeline ;
+options manquantes, répétées, inconnues et arguments positionnels sont refusés avant
+chargement de l'application. Le contexte acquis est fermé par `finally`, y compris
+si la génération échoue ou ne confirme aucun plan. L'import du script ne l'exécute plus.
+
+**Validation.** Test de reproduction : le catalogue simulé indiquait `402`, mais le
+script transmettait `1`. Après correction : 21 tests CLI et 189 tests au total dans
+13 suites marketing, avec réseau interdit. La configuration Jest marketing inclut
+maintenant le test CLI. TypeScript sémantique ciblé, formatage et syntaxe de la
+configuration réussis. Un vrai processus `ts-node`, contrôle TypeScript actif et
+réseau bloqué, rejette `2021-W53` avec code 1 avant le bootstrap.
+
+Le premier essai processus a dépassé 1536 Mo en analysant la racine applicative.
+`AppModule` est désormais chargé à la frontière CommonJS au moment du bootstrap ;
+le contrôle CLI ne traverse plus tout ce graphe. Le contrôle ciblé inclut le script,
+ses tests et les dépendances typées marketing, pas le graphe d'`AppModule`. Ce choix
+ne qualifie pas le démarrage complet de Nest ni la connexion à une base réelle.
+
+**Conservation et suite.** `candidate-l4-cli.json`, `coverage-l4-cli.json` et
+`delta-l4-cli.patch` dans `C:/Users/Marwane/.codex/reconciliation-chaine-20261016/`.
+Retour arrière : contrôler l'état courant puis l'inverse du seul delta avec
+`git apply --reverse --check` ; ne pas l'appliquer si des travaux ultérieurs divergent.
+Les jalons précédents restent conservés. `VALIDATED_FOR_SCOPE_ONLY`, global
+`PARTIAL_COVERAGE`. Prochaine correction : rapprocher le script adjacent
+`generate-copy-batch.ts` du contrat de simulation du pipeline (il charge actuellement
+le contexte et le plan même avec `--dry-run`), puis poursuivre la recette isolée.
+Aucun appel fournisseur, accès partagé, push, merge, déploiement ou publication.
+
+### Reprise locale L4 — simulation du batch copy CLI (2026-10-17)
+
+`generate-copy-batch.ts --week 2026-W42 --dry-run` valide uniquement les arguments,
+puis termine avant tout chargement de Nest, d'AppModule et des services métier.
+Il ne lit aucun plan, ne génère aucun contenu et n'écrit aucune donnée. Le message
+CLI précise cette portée : une simulation réussie ne confirme pas qu'un plan existe
+ou qu'il est prêt. Les options ambiguës (`--dry-run=false`, doublons, arguments
+positionnels) et semaines ISO inexistantes sont refusées avant les accès métier.
+La validation réutilise le DTO du pipeline. L'import du script reste sans exécution ;
+le parcours normal ferme le contexte acquis même si le plan est absent ou échoue.
+
+**Preuves.** Régression initiale reproduite : AppModule chargé en simulation.
+Après correction : 23 tests CLI ciblés et 212 tests réussis dans 14 suites marketing.
+TypeScript sémantique ciblé, formatage et syntaxe Jest validés. Trois essais dans
+de vrais processus `ts-node`, contrôle TypeScript actif, réseau et modules métier
+bloqués : simulation sans credentials, simulation avec credentials fictifs, refus
+de `--dry-run=false`. Les parcours métier normaux sont testés sur fixtures ; leur
+exécution avec authentification et base isolée reste à qualifier.
+
+**Conservation.** `candidate-l4-copy-cli.json`, `coverage-l4-copy-cli.json` et
+`delta-l4-copy-cli.patch` dans `C:/Users/Marwane/.codex/reconciliation-chaine-20261016/`.
+Le delta et le patch cumulatif passent `git apply --reverse --check`. Vérifier l'état
+courant avant tout retour arrière ; conserver les jalons précédents et arrêter si
+des changements ultérieurs divergent. Ce lot est `VALIDATED_FOR_SCOPE_ONLY` ;
+l'intégration globale reste `PARTIAL_COVERAGE`. Aucun push, merge, accès partagé,
+appel fournisseur, déploiement ou publication effectué.
+
+### Reprise locale L4 — erreurs CLI et recette authentifiée isolée (2026-10-17)
+
+**Correction.** Le CLI copy affichait encore `Done!` quand `generateBatch` retournait
+des erreurs. Deux tests ont reproduit ce défaut (échec total et génération partielle).
+Il conserve maintenant les posts générés, exécute leurs contrôles et met à jour le
+compteur, puis lève une erreur explicite si le batch est incomplet. Le contexte est
+fermé et l'entrée CLI retourne un code d'échec. Le retour anticipé `--dry-run` reste
+inchangé, avant les imports applicatifs. 214 tests passent dans 14 suites, dont 25
+cas du CLI copy ; TypeScript ciblé et formatage réussis.
+
+**Recette exécutée.** Sur DEV, cinq conteneurs dédiés ont utilisé un réseau Docker
+interne sans port publié : application Nest, PostgreSQL 17 neuf en tmpfs, PostgREST,
+Redis et Caddy HTTPS. Aucun secret réel ni donnée métier partagée. Les migrations
+du candidat ont été appliquées uniquement à ce schéma synthétique ; ses privilèges
+ont été réconciliés explicitement avant application. Les comptes fictifs sont en DB,
+avec bcrypt, RPC d'identité, contrôleur de login, cookie sécurisé, sérialisation et
+stockage Redis réels. Aucun remplacement de provider ni de guard.
+
+Les **36 contrôles HTTP/DB** réussissent : accès anonyme/client refusé, mauvais mot
+de passe et cookie altéré refusés, connexion admin, simulation sans mutation des
+tables marketing, entrées invalides, gate bloquant, approbations liées aux versions,
+concurrence (un succès et un conflit), export par réseau, rejet de hash périmé,
+preuves HTTPS fictives et idempotence, gel éditorial après publication partielle,
+statut agrégé après toutes les preuves, historique, invalidation par nouvelle révision,
+et refus après déconnexion. Les URL `example.invalid` sont des fixtures : aucune
+publication réelle n'a été effectuée.
+
+**Lien au candidat et limites.** 1519 fichiers source backend vérifiés par SHA-256,
+1512 fichiers d'exécution inventoriés ; point d'entrée applicatif normal. L'image
+support est `sha256:1584509a89eb5e8bd2e3ac58874a26a41c244fdf85fc2ef043af742d01febe7a`.
+Ses dépendances sont inventoriées. Le premier essai local a dépassé le heap de
+1536 Mo ; la compilation a été déplacée sur DEV dans un conteneur sans réseau,
+limité à 5 Gio / 2 CPU. Après construction des packages de workspace manquants,
+le **typecheck backend complet** passe. Le frontend de l'image reste antérieur :
+aucune qualification du navigateur ni du frontend courant n'est revendiquée.
+Les services hors marketing rencontrent des tables absentes dans ce schéma volontairement
+limité ; cette recette ne valide pas l'application entière, la génération fournisseur,
+une migration partagée, CI, PREPROD ou PROD.
+
+**Conservation.** Les preuves sont dans
+`C:/Users/Marwane/.codex/reconciliation-chaine-20261016/runtime-l4-20261017/evidence/`
+et sur DEV dans `/home/deploy/reconciliation-l4-runtime-20261017/`.
+La base fictive est sauvegardée ; seuls les cinq conteneurs et leur réseau ont été
+retirés après collecte. Candidat et delta : `candidate-l4-runtime.json` et
+`delta-l4-runtime.patch` dans le suivi habituel. Checkpoint natif à relire avant reprise.
+`VALIDATED_FOR_SCOPE_ONLY` pour la correction CLI et les parcours API listés ; ensemble
+`PARTIAL_COVERAGE`. Suite : qualifier le frontend exact dans le navigateur, puis traiter
+l'intégration et les écarts de schéma cible avant toute activation partagée.
+
+
+## 2026-10-17 — frontend exact et recette navigateur isolée
+
+**Corrections issues de la recette.** Le build de production excluait la route
+Social Hub (404) ; elle est maintenant incluse explicitement, sans ouvrir les autres
+routes marketing. Une boundary locale réutilise l'écran d'erreur existant : les
+refus 403 ne remontent plus à la boundary racine qui produisait des erreurs React.
+Les options de route masquent la navigation boutique même sans le layout admin.
+Les deux régressions ont été reproduites avant correction ; 26 tests de routage et
+revue passent ensuite. Build frontend complet, typegen, TypeScript et formatage passent.
+
+**Preuve réelle.** Edge Chromium 155, vues 1440×1000 et 390×844, frontend compilé
+du candidat monté en lecture seule sur l'application complète, base PostgreSQL
+neuve, PostgREST, Redis et HTTPS dédiés. Identités fictives en DB, connexion par
+formulaire, bcrypt/RPC/session et guards réels. 1989 entrées source vérifiées par
+SHA-256 et 250 fichiers de build inventoriés ; les 9 dépendances frontend contrôlées
+correspondent au lock. Le JavaScript Social Hub reçu par le navigateur a exactement
+le hash du fichier compilé. Aucun mock de réponse applicative ; seules les requêtes
+externes du navigateur sont bloquées, et le réseau Docker est interne.
+
+**Parcours validés.** Refus anonyme et client non admin ; connexion admin ; contrôle,
+approbation liée à la révision et déclaration HTTPS par Facebook puis Instagram ;
+export Facebook limité au canal approuvé et non encore déclaré ; export Instagram
+vide sans approbation ; gate bloquant ; conflit 409 sur une révision modifiée puis
+rechargement du contenu sans ancienne décision. Les écritures ont été relues en DB.
+La double déclaration fictive fait passer le post au statut agrégé `published`.
+Déconnexion via HTTP depuis la page puis rechargement refusé. Captures mobile et
+bureau inspectées ; aucune erreur JavaScript sur le chargement final authentifié.
+
+**Limites.** Les preuves `example.invalid` ne publient rien et ne prouvent aucun
+compte distant. La panne volontaire de PostgREST est refusée en 403 par la chaîne
+d'identité ; une reconnexion après rétablissement fonctionne. La boundary 503 est
+couverte en test de composant, pas par cette panne de bout en bout. La redirection
+admin générique `/admin` reste exclue du build : la recette utilise le retour explicite
+au Social Hub. Pas de qualification globale du site, catalogue, génération fournisseur,
+vidéo, CI, PREPROD ou schéma partagé. Les 214 tests backend/CLI et 36 contrôles API/DB
+du jalon précédent restent des preuves distinctes ; sources pertinentes inchangées.
+
+**Conservation.** Rapport et preuves :
+`C:/Users/Marwane/.codex/reconciliation-chaine-20261016/browser-l4-20261017/`.
+Captures : `output/playwright/l4-browser-20261017/` (hors archive de code).
+La base fictive est sauvegardée. Les cinq conteneurs, leur réseau interne, les deux
+sessions navigateur et le tunnel propres à cette recette sont retirés. Sources et
+journaux sont conservés sur DEV. Candidat `candidate-l4-browser.json`, delta
+`delta-l4-browser.patch` ; validation limitée aux parcours ci-dessus, ensemble
+`PARTIAL_COVERAGE`. Suite : réconcilier l'intégration et le schéma cible, puis fermer
+la matrice fonctionnelle encore ouverte avant toute activation partagée.
+
+## 2026-10-17 — indisponibilité de l'identité et conservation de session
+
+**Correction.** Le défaut 403 décrit au jalon navigateur ci-dessus est corrigé :
+une erreur de lecture d'identité n'est plus assimilée à un utilisateur absent.
+Les recherches admin/client distinguent résultat vide et erreur ; AuthService
+propage une indisponibilité 503 jusqu'à Passport, qui conserve l'identité de session.
+La recherche historique ne bascule pas vers une identité client après une erreur
+de lecture admin. Une absence réelle reste un refus ; les privilèges ne changent pas.
+
+**Validation nouvelle.** Régression reproduite avant correction (11 échecs), puis
+164 tests ciblés dans 4 suites réussis. Compilation sémantique complète du backend
+et réécriture des alias réussies. Les 36 contrôles HTTP/auth/DB marketing ont été
+relancés, ainsi que 11 contrôles de panne, récupération et liaison exacte entre
+cookie et session Redis. Base PostgreSQL et identités fictives neuves sur DEV,
+PostgREST/Redis/HTTPS dédiés, application et guards réels.
+
+**Navigateur.** Connexion par formulaire, Social Hub 200 ; arrêt de PostgREST,
+rechargement 503 avec l'écran existant « Service indisponible » ; rétablissement,
+rechargement 200 et cinq boutons de revue sans reconnexion. Capture de la panne
+inspectée ; aucune erreur JavaScript à la récupération. Les 3509 entrées source
+du snapshot sont vérifiées par empreinte ; les 250 fichiers du frontend qualifié
+au jalon précédent restent identiques. Le backend recompilé est inventorié.
+
+**Portée et conservation.** Ces méthodes de lecture d'identité sont partagées :
+leurs autres consommateurs n'ont pas fait l'objet d'une recette globale du site.
+Le schéma reste synthétique et limité. Aucune nouvelle CI, PREPROD, activation
+partagée, génération fournisseur ou publication réelle. Les preuves et le dump
+sont conservés dans `auth-availability-20261017/` du suivi
+`C:/Users/Marwane/.codex/reconciliation-chaine-20261016/` et sur DEV dans
+`/home/deploy/reconciliation-l4-auth-20261017/`. Les cinq conteneurs, leur réseau,
+la session navigateur et le tunnel propres à cette recette sont retirés.
+Candidat `candidate-l4-auth.json`, delta `delta-l4-auth.patch` ; checkpoint natif
+à relire avant reprise. `VALIDATED_FOR_SCOPE_ONLY`, ensemble `PARTIAL_COVERAGE`.
+Suite : réconcilier l'intégration et le schéma cible, puis fermer les exigences
+fonctionnelles encore ouvertes.
+
+## 2026-10-17 — export CLI vide et fermeture du contexte
+
+**Défaut reproduit.** Avec un manifeste antérieur sur disque et une file désormais
+vide, `export-publish-queue.ts` quittait avec succès avant de remplacer ce fichier
+et avant `app.close()`. Le fichier pouvait donc encore présenter un ancien contenu
+approuvé après révocation ou déclaration de publication.
+
+**Correction.** Tout export réussi écrit le résultat courant, y compris `posts: []`.
+Le contexte acquis est fermé avant la fin normale ou en erreur. Le CLI utilise le
+schéma semaine ISO/canal de l'API, refuse les options dupliquées, inconnues et les
+arguments positionnels avant de charger l'application. Un import seul n'exécute
+rien. Les exports restent des instantanés éditoriaux ; les copies antérieures déjà
+transmises ne sont pas révoquées par cette écriture locale.
+
+**Preuves.** La reproduction en sous-processus a conservé l'ancien post et n'a pas
+appelé la fermeture. La suite nouvelle comptait 11 échecs avant correction ; les
+230 tests marketing/CLI dans 15 suites passent après correction, dont 16 parcours
+du vrai CLI en sous-processus : résultat vide, import, arguments invalides, export
+avec révision/empreinte, erreurs de lecture, démarrage, fermeture et écriture.
+Le réseau est bloqué ; la frontière application/DB est remplacée par une fixture,
+les fichiers et codes de sortie sont réels. Les preuves auth/DB/navigateur du jalon
+précédent restent distinctes : aucun de leurs fichiers applicatifs n'est modifié.
+
+**Conservation et suite.** Rapport : `export-cli-20261017/qualification.json` dans
+`C:/Users/Marwane/.codex/reconciliation-chaine-20261016/`. Candidat
+`candidate-l4-export.json`, delta `delta-l4-export.patch`, checkpoint natif à relire.
+Le `main` récupéré (`c9e44416f`) ne modifie pas le CLI ; chevauchements à traiter
+pour l'intégration sur `weekly-plan-generator.service.ts` et ce README. Aucune
+fusion ni migration partagée. `VALIDATED_FOR_SCOPE_ONLY`, ensemble
+`PARTIAL_COVERAGE` ; intégration/schéma cible et recette globale restent ouverts.
+
+## 2026-10-17 — candidat réconcilié avec main et métadonnées cible
+
+**Git.** Le candidat est reporté sur `ec92f36c9331e24f4052b3952ed85e25752a1085`
+dans le même worktree isolé, branche `codex/reconciliation-l4-main-20261017`.
+Les 52 fichiers antérieurs restent conservés dans l'archive `candidate-l4-export-files.zip`
+et un stash Git conservé, dont l'identifiant est dans le dossier de preuve.
+Les modifications restent non committées. Le retrait upstream de la dépendance UTM
+inutilisée du planificateur est conservé ; ses deux constructions de test sont alignées
+(TS2554 reproduit avant correction). Le chevauchement avec #1690 est identifié :
+cette PR ajoute une validation des briefs dans le même service de conformité ; elle
+reste un candidat distinct, non incorporé au flux social de cette branche.
+
+**Cible lue, jamais modifiée.** Métadonnées du projet AutoMecanik
+`cxpojprgwgubzjyqzmoq` : trois tables marketing, colonnes/types, contraintes,
+index, trigger social, politiques RLS, droits et entrées de ledger pertinentes.
+Les deux migrations d'approbation/publication du candidat ne sont pas enregistrées
+et leurs objets ne sont pas présents. Les contraintes de semaine sont valides :
+l'ambiguïté initiale d'échappement JSON a été levée par lecture hexadécimale et test.
+La capture ne confirme pas l'ancienne affirmation « 20260430 appliquée » du lot L08 ;
+ne pas la reprendre comme fait actuel. Ce lot briefs et son ratchet restent séparés.
+
+**Correction SQL.** La migration non appliquée `20261014010000` retire explicitement
+INSERT/UPDATE/DELETE/TRUNCATE de PUBLIC, anon et authenticated sur les seuls posts
+sociaux. Elle exige auparavant RLS actif et exactement la politique existante
+service_role/ALL/true. Une politique supplémentaire ou des droits hérités résiduels
+font échouer la transaction. Les contraintes, politiques, autres tables et droits
+service_role ne sont pas modifiés. Le rollback vide conserve cette restriction
+de droits ; après présence de contenu/historique, la réparation reste progressive.
+
+**Validation.** 230 tests marketing/CLI, 15 suites ; typecheck sémantique ciblé ;
+30 contrôles SQL existants ; 12 nouveaux contrôles sur une reconstruction isolée
+des métadonnées cible. Ces derniers couvrent les semaines, les dérives RLS/droits,
+les contraintes conservées, le writer service_role, les revues CAS et la preuve
+de publication liée au hash approuvé. Aucun contenu réel n'est copié. Le rôle
+service_role de la fixture est volontairement soumis à RLS ; ses droits de séquence
+sont accordés uniquement pour le test et ne constituent pas un inventaire cible.
+
+Commandes reproductibles depuis le candidat, avec les dépendances verrouillées :
+
+```sh
+node --require ./scripts/marketing/simulation-no-network.cjs scripts/marketing/social-target-schema.sql-test.mjs
+node --require ./scripts/marketing/simulation-no-network.cjs scripts/marketing/social-reviews.sql-test.mjs
+node node_modules/jest/bin/jest.js --config backend/src/modules/marketing/jest.config.cjs --runInBand --roots src/modules/marketing ../scripts/marketing
+```
+
+**Application owner à préparer, pas exécutée.** Recontrôler le ledger et le schéma
+au moment de l'intervention, sauvegarder les données/droits et prévoir l'arrêt des
+writers. Examiner les anciens posts : la première migration les historise et retire
+les approbations non liées à une version. Appliquer les deux fichiers UP dans l'ordre
+140 puis 160, dans une seule transaction avec les délais de verrouillage prévus.
+En cas d'écart ou de timeout, annuler et réexaminer ; ne pas affaiblir les gardes.
+Le ledger et une éventuelle baseline ne seront actualisés qu'après application
+effective. Avant celle-ci, le candidat n'est pas activable sur la base partagée.
+
+**Preuves et limites.** `integration-main-20261017/` et `candidate-l4-main-schema.json`
+dans `C:/Users/Marwane/.codex/reconciliation-chaine-20261016/` ; checkpoint natif
+à relire. La preuve navigateur/auth antérieure est conservée ; aucun nouveau build
+complet ni parcours navigateur sur cette nouvelle base main n'est revendiqué.
+Pas de push, fusion, CI, PREPROD, migration partagée ni publication réelle.
+`VALIDATED_FOR_SCOPE_ONLY`, ensemble `PARTIAL_COVERAGE`. Prochaine étape : revue
+owner du delta SQL, puis recette de l'artefact exact dans l'environnement cible
+autorisé et poursuite de la matrice fonctionnelle restante.
+
+## 2026-10-17 — Recette navigateur du candidat réconcilié avec main
+
+**Périmètre validé.** Base `ec92f36c9331e24f4052b3952ed85e25752a1085`,
+54 fichiers du candidat conservés. Les neuf packages internes, le backend complet
+et le frontend de production ont été reconstruits ; typegen et TypeScript frontend
+passent. Les 4 245 entrées source ont été vérifiées et les 5 232 fichiers produits
+inventoriés. Le JS Social Hub effectivement chargé dans Edge correspond au build
+(SHA256 `44df619a9ac8697e81a204da3559242961e932750d96f64eb47f496c5e95daca`).
+
+**Base et authentification.** PostgreSQL 17, PostgREST et Redis dans un réseau DEV
+interne neuf ; trois tables marketing reconstruites depuis les métadonnées cible,
+migrations exactes du candidat, identités fictives, RPC/session réels. 36 contrôles
+HTTP/DB et 11 contrôles de panne/reprise réussis. Les fixtures ont été corrigées :
+DDL brand_rules redondant retiré, texte synthétique réencodé correctement, URL
+storefront rétablie après le scénario HTTP d'invalidation. Aucun correctif applicatif
+supplémentaire n'a été nécessaire dans ce lot.
+
+**Navigateur.** Edge 155.0.4283.45, desktop 1440×1000 et mobile 390×844 : accès
+anonyme/client refusé, connexion administrateur par formulaire, conflit 409 sur
+revue et preuve périmées, rafraîchissement de révision, contrôle bloquant et
+approbation par canal. Le fichier Facebook téléchargé porte la révision 5 et le
+même hash que l'approbation et la preuve fictive persistées. Instagram non approuvé
+reste exclu. Les actions sont figées après déclaration. Panne réelle PostgREST :
+503 sans action de revue, puis 200 avec la même session sans reconnexion ; logout
+supprime le cookie et rend 403. Aucun pageerror à la reprise.
+
+**Tests et limites.** 26 tests frontend / 2 suites passent. Le premier passage
+avait 25 succès et un timeout de 5 s ; les deux journaux sont conservés. Les
+230 tests marketing/CLI et 42 contrôles SQL du jalon précédent restent applicables
+aux sources inchangées. La fixture ne couvre pas toute l'application : accueil,
+compte client, catalogue et jobs ont des dépendances absentes et ne sont pas
+qualifiés par cette recette. Les neuf versions de dépendances frontend contrôlées
+correspondent au lockfile ; l'image runtime reste identifiée par son digest.
+
+**Preuves.** `browser-main-20261017/qualification.json`, `coverage-manifest.json`,
+manifestes téléchargés, captures et dump fictif sous
+`C:/Users/Marwane/.codex/reconciliation-chaine-20261016/`. Les cinq conteneurs, leur
+réseau, le navigateur et le tunnel de recette ont été fermés ; sources et preuves
+sont conservées. `VALIDATED_FOR_SCOPE_ONLY`, global `PARTIAL_COVERAGE`.
+Les migrations cible restent préparées, non appliquées. Aucun push, fusion, CI,
+PREPROD/PROD, appel fournisseur ni publication réelle. Prochaine étape : revue et
+intégration du candidat exact, puis activation cible dans un mandat explicite et
+poursuite des exigences fonctionnelles encore ouvertes.

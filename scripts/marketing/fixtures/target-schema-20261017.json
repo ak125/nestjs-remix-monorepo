@@ -1,0 +1,1339 @@
+{
+  "observed_at": "2026-10-17",
+  "project_ref": "cxpojprgwgubzjyqzmoq",
+  "scope": "Metadata only; no business rows. Reproduce three marketing tables, constraints, ACL/RLS, indexes and social update trigger.",
+  "columns": [
+    {
+      "table_name": "__marketing_brand_rules",
+      "column_name": "id",
+      "data_type": "bigint",
+      "udt_name": "int8",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "column_name": "rule_type",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "column_name": "channel",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "column_name": "rule_key",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "column_name": "rule_value",
+      "data_type": "jsonb",
+      "udt_name": "jsonb",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "column_name": "severity",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO",
+      "column_default": "'warn'::text"
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "column_name": "active",
+      "data_type": "boolean",
+      "udt_name": "bool",
+      "is_nullable": "YES",
+      "column_default": "true"
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "YES",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "id",
+      "data_type": "bigint",
+      "udt_name": "int8",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "week_iso",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "day_of_week",
+      "data_type": "smallint",
+      "udt_name": "int2",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "slot_label",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "channels",
+      "data_type": "jsonb",
+      "udt_name": "jsonb",
+      "is_nullable": "NO",
+      "column_default": "'{}'::jsonb"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "primary_channel",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "channels_list",
+      "data_type": "ARRAY",
+      "udt_name": "_text",
+      "is_nullable": "NO",
+      "column_default": "'{}'::text[]"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "gamme_id",
+      "data_type": "integer",
+      "udt_name": "int4",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "gamme_alias",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "content_source",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "source_url",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "reused",
+      "data_type": "boolean",
+      "udt_name": "bool",
+      "is_nullable": "YES",
+      "column_default": "false"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "utm_campaign",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "utm_source",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "utm_medium",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO",
+      "column_default": "'social'::text"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "utm_content",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "objective",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "expected_reach",
+      "data_type": "integer",
+      "udt_name": "int4",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "expected_clicks",
+      "data_type": "integer",
+      "udt_name": "int4",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "brand_gate_level",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "compliance_gate_level",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "gate_summary",
+      "data_type": "jsonb",
+      "udt_name": "jsonb",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "quality_score",
+      "data_type": "real",
+      "udt_name": "float4",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "status",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO",
+      "column_default": "'draft'::text"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "approved_by",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "approved_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "published_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "ai_provider",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "ai_model",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "generation_prompt_hash",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "performance_score",
+      "data_type": "real",
+      "udt_name": "float4",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "actual_reach",
+      "data_type": "integer",
+      "udt_name": "int4",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "actual_clicks",
+      "data_type": "integer",
+      "udt_name": "int4",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "actual_engagement_rate",
+      "data_type": "real",
+      "udt_name": "float4",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "actual_conversions",
+      "data_type": "integer",
+      "udt_name": "int4",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "performance_updated_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "YES",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "YES",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "column_name": "id",
+      "data_type": "bigint",
+      "udt_name": "int8",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "column_name": "week_iso",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "column_name": "priority_gammes",
+      "data_type": "jsonb",
+      "udt_name": "jsonb",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "column_name": "calendar_rules",
+      "data_type": "jsonb",
+      "udt_name": "jsonb",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "column_name": "plan_json",
+      "data_type": "jsonb",
+      "udt_name": "jsonb",
+      "is_nullable": "NO",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "column_name": "status",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO",
+      "column_default": "'draft'::text"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "column_name": "posts_generated",
+      "data_type": "integer",
+      "udt_name": "int4",
+      "is_nullable": "YES",
+      "column_default": "0"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "column_name": "posts_approved",
+      "data_type": "integer",
+      "udt_name": "int4",
+      "is_nullable": "YES",
+      "column_default": "0"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "column_name": "posts_published",
+      "data_type": "integer",
+      "udt_name": "int4",
+      "is_nullable": "YES",
+      "column_default": "0"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "column_name": "performance_summary",
+      "data_type": "jsonb",
+      "udt_name": "jsonb",
+      "is_nullable": "YES",
+      "column_default": null
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "YES",
+      "column_default": "now()"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "YES",
+      "column_default": "now()"
+    }
+  ],
+  "constraints": [
+    {
+      "table": "__marketing_social_posts",
+      "name": "__marketing_social_posts_brand_gate_level_check",
+      "definition": "CHECK ((brand_gate_level = ANY (ARRAY['PASS'::text, 'WARN'::text, 'FAIL'::text])))"
+    },
+    {
+      "table": "__marketing_social_posts",
+      "name": "__marketing_social_posts_compliance_gate_level_check",
+      "definition": "CHECK ((compliance_gate_level = ANY (ARRAY['PASS'::text, 'WARN'::text, 'FAIL'::text])))"
+    },
+    {
+      "table": "__marketing_social_posts",
+      "name": "__marketing_social_posts_content_source_check",
+      "definition": "CHECK ((content_source = ANY (ARRAY['gamme_catalogue'::text, 'blog_advice'::text, 'blog_guide'::text, 'promo'::text, 'trust_review'::text, 'seo_recycle'::text])))"
+    },
+    {
+      "table": "__marketing_social_posts",
+      "name": "__marketing_social_posts_day_of_week_check",
+      "definition": "CHECK (((day_of_week >= 1) AND (day_of_week <= 7)))"
+    },
+    {
+      "table": "__marketing_social_posts",
+      "name": "__marketing_social_posts_objective_check",
+      "definition": "CHECK ((objective = ANY (ARRAY['traffic'::text, 'engagement'::text, 'conversion'::text, 'awareness'::text])))"
+    },
+    {
+      "table": "__marketing_social_posts",
+      "name": "__marketing_social_posts_pkey",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table": "__marketing_social_posts",
+      "name": "__marketing_social_posts_primary_channel_check",
+      "definition": "CHECK ((primary_channel = ANY (ARRAY['instagram'::text, 'facebook'::text, 'youtube'::text])))"
+    },
+    {
+      "table": "__marketing_social_posts",
+      "name": "__marketing_social_posts_slot_label_check",
+      "definition": "CHECK ((slot_label = ANY (ARRAY['catalogue'::text, 'conseil'::text, 'confiance'::text, 'promo'::text])))"
+    },
+    {
+      "table": "__marketing_social_posts",
+      "name": "__marketing_social_posts_status_check",
+      "definition": "CHECK ((status = ANY (ARRAY['draft'::text, 'generated'::text, 'gate_pending'::text, 'gate_passed'::text, 'gate_failed'::text, 'approved'::text, 'published'::text, 'archived'::text])))"
+    },
+    {
+      "table": "__marketing_social_posts",
+      "name": "__marketing_social_posts_week_iso_check",
+      "definition": "CHECK ((week_iso ~ '^\\d{4}-W\\d{2}$'::text))"
+    },
+    {
+      "table": "__marketing_social_posts",
+      "name": "chk_msp_gamme_source",
+      "definition": "CHECK (((gamme_id IS NULL) OR (content_source IS NOT NULL)))"
+    },
+    {
+      "table": "__marketing_social_posts",
+      "name": "chk_msp_utm_source",
+      "definition": "CHECK ((utm_source = ANY (ARRAY['instagram'::text, 'facebook'::text, 'youtube'::text])))"
+    },
+    {
+      "table": "__marketing_social_posts",
+      "name": "uq_msp_slot",
+      "definition": "UNIQUE (week_iso, day_of_week, slot_label, primary_channel)"
+    },
+    {
+      "table": "__marketing_weekly_plans",
+      "name": "__marketing_weekly_plans_pkey",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table": "__marketing_weekly_plans",
+      "name": "__marketing_weekly_plans_status_check",
+      "definition": "CHECK ((status = ANY (ARRAY['draft'::text, 'reviewed'::text, 'approved'::text, 'in_progress'::text, 'completed'::text])))"
+    },
+    {
+      "table": "__marketing_weekly_plans",
+      "name": "__marketing_weekly_plans_week_iso_check",
+      "definition": "CHECK ((week_iso ~ '^\\d{4}-W\\d{2}$'::text))"
+    },
+    {
+      "table": "__marketing_weekly_plans",
+      "name": "__marketing_weekly_plans_week_iso_key",
+      "definition": "UNIQUE (week_iso)"
+    },
+    {
+      "table": "__marketing_brand_rules",
+      "name": "__marketing_brand_rules_channel_check",
+      "definition": "CHECK ((channel = ANY (ARRAY['instagram'::text, 'facebook'::text, 'youtube'::text])))"
+    },
+    {
+      "table": "__marketing_brand_rules",
+      "name": "__marketing_brand_rules_pkey",
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table": "__marketing_brand_rules",
+      "name": "__marketing_brand_rules_rule_type_check",
+      "definition": "CHECK ((rule_type = ANY (ARRAY['tone'::text, 'forbidden_word'::text, 'required_element'::text, 'legal'::text, 'visual'::text, 'claims_policy'::text])))"
+    },
+    {
+      "table": "__marketing_brand_rules",
+      "name": "__marketing_brand_rules_severity_check",
+      "definition": "CHECK ((severity = ANY (ARRAY['block'::text, 'warn'::text, 'info'::text])))"
+    }
+  ],
+  "triggers": [
+    {
+      "table": "__marketing_social_posts",
+      "definition": "CREATE TRIGGER trg_msp_updated_at BEFORE UPDATE ON public.__marketing_social_posts FOR EACH ROW EXECUTE FUNCTION __marketing_set_updated_at()"
+    }
+  ],
+  "policies": [
+    {
+      "schemaname": "public",
+      "tablename": "__marketing_analytics_digests",
+      "policyname": "service_role_all",
+      "permissive": "PERMISSIVE",
+      "roles": ["service_role"],
+      "cmd": "ALL",
+      "qual": "true",
+      "with_check": "true"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "__marketing_backlinks",
+      "policyname": "service_role_all",
+      "permissive": "PERMISSIVE",
+      "roles": ["service_role"],
+      "cmd": "ALL",
+      "qual": "true",
+      "with_check": "true"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "__marketing_campaigns",
+      "policyname": "service_role_all",
+      "permissive": "PERMISSIVE",
+      "roles": ["service_role"],
+      "cmd": "ALL",
+      "qual": "true",
+      "with_check": "true"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "__marketing_content_library",
+      "policyname": "service_role_all",
+      "permissive": "PERMISSIVE",
+      "roles": ["service_role"],
+      "cmd": "ALL",
+      "qual": "true",
+      "with_check": "true"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "__marketing_content_roadmap",
+      "policyname": "service_role_all",
+      "permissive": "PERMISSIVE",
+      "roles": ["service_role"],
+      "cmd": "ALL",
+      "qual": "true",
+      "with_check": "true"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "__marketing_kpi_snapshots",
+      "policyname": "service_role_all",
+      "permissive": "PERMISSIVE",
+      "roles": ["service_role"],
+      "cmd": "ALL",
+      "qual": "true",
+      "with_check": "true"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "__marketing_outreach",
+      "policyname": "service_role_all",
+      "permissive": "PERMISSIVE",
+      "roles": ["service_role"],
+      "cmd": "ALL",
+      "qual": "true",
+      "with_check": "true"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "__marketing_social_posts",
+      "policyname": "service_role_all",
+      "permissive": "PERMISSIVE",
+      "roles": ["service_role"],
+      "cmd": "ALL",
+      "qual": "true",
+      "with_check": "true"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "__marketing_weekly_plans",
+      "policyname": "service_role_all",
+      "permissive": "PERMISSIVE",
+      "roles": ["service_role"],
+      "cmd": "ALL",
+      "qual": "true",
+      "with_check": "true"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "__marketing_brand_rules",
+      "policyname": "service_role_all",
+      "permissive": "PERMISSIVE",
+      "roles": ["service_role"],
+      "cmd": "ALL",
+      "qual": "true",
+      "with_check": "true"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "__marketing_guest_posts",
+      "policyname": "service_role_all",
+      "permissive": "PERMISSIVE",
+      "roles": ["service_role"],
+      "cmd": "ALL",
+      "qual": "true",
+      "with_check": "true"
+    },
+    {
+      "schemaname": "public",
+      "tablename": "__marketing_utm_registry",
+      "policyname": "service_role_all",
+      "permissive": "PERMISSIVE",
+      "roles": ["service_role"],
+      "cmd": "ALL",
+      "qual": "true",
+      "with_check": "true"
+    }
+  ],
+  "privileges": [
+    {
+      "table_name": "__marketing_brand_rules",
+      "grantee": "postgres",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "grantee": "postgres",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "grantee": "postgres",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "grantee": "postgres",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "grantee": "postgres",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "grantee": "postgres",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "grantee": "postgres",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "grantee": "anon",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "grantee": "anon",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "grantee": "anon",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "grantee": "authenticated",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "grantee": "authenticated",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "grantee": "authenticated",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "grantee": "service_role",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "grantee": "service_role",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "grantee": "service_role",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "grantee": "service_role",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "grantee": "service_role",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "grantee": "service_role",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "grantee": "service_role",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "__marketing_brand_rules",
+      "grantee": "dev_readonly",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "grantee": "postgres",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "grantee": "postgres",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "grantee": "postgres",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "grantee": "postgres",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "grantee": "postgres",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "grantee": "postgres",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "grantee": "postgres",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "grantee": "anon",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "grantee": "anon",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "grantee": "anon",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "grantee": "authenticated",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "grantee": "authenticated",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "grantee": "authenticated",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "grantee": "service_role",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "grantee": "service_role",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "grantee": "service_role",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "grantee": "service_role",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "grantee": "service_role",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "grantee": "service_role",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "grantee": "service_role",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "grantee": "dev_readonly",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "grantee": "postgres",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "grantee": "postgres",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "grantee": "postgres",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "grantee": "postgres",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "grantee": "postgres",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "grantee": "postgres",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "grantee": "postgres",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "grantee": "anon",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "grantee": "anon",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "grantee": "anon",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "grantee": "anon",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "grantee": "anon",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "grantee": "anon",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "grantee": "anon",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "grantee": "authenticated",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "grantee": "authenticated",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "grantee": "authenticated",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "grantee": "authenticated",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "grantee": "authenticated",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "grantee": "authenticated",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "grantee": "authenticated",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "grantee": "service_role",
+      "privilege_type": "INSERT"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "grantee": "service_role",
+      "privilege_type": "SELECT"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "grantee": "service_role",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "grantee": "service_role",
+      "privilege_type": "DELETE"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "grantee": "service_role",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "grantee": "service_role",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "grantee": "service_role",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "grantee": "dev_readonly",
+      "privilege_type": "SELECT"
+    }
+  ],
+  "rls": [
+    {
+      "name": "__marketing_social_posts",
+      "enabled": true,
+      "forced": false
+    },
+    {
+      "name": "__marketing_weekly_plans",
+      "enabled": true,
+      "forced": false
+    },
+    {
+      "name": "__marketing_brand_rules",
+      "enabled": true,
+      "forced": false
+    }
+  ],
+  "ledger": [
+    {
+      "version": "20260222004417",
+      "name": "create_marketing_brand_rules_v2"
+    },
+    {
+      "version": "20260209141340",
+      "name": "create_marketing_tables"
+    },
+    {
+      "version": "20260222004403",
+      "name": "create_marketing_weekly_plans"
+    },
+    {
+      "version": "20260222004401",
+      "name": "create_marketing_social_posts"
+    },
+    {
+      "version": "20260222004421",
+      "name": "create_marketing_utm_registry"
+    },
+    {
+      "version": "20260222004427",
+      "name": "create_marketing_analytics_digests"
+    },
+    {
+      "version": "20260222004431",
+      "name": "create_marketing_content_library"
+    },
+    {
+      "version": "20260222004438",
+      "name": "marketing_rls_policies"
+    },
+    {
+      "version": "20260222004449",
+      "name": "marketing_patch_1b_constraints"
+    }
+  ],
+  "identities": [
+    {
+      "table_name": "__marketing_brand_rules",
+      "column_name": "id",
+      "is_identity": "YES",
+      "identity_generation": "BY DEFAULT"
+    },
+    {
+      "table_name": "__marketing_social_posts",
+      "column_name": "id",
+      "is_identity": "YES",
+      "identity_generation": "BY DEFAULT"
+    },
+    {
+      "table_name": "__marketing_weekly_plans",
+      "column_name": "id",
+      "is_identity": "YES",
+      "identity_generation": "BY DEFAULT"
+    }
+  ],
+  "indexes": [
+    {
+      "tablename": "__marketing_brand_rules",
+      "indexname": "__marketing_brand_rules_pkey",
+      "indexdef": "CREATE UNIQUE INDEX __marketing_brand_rules_pkey ON public.__marketing_brand_rules USING btree (id)"
+    },
+    {
+      "tablename": "__marketing_brand_rules",
+      "indexname": "idx_mbr_unique_rule",
+      "indexdef": "CREATE UNIQUE INDEX idx_mbr_unique_rule ON public.__marketing_brand_rules USING btree (rule_type, COALESCE(channel, '__all'::text), rule_key)"
+    },
+    {
+      "tablename": "__marketing_social_posts",
+      "indexname": "__marketing_social_posts_pkey",
+      "indexdef": "CREATE UNIQUE INDEX __marketing_social_posts_pkey ON public.__marketing_social_posts USING btree (id)"
+    },
+    {
+      "tablename": "__marketing_social_posts",
+      "indexname": "uq_msp_slot",
+      "indexdef": "CREATE UNIQUE INDEX uq_msp_slot ON public.__marketing_social_posts USING btree (week_iso, day_of_week, slot_label, primary_channel)"
+    },
+    {
+      "tablename": "__marketing_social_posts",
+      "indexname": "idx_msp_channels_list",
+      "indexdef": "CREATE INDEX idx_msp_channels_list ON public.__marketing_social_posts USING gin (channels_list)"
+    },
+    {
+      "tablename": "__marketing_social_posts",
+      "indexname": "idx_msp_gamme",
+      "indexdef": "CREATE INDEX idx_msp_gamme ON public.__marketing_social_posts USING btree (gamme_id) WHERE (gamme_id IS NOT NULL)"
+    },
+    {
+      "tablename": "__marketing_social_posts",
+      "indexname": "idx_msp_primary_channel",
+      "indexdef": "CREATE INDEX idx_msp_primary_channel ON public.__marketing_social_posts USING btree (primary_channel)"
+    },
+    {
+      "tablename": "__marketing_social_posts",
+      "indexname": "idx_msp_published",
+      "indexdef": "CREATE INDEX idx_msp_published ON public.__marketing_social_posts USING btree (published_at) WHERE (published_at IS NOT NULL)"
+    },
+    {
+      "tablename": "__marketing_social_posts",
+      "indexname": "idx_msp_slot",
+      "indexdef": "CREATE INDEX idx_msp_slot ON public.__marketing_social_posts USING btree (slot_label)"
+    },
+    {
+      "tablename": "__marketing_social_posts",
+      "indexname": "idx_msp_slot_unique",
+      "indexdef": "CREATE UNIQUE INDEX idx_msp_slot_unique ON public.__marketing_social_posts USING btree (week_iso, day_of_week, slot_label, primary_channel) WHERE (status <> 'archived'::text)"
+    },
+    {
+      "tablename": "__marketing_social_posts",
+      "indexname": "idx_msp_utm",
+      "indexdef": "CREATE INDEX idx_msp_utm ON public.__marketing_social_posts USING btree (utm_campaign)"
+    },
+    {
+      "tablename": "__marketing_social_posts",
+      "indexname": "idx_msp_week_status",
+      "indexdef": "CREATE INDEX idx_msp_week_status ON public.__marketing_social_posts USING btree (week_iso, status)"
+    },
+    {
+      "tablename": "__marketing_weekly_plans",
+      "indexname": "__marketing_weekly_plans_pkey",
+      "indexdef": "CREATE UNIQUE INDEX __marketing_weekly_plans_pkey ON public.__marketing_weekly_plans USING btree (id)"
+    },
+    {
+      "tablename": "__marketing_weekly_plans",
+      "indexname": "__marketing_weekly_plans_week_iso_key",
+      "indexdef": "CREATE UNIQUE INDEX __marketing_weekly_plans_week_iso_key ON public.__marketing_weekly_plans USING btree (week_iso)"
+    },
+    {
+      "tablename": "__marketing_weekly_plans",
+      "indexname": "idx_mwp_status",
+      "indexdef": "CREATE INDEX idx_mwp_status ON public.__marketing_weekly_plans USING btree (status)"
+    }
+  ],
+  "updated_at_function": "CREATE OR REPLACE FUNCTION public.__marketing_set_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'public'\nAS $function$\nBEGIN\n  NEW.updated_at = NOW();\n  RETURN NEW;\nEND;\n$function$\n",
+  "candidate_objects": null,
+  "marketing_ledger": [
+    {
+      "version": "20260220232654",
+      "name": "add_page_brief_table"
+    },
+    {
+      "version": "20260220235539",
+      "name": "add_brief_traceability_to_refresh_log"
+    },
+    {
+      "version": "20260221131036",
+      "name": "create_brief_template_and_alter_brief"
+    },
+    {
+      "version": "20260221142835",
+      "name": "add_overrides_hash_to_page_brief"
+    },
+    {
+      "version": "20260222004401",
+      "name": "create_marketing_social_posts"
+    },
+    {
+      "version": "20260226171332",
+      "name": "create_seo_research_brief"
+    },
+    {
+      "version": "20260315220237",
+      "name": "tecdoc_staging_phase1_raw"
+    },
+    {
+      "version": "20260315220825",
+      "name": "tecdoc_staging_phase1_norm"
+    },
+    {
+      "version": "20260427140235",
+      "name": "adr024_phase1_gamme_page_cache_schema"
+    },
+    {
+      "version": "20260427140257",
+      "name": "adr024_phase1_gamme_page_cache_functions"
+    }
+  ]
+}

@@ -3,11 +3,8 @@ import {
   CheckCircle2,
   ShieldCheck,
   Send,
-  MoreHorizontal,
   Eye,
   ThumbsUp,
-  ThumbsDown,
-  ShieldAlert,
   Download,
   RefreshCw,
   Wand2,
@@ -21,6 +18,9 @@ import {
   type MetaFunction,
   useLoaderData,
   useSearchParams,
+  useRevalidator,
+  useRouteError,
+  isRouteErrorResponse,
 } from "react-router";
 import { toast } from "sonner";
 import { AdminDataTable } from "~/components/admin/patterns/AdminDataTable";
@@ -34,6 +34,7 @@ import {
   StatusBadge,
   type StatusType,
 } from "~/components/admin/patterns/StatusBadge";
+import { ErrorGeneric } from "~/components/errors";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -53,13 +54,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Select, SelectItem } from "~/components/ui/select";
@@ -70,10 +64,54 @@ import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 export const meta: MetaFunction = () => createNoIndexMeta("Social Hub - Admin");
 
+// This route is also built without the optional admin layouts.
+export const handle = {
+  hideGlobalNavbar: true,
+  hideGlobalFooter: true,
+  hideBottomNav: true,
+};
+
+export function ErrorBoundary() {
+  const error = useRouteError();
+  return (
+    <ErrorGeneric
+      status={isRouteErrorResponse(error) ? error.status : 500}
+      message={
+        isRouteErrorResponse(error) && [401, 403].includes(error.status)
+          ? "Connectez-vous avec un compte administrateur pour accéder au Social Hub."
+          : "Impossible de charger le Social Hub. Réessayez dans quelques instants."
+      }
+    />
+  );
+}
+
 // ── Types ──
 
 interface SocialPost {
   id: number;
+  content_revision: number;
+  review_version: number;
+  channel_reviews?: Record<
+    string,
+    {
+      state: string;
+      content_revision: number;
+      actor: string;
+      decided_at: string;
+      approved_content_hash?: string;
+      gate?: { blocking_issues: string[] };
+    }
+  >;
+  publications?: Record<
+    string,
+    {
+      url: string;
+      content_revision: number;
+      content_hash: string;
+      declared_by: string;
+      declared_at: string;
+    }
+  >;
   week_iso: string;
   day_of_week: number;
   slot_label: string;
@@ -113,6 +151,7 @@ interface ChannelData {
 interface PipelineStatus {
   plan_status: string | null;
   posts: {
+    total: number;
     draft: number;
     generated: number;
     gate_passed: number;
@@ -120,7 +159,6 @@ interface PipelineStatus {
     approved: number;
     published: number;
   };
-  total: number;
 }
 
 // ── Mappings ──
@@ -165,21 +203,29 @@ const STATUS_OPTIONS = [
   { value: "gate_passed", label: "Gate Passed" },
   { value: "gate_failed", label: "Gate Failed" },
   { value: "approved", label: "Approved" },
-  { value: "published", label: "Published" },
+  { value: "published", label: "Publication déclarée" },
 ];
 
 // ── Helpers ──
 
 function getCurrentWeekISO(): string {
-  const now = new Date();
-  const jan4 = new Date(now.getFullYear(), 0, 4);
-  const dayDiff = jan4.getDay() || 7;
-  const monday = new Date(jan4);
-  monday.setDate(jan4.getDate() - dayDiff + 1);
-  const weekNum = Math.ceil(
-    ((now.getTime() - monday.getTime()) / 86400000 + 1) / 7,
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Paris",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const part = (type: string) =>
+    Number(parts.find((p) => p.type === type)?.value);
+  const thursday = new Date(
+    Date.UTC(part("year"), part("month") - 1, part("day")),
   );
-  return `${now.getFullYear()}-W${String(weekNum).padStart(2, "0")}`;
+  thursday.setUTCDate(thursday.getUTCDate() + 4 - (thursday.getUTCDay() || 7));
+  const year = thursday.getUTCFullYear();
+  const week = Math.ceil(
+    ((thursday.getTime() - Date.UTC(year, 0, 1)) / 86400000 + 1) / 7,
+  );
+  return `${year}-W${String(week).padStart(2, "0")}`;
 }
 
 // ── Loader ──
@@ -212,84 +258,92 @@ export async function loader({ request }: LoaderFunctionArgs) {
     ),
   ]);
 
-  const postsData =
-    postsRes.status === "fulfilled" && postsRes.value.ok
-      ? await postsRes.value.json()
-      : { data: [], total: 0 };
-
-  const pipelineData =
-    statusRes.status === "fulfilled" && statusRes.value.ok
-      ? await statusRes.value.json()
-      : null;
-
+  // A failed read must never look like an empty, healthy week.
+  const readJson = async (result: PromiseSettledResult<Response>) => {
+    if (result.status !== "fulfilled" || !result.value.ok) return null;
+    try {
+      return await result.value.json();
+    } catch {
+      return null;
+    }
+  };
+  const [postsData, pipelineResponse] = await Promise.all([
+    readJson(postsRes),
+    readJson(statusRes),
+  ]);
+  if (
+    !Array.isArray(postsData?.data) ||
+    !Number.isSafeInteger(postsData.total) ||
+    postsData.total < 0
+  ) {
+    const status =
+      postsRes.status === "fulfilled" &&
+      [401, 403].includes(postsRes.value.status)
+        ? postsRes.value.status
+        : 503;
+    throw new Response(
+      "Impossible de charger les publications. Réessayez le chargement.",
+      { status },
+    );
+  }
+  const candidate = pipelineResponse?.data;
+  const validPipeline =
+    pipelineResponse?.success === true &&
+    candidate &&
+    (candidate.plan_status === null ||
+      typeof candidate.plan_status === "string") &&
+    [
+      "total",
+      "draft",
+      "generated",
+      "gate_passed",
+      "gate_failed",
+      "approved",
+      "published",
+    ].every(
+      (key) =>
+        Number.isSafeInteger(candidate.posts?.[key]) &&
+        candidate.posts[key] >= 0,
+    );
   return {
-    posts: (postsData.data || []) as SocialPost[],
-    total: postsData.total || 0,
+    posts: postsData.data as SocialPost[],
+    total: postsData.total as number,
     filters: { week, status },
-    pipeline: pipelineData as PipelineStatus | null,
+    pipeline: (validPipeline ? candidate : null) as PipelineStatus | null,
+    pipelineUnavailable: !validPipeline,
   };
 }
 
 // ── Post Actions ──
 
 function PostActions({
-  post,
   onPreview,
-  onApprove,
-  onReject,
-  onRunGate,
   disabled,
 }: {
-  post: SocialPost;
   onPreview: () => void;
-  onApprove: () => void;
-  onReject: () => void;
-  onRunGate: () => void;
   disabled: boolean;
 }) {
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={onPreview}>
-          <Eye className="mr-2 h-4 w-4" />
-          Preview
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={onApprove}
-          disabled={post.status !== "gate_passed" || disabled}
-        >
-          <ThumbsUp className="mr-2 h-4 w-4" />
-          Approve
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={onReject} disabled={disabled}>
-          <ThumbsDown className="mr-2 h-4 w-4" />
-          Reject
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={onRunGate} disabled={disabled}>
-          <ShieldAlert className="mr-2 h-4 w-4" />
-          Run Gate
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <Button variant="outline" size="sm" onClick={onPreview} disabled={disabled}>
+      <Eye className="mr-2 h-4 w-4" />
+      Revoir par canal
+    </Button>
   );
 }
 
-// ── Component ──
-
 export default function SocialHubPostsPage() {
-  const { posts, total, filters, pipeline } = useLoaderData<typeof loader>();
+  const { posts, total, filters, pipeline, pipelineUnavailable } =
+    useLoaderData<typeof loader>();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [previewPost, setPreviewPost] = useState<SocialPost | null>(null);
-  const [approvePost, setApprovePost] = useState<SocialPost | null>(null);
+  const [approvePost, setApprovePost] = useState<{
+    post: SocialPost;
+    channel: string;
+  } | null>(null);
+  const revalidator = useRevalidator();
   const [loading, setLoading] = useState(false);
+  const [stalePosts, setStalePosts] = useState<Set<number>>(() => new Set());
   const [planDialogOpen, setPlanDialogOpen] = useState(false);
   const [planWeek, setPlanWeek] = useState(filters.week);
   const [planGammes, setPlanGammes] = useState("");
@@ -312,76 +366,101 @@ export default function SocialHubPostsPage() {
   }
 
   // ── Actions ──
-  async function handleApprove(id: number) {
+  async function refreshPost(id: number) {
+    const res = await fetch(`/api/admin/marketing/social/posts/${id}`, {
+      cache: "no-store",
+    });
+    const response = await res.json();
+    if (!res.ok || response.data?.id !== id)
+      throw new Error("Impossible de recharger le contenu");
+    // Closing a dialog while a request is pending must remain effective.
+    setPreviewPost((current) => (current?.id === id ? response.data : current));
+    setStalePosts((current) => {
+      const next = new Set(current);
+      next.delete(id);
+      return next;
+    });
+    revalidator.revalidate();
+  }
+
+  async function handleReload(id: number) {
     setLoading(true);
     try {
+      await refreshPost(id);
+    } catch {
+      toast.error(
+        "Impossible de recharger le contenu. Les décisions restent bloquées.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleReview(
+    post: SocialPost,
+    channel: string,
+    action: "gate" | "approve" | "reject" | "publications",
+    url?: string,
+  ) {
+    if (loading || stalePosts.has(post.id)) return;
+    setLoading(true);
+    setStalePosts((current) => new Set(current).add(post.id));
+    try {
       const res = await fetch(
-        `/api/admin/marketing/social/posts/${id}/approve`,
+        `/api/admin/marketing/social/posts/${post.id}/${action}`,
         {
-          method: "PUT",
+          method: action === "approve" || action === "reject" ? "PUT" : "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ approved_by: "admin" }),
+          body: JSON.stringify({
+            channel,
+            content_revision: post.content_revision,
+            review_version: post.review_version,
+            ...(action === "publications"
+              ? {
+                  url,
+                  approved_content_hash:
+                    post.channel_reviews?.[channel]?.approved_content_hash,
+                }
+              : {}),
+          }),
         },
       );
-      const data = await res.json();
-      if (data.success) {
-        toast.success(`Post #${id} approuve`);
-        setSearchParams(new URLSearchParams(searchParams));
-      } else {
-        toast.error("Echec de l'approbation");
+      const response = await res.json();
+      if (!res.ok) {
+        toast.error(
+          res.status === 409
+            ? "Le contenu ou la revue a changé. Relisez la version actualisée avant de décider."
+            : "Action refusée : vérifiez la revue et les prérequis du canal.",
+        );
+        await refreshPost(post.id);
+        return;
       }
+      const confirmed =
+        action === "gate"
+          ? typeof response.data?.can_approve === "boolean"
+          : response.success === true && response.data?.id === post.id;
+      if (!confirmed) throw new Error("Unconfirmed action response");
+      if (action === "gate" && response.data?.can_approve === false)
+        toast.warning("Contrôle terminé : des points bloquent ce canal.");
+      else
+        toast.success(
+          action === "publications"
+            ? "URL de publication enregistrée"
+            : action === "approve"
+              ? `${channel} : contenu approuvé`
+              : action === "reject"
+                ? `${channel} : contenu rejeté`
+                : `${channel} : contrôle enregistré`,
+        );
+      await refreshPost(post.id);
     } catch {
-      toast.error("Erreur reseau");
+      toast.error(
+        "Résultat non confirmé. Rechargez le contenu avant de réessayer.",
+      );
     } finally {
       setLoading(false);
       setApprovePost(null);
-    }
-  }
-
-  async function handleReject(id: number) {
-    setLoading(true);
-    try {
-      const res = await fetch(
-        `/api/admin/marketing/social/posts/${id}/reject`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-        },
-      );
-      const data = await res.json();
-      if (data.success) {
-        toast.success(`Post #${id} rejete`);
-        setSearchParams(new URLSearchParams(searchParams));
-      } else {
-        toast.error("Echec du rejet");
-      }
-    } catch {
-      toast.error("Erreur reseau");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleRunGate(id: number) {
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/admin/marketing/social/posts/${id}/gate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-      const data = await res.json();
-      if (data.data) {
-        toast.success(
-          `Gate: brand=${data.data.brand.level} compliance=${data.data.compliance.level}`,
-        );
-        setSearchParams(new URLSearchParams(searchParams));
-      } else {
-        toast.error(data.error || "Echec du gate");
-      }
-    } catch {
-      toast.error("Erreur reseau");
-    } finally {
-      setLoading(false);
+      revalidator.revalidate();
     }
   }
 
@@ -410,15 +489,20 @@ export default function SocialHubPostsPage() {
           ...(aliases.length > 0 ? { gamme_aliases: aliases } : {}),
         }),
       });
-      const data = await res.json();
-      if (data.week_iso) {
+      const response = await res.json();
+      const data = response.data;
+      if (res.ok && response.success === true && data?.week_iso) {
         toast.success(
           `Plan ${planWeek} genere : ${data.plan_json?.length || 0} slots`,
         );
         setPlanDialogOpen(false);
         updateFilter("week", planWeek);
       } else {
-        toast.error(data.message || "Echec de la generation du plan");
+        toast.error(
+          response.message ||
+            response.error ||
+            "Echec de la generation du plan",
+        );
       }
     } catch {
       toast.error("Erreur reseau");
@@ -436,14 +520,19 @@ export default function SocialHubPostsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ week_iso: week }),
       });
-      const data = await res.json();
-      if (data.generated != null) {
-        toast.success(
-          `${data.generated} posts generes, ${data.errors} erreurs`,
-        );
+      const response = await res.json();
+      const data = response.data;
+      if (res.ok && data?.generated != null) {
+        const notify =
+          response.success === true && data.generated > 0 && data.errors === 0
+            ? toast.success
+            : toast.warning;
+        notify(`${data.generated} posts generes, ${data.errors} erreurs`);
         setSearchParams(new URLSearchParams(searchParams));
       } else {
-        toast.error(data.message || "Echec de la generation");
+        toast.error(
+          response.message || response.error || "Echec de la generation",
+        );
       }
     } catch {
       toast.error("Erreur reseau");
@@ -461,14 +550,19 @@ export default function SocialHubPostsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ week_iso: week }),
       });
-      const data = await res.json();
-      if (data.passed != null) {
-        toast.success(
+      const response = await res.json();
+      const data = response.data;
+      if (res.ok && response.success === true && data?.passed != null) {
+        const notify =
+          data.failed === 0 && data.warned === 0
+            ? toast.success
+            : toast.warning;
+        notify(
           `Gates: ${data.passed} passed, ${data.warned} warned, ${data.failed} failed`,
         );
         setSearchParams(new URLSearchParams(searchParams));
       } else {
-        toast.error(data.message || "Echec des gates");
+        toast.error(response.message || response.error || "Echec des gates");
       }
     } catch {
       toast.error("Erreur reseau");
@@ -557,11 +651,7 @@ export default function SocialHubPostsPage() {
       width: "40px",
       render: (_val, row) => (
         <PostActions
-          post={row as SocialPost}
           onPreview={() => setPreviewPost(row as SocialPost)}
-          onApprove={() => setApprovePost(row as SocialPost)}
-          onReject={() => handleReject((row as SocialPost).id)}
-          onRunGate={() => handleRunGate((row as SocialPost).id)}
           disabled={loading}
         />
       ),
@@ -593,7 +683,7 @@ export default function SocialHubPostsPage() {
             variant="success"
           />
           <KpiCard
-            title="Published"
+            title="Publications déclarées"
             value={counts.published}
             icon={Send}
             variant="info"
@@ -642,7 +732,7 @@ export default function SocialHubPostsPage() {
                     setPlanWeek(filters.week);
                     setPlanDialogOpen(true);
                   }}
-                  disabled={pipelineLoading !== null}
+                  disabled={pipelineLoading !== null || pipelineUnavailable}
                 >
                   {pipelineLoading === "plan" ? (
                     <RefreshCw className="mr-1.5 h-3.5 w-3.5 animate-spin" />
@@ -723,6 +813,12 @@ export default function SocialHubPostsPage() {
         </Card>
       }
     >
+      {pipelineUnavailable && (
+        <p role="alert" className="rounded-md border p-3 text-sm">
+          Statut du pipeline indisponible. Les publications chargées restent
+          consultables ; rechargez la page avant de lancer le pipeline.
+        </p>
+      )}
       {/* Pipeline Status Bar */}
       {pipeline && (
         <PipelineStatusBar pipeline={pipeline} week={filters.week} />
@@ -750,6 +846,21 @@ export default function SocialHubPostsPage() {
               {DAY_NAMES[previewPost?.day_of_week || 0]}
             </DialogTitle>
           </DialogHeader>
+          {previewPost && stalePosts.has(previewPost.id) && (
+            <div role="alert" className="space-y-2 rounded-md border p-3">
+              <p>
+                Rechargez le contenu pour confirmer son état avant une nouvelle
+                décision.
+              </p>
+              <Button
+                variant="outline"
+                disabled={loading}
+                onClick={() => handleReload(previewPost.id)}
+              >
+                Recharger le contenu
+              </Button>
+            </div>
+          )}
           {previewPost && (
             <Tabs defaultValue={previewPost.primary_channel}>
               <TabsList>
@@ -761,6 +872,17 @@ export default function SocialHubPostsPage() {
               </TabsList>
               {previewPost.channels_list?.map((ch) => {
                 const data = previewPost.channels?.[ch];
+                const review = previewPost.channel_reviews?.[ch];
+                const proof = previewPost.publications?.[ch];
+                const current =
+                  review?.content_revision === previewPost.content_revision;
+                const editable =
+                  !loading &&
+                  !stalePosts.has(previewPost.id) &&
+                  !proof &&
+                  !["published", "archived"].includes(previewPost.status) &&
+                  Number.isSafeInteger(previewPost.content_revision) &&
+                  Number.isSafeInteger(previewPost.review_version);
                 return (
                   <TabsContent key={ch} value={ch} className="space-y-3 mt-3">
                     {!data ? (
@@ -772,6 +894,119 @@ export default function SocialHubPostsPage() {
                     ) : (
                       <SocialPreview data={data} channel={ch} />
                     )}
+                    <div className="space-y-3 border-t pt-3">
+                      <p className="text-sm">
+                        Révision{" "}
+                        {previewPost.content_revision ?? "non disponible"} ·{" "}
+                        {current ? review?.state : "À contrôler"}
+                      </p>
+                      {current && review && (
+                        <p className="text-xs text-muted-foreground">
+                          Décision de {review.actor} · {review.decided_at}
+                        </p>
+                      )}
+                      {review?.gate?.blocking_issues?.map((issue, index) => (
+                        <p key={index} className="text-sm text-destructive">
+                          {issue}
+                        </p>
+                      ))}
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          variant="outline"
+                          disabled={
+                            !editable ||
+                            (current && review?.state === "approved")
+                          }
+                          onClick={() => handleReview(previewPost, ch, "gate")}
+                        >
+                          Contrôler {ch}
+                        </Button>
+                        <Button
+                          disabled={
+                            !editable ||
+                            !current ||
+                            review?.state !== "gate_passed"
+                          }
+                          onClick={() =>
+                            setApprovePost({ post: previewPost, channel: ch })
+                          }
+                        >
+                          Approuver {ch}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          disabled={!editable}
+                          onClick={() =>
+                            handleReview(previewPost, ch, "reject")
+                          }
+                        >
+                          Rejeter {ch}
+                        </Button>
+                      </div>
+                      {proof ? (
+                        <div className="text-sm">
+                          <a
+                            className="underline"
+                            href={
+                              proof.url.startsWith("https://")
+                                ? proof.url
+                                : undefined
+                            }
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            Voir la publication déclarée
+                          </a>
+                          <p>
+                            Déclarée par {proof.declared_by} le{" "}
+                            {proof.declared_at}. Le contenu est figé.
+                          </p>
+                        </div>
+                      ) : (
+                        current &&
+                        review?.state === "approved" &&
+                        review.approved_content_hash && (
+                          <form
+                            className="space-y-2"
+                            onSubmit={(event) => {
+                              event.preventDefault();
+                              const url = String(
+                                new FormData(event.currentTarget).get("url") ??
+                                  "",
+                              );
+                              void handleReview(
+                                previewPost,
+                                ch,
+                                "publications",
+                                url,
+                              );
+                            }}
+                          >
+                            <Label htmlFor={`publication-${ch}`}>
+                              URL HTTPS du contenu publié sur {ch}
+                            </Label>
+                            <Input
+                              id={`publication-${ch}`}
+                              name="url"
+                              type="url"
+                              pattern="https://.*"
+                              required
+                              maxLength={2048}
+                              disabled={!editable}
+                              placeholder="https://…"
+                            />
+                            <p className="text-xs text-muted-foreground">
+                              Saisissez l’URL après publication manuelle. Cette
+                              déclaration ne publie rien et ne vérifie pas le
+                              compte distant.
+                            </p>
+                            <Button type="submit" disabled={!editable}>
+                              Enregistrer la publication
+                            </Button>
+                          </form>
+                        )
+                      )}
+                    </div>
                   </TabsContent>
                 );
               })}
@@ -856,17 +1091,22 @@ export default function SocialHubPostsPage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Approuver le post #{approvePost?.id} ?
+              Approuver le post #{approvePost?.post.id} — {approvePost?.channel}{" "}
+              ?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Ce post passera en statut &quot;approved&quot; et sera disponible
-              pour export dans le manifest de publication.
+              Vous approuvez le contenu de {approvePost?.channel} à la révision{" "}
+              {approvePost?.post.content_revision} affichée. Il sera exportable
+              pour préparation manuelle. Cette décision ne publie rien.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => approvePost && handleApprove(approvePost.id)}
+              onClick={() =>
+                approvePost &&
+                handleReview(approvePost.post, approvePost.channel, "approve")
+              }
               disabled={loading}
             >
               {loading ? (
@@ -915,13 +1155,17 @@ function PipelineStatusBar({
       value: p.approved + p.published,
       active: p.approved > 0 || p.published > 0,
     },
-    { label: "Published", value: p.published, active: p.published > 0 },
+    {
+      label: "Publication déclarée",
+      value: p.published,
+      active: p.published > 0,
+    },
   ];
 
   return (
     <Card>
       <CardContent className="py-3 px-4">
-        <div className="flex items-center gap-1 text-xs">
+        <div className="flex flex-wrap items-center gap-x-1 gap-y-2 text-xs">
           <span className="font-medium text-muted-foreground mr-2">{week}</span>
           {steps.map((step, i) => (
             <span key={step.label} className="flex items-center gap-1">
@@ -944,9 +1188,9 @@ function PipelineStatusBar({
               </span>
             </span>
           ))}
-          {pipeline.total > 0 && (
+          {pipeline.posts.total > 0 && (
             <span className="ml-auto text-muted-foreground">
-              Total: {pipeline.total}
+              Total: {pipeline.posts.total}
             </span>
           )}
         </div>

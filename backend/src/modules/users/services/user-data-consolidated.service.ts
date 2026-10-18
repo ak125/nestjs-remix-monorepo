@@ -3,7 +3,11 @@
  * Couche d'accès aux données Supabase sans logique métier
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import {
@@ -36,14 +40,17 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
         .from(TABLES.xtr_customer)
         .select('*')
         .eq('cst_id', userId)
-        .single();
+        .maybeSingle();
 
-      if (error || !data) return null;
+      if (error) throw error;
+      if (!data) return null;
 
       return mapSupabaseToUser(data);
     } catch (error) {
       this.logger.error(`Error finding user by ID ${userId}:`, error);
-      return null;
+      throw new ServiceUnavailableException('Identity service unavailable', {
+        cause: error,
+      });
     }
   }
 
@@ -436,9 +443,10 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
         .from(TABLES.config_admin)
         .select('*')
         .eq('cnfa_id', adminId)
-        .single();
+        .maybeSingle();
 
-      if (error || !data) return null;
+      if (error) throw error;
+      if (!data) return null;
 
       return {
         id: String(data.cnfa_id),
@@ -450,7 +458,9 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
       };
     } catch (error) {
       this.logger.error(`Error finding admin by ID ${adminId}:`, error);
-      return null;
+      throw new ServiceUnavailableException('Identity service unavailable', {
+        cause: error,
+      });
     }
   }
 

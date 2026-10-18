@@ -1,4 +1,13 @@
+import {
+  parseSocialReview,
+  type SocialReviewTarget,
+} from '../dto/social-review.dto';
 import { Injectable, Logger } from '@nestjs/common';
+import {
+  DomainValidationException,
+  DomainConflictException,
+} from '@common/exceptions';
+import { socialContentSchemas } from '../dto/social-content.dto';
 import { MarketingHubDataService } from './marketing-hub-data.service';
 import type {
   SocialPost,
@@ -31,10 +40,66 @@ export class BrandComplianceGateService {
    * Run full gate evaluation on a social post.
    */
   async evaluate(post: SocialPost): Promise<GateSummary> {
-    const rules = await this.hubData.getActiveBrandRules(post.primary_channel);
-
-    const brand = this.runBrandGate(post, rules);
-    const compliance = this.runComplianceGate(post, rules);
+    const brand: BrandGateResult = {
+      level: 'PASS',
+      violations: [],
+      warnings: [],
+      fix_suggestions: [],
+    };
+    const compliance: ComplianceGateResult = { level: 'PASS', checks: [] };
+    const channels = [...new Set(post.channels_list ?? [])];
+    if (!channels.length) {
+      compliance.checks.push({
+        check: 'Channel content',
+        level: 'FAIL',
+        details: 'No declared channel variant',
+      });
+    }
+    for (const channel of channels) {
+      const schema = socialContentSchemas[channel];
+      if (!schema || !schema.safeParse(post.channels?.[channel]).success) {
+        compliance.checks.push({
+          check: `${channel}: content`,
+          level: 'FAIL',
+          details: `${channel}: missing or invalid variant`,
+        });
+        continue;
+      }
+      const rules = await this.hubData.getActiveBrandRules(channel);
+      const variant = { ...post, primary_channel: channel };
+      const channelBrand = this.runBrandGate(variant, rules);
+      const label = (v: GateViolation): GateViolation => ({
+        ...v,
+        message: `${channel}: ${v.message}`,
+      });
+      for (const finding of [
+        ...channelBrand.violations,
+        ...channelBrand.warnings,
+      ]) {
+        if (finding.severity === 'block') brand.violations.push(label(finding));
+        else brand.warnings.push(label(finding));
+      }
+      brand.fix_suggestions.push(
+        ...channelBrand.fix_suggestions.map((s) => `${channel}: ${s}`),
+      );
+      compliance.checks.push(
+        ...this.runComplianceGate(variant, rules).checks.map((c) => ({
+          ...c,
+          check: `${channel}: ${c.check}`,
+          details: `${channel}: ${c.details}`,
+        })),
+      );
+    }
+    brand.level = brand.violations.some((v) => v.severity === 'block')
+      ? 'FAIL'
+      : brand.warnings.length
+        ? 'WARN'
+        : 'PASS';
+    compliance.level = compliance.checks.some((c) => c.level === 'FAIL')
+      ? 'FAIL'
+      : compliance.checks.some((c) => c.level === 'WARN')
+        ? 'WARN'
+        : 'PASS';
 
     const blockingIssues = [
       ...brand.violations
@@ -58,34 +123,76 @@ export class BrandComplianceGateService {
   /**
    * Evaluate and persist gate results.
    */
-  async evaluateAndPersist(post: SocialPost): Promise<GateSummary> {
-    const summary = await this.evaluate(post);
-
-    // Calculate quality score (0-100)
-    const brandScore =
-      summary.brand.level === 'PASS'
-        ? 100
-        : summary.brand.level === 'WARN'
-          ? 70
-          : 0;
-    const complianceScore =
-      summary.compliance.level === 'PASS'
-        ? 100
-        : summary.compliance.level === 'WARN'
-          ? 70
-          : 0;
-    const qualityScore = (brandScore + complianceScore) / 2;
-
-    await this.hubData.updatePostGates(post.id, summary, qualityScore);
-
-    this.logger.log(
-      `Post ${post.id}: brand=${summary.brand.level} compliance=${summary.compliance.level} score=${qualityScore} approve=${summary.can_approve}`,
-    );
-
-    return summary;
+  async evaluateAndPersist(
+    post: SocialPost,
+    target?: SocialReviewTarget,
+    actor = 'system:marketing-gate',
+  ): Promise<GateSummary> {
+    const channels = target
+      ? [parseSocialReview(target).channel]
+      : [...new Set(post.channels_list ?? [])];
+    if (!channels.length)
+      throw new DomainValidationException({
+        message: 'Declared channel required',
+        field: 'channel',
+      });
+    let current = post;
+    const summaries: GateSummary[] = [];
+    for (const channel of channels) {
+      const selected = parseSocialReview(
+        target ?? {
+          channel,
+          content_revision: post.content_revision,
+          review_version: current.review_version,
+        },
+      );
+      if (
+        selected.content_revision !== current.content_revision ||
+        selected.review_version !== current.review_version
+      )
+        throw new DomainConflictException({
+          message: 'Content or review changed; reload before evaluating',
+        });
+      if (!current.channels_list.includes(channel))
+        throw new DomainValidationException({
+          message: 'Undeclared channel',
+          field: 'channel',
+        });
+      const summary = await this.evaluate({
+        ...current,
+        primary_channel: channel,
+        channels_list: [channel],
+      });
+      current = await this.hubData.reviewSocialPost(
+        current.id,
+        selected,
+        'gate',
+        actor,
+        summary,
+      );
+      summaries.push(summary);
+    }
+    const level = (levels: GateLevel[]): GateLevel =>
+      levels.includes('FAIL')
+        ? 'FAIL'
+        : levels.includes('WARN')
+          ? 'WARN'
+          : 'PASS';
+    return {
+      brand: {
+        level: level(summaries.map((s) => s.brand.level)),
+        violations: summaries.flatMap((s) => s.brand.violations),
+        warnings: summaries.flatMap((s) => s.brand.warnings),
+        fix_suggestions: summaries.flatMap((s) => s.brand.fix_suggestions),
+      },
+      compliance: {
+        level: level(summaries.map((s) => s.compliance.level)),
+        checks: summaries.flatMap((s) => s.compliance.checks),
+      },
+      can_approve: summaries.every((s) => s.can_approve),
+      blocking_issues: summaries.flatMap((s) => s.blocking_issues),
+    };
   }
-
-  // ── Brand Gate ──
 
   private runBrandGate(post: SocialPost, rules: BrandRule[]): BrandGateResult {
     const violations: GateViolation[] = [];
@@ -97,7 +204,10 @@ export class BrandComplianceGateService {
       Record<string, string | string[] | boolean | undefined>
     >;
     const channelData = channels?.[post.primary_channel];
-    const caption = String(channelData?.caption || '');
+    const caption =
+      post.primary_channel === 'youtube'
+        ? `${channelData?.title ?? ''}\n${channelData?.description ?? ''}`
+        : String(channelData?.caption || '');
 
     // 1. Language check
     this.checkLanguage(caption, rules, violations, warnings, fixSuggestions);
@@ -135,8 +245,12 @@ export class BrandComplianceGateService {
       Record<string, string | string[] | boolean | undefined>
     >;
     const channelData = channels?.[post.primary_channel];
-    const caption = String(channelData?.caption || '');
-    const hashtags = (channelData?.hashtags || []) as string[];
+    const caption = String(
+      channelData?.caption || channelData?.description || '',
+    );
+    const hashtags = (channelData?.hashtags ||
+      channelData?.tags ||
+      []) as string[];
 
     // 1. UTM present
     checks.push(this.checkUTM(post));
@@ -215,7 +329,12 @@ export class BrandComplianceGateService {
       const v: GateViolation = {
         rule_key: 'emoji_count',
         rule_type: 'tone',
-        severity: emojiCount > max + 2 || emojiCount === 0 ? 'block' : 'warn',
+        severity:
+          emojiRule.severity === 'block' ||
+          emojiCount > max + 2 ||
+          emojiCount === 0
+            ? 'block'
+            : 'warn',
         message: `Emojis: ${emojiCount} (attendu ${min}-${max})`,
         fix_suggestion: `Ajuster a ${min}-${max} emojis en debut de ligne`,
       };

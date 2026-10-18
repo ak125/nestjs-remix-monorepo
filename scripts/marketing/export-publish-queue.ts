@@ -6,50 +6,55 @@
  * Idempotent: re-export does not create duplicates.
  *
  * Usage:
- *   npx ts-node scripts/marketing/export-publish-queue.ts --week 2026-W09 --channel instagram
- *   npx ts-node scripts/marketing/export-publish-queue.ts --week 2026-W09 --channel facebook
- *   npx ts-node scripts/marketing/export-publish-queue.ts --week 2026-W09 --channel youtube
+ *   npx ts-node --project backend/tsconfig.json -r tsconfig-paths/register scripts/marketing/export-publish-queue.ts --week 2026-W09 --channel instagram
+ *
+ * A successful export replaces the current manifest even when the queue is empty.
+ * It is an editorial snapshot, not a publication or a permanent authorization.
  */
 
-import { writeFileSync } from 'fs';
-import { join } from 'path';
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from '../../backend/src/app.module';
-import { PublishQueueService } from '../../backend/src/modules/marketing/services/publish-queue.service';
-import type { SocialChannel } from '../../backend/src/modules/marketing/interfaces/marketing-hub.interfaces';
+import { writeFileSync } from "fs";
+import { join } from "path";
+import { parseArgs } from "node:util";
+import type { Type } from "@nestjs/common";
+import { DomainValidationException } from "../../backend/src/common/exceptions";
+import { parseSocialExport } from "../../backend/src/modules/marketing/dto/social-export.dto";
 
-const VALID_CHANNELS: SocialChannel[] = ['instagram', 'facebook', 'youtube'];
-
-async function main() {
-  const args = process.argv.slice(2);
-  const weekIdx = args.indexOf('--week');
-  const channelIdx = args.indexOf('--channel');
-
-  if (weekIdx === -1 || !args[weekIdx + 1] || channelIdx === -1 || !args[channelIdx + 1]) {
-    console.error('Usage: --week 2026-W09 --channel instagram|facebook|youtube');
-    process.exit(1);
+export async function main(args: string[] = process.argv.slice(2)) {
+  const { values, tokens } = parseArgs({
+    args,
+    options: { week: { type: "string" }, channel: { type: "string" } },
+    strict: true,
+    allowPositionals: false,
+    tokens: true,
+  });
+  const seen = new Set<string>();
+  for (const token of tokens) {
+    if (token.kind !== "option") continue;
+    if (seen.has(token.name)) {
+      throw new DomainValidationException({
+        message: `Duplicate option: --${token.name}`,
+        field: token.name,
+      });
+    }
+    seen.add(token.name);
   }
-
-  const weekIso = args[weekIdx + 1];
-  const channel = args[channelIdx + 1] as SocialChannel;
-
-  if (!/^\d{4}-W\d{2}$/.test(weekIso)) {
-    console.error('Invalid week format. Expected: YYYY-WNN');
-    process.exit(1);
-  }
-
-  if (!VALID_CHANNELS.includes(channel)) {
-    console.error(`Invalid channel. Must be one of: ${VALID_CHANNELS.join(', ')}`);
-    process.exit(1);
-  }
+  const { week: weekIso, channel } = parseSocialExport(values);
 
   console.log(`\n--- Marketing Hub: Export Publish Queue ---`);
   console.log(`Week: ${weekIso}`);
   console.log(`Channel: ${channel}`);
-  console.log('');
+  console.log("");
 
+  const { NestFactory } = await import("@nestjs/core");
+  // Keep the application DI root outside argument validation and import-only use.
+  const {
+    AppModule,
+  }: { AppModule: Type<unknown> } = require("../../backend/src/app.module");
+  const { PublishQueueService } =
+    await import("../../backend/src/modules/marketing/services/publish-queue.service");
   const app = await NestFactory.createApplicationContext(AppModule, {
-    logger: ['error', 'warn'],
+    logger: ["error", "warn"],
+    abortOnError: false,
   });
 
   try {
@@ -57,28 +62,28 @@ async function main() {
 
     const manifest = await publishQueue.exportManifest(weekIso, channel);
 
-    if (manifest.posts.length === 0) {
-      console.warn('No approved posts found for this week/channel.');
-      console.warn('Make sure posts are approved in the admin UI first.');
-      process.exit(0);
-    }
-
-    // Write manifest to file
+    // Also replace an earlier export after approvals are revoked or published.
     const filename = `manifest_${weekIso}_${channel}.json`;
     const filepath = join(process.cwd(), filename);
-    writeFileSync(filepath, JSON.stringify(manifest, null, 2), 'utf-8');
+    writeFileSync(filepath, JSON.stringify(manifest, null, 2), "utf-8");
 
     console.log(`Manifest exported: ${filename}`);
     console.log(`  Posts: ${manifest.posts.length}`);
-    console.log('');
-    console.log('Posts in manifest:');
+    if (manifest.posts.length === 0) {
+      console.warn(
+        "No approved unpublished posts for this week/channel. Empty manifest saved.",
+      );
+      return;
+    }
+    console.log("");
+    console.log("Posts in manifest:");
     for (const post of manifest.posts) {
       console.log(
         `  #${post.post_id} — ${post.scheduled_date} ${post.scheduled_time} — ${post.format}`,
       );
       console.log(`    Caption: ${post.caption.substring(0, 80)}...`);
       console.log(`    Link: ${post.link}`);
-      console.log('');
+      console.log("");
     }
 
     console.log(`Next steps:`);
@@ -90,7 +95,12 @@ async function main() {
   }
 }
 
-main().catch((err) => {
-  console.error('Fatal error:', err.message);
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch((err: unknown) => {
+    console.error(
+      "Fatal error:",
+      err instanceof Error ? err.message : "Unknown failure",
+    );
+    process.exitCode = 1;
+  });
+}

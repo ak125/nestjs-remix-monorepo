@@ -10,7 +10,11 @@
  * @see backend/src/auth/session-privilege.ts
  */
 import { Test } from '@nestjs/testing';
-import { UnauthorizedException, type ExecutionContext } from '@nestjs/common';
+import {
+  UnauthorizedException,
+  ServiceUnavailableException,
+  type ExecutionContext,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -188,6 +192,63 @@ describe('AuthService — constructeurs d’identité', () => {
       ],
     }).compile();
     service = moduleRef.get(AuthService);
+  });
+
+  describe('identity availability during session restoration', () => {
+    it.each(['admin', 'customer'] as const)(
+      '%s lookup failure reaches Passport as an error, not a missing identity',
+      async (source) => {
+        const failure = new ServiceUnavailableException('Identity unavailable');
+        const lookup =
+          source === 'admin' ? users.findAdminById : users.findById;
+        lookup.mockRejectedValue(failure);
+        const serializer = new CookieSerializer(service);
+        const done = jest.fn();
+        await serializer.deserializeUser(
+          { userId: 'fixture-id', authSource: source },
+          done,
+        );
+        expect(done).toHaveBeenCalledTimes(1);
+        expect(done).toHaveBeenCalledWith(
+          expect.any(ServiceUnavailableException),
+          null,
+        );
+        // A later request can use the same session after the dependency recovers.
+        lookup.mockResolvedValue(
+          source === 'admin' ? adminRow(7) : customerRow(9),
+        );
+        done.mockClear();
+        await serializer.deserializeUser(
+          { userId: 'fixture-id', authSource: source },
+          done,
+        );
+        expect(done).toHaveBeenCalledWith(
+          null,
+          expect.objectContaining({ authSource: source }),
+        );
+      },
+    );
+
+    it('legacy session does not fall through to a customer on admin lookup failure', async () => {
+      users.findAdminById.mockRejectedValue(new Error('upstream unavailable'));
+      users.findById.mockResolvedValue(customerRow(9));
+      const done = jest.fn();
+      await new CookieSerializer(service).deserializeUser('fixture-id', done);
+      expect(done).toHaveBeenCalledWith(
+        expect.any(ServiceUnavailableException),
+        null,
+      );
+      expect(users.findById).not.toHaveBeenCalled();
+    });
+
+    it('genuinely missing identity still invalidates the session', async () => {
+      const done = jest.fn();
+      await new CookieSerializer(service).deserializeUser(
+        { userId: 'missing', authSource: 'admin' },
+        done,
+      );
+      expect(done).toHaveBeenCalledWith(null, false);
+    });
   });
 
   describe.each(CUSTOMER_TIERS)('compte client au palier %i', (tier) => {
