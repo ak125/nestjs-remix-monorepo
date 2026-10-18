@@ -19953,7 +19953,7 @@
         "backend/src/modules/media-factory/types/video.types.ts"
       ],
       "kind": "service",
-      "loc": 406,
+      "loc": 415,
       "owner": "__unassigned__",
       "path": "backend/src/modules/media-factory/services/video-gates.service.ts",
       "risk": "low",
@@ -41928,7 +41928,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 529,
+      "loc": 544,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/video-gates.service.test.ts",
       "risk": "low",
@@ -71360,6 +71360,44 @@
       "loc": 97,
       "owner": "__unassigned__",
       "path": "scripts/marketing/export-publish-queue.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/marketing/fafa-pilot-governance.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 266,
+      "owner": "__unassigned__",
+      "path": "scripts/marketing/fafa-pilot-governance.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/marketing/fafa-pilot-governance.test.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 699,
+      "owner": "__unassigned__",
+      "path": "scripts/marketing/fafa-pilot-governance.test.cjs",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
