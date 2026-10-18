@@ -1,6 +1,6 @@
 {
   "_generated_by": "scripts/audit/build-deep-inventory.js",
-  "count": 32,
+  "count": 41,
   "duplicates": [
     {
       "path": "backend/src/auth/dto/register.dto.ts",
@@ -288,6 +288,87 @@
         "default"
       ],
       "domain": "frontend-shared",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "scripts/ui-audit/analyzer/file-parser.ts",
+      "names": [
+        "default",
+        "parseFile"
+      ],
+      "domain": "scripts",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "scripts/ui-audit/evaluators/rule-evaluator.ts",
+      "names": [
+        "default",
+        "evaluateRules"
+      ],
+      "domain": "scripts",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "scripts/ui-audit/evaluators/scoring-engine.ts",
+      "names": [
+        "calculateScores",
+        "default"
+      ],
+      "domain": "scripts",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "scripts/ui-audit/generators/audit-md.ts",
+      "names": [
+        "default",
+        "generateAuditMd"
+      ],
+      "domain": "scripts",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "scripts/ui-audit/generators/scores.ts",
+      "names": [
+        "default",
+        "generateScoresJson"
+      ],
+      "domain": "scripts",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "scripts/ui-audit/generators/tree-output.ts",
+      "names": [
+        "default",
+        "generateTreeOutput"
+      ],
+      "domain": "scripts",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "scripts/ui-audit/index.ts",
+      "names": [
+        "auditPage",
+        "default"
+      ],
+      "domain": "scripts",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "scripts/ui-audit/rules/hard-rules.ts",
+      "names": [
+        "HARD_RULES",
+        "default"
+      ],
+      "domain": "scripts",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "scripts/ui-audit/rules/soft-rules.ts",
+      "names": [
+        "SOFT_RULES",
+        "default"
+      ],
+      "domain": "scripts",
       "fix": "collapse-to-named"
     }
   ]
