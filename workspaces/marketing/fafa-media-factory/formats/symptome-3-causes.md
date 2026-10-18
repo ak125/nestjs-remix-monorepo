@@ -22,28 +22,38 @@ Fafa éduque le client sur le diagnostic différentiel — un symptôme commun a
 
 ## Composition Remotion (V2)
 
-`SymptomeTroisCauses.tsx` (1080×1920, 30fps, 25-40s)
+`SymptomeTroisCauses.tsx` (1080×1920, 30fps, 33 s fixes : `durationInFrames={990}`, `compositions/index.tsx:87-105`)
 
-Props attendues :
+Props lues par la composition (`services/remotion-renderer/src/compositions/SymptomeTroisCauses.tsx:27-43`), passées dans
+`compositionProps` ; en cas d'écart avec cette page, la composition fait foi. `briefId`, `videoType` et `vertical` viennent de
+la requête `/render`.
 ```typescript
 interface SymptomeTroisCausesProps {
-  symptom: string;               // observable concret <80 chars
-  causes: [                      // EXACTEMENT 3, ordonnées par probabilité décroissante
-    { cause: string; sign: string; check: string; duration_sec: number; },
-    { cause: string; sign: string; check: string; duration_sec: number; },
-    { cause: string; sign: string; check: string; duration_sec: number; }
-  ];
-  cta: string;
-  disclaimer: string;
-  voiceUrl: string;
-  brollAssets: Array<{
-    s3_key: string;
-    visual_type: 'schema' | 'animation' | 'macro' | 'motion_text' | 'ambiance';
-    timestamp_sec: number;
-    truth_dependency: 'illustration' | 'reference';  // JAMAIS 'proof' (G6)
+  symptom?: string;              // observable concret <80 chars
+  causes?: Array<{               // EXACTEMENT 3, ordonnées par probabilité décroissante
+    cause: string;
+    sign?: string;
+    check?: string;
   }>;
+  cta?: string;
+  disclaimer?: string;
+  audioUrl?: string;             // piste voix
+  brandName?: string;
 }
 ```
+
+Constaté dans le code, sans rendu lancé :
+
+- Toute prop absente affiche une valeur de démonstration (perte de puissance, filtre à air, débitmètre, vanne EGR), tirée de
+  `defaultProps` dans `index.tsx` ou des valeurs par défaut du composant (l.45-56). Le moteur ne signale pas l'oubli :
+  renseigner chaque champ.
+- Le code n'impose pas « exactement 3 » : il garde les 3 premières causes (l.65) et donne à chacune une fenêtre fixe (l.61).
+  Avec 2 causes, la fenêtre 21-29 s reste vide. Aucune durée par cause ne se règle.
+- Découpage rendu (l.60-62) : symptôme 0-4 s, cause 1 4-13 s, cause 2 13-21 s, cause 3 21-29 s, CTA 29-33 s. Le tableau
+  ci-dessus reste l'intention éditoriale ; la voix se cale sur ce découpage.
+- Sans `audioUrl`, le rendu est muet, sans erreur (l.75).
+- Aucune prop b-roll : l'ancien champ `brollAssets` de cette page n'est lu par aucune composition V1. G6 s'applique aux visuels
+  de la composition elle-même.
 
 ## Exemples Fafa V1 (5 pilotes Lot 2)
 

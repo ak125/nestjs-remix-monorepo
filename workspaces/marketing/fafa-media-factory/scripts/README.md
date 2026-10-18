@@ -13,6 +13,19 @@ Chaque vidéo Fafa traverse 8 statuts. Le dossier reflète le statut courant.
 | 7 | `PUBLISHED` | `scripts/published/<video_id>/` | Owner publie manuellement, met `publish_approved=true` + record `manifests/publishing/` |
 | 8 | `MEASURED` | (reste dans `published/`) | KPIs CSV J+7 dans `manifests/metrics/video-performance.csv` |
 
+Les documents de la zone ne décrivent pas tous ce flux de la même façon (relevé du 18/10) :
+
+- **Qui pose `content_approved`** : l'owner, comme le dit cette table. La règle AI2 du vault (`ledger/rules/rules-ai-cos.md` :
+  « L'IA propose, analyse, recommande. L'humain valide, decide, engage. »), à laquelle renvoie ADR-036 (`accepted`), réserve la
+  validation à un humain ; le manifeste du pilote le redit (« Éligibilité gates ≠ approbation »,
+  `manifests/renders/fafa-plaquettes-frein-001.json:71`). L'étape 4 du Workflow de `fafa-brand-safety-reviewer`, qui pose
+  `content_approved=true` quand les 7 gates passent, reste à corriger avec le réalignement de ce skill. Le schéma n'exige qu'une
+  chaîne non vide dans `content_approved_by` (`governance/approval-record.schema.json:77-84`) : il ne prouve pas qu'un humain a
+  signé.
+- **Quand la vidéo est rendue** : non tranché. Le statut 6 exige déjà `render_approved=true`, et le pilote a été rendu en
+  `DRAFT_ONLY` (`manifests/renders/fafa-plaquettes-frein-001.json:4,8`) ; `fafa-remotion-template-planner` (« Quand invoquer »,
+  « Pré-requis ») et `../README.md` rendent la vidéo après `APPROVED`.
+
 ## Structure dossier par vidéo
 
 ```
@@ -24,6 +37,8 @@ scripts/<statut>/<video_id>/
   disclaimer.json         # disclaimer-plan.schema.json
   approval.json           # approval-record.schema.json (3 flags + 7 gates + history)
   inspiration.json        # (si applicable) référence pattern source + signature INSPIRED_PATTERN_ONLY
+  render-payload.json     # (si rendu) corps de la requête POST /render, sans schéma ; chemin et empreinte cités
+                          # par manifests/renders/<video_id>.json (renderPayload, renderPayloadSha256)
 ```
 
 ## Règle anti-régression
@@ -32,7 +47,9 @@ scripts/<statut>/<video_id>/
 - Toute promotion de statut = `git mv` du dossier + update `brief.json.status` + entrée `approval.json.history`
 - Pas de duplication entre dossiers — une seule SoT par vidéo à un instant T
 
-## V1 — pas de pilotes encore
+## V1 — état au 18/10
 
-Les dossiers `draft/`, `review-ready/`, `approved/`, `published/` sont vides en PR #1 Foundation.
-Les 10 pilotes V1 arrivent en PR #3 Pilotes (backlog post-merge PR #2).
+Un seul pilote sur les 10 prévus (`../README.md`) : `draft/fafa-plaquettes-frein-001/` (#1260, 14/07/2026), statut `DRAFT_ONLY`.
+Ses 7 gates sont évaluées par le skill de revue, et aucun des trois drapeaux d'approbation n'est posé (`approval.json`). Son rendu
+muet est consigné dans `manifests/renders/fafa-plaquettes-frein-001.json` (#1273). `review-ready/`, `approved/` et `published/`
+sont vides (`.gitkeep` seul).
