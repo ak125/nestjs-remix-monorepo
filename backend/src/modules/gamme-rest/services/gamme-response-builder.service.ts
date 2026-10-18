@@ -329,15 +329,18 @@ export class GammeResponseBuilderService {
       );
     }
 
+    // Guide d'achat
+    const guideAchat = this.buildGuideAchat(blogData, pgAlias);
+
     // ── Liens vers les guides d'achat (ADR-103 D5) ──
-    // Ordre de rendu : « Liens utiles » (conseils toujours lié, puis guide) →
+    // Ordre de rendu : « Liens utiles » (conseils si servi, puis guide) →
     // contenu éditorial → blocs de maillage. Les liens servis s'accumulent.
+    // Le lien conseils n'est servi que via guideAchat.link (conseilsHref côté
+    // front) : sans lui, le guide reste le seul accès à la page conseils.
     const guideLinkSnapshot = await this.guideLinkPolicy.getSnapshot();
     const guideLinkCtx = {
       currentPath: `/pieces/${pgAlias}-${pgIdNum}.html`,
-      linkedPaths: new Set<string>(
-        pgAlias ? [`/blog-pieces-auto/conseils/${pgAlias}`] : [],
-      ),
+      linkedPaths: new Set<string>(guideAchat?.link ? [guideAchat.link] : []),
     };
     const buyingGuideHref = pgAlias
       ? resolveGuideLink(pgAlias, guideLinkSnapshot, guideLinkCtx)
@@ -717,26 +720,6 @@ export class GammeResponseBuilderService {
       },
     );
 
-    // Guide d'achat
-    const guideAchat = blogData
-      ? {
-          id: blogData.ba_id,
-          title: this.transformer.contentCleaner(blogData.ba_h1 || ''),
-          alias: blogData.ba_alias,
-          preview: this.transformer.contentCleaner(blogData.ba_preview || ''),
-          // ✅ Utilise fonction centralisée
-          image: blogData.ba_wall
-            ? buildProxyImageUrl(
-                IMAGE_CONFIG.BUCKETS.UPLOADS,
-                `blog/${blogData.ba_wall}`,
-              )
-            : null,
-          wall: blogData.ba_wall || '',
-          link: `/blog-pieces-auto/conseils/${blogData.ba_alias}`,
-          updated: blogData.ba_update,
-        }
-      : null;
-
     // 🚀 LCP V9: Start reference lookup early (runs in parallel with buying guide)
     const referencePromise = this.referenceService
       .getByPgId(pgIdNum)
@@ -1084,6 +1067,34 @@ export class GammeResponseBuilderService {
    * Matches slot to H2 by keyword, inserts <figure> after the H2.
    */
   // injectR1Images removed — images are now structured data in r1Images map
+
+  /**
+   * Bloc « guide d'achat » : le conseil de la gamme (`aggregatedData.blog`).
+   * Son lien vise la route /conseils/, indexée sur pg_alias — jamais sur
+   * ba_alias, qui est le slug de l'article.
+   */
+  private buildGuideAchat(
+    blogData: { [k: string]: string | null | undefined } | undefined,
+    pgAlias: string,
+  ) {
+    if (!blogData) return null;
+    return {
+      id: blogData.ba_id,
+      title: this.transformer.contentCleaner(blogData.ba_h1 || ''),
+      alias: blogData.ba_alias,
+      preview: this.transformer.contentCleaner(blogData.ba_preview || ''),
+      // ✅ Utilise fonction centralisée
+      image: blogData.ba_wall
+        ? buildProxyImageUrl(
+            IMAGE_CONFIG.BUCKETS.UPLOADS,
+            `blog/${blogData.ba_wall}`,
+          )
+        : null,
+      wall: blogData.ba_wall || '',
+      link: `/blog-pieces-auto/conseils/${pgAlias}`,
+      updated: blogData.ba_update,
+    };
+  }
 
   // ────────────────────────────────────────────────────────────────────
   // PR-5 (plan seo-v9) — branchement chaîne SEO commune en shadow/on

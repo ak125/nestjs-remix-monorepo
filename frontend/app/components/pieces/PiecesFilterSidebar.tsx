@@ -48,6 +48,7 @@ interface PiecesFilterSidebarProps {
   filtersData?: FiltersData | null;
   availablePositions?: string[]; // Positions disponibles (Avant, Arrière, Gauche, Droite...)
   positionLabel?: string; // Label du filtre ("Position" ou "Côté")
+  brandLogos?: ReadonlyMap<string, string>;
   brandAverageNotes?: Map<string, number>; // Notes moyennes par marque
 }
 
@@ -68,6 +69,7 @@ export const PiecesFilterSidebar = memo(function PiecesFilterSidebar({
   availablePositions = [],
   positionLabel = "Position",
   brandAverageNotes,
+  brandLogos,
 }: PiecesFilterSidebarProps) {
   // Extract data from API response
   const brandFilters =
@@ -336,7 +338,7 @@ export const PiecesFilterSidebar = memo(function PiecesFilterSidebar({
                         {/* Logo centré avec Avatar Shadcn */}
                         <div className="w-full h-10 flex items-center justify-center mb-1 px-1">
                           <BrandLogo
-                            logoPath={null}
+                            logoPath={brandLogos?.get(brandName) ?? null}
                             brandName={brandName}
                             type="equipementier"
                             size="lg"

@@ -12,14 +12,14 @@
  *
  * Limitation: `z.toJSONSchema()` does not translate `.superRefine()` to
  * JSON Schema. The composite FK invariant
- * (`symptoms[*].value` ∈ `systems[]`) is therefore NOT captured in the
- * derived schema — it is enforced exclusively at Zod parse time, in 4
- * layers documented in the plan `tat-adr-033-wave-abundant-crown.md` §A1bis.
+ * (`symptoms[*].value` and `causes[*].value` ∈ `systems[]`) is therefore NOT
+ * captured in the derived schema — it is enforced exclusively at Zod parse
+ * time, in 4 layers documented in the plan `tat-adr-033-wave-abundant-crown.md`
+ * §A1bis.
  *
- * The builder uses no `name`/registry — emitting an inline schema with
- * `type: 'object'` at the root rather than a `$ref` wrapper around
- * `definitions/DiagCanon`. The inline form is what consumer tooling
- * (linters, IDE autocomplete) expects.
+ * The builder uses no `name`/registry — emitting an inline schema rather than
+ * a `$ref` wrapper around `definitions/DiagCanon`. The inline form is what
+ * consumer tooling (linters, IDE autocomplete) expects.
  *
  * Dialect: native `z.toJSONSchema` supports draft-7 / draft-2020-12 /
  * draft-4 / openapi-3.0. The former `jsonSchema2019-09` target (legacy

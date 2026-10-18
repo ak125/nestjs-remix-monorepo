@@ -17,7 +17,6 @@ import {
   BadRequestException,
   Controller,
   Get,
-  Logger,
   NotFoundException,
   Query,
   Req,
@@ -36,8 +35,6 @@ import { SeoControlService } from '../services/seo-control.service';
 @UseGuards(AuthenticatedGuard, IsAdminGuard)
 @UseInterceptors(AdminResponseInterceptor)
 export class SeoControlController {
-  private readonly logger = new Logger(SeoControlController.name);
-
   constructor(
     private readonly seoControlService: SeoControlService,
     private readonly featureFlags: FeatureFlagsService,

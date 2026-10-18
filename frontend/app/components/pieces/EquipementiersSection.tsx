@@ -1,5 +1,4 @@
 import { memo } from "react";
-import { Link } from "react-router";
 
 interface EquipementierItem {
   pm_id: number;
@@ -20,21 +19,6 @@ interface EquipementiersSectionProps {
   maxItems?: number;
   /** Masquer le H2 interne (le parent fournit le sien) */
   hideTitle?: boolean;
-}
-
-/**
- * Génère l'URL de la page équipementier
- * Exemple: BOSCH → /pieces-bosch.html
- */
-function getEquipementierUrl(pmName: string): string {
-  const slug = pmName
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // Enlever les accents
-    .replace(/[^a-z0-9]+/g, "-") // Remplacer les caractères spéciaux par des tirets
-    .replace(/-+/g, "-") // Éviter les doubles tirets
-    .replace(/^-|-$/g, ""); // Enlever les tirets au début/fin
-  return `/pieces-${slug}.html`;
 }
 
 const EquipementiersSection = memo(function EquipementiersSection({
@@ -71,12 +55,13 @@ const EquipementiersSection = memo(function EquipementiersSection({
           pour garantir performance, sécurité et longévité, selon les standards
           d'origine.
         </p>
+        {/* Pas de lien : aucune page ne correspond à une marque
+            d'équipementier, et le payload ne porte aucune URL (cf. PR #133). */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {displayItems.map((equipementier) => (
-            <Link
+            <div
               key={equipementier.pm_id}
-              to={getEquipementierUrl(equipementier.pm_name)}
-              className="group border border-gray-200 rounded-lg p-5 hover:border-orange-300 hover:shadow-md transition-all duration-200 block"
+              className="border border-gray-200 rounded-lg p-5"
             >
               <div className="flex items-start space-x-4">
                 <div className="shrink-0">
@@ -85,7 +70,7 @@ const EquipementiersSection = memo(function EquipementiersSection({
                     alt={`Logo ${equipementier.pm_name}`}
                     width={64}
                     height={64}
-                    className="w-16 h-16 object-contain rounded-lg border-2 border-gray-100 p-2 group-hover:border-orange-200 transition-colors"
+                    className="w-16 h-16 object-contain rounded-lg border-2 border-gray-100 p-2"
                     loading="lazy"
                     decoding="async"
                     onError={(e) => {
@@ -99,7 +84,7 @@ const EquipementiersSection = memo(function EquipementiersSection({
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-gray-900 mb-2 group-hover:text-orange-600 transition-colors">
+                  <h3 className="font-semibold text-gray-900 mb-2">
                     {equipementier.pm_name}
                   </h3>
 
@@ -107,7 +92,7 @@ const EquipementiersSection = memo(function EquipementiersSection({
                     {equipementier.description}
                   </p>
 
-                  <div className="mt-3 flex items-center justify-between">
+                  <div className="mt-3 flex items-center">
                     <span className="text-xs text-orange-600 font-medium flex items-center">
                       <svg
                         className="w-4 h-4 mr-1"
@@ -124,26 +109,10 @@ const EquipementiersSection = memo(function EquipementiersSection({
                       </svg>
                       Marque de confiance
                     </span>
-                    <span className="text-xs text-gray-400 group-hover:text-orange-500 transition-colors flex items-center">
-                      Voir les pièces
-                      <svg
-                        className="w-3 h-3 ml-1 group-hover:translate-x-1 transition-transform"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 5l7 7-7 7"
-                        />
-                      </svg>
-                    </span>
                   </div>
                 </div>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
       </div>

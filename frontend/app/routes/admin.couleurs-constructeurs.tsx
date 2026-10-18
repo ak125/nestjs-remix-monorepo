@@ -21,10 +21,6 @@ interface Brand {
   marque_alias: string;
 }
 
-interface LoaderData {
-  brands: Brand[];
-}
-
 export async function loader({ request }: LoaderFunctionArgs) {
   const baseUrl = getInternalApiUrl("");
 

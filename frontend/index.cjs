@@ -74,6 +74,13 @@ module.exports.startDevServer = async function startDevServer(app, httpServer) {
 		next(err);
 	});
 
+	// Prepare the same SSR graph used by getServerBuild before Nest listens.
+	// Otherwise the first page pays for transforming every route after /health
+	// already reports ready. No loaders run here and Vite still handles HMR.
+	const ssrStartedAt = performance.now();
+	await module.exports.getServerBuild();
+	console.log(`[Vite] SSR graph ready in ${Math.round(performance.now() - ssrStartedAt)}ms`);
+
 	app.use(devServer.middlewares);
 
 	// ✅ Log pour confirmer que Vite est actif

@@ -1,5 +1,10 @@
 /**
- * ResultHypotheses — Block 3: Scored hypotheses with evidence
+ * ResultHypotheses — Block 3: ranked hypotheses with evidence
+ *
+ * No number is shown per cause (ADR-035 D3): no score out of 100, no bar,
+ * no sub-score. The order still comes from the engine; only the rank shows.
+ * A neutral badge says what the WIKI documents behind each cause — only when
+ * the provenance was read, never a guessed state.
  */
 import {
   ChevronDown,
@@ -12,11 +17,15 @@ import {
 import { useState } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Progress } from "~/components/ui/progress";
-import { type Hypothesis } from "../types";
+import {
+  type Hypothesis,
+  type ProvenanceState,
+  type ProvenanceSummary,
+} from "../types";
 
 interface Props {
   hypotheses: Hypothesis[];
+  provenanceSummary?: ProvenanceSummary;
 }
 
 const URGENCY_BADGE: Record<Hypothesis["urgency"], string> = {
@@ -26,24 +35,18 @@ const URGENCY_BADGE: Record<Hypothesis["urgency"], string> = {
   basse: "bg-green-100 text-green-700 border-green-200",
 };
 
-const SCORE_COLOR = (score: number) => {
-  if (score >= 70) return "text-red-600";
-  if (score >= 45) return "text-orange-600";
-  if (score >= 25) return "text-amber-600";
-  return "text-gray-500";
+const PROVENANCE_LABEL: Record<ProvenanceState, string> = {
+  sourced: "Relation documentée (relue, sources archivées)",
+  partial: "Relation partiellement documentée",
+  unsourced: "Relation non encore documentée — à confirmer par un contrôle",
 };
 
-const PROGRESS_COLOR = (score: number) => {
-  if (score >= 70) return "[&>div]:bg-red-500";
-  if (score >= 45) return "[&>div]:bg-orange-500";
-  if (score >= 25) return "[&>div]:bg-amber-500";
-  return "[&>div]:bg-gray-400";
-};
-
-export function ResultHypotheses({ hypotheses }: Props) {
+export function ResultHypotheses({ hypotheses, provenanceSummary }: Props) {
   const [expandedId, setExpandedId] = useState<string | null>(
     hypotheses[0]?.hypothesis_id || null,
   );
+  // No badge rather than a false one: flag OFF, older session, unreadable.
+  const showProvenance = provenanceSummary?.status === "available";
 
   return (
     <Card>
@@ -69,7 +72,7 @@ export function ResultHypotheses({ hypotheses }: Props) {
               <button
                 type="button"
                 onClick={() => setExpandedId(expanded ? null : h.hypothesis_id)}
-                className="w-full flex items-center gap-3 px-3 pt-3 pb-1 text-left"
+                className="w-full flex items-center gap-3 p-3 text-left"
               >
                 {/* Rank */}
                 <span
@@ -82,7 +85,7 @@ export function ResultHypotheses({ hypotheses }: Props) {
                   {i + 1}
                 </span>
 
-                {/* Label */}
+                {/* Label + provenance */}
                 <span className="flex-1 min-w-0">
                   <span className="flex items-center gap-2 flex-wrap">
                     <span className="font-medium text-sm text-gray-900 truncate">
@@ -97,6 +100,15 @@ export function ResultHypotheses({ hypotheses }: Props) {
                       {h.urgency}
                     </Badge>
                   </span>
+                  {showProvenance && h.provenance && (
+                    <Badge
+                      variant="outline"
+                      size="xs"
+                      className="mt-1 font-normal text-gray-600"
+                    >
+                      {PROVENANCE_LABEL[h.provenance.state]}
+                    </Badge>
+                  )}
                 </span>
 
                 {expanded ? (
@@ -106,41 +118,9 @@ export function ResultHypotheses({ hypotheses }: Props) {
                 )}
               </button>
 
-              {/* Score — outside the button: <Progress> renders divs */}
-              <div className="flex items-center gap-2 px-3 pb-3 ml-10">
-                <Progress
-                  value={h.relative_score}
-                  className={`h-1.5 flex-1 max-w-[120px] ${PROGRESS_COLOR(h.relative_score)}`}
-                />
-                <span
-                  className={`text-xs font-semibold ${SCORE_COLOR(h.relative_score)}`}
-                >
-                  {h.relative_score}/100
-                </span>
-              </div>
-
               {/* Expanded details */}
               {expanded && (
                 <div className="px-3 pb-3 space-y-3 border-t border-gray-100 pt-3 ml-10">
-                  {/* Scoring breakdown */}
-                  {h.scoring_breakdown && (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                      {Object.entries(h.scoring_breakdown).map(([key, val]) => (
-                        <div
-                          key={key}
-                          className="text-center p-1.5 rounded bg-gray-50"
-                        >
-                          <p className="text-[10px] text-gray-500 uppercase">
-                            {SCORE_LABELS[key] || key}
-                          </p>
-                          <p className="text-sm font-semibold text-gray-900">
-                            {val as number}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
                   {/* Evidence for */}
                   {h.evidence_for.length > 0 && (
                     <div className="space-y-1">
@@ -204,12 +184,3 @@ export function ResultHypotheses({ hypotheses }: Props) {
     </Card>
   );
 }
-
-const SCORE_LABELS: Record<string, string> = {
-  signal_match: "Signal",
-  vehicle_fit: "Véhicule",
-  lifecycle_fit: "Cycle vie",
-  maintenance_history: "Entretien",
-  plausibility: "Plausibilité",
-  context: "Contexte",
-};

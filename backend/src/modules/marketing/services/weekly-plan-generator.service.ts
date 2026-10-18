@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { MarketingHubDataService } from './marketing-hub-data.service';
 import { MarketingDataService } from './marketing-data.service';
-import { UTMBuilderService } from './utm-builder.service';
 import { SITE_ORIGIN } from '../../../config/app.config';
 import type {
   WeeklyPlan,
@@ -37,7 +36,6 @@ export class WeeklyPlanGeneratorService {
   constructor(
     private readonly hubData: MarketingHubDataService,
     private readonly marketingData: MarketingDataService,
-    private readonly utmBuilder: UTMBuilderService,
   ) {}
 
   /**
@@ -77,7 +75,6 @@ export class WeeklyPlanGeneratorService {
     const slots: DaySlot[] = calendar.posting_days.map((day, index) => {
       const pillar = calendar.pillar_schedule[day] as ContentPillar;
       const gamme = finalGammes[index % finalGammes.length];
-      const _isReused = recentIds.includes(gamme?.pg_id);
 
       const brief: PostBrief = {
         topic: gamme

@@ -4,19 +4,17 @@ import { Section } from "~/components/layout";
 
 interface GammeGuideCTAProps {
   gammeName: string;
-  pgAlias?: string;
+  /** Lien vers la page conseils de la gamme ; absent = pas de bloc. */
+  href?: string | null;
 }
 
-export default function GammeGuideCTA({
-  gammeName,
-  pgAlias,
-}: GammeGuideCTAProps) {
-  if (!pgAlias) return null;
+export default function GammeGuideCTA({ gammeName, href }: GammeGuideCTAProps) {
+  if (!href) return null;
 
   return (
     <Section variant="white">
       <Link
-        to={`/blog-pieces-auto/conseils/${pgAlias}`}
+        to={href}
         className="flex items-center gap-3.5 bg-slate-50 border border-slate-200 rounded-[22px] p-4 lg:p-5 shadow-[0_6px_18px_rgba(15,23,42,0.05)] hover:border-blue-200 hover:shadow-lg hover:-translate-y-0.5 transition-all group"
       >
         <div className="w-11 h-11 lg:w-12 lg:h-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0 group-hover:bg-blue-100 group-hover:scale-105 transition-all">

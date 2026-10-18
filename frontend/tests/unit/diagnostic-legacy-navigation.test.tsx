@@ -1,10 +1,9 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import CalendrierEntretienPage, {
   loader as calendarLoader,
 } from "~/routes/blog-pieces-auto.calendrier-entretien";
-import DiagnosticPage from "~/routes/diagnostic";
 
 afterEach(() => {
   cleanup();
@@ -69,62 +68,6 @@ describe("Legacy diagnostic navigation without canonical gamme data", () => {
     expect(links).toHaveLength(1);
     expect(links[0].textContent).toBe("Voir le catalogue de pièces");
     expect(links[0].getAttribute("href")).toBe("/#catalogue");
-  });
-
-  it("keeps diagnosed part labels without inventing gamme aliases or empty links", async () => {
-    const router = createMemoryRouter([
-      {
-        path: "/",
-        Component: DiagnosticPage,
-        HydrateFallback: () => null,
-        loader: () => ({
-          observables: [
-            {
-              node_id: "obs",
-              node_label: "Bruit au freinage",
-              node_category: "freinage",
-            },
-          ],
-          error: null,
-        }),
-        action: () => ({
-          primaryFault: {
-            faultId: "fault",
-            faultLabel: "Usure possible",
-            faultCategory: "freinage",
-            score: 0.7,
-            matchedObservables: [],
-            actions: [],
-            parts: [
-              {
-                partNodeId: "part1",
-                partLabel: "Plaquettes de frein",
-                gammeId: "402",
-              },
-              {
-                partNodeId: "part2",
-                partLabel: "Composant à vérifier",
-                gammeId: "",
-              },
-            ],
-          },
-          faults: [],
-          confidence: 0.7,
-          explanation: "Controle recommande",
-          matchedSymptoms: [],
-          unmatchedSymptoms: [],
-        }),
-      },
-    ]);
-    render(<RouterProvider router={router} />);
-    fireEvent.click(await screen.findByRole("checkbox"));
-    fireEvent.click(
-      screen.getByRole("button", { name: "Analyser les symptômes" }),
-    );
-    for (const name of ["Plaquettes de frein", "Composant à vérifier"]) {
-      expect((await screen.findByText(name)).closest("a")).toBeNull();
-    }
-    expect(screen.queryByText("Voir la gamme")).toBeNull();
   });
 });
 

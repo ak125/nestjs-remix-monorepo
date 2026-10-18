@@ -1,24 +1,23 @@
 #!/usr/bin/env python3
 """
-kg-engine-evidence-seed.py — Seed DB-FIRST de l'éditorial moteur depuis la
-connaissance INTERNE déjà curée (`kg_engine_families.common_issues`), AVANT tout
-scraping. SELECT-only (RAW n'écrit jamais en DB).
+kg-engine-evidence-seed.py — Seed des PISTES moteur depuis `kg_engine_families.common_issues`,
+AVANT tout scraping. SELECT-only (RAW n'écrit jamais en DB).
 
-Doctrine « Internal DB first, editorial RAW second » (owner) : le diagnostic
-engine (kg) est PAUSED en tant que moteur, mais sa DONNÉE est une source
-autoritaire de 1er rang. On l'extrait en évidence engine-keyed (source_type:
-internal_kg, Tier A) → consommée par engine-issues-from-evidence.py → RAW
-known_issues_by_engine. L'éditorial enrichi (symptômes/sources externes ajoutés
-par le scraping d'augmentation) repart ALIMENTER le kg via le flux gouverné
+kg = piste interne non sourcée, jamais une preuve : le graphe `kg_*` est une
+projection, pas une source de vérité (ADR-086, repris par ADR-112). Chaque fait
+seedé garde la référence kg dans `seed_ref` (traçabilité), avec `sources: []` :
+engine-issues-from-evidence.py le rejette tant que le scraping d'augmentation ne
+l'a pas sourcé. `diagnostic_safe` n'est pas émis : son flip est une revue humaine,
+jamais automatique (ADR-033 §D4). L'éditorial sourcé suit ensuite le flux gouverné
 RAW→WIKI→export (jamais d'INSERT direct depuis ici).
 
-Chaque `common_issue` {topic: description} devient un fait DB-first :
+Chaque `common_issue` {topic: description} devient une piste :
   - issue slug = normalisé depuis le topic,
-  - label/symptoms = description curée (terse mais AUTORITAIRE),
-  - source = internal_kg (high),
+  - label/symptoms = description kg (terse, à sourcer),
+  - seed_ref = internal://kg_engine_families/<family_code>, sources = [],
   - related_gammes / related_diagnostic = mappés déterministiquement par topic
     (validés ensuite contre les entités RAW par l'injecteur).
-Le scraping complète ensuite symptômes détaillés + corroboration externe.
+Le scraping ajoute ensuite les sources externes et les symptômes détaillés.
 
 Usage :
   python3 scripts/wiki-generators/kg-engine-evidence-seed.py --out-dir audit/content/prc-evidence/seed [--family K9K]
@@ -203,19 +202,14 @@ def family_to_evidence(fam: dict) -> dict | None:
         faults.append({
             "issue": tkey,
             "label": f"{topic.replace('_', ' ').capitalize()} — {desc} (connu sur la famille {fam.get('family_code')})",
-            "symptoms": [str(desc)],   # terse mais DB-autoritaire ; détaillé au scraping d'augmentation
+            "symptoms": [str(desc)],   # terse, à sourcer ; détaillé au scraping d'augmentation
             "severity": "medium",
-            "diagnostic_safe": True,
             "needs_augmentation": True,  # le scraping ajoutera symptômes détaillés + sources externes
             "related_gammes": mapping["gammes"],
             "related_diagnostic": mapping["diag"],
-            "sources": [{
-                "url": f"internal://kg_engine_families/{fam.get('family_code')}",
-                "source_type": "internal_kg",
-                "source_market": "FR",
-                "lang_original": "fr",
-                "confidence": "high",
-            }],
+            # Piste kg : traçabilité seulement, jamais une source (l'injecteur ne la recopie pas).
+            "seed_ref": f"internal://kg_engine_families/{fam.get('family_code')}",
+            "sources": [],
         })
     if not faults:
         return None
@@ -228,13 +222,13 @@ def family_to_evidence(fam: dict) -> dict | None:
         # applies_to_vehicles : à RÉSOUDRE (matching marque+cylindrée+fuel → fiches RAW).
         # Laissé vide ici → l'injecteur ne fan-out pas tant que non résolu (pas de mis-attribution).
         "applies_to_vehicles": [],
-        "_seed_provenance": "kg_engine_families (Internal DB first) — augmenter par scraping",
+        "_seed_provenance": "kg_engine_families (pistes non sourcées) — à sourcer par scraping",
         "faults": faults,
     }
 
 
 def main() -> int:
-    p = argparse.ArgumentParser(description="Seed DB-first de l'éditorial moteur depuis kg_engine_families (SELECT-only).")
+    p = argparse.ArgumentParser(description="Seed des pistes moteur depuis kg_engine_families (SELECT-only, non sourcées).")
     p.add_argument("--out-dir", required=True)
     p.add_argument("--family", default=None, help="Filtrer un family_code (ex. K9K)")
     args = p.parse_args()
@@ -258,8 +252,8 @@ def main() -> int:
             ev["_match_basis"] = basis
         total_matched += len(matched)
         path = out_dir / f"engine-{ev['engine_family']}.seed.yml"
-        header = (f"# Seed DB-first — famille {fam.get('family_code')} ({fam.get('family_name')}, "
-                  f"{fam.get('manufacturer')}). Source : kg_engine_families (Internal DB first).\n"
+        header = (f"# Seed de pistes — famille {fam.get('family_code')} ({fam.get('family_name')}, "
+                  f"{fam.get('manufacturer')}). Piste : kg_engine_families (non sourcée, jamais une preuve).\n"
                   f"# applies_to_vehicles à résoudre (matching) ; scraping = augmentation symptômes/sources.\n")
         path.write_text(header + yaml.safe_dump(ev, sort_keys=False, allow_unicode=True, width=110), encoding="utf-8")
         written += 1

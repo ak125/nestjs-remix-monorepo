@@ -14,6 +14,8 @@
     "./reactivation-pilot.test.ts",
     "./marketing-workbench.test.ts",
     "./marketing-operations.test.ts",
-    "./marketing-measurement.test.ts"
+    "./marketing-measurement.test.ts",
+    "./summarize-reactivation-exclusions.ts",
+    "./summarize-reactivation-exclusions.test.ts"
   ]
 }

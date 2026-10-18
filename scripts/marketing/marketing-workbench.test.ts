@@ -1,10 +1,15 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
+import { createHash } from "node:crypto";
+import path from "node:path";
+import { runInNewContext } from "node:vm";
+import ts from "typescript";
 import {
   prepareScenario,
   importPreview,
   explainSegment,
+  summarizeSegment,
   renderCampaign,
   recommendProducts,
   planOpportunities,
@@ -12,7 +17,11 @@ import {
   eligibility,
   uniqueEvents,
 } from "../../backend/src/modules/marketing/services/marketing-preparation";
-import { workspace } from "../../backend/src/modules/marketing/dto/marketing-workbench.dto";
+import {
+  workspace,
+  type WorkEvent,
+} from "../../backend/src/modules/marketing/dto/marketing-workbench.dto";
+import { runWorkbench } from "./workbench-cli";
 const fixture = () =>
   JSON.parse(
     readFileSync(__dirname + "/fixtures/workbench.synthetic.json", "utf8"),
@@ -147,6 +156,73 @@ test("T06 explicitly supplied template variables remain literal, escaped and unc
   assert.equal(JSON.stringify(variables), before);
   assert.equal(Object.getPrototypeOf(variables), Object.prototype);
   assert.deepEqual(r.source_refs, ["synthetic-wiki"]);
+});
+
+test("T06 supplied braces remain literal data and are never expanded recursively", () => {
+  for (const vehicle of [
+    "{{missing}}",
+    "{{vehicle}}",
+    "prefix {{",
+    "suffix }}",
+    "<b>{{other}}</b> & literal",
+  ]) {
+    const w = fixture();
+    w.sources[0].text = "Conseil {{vehicle}} puis {{vehicle}}.";
+    const variables = { vehicle, other: "must not be substituted" };
+    const before = structuredClone({ w, variables });
+    const r = renderCampaign(w, ["synthetic-wiki"], "fr", variables);
+    const expected = `Conseil ${vehicle} puis ${vehicle}.`;
+    assert.equal(r.guide.checklist[0], expected);
+    const htmlValue = vehicle.startsWith("<b>")
+      ? "&lt;b&gt;{{other}}&lt;/b&gt; &amp; literal"
+      : vehicle;
+    for (const variant of r.variants) {
+      assert.ok(variant.text.includes(expected));
+      assert.ok(!variant.text.includes(variables.other));
+      assert.ok(
+        variant.html.includes(`Conseil ${htmlValue} puis ${htmlValue}.`),
+      );
+      assert.ok(!variant.html.includes("<b>"));
+    }
+    assert.deepEqual({ w, variables }, before);
+  }
+});
+
+test("T06 template checks do not join literal braces around valid placeholders", () => {
+  for (const [source, expected] of [
+    ["{{{vehicle}}{", "{literal{"],
+    ["}{{vehicle}}}", "}literal}"],
+    ["{{{vehicle}}}", "{literal}"],
+  ]) {
+    const w = fixture();
+    w.sources[0].text = source;
+    const r = renderCampaign(w, ["synthetic-wiki"], "fr", {
+      vehicle: "literal",
+    });
+    assert.equal(r.guide.checklist[0], expected);
+  }
+});
+
+test("T06 malformed source placeholders still refuse even when variables contain braces", () => {
+  for (const source of [
+    "{{vehicle",
+    "vehicle}}",
+    "{{}}",
+    "{{ vehicle }}",
+    "{{vehicle-name}}",
+    "{{{{vehicle}}}}",
+    "{{vehicle}} {{missing}}",
+    "{{vehicle}} }}{{",
+  ]) {
+    const w = fixture();
+    w.sources[0].text = source;
+    assert.throws(
+      () =>
+        renderCampaign(w, ["synthetic-wiki"], "fr", { vehicle: "{{literal}}" }),
+      /TEMPLATE_VARIABLE_MISSING/,
+      source,
+    );
+  }
 });
 
 for (const [id, ready] of [
@@ -900,6 +976,92 @@ test("V2 acquisition, qualification, after-sales, recommendation, stock and reac
   assert.equal(q.decision, "ask");
   assert.ok(q.questions.includes("engine"));
 });
+test("J06 opposition suppresses after-delivery content and brief", () => {
+  const w = workspace(fixture());
+  const s = w.scenarios.find((s) => s.id === "J06");
+  assert.ok(s);
+  assert.equal(prepareScenario(w, "J06").decision, "prepare");
+  const contact = w.contacts.find((c) => c.id === s.contact_id);
+  assert.ok(contact);
+  contact.opposed = true;
+
+  const r = prepareScenario(w, "J06");
+  assert.equal(r.decision, "exclude");
+  assert.deepEqual(r.reasons, ["opposed"]);
+  assert.deepEqual(r.questions, []);
+  assert.equal(r.content, null);
+  assert.equal(r.brief, null);
+  assert.equal(r.real_execution, "unavailable");
+});
+
+for (const kind of ["refusal", "support"] as const) {
+  test(`J06 ${kind} stops after-delivery content from the trigger boundary`, () => {
+    for (const atTrigger of [true, false]) {
+      const w = workspace(fixture());
+      const s = w.scenarios.find((s) => s.id === "J06");
+      assert.ok(s);
+      assert.equal(prepareScenario(w, "J06").decision, "prepare");
+      w.events.push({
+        id: "synthetic-after-delivery-stop",
+        project: w.context.project,
+        contact_id: s.contact_id,
+        object_id: s.object_id,
+        kind,
+        occurred_at: atTrigger ? s.trigger_at : w.context.data_at,
+        received_at: w.context.data_at,
+        verified: true,
+        bot: false,
+      });
+
+      const r = prepareScenario(w, "J06");
+      assert.equal(r.decision, "exclude", `atTrigger=${atTrigger}`);
+      assert.deepEqual(r.reasons, ["human_or_service_stop"]);
+      assert.deepEqual(r.questions, []);
+      assert.equal(r.content, null);
+      assert.equal(r.brief, null);
+      assert.equal(r.real_execution, "unavailable");
+    }
+  });
+
+  test(`J06 ${kind} outside the verified journey does not suppress its draft`, () => {
+    const changes: Partial<WorkEvent>[] = [
+      { project: "other-project" },
+      { contact_id: "synthetic-other-contact" },
+      { object_id: "synthetic-other-order" },
+      { verified: false },
+      { bot: true },
+      { occurred_at: "2026-09-01T09:59:59.999Z" },
+    ];
+    for (const change of changes) {
+      const w = workspace(fixture());
+      const s = w.scenarios.find((s) => s.id === "J06");
+      assert.ok(s);
+      const before = prepareScenario(w, "J06");
+      assert.equal(before.decision, "prepare");
+      assert.ok(before.content?.text.length);
+      assert.equal(before.brief?.payload.status, "draft");
+      w.events.push({
+        id: "synthetic-unrelated-after-delivery-stop",
+        project: w.context.project,
+        contact_id: s.contact_id,
+        object_id: s.object_id,
+        kind,
+        occurred_at: s.trigger_at,
+        received_at: w.context.data_at,
+        verified: true,
+        bot: false,
+        ...change,
+      });
+
+      assert.deepEqual(
+        prepareScenario(w, "J06"),
+        before,
+        JSON.stringify(change),
+      );
+    }
+  });
+}
+
 test("V2 different vehicle, side and audience never inherit another fitment or professional offer", () => {
   const w = fixture();
   const r = recommendProducts(w, "synthetic-contact-1", "synthetic-vehicle-1");
@@ -1045,6 +1207,60 @@ test("V2 rendering keeps evidence, two variants, plain text and inert source con
     /SOURCE_UNVERIFIED/,
   );
 });
+for (const language of ["fr", "en"] as const) {
+  test(`V2 complete variants preserve sourced bodies and their own titles (${language})`, () => {
+    const w = fixture();
+    w.sources[0].text = "Conseil {{vehicle}} & <script>untrusted</script>.";
+    const before = structuredClone(w);
+    const variables = { vehicle: '<img src=x onerror="alert(1)">' };
+    const r = renderCampaign(w, ["synthetic-wiki"], language, variables, "J07");
+    assert.deepEqual(
+      r.variants.map((v) => v.id),
+      ["A", "B"],
+    );
+    for (const variant of r.variants) {
+      assert.equal(typeof variant.html, "string");
+      assert.equal(typeof variant.text, "string");
+      assert.ok(
+        variant.html.startsWith(`<!doctype html><html lang="${language}"`),
+      );
+      assert.ok(variant.html.includes(`<title>${variant.subject}</title>`));
+      assert.ok(variant.html.includes(`<h1>${variant.subject}</h1>`));
+      assert.ok(variant.text.startsWith(variant.subject + "\n\n"));
+      assert.ok(variant.text.includes(variables.vehicle));
+      assert.ok(
+        variant.html.includes("&lt;img src=x onerror=&quot;alert(1)&quot;&gt;"),
+      );
+      assert.ok(
+        variant.html.includes("&amp; &lt;script&gt;untrusted&lt;/script&gt;"),
+      );
+      assert.ok(!variant.html.includes("<script>"));
+      assert.ok(!variant.html.includes("<img"));
+      const notice =
+        language === "fr"
+          ? "Simulation — aucune offre réelle"
+          : "Simulation — no real offer";
+      assert.ok(variant.text.endsWith(notice));
+      assert.ok(variant.html.includes(`<p>${notice}</p>`));
+    }
+    const [a, b] = r.variants;
+    assert.notEqual(a.subject, b.subject);
+    assert.notEqual(a.html, b.html);
+    assert.notEqual(a.text, b.text);
+    assert.equal(a.preheader, b.preheader);
+    assert.deepEqual(
+      a.text.split("\n\n").slice(1),
+      b.text.split("\n\n").slice(1),
+    );
+    assert.equal(r.html, a.html);
+    assert.equal(r.text, a.text);
+    assert.deepEqual(r.source_refs, ["synthetic-wiki"]);
+    assert.equal(r.review_required, true);
+    assert.equal(r.email_client_tested, false);
+    assert.equal(r.unsubscribe, "not_connected");
+    assert.deepEqual(w, before);
+  });
+}
 test("V2 missing receipt and late purchase during waiting stop the right scenario", () => {
   const w = fixture();
   w.scenarios[0].facts.receipt_verified = false;
@@ -1205,6 +1421,128 @@ test("C16 C21 a media plan preserves account, rights, budget and stop without pu
     false,
   );
 });
+test("T04 sequence preserves strict chronology, window bounds and equal event kinds", () => {
+  const cases = [
+    {
+      first: "view",
+      then: "click",
+      firstAt: "2026-10-01T10:00:00Z",
+      thenAt: "2026-10-01T10:00:00.001Z",
+      match: true,
+    },
+    {
+      first: "view",
+      then: "click",
+      firstAt: "2026-10-01T10:00:00Z",
+      thenAt: "2026-10-01T10:00:00.000Z",
+      match: false,
+    },
+    {
+      first: "view",
+      then: "click",
+      firstAt: "2026-10-01T10:00:00Z",
+      thenAt: "2026-10-01T09:00:00Z",
+      match: false,
+    },
+    {
+      first: "view",
+      then: "click",
+      firstAt: "2026-09-25T12:00:00Z",
+      thenAt: "2026-10-01T10:00:00Z",
+      match: true,
+    },
+    {
+      first: "view",
+      then: "click",
+      firstAt: "2026-09-25T11:59:59.999Z",
+      thenAt: "2026-10-01T10:00:00Z",
+      match: false,
+    },
+    {
+      first: "view",
+      then: "view",
+      firstAt: "2026-10-01T10:00:00Z",
+      thenAt: "2026-10-01T10:00:00.001Z",
+      match: true,
+    },
+    {
+      first: "view",
+      then: "view",
+      firstAt: "2026-10-01T10:00:00Z",
+      thenAt: "2026-10-01T10:00:00.000Z",
+      match: false,
+    },
+  ];
+  for (const c of cases)
+    for (const reverse of [false, true]) {
+      const w = fixture();
+      w.contacts = [w.contacts[0]];
+      w.events = [
+        {
+          ...w.events[0],
+          id: "synthetic-first",
+          kind: c.first,
+          occurred_at: c.firstAt,
+          received_at: w.context.data_at,
+        },
+        {
+          ...w.events[0],
+          id: "synthetic-then",
+          kind: c.then,
+          occurred_at: c.thenAt,
+          received_at: w.context.data_at,
+        },
+      ];
+      if (reverse) w.events.reverse();
+      const before = structuredClone(w);
+      const result = explainSegment(w, {
+        op: "sequence",
+        first: c.first,
+        then: c.then,
+        days: 7,
+      });
+      assert.equal(result[0].match, c.match, JSON.stringify(c));
+      assert.equal(result[0].included, c.match);
+      assert.deepEqual(w, before);
+    }
+});
+
+test("T04 concentrated sequence history stays within a bounded date evaluation budget", () => {
+  const parse = Date.parse;
+  let evaluations = 0;
+  // Count work without retaining a mock call record for each parsed date.
+  Date.parse = (value: string) => {
+    if (++evaluations > 1000000)
+      assert.fail("date evaluation budget exceeded for 10000 events");
+    return parse(value);
+  };
+  try {
+    for (const then of ["view", "click"]) {
+      evaluations = 0;
+      const w = fixture();
+      w.contacts = [w.contacts[0]];
+      w.events = Array.from({ length: 10000 }, (_, i) => ({
+        ...w.events[0],
+        id: `synthetic-event-${i}`,
+        kind: i % 2 ? then : "view",
+        occurred_at:
+          i % 2 ? "2026-10-01T10:00:00.000Z" : "2026-10-01T10:00:00Z",
+        received_at: w.context.data_at,
+      }));
+      const result = explainSegment(w, {
+        op: "sequence",
+        first: "view",
+        then,
+        days: 7,
+      });
+      assert.equal(result[0].match, false);
+      assert.equal(result[0].included, false);
+    }
+  } finally {
+    Date.parse = parse;
+  }
+});
+
 test("T04 sequence and bounded performance at 1000 contacts / 10000 events", () => {
   const w = fixture(),
     base = w.contacts[0],
@@ -1234,4 +1572,348 @@ test("T04 sequence and bounded performance at 1000 contacts / 10000 events", () 
     performance.now() - start < 10000,
     "10-second bounded preparation budget",
   );
+});
+
+const a1Segment = {
+  op: "all",
+  rules: [
+    { op: "inactive", days: 180 },
+    { op: "not", rule: { op: "audience", value: "professional" } },
+  ],
+};
+
+test("A1 exclusions aggregate all match states and eligibility without inventing consent", () => {
+  const w = workspace(fixture());
+  const base = w.contacts.find((c) => c.id === "synthetic-contact-inactive")!;
+  w.events = [];
+  w.contacts = ["included", "blocked", "recent", "unknown"].map((name) => ({
+    ...structuredClone(base),
+    id: `synthetic-${name}`,
+    email: `synthetic-${name}@example.invalid`,
+  }));
+  Object.assign(w.contacts[1], {
+    identity_verified: false,
+    opposed: true,
+    erased: true,
+    complaint: true,
+    hard_bounce: true,
+    paused_until: "2026-10-03T00:00:00Z",
+    language: null,
+  });
+  w.contacts[1].preferences[0].state = "refused";
+  w.contacts[2].purchases[0].at = "2026-09-01T12:00:00Z";
+  w.contacts[3].history_complete = false;
+  const rule = {
+    ...a1Segment,
+    rules: [...a1Segment.rules, a1Segment.rules[1]],
+  };
+  const before = structuredClone({ w, rule });
+  const rows = explainSegment(w, rule);
+  assert.deepEqual(
+    rows.map((r) => [r.match, r.included]),
+    [
+      [true, true],
+      [true, false],
+      [false, false],
+      [null, false],
+    ],
+  );
+  assert.deepEqual(eligibility(w.contacts[2], w), []);
+  assert.deepEqual(eligibility(w.contacts[3], w), []);
+  const r = summarizeSegment(w, rule);
+  assert.deepEqual(r, {
+    mode: "snapshot",
+    counting_unit: "project:id",
+    total: 4,
+    included: 1,
+    excluded: 3,
+    reason_counts_exclusive: false,
+    exclusion_reasons: [
+      { reason: "audience_declared", count: 3 },
+      { reason: "consent_unverified", count: 1 },
+      { reason: "erased", count: 1 },
+      { reason: "history_unknown", count: 1 },
+      { reason: "identity_unverified", count: 1 },
+      { reason: "language_unknown", count: 1 },
+      { reason: "not", count: 3 },
+      { reason: "opposed", count: 1 },
+      { reason: "paused", count: 1 },
+      { reason: "recency_days:305", count: 1 },
+      { reason: "recency_days:31", count: 1 },
+      { reason: "suppressed", count: 1 },
+    ],
+  });
+  assert.equal(r.total, r.included + r.excluded);
+  assert.ok(r.exclusion_reasons.reduce((n, x) => n + x.count, 0) > r.excluded);
+  assert.deepEqual(summarizeSegment(w, rule), r);
+  assert.deepEqual({ w, rule }, before);
+  w.contacts.reverse();
+  rule.rules.reverse();
+  assert.equal(JSON.stringify(summarizeSegment(w, rule)), JSON.stringify(r));
+  const serialized = JSON.stringify(r);
+  for (const c of w.contacts) {
+    assert.ok(!serialized.includes(c.id));
+    assert.ok(!serialized.includes(c.email));
+  }
+  // Returned aggregates share no mutable arrays or objects with the workspace.
+  r.exclusion_reasons[0].reason = "changed-output";
+  assert.deepEqual(
+    summarizeSegment(before.w, before.rule),
+    summarizeSegment(w, rule),
+  );
+});
+
+test("A1 exclusions count project:id and keep DTO duplicate and ambiguity refusals", () => {
+  const w = workspace(fixture());
+  const base = w.contacts.find((c) => c.id === "synthetic-contact-inactive")!;
+  w.contacts = [
+    structuredClone(base),
+    { ...structuredClone(base), project: "other-project" },
+  ];
+  w.events = [];
+  const r = summarizeSegment(w, a1Segment);
+  assert.equal(r.total, 2);
+  assert.equal(r.included, 1);
+  assert.equal(r.excluded, 1);
+  assert.ok(
+    r.exclusion_reasons.some(
+      (x) => x.reason === "project_mismatch" && x.count === 1,
+    ),
+  );
+  assert.throws(
+    () => summarizeSegment({ ...w, contacts: [base, base] }, a1Segment),
+    /DUPLICATE_OBJECT/,
+  );
+  const ambiguous = {
+    ...structuredClone(base),
+    id: "synthetic-ambiguous",
+    email: base.email.replace("example.invalid", "EXAMPLE.INVALID"),
+  };
+  assert.throws(
+    () => summarizeSegment({ ...w, contacts: [base, ambiguous] }, a1Segment),
+    /AMBIGUOUS_CONTACT_IDENTITY/,
+  );
+});
+
+test("A1 exclusions handle empty and wholly included audiences without reason leakage", () => {
+  const w = workspace(fixture());
+  w.contacts = [];
+  assert.deepEqual(summarizeSegment(w, a1Segment), {
+    mode: "snapshot",
+    counting_unit: "project:id",
+    total: 0,
+    included: 0,
+    excluded: 0,
+    reason_counts_exclusive: false,
+    exclusion_reasons: [],
+  });
+  w.contacts = workspace(fixture()).contacts.filter(
+    (c) => c.id === "synthetic-contact-inactive",
+  );
+  const r = summarizeSegment(w, a1Segment);
+  assert.equal(r.total, 1);
+  assert.equal(r.included, 1);
+  assert.equal(r.excluded, 0);
+  assert.deepEqual(r.exclusion_reasons, []);
+});
+
+test("A1 exclusions reject unknown fields, invalid rules and non-synthetic contexts", () => {
+  const w = fixture();
+  for (const bad of [
+    { ...w, unknown: "private-value" },
+    { ...w, contacts: [{ ...w.contacts[0], unknown: "private-value" }] },
+    { ...w, context: { ...w.context, synthetic: false } },
+    { ...w, context: { ...w.context, environment: "PROD" } },
+  ])
+    assert.throws(
+      () => summarizeSegment(bad, a1Segment),
+      /INVALID_WORKBENCH_INPUT/,
+    );
+  for (const rule of [
+    { op: "inactive", days: 0 },
+    { ...a1Segment, unknown: "private-value" },
+  ])
+    assert.throws(() => summarizeSegment(w, rule), /INVALID_WORKBENCH_INPUT/);
+});
+
+test("V2 inactivity compares 180/365 on the same five identities without changing other indicators", () => {
+  const baseline = runWorkbench(["--report"]);
+  assert.deepEqual(
+    runWorkbench(["--report", "--inactive-days", "180"]),
+    baseline,
+  );
+  assert.ok("audience" in baseline && "economics" in baseline);
+  for (const [days, included] of [
+    [180, 1],
+    [365, 0],
+  ] as const) {
+    const report = runWorkbench(["--report", "--inactive-days", String(days)]);
+    assert.ok("audience" in report && "economics" in report);
+    assert.equal(report.audience.total, 5);
+    assert.equal(report.audience.included, included);
+    assert.equal(report.audience.excluded, 5 - included);
+    for (const key of [
+      "economics",
+      "engagement",
+      "scores",
+      "experiment",
+      "capacity",
+    ] as const)
+      assert.deepEqual(report[key], baseline[key], key);
+    const rows = runWorkbench(["--segment", "--inactive-days", String(days)]);
+    assert.ok(Array.isArray(rows) && rows.every((row) => "included" in row));
+    const selected = rows.filter((row) => "included" in row && row.included);
+    assert.deepEqual(
+      selected.map((row) => ("id" in row ? row.id : null)),
+      days === 180 ? ["synthetic-contact-inactive"] : [],
+    );
+    assert.equal(rows.length, 5);
+  }
+});
+
+test("V2 inactivity validates its bounds and rejects ambiguous or unrelated options", () => {
+  for (const command of ["--segment", "--report"]) {
+    for (const value of ["1", "3650"])
+      assert.doesNotThrow(() =>
+        runWorkbench([command, "--inactive-days", value]),
+      );
+    for (const value of [
+      "0",
+      "3651",
+      "-1",
+      "1.5",
+      "1e2",
+      "Infinity",
+      "",
+      " 180",
+      "180x",
+      "01",
+      "9999999999999999999999999",
+    ])
+      assert.throws(
+        () => runWorkbench([command, "--inactive-days", value]),
+        /INVALID_ARGUMENT/,
+      );
+    for (const tail of [
+      ["--inactive-days"],
+      ["--inactive-days", "180", "--inactive-days", "365"],
+      ["--inactive-days", "180", "--send"],
+      ["--days", "180"],
+    ])
+      assert.throws(() => runWorkbench([command, ...tail]), /INVALID_ARGUMENT/);
+  }
+  for (const command of [
+    "--help",
+    "--operations",
+    "--capabilities",
+    "--all-scenarios",
+  ])
+    assert.throws(
+      () => runWorkbench([command, "--inactive-days", "365"]),
+      /INVALID_ARGUMENT/,
+    );
+});
+
+test("A1 report adds aggregate audience and preserves the five existing indicators", () => {
+  const report = runWorkbench(["--report"]);
+  assert.ok("economics" in report && "audience" in report);
+  assert.deepEqual(report.audience, summarizeSegment(fixture(), a1Segment));
+  assert.equal(report.audience.total, 5);
+  assert.equal(report.audience.included, 1);
+  assert.equal(report.audience.excluded, 4);
+  assert.deepEqual(
+    runWorkbench(["--segment"]),
+    explainSegment(fixture(), a1Segment),
+  );
+  assert.deepEqual(runWorkbench(["--report"]), report);
+  // SHA-256 of each fixed-fixture indicator captured before the A1 integration.
+  const before = {
+    economics:
+      "f9ae8b5bca613dd2ac6d96ede2e4175d3b4d5fe7c6a96dc4022fac9164e6dbf0",
+    engagement:
+      "2b09fd796a4ac6defae78e2afe8bb3a262d37c729d39c3368224f0d23dfd7120",
+    scores: "c4a0e54bf2ecd9404cfe22f02d94e221a9b4279bf9f09820f9a6980a246cb44a",
+    experiment:
+      "973a9877ec0ffc3282559549dc5f1de4186701afbf43532cedf519dadc4cc2ce",
+    capacity:
+      "55fe89fcb7dcfa4db97011b7201b736a01e212a9ac157239d31fe7d22aadf4f1",
+  };
+  for (const key of Object.keys(before) as Array<keyof typeof before>) {
+    assert.equal(
+      createHash("sha256").update(JSON.stringify(report[key])).digest("hex"),
+      before[key],
+      key,
+    );
+  }
+  assert.deepEqual(
+    Object.keys(report).sort(),
+    ["audience", ...Object.keys(before)].sort(),
+  );
+});
+
+test("A1 report V2 envelope retains DEV markers with an isolated repository stub", () => {
+  // Unit-test the unchanged entrypoint, without claiming that sandbox Git provenance passed.
+  const filename = path.join(__dirname, "run-reactivation-pilot.ts");
+  const code = ts.transpileModule(readFileSync(filename, "utf8"), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, esModuleInterop: true },
+  }).outputText;
+  let stdout = "",
+    stderr = "",
+    originChecks = 0;
+  const isolatedProcess = {
+    argv: [process.execPath, filename, "--report"],
+    cwd: () => path.resolve(__dirname, "../.."),
+    stdout: {
+      write: (s: string) => {
+        stdout += s;
+      },
+    },
+    stderr: {
+      write: (s: string) => {
+        stderr += s;
+      },
+    },
+    exitCode: 0,
+  };
+  runInNewContext(
+    code,
+    {
+      exports: {},
+      __dirname,
+      process: isolatedProcess,
+      require: (name: string) => {
+        if (name === "node:fs") return { readFileSync };
+        if (name === "node:path") return path;
+        if (name === "./workbench-cli") return { runWorkbench };
+        if (name === "./reactivation-pilot")
+          return { runPilot: () => assert.fail("unexpected V1 execution") };
+        if (name === "node:child_process")
+          return {
+            execFileSync: (command: string, args: string[]) => {
+              assert.equal(command, "git");
+              assert.equal(
+                JSON.stringify(args),
+                JSON.stringify(["remote", "get-url", "origin"]),
+              );
+              originChecks++;
+              return "https://github.com/ak125/nestjs-remix-monorepo.git\n";
+            },
+          };
+        throw new Error(`Unexpected module: ${name}`);
+      },
+    },
+    { timeout: 10000 },
+  );
+  assert.equal(originChecks, 1);
+  assert.equal(isolatedProcess.exitCode, 0);
+  assert.equal(stderr, "");
+  const { result, ...markers } = JSON.parse(stdout);
+  assert.deepEqual(markers, {
+    schema_version: "2.0.0",
+    project: "automecanik",
+    environment: "DEV",
+    synthetic: true,
+    real_execution: false,
+  });
+  assert.deepEqual(result, runWorkbench(["--report"]));
 });

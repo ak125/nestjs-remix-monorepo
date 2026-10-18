@@ -24,11 +24,13 @@ command -v docker >/dev/null || { echo "FATAL: docker requis"; exit 2; }
 [[ -f "$FIXTURE"   ]] || { echo "FATAL: fixture absente: $FIXTURE"; exit 2; }
 [[ -f "$MIGRATION" ]] || { echo "FATAL: migration absente: $MIGRATION"; exit 2; }
 
-cleanup() { docker rm -f "$CT" >/dev/null 2>&1 || true; }
+# Only remove the container created by this invocation and its anonymous data.
+CT_ID=""
+cleanup() { if [[ -n "$CT_ID" ]]; then docker rm -fv "$CT_ID" >/dev/null 2>&1 || true; fi; }
 trap cleanup EXIT
 
 echo "Image : $IMAGE"
-docker run -d --name "$CT" -e POSTGRES_PASSWORD=test -e POSTGRES_DB=test "$IMAGE" >/dev/null || exit 2
+CT_ID="$(docker run -d --name "$CT" -e POSTGRES_PASSWORD=test -e POSTGRES_DB=test "$IMAGE")" || exit 2
 for _ in $(seq 1 60); do
   docker exec "$CT" pg_isready -U postgres -d test >/dev/null 2>&1 && break
   sleep 1

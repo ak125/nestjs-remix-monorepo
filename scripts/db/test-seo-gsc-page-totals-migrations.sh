@@ -37,11 +37,13 @@ for f in "$FIXTURE" "$M1" "$M1_DOWN" "$M2" "$M2_DOWN"; do
 done
 
 TMPD="$(mktemp -d)"
-cleanup() { docker rm -f "$CT" >/dev/null 2>&1 || true; rm -rf "$TMPD"; }
+# Only remove the container created by this invocation and its anonymous data.
+CT_ID=""
+cleanup() { if [[ -n "$CT_ID" ]]; then docker rm -fv "$CT_ID" >/dev/null 2>&1 || true; fi; rm -rf "$TMPD"; }
 trap cleanup EXIT
 
 echo "Image : $IMAGE"
-docker run -d --name "$CT" -e POSTGRES_PASSWORD=test -e POSTGRES_DB=test "$IMAGE" >/dev/null || exit 2
+CT_ID="$(docker run -d --name "$CT" -e POSTGRES_PASSWORD=test -e POSTGRES_DB=test "$IMAGE")" || exit 2
 for _ in $(seq 1 60); do
   docker exec "$CT" pg_isready -U postgres -d test >/dev/null 2>&1 && break
   sleep 1

@@ -1,8 +1,7 @@
 /**
  * StubRenderEngine — No-op render engine for P3-Lite.
  *
- * Simulates a successful render in ~50ms.
- * Will be replaced by RemotionRenderEngine when real rendering is needed.
+ * Exercises the pipeline in ~50ms without producing a deliverable.
  */
 
 import type { IRenderEngine } from './render-engine.interface';
@@ -19,13 +18,14 @@ export class StubRenderEngine implements IRenderEngine {
     await new Promise((resolve) => setTimeout(resolve, 50));
 
     return {
-      status: 'success',
+      status: 'skipped',
       engineName: this.name,
       engineVersion: this.version,
       durationMs: Date.now() - start,
       outputPath: null,
       metadata: {
         stub: true,
+        executionMode: 'simulated',
         briefId: request.briefId,
         videoType: request.videoType,
         vertical: request.vertical,

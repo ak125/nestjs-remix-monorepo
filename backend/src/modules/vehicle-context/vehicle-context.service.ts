@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import type { Request, Response } from 'express';
@@ -27,7 +27,6 @@ import {
 export class VehicleContextService implements VehicleContextPort {
   static readonly TARGET_DOMAIN = TARGET_DOMAIN;
 
-  private readonly logger = new Logger(VehicleContextService.name);
   private readonly secret: Uint8Array;
 
   constructor(

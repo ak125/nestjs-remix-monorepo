@@ -88,6 +88,87 @@ const data = () => ({
   history_complete: true,
 });
 
+test("T15 multiple refunds accumulate once per order and retain the selected cohort", () => {
+  const d = data();
+  d.orders.push(
+    { ...order(), id: "synthetic-second" },
+    {
+      ...order(),
+      id: "synthetic-outside",
+      contact_id: "synthetic-contact-2",
+      at: "2026-08-01T00:00:00Z",
+    },
+  );
+  d.refunds.push(
+    { ...d.refunds[0] },
+    {
+      ...d.refunds[0],
+      id: "synthetic-partial",
+      revenue_ex_tax_minor: "1000",
+      tax_minor: "200",
+      cost_recovered_minor: "250",
+    },
+    {
+      ...d.refunds[0],
+      id: "synthetic-full",
+      order_id: "synthetic-second",
+      revenue_ex_tax_minor: "10000",
+      tax_minor: "2000",
+      cost_recovered_minor: "4000",
+    },
+    {
+      ...d.refunds[0],
+      id: "synthetic-outside-refund",
+      order_id: "synthetic-outside",
+    },
+  );
+  const report = economicReport(fixture().context, d);
+  assert.deepEqual(report.currencies, [
+    {
+      currency: "EUR",
+      net_revenue_ex_tax_minor: "7000",
+      net_tax_minor: "1400",
+      marketing_cost_ex_tax_minor: "1000",
+      contribution_ex_tax_minor: "2750",
+      costs_complete: true,
+    },
+  ]);
+  assert.equal(report.distinct_orders, 2);
+  assert.equal(report.distinct_buyers, 1);
+  assert.equal(report.second_purchase_buyers, 1);
+  assert.deepEqual(report.positive_net_revenue, {
+    distinct_orders: 1,
+    distinct_buyers: 1,
+    conversion_rate: 0.1,
+    second_purchase_buyers: 0,
+    second_purchase_rate: 0,
+  });
+  assert.deepEqual(report.source_ids.refunds, [
+    "synthetic-full",
+    "synthetic-partial",
+    "synthetic-refund",
+  ]);
+  assert.deepEqual(
+    economicReport(fixture().context, {
+      ...d,
+      orders: [...d.orders].reverse(),
+      refunds: [...d.refunds].reverse(),
+    }),
+    report,
+  );
+});
+
+test("T15 a refund requires a verified order even outside the selected cohort", () => {
+  for (const at of [order().at, "2026-08-01T00:00:00Z"]) {
+    const d = data();
+    d.orders[0] = { ...d.orders[0], at, verified: false };
+    assert.throws(
+      () => economicReport(fixture().context, d),
+      /REFUND_UNRECONCILED/,
+    );
+  }
+});
+
 test("T15 costs are dated and restricted to the report period with exact boundaries", () => {
   const d = data();
   const dated = {
@@ -208,6 +289,58 @@ test("T16 duplicate observations cannot hide missing participants", () => {
   const r = experimentReport(a, [observed, observed], 30);
   assert.ok(r.reasons.includes("missing_outcomes"));
   assert.equal(r.groups.find((g) => g.group === "A")?.observed, 1);
+});
+
+test("T16 unknown participants, duplicate assignments and conflicting outcomes are rejected", () => {
+  const a = [{ id: "synthetic-a", group: "A" }];
+  const observation = { ...a[0], converted: true };
+  for (const [assignments, observations] of [
+    [a, [{ ...observation, id: "synthetic-unknown" }]],
+    [[...a, ...a], [observation]],
+    [[...a, { ...a[0], group: "B" }], [observation]],
+    [a, [observation, { ...observation, converted: false }]],
+    [a, [{ ...observation, group: "B" }]],
+  ]) {
+    assert.throws(
+      () => experimentReport(assignments, observations, 30),
+      /EXPERIMENT_CONTAMINATION/,
+    );
+  }
+});
+
+test("T16 maximum-size experiments preserve results regardless of observation order", () => {
+  const groups = ["holdout", "A", "B"];
+  const assignments = Array.from({ length: 10000 }, (_, i) => ({
+    id: `synthetic-unit-${i}`,
+    group: groups[i % groups.length],
+  }));
+  const observations = assignments.map((row, i) => ({
+    ...row,
+    converted: i % 5 === 0,
+  }));
+  const report = experimentReport(assignments, observations, 30);
+  assert.deepEqual(
+    experimentReport(assignments, [...observations].reverse(), 30),
+    report,
+  );
+  assert.deepEqual(
+    report.groups.map(({ assigned, observed, conversions }) => ({
+      assigned,
+      observed,
+      conversions,
+    })),
+    [
+      { assigned: 3334, observed: 3334, conversions: 667 },
+      { assigned: 3333, observed: 3333, conversions: 666 },
+      { assigned: 3333, observed: 3333, conversions: 667 },
+    ],
+  );
+  assert.equal(report.verdict, "inconclusive");
+  assert.equal(report.winner, null);
+  assert.equal(report.causal_claim, false);
+  assert.deepEqual(report.reasons, [
+    "approved_protocol_and_observation_window_not_connected",
+  ]);
 });
 
 test("T15 refunds outside the selected cohort are validated and uncovered report periods rejected", () => {
@@ -375,6 +508,62 @@ test("C25 capacity projection bounds hypotheses and preserves unknown profitabil
   assert.equal(r.scheduled, false);
   assert.equal(r.revenue_forecast, null);
 });
+test("C25 decimal hypotheses preserve whole units and their exact contribution", () => {
+  for (const [factor, demand] of [
+    [0.29, 29],
+    [0.58, 58],
+    [1.13, 113],
+    [0.2899999999999999, 28],
+    [0.29000000000000004, 29],
+  ]) {
+    const r = capacityProjection({
+      historical_units: 100,
+      period_days: 30,
+      factors: [factor],
+      capacity_units: 30,
+      unit_contribution_minor: "999999999999999999",
+      verified_dates: false,
+    });
+    const served = Math.min(demand, 30);
+    assert.deepEqual(r.scenarios[0], {
+      factor_hypothesis: factor,
+      demand_units: demand,
+      served_units: served,
+      unserved_units: demand - served,
+      contribution_minor: (BigInt(served) * 999999999999999999n).toString(),
+    });
+    assert.equal(r.scheduled, false);
+    assert.equal(r.revenue_forecast, null);
+    assert.equal(r.confidence_interval, null);
+  }
+});
+
+test("C25 projection handles zero, decimal exponents and bounded maximum inputs", () => {
+  for (const [units, factor, demand] of [
+    [0, 10, 0],
+    [1000000, 0, 0],
+    [1000000, Number.MIN_VALUE, 0],
+    [1000000, 1e-7, 0],
+    [1000000, 0.000001, 1],
+    [1000000, 10, 10000000],
+  ]) {
+    const input = {
+      historical_units: units,
+      period_days: 30,
+      factors: [factor],
+      capacity_units: 1000000,
+      unit_contribution_minor: null,
+      verified_dates: false,
+    };
+    const before = structuredClone(input);
+    const r = capacityProjection(input);
+    assert.equal(r.scenarios[0].demand_units, demand);
+    assert.equal(r.scenarios[0].served_units, Math.min(demand, 1000000));
+    assert.equal(r.scenarios[0].contribution_minor, null);
+    assert.deepEqual(input, before);
+  }
+});
+
 test("C22 C26 bots and unreliable opens remain separate; duplicate alerts group by fact", () => {
   const w = fixture(),
     e = w.events[0];

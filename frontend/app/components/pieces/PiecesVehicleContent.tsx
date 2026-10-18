@@ -79,6 +79,7 @@ export function PiecesVehicleContent() {
     recommendedPieces,
     dynamicFilterCounts,
     brandAverageNotes,
+    brandLogos,
     setActiveFilters,
     setSortBy,
     setViewMode,
@@ -328,6 +329,7 @@ export function PiecesVehicleContent() {
                 availablePositions={availablePositions}
                 positionLabel={positionLabel}
                 brandAverageNotes={brandAverageNotes}
+                brandLogos={brandLogos}
               />
             </div>
 

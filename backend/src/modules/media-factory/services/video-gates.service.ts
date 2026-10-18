@@ -78,7 +78,7 @@ export class VideoGatesService {
 
     const hasBrief = !!input.brief;
     const hasClaimTable =
-      Array.isArray(input.claims) && input.claims.length >= 0;
+      Array.isArray(input.claims) && input.claims.length > 0;
     const hasEvidencePack =
       Array.isArray(input.evidencePack) && input.evidencePack.length >= 0;
     const hasDisclaimerPlan =
@@ -110,34 +110,36 @@ export class VideoGatesService {
     const { warn, fail } = VIDEO_GATE_THRESHOLDS.truth_attribution;
 
     if (!claims || claims.length === 0) {
-      return this.makeResult('truth', 'PASS', 0, warn, fail, [
-        'No claims to verify',
+      return this.makeResult('truth', 'FAIL', 0, warn, fail, [
+        'Claim table is empty: at least one claim is required',
       ]);
     }
 
+    const evidenceIds = new Set((input.evidencePack ?? []).map((e) => e.docId));
     const unsourced = claims.filter(
       (c) =>
-        c.status === 'unverified' &&
         c.kind !== 'procedure' &&
-        c.kind !== 'safety',
+        c.kind !== 'safety' &&
+        (c.status !== 'verified' ||
+          !(
+            c.sourceRef?.trim() ||
+            (c.evidenceId?.trim() && evidenceIds.has(c.evidenceId))
+          )),
     );
-    const ratio = unsourced.length / claims.length;
 
     const triggerItems = unsourced.map((c) => ({
-      location: `claim:${c.sectionKey}`,
+      location: `claim:${c.id}`,
       issue: `Unsourced ${c.kind}: "${c.rawText}"`,
       evidenceRef: c.sourceRef ?? undefined,
     }));
 
     return this.makeResult(
       'truth',
-      this.thresholdVerdict(ratio, warn, fail),
-      ratio,
+      this.thresholdVerdict(unsourced.length, warn, fail),
+      unsourced.length,
       warn,
       fail,
-      [
-        `${unsourced.length}/${claims.length} claims unsourced (ratio=${ratio.toFixed(2)})`,
-      ],
+      [`${unsourced.length} factual claims unsupported`],
       triggerItems,
     );
   }
@@ -152,9 +154,7 @@ export class VideoGatesService {
       (c) => c.kind === 'procedure' || c.kind === 'safety',
     );
 
-    const unvalidated = safetyClaims.filter(
-      (c) => c.requiresHumanValidation && !c.validatedBy,
-    );
+    const unvalidated = safetyClaims.filter((c) => !c.validatedBy?.trim());
 
     const triggerItems = unvalidated.map((c) => ({
       location: `claim:${c.sectionKey}`,

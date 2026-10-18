@@ -124,7 +124,7 @@ export const InventoryMetaSchema = z.object({
   schemaVersion: z.string().regex(/^\d+\.\d+\.\d+$/), // semver shape; constant is exported above
   cleanupPolicyVersion: z.literal(CLEANUP_POLICY_VERSION), // projection layer, NOT new canon
   validationMode: ValidationModeSchema,                // "snapshot-only" for every PR-8a inventory
-  generatedAt: z.string().datetime(),                  // honors SOURCE_DATE_EPOCH when set; --check pins to committed value
+  generatedAt: z.string().datetime(),                  // fixed 1970-01-01 placeholder (ADR-058 V1-2), SOURCE_DATE_EPOCH when set; --check pins to committed value
   generator: z.literal("scripts/audit/build-cleanup-candidates.ts"),
   toolchain: ToolchainSchema,
   inputFingerprint: z.object({

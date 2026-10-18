@@ -578,20 +578,4 @@ export class RedirectService extends SupabaseBaseService {
       reason: reason || 'Page supprimée définitivement',
     });
   }
-
-  /**
-   * Incrémenter le compteur de hits (version du code utilisateur)
-   * Conservé pour compatibilité avec l'ancien système
-   */
-  private async incrementHitCountLegacy(redirectId: number): Promise<void> {
-    try {
-      // Cette méthode ne fonctionne plus avec notre nouvelle architecture
-      // Mais on la garde pour référence
-      this.logger.debug(
-        `Tentative d'incrémentation legacy pour ID: ${redirectId}`,
-      );
-    } catch {
-      // Ignore silencieusement
-    }
-  }
 }

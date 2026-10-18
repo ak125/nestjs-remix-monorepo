@@ -26,7 +26,6 @@ export class ErrorsApiController {
 
   constructor(
     private readonly errorService: ErrorService,
-    private readonly redirectService: RedirectService,
     private readonly errorLogService: ErrorLogService,
   ) {}
 

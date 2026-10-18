@@ -57,7 +57,7 @@ export interface GammeApiResponse {
     content: string;
     items: string[];
   } | null;
-  guideAchat?: Record<string, unknown> & { updated?: string };
+  guideAchat?: Record<string, unknown> & { updated?: string; link?: string };
   gammeBuyingGuide?: GammePageBuyingGuide | null;
   catalogueMameFamille?: {
     title: string;

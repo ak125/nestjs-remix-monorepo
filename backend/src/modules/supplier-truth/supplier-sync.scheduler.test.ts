@@ -3,9 +3,14 @@ import { SupplierSyncJobProcessor } from './supplier-sync.job.processor';
 import type { SupplierSyncRunner } from './supplier-sync.runner';
 import type { ConfigService } from '@nestjs/config';
 
-function mockQueue() {
+const PERSISTED_REPEATABLE_KEY = 'sync:supplier-sync-repeatable:::0 */4 * * *';
+
+/** Bull keeps repeatables in Redis across restarts: seed what an earlier `flag=true` boot armed. */
+function mockQueue(persisted: Array<{ name: string; key: string }> = []) {
   return {
     add: jest.fn(async () => ({ id: '1' })),
+    getRepeatableJobs: jest.fn(async () => persisted),
+    removeRepeatableByKey: jest.fn(async () => undefined),
   } as unknown as import('bull').Queue;
 }
 
@@ -36,6 +41,31 @@ describe('SupplierSyncScheduler', () => {
     new SupplierSyncScheduler(q, mockConfig(false)).onModuleInit();
     await flushMicrotasks(); // even if work were deferred, give it a tick
     expect(q.add).not.toHaveBeenCalled();
+  });
+
+  it('active→inactive: flag!=true ⇒ onModuleInit disarms the repeatable a previous boot left in Redis', async () => {
+    const q = mockQueue([
+      { name: 'sync', key: PERSISTED_REPEATABLE_KEY },
+      { name: 'other-job', key: 'other-job:x:::* * * * *' },
+    ]);
+    new SupplierSyncScheduler(q, mockConfig(false)).onModuleInit();
+    await flushMicrotasks();
+    expect(q.removeRepeatableByKey).toHaveBeenCalledTimes(1);
+    expect(q.removeRepeatableByKey).toHaveBeenCalledWith(
+      PERSISTED_REPEATABLE_KEY,
+    );
+    expect(q.add).not.toHaveBeenCalled();
+  });
+
+  it('flag!=true and Redis unreachable ⇒ onModuleInit stays synchronous and does not throw', async () => {
+    const q = mockQueue();
+    (q.getRepeatableJobs as jest.Mock).mockRejectedValueOnce(
+      new Error('ECONNREFUSED'),
+    );
+    const s = new SupplierSyncScheduler(q, mockConfig(false));
+    expect(s.onModuleInit()).toBeUndefined();
+    await flushMicrotasks();
+    expect(q.removeRepeatableByKey).not.toHaveBeenCalled();
   });
 
   it('isSyncEnabled reflects the flag', () => {
@@ -84,8 +114,8 @@ describe('SupplierSyncScheduler', () => {
 });
 
 describe('SupplierSyncJobProcessor', () => {
-  it('runs one sync cycle via the runner', async () => {
-    const runner = {
+  function mockRunner() {
+    return {
       runSync: jest.fn(async () => ({
         suppliersRun: 1,
         suppliersFailed: 0,
@@ -94,8 +124,25 @@ describe('SupplierSyncJobProcessor', () => {
         offersInserted: 2,
       })),
     } as unknown as SupplierSyncRunner;
-    const summary = await new SupplierSyncJobProcessor(runner).handle();
+  }
+
+  it('runs one sync cycle via the runner', async () => {
+    const runner = mockRunner();
+    const summary = await new SupplierSyncJobProcessor(
+      runner,
+      mockConfig(true),
+    ).handle();
     expect(runner.runSync).toHaveBeenCalled();
-    expect(summary.offersInserted).toBe(2);
+    expect(summary).toMatchObject({ offersInserted: 2 });
+  });
+
+  it('flag!=true ⇒ a residual, retried or one-off job never reaches the runner (no portal login, no DB write)', async () => {
+    const runner = mockRunner();
+    const result = await new SupplierSyncJobProcessor(
+      runner,
+      mockConfig(false),
+    ).handle();
+    expect(runner.runSync).not.toHaveBeenCalled();
+    expect(result).toEqual({ skipped: 'SUPPLIER_TRUTH_SYNC_ENABLED!=true' });
   });
 });

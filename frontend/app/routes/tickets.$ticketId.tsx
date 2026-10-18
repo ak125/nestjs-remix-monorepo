@@ -7,8 +7,6 @@ import {
   type ActionFunctionArgs,
   type MetaFunction,
   data,
-} from "react-router";
-import {
   Form,
   Link,
   useActionData,
@@ -22,11 +20,7 @@ import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { logger } from "~/utils/logger";
-import {
-  getTicket,
-  updateTicketStatus,
-  type ContactTicket,
-} from "../services/api/contact.api";
+import { getTicket, updateTicketStatus } from "../services/api/contact.api";
 
 export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   return [
@@ -38,10 +32,6 @@ export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
     { name: "description", content: "Détails du ticket de support client" },
   ];
 };
-
-interface LoaderData {
-  ticket: ContactTicket;
-}
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const ticketId = params.ticketId;
@@ -57,11 +47,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     logger.error("Erreur lors du chargement du ticket:", error);
     throw new Response("Ticket non trouvé", { status: 404 });
   }
-}
-
-interface ActionData {
-  success?: boolean;
-  error?: string;
 }
 
 export async function action({ params, request }: ActionFunctionArgs) {

@@ -6,7 +6,6 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { CacheService } from '@cache/cache.service';
 
 export interface SearchMetrics {
@@ -52,10 +51,7 @@ export class SearchMonitoringService {
   private metrics: SearchMetrics;
   private readonly metricsKey = 'search:monitoring:metrics';
 
-  constructor(
-    private readonly config: ConfigService,
-    private readonly cache: CacheService,
-  ) {
+  constructor(private readonly cache: CacheService) {
     this.initializeMetrics();
   }
 

@@ -18,7 +18,7 @@ import * as path from "node:path";
 import { createRequire } from "node:module";
 import Ajv2020 from "ajv/dist/2020";
 import addFormats from "ajv-formats";
-import { CommandCenterSnapshotSchema } from "../../../packages/registry/src/command-center/snapshot";
+import { CommandCenterSnapshotV2Schema } from "../../../packages/registry/src/command-center/snapshot";
 
 const require = createRequire(import.meta.url);
 const gen = require("../build-command-center-snapshot.js");
@@ -115,9 +115,13 @@ const FIXTURE = {
   ],
 };
 
+for (const [i, d] of FIXTURE.departments.entries()) {
+  Object.assign(d, {business_number:i+1,accountable_owner:null,operating_mode:"hybrid",profile_ref:`audit/automecanik-departments-map.md#department-${d.id}`});
+}
+
 test("golden: buildSnapshot from fixture has expected shape + values", () => {
   const snap = buildSnapshot(FIXTURE, present);
-  assert.equal(snap.schema_version, "command-center.v1");
+  assert.equal(snap.schema_version, "command-center.v2");
   assert.equal(snap.summary.departments_total, 3);
   assert.equal(snap.summary.capabilities_total, 4);
   const broken = snap.capabilities.find((c: any) => c.id === "broken-cap");
@@ -139,7 +143,7 @@ test("AJV + Zod: fixture snapshot validates against both contracts (zero drift)"
   const snap = buildSnapshot(FIXTURE, present);
   const ok = validate(snap);
   assert.ok(ok, "AJV: " + JSON.stringify(validate.errors));
-  CommandCenterSnapshotSchema.parse(snap); // throws on drift
+  CommandCenterSnapshotV2Schema.parse(snap); // throws on drift
 });
 
 test("AJV self-test: invalid snapshots are rejected", () => {
@@ -174,7 +178,7 @@ test("resolution: a departments[].capabilities slug missing from declared_capabi
   assert.equal(snap.summary.capabilities_total, 5);
   assert.equal(snap.alerts.some((a: any) => a.code === "DROPPED_CAPABILITY"), false);
   assert.ok(validate(snap), "AJV: " + JSON.stringify(validate.errors));
-  CommandCenterSnapshotSchema.parse(snap);
+  CommandCenterSnapshotV2Schema.parse(snap);
 });
 
 test("resolution: a registry path MISSING on disk becomes BROKEN (pessimism, never silent green)", () => {
@@ -198,7 +202,7 @@ test("drop: an unresolvable slug raises DROPPED_CAPABILITY (error) — never a s
   assert.equal(snap.capabilities.some((c: any) => c.id === "nowhere-cap"), false);
   // Zod accepte le nouveau code ; l'enum du schéma AJV canon (.spec/00-canon, owner-only)
   // a son diff préparé dans audit/cc-wiring-owner-actions-2026-06-11.md.
-  CommandCenterSnapshotSchema.parse(snap);
+  CommandCenterSnapshotV2Schema.parse(snap);
 });
 
 test("back-compat: buildSnapshot without a skills registry behaves like before (no synth, no crash)", () => {
@@ -211,5 +215,5 @@ test("integration: the committed snapshot satisfies AJV + Zod", () => {
   if (!fs.existsSync(file)) return; // generated artifact may be absent in a fresh checkout
   const data = JSON.parse(fs.readFileSync(file, "utf8"));
   assert.ok(validate(data), "AJV: " + JSON.stringify(validate.errors));
-  CommandCenterSnapshotSchema.parse(data);
+  CommandCenterSnapshotV2Schema.parse(data);
 });

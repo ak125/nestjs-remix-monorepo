@@ -1,9 +1,10 @@
 /**
  * SeoProjectionAdminController — surface admin minimale du forward-writer (ADR-059 PR-6c).
  *
- * Un seul endpoint : déclenche un cycle de feed R1 one-off (découverte exports → write-jobs),
- * pour PROUVER la boucle sans attendre le cron (ni dépendre du flag SEO_PROJECTION_R1_FEED_ENABLED,
- * qui ne gouverne que la planification automatique). Admin-only (AuthenticatedGuard + IsAdminGuard).
+ * Un seul endpoint : déclenche un cycle de feed one-off (découverte des exports de chaque type
+ * projetable → write-jobs), pour PROUVER la boucle sans attendre le cron (ni dépendre du flag
+ * SEO_PROJECTION_R1_FEED_ENABLED — « R1 » historique —, qui ne gouverne que la planification
+ * automatique). Admin-only (AuthenticatedGuard + IsAdminGuard).
  * Aucune lecture publique : le read-path reste dark (RPC PR-7).
  */
 import {

@@ -12,6 +12,7 @@ import {
   type LoaderFunctionArgs,
   type MetaFunction,
   data,
+  redirect,
   Await,
   Link,
   useLoaderData,
@@ -57,6 +58,7 @@ import {
   type R3GuidePage,
 } from "~/types/r3-guide.types";
 import { trackArticleView, trackReadingTime } from "~/utils/analytics";
+import { resolveLegacyAdviceAlias } from "~/utils/blog-article-redirect.server";
 import {
   buildCacheHeaders,
   NO_STORE_CACHE_CONTROL,
@@ -270,8 +272,28 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     clearTimeout(timeoutId);
     if (error instanceof Response) throw error;
 
-    // Genuine absence — the only case that legitimately answers 404.
+    // No guide under this alias. It may be a conseil's ba_alias (former links
+    // /conseils/{ba_alias}): the article itself decides its canonical address.
+    // A target equal to this URL is never followed (no redirect loop). A failed
+    // lookup is transient (503), never a 404.
     if (error instanceof R3GuideNotFoundError) {
+      const resolution = await resolveLegacyAdviceAlias(pg_alias, request);
+      if (
+        resolution.status === "found" &&
+        resolution.location !== `/blog-pieces-auto/conseils/${pg_alias}`
+      ) {
+        throw redirect(resolution.location, 301);
+      }
+      if (resolution.status === "unavailable") {
+        logger.error(
+          `[R3 Guide] ba_alias lookup failed for: ${pg_alias}: ${resolution.reason}`,
+        );
+        throw data(
+          { message: `Erreur chargement guide R3: ${pg_alias}` },
+          { status: 503, headers: { "Retry-After": "60" } },
+        );
+      }
+      // Genuine absence — the only case that legitimately answers 404.
       throw data(
         { message: error.message },
         { status: 404, headers: { "Cache-Control": NO_STORE_CACHE_CONTROL } },

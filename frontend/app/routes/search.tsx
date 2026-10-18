@@ -490,6 +490,7 @@ export default function SearchPage() {
     uniqueBrands,
     dynamicFilterCounts,
     brandAverageNotes,
+    brandLogos,
     setActiveFilters,
     setSortBy,
     setViewMode,
@@ -691,6 +692,7 @@ export default function SearchPage() {
                   availablePositions={availablePositions}
                   positionLabel="Position"
                   brandAverageNotes={brandAverageNotes}
+                  brandLogos={brandLogos}
                 />
               </div>
             </aside>

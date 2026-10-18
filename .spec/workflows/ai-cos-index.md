@@ -453,8 +453,7 @@ Docs (1)   : Knowledge Base / FAQ Generator
 
 ### Agents Python
 
-- [ai-agents-python/](../../ai-agents-python/) - Code source agents Python
-- [config.yaml](../../ai-agents-python/config.yaml) - Configuration agents
+- `ai-agents-python/` - prototype retiré le 2026-10-17 : aucun appelant (code, scripts, workflows, Docker, tâche planifiée). Code consultable dans l'historique Git.
 
 ---
 

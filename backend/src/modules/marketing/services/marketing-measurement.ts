@@ -66,6 +66,12 @@ function deduplicate<T extends { id: string }>(rows: T[]): T[] {
   }
   return [...map.values()].sort((a, b) => a.id.localeCompare(b.id));
 }
+function countOrdersByBuyer(orders: z.infer<typeof OrderSchema>[]) {
+  const counts = new Map<string, number>();
+  for (const order of orders)
+    counts.set(order.contact_id, (counts.get(order.contact_id) ?? 0) + 1);
+  return counts;
+}
 /** Sales cohort report: later refunds require a refreshed report. No cash-flow or causal claim. */
 export function economicReport(ctx: unknown, input: unknown) {
   const c = context(ctx),
@@ -87,16 +93,21 @@ export function economicReport(ctx: unknown, input: unknown) {
     Date.parse(row.at) >= from && Date.parse(row.at) < to;
   const included = orders.filter((o) => o.verified && inPeriod(o));
   const includedCosts = costs.filter(inPeriod);
+  const ordersById = new Map(orders.map((order) => [order.id, order]));
+  const refundsByOrder = new Map<string, z.infer<typeof RefundSchema>[]>();
   for (const refund of refunds) {
-    const order = orders.find((o) => o.id === refund.order_id && o.verified);
-    if (!order) throw new Error('REFUND_UNRECONCILED');
+    const order = ordersById.get(refund.order_id);
+    if (!order?.verified) throw new Error('REFUND_UNRECONCILED');
     if (order.currency !== refund.currency) throw new Error('REFUND_CURRENCY');
     if (Date.parse(refund.at) < Date.parse(order.at))
       throw new Error('REFUND_BEFORE_ORDER');
+    const own = refundsByOrder.get(order.id) ?? [];
+    own.push(refund);
+    refundsByOrder.set(order.id, own);
   }
   const refundTotals = new Map(
     orders.map((order) => {
-      const own = refunds.filter((r) => r.order_id === order.id);
+      const own = refundsByOrder.get(order.id) ?? [];
       const returned = own.reduce(
         (n, r) => n + BigInt(r.revenue_ex_tax_minor),
         0n,
@@ -160,19 +171,18 @@ export function economicReport(ctx: unknown, input: unknown) {
         costs_complete: known,
       };
     });
-  const buyers = new Set(included.map((x) => x.contact_id));
+  const buyers = countOrdersByBuyer(included);
   if (d.eligible_contacts !== null && buyers.size > d.eligible_contacts)
     throw new Error('INVALID_DENOMINATOR');
-  const repeat = [...buyers].filter(
-    (id) => included.filter((o) => o.contact_id === id).length >= 2,
-  ).length;
+  const repeat = [...buyers.values()].filter((count) => count >= 2).length;
   const positive = included.filter(
     (o) => BigInt(o.revenue_ex_tax_minor) > refundTotals.get(o.id)!.returned,
   );
-  const positiveBuyers = new Set(positive.map((o) => o.contact_id));
-  const positiveRepeat = [...positiveBuyers].filter(
-    (id) => positive.filter((o) => o.contact_id === id).length >= 2,
+  const positiveBuyers = countOrdersByBuyer(positive);
+  const positiveRepeat = [...positiveBuyers.values()].filter(
+    (count) => count >= 2,
   ).length;
+  const includedOrderIds = new Set(included.map((order) => order.id));
   return {
     synthetic: true,
     snapshot_at: c.data_at,
@@ -210,7 +220,7 @@ export function economicReport(ctx: unknown, input: unknown) {
     source_ids: {
       orders: included.map((x) => x.id),
       refunds: refunds
-        .filter((r) => included.some((o) => o.id === r.order_id))
+        .filter((r) => includedOrderIds.has(r.order_id))
         .map((x) => x.id),
       costs: includedCosts.map((x) => x.id),
     },
@@ -249,7 +259,8 @@ export function experimentReport(
       observations,
     );
   checked(z.number().int().min(30).max(1000000), minPerGroup);
-  if (new Set(a.map((x) => x.id)).size !== a.length)
+  const assignedGroups = new Map(a.map((x) => [x.id, x.group]));
+  if (assignedGroups.size !== a.length)
     throw new Error('EXPERIMENT_CONTAMINATION');
   const observed = new Map<
     string,
@@ -257,7 +268,7 @@ export function experimentReport(
   >();
   for (const row of o) {
     if (
-      !a.some((x) => x.id === row.id && x.group === row.group) ||
+      assignedGroups.get(row.id) !== row.group ||
       (observed.has(row.id) &&
         JSON.stringify(observed.get(row.id)) !== JSON.stringify(row))
     )
@@ -407,7 +418,17 @@ export function capacityProjection(input: unknown) {
   );
   return {
     scenarios: p.factors.map((f) => {
-      const demand = Math.floor(p.historical_units * f),
+      // Use the supplied number's decimal representation: binary multiplication
+      // can turn 100 * 0.29 into 28.999... before flooring. Inputs are nonnegative.
+      const [coefficient, exponent = '0'] = f.toString().split('e');
+      const [whole, fraction = ''] = coefficient.split('.');
+      const scale = fraction.length - Number(exponent);
+      const numerator = BigInt(p.historical_units) * BigInt(whole + fraction);
+      const demand = Number(
+          scale >= 0
+            ? numerator / 10n ** BigInt(scale)
+            : numerator * 10n ** BigInt(-scale),
+        ),
         served = Math.min(demand, p.capacity_units);
       return {
         factor_hypothesis: f,

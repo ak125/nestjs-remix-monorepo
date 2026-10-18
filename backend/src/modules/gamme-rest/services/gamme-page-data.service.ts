@@ -1,8 +1,6 @@
 import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
-import { CacheService } from '@cache/cache.service';
-import { GammeDataTransformerService } from './gamme-data-transformer.service';
 import { UnifiedPageDataService } from '../../catalog/services/unified-page-data.service';
 
 /**
@@ -17,11 +15,7 @@ import { UnifiedPageDataService } from '../../catalog/services/unified-page-data
 export class GammePageDataService extends SupabaseBaseService {
   protected override readonly logger = new Logger(GammePageDataService.name);
 
-  constructor(
-    private readonly cacheService: CacheService,
-    private readonly transformer: GammeDataTransformerService,
-    private readonly unifiedPageDataService: UnifiedPageDataService,
-  ) {
+  constructor(private readonly unifiedPageDataService: UnifiedPageDataService) {
     super();
   }
 

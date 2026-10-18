@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test:marketing": "tsx --tsconfig scripts/marketing/tsconfig.json --test scripts/marketing/reactivation-pilot.test.ts scripts/marketing/marketing-workbench.test.ts scripts/marketing/marketing-operations.test.ts scripts/marketing/marketing-measurement.test.ts && node --test scripts/marketing/reactivation-runtime.test.mjs",
+    "test:marketing": "tsx --tsconfig scripts/marketing/tsconfig.json --test scripts/marketing/reactivation-pilot.test.ts scripts/marketing/marketing-workbench.test.ts scripts/marketing/marketing-operations.test.ts scripts/marketing/marketing-measurement.test.ts scripts/marketing/summarize-reactivation-exclusions.test.ts && node --test scripts/marketing/reactivation-runtime.test.mjs",
     "typecheck:marketing": "tsc -p scripts/marketing/tsconfig.json",
     "test": "turbo test",
     "dev": "turbo dev",
@@ -16,7 +16,7 @@
     "size:verify-paths:test": "node --test scripts/ci/verify-size-limit-initial-load.test.mjs",
     "typecheck": "turbo typecheck",
     "start": "cd backend && npm run start",
-    "clean-node-modules": "find . -type d -name 'node_modules' -exec rm -rf {} + && find . -name 'package-lock.json' -exec rm -f {} +",
+    "clean-node-modules": "find . -type d -name 'node_modules' -exec rm -rf {} +",
     "clean-turbo-cache": "find . -name '.turbo' -type d -exec rm -rf {} +",
     "dev:clean": "pkill -f 'tsc --build --watch' ; pkill -f 'tsc --watch' ; pkill -f 'tsup --watch' ; pkill -f dev-compile-watch ; pkill -f turbo ; echo 'Dev processes cleaned'",
     "pipeline:full": "node scripts/mcp-orchestrator.js",
@@ -61,7 +61,7 @@
     "audit:drift-dashboard:check": "tsx --test scripts/audit/build-drift-dashboard.test.ts",
     "audit:cleanup-candidates": "tsx scripts/audit/build-cleanup-candidates.ts",
     "audit:cleanup-candidates:check": "tsx scripts/audit/build-cleanup-candidates.ts --check",
-    "audit:cleanup-candidates:test": "tsx --test scripts/audit/build-cleanup-candidates.test.ts",
+    "audit:cleanup-candidates:test": "tsx --test scripts/audit/build-cleanup-candidates.test.ts scripts/cleanup/validate-before-delete.test.ts",
     "audit:contract-drift-ratchet": "tsx scripts/audit/check-contract-drift-ratchet.ts",
     "audit:contract-drift-ratchet:json": "tsx scripts/audit/check-contract-drift-ratchet.ts --json",
     "audit:contract-drift-ratchet:refresh": "tsx scripts/audit/check-contract-drift-ratchet.ts --refresh",
@@ -100,7 +100,7 @@
     "audit:db-usage": "node scripts/audit/build-db-usage-map.js",
     "audit:inventory": "node scripts/audit/build-deep-inventory.js && node scripts/audit/build-db-usage-map.js",
     "audit:db-usage:test": "tsx --test scripts/audit/build-db-usage-map.test.ts",
-    "audit:inventory:test": "tsx --test scripts/audit/__tests__/deep-inventory-determinism.test.ts",
+    "audit:inventory:test": "tsx --test scripts/audit/__tests__/deep-inventory-determinism.test.ts scripts/audit/__tests__/deep-inventory-reachability.test.ts",
     "audit:inventory:check": "npm run audit:inventory && git diff --exit-code -- audit/*.json",
     "audit:runtime-truth": "for c in pg-stable-write partition-cron-gap rpc-registry-drift rpc-overload-ambiguity bull-repeatable-drift; do tsx scripts/audit/runtime-truth/$c.ts; done",
     "registry:build:files": "node scripts/registry/build-files-registry.js",
@@ -234,7 +234,7 @@
   },
   "lint-staged": {
     "backend/src/**/*.ts": [
-      "node --max-old-space-size=4096 node_modules/.bin/eslint --cache --fix",
+      "node --max-old-space-size=4096 node_modules/eslint/bin/eslint.js --cache --fix",
       "prettier --write"
     ]
   }

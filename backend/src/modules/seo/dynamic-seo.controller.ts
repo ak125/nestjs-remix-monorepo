@@ -147,8 +147,6 @@ export class DynamicSeoController {
         },
       };
     } catch (error) {
-      const _responseTime = Date.now() - startTime;
-
       this.logger.error(`❌ [API] Erreur génération SEO:`, error);
 
       throw new OperationFailedException({

@@ -6,6 +6,10 @@ import { basename, join } from 'path';
 import { gzipSync } from 'zlib';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import {
+  TrackingIntegrityService,
+  TrackingIntegrityVerdictV1Schema,
+} from '../../analytics';
+import {
   buildCertificationActions,
   type ChainView,
   type DeptView,
@@ -17,6 +21,7 @@ import {
   type GscOpportunityRow,
 } from './command-center-action-rules/seo-action.rules';
 import { buildPricingRiskActions } from './command-center-action-rules/pricing-action.rules';
+import { buildTrackingIntegrityActions } from './command-center-action-rules/tracking-integrity-action.rules';
 import {
   buildImprovementCandidateActions,
   type SizeBudgetMeasure,
@@ -48,7 +53,9 @@ interface RawGscRow {
  *     cap + committed days + clicks/impressions coverage + ingestion freshness;
  *     explicit logged fallback v3 → v2 → v1 while the migration is not applied),
  *   - cautious pricing actions (missing purchase price via count; margin thresholds
- *     + runtime sell-at-loss kept as certification — no fake threshold).
+ *     + runtime sell-at-loss kept as certification — no fake threshold),
+ *   - the Data → Sales verdict `tracking-integrity-verdict.v1` (order measurement
+ *     reliability), validated against its Zod contract before it is interpreted.
  * Every source is graceful: a failed query yields a "source unavailable" certification
  * action, never a crash and never a fabricated business insight. supabase-js does NOT
  * throw on a failed query (it resolves { error }), so every read checks `error` and
@@ -64,7 +71,10 @@ export class CommandCenterActionsService extends SupabaseBaseService {
   /** Premier jour GSC attendu passé à v4 (même param que le planificateur d'ingestion). */
   private readonly gscExpectedFrom: string;
 
-  constructor(configService: ConfigService) {
+  constructor(
+    configService: ConfigService,
+    private readonly trackingIntegrity: TrackingIntegrityService,
+  ) {
     super(configService);
     const rawFloor = configService.get<string>('SEO_GSC_BACKFILL_FLOOR_DATE');
     if (rawFloor == null || String(rawFloor).trim() === '') {
@@ -90,6 +100,7 @@ export class CommandCenterActionsService extends SupabaseBaseService {
       ...buildCertificationActions(departments, chains),
       ...(await this.seoOpportunities()),
       ...(await this.pricingRisks()),
+      ...(await this.trackingIntegrityActions()),
       ...this.improvementCandidates(),
     ];
     return sortActions(raws.map(finalizeAction));
@@ -302,6 +313,36 @@ export class CommandCenterActionsService extends SupabaseBaseService {
     }
   }
 
+  /**
+   * Data → Sales handoff. The consumer validates the verdict against its contract
+   * before interpreting it: a verdict that breaks the contract, or a producer
+   * that throws, surfaces as a sourceUnavailable certification action — never as
+   * a silent CERTIFIED.
+   */
+  private async trackingIntegrityActions(): Promise<RawAction[]> {
+    try {
+      const parsed = TrackingIntegrityVerdictV1Schema.safeParse(
+        await this.trackingIntegrity.evaluate(),
+      );
+      if (!parsed.success) {
+        throw new Error(
+          `verdict hors contrat : ${parsed.error.issues.map((i) => i.message).join(' ; ')}`,
+        );
+      }
+      return buildTrackingIntegrityActions(parsed.data);
+    } catch (e) {
+      this.logger.warn(
+        `[command-center-actions] tracking-integrity indisponible: ${e}`,
+      );
+      return [
+        this.sourceUnavailable(
+          'data',
+          'Verdict de fiabilité de la mesure des commandes indisponible',
+        ),
+      ];
+    }
+  }
+
   /** In-memory memo so an admin request doesn't re-gzip the build every time. */
   private sizeMemo: { at: number; actions: RawAction[] } | null = null;
   private static readonly SIZE_MEMO_TTL_MS = 60_000;
@@ -436,6 +477,7 @@ export class CommandCenterActionsService extends SupabaseBaseService {
       reason,
       evidence: [],
       next_step: `Vérifier la connectivité/le schéma de la source ${source}.`,
+      owner_go_required: false,
     };
   }
 }

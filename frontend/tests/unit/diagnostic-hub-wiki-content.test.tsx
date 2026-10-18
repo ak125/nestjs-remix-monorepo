@@ -128,6 +128,23 @@ describe("Diagnostic hub wiki content availability", () => {
     expect(screen.queryByText(/temporairement indisponibles/)).toBeNull();
   });
 
+  // ADR-035: no reliability percentage until one is calibrated on real outcomes.
+  it("states no reliability percentage", async () => {
+    stubFetch(allWiki(() => entry({ clusters: [], signs: [], faq: [] })));
+    renderHub();
+    await screen.findByText("FAQ en cours de population.");
+    expect(document.body.textContent).not.toMatch(/fiabilit/i);
+  });
+
+  // ADR-112 D14 (1): the page itself states no percentage; any figure must come
+  // from sourced content, so with empty wiki content none is left.
+  it("states no percentage of its own", async () => {
+    stubFetch(allWiki(() => entry({ clusters: [], signs: [], faq: [] })));
+    renderHub();
+    await screen.findByText("FAQ en cours de population.");
+    expect(document.body.textContent).not.toMatch(/\d\s*%/);
+  });
+
   it("renders available wiki content", async () => {
     stubFetch({
       "vocab-clusters": () =>

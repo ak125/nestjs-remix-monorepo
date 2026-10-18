@@ -31,7 +31,8 @@ export class SupplierSyncScheduler implements OnModuleInit {
   /**
    * Activation flag — INERT by default (owner-gated). The sentinel NEVER syncs
    * unless `SUPPLIER_TRUTH_SYNC_ENABLED` is explicitly `'true'`. Off → no
-   * repeatable job is ever armed → the @Processor never receives work → no
+   * repeatable job is armed, the one a previous `true` boot left in Redis is
+   * removed, and `SupplierSyncJobProcessor` refuses any job still queued → no
    * connector login / portal hit / DB write.
    */
   isSyncEnabled(): boolean {
@@ -43,6 +44,7 @@ export class SupplierSyncScheduler implements OnModuleInit {
       this.logger.log(
         '⏸️ supplier-sync INERT — SUPPLIER_TRUTH_SYNC_ENABLED!=true: scheduler present, NO repeatable job armed, no portal hit',
       );
+      void this.disarmRepeatable();
       return;
     }
     this.logger.log(
@@ -68,6 +70,35 @@ export class SupplierSyncScheduler implements OnModuleInit {
     } catch (e) {
       this.logger.error(
         `failed to schedule supplier-sync: ${(e as Error).message}`,
+      );
+    }
+  }
+
+  /**
+   * Bull persists repeatables in Redis across restarts: switching the flag off
+   * must also remove what an earlier `flag=true` boot armed, or the 4h cron
+   * keeps firing. Same idiom as the seo-projection feeder's OFF path. Deferred
+   * with `void` from init; both outcomes are logged, failure is never thrown.
+   */
+  async disarmRepeatable(): Promise<void> {
+    try {
+      let removed = 0;
+      const jobs = await this.queue.getRepeatableJobs();
+      for (const job of jobs) {
+        if (job.name === SUPPLIER_SYNC_JOB) {
+          await this.queue.removeRepeatableByKey(job.key);
+          removed += 1;
+          this.logger.warn(
+            `🗑️ supplier-sync repeatable disarmed (flag off): ${job.key}`,
+          );
+        }
+      }
+      if (removed === 0) {
+        this.logger.log('✅ supplier-sync OFF — no residual repeatable');
+      }
+    } catch (e) {
+      this.logger.error(
+        `failed to disarm supplier-sync repeatable: ${(e as Error).message}`,
       );
     }
   }

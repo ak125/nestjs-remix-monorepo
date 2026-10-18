@@ -141,6 +141,9 @@ const APP_ENTRY_FILES = [
   'frontend/server.js',
 ];
 
+// Trees cruised by dependency-cruiser (the import graph every projection derives from).
+const CRUISE_ROOTS = ['backend/src', 'frontend/app'];
+
 const ROOT_MODULE_FILES = [
   'backend/src/app.module.ts',
   'backend/src/workers/worker.module.ts',
@@ -277,7 +280,7 @@ function runJson(cmd, args, label) {
 function loadDepcruise() {
   const j = runJson(
     NPX,
-    ['--no-install', 'depcruise', '--config', '.dependency-cruiser.cjs', '--output-type', 'json', 'backend/src', 'frontend/app'],
+    ['--no-install', 'depcruise', '--config', '.dependency-cruiser.cjs', '--output-type', 'json', ...CRUISE_ROOTS],
     'dependency-cruiser',
   );
   const imports = new Map();        // path → Set<path> (static)
@@ -467,18 +470,25 @@ function scanTypeScript(files, ts) {
  * Reachable NestJS modules = BFS from the root modules over the *resolved* import graph,
  * following edges that land on a `*.module.ts` file (handles aliased imports, `forwardRef`,
  * `.forRoot()`/`.register()` — depcruise still records the underlying import statement).
+ * A module imported through its folder lands on an `index.ts` barrel, not on the module file:
+ * barrels are traversed (transitively), any other file is not.
  * DI-live class names = providers/controllers/exports declared in any reachable module's
  * `@Module({...})`. DI-live files = the declaring files of those classes + every module file.
  */
 function resolveDiLive(moduleArrays, classByName, depImports) {
   const isModuleFile = (f) => /\.module\.tsx?$/.test(f);
+  const isBarrel = (f) => /(^|\/)index\.tsx?$/.test(f);
   const reachableModuleFiles = new Set();
+  const visited = new Set();
   const queue = [];
-  for (const rf of ROOT_MODULE_FILES) { if (moduleArrays.has(rf)) { reachableModuleFiles.add(rf); queue.push(rf); } }
+  for (const rf of ROOT_MODULE_FILES) { if (moduleArrays.has(rf)) { reachableModuleFiles.add(rf); visited.add(rf); queue.push(rf); } }
   while (queue.length) {
     const f = queue.shift();
     for (const dep of depImports.get(f) || []) {
-      if (isModuleFile(dep) && !reachableModuleFiles.has(dep)) { reachableModuleFiles.add(dep); queue.push(dep); }
+      if (visited.has(dep) || !(isModuleFile(dep) || isBarrel(dep))) continue;
+      visited.add(dep);
+      queue.push(dep);
+      if (isModuleFile(dep)) reachableModuleFiles.add(dep);
     }
   }
   const diLiveClassNames = new Set();
@@ -776,4 +786,4 @@ if (require.main === module) {
   main().catch((e) => die(e && e.stack ? e.stack : String(e)));
 }
 
-module.exports = { inventoryInputFingerprint, isTestPath };
+module.exports = { inventoryInputFingerprint, isTestPath, resolveDiLive, CRUISE_ROOTS };

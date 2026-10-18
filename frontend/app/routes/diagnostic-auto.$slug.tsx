@@ -379,9 +379,7 @@ export default function DiagnosticAutoDetail() {
                         <CardTitle className="text-lg">
                           🎧 Ce que vous ressentez
                         </CardTitle>
-                        <p className="text-sm text-gray-500">
-                          Symptôme - Fiabilité 60%
-                        </p>
+                        <p className="text-sm text-gray-500">Symptôme</p>
                       </div>
                     </div>
                   </CardHeader>
@@ -425,9 +423,7 @@ export default function DiagnosticAutoDetail() {
                         <CardTitle className="text-lg">
                           🔍 Ce que le technicien vérifie
                         </CardTitle>
-                        <p className="text-sm text-gray-500">
-                          Signe technique - Fiabilité 85%
-                        </p>
+                        <p className="text-sm text-gray-500">Signe technique</p>
                       </div>
                     </div>
                   </CardHeader>
@@ -466,9 +462,7 @@ export default function DiagnosticAutoDetail() {
                       <CardTitle className="text-lg">
                         💻 Codes OBD associés
                       </CardTitle>
-                      <p className="text-sm text-gray-500">
-                        Code DTC - Fiabilité 95%
-                      </p>
+                      <p className="text-sm text-gray-500">Code DTC</p>
                     </div>
                   </div>
                 </CardHeader>

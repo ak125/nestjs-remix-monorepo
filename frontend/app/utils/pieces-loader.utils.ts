@@ -6,11 +6,8 @@
 
 import { type CatalogueMameFamille } from "../components/pieces/PiecesCatalogueFamille";
 import { type GammeData, type VehicleData } from "../types/pieces-route.types";
-import { ImageOptimizer } from "./image-optimizer";
+import { getOptimizedPartImageUrl } from "./image-optimizer";
 import { toTitleCaseFromSlug } from "./pieces-route.utils";
-
-// Chemin relatif dans le bucket uploads pour les images catalogue
-const CATALOGUE_IMAGE_PATH = "articles/gammes-produits/catalogue";
 
 /**
  * Paramètres pour construire les données véhicule
@@ -182,12 +179,9 @@ export function buildCataloguePromise(
           name: g.name,
           link: `/pieces/${g.alias}-${g.id}.html`,
           // ✅ Migration imgproxy : Transformation WebP automatique (gratuit, self-hosted)
-          image: ImageOptimizer.getOptimizedUrl(
-            g.image
-              ? `${CATALOGUE_IMAGE_PATH}/${g.image}`
-              : `${CATALOGUE_IMAGE_PATH}/${g.alias}.webp`,
-            { width: 400 },
-          ),
+          image: getOptimizedPartImageUrl(g.image || `${g.alias}.webp`, {
+            width: 400,
+          }),
           description: `Automecanik vous conseille de contrôler l'état du ${g.name.toLowerCase()} de votre véhicule`,
         })),
       };

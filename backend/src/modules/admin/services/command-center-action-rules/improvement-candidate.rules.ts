@@ -88,6 +88,7 @@ export function buildImprovementCandidateActions(
       next_step:
         `Lancer la boucle d'amélioration mesurée (§8 agent-method-patterns) sur ce chunk : ` +
         `worktree → optimiser → garder seulement si poids↓ ET holdout large vert → PR owner-gated.`,
+      owner_go_required: false, // poids de bundle : hors zone STOP, la PR suit la revue normale
     });
   }
   return actions;
