@@ -41927,7 +41927,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 414,
+      "loc": 529,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/video-gates.service.test.ts",
       "risk": "low",
