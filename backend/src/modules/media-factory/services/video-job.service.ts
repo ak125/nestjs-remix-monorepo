@@ -51,6 +51,10 @@ export interface ExecutionLogRow {
   renderStatus: string | null;
   renderOutputPath: string | null;
   renderMetadata: unknown | null;
+  /** Stored renderer observations, not a human review or publication approval. */
+  postprocessVariants: unknown | null;
+  postprocessDurationMs: number | null;
+  srtS3Path: string | null;
   renderDurationMs: number | null;
   renderErrorCode: string | null;
   engineResolution: string | null;
@@ -668,6 +672,9 @@ export class VideoJobService extends SupabaseBaseService {
     renderStatus: (row.render_status as string) ?? null,
     renderOutputPath: (row.render_output_path as string) ?? null,
     renderMetadata: row.render_metadata ?? null,
+    postprocessVariants: row.postprocess_variants ?? null,
+    postprocessDurationMs: (row.postprocess_duration_ms as number) ?? null,
+    srtS3Path: (row.srt_s3_path as string) ?? null,
     renderDurationMs: (row.render_duration_ms as number) ?? null,
     renderErrorCode: (row.render_error_code as string) ?? null,
     engineResolution: (row.engine_resolution as string) ?? null,

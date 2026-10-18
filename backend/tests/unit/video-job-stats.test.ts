@@ -41,9 +41,7 @@ function createMocks() {
   return { mockQueue, mockDataService, mockRenderAdapter, mockConfigService };
 }
 
-function createService(
-  mocks: ReturnType<typeof createMocks>,
-): VideoJobService {
+function createService(mocks: ReturnType<typeof createMocks>): VideoJobService {
   return new (VideoJobService as any)(
     mocks.mockConfigService,
     mocks.mockQueue,
@@ -133,6 +131,68 @@ describe('VideoJobService — stats/list/map (P18)', () => {
   beforeEach(() => {
     mocks = createMocks();
     service = createService(mocks);
+  });
+
+  it('returns stored technical inspections without changing publication eligibility', async () => {
+    const inspection = {
+      checksumSha256: 'a'.repeat(64),
+      video: { codec: 'h264', width: 1080, height: 1920 },
+      audio: [],
+    };
+    const variants = [
+      { name: 'vertical', s3Path: 's3://media/v.mp4', inspection },
+    ];
+    const chain = simpleChain({
+      data: fullDbRow({
+        render_metadata: { inspection },
+        postprocess_variants: variants,
+        postprocess_duration_ms: 51,
+        srt_s3_path: 's3://media/sub.srt',
+        can_publish: null,
+      }),
+      error: null,
+    });
+    Object.defineProperty(service, 'client', {
+      get: () => chain,
+      configurable: true,
+    });
+    const result = await service.getExecutionStatus(10);
+    expect(result).toMatchObject({
+      renderMetadata: { inspection },
+      postprocessVariants: variants,
+      postprocessDurationMs: 51,
+      srtS3Path: 's3://media/sub.srt',
+      canPublish: null,
+    });
+  });
+
+  it('keeps absent historical inspection results explicitly unknown', async () => {
+    const chain = simpleChain({ data: fullDbRow(), error: null });
+    Object.defineProperty(service, 'client', {
+      get: () => chain,
+      configurable: true,
+    });
+    expect(await service.getExecutionStatus(10)).toMatchObject({
+      renderMetadata: null,
+      postprocessVariants: null,
+      postprocessDurationMs: null,
+      srtS3Path: null,
+    });
+  });
+
+  it('preserves empty variants and zero elapsed time rather than treating them as absent', async () => {
+    const chain = simpleChain({
+      data: fullDbRow({ postprocess_variants: [], postprocess_duration_ms: 0 }),
+      error: null,
+    });
+    Object.defineProperty(service, 'client', {
+      get: () => chain,
+      configurable: true,
+    });
+    expect(await service.getExecutionStatus(10)).toMatchObject({
+      postprocessVariants: [],
+      postprocessDurationMs: 0,
+    });
   });
 
   // ── getExecutionStatus ──
@@ -270,9 +330,33 @@ describe('VideoJobService — stats/list/map (P18)', () => {
 
     it('should compute byStatus correctly with mixed statuses', async () => {
       const rows = [
-        { status: 'completed', duration_ms: 100, engine_name: 'stub', render_duration_ms: null, is_canary: false, canary_fallback: false, canary_error_code: null },
-        { status: 'completed', duration_ms: 200, engine_name: 'stub', render_duration_ms: null, is_canary: false, canary_fallback: false, canary_error_code: null },
-        { status: 'failed', duration_ms: 300, engine_name: 'stub', render_duration_ms: null, is_canary: false, canary_fallback: false, canary_error_code: null },
+        {
+          status: 'completed',
+          duration_ms: 100,
+          engine_name: 'stub',
+          render_duration_ms: null,
+          is_canary: false,
+          canary_fallback: false,
+          canary_error_code: null,
+        },
+        {
+          status: 'completed',
+          duration_ms: 200,
+          engine_name: 'stub',
+          render_duration_ms: null,
+          is_canary: false,
+          canary_fallback: false,
+          canary_error_code: null,
+        },
+        {
+          status: 'failed',
+          duration_ms: 300,
+          engine_name: 'stub',
+          render_duration_ms: null,
+          is_canary: false,
+          canary_fallback: false,
+          canary_error_code: null,
+        },
       ];
       const chain = statsChain({ data: rows, error: null });
       Object.defineProperty(service, 'client', {
@@ -288,10 +372,42 @@ describe('VideoJobService — stats/list/map (P18)', () => {
 
     it('should compute canary successRate and fallbackRate when totalCanary > 0', async () => {
       const rows = [
-        { status: 'completed', duration_ms: 100, engine_name: 'remotion', render_duration_ms: 80, is_canary: true, canary_fallback: false, canary_error_code: null },
-        { status: 'completed', duration_ms: 200, engine_name: 'remotion', render_duration_ms: 150, is_canary: true, canary_fallback: false, canary_error_code: null },
-        { status: 'completed', duration_ms: 300, engine_name: 'remotion', render_duration_ms: 250, is_canary: true, canary_fallback: false, canary_error_code: null },
-        { status: 'completed', duration_ms: 400, engine_name: 'stub', render_duration_ms: 50, is_canary: true, canary_fallback: true, canary_error_code: 'RENDER_ENGINE_TIMEOUT' },
+        {
+          status: 'completed',
+          duration_ms: 100,
+          engine_name: 'remotion',
+          render_duration_ms: 80,
+          is_canary: true,
+          canary_fallback: false,
+          canary_error_code: null,
+        },
+        {
+          status: 'completed',
+          duration_ms: 200,
+          engine_name: 'remotion',
+          render_duration_ms: 150,
+          is_canary: true,
+          canary_fallback: false,
+          canary_error_code: null,
+        },
+        {
+          status: 'completed',
+          duration_ms: 300,
+          engine_name: 'remotion',
+          render_duration_ms: 250,
+          is_canary: true,
+          canary_fallback: false,
+          canary_error_code: null,
+        },
+        {
+          status: 'completed',
+          duration_ms: 400,
+          engine_name: 'stub',
+          render_duration_ms: 50,
+          is_canary: true,
+          canary_fallback: true,
+          canary_error_code: 'RENDER_ENGINE_TIMEOUT',
+        },
       ];
       const chain = statsChain({ data: rows, error: null });
       Object.defineProperty(service, 'client', {
@@ -313,7 +429,15 @@ describe('VideoJobService — stats/list/map (P18)', () => {
 
     it('should return successRate=null when totalCanary=0', async () => {
       const rows = [
-        { status: 'completed', duration_ms: 100, engine_name: 'stub', render_duration_ms: 50, is_canary: false, canary_fallback: false, canary_error_code: null },
+        {
+          status: 'completed',
+          duration_ms: 100,
+          engine_name: 'stub',
+          render_duration_ms: 50,
+          is_canary: false,
+          canary_fallback: false,
+          canary_error_code: null,
+        },
       ];
       const chain = statsChain({ data: rows, error: null });
       Object.defineProperty(service, 'client', {
