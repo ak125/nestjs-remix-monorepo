@@ -93,6 +93,9 @@ Gardes mécaniques : `.ast-grep/rules/*.yml`, `.husky/pre-commit`, `scripts/agen
   `frontend.md` (RR8), `payments.md` (zone STOP), `deployment.md` (infra — charger AVANT toute action
   infra), `context7.md` (API/syntaxe lib externe), `security-hooks.md` (édition, advisory),
   `agent-doc-search.md` (recherche registry-first — cf. invariant 1).
+- **Relecture éditoriale** (brouillon français sourcé, côté consommateur) : lire
+  `.claude/prompts/_shared/editorial-review.md` **avant** toute relecture ou réécriture de style ;
+  sortie = proposition motivée, jamais d'écriture RAW/WIKI ni de publication.
 
 ---
 
