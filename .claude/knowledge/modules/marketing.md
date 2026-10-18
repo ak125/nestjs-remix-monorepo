@@ -2,16 +2,16 @@
 module: marketing
 sources:
 - backend/src/modules/marketing
-last_scan: '2026-10-02'
+last_scan: '2026-10-17'
 primary_files:
 - backend/src/modules/marketing/controllers/marketing-backlinks.controller.ts
 - backend/src/modules/marketing/controllers/marketing-briefs.controller.ts
 - backend/src/modules/marketing/controllers/marketing-content-roadmap.controller.ts
 - backend/src/modules/marketing/controllers/marketing-dashboard.controller.ts
+- backend/src/modules/marketing/controllers/marketing-pipeline.controller.test.ts
 - backend/src/modules/marketing/controllers/marketing-pipeline.controller.ts
+- backend/src/modules/marketing/controllers/marketing-social-posts.controller.test.ts
 - backend/src/modules/marketing/controllers/marketing-social-posts.controller.ts
-- backend/src/modules/marketing/dto/marketing-brief.dto.ts
-- backend/src/modules/marketing/dto/marketing-workbench.dto.ts
 depends_on:
 - DatabaseModule
 - AiContentModule
@@ -48,10 +48,10 @@ _Section à rédiger._
 - [backend/src/modules/marketing/controllers/marketing-briefs.controller.ts](../../../backend/src/modules/marketing/controllers/marketing-briefs.controller.ts)
 - [backend/src/modules/marketing/controllers/marketing-content-roadmap.controller.ts](../../../backend/src/modules/marketing/controllers/marketing-content-roadmap.controller.ts)
 - [backend/src/modules/marketing/controllers/marketing-dashboard.controller.ts](../../../backend/src/modules/marketing/controllers/marketing-dashboard.controller.ts)
+- [backend/src/modules/marketing/controllers/marketing-pipeline.controller.test.ts](../../../backend/src/modules/marketing/controllers/marketing-pipeline.controller.test.ts)
 - [backend/src/modules/marketing/controllers/marketing-pipeline.controller.ts](../../../backend/src/modules/marketing/controllers/marketing-pipeline.controller.ts)
+- [backend/src/modules/marketing/controllers/marketing-social-posts.controller.test.ts](../../../backend/src/modules/marketing/controllers/marketing-social-posts.controller.test.ts)
 - [backend/src/modules/marketing/controllers/marketing-social-posts.controller.ts](../../../backend/src/modules/marketing/controllers/marketing-social-posts.controller.ts)
-- [backend/src/modules/marketing/dto/marketing-brief.dto.ts](../../../backend/src/modules/marketing/dto/marketing-brief.dto.ts)
-- [backend/src/modules/marketing/dto/marketing-workbench.dto.ts](../../../backend/src/modules/marketing/dto/marketing-workbench.dto.ts)
 
 <!-- END AUTO-GENERATED -->
 

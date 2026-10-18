@@ -43,7 +43,7 @@
         "backend/src/modules/ai-content/templates"
       ],
       "files_count": 12,
-      "loc_total": 3256,
+      "loc_total": 3283,
       "has_barrel": false
     },
     "analytics": {
@@ -75,7 +75,7 @@
         "backend/src/modules/auth/dto"
       ],
       "files_count": 44,
-      "loc_total": 5878,
+      "loc_total": 5944,
       "has_barrel": true
     },
     "backend-core": {
@@ -261,7 +261,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 114841,
+      "loc_total": 115085,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -410,8 +410,8 @@
         "backend/src/modules/marketing/services",
         "backend/src/modules/marketing/templates"
       ],
-      "files_count": 29,
-      "loc_total": 7016,
+      "files_count": 46,
+      "loc_total": 9607,
       "has_barrel": false
     },
     "mcp-validation": {
@@ -700,8 +700,8 @@
         "scripts/wiki-generators",
         "scripts/wiki-generators/__tests__"
       ],
-      "files_count": 207,
-      "loc_total": 47221,
+      "files_count": 212,
+      "loc_total": 48657,
       "has_barrel": true
     },
     "search": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 303,
-      "loc_total": 57888,
+      "files_count": 304,
+      "loc_total": 58316,
       "has_barrel": true
     },
     "upload": {
@@ -979,8 +979,8 @@
         "backend/src/modules/users/schemas",
         "backend/src/modules/users/services"
       ],
-      "files_count": 27,
-      "loc_total": 5216,
+      "files_count": 28,
+      "loc_total": 5300,
       "has_barrel": true
     },
     "vehicle-context": {
@@ -1784,16 +1784,21 @@
     {
       "from": "marketing",
       "to": "ai-content",
-      "count": 2
+      "count": 6
     },
     {
       "from": "marketing",
       "to": "config",
-      "count": 4
+      "count": 7
     },
     {
       "from": "marketing",
       "to": "database",
+      "count": 1
+    },
+    {
+      "from": "marketing",
+      "to": "uncategorized",
       "count": 1
     },
     {
@@ -2611,6 +2616,26 @@
     {
       "from": "backend/src/modules/health/health.module.ts",
       "to": "backend/src/modules/session/session-store.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/marketing/services/copywriter-provenance.test.ts",
+      "to": "backend/src/modules/ai-content/ai-content.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/marketing/services/copywriter-provenance.test.ts",
+      "to": "backend/src/modules/ai-content/dto/generate-content.dto.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/marketing/services/copywriter-provenance.test.ts",
+      "to": "backend/src/modules/ai-content/templates/content-templates.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/marketing/services/multi-channel-copywriter.service.test.ts",
+      "to": "backend/src/modules/ai-content/ai-content.service.ts",
       "rule": "no-deep-module-access"
     },
     {

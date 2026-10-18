@@ -774,6 +774,28 @@ entries:
     owner: '@ak125/marketing-team'
     sourceConfidence: medium
     risk: low
+  # Social Hub : attribution dérivée du module marketing ci-dessus.
+  # Chemins exacts ; les migrations futures restent soumises à leur propre revue.
+  - glob: backend/supabase/migrations/20261014010000_marketing_social_reviews.sql
+    domain: D12
+    owner: '@ak125/marketing-team'
+    sourceConfidence: medium
+    risk: medium
+  - glob: backend/supabase/migrations/20261014010000_marketing_social_reviews.down.sql
+    domain: D12
+    owner: '@ak125/marketing-team'
+    sourceConfidence: medium
+    risk: medium
+  - glob: backend/supabase/migrations/20261016010000_marketing_publication_proofs.sql
+    domain: D12
+    owner: '@ak125/marketing-team'
+    sourceConfidence: medium
+    risk: medium
+  - glob: backend/supabase/migrations/20261016010000_marketing_publication_proofs.down.sql
+    domain: D12
+    owner: '@ak125/marketing-team'
+    sourceConfidence: medium
+    risk: medium
   - glob: backend/src/modules/messages/**
     domain: D11
     owner: '@ak125'

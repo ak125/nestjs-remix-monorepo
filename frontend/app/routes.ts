@@ -13,7 +13,7 @@ import { flatRoutes } from "remix-flat-routes";
  * 147/147 vs Remix v2 ; `@react-router/fs-routes` casse 7 URLs (/aide /catalogue /home
  * /login /marques /register + index mangle) → NO-GO. Les `ignoredRouteFiles` sont
  * préservent les exclusions admin/ui-kit/design-system en production, avec les
- * exceptions Video Hub et Command Center (toutes deux protégées côté serveur).
+ * exceptions Video Hub, Command Center et Social Hub posts (protégées côté serveur).
  */
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -32,11 +32,11 @@ export default remixRoutesOptionAdapter((defineRoutes) =>
       "**/*.css",
       "**/*.test.{js,jsx,ts,tsx}",
       "**/__*.*",
-      // Garder uniquement Video Hub et le cockpit Command Center parmi admin.*.
-      // Le mode runtime du Command Center et requireAdmin restent appliqués.
+      // Exceptions bornées : Video Hub, Command Center et Social Hub posts.
+      // Le Social Hub exige les lectures API protégées avant de rendre les données.
       ...(isProduction
         ? [
-            "**/admin.!(video-hub*|command-center.tsx)",
+            "**/admin.!(video-hub*|command-center.tsx|marketing.social-hub.posts.tsx)",
             "**/ui-kit.*",
             "**/ui-kit/**",
             "**/design-system.*",

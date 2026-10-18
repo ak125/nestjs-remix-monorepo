@@ -96,6 +96,10 @@ export const ContentResponseSchema = z.object({
     model: z.string(),
     language: z.string(),
     provider: z.string().optional(), // Track which AI provider was used
+    promptHash: z
+      .string()
+      .regex(/^[a-f0-9]{64}$/)
+      .optional(),
   }),
 });
 

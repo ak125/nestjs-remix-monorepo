@@ -1,3 +1,4 @@
+import { parseSocialReview } from '../dto/social-review.dto';
 import {
   Controller,
   Get,
@@ -8,9 +9,14 @@ import {
   Body,
   UseGuards,
   Res,
+  Req,
 } from '@nestjs/common';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 import { IsAdminGuard } from '@auth/is-admin.guard';
+import {
+  DomainValidationException,
+  DomainNotFoundException,
+} from '@common/exceptions';
 import { MarketingHubDataService } from '../services/marketing-hub-data.service';
 import { PublishQueueService } from '../services/publish-queue.service';
 import { BrandComplianceGateService } from '../services/brand-compliance-gate.service';
@@ -50,52 +56,79 @@ export class MarketingSocialPostsController {
   @Put('posts/:id/approve')
   async approvePost(
     @Param('id') id: string,
-    @Body('approved_by') approvedBy: string,
+    @Body() body: unknown,
+    @Req() req: Request,
   ) {
-    const ok = await this.publishQueue.approvePost(
-      parseInt(id),
-      approvedBy || 'admin',
+    const data = await this.publishQueue.approvePost(
+      this.postId(id),
+      parseSocialReview(body),
+      this.actor(req),
     );
-    return { success: ok };
+    return { success: true, data };
   }
 
-  /**
-   * PUT /api/admin/marketing/social/posts/:id/reject
-   */
   @Put('posts/:id/reject')
-  async rejectPost(@Param('id') id: string) {
-    const ok = await this.publishQueue.rejectPost(parseInt(id));
-    return { success: ok };
-  }
-
-  /**
-   * POST /api/admin/marketing/social/posts/bulk-approve
-   */
-  @Post('posts/bulk-approve')
-  async bulkApprove(
-    @Body('post_ids') postIds: number[],
-    @Body('approved_by') approvedBy: string,
+  async rejectPost(
+    @Param('id') id: string,
+    @Body() body: unknown,
+    @Req() req: Request,
   ) {
-    const result = await this.publishQueue.bulkApprove(
-      postIds,
-      approvedBy || 'admin',
+    const data = await this.publishQueue.rejectPost(
+      this.postId(id),
+      parseSocialReview(body),
+      this.actor(req),
     );
-    return result;
+    return { success: true, data };
   }
 
-  /**
-   * POST /api/admin/marketing/social/posts/:id/gate
-   * Run brand + compliance gate on a single post.
-   */
-  @Post('posts/:id/gate')
-  async runGate(@Param('id') id: string) {
-    const posts = await this.hubData.getPostsByWeek('', undefined);
-    // Get post by ID directly
-    const post = posts.find((p) => p.id === parseInt(id));
-    if (!post) return { error: 'Post not found' };
+  @Post('posts/bulk-approve')
+  async bulkApprove() {
+    return this.publishQueue.bulkApprove();
+  }
 
-    const summary = await this.gateService.evaluateAndPersist(post);
+  @Get('posts/:id')
+  async getPost(@Param('id') id: string) {
+    const data = await this.hubData.getPostById(this.postId(id));
+    if (!data) throw new DomainNotFoundException({ message: 'Post not found' });
+    return { data };
+  }
+
+  @Get('posts/:id/history')
+  async getHistory(@Param('id') id: string) {
+    return { data: await this.hubData.getPostHistory(this.postId(id)) };
+  }
+
+  @Post('posts/:id/gate')
+  async runGate(
+    @Param('id') id: string,
+    @Body() body: unknown,
+    @Req() req: Request,
+  ) {
+    const postId = this.postId(id);
+    const target = parseSocialReview(body);
+    const actor = this.actor(req);
+    const post = await this.hubData.getPostById(postId);
+    if (!post) throw new DomainNotFoundException({ message: 'Post not found' });
+    const summary = await this.gateService.evaluateAndPersist(
+      post,
+      target,
+      actor,
+    );
     return { data: summary };
+  }
+
+  @Post('posts/:id/publications')
+  async declarePublication(
+    @Param('id') id: string,
+    @Body() body: unknown,
+    @Req() req: Request,
+  ) {
+    const data = await this.publishQueue.declarePublication(
+      this.postId(id),
+      body,
+      this.actor(req),
+    );
+    return { success: true, data };
   }
 
   /**
@@ -108,6 +141,7 @@ export class MarketingSocialPostsController {
     @Query('channel') channel: string,
     @Res() res: Response,
   ) {
+    res.setHeader('Cache-Control', 'private, no-store');
     if (!week || !channel) {
       return res
         .status(400)
@@ -134,5 +168,27 @@ export class MarketingSocialPostsController {
   async markPublished(@Body('post_ids') postIds: number[]) {
     const count = await this.publishQueue.markAsPublished(postIds);
     return { published: count };
+  }
+  private postId(id: string): number {
+    const value = Number(id);
+    if (!/^[1-9]\d*$/.test(id) || !Number.isSafeInteger(value))
+      throw new DomainValidationException({
+        message: 'Invalid post id',
+        field: 'id',
+      });
+    return value;
+  }
+
+  private actor(req: Request): string {
+    const id: unknown = req.user?.id;
+    if (
+      (typeof id !== 'string' && typeof id !== 'number') ||
+      !String(id).trim()
+    )
+      throw new DomainValidationException({
+        message: 'Authenticated actor required',
+        field: 'actor',
+      });
+    return String(id);
   }
 }

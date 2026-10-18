@@ -15,6 +15,14 @@ import { readFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { createRequire } from "node:module";
+
+test("workspace imports do not depend on generated dist files", () => {
+  const { dependencyTarget } = createRequire(import.meta.url)("../build-deep-inventory.js");
+  assert.equal(dependencyTarget({ module: '@repo/seo-roles', resolved: 'packages/seo-roles/dist/index.d.ts' }), '@repo/seo-roles');
+  assert.equal(dependencyTarget({ module: '@repo/seo-roles', resolved: '@repo/seo-roles' }), '@repo/seo-roles');
+  assert.equal(dependencyTarget({ module: '../src/index', resolved: 'packages/seo-roles/src/index.ts' }), 'packages/seo-roles/src/index.ts');
+});
 
 const REPO_ROOT = join(fileURLToPath(new URL(".", import.meta.url)), "..", "..", "..");
 const read = (rel: string) => JSON.parse(readFileSync(join(REPO_ROOT, "audit", rel), "utf8"));

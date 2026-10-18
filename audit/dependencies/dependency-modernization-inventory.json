@@ -1,5 +1,5 @@
 {
-  "artifact_immutability_hash": "sha256:c91c3054d16ceb1851c4b2a9a6d99f974104b306cc4f909a7a950cba3393f147",
+  "artifact_immutability_hash": "sha256:d0b044e8dccce5b09b69881b16c8b79695757e444971f5f482a20b8ee7f3441b",
   "divergences": [
     {
       "kind": "resolved",
@@ -3733,9 +3733,9 @@
   ],
   "generatedFrom": {
     "deps_registry": "audit/registry/deps.json",
-    "deps_registry_sha": "sha256:eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
+    "deps_registry_sha": "sha256:c6b55c81404c123787afdcfa14974847d7a56f7a46b70f50e13017be225b7825",
     "lockfile": "package-lock.json",
-    "lockfile_sha": "sha256:ef61a1b69beb0185c2ca9edb978ed32f5262aca175abd280526c6c816901c612",
+    "lockfile_sha": "sha256:0204b64d2563814403347dd176c171c240ae33bafc439328e57ba2fb1d0b9276",
     "overlay": "audit/dependencies/family-overlay.yaml",
     "overlay_sha": "sha256:f5b19e7c0c73a75b55e4c0a620e0d01c6665dfcfffe8b00a77d5c8928bb05117"
   },
@@ -3752,7 +3752,7 @@
       "runtime-backend": 17,
       "runtime-frontend": 11,
       "tooling": 15,
-      "unassigned": 160,
+      "unassigned": 161,
       "validation": 1
     },
     "by_pr_assignment": {
@@ -3766,9 +3766,9 @@
     },
     "divergent_packages_count": 27,
     "families_count": 12,
-    "total_occurrences": 336,
-    "total_packages": 227,
-    "unassigned_count": 160
+    "total_occurrences": 337,
+    "total_packages": 228,
+    "unassigned_count": 161
   },
   "unassigned_packages": [
     {
@@ -3859,6 +3859,21 @@
       ],
       "resolved_versions": [
         "20.5.3"
+      ]
+    },
+    {
+      "divergent_resolved": false,
+      "divergent_specifiers": false,
+      "name": "@electric-sql/pglite",
+      "occurrences": [
+        {
+          "declaredIn": "package.json",
+          "specifier": "0.3.14",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
+      "resolved_versions": [
+        "0.3.14"
       ]
     },
     {

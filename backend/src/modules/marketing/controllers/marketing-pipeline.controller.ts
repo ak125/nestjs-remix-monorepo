@@ -1,5 +1,15 @@
 import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
 import { IsAdminGuard } from '@auth/is-admin.guard';
+import {
+  DomainValidationException,
+  OperationFailedException,
+} from '@common/exceptions';
+import {
+  parsePipelineInput,
+  pipelineCopySchema,
+  pipelinePlanSchema,
+  pipelineWeekSchema,
+} from '../dto/marketing-pipeline.dto';
 import { MarketingHubDataService } from '../services/marketing-hub-data.service';
 import { WeeklyPlanGeneratorService } from '../services/weekly-plan-generator.service';
 import { MultiChannelCopywriterService } from '../services/multi-channel-copywriter.service';
@@ -25,22 +35,13 @@ export class MarketingPipelineController {
    * Generate a weekly plan. Resolves gamme aliases to real pg_ids.
    */
   @Post('plan')
-  async generatePlan(
-    @Body() body: { week_iso: string; gamme_aliases?: string[] },
-  ) {
-    if (!body.week_iso || !/^\d{4}-W\d{2}$/.test(body.week_iso)) {
-      return { error: 'week_iso required (format: YYYY-WNN)' };
-    }
+  async generatePlan(@Body() input: unknown) {
+    const body = parsePipelineInput(pipelinePlanSchema, input);
 
     let priorityGammes: PriorityGamme[] | undefined;
 
     if (body.gamme_aliases && body.gamme_aliases.length > 0) {
       priorityGammes = await this.resolveGammeAliases(body.gamme_aliases);
-      if (priorityGammes.length === 0) {
-        return {
-          error: `No gammes found for aliases: ${body.gamme_aliases.join(', ')}`,
-        };
-      }
     }
 
     const plan = await this.planGenerator.generatePlan({
@@ -70,6 +71,7 @@ export class MarketingPipelineController {
    */
   @Get('plan/:week')
   async getPlan(@Param('week') week: string) {
+    parsePipelineInput(pipelineWeekSchema, { week_iso: week });
     const plan = await this.hubData.getWeeklyPlan(week);
     if (!plan) {
       return { error: `No plan found for ${week}` };
@@ -82,9 +84,15 @@ export class MarketingPipelineController {
    * Generate copy for all slots in a weekly plan.
    */
   @Post('generate')
-  async generateCopy(@Body() body: { week_iso: string; dry_run?: boolean }) {
-    if (!body.week_iso) {
-      return { error: 'week_iso required' };
+  async generateCopy(@Body() input: unknown) {
+    const body = parsePipelineInput(pipelineCopySchema, input);
+
+    // A simulation must not load a shared plan or touch the provider/cache.
+    if (body.dry_run === true) {
+      return {
+        success: true,
+        data: await this.copywriter.generateBatch([], body.week_iso, true),
+      };
     }
 
     const plan = await this.hubData.getWeeklyPlan(body.week_iso);
@@ -103,14 +111,22 @@ export class MarketingPipelineController {
 
     // Update plan status
     if (!body.dry_run && result.generated > 0) {
-      await this.hubData.upsertWeeklyPlan({
+      const saved = await this.hubData.upsertWeeklyPlan({
         week_iso: body.week_iso,
         status: 'in_progress',
         posts_generated: result.generated,
       });
+      if (!saved) {
+        throw new OperationFailedException({
+          message: 'Generated posts exist but plan progress was not persisted',
+        });
+      }
     }
 
-    return { success: true, data: result };
+    return {
+      success: result.generated > 0 && result.errors === 0,
+      data: result,
+    };
   }
 
   /**
@@ -118,10 +134,8 @@ export class MarketingPipelineController {
    * Run brand + compliance gates on all generated posts.
    */
   @Post('gate-all')
-  async gateAll(@Body() body: { week_iso: string }) {
-    if (!body.week_iso) {
-      return { error: 'week_iso required' };
-    }
+  async gateAll(@Body() input: unknown) {
+    const body = parsePipelineInput(pipelineWeekSchema, input);
 
     const posts = await this.hubData.getPostsByWeek(
       body.week_iso,
@@ -184,6 +198,7 @@ export class MarketingPipelineController {
    */
   @Get('status/:week')
   async getStatus(@Param('week') week: string) {
+    parsePipelineInput(pipelineWeekSchema, { week_iso: week });
     const plan = await this.hubData.getWeeklyPlan(week);
     const allPosts = await this.hubData.getPostsByWeek(week);
 
@@ -217,18 +232,17 @@ export class MarketingPipelineController {
   private async resolveGammeAliases(
     aliases: string[],
   ): Promise<PriorityGamme[]> {
-    // Use hubData's supabase connection via a direct query
     const results: PriorityGamme[] = [];
 
     for (const alias of aliases) {
-      const trimmed = alias.trim();
-      if (!trimmed) continue;
-
-      // Query via hubData's inherited supabase client
-      const gammes = await this.hubData.resolveGammeAlias(trimmed);
-      if (gammes) {
-        results.push(gammes);
+      const gamme = await this.hubData.resolveGammeAlias(alias);
+      if (!gamme) {
+        throw new DomainValidationException({
+          message: `Unknown gamme alias: ${alias}`,
+          field: 'gamme_aliases',
+        });
       }
+      results.push(gamme);
     }
 
     return results;

@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { DatabaseException } from '@common/exceptions';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import {
@@ -223,6 +224,28 @@ export class MarketingDataService extends SupabaseBaseService {
       this.supabase.from('__seo_observable').select('related_gammes'),
       this.supabase.from('__marketing_content_roadmap').select('pg_id'),
     ]);
+
+    // An unavailable source is not evidence of missing content.
+    for (const [table, result] of [
+      ['pieces_gamme', gammes],
+      ['__seo_gamme_conseil', seoConseilRows],
+      ['__seo_gamme_purchase_guide', seoGuideRows],
+      ['__blog_advice', blogAdviceRows],
+      ['__seo_reference', references],
+      ['__seo_observable', observables],
+      ['__marketing_content_roadmap', roadmapItems],
+    ] as const) {
+      if (result.error) {
+        throw new DatabaseException({
+          message: 'Unable to read marketing content coverage',
+          context: {
+            operation: 'getContentCoverage',
+            table,
+            sourceCode: result.error.code,
+          },
+        });
+      }
+    }
 
     const allGammes = gammes.data || [];
 

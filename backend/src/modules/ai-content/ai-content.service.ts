@@ -320,6 +320,10 @@ export class AiContentService {
           model: this.getProviderModelName(usedProvider),
           language: dto.language || 'fr',
           provider: usedProvider, // Track which provider was used
+          // Hash the prompt actually executed, and preserve it on cache hits.
+          promptHash: createHash('sha256')
+            .update(JSON.stringify({ system, user }))
+            .digest('hex'),
         },
       };
 

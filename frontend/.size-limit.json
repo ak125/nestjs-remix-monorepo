@@ -20,7 +20,7 @@
   {
     "name": "Total JS (all chunks), gzip",
     "path": "build/client/assets/*.js",
-    "limit": "1020 KB",
+    "limit": "1028 KB",
     "gzip": true
   },
   {

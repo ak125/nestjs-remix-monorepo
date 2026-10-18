@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { createHash } from 'crypto';
 import { SITE_ORIGIN } from '../../../config/app.config';
+import { DomainValidationException } from '@common/exceptions';
 import type {
   UTMParams,
   UTMLink,
@@ -50,19 +51,52 @@ export class UTMBuilderService {
       utm_content: utmContent,
     };
 
-    const baseUrl = `${this.BASE_URL}${opts.path}`;
-    const searchParams = new URLSearchParams({
-      utm_campaign: params.utm_campaign,
-      utm_source: params.utm_source,
-      utm_medium: params.utm_medium,
-      utm_content: params.utm_content!,
-    });
+    const baseUrl = this.destination(opts.path).toString();
 
     return {
       base_url: baseUrl,
       params,
-      full_url: `${baseUrl}?${searchParams.toString()}`,
+      full_url: this.appendParams(baseUrl, params),
     };
+  }
+
+  /** Share URL handling with manual exports; attribution replaces old UTM values. */
+  appendParams(path: string, params: UTMParams): string {
+    const url = this.destination(path);
+    for (const key of [
+      'utm_campaign',
+      'utm_source',
+      'utm_medium',
+      'utm_content',
+    ] as const) {
+      const value = params[key];
+      if (value) url.searchParams.set(key, value);
+      else url.searchParams.delete(key);
+    }
+    return url.toString();
+  }
+
+  private destination(path: string): URL {
+    let url: URL;
+    try {
+      url = new URL(path, this.BASE_URL);
+    } catch {
+      throw new DomainValidationException({
+        message: 'Invalid marketing destination',
+        field: 'source_url',
+      });
+    }
+    if (
+      url.origin !== new URL(this.BASE_URL).origin ||
+      url.username ||
+      url.password
+    ) {
+      throw new DomainValidationException({
+        message: 'Marketing destination must belong to the storefront',
+        field: 'source_url',
+      });
+    }
+    return url;
   }
 
   /**

@@ -191,7 +191,13 @@ export interface PriorityGamme {
   pg_id: number;
   pg_alias: string;
   pg_name: string;
-  reason: 'high_traffic' | 'low_coverage' | 'seasonal' | 'trending' | 'manual';
+  reason:
+    | 'seo_content'
+    | 'high_traffic'
+    | 'low_coverage'
+    | 'seasonal'
+    | 'trending'
+    | 'manual';
   search_volume?: number;
 }
 
@@ -209,10 +215,17 @@ export interface PublishManifest {
   week_iso: string;
   channel: SocialChannel;
   generated_at: string;
+  timezone: 'Europe/Paris';
   posts: Array<{
     post_id: number;
+    content_revision: number;
+    review_version: number;
+    approved_content_hash: string;
+    approval_scope: 'editorial';
+    approval: { actor: string; decided_at: string };
     scheduled_date: string;
     scheduled_time: string;
+    title?: string;
     caption: string;
     hashtags: string[];
     link: string;
@@ -223,7 +236,27 @@ export interface PublishManifest {
 
 // ── Social Post (DB row) ──
 
+export interface ChannelReview {
+  content_revision: number;
+  state: 'gate_passed' | 'gate_failed' | 'approved' | 'rejected';
+  actor: string;
+  decided_at: string;
+  gate?: GateSummary;
+  approved_content_hash?: string;
+}
+export interface PublicationProof {
+  url: string;
+  content_revision: number;
+  content_hash: string;
+  declared_by: string;
+  declared_at: string;
+}
+
 export interface SocialPost {
+  content_revision: number;
+  review_version: number;
+  channel_reviews: Partial<Record<SocialChannel, ChannelReview>>;
+  publications: Partial<Record<SocialChannel, PublicationProof>>;
   id: number;
   week_iso: string;
   day_of_week: number;

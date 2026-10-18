@@ -1798,6 +1798,66 @@
       "args": [
         {
           "mode": "IN",
+          "name": "p_post_id",
+          "type": "bigint"
+        },
+        {
+          "mode": "IN",
+          "name": "p_channel",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_content_revision",
+          "type": "bigint"
+        },
+        {
+          "mode": "IN",
+          "name": "p_review_version",
+          "type": "bigint"
+        },
+        {
+          "mode": "IN",
+          "name": "p_content_hash",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_url",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_actor",
+          "type": "text"
+        }
+      ],
+      "definedInMigrations": [
+        "20261016010000_marketing_publication_proofs.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.declare_marketing_social_publication",
+      "language": "plpgsql",
+      "name": "declare_marketing_social_publication",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "jsonb",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "pg_catalog",
+        "public"
+      ],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
           "name": "p_window_hours",
           "type": "INT"
         },
@@ -6548,6 +6608,141 @@
       "args": [
         {
           "mode": "IN",
+          "name": "p_row",
+          "type": "jsonb"
+        }
+      ],
+      "definedInMigrations": [
+        "20261016010000_marketing_publication_proofs.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.marketing_social_editorial",
+      "language": "sql",
+      "name": "marketing_social_editorial",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "jsonb",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "pg_catalog",
+        "pg_catalog",
+        "public"
+      ],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20261014010000_marketing_social_reviews.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.marketing_social_history_immutable",
+      "language": "plpgsql",
+      "name": "marketing_social_history_immutable",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "trigger",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "pg_catalog"
+      ],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_url",
+          "type": "text"
+        }
+      ],
+      "definedInMigrations": [
+        "20261016010000_marketing_publication_proofs.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.marketing_social_publication_url",
+      "language": "sql",
+      "name": "marketing_social_publication_url",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "boolean",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "pg_catalog",
+        "pg_catalog",
+        "pg_catalog",
+        "public"
+      ],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20261014010000_marketing_social_reviews.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.marketing_social_record_history",
+      "language": "plpgsql",
+      "name": "marketing_social_record_history",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "trigger",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "pg_catalog",
+        "public",
+        "pg_catalog"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20261016010000_marketing_publication_proofs.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.marketing_social_revision_guard",
+      "language": "plpgsql",
+      "name": "marketing_social_revision_guard",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "trigger",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "pg_catalog",
+        "public"
+      ],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
           "name": "p_text",
           "type": "text"
         }
@@ -7399,6 +7594,66 @@
       "schemaVersion": "1.0.0",
       "searchPath": [],
       "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_post_id",
+          "type": "bigint"
+        },
+        {
+          "mode": "IN",
+          "name": "p_channel",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_content_revision",
+          "type": "bigint"
+        },
+        {
+          "mode": "IN",
+          "name": "p_review_version",
+          "type": "bigint"
+        },
+        {
+          "mode": "IN",
+          "name": "p_action",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_actor",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_gate",
+          "type": "jsonb"
+        }
+      ],
+      "definedInMigrations": [
+        "20261016010000_marketing_publication_proofs.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.review_marketing_social_post",
+      "language": "plpgsql",
+      "name": "review_marketing_social_post",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "jsonb",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "pg_catalog",
+        "public"
+      ],
+      "securityDefiner": false,
       "sourceConfidence": "high",
       "status": "UNKNOWN",
       "usedBy": []

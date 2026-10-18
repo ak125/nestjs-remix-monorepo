@@ -2633,6 +2633,58 @@
       ]
     },
     {
+      "columns": [
+        {
+          "hasDefault": false,
+          "name": "id",
+          "nullable": true,
+          "type": "bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY"
+        },
+        {
+          "hasDefault": false,
+          "name": "content_revision",
+          "nullable": false,
+          "type": "bigint"
+        },
+        {
+          "hasDefault": false,
+          "name": "review_version",
+          "nullable": false,
+          "type": "bigint"
+        },
+        {
+          "hasDefault": false,
+          "name": "snapshot",
+          "nullable": false,
+          "type": "jsonb"
+        },
+        {
+          "hasDefault": true,
+          "name": "recorded_at",
+          "nullable": false,
+          "type": "timestamptz"
+        }
+      ],
+      "deletePolicy": "FREE",
+      "domain": "UNKNOWN",
+      "id": "__marketing_social_post_history",
+      "inMigrations": [
+        "20261014010000_marketing_social_reviews.sql"
+      ],
+      "indexes": [],
+      "name": "__marketing_social_post_history",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": false,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "usedBy": [
+        "backend/src/modules/marketing/services/marketing-hub-data.service.ts"
+      ]
+    },
+    {
       "columns": [],
       "deletePolicy": "FREE",
       "domain": "UNKNOWN",

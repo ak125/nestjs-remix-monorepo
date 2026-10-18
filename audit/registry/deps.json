@@ -98,6 +98,22 @@
     },
     {
       "declaredIn": [
+        "package.json"
+      ],
+      "id": "npm:@electric-sql/pglite@0.3.14",
+      "name": "@electric-sql/pglite",
+      "owner": "__unassigned__",
+      "schemaVersion": "1.0.0",
+      "source": "npm",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "version": "0.3.14",
+      "workspaces": [
+        "nestjs-remix-monorepo"
+      ]
+    },
+    {
+      "declaredIn": [
         "frontend/package.json"
       ],
       "id": "npm:@fafa/design-tokens@^1.0.0",

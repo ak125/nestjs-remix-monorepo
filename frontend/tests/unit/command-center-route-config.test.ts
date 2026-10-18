@@ -20,7 +20,22 @@ afterEach(() => {
   vi.resetModules();
 });
 
-describe("Command Center build routing", () => {
+describe("Authenticated admin build routing", () => {
+  it.each(["production", "development"])(
+    "registers Social Hub posts at the same URL in %s",
+    async (environment) => {
+      vi.stubEnv("NODE_ENV", environment);
+      const { default: config } = await import("../../app/routes");
+      expect(
+        flatten(await config).find(
+          (route) => route.id === "routes/admin.marketing.social-hub.posts",
+        ),
+      ).toMatchObject({
+        resolvedPath: "admin/marketing/social-hub/posts",
+        file: "routes/admin.marketing.social-hub.posts.tsx",
+      });
+    },
+  );
   it.each(["production", "development"])(
     "registers the authenticated cockpit at its URL in %s",
     async (environment) => {
@@ -48,7 +63,8 @@ describe("Command Center build routing", () => {
         (route) =>
           route.id?.startsWith("routes/admin.") &&
           !route.id.startsWith("routes/admin.video-hub") &&
-          route.id !== "routes/admin.command-center",
+          route.id !== "routes/admin.command-center" &&
+          route.id !== "routes/admin.marketing.social-hub.posts",
       ),
     ).toEqual([]);
     expect(

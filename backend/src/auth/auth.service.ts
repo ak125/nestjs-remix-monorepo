@@ -12,6 +12,7 @@
 import {
   Injectable,
   UnauthorizedException,
+  ServiceUnavailableException,
   BadRequestException,
   ForbiddenException,
   Logger,
@@ -541,7 +542,9 @@ export class AuthService {
         `Error getting user by ID+source ${authSource}:${userId}:`,
         error,
       );
-      return null;
+      throw new ServiceUnavailableException('Identity service unavailable', {
+        cause: error,
+      });
     }
   }
 
@@ -562,7 +565,9 @@ export class AuthService {
       return null;
     } catch (error) {
       this.logger.error(`Error getting user by ID ${userId}:`, error);
-      return null;
+      throw new ServiceUnavailableException('Identity service unavailable', {
+        cause: error,
+      });
     }
   }
 

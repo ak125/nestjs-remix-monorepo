@@ -22,6 +22,22 @@ function sanitizeBriefArray(arr: string[] | undefined): string[] {
   return (arr ?? []).map(sanitizeBriefField);
 }
 
+// Editorial guidance and a source pointer are data, not a technical admission.
+function socialBriefContext(brief: Record<string, unknown>): string {
+  return [
+    ['angle', 'Angle'],
+    ['visual_direction', 'Direction visuelle'],
+    ['source_url', 'Référence source non validée'],
+    ['content_source', 'Type de contenu'],
+  ]
+    .map(([key, label]) =>
+      typeof brief[key] === 'string' && brief[key]
+        ? `${label} : ${sanitizeBriefField(brief[key] as string)}\n`
+        : '',
+    )
+    .join('');
+}
+
 export const CONTENT_TEMPLATES: Record<ContentType, PromptTemplate> = {
   generic: {
     system: `Tu es un assistant de rédaction polyvalent et expert.
@@ -436,7 +452,7 @@ REGLES STRICTES :
 - JAMAIS mentionner de concurrents ni de claims non prouves
 - Si prix : uniquement si source DB fournie
 - Livraison : "Livraison gratuite des 150€" (formulation exacte)
-SORTIE : JSON {"caption":"...","hashtags":["#automecanik",...],"format":"carrousel|post|reel|story","visual_brief":"..."}`,
+SORTIE : JSON {"caption":"...","hashtags":["#automecanik",...],"format":"carrousel|post|reel|story","dimensions":"1080x1080|1080x1350|1080x1920","visual_brief":"..."}`,
     user: (ctx) => {
       const brief = ctx.brief || {};
       const gamme = sanitizeBriefField(brief.gamme_name || ctx.prompt || '');
@@ -444,6 +460,7 @@ SORTIE : JSON {"caption":"...","hashtags":["#automecanik",...],"format":"carrous
         brief.key_selling_points || ctx.features,
       );
       let prompt = `Cree un post Instagram pour :\n\nGamme : ${gamme}\n`;
+      prompt += socialBriefContext(brief);
       if (brief.utm_link) prompt += `Lien UTM : ${brief.utm_link}\n`;
       if (brief.pillar)
         prompt += `Pilier : ${sanitizeBriefField(brief.pillar)}\n`;
@@ -480,6 +497,7 @@ SORTIE : JSON {"caption":"...","hashtags":["#automecanik",...],"format":"post|st
         brief.key_selling_points || ctx.features,
       );
       let prompt = `Cree un post Facebook pour :\n\nGamme : ${gamme}\n`;
+      prompt += socialBriefContext(brief);
       if (brief.utm_link) prompt += `Lien : ${brief.utm_link}\n`;
       if (brief.pillar)
         prompt += `Pilier : ${sanitizeBriefField(brief.pillar)}\n`;
@@ -514,6 +532,7 @@ SORTIE : JSON {"title":"...","description":"...","tags":["automecanik","pieces a
         brief.key_selling_points || ctx.features,
       );
       let prompt = `Cree un contenu YouTube pour :\n\nGamme : ${gamme}\n`;
+      prompt += socialBriefContext(brief);
       if (brief.utm_link) prompt += `Lien : ${brief.utm_link}\n`;
       if (brief.pillar)
         prompt += `Pilier : ${sanitizeBriefField(brief.pillar)}\n`;
