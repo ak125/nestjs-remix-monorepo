@@ -40,7 +40,7 @@
       "properties": {
         "content_approved": {
           "type": "boolean",
-          "description": "Script + claims + evidence + disclaimer valides (Skill fafa-brand-safety-reviewer verdict)."
+          "description": "Posé par l'owner après relecture du verdict du skill fafa-brand-safety-reviewer (règle AI2 du vault) : script + claims + evidence + disclaimer valides. Le schéma ne vérifie que la présence d'un nom dans content_approved_by."
         },
         "content_approved_by": {
           "type": ["string", "null"]
