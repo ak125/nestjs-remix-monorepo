@@ -37,6 +37,20 @@ export class RemotionRenderEngine implements IRenderEngine {
       ? baseUrl
       : `${baseUrl}/render`;
 
+    if (!request.resolvedCompositionId?.trim()) {
+      return {
+        status: 'failed',
+        engineName: this.name,
+        engineVersion: this.version,
+        durationMs: Date.now() - start,
+        outputPath: null,
+        metadata: null,
+        errorMessage: 'An explicit resolved composition is required',
+        errorCode: RenderErrorCode.RENDER_ARTEFACTS_INCOMPLETE,
+        retryable: false,
+      };
+    }
+
     // P6: Timeout via AbortController
     const timeoutMs = parseInt(
       process.env.VIDEO_REMOTION_TIMEOUT_MS || '120000',
@@ -57,7 +71,7 @@ export class RemotionRenderEngine implements IRenderEngine {
           videoType: request.videoType,
           vertical: request.vertical,
           templateId: request.templateId ?? null,
-          composition: request.resolvedCompositionId ?? 'TestCard',
+          composition: request.resolvedCompositionId,
           compositionProps: request.compositionProps ?? null,
           // P12b: Forward resolution and fps to renderer
           resolution: request.compositionProps?.resolution ?? undefined,
@@ -100,7 +114,13 @@ export class RemotionRenderEngine implements IRenderEngine {
       }
 
       // Rule 3: No output = no success
-      if (body.status === 'success' && !outputPath) {
+      if (
+        body.status !== 'failed' &&
+        (!response.ok ||
+          body.status !== 'success' ||
+          typeof outputPath !== 'string' ||
+          !outputPath.trim())
+      ) {
         return {
           status: 'failed',
           engineName: this.name,
@@ -112,7 +132,10 @@ export class RemotionRenderEngine implements IRenderEngine {
             canary: true,
             renderServiceDurationMs,
           },
-          errorMessage: 'Engine returned success but no output file',
+          errorMessage:
+            body.status === 'success' && !outputPath
+              ? 'Engine returned success but no output file'
+              : 'Render service returned an invalid success response',
           errorCode: RenderErrorCode.RENDER_OUTPUT_INVALID,
           retryable: true,
         };

@@ -1,3 +1,4 @@
+import { StubRenderEngine } from '../../src/modules/media-factory/render/engines/stub-render.engine';
 /**
  * RenderAdapterService Unit Tests (P13b)
  *
@@ -545,6 +546,34 @@ describe('RenderAdapterService', () => {
       expect(result.status).toBe('failed');
       expect(result.errorCode).toBe(RenderErrorCode.RENDER_UNKNOWN_ERROR);
       expect(result.retryable).toBe(false);
+    });
+  });
+
+  describe('honest results through the public adapter', () => {
+    it('reports a real stub invocation as skipped simulation', async () => {
+      const service = createService({ VIDEO_RENDER_ENGINE: 'stub' });
+      const result = await service.render(makeRequest());
+      expect(result).toMatchObject({ status: 'skipped', outputPath: null, metadata: { stub: true, executionMode: 'simulated' } });
+    });
+
+    it.each(['stub', 'canary', 'fallback'])(
+      'rejects success without a usable output through %s', async (route) => {
+        const service = createService({ VIDEO_RENDER_ENGINE: route === 'stub' ? 'stub' : 'remotion', VIDEO_RENDER_ENABLED: 'true', VIDEO_CANARY_ENABLED: 'true', VIDEO_CANARY_ELIGIBLE_VIDEO_TYPES: 'short' });
+        const invalid: RenderResult = { status: 'success', engineName: route === 'canary' ? 'remotion' : 'stub', engineVersion: '1.0.0', durationMs: 1, outputPath: '   ', metadata: {}, retryable: false };
+        (service as any).stubEngine = { name: 'stub', render: jest.fn().mockResolvedValue(invalid) };
+        (service as any).canaryEngine = { name: 'remotion', render: route === 'fallback' ? jest.fn().mockRejectedValue(new Error('canary unavailable')) : jest.fn().mockResolvedValue(invalid) };
+        const result = await service.render(makeRequest());
+        expect(result).toMatchObject({ status: 'failed', outputPath: null, errorCode: RenderErrorCode.RENDER_OUTPUT_INVALID });
+        if (route === 'fallback') expect(result.metadata).toMatchObject({ fallback: true, canaryError: 'canary unavailable' });
+      },
+    );
+
+    it('keeps canary failure visible when falling back to the real stub', async () => {
+      const service = createService({ VIDEO_RENDER_ENGINE: 'remotion', VIDEO_RENDER_ENABLED: 'true', VIDEO_CANARY_ENABLED: 'true', VIDEO_CANARY_ELIGIBLE_VIDEO_TYPES: 'short' });
+      (service as any).stubEngine = new StubRenderEngine();
+      (service as any).canaryEngine = { name: 'remotion', render: jest.fn().mockRejectedValue(new Error('canary unavailable')) };
+      const result = await service.render(makeRequest());
+      expect(result).toMatchObject({ status: 'skipped', outputPath: null, engineResolution: 'fallback_to_stub', metadata: { stub: true, executionMode: 'simulated', canary: true, fallback: true, canaryError: 'canary unavailable' } });
     });
   });
 
