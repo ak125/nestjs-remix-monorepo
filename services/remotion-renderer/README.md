@@ -33,6 +33,9 @@ These checks inspect container/stream metadata; they do not decode every frame,
 detect silence, establish speech intelligibility or validate visual quality.
 The real-file tests use synthetic media, not the historical pilot. SHA-256 is
 checked before and after inspection, not atomically across an eventual upload.
+The Linux inspector passes an inherited open file descriptor to ffprobe, so
+renaming/replacing its path cannot switch the probed file away from the hashed
+one. The descriptor is closed on both success and failure.
 The existing audio merge uses `-shortest`; variant checks compare to its processed
 input. An original-duration requirement must also be checked against the manifest.
 

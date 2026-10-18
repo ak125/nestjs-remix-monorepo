@@ -53,6 +53,7 @@ beforeEach(() => {
     Buffer.from(JSON.stringify(probeFixture()));
   mock.method(childProcess, "execSync", (...args) => probe(...args));
   mock.method(childProcess, "execFileSync", (...args) => probe(...args));
+  require('./probe-fixture.cjs').mockMediaDescriptors(mock);
 });
 afterEach(() => mock.restoreAll());
 

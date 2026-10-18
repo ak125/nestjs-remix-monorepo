@@ -178,3 +178,20 @@ test("real resize preserves the AAC track, frames and duration", () => {
     if (result) cleanupPostprocessFiles([result.localPath]);
   }
 });
+
+test("probe and hash stay bound to the opened file if its path is replaced", (t) => {
+  const fs = require("node:fs");
+  const cp = require("node:child_process");
+  const saved = join(dir, "saved-original.mp4");
+  t.mock.method(cp, "execFileSync", (command, args, options) => {
+    if (command !== "ffprobe") return execFileSync(command, args, options);
+    fs.renameSync(silent, saved);
+    fs.copyFileSync(audible, silent);
+    try {
+      return execFileSync(command, args, options);
+    } finally {
+      fs.renameSync(saved, silent);
+    }
+  });
+  assert.equal(inspectVideo(silent, expected).audio.length, 0);
+});

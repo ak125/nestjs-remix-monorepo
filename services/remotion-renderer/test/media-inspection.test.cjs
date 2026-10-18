@@ -21,6 +21,7 @@ beforeEach(() => {
     p === file ? { size: bytes.length } : realStat(p, ...args),
   );
   mock.method(cp, "execFileSync", () => Buffer.from(JSON.stringify(data)));
+  require("./probe-fixture.cjs").mockMediaDescriptors(mock);
 });
 afterEach(() => mock.restoreAll());
 const manifest = () => ({
@@ -168,3 +169,17 @@ test("manifest silent declaration rejects an actual audio stream", () => {
   data = probeFixture({ audio: true });
   assert.throws(() => verifyRenderManifest(manifest(), file), /audio presence/);
 });
+
+for (const invalid of [false, true]) {
+  test(`inspection closes its descriptor on ${invalid ? "failure" : "success"}`, () => {
+    if (invalid) data.streams[0].codec_name = "vp9";
+    if (invalid) assert.throws(() => inspectVideo(file));
+    else inspectVideo(file);
+    assert.equal(fs.openSync.mock.callCount(), 1);
+    assert.equal(fs.closeSync.mock.callCount(), 1);
+    assert.equal(
+      fs.closeSync.mock.calls[0].arguments[0],
+      fs.openSync.mock.calls[0].result,
+    );
+  });
+}

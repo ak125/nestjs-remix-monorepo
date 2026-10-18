@@ -69,6 +69,7 @@ beforeEach(() => {
   writes = mock.method(fs, 'writeFileSync', () => { events.push('write'); });
   mock.method(fs, 'createReadStream', () => Readable.from(['fixture']));
   uploads = mock.method(S3Client.prototype, 'send', async () => { events.push('upload'); return {}; });
+  require('./probe-fixture.cjs').mockMediaDescriptors(mock);
 });
 afterEach(() => mock.restoreAll());
 async function post(payload) {
