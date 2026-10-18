@@ -24,8 +24,10 @@ export interface VideoExecutionJobData {
 // Execution result (returned by processor)
 // ─────────────────────────────────────────────────────────────
 
+import type { ExecutionOutcome } from '../../modules/media-factory/render/execution-outcome';
+
 export interface VideoExecutionResult {
-  status: 'completed' | 'failed';
+  status: ExecutionOutcome;
   canPublish: boolean | null;
   qualityScore: number | null;
   qualityFlags: string[];
@@ -34,7 +36,7 @@ export interface VideoExecutionResult {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Execution log status (DB column values)
+// Legacy execution log lifecycle (DB column values; not render success)
 // ─────────────────────────────────────────────────────────────
 
 export type VideoExecutionStatus =

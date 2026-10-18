@@ -1,15 +1,6 @@
 import {
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  data,
-  useLoaderData,
-  Link,
-  useFetcher,
-} from "react-router";
-import {
   ArrowLeft,
   CheckCircle,
-  XCircle,
   AlertTriangle,
   Clock,
   Cpu,
@@ -29,10 +20,23 @@ import {
   HardDrive,
 } from "lucide-react";
 import { useCallback, useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  data,
+  useLoaderData,
+  Link,
+  useFetcher,
+} from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+
+import {
+  executionPresentation,
+  hasRenderedArtifact,
+} from "~/utils/video-execution";
 
 interface ExecutionLog {
   id: number;
@@ -40,6 +44,7 @@ interface ExecutionLog {
   videoType: string;
   vertical: string;
   status: string;
+  executionOutcome?: string;
   bullmqJobId: string | null;
   triggerSource: string;
   triggerJobId: string | null;
@@ -104,9 +109,9 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     const body = await res.json();
     const execution = body.data as ExecutionLog;
 
-    // Fetch variants if execution completed
+    // A legacy completed lifecycle does not prove an artifact exists.
     let variants: VariantRecord[] = [];
-    if (execution.status === "completed") {
+    if (hasRenderedArtifact(execution.executionOutcome)) {
       try {
         const varRes = await fetch(
           `${backendUrl}/api/admin/video/executions/${executionLogId}/variants`,
@@ -149,32 +154,6 @@ export async function action({ request, params }: ActionFunctionArgs) {
     return data({ ok: false, error: "Erreur reseau" });
   }
 }
-
-const STATUS_CONFIG: Record<
-  string,
-  { color: string; bg: string; icon: typeof Clock }
-> = {
-  pending: {
-    color: "text-gray-600",
-    bg: "bg-gray-100 text-gray-700",
-    icon: Clock,
-  },
-  processing: {
-    color: "text-blue-600",
-    bg: "bg-blue-100 text-blue-700",
-    icon: Activity,
-  },
-  completed: {
-    color: "text-green-600",
-    bg: "bg-green-100 text-green-700",
-    icon: CheckCircle,
-  },
-  failed: {
-    color: "text-red-600",
-    bg: "bg-red-100 text-red-700",
-    icon: XCircle,
-  },
-};
 
 const VERDICT_CONFIG = {
   PASS: {
@@ -360,7 +339,18 @@ export default function ExecutionDetail() {
     );
   }
 
-  const statusConf = STATUS_CONFIG[execution.status] ?? STATUS_CONFIG.pending;
+  const presentation = executionPresentation(execution.executionOutcome);
+  const statusConf = {
+    color:
+      execution.executionOutcome === "rendered_checked"
+        ? "text-green-600"
+        : "text-gray-600",
+    bg: presentation.className,
+    icon:
+      execution.executionOutcome === "rendered_checked"
+        ? CheckCircle
+        : AlertTriangle,
+  };
   const StatusIcon = statusConf.icon;
 
   return (
@@ -441,7 +431,7 @@ export default function ExecutionDetail() {
           </Button>
           <Badge className={statusConf.bg}>
             <StatusIcon className={`h-3 w-3 mr-1 ${statusConf.color}`} />
-            {execution.status}
+            {presentation.label}
           </Badge>
         </div>
       </div>

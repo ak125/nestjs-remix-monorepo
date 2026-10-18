@@ -11,11 +11,16 @@ import {
   NotFoundException,
   ConflictException,
   BadRequestException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
 import type { Queue } from 'bull';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import {
+  executionOutcome,
+  type ExecutionOutcome,
+} from '../render/execution-outcome';
 import { VideoDataService } from './video-data.service';
 import { RenderAdapterService } from '../render/render-adapter.service';
 import type { VideoExecutionJobData } from '../../../workers/types/video-execution.types';
@@ -29,7 +34,9 @@ export interface ExecutionLogRow {
   briefId: string;
   videoType: string;
   vertical: string;
+  /** Legacy SQL lifecycle, not evidence of a checked render. */
   status: string;
+  executionOutcome: ExecutionOutcome;
   bullmqJobId: string | null;
   triggerSource: string;
   triggerJobId: string | null;
@@ -72,6 +79,7 @@ export interface ExecutionLogRow {
 export interface ExecutionStats {
   total: number;
   byStatus: Record<string, number>;
+  byOutcome: Partial<Record<ExecutionOutcome, number>>;
   avgDurationMs: number | null;
   // P5.4: canary observability
   engineDistribution: Record<string, number>;
@@ -372,7 +380,7 @@ export class VideoJobService extends SupabaseBaseService {
     let query = this.client
       .from('__video_execution_log')
       .select(
-        'status, duration_ms, engine_name, render_duration_ms, is_canary, canary_fallback, canary_error_code',
+        'status, duration_ms, engine_name, render_status, render_output_path, render_metadata, feature_flags, engine_resolution, render_duration_ms, is_canary, canary_fallback, canary_error_code',
       );
 
     // P6.2: Time window filter
@@ -392,29 +400,13 @@ export class VideoJobService extends SupabaseBaseService {
 
     if (error) {
       this.logger.error(`getExecutionStats error: ${error.message}`);
-      return {
-        total: 0,
-        byStatus: {},
-        avgDurationMs: null,
-        engineDistribution: {},
-        canary: {
-          totalCanary: 0,
-          totalFallback: 0,
-          successRate: null,
-          fallbackRate: null,
-          topErrorCodes: {},
-        },
-        renderPerformance: {
-          p50RenderDurationMs: null,
-          p95RenderDurationMs: null,
-          byEngine: {},
-        },
-        timeWindow,
-      };
+      throw new ServiceUnavailableException('Execution statistics unavailable');
     }
 
     const rows = data ?? [];
     const byStatus: Record<string, number> = {};
+    const byOutcome: Partial<Record<ExecutionOutcome, number>> = {};
+    let checkedCanary = 0;
     let totalDuration = 0;
     let durationCount = 0;
 
@@ -425,6 +417,8 @@ export class VideoJobService extends SupabaseBaseService {
     const byEngine: Record<string, number[]> = {};
 
     for (const row of rows) {
+      const outcome = executionOutcome(row);
+      byOutcome[outcome] = (byOutcome[outcome] ?? 0) + 1;
       byStatus[row.status] = (byStatus[row.status] ?? 0) + 1;
       if (row.duration_ms != null) {
         totalDuration += row.duration_ms;
@@ -436,6 +430,7 @@ export class VideoJobService extends SupabaseBaseService {
 
       if (row.is_canary) {
         totalCanary++;
+        if (outcome === 'rendered_checked') checkedCanary++;
         if (row.canary_fallback) {
           totalFallback++;
           const errCode = (row.canary_error_code as string) || 'UNKNOWN';
@@ -481,6 +476,7 @@ export class VideoJobService extends SupabaseBaseService {
     return {
       total: rows.length,
       byStatus,
+      byOutcome,
       avgDurationMs:
         durationCount > 0 ? Math.round(totalDuration / durationCount) : null,
       engineDistribution,
@@ -489,7 +485,7 @@ export class VideoJobService extends SupabaseBaseService {
         totalFallback,
         successRate:
           totalCanary > 0
-            ? Math.round(((totalCanary - totalFallback) / totalCanary) * 100)
+            ? Math.round((checkedCanary / totalCanary) * 100)
             : null,
         fallbackRate:
           totalCanary > 0
@@ -648,6 +644,7 @@ export class VideoJobService extends SupabaseBaseService {
     videoType: row.video_type as string,
     vertical: row.vertical as string,
     status: row.status as string,
+    executionOutcome: executionOutcome(row),
     bullmqJobId: row.bullmq_job_id as string | null,
     triggerSource: row.trigger_source as string,
     triggerJobId: row.trigger_job_id as string | null,
@@ -656,7 +653,10 @@ export class VideoJobService extends SupabaseBaseService {
     completedAt: row.completed_at as string | null,
     artefactCheck: row.artefact_check,
     gateResults: row.gate_results,
-    canPublish: row.can_publish as boolean | null,
+    canPublish:
+      executionOutcome(row) === 'rendered_checked'
+        ? (row.can_publish as boolean | null)
+        : false,
     qualityScore: row.quality_score as number | null,
     qualityFlags: row.quality_flags,
     errorMessage: row.error_message as string | null,

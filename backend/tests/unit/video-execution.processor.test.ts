@@ -202,6 +202,44 @@ describe('VideoExecutionProcessor', () => {
     });
   }
 
+  describe('honest results', () => {
+    it.each([
+      [{ engineName: 'stub' }, 'simulated'],
+      [{ engineName: 'remotion', metadata: { fallback: true } }, 'simulated'],
+      [
+        { engineName: 'remotion', status: 'skipped', outputPath: null },
+        'skipped',
+      ],
+      [{ engineName: 'remotion' }, 'rendered_unverified'],
+    ])('does not approve unchecked result %j', async (render, expected) => {
+      const cleanup = withEnv({
+        VIDEO_PIPELINE_ENABLED: 'true',
+        VIDEO_GATES_BLOCKING: 'true',
+      });
+      try {
+        const chain = chainMock({ data: { status: 'pending' }, error: null });
+        chain.update.mockReturnValue({
+          eq: jest.fn().mockResolvedValue({ error: null }),
+        });
+        setClient(chain);
+        mocks.renderAdapter.render.mockResolvedValue(fakeRenderResult(render));
+        const result = await processor.handleVideoExecution(fakeJob());
+        expect(result.status).toBe(expected);
+        expect(result.canPublish).toBe(false);
+        expect(mocks.jobHealth.recordSuccess).not.toHaveBeenCalled();
+      } finally {
+        cleanup();
+      }
+    });
+    it('does not rerender when the idempotency read is unavailable', async () => {
+      setClient(chainMock({ data: null, error: { message: 'unavailable' } }));
+      await expect(processor.handleVideoExecution(fakeJob())).rejects.toThrow(
+        'Execution state unavailable',
+      );
+      expect(mocks.renderAdapter.render).not.toHaveBeenCalled();
+    });
+  });
+
   // ── Idempotency guard ──
 
   describe('idempotency guard', () => {
@@ -211,7 +249,7 @@ describe('VideoExecutionProcessor', () => {
 
       const result = await (processor as any).handleVideoExecution(fakeJob());
 
-      expect(result.status).toBe('completed');
+      expect(result.status).toBe('unknown');
       expect(result.durationMs).toBe(0);
       expect(mocks.gatesService.runAllGates).not.toHaveBeenCalled();
       expect(mocks.dataService.getProduction).not.toHaveBeenCalled();
@@ -242,7 +280,7 @@ describe('VideoExecutionProcessor', () => {
 
       const result = await (processor as any).handleVideoExecution(fakeJob());
 
-      expect(result.status).toBe('completed');
+      expect(result.status).toBe('simulated');
       expect(mocks.dataService.getProduction).toHaveBeenCalledWith('brief-001');
       cleanup();
     });
@@ -261,9 +299,9 @@ describe('VideoExecutionProcessor', () => {
 
       const result = await (processor as any).handleVideoExecution(fakeJob());
 
-      expect(result.status).toBe('completed');
+      expect(result.status).toBe('disabled');
       expect(result.errorMessage).toBe('Pipeline disabled');
-      expect(result.canPublish).toBeNull();
+      expect(result.canPublish).toBe(false);
       expect(mocks.gatesService.runAllGates).not.toHaveBeenCalled();
       cleanup();
     });
@@ -281,7 +319,7 @@ describe('VideoExecutionProcessor', () => {
 
       const result = await (processor as any).handleVideoExecution(fakeJob());
 
-      expect(result.status).toBe('completed');
+      expect(result.status).toBe('simulated');
       expect(mocks.dataService.getProduction).toHaveBeenCalled();
       expect(mocks.gatesService.checkArtefacts).toHaveBeenCalled();
       cleanup();
@@ -334,7 +372,7 @@ describe('VideoExecutionProcessor', () => {
 
       expect(mocks.gatesService.checkArtefacts).toHaveBeenCalled();
       expect(mocks.gatesService.runAllGates).toHaveBeenCalled();
-      expect(result.status).toBe('completed');
+      expect(result.status).toBe('simulated');
       cleanup();
     });
   });
@@ -452,7 +490,7 @@ describe('VideoExecutionProcessor', () => {
 
       const result = await (processor as any).handleVideoExecution(fakeJob());
 
-      expect(result.status).toBe('completed');
+      expect(result.status).toBe('simulated');
       expect(result.qualityScore).toBeDefined();
       expect(typeof result.qualityScore).toBe('number');
       cleanup();
@@ -525,7 +563,7 @@ describe('VideoExecutionProcessor', () => {
 
       const result = await (processor as any).handleVideoExecution(fakeJob());
 
-      expect(result.canPublish).toBe(true);
+      expect(result.canPublish).toBe(false);
       cleanup();
     });
 
@@ -545,7 +583,7 @@ describe('VideoExecutionProcessor', () => {
 
       const result = await (processor as any).handleVideoExecution(fakeJob());
 
-      expect(result.canPublish).toBeNull();
+      expect(result.canPublish).toBe(false);
       cleanup();
     });
   });
@@ -565,7 +603,7 @@ describe('VideoExecutionProcessor', () => {
 
       const result = await (processor as any).handleVideoExecution(fakeJob());
 
-      expect(result.status).toBe('completed');
+      expect(result.status).toBe('simulated');
       // Should have called update multiple times: processing, phase1, phase2
       expect(chain.update).toHaveBeenCalledTimes(3);
       // Production write-back
