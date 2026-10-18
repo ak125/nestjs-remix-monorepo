@@ -1,9 +1,9 @@
 import { RouterContextProvider } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { loader } from "../../app/routes/admin.video-hub.executions.$executionLogId";
 vi.mock("~/utils/internal-api.server", () => ({
   getInternalApiUrl: () => "http://backend",
 }));
-import { loader } from "../../app/routes/admin.video-hub.executions.$executionLogId";
 describe("execution detail artifact loading", () => {
   afterEach(() => vi.unstubAllGlobals());
   it.each([undefined, "simulated", "disabled", "skipped", "unknown"])(
