@@ -2,7 +2,6 @@
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "workspaces": {
     ".": {
-      "entry": ["scripts/**/*.{js,ts,mjs,cjs}"],
       "project": ["scripts/**/*.{js,ts,mjs,cjs}"],
       "ignore": [
         "audit-monorepo/**",
@@ -51,11 +50,7 @@
         "build/**",
         "public/build/**",
         ".cache/**"
-      ],
-      "remix": {
-        "config": "remix.config.js",
-        "entry": ["app/root.tsx", "app/entry.client.tsx", "app/entry.server.tsx"]
-      }
+      ]
     },
     "packages/*": {
       "entry": ["src/index.ts", "src/index.tsx"],
