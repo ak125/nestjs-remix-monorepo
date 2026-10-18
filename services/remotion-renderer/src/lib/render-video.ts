@@ -5,7 +5,7 @@ import {
   makeCancelSignal,
 } from '@remotion/renderer';
 import { statSync, unlinkSync, readFileSync } from 'fs';
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 import { createHash } from 'crypto';
 import { join } from 'path';
 import pino from 'pino';
@@ -156,23 +156,33 @@ export async function renderVideo(
     });
   }
 
-  // P7b: Validate duration with ffprobe
-  let durationSecs: number | null = null;
+  // A probe failure must not turn an unverified output into a successful render.
+  let durationSecs: number;
   try {
-    const probeOut = execSync(
-      `ffprobe -v quiet -print_format json -show_format "${outputLocation}"`,
-      { timeout: 10000 },
-    ).toString();
+    const probeOut = execFileSync(
+      'ffprobe',
+      ['-v', 'error', '-print_format', 'json', '-show_format', outputLocation],
+      { timeout: 10_000, encoding: 'utf8' },
+    );
     const probeData = JSON.parse(probeOut);
-    durationSecs = parseFloat(probeData.format?.duration ?? '0');
-    if (durationSecs < 0.5) {
-      throw Object.assign(new Error(`Render too short: ${durationSecs}s`), {
-        code: 'OUTPUT_INVALID',
-      });
+    const rawDuration: unknown = probeData?.format?.duration;
+    durationSecs =
+      typeof rawDuration === 'number'
+        ? rawDuration
+        : typeof rawDuration === 'string' && /^\d+(\.\d+)?$/.test(rawDuration)
+          ? Number(rawDuration)
+          : NaN;
+    if (!Number.isFinite(durationSecs) || durationSecs < 0.5) {
+      throw new Error('Render duration is missing, invalid or below 0.5 seconds');
     }
   } catch (err) {
-    if ((err as { code?: string }).code === 'OUTPUT_INVALID') throw err;
-    logger.warn({ err }, 'ffprobe failed — duration not validated');
+    // The route has no localPath until this function returns. Clean up here.
+    cleanupRenderFile(outputLocation);
+    logger.error({ err }, 'Render output validation failed');
+    throw Object.assign(new Error('Render output could not be validated'), {
+      code: 'OUTPUT_INVALID',
+      cause: err,
+    });
   }
 
   // P7b: Compute SHA256 checksum

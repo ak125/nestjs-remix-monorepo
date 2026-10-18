@@ -208,10 +208,12 @@ export function generateSrt(segments: SubtitleSegment[]): string {
 }
 
 function formatSrtTime(secs: number): string {
-  const h = Math.floor(secs / 3600);
-  const m = Math.floor((secs % 3600) / 60);
-  const s = Math.floor(secs % 60);
-  const ms = Math.round((secs % 1) * 1000);
+  // Round once before splitting units so 59.9996 becomes 00:01:00,000.
+  const totalMs = Math.round(secs * 1000);
+  const h = Math.floor(totalMs / 3_600_000);
+  const m = Math.floor((totalMs % 3_600_000) / 60_000);
+  const s = Math.floor((totalMs % 60_000) / 1000);
+  const ms = totalMs % 1000;
   return `${pad(h, 2)}:${pad(m, 2)}:${pad(s, 2)},${pad(ms, 3)}`;
 }
 

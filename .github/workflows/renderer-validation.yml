@@ -1,0 +1,36 @@
+name: renderer-validation
+
+on:
+  pull_request:
+    paths:
+      - "services/remotion-renderer/**"
+      - ".github/workflows/renderer-validation.yml"
+  push:
+    branches: [main]
+    paths:
+      - "services/remotion-renderer/**"
+      - ".github/workflows/renderer-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  renderer-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: services/remotion-renderer
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: services/remotion-renderer/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      # No Chromium render, provider, database or object-storage connection.
+      - run: npm test
+      - run: npm run build

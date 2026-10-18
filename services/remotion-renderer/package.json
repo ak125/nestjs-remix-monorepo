@@ -4,6 +4,7 @@
   "private": true,
   "description": "AutoMecanik video render service — Remotion + FFmpeg + S3",
   "scripts": {
+    "test": "node --require tsx/cjs --test test/*.test.cjs",
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
