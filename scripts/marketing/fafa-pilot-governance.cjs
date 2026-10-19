@@ -214,26 +214,47 @@ function evaluateDossier(dir, options) {
     wikiAdmission,
     claimGates: gates,
     acceptedEvidenceIds: [...acceptedIds],
+    // Compatibility field: declared flags only, never authenticated approval.
     approvalsComplete: ['content_approved', 'render_approved', 'publish_approved'].every((key) => approval.approval[key] === true),
     canPublishEligible: claimsReady ? null : false,
     actorAuthenticated: false,
+    humanReview: 'NOT_ASSESSED',
   };
 }
-function validateRenderReview(review, relativePath, artifactPath, manifest) {
+function validateRenderReview(review, relativePath, artifactPath, manifest, sourceFiles) {
   check('render-review', review);
   if (relativePath !== `reviews/${review.render_sha256}/${review.requested_revision}.json`) throw new Error('REVIEW_PATH_MISMATCH');
   const bytes = fs.readFileSync(artifactPath);
   const hash = crypto.createHash('sha256').update(bytes).digest('hex');
-  if (hash !== review.render_sha256 || hash !== manifest.artifact.sha256 || bytes.length !== manifest.artifact.bytes) throw new Error('RENDER_HASH_MISMATCH');
-  const durationMs = manifest.composition.durationSecs * 1000;
-  if (!Number.isFinite(durationMs) || durationMs <= 0 || review.end_ms <= review.start_ms || review.end_ms > durationMs) throw new Error('REVIEW_INTERVAL');
-  // Bounds use declared duration; this is not a codec/AV inspection or actor authentication.
-  return { sha256: hash, bytes: bytes.length, actorAuthenticated: false };
+  if (hash !== review.render_sha256 || hash !== manifest.artifact.sha256 || bytes.length !== manifest.artifact.bytes ||
+      (manifest.approvalBinding !== undefined && manifest.approvalBinding?.boundSha256 !== hash)) throw new Error('RENDER_HASH_MISMATCH');
+  const durationSecs = manifest.composition.durationSecs;
+  const durationMs = durationSecs * 1000;
+  if (typeof durationSecs !== 'number' || !Number.isFinite(durationMs) || durationMs <= 0 || review.end_ms <= review.start_ms || review.end_ms / 1000 > durationSecs) throw new Error('REVIEW_INTERVAL');
+  let sourceBinding = { status: 'NOT_ASSESSED' };
+  if (sourceFiles !== undefined) {
+    const names = ['renderPayload', 'propsUsed'];
+    if (!sourceFiles || typeof sourceFiles !== 'object' || Array.isArray(sourceFiles) ||
+        names.some((name) => typeof sourceFiles[`${name}Path`] !== 'string' || !path.isAbsolute(sourceFiles[`${name}Path`]))) {
+      throw new Error('RENDER_SOURCE_FILES_REQUIRED');
+    }
+    if (names.some((name) => !/^[a-f0-9]{64}$/.test(manifest.source?.[`${name}Sha256`] ?? ''))) {
+      throw new Error('RENDER_SOURCE_BINDING_REQUIRED');
+    }
+    sourceBinding = { status: 'MATCH' };
+    for (const name of names) {
+      const sourceHash = crypto.createHash('sha256').update(fs.readFileSync(sourceFiles[`${name}Path`])).digest('hex');
+      if (sourceHash !== manifest.source[`${name}Sha256`]) throw new Error('RENDER_SOURCE_HASH_MISMATCH');
+      sourceBinding[`${name}Sha256`] = sourceHash;
+    }
+  }
+  // Byte binding and declared duration do not prove render execution, AV quality or human approval.
+  return { sha256: hash, bytes: bytes.length, sourceBinding, actorAuthenticated: false, humanReview: 'NOT_ASSESSED' };
 }
-function prepareCorrection(record, review, relativePath, artifactPath, manifest) {
+function prepareCorrection(record, review, relativePath, artifactPath, manifest, sourceFiles) {
   check('approval-record', record);
   if (record.video_id !== manifest.briefId) throw new Error('DOSSIER_ID_MISMATCH');
-  validateRenderReview(review, relativePath, artifactPath, manifest);
+  validateRenderReview(review, relativePath, artifactPath, manifest, sourceFiles);
   if (record.approval.render_sha256 && record.approval.render_sha256 !== review.render_sha256) throw new Error('APPROVAL_RENDER_MISMATCH');
   if (review.requested_revision <= (record.revision ?? 0)) throw new Error('REVISION_NOT_NEWER');
   const next = structuredClone(record);

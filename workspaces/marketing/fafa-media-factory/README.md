@@ -31,11 +31,12 @@ INSPIRED_PATTERN_ONLY   # transformé en brief Fafa original (anti-recyclage)
   ↓
 DRAFT_ONLY              # Skill fafa-script-generator → scripts/draft/
   ↓
-REVIEW_READY            # Skill fafa-brand-safety-reviewer 7 gates → scripts/review-ready/
-  ↓
-APPROVED                # owner signe Approval Record → scripts/approved/
-  ↓ (render Remotion via skill fafa-remotion-template-planner)
-  ↓ (manifest JSON → manifests/renders/)
+REVIEW_READY            # verdict des gates → scripts/review-ready/ ; aucun flag automatique
+  ↓ (owner approuve le contenu exact : content_approved=true)
+  ↓ (render candidat autorisé + manifeste, puis inspection technique)
+  ↓ (owner inspecte et approuve le MP4 exact : render_approved=true)
+APPROVED                # contenu ET rendu approuvés → scripts/approved/ ; publish_approved=false
+  ↓ (autorisation de publication humaine distincte)
 PUBLISHED               # owner publie manuellement → scripts/published/
   ↓
 MEASURED                # KPIs CSV J+7 → skill fafa-performance-analyzer
@@ -55,8 +56,9 @@ MEASURED                # KPIs CSV J+7 → skill fafa-performance-analyzer
 
 Une vidéo `content_approved=true + render_approved=true + publish_approved=false` = prête, et reste dans `scripts/approved/` tant que l'owner n'a pas signé la publication.
 
-Qui pose `content_approved` (l'owner, règle AI2 du vault) et à quel statut la vidéo est rendue (non tranché) : voir
-`scripts/README.md`, qui relève les écarts entre documents.
+Choix opérationnel D18/D19 confirmé par l'owner le 19/10/2026 : fichiers seuls, backend éteint, rendu avant `APPROVED` et
+approbations humaines séparées, liées aux versions exactes. Voir `scripts/README.md` pour le flux et les limites des contrôles.
+Ce choix ne vaut ni approbation du pilote historique, ni autorisation de lancer un rendu, un upload ou une publication.
 
 ## Stockage — règle stricte
 
@@ -129,3 +131,10 @@ la limite existante de 1500 caractères de preuve reste applicable.
 Une référence inutilisée ne bloque pas un claim catalogue valide. L'admission ne rend pas une vidéo
 publiable : `actorAuthenticated` reste false et les étapes contenu, rendu et publication restent séparées.
 Ce raccordement est un candidat testé ; aucune configuration partagée n'est activée par ces fichiers.
+
+La sortie `evaluateDossier` conserve `approvalsComplete` pour compatibilité : ce champ indique seulement
+que les trois flags déclarés sont vrais. Il ne valide aucun acte humain. `humanReview:NOT_ASSESSED`
+et `actorAuthenticated:false` restent explicites, même si les claims passent les contrôles ou si les trois
+flags sont vrais. `CLAIMS_ONLY` ne signifie donc ni contenu approuvé, ni rendu approuvé, ni publication autorisée.
+Les champs `*_approved_by`, `*_approved_at` et l'historique sont déclaratifs ; leur conformité au schéma
+ne prouve pas l'identité ni l'autorité de leur auteur. La lecture d'un acte humain autorisé reste à raccorder.
