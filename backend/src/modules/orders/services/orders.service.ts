@@ -15,6 +15,8 @@ import {
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { PiecePriceDataService } from '@database/services/piece-price-data.service';
+import { SITE_ORIGIN } from '@config/site.constants';
 import { OrderCalculationService } from './order-calculation.service';
 import { OrderStatusService } from './order-status.service';
 import { ShippingService } from '../../shipping/shipping.service';
@@ -218,6 +220,47 @@ export interface OrderOperationResult {
   ord_id?: string;
 }
 
+/** Échange d'une ligne payée en rupture contre un équivalent plus cher. */
+export interface CreateSupplementOrderInput {
+  /** `orl_id` de la ligne en rupture, dans la commande d'origine. */
+  lineId: string;
+  /** `piece_id` de l'équivalent disponible. */
+  pieceId: number;
+  /** Nombre de pièces de l'équivalent. */
+  quantity: number;
+  /** Prix d'achat HT unitaire de l'équivalent, confirmé chez le fournisseur. */
+  confirmedPurchaseHt: number;
+}
+
+/** Commande de supplément créée, et le lien qui permet au client de la payer. */
+export interface SupplementOrderResult {
+  orderId: string;
+  parentOrderId: string;
+  totalTtc: number;
+  unitTtc: number;
+  quantity: number;
+  paymentUrl: string;
+}
+
+/** Montant texte de `___xtr_order` / `___xtr_order_line` : vide ou « 12.34 ».
+ * Mesuré le 2026-10-19 : aucune valeur non vide hors de ce format. */
+const MONTANT_TEXTE = /^\d+(?:\.\d{1,2})?$/;
+
+/** Montant texte en centimes ; vide = 0 (même lecture que `coalesce(nullif(x,''),'0')`),
+ * `null` si la valeur n'est pas un montant. */
+function centimesDuTexte(valeur: unknown): number | null {
+  const texte = valeur == null ? '' : String(valeur).trim();
+  if (texte === '') return 0;
+  if (!MONTANT_TEXTE.test(texte)) return null;
+  const [euros, decimales = ''] = texte.split('.');
+  return Number(euros) * 100 + Number(decimales.padEnd(2, '0'));
+}
+
+/** Centimes → « 12.34 », sans passer par un flottant. */
+function texteDesCentimes(centimes: number): string {
+  return `${Math.floor(centimes / 100)}.${String(centimes % 100).padStart(2, '0')}`;
+}
+
 /**
  * Service Orders Principal - Version Consolidée
  *
@@ -244,6 +287,7 @@ export class OrdersService extends SupabaseBaseService {
     private readonly shippingCalculator: ShippingCalculatorService,
     private readonly eventEmitter: EventEmitter2,
     private readonly mailService: MailService,
+    private readonly piecePriceData: PiecePriceDataService,
   ) {
     super();
   }
@@ -848,6 +892,309 @@ export class OrdersService extends SupabaseBaseService {
       this.logger.error(`Erreur cancelOrder(${orderId}):`, error);
       throw error;
     }
+  }
+
+  /**
+   * Commande de supplément : une pièce payée est en rupture chez le fournisseur,
+   * un équivalent plus cher est disponible, et le client paie la différence.
+   *
+   * Crée une commande ENFANT (`ord_parent` = commande d'origine), non payée, d'une
+   * seule ligne : l'équivalent au prix de vente du site, moins ce qui a déjà été
+   * payé pour la ligne en rupture. Port et consigne à 0 : le port payé sur la
+   * commande d'origine reste acquis. `paymentUrl` mène au paiement Paybox, qui
+   * relit le montant en base.
+   *
+   * Tout est vérifié AVANT l'écriture, et l'écriture passe par `create_order_atomic`
+   * (commande + ligne + ORDER_CREATED en une transaction), jamais par une table :
+   * - commande d'origine payée (`ord_is_pay = '1'` et date de paiement), non
+   *   annulée, et dont les montants sont ceux de ses lignes (un écart = remise ou
+   *   retouche, hors de cette procédure) ;
+   * - ligne en rupture dans cette commande, avec un montant payé ;
+   * - aucun autre supplément non annulé sur la commande ;
+   * - équivalent affiché, autre que la pièce en rupture, vendable selon
+   *   `PiecePriceDataService` (le prix que voit le client), sans consigne, et
+   *   jamais vendu à perte : vente HT ≥ achat HT en base ET achat HT confirmé
+   *   chez le fournisseur ;
+   * - supplément > 0 et divisible au centime par la quantité ;
+   * - client avec une adresse e-mail, sans laquelle le lien serait refusé.
+   *
+   * N'envoie aucun mail : le texte proposé au client est validé par l'owner
+   * (skill order-rupture-equivalence).
+   *
+   * Limite connue : deux appels simultanés peuvent passer tous deux le contrôle
+   * « aucun supplément ». La base n'a pas d'unicité sur `ord_parent`, car des
+   * commandes historiques portent plusieurs enfants.
+   */
+  async createSupplementOrder(
+    parentOrderId: string,
+    input: CreateSupplementOrderInput,
+    ctx: { userId?: string } = {},
+  ): Promise<SupplementOrderResult> {
+    const { lineId, pieceId, quantity, confirmedPurchaseHt } = input;
+    if (typeof parentOrderId !== 'string' || parentOrderId.trim() === '') {
+      throw new BadRequestException("Commande d'origine requise.");
+    }
+    if (typeof lineId !== 'string' || lineId.trim() === '') {
+      throw new BadRequestException('Ligne en rupture requise (lineId).');
+    }
+    if (!Number.isInteger(pieceId) || pieceId <= 0) {
+      throw new BadRequestException(
+        'Pièce équivalente invalide (pieceId entier positif).',
+      );
+    }
+    if (!Number.isInteger(quantity) || quantity <= 0) {
+      throw new BadRequestException('Quantité invalide (entier positif).');
+    }
+    if (
+      typeof confirmedPurchaseHt !== 'number' ||
+      !Number.isFinite(confirmedPurchaseHt) ||
+      confirmedPurchaseHt <= 0
+    ) {
+      throw new BadRequestException(
+        "Prix d'achat HT confirmé chez le fournisseur requis (confirmedPurchaseHt > 0).",
+      );
+    }
+    const echecLecture = (quoi: string, error: { message: string }) =>
+      new Error(`Lecture ${quoi} impossible : ${error.message}`);
+
+    // Commande d'origine : payée, non annulée, montants égaux à ses lignes.
+    const { data: parent, error: parentError } = await this.supabase
+      .from(TABLES.xtr_order)
+      .select(
+        'ord_id, ord_cst_id, ord_is_pay, ord_date_pay, ord_ords_id, ord_amount_ttc, ord_deposit_ttc, ord_cba_id, ord_cda_id, ord_billing_snapshot, ord_shipping_snapshot',
+      )
+      .eq('ord_id', parentOrderId)
+      .maybeSingle();
+    if (parentError) throw echecLecture('de la commande', parentError);
+    if (!parent) {
+      throw new NotFoundException(`Commande ${parentOrderId} introuvable.`);
+    }
+    const payee =
+      String(parent.ord_is_pay) === '1' &&
+      parent.ord_date_pay != null &&
+      String(parent.ord_date_pay).trim() !== '';
+    if (!payee || parent.ord_ords_id === OrderStatus.CANCELLED) {
+      throw new ConflictException(
+        `La commande ${parentOrderId} n'est pas payée, ou est annulée : pas de supplément possible.`,
+      );
+    }
+
+    const { data: lignes, error: lignesError } = await this.supabase
+      .from(TABLES.xtr_order_line)
+      .select(
+        'orl_id, orl_pg_id, orl_pm_name, orl_art_ref, orl_art_price_sell_ttc, orl_art_deposit_ttc',
+      )
+      .eq('orl_ord_id', parentOrderId);
+    if (lignesError) throw echecLecture('des lignes', lignesError);
+    let piecesCentimes = 0;
+    let consigneCentimes = 0;
+    for (const l of lignes ?? []) {
+      const vente = centimesDuTexte(l.orl_art_price_sell_ttc);
+      const consigne = centimesDuTexte(l.orl_art_deposit_ttc);
+      if (vente === null || consigne === null) {
+        throw new ConflictException(
+          `Montant illisible sur la ligne ${l.orl_id} : supplément à traiter à la main.`,
+        );
+      }
+      piecesCentimes += vente;
+      consigneCentimes += consigne;
+    }
+    if (
+      piecesCentimes !== centimesDuTexte(parent.ord_amount_ttc) ||
+      consigneCentimes !== centimesDuTexte(parent.ord_deposit_ttc)
+    ) {
+      throw new ConflictException(
+        `Les montants de la commande ${parentOrderId} (pièces ${parent.ord_amount_ttc}, consigne ${parent.ord_deposit_ttc}) ne sont pas ceux de ses lignes (pièces ${texteDesCentimes(piecesCentimes)}, consigne ${texteDesCentimes(consigneCentimes)}) : remise ou retouche, supplément à traiter à la main.`,
+      );
+    }
+
+    // Ligne en rupture, et ce qui a été payé pour elle (pièces + consigne).
+    const ligne = (lignes ?? []).find((l) => l.orl_id === lineId);
+    if (!ligne) {
+      throw new NotFoundException(
+        `Ligne ${lineId} absente de la commande ${parentOrderId}.`,
+      );
+    }
+    const payeCentimes =
+      (centimesDuTexte(ligne.orl_art_price_sell_ttc) ?? 0) +
+      (centimesDuTexte(ligne.orl_art_deposit_ttc) ?? 0);
+    if (payeCentimes <= 0) {
+      throw new ConflictException(
+        `Aucun montant payé lisible pour la ligne ${lineId}.`,
+      );
+    }
+
+    // Un seul supplément vivant par commande ; un supplément annulé ne compte pas.
+    const { data: enfants, error: enfantsError } = await this.supabase
+      .from(TABLES.xtr_order)
+      .select('ord_id, ord_ords_id')
+      .eq('ord_parent', parentOrderId);
+    if (enfantsError) throw echecLecture('des suppléments', enfantsError);
+    const enCours = (enfants ?? []).find(
+      (e) => e.ord_ords_id !== OrderStatus.CANCELLED,
+    );
+    if (enCours) {
+      throw new ConflictException(
+        `La commande ${parentOrderId} a déjà un supplément non annulé (${enCours.ord_id}).`,
+      );
+    }
+
+    // Équivalent : affiché, autre que la pièce en rupture, avec sa marque.
+    if (String(pieceId) === String(ligne.orl_pg_id)) {
+      throw new ConflictException(
+        `La pièce ${pieceId} est celle en rupture : choisir un équivalent.`,
+      );
+    }
+    const { data: piece, error: pieceError } = await this.supabase
+      .from(TABLES.pieces)
+      .select('piece_id, piece_name, piece_ref, piece_pm_id, piece_display')
+      .eq('piece_id', pieceId)
+      .maybeSingle();
+    if (pieceError) throw echecLecture('de la pièce', pieceError);
+    if (!piece || piece.piece_display !== true) {
+      throw new ConflictException(
+        `La pièce ${pieceId} est introuvable ou n'est pas affichée sur le site.`,
+      );
+    }
+    const { data: marque, error: marqueError } = await this.supabase
+      .from(TABLES.pieces_marque)
+      .select('pm_name')
+      .eq('pm_id', String(piece.piece_pm_id))
+      .maybeSingle();
+    if (marqueError) throw echecLecture('de la marque', marqueError);
+    if (!marque?.pm_name) {
+      throw new ConflictException(
+        `Marque introuvable pour la pièce ${pieceId}.`,
+      );
+    }
+
+    // Tarif : l'autorité unique, jamais une requête de plus sur pieces_price.
+    const tarif = await this.piecePriceData.findSellablePrice(pieceId);
+    if (!tarif) {
+      throw new ConflictException(
+        `La pièce ${pieceId} n'a aucun tarif vendable.`,
+      );
+    }
+    const consigneTtc = Number(tarif.pri_consigne_ttc_n ?? 0);
+    if (consigneTtc !== 0) {
+      throw new ConflictException(
+        `La pièce ${pieceId} porte une consigne (${tarif.pri_consigne_ttc_n} € TTC) : supplément à traiter à la main.`,
+      );
+    }
+    const venteHt =
+      tarif.pri_vente_ht_n == null ? NaN : Number(tarif.pri_vente_ht_n);
+    const achatBaseHt =
+      tarif.pri_achat_ht_n == null ? null : Number(tarif.pri_achat_ht_n);
+    if (!(venteHt >= Math.max(confirmedPurchaseHt, achatBaseHt ?? 0))) {
+      throw new ConflictException(
+        `Vente à perte refusée pour la pièce ${pieceId} : vente HT ${tarif.pri_vente_ht_n ?? 'absente'}, achat HT en base ${achatBaseHt ?? 'absent'}, achat HT confirmé ${confirmedPurchaseHt}.`,
+      );
+    }
+
+    // Supplément = quantité × prix TTC − payé pour la ligne, en centimes.
+    const venteTtcCentimes = Math.round(Number(tarif.pri_vente_ttc_n) * 100);
+    const totalCentimes = quantity * venteTtcCentimes - payeCentimes;
+    if (totalCentimes <= 0) {
+      throw new ConflictException(
+        `Aucun supplément à payer : ${quantity} × ${texteDesCentimes(venteTtcCentimes)} € TTC ne dépasse pas les ${texteDesCentimes(payeCentimes)} € déjà payés.`,
+      );
+    }
+    if (totalCentimes % quantity !== 0) {
+      throw new ConflictException(
+        `Le supplément de ${texteDesCentimes(totalCentimes)} € ne se divise pas au centime par ${quantity} : supplément à traiter à la main.`,
+      );
+    }
+    const unitCentimes = totalCentimes / quantity;
+
+    const { data: client, error: clientError } = await this.supabase
+      .from(TABLES.xtr_customer)
+      .select('cst_mail')
+      .eq('cst_id', String(parent.ord_cst_id))
+      .maybeSingle();
+    if (clientError) throw echecLecture('du client', clientError);
+    const email =
+      typeof client?.cst_mail === 'string' ? client.cst_mail.trim() : '';
+    if (!email) {
+      throw new ConflictException(
+        `Le client de la commande ${parentOrderId} n'a pas d'adresse e-mail : le lien de paiement serait refusé.`,
+      );
+    }
+
+    // Création atomique : commande + ligne + ORDER_CREATED.
+    const orderId = await this.generateOrderNumber();
+    const total = texteDesCentimes(totalCentimes);
+    const enRupture =
+      `${ligne.orl_pm_name ?? ''} ${ligne.orl_art_ref ?? ''}`.trim();
+    const order = {
+      ord_id: orderId,
+      ord_cst_id: String(parent.ord_cst_id),
+      ord_date: new Date().toISOString(),
+      ord_parent: parentOrderId,
+      ord_is_pay: '0',
+      ord_date_pay: null,
+      ord_amount_ttc: total,
+      ord_deposit_ttc: '0.00',
+      ord_shipping_fee_ttc: '0.00',
+      ord_total_ttc: total,
+      ord_info: `Supplément de la commande ${parentOrderId} : ${quantity} × ${marque.pm_name} ${piece.piece_ref} (${texteDesCentimes(venteTtcCentimes)} € TTC) au lieu de ${enRupture} en rupture fournisseur, moins ${texteDesCentimes(payeCentimes)} € déjà payés ; port déjà payé sur la commande d'origine.`,
+      ord_ords_id: OrderStatus.PROCESSING,
+      ord_cba_id: parent.ord_cba_id ?? null,
+      ord_cda_id: parent.ord_cda_id ?? null,
+      ord_billing_snapshot: parent.ord_billing_snapshot ?? null,
+      ord_shipping_snapshot: parent.ord_shipping_snapshot ?? null,
+    };
+    const line = {
+      orl_id: `${orderId}-L001`,
+      orl_ord_id: orderId,
+      orl_pg_id: String(pieceId),
+      orl_pg_name: `${piece.piece_name} — supplément échange (remplace ${enRupture})`,
+      orl_pm_name: marque.pm_name,
+      orl_art_ref: piece.piece_ref,
+      orl_art_quantity: String(quantity),
+      orl_art_price_sell_unit_ttc: texteDesCentimes(unitCentimes),
+      orl_art_price_sell_ttc: total,
+      orl_art_deposit_unit_ttc: null,
+      orl_art_deposit_ttc: null,
+      orl_website_url: null,
+    };
+    const correlationId = randomUUID();
+    const { error: rpcError } = await this.callRpc(
+      'create_order_atomic',
+      { p_order: order, p_lines: [line], p_correlation_id: correlationId },
+      { isServiceRole: true, source: 'internal' },
+    );
+    if (rpcError) {
+      this.logger.error(
+        `Échec création du supplément de ${parentOrderId}: ${rpcError.message}`,
+      );
+      throw new BadRequestException(
+        `Échec création du supplément: ${rpcError.message}`,
+      );
+    }
+
+    this.eventEmitter.emit(ORDER_EVENTS.CREATED, {
+      orderId,
+      customerId: String(parent.ord_cst_id),
+      totalTtc: totalCentimes / 100,
+      linesCount: 1,
+      lines: [
+        { lineId: line.orl_id, productId: line.orl_pg_id, websiteUrl: null },
+      ],
+      timestamp: new Date().toISOString(),
+      correlationId,
+    } satisfies OrderCreatedEvent);
+    this.logger.log(
+      `Supplément ${orderId} créé pour ${parentOrderId} : ${total} € TTC (${quantity} × pièce ${pieceId}), utilisateur ${ctx.userId ?? 'inconnu'}`,
+    );
+
+    return {
+      orderId,
+      parentOrderId,
+      totalTtc: totalCentimes / 100,
+      unitTtc: unitCentimes / 100,
+      quantity,
+      paymentUrl: `${SITE_ORIGIN}/api/paybox/redirect?${new URLSearchParams({ orderId, amount: total, email })}`,
+    };
   }
 
   // NOTE: deleteOrder method intentionally REMOVED (Vault #301 PR-C).
