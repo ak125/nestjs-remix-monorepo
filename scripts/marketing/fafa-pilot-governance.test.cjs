@@ -824,3 +824,48 @@ test('D18 bound correction produces a reset copy and preserves the original reco
   assert.equal(next.approval.render_sha256, null);
   assert.equal(JSON.stringify(record), before);
 });
+
+// The review reader must not accept a manifest that L10 would reject for binding or duration.
+for (const approvalBinding of [null, {}, { boundSha256: 'invalid' }, { boundSha256: 'b'.repeat(64) }]) {
+  test(`D18 rejects an explicit invalid approval binding: ${JSON.stringify(approvalBinding)}`, (t) => {
+    const f = renderSourceFixture(t);
+    f.manifest.approvalBinding = approvalBinding;
+    assert.throws(() => require('./fafa-pilot-governance.cjs').validateRenderReview(
+      f.review, f.relativePath, f.artifact, f.manifest, f.sourceFiles), /RENDER_HASH_MISMATCH/);
+  });
+}
+
+for (const durationSecs of ['38', [38], true]) {
+  test(`D18 refuses coercion of declared duration: ${JSON.stringify(durationSecs)}`, (t) => {
+    const f = renderSourceFixture(t);
+    f.manifest.composition.durationSecs = durationSecs;
+    assert.throws(() => require('./fafa-pilot-governance.cjs').validateRenderReview(
+      f.review, f.relativePath, f.artifact, f.manifest), /REVIEW_INTERVAL/);
+  });
+}
+
+test('D18 matching optional approval binding remains a technical check only', (t) => {
+  const f = renderSourceFixture(t);
+  f.manifest.approvalBinding = { boundSha256: f.manifest.artifact.sha256 };
+  // Decimal seconds are valid; review end exactly at the declared boundary is accepted.
+  f.manifest.composition.durationSecs = 1.25;
+  f.review.end_ms = 1250;
+  const result = require('./fafa-pilot-governance.cjs').validateRenderReview(
+    f.review, f.relativePath, f.artifact, f.manifest, f.sourceFiles);
+  assert.equal(result.sha256, f.manifest.approvalBinding.boundSha256);
+  assert.equal(result.sourceBinding.status, 'MATCH');
+  assert.equal(result.actorAuthenticated, false);
+  assert.equal(result.humanReview, 'NOT_ASSESSED');
+});
+
+test('D18 inconsistent manifest binding cannot prepare a correction or mutate prior approvals', (t) => {
+  const f = renderSourceFixture(t);
+  const record = read(path.join(pilot, 'approval.json'));
+  record.revision = 1;
+  record.approval.render_sha256 = f.manifest.artifact.sha256;
+  f.manifest.approvalBinding = { boundSha256: 'b'.repeat(64) };
+  const before = JSON.stringify(record);
+  assert.throws(() => require('./fafa-pilot-governance.cjs').prepareCorrection(
+    record, f.review, f.relativePath, f.artifact, f.manifest, f.sourceFiles), /RENDER_HASH_MISMATCH/);
+  assert.equal(JSON.stringify(record), before);
+});

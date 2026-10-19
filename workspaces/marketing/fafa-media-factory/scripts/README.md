@@ -29,6 +29,12 @@ image/voix si applicables) restent des prérequis distincts. Ce choix opération
 
 ### Contrôle local de liaison des sources
 
+Le lecteur de revue vérifie les octets du rendu contre le commentaire et le manifeste. Si le manifeste contient
+`approvalBinding`, son `boundSha256` doit désigner ce même fichier ; un bloc vide, nul, mal formé ou divergent est rejeté.
+L'absence du bloc reste compatible avec les anciens manifestes. Cette correspondance ne prouve aucune approbation.
+La durée déclarée doit être un nombre positif et fini, sans conversion implicite depuis du texte, un tableau ou un booléen.
+Les secondes décimales sont acceptées ; les bornes du commentaire restent vérifiées contre cette durée déclarée.
+
 `scripts/marketing/fafa-pilot-governance.cjs` (racine du dépôt) expose :
 
 ```js

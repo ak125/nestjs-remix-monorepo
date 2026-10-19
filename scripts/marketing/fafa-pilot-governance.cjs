@@ -226,9 +226,11 @@ function validateRenderReview(review, relativePath, artifactPath, manifest, sour
   if (relativePath !== `reviews/${review.render_sha256}/${review.requested_revision}.json`) throw new Error('REVIEW_PATH_MISMATCH');
   const bytes = fs.readFileSync(artifactPath);
   const hash = crypto.createHash('sha256').update(bytes).digest('hex');
-  if (hash !== review.render_sha256 || hash !== manifest.artifact.sha256 || bytes.length !== manifest.artifact.bytes) throw new Error('RENDER_HASH_MISMATCH');
-  const durationMs = manifest.composition.durationSecs * 1000;
-  if (!Number.isFinite(durationMs) || durationMs <= 0 || review.end_ms <= review.start_ms || review.end_ms > durationMs) throw new Error('REVIEW_INTERVAL');
+  if (hash !== review.render_sha256 || hash !== manifest.artifact.sha256 || bytes.length !== manifest.artifact.bytes ||
+      (manifest.approvalBinding !== undefined && manifest.approvalBinding?.boundSha256 !== hash)) throw new Error('RENDER_HASH_MISMATCH');
+  const durationSecs = manifest.composition.durationSecs;
+  const durationMs = durationSecs * 1000;
+  if (typeof durationSecs !== 'number' || !Number.isFinite(durationMs) || durationMs <= 0 || review.end_ms <= review.start_ms || review.end_ms > durationMs) throw new Error('REVIEW_INTERVAL');
   let sourceBinding = { status: 'NOT_ASSESSED' };
   if (sourceFiles !== undefined) {
     const names = ['renderPayload', 'propsUsed'];
