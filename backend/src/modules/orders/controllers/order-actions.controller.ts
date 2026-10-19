@@ -16,6 +16,10 @@ import { AuthenticatedGuard } from '@auth/authenticated.guard';
 import { PermissionsGuard } from '@auth/guards/permissions.guard';
 import { RequirePermission } from '@auth/decorators/require-permission.decorator';
 import { OrderActionsService } from '../services/order-actions.service';
+import {
+  OrdersService,
+  type CreateSupplementOrderInput,
+} from '../services/orders.service';
 import { MailService } from '../../../services/mail.service';
 
 /**
@@ -33,6 +37,7 @@ export class OrderActionsController {
   constructor(
     private readonly orderActionsService: OrderActionsService,
     private readonly mailService: MailService,
+    private readonly ordersService: OrdersService,
   ) {}
 
   /**
@@ -284,6 +289,32 @@ export class OrderActionsController {
       this.logger.error(`❌ Échec annulation ${orderId}:`, message);
       throw error;
     }
+  }
+
+  /**
+   * POST /api/admin/orders/:orderId/supplements
+   * Supplément après une rupture fournisseur : l'équivalent disponible coûte
+   * plus cher, le client paie la différence par une commande enfant. Les règles
+   * sont dans OrdersService.createSupplementOrder. Aucun mail n'est envoyé : le
+   * texte proposé au client, avec `paymentUrl`, est validé par l'owner.
+   */
+  @Post(':orderId/supplements')
+  @RequirePermission('canCreateOrders')
+  async createSupplementOrder(
+    @Param('orderId') orderId: string,
+    @Body() body: CreateSupplementOrderInput,
+    @Req() req: Request,
+  ) {
+    const supplement = await this.ordersService.createSupplementOrder(
+      orderId,
+      body,
+      { userId: req.user?.id },
+    );
+    return {
+      success: true,
+      message: `Supplément ${supplement.orderId} créé : ${supplement.totalTtc.toFixed(2)} € TTC à payer par le client.`,
+      ...supplement,
+    };
   }
 
   /**
