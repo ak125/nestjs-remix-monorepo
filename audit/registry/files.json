@@ -43752,11 +43752,10 @@
       "id": "frontend/app/components/blog/NewsletterCTA.tsx",
       "importedBy": [],
       "imports": [
-        "~/components/ui/button",
-        "~/components/ui/input"
+        "~/components/ui/button"
       ],
       "kind": "config",
-      "loc": 97,
+      "loc": 53,
       "owner": "__unassigned__",
       "path": "frontend/app/components/blog/NewsletterCTA.tsx",
       "risk": "low",
@@ -64460,6 +64459,25 @@
       "loc": 58,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/mini-diagnostic-table-anchor.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/newsletter-cta-no-fake-subscription.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 54,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/newsletter-cta-no-fake-subscription.test.tsx",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
