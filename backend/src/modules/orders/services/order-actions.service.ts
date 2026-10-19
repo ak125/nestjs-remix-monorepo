@@ -1,7 +1,9 @@
+import { randomUUID } from 'crypto';
 import { TABLES } from '@repo/database-types';
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { OrdersService } from './orders.service';
 import {
   ORDER_EVENTS,
   type OrderStatusChangedEvent,
@@ -24,7 +26,10 @@ import type { OrderRecord, CustomerRecord } from '../types/order.types';
 export class OrderActionsService extends SupabaseBaseService {
   protected readonly logger = new Logger(OrderActionsService.name);
 
-  constructor(private readonly eventEmitter: EventEmitter2) {
+  constructor(
+    private readonly eventEmitter: EventEmitter2,
+    private readonly ordersService: OrdersService,
+  ) {
     super();
   }
 
@@ -671,7 +676,14 @@ export class OrderActionsService extends SupabaseBaseService {
   }
 
   /**
-   * ❌ Annuler commande (→ statut 6)
+   * ❌ Annuler commande (→ statut 2)
+   *
+   * Délègue à OrdersService.cancelOrder, seul propriétaire de
+   * cancel_order_atomic (authority-graph.yaml, order_lifecycle.cancellation) :
+   * la RPC décide sur la ligne verrouillée (refus d'une commande payée, seules
+   * les transitions 1|3|4 → 2) et journalise ORDER_CANCELLED dans
+   * ___xtr_order_history. L'événement émis ensuite porte la même corrélation ;
+   * ses écouteurs envoient l'unique mail d'annulation et l'audit admin.
    */
   async cancelOrder(
     orderId: string,
@@ -682,33 +694,13 @@ export class OrderActionsService extends SupabaseBaseService {
       this.logger.log(`❌ Annulation commande ${orderId} - Raison: ${reason}`);
 
       const order = await this.getOrder(orderId);
+      const correlationId = randomUUID();
 
-      // Ne pas annuler si déjà expédiée ou livrée
-      if (order.ord_ords_id === '4' || order.ord_ords_id === '5') {
-        throw new BadRequestException(
-          "Impossible d'annuler une commande expédiée ou livrée",
-        );
-      }
-
-      // Mettre à jour
-      const { error } = await this.supabase
-        .from(TABLES.xtr_order)
-        .update({
-          ord_ords_id: '6', // Annulée
-          ord_cancel_date: new Date().toISOString(),
-          ord_cancel_reason: reason,
-          ord_updated_at: new Date().toISOString(),
-        })
-        .eq('ord_id', orderId);
-
-      if (error) throw error;
-
-      // Historique
-      await this.createOrderStatusHistory(
+      await this.ordersService.cancelOrder(
         orderId,
-        '6',
-        `Commande annulée: ${reason}`,
+        reason,
         userId,
+        correlationId,
       );
 
       this.eventEmitter.emit(ORDER_EVENTS.CANCELLED, {
@@ -716,11 +708,12 @@ export class OrderActionsService extends SupabaseBaseService {
         customerId: order.ord_cst_id,
         reason,
         changedBy: userId ? String(userId) : undefined,
+        correlationId,
         timestamp: new Date().toISOString(),
       } satisfies OrderCancelledEvent);
 
       this.logger.log(`✅ Commande ${orderId} annulée`);
-      return { success: true, newStatus: '6', reason };
+      return { success: true, newStatus: '2', reason };
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(`❌ Erreur annulation commande:`, message);

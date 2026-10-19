@@ -269,21 +269,9 @@ export class OrderActionsController {
         `❌ Annulation commande ${orderId} - Raison: ${body.reason}`,
       );
 
-      // 1. Annuler commande
+      // Le mail d'annulation part de l'écouteur de ORDER_EVENTS.CANCELLED
+      // (OrderEmailListener), émis par le service : un seul mail.
       await this.orderActionsService.cancelOrder(orderId, body.reason);
-
-      // 2. Récupérer données pour email
-      const order = await this.orderActionsService.getOrder(orderId);
-      const customer = await this.orderActionsService.getCustomer(
-        order.ord_cst_id,
-      );
-
-      // 3. Envoyer email annulation
-      await this.mailService.sendCancellationEmail(
-        order,
-        customer,
-        body.reason,
-      );
 
       this.logger.log(`✅ Commande ${orderId} annulée avec succès`);
 
