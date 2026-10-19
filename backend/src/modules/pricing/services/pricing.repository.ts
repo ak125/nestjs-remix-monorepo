@@ -324,7 +324,8 @@ export class PricingRepository extends SupabaseBaseService {
           'pri_ref, pri_piece_id_i, pri_type, pri_dispo, pricing_state, pricing_state_reason',
         )
         .eq('pri_pm_id', supplier)
-        .in('pri_ref', chunk);
+        .in('pri_ref', chunk)
+        .limit(PAGE);
       if (error) throw error;
       const rows = (data ?? []) as Array<Record<string, unknown>>;
       if (rows.length >= PAGE) {
@@ -369,7 +370,8 @@ export class PricingRepository extends SupabaseBaseService {
         .from('pieces_price')
         .select('pri_piece_id_i, pri_type, pri_dispo, pri_vente_ttc_n')
         .eq('pri_pm_id', supplier)
-        .in('pri_piece_id_i', chunk);
+        .in('pri_piece_id_i', chunk)
+        .limit(PAGE);
       if (error) throw error;
       const priceRows = (data ?? []) as Array<Record<string, unknown>>;
       if (priceRows.length >= PAGE) {
@@ -391,7 +393,8 @@ export class PricingRepository extends SupabaseBaseService {
       const { data: pieces, error: piecesError } = await this.supabase
         .from('pieces')
         .select('piece_id, piece_display, piece_pm_id')
-        .in('piece_id', chunk);
+        .in('piece_id', chunk)
+        .limit(PAGE);
       if (piecesError) throw piecesError;
       for (const p of (pieces ?? []) as Array<Record<string, unknown>>) {
         visibleBrand.set(

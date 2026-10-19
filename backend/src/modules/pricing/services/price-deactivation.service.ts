@@ -165,7 +165,11 @@ export class PriceDeactivationService {
     report: DeactivationReport;
     commitRows: DeactivationCommitRow[];
   }> {
-    if (!req?.supplierId || !Array.isArray(req.rows)) {
+    if (
+      typeof req?.supplierId !== 'string' ||
+      !req.supplierId ||
+      !Array.isArray(req.rows)
+    ) {
       throw new BadRequestException(
         'deactivation requires supplierId and rows[]',
       );

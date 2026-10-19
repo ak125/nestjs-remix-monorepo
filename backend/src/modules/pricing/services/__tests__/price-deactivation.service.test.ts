@@ -261,6 +261,13 @@ describe('PriceDeactivationService', () => {
         svc.dryRun({ supplierId: '4500' } as never),
       ).rejects.toBeInstanceOf(BadRequestException);
     });
+
+    it('refuses a numeric supplierId (the brand lock compares strings)', async () => {
+      const svc = new PriceDeactivationService(makeRepo());
+      await expect(
+        svc.dryRun({ supplierId: 4500 as never, rows: [] }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
   });
 
   describe('commit', () => {
