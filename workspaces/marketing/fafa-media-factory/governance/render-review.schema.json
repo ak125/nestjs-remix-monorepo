@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://automecanik.com/schema/fafa-media-factory/render-review.schema.json",
   "title": "File-only Render Review (D18)",
-  "description": "reviews/<render_sha256>/<requested_revision>.json. Aucun champ d'identité; l'acteur est l'auteur authentifié de la PR, non vérifiable par ce fichier local.",
+  "description": "reviews/<render_sha256>/<requested_revision>.json. Demande de correction sans champ d'identité. L'auteur de la PR seul ne prouve pas l'approbation humaine : elle exige un acte de revue autorisé lié au commit et au rendu exacts, non vérifiable par ce fichier local.",
   "type": "object",
   "additionalProperties": false,
   "required": ["render_sha256", "start_ms", "end_ms", "comment", "requested_revision"],

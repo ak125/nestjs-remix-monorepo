@@ -31,11 +31,12 @@ INSPIRED_PATTERN_ONLY   # transformé en brief Fafa original (anti-recyclage)
   ↓
 DRAFT_ONLY              # Skill fafa-script-generator → scripts/draft/
   ↓
-REVIEW_READY            # Skill fafa-brand-safety-reviewer 7 gates → scripts/review-ready/
-  ↓
-APPROVED                # owner signe Approval Record → scripts/approved/
-  ↓ (render Remotion via skill fafa-remotion-template-planner)
-  ↓ (manifest JSON → manifests/renders/)
+REVIEW_READY            # verdict des gates → scripts/review-ready/ ; aucun flag automatique
+  ↓ (owner approuve le contenu exact : content_approved=true)
+  ↓ (render candidat autorisé + manifeste, puis inspection technique)
+  ↓ (owner inspecte et approuve le MP4 exact : render_approved=true)
+APPROVED                # contenu ET rendu approuvés → scripts/approved/ ; publish_approved=false
+  ↓ (autorisation de publication humaine distincte)
 PUBLISHED               # owner publie manuellement → scripts/published/
   ↓
 MEASURED                # KPIs CSV J+7 → skill fafa-performance-analyzer
@@ -55,8 +56,9 @@ MEASURED                # KPIs CSV J+7 → skill fafa-performance-analyzer
 
 Une vidéo `content_approved=true + render_approved=true + publish_approved=false` = prête, et reste dans `scripts/approved/` tant que l'owner n'a pas signé la publication.
 
-Qui pose `content_approved` (l'owner, règle AI2 du vault) et à quel statut la vidéo est rendue (non tranché) : voir
-`scripts/README.md`, qui relève les écarts entre documents.
+Choix opérationnel D18/D19 confirmé par l'owner le 19/10/2026 : fichiers seuls, backend éteint, rendu avant `APPROVED` et
+approbations humaines séparées, liées aux versions exactes. Voir `scripts/README.md` pour le flux et les limites des contrôles.
+Ce choix ne vaut ni approbation du pilote historique, ni autorisation de lancer un rendu, un upload ou une publication.
 
 ## Stockage — règle stricte
 

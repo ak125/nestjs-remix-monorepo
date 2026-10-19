@@ -696,3 +696,106 @@ test('authority timeout is observable and bounded', (t) => {
   assert.equal(result.wikiAdmission.reason,'WIKI_AUTHORITY_UNAVAILABLE');
   assert.equal(result.claimsReady,false);
 });
+
+
+// Real temporary files: a changed source must not inherit the old render binding.
+function renderSourceFixture(t) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fafa-review-sources-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const artifact = path.join(dir, 'synthetic.bin');
+  const payload = path.join(dir, 'payload.json');
+  const props = path.join(dir, 'props.json');
+  const bytes = Buffer.from('Synthetic source-binding fixture, not a video.');
+  fs.writeFileSync(artifact, bytes);
+  fs.writeFileSync(payload, '{"compositionProps":{"hook":"before"}}\n');
+  fs.writeFileSync(props, '{"hook":"before"}\n');
+  const digest = (file) => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+  const hash = digest(artifact);
+  const manifest = { briefId: 'fafa-plaquettes-frein-001',
+    artifact: { sha256: hash, bytes: bytes.length }, composition: { durationSecs: 38 },
+    source: { renderPayloadSha256: digest(payload), propsUsedSha256: digest(props) } };
+  const review = { render_sha256: hash, start_ms: 0, end_ms: 1000, comment: 'Fixture only', requested_revision: 2 };
+  return { artifact, payload, props, manifest, review, relativePath: `reviews/${hash}/2.json`,
+    sourceFiles: { renderPayloadPath: payload, propsUsedPath: props } };
+}
+
+test('D18 source bytes match without authenticating a reviewer or assessing human quality', (t) => {
+  const f = renderSourceFixture(t);
+  const { validateRenderReview } = require('./fafa-pilot-governance.cjs');
+  const result = validateRenderReview(f.review, f.relativePath, f.artifact, f.manifest, f.sourceFiles);
+  assert.deepEqual(result.sourceBinding, { status: 'MATCH',
+    renderPayloadSha256: f.manifest.source.renderPayloadSha256,
+    propsUsedSha256: f.manifest.source.propsUsedSha256 });
+  assert.equal(result.actorAuthenticated, false);
+  assert.equal(result.humanReview, 'NOT_ASSESSED');
+});
+
+test('D18 historical artifact-only review leaves sources explicitly unassessed', (t) => {
+  const f = renderSourceFixture(t);
+  const result = require('./fafa-pilot-governance.cjs').validateRenderReview(f.review, f.relativePath, f.artifact, f.manifest);
+  assert.deepEqual(result.sourceBinding, { status: 'NOT_ASSESSED' });
+  assert.equal(result.actorAuthenticated, false);
+});
+
+for (const file of ['payload', 'props']) {
+  test(`D18 changed ${file} is rejected despite unchanged render bytes`, (t) => {
+    const f = renderSourceFixture(t);
+    fs.writeFileSync(f[file], '{"hook":"changed"}\n');
+    assert.throws(() => require('./fafa-pilot-governance.cjs').validateRenderReview(
+      f.review, f.relativePath, f.artifact, f.manifest, f.sourceFiles), /RENDER_SOURCE_HASH_MISMATCH/);
+  });
+}
+
+for (const sourceFiles of [null, {}, { renderPayloadPath: 'relative.json', propsUsedPath: 'relative.json' }]) {
+  test(`D18 malformed explicit source context is rejected: ${JSON.stringify(sourceFiles)}`, (t) => {
+    const f = renderSourceFixture(t);
+    assert.throws(() => require('./fafa-pilot-governance.cjs').validateRenderReview(
+      f.review, f.relativePath, f.artifact, f.manifest, sourceFiles), /RENDER_SOURCE_FILES_REQUIRED/);
+  });
+}
+
+for (const source of [undefined, { renderPayloadSha256: 'a'.repeat(64) }, { renderPayloadSha256: 'bad', propsUsedSha256: 'b'.repeat(64) }]) {
+  test(`D18 explicit source check refuses absent or malformed manifest hashes: ${JSON.stringify(source)}`, (t) => {
+    const f = renderSourceFixture(t);
+    assert.throws(() => require('./fafa-pilot-governance.cjs').validateRenderReview(
+      f.review, f.relativePath, f.artifact, { ...f.manifest, source }, f.sourceFiles), /RENDER_SOURCE_BINDING_REQUIRED/);
+  });
+}
+
+test('D18 correction does not reset an approval when source binding is stale', (t) => {
+  const f = renderSourceFixture(t);
+  const record = read(path.join(pilot, 'approval.json'));
+  record.revision = 1;
+  const before = JSON.stringify(record);
+  fs.writeFileSync(f.props, '{"hook":"changed"}');
+  assert.throws(() => require('./fafa-pilot-governance.cjs').prepareCorrection(
+    record, f.review, f.relativePath, f.artifact, f.manifest, f.sourceFiles), /RENDER_SOURCE_HASH_MISMATCH/);
+  assert.equal(JSON.stringify(record), before);
+});
+
+for (const name of ['renderPayloadPath', 'propsUsedPath']) {
+  test(`D18 unreadable source ${name} fails without an artifact-only fallback`, (t) => {
+    const f = renderSourceFixture(t);
+    const sourceFiles = { ...f.sourceFiles, [name]: path.join(path.dirname(f.artifact), 'missing.json') };
+    assert.throws(() => require('./fafa-pilot-governance.cjs').validateRenderReview(
+      f.review, f.relativePath, f.artifact, f.manifest, sourceFiles), { code: 'ENOENT' });
+  });
+}
+
+test('D18 bound correction produces a reset copy and preserves the original record', (t) => {
+  const f = renderSourceFixture(t);
+  const record = read(path.join(pilot, 'approval.json'));
+  record.revision = 1;
+  const before = JSON.stringify(record);
+  const next = require('./fafa-pilot-governance.cjs').prepareCorrection(
+    record, f.review, f.relativePath, f.artifact, f.manifest, f.sourceFiles);
+  assert.equal(next.revision, 2);
+  assert.notEqual(next, record);
+  for (const stage of ['content', 'render', 'publish']) {
+    assert.equal(next.approval[`${stage}_approved`], false);
+    assert.equal(next.approval[`${stage}_approved_by`], null);
+    assert.equal(next.approval[`${stage}_approved_at`], null);
+  }
+  assert.equal(next.approval.render_sha256, null);
+  assert.equal(JSON.stringify(record), before);
+});

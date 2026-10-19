@@ -5,7 +5,7 @@ description: Use when validating a video brief/script/render against the 7 gates
 
 # Fafa Brand Safety Reviewer — Skill
 
-> Applique les 7 gates de gouvernance vidéo (`.spec/00-canon/video-governance-p0.md`) à un script + claims + evidence + render. Statut REVIEW_READY → APPROVED ou REJECTED.
+> Applique les 7 gates de gouvernance vidéo (`.spec/00-canon/video-governance-p0.md`) à un script + claims + evidence + render. Produit un verdict pour la revue humaine ; ne pose aucun flag d'approbation et ne crée aucun statut.
 
 ## Quand invoquer
 
@@ -31,16 +31,26 @@ description: Use when validating a video brief/script/render against the 7 gates
 | **G6** | Visual Role | Nb visuels utilisés comme preuve (truth_dependency=proof) | 0 | 1 | **STRICT** |
 | **G7** | Final QA | Nb artefacts manquants + approval | 0 | 1 | non |
 
-`canPublish = true` ssi **AUCUN** gate FAIL. Sinon `content_approved=false`.
+`can_publish_eligible` décrit uniquement l'éligibilité au regard des gates évaluées : false si au moins une FAIL, true seulement
+si toutes ont été évaluées sans FAIL. Une inspection absente reste non évaluée, jamais PASS par défaut. Ce résultat ne signifie
+ni `canPublish`, ni approbation de contenu/rendu/publication ; les trois décisions restent humaines et distinctes.
 
 ## Workflow
 
 1. Charger tous les artefacts du `scripts/<statut>/<video_id>/`
 2. Pour chaque gate G1-G7, calculer mesure + comparer thresholds
 3. Construire verdict array conforme `governance/approval-record.schema.json` (`gate_results[]`)
-4. Si tous PASS → `content_approved=true`, déplacer vers `scripts/review-ready/`
-5. Si ≥1 FAIL → produire rapport détaillé, rester en `scripts/draft/` pour itération
-6. Owner inspecte verdict + signe Approval Record (3 flags)
+4. Si tous PASS sur le périmètre évalué → proposer `REVIEW_READY`, conserver les flags inchangés ; détailler les contrôles
+   encore impossibles sans rendu. Les gates seules ne posent jamais `content_approved=true`
+5. Si ≥1 FAIL → produire le rapport de correction ; ne pas promouvoir le dossier et ne pas inventer un statut `REJECTED`
+6. L'owner approuve séparément le contenu exact avant le rendu en `REVIEW_READY`. Après rendu autorisé, refaire les contrôles
+   techniques et les gates sur le MP4 réel ; l'owner le visionne puis approuve ce rendu exact. Alors seulement les deux flags
+   contenu/rendu permettent `APPROVED`. `publish_approved` reste false jusqu'à une décision de publication distincte
+
+Le nom de l'auteur d'une PR ou un champ `*_approved_by` ne prouvent pas cet acte. Exiger une preuve humaine autorisée liée au
+commit, à la révision et au hash du MP4 ; le validateur local ne l'authentifie pas. Sans elle, ne pas accorder l'approbation manquante.
+Si une entrée déterminante change, demander une nouvelle révision et invalider les approbations antérieures via le flux de
+correction existant ; ne pas écraser l'historique.
 
 Relecture de style du `script_voice` (facultative, distincte des 7 gates) : suivre `.claude/prompts/_shared/editorial-review.md` (racine monorepo ; depuis ce workspace : `../../.claude/prompts/_shared/editorial-review.md`). Elle rend une proposition sans modifier le script, ne change aucune mesure ni aucun seuil de gate, et la version retenue repasse les 7 gates.
 
