@@ -976,6 +976,13 @@ this project.
 Nothing else changes: `target` stays `ES2022`, and the decorator options, `paths`,
 `outDir`, `rootDir`, `lib` and `types` are those of `main`.
 
+A second commit gives `ts-jest` two options in `backend/jest.config.js`: `module:
+commonjs` and `moduleResolution: bundler`. These are the options `ts-jest` compiles with
+anyway. Without them, the CI backend tests ran out of memory (see "Jest and `ts-jest`"
+below). The diff is +10 −1, a comment included. `tsc`, the build, `ts-node`, ESLint and
+the marketing project do not read that file, and `jest.command-center.config.cjs`
+replaces its `transform` entry.
+
 ### Evidence — TS 6.0.3, the repo compiler
 
 The counts below come from the preparation run on `main` of 2026-10-18. The delivery
@@ -989,9 +996,9 @@ reported the `agentic.processor.ts` error, which the first change removes. Its t
 |---|---|---|
 | `tsc --noEmit` | exit 0, 0 diagnostics | exit 0, 0 diagnostics |
 | Build (`npm run build`: `tsc --build`, then `tsc-alias`) | exit 0, 4,476 files in `dist/` | exit 0, the same 4,476 paths; 28 differ, listed below |
-| `ts-jest`, `jest.config.js` (the CI configuration): emit of `src/` and `tests/` | 1,605 roots, 3,234 outputs | the same 3,234, byte-identical (sha256) |
-| `ts-jest`, `jest.config.js`: type diagnostics | 0 | 0 |
-| `ts-jest`, `jest.config.js`: emit of the 74 package sources that tests map to | 148 outputs | identical |
+| `ts-jest` options, `jest.config.js` (the CI configuration), one program: emit of `src/` and `tests/` | 1,605 roots, 3,234 outputs | the same 3,234, byte-identical (sha256) |
+| `ts-jest` options, `jest.config.js`, one program: type diagnostics | 0 | 0 |
+| `ts-jest` options, `jest.config.js`, one program: emit of the 74 package sources that tests map to | 148 outputs | identical |
 | `ts-jest`, `jest.command-center.config.cjs` (`isolatedModules`) | 1,679 files | the same 1,679; 29 differ, listed below |
 | The 4 command-center suites with that configuration | 143 tests pass | 143 tests pass |
 | `ts-node`: the 5 entries that load this file | compiled, 0 errors | the same 5 outputs, byte-identical |
@@ -1038,12 +1045,55 @@ Under Node v24.21.0, each site yields the same value before and after. What chan
 how Node loads the target (the asynchronous ES module loader) and the shape of the error
 when loading fails. None of these files tests an error code such as `MODULE_NOT_FOUND`.
 
+#### Jest and `ts-jest`
+
 `ts-jest` (29.4.11) does not compile with this file's `module`. With the CI
-configuration (`jest.config.js`, type-checked), it forces CommonJS and maps NodeNext
-resolution to `Bundler`. That is why the 3,234 outputs are identical. The program goes
-from 5,136 to 5,185 files (67 added, 18 removed, all declarations under `node_modules`)
-with no new diagnostic. With NodeNext, `ts-jest` also logs a warning (code 151002) that
-hybrid module kinds are only supported with `isolatedModules`: a message, not an error.
+configuration (`jest.config.js`, type-checked), outside ESM mode, it replaces NodeNext
+with CommonJS and NodeNext resolution with `Bundler` (`fixupCompilerOptionsForModuleKind`).
+That is why the emitted code is identical. The three "`ts-jest` options" rows of the table
+did not run `ts-jest`: a script applied these option rules to one TypeScript program. They
+show which options `ts-jest` compiles with, not how it behaves, and the first CI run of
+this change failed on how it behaves.
+
+Run as is, `ts-jest` ran out of memory. The CI Backend Tests job died on its first Jest
+command (`video-gates.service.test.ts`, 4 GB heap). `ts-jest` builds its language service
+with the options of `tsconfig.json`, then compiles each file with the corrected options.
+An instrumented run of that command, with a larger heap, showed:
+
+- the NodeNext program built at start-up is kept;
+- the first compile builds a second full program that shares none of the 5,064 source
+  files of the first. The heap goes from 2.3 to 4.3 GB: with a 4 GB heap, the process
+  dies here;
+- each later compile of a `src/` file builds a new program and a new type checker;
+- 57 declaration files read by the start-up program stay in every later program, 46 of
+  them from `@anthropic-ai/sdk`. They are CommonJS declarations of packages that the
+  corrected options resolve to their ES module declarations. They stay because `ts-jest`
+  adds each file it reads to its root files.
+
+With the two options in `backend/jest.config.js`, `ts-jest` starts with the options it
+computes itself. Its corrected options are the same with and without them, compared in
+full. The first compile reuses 5,069 source files, compiling a `src/` file no longer
+builds a program, and the 151002 warning (hybrid module kinds) is no longer logged.
+`tsc`, the build, `ts-node` and ESLint still read NodeNext from `tsconfig.json`.
+
+| `video-gates.service.test.ts`, CI command, 4 GB heap | Result | Time | Peak memory (RSS) |
+|---|---|---|---|
+| `main` | 45 of 45 pass | 15.5 s | 2.87 GB |
+| `tsconfig.json` change only | out of memory | 34 s | 4.5 GB |
+| With the Jest options | 45 of 45 pass | 14.7 s | 2.85 GB |
+
+The whole backend suite, run as CI runs it, gives the same result on `main` and with the
+Jest options, test by test: 346 suites, 5,638 tests, 5,614 pass, 23 skipped, and the same
+failure in both (`diag-canon.schema.test.ts`, which reads a local wiki export). Coverage
+is the same (29.31 % of statements).
+
+`ts-jest` itself was then run file by file, through its `process` function with the CI
+configuration, on 1,681 files: the 1,607 files of `src/` and `tests/` and the 74 package
+sources of the table. With the Jest options, each file compiles to the same code as on
+`main` (sha256, inline source map excluded). One file reports a type error, the same on
+both sides: `packages/registry/src/command-center/snapshot.ts` (TS2345). No suite of this
+configuration loads it, since `jest.config.js` does not map `@repo/registry` to its
+sources. The one-program diagnostics row covered `src/` and `tests/` only.
 
 The second configuration, `jest.command-center.config.cjs`, is called by no script and
 no workflow. It compiles with `isolatedModules`, where NodeNext applies. Its 29 changed
@@ -1061,6 +1111,8 @@ The 4 command-center suites, the only ones this configuration is written for, pa
 before and after. A suite run with this configuration that reaches one of those files
 would now fail. With `jest.config.js`, which CI runs, the same files are unchanged.
 `tests/unit/command-center.controller.test.ts` was not run: it listens on a port.
+
+#### The other consumers
 
 The other consumers of this file:
 
