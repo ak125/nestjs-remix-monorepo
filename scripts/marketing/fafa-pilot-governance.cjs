@@ -214,9 +214,11 @@ function evaluateDossier(dir, options) {
     wikiAdmission,
     claimGates: gates,
     acceptedEvidenceIds: [...acceptedIds],
+    // Compatibility field: declared flags only, never authenticated approval.
     approvalsComplete: ['content_approved', 'render_approved', 'publish_approved'].every((key) => approval.approval[key] === true),
     canPublishEligible: claimsReady ? null : false,
     actorAuthenticated: false,
+    humanReview: 'NOT_ASSESSED',
   };
 }
 function validateRenderReview(review, relativePath, artifactPath, manifest, sourceFiles) {

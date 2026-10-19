@@ -94,6 +94,7 @@ for (const referenced of [false, true]) {
     assert.equal(result.claimsReady, !referenced);
     assert.equal(result.readiness, referenced ? 'NOT_READY' : 'CLAIMS_ONLY');
     assert.equal(result.canPublishEligible, referenced ? false : null);
+    assert.equal(result.humanReview, 'NOT_ASSESSED');
     assert.deepEqual(result.acceptedEvidenceIds, ['synthetic-catalogue']);
     assert.deepEqual(result.wikiAdmission, { status: referenced ? 'UNRESOLVED' : 'NOT_REFERENCED',
       unresolvedEvidenceIds: ['synthetic-wiki'], blockingClaimIds: referenced ? ['claim-1'] : [],
@@ -210,6 +211,30 @@ test('file-only evaluator reuses L10a and keeps approval distinct from eligibili
   assert.deepEqual(result.acceptedEvidenceIds, []);
   assert.equal(result.actorAuthenticated, false);
 });
+
+for (const declaredApproved of [false, true]) {
+  test(`declared approvals never assess human review: ${declaredApproved}`, (t) => {
+    const { evaluateDossier } = require('./fafa-pilot-governance.cjs');
+    const fixture = wikiAdmissionFixture(t);
+    const approvalPath = path.join(fixture.dir, 'approval.json');
+    const record = read(approvalPath);
+    for (const stage of ['content', 'render', 'publish']) {
+      record.approval[`${stage}_approved`] = declaredApproved;
+      record.approval[`${stage}_approved_by`] = declaredApproved ? 'synthetic-not-authenticated' : null;
+      record.approval[`${stage}_approved_at`] = declaredApproved ? '2026-01-01T00:00:00Z' : null;
+    }
+    record.approval.render_sha256 = declaredApproved ? 'a'.repeat(64) : null;
+    fs.writeFileSync(approvalPath, JSON.stringify(record));
+    const before = fs.readFileSync(approvalPath);
+    const result = evaluateDossier(fixture.dir);
+    assert.equal(result.approvalsComplete, declaredApproved); // Declaration only, retained for compatibility.
+    assert.equal(result.actorAuthenticated, false);
+    assert.equal(result.humanReview, 'NOT_ASSESSED');
+    assert.equal(result.canPublishEligible, false);
+    assert.equal(result.readiness, 'NOT_READY');
+    assert.deepEqual(fs.readFileSync(approvalPath), before);
+  });
+}
 
 test('D17 supporting evidence excludes proposals, SEO text and other unapproved types', () => {
   const supports = ajv.getSchema(`${evidenceSchema.$id}#/$defs/SupportingEvidence`);

@@ -131,3 +131,10 @@ la limite existante de 1500 caractères de preuve reste applicable.
 Une référence inutilisée ne bloque pas un claim catalogue valide. L'admission ne rend pas une vidéo
 publiable : `actorAuthenticated` reste false et les étapes contenu, rendu et publication restent séparées.
 Ce raccordement est un candidat testé ; aucune configuration partagée n'est activée par ces fichiers.
+
+La sortie `evaluateDossier` conserve `approvalsComplete` pour compatibilité : ce champ indique seulement
+que les trois flags déclarés sont vrais. Il ne valide aucun acte humain. `humanReview:NOT_ASSESSED`
+et `actorAuthenticated:false` restent explicites, même si les claims passent les contrôles ou si les trois
+flags sont vrais. `CLAIMS_ONLY` ne signifie donc ni contenu approuvé, ni rendu approuvé, ni publication autorisée.
+Les champs `*_approved_by`, `*_approved_at` et l'historique sont déclaratifs ; leur conformité au schéma
+ne prouve pas l'identité ni l'autorité de leur auteur. La lecture d'un acte humain autorisé reste à raccorder.
