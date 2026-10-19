@@ -1,15 +1,6 @@
 import {
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  data,
-  useLoaderData,
-  Link,
-  useFetcher,
-} from "react-router";
-import {
   ArrowLeft,
   CheckCircle,
-  XCircle,
   AlertTriangle,
   Clock,
   Cpu,
@@ -29,10 +20,23 @@ import {
   HardDrive,
 } from "lucide-react";
 import { useCallback, useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  data,
+  useLoaderData,
+  Link,
+  useFetcher,
+} from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+
+import {
+  executionPresentation,
+  hasRenderedArtifact,
+} from "~/utils/video-execution";
 
 interface ExecutionLog {
   id: number;
@@ -40,6 +44,7 @@ interface ExecutionLog {
   videoType: string;
   vertical: string;
   status: string;
+  executionOutcome?: string;
   bullmqJobId: string | null;
   triggerSource: string;
   triggerJobId: string | null;
@@ -67,6 +72,9 @@ interface ExecutionLog {
   renderStatus: string | null;
   renderOutputPath: string | null;
   renderMetadata: Record<string, unknown> | null;
+  postprocessVariants?: unknown | null;
+  postprocessDurationMs?: number | null;
+  srtS3Path?: string | null;
   renderDurationMs: number | null;
   renderErrorCode: string | null;
   engineResolution: string | null;
@@ -104,9 +112,9 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     const body = await res.json();
     const execution = body.data as ExecutionLog;
 
-    // Fetch variants if execution completed
+    // A legacy completed lifecycle does not prove an artifact exists.
     let variants: VariantRecord[] = [];
-    if (execution.status === "completed") {
+    if (hasRenderedArtifact(execution.executionOutcome)) {
       try {
         const varRes = await fetch(
           `${backendUrl}/api/admin/video/executions/${executionLogId}/variants`,
@@ -149,32 +157,6 @@ export async function action({ request, params }: ActionFunctionArgs) {
     return data({ ok: false, error: "Erreur reseau" });
   }
 }
-
-const STATUS_CONFIG: Record<
-  string,
-  { color: string; bg: string; icon: typeof Clock }
-> = {
-  pending: {
-    color: "text-gray-600",
-    bg: "bg-gray-100 text-gray-700",
-    icon: Clock,
-  },
-  processing: {
-    color: "text-blue-600",
-    bg: "bg-blue-100 text-blue-700",
-    icon: Activity,
-  },
-  completed: {
-    color: "text-green-600",
-    bg: "bg-green-100 text-green-700",
-    icon: CheckCircle,
-  },
-  failed: {
-    color: "text-red-600",
-    bg: "bg-red-100 text-red-700",
-    icon: XCircle,
-  },
-};
 
 const VERDICT_CONFIG = {
   PASS: {
@@ -250,14 +232,16 @@ function CopyJsonButton({ data, label }: { data: unknown; label: string }) {
 
 function RenderMetadataSection({
   metadata,
+  title = "Render Metadata",
 }: {
   metadata: Record<string, unknown>;
+  title?: string;
 }) {
   const [expanded, setExpanded] = useState(false);
   return (
     <div className="mt-3 border-t pt-3">
       <div className="flex items-center justify-between">
-        <div className="text-xs text-gray-500">Render Metadata</div>
+        <div className="text-xs text-gray-500">{title}</div>
         <div className="flex gap-2">
           <CopyJsonButton data={metadata} label="Copy JSON" />
           <Button
@@ -360,7 +344,18 @@ export default function ExecutionDetail() {
     );
   }
 
-  const statusConf = STATUS_CONFIG[execution.status] ?? STATUS_CONFIG.pending;
+  const presentation = executionPresentation(execution.executionOutcome);
+  const statusConf = {
+    color:
+      execution.executionOutcome === "rendered_checked"
+        ? "text-green-600"
+        : "text-gray-600",
+    bg: presentation.className,
+    icon:
+      execution.executionOutcome === "rendered_checked"
+        ? CheckCircle
+        : AlertTriangle,
+  };
   const StatusIcon = statusConf.icon;
 
   return (
@@ -391,6 +386,7 @@ export default function ExecutionDetail() {
                   id: execution.id,
                   briefId: execution.briefId,
                   status: execution.status,
+                  executionOutcome: execution.executionOutcome ?? "unknown",
                   attemptNumber: execution.attemptNumber,
                   triggerSource: execution.triggerSource,
                   durationMs: execution.durationMs,
@@ -411,6 +407,10 @@ export default function ExecutionDetail() {
                   renderDurationMs: execution.renderDurationMs,
                   renderOutputPath: execution.renderOutputPath,
                   renderMetadata: execution.renderMetadata,
+                  postprocessVariants: execution.postprocessVariants ?? null,
+                  postprocessDurationMs:
+                    execution.postprocessDurationMs ?? null,
+                  srtS3Path: execution.srtS3Path ?? null,
                 },
                 canary: {
                   isCanary: execution.isCanary,
@@ -441,7 +441,7 @@ export default function ExecutionDetail() {
           </Button>
           <Badge className={statusConf.bg}>
             <StatusIcon className={`h-3 w-3 mr-1 ${statusConf.color}`} />
-            {execution.status}
+            {presentation.label}
           </Badge>
         </div>
       </div>
@@ -639,18 +639,43 @@ export default function ExecutionDetail() {
               </div>
             )}
           </div>
-          {execution.renderOutputPath && (
-            <VideoPreviewSection
-              executionLogId={execution.id}
-              renderOutputPath={execution.renderOutputPath}
-            />
-          )}
+          {hasRenderedArtifact(execution.executionOutcome) &&
+            execution.renderOutputPath && (
+              <VideoPreviewSection
+                executionLogId={execution.id}
+                renderOutputPath={execution.renderOutputPath}
+              />
+            )}
           {execution.renderMetadata &&
             Object.keys(execution.renderMetadata).length > 0 && (
               <RenderMetadataSection metadata={execution.renderMetadata} />
             )}
         </CardContent>
       </Card>
+
+      {execution.postprocessVariants != null && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">
+              Observations du post-traitement
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-gray-500">
+              Ces mesures enregistrées ne constituent pas une approbation
+              humaine et ne vérifient pas à nouveau le fichier stocké.
+            </p>
+            <RenderMetadataSection
+              title="Données enregistrées"
+              metadata={{
+                variants: execution.postprocessVariants,
+                durationMs: execution.postprocessDurationMs ?? null,
+                srtS3Path: execution.srtS3Path ?? null,
+              }}
+            />
+          </CardContent>
+        </Card>
+      )}
 
       {/* Variants (postprocess outputs) */}
       {variants && variants.length > 0 && (

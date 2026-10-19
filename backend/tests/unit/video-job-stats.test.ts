@@ -133,7 +133,7 @@ describe('VideoJobService — stats/list/map (P18)', () => {
     service = createService(mocks);
   });
 
-  it('returns stored technical inspections without changing publication eligibility', async () => {
+  it('returns stored technical inspections without granting publication', async () => {
     const inspection = {
       checksumSha256: 'a'.repeat(64),
       video: { codec: 'h264', width: 1080, height: 1920 },
@@ -162,7 +162,7 @@ describe('VideoJobService — stats/list/map (P18)', () => {
       postprocessVariants: variants,
       postprocessDurationMs: 51,
       srtS3Path: 's3://media/sub.srt',
-      canPublish: null,
+      canPublish: false,
     });
   });
 
@@ -194,6 +194,62 @@ describe('VideoJobService — stats/list/map (P18)', () => {
       postprocessDurationMs: 0,
     });
   });
+
+  it.each([
+    [{}, 'rendered_unverified'],
+    [{ engine_name: 'stub' }, 'simulated'],
+    [{ engine_resolution: 'fallback_to_stub' }, 'simulated'],
+    [{ feature_flags: { pipeline_enabled: false } }, 'disabled'],
+    [{ render_status: 'skipped' }, 'skipped'],
+    [{ render_status: 'failed' }, 'failed'],
+    [{ render_output_path: null }, 'unknown'],
+  ])(
+    'keeps observations separate from outcome for %j',
+    async (overrides, outcome) => {
+      const inspection = {
+        checksumSha256: 'a'.repeat(64),
+        fileSizeBytes: 1024,
+        durationSecs: 2,
+        video: {
+          codec: 'h264',
+          width: 1080,
+          height: 1920,
+          fps: 30,
+          frames: 60,
+          durationSecs: 2,
+        },
+        audio: [],
+      };
+      const metadata = {
+        inspection,
+        checked: true,
+        executionOutcome: 'rendered_checked',
+      };
+      const variants = [
+        { name: 'vertical', s3Path: 's3://media/v.mp4', inspection },
+      ];
+      const row = fullDbRow({
+        engine_name: 'remotion',
+        render_output_path: 's3://media/master.mp4',
+        render_metadata: metadata,
+        postprocess_variants: variants,
+        can_publish: true,
+        ...overrides,
+      });
+      const chain = simpleChain({ data: row, error: null });
+      Object.defineProperty(service, 'client', {
+        get: () => chain,
+        configurable: true,
+      });
+      expect(await service.getExecutionStatus(10)).toMatchObject({
+        executionOutcome: outcome,
+        canPublish: false,
+        renderMetadata: metadata,
+        postprocessVariants: variants,
+      });
+      expect(row.can_publish).toBe(true);
+    },
+  );
 
   // ── getExecutionStatus ──
 
@@ -298,7 +354,7 @@ describe('VideoJobService — stats/list/map (P18)', () => {
   // ── getExecutionStats ──
 
   describe('getExecutionStats', () => {
-    it('should return zero stats on DB error', async () => {
+    it('should reject unavailable stats instead of reporting an empty population', async () => {
       const chain = statsChain({
         data: null,
         error: { message: 'DB unreachable' },
@@ -308,11 +364,9 @@ describe('VideoJobService — stats/list/map (P18)', () => {
         configurable: true,
       });
 
-      const stats = await service.getExecutionStats('all');
-      expect(stats.total).toBe(0);
-      expect(stats.byStatus).toEqual({});
-      expect(stats.avgDurationMs).toBeNull();
-      expect(stats.timeWindow).toBe('all');
+      await expect(service.getExecutionStats('all')).rejects.toThrow(
+        'Execution statistics unavailable',
+      );
     });
 
     it('should return total=0 and null averages for empty data', async () => {
@@ -367,6 +421,7 @@ describe('VideoJobService — stats/list/map (P18)', () => {
       const stats = await service.getExecutionStats();
       expect(stats.total).toBe(3);
       expect(stats.byStatus).toEqual({ completed: 2, failed: 1 });
+      expect(stats.byOutcome).toEqual({ simulated: 2, failed: 1 });
       expect(stats.avgDurationMs).toBe(200); // (100+200+300)/3
     });
 
@@ -418,13 +473,52 @@ describe('VideoJobService — stats/list/map (P18)', () => {
       const stats = await service.getExecutionStats();
       expect(stats.canary.totalCanary).toBe(4);
       expect(stats.canary.totalFallback).toBe(1);
-      // successRate = Math.round(((4 - 1) / 4) * 100) = 75
-      expect(stats.canary.successRate).toBe(75);
+      // No artifact checks: absence of fallback is not success.
+      expect(stats.canary.successRate).toBe(0);
       // fallbackRate = Math.round((1 / 4) * 100) = 25
       expect(stats.canary.fallbackRate).toBe(25);
       expect(stats.canary.topErrorCodes).toEqual({
         RENDER_ENGINE_TIMEOUT: 1,
       });
+    });
+
+    it('does not count a real unchecked canary, an engine failure or claimed checks as success', async () => {
+      const chain = statsChain({
+        data: [
+          {
+            status: 'completed',
+            is_canary: true,
+            engine_name: 'remotion',
+            render_status: 'success',
+            render_output_path: 's3://renders/a.mp4',
+          },
+          {
+            status: 'completed',
+            is_canary: true,
+            engine_name: 'remotion',
+            render_status: 'failed',
+          },
+          {
+            status: 'completed',
+            is_canary: true,
+            engine_name: 'remotion',
+            render_status: 'success',
+            render_output_path: 's3://renders/b.mp4',
+            render_metadata: {
+              executionOutcome: 'rendered_checked',
+              checked: true,
+            },
+          },
+        ],
+        error: null,
+      });
+      Object.defineProperty(service, 'client', {
+        get: () => chain,
+        configurable: true,
+      });
+      const stats = await service.getExecutionStats();
+      expect(stats.canary.successRate).toBe(0);
+      expect(stats.byOutcome).toEqual({ rendered_unverified: 2, failed: 1 });
     });
 
     it('should return successRate=null when totalCanary=0', async () => {
@@ -500,7 +594,8 @@ describe('VideoJobService — stats/list/map (P18)', () => {
       expect(mapped.videoType).toBe('short');
       expect(mapped.bullmqJobId).toBe('bull-job-10');
       expect(mapped.triggerSource).toBe('manual');
-      expect(mapped.canPublish).toBe(true);
+      expect(mapped.canPublish).toBe(false);
+      expect(mapped.executionOutcome).toBe('simulated');
       expect(mapped.qualityScore).toBe(85);
       expect(mapped.engineName).toBe('stub');
       expect(mapped.renderDurationMs).toBe(3000);

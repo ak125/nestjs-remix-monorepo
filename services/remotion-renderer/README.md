@@ -60,4 +60,27 @@ JSON update fails, or when no execution row is updated. Its writes are sequentia
 not transactional: an error can leave partial variant rows, and a later explicit
 retry uses the existing upsert key. The execution processor does not currently
 invoke this service; this change does not connect or enable it. No schema,
-human review, publication eligibility, or D18/D19 decision is changed.
+human review, or D18/D19 decision is changed.
+
+## Qualified execution outcomes
+
+The API and video hub keep the legacy SQL lifecycle separately from
+`executionOutcome`: pending, processing, failed, disabled, simulated, skipped,
+rendered_unverified, rendered_checked or unknown. A completed Remotion result
+with a successful render and a non-empty output path is only
+`rendered_unverified`. Stub/fallback and disabled executions cannot be presented
+as real renders. Free-form inspection/review metadata cannot produce
+`rendered_checked`; that state awaits the trusted writer defined by D18/D19.
+Until then, publication eligibility is false, including historical rows that
+stored `can_publish: true`. Canary success counts checked renders only.
+
+The execution detail offers the artifact preview only for a render-qualified
+outcome. It preserves master metadata and saved post-processing observations,
+including in incident exports, while explicitly separating those observations
+from human approval or a fresh verification of the stored file. Historical
+missing fields remain absent/null. Completed-job replay does not rerender or
+rewrite those observations. Unavailable execution state or statistics fails
+explicitly instead of inventing an empty or successful result.
+
+These are isolated candidate changes: the worker still does not invoke
+post-processing, and no renderer, backend, migration or publication is activated.
