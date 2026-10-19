@@ -69200,7 +69200,7 @@
         "backend/src/modules/agentic-engine/types/job.types.ts"
       ],
       "kind": "service",
-      "loc": 363,
+      "loc": 362,
       "owner": "@ak125",
       "path": "backend/src/workers/processors/agentic.processor.ts",
       "risk": "medium",
@@ -105047,11 +105047,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "90163175840e44796908f793612d86b090e6efec04ed7053e3966b0e0c211728",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "27326fbba5c78cee555e705526174273611e862a86e164dc8a10ad1db2947732",
+      "audit/registry/files.json": "44bd8b448a816851209207108c695235b6071db3a954d699a6a93f3e7af93c3d",
       "audit/registry/rpc.json": "623f3a5150e1cc71cd79946d7a4128fd078d6493626b20f4b6c4c4ac64f06f6d",
       "audit/registry/runtime.json": "ea99f1c5d58436fbe0458e6b7c4d82dee91812babba25c62bbeac60e2d87a2d4"
     },
-    "sotFingerprint": "ae5872afc9d0"
+    "sotFingerprint": "adc99c1a0322"
   },
   "runtime": [
     {
