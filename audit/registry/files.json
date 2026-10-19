@@ -2936,7 +2936,7 @@
         "backend/src/modules/vehicles/services/vehicle-profile.service.ts"
       ],
       "imports": [
-        "packages/seo-url-contract/dist/index.d.ts"
+        "@repo/seo-url-contract"
       ],
       "kind": "service",
       "loc": 153,
@@ -3117,7 +3117,7 @@
         "backend/src/modules/gamme-rest/services/buying-guide-data.service.ts"
       ],
       "imports": [
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types"
       ],
       "kind": "config",
       "loc": 353,
@@ -5018,7 +5018,7 @@
         "backend/src/workers/types/content-refresh.types.ts"
       ],
       "imports": [
-        "packages/seo-roles/dist/index.d.ts"
+        "@repo/seo-roles"
       ],
       "kind": "service",
       "loc": 24,
@@ -5707,10 +5707,10 @@
       "imports": [
         "@cache/cache.service",
         "@common/exceptions",
+        "@repo/database-types",
         "backend/src/database/services/piece-price-data.service.ts",
         "backend/src/database/services/supabase-base.service.ts",
-        "backend/src/modules/catalog/utils/image-urls.utils.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/modules/catalog/utils/image-urls.utils.ts"
       ],
       "kind": "service",
       "loc": 1037,
@@ -5809,8 +5809,8 @@
         "backend/src/modules/vehicles/services/vehicle-meta.service.ts"
       ],
       "imports": [
-        "backend/src/database/services/supabase-base.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types",
+        "backend/src/database/services/supabase-base.service.ts"
       ],
       "kind": "service",
       "loc": 256,
@@ -5841,8 +5841,8 @@
       ],
       "imports": [
         "@cache/cache.service",
-        "backend/src/database/services/supabase-base.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types",
+        "backend/src/database/services/supabase-base.service.ts"
       ],
       "kind": "service",
       "loc": 1077,
@@ -5908,8 +5908,8 @@
         "backend/src/database/services/piece-price-data.service.test.ts"
       ],
       "imports": [
-        "backend/src/database/services/supabase-base.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types",
+        "backend/src/database/services/supabase-base.service.ts"
       ],
       "kind": "service",
       "loc": 263,
@@ -7021,6 +7021,7 @@
       "imports": [
         "@auth/authenticated.guard",
         "@auth/is-admin.guard",
+        "@repo/registry",
         "backend/src/common/decorators/user.decorator.ts",
         "backend/src/common/interceptors/admin-response.interceptor.ts",
         "backend/src/modules/admin/services/command-center-orchestrator/executable-action.contract.ts",
@@ -7028,8 +7029,7 @@
         "backend/src/modules/admin/services/command-center-orchestrator/pr-proposition.planner.ts",
         "backend/src/modules/admin/services/command-center-orchestrator/regen-artifact.executor.ts",
         "backend/src/modules/admin/services/command-center-orchestrator/regen-artifact.planner.ts",
-        "backend/src/modules/admin/services/command-center-reader.service.ts",
-        "packages/registry/dist/index.d.ts"
+        "backend/src/modules/admin/services/command-center-reader.service.ts"
       ],
       "kind": "controller",
       "loc": 261,
@@ -7128,9 +7128,9 @@
         "backend/src/modules/admin/admin.module.ts"
       ],
       "imports": [
+        "@repo/registry",
         "backend/src/auth/internal-api-key.guard.ts",
-        "backend/src/modules/admin/services/command-center-reader.service.ts",
-        "packages/registry/dist/index.d.ts"
+        "backend/src/modules/admin/services/command-center-reader.service.ts"
       ],
       "kind": "controller",
       "loc": 35,
@@ -7257,9 +7257,9 @@
       "imports": [
         "@auth/authenticated.guard",
         "@auth/is-admin.guard",
+        "@repo/database-types",
         "backend/src/common/interceptors/admin-response.interceptor.ts",
-        "backend/src/modules/admin/services/seo-cockpit.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/modules/admin/services/seo-cockpit.service.ts"
       ],
       "kind": "controller",
       "loc": 333,
@@ -7284,10 +7284,10 @@
       "imports": [
         "@auth/authenticated.guard",
         "@auth/is-admin.guard",
+        "@repo/seo-types",
         "backend/src/common/interceptors/admin-response.interceptor.ts",
         "backend/src/config/feature-flags.service.ts",
-        "backend/src/modules/admin/services/seo-control.service.ts",
-        "packages/seo-types/dist/index.d.ts"
+        "backend/src/modules/admin/services/seo-control.service.ts"
       ],
       "kind": "controller",
       "loc": 70,
@@ -7598,13 +7598,13 @@
         "@cache/cache.service",
         "@common/exceptions",
         "@database/services/supabase-base.service",
+        "@repo/database-types",
         "@security/rpc-gate/rpc-gate.service",
         "backend/src/modules/admin/services/gamme-detail-enricher.service.ts",
         "backend/src/modules/admin/services/gamme-seo-audit.service.ts",
         "backend/src/modules/admin/services/gamme-seo-badges.service.ts",
         "backend/src/modules/admin/services/gamme-seo-thresholds.service.ts",
-        "backend/src/modules/admin/services/gamme-vlevel.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/modules/admin/services/gamme-vlevel.service.ts"
       ],
       "kind": "service",
       "loc": 1126,
@@ -8116,9 +8116,9 @@
         "backend/src/modules/admin/services/command-center-reader.service.ts"
       ],
       "imports": [
+        "@repo/registry",
         "backend/src/modules/admin/services/command-center-action-rules/live-kpi.ts",
-        "backend/src/modules/admin/services/command-center-action-rules/score-action.ts",
-        "packages/registry/dist/index.d.ts"
+        "backend/src/modules/admin/services/command-center-action-rules/score-action.ts"
       ],
       "kind": "service",
       "loc": 329,
@@ -8222,7 +8222,7 @@
         "backend/src/modules/admin/services/command-center-reader.service.ts"
       ],
       "imports": [
-        "packages/registry/dist/index.d.ts"
+        "@repo/registry"
       ],
       "kind": "service",
       "loc": 120,
@@ -8295,6 +8295,7 @@
         "backend/src/modules/admin/services/command-center-reader.service.ts"
       ],
       "imports": [
+        "@repo/seo-types",
         "backend/src/database/services/supabase-base.service.ts",
         "backend/src/modules/admin/services/command-center-action-rules/certification-action.rules.ts",
         "backend/src/modules/admin/services/command-center-action-rules/improvement-candidate.rules.ts",
@@ -8305,7 +8306,6 @@
         "backend/src/modules/admin/services/command-center-orchestrator/executable-action.contract.ts",
         "backend/src/modules/analytics/index.ts",
         "fs",
-        "packages/seo-types/dist/index.d.ts",
         "path",
         "zlib"
       ],
@@ -8331,12 +8331,12 @@
         "backend/src/modules/admin/services/command-center-reader.service.ts"
       ],
       "imports": [
+        "@repo/database-types",
+        "@repo/domain-commerce",
         "backend/src/database/services/supabase-base.service.ts",
         "backend/src/modules/admin/services/command-center-action-rules/department-kpi.rules.ts",
         "backend/src/modules/admin/services/command-center-action-rules/live-kpi.ts",
-        "backend/src/modules/analytics/index.ts",
-        "packages/database-types/dist/index.d.ts",
-        "packages/domain-commerce/dist/index.d.ts"
+        "backend/src/modules/analytics/index.ts"
       ],
       "kind": "service",
       "loc": 530,
@@ -8527,6 +8527,7 @@
         "backend/src/modules/admin/controllers/internal-command-center.controller.ts"
       ],
       "imports": [
+        "@repo/registry",
         "backend/src/cache/cache.service.ts",
         "backend/src/modules/admin/services/command-center-action-rules/department-report.rules.ts",
         "backend/src/modules/admin/services/command-center-action-rules/live-kpi.ts",
@@ -8534,7 +8535,6 @@
         "backend/src/modules/admin/services/command-center-actions.service.ts",
         "backend/src/modules/admin/services/command-center-kpi.service.ts",
         "fs",
-        "packages/registry/dist/index.d.ts",
         "path"
       ],
       "kind": "service",
@@ -8879,7 +8879,7 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "packages/seo-roles/dist/index.d.ts"
+        "@repo/seo-roles"
       ],
       "kind": "service",
       "loc": 680,
@@ -10010,9 +10010,9 @@
         "backend/src/modules/admin/controllers/control-plane.controller.ts"
       ],
       "imports": [
+        "@repo/registry",
         "backend/src/cache/cache.service.ts",
         "fs",
-        "packages/registry/dist/index.d.ts",
         "path"
       ],
       "kind": "service",
@@ -10162,7 +10162,7 @@
         "backend/src/modules/admin/services/seo-control.service.ts"
       ],
       "imports": [
-        "packages/seo-types/dist/index.d.ts"
+        "@repo/seo-types"
       ],
       "kind": "service",
       "loc": 227,
@@ -10236,11 +10236,11 @@
         "backend/src/modules/admin/processors/seo-control-refresh.processor.ts"
       ],
       "imports": [
+        "@repo/seo-types",
         "backend/src/cache/cache.service.ts",
         "backend/src/database/services/supabase-base.service.ts",
         "backend/src/modules/admin/services/seo-control-decisions.service.ts",
-        "crypto",
-        "packages/seo-types/dist/index.d.ts"
+        "crypto"
       ],
       "kind": "service",
       "loc": 423,
@@ -10271,9 +10271,9 @@
         "@cache/cache.service",
         "@common/exceptions",
         "@database/services/supabase-base.service",
+        "@repo/database-types",
         "backend/src/modules/admin/services/stock-movement.service.ts",
-        "backend/src/modules/admin/services/stock-report.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/modules/admin/services/stock-report.service.ts"
       ],
       "kind": "service",
       "loc": 746,
@@ -10299,8 +10299,8 @@
       "imports": [
         "@common/exceptions",
         "@database/services/supabase-base.service",
-        "backend/src/modules/admin/services/stock-management.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types",
+        "backend/src/modules/admin/services/stock-management.service.ts"
       ],
       "kind": "service",
       "loc": 334,
@@ -10407,7 +10407,7 @@
       "imports": [
         "@common/exceptions",
         "@database/services/supabase-base.service",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types"
       ],
       "kind": "service",
       "loc": 273,
@@ -11374,9 +11374,9 @@
       "id": "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.test.ts",
       "importedBy": [],
       "imports": [
+        "@repo/database-types",
         "backend/src/modules/analytics/tracking-integrity/tracking-integrity-verdict.schema.ts",
-        "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts"
       ],
       "kind": "test",
       "loc": 446,
@@ -11402,8 +11402,8 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "backend/src/modules/analytics/tracking-integrity/tracking-integrity-verdict.schema.ts",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types",
+        "backend/src/modules/analytics/tracking-integrity/tracking-integrity-verdict.schema.ts"
       ],
       "kind": "service",
       "loc": 287,
@@ -11774,12 +11774,12 @@
         "backend/src/modules/blog/services/advice.service.ts"
       ],
       "imports": [
+        "@repo/database-types",
         "backend/src/modules/blog/interfaces/blog.interfaces.ts",
         "backend/src/modules/blog/services/advice-transform.service.ts",
         "backend/src/modules/blog/services/advice.service.ts",
         "backend/src/modules/catalog/utils/image-urls.utils.ts",
-        "backend/src/modules/search/services/supabase-indexation.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/modules/search/services/supabase-indexation.service.ts"
       ],
       "kind": "service",
       "loc": 244,
@@ -11804,11 +11804,11 @@
         "backend/src/modules/blog/services/advice.service.ts"
       ],
       "imports": [
+        "@repo/database-types",
         "backend/src/modules/blog/interfaces/blog.interfaces.ts",
         "backend/src/modules/blog/utils/blog-text.utils.ts",
         "backend/src/modules/search/services/supabase-indexation.service.ts",
-        "backend/src/utils/html-entities.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/utils/html-entities.ts"
       ],
       "kind": "service",
       "loc": 266,
@@ -11835,6 +11835,7 @@
         "backend/src/modules/blog/services/advice-enrichment.service.ts"
       ],
       "imports": [
+        "@repo/database-types",
         "@security/rpc-gate/rpc-gate.service",
         "backend/src/common/utils/url-builder.utils.ts",
         "backend/src/modules/blog/interfaces/blog.interfaces.ts",
@@ -11842,8 +11843,7 @@
         "backend/src/modules/blog/services/advice-transform.service.ts",
         "backend/src/modules/blog/services/blog-cache.service.ts",
         "backend/src/modules/blog/services/blog.service.ts",
-        "backend/src/modules/search/services/supabase-indexation.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/modules/search/services/supabase-indexation.service.ts"
       ],
       "kind": "service",
       "loc": 738,
@@ -11864,10 +11864,10 @@
       "id": "backend/src/modules/blog/services/blog-article-data.service.adjacent.test.ts",
       "importedBy": [],
       "imports": [
+        "@repo/database-types",
         "backend/src/modules/blog/interfaces/blog.interfaces.ts",
         "backend/src/modules/blog/services/blog-article-data.service.ts",
-        "backend/src/modules/blog/services/blog-article-transform.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/modules/blog/services/blog-article-transform.service.ts"
       ],
       "kind": "test",
       "loc": 116,
@@ -11896,11 +11896,11 @@
       ],
       "imports": [
         "@common/exceptions",
+        "@repo/database-types",
         "backend/src/modules/blog/interfaces/blog.interfaces.ts",
         "backend/src/modules/blog/services/blog-article-transform.service.ts",
         "backend/src/modules/blog/services/blog-cache.service.ts",
-        "backend/src/modules/search/services/supabase-indexation.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/modules/search/services/supabase-indexation.service.ts"
       ],
       "kind": "service",
       "loc": 818,
@@ -11950,10 +11950,10 @@
       ],
       "imports": [
         "@cache/cache.service",
+        "@repo/database-types",
         "backend/src/common/utils/url-builder.utils.ts",
         "backend/src/modules/blog/services/blog-article-transform.service.ts",
-        "backend/src/modules/search/services/supabase-indexation.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/modules/search/services/supabase-indexation.service.ts"
       ],
       "kind": "service",
       "loc": 462,
@@ -12043,13 +12043,13 @@
         "backend/src/modules/blog/services/r3-guide.service.ts"
       ],
       "imports": [
+        "@repo/database-types",
         "backend/src/config/conseil-pack.constants.ts",
         "backend/src/config/fr-accent-map.ts",
         "backend/src/config/seo-link-limits.config.ts",
         "backend/src/modules/blog/utils/source-provenance.util.ts",
         "backend/src/modules/search/services/supabase-indexation.service.ts",
-        "backend/src/modules/seo/internal-linking.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/modules/seo/internal-linking.service.ts"
       ],
       "kind": "service",
       "loc": 438,
@@ -12075,11 +12075,11 @@
         "backend/src/modules/blog/services/blog.service.ts"
       ],
       "imports": [
+        "@repo/database-types",
         "backend/src/modules/blog/interfaces/blog.interfaces.ts",
         "backend/src/modules/blog/services/blog-article-transform.service.ts",
         "backend/src/modules/blog/services/blog-cache.service.ts",
-        "backend/src/modules/search/services/supabase-indexation.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/modules/search/services/supabase-indexation.service.ts"
       ],
       "kind": "service",
       "loc": 635,
@@ -12166,12 +12166,12 @@
         "backend/src/modules/blog/services/constructeur.service.ts"
       ],
       "imports": [
+        "@repo/database-types",
         "backend/src/modules/blog/interfaces/blog.interfaces.ts",
         "backend/src/modules/blog/services/blog-cache.service.ts",
         "backend/src/modules/blog/services/constructeur-transform.service.ts",
         "backend/src/modules/blog/services/constructeur.service.ts",
-        "backend/src/modules/search/services/supabase-indexation.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/modules/search/services/supabase-indexation.service.ts"
       ],
       "kind": "service",
       "loc": 230,
@@ -12196,9 +12196,9 @@
         "backend/src/modules/blog/services/constructeur.service.ts"
       ],
       "imports": [
+        "@repo/database-types",
         "backend/src/modules/blog/interfaces/blog.interfaces.ts",
-        "backend/src/utils/html-entities.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/utils/html-entities.ts"
       ],
       "kind": "service",
       "loc": 320,
@@ -12224,12 +12224,12 @@
         "backend/src/modules/blog/services/constructeur-search.service.ts"
       ],
       "imports": [
+        "@repo/database-types",
         "backend/src/modules/blog/interfaces/blog.interfaces.ts",
         "backend/src/modules/blog/services/blog-cache.service.ts",
         "backend/src/modules/blog/services/constructeur-search.service.ts",
         "backend/src/modules/blog/services/constructeur-transform.service.ts",
-        "backend/src/modules/search/services/supabase-indexation.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/modules/search/services/supabase-indexation.service.ts"
       ],
       "kind": "service",
       "loc": 810,
@@ -12254,9 +12254,9 @@
         "backend/src/modules/blog/controllers/content.controller.ts"
       ],
       "imports": [
+        "@repo/database-types",
         "backend/src/modules/blog/interfaces/blog.interfaces.ts",
-        "backend/src/modules/search/services/supabase-indexation.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/modules/search/services/supabase-indexation.service.ts"
       ],
       "kind": "service",
       "loc": 479,
@@ -12281,10 +12281,10 @@
         "backend/src/modules/blog/controllers/content.controller.ts"
       ],
       "imports": [
+        "@repo/database-types",
         "backend/src/modules/blog/interfaces/blog.interfaces.ts",
         "backend/src/modules/catalog/utils/image-urls.utils.ts",
-        "backend/src/modules/search/services/supabase-indexation.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/modules/search/services/supabase-indexation.service.ts"
       ],
       "kind": "service",
       "loc": 1254,
@@ -13229,8 +13229,8 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "backend/src/database/services/cart-data.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types",
+        "backend/src/database/services/cart-data.service.ts"
       ],
       "kind": "service",
       "loc": 219,
@@ -13330,7 +13330,7 @@
       "importedBy": [],
       "imports": [
         "@cache/cache.service",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types"
       ],
       "kind": "service",
       "loc": 414,
@@ -13442,9 +13442,9 @@
         "@common/exceptions",
         "@common/utils/error.utils",
         "@database/services/supabase-base.service",
+        "@repo/database-types",
         "@security/rpc-gate/rpc-gate.service",
-        "backend/src/modules/catalog/services/catalog-hierarchy.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/modules/catalog/services/catalog-hierarchy.service.ts"
       ],
       "kind": "service",
       "loc": 885,
@@ -13809,7 +13809,7 @@
       "id": "backend/src/modules/catalog/services/__tests__/vehicle-aware-label.composer.test.ts",
       "importedBy": [],
       "imports": [
-        "packages/seo-types/dist/index.d.ts"
+        "@repo/seo-types"
       ],
       "kind": "test",
       "loc": 229,
@@ -13912,8 +13912,8 @@
         "@cache/cache.service",
         "@common/utils/error.utils",
         "@database/services/supabase-base.service",
-        "@security/rpc-gate/rpc-gate.service",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types",
+        "@security/rpc-gate/rpc-gate.service"
       ],
       "kind": "service",
       "loc": 492,
@@ -13942,8 +13942,8 @@
         "@cache/cache.service",
         "@common/exceptions",
         "@database/services/supabase-base.service",
-        "backend/src/modules/catalog/interfaces/catalog-family.interface.ts",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types",
+        "backend/src/modules/catalog/interfaces/catalog-family.interface.ts"
       ],
       "kind": "service",
       "loc": 218,
@@ -14017,7 +14017,7 @@
       "imports": [
         "@cache/cache.service",
         "@database/services/supabase-base.service",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types"
       ],
       "kind": "service",
       "loc": 224,
@@ -14067,8 +14067,8 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "backend/src/modules/catalog/types/gamme.types.ts",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types",
+        "backend/src/modules/catalog/types/gamme.types.ts"
       ],
       "kind": "service",
       "loc": 165,
@@ -14144,7 +14144,7 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types"
       ],
       "kind": "service",
       "loc": 91,
@@ -14173,10 +14173,10 @@
       ],
       "imports": [
         "@cache/cache.service",
+        "@repo/seo-types",
         "backend/src/config/seo-variations.config.ts",
         "backend/src/modules/catalog/services/vehicle-aware-description.composer.ts",
-        "backend/src/modules/seo/services/seo-placeholder-events.service.ts",
-        "packages/seo-types/dist/index.d.ts"
+        "backend/src/modules/seo/services/seo-placeholder-events.service.ts"
       ],
       "kind": "service",
       "loc": 672,
@@ -14258,9 +14258,9 @@
       "imports": [
         "@common/utils/error.utils",
         "@database/services/supabase-base.service",
+        "@repo/database-types",
         "@security/rpc-gate/rpc-gate.service",
-        "backend/src/utils/promise-helpers.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/utils/promise-helpers.ts"
       ],
       "kind": "service",
       "loc": 745,
@@ -14394,7 +14394,7 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types"
       ],
       "kind": "service",
       "loc": 376,
@@ -14709,8 +14709,8 @@
         "@cache/cache.service",
         "@common/exceptions",
         "@database/services/supabase-base.service",
-        "backend/src/database/services/meta-tags-ariane-data.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types",
+        "backend/src/database/services/meta-tags-ariane-data.service.ts"
       ],
       "kind": "service",
       "loc": 941,
@@ -15455,7 +15455,7 @@
       "id": "backend/src/modules/diagnostic-engine/ports/commerce.port.ts",
       "importedBy": [],
       "imports": [
-        "packages/registry/dist/index.d.ts"
+        "@repo/registry"
       ],
       "kind": "service",
       "loc": 44,
@@ -15476,7 +15476,7 @@
       "id": "backend/src/modules/diagnostic-engine/ports/editorial.port.ts",
       "importedBy": [],
       "imports": [
-        "packages/registry/dist/index.d.ts"
+        "@repo/registry"
       ],
       "kind": "service",
       "loc": 36,
@@ -15497,7 +15497,7 @@
       "id": "backend/src/modules/diagnostic-engine/ports/maintenance.port.ts",
       "importedBy": [],
       "imports": [
-        "packages/registry/dist/index.d.ts"
+        "@repo/registry"
       ],
       "kind": "service",
       "loc": 50,
@@ -15523,7 +15523,7 @@
         "backend/src/modules/vehicle-context/vehicle-context.service.ts"
       ],
       "imports": [
-        "packages/registry/dist/index.d.ts"
+        "@repo/registry"
       ],
       "kind": "service",
       "loc": 58,
@@ -16780,7 +16780,7 @@
         "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts"
       ],
       "imports": [
-        "packages/registry/dist/index.d.ts"
+        "@repo/registry"
       ],
       "kind": "service",
       "loc": 45,
@@ -17018,7 +17018,7 @@
       "imports": [
         "@common/utils/error.utils",
         "@database/services/supabase-base.service",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types"
       ],
       "kind": "service",
       "loc": 582,
@@ -17278,8 +17278,8 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "backend/src/modules/catalog/services/unified-page-data.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types",
+        "backend/src/modules/catalog/services/unified-page-data.service.ts"
       ],
       "kind": "service",
       "loc": 107,
@@ -17611,7 +17611,7 @@
       "imports": [
         "@common/exceptions",
         "@database/services/supabase-base.service",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types"
       ],
       "kind": "service",
       "loc": 165,
@@ -17884,7 +17884,7 @@
       ],
       "imports": [
         "@cache/cache.service",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types"
       ],
       "kind": "service",
       "loc": 451,
@@ -17912,7 +17912,7 @@
       ],
       "imports": [
         "@cache/cache.service",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types"
       ],
       "kind": "service",
       "loc": 283,
@@ -20297,7 +20297,7 @@
       "imports": [
         "@common/exceptions",
         "@database/services/supabase-base.service",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types"
       ],
       "kind": "service",
       "loc": 326,
@@ -20586,7 +20586,7 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types"
       ],
       "kind": "service",
       "loc": 272,
@@ -20979,13 +20979,13 @@
         "@auth/authenticated.guard",
         "@auth/is-admin.guard",
         "@cache/cache.service",
+        "@repo/domain-commerce",
         "backend/src/auth/auth.service.ts",
         "backend/src/auth/guards/optional-auth.guard.ts",
         "backend/src/modules/orders/services/orders.service.ts",
         "backend/src/services/mail.service.ts",
         "backend/src/utils/promise-helpers.ts",
-        "crypto",
-        "packages/domain-commerce/dist/index.d.ts"
+        "crypto"
       ],
       "kind": "controller",
       "loc": 1243,
@@ -21161,9 +21161,9 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
+        "@repo/database-types",
         "backend/src/modules/orders/events/order.events.ts",
-        "backend/src/services/mail.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/services/mail.service.ts"
       ],
       "kind": "service",
       "loc": 121,
@@ -21249,9 +21249,9 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
+        "@repo/database-types",
         "backend/src/modules/orders/events/order.events.ts",
-        "backend/src/modules/orders/types/order.types.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/modules/orders/types/order.types.ts"
       ],
       "kind": "service",
       "loc": 763,
@@ -21277,7 +21277,7 @@
       "imports": [
         "@common/exceptions",
         "@database/services/supabase-base.service",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types"
       ],
       "kind": "service",
       "loc": 507,
@@ -21349,8 +21349,8 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "crypto",
-        "packages/domain-commerce/dist/index.d.ts"
+        "@repo/domain-commerce",
+        "crypto"
       ],
       "kind": "service",
       "loc": 112,
@@ -21375,15 +21375,15 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
+        "@repo/database-types",
+        "@repo/domain-commerce",
         "backend/src/modules/cart/services/shipping-calculator.service.ts",
         "backend/src/modules/orders/events/order.events.ts",
         "backend/src/modules/orders/services/order-calculation.service.ts",
         "backend/src/modules/orders/services/order-status.service.ts",
         "backend/src/modules/shipping/shipping.service.ts",
         "backend/src/services/mail.service.ts",
-        "crypto",
-        "packages/database-types/dist/index.d.ts",
-        "packages/domain-commerce/dist/index.d.ts"
+        "crypto"
       ],
       "kind": "service",
       "loc": 924,
@@ -21408,7 +21408,7 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types"
       ],
       "kind": "service",
       "loc": 438,
@@ -21992,9 +21992,9 @@
       "imports": [
         "@common/exceptions",
         "@database/services/supabase-base.service",
+        "@repo/database-types",
         "backend/src/modules/payments/entities/payment.entity.ts",
-        "backend/src/modules/payments/utils/normalize-order-id.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/modules/payments/utils/normalize-order-id.ts"
       ],
       "kind": "service",
       "loc": 798,
@@ -23497,8 +23497,8 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "@security/rpc-gate/rpc-gate.service",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types",
+        "@security/rpc-gate/rpc-gate.service"
       ],
       "kind": "service",
       "loc": 576,
@@ -23551,9 +23551,9 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
+        "@repo/database-types",
         "backend/src/modules/products/services/cross-selling.service.ts",
-        "backend/src/utils/html-entities.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/utils/html-entities.ts"
       ],
       "kind": "service",
       "loc": 284,
@@ -23578,8 +23578,8 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "backend/src/modules/products/services/cross-selling.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types",
+        "backend/src/modules/products/services/cross-selling.service.ts"
       ],
       "kind": "service",
       "loc": 462,
@@ -23637,7 +23637,7 @@
         "@common/exceptions",
         "@database/services/piece-price-data.service",
         "@database/services/supabase-base.service",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types"
       ],
       "kind": "service",
       "loc": 532,
@@ -23685,7 +23685,7 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types"
       ],
       "kind": "service",
       "loc": 432,
@@ -23712,9 +23712,9 @@
       "imports": [
         "@common/exceptions",
         "@database/services/supabase-base.service",
+        "@repo/database-types",
         "@security/rpc-gate/rpc-gate.service",
-        "backend/src/modules/pricing/services/pricing-formula.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/modules/pricing/services/pricing-formula.service.ts"
       ],
       "kind": "service",
       "loc": 627,
@@ -23741,8 +23741,8 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "@security/rpc-gate/rpc-gate.service",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types",
+        "@security/rpc-gate/rpc-gate.service"
       ],
       "kind": "service",
       "loc": 366,
@@ -23766,7 +23766,7 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types"
       ],
       "kind": "service",
       "loc": 311,
@@ -23794,7 +23794,7 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types"
       ],
       "kind": "service",
       "loc": 507,
@@ -25429,8 +25429,8 @@
         "backend/src/modules/search/search.module.ts"
       ],
       "imports": [
-        "backend/src/modules/search/services/supabase-indexation.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types",
+        "backend/src/modules/search/services/supabase-indexation.service.ts"
       ],
       "kind": "service",
       "loc": 199,
@@ -25506,7 +25506,7 @@
       "imports": [
         "@common/exceptions",
         "@database/services/supabase-base.service",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types"
       ],
       "kind": "service",
       "loc": 351,
@@ -25557,7 +25557,7 @@
       "imports": [
         "@common/exceptions",
         "@database/services/supabase-base.service",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types"
       ],
       "kind": "service",
       "loc": 817,
@@ -25631,8 +25631,8 @@
       "imports": [
         "@cache/cache.service",
         "@database/services/supabase-base.service",
-        "backend/src/modules/catalog/utils/image-urls.utils.ts",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types",
+        "backend/src/modules/catalog/utils/image-urls.utils.ts"
       ],
       "kind": "service",
       "loc": 999,
@@ -25695,8 +25695,8 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "backend/src/modules/search/services/vehicle-naming.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types",
+        "backend/src/modules/search/services/vehicle-naming.service.ts"
       ],
       "kind": "service",
       "loc": 489,
@@ -25721,7 +25721,7 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types"
       ],
       "kind": "service",
       "loc": 283,
@@ -25791,9 +25791,9 @@
       "id": "backend/src/modules/seo-control-plane/collectors/cf-analytics/cf-analytics.service.test.ts",
       "importedBy": [],
       "imports": [
+        "@repo/registry",
         "backend/src/modules/seo-control-plane/collectors/cf-analytics/cf-analytics.service.ts",
-        "backend/src/modules/seo-control-plane/services/criticality-loader.service.ts",
-        "packages/registry/dist/index.d.ts"
+        "backend/src/modules/seo-control-plane/services/criticality-loader.service.ts"
       ],
       "kind": "test",
       "loc": 262,
@@ -25847,7 +25847,7 @@
         "backend/src/modules/seo-control-plane/collectors/cf-analytics/cf-analytics.service.ts"
       ],
       "imports": [
-        "packages/registry/dist/index.d.ts"
+        "@repo/registry"
       ],
       "kind": "config",
       "loc": 62,
@@ -25917,9 +25917,9 @@
       "id": "backend/src/modules/seo-control-plane/collectors/cf-rum/cf-rum.service.test.ts",
       "importedBy": [],
       "imports": [
+        "@repo/registry",
         "backend/src/modules/seo-control-plane/collectors/cf-rum/cf-rum.service.ts",
-        "backend/src/modules/seo-control-plane/services/criticality-loader.service.ts",
-        "packages/registry/dist/index.d.ts"
+        "backend/src/modules/seo-control-plane/services/criticality-loader.service.ts"
       ],
       "kind": "test",
       "loc": 523,
@@ -25973,7 +25973,7 @@
         "backend/src/modules/seo-control-plane/collectors/cf-rum/cf-rum.service.ts"
       ],
       "imports": [
-        "packages/registry/dist/index.d.ts"
+        "@repo/registry"
       ],
       "kind": "config",
       "loc": 104,
@@ -26043,9 +26043,9 @@
       "id": "backend/src/modules/seo-control-plane/collectors/runtime-logs/runtime-logs.service.test.ts",
       "importedBy": [],
       "imports": [
+        "@repo/registry",
         "backend/src/modules/seo-control-plane/collectors/runtime-logs/runtime-logs.service.ts",
-        "backend/src/modules/seo-control-plane/services/criticality-loader.service.ts",
-        "packages/registry/dist/index.d.ts"
+        "backend/src/modules/seo-control-plane/services/criticality-loader.service.ts"
       ],
       "kind": "test",
       "loc": 251,
@@ -26099,7 +26099,7 @@
         "backend/src/modules/seo-control-plane/collectors/runtime-logs/runtime-logs.service.ts"
       ],
       "imports": [
-        "packages/registry/dist/index.d.ts"
+        "@repo/registry"
       ],
       "kind": "config",
       "loc": 54,
@@ -26192,10 +26192,10 @@
       "id": "backend/src/modules/seo-control-plane/collectors/synthetic-crawler/synthetic-crawler.service.test.ts",
       "importedBy": [],
       "imports": [
+        "@repo/registry",
         "backend/src/modules/seo-control-plane/collectors/synthetic-crawler/synthetic-crawler.service.ts",
         "backend/src/modules/seo-control-plane/services/criticality-loader.service.ts",
-        "backend/src/modules/seo-control-plane/types.ts",
-        "packages/registry/dist/index.d.ts"
+        "backend/src/modules/seo-control-plane/types.ts"
       ],
       "kind": "test",
       "loc": 534,
@@ -26220,12 +26220,12 @@
         "backend/src/modules/seo-control-plane/seo-control-plane.module.ts"
       ],
       "imports": [
+        "@repo/registry",
         "backend/src/database/services/supabase-base.service.ts",
         "backend/src/modules/seo-control-plane/services/criticality-loader.service.ts",
         "backend/src/modules/seo-control-plane/synthetic-probe-credential.service.ts",
         "backend/src/modules/seo-control-plane/types.ts",
-        "crypto",
-        "packages/registry/dist/index.d.ts"
+        "crypto"
       ],
       "kind": "service",
       "loc": 615,
@@ -26283,8 +26283,8 @@
       "id": "backend/src/modules/seo-control-plane/services/criticality-loader.service.test.ts",
       "importedBy": [],
       "imports": [
-        "backend/src/modules/seo-control-plane/services/criticality-loader.service.ts",
-        "packages/registry/dist/index.d.ts"
+        "@repo/registry",
+        "backend/src/modules/seo-control-plane/services/criticality-loader.service.ts"
       ],
       "kind": "test",
       "loc": 93,
@@ -26316,8 +26316,8 @@
         "backend/src/modules/seo-control-plane/services/criticality-loader.service.test.ts"
       ],
       "imports": [
+        "@repo/registry",
         "fs",
-        "packages/registry/dist/index.d.ts",
         "path"
       ],
       "kind": "service",
@@ -26423,7 +26423,7 @@
         "backend/src/modules/seo-control-plane/synthetic-probe-credential.service.ts"
       ],
       "imports": [
-        "packages/registry/dist/index.d.ts"
+        "@repo/registry"
       ],
       "kind": "service",
       "loc": 185,
@@ -26787,7 +26787,7 @@
         "backend/src/modules/seo-monitoring/cli/run-ingestion-backfill.ts"
       ],
       "imports": [
-        "packages/seo-types/dist/index.d.ts"
+        "@repo/seo-types"
       ],
       "kind": "service",
       "loc": 110,
@@ -26861,8 +26861,8 @@
       ],
       "imports": [
         "@config/site.constants",
-        "backend/src/modules/seo-monitoring/services/cwv-beacon.service.ts",
-        "packages/cwv-taxonomy/dist/index.d.ts"
+        "@repo/cwv-taxonomy",
+        "backend/src/modules/seo-monitoring/services/cwv-beacon.service.ts"
       ],
       "kind": "controller",
       "loc": 91,
@@ -26909,8 +26909,8 @@
         "backend/src/modules/seo-monitoring/seo-monitoring.module.ts"
       ],
       "imports": [
-        "backend/src/modules/seo-monitoring/services/funnel-events.service.ts",
-        "packages/seo-types/dist/index.d.ts"
+        "@repo/seo-types",
+        "backend/src/modules/seo-monitoring/services/funnel-events.service.ts"
       ],
       "kind": "controller",
       "loc": 38,
@@ -26959,9 +26959,9 @@
         "backend/src/modules/seo-monitoring/seo-monitoring.module.ts"
       ],
       "imports": [
+        "@repo/cwv-taxonomy",
         "backend/src/modules/seo-monitoring/services/runtime-events.schema.ts",
-        "backend/src/modules/seo-monitoring/services/runtime-events.service.ts",
-        "packages/cwv-taxonomy/dist/index.d.ts"
+        "backend/src/modules/seo-monitoring/services/runtime-events.service.ts"
       ],
       "kind": "controller",
       "loc": 76,
@@ -26988,14 +26988,14 @@
         "@auth/authenticated.guard",
         "@auth/is-admin.guard",
         "@common/utils",
+        "@repo/seo-types",
         "backend/src/modules/seo-monitoring/services/audit-findings.service.ts",
         "backend/src/modules/seo-monitoring/services/ga4-daily-fetcher.service.ts",
         "backend/src/modules/seo-monitoring/services/google-credentials.service.ts",
         "backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.ts",
         "backend/src/modules/seo-monitoring/services/r-content-auditor.service.ts",
         "backend/src/modules/seo-monitoring/services/rag-mirror-freshness.service.ts",
-        "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts",
-        "packages/seo-types/dist/index.d.ts"
+        "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts"
       ],
       "kind": "controller",
       "loc": 473,
@@ -27065,9 +27065,9 @@
       "imports": [
         "@config/feature-flags.service",
         "@database/services/supabase-base.service",
+        "@repo/seo-types",
         "backend/src/modules/orders/events/order.events.ts",
-        "backend/src/modules/seo-monitoring/services/funnel-events.service.ts",
-        "packages/seo-types/dist/index.d.ts"
+        "backend/src/modules/seo-monitoring/services/funnel-events.service.ts"
       ],
       "kind": "service",
       "loc": 150,
@@ -27197,7 +27197,7 @@
       ],
       "imports": [
         "@common/utils",
-        "packages/seo-types/dist/index.d.ts"
+        "@repo/seo-types"
       ],
       "kind": "service",
       "loc": 527,
@@ -27243,7 +27243,7 @@
         "backend/src/modules/seo-monitoring/services/crux-field-fetcher.test.ts"
       ],
       "imports": [
-        "packages/seo-types/dist/index.d.ts"
+        "@repo/seo-types"
       ],
       "kind": "service",
       "loc": 235,
@@ -27269,9 +27269,9 @@
       ],
       "imports": [
         "@common/utils",
+        "@repo/seo-types",
         "backend/src/modules/seo-monitoring/services/crux-api-client.service.ts",
-        "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts",
-        "packages/seo-types/dist/index.d.ts"
+        "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts"
       ],
       "kind": "service",
       "loc": 355,
@@ -27315,8 +27315,8 @@
       "id": "backend/src/modules/seo-monitoring/services/cwv-beacon.service.test.ts",
       "importedBy": [],
       "imports": [
-        "backend/src/modules/seo-monitoring/services/cwv-beacon.service.ts",
-        "packages/cwv-taxonomy/dist/index.d.ts"
+        "@repo/cwv-taxonomy",
+        "backend/src/modules/seo-monitoring/services/cwv-beacon.service.ts"
       ],
       "kind": "test",
       "loc": 301,
@@ -27343,7 +27343,7 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "packages/cwv-taxonomy/dist/index.d.ts"
+        "@repo/cwv-taxonomy"
       ],
       "kind": "service",
       "loc": 242,
@@ -27418,7 +27418,7 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "packages/seo-types/dist/index.d.ts"
+        "@repo/seo-types"
       ],
       "kind": "service",
       "loc": 84,
@@ -27439,7 +27439,7 @@
       "id": "backend/src/modules/seo-monitoring/services/funnel-events.test.ts",
       "importedBy": [],
       "imports": [
-        "packages/seo-types/dist/index.d.ts"
+        "@repo/seo-types"
       ],
       "kind": "test",
       "loc": 62,
@@ -27468,11 +27468,11 @@
       "imports": [
         "@common/utils",
         "@config/site.constants",
+        "@repo/seo-types",
         "backend/src/modules/seo-monitoring/services/google-credentials.service.ts",
         "backend/src/modules/seo-monitoring/services/ingestion-date-planner.ts",
         "backend/src/modules/seo-monitoring/services/ingestion-error-classifier.ts",
-        "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts",
-        "packages/seo-types/dist/index.d.ts"
+        "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts"
       ],
       "kind": "service",
       "loc": 674,
@@ -27621,13 +27621,13 @@
       ],
       "imports": [
         "@common/utils",
+        "@repo/seo-types",
         "backend/src/modules/seo-monitoring/services/google-credentials.service.ts",
         "backend/src/modules/seo-monitoring/services/gsc-coverage.ts",
         "backend/src/modules/seo-monitoring/services/gsc-finality.ts",
         "backend/src/modules/seo-monitoring/services/ingestion-date-planner.ts",
         "backend/src/modules/seo-monitoring/services/ingestion-error-classifier.ts",
-        "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts",
-        "packages/seo-types/dist/index.d.ts"
+        "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts"
       ],
       "kind": "service",
       "loc": 1106,
@@ -27790,8 +27790,8 @@
       "id": "backend/src/modules/seo-monitoring/services/ingestion-date-planner.test.ts",
       "importedBy": [],
       "imports": [
-        "backend/src/modules/seo-monitoring/services/ingestion-date-planner.ts",
-        "packages/seo-types/dist/index.d.ts"
+        "@repo/seo-types",
+        "backend/src/modules/seo-monitoring/services/ingestion-date-planner.ts"
       ],
       "kind": "test",
       "loc": 258,
@@ -27818,7 +27818,7 @@
         "backend/src/modules/seo-monitoring/services/ingestion-date-planner.test.ts"
       ],
       "imports": [
-        "packages/seo-types/dist/index.d.ts"
+        "@repo/seo-types"
       ],
       "kind": "service",
       "loc": 218,
@@ -27964,7 +27964,7 @@
         "backend/src/modules/seo-monitoring/services/runtime-events.service.ts"
       ],
       "imports": [
-        "packages/cwv-taxonomy/dist/index.d.ts"
+        "@repo/cwv-taxonomy"
       ],
       "kind": "config",
       "loc": 43,
@@ -28639,8 +28639,8 @@
       ],
       "imports": [
         "@modules/seo/services/chain/seo-chain-orchestrator.service",
-        "backend/src/modules/seo-shadow-observatory/types.ts",
-        "packages/seo-role-contracts/dist/index.d.ts"
+        "@repo/seo-role-contracts",
+        "backend/src/modules/seo-shadow-observatory/types.ts"
       ],
       "kind": "service",
       "loc": 165,
@@ -28664,10 +28664,10 @@
         "backend/src/modules/seo-shadow-observatory/seo-shadow-observatory.service.ts"
       ],
       "imports": [
+        "@repo/seo-role-contracts",
         "backend/src/modules/seo-shadow-observatory/seo-shadow-url-normalizer.service.ts",
         "backend/src/modules/seo-shadow-observatory/types.ts",
-        "crypto",
-        "packages/seo-role-contracts/dist/index.d.ts"
+        "crypto"
       ],
       "kind": "service",
       "loc": 189,
@@ -28692,8 +28692,8 @@
       ],
       "imports": [
         "@common/utils",
-        "backend/src/modules/seo-shadow-observatory/types.ts",
-        "packages/seo-role-contracts/dist/index.d.ts"
+        "@repo/seo-role-contracts",
+        "backend/src/modules/seo-shadow-observatory/types.ts"
       ],
       "kind": "service",
       "loc": 115,
@@ -28751,12 +28751,12 @@
       ],
       "imports": [
         "@modules/seo/registries/seo-feature-flag.registry",
+        "@repo/seo-role-contracts",
         "backend/src/modules/seo-shadow-observatory/seo-shadow-chain-runner.service.ts",
         "backend/src/modules/seo-shadow-observatory/seo-shadow-diff-engine.service.ts",
         "backend/src/modules/seo-shadow-observatory/seo-shadow-event-sink.service.ts",
         "backend/src/modules/seo-shadow-observatory/seo-shadow-sampler.service.ts",
-        "backend/src/modules/seo-shadow-observatory/types.ts",
-        "packages/seo-role-contracts/dist/index.d.ts"
+        "backend/src/modules/seo-shadow-observatory/types.ts"
       ],
       "kind": "service",
       "loc": 136,
@@ -28852,7 +28852,7 @@
         "backend/src/modules/seo-shadow-observatory/seo-shadow-observatory.service.ts"
       ],
       "imports": [
-        "packages/seo-role-contracts/dist/index.d.ts"
+        "@repo/seo-role-contracts"
       ],
       "kind": "service",
       "loc": 92,
@@ -29088,8 +29088,8 @@
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
-        "backend/src/modules/seo/services/keywords-dashboard.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types",
+        "backend/src/modules/seo/services/keywords-dashboard.service.ts"
       ],
       "kind": "controller",
       "loc": 191,
@@ -29186,9 +29186,9 @@
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
+        "@repo/database-types",
         "backend/src/modules/seo/services/googlebot-detector.service.ts",
-        "backend/src/modules/seo/services/risk-flags-engine.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/modules/seo/services/risk-flags-engine.service.ts"
       ],
       "kind": "controller",
       "loc": 481,
@@ -29583,8 +29583,8 @@
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
-        "backend/src/config/app.config.ts",
-        "packages/seo-url-contract/dist/robots-policy.d.ts"
+        "@repo/seo-url-contract/robots-policy",
+        "backend/src/config/app.config.ts"
       ],
       "kind": "service",
       "loc": 89,
@@ -29847,9 +29847,9 @@
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
+        "@repo/database-types",
         "backend/src/config/seo-link-limits.config.ts",
-        "backend/src/modules/seo/types/page-role.types.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/modules/seo/types/page-role.types.ts"
       ],
       "kind": "service",
       "loc": 723,
@@ -31100,8 +31100,8 @@
       "id": "backend/src/modules/seo/registries/__tests__/seo-surface.registry.test.ts",
       "importedBy": [],
       "imports": [
-        "backend/src/modules/seo/registries/seo-surface.registry.ts",
-        "packages/seo-roles/dist/index.d.ts"
+        "@repo/seo-roles",
+        "backend/src/modules/seo/registries/seo-surface.registry.ts"
       ],
       "kind": "test",
       "loc": 40,
@@ -31176,8 +31176,8 @@
         "backend/src/modules/seo/services/policies/seo-indexability-policy.service.ts"
       ],
       "imports": [
-        "packages/seo-role-contracts/dist/index.d.ts",
-        "packages/seo-roles/dist/index.d.ts"
+        "@repo/seo-role-contracts",
+        "@repo/seo-roles"
       ],
       "kind": "service",
       "loc": 42,
@@ -31285,7 +31285,7 @@
         "backend/src/modules/seo/services/seo-v4-switch-engine.service.ts"
       ],
       "imports": [
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types"
       ],
       "kind": "config",
       "loc": 206,
@@ -31479,8 +31479,8 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "backend/src/database/services/meta-tags-ariane-data.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types",
+        "backend/src/database/services/meta-tags-ariane-data.service.ts"
       ],
       "kind": "service",
       "loc": 264,
@@ -31789,7 +31789,7 @@
         "backend/src/modules/seo/services/chain/seo-content-block-builder.service.ts"
       ],
       "imports": [
-        "packages/seo-role-contracts/dist/index.d.ts"
+        "@repo/seo-role-contracts"
       ],
       "kind": "service",
       "loc": 103,
@@ -31817,6 +31817,7 @@
         "backend/src/modules/seo/services/chain/__tests__/seo-chain-orchestrator.service.test.ts"
       ],
       "imports": [
+        "@repo/seo-role-contracts",
         "backend/src/modules/seo/registries/seo-surface.registry.ts",
         "backend/src/modules/seo/services/chain/seo-ariane-breadcrumb.service.ts",
         "backend/src/modules/seo/services/chain/seo-content-block-builder.service.ts",
@@ -31824,8 +31825,7 @@
         "backend/src/modules/seo/services/chain/seo-switch-selector.service.ts",
         "backend/src/modules/seo/services/chain/seo-template-renderer.service.ts",
         "backend/src/modules/seo/services/policies/seo-canonical.service.ts",
-        "backend/src/modules/seo/services/policies/seo-indexability-policy.service.ts",
-        "packages/seo-role-contracts/dist/index.d.ts"
+        "backend/src/modules/seo/services/policies/seo-indexability-policy.service.ts"
       ],
       "kind": "service",
       "loc": 412,
@@ -31853,10 +31853,10 @@
         "backend/src/modules/seo/services/chain/seo-chain-orchestrator.service.ts"
       ],
       "imports": [
+        "@repo/seo-role-contracts",
         "backend/src/modules/seo/services/chain/seo-ariane-breadcrumb.service.ts",
         "backend/src/modules/seo/services/chain/seo-internal-linking.service.ts",
-        "backend/src/modules/seo/services/chain/seo-switch-selector.service.ts",
-        "packages/seo-role-contracts/dist/index.d.ts"
+        "backend/src/modules/seo/services/chain/seo-switch-selector.service.ts"
       ],
       "kind": "service",
       "loc": 146,
@@ -31888,10 +31888,10 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "crypto",
-        "packages/database-types/dist/index.d.ts",
-        "packages/seo-role-contracts/dist/index.d.ts",
-        "packages/seo-roles/dist/index.d.ts"
+        "@repo/database-types",
+        "@repo/seo-role-contracts",
+        "@repo/seo-roles",
+        "crypto"
       ],
       "kind": "service",
       "loc": 333,
@@ -31916,7 +31916,7 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types"
       ],
       "kind": "service",
       "loc": 119,
@@ -32029,9 +32029,9 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "backend/src/modules/seo/seo-v4.types.ts",
-        "packages/database-types/dist/index.d.ts",
-        "packages/seo-role-contracts/dist/index.d.ts"
+        "@repo/database-types",
+        "@repo/seo-role-contracts",
+        "backend/src/modules/seo/seo-v4.types.ts"
       ],
       "kind": "service",
       "loc": 234,
@@ -32128,8 +32128,8 @@
       "id": "backend/src/modules/seo/services/policies/__tests__/r2-indexability-gate.service.test.ts",
       "importedBy": [],
       "imports": [
-        "backend/src/modules/seo/services/policies/r2-indexability-gate.service.ts",
-        "packages/seo-role-contracts/dist/index.d.ts"
+        "@repo/seo-role-contracts",
+        "backend/src/modules/seo/services/policies/r2-indexability-gate.service.ts"
       ],
       "kind": "test",
       "loc": 45,
@@ -32171,10 +32171,10 @@
       "id": "backend/src/modules/seo/services/policies/__tests__/seo-indexability-policy.service.test.ts",
       "importedBy": [],
       "imports": [
+        "@repo/seo-role-contracts",
         "backend/src/modules/seo/registries/seo-surface.registry.ts",
         "backend/src/modules/seo/services/policies/r2-indexability-gate.service.ts",
-        "backend/src/modules/seo/services/policies/seo-indexability-policy.service.ts",
-        "packages/seo-role-contracts/dist/index.d.ts"
+        "backend/src/modules/seo/services/policies/seo-indexability-policy.service.ts"
       ],
       "kind": "test",
       "loc": 117,
@@ -32224,7 +32224,7 @@
         "backend/src/modules/seo/services/policies/seo-indexability-policy.service.ts"
       ],
       "imports": [
-        "packages/seo-role-contracts/dist/index.d.ts"
+        "@repo/seo-role-contracts"
       ],
       "kind": "service",
       "loc": 30,
@@ -32252,7 +32252,7 @@
         "backend/src/modules/seo/services/policies/__tests__/seo-canonical.service.test.ts"
       ],
       "imports": [
-        "packages/seo-role-contracts/dist/index.d.ts"
+        "@repo/seo-role-contracts"
       ],
       "kind": "service",
       "loc": 108,
@@ -32280,9 +32280,9 @@
         "backend/src/modules/seo/services/policies/__tests__/seo-indexability-policy.service.test.ts"
       ],
       "imports": [
+        "@repo/seo-role-contracts",
         "backend/src/modules/seo/registries/seo-surface.registry.ts",
-        "backend/src/modules/seo/services/policies/r2-indexability-gate.service.ts",
-        "packages/seo-role-contracts/dist/index.d.ts"
+        "backend/src/modules/seo/services/policies/r2-indexability-gate.service.ts"
       ],
       "kind": "service",
       "loc": 137,
@@ -32558,7 +32558,7 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types"
       ],
       "kind": "service",
       "loc": 506,
@@ -32694,8 +32694,8 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "backend/src/modules/seo/seo-v4.types.ts",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types",
+        "backend/src/modules/seo/seo-v4.types.ts"
       ],
       "kind": "service",
       "loc": 366,
@@ -32717,8 +32717,8 @@
       "importedBy": [],
       "imports": [
         "@database/services/supabase-base.service",
-        "backend/src/modules/seo/seo-v4.types.ts",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types",
+        "backend/src/modules/seo/seo-v4.types.ts"
       ],
       "kind": "service",
       "loc": 276,
@@ -33512,9 +33512,9 @@
         "backend/src/modules/seo/utils/seo-balise-collision-gate.ts"
       ],
       "imports": [
+        "@repo/seo-roles",
         "backend/src/modules/seo/types/resolved-seo-field.ts",
-        "crypto",
-        "packages/seo-roles/dist/index.d.ts"
+        "crypto"
       ],
       "kind": "service",
       "loc": 169,
@@ -33748,8 +33748,8 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "backend/src/common/utils/url-builder.utils.ts",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types",
+        "backend/src/common/utils/url-builder.utils.ts"
       ],
       "kind": "service",
       "loc": 786,
@@ -33896,8 +33896,8 @@
       "imports": [
         "@common/exceptions",
         "@database/services/supabase-base.service",
-        "backend/src/modules/cart/services/shipping-calculator.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types",
+        "backend/src/modules/cart/services/shipping-calculator.service.ts"
       ],
       "kind": "service",
       "loc": 375,
@@ -33967,8 +33967,8 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "backend/src/modules/staff/dto/staff.dto.ts",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types",
+        "backend/src/modules/staff/dto/staff.dto.ts"
       ],
       "kind": "service",
       "loc": 317,
@@ -35644,7 +35644,7 @@
       "imports": [
         "@common/exceptions",
         "@database/services/supabase-base.service",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types"
       ],
       "kind": "service",
       "loc": 652,
@@ -35950,7 +35950,7 @@
         "backend/src/modules/support/controllers/leads-admin.controller.ts"
       ],
       "imports": [
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types"
       ],
       "kind": "service",
       "loc": 69,
@@ -36143,9 +36143,9 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
+        "@repo/database-types",
         "backend/src/modules/support/services/notification.service.ts",
-        "backend/src/services/mail.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/services/mail.service.ts"
       ],
       "kind": "service",
       "loc": 907,
@@ -36197,7 +36197,7 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types"
       ],
       "kind": "service",
       "loc": 272,
@@ -36247,8 +36247,8 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "backend/src/modules/support/services/legal.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types",
+        "backend/src/modules/support/services/legal.service.ts"
       ],
       "kind": "service",
       "loc": 150,
@@ -36278,9 +36278,9 @@
       "imports": [
         "@common/exceptions",
         "@database/services/supabase-base.service",
+        "@repo/database-types",
         "backend/src/modules/support/services/legal-page.service.ts",
-        "backend/src/modules/support/services/legal-version.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/modules/support/services/legal-version.service.ts"
       ],
       "kind": "service",
       "loc": 912,
@@ -36369,8 +36369,8 @@
       "imports": [
         "@common/exceptions",
         "@database/services/supabase-base.service",
-        "backend/src/modules/support/services/notification.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types",
+        "backend/src/modules/support/services/notification.service.ts"
       ],
       "kind": "service",
       "loc": 773,
@@ -36598,9 +36598,9 @@
       "imports": [
         "@common/utils/error.utils",
         "@database/services/supabase-base.service",
+        "@repo/database-types",
         "backend/src/modules/system/services/database-monitor.service.ts",
-        "backend/src/modules/system/services/metrics.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/modules/system/services/metrics.service.ts"
       ],
       "kind": "service",
       "loc": 360,
@@ -36629,8 +36629,8 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "backend/src/database/services/meta-tags-ariane-data.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types",
+        "backend/src/database/services/meta-tags-ariane-data.service.ts"
       ],
       "kind": "service",
       "loc": 315,
@@ -37580,8 +37580,8 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "backend/src/modules/users/dto/addresses.dto.ts",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types",
+        "backend/src/modules/users/dto/addresses.dto.ts"
       ],
       "kind": "service",
       "loc": 523,
@@ -37606,9 +37606,9 @@
       "imports": [
         "@common/exceptions",
         "@database/services/supabase-base.service",
+        "@repo/database-types",
         "backend/src/modules/users/dto/users.dto.ts",
-        "backend/src/modules/users/services/profile.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/modules/users/services/profile.service.ts"
       ],
       "kind": "service",
       "loc": 279,
@@ -37634,9 +37634,9 @@
       "imports": [
         "@common/exceptions",
         "@database/services/supabase-base.service",
+        "@repo/database-types",
         "backend/src/services/mail.service.ts",
-        "crypto",
-        "packages/database-types/dist/index.d.ts"
+        "crypto"
       ],
       "kind": "service",
       "loc": 388,
@@ -37663,10 +37663,10 @@
         "@cache/cache.service",
         "@common/exceptions",
         "@database/services/supabase-base.service",
+        "@repo/database-types",
         "backend/src/modules/users/dto/user.dto.ts",
         "backend/src/modules/users/dto/users.dto.ts",
-        "backend/src/modules/users/services/user-data-consolidated.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/modules/users/services/user-data-consolidated.service.ts"
       ],
       "kind": "service",
       "loc": 282,
@@ -37698,8 +37698,8 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "backend/src/modules/users/dto/user.dto.ts",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types",
+        "backend/src/modules/users/dto/user.dto.ts"
       ],
       "kind": "service",
       "loc": 643,
@@ -37725,7 +37725,7 @@
       "imports": [
         "@common/utils/error.utils",
         "@database/services/supabase-base.service",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types"
       ],
       "kind": "service",
       "loc": 127,
@@ -37841,10 +37841,10 @@
       "id": "backend/src/modules/vehicle-context/vehicle-context.middleware.test.ts",
       "importedBy": [],
       "imports": [
+        "@repo/registry",
         "backend/src/config/feature-flags.service.ts",
         "backend/src/modules/vehicle-context/vehicle-context.middleware.ts",
-        "backend/src/modules/vehicle-context/vehicle-context.service.ts",
-        "packages/registry/dist/index.d.ts"
+        "backend/src/modules/vehicle-context/vehicle-context.service.ts"
       ],
       "kind": "test",
       "loc": 205,
@@ -37869,9 +37869,9 @@
         "backend/src/modules/vehicle-context/vehicle-context.module.ts"
       ],
       "imports": [
+        "@repo/registry",
         "backend/src/config/feature-flags.service.ts",
-        "backend/src/modules/vehicle-context/vehicle-context.service.ts",
-        "packages/registry/dist/index.d.ts"
+        "backend/src/modules/vehicle-context/vehicle-context.service.ts"
       ],
       "kind": "service",
       "loc": 78,
@@ -37922,8 +37922,8 @@
         "backend/src/modules/vehicle-context/vehicle-context.module.ts"
       ],
       "imports": [
-        "backend/src/modules/diagnostic-engine/ports/vehicle-context.port.ts",
-        "packages/registry/dist/index.d.ts"
+        "@repo/registry",
+        "backend/src/modules/diagnostic-engine/ports/vehicle-context.port.ts"
       ],
       "kind": "service",
       "loc": 104,
@@ -38153,11 +38153,11 @@
       "imports": [
         "@common/utils/error.utils",
         "@database/services/supabase-base.service",
+        "@repo/database-types",
         "@security/rpc-gate/rpc-gate.service",
         "backend/src/common/utils/url-builder.utils.ts",
         "backend/src/config/cache-ttl.config.ts",
-        "backend/src/modules/catalog/utils/image-urls.utils.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/modules/catalog/utils/image-urls.utils.ts"
       ],
       "kind": "service",
       "loc": 453,
@@ -38268,9 +38268,9 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
+        "@repo/database-types",
         "backend/src/modules/vehicles/services/core/vehicle-cache.service.ts",
-        "backend/src/modules/vehicles/types/vehicle.types.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/modules/vehicles/types/vehicle.types.ts"
       ],
       "kind": "service",
       "loc": 662,
@@ -38297,9 +38297,9 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
+        "@repo/database-types",
         "backend/src/modules/vehicles/services/core/vehicle-cache.service.ts",
-        "backend/src/modules/vehicles/types/vehicle.types.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/modules/vehicles/types/vehicle.types.ts"
       ],
       "kind": "service",
       "loc": 774,
@@ -38327,10 +38327,10 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
+        "@repo/database-types",
         "backend/src/modules/vehicles/services/core/vehicle-cache.service.ts",
         "backend/src/modules/vehicles/services/core/vehicle-enrichment.service.ts",
-        "backend/src/modules/vehicles/types/vehicle.types.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/modules/vehicles/types/vehicle.types.ts"
       ],
       "kind": "service",
       "loc": 700,
@@ -38386,10 +38386,10 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
+        "@repo/database-types",
         "backend/src/modules/vehicles/services/core/vehicle-cache.service.ts",
         "backend/src/modules/vehicles/services/core/vehicle-enrichment.service.ts",
-        "backend/src/modules/vehicles/types/vehicle.types.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/modules/vehicles/types/vehicle.types.ts"
       ],
       "kind": "service",
       "loc": 525,
@@ -38416,10 +38416,10 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
+        "@repo/database-types",
         "backend/src/modules/vehicles/services/core/vehicle-cache.service.ts",
         "backend/src/modules/vehicles/services/core/vehicle-enrichment.service.ts",
-        "backend/src/modules/vehicles/types/vehicle.types.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/modules/vehicles/types/vehicle.types.ts"
       ],
       "kind": "service",
       "loc": 491,
@@ -38444,8 +38444,8 @@
       ],
       "imports": [
         "@common/utils",
-        "backend/src/config/seo-variations.config.ts",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types",
+        "backend/src/config/seo-variations.config.ts"
       ],
       "kind": "service",
       "loc": 298,
@@ -38495,8 +38495,8 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
-        "backend/src/config/cache-ttl.config.ts",
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types",
+        "backend/src/config/cache-ttl.config.ts"
       ],
       "kind": "service",
       "loc": 347,
@@ -38521,11 +38521,11 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
+        "@repo/database-types",
         "backend/src/common/utils/url-builder.utils.ts",
         "backend/src/config/cache-ttl.config.ts",
         "backend/src/modules/catalog/utils/image-urls.utils.ts",
-        "backend/src/modules/vehicles/services/vehicle-motor-codes.service.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/modules/vehicles/services/vehicle-motor-codes.service.ts"
       ],
       "kind": "service",
       "loc": 329,
@@ -38742,9 +38742,9 @@
       ],
       "imports": [
         "@database/services/supabase-base.service",
+        "@repo/database-types",
         "backend/src/modules/catalog/utils/image-urls.utils.ts",
-        "backend/src/modules/vehicles/dto/vehicles.dto.ts",
-        "packages/database-types/dist/index.d.ts"
+        "backend/src/modules/vehicles/dto/vehicles.dto.ts"
       ],
       "kind": "service",
       "loc": 184,
@@ -44862,7 +44862,7 @@
       "id": "frontend/app/components/command-center/DepartmentReports.tsx",
       "importedBy": [],
       "imports": [
-        "packages/registry/dist/index.d.ts",
+        "@repo/registry",
         "~/components/ui/badge",
         "~/components/ui/button",
         "~/components/ui/card"
@@ -44886,8 +44886,8 @@
       "id": "frontend/app/components/command-center/GlobalHealthBar.tsx",
       "importedBy": [],
       "imports": [
+        "@repo/registry",
         "frontend/app/components/command-center/badges.tsx",
-        "packages/registry/dist/index.d.ts",
         "~/components/ui/alert",
         "~/components/ui/badge",
         "~/components/ui/card"
@@ -44911,8 +44911,8 @@
       "id": "frontend/app/components/command-center/ModuleGrid.tsx",
       "importedBy": [],
       "imports": [
+        "@repo/registry",
         "frontend/app/components/command-center/badges.tsx",
-        "packages/registry/dist/index.d.ts",
         "~/components/ui/badge",
         "~/components/ui/card",
         "~/components/ui/progress"
@@ -44960,7 +44960,7 @@
       "id": "frontend/app/components/command-center/OwnerActionQueue.tsx",
       "importedBy": [],
       "imports": [
-        "packages/registry/dist/index.d.ts",
+        "@repo/registry",
         "~/components/ui/alert",
         "~/components/ui/badge",
         "~/components/ui/card"
@@ -44987,7 +44987,7 @@
         "frontend/app/components/command-center/ModuleGrid.tsx"
       ],
       "imports": [
-        "packages/registry/dist/index.d.ts",
+        "@repo/registry",
         "~/components/ui/badge"
       ],
       "kind": "config",
@@ -47559,7 +47559,7 @@
         "frontend/app/components/home/HomepageJsonLd.tsx"
       ],
       "imports": [
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types"
       ],
       "kind": "config",
       "loc": 343,
@@ -49104,11 +49104,11 @@
       "id": "frontend/app/components/pieces/PiecesHeader.tsx",
       "importedBy": [],
       "imports": [
+        "@repo/seo-types",
         "frontend/app/components/pieces/hero/index.ts",
         "frontend/app/services/brand-colors.service.ts",
         "frontend/app/types/pieces-route.types.ts",
-        "frontend/app/utils/image-optimizer.ts",
-        "packages/seo-types/dist/index.d.ts"
+        "frontend/app/utils/image-optimizer.ts"
       ],
       "kind": "config",
       "loc": 232,
@@ -51892,10 +51892,10 @@
         "frontend/app/routes/constructeurs.$brand[.]html.tsx"
       ],
       "imports": [
+        "@repo/database-types",
         "frontend/app/components/ui/button.tsx",
         "frontend/app/components/ui/card.tsx",
         "frontend/app/services/api/enhanced-vehicle.api.ts",
-        "packages/database-types/dist/index.d.ts",
         "~/utils/logger"
       ],
       "kind": "config",
@@ -52128,9 +52128,9 @@
         "frontend/app/components/vehicle/r8/index.ts"
       ],
       "imports": [
+        "@repo/seo-types",
         "frontend/app/components/heroes/index.ts",
         "frontend/app/components/vehicle/r8/r8.types.ts",
-        "packages/seo-types/dist/index.d.ts",
         "~/config/visual-intent"
       ],
       "kind": "config",
@@ -54121,8 +54121,8 @@
       "id": "frontend/app/routes/admin.command-center.tsx",
       "importedBy": [],
       "imports": [
+        "@repo/registry",
         "frontend/app/auth/unified.server.ts",
-        "packages/registry/dist/index.d.ts",
         "~/components/admin/patterns/KpiCard",
         "~/components/command-center/DepartmentReports",
         "~/components/command-center/GlobalHealthBar",
@@ -54583,12 +54583,12 @@
       "id": "frontend/app/routes/admin.leads.$id.tsx",
       "importedBy": [],
       "imports": [
+        "@repo/database-types",
         "frontend/app/components/ui/badge.tsx",
         "frontend/app/components/ui/button.tsx",
         "frontend/app/components/ui/card.tsx",
         "frontend/app/components/ui/input.tsx",
         "frontend/app/components/ui/textarea.tsx",
-        "packages/database-types/dist/index.d.ts",
         "~/components/errors/ErrorGeneric",
         "~/utils/logger"
       ],
@@ -54611,10 +54611,10 @@
       "id": "frontend/app/routes/admin.leads._index.tsx",
       "importedBy": [],
       "imports": [
+        "@repo/database-types",
         "frontend/app/components/ui/badge.tsx",
         "frontend/app/components/ui/button.tsx",
         "frontend/app/components/ui/card.tsx",
-        "packages/database-types/dist/index.d.ts",
         "~/components/errors/ErrorGeneric",
         "~/utils/logger"
       ],
@@ -55512,7 +55512,7 @@
       "id": "frontend/app/routes/admin.seo-control.tsx",
       "importedBy": [],
       "imports": [
-        "packages/seo-types/dist/index.d.ts",
+        "@repo/seo-types",
         "~/components/ui/button",
         "~/components/ui/table",
         "~/utils/internal-api.server",
@@ -56117,7 +56117,7 @@
       "id": "frontend/app/routes/admin.seo-hub.page-briefs.tsx",
       "importedBy": [],
       "imports": [
-        "packages/seo-roles/dist/index.d.ts",
+        "@repo/seo-roles",
         "~/components/ui/badge",
         "~/components/ui/card",
         "~/utils/internal-api.server",
@@ -57216,7 +57216,7 @@
       "id": "frontend/app/routes/blog-pieces-auto.conseils._index.tsx",
       "importedBy": [],
       "imports": [
-        "packages/database-types/dist/index.d.ts",
+        "@repo/database-types",
         "~/components/blog/ArticleCardEnhanced",
         "~/components/blog/BlogPiecesAutoNavigation",
         "~/components/blog/blog-helpers",
@@ -57314,7 +57314,7 @@
       "id": "frontend/app/routes/blog-pieces-auto.guide-achat._index.tsx",
       "importedBy": [],
       "imports": [
-        "packages/database-types/dist/index.d.ts",
+        "@repo/database-types",
         "~/components/blog/BlogPiecesAutoNavigation",
         "~/components/errors/ErrorGeneric",
         "~/components/ui/ResponsiveImage",
@@ -59418,7 +59418,7 @@
       "id": "frontend/app/routes/robots[.]txt.tsx",
       "importedBy": [],
       "imports": [
-        "packages/seo-url-contract/dist/robots-policy.d.ts",
+        "@repo/seo-url-contract/robots-policy",
         "~/lib/sitemap-fetch"
       ],
       "kind": "route",
@@ -59854,7 +59854,7 @@
       "id": "frontend/app/server/vehicle-context.server.ts",
       "importedBy": [],
       "imports": [
-        "packages/registry/dist/index.d.ts"
+        "@repo/registry"
       ],
       "kind": "config",
       "loc": 73,
@@ -59920,7 +59920,7 @@
       "id": "frontend/app/services/api.ts",
       "importedBy": [],
       "imports": [
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types"
       ],
       "kind": "config",
       "loc": 175,
@@ -60103,7 +60103,7 @@
         "frontend/app/components/vehicle/VehicleSelector.tsx"
       ],
       "imports": [
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types"
       ],
       "kind": "config",
       "loc": 334,
@@ -60174,8 +60174,8 @@
         "frontend/app/routes/constructeurs.$brand.$model.$type.tsx"
       ],
       "imports": [
+        "@repo/database-types",
         "frontend/app/types/catalog.types.ts",
-        "packages/database-types/dist/index.d.ts",
         "~/utils/family-theme",
         "~/utils/logger"
       ],
@@ -60270,7 +60270,7 @@
       "id": "frontend/app/services/api/vehicle-api-unified.ts",
       "importedBy": [],
       "imports": [
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types"
       ],
       "kind": "config",
       "loc": 188,
@@ -61340,7 +61340,7 @@
       "id": "frontend/app/utils/family-theme.ts",
       "importedBy": [],
       "imports": [
-        "packages/database-types/dist/index.d.ts"
+        "@repo/database-types"
       ],
       "kind": "service",
       "loc": 350,
@@ -61422,7 +61422,7 @@
       "id": "frontend/app/utils/funnel-beacon.ts",
       "importedBy": [],
       "imports": [
-        "packages/seo-types/dist/index.d.ts",
+        "@repo/seo-types",
         "~/utils/safe-storage"
       ],
       "kind": "service",
@@ -61904,8 +61904,8 @@
         "frontend/app/utils/pieces-loader.utils.ts"
       ],
       "imports": [
+        "@repo/seo-url-contract",
         "frontend/app/types/pieces-route.types.ts",
-        "packages/seo-url-contract/dist/index.d.ts",
         "~/utils/logger"
       ],
       "kind": "service",
@@ -61927,7 +61927,7 @@
       "id": "frontend/app/utils/pieces-vehicle.loader.server.ts",
       "importedBy": [],
       "imports": [
-        "packages/seo-types/dist/index.d.ts",
+        "@repo/seo-types",
         "~/components/pieces/NoProductsAlternatives",
         "~/components/pieces/PiecesFilterSidebar",
         "~/services/api/rm-api.service",
@@ -62237,7 +62237,7 @@
       "id": "frontend/app/utils/runtime-errors.client.ts",
       "importedBy": [],
       "imports": [
-        "packages/cwv-taxonomy/dist/index.d.ts",
+        "@repo/cwv-taxonomy",
         "~/utils/chunk-error-classification",
         "~/utils/safe-storage"
       ],
@@ -62625,7 +62625,7 @@
         "frontend/app/utils/vehicle-cookie.ts"
       ],
       "imports": [
-        "packages/seo-url-contract/dist/index.d.ts"
+        "@repo/seo-url-contract"
       ],
       "kind": "service",
       "loc": 161,
@@ -62712,7 +62712,7 @@
       "id": "frontend/app/utils/web-vitals.client.ts",
       "importedBy": [],
       "imports": [
-        "packages/cwv-taxonomy/dist/index.d.ts",
+        "@repo/cwv-taxonomy",
         "~/utils/safe-storage"
       ],
       "kind": "service",
