@@ -20908,7 +20908,7 @@
         "backend/src/services/mail.service.ts"
       ],
       "kind": "controller",
-      "loc": 365,
+      "loc": 353,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/controllers/order-actions.controller.ts",
       "risk": "low",
@@ -21226,10 +21226,12 @@
         "@database/services/supabase-base.service",
         "@repo/database-types",
         "backend/src/modules/orders/events/order.events.ts",
-        "backend/src/modules/orders/types/order.types.ts"
+        "backend/src/modules/orders/services/orders.service.ts",
+        "backend/src/modules/orders/types/order.types.ts",
+        "crypto"
       ],
       "kind": "service",
-      "loc": 763,
+      "loc": 756,
       "owner": "__unassigned__",
       "path": "backend/src/modules/orders/services/order-actions.service.ts",
       "risk": "low",
@@ -21346,7 +21348,8 @@
       "id": "backend/src/modules/orders/services/orders.service.ts",
       "importedBy": [
         "backend/src/modules/orders/controllers/orders.controller.ts",
-        "backend/src/modules/orders/orders.module.ts"
+        "backend/src/modules/orders/orders.module.ts",
+        "backend/src/modules/orders/services/order-actions.service.ts"
       ],
       "imports": [
         "@database/services/supabase-base.service",
@@ -40576,6 +40579,25 @@
       "loc": 43,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/media-factory-flag.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/order-actions.cancel-order.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 147,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/order-actions.cancel-order.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",

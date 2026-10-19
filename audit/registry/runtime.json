@@ -4433,7 +4433,9 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [],
+      "dependsOn": [
+        "runtime:backend/src/modules/orders/services/orders.service.ts"
+      ],
       "id": "runtime:backend/src/modules/orders/services/order-actions.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/orders/services/order-actions.service.ts",
