@@ -261,7 +261,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 114841,
+      "loc_total": 115052,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -502,7 +502,7 @@
         "backend/src/modules/orders/types"
       ],
       "files_count": 21,
-      "loc_total": 6213,
+      "loc_total": 6194,
       "has_barrel": true
     },
     "payments": {
@@ -621,8 +621,8 @@
         "backend/src/modules/pricing/utils",
         "backend/src/modules/pricing/utils/__tests__"
       ],
-      "files_count": 37,
-      "loc_total": 9480,
+      "files_count": 39,
+      "loc_total": 10478,
       "has_barrel": false
     },
     "products": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 303,
-      "loc_total": 58064,
+      "files_count": 305,
+      "loc_total": 58441,
       "has_barrel": true
     },
     "upload": {
@@ -1026,7 +1026,7 @@
         "backend/src/workers/types"
       ],
       "files_count": 20,
-      "loc_total": 5073,
+      "loc_total": 5072,
       "has_barrel": false
     }
   },
