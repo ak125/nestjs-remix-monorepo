@@ -261,7 +261,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 114841,
+      "loc_total": 114862,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -341,8 +341,8 @@
         "frontend/app/utils",
         "frontend/app/utils/seo"
       ],
-      "files_count": 585,
-      "loc_total": 110497,
+      "files_count": 586,
+      "loc_total": 110531,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -439,8 +439,8 @@
         "backend/src/modules/media-factory/services",
         "backend/src/modules/media-factory/types"
       ],
-      "files_count": 23,
-      "loc_total": 4826,
+      "files_count": 24,
+      "loc_total": 4897,
       "has_barrel": false
     },
     "merchant-center": {
@@ -950,15 +950,17 @@
         "frontend/tests/visual",
         "migrations",
         "services/remotion-renderer/src",
+        "services/remotion-renderer/src/cli",
         "services/remotion-renderer/src/compositions",
         "services/remotion-renderer/src/compositions/components",
         "services/remotion-renderer/src/lib",
         "services/remotion-renderer/src/routes",
         "services/remotion-renderer/src/types",
+        "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 303,
-      "loc_total": 58064,
+      "files_count": 317,
+      "loc_total": 60023,
       "has_barrel": true
     },
     "upload": {
@@ -1026,7 +1028,7 @@
         "backend/src/workers/types"
       ],
       "files_count": 20,
-      "loc_total": 5073,
+      "loc_total": 5098,
       "has_barrel": false
     }
   },
@@ -2219,7 +2221,7 @@
     {
       "from": "workers",
       "to": "media-factory",
-      "count": 9
+      "count": 11
     },
     {
       "from": "workers",

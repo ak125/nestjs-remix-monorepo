@@ -16,11 +16,12 @@ import {
   normalizeAudio,
   mergeAudio,
   generateSrt,
+  validateSubtitleSegments,
   writeSrtFile,
   cleanupPostprocessFiles,
-  type VariantSpec,
-  type SubtitleSegment,
+  type PostprocessResult,
 } from '../lib/ffmpeg-postprocess';
+import { inspectVideo, type MediaInspection } from '../lib/media-inspection';
 import { uploadToS3Generic } from '../lib/s3-upload';
 
 const logger = pino({ name: 'PostprocessRoute' });
@@ -50,7 +51,13 @@ const postprocessRequestSchema = z.object({
   variants: z.array(variantSpecSchema).min(1),
   normalizeLoudness: z.boolean().default(true),
   loudnessTarget: z.number().default(-14),
-  subtitleSegments: z.array(subtitleSegmentSchema).nullish(),
+  subtitleSegments: z.array(subtitleSegmentSchema).superRefine((segments, ctx) => {
+    try {
+      validateSubtitleSegments(segments);
+    } catch (error) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: (error as Error).message });
+    }
+  }).nullish(),
 });
 
 type PostprocessRequest = z.infer<typeof postprocessRequestSchema>;
@@ -63,7 +70,8 @@ interface VariantResult {
   codec: string;
   resolution: string;
   fileSizeBytes: number;
-  durationSecs: number | null;
+  durationSecs: number;
+  inspection: MediaInspection;
 }
 
 interface PostprocessResponse {
@@ -98,6 +106,8 @@ export async function postprocessRoute(app: FastifyInstance): Promise<void> {
       // Download source video from S3
       const inputLocalPath = await downloadFromS3(req.inputS3Key, `input-${req.executionLogId}`);
       filesToCleanup.push(inputLocalPath);
+      const inputInspection = inspectVideo(inputLocalPath);
+      const audioRequired = !!req.audioS3Key || inputInspection.audio.length > 0;
 
       // Download audio if provided (for film_socle/film_gamme audio merge)
       let mergedPath = inputLocalPath;
@@ -117,21 +127,32 @@ export async function postprocessRoute(app: FastifyInstance): Promise<void> {
         }
       }
 
-      // Generate variants
-      const variants: VariantResult[] = [];
-
+      // Prepare and validate every local artifact before the first upload.
+      const results: PostprocessResult[] = [];
+      const segments = req.subtitleSegments;
       for (const variantSpec of req.variants) {
-        const result = resizeVideo(processedPath, variantSpec, `exec-${req.executionLogId}`);
+        const result = resizeVideo(processedPath, variantSpec, `exec-${req.executionLogId}`, audioRequired);
         filesToCleanup.push(result.localPath);
+        results.push(result);
+        if (segments && segments.length > 0) {
+          validateSubtitleSegments(segments, result.durationSecs);
+        }
+      }
 
-        // Upload variant to S3
+      let srtLocalPath: string | null = null;
+      if (segments && segments.length > 0) {
+        srtLocalPath = writeSrtFile(generateSrt(segments), `exec-${req.executionLogId}`);
+        filesToCleanup.push(srtLocalPath);
+      }
+
+      const variants: VariantResult[] = [];
+      for (const result of results) {
         const s3Path = await uploadVariant(
           result.localPath,
           req.briefId,
           req.executionLogId,
-          variantSpec.name,
+          result.name,
         );
-
         variants.push({
           name: result.name,
           s3Path,
@@ -139,17 +160,13 @@ export async function postprocessRoute(app: FastifyInstance): Promise<void> {
           resolution: result.resolution,
           fileSizeBytes: result.fileSizeBytes,
           durationSecs: result.durationSecs,
+          inspection: result.inspection,
         });
       }
 
-      // Generate SRT if subtitle segments provided
-      let srtS3Path: string | null = null;
-      if (req.subtitleSegments && req.subtitleSegments.length > 0) {
-        const srtContent = generateSrt(req.subtitleSegments);
-        const srtLocalPath = writeSrtFile(srtContent, `exec-${req.executionLogId}`);
-        filesToCleanup.push(srtLocalPath);
-        srtS3Path = await uploadSrt(srtLocalPath, req.briefId, req.executionLogId);
-      }
+      const srtS3Path = srtLocalPath
+        ? await uploadSrt(srtLocalPath, req.briefId, req.executionLogId)
+        : null;
 
       const response: PostprocessResponse = {
         status: 'success',

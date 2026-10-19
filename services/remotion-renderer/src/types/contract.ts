@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { mediaInspectionSchema } from '../lib/media-inspection';
 
 // ── Request schema (POST /render) ──
 
@@ -11,7 +12,7 @@ export const renderRequestSchema = z.object({
   templateId: z.string().nullish().default(null),
   composition: z.string().default('TestCard'),
   compositionProps: z.record(z.unknown()).nullish().default(null), // P8
-  outputFormat: z.enum(['mp4', 'webm']).default('mp4'),
+  outputFormat: z.literal('mp4').default('mp4'),
   resolution: z
     .object({
       width: z.number().int().positive(),
@@ -42,6 +43,7 @@ export const renderResponseSchema = z.object({
       compositionId: z.string(),
       durationSecs: z.number().nullable(),
       checksumSha256: z.string(),
+      inspection: mediaInspectionSchema,
     })
     .nullable(),
   errorMessage: z.string().nullable(),

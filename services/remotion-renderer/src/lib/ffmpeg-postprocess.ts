@@ -6,9 +6,10 @@
  */
 
 import { execSync, execFileSync } from 'child_process';
-import { existsSync, statSync, writeFileSync, unlinkSync } from 'fs';
+import { existsSync, writeFileSync, unlinkSync } from 'fs';
 import { join } from 'path';
 import pino from 'pino';
+import { inspectVideo, type MediaInspection } from './media-inspection';
 
 const logger = pino({ name: 'FFmpegPostprocess' });
 
@@ -27,7 +28,8 @@ export interface PostprocessResult {
   codec: string;
   resolution: string;
   fileSizeBytes: number;
-  durationSecs: number | null;
+  durationSecs: number;
+  inspection: MediaInspection;
 }
 
 /**
@@ -44,7 +46,11 @@ export function resizeVideo(
   inputPath: string,
   variant: VariantSpec,
   outputSuffix: string,
+  audioRequired?: boolean,
 ): PostprocessResult {
+  const source = inspectVideo(inputPath, {
+    audio: audioRequired === undefined ? 'optional' : audioRequired ? 'required' : 'forbidden',
+  });
   ensureWorkDir();
   const outputPath = join(WORK_DIR, `${outputSuffix}-${variant.name}.mp4`);
 
@@ -68,19 +74,23 @@ export function resizeVideo(
 
   logger.info({ variant: variant.name, resolution: `${variant.width}x${variant.height}` }, 'Resizing video');
 
-  execFileSync(cmd[0], cmd.slice(1), { timeout: 300_000, stdio: 'pipe' });
-
-  const stats = statSync(outputPath);
-  const durationSecs = probeDuration(outputPath);
-
-  return {
-    name: variant.name,
-    localPath: outputPath,
-    codec: variant.codec,
-    resolution: `${variant.width}x${variant.height}`,
-    fileSizeBytes: stats.size,
-    durationSecs,
-  };
+  try {
+    execFileSync(cmd[0], cmd.slice(1), { timeout: 300_000, stdio: 'pipe' });
+    const inspection = inspectVideo(outputPath, {
+      codec: variant.codec, width: variant.width, height: variant.height,
+      fps: source.video.fps, durationSecs: source.video.durationSecs,
+      frames: source.video.frames,
+      audio: source.audio.length ? 'required' : 'forbidden', audioCodec: 'aac',
+    });
+    return {
+      name: variant.name, localPath: outputPath, codec: inspection.video.codec,
+      resolution: `${inspection.video.width}x${inspection.video.height}`,
+      fileSizeBytes: inspection.fileSizeBytes, durationSecs: inspection.durationSecs, inspection,
+    };
+  } catch (error) {
+    cleanupPostprocessFiles([outputPath]);
+    throw error;
+  }
 }
 
 /**
@@ -197,21 +207,57 @@ export interface SubtitleSegment {
   text: string;
 }
 
+/** Validate a single sequential subtitle track at SRT millisecond precision. */
+export function validateSubtitleSegments(
+  segments: SubtitleSegment[],
+  durationSecs?: number,
+): void {
+  if (durationSecs !== undefined && (!Number.isFinite(durationSecs) || durationSecs <= 0)) {
+    throw new Error('Invalid subtitle media duration');
+  }
+  let previousEnd = 0;
+  for (const [index, segment] of segments.entries()) {
+    const startMs = Math.round(segment.startSecs * 1000);
+    const endMs = Math.round(segment.endSecs * 1000);
+    const text = segment.text.replace(/\r\n?/g, '\n').trim();
+    if (
+      !Number.isFinite(segment.startSecs) || !Number.isFinite(segment.endSecs) ||
+      !Number.isSafeInteger(startMs) || !Number.isSafeInteger(endMs) ||
+      segment.startSecs < 0 || segment.endSecs <= segment.startSecs || endMs <= startMs ||
+      segment.startSecs < previousEnd
+    ) {
+      throw new Error(`Invalid subtitle interval at segment ${index + 1}`);
+    }
+    if (!text || /\n[^\S\n]*\n/.test(text) || /[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/.test(text)) {
+      throw new Error(`Invalid subtitle text at segment ${index + 1}`);
+    }
+    // No tolerance: even the rounded SRT endpoint must fit the measured file.
+    if (durationSecs !== undefined &&
+        (segment.endSecs > durationSecs || endMs > Math.floor(durationSecs * 1000))) {
+      throw new Error(`Subtitle segment ${index + 1} exceeds media duration`);
+    }
+    previousEnd = segment.endSecs;
+  }
+}
+
 export function generateSrt(segments: SubtitleSegment[]): string {
+  validateSubtitleSegments(segments);
   return segments
     .map((seg, i) => {
       const start = formatSrtTime(seg.startSecs);
       const end = formatSrtTime(seg.endSecs);
-      return `${i + 1}\n${start} --> ${end}\n${seg.text}\n`;
+      return `${i + 1}\n${start} --> ${end}\n${seg.text.replace(/\r\n?/g, '\n').trim()}\n`;
     })
     .join('\n');
 }
 
 function formatSrtTime(secs: number): string {
-  const h = Math.floor(secs / 3600);
-  const m = Math.floor((secs % 3600) / 60);
-  const s = Math.floor(secs % 60);
-  const ms = Math.round((secs % 1) * 1000);
+  // Round once before splitting units so 59.9996 becomes 00:01:00,000.
+  const totalMs = Math.round(secs * 1000);
+  const h = Math.floor(totalMs / 3_600_000);
+  const m = Math.floor((totalMs % 3_600_000) / 60_000);
+  const s = Math.floor((totalMs % 60_000) / 1000);
+  const ms = totalMs % 1000;
   return `${pad(h, 2)}:${pad(m, 2)}:${pad(s, 2)},${pad(ms, 3)}`;
 }
 
@@ -227,22 +273,6 @@ export function writeSrtFile(srtContent: string, outputSuffix: string): string {
   const outputPath = join(WORK_DIR, `${outputSuffix}.srt`);
   writeFileSync(outputPath, srtContent, 'utf-8');
   return outputPath;
-}
-
-/**
- * Probe duration with ffprobe.
- */
-function probeDuration(filePath: string): number | null {
-  try {
-    const out = execSync(
-      `ffprobe -v quiet -print_format json -show_format "${filePath}"`,
-      { timeout: 10_000 },
-    ).toString();
-    const data = JSON.parse(out);
-    return parseFloat(data.format?.duration ?? '0') || null;
-  } catch {
-    return null;
-  }
 }
 
 /**

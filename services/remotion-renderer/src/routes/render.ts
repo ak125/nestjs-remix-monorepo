@@ -92,6 +92,7 @@ export async function renderRoute(app: FastifyInstance): Promise<void> {
           compositionId: result.compositionId,
           durationSecs: result.durationSecs,
           checksumSha256: result.checksumSha256,
+          inspection: result.inspection,
         },
         errorMessage: null,
         errorCode: null,

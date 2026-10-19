@@ -17,6 +17,7 @@ import { VideoGatesService } from '../../modules/media-factory/services/video-ga
 import type { VideoGateInput } from '../../modules/media-factory/services/video-gates.service';
 import { VideoDataService } from '../../modules/media-factory/services/video-data.service';
 import { RenderAdapterService } from '../../modules/media-factory/render/render-adapter.service';
+import { executionOutcome } from '../../modules/media-factory/render/execution-outcome';
 import { RenderErrorCode } from '../../modules/media-factory/render/types/render.types';
 import type { RenderRequest } from '../../modules/media-factory/render/types/render.types';
 import { VIDEO_FLAG_PENALTIES } from '../../config/video-quality.constants';
@@ -109,17 +110,21 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
     // P7a: Idempotency guard — skip if already completed
     const currentLog = await this.client
       .from('__video_execution_log')
-      .select('status')
+      .select('*')
       .eq('id', executionLogId)
       .single();
+
+    if (currentLog.error || !currentLog.data) {
+      throw new Error('Execution state unavailable');
+    }
 
     if (currentLog.data?.status === 'completed') {
       this.logger.warn(
         `[VEP] exec=${executionLogId} already completed — skipping`,
       );
       return {
-        status: 'completed',
-        canPublish: null,
+        status: executionOutcome(currentLog.data),
+        canPublish: false,
         qualityScore: null,
         qualityFlags: [],
         durationMs: 0,
@@ -134,15 +139,17 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
     if (process.env.VIDEO_PIPELINE_ENABLED !== 'true') {
       this.logger.warn('[VEP] VIDEO_PIPELINE_ENABLED is not true — skipping');
       await this.updateExecutionLog(executionLogId, {
-        status: 'completed',
+        status: 'completed', // Legacy SQL lifecycle; D19 schema change pending.
+        can_publish: false,
+        render_metadata: { executionMode: 'disabled' },
         error_message: 'Pipeline disabled (VIDEO_PIPELINE_ENABLED=false)',
         completed_at: new Date().toISOString(),
         duration_ms: Date.now() - startTime,
         feature_flags: await this.captureFeatureFlags(),
       });
       return {
-        status: 'completed',
-        canPublish: null,
+        status: 'disabled',
+        canPublish: false,
         qualityScore: null,
         qualityFlags: [],
         errorMessage: 'Pipeline disabled',
@@ -325,7 +332,18 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
 
       // ── Step 7: Observe-only mode ──
       const gatesBlocking = process.env.VIDEO_GATES_BLOCKING === 'true';
-      const canPublish = gatesBlocking ? gateOutput.canPublish : null;
+      const outcome = executionOutcome({
+        status: 'completed',
+        engine_name: renderResult.engineName,
+        render_status: renderResult.status,
+        render_output_path: renderResult.outputPath,
+        render_metadata: renderResult.metadata,
+        engine_resolution: renderResult.engineResolution,
+      });
+      const canPublish =
+        outcome === 'rendered_checked' && gatesBlocking
+          ? gateOutput.canPublish
+          : false;
 
       if (!gatesBlocking && !gateOutput.canPublish) {
         this.logger.warn(
@@ -358,7 +376,8 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
         feature_flags: await this.captureFeatureFlags(),
       });
 
-      // Phase 2: Mark completed (only if Phase 1 succeeded)
+      // Phase 2: Close legacy SQL lifecycle after Phase 1.
+      // This is NOT rendered_checked; changing SQL values requires the D19 schema contract.
       await this.updateExecutionLog(executionLogId, {
         status: 'completed',
         can_publish: canPublish,
@@ -376,13 +395,17 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
       });
 
       this.logger.log(
-        `[VEP] Execution #${executionLogId} completed: canPublish=${canPublish}, score=${qualityScore}, duration=${durationMs}ms`,
+        `[VEP] Execution #${executionLogId} ${outcome}: canPublish=${canPublish}, score=${qualityScore}, duration=${durationMs}ms`,
       );
 
-      this.jobHealth.recordSuccess('video-render', durationMs).catch(() => {});
+      if (outcome === 'rendered_checked') {
+        this.jobHealth
+          .recordSuccess('video-render', durationMs)
+          .catch(() => {});
+      }
 
       return {
-        status: 'completed',
+        status: outcome,
         canPublish,
         qualityScore,
         qualityFlags,
