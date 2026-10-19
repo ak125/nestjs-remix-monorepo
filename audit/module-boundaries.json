@@ -622,7 +622,7 @@
         "backend/src/modules/pricing/utils/__tests__"
       ],
       "files_count": 39,
-      "loc_total": 10464,
+      "loc_total": 10478,
       "has_barrel": false
     },
     "products": {
