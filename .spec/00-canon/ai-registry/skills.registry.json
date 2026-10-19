@@ -1,6 +1,6 @@
 {
-  "compliantCount": 13,
-  "generatedAt": "2026-10-13T12:34:53.213Z",
+  "compliantCount": 14,
+  "generatedAt": "2026-10-19T01:36:52.996Z",
   "issues": [],
   "schemaPath": ".spec/00-canon/ai-registry/skill.schema.json",
   "schemaVersion": "1.0.0",
@@ -155,6 +155,36 @@
         "ledger",
         "ssh-signing",
         "vault"
+      ],
+      "type": "discipline"
+    },
+    {
+      "checksum": "sha256:1c2fc075d51ba8e441471cc0e5dd233f6e4c52c996a6ea241f8a8090b522c0cf",
+      "domain": "D11",
+      "last_verified": "2026-10-19",
+      "llm_safe": false,
+      "metadata": {
+        "spec": "agentskills.io/specification v1",
+        "version": "1.0"
+      },
+      "name": "order-rupture-equivalence",
+      "owners": [
+        "@ak125"
+      ],
+      "path": ".claude/skills/order-rupture-equivalence/SKILL.md",
+      "runtime_class": "privileged",
+      "spec_compliant": true,
+      "status": "experimental",
+      "tags": [
+        "commerce",
+        "customer-mail",
+        "equivalence",
+        "oem",
+        "orders",
+        "quarantine",
+        "rupture",
+        "supplement",
+        "tecdoc"
       ],
       "type": "discipline"
     },
@@ -349,5 +379,5 @@
       "type": "technique"
     }
   ],
-  "totalSkills": 13
+  "totalSkills": 14
 }
