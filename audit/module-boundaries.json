@@ -92,7 +92,7 @@
         "backend/src/utils"
       ],
       "files_count": 35,
-      "loc_total": 6184,
+      "loc_total": 6176,
       "has_barrel": true
     },
     "blog": {
@@ -132,7 +132,7 @@
         "backend/src/modules/cart/services"
       ],
       "files_count": 21,
-      "loc_total": 4092,
+      "loc_total": 4009,
       "has_barrel": false
     },
     "catalog": {
@@ -213,7 +213,7 @@
         "backend/src/database/types"
       ],
       "files_count": 15,
-      "loc_total": 21757,
+      "loc_total": 21761,
       "has_barrel": true
     },
     "dev-only": {
@@ -502,7 +502,7 @@
         "backend/src/modules/orders/types"
       ],
       "files_count": 21,
-      "loc_total": 6194,
+      "loc_total": 6572,
       "has_barrel": true
     },
     "payments": {
@@ -958,7 +958,7 @@
         "tests/registry"
       ],
       "files_count": 307,
-      "loc_total": 58919,
+      "loc_total": 59122,
       "has_barrel": true
     },
     "upload": {
