@@ -815,3 +815,112 @@ and 0 diagnostics.
 Two projects remain on `node-cjs-legacy.json`: `packages/registry` and `backend`.
 `ts7-shadow-parity.json` is still not regenerated, for the reasons given in the pilot
 section; its `packages/seo-roles` row describes the configuration before this change.
+
+## `nodenext` on `packages/registry` — seventh project of the sequence
+
+Same scope rule as the pilot: one project. `node-cjs-legacy.json` is untouched, TS7 is
+still not a repo dependency (no `package.json` or lockfile change), and the PARKED
+decision above stands.
+
+`packages/registry` is the typed library of the Repository Control Plane (ADR-058): the
+zod schemas and loaders of the canonical registry and its overlays, the command-center
+entries, the vehicle-context token helpers, and the five `build:*` generators of the
+contract artefacts. Its 57 files are in D15 (Security & Governance), except the 3 files
+of `src/vehicle-context/`, which are in D4. The change is compile configuration only, the
+emitted `dist/` is byte-identical, and the package's sources, tests and `package.json` do
+not change. It was applied by a delivery script that only the owner runs: that run is the
+owner's GO for this project.
+
+### What differs from the first six projects
+
+- The `tsconfig.json` is not a copy of the pilot's. It keeps its own options (`types`,
+  `lib`, `strict`, the declaration and source maps, the exclusion of test files). The
+  change applies the same transformation to it: `extends` moves from
+  `node-cjs-legacy.json` to `base.json`, and `module` / `moduleResolution` `NodeNext` are
+  added. The diff is +3 −1.
+- Four bare specifiers instead of one, each with the same target before and after.
+- The package's `test` script and its five `build:*` generators run with `tsx` from the
+  package directory, so `tsx` reads this `tsconfig.json`. Both were run under the two
+  configurations.
+
+Like the sixth project, this is the producer side: `dist/` is gitignored, built by `tsc`
+with this file, and read by the consumers listed below. The package has no `"type"`
+field, so its files stay **CommonJS**.
+
+### Change
+
+`packages/registry/tsconfig.json` extends `base.json` instead of `node-cjs-legacy.json` and
+sets `module` and `moduleResolution` to `NodeNext`. Its other lines do not change. The
+effective delta (`tsc --showConfig`, TS 6.0.3) is the pilot's:
+
+- `ignoreDeprecations: "6.0"` is removed;
+- `module` goes from commonjs to nodenext, and `moduleResolution` from node10 to nodenext;
+- `moduleDetection` becomes force;
+- `resolvePackageJsonExports` / `resolvePackageJsonImports` are no longer forced to false
+  (the NodeNext default is true).
+
+Nothing else changes; `target` stays `ES2020`.
+
+### Evidence — TS 6.0.3, the repo compiler
+
+| Check | Before | After |
+|---|---|---|
+| `tsc --noEmit` | exit 0, 0 diagnostics | exit 0, 0 diagnostics |
+| `tsc` build | exit 0 | exit 0 |
+| Emit (`.js`, `.d.ts` and their maps) | 164 files (41 modules) | the same 164, byte-identical (sha256) |
+| Imports from `src/` (importer, specifier, target) | 156: 96 relative, 44 bare, 16 Node builtins | identical |
+| Bare specifiers | `zod` (37) → `node_modules/zod/index.d.cts`; `js-yaml` (5) → `node_modules/@types/js-yaml/index.d.ts`; `jose` (1) → `node_modules/jose/dist/types/index.d.ts`; `micromatch` (1) → `node_modules/@types/micromatch/index.d.ts` | identical |
+| Resolution outcomes, all files | 327: 228 resolved, 99 not resolved, all Node builtins | the same 327 |
+| Importer, specifier, target, all files | 782 | identical |
+| Program files (`--listFilesOnly`) | 313 (47 lib, 41 src, 80 zod, 66 `@types/node`, 42 `undici-types`, 33 jose, 1 each for `@types/js-yaml`, `@types/micromatch`, `@types/braces` and `buffer`) | the same 313 |
+| Package tests (`tsx --test`, 16 files) | 220 tests: 220 pass, 0 fail | identical |
+| `build:*` generators (`tsx`) | 6 files written | the same 6, byte-identical |
+
+The 99 unresolved outcomes are Node builtin names (`node:fs`, `crypto`, …), imported by
+`src/` and by `@types/node` itself. `@types/node` declares them as ambient modules, so
+they type-check under both configurations; the trace reports them as not resolved because
+no file on disk matches the name.
+
+The generators read YAML from the repository and write five JSON Schemas under
+`.spec/00-canon/_schema/` (gitignored) and `.dependency-cruiser.generated.cjs` (tracked).
+The tracked file is unchanged from `main` under both configurations.
+
+Consumers, all through the unchanged `package.json` (`exports` `"."` with `types` and
+`default`, plus `main` and `types`) to `dist/`:
+
+- the backend: 20 source files and 9 tests (command center, diagnostic-engine ports, SEO
+  control-plane collectors, vehicle context). `tsc`, the backend build and the runtime
+  read `dist/`. One Jest configuration, `jest.command-center.config.cjs`, maps the
+  package to its `src/index.ts`; `ts-jest` compiles it there with the backend's
+  configuration, never with this file.
+- the frontend: 7 source files and 1 test (command-center components and route, the
+  vehicle-context server module). `vite.config.ts` pre-bundles the package in DEV, from
+  `dist/`.
+- CI: `audit` and `contract-gate` run the package's `test` script (covered above);
+  `automation-registry-validate` runs one of its tests from the repository root, so
+  `tsx` does not read this file there.
+
+The emit is byte-identical, so the consumer delta is zero by construction. The CI of the
+change builds the workspace, then type-checks the affected projects, among them this
+package and its dependents (the backend and the frontend), against a `dist/` rebuilt with
+the new configuration.
+
+### Evidence — TS 7.0.2, observation
+
+Same method as the pilot: this project alone, the harness's own functions, TS6 exit code
+checked. The delivery script commits only if the run before the change is
+`BLOCKED_CONFIG` with `TS5108` and the run after is `PARITY` with TS6 and TS7 at exit 0
+and 0 diagnostics.
+
+| Configuration | Classification | TS6 | TS7 |
+|---|---|---|---|
+| Before (`node-cjs-legacy.json`) | BLOCKED_CONFIG | exit 0, 0 diagnostics | `TS5108` |
+| After (`NodeNext`) | PARITY | exit 0, 0 diagnostics | exit 0, 0 diagnostics |
+
+### Still `BLOCKED_CONFIG` after the seventh project
+
+One project remains on `node-cjs-legacy.json`: `backend`. It is not a configuration-only
+change: with NodeNext, some of its specifiers resolve to a different target. It needs its
+own analysis before any change. `ts7-shadow-parity.json` is still not regenerated, for
+the reasons given in the pilot section; its `packages/registry` row describes the
+configuration before this change.
