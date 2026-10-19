@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 9e6ebc651f9f48d9074644d827343859fcbd5972dc661fb35874ade4035eba53
+source_sha256: 7a6bfa6c0274b498dcdb428845eeccc080e7149ef73104cf041e2c998843a4b4
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3062 |
+| Files (Layer 1) | 3064 |
 | DB tables (Layer 1) | 316 |
-| DB RPC (Layer 1) | 257 |
+| DB RPC (Layer 1) | 259 |
 | Dependencies (Layer 1) | 237 |
-| Runtime entrypoints (Layer 1) | 1015 |
+| Runtime entrypoints (Layer 1) | 1016 |
 
-Source sotFingerprint: `257897a0966d`.
+Source sotFingerprint: `ae5872afc9d0`.
 
 ## Comment l'utiliser
 
@@ -116,11 +116,11 @@ Source sotFingerprint: `257897a0966d`.
 
 ### D11 — Commerce & Users
 
-- **Files**: 294 (service=190, test=63, controller=40, config=1)
-- **Runtime entrypoints**: 128
-- **Top owners**: @ak125 (126), @ak125/payments-team (82), @ak125/auth-team (74)
+- **Files**: 296 (service=191, test=64, controller=40, config=1)
+- **Runtime entrypoints**: 129
+- **Top owners**: @ak125 (128), @ak125/payments-team (82), @ak125/auth-team (74)
 - **Knowledge prose**: [`cart`](modules/cart.md), [`invoices`](modules/invoices.md), [`messages`](modules/messages.md), [`orders`](modules/orders.md), [`payments`](modules/payments.md), [`support`](modules/support.md), [`users`](modules/users.md)
-- **Status**: LIVE=177, UNKNOWN=117
+- **Status**: LIVE=178, UNKNOWN=118
 
 ### D12 — Marketing & Video
 
@@ -165,7 +165,7 @@ Source sotFingerprint: `257897a0966d`.
 
 - **Files**: 243 (service=149, config=57, controller=20, script=14, test=3)
 - **DB tables**: 316
-- **DB RPC**: 257
+- **DB RPC**: 259
 - **Runtime entrypoints**: 83
 - **Top owners**: __unassigned__ (243)
 - **Knowledge prose**: [`config`](modules/config.md), [`layout`](modules/layout.md), [`mcp-validation`](modules/mcp-validation.md), [`metadata`](modules/metadata.md), [`navigation`](modules/navigation.md), [`search`](modules/search.md), [`shipping`](modules/shipping.md), [`suppliers`](modules/suppliers.md), [`system`](modules/system.md)

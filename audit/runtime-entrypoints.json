@@ -1266,6 +1266,7 @@
       "PositiveIntParamPipe",
       "PostprocessService",
       "PriceActivationService",
+      "PriceDeactivationService",
       "PriceImportService",
       "PricingFormulaService",
       "PricingImportController",
@@ -2022,6 +2023,7 @@
       "backend/src/modules/pricing/services/catalog-display-activation.service.ts",
       "backend/src/modules/pricing/services/catalog-display-quarantine.service.ts",
       "backend/src/modules/pricing/services/price-activation.service.ts",
+      "backend/src/modules/pricing/services/price-deactivation.service.ts",
       "backend/src/modules/pricing/services/price-import.service.ts",
       "backend/src/modules/pricing/services/pricing-formula.service.ts",
       "backend/src/modules/pricing/services/pricing-invariants.service.ts",
@@ -2836,6 +2838,8 @@
       "backend/supabase/migrations/20261011_diag_capture_maintenance_schema.sql",
       "backend/supabase/migrations/20261012_diag_projection_requires_review.down.sql",
       "backend/supabase/migrations/20261012_diag_projection_requires_review.sql",
+      "backend/supabase/migrations/20261019_pricing_deactivate_chunk.down.sql",
+      "backend/supabase/migrations/20261019_pricing_deactivate_chunk.sql",
       "backend/supabase/migrations/README.md"
     ],
     "ci_workflows": [
@@ -3023,7 +3027,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1615,
+  "runtime_files_count": 1618,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -3510,6 +3514,7 @@
     "backend/src/modules/pricing/services/catalog-display-activation.service.ts",
     "backend/src/modules/pricing/services/catalog-display-quarantine.service.ts",
     "backend/src/modules/pricing/services/price-activation.service.ts",
+    "backend/src/modules/pricing/services/price-deactivation.service.ts",
     "backend/src/modules/pricing/services/price-import.service.ts",
     "backend/src/modules/pricing/services/pricing-formula.service.ts",
     "backend/src/modules/pricing/services/pricing-invariants.service.ts",
@@ -4301,6 +4306,8 @@
     "backend/supabase/migrations/20261011_diag_capture_maintenance_schema.sql",
     "backend/supabase/migrations/20261012_diag_projection_requires_review.down.sql",
     "backend/supabase/migrations/20261012_diag_projection_requires_review.sql",
+    "backend/supabase/migrations/20261019_pricing_deactivate_chunk.down.sql",
+    "backend/supabase/migrations/20261019_pricing_deactivate_chunk.sql",
     "backend/supabase/migrations/README.md",
     "docker/lighthouse/Dockerfile",
     "docker/lighthouse/crontab",
