@@ -13013,7 +13013,7 @@
         "backend/src/modules/cart/services/abandoned-cart.service.ts"
       ],
       "kind": "controller",
-      "loc": 155,
+      "loc": 224,
       "owner": "__unassigned__",
       "path": "backend/src/modules/cart/controllers/cart-recovery.controller.ts",
       "risk": "low",
@@ -13154,7 +13154,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 288,
+      "loc": 294,
       "owner": "__unassigned__",
       "path": "backend/src/modules/cart/services/abandoned-cart-data.service.ts",
       "risk": "low",
@@ -13184,7 +13184,7 @@
         "backend/src/services/mail.service.ts"
       ],
       "kind": "service",
-      "loc": 320,
+      "loc": 328,
       "owner": "__unassigned__",
       "path": "backend/src/modules/cart/services/abandoned-cart.service.ts",
       "risk": "low",
@@ -39227,7 +39227,7 @@
         "backend/src/config/app.config.ts"
       ],
       "kind": "service",
-      "loc": 1182,
+      "loc": 1190,
       "owner": "__unassigned__",
       "path": "backend/src/services/mail.service.ts",
       "risk": "low",
@@ -40002,6 +40002,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/tests/unit/abandoned-cart-delivery-truth.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 197,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/abandoned-cart-delivery-truth.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/tests/unit/admin-job-health.service.test.ts",
       "importedBy": [],
       "imports": [],
@@ -40104,6 +40123,25 @@
       "loc": 700,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/buying-guide-data.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/cart-recovery.unsubscribe.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 272,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/cart-recovery.unsubscribe.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
