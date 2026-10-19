@@ -31,6 +31,9 @@
 #   dedup-worktree-node-modules.sh            # dry-run (par défaut) : ne modifie rien
 #   dedup-worktree-node-modules.sh --apply    # crée les liens
 #
+# Crontab DEV (utilisateur deploy ; `2>&1` requis, la machine n'a pas de MTA) :
+#   45 * * * * cd /opt/automecanik/app && [ -x scripts/cron/dedup-worktree-node-modules.sh ] && /usr/bin/bash scripts/cron/dedup-worktree-node-modules.sh --apply >> /tmp/dedup-worktree-node-modules.log 2>&1
+#
 # Env (optionnel):
 #   DEDUP_ROOTS  préfixes de chemin des worktrees concernés, séparés par « : »
 #                (défaut : <checkout principal>/.claude/worktrees/:$HOME/worktrees/claude-)
