@@ -2,7 +2,7 @@
 module: catalog
 sources:
 - backend/src/modules/catalog
-last_scan: '2026-07-02'
+last_scan: '2026-10-11'
 primary_files:
 - backend/src/modules/catalog/catalog.controller.ts
 - backend/src/modules/catalog/catalog.module.ts
@@ -41,6 +41,7 @@ _Section à rédiger._
 - `PopularGammesService`
 
 ### Providers (top 15)
+- `AccessoryProductsService`
 - `CatalogService`
 - `EnhancedVehicleCatalogService`
 - `GammeUnifiedService`
@@ -51,11 +52,10 @@ _Section à rédiger._
 - `PricingService`
 - `OemPlatformMappingService`
 - `SeoTemplateService`
+- `SeoPlaceholderEventsService`
 - `UnifiedPageDataService`
 - `HomepageRpcService`
 - `CatalogHierarchyService`
-- `CacheWarmingService`
-- `CompatibilityService`
 
 ### Fichiers primaires
 - [backend/src/modules/catalog/catalog.controller.ts](../../../backend/src/modules/catalog/catalog.controller.ts)

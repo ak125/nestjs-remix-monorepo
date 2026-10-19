@@ -1,3 +1,12 @@
+jest.mock('../../src/cache/cache.service', () => ({ CacheService: class {} }));
+jest.mock(
+  '../../src/modules/admin/services/command-center-actions.service',
+  () => ({ CommandCenterActionsService: class {} }),
+);
+jest.mock(
+  '../../src/modules/admin/services/command-center-kpi.service',
+  () => ({ CommandCenterKpiService: class {} }),
+);
 /**
  * Digest Command Center pour le superviseur Hermes — GET /api/internal/command-center/digest.
  *
@@ -92,6 +101,26 @@ function response(
 }
 
 describe('toCommandCenterDigest', () => {
+  it('conserve le contrat Hermes v1 sans le champ explicatif du cockpit', () => {
+    const digest = toCommandCenterDigest(
+      response({
+        department_reports: [
+          { ...REPORT, score_reason: 'Aucune cible définie.' },
+        ],
+      }),
+    );
+    expect(digest.department_reports).toEqual([REPORT]);
+    expect(CommandCenterDigestSchema.parse(digest)).toEqual(digest);
+    expect(
+      CommandCenterDigestSchema.safeParse({
+        ...digest,
+        department_reports: [
+          { ...REPORT, score_reason: 'Champ réservé au cockpit' },
+        ],
+      }).success,
+    ).toBe(false);
+  });
+
   const queue = [
     ...Array.from({ length: 12 }, (_, i) => action(`go-${i}`, true, 30 - i)),
     action('free-1', false, 40),

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
   BlogArticle,
   BlogIntent,
@@ -33,8 +33,6 @@ import { normalizeAlias } from '../../../common/utils/url-builder.utils';
  */
 @Injectable()
 export class BlogArticleTransformService {
-  private readonly logger = new Logger(BlogArticleTransformService.name);
-
   /**
    * 🔄 Transformation advice → BlogArticle (version simple sans sections)
    * Utilisé pour les listes d'articles où les sections ne sont pas nécessaires

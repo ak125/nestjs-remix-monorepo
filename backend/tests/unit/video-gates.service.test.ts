@@ -26,9 +26,7 @@ describe('VideoGatesService', () => {
 
   // ── Helper: base fixture ──
 
-  function makeBrief(
-    overrides?: Partial<VideoBrief>,
-  ): VideoBrief {
+  function makeBrief(overrides?: Partial<VideoBrief>): VideoBrief {
     return {
       briefId: 'test-brief',
       type: 'short',
@@ -44,9 +42,7 @@ describe('VideoGatesService', () => {
     };
   }
 
-  function makeApproval(
-    overrides?: Partial<ApprovalRecord>,
-  ): ApprovalRecord {
+  function makeApproval(overrides?: Partial<ApprovalRecord>): ApprovalRecord {
     return {
       briefId: 'test-brief',
       stages: [
@@ -61,9 +57,7 @@ describe('VideoGatesService', () => {
     };
   }
 
-  function makeClaim(
-    overrides?: Partial<VideoClaimEntry>,
-  ): VideoClaimEntry {
+  function makeClaim(overrides?: Partial<VideoClaimEntry>): VideoClaimEntry {
     return {
       id: 'claim-1',
       kind: 'mileage',
@@ -79,12 +73,10 @@ describe('VideoGatesService', () => {
     };
   }
 
-  function makeInput(
-    overrides?: Partial<VideoGateInput>,
-  ): VideoGateInput {
+  function makeInput(overrides?: Partial<VideoGateInput>): VideoGateInput {
     return {
       brief: makeBrief(),
-      claims: [],
+      claims: [makeClaim()],
       evidencePack: [],
       disclaimerPlan: { disclaimers: [] },
       approvalRecord: makeApproval(),
@@ -99,6 +91,13 @@ describe('VideoGatesService', () => {
       const result = service.checkArtefacts(makeInput());
       expect(result.canProceed).toBe(true);
       expect(result.missingArtefacts).toEqual([]);
+    });
+
+    it('rejects an empty claim table as a missing required artefact', () => {
+      const result = service.checkArtefacts(makeInput({ claims: [] }));
+      expect(result.hasClaimTable).toBe(false);
+      expect(result.canProceed).toBe(false);
+      expect(result.missingArtefacts).toContain('claim_table');
     });
 
     it('should detect missing brief', () => {
@@ -169,43 +168,40 @@ describe('VideoGatesService', () => {
       expect(result.flags).toContain('GATE_FAIL:safety');
     });
 
-    it('should allow canPublish=true with WARN flags', () => {
-      // G1 Truth: 15-30% unsourced → WARN (warn=0.15, fail=0.3)
-      const claims = Array.from({ length: 5 }, (_, i) =>
-        makeClaim({
-          id: `claim-${i}`,
-          status: i === 0 ? 'unverified' : 'verified',
-        }),
-      );
-      // 1/5 = 0.2 → between warn(0.15) and fail(0.3) → WARN
-      const result = service.runAllGates(makeInput({ claims }));
+    it('should allow a nonblocking reuse warning with supported claims', () => {
+      const result = service.runAllGates(makeInput({ similarityScore: 0.6 }));
       expect(result.canPublish).toBe(true);
-      expect(result.flags).toContain('GATE_WARN:truth');
+      expect(result.flags).toContain('GATE_WARN:reuse_risk');
     });
   });
 
-  // ── G1: Truth Gate ──
+  describe('file-only claim gates', () => {
+    it.each(['supported', 'unsupported', 'empty', 'safety'])(
+      'preserves the full pipeline truth and safety verdicts for %s claims',
+      (scenario) => {
+        const claims = scenario === 'empty' ? [] : [makeClaim({
+          ...(scenario === 'unsupported' ? { status: 'unverified' as const } : {}),
+          ...(scenario === 'safety' ? { kind: 'safety' as const, validatedBy: undefined } : {}),
+        })];
+        const input = makeInput({ claims });
+        expect(service.runClaimGates({ claims, evidencePack: input.evidencePack }))
+          .toEqual(service.runAllGates(input).gates.slice(0, 2));
+      },
+    );
+  });
 
-  describe('G1 Truth', () => {
-    it('should PASS with 0 claims', () => {
+  describe('G1 Truth — support each fact', () => {
+    it('rejects an empty claim table with a reason', () => {
       const result = service.runAllGates(makeInput({ claims: [] }));
-      const g1 = result.gates.find((g) => g.gate === 'truth')!;
-      expect(g1.verdict).toBe('PASS');
+      const truth = result.gates.find((g) => g.gate === 'truth')!;
+      expect(truth.verdict).toBe('FAIL');
+      expect(truth.measured).toBe(0);
+      expect(truth.details.length).toBeGreaterThan(0);
+      expect(result.canPublish).toBe(false);
+      expect(result.flags).toContain('GATE_FAIL:truth');
     });
 
-    it('should PASS when all claims are verified', () => {
-      const claims = [
-        makeClaim({ status: 'verified' }),
-        makeClaim({ id: 'claim-2', status: 'verified' }),
-      ];
-      const result = service.runAllGates(makeInput({ claims }));
-      const g1 = result.gates.find((g) => g.gate === 'truth')!;
-      expect(g1.verdict).toBe('PASS');
-      expect(g1.measured).toBe(0);
-    });
-
-    it('should FAIL when >30% claims are unsourced', () => {
-      // 2/4 = 0.5 → > fail(0.3) → FAIL
+    it('counts every unsupported claim separately', () => {
       const claims = [
         makeClaim({ id: 'c1', status: 'unverified' }),
         makeClaim({ id: 'c2', status: 'unverified' }),
@@ -215,71 +211,205 @@ describe('VideoGatesService', () => {
       const result = service.runAllGates(makeInput({ claims }));
       const g1 = result.gates.find((g) => g.gate === 'truth')!;
       expect(g1.verdict).toBe('FAIL');
+      expect(g1.measured).toBe(2);
+      expect(g1.triggerItems?.map((item) => item.location)).toEqual([
+        'claim:c1',
+        'claim:c2',
+      ]);
     });
 
-    it('should WARN when 15-30% claims are unsourced', () => {
-      // 1/5 = 0.2 → between warn(0.15) and fail(0.3) → WARN
-      const claims = Array.from({ length: 5 }, (_, i) =>
-        makeClaim({ id: `c${i}`, status: i === 0 ? 'unverified' : 'verified' }),
+    it.each([7, 4])(
+      'rejects one unsupported claim among %i claims',
+      (count) => {
+        const claims = Array.from({ length: count }, (_, i) =>
+          makeClaim({
+            id: `c${i}`,
+            status: i === 0 ? 'unverified' : 'verified',
+          }),
+        );
+        const result = service.runAllGates(makeInput({ claims }));
+        const truth = result.gates.find((g) => g.gate === 'truth')!;
+        expect(truth.verdict).toBe('FAIL');
+        expect(truth.measured).toBe(1);
+        expect(truth.triggerItems).toHaveLength(1);
+        expect(result.canPublish).toBe(false);
+      },
+    );
+
+    it.each([
+      { sourceRef: null, evidenceId: null },
+      { sourceRef: '  ', evidenceId: null },
+      { sourceRef: null, evidenceId: 'absent-from-pack' },
+    ])('rejects verified claims without usable support: %j', (support) => {
+      const result = service.runAllGates(
+        makeInput({ claims: [makeClaim(support)] }),
       );
-      const result = service.runAllGates(makeInput({ claims }));
-      const g1 = result.gates.find((g) => g.gate === 'truth')!;
-      expect(g1.verdict).toBe('WARN');
+      expect(result.gates.find((g) => g.gate === 'truth')).toMatchObject({
+        verdict: 'FAIL',
+        measured: 1,
+      });
     });
 
-    it('should exclude procedure/safety claims from unsourced count', () => {
-      // 1 unverified procedure + 1 unverified mileage out of 2
-      // Only mileage counts → 1/2 = 0.5 → FAIL
-      const claims = [
-        makeClaim({ id: 'c1', kind: 'procedure', status: 'unverified' }),
-        makeClaim({ id: 'c2', kind: 'mileage', status: 'unverified' }),
-      ];
-      const result = service.runAllGates(makeInput({ claims }));
-      const g1 = result.gates.find((g) => g.gate === 'truth')!;
-      // procedure excluded from unsourced, so 1 unsourced / 2 total = 0.5
-      expect(g1.measured).toBe(0.5);
+    it.each(['unverified', 'blocked'] as const)(
+      'rejects a %s fact even with a source reference',
+      (status) => {
+        const result = service.runAllGates(
+          makeInput({ claims: [makeClaim({ status })] }),
+        );
+        expect(result.gates.find((g) => g.gate === 'truth')).toMatchObject({
+          verdict: 'FAIL',
+          measured: 1,
+        });
+      },
+    );
+
+    it('accepts verified facts with a source reference or a matching evidence entry', () => {
+      const result = service.runAllGates(
+        makeInput({
+          claims: [
+            makeClaim({ evidenceId: null }),
+            makeClaim({ id: 'c2', sourceRef: null }),
+          ],
+          evidencePack: [
+            {
+              docId: 'ev-001',
+              heading: 'Source',
+              charRange: [0, 10],
+              rawExcerpt: 'Evidence',
+              confidence: 1,
+            },
+          ],
+        }),
+      );
+      expect(result.gates.find((g) => g.gate === 'truth')).toMatchObject({
+        verdict: 'PASS',
+        measured: 0,
+      });
+      expect(result.canPublish).toBe(true);
+    });
+
+    it('does not accept an evidence reference to another entry', () => {
+      const result = service.runAllGates(
+        makeInput({
+          claims: [makeClaim({ sourceRef: null })],
+          evidencePack: [
+            {
+              docId: 'ev-other',
+              heading: 'Other',
+              charRange: [0, 10],
+              rawExcerpt: 'Other',
+              confidence: 1,
+            },
+          ],
+        }),
+      );
+      expect(result.gates.find((g) => g.gate === 'truth')).toMatchObject({
+        verdict: 'FAIL',
+        measured: 1,
+      });
+    });
+
+    it('excludes procedure/safety from the factual count, leaving them to G2', () => {
+      const result = service.runAllGates(
+        makeInput({
+          claims: [
+            makeClaim({
+              kind: 'procedure',
+              status: 'unverified',
+              validatedBy: 'expert-01',
+            }),
+            makeClaim({
+              id: 'safety',
+              kind: 'safety',
+              status: 'unverified',
+              validatedBy: 'expert-01',
+            }),
+            makeClaim({ id: 'fact', status: 'unverified' }),
+          ],
+        }),
+      );
+      expect(result.gates.find((g) => g.gate === 'truth')).toMatchObject({
+        verdict: 'FAIL',
+        measured: 1,
+      });
     });
   });
 
-  // ── G2: Safety Gate ──
+  describe('G2 Safety — validation follows kind', () => {
+    it('keeps the existing nonblocking verdict when there are no safety claims', () => {
+      const result = service.runAllGates(makeInput());
+      expect(result.gates.find((g) => g.gate === 'safety')).toMatchObject({
+        verdict: 'WARN',
+        measured: 0,
+      });
+    });
 
-  describe('G2 Safety', () => {
-    it('should WARN when no safety/procedure claims (warn=0 threshold)', () => {
+    it.each(['safety', 'procedure'] as const)(
+      'rejects unvalidated %s even when the generator flag is false',
+      (kind) => {
+        const result = service.runAllGates(
+          makeInput({
+            claims: [
+              makeClaim({
+                kind,
+                status: 'unverified',
+                requiresHumanValidation: false,
+              }),
+            ],
+          }),
+        );
+        expect(result.gates.find((g) => g.gate === 'safety')).toMatchObject({
+          verdict: 'FAIL',
+          measured: 1,
+        });
+        expect(result.canPublish).toBe(false);
+      },
+    );
+
+    it.each([undefined, '', '  '])(
+      'rejects a missing or blank validator (%s)',
+      (validatedBy) => {
+        const result = service.runAllGates(
+          makeInput({
+            claims: [
+              makeClaim({
+                kind: 'safety',
+                requiresHumanValidation: true,
+                validatedBy,
+              }),
+            ],
+          }),
+        );
+        expect(result.gates.find((g) => g.gate === 'safety')).toMatchObject({
+          verdict: 'FAIL',
+          measured: 1,
+        });
+      },
+    );
+
+    it('accepts human-validated safety and procedure claims regardless of generator flag', () => {
       const result = service.runAllGates(
-        makeInput({ claims: [makeClaim({ kind: 'mileage' })] }),
+        makeInput({
+          claims: [
+            makeClaim({
+              kind: 'safety',
+              requiresHumanValidation: false,
+              validatedBy: 'expert-01',
+            }),
+            makeClaim({
+              id: 'procedure',
+              kind: 'procedure',
+              requiresHumanValidation: true,
+              validatedBy: 'expert-02',
+            }),
+          ],
+        }),
       );
-      const g2 = result.gates.find((g) => g.gate === 'safety')!;
-      // safety_unvalidated threshold: warn=0, fail=1 → 0 unvalidated → WARN
-      expect(g2.verdict).toBe('WARN');
-      expect(g2.measured).toBe(0);
-    });
-
-    it('should FAIL with 1 unvalidated safety claim (strict)', () => {
-      const claims = [
-        makeClaim({
-          kind: 'safety',
-          requiresHumanValidation: true,
-          validatedBy: undefined,
-        }),
-      ];
-      const result = service.runAllGates(makeInput({ claims }));
-      const g2 = result.gates.find((g) => g.gate === 'safety')!;
-      expect(g2.verdict).toBe('FAIL');
-    });
-
-    it('should WARN (not FAIL) when safety claim is validated', () => {
-      const claims = [
-        makeClaim({
-          kind: 'safety',
-          requiresHumanValidation: true,
-          validatedBy: 'expert-01',
-        }),
-      ];
-      const result = service.runAllGates(makeInput({ claims }));
-      const g2 = result.gates.find((g) => g.gate === 'safety')!;
-      // validated → unvalidated=0 → warn=0 threshold → WARN (not FAIL)
-      expect(g2.verdict).toBe('WARN');
-      expect(g2.measured).toBe(0);
+      expect(result.gates.find((g) => g.gate === 'safety')).toMatchObject({
+        verdict: 'WARN',
+        measured: 0,
+      });
+      expect(result.canPublish).toBe(true);
     });
   });
 

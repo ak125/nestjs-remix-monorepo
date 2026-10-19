@@ -5,7 +5,6 @@ import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { RagFingerprintService } from './rag-fingerprint.service';
 import { RagFoundationGateService } from './rag-foundation-gate.service';
-import { FrontmatterValidatorService } from './frontmatter-validator.service';
 import { RagGammeDetectionService } from './rag-gamme-detection.service';
 import type {
   NormalizationRecord,
@@ -95,8 +94,6 @@ export class RagNormalizationService extends SupabaseBaseService {
     private readonly fingerprintService: RagFingerprintService,
     @Inject(forwardRef(() => RagFoundationGateService))
     private readonly foundationGateService: RagFoundationGateService,
-    @Inject(forwardRef(() => FrontmatterValidatorService))
-    private readonly frontmatterValidator: FrontmatterValidatorService,
     @Inject(forwardRef(() => RagGammeDetectionService))
     private readonly gammeDetectionService: RagGammeDetectionService,
   ) {

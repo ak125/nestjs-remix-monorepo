@@ -16,6 +16,11 @@ on:
       # --- Builder + overlay : la CONFIG du registre ---
       - "scripts/registry/**"
       - "scripts/audit/build-deep-inventory.js"
+      # Configurations des deux outils que lance le deep-inventory : une PR qui
+      # ne modifie que l'une d'elles peut changer les projections sans
+      # déclencher ce job (constaté le 2026-10-12, motifs non ancrés).
+      - ".dependency-cruiser.cjs"
+      - "knip.json"
       - "scripts/audit/build-db-usage-map.js"
       - "scripts/audit/build-db-usage-map.test.ts"
       # Le job lance `registry:test:rpc-parser` (tests/registry/) sans qu'aucune
@@ -34,6 +39,7 @@ on:
       - "scripts/audit/__tests__/**"
       - "audit/cleanup/**"
       - "scripts/cleanup/validate-before-delete.sh"
+      - "scripts/cleanup/validate-before-delete.test.ts"
       - "packages/registry/**"
       - "audit/registry/**"
       - ".spec/00-canon/repository-registry/**"
@@ -71,6 +77,8 @@ on:
       # --- Builder + overlay : la CONFIG du registre ---
       - "scripts/registry/**"
       - "scripts/audit/build-deep-inventory.js"
+      - ".dependency-cruiser.cjs"
+      - "knip.json"
       - "scripts/audit/build-db-usage-map.js"
       # Résidu d'alignement du 2026-09-17 : ces deux entrées existaient côté
       # `pull_request` et manquaient ici. `packages/registry/**` n'est pas repris,
@@ -84,6 +92,7 @@ on:
       - "scripts/audit/__tests__/**"
       - "audit/cleanup/**"
       - "scripts/cleanup/validate-before-delete.sh"
+      - "scripts/cleanup/validate-before-delete.test.ts"
       - "packages/**"
       - "audit/registry/**"
       - ".spec/00-canon/repository-registry/**"
@@ -190,6 +199,11 @@ jobs:
       # Les 17 préexistants encodent des décisions de conception : C8
       # snapshot-only, parité NEVER_AUTO_DELETE bash↔TS, tolérance
       # target-scoped.
+      #
+      # Le même script lance aussi les tests de comportement de la garde
+      # d'action (scripts/cleanup/validate-before-delete.test.ts, dépôts git
+      # jetables) : jusqu'au 2026-10-11 aucun test n'exerçait ses verdicts, et
+      # 30 cas sur 56 répondaient SAFE à tort.
       #
       # Ce step tourne AVANT le check ci-dessous : un générateur cassé doit se
       # voir sur ses fixtures, pas sur l'inventaire réel.

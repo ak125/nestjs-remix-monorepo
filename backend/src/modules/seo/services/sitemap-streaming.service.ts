@@ -48,7 +48,6 @@ export class SitemapStreamingService {
   private readonly logger = new Logger(SitemapStreamingService.name);
   private readonly config: StreamingConfig;
   private readonly supabase: SupabaseClient;
-  private readonly BASE_URL = SITE_ORIGIN;
 
   constructor(private readonly configService: ConfigService) {
     this.config = {

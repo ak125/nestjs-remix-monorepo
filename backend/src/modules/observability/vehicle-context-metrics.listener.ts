@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import type { VehicleContextCounters } from './vehicle-context.metrics';
 import { VEHICLE_CONTEXT_COUNTERS } from './observability.tokens';
@@ -19,8 +19,6 @@ import { VEHICLE_CONTEXT_COUNTERS } from './observability.tokens';
  */
 @Injectable()
 export class VehicleContextMetricsListener {
-  private readonly logger = new Logger(VehicleContextMetricsListener.name);
-
   constructor(
     @Inject(VEHICLE_CONTEXT_COUNTERS)
     private readonly counters: VehicleContextCounters,

@@ -7,7 +7,6 @@ import {
   Body,
   Res,
   UseGuards,
-  Logger,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { AuthenticatedGuard } from '@auth/authenticated.guard';
@@ -22,8 +21,6 @@ import { ImagePromptQueryDto } from '../dto/r3-image-prompt.dto';
 @Controller('api/admin/r3-image-prompts')
 @UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class AdminR3ImagePromptsController {
-  private readonly logger = new Logger(AdminR3ImagePromptsController.name);
-
   constructor(private readonly imagePromptService: R3ImagePromptService) {}
 
   /**

@@ -89,23 +89,6 @@ async function testUrlMigration(
   }
 }
 
-/**
- * Effectue une redirection 301 si la migration est possible
- */
-async function _performRedirection(
-  legacyUrl: string,
-  baseUrl: string,
-): Promise<Response | null> {
-  const migration = await testUrlMigration(legacyUrl, baseUrl);
-
-  if (migration.success && migration.new_url) {
-    // Redirection 301 permanente pour le SEO
-    return redirect(migration.new_url, { status: 301 });
-  }
-
-  return null;
-}
-
 // ====================================
 // 📡 LOADER FUNCTION
 // ====================================

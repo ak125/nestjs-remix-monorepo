@@ -61,13 +61,15 @@ for f in "$FIXTURE" "$HISTORY" "$ORIGIN" "$RIGHTS" "$MIGRATION" "$DOWN"; do
 done
 
 WORK="$(mktemp -d)"
-cleanup() { docker rm -f "$CT" >/dev/null 2>&1 || true; rm -rf "$WORK"; }
+# Only remove the container created by this invocation and its anonymous data.
+CT_ID=""
+cleanup() { if [[ -n "$CT_ID" ]]; then docker rm -fv "$CT_ID" >/dev/null 2>&1 || true; fi; rm -rf "$WORK"; }
 trap cleanup EXIT
 
 echo "Image : $IMAGE"
-docker run -d --name "$CT" --network none \
+CT_ID="$(docker run -d --name "$CT" --network none \
   -e POSTGRES_PASSWORD=test -e POSTGRES_DB=test \
-  "$IMAGE" -c listen_addresses='' >/dev/null || exit 2
+  "$IMAGE" -c listen_addresses='')" || exit 2
 for _ in $(seq 1 90); do
   if docker logs "$CT" 2>&1 | grep -q "PostgreSQL init process complete" \
      && docker exec "$CT" pg_isready -U postgres -d test >/dev/null 2>&1; then

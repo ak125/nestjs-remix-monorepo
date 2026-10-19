@@ -5,6 +5,11 @@ import {
   matchBrandRow,
   classifyForActivation,
   verdictForRef,
+  withTariffStatus,
+  searchTerm,
+  needsRefPass,
+  mergeRefPass,
+  type RefVerdict,
   type SearchRow,
 } from './inoshop-search-parse';
 
@@ -268,6 +273,353 @@ describe('classifyForActivation (no-false-in-stock invariant)', () => {
   });
 });
 
+describe('icon legend (hashed icon file names)', () => {
+  // synthetic hashed file names: mixed case, digits, and none of the state words
+  const HASHED = 'Ab12Cd34Ef56';
+  const H = HASHED.toLowerCase();
+  const OTHER = 'Pq78Rs90Tu12';
+  const escapeOnce = (s: string): string =>
+    s
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  const legendEntry = (type: string, file: string | null): string =>
+    `<div class="d-inline-flex align-items-center py-1" data-icon-type="${type}">` +
+    `<div style="max-width: 24px;">` +
+    (file ? `<img class="w-100" src="/img/stock/${file}.png"/>` : '') +
+    `</div><span class="ml-2">label</span></div>`;
+  /** the legend as the portal ships it: inside a tooltip attribute, escaped `depth` times. */
+  const legendTooltip = (entries: string, depth = 1): string => {
+    let s = entries;
+    for (let i = 0; i < depth; i++) s = escapeOnce(s);
+    return `<span data-toggle="tooltip" data-html="true" data-original-title="${s}">?</span>`;
+  };
+  const rowHtml = (dispo: string, file: string): string =>
+    articleTr({ code: 'X1', ref: '1', marque: 'NK', ean: 'E1', dispo }) +
+    iconImg('X1', file);
+  const rowOf = (legend: string, dispo = 'grp', file = HASHED): SearchRow =>
+    parseSearchHtml(legend + rowHtml(dispo, file))[0];
+  const GRP_LEGEND = legendTooltip(
+    legendEntry('ag', 'vert') + legendEntry('grp', HASHED),
+  );
+  // the portal's legend shape: named files, one hashed file, orange+ drawn for 4 types
+  const PORTAL_LEGEND = legendTooltip(
+    [
+      ['ag', 'vert'],
+      ['agpart', 'orange'],
+      ['agvirt', 'orange+'],
+      ['agvirtpart', 'orange+'],
+      ['grp', HASHED],
+      ['grppart', 'orange+'],
+      ['nonecmd', 'orange+'],
+      ['none', 'rouge'],
+      ['fourn', 'transport'],
+      ['partner', 'partner'],
+      ['noref', 'gris'],
+    ]
+      .map(([type, file]) => legendEntry(type, file))
+      .join(''),
+  );
+
+  it('captures a hashed icon file name (digits included)', () => {
+    expect(rowOf('').icon).toBe(`/stock/${H}.png`);
+  });
+
+  it.each([1, 2, 3])(
+    'binds the file to its legend type at escaping depth %i',
+    (depth) => {
+      const legend = legendTooltip(
+        legendEntry('ag', 'vert') + legendEntry('grp', HASHED),
+        depth,
+      );
+      const rows = parseSearchHtml(legend + rowHtml('grp', HASHED));
+      expect(rows).toHaveLength(1); // the legend images never become rows or row icons
+      expect(rows[0].iconType).toBe('grp');
+    },
+  );
+
+  it('reads the legend only inside its tooltip attribute, never the page', () => {
+    // a typed entry in the page body, and a row icon wrapped in an element typed
+    // with the row's dispo: neither is the legend, which binds the file to none
+    const html =
+      legendEntry('grp', HASHED) +
+      legendTooltip(legendEntry('none', HASHED)) +
+      articleTr({
+        code: 'X1',
+        ref: '1',
+        marque: 'NK',
+        ean: 'E1',
+        dispo: 'grp',
+      }) +
+      `<div data-icon-type="grp">${iconImg('X1', HASHED)}</div>`;
+    const r = parseSearchHtml(html)[0];
+    expect(r.iconType).toBe('none');
+    const c = classifyForActivation(r);
+    expect(c.bucket).toBe('REVIEW_CONTRADICTION');
+    expect(c.reason).toBe('grp+rouge [legend:none]');
+    expect(rowOf(legendEntry('grp', HASHED)).iconType).toBeNull();
+  });
+
+  it('decodes numeric entities (&#60; &#62; &#34;)', () => {
+    const legend = legendTooltip(
+      legendEntry('grp', HASHED) + legendEntry('grppart', OTHER),
+    )
+      .replace(/&lt;/g, '&#60;')
+      .replace(/&gt;/g, '&#62;')
+      .replace(/&quot;/g, '&#34;');
+    expect(rowOf(legend, 'grp', OTHER).iconType).toBe('grppart');
+    expect(rowOf(legend).iconType).toBe('grp');
+  });
+
+  it('binds each entry to the image inside it, whatever comes before', () => {
+    // an image-less typed element, then a typed entry holding nested wrappers
+    const legend = legendTooltip(
+      `<span data-icon-type="grp">label</span>` +
+        `<div data-icon-type="grppart"><div class="w"><div>` +
+        `<img src="/img/stock/${OTHER}.png"/></div></div></div>`,
+    );
+    expect(rowOf(legend, 'grp', OTHER).iconType).toBe('grppart');
+  });
+
+  it('an image outside its typed element binds nothing', () => {
+    const imgFirst = (type: string, file: string): string =>
+      `<div><img src="/img/stock/${file}.png"/><span data-icon-type="${type}">x</span></div>`;
+    const legend = legendTooltip(
+      imgFirst('grp', HASHED) + imgFirst('grppart', OTHER),
+    );
+    expect(rowOf(legend).iconType).toBeNull();
+    expect(rowOf(legend, 'grp', OTHER).iconType).toBeNull();
+  });
+
+  it('binds nothing from an entry holding two images', () => {
+    const legend = legendTooltip(
+      `<div data-icon-type="grp"><img src="/img/stock/${HASHED}.png"/>` +
+        `<img src="/img/stock/${OTHER}.png"/></div>`,
+    );
+    expect(rowOf(legend).iconType).toBeNull();
+    expect(rowOf(legend, 'grp', OTHER).iconType).toBeNull();
+  });
+
+  it('binds nothing from a holder whose typed element never closes', () => {
+    const legend = legendTooltip(
+      `<div data-icon-type="grp"><img src="/img/stock/${HASHED}.png"/>` +
+        legendEntry('grppart', OTHER),
+    );
+    expect(rowOf(legend).iconType).toBeNull();
+    expect(rowOf(legend, 'grp', OTHER).iconType).toBeNull();
+  });
+
+  it('binds nothing from a holder nested deeper than the portal ever does', () => {
+    const nested = (n: number): string =>
+      legendTooltip(
+        '<div>'.repeat(n) + legendEntry('grp', HASHED) + '</div>'.repeat(n),
+      );
+    expect(rowOf(nested(5)).iconType).toBe('grp');
+    expect(rowOf(nested(40)).iconType).toBeNull();
+  });
+
+  it('drops a file bound to several types, in one legend or across two', () => {
+    const one = legendTooltip(
+      legendEntry('agvirt', HASHED) +
+        legendEntry('grppart', HASHED) +
+        legendEntry('grp', null),
+    );
+    expect(rowOf(one).iconType).toBeNull();
+    const two =
+      legendTooltip(legendEntry('grp', HASHED)) +
+      legendTooltip(legendEntry('none', HASHED), 2);
+    expect(rowOf(two).iconType).toBeNull();
+  });
+
+  it('captures and binds a file name with - _ . % and a query string', () => {
+    const F = 'a1-B2_c3.v2%3D';
+    const legend = legendTooltip(
+      legendEntry('grp', F).replace(`${F}.png`, `${F}.png?v=1`),
+    );
+    const html =
+      legend +
+      articleTr({
+        code: 'X1',
+        ref: '1',
+        marque: 'NK',
+        ean: 'E1',
+        dispo: 'grp',
+      }) +
+      `<img class="icone-dispo-X1" src="/img/stock/${F}.png?v=1" alt="">`;
+    const r = parseSearchHtml(html)[0];
+    expect(r.icon).toBe('/stock/a1-b2_c3.v2%3d.png');
+    expect(r.iconType).toBe('grp');
+  });
+
+  it('normalises an upper-case legend type', () => {
+    const c = classifyForActivation(
+      rowOf(legendTooltip(legendEntry('GRP', HASHED))),
+    );
+    expect(c.bucket).toBe('CONFIRMED_GRP');
+    expect(c.reason).toBe('grp/vert+ [legend:grp]');
+  });
+
+  it('grp + hashed file the legend binds to grp → CONFIRMED_GRP, reason names the legend', () => {
+    const c = classifyForActivation(rowOf(GRP_LEGEND));
+    expect(c.bucket).toBe('CONFIRMED_GRP');
+    expect(c.reason).toBe('grp/vert+ [legend:grp]');
+    expect(c.icon).toBe('vert+');
+  });
+
+  it('portal-shaped legend: named files keep their plain reason', () => {
+    const at = (dispo: string, file: string) =>
+      classifyForActivation(rowOf(PORTAL_LEGEND, dispo, file));
+    expect(at('grp', HASHED)).toEqual({
+      bucket: 'CONFIRMED_GRP',
+      reason: 'grp/vert+ [legend:grp]',
+      icon: 'vert+',
+    });
+    expect(at('ag', 'vert')).toEqual({
+      bucket: 'CONFIRMED_AG',
+      reason: 'ag/vert',
+      icon: 'vert',
+    });
+    expect(at('none', 'rouge')).toEqual({
+      bucket: 'BLOCK_NONE',
+      reason: 'none/rouge',
+      icon: 'rouge',
+    });
+    // orange+ is drawn for several types: the legend drops it, the name still reads
+    expect(rowOf(PORTAL_LEGEND, 'grp', 'orange+').iconType).toBeNull();
+    expect(at('grp', 'orange+').reason).toBe('grp+noncorrob:orange+');
+  });
+
+  it('a file name and a legend that disagree → REVIEW_CONTRADICTION, never confirmed nor blocked', () => {
+    const at = (dispo: string | null, file: string, type: string) =>
+      classifyForActivation({
+        dispoType: dispo,
+        icon: `/stock/${file}.png`,
+        iconType: type,
+      } as SearchRow);
+    expect(at('grp', 'rouge', 'grp')).toEqual({
+      bucket: 'REVIEW_CONTRADICTION',
+      reason: 'grp+conflict(rouge.png vs legend:grp)',
+      icon: 'unknown',
+    });
+    expect(at('ag', 'vert', 'none').reason).toBe(
+      'ag+conflict(vert.png vs legend:none)',
+    );
+    expect(at('none', 'vert', 'none').reason).toBe(
+      'none+conflict(vert.png vs legend:none)',
+    );
+    expect(at(null, 'rouge', 'ag').reason).toBe(
+      'nodispo+conflict(rouge.png vs legend:ag)',
+    );
+    for (const [d, f, t] of [
+      ['ag', 'vert', 'none'],
+      ['none', 'vert', 'none'],
+      ['arrivage', 'transport', 'grp'],
+      [null, 'rouge', 'ag'],
+    ] as const)
+      expect(at(d, f, t).bucket).toBe('REVIEW_CONTRADICTION');
+  });
+
+  it('a hashed name containing a state word is not read as that state', () => {
+    const F = 'Q7vErTz9';
+    expect(classifyForActivation(rowOf('', 'ag', F))).toEqual({
+      bucket: 'REVIEW_NO_SIGNAL',
+      reason: 'ag+noncorrob:unknown(q7vertz9.png)',
+      icon: 'unknown',
+    });
+    const c = classifyForActivation(
+      rowOf(legendTooltip(legendEntry('none', F)), 'ag', F),
+    );
+    expect(c.bucket).toBe('REVIEW_CONTRADICTION');
+    expect(c.reason).toBe('ag+rouge [legend:none]');
+  });
+
+  it('hashed file without a legend → every reason names the file', () => {
+    const at = (dispo: string) => classifyForActivation(rowOf('', dispo));
+    expect(at('grp')).toEqual({
+      bucket: 'REVIEW_NO_SIGNAL',
+      reason: `grp+noncorrob:unknown(${H}.png)`,
+      icon: 'unknown',
+    });
+    expect(at('arrivage')).toEqual({
+      bucket: 'REVIEW_ARRIVAGE',
+      reason: `arrivage/unknown(${H}.png)`,
+      icon: 'unknown',
+    });
+    expect(at('none')).toEqual({
+      bucket: 'BLOCK_NONE',
+      reason: `none/unknown(${H}.png)`,
+      icon: 'unknown',
+    });
+    expect(at('')).toEqual({
+      bucket: 'REVIEW_NO_SIGNAL',
+      reason: `dispo='' icon=unknown(${H}.png)`,
+      icon: 'unknown',
+    });
+  });
+
+  // the state each type's named legend file draws on the pages captured 2026-10-13
+  it.each([
+    ['ag', 'vert'],
+    ['agpart', 'orange'],
+    ['agvirt', 'orange+'],
+    ['agvirtpart', 'orange+'],
+    ['grp', 'vert+'],
+    ['grppart', 'orange+'],
+    ['nonecmd', 'orange+'],
+    ['none', 'rouge'],
+    ['fourn', 'transport'],
+    ['partner', 'partner'],
+    ['noref', 'gris'],
+  ])(
+    'hashed file bound to %s reads %s; an ag/grp row confirms only on green',
+    (type, state) => {
+      const legend = legendTooltip(legendEntry(type, HASHED));
+      for (const dispo of ['ag', 'grp']) {
+        const c = classifyForActivation(rowOf(legend, dispo));
+        expect(c.icon).toBe(state);
+        expect(c.bucket.startsWith('CONFIRMED')).toBe(
+          state === 'vert' || state === 'vert+',
+        );
+      }
+    },
+  );
+
+  it('a legend type without a bound icon never confirms', () => {
+    const c = classifyForActivation({
+      dispoType: 'grp',
+      icon: null,
+      iconType: 'grp',
+    } as SearchRow);
+    expect(c.bucket).toBe('REVIEW_NO_SIGNAL');
+    expect(c.icon).toBe('unknown');
+  });
+
+  it('a legend type outside the known vocabulary resolves to nothing', () => {
+    for (const t of ['mystery', 'constructor', '__proto__']) {
+      const c = classifyForActivation({
+        dispoType: 'grp',
+        icon: `/stock/${HASHED}.png`,
+        iconType: t,
+      } as SearchRow);
+      expect(c.bucket).toBe('REVIEW_NO_SIGNAL');
+      expect(c.icon).toBe('unknown');
+    }
+  });
+
+  it('end-to-end: EAN-locked grp row with a hashed icon → CONFIRMED_GRP', () => {
+    const v = verdictForRef(
+      parseSearchHtml(GRP_LEGEND + rowHtml('grp', HASHED)),
+      '1',
+      'E1',
+      NK,
+    );
+    expect(v.bucket).toBe('CONFIRMED_GRP');
+    expect(v.matchKind).toBe('EAN');
+    expect(v.icon).toBe('vert+');
+  });
+});
+
 describe('verdictForRef (end-to-end)', () => {
   const articleHtml = (o: ArtOpts, icon: string): string =>
     articleTr(o) + iconImg(o.code, icon);
@@ -330,4 +682,128 @@ describe('verdictForRef (end-to-end)', () => {
     );
     expect(verdictForRef(rows, '1', 'E1', NK).bucket).toBe('BLOCK_NONE');
   });
+});
+
+describe('search by EAN, then by ref for the misses', () => {
+  const html = (o: ArtOpts, icon: string): string =>
+    articleTr(o) + iconImg(o.code, icon);
+  const miss = (ean: string | null, kind: 'NOT_FOUND' | 'FALSE_MATCH') =>
+    verdictForRef(
+      kind === 'FALSE_MATCH'
+        ? parseSearchHtml(
+            html({ code: 'V1', ref: '1', marque: 'VALEO' }, 'vert'),
+          )
+        : [],
+      '1',
+      ean,
+      NK,
+    );
+
+  it('searches the EAN when the feed has one, else the ref', () => {
+    expect(searchTerm({ ref: '1', ean: 'E1' })).toBe('E1');
+    expect(searchTerm({ ref: '1', ean: null })).toBe('1');
+  });
+
+  it('only a miss searched by EAN gets a ref pass', () => {
+    expect(needsRefPass(miss('E1', 'NOT_FOUND'))).toBe(true);
+    expect(needsRefPass(miss('E1', 'FALSE_MATCH'))).toBe(true);
+    // already searched by ref: a second identical search adds nothing
+    expect(needsRefPass(miss(null, 'NOT_FOUND'))).toBe(false);
+    const found = verdictForRef(
+      parseSearchHtml(
+        html(
+          { code: 'SBS1', ref: '1', marque: 'NK', ean: 'E1', dispo: 'ag' },
+          'vert',
+        ),
+      ),
+      '1',
+      'E1',
+      NK,
+    );
+    expect(needsRefPass(found)).toBe(false);
+  });
+
+  it('re-resolves the misses on all rows read and keeps the resolved verdicts', () => {
+    // A: found by EAN. B: portal EAN differs from the feed, found by ref.
+    // C: EAN missed, the ref search returns the row carrying it. D: absent.
+    const byEan = parseSearchHtml(
+      html(
+        { code: 'SBSA', ref: 'A', marque: 'NK', ean: 'EA', dispo: 'ag' },
+        'vert',
+      ),
+    );
+    const feed = [
+      { ref: 'A', ean: 'EA' },
+      { ref: 'B', ean: 'EB' },
+      { ref: 'C', ean: 'EC' },
+      { ref: 'D', ean: 'ED' },
+    ];
+    const first = feed.map((f) => verdictForRef(byEan, f.ref, f.ean, NK));
+    expect(first.filter(needsRefPass).map((v) => v.ref)).toEqual([
+      'B',
+      'C',
+      'D',
+    ]);
+
+    const byRef = parseSearchHtml(
+      html(
+        { code: 'SBSB', ref: 'B', marque: 'NK', ean: 'EB2', dispo: 'none' },
+        'rouge',
+      ) +
+        html(
+          { code: 'SBSC', ref: 'C', marque: 'NK', ean: 'EC', dispo: 'grp' },
+          'vert+',
+        ) +
+        html({ code: 'VD', ref: 'D', marque: 'VALEO' }, 'vert'),
+    );
+    const out = mergeRefPass(first, [...byEan, ...byRef], NK);
+    expect(out[0]).toBe(first[0]);
+    expect(out.map((v) => [v.ref, v.matchKind, v.bucket])).toEqual([
+      ['A', 'EAN', 'CONFIRMED_AG'],
+      ['B', 'REF_BRAND', 'BLOCK_NONE'],
+      ['C', 'EAN', 'CONFIRMED_GRP'],
+      ['D', 'FALSE_MATCH', 'REVIEW_FALSE_MATCH'],
+    ]);
+  });
+});
+
+describe('withTariffStatus (supplier tariff marks the ref discontinued)', () => {
+  const v = (bucket: RefVerdict['bucket'], reason = 'r'): RefVerdict => ({
+    ref: '1',
+    ean: null,
+    bucket,
+    matchKind: 'REF_BRAND',
+    reason,
+    code: 'C1',
+    marque: 'NK',
+    dispoType: null,
+    icon: null,
+    portalPrix: null,
+  });
+
+  it('not discontinued → verdict unchanged', () => {
+    const x = v('CONFIRMED_AG');
+    expect(withTariffStatus(x, false)).toBe(x);
+  });
+
+  it.each([
+    'BLOCK_NONE',
+    'REVIEW_NO_SIGNAL',
+    'REVIEW_ON_ORDER_OR_OUT',
+    'REVIEW_NOT_FOUND',
+    'REVIEW_PORTAL_TIMEOUT',
+  ] as const)('discontinued + %s → BLOCK_DISCONTINUED', (bucket) => {
+    const out = withTariffStatus(v(bucket, 'why'), true);
+    expect(out.bucket).toBe('BLOCK_DISCONTINUED');
+    expect(out.reason).toBe('discontinued|why');
+  });
+
+  it.each(['CONFIRMED_AG', 'CONFIRMED_GRP'] as const)(
+    'discontinued + %s (stock left) → REVIEW_CONTRADICTION, never sold or blocked silently',
+    (bucket) => {
+      const out = withTariffStatus(v(bucket, 'vert'), true);
+      expect(out.bucket).toBe('REVIEW_CONTRADICTION');
+      expect(out.reason).toBe('discontinued+vert');
+    },
+  );
 });

@@ -14,7 +14,11 @@
 #     run_key unique ;
 #   - __diag_projection_record_failure : issue cohérente avec un apply validé,
 #     annulé ou encore en file pour la même run_key ;
-#   - idempotence et rollback.
+#   - ADR-115 (migration 20261012_diag_projection_requires_review.sql) : une
+#     provenance non relue est refusée, la raison `not_reviewed` est admise, la
+#     garde finale échoue sur une contrainte mal nommée ou une ligne existante
+#     qui la viole ;
+#   - idempotence et rollback des deux migrations.
 #
 # Environnement : conteneur PostgreSQL jetable, sans réseau (même majeure que la
 # PROD). Ne touche JAMAIS une base réelle : aucune variable de connexion Supabase
@@ -22,6 +26,7 @@
 #
 # Usage   : bash scripts/db/test-diag-link-provenance.sh
 # Mutation: MIGRATION_UNDER_TEST=<variante.sql> bash scripts/db/test-diag-link-provenance.sh
+#           REVIEW_MIGRATION_UNDER_TEST=<variante.sql> (idem pour 20261012)
 # Sortie  : 0 si toutes les assertions passent, 1 si une échoue, 2 si fatal.
 # =============================================================================
 set -uo pipefail
@@ -31,6 +36,8 @@ FIXTURE="$ROOT/scripts/db/diag-link-provenance-fixture.sql"
 # Une mutation ne vise que la migration ; le rollback est toujours celui du dépôt.
 MIGRATION="${MIGRATION_UNDER_TEST:-$ROOT/backend/supabase/migrations/20261010_diag_link_provenance.sql}"
 DOWN="$ROOT/backend/supabase/migrations/20261010_diag_link_provenance.down.sql"
+REVIEW_MIGRATION="${REVIEW_MIGRATION_UNDER_TEST:-$ROOT/backend/supabase/migrations/20261012_diag_projection_requires_review.sql}"
+REVIEW_DOWN="$ROOT/backend/supabase/migrations/20261012_diag_projection_requires_review.down.sql"
 IMAGE="${PGIMAGE:-postgres:17-alpine}"
 CT="diag-provenance-test-$$"
 
@@ -38,14 +45,19 @@ command -v docker >/dev/null || { echo "FATAL: docker requis"; exit 2; }
 [[ -f "$FIXTURE"   ]] || { echo "FATAL: fixture absente: $FIXTURE"; exit 2; }
 [[ -f "$MIGRATION" ]] || { echo "FATAL: migration absente: $MIGRATION"; exit 2; }
 [[ -f "$DOWN"      ]] || { echo "FATAL: rollback absent: $DOWN"; exit 2; }
+[[ -f "$REVIEW_MIGRATION" ]] || { echo "FATAL: migration absente: $REVIEW_MIGRATION"; exit 2; }
+[[ -f "$REVIEW_DOWN"      ]] || { echo "FATAL: rollback absent: $REVIEW_DOWN"; exit 2; }
 
 TMP="$(mktemp -d)"
-cleanup() { docker rm -f "$CT" >/dev/null 2>&1 || true; rm -rf "$TMP"; }
+# Only remove the container created by this invocation and its anonymous data.
+CT_ID=""
+cleanup() { if [[ -n "$CT_ID" ]]; then docker rm -fv "$CT_ID" >/dev/null 2>&1 || true; fi; rm -rf "$TMP"; }
 trap cleanup EXIT
 
 echo "Image     : $IMAGE"
 echo "Migration : ${MIGRATION#"$ROOT"/}"
-docker run -d --network none --memory 512m --memory-swap 512m --cpus 1 --pids-limit 128 --name "$CT" -e POSTGRES_PASSWORD=test -e POSTGRES_DB=test "$IMAGE" >/dev/null || exit 2
+echo "Migration : ${REVIEW_MIGRATION#"$ROOT"/}"
+CT_ID="$(docker run -d --network none --memory 512m --memory-swap 512m --cpus 1 --pids-limit 128 --name "$CT" -e POSTGRES_PASSWORD=test -e POSTGRES_DB=test "$IMAGE")" || exit 2
 # Prêt = le serveur DÉFINITIF répond sur TCP. Le serveur temporaire que l'image
 # lance pour son initialisation n'écoute que la socket Unix : sonder la socket
 # rend la main pendant l'init, puis le serveur s'arrête sous la fixture.
@@ -122,12 +134,13 @@ COMMIT40=$(printf 'a%.0s' $(seq 1 40))
 HASH64=$(printf 'b%.0s' $(seq 1 64))
 # Source au format de l'export WIKI (raw_proven + status + raw_ref épinglé).
 src() { printf '{"slug":"src_%s","status":"active","raw_proven":%s,"raw_ref":{"repo":"automecanik-raw","manifest_id":"m_%s","expected_sha256":"sha256:%s"}}' "$1" "$2" "$1" "$HASH64"; }
-# proj <link_id> <gamme_slug> [sources_json] ; PROJ_REVIEWED / PROJ_SAFE (défaut false)
+# proj <link_id> <gamme_slug> [sources_json] ; PROJ_REVIEWED (défaut true : seule
+# une relation relue est projetée, ADR-115 D1) / PROJ_SAFE (défaut false)
 proj() {
   local sources
   if [[ $# -ge 3 ]]; then sources="$3"; else sources="[$(src "$2" true)]"; fi
   printf '{"link_id":%s,"wiki_path":"wiki/gamme/%s.md","gamme_slug":"%s","wiki_commit":"%s","content_hash":"sha256:%s","relation_to_part":"possible_cause","part_role":"Piece en cause pour ce symptome (fixture de test).","confidence":"medium","source_policy":"2_medium_concordant","confidence_score_computed":0.6,"reviewed":%s,"diagnostic_safe":%s,"sources":%s}' \
-    "$1" "$2" "$2" "$COMMIT40" "$HASH64" "${PROJ_REVIEWED:-false}" "${PROJ_SAFE:-false}" "$sources"
+    "$1" "$2" "$2" "$COMMIT40" "$HASH64" "${PROJ_REVIEWED:-true}" "${PROJ_SAFE:-false}" "$sources"
 }
 # conf <gamme_slug> <relation_index> <symptom_slug> <reason>
 conf() {
@@ -145,7 +158,7 @@ failure() { printf '{"run_key":"%s","triggered_by":"admin","runtime_env":"test"%
 fail_sql() { printf 'SELECT public.__diag_projection_record_failure($j$%s$j$::jsonb);' "$1"; }
 
 P113=$(proj 113 filtre-a-air); P114=$(proj 114 filtre-a-carburant)
-P117=$(PROJ_REVIEWED=true PROJ_SAFE=true proj 117 filtre-d-habitacle)
+P117=$(PROJ_SAFE=true proj 117 filtre-d-habitacle)
 runs()  { q "SELECT count(*) FROM public.__diag_projection_runs"; }
 live()  { q "SELECT count(*) FROM public.__diag_link_provenance WHERE retired_at IS NULL"; }
 total() { q "SELECT count(*) FROM public.__diag_link_provenance"; }
@@ -155,6 +168,8 @@ TABLES="__diag_projection_runs __diag_projection_conflicts __diag_link_provenanc
 psql_run -f - < "$FIXTURE" || { echo "FATAL: fixture en échec"; exit 2; }
 docker exec -i "$CT" psql -U postgres -d test -v ON_ERROR_STOP=1 -q -1 -f - < "$MIGRATION" \
   || { echo "FATAL: migration en échec"; exit 2; }
+docker exec -i "$CT" psql -U postgres -d test -v ON_ERROR_STOP=1 -q -1 -f - < "$REVIEW_MIGRATION" \
+  || { echo "FATAL: migration 20261012 en échec"; exit 2; }
 
 echo "1. Surface : anon / authenticated fermés, service_role en lecture seule"
 for t in $TABLES; do
@@ -180,7 +195,7 @@ done
 assert "service_role INSERT __diag_projection_runs" REFUSE "$(probe service_role \
   "INSERT INTO public.__diag_projection_runs (run_key, triggered_by, runtime_env, status, error) VALUES ('$(uuid)', 'admin', 'test', 'failed', 'x');")"
 assert "service_role INSERT __diag_link_provenance" REFUSE "$(probe service_role \
-  "INSERT INTO public.__diag_link_provenance (link_id, wiki_path, gamme_slug, wiki_commit, content_hash, relation_to_part, part_role, confidence, source_policy, confidence_score_computed, reviewed, diagnostic_safe, sources, first_run_id, last_run_id) VALUES (113, 'w', 'g', 'c', 'h', 'r', 'p', 'c', 's', 0, false, false, '[{\"raw_proven\":true}]', 1, 1);")"
+  "INSERT INTO public.__diag_link_provenance (link_id, wiki_path, gamme_slug, wiki_commit, content_hash, relation_to_part, part_role, confidence, source_policy, confidence_score_computed, reviewed, diagnostic_safe, sources, first_run_id, last_run_id) VALUES (113, 'w', 'g', 'c', 'h', 'r', 'p', 'c', 's', 0, true, false, '[{\"raw_proven\":true}]', 1, 1);")"
 EMPTY=$(apply_sql "$(payload 0 '' '')")
 FAIL_PROBE=$(fail_sql "$(failure "$(uuid)" ',"error":"probe"')")
 for f in __diag_projection_apply __diag_projection_record_failure; do
@@ -207,6 +222,9 @@ assert "0 ligne de provenance" 0 "$(total)"
 out=$(sr "$(apply_sql "$(payload 2 '' "$(conf filtre-a-air 1 perte_puissance_filtration cause_slug_mismatch),$(conf filtre-a-air 2 perte_puissance_filtration vehicle_scope_unsupported)")")"); rc=$?
 assert "raisons ADR-112 acceptées (cause_slug_mismatch, vehicle_scope_unsupported)" 0 "$rc"
 assert "2 conflits ADR-112 enregistrés" 2 "$(q "SELECT count(*) FROM public.__diag_projection_conflicts WHERE reason IN ('cause_slug_mismatch', 'vehicle_scope_unsupported')")"
+out=$(sr "$(apply_sql "$(payload 1 '' "$(conf filtre-a-huile 0 perte_puissance_filtration not_reviewed)")")"); rc=$?
+assert "raison ADR-115 acceptée (not_reviewed)" 0 "$rc"
+assert "1 conflit not_reviewed enregistré" 1 "$(q "SELECT count(*) FROM public.__diag_projection_conflicts WHERE reason = 'not_reviewed'")"
 
 echo
 echo "3. Projection de 113 / 114 / 117"
@@ -216,7 +234,7 @@ R2=$(q "SELECT max(id) FROM public.__diag_projection_runs")
 K2=$(q "SELECT run_key FROM public.__diag_projection_runs WHERE id = $R2")
 assert "3 lignes vivantes" 3 "$(live)"
 assert "first_run_id = last_run_id = run courant" 3 "$(q "SELECT count(*) FROM public.__diag_link_provenance WHERE first_run_id = $R2 AND last_run_id = $R2")"
-assert "reviewed / diagnostic_safe copiés tels quels (false)" "f|f" "$(q "SELECT DISTINCT concat_ws('|', reviewed, diagnostic_safe) FROM public.__diag_link_provenance WHERE link_id IN (113, 114)")"
+assert "reviewed / diagnostic_safe copiés tels quels (true / false)" "t|f" "$(q "SELECT DISTINCT concat_ws('|', reviewed, diagnostic_safe) FROM public.__diag_link_provenance WHERE link_id IN (113, 114)")"
 assert "reviewed / diagnostic_safe copiés tels quels (true)" "t|t" "$(q "SELECT concat_ws('|', reviewed, diagnostic_safe) FROM public.__diag_link_provenance WHERE link_id = 117")"
 assert "sources copiées telles quelles" t "$(q "SELECT sources = '[$(src filtre-a-air true)]'::jsonb FROM public.__diag_link_provenance WHERE link_id = 113")"
 assert "retour de la RPC" "{\"run_id\": $R2, \"retired_count\": 0, \"conflict_count\": 0, \"projected_count\": 3}" "$out"
@@ -278,6 +296,8 @@ for case in "sources vides|[]" \
   out=$(sr "$(apply_sql "$(payload 1 "$(proj 113 filtre-a-air "${case#*|}")" '')")"); rc=$?
   assert_err "D7 : ${case%%|*}" "__diag_link_provenance_sources_raw_proven" "$out" "$rc"
 done
+out=$(sr "$(apply_sql "$(payload 2 "$P113,$(PROJ_REVIEWED=false proj 114 filtre-a-carburant)" '')")"); rc=$?
+assert_err "ADR-115 D3 : relation non relue (reviewed false)" "__diag_link_provenance_reviewed" "$out" "$rc"
 out=$(sr "$(apply_sql "$(payload 1 '' "$(conf filtre-a-air 0 perte_puissance_filtration raison_inventee)")")"); rc=$?
 assert_err "raison hors vocabulaire" "__diag_projection_conflicts_reason_check" "$out" "$rc"
 out=$(sr "$(apply_sql "$(payload 1 '' "$(conf filtre-a-air -1 perte_puissance_filtration duplicate_relation)")")"); rc=$?
@@ -333,6 +353,9 @@ out=$(q "INSERT INTO public.__diag_projection_runs (run_key, triggered_by, runti
 assert_err "run applied avec error" "__diag_projection_runs_error_iff_failed" "$out" "$rc"
 out=$(q "UPDATE public.__diag_link_provenance SET retired_at = now() WHERE retired_at IS NULL;" 2>&1); rc=$?
 assert_err "retired_at sans retired_run_id" "__diag_link_provenance_retired_pair" "$out" "$rc"
+# NOT VALID ne dispense que les lignes antérieures : toute écriture est contrôlée.
+out=$(q "UPDATE public.__diag_link_provenance SET reviewed = false WHERE retired_at IS NULL;" 2>&1); rc=$?
+assert_err "ligne repassée à reviewed false" "__diag_link_provenance_reviewed" "$out" "$rc"
 
 echo
 echo "9. Verrous : consultatif pendant le run, FOR SHARE sur les liens projetés"
@@ -414,13 +437,72 @@ assert "service_role toujours sans écriture" f "$(q "SELECT bool_or(has_table_p
 assert "anon EXECUTE apply toujours refusé"          REFUSE_FONCTION "$(probe anon "$EMPTY")"
 assert "anon EXECUTE record_failure toujours refusé" REFUSE_FONCTION "$(probe anon "$FAIL_PROBE")"
 assert "historique conservé après rejeu" "$total_before" "$(q "SELECT count(*) FROM public.__diag_link_provenance")"
+# Les deux contraintes d'ADR-115, leur nom et leur définition, une seule fois chacune.
+REVIEW_CHECKS="SELECT string_agg(conname || ':' || convalidated || ':' || (pg_get_constraintdef(oid) LIKE '%''not_reviewed''%'), ',' ORDER BY conname) FROM pg_constraint WHERE contype = 'c' AND conname IN ('__diag_projection_conflicts_reason_check', '__diag_link_provenance_reviewed')"
+docker exec -i "$CT" psql -U postgres -d test -v ON_ERROR_STOP=1 -q -1 -f - < "$REVIEW_MIGRATION" >/dev/null 2>&1; rc=$?
+assert "rejeu de 20261012 sans erreur" 0 "$rc"
+assert "contraintes ADR-115 après rejeu" "__diag_link_provenance_reviewed:false:false,__diag_projection_conflicts_reason_check:false:true" "$(q "$REVIEW_CHECKS")"
+assert "historique conservé après rejeu de 20261012" "$total_before" "$(q "SELECT count(*) FROM public.__diag_link_provenance")"
 
 echo
-echo "12. Rollback : le .down.sql retire les 5 objets, la migration se rejoue ensuite"
+echo "11b. Garde finale de 20261012 : fail-closed, rien n'est appliqué"
+# review_mutant <libellé> <sed> <fragment attendu> : variante de 20261012 rejouée ;
+# elle doit échouer sur la garde et laisser les contraintes en place.
+review_mutant() {
+  local mutant="$TMP/mutant.sql" out rc
+  sed "$2" "$REVIEW_MIGRATION" > "$mutant"
+  if cmp -s "$mutant" "$REVIEW_MIGRATION"; then echo "  FAIL  $1 → la mutation n'a rien changé"; fail=$((fail+1)); return; fi
+  out=$(docker exec -i "$CT" psql -U postgres -d test -v ON_ERROR_STOP=1 -q -1 -f - < "$mutant" 2>&1); rc=$?
+  assert_err "$1" "$3" "$out" "$rc"
+  assert "$1 : contraintes intactes" "__diag_link_provenance_reviewed:false:false,__diag_projection_conflicts_reason_check:false:true" "$(q "$REVIEW_CHECKS")"
+}
+review_mutant "CHECK (reviewed) posé sous un autre nom" \
+  's/ADD CONSTRAINT __diag_link_provenance_reviewed CHECK/ADD CONSTRAINT __diag_link_provenance_is_reviewed CHECK/' \
+  "CHECK de __diag_link_provenance.reviewed inattendu"
+review_mutant "ensemble des raisons élargi (raison inventée)" \
+  "/^    'cause_slug_mismatch', 'vehicle_scope_unsupported',\$/{n;s/^    'not_reviewed')) NOT VALID;/    'not_reviewed', 'raison_inventee')) NOT VALID;/}" \
+  "CHECK de __diag_projection_conflicts.reason inattendu"
+# CHECK des raisons présent en base sous un autre nom : le DROP IF EXISTS ne le
+# trouve pas, l'ancien ensemble resterait en vigueur à côté du nouveau.
+q "ALTER TABLE public.__diag_projection_conflicts RENAME CONSTRAINT __diag_projection_conflicts_reason_check TO __diag_projection_conflicts_reason_check1;" >/dev/null
+out=$(docker exec -i "$CT" psql -U postgres -d test -v ON_ERROR_STOP=1 -q -1 -f - < "$REVIEW_MIGRATION" 2>&1); rc=$?
+assert_err "CHECK des raisons en base sous un autre nom" "CHECK de __diag_projection_conflicts.reason inattendu" "$out" "$rc"
+assert "CHECK sous un autre nom : rien appliqué" "__diag_projection_conflicts_reason_check1" "$(q "SELECT string_agg(conname, ',') FROM pg_constraint WHERE conrelid = 'public.__diag_projection_conflicts'::regclass AND conname LIKE '%reason%'")"
+q "ALTER TABLE public.__diag_projection_conflicts RENAME CONSTRAINT __diag_projection_conflicts_reason_check1 TO __diag_projection_conflicts_reason_check;" >/dev/null
+# Lignes antérieures : NOT VALID ne les contrôle pas, la garde si. Contrainte retirée
+# à la main, ligne non relue écrite, puis rejeu : refusé.
+q "ALTER TABLE public.__diag_link_provenance DROP CONSTRAINT __diag_link_provenance_reviewed; UPDATE public.__diag_link_provenance SET reviewed = false WHERE id = (SELECT min(id) FROM public.__diag_link_provenance);" >/dev/null
+out=$(docker exec -i "$CT" psql -U postgres -d test -v ON_ERROR_STOP=1 -q -1 -f - < "$REVIEW_MIGRATION" 2>&1); rc=$?
+assert_err "ligne existante reviewed false" "porte des lignes reviewed = false" "$out" "$rc"
+assert "contrainte toujours absente (rien appliqué)" 0 "$(q "SELECT count(*) FROM pg_constraint WHERE conname = '__diag_link_provenance_reviewed'")"
+q "UPDATE public.__diag_link_provenance SET reviewed = true WHERE NOT reviewed;" >/dev/null
+q "ALTER TABLE public.__diag_projection_conflicts DROP CONSTRAINT __diag_projection_conflicts_reason_check; INSERT INTO public.__diag_projection_conflicts (run_id, wiki_path, gamme_slug, relation_index, reason, detail) SELECT max(id), 'w', 'g', 0, 'raison_inventee', '{}' FROM public.__diag_projection_runs;" >/dev/null
+out=$(docker exec -i "$CT" psql -U postgres -d test -v ON_ERROR_STOP=1 -q -1 -f - < "$REVIEW_MIGRATION" 2>&1); rc=$?
+assert_err "ligne existante à raison hors vocabulaire" "raison hors vocabulaire" "$out" "$rc"
+q "DELETE FROM public.__diag_projection_conflicts WHERE reason = 'raison_inventee';" >/dev/null
+docker exec -i "$CT" psql -U postgres -d test -v ON_ERROR_STOP=1 -q -1 -f - < "$REVIEW_MIGRATION" >/dev/null 2>&1; rc=$?
+assert "lignes corrigées : 20261012 rejouée" 0 "$rc"
+assert "contraintes ADR-115 rétablies" "__diag_link_provenance_reviewed:false:false,__diag_projection_conflicts_reason_check:false:true" "$(q "$REVIEW_CHECKS")"
+
+echo
+echo "12. Rollback : 20261012 puis 20261010, puis les deux se rejouent"
+# Les rollbacks tournent SANS -1 (comme à la main) : ils doivent porter leur propre
+# transaction, sinon les SET LOCAL ne bornent rien et les ALTER / DROP ne sont pas
+# atomiques.
+for d in "$REVIEW_DOWN" "$DOWN"; do
+  assert "rollback ${d##*/} auto-transactionnel (BEGIN / SET LOCAL / COMMIT)" "1|1|2" "$(printf '%s|%s|%s' "$(grep -c '^BEGIN;$' "$d")" "$(grep -c '^COMMIT;$' "$d")" "$(grep -c '^SET LOCAL ' "$d")")"
+done
+# Un conflit not_reviewed déjà écrit (section 2) : le CHECK rétabli le refuse.
+out=$(docker exec -i "$CT" psql -U postgres -d test -v ON_ERROR_STOP=1 -q -f - < "$REVIEW_DOWN" 2>&1); rc=$?
+assert_err "rollback 20261012 refusé tant qu'un conflit not_reviewed existe" "is violated by some row" "$out" "$rc"
+assert "rollback 20261012 refusé : rien défait" "__diag_link_provenance_reviewed:false:false,__diag_projection_conflicts_reason_check:false:true" "$(q "$REVIEW_CHECKS")"
+q "DELETE FROM public.__diag_projection_conflicts WHERE reason = 'not_reviewed';" >/dev/null
+docker exec -i "$CT" psql -U postgres -d test -v ON_ERROR_STOP=1 -q -f - < "$REVIEW_DOWN" >/dev/null 2>&1; rc=$?
+assert "rollback 20261012 sans erreur" 0 "$rc"
+assert "CHECK des raisons de 20261010 rétabli, validé ; CHECK (reviewed) retiré" "__diag_projection_conflicts_reason_check:true:false" "$(q "$REVIEW_CHECKS")"
+out=$(sr "$(apply_sql "$(payload 1 '' "$(conf filtre-a-huile 0 perte_puissance_filtration not_reviewed)")")"); rc=$?
+assert_err "not_reviewed refusé après rollback" "__diag_projection_conflicts_reason_check" "$out" "$rc"
 links_before=$(q "SELECT count(*) FROM public.__diag_symptom_cause_link")
-# Le rollback tourne SANS -1 (comme à la main) : il doit porter sa propre transaction,
-# sinon les SET LOCAL ne bornent rien et les DROP ne sont pas atomiques.
-assert "rollback auto-transactionnel (BEGIN / SET LOCAL / COMMIT)" "1|1|2" "$(printf '%s|%s|%s' "$(grep -c '^BEGIN;$' "$DOWN")" "$(grep -c '^COMMIT;$' "$DOWN")" "$(grep -c '^SET LOCAL ' "$DOWN")")"
 docker exec -i "$CT" psql -U postgres -d test -v ON_ERROR_STOP=1 -q -f - < "$DOWN" >/dev/null 2>&1; rc=$?
 assert "rollback sans erreur" 0 "$rc"
 assert "0 table de provenance restante" 0 "$(q "SELECT count(*) FROM pg_tables WHERE schemaname = 'public' AND tablename IN ('__diag_projection_runs', '__diag_projection_conflicts', '__diag_link_provenance')")"
@@ -429,6 +511,9 @@ assert "liens du moteur intacts" "$links_before" "$(q "SELECT count(*) FROM publ
 docker exec -i "$CT" psql -U postgres -d test -v ON_ERROR_STOP=1 -q -1 -f - < "$MIGRATION" >/dev/null 2>&1; rc=$?
 assert "migration rejouée après rollback" 0 "$rc"
 assert "anon EXECUTE refusé après rejeu" REFUSE_FONCTION "$(probe anon "$EMPTY")"
+docker exec -i "$CT" psql -U postgres -d test -v ON_ERROR_STOP=1 -q -1 -f - < "$REVIEW_MIGRATION" >/dev/null 2>&1; rc=$?
+assert "20261012 rejouée après rollback" 0 "$rc"
+assert "contraintes ADR-115 après rejeu" "__diag_link_provenance_reviewed:false:false,__diag_projection_conflicts_reason_check:false:true" "$(q "$REVIEW_CHECKS")"
 
 echo
 echo "Résultat : $pass PASS, $fail FAIL"

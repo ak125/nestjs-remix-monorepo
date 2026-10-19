@@ -14,16 +14,31 @@ export interface LiveExecutiveKpi {
   certified: boolean;
 }
 
+/** Cause interne de lecture, sans message brut de la source. */
+export type KpiReadFailure =
+  | 'read_failed'
+  | 'access_denied'
+  | 'incomplete'
+  | 'completeness_unverified';
+
 /**
  * Un indicateur mesuré + sa valeur sur la fenêtre précédente de même durée.
  * Alimente le rapport de département (Vue 5, champ « Évolution ») sans rien
  * persister : la fenêtre précédente est relue en base à chaque requête.
- * `previous_value` null = pas de comparaison possible (lecture en échec), jamais 0.
+ * `previous_value` null = pas de comparaison possible (lecture en échec ou
+ * échantillon précédent vide), jamais un zéro supposé.
  */
 export interface LiveKpiMeasure {
   kpi: LiveExecutiveKpi;
   window_days: number;
   previous_value: number | null;
+  /** Sessions exploitables du Diagnostic ; absent si la lecture est impossible.
+   * Interne au calcul du rapport : zéro ne permet pas d'évaluer la performance.
+   */
+  sample_size?: number;
+  /** Causes propres à chaque fenêtre ; projetées en texte sûr par le rapport. */
+  read_failure?: KpiReadFailure;
+  previous_read_failure?: KpiReadFailure;
   /** Sens d'amélioration : `higher` = une hausse de `value` est un progrès. */
   better: 'higher' | 'lower';
   /**

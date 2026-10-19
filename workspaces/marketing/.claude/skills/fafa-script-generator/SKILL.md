@@ -40,6 +40,10 @@ description: Use when transforming a video brief (gamme, symptom, format, URL ci
   "video_id": "fafa-vanne-egr-001",
   "format": "ne-change-pas-trop-vite",
   "hook": "Perte de puissance et fumée noire ? Ne change pas ta vanne EGR trop vite.",
+  "hook_variants": [
+    "Fumée noire et perte de puissance : la vanne EGR n'est pas la seule piste.",
+    "Avant d'acheter une vanne EGR, vérifie ces trois points."
+  ],
   "script_voice": "Oui, elle peut être en cause. Mais un filtre à air bouché, un débitmètre fatigué ou une durite percée peuvent donner des symptômes proches...",
   "screen_text": ["Perte de puissance", "Fumée noire", "Vérifie avant d'acheter"],
   "cta": "Sur AutoMecanik, sélectionne ton véhicule pour voir les pièces compatibles.",
@@ -55,12 +59,15 @@ description: Use when transforming a video brief (gamme, symptom, format, URL ci
 ## Règles strictes
 
 - ✅ Hook <80 chars, accroche émotionnelle non agressive
+- ✅ Trois accroches préparées : `hook` (A) et `hook_variants` (B, C), même `script_voice`, même CTA, même disclaimer (forme du pilote `scripts/draft/fafa-plaquettes-frein-001/script.json`)
+- ✅ Sélection humaine : l'owner choisit l'accroche rendue (copiée dans `compositionProps.hook`). Ce choix n'est pas un test et ne se présente jamais comme tel ; une comparaison de variantes exige une mesure certifiée (`experimentReport`, `backend/src/modules/marketing/services/marketing-measurement.ts`, au moins 30 observations par groupe), sinon résultat UNKNOWN
 - ✅ `script_voice` adapté à la durée cible du format (G4 Platform ±10%)
 - ✅ `screen_text` 3-5 items max (lisibilité 9:16 mobile)
 - ✅ CTA pédagogique avec verbe « vérifie » / « sélectionne » / « comprends »
 - ✅ Disclaimer présent (G2 Safety + G6 Visual Honesty)
 - ❌ Aucun prix, code promo, urgence artificielle
 - ❌ Aucune promesse absolue (« certain », « garanti »)
+- ❌ Aucun essai, client, atelier, témoignage ni expérience vécue inventés : Fafa est une IA assumée (cf. `.claude/prompts/_shared/editorial-review.md` §8 ; depuis ce workspace : `../../.claude/prompts/_shared/editorial-review.md`)
 - ❌ Si dérivé d'un pattern, cosine cible <0.5 vs script source (G5 Reuse Risk)
 - ❌ Aucune référence à la source d'inspiration dans le script final (anonymisation)
 

@@ -329,15 +329,18 @@ export class GammeResponseBuilderService {
       );
     }
 
+    // Guide d'achat
+    const guideAchat = this.buildGuideAchat(blogData, pgAlias);
+
     // ── Liens vers les guides d'achat (ADR-103 D5) ──
-    // Ordre de rendu : « Liens utiles » (conseils toujours lié, puis guide) →
+    // Ordre de rendu : « Liens utiles » (conseils si servi, puis guide) →
     // contenu éditorial → blocs de maillage. Les liens servis s'accumulent.
+    // Le lien conseils n'est servi que via guideAchat.link (conseilsHref côté
+    // front) : sans lui, le guide reste le seul accès à la page conseils.
     const guideLinkSnapshot = await this.guideLinkPolicy.getSnapshot();
     const guideLinkCtx = {
       currentPath: `/pieces/${pgAlias}-${pgIdNum}.html`,
-      linkedPaths: new Set<string>(
-        pgAlias ? [`/blog-pieces-auto/conseils/${pgAlias}`] : [],
-      ),
+      linkedPaths: new Set<string>(guideAchat?.link ? [guideAchat.link] : []),
     };
     const buyingGuideHref = pgAlias
       ? resolveGuideLink(pgAlias, guideLinkSnapshot, guideLinkCtx)
@@ -716,9 +719,6 @@ export class GammeResponseBuilderService {
         };
       },
     );
-
-    // Guide d'achat
-    const guideAchat = this.buildGuideAchat(blogData, pgAlias);
 
     // 🚀 LCP V9: Start reference lookup early (runs in parallel with buying guide)
     const referencePromise = this.referenceService

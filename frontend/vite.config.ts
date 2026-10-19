@@ -13,6 +13,26 @@ export default defineConfig({
     preserveSymlinks: true,
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react-router"],
   },
+  // RR8 scans no route entries by default. Discovering these shell/cockpit
+  // dependencies on the first request invalidates the optimizer graph during
+  // hydration. Pre-bundle them at startup; this option only affects DEV.
+  optimizeDeps: {
+    include: [
+      "@radix-ui/react-dropdown-menu",
+      "@radix-ui/react-slot",
+      "@radix-ui/react-tabs",
+      "@repo/cwv-taxonomy",
+      "@repo/registry",
+      "@sentry/react",
+      "class-variance-authority",
+      "clsx",
+      "lucide-react",
+      "sonner",
+      "tailwind-merge",
+      "web-vitals/attribution",
+      "zod",
+    ],
+  },
   // Proxy /img vers production pour les images Supabase en dev
   server: {
     proxy: {

@@ -24,6 +24,7 @@ import { MaintenanceIntelligenceEngine } from './engines/maintenance-intelligenc
 import { MaintenanceCalculatorService } from './services/maintenance-calculator.service';
 import { DiagnosticContentService } from './services/diagnostic-content.service';
 import { KgShadowService } from './services/kg-shadow.service';
+import { DiagnosticProvenanceService } from './services/diagnostic-provenance.service';
 // V1A.0 — Intent Resolution layer (composition pure)
 import { IntentClassifierService } from './services/intent-classifier.service';
 import { ActionRecommenderService } from './services/action-recommender.service';
@@ -49,6 +50,7 @@ import { DiagnosticResolutionPipelineService } from './services/diagnostic-resol
     MaintenanceCalculatorService,
     DiagnosticContentService,
     KgShadowService, // PR-E — shadow KG comparison (fire-and-forget)
+    DiagnosticProvenanceService, // WIKI provenance of the ranking (flags EXPOSE / PRIMARY)
     // V1A.0 — Intent Resolution layer
     IntentClassifierService,
     ActionRecommenderService,

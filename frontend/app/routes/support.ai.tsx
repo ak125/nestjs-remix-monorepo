@@ -74,18 +74,6 @@ interface CompleteAIAnalysis {
   };
 }
 
-interface _ContactTicket {
-  msg_id: string;
-  msg_cst_id: string;
-  msg_subject: string;
-  msg_content: string;
-  msg_date: string;
-  customer?: {
-    cst_name: string;
-    cst_mail: string;
-  };
-}
-
 export async function loader({ request }: LoaderFunctionArgs) {
   // Version simplifiée pour démo
   return {

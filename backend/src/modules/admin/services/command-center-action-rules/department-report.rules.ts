@@ -14,7 +14,7 @@
  *     (`observed_cause`, ex. motifs saisis à l'annulation), jamais devinée.
  */
 import type { CcDepartmentReport } from '@repo/registry';
-import type { LiveKpiMeasure } from './live-kpi';
+import type { KpiReadFailure, LiveKpiMeasure } from './live-kpi';
 import type { OwnerActionV2 } from './score-action';
 
 interface ReportDeptView {
@@ -22,6 +22,7 @@ interface ReportDeptView {
   label: string;
   priority: string | null;
   kpi_primary: string | null;
+  operating_mode?: 'human' | 'software' | 'hybrid';
 }
 
 type Score = CcDepartmentReport['score'];
@@ -29,6 +30,29 @@ type Risk = CcDepartmentReport['risk'];
 
 const OPERATING_MAP = '.spec/00-canon/ai-registry/agent-operating-map.yaml';
 const MAX_EVIDENCE = 5;
+const NO_SAMPLE = 'Aucune session exploitable sur la période.';
+
+/** Texte prédéfini : aucun message brut de base de données ne part au digest. */
+const READ_FAILURE: Record<KpiReadFailure, { cause: string; next: string }> = {
+  read_failed: {
+    cause: 'Lecture de la source en échec.',
+    next: 'Consulter les journaux du backend ([command-center-kpi]) et rétablir la lecture.',
+  },
+  access_denied: {
+    cause: 'Accès refusé à la source.',
+    next: 'Vérifier les droits de lecture prévus pour le rôle utilisé, sans élargissement automatique.',
+  },
+  incomplete: {
+    cause:
+      'Lecture incomplète : toutes les lignes attendues n’ont pas été reçues.',
+    next: 'Vérifier la complétude de la lecture avant tout calcul ; conserver le plafond actuel.',
+  },
+  completeness_unverified: {
+    cause:
+      'Complétude de la lecture non vérifiable : total absent ou incohérent.',
+    next: 'Vérifier le comptage exact et sa cohérence avec les lignes reçues avant tout calcul.',
+  },
+};
 
 const SCORE_BY_STATUS: Record<LiveKpiMeasure['kpi']['status'], Score> = {
   OK: 'FORT',
@@ -61,10 +85,61 @@ function toPriority(p: string | null): CcDepartmentReport['priority'] {
 
 function evolutionOf(m: LiveKpiMeasure): CcDepartmentReport['evolution'] {
   const { value } = m.kpi;
-  if (value == null || m.previous_value == null) return 'INCONNUE';
+  if (value == null || m.previous_value == null || m.sample_size === 0)
+    return 'INCONNUE';
   if (value === m.previous_value) return 'STABLE';
   const rose = value > m.previous_value;
   return rose === (m.better === 'higher') ? 'MIEUX' : 'PIRE';
+}
+
+/** Explique le verdict du producteur, sans utiliser le motif d’une action. */
+function scoreReason(m: LiveKpiMeasure | undefined, declared: boolean): string {
+  if (!m)
+    return declared
+      ? 'Score non mesuré : aucun producteur branché.'
+      : 'Score non mesuré : aucun KPI primaire déclaré.';
+  if (m.kpi.value == null)
+    return `Score non mesuré : ${
+      m.read_failure
+        ? READ_FAILURE[m.read_failure].cause
+        : 'source illisible ou données insuffisantes pour évaluer le KPI.'
+    }`;
+  const noTarget =
+    m.kpi.id === 'pages_generating_atc' || m.kpi.id === 'diagnostic_to_product';
+  const targetNote = noTarget
+    ? ' Aucune cible définie ; sa validation relève de l’owner.'
+    : '';
+  if (m.sample_size === 0)
+    return `${NO_SAMPLE} Performance non évaluée.${targetNote}`;
+  if (m.kpi.status === 'UNKNOWN')
+    return `Performance non évaluée : la mesure ne dispose pas d’un critère de réussite qualifié.${targetNote}`;
+  const explanations: Record<
+    string,
+    Partial<Record<LiveKpiMeasure['kpi']['status'], string>>
+  > = {
+    payments_kept: {
+      CRITICAL:
+        'Critique : aucun paiement gardé sur la période selon les statuts de commande.',
+      WARNING:
+        'Moyen : des paiements sont gardés, mais des annulations après paiement sont relevées.',
+      OK: 'Fort : des paiements sont gardés et aucune annulation après paiement n’est relevée.',
+    },
+    metric_reliability: {
+      CRITICAL: 'Critique : aucun contrôle de fiabilité réussi sur la période.',
+      WARNING:
+        'Moyen : certains contrôles de fiabilité réussissent, mais la mesure reste non certifiée.',
+      OK: 'Fort : le verdict Data certifie la fiabilité de la mesure des commandes.',
+    },
+    pages_generating_atc: {
+      CRITICAL:
+        'Critique : aucune page SEO n’a généré d’ajout au panier sur la période.',
+    },
+    diagnostic_to_product: {
+      CRITICAL:
+        'Critique : aucune session exploitable du diagnostic n’a ensuite vu de produit.',
+    },
+  };
+  return `${explanations[m.kpi.id]?.[m.kpi.status] ?? `Score issu du statut ${m.kpi.status} du KPI mesuré.`}${targetNote}`;
 }
 
 export function buildDepartmentReports(input: {
@@ -81,7 +156,13 @@ export function buildDepartmentReports(input: {
     const top = open[0];
     const m = d.kpi_primary ? measureById.get(d.kpi_primary) : undefined;
     const measured = m != null && m.kpi.value != null;
+    const noSample = measured && m.sample_size === 0;
     const kpiName = d.kpi_primary ?? 'non déclaré';
+    const readFailure =
+      !measured && m?.read_failure ? READ_FAILURE[m.read_failure] : undefined;
+    const previousFailure = m?.previous_read_failure
+      ? READ_FAILURE[m.previous_read_failure]
+      : undefined;
 
     const kpi: CcDepartmentReport['kpi'] = {
       id: d.kpi_primary,
@@ -100,7 +181,16 @@ export function buildDepartmentReports(input: {
       ...(measured
         ? [
             `${m.kpi.id} = ${m.kpi.value}${m.kpi.unit ?? ''} (base, ${m.window_days} j)`,
+            ...(noSample ? [NO_SAMPLE] : []),
             ...(m.observed_cause ? [m.observed_cause] : []),
+          ]
+        : []),
+      ...(readFailure
+        ? [`Période courante : ${readFailure.cause} ${readFailure.next}`]
+        : []),
+      ...(previousFailure
+        ? [
+            `Période précédente : ${previousFailure.cause} ${previousFailure.next}`,
           ]
         : []),
       ...(top?.evidence ?? []),
@@ -117,6 +207,7 @@ export function buildDepartmentReports(input: {
       },
       kpi,
       score,
+      score_reason: scoreReason(m, d.kpi_primary != null),
       evolution: measured ? evolutionOf(m) : ('INCONNUE' as const),
       evidence: dedup.length ? dedup : [`${OPERATING_MAP}#${d.id}`],
       open_action_ids: open.map((a) => a.id),
@@ -131,6 +222,18 @@ export function buildDepartmentReports(input: {
         risk: toRisk(top.risk),
         owner_go_required: top.owner_go_required,
         next_evidence: top.next_step,
+      };
+    }
+    if (!d.kpi_primary && d.operating_mode === 'human') {
+      return {
+        ...base,
+        gap: "Responsabilité humaine sans KPI déclaré ; procédure et preuve d'activité à qualifier",
+        probable_cause: null,
+        decision: 'IMPROVE',
+        risk: 'FAIBLE',
+        owner_go_required: true,
+        next_evidence:
+          "Renseigner ou vérifier dans la fiche le responsable, la procédure et la preuve d'activité attendue.",
       };
     }
     if (!d.kpi_primary) {
@@ -149,17 +252,44 @@ export function buildDepartmentReports(input: {
       return {
         ...base,
         gap: m
-          ? `KPI « ${kpiName} » illisible : la source n'a pas répondu.`
+          ? `KPI « ${kpiName} » illisible : ${readFailure?.cause ?? "la source n'a pas répondu."}`
           : `KPI « ${kpiName} » non mesuré : aucun producteur branché.`,
         probable_cause: m
-          ? 'Lecture de la source en échec (journaux du backend, préfixe [command-center-kpi]).'
+          ? (readFailure?.cause ??
+            'Lecture de la source en échec (journaux du backend, préfixe [command-center-kpi]).')
           : null,
         decision: 'IMPROVE',
         risk: 'FAIBLE',
         owner_go_required: false,
         next_evidence: m
-          ? `Rétablir la lecture de « ${kpiName} ».`
+          ? (readFailure?.next ?? `Rétablir la lecture de « ${kpiName} ».`)
           : `Brancher un producteur en lecture seule pour « ${kpiName} ».`,
+      };
+    }
+    if (noSample) {
+      return {
+        ...base,
+        gap: NO_SAMPLE,
+        probable_cause: null,
+        decision: 'IMPROVE',
+        risk: 'FAIBLE',
+        owner_go_required: false,
+        next_evidence:
+          'Vérifier la collecte et obtenir une période avec des sessions exploitables.',
+      };
+    }
+    // NON_MESURE porte sur le score : la valeur reste MESURE lorsqu'une lecture
+    // existe, mais qu'aucun critère ne permet d'en qualifier la performance.
+    if (score === 'NON_MESURE') {
+      return {
+        ...base,
+        gap: `Performance non évaluée pour « ${m.kpi.label} » : critère de réussite non qualifié.`,
+        probable_cause: m.observed_cause ?? null,
+        decision: 'IMPROVE',
+        risk: 'FAIBLE',
+        owner_go_required: true,
+        next_evidence:
+          'Faire définir ou valider une cible ou un critère de réussite par l’owner avant de qualifier la performance.',
       };
     }
     if (score !== 'FORT') {

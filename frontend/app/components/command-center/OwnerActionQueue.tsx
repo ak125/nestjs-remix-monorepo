@@ -8,8 +8,7 @@
  * collapsible table (URL · page kind · impressions · clicks · CTR).
  * « feu vert owner » = `owner_go_required`, declared by the rule (STOP zone or owner flag).
  */
-import { useState } from "react";
-import { type CommandCenterResponse } from "@repo/registry";
+import { type CommandCenterResponseV2 } from "@repo/registry";
 import {
   Target,
   ArrowRight,
@@ -21,11 +20,12 @@ import {
   ChevronRight,
   Hand,
 } from "lucide-react";
+import { useState } from "react";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 
-type Action = CommandCenterResponse["action_queue"][number];
+type Action = CommandCenterResponseV2["action_queue"][number];
 
 const TYPE_VARIANT: Record<
   Action["action_type"],
@@ -51,7 +51,7 @@ const TYPE_ICON: Record<Action["action_type"], typeof TrendingUp> = {
 
 const PRUDENCE_THRESHOLD = 70; // data_confidence below this → cautious
 
-export function OwnerActionQueue({ data }: { data: CommandCenterResponse }) {
+export function OwnerActionQueue({ data }: { data: CommandCenterResponseV2 }) {
   const actions = data.action_queue; // already scored + sorted server-side
   const [openIds, setOpenIds] = useState<Set<string>>(new Set());
   const toggle = (id: string) =>

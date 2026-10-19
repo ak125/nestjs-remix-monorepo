@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CacheService } from '@cache/cache.service';
 import { AdminJobHealthService } from './admin-job-health.service';
 import type { JobHealthRow } from './admin-job-health.service';
@@ -48,8 +48,6 @@ export interface HealthOverview {
 
 @Injectable()
 export class AdminHealthService {
-  private readonly logger = new Logger(AdminHealthService.name);
-
   constructor(
     private readonly cacheService: CacheService,
     private readonly jobHealthService: AdminJobHealthService,

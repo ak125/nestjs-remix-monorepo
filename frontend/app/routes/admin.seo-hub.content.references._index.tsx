@@ -84,14 +84,6 @@ interface Reference {
   updatedAt: string;
 }
 
-interface LoaderData {
-  references: Reference[];
-  drafts: Reference[];
-  total: number;
-  error: string | null;
-  authError?: boolean;
-}
-
 export const meta: MetaFunction = () =>
   createNoIndexMeta("Références SEO - Admin");
 
