@@ -18,6 +18,7 @@ import { Job, Queue } from 'bull';
 import {
   AGENTIC_QUEUE_NAME,
   AGENTIC_DEFAULTS,
+  GOAL_REGISTRY,
 } from '../../modules/agentic-engine/constants/agentic.constants';
 import { AgenticDataService } from '../../modules/agentic-engine/services/agentic-data.service';
 import { EvidenceLedgerService } from '../../modules/agentic-engine/services/evidence-ledger.service';
@@ -308,8 +309,6 @@ export class AgenticProcessor {
     }
 
     // Prepare apply payload (what would be written, where)
-    const { GOAL_REGISTRY } =
-      await import('../../modules/agentic-engine/constants/agentic.constants');
     const goalEntry =
       GOAL_REGISTRY[run.goal_type as keyof typeof GOAL_REGISTRY];
     const targetTables = goalEntry?.targetTables ?? [];

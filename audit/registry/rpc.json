@@ -6900,6 +6900,89 @@
         },
         {
           "mode": "IN",
+          "name": "p_chunk_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
+          "name": "p_supplier",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_operator",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_rows",
+          "type": "JSONB"
+        }
+      ],
+      "definedInMigrations": [
+        "20261019_pricing_deactivate_chunk.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.pricing_deactivate_chunk",
+      "language": "plpgsql",
+      "name": "pricing_deactivate_chunk",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "JSONB",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public"
+      ],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_batch_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
+          "name": "p_supplier",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20261019_pricing_deactivate_chunk.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.pricing_deactivate_rollback",
+      "language": "plpgsql",
+      "name": "pricing_deactivate_rollback",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "JSONB",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public"
+      ],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_batch_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
           "name": "p_supplier",
           "type": "TEXT"
         }
