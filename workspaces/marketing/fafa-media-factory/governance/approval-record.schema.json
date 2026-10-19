@@ -7,6 +7,7 @@
   "additionalProperties": false,
   "required": ["video_id", "approval", "gate_results", "history"],
   "properties": {
+    "revision": { "type": "integer", "minimum": 0, "description": "Révision du dossier; toute correction prépare une révision supérieure et remet les approbations à false." },
     "video_id": {
       "type": "string",
       "pattern": "^[a-z0-9-]+$"
@@ -38,6 +39,7 @@
       "additionalProperties": false,
       "required": ["content_approved", "render_approved", "publish_approved"],
       "properties": {
+        "render_sha256": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$", "description": "Empreinte exacte du rendu approuvé; aucune approbation transférable à un autre rendu." },
         "content_approved": {
           "type": "boolean",
           "description": "Script + claims + evidence + disclaimer valides (Skill fafa-brand-safety-reviewer verdict)."
@@ -86,8 +88,9 @@
         {
           "if": { "properties": { "render_approved": { "const": true } }, "required": ["render_approved"] },
           "then": {
-            "required": ["render_approved_by", "render_approved_at"],
+            "required": ["render_approved_by", "render_approved_at", "render_sha256"],
             "properties": {
+              "render_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
               "render_approved_by": { "type": "string", "minLength": 1, "description": "Audit trail non-null obligatoire si flag=true. Bypass interdit." },
               "render_approved_at": { "type": "string", "format": "date-time" }
             }

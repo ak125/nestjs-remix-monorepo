@@ -440,7 +440,7 @@
         "backend/src/modules/media-factory/types"
       ],
       "files_count": 23,
-      "loc_total": 4769,
+      "loc_total": 4826,
       "has_barrel": false
     },
     "merchant-center": {
@@ -700,8 +700,8 @@
         "scripts/wiki-generators",
         "scripts/wiki-generators/__tests__"
       ],
-      "files_count": 207,
-      "loc_total": 47221,
+      "files_count": 209,
+      "loc_total": 48186,
       "has_barrel": true
     },
     "search": {
@@ -958,7 +958,7 @@
         "tests/registry"
       ],
       "files_count": 303,
-      "loc_total": 57888,
+      "loc_total": 58064,
       "has_barrel": true
     },
     "upload": {
