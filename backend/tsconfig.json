@@ -1,6 +1,8 @@
 {
-  "extends": "@fafa/typescript-config/node-cjs-legacy.json",
+  "extends": "@fafa/typescript-config/base.json",
   "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "strict": false,

@@ -4,7 +4,16 @@ module.exports = {
   rootDir: '.',
   testRegex: '.*\\.test\\.ts$',
   transform: {
-    '^.+\\.(t|j)s$': 'ts-jest',
+    // Les options avec lesquelles ts-jest compile de toute façon : hors mode ESM,
+    // il remplace le NodeNext de tsconfig.json par CommonJS et Bundler (ts-jest
+    // 29.4, fixupCompilerOptionsForModuleKind). Sans elles, il garde le programme
+    // NodeNext construit au démarrage, en bâtit un second complet au premier
+    // fichier, puis un programme et un vérificateur de types neufs à chaque
+    // fichier de src/ : la CI dépassait ses 4 Go de tas.
+    '^.+\\.(t|j)s$': [
+      'ts-jest',
+      { tsconfig: { module: 'commonjs', moduleResolution: 'bundler' } },
+    ],
   },
   collectCoverageFrom: ['src/**/*.(t|j)s'],
   coverageDirectory: './coverage',
