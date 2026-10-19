@@ -261,7 +261,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 114841,
+      "loc_total": 115052,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 303,
-      "loc_total": 58064,
+      "files_count": 304,
+      "loc_total": 58294,
       "has_barrel": true
     },
     "upload": {
