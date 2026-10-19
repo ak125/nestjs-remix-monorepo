@@ -1,18 +1,11 @@
 /**
- * NewsletterCTA — CTA newsletter + contact/catalogue
+ * NewsletterCTA — CTA de fin de l'index blog : contact + catalogue.
+ * Aucun abonnement par e-mail n'existe (ni endpoint, ni envoi d'articles) :
+ * le bloc n'en propose pas.
  */
-import {
-  Mail,
-  Sparkles,
-  Clock,
-  Award,
-  MessageCircle,
-  ExternalLink,
-  ArrowRight,
-} from "lucide-react";
-import { Link, Form } from "react-router";
+import { MessageCircle, ExternalLink, ArrowRight } from "lucide-react";
+import { Link } from "react-router";
 import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
 
 export function NewsletterCTA() {
   return (
@@ -22,50 +15,13 @@ export function NewsletterCTA() {
 
       <div className="container mx-auto px-4 text-center relative z-10">
         <div className="max-w-3xl mx-auto">
-          <Mail className="w-16 h-16 mx-auto mb-6 animate-pulse" />
+          <MessageCircle className="w-16 h-16 mx-auto mb-6" />
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Ne manquez aucun article !
+            Besoin d'aide pour choisir une pièce ?
           </h2>
           <p className="text-xl mb-8 leading-relaxed text-white/90">
-            Rejoignez{" "}
-            <strong className="font-bold">
-              plus de 10 000 passionnés d'automobile
-            </strong>{" "}
-            et recevez nos meilleurs conseils, guides exclusifs et actualités
-            directement dans votre boîte mail.
+            Contactez nos experts ou parcourez le catalogue.
           </p>
-
-          <div className="max-w-md mx-auto mb-8">
-            <Form className="flex flex-col sm:flex-row gap-3">
-              <Input
-                type="email"
-                placeholder="Votre adresse email"
-                className="flex-1 bg-white text-gray-900 border-0 shadow-lg py-6 text-lg"
-                required
-              />
-              <Button
-                type="submit"
-                size="lg"
-                className="bg-gray-900 hover:bg-neutral-900 text-white px-8 py-6 text-lg font-bold shadow-2xl"
-              >
-                <Mail className="w-5 h-5 mr-2" />
-                Je m'abonne
-              </Button>
-            </Form>
-            <div className="flex items-center justify-center gap-6 mt-4 text-sm text-white/80">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4" />
-                Gratuit
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4" />1 email/semaine
-              </div>
-              <div className="flex items-center gap-2">
-                <Award className="w-4 h-4" />
-                Sans spam
-              </div>
-            </div>
-          </div>
 
           <div className="flex flex-col sm:flex-row gap-6 justify-center mt-8">
             <Link to="/contact">
