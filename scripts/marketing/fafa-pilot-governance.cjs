@@ -230,7 +230,7 @@ function validateRenderReview(review, relativePath, artifactPath, manifest, sour
       (manifest.approvalBinding !== undefined && manifest.approvalBinding?.boundSha256 !== hash)) throw new Error('RENDER_HASH_MISMATCH');
   const durationSecs = manifest.composition.durationSecs;
   const durationMs = durationSecs * 1000;
-  if (typeof durationSecs !== 'number' || !Number.isFinite(durationMs) || durationMs <= 0 || review.end_ms <= review.start_ms || review.end_ms > durationMs) throw new Error('REVIEW_INTERVAL');
+  if (typeof durationSecs !== 'number' || !Number.isFinite(durationMs) || durationMs <= 0 || review.end_ms <= review.start_ms || review.end_ms / 1000 > durationSecs) throw new Error('REVIEW_INTERVAL');
   let sourceBinding = { status: 'NOT_ASSESSED' };
   if (sourceFiles !== undefined) {
     const names = ['renderPayload', 'propsUsed'];

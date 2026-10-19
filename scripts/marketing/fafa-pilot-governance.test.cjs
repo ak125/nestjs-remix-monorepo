@@ -869,3 +869,13 @@ test('D18 inconsistent manifest binding cannot prepare a correction or mutate pr
     record, f.review, f.relativePath, f.artifact, f.manifest, f.sourceFiles), /RENDER_HASH_MISMATCH/);
   assert.equal(JSON.stringify(record), before);
 });
+
+test('D18 accepts the exact decimal millisecond boundary without extending it', (t) => {
+  const f = renderSourceFixture(t);
+  f.manifest.composition.durationSecs = 1.001;
+  f.review.end_ms = 1001;
+  const { validateRenderReview } = require('./fafa-pilot-governance.cjs');
+  assert.doesNotThrow(() => validateRenderReview(f.review, f.relativePath, f.artifact, f.manifest));
+  f.review.end_ms = 1002;
+  assert.throws(() => validateRenderReview(f.review, f.relativePath, f.artifact, f.manifest), /REVIEW_INTERVAL/);
+});
