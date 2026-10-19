@@ -49840,7 +49840,7 @@
         "backend/src/services/mail.service.ts"
       ],
       "kind": "controller",
-      "loc": 365,
+      "loc": 353,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/orders/controllers/order-actions.controller.ts",
       "risk": "high",
@@ -50171,10 +50171,12 @@
         "@database/services/supabase-base.service",
         "@repo/database-types",
         "backend/src/modules/orders/events/order.events.ts",
-        "backend/src/modules/orders/types/order.types.ts"
+        "backend/src/modules/orders/services/orders.service.ts",
+        "backend/src/modules/orders/types/order.types.ts",
+        "crypto"
       ],
       "kind": "service",
-      "loc": 763,
+      "loc": 756,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/orders/services/order-actions.service.ts",
       "risk": "high",
@@ -50296,7 +50298,8 @@
       "id": "backend/src/modules/orders/services/orders.service.ts",
       "importedBy": [
         "backend/src/modules/orders/controllers/orders.controller.ts",
-        "backend/src/modules/orders/orders.module.ts"
+        "backend/src/modules/orders/orders.module.ts",
+        "backend/src/modules/orders/services/order-actions.service.ts"
       ],
       "imports": [
         "@database/services/supabase-base.service",
@@ -70166,6 +70169,26 @@
       "loc": 43,
       "owner": "@ak125",
       "path": "backend/tests/unit/media-factory-flag.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/order-actions.cancel-order.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 147,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/order-actions.cancel-order.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -104911,11 +104934,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "90163175840e44796908f793612d86b090e6efec04ed7053e3966b0e0c211728",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "3fca5bfb5d01cd539565ccd137433f08181252e61ee410052a1a77639055654a",
+      "audit/registry/files.json": "5fc9594161a963fa74151652860f6ff16431688bcc9c3949e80dfec2cb24e1fb",
       "audit/registry/rpc.json": "68f3b21f7aa0b2ef7da9b488c657c3b6b5bdde0476bf7d617f1e346cc26b4449",
-      "audit/registry/runtime.json": "db3c1293c1d26fff96e8f10d130e6ef2238b96d3fbbc099f9e074be14c26bbbf"
+      "audit/registry/runtime.json": "34746b5b3a7db5643cec819eb4f5f4a649d3ce3672636efbf436b269673c73cc"
     },
-    "sotFingerprint": "257897a0966d"
+    "sotFingerprint": "1d2a97dc4652"
   },
   "runtime": [
     {
@@ -109351,7 +109374,9 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [],
+      "dependsOn": [
+        "runtime:backend/src/modules/orders/services/orders.service.ts"
+      ],
       "id": "runtime:backend/src/modules/orders/services/order-actions.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/orders/services/order-actions.service.ts",
