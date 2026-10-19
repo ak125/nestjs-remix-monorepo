@@ -22356,7 +22356,7 @@
         "backend/src/modules/pricing/services/pricing.repository.ts"
       ],
       "kind": "test",
-      "loc": 400,
+      "loc": 407,
       "owner": "__unassigned__",
       "path": "backend/src/modules/pricing/services/__tests__/price-deactivation.service.test.ts",
       "risk": "low",
@@ -22768,7 +22768,7 @@
         "backend/src/modules/pricing/services/pricing.repository.ts"
       ],
       "kind": "service",
-      "loc": 368,
+      "loc": 372,
       "owner": "__unassigned__",
       "path": "backend/src/modules/pricing/services/price-deactivation.service.ts",
       "risk": "low",
@@ -23025,7 +23025,7 @@
         "backend/src/modules/pricing/utils/normalize-supplier-reference.ts"
       ],
       "kind": "service",
-      "loc": 831,
+      "loc": 834,
       "owner": "__unassigned__",
       "path": "backend/src/modules/pricing/services/pricing.repository.ts",
       "risk": "low",

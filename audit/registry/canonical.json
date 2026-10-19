@@ -51427,7 +51427,7 @@
         "backend/src/modules/pricing/services/pricing.repository.ts"
       ],
       "kind": "test",
-      "loc": 400,
+      "loc": 407,
       "owner": "@ak125",
       "path": "backend/src/modules/pricing/services/__tests__/price-deactivation.service.test.ts",
       "risk": "high",
@@ -51857,7 +51857,7 @@
         "backend/src/modules/pricing/services/pricing.repository.ts"
       ],
       "kind": "service",
-      "loc": 368,
+      "loc": 372,
       "owner": "@ak125",
       "path": "backend/src/modules/pricing/services/price-deactivation.service.ts",
       "risk": "high",
@@ -52123,7 +52123,7 @@
         "backend/src/modules/pricing/utils/normalize-supplier-reference.ts"
       ],
       "kind": "service",
-      "loc": 831,
+      "loc": 834,
       "owner": "@ak125",
       "path": "backend/src/modules/pricing/services/pricing.repository.ts",
       "risk": "high",
@@ -105047,11 +105047,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "90163175840e44796908f793612d86b090e6efec04ed7053e3966b0e0c211728",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "de111f8379ddf74c7bbd7e04c0c7806f3d616a8ea94288ddbd1e46b8e8ad2427",
+      "audit/registry/files.json": "27326fbba5c78cee555e705526174273611e862a86e164dc8a10ad1db2947732",
       "audit/registry/rpc.json": "623f3a5150e1cc71cd79946d7a4128fd078d6493626b20f4b6c4c4ac64f06f6d",
       "audit/registry/runtime.json": "ea99f1c5d58436fbe0458e6b7c4d82dee91812babba25c62bbeac60e2d87a2d4"
     },
-    "sotFingerprint": "1ff61308210d"
+    "sotFingerprint": "ae5872afc9d0"
   },
   "runtime": [
     {
