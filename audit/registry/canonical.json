@@ -28453,7 +28453,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 23,
+      "loc": 31,
       "owner": "@ak125",
       "path": "backend/jest.command-center.config.cjs",
       "risk": "medium",
@@ -37137,7 +37137,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 452,
+      "loc": 466,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/command-center-reader.service.ts",
       "risk": "medium",
@@ -69962,7 +69962,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 668,
+      "loc": 735,
       "owner": "@ak125",
       "path": "backend/tests/unit/command-center-reader.service.test.ts",
       "risk": "medium",
@@ -105090,11 +105090,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "90163175840e44796908f793612d86b090e6efec04ed7053e3966b0e0c211728",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "d6e71aa5b2282f133ab20bc91ab336aa9dea216cf973e09664efac7d52924e10",
+      "audit/registry/files.json": "71a62b599e594d5e4912b6bee722f5c9b922e423eaf10ce9ad2865756e683d6b",
       "audit/registry/rpc.json": "623f3a5150e1cc71cd79946d7a4128fd078d6493626b20f4b6c4c4ac64f06f6d",
       "audit/registry/runtime.json": "1c48c29f0f586ff2777cd7731d06c14574cabc56bb24231f4a9dd3c9ddd2b10f"
     },
-    "sotFingerprint": "917fac821a1d"
+    "sotFingerprint": "cea03f51798b"
   },
   "runtime": [
     {
