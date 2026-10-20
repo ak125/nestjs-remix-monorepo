@@ -215,7 +215,9 @@ Pour chaque PR cassant un cycle :
 - [ ] `npm run build` + `npm test` passent
 - [ ] `npm run audit:baseline` — vérifier 0 régression ailleurs
 - [ ] Mettre à jour `.claude/knowledge/ops/cleanup-targets.md` (status → `done-pr#XXX`)
-- [ ] Après merge, refresh `audit-reports/phase0-baseline.json` (cycles -= N)
+- [ ] Après merge, si une mise à jour de baseline est décidée, suivre le
+  [contrôle avant refresh](safe-delete-procedure.md#4-batch--regression-gate) : mesurer
+  les deltas avant régénération, examiner le diff, ne pas ajuster les counts à la main.
 
 ## Références
 
