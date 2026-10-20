@@ -64,6 +64,7 @@ function makeService(): { service: OrdersService; callRpc: jest.Mock } {
     {} as never, // shippingCalculator
     { emit: jest.fn() } as never,
     {} as never, // mailService
+    {} as never, // piecePriceData
   );
   const callRpc = jest.fn();
   Object.defineProperty(service, 'callRpc', {
