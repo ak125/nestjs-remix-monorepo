@@ -75,6 +75,7 @@ function makeService(): {
     shippingCalculator as never,
     eventEmitter as never,
     {} as never, // mailService — guarded out (benign supabase → no customer email)
+    {} as never, // piecePriceData — unused on the createOrder path
   );
 
   // Override the protected readonly `supabase` + `callRpc` (same technique the

@@ -1652,3 +1652,11 @@ entries:
     owner: '@ak125/payments-team'
     sourceConfidence: high
     risk: high
+  # Consentement marketing client (ADR-036) : colonnes cst_marketing_consent_at /
+  # cst_marketing_consent_source sur ___xtr_customer (PR #1846). Couvre .sql +
+  # .down.sql. Glob exact : les migrations ne sont pas auto-couvertes.
+  - glob: backend/supabase/migrations/20261019_customer_marketing_consent*.sql
+    domain: D11
+    owner: '@ak125/auth-team'
+    sourceConfidence: high
+    risk: medium

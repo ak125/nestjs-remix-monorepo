@@ -282,7 +282,7 @@ export class AbandonedCartService implements OnModuleInit {
     const unsubscribeUrl = `${SITE_ORIGIN}/api/cart/unsubscribe/${record.recovery_token}`;
     const trackingPixelUrl = `${SITE_ORIGIN}/api/cart/track/open/${record.recovery_token}`;
 
-    await this.mailService.sendAbandonedCartEmail({
+    const delivery = await this.mailService.sendAbandonedCartEmail({
       to: record.cst_mail,
       firstName: record.cst_fname || 'Client',
       subject: subjects[step],
@@ -293,6 +293,14 @@ export class AbandonedCartService implements OnModuleInit {
       trackingPixelUrl,
       step,
     });
+
+    // Only a real send is recorded: a dry-run (no mail transport) leaves the
+    // step unsent and fails the job so the misconfiguration stays visible.
+    if (delivery !== 'sent') {
+      throw new Error(
+        `Email ${step} not sent for record ${record.id} (delivery=${delivery}) — step left unrecorded`,
+      );
+    }
 
     await this.abandonedCartData.updateEmailSent(record.id, step);
 
