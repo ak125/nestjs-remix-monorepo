@@ -12,14 +12,14 @@ owners: ['@ak125']
 domain: D11
 runtime_class: privileged
 llm_safe: false
-last_verified: '2026-10-19'
+last_verified: '2026-10-20'
 license: Internal - Automecanik
 compatibility: Designed for Claude Code in the AutoMecanik monorepo. Stack — Supabase/PostgreSQL (___xtr_order*, pieces*, pieces_price), Paybox redirect, Gmail SMTP. Privileged — creates a customer order, takes parts off sale and prepares a customer e-mail; each write needs the owner's nominative GO.
 tags: [orders, rupture, equivalence, supplement, oem, tecdoc, quarantine, customer-mail, commerce]
 argument-hint: "[order-id]"
 disable-model-invocation: true
 metadata:
-  version: "1.0"
+  version: "1.1"
   spec: agentskills.io/specification v1
 ---
 
@@ -27,8 +27,7 @@ metadata:
 
 Une commande payée dont la réf est en rupture chez le fournisseur se sauve en proposant au client
 l'équivalent disponible, même plus cher, au lieu de l'annuler « pas dispo ». Ce skill porte la
-procédure de l'owner (2026-10-18) et les seuls outils sûrs pour l'exécuter tant que l'application
-ne sait pas le faire elle-même.
+procédure de l'owner (2026-10-18) et, pour chaque écriture, le seul outil sûr.
 
 > **Règle cardinale `[CRITICAL]`** : aucun mail au client avant que l'owner ait validé **le texte
 > final, affiché en entier** dans la conversation. Un « envoie directement », « gère tout » ou
@@ -37,9 +36,9 @@ ne sait pas le faire elle-même.
 
 > **Zones STOP** (CLAUDE.md, invariant 9) : créer la commande de supplément, retirer des réfs de la
 > vente, toute écriture en base, l'envoi du mail. Chacune exige un GO nominatif de l'owner **pour
-> cette écriture-là**, donné après avoir vu le script rempli ou le texte final. « Annule tout »,
-> « pas besoin de me le montrer » ne valent pas GO. Ce skill décrit la procédure ; il ne lève
-> aucune zone STOP.
+> cette écriture-là**, donné après avoir vu le script rempli, les valeurs du formulaire ou le texte
+> final. « Annule tout », « pas besoin de me le montrer » ne valent pas GO. Ce skill décrit la
+> procédure ; il ne lève aucune zone STOP.
 
 ## Signaux d'alerte — s'arrêter
 
@@ -50,7 +49,9 @@ ne sait pas le faire elle-même.
 | « L'owner a dit "envoie directement" » | Pas sur CE texte. Montrer le texte final. |
 | « Je ne sais pas faire le lien de paiement, l'owner s'en chargera » | Le lien vient d'une commande enfant (§6). Pas de commande enfant, pas de lien. |
 | « Je passe `pri_dispo` à 0 » / « Je mets la marque en quarantaine » | Retrait = migration FROZEN + `piece_display` par réf, avec garde SEO (§4). |
-| « L'admin a un flux d'équivalence, je l'utilise » | Inutilisable (§Trous de l'application). |
+| « L'admin a un flux d'équivalence (statuts 91–94), je l'utilise » | Inutilisable (§Trous de l'application). Le supplément passe par le formulaire « Supplément après rupture » ou par le script, selon la sonde de §6. |
+| « La route de supplément est sur `main`, donc en ligne » | `main` = PREPROD ; PROD ne change qu'au tag. Seule la sonde de §6 sur PROD décide. |
+| « La route d'annulation admin est corrigée, j'annule par le bouton » | Elle envoie au client le mail automatique « Commande annulée », jamais validé, avant le remboursement. Annuler avec `supplement-cancel.sql` (§8). |
 | « Même réf OEM, donc compatible » | Indice seulement. Preuve = types véhicule communs + mêmes critères (§2). |
 | « Je commande l'équivalent chez le fournisseur tout de suite » | Seulement après paiement du supplément (§8). |
 | « Le client refuse, je supprime la commande de supplément » | Le journal l'interdit ; on l'annule par `cancel_order_atomic`, et l'annulation ne coupe pas le lien (§8). |
@@ -59,9 +60,9 @@ ne sait pas le faire elle-même.
 
 ## Procédure (ordre imposé)
 
-Lectures en base : SELECT seulement, dans une session READ ONLY. Données client (nom, e-mail, id
-de commande, `cst_id`, adresse) : scratchpad uniquement, jamais dans un fichier commité, une PR ou
-un commit (dépôt public).
+Lectures en base : SELECT, ou l'essai à blanc du script de §6, dans une session READ ONLY.
+Données client (nom, e-mail, id de commande, `cst_id`, adresse) : scratchpad uniquement, jamais
+dans un fichier commité, une PR ou un commit (dépôt public).
 
 ### 1. Constater la rupture
 
@@ -87,8 +88,10 @@ qu'annonce le fournisseur de la réf (`pieces_price.pri_frs`) ; la base ne la co
      (essieu, côté, pression, capacité…).
 
    Une réf « large » se scinde : un équivalent ne couvre souvent qu'une partie de ses véhicules.
-4. Unité de vente (`pieces_price.pri_qte_vente`) : si l'une se vend par paire et l'autre à
-   l'unité, la quantité porte sur les pièces physiques.
+4. Unité de vente : les prix de `pieces_price` sont à la pièce, et `pri_qte_vente` est le
+   multiple de vente (une réf vendue par paire se commande par 2). La quantité du supplément
+   compte les pièces physiques — celle de la ligne en rupture quand l'équivalent la remplace
+   pièce pour pièce — et reste un multiple du `pri_qte_vente` de l'équivalent.
 
 ### 3. Interroger la dispo de chaque correspondance chez les fournisseurs
 
@@ -154,24 +157,64 @@ l'écriture a lieu quand l'owner la fusionne puis lance le workflow.
 
 ### 6. Commande de supplément et lien de paiement
 
-L'application ne fabrique aucun lien de supplément. Son lien de paiement relit le total d'une
-commande **existante et non payée**, et refuse une commande payée. Le supplément passe donc par
-une **commande enfant** de la commande d'origine.
+Le lien de paiement du site relit le total d'une commande **existante et non payée**, et refuse
+une commande payée. Le supplément passe donc par une **commande enfant** (`ord_parent` = commande
+d'origine), créée avant l'envoi du mail de §7, qui porte son lien.
 
 - **Montant** = prix TTC unitaire de l'équivalent × quantité − (`orl_art_price_sell_ttc` +
   `orl_art_deposit_ttc` de la ligne en rupture). La consigne de la réf initiale disparaît si
   l'équivalent n'en a pas. Le port payé reste acquis (choix owner) : port 0 sur l'enfant, même si le
   nouveau sous-total franchit 150 € (`FREE_SHIPPING_THRESHOLD`).
 - Montant ≤ 0, ou équivalent à consigne : hors procédure, owner.
-- **Création** : `supplement-create.sql` (ce dossier). Un seul bloc DO qui appelle la fonction du
-  site `create_order_atomic` (commande + ligne + événement ORDER_CREATED en une transaction), avec
-  ses pré-contrôles : commande d'origine payée et inchangée, aucun enfant existant, équivalent en
-  vente au prix du mail et jamais à perte, montant exact, contrôles après écriture.
+- **Outil = ce que PROD sert**, jamais ce que contient `main`. Sonde sans session, refusée avant
+  toute écriture :
+
+  ```bash
+  curl -s -o /dev/null -w '%{http_code}\n' -X POST -H 'Content-Type: application/json' -d '{}' https://www.automecanik.com/api/admin/orders/0/supplements
+  ```
+
+  Témoins, même requête : `…/api/admin/orders/0/cancel` (route servie) répond 403, et
+  `…/api/admin/orders/0/zz-route-inexistante` (route absente) répond 404. Sinon la sonde ne
+  distingue plus les deux cas.
+
+  | Sonde | Outil |
+  |---|---|
+  | 403 (route servie, session exigée) | Formulaire de l'admin |
+  | 404 (route absente) | `supplement-create.sql` |
+  | Autre code, ou un témoin qui ne répond pas son code attendu | Stop, owner |
+
+  Refus du formulaire ou ABORT du script : rien n'est écrit. Le rapporter tel quel, et ne changer
+  une valeur qu'en refaisant le § qui l'a produite.
+- **Formulaire** : fiche de la commande d'origine dans l'admin, bouton « Supplément après
+  rupture » (commande payée et non annulée). L'agent n'a pas de session admin : il donne à l'owner
+  les valeurs et le montant attendu ; l'owner les saisit et clique. Bouton absent alors que la
+  sonde répond 403 : stop, owner.
+  - « Ligne en rupture » = `orl_id` ; « Pièce équivalente (piece_id) » ; « Quantité » (§2,
+    point 4 ; proposée = celle de la ligne) ; « Achat HT unitaire confirmé chez le fournisseur
+    (€) » = achat net HT du portail (§3).
+  - « Créer le supplément » écrit tout de suite, sans essai à blanc : le GO porte sur ces valeurs.
+    Le service vérifie avant d'écrire — commande d'origine payée, non annulée, montants égaux à
+    ses lignes ; aucun autre supplément non annulé ; équivalent affiché, autre que la pièce en
+    rupture, vendable, sans consigne, jamais à perte (achat en base et achat confirmé) ; montant
+    positif et divisible au centime par la quantité ; client avec e-mail.
+  - Aucun mail ne part à la création.
+  - Montant affiché ≠ montant attendu : aucun mail au client ; annuler ce supplément (§8, étape 1)
+    et reprendre le calcul.
+  - Le lien s'affiche une seule fois, sous le formulaire (« Copier le lien ») ; perdu, il se
+    reconstruit au format ci-dessous.
+- **Script** `supplement-create.sql` (ce dossier) : un seul bloc DO qui appelle la fonction du site
+  `create_order_atomic` (commande + ligne + événement ORDER_CREATED en une transaction), avec ses
+  pré-contrôles : commande d'origine payée et inchangée, aucun supplément non annulé, équivalent
+  en vente au prix du mail et jamais à perte, montant exact, contrôles après écriture.
   1. Copier le fichier en scratchpad et renseigner les constantes ; le bloc refuse de partir sinon.
-  2. `c_apply := false` : pré-contrôles seuls, sans écriture, en session READ ONLY.
+  2. `c_apply := false` : l'agent lance les pré-contrôles seuls, sans écriture, en session
+     READ ONLY.
   3. Montrer le script à l'owner. Sur GO nominatif, `c_apply := true` : `execute_sql` du MCP
      Supabase, ou l'owner le colle dans l'éditeur SQL Supabase. Un refus du classifieur ne se
      contourne pas.
+
+  Transitoire : quand la sonde désigne le formulaire (403, témoins conformes), retirer le script
+  par une PR.
 - **Lien** =
   `https://www.automecanik.com/api/paybox/redirect?orderId=<id enfant>&amount=<montant, point décimal>&email=<e-mail encodé>`.
   Il répond 400 « Commande introuvable » avant la création, 200 avec le formulaire Paybox après
@@ -222,19 +265,21 @@ non prouvé : compatibilité, délai, origine de la marque.
 - **Il paie** : commander l'équivalent chez le fournisseur retenu, au prix d'achat confirmé, livré à
   l'adresse de la commande d'origine.
 - **Il refuse, ou son véhicule n'est pas couvert**, dans cet ordre :
-  1. Annuler la commande de supplément avec `supplement-cancel.sql` (même déroulé que §6), qui
-     passe par `cancel_order_atomic` : statut '2', ORDER_CANCELLED journalisé, aucun mail. Si elle
-     est déjà payée, le script refuse : owner.
+  1. Annuler la commande de supplément avec `supplement-cancel.sql` (même déroulé que le script
+     de §6), qui passe par `cancel_order_atomic` : statut '2', ORDER_CANCELLED journalisé. Aucun
+     mail : le mail d'annulation part de l'application, jamais du journal. Si elle est déjà payée,
+     le script refuse : owner.
      - Jamais de DELETE : `___xtr_order_history` la référence (clé RESTRICT), le journal reste.
-     - Jamais la route admin `POST /api/admin/orders/:id/cancel` (§Trous).
+     - Jamais le bouton « Annuler » de l'admin ni sa route `POST /api/admin/orders/:id/cancel`,
+       même corrigés : mail automatique (§Trous).
   2. L'owner rembourse <montant> (§7, point 8) depuis l'espace Paybox. Aucune route de
      l'application ne rend l'argent (§Trous).
   3. Mail de confirmation au client : règle cardinale, et envoi seulement une fois le
      remboursement fait dans Paybox, confirmé par l'owner. Texte brut, dans cet ordre : objet
      « Votre remboursement de <montant> » ; remboursement fait sur la carte utilisée, montant ;
-     commande annulée ; « ne réglez pas le lien de paiement du <date du mail de proposition> : il
-     est annulé » ; excuses courtes ; « Cordialement, L'équipe AutoMecanik ». Aucun délai bancaire
-     annoncé.
+     commande annulée ; « ne réglez plus le lien de paiement du <date du mail de proposition> : la
+     commande qu'il règle est annulée » (phrase obligatoire : le lien reste actif, §Trous) ; excuses
+     courtes ; « Cordialement, L'équipe AutoMecanik ». Aucun délai bancaire annoncé.
   4. La commande d'origine reste « payée » en base, et l'admin la montre comme à expédier : aucun
      chemin gouverné ne la marque remboursée (§Trous). Elle ne part pas : c'est l'owner qui la
      retient.
@@ -257,10 +302,12 @@ et paiement ; le module `payments/` ne se modifie pas).
   `propose-equivalent` lit le tarif hors `PiecePriceDataService` et lit `pieces_marque[0]` sur une
   relation qui renvoie un objet ; ni mail ni interface client.
 - `proceed-supplement` renvoie un `redirectUrl` indéfini.
-- Route admin `POST /api/admin/orders/:id/cancel` : accepte une commande payée (seuls les statuts
-  '4' et '5' sont bloqués), écrit `ord_ords_id = '6'` (hors des 5 statuts canon), sans
-  `cancel_order_atomic` ni `___xtr_order_history`, et envoie au client deux mails d'annulation
-  (l'écouteur de l'événement, puis le contrôleur).
+- Route admin `POST /api/admin/orders/:id/cancel` (bouton « Annuler ») : quelle que soit la
+  version servie, elle envoie au client le mail automatique « Commande <id> annulée » — motif
+  saisi dans l'admin, « vous serez remboursé sous 5 à 7 jours ouvrés » — sans texte validé et
+  avant tout remboursement. Les versions anciennes, en plus, acceptent une commande payée,
+  écrivent `ord_ords_id = '6'` (hors des 5 statuts canon) sans `cancel_order_atomic` ni journal,
+  et envoient ce mail deux fois.
 - Route `POST /api/payments/:id/refund` : enregistre un remboursement `processed` et envoie au
   client « remboursement confirmé », sans aucun appel à Paybox. Le client est prévenu, pas
   remboursé.
