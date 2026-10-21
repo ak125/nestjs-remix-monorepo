@@ -1,51 +1,67 @@
-# V3 decision-pack dry-run pipeline
+# V-Level — CLI de préparation des packs
 
-Outillage **READ-ONLY + DRY-RUN** pour résoudre les V3 (couple gamme + véhicule) vers la meilleure page
-`/pieces/{gamme}/{marque}/{modele}/{type}.html`. **Automatise la procédure (preuve + contrôle), jamais la
-décision métier ni la mutation.**
+[`vlevel-v3-pipeline.ts`](vlevel-v3-pipeline.ts) prépare des propositions V-Level et des fichiers
+locaux. Il **ne modifie pas la base et n'exécute pas le SQL produit**. L'ordre des opérations,
+les invariants métier et les conditions d'une exécution séparée sont dans le
+[runbook par gamme](../../.claude/knowledge/ops/vlevel-v3-gamme-procedure.md).
 
-- `vlevel-v3-pipeline.ts` — script (3 sous-commandes).
-- `vlevel-v3-web-evidence.json` — seed de preuves web, **alimenté manuellement** (jamais de scraping auto) ;
-  override la puissance « diesel par défaut » sur les cas importants (V2 / fort volume).
+## Commandes et fichiers
 
-## Commandes
+Exécuter depuis la racine du dépôt, uniquement contre une base dont la lecture est autorisée.
+Les scripts npm disponibles sont définis dans [`package.json`](../../package.json) ; les modes
+pris en charge sont dans le dispatch final du CLI. Les exemples ci-dessous ne lancent aucun apply DB.
+
+Les modes de préparation chargent `SUPABASE_URL` et `SUPABASE_SERVICE_ROLE_KEY` depuis
+l'environnement, sinon `backend/.env`, et utilisent des lectures `.select()` via le SDK Supabase.
+Vérifier la cible avant de les lancer : le nom « dry-run » n'isole pas l'environnement.
+Le [seed de preuves web](vlevel-v3-web-evidence.json) est alimenté manuellement.
+
+**Préserver les sorties existantes.** Le CLI utilise `PACK_DATE`, avec un défaut fixe `2026-06-06`.
+Fournir une date explicite et vérifier les chemins de sortie avant chaque génération : relancer
+le même mode sur le même lot avec la même date peut écraser les fichiers. La date seule n'assure
+pas l'unicité. `apply-pack` écrit à côté du CSV et remplace son suffixe `.csv` par `.apply-dryrun.sql` ;
+utiliser un fichier portant bien l'extension `.csv` et préserver l'éventuelle sortie précédente.
 
 ```bash
-npm run vlevel:v3:decision-pack -- --pg-id 82      # génère audit/vlevel-v3-decision-pack-<gamme>-<date>.{md,csv,json}
-npm run vlevel:v3:validate-pack -- --file audit/...csv
-npm run vlevel:v3:apply-pack    -- --file audit/...csv --dry-run     # before/after + UPDATE/rollback SQL (ZÉRO écriture)
-npm run vlevel:v3:apply-pack    -- --file audit/...csv --apply --owner-approved   # ⛔ REFUSÉ par design
+# Exemple Bash : choisir un lot autorisé et vérifier les sorties avant exécution.
+PACK_DATE="$(date +%F)" npm run vlevel:v3:decision-pack -- --pg-id 82
+# Remplacer le chemin ci-dessous par le CSV du lot effectivement relu par l'owner.
+npm run vlevel:v3:validate-pack -- --file audit/lot-relu.csv
+PACK_DATE="$(date +%F)" npm run vlevel:v3:apply-pack -- --file audit/lot-relu.csv --dry-run
 ```
 
-Env : lit `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` (process.env, sinon `backend/.env`). Pas de `DATABASE_URL`
-dans ce repo — accès via `@supabase/supabase-js`, uniquement `.select()`.
+## Sorties et portée
 
-## Pipeline (7 étapes) — où s'arrête l'automatisation
-
-| # | Étape | Automatisé ? |
+| Mode | Sorties locales | Limite |
 |---|---|---|
-| 1 | investigation DB (+ web frugal manuel → seed) | partiel |
-| 2 | scoring / classification | ✅ `decision-pack` |
-| 3 | decision-pack md/csv/json | ✅ |
-| 4 | **validation owner** (édite `owner_decision`) | ❌ humain — le script PROPOSE (`_CANDIDATE`) |
-| 5 | validate + dry-run | ✅ `validate-pack`, `apply-pack --dry-run` |
-| 6 | **apply réel** | ⛔ NON implémenté (stub gated, refuse, n'écrit jamais) |
-| 7 | contrôle after | futur |
+| `decision-pack` | `audit/`, Markdown + CSV + JSON | propositions à faire trancher par l'owner |
+| `generics-pack` | `audit/`, CSV + JSON | génériques V2/V3/V4 ; pas de SQL produit par ce mode |
+| `decontaminate-pack`, `reelection-pack` | `audit/`, Markdown + CSV + JSON + SQL | SQL spécialisé avec gardes, à relire pour le lot courant |
+| `auto-plan` | `audit/`, CSV + JSON + SQL | SQL des seuls changements `AUTO_APPLY_SAFE` ; ce label n'autorise aucune exécution |
+| `blocked-plan` | `audit/`, CSV + JSON + Markdown | diagnostic et candidats, pas d'apply |
+| `blocked-apply-pack` | `scripts/seo/`, SQL | proposition gardée pour les cas clairs retenus |
+| `validate-pack` | console | contrôles locaux du CSV, sans lecture DB |
+| `apply-pack --dry-run` | console + fichier `.apply-dryrun.sql` | proposition SQL non exécutée, sans les gardes des packs spécialisés |
 
-## Doctrine encodée
-- **Diesel par défaut** uniquement si keyword modèle-seul / énergie absente.
-- Énergie explicite (`1.5 dci`), **version sportive** (`gti`, `rs`…) ou essence explicite → **V3 distinct**.
-- **Essence ≠ diesel = véhicules différents** : l'essence courante reste un V3 distinct, jamais supprimée.
-- **Cross-gamme** (keyword d'une autre pièce) → jamais `APPROVE`.
+## Revue et limites de validation
 
-## Classification proposée (le script propose, l'owner tranche)
-`APPROVE_CANDIDATE` (diesel-default web ≥78) · `APPROVE_DISTINCT_CANDIDATE` (essence/sport explicite) ·
-`REVIEW_OWNER` (médiane DB fallback / conflit / cross-gamme) · `DEFER_REMAP` (sous-modèle, orphan) ·
-`DEFER_CATALOG_GAP` (modèle absent du catalogue). L'owner édite `owner_decision` en
-`APPROVE | APPROVE_DISTINCT | REVIEW | DEFER | REJECT`.
+`decision-pack` propose notamment `APPROVE_CANDIDATE`, `APPROVE_DISTINCT_CANDIDATE`,
+`REVIEW_OWNER`, `DEFER_REMAP` ou `DEFER_CATALOG_GAP`. Les critères sont définis dans
+`decisionPack` ; ils ne sont pas interchangeables avec ceux de `autoPlan`.
+L'owner tranche dans `owner_decision` : `APPROVE`, `APPROVE_DISTINCT`, `REVIEW`, `DEFER` ou `REJECT`.
+Seules les deux premières valeurs sont retenues par `validate-pack` et `apply-pack`.
 
-## Garanties
-- Aucun `UPDATE/INSERT/DELETE`, aucun recalcul `v_level`, aucune publication, aucune mutation cachée.
-- `--apply --owner-approved` **refuse** : ce build ne peut pas écrire en DB. Le SQL produit en dry-run est
-  une **preuve**, pas une exécution.
-- `REVIEW` / `DEFER` / `REJECT` sont **exclues** de tout apply.
+`validate-pack` vérifie un type cible renseigné, la forme de l'URL `/pieces/...html` et la
+cohérence du `pg_id` dans l'URL lorsque les colonnes nécessaires sont présentes. Il signale
+les propositions non tranchées, sans les rendre bloquantes. Il ne vérifie ni l'état courant
+DB, ni la disponibilité réelle de la page, ni l'authenticité du GO owner. Un résultat vert
+peut donc porter sur **zéro ligne approuvée**.
+
+`apply-pack --dry-run` lit le CSV sans appeler `validate-pack` : lancer et examiner la validation
+séparément. Le SQL proposé contient des `UPDATE` et des commentaires de retour arrière ;
+il n'embarque ni transaction, ni contrôle `ROW_COUNT`, ni garde sur l'ancien `type_id`.
+Il ne constitue donc pas le package d'exécution gardé exigé par le runbook. Le relire et préparer
+les gardes, le snapshot et le rollback avant toute exécution distinctement autorisée.
+
+`apply-pack --apply --owner-approved` est **refusé** avec le code de sortie 2, avant lecture
+du CSV. Ce refus ne dépend pas d'une approbation : l'apply réel n'est pas implémenté dans ce CLI.
