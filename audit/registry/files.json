@@ -29514,12 +29514,14 @@
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "@common/exceptions",
         "@common/utils/error.utils",
         "backend/src/modules/seo/dynamic-seo-v4-ultimate.service.ts"
       ],
       "kind": "controller",
-      "loc": 774,
+      "loc": 778,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/dynamic-seo.controller.ts",
       "risk": "low",
@@ -41345,6 +41347,25 @@
       "loc": 319,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/seo-control/seo-control.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/seo-dynamic-v4-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 196,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/seo-dynamic-v4-authz.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
