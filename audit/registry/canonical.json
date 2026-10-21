@@ -79369,7 +79369,7 @@
         "frontend/app/types/pieces-route.types.ts"
       ],
       "kind": "config",
-      "loc": 229,
+      "loc": 242,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/pieces/PiecesOemSection.tsx",
       "risk": "low",
@@ -95576,7 +95576,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 90,
+      "loc": 149,
       "owner": "@ak125",
       "path": "frontend/tests/unit/pieces-oem-section.test.tsx",
       "risk": "medium",
@@ -105193,11 +105193,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "90163175840e44796908f793612d86b090e6efec04ed7053e3966b0e0c211728",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "36805785a94f89999fd74eb2a07ec183710e0ed69b9fb3b70b86e43c70a7b80f",
+      "audit/registry/files.json": "1bb632869a843351921a73b7092c01d5e3edd37f835edd66e348db79def03487",
       "audit/registry/rpc.json": "623f3a5150e1cc71cd79946d7a4128fd078d6493626b20f4b6c4c4ac64f06f6d",
       "audit/registry/runtime.json": "fed459a44851475be334b2234fe92f7c5cdb1d371bdbf448f9d524dc28445d84"
     },
-    "sotFingerprint": "13013d5825ba"
+    "sotFingerprint": "e17a3fc59b34"
   },
   "runtime": [
     {
