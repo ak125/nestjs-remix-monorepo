@@ -1,6 +1,6 @@
 {
   "compliantCount": 14,
-  "generatedAt": "2026-10-21T13:26:24.051Z",
+  "generatedAt": "2026-10-21T21:41:15.660Z",
   "issues": [],
   "schemaPath": ".spec/00-canon/ai-registry/skill.schema.json",
   "schemaVersion": "1.0.0",
@@ -159,13 +159,13 @@
       "type": "discipline"
     },
     {
-      "checksum": "sha256:036224afaa3730927d6a3389f01a78c35abfe8cb06dca2698a8041434f1683fd",
+      "checksum": "sha256:6c3d50c41f625ef5b198c294c6eb67684d4bf7f9a03b56a07cbfb134b09db176",
       "domain": "D11",
-      "last_verified": "2026-10-20",
+      "last_verified": "2026-10-21",
       "llm_safe": false,
       "metadata": {
         "spec": "agentskills.io/specification v1",
-        "version": "1.1"
+        "version": "1.2"
       },
       "name": "order-rupture-equivalence",
       "owners": [
@@ -176,6 +176,7 @@
       "spec_compliant": true,
       "status": "experimental",
       "tags": [
+        "cancellation",
         "commerce",
         "customer-mail",
         "equivalence",
