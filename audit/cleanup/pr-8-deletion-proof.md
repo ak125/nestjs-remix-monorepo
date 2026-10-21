@@ -9,7 +9,7 @@
 - Cleanup policy version: `pr8-v1`
 - Validation mode: `snapshot-only` (active runtime check deferred to PR-8b)
 - Generated at: `1970-01-01T00:00:00.000Z`
-- Toolchain: `v24.22.0` on `linux/x64`
+- Toolchain: `v24.21.0` on `linux/x64`
 
 ## Input Fingerprint (sha256)
 
