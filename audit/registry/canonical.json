@@ -58214,6 +58214,7 @@
         "backend/src/modules/seo/dynamic-seo-v4-ultimate.service.ts",
         "backend/src/modules/seo/registries/seo-surface.registry.ts",
         "backend/src/modules/seo/registries/seo-variant-family.registry.ts",
+        "backend/src/modules/seo/seo-v4.types.ts",
         "backend/src/modules/seo/services/chain/seo-ariane-breadcrumb.service.ts",
         "backend/src/modules/seo/services/chain/seo-chain-orchestrator.service.ts",
         "backend/src/modules/seo/services/chain/seo-content-block-builder.service.ts",
@@ -58227,7 +58228,7 @@
         "backend/src/modules/seo/services/seo-v4-monitoring.service.ts"
       ],
       "kind": "test",
-      "loc": 323,
+      "loc": 437,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/__tests__/dynamic-seo-v4-via-chain.test.ts",
       "risk": "high",
@@ -58822,7 +58823,7 @@
         "backend/src/modules/seo/services/seo-v4-monitoring.service.ts"
       ],
       "kind": "service",
-      "loc": 460,
+      "loc": 471,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/dynamic-seo-v4-ultimate.service.ts",
       "risk": "high",
@@ -60714,6 +60715,7 @@
         "backend/src/modules/admin/services/keyword-plan-gates.service.ts",
         "backend/src/modules/blog/services/r3-guide.service.ts",
         "backend/src/modules/blog/services/r6-guide.service.ts",
+        "backend/src/modules/seo/__tests__/dynamic-seo-v4-via-chain.test.ts",
         "backend/src/modules/seo/dynamic-seo-v4-ultimate.service.ts",
         "backend/src/modules/seo/seo.module.ts",
         "backend/src/modules/seo/services/chain/__tests__/seo-chain-marketing-parity.test.ts",
@@ -60725,7 +60727,7 @@
         "@repo/database-types"
       ],
       "kind": "config",
-      "loc": 206,
+      "loc": 216,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/seo-v4.types.ts",
       "risk": "high",
@@ -62186,7 +62188,7 @@
         "backend/src/modules/seo/seo-v4.types.ts"
       ],
       "kind": "service",
-      "loc": 366,
+      "loc": 365,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/services/seo-v4-monitoring.service.ts",
       "risk": "high",
@@ -105236,11 +105238,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "90163175840e44796908f793612d86b090e6efec04ed7053e3966b0e0c211728",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "3e4e1d323b6efa3272669fe45212b9533f02ec0011bd039b8705982d17c49fff",
+      "audit/registry/files.json": "c22b9b8c644e7f0ffe9f0756d0fbc71827982a87320f676dd5fdfe2941353f56",
       "audit/registry/rpc.json": "623f3a5150e1cc71cd79946d7a4128fd078d6493626b20f4b6c4c4ac64f06f6d",
       "audit/registry/runtime.json": "fed459a44851475be334b2234fe92f7c5cdb1d371bdbf448f9d524dc28445d84"
     },
-    "sotFingerprint": "8e9342a3d10d"
+    "sotFingerprint": "fe2339d1e3c7"
   },
   "runtime": [
     {
