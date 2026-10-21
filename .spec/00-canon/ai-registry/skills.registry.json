@@ -1,6 +1,6 @@
 {
-  "compliantCount": 14,
-  "generatedAt": "2026-10-21T21:41:15.660Z",
+  "compliantCount": 16,
+  "generatedAt": "2026-10-21T22:17:47.239Z",
   "issues": [],
   "schemaPath": ".spec/00-canon/ai-registry/skill.schema.json",
   "schemaVersion": "1.0.0",
@@ -101,6 +101,24 @@
       "type": "discipline"
     },
     {
+      "checksum": "sha256:eb7e98769622c5435a45d2af0aa1d984eb48c46280f017e52199e778080e0cfa",
+      "domain": "D7",
+      "last_verified": "2026-10-21",
+      "llm_safe": true,
+      "metadata": {
+        "version": "1.0.0"
+      },
+      "name": "diagnostic-orientation",
+      "owners": [
+        "@ak125"
+      ],
+      "path": ".claude/skills/diagnostic-orientation/SKILL.md",
+      "runtime_class": "read-only",
+      "spec_compliant": true,
+      "status": "experimental",
+      "type": "technique"
+    },
+    {
       "checksum": "sha256:750b518adb6ab24a45c782cee6b8553065e1e2e733f27cbd8c62a9042a3666d3",
       "domain": "D15",
       "last_verified": "2026-05-18",
@@ -188,6 +206,24 @@
         "tecdoc"
       ],
       "type": "discipline"
+    },
+    {
+      "checksum": "sha256:7c8e68eeabcbe47d2eced20d25ea793b14b8f2c10ac48cdfa13ddafa3c630f2f",
+      "domain": "D10",
+      "last_verified": "2026-10-21",
+      "llm_safe": true,
+      "metadata": {
+        "version": "1.0.0"
+      },
+      "name": "project-state-report",
+      "owners": [
+        "@ak125"
+      ],
+      "path": ".claude/skills/project-state-report/SKILL.md",
+      "runtime_class": "read-only",
+      "spec_compliant": true,
+      "status": "experimental",
+      "type": "technique"
     },
     {
       "checksum": "sha256:2a73b361688f370178e1ee6557bf159ac32cc7cea9ccd8e389a8d6d8e45cca03",
@@ -380,5 +416,5 @@
       "type": "technique"
     }
   ],
-  "totalSkills": 14
+  "totalSkills": 16
 }
