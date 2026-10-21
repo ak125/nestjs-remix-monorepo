@@ -75,8 +75,9 @@ Les trois rapports ont été écrits puis relus avec une empreinte identique. Le
 > agent et brouillon d'ADR non faits) et L16 (#1816, `45b524a0e`) ; complément L16 (`formats/*.md`, skills de rendu, de mesure et
 > de prompts, README des métriques) et constats C17-12 à C17-21. Aucun lot approuvé ni activé.
 > **Complété le 18/10** (base `3d1d395a1`) : L16 étendu à la veille créative (`creative-pattern-extractor`, `inspiration/README.md`)
-> puis aux README de `fafa-media-factory/` et de `scripts/` ; constats C18-1 à C18-14. Suite (base `42d36357f`) :
-> `fafa-brand-safety-reviewer` réaligné sur le code des gates ; constats C18-15 à C18-17. Aucun lot approuvé ni activé.
+> puis aux README de `fafa-media-factory/` et de `scripts/` ; constats C18-1 à C18-14. Suite (base `42d36357f`, lignes recalées
+> le 22/10 à `1a16da60c`) : `fafa-brand-safety-reviewer` réaligné sur le code des gates, G1 et G2 repris du validateur du dossier
+> (#1830) ; constats C18-15 à C18-17. Aucun lot approuvé ni activé.
 
 - **Vocabulaire** : présent ≠ branché ≠ activé ≠ servi ; trouvée ≠ chargée ≠ exécutée ≠ réussie. Statut d'un lot : prêt pour revue →
   testé localement → vérifié sur environnement cible → activé. Fusion sur `main` = PREPROD ; tag `v*` = PROD, posé par l'owner.
@@ -194,22 +195,23 @@ Chaque lot livre : niveau d'effet atteint, commande de vérification, verdict Ro
   Ajout du 18/10 : la règle « score sans mesure = UNKNOWN » couvre G5. `similarityScore` absent y est compté 0
   (`backend/src/modules/media-factory/services/video-gates.service.ts:277`) et aucun module ne le produit (seulement déclaré, l.398) :
   G5 rend PASS à chaque exécution (C18-1). Test : score absent → ni PASS ni 0 (refus motivé ou UNKNOWN) ; les deux tests G5 existants
-  (`backend/tests/unit/video-gates.service.test.ts:466-480`) restent verts. Ni #1818 (L10a : G1 et G2) ni #1823 ne touchent G5.
+  (`backend/tests/unit/video-gates.service.test.ts:481-495`) restent verts. Ni #1818 (L10a : G1 et G2) ni #1823 ne touchent G5.
   Suite du 18/10 : même règle pour G4. Sans `actualDurationSec`, G4 rend PASS (« No duration data — skipping platform gate »,
   `video-gates.service.ts:237-241`) ; ni le processeur (`backend/src/workers/processors/video-execution.processor.ts:201-207`), qui
   exécute les gates avant le rendu (l.209-210, rendu l.241-259), ni l'écran de simulation
   (`frontend/app/routes/admin.video-hub.productions.$briefId.tsx:252-262`) ne passent la durée (C18-12). Test : durée absente → ni
-  PASS ni 0 ; le test « should PASS when no duration data » (`video-gates.service.test.ts:443-447`) change d'attente avec le
+  PASS ni 0 ; le test « should PASS when no duration data » (`video-gates.service.test.ts:458-462`) change d'attente avec le
   correctif. #1818 et #1823 ne touchent pas G4.
-  Suite du 18/10 (base `42d36357f`) : même règle pour G3 et G6, que ni le processeur (l.201-207) ni l'écran de simulation
-  (l.252-262) ne mesurent. Sans `scriptText`, G3 rend PASS (« No script text to check », `video-gates.service.ts:183-187`), alors
-  que la production porte ce texte (`backend/src/modules/media-factory/services/video-data.service.ts:350`) ; `visualRoleViolations`
-  n'a aucun producteur (déclaré `video-gates.service.ts:400`) et G6 rend WARN avec « All visuals used as illustration (correct) »
-  (l.304-305) sans contrôle ; l'écran envoie `videoType` au lieu de `type`, et aucun `mode` : avec une durée, G4 y lèverait une
-  erreur de type (plage indéfinie, l.243-244) (C18-15). Contrat : les appelants passent le texte de la production, le relevé des
-  visuels et `type`, ou la gate rend UNKNOWN. Tests : texte ou relevé absent → ni PASS ni message affirmatif (refus motivé ou
-  UNKNOWN) ; « should PASS when no script text » (`video-gates.service.test.ts:404-408`) et « should WARN with no violations »
-  (l.485-491) changent d'attente avec le correctif. `FORBIDDEN_PATTERNS_SHORT` ne reconnaît ni « Dépêchez-vous » ni « Dernière
+  Suite du 18/10 (base `42d36357f`, lignes recalées le 22/10 à `1a16da60c`) : même règle pour G3 et G6, que ni le processeur
+  (l.201-207) ni l'écran de simulation (l.252-262) ne mesurent. Sans `scriptText`, G3 rend PASS (« No script text to check »,
+  `video-gates.service.ts:192-196`), alors que la production porte ce texte
+  (`backend/src/modules/media-factory/services/video-data.service.ts:350`) ; `visualRoleViolations` n'a aucun producteur (déclaré
+  `video-gates.service.ts:409`) et G6 rend WARN avec « All visuals used as illustration (correct) » (l.313-314) sans contrôle ;
+  l'écran envoie `videoType` au lieu de `type`, et aucun `mode` : avec une durée, G4 y lèverait une erreur de type (plage
+  indéfinie, l.252-253) (C18-15). Contrat : les appelants passent le texte de la production, le relevé des visuels et `type`, ou la
+  gate rend UNKNOWN. Tests : texte ou relevé absent → ni PASS ni message affirmatif (refus motivé ou UNKNOWN) ; « should PASS when
+  no script text » (`video-gates.service.test.ts:419-423`) et « should WARN with no violations » (l.500-506) changent d'attente
+  avec le correctif. `FORBIDDEN_PATTERNS_SHORT` ne reconnaît ni « Dépêchez-vous » ni « Dernière
   chance » : le motif `depêchez` n'a pas le « é » de « dépêchez », `dernier(e|s)?` pas le « è » de « dernière »
   (`backend/src/config/video-quality.constants.ts:243,245`, C18-16). Test : ces deux phrases en mode `short` → une violation chacune
   ; « depêchez-vous », « dernier jour » et « Derniers jours » restent reconnues.
@@ -251,13 +253,14 @@ Chaque lot livre : niveau d'effet atteint, commande de vérification, verdict Ro
   (`backend/src/modules/media-factory/types/video.types.ts:105-116`, étapes de
   `backend/src/config/video-quality.constants.ts:168-174`). Sans tableau `stages`, `checkArtefacts` signale `approval_record`
   (`video-gates.service.ts:86-87,93`) et les deux appelants s'arrêtent avant les gates ; appelé directement, `runAllGates` lève
-  une erreur de type à G7 (l.323). Avec un tableau, G7 rend FAIL sans étape `script_text` approuvée (l.322-329) : l'approbation
+  une erreur de type à G7 (l.332). Avec un tableau, G7 rend FAIL sans étape `script_text` approuvée (l.331-338) : l'approbation
   du script y précède les gates. Le schéma et le pilote portent trois drapeaux, sans `stages`
-  (`governance/approval-record.schema.json:36-74`), et les gates y précèdent l'approbation. Le pilote consigne G7 `PASS`
-  (« approval record initialisé », `approval.json:76-82`) là où le code s'arrêterait sur `MISSING_ARTEFACTS` (C18-13, précisé à
-  `42d36357f`). Contrat : un seul modèle, celui des trois approbations retenu ci-dessus ; G7 le lit, ou `stages` en est dérivé,
-  sans second modèle. Test : dossier du pilote passé à `checkArtefacts` puis à `runAllGates` → aucun manque, et verdict G7
-  identique à celui consigné.
+  (`governance/approval-record.schema.json:37-76`), et les gates y précèdent l'approbation. Le pilote consigne G7 `PASS`
+  (« approval record initialisé », `approval.json:81-89`) là où le code s'arrêterait sur `MISSING_ARTEFACTS` (C18-13, précisé à
+  `42d36357f`, lignes de `1a16da60c`). Ses G1 et G2 ont été recalculés le 14/10 par `VideoGatesService`, G3 à G7 restant
+  historiques (`approval.json:117-122`). Contrat : un seul modèle, celui des trois approbations retenu ci-dessus ; G7 le lit, ou
+  `stages` en est dérivé, sans second modèle. Test : dossier du pilote passé à `checkArtefacts` puis à `runAllGates` → aucun
+  manque, et verdict G7 identique à celui consigné.
 - **L12** · Migration additive préparée (compte, empreinte de révision, preuve, réservation par `intent_id` avec bail, liaison au brief selon D16, journal d'approbations) ; `marketing-hub-data.service.ts:31-44` ; export du contrôleur des posts (validation de `week` et `channel`, variantes secondaires) ; `utm_content` = id de variante. Tests : Instagram publié ne publie pas Facebook ; second compte → 422 ; export des variantes secondaires. Limites : lecture autorisée du CHECK réel et réconciliation du ledger d'abord ; application = acte owner ; baseline du ratchet rafraîchie dans la même PR si elle change.
 - **L13** · `publish-queue.service.ts:135-144` ; marquage publié du contrôleur des posts ; `scripts/marketing/export-publish-queue.ts` ; `fafa-media-factory/manifests/publishing/` (`.gitkeep` seul). Contrat : `publication-proof` v1 sur ces deux surfaces ; revalidation juste avant l'effet. Tests : sans preuve → 422 ; même preuve → sans effet ; preuve différente → 409 ; approbation révoquée → refus ; délai dépassé → incertain, 0 nouvelle tentative. Limites : publication = acte owner.
 - **L14** · Contrôleur d'attribution d'atterrissage (capture `medium`, `campaign`, `content` en session) ; `marketing-measurement.ts:13-25` ; contrôleur des commandes : préparation seulement (STOP). Contrat : verdict v1 lu tel quel, usage restreint à `r2_order_placed`, UNKNOWN affiché hors DEV ; les colonnes de mesure des posts (`actual_*`, `ga4_*`, `performance_*`) n'ont aucun producteur : UNKNOWN jusqu'à un producteur unique ; `qualified-demand` reste à définir par sales et data (D6), jamais déduit ici. Tests : visite → variante → commande sur fixtures synthétiques ; non certifié → UNKNOWN ; jamais 0 faute de données. Limites : D6, D7 ; aucun chiffre de vente.
@@ -296,18 +299,21 @@ Chaque lot livre : niveau d'effet atteint, commande de vérification, verdict Ro
   dans `fafa-media-factory/README.md` ; `personas/fafa.md:3` et `fafa-persona-canon/SKILL.md:8` restent à reprendre à la relecture
   de `personas/`, `fafa-brand-safety-reviewer/SKILL.md:62` avec C17-20 (C18-14). Le schéma, les skills de revue et de rendu et le
   dossier du pilote ne sont pas modifiés.
-  Suite du 18/10 (base `42d36357f`, après #1818 et #1823) : `fafa-brand-safety-reviewer/SKILL.md` réaligné sur `runAllGates` et
-  `video-quality.constants.ts`, seule règle (C17-20). Champs lus sous les noms du code, un nom absent valant absent ; seule
+  Suite du 18/10 (base `42d36357f`, après #1818 et #1823 ; recalée le 22/10 à `1a16da60c`, après #1830) :
+  `fafa-brand-safety-reviewer/SKILL.md` réaligné sur `runAllGates` et `video-quality.constants.ts`, seule règle (C17-20). G1 et G2
+  repris de `claimGates` du validateur du dossier (`scripts/marketing/fafa-pilot-governance.cjs`, #1830), qui appelle ce même code
+  avec sa correspondance des champs ; pour G3 à G7, champs lus sous les noms du code, un nom absent valant absent ; seule
   correspondance de valeurs, le mode lu en minuscules ; arrêt sur `MISSING_ARTEFACTS` comme `checkArtefacts`, ce qui arrête le
   pilote faute de `stages` (C18-13 reste à L11) ; UNKNOWN là où le code rend PASS ou WARN sans mesure (G3 sans texte, G4 sans durée,
-  G5 toujours au 18/10, G6 sans relevé) ou lève une erreur (G4 sans `brief.type`) ; G5 décrit sans cosinus (C18-2) ; aucun drapeau
+  G5 toujours au 22/10, G6 sans relevé) ou lève une erreur (G4 sans `brief.type`) ; G5 décrit sans cosinus (C18-2) ; aucun drapeau
   posé, aucun dossier déplacé, `gate_results` remplacé seulement quand les 7 gates ont un verdict du code (C18-11) ; interdits de
   `personas/fafa.md` relus hors mesure de G3 ; bloc JSON valide ; règles vault `rules-fafa-persona-canon-v1.md` (C18-14) et
-  `rules-video-disclaimer-safety.md` dites introuvables (C18-17). Description du schéma (l.43) : drapeau posé par l'owner (C18-11).
-  Phrases voisines de `scripts/README.md` et `inspiration/README.md` mises à jour. Le code des gates, les autres skills, `personas/`
-  et le dossier du pilote ne sont pas modifiés : ses `gate_results` et la revue de son manifeste restent ceux de l'ancienne version
-  du skill, réévalués par L11 (contrat du 14/10, C18-8, C18-13). Tests : `scripts/lint/check-preprod-vocabulary.sh` ; bloc JSON et
-  schéma valides ; diff limité à ces fichiers.
+  `rules-video-disclaimer-safety.md` dites introuvables (C18-17). Description du schéma (l.45) : drapeau posé par l'owner (C18-11).
+  Phrases voisines de `scripts/README.md` et `inspiration/README.md` mises à jour. Le code des gates, le validateur, les autres
+  skills, `personas/` et le dossier du pilote ne sont pas modifiés : G1 et G2 de ses `gate_results` ont été recalculés le 14/10 par
+  le validateur (FAIL, WARN ; `approval.json:117-122`) ; G3 à G7 et la revue de son manifeste restent ceux de l'ancienne version du
+  skill, réévalués par L11 (contrat du 14/10, C18-8, C18-13). Tests : `scripts/lint/check-preprod-vocabulary.sh` ; bloc JSON et
+  schéma valides ; sortie du validateur sur le pilote (2, `NOT_READY`) ; diff limité à ces fichiers.
 
 ### Décisions ouvertes (aucun nom ; « owner » = acte nominatif, non nommé ici)
 
@@ -598,7 +604,7 @@ tenue hors dépôt ; ses constats ne sont ni recopiés ni comptés ici. Ceux de 
 | C17-17 | `workspaces/marketing/fafa-media-factory/manifests/metrics/README.md:39` (avant ce complément) contre `utm-builder.service.ts:46-51`, `landing-attribution.controller.ts:59-68`, `landing-source.classifier.ts:71-79` | `utm_source=fafa` sans la plateforme ; `utm_medium=video` : visite classée `social`, `organic` ou `campaign` selon le referer | lecture : aucune visite réelle observée | L16 |
 | C17-18 | `workspaces/marketing/.claude/skills/fafa-video-prompt-builder/SKILL.md:20,49` ; `fafa-remotion-template-planner/SKILL.md:12` (avant ce complément) | b-roll, avatar et scènes produit préparés pour V1, alors que les trois compositions ne lisent que `<Audio src={audioUrl}>` ; le prérequis de rendu attendait ces prompts | lecture | L16 |
 | C17-19 | `workspaces/marketing/fafa-media-factory/governance/evidence-pack.schema.json:35` ; `fafa-persona-canon/SKILL.md:50-53` ; `workspaces/marketing/fafa-media-factory/personas/fafa.md:47-48` | propositions WIKI et schéma de données acceptés comme preuve ; `proposals/` = fiches en cours d'extraction, `wiki/` = base validée (README du WIKI, l.26-27) | lecture ; skill figé en V1 (l.80-81), non modifié | L11 |
-| C17-20 | `workspaces/marketing/.claude/skills/fafa-brand-safety-reviewer/SKILL.md:49-58,74-77,85-106` (à `3d1d395a1`, avant le réalignement du 18/10 ; 47-56, 72-75, 83-104 avant #1822) contre `backend/src/modules/media-factory/services/video-gates.service.ts:108-175,291-313` | G1 et G2 décrits avec `evidence_refs` et `human_validated`, que le code ne lit pas (`status`, `requiresHumanValidation`, `validatedBy`) ; G6 compté sur `brollAssets`, le code sur `visualRoleViolations` ; bloc JSON invalide (commentaire `//`) | lecture ; #1818 fusionnée (`7ad66ed14`) : G1 lit `status`, `sourceRef`, `evidenceId`, G2 lit `validatedBy` seul ; réaligné le 18/10 | L16 (après L10a) |
+| C17-20 | `workspaces/marketing/.claude/skills/fafa-brand-safety-reviewer/SKILL.md:49-58,74-77,85-106` (à `3d1d395a1`, avant le réalignement du 18/10 ; 47-56, 72-75, 83-104 avant #1822) contre `backend/src/modules/media-factory/services/video-gates.service.ts:115-184,300-322` (`108-175,291-313` à `42d36357f`) | G1 et G2 décrits avec `evidence_refs` et `human_validated`, que le code ne lit pas (`status`, `requiresHumanValidation`, `validatedBy`) ; G6 compté sur `brollAssets`, le code sur `visualRoleViolations` ; bloc JSON invalide (commentaire `//`) | lecture ; #1818 fusionnée (`7ad66ed14`) : G1 lit `status`, `sourceRef`, `evidenceId`, G2 lit `validatedBy` seul ; réaligné le 18/10 | L16 (après L10a) |
 | C17-21 | `.spec/00-canon/video-governance-p0.md` (« Spec Canonique », v1.0 du 2026-02-24), cité par `fafa-persona-canon`, `fafa-brand-safety-reviewer`, `fafa-media-factory/README.md`, `personas/*.md`, `prompts/higgsfield/broll-prompt-template.md` | document legacy de `.spec/00-canon` présenté comme canon par les documents Fafa | lecture | hors mandat : governance-lead (`.spec/00-canon/**`) |
 
 #### Constats du 18/10
@@ -608,7 +614,9 @@ sur le checkout DEV, sans écriture ; ADR-036 et `ledger/rules/rules-ai-cos.md` 
 au moteur, aucun outil d'analyse vidéo lancé. Numéros vérifiés libres le 18/10 (dossier, branches marketing et vidéo, PR ouvertes,
 handoffs du jour).
 Pour C18-15 à C18-17 : `main` à `42d36357f` (après #1818, #1822, #1823, #1828) ; lignes de tests de L10 et de C18-12 recalées à
-cette base, #1818 ayant ajouté des tests ; vault relu par l'API GitHub, `main` toujours à `eb97222`.
+cette base, #1818 ayant ajouté des tests ; vault relu par l'API GitHub, `main` toujours à `eb97222`. Le 22/10, lignes de C17-20,
+C18-12, C18-13 et C18-15 recalées à `1a16da60c`, après #1830 (`runClaimGates` et ses tests ajoutés) ; vault relu par l'API
+GitHub, `main` à `684e734`.
 
 | Id | Fichier, fonction | Preuve | Limite | Lot |
 |---|---|---|---|---|
@@ -623,10 +631,10 @@ cette base, #1818 ayant ajouté des tests ; vault relu par l'API GitHub, `main` 
 | C18-9 | `fafa-media-factory/README.md:18-19,94-98` ; `fafa-media-factory/scripts/README.md:35-38` (avant ce complément) | PR #2 et #3 dites en attente, PR #1 dite « actuelle », dossiers de statut dits vides ; or #789 et #794 fusionnées le 29/05/2026, pilote `draft/fafa-plaquettes-frein-001/` (#1260, 7 fichiers) rendu (#1273) : 1 pilote sur 10 | lecture (`gh pr view`, `git ls-tree` à `3d1d395a1`) | L16 |
 | C18-10 | `fafa-media-factory/scripts/README.md:18-27` (avant ce complément) | structure par vidéo sans `render-payload.json`, que porte le pilote et que son manifeste cite avec son empreinte (`manifests/renders/fafa-plaquettes-frein-001.json:12-13`) ; fichier sans schéma | lecture | L16 |
 | C18-11 | `fafa-brand-safety-reviewer/SKILL.md:41` ; `governance/approval-record.schema.json:43` ; `fafa-media-factory/README.md:36-38,50,56` (avant ce complément) contre `scripts/README.md:12`, `fafa-brand-safety-reviewer/SKILL.md:43`, `manifests/renders/fafa-plaquettes-frein-001.json:71` ; `fafa-remotion-template-planner/SKILL.md:12,19,114` | `content_approved` posé par le skill quand les 7 gates passent (l.41), alors que la table des statuts, l'étape 6 du même skill et le manifeste le réservent à l'owner, comme la règle AI2 du vault (`ledger/rules/rules-ai-cos.md`, renvoyée par ADR-036, `accepted`) ; rendu placé après `APPROVED` par le skill de rendu et le README, alors que le statut 6 exige `render_approved=true` et que le pilote a été rendu en `DRAFT_ONLY` (manifeste l.4, 8) ; « bloquée en DRAFT_ONLY » (README l.56) faux sous les deux lectures ; `content_approved_by` = chaîne non vide seulement (schéma l.77-84) | lecture ; vault lu sans écriture | L16 |
-| C18-12 | `backend/src/modules/media-factory/services/video-gates.service.ts:237-241` (`g4Platform`) ; appelants `backend/src/workers/processors/video-execution.processor.ts:201-210`, `frontend/app/routes/admin.video-hub.productions.$briefId.tsx:252-262` | sans `actualDurationSec`, G4 rend PASS ; aucun des deux appelants ne passe la durée, et le processeur exécute les gates avant le rendu (l.209-210, rendu l.241-259) : G4 rend PASS à chaque exécution par ces chemins ; `backend/tests/unit/video-gates.service.test.ts:443-447` attend ce PASS (l.328-332 à `3d1d395a1`) | lecture ; tests lus, non lancés ; appel direct de `POST /api/admin/video/validate-gates` avec une durée non exclu | L10 |
-| C18-13 | `backend/src/modules/media-factory/types/video.types.ts:105-116` ; `backend/src/config/video-quality.constants.ts:168-174` ; `video-gates.service.ts:86-87,93,322-329` contre `governance/approval-record.schema.json:36-74` ; `scripts/draft/fafa-plaquettes-frein-001/approval.json:76-82` | le code lit `approvalRecord.stages[]` : sans tableau, `approval_record` manquant et arrêt avant les gates (erreur de type à G7, l.323, si `runAllGates` est appelé directement) ; avec un tableau, G7 FAIL sans `script_text` approuvé ; schéma et pilote portent trois drapeaux, sans `stages` ; le pilote consigne G7 `PASS` (« approval record initialisé ») là où le code s'arrêterait avant les gates (précisé à `42d36357f`) | lecture ; dossier du pilote non passé au code | L11 |
+| C18-12 | `backend/src/modules/media-factory/services/video-gates.service.ts:246-250` (`g4Platform`) ; appelants `backend/src/workers/processors/video-execution.processor.ts:201-210`, `frontend/app/routes/admin.video-hub.productions.$briefId.tsx:252-262` | sans `actualDurationSec`, G4 rend PASS ; aucun des deux appelants ne passe la durée, et le processeur exécute les gates avant le rendu (l.209-210, rendu l.241-259) : G4 rend PASS à chaque exécution par ces chemins ; `backend/tests/unit/video-gates.service.test.ts:458-462` attend ce PASS (l.443-447 à `42d36357f`, l.328-332 à `3d1d395a1`) | lecture ; tests lus, non lancés ; appel direct de `POST /api/admin/video/validate-gates` avec une durée non exclu | L10 |
+| C18-13 | `backend/src/modules/media-factory/types/video.types.ts:105-116` ; `backend/src/config/video-quality.constants.ts:168-174` ; `video-gates.service.ts:86-87,93,331-338` contre `governance/approval-record.schema.json:37-76` ; `scripts/draft/fafa-plaquettes-frein-001/approval.json:81-89` | le code lit `approvalRecord.stages[]` : sans tableau, `approval_record` manquant et arrêt avant les gates (erreur de type à G7, l.332, si `runAllGates` est appelé directement) ; avec un tableau, G7 FAIL sans `script_text` approuvé ; schéma et pilote portent trois drapeaux, sans `stages` ; le pilote consigne G7 `PASS` (« approval record initialisé ») là où le code s'arrêterait avant les gates (précisé à `42d36357f`) | lecture ; dossier du pilote non passé à `checkArtefacts` ni à `runAllGates` (le validateur de #1830 n'appelle que `runClaimGates`) | L11 |
 | C18-14 | `fafa-media-factory/README.md:79-80` (avant ce complément) ; `personas/fafa.md:3` ; `fafa-persona-canon/SKILL.md:8` ; `fafa-brand-safety-reviewer/SKILL.md:62` | règle vault `rules-fafa-persona-canon-v1.md` (« PR vault A en cours ») et « ADR vault dédiée » à la frontière d'auto-publication : absentes de `main` du vault (`eb97222`) ; aucune des 355 PR du vault ne cite Fafa, persona, media factory ou vidéo dans son titre | lecture ; titres seuls, contenu des PR non lu ; rédaction de ces règles hors mandat | L16 |
-| C18-15 | `backend/src/workers/processors/video-execution.processor.ts:201-207` ; `frontend/app/routes/admin.video-hub.productions.$briefId.tsx:252-262` contre `backend/src/modules/media-factory/services/video-gates.service.ts:183-187,291-313` | aucun des deux appelants ne passe `scriptText`, que porte la production (`backend/src/modules/media-factory/services/video-data.service.ts:350`) : G3 rend PASS (« No script text to check ») ; `visualRoleViolations` n'a aucun producteur dans `backend/`, `frontend/`, `shared/`, `services/`, `scripts/`, `packages/` (déclaré `video-gates.service.ts:400`) : G6 rend WARN avec « All visuals used as illustration (correct) » (l.304-305) sans contrôle ; l'écran envoie `videoType` au lieu de `type`, et aucun `mode` : avec une durée, G4 y lèverait une erreur de type (l.243-244) | lecture ; tests lus, non lancés ; appel direct de `POST /api/admin/video/validate-gates` avec texte et relevé non exclu | L10 |
+| C18-15 | `backend/src/workers/processors/video-execution.processor.ts:201-207` ; `frontend/app/routes/admin.video-hub.productions.$briefId.tsx:252-262` contre `backend/src/modules/media-factory/services/video-gates.service.ts:192-196,300-322` | aucun des deux appelants ne passe `scriptText`, que porte la production (`backend/src/modules/media-factory/services/video-data.service.ts:350`) : G3 rend PASS (« No script text to check ») ; `visualRoleViolations` n'a aucun producteur dans `backend/`, `frontend/`, `shared/`, `services/`, `scripts/`, `packages/` (déclaré `video-gates.service.ts:409`) : G6 rend WARN avec « All visuals used as illustration (correct) » (l.313-314) sans contrôle ; l'écran envoie `videoType` au lieu de `type`, et aucun `mode` : avec une durée, G4 y lèverait une erreur de type (l.252-253) | lecture ; tests lus, non lancés ; appel direct de `POST /api/admin/video/validate-gates` avec texte et relevé non exclu | L10 |
 | C18-16 | `backend/src/config/video-quality.constants.ts:240-246` (`FORBIDDEN_PATTERNS_SHORT`) | `/\bdepêchez/i` (l.243) et `/\bdernier(e|s)?\s+(chance|jour)/i` (l.245) ne reconnaissent ni « Dépêchez-vous » ni « Dernière chance » ; « depêchez-vous », « dernier jour » et « Derniers jours » sont reconnus | motifs exécutés sous Node hors du service ; tests du dépôt non lancés | L10 |
 | C18-17 | `workspaces/marketing/.claude/skills/fafa-brand-safety-reviewer/SKILL.md:115` (avant ce complément) | règle vault `rules-video-disclaimer-safety.md` (« PR vault C ») citée ; absente de `main` du vault (`eb97222`) | arbre du vault lu par l'API GitHub ; rédaction de la règle hors mandat | L16 |
 

@@ -84,10 +84,10 @@ de commentateur ni un extrait de transcript.
 4. Seulement après → passage en `DRAFT_ONLY`
 
 Aucun contrôle automatique ne vérifie cette signature : G5 du code ne lit que `similarityScore`
-(`video-gates.service.ts:273-287`), dont aucun producteur n'existe au 18/10 ; `fafa-brand-safety-reviewer` rend donc G5 UNKNOWN
+(`video-gates.service.ts:282-296`), dont aucun producteur n'existe au 22/10 ; `fafa-brand-safety-reviewer` rend donc G5 UNKNOWN
 et signale à part une signature manquante. La signature relève de la relecture de l'owner avant qu'il pose `content_approved`
-(`governance/approval-record.schema.json:41-44`) ; le schéma ne contrôle que la présence d'un nom dans `content_approved_by`
-(l.77-84), pas qu'un humain a relu.
+(`governance/approval-record.schema.json:43-46`) ; le schéma ne contrôle que la présence d'un nom dans `content_approved_by`
+(l.79-86), pas qu'un humain a relu.
 
 ## Voir aussi
 
