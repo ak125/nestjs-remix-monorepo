@@ -195,6 +195,25 @@ export class AbandonedCartDataService extends SupabaseBaseService {
     return !!data;
   }
 
+  /**
+   * Consentement marketing explicite du client (ADR-036) — préalable à toute
+   * relance. Sans ligne ou sans date de consentement : pas de consentement.
+   * Une erreur de lecture est levée, jamais lue comme un accord.
+   */
+  async hasMarketingConsent(cstId: number): Promise<boolean> {
+    const { data, error } = await this.supabase
+      .from('___xtr_customer')
+      .select('cst_marketing_consent_at')
+      .eq('cst_id', cstId)
+      .maybeSingle();
+
+    if (error) {
+      this.logger.error(`Marketing consent check failed: ${error.message}`);
+      throw new Error(`Marketing consent check failed: ${error.message}`);
+    }
+    return !!data?.cst_marketing_consent_at;
+  }
+
   async getCustomerEmail(
     cstId: number,
   ): Promise<{ cst_mail: string; cst_fname: string | null } | null> {

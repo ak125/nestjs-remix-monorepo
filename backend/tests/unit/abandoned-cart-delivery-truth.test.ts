@@ -105,6 +105,7 @@ function sequence(delivery: 'sent' | 'dry-run') {
   const data = {
     findById: jest.fn().mockResolvedValue(record()),
     isUnsubscribedByCstId: jest.fn().mockResolvedValue(false),
+    hasMarketingConsent: jest.fn().mockResolvedValue(true),
     updateEmailSent: jest.fn().mockResolvedValue(undefined),
   };
   const mail = {
