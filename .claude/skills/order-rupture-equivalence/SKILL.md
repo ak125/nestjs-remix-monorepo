@@ -13,14 +13,14 @@ owners: ['@ak125']
 domain: D11
 runtime_class: privileged
 llm_safe: false
-last_verified: '2026-10-21'
+last_verified: '2026-10-22'
 license: Internal - Automecanik
-compatibility: Designed for Claude Code in the AutoMecanik monorepo. Stack — Supabase/PostgreSQL (___xtr_order*, pieces*, pieces_price), Paybox redirect, Gmail SMTP. Privileged — creates a customer order, takes parts off sale and prepares a customer e-mail; each write needs the owner's nominative GO.
+compatibility: Designed for Claude Code in the AutoMecanik monorepo. Stack — Supabase/PostgreSQL (___xtr_order*, pieces*, pieces_price), Paybox redirect, Gmail SMTP. Privileged — creates a customer order, takes parts off sale, cancels orders and prepares a customer e-mail; each write needs the owner's nominative GO.
 tags: [orders, rupture, equivalence, supplement, oem, tecdoc, quarantine, cancellation, customer-mail, commerce]
 argument-hint: "[order-id]"
 disable-model-invocation: true
 metadata:
-  version: "1.2"
+  version: "1.3"
   spec: agentskills.io/specification v1
 ---
 
@@ -30,7 +30,7 @@ Une commande payée dont la réf est en rupture chez le fournisseur se sauve en 
 l'équivalent disponible, même plus cher, au lieu de l'annuler « pas dispo ». Quand aucun
 équivalent n'est dispo, que le client refuse ou que l'owner décide d'annuler, la commande est
 annulée et le client prévenu (§8). Ce skill porte la procédure de l'owner (2026-10-18, complétée
-le 2026-10-21) et, pour chaque écriture, le seul outil sûr.
+les 2026-10-21 et 2026-10-22) et, pour chaque écriture, le seul outil sûr.
 
 > **Règle cardinale `[CRITICAL]`** : aucun mail au client avant que l'owner ait validé **le texte
 > final, affiché en entier** dans la conversation. Un « envoie directement », « gère tout » ou
@@ -54,7 +54,8 @@ le 2026-10-21) et, pour chaque écriture, le seul outil sûr.
 | « Je passe `pri_dispo` à 0 par l'admin » / « Je mets la marque en quarantaine » | Retrait ou mise en rupture = migration par réf, FROZEN, avec garde SEO (§4). |
 | « Le retrait vide une page, tant pis : elle reviendra » | Une page à 0 pièce passe en noindex. Cette réf se met en rupture au lieu d'être retirée (§4). |
 | « Le texte a été validé, je l'envoie » | Si un fait du texte a changé depuis (commande annulée, supplément payé), il est caduc : nouveau texte, nouveau GO. |
-| « Le paiement est annulé dans Paybox, donc la commande est annulée en base » | Elle reste « payée » et l'admin la montre à expédier ; l'owner la retient (§8). |
+| « Le paiement est annulé dans Paybox, donc la commande est annulée en base » | La base n'en sait rien : elle reste « payée » et l'admin la montre à expédier. L'annuler avec `voided-payment-cancel.sql`, sur GO (§8, étape 4). |
+| « Le paiement a été remboursé, j'annule avec `voided-payment-cancel.sql` » | Réservé au paiement annulé avant encaissement. Remboursée, la commande reste « payée » ; l'owner la retient (§Trous). |
 | « J'écris "remboursé" dans le mail d'annulation » | Seulement après un remboursement fait dans Paybox. Paiement annulé avant encaissement : « aucun montant ne sera prélevé » (§8). |
 | « L'admin a un flux d'équivalence (statuts 91–94), je l'utilise » | Inutilisable (§Trous de l'application). Le supplément passe par le formulaire « Supplément après rupture » ou par le script, selon la sonde de §6. |
 | « La route de supplément est sur `main`, donc en ligne » | `main` = PREPROD ; PROD ne change qu'au tag. Seule la sonde de §6 sur PROD décide. |
@@ -325,9 +326,19 @@ non prouvé : compatibilité, délai, origine de la marque.
         mail de proposition> : la commande qu'il règle est annulée. » (obligatoire : le lien reste
         actif, §Trous) ;
      6. excuses courtes ; « Cordialement, L'équipe AutoMecanik ».
-  4. La commande d'origine reste « payée » en base (statut '3') : `cancel_order_atomic` refuse
-     une commande payée, et aucun chemin gouverné ne la marque annulée ou remboursée (§Trous).
-     L'admin la montre comme à expédier ; elle ne part pas : c'est l'owner qui la retient.
+  4. La commande d'origine reste « payée » en base tant qu'on ne l'annule pas :
+     `cancel_order_atomic` refuse une commande payée.
+     - Paiement **annulé** avant encaissement, confirmé par l'owner dans l'espace Paybox (étape 2) :
+       l'annuler avec `voided-payment-cancel.sql`, même déroulé que le script de §6 (essai à blanc
+       en READ ONLY, script rempli montré, GO nominatif). Le script passe par
+       `cancel_order_payment_voided_atomic` : statut '2', date et motif d'annulation, ORDER_CANCELLED
+       journalisé avec l'attestation (`c_attested_by` : qui a vu l'annulation dans Paybox, et
+       quand). Les champs de paiement restent tels quels : le KPI la compte « annulée après
+       paiement ». Aucun mail. La fonction n'est exécutable que par le propriétaire de la base :
+       `execute_sql` du MCP Supabase ou éditeur SQL, jamais l'application. Fonction absente
+       (migration non appliquée) : le script refuse, la commande reste « payée », l'owner la retient.
+     - Paiement **remboursé** après encaissement : aucun chemin gouverné. Elle reste « payée » et
+       l'admin la montre à expédier ; elle ne part pas : c'est l'owner qui la retient (§Trous).
   5. Un mail préparé pour ce client et pas encore envoyé (relance, attente) devient caduc :
      le marquer comme tel en scratchpad, ne jamais l'envoyer.
 - **Surveiller le supplément annulé** : l'annulation ne coupe pas le lien, qui n'expire pas
@@ -358,9 +369,9 @@ et paiement ; le module `payments/` ne se modifie pas).
 - Route `POST /api/payments/:id/refund` : enregistre un remboursement `processed` et envoie au
   client « remboursement confirmé », sans aucun appel à Paybox. Le client est prévenu, pas
   remboursé.
-- Aucun statut « remboursée » ou « paiement annulé », ni marque « ne pas expédier » : une commande
-  remboursée, ou dont le paiement est annulé dans Paybox, reste « payée » en base
-  (`cancel_order_atomic` refuse une commande payée) et à expédier dans l'admin.
+- Aucun statut « remboursée », ni marque « ne pas expédier » : une commande encaissée puis
+  remboursée reste « payée » en base (`cancel_order_atomic` refuse une commande payée) et à
+  expédier dans l'admin. Seul le paiement annulé avant encaissement a un chemin (§8, étape 4).
 - Aucun gabarit de mail pour une équivalence ou un supplément.
 - Le lien de paiement d'une commande annulée non payée reste actif, et `mark_order_paid_atomic`
   remet une commande annulée en « payée » (statut '3') si elle est réglée.
