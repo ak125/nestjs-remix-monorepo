@@ -12,11 +12,41 @@ import {
   UpdateUserDto,
   UserFilters,
   PaginatedUsers,
+  MarketingConsent,
+  MarketingConsentSource,
+  MarketingConsentSourceSchema,
   mapSupabaseToUser,
   mapUserToSupabase,
 } from '../dto/user.dto';
 import * as bcrypt from 'bcrypt';
 import { TABLES } from '@repo/database-types';
+
+const MARKETING_CONSENT_SELECT =
+  'cst_marketing_consent_at, cst_marketing_consent_source';
+
+function marketingConsentColumns(source: MarketingConsentSource) {
+  return {
+    cst_marketing_consent_at: new Date().toISOString(),
+    cst_marketing_consent_source: source,
+  };
+}
+
+function toMarketingConsent(row: {
+  cst_marketing_consent_at: string | null;
+  cst_marketing_consent_source: string | null;
+}): MarketingConsent {
+  if (!row.cst_marketing_consent_at) {
+    return { granted: false, grantedAt: null, source: null };
+  }
+  return {
+    granted: true,
+    grantedAt: row.cst_marketing_consent_at,
+    // The SQL CHECK guarantees the value; parse() makes any drift loud.
+    source: MarketingConsentSourceSchema.parse(
+      row.cst_marketing_consent_source,
+    ),
+  };
+}
 
 @Injectable()
 export class UserDataConsolidatedService extends SupabaseBaseService {
@@ -144,9 +174,14 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
   }
 
   /**
-   * Créer un nouvel utilisateur
+   * Créer un nouvel utilisateur.
+   * `marketingConsentSource` : le client a coché le consentement marketing sur
+   * ce parcours — enregistré dans la même insertion que le compte (ADR-036).
    */
-  async create(userData: CreateUserDto): Promise<User> {
+  async create(
+    userData: CreateUserDto,
+    options: { marketingConsentSource?: MarketingConsentSource } = {},
+  ): Promise<User> {
     try {
       // Vérifier doublon email (pas de UNIQUE constraint en DB)
       if (userData.email) {
@@ -171,6 +206,9 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
         cst_pswd: hashedPassword,
         cst_activ: '1',
         ...mapUserToSupabase(userData),
+        ...(options.marketingConsentSource
+          ? marketingConsentColumns(options.marketingConsentSource)
+          : {}),
       };
 
       const { data, error } = await this.supabase
@@ -186,6 +224,60 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
       this.logger.error('Error creating user:', error);
       throw error;
     }
+  }
+
+  /**
+   * Consentement marketing du client (ADR-036). Une erreur de lecture est
+   * levée : l'appelant ne doit jamais la confondre avec « pas de consentement ».
+   */
+  async getMarketingConsent(userId: string): Promise<MarketingConsent> {
+    const { data, error } = await this.supabase
+      .from(TABLES.xtr_customer)
+      .select(MARKETING_CONSENT_SELECT)
+      .eq('cst_id', userId)
+      .maybeSingle();
+
+    if (error) {
+      throw new Error(`Lecture du consentement impossible: ${error.message}`);
+    }
+    if (!data) throw new Error(`Utilisateur ${userId} introuvable`);
+    return toMarketingConsent(data);
+  }
+
+  /**
+   * Donner ou retirer le consentement marketing. Sans changement d'état,
+   * rien n'est écrit : la date et le parcours d'origine restent ceux du
+   * consentement initial. Le retrait efface les deux colonnes.
+   */
+  async setMarketingConsent(
+    userId: string,
+    granted: boolean,
+    source: MarketingConsentSource,
+  ): Promise<MarketingConsent> {
+    const current = await this.getMarketingConsent(userId);
+    if (current.granted === granted) return current;
+
+    const { data, error } = await this.supabase
+      .from(TABLES.xtr_customer)
+      .update(
+        granted
+          ? marketingConsentColumns(source)
+          : {
+              cst_marketing_consent_at: null,
+              cst_marketing_consent_source: null,
+            },
+      )
+      .eq('cst_id', userId)
+      .select(MARKETING_CONSENT_SELECT)
+      .maybeSingle();
+
+    if (error) {
+      throw new Error(
+        `Enregistrement du consentement impossible: ${error.message}`,
+      );
+    }
+    if (!data) throw new Error(`Utilisateur ${userId} introuvable`);
+    return toMarketingConsent(data);
   }
 
   /**

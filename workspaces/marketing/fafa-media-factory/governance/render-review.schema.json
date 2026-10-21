@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://automecanik.com/schema/fafa-media-factory/render-review.schema.json",
+  "title": "File-only Render Review (D18)",
+  "description": "reviews/<render_sha256>/<requested_revision>.json. Aucun champ d'identité; l'acteur est l'auteur authentifié de la PR, non vérifiable par ce fichier local.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["render_sha256", "start_ms", "end_ms", "comment", "requested_revision"],
+  "properties": {
+    "render_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "start_ms": { "type": "integer", "minimum": 0 },
+    "end_ms": { "type": "integer", "minimum": 1 },
+    "comment": { "type": "string", "minLength": 1, "maxLength": 4000, "pattern": "\\S" },
+    "requested_revision": { "type": "integer", "minimum": 1 }
+  }
+}
