@@ -4340,6 +4340,7 @@
     {
       "dependsOn": [
         "runtime:backend/src/modules/orders/services/order-actions.service.ts",
+        "runtime:backend/src/modules/orders/services/orders.service.ts",
         "runtime:backend/src/services/mail.service.ts"
       ],
       "id": "runtime:backend/src/modules/orders/controllers/order-actions.controller.ts",
@@ -4433,7 +4434,9 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [],
+      "dependsOn": [
+        "runtime:backend/src/modules/orders/services/orders.service.ts"
+      ],
       "id": "runtime:backend/src/modules/orders/services/order-actions.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/orders/services/order-actions.service.ts",
@@ -4679,6 +4682,7 @@
         "runtime:backend/src/modules/pricing/services/catalog-display-activation.service.ts",
         "runtime:backend/src/modules/pricing/services/catalog-display-quarantine.service.ts",
         "runtime:backend/src/modules/pricing/services/price-activation.service.ts",
+        "runtime:backend/src/modules/pricing/services/price-deactivation.service.ts",
         "runtime:backend/src/modules/pricing/services/price-import.service.ts",
         "runtime:backend/src/modules/pricing/services/pricing-simulation.service.ts",
         "runtime:backend/src/modules/pricing/services/pricing-strategy.service.ts"
@@ -4696,6 +4700,7 @@
         "runtime:backend/src/modules/pricing/services/catalog-display-activation.service.ts",
         "runtime:backend/src/modules/pricing/services/catalog-display-quarantine.service.ts",
         "runtime:backend/src/modules/pricing/services/price-activation.service.ts",
+        "runtime:backend/src/modules/pricing/services/price-deactivation.service.ts",
         "runtime:backend/src/modules/pricing/services/price-import.service.ts",
         "runtime:backend/src/modules/pricing/services/pricing-formula.service.ts",
         "runtime:backend/src/modules/pricing/services/pricing-invariants.service.ts",
@@ -4740,6 +4745,17 @@
       "id": "runtime:backend/src/modules/pricing/services/price-activation.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/pricing/services/price-activation.service.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/modules/pricing/services/pricing.repository.ts"
+      ],
+      "id": "runtime:backend/src/modules/pricing/services/price-deactivation.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/pricing/services/price-deactivation.service.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"

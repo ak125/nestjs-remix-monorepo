@@ -7424,6 +7424,89 @@
           },
           {
             "mode": "IN",
+            "name": "p_chunk_id",
+            "type": "UUID"
+          },
+          {
+            "mode": "IN",
+            "name": "p_supplier",
+            "type": "TEXT"
+          },
+          {
+            "mode": "IN",
+            "name": "p_operator",
+            "type": "TEXT"
+          },
+          {
+            "mode": "IN",
+            "name": "p_rows",
+            "type": "JSONB"
+          }
+        ],
+        "definedInMigrations": [
+          "20261019_pricing_deactivate_chunk.sql"
+        ],
+        "domain": "UNKNOWN",
+        "id": "public.pricing_deactivate_chunk",
+        "language": "plpgsql",
+        "name": "pricing_deactivate_chunk",
+        "owner": "__unassigned__",
+        "parseMode": "parsed",
+        "parseWarnings": [],
+        "returnType": "JSONB",
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "searchPath": [
+          "public"
+        ],
+        "securityDefiner": false,
+        "sourceConfidence": "high",
+        "status": "UNKNOWN",
+        "usedBy": []
+      },
+      {
+        "args": [
+          {
+            "mode": "IN",
+            "name": "p_batch_id",
+            "type": "UUID"
+          },
+          {
+            "mode": "IN",
+            "name": "p_supplier",
+            "type": "TEXT"
+          }
+        ],
+        "definedInMigrations": [
+          "20261019_pricing_deactivate_chunk.sql"
+        ],
+        "domain": "UNKNOWN",
+        "id": "public.pricing_deactivate_rollback",
+        "language": "plpgsql",
+        "name": "pricing_deactivate_rollback",
+        "owner": "__unassigned__",
+        "parseMode": "parsed",
+        "parseWarnings": [],
+        "returnType": "JSONB",
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "searchPath": [
+          "public"
+        ],
+        "securityDefiner": false,
+        "sourceConfidence": "high",
+        "status": "UNKNOWN",
+        "usedBy": []
+      },
+      {
+        "args": [
+          {
+            "mode": "IN",
+            "name": "p_batch_id",
+            "type": "UUID"
+          },
+          {
+            "mode": "IN",
             "name": "p_supplier",
             "type": "TEXT"
           }
@@ -28389,7 +28472,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 64,
+      "loc": 73,
       "owner": "__unassigned__",
       "path": "backend/jest.config.js",
       "risk": "low",
@@ -29372,7 +29455,7 @@
         "backend/src/utils/promise-helpers.ts"
       ],
       "kind": "controller",
-      "loc": 950,
+      "loc": 959,
       "owner": "@ak125/auth-team",
       "path": "backend/src/auth/controllers/auth-login.controller.ts",
       "risk": "high",
@@ -29652,7 +29735,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 128,
+      "loc": 140,
       "owner": "@ak125/auth-team",
       "path": "backend/src/auth/dto/register.dto.ts",
       "risk": "high",
@@ -34096,7 +34179,7 @@
         "backend/src/database/services/piece-price-data.service.ts"
       ],
       "kind": "test",
-      "loc": 203,
+      "loc": 204,
       "owner": "@ak125/payments-team",
       "path": "backend/src/database/services/cart-data.sellable-guard.test.ts",
       "risk": "medium",
@@ -34314,7 +34397,7 @@
         "backend/src/database/services/piece-price-data.service.ts"
       ],
       "kind": "test",
-      "loc": 275,
+      "loc": 276,
       "owner": "@ak125/payments-team",
       "path": "backend/src/database/services/piece-price-data.service.test.ts",
       "risk": "medium",
@@ -34342,7 +34425,7 @@
         "backend/src/database/services/supabase-base.service.ts"
       ],
       "kind": "service",
-      "loc": 263,
+      "loc": 265,
       "owner": "@ak125/payments-team",
       "path": "backend/src/database/services/piece-price-data.service.ts",
       "risk": "high",
@@ -41693,7 +41776,7 @@
         "backend/src/modules/cart/services/abandoned-cart.service.ts"
       ],
       "kind": "controller",
-      "loc": 155,
+      "loc": 224,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/cart/controllers/cart-recovery.controller.ts",
       "risk": "high",
@@ -41840,7 +41923,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 288,
+      "loc": 313,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/cart/services/abandoned-cart-data.service.ts",
       "risk": "high",
@@ -41871,7 +41954,7 @@
         "backend/src/services/mail.service.ts"
       ],
       "kind": "service",
-      "loc": 320,
+      "loc": 345,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/cart/services/abandoned-cart.service.ts",
       "risk": "high",
@@ -48859,7 +48942,7 @@
         "backend/src/modules/media-factory/types/video.types.ts"
       ],
       "kind": "service",
-      "loc": 406,
+      "loc": 415,
       "owner": "@ak125/marketing-team",
       "path": "backend/src/modules/media-factory/services/video-gates.service.ts",
       "risk": "medium",
@@ -49837,10 +49920,11 @@
         "@auth/decorators/require-permission.decorator",
         "@auth/guards/permissions.guard",
         "backend/src/modules/orders/services/order-actions.service.ts",
+        "backend/src/modules/orders/services/orders.service.ts",
         "backend/src/services/mail.service.ts"
       ],
       "kind": "controller",
-      "loc": 365,
+      "loc": 384,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/orders/controllers/order-actions.controller.ts",
       "risk": "high",
@@ -50171,10 +50255,12 @@
         "@database/services/supabase-base.service",
         "@repo/database-types",
         "backend/src/modules/orders/events/order.events.ts",
-        "backend/src/modules/orders/types/order.types.ts"
+        "backend/src/modules/orders/services/orders.service.ts",
+        "backend/src/modules/orders/types/order.types.ts",
+        "crypto"
       ],
       "kind": "service",
-      "loc": 763,
+      "loc": 756,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/orders/services/order-actions.service.ts",
       "risk": "high",
@@ -50295,10 +50381,14 @@
       "domain": "D11",
       "id": "backend/src/modules/orders/services/orders.service.ts",
       "importedBy": [
+        "backend/src/modules/orders/controllers/order-actions.controller.ts",
         "backend/src/modules/orders/controllers/orders.controller.ts",
-        "backend/src/modules/orders/orders.module.ts"
+        "backend/src/modules/orders/orders.module.ts",
+        "backend/src/modules/orders/services/order-actions.service.ts"
       ],
       "imports": [
+        "@config/site.constants",
+        "@database/services/piece-price-data.service",
         "@database/services/supabase-base.service",
         "@repo/database-types",
         "@repo/domain-commerce",
@@ -50311,7 +50401,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 924,
+      "loc": 1271,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/orders/services/orders.service.ts",
       "risk": "high",
@@ -51168,12 +51258,13 @@
         "backend/src/modules/pricing/services/catalog-display-activation.service.ts",
         "backend/src/modules/pricing/services/catalog-display-quarantine.service.ts",
         "backend/src/modules/pricing/services/price-activation.service.ts",
+        "backend/src/modules/pricing/services/price-deactivation.service.ts",
         "backend/src/modules/pricing/services/price-import.service.ts",
         "backend/src/modules/pricing/services/pricing-simulation.service.ts",
         "backend/src/modules/pricing/services/pricing-strategy.service.ts"
       ],
       "kind": "controller",
-      "loc": 208,
+      "loc": 233,
       "owner": "@ak125",
       "path": "backend/src/modules/pricing/controllers/pricing-import.controller.ts",
       "risk": "high",
@@ -51198,6 +51289,7 @@
         "backend/src/modules/pricing/services/catalog-display-activation.service.ts",
         "backend/src/modules/pricing/services/catalog-display-quarantine.service.ts",
         "backend/src/modules/pricing/services/price-activation.service.ts",
+        "backend/src/modules/pricing/services/price-deactivation.service.ts",
         "backend/src/modules/pricing/services/price-import.service.ts",
         "backend/src/modules/pricing/services/pricing-formula.service.ts",
         "backend/src/modules/pricing/services/pricing-invariants.service.ts",
@@ -51207,7 +51299,7 @@
         "backend/src/modules/pricing/services/supplier-profile.service.ts"
       ],
       "kind": "service",
-      "loc": 43,
+      "loc": 45,
       "owner": "@ak125",
       "path": "backend/src/modules/pricing/pricing.module.ts",
       "risk": "high",
@@ -51322,6 +51414,29 @@
       "loc": 53,
       "owner": "@ak125",
       "path": "backend/src/modules/pricing/services/__tests__/price-activation.service.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
+      "id": "backend/src/modules/pricing/services/__tests__/price-deactivation.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/pricing/services/price-deactivation.service.ts",
+        "backend/src/modules/pricing/services/pricing.repository.ts"
+      ],
+      "kind": "test",
+      "loc": 407,
+      "owner": "@ak125",
+      "path": "backend/src/modules/pricing/services/__tests__/price-deactivation.service.test.ts",
       "risk": "high",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -51736,6 +51851,32 @@
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
+        "manual"
+      ],
+      "domain": "D11",
+      "id": "backend/src/modules/pricing/services/price-deactivation.service.ts",
+      "importedBy": [
+        "backend/src/modules/pricing/controllers/pricing-import.controller.ts",
+        "backend/src/modules/pricing/pricing.module.ts",
+        "backend/src/modules/pricing/services/__tests__/price-deactivation.service.test.ts"
+      ],
+      "imports": [
+        "backend/src/modules/pricing/services/pricing.repository.ts"
+      ],
+      "kind": "service",
+      "loc": 372,
+      "owner": "@ak125",
+      "path": "backend/src/modules/pricing/services/price-deactivation.service.ts",
+      "risk": "high",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
         "manual",
         "reachability"
       ],
@@ -51969,11 +52110,13 @@
       "id": "backend/src/modules/pricing/services/pricing.repository.ts",
       "importedBy": [
         "backend/src/modules/pricing/pricing.module.ts",
+        "backend/src/modules/pricing/services/__tests__/price-deactivation.service.test.ts",
         "backend/src/modules/pricing/services/catalog-display-activation.service.test.ts",
         "backend/src/modules/pricing/services/catalog-display-activation.service.ts",
         "backend/src/modules/pricing/services/catalog-display-quarantine.service.test.ts",
         "backend/src/modules/pricing/services/catalog-display-quarantine.service.ts",
         "backend/src/modules/pricing/services/price-activation.service.ts",
+        "backend/src/modules/pricing/services/price-deactivation.service.ts",
         "backend/src/modules/pricing/services/price-import.service.ts",
         "backend/src/modules/pricing/services/pricing-simulation.service.ts"
       ],
@@ -51987,7 +52130,7 @@
         "backend/src/modules/pricing/utils/normalize-supplier-reference.ts"
       ],
       "kind": "service",
-      "loc": 642,
+      "loc": 834,
       "owner": "@ak125",
       "path": "backend/src/modules/pricing/services/pricing.repository.ts",
       "risk": "high",
@@ -58071,6 +58214,7 @@
         "backend/src/modules/seo/dynamic-seo-v4-ultimate.service.ts",
         "backend/src/modules/seo/registries/seo-surface.registry.ts",
         "backend/src/modules/seo/registries/seo-variant-family.registry.ts",
+        "backend/src/modules/seo/seo-v4.types.ts",
         "backend/src/modules/seo/services/chain/seo-ariane-breadcrumb.service.ts",
         "backend/src/modules/seo/services/chain/seo-chain-orchestrator.service.ts",
         "backend/src/modules/seo/services/chain/seo-content-block-builder.service.ts",
@@ -58084,7 +58228,7 @@
         "backend/src/modules/seo/services/seo-v4-monitoring.service.ts"
       ],
       "kind": "test",
-      "loc": 323,
+      "loc": 437,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/__tests__/dynamic-seo-v4-via-chain.test.ts",
       "risk": "high",
@@ -58679,7 +58823,7 @@
         "backend/src/modules/seo/services/seo-v4-monitoring.service.ts"
       ],
       "kind": "service",
-      "loc": 460,
+      "loc": 471,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/dynamic-seo-v4-ultimate.service.ts",
       "risk": "high",
@@ -60571,6 +60715,7 @@
         "backend/src/modules/admin/services/keyword-plan-gates.service.ts",
         "backend/src/modules/blog/services/r3-guide.service.ts",
         "backend/src/modules/blog/services/r6-guide.service.ts",
+        "backend/src/modules/seo/__tests__/dynamic-seo-v4-via-chain.test.ts",
         "backend/src/modules/seo/dynamic-seo-v4-ultimate.service.ts",
         "backend/src/modules/seo/seo.module.ts",
         "backend/src/modules/seo/services/chain/__tests__/seo-chain-marketing-parity.test.ts",
@@ -60582,7 +60727,7 @@
         "@repo/database-types"
       ],
       "kind": "config",
-      "loc": 206,
+      "loc": 216,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/seo-v4.types.ts",
       "risk": "high",
@@ -62043,7 +62188,7 @@
         "backend/src/modules/seo/seo-v4.types.ts"
       ],
       "kind": "service",
-      "loc": 366,
+      "loc": 365,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/services/seo-v4-monitoring.service.ts",
       "risk": "high",
@@ -67021,7 +67166,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 220,
+      "loc": 242,
       "owner": "@ak125/auth-team",
       "path": "backend/src/modules/users/dto/user.dto.ts",
       "risk": "high",
@@ -67220,7 +67365,7 @@
         "backend/src/modules/users/dto/user.dto.ts"
       ],
       "kind": "service",
-      "loc": 643,
+      "loc": 735,
       "owner": "@ak125/auth-team",
       "path": "backend/src/modules/users/services/user-data-consolidated.service.ts",
       "risk": "high",
@@ -67275,7 +67420,7 @@
         "backend/src/modules/users/users-final.service.ts"
       ],
       "kind": "controller",
-      "loc": 514,
+      "loc": 579,
       "owner": "@ak125/auth-team",
       "path": "backend/src/modules/users/users-final.controller.ts",
       "risk": "high",
@@ -67305,7 +67450,7 @@
         "backend/src/modules/users/services/user-data-consolidated.service.ts"
       ],
       "kind": "service",
-      "loc": 437,
+      "loc": 463,
       "owner": "@ak125/auth-team",
       "path": "backend/src/modules/users/users-final.service.ts",
       "risk": "high",
@@ -68761,7 +68906,7 @@
         "backend/src/config/app.config.ts"
       ],
       "kind": "service",
-      "loc": 1182,
+      "loc": 1190,
       "owner": "__unassigned__",
       "path": "backend/src/services/mail.service.ts",
       "risk": "low",
@@ -69064,7 +69209,7 @@
         "backend/src/modules/agentic-engine/types/job.types.ts"
       ],
       "kind": "service",
-      "loc": 363,
+      "loc": 362,
       "owner": "@ak125",
       "path": "backend/src/workers/processors/agentic.processor.ts",
       "risk": "medium",
@@ -69523,7 +69668,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 98,
+      "loc": 101,
       "owner": "@ak125",
       "path": "backend/tests/__mocks__/@repo/database-types.ts",
       "risk": "medium",
@@ -69546,6 +69691,26 @@
       "loc": 19,
       "owner": "@ak125",
       "path": "backend/tests/setup.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/abandoned-cart-delivery-truth.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 198,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/abandoned-cart-delivery-truth.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -69666,6 +69831,26 @@
       "loc": 700,
       "owner": "@ak125",
       "path": "backend/tests/unit/buying-guide-data.service.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/cart-recovery.unsubscribe.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 272,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/cart-recovery.unsubscribe.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -70159,6 +70344,26 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "backend/tests/unit/marketing-consent-wiring.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 565,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/marketing-consent-wiring.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "backend/tests/unit/media-factory-flag.test.ts",
       "importedBy": [],
       "imports": [],
@@ -70166,6 +70371,46 @@
       "loc": 43,
       "owner": "@ak125",
       "path": "backend/tests/unit/media-factory-flag.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/order-actions.cancel-order.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 148,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/order-actions.cancel-order.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/order-actions.create-supplement.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 114,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/order-actions.create-supplement.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -70243,7 +70488,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 173,
+      "loc": 174,
       "owner": "@ak125",
       "path": "backend/tests/unit/orders.service.cancel-order-rpc-contract.test.ts",
       "risk": "medium",
@@ -70263,9 +70508,29 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 166,
+      "loc": 167,
       "owner": "@ak125",
       "path": "backend/tests/unit/orders.service.create-correlation-id.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/orders.service.create-supplement-order.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 552,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/orders.service.create-supplement-order.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -71643,7 +71908,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 529,
+      "loc": 544,
       "owner": "@ak125",
       "path": "backend/tests/unit/video-gates.service.test.ts",
       "risk": "medium",
@@ -73462,11 +73727,10 @@
       "id": "frontend/app/components/blog/NewsletterCTA.tsx",
       "importedBy": [],
       "imports": [
-        "~/components/ui/button",
-        "~/components/ui/input"
+        "~/components/ui/button"
       ],
       "kind": "config",
-      "loc": 97,
+      "loc": 53,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/blog/NewsletterCTA.tsx",
       "risk": "low",
@@ -79127,7 +79391,7 @@
         "frontend/app/types/pieces-route.types.ts"
       ],
       "kind": "config",
-      "loc": 229,
+      "loc": 242,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/pieces/PiecesOemSection.tsx",
       "risk": "low",
@@ -83953,10 +84217,13 @@
         "frontend/app/components/ui/card.tsx",
         "frontend/app/components/ui/input.tsx",
         "frontend/app/components/ui/label.tsx",
-        "~/components/errors/ErrorGeneric"
+        "~/components/errors/ErrorGeneric",
+        "~/services/profile.server",
+        "~/utils/date",
+        "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 424,
+      "loc": 360,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/account.settings.tsx",
       "risk": "medium",
@@ -85031,7 +85298,7 @@
         "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 925,
+      "loc": 1136,
       "owner": "@ak125/admin-team",
       "path": "frontend/app/routes/admin.orders.$orderId.tsx",
       "risk": "medium",
@@ -90948,7 +91215,7 @@
         "~/utils/logger"
       ],
       "kind": "config",
-      "loc": 84,
+      "loc": 169,
       "owner": "__unassigned__",
       "path": "frontend/app/services/profile.server.ts",
       "risk": "low",
@@ -93650,6 +93917,26 @@
         "manual"
       ],
       "domain": "D2",
+      "id": "frontend/tests/unit/account-settings-marketing-consent.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 280,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/account-settings-marketing-consent.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
       "id": "frontend/tests/unit/admin-leads-loader-status.test.ts",
       "importedBy": [],
       "imports": [],
@@ -93657,6 +93944,26 @@
       "loc": 140,
       "owner": "@ak125",
       "path": "frontend/tests/unit/admin-leads-loader-status.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/admin-order-supplement.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 230,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/admin-order-supplement.test.tsx",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -94950,6 +95257,26 @@
         "manual"
       ],
       "domain": "D2",
+      "id": "frontend/tests/unit/newsletter-cta-no-fake-subscription.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 54,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/newsletter-cta-no-fake-subscription.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
       "id": "frontend/tests/unit/no-ios16-incompatible-regex.test.ts",
       "importedBy": [],
       "imports": [],
@@ -95294,7 +95621,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 90,
+      "loc": 149,
       "owner": "@ak125",
       "path": "frontend/tests/unit/pieces-oem-section.test.tsx",
       "risk": "medium",
@@ -102306,6 +102633,46 @@
         "manual"
       ],
       "domain": "D13",
+      "id": "scripts/marketing/fafa-pilot-governance.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 266,
+      "owner": "@ak125",
+      "path": "scripts/marketing/fafa-pilot-governance.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
+      "id": "scripts/marketing/fafa-pilot-governance.test.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 699,
+      "owner": "@ak125",
+      "path": "scripts/marketing/fafa-pilot-governance.test.cjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
       "id": "scripts/marketing/generate-copy-batch.ts",
       "importedBy": [],
       "imports": [],
@@ -104867,15 +105234,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "5ca91094428cc956799c31406f2c730d22e7557eca4996e6945b0e0c6969aa47",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "f5e3af9f51963906b209979eab5ba317a31b0d7ecb78bf27af96eac2a1acad56",
+      ".spec/00-canon/repository-registry/ownership.yaml": "69cb4efc63cebbb9c451c9d0b7d8fc59b51d2ef80981f022b06ed635ea78d0e1",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "90163175840e44796908f793612d86b090e6efec04ed7053e3966b0e0c211728",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "05eb099d3fa29d6132cc28b34c84bdfeb07846a464af4b02e1c567a9dd8eb5b6",
-      "audit/registry/rpc.json": "68f3b21f7aa0b2ef7da9b488c657c3b6b5bdde0476bf7d617f1e346cc26b4449",
-      "audit/registry/runtime.json": "db3c1293c1d26fff96e8f10d130e6ef2238b96d3fbbc099f9e074be14c26bbbf"
+      "audit/registry/files.json": "c22b9b8c644e7f0ffe9f0756d0fbc71827982a87320f676dd5fdfe2941353f56",
+      "audit/registry/rpc.json": "623f3a5150e1cc71cd79946d7a4128fd078d6493626b20f4b6c4c4ac64f06f6d",
+      "audit/registry/runtime.json": "fed459a44851475be334b2234fe92f7c5cdb1d371bdbf448f9d524dc28445d84"
     },
-    "sotFingerprint": "b87e455a21de"
+    "sotFingerprint": "fe2339d1e3c7"
   },
   "runtime": [
     {
@@ -109218,6 +109585,7 @@
     {
       "dependsOn": [
         "runtime:backend/src/modules/orders/services/order-actions.service.ts",
+        "runtime:backend/src/modules/orders/services/orders.service.ts",
         "runtime:backend/src/services/mail.service.ts"
       ],
       "id": "runtime:backend/src/modules/orders/controllers/order-actions.controller.ts",
@@ -109311,7 +109679,9 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [],
+      "dependsOn": [
+        "runtime:backend/src/modules/orders/services/orders.service.ts"
+      ],
       "id": "runtime:backend/src/modules/orders/services/order-actions.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/orders/services/order-actions.service.ts",
@@ -109557,6 +109927,7 @@
         "runtime:backend/src/modules/pricing/services/catalog-display-activation.service.ts",
         "runtime:backend/src/modules/pricing/services/catalog-display-quarantine.service.ts",
         "runtime:backend/src/modules/pricing/services/price-activation.service.ts",
+        "runtime:backend/src/modules/pricing/services/price-deactivation.service.ts",
         "runtime:backend/src/modules/pricing/services/price-import.service.ts",
         "runtime:backend/src/modules/pricing/services/pricing-simulation.service.ts",
         "runtime:backend/src/modules/pricing/services/pricing-strategy.service.ts"
@@ -109574,6 +109945,7 @@
         "runtime:backend/src/modules/pricing/services/catalog-display-activation.service.ts",
         "runtime:backend/src/modules/pricing/services/catalog-display-quarantine.service.ts",
         "runtime:backend/src/modules/pricing/services/price-activation.service.ts",
+        "runtime:backend/src/modules/pricing/services/price-deactivation.service.ts",
         "runtime:backend/src/modules/pricing/services/price-import.service.ts",
         "runtime:backend/src/modules/pricing/services/pricing-formula.service.ts",
         "runtime:backend/src/modules/pricing/services/pricing-invariants.service.ts",
@@ -109618,6 +109990,17 @@
       "id": "runtime:backend/src/modules/pricing/services/price-activation.service.ts",
       "kind": "nestjs-service",
       "path": "backend/src/modules/pricing/services/price-activation.service.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/modules/pricing/services/pricing.repository.ts"
+      ],
+      "id": "runtime:backend/src/modules/pricing/services/price-deactivation.service.ts",
+      "kind": "nestjs-service",
+      "path": "backend/src/modules/pricing/services/price-deactivation.service.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"

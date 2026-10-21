@@ -46,6 +46,9 @@ export const RegisterSchema = z.object({
     .string()
     .regex(/^[\d\s\+\-\(\)]+$/, 'Numéro de mobile invalide')
     .optional(),
+
+  // Consentement marketing explicite (ADR-036) ; absent = pas de consentement.
+  newsletterOptIn: z.boolean().optional(),
 });
 
 /**
@@ -111,6 +114,15 @@ export class RegisterDtoClass {
     type: String,
   })
   gsm?: string;
+
+  @ApiProperty({
+    description:
+      'Explicit marketing consent (offers and news). Omitted or false = no consent.',
+    example: false,
+    required: false,
+    type: Boolean,
+  })
+  newsletterOptIn?: boolean;
 }
 
 /**

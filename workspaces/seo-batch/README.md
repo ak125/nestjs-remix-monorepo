@@ -1,57 +1,44 @@
 # SEO Batch Workspace
 
-> ⚠️ **LEGACY pour le CONTENU — pour PRODUIRE du contenu, utiliser `workspaces/wiki/`, pas ce workspace.**
-> Ici `content-gen` / `rag-ops` / `r*-content-batch` / `r7-brand-rag-generator` lisent `/opt/automecanik/rag/knowledge/` → DB : ce mode RAG-source-de-contenu est **abandonné** (canon vault ADR-031/046 ; garde ast-grep #923 `seo-no-rag-as-content-source`).
-> **Pipeline contenu MODERNE** = `workspaces/wiki/` (`wiki-proposal-writer`, ADR-033) → wiki-repo `_scripts/` (`build_exports_seo` ADR-059, `promote.py` ADR-083 auto-tiered) → `exports/seo` → DB → R.
-> Les skills **audit/QA** d'ici (`v5-guardian` — qui fusionne `pollution-scanner` + `content-quality-gate` depuis 2026-06-12 —, `seo-gamme-audit`, `kw-classify`, `r8-diversity-check`) restent valides. Dépréciation du RAG-contenu = programme owner-sponsorisé séparé (ne pas réécrire réactivement).
+Workspace pour le planning de mots-clés, les audits SEO et la méthode de contenu
+[seo-content-loop](.claude/skills/seo-content-loop/SKILL.md).
+Les rôles et statuts sont décrits dans [AGENTS.md](AGENTS.md) ; les règles métier
+sont dans [CLAUDE.md](CLAUDE.md) et [.claude/rules/seo-batch.md](.claude/rules/seo-batch.md).
 
-Claude Code project root pour les campagnes SEO AutoMecanik. Charge uniquement les 39 agents R0-R8 et les 16 skills SEO, sans les charger dans le workspace dev daily.
+## Sources et méthode de contenu
 
-## Pourquoi ce workspace existe
+Le contenu vient de **RAW → WIKI validée → exports/projections autorisés → consommateurs**.
+Le **RAG est réservé au chatbot**, jamais source de génération SEO.
 
-Le `.claude/` à la racine du monorepo mélangait deux usages très différents :
+- Pour planifier ou exécuter la méthode de contenu R1-R8, consulter
+  [seo-content-loop](.claude/skills/seo-content-loop/SKILL.md), dans le mandat autorisé.
+- Pour rédiger des proposals WIKI, utiliser le [workspace WIKI](../wiki/README.md).
+  La présence d'un outil ne prouve pas sa promotion, son activation ou son résultat servi.
+- Les agents marqués **NEUTRALISÉ** dans [AGENTS.md](AGENTS.md) restent inertes ;
+  leurs fichiers indiquent leurs remplacements. Ne pas les réactiver.
+- Les opérations RAG concernent le chatbot selon le périmètre de
+  [rag-ops](.claude/skills/rag-ops/SKILL.md), sans ingestion RAG destinée au contenu SEO.
 
-| Workload | Fréquence | Surface utile |
-|---|---|---|
-| Dev monorepo daily (backend, frontend, refactor, CI) | tous les jours | 8 skills dev (`code-review`, `frontend-design`, `responsive-audit`, `vehicle-ops`, …) |
-| Batchs SEO (KW planning, content gen, RAG enrich) | par campagnes | 39 agents R*-* + 16 skills SEO |
-
-Avant la séparation, **chaque session Claude Code chargeait les 47 agents/skills SEO en system prompt** même pour des fixes backend triviaux. La séparation par workspace utilise le mécanisme natif Claude Code (un `.claude/` lié au cwd) — pas de hook custom, pas d'archivage.
-
-## Usage
+## Usage et chargement
 
 ```bash
-# Session SEO (charge les 39 agents + 16 skills SEO)
 cd /opt/automecanik/app/workspaces/seo-batch && claude
-
-# Session dev daily (ne charge AUCUN des agents R*)
-cd /opt/automecanik/app && claude
 ```
 
-## Contenu
+Les instructions et skills parents restent applicables. La
+[carte commune des workspaces](../../.claude/knowledge/workspaces.md) décrit la découverte
+Claude/Codex ; ce dossier ne constitue pas une isolation technique.
+Consulter la description du skill pertinent sous `.claude/skills/`, sans charger le catalogue entier.
+Le contrat de sortie distribué est sous `.claude/canon-mirrors/`, séparé des règles locales.
 
-- `.claude/agents/` : 39 agents R0-R8 (`r0-home-execution`, `r1-keyword-planner`, `r2-product-validator`, ..., `r8-vehicle-validator`) + `_shared/`
-- `.claude/skills/` : 16 skills SEO (voir liste ci-dessous)
-- `.claude/rules/` : règles SEO + contrat de sortie agents
-- `.claude/settings.json` : hooks PreToolUse / PostToolUse / Stop (mêmes scripts que monorepo, paths absolus)
-- `CLAUDE.md` : pointer vers gouvernance + règles SEO spécifiques
+## Choisir le périmètre
 
-### Skills SEO inclus
-
-`content-audit`, `content-gen`, `content-quality-gate` (🚨 deprecated 2026-06-12, fusionné dans `v5-guardian`), `keyword-planner`, `kw-classify`, `legacy-recycler`, `pipeline-orchestrator` (🔎 read-only depuis 2026-06-20 — détecteur d'état/couverture ; sous-commandes `run R3/R4/R6/R7` retirées, doctrine contenu = `seo-content-loop`), `pollution-scanner` (🚨 deprecated 2026-06-12, fusionné dans `v5-guardian`), `r8-diversity-check`, `rag-check` (🚨 deprecated 2026-06-12, successeur = validation exports WIKI), `rag-ops` (⚠️ chatbot-ops only ; ingestion contenu = legacy ADR-031/046), `seo-content-architect`, `seo-gamme-audit`, `seo-vault-verify`, `surgical-cleaner`, `v5-guardian` (survivant renforcé).
-
-### Skills DEV restés en monorepo racine
-
-`code-review`, `db-migration`, `frontend-design`, `governance-vault-ops`, `responsive-audit`, `session-log`, `ui-ux-pro-max`, `vehicle-ops`.
-
-## Quand basculer ?
-
-| Tâche | Workspace |
+| Tâche | Point d'entrée |
 |---|---|
-| KW planning gamme/véhicule | `seo-batch` |
-| Génération contenu R1-R8 | `seo-batch` |
-| Audit gamme / pollution scan / diversity check | `seo-batch` |
-| RAG enrich / refresh | `seo-batch` |
-| Fix bug backend / frontend | monorepo racine |
-| Refactor, new feature dev, ADR exec | monorepo racine |
-| Governance vault, code review, deploy | monorepo racine |
+| Planning KW, audit SEO, qualité ou diversité | Ce workspace et le skill pertinent |
+| Méthode de contenu R1-R8 à partir de WIKI validée | `seo-content-loop` |
+| Rédaction de proposals WIKI | `workspaces/wiki/` |
+| Diagnostic du retrieval chatbot | `rag-ops`, dans son périmètre autorisé |
+| Modification backend/frontend ou infrastructure | Racine du dépôt et règles du domaine |
+
+Ce guide n'autorise aucune migration, publication, activation ni intervention PROD.

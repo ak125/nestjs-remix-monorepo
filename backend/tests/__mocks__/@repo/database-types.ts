@@ -7,9 +7,12 @@
  */
 export const TABLES = {
   xtr_order: 'xtr_order',
+  xtr_order_line: 'xtr_order_line',
   xtr_customer: 'xtr_customer',
   xtr_product: 'xtr_product',
   ic_postback: 'ic_postback',
+  pieces: 'pieces',
+  pieces_marque: 'pieces_marque',
 } as Record<string, string>;
 
 // Re-export empty placeholders for other named exports

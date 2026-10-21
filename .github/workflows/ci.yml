@@ -225,6 +225,8 @@ jobs:
         run: |
           npm run typecheck:marketing
           npm run test:marketing
+          node --test scripts/marketing/fafa-pilot-governance.test.cjs
+          node node_modules/jest/bin/jest.js --config backend/jest.config.js --runInBand backend/tests/unit/video-gates.service.test.ts
 
       - name: Test deployment probes
         run: node --test scripts/ci/prod-client-ip-probe.test.mjs scripts/ci/prod-admin-guard-probe.test.mjs

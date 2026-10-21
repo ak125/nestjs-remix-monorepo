@@ -166,39 +166,30 @@ Statuts PR connus (à compléter quand mergent) :
 
 Fusions = PR **plus lourdes** que simple delete (nécessitent update des imports côté consumers). Faire séparément des cleanup "simple delete".
 
-## Section 4 — Cycles (**15** au total, ~~17~~)
+## Section 4 — Cycles (historique)
 
-État 2026-05-13 : [`audit/cycle-map.json`](../../../audit/cycle-map.json) en compte **15** (vs 17 estimés en 2026-04-24 — 2 cycles fortuits ont été résolus depuis). Liste exhaustive : voir le JSON ; classification humaine ci-dessous toujours valable. Séquence d'attaque dans PR-5 du plan canon ([`audit/cleanup-plan-by-domain.md`](../../../audit/cleanup-plan-by-domain.md) §PR-5).
+État consigné le 2026-05-13 : **15** cycles dans `audit/cycle-map.json`, contre
+17 estimés le 2026-04-24. Ces chiffres et les observations ci-dessous ne décrivent
+pas nécessairement le checkout courant. Les anciennes classifications « fortuit »,
+« structurel » ou « acceptable » ne valent plus décision d'intervention ou de tolérance.
 
-### Fortuits (résolus par 1 inversion d'import, voir playbook)
+| Observation historique | Fichiers ou services concernés |
+|---|---|
+| Types de rôles | `config/role-ids.ts` ↔ `workers/types/content-refresh.types.ts` |
+| Cross-selling | `products/cross-selling.service` ↔ `cross-selling-seo.service` / `cross-selling-source.service` |
+| Pipeline RAG | `rag-proxy/*` : cleanup↔detection↔knowledge, rag-proxy↔ingestion↔redis-job, rag-proxy↔webhook |
+| Authentification et utilisateurs | `auth/auth.module` ↔ `modules/users/users.module` |
+| Administration | `admin/services/admin-gammes-seo` ↔ `gamme-detail-enricher` ; `stock-management` ↔ `stock-movement` / `stock-report` |
+| Blog | `blog/services/advice` ↔ `advice-enrichment` ; `constructeur` ↔ `constructeur-search` |
+| Support | `support/services/legal` ↔ `legal-page` / `legal-version` |
+| Frontend | `root.tsx` ↔ `hooks/useRootData.ts` |
 
-| # | Cycle | Solution |
-|---|---|---|
-| 1 | `config/role-ids.ts` ↔ `workers/types/content-refresh.types.ts` | Extraire types partagés dans `shared-types.ts` |
-| 2 | `products/cross-selling.service` ↔ `cross-selling-seo.service` | Inverser direction (SEO depends on base, pas l'inverse) |
-| 3 | `products/cross-selling.service` ↔ `cross-selling-source.service` | Idem |
-
-### Structurels (refactor non-trivial)
-
-| # | Cycle | Complexité | Solution |
-|---|---|---|---|
-| 4 | `rag-proxy/*` (3 cycles internes : cleanup↔detection↔knowledge, rag-proxy↔ingestion↔redis-job, rag-proxy↔webhook) | Haute | Extraire interfaces vers `rag-proxy/interfaces/` + implémentations vers `services/impl/`. ADR possible. |
-| 5 | `auth/auth.module` ↔ `modules/users/users.module` | Moyenne | Inverser : users dépend de auth, auth ne doit pas dépendre de users. Extract shared types si besoin. |
-
-### Acceptables (cycles intra-module orchestrateur-workers, pattern NestJS courant)
-
-| # | Cycle | Statut |
-|---|---|---|
-| 10 | `admin/services/admin-gammes-seo` ↔ `admin/services/gamme-detail-enricher` | Acceptable — pattern orchestrateur |
-| 11 | `admin/services/stock-management` ↔ `stock-movement` | Acceptable |
-| 12 | `admin/services/stock-management` ↔ `stock-report` | Acceptable |
-| 13 | `blog/services/advice` ↔ `advice-enrichment` | Acceptable |
-| 14 | `blog/services/constructeur` ↔ `constructeur-search` | Acceptable |
-| 15-16 | `support/services/legal` ↔ `legal-page`/`legal-version` | Acceptable |
-| 17 | Frontend `root.tsx` ↔ `hooks/useRootData.ts` | Acceptable — pattern React Router SSR |
-
-Les cycles "acceptables" sont documentés ici comme **explicitement tolérés**.
-À re-évaluer si une nouvelle règle `no-circular` strict s'active côté CI.
+Pour reprendre un candidat, suivre le [playbook de diagnostic des cycles](cycle-resolution-playbook.md)
+et y vérifier le propriétaire actuel, les imports et le câblage. Les recettes sont
+centralisées dans ce guide : pas d'extraction automatique de types, d'inversion
+`auth`/`users` présumée ni d'exemption par catégorie. Le package `@repo/seo-roles`
+existe déjà ; ne pas réappliquer l'ancienne extraction vers `shared-types.ts`.
+Les priorités PR-5 ci-dessous sont celles de mai 2026, à requalifier avant exécution.
 
 ## Section 5 — Dependency-cruiser violations
 
@@ -229,4 +220,4 @@ Les cycles "acceptables" sont documentés ici comme **explicitement tolérés**.
 
 ---
 
-_Mettre à jour ce doc à chaque PR cleanup mergée (column Statut). Pour les chiffres : ne JAMAIS éditer à la main — `npm run audit:inventory` régénère `audit/*.json`. Pour le baseline ratchet : `npm run audit:baseline:refresh` (manuel, maintainer-only — cf. PR #267)._
+_Mettre à jour ce doc après vérification de chaque PR cleanup fusionnée (colonne Statut). Pour les chiffres générés, ne pas les éditer à la main : `npm run audit:inventory` régénère les artefacts. Le refresh de baseline reste manuel et réservé au mainteneur. Avant toute régénération ou mise à jour de baseline, suivre le [contrôle avant refresh](safe-delete-procedure.md#4-batch--regression-gate) ; ne pas effacer les deltas à examiner._
