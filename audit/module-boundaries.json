@@ -75,7 +75,7 @@
         "backend/src/modules/auth/dto"
       ],
       "files_count": 44,
-      "loc_total": 5899,
+      "loc_total": 5878,
       "has_barrel": true
     },
     "backend-core": {
@@ -132,7 +132,7 @@
         "backend/src/modules/cart/services"
       ],
       "files_count": 21,
-      "loc_total": 4128,
+      "loc_total": 4092,
       "has_barrel": false
     },
     "catalog": {
@@ -261,7 +261,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 114988,
+      "loc_total": 115052,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 585,
-      "loc_total": 110538,
+      "loc_total": 110466,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 312,
-      "loc_total": 60491,
+      "files_count": 310,
+      "loc_total": 59704,
       "has_barrel": true
     },
     "upload": {
@@ -980,7 +980,7 @@
         "backend/src/modules/users/services"
       ],
       "files_count": 27,
-      "loc_total": 5421,
+      "loc_total": 5216,
       "has_barrel": true
     },
     "vehicle-context": {

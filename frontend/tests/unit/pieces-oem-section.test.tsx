@@ -3,6 +3,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { PiecesOemSection } from "~/components/pieces/PiecesOemSection";
 
+import pilot from "./fixtures/oem-filtre-huile-7-type-19052.json";
+
 type Props = ComponentProps<typeof PiecesOemSection>;
 
 const vehicle: Props["vehicle"] = {
@@ -86,4 +88,61 @@ describe("PiecesOemSection — references without unsupported advice", () => {
       expect(renderSection(groups).innerHTML).toBe("");
     },
   );
+});
+
+describe("PiecesOemSection — source-backed mounting position", () => {
+  it("does not invent a rear mounting position for the real pg7/type19052 payload", () => {
+    const html = renderToStaticMarkup(<PiecesOemSection {...pilot} />);
+    const container = document.createElement("div");
+    container.innerHTML = html;
+    expect(container.textContent).not.toMatch(/à l'avant|à l'arrière/);
+    expect(container.textContent).toContain("Filtre à huile");
+    expect(container.textContent).toContain("CLIO III");
+    expect(container.querySelectorAll("span[title]")).toHaveLength(
+      pilot.groupedPieces[0].oemRefs.length,
+    );
+    expect(
+      Array.from(
+        container.querySelectorAll("span[title]"),
+        (x) => x.textContent,
+      ),
+    ).toEqual(pilot.groupedPieces[0].oemRefs);
+  });
+
+  it.each<{ fields: Props["groupedPieces"][number]; expected: string }>([
+    { fields: { filtre_side: "Avant" }, expected: "à l'avant" },
+    { fields: { filtre_side: "Arrière" }, expected: "à l'arrière" },
+    { fields: { title_h2: "Disques avant" }, expected: "à l'avant" },
+    { fields: { title_h2: "Disques arrière" }, expected: "à l'arrière" },
+  ])(
+    "preserves explicit mounting positions $fields",
+    ({ fields, expected }) => {
+      expect(
+        renderSection([{ ...fields, oemRefs: ["OEM-TEST"] }]).textContent,
+      ).toContain(expected);
+    },
+  );
+
+  it.each([
+    {},
+    { filtre_side: "" },
+    { filtre_side: "Non renseigné" },
+    { filtre_side: "Avant et arrière" },
+    { filtre_side: "Avant", title_h2: "Disques arrière" },
+  ])("omits a position when absent or contradictory %j", (fields) => {
+    expect(
+      renderSection([{ ...fields, oemRefs: ["OEM-TEST"] }]).textContent,
+    ).not.toMatch(/à l'avant|à l'arrière/);
+  });
+
+  it("takes the example from a populated source group instead of inventing a reference", () => {
+    const container = renderSection([
+      { oemRefs: [] },
+      { oemRefs: ["OEM-REAL-SECOND-GROUP"] },
+    ]);
+    expect(container.querySelector("details code")?.textContent).toBe(
+      "OEM-REAL-SECOND-GROUP",
+    );
+    expect(container.textContent).not.toContain("41 06 003 79R");
+  });
 });
