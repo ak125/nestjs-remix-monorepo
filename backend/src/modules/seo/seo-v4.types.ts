@@ -147,8 +147,12 @@ export interface InternalLinkMetrics {
 export interface SeoMetricsStats {
   cacheHits: number;
   cacheMisses: number;
-  processingTimes: number[];
-  unknownPagesDetected: Array<{
+  // Somme + nombre : moyenne exacte en mémoire constante.
+  processingTimeTotalMs: number;
+  processingTimeCount: number;
+  unknownPagesCount: number;
+  // Au plus SEO_V4_RECENT_UNKNOWN_PAGES entrées, la plus récente en dernier.
+  recentUnknownPages: Array<{
     pgId: number;
     typeId: number;
     timestamp: Date;
@@ -158,6 +162,12 @@ export interface SeoMetricsStats {
 // ====================================
 // 📊 CONSTANTS
 // ====================================
+
+/** Borne LRU du cache de résultats V4 (même borne que le cache du module SEO). */
+export const SEO_V4_RESULT_CACHE_MAX_ENTRIES = 1000;
+
+/** Nombre de pages « unknown » récentes conservées pour les métriques. */
+export const SEO_V4_RECENT_UNKNOWN_PAGES = 10;
 
 export const PRIX_PAS_CHER = [
   'pas cher',
