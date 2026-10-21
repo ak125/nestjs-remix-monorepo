@@ -29455,7 +29455,7 @@
         "backend/src/utils/promise-helpers.ts"
       ],
       "kind": "controller",
-      "loc": 950,
+      "loc": 959,
       "owner": "@ak125/auth-team",
       "path": "backend/src/auth/controllers/auth-login.controller.ts",
       "risk": "high",
@@ -29735,7 +29735,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 128,
+      "loc": 140,
       "owner": "@ak125/auth-team",
       "path": "backend/src/auth/dto/register.dto.ts",
       "risk": "high",
@@ -41923,7 +41923,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 294,
+      "loc": 313,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/cart/services/abandoned-cart-data.service.ts",
       "risk": "high",
@@ -41954,7 +41954,7 @@
         "backend/src/services/mail.service.ts"
       ],
       "kind": "service",
-      "loc": 328,
+      "loc": 345,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/cart/services/abandoned-cart.service.ts",
       "risk": "high",
@@ -67164,7 +67164,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 220,
+      "loc": 242,
       "owner": "@ak125/auth-team",
       "path": "backend/src/modules/users/dto/user.dto.ts",
       "risk": "high",
@@ -67363,7 +67363,7 @@
         "backend/src/modules/users/dto/user.dto.ts"
       ],
       "kind": "service",
-      "loc": 643,
+      "loc": 735,
       "owner": "@ak125/auth-team",
       "path": "backend/src/modules/users/services/user-data-consolidated.service.ts",
       "risk": "high",
@@ -67418,7 +67418,7 @@
         "backend/src/modules/users/users-final.service.ts"
       ],
       "kind": "controller",
-      "loc": 514,
+      "loc": 579,
       "owner": "@ak125/auth-team",
       "path": "backend/src/modules/users/users-final.controller.ts",
       "risk": "high",
@@ -67448,7 +67448,7 @@
         "backend/src/modules/users/services/user-data-consolidated.service.ts"
       ],
       "kind": "service",
-      "loc": 437,
+      "loc": 463,
       "owner": "@ak125/auth-team",
       "path": "backend/src/modules/users/users-final.service.ts",
       "risk": "high",
@@ -69706,7 +69706,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 197,
+      "loc": 198,
       "owner": "@ak125",
       "path": "backend/tests/unit/abandoned-cart-delivery-truth.test.ts",
       "risk": "medium",
@@ -70329,6 +70329,26 @@
       "loc": 239,
       "owner": "@ak125",
       "path": "backend/tests/unit/maintenance-calendar-endpoint.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/marketing-consent-wiring.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 565,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/marketing-consent-wiring.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -84195,10 +84215,13 @@
         "frontend/app/components/ui/card.tsx",
         "frontend/app/components/ui/input.tsx",
         "frontend/app/components/ui/label.tsx",
-        "~/components/errors/ErrorGeneric"
+        "~/components/errors/ErrorGeneric",
+        "~/services/profile.server",
+        "~/utils/date",
+        "~/utils/logger"
       ],
       "kind": "route",
-      "loc": 424,
+      "loc": 360,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/account.settings.tsx",
       "risk": "medium",
@@ -91190,7 +91213,7 @@
         "~/utils/logger"
       ],
       "kind": "config",
-      "loc": 84,
+      "loc": 169,
       "owner": "__unassigned__",
       "path": "frontend/app/services/profile.server.ts",
       "risk": "low",
@@ -93879,6 +93902,26 @@
       "loc": 191,
       "owner": "@ak125",
       "path": "frontend/tests/unit/account-profile-edit.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/account-settings-marketing-consent.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 280,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/account-settings-marketing-consent.test.tsx",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -105193,11 +105236,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "90163175840e44796908f793612d86b090e6efec04ed7053e3966b0e0c211728",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "1bb632869a843351921a73b7092c01d5e3edd37f835edd66e348db79def03487",
+      "audit/registry/files.json": "3e4e1d323b6efa3272669fe45212b9533f02ec0011bd039b8705982d17c49fff",
       "audit/registry/rpc.json": "623f3a5150e1cc71cd79946d7a4128fd078d6493626b20f4b6c4c4ac64f06f6d",
       "audit/registry/runtime.json": "fed459a44851475be334b2234fe92f7c5cdb1d371bdbf448f9d524dc28445d84"
     },
-    "sotFingerprint": "e17a3fc59b34"
+    "sotFingerprint": "8e9342a3d10d"
   },
   "runtime": [
     {

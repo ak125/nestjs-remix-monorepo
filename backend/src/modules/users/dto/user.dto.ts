@@ -74,6 +74,28 @@ export const UpdateOwnProfileSchema = UserSchema.pick({
   .strict()
   .refine(hasAtLeastOneField, EMPTY_UPDATE_MESSAGE);
 
+// Marketing consent (ADR-036) — ___xtr_customer.cst_marketing_consent_at +
+// cst_marketing_consent_source, set and cleared together. The enum mirrors the
+// SQL CHECK of migration 20261019_customer_marketing_consent.
+export const MarketingConsentSourceSchema = z.enum([
+  'register',
+  'account_settings',
+]);
+export type MarketingConsentSource = z.infer<
+  typeof MarketingConsentSourceSchema
+>;
+
+export interface MarketingConsent {
+  granted: boolean;
+  grantedAt: string | null;
+  source: MarketingConsentSource | null;
+}
+
+// Self-service consent change (PUT /api/users/profile/marketing-consent).
+export const UpdateMarketingConsentSchema = z
+  .object({ granted: z.boolean() })
+  .strict();
+
 export const UserFiltersSchema = z.object({
   search: z.string().optional(),
   status: z.enum(['active', 'inactive', '']).optional(),

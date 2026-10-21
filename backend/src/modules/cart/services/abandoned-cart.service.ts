@@ -125,6 +125,12 @@ export class AbandonedCartService implements OnModuleInit {
         const isUnsubscribed = await this.cacheService.get(unsubKey);
         if (isUnsubscribed) continue;
 
+        // No reminder without explicit marketing consent (ADR-036)
+        const consented = await this.abandonedCartData.hasMarketingConsent(
+          candidate.userId,
+        );
+        if (!consented) continue;
+
         // Check if already captured recently
         const existing = await this.abandonedCartData.findRecentByCstId(
           candidate.userId,
@@ -245,6 +251,17 @@ export class AbandonedCartService implements OnModuleInit {
     }
     if (isUnsubscribed) {
       this.logger.log(`User ${record.cst_id} unsubscribed — skipping`);
+      return false;
+    }
+
+    // Consent may have been withdrawn since detection (ADR-036)
+    const consented = await this.abandonedCartData.hasMarketingConsent(
+      record.cst_id,
+    );
+    if (!consented) {
+      this.logger.log(
+        `User ${record.cst_id} has no marketing consent — skipping ${step} email`,
+      );
       return false;
     }
 
