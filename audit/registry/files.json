@@ -73990,10 +73990,10 @@
       "owner": "__unassigned__",
       "path": "tests/registry/llm-repo-map.test.ts",
       "risk": "low",
-      "runtime": false,
+      "runtime": true,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "UNKNOWN"
+      "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",

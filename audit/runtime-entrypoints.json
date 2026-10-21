@@ -3027,13 +3027,14 @@
       "tests/registry/db-registry-status.test.ts",
       "tests/registry/depcruise-integrity.test.ts",
       "tests/registry/dependency-graph-builder.test.ts",
+      "tests/registry/llm-repo-map.test.ts",
       "tests/registry/planning-builder.test.ts",
       "tests/registry/rpc-parser.test.ts",
       "tests/registry/runtime-excludes-tests.test.ts",
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1624,
+  "runtime_files_count": 1625,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4655,6 +4656,7 @@
     "tests/registry/db-registry-status.test.ts",
     "tests/registry/depcruise-integrity.test.ts",
     "tests/registry/dependency-graph-builder.test.ts",
+    "tests/registry/llm-repo-map.test.ts",
     "tests/registry/planning-builder.test.ts",
     "tests/registry/rpc-parser.test.ts",
     "tests/registry/runtime-excludes-tests.test.ts",
