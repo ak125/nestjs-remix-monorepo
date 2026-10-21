@@ -1,21 +1,64 @@
-# Workspaces Claude Code — séparation dev / SEO / marketing / wiki
+# Workspaces et chargement des instructions
 
-> Relocalisé depuis `CLAUDE.md` (2026-06-16, dégraissage P3). **On-demand** : pertinent
-> uniquement au changement de cwd de session. `CLAUDE.md` garde un pointer.
+Les racines spécialisent le travail ; elles ne sont pas des frontières de permissions.
+Les chemins ci-dessous sont relatifs à la racine Git du checkout utilisé.
 
-Le monorepo expose **quatre racines de session** Claude Code distinctes :
+| Répertoire de départ | Usage et sources locales |
+|---|---|
+| `.` | Développement ; `CLAUDE.md`, `AGENTS.md`, `.claude/rules/`, `.claude/skills/` |
+| `workspaces/seo-batch/` | SEO ; instructions locales, règles SEO, agents R*, skills SEO |
+| `workspaces/marketing/` | Marketing ; instructions locales, règles marketing, agents G1 et skills locaux |
+| `workspaces/wiki/` | Proposals WIKI ; instructions locales, règles wiki, skill `wiki-proposal-writer` |
 
-Les décomptes ne sont pas recopiés ici (ils périment au premier skill ajouté) : le hook
-SessionStart (`scripts/claude-hooks/sessionstart-workspace-context.sh`) les compte sur disque à
-chaque session ; la liste = `ls <cwd>/.claude/skills/`.
+## Mémoire et reprise
 
-| cwd | Surface chargée | Usage |
-|-----|-----------------|-------|
-| `/opt/automecanik/app/` | skills DEV de `.claude/skills/` — **0 agents** R*, **0 skills SEO** | dev backend/frontend, refactor, CI, ADR, governance |
-| `/opt/automecanik/app/workspaces/seo-batch/` | agents R0-R8 (`.claude/agents/`) + skills SEO (`.claude/skills/` : `content-gen`, `kw-classify`, `pollution-scanner`, `seo-gamme-audit`, `r8-diversity-check`, `rag-check`, `v5-guardian`, …) | campagnes SEO, KW planning, content gen R*, RAG enrich |
-| `/opt/automecanik/app/workspaces/marketing/` | agents G1 marketing (LEAD/LOCAL/RETENTION en Phase 1-2 ADR-036) + skills marketing (`.claude/skills/`) + canon brand voice + AEC | briefs marketing orientés conversion, posts GBP, retention, plan hebdo cross-units |
-| `/opt/automecanik/app/workspaces/wiki/` | skill `wiki-proposal-writer` + canon ADR-033 + AEC | sas wiki documentaire (Phase 2 ADR-033), proposals frontmatter v2.0.0 |
+Ne pas supposer une mémoire distincte par workspace : vérifier le chemin indiqué
+par le runtime. Pour une reprise, lire un extrait borné du journal et revalider
+les états, phases et décomptes historiques contre le checkout et ses preuves.
+La présence d'un agent ou d'une route ne prouve pas son activation.
 
-Pour les batchs SEO : `cd workspaces/seo-batch && claude`. Voir `workspaces/seo-batch/README.md`.
-Pour les sessions marketing : `cd workspaces/marketing && claude`. Voir `workspaces/marketing/README.md` (ADR-036).
-Pour le sas wiki : `cd workspaces/wiki && claude`. Voir `workspaces/wiki/README.md` (ADR-033).
+## Claude Code
+
+Vérifié pour l'installation 2.1.301 le 2026-10-20 : les `CLAUDE.md` parents
+s'ajoutent à celui du cwd ; les fichiers imbriqués et règles `paths:` se chargent
+à la demande. Les règles sans `paths:` se chargent systématiquement dans leur périmètre.
+Par défaut, la présence d'un `CLAUDE.md` parent/courant empêche le chargement
+alternatif des `AGENTS.md`. Ce dépôt conserve donc son contrat dans `CLAUDE.md`,
+sans import circulaire ni duplication dans `AGENTS.md`.
+
+Les skills du cwd et de ses parents jusqu'à la racine Git sont découverts ensemble ;
+leur corps est chargé à l'invocation. Une surface spécialisée n'exclut donc pas les
+skills racine. Une liste de fichiers ne prouve pas leur invocation ni leurs droits.
+Les agents `.claude/agents/` et les miroirs restent à distinguer de leur chargement.
+
+Les settings de la racine et des trois workspaces désactivent localement
+`superpowers@claude-plugins-official`, en conservant les hooks et permissions existants.
+Le réglage racine seul ne désactive pas le plugin depuis ces workspaces dans cette installation :
+la découverte des settings ne doit pas être déduite de celle des `CLAUDE.md`.
+Les trois workspaces ont été vérifiés dans de nouvelles sessions. Les paramètres globaux sont inchangés.
+Les hooks SessionStart/UserPromptSubmit ajoutent leurs propres extraits bornés ;
+ils ne rendent pas toute la documentation canonique automatiquement chargée.
+
+## Codex et Hermes
+
+Codex CLI 0.144.4 : chaîne `AGENTS.override.md` ou `AGENTS.md` de la racine au cwd ;
+le fichier racine demande de lire `CLAUDE.md`. Les liens Markdown ne sont pas des
+imports. `.agents/skills` est un symlink interne vers les skills racine ; les
+skills imbriqués sous `.claude/` ne sont pas une découverte Codex garantie.
+
+Hermes s'exécute sur un autre VPS, sans accès local au checkout
+`/opt/automecanik/app`. Ses outils et sections de continuité existants ne prouvent
+pas le chargement des instructions de ce dépôt. Le chargement natif de ces règles
+reste non raccordé ; aucune copie ni synchronisation n'est ajoutée. Les profils,
+configurations globales et droits restent hors du périmètre de cette simplification.
+
+## Contrôle du chargement
+
+Après changement, vérifier les sources dans une nouvelle session à la racine puis
+dans un workspace représentatif (`/memory` et `/context` côté Claude, si disponibles).
+Ne pas extrapoler à une session déjà ouverte. Aucun chargement réel nouveau ni gain
+de tokens/RAM n'est déduit d'un simple contrôle statique.
+
+Sources officielles : [Claude memory](https://code.claude.com/docs/en/memory),
+[Claude skills](https://code.claude.com/docs/en/skills),
+[Codex AGENTS.md](https://developers.openai.com/codex/guides/agents-md).
