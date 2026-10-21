@@ -53,8 +53,9 @@ feature (sinon DEV:3000 sert du code périmé).
    localement, commit non publié ou dépôt injoignable → alerte, jamais d'écrasement. (auto)
 2. **`.env`** : `backend/.env` doit avoir toutes les vars REQUIRED de `env-validation.ts`
    (ex. `JWT_SECRET` depuis #606) ; manquante → boot crash. (alerte via health-check KO)
-3. **Node** : doit matcher `.nvmrc`/`engines` (≥22) ; sinon crash `@supabase/realtime-js` ;
-   upgrade manuel (`NodeSource setup_22.x`). (alerte)
+3. **Node** : doit correspondre à `.nvmrc` et aux `engines` des manifests du checkout ;
+   vérifier `node --version` avant build. Ne pas déduire une procédure d'upgrade
+   d'un ancien incident ; tout changement de runtime relève d'un mandat distinct. (alerte)
 4. **Migrations DB** : pas auto-appliquées à la DB partagée ; appliquer l'additif réviewé à la
    main (`ADD VALUE IF NOT EXISTS`…). (alerte)
 5. **Workspaces npm** : un nouveau `packages/<name>/` mergé doit être (a) symlinké via

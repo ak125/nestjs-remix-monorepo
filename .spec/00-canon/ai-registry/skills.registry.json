@@ -1,12 +1,12 @@
 {
   "compliantCount": 14,
-  "generatedAt": "2026-10-19T01:36:52.996Z",
+  "generatedAt": "2026-10-20T23:45:01.225Z",
   "issues": [],
   "schemaPath": ".spec/00-canon/ai-registry/skill.schema.json",
   "schemaVersion": "1.0.0",
   "skills": [
     {
-      "checksum": "sha256:dae2f33d3a366d837ce3dd5a68fbe25cfc28c0f517fcb882937842267ed1ccb6",
+      "checksum": "sha256:11c9e4524c4991a64729c7e9b9eebd949c16cf9618693cbaa1af076e233b3a2a",
       "domain": "D15",
       "last_verified": "2026-09-30",
       "llm_safe": true,
@@ -32,7 +32,7 @@
       "type": "technique"
     },
     {
-      "checksum": "sha256:33f0adf8345a9d9258cce2779253ac5ddc764a2f6fbb40e5b4d13ed0127bba3b",
+      "checksum": "sha256:b947aa094ebcf0ff1ef9b631deb1cb750ed9a9b7da3e4b00c205527427df2689",
       "domain": "D15",
       "last_verified": "2026-09-30",
       "llm_safe": true,
@@ -59,7 +59,7 @@
       "type": "technique"
     },
     {
-      "checksum": "sha256:517dfe9551f6aef7f5140f89159878625c0d572b031a0df2bd610250c520c0c2",
+      "checksum": "sha256:015918fa92b5416937cd44913ac4a182abf77849f1d374a7af641bd754e2eb60",
       "domain": "D15",
       "last_verified": "2026-07-04",
       "llm_safe": true,

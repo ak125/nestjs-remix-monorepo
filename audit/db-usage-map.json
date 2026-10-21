@@ -12216,28 +12216,28 @@
     },
     {
       "file": "backend/src/modules/cart/services/abandoned-cart-data.service.ts",
-      "line": 162,
+      "line": 163,
       "form": "IDENT",
       "resolved_table": "__abandoned_cart_emails",
       "refusal": null
     },
     {
       "file": "backend/src/modules/cart/services/abandoned-cart-data.service.ts",
-      "line": 181,
+      "line": 183,
       "form": "IDENT",
       "resolved_table": "__abandoned_cart_emails",
       "refusal": null
     },
     {
       "file": "backend/src/modules/cart/services/abandoned-cart-data.service.ts",
-      "line": 230,
+      "line": 236,
       "form": "IDENT",
       "resolved_table": "__abandoned_cart_emails",
       "refusal": null
     },
     {
       "file": "backend/src/modules/cart/services/abandoned-cart-data.service.ts",
-      "line": 257,
+      "line": 263,
       "form": "IDENT",
       "resolved_table": "__abandoned_cart_emails",
       "refusal": null
@@ -16292,7 +16292,7 @@
       "method": "from",
       "reason": "js-builtin-static-from",
       "file": "backend/src/modules/cart/controllers/cart-recovery.controller.ts",
-      "line": 8,
+      "line": 17,
       "receiver": "Buffer"
     },
     {

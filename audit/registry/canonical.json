@@ -41776,7 +41776,7 @@
         "backend/src/modules/cart/services/abandoned-cart.service.ts"
       ],
       "kind": "controller",
-      "loc": 155,
+      "loc": 224,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/cart/controllers/cart-recovery.controller.ts",
       "risk": "high",
@@ -41923,7 +41923,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 288,
+      "loc": 294,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/cart/services/abandoned-cart-data.service.ts",
       "risk": "high",
@@ -41954,7 +41954,7 @@
         "backend/src/services/mail.service.ts"
       ],
       "kind": "service",
-      "loc": 320,
+      "loc": 328,
       "owner": "@ak125/payments-team",
       "path": "backend/src/modules/cart/services/abandoned-cart.service.ts",
       "risk": "high",
@@ -68904,7 +68904,7 @@
         "backend/src/config/app.config.ts"
       ],
       "kind": "service",
-      "loc": 1182,
+      "loc": 1190,
       "owner": "__unassigned__",
       "path": "backend/src/services/mail.service.ts",
       "risk": "low",
@@ -69702,6 +69702,26 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "backend/tests/unit/abandoned-cart-delivery-truth.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 197,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/abandoned-cart-delivery-truth.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "backend/tests/unit/admin-job-health.service.test.ts",
       "importedBy": [],
       "imports": [],
@@ -69809,6 +69829,26 @@
       "loc": 700,
       "owner": "@ak125",
       "path": "backend/tests/unit/buying-guide-data.service.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/cart-recovery.unsubscribe.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 272,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/cart-recovery.unsubscribe.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -73665,11 +73705,10 @@
       "id": "frontend/app/components/blog/NewsletterCTA.tsx",
       "importedBy": [],
       "imports": [
-        "~/components/ui/button",
-        "~/components/ui/input"
+        "~/components/ui/button"
       ],
       "kind": "config",
-      "loc": 97,
+      "loc": 53,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/blog/NewsletterCTA.tsx",
       "risk": "low",
@@ -79330,7 +79369,7 @@
         "frontend/app/types/pieces-route.types.ts"
       ],
       "kind": "config",
-      "loc": 229,
+      "loc": 242,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/pieces/PiecesOemSection.tsx",
       "risk": "low",
@@ -95173,6 +95212,26 @@
         "manual"
       ],
       "domain": "D2",
+      "id": "frontend/tests/unit/newsletter-cta-no-fake-subscription.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 54,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/newsletter-cta-no-fake-subscription.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
       "id": "frontend/tests/unit/no-ios16-incompatible-regex.test.ts",
       "importedBy": [],
       "imports": [],
@@ -95517,7 +95576,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 90,
+      "loc": 149,
       "owner": "@ak125",
       "path": "frontend/tests/unit/pieces-oem-section.test.tsx",
       "risk": "medium",
@@ -105134,11 +105193,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "90163175840e44796908f793612d86b090e6efec04ed7053e3966b0e0c211728",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "65d2c7f155df6b9d0fe475dbba0b2d1a62837c699b44118954acc7802488d14c",
+      "audit/registry/files.json": "1bb632869a843351921a73b7092c01d5e3edd37f835edd66e348db79def03487",
       "audit/registry/rpc.json": "623f3a5150e1cc71cd79946d7a4128fd078d6493626b20f4b6c4c4ac64f06f6d",
       "audit/registry/runtime.json": "fed459a44851475be334b2234fe92f7c5cdb1d371bdbf448f9d524dc28445d84"
     },
-    "sotFingerprint": "0c4f910c9a34"
+    "sotFingerprint": "e17a3fc59b34"
   },
   "runtime": [
     {
