@@ -17,7 +17,10 @@ import {
   Query,
   ParseIntPipe,
   Logger,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { OperationFailedException } from '@common/exceptions';
 import {
   ApiTags,
@@ -35,6 +38,7 @@ import { getErrorMessage } from '@common/utils/error.utils';
 
 @ApiTags('SEO - Dynamic V4')
 @Controller('api/seo-dynamic-v4')
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class DynamicSeoController {
   private readonly logger = new Logger(DynamicSeoController.name);
 
