@@ -2844,6 +2844,8 @@
       "backend/supabase/migrations/20261019_customer_marketing_consent.sql",
       "backend/supabase/migrations/20261019_pricing_deactivate_chunk.down.sql",
       "backend/supabase/migrations/20261019_pricing_deactivate_chunk.sql",
+      "backend/supabase/migrations/20261021_pricing_rupture_emetteur_embrayage_luk_5130041.down.sql",
+      "backend/supabase/migrations/20261021_pricing_rupture_emetteur_embrayage_luk_5130041.sql",
       "backend/supabase/migrations/README.md"
     ],
     "ci_workflows": [
@@ -3031,7 +3033,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1622,
+  "runtime_files_count": 1624,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4316,6 +4318,8 @@
     "backend/supabase/migrations/20261019_customer_marketing_consent.sql",
     "backend/supabase/migrations/20261019_pricing_deactivate_chunk.down.sql",
     "backend/supabase/migrations/20261019_pricing_deactivate_chunk.sql",
+    "backend/supabase/migrations/20261021_pricing_rupture_emetteur_embrayage_luk_5130041.down.sql",
+    "backend/supabase/migrations/20261021_pricing_rupture_emetteur_embrayage_luk_5130041.sql",
     "backend/supabase/migrations/README.md",
     "docker/lighthouse/Dockerfile",
     "docker/lighthouse/crontab",
