@@ -32,7 +32,7 @@ montage, texte exact). Un clone plan-pour-plan avec script réécrit + visuels d
 → `shot-by-shot functional rebuild` = OK · `frame-by-frame copy` = FAIL, rebrand non opposable.
 
 En V1, G5 passe d'ailleurs pour tout script : aucun module ne produit `similarityScore`, que le code compte 0 s'il manque
-(`backend/src/modules/media-factory/services/video-gates.service.ts:277`), et aucun texte de référence n'est conservé (pattern
+(`backend/src/modules/media-factory/services/video-gates.service.ts:286`), et aucun texte de référence n'est conservé (pattern
 structurel, source vue en analyse éphémère). Le détail est dans le skill `creative-pattern-extractor` (« G5 Reuse Risk en V1 »).
 
 ## Format JSONL de référence (un pattern par ligne)

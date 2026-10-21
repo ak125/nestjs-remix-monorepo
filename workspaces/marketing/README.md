@@ -193,11 +193,11 @@ Chaque lot livre : niveau d'effet atteint, commande de vérification, verdict Ro
   sans une prop de contenu → refus qui nomme la prop, jamais la valeur de démonstration ; requête 9:16 sans `resolution` → refus
   motivé ou taille de la composition ; `fps` différent de celui de la composition → refus motivé.
   Ajout du 18/10 : la règle « score sans mesure = UNKNOWN » couvre G5. `similarityScore` absent y est compté 0
-  (`backend/src/modules/media-factory/services/video-gates.service.ts:277`) et aucun module ne le produit (seulement déclaré, l.398) :
+  (`backend/src/modules/media-factory/services/video-gates.service.ts:286`) et aucun module ne le produit (seulement déclaré, l.407) :
   G5 rend PASS à chaque exécution (C18-1). Test : score absent → ni PASS ni 0 (refus motivé ou UNKNOWN) ; les deux tests G5 existants
   (`backend/tests/unit/video-gates.service.test.ts:481-495`) restent verts. Ni #1818 (L10a : G1 et G2) ni #1823 ne touchent G5.
   Suite du 18/10 : même règle pour G4. Sans `actualDurationSec`, G4 rend PASS (« No duration data — skipping platform gate »,
-  `video-gates.service.ts:237-241`) ; ni le processeur (`backend/src/workers/processors/video-execution.processor.ts:201-207`), qui
+  `video-gates.service.ts:246-250`) ; ni le processeur (`backend/src/workers/processors/video-execution.processor.ts:201-207`), qui
   exécute les gates avant le rendu (l.209-210, rendu l.241-259), ni l'écran de simulation
   (`frontend/app/routes/admin.video-hub.productions.$briefId.tsx:252-262`) ne passent la durée (C18-12). Test : durée absente → ni
   PASS ni 0 ; le test « should PASS when no duration data » (`video-gates.service.test.ts:458-462`) change d'attente avec le
