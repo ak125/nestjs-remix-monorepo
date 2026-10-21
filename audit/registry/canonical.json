@@ -58844,12 +58844,14 @@
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
+        "@auth/authenticated.guard",
+        "@auth/is-admin.guard",
         "@common/exceptions",
         "@common/utils/error.utils",
         "backend/src/modules/seo/dynamic-seo-v4-ultimate.service.ts"
       ],
       "kind": "controller",
-      "loc": 774,
+      "loc": 778,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/dynamic-seo.controller.ts",
       "risk": "high",
@@ -71111,6 +71113,26 @@
       "loc": 319,
       "owner": "@ak125",
       "path": "backend/tests/unit/seo-control/seo-control.service.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/seo-dynamic-v4-authz.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 196,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/seo-dynamic-v4-authz.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -105121,10 +105143,10 @@
       "owner": "@ak125",
       "path": "tests/registry/llm-repo-map.test.ts",
       "risk": "medium",
-      "runtime": true,
+      "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE"
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -105238,11 +105260,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "90163175840e44796908f793612d86b090e6efec04ed7053e3966b0e0c211728",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "221a986e7a3e526d9704594c8dc81c1fe51565e4381bc83a2cc04920ed478f2e",
+      "audit/registry/files.json": "5ee0953bf2731e07bcfd3c24d033a1f23f27849b4b8bac055f71edbbab35602d",
       "audit/registry/rpc.json": "623f3a5150e1cc71cd79946d7a4128fd078d6493626b20f4b6c4c4ac64f06f6d",
       "audit/registry/runtime.json": "fed459a44851475be334b2234fe92f7c5cdb1d371bdbf448f9d524dc28445d84"
     },
-    "sotFingerprint": "70cbc70df7e4"
+    "sotFingerprint": "b607287ee787"
   },
   "runtime": [
     {
