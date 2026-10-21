@@ -105121,10 +105121,10 @@
       "owner": "@ak125",
       "path": "tests/registry/llm-repo-map.test.ts",
       "risk": "medium",
-      "runtime": false,
+      "runtime": true,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "UNKNOWN"
+      "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
@@ -105238,11 +105238,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "90163175840e44796908f793612d86b090e6efec04ed7053e3966b0e0c211728",
       "audit/registry/deps.json": "eae674e8053ccbd715130de6606f46f433f4a400e5b8a4e0f79cc3dae594524a",
-      "audit/registry/files.json": "c22b9b8c644e7f0ffe9f0756d0fbc71827982a87320f676dd5fdfe2941353f56",
+      "audit/registry/files.json": "221a986e7a3e526d9704594c8dc81c1fe51565e4381bc83a2cc04920ed478f2e",
       "audit/registry/rpc.json": "623f3a5150e1cc71cd79946d7a4128fd078d6493626b20f4b6c4c4ac64f06f6d",
       "audit/registry/runtime.json": "fed459a44851475be334b2234fe92f7c5cdb1d371bdbf448f9d524dc28445d84"
     },
-    "sotFingerprint": "fe2339d1e3c7"
+    "sotFingerprint": "70cbc70df7e4"
   },
   "runtime": [
     {
