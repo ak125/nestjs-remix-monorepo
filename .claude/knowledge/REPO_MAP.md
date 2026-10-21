@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 86dc6f3998cb2a0e23b6fa34a33542cc4bb41d8f7d02a9c1eb99393b433c965f
+source_sha256: 80764be27e902d3432db31132dad5ad508dc0339068e98e0985d61dd31d23cd5
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -24,7 +24,7 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1016 |
 
-Source sotFingerprint: `b607287ee787`.
+Source sotFingerprint: `122a31af715d`.
 
 ## Comment l'utiliser
 
@@ -151,7 +151,7 @@ Source sotFingerprint: `b607287ee787`.
 - **Runtime entrypoints**: 3
 - **Top owners**: @ak125 (287)
 - **Knowledge prose**: [`bot-guard`](modules/bot-guard.md)
-- **Status**: LIVE=57, UNKNOWN=230
+- **Status**: LIVE=58, UNKNOWN=229
 
 ### D16 — Maintenance
 
