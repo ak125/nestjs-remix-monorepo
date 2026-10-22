@@ -18,6 +18,7 @@ import {
   resetAppConfig,
 } from './app.config';
 import { WriteGuardLockService } from './write-guard-lock.service';
+import { RedisThrottlerStorage } from './throttler-redis-storage.service';
 import { GithubOidcService } from '../auth/github-oidc.service';
 import { SeoAuditSchedulerService } from '../modules/seo-logs/services/seo-audit-scheduler.service';
 
@@ -25,6 +26,7 @@ jest.mock('ioredis', () => {
   const MockRedis = jest.fn().mockImplementation(() => ({
     connect: () => Promise.resolve(),
     on: jest.fn(),
+    defineCommand: jest.fn(),
     disconnect: jest.fn(),
     quit: jest.fn(),
   }));
@@ -251,6 +253,27 @@ describe('consommateurs Redis — même cible que REDIS_URL', () => {
     expect(
       () =>
         new WriteGuardLockService(fakeConfig({ REDIS_URL: 'http://cache' })),
+    ).toThrow('REDIS_URL invalide (schéma)');
+    expect(RedisMock).not.toHaveBeenCalled();
+  });
+
+  it('limiteur : cible REDIS_URL, sans file hors ligne', () => {
+    new RedisThrottlerStorage(fakeConfig(env));
+    expect(RedisMock).toHaveBeenCalledTimes(1);
+    expect(RedisMock.mock.calls[0][0]).toMatchObject({
+      host: 'isolated-redis',
+      port: 6390,
+      db: 3,
+      lazyConnect: true,
+      enableOfflineQueue: false,
+      commandTimeout: 250,
+    });
+  });
+
+  it('limiteur : une REDIS_URL invalide échoue au lieu de basculer en mémoire', () => {
+    expect(
+      () =>
+        new RedisThrottlerStorage(fakeConfig({ REDIS_URL: 'http://cache' })),
     ).toThrow('REDIS_URL invalide (schéma)');
     expect(RedisMock).not.toHaveBeenCalled();
   });

@@ -2,13 +2,14 @@ import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { CloudflareThrottlerGuard } from './common/guards/cloudflare-throttler.guard';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { LoggerModule } from 'nestjs-pino';
 import { SentryModule } from '@sentry/nestjs/setup';
 import { loggerConfig } from './config/logger.config';
 import { THROTTLER_TIERS } from './config/throttler-tiers.config';
 import { shouldSkipThrottling } from './config/throttler-skip.config';
+import { RedisThrottlerStorage } from './config/throttler-redis-storage.service';
 import { RequestIdMiddleware } from './modules/mcp-validation/middleware/request-id.middleware';
 // import { ScheduleModule } from '@nestjs/schedule'; // ❌ DÉSACTIVÉ - Conflit de version avec @nestjs/common v10
 // import { BullModule } from '@nestjs/bullmq'; // ❌ DÉSACTIVÉ - Conflit de version avec @nestjs/common v10
@@ -98,11 +99,17 @@ import { TrendSignalsModule } from './modules/trend-signals/trend-signals.module
     // 📝 LOGGER - Pino structuré (JSON prod, pretty dev)
     LoggerModule.forRoot(loggerConfig),
     // 🛡️ RATE LIMITING - Protection anti-spam/DDoS
-    ThrottlerModule.forRoot({
-      // Tiers + invariant de portée : src/config/throttler-tiers.config.ts
-      // (un tier nommé ici s'applique à TOUTES les routes — cf. régression #390).
-      throttlers: THROTTLER_TIERS,
-      skipIf: shouldSkipThrottling,
+    ThrottlerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        // Tiers + invariant de portée : src/config/throttler-tiers.config.ts
+        // (un tier nommé ici s'applique à TOUTES les routes — cf. régression #390).
+        throttlers: THROTTLER_TIERS,
+        skipIf: shouldSkipThrottling,
+        // Compteurs en Redis : un budget commun à tous les processus qui servent
+        // la même route, repli en mémoire journalisé si Redis échoue.
+        storage: new RedisThrottlerStorage(config),
+      }),
     }),
 
     // Event Emitter global
