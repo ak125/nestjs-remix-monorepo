@@ -79,6 +79,46 @@ class DigestTests(unittest.TestCase):
             self.assertEqual(run.call_args.args[0][-1], 'automecanik-command-center-v1')
             self.assertEqual(json.loads(out.read_text())['status'], 'unavailable')
 
+    def test_degraded_source_is_recorded_without_failing_the_unit(self):
+        with tempfile.TemporaryDirectory() as t:
+            config, out = Path(t) / 'config.json', Path(t) / 'snapshot.json'
+            config.write_text(json.dumps({'ssh_command': ['/usr/bin/ssh', 'host', 'automecanik-supervision-v1'],
+                                          'cadence_minutes': 30}))
+            with patch.object(cc, 'CONFIG', config), patch.object(cc.subprocess, 'run', side_effect=OSError('secret')):
+                packet = cc.collect_from_config(out)
+            self.assertEqual(packet['reason'], 'digest_transport_unavailable')
+            self.assertEqual(json.loads(out.read_text())['status'], 'unavailable')
+
+    def test_invalid_configuration_replaces_old_success_and_fails_the_unit(self):
+        valid = {'ssh_command': ['/usr/bin/ssh', 'host', 'automecanik-supervision-v1'], 'cadence_minutes': 30}
+        for config_text in (None, 'not json', '{}', json.dumps({**valid, 'cadence_minutes': 0}),
+                            json.dumps({**valid, 'ssh_command': ['/bin/sh', '-c', 'any']})):
+            with self.subTest(config_text=config_text), tempfile.TemporaryDirectory() as t:
+                config, out = Path(t) / 'config.json', Path(t) / 'snapshot.json'
+                if config_text is not None: config.write_text(config_text)
+                out.write_text(json.dumps({'status': 'ok', 'source': cc.SOURCE, 'observed_at': cc.now(),
+                    'collected_at': cc.now(), 'cadence_minutes': 30, 'digest': self.digest}))
+                with patch.object(cc, 'CONFIG', config), patch.object(cc.subprocess, 'run') as run:
+                    with self.assertRaisesRegex(SystemExit, '^collector_config_unavailable$'):
+                        cc.collect_from_config(out)
+                run.assert_not_called()
+                with patch.object(cc, 'SNAPSHOT', out), patch.object(cc, 'current_profile', return_value=cc.PROFILE):
+                    seen = json.loads(cc.submit({'action': 'digest'}))
+                self.assertEqual((seen['status'], seen['reason'], seen['collection_freshness']),
+                                 ('unavailable', 'collector_config_unavailable', 'current'))
+
+    def test_unwritable_snapshot_fails_the_unit(self):
+        with tempfile.TemporaryDirectory() as t:
+            config = Path(t) / 'config.json'
+            config.write_text(json.dumps({'ssh_command': ['/usr/bin/ssh', 'host', 'automecanik-supervision-v1'],
+                                          'cadence_minutes': 30}))
+            target = Path(t) / 'missing' / 'snapshot.json'
+            for current in (config, Path(t) / 'no-config.json'):
+                with self.subTest(config=current), patch.object(cc, 'CONFIG', current), \
+                        patch.object(cc.subprocess, 'run', side_effect=OSError('secret')):
+                    with self.assertRaisesRegex(SystemExit, '^snapshot_write_failed$'):
+                        cc.collect_from_config(target)
+
     def test_transport_packet_validation(self):
         packet = {'status':'ok','observed_at':cc.now(), 'source':cc.SOURCE, 'digest':self.digest}
         cc.validate_packet(packet)

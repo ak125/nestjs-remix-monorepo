@@ -21,7 +21,9 @@ SNAPSHOT = Path('/var/lib/automecanik-supervisor/command-center.json')
 CONFIG = Path('/etc/automecanik-supervisor/config.json')
 ENV = Path('/opt/automecanik/app/backend/.env')
 COMMAND = 'automecanik-command-center-v1'
-REASONS = {'digest_http_unavailable', 'digest_fetch_failed', 'digest_transport_unavailable'}
+CADENCE = 30
+REASONS = {'digest_http_unavailable', 'digest_fetch_failed', 'digest_transport_unavailable',
+           'collector_config_unavailable'}
 KEYS = {'schema_version', 'generated_at', 'git_sha', 'mode', 'degraded',
         'stale_status', 'global_status', 'department_reports', 'owner_go_actions_total', 'owner_go_actions'}
 
@@ -134,12 +136,22 @@ def atomic(path, data):
         if os.path.exists(temporary): os.unlink(temporary)
 
 
-def collect(command, destination=SNAPSHOT, cadence=30):
+def supervision_contract(command, cadence):
+    if (not isinstance(command, list) or not all(isinstance(x, str) for x in command)
+            or not command or command[0] != '/usr/bin/ssh' or command[-1] != 'automecanik-supervision-v1'
+            or type(cadence) is not int or not 1 <= cadence <= 1440):
+        raise ValueError('supervision_contract')
+
+
+def record(destination, packet, cadence):
+    packet.update(collected_at=now(), cadence_minutes=cadence)
+    atomic(destination, packet)
+    return packet
+
+
+def collect(command, destination=SNAPSHOT, cadence=CADENCE):
     try:
-        if (not isinstance(command, list) or not all(isinstance(x, str) for x in command)
-                or not command or command[0] != '/usr/bin/ssh' or command[-1] != 'automecanik-supervision-v1'
-                or type(cadence) is not int or not 1 <= cadence <= 1440):
-            raise ValueError('supervision_contract')
+        supervision_contract(command, cadence)
         # The forced endpoint and HTTP reader cap output. No shell or caller arguments.
         result = subprocess.run([*command[:-1], COMMAND], input=b'', capture_output=True, timeout=25, check=True)
         if len(result.stdout) > MAX_BYTES + 2048:
@@ -147,9 +159,26 @@ def collect(command, destination=SNAPSHOT, cadence=30):
         packet = validate_packet(json.loads(result.stdout))
     except (OSError, ValueError, KeyError, TypeError, RecursionError, subprocess.SubprocessError):
         packet = unavailable('digest_transport_unavailable')
-    packet.update(collected_at=now(), cadence_minutes=cadence)
-    atomic(destination, packet)
-    return packet
+    return record(destination, packet, cadence)
+
+
+def collect_from_config(destination=SNAPSHOT):
+    # ExecStartPost of the supervisor. A degraded DEV source or transport is
+    # recorded for Hermes and exits 0. A collector defect exits 1 so the unit
+    # shows it: invalid configuration (also recorded) or unwritable snapshot.
+    try:
+        config = json.loads(CONFIG.read_text())
+        command, cadence = config['ssh_command'], config['cadence_minutes']
+        supervision_contract(command, cadence)
+    except (OSError, ValueError, KeyError, TypeError, RecursionError):
+        command = None
+    try:
+        if command is None:
+            record(destination, unavailable('collector_config_unavailable'), CADENCE)
+            raise SystemExit('collector_config_unavailable')
+        return collect(command, destination, cadence)
+    except OSError:
+        raise SystemExit('snapshot_write_failed')
 
 
 def current_profile():
@@ -201,8 +230,7 @@ if __name__ == '__main__':
     if sys.argv[1:] == ['--dev-read']:
         print(json.dumps(fetch_digest(), ensure_ascii=False))
     elif sys.argv[1:] == ['--collect']:
-        config = json.loads(CONFIG.read_text())
-        result = collect(config['ssh_command'], cadence=config['cadence_minutes'])
+        result = collect_from_config()
         print(json.dumps({k: result[k] for k in ('status', 'observed_at', 'collected_at')}))
     else:
         raise SystemExit('arguments_denied')

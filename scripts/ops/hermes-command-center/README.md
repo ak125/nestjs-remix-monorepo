@@ -12,9 +12,20 @@ Chemin: timer de supervision existant (30 minutes) → ExecStartPost sous
 La clé interne est lue sur DEV dans le fichier de configuration existant. Elle
 ne traverse pas SSH. Aucun URL, chemin, commande ou secret n'est fourni par le
 modèle. Proxies et redirections HTTP désactivés; corps limité à 128 Kio; timeout
-HTTP 15 s et SSH 25 s; une tentative, aucune relance. Les erreurs remplacent le
-précédent succès par une indisponibilité. L'outil lit uniquement le fichier local
-en refusant les liens; il ne déclenche pas de collecte ni de décision.
+HTTP 15 s et SSH 25 s; une tentative, aucune relance. L'outil lit uniquement le
+fichier local en refusant les liens; il ne déclenche pas de collecte ni de décision.
+
+Erreurs de collecte, `ExecStartPost` sans préfixe `-`:
+- DEV, HTTP ou transport indisponible: le fichier passe à `unavailable` avec sa
+  raison, sortie 0. Hermes voit la dégradation; l'unité de supervision reste saine.
+- Configuration du collecteur invalide: le fichier passe à `unavailable`
+  (`collector_config_unavailable`), puis sortie 1.
+- Fichier impossible à écrire: sortie 1 (`snapshot_write_failed`). Le précédent
+  fichier reste en place et devient `stale` après 2 × cadence + 3 minutes.
+Une sortie 1 signale un défaut du collecteur lui-même: l'unité passe en échec,
+comme pour les autres défauts du superviseur. Le préfixe `-` masquerait ces deux
+cas. Si l'exécution principale du superviseur échoue, la collecte n'a pas lieu et
+le fichier devient `stale`.
 
 Le JSON applicatif est conservé sans projection ou recalcul: mode, degraded,
 stale_status, generated_at, git_sha et tous les rapports. collected_at et
