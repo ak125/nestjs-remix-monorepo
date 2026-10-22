@@ -49,14 +49,19 @@ Installation opérateur: exporter command_center.py, install.py et source.json
 (commit et SHA-256), ainsi que le module marketing exact pour Hermes. Lancer
 `sudo python3 install.py dev` sur DEV et `sudo python3 install.py hermes` sur
 Hermes. L'installateur sauvegarde les fichiers remplacés avec leurs permissions
-sous /var/lib/automecanik-command-center-install/20261022, refuse un backup
-conflictuel, puis effectue un remplacement atomique. Sur Hermes uniquement:
+sous /var/lib/automecanik-command-center-install/<commit de source.json> (la
+première installation, 25837bd34, a les siennes sous .../20261022). Il vérifie
+tous les fichiers avant la première écriture et refuse, sans rien modifier, une
+sauvegarde existante dont le contenu diffère du fichier à remplacer, puis
+effectue des remplacements atomiques. Sur Hermes uniquement:
 `systemctl daemon-reload`; collecter avec l'identité et le groupe du superviseur;
 recharger WebUI et gateway AutoMecanik lorsqu'ils sont inactifs. Ne pas lancer le
 superviseur complet pour qualifier, car il peut émettre ses alertes existantes.
 
-Rollback opérateur: restaurer endpoint.py sur DEV et __init__.py sur Hermes depuis
-ces sauvegardes en conservant owner/mode; retirer uniquement le drop-in
+Rollback opérateur: restaurer, depuis le répertoire de sauvegarde du commit à
+retirer, les fichiers qu'il contient (version précédente) en conservant
+owner/mode; pour revenir à l'état d'avant la première installation, restaurer
+endpoint.py sur DEV et __init__.py sur Hermes depuis .../20261022 et retirer le drop-in
 70-command-center.conf créé par cette installation; daemon-reload et reload des
 deux processus Hermes à l'arrêt de leurs missions. Les exports et preuves peuvent
 rester pour audit. Aucun redémarrage applicatif ni restauration DB nécessaire.

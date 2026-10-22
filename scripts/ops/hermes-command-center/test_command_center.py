@@ -8,6 +8,7 @@ from unittest.mock import patch, Mock
 import urllib.error
 
 import command_center as cc
+import install
 
 
 class DigestTests(unittest.TestCase):
@@ -149,6 +150,55 @@ class DigestTests(unittest.TestCase):
                 out.unlink()
                 out.symlink_to(Path(t)/'outside')
                 self.assertEqual(json.loads(cc.submit({'action':'digest'}))['status'],'unavailable')
+
+
+class InstallTests(unittest.TestCase):
+    ANCHOR = '# Fixed read-only aggregate collector, no caller arguments.\n'
+
+    def install_dev(self, root, commit):
+        export = root/'export'
+        export.mkdir(exist_ok=True)
+        source = b'# collector ' + commit.encode() + b'\n'
+        (export/'command_center.py').write_bytes(source)
+        (export/'source.json').write_text(json.dumps({'commit':commit,'command_center_sha256':install.hashlib.sha256(source).hexdigest()}))
+        with patch.object(install, 'HERE', export), patch.object(install, 'BACKUP_ROOT', root/'backup'), \
+                patch.object(install, 'DEV_RELEASE', root/'release'), patch.object(install, 'ENDPOINT', root/'endpoint.py'), \
+                patch.object(install.os, 'getuid', return_value=0), patch.object(install.os, 'chown'), \
+                patch('sys.stdout', io.StringIO()):
+            install.main('dev')
+        return source
+
+    def test_upgrade_keeps_the_previous_release_under_its_own_backup(self):
+        with tempfile.TemporaryDirectory() as t:
+            root = Path(t)
+            (root/'endpoint.py').write_text('import os\n' + self.ANCHOR)
+            first = self.install_dev(root, 'a'*40)
+            installed_source = (root/'release/source.json').read_bytes()
+            second = self.install_dev(root, 'b'*40)
+            self.assertEqual((root/'release/command_center.py').read_bytes(), second)
+            kept = install.saved(root/'release/command_center.py', root/'backup'/('b'*40))
+            self.assertEqual(kept.read_bytes(), first)
+            self.assertEqual(install.saved(root/'release/source.json', root/'backup'/('b'*40)).read_bytes(), installed_source)
+            self.install_dev(root, 'b'*40)
+            self.assertEqual((root/'endpoint.py').read_text().count('automecanik-command-center-v1'), 1)
+
+    def test_conflicting_backup_refuses_before_any_write(self):
+        with tempfile.TemporaryDirectory() as t:
+            root = Path(t)
+            (root/'endpoint.py').write_text('import os\n' + self.ANCHOR)
+            first = self.install_dev(root, 'a'*40)
+            stale = install.saved(root/'release/source.json', root/'backup'/('b'*40))
+            stale.parent.mkdir(parents=True)
+            stale.write_text('older release')
+            with self.assertRaisesRegex(ValueError, '^install_refused_before_write:'):
+                self.install_dev(root, 'b'*40)
+            self.assertEqual((root/'release/command_center.py').read_bytes(), first)
+            self.assertFalse(install.saved(root/'release/command_center.py', root/'backup'/('b'*40)).exists())
+
+    def test_source_commit_must_be_a_full_sha(self):
+        with tempfile.TemporaryDirectory() as t:
+            with self.assertRaisesRegex(ValueError, '^source_commit_invalid$'):
+                self.install_dev(Path(t), '../20261022')
 
 
 if __name__ == '__main__': unittest.main()

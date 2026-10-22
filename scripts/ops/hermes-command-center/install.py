@@ -6,11 +6,12 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import sys
 
 HERE = Path(__file__).resolve().parent
-BACKUP = Path('/var/lib/automecanik-command-center-install/20261022')
+BACKUP_ROOT = Path('/var/lib/automecanik-command-center-install')
 DEV_RELEASE = Path('/opt/automecanik-command-center/1.0.0')
 HERMES_RELEASE = Path('/opt/codex-project-tools/automecanik-command-center-1.0.0')
 PLUGIN = Path('/home/hermes/.hermes/profiles/orchestration-automecanik-pilot/plugins/codex-automecanik-control/__init__.py')
@@ -20,8 +21,22 @@ MARKETING_RELEASE = Path('/opt/codex-project-tools/automecanik-marketing-profile
 DROPIN = Path('/etc/systemd/system/automecanik-supervisor.service.d/70-command-center.conf')
 
 
-def write(path, data, mode=0o644):
-    raw = data.encode() if isinstance(data, str) else data
+def saved(path, backup):
+    return backup / str(path).lstrip('/')
+
+
+def blocked(writes, backup):
+    """Every refusal happens before the first write: never a half-installed release."""
+    found = []
+    for path, raw in writes:
+        if path.with_name(path.name + '.installing').exists(): found.append(str(path) + '.installing')
+        copy = saved(path, backup)
+        if path.exists() and path.read_bytes() != raw and copy.exists() and copy.read_bytes() != path.read_bytes():
+            found.append(str(copy))
+    return found
+
+
+def write(path, raw, backup, mode=0o644):
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.exists() and path.read_bytes() == raw: return
     owner = (0, 0)
@@ -29,11 +44,12 @@ def write(path, data, mode=0o644):
         info = path.stat()
         owner = (info.st_uid, info.st_gid)
         mode = info.st_mode & 0o777
-        backup = BACKUP / str(path).lstrip('/')
-        backup.parent.mkdir(parents=True, exist_ok=True)
-        if backup.exists(): raise ValueError('backup_already_exists_for_different_content')
-        shutil.copy2(path, backup)
-        os.chown(backup, *owner)
+        copy = saved(path, backup)
+        copy.parent.mkdir(parents=True, exist_ok=True)
+        if not copy.exists():
+            shutil.copy2(path, copy)
+            os.chown(copy, *owner)
+        elif copy.read_bytes() != path.read_bytes(): raise ValueError('backup_already_exists_for_different_content')
     temporary = path.with_name(path.name + '.installing')
     with temporary.open('xb') as handle:
         handle.write(raw)
@@ -50,6 +66,9 @@ def main(target):
     manifest = json.loads((HERE/'source.json').read_text())
     if hashlib.sha256(source).hexdigest() != manifest['command_center_sha256']:
         raise ValueError('source_hash_mismatch')
+    # One backup set per installed commit: an upgrade keeps the previous release restorable.
+    if not re.fullmatch('[0-9a-f]{40}', manifest['commit']): raise ValueError('source_commit_invalid')
+    backup = BACKUP_ROOT / manifest['commit']
     if target == 'dev':
         text = ENDPOINT.read_text()
         anchor = '# Fixed read-only aggregate collector, no caller arguments.\n'
@@ -60,9 +79,9 @@ def main(target):
             if text.count(anchor) != 1: raise ValueError('endpoint_anchor_changed')
             text = text.replace(anchor, insertion + anchor, 1)
         compile(text, str(ENDPOINT), 'exec')
-        write(DEV_RELEASE/'command_center.py', source)
-        write(DEV_RELEASE/'source.json', (HERE/'source.json').read_bytes())
-        write(ENDPOINT, text)
+        writes = [(DEV_RELEASE/'command_center.py', source),
+                  (DEV_RELEASE/'source.json', (HERE/'source.json').read_bytes()),
+                  (ENDPOINT, text.encode())]
     elif target == 'hermes':
         text = PLUGIN.read_text()
         old = "sys.path.insert(0, '/opt/codex-project-tools/automecanik-marketing-profile-1.0.2')\nfrom marketing_profile_v1_0_2 import register as register_marketing"
@@ -76,14 +95,17 @@ def main(target):
         marketing = (HERE/'marketing_profile.py').read_bytes()
         if hashlib.sha256(marketing).hexdigest() != manifest['marketing_sha256']:
             raise ValueError('marketing_hash_mismatch')
-        write(HERMES_RELEASE/'command_center_v1.py', source)
-        write(HERMES_RELEASE/'source.json', (HERE/'source.json').read_bytes())
-        write(MARKETING_RELEASE/'marketing_profile_v1_0_3.py', marketing)
-        write(MARKETING_RELEASE/'source.json', json.dumps({'commit':MARKETING_COMMIT,'path':'scripts/marketing/hermes/marketing_profile.py','sha256':manifest['marketing_sha256']}))
-        write(DROPIN, '[Service]\nExecStartPost=/usr/bin/python3 -I -B /opt/codex-project-tools/automecanik-command-center-1.0.0/command_center_v1.py --collect\n')
-        write(PLUGIN, text)
+        writes = [(HERMES_RELEASE/'command_center_v1.py', source),
+                  (HERMES_RELEASE/'source.json', (HERE/'source.json').read_bytes()),
+                  (MARKETING_RELEASE/'marketing_profile_v1_0_3.py', marketing),
+                  (MARKETING_RELEASE/'source.json', json.dumps({'commit':MARKETING_COMMIT,'path':'scripts/marketing/hermes/marketing_profile.py','sha256':manifest['marketing_sha256']}).encode()),
+                  (DROPIN, b'[Service]\nExecStartPost=/usr/bin/python3 -I -B /opt/codex-project-tools/automecanik-command-center-1.0.0/command_center_v1.py --collect\n'),
+                  (PLUGIN, text.encode())]
     else: raise ValueError('target_denied')
-    print(json.dumps({'target':target,'installed':True,'backup':str(BACKUP),'source':manifest}))
+    found = blocked(writes, backup)
+    if found: raise ValueError('install_refused_before_write:' + ','.join(found))
+    for path, raw in writes: write(path, raw, backup)
+    print(json.dumps({'target':target,'installed':True,'backup':str(backup),'source':manifest}))
 
 
 if __name__ == '__main__':
