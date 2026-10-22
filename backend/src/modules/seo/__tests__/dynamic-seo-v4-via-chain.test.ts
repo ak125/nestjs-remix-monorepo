@@ -1,6 +1,10 @@
 import { BadRequestException } from '@nestjs/common';
 
 import { DynamicSeoV4UltimateService } from '../dynamic-seo-v4-ultimate.service';
+import {
+  SEO_V4_RECENT_UNKNOWN_PAGES,
+  SEO_V4_RESULT_CACHE_MAX_ENTRIES,
+} from '../seo-v4.types';
 import { SeoPlaceholderEventsService } from '../services/seo-placeholder-events.service';
 import { SeoSurfaceRegistry } from '../registries/seo-surface.registry';
 import { SeoVariantFamilyRegistry } from '../registries/seo-variant-family.registry';
@@ -210,6 +214,116 @@ describe('DynamicSeoV4UltimateService → chain delegation (PR-2d E2E)', () => {
     const r2 = await v4.generateCompleteSeo(1, 1, baseVars);
 
     expect(r2.metadata.cacheHit).toBe(false);
+  });
+
+  // ── État mémoire borné : cache LRU + TTL, statistiques de taille constante ──
+
+  describe('état mémoire borné', () => {
+    afterEach(() => jest.useRealTimers());
+
+    it(`cache LRU : au-delà de ${SEO_V4_RESULT_CACHE_MAX_ENTRIES} clés distinctes, la plus ancienne est évincée`, async () => {
+      const v4 = buildV4({
+        templateRow: { sgc_id: 1, sgc_title: '#Gamme#' },
+      });
+      const max = SEO_V4_RESULT_CACHE_MAX_ENTRIES;
+
+      for (let pgId = 1; pgId <= max + 1; pgId++) {
+        await v4.generateCompleteSeo(pgId, 1, baseVars);
+      }
+
+      // La clé la plus récente est encore servie depuis le cache…
+      const newest = await v4.generateCompleteSeo(max + 1, 1, baseVars);
+      expect(newest.metadata.cacheHit).toBe(true);
+      // …la plus ancienne a été évincée par la (max + 1)-ième.
+      const oldest = await v4.generateCompleteSeo(1, 1, baseVars);
+      expect(oldest.metadata.cacheHit).toBe(false);
+    });
+
+    it('TTL : une entrée expirée n’est plus servie', async () => {
+      jest.useFakeTimers({
+        now: new Date('2026-10-21T12:00:00Z'),
+        doNotFake: [
+          'nextTick',
+          'setImmediate',
+          'setTimeout',
+          'setInterval',
+          'clearTimeout',
+          'clearInterval',
+          'queueMicrotask',
+        ],
+      });
+      const v4 = buildV4({
+        templateRow: { sgc_id: 1, sgc_title: '#Gamme#' },
+      });
+
+      await v4.generateCompleteSeo(1, 1, baseVars);
+
+      // baseVars : ni isTopGamme ni seoScore → TTL court (5 min).
+      jest.setSystemTime(new Date('2026-10-21T12:04:59Z'));
+      const fresh = await v4.generateCompleteSeo(1, 1, baseVars);
+      expect(fresh.metadata.cacheHit).toBe(true);
+
+      jest.setSystemTime(new Date('2026-10-21T12:05:01Z'));
+      const expired = await v4.generateCompleteSeo(1, 1, baseVars);
+      expect(expired.metadata.cacheHit).toBe(false);
+    });
+
+    it('statistiques : aucune collection ne grandit avec le trafic', async () => {
+      const v4 = buildV4({ templateRow: null });
+      const internals = v4 as unknown as {
+        generateDefaultSeo: (...a: unknown[]) => unknown;
+        getMetricsStats: () => Record<string, unknown>;
+      };
+
+      for (let pgId = 1; pgId <= 50; pgId++) {
+        await v4.generateCompleteSeo(pgId, 1, baseVars);
+      }
+      // Contexte vide : seul chemin qui enregistre une page « unknown »
+      // (inatteignable via generateCompleteSeo, dont le schéma exige ces champs).
+      const emptyContext = {
+        ...baseVars,
+        gamme: '',
+        marque: '',
+        modele: '',
+        type: '',
+      };
+      for (let i = 0; i < 15; i++) {
+        internals.generateDefaultSeo(emptyContext, Date.now(), 0, 0);
+      }
+
+      const stats = internals.getMetricsStats();
+      for (const value of Object.values(stats)) {
+        if (Array.isArray(value)) {
+          expect(value.length).toBeLessThanOrEqual(SEO_V4_RECENT_UNKNOWN_PAGES);
+        }
+      }
+      expect(stats.processingTimeCount).toBe(65);
+      expect(stats.unknownPagesCount).toBe(15);
+    });
+
+    it('getMetrics : moyenne = total / nombre, pages unknown = compteur + plus récentes', async () => {
+      const monitoring = Object.create(
+        SeoV4MonitoringService.prototype,
+      ) as SeoV4MonitoringService;
+
+      const metrics = await monitoring.getMetrics({
+        cacheHits: 3,
+        cacheMisses: 1,
+        processingTimeTotalMs: 90,
+        processingTimeCount: 4,
+        unknownPagesCount: 12,
+        recentUnknownPages: [
+          { pgId: 7, typeId: 70, timestamp: new Date('2026-10-21T12:00:00Z') },
+        ],
+      });
+
+      expect(metrics.cacheHitRate.overall).toBe(75);
+      expect(metrics.avgProcessingTime.overall).toBe(22.5);
+      expect(metrics.unknownPages).toEqual({
+        count: 12,
+        lastDetected: ['pgId=7, typeId=70'],
+      });
+    });
   });
 
   // ── A1b : SeoVariables additif + safeParse fail-CLOSED ──────────────────────

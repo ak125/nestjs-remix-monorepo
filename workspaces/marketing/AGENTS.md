@@ -5,7 +5,7 @@
 
 ## Règle d'ownership
 
-Le workspace `app/workspaces/marketing/` charge **uniquement** les 3 agents G1 marketing + skills marketing-relevant. Il **n'invoque** ni les 39 agents R0-R8 SEO (workspace `seo-batch/`), ni les 8 skills DEV daily (workspace `app/`), ni le skill `wiki-proposal-writer` (workspace `wiki/`).
+Le workspace `app/workspaces/marketing/` est destiné aux agents G1 marketing et aux skills marketing pertinents ; les skills parents peuvent aussi être découverts. Il **n'invoque** ni les 39 agents R0-R8 SEO (workspace `seo-batch/`), ni les 8 skills DEV daily (workspace `app/`), ni le skill `wiki-proposal-writer` (workspace `wiki/`).
 
 Tout agent invoqué sous le scope de ce workspace **doit** figurer ci-dessous. Ajout/retrait d'agent = PR monorepo signée modifiant ce fichier (cf. ADR-061 §5).
 
@@ -21,9 +21,10 @@ Fichiers source : `.claude/agents/{marketing-lead-agent,local-business-agent,cus
 
 ## Skills locales
 
-Le workspace ne charge **aucun skill local exclusif** au 2026-05-14. Les skills marketing-relevant (frontend-design, ui-ux-pro-max) restent dans `app/.claude/skills/` (DEV root) et sont disponibles via PATH d'inclusion natif Claude Code.
-
-État au 2026-10-17 : 11 skills locaux sous `.claude/skills/` (`fafa-*`, `amk-*`, `creative-pattern-extractor`). Relecture éditoriale d'un brouillon français (script, copie) : lire `../../.claude/prompts/_shared/editorial-review.md` avant d'agir.
+Consulter `.claude/skills/*/SKILL.md` pour les procédures locales et
+`../../.claude/knowledge/workspaces.md` pour les règles d'héritage. Ne pas figer
+le nombre de skills dans les instructions.
+Relecture éditoriale française : `../../.claude/prompts/_shared/editorial-review.md`.
 
 ## Outputs autorisés (conformité ADR-036 + ADR-060 + ADR-061)
 

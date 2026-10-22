@@ -1,4 +1,13 @@
-import { Controller, Get, Param, Req, Res, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  Req,
+  Res,
+  Logger,
+} from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AbandonedCartDataService } from '../services/abandoned-cart-data.service';
 import { AbandonedCartService } from '../services/abandoned-cart.service';
@@ -9,6 +18,15 @@ const TRACKING_PIXEL = Buffer.from(
   'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
   'base64',
 );
+
+// recovery_token = randomBytes(32).toString('hex') (AbandonedCartDataService.insert).
+// Checked before the token is echoed into the confirmation form.
+function isRecoveryToken(token: string | undefined): token is string {
+  return typeof token === 'string' && /^[a-f0-9]{64}$/.test(token);
+}
+
+const INVALID_LINK =
+  '<p style="color:#6b7280;">Ce lien de désinscription est invalide ou a expiré. Aucune modification n’a été enregistrée.</p>';
 
 @Controller('api/cart')
 export class CartRecoveryController {
@@ -101,33 +119,64 @@ export class CartRecoveryController {
   }
 
   /**
-   * Unsubscribe — opt out of abandoned cart emails
+   * Unsubscribe link (email body and List-Unsubscribe) — confirmation page only.
+   * GET never writes: mail scanners prefetch links (RFC 8058 §1). The form
+   * posts to the same URL as the one-click handler below.
    */
   @Get('unsubscribe/:token')
+  unsubscribePage(@Param('token') token: string, @Res() res: Response): void {
+    if (!isRecoveryToken(token)) {
+      this.sendUnsubscribePage(res, 400, 'Lien invalide', INVALID_LINK);
+      return;
+    }
+    this.sendUnsubscribePage(
+      res,
+      200,
+      'Ne plus recevoir les rappels de panier',
+      `<p style="color:#6b7280;">Confirmez pour ne plus recevoir de rappels de panier abandonné.</p>
+    <form method="post" action="/api/cart/unsubscribe/${token}">
+      <input type="hidden" name="List-Unsubscribe" value="One-Click" />
+      <button type="submit" style="background:#f59e0b;color:#fff;border:0;padding:12px 24px;border-radius:6px;font-weight:bold;cursor:pointer;">Confirmer la désinscription</button>
+    </form>`,
+    );
+  }
+
+  /**
+   * One-click unsubscribe (RFC 8058) — also the confirmation form target.
+   * Sent by mail providers without cookies; the body is not required. Answers
+   * 200, never a redirect, and only confirms an opposition actually recorded.
+   */
+  @Post('unsubscribe/:token')
+  @HttpCode(200)
   async unsubscribe(
     @Param('token') token: string,
     @Res() res: Response,
   ): Promise<void> {
+    if (!isRecoveryToken(token)) {
+      this.sendUnsubscribePage(res, 400, 'Lien invalide', INVALID_LINK);
+      return;
+    }
     try {
       const result = await this.abandonedCartData.updateUnsubscribed(token);
-
-      if (result) {
-        await this.abandonedCartService.markUnsubscribed(result.cst_id);
+      if (!result) {
+        this.sendUnsubscribePage(res, 404, 'Lien inconnu', INVALID_LINK);
+        return;
       }
-
-      res.set('Content-Type', 'text/html; charset=utf-8');
-      res.send(`<!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>Desinscription</title></head>
-<body style="font-family:Arial,sans-serif;text-align:center;padding:60px 20px;background:#f3f4f6;">
-  <div style="max-width:400px;margin:0 auto;background:#fff;padding:32px;border-radius:8px;">
-    <h2 style="color:#1f2937;">Desinscription confirmee</h2>
-    <p style="color:#6b7280;">Vous ne recevrez plus de rappels de panier abandonne.</p>
-    <a href="/" style="color:#f59e0b;text-decoration:underline;">Retour sur Automecanik</a>
-  </div>
-</body></html>`);
+      await this.abandonedCartService.markUnsubscribed(result.cst_id);
+      this.sendUnsubscribePage(
+        res,
+        200,
+        'Désinscription confirmée',
+        '<p style="color:#6b7280;">Vous ne recevrez plus de rappels de panier abandonné.</p>',
+      );
     } catch (error) {
       this.logger.error('Unsubscribe failed', error);
-      res.status(500).send('Erreur lors de la desinscription.');
+      this.sendUnsubscribePage(
+        res,
+        500,
+        'Désinscription non enregistrée',
+        '<p style="color:#6b7280;">Une erreur est survenue. Réessayez dans quelques minutes.</p>',
+      );
     }
   }
 
@@ -143,6 +192,26 @@ export class CartRecoveryController {
         : 0;
 
     return { ...stats, recovery_rate: recoveryRate };
+  }
+
+  private sendUnsubscribePage(
+    res: Response,
+    status: number,
+    title: string,
+    content: string,
+  ): void {
+    res.status(status);
+    res.set('Content-Type', 'text/html; charset=utf-8');
+    res.set('Cache-Control', 'no-store');
+    res.send(`<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="robots" content="noindex"><title>${title}</title></head>
+<body style="font-family:Arial,sans-serif;text-align:center;padding:60px 20px;background:#f3f4f6;">
+  <div style="max-width:400px;margin:0 auto;background:#fff;padding:32px;border-radius:8px;">
+    <h2 style="color:#1f2937;">${title}</h2>
+    ${content}
+    <a href="/" style="color:#f59e0b;text-decoration:underline;">Retour sur Automecanik</a>
+  </div>
+</body></html>`);
   }
 
   private getCartSessionId(req: Request): string {

@@ -87,12 +87,15 @@ export class AuthLoginController {
     @Req() request: Express.Request,
   ): Promise<Record<string, unknown>> {
     try {
-      await this.userDataService.create({
-        email: userData.email,
-        password: userData.password,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-      });
+      await this.userDataService.create(
+        {
+          email: userData.email,
+          password: userData.password,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+        },
+        userData.newsletterOptIn ? { marketingConsentSource: 'register' } : {},
+      );
 
       const loginResult = await this.authService.login(
         userData.email,
@@ -162,6 +165,9 @@ export class AuthLoginController {
     const lastName = String(body.lastName || '').trim();
     const civility = body.civility || undefined;
     const phone = String(body.phone || '').trim() || undefined;
+    // Case « Je souhaite recevoir les offres et actualités AutoMecanik » :
+    // envoyée « on » seulement si cochée (ADR-036, consentement explicite).
+    const marketingConsent = body.newsletterOptIn === 'on';
 
     // Billing → mapped to CreateUserDto fields
     const address1 = String(body['billing.address1'] || '').trim();
@@ -200,18 +206,21 @@ export class AuthLoginController {
 
     // Création du compte
     try {
-      await this.userDataService.create({
-        email,
-        password,
-        firstName: firstName || undefined,
-        lastName: lastName || undefined,
-        civility,
-        phone,
-        address: address || undefined,
-        zipCode,
-        city,
-        country,
-      });
+      await this.userDataService.create(
+        {
+          email,
+          password,
+          firstName: firstName || undefined,
+          lastName: lastName || undefined,
+          civility,
+          phone,
+          address: address || undefined,
+          zipCode,
+          city,
+          country,
+        },
+        marketingConsent ? { marketingConsentSource: 'register' } : {},
+      );
     } catch (error: unknown) {
       const errMsg =
         error instanceof Error

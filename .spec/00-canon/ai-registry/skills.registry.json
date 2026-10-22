@@ -1,12 +1,12 @@
 {
-  "compliantCount": 14,
-  "generatedAt": "2026-10-19T01:36:52.996Z",
+  "compliantCount": 16,
+  "generatedAt": "2026-10-21T22:17:47.239Z",
   "issues": [],
   "schemaPath": ".spec/00-canon/ai-registry/skill.schema.json",
   "schemaVersion": "1.0.0",
   "skills": [
     {
-      "checksum": "sha256:dae2f33d3a366d837ce3dd5a68fbe25cfc28c0f517fcb882937842267ed1ccb6",
+      "checksum": "sha256:11c9e4524c4991a64729c7e9b9eebd949c16cf9618693cbaa1af076e233b3a2a",
       "domain": "D15",
       "last_verified": "2026-09-30",
       "llm_safe": true,
@@ -32,7 +32,7 @@
       "type": "technique"
     },
     {
-      "checksum": "sha256:33f0adf8345a9d9258cce2779253ac5ddc764a2f6fbb40e5b4d13ed0127bba3b",
+      "checksum": "sha256:b947aa094ebcf0ff1ef9b631deb1cb750ed9a9b7da3e4b00c205527427df2689",
       "domain": "D15",
       "last_verified": "2026-09-30",
       "llm_safe": true,
@@ -59,7 +59,7 @@
       "type": "technique"
     },
     {
-      "checksum": "sha256:517dfe9551f6aef7f5140f89159878625c0d572b031a0df2bd610250c520c0c2",
+      "checksum": "sha256:015918fa92b5416937cd44913ac4a182abf77849f1d374a7af641bd754e2eb60",
       "domain": "D15",
       "last_verified": "2026-07-04",
       "llm_safe": true,
@@ -99,6 +99,24 @@
         "supabase"
       ],
       "type": "discipline"
+    },
+    {
+      "checksum": "sha256:eb7e98769622c5435a45d2af0aa1d984eb48c46280f017e52199e778080e0cfa",
+      "domain": "D7",
+      "last_verified": "2026-10-21",
+      "llm_safe": true,
+      "metadata": {
+        "version": "1.0.0"
+      },
+      "name": "diagnostic-orientation",
+      "owners": [
+        "@ak125"
+      ],
+      "path": ".claude/skills/diagnostic-orientation/SKILL.md",
+      "runtime_class": "read-only",
+      "spec_compliant": true,
+      "status": "experimental",
+      "type": "technique"
     },
     {
       "checksum": "sha256:750b518adb6ab24a45c782cee6b8553065e1e2e733f27cbd8c62a9042a3666d3",
@@ -159,13 +177,13 @@
       "type": "discipline"
     },
     {
-      "checksum": "sha256:1c2fc075d51ba8e441471cc0e5dd233f6e4c52c996a6ea241f8a8090b522c0cf",
+      "checksum": "sha256:6c3d50c41f625ef5b198c294c6eb67684d4bf7f9a03b56a07cbfb134b09db176",
       "domain": "D11",
-      "last_verified": "2026-10-19",
+      "last_verified": "2026-10-21",
       "llm_safe": false,
       "metadata": {
         "spec": "agentskills.io/specification v1",
-        "version": "1.0"
+        "version": "1.2"
       },
       "name": "order-rupture-equivalence",
       "owners": [
@@ -176,6 +194,7 @@
       "spec_compliant": true,
       "status": "experimental",
       "tags": [
+        "cancellation",
         "commerce",
         "customer-mail",
         "equivalence",
@@ -187,6 +206,24 @@
         "tecdoc"
       ],
       "type": "discipline"
+    },
+    {
+      "checksum": "sha256:7c8e68eeabcbe47d2eced20d25ea793b14b8f2c10ac48cdfa13ddafa3c630f2f",
+      "domain": "D10",
+      "last_verified": "2026-10-21",
+      "llm_safe": true,
+      "metadata": {
+        "version": "1.0.0"
+      },
+      "name": "project-state-report",
+      "owners": [
+        "@ak125"
+      ],
+      "path": ".claude/skills/project-state-report/SKILL.md",
+      "runtime_class": "read-only",
+      "spec_compliant": true,
+      "status": "experimental",
+      "type": "technique"
     },
     {
       "checksum": "sha256:2a73b361688f370178e1ee6557bf159ac32cc7cea9ccd8e389a8d6d8e45cca03",
@@ -379,5 +416,5 @@
       "type": "technique"
     }
   ],
-  "totalSkills": 14
+  "totalSkills": 16
 }

@@ -30,7 +30,7 @@
 - supabase-js-1000-row-cap
 - postgrest-stable-function-write
 - dev-runtime-not-auto-updated-on-merge
-- node-22-required-for-architecture-build
+- node-manifests-required-for-architecture-build
 - evidence-window-locks-architecture-decisions
 
 ## EXPLORATION_BUDGET

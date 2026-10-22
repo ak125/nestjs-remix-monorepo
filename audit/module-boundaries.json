@@ -18,7 +18,7 @@
         "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__"
       ],
       "files_count": 157,
-      "loc_total": 44010,
+      "loc_total": 43996,
       "has_barrel": true
     },
     "agentic-engine": {
@@ -75,7 +75,7 @@
         "backend/src/modules/auth/dto"
       ],
       "files_count": 44,
-      "loc_total": 5878,
+      "loc_total": 5899,
       "has_barrel": true
     },
     "backend-core": {
@@ -92,7 +92,7 @@
         "backend/src/utils"
       ],
       "files_count": 35,
-      "loc_total": 6176,
+      "loc_total": 6184,
       "has_barrel": true
     },
     "blog": {
@@ -132,7 +132,7 @@
         "backend/src/modules/cart/services"
       ],
       "files_count": 21,
-      "loc_total": 4009,
+      "loc_total": 4128,
       "has_barrel": false
     },
     "catalog": {
@@ -213,7 +213,7 @@
         "backend/src/database/types"
       ],
       "files_count": 15,
-      "loc_total": 21757,
+      "loc_total": 21761,
       "has_barrel": true
     },
     "dev-only": {
@@ -261,7 +261,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 115052,
+      "loc_total": 114988,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 585,
-      "loc_total": 110497,
+      "loc_total": 110551,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -502,7 +502,7 @@
         "backend/src/modules/orders/types"
       ],
       "files_count": 21,
-      "loc_total": 6194,
+      "loc_total": 6572,
       "has_barrel": true
     },
     "payments": {
@@ -768,7 +768,7 @@
         "scripts/seo/lib"
       ],
       "files_count": 279,
-      "loc_total": 59406,
+      "loc_total": 59544,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 305,
-      "loc_total": 58525,
+      "files_count": 313,
+      "loc_total": 60746,
       "has_barrel": true
     },
     "upload": {
@@ -980,7 +980,7 @@
         "backend/src/modules/users/services"
       ],
       "files_count": 27,
-      "loc_total": 5216,
+      "loc_total": 5421,
       "has_barrel": true
     },
     "vehicle-context": {

@@ -4,7 +4,7 @@ S'applique aux runs depuis `workspaces/seo-batch/`. Complète (sans les remplace
 
 ## Sources de vérité
 
-- **RAG knowledge** : `/opt/automecanik/rag/knowledge/` (gammes `.md`, vehicles, constructeurs). **Ne jamais seed du contenu métier depuis le LLM** — incident breezy-eagle 2026-04-18, 350 entrées rollback.
+- **Contenu SEO** : sources WIKI validées et leurs projections autorisées (ADR-031/046). RAG est consommateur chatbot, jamais source de génération SEO. Ne jamais inventer du contenu métier depuis le LLM.
 - **DB Supabase** via MCP (`mcp__supabase__execute_sql` ou `mcp__claude_ai_Supabase__execute_sql`). Tables : `__seo_*`, `__rag_*`, `__pg_*`, `__diag_*`, `__blog_*`. Pas de DROP/TRUNCATE sans validation humaine.
 - **Vault gouvernance** : `/opt/automecanik/governance-vault/ledger/knowledge/` pour les recettes canon (V-Level, KW pipeline, gamme audit).
 
@@ -26,10 +26,10 @@ S'applique aux runs depuis `workspaces/seo-batch/`. Complète (sans les remplace
 ## Anti-patterns SEO
 
 - **Pas de scrape "parts-feed"** (catalogue fournisseur) sans recipe canon. Termes neutres uniquement dans nouveaux fichiers (jamais "tecdoc" dans contenus créés ici).
-- **Pas de commit de contenu seedé** — toute génération R1-R8 doit s'appuyer sur RAG `.md` + KW DB, pas sur l'imagination du LLM.
+- **Pas de commit de contenu seedé** — toute génération R1-R8 doit s'appuyer sur WIKI validée + KW DB, pas sur l'imagination du LLM.
 - **Pas de trigger sitemap** (`POST /api/sitemap/v10/generate-all`) sans validation explicite. Incident 2026-04-18.
 - **R7 vs R8** : R7 = hub marque transversal. R8 = page véhicule (modele/motorisation/type_id). Ne **jamais** dériver R8 vers une page gamme.
 
 ## Contrat de sortie agents
 
-`./agent-exit-contract.md` — règle non-négociable applicable à tous les agents R*.
+`.claude/canon-mirrors/agent-exit-contract.md` (depuis ce workspace) — règle non-négociable applicable à tous les agents R*.
