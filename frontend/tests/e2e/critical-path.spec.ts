@@ -34,14 +34,21 @@ function isMobile(width: number): boolean {
   return width < 768;
 }
 
-// Helper: skip si 404
-async function skipIf404(page: Page): Promise<boolean> {
-  const is404 = await page.getByText(/page non trouvée|404/i).first().isVisible().catch(() => false);
-  if (is404) {
-    console.log('Page 404 - test skipped');
-    return true;
-  }
-  return false;
+// R1 de gamme servie en 200 (aussi vérifiée par url-validation.spec.ts).
+const R1_GAMME = '/pieces/plaquette-de-frein-402.html';
+// R2 de la fixture « plaquettes-402-x-57414 » (scripts/ci/r2-golden.json) : ses pièces
+// et ses côtés Avant/Arrière sont vérifiés sur PREPROD par l'étape bloquante « R2 golden »
+// du job Deploy PREPROD, avant ce job.
+const R2_GOLDEN = '/pieces/plaquette-de-frein-402/chevrolet-44/cruze-iii-j305-44088/1-6-57414.html';
+const PIECE_CARD = /^Voir .+ —/;
+
+// Helper: page servie telle quelle (200, sans redirection). L'ancienne URL
+// /pieces/plaquettes-de-frein-1.html redirigeait vers une autre gamme, et le
+// test vérifiait la mauvaise page sans le voir.
+async function gotoServed(page: Page, path: string) {
+  const res = await page.goto(path);
+  expect(res?.status()).toBe(200);
+  expect(new URL(page.url()).pathname).toBe(path);
 }
 
 // ============================================
@@ -54,136 +61,94 @@ test.describe('1. Menu → Catégorie', () => {
       await page.goto('/');
       await page.waitForLoadState('load');
 
-      // Mobile: ouvrir burger menu puis accordion Catalogue
-      if (isMobile(size.width)) {
-        const menuButton = page.locator('[aria-label="Menu"], button:has(svg[class*="menu"]), .hamburger').first();
-        if (await menuButton.isVisible()) {
-          await menuButton.click();
-          // Attendre l'animation du Sheet
-          await page.waitForTimeout(500);
-
-          // Ouvrir l'accordion Catalogue - le trigger a un data-state attribute
-          const catalogueAccordion = page.getByRole('button', { name: /Catalogue/i }).first();
-          if (await catalogueAccordion.isVisible({ timeout: 2000 }).catch(() => false)) {
-            await catalogueAccordion.click();
-            // Attendre l'animation de l'accordion
-            await page.waitForTimeout(400);
-          }
-        }
-      }
-
-      // Chercher un lien de catégorie (Freinage, Filtration, etc.)
-      // Sur mobile: chercher dans le Sheet dialog pour éviter les quick chips
-      const categorySelector = isMobile(size.width)
-        ? '[role="dialog"] a:has-text("Freinage"), [role="dialog"] a:has-text("Filtration")'
-        : 'a:has-text("Freinage"), a:has-text("Filtration"), a:has-text("Huiles")';
-      const categoryLink = page.locator(categorySelector).first();
-
-      if (await categoryLink.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await categoryLink.click({ force: true }); // force pour éviter l'interception
-        await page.waitForLoadState('load');
-
-        // Vérifier navigation OK
-        await expect(page.locator('h1, h2').first()).toBeVisible();
+      // Jusqu'à 768 px, le lien est dans le dialogue « Menu » ; au-delà, dans
+      // la barre. Avant l'hydratation, le clic sur « Menu » est perdu : on le
+      // rejoue tant que le dialogue n'est pas ouvert.
+      const menuButton = page.getByRole('button', { name: 'Menu', exact: true });
+      if (await menuButton.isVisible()) {
+        const menu = page.getByRole('dialog', { name: 'Menu de navigation' });
+        await expect(async () => {
+          if (!(await menu.isVisible())) await menuButton.click({ timeout: 2000 });
+          await expect(menu).toBeVisible({ timeout: 1000 });
+        }).toPass();
+        await menu.getByRole('link', { name: 'Catalogue pièces auto' }).click();
+        await expect(menu).toBeHidden();
       } else {
-        console.log(`[${name}] No category link found - checking homepage structure`);
-        // Au minimum, vérifier que la page d'accueil charge
-        await expect(page.locator('body')).toBeVisible();
+        await page
+          .getByRole('navigation', { name: 'Navigation principale' })
+          .getByRole('link', { name: 'Catalogue pièces auto' })
+          .click();
       }
+
+      await page.locator('#catalogue').getByRole('link', { name: 'Plaquette de frein', exact: true }).click();
+      await expect(page).toHaveURL(/\/pieces\/plaquette-de-frein-402\.html$/);
+      await expect(page.getByRole('heading', { level: 1 })).toContainText(/plaquette/i);
     });
   }
 });
 
 // ============================================
-// TEST 2: Recherche → Fiche produit
+// TEST 2: Recherche de l'en-tête → /search?q=
 // ============================================
-test.describe('2. Recherche → Fiche produit', () => {
+// Le formulaire mène à /search?q= avec ou sans JS : avant l'hydratation, la
+// soumission est native. Le nombre de résultats est seulement journalisé :
+// PREPROD tourne en READ_ONLY avec la clé anon (ADR-028 option D), qui n'a
+// pas SELECT sur les tables du catalogue. Le parcours strict recherche →
+// panier est dans commerce-journey.spec.ts, sur DEV.
+const SEARCH_TERM = 'plaquette';
+
+async function submitHeaderSearch(page: Page) {
+  const searchbox = page
+    .getByRole('searchbox', { name: 'Rechercher une pièce auto' })
+    .filter({ visible: true });
+  await expect(searchbox).toHaveCount(1);
+  await searchbox.fill(SEARCH_TERM);
+  await searchbox.press('Enter');
+  await expect(page).toHaveURL(new RegExp(`/search\\?q=${SEARCH_TERM}$`));
+}
+
+test.describe('2. Recherche en-tête → /search?q=', () => {
   for (const name of priorityViewports) {
     const size = viewports[name];
 
-    test(`[${name}] Recherche et ouverture fiche`, async ({ page }) => {
+    test(`[${name}] Recherche soumise vers /search?q=`, async ({ page }) => {
       await page.setViewportSize(size);
       await page.goto('/');
       await page.waitForLoadState('load');
 
-      // Chercher input de recherche
-      const searchInput = page.locator('input[placeholder*="recherch" i], input[type="search"], input[name="q"]').first();
+      await submitHeaderSearch(page);
 
-      if (await searchInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await searchInput.fill('plaquette frein');
-        await searchInput.press('Enter');
-
-        // Attendre résultats
-        await page.waitForLoadState('load');
-        await page.waitForTimeout(500);
-
-        // Vérifier qu'on a des résultats ou une page de recherche
-        const hasResults = await page.locator('.group\\/card, [data-testid="piece-card"], [data-testid="search-result"]').first().isVisible({ timeout: 5000 }).catch(() => false);
-
-        if (hasResults) {
-          // Cliquer sur premier résultat
-          const firstProduct = page.locator('.group\\/card, [data-testid="piece-card"]').first();
-          await firstProduct.click();
-          await page.waitForTimeout(500);
-
-          // Vérifier qu'un prix est visible (modal ou page)
-          const priceVisible = await page.locator('text=/\\d+([,.]\\d{2})?\\s*€/').first().isVisible({ timeout: 3000 }).catch(() => false);
-          expect(priceVisible).toBe(true);
-        } else {
-          console.log(`[${name}] No search results found`);
-        }
-      } else {
-        console.log(`[${name}] Search input not visible - skipping`);
-      }
+      const results = await page.getByRole('button', { name: /^Ajouter .+ au panier$/ }).count();
+      console.log(`[${name}] ${results} résultat(s) pour "${SEARCH_TERM}"`);
     });
   }
+
+  test.describe('sans JavaScript', () => {
+    test.use({ javaScriptEnabled: false });
+
+    for (const name of priorityViewports) {
+      const size = viewports[name];
+
+      test(`[${name}] Soumission native vers /search?q=`, async ({ page }) => {
+        await page.setViewportSize(size);
+        await page.goto('/');
+
+        await submitHeaderSearch(page);
+      });
+    }
+  });
 });
 
 // ============================================
 // TEST 3: Ajout panier → Vérification
 // ============================================
+// Non prouvable sur PREPROD : la recherche et l'ajout lisent le catalogue,
+// illisible par la clé anon (cf. TEST 2). L'ancien test passait sans rien
+// vérifier. Preuve stricte : commerce-journey.spec.ts, sur DEV.
 test.describe('3. Ajout panier', () => {
-  for (const name of priorityViewports) {
-    const size = viewports[name];
-
-    test(`[${name}] Ajouter au panier et vérifier`, async ({ page }) => {
-      await page.setViewportSize(size);
-      await page.goto('/pieces/plaquettes-de-frein-1.html');
-      await page.waitForLoadState('load');
-
-      if (await skipIf404(page)) return;
-
-      // Ouvrir modal produit (si cards présentes)
-      const productCard = page.locator('.group\\/card').first();
-      if (await productCard.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await productCard.click();
-        await page.waitForTimeout(500);
-
-        // Cliquer sur "Ajouter au panier"
-        const addToCartBtn = page.locator('button:has-text("Ajouter au panier")').first();
-
-        if (await addToCartBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
-          await addToCartBtn.click();
-          await page.waitForTimeout(1000);
-
-          // Vérifier notification ou panier mis à jour
-          const cartUpdated = await page.locator('text=/panier|ajouté|cart/i').first().isVisible({ timeout: 3000 }).catch(() => false);
-
-          if (cartUpdated) {
-            // Aller au panier
-            await page.goto('/cart');
-            await page.waitForLoadState('load');
-
-            // Vérifier qu'il y a au moins un article ou panier vide message
-            const cartContent = await page.locator('[data-testid="cart-item"], .cart-item, text=/panier.*vide/i').first().isVisible({ timeout: 3000 }).catch(() => false);
-            expect(cartContent).toBe(true);
-          }
-        }
-      } else {
-        console.log(`[${name}] No product cards found - page may require vehicle selection`);
-      }
-    });
-  }
+  test('Ajouter au panier et vérifier', () => {
+    test.skip(true, 'catalogue illisible en READ_ONLY anon — preuve : commerce-journey.spec.ts sur DEV');
+  });
 });
 
 // ============================================
@@ -195,39 +160,36 @@ test.describe('4. Filtres', () => {
 
     test(`[${name}] Appliquer filtre`, async ({ page }) => {
       await page.setViewportSize(size);
-      await page.goto('/pieces/plaquettes-de-frein-1.html');
-      await page.waitForLoadState('load');
+      await gotoServed(page, R2_GOLDEN);
 
-      if (await skipIf404(page)) return;
+      const counter = page.getByText(/^\d+\s*résultats?$/).filter({ visible: true });
+      const resultCount = async () => Number((await counter.innerText()).match(/\d+/)?.[0]);
 
-      // Mobile: ouvrir drawer filtres
+      // Mobile : les filtres s'ouvrent par « Filtrer » (le bouton devient
+      // « Masquer filtres »), clic rejoué tant que l'hydratation n'est pas faite.
       if (isMobile(size.width)) {
-        const filterButton = page.locator('button:has-text("Filtrer"), button:has-text("Filtres")').first();
-        if (await filterButton.isVisible({ timeout: 3000 }).catch(() => false)) {
-          await filterButton.click();
-          await page.waitForTimeout(300);
-        }
+        await expect(async () => {
+          if (!(await counter.isVisible())) {
+            await page.getByRole('button', { name: 'Filtrer', exact: true }).click({ timeout: 2000 });
+          }
+          await expect(counter).toBeVisible({ timeout: 1000 });
+        }).toPass();
       }
 
-      // Chercher un filtre disponible
-      const filterOption = page.locator('button:has-text("En stock"), label:has-text("En stock"), [data-filter]').first();
+      const before = await resultCount();
+      expect(before).toBeGreaterThan(0);
 
-      if (await filterOption.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await filterOption.click();
-        await page.waitForTimeout(500);
+      // « Avant » fixe le côté : rejouer le clic ne change rien une fois appliqué.
+      const beforeText = await counter.innerText();
+      await expect(async () => {
+        await page.getByRole('button', { name: 'Avant', exact: true }).filter({ visible: true }).click({ timeout: 2000 });
+        await expect(counter).not.toHaveText(beforeText, { timeout: 1000 });
+      }).toPass();
 
-        // Fermer le drawer si mobile
-        if (isMobile(size.width)) {
-          await page.keyboard.press('Escape');
-          await page.waitForTimeout(300);
-        }
-
-        // Vérifier que des produits sont toujours affichés (le filtrage peut tout masquer)
-        await page.locator('.group\\/card, [data-testid="piece-card"]').first().isVisible({ timeout: 3000 }).catch(() => false);
-        expect(true).toBe(true);
-      } else {
-        console.log(`[${name}] No filter options found`);
-      }
+      const after = await resultCount();
+      expect(after).toBeGreaterThan(0);
+      expect(after).toBeLessThan(before);
+      await expect(page.getByRole('button', { name: PIECE_CARD }).filter({ visible: true }).first()).toBeVisible();
     });
   }
 });
@@ -238,32 +200,26 @@ test.describe('4. Filtres', () => {
 test.describe('5. Navigation retour', () => {
   test('Navigation retour préserve contexte', async ({ page }) => {
     await page.setViewportSize(viewports.iphone);
-    await page.goto('/pieces/plaquettes-de-frein-1.html');
-    await page.waitForLoadState('load');
+    await gotoServed(page, R2_GOLDEN);
 
-    if (await skipIf404(page)) return;
+    // Ouvrir la fiche d'une pièce (dialogue), clic rejoué avant l'hydratation
+    const productCard = page.getByRole('button', { name: PIECE_CARD }).filter({ visible: true }).first();
+    const detail = page.getByRole('dialog');
+    await expect(async () => {
+      if (!(await detail.isVisible())) await productCard.click({ timeout: 2000 });
+      await expect(detail).toBeVisible({ timeout: 1000 });
+    }).toPass();
 
-    // Ouvrir un produit
-    const productCard = page.locator('.group\\/card').first();
-    if (await productCard.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await productCard.click();
-      await page.waitForTimeout(500);
+    // Fermer la fiche (Escape) : retour au listing
+    await page.keyboard.press('Escape');
+    await expect(detail).toBeHidden();
+    await expect(productCard).toBeVisible();
 
-      // Fermer modal (Escape)
-      await page.keyboard.press('Escape');
-      await page.waitForTimeout(300);
-
-      // Vérifier retour au listing
-      const cardsVisible = await page.locator('.group\\/card').first().isVisible({ timeout: 3000 }).catch(() => false);
-      expect(cardsVisible).toBe(true);
-
-      // Naviguer ailleurs puis revenir
-      await page.goto('/');
-      await page.goBack();
-
-      // Vérifier page restaurée
-      await expect(page).toHaveURL(/pieces/);
-    }
+    // Naviguer ailleurs puis revenir : même R2, listing restauré
+    await page.goto('/');
+    await page.goBack();
+    await expect(page).toHaveURL((url) => url.pathname === R2_GOLDEN);
+    await expect(productCard).toBeVisible();
   });
 });
 
@@ -274,10 +230,8 @@ test.describe('6. Orientation', () => {
   test('Changement orientation portrait/landscape', async ({ page }) => {
     // Portrait
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/pieces/plaquettes-de-frein-1.html');
+    await gotoServed(page, R1_GAMME);
     await page.waitForLoadState('load');
-
-    if (await skipIf404(page)) return;
 
     // En portrait, la page doit charger correctement
     const bodyPortrait = await page.locator('body').isVisible();
@@ -325,10 +279,8 @@ test.describe('7. Checklist qualité', () => {
       test.skip(browserName === 'webkit', 'WebKit Playwright scroll detection false positive');
 
       await page.setViewportSize(size);
-      await page.goto('/pieces/plaquettes-de-frein-1.html');
+      await gotoServed(page, R1_GAMME);
       await page.waitForLoadState('load');
-
-      if (await skipIf404(page)) return;
 
       // Vérifier que la scrollbar horizontale n'est pas visible à l'utilisateur
       // (overflow: hidden est OK, seul le scroll visible compte)
@@ -359,10 +311,8 @@ test.describe('7. Checklist qualité', () => {
 
     test(`[${name}] Texte lisible (font >= 14px)`, async ({ page }) => {
       await page.setViewportSize(size);
-      await page.goto('/pieces/plaquettes-de-frein-1.html');
+      await gotoServed(page, R1_GAMME);
       await page.waitForLoadState('load');
-
-      if (await skipIf404(page)) return;
 
       const bodyFontSize = await page.evaluate(() =>
         parseFloat(getComputedStyle(document.body).fontSize)
@@ -373,10 +323,8 @@ test.describe('7. Checklist qualité', () => {
 
     test(`[${name}] Images chargées correctement`, async ({ page }) => {
       await page.setViewportSize(size);
-      await page.goto('/pieces/plaquettes-de-frein-1.html');
+      await gotoServed(page, R1_GAMME);
       await page.waitForLoadState('load');
-
-      if (await skipIf404(page)) return;
 
       // Attendre que les images lazy-load
       await page.waitForTimeout(1000);
