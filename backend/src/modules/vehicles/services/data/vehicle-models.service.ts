@@ -226,6 +226,9 @@ export class VehicleModelsService extends SupabaseBaseService {
         // 🔧 Étape 2: Récupérer les types pour ces modèles
         // ⚠️ type_modele_id est TEXT dans auto_type
         // ⚠️ Supabase PostgREST max-rows = 1000. Paginer pour les grosses marques (Toyota 3510+).
+        // Lots en ordre total (type_modele_id, type_id) : sans ORDER BY, deux lots
+        // successifs peuvent se recouvrir ou sauter des lignes. Le modèle en tête suit
+        // l'index de type_modele_id ; l'ordre dans un modèle reste celui de type_id.
         const typesSelect =
           'type_id, type_modele_id, type_year_from, type_year_to, type_fuel';
         const allTypes: TypePartial[] = [];
@@ -237,6 +240,8 @@ export class VehicleModelsService extends SupabaseBaseService {
             .from(TABLES.auto_type)
             .select(typesSelect)
             .in('type_modele_id', allModelIdsStr)
+            .order('type_modele_id')
+            .order('type_id')
             .range(typesOffset, typesOffset + typesBatchSize - 1);
 
           if (typesError) {
@@ -329,10 +334,13 @@ export class VehicleModelsService extends SupabaseBaseService {
           );
         }
 
+        // `modele_id` départage les noms identiques d'une marque : sans lui, une page
+        // peut répéter ou omettre un modèle à la frontière de deux pages.
         query = query
           .limit(limit)
           .range(offset, offset + limit - 1)
-          .order('modele_name');
+          .order('modele_name')
+          .order('modele_id');
 
         const { data, error, count } = await query;
 
