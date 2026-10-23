@@ -49471,7 +49471,7 @@
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 621,
+      "loc": 622,
       "owner": "__unassigned__",
       "path": "frontend/app/components/pieces/PiecesVehicleContent.tsx",
       "risk": "low",
