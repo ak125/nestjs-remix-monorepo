@@ -114,6 +114,14 @@ describe("evaluateDoD — checklist lines only", () => {
     assert.deepEqual(r.reasons.map((x) => x.slice(0, 4)), DOD_IDS);
   });
 
+  test("an N/A after a placeholder counts, one split by a placeholder does not", () => {
+    const after = fullBody().replace("- [x] **DoD4** Observabilité", "- [ ] **DoD4** Observabilité: <détail> N/A");
+    assert.equal(evaluateDoD(after, [], 1, OWNED).pass, true);
+    const split = fullBody().replace("- [x] **DoD4** Observabilité", "- [ ] **DoD4** Observabilité: N/<x>A");
+    const r = evaluateDoD(split, [], 1, OWNED);
+    assert.ok(r.reasons.some((x) => x.startsWith("DoD4: present but unchecked")));
+  });
+
   test("a prose N/A is not a checklist line", () => {
     const body = fullBody()
       .split("\n")

@@ -140,7 +140,7 @@ export function evaluateDoD(
       continue;
     }
     // An N/A inside a `<…>` placeholder is template text, not a declaration.
-    const notApplicable = /\bN\/A\b/i.test(m[0].replace(/<[^>]*>/g, ""));
+    const notApplicable = m[0].split(/<[^>]*>/).some((part) => /\bN\/A\b/i.test(part));
     if (!checked && !notApplicable) {
       fail(id, "present but unchecked (no [x] and not marked N/A).");
     }
