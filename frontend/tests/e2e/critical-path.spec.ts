@@ -192,6 +192,23 @@ test.describe('4. Filtres', () => {
       await expect(page.getByRole('button', { name: PIECE_CARD }).filter({ visible: true }).first()).toBeVisible();
     });
   }
+
+  // Avant l'hydratation, BottomNav n'a pas encore mesuré --bottom-nav-height :
+  // la barre d'actions doit déjà être au-dessus de lui, sinon l'appui sur
+  // « Filtrer » tombe sur le lien « Compte ».
+  for (const name of priorityViewports.filter((n) => isMobile(viewports[n].width))) {
+    test(`[${name}] « Filtrer » reçoit l'appui avant l'hydratation`, async ({ page }) => {
+      await page.setViewportSize(viewports[name]);
+      // Scripts externes bloqués : la page reste dans l'état d'avant hydratation.
+      await page.route(/\.m?js(\?|$)/, (route) => route.abort());
+      await gotoServed(page, R2_GOLDEN);
+      await expect(page.getByRole('navigation', { name: 'Navigation mobile' })).toBeVisible();
+
+      // trial : vérifications d'action seulement (dont l'élément qui reçoit
+      // l'appui), sans cliquer.
+      await page.getByRole('button', { name: 'Filtrer', exact: true }).click({ trial: true, timeout: 5000 });
+    });
+  }
 });
 
 // ============================================
