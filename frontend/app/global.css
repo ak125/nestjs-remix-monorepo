@@ -116,6 +116,16 @@
     text-rendering: optimizeLegibility;
   }
 
+  /* --bottom-nav-height avant que BottomNav ne la mesure (hydratation) : sans
+     elle, MobileBottomBar se place sous BottomNav, et l'appui sur ses boutons
+     tombe sur la navigation. Même valeur que la mesure, qui la remplace (style
+     inline). Sous lg, comme BottomNav. */
+  @media (width < 64rem) {
+    :root:has([data-bottom-nav]) {
+      --bottom-nav-height: 56px;
+    }
+  }
+
   * {
     @apply border-border;
   }
