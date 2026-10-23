@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: fffa5924fa59039b70e62d1b3d6e59bb4f22083ba7bc21ff36fc55b5da22020b
+source_sha256: 83ace0bdafb1ee14a134c8fee1362968d19fd6a5e0b78129b7b1cc5d84054360
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -24,7 +24,7 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1016 |
 
-Source sotFingerprint: `69f16f4655b7`.
+Source sotFingerprint: `793d4d65eb28`.
 
 ## Comment l'utiliser
 
@@ -97,7 +97,7 @@ Source sotFingerprint: `69f16f4655b7`.
 - **Runtime entrypoints**: 349
 - **Top owners**: @ak125/frontend-team (674), @ak125/admin-team (267)
 - **Knowledge prose**: [`admin`](modules/admin.md), [`staff`](modules/staff.md)
-- **Status**: LIVE=514, UNKNOWN=427
+- **Status**: LIVE=515, UNKNOWN=426
 
 ### D9 — Import / ETL / Normalisation
 

@@ -47733,24 +47733,27 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "reachability"
       ],
       "domain": "UNKNOWN",
       "id": "frontend/app/components/layout/BottomNav.tsx",
-      "importedBy": [],
+      "importedBy": [
+        "frontend/app/root.tsx"
+      ],
       "imports": [
         "~/hooks/useCartSidebar",
         "~/hooks/useRootData"
       ],
       "kind": "config",
-      "loc": 108,
+      "loc": 110,
       "owner": "__unassigned__",
       "path": "frontend/app/components/layout/BottomNav.tsx",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "UNKNOWN"
+      "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
@@ -47907,7 +47910,7 @@
         "~/lib/utils"
       ],
       "kind": "config",
-      "loc": 94,
+      "loc": 95,
       "owner": "__unassigned__",
       "path": "frontend/app/components/layout/MobileBottomBar.tsx",
       "risk": "low",
@@ -53295,6 +53298,7 @@
         "frontend/app/auth/unified.server.ts",
         "frontend/app/components/Navbar.tsx",
         "frontend/app/components/errors/index.ts",
+        "frontend/app/components/layout/BottomNav.tsx",
         "frontend/app/components/notifications/NotificationContainer.tsx",
         "frontend/app/global.css",
         "frontend/app/hooks/useHydrated.ts",
@@ -53310,7 +53314,7 @@
         "~/utils/resilient-lazy"
       ],
       "kind": "service",
-      "loc": 598,
+      "loc": 595,
       "owner": "__unassigned__",
       "path": "frontend/app/root.tsx",
       "risk": "low",
@@ -63042,7 +63046,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 373,
+      "loc": 390,
       "owner": "__unassigned__",
       "path": "frontend/tests/e2e/critical-path.spec.ts",
       "risk": "low",
