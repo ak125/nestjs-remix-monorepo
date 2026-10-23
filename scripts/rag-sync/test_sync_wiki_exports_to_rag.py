@@ -1,5 +1,7 @@
 """Offline D20 and freshness regressions; all writes stay in temporary fixtures."""
+from contextlib import redirect_stderr
 import importlib.util
+import io
 import json
 import os
 from pathlib import Path
@@ -28,13 +30,13 @@ class SyncContractTests(unittest.TestCase):
         self.manifest = self.mirror / '.last-sync.json'
         self.manifest.write_text('{"synced_at":"previous-success"}\n')
 
-    def run_sync(self, source=None, apply=True):
+    def run_sync(self, source=None, apply=True, extra=()):
         args = ['sync', '--wiki-repo', str(self.wiki), '--rag-repo', str(self.rag)]
         if source is not None:
             args += ['--source', str(source)]
         if apply:
             args += ['--apply']
-        with patch.object(sys, 'argv', args):
+        with patch.object(sys, 'argv', args + list(extra)):
             return sync.main()
 
     def add_export(self, relative='gammes/oil.md'):
@@ -127,6 +129,21 @@ class SyncContractTests(unittest.TestCase):
         old.write_text('historical corpus')
         self.assertEqual(self.run_sync(), 1)
         self.assertEqual(old.read_text(), 'historical corpus')
+        self.assertIn('previous-success', self.manifest.read_text())
+
+    def test_unreconciled_report_is_bounded_and_counts_the_whole_set(self):
+        self.add_export()
+        total = sync.UNRECONCILED_SAMPLE + 15
+        for i in range(total):
+            (self.mirror / f'legacy-{i:03}.md').write_text('historical corpus')
+        for extra, listed in (((), sync.UNRECONCILED_SAMPLE), (('--list-unreconciled',), total)):
+            err = io.StringIO()
+            with redirect_stderr(err):
+                self.assertEqual(self.run_sync(extra=extra), 1)
+            lines = err.getvalue().splitlines()
+            self.assertEqual(sum(l.startswith('UNRECONCILED ') for l in lines), listed)
+            self.assertIn(f'{total} mirror files absent from WIKI exports ({listed} listed, set sha256 ', lines[-1])
+        self.assertEqual(len(list(self.mirror.glob('legacy-*.md'))), total)
         self.assertIn('previous-success', self.manifest.read_text())
 
     def test_partial_source_cannot_claim_global_mirror_freshness(self):

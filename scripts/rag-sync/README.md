@@ -44,10 +44,15 @@ peuvent déjà avoir été remplacés. L’instantané cohérent du corpus et la
 avec les lecteurs restent à traiter séparément. Le script ne supprime pas les
 exports retirés ni les fichiers non réconciliés.
 
+Un refus pour fichiers non réconciliés nomme les 20 premiers, puis donne leur
+nombre total et l’empreinte de l’ensemble : deux refus de même empreinte portent
+sur le même ensemble. `--list-unreconciled` les liste tous.
+
 Validation hors ligne :
 ```bash
 PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover \
   -s scripts/rag-sync -p 'test_sync_wiki_exports_to_rag.py' -v
+bash scripts/cron/sync-rag-from-wiki.test.sh   # cron horaire, sur dépôts jetables
 ```
 
 ## Référence
