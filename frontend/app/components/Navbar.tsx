@@ -62,7 +62,7 @@ export const Navbar = memo(function Navbar() {
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [isCompact, setIsCompact] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [hasSearchText, setHasSearchText] = useState(false);
 
   const progressBarRef = useRef<HTMLDivElement>(null);
   const rafIdRef = useRef<number>(undefined);
@@ -123,17 +123,29 @@ export const Navbar = memo(function Navbar() {
     return () => observer.disconnect();
   }, []);
 
+  // Champs non contrôlés : un texte saisi avant l'hydratation survit, et la
+  // soumission lit ce que l'utilisateur voit.
   const handleSearch = useCallback(
-    (e: React.FormEvent) => {
+    (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       e.stopPropagation();
-      const query = searchQuery.trim();
+      const form = e.currentTarget;
+      const query = String(new FormData(form).get("q") ?? "").trim();
       if (query) {
-        setSearchQuery("");
+        form.reset();
+        setHasSearchText(false);
         navigate(`/search?q=${encodeURIComponent(query)}`);
       }
     },
-    [searchQuery, navigate],
+    [navigate],
+  );
+
+  const clearSearch = useCallback(
+    (e: React.SyntheticEvent<HTMLButtonElement | HTMLInputElement>) => {
+      e.currentTarget.form?.reset();
+      setHasSearchText(false);
+    },
+    [],
   );
 
   return (
@@ -189,24 +201,26 @@ export const Navbar = memo(function Navbar() {
           </div>
 
           {/* MOBILE: Search full-width */}
+          {/* action/method/name = soumission native avant hydratation ou sans JS */}
           <form
+            action="/search"
+            method="get"
             onSubmit={handleSearch}
             className="lg:hidden w-full pb-2 relative"
           >
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
             <input
               type="search"
-              name="search"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              name="q"
+              onChange={(e) => setHasSearchText(e.target.value !== "")}
               placeholder="Rechercher une pièce..."
               aria-label="Rechercher une pièce auto"
               className="w-full py-2 pl-9 pr-8 bg-white/10 border border-white/10 rounded-xl text-sm text-white outline-none placeholder:text-white/35 transition-all focus:bg-white/15 focus:border-white/25"
             />
-            {searchQuery && (
+            {hasSearchText && (
               <button
                 type="button"
-                onClick={() => setSearchQuery("")}
+                onClick={clearSearch}
                 aria-label="Effacer la recherche"
                 className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-white/10 rounded transition-all"
               >
@@ -277,30 +291,31 @@ export const Navbar = memo(function Navbar() {
 
           {/* DESKTOP SEARCH — between nav links and actions */}
           <form
+            action="/search"
+            method="get"
             onSubmit={handleSearch}
             className="hidden lg:flex flex-1 max-w-sm xl:max-w-lg relative group/search"
           >
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-white/30 group-focus-within/search:text-white/60 transition-colors pointer-events-none" />
             <input
               type="search"
-              name="search"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              name="q"
+              onChange={(e) => setHasSearchText(e.target.value !== "")}
               aria-label="Rechercher une pièce auto"
               onKeyDown={(e) => {
                 if (e.key === "Escape") {
-                  setSearchQuery("");
-                  (e.target as HTMLInputElement).blur();
+                  clearSearch(e);
+                  e.currentTarget.blur();
                 }
               }}
               placeholder="Rechercher une pièce, référence ou véhicule…"
               className="w-full h-12 pl-11 pr-10 bg-white/[0.04] border border-white/10 rounded-2xl text-[15px] font-medium text-white outline-none placeholder:text-white/35 transition-all duration-200 focus:bg-white/[0.08] focus:border-white/20 focus:shadow-lg focus:shadow-black/10 hover:bg-white/[0.06] hover:border-white/16"
             />
             <span className="pointer-events-none absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent via-cta/50 to-transparent opacity-60" />
-            {searchQuery && (
+            {hasSearchText && (
               <button
                 type="button"
-                onClick={() => setSearchQuery("")}
+                onClick={clearSearch}
                 aria-label="Effacer la recherche"
                 className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1.5 hover:bg-white/10 rounded-lg transition-all"
               >
