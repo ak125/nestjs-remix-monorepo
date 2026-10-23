@@ -1240,6 +1240,24 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: high
+  # `**` ne matche pas les dotfiles sous micromatch (cf. audit/wiki-bootstrap-runs/.*).
+  - glob: services/vehicle-models-rs/.*
+    domain: D4
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
+  # Preuves des campagnes du service Rust (passes, empreintes, rapports) — read-only,
+  # ancrées à la date de capture, même domaine que le service (cf. audit/massdoc-*).
+  - glob: audit/rust-vehicle-models-*.md
+    domain: D4
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  - glob: audit/rust-vehicle-models-*/**
+    domain: D4
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
   - glob: workspaces/wiki/**
     domain: D15
     owner: '@ak125'
