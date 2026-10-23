@@ -29,6 +29,13 @@ if (
     'Real Redis tests require the dedicated temporary Unix socket',
   );
 }
+// La CI (« 🧪 Backend Tests ») fournit un Redis jetable et l'exige : sans socket,
+// la suite échoue au lieu de passer sur ioredis-mock en ignorant le test réel.
+if (process.env.THROTTLER_TEST_REDIS_REQUIRED === '1' && !socket) {
+  throw new Error(
+    'THROTTLER_TEST_REDIS_REQUIRED=1 without THROTTLER_TEST_REDIS_SOCKET',
+  );
+}
 
 type StorageRecord = Awaited<ReturnType<ThrottlerStorageService['increment']>>;
 
@@ -47,6 +54,16 @@ function newClient(): Redis {
     : (new RedisMock({ lazyConnect: true }) as unknown as Redis);
   clients.push(client);
   return client;
+}
+
+/** Client sans keyPrefix : ioredis ne préfixe pas le motif de SCAN. */
+function adminClient(): Redis {
+  return new Redis(socket as string, {
+    lazyConnect: true,
+    enableOfflineQueue: false,
+    maxRetriesPerRequest: 0,
+    retryStrategy: () => null,
+  });
 }
 
 function storageOn(client: Redis): RedisThrottlerStorage {
@@ -86,6 +103,19 @@ let now: number;
 let errorSpy: jest.SpyInstance;
 let warnSpy: jest.SpyInstance;
 
+// Un socket muet ferait passer les tests de parité sur le repli en mémoire, qui
+// est la référence elle-même : on exige une réponse de Redis avant tout test.
+beforeAll(async () => {
+  if (!socket) return;
+  const admin = adminClient();
+  try {
+    await admin.connect();
+    expect(await admin.ping()).toBe('PONG');
+  } finally {
+    admin.disconnect();
+  }
+});
+
 beforeEach(async () => {
   now = Date.UTC(2026, 9, 23, 8, 0, 0);
   jest.spyOn(Date, 'now').mockImplementation(() => now);
@@ -95,9 +125,28 @@ beforeEach(async () => {
   if (!socket) await new RedisMock().flushall();
 });
 
-afterEach(() => {
+afterEach(async () => {
   for (const client of clients.splice(0)) client.disconnect();
   jest.restoreAllMocks();
+  if (!socket) return;
+  const admin = adminClient();
+  try {
+    await admin.connect();
+    let cursor = '0';
+    do {
+      const [next, keys] = await admin.scan(
+        cursor,
+        'MATCH',
+        `${prefix}*`,
+        'COUNT',
+        500,
+      );
+      if (keys.length) await admin.unlink(...keys);
+      cursor = next;
+    } while (cursor !== '0');
+  } finally {
+    admin.disconnect();
+  }
 });
 
 describe('THROTTLER_INCREMENT_LUA — parité avec ThrottlerStorageService 6.7.1', () => {
@@ -139,6 +188,7 @@ describe('THROTTLER_INCREMENT_LUA — parité avec ThrottlerStorageService 6.7.1
         if (expected.isBlocked) blocked++;
       }
       expect(blocked).toBeGreaterThan(20);
+      expect(errorSpy).not.toHaveBeenCalled(); // aucune décision du repli
       reference.onApplicationShutdown();
     },
   );
