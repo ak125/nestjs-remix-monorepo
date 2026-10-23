@@ -122,6 +122,18 @@ describe("evaluateDoD — checklist lines only", () => {
     assert.ok(r.reasons.some((x) => x.startsWith("DoD4: present but unchecked")));
   });
 
+  test("an unboxed bullet citing an id does not shadow its boxed line", () => {
+    const body = ["Constat :", "  - DoD5 non coché ;", "  - DoD7 sans surveillant ;", "", fullBody()].join("\n");
+    assert.equal(evaluateDoD(body, [], 1, OWNED).pass, true);
+  });
+
+  test("boxed lines that disagree fail instead of picking one", () => {
+    const body = fullBody().concat("\n- [ ] **DoD5** Drift zéro");
+    const r = evaluateDoD(body, [], 1, OWNED);
+    assert.equal(r.pass, false);
+    assert.ok(r.reasons.some((x) => x.startsWith("DoD5: 2 checklist lines disagree")));
+  });
+
   test("a prose N/A is not a checklist line", () => {
     const body = fullBody()
       .split("\n")

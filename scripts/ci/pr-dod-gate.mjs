@@ -19,7 +19,9 @@
 //
 // An item is read from its own list line only (`- [x] DoD3 …`). A sentence that
 // merely cites an id ("voir DoD7") is not a box: reading the first mention let
-// prose stand in for the checklist, in both directions.
+// prose stand in for the checklist, in both directions. Boxed lines are the
+// checklist; an unboxed bullet (`- DoD5 non coché`) counts only when the id has
+// no boxed line, and lines that disagree fail rather than pick a winner.
 //
 // DoD2 is a GitHub state, not a self-assessment: the rule requires an assignee
 // and >= 1 human approval. A ticked DoD2 box is never evidence on its own.
@@ -61,8 +63,11 @@ const OWNERSHIP_MIN_APPROVALS = 1;
 const checklistLine = (id) =>
   new RegExp(
     `^[ \\t]*[-*+][ \\t]+(?:\\[([ xX])\\][ \\t]*)?(?:\\*\\*|__)?${id}\\b.*$`,
-    "m",
+    "gm",
   );
+const isChecked = (m) => m[1] !== undefined && m[1] !== " ";
+// An N/A inside a `<…>` placeholder is template text, not a declaration.
+const isNotApplicable = (m) => m[0].split(/<[^>]*>/).some((part) => /\bN\/A\b/i.test(part));
 
 /** Validates DOD_ADVISORY_ITEMS; an unknown id is an error, never ignored. */
 export function parseAdvisoryItems(raw) {
@@ -120,13 +125,15 @@ export function evaluateDoD(
     (advisorySet.has(id) ? advisory : reasons).push(`${id}: ${reason}`);
 
   for (const id of DOD_IDS) {
-    const m = text.match(checklistLine(id));
-    if (!m) {
+    const lines = [...text.matchAll(checklistLine(id))];
+    if (lines.length === 0) {
       fail(id, `missing from PR body DoD self-evaluation (no checklist line \`- [ ] ${id} …\`).`);
       continue;
     }
-    const checked = m[1] !== undefined && m[1] !== " ";
+    const boxed = lines.filter((m) => m[1] !== undefined);
+    const decisive = boxed.length > 0 ? boxed : lines;
     if (id === OWNERSHIP_ID) {
+      const checked = decisive.some(isChecked);
       // GitHub state decides; the box (or an N/A) cannot replace it.
       const missing = [];
       if (assignees === undefined) missing.push("assignees unknown (no event payload)");
@@ -139,10 +146,11 @@ export function evaluateDoD(
       }
       continue;
     }
-    // An N/A inside a `<…>` placeholder is template text, not a declaration.
-    const notApplicable = m[0].split(/<[^>]*>/).some((part) => /\bN\/A\b/i.test(part));
-    if (!checked && !notApplicable) {
+    const satisfied = decisive.filter((m) => isChecked(m) || isNotApplicable(m)).length;
+    if (satisfied === 0) {
       fail(id, "present but unchecked (no [x] and not marked N/A).");
+    } else if (satisfied < decisive.length) {
+      fail(id, `${decisive.length} checklist lines disagree (${satisfied} checked or N/A).`);
     }
   }
 
