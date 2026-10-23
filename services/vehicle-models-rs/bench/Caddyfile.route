@@ -1,0 +1,140 @@
+# Caddy isolé du banc de la route complète (route.sh). Reprend, pour les chemins
+# que sert le banc, les blocs de config/caddy/Caddyfile : en-têtes des routes
+# privées, transmission de l'IP client, en-têtes de sécurité, compression et
+# gestion des erreurs. Seule différence voulue : GET/HEAD de
+# /api/vehicles/brands/:brandId/models avec une année (?year=AAAA) vont vers
+# l'amont choisi dans {$ROUTE_SELECTION} (Node A2 ou Rust R2), sans repli sur
+# l'autre ; sans année, la route reste à Node dans les deux sélections.
+#
+# Écarts au fichier de production, propres à l'isolement : admin local (pour
+# `caddy reload`), ports du banc sans redirection HTTP→HTTPS automatique,
+# certificat interne au lieu du certificat d'origine Cloudflare,
+# proxys de confiance = boucle locale (les essais posent Cf-Connecting-Ip comme
+# le ferait Cloudflare), journaux dans le répertoire du banc, dont un journal
+# par requête qui nomme l'amont servi, écoute limitée à la boucle locale (VM
+# partagée).
+{
+	admin {$ROUTE_CADDY_ADMIN}
+	default_bind 127.0.0.1 [::1]
+	skip_install_trust
+	http_port {$ROUTE_CADDY_HTTP}
+	https_port {$ROUTE_CADDY_HTTPS}
+	auto_https disable_redirects
+	servers {
+		client_ip_headers Cf-Connecting-Ip
+		trusted_proxies static 127.0.0.1/8 ::1/128
+	}
+	log {
+		output file {$ROUTE_OUT}/caddy-access.log
+		format json {
+			time_format "iso8601"
+			message_key "msg"
+			level_key "level"
+			name_key "logger"
+		}
+		level INFO
+	}
+}
+
+(proxy_headers) {
+	header_up Host {host}
+	header_up Cf-Connecting-Ip {client_ip}
+	header_up X-Real-IP {client_ip}
+	header_up X-Forwarded-For {client_ip}
+	header_up X-Forwarded-Proto {scheme}
+	header_up X-Forwarded-Host {host}
+}
+
+(site) {
+	# Journal par requête (écart au fichier de production) : l'amont qui a
+	# répondu y figure, preuve de la destination réelle de chaque appel.
+	# roll_keep : un suivi long (3600 s, environ 3,3 Ko par ligne) dépasse les
+	# 10 fichiers de 100 Mio gardés par défaut ; aucune ligne ne doit être perdue.
+	log {
+		output file {$ROUTE_OUT}/caddy-requests.log {
+			roll_keep 100
+		}
+		format json {
+			time_format "iso8601"
+		}
+	}
+	log_append upstream {http.reverse_proxy.upstream.hostport}
+
+	@vehicle_models {
+		method GET HEAD
+		# Sensible à la casse comme le routage Nest : /API/... reste à Node (404).
+		path_regexp vehicle_models ^/api/vehicles/brands/[^/]+/models/?$
+		# Avec année seulement : le chemin sans année (cache LRU partagé de Node) reste à
+		# Node, pour ne pas créer une seconde politique de cache. {query.year} joint les
+		# valeurs répétées par une virgule (année répétée ⇒ Node) ; au-delà de 1000
+		# paramètres, qs (Node) et R2 ignorent la suite, donc une année placée après.
+		expression `{query.year}.matches("^[1-9][0-9][0-9][0-9]$") && size({query}.split("&")) <= 1000`
+	}
+	handle @vehicle_models {
+		header Cache-Control "private, no-cache, no-store, must-revalidate"
+		header Pragma "no-cache"
+		header Expires "0"
+		header CDN-Cache-Control "no-store"
+		header Cloudflare-CDN-Cache-Control "no-store"
+		import {$ROUTE_SELECTION}
+	}
+
+	@private {
+		path /api/* /admin/* /auth/* /cart/* /checkout/* /account/*
+		not path /api/catalog/batch-loader/*
+	}
+	handle @private {
+		header Cache-Control "private, no-cache, no-store, must-revalidate"
+		header Pragma "no-cache"
+		header Expires "0"
+		header CDN-Cache-Control "no-store"
+		header Cloudflare-CDN-Cache-Control "no-store"
+		reverse_proxy {$ROUTE_NODE} {
+			import proxy_headers
+		}
+	}
+
+	reverse_proxy {$ROUTE_NODE} {
+		header_up Host {host}
+		header_up Cf-Connecting-Ip {client_ip}
+		header_up X-Real-IP {client_ip}
+		header_up X-Forwarded-For {client_ip}
+		health_uri /health
+		health_interval 30s
+		health_timeout 5s
+		health_status 2xx
+		transport http {
+			dial_timeout 30s
+			response_header_timeout 60s
+		}
+	}
+
+	handle_errors {
+		header Cache-Control "no-store"
+		@404 expression {http.error.status_code} == 404
+		@500 expression {http.error.status_code} >= 500
+		redir @404 /404 302
+		respond @500 "Une erreur est survenue. Veuillez reessayer plus tard." 500
+	}
+
+	header {
+		X-Frame-Options "SAMEORIGIN"
+		X-Content-Type-Options "nosniff"
+		X-XSS-Protection "1; mode=block"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()"
+		-Server
+		-X-Powered-By
+	}
+
+	encode gzip zstd
+}
+
+https://localhost:{$ROUTE_CADDY_HTTPS} {
+	tls internal
+	import site
+}
+
+http://localhost:{$ROUTE_CADDY_HTTP} {
+	import site
+}
