@@ -243,8 +243,9 @@ export function PiecesVehicleContent() {
         />
       </div>
       {/* Fil d'ariane SEO optimise - Reutilisation composant Breadcrumbs */}
+      {/* Pas de z-index : la navbar collante et les barres fixes mobiles doivent rester au-dessus */}
       <div
-        className="bg-white border-b border-gray-200 relative z-[100]"
+        className="bg-white border-b border-gray-200 relative"
         style={{ pointerEvents: "auto", position: "relative" }}
       >
         <div
