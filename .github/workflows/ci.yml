@@ -239,6 +239,33 @@ jobs:
       - name: Test E2E rate-budget admission
         run: node --test scripts/ci/preprod-e2e-rate-budget.test.mjs scripts/ci/preprod-e2e-rate-budget.storage.test.mjs
 
+      # Les suites du limiteur partagé (stockage Redis, callbacks de paiement)
+      # tournent sur un Redis réel (THROTTLER_TEST_REDIS_REQUIRED=1 à l'étape des
+      # tests). Conteneur jetable, sans réseau ; socket Unix sous le seul motif
+      # accepté par leurs gardes (/tmp/automecanik-throttler-*).
+      - name: 🧰 Start disposable Redis (throttler suites)
+        run: |
+          set -euo pipefail
+          FX=$(mktemp -d /tmp/automecanik-throttler-XXXXXXXX)
+          chmod 777 "$FX"
+          NAME="throttler-redis-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          docker run -d --rm --name "$NAME" --network none -v "$FX:/sock" \
+            redis:7.4.11-alpine@sha256:ff02b58f971e7d7d156a1267e283fcbbeee91773b6aa36c49dac28ecfe28eadf \
+            redis-server --port 0 --unixsocket /sock/redis.sock --unixsocketperm 777 --save '' --appendonly no
+          # Exporté avant le contrôle : l'étape d'arrêt nettoie même si Redis ne répond pas.
+          {
+            echo "THROTTLER_REDIS_CONTAINER=$NAME"
+            echo "THROTTLER_REDIS_DIR=$FX"
+          } >> "$GITHUB_ENV"
+          for _ in $(seq 1 30); do
+            if timeout 2 docker exec "$NAME" redis-cli -s /sock/redis.sock ping 2>/dev/null | grep -qx PONG; then
+              break
+            fi
+            sleep 1
+          done
+          timeout 2 docker exec "$NAME" redis-cli -s /sock/redis.sock ping | grep -qx PONG
+          echo "THROTTLER_TEST_REDIS_SOCKET=$FX/redis.sock" >> "$GITHUB_ENV"
+
       - name: 🧪 Run backend tests
         run: cd backend && npx jest --ci --verbose --maxWorkers=1 --forceExit --coverage --coverageReporters=text-summary --coverageReporters=json-summary
         env:
@@ -248,6 +275,24 @@ jobs:
           # parse failure instead of soft fallback. Catches regressions in CI
           # that would otherwise pass silently in prod (where soft is the default).
           SEO_ROLE_STRICT: "true"
+          # Fixé ici, pas par l'étape de démarrage : sans socket Redis, les suites
+          # du limiteur échouent au lieu de retomber sur ioredis-mock.
+          THROTTLER_TEST_REDIS_REQUIRED: "1"
+
+      # Les suites suppriment leurs clés après chaque test : une clé restante
+      # fait échouer le job. Le conteneur (--rm) disparaît à l'arrêt de Redis.
+      - name: 🧹 Stop disposable Redis (throttler suites)
+        if: always()
+        run: |
+          if [ -z "${THROTTLER_REDIS_CONTAINER:-}" ]; then
+            exit 0
+          fi
+          keys=$(timeout 3 docker exec "$THROTTLER_REDIS_CONTAINER" redis-cli -s /sock/redis.sock dbsize || echo "?")
+          echo "Clés restantes dans le Redis jetable : $keys"
+          timeout 3 docker exec "$THROTTLER_REDIS_CONTAINER" redis-cli -s /sock/redis.sock shutdown nosave || true
+          timeout 20 docker wait "$THROTTLER_REDIS_CONTAINER" >/dev/null 2>&1 || true
+          rm -rf "${THROTTLER_REDIS_DIR:?}"
+          [ "$keys" = "0" ]
 
       - name: 📊 Backend coverage summary
         if: always()
