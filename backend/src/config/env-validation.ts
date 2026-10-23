@@ -85,6 +85,8 @@ const OPTIONAL_ENV_VARS_WITH_DEFAULTS: Record<string, string> = {
   DEV_SUPABASE_KEY: '(dev_readonly role key)', // Supabase key for dev_readonly PostgreSQL role
   // ADR-028 Option D — preprod read-only hardening (set in CI .env.preprod)
   READ_ONLY: 'false', // 'true' enables relaxed env validation + ANON_KEY fallback
+  // Redis réservé aux compteurs du limiteur (throttlerRedisConnectionOptions)
+  THROTTLER_REDIS_URL: '(REDIS_URL)',
 };
 
 /**

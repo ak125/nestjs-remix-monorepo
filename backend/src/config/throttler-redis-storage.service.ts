@@ -7,6 +7,10 @@
  * donc la portée de chaque limite est inchangée ; deux processus qui servent la
  * même route pour la même adresse consomment le même budget.
  *
+ * Cible : THROTTLER_REDIS_URL s'il est défini (Redis réservé aux compteurs),
+ * sinon REDIS_URL ; elle est journalisée à la construction
+ * (throttlerRedisConnectionOptions).
+ *
  * Panne Redis : ni ouverture ni fermeture. Le processus repasse sur le stockage
  * en mémoire de la bibliothèque (le comportement d'avant ce stockage) et le
  * journalise à l'entrée comme au retour.
@@ -24,7 +28,7 @@ import {
 } from '@nestjs/throttler';
 import Redis from 'ioredis';
 
-import { redisConnectionOptions } from './app.config';
+import { throttlerRedisConnectionOptions } from './app.config';
 
 type ThrottlerStorageRecord = Awaited<
   ReturnType<ThrottlerStorage['increment']>
@@ -162,8 +166,14 @@ export class RedisThrottlerStorage
 
   /** Factory hook — les tests passent une instance ioredis-mock. */
   protected createRedis(): Redis {
+    const { target, source } = throttlerRedisConnectionOptions((key) =>
+      this.config.get<string>(key),
+    );
+    this.logger.log(
+      `Compteurs sur ${target.host}:${target.port}/${target.db ?? 0} (${source})`,
+    );
     return new Redis({
-      ...redisConnectionOptions((key) => this.config.get<string>(key)),
+      ...target,
       lazyConnect: true,
       enableOfflineQueue: false,
       maxRetriesPerRequest: 1,

@@ -6,6 +6,9 @@
  * le verrou d'écriture et la file BullMQ `seo-audit` lisaient REDIS_HOST ||
  * localhost. Une instance lancée avec son propre REDIS_URL partageait donc
  * encore ces clés et cette file avec une autre instance.
+ *
+ * Seule exception : THROTTLER_REDIS_URL (facultatif) pour les compteurs du
+ * limiteur ; absent ou vide, ils suivent REDIS_URL comme les autres.
  */
 import { Logger } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
@@ -16,6 +19,7 @@ import {
   createAppConfig,
   redisConnectionOptions,
   resetAppConfig,
+  throttlerRedisConnectionOptions,
 } from './app.config';
 import { WriteGuardLockService } from './write-guard-lock.service';
 import { RedisThrottlerStorage } from './throttler-redis-storage.service';
@@ -46,7 +50,13 @@ const RedisMock = Redis as unknown as jest.Mock;
 const QueueMock = Queue as unknown as jest.Mock;
 const WorkerMock = Worker as unknown as jest.Mock;
 
-const REDIS_KEYS = ['REDIS_URL', 'REDIS_HOST', 'REDIS_PORT', 'REDIS_PASSWORD'];
+const REDIS_KEYS = [
+  'REDIS_URL',
+  'REDIS_HOST',
+  'REDIS_PORT',
+  'REDIS_PASSWORD',
+  'THROTTLER_REDIS_URL',
+];
 
 function reader(env: Record<string, string>) {
   return (key: string): string | undefined => env[key];
@@ -207,6 +217,68 @@ describe('redisConnectionOptions — REDIS_URL fait autorité', () => {
   );
 });
 
+describe('throttlerRedisConnectionOptions — compteurs du limiteur', () => {
+  const shared = {
+    REDIS_URL: 'redis://isolated-redis:6390/3',
+    REDIS_PASSWORD: 'fromenv',
+  };
+
+  it.each([
+    ['absent', {}],
+    ['vide', { THROTTLER_REDIS_URL: '' }],
+  ])('%s : cible de REDIS_URL, inchangée', (_, extra) => {
+    const env = { ...shared, ...extra };
+    expect(throttlerRedisConnectionOptions(reader(env))).toEqual({
+      target: redisConnectionOptions(reader(env)),
+      source: 'REDIS_URL',
+    });
+  });
+
+  it('défini : Redis réservé, sans REDIS_HOST, REDIS_PORT ni REDIS_PASSWORD', () => {
+    expect(
+      throttlerRedisConnectionOptions(
+        reader({
+          ...shared,
+          REDIS_HOST: 'localhost',
+          REDIS_PORT: '6379',
+          THROTTLER_REDIS_URL: 'redis://redis_throttler:6379',
+        }),
+      ),
+    ).toEqual({
+      target: {
+        host: 'redis_throttler',
+        port: 6379,
+        username: undefined,
+        password: undefined,
+        db: undefined,
+      },
+      source: 'THROTTLER_REDIS_URL',
+    });
+    expect(warnSpy).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['schéma', 'tcp://:s3cr3t@redis_throttler:6379'],
+    ['base', 'redis://:s3cr3t@redis_throttler:6379/x'],
+  ])(
+    'refuse une THROTTLER_REDIS_URL (%s) sans divulguer son mot de passe ni revenir à REDIS_URL',
+    (detail, url) => {
+      let thrown: unknown;
+      try {
+        throttlerRedisConnectionOptions(
+          reader({ ...shared, THROTTLER_REDIS_URL: url }),
+        );
+      } catch (error) {
+        thrown = error;
+      }
+      expect(thrown).toBeInstanceOf(Error);
+      const message = (thrown as Error).message;
+      expect(message).toContain(`THROTTLER_REDIS_URL invalide (${detail})`);
+      expect(message).not.toContain('s3cr3t');
+    },
+  );
+});
+
 describe('createAppConfig().redis suit REDIS_URL', () => {
   it('hôte et port viennent de REDIS_URL, pas de REDIS_HOST', () => {
     process.env.REDIS_URL = 'redis://isolated-redis:6390';
@@ -275,6 +347,56 @@ describe('consommateurs Redis — même cible que REDIS_URL', () => {
       () =>
         new RedisThrottlerStorage(fakeConfig({ REDIS_URL: 'http://cache' })),
     ).toThrow('REDIS_URL invalide (schéma)');
+    expect(RedisMock).not.toHaveBeenCalled();
+  });
+
+  it('limiteur : THROTTLER_REDIS_URL défini → Redis réservé, journalisé ; le verrou reste sur REDIS_URL', () => {
+    const logSpy = jest
+      .spyOn(Logger.prototype, 'log')
+      .mockImplementation(() => {});
+    const dedicated = {
+      ...env,
+      THROTTLER_REDIS_URL: 'redis://redis_throttler:6379',
+    };
+    new RedisThrottlerStorage(fakeConfig(dedicated));
+    new WriteGuardLockService(fakeConfig(dedicated));
+    expect(RedisMock).toHaveBeenCalledTimes(2);
+    expect(RedisMock.mock.calls[0][0]).toMatchObject({
+      host: 'redis_throttler',
+      port: 6379,
+      db: undefined,
+      enableOfflineQueue: false,
+      commandTimeout: 250,
+    });
+    expect(RedisMock.mock.calls[1][0]).toMatchObject({
+      host: 'isolated-redis',
+      port: 6390,
+      db: 3,
+    });
+    expect(logSpy).toHaveBeenCalledWith(
+      'Compteurs sur redis_throttler:6379/0 (THROTTLER_REDIS_URL)',
+    );
+    logSpy.mockRestore();
+  });
+
+  it('limiteur : THROTTLER_REDIS_URL absent → journal de la cible REDIS_URL', () => {
+    const logSpy = jest
+      .spyOn(Logger.prototype, 'log')
+      .mockImplementation(() => {});
+    new RedisThrottlerStorage(fakeConfig(env));
+    expect(logSpy).toHaveBeenCalledWith(
+      'Compteurs sur isolated-redis:6390/3 (REDIS_URL)',
+    );
+    logSpy.mockRestore();
+  });
+
+  it('limiteur : une THROTTLER_REDIS_URL invalide échoue sans revenir à REDIS_URL', () => {
+    expect(
+      () =>
+        new RedisThrottlerStorage(
+          fakeConfig({ ...env, THROTTLER_REDIS_URL: 'http://cache' }),
+        ),
+    ).toThrow('THROTTLER_REDIS_URL invalide (schéma)');
     expect(RedisMock).not.toHaveBeenCalled();
   });
 

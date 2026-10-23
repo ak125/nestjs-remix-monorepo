@@ -48,7 +48,9 @@ const redisConfigLogger = new Logger('RedisConfig');
  * identifiant, mot de passe, base et TLS en sont dérivés. Tout consommateur qui
  * ouvre sa propre connexion passe par ici ; sinon une instance lancée avec son
  * propre REDIS_URL partage encore, via REDIS_HOST||localhost, les files BullMQ,
- * verrous et clés anti-rejeu d'une autre instance.
+ * verrous et clés anti-rejeu d'une autre instance. Seule exception : les
+ * compteurs du limiteur quand THROTTLER_REDIS_URL est défini
+ * (throttlerRedisConnectionOptions).
  *
  * - REDIS_HOST / REDIS_PORT ne servent qu'en l'absence de REDIS_URL (tests,
  *   scripts hors boot). S'ils désignent une autre cible, ils sont ignorés et un
@@ -88,11 +90,45 @@ export function redisConnectionOptions(
   return { ...target, password: target.password ?? envPassword };
 }
 
-function parseRedisUrl(url: string): RedisConnectionOptions {
+/** Variable dont une cible Redis est dérivée (journal et messages d'erreur). */
+export type RedisTargetSource = 'REDIS_URL' | 'THROTTLER_REDIS_URL';
+
+/**
+ * Cible des compteurs du limiteur (RedisThrottlerStorage). La route R2
+ * (services/vehicle-models-rs) applique la même règle : les deux processus
+ * doivent compter dans le même stockage pour partager le budget.
+ *
+ * THROTTLER_REDIS_URL, facultatif, réserve aux compteurs un Redis borné. Le trafic
+ * externe crée ces clés : sous allkeys-lru ou volatile-*, un Redis partagé en
+ * évince sans bruit (budget remis à zéro) ou, à l'inverse, évince les autres
+ * données ; une base logique séparée ne borne pas la mémoire.
+ *
+ * - absent ou vide : cible de REDIS_URL (redisConnectionOptions), inchangée ;
+ * - défini : mêmes règles d'analyse que REDIS_URL, erreur au nom de
+ *   THROTTLER_REDIS_URL, sans repli sur REDIS_URL ; REDIS_HOST, REDIS_PORT et
+ *   REDIS_PASSWORD ne s'y appliquent pas.
+ */
+export function throttlerRedisConnectionOptions(
+  read: EnvReader = readProcessEnv,
+): { target: RedisConnectionOptions; source: RedisTargetSource } {
+  const url = read('THROTTLER_REDIS_URL');
+  if (!url) {
+    return { target: redisConnectionOptions(read), source: 'REDIS_URL' };
+  }
+  return {
+    target: parseRedisUrl(url, 'THROTTLER_REDIS_URL'),
+    source: 'THROTTLER_REDIS_URL',
+  };
+}
+
+function parseRedisUrl(
+  url: string,
+  source: RedisTargetSource = 'REDIS_URL',
+): RedisConnectionOptions {
   const invalid = (detail: string) =>
     new ConfigurationException({
       code: ErrorCodes.CONFIG.LOAD_FAILED,
-      message: `REDIS_URL invalide (${detail}) : attendu redis://[utilisateur:motdepasse@]hote[:port][/base] ou rediss://…`,
+      message: `${source} invalide (${detail}) : attendu redis://[utilisateur:motdepasse@]hote[:port][/base] ou rediss://…`,
     });
 
   let parsed: URL;
