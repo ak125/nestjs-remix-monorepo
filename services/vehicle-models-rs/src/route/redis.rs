@@ -67,11 +67,18 @@ pub struct Redis {
 impl Redis {
     /// `redis://hôte:port[/base]` (sans authentification : Redis local de DEV).
     pub fn new(url: &str, mode: Mode) -> Result<Self, String> {
+        Self::from_var("REDIS_URL", url, mode)
+    }
+
+    /// Comme `new` ; l'erreur nomme `var`, la variable d'où vient `url`.
+    pub fn from_var(var: &str, url: &str, mode: Mode) -> Result<Self, String> {
         let rest = url
             .strip_prefix("redis://")
-            .ok_or_else(|| "REDIS_URL doit commencer par redis://".to_owned())?;
+            .ok_or_else(|| format!("{var} doit commencer par redis://"))?;
         if rest.contains('@') {
-            return Err("REDIS_URL avec identifiants non pris en charge par la route R2".into());
+            return Err(format!(
+                "{var} avec identifiants non pris en charge par la route R2"
+            ));
         }
         let (addr, db) = match rest.split_once('/') {
             Some((a, d)) if !d.is_empty() => (a, Some(d.to_owned())),
@@ -90,6 +97,11 @@ impl Redis {
             conn: Mutex::new(None),
             failed: AtomicBool::new(false),
         })
+    }
+
+    /// `hôte:port/base`, comme le journal de démarrage de RedisThrottlerStorage.
+    pub fn target(&self) -> String {
+        format!("{}/{}", self.addr, self.db.as_deref().unwrap_or("0"))
     }
 
     pub async fn cmd(&self, args: &[&[u8]]) -> Result<Reply, String> {

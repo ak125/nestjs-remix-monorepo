@@ -57,6 +57,8 @@ pub struct State {
     guard: BotGuard,
     probe: Probe,
     throttler: Throttler,
+    /// Ligne de démarrage du limiteur (`log_start`).
+    throttler_target: String,
     errors: Mutex<ErrorBuffer>,
     cors_origins: Vec<String>,
     csp: (String, String),
@@ -86,6 +88,13 @@ impl State {
             return Err("SESSION_SECRET : 32 caractères au moins".into());
         }
         let redis_url = env("REDIS_URL").ok_or("REDIS_URL manquant")?;
+        let (throttler_var, throttler_url) = throttler_redis_url(env, &redis_url);
+        let throttler_redis = Redis::from_var(
+            throttler_var,
+            &throttler_url,
+            Mode::Bounded(THROTTLER_REDIS_TIMEOUT),
+        )?;
+        let throttler_target = format!("Compteurs sur {} ({throttler_var})", throttler_redis.target());
         let redis_timeout = env("ROUTE_REDIS_TIMEOUT_MS")
             .and_then(|v| v.parse().ok())
             .unwrap_or(2000);
@@ -124,7 +133,8 @@ impl State {
             },
             // Connexion dédiée, comme RedisThrottlerStorage : un appel du limiteur
             // n'attend pas derrière une lecture de cache, et inversement.
-            throttler: Throttler::new(Redis::new(&redis_url, Mode::Bounded(THROTTLER_REDIS_TIMEOUT))?),
+            throttler: Throttler::new(throttler_redis),
+            throttler_target,
             errors: Mutex::new(ErrorBuffer::default()),
             cors_origins: env("CORS_ORIGIN")
                 .unwrap_or_else(|| "https://www.automecanik.com".into())
@@ -136,6 +146,12 @@ impl State {
             base,
         };
         Ok(Box::leak(Box::new(state)))
+    }
+
+    /// Lignes de démarrage, après `log::init` : cible des compteurs, comme le
+    /// constructeur de RedisThrottlerStorage.
+    pub fn log_start(&self) {
+        log::line(log::INFO, None, "RedisThrottlerStorage", &self.throttler_target);
     }
 
     fn random(&self, n: usize) -> Vec<u8> {
@@ -805,9 +821,56 @@ fn model_event(req: Option<&ReqCtx>, brand_id: u32, e: Event<'_>) {
     log::line(level, req, CONTEXT, &msg);
 }
 
+/// Cible des compteurs, règle de `throttlerRedisConnectionOptions` (Node) : les deux
+/// processus doivent compter dans le même stockage. THROTTLER_REDIS_URL, s'il est
+/// défini et non vide, désigne un Redis réservé aux compteurs ; sinon REDIS_URL.
+/// Sessions et garde anti-bots restent sur REDIS_URL.
+fn throttler_redis_url(env: &dyn Fn(&str) -> Option<String>, redis_url: &str) -> (&'static str, String) {
+    match env("THROTTLER_REDIS_URL").filter(|u| !u.is_empty()) {
+        Some(url) => ("THROTTLER_REDIS_URL", url),
+        None => ("REDIS_URL", redis_url.to_owned()),
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::is_route;
+    use super::{Mode, Redis, THROTTLER_REDIS_TIMEOUT, is_route, throttler_redis_url};
+
+    #[test]
+    fn throttler_target_follows_node_rule() {
+        let shared = "redis://redis_prod:6379";
+        for value in [None, Some("")] {
+            let env = |k: &str| {
+                (k == "THROTTLER_REDIS_URL")
+                    .then(|| value.map(str::to_owned))
+                    .flatten()
+            };
+            assert_eq!(
+                throttler_redis_url(&env, shared),
+                ("REDIS_URL", shared.to_owned()),
+                "{value:?}"
+            );
+        }
+        let env = |k: &str| (k == "THROTTLER_REDIS_URL").then(|| "redis://redis_throttler:6379".to_owned());
+        let (var, url) = throttler_redis_url(&env, shared);
+        assert_eq!(
+            (var, url.as_str()),
+            ("THROTTLER_REDIS_URL", "redis://redis_throttler:6379")
+        );
+        let redis = Redis::from_var(var, &url, Mode::Bounded(THROTTLER_REDIS_TIMEOUT)).unwrap();
+        assert_eq!(redis.target(), "redis_throttler:6379/0");
+        // Erreur au nom de la variable fautive, sans repli sur REDIS_URL.
+        for bad in [
+            "http://redis_throttler:6379",
+            "redis://:s3cr3t@redis_throttler:6379",
+        ] {
+            let err = Redis::from_var(var, bad, Mode::Bounded(THROTTLER_REDIS_TIMEOUT))
+                .err()
+                .unwrap();
+            assert!(err.starts_with("THROTTLER_REDIS_URL "), "{err}");
+            assert!(!err.contains("s3cr3t"), "{err}");
+        }
+    }
 
     #[test]
     fn route_requires_a_year_like_caddy() {

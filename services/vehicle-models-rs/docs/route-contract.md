@@ -328,7 +328,12 @@ moyen de trois clients (`src/route/redis.rs`) :
 - **limiteur**, pour `throttler:*` : connexion dédiée, délai de 250 ms par
   commande, sans file hors ligne, comme la connexion ioredis de
   `RedisThrottlerStorage` dans Node. Une panne fait passer le processus en
-  repli (§ 6).
+  repli (§ 6). Cible : `THROTTLER_REDIS_URL` s'il est défini et non vide (Redis
+  réservé aux compteurs), sinon `REDIS_URL`, la règle de
+  `throttlerRedisConnectionOptions` dans Node ; Node et R2 doivent désigner le
+  même stockage pour partager le budget. La cible et sa variable sont
+  journalisées au démarrage (`Compteurs sur hôte:port/base (variable)`, contexte
+  `RedisThrottlerStorage`). Les deux autres clients restent sur `REDIS_URL`.
 
 Comparaison : le Redis du banc est vidé puis préparé avant chaque capture
 (`route.sh reset`). Pour `bot-guard:*`, `sess:*` et `session_version:*`

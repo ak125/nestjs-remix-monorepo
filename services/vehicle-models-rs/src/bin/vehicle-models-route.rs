@@ -43,6 +43,7 @@ fn main() -> ExitCode {
     runtime.block_on(async move {
         let hostname = std::fs::read_to_string("/proc/sys/kernel/hostname").unwrap_or_default();
         log::init(hostname.trim());
+        state.log_start();
         let listener = match tokio::net::TcpListener::bind(listen).await {
             Ok(l) => l,
             Err(e) => {
