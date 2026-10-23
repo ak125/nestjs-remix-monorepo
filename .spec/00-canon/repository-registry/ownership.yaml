@@ -1232,6 +1232,14 @@ entries:
     owner: '@ak125/marketing-team'
     sourceConfidence: high
     risk: medium
+  # Service Rust des modèles par marque (GET /api/vehicles/brands/:brandId/models) :
+  # lot 1 appelé par Node et route complète R2, banc local. Même domaine et même
+  # owner que backend/src/modules/vehicles/** (D4 Vehicle/Compatibility).
+  - glob: services/vehicle-models-rs/**
+    domain: D4
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
   - glob: workspaces/wiki/**
     domain: D15
     owner: '@ak125'
