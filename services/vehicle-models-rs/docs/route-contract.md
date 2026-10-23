@@ -452,6 +452,16 @@ Panne commune : la route par défaut de Caddy, vers Node, porte un contrôle de
 santé actif toutes les 30 s. Après un redémarrage d'A2, Caddy peut répondre
 lui-même 500 aux pages jusqu'au contrôle suivant, quelle que soit la sélection.
 
+Retour arrière, ordre imposé : sélection `node` avec destination prouvée, puis
+retrait du stockage partagé, puis retour de version du limiteur. Le budget
+partagé n'est jamais retiré pendant que R2 reçoit encore la route.
+
+Cet ordre a été répété sur le banc isolé (L3 avec R2, puis Node de L3, L2, L1 et
+`main`) : destination prouvée à chaque état, clés `throttler:*` de 962 à 0 au retrait
+de L2, budget conservé à la bascule Rust → Node. Le rejeu n'a pas servi la route
+nominale sur le Node d'avant L3 : ses enregistrements ne portent que les requêtes
+ordonnées de L3. Aucune preuve PREPROD.
+
 ## 11. Artefacts du banc (hors contrat)
 
 - Images absentes du banc : environ 30 requêtes Node en 404 par seconde au
@@ -513,5 +523,10 @@ a été réutilisé par un autre processus, la commande refuse et n'arrête rien
   donc A2 écoute sur toutes les interfaces. Les essais n'utilisent que la boucle
   locale, et le pare-feu de la VM n'a pas été inspecté. R2 et Caddy écoutent sur
   la boucle locale seulement.
+- R2 n'a été mesuré qu'avec la clé en lecture seule du banc, pas avec la clé de
+  rôle service de Node.
+- Packaging répété sur conteneurs jetables seulement : l'image n'a été ni
+  construite ni exécutée. Après une recréation de Caddy, R2 reste déclaré sain
+  mais injoignable jusqu'à son redémarrage.
 - Les mesures de ce banc ne valent ni activation, ni preuve de comportement en
   PREPROD ou en PROD, ni correction d'un incident mémoire de production.

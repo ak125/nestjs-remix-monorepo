@@ -1212,10 +1212,50 @@ sont gardées avec les preuves :
 - `cargo test` 1 : 54 tests unitaires et 2 ignorés faute de Redis jetable, avant le dernier changement de
   `redis.rs` et l'ajout de `bounded_mode_bounds_lock_wait_behind_a_frozen_redis`.
 
-La suite Jest complète n'a pas été tentée sur la version corrigée. Elle n'avait pas été obtenue sur `c6ecea9d9`
-(plafond de 6 Go, ci-dessus).
+La suite Jest complète n'a pas été tentée sur la version corrigée elle-même. Elle n'avait pas été obtenue sur
+`c6ecea9d9` (plafond de 6 Go, ci-dessus). Elle l'a été ensuite sur la composition des trois livraisons (ci-dessous).
 
-Aucune CI n'a tourné : rien n'est poussé.
+**Livraisons sur `main` `8c8b92007`** (2026-10-23). Preuves dans `reprise-20261022/integration-l123-20261023/`
+du répertoire de preuves.
+
+| Contrôle | Arbre | Résultat |
+|---|---|---|
+| `tsc --noEmit -p tsconfig.json` (backend) | L1, L2, L3 | code 0 sur chacun |
+| Jest, suites du limiteur | L1 (6.7.1) | 7 suites, 83/83 ; même sélection sur `main` (6.5.0) : 83/83 |
+| déblocage d'une clé, script isolé | 6.5.0 puis 6.7.1 | 6.5.0 refuse l'adresse dont la fenêtre est écoulée ; 6.7.1 l'admet |
+| paquet 6.7.1 | verrou de L1 | intégrité identique dans le verrou, l'archive et le registre ; deux signatures du registre vérifiées ; provenance SLSA, workflow `release.yml` de `nestjs/throttler`. `npm audit signatures` inutilisable : il échoue sur `whatwg-url@17.1.1` |
+| Jest, stockage partagé et callbacks de paiement, Redis 7.4.11 jetable sans réseau | L2 | 2 suites, 34/34 |
+| même sélection, Redis réel exigé, sans socket | L2 | les 2 suites échouent, comme attendu |
+| même sélection, ioredis-mock | L2 | 33 réussis, 1 ignoré (forme à plusieurs entrées, Redis réel seulement) |
+| panne, redémarrage, éviction et refus d'écriture, `redis-server` jetables | L2 | 6/6 scénarios |
+| étapes du job Rust par un exécuteur local : `fmt --check`, `clippy --all-targets -D warnings`, tests, build release, contrôle ELF et glibc | L3 (`05a16602d`), Redis 7.4.11 jetable | 71 tests listés, 71 réussis ; sans Redis, l'étape des tests échoue (101) ; un test ignoré ou filtré fait échouer l'inventaire |
+| Jest `vehicle-models.service.order` | L3 | 3/3 |
+| suite Jest complète, 6 shards | composition à blanc L1 + L2 + L3 (`85538687a`, sans les commits `.github`) | 357 fichiers prévus, 357 exécutés ; 5 871 tests : 5 837 réussis, 25 ignorés, 9 en échec |
+
+Inventaire Rust : 57 tests de la bibliothèque (dont 2 sur Redis réel) et 9 de `tests/service.rs`, soit les 66 des
+campagnes précédentes. `--all-targets` ajoute les 5 tests unitaires de `examples/replay.rs` : 71.
+
+Suite Jest complète :
+
+- chaque shard tourne dans un conteneur sans réseau, avec 5 Gio et un tas Node de 4 Gio, en bande comme la CI ;
+  pic entre 4,68 et 4,93 Go, aucun arrêt pour manque de mémoire ;
+- les 9 échecs viennent tous de `session-store`, qui démarre un Redis par Testcontainers sans démon Docker dans
+  le conteneur. Rejouée seule sur l'hôte : 9/9 ;
+- les 25 ignorés existent sur `main` : 23 dans `seo-control/rpcs`, 1 dans `diag-canon.schema`, 1 dans
+  `throttler-redis-storage` ;
+- couverture fusionnée : lignes 29,54 %, branches 23,62 %, fonctions 23,94 %, instructions 30,25 % (seuil du
+  dépôt : 2 %). Aucun test désactivé, aucun seuil modifié ;
+- deux corrections de l'instrument, aucune du code. Le shard 1 a été rejoué une fois : paquets internes sans
+  `dist/`, puis tas de 3 Gio épuisé. `session-store` a été rejouée une fois : unité de la limite mémoire refusée
+  par systemd, Jest non démarré.
+
+**CI, trois états distincts :**
+
+- *préparée* : job Redis de Backend Tests (`ci.yml`, L2) et workflow `vehicle-models-rs.yml` (L3). `.github/`
+  est réservé à l'owner : ce sont des diffs owner, vérifiés par `git apply --check` sur les têtes ;
+- *exécutée localement* : commandes de ces jobs rejouées. Redis jetable : démarrage, échec sans Redis, arrêt
+  sans clé restante, échec si une clé reste. Job Rust : ligne ci-dessus ;
+- *CI hébergée* : non exécutée. Rien n'est poussé ; aucun résultat n'est déclaré.
 
 ## 10. Fichiers, commits, intégration et retour arrière
 
@@ -1247,92 +1287,158 @@ Deux étiquettes locales, sans préfixe `v` et non poussées, rattachent les ré
 
 Ces étiquettes conservent les références historiques avant toute réorganisation locale des commits.
 
-**Conditions d'intégration** (rien n'est poussé, aucune PR ouverte). Les simulations partent de la référence
-locale `origin/main` `747669961` (2026-10-23 à 01:15), **non rafraîchie**. La base `4a2ddd1a5` a 15 commits de
-retard ; la branche en a 26 d'avance. `git merge-tree --write-tree` ne crée ni worktree ni référence. Un
-cherry-pick y est simulé par `--merge-base=<parent>` ; une suite de cherry-picks est enchaînée par des objets
-commit non référencés.
+**Intégration sur `main` `8c8b92007`** (rafraîchi le 2026-10-23). Elle remplace les simulations de la version
+précédente de ce paragraphe, faites sur `747669961`. Rien n'est poussé, aucune PR n'est ouverte.
 
-| Simulation sur `origin/main` | Résultat |
-|---|---|
-| branche entière | conflits sur 6 fichiers, tous des projections générées : `REPO_MAP.md`, `canonical.json`, `db-usage-map.json`, `module-boundaries.json` et les deux fichiers de l'inventaire PR-8. Aucun conflit de source ; `package-lock.json` et `files.json` fusionnent seuls |
-| `c6ecea9d9` seul | sans conflit |
-| `c6ecea9d9`, `9c3c7b1f1`, puis `22cb0cc7a` | sans conflit ; 8 fichiers, 779 insertions, 13 suppressions. Les fichiers du correctif et `ownership.yaml` sont identiques octet pour octet à ceux de `fdf82d84a` |
+| Livraison | Branche locale | Tête avant composition owner | Base |
+|---|---|---|---|
+| L1, limiteur 6.7.1 | `fix/throttler-6.7.1-expirations` | `ef4ca3c89` | `main` `8c8b92007` |
+| L2, stockage partagé | `fix/throttler-redis-shared-storage` | `00b8421d8` | L1 |
+| L3, R2 inerte | `feat/vehicle-models-rs-route-r2-inert` | `8e57457ee` + commit de ce rapport | L2 |
 
-Les six fichiers en conflit figurent tous dans la liste des projections que `resync-pr.sh` reprend de `main`
-puis régénère avec l'outillage du dépôt. Ce script exige une PR et pousse : il n'a pas été lancé. Depuis
-`4a2ddd1a5`, `main` ne modifie ni `app.module.ts`, ni `main.ts`, ni `backend/src/config`, ni `ownership.yaml`,
-ni aucun usage du limiteur. Aucun fichier du backend n'est modifié des deux côtés.
+- **L1** n'est pas « `c6ecea9d9` seul ». Elle reprend `c6ecea9d9` par cherry-pick (`backend/package.json` et
+  verrou), puis ajoute un commit de commentaires alignés sur 6.7.1, les projections régénérées et la fiche
+  `analytics.md`, périmée sur `main` depuis #1726. Ces ajouts ne changent aucun comportement.
+- **L2 et L3** : les commits réservés à l'owner (`ownership.yaml`, `.github/`) sont insérés par
+  `ci/owner-diffs/apply-owner-changes.sh` (répertoire de preuves). Ce script recompose les branches :
+  - cherry-pick des commits testés ;
+  - patch-ids comparés, puis arbres `backend/` et `services/vehicle-models-rs/` comparés aux arbres testés ;
+  - projections régénérées par l'outillage du dépôt, dans un arbre jetable.
+  `resync-pr.sh` n'a pas servi : il exige une PR et pousse.
+- **Essai à blanc** (`--essai`, sans les deux étapes `.github`, dont seul `git apply --check` est exécuté) :
+  sur `8e57457ee`, sortie 0 en 3 min 13 s (RSS max 849 Mo) ; patch-ids et arbres identiques aux arbres
+  testés ; `--retour` en sortie 0, L1 inchangée. Rejoué après le commit de ce rapport : sortie consignée dans
+  `ci/owner-diffs/` (répertoire de preuves).
+- **Gardes** : block-new 415/415 fichiers nouveaux couverts, `registry:validate` 0 erreur. Les hooks étaient
+  absents des worktrees lors des commits. Ils ont été rejoués ensuite étape par étape (413 fichiers indexés pour
+  L3) : tous en sortie 0 ou sans objet ; commitlint en sortie 0.
 
-Preuves sur les arbres intégrés. Ils sont exportés par `git archive`, avec les dépendances de la branche liées,
-sans `npm ci`. `main` ne modifie ni `packages/` ni les dépendances du backend.
+**Callbacks de paiement.**
 
-| Arbre intégré | Contrôle | Résultat |
-|---|---|---|
-| `c6ecea9d9` + `9c3c7b1f1` + `22cb0cc7a` | `tsc --noEmit -p tsconfig.json` (backend) | code 0 |
-| idem | Jest, les 4 suites du limiteur, Redis 7.0.15 jetable sur un socket Unix | 64/64, aucun ignoré |
-| branche entière, projections en conflit laissées telles quelles | `tsc --noEmit -p tsconfig.json` (backend) | code 0 |
-| idem | Jest, les mêmes 4 suites et les 2 suites `vehicle-models.service`, ioredis-mock | 75/76, 1 ignoré : le test réservé au Redis réel |
+- Endpoints : `POST /api/paybox/callback` (`PayboxCallbackController`) et `POST /api/payments/callback/cyberplus`
+  (`PaymentCallbackController`, SystemPay). Les deux portent `@Throttle({ payment_callback: { limit: 30, ttl:
+  60000 } })`. `GET /api/paybox/callback` n'a pas de palier explicite. Chaîne : garde global
+  `CloudflareThrottlerGuard` (traqueur `Cf-Connecting-Ip`), puis le contrôleur, qui vérifie la signature.
+- Effets :
+  - L1 change le stockage en mémoire du limiteur, callbacks compris ;
+  - L2 place leur budget dans Redis, commun à tous les processus ;
+  - L3 ne les touche pas.
+  Aucun fichier de `payments/` n'est modifié. Un drapeau R2 éteint ne rend inerte ni L1 ni L2 : elles agissent
+  dans Node.
+- Source de l'accord requis : `CLAUDE.md`, invariant 9 (zone STOP « Paiement »), et `.claude/rules/payments.md`.
+  Aucun accord existant ne couvre L1 ni L2.
+- Tests sur fixtures (`payment-callback-throttling.test.ts`). Contrôleurs et validation Paybox réels, paire RSA
+  générée pour le test, aucune transaction. Couverts :
+  - signatures valides et invalides ;
+  - répétition sans nouvelle écriture ;
+  - 40 callbacks simultanés, dont exactement 15 admis ;
+  - 31e callback en 429 avant le contrôleur ;
+  - rejeu SystemPay admis 15 min plus tard ;
+  - deux processus ;
+  - redémarrage ;
+  - panne puis retour de Redis.
+  Résultat sur Redis réel : 34/34 avec la suite du stockage.
+- Documentation officielle : SystemPay « Centre de notifications » v1.6 et « API Formulaire » v3.42 ; Paybox
+  System V8.3.
+  - Chez SystemPay, un 429 est un échec. Si le rejeu automatique est activé, SystemPay retente jusqu'à 4 fois,
+    aux quarts d'heure fixes.
+  - Paybox ne documente aucun rejeu automatique.
+  - Inférence, que ces sources n'affirment pas : un 429 sur un callback Paybox peut être définitif.
+  Le volume réel de notifications par minute et par adresse n'est pas connu. Extrait des sources :
+  `payments/sources-officielles-paybox-systempay.txt`.
 
-Le dernier essai reproduit les conditions de la CI. Aucun workflow ne définit le socket dédié : la suite du
-stockage y tourne sur ioredis-mock, avec ce test ignoré, et sa preuve reste locale. Aucun workflow ne construit
-ni ne teste `services/vehicle-models-rs` : les 66 tests Rust et la construction de R2 restent eux aussi des
-preuves locales.
+**Redis.**
 
-Le gate block-new a été lancé à `fdf82d84a`, avec la commande du workflow `registry-new-file-gate.yml`
-(`scripts/registry/check-new-files.js --base origin/main`). Il compte 414 nouveaux fichiers, dont 0 sans
-propriétaire ni domaine. Les trois nouveaux fichiers de la livraison 2 en font partie :
+- DEV :6379, en lecture seule, avec un délai de 3 s :
+  - connexion TCP en IPv4 par le port publié : aucune réponse (SYN envoyé, délai atteint) ;
+  - en IPv6 `::1` : PONG en 19 à 28 ms ; sur l'adresse du conteneur : PONG en 14 ms ;
+  - le DEV partagé s'y connecte en IPv6 (53 connexions).
+  Un port en écoute ne prouvait donc pas une réponse. Aucune cause n'est établie, ni aucun lien avec R2 ou avec
+  un crash.
+  Instance : 7.4.7, `maxmemory` 256 Mo, `noeviction`, AOF désactivé, 0 clé évincée.
+  Connexion en clair acceptée sans mot de passe pour l'utilisateur `default`, TLS désactivé (`tls-port` 0) ; les
+  54 clients connectés sont tous en `default`. L'URL du DEV partagé, dans un `.env`, n'a pas été lue.
+- PREPROD et PROD : configuration servie non lue, faute d'accès autorisé. Configuration déclarée : `allkeys-lru`
+  et AOF, 128 Mo en PREPROD, 512 Mo en PROD. Lectures console préparées dans `preprod/` :
+  - `prod-redis-lecture-console.txt`, avant la fusion de L2 ;
+  - `l2-lecture-console.txt`, après la chaîne PREPROD de L2.
+- Mesuré sur Redis jetables :
+  - redémarrage sans persistance : compteurs remis à zéro ;
+  - `allkeys-lru` sous pression : clés du limiteur évincées, sans journal ;
+  - `noeviction` saturé : écriture refusée, repli en mémoire journalisé ;
+  - panne puis retour : repli, puis reconnexion en environ 200 ms.
+  Le préfixe `throttler:` ne réserve aucune mémoire : les autres usages de l'instance peuvent la remplir.
 
-- `throttle.lua` : `@ak125`, D4, par le glob de `9c3c7b1f1` ;
-- le stockage : D13 ;
-- son test : chemin d'exception.
+**Candidat intégré** : binaire R2 `5daeb5f0…`, construit sur L3, et `backend/dist` `d58b2173…`. Campagne dans
+`candidate/final/` :
 
-`ownership.yaml` et `domains.yaml` y sont identiques à ceux de la tête.
+- contrat de 185 cas : 184 identiques et 1 écart, `q-url-20k`. C'est une course de transport entre Caddy et un
+  amont qui répond tôt puis ferme ; elle est hors R2 et n'est pas normalisée. Destination : 185/185 dans chaque
+  sélection ;
+- sondes 21/21 ; budget de 99 à 88 dans les deux sélections ;
+- pannes : 17 étapes, 3 écarts sur les seuls journaux. Panne d'amont : 0 écart à l'attendu, aucun retour vers
+  Node quand R2 est arrêté. `scope-r2` : 0 écart ;
+- parcours : 9 par sélection, sans 421 vu par le navigateur. Ils ont servi le frontend de l'arbre de mesure, pas
+  celui de L3 : 4 fichiers de code diffèrent, aucun ne lit l'API. Ils ont été rejoués sur celui de L3 pendant la
+  répétition du retour arrière (ci-dessous).
 
-Les projections du registre n'ont pas été régénérées depuis le lot 1 (`ee2a248c2`, `25571b854`), et leur
-fraîcheur n'a pas été contrôlée. Les régénérer sur la base actuelle ne servirait à rien : elles seront reprises
-de `main`, puis régénérées à la mise à jour de la PR. Les simulations ont laissé trois objets commit non
-référencés dans le dépôt local. Ils ne sont sur aucune branche ; le ramasse-miettes les élaguera.
+**Packaging**, préparé hors des livraisons. Diffs owner `0003` (Dockerfile) et `0004` (compose, profil `r2`).
 
-Trois livraisons distinctes, dans cet ordre. Chacune demande sa revue, sa CI et une passe PREPROD propre avant
-la suivante. L'ordre suit les combinaisons réellement testées : le stockage partagé n'a été testé que sur 6.7.1,
-et R2 n'a de budget commun qu'avec le stockage partagé de Node.
+- Validation hors ligne.
+- Répétition sur conteneurs jetables : 15 réussis, 0 échoué.
+- Constat : après une recréation de Caddy, R2 reste déclaré sain mais injoignable (502) jusqu'à son redémarrage.
+- Non exécutés : construction de l'image, qui exigerait un téléchargement, et exécution de l'image construite.
+- R2 n'a été mesuré qu'avec la clé en lecture seule du banc, pas avec la clé de rôle service de Node.
 
-1. **Limiteur 6.7.1** (`c6ecea9d9`, seul). Il change l'implémentation du stockage en mémoire de la
-   bibliothèque, pour tout le site. La suite Jest complète n'a pas été obtenue ici (§ 9).
-2. **Stockage partagé, côté Node** (`22cb0cc7a`). Il doit emporter le glob `services/vehicle-models-rs/**` de
-   `9c3c7b1f1` (`ownership.yaml`), car `throttle.lua` est sous ce chemin et le test du stockage vérifie que le
-   script embarqué par Node lui est identique. `ownership.yaml` relève de l'owner : ce glob a été ajouté sous un
-   mandat précédent, nommé dans le message du commit. Les projections du registre se régénèrent par l'outil du
-   dépôt, jamais à la main. Ce changement n'est derrière aucun drapeau : fusionné, il est actif pour tout le
-   site.
-   - **Condition de zone protégée.** Le nouveau stockage porte aussi le limiteur des deux callbacks de paiement
-     (`payment_callback`). Aucun fichier de `payments/` n'est modifié et les budgets sont les mêmes. Mais la
-     décision touche une zone où l'accord nominatif est requis : il faut cet accord, une revue, la CI et une
-     PREPROD propres. En panne de Redis, le stockage se replie en mémoire avec les mêmes limites (§ 2.4) et
-     n'ajoute aucun refus. C'est établi par les tests du stockage et au banc sur la route, pas sur un
-     callback.
-   - **Configuration Redis servie.** L'AOF et `allkeys-lru` déclarés pour la production ne sont pas prouvés
-     servis (§ 2.4). Le risque d'éviction des compteurs n'est pas mesuré.
-3. **R2 inerte** : `b646dd0a8`, `350e09ba9`, le service Rust, le lot 1, le banc et les rapports.
-   `VEHICLE_MODELS_RS_ENABLED` vaut `false` par défaut, et le Caddyfile de production ne contient aucune règle
-   pour la route.
+**PREPROD**, après chaque fusion, une livraison à la fois :
 
-**Activation hors banc.** Aucune des trois livraisons ne la vaut. Le double budget de `16a5a8a6…` est corrigé
-au banc sur `b6d5bcd3…` ; ni CI, ni PREPROD, ni PROD n'ont tourné. Une activation suppose la livraison 2 servie
-et vérifiée, puis une décision distincte.
+1. Sur le run de `main` qui contient le commit de fusion : `🧪 Deploy PREPROD`, `🎭 E2E Smoke Tests` et
+   `🔦 Lighthouse Performance Audit` en succès, plus `vehicle-models-rs` pour L3.
+2. Après L2, lecture console `preprod/l2-lecture-console.txt` :
+   - aucune ligne de repli de `RedisThrottlerStorage` ;
+   - clés `throttler:*` présentes ;
+   - configuration servie.
+3. PREPROD n'a pas de Caddy en frontal et ne reçoit pas les callbacks. Ni la route R2 ni le budget des callbacks
+   n'y sont exercés.
+
+Une répétition locale n'est pas une validation PREPROD.
+
+**Activation hors banc.** Aucune des trois livraisons ne la vaut. Ni CI hébergée, ni PREPROD, ni PROD n'ont tourné.
+Une activation suppose L2 servie et vérifiée, les limites du packaging levées, puis une décision distincte.
 
 **Retour arrière.**
 
 - Dans le banc : `bench/route.sh select node`, puis `bench/route.sh down`.
-- Côté code, aujourd'hui : rien n'est poussé ni fusionné. Abandonner la branche suffit.
-- Après intégration, dans l'ordre inverse :
-  - **R2 d'abord.** Retirer la règle Caddy de la route ou repasser en sélection node, avant tout retour sur le
-    stockage. Sinon R2 et Node retrouvent chacun leur budget : c'est le double budget du § 2.3.
-  - **Stockage partagé ensuite** : revenir sur `22cb0cc7a`. Le stockage en mémoire repart de zéro, comme au
-    redémarrage d'un processus aujourd'hui. Les clés `throttler:*` restées dans Redis ne sont plus lues ; elles
-    expirent seules, au plus tard à la fin de leur fenêtre ou de leur blocage. Aucune purge n'est nécessaire.
-  - **6.7.1 enfin** : revenir sur `c6ecea9d9`, puis réinstaller les dépendances.
+- Côté code, aujourd'hui : rien n'est poussé ni fusionné. Abandonner les branches suffit.
+- Après intégration, dans cet ordre :
+  1. **Routage d'abord.** Rendre la route à Node et prouver la destination, avant tout retour sur le stockage.
+     Sinon R2 et Node retrouvent chacun leur budget : c'est le double budget du § 2.3.
+  2. **Stockage partagé ensuite** : revert de L2. Le stockage en mémoire repart de zéro. Les clés `throttler:*`
+     restées dans Redis ne sont plus lues et expirent seules ; aucune purge n'est nécessaire.
+  3. **6.7.1 enfin** : revert de L1, puis réinstallation des dépendances.
+  Le budget partagé n'est jamais retiré pendant que Rust reçoit encore le trafic concerné. L'ancien schéma, où
+  Node appelle Rust, ne remplace pas ce retour.
+
+**Répétition isolée de ce retour** (banc, 2026-10-23, `candidate/rollback/` du répertoire de preuves). Cinq
+états, chacun rattaché à son commit et à son `dist` : S0 L3 `8e57457ee` avec R2 (binaire `5daeb5f0…`) ; S1 même
+processus Node, `select node` sans redémarrage, puis R2 arrêté ; S2 Node de L2 `00b8421d8` ; S3 Node de L1
+`ef4ca3c89` ; S4 Node de `main` `8c8b92007` (6.5.0).
+
+- Prouvé :
+  - ordre imposé par les gardes du script ; destination de la route Rust en S0, Node ensuite (185 cas, 0 en
+    défaut à chaque état) ;
+  - parcours navigateur 9/9 en S0 et en S1, mêmes empreintes de liste, aucun 421 ;
+  - clés `throttler:*` : 962 en S2, 0 en S3 et S4 ; 3 réponses 429 à chaque état ;
+  - budget commun conservé à la bascule : Rust ouvre la fenêtre (`remaining` 1999), Node relit et décrémente le
+    même compteur (1998).
+- Écarts de S1 contre le Node du candidat : 30, classés. Un seul est non expliqué : `s-cookie-twice`, 7 lectures
+  de base contre 6, à réponse identique.
+- Non prouvé :
+  - le chemin nominal de la route sur le Node d'avant L3 (S2 à S4). Les enregistrements du rejeu ne contiennent que
+    les requêtes ordonnées de L3 : 131 réponses 500 par état, laissées visibles, sans normalisation ni relance ;
+  - rien sur PREPROD.
+
+Classement brut : `candidate/rollback/run/classement.txt`.
 
 ## 11. Tâches bloquées
 
@@ -1340,32 +1446,28 @@ et vérifiée, puis une décision distincte.
 |---|---|
 | Détail noyau des OOM (v3 et passe diag) | `journalctl -k` : « Users in groups 'adm', 'systemd-journal' can see all messages » ; `dmesg` : « read kernel buffer failed: Operation not permitted ». Les protections système n'ont pas été modifiées. Attribution faite par le cgroup et la sonde (§ 7) |
 | Installation de 6.7.1 par l'agent | la garde Bash du dépôt bloque toute commande `npm install` dans une session d'agent ; elle n'a pas été contournée. Le script a été écrit puis lancé par l'utilisateur |
-| Suite Jest complète du backend | tuée deux fois par le plafond de 6 Go du scope sur `c6ecea9d9` ; non tentée sur la version corrigée (§ 9) |
+| Écriture de `.github/` et de `ownership.yaml` | la garde de fichiers du dépôt bloque `.github/` ; `ownership.yaml` relève de l'owner. Diffs owner et `apply-owner-changes.sh`, dont seul le mode à blanc a été exécuté (§ 10) |
+| Construction et exécution de l'image R2 | la construction exigerait un téléchargement (paquets de la base), non autorisé ; répétition faite avec le binaire du candidat dans la base épinglée (§ 10) |
+| R2 avec la clé de rôle service | non mesuré : le banc n'utilise que la clé en lecture seule |
 | Cause du SIGKILL de Node arrêté sans Redis | non établie ; l'attente des hooks d'arrêt BullMQ reste une hypothèse (§ 2.4) |
-| Configuration Redis servie en production (AOF, `allkeys-lru`) | non lue : aucune intervention sur la production ; déclarée seulement dans `docker-compose.prod.yml` (§ 2.4) |
+| Configuration Redis servie en PREPROD et en PROD | non lue : aucun accès autorisé à ces hôtes. Lectures console préparées (§ 10) |
 | Comparer le limiteur sur la boucle bloquée | la sonde dans le processus ne relève rien pendant le blocage (§ 6.2) ; mesure faite en isolement |
 | Expliquer la montée de la p95 d'a2 diag avant 3600 s | non expliquée ; aucune analyse exhaustive du tas n'a été faite (§ 7) |
 | Capture réseau de q-url-20k | `tcpdump` exige root |
-| Commentaires citant « 6.5.0 » et des numéros de ligne de `throttler.guard.js` | non modifiés, à mettre à jour : `throttler-tiers.config.ts` (l. 8, 14-17, 46-49) et son test (l. 6), `.ast-grep/rules/backend-throttle-key-must-match-configured-tier.yml` (l. 12), `cwv-beacon.controller.ts` (l. 47-50), `runtime-events.controller.ts` (l. 40-43), `landing-attribution.controller.ts` (l. 92-95). Le mécanisme cité est le même en 6.7.1 |
-| CI, PREPROD, PROD | rien n'est poussé : aucune CI n'a tourné ; aucune activation hors du banc |
+| CI hébergée, PREPROD, PROD | rien n'est publié : aucune CI hébergée n'a tourné ; aucune activation hors du banc |
 
 ## 12. Prochain acte
 
-Le banc a répondu pour les deux binaires ; une nouvelle mesure n'apporterait rien. La suite consiste à faire
-passer les livraisons du § 10 par la chaîne normale, dans cet ordre :
+Les livraisons sont prêtes à relire ; une nouvelle mesure n'apporterait rien. Dans cet ordre :
 
-1. Repartir d'un `origin/main` rafraîchi et refaire les simulations du § 10. Préparer une branche avec
-   `c6ecea9d9` seul, puis une branche avec `9c3c7b1f1` et `22cb0cc7a`. La seconde reste en brouillon tant que
-   la première n'est pas fusionnée. Dans la première, mettre à jour les commentaires qui citent 6.5.0 (§ 11).
-2. Régénérer les projections par `resync-pr.sh`, jamais à la main.
-3. Obtenir la suite Jest complète du backend sous un plafond suffisant, ce que ce lot n'a pas obtenu (§ 9).
-4. Sur PREPROD, vérifier que le limiteur décide depuis Redis :
-   - présence des clés `throttler:*` ;
-   - aucune entrée en repli journalisée ;
-   - configuration Redis servie (`maxmemory-policy`, persistance).
-
-   Vérifier aussi le comportement des callbacks de paiement, sous l'accord nominatif requis par cette zone.
-5. Ensuite seulement, livrer R2 inerte, avec une CI qui construit et teste `services/vehicle-models-rs`.
+1. Lire la configuration Redis servie en PROD, en console et en lecture seule
+   (`preprod/prod-redis-lecture-console.txt`), avant la fusion de L2.
+2. Exécuter `apply-owner-changes.sh` en mode réel (owner) : il installe les commits `ownership.yaml` et
+   `.github/`, recompose L2 et L3 et régénère les projections.
+3. Publier L1, puis L2 et L3 en brouillon jusqu'à la fusion de leur dépendance. Le dépôt est public : L3, qui
+   décrit le blocage de la boucle sous 6.5.0, ne se publie qu'une fois L1 servie en PROD.
+4. Pour chaque PR, lire la CI hébergée ; après chaque fusion, lire la chaîne PREPROD, puis faire les lectures
+   console du § 10.
 
 L'activation de la route Rust hors banc reste une décision distincte, à prendre sur les preuves de PREPROD.
 Rien dans ce lot ne prouve que le crash initial de la production est corrigé, ni ne vaut décision de réécrire
