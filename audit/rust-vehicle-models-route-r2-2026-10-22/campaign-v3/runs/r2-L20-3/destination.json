@@ -1,0 +1,1 @@
+{"expected": "127.0.0.1:3150", "files": ["caddy-requests.log"], "lines": 9355, "route": {"127.0.0.1:3150 200": 9355}, "route_total": 9355, "route_wrong": {}, "other": {}}

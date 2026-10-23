@@ -1,0 +1,2976 @@
+{
+ "run2/diff-direct.json": {
+  "normalisations": 15,
+  "identiques": 175,
+  "écarts": 10,
+  "ordre seul": 0,
+  "absents": 0,
+  "journal_erreurs_identiques": false,
+  "cas_en_écart": [
+   "p052",
+   "p069",
+   "m-post",
+   "m-put",
+   "m-delete",
+   "m-patch",
+   "m-options",
+   "m-preflight-ok",
+   "m-preflight-ko",
+   "t-burst-admin"
+  ],
+  "redis": {
+   "keys": true,
+   "stats": false,
+   "recent_blocks": true,
+   "vbot": true
+  }
+ },
+ "run3/diff-a2-a2.json": {
+  "normalisations": 16,
+  "identiques": 183,
+  "écarts": 1,
+  "ordre seul": 0,
+  "absents": 1,
+  "journal_erreurs_identiques": false,
+  "cas_en_écart": [
+   "q-url-20k",
+   "t-loopback"
+  ],
+  "redis": {
+   "keys": true,
+   "stats": true,
+   "recent_blocks": true,
+   "vbot": true
+  }
+ },
+ "run3/diff-caddy-b.json": {
+  "normalisations": 15,
+  "identiques": 178,
+  "écarts": 7,
+  "ordre seul": 0,
+  "absents": 0,
+  "journal_erreurs_identiques": false,
+  "cas_en_écart": [
+   "p052",
+   "p069",
+   "q-url-20k",
+   "m-post",
+   "m-put",
+   "m-delete",
+   "m-patch"
+  ],
+  "redis": {
+   "keys": true,
+   "stats": true,
+   "recent_blocks": true,
+   "vbot": true
+  }
+ },
+ "run3/diff-caddy-b2.json": {
+  "normalisations": 16,
+  "identiques": 184,
+  "écarts": 1,
+  "ordre seul": 0,
+  "absents": 0,
+  "journal_erreurs_identiques": true,
+  "cas_en_écart": [
+   "q-url-20k"
+  ],
+  "redis": {
+   "keys": true,
+   "stats": true,
+   "recent_blocks": true,
+   "vbot": true
+  }
+ },
+ "run3/diff-caddy-c.json": {
+  "normalisations": 16,
+  "identiques": 184,
+  "écarts": 1,
+  "ordre seul": 0,
+  "absents": 0,
+  "journal_erreurs_identiques": true,
+  "cas_en_écart": [
+   "q-url-20k"
+  ],
+  "redis": {
+   "keys": true,
+   "stats": true,
+   "recent_blocks": true,
+   "vbot": true
+  }
+ },
+ "run3/diff-caddy.json": {
+  "normalisations": 15,
+  "identiques": 177,
+  "écarts": 8,
+  "ordre seul": 0,
+  "absents": 0,
+  "journal_erreurs_identiques": false,
+  "cas_en_écart": [
+   "p052",
+   "p069",
+   "q-url-20k",
+   "q-body-11mb",
+   "m-post",
+   "m-put",
+   "m-delete",
+   "m-patch"
+  ],
+  "redis": {
+   "keys": true,
+   "stats": true,
+   "recent_blocks": true,
+   "vbot": true
+  }
+ },
+ "run3/diff-outages-d.json": {
+  "écarts": [
+   {
+    "id": "o-redis-down",
+    "champs": [
+     "logs"
+    ]
+   },
+   {
+    "id": "o-redis-down-session",
+    "champs": [
+     "logs"
+    ]
+   },
+   {
+    "id": "o-redis-back",
+    "champs": [
+     "logs"
+    ]
+   }
+  ]
+ },
+ "run3/diff-outages-e.json": {
+  "écarts": [
+   {
+    "id": "o-replay-down-abort",
+    "champs": [
+     "logs"
+    ]
+   },
+   {
+    "id": "o-redis-down",
+    "champs": [
+     "logs"
+    ]
+   },
+   {
+    "id": "o-redis-down-session",
+    "champs": [
+     "logs"
+    ]
+   }
+  ]
+ },
+ "run3/diff-outages-f.json": {
+  "écarts": [
+   {
+    "id": "o-redis-down",
+    "champs": [
+     "logs"
+    ]
+   },
+   {
+    "id": "o-redis-down-session",
+    "champs": [
+     "logs"
+    ]
+   }
+  ]
+ },
+ "run3/diff-outages-g.json": {
+  "écarts": [
+   {
+    "id": "o-redis-down",
+    "champs": [
+     "logs"
+    ]
+   },
+   {
+    "id": "o-redis-down-session",
+    "champs": [
+     "logs"
+    ]
+   },
+   {
+    "id": "o-redis-back",
+    "champs": [
+     "logs"
+    ]
+   }
+  ]
+ },
+ "run3/diff-outages.json": {
+  "écarts": [
+   {
+    "id": "o-redis-down",
+    "champs": [
+     "logs"
+    ]
+   },
+   {
+    "id": "o-redis-down-session",
+    "champs": [
+     "headers",
+     "logs",
+     "status"
+    ]
+   },
+   {
+    "id": "o-redis-back",
+    "champs": [
+     "logs"
+    ]
+   },
+   {
+    "id": "writes after replay restart",
+    "champs": [
+     "error_log"
+    ]
+   }
+  ]
+ },
+ "run3/diff-probes2.json": {
+  "normalisations": 16,
+  "identiques": 21,
+  "écarts": 0,
+  "ordre seul": 0,
+  "absents": 0,
+  "journal_erreurs_identiques": true,
+  "cas_en_écart": [],
+  "redis": {
+   "keys": true,
+   "stats": true,
+   "recent_blocks": true,
+   "vbot": true
+  }
+ },
+ "run3/routes-a2-probes2.json": {
+  "sélection": "node",
+  "cas": 21,
+  "en_défaut": 0,
+  "cas_en_défaut": []
+ },
+ "run3/routes-a2.json": {
+  "sélection": "node",
+  "cas": 185,
+  "en_défaut": 2,
+  "cas_en_défaut": [
+   "p070",
+   "q-headers-20k"
+  ]
+ },
+ "run3/routes-a2b.json": {
+  "sélection": "node",
+  "cas": 185,
+  "en_défaut": 0,
+  "cas_en_défaut": []
+ },
+ "run3/routes-r2-probes2.json": {
+  "sélection": "rust",
+  "cas": 21,
+  "en_défaut": 0,
+  "cas_en_défaut": []
+ },
+ "run3/routes-r2.json": {
+  "sélection": "rust",
+  "cas": 185,
+  "en_défaut": 2,
+  "cas_en_défaut": [
+   "p070",
+   "q-headers-20k"
+  ]
+ },
+ "run3/routes-r2b.json": {
+  "sélection": "rust",
+  "cas": 185,
+  "en_défaut": 0,
+  "cas_en_défaut": []
+ },
+ "run3/routes-r2c.json": {
+  "sélection": "rust",
+  "cas": 185,
+  "en_défaut": 0,
+  "cas_en_défaut": []
+ },
+ "run4/diff-caddy-d.json": {
+  "normalisations": 16,
+  "identiques": 185,
+  "écarts": 0,
+  "ordre seul": 0,
+  "absents": 0,
+  "journal_erreurs_identiques": true,
+  "cas_en_écart": [],
+  "redis": {
+   "keys": true,
+   "stats": true,
+   "recent_blocks": true,
+   "vbot": true
+  }
+ },
+ "run4/routes-a2b-strict.json": {
+  "sélection": "node",
+  "cas": 185,
+  "en_défaut": 0,
+  "cas_en_défaut": []
+ },
+ "run4/routes-r2b-strict.json": {
+  "sélection": "rust",
+  "cas": 185,
+  "en_défaut": 0,
+  "cas_en_défaut": []
+ },
+ "run4/routes-r2c-strict.json": {
+  "sélection": "rust",
+  "cas": 185,
+  "en_défaut": 0,
+  "cas_en_défaut": []
+ },
+ "run4/routes-r2d-strict.json": {
+  "sélection": "rust",
+  "cas": 185,
+  "en_défaut": 0,
+  "cas_en_défaut": []
+ },
+ "run4/routes-r2d.json": {
+  "sélection": "rust",
+  "cas": 185,
+  "en_défaut": 0,
+  "cas_en_défaut": []
+ },
+ "run5/diff-outages.json": {
+  "écarts": [
+   {
+    "id": "o-redis-down",
+    "champs": [
+     "logs"
+    ]
+   },
+   {
+    "id": "o-redis-down-session",
+    "champs": [
+     "logs"
+    ]
+   },
+   {
+    "id": "o-redis-back",
+    "champs": [
+     "logs"
+    ]
+   }
+  ]
+ },
+ "run5/diff-probes.json": {
+  "normalisations": 16,
+  "identiques": 21,
+  "écarts": 0,
+  "ordre seul": 0,
+  "absents": 0,
+  "journal_erreurs_identiques": true,
+  "cas_en_écart": [],
+  "redis": {
+   "keys": true,
+   "stats": true,
+   "recent_blocks": true,
+   "vbot": true
+  }
+ },
+ "run5/routes-r2-probes.json": {
+  "sélection": "rust",
+  "cas": 21,
+  "en_défaut": 0,
+  "cas_en_défaut": []
+ },
+ "run3/a2-backend-outage-2/backend-outage.json": {
+  "sélection": "node",
+  "arrêté": "a2",
+  "échecs": [],
+  "étapes": [
+   {
+    "id": "u-before",
+    "éligible": true,
+    "statut": 200,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3140",
+      200
+     ]
+    ],
+    "lignes_a2": 4,
+    "lignes_r2": 0,
+    "problèmes": []
+   },
+   {
+    "id": "u-before-excl",
+    "éligible": false,
+    "statut": 200,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3140",
+      200
+     ]
+    ],
+    "lignes_a2": 0,
+    "lignes_r2": 0,
+    "problèmes": []
+   },
+   {
+    "id": "u-down",
+    "éligible": true,
+    "statut": 500,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3140",
+      500
+     ]
+    ],
+    "lignes_a2": 0,
+    "lignes_r2": 0,
+    "problèmes": []
+   },
+   {
+    "id": "u-down-excl",
+    "éligible": false,
+    "statut": 500,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3140",
+      500
+     ]
+    ],
+    "lignes_a2": 0,
+    "lignes_r2": 0,
+    "problèmes": []
+   },
+   {
+    "id": "u-back",
+    "éligible": true,
+    "statut": 200,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3140",
+      200
+     ]
+    ],
+    "lignes_a2": 4,
+    "lignes_r2": 0,
+    "problèmes": []
+   },
+   {
+    "id": "u-back-excl",
+    "éligible": false,
+    "statut": 200,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3140",
+      200
+     ]
+    ],
+    "lignes_a2": 0,
+    "lignes_r2": 0,
+    "problèmes": []
+   }
+  ]
+ },
+ "run3/a2-backend-outage-3/backend-outage.json": {
+  "sélection": "node",
+  "arrêté": "a2",
+  "échecs": [],
+  "étapes": [
+   {
+    "id": "u-before",
+    "éligible": true,
+    "statut": 200,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3140",
+      200
+     ]
+    ],
+    "lignes_a2": 4,
+    "lignes_r2": 0,
+    "problèmes": []
+   },
+   {
+    "id": "u-before-excl",
+    "éligible": false,
+    "statut": 400,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3140",
+      400
+     ]
+    ],
+    "lignes_a2": 2,
+    "lignes_r2": 0,
+    "problèmes": []
+   },
+   {
+    "id": "u-down",
+    "éligible": true,
+    "statut": 500,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3140",
+      500
+     ]
+    ],
+    "lignes_a2": 0,
+    "lignes_r2": 0,
+    "problèmes": []
+   },
+   {
+    "id": "u-down-excl",
+    "éligible": false,
+    "statut": 500,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3140",
+      500
+     ]
+    ],
+    "lignes_a2": 0,
+    "lignes_r2": 0,
+    "problèmes": []
+   },
+   {
+    "id": "u-back",
+    "éligible": true,
+    "statut": 200,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3140",
+      200
+     ]
+    ],
+    "lignes_a2": 4,
+    "lignes_r2": 0,
+    "problèmes": []
+   },
+   {
+    "id": "u-back-excl",
+    "éligible": false,
+    "statut": 400,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3140",
+      400
+     ]
+    ],
+    "lignes_a2": 2,
+    "lignes_r2": 0,
+    "problèmes": []
+   }
+  ]
+ },
+ "run3/a2-backend-outage/backend-outage.json": {
+  "sélection": "node",
+  "arrêté": "a2",
+  "échecs": [
+   "u-down: aucune erreur de proxy dans caddy-access.log",
+   "u-down-excl: aucune erreur de proxy dans caddy-access.log"
+  ],
+  "étapes": [
+   {
+    "id": "u-before",
+    "éligible": true,
+    "statut": 200,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3140",
+      200
+     ]
+    ],
+    "lignes_a2": 4,
+    "lignes_r2": 0,
+    "problèmes": []
+   },
+   {
+    "id": "u-before-excl",
+    "éligible": false,
+    "statut": 200,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3140",
+      200
+     ]
+    ],
+    "lignes_a2": 0,
+    "lignes_r2": 0,
+    "problèmes": []
+   },
+   {
+    "id": "u-down",
+    "éligible": true,
+    "statut": 500,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3140",
+      500
+     ]
+    ],
+    "lignes_a2": 0,
+    "lignes_r2": 0,
+    "problèmes": [
+     "aucune erreur de proxy dans caddy-access.log"
+    ]
+   },
+   {
+    "id": "u-down-excl",
+    "éligible": false,
+    "statut": 500,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3140",
+      500
+     ]
+    ],
+    "lignes_a2": 0,
+    "lignes_r2": 0,
+    "problèmes": [
+     "aucune erreur de proxy dans caddy-access.log"
+    ]
+   },
+   {
+    "id": "u-back",
+    "éligible": true,
+    "statut": 200,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3140",
+      200
+     ]
+    ],
+    "lignes_a2": 4,
+    "lignes_r2": 0,
+    "problèmes": []
+   },
+   {
+    "id": "u-back-excl",
+    "éligible": false,
+    "statut": 200,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3140",
+      200
+     ]
+    ],
+    "lignes_a2": 0,
+    "lignes_r2": 0,
+    "problèmes": []
+   }
+  ]
+ },
+ "run3/r2-backend-outage-2/backend-outage.json": {
+  "sélection": "rust",
+  "arrêté": "r2",
+  "échecs": [],
+  "étapes": [
+   {
+    "id": "u-before",
+    "éligible": true,
+    "statut": 200,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3150",
+      200
+     ]
+    ],
+    "lignes_a2": 0,
+    "lignes_r2": 4,
+    "problèmes": []
+   },
+   {
+    "id": "u-before-excl",
+    "éligible": false,
+    "statut": 400,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3140",
+      400
+     ]
+    ],
+    "lignes_a2": 2,
+    "lignes_r2": 0,
+    "problèmes": []
+   },
+   {
+    "id": "u-down",
+    "éligible": true,
+    "statut": 500,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3150",
+      500
+     ]
+    ],
+    "lignes_a2": 0,
+    "lignes_r2": 0,
+    "problèmes": []
+   },
+   {
+    "id": "u-down-excl",
+    "éligible": false,
+    "statut": 400,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3140",
+      400
+     ]
+    ],
+    "lignes_a2": 2,
+    "lignes_r2": 0,
+    "problèmes": []
+   },
+   {
+    "id": "u-back",
+    "éligible": true,
+    "statut": 200,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3150",
+      200
+     ]
+    ],
+    "lignes_a2": 0,
+    "lignes_r2": 4,
+    "problèmes": []
+   },
+   {
+    "id": "u-back-excl",
+    "éligible": false,
+    "statut": 400,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3140",
+      400
+     ]
+    ],
+    "lignes_a2": 2,
+    "lignes_r2": 0,
+    "problèmes": []
+   }
+  ]
+ },
+ "run3/r2-backend-outage-3/backend-outage.json": {
+  "sélection": "rust",
+  "arrêté": "r2",
+  "échecs": [],
+  "étapes": [
+   {
+    "id": "u-before",
+    "éligible": true,
+    "statut": 200,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3150",
+      200
+     ]
+    ],
+    "lignes_a2": 0,
+    "lignes_r2": 4,
+    "problèmes": []
+   },
+   {
+    "id": "u-before-excl",
+    "éligible": false,
+    "statut": 400,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3140",
+      400
+     ]
+    ],
+    "lignes_a2": 2,
+    "lignes_r2": 0,
+    "problèmes": []
+   },
+   {
+    "id": "u-down",
+    "éligible": true,
+    "statut": 500,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3150",
+      500
+     ]
+    ],
+    "lignes_a2": 0,
+    "lignes_r2": 0,
+    "problèmes": []
+   },
+   {
+    "id": "u-down-excl",
+    "éligible": false,
+    "statut": 400,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3140",
+      400
+     ]
+    ],
+    "lignes_a2": 2,
+    "lignes_r2": 0,
+    "problèmes": []
+   },
+   {
+    "id": "u-back",
+    "éligible": true,
+    "statut": 200,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3150",
+      200
+     ]
+    ],
+    "lignes_a2": 0,
+    "lignes_r2": 4,
+    "problèmes": []
+   },
+   {
+    "id": "u-back-excl",
+    "éligible": false,
+    "statut": 400,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3140",
+      400
+     ]
+    ],
+    "lignes_a2": 2,
+    "lignes_r2": 0,
+    "problèmes": []
+   }
+  ]
+ },
+ "run3/r2-backend-outage/backend-outage.json": {
+  "sélection": "rust",
+  "arrêté": "r2",
+  "échecs": [
+   "u-before-excl: 200 attendu, reçu 500",
+   "u-before-excl: amont [None] ≠ 127.0.0.1:3140",
+   "u-down-excl: 200 attendu, reçu 500",
+   "u-down-excl: amont [None] ≠ 127.0.0.1:3140",
+   "u-back-excl: 200 attendu, reçu 500",
+   "u-back-excl: amont [None] ≠ 127.0.0.1:3140"
+  ],
+  "étapes": [
+   {
+    "id": "u-before",
+    "éligible": true,
+    "statut": 200,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3150",
+      200
+     ]
+    ],
+    "lignes_a2": 0,
+    "lignes_r2": 4,
+    "problèmes": []
+   },
+   {
+    "id": "u-before-excl",
+    "éligible": false,
+    "statut": 500,
+    "caddy_amont_statut": [
+     [
+      null,
+      500
+     ]
+    ],
+    "lignes_a2": 0,
+    "lignes_r2": 0,
+    "problèmes": [
+     "200 attendu, reçu 500",
+     "amont [None] ≠ 127.0.0.1:3140"
+    ]
+   },
+   {
+    "id": "u-down",
+    "éligible": true,
+    "statut": 500,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3150",
+      500
+     ]
+    ],
+    "lignes_a2": 0,
+    "lignes_r2": 0,
+    "problèmes": []
+   },
+   {
+    "id": "u-down-excl",
+    "éligible": false,
+    "statut": 500,
+    "caddy_amont_statut": [
+     [
+      null,
+      500
+     ]
+    ],
+    "lignes_a2": 0,
+    "lignes_r2": 0,
+    "problèmes": [
+     "200 attendu, reçu 500",
+     "amont [None] ≠ 127.0.0.1:3140"
+    ]
+   },
+   {
+    "id": "u-back",
+    "éligible": true,
+    "statut": 200,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3150",
+      200
+     ]
+    ],
+    "lignes_a2": 0,
+    "lignes_r2": 4,
+    "problèmes": []
+   },
+   {
+    "id": "u-back-excl",
+    "éligible": false,
+    "statut": 500,
+    "caddy_amont_statut": [
+     [
+      null,
+      500
+     ]
+    ],
+    "lignes_a2": 0,
+    "lignes_r2": 0,
+    "problèmes": [
+     "200 attendu, reçu 500",
+     "amont [None] ≠ 127.0.0.1:3140"
+    ]
+   }
+  ]
+ },
+ "run5/r2-backend-outage/backend-outage.json": {
+  "sélection": "rust",
+  "arrêté": "r2",
+  "échecs": [],
+  "étapes": [
+   {
+    "id": "u-before",
+    "éligible": true,
+    "statut": 200,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3150",
+      200
+     ]
+    ],
+    "lignes_a2": 0,
+    "lignes_r2": 4,
+    "problèmes": []
+   },
+   {
+    "id": "u-before-excl",
+    "éligible": false,
+    "statut": 400,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3140",
+      400
+     ]
+    ],
+    "lignes_a2": 2,
+    "lignes_r2": 0,
+    "problèmes": []
+   },
+   {
+    "id": "u-down",
+    "éligible": true,
+    "statut": 500,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3150",
+      500
+     ]
+    ],
+    "lignes_a2": 0,
+    "lignes_r2": 0,
+    "problèmes": []
+   },
+   {
+    "id": "u-down-excl",
+    "éligible": false,
+    "statut": 400,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3140",
+      400
+     ]
+    ],
+    "lignes_a2": 2,
+    "lignes_r2": 0,
+    "problèmes": []
+   },
+   {
+    "id": "u-back",
+    "éligible": true,
+    "statut": 200,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3150",
+      200
+     ]
+    ],
+    "lignes_a2": 0,
+    "lignes_r2": 4,
+    "problèmes": []
+   },
+   {
+    "id": "u-back-excl",
+    "éligible": false,
+    "statut": 400,
+    "caddy_amont_statut": [
+     [
+      "127.0.0.1:3140",
+      400
+     ]
+    ],
+    "lignes_a2": 2,
+    "lignes_r2": 0,
+    "problèmes": []
+   }
+  ]
+ },
+ "run3/budget-node/budget.json": {
+  "sélection": "node",
+  "échecs": [],
+  "étapes": [
+   {
+    "id": "t-route-0",
+    "type": "route",
+    "amont_attendu": "127.0.0.1:3140",
+    "status": 200,
+    "restant": {
+     "x-ratelimit-remaining-long": "1999",
+     "x-ratelimit-remaining-medium": "99",
+     "x-ratelimit-remaining-payment_callback": "99",
+     "x-ratelimit-remaining-short": "14"
+    },
+    "amont": "127.0.0.1:3140"
+   },
+   {
+    "id": "t-exclusion-0",
+    "type": "exclusion",
+    "amont_attendu": "127.0.0.1:3140",
+    "status": 400,
+    "restant": {
+     "x-ratelimit-remaining-long": "1998",
+     "x-ratelimit-remaining-medium": "98",
+     "x-ratelimit-remaining-payment_callback": "98",
+     "x-ratelimit-remaining-short": "13"
+    },
+    "amont": "127.0.0.1:3140"
+   },
+   {
+    "id": "t-route-1",
+    "type": "route",
+    "amont_attendu": "127.0.0.1:3140",
+    "status": 200,
+    "restant": {
+     "x-ratelimit-remaining-long": "1997",
+     "x-ratelimit-remaining-medium": "97",
+     "x-ratelimit-remaining-payment_callback": "97",
+     "x-ratelimit-remaining-short": "12"
+    },
+    "amont": "127.0.0.1:3140"
+   },
+   {
+    "id": "t-exclusion-1",
+    "type": "exclusion",
+    "amont_attendu": "127.0.0.1:3140",
+    "status": 400,
+    "restant": {
+     "x-ratelimit-remaining-long": "1996",
+     "x-ratelimit-remaining-medium": "96",
+     "x-ratelimit-remaining-payment_callback": "96",
+     "x-ratelimit-remaining-short": "11"
+    },
+    "amont": "127.0.0.1:3140"
+   },
+   {
+    "id": "t-route-2",
+    "type": "route",
+    "amont_attendu": "127.0.0.1:3140",
+    "status": 200,
+    "restant": {
+     "x-ratelimit-remaining-long": "1995",
+     "x-ratelimit-remaining-medium": "95",
+     "x-ratelimit-remaining-payment_callback": "95",
+     "x-ratelimit-remaining-short": "10"
+    },
+    "amont": "127.0.0.1:3140"
+   },
+   {
+    "id": "t-exclusion-2",
+    "type": "exclusion",
+    "amont_attendu": "127.0.0.1:3140",
+    "status": 400,
+    "restant": {
+     "x-ratelimit-remaining-long": "1994",
+     "x-ratelimit-remaining-medium": "94",
+     "x-ratelimit-remaining-payment_callback": "94",
+     "x-ratelimit-remaining-short": "9"
+    },
+    "amont": "127.0.0.1:3140"
+   },
+   {
+    "id": "t-route-3",
+    "type": "route",
+    "amont_attendu": "127.0.0.1:3140",
+    "status": 200,
+    "restant": {
+     "x-ratelimit-remaining-long": "1993",
+     "x-ratelimit-remaining-medium": "93",
+     "x-ratelimit-remaining-payment_callback": "93",
+     "x-ratelimit-remaining-short": "8"
+    },
+    "amont": "127.0.0.1:3140"
+   },
+   {
+    "id": "t-exclusion-3",
+    "type": "exclusion",
+    "amont_attendu": "127.0.0.1:3140",
+    "status": 400,
+    "restant": {
+     "x-ratelimit-remaining-long": "1992",
+     "x-ratelimit-remaining-medium": "92",
+     "x-ratelimit-remaining-payment_callback": "92",
+     "x-ratelimit-remaining-short": "7"
+    },
+    "amont": "127.0.0.1:3140"
+   },
+   {
+    "id": "t-route-4",
+    "type": "route",
+    "amont_attendu": "127.0.0.1:3140",
+    "status": 200,
+    "restant": {
+     "x-ratelimit-remaining-long": "1991",
+     "x-ratelimit-remaining-medium": "91",
+     "x-ratelimit-remaining-payment_callback": "91",
+     "x-ratelimit-remaining-short": "6"
+    },
+    "amont": "127.0.0.1:3140"
+   },
+   {
+    "id": "t-exclusion-4",
+    "type": "exclusion",
+    "amont_attendu": "127.0.0.1:3140",
+    "status": 400,
+    "restant": {
+     "x-ratelimit-remaining-long": "1990",
+     "x-ratelimit-remaining-medium": "90",
+     "x-ratelimit-remaining-payment_callback": "90",
+     "x-ratelimit-remaining-short": "5"
+    },
+    "amont": "127.0.0.1:3140"
+   },
+   {
+    "id": "t-route-5",
+    "type": "route",
+    "amont_attendu": "127.0.0.1:3140",
+    "status": 200,
+    "restant": {
+     "x-ratelimit-remaining-long": "1989",
+     "x-ratelimit-remaining-medium": "89",
+     "x-ratelimit-remaining-payment_callback": "89",
+     "x-ratelimit-remaining-short": "4"
+    },
+    "amont": "127.0.0.1:3140"
+   },
+   {
+    "id": "t-exclusion-5",
+    "type": "exclusion",
+    "amont_attendu": "127.0.0.1:3140",
+    "status": 400,
+    "restant": {
+     "x-ratelimit-remaining-long": "1988",
+     "x-ratelimit-remaining-medium": "88",
+     "x-ratelimit-remaining-payment_callback": "88",
+     "x-ratelimit-remaining-short": "3"
+    },
+    "amont": "127.0.0.1:3140"
+   }
+  ]
+ },
+ "run3/budget-rust/budget.json": {
+  "sélection": "rust",
+  "échecs": [],
+  "étapes": [
+   {
+    "id": "t-route-0",
+    "type": "route",
+    "amont_attendu": "127.0.0.1:3150",
+    "status": 200,
+    "restant": {
+     "x-ratelimit-remaining-long": "1999",
+     "x-ratelimit-remaining-medium": "99",
+     "x-ratelimit-remaining-payment_callback": "99",
+     "x-ratelimit-remaining-short": "14"
+    },
+    "amont": "127.0.0.1:3150"
+   },
+   {
+    "id": "t-exclusion-0",
+    "type": "exclusion",
+    "amont_attendu": "127.0.0.1:3140",
+    "status": 400,
+    "restant": {
+     "x-ratelimit-remaining-long": "1999",
+     "x-ratelimit-remaining-medium": "99",
+     "x-ratelimit-remaining-payment_callback": "99",
+     "x-ratelimit-remaining-short": "14"
+    },
+    "amont": "127.0.0.1:3140"
+   },
+   {
+    "id": "t-route-1",
+    "type": "route",
+    "amont_attendu": "127.0.0.1:3150",
+    "status": 200,
+    "restant": {
+     "x-ratelimit-remaining-long": "1998",
+     "x-ratelimit-remaining-medium": "98",
+     "x-ratelimit-remaining-payment_callback": "98",
+     "x-ratelimit-remaining-short": "13"
+    },
+    "amont": "127.0.0.1:3150"
+   },
+   {
+    "id": "t-exclusion-1",
+    "type": "exclusion",
+    "amont_attendu": "127.0.0.1:3140",
+    "status": 400,
+    "restant": {
+     "x-ratelimit-remaining-long": "1998",
+     "x-ratelimit-remaining-medium": "98",
+     "x-ratelimit-remaining-payment_callback": "98",
+     "x-ratelimit-remaining-short": "13"
+    },
+    "amont": "127.0.0.1:3140"
+   },
+   {
+    "id": "t-route-2",
+    "type": "route",
+    "amont_attendu": "127.0.0.1:3150",
+    "status": 200,
+    "restant": {
+     "x-ratelimit-remaining-long": "1997",
+     "x-ratelimit-remaining-medium": "97",
+     "x-ratelimit-remaining-payment_callback": "97",
+     "x-ratelimit-remaining-short": "12"
+    },
+    "amont": "127.0.0.1:3150"
+   },
+   {
+    "id": "t-exclusion-2",
+    "type": "exclusion",
+    "amont_attendu": "127.0.0.1:3140",
+    "status": 400,
+    "restant": {
+     "x-ratelimit-remaining-long": "1997",
+     "x-ratelimit-remaining-medium": "97",
+     "x-ratelimit-remaining-payment_callback": "97",
+     "x-ratelimit-remaining-short": "12"
+    },
+    "amont": "127.0.0.1:3140"
+   },
+   {
+    "id": "t-route-3",
+    "type": "route",
+    "amont_attendu": "127.0.0.1:3150",
+    "status": 200,
+    "restant": {
+     "x-ratelimit-remaining-long": "1996",
+     "x-ratelimit-remaining-medium": "96",
+     "x-ratelimit-remaining-payment_callback": "96",
+     "x-ratelimit-remaining-short": "11"
+    },
+    "amont": "127.0.0.1:3150"
+   },
+   {
+    "id": "t-exclusion-3",
+    "type": "exclusion",
+    "amont_attendu": "127.0.0.1:3140",
+    "status": 400,
+    "restant": {
+     "x-ratelimit-remaining-long": "1996",
+     "x-ratelimit-remaining-medium": "96",
+     "x-ratelimit-remaining-payment_callback": "96",
+     "x-ratelimit-remaining-short": "11"
+    },
+    "amont": "127.0.0.1:3140"
+   },
+   {
+    "id": "t-route-4",
+    "type": "route",
+    "amont_attendu": "127.0.0.1:3150",
+    "status": 200,
+    "restant": {
+     "x-ratelimit-remaining-long": "1995",
+     "x-ratelimit-remaining-medium": "95",
+     "x-ratelimit-remaining-payment_callback": "95",
+     "x-ratelimit-remaining-short": "10"
+    },
+    "amont": "127.0.0.1:3150"
+   },
+   {
+    "id": "t-exclusion-4",
+    "type": "exclusion",
+    "amont_attendu": "127.0.0.1:3140",
+    "status": 400,
+    "restant": {
+     "x-ratelimit-remaining-long": "1995",
+     "x-ratelimit-remaining-medium": "95",
+     "x-ratelimit-remaining-payment_callback": "95",
+     "x-ratelimit-remaining-short": "10"
+    },
+    "amont": "127.0.0.1:3140"
+   },
+   {
+    "id": "t-route-5",
+    "type": "route",
+    "amont_attendu": "127.0.0.1:3150",
+    "status": 200,
+    "restant": {
+     "x-ratelimit-remaining-long": "1994",
+     "x-ratelimit-remaining-medium": "94",
+     "x-ratelimit-remaining-payment_callback": "94",
+     "x-ratelimit-remaining-short": "9"
+    },
+    "amont": "127.0.0.1:3150"
+   },
+   {
+    "id": "t-exclusion-5",
+    "type": "exclusion",
+    "amont_attendu": "127.0.0.1:3140",
+    "status": 400,
+    "restant": {
+     "x-ratelimit-remaining-long": "1994",
+     "x-ratelimit-remaining-medium": "94",
+     "x-ratelimit-remaining-payment_callback": "94",
+     "x-ratelimit-remaining-short": "9"
+    },
+    "amont": "127.0.0.1:3140"
+   }
+  ]
+ },
+ "run5/budget-rust/budget.json": {
+  "sélection": "rust",
+  "échecs": [],
+  "étapes": [
+   {
+    "id": "t-route-0",
+    "type": "route",
+    "amont_attendu": "127.0.0.1:3150",
+    "status": 200,
+    "restant": {
+     "x-ratelimit-remaining-long": "1999",
+     "x-ratelimit-remaining-medium": "99",
+     "x-ratelimit-remaining-payment_callback": "99",
+     "x-ratelimit-remaining-short": "14"
+    },
+    "amont": "127.0.0.1:3150"
+   },
+   {
+    "id": "t-exclusion-0",
+    "type": "exclusion",
+    "amont_attendu": "127.0.0.1:3140",
+    "status": 400,
+    "restant": {
+     "x-ratelimit-remaining-long": "1999",
+     "x-ratelimit-remaining-medium": "99",
+     "x-ratelimit-remaining-payment_callback": "99",
+     "x-ratelimit-remaining-short": "14"
+    },
+    "amont": "127.0.0.1:3140"
+   },
+   {
+    "id": "t-route-1",
+    "type": "route",
+    "amont_attendu": "127.0.0.1:3150",
+    "status": 200,
+    "restant": {
+     "x-ratelimit-remaining-long": "1998",
+     "x-ratelimit-remaining-medium": "98",
+     "x-ratelimit-remaining-payment_callback": "98",
+     "x-ratelimit-remaining-short": "13"
+    },
+    "amont": "127.0.0.1:3150"
+   },
+   {
+    "id": "t-exclusion-1",
+    "type": "exclusion",
+    "amont_attendu": "127.0.0.1:3140",
+    "status": 400,
+    "restant": {
+     "x-ratelimit-remaining-long": "1998",
+     "x-ratelimit-remaining-medium": "98",
+     "x-ratelimit-remaining-payment_callback": "98",
+     "x-ratelimit-remaining-short": "13"
+    },
+    "amont": "127.0.0.1:3140"
+   },
+   {
+    "id": "t-route-2",
+    "type": "route",
+    "amont_attendu": "127.0.0.1:3150",
+    "status": 200,
+    "restant": {
+     "x-ratelimit-remaining-long": "1997",
+     "x-ratelimit-remaining-medium": "97",
+     "x-ratelimit-remaining-payment_callback": "97",
+     "x-ratelimit-remaining-short": "12"
+    },
+    "amont": "127.0.0.1:3150"
+   },
+   {
+    "id": "t-exclusion-2",
+    "type": "exclusion",
+    "amont_attendu": "127.0.0.1:3140",
+    "status": 400,
+    "restant": {
+     "x-ratelimit-remaining-long": "1997",
+     "x-ratelimit-remaining-medium": "97",
+     "x-ratelimit-remaining-payment_callback": "97",
+     "x-ratelimit-remaining-short": "12"
+    },
+    "amont": "127.0.0.1:3140"
+   },
+   {
+    "id": "t-route-3",
+    "type": "route",
+    "amont_attendu": "127.0.0.1:3150",
+    "status": 200,
+    "restant": {
+     "x-ratelimit-remaining-long": "1996",
+     "x-ratelimit-remaining-medium": "96",
+     "x-ratelimit-remaining-payment_callback": "96",
+     "x-ratelimit-remaining-short": "11"
+    },
+    "amont": "127.0.0.1:3150"
+   },
+   {
+    "id": "t-exclusion-3",
+    "type": "exclusion",
+    "amont_attendu": "127.0.0.1:3140",
+    "status": 400,
+    "restant": {
+     "x-ratelimit-remaining-long": "1996",
+     "x-ratelimit-remaining-medium": "96",
+     "x-ratelimit-remaining-payment_callback": "96",
+     "x-ratelimit-remaining-short": "11"
+    },
+    "amont": "127.0.0.1:3140"
+   },
+   {
+    "id": "t-route-4",
+    "type": "route",
+    "amont_attendu": "127.0.0.1:3150",
+    "status": 200,
+    "restant": {
+     "x-ratelimit-remaining-long": "1995",
+     "x-ratelimit-remaining-medium": "95",
+     "x-ratelimit-remaining-payment_callback": "95",
+     "x-ratelimit-remaining-short": "10"
+    },
+    "amont": "127.0.0.1:3150"
+   },
+   {
+    "id": "t-exclusion-4",
+    "type": "exclusion",
+    "amont_attendu": "127.0.0.1:3140",
+    "status": 400,
+    "restant": {
+     "x-ratelimit-remaining-long": "1995",
+     "x-ratelimit-remaining-medium": "95",
+     "x-ratelimit-remaining-payment_callback": "95",
+     "x-ratelimit-remaining-short": "10"
+    },
+    "amont": "127.0.0.1:3140"
+   },
+   {
+    "id": "t-route-5",
+    "type": "route",
+    "amont_attendu": "127.0.0.1:3150",
+    "status": 200,
+    "restant": {
+     "x-ratelimit-remaining-long": "1994",
+     "x-ratelimit-remaining-medium": "94",
+     "x-ratelimit-remaining-payment_callback": "94",
+     "x-ratelimit-remaining-short": "9"
+    },
+    "amont": "127.0.0.1:3150"
+   },
+   {
+    "id": "t-exclusion-5",
+    "type": "exclusion",
+    "amont_attendu": "127.0.0.1:3140",
+    "status": 400,
+    "restant": {
+     "x-ratelimit-remaining-long": "1994",
+     "x-ratelimit-remaining-medium": "94",
+     "x-ratelimit-remaining-payment_callback": "94",
+     "x-ratelimit-remaining-short": "9"
+    },
+    "amont": "127.0.0.1:3140"
+   }
+  ]
+ },
+ "run3/journeys/node-v2/routes-20261022T123017931085387-164-2008-desktop.json": {
+  "parcours": "20261022T123017931085387-164-2008-desktop.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "node",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 78,
+   "total": 78
+  },
+  "liste_affichée": {
+   "options": 78,
+   "digest": "efbc904158a2d5bbe9e34ced547376e310caa625b150eba71b474004ab0f6aa5"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3140",
+    "attendu": "127.0.0.1:3140",
+    "fins": {
+     "a2": 1,
+     "r2": 0
+    }
+   }
+  ]
+ },
+ "run3/journeys/node-v2/routes-20261022T123127556067669-140-2008-mobile.json": {
+  "parcours": "20261022T123127556067669-140-2008-mobile.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "node",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 36,
+   "total": 36
+  },
+  "liste_affichée": {
+   "options": 36,
+   "digest": "60c7af6523bee5dd9253ec35d6d26381f56b4efb726a8cde04332bf972a06ad5"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3140",
+    "attendu": "127.0.0.1:3140",
+    "fins": {
+     "a2": 1,
+     "r2": 0
+    }
+   }
+  ]
+ },
+ "run3/journeys/node-v2/routes-20261022T123236749219140-108-2018-desktop.json": {
+  "parcours": "20261022T123236749219140-108-2018-desktop.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "node",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 84,
+   "total": 84
+  },
+  "liste_affichée": {
+   "options": 84,
+   "digest": "33930cbc78a7cad3e617a1cef1afb3ba8cd62c0de2c6180746fa8878b69bb5b6"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3140",
+    "attendu": "127.0.0.1:3140",
+    "fins": {
+     "a2": 1,
+     "r2": 0
+    }
+   }
+  ]
+ },
+ "run3/journeys/node-v2/routes-20261022T123346293400616-173-1995-mobile.json": {
+  "parcours": "20261022T123346293400616-173-1995-mobile.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "node",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 33,
+   "total": 33
+  },
+  "liste_affichée": {
+   "options": 33,
+   "digest": "24864f292aaecac94208d54bb139fb61e1a69e8d163ce2327f18e36dae95123a"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3140",
+    "attendu": "127.0.0.1:3140",
+    "fins": {
+     "a2": 1,
+     "r2": 0
+    }
+   }
+  ]
+ },
+ "run3/journeys/node-v2/routes-20261022T123455343629231-128-2008-desktop.json": {
+  "parcours": "20261022T123455343629231-128-2008-desktop.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "node",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 39,
+   "total": 39
+  },
+  "liste_affichée": {
+   "options": 39,
+   "digest": "a60307c5603393fc25e5e1d721240512af211e3dad44666544d76a403d576b52"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3140",
+    "attendu": "127.0.0.1:3140",
+    "fins": {
+     "a2": 1,
+     "r2": 0
+    }
+   }
+  ]
+ },
+ "run3/journeys/node-v2/routes-20261022T123604894620983-441-2018-mobile.json": {
+  "parcours": "20261022T123604894620983-441-2018-mobile.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "node",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 7,
+   "total": 7
+  },
+  "liste_affichée": {
+   "options": 7,
+   "digest": "8064852f2e18acf5d4e756503cdcf0777defffbe6d9b4cda3b65d0240947579e"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3140",
+    "attendu": "127.0.0.1:3140",
+    "fins": {
+     "a2": 1,
+     "r2": 0
+    }
+   }
+  ]
+ },
+ "run3/journeys/node-v2/routes-20261022T123714009480315-140---diagnostic.json": {
+  "parcours": "20261022T123714009480315-140---diagnostic.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "node",
+  "appels": 8,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 208,
+   "total": 208
+  },
+  "liste_affichée": {
+   "options": 208,
+   "digest": "306133a13b31ac7eb372fe13e31603821bc5fab1efc48f84ace95a2b5c1f97e9"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3140",
+    "attendu": "127.0.0.1:3140",
+    "fins": {
+     "a2": 1,
+     "r2": 0
+    }
+   }
+  ]
+ },
+ "run3/journeys/node-v2/routes-20261022T123837860090988-164---diagnostic.json": {
+  "parcours": "20261022T123837860090988-164---diagnostic.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "node",
+  "appels": 8,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 500,
+   "total": 618
+  },
+  "liste_affichée": {
+   "options": 500,
+   "digest": "1a204b9373db045a0034c675232e6627a71128da0cd6d9490a58006379e7b27b"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3140",
+    "attendu": "127.0.0.1:3140",
+    "fins": {
+     "a2": 1,
+     "r2": 0
+    }
+   }
+  ]
+ },
+ "run3/journeys/node-v2/routes-20261022T124001732356904-441---diagnostic.json": {
+  "parcours": "20261022T124001732356904-441---diagnostic.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "node",
+  "appels": 8,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 15,
+   "total": 15
+  },
+  "liste_affichée": {
+   "options": 15,
+   "digest": "bf753aee2c7c39c9021d23f51aa08ace4ef59b4c608ed22d0361d4d37ab1cb8f"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3140",
+    "attendu": "127.0.0.1:3140",
+    "fins": {
+     "a2": 1,
+     "r2": 0
+    }
+   }
+  ]
+ },
+ "run3/journeys/node/routes-20261022T121806426022939-164-2008-desktop.json": {
+  "parcours": "20261022T121806426022939-164-2008-desktop.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "node",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 78,
+   "total": 78
+  },
+  "liste_affichée": {
+   "options": 78,
+   "digest": null
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3140",
+    "attendu": "127.0.0.1:3140",
+    "fins": {
+     "a2": 1,
+     "r2": 0
+    }
+   }
+  ]
+ },
+ "run3/journeys/node/routes-20261022T121915934815012-140-2008-mobile.json": {
+  "parcours": "20261022T121915934815012-140-2008-mobile.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "node",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 36,
+   "total": 36
+  },
+  "liste_affichée": {
+   "options": 36,
+   "digest": null
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3140",
+    "attendu": "127.0.0.1:3140",
+    "fins": {
+     "a2": 1,
+     "r2": 0
+    }
+   }
+  ]
+ },
+ "run3/journeys/node/routes-20261022T122025033364016-108-2018-desktop.json": {
+  "parcours": "20261022T122025033364016-108-2018-desktop.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "node",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 84,
+   "total": 84
+  },
+  "liste_affichée": {
+   "options": 84,
+   "digest": null
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3140",
+    "attendu": "127.0.0.1:3140",
+    "fins": {
+     "a2": 1,
+     "r2": 0
+    }
+   }
+  ]
+ },
+ "run3/journeys/node/routes-20261022T122134495955990-173-1995-mobile.json": {
+  "parcours": "20261022T122134495955990-173-1995-mobile.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "node",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 33,
+   "total": 33
+  },
+  "liste_affichée": {
+   "options": 33,
+   "digest": null
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3140",
+    "attendu": "127.0.0.1:3140",
+    "fins": {
+     "a2": 1,
+     "r2": 0
+    }
+   }
+  ]
+ },
+ "run3/journeys/node/routes-20261022T122243513737033-128-2008-desktop.json": {
+  "parcours": "20261022T122243513737033-128-2008-desktop.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "node",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 39,
+   "total": 39
+  },
+  "liste_affichée": {
+   "options": 39,
+   "digest": null
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3140",
+    "attendu": "127.0.0.1:3140",
+    "fins": {
+     "a2": 1,
+     "r2": 0
+    }
+   }
+  ]
+ },
+ "run3/journeys/node/routes-20261022T122352997003474-441-2018-mobile.json": {
+  "parcours": "20261022T122352997003474-441-2018-mobile.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "node",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 7,
+   "total": 7
+  },
+  "liste_affichée": {
+   "options": 7,
+   "digest": null
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3140",
+    "attendu": "127.0.0.1:3140",
+    "fins": {
+     "a2": 1,
+     "r2": 0
+    }
+   }
+  ]
+ },
+ "run3/journeys/routes-rust-140-mobile.json": {
+  "parcours": "20261022T120738573371910-140-2008-mobile.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "rust",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 36,
+   "total": 36
+  },
+  "liste_affichée": {
+   "options": 36,
+   "digest": null
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3150",
+    "attendu": "127.0.0.1:3150",
+    "fins": {
+     "a2": 0,
+     "r2": 1
+    }
+   }
+  ]
+ },
+ "run3/journeys/rust-v2/routes-20261022T124323528067438-164-2008-desktop.json": {
+  "parcours": "20261022T124323528067438-164-2008-desktop.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "rust",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 78,
+   "total": 78
+  },
+  "liste_affichée": {
+   "options": 78,
+   "digest": "efbc904158a2d5bbe9e34ced547376e310caa625b150eba71b474004ab0f6aa5"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3150",
+    "attendu": "127.0.0.1:3150",
+    "fins": {
+     "a2": 0,
+     "r2": 1
+    }
+   }
+  ]
+ },
+ "run3/journeys/rust-v2/routes-20261022T124432950660838-140-2008-mobile.json": {
+  "parcours": "20261022T124432950660838-140-2008-mobile.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "rust",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 36,
+   "total": 36
+  },
+  "liste_affichée": {
+   "options": 36,
+   "digest": "60c7af6523bee5dd9253ec35d6d26381f56b4efb726a8cde04332bf972a06ad5"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3150",
+    "attendu": "127.0.0.1:3150",
+    "fins": {
+     "a2": 0,
+     "r2": 1
+    }
+   }
+  ]
+ },
+ "run3/journeys/rust-v2/routes-20261022T124541999876238-108-2018-desktop.json": {
+  "parcours": "20261022T124541999876238-108-2018-desktop.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "rust",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 84,
+   "total": 84
+  },
+  "liste_affichée": {
+   "options": 84,
+   "digest": "33930cbc78a7cad3e617a1cef1afb3ba8cd62c0de2c6180746fa8878b69bb5b6"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3150",
+    "attendu": "127.0.0.1:3150",
+    "fins": {
+     "a2": 0,
+     "r2": 1
+    }
+   }
+  ]
+ },
+ "run3/journeys/rust-v2/routes-20261022T124651556114576-173-1995-mobile.json": {
+  "parcours": "20261022T124651556114576-173-1995-mobile.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "rust",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 33,
+   "total": 33
+  },
+  "liste_affichée": {
+   "options": 33,
+   "digest": "24864f292aaecac94208d54bb139fb61e1a69e8d163ce2327f18e36dae95123a"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3150",
+    "attendu": "127.0.0.1:3150",
+    "fins": {
+     "a2": 0,
+     "r2": 1
+    }
+   }
+  ]
+ },
+ "run3/journeys/rust-v2/routes-20261022T124800642361369-128-2008-desktop.json": {
+  "parcours": "20261022T124800642361369-128-2008-desktop.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "rust",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 39,
+   "total": 39
+  },
+  "liste_affichée": {
+   "options": 39,
+   "digest": "a60307c5603393fc25e5e1d721240512af211e3dad44666544d76a403d576b52"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3150",
+    "attendu": "127.0.0.1:3150",
+    "fins": {
+     "a2": 0,
+     "r2": 1
+    }
+   }
+  ]
+ },
+ "run3/journeys/rust-v2/routes-20261022T124910126320333-441-2018-mobile.json": {
+  "parcours": "20261022T124910126320333-441-2018-mobile.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "rust",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 7,
+   "total": 7
+  },
+  "liste_affichée": {
+   "options": 7,
+   "digest": "8064852f2e18acf5d4e756503cdcf0777defffbe6d9b4cda3b65d0240947579e"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3150",
+    "attendu": "127.0.0.1:3150",
+    "fins": {
+     "a2": 0,
+     "r2": 1
+    }
+   }
+  ]
+ },
+ "run3/journeys/rust-v2/routes-20261022T125019224225202-140---diagnostic.json": {
+  "parcours": "20261022T125019224225202-140---diagnostic.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "rust",
+  "appels": 8,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 208,
+   "total": 208
+  },
+  "liste_affichée": {
+   "options": 208,
+   "digest": "306133a13b31ac7eb372fe13e31603821bc5fab1efc48f84ace95a2b5c1f97e9"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3150",
+    "attendu": "127.0.0.1:3150",
+    "fins": {
+     "a2": 0,
+     "r2": 1
+    }
+   }
+  ]
+ },
+ "run3/journeys/rust-v2/routes-20261022T125143138444088-164---diagnostic.json": {
+  "parcours": "20261022T125143138444088-164---diagnostic.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "rust",
+  "appels": 8,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 500,
+   "total": 618
+  },
+  "liste_affichée": {
+   "options": 500,
+   "digest": "1a204b9373db045a0034c675232e6627a71128da0cd6d9490a58006379e7b27b"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3150",
+    "attendu": "127.0.0.1:3150",
+    "fins": {
+     "a2": 0,
+     "r2": 1
+    }
+   }
+  ]
+ },
+ "run3/journeys/rust-v2/routes-20261022T125306992452037-441---diagnostic.json": {
+  "parcours": "20261022T125306992452037-441---diagnostic.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "rust",
+  "appels": 8,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 15,
+   "total": 15
+  },
+  "liste_affichée": {
+   "options": 15,
+   "digest": "bf753aee2c7c39c9021d23f51aa08ace4ef59b4c608ed22d0361d4d37ab1cb8f"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3150",
+    "attendu": "127.0.0.1:3150",
+    "fins": {
+     "a2": 0,
+     "r2": 1
+    }
+   }
+  ]
+ },
+ "run3/journeys/rust/routes-20261022T121335140349315-164-2008-desktop.json": {
+  "parcours": "20261022T121335140349315-164-2008-desktop.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "rust",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 78,
+   "total": 78
+  },
+  "liste_affichée": {
+   "options": 78,
+   "digest": null
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3150",
+    "attendu": "127.0.0.1:3150",
+    "fins": {
+     "a2": 0,
+     "r2": 1
+    }
+   }
+  ]
+ },
+ "run3/journeys/rust/routes-20261022T121343654351757-140-2008-mobile.json": {
+  "parcours": "20261022T121343654351757-140-2008-mobile.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "rust",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 36,
+   "total": 36
+  },
+  "liste_affichée": {
+   "options": 36,
+   "digest": null
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3150",
+    "attendu": "127.0.0.1:3150",
+    "fins": {
+     "a2": 0,
+     "r2": 1
+    }
+   }
+  ]
+ },
+ "run3/journeys/rust/routes-20261022T121351780903640-108-2018-desktop.json": {
+  "parcours": "20261022T121351780903640-108-2018-desktop.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "rust",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 84,
+   "total": 84
+  },
+  "liste_affichée": {
+   "options": 84,
+   "digest": null
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3150",
+    "attendu": "127.0.0.1:3150",
+    "fins": {
+     "a2": 0,
+     "r2": 1
+    }
+   }
+  ]
+ },
+ "run3/journeys/rust/routes-20261022T121400374900084-173-1995-mobile.json": {
+  "parcours": "20261022T121400374900084-173-1995-mobile.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "rust",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 33,
+   "total": 33
+  },
+  "liste_affichée": {
+   "options": 33,
+   "digest": null
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3150",
+    "attendu": "127.0.0.1:3150",
+    "fins": {
+     "a2": 0,
+     "r2": 1
+    }
+   }
+  ]
+ },
+ "run3/journeys/rust/routes-20261022T121408411689304-128-2008-desktop.json": {
+  "parcours": "20261022T121408411689304-128-2008-desktop.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "rust",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 39,
+   "total": 39
+  },
+  "liste_affichée": {
+   "options": 39,
+   "digest": null
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3150",
+    "attendu": "127.0.0.1:3150",
+    "fins": {
+     "a2": 0,
+     "r2": 1
+    }
+   }
+  ]
+ },
+ "run3/journeys/rust/routes-20261022T121416942439203-441-2018-mobile.json": {
+  "parcours": "20261022T121416942439203-441-2018-mobile.json",
+  "ok": false,
+  "erreur": "TimeoutError: page.waitForFunction: Timeout 30000ms exceeded.",
+  "sélection": "rust",
+  "appels": 4,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": null,
+   "models": null,
+   "total": null
+  },
+  "liste_affichée": {
+   "options": null,
+   "digest": null
+  },
+  "erreurs_page": 0,
+  "appels_route": []
+ },
+ "run3/journeys/rust/routes-20261022T121650882647218-441-2018-mobile.json": {
+  "parcours": "20261022T121650882647218-441-2018-mobile.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "rust",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 7,
+   "total": 7
+  },
+  "liste_affichée": {
+   "options": 7,
+   "digest": null
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3150",
+    "attendu": "127.0.0.1:3150",
+    "fins": {
+     "a2": 0,
+     "r2": 1
+    }
+   }
+  ]
+ },
+ "run5/journeys-node/routes-20261022T160928868756050-164-2008-desktop.json": {
+  "parcours": "20261022T160928868756050-164-2008-desktop.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "node",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 78,
+   "total": 78
+  },
+  "liste_affichée": {
+   "options": 78,
+   "digest": "efbc904158a2d5bbe9e34ced547376e310caa625b150eba71b474004ab0f6aa5"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3140",
+    "attendu": "127.0.0.1:3140",
+    "fins": {
+     "a2": 1,
+     "r2": 0
+    }
+   }
+  ]
+ },
+ "run5/journeys-node/routes-20261022T161039983886357-140-2008-mobile.json": {
+  "parcours": "20261022T161039983886357-140-2008-mobile.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "node",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 36,
+   "total": 36
+  },
+  "liste_affichée": {
+   "options": 36,
+   "digest": "60c7af6523bee5dd9253ec35d6d26381f56b4efb726a8cde04332bf972a06ad5"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3140",
+    "attendu": "127.0.0.1:3140",
+    "fins": {
+     "a2": 1,
+     "r2": 0
+    }
+   }
+  ]
+ },
+ "run5/journeys-node/routes-20261022T161149184203137-108-2018-desktop.json": {
+  "parcours": "20261022T161149184203137-108-2018-desktop.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "node",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 84,
+   "total": 84
+  },
+  "liste_affichée": {
+   "options": 84,
+   "digest": "33930cbc78a7cad3e617a1cef1afb3ba8cd62c0de2c6180746fa8878b69bb5b6"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3140",
+    "attendu": "127.0.0.1:3140",
+    "fins": {
+     "a2": 1,
+     "r2": 0
+    }
+   }
+  ]
+ },
+ "run5/journeys-node/routes-20261022T161258735992508-173-1995-mobile.json": {
+  "parcours": "20261022T161258735992508-173-1995-mobile.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "node",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 33,
+   "total": 33
+  },
+  "liste_affichée": {
+   "options": 33,
+   "digest": "24864f292aaecac94208d54bb139fb61e1a69e8d163ce2327f18e36dae95123a"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3140",
+    "attendu": "127.0.0.1:3140",
+    "fins": {
+     "a2": 1,
+     "r2": 0
+    }
+   }
+  ]
+ },
+ "run5/journeys-node/routes-20261022T161407800234251-128-2008-desktop.json": {
+  "parcours": "20261022T161407800234251-128-2008-desktop.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "node",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 39,
+   "total": 39
+  },
+  "liste_affichée": {
+   "options": 39,
+   "digest": "a60307c5603393fc25e5e1d721240512af211e3dad44666544d76a403d576b52"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3140",
+    "attendu": "127.0.0.1:3140",
+    "fins": {
+     "a2": 1,
+     "r2": 0
+    }
+   }
+  ]
+ },
+ "run5/journeys-node/routes-20261022T161517296649889-441-2018-mobile.json": {
+  "parcours": "20261022T161517296649889-441-2018-mobile.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "node",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 7,
+   "total": 7
+  },
+  "liste_affichée": {
+   "options": 7,
+   "digest": "8064852f2e18acf5d4e756503cdcf0777defffbe6d9b4cda3b65d0240947579e"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3140",
+    "attendu": "127.0.0.1:3140",
+    "fins": {
+     "a2": 1,
+     "r2": 0
+    }
+   }
+  ]
+ },
+ "run5/journeys-node/routes-20261022T161626338518866-140---diagnostic.json": {
+  "parcours": "20261022T161626338518866-140---diagnostic.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "node",
+  "appels": 8,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 208,
+   "total": 208
+  },
+  "liste_affichée": {
+   "options": 208,
+   "digest": "306133a13b31ac7eb372fe13e31603821bc5fab1efc48f84ace95a2b5c1f97e9"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3140",
+    "attendu": "127.0.0.1:3140",
+    "fins": {
+     "a2": 1,
+     "r2": 0
+    }
+   }
+  ]
+ },
+ "run5/journeys-node/routes-20261022T161750152405929-164---diagnostic.json": {
+  "parcours": "20261022T161750152405929-164---diagnostic.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "node",
+  "appels": 8,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 500,
+   "total": 618
+  },
+  "liste_affichée": {
+   "options": 500,
+   "digest": "1a204b9373db045a0034c675232e6627a71128da0cd6d9490a58006379e7b27b"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3140",
+    "attendu": "127.0.0.1:3140",
+    "fins": {
+     "a2": 1,
+     "r2": 0
+    }
+   }
+  ]
+ },
+ "run5/journeys-node/routes-20261022T161914027220004-441---diagnostic.json": {
+  "parcours": "20261022T161914027220004-441---diagnostic.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "node",
+  "appels": 8,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 15,
+   "total": 15
+  },
+  "liste_affichée": {
+   "options": 15,
+   "digest": "bf753aee2c7c39c9021d23f51aa08ace4ef59b4c608ed22d0361d4d37ab1cb8f"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3140",
+    "attendu": "127.0.0.1:3140",
+    "fins": {
+     "a2": 1,
+     "r2": 0
+    }
+   }
+  ]
+ },
+ "run5/journeys-rust/routes-20261022T162104781885070-164-2008-desktop.json": {
+  "parcours": "20261022T162104781885070-164-2008-desktop.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "rust",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 78,
+   "total": 78
+  },
+  "liste_affichée": {
+   "options": 78,
+   "digest": "efbc904158a2d5bbe9e34ced547376e310caa625b150eba71b474004ab0f6aa5"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3150",
+    "attendu": "127.0.0.1:3150",
+    "fins": {
+     "a2": 0,
+     "r2": 1
+    }
+   }
+  ]
+ },
+ "run5/journeys-rust/routes-20261022T162215112802033-140-2008-mobile.json": {
+  "parcours": "20261022T162215112802033-140-2008-mobile.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "rust",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 36,
+   "total": 36
+  },
+  "liste_affichée": {
+   "options": 36,
+   "digest": "60c7af6523bee5dd9253ec35d6d26381f56b4efb726a8cde04332bf972a06ad5"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3150",
+    "attendu": "127.0.0.1:3150",
+    "fins": {
+     "a2": 0,
+     "r2": 1
+    }
+   }
+  ]
+ },
+ "run5/journeys-rust/routes-20261022T162324300723710-108-2018-desktop.json": {
+  "parcours": "20261022T162324300723710-108-2018-desktop.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "rust",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 84,
+   "total": 84
+  },
+  "liste_affichée": {
+   "options": 84,
+   "digest": "33930cbc78a7cad3e617a1cef1afb3ba8cd62c0de2c6180746fa8878b69bb5b6"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3150",
+    "attendu": "127.0.0.1:3150",
+    "fins": {
+     "a2": 0,
+     "r2": 1
+    }
+   }
+  ]
+ },
+ "run5/journeys-rust/routes-20261022T162433876983974-173-1995-mobile.json": {
+  "parcours": "20261022T162433876983974-173-1995-mobile.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "rust",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 33,
+   "total": 33
+  },
+  "liste_affichée": {
+   "options": 33,
+   "digest": "24864f292aaecac94208d54bb139fb61e1a69e8d163ce2327f18e36dae95123a"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3150",
+    "attendu": "127.0.0.1:3150",
+    "fins": {
+     "a2": 0,
+     "r2": 1
+    }
+   }
+  ]
+ },
+ "run5/journeys-rust/routes-20261022T162543031649190-128-2008-desktop.json": {
+  "parcours": "20261022T162543031649190-128-2008-desktop.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "rust",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 39,
+   "total": 39
+  },
+  "liste_affichée": {
+   "options": 39,
+   "digest": "a60307c5603393fc25e5e1d721240512af211e3dad44666544d76a403d576b52"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3150",
+    "attendu": "127.0.0.1:3150",
+    "fins": {
+     "a2": 0,
+     "r2": 1
+    }
+   }
+  ]
+ },
+ "run5/journeys-rust/routes-20261022T162652518375878-441-2018-mobile.json": {
+  "parcours": "20261022T162652518375878-441-2018-mobile.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "rust",
+  "appels": 7,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 7,
+   "total": 7
+  },
+  "liste_affichée": {
+   "options": 7,
+   "digest": "8064852f2e18acf5d4e756503cdcf0777defffbe6d9b4cda3b65d0240947579e"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3150",
+    "attendu": "127.0.0.1:3150",
+    "fins": {
+     "a2": 0,
+     "r2": 1
+    }
+   }
+  ]
+ },
+ "run5/journeys-rust/routes-20261022T162801568197332-140---diagnostic.json": {
+  "parcours": "20261022T162801568197332-140---diagnostic.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "rust",
+  "appels": 8,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 208,
+   "total": 208
+  },
+  "liste_affichée": {
+   "options": 208,
+   "digest": "306133a13b31ac7eb372fe13e31603821bc5fab1efc48f84ace95a2b5c1f97e9"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3150",
+    "attendu": "127.0.0.1:3150",
+    "fins": {
+     "a2": 0,
+     "r2": 1
+    }
+   }
+  ]
+ },
+ "run5/journeys-rust/routes-20261022T162925427688104-164---diagnostic.json": {
+  "parcours": "20261022T162925427688104-164---diagnostic.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "rust",
+  "appels": 8,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 500,
+   "total": 618
+  },
+  "liste_affichée": {
+   "options": 500,
+   "digest": "1a204b9373db045a0034c675232e6627a71128da0cd6d9490a58006379e7b27b"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3150",
+    "attendu": "127.0.0.1:3150",
+    "fins": {
+     "a2": 0,
+     "r2": 1
+    }
+   }
+  ]
+ },
+ "run5/journeys-rust/routes-20261022T163049313282618-441---diagnostic.json": {
+  "parcours": "20261022T163049313282618-441---diagnostic.json",
+  "ok": true,
+  "erreur": null,
+  "sélection": "rust",
+  "appels": 8,
+  "en_défaut": 0,
+  "modèles_reçus": {
+   "status": 200,
+   "models": 15,
+   "total": 15
+  },
+  "liste_affichée": {
+   "options": 15,
+   "digest": "bf753aee2c7c39c9021d23f51aa08ace4ef59b4c608ed22d0361d4d37ab1cb8f"
+  },
+  "erreurs_page": 0,
+  "appels_route": [
+   {
+    "statut": 200,
+    "amont": "127.0.0.1:3150",
+    "attendu": "127.0.0.1:3150",
+    "fins": {
+     "a2": 0,
+     "r2": 1
+    }
+   }
+  ]
+ }
+}

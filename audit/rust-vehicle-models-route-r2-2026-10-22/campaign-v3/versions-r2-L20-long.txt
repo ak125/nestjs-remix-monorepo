@@ -1,0 +1,14 @@
+date 2026-10-22T15:30:19+02:00
+commit 1a810f27a815a1b9f1bf9ae1b0050acda135e79d
+motif passe lancée seule : la campagne s'est arrêtée (code 1) sur le défaut d'échantillonneur corrigé par ce commit, avant cette passe planifiée
+/home/deploy/worktrees/claude-rust-vehicle-models-20261021/services/vehicle-models-rs/target/release
+2aeea4d5ee2de164c20dbb0352a6493844c7a4eabf6421bdcebb8fab6aa31e8f  /home/deploy/worktrees/claude-rust-vehicle-models-20261021/services/vehicle-models-rs/target/release/vehicle-models-route
+f393c0433c67ba186255fd8afae8910eea04f973a0060dd839396f668812d87f  /home/deploy/worktrees/claude-rust-vehicle-models-20261021/services/vehicle-models-rs/target/release/examples/loadgen
+bac423c08559f5000e4958a9097f5636d0c30b71ea83cbf23021873118e63a86  /home/deploy/worktrees/claude-rust-vehicle-models-20261021/services/vehicle-models-rs/target/release/examples/replay
+2e77233c3ec87c26f4064d73df61079ea4b3d39fc3a48eff8f753ebfa046aedb  /home/deploy/worktrees/claude-rust-vehicle-models-20261021/services/vehicle-models-rs/bench/PROTOCOL-v3.md
+304013362bae931178ef449d11816be1eded110e4b8c012692d998d257eab69b  /home/deploy/worktrees/claude-rust-vehicle-models-20261021/services/vehicle-models-rs/bench/paths-load.txt
+b61e1a6ae4a15ba8e296c0da0fb79e009e175d7bb7e6ea0f94dc0c350b7ae53d  /home/deploy/worktrees/claude-rust-vehicle-models-20261021/services/vehicle-models-rs/bench/load-headers.txt
+7e48cdc8586ebd20589920a877460a6d21d1f4d977c03013e56b2bcc6ffdbb44  /home/deploy/worktrees/claude-rust-vehicle-models-20261021/services/vehicle-models-rs/bench/Caddyfile.route
+aa1ed17c76425c08b567089f8139f7362f97d4882609881bb7bcdfffdf41bf41  /home/deploy/worktrees/claude-rust-vehicle-models-20261021/services/vehicle-models-rs/bench/route.sh
+8e683bf1745685ccb8372f920ea8541d60f228c830fa9673cf30a88504715ede  /home/deploy/worktrees/claude-rust-vehicle-models-20261021/services/vehicle-models-rs/bench/tools.py
+47b2db478b612fc74c620de97a753b04bb39e196af0333feeb71582d341b861e  /home/deploy/worktrees/claude-rust-vehicle-models-20261021/services/vehicle-models-rs/bench/contract.py

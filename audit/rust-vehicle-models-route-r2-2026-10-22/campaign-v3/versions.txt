@@ -1,0 +1,20 @@
+date 2026-10-22T14:03:32+02:00
+commit 0f3aa5c2a515b6945f988902dd6914f1a128e685
+node v24.21.0
+caddy v2.11.7 h1:yj0Y4fYZGPkSvibBJ1sTWE33xC0fxztVyXEW5iIdUT4=
+redis Redis server v=7.0.15 sha=00000000:0 malloc=jemalloc-5.3.0 bits=64 build=d064f9f48c901a92
+machine 6.8.0-139-generic ; 8 CPU ; AMD EPYC-Genoa Processor
+a2_dist f2c349e385f08bcd02597871f4bd9c36337fe896a011567ff93c3bb36c3e396f
+2aeea4d5ee2de164c20dbb0352a6493844c7a4eabf6421bdcebb8fab6aa31e8f  /home/deploy/worktrees/claude-rust-vehicle-models-20261021/services/vehicle-models-rs/target/release/vehicle-models-route
+f393c0433c67ba186255fd8afae8910eea04f973a0060dd839396f668812d87f  /home/deploy/worktrees/claude-rust-vehicle-models-20261021/services/vehicle-models-rs/target/release/examples/loadgen
+bac423c08559f5000e4958a9097f5636d0c30b71ea83cbf23021873118e63a86  /home/deploy/worktrees/claude-rust-vehicle-models-20261021/services/vehicle-models-rs/target/release/examples/replay
+2e77233c3ec87c26f4064d73df61079ea4b3d39fc3a48eff8f753ebfa046aedb  /home/deploy/worktrees/claude-rust-vehicle-models-20261021/services/vehicle-models-rs/bench/PROTOCOL-v3.md
+304013362bae931178ef449d11816be1eded110e4b8c012692d998d257eab69b  /home/deploy/worktrees/claude-rust-vehicle-models-20261021/services/vehicle-models-rs/bench/paths-load.txt
+b61e1a6ae4a15ba8e296c0da0fb79e009e175d7bb7e6ea0f94dc0c350b7ae53d  /home/deploy/worktrees/claude-rust-vehicle-models-20261021/services/vehicle-models-rs/bench/load-headers.txt
+7e48cdc8586ebd20589920a877460a6d21d1f4d977c03013e56b2bcc6ffdbb44  /home/deploy/worktrees/claude-rust-vehicle-models-20261021/services/vehicle-models-rs/bench/Caddyfile.route
+aa1ed17c76425c08b567089f8139f7362f97d4882609881bb7bcdfffdf41bf41  /home/deploy/worktrees/claude-rust-vehicle-models-20261021/services/vehicle-models-rs/bench/route.sh
+5c7107f75cb55b3033a5f2b3607c5099c22fa33461bcbc916593146081162cba  /home/deploy/worktrees/claude-rust-vehicle-models-20261021/services/vehicle-models-rs/bench/tools.py
+47b2db478b612fc74c620de97a753b04bb39e196af0333feeb71582d341b861e  /home/deploy/worktrees/claude-rust-vehicle-models-20261021/services/vehicle-models-rs/bench/contract.py
+63e6e6b77ca67da0c93568c61861c74dacfe23e3b321269207bdbcf0bf479636  /home/deploy/rust-vehicle-models-20261021-evidence/r2/record-v3/recorded.jsonl
+da45f6037b2fb4dd25770ef9126e6fb403f92a5e5149791ccaeea851c080498a  /home/deploy/rust-vehicle-models-20261021-evidence/r2/contract-v1/fixtures-users.jsonl
+319c235142f6031e97aa548572155516406b3ef1ceb6652f7e25e356e72f8b01  /home/deploy/rust-vehicle-models-20261021-evidence/r2/record-v4/recorded-new.jsonl

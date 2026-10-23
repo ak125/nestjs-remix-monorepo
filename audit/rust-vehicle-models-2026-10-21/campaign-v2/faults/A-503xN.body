@@ -1,0 +1,1 @@
+{"statusCode":500,"timestamp":"2026-10-21T15:27:34.128Z","path":"/api/vehicles/brands/441/models?year=2008&page=0&limit=100","method":"GET","message":"Erreur interne du serveur","error":"InternalServerError"}

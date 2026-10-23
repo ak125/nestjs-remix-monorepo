@@ -1,0 +1,1 @@
+{"duration_s": 0.00031557679176330566, "t": [0.0], "procs": {"node": {"pid": 665633, "cpu_ms": 0.0, "rss_kb": [190708], "hwm_kb": 190976}, "rust": {"pid": 665632, "cpu_ms": 0.0, "rss_kb": [5344], "hwm_kb": 5344}}, "cgroup": {"path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/vmrs-bench-B-L0-2-661018.scope", "cpu_ms": 0.0, "memory_peak_b": 146309120}}
