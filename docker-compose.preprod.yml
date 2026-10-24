@@ -6,6 +6,8 @@ services:
       - REDIS_URL=redis://redis_preprod:6379
       - REDIS_HOST=redis_preprod
       - REDIS_PORT=6379
+      # Compteurs du limiteur : même topologie que docker-compose.prod.yml (redis_throttler).
+      - THROTTLER_REDIS_URL=redis://redis_throttler_preprod:6379
       - NODE_ENV=production
       - APP_ENV=preprod
       - DATABASE_URL
@@ -83,6 +85,32 @@ services:
           create_host_path: false
     networks:
       - automecanik-preprod
+
+  # Compteurs du limiteur seulement, comme redis_throttler dans docker-compose.prod.yml (raisons et
+  # règle de taille : voir ce fichier). 64 Mo, plancher de la règle.
+  redis_throttler_preprod:
+    image: redis:7.4.11-alpine@sha256:ff02b58f971e7d7d156a1267e283fcbbeee91773b6aa36c49dac28ecfe28eadf
+    container_name: redis-throttler-preprod
+    restart: always
+    command: >
+      redis-server
+      --appendonly yes
+      --appendfsync everysec
+      --save ''
+      --maxmemory 64mb
+      --maxmemory-policy noeviction
+    deploy:
+      resources:
+        limits:
+          memory: 192M
+    memswap_limit: 192M
+    volumes:
+      - redis_throttler_preprod_data:/data
+    networks:
+      - automecanik-preprod
+
+volumes:
+  redis_throttler_preprod_data:
 
 networks:
   automecanik-preprod:

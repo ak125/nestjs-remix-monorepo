@@ -6,6 +6,9 @@ services:
       - REDIS_URL=redis://redis_prod:6379
       - REDIS_HOST=redis_prod
       - REDIS_PORT=6379
+      # Compteurs du limiteur (@nestjs/throttler) : Redis réservé, sans éviction. Sans cette
+      # variable, ils iraient dans redis_prod, où allkeys-lru les efface en silence.
+      - THROTTLER_REDIS_URL=redis://redis_throttler:6379
       - NODE_ENV
       - DATABASE_URL
       - SUPABASE_SERVICE_ROLE_KEY
@@ -222,6 +225,36 @@ services:
           create_host_path: false
     networks:
       - automecanik-prod
+
+  # Compteurs du limiteur seulement (THROTTLER_REDIS_URL de monorepo_prod). À part de redis_prod :
+  # en allkeys-lru, cache et sessions y évinceraient les compteurs, et ni un préfixe ni une base
+  # logique ne réservent de mémoire. noeviction : saturé, Redis refuse l'écriture et le limiteur
+  # passe en mémoire du processus en le journalisant. maxmemory : règle du calibrage du trafic PROD ;
+  # limite du conteneur : 2 × maxmemory + 64 Mio, pour la copie à l'écriture de la réécriture AOF.
+  # AOF everysec sans instantané RDB, volume nommé : compteurs d'une heure au plus, rien à migrer.
+  redis_throttler:
+    image: redis:7.4.11-alpine@sha256:ff02b58f971e7d7d156a1267e283fcbbeee91773b6aa36c49dac28ecfe28eadf
+    restart: always
+    # SECURITY: Never expose Redis publicly - internal network only
+    command: >
+      redis-server
+      --appendonly yes
+      --appendfsync everysec
+      --save ''
+      --maxmemory 64mb
+      --maxmemory-policy noeviction
+    deploy:
+      resources:
+        limits:
+          memory: 192M
+    memswap_limit: 192M
+    volumes:
+      - redis_throttler_data:/data
+    networks:
+      - automecanik-prod
+
+volumes:
+  redis_throttler_data:
 
 networks:
   automecanik-prod:
