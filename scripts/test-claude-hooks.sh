@@ -270,15 +270,27 @@ git clone -q "$SB/origin.git" "$SB/app" 2>/dev/null
 )
 mkdir -p "$SB/app/backend/dist"
 git clone -q -b main "$SB/origin.git" "$SB/up" 2>/dev/null
-mkdir -p "$SB/tmp" "$SB/crash"
+mkdir -p "$SB/tmp" "$SB/crash" "$SB/fake"
+# systemctl et journalctl factices : le faux systemctl rend $SB/unit-state (défaut : unit
+# non installée) ou échoue si $SB/unit-fail existe ; le faux journalctl rend $SB/unit-journal.
+cat > "$SB/fake/systemctl" <<EOF
+#!/bin/sh
+[ -e "$SB/unit-fail" ] && { echo "Failed to connect to bus" >&2; exit 1; }
+[ -f "$SB/unit-state" ] && exec cat "$SB/unit-state"
+printf 'LoadState=not-found\nActiveState=inactive\nSubState=dead\nControlGroup=\n'
+EOF
+printf '#!/bin/sh\ncat "%s/unit-journal" 2>/dev/null\nexit 0\n' "$SB" > "$SB/fake/journalctl"
+chmod +x "$SB/fake/"*
 # TMPDIR : logs de build et sauvegardes untracked restent dans le bac à sable, jamais
-# mêlés à ceux des vrais ticks cron dans /tmp. CRASH_DIR : les dumps de la machine
-# n'influencent pas l'issue. SB_HEALTH_URL : santé simulée à terre (cas 4).
+# mêlés à ceux des vrais ticks cron dans /tmp. CRASH_DIR, SYSTEMCTL, JOURNALCTL : les dumps
+# et le service DEV de la machine n'influencent pas l'issue. SB_HEALTH_URL : santé simulée
+# à terre (cas 4).
 # GIT_CONFIG_* : le sous-module du bac à sable (cas 10+) est un dépôt local, que git refuse
 # de cloner par défaut (protocol.file) — autorisé pour ces seuls ticks, jamais en config globale.
 run_sync() {
   APP_DIR="$SB/app" HEALTH_URL="${SB_HEALTH_URL:-file://$SB/app/package.json}" CRASH_DIR="$SB/crash" \
     CRON_STATE_DIR="$SB/state" TMPDIR="$SB/tmp" \
+    SYSTEMCTL="$SB/fake/systemctl" JOURNALCTL="$SB/fake/journalctl" \
     GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=protocol.file.allow GIT_CONFIG_VALUE_0=always \
     bash "$SB/app/scripts/ops/sync-dev-runtime.sh" >"$SB/out" 2>"$SB/err"
 }
@@ -384,6 +396,59 @@ touch -d '25 hours ago' "$SB/crash/_usr_bin_node.1000.crash"
 run_sync
 assert_contains "sonde : dump de plus de 24 h → ok" '"ok"' "$(sync_state '.status')"
 
+# 9b. Imputation par ProcCwd : le nom « _usr_bin_node » ne dit pas quel node a crashé. Un
+#     jest de worktree (2026-10-24, 57 ticks en alerte) ne doit plus passer pour le stack.
+dump() { printf 'ProblemType: Crash\nProcCmdline: node x\nProcCwd: %s\nSignal: 6\n' "$2" > "$SB/crash/$1"; }
+dump _usr_bin_node.1001.crash "$SB/app/.claude/worktrees/wt/backend"
+dump _usr_bin_node.1002.crash "/home/ailleurs/worktree/backend"
+run_sync
+assert_contains "sonde : dumps d'un worktree imbriqué et d'un autre checkout → ok" '"ok"' "$(sync_state '.status')"
+assert_contains "sonde : dumps hors checkout journalisés, pas tus" "non imputés au stack.*1001.*1002" "$(cat "$SB/out")"
+dump _usr_bin_node.1003.crash "$SB/app/backend"
+run_sync
+assert_contains "sonde : dump dont ProcCwd est le backend du checkout → warn" '"warn".*1003' "$(sync_state '[.status,.summary]')"
+assert_not_contains "sonde : seul le dump du checkout est imputé" "1001\|1002" "$(sync_state '.summary')"
+rm -f "$SB/crash/"*
+
+# 9c. Stack dev d'un worktree imbriqué (.claude/worktrees) : autre checkout, autre dist
+mkdir -p "$SB/app/.claude/worktrees/wt/backend"
+spawn_titled "$SB/app/backend" "npm run dev" "$SB/root4.pid" &
+ROOT4=$(wait_pid "$SB/root4.pid")
+spawn_titled "$SB/app/.claude/worktrees/wt/backend" "npm run dev" "$SB/root5.pid" &
+ROOT5=$(wait_pid "$SB/root5.pid")
+run_sync
+assert_contains "sonde : stack d'un worktree imbriqué à côté du stack servi → ok (pas CONCURRENTS)" '"ok"' "$(sync_state '.status')"
+kill_tree "$ROOT5"
+
+# 9d–9h. Supervision systemd (unit automecanik-dev.service), stack servi = ROOT4.
+OWN_CG=$(sed -n 's/^0:://p' "/proc/$ROOT4/cgroup")
+unit_state() { printf 'LoadState=loaded\nActiveState=%s\nSubState=%s\nControlGroup=%s\n' "$1" "$2" "$3" > "$SB/unit-state"; }
+unit_state active running "$OWN_CG"
+run_sync
+assert_contains "sonde : stack dans le cgroup du service actif → ok" '"ok"' "$(sync_state '.status')"
+unit_state active running "/user.slice/autre.service"
+run_sync
+assert_contains "sonde : unit installée, stack lancé hors du service → warn" '"warn".*stack DEV hors du service.*'"$ROOT4" "$(sync_state '[.status,.summary]')"
+unit_state failed failed "$OWN_CG"
+run_sync
+assert_contains "sonde : service en échec → warn" '"warn".*en échec' "$(sync_state '[.status,.summary]')"
+unit_state activating auto-restart "$OWN_CG"
+run_sync
+assert_contains "sonde : service en attente de redémarrage → warn" '"warn".*attente de redémarrage' "$(sync_state '[.status,.summary]')"
+unit_state active running "$OWN_CG"
+printf 'DEV_APP_CRASH count=1 exit=1 restart_in=2s\nautomecanik-dev.service: Scheduled restart job, restart counter is at 1.\n' > "$SB/unit-journal"
+run_sync
+assert_contains "sonde : crashs récupérés dans le journal → warn (relancés mais pas tus)" \
+  "1 crash(s) de l'app relancé(s).*1 redémarrage(s) du stack" "$(sync_state '.summary')"
+rm -f "$SB/unit-journal"
+touch "$SB/unit-fail"
+run_sync
+assert_contains "sonde : état du service illisible → warn, pas un ok" '"warn".*illisible' "$(sync_state '[.status,.summary]')"
+rm -f "$SB/unit-fail" "$SB/unit-state"
+kill_tree "$ROOT4"
+run_sync
+assert_contains "sonde : unit non installée, rien qui tourne → ok" '"ok"' "$(sync_state '.status')"
+
 # Sous-modules (axe git). Le writer seo-projection et le moteur de diagnostic lisent le wiki
 # DEPUIS le sous-module de ce checkout ; le pin committé sur main en est l'unique autorité.
 # `git merge --ff-only` déplace le pin sans toucher au sous-module : sans alignement, le
@@ -470,14 +535,15 @@ rm -rf "$SB"
 # backend/wait-and-start.js (dev:watch du stack DEV) : une modification de backend/.env relance
 # l'app sans tuer le script — sa mort fait arrêter par run-p toute la chaîne (tsc, tsc-alias,
 # nodemon). Vrai script, lancé dans un bac à sable : `ps`, `ss` et `docker` y sont factices,
-# sinon son nettoyage de démarrage tuerait les watchers tsc du stack dev de la machine.
+# sinon son nettoyage de démarrage verrait les processus de la machine. Le faux `ps` ne
+# liste que $WS/ps-list : deux vrais processus du bac à sable, présentés comme des watchers.
 WS=$(mktemp -d)
-mkdir -p "$WS/backend/dist" "$WS/bin"
+mkdir -p "$WS/backend/dist" "$WS/bin" "$WS/ailleurs"
 cp "$REPO_ROOT/backend/wait-and-start.js" "$WS/backend/"
 echo "SANDBOX=1" > "$WS/backend/.env"
-echo 'require("fs").appendFileSync(__dirname + "/../../boots.log", "boot\n"); setInterval(() => {}, 1e9);' > "$WS/backend/dist/main.js"
-printf '#!/bin/sh\nexit 0\n' > "$WS/bin/ps"
-cp "$WS/bin/ps" "$WS/bin/ss"
+echo 'const fs = require("fs"); fs.appendFileSync(__dirname + "/../../boots.log", "boot\n"); fs.writeFileSync(__dirname + "/../../app.pid", String(process.pid)); setInterval(() => {}, 1e9);' > "$WS/backend/dist/main.js"
+printf '#!/bin/sh\ncat "%s/ps-list" 2>/dev/null\nexit 0\n' "$WS" > "$WS/bin/ps"
+printf '#!/bin/sh\nexit 0\n' > "$WS/bin/ss"
 printf '#!/bin/sh\necho "Up 1 hour"\n' > "$WS/bin/docker"
 printf '#!/bin/sh\nexec node %s "$@"\n' "$(cd "$REPO_ROOT" && node -p 'require.resolve("nodemon/bin/nodemon.js")')" > "$WS/bin/nodemon"
 chmod +x "$WS/bin/"*
@@ -487,18 +553,54 @@ wait_boots() { local i; for i in $(seq $(( $2 * 10 ))); do [ "$(boots)" -ge "$1"
 alive() { [ -n "$(ps -o stat= -p "$1" 2>/dev/null | grep -v Z)" ] && echo vivant || echo mort; }
 # stdin ouvert comme dans le terminal ; setsid : un groupe de processus à tuer d'un bloc.
 mkfifo "$WS/stdin" && exec 7<>"$WS/stdin"
+# Watcher « dev-compile-watch.js » de 100 s dans ce backend/ et dans un autre checkout : le
+# nettoyage de démarrage ne tue que le premier (avant : kill -9 de toute la machine).
+(cd "$WS/backend" && exec node -e 'setTimeout(() => {}, 120000)') &
+OWN_W=$!
+(cd "$WS/ailleurs" && exec node -e 'setTimeout(() => {}, 120000)') &
+FOREIGN_W=$!
+printf '%s 100 node scripts/ops/dev-compile-watch.js -p tsconfig.json\n' "$OWN_W" "$FOREIGN_W" > "$WS/ps-list"
 (cd "$WS/backend" && PATH="$WS/bin:$PATH" exec setsid node wait-and-start.js <&7 >"$WS/out" 2>&1) &
 WPID=$!
 wait_boots 1 30
 assert_contains "wait-and-start : l'app démarre sous nodemon (bac à sable)" "^1$" "$(boots)"
+assert_contains "wait-and-start : vieux watcher de CE backend/ tué au démarrage" "mort" "$(alive "$OWN_W")"
+assert_contains "wait-and-start : watcher d'un autre checkout laissé en place" "vivant" "$(alive "$FOREIGN_W")"
+assert_contains "wait-and-start : watcher épargné journalisé" "1 process(es) dev-compile-watch.js hors de" "$(cat "$WS/out")"
+: > "$WS/ps-list"
+kill "$FOREIGN_W" 2>/dev/null
+wait "$OWN_W" "$FOREIGN_W" 2>/dev/null
 echo "SANDBOX=2" >> "$WS/backend/.env"
 wait_boots 2 15
 assert_contains "wait-and-start : backend/.env modifié → l'app redémarre" "^2$" "$(boots)"
 assert_contains "wait-and-start : backend/.env modifié → le script reste vivant (la chaîne dev survit)" "vivant" "$(alive "$WPID")"
+# Crash contrôlé (kill -9 de l'app) : avant, nodemon attendait une modification de fichier et
+# DEV:3000 restait à terre. Avec --exitcrash, wait-and-start.js relance nodemon après 2 s.
+kill -9 "$(cat "$WS/app.pid")"
+wait_boots 3 20
+assert_contains "wait-and-start : app tuée (kill -9) → relancée sans intervention" "^3$" "$(boots)"
+assert_contains "wait-and-start : crash journalisé DEV_APP_CRASH (compté par sync-dev-runtime)" "DEV_APP_CRASH count=1 exit=1" "$(cat "$WS/out")"
+assert_contains "wait-and-start : après le crash, le script reste vivant" "vivant" "$(alive "$WPID")"
 kill -- -"$WPID" 2>/dev/null
 wait "$WPID" 2>/dev/null
 exec 7>&-
 rm -rf "$WS"
+
+# scripts/ops/install-dev-service.sh : install et switch copient l'unit du checkout lancé ;
+# depuis une copie (worktree), refus avant toute écriture. Copie dans un bac à sable :
+# lancé depuis le checkout servi, `install` installerait réellement l'unit.
+IS=$(mktemp -d)
+mkdir -p "$IS/scripts/ops"
+cp "$REPO_ROOT/scripts/ops/install-dev-service.sh" "$REPO_ROOT/scripts/ops/automecanik-dev.service" "$IS/scripts/ops/"
+for sub in install switch; do
+  XDG_CONFIG_HOME="$IS/config" bash "$IS/scripts/ops/install-dev-service.sh" "$sub" >"$IS/out" 2>&1
+  assert_exit "install-dev-service $sub hors du checkout servi → refus" 1 "$?"
+  assert_contains "install-dev-service $sub : motif du refus" "lancer depuis le checkout servi" "$(cat "$IS/out")"
+done
+assert_contains "install-dev-service : refus sans écriture d'unit" "absente" "$([ -e "$IS/config" ] && echo présente || echo absente)"
+XDG_CONFIG_HOME="$IS/config" bash "$IS/scripts/ops/install-dev-service.sh" status >"$IS/out" 2>&1
+assert_exit "install-dev-service status : lecture seule, exit 0" 0 "$?"
+rm -rf "$IS"
 
 # scripts/ops/dev-compile-watch.js (dev:compile du stack DEV) : UN seul processus compile et
 # réécrit les @alias en chemins relatifs. Bac à sable : mini-projet TypeScript avec un alias,

@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: f5a041384ac156dfeb0304488df996fcf2af705062ac14c8b0409f711d7c0724
+source_sha256: 0f19e3ff8b968e9b0757dfd2f1212404935560797e4f2c17916dddbbfb9377d5
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3077 |
+| Files (Layer 1) | 3078 |
 | DB tables (Layer 1) | 316 |
 | DB RPC (Layer 1) | 259 |
 | Dependencies (Layer 1) | 237 |
-| Runtime entrypoints (Layer 1) | 1016 |
+| Runtime entrypoints (Layer 1) | 1017 |
 
-Source sotFingerprint: `fb52a652718b`.
+Source sotFingerprint: `bd83daa57ed7`.
 
 ## Comment l'utiliser
 
@@ -108,19 +108,19 @@ Source sotFingerprint: `fb52a652718b`.
 
 ### D10 — Quality, Monitoring & Observabilité
 
-- **Files**: 43 (service=24, test=11, controller=7, config=1)
+- **Files**: 42 (service=24, test=10, controller=7, config=1)
 - **Runtime entrypoints**: 24
-- **Top owners**: @ak125 (43)
+- **Top owners**: @ak125 (42)
 - **Knowledge prose**: [`analytics`](modules/analytics.md), [`dashboard`](modules/dashboard.md), [`errors`](modules/errors.md), [`health`](modules/health.md), [`observability`](modules/observability.md)
-- **Status**: LIVE=32, UNKNOWN=11
+- **Status**: LIVE=32, UNKNOWN=10
 
 ### D11 — Commerce & Users
 
-- **Files**: 296 (service=191, test=64, controller=40, config=1)
-- **Runtime entrypoints**: 129
-- **Top owners**: @ak125 (128), @ak125/payments-team (82), @ak125/auth-team (74)
+- **Files**: 297 (service=192, test=64, controller=40, config=1)
+- **Runtime entrypoints**: 130
+- **Top owners**: @ak125 (128), @ak125/payments-team (82), @ak125/auth-team (75)
 - **Knowledge prose**: [`cart`](modules/cart.md), [`invoices`](modules/invoices.md), [`messages`](modules/messages.md), [`orders`](modules/orders.md), [`payments`](modules/payments.md), [`support`](modules/support.md), [`users`](modules/users.md)
-- **Status**: LIVE=178, UNKNOWN=118
+- **Status**: LIVE=180, UNKNOWN=117
 
 ### D12 — Marketing & Video
 
@@ -147,11 +147,11 @@ Source sotFingerprint: `fb52a652718b`.
 
 ### D15 — Security & Governance
 
-- **Files**: 287 (test=176, script=62, service=46, config=2, controller=1)
+- **Files**: 288 (test=177, script=62, service=46, config=2, controller=1)
 - **Runtime entrypoints**: 3
-- **Top owners**: @ak125 (287)
+- **Top owners**: @ak125 (288)
 - **Knowledge prose**: [`bot-guard`](modules/bot-guard.md)
-- **Status**: LIVE=58, UNKNOWN=229
+- **Status**: LIVE=58, UNKNOWN=230
 
 ### D16 — Maintenance
 

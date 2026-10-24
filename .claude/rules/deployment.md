@@ -39,6 +39,10 @@ paths:
 ## Sync du runtime DEV:3000 (où on teste/mesure)
 
 DEV:3000 = `npm run dev` (nodemon) servant **le working tree `/opt/automecanik/app/backend/dist`**.
+Supervision : unit systemd utilisateur `automecanik-dev.service` (relance du stack, arbre tué
+en bloc à l'arrêt) une fois la bascule `bash /opt/automecanik/app/scripts/ops/install-dev-service.sh switch`
+faite par l'owner ; avant elle, le stack vit dans le terminal qui l'a lancé. Un crash de l'app est
+relancé dans le stack par `backend/wait-and-start.js` (ligne `DEV_APP_CRASH`).
 **Le merge `main` ne met PAS à jour DEV:3000** (il ne réécrit que le tag `:preprod`). Resync
 automatisé par [`scripts/ops/sync-dev-runtime.sh`](../../scripts/ops/sync-dev-runtime.sh) (cron ~10 min).
 
@@ -67,8 +71,11 @@ feature (sinon DEV:3000 sert du code périmé).
    persistantes vivantes, reparentées à PID 1 — `:3000` répond alors toujours `200` alors que plus
    rien ne supervise (incident 2026-09-09 : `turbo dev` SIGSEGV, bug amont turbo 2.10.0 corrigé en
    2.10.4). Détection `check_dev_runtime_topology()` : santé HTTP à chaque tick, racines orphelines
-   (PPID 1), stacks dev concurrents, dumps de moins de 24 h dans `/var/crash` (supprimer un dump
-   après analyse l'acquitte). Sonde **placée avant les gardes git** (un incident runtime est
+   (PPID 1), stacks dev concurrents, dumps de moins de 24 h dans `/var/crash` imputés au stack par
+   leur champ `ProcCwd` (un dump d'un worktree ou d'un autre checkout est journalisé sans alerte ;
+   supprimer un dump après analyse l'acquitte). Unit installée : service en échec ou en attente de
+   redémarrage, stack lancé hors de son cgroup, crashs relancés (`DEV_APP_CRASH`,
+   `Scheduled restart job`) lus dans son journal sur 24 h. Sonde **placée avant les gardes git** (un incident runtime est
    indépendant de l'état git) et **alert-only** — jamais `abort`, qui couperait les axes de resync ;
    ses alertes passent l'issue du tick en `warn`, que le hook SessionStart affiche. Détail : PR #1424.
    (alerte)
@@ -155,7 +162,8 @@ Voir `feedback_rollback_via_revert_pr_branch_protected.md` : main est branch-pro
   `docker logs nestjs-remix-monorepo-preprod` (3200, READ_ONLY) / `nestjs-remix-monorepo-prod` (80/443)
 - **Machine DEV (46.224.118.55)** : poste SSH — aucun container deploy attendu.
   Logs : la sortie du backend (`npm run dev` → nodemon → `node dist/main.js`, cwd `backend/`) va dans
-  le terminal qui l'a lancé, **non persistée** (aucun transport fichier) ; resync cron
+  le journal de l'unit (`journalctl --user -u automecanik-dev`) une fois la bascule faite ; avant,
+  dans le terminal qui l'a lancé, **non persistée** (aucun transport fichier) ; resync cron
   `/tmp/sync-dev-runtime-cron.log` ; `npm ci`/build du resync `${TMPDIR:-/tmp}/sync-dev-runtime-npm-{install,build}-<pid>.log` ;
   dumps `/var/crash` (axe 6).
 - **Health** : local `curl http://localhost:3000/health` (46.224.118.55, si `npm run dev` tourne) ·
