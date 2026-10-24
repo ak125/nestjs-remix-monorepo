@@ -363,8 +363,8 @@
       "dirs": [
         "backend/src/modules/health"
       ],
-      "files_count": 1,
-      "loc_total": 114,
+      "files_count": 2,
+      "loc_total": 158,
       "has_barrel": false
     },
     "invoices": {

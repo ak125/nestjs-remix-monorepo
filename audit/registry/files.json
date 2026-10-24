@@ -17561,7 +17561,8 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/health/health.module.ts",
       "importedBy": [
-        "backend/src/app.module.ts"
+        "backend/src/app.module.ts",
+        "backend/src/modules/health/health.service.test.ts"
       ],
       "imports": [
         "@security/rpc-gate/rpc-gate.service",
@@ -17569,7 +17570,7 @@
         "backend/src/modules/session/session-store.service.ts"
       ],
       "kind": "service",
-      "loc": 114,
+      "loc": 125,
       "owner": "__unassigned__",
       "path": "backend/src/modules/health/health.module.ts",
       "risk": "low",
@@ -17577,6 +17578,27 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/health/health.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/health/health.module.ts"
+      ],
+      "kind": "test",
+      "loc": 33,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/health/health.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
