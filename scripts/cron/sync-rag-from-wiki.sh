@@ -22,10 +22,19 @@
 #
 # Logs : /opt/automecanik/rag/logs/sync-rag-from-wiki.log (mkdir -p si absent).
 #
+# Observabilité : chaque passage enregistre son issue via cron_report
+# (scripts/cron/lib-supabase-report.sh), lue par le hook SessionStart : error si
+# une étape échoue, warn si le clone wiki n'est pas sur main (pull sauté, miroir
+# alimenté hors main), ok sinon. Sans ce rapport, le refus horaire du
+# 2026-09-29 au 2026-10-24 (miroir non rafraîchi) n'a été vu que dans ce log.
+#
 # Env (optionnels, defaults sains pour DEV VPS) :
 #   AUTOMECANIK_WIKI_PATH (default /opt/automecanik/automecanik-wiki)
 #   AUTOMECANIK_RAG_PATH  (default /opt/automecanik/rag)
 #   APP_PATH              (default /opt/automecanik/app)
+#   SYNC_RAG_LOG_DIR      (default /opt/automecanik/rag/logs)
+#   RAG_GLOBAL_LOCK       (default /tmp/rag-global.lock)
+#   CRON_REPORT_MAX_AGE_S silence au-delà duquel le hook SessionStart signale le cron arrêté (défaut : 10800)
 # ==============================================================================
 set -euo pipefail
 
@@ -33,8 +42,36 @@ WIKI_PATH="${AUTOMECANIK_WIKI_PATH:-/opt/automecanik/automecanik-wiki}"
 RAG_PATH="${AUTOMECANIK_RAG_PATH:-/opt/automecanik/rag}"
 APP_PATH="${APP_PATH:-/opt/automecanik/app}"
 SYNC_SCRIPT="$APP_PATH/scripts/rag-sync/sync-wiki-exports-to-rag.py"
-LOG_DIR="/opt/automecanik/rag/logs"
+LOG_DIR="${SYNC_RAG_LOG_DIR:-/opt/automecanik/rag/logs}"
 LOG_FILE="$LOG_DIR/sync-rag-from-wiki.log"
+
+LOG_TAG=sync-rag-from-wiki
+START="$(date +%s)"
+# Cadence horaire : trois passages manqués = cron considéré arrêté.
+CRON_REPORT_MAX_AGE_S="${CRON_REPORT_MAX_AGE_S:-10800}"
+# shellcheck source=lib-supabase-report.sh
+source "$(dirname "${BASH_SOURCE[0]}")/lib-supabase-report.sh" 2>/dev/null || true
+STEP=start
+OUTCOME=""
+WARNING=""
+report_outcome() {
+  local rc=$? status=ok summary
+  if [ "$rc" -ne 0 ]; then
+    status=error
+    summary="échec à l'étape ${STEP} (code ${rc}), voir ${LOG_FILE}"
+  elif [ -n "$WARNING" ]; then
+    status=warn
+    summary="${OUTCOME} ; ${WARNING}"
+  else
+    summary="$OUTCOME"
+  fi
+  if command -v cron_report >/dev/null 2>&1; then
+    cron_report "$LOG_TAG" "$status" "$(( $(date +%s) - START ))" '' "$summary"
+  else
+    echo "WARN: cron_report indisponible (lib-supabase-report.sh non chargée) — issue du run NON enregistrée" >&2
+  fi
+}
+trap report_outcome EXIT
 
 mkdir -p "$LOG_DIR"
 ts() { date '+%Y-%m-%dT%H:%M:%S%z'; }
@@ -43,6 +80,7 @@ log() { echo "[$(ts)] $*" | tee -a "$LOG_FILE"; }
 log "=== sync-rag-from-wiki start ==="
 
 # --- Sanity checks ---
+STEP=sanity
 for d in "$WIKI_PATH" "$RAG_PATH" "$APP_PATH"; do
   [ -d "$d/.git" ] || { log "ERROR: $d not a git repo"; exit 2; }
 done
@@ -51,19 +89,23 @@ done
 }
 
 # --- Global lock to avoid overlap with other rag operations ---
-GLOBAL_LOCK="/tmp/rag-global.lock"
+# Partagé avec scripts/reindex_two_pass_cron.sh ; surchargé par le test seulement.
+GLOBAL_LOCK="${RAG_GLOBAL_LOCK:-/tmp/rag-global.lock}"
 exec 8>"$GLOBAL_LOCK"
 if ! flock -n 8; then
   log "Another RAG operation active, skipping this run"
+  OUTCOME="passage sauté : autre opération RAG en cours"
   exit 0
 fi
 
 # --- Step 1: Pull wiki main (source of truth) ---
+STEP="[1/4] pull wiki"
 log "[1/4] git pull wiki main"
 cd "$WIKI_PATH"
 WIKI_BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null || echo "detached")
 if [ "$WIKI_BRANCH" != "main" ]; then
   log "WARN: wiki not on main (branch=$WIKI_BRANCH), skipping pull"
+  WARNING="clone wiki sur $WIKI_BRANCH et non main : pull sauté, miroir alimenté hors main"
 else
   git pull --ff-only origin main 2>&1 | tee -a "$LOG_FILE"
 fi
@@ -71,6 +113,7 @@ WIKI_SHA=$(git rev-parse --short HEAD)
 log "  wiki HEAD: $WIKI_SHA"
 
 # --- Step 2: Pull rag main (target) ---
+STEP="[2/4] pull rag"
 log "[2/4] git pull rag main"
 cd "$RAG_PATH"
 RAG_BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null || echo "detached")
@@ -89,6 +132,7 @@ git checkout -- knowledge/.last-sync.json 2>/dev/null || true
 git pull --ff-only origin main 2>&1 | tee -a "$LOG_FILE"
 
 # --- Step 3: Run sync (D20 enforce + sha256 idempotent) ---
+STEP="[3/4] sync"
 log "[3/4] sync-wiki-exports-to-rag.py --apply"
 python3 "$SYNC_SCRIPT" \
   --wiki-repo "$WIKI_PATH" \
@@ -106,6 +150,7 @@ python3 "$SYNC_SCRIPT" \
 # produces NO commit. The rag repo also untracks it (.gitignore, companion PR)
 # for a clean working tree; this exclude keeps the job correct during that
 # transition and if the ignore is ever reverted.
+STEP="[4/4] commit"
 cd "$RAG_PATH"
 MANIFEST_EXCLUDE=':(exclude)knowledge/.last-sync.json'
 # Stage first (excluding the manifest), THEN inspect the index. A plain `git diff`
@@ -117,6 +162,7 @@ git add -- knowledge/ "$MANIFEST_EXCLUDE"
 if git diff --cached --quiet -- knowledge/ "$MANIFEST_EXCLUDE"; then
   log "[4/4] No content changes under knowledge/ (runtime manifest churn ignored) — nothing to commit (idempotent)"
   log "=== sync-rag-from-wiki done (no-op) ==="
+  OUTCOME="aucun changement (wiki @ $WIKI_SHA)"
   exit 0
 fi
 
@@ -134,3 +180,4 @@ git commit -m "$COMMIT_MSG" 2>&1 | tee -a "$LOG_FILE"
 git push origin main 2>&1 | tee -a "$LOG_FILE"
 
 log "=== sync-rag-from-wiki done (synced @ $WIKI_SHA) ==="
+OUTCOME="miroir synchronisé @ $WIKI_SHA"
