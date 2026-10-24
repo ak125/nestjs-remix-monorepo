@@ -9,11 +9,18 @@ Chemin: timer de supervision existant (30 minutes) → ExecStartPost sous
 `/var/lib/automecanik-supervisor/command-center.json` → outil natif Hermes
 `automecanik_command_center(action="digest")`, limité au profil AutoMecanik.
 
-La clé interne est lue sur DEV dans le fichier de configuration existant. Elle
-ne traverse pas SSH. Aucun URL, chemin, commande ou secret n'est fourni par le
-modèle. Proxies et redirections HTTP désactivés; corps limité à 128 Kio; timeout
-HTTP 15 s et SSH 25 s; une tentative, aucune relance. L'outil lit uniquement le
-fichier local en refusant les liens; il ne déclenche pas de collecte ni de décision.
+La clé est dédiée au digest (en-tête `X-Command-Center-Key`) et n'ouvre aucune
+autre route; ce n'est pas `INTERNAL_API_KEY`. Le collecteur DEV la lit dans
+`/home/deploy/.config/automecanik-command-center/digest.key` (fichier régulier
+du compte, mode 0600, 64 caractères hexadécimaux), jamais dans `backend/.env`.
+Le backend n'en garde que l'empreinte SHA-256 (`COMMAND_CENTER_DIGEST_KEY_SHA256`).
+Variable absente ou malformée: clé refusée. Révocation: retirer ou remplacer la
+variable, puis redémarrer le backend. Chaque lecture acceptée ou refusée est
+journalisée sans la valeur. La clé ne traverse pas SSH. Aucun URL, chemin,
+commande ou secret n'est fourni par le modèle. Proxies et redirections HTTP
+désactivés; corps limité à 128 Kio; timeout HTTP 15 s et SSH 25 s; une
+tentative, aucune relance. L'outil lit uniquement le fichier local en refusant
+les liens; il ne déclenche pas de collecte ni de décision.
 
 Erreurs de collecte, `ExecStartPost` sans préfixe `-`:
 - DEV, HTTP ou transport indisponible: le fichier passe à `unavailable` avec sa
