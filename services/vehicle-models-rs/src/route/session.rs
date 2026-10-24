@@ -428,12 +428,10 @@ impl SessionStore<'_> {
     }
 
     async fn session_version(&self, user_id: &str) -> f64 {
+        // Sans `req`, comme la ligne CookieSerializer voisine (deserializeUser).
         let key = format!("session_version:{user_id}");
-        match self.redis.cmd(&[b"GET", key.as_bytes()]).await {
-            Ok(Reply::Bulk(b)) if !b.is_empty() => match json::parse(&String::from_utf8_lossy(&b)) {
-                Ok(Json::Num(n)) if n != 0.0 && !n.is_nan() => n,
-                _ => 0.0,
-            },
+        match self.redis.cache_get(&key, None).await {
+            Some(Json::Num(n)) if n != 0.0 && !n.is_nan() => n,
             _ => 0.0,
         }
     }

@@ -253,11 +253,8 @@ impl BotGuard {
     }
 
     /// `refreshConfig` : surcharge stockée dans `bot-guard:config`.
-    pub async fn refresh(&self, redis: &Redis) {
-        let stored = match redis.cmd(&[b"GET", b"bot-guard:config"]).await {
-            Ok(Reply::Bulk(b)) if !b.is_empty() => json::parse(&String::from_utf8_lossy(&b)).ok(),
-            _ => None,
-        };
+    pub async fn refresh(&self, redis: &Redis, req: &ReqCtx) {
+        let stored = redis.cache_get("bot-guard:config", Some(req)).await;
         let Ok(mut c) = self.config.lock() else { return };
         if let Some(Json::Obj(o)) = stored.filter(Json::truthy) {
             if let Some(v) = o.get("enabled") {
@@ -291,14 +288,14 @@ impl BotGuard {
         c.last_refresh = Some(Instant::now());
     }
 
-    async fn maybe_refresh(&self, redis: &Redis) {
+    async fn maybe_refresh(&self, redis: &Redis, req: &ReqCtx) {
         let due = self
             .config
             .lock()
             .map(|c| c.last_refresh.is_none_or(|t| t.elapsed() > CONFIG_REFRESH))
             .unwrap_or(false);
         if due {
-            self.refresh(redis).await;
+            self.refresh(redis, req).await;
         }
     }
 
@@ -328,7 +325,7 @@ impl BotGuard {
         let country_s = country.clone().unwrap_or_else(|| "undefined".into());
 
         let blocked_ip = if self.snapshot(|c| c.enabled) {
-            self.maybe_refresh(redis).await;
+            self.maybe_refresh(redis, req).await;
             self.snapshot(|c| c.blocked_ips.contains(&ip))
         } else {
             false
@@ -363,7 +360,7 @@ impl BotGuard {
         }
         if let Some(cc) = country.as_deref() {
             let blocked = if self.snapshot(|c| c.enabled) {
-                self.maybe_refresh(redis).await;
+                self.maybe_refresh(redis, req).await;
                 self.snapshot(|c| c.blocked_countries.iter().any(|b| b == cc))
             } else {
                 false
@@ -417,9 +414,7 @@ impl BotGuard {
             return false;
         }
         let key = format!("bot-guard:vbot:{norm}");
-        if let Ok(Reply::Bulk(b)) = redis.cmd(&[b"GET", key.as_bytes()]).await
-            && !b.is_empty()
-            && let Ok(v) = json::parse(&String::from_utf8_lossy(&b))
+        if let Some(v) = redis.cache_get(&key, Some(req)).await
             && v != Json::Null
         {
             return v.truthy();

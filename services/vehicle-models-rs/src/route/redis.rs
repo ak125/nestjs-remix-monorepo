@@ -11,7 +11,8 @@ use tokio::io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader};
 use tokio::net::TcpStream;
 use tokio::sync::Mutex;
 
-use super::log;
+use super::json::{self, Json};
+use super::log::{self, ReqCtx};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Reply {
@@ -107,6 +108,29 @@ impl Redis {
     pub async fn cmd(&self, args: &[&[u8]]) -> Result<Reply, String> {
         let mut r = self.pipeline(&[args]).await?;
         Ok(r.pop().unwrap_or(Reply::Nil))
+    }
+
+    /// `CacheService.get` : valeur JSON de `key`, `None` si la clé est absente ou vide.
+    /// Un échec (connexion, délai, réponse d'erreur, JSON invalide) est journalisé
+    /// comme dans Node (`Cache GET ${key} error: ${error}`, ERROR, CacheService), puis
+    /// rendu comme une clé absente : la panne reste visible, la conséquence inchangée.
+    pub async fn cache_get(&self, key: &str, req: Option<&ReqCtx>) -> Option<Json> {
+        let error = match self.cmd(&[b"GET", key.as_bytes()]).await {
+            Ok(Reply::Bulk(b)) if !b.is_empty() => match json::parse(&String::from_utf8_lossy(&b)) {
+                Ok(v) => return Some(v),
+                Err(e) => format!("SyntaxError: {}", e.message),
+            },
+            Ok(Reply::Error(e)) => format!("ReplyError: {e}"),
+            Ok(_) => return None,
+            Err(e) => e,
+        };
+        log::line(
+            log::ERROR,
+            req,
+            "CacheService",
+            &format!("Cache GET {key} error: {error}"),
+        );
+        None
     }
 
     /// Envoie les commandes d'un bloc et lit autant de réponses.
@@ -292,7 +316,7 @@ fn read_reply(
 
 #[cfg(test)]
 mod tests {
-    use super::{Mode, Redis, Reply, reconnect_delay};
+    use super::{Json, Mode, Redis, Reply, reconnect_delay};
     use std::time::Duration;
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
     use tokio::net::TcpListener;
@@ -405,5 +429,39 @@ mod tests {
             "{:?}",
             start.elapsed()
         );
+    }
+
+    /// `cache_get` rend ce que rendait la lecture directe : la valeur JSON, ou rien
+    /// pour une clé absente ou vide, une réponse d'erreur, un JSON invalide, une panne.
+    #[tokio::test]
+    async fn cache_get_returns_value_or_none() {
+        let server = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = server.local_addr().unwrap();
+        let replies: [&[u8]; 5] = [
+            b"$4\r\ntrue\r\n",
+            b"$-1\r\n",
+            b"$0\r\n\r\n",
+            b"-WRONGTYPE x\r\n",
+            b"$3\r\n{x}\r\n",
+        ];
+        let _server = tokio::spawn(async move {
+            let (mut sock, _) = server.accept().await.unwrap();
+            let mut buf = [0u8; 256];
+            for r in replies {
+                let _ = sock.read(&mut buf).await.unwrap();
+                sock.write_all(r).await.unwrap();
+            }
+        });
+        let redis = Redis::new(&format!("redis://{addr}"), Mode::Bounded(Duration::from_secs(2))).unwrap();
+        assert_eq!(redis.cache_get("k", None).await, Some(Json::Bool(true)));
+        for _ in 0..4 {
+            assert_eq!(redis.cache_get("k", None).await, None);
+        }
+        let down = Redis::new(
+            &format!("redis://{}", free_addr().await),
+            Mode::Bounded(Duration::from_millis(200)),
+        )
+        .unwrap();
+        assert_eq!(down.cache_get("k", None).await, None);
     }
 }
