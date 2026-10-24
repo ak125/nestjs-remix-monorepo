@@ -978,6 +978,7 @@
       "CloudflareThrottlerGuard",
       "CommandCenterActionsService",
       "CommandCenterController",
+      "CommandCenterDigestKeyGuard",
       "CommandCenterExecutionLedgerService",
       "CommandCenterKpiService",
       "CommandCenterOrchestratorService",
@@ -1636,6 +1637,7 @@
       "backend/src/auth/admin-session.guard.ts",
       "backend/src/auth/auth.module.ts",
       "backend/src/auth/auth.service.ts",
+      "backend/src/auth/command-center-digest-key.guard.ts",
       "backend/src/auth/controllers/auth-login.controller.ts",
       "backend/src/auth/controllers/auth-permissions.controller.ts",
       "backend/src/auth/controllers/auth-session.controller.ts",
@@ -3036,7 +3038,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1627,
+  "runtime_files_count": 1628,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -3134,6 +3136,7 @@
     "backend/src/auth/admin-session.guard.ts",
     "backend/src/auth/auth.module.ts",
     "backend/src/auth/auth.service.ts",
+    "backend/src/auth/command-center-digest-key.guard.ts",
     "backend/src/auth/controllers/auth-login.controller.ts",
     "backend/src/auth/controllers/auth-permissions.controller.ts",
     "backend/src/auth/controllers/auth-session.controller.ts",

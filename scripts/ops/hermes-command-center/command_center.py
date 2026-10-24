@@ -7,6 +7,7 @@ import datetime as dt
 import json
 import os
 from pathlib import Path
+import re
 import stat
 import subprocess
 import sys
@@ -19,7 +20,8 @@ SOURCE = 'DEV localhost:3000 /api/internal/command-center/digest'
 PROFILE = '/home/hermes/.hermes/profiles/orchestration-automecanik-pilot'
 SNAPSHOT = Path('/var/lib/automecanik-supervisor/command-center.json')
 CONFIG = Path('/etc/automecanik-supervisor/config.json')
-ENV = Path('/opt/automecanik/app/backend/.env')
+# Digest-only key (the backend keeps its SHA-256): never INTERNAL_API_KEY, never backend/.env.
+KEY = Path('/home/deploy/.config/automecanik-command-center/digest.key')
 COMMAND = 'automecanik-command-center-v1'
 CADENCE = 30
 REASONS = {'digest_http_unavailable', 'digest_fetch_failed', 'digest_transport_unavailable',
@@ -72,12 +74,16 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 
 
 def load_key():
-    # Read only the configured key locally on DEV; never export environment values.
-    values = [line.split('=', 1)[1].strip().strip('"').strip("'")
-              for line in ENV.read_text().splitlines() if line.startswith('INTERNAL_API_KEY=')]
-    if len(values) != 1 or not values[0]:
+    # Owner-only regular file holding 64 hex characters; anything else fails closed.
+    fd = os.open(KEY, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    with os.fdopen(fd, 'rb') as handle:
+        info = os.fstat(handle.fileno())
+        if not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid() or info.st_mode & 0o077:
+            raise ValueError('credential_unavailable')
+        raw = handle.read(66)
+    if not re.fullmatch(rb'[0-9a-f]{64}\n?', raw):
         raise ValueError('credential_unavailable')
-    return values[0]
+    return raw[:64].decode('ascii')
 
 
 def unavailable(reason):
@@ -87,7 +93,7 @@ def unavailable(reason):
 def fetch_digest():
     try:
         request = urllib.request.Request('http://127.0.0.1:3000/api/internal/command-center/digest',
-                                         headers={'X-Internal-Key': load_key(), 'Accept': 'application/json'}, method='GET')
+                                         headers={'X-Command-Center-Key': load_key(), 'Accept': 'application/json'}, method='GET')
         opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
         with opener.open(request, timeout=15) as response:
             if response.status != 200:

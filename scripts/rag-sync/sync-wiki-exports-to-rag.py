@@ -16,6 +16,7 @@ Usage:
   ./sync-from-wiki.py --apply                                       # write changes
   ./sync-from-wiki.py --wiki-repo /opt/automecanik-wiki \\           # default
                       --rag-repo  /opt/automecanik/rag              # default
+  ./sync-from-wiki.py --list-unreconciled                           # list every unreconciled file
 
 Env override:
   AUTOMECANIK_WIKI_PATH overrides --wiki-repo.
@@ -39,6 +40,10 @@ from pathlib import Path
 WIKI_EXPORTS_RAG_RELATIVE = Path("exports") / "rag"
 RAG_KNOWLEDGE_RELATIVE = Path("knowledge")
 SUPPORTED_EXTS = {".md", ".json"}
+# Unreconciled files named per refusal. The hourly cron repeats the same refusal
+# until reconciliation; the full list (4 590 paths, ~420 KB per run on 2026-10-24)
+# made its log grow by ~10 MB a day.
+UNRECONCILED_SAMPLE = 20
 
 
 def sha256_of(path: Path) -> str:
@@ -92,6 +97,11 @@ def main() -> int:
         help="Override source. MUST resolve to the complete <wiki-repo>/exports/rag/ root. "
              "Reading from <wiki-repo>/wiki/<entity_type>/ is forbidden (D20).",
     )
+    ap.add_argument(
+        "--list-unreconciled",
+        action="store_true",
+        help=f"List every mirror file absent from the WIKI exports (default: the first {UNRECONCILED_SAMPLE})",
+    )
     args = ap.parse_args()
 
     wiki_repo = Path(args.wiki_repo).resolve()
@@ -140,8 +150,16 @@ def main() -> int:
         }
         unreconciled = sorted(actual_paths - expected_paths)
         if unreconciled:
-            for relative in unreconciled:
+            shown = unreconciled if args.list_unreconciled else unreconciled[:UNRECONCILED_SAMPLE]
+            for relative in shown:
                 print(f"UNRECONCILED {relative} (preserved; absent from WIKI exports)", file=sys.stderr)
+            # The fingerprint shows whether the set changed between two refusals.
+            digest = hashlib.sha256("\n".join(p.as_posix() for p in unreconciled).encode()).hexdigest()
+            print(
+                f"sync-from-wiki: {len(unreconciled)} mirror files absent from WIKI exports "
+                f"({len(shown)} listed, set sha256 {digest[:12]}); mirror not refreshed",
+                file=sys.stderr,
+            )
             return 1
     except (OSError, ValueError) as e:
         print(f"sync-from-wiki: mirror preflight failed: {e}", file=sys.stderr)
