@@ -80,6 +80,7 @@ const FOREIGN_KEY = generateKeyPairSync('rsa', {
 const SYSTEMPAY_HMAC = 'fixture-systempay-hmac';
 // Plages de documentation (RFC 5737), pas les adresses des prestataires.
 const PAYBOX_IP = '198.51.100.20';
+const OTHER_IP = '198.51.100.21';
 const SYSTEMPAY_IP = '192.0.2.30';
 const UNPAID = 'ORD-1761200000000-101';
 const PAID = 'ORD-1761200000000-202';
@@ -273,12 +274,17 @@ async function processOn(
   return app;
 }
 
-function paybox(app: INestApplication, query: string, method = 'post') {
+function paybox(
+  app: INestApplication,
+  query: string,
+  method = 'post',
+  ip = PAYBOX_IP,
+) {
   const agent = request(app.getHttpServer());
   const url = `/api/paybox/callback?${query}`;
   return (method === 'get' ? agent.get(url) : agent.post(url)).set(
     'CF-Connecting-IP',
-    PAYBOX_IP,
+    ip,
   );
 }
 
@@ -440,6 +446,52 @@ describe.each<Kind>(['memory', 'redis'])(
       expect(gate).toHaveBeenCalledTimes(31);
     });
 
+    it('Paybox : budget par IP et non par commande ; une notification refusée en 429 puis renvoyée est traitée une fois', async () => {
+      const app = await processOn(kind);
+      const refs = Array.from(
+        { length: 32 },
+        (_, i) => `ORD-1761200000000-${300 + i}`,
+      );
+      for (const ref of refs) {
+        orders.set(ref, {
+          ord_id: ref,
+          ord_total_ttc: '10.00',
+          ord_is_pay: '0',
+          ord_date_pay: null,
+        });
+      }
+      const queries = refs.map((ref) => payboxQuery(ref, '1000'));
+      let next = 0;
+      const statuses = await sequence(30, 100, () =>
+        paybox(app, queries[next++]),
+      );
+      expect(statuses).toEqual(Array(30).fill(200));
+      expect(paymentData.createPayment).toHaveBeenCalledTimes(30);
+
+      // Deux commandes nouvelles depuis la même IP : refusées avant le gate.
+      await paybox(app, queries[30]).expect(429);
+      await paybox(app, queries[31]).expect(429);
+      expect(gate).toHaveBeenCalledTimes(30);
+      expect(orders.get(refs[30])?.ord_is_pay).toBe('0');
+      expect(orders.get(refs[31])?.ord_is_pay).toBe('0');
+
+      // La même notification depuis une autre IP a son propre budget.
+      await paybox(app, queries[30], 'post', OTHER_IP).expect(200);
+      expect(orders.get(refs[30])?.ord_is_pay).toBe('1');
+
+      // Renvoyées après la fenêtre depuis la première IP : la commande
+      // restée impayée est traitée, celle déjà payée répond OK sans écriture.
+      now += 61_000;
+      await paybox(app, queries[31]).expect(200);
+      const duplicate = await paybox(app, queries[30]).expect(200);
+      expect(duplicate.text).toBe('OK');
+      const paid = paymentData.createPayment.mock.calls.map(
+        (c) => (c[0] as { orderId: string }).orderId,
+      );
+      expect(paid).toHaveLength(32);
+      expect(new Set(paid)).toEqual(new Set(refs));
+    });
+
     it('Paybox : rafale de 16 dans la même seconde → palier short, 429 au 16e', async () => {
       const app = await processOn(kind);
       const query = payboxQuery(PAID, '5000');
@@ -535,6 +587,47 @@ describe.each<Kind>(['memory', 'redis'])(
     });
   },
 );
+
+describe('callbacks de paiement — bascule entre budget par processus et budget commun', () => {
+  async function stop(app: INestApplication) {
+    await app.close();
+    apps.splice(apps.indexOf(app), 1);
+  }
+
+  it('déploiement puis retour arrière : rien n’est hérité de la mémoire, Redis garde ses compteurs jusqu’à expiration', async () => {
+    const query = payboxQuery(PAID, '5000');
+
+    // Avant le stockage partagé : budget dans la mémoire du processus.
+    const before = await processOn('memory');
+    expect(await sequence(25, 100, () => paybox(before, query))).toEqual(
+      Array(25).fill(200),
+    );
+    await stop(before);
+
+    // Déploiement : le budget commun part de zéro.
+    const shared = await processOn('redis');
+    expect(await sequence(31, 100, () => paybox(shared, query))).toEqual([
+      ...Array(30).fill(200),
+      429,
+    ]);
+    await stop(shared);
+
+    // Retour arrière : la mémoire ne voit pas les compteurs Redis.
+    const rolledBack = await processOn('memory');
+    expect(await sequence(31, 100, () => paybox(rolledBack, query))).toEqual([
+      ...Array(30).fill(200),
+      429,
+    ]);
+    await stop(rolledBack);
+
+    // Redéploiement dans la minute : le blocage posé en Redis s'applique
+    // encore, puis expire.
+    const again = await processOn('redis');
+    await paybox(again, query).expect(429);
+    now += 61_000;
+    await paybox(again, query).expect(200);
+  });
+});
 
 describe('callbacks de paiement — panne puis retour de Redis', () => {
   type Increment = (...args: unknown[]) => Promise<unknown>;
