@@ -849,7 +849,21 @@ jobs:
           CRUX_API_KEY: ${{ secrets.CRUX_API_KEY }}
           READ_ONLY: "true"
         run: |
-          docker pull massdoc/nestjs-remix-monorepo:preprod
+          # The image of THIS run's commit, not the shared :preprod alias: a later
+          # re-run of this job would otherwise deploy a newer commit's image under
+          # this commit's name, and deploy-prod.yml's PREPROD evidence would lie.
+          EXPECTED_SHA="${{ github.sha }}"
+          COMMIT_IMAGE="massdoc/nestjs-remix-monorepo:sha-$EXPECTED_SHA"
+          docker pull "$COMMIT_IMAGE"
+          read -r IMAGE_ID IMAGE_SHA <<< "$(docker inspect "$COMMIT_IMAGE" \
+            --format '{{.Id}} {{ index .Config.Labels "org.opencontainers.image.revision" }}')"
+          if [[ ! "$IMAGE_ID" =~ ^sha256:[a-f0-9]{64}$ ]] || [ "$IMAGE_SHA" != "$EXPECTED_SHA" ]; then
+            echo "::error::$COMMIT_IMAGE: invalid image ID or revision ${IMAGE_SHA:-<unset>} != $EXPECTED_SHA"
+            exit 1
+          fi
+          # docker-compose.preprod.yml runs :preprod; compose does not pull an image
+          # already present, so point the local alias at the verified image.
+          docker tag "$IMAGE_ID" massdoc/nestjs-remix-monorepo:preprod
 
           PREPROD_DIR=~/preprod
           mkdir -p $PREPROD_DIR
@@ -986,6 +1000,16 @@ jobs:
             docker logs nestjs-remix-monorepo-preprod --tail 50
             exit 1
           fi
+
+          # Served version: the container runs the verified image and /health
+          # reports this run's commit (GIT_SHA baked in by build.yml).
+          RUNNING_ID=$(docker inspect nestjs-remix-monorepo-preprod --format '{{.Image}}')
+          SERVED_SHA=$(curl -sf http://localhost:3200/health | grep -oE '"revision":"[0-9a-f]{40}"' | cut -d'"' -f4 || true)
+          if [ "$RUNNING_ID" != "$IMAGE_ID" ] || [ "$SERVED_SHA" != "$EXPECTED_SHA" ]; then
+            echo "::error::PREPROD serves ${SERVED_SHA:-<no revision>} from image $RUNNING_ID; expected $EXPECTED_SHA from $IMAGE_ID"
+            exit 1
+          fi
+          echo "✅ PREPROD serves $SERVED_SHA (image $IMAGE_ID)"
 
           echo "✅ PREPROD deployed successfully on port 3200"
           echo "🔗 Test URL: http://$(hostname -I | awk '{print $1}'):3200"

@@ -128,4 +128,10 @@ COPY --chown=remix-api:nodejs --from=builder /app/backend/content/automecanik-wi
 COPY --chown=remix-api:nodejs --from=builder /app/backend/start.sh ./backend/start.sh
 RUN chmod +x ./backend/start.sh
 
+# Commit of this build, served by /health as `revision`: the PREPROD and PROD
+# deploys compare it with the commit they deploy. Last layer, so a new commit
+# invalidates nothing above it.
+ARG GIT_SHA=""
+ENV GIT_SHA=$GIT_SHA
+
 ENTRYPOINT [ "/bin/sh", "./backend/start.sh" ]

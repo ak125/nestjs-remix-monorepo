@@ -62,6 +62,7 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             CACHEBUST=${{ github.sha }}
+            GIT_SHA=${{ github.sha }}
             VITE_GOOGLE_CLIENT_ID=${{ secrets.VITE_GOOGLE_CLIENT_ID }}
 
       #   - name: 🐳 Build Staging Image
