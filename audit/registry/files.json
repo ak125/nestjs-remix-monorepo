@@ -903,12 +903,14 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "reachability"
       ],
       "domain": "UNKNOWN",
       "id": "backend/src/auth/any-of.guard.ts",
       "importedBy": [
-        "backend/src/auth/any-of.guard.test.ts"
+        "backend/src/auth/any-of.guard.test.ts",
+        "backend/src/modules/admin/controllers/internal-command-center.controller.ts"
       ],
       "imports": [],
       "kind": "service",
@@ -919,7 +921,7 @@
       "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "UNKNOWN"
+      "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
@@ -1051,6 +1053,30 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/auth/command-center-digest-key.guard.ts",
+      "importedBy": [
+        "backend/src/modules/admin/admin.module.ts",
+        "backend/src/modules/admin/controllers/internal-command-center.controller.ts"
+      ],
+      "imports": [
+        "crypto"
+      ],
+      "kind": "service",
+      "loc": 67,
+      "owner": "__unassigned__",
+      "path": "backend/src/auth/command-center-digest-key.guard.ts",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
@@ -6181,6 +6207,7 @@
         "backend/src/app.module.ts"
       ],
       "imports": [
+        "backend/src/auth/command-center-digest-key.guard.ts",
         "backend/src/config/feature-flags.module.ts",
         "backend/src/config/operating-matrix.module.ts",
         "backend/src/database/database.module.ts",
@@ -6294,7 +6321,7 @@
         "backend/src/workers/worker.module.ts"
       ],
       "kind": "service",
-      "loc": 336,
+      "loc": 338,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/admin.module.ts",
       "risk": "low",
@@ -7129,11 +7156,13 @@
       ],
       "imports": [
         "@repo/registry",
+        "backend/src/auth/any-of.guard.ts",
+        "backend/src/auth/command-center-digest-key.guard.ts",
         "backend/src/auth/internal-api-key.guard.ts",
         "backend/src/modules/admin/services/command-center-reader.service.ts"
       ],
       "kind": "controller",
-      "loc": 35,
+      "loc": 39,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/controllers/internal-command-center.controller.ts",
       "risk": "low",
@@ -40238,6 +40267,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/tests/unit/command-center-digest-auth.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 157,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/command-center-digest-auth.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/tests/unit/command-center-digest.test.ts",
       "importedBy": [],
       "imports": [],
@@ -70874,7 +70922,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 130,
+      "loc": 227,
       "owner": "__unassigned__",
       "path": "scripts/ci/pr-dod-gate.mjs",
       "risk": "low",
@@ -70893,7 +70941,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 87,
+      "loc": 228,
       "owner": "__unassigned__",
       "path": "scripts/ci/pr-dod-gate.test.mjs",
       "risk": "low",
