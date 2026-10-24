@@ -52,7 +52,7 @@ docker rm "$CONTAINER" 2>/dev/null || true
 # corrupted, and it is only an off-box convenience copy.
 docker tag "$ROLLBACK_IMAGE_ID" "${IMAGE_REPO}:production"
 
-docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d --no-deps monorepo_prod caddy redis_prod
+docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d --no-deps monorepo_prod caddy redis_prod redis_throttler
 sleep "$SETTLE"
 
 # ── Proof 1: the container really runs the pinned OLD image ──────────────────

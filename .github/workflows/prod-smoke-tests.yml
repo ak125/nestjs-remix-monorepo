@@ -412,6 +412,33 @@ jobs:
           fi
           echo "✅ Redis: $REDIS"
 
+          # Rate-limit counters: only when the running backend points at redis_throttler (the
+          # template prints "oui" or nothing, never a value). Without that Redis the throttler
+          # keeps its counters in process memory and logs a single ERROR at startup.
+          USES_THROTTLER=$(docker inspect --format '{{range .Config.Env}}{{if eq (index (split . "=") 0) "THROTTLER_REDIS_URL"}}oui{{end}}{{end}}' nestjs-remix-monorepo-prod 2>/dev/null || true)
+          if [ "$USES_THROTTLER" = "oui" ]; then
+            THR=$(docker ps --filter label=com.docker.compose.service=redis_throttler --format "{{.Names}} {{.Status}}" | head -1)
+            if [ -z "$THR" ]; then
+              echo "❌ redis_throttler container not found (THROTTLER_REDIS_URL is set)"
+              exit 1
+            fi
+            if echo "$THR" | grep -qi "restarting"; then
+              echo "❌ redis_throttler is crash-looping: $THR"
+              exit 1
+            fi
+            THR_NAME=${THR%% *}
+            if [ "$(docker exec "$THR_NAME" redis-cli ping 2>/dev/null | tr -d '\r')" != "PONG" ]; then
+              echo "❌ redis_throttler does not answer PING: $THR"
+              exit 1
+            fi
+            THR_POLICY=$(docker exec "$THR_NAME" redis-cli config get maxmemory-policy 2>/dev/null | tr -d '\r' | sed -n 2p)
+            if [ "$THR_POLICY" != "noeviction" ]; then
+              echo "❌ redis_throttler maxmemory-policy is '${THR_POLICY:-<none>}', expected noeviction"
+              exit 1
+            fi
+            echo "✅ Redis (throttler): $THR, noeviction"
+          fi
+
       - name: 📏 Response size (SSR check)
         id: response-size-check
         run: |

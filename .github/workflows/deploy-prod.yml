@@ -397,13 +397,13 @@ jobs:
             echo "✅ Injecting Sentry secrets via sops exec-env"
             export SOPS_AGE_KEY_FILE="$AGE_KEY_FILE"
             sops exec-env "$SOPS_FILE" \
-              'docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d --no-deps monorepo_prod caddy redis_prod'
+              'docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d --no-deps monorepo_prod caddy redis_prod redis_throttler'
           else
             echo "::warning::sops binary, secrets file, or age key missing on runner — Sentry SDK will start in no-op mode for PROD"
             echo "  sops:        $(command -v sops || echo 'NOT FOUND')"
             echo "  SOPS_FILE:   $SOPS_FILE ($([ -f "$SOPS_FILE" ] && echo present || echo absent))"
             echo "  age key:     $AGE_KEY_FILE ($([ -r "$AGE_KEY_FILE" ] && echo readable || echo unreadable))"
-            docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d --no-deps monorepo_prod caddy redis_prod
+            docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d --no-deps monorepo_prod caddy redis_prod redis_throttler
           fi
           docker compose -f docker-compose.imgproxy.yml up -d --force-recreate
 

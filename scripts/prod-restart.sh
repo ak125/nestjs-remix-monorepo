@@ -19,7 +19,7 @@ docker pull "$EXPECTED_IMAGE"
 
 # 2. Restart via compose (the only authorized method)
 echo "[2/4] Restarting via docker compose..."
-docker compose $COMPOSE_FILES up -d --no-deps monorepo_prod caddy redis_prod
+docker compose $COMPOSE_FILES up -d --no-deps monorepo_prod caddy redis_prod redis_throttler
 docker compose -f docker-compose.imgproxy.yml up -d 2>/dev/null || true
 
 # 3. Verify image tag
