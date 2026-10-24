@@ -49,6 +49,8 @@ class DigestTests(unittest.TestCase):
         req = opener.open.call_args.args[0]
         self.assertEqual(req.full_url, 'http://127.0.0.1:3000/api/internal/command-center/digest')
         self.assertEqual(req.method, 'GET')
+        self.assertEqual(req.get_header('X-command-center-key'), 'test-secret')
+        self.assertIsNone(req.get_header('X-internal-key'))
         self.assertIsNone(req.data)
         self.assertEqual(build.call_args.args[0].proxies, {})
         self.assertIsInstance(build.call_args.args[1], cc.NoRedirect)
@@ -150,6 +152,48 @@ class DigestTests(unittest.TestCase):
                 out.unlink()
                 out.symlink_to(Path(t)/'outside')
                 self.assertEqual(json.loads(cc.submit({'action':'digest'}))['status'],'unavailable')
+
+
+class KeyTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.key = Path(self.tmp.name) / 'digest.key'
+        self.value = 'ab' * 32
+        ctx = patch.object(cc, 'KEY', self.key)
+        ctx.start(); self.addCleanup(ctx.stop)
+
+    def write(self, text, mode=0o600):
+        self.key.write_text(text)
+        self.key.chmod(mode)
+
+    def test_reads_only_the_dedicated_owner_only_file(self):
+        self.write(self.value + '\n')
+        self.assertEqual(cc.load_key(), self.value)
+        source = Path(cc.__file__).read_text()
+        self.assertNotIn('INTERNAL_API_KEY=', source)
+        self.assertNotIn('backend/.env', source.replace('never backend/.env', ''))
+
+    def test_unsafe_or_malformed_key_fails_closed(self):
+        for text, mode in ((self.value, 0o640), (self.value, 0o604), ('', 0o600),
+                           (self.value[:-1], 0o600), (self.value.upper(), 0o600), (self.value + 'ab', 0o600),
+                           (self.value + '\n\nab', 0o600), (' ' + self.value, 0o600)):
+            with self.subTest(mode=oct(mode), size=len(text)):
+                self.write(text, mode)
+                with self.assertRaises(ValueError): cc.load_key()
+
+    def test_missing_or_linked_key_fails_closed(self):
+        with self.assertRaises(OSError): cc.load_key()
+        target = Path(self.tmp.name) / 'elsewhere'
+        target.write_text(self.value); target.chmod(0o600)
+        self.key.symlink_to(target)
+        with self.assertRaises(OSError): cc.load_key()
+
+    def test_unreadable_key_is_unavailable_without_request(self):
+        with patch.object(cc.urllib.request, 'build_opener') as build:
+            packet = cc.fetch_digest()
+        build.return_value.open.assert_not_called()
+        self.assertEqual((packet['status'], packet['reason']), ('unavailable', 'digest_fetch_failed'))
 
 
 class InstallTests(unittest.TestCase):
