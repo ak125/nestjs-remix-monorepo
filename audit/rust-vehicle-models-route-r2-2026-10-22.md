@@ -756,7 +756,10 @@ D'où l'amendement 2 : le défaut est établi en isolement.
 
 ### 6.3 Limiteur : test isolé et correction
 
-`bench/throttler-expiry-repro.js` charge le `ThrottlerStorageService` du paquet testé, sans réseau. Il remplit
+`services/vehicle-models-rs/bench/throttler-expiry-repro.js` charge, sans réseau, le `ThrottlerStorageService` du
+paquet `@nestjs/throttler` installé dont le dossier lui est passé en premier argument (le second est le fichier
+de sortie). Le script est livré par L3, dans le commit
+`02b6e0d79059c79686ec393049c6b199054e3941` ; L1 ne le contient pas, elle ne change que la version du paquet. Il remplit
 le palier long de 576 000 coups sur 8192 clés, échelonnés pour expirer à 160/s. Il envoie ensuite 160 nouveaux
 coups par seconde (80 req/s × 2 contextes de garde) et relève chaque seconde l'écart entre relevés, le retard
 de boucle, le RSS et le tas. Critère d'acceptation (`tools.py limiter-accept`), fixé avant toute mesure de
@@ -793,8 +796,10 @@ commande d'installation dans une session d'agent. Aucun code modifié, aucun fic
 configuration des paliers. `backend/dist` est inchangé (`f2c349e3…`) : le limiteur est résolu dans
 `node_modules`. Pour la configuration actuelle, des limites et durées numériques sans `blockDuration`, le
 calcul, la clé et les en-têtes sont inchangés. `CloudflareThrottlerGuard` surcharge toujours `getTracker` :
-la normalisation IPv6 ajoutée par défaut après 6.5.0 ne s'applique donc pas. `engines` de 6.7.1 (node >= 24)
-est compatible avec `.nvmrc` et l'image `node:24-alpine`. Tests au § 9.
+la normalisation IPv6 ajoutée par défaut après 6.5.0 ne s'applique donc pas. `engines` de 6.7.1
+(`^20.19.0 || ^22.12.0 || >=24.0.0`, verrou de L1) admet Node 24, celui de `.nvmrc` et de l'image
+`node:24-alpine`. Le message du commit de L1 qui installe 6.7.1 résume cette contrainte à « node >=24 » et cite
+le script sous `bench/` sans préciser qu'il est livré par L3 : la description de la PR L1 le corrige. Tests au § 9.
 
 Le garde global s'applique à toutes les routes, y compris les callbacks de paiement. La mise à jour change le
 stockage du limiteur pour tout le site, pas seulement pour cette route.
@@ -1215,8 +1220,10 @@ sont gardées avec les preuves :
 La suite Jest complète n'a pas été tentée sur la version corrigée elle-même. Elle n'avait pas été obtenue sur
 `c6ecea9d9` (plafond de 6 Go, ci-dessus). Elle l'a été ensuite sur la composition des trois livraisons (ci-dessous).
 
-**Livraisons sur `main` `8c8b92007`** (2026-10-23). Preuves dans `reprise-20261022/integration-l123-20261023/`
-du répertoire de preuves.
+**Livraisons sur `main` `8c8b92007`** (2026-10-23). Ces contrôles sont rattachés aux têtes de cette base
+(L1 `ef4ca3c89`, L2 `00b8421d8`, L3 `8e57457ee`, composition `85538687a`) ; ils ne valent pas automatiquement
+pour les têtes recomposées ensuite (§ 10). Preuves dans `reprise-20261022/integration-l123-20261023/` du
+répertoire de preuves.
 
 | Contrôle | Arbre | Résultat |
 |---|---|---|
@@ -1287,15 +1294,27 @@ Deux étiquettes locales, sans préfixe `v` et non poussées, rattachent les ré
 
 Ces étiquettes conservent les références historiques avant toute réorganisation locale des commits.
 
-**Intégration sur `main` `8c8b92007`** (rafraîchi le 2026-10-23). Elle remplace les simulations de la version
-précédente de ce paragraphe, faites sur `747669961`. Rien n'est poussé, aucune PR n'est ouverte.
+**Intégration sur `main` `7d9c9a15b6e4eecb0fe10732842aae08d1988911`** (#1881, base enregistrée le
+2026-10-24). Rien n'est poussé, aucune PR n'est ouverte.
 
-| Livraison | Branche locale | Tête avant composition owner | Base |
+| Livraison | Branche locale | Tête avant composition owner | Base de la branche |
 |---|---|---|---|
-| L1, limiteur 6.7.1 | `fix/throttler-6.7.1-expirations` | `ef4ca3c89` | `main` `8c8b92007` |
-| L2, stockage partagé | `fix/throttler-redis-shared-storage` | `00b8421d8` | L1 |
-| L3, R2 inerte | `feat/vehicle-models-rs-route-r2-inert` | `8e57457ee` + commit de ce rapport | L2 |
+| L1, limiteur 6.7.1 | `fix/throttler-6.7.1-expirations` | `cb3d160c15212117b24e8743eb1041308139520e` | `main` `7d9c9a15b…` |
+| L2, stockage partagé | `fix/throttler-redis-shared-storage` | `39e9b9185021360238a368e62f2ce8ebc14677df` | `main` `8c8b92007…`, recomposée sur L1 par le script owner |
+| L3, R2 inerte | `feat/vehicle-models-rs-route-r2-inert` | commit de ce rapport, après `8736fa37faa6e7ad1a14fc81327d3369c1ea35ec` | `main` `8c8b92007…`, recomposée sur L2 par le script owner |
 
+- **Filiation des bases.** `main` a avancé cinq fois depuis la première intégration : `8c8b92007` →
+  `75448cb1d` → `8c9e4c24e` → `06de6293b` → `ffc5cee4d` → `7d9c9a15b`. À chaque avance, L1 est recomposée
+  localement (ses commits sources repris par cherry-pick avec le même patch-id, puis projections régénérées) et
+  le script owner est rejoué à blanc ; il produit une tête d'essai L2 et une tête d'essai L3 par base
+  (`22af89cff` sur `75448cb1d`, `f3e8c323c` sur `8c9e4c24e`, `55eb1641f` sur `06de6293b`, `7c1fea602` sur
+  `ffc5cee4d`, `48c328c50` puis les essais suivants sur `7d9c9a15b`). Sur `7d9c9a15b`, le job du registre a
+  été rejoué sur L1 `cb3d160c1` et les têtes d'essai `a7e3651ae` et `48c328c50` : 11 étapes en sortie 0,
+  `canonical.json` stable et projections commitées identiques aux projections régénérées. Chaque preuve reste rattachée à la tête qui l'a produite : image R2 et suite Jest complète à
+  `22af89cff`, transitions des compteurs entre deux processus à `f3e8c323c`, démarrage par
+  `wait-and-start.js` à `7c1fea602`. Une preuve n'est reprise sur une tête plus récente que si le diff entre les
+  deux ne touche aucun élément qu'elle exerce. La table d'identité complète (têtes, bases, arbres, preuves) est
+  tenue dans le répertoire de preuves (`reprise-20261022/RESUME.md`), pas dans ce rapport.
 - **L1** n'est pas « `c6ecea9d9` seul ». Elle reprend `c6ecea9d9` par cherry-pick (`backend/package.json` et
   verrou), puis ajoute un commit de commentaires alignés sur 6.7.1, les projections régénérées et la fiche
   `analytics.md`, périmée sur `main` depuis #1726. Ces ajouts ne changent aucun comportement.
@@ -1305,11 +1324,12 @@ précédente de ce paragraphe, faites sur `747669961`. Rien n'est poussé, aucun
   - patch-ids comparés, puis arbres `backend/` et `services/vehicle-models-rs/` comparés aux arbres testés ;
   - projections régénérées par l'outillage du dépôt, dans un arbre jetable.
   `resync-pr.sh` n'a pas servi : il exige une PR et pousse.
-- **Essai à blanc** (`--essai`, sans les deux étapes `.github`, dont seul `git apply --check` est exécuté) :
-  sur `8e57457ee`, sortie 0 en 3 min 13 s (RSS max 849 Mo) ; patch-ids et arbres identiques aux arbres
-  testés ; `--retour` en sortie 0, L1 inchangée. Rejoué après le commit de ce rapport : sortie consignée dans
-  `ci/owner-diffs/` (répertoire de preuves).
-- **Gardes** : block-new 415/415 fichiers nouveaux couverts, `registry:validate` 0 erreur. Les hooks étaient
+- **Essai à blanc** (`--essai`, sans les étapes `.github`, dont seul `git apply --check` est exécuté). Premier
+  essai, sur `8e57457ee` : sortie 0 en 3 min 13 s (RSS max 849 Mo) ; patch-ids et arbres identiques aux arbres
+  testés ; `--retour` en sortie 0, L1 inchangée. Rejoué à chaque base listée ci-dessus ; journaux d'essai, de
+  refus et de retour dans `ci/owner-diffs/` (répertoire de preuves). Le script refuse de s'exécuter si
+  `origin/main` n'est plus la base enregistrée ou si L1 n'est plus la tête enregistrée.
+- **Gardes** (têtes de `8c8b92007`) : block-new 415/415 fichiers nouveaux couverts, `registry:validate` 0 erreur. Les hooks étaient
   absents des worktrees lors des commits. Ils ont été rejoués ensuite étape par étape (413 fichiers indexés pour
   L3) : tous en sortie 0 ou sans objet ; commitlint en sortie 0.
 
@@ -1368,6 +1388,15 @@ précédente de ce paragraphe, faites sur `747669961`. Rien n'est poussé, aucun
   - `noeviction` saturé : écriture refusée, repli en mémoire journalisé ;
   - panne puis retour : repli, puis reconnexion en environ 200 ms.
   Le préfixe `throttler:` ne réserve aucune mémoire : les autres usages de l'instance peuvent la remplir.
+- Conséquence, préparée en diffs owner que le script owner applique avec L2 : `0005` ajoute aux compose PROD et
+  PREPROD un Redis réservé aux compteurs (`redis_throttler`, `noeviction`, AOF `everysec`, aucun port publié,
+  `maxmemory` 64 Mo ou variante 128 Mo, limite du conteneur 2 × `maxmemory` + 64 Mio), lu par Node via
+  `THROTTLER_REDIS_URL` ; `0006` le fait démarrer par le déploiement, le retour arrière et le redémarrage PROD,
+  et le contrôle après déploiement. R2 lit la même variable (commit `d1752cd9ac4f0a71a94b15b3555400cfdb259e09`).
+  La taille découle d'une règle fixée avant toute donnée PROD, appliquée à une lecture console du trafic PROD
+  (journaux d'accès agrégés : paires palier, handler, adresse vivantes et coups par paire), pas encore faite ;
+  la lecture de `redis_prod` vérifie seulement la politique servie. Validation des diffs :
+  `ci/owner-diffs/0005-validation.txt` ; règle de taille : `redis/constat.md` § 3 (répertoire de preuves).
 
 **Candidat intégré** : binaire R2 `5daeb5f0…`, construit sur L3, et `backend/dist` `d58b2173…`. Campagne dans
 `candidate/final/` :
@@ -1387,16 +1416,39 @@ précédente de ce paragraphe, faites sur `747669961`. Rien n'est poussé, aucun
 - Validation hors ligne.
 - Répétition sur conteneurs jetables : 15 réussis, 0 échoué.
 - Constat : après une recréation de Caddy, R2 reste déclaré sain mais injoignable (502) jusqu'à son redémarrage.
-- Non exécutés : construction de l'image, qui exigerait un téléchargement, et exécution de l'image construite.
-- R2 n'a été mesuré qu'avec la clé en lecture seule du banc, pas avec la clé de rôle service de Node.
+- Image construite et exercée le 2026-10-24 sur la tête d'essai `22af89cffc216bd83f2e8bca480da09c4ee8c1f8`
+  (base `75448cb1d`) : Dockerfile `0003`, binaire `a846aa23998f7e836aef6e624f5224ebdd2e27d287f884f07c60c4be12b04945`,
+  identifiant local d'image `sha256:caa4c8a9a107f73cbba72675464eadd1dada9c7ca204f68e64fbef7b7b33c258`. Banc
+  jetable Node + Caddy + deux Redis : 97 réussis, 0 échoué, exécution unique. Il confirme le constat précédent
+  (R2 orphelin déclaré sain), montre que `0004b` (`THROTTLER_REDIS_URL` pour R2) est nécessaire, et que R2 avec la
+  clé anon exige `READ_ONLY=true`. Correctif proposé `0003b` (sonde exigeant une interface autre que `lo`,
+  versions apt figées) : 10/10. Constat : `candidate/image-22af89cff/constat.md` du répertoire de preuves.
+- Avec le stockage containerd de Docker, l'identifiant local est le digest de l'index OCI de l'image
+  (manifeste linux/amd64 `sha256:ba9290a5b0c8e78604cb70d2352e3f60664c9a3ac6f8f80950178c2dbec846bf`). Le digest
+  qui fera foi est celui que rendra le registre à la publication ; c'est lui qu'il faudra épingler. Aucune image
+  n'est publiée.
+- L'empreinte de l'image n'est pas reproductible octet pour octet (couche apt reconstruite). Sont vérifiés :
+  base épinglée, empreinte du binaire copié, labels, versions des paquets. Une reconstruction, locale ou en CI
+  hébergée, produirait donc une autre image et, pour le binaire, une autre provenance. L'image exercée et son
+  artefact binaire sont conservés (archive OCI `sha256:4f18c62a55b4184ce7f57c373d708f32a1f1cce58e83fe96b0c790ee35140ddb`,
+  `candidate/image-22af89cff/conservation/` du répertoire de preuves) pour promouvoir ce même artefact.
+- Rattachement à la tête L3 actuelle : arbre `services/vehicle-models-rs/` identique à celui de `22af89cff`
+  (`8279d0d20b5922a3bafcdbfa86fd47d6c4fe60f8`, `Cargo.lock` et `rust-toolchain.toml` compris), Dockerfile
+  `0003` et base inchangés. L'image s'applique donc au code Rust de cette tête ; la provenance et le label
+  nomment `22af89cff`, écart de traçabilité sans effet sur l'exécution. L'image ne contient pas `backend/` :
+  les preuves du banc qui exercent Node restent rattachées à `22af89cff`.
+- Les mesures de performance du § 6 ne sont pas reportées sur ce binaire. R2 n'a été mesuré qu'avec la clé en
+  lecture seule du banc ; sur le banc de l'image, les clés de rôle service et anon étaient aléatoires, l'amont
+  étant le rejeu. Aucune clé réelle n'a été exercée.
 
 **PREPROD**, après chaque fusion, une livraison à la fois :
 
 1. Sur le run de `main` qui contient le commit de fusion : `🧪 Deploy PREPROD`, `🎭 E2E Smoke Tests` et
    `🔦 Lighthouse Performance Audit` en succès, plus `vehicle-models-rs` pour L3.
-2. Après L2, lecture console `preprod/l2-lecture-console.txt` :
+2. Après L2, lecture console `preprod/l2-lecture-console-0005.txt` (elle remplace `l2-lecture-console.txt`,
+   écrite avant `0005`) :
    - aucune ligne de repli de `RedisThrottlerStorage` ;
-   - clés `throttler:*` présentes ;
+   - clés `throttler:*` présentes sur le Redis des compteurs de PREPROD ;
    - configuration servie.
 3. PREPROD n'a pas de Caddy en frontal et ne reçoit pas les callbacks. Ni la route R2 ni le budget des callbacks
    n'y sont exercés.
@@ -1446,9 +1498,11 @@ Classement brut : `candidate/rollback/run/classement.txt`.
 |---|---|
 | Détail noyau des OOM (v3 et passe diag) | `journalctl -k` : « Users in groups 'adm', 'systemd-journal' can see all messages » ; `dmesg` : « read kernel buffer failed: Operation not permitted ». Les protections système n'ont pas été modifiées. Attribution faite par le cgroup et la sonde (§ 7) |
 | Installation de 6.7.1 par l'agent | la garde Bash du dépôt bloque toute commande `npm install` dans une session d'agent ; elle n'a pas été contournée. Le script a été écrit puis lancé par l'utilisateur |
-| Écriture de `.github/` et de `ownership.yaml` | la garde de fichiers du dépôt bloque `.github/` ; `ownership.yaml` relève de l'owner. Diffs owner et `apply-owner-changes.sh`, dont seul le mode à blanc a été exécuté (§ 10) |
-| Construction et exécution de l'image R2 | la construction exigerait un téléchargement (paquets de la base), non autorisé ; répétition faite avec le binaire du candidat dans la base épinglée (§ 10) |
-| R2 avec la clé de rôle service | non mesuré : le banc n'utilise que la clé en lecture seule |
+| Écriture de `.github/`, des fichiers compose et de `ownership.yaml` | la garde de fichiers du dépôt bloque `.github/` et `docker-compose*` ; `ownership.yaml` relève de l'owner. Diffs owner et `apply-owner-changes.sh`, dont seul le mode à blanc a été exécuté (§ 10) |
+| Publication de l'image R2 | aucune image publiée : l'image construite et exercée localement (§ 10) n'a que son identifiant local, digest de son index OCI ; le digest du registre n'existera qu'à la publication |
+| R2 avec une clé réelle | non mesuré : le banc n'utilise que la clé en lecture seule ; le banc de l'image, des clés aléatoires |
+| Taille du Redis des compteurs (64 ou 128 Mo) | dépend du trafic PROD (paires palier, handler, adresse vivantes ; coups par paire), non lu ; règle fixée avant toute donnée PROD, lecture console préparée |
+| Adéquation de 30 callbacks par minute au trafic légitime | volume de notifications par adresse et rejeux réellement configurés chez les prestataires inconnus ; les tests prouvent la conformité du limiteur, pas cette adéquation |
 | Cause du SIGKILL de Node arrêté sans Redis | non établie ; l'attente des hooks d'arrêt BullMQ reste une hypothèse (§ 2.4) |
 | Configuration Redis servie en PREPROD et en PROD | non lue : aucun accès autorisé à ces hôtes. Lectures console préparées (§ 10) |
 | Comparer le limiteur sur la boucle bloquée | la sonde dans le processus ne relève rien pendant le blocage (§ 6.2) ; mesure faite en isolement |
@@ -1460,13 +1514,17 @@ Classement brut : `candidate/rollback/run/classement.txt`.
 
 Les livraisons sont prêtes à relire ; une nouvelle mesure n'apporterait rien. Dans cet ordre :
 
-1. Lire la configuration Redis servie en PROD, en console et en lecture seule
-   (`preprod/prod-redis-lecture-console.txt`), avant la fusion de L2.
-2. Exécuter `apply-owner-changes.sh` en mode réel (owner) : il installe les commits `ownership.yaml` et
-   `.github/`, recompose L2 et L3 et régénère les projections.
-3. Publier L1, puis L2 et L3 en brouillon jusqu'à la fusion de leur dépendance. Le dépôt est public : L3, qui
+1. Lire en console et en lecture seule le trafic PROD agrégé, celui des callbacks et la configuration servie de
+   `redis_prod` (`preprod/` du répertoire de preuves), avant l'application du script owner : la lecture du
+   trafic choisit 64 ou 128 Mo pour `0005` par la règle fixée ; celle de `redis_prod` vérifie la politique
+   servie.
+2. Exécuter `apply-owner-changes.sh` en mode réel (owner), sur la base enregistrée : il installe les commits
+   `ownership.yaml`, `.github/` et compose, recompose L2 et L3 et régénère les projections. Si `main` a avancé,
+   le script refuse ; L1 est d'abord recomposée et le script mis à jour.
+3. Contrôler ensuite, en local, les nouveaux fichiers, le registre et le démarrage sur les têtes produites.
+4. Publier L1, puis L2 et L3 en brouillon jusqu'à la fusion de leur dépendance. Le dépôt est public : L3, qui
    décrit le blocage de la boucle sous 6.5.0, ne se publie qu'une fois L1 servie en PROD.
-4. Pour chaque PR, lire la CI hébergée ; après chaque fusion, lire la chaîne PREPROD, puis faire les lectures
+5. Pour chaque PR, lire la CI hébergée ; après chaque fusion, lire la chaîne PREPROD, puis faire les lectures
    console du § 10.
 
 L'activation de la route Rust hors banc reste une décision distincte, à prendre sur les preuves de PREPROD.
