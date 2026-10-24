@@ -187,7 +187,7 @@
         "backend/src/modules/config/validators"
       ],
       "files_count": 103,
-      "loc_total": 25070,
+      "loc_total": 25071,
       "has_barrel": true
     },
     "customers": {
