@@ -168,6 +168,9 @@ jobs:
           docker tag "$IMAGE_ID" "$IMAGE_REPO:$RELEASE_TAG"
           docker push "$IMAGE_REPO:production"
           docker push "$IMAGE_REPO:$RELEASE_TAG"
+          # The Deploy and Validate steps check the running container against
+          # this ID, not against the :production name it was started from.
+          echo "PROMOTED_IMAGE_ID=$IMAGE_ID" >> "$GITHUB_ENV"
 
       - name: 🚀 Deploy to PROD
         env:
@@ -400,11 +403,11 @@ jobs:
             exit 1
           fi
 
-          # Image assertion: verify container runs the correct image
-          EXPECTED_IMAGE="massdoc/nestjs-remix-monorepo:production"
-          ACTUAL_IMAGE=$(docker inspect nestjs-remix-monorepo-prod --format='{{.Config.Image}}')
-          if [ "$ACTUAL_IMAGE" != "$EXPECTED_IMAGE" ]; then
-            echo "FATAL: Container running $ACTUAL_IMAGE instead of $EXPECTED_IMAGE"
+          # Image assertion: the container runs the image promoted by the safety
+          # gate. Its configured name is always :production, so compare IDs.
+          ACTUAL_IMAGE=$(docker inspect nestjs-remix-monorepo-prod --format='{{.Image}}')
+          if [ -z "${PROMOTED_IMAGE_ID:-}" ] || [ "$ACTUAL_IMAGE" != "$PROMOTED_IMAGE_ID" ]; then
+            echo "FATAL: Container running $ACTUAL_IMAGE instead of ${PROMOTED_IMAGE_ID:-<unset>}"
             exit 1
           fi
           echo "Image verified: $ACTUAL_IMAGE"
@@ -426,6 +429,11 @@ jobs:
           HEALTH_OK=0
           if echo "$HEALTH" | grep -q '"status":"ok"'; then HEALTH_OK=1; fi
 
+          # Served version: /health reports the commit baked into the image.
+          SERVED_SHA=$(echo "$HEALTH" | grep -oE '"revision":"[0-9a-f]{40}"' | cut -d'"' -f4 || true)
+          REVISION_OK=0
+          if [ "$SERVED_SHA" = "$GITHUB_SHA" ]; then REVISION_OK=1; fi
+
           # SSR gate (BLOCKING). Only meaningful once the process answers /health.
           # See scripts/ci/prod-ssr-probe.sh for why /health alone is not enough
           # and why `noindex` is the signal that catches the degraded fallback.
@@ -442,9 +450,11 @@ jobs:
             done
           fi
 
-          if [ "$HEALTH_OK" != "1" ] || [ "$SSR_OK" != "1" ]; then
+          if [ "$HEALTH_OK" != "1" ] || [ "$REVISION_OK" != "1" ] || [ "$SSR_OK" != "1" ]; then
             if [ "$HEALTH_OK" != "1" ]; then
               echo "❌ Health check failed after $RETRIES attempts"
+            elif [ "$REVISION_OK" != "1" ]; then
+              echo "❌ /health serves revision ${SERVED_SHA:-<none>}, expected $GITHUB_SHA"
             else
               echo "❌ SSR gate failed — GET / is not a healthy, indexable, server-rendered document"
             fi
@@ -454,7 +464,7 @@ jobs:
             exit 1
           fi
 
-          echo "✅ PROD deployment successful — /health OK and GET / is a healthy indexable SSR document"
+          echo "✅ PROD deployment successful — /health OK (revision $SERVED_SHA) and GET / is a healthy indexable SSR document"
 
           docker image prune -f
 
@@ -466,11 +476,10 @@ jobs:
           # All checks run INSIDE the container (host networking unreliable on self-hosted runner)
           EXEC="docker exec nestjs-remix-monorepo-prod"
 
-          # Image assertion (double-check)
-          EXPECTED_IMAGE="massdoc/nestjs-remix-monorepo:production"
-          ACTUAL_IMAGE=$(docker inspect nestjs-remix-monorepo-prod --format='{{.Config.Image}}')
-          if [ "$ACTUAL_IMAGE" != "$EXPECTED_IMAGE" ]; then
-            echo "FATAL: Container image mismatch: $ACTUAL_IMAGE (expected $EXPECTED_IMAGE)"
+          # Image assertion (double-check), by immutable ID as in the Deploy step
+          ACTUAL_IMAGE=$(docker inspect nestjs-remix-monorepo-prod --format='{{.Image}}')
+          if [ -z "${PROMOTED_IMAGE_ID:-}" ] || [ "$ACTUAL_IMAGE" != "$PROMOTED_IMAGE_ID" ]; then
+            echo "FATAL: Container image mismatch: $ACTUAL_IMAGE (expected ${PROMOTED_IMAGE_ID:-<unset>})"
             FAILED=1
           else
             echo "Image OK: $ACTUAL_IMAGE"
@@ -484,6 +493,13 @@ jobs:
           else
             echo "❌ /health -> FAILED: $HEALTH"
             docker logs nestjs-remix-monorepo-prod --tail 20
+            FAILED=1
+          fi
+          SERVED_SHA=$(echo "$HEALTH" | grep -oE '"revision":"[0-9a-f]{40}"' | cut -d'"' -f4 || true)
+          if [ "$SERVED_SHA" = "$GITHUB_SHA" ]; then
+            echo "✅ /health revision -> $SERVED_SHA"
+          else
+            echo "❌ /health revision -> ${SERVED_SHA:-<none>}, expected $GITHUB_SHA"
             FAILED=1
           fi
 
