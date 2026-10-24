@@ -13,6 +13,7 @@ import {
   DOD_IDS,
   parseAdvisoryItems,
   readAssignees,
+  readAuthor,
 } from "./pr-dod-gate.mjs";
 
 // GitHub state that satisfies DoD2 (assignee + 1 human approval).
@@ -204,6 +205,35 @@ describe("readAssignees", () => {
     assert.equal(readAssignees(event), undefined);
     assert.equal(readAssignees(join(dir, "absent.json")), undefined);
     assert.equal(readAssignees(undefined), undefined);
+  });
+});
+
+describe("readAuthor", () => {
+  test("reads the PR author login from the event payload, undefined otherwise", () => {
+    const dir = mkdtempSync(join(tmpdir(), "dod-gate-"));
+    const event = join(dir, "event.json");
+    writeFileSync(event, JSON.stringify({ pull_request: { user: { login: "dependabot[bot]" } } }));
+    assert.equal(readAuthor(event), "dependabot[bot]");
+    writeFileSync(event, JSON.stringify({ pull_request: {} }));
+    assert.equal(readAuthor(event), undefined);
+    assert.equal(readAuthor(join(dir, "absent.json")), undefined);
+    assert.equal(readAuthor(undefined), undefined);
+  });
+});
+
+describe("evaluateDoD — Dependabot", () => {
+  test("a Dependabot PR passes without a checklist", () => {
+    const r = evaluateDoD("Bumps nodemailer from 8.0.11 to 10.1.7.", [], 0, { author: "dependabot[bot]" });
+    assert.equal(r.mode, "dependabot");
+    assert.equal(r.pass, true);
+  });
+
+  test("only the exact bot login is exempt", () => {
+    for (const author of ["dependabot", "ak125", undefined]) {
+      const r = evaluateDoD("Bumps nodemailer.", [], 0, { author });
+      assert.equal(r.mode, "checklist", String(author));
+      assert.equal(r.pass, false, String(author));
+    }
   });
 });
 

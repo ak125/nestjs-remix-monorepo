@@ -26,6 +26,11 @@
 // DoD2 is a GitHub state, not a self-assessment: the rule requires an assignee
 // and >= 1 human approval. A ticked DoD2 box is never evidence on its own.
 //
+// Dependabot cannot write a self-evaluation, and the escape hatch needs two
+// approvals: a blocking gate would hold every dependency bump. Its PRs pass on
+// the author login from the event payload; GitHub logins cannot contain
+// brackets, so `dependabot[bot]` is never a human account.
+//
 // Pure `evaluateDoD()` is exported for testing; `main()` reads env + writes the
 // PR-comment report and sets the exit code.
 //
@@ -33,7 +38,8 @@
 //   PR_BODY            — full PR description markdown
 //   PR_LABELS          — comma-separated label names
 //   PR_APPROVALS       — integer count of APPROVED reviews
-//   GITHUB_EVENT_PATH  — event payload; `pull_request.assignees` feeds DoD2
+//   GITHUB_EVENT_PATH  — event payload; `pull_request.assignees` feeds DoD2,
+//                        `pull_request.user.login` the Dependabot exemption
 //   DOD_ADVISORY_ITEMS — optional, comma-separated DoD ids reported but not
 //                        blocking (phased rollout). Unset = all 9 block.
 // =============================================================================
@@ -56,6 +62,7 @@ const SKIP_LABEL = "dod-skip-justified";
 const SKIP_MIN_APPROVALS = 2;
 const OWNERSHIP_ID = "DoD2";
 const OWNERSHIP_MIN_APPROVALS = 1;
+const DEPENDABOT_LOGIN = "dependabot[bot]";
 
 // List item whose first token is the id, optionally boxed and bold:
 // `- [x] DoD1 — …` (vault template), `- [x] **DoD1** …`, `- DoD4 — N/A : …`.
@@ -84,16 +91,25 @@ export function parseAdvisoryItems(raw) {
 
 /**
  * Pure evaluation. Returns { pass, mode, reasons[], advisory[] }.
- *   mode: "checklist" | "skip-justified" | "skip-needs-approvals"
+ *   mode: "dependabot" | "checklist" | "skip-justified" | "skip-needs-approvals"
  *   reasons: blocking failures; advisory: failures on DOD_ADVISORY_ITEMS ids.
  *   assignees: logins from the event payload; undefined = unknown (DoD2 fails).
+ *   author: PR author login from the event payload.
  */
 export function evaluateDoD(
   body,
   labels,
   approvals,
-  { assignees, advisoryItems = [] } = {},
+  { assignees, author, advisoryItems = [] } = {},
 ) {
+  if (author === DEPENDABOT_LOGIN) {
+    return {
+      pass: true,
+      mode: "dependabot",
+      reasons: [`Opened by ${DEPENDABOT_LOGIN}: no self-evaluation required.`],
+      advisory: [],
+    };
+  }
   const labelSet = new Set((labels || []).map((l) => String(l).trim()));
   const reasons = [];
 
@@ -169,16 +185,25 @@ export function evaluateDoD(
   };
 }
 
-/** Assignee logins from the Actions event payload; undefined when unreadable. */
-export function readAssignees(eventPath) {
+function readPullRequest(eventPath) {
   if (!eventPath) return undefined;
   try {
-    const event = JSON.parse(readFileSync(eventPath, "utf8"));
-    const list = event?.pull_request?.assignees;
-    return Array.isArray(list) ? list.map((a) => a.login) : undefined;
+    return JSON.parse(readFileSync(eventPath, "utf8"))?.pull_request;
   } catch {
     return undefined;
   }
+}
+
+/** Assignee logins from the Actions event payload; undefined when unreadable. */
+export function readAssignees(eventPath) {
+  const list = readPullRequest(eventPath)?.assignees;
+  return Array.isArray(list) ? list.map((a) => a.login) : undefined;
+}
+
+/** PR author login from the Actions event payload; undefined when unreadable. */
+export function readAuthor(eventPath) {
+  const login = readPullRequest(eventPath)?.user?.login;
+  return typeof login === "string" ? login : undefined;
 }
 
 function renderReport(result) {
@@ -202,6 +227,7 @@ function main() {
     .filter(Boolean);
   const approvals = Number.parseInt(process.env.PR_APPROVALS ?? "0", 10) || 0;
   const assignees = readAssignees(process.env.GITHUB_EVENT_PATH);
+  const author = readAuthor(process.env.GITHUB_EVENT_PATH);
   let advisoryItems;
   try {
     advisoryItems = parseAdvisoryItems(process.env.DOD_ADVISORY_ITEMS);
@@ -212,7 +238,7 @@ function main() {
     process.exit(1);
   }
 
-  const result = evaluateDoD(body, labels, approvals, { assignees, advisoryItems });
+  const result = evaluateDoD(body, labels, approvals, { assignees, author, advisoryItems });
   writeFileSync("dod-gate-report.md", renderReport(result), "utf8");
   process.stderr.write(
     `[pr-dod-gate] mode=${result.mode} pass=${result.pass} reasons=${result.reasons.length} advisory=${result.advisory.length}\n`,
