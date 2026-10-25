@@ -2920,6 +2920,7 @@
       ".github/workflows/tecdoc-failclosed-guard.yml",
       ".github/workflows/validator-dev-safety-observe.yml",
       ".github/workflows/vault-canon-exists.yml",
+      ".github/workflows/vehicle-models-rs.yml",
       ".github/workflows/visual-gate.yml",
       ".github/workflows/weekly-pr-hygiene.yml",
       ".github/workflows/wiki-canon-shape-check.yml",
@@ -3038,7 +3039,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1628,
+  "runtime_files_count": 1629,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -3109,6 +3110,7 @@
     ".github/workflows/tecdoc-failclosed-guard.yml",
     ".github/workflows/validator-dev-safety-observe.yml",
     ".github/workflows/vault-canon-exists.yml",
+    ".github/workflows/vehicle-models-rs.yml",
     ".github/workflows/visual-gate.yml",
     ".github/workflows/weekly-pr-hygiene.yml",
     ".github/workflows/wiki-canon-shape-check.yml",

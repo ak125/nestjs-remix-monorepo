@@ -955,10 +955,11 @@
         "services/remotion-renderer/src/lib",
         "services/remotion-renderer/src/routes",
         "services/remotion-renderer/src/types",
+        "services/vehicle-models-rs/bench",
         "tests/registry"
       ],
-      "files_count": 317,
-      "loc_total": 61885,
+      "files_count": 322,
+      "loc_total": 62571,
       "has_barrel": true
     },
     "upload": {
@@ -1005,8 +1006,8 @@
         "backend/src/modules/vehicles/services/seo",
         "backend/src/modules/vehicles/types"
       ],
-      "files_count": 30,
-      "loc_total": 8914,
+      "files_count": 31,
+      "loc_total": 9104,
       "has_barrel": false
     },
     "wiki": {
