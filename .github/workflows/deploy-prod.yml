@@ -76,9 +76,10 @@ jobs:
           # into the script body) so no expression value can be executed.
           BREAK_GLASS: ${{ inputs.break_glass_no_rollback_point || vars.PROD_BREAK_GLASS_NO_ROLLBACK_POINT }}
         run: |
-          # ⚠️ Ordering is load-bearing. This step MUST stay before the safety gate.
+          # ⚠️ Ordering is load-bearing. This step MUST stay before any :production
+          # mutation (the Deploy step promotes it past its point of no return).
           #
-          # The previous rollback was a proven NO-OP: the safety gate below retags
+          # The previous rollback was a proven NO-OP: the safety gate used to retag
           # `:production` to the NEW image, and the deploy step then derived
           # `production-previous` FROM `:production` — so `production-previous`
           # WAS the new image, and "rolling back" re-deployed the broken build.
@@ -164,9 +165,10 @@ jobs:
           fi
           echo "Verified commit: $IMAGE_SHA; immutable image: $IMAGE_ID"
 
-          docker tag "$IMAGE_ID" "$IMAGE_REPO:production"
+          # :production is NOT moved here: the Deploy step still refuses a bad
+          # .env or flag before its point of no return, and those refusals do not
+          # roll back. It moves :production right after DEPLOY_STARTED=1.
           docker tag "$IMAGE_ID" "$IMAGE_REPO:$RELEASE_TAG"
-          docker push "$IMAGE_REPO:production"
           docker push "$IMAGE_REPO:$RELEASE_TAG"
           # The Deploy and Validate steps check the running container against
           # this ID, not against the :production name it was started from.
@@ -239,8 +241,6 @@ jobs:
           DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED_OVERRIDE: ${{ vars.PROD_DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED }}
           DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED_OVERRIDE: ${{ vars.PROD_DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED }}
         run: |
-          docker pull massdoc/nestjs-remix-monorepo:production
-
           PROD_DIR=~/production
           mkdir -p $PROD_DIR/config/caddy
 
@@ -348,17 +348,30 @@ jobs:
 
           # Rollback point already captured by the "💾 Capture rollback point"
           # step as $ROLLBACK_IMAGE_ID — the running container's IMMUTABLE image
-          # ID, read BEFORE the safety gate retagged :production.
-          # Do NOT re-derive production-previous from :production here: by this
-          # point :production already points at the NEW image, which is exactly
-          # what made the old rollback restore the broken build.
+          # ID, read BEFORE any :production mutation.
+          # Do NOT re-derive production-previous from :production: the old
+          # rollback did, after :production had moved to the NEW image, and
+          # restored the broken build.
           echo "🔒 Rollback point pinned: ${ROLLBACK_IMAGE_ID:-<none — auto-rollback disabled>}"
+
+          if [[ ! "${PROMOTED_IMAGE_ID:-}" =~ ^sha256:[a-f0-9]{64}$ ]]; then
+            echo "❌ FATAL: no verified image ID from the safety gate"
+            exit 1
+          fi
 
           # POINT OF NO RETURN. Past this line the running container is destroyed,
           # so ANY later failure — including in "Validate PROD" — must roll back.
           # The dedicated `if: failure()` rollback step keys off this flag, which
           # is why it is set BEFORE the stop/rm rather than after a successful up.
           echo "DEPLOY_STARTED=1" >> "$GITHUB_ENV"
+
+          # Promote :production only now. compose starts the container from this
+          # name, and every refusal above (missing .env, required variable, SEO
+          # env writers) must leave the registry and the local tag on the build
+          # PROD is running: the rollback step only runs past this point. A
+          # failed push therefore rolls back too, to the pinned ID.
+          docker tag "$PROMOTED_IMAGE_ID" massdoc/nestjs-remix-monorepo:production
+          docker push massdoc/nestjs-remix-monorepo:production
 
           docker stop nestjs-remix-caddy nestjs-remix-monorepo-prod 2>/dev/null || true
           docker rm nestjs-remix-caddy nestjs-remix-monorepo-prod 2>/dev/null || true
