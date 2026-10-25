@@ -29106,6 +29106,7 @@
         "backend/src/common/guards/cloudflare-throttler.guard.ts",
         "backend/src/config/feature-flags.module.ts",
         "backend/src/config/logger.config.ts",
+        "backend/src/config/throttler-redis-storage.service.ts",
         "backend/src/config/throttler-skip.config.ts",
         "backend/src/config/throttler-tiers.config.ts",
         "backend/src/config/write-guard.module.ts",
@@ -29170,7 +29171,7 @@
         "backend/src/workers/worker.module.ts"
       ],
       "kind": "service",
-      "loc": 224,
+      "loc": 231,
       "owner": "__unassigned__",
       "path": "backend/src/app.module.ts",
       "risk": "low",
@@ -30878,6 +30879,7 @@
       "importedBy": [
         "backend/src/app.module.ts",
         "backend/src/common/guards/cloudflare-throttler.guard.test.ts",
+        "backend/src/config/throttler-redis-storage.service.test.ts",
         "backend/src/config/throttler-skip.config.test.ts",
         "backend/src/config/throttler-tiers.config.test.ts"
       ],
@@ -31460,6 +31462,7 @@
         "backend/src/config/csp.config.ts",
         "backend/src/config/index.ts",
         "backend/src/config/redis-single-target.test.ts",
+        "backend/src/config/throttler-redis-storage.service.ts",
         "backend/src/config/write-guard-lock.service.ts",
         "backend/src/database/services/supabase-base.service.ts",
         "backend/src/main.ts",
@@ -31510,7 +31513,7 @@
         "backend/src/config/site.constants.ts"
       ],
       "kind": "config",
-      "loc": 199,
+      "loc": 235,
       "owner": "@ak125",
       "path": "backend/src/config/app.config.ts",
       "risk": "medium",
@@ -32081,7 +32084,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 190,
+      "loc": 192,
       "owner": "@ak125",
       "path": "backend/src/config/env-validation.ts",
       "risk": "medium",
@@ -33457,11 +33460,12 @@
       "imports": [
         "backend/src/auth/github-oidc.service.ts",
         "backend/src/config/app.config.ts",
+        "backend/src/config/throttler-redis-storage.service.ts",
         "backend/src/config/write-guard-lock.service.ts",
         "backend/src/modules/seo-logs/services/seo-audit-scheduler.service.ts"
       ],
       "kind": "test",
-      "loc": 274,
+      "loc": 419,
       "owner": "@ak125",
       "path": "backend/src/config/redis-single-target.test.ts",
       "risk": "medium",
@@ -33728,6 +33732,61 @@
         "manual"
       ],
       "domain": "D13",
+      "id": "backend/src/config/throttler-redis-storage.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/common/guards/cloudflare-throttler.guard.ts",
+        "backend/src/config/throttler-redis-storage.service.ts",
+        "backend/src/config/throttler-skip.config.ts",
+        "backend/src/config/throttler-tiers.config.ts",
+        "crypto",
+        "fs",
+        "path"
+      ],
+      "kind": "test",
+      "loc": 449,
+      "owner": "@ak125",
+      "path": "backend/src/config/throttler-redis-storage.service.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D13",
+      "id": "backend/src/config/throttler-redis-storage.service.ts",
+      "importedBy": [
+        "backend/src/app.module.ts",
+        "backend/src/config/redis-single-target.test.ts",
+        "backend/src/config/throttler-redis-storage.service.test.ts"
+      ],
+      "imports": [
+        "backend/src/config/app.config.ts"
+      ],
+      "kind": "service",
+      "loc": 251,
+      "owner": "@ak125",
+      "path": "backend/src/config/throttler-redis-storage.service.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
       "id": "backend/src/config/throttler-skip.config.test.ts",
       "importedBy": [],
       "imports": [
@@ -33756,6 +33815,7 @@
       "id": "backend/src/config/throttler-skip.config.ts",
       "importedBy": [
         "backend/src/app.module.ts",
+        "backend/src/config/throttler-redis-storage.service.test.ts",
         "backend/src/config/throttler-skip.config.test.ts"
       ],
       "imports": [
@@ -33806,6 +33866,7 @@
       "id": "backend/src/config/throttler-tiers.config.ts",
       "importedBy": [
         "backend/src/app.module.ts",
+        "backend/src/config/throttler-redis-storage.service.test.ts",
         "backend/src/config/throttler-skip.config.test.ts",
         "backend/src/config/throttler-tiers.config.test.ts"
       ],
@@ -70719,6 +70780,26 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "backend/tests/unit/payment-callback-throttling.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 667,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/payment-callback-throttling.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "backend/tests/unit/pr-proposition.planner.test.ts",
       "importedBy": [],
       "imports": [],
@@ -105373,15 +105454,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "5ca91094428cc956799c31406f2c730d22e7557eca4996e6945b0e0c6969aa47",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "69cb4efc63cebbb9c451c9d0b7d8fc59b51d2ef80981f022b06ed635ea78d0e1",
+      ".spec/00-canon/repository-registry/ownership.yaml": "7b19192795bf2ffdb43a2c7fede69cbc0164771799ba90b7c4cea5ee39276b43",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "90163175840e44796908f793612d86b090e6efec04ed7053e3966b0e0c211728",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "32dba461bbc158c3d0960f726608b69ae896b4f23fe6ed5a67d5e29f3e8cb87a",
+      "audit/registry/files.json": "6328ddf82649f50dcf6b03a71174d131f91a23f01850a0d40dcbf9e7bb2bce7b",
       "audit/registry/rpc.json": "623f3a5150e1cc71cd79946d7a4128fd078d6493626b20f4b6c4c4ac64f06f6d",
       "audit/registry/runtime.json": "121d868fa45952069f14d1a9b717212a5f50b51ac7fd0edc9546ae56d1c41bc2"
     },
-    "sotFingerprint": "7593cba2c83f"
+    "sotFingerprint": "65840bfaa42e"
   },
   "runtime": [
     {

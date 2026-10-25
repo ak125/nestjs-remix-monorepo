@@ -762,6 +762,7 @@
         "backend/src/common/guards/cloudflare-throttler.guard.ts",
         "backend/src/config/feature-flags.module.ts",
         "backend/src/config/logger.config.ts",
+        "backend/src/config/throttler-redis-storage.service.ts",
         "backend/src/config/throttler-skip.config.ts",
         "backend/src/config/throttler-tiers.config.ts",
         "backend/src/config/write-guard.module.ts",
@@ -826,7 +827,7 @@
         "backend/src/workers/worker.module.ts"
       ],
       "kind": "service",
-      "loc": 224,
+      "loc": 231,
       "owner": "__unassigned__",
       "path": "backend/src/app.module.ts",
       "risk": "low",
@@ -2480,6 +2481,7 @@
       "importedBy": [
         "backend/src/app.module.ts",
         "backend/src/common/guards/cloudflare-throttler.guard.test.ts",
+        "backend/src/config/throttler-redis-storage.service.test.ts",
         "backend/src/config/throttler-skip.config.test.ts",
         "backend/src/config/throttler-tiers.config.test.ts"
       ],
@@ -3043,6 +3045,7 @@
         "backend/src/config/csp.config.ts",
         "backend/src/config/index.ts",
         "backend/src/config/redis-single-target.test.ts",
+        "backend/src/config/throttler-redis-storage.service.ts",
         "backend/src/config/write-guard-lock.service.ts",
         "backend/src/database/services/supabase-base.service.ts",
         "backend/src/main.ts",
@@ -3093,7 +3096,7 @@
         "backend/src/config/site.constants.ts"
       ],
       "kind": "config",
-      "loc": 199,
+      "loc": 235,
       "owner": "__unassigned__",
       "path": "backend/src/config/app.config.ts",
       "risk": "low",
@@ -3643,7 +3646,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 190,
+      "loc": 192,
       "owner": "__unassigned__",
       "path": "backend/src/config/env-validation.ts",
       "risk": "low",
@@ -4968,11 +4971,12 @@
       "imports": [
         "backend/src/auth/github-oidc.service.ts",
         "backend/src/config/app.config.ts",
+        "backend/src/config/throttler-redis-storage.service.ts",
         "backend/src/config/write-guard-lock.service.ts",
         "backend/src/modules/seo-logs/services/seo-audit-scheduler.service.ts"
       ],
       "kind": "test",
-      "loc": 274,
+      "loc": 419,
       "owner": "__unassigned__",
       "path": "backend/src/config/redis-single-target.test.ts",
       "risk": "low",
@@ -5229,6 +5233,59 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/config/throttler-redis-storage.service.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/common/guards/cloudflare-throttler.guard.ts",
+        "backend/src/config/throttler-redis-storage.service.ts",
+        "backend/src/config/throttler-skip.config.ts",
+        "backend/src/config/throttler-tiers.config.ts",
+        "crypto",
+        "fs",
+        "path"
+      ],
+      "kind": "test",
+      "loc": 449,
+      "owner": "__unassigned__",
+      "path": "backend/src/config/throttler-redis-storage.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "reachability"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/config/throttler-redis-storage.service.ts",
+      "importedBy": [
+        "backend/src/app.module.ts",
+        "backend/src/config/redis-single-target.test.ts",
+        "backend/src/config/throttler-redis-storage.service.test.ts"
+      ],
+      "imports": [
+        "backend/src/config/app.config.ts"
+      ],
+      "kind": "service",
+      "loc": 251,
+      "owner": "__unassigned__",
+      "path": "backend/src/config/throttler-redis-storage.service.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/config/throttler-skip.config.test.ts",
       "importedBy": [],
       "imports": [
@@ -5256,6 +5313,7 @@
       "id": "backend/src/config/throttler-skip.config.ts",
       "importedBy": [
         "backend/src/app.module.ts",
+        "backend/src/config/throttler-redis-storage.service.test.ts",
         "backend/src/config/throttler-skip.config.test.ts"
       ],
       "imports": [
@@ -5304,6 +5362,7 @@
       "id": "backend/src/config/throttler-tiers.config.ts",
       "importedBy": [
         "backend/src/app.module.ts",
+        "backend/src/config/throttler-redis-storage.service.test.ts",
         "backend/src/config/throttler-skip.config.test.ts",
         "backend/src/config/throttler-tiers.config.test.ts"
       ],
@@ -40961,6 +41020,25 @@
       "loc": 216,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/paybox-service-log-sanitization.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/payment-callback-throttling.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 667,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/payment-callback-throttling.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
