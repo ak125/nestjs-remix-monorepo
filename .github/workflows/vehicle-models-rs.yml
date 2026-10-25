@@ -1,0 +1,200 @@
+name: 🦀 vehicle-models-rs
+
+# Service Rust de la route R2 (GET /api/vehicles/brands/:brandId/models), livré
+# inerte : aucune règle de production n'y envoie de trafic. Ce workflow vérifie
+# le code (fmt, clippy, tests, dont ceux sur un Redis réel) et produit le binaire
+# de la route avec sa provenance. Il ne publie aucune image et ne déploie rien ;
+# la campagne de charge du banc n'y tourne pas.
+#
+# Seul ce dossier entre dans la compilation et les tests (aucun build.rs, aucun
+# fichier lu hors du crate). La copie Node du script Lua du limiteur est comparée
+# octet à octet par Backend Tests (ci.yml), qui tourne sur toute PR.
+on:
+  pull_request:
+    paths:
+      - 'services/vehicle-models-rs/**'
+      - '.github/workflows/vehicle-models-rs.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'services/vehicle-models-rs/**'
+      - '.github/workflows/vehicle-models-rs.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vehicle-models-rs-${{ github.ref }}
+  # Sur main, chaque commit garde son binaire : pas d'annulation.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+defaults:
+  run:
+    shell: bash
+    working-directory: services/vehicle-models-rs
+
+jobs:
+  rust:
+    name: 🦀 vehicle-models-rs (fmt, clippy, tests, binaire)
+    # Image fixée : la glibc et l'éditeur de liens entrent dans le binaire.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    services:
+      redis:
+        # Même image que les compose ; dédiée au job et détruite à sa fin. Les
+        # clés des tests portent une expiration d'une heure au plus.
+        image: redis:7.4.11-alpine@sha256:ff02b58f971e7d7d156a1267e283fcbbeee91773b6aa36c49dac28ecfe28eadf
+        ports:
+          - 6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 2s
+          --health-timeout 2s
+          --health-retries 15
+    env:
+      CARGO_TERM_COLOR: never
+      CARGO_INCREMENTAL: '0'
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: 🦀 Toolchain (rust-toolchain.toml)
+        run: |
+          CHANNEL=$(sed -nE 's/^channel = "([^"]+)"$/\1/p' rust-toolchain.toml)
+          test -n "$CHANNEL"
+          rustup toolchain install "$CHANNEL" --profile minimal --component rustfmt --component clippy
+          rustc -V | grep -q "^rustc $CHANNEL "
+          rustc -vV
+          cargo -V
+
+      - name: 💾 Cache des crates
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+          key: vehicle-models-rs-crates-${{ hashFiles('services/vehicle-models-rs/Cargo.lock') }}
+
+      - name: 📦 Dépendances verrouillées
+        run: cargo fetch --locked
+
+      - name: 🎨 rustfmt
+        run: cargo fmt --check
+
+      - name: 📎 clippy
+        run: cargo clippy --locked --all-targets -- -D warnings
+
+      # Les deux tests du limiteur sur Redis réel sont marqués #[ignore] hors de
+      # ce job ; --include-ignored les exécute, et ils échouent sans Redis.
+      # L'inventaire vérifie qu'aucun test listé n'est sauté ou filtré.
+      - name: 🧪 Tests (dont Redis réel) et inventaire
+        env:
+          THROTTLER_TEST_REDIS_URL: redis://127.0.0.1:${{ job.services.redis.ports['6379'] }}
+        run: |
+          cargo test --locked --all-targets -- --list --include-ignored > "$RUNNER_TEMP/tests-list.txt"
+          cargo test --locked --all-targets --no-fail-fast -- --include-ignored 2>&1 | tee "$RUNNER_TEMP/tests-run.txt"
+          cargo test --locked --doc
+          listed=$(grep -cE ': test$' "$RUNNER_TEMP/tests-list.txt")
+          read -r passed ignored filtered < <(awk '/^test result:/ {p += $4; i += $8; f += $12} END {print p + 0, i + 0, f + 0}' "$RUNNER_TEMP/tests-run.txt")
+          {
+            echo "### Tests vehicle-models-rs"
+            echo "listés : $listed ; réussis : $passed ; ignorés : $ignored ; filtrés : $filtered"
+            echo
+            grep -E '^ +Running |^test result:' "$RUNNER_TEMP/tests-run.txt" | sed 's/^ *//'
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$passed" -ne "$listed" ] || [ "$ignored" -ne 0 ] || [ "$filtered" -ne 0 ]; then
+            echo "::error::inventaire : $listed listés, $passed réussis, $ignored ignorés, $filtered filtrés"
+            exit 1
+          fi
+
+      # Le préfixe du registre Cargo est réécrit : le binaire ne contient aucun
+      # chemin de l'hôte, et une construction locale identique (même toolchain,
+      # même Cargo.lock, même commande) peut être comparée par son sha256.
+      - name: 🏗️ Binaire de la route (release)
+        run: |
+          RUSTFLAGS="--remap-path-prefix=${CARGO_HOME:-$HOME/.cargo}=/cargo" \
+            cargo build --locked --release --bin vehicle-models-route
+
+      # L'image applicative est Alpine (musl) et ne peut pas exécuter ce binaire
+      # glibc : il vise un service à part sur une base Debian 12 (bookworm,
+      # glibc 2.36). Ce contrôle refuse un binaire qu'une telle base ne chargerait pas.
+      - name: 🧾 Provenance et compatibilité glibc
+        env:
+          GLIBC_RUNTIME_MAX: '2.36'
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          BIN=target/release/vehicle-models-route
+          OUT="$RUNNER_TEMP/vehicle-models-route"
+          mkdir -p "$OUT"
+          cp "$BIN" "$OUT/vehicle-models-route"
+          needed=$(readelf -d "$BIN" | sed -nE 's/.*\(NEEDED\).*\[(.+)\]$/\1/p' | sort -u | paste -sd' ')
+          glibc=$(objdump -T "$BIN" | grep -oE 'GLIBC_[0-9]+(\.[0-9]+)+' | sed 's/^GLIBC_//' | sort -uV | tail -1)
+          for lib in $needed; do
+            case "$lib" in
+              libc.so.6 | libm.so.6 | libgcc_s.so.1 | ld-linux-x86-64.so.2) ;;
+              *) echo "::error::bibliothèque partagée inattendue : $lib"; exit 1 ;;
+            esac
+          done
+          if [ "$(printf '%s\n%s\n' "$glibc" "$GLIBC_RUNTIME_MAX" | sort -V | tail -1)" != "$GLIBC_RUNTIME_MAX" ]; then
+            echo "::error::le binaire exige glibc $glibc (> $GLIBC_RUNTIME_MAX)"
+            exit 1
+          fi
+          if strings "$BIN" | grep -qF -e "$HOME/" -e "$GITHUB_WORKSPACE"; then
+            echo "::error::chemin de l'hôte de construction dans le binaire"
+            exit 1
+          fi
+          (cd "$OUT" && sha256sum vehicle-models-route > vehicle-models-route.sha256)
+          NEEDED="$needed" GLIBC_MAX="$glibc" python3 -I - "$OUT" <<'PY'
+          import hashlib, json, os, subprocess, sys
+
+          out = sys.argv[1]
+          binary = os.path.join(out, "vehicle-models-route")
+
+
+          def sha(path):
+              with open(path, "rb") as f:
+                  return hashlib.sha256(f.read()).hexdigest()
+
+
+          def run(*args):
+              return subprocess.run(args, check=True, capture_output=True, text=True).stdout.strip()
+
+
+          rustc = run("rustc", "-vV")
+          prov = {
+              "binary": {"name": "vehicle-models-route", "sha256": sha(binary), "size": os.path.getsize(binary)},
+              "source": {
+                  "repository": os.environ["GITHUB_REPOSITORY"],
+                  "built_commit": os.environ["GITHUB_SHA"],
+                  "pr_head_commit": os.environ.get("PR_HEAD_SHA") or None,
+                  "ref": os.environ["GITHUB_REF"],
+                  "event": os.environ["GITHUB_EVENT_NAME"],
+              },
+              "run": {
+                  "workflow_ref": os.environ["GITHUB_WORKFLOW_REF"],
+                  "run_id": os.environ["GITHUB_RUN_ID"],
+                  "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
+                  "runner_image": f'{os.environ.get("ImageOS", "?")} {os.environ.get("ImageVersion", "?")}',
+              },
+              "toolchain": {"rustc": rustc, "cargo": run("cargo", "-V")},
+              "target": next(l.split(": ", 1)[1] for l in rustc.splitlines() if l.startswith("host: ")),
+              "cargo_lock_sha256": sha("Cargo.lock"),
+              "build": "RUSTFLAGS=--remap-path-prefix=<CARGO_HOME>=/cargo cargo build --locked --release --bin vehicle-models-route",
+              "elf": {"needed": os.environ["NEEDED"].split(), "glibc_max_required": os.environ["GLIBC_MAX"]},
+          }
+          with open(os.path.join(out, "provenance.json"), "w") as f:
+              json.dump(prov, f, indent=2)
+              f.write("\n")
+          PY
+          cat "$OUT/vehicle-models-route.sha256" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 📤 Artefact (binaire, sha256, provenance)
+        uses: actions/upload-artifact@v7
+        with:
+          name: vehicle-models-route-${{ github.sha }}
+          path: ${{ runner.temp }}/vehicle-models-route/
+          if-no-files-found: error
+          retention-days: 30
