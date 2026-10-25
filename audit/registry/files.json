@@ -71172,7 +71172,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 191,
+      "loc": 295,
       "owner": "__unassigned__",
       "path": "scripts/ci/prod-image-selection.test.mjs",
       "risk": "low",
