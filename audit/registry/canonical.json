@@ -68090,9 +68090,32 @@
         "manual"
       ],
       "domain": "D4",
+      "id": "backend/src/modules/vehicles/services/data/vehicle-models.service.order.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/vehicles/services/data/vehicle-models.service.ts"
+      ],
+      "kind": "test",
+      "loc": 182,
+      "owner": "@ak125",
+      "path": "backend/src/modules/vehicles/services/data/vehicle-models.service.order.test.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D4",
       "id": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
       "importedBy": [
         "backend/src/modules/vehicles/brands.controller.ts",
+        "backend/src/modules/vehicles/services/data/vehicle-models.service.order.test.ts",
         "backend/src/modules/vehicles/services/enhanced-vehicle.service.ts",
         "backend/src/modules/vehicles/vehicles.controller.ts",
         "backend/src/modules/vehicles/vehicles.module.ts"
@@ -68104,7 +68127,7 @@
         "backend/src/modules/vehicles/types/vehicle.types.ts"
       ],
       "kind": "service",
-      "loc": 774,
+      "loc": 782,
       "owner": "@ak125",
       "path": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
       "risk": "high",
@@ -105232,6 +105255,106 @@
         "depcruise",
         "manual"
       ],
+      "domain": "D4",
+      "id": "services/vehicle-models-rs/bench/harness.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 118,
+      "owner": "@ak125",
+      "path": "services/vehicle-models-rs/bench/harness.cjs",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D4",
+      "id": "services/vehicle-models-rs/bench/journey.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 163,
+      "owner": "@ak125",
+      "path": "services/vehicle-models-rs/bench/journey.mjs",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D4",
+      "id": "services/vehicle-models-rs/bench/js-diff.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 220,
+      "owner": "@ak125",
+      "path": "services/vehicle-models-rs/bench/js-diff.mjs",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D4",
+      "id": "services/vehicle-models-rs/bench/memprobe.cjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 132,
+      "owner": "@ak125",
+      "path": "services/vehicle-models-rs/bench/memprobe.cjs",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D4",
+      "id": "services/vehicle-models-rs/bench/throttler-expiry-repro.js",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 53,
+      "owner": "@ak125",
+      "path": "services/vehicle-models-rs/bench/throttler-expiry-repro.js",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
       "domain": "D15",
       "id": "tests/registry/architecture-generator.test.ts",
       "importedBy": [],
@@ -105454,15 +105577,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "5ca91094428cc956799c31406f2c730d22e7557eca4996e6945b0e0c6969aa47",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "7b19192795bf2ffdb43a2c7fede69cbc0164771799ba90b7c4cea5ee39276b43",
+      ".spec/00-canon/repository-registry/ownership.yaml": "7ce3ab3b01846eb7247f2bac5c38472d366699fb99a5fb08f4e01f8c06797325",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "90163175840e44796908f793612d86b090e6efec04ed7053e3966b0e0c211728",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "6328ddf82649f50dcf6b03a71174d131f91a23f01850a0d40dcbf9e7bb2bce7b",
+      "audit/registry/files.json": "2fd2e55b2b66eb0ed1ca0990d224fbbebe2539d178a243de64599bbc216119c0",
       "audit/registry/rpc.json": "623f3a5150e1cc71cd79946d7a4128fd078d6493626b20f4b6c4c4ac64f06f6d",
       "audit/registry/runtime.json": "121d868fa45952069f14d1a9b717212a5f50b51ac7fd0edc9546ae56d1c41bc2"
     },
-    "sotFingerprint": "65840bfaa42e"
+    "sotFingerprint": "a291f8e6ce42"
   },
   "runtime": [
     {
