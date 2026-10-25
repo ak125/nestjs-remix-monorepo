@@ -1,11 +1,56 @@
 const fs = require('fs');
 const path = require('path');
-const { spawn, execSync } = require('child_process');
+const { spawn, execSync, execFileSync } = require('child_process');
 
 const mainJsPath = path.join(__dirname, 'dist', 'main.js');
 const maxWaitTime = 120000; // 2 minutes
 const checkIntervalMs = 500; // Check every 500ms
 let elapsed = 0;
+
+// 🛑 Stack DEV:3000 tenu par le service systemd
+// Lancé depuis un terminal alors que automecanik-dev.service tient ce backend/, le
+// nettoyage ci-dessous tuait (kill -9) les watchers et le serveur du service : son stack
+// sortait en code 0, que Restart=on-failure ne relance pas, et DEV:3000 passait sans
+// bruit sous le terminal (constaté le 2026-10-25). Refus avant tout kill. Le stack du
+// service lui-même est dans le cgroup de l'unit et passe ; sans systemd utilisateur
+// (CI, conteneur) il n'y a pas de service à protéger.
+const DEV_UNIT = 'automecanik-dev.service';
+
+function refuseIfServiceHoldsBackend() {
+  let show;
+  try {
+    show = execFileSync('systemctl', ['--user', 'show', DEV_UNIT, '-p', 'ActiveState', '-p', 'WorkingDirectory', '-p', 'ControlGroup'], {
+      encoding: 'utf-8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+      // cron et turbo ne transmettent pas toujours XDG_RUNTIME_DIR (même repli que sync-dev-runtime.sh).
+      env: { ...process.env, XDG_RUNTIME_DIR: process.env.XDG_RUNTIME_DIR || `/run/user/${process.getuid()}` },
+    });
+  } catch (e) {
+    return;
+  }
+  const unit = {};
+  show.split('\n').forEach(line => {
+    const eq = line.indexOf('=');
+    if (eq > 0) unit[line.slice(0, eq)] = line.slice(eq + 1);
+  });
+  if (!['active', 'activating', 'reloading'].includes(unit.ActiveState)) return;
+  try {
+    if (fs.realpathSync(unit.WorkingDirectory) !== fs.realpathSync(__dirname)) return;
+  } catch (e) {
+    return;
+  }
+  let ownCgroup = null;
+  try {
+    ownCgroup = (fs.readFileSync('/proc/self/cgroup', 'utf-8').match(/^0::(.*)$/m) || [])[1];
+  } catch (e) {
+    // cgroup illisible : traité comme hors du service
+  }
+  if (ownCgroup && ownCgroup === unit.ControlGroup) return;
+  console.error(`❌ DEV:3000 tourne sous ${DEV_UNIT} (${unit.ActiveState}) : ce lancement tuerait son stack, que systemd ne relancerait pas.`);
+  console.error(`   Journal du service : journalctl --user -u ${DEV_UNIT} -f`);
+  console.error(`   Lancer à la main : systemctl --user stop ${DEV_UNIT}, puis npm run dev`);
+  process.exit(1);
+}
 
 // 🧹 Auto-cleanup old processes to prevent port conflicts and memory leaks
 function cleanupOldProcesses() {
@@ -274,6 +319,8 @@ function startNodemon() {
 
 // Main startup
 (async () => {
+  refuseIfServiceHoldsBackend();
+
   // First, cleanup any old processes blocking port 3000
   cleanupOldProcesses();
 
