@@ -42,7 +42,10 @@ DEV:3000 = `npm run dev` (nodemon) servant **le working tree `/opt/automecanik/a
 Supervision : unit systemd utilisateur `automecanik-dev.service` (relance du stack, arbre tué
 en bloc à l'arrêt) une fois la bascule `bash /opt/automecanik/app/scripts/ops/install-dev-service.sh switch`
 faite par l'owner ; avant elle, le stack vit dans le terminal qui l'a lancé. Un crash de l'app est
-relancé dans le stack par `backend/wait-and-start.js` (ligne `DEV_APP_CRASH`).
+relancé dans le stack par `backend/wait-and-start.js` (ligne `DEV_APP_CRASH`). Service actif, un
+`npm run dev` lancé dans `backend/` depuis un terminal est refusé avant tout nettoyage : il tuait
+le stack du service, qui sortait en code 0 sans être relancé. Journal : `journalctl --user -u
+automecanik-dev -f` ; lancement manuel : `systemctl --user stop automecanik-dev` d'abord.
 **Le merge `main` ne met PAS à jour DEV:3000** (il ne réécrit que le tag `:preprod`). Resync
 automatisé par [`scripts/ops/sync-dev-runtime.sh`](../../scripts/ops/sync-dev-runtime.sh) (cron ~10 min).
 

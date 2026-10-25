@@ -534,15 +534,17 @@ rm -rf "$SB"
 
 # backend/wait-and-start.js (dev:watch du stack DEV) : une modification de backend/.env relance
 # l'app sans tuer le script — sa mort fait arrêter par run-p toute la chaîne (tsc, tsc-alias,
-# nodemon). Vrai script, lancé dans un bac à sable : `ps`, `ss` et `docker` y sont factices,
+# nodemon). Vrai script, lancé dans un bac à sable : `ps`, `ss`, `systemctl` et `docker` y sont factices,
 # sinon son nettoyage de démarrage verrait les processus de la machine. Le faux `ps` ne
 # liste que $WS/ps-list : deux vrais processus du bac à sable, présentés comme des watchers.
 WS=$(mktemp -d)
 mkdir -p "$WS/backend/dist" "$WS/bin" "$WS/ailleurs"
 cp "$REPO_ROOT/backend/wait-and-start.js" "$WS/backend/"
 echo "SANDBOX=1" > "$WS/backend/.env"
-echo 'const fs = require("fs"); fs.appendFileSync(__dirname + "/../../boots.log", "boot\n"); fs.writeFileSync(__dirname + "/../../app.pid", String(process.pid)); setInterval(() => {}, 1e9);' > "$WS/backend/dist/main.js"
 printf '#!/bin/sh\ncat "%s/ps-list" 2>/dev/null\nexit 0\n' "$WS" > "$WS/bin/ps"
+# Faux systemctl : état de l'unit lu dans $WS/unit-state, @SELF@ = cgroup de l'appelant
+# (hérité de wait-and-start.js, comme le stack lancé par le service).
+printf '#!/bin/sh\ncg=$(sed -n "s/^0:://p" /proc/self/cgroup)\nsed "s|@SELF@|$cg|" "%s/unit-state"\n' "$WS" > "$WS/bin/systemctl"
 printf '#!/bin/sh\nexit 0\n' > "$WS/bin/ss"
 printf '#!/bin/sh\necho "Up 1 hour"\n' > "$WS/bin/docker"
 printf '#!/bin/sh\nexec node %s "$@"\n' "$(cd "$REPO_ROOT" && node -p 'require.resolve("nodemon/bin/nodemon.js")')" > "$WS/bin/nodemon"
@@ -560,6 +562,17 @@ OWN_W=$!
 (cd "$WS/ailleurs" && exec node -e 'setTimeout(() => {}, 120000)') &
 FOREIGN_W=$!
 printf '%s 100 node scripts/ops/dev-compile-watch.js -p tsconfig.json\n' "$OWN_W" "$FOREIGN_W" > "$WS/ps-list"
+# Lancé hors du service qui tient ce backend/ (terminal) : refus avant tout kill. Avant, le
+# nettoyage tuait le stack du service, qui sortait en code 0 sans être relancé (2026-10-25).
+# dist/main.js est encore absent : sans le refus, le script attendrait la compilation.
+printf 'ActiveState=active\nWorkingDirectory=%s\nControlGroup=/user.slice/app.slice/automecanik-dev.service\n' "$WS/backend" > "$WS/unit-state"
+(cd "$WS/backend" && PATH="$WS/bin:$PATH" timeout 10 node wait-and-start.js </dev/null >"$WS/out" 2>&1)
+assert_exit "wait-and-start hors du service actif sur ce backend/ → refus" 1 "$?"
+assert_contains "wait-and-start : motif du refus" "tourne sous automecanik-dev.service" "$(cat "$WS/out")"
+assert_contains "wait-and-start : refus sans tuer le stack du service" "vivant" "$(alive "$OWN_W")"
+# Stack du service : l'appelant est dans le cgroup de l'unit, le démarrage continue.
+printf 'ActiveState=active\nWorkingDirectory=%s\nControlGroup=@SELF@\n' "$WS/backend" > "$WS/unit-state"
+echo 'const fs = require("fs"); fs.appendFileSync(__dirname + "/../../boots.log", "boot\n"); fs.writeFileSync(__dirname + "/../../app.pid", String(process.pid)); setInterval(() => {}, 1e9);' > "$WS/backend/dist/main.js"
 (cd "$WS/backend" && PATH="$WS/bin:$PATH" exec setsid node wait-and-start.js <&7 >"$WS/out" 2>&1) &
 WPID=$!
 wait_boots 1 30
