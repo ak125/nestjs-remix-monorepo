@@ -143,6 +143,8 @@ class PublishTests(unittest.TestCase):
                  'outside_contract_paths': {'changed_files': ['docs/b.txt']},
                  'owner_reserved_path': {'contract': {**good['contract'], 'paths': ['.github/']},
                                          'changed_files': ['.github/workflows/ci.yml']},
+                 'scanner_rules_path': {'contract': {**good['contract'], 'paths': ['backend/', '.gitleaksignore']},
+                                        'changed_files': ['backend/a.txt', '.gitleaksignore']},
                  'patch_size': {'diff_bytes': good['diff_bytes'] + 1},
                  'patch_artifact_name': {'diff_sha256': '0' * 64},
                  'execution_target_unknown': {'contract': {**good['contract'], 'target': 'wiki'}},
@@ -155,6 +157,8 @@ class PublishTests(unittest.TestCase):
         patch = fx.directory / good['diff_artifact']
         patch.write_bytes(patch.read_bytes().replace(b'fixed', b'fixeD'))
         with self.assertRaisesRegex(ValueError, 'patch_drift'): fx.proof()
+        fx.state = {**good, 'changed_files': ['backend/.gitleaks.toml']}; fx.write()
+        with self.assertRaisesRegex(ValueError, 'scanner_rules_path'): fx.proof()
 
     def test_workspace_on_another_revision_is_refused(self):
         fx = self.fixture()
@@ -197,15 +201,6 @@ class PublishTests(unittest.TestCase):
         self.assertEqual(fx.remote_branch(), [])
         self.assertNotIn('hermes-publish', sh(fx.source, 'git', 'worktree', 'list'))
 
-    @unittest.skipUnless(GITLEAKS, 'gitleaks absent')
-    def test_patched_scanner_rules_are_ignored(self):
-        (self.bin / 'gitleaks').unlink()
-        token = 'ghp' + '_' + hashlib.sha256(b'fixture').hexdigest()[:36]
-        fx = self.fixture({'backend/a.txt': f'token = "{token}"\n'.encode(),
-                           '.gitleaks.toml': b"[allowlist]\npaths = ['''.*''']\n", '.gitleaksignore': b'*\n'},
-                          paths=('backend/', '.gitleaks.toml', '.gitleaksignore'))
-        with self.assertRaisesRegex(ValueError, 'gitleaks_failed'):
-            hp.main(['check', fx.id], fx.config, self.root / 'receipts')
 
 
 if __name__ == '__main__':

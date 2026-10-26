@@ -72,6 +72,8 @@ def verify(cfg, directory, state):
     if not all(in_scope(f, contract.get('paths') or []) for f in files): raise ValueError('outside_contract_paths')
     # .github/ is owner-reserved; the App has no Workflows permission either.
     if any(f.startswith('.github/') for f in files): raise ValueError('owner_reserved_path')
+    # gitleaks reads its rules and the .gitleaksignore of the scanned tree: the patch must not touch them.
+    if any(Path(f).name in ('.gitleaks.toml', '.gitleaksignore') for f in files): raise ValueError('scanner_rules_path')
     digest = state.get('diff_sha256')
     if state.get('diff_artifact') != f'changes-{digest}.patch': raise ValueError('patch_artifact_name')
     patch = directory / state['diff_artifact']
@@ -146,14 +148,9 @@ def build(proof, work):
     commit = git(work, 'rev-parse', 'HEAD').strip()
     changed = sorted(n for n in git(work, 'diff', '--name-only', '-z', proof['revision'], commit).split('\0') if n)
     if changed != proof['changed_files']: raise ValueError('commit_files_mismatch')
-    # Public repository: the push itself publishes. Same gitleaks as CI, with the rules of the fixed
-    # revision: the patch cannot weaken its own scan.
-    rules = []
-    for name, flag, fallback in (('.gitleaks.toml', '--config', '[extend]\nuseDefault = true\n'),
-                                 ('.gitleaksignore', '--gitleaks-ignore-path', '')):
-        tracked = git(proof['source'], 'ls-tree', '--name-only', proof['revision'], name).strip()
-        (work.parent / name).write_text(git(proof['source'], 'show', f"{proof['revision']}:{name}") if tracked else fallback)
-        rules += [flag, str(work.parent / name)]
+    # Public repository: the push itself publishes. Same gitleaks and rules as CI; verify() refused
+    # any patch touching them, so they are the fixed revision's.
+    rules = ['--config', str(work / '.gitleaks.toml')] if (work / '.gitleaks.toml').is_file() else []
     run(['gitleaks', 'git', *rules, '--log-opts', f"{proof['revision']}..{commit}", '--redact', '--no-banner',
          '--exit-code', '1', str(work)], cwd=work)
     run(['gitleaks', 'stdin', *rules, '--redact', '--no-banner', '--exit-code', '1'], cwd=work, data=body(proof).encode())

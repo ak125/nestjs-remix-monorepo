@@ -25,14 +25,14 @@ Contrôles avant toute écriture, chacun refusant sans rien laisser derrière lu
   de l'espace isolé tant que celui-ci est conservé (`workspace_head: verified` ;
   `released` après sa libération) ;
 - fichiers dans les chemins du contrat, même règle que le contrôleur ; `.github/`
-  refusé (réservé à l'owner) ;
+  refusé (réservé à l'owner), ainsi que tout `.gitleaks.toml` ou `.gitleaksignore`
+  (gitleaks lit ceux de l'arbre scanné : le patch ne doit pas affaiblir son
+  propre scan) ;
 - patch identique à l'empreinte et à la taille enregistrées (8 Mio au plus) ;
 - commit reconstruit dans un worktree temporaire détaché sur la révision exacte,
   liste des fichiers comparée deux fois (après `git apply`, puis après le commit) ;
-- gitleaks sur le commit et sur le texte de la PR, avec `.gitleaks.toml` et
-  `.gitleaksignore` lus dans la révision fixée, jamais dans l'arbre patché : le
-  dépôt est public, le push publie, et le patch ne peut pas affaiblir son propre
-  scan.
+- gitleaks sur le commit et sur le texte de la PR, avec les règles du dépôt à la
+  révision fixée : le dépôt est public, le push publie.
 
 Le commit est déterministe (auteur, committer et date fixés par la mission) : une
 relance après un échec de `gh pr create` réutilise la branche déjà poussée ; une
