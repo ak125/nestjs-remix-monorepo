@@ -46,6 +46,14 @@ le fichier racine demande de lire `CLAUDE.md`. Les liens Markdown ne sont pas de
 imports. `.agents/skills` est un symlink interne vers les skills racine ; les
 skills imbriqués sous `.claude/` ne sont pas une découverte Codex garantie.
 
+Missions Hermes de DEV, constaté le 2026-10-26 sur des missions réelles : avec
+l'exécutant Codex (runtime 0.153.2), la session liste les skills du dépôt ; avec
+l'exécutant Claude, le contrôleur lance Claude sans sources de réglages, sans
+commandes slash ni outils natifs (seul l'outil MCP de la mission) : ni `CLAUDE.md`
+ni aucun skill n'entrent dans le contexte ; seule la consigne du contrôleur
+demande de lire les `AGENTS.md` applicables. Une mission Claude qui doit suivre un skill le cite par son
+chemin dans l'objectif.
+
 Hermes s'exécute sur un autre VPS, sans accès local au checkout
 `/opt/automecanik/app`. Ses outils et sections de continuité existants ne prouvent
 pas le chargement des instructions de ce dépôt. Le chargement natif de ces règles
