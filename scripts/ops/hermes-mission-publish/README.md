@@ -49,7 +49,10 @@ qui bloque une seconde publication.
 
 Limites : le déclenchement reste manuel sur DEV, après l'accord humain ; aucun
 accord Telegram natif n'est raccordé à cet outil. Une mission `partial` ou
-`blocked` n'est pas publiable, même si son patch est propre.
+`blocked` n'est pas publiable, même si son patch est propre. Le corps de la PR
+ne porte pas la section « Definition of Done » : l'outil n'a pas lu la CI et ne
+certifie rien à la place de celui qui réceptionne ; le contrôle DoD reste rouge
+jusqu'à ce que cette section soit remplie après lecture de la CI.
 
 Qualification : `python3 -B test_publish.py`. Les fixtures sont synthétiques
 (dépôt Git local, remote nu, `gh` simulé ; gitleaks réel s'il est installé) ;
