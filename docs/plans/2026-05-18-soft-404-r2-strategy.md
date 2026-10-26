@@ -1,7 +1,5 @@
 # Soft-404 R2-PRODUIT Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** Refondre la page Remix `/pieces/:gamme/:marque/:modele/:type.html` quand `count(pieces)=0` pour passer d'un "Non disponible" générique à un hub de rebond compat-aware (multi-tier ranking + JSON-LD ItemList + télémétrie append-only), tout en maintenant `HTTP 200 + noindex,follow`.
 
 **Architecture:** Nouveau service backend `RmAlternativesService` (single-write-path) qui produit un payload v2 (`alternativeVehicles` + `alternativeGammes` + `relatedModels`) filtré par `EXISTS pieces_relation_type` et trié par tiers de proximité catalogue. Frontend refactor du composant `NoProductsAlternatives` en 3 blocs hiérarchisés + meta enrichie (JSON-LD `ItemList`, title/desc/og dynamiques). Télémétrie append-only via table `__soft_404_events` + vue `v_soft_404_demand_30d`. Cache Redis 5 min keyed `alt:{type_id}:{pg_id}:v1`. URL strictement préservée.
@@ -10,7 +8,7 @@
 
 **Worktree:** `/opt/automecanik/app-worktrees/soft-404-r2-strategy/` (branche `feat/soft-404-r2-strategy`).
 
-**Spec source:** [docs/superpowers/specs/2026-05-18-soft-404-r2-strategy-design.md](../specs/2026-05-18-soft-404-r2-strategy-design.md)
+**Spec source:** [docs/specs/2026-05-18-soft-404-r2-strategy-design.md](../specs/2026-05-18-soft-404-r2-strategy-design.md)
 
 ---
 
@@ -135,7 +133,7 @@ Append-only __soft_404_events (pg_id, type_id, ts, referrer, ua_class)
 + v_soft_404_demand_30d (hits >= 3 sur 30j). Idempotent via IF NOT
 EXISTS. Owner: seo-platform.
 
-Spec: docs/superpowers/specs/2026-05-18-soft-404-r2-strategy-design.md
+Spec: docs/specs/2026-05-18-soft-404-r2-strategy-design.md
 
 Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
 EOF
@@ -2543,8 +2541,8 @@ Refonte de la page R2-PRODUIT quand `count(pieces) = 0` :
 
 ## Spec et plan
 
-- Spec : [docs/superpowers/specs/2026-05-18-soft-404-r2-strategy-design.md](docs/superpowers/specs/2026-05-18-soft-404-r2-strategy-design.md)
-- Plan : [docs/superpowers/plans/2026-05-18-soft-404-r2-strategy.md](docs/superpowers/plans/2026-05-18-soft-404-r2-strategy.md)
+- Spec : [docs/specs/2026-05-18-soft-404-r2-strategy-design.md](docs/specs/2026-05-18-soft-404-r2-strategy-design.md)
+- Plan : [docs/plans/2026-05-18-soft-404-r2-strategy.md](docs/plans/2026-05-18-soft-404-r2-strategy.md)
 
 ## Test plan
 
@@ -2683,7 +2681,7 @@ DELETE FROM __soft_404_events WHERE ts < now() - interval '90 days';
 - Volume `bot` >50% des hits → revoir les patterns UA.
 
 ## SLO associés
-- Voir spec `docs/superpowers/specs/2026-05-18-soft-404-r2-strategy-design.md` §6.
+- Voir spec `docs/specs/2026-05-18-soft-404-r2-strategy-design.md` §6.
 ```
 
 - [ ] **Step 2: Commit + PR**
@@ -2716,17 +2714,3 @@ Avant de marquer le plan terminé :
 2. **Placeholder scan** : grep TBD/TODO/FIXME → seuls les 2 placeholders déclarés du spec (cluster catalogue, fixtures 2-5) restent, et ils sont des **action items pre-merge bloquants explicites**.
 
 3. **Type consistency** : `AlternativeVehicle` / `AlternativeGamme` / `RelatedModel` identiques entre `dto/alternatives-v2.dto.ts` et `NoProductsAlternatives.tsx`. `compute(type_id, pg_id, limit)` signature identique entre service, tests, controller. `vehicleContext` shape identique entre loader, meta, composant. ✓
-
----
-
-## Plan complet et sauvegardé
-
-Fichier : `docs/superpowers/plans/2026-05-18-soft-404-r2-strategy.md`
-
-### Deux options d'exécution
-
-**1. Subagent-Driven (recommandé)** — Je dispatche un subagent par tâche, review entre chaque, itération rapide. Skill : `superpowers:subagent-driven-development`.
-
-**2. Inline Execution** — J'exécute les tâches en série dans cette session avec checkpoints. Skill : `superpowers:executing-plans`.
-
-Lequel choisis-tu ?

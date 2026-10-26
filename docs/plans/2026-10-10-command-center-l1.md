@@ -1,6 +1,6 @@
 # Command Center L1 — Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking. Méthode retenue : exécution native, un seul écrivain principal ; un sous-agent ponctuel en lecture seule si nécessaire, selon la mission bornée ci-dessous. Aucune sous-délégation ni revue automatique systématique.
+> Méthode retenue : exécution native, un seul écrivain principal ; un sous-agent ponctuel en lecture seule si nécessaire, selon la mission bornée ci-dessous. Aucune sous-délégation ni revue automatique systématique.
 
 **Goal:** représenter les 24 responsabilités dans le cockpit existant, avec identité, responsable, mode, fiche et rapports honnêtes, en conservant les raccordements actuels.
 
@@ -8,7 +8,7 @@
 
 **Tech Stack:** Node 24, JavaScript/TypeScript, AJV 2020, Zod 4, NestJS, React Router/React, node:test/tsx, Jest/ts-jest, Vitest et Playwright déjà présents ; aucun changement de dépendance ou lockfile.
 
-**Spec:** [spécification L1 révision 4](../../../audit/command-center-l1-spec-2026-10-10.md), approuvée par Marwane le 2026-10-10 ; empreinte avant annotation d'approbation : `e5952f14824ccd1915676fcf015982ad14ed85950e478e0466fdd66ae0295494`.
+**Spec:** [spécification L1 révision 4](../../audit/command-center-l1-spec-2026-10-10.md), approuvée par Marwane le 2026-10-10 ; empreinte avant annotation d'approbation : `e5952f14824ccd1915676fcf015982ad14ed85950e478e0466fdd66ae0295494`.
 
 **État du plan : exécution locale autorisée le 2026-10-10**, instruction de Marwane « continue corrections et amelioration » après présentation du plan et choix de méthode. Base B : `c2dfa0699c9d08e549a107b53a37a4657646811a`. Worktree : `C:/Users/Marwane/.codex/worktrees/command-center-l0/nestjs-remix-monorepo`, HEAD détachée. Les tâches produit 1–5 sont implémentées dans le candidat local ; la qualification de la tâche 6 est consignée en fin de document. Le candidat n'est ni intégré à main ni servi en PREPROD/PROD.
 

@@ -20,7 +20,7 @@ coverage:
 
 ## Overview
 
-**Système d'orchestration intelligent du monorepo piloté par 57 agents IA**, KPIs temps réel (52 métriques), coordination inter-domaines automatisée, et intégration Spec Kit. Transforme l'organisation en **Entreprise Augmentée** où les agents gèrent 80% des opérations avec gouvernance transparente via Health Board.
+**Système d'orchestration intelligent du monorepo piloté par 57 agents IA**, KPIs temps réel (52 métriques) et coordination inter-domaines automatisée. Transforme l'organisation en **Entreprise Augmentée** où les agents gèrent 80% des opérations avec gouvernance transparente via Health Board.
 
 ## Vision Globale : Entreprise Augmentée
 
@@ -1022,80 +1022,6 @@ CREATE INDEX idx_ai_cos_actions_priority
   ON ai_cos_actions(priority);
 ```
 
-## Intégration Spec Kit
-
-### Workflow Automatique
-
-```mermaid
-graph TD
-    A[AI-COS détecte KPI rouge] --> B[Agent Squad Planner]
-    B --> C[Génère spec dans .spec/features/]
-    C --> D[Crée GitHub Issue]
-    D --> E[/speckit.specify]
-    E --> F[/speckit.plan]
-    F --> G[/speckit.implement]
-    G --> H[Copilot implémente]
-    H --> I[PR créée]
-    I --> J[Review & Merge]
-    J --> K[Nouveau snapshot AI-COS]
-    K --> L{KPI vert?}
-    L -->|Oui| M[✅ Objectif atteint]
-    L -->|Non| B
-```
-
-### Exemple Concret
-
-**Scénario** : p95 backend = 230ms (cible: 180ms)
-
-1. **Détection** (snapshot quotidien 3h)
-   ```
-   ⚠️ KPI backend-p95 hors cible
-   Actuel: 230ms, Cible: 180ms, Delta: +28%
-   Agent: Performance Squad
-   ```
-
-2. **Génération Spec** (Agent Squad Planner)
-   ```markdown
-   # .spec/features/performance-backend-optimization.md
-   ---
-   title: "Optimisation Performance Backend p95 < 180ms"
-   status: draft
-   priority: high
-   squad: performance-squad
-   ---
-   
-   ## Context
-   p95 backend = 230ms, cible = 180ms (+28%)
-   
-   ## Objective
-   Réduire p95 à < 180ms via optimisations Redis + queries SQL
-   
-   ## Plan
-   - Augmenter TTL cache équipementiers 30min → 1h
-   - Optimiser requêtes N+1 sur module vehicles
-   - Implémenter cache multi-niveaux conseils
-   ```
-
-3. **Issue GitHub créée**
-   ```
-   [AI-COS] Optimisation Performance Backend p95 < 180ms
-   Labels: ai-cos, performance-squad, high-priority
-   Assignee: Performance Squad
-   ```
-
-4. **Implémentation Spec Kit**
-   ```bash
-   /speckit.specify  # Affiner spec
-   /speckit.plan     # Plan technique détaillé
-   /speckit.implement # Copilot code
-   ```
-
-5. **Validation**
-   ```bash
-   npm run ai-cos:snapshot
-   # backend-p95 = 175ms ✅
-   ```
-
 ## API Endpoints
 
 ### Dashboard
@@ -1194,13 +1120,7 @@ GET /api/ai-cos/snapshots/latest
 - [ ] Graphiques et visualisations
 - [ ] API endpoints backend
 
-### Phase 5 - Intégration Spec Kit 🔗
-- [ ] Agent Squad Planner (Python)
-- [ ] Génération specs automatique
-- [ ] Création issues GitHub
-- [ ] Tests end-to-end workflow complet
-
-### Phase 6 - Production 🚀
+### Phase 5 - Production 🚀
 - [ ] GitHub Action snapshot quotidien
 - [ ] Notifications Slack/Teams
 - [ ] Monitoring Grafana/Loki
@@ -3393,7 +3313,6 @@ Module    Taxono-    Double     Gate      Observable
 - [AI-COS Vision](../architecture/ai-cos-vision.md)
 - [AI-COS Workflow](../workflows/ai-cos-workflow.md)
 - [Cache Multi-Levels](../architecture/003-cache-redis-multi-levels.md)
-- [Spec Kit README](../README.md)
 
 ## Change Log
 

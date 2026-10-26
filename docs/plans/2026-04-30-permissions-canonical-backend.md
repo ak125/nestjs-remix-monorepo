@@ -1,14 +1,12 @@
 # Permissions Canonical Backend — Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** Move the per-action permission matrix from frontend to backend as single source of truth, replace `IsAdminGuard` with `@RequirePermission(action)` on `OrderActionsController`, and refactor frontend `permissions.ts` into a thin API client. Fix the prod bug where commercial-level users get HTTP 403 on order cancel/ship/deliver/mark-paid.
 
 **Architecture:** Backend `PermissionsService` owns the canonical matrix (5 user levels × 15 actions, ported as-is from frontend). `PermissionsGuard` reads `@RequirePermission('canCancel')` decorator and consults the service. Endpoint `GET /auth/user-permissions/:userId` returns `UserPermissions` shape. Frontend `permissions.ts` exposes `loadUserPermissions(userId)` instead of computing locally. `IsAdminGuard` stays in place for genuinely admin-only routes (out of scope).
 
 **Tech Stack:** NestJS 10, TypeScript 5, Jest, Remix 2 (loaders), Vitest (frontend tests if any).
 
-**Spec:** [`docs/superpowers/specs/2026-04-30-permissions-canonical-backend-design.md`](../specs/2026-04-30-permissions-canonical-backend-design.md)
+**Spec:** [`docs/specs/2026-04-30-permissions-canonical-backend-design.md`](../specs/2026-04-30-permissions-canonical-backend-design.md)
 
 **Branch:** Continue on `feat/fe-diagnostic-wizard-dynamic` is **NOT** acceptable (per memory `feedback_branch_scope_discipline.md`). Create dedicated branch from `main`: `fix/permissions-canonical-backend`.
 
@@ -1070,9 +1068,9 @@ Move per-action permission matrix from frontend to backend as single source of t
 
 **Triggered by:** Order `ORD-1777531019900-837` cancel returned `Forbidden resource` (HTTP 403) to commercial-level user despite frontend declaring `canCancel: true`.
 
-**Spec:** [`docs/superpowers/specs/2026-04-30-permissions-canonical-backend-design.md`](../blob/fix/permissions-canonical-backend/docs/superpowers/specs/2026-04-30-permissions-canonical-backend-design.md)
+**Spec:** [`docs/specs/2026-04-30-permissions-canonical-backend-design.md`](../blob/fix/permissions-canonical-backend/docs/specs/2026-04-30-permissions-canonical-backend-design.md)
 
-**Plan:** [`docs/superpowers/plans/2026-04-30-permissions-canonical-backend.md`](../blob/fix/permissions-canonical-backend/docs/superpowers/plans/2026-04-30-permissions-canonical-backend.md)
+**Plan:** [`docs/plans/2026-04-30-permissions-canonical-backend.md`](../blob/fix/permissions-canonical-backend/docs/plans/2026-04-30-permissions-canonical-backend.md)
 
 ## Scope
 

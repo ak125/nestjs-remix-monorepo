@@ -1,14 +1,12 @@
 # AI Additive Layer (Phase 0 + Phase 1) Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** Acter la doctrine "AI = couche additive du Search Control Plane" via 9 ADRs vault (Phase 0) puis livrer 6 extensions tech petites observable (Phase 1) parallèlement à commerce-loop V1.
 
 **Architecture:** Phase 0 = 9 ADRs vault courts dans le repo `governance-vault` séparé (pas de code, gouvernance d'abord). Phase 1 = 6 extensions du monorepo : 1 service backend (étend `QualityHistorySnapshotService` avec 3 nouveaux `metric_name`), 1 script d'audit, 2 artefacts workspace, 1 query SQL, 1 module NestJS BullMQ. Aucune nouvelle table SQL (les nouveaux signaux passent par le pattern EAV existant `__seo_quality_history`). Phase 3 (produit C) reste GATED par commerce-loop V1 + KPIs + ADRs C résolus — hors-scope de ce plan.
 
 **Tech Stack:** NestJS (backend services + processors BullMQ), Supabase (`__seo_quality_history` EAV existante, `__trend_signals` nouvelle additive), Jest (tests unit), TypeScript (services + scripts), YAML (Prompt Registry), CSV (probe template), SQL (Opportunity Lens query).
 
-**Spec source:** `/opt/automecanik/app/.claude/worktrees/ai-additive-layer-design/docs/superpowers/specs/2026-05-23-ai-additive-layer-phase-0-and-1-design.md`
+**Spec source:** `/opt/automecanik/app/.claude/worktrees/ai-additive-layer-design/docs/specs/2026-05-23-ai-additive-layer-phase-0-and-1-design.md`
 
 **Mémoires anti-régression à respecter:** [[project_a_b_c_surfaces_distinction]], [[feedback_product_c_design_invariants]], [[feedback_branch_scope_discipline]], [[feedback_commit_via_worktree_when_concurrent_agents]], [[feedback_worktree_commit_needs_no_verify_husky]], [[feedback_no_touch_meta_h1_if_optimized]], [[feedback_no_url_changes_ever]], [[reference_partitioned_snapshot_tables_need_premake_cron]], [[reference_postgrest_stable_function_write_readonly]], [[feedback_supabase_js_1000_row_cap_data_loss]].
 
@@ -88,7 +86,7 @@ Expected: discover how the service obtains page HTML for scoring (SSR render, ca
 
 - [ ] **Step 3: Document findings**
 
-Append findings to `docs/superpowers/plans/2026-05-23-ai-additive-layer-phase-0-and-1.md` under a `## Task 1.1 findings` section so subsequent tasks reference the correct paths.
+Append findings to `docs/plans/2026-05-23-ai-additive-layer-phase-0-and-1.md` under a `## Task 1.1 findings` section so subsequent tasks reference the correct paths.
 
 ### Task 1.1 findings (résolus par exploration en amont)
 

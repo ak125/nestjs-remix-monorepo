@@ -27,9 +27,9 @@ L'annulation n'a pas eu lieu, aucun email client envoyé, aucun audit trail cré
 
 | # | Localisation | Granularité | Verdict pour "commercial peut annuler" |
 |---|---|---|---|
-| 1 | [`backend/src/auth/auth.service.ts:877-885`](../../../backend/src/auth/auth.service.ts) | Module × `read`/`write` | Indéterminé (ne couvre pas l'action `cancel`) |
-| 2 | [`frontend/app/utils/permissions.ts:101-118`](../../../frontend/app/utils/permissions.ts) | Par-action (`canCancel`, `canShip`, …) | **OUI** (level 3-4 → `canCancel: true`) |
-| 3 | [`backend/src/auth/is-admin.guard.ts:20`](../../../backend/src/auth/is-admin.guard.ts) | Booléen (`level >= 7`) | **NON** (commercial level 3-6 rejeté) |
+| 1 | [`backend/src/auth/auth.service.ts:877-885`](../../backend/src/auth/auth.service.ts) | Module × `read`/`write` | Indéterminé (ne couvre pas l'action `cancel`) |
+| 2 | [`frontend/app/utils/permissions.ts:101-118`](../../frontend/app/utils/permissions.ts) | Par-action (`canCancel`, `canShip`, …) | **OUI** (level 3-4 → `canCancel: true`) |
+| 3 | [`backend/src/auth/is-admin.guard.ts:20`](../../backend/src/auth/is-admin.guard.ts) | Booléen (`level >= 7`) | **NON** (commercial level 3-6 rejeté) |
 
 Le frontend affiche le bouton "Annuler" au commercial, le backend le bloque. Toute action métier opérationnelle pour le commercial souffre du même symptôme : `canShip`, `canDeliver`, `canMarkPaid`, `canSendEmails`, `canValidate` sont déclarées `true` côté frontend mais le backend les bloque toutes via `IsAdminGuard`.
 
@@ -65,7 +65,7 @@ Trois précédents identiques peuvent déjà être ouverts en silence (commercia
 
 ### 2.3 Matrice canonique (portée à l'identique depuis le frontend)
 
-La matrice est portée **sans modification métier** depuis [`frontend/app/utils/permissions.ts:36-139`](../../../frontend/app/utils/permissions.ts). Cette PR ne renégocie pas les règles — elle les déplace au bon endroit.
+La matrice est portée **sans modification métier** depuis [`frontend/app/utils/permissions.ts:36-139`](../../frontend/app/utils/permissions.ts). Cette PR ne renégocie pas les règles — elle les déplace au bon endroit.
 
 | Niveau | Rôle | canCancel | canShip | canDeliver | canMarkPaid | canValidate | canSendEmails | canCreateOrders | canReturn | canRefund |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -151,7 +151,7 @@ async getUserPermissions(@Param('userId') userId: string): Promise<UserPermissio
 
 ### 3.4 Migration des endpoints orders
 
-[`backend/src/modules/orders/controllers/order-actions.controller.ts`](../../../backend/src/modules/orders/controllers/order-actions.controller.ts) :
+[`backend/src/modules/orders/controllers/order-actions.controller.ts`](../../backend/src/modules/orders/controllers/order-actions.controller.ts) :
 
 ```ts
 @Controller('api/admin/orders')
@@ -328,11 +328,11 @@ La PR introduit du nouveau code et remplace 6 décorateurs sur `OrderActionsCont
 ## 10. Références
 
 - Bug déclencheur : commande `ORD-1777531019900-837` (DB `cxpojprgwgubzjyqzmoq`)
-- Frontend matrice originale : [`frontend/app/utils/permissions.ts:36-139`](../../../frontend/app/utils/permissions.ts)
-- Backend guard à remplacer : [`backend/src/auth/is-admin.guard.ts`](../../../backend/src/auth/is-admin.guard.ts)
-- Endpoint cancel impacté : [`backend/src/modules/orders/controllers/order-actions.controller.ts:246`](../../../backend/src/modules/orders/controllers/order-actions.controller.ts)
+- Frontend matrice originale : [`frontend/app/utils/permissions.ts:36-139`](../../frontend/app/utils/permissions.ts)
+- Backend guard à remplacer : [`backend/src/auth/is-admin.guard.ts`](../../backend/src/auth/is-admin.guard.ts)
+- Endpoint cancel impacté : [`backend/src/modules/orders/controllers/order-actions.controller.ts:246`](../../backend/src/modules/orders/controllers/order-actions.controller.ts)
 - Listeners événement cancel (preserved, non touchés) :
-  - [`backend/src/modules/orders/listeners/order-email.listener.ts:48`](../../../backend/src/modules/orders/listeners/order-email.listener.ts)
-  - [`backend/src/modules/orders/listeners/order-audit.listener.ts:105`](../../../backend/src/modules/orders/listeners/order-audit.listener.ts)
+  - [`backend/src/modules/orders/listeners/order-email.listener.ts:48`](../../backend/src/modules/orders/listeners/order-email.listener.ts)
+  - [`backend/src/modules/orders/listeners/order-audit.listener.ts:105`](../../backend/src/modules/orders/listeners/order-audit.listener.ts)
 - CLAUDE.md backend pattern : `.claude/rules/backend.md`
 - CLAUDE.md règle "vérifier l'existant" : `CLAUDE.md` §"Vérifier l'existant AVANT d'inventer"

@@ -31,11 +31,9 @@ leur corps est chargé à l'invocation. Une surface spécialisée n'exclut donc 
 skills racine. Une liste de fichiers ne prouve pas leur invocation ni leurs droits.
 Les agents `.claude/agents/` et les miroirs restent à distinguer de leur chargement.
 
-Les settings de la racine et des trois workspaces désactivent localement
-`superpowers@claude-plugins-official`, en conservant les hooks et permissions existants.
-Le réglage racine seul ne désactive pas le plugin depuis ces workspaces dans cette installation :
+Chaque workspace porte son propre `.claude/settings.json` (hooks, permissions) ;
+le réglage racine seul ne s'y applique pas dans cette installation :
 la découverte des settings ne doit pas être déduite de celle des `CLAUDE.md`.
-Les trois workspaces ont été vérifiés dans de nouvelles sessions. Les paramètres globaux sont inchangés.
 Les hooks SessionStart/UserPromptSubmit ajoutent leurs propres extraits bornés ;
 ils ne rendent pas toute la documentation canonique automatiquement chargée.
 
