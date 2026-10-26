@@ -531,3 +531,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/diag-maintenance-schema-capture`
 - **Décision** : fix(diagnostic): capturer le schéma des tables d'entretien, créées hors du dépôt (ADR-112 D8)
 - **Sortie** : PR aucune | commits 72634ebfe
+
+## 2026-10-26 — docs/capability-acceptance-v1-1 (auto)
+
+- **Branche** : `docs/capability-acceptance-v1-1`
+- **Décision** : docs(skills): capability-acceptance 1.1.0, critères préalables et réouverture
+- **Sortie** : PR #1895 | commits 8d9082bec
