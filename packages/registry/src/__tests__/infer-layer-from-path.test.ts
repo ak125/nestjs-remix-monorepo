@@ -63,7 +63,7 @@ describe("inferLayerFromPath — specificity (longest glob wins)", () => {
 describe("inferLayerFromPath — no match", () => {
   test("returns undefined for path matching no layer", () => {
     const layer = inferLayerFromPath(
-      "docs/superpowers/specs/2026-05-14-design.md",
+      "docs/specs/2026-05-14-design.md",
       ARCHITECTURE_LAYERS,
     );
     assert.equal(layer, undefined);

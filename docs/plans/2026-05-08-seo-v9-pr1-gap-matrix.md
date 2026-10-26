@@ -1,7 +1,5 @@
 # SEO v9 PR-1 — Audit inventaire + matrice gap legacy → monorepo Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** Livrer `docs/seo/legacy_to_monorepo_gap_matrix.md` (matrice ligne par fichier PHP legacy → équivalent monorepo + statut + gap + priorité) + JSON raw `audit/seo-v9-inventaire-{date}.json`. READ-ONLY, 0 impact prod.
 
 **Architecture:** 1 script orchestrateur `audit-v9-inventaire.ts` qui appelle 5 modules SRP (1 par volet : inventory-services, diff-v4, r2-routes, r2-volume, php-vs-remix) + 1 générateur markdown. Tests Vitest unitaires sur logique pure, tests integration mocked-Supabase.
@@ -1319,17 +1317,3 @@ Cette section est exécutée par moi avant de proposer le handoff.
 - Schéma `pieces` (volet 4) : colonnes `piece_qty_stock`, `piece_img` à confirmer en lançant.
 - Endpoint V4 `/api/seo-dynamic-v4/generate-complete` : forme exacte de la requête à confirmer (POST body) lors du run réel.
 - Sample 50 URLs : doit être complété par opérateur avant Task 10 step 2.
-
----
-
-## Execution Handoff
-
-**Plan complet et sauvé dans `docs/superpowers/plans/2026-05-08-seo-v9-pr1-gap-matrix.md`.**
-
-**Deux options d'exécution :**
-
-**1. Subagent-Driven (recommandée)** — Dispatch un fresh subagent par tâche, review entre les tâches, itération rapide. Sub-skill : `superpowers:subagent-driven-development`.
-
-**2. Inline Execution** — Tâches exécutées dans la session courante avec checkpoints. Sub-skill : `superpowers:executing-plans`.
-
-Quelle approche ?

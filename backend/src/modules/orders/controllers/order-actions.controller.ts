@@ -27,7 +27,7 @@ import { MailService } from '../../../services/mail.service';
  *
  * Endpoints pour toutes les actions backoffice. Permissions per-action via
  * @RequirePermission(canX) consultant la matrice canonique PermissionsService.
- * Cf docs/superpowers/specs/2026-04-30-permissions-canonical-backend-design.md
+ * Cf docs/specs/2026-04-30-permissions-canonical-backend-design.md
  */
 @Controller('api/admin/orders')
 @UseGuards(AuthenticatedGuard, PermissionsGuard)

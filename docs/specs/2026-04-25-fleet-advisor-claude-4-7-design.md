@@ -268,7 +268,7 @@ Before any of the following actions, you MUST create a `pre_canon_review` approv
 
 ### How to create the approval
 
-1. Build payload per `docs/superpowers/specs/2026-04-25-fleet-advisor-claude-4-7-design.md` § 3.4
+1. Build payload per `docs/specs/2026-04-25-fleet-advisor-claude-4-7-design.md` § 3.4
 2. POST `/api/companies/:companyId/approvals` with `type=pre_canon_review`
 3. Note the `approvalId` in your task / commit-message-prefix as `[approval:<id>]`
 4. Wait next heartbeat. Check status:
@@ -439,7 +439,7 @@ Total elapsed : ~12-13 days.
 - `paperclip/packages/db/src/schema/approvals.ts` (text type field — extensible)
 - Memory : `paperclip-agents-config.md`, `vps-aicos.md`, `r12-exit-contract.md`, `feedback_no_hybrid_workarounds.md`
 - Vault canon : `ops/rules/rules-governance.md` (G3), `ledger/decisions/adr/ADR-021-rls-hardening.md`
-- Anthropic pattern : Claude Code subagent `code-reviewer` (this very environment, `superpowers:code-reviewer`)
+- Anthropic pattern : Claude Code subagent `code-reviewer`
 
 ---
 

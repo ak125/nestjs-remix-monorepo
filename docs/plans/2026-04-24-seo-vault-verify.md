@@ -1,14 +1,12 @@
 # SEO Vault Verify Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** Créer le skill `.claude/skills/seo-vault-verify/` pour auditer un vault Obsidian SEO (ZIP ou dossier), produire un rapport reproductible audit-grade, exécuter un run one-shot sur le ZIP fourni et ouvrir la PR.
 
 **Architecture:** 80 % déterministe (scripts Python stdlib + pyyaml) / 20 % LLM (1 subagent judgment). Entrée = ZIP extrait sandbox `/tmp/`, manifeste YAML canonique décrit les assertions binaires, orchestrator enchaîne extract → content → crossref → obsidian → subagent judgment → consolidation. Zero auto-fix, exit-contract respecté, rapport `.spec/reports/`.
 
 **Tech Stack:** Python 3 stdlib (`zipfile`, `hashlib`, `re`, `json`, `pathlib`, `unicodedata`, `io`, `subprocess`), `pyyaml`, `pytest` pour tests, `general-purpose` subagent pour la couche 5.
 
-**Spec de référence :** `docs/superpowers/specs/2026-04-24-seo-vault-verify-design.md` (v0.2, commit `cbf30c46`).
+**Spec de référence :** `docs/specs/2026-04-24-seo-vault-verify-design.md` (v0.2, commit `cbf30c46`).
 
 ---
 
@@ -123,7 +121,7 @@ Verdicts autorisés : `SCOPE_SCANNED`, `PARTIAL_COVERAGE`, `REVIEW_REQUIRED`, `I
 - `references/reviewer-seo-judgment.md` — prompt subagent
 - `references/report-template.md` — structure rapport
 - `schemas/*.schema.md` — structures documentées (stdlib-only, pas JSON Schema lib)
-- Spec : `docs/superpowers/specs/2026-04-24-seo-vault-verify-design.md`
+- Spec : `docs/specs/2026-04-24-seo-vault-verify-design.md`
 ```
 
 - [ ] **Step 3 : Commit scaffold**
@@ -950,7 +948,7 @@ git commit -m "feat(skill): check_obsidian.py + tests (couche 4 intégrité)"
 
 - [ ] **Step 1 : Écrire `references/expected-changes-v1.yaml` (copie du §4 spec, avec SHA256 en placeholder)**
 
-Reporter littéralement le bloc YAML de la §4 du spec `docs/superpowers/specs/2026-04-24-seo-vault-verify-design.md` (18 items `files_unchanged` + 8 items `files_regenerated` + `cross_ref_aggregate` + `matching_rules`). Les `sha256_expected` restent `PENDING_BASELINE` — ils seront remplis au premier audit via `run_audit.py --freeze-baseline`.
+Reporter littéralement le bloc YAML de la §4 du spec `docs/specs/2026-04-24-seo-vault-verify-design.md` (18 items `files_unchanged` + 8 items `files_regenerated` + `cross_ref_aggregate` + `matching_rules`). Les `sha256_expected` restent `PENDING_BASELINE` — ils seront remplis au premier audit via `run_audit.py --freeze-baseline`.
 
 - [ ] **Step 2 : Écrire `schemas/expected-changes.schema.md`**
 
@@ -1889,8 +1887,8 @@ Nouveau skill `/seo-vault-verify` pour auditer un vault Obsidian SEO (ZIP ou dos
 - Selftest 6 cas d'acceptance (happy + fail-detection via fixtures in-memory)
 - Rapport one-shot sur ZIP fourni inclus dans `.spec/reports/`
 
-Spec : `docs/superpowers/specs/2026-04-24-seo-vault-verify-design.md` (v0.2)
-Plan : `docs/superpowers/plans/2026-04-24-seo-vault-verify.md`
+Spec : `docs/specs/2026-04-24-seo-vault-verify-design.md` (v0.2)
+Plan : `docs/plans/2026-04-24-seo-vault-verify.md`
 
 ## Test plan
 
@@ -1932,7 +1930,7 @@ Expected : PR créée, état `OPEN`, URL retournée.
 
 ## Execution Handoff
 
-Plan complet sauvegardé dans `docs/superpowers/plans/2026-04-24-seo-vault-verify.md`.
+Plan complet sauvegardé dans `docs/plans/2026-04-24-seo-vault-verify.md`.
 
 **Options d'exécution :**
 

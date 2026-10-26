@@ -292,7 +292,7 @@ Méthode extension :
 - Plan parent : `/home/deploy/.claude/plans/utiliser-superpower-et-verifier-precious-pebble.md`
 - Golden dataset : `backend/src/modules/diagnostic-engine/__tests__/golden/diagnostic-engine-golden-v1.json`
 - Failure category enum : `backend/src/modules/diagnostic-engine/types/diagnostic-failure-category.ts`
-- Vehicle coverage prioritization : `docs/superpowers/specs/2026-05-23-vehicle-coverage-prioritization.md`
+- Vehicle coverage prioritization : `docs/specs/2026-05-23-vehicle-coverage-prioritization.md`
 
 ## Mémoires Claude liées
 

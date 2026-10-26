@@ -52,5 +52,5 @@ Verdicts autorisés : `SCOPE_SCANNED`, `PARTIAL_COVERAGE`, `REVIEW_REQUIRED`, `I
 - `references/reviewer-seo-judgment.md` — prompt subagent
 - `references/report-template.md` — structure rapport
 - `schemas/*.schema.md` — structures documentées (stdlib-only, pas JSON Schema lib)
-- Spec : `docs/superpowers/specs/2026-04-24-seo-vault-verify-design.md`
-- Plan : `docs/superpowers/plans/2026-04-24-seo-vault-verify.md`
+- Spec : `docs/specs/2026-04-24-seo-vault-verify-design.md`
+- Plan : `docs/plans/2026-04-24-seo-vault-verify.md`
