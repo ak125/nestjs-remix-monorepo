@@ -25,7 +25,7 @@ BASE_REF="${1:-origin/main}"
 # 1. Détection probe : modif d'un rapport empirique sous docs/research/
 DIFF_FILES=$(git diff --name-only "${BASE_REF}...HEAD" 2>/dev/null || true)
 IS_PROBE=0
-if echo "$DIFF_FILES" | grep -qE "^docs/research/.+-empirical-report\.md$"; then
+if grep -qE "^docs/research/.+-empirical-report\.md$" <<<"$DIFF_FILES"; then
   IS_PROBE=1
 fi
 
