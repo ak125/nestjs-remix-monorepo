@@ -537,3 +537,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `docs/capability-acceptance-v1-1`
 - **Décision** : docs(skills): capability-acceptance 1.1.0, critères préalables et réouverture
 - **Sortie** : PR #1895 | commits 8d9082bec
+
+## 2026-10-26 — docs/capability-acceptance-v1-1 (auto)
+
+- **Branche** : `docs/capability-acceptance-v1-1`
+- **Décision** : docs(skills): capability-acceptance se déclenche sur « déclare opérationnel » (+2 other commits)
+- **Sortie** : PR #1895 | commits 59e8c09a9 b05e21060 8d9082bec
