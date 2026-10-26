@@ -1,6 +1,6 @@
 ---
 name: capability-acceptance
-description: Use when asked whether an AutoMecanik capability really works end to end, to place it on the L0–L4 ladder with dated evidence, or to close a work cycle with a réception report. Triggers — "est-ce vraiment opérationnel", "réception de la capacité", "prouve que X marche", "capability map", "acceptance". Excludes runtime drift audits (runtime-truth-audit), improvement verdicts (continuous-improvement-global), self-review of a diff (code-auto-review), department state (project-state-report) and any deploy, payment or PROD mutation.
+description: Use when asked whether an AutoMecanik capability really works end to end, to place it on the L0–L4 ladder with dated evidence, to declare a capability operational or TERMINÉ, or to close a work cycle with a réception report. Triggers — "est-ce vraiment opérationnel", "déclare X opérationnel", "clos le sujet", "marque TERMINÉ", "réception de la capacité", "prouve que X marche", "capability map", "acceptance". Excludes runtime drift audits (runtime-truth-audit), improvement verdicts (continuous-improvement-global), self-review of a diff (code-auto-review), department state (project-state-report) and any deploy, payment or PROD mutation.
 type: technique
 status: experimental
 owners: ["@ak125"]

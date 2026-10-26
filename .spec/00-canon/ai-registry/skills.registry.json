@@ -1,12 +1,12 @@
 {
   "compliantCount": 17,
-  "generatedAt": "2026-10-26T08:13:19.035Z",
+  "generatedAt": "2026-10-26T08:22:07.927Z",
   "issues": [],
   "schemaPath": ".spec/00-canon/ai-registry/skill.schema.json",
   "schemaVersion": "1.0.0",
   "skills": [
     {
-      "checksum": "sha256:faf6e0d693ab8b819121797ce7da7b285e894a02f8f3bc3f7e255d37ac193faf",
+      "checksum": "sha256:3b17d01ff6673e0ac513a43e4874db2370affe55d15abecd94afcd5735438e44",
       "domain": "D15",
       "last_verified": "2026-10-26",
       "llm_safe": true,
