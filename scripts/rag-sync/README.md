@@ -44,9 +44,35 @@ peuvent déjà avoir été remplacés. L’instantané cohérent du corpus et la
 avec les lecteurs restent à traiter séparément. Le script ne supprime pas les
 exports retirés ni les fichiers non réconciliés.
 
-Un refus pour fichiers non réconciliés nomme les 20 premiers, puis donne leur
-nombre total et l’empreinte de l’ensemble : deux refus de même empreinte portent
-sur le même ensemble. `--list-unreconciled` les liste tous.
+## Fichiers du miroir absents des exports
+
+Seuls comptent les fichiers que le dépôt rag publie : suivis, ou non suivis et
+non ignorés par git (ce que l’étape 4 du cron ajoute). Les fichiers ignorés
+(`knowledge/_raw/`, `knowledge/gammes/.backup-*/`) ne sont ni publiés ni comptés.
+
+Le corpus publié avant la garde #1587 et absent des exports (2 008 fichiers au
+2026-10-26, corpus vivant du chatbot) est inscrit dans
+`audit/baselines/rag-mirror-legacy-baseline.json`. Il est préservé et compté à
+chaque passage : ligne de log, champ `legacy_unreconciled` du manifeste et résumé
+du cron. Tout autre fichier absent des exports bloque le sync : le refus nomme les
+20 premiers, puis donne leur nombre total et l’empreinte de l’ensemble ; deux
+refus de même empreinte portent sur le même ensemble. `--list-unreconciled` les
+liste tous.
+
+La baseline ne fait que décroître : le cron ne l’écrit jamais et aucun outil n’y
+ajoute d’entrée. Une entrée devenue obsolète (fichier retiré du
+miroir ou désormais exporté par la WIKI) est signalée `STALE-BASELINE` et met le
+cron en `warn`. `--tighten-legacy-baseline` retire ces entrées sans jamais en
+ajouter ni synchroniser ; la baseline réduite passe ensuite en PR. Le lancer sur
+un instantané de la WIKI à `origin/main`, comme le cron. Ne jamais purger le
+miroir pour le faire correspondre aux exports.
+
+## Source des exports
+
+Le cron lit `exports/rag` dans un instantané de `origin/main` (`git fetch` puis
+`git archive`), jamais dans l’arbre de travail du clone wiki partagé, dont il ne
+change ni la branche ni les fichiers. Le manifeste enregistre la provenance dans
+`source_ref` (`automecanik-wiki@<commit>`).
 
 Validation hors ligne :
 ```bash
