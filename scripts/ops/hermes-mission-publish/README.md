@@ -29,14 +29,17 @@ Contrôles avant toute écriture, chacun refusant sans rien laisser derrière lu
 - patch identique à l'empreinte et à la taille enregistrées (8 Mio au plus) ;
 - commit reconstruit dans un worktree temporaire détaché sur la révision exacte,
   liste des fichiers comparée deux fois (après `git apply`, puis après le commit) ;
-- gitleaks, avec le `.gitleaks.toml` du dépôt, sur le commit et sur le texte de
-  la PR : le dépôt est public, le push publie.
+- gitleaks sur le commit et sur le texte de la PR, avec `.gitleaks.toml` et
+  `.gitleaksignore` lus dans la révision fixée, jamais dans l'arbre patché : le
+  dépôt est public, le push publie, et le patch ne peut pas affaiblir son propre
+  scan.
 
 Le commit est déterministe (auteur, committer et date fixés par la mission) : une
 relance après un échec de `gh pr create` réutilise la branche déjà poussée ; une
-branche existante portant un autre commit est refusée. Le hook pre-commit (Node)
-ne peut pas tourner dans le worktree temporaire : `HUSKY=0`, comme
-`registry-self-heal.sh` ; la CI de la PR fait foi. Titre `chore(hermes): …`
+branche existante portant un autre commit est refusée. Aucun hook Git ne tourne
+(`core.hooksPath=/dev/null`) : le `core.hooksPath` relatif du dépôt se
+résoudrait dans l'arbre patché, avec l'identité de publication, et le hook Node
+ne pourrait pas tourner ici ; la CI de la PR fait foi. Titre `chore(hermes): …`
 conforme à commitlint.
 
 `check` exécute tous les contrôles et la reconstruction sans pousser.

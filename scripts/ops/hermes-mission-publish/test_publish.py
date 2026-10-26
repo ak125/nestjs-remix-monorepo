@@ -116,6 +116,17 @@ class PublishTests(unittest.TestCase):
             self.assertIn(f'Hermes-Revision: {fx.revision}', sh(work, 'git', 'log', '-1', '--format=%B'))
         self.assertEqual(commits[0], commits[1])
 
+    def test_no_repository_hook_runs(self):
+        fx = self.fixture()
+        hooks = self.root / 'hooks'
+        hooks.mkdir()
+        for name in ('post-checkout', 'pre-commit', 'commit-msg', 'post-commit', 'pre-push'):
+            (hooks / name).write_text(f'#!/bin/sh\ntouch "{self.root}/hook-ran"\nexit 1\n')
+            os.chmod(hooks / name, 0o755)
+        sh(fx.source, 'git', 'config', 'core.hooksPath', str(hooks))
+        hp.main(['publish', fx.id], fx.config, self.root / 'receipts')
+        self.assertFalse((self.root / 'hook-ran').exists())
+
     def test_released_workspace_still_needs_the_patch_to_apply_at_revision(self):
         fx = self.fixture()
         sh(fx.source, 'git', 'worktree', 'remove', '--force', fx.state['workspace'])
@@ -185,6 +196,16 @@ class PublishTests(unittest.TestCase):
             hp.main(['publish', fx.id], fx.config, self.root / 'receipts')
         self.assertEqual(fx.remote_branch(), [])
         self.assertNotIn('hermes-publish', sh(fx.source, 'git', 'worktree', 'list'))
+
+    @unittest.skipUnless(GITLEAKS, 'gitleaks absent')
+    def test_patched_scanner_rules_are_ignored(self):
+        (self.bin / 'gitleaks').unlink()
+        token = 'ghp' + '_' + hashlib.sha256(b'fixture').hexdigest()[:36]
+        fx = self.fixture({'backend/a.txt': f'token = "{token}"\n'.encode(),
+                           '.gitleaks.toml': b"[allowlist]\npaths = ['''.*''']\n", '.gitleaksignore': b'*\n'},
+                          paths=('backend/', '.gitleaks.toml', '.gitleaksignore'))
+        with self.assertRaisesRegex(ValueError, 'gitleaks_failed'):
+            hp.main(['check', fx.id], fx.config, self.root / 'receipts')
 
 
 if __name__ == '__main__':

@@ -35,7 +35,9 @@ def run(argv, cwd=None, data=None, env=None):
 
 
 def git(cwd, *args, **kw):
-    return run(['git', *args], cwd=cwd, **kw)
+    # No hook runs: the repository's relative core.hooksPath would resolve inside the patched tree,
+    # with the publishing identity. The Node hook could not run here anyway; the PR's CI is the gate.
+    return run(['git', '-c', 'core.hooksPath=/dev/null', *args], cwd=cwd, **kw)
 
 
 def in_scope(name, paths):
@@ -137,16 +139,21 @@ def build(proof, work):
     message = (title(proof) + '\n\n' + f"Hermes-Mission: {proof['mission_id']}\n"
                f"Hermes-Revision: {proof['revision']}\nHermes-Patch-SHA256: {proof['patch_sha256']}\n"
                f"Hermes-Executor: {proof['executor']}\n")
-    # HUSKY=0 as registry-self-heal.sh: the Node hook cannot run here; the PR's CI is the gate.
     git(work, 'commit', '--quiet', '-F', '-', data=message.encode(),
-        env={'HUSKY': '0', 'GIT_AUTHOR_NAME': BOT_NAME, 'GIT_AUTHOR_EMAIL': BOT_EMAIL,
+        env={'GIT_AUTHOR_NAME': BOT_NAME, 'GIT_AUTHOR_EMAIL': BOT_EMAIL,
              'GIT_COMMITTER_NAME': BOT_NAME, 'GIT_COMMITTER_EMAIL': BOT_EMAIL,
              'GIT_AUTHOR_DATE': when, 'GIT_COMMITTER_DATE': when})
     commit = git(work, 'rev-parse', 'HEAD').strip()
     changed = sorted(n for n in git(work, 'diff', '--name-only', '-z', proof['revision'], commit).split('\0') if n)
     if changed != proof['changed_files']: raise ValueError('commit_files_mismatch')
-    # Public repository: the push itself publishes. Same gitleaks and config as CI.
-    rules = ['--config', str(work / '.gitleaks.toml')] if (work / '.gitleaks.toml').is_file() else []
+    # Public repository: the push itself publishes. Same gitleaks as CI, with the rules of the fixed
+    # revision: the patch cannot weaken its own scan.
+    rules = []
+    for name, flag, fallback in (('.gitleaks.toml', '--config', '[extend]\nuseDefault = true\n'),
+                                 ('.gitleaksignore', '--gitleaks-ignore-path', '')):
+        tracked = git(proof['source'], 'ls-tree', '--name-only', proof['revision'], name).strip()
+        (work.parent / name).write_text(git(proof['source'], 'show', f"{proof['revision']}:{name}") if tracked else fallback)
+        rules += [flag, str(work.parent / name)]
     run(['gitleaks', 'git', *rules, '--log-opts', f"{proof['revision']}..{commit}", '--redact', '--no-banner',
          '--exit-code', '1', str(work)], cwd=work)
     run(['gitleaks', 'stdin', *rules, '--redact', '--no-banner', '--exit-code', '1'], cwd=work, data=body(proof).encode())
