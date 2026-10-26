@@ -102192,6 +102192,46 @@
         "manual"
       ],
       "domain": "D13",
+      "id": "scripts/ci/prod-observation-report.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 568,
+      "owner": "@ak125",
+      "path": "scripts/ci/prod-observation-report.mjs",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
+      "id": "scripts/ci/prod-observation-report.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 345,
+      "owner": "@ak125",
+      "path": "scripts/ci/prod-observation-report.test.mjs",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
       "id": "scripts/ci/prod-preprod-evidence.mjs",
       "importedBy": [],
       "imports": [],
@@ -105377,11 +105417,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "90163175840e44796908f793612d86b090e6efec04ed7053e3966b0e0c211728",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "32dba461bbc158c3d0960f726608b69ae896b4f23fe6ed5a67d5e29f3e8cb87a",
+      "audit/registry/files.json": "97312a2fcf20838d21e9572753b97f6b8ca3ec54192ab0bb3a4acdb0fc3f0b82",
       "audit/registry/rpc.json": "623f3a5150e1cc71cd79946d7a4128fd078d6493626b20f4b6c4c4ac64f06f6d",
       "audit/registry/runtime.json": "121d868fa45952069f14d1a9b717212a5f50b51ac7fd0edc9546ae56d1c41bc2"
     },
-    "sotFingerprint": "7593cba2c83f"
+    "sotFingerprint": "a66023a409a8"
   },
   "runtime": [
     {
