@@ -9,7 +9,10 @@
  *              → Par intention → Securite → FAQ → CTA
  */
 
-import { FAMILY_REGISTRY, findFamilyIdByKeyword } from "@repo/database-types";
+import {
+  FAMILY_REGISTRY,
+  findFamilyIdByKeyword,
+} from "@repo/database-types/family-registry";
 import {
   Wrench,
   AlertTriangle,

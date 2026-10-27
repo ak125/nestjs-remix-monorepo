@@ -172,7 +172,7 @@ const PieceCard = memo(function PieceCard({
 
   return (
     <div
-      className={`group relative bg-white rounded-xl transition-all duration-300 cursor-pointer flex flex-col ${
+      className={`pieces-product-card group relative bg-white rounded-xl transition-all duration-300 cursor-pointer flex flex-col ${
         isSelected
           ? "ring-2 ring-indigo-500 shadow-xl shadow-indigo-500/20"
           : "shadow-sm hover:shadow-lg hover:-translate-y-0.5"

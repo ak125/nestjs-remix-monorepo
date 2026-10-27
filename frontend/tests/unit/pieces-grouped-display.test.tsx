@@ -2,7 +2,8 @@ import { render, cleanup, fireEvent } from "@testing-library/react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { PiecesGroupedDisplay } from "~/components/pieces/PiecesGroupedDisplay";
-import { type PiecesFilters } from "~/types/pieces-route.types";
+import { type PiecesFilters, type SortBy } from "~/types/pieces-route.types";
+import * as routeUtils from "~/utils/pieces-route.utils";
 
 // Keep the real product cards; isolate cart and modal side effects.
 vi.mock("~/hooks/useCart", () => ({
@@ -15,7 +16,10 @@ vi.mock("~/components/pieces/PieceDetailModal", () => ({
 }));
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
 const filters: PiecesFilters = {
   brands: [],
   priceRange: "all",
@@ -48,6 +52,77 @@ const props = {
 };
 
 describe("PiecesGroupedDisplay — nullable catalog labels", () => {
+  it.each<[SortBy, number[]]>([
+    ["price-desc", [2, 1, 3]],
+    ["price-asc", [3, 1, 2]],
+    ["name", [1, 3, 2]],
+    ["brand", [2, 3, 1]],
+  ])(
+    "applies %s within each group without remapping products",
+    (sortBy, ids) => {
+      const mapper = vi.spyOn(routeUtils, "mapApiPieceToData");
+      const groupedPieces = [
+        {
+          filtre_gamme: "Alternateur",
+          pieces: [
+            {
+              ...product(1),
+              nom: "Alternateur 2",
+              marque: "Z",
+              prix_ttc: 20,
+              prix_unitaire: 20,
+            },
+            {
+              ...product(2),
+              nom: "Alternateur 10",
+              marque: "A",
+              prix_ttc: 60,
+              prix_unitaire: 60,
+            },
+            {
+              ...product(3),
+              nom: "Alternateur 4",
+              marque: "B",
+              prix_ttc: 10,
+              prix_unitaire: 10,
+            },
+          ],
+        },
+      ];
+      const { container, rerender } = render(
+        <PiecesGroupedDisplay
+          {...props}
+          groupedPieces={groupedPieces}
+          sortBy="price-asc"
+        />,
+      );
+      expect(mapper).toHaveBeenCalledTimes(3);
+      rerender(
+        <PiecesGroupedDisplay
+          {...props}
+          groupedPieces={groupedPieces}
+          sortBy={sortBy}
+        />,
+      );
+      expect(
+        Array.from(container.querySelectorAll("code"), (e) => e.textContent),
+      ).toEqual(ids.map((id) => `REF-${id}`));
+      expect(mapper).toHaveBeenCalledTimes(3);
+      rerender(
+        <PiecesGroupedDisplay
+          {...props}
+          groupedPieces={groupedPieces}
+          sortBy={sortBy}
+          activeFilters={{ ...filters, brands: ["A"] }}
+        />,
+      );
+      expect(
+        Array.from(container.querySelectorAll("code"), (e) => e.textContent),
+      ).toEqual(["REF-2"]);
+      expect(mapper).toHaveBeenCalledTimes(3);
+      expect(groupedPieces[0].pieces.map((p) => p.id)).toEqual([1, 2, 3]);
+    },
+  );
   it.each([1, 2])(
     "SSR: a group without a label keeps its %i products without a fabricated heading",
     (count) => {
