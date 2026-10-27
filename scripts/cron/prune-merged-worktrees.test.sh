@@ -8,6 +8,10 @@
 # régénérables, un sous-module porteur de commits locaux, des modifications masquées par
 # skip-worktree / assume-unchanged, un chemin contenant une espace, une attribution de
 # mission sans verrou, une écriture tardive (entre contrôle et retrait) et un `gh` en échec.
+# Un worktree de session hors du dépôt ($HOME/worktrees/claude-*) est géré, son voisin
+# d'un autre gestionnaire ne l'est pas ; une entrée vide de PRUNE_ROOTS ne couvre rien.
+# Une pointe en retard sur la tête d'une PR fusionnée (commit poussé ensuite d'ailleurs) est
+# publiée ; si la tête est absente localement, l'ascendance est invérifiable et rien ne part.
 #
 # Usage : bash prune-merged-worktrees.test.sh
 #         PRUNE_SCRIPT=/chemin/autre-version.sh bash prune-merged-worktrees.test.sh
@@ -33,6 +37,8 @@ unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_COMMON_DIR
 export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1
 export GIT_AUTHOR_NAME=fixture GIT_AUTHOR_EMAIL=fixture@example.invalid
 export GIT_COMMITTER_NAME=fixture GIT_COMMITTER_EMAIL=fixture@example.invalid
+# Le périmètre par défaut lit $HOME/worktrees/claude- : jamais le vrai HOME.
+export HOME="$FIX"
 
 R="$FIX/repo"; WT="$R/.claude/worktrees"
 git init -q --bare -b main "$FIX/origin.git"
@@ -147,6 +153,15 @@ printf '{"mission":"fixture-w22"}\n' > "$(git -C "$WT/w22-claimed" rev-parse --a
 # W23 — MERGED, « ?? .playwright-mcp/ » ; une écriture arrive juste avant le retrait (git factice)
 s=$(mkwt "$WT/w23-late" feat/w23-late); pr 37 MERGED feat/w23-late "$s"
 mkdir -p "$WT/w23-late/.playwright-mcp"; : > "$WT/w23-late/.playwright-mcp/shot.png"
+# W24 — MERGED, propre, worktree de session hors du dépôt, voisin de W10 (témoin positif)
+s=$(mkwt "$HOME/worktrees/claude-w24" feat/w24-home); pr 38 MERGED feat/w24-home "$s"
+# W25 — MERGED, propre, pointe EN RETARD sur la tête de la PR : un commit poussé d'ailleurs
+# (fusion de main par resync-pr.sh) ; la pointe est un ancêtre de la tête (témoin positif)
+s=$(mkwt "$WT/w25-behind" feat/w25-behind)
+h="$(git -C "$R" commit-tree -p "$s" -m "Merge origin/main into feat/w25-behind" "$(git -C "$R" rev-parse "$s^{tree}")")"
+git -C "$R" push -q origin "$h:refs/heads/feat/w25-behind"; pr 39 MERGED feat/w25-behind "$h"
+# W26 — MERGED, propre, tête de PR inconnue localement : ascendance invérifiable
+s=$(mkwt "$WT/w26-unknown" feat/w26-unknown); pr 40 MERGED feat/w26-unknown 0123456789abcdef0123456789abcdef01234567
 
 # Branches sans worktree (passe 2)
 s=$(mkbr feat/b1-extra); pr 21 MERGED feat/b1-extra "$s"
@@ -164,7 +179,7 @@ git -C "$R" fetch -q origin
 git -C "$FIX/origin.git" update-ref -d refs/heads/feat/remote-gone
 
 # Vieillir toutes les dates (sauf l'index/reflog de W8, laissés « maintenant »)
-for d in "$WT"/w* "$FIX/worktrees/codex-w10"; do
+for d in "$WT"/w* "$FIX/worktrees/codex-w10" "$HOME/worktrees/claude-w24"; do
   [[ -d "$d" ]] || continue
   gd="$(git -C "$d" rev-parse --absolute-git-dir 2>/dev/null || true)"
   touch -d '2 days ago' "$d"
@@ -221,6 +236,10 @@ check "dry-run : registration du dossier disparu conservée (W11)"  present "$(p
 check "dry-run : ref distante origin/feat/remote-gone conservée"   present "$(git -C "$R" show-ref --verify --quiet refs/remotes/origin/feat/remote-gone && echo present || echo absent)"
 check "dry-run : W9 (statut illisible) non proposé à la suppression" no "$(grep -q 'WOULD-REMOVE.*w9-statuserr' <<<"$DRY" && echo yes || echo no)"
 check "dry-run : W14 (.env ignoré) non proposé à la suppression"    no "$(grep -q 'WOULD-REMOVE.*w14-env' <<<"$DRY" && echo yes || echo no)"
+check "dry-run : W24 (\$HOME/worktrees/claude-*) proposé à la suppression" yes "$(grep -q 'WOULD-REMOVE.*claude-w24' <<<"$DRY" && echo yes || echo no)"
+EMPTY="$(cd "$R" && PRUNE_ROOTS='::' LOG_DIR="$FIX/logs/dry" bash "$SCRIPT" 2>&1)"
+check "PRUNE_ROOTS sans entrée non vide : aucun worktree proposé"    0 "$(grep -c '^WOULD-REMOVE ' <<<"$EMPTY" || true)"
+check "PRUNE_ROOTS sans entrée non vide : W3 hors périmètre (témoin)" yes "$(grep -q 'other-manager.*w3-clean' <<<"$EMPTY" && echo yes || echo no)"
 
 # ---------------- 2. apply sans état PR lisible ----------------
 before="$(snap_local)"
@@ -269,6 +288,12 @@ check "W21 « w21 sp » MERGED propre : worktree supprimé (témoin)"   absent "
 check "W22 attribution sans verrou : worktree conservé"             present "$(present "$WT/w22-claimed")"
 check "W23 écriture tardive : worktree conservé"                    present "$(present "$WT/w23-late")"
 check "W23 : écriture tardive intacte"                              yes "$(grep -q 'ÉCRITURE-TARDIVE' "$WT/w23-late/a.txt" 2>/dev/null && echo yes || echo no)"
+check "W24 \$HOME/worktrees/claude-* MERGED propre : supprimé (témoin)" absent "$(present "$HOME/worktrees/claude-w24")"
+check "W24 : branche supprimée"                                     absent "$(branch feat/w24-home)"
+check "W25 pointe = ancêtre de la tête PR : worktree supprimé (témoin)" absent "$(present "$WT/w25-behind")"
+check "W25 : branche supprimée"                                     absent "$(branch feat/w25-behind)"
+check "W26 tête PR inconnue localement : worktree conservé"         present "$(present "$WT/w26-unknown")"
+check "W26 : branche conservée"                                     present "$(branch feat/w26-unknown)"
 ALL_OUT="$( { printf '%s\n' "$DRY" "$GHFAIL" "$APPLY_OUT"; cat "$FIX"/logs/*/* 2>/dev/null; } )"
 check "journaux et sorties relus (témoin : W14 y figure)"           yes "$(grep -q 'w14-env' <<<"$ALL_OUT" && echo yes || echo no)"
 check "valeur d'un fichier ignoré absente des sorties et journaux"  0 "$(grep -c 'fixture-only' <<<"$ALL_OUT" || true)"
