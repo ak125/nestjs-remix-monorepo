@@ -10,6 +10,8 @@
 # mission sans verrou, une écriture tardive (entre contrôle et retrait) et un `gh` en échec.
 # Un worktree de session hors du dépôt ($HOME/worktrees/claude-*) est géré, son voisin
 # d'un autre gestionnaire ne l'est pas ; une entrée vide de PRUNE_ROOTS ne couvre rien.
+# Une pointe en retard sur la tête d'une PR fusionnée (commit poussé ensuite d'ailleurs) est
+# publiée ; si la tête est absente localement, l'ascendance est invérifiable et rien ne part.
 #
 # Usage : bash prune-merged-worktrees.test.sh
 #         PRUNE_SCRIPT=/chemin/autre-version.sh bash prune-merged-worktrees.test.sh
@@ -153,6 +155,13 @@ s=$(mkwt "$WT/w23-late" feat/w23-late); pr 37 MERGED feat/w23-late "$s"
 mkdir -p "$WT/w23-late/.playwright-mcp"; : > "$WT/w23-late/.playwright-mcp/shot.png"
 # W24 — MERGED, propre, worktree de session hors du dépôt, voisin de W10 (témoin positif)
 s=$(mkwt "$HOME/worktrees/claude-w24" feat/w24-home); pr 38 MERGED feat/w24-home "$s"
+# W25 — MERGED, propre, pointe EN RETARD sur la tête de la PR : un commit poussé d'ailleurs
+# (fusion de main par resync-pr.sh) ; la pointe est un ancêtre de la tête (témoin positif)
+s=$(mkwt "$WT/w25-behind" feat/w25-behind)
+h="$(git -C "$R" commit-tree -p "$s" -m "Merge origin/main into feat/w25-behind" "$(git -C "$R" rev-parse "$s^{tree}")")"
+git -C "$R" push -q origin "$h:refs/heads/feat/w25-behind"; pr 39 MERGED feat/w25-behind "$h"
+# W26 — MERGED, propre, tête de PR inconnue localement : ascendance invérifiable
+s=$(mkwt "$WT/w26-unknown" feat/w26-unknown); pr 40 MERGED feat/w26-unknown 0123456789abcdef0123456789abcdef01234567
 
 # Branches sans worktree (passe 2)
 s=$(mkbr feat/b1-extra); pr 21 MERGED feat/b1-extra "$s"
@@ -281,6 +290,10 @@ check "W23 écriture tardive : worktree conservé"                    present "$
 check "W23 : écriture tardive intacte"                              yes "$(grep -q 'ÉCRITURE-TARDIVE' "$WT/w23-late/a.txt" 2>/dev/null && echo yes || echo no)"
 check "W24 \$HOME/worktrees/claude-* MERGED propre : supprimé (témoin)" absent "$(present "$HOME/worktrees/claude-w24")"
 check "W24 : branche supprimée"                                     absent "$(branch feat/w24-home)"
+check "W25 pointe = ancêtre de la tête PR : worktree supprimé (témoin)" absent "$(present "$WT/w25-behind")"
+check "W25 : branche supprimée"                                     absent "$(branch feat/w25-behind)"
+check "W26 tête PR inconnue localement : worktree conservé"         present "$(present "$WT/w26-unknown")"
+check "W26 : branche conservée"                                     present "$(branch feat/w26-unknown)"
 ALL_OUT="$( { printf '%s\n' "$DRY" "$GHFAIL" "$APPLY_OUT"; cat "$FIX"/logs/*/* 2>/dev/null; } )"
 check "journaux et sorties relus (témoin : W14 y figure)"           yes "$(grep -q 'w14-env' <<<"$ALL_OUT" && echo yes || echo no)"
 check "valeur d'un fichier ignoré absente des sorties et journaux"  0 "$(grep -c 'fixture-only' <<<"$ALL_OUT" || true)"

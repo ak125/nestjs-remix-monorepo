@@ -98,12 +98,16 @@ pr_info() { # $1=branch -> "STATE<TAB>headRefOid" (la PR la plus récente gagne 
 }
 
 # Le travail au bout de la branche est-il conservé ailleurs ?
-#   MERGED : la pointe est exactement la tête de la PR (squash compris) ou déjà dans origin/main.
+#   MERGED : la pointe est la tête de la PR (squash compris), un ancêtre de cette tête, ou déjà
+#            dans origin/main. Ancêtre : la PR a reçu ensuite des commits poussés d'ailleurs (fusion
+#            de main et projections par resync-pr.sh) ; GitHub garde la tête fusionnée (refs/pull/N/head).
 #   CLOSED : seulement si déjà dans origin/main (une PR fermée non fusionnée n'a rien conservé).
 # Un commit ajouté APRÈS la tête de la PR (ex. entrée log auto) n'est conservé nulle part.
 tip_published() { # $1=state $2=sha $3=headRefOid
   git merge-base --is-ancestor "$2" "$MAIN_REF" 2>/dev/null && return 0
-  [[ "$1" == "MERGED" && -n "$3" && "$2" == "$3" ]]
+  [[ "$1" == "MERGED" && -n "$3" ]] || return 1
+  # Tête absente localement : ascendance invérifiable, donc non publiée.
+  [[ "$2" == "$3" ]] || git merge-base --is-ancestor "$2" "$3" 2>/dev/null
 }
 
 extra_commits() { # $1=sha $2=headRefOid -> nombre de commits au-delà de la tête de PR, ou '?'
