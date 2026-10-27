@@ -8,9 +8,9 @@
 # de liste figée. Ne détruit JAMAIS de travail non-mergé, non-commité, OPEN ou
 # sans PR. Écrit un manifeste de récupération (SHAs) avant toute suppression.
 #
-# Périmètre : seuls les worktrees du gestionnaire Claude ($MANAGED_PREFIX) sont
-# candidats. Les autres gestionnaires (pont Hermes, worktrees Codex directs) gardent
-# leur propre cycle de vie — ce script ne les retire jamais.
+# Périmètre : seuls les worktrees des sessions Claude ($PRUNE_ROOTS, mêmes préfixes que
+# dedup-worktree-node-modules.sh) sont candidats. Les autres gestionnaires (pont Hermes,
+# worktrees Codex directs) gardent leur propre cycle de vie — ce script ne les retire jamais.
 #
 # Usage:
 #   prune-merged-worktrees.sh            # dry-run (par défaut) : n'écrit RIEN dans le dépôt
@@ -20,7 +20,8 @@
 #   REPO            slug GitHub (défaut: ak125/nestjs-remix-monorepo)
 #   LOG_DIR         dossier des manifestes (défaut: /tmp)
 #   RECENT_MIN      minutes sous lesquelles un worktree récent est épargné (défaut: 180)
-#   MANAGED_PREFIX  emplacement des worktrees gérés, relatif au dépôt (défaut: .claude/worktrees/)
+#   PRUNE_ROOTS     préfixes de chemin des worktrees gérés, séparés par « : »
+#                   (défaut: <dépôt>/.claude/worktrees/:$HOME/worktrees/claude-)
 #
 # Dépendances: git, gh (authentifié), jq.
 set -euo pipefail
@@ -33,7 +34,6 @@ APPLY=0
 REPO="${REPO:-ak125/nestjs-remix-monorepo}"
 LOG_DIR="${LOG_DIR:-/tmp}"
 RECENT_MIN="${RECENT_MIN:-180}"
-MANAGED_PREFIX="${MANAGED_PREFIX:-.claude/worktrees/}"
 # untracked jetables : ne bloquent pas la suppression d'un worktree par ailleurs propre
 ALLOW='^(\.playwright-mcp|node_modules|\.turbo|dist|build|coverage)(/|$)'
 # ignorés régénérables : `git worktree remove` supprime les fichiers ignorés sans --force et
@@ -54,7 +54,9 @@ done
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 cd "$REPO_ROOT"
-MANAGED_DIR="$REPO_ROOT/${MANAGED_PREFIX%/}/"
+IFS=: read -r -a ROOTS <<<"${PRUNE_ROOTS:-$REPO_ROOT/.claude/worktrees/:$HOME/worktrees/claude-}"
+# Une entrée vide couvrirait tous les chemins : elle est ignorée.
+managed() { local r; for r in "${ROOTS[@]}"; do [[ -n "$r" && "$1" == "$r"* ]] && return 0; done; return 1; }
 
 TS="$(date +%Y%m%d-%H%M%S)"
 LOG="$LOG_DIR/worktree-cleanup-$TS.log"
@@ -64,6 +66,7 @@ trap 'rm -f "$PRSTATE"' EXIT
 mode_label="DRY-RUN (aucune suppression — utiliser --apply pour agir)"
 [[ $APPLY -eq 1 ]] && mode_label="APPLY"
 echo "=== prune-merged-worktrees — $mode_label — $TS ===" | tee "$LOG"
+echo "INFO    périmètre : ${ROOTS[*]}" | tee -a "$LOG"
 
 # --- Manifeste de récupération (SHAs) AVANT toute action ---
 {
@@ -159,7 +162,7 @@ NOW="$(date +%s)"
 echo "--- Passe 1 : worktrees ---" | tee -a "$LOG"
 while IFS= read -r -d '' path && IFS= read -r -d '' ref && IFS= read -r -d '' det && IFS= read -r -d '' locked; do
   [[ "$path" == "$REPO_ROOT" ]] && continue
-  [[ "$path/" == "$MANAGED_DIR"* ]] || { echo "KEEP    other-manager    $path" | tee -a "$LOG"; continue; }
+  managed "$path/" || { echo "KEEP    other-manager    $path" | tee -a "$LOG"; continue; }
   [[ "$det" == "1" || -z "$ref" ]] && { echo "KEEP    detached         $path" | tee -a "$LOG"; continue; }
   br="${ref#refs/heads/}"
   IFS=$'\t' read -r st oid < <(pr_info "$br")
