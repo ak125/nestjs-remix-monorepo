@@ -2,7 +2,7 @@
   "_generated_by": "scripts/audit/build-db-usage-map.js",
   "note": "Candidates only — never a \"dead\" verdict. A real DROP table/function goes through the RPC Gate + a vault ADR, never from this map.",
   "important_caveats": [
-    "779 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
+    "780 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
     "Migration parsing is regex-based and tracks last CREATE vs last DROP per object (date-prefixed filenames ≈ chronological); re-create-after-drop edge cases may slip through.",
     "RLS-only / dashboard / external-cron / RPC-internal usage is invisible here — see per-candidate caveats.",
     "8 call-site(s) écarté(s) : le récepteur n'est pas un client PostgREST (Buffer/Array, ou bucket Supabase Storage) — voir dropped_call_sites[].",
@@ -17,12 +17,12 @@
     "rpc_with_callsites": 14,
     "trigger_functions": 30,
     "candidate_orphan_rpc": 209,
-    "dynamic_from_callsites": 779,
+    "dynamic_from_callsites": 780,
     "dynamic_rpc_callsites": 1,
     "unresolved_callsites": 0,
     "dropped_call_sites": 8,
     "migrations_scanned": 430,
-    "backend_files_scanned": 1493
+    "backend_files_scanned": 1496
   },
   "tables": {
     "___config": {
@@ -1123,6 +1123,7 @@
     "__seo_event_log": {
       "used_by": [
         "backend/src/modules/admin/services/command-center-kpi.service.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
         "backend/src/modules/admin/services/seo-control.service.ts",
         "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts",
         "backend/src/modules/diagnostic-engine/services/outcome-emitter.service.ts",
@@ -1135,7 +1136,7 @@
         "backend/src/modules/seo/services/seo-placeholder-events.service.ts",
         "backend/src/modules/seo/services/sitemap-event-log.service.ts"
       ],
-      "used_by_count": 12,
+      "used_by_count": 13,
       "in_migrations": [
         "20260425_seo_event_log.sql"
       ],
@@ -2284,9 +2285,10 @@
     },
     "__vehicle_page_cache": {
       "used_by": [
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
         "backend/src/modules/vehicles/services/vehicle-rpc.service.ts"
       ],
-      "used_by_count": 1,
+      "used_by_count": 2,
       "in_migrations": [
         "20260420_vehicle_page_cache_schema.sql"
       ],
@@ -11285,63 +11287,70 @@
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 662,
+      "line": 759,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_pages",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1294,
+      "line": 991,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_pages",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1369,
+      "line": 1663,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_pages",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1406,
+      "line": 1738,
+      "form": "OBJ.KEY",
+      "resolved_table": "__seo_r8_pages",
+      "refusal": null
+    },
+    {
+      "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
+      "line": 1775,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_page_versions",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1414,
+      "line": 1783,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_page_versions",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1439,
+      "line": 1808,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_fingerprints",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1481,
+      "line": 1850,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_similarity_index",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1501,
+      "line": 1870,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_regeneration_queue",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1512,
+      "line": 1881,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_qa_reviews",
       "refusal": null
