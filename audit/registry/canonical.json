@@ -34566,7 +34566,7 @@
         "backend/src/utils/promise-helpers.ts"
       ],
       "kind": "service",
-      "loc": 539,
+      "loc": 572,
       "owner": "__unassigned__",
       "path": "backend/src/database/services/supabase-base.service.ts",
       "risk": "low",
@@ -68009,11 +68009,12 @@
       "imports": [
         "@database/services/supabase-base.service",
         "@repo/database-types",
+        "@security/rpc-gate/rpc-gate.service",
         "backend/src/modules/vehicles/services/core/vehicle-cache.service.ts",
         "backend/src/modules/vehicles/types/vehicle.types.ts"
       ],
       "kind": "service",
-      "loc": 662,
+      "loc": 697,
       "owner": "@ak125",
       "path": "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts",
       "risk": "high",
@@ -68039,11 +68040,12 @@
       "imports": [
         "@database/services/supabase-base.service",
         "@repo/database-types",
+        "@security/rpc-gate/rpc-gate.service",
         "backend/src/modules/vehicles/services/core/vehicle-cache.service.ts",
         "backend/src/modules/vehicles/types/vehicle.types.ts"
       ],
       "kind": "service",
-      "loc": 774,
+      "loc": 805,
       "owner": "@ak125",
       "path": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
       "risk": "high",
@@ -68070,12 +68072,13 @@
       "imports": [
         "@database/services/supabase-base.service",
         "@repo/database-types",
+        "@security/rpc-gate/rpc-gate.service",
         "backend/src/modules/vehicles/services/core/vehicle-cache.service.ts",
         "backend/src/modules/vehicles/services/core/vehicle-enrichment.service.ts",
         "backend/src/modules/vehicles/types/vehicle.types.ts"
       ],
       "kind": "service",
-      "loc": 700,
+      "loc": 715,
       "owner": "@ak125",
       "path": "backend/src/modules/vehicles/services/data/vehicle-types.service.ts",
       "risk": "high",
@@ -71866,6 +71869,26 @@
       "loc": 60,
       "owner": "@ak125",
       "path": "backend/tests/unit/users.controller.dashboard-level.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "backend/tests/unit/vehicle-api-definer-reads.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 284,
+      "owner": "@ak125",
+      "path": "backend/tests/unit/vehicle-api-definer-reads.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -93891,7 +93914,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 214,
+      "loc": 250,
       "owner": "@ak125",
       "path": "frontend/tests/e2e/url-validation.spec.ts",
       "risk": "medium",
@@ -105448,11 +105471,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "90163175840e44796908f793612d86b090e6efec04ed7053e3966b0e0c211728",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "75b0080dca9f8bde95cdb51cfb112a03afb5fe2a8880522ebcc845558ca92cc1",
+      "audit/registry/files.json": "c3dbd8b1b3b922a1ab896771f40e98a9f1fa4427bba1c872f838a5cb70a81cdb",
       "audit/registry/rpc.json": "623f3a5150e1cc71cd79946d7a4128fd078d6493626b20f4b6c4c4ac64f06f6d",
       "audit/registry/runtime.json": "121d868fa45952069f14d1a9b717212a5f50b51ac7fd0edc9546ae56d1c41bc2"
     },
-    "sotFingerprint": "cbb36ccc2d42"
+    "sotFingerprint": "11a1adc6131e"
   },
   "runtime": [
     {
