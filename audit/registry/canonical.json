@@ -83656,11 +83656,12 @@
       "id": "frontend/app/routes.ts",
       "importedBy": [],
       "imports": [
+        "frontend/route-files.ts",
         "path",
         "url"
       ],
       "kind": "service",
-      "loc": 48,
+      "loc": 43,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes.ts",
       "risk": "low",
@@ -93604,6 +93605,29 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
+        "depcruise",
+        "manual",
+        "reachability"
+      ],
+      "domain": "D8",
+      "id": "frontend/route-files.ts",
+      "importedBy": [
+        "frontend/app/routes.ts"
+      ],
+      "imports": [],
+      "kind": "service",
+      "loc": 9,
+      "owner": "@ak125/frontend-team",
+      "path": "frontend/route-files.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
         "depcruise"
       ],
       "domain": "UNKNOWN",
@@ -93611,7 +93635,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 229,
+      "loc": 225,
       "owner": "__unassigned__",
       "path": "frontend/tailwind.config.cjs",
       "risk": "low",
@@ -95927,6 +95951,26 @@
         "manual"
       ],
       "domain": "D2",
+      "id": "frontend/tests/unit/production-css-sources.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 135,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/production-css-sources.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
       "id": "frontend/tests/unit/products-private-cache.test.ts",
       "importedBy": [],
       "imports": [],
@@ -96550,10 +96594,30 @@
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 193,
+      "loc": 198,
       "owner": "__unassigned__",
       "path": "frontend/vite.config.ts",
       "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
+      "id": "frontend/vite.production-css.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 62,
+      "owner": "@ak125",
+      "path": "frontend/vite.production-css.ts",
+      "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
@@ -105444,15 +105508,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "5ca91094428cc956799c31406f2c730d22e7557eca4996e6945b0e0c6969aa47",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "3533a17d0fff94133c05615f9d05e9b7f8c0a2e2aa545548c6c0594e5e0c49d1",
+      ".spec/00-canon/repository-registry/ownership.yaml": "e799122e399e1bcb43fa249f45b9ac8f5db553196272a0b69154929f774ed1d9",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "90163175840e44796908f793612d86b090e6efec04ed7053e3966b0e0c211728",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "75b0080dca9f8bde95cdb51cfb112a03afb5fe2a8880522ebcc845558ca92cc1",
+      "audit/registry/files.json": "1769c2e630940924be4e54411f673aab2b8256b1c7340c205c696676fd8a0bb6",
       "audit/registry/rpc.json": "623f3a5150e1cc71cd79946d7a4128fd078d6493626b20f4b6c4c4ac64f06f6d",
       "audit/registry/runtime.json": "121d868fa45952069f14d1a9b717212a5f50b51ac7fd0edc9546ae56d1c41bc2"
     },
-    "sotFingerprint": "cbb36ccc2d42"
+    "sotFingerprint": "426eaaea4963"
   },
   "runtime": [
     {

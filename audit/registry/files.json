@@ -53403,11 +53403,12 @@
       "id": "frontend/app/routes.ts",
       "importedBy": [],
       "imports": [
+        "frontend/route-files.ts",
         "path",
         "url"
       ],
       "kind": "service",
-      "loc": 48,
+      "loc": 43,
       "owner": "__unassigned__",
       "path": "frontend/app/routes.ts",
       "risk": "low",
@@ -63025,6 +63026,28 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
+        "depcruise",
+        "reachability"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/route-files.ts",
+      "importedBy": [
+        "frontend/app/routes.ts"
+      ],
+      "imports": [],
+      "kind": "service",
+      "loc": 9,
+      "owner": "__unassigned__",
+      "path": "frontend/route-files.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
         "depcruise"
       ],
       "domain": "UNKNOWN",
@@ -63032,7 +63055,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 229,
+      "loc": 225,
       "owner": "__unassigned__",
       "path": "frontend/tailwind.config.cjs",
       "risk": "low",
@@ -65232,6 +65255,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/production-css-sources.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 135,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/production-css-sources.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/tests/unit/products-private-cache.test.ts",
       "importedBy": [],
       "imports": [],
@@ -65825,9 +65867,28 @@
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 193,
+      "loc": 198,
       "owner": "__unassigned__",
       "path": "frontend/vite.config.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/vite.production-css.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 62,
+      "owner": "__unassigned__",
+      "path": "frontend/vite.production-css.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
