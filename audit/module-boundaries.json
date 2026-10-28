@@ -92,7 +92,7 @@
         "backend/src/utils"
       ],
       "files_count": 35,
-      "loc_total": 6184,
+      "loc_total": 6191,
       "has_barrel": true
     },
     "blog": {
@@ -186,8 +186,8 @@
         "backend/src/modules/config/services",
         "backend/src/modules/config/validators"
       ],
-      "files_count": 103,
-      "loc_total": 25071,
+      "files_count": 105,
+      "loc_total": 25954,
       "has_barrel": true
     },
     "customers": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 317,
-      "loc_total": 61373,
+      "files_count": 318,
+      "loc_total": 62040,
       "has_barrel": true
     },
     "upload": {
@@ -1269,7 +1269,7 @@
     {
       "from": "backend-core",
       "to": "config",
-      "count": 10
+      "count": 11
     },
     {
       "from": "backend-core",
@@ -1624,7 +1624,7 @@
     {
       "from": "config",
       "to": "common",
-      "count": 2
+      "count": 3
     },
     {
       "from": "config",
