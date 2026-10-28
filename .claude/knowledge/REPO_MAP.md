@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: c951357c9d9530a32ec23cd7859c45b6510dc6ad99754d71fa3d906c5fa86910
+source_sha256: 11e3666d64258b142ec60610790361174b151ee3c7ddab5fc8c3aa38208466f4
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3082 |
+| Files (Layer 1) | 3085 |
 | DB tables (Layer 1) | 316 |
 | DB RPC (Layer 1) | 259 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1017 |
 
-Source sotFingerprint: `cbb36ccc2d42`.
+Source sotFingerprint: `b60a696ce275`.
 
 ## Comment l'utiliser
 
@@ -132,10 +132,10 @@ Source sotFingerprint: `cbb36ccc2d42`.
 
 ### D13 — Config & System
 
-- **Files**: 232 (script=78, service=70, config=54, test=30)
+- **Files**: 234 (script=78, service=71, config=54, test=31)
 - **Runtime entrypoints**: 16
-- **Top owners**: @ak125 (232)
-- **Status**: LIVE=91, UNKNOWN=141
+- **Top owners**: @ak125 (234)
+- **Status**: LIVE=92, UNKNOWN=142
 
 ### D14 — Gamme Aggregates & V-Level
 
@@ -147,11 +147,11 @@ Source sotFingerprint: `cbb36ccc2d42`.
 
 ### D15 — Security & Governance
 
-- **Files**: 288 (test=177, script=62, service=46, config=2, controller=1)
+- **Files**: 289 (test=178, script=62, service=46, config=2, controller=1)
 - **Runtime entrypoints**: 3
-- **Top owners**: @ak125 (288)
+- **Top owners**: @ak125 (289)
 - **Knowledge prose**: [`bot-guard`](modules/bot-guard.md)
-- **Status**: LIVE=58, UNKNOWN=230
+- **Status**: LIVE=58, UNKNOWN=231
 
 ### D16 — Maintenance
 
