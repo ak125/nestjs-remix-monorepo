@@ -25188,7 +25188,7 @@
         "backend/src/modules/rm/services/rm-alternatives.service.ts"
       ],
       "kind": "test",
-      "loc": 361,
+      "loc": 441,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/services/__tests__/rm-alternatives.service.test.ts",
       "risk": "low",
@@ -25327,7 +25327,7 @@
         "crypto"
       ],
       "kind": "service",
-      "loc": 213,
+      "loc": 235,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/services/rm-alternatives.service.ts",
       "risk": "low",
@@ -47835,7 +47835,7 @@
         "frontend/app/components/home/HomepageJsonLd.tsx"
       ],
       "imports": [
-        "@repo/database-types"
+        "@repo/database-types/family-registry"
       ],
       "kind": "config",
       "loc": 343,
@@ -49361,11 +49361,12 @@
         "frontend/app/components/pieces/PiecesGridView.tsx",
         "frontend/app/components/pieces/PiecesListView.tsx",
         "frontend/app/types/pieces-route.types.ts",
+        "frontend/app/utils/pieces-filters.utils.ts",
         "frontend/app/utils/pieces-route.utils.ts",
         "~/services/api/rm-api.service"
       ],
       "kind": "config",
-      "loc": 294,
+      "loc": 302,
       "owner": "__unassigned__",
       "path": "frontend/app/components/pieces/PiecesGroupedDisplay.tsx",
       "risk": "low",
@@ -49383,7 +49384,7 @@
       "id": "frontend/app/components/pieces/PiecesHeader.tsx",
       "importedBy": [],
       "imports": [
-        "@repo/seo-types",
+        "@repo/seo-types/build-r2-h1",
         "frontend/app/components/pieces/hero/index.ts",
         "frontend/app/services/brand-colors.service.ts",
         "frontend/app/types/pieces-route.types.ts",
@@ -49622,7 +49623,7 @@
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 622,
+      "loc": 631,
       "owner": "__unassigned__",
       "path": "frontend/app/components/pieces/PiecesVehicleContent.tsx",
       "risk": "low",
@@ -52407,7 +52408,7 @@
         "frontend/app/components/vehicle/r8/index.ts"
       ],
       "imports": [
-        "@repo/seo-types",
+        "@repo/seo-types/build-r8-h1",
         "frontend/app/components/heroes/index.ts",
         "frontend/app/components/vehicle/r8/r8.types.ts",
         "~/config/visual-intent"
@@ -52800,7 +52801,7 @@
         "frontend/app/utils/pieces-filters.utils.ts"
       ],
       "kind": "config",
-      "loc": 414,
+      "loc": 397,
       "owner": "__unassigned__",
       "path": "frontend/app/hooks/use-pieces-filters.ts",
       "risk": "low",
@@ -57496,7 +57497,7 @@
       "id": "frontend/app/routes/blog-pieces-auto.conseils._index.tsx",
       "importedBy": [],
       "imports": [
-        "@repo/database-types",
+        "@repo/database-types/family-registry",
         "~/components/blog/ArticleCardEnhanced",
         "~/components/blog/BlogPiecesAutoNavigation",
         "~/components/blog/blog-helpers",
@@ -57510,7 +57511,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 977,
+      "loc": 980,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/blog-pieces-auto.conseils._index.tsx",
       "risk": "low",
@@ -57594,7 +57595,7 @@
       "id": "frontend/app/routes/blog-pieces-auto.guide-achat._index.tsx",
       "importedBy": [],
       "imports": [
-        "@repo/database-types",
+        "@repo/database-types/family-registry",
         "~/components/blog/BlogPiecesAutoNavigation",
         "~/components/errors/ErrorGeneric",
         "~/components/ui/ResponsiveImage",
@@ -60454,7 +60455,7 @@
         "frontend/app/routes/constructeurs.$brand.$model.$type.tsx"
       ],
       "imports": [
-        "@repo/database-types",
+        "@repo/database-types/family-registry",
         "frontend/app/types/catalog.types.ts",
         "~/utils/family-theme",
         "~/utils/logger"
@@ -61157,6 +61158,7 @@
         "frontend/app/hooks/use-pieces-filters.ts",
         "frontend/app/routes/search.tsx",
         "frontend/app/services/pieces/pieces-route.service.ts",
+        "frontend/app/utils/pieces-filters.utils.ts",
         "frontend/app/utils/pieces-loader.utils.ts",
         "frontend/app/utils/pieces-route.utils.ts",
         "frontend/app/utils/search-mappers.ts",
@@ -61456,7 +61458,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 66,
+      "loc": 68,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/cache-control.ts",
       "risk": "low",
@@ -61620,10 +61622,10 @@
       "id": "frontend/app/utils/family-theme.ts",
       "importedBy": [],
       "imports": [
-        "@repo/database-types"
+        "@repo/database-types/family-registry"
       ],
       "kind": "service",
-      "loc": 350,
+      "loc": 353,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/family-theme.ts",
       "risk": "low",
@@ -62132,11 +62134,14 @@
       "domain": "UNKNOWN",
       "id": "frontend/app/utils/pieces-filters.utils.ts",
       "importedBy": [
+        "frontend/app/components/pieces/PiecesGroupedDisplay.tsx",
         "frontend/app/hooks/use-pieces-filters.ts"
       ],
-      "imports": [],
+      "imports": [
+        "frontend/app/types/pieces-route.types.ts"
+      ],
       "kind": "service",
-      "loc": 56,
+      "loc": 83,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/pieces-filters.utils.ts",
       "risk": "low",
@@ -62157,10 +62162,11 @@
         "frontend/app/components/pieces/PiecesCatalogueFamille.tsx",
         "frontend/app/types/pieces-route.types.ts",
         "frontend/app/utils/image-optimizer.ts",
-        "frontend/app/utils/pieces-route.utils.ts"
+        "frontend/app/utils/pieces-route.utils.ts",
+        "frontend/app/utils/remix-application-port.ts"
       ],
       "kind": "service",
-      "loc": 191,
+      "loc": 176,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/pieces-loader.utils.ts",
       "risk": "low",
@@ -62225,7 +62231,7 @@
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 708,
+      "loc": 732,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/pieces-vehicle.loader.server.ts",
       "risk": "low",
@@ -62452,7 +62458,9 @@
       ],
       "domain": "UNKNOWN",
       "id": "frontend/app/utils/remix-application-port.ts",
-      "importedBy": [],
+      "importedBy": [
+        "frontend/app/utils/pieces-loader.utils.ts"
+      ],
       "imports": [],
       "kind": "service",
       "loc": 158,
@@ -62518,11 +62526,13 @@
       "importedBy": [],
       "imports": [
         "@repo/cwv-taxonomy",
+        "@repo/cwv-taxonomy/priority-tier",
+        "@repo/cwv-taxonomy/route-group",
         "~/utils/chunk-error-classification",
         "~/utils/safe-storage"
       ],
       "kind": "service",
-      "loc": 272,
+      "loc": 269,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/runtime-errors.client.ts",
       "risk": "low",
@@ -62974,10 +62984,11 @@
       "importedBy": [],
       "imports": [
         "@repo/cwv-taxonomy",
+        "@repo/cwv-taxonomy/route-group",
         "~/utils/safe-storage"
       ],
       "kind": "service",
-      "loc": 476,
+      "loc": 474,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/web-vitals.client.ts",
       "risk": "low",
@@ -63707,7 +63718,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 134,
+      "loc": 149,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/cache-control.test.ts",
       "risk": "low",
@@ -63783,7 +63794,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 98,
+      "loc": 109,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/catalogue-image-source.test.ts",
       "risk": "low",
@@ -65014,11 +65025,30 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/pieces-family-contract.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 52,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/pieces-family-contract.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/tests/unit/pieces-grouped-display.test.tsx",
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 178,
+      "loc": 253,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/pieces-grouped-display.test.tsx",
       "risk": "low",
@@ -65246,7 +65276,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 697,
+      "loc": 699,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/pieces-vehicle-loader-canonical-redirect.test.ts",
       "risk": "low",
@@ -71253,6 +71283,44 @@
       "loc": 295,
       "owner": "__unassigned__",
       "path": "scripts/ci/prod-image-selection.test.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/ci/prod-observation-report.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 568,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/prod-observation-report.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/ci/prod-observation-report.test.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 345,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/prod-observation-report.test.mjs",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",

@@ -1,7 +1,5 @@
 # Organic Landing Attribution (Étape 0) Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** Capture first-party, server-side landing attribution (organic / paid / social / referral / direct) at the first hit of a session and stamp it onto each order, so organic→order conversion is SQL-queryable in Supabase independently of GA4 consent.
 
 **Architecture:** A pure classifier turns `Referer` + UTM/click-id query params into a `LandingSource`. A NestJS global middleware (registered after `express-session` in `main.ts`) writes the classification into `req.session.landing` on the first hit only. At order creation, `OrdersController.createOrder` folds `req.session.landing` into the same post-create `.update()` that already persists `ga_client_id` on `___xtr_order`. Three new nullable columns hold the attribution. This **complements** the existing GA4 stack (`analytics.ts` client events + `___xtr_order.ga_client_id` + Paybox-callback Measurement Protocol purchase) — it does **not** replace it, and it survives GA4 consent refusal / ad-blockers.
@@ -47,7 +45,7 @@ File `backend/supabase/migrations/20260520_order_landing_attribution.sql`:
 -- Order Landing Attribution (Étape 0 — PR-INST-1)
 -- Date: 2026-05-20
 -- Refs: plans/utiliser-superpower-toasty-charm.md (Étape 0, corrected)
---       docs/superpowers/plans/2026-05-20-organic-landing-attribution.md
+--       docs/plans/2026-05-20-organic-landing-attribution.md
 -- =====================================================
 -- First-party server-side attribution, complements existing ga_client_id.
 -- New columns are NULLABLE: existing rows stay NULL (no backfill needed,
@@ -645,7 +643,7 @@ Expected: query runs (returns 0/0 until traffic flows post-deploy — proves sch
 git push -u origin feat/organic-landing-attribution
 gh pr create --repo ak125/nestjs-remix-monorepo --base main \
   --title "feat(attribution): organic landing attribution on orders (Étape 0 PR-INST)" \
-  --body "See docs/superpowers/plans/2026-05-20-organic-landing-attribution.md. First-party server-side landing capture complementing GA4 ga_client_id; columns on ___xtr_order; first-touch session middleware; closed-enum classifier with tests."
+  --body "See docs/plans/2026-05-20-organic-landing-attribution.md. First-party server-side landing capture complementing GA4 ga_client_id; columns on ___xtr_order; first-touch session middleware; closed-enum classifier with tests."
 ```
 
 ---

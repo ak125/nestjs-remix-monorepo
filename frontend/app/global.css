@@ -400,6 +400,15 @@
     contain-intrinsic-size: auto 700px;
   }
 
+  /* Keep every product in SSR/DOM while skipping layout and paint for cards
+     outside the viewport. Individual cards (rather than the whole long grid)
+     bound the style/layout work when a native product dialog opens. Once seen,
+     `auto` remembers the actual height, including longer references/names. */
+  .pieces-product-card {
+    content-visibility: auto;
+    contain-intrinsic-block-size: auto 360px;
+  }
+
   /* Native <dialog> drawer (menu mobile + panier) : slide + backdrop fade.
      Contenu rendu en permanence (display:none fermé) → showModal() instantané,
      INP -54% vs Radix Sheet (pas de react-remove-scroll / FocusScope reflow).

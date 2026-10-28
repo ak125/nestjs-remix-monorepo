@@ -800,6 +800,21 @@ assert_contains "bash-guard: motif de refus explicite" "enveloppe PreToolUse ill
   "$(printf 'not json' | bash scripts/claude-hooks/pretool-bash-guard.sh 2>&1)"
 assert_exit "bash-guard: enveloppe complète documentée → allow"     "0" "$(run_bash_guard_raw '{"session_id":"s","cwd":"/tmp","hook_event_name":"PreToolUse","tool_name":"Bash","tool_input":{"command":"git status","description":"d"}}')"
 
+# Entrée longue sur plusieurs lignes : motif en ligne 1, ~1 Mo de lignes ensuite.
+# Avant : `echo "$X" | grep -q` sous pipefail — grep sort au premier match, echo
+# reçoit SIGPIPE, le test vaut faux et la garde laisse passer (exit 0).
+LONG_PAD=$(awk 'BEGIN { for (i = 0; i < 100000; i++) print "# padding" }')
+run_bash_guard_long() {
+  jq -Rsc '{tool_name:"Bash",tool_input:{command:.}}' <<<"$1"$'\n'"$LONG_PAD" \
+    | bash scripts/claude-hooks/pretool-bash-guard.sh >/dev/null 2>&1
+  echo $?
+}
+assert_exit "bash-guard: git push origin main + 1 Mo → BLOCK"  "2" "$(run_bash_guard_long 'git push origin main')"
+assert_exit "bash-guard: git push --force + 1 Mo → BLOCK"      "2" "$(run_bash_guard_long 'git push --force origin feat/x')"
+assert_exit "bash-guard: git reset --hard + 1 Mo → BLOCK"      "2" "$(run_bash_guard_long 'git reset --hard')"
+assert_exit "bash-guard: git tag v1.2.3 + 1 Mo → BLOCK"        "2" "$(run_bash_guard_long 'git tag v1.2.3')"
+assert_exit "bash-guard: git status + 1 Mo → allow"            "0" "$(run_bash_guard_long 'git status')"
+
 # ============================================================
 # Guard : pretool-supabase-guard.sh — Guard 6 (DML direct sur tables gouvernées)
 # ============================================================
@@ -842,6 +857,21 @@ assert_contains "sql-guard: motif de refus explicite" "enveloppe PreToolUse illi
   "$(printf 'not json' | bash scripts/claude-hooks/pretool-supabase-guard.sh 2>&1)"
 assert_exit "sql-guard: enveloppe execute_sql complète → allow"      "0" "$(run_sql_guard_raw '{"session_id":"s","cwd":"/tmp","hook_event_name":"PreToolUse","tool_name":"mcp__supabase__execute_sql","tool_input":{"project_id":"p","query":"SELECT 1"}}')"
 assert_exit "sql-guard: enveloppe apply_migration complète → allow"  "0" "$(run_sql_guard_raw '{"session_id":"s","cwd":"/tmp","hook_event_name":"PreToolUse","tool_name":"mcp__supabase__apply_migration","tool_input":{"project_id":"p","name":"add_idx","query":"CREATE INDEX IF NOT EXISTS i ON t (c)"}}')"
+
+# Migration longue : instruction en ligne 1, ~1 Mo de lignes ensuite (même défaut
+# SIGPIPE que bash-guard). Les cas allow vérifient que la correction ne bloque pas à tort.
+LONG_SQL_PAD=$(awk 'BEGIN { for (i = 0; i < 100000; i++) print "-- padding" }')
+run_sql_guard_long() {
+  jq -Rsc '{tool_name:"mcp__supabase__apply_migration",tool_input:{name:"m",query:.}}' <<<"$1"$'\n'"$LONG_SQL_PAD" \
+    | bash scripts/claude-hooks/pretool-supabase-guard.sh >/dev/null 2>&1
+  echo $?
+}
+assert_exit "sql-guard: DROP TABLE foo + 1 Mo → BLOCK"         "2" "$(run_sql_guard_long 'DROP TABLE foo;')"
+assert_exit "sql-guard: TRUNCATE foo + 1 Mo → BLOCK"           "2" "$(run_sql_guard_long 'TRUNCATE foo;')"
+assert_exit "sql-guard: DISABLE RLS + 1 Mo → BLOCK"            "2" "$(run_sql_guard_long 'ALTER TABLE foo DISABLE ROW LEVEL SECURITY;')"
+assert_exit "sql-guard: UPDATE pieces_price + 1 Mo → BLOCK"    "2" "$(run_sql_guard_long 'UPDATE pieces_price SET pri_dispo=1;')"
+assert_exit "sql-guard: DROP TABLE IF EXISTS + 1 Mo → allow"   "0" "$(run_sql_guard_long 'DROP TABLE IF EXISTS foo;')"
+assert_exit "sql-guard: SELECT 1 + 1 Mo → allow"               "0" "$(run_sql_guard_long 'SELECT 1;')"
 
 # ============================================================
 # Guard : pretool-file-guard.sh — chemins protégés (format réel : tool_input.file_path)

@@ -131,7 +131,6 @@ Source-of-truth machine-readable : [`.spec/00-canon/ai-registry/skills.registry.
 ## Liens canon
 
 - Spec normative : <https://agentskills.io/specification>
-- TDD doctrine pour skills : `superpowers:writing-skills` (RED/GREEN/REFACTOR + CSO + bulletproofing)
 - Schema : [`.spec/00-canon/ai-registry/skill.schema.json`](../../.spec/00-canon/ai-registry/skill.schema.json)
 - Validator : [`scripts/governance/validate-skills-frontmatter.js`](../../scripts/governance/validate-skills-frontmatter.js)
 - Registry projection : [`scripts/governance/build-skills-registry.js`](../../scripts/governance/build-skills-registry.js)

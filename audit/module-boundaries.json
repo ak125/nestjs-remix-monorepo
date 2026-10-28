@@ -92,7 +92,7 @@
         "backend/src/utils"
       ],
       "files_count": 35,
-      "loc_total": 6191,
+      "loc_total": 6184,
       "has_barrel": true
     },
     "blog": {
@@ -186,8 +186,8 @@
         "backend/src/modules/config/services",
         "backend/src/modules/config/validators"
       ],
-      "files_count": 105,
-      "loc_total": 25954,
+      "files_count": 103,
+      "loc_total": 25071,
       "has_barrel": true
     },
     "customers": {
@@ -226,7 +226,7 @@
         "backend/src/modules/rm/utils"
       ],
       "files_count": 15,
-      "loc_total": 3532,
+      "loc_total": 3634,
       "has_barrel": false
     },
     "diagnostic-engine": {
@@ -261,7 +261,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 114988,
+      "loc_total": 114991,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 585,
-      "loc_total": 110567,
+      "loc_total": 110603,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -700,8 +700,8 @@
         "scripts/wiki-generators",
         "scripts/wiki-generators/__tests__"
       ],
-      "files_count": 209,
-      "loc_total": 48584,
+      "files_count": 211,
+      "loc_total": 49497,
       "has_barrel": true
     },
     "search": {
@@ -958,7 +958,7 @@
         "tests/registry"
       ],
       "files_count": 317,
-      "loc_total": 61885,
+      "loc_total": 61373,
       "has_barrel": true
     },
     "upload": {
@@ -1269,7 +1269,7 @@
     {
       "from": "backend-core",
       "to": "config",
-      "count": 11
+      "count": 10
     },
     {
       "from": "backend-core",
@@ -1624,7 +1624,7 @@
     {
       "from": "config",
       "to": "common",
-      "count": 3
+      "count": 2
     },
     {
       "from": "config",

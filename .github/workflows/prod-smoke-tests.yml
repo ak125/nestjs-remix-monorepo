@@ -912,3 +912,26 @@ jobs:
                 }
               ]
             }"
+
+  prod-observation:
+    name: 🔭 PROD observation report
+    # Read-only (scripts/ci/prod-observation-report.mjs): payment notification
+    # routes, rate-limit counters of PROD and PREPROD, container memory and the
+    # R2 models route. Aggregates only: no address, no request total. A job of
+    # its own, so a smoke failure does not hide it and the reverse. nice and a
+    # heap cap keep it from competing with the site (2.1 M synthetic log lines:
+    # 15 s, 118 MB).
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 10
+
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v7
+
+      - name: ⚙️ Setup Node.js 24
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: 🔭 Observation report
+        run: nice -n 19 node --max-old-space-size=256 scripts/ci/prod-observation-report.mjs
