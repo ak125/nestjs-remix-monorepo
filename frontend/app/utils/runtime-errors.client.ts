@@ -18,12 +18,9 @@
  * Initialisé depuis `entry.client.tsx` après `reportWebVitals()`.
  */
 
-import {
-  classifyRoute,
-  priorityTierFromSurface,
-  type DeviceType,
-  type Surface,
-} from "@repo/cwv-taxonomy";
+import { type DeviceType, type Surface } from "@repo/cwv-taxonomy";
+import { priorityTierFromSurface } from "@repo/cwv-taxonomy/priority-tier";
+import { classifyRoute } from "@repo/cwv-taxonomy/route-group";
 
 import { isChunkLoadErrorMessage } from "~/utils/chunk-error-classification";
 import { safeSessionStorage } from "~/utils/safe-storage";

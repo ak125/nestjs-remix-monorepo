@@ -440,14 +440,14 @@
       "declaredIn": [
         "backend/package.json"
       ],
-      "id": "npm:@nestjs/throttler@^6.5.0",
+      "id": "npm:@nestjs/throttler@^6.7.1",
       "name": "@nestjs/throttler",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^6.5.0",
+      "version": "^6.7.1",
       "workspaces": [
         "@fafa/backend"
       ]

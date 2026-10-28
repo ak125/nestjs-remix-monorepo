@@ -1,6 +1,6 @@
 # Marketing Workspace
 
-Claude Code project root pour les agents marketing AutoMecanik (ADR-036). Charge uniquement les agents marketing G1 + skills marketing-relevant, sans charger les 39 agents R0-R8 SEO ni les 8 skills dev daily.
+Workspace des agents marketing AutoMecanik (ADR-036). Les rôles locaux sont décrits dans [AGENTS.md](AGENTS.md) ; le chargement des instructions et des skills est expliqué dans la [carte commune des workspaces](../../.claude/knowledge/workspaces.md).
 
 ## État vérifié du socle Hermes A1 — 13 octobre 2026
 
@@ -1424,34 +1424,23 @@ Phase 0 ADR-036 introduit 3 agents G1 dédiés au marketing :
 | `local-business-agent`     | LOCAL only (10 communes 93)              | `rt-local-gbp-week` (mercredi 09:00)     |
 | `customer-retention-agent` | ECOMMERCE primary, HYBRID strict zone 93 | `rt-retention-monthly` (1er du mois)     |
 
-Les mélanger avec les 39 agents R0-R8 SEO (`workspaces/seo-batch/`) diluerait le scope. Le pattern dual-workspace (PR #200) est étendu ici — 3 racines Claude Code distinctes :
-
-| cwd                                          | Surface chargée                                   | Usage                                               |
-| -------------------------------------------- | ------------------------------------------------- | --------------------------------------------------- |
-| `/opt/automecanik/app/`                      | 8 skills DEV                                      | dev backend/frontend, refactor, CI, ADR, governance |
-| `/opt/automecanik/app/workspaces/seo-batch/` | 39 agents R0-R8 + 16 skills SEO                   | campagnes SEO, KW planning, content gen, RAG enrich |
-| `/opt/automecanik/app/workspaces/marketing/` | 3 agents G1 marketing + skills marketing-relevant | briefs marketing, GBP posts, retention campaigns    |
+Ce workspace spécialise le travail marketing ; les instructions et skills parents
+restent applicables selon la [carte commune](../../.claude/knowledge/workspaces.md).
+Les rôles décrits ci-dessus ne prouvent ni le chargement ni l'activation des agents.
 
 ## Usage
 
 ```bash
-# Session marketing (charge uniquement les 3 agents G1 marketing)
 cd /opt/automecanik/app/workspaces/marketing && claude
-
-# Session SEO (charge les 39 agents R0-R8)
-cd /opt/automecanik/app/workspaces/seo-batch && claude
-
-# Session dev daily (ne charge AUCUN agent métier)
-cd /opt/automecanik/app && claude
 ```
 
 ## Contenu
 
-- `.claude/agents/` : 3 agents G1 marketing — arrivent en Phase 1 (`local-business-agent`) et Phase 2 (`marketing-lead-agent`, `customer-retention-agent`)
-- `.claude/skills/` : skills marketing-relevant (réutilisés via paths partagés au démarrage, dédiés plus tard si gap)
-- `.claude/rules/` : règles spécifiques marketing (`marketing-batch.md`) + canons distribués depuis le vault (`marketing-voice.md`, `agent-exit-contract.md`)
-- `.claude/settings.json` : hooks PreToolUse / PostToolUse / Stop (mêmes scripts que monorepo, paths absolus)
-- `CLAUDE.md` : pointer vers gouvernance + règles marketing spécifiques
+- [AGENTS.md](AGENTS.md) : rôles, destinations autorisées et restrictions.
+- [CLAUDE.md](CLAUDE.md) : règles marketing et références à lire.
+- `.claude/agents/` et `.claude/skills/` : définitions locales ; consulter la description pertinente.
+- `.claude/rules/marketing-batch.md` : règles métier ; les miroirs canoniques sont sous `.claude/canon-mirrors/`.
+- `.claude/settings.json` : réglages locaux ; ils n'accordent pas de droits supplémentaires.
 
 ## Historique du scaffold (ne vaut pas état runtime actuel)
 

@@ -1,6 +1,6 @@
 ---
 name: continuous-improvement-global
-description: Use when reviewing any AutoMecanik PR, audit, script, pipeline, owner-action or code change as the priority operational filter — checks whether the action improves a real measured problem with evidence, controlled risk, tests, and a clear next action. Non-blocking by default; proportional to risk. Triggers — "review PR", "audit this change", "validate before merge", "should I add this layer", "this looks ready", "ready to ship", "ouvrir une PR", or any request that touches code/archi/DB/contenu/SEO/conversion/pipeline.
+description: Use when explicitly assessing whether a proposed AutoMecanik process, pipeline or architectural change is worth its complexity and risk, or when asked for an Improvement Check. Not a mandatory step for every edit, audit or PR.
 type: technique
 status: stable
 owners: ['@ak125']
@@ -22,18 +22,9 @@ This skill is the priority operational filter for AutoMecanik decisions.
 
 ## Use when
 
-Use for:
-
-- PR review
-- Audit review
-- Pipeline decision
-- Owner action
-- Code change
-- SEO / content / conversion change
-- CI / config change
-- Runtime or production decision
-
-Apply implicitly when the user signals an implicit decision point ("est-ce que je peux merger ?", "ça a l'air prêt", "j'ajoute X ?") — these are improvement-check moments even without the word "validate".
+Use for an explicit Improvement Check or an unresolved value/risk/complexity
+decision. A simple authorized edit, review or completion report does not trigger
+this skill automatically. Existing CI and domain checks still apply.
 
 ## Default output : Improvement Check
 
@@ -116,9 +107,8 @@ Keep the output compact :
 `ACCIDENTAL_DUPLICATION` is incompatible with `GO` or `GO_WITH_WATCH` : use the existing
 `FIX_AND_RETEST` or `OWNER_DECISION` verdict according to scope and authority.
 
-This closeout grants no mutation authority and is never a gate. Any accepted follow-up returns to
-PATCH → VERIFY → this closeout again before handoff (a deletion can itself make something else
-obsolete) and remains governed by the existing frozen scope, ownership, danger-zone, and autonomy
+This closeout grants no mutation authority and is never a gate. Reopen the closeout only if an accepted follow-up introduces a new mechanism or an identified
+remaining risk. Otherwise stop after the verified result. Follow-ups remain governed by the existing frozen scope, ownership, danger-zone, and autonomy
 rules.
 
 Simplicity never overrides correctness, business truth, security, validation, tests, observability,

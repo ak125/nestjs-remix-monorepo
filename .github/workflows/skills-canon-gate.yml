@@ -29,6 +29,7 @@ on:
       - "scripts/governance/build-command-center-snapshot.js"
       - "scripts/governance/__tests__/build-command-center-snapshot.test.ts"
       - "scripts/governance/__fixtures__/agent-operating-map.invalid.yaml"
+      - "scripts/governance/__fixtures__/agent-operating-map.dept-handoffs.invalid.yaml"
       - "audit/registry/command-center-snapshot.json"
       - ".github/workflows/skills-canon-gate.yml"
 

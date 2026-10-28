@@ -158,6 +158,7 @@ export class AbandonedCartDataService extends SupabaseBaseService {
     return data as AbandonedCartRecord | null;
   }
 
+  /** null = no record carries this token; a database error is thrown. */
   async updateUnsubscribed(token: string): Promise<{ cst_id: number } | null> {
     const { data, error } = await this.supabase
       .from(TABLE)
@@ -168,17 +169,18 @@ export class AbandonedCartDataService extends SupabaseBaseService {
       })
       .eq('recovery_token', token)
       .select('cst_id')
-      .single();
+      .maybeSingle();
 
     if (error) {
       this.logger.error(`Update unsubscribed failed: ${error.message}`);
-      return null;
+      throw new Error(`Update unsubscribed failed: ${error.message}`);
     }
-    return data as { cst_id: number };
+    return data as { cst_id: number } | null;
   }
 
+  /** A database error is thrown, never read as "not unsubscribed". */
   async isUnsubscribedByCstId(cstId: number): Promise<boolean> {
-    const { data } = await this.supabase
+    const { data, error } = await this.supabase
       .from(TABLE)
       .select('id')
       .eq('cst_id', cstId)
@@ -186,7 +188,30 @@ export class AbandonedCartDataService extends SupabaseBaseService {
       .limit(1)
       .maybeSingle();
 
+    if (error) {
+      this.logger.error(`Unsubscribe check failed: ${error.message}`);
+      throw new Error(`Unsubscribe check failed: ${error.message}`);
+    }
     return !!data;
+  }
+
+  /**
+   * Consentement marketing explicite du client (ADR-036) — préalable à toute
+   * relance. Sans ligne ou sans date de consentement : pas de consentement.
+   * Une erreur de lecture est levée, jamais lue comme un accord.
+   */
+  async hasMarketingConsent(cstId: number): Promise<boolean> {
+    const { data, error } = await this.supabase
+      .from('___xtr_customer')
+      .select('cst_marketing_consent_at')
+      .eq('cst_id', cstId)
+      .maybeSingle();
+
+    if (error) {
+      this.logger.error(`Marketing consent check failed: ${error.message}`);
+      throw new Error(`Marketing consent check failed: ${error.message}`);
+    }
+    return !!data?.cst_marketing_consent_at;
   }
 
   async getCustomerEmail(

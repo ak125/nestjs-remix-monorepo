@@ -74,11 +74,13 @@ BEGIN
     RAISE EXCEPTION 'ABORT: montant payé pour la ligne % illisible', c_line;
   END IF;
 
-  -- §3 Aucun supplément déjà rattaché ; id enfant au format du site, préfixe libre
-  --    (le lien de paiement résout aussi un id par son préfixe ORD-<horodatage>).
-  SELECT count(*) INTO v_n FROM public.___xtr_order WHERE ord_parent = c_parent;
+  -- §3 Aucun supplément non annulé (même règle que la route du site : un supplément annulé ne
+  --    compte pas) ; id enfant au format du site, préfixe libre (le lien de paiement résout
+  --    aussi un id par son préfixe ORD-<horodatage>).
+  SELECT count(*) INTO v_n FROM public.___xtr_order
+   WHERE ord_parent = c_parent AND ord_ords_id IS DISTINCT FROM '2';
   IF v_n <> 0 THEN
-    RAISE EXCEPTION 'ABORT: % commande(s) déjà rattachée(s) à % — supplément déjà créé ?', v_n, c_parent;
+    RAISE EXCEPTION 'ABORT: % supplément(s) non annulé(s) rattaché(s) à % — déjà créé ?', v_n, c_parent;
   END IF;
   v_ts    := floor(extract(epoch FROM clock_timestamp()) * 1000)::bigint::text;
   v_child := 'ORD-' || v_ts || '-' || lpad(floor(random() * 1000)::int::text, 3, '0');

@@ -14,6 +14,8 @@ import {
   UserFilters,
   PaginatedUsers,
   UserStats,
+  MarketingConsent,
+  MarketingConsentSource,
 } from './dto/user.dto';
 
 export interface DashboardData {
@@ -158,6 +160,30 @@ export class UsersFinalService {
 
     this.logger.log(`✅ User updated: ${userId}`);
     return user;
+  }
+
+  /**
+   * Consentement marketing (ADR-036). Lu sans cache : c'est la preuve qui
+   * autorise un envoi, elle doit refléter la base au moment de la lecture.
+   */
+  async getMarketingConsent(userId: string): Promise<MarketingConsent> {
+    return this.userDataService.getMarketingConsent(userId);
+  }
+
+  async setMarketingConsent(
+    userId: string,
+    granted: boolean,
+    source: MarketingConsentSource,
+  ): Promise<MarketingConsent> {
+    const consent = await this.userDataService.setMarketingConsent(
+      userId,
+      granted,
+      source,
+    );
+    this.logger.log(
+      `✅ Marketing consent ${consent.granted ? 'granted' : 'withdrawn'} for user: ${userId}`,
+    );
+    return consent;
   }
 
   /**

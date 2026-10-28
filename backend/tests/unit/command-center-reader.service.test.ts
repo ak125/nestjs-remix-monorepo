@@ -12,7 +12,14 @@ jest.mock(
   '../../src/modules/admin/services/command-center-kpi.service',
   () => ({ CommandCenterKpiService: class {} }),
 );
-import { mkdtempSync, readFileSync, writeFileSync, rmSync } from 'fs';
+import {
+  copyFileSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  writeFileSync,
+  rmSync,
+} from 'fs';
 import { tmpdir } from 'os';
 import {
   CommandCenterResponseV2Schema,
@@ -664,4 +671,64 @@ describe('R8 — causes dans le digest sans extension de contrat', () => {
       );
     },
   );
+});
+
+describe('validation_status — forme du rapport agent-operating-map', () => {
+  const originalRegistry = process.env.REGISTRY_DIR;
+  const originalMode = process.env.COMMAND_CENTER_MODE;
+  let dir: string;
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), 'cc-validation-'));
+    mkdirSync(join(dir, 'audit', 'registry'), { recursive: true });
+    mkdirSync(join(dir, 'audit-reports'));
+    copyFileSync(
+      join(FIXTURES, 'full', 'command-center-snapshot.json'),
+      join(dir, 'audit', 'registry', 'command-center-snapshot.json'),
+    );
+    process.env.COMMAND_CENTER_MODE = 'full';
+  });
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true });
+    if (originalRegistry === undefined) delete process.env.REGISTRY_DIR;
+    else process.env.REGISTRY_DIR = originalRegistry;
+    if (originalMode === undefined) delete process.env.COMMAND_CENTER_MODE;
+    else process.env.COMMAND_CENTER_MODE = originalMode;
+  });
+  const statusFor = async (report?: string) => {
+    if (report !== undefined)
+      writeFileSync(
+        join(dir, 'audit-reports', 'agent-operating-map-report.json'),
+        report,
+      );
+    const { service } = makeService('full', join(dir, 'audit', 'registry'));
+    const r = await service.getCommandCenter();
+    expect(r.degraded).toBe(false);
+    return r.validation_status;
+  };
+
+  // Forme écrite par scripts/governance/validate-agent-operating-map.js.
+  it.each([
+    ['{"counts":{"errors":0,"warns":0,"total":0}}', 'VALIDATED'],
+    ['{"counts":{"errors":2,"warns":0,"total":2}}', 'STRICT_FAIL'],
+    ['{"counts":{"errors":0,"warns":1,"total":1}}', 'WARN_ONLY'],
+  ])('rapport bien formé %s → %s', async (report, expected) => {
+    expect(await statusFor(report)).toBe(expected);
+  });
+
+  it('rapport absent → UNKNOWN', async () => {
+    expect(await statusFor()).toBe('UNKNOWN');
+  });
+
+  // Un rapport mal formé ne prouve rien : il ne doit jamais s'afficher VALIDATED.
+  it.each([
+    'null',
+    '{',
+    '{"counts":{}}',
+    '{"counts":{"errors":0}}',
+    '{"counts":{"errors":"0","warns":null}}',
+    '{"counts":{"errors":-1,"warns":0}}',
+    '{"counts":{"errors":0.5,"warns":0}}',
+  ])('rapport mal formé %s → UNKNOWN', async (report) => {
+    expect(await statusFor(report)).toBe('UNKNOWN');
+  });
 });

@@ -15,8 +15,8 @@
 --
 -- Jamais de DELETE à la place : ___xtr_order_history référence la commande (clé étrangère
 -- RESTRICT) et ce journal ne s'efface pas.
--- Jamais la route admin POST /api/admin/orders/:id/cancel : elle écrit un statut hors canon,
--- contourne cancel_order_atomic et le journal, et envoie au client deux mails d'annulation.
+-- Jamais la route admin POST /api/admin/orders/:id/cancel (bouton « Annuler »), même corrigée :
+-- elle envoie au client un mail d'annulation automatique, non validé, avant tout remboursement.
 
 DO $cancel$
 DECLARE

@@ -40,6 +40,13 @@ function invoke(
 }
 
 describe("buildCacheHeaders — success path", () => {
+  it("forwards aggregate timing without changing the cache policy", () => {
+    const out = invoke(buildCacheHeaders(SUCCESS), {
+      loader: { "Server-Timing": "r2_loader;dur=12.3" },
+    });
+    expect(out["Server-Timing"]).toBe("r2_loader;dur=12.3");
+    expect(out["Cache-Control"]).toBe(SUCCESS);
+  });
   it("applies the success policy when the loader set no Cache-Control", () => {
     const out = invoke(buildCacheHeaders(SUCCESS));
     expect(out["Cache-Control"]).toBe(SUCCESS);
@@ -71,6 +78,14 @@ describe("buildCacheHeaders — success path", () => {
 });
 
 describe("buildCacheHeaders — error path (anti cache-poisoning)", () => {
+  it("does not attribute a successful loader timing to an error response", () => {
+    const out = invoke(buildCacheHeaders(SUCCESS), {
+      loader: { "Server-Timing": "r2_loader;dur=12.3" },
+      error: {},
+    });
+    expect(out["Server-Timing"]).toBeUndefined();
+    expect(out["Cache-Control"]).toBe(NO_STORE_CACHE_CONTROL);
+  });
   it("forces no-store on a bare loader-thrown error, never leaking the success s-maxage", () => {
     const out = invoke(buildCacheHeaders(SUCCESS), { error: {} });
     expect(out["Cache-Control"]).toBe(NO_STORE_CACHE_CONTROL);

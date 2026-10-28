@@ -6,7 +6,7 @@ import { z } from 'zod';
 /**
  * Prompt Registry MINIMAL — schema validation (Zod canon, pas Ajv/JSON-Schema).
  *
- * Cf. spec docs/superpowers/specs/2026-05-23-ai-additive-layer-phase-0-and-1-design.md §4.4
+ * Cf. spec docs/specs/2026-05-23-ai-additive-layer-phase-0-and-1-design.md §4.4
  * 5 champs uniquement : {prompt, intent, r_role, target_url, funnel_stage}.
  */
 

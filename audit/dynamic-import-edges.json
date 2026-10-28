@@ -1,6 +1,6 @@
 {
   "_generated_by": "scripts/audit/build-deep-inventory.js",
-  "count": 17,
+  "count": 16,
   "edges": [
     {
       "from": "backend/src/modules/admin/services/execution-router.service.ts",
@@ -50,11 +50,6 @@
     {
       "from": "frontend/app/entry.client.tsx",
       "to": "~/utils/chunk-error-classification",
-      "kind": "import()"
-    },
-    {
-      "from": "frontend/app/root.tsx",
-      "to": "frontend/app/components/layout/BottomNav.tsx",
       "kind": "import()"
     },
     {
