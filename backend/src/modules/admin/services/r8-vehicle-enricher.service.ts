@@ -91,6 +91,21 @@ interface R8Block {
   semanticPayload: string[];
 }
 
+// ── Metrics ──
+
+/** Diversity metrics (scores on 0-100, ratios on 0-1). */
+interface R8Metrics {
+  specificContentRatio: number;
+  boilerplateRatio: number;
+  diversityScore: number;
+  blockSpecificityScore: number;
+  semanticSimilarityScore: number;
+  categoryOrderDiversityScore: number;
+  faqReuseRiskScore: number;
+  catalogDeltaScore: number;
+  commercialIntentScore: number;
+}
+
 // ── Neighbor ──
 
 interface R8Neighbor {
@@ -388,27 +403,21 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
         .map((b) => `## ${b.title}\n\n${b.renderedText}`)
         .join('\n\n---\n\n');
 
-      // ── 3. SCORE ──
-      const metrics = this.computeMetrics(blocks, neighbors, families);
-      const fingerprints = this.computeFingerprints(contentMain, blocks);
-
-      // ── 3.b META COLLISION (PR-1 seo-v9 R8 meta variant pool) ──
-      // Pénalise semanticSimilarityScore si ≥2 voisins partagent le même
-      // template `meta_title` ou `meta_description`. La pénalité (≤ -10) peut
-      // basculer le score sous le seuil `min_semantic_diversity=65` du gate
-      // → `LOW_SEMANTIC_DIVERSITY` reason naturellement émis. Pas de
-      // pénalité H1 (5 templates × 18 frères → ⌈18/5⌉=4 collisions
-      // mathématiquement inévitables, faux positifs garantis).
-      const metaCollisionWarnings = this.applyMetaCollisionPenalty(
-        metrics,
+      // ── 3. SCORE + 4. GATE ──
+      // META COLLISION (PR-1 seo-v9 R8 meta variant pool) : pénalise
+      // semanticSimilarityScore si ≥2 voisins partagent le même template
+      // `meta_title` ou `meta_description`. La pénalité (≤ -10) peut basculer
+      // sous `min_semantic_diversity=65` (→ `LOW_SEMANTIC_DIVERSITY`) et, via
+      // le score agrégé recalculé, sous `index_min`. Pas de pénalité H1
+      // (5 templates × 18 frères → ⌈18/5⌉=4 collisions mathématiquement
+      // inévitables, faux positifs garantis).
+      const { metrics, decision, reasons, warnings } = this.scoreAndGate(
+        blocks,
         neighbors,
+        families,
         variantSignature,
       );
-
-      // ── 4. GATE ──
-      const { decision, reasons, warnings } = this.gate(metrics, blocks);
-      // Merge des warnings collision avec ceux du gate
-      warnings.push(...metaCollisionWarnings);
+      const fingerprints = this.computeFingerprints(contentMain, blocks);
       const sitemapRules = R8_SITEMAP_RULES[decision];
 
       // ── 5. WRITE DB ──
@@ -965,7 +974,7 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
     blocks: R8Block[],
     neighbors: R8Neighbor[],
     families: RpcCatalogFamily[],
-  ) {
+  ): R8Metrics {
     const total = blocks.length;
     const specificBlocks = blocks.filter((b) => b.specificityWeight >= 0.65);
     const boilerplateBlocks = blocks.filter((b) => b.boilerplateRisk >= 0.5);
@@ -1024,36 +1033,49 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       (hasBestsellers ? 30 : 0) +
       (families.length > 5 ? 30 : families.length > 0 ? 15 : 0);
 
-    // Weighted formula
-    const w = R8_DIVERSITY_FORMULA_WEIGHTS;
-    const diversityScore = Math.max(
-      0,
-      Math.min(
-        100,
-        specificContentRatio * 100 * w.specificContentRatioScore +
-          (specificBlocks.reduce((s, b) => s + b.specificityWeight, 0) /
-            Math.max(1, specificBlocks.length)) *
-            100 *
-            w.blockSpecificityScore +
-          semanticSimilarityScore * w.semanticSimilarityScore +
-          categoryOrderDiversityScore * w.categoryOrderDiversityScore +
-          catalogDeltaScore * w.catalogDeltaScore +
-          commercialIntentScore * w.commercialIntentScore +
-          (100 - faqReuseRiskScore) * w.faqReuseRiskInverted +
-          boilerplateRatio * 100 * w.boilerplatePenalty,
-      ),
-    );
+    // Average weight of the specific blocks, on the 0-100 scale of the formula
+    const blockSpecificityScore =
+      (specificBlocks.reduce((s, b) => s + b.specificityWeight, 0) /
+        Math.max(1, specificBlocks.length)) *
+      100;
 
-    return {
+    const metrics: R8Metrics = {
       specificContentRatio,
       boilerplateRatio,
-      diversityScore,
+      diversityScore: 0,
+      blockSpecificityScore,
       semanticSimilarityScore,
       categoryOrderDiversityScore,
       faqReuseRiskScore,
       catalogDeltaScore,
       commercialIntentScore,
     };
+    metrics.diversityScore = this.scoreDiversity(metrics);
+    return metrics;
+  }
+
+  /**
+   * Weighted formula (R8_DIVERSITY_FORMULA_WEIGHTS), the only place the
+   * aggregate is computed: `scoreAndGate` re-applies it after the meta
+   * collision penalty so the gate and the persisted `diversity_score` read
+   * the same post-penalty value.
+   */
+  private scoreDiversity(m: Omit<R8Metrics, 'diversityScore'>): number {
+    const w = R8_DIVERSITY_FORMULA_WEIGHTS;
+    return Math.max(
+      0,
+      Math.min(
+        100,
+        m.specificContentRatio * 100 * w.specificContentRatioScore +
+          m.blockSpecificityScore * w.blockSpecificityScore +
+          m.semanticSimilarityScore * w.semanticSimilarityScore +
+          m.categoryOrderDiversityScore * w.categoryOrderDiversityScore +
+          m.catalogDeltaScore * w.catalogDeltaScore +
+          m.commercialIntentScore * w.commercialIntentScore +
+          (100 - m.faqReuseRiskScore) * w.faqReuseRiskInverted +
+          m.boilerplateRatio * 100 * w.boilerplatePenalty,
+      ),
+    );
   }
 
   // ── Fingerprints ──
@@ -1147,6 +1169,34 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
     return warnings;
   }
 
+  /**
+   * Fixed order: metrics → meta collision penalty → aggregate recomputed on
+   * the penalised metrics → gate. The returned metrics are the ones the gate
+   * read, i.e. the values persisted on `__seo_r8_pages` and its versions.
+   */
+  private scoreAndGate(
+    blocks: R8Block[],
+    neighbors: R8Neighbor[],
+    families: RpcCatalogFamily[],
+    variantSignature: R8VariantSignature,
+  ): {
+    metrics: R8Metrics;
+    decision: R8SeoDecision;
+    reasons: R8ReasonCode[];
+    warnings: string[];
+  } {
+    const metrics = this.computeMetrics(blocks, neighbors, families);
+    const metaCollisionWarnings = this.applyMetaCollisionPenalty(
+      metrics,
+      neighbors,
+      variantSignature,
+    );
+    metrics.diversityScore = this.scoreDiversity(metrics);
+    const { decision, reasons, warnings } = this.gate(metrics, blocks);
+    warnings.push(...metaCollisionWarnings);
+    return { metrics, decision, reasons, warnings };
+  }
+
   // ── Gate ──
 
   private gate(
@@ -1193,21 +1243,20 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       return { decision: 'REGENERATE', reasons, warnings };
     }
 
-    // Score-based decision
-    if (
-      metrics.diversityScore >= R8_DIVERSITY_THRESHOLDS.index_min &&
-      reasons.length === 0
-    ) {
+    // Hard gates are pass/fail before the composite score: no aggregate,
+    // however high, turns a hard-gate reason into an INDEX warning.
+    if (reasons.some((r) => !r.startsWith('MISSING_'))) {
+      return { decision: 'REVIEW_REQUIRED', reasons, warnings };
+    }
+
+    // Score-based decision; a single missing block stays a warning
+    if (metrics.diversityScore >= R8_DIVERSITY_THRESHOLDS.index_min) {
+      warnings.push(...criticalMissing.map((r) => `gate warning: ${r}`));
       if (metrics.diversityScore < R8_DIVERSITY_THRESHOLDS.clean_threshold) {
         warnings.push(
           `diversityScore ${metrics.diversityScore.toFixed(1)} < clean_threshold ${R8_DIVERSITY_THRESHOLDS.clean_threshold}`,
         );
       }
-      return { decision: 'INDEX', reasons, warnings };
-    }
-
-    if (metrics.diversityScore >= R8_DIVERSITY_THRESHOLDS.index_min) {
-      warnings.push(...reasons.map((r) => `gate warning: ${r}`));
       return { decision: 'INDEX', reasons, warnings };
     }
 
