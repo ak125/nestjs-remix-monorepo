@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 9d36d18810460b8cf54be34ebece1eb132e20871029f9f5a52df5416a2a44377
+source_sha256: c951357c9d9530a32ec23cd7859c45b6510dc6ad99754d71fa3d906c5fa86910
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3081 |
+| Files (Layer 1) | 3082 |
 | DB tables (Layer 1) | 316 |
 | DB RPC (Layer 1) | 259 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1017 |
 
-Source sotFingerprint: `e42bdb5a2aec`.
+Source sotFingerprint: `cbb36ccc2d42`.
 
 ## Comment l'utiliser
 
@@ -45,11 +45,11 @@ Source sotFingerprint: `e42bdb5a2aec`.
 
 ### D2 — Legacy/XTR Migration
 
-- **Files**: 159 (test=145, service=10, config=3, controller=1)
+- **Files**: 160 (test=146, service=10, config=3, controller=1)
 - **Runtime entrypoints**: 5
-- **Top owners**: @ak125 (144), __unassigned__ (15)
+- **Top owners**: @ak125 (145), __unassigned__ (15)
 - **Knowledge prose**: [`rm`](modules/rm.md)
-- **Status**: LEGACY=7, LIVE=8, UNKNOWN=144
+- **Status**: LEGACY=7, LIVE=8, UNKNOWN=145
 
 ### D3 — SEO & Sitemap
 

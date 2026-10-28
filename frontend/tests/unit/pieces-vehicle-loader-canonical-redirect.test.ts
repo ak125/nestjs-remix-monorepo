@@ -283,6 +283,8 @@ describe("R2 — requêtes document : comportement inchangé", () => {
     const res = await get(CANONICAL_PATH);
     expect(res.status).toBe(200);
     expect(res.headers.get("Location")).toBeNull();
+    expect(res.headers.get("Server-Timing")).toMatch(/r2_loader;dur=\d/);
+    expect(res.headers.get("Server-Timing")).toContain("r2_catalogue;dur=");
   });
 
   it("chemin non canonique → 301 vers le canonique sans paramètre r", async () => {
