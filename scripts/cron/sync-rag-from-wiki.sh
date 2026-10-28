@@ -6,15 +6,19 @@
 # (mirror read-only) dont la source autoritaire est automecanik-wiki/exports/rag/.
 # Ce cron exécute la chaîne canon en local sur DEV VPS :
 #
-#   1. git fetch wiki main + instantané de exports/rag à origin/main
+#   1. git fetch wiki main + instantané de exports/rag à origin/main ;
+#      git fetch raw main + manifests/tombstones.json à origin/main
 #   2. git pull rag (sync HEAD courant)
 #   3. sync-wiki-exports-to-rag.py --apply (D20 enforce + sha256 idempotent,
-#      baseline héritée audit/baselines/rag-mirror-legacy-baseline.json)
+#      baseline héritée audit/baselines/rag-mirror-legacy-baseline.json,
+#      retrait des fichiers hérités tombstonés, ADR-031 §D21)
 #   4. git commit + push avec marker `synced-from-wiki: <wiki-sha>` (D22)
 #
-# Le clone wiki est partagé (branches humaines et agents, worktrees) : le cron
-# ne fait que `fetch`, sans jamais changer sa branche ni ses fichiers. Lire son
-# arbre de travail a alimenté le miroir hors main (branche feat/ depuis 2026-07-26).
+# Les clones wiki et raw sont partagés (branches humaines et agents, worktrees) :
+# le cron ne fait que `fetch`, sans jamais changer leur branche ni leurs fichiers.
+# Lire l'arbre de travail du wiki a alimenté le miroir hors main (branche feat/
+# depuis 2026-07-26). Le registre des tombstones n'autorise que des retraits ;
+# un fichier hérité ne sort du miroir que si son contenu porte le SHA-256 épinglé.
 #
 # Pourquoi cron VPS et pas GitHub Actions :
 #   - Les 3 clones git sont déjà locaux (zéro re-checkout)
@@ -31,13 +35,15 @@
 # (scripts/cron/lib-supabase-report.sh), lue par le hook SessionStart : error si
 # une étape échoue (dont un fichier du miroir absent des exports et de la baseline
 # héritée), warn si des entrées de la baseline ne sont plus hors exports (baseline
-# à resserrer), ok sinon. Le résumé donne le compte des fichiers hérités préservés.
+# à resserrer) ou si un fichier tombstoné a changé depuis son tombstone, ok sinon.
+# Le résumé donne le compte des fichiers hérités préservés et retirés.
 # Sans ce rapport, le refus horaire du 2026-09-29 au 2026-10-24 (miroir non
 # rafraîchi) n'a été vu que dans ce log.
 #
 # Env (optionnels, defaults sains pour DEV VPS) :
 #   AUTOMECANIK_WIKI_PATH (default /opt/automecanik/automecanik-wiki)
 #   AUTOMECANIK_RAG_PATH  (default /opt/automecanik/rag)
+#   AUTOMECANIK_RAW_PATH  (default /opt/automecanik/automecanik-raw)
 #   APP_PATH              (default /opt/automecanik/app)
 #   SYNC_RAG_LOG_DIR      (default /opt/automecanik/rag/logs)
 #   RAG_GLOBAL_LOCK       (default /tmp/rag-global.lock)
@@ -47,6 +53,7 @@ set -euo pipefail
 
 WIKI_PATH="${AUTOMECANIK_WIKI_PATH:-/opt/automecanik/automecanik-wiki}"
 RAG_PATH="${AUTOMECANIK_RAG_PATH:-/opt/automecanik/rag}"
+RAW_PATH="${AUTOMECANIK_RAW_PATH:-/opt/automecanik/automecanik-raw}"
 APP_PATH="${APP_PATH:-/opt/automecanik/app}"
 SYNC_SCRIPT="$APP_PATH/scripts/rag-sync/sync-wiki-exports-to-rag.py"
 LOG_DIR="${SYNC_RAG_LOG_DIR:-/opt/automecanik/rag/logs}"
@@ -62,9 +69,11 @@ STEP=start
 OUTCOME=""
 WARNING=""
 WIKI_SNAPSHOT=""
+TOMBSTONES=""
 report_outcome() {
   local rc=$? status=ok summary
   if [ -n "$WIKI_SNAPSHOT" ]; then rm -rf -- "$WIKI_SNAPSHOT"; fi
+  if [ -n "$TOMBSTONES" ]; then rm -f -- "$TOMBSTONES"; fi
   if [ "$rc" -ne 0 ]; then
     status=error
     summary="échec à l'étape ${STEP} (code ${rc}), voir ${LOG_FILE}"
@@ -90,7 +99,7 @@ log "=== sync-rag-from-wiki start ==="
 
 # --- Sanity checks ---
 STEP=sanity
-for d in "$WIKI_PATH" "$RAG_PATH" "$APP_PATH"; do
+for d in "$WIKI_PATH" "$RAG_PATH" "$RAW_PATH" "$APP_PATH"; do
   [ -d "$d/.git" ] || { log "ERROR: $d not a git repo"; exit 2; }
 done
 [ -x "$SYNC_SCRIPT" ] || [ -r "$SYNC_SCRIPT" ] || {
@@ -116,6 +125,14 @@ WIKI_SHA=$(git -C "$WIKI_PATH" rev-parse --short "$WIKI_COMMIT")
 WIKI_SNAPSHOT=$(mktemp -d "${TMPDIR:-/tmp}/sync-rag-wiki.XXXXXX")
 git -C "$WIKI_PATH" archive --format=tar "$WIKI_COMMIT" -- exports/rag | tar -x -C "$WIKI_SNAPSHOT"
 log "  wiki origin/main: $WIKI_SHA"
+STEP="[1/4] fetch raw"
+log "[1/4] git fetch raw main, snapshot manifests/tombstones.json"
+git -C "$RAW_PATH" fetch -q origin +refs/heads/main:refs/remotes/origin/main 2>&1 | tee -a "$LOG_FILE"
+RAW_COMMIT=$(git -C "$RAW_PATH" rev-parse --verify 'refs/remotes/origin/main^{commit}')
+RAW_SHA=$(git -C "$RAW_PATH" rev-parse --short "$RAW_COMMIT")
+TOMBSTONES=$(mktemp "${TMPDIR:-/tmp}/sync-rag-tombstones.XXXXXX")
+git -C "$RAW_PATH" show "$RAW_COMMIT:manifests/tombstones.json" >"$TOMBSTONES"
+log "  raw origin/main: $RAW_SHA"
 
 # --- Step 2: Pull rag main (target) ---
 STEP="[2/4] pull rag"
@@ -143,15 +160,23 @@ python3 "$SYNC_SCRIPT" \
   --wiki-repo "$WIKI_SNAPSHOT" \
   --rag-repo "$RAG_PATH" \
   --source-ref "automecanik-wiki@$WIKI_COMMIT" \
+  --tombstones "$TOMBSTONES" \
+  --tombstones-ref "automecanik-raw@$RAW_COMMIT" \
   --apply 2>&1 | tee -a "$LOG_FILE"
-# Compte hérité lu dans le manifeste que le sync vient d'écrire.
+# Comptes hérités et retraits lus dans le manifeste que le sync vient d'écrire.
 LEGACY_COUNTS=$(python3 -c \
-  'import json, sys; m = json.load(open(sys.argv[1]))["legacy_unreconciled"]; print(m["count"], m["baseline_total"])' \
+  'import json, sys; m = json.load(open(sys.argv[1])); l, t = m["legacy_unreconciled"], m["tombstones"]; print(l["count"], l["baseline_total"], t["withdrawn"], t["mismatched"])' \
   "$RAG_PATH/knowledge/.last-sync.json")
-read -r LEGACY_COUNT LEGACY_TOTAL <<<"$LEGACY_COUNTS"
+read -r LEGACY_COUNT LEGACY_TOTAL WITHDRAWN MISMATCHED <<<"$LEGACY_COUNTS"
 LEGACY="hérités hors exports : $LEGACY_COUNT (baseline $LEGACY_TOTAL)"
+if [ "$WITHDRAWN" -gt 0 ]; then
+  LEGACY="$LEGACY ; retirés par tombstone : $WITHDRAWN (raw @ $RAW_SHA)"
+fi
 if [ "$LEGACY_COUNT" -lt "$LEGACY_TOTAL" ]; then
   WARNING="baseline héritée à resserrer : $(( LEGACY_TOTAL - LEGACY_COUNT )) entrée(s) obsolète(s)"
+fi
+if [ "$MISMATCHED" -gt 0 ]; then
+  WARNING="${WARNING:+$WARNING ; }fichier(s) tombstoné(s) modifié(s) depuis leur tombstone, préservé(s) : $MISMATCHED"
 fi
 
 # --- Step 4: Commit + push only if real CONTENT changed ---
@@ -189,6 +214,7 @@ log "[4/4] Committing + pushing content changes"
 COMMIT_MSG="synced-from-wiki: $WIKI_SHA
 
 Source: automecanik-wiki@$WIKI_SHA
+Withdrawals: automecanik-raw@$RAW_SHA manifests/tombstones.json (ADR-031 §D21), $WITHDRAWN file(s)
 Sync: scripts/rag-sync/sync-wiki-exports-to-rag.py via cron VPS DEV.
 Pattern canon ADR-031 §D20/D22 — aucune écriture humaine directe."
 

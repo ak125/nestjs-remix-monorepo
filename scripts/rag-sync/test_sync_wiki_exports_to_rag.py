@@ -1,5 +1,6 @@
 """Offline D20 and freshness regressions; all writes stay in temporary fixtures."""
-from contextlib import redirect_stderr
+from contextlib import redirect_stderr, redirect_stdout
+import hashlib
 import importlib.util
 import io
 import json
@@ -200,7 +201,8 @@ class SyncContractTests(unittest.TestCase):
         manifest = json.loads(self.manifest.read_text())
         self.assertEqual(manifest['legacy_unreconciled'], {'count': 1, 'baseline_total': 1})
         self.assertEqual(manifest['source_ref'], 'automecanik-wiki@abc')
-        self.assertEqual(manifest['schema_version'], '1.1.0')
+        self.assertEqual(manifest['schema_version'], '1.2.0')
+        self.assertIsNone(manifest['tombstones'])
 
     def test_addition_outside_legacy_baseline_is_refused(self):
         self.add_export()
@@ -234,6 +236,141 @@ class SyncContractTests(unittest.TestCase):
         self.assertEqual((baseline['total'], baseline['files'], baseline['rule']), (1, ['web/page.md'], 'fixture'))
         self.assertEqual(self.manifest.read_bytes(), manifest_before)
         self.assertEqual(self.run_sync(), 1)
+
+    def write_tombstones(self, entries, version='1.1.0'):
+        path = self.root / 'tombstones.json'
+        path.write_text(json.dumps({'_schema_version': version, 'tombstones': entries}))
+        return path
+
+    def tombstone(self, relative, text='historical corpus'):
+        digest = hashlib.sha256(text.encode()).hexdigest()
+        return {'id': f'rag-mirror:{relative}@{digest[:12]}', 'scope': 'rag-mirror',
+                'original_path': f'knowledge/{relative}', 'sha256': digest}
+
+    def run_with_tombstones(self, registry, apply=True):
+        out, err = io.StringIO(), io.StringIO()
+        with redirect_stdout(out), redirect_stderr(err):
+            code = self.run_sync(apply=apply, extra=('--tombstones', str(registry),
+                                                     '--tombstones-ref', 'automecanik-raw@abc'))
+        return code, out.getvalue(), err.getvalue()
+
+    def test_tombstoned_legacy_file_is_withdrawn_then_baseline_tightened(self):
+        self.add_export()
+        withdrawn = self.add_mirror('web/old/page.md')
+        kept = self.add_mirror('web/kept.md')
+        self.write_baseline(['web/kept.md', 'web/old/page.md'])
+        registry = self.write_tombstones([self.tombstone('web/old/page.md')])
+        code, out, err = self.run_with_tombstones(registry)
+        self.assertEqual(code, 0, err)
+        self.assertFalse(withdrawn.exists())
+        self.assertFalse((self.mirror / 'web/old').exists())
+        self.assertTrue(kept.exists())
+        self.assertIn('WITHDRAW web/old/page.md (tombstone rag-mirror:web/old/page.md@', out)
+        self.assertIn('STALE-BASELINE web/old/page.md (no longer an unreconciled mirror file)', err)
+        manifest = json.loads(self.manifest.read_text())
+        self.assertEqual(manifest['tombstones'], {'ref': 'automecanik-raw@abc', 'withdrawn': 1, 'mismatched': 0})
+        self.assertEqual(manifest['legacy_unreconciled'], {'count': 1, 'baseline_total': 2})
+        self.assertEqual(self.run_sync(extra=('--tighten-legacy-baseline',)), 0)
+        self.assertEqual(json.loads(self.baseline.read_text())['files'], ['web/kept.md'])
+        code, out, _ = self.run_with_tombstones(registry)
+        self.assertEqual((code, 'WITHDRAW' in out), (0, False))
+
+    def test_changed_content_is_preserved_on_tombstone_mismatch(self):
+        self.add_export()
+        changed = self.add_mirror('web/page.md', 'edited after its tombstone')
+        self.write_baseline(['web/page.md'])
+        code, out, err = self.run_with_tombstones(self.write_tombstones([self.tombstone('web/page.md')]))
+        self.assertEqual(code, 0, err)
+        self.assertEqual(changed.read_text(), 'edited after its tombstone')
+        self.assertNotIn('WITHDRAW', out)
+        self.assertIn('TOMBSTONE-MISMATCH web/page.md (sha256 ', err)
+        self.assertEqual(json.loads(self.manifest.read_text())['tombstones']['mismatched'], 1)
+
+    def test_any_pinned_digest_of_a_path_authorises_its_withdrawal(self):
+        self.add_export()
+        page = self.add_mirror('web/page.md', 'second version')
+        self.write_baseline(['web/page.md'])
+        registry = self.write_tombstones([self.tombstone('web/page.md'),
+                                          self.tombstone('web/page.md', 'second version')])
+        self.assertEqual(self.run_with_tombstones(registry)[0], 0)
+        self.assertFalse(page.exists())
+
+    def test_dry_run_reports_withdrawals_without_deleting(self):
+        self.add_export()
+        page = self.add_mirror('web/page.md')
+        self.write_baseline(['web/page.md'])
+        before = self.manifest.read_bytes()
+        code, out, _ = self.run_with_tombstones(self.write_tombstones([self.tombstone('web/page.md')]), apply=False)
+        self.assertEqual(code, 0)
+        self.assertIn('DRY-WITHDRAW web/page.md (tombstone ', out)
+        self.assertTrue(page.exists())
+        self.assertEqual(self.manifest.read_bytes(), before)
+
+    def test_wiki_export_wins_over_tombstone(self):
+        self.add_export('web/page.md')
+        self.add_mirror('web/page.md')
+        self.write_baseline([])
+        code, out, err = self.run_with_tombstones(self.write_tombstones([self.tombstone('web/page.md')]))
+        self.assertEqual(code, 0, err)
+        self.assertEqual((self.mirror / 'web/page.md').read_text(), 'fixture: validated export\n')
+        self.assertNotIn('WITHDRAW', out)
+
+    def test_tombstone_never_withdraws_outside_legacy_baseline(self):
+        self.add_export()
+        page = self.add_mirror('web/page.md')
+        legacy = self.add_mirror('web/legacy.md')
+        self.write_baseline(['web/legacy.md'])
+        registry = self.write_tombstones([self.tombstone('web/page.md'), self.tombstone('web/legacy.md')])
+        code, out, err = self.run_with_tombstones(registry)
+        self.assertEqual(code, 1)
+        self.assertIn('UNRECONCILED web/page.md', err)
+        self.assertTrue(page.exists() and legacy.exists())
+        self.assertNotIn('WITHDRAW', out)
+        self.assertIn('previous-success', self.manifest.read_text())
+
+    def test_raw_scope_tombstones_withdraw_nothing(self):
+        self.add_export()
+        page = self.add_mirror('web/page.md')
+        self.write_baseline(['web/page.md'])
+        raw_entry = {'id': 'old-source', 'original_path': 'knowledge/web/page.md'}
+        code, _, err = self.run_with_tombstones(self.write_tombstones([raw_entry], version='1.0.0'))
+        self.assertEqual(code, 0, err)
+        self.assertTrue(page.exists())
+        self.assertEqual(json.loads(self.manifest.read_text())['tombstones']['withdrawn'], 0)
+
+    def test_malformed_or_missing_tombstones_fail_closed(self):
+        self.add_export()
+        page = self.add_mirror('web/page.md')
+        self.write_baseline(['web/page.md'])
+        good = self.tombstone('web/page.md')
+        for version, entry in (('2.0.0', good), ('1.1.0', {**good, 'original_path': 'web/page.md'}),
+                               ('1.1.0', {**good, 'original_path': 'knowledge/../web/page.md'}),
+                               ('1.1.0', {**good, 'original_path': 'knowledge//etc/page.md'}),
+                               ('1.1.0', {**good, 'original_path': 'knowledge/.last-sync.json'}),
+                               ('1.1.0', {**good, 'original_path': 'knowledge/web/page.txt'}),
+                               ('1.1.0', {**good, 'sha256': good['sha256'][:12]}),
+                               ('1.1.0', {k: v for k, v in good.items() if k != 'sha256'})):
+            code, _, err = self.run_with_tombstones(self.write_tombstones([entry], version=version))
+            self.assertEqual(code, 1, (version, entry))
+            self.assertIn('mirror preflight failed', err)
+        registry = self.root / 'tombstones.json'
+        registry.write_text('not json')
+        self.assertEqual(self.run_with_tombstones(registry)[0], 1)
+        registry.unlink()
+        self.assertEqual(self.run_with_tombstones(registry)[0], 1)
+        self.assertTrue(page.exists())
+        self.assertIn('previous-success', self.manifest.read_text())
+
+    def test_failed_withdrawal_is_observable_and_keeps_previous_success(self):
+        self.add_export()
+        page = self.add_mirror('web/page.md')
+        self.write_baseline(['web/page.md'])
+        with patch.object(Path, 'unlink', side_effect=OSError('read-only mirror')):
+            code, _, err = self.run_with_tombstones(self.write_tombstones([self.tombstone('web/page.md')]))
+        self.assertEqual(code, 1)
+        self.assertIn('FAIL  web/page.md: withdrawal failed: read-only mirror', err)
+        self.assertTrue(page.exists())
+        self.assertIn('previous-success', self.manifest.read_text())
 
     def test_malformed_or_missing_baseline_fails_closed(self):
         self.add_export()

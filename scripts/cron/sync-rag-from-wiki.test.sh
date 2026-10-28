@@ -4,9 +4,11 @@
 # Cas couverts : passage sans changement, export nouveau poussé avec le marqueur D22, clone wiki
 # hors main (instantané de origin/main, clone intact), fichiers du miroir absents des exports et
 # de la baseline héritée (error, rapport borné, miroir intact), baseline héritée (ok, compte
-# rapporté, fichiers ignorés par git hors compte), baseline à resserrer (warn), verrou RAG déjà
-# tenu (passage sauté), clone rag hors main (error). Chaque cas vérifie l'état enregistré pour le
-# hook SessionStart (cron_report).
+# rapporté, fichiers ignorés par git hors compte), baseline à resserrer (warn), retrait par
+# tombstone lu à origin/main du clone raw (fichier épinglé retiré, contenu modifié préservé, warn),
+# registre de tombstones illisible (error, miroir intact), verrou RAG déjà tenu (passage sauté),
+# clone rag hors main (error). Chaque cas vérifie l'état enregistré pour le hook SessionStart
+# (cron_report).
 #
 # Usage : bash sync-rag-from-wiki.test.sh
 #         SYNC_RAG_SCRIPT=/chemin/autre-version.sh bash sync-rag-from-wiki.test.sh
@@ -29,7 +31,7 @@ unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_COMMON_DIR XDG_STATE_HOME CRON_RE
 export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1
 export GIT_AUTHOR_NAME=fixture GIT_AUTHOR_EMAIL=fixture@example.invalid
 export GIT_COMMITTER_NAME=fixture GIT_COMMITTER_EMAIL=fixture@example.invalid
-export AUTOMECANIK_WIKI_PATH="$FIX/wiki" AUTOMECANIK_RAG_PATH="$FIX/rag" APP_PATH="$FIX/app"
+export AUTOMECANIK_WIKI_PATH="$FIX/wiki" AUTOMECANIK_RAG_PATH="$FIX/rag" AUTOMECANIK_RAW_PATH="$FIX/raw" APP_PATH="$FIX/app"
 export SYNC_RAG_LOG_DIR="$FIX/logs" RAG_GLOBAL_LOCK="$FIX/rag-global.lock" CRON_STATE_DIR="$FIX/state"
 export TMPDIR="$FIX/tmp"
 mkdir -p "$TMPDIR"
@@ -47,6 +49,13 @@ field() { jq -r ".$1" "$STATE" 2>/dev/null; }
 baseline() { # baseline <chemin>... : baseline héritée de la fixture (triée)
   printf '%s\n' "$@" | sed '/^$/d' | LC_ALL=C sort | jq -R . | jq -s '{rule: "fixture", total: length, files: .}' >"$BASELINE"
 }
+tomb() { # tomb <chemin sous knowledge/> <sha256> : tombstone rag-mirror
+  jq -cn --arg p "$1" --arg s "$2" \
+    '{id: ("rag-mirror:" + $p + "@" + $s[0:12]), scope: "rag-mirror", original_path: ("knowledge/" + $p), sha256: $s}'
+}
+registry() { # registry <tombstone>... : registre du clone raw (non commité)
+  printf '%s\n' "$@" | jq -s '{_schema_version: "1.1.0", tombstones: .}' >"$FIX/raw/manifests/tombstones.json"
+}
 
 mkdir -p "$FIX/app/scripts/rag-sync"
 git init -q "$FIX/app"
@@ -62,6 +71,10 @@ mkdir -p "$FIX/rag/knowledge/gammes"
 cp "$FIX/wiki/exports/rag/gammes/oil.md" "$FIX/rag/knowledge/gammes/"
 printf 'knowledge/.last-sync.json\nknowledge/_raw/\n' >"$FIX/rag/.gitignore"
 commit_push "$FIX/rag" init
+repo raw
+mkdir -p "$FIX/raw/manifests"
+echo '{"_schema_version": "1.0.0", "tombstones": []}' >"$FIX/raw/manifests/tombstones.json"
+commit_push "$FIX/raw" init
 
 echo "1. passage sans changement"
 check "code retour" 0 "$(run)"
@@ -132,6 +145,37 @@ check "code retour" 0 "$(run)"
 check "statut" warn "$(field status)"
 check "résumé" "aucun changement (wiki @ $MSHA) ; hérités hors exports : 30 (baseline 31) ; baseline héritée à resserrer : 1 entrée(s) obsolète(s)" "$(field summary)"
 check "entrée nommée dans le log" 1 "$(grep -c '^STALE-BASELINE legacy/retiré.md ' "$FIX/out.txt")"
+
+echo "4d. retrait par tombstone (registre raw à origin/main)"
+LEGACY_SHA="$(sha256sum "$FIX/rag/knowledge/legacy/l01.md" | cut -d' ' -f1)"
+registry "$(tomb legacy/l01.md "$LEGACY_SHA")" "$(tomb legacy/l02.md "$(printf autre | sha256sum | cut -d' ' -f1)")"
+commit_push "$FIX/raw" tombstones
+RAWSHA="$(git -C "$FIX/raw.git" rev-parse --short main)"
+registry "$(tomb legacy/l01.md "$LEGACY_SHA")" "$(tomb legacy/l03.md "$LEGACY_SHA")"  # arbre de travail, non poussé
+check "code retour" 0 "$(run)"
+check "statut" warn "$(field status)"
+check "résumé" "miroir synchronisé @ $MSHA ; hérités hors exports : 29 (baseline 31) ; retirés par tombstone : 1 (raw @ $RAWSHA) ; baseline héritée à resserrer : 2 entrée(s) obsolète(s) ; fichier(s) tombstoné(s) modifié(s) depuis leur tombstone, préservé(s) : 1" "$(field summary)"
+check "commit poussé avec le marqueur D22" "synced-from-wiki: $MSHA" "$(git -C "$FIX/rag.git" log -1 --format=%s main)"
+check "provenance du retrait" 1 "$(git -C "$FIX/rag.git" log -1 --format=%b main | grep -c "^Withdrawals: automecanik-raw@$RAWSHA manifests/tombstones.json (ADR-031 §D21), 1 file(s)$")"
+check "seul le fichier épinglé est retiré" "D	knowledge/legacy/l01.md" "$(git -C "$FIX/rag.git" show --format= --name-status main)"
+check "contenu différent préservé" 1 "$(grep -c '^TOMBSTONE-MISMATCH legacy/l02.md ' "$FIX/out.txt")"
+check "arbre de travail raw non lu, clone intact" "présent $LEGACY_SHA" \
+  "$([ -e "$FIX/rag/knowledge/legacy/l03.md" ] && echo -n présent || echo -n absent) $(jq -r '.tombstones[1].sha256' "$FIX/raw/manifests/tombstones.json")"
+check "registre temporaire supprimé" 0 "$(find "$TMPDIR" -maxdepth 1 -name 'sync-rag-tombstones.*' | wc -l)"
+git -C "$FIX/raw" checkout -q -- manifests/tombstones.json
+baseline $(cd "$FIX/rag/knowledge" && find legacy -name '*.md')
+
+echo "4e. registre de tombstones illisible"
+echo 'pas du json' >"$FIX/raw/manifests/tombstones.json"
+commit_push "$FIX/raw" cassé
+RSHA="$(git -C "$FIX/rag.git" rev-parse main)"
+check "code retour" 1 "$(run)"
+check "statut" error "$(field status)"
+check "résumé" "échec à l'étape [3/4] sync (code 1), voir $FIX/logs/sync-rag-from-wiki.log" "$(field summary)"
+check "aucun commit rag" "$RSHA" "$(git -C "$FIX/rag.git" rev-parse main)"
+check "miroir intact" 29 "$(find "$FIX/rag/knowledge/legacy" -name '*.md' | wc -l)"
+git -C "$FIX/raw" revert --no-edit HEAD >/dev/null && git -C "$FIX/raw" push -q origin main 2>/dev/null
+check "registre réparé" 0 "$(run)"
 
 echo "5. verrou RAG déjà tenu"
 exec 9>"$RAG_GLOBAL_LOCK"
