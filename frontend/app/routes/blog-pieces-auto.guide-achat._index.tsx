@@ -18,7 +18,7 @@
 import {
   FAMILY_IDS_ORDERED,
   findFamilyIdByKeyword,
-} from "@repo/database-types";
+} from "@repo/database-types/family-registry";
 import {
   ArrowRight,
   BookOpen,
