@@ -83,6 +83,12 @@ feature (sinon DEV:3000 sert du code périmé).
    ses alertes passent l'issue du tick en `warn`, que le hook SessionStart affiche. Détail : PR #1424.
    (alerte)
 
+Hors de ces axes, le même tick recharge le **cache npm hors ligne des missions Hermes d'écriture**
+quand le lockfile de `main` n'y est pas encore chargé (`refresh_hermes_npm_cache()`, empreinte
+`hermes-npm-cache.lock-sha256` dans le répertoire d'état des crons) : sans lui, leur préparation
+échoue en `ENOTCACHED` dès qu'une dépendance change (2026-10-28). Mission en cours → essai au tick
+suivant ; échec → alerte à chaque tick, nouvel essai au plus une fois par heure. (auto)
+
 ## Mécanique du tag Docker `:preprod` (alias flottant)
 
 - Le tag `:preprod` est **réécrit à chaque merge sur `main`** (workflow `ci.yml` → step `build`).
