@@ -1,7 +1,7 @@
 // 🎯 R8 Vehicle — S_HERO
 // H1 unique (image-matrix-v1 §7, gradient-only)
 
-import { buildR8H1Emitted } from "@repo/seo-types";
+import { buildR8H1Emitted } from "@repo/seo-types/build-r8-h1";
 
 import { resolveSlogan } from "~/config/visual-intent";
 import { HeroSelection } from "../../../heroes";

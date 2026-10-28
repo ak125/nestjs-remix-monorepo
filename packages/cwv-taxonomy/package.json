@@ -9,6 +9,16 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.js"
+    },
+    "./route-group": {
+      "types": "./dist/route-group.d.ts",
+      "import": "./dist/route-group.js",
+      "require": "./dist/route-group.js"
+    },
+    "./priority-tier": {
+      "types": "./dist/priority-tier.d.ts",
+      "import": "./dist/priority-tier.js",
+      "require": "./dist/priority-tier.js"
     }
   },
   "scripts": {

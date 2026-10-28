@@ -22,11 +22,9 @@
  * `console`, CMP qui mock `gtag`, etc.).
  */
 
-import {
-  classifyRoute,
-  type DeviceType,
-  type NavType,
-} from "@repo/cwv-taxonomy";
+import { type DeviceType, type NavType } from "@repo/cwv-taxonomy";
+// Keep reporting available at startup without loading the server payload schemas.
+import { classifyRoute } from "@repo/cwv-taxonomy/route-group";
 import {
   onLCP,
   onCLS,
