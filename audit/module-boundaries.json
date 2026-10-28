@@ -213,7 +213,7 @@
         "backend/src/database/types"
       ],
       "files_count": 15,
-      "loc_total": 21761,
+      "loc_total": 21794,
       "has_barrel": true
     },
     "dev-only": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 317,
-      "loc_total": 61373,
+      "files_count": 318,
+      "loc_total": 61693,
       "has_barrel": true
     },
     "upload": {
@@ -1006,7 +1006,7 @@
         "backend/src/modules/vehicles/types"
       ],
       "files_count": 30,
-      "loc_total": 8914,
+      "loc_total": 8995,
       "has_barrel": false
     },
     "wiki": {
