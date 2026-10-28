@@ -48,14 +48,31 @@ import {
   type RpcCatalogFamily,
   type MotorisationFacts,
 } from './r8-owned-editorial.composer';
+import { isR8TecdocReleaseGateOpen } from '@repo/seo-role-contracts';
+import { buildR8H1Emitted } from '@repo/seo-types';
+import {
+  SeoFeatureFlagRegistry,
+  type SeoChainMode,
+} from '../../seo/registries/seo-feature-flag.registry';
+import {
+  SeoBaliseCollisionGate,
+  type BaliseGateVerdict,
+  type BaliseSibling,
+} from '../../seo/utils/seo-balise-collision-gate';
+import {
+  SEO_FINGERPRINT_VERSION,
+  SeoFingerprintCore,
+  type SeoPageFingerprint,
+} from '../../seo/utils/seo-fingerprint-core';
 
 // ── Result ──
 
 export interface R8EnrichResult {
   /**
    * `write_gate_blocked` : contenu calculé mais écriture refusée par le
-   * WriteGate (`written=false`). Un refus de garde n'est pas une erreur :
-   * la page reste telle quelle et aucune version n'est enregistrée.
+   * WriteGate (`written=false`) ou par la gate balises ADR-095 (mode `on`).
+   * Un refus de garde n'est pas une erreur : la page reste telle quelle et
+   * aucune version n'est enregistrée.
    */
   status: 'draft' | 'failed' | 'skipped' | 'write_gate_blocked';
   seoDecision: R8SeoDecision;
@@ -65,7 +82,8 @@ export interface R8EnrichResult {
   pageKey: string;
   /**
    * Motif d'un résultat non abouti (`failed` ou `write_gate_blocked`), préfixé
-   * par son code (`DB_ERROR: …`, `WRITE_GATE_BLOCKED: …`, `CONTENT_BROKEN: …`).
+   * par son code (`DB_ERROR: …`, `WRITE_GATE_BLOCKED: …`,
+   * `BALISE_GATE_BLOCKED: …`, `CONTENT_BROKEN: …`).
    * C'est le champ `data.reason` que `ExecutionRouterService` recopie dans
    * `__pipeline_chain_queue.pcq_error` : sans lui, le rapport d'exécution ne
    * distingue pas une panne DB d'un refus de garde. Absent sur `draft`.
@@ -144,6 +162,24 @@ type R8PageWriteOutcome =
     }
   | { kind: 'db_error'; operation: string; code?: string; message: string };
 
+// ── Balise gate (ADR-095) ──
+
+/** Overlay R8 servi d'une page sœur (colonnes lues par la gate balises). */
+interface R8BaliseSiblingRow {
+  type_id: string;
+  brand: string;
+  model: string;
+  type_name: string;
+  power_ps: string;
+  year_from: string;
+  year_to: string | null;
+  meta_title: string | null;
+  meta_description: string | null;
+}
+
+/** Borne de chaque lecture de sœurs ; atteinte → journalisée (couverture partielle). */
+const R8_BALISE_SIBLING_LIMIT = 200;
+
 @Injectable()
 export class R8VehicleEnricherService extends SupabaseBaseService {
   protected override readonly logger = new Logger(
@@ -156,6 +192,7 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
     private readonly seoRoleTemplate: SeoRoleTemplateSelector,
     @Optional() private readonly writeGate?: ContentWriteGateService,
     @Optional() private readonly featureFlags?: FeatureFlagsService,
+    @Optional() private readonly seoFlags?: SeoFeatureFlagRegistry,
   ) {
     super(configService);
   }
@@ -420,6 +457,34 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       const fingerprints = this.computeFingerprints(contentMain, blocks);
       const sitemapRules = R8_SITEMAP_RULES[decision];
 
+      // ── 4b. GATE BALISES (ADR-095) ──
+      // Le passage INDEX active l'overlay title/description servi
+      // (`getR8Content`) : c'est le changement évalué. Refus (mode `on`) =
+      // aucune écriture, la version servie reste en place ; robots, URL et
+      // canonical ne sont jamais modifiés ici.
+      if (decision === 'INDEX') {
+        const balise = await this.evaluateBaliseGate({
+          typeId,
+          pageKey,
+          canonicalUrl,
+          vehicle: v,
+          candidateIndexable: vehicleData.seo_validation?.is_indexable === true,
+          metaTitle,
+          metaDescription,
+        });
+        if (balise.refused) {
+          return {
+            status: 'write_gate_blocked',
+            seoDecision: decision,
+            diversityScore: metrics.diversityScore,
+            warnings: [...warnings, balise.reason],
+            reasons,
+            reason: balise.reason,
+            pageKey,
+          };
+        }
+      }
+
       // ── 5. WRITE DB ──
       const engineFamilyKey = buildEngineFamilyKey({
         brand: v.brand_name || '',
@@ -574,6 +639,261 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
         reason: `${code}: ${message}`,
         pageKey,
       };
+    }
+  }
+
+  // ── Balise gate (ADR-095) ──
+
+  /**
+   * Gate anti-duplicate des balises émises (ADR-095) au passage INDEX.
+   * `SEO_CHAIN_DUPLICATE_GATE_MODE` : `off` (défaut) → aucune lecture ;
+   * `shadow` → verdict journalisé, écriture inchangée ; `on` → collision
+   * exacte title/H1 entre pages indexables = écriture refusée.
+   * Candidat = balises que la page servira : overlay title/description et
+   * H1 `buildR8H1Emitted` (même builder que `HeroSection`).
+   */
+  private async evaluateBaliseGate(params: {
+    typeId: number;
+    pageKey: string;
+    canonicalUrl: string;
+    vehicle: any;
+    candidateIndexable: boolean;
+    metaTitle: string;
+    metaDescription: string;
+  }): Promise<{ refused: false } | { refused: true; reason: string }> {
+    const mode: SeoChainMode = this.seoFlags?.mode('DUPLICATE_GATE') ?? 'off';
+    if (mode === 'off') return { refused: false };
+
+    const v = params.vehicle;
+    const candidate = this.r8BaliseFingerprint(params.pageKey, {
+      title: params.metaTitle,
+      description: params.metaDescription,
+      h1: buildR8H1Emitted({
+        marqueName: v.marque_name ?? v.brand_name ?? '',
+        modeleName: v.modele_name ?? v.model_name ?? '',
+        typeName: v.type_name ?? '',
+        typePowerPs: v.type_power_ps ?? v.power_ps ?? '',
+        typeYearFrom: v.type_year_from ?? v.year_from ?? '',
+        typeYearTo: v.type_year_to ?? v.year_to ?? null,
+      }),
+    });
+
+    let siblings: BaliseSibling[];
+    try {
+      siblings = await this.fetchBaliseSiblings(
+        params.typeId,
+        v,
+        params.metaTitle,
+      );
+    } catch (error) {
+      // shadow observe sans jamais bloquer ; on : sœurs illisibles ≠ « aucune
+      // collision » → l'erreur remonte (DB_ERROR, aucune écriture).
+      if (mode === 'on') throw error;
+      this.logger.error(
+        `[R8_BALISE_GATE] mode=shadow type_id=${params.typeId} siblings_unavailable: ${(error as Error).message}`,
+      );
+      return { refused: false };
+    }
+
+    const verdict = SeoBaliseCollisionGate.evaluate({
+      candidate,
+      candidateIndexableEffective:
+        params.candidateIndexable && !isR8TecdocReleaseGateOpen(params.typeId),
+      siblings,
+    });
+    const refused = mode === 'on' && verdict.blocking;
+
+    if (verdict.decision !== 'CLEAN') {
+      this.logger.warn(
+        `[R8_BALISE_GATE] mode=${mode} type_id=${params.typeId} decision=${verdict.decision} reason=${verdict.reasonCode} colliding=${verdict.collidingEntityKey ?? '-'} applied=${refused ? 'refused' : 'observed'}`,
+      );
+      await this.emitBaliseEvent({
+        ...params,
+        mode,
+        verdict,
+        refused,
+        siblingCount: siblings.length,
+      });
+    }
+
+    if (!refused) return { refused: false };
+    return {
+      refused: true,
+      reason: `BALISE_GATE_BLOCKED: ${verdict.reasonCode} vs ${verdict.collidingEntityKey}`,
+    };
+  }
+
+  private r8BaliseFingerprint(
+    entityKey: string,
+    balises: { title: string; description: string; h1: string },
+  ): SeoPageFingerprint {
+    return {
+      surface: 'R8',
+      entityKey,
+      fields: {
+        title: SeoFingerprintCore.computeField('title', balises.title),
+        description: SeoFingerprintCore.computeField(
+          'description',
+          balises.description,
+        ),
+        h1: SeoFingerprintCore.computeField('h1', balises.h1),
+      },
+      version: SEO_FINGERPRINT_VERSION,
+    };
+  }
+
+  /**
+   * Sœurs de la gate balises : overlays R8 réellement servis (`getR8Content` :
+   * INDEX + blocs rendus) de même title exact ou de même marque/modèle (seule
+   * fratrie où un H1 identique est possible). Indexabilité effective = live
+   * `__vehicle_page_cache.payload.seo_validation.is_indexable`, hors plage
+   * TecDoc — la règle robots de la page servie. Erreur DB → exception, jamais
+   * « aucune sœur ».
+   */
+  private async fetchBaliseSiblings(
+    typeId: number,
+    vehicle: any,
+    metaTitle: string,
+  ): Promise<BaliseSibling[]> {
+    const served = () =>
+      this.client
+        .from(R8_TABLES.pages)
+        .select(
+          'type_id, brand, model, type_name, power_ps, year_from, year_to, meta_title, meta_description',
+        )
+        .eq('seo_decision', 'INDEX')
+        .filter('rendered_json->blocks', 'not.is', null)
+        .neq('type_id', String(typeId));
+    const [byTitle, byModel] = await Promise.all([
+      served().eq('meta_title', metaTitle).limit(R8_BALISE_SIBLING_LIMIT),
+      served()
+        .eq('brand', vehicle.brand_name || '')
+        .eq('model', vehicle.model_name || '')
+        .limit(R8_BALISE_SIBLING_LIMIT),
+    ]);
+    const pageError = byTitle.error ?? byModel.error;
+    if (pageError) {
+      throw this.baliseReadError('fetch_balise_siblings', typeId, pageError);
+    }
+    for (const [query, res] of [
+      ['title', byTitle],
+      ['model', byModel],
+    ] as const) {
+      if ((res.data ?? []).length >= R8_BALISE_SIBLING_LIMIT) {
+        this.logger.warn(
+          `[R8_BALISE_GATE] type_id=${typeId} siblings_truncated query=${query} limit=${R8_BALISE_SIBLING_LIMIT}`,
+        );
+      }
+    }
+
+    const rows = new Map<string, R8BaliseSiblingRow>();
+    for (const row of [
+      ...((byTitle.data ?? []) as R8BaliseSiblingRow[]),
+      ...((byModel.data ?? []) as R8BaliseSiblingRow[]),
+    ]) {
+      rows.set(String(row.type_id), row);
+    }
+    if (rows.size === 0) return [];
+
+    const { data: cache, error: cacheError } = await this.client
+      .from('__vehicle_page_cache')
+      .select('type_id, is_indexable:payload->seo_validation->is_indexable')
+      .in(
+        'type_id',
+        [...rows.keys()].map((id) => Number(id)),
+      );
+    if (cacheError) {
+      throw this.baliseReadError(
+        'fetch_balise_indexability',
+        typeId,
+        cacheError,
+      );
+    }
+    const indexable = new Set(
+      ((cache ?? []) as Array<{ type_id: number; is_indexable: unknown }>)
+        .filter((c) => c.is_indexable === true)
+        .map((c) => String(c.type_id)),
+    );
+
+    return [...rows.entries()].map(([id, row]) => ({
+      fingerprint: this.r8BaliseFingerprint(`r8_vehicle_${id}`, {
+        title: row.meta_title ?? '',
+        description: row.meta_description ?? '',
+        h1: buildR8H1Emitted({
+          marqueName: row.brand,
+          modeleName: row.model,
+          typeName: row.type_name,
+          typePowerPs: row.power_ps,
+          typeYearFrom: row.year_from,
+          typeYearTo: row.year_to,
+        }),
+      }),
+      indexableEffective:
+        indexable.has(id) && !isR8TecdocReleaseGateOpen(Number(id)),
+    }));
+  }
+
+  private baliseReadError(
+    operation: string,
+    typeId: number,
+    error: { code?: string; message: string },
+  ): DatabaseException {
+    this.logger.error(
+      `[R8_DB_ERROR] op=${operation} type_id=${typeId} code=${error.code ?? 'unknown'} message=${error.message}`,
+    );
+    return new DatabaseException({
+      code: ErrorCodes.DATABASE.OPERATION_FAILED,
+      message: `R8 ${operation} failed (code=${error.code ?? 'unknown'}): ${error.message}`,
+      context: { operation, pgCode: error.code, typeId },
+    });
+  }
+
+  /**
+   * Observation `__seo_event_log` (`observation_kind=BALISE`, ADR-095 §4).
+   * Un échec d'insertion est journalisé ; il ne change pas la décision.
+   */
+  private async emitBaliseEvent(params: {
+    typeId: number;
+    pageKey: string;
+    canonicalUrl: string;
+    mode: SeoChainMode;
+    verdict: BaliseGateVerdict;
+    refused: boolean;
+    siblingCount: number;
+  }): Promise<void> {
+    const { verdict } = params;
+    const { error } = await this.client.from('__seo_event_log').insert({
+      event_type: 'anomaly_detected',
+      entity_url: params.canonicalUrl,
+      severity: verdict.blocking
+        ? params.refused
+          ? 'high'
+          : 'medium'
+        : 'info',
+      payload: {
+        schema_version: 1,
+        observation_kind: 'BALISE',
+        subtype: 'seo.balise.r8.collision',
+        surface: 'R8',
+        entity_id: params.pageKey,
+        type_id: params.typeId,
+        mode: params.mode,
+        decision: verdict.decision,
+        blocking: verdict.blocking,
+        applied: params.refused ? 'refused' : 'observed',
+        reason_code: verdict.reasonCode,
+        field: verdict.field ?? null,
+        colliding_entity_key: verdict.collidingEntityKey ?? null,
+        near_dup: verdict.nearDup.slice(0, 20),
+        siblings_evaluated: params.siblingCount,
+        fingerprint_version: SEO_FINGERPRINT_VERSION,
+        observed_at: new Date().toISOString(),
+      },
+    });
+    if (error) {
+      this.logger.error(
+        `[R8_BALISE_GATE] event_log_insert_failed type_id=${params.typeId} code=${error.code ?? 'unknown'} message=${error.message}`,
+      );
     }
   }
 
