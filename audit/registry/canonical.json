@@ -1133,7 +1133,7 @@
           }
         ],
         "definedInMigrations": [
-          "20261029_seo_r8_publish_snapshot_text_type_id.sql"
+          "20260517_seo_r2_v2_outbox_relay_rpc.sql"
         ],
         "domain": "UNKNOWN",
         "id": "public.__seo_r8_publish_snapshot",
@@ -60077,7 +60077,7 @@
         "backend/src/modules/seo/r2/services/r8-snapshot-reader.service.ts"
       ],
       "kind": "test",
-      "loc": 358,
+      "loc": 292,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/r2/services/__tests__/r8-snapshot-reader.test.ts",
       "risk": "high",
@@ -60494,7 +60494,7 @@
         "backend/src/modules/seo/r2/schemas/r8-snapshot.schema.ts"
       ],
       "kind": "service",
-      "loc": 249,
+      "loc": 228,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/r2/services/r8-snapshot-reader.service.ts",
       "risk": "high",
@@ -75452,7 +75452,7 @@
         "~/utils/funnel-beacon"
       ],
       "kind": "config",
-      "loc": 886,
+      "loc": 958,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/DiagnosticWizard.tsx",
       "risk": "low",
@@ -75901,7 +75901,7 @@
         "~/components/ui/card"
       ],
       "kind": "config",
-      "loc": 430,
+      "loc": 460,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/steps/StepSymptom.tsx",
       "risk": "low",
@@ -89123,7 +89123,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 1032,
+      "loc": 1003,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/diagnostic-auto._index.tsx",
       "risk": "medium",
@@ -94827,6 +94827,26 @@
         "manual"
       ],
       "domain": "D2",
+      "id": "frontend/tests/unit/diagnostic-entry-params.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 181,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/diagnostic-entry-params.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
       "id": "frontend/tests/unit/diagnostic-funnel-events.test.tsx",
       "importedBy": [],
       "imports": [],
@@ -94851,7 +94871,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 188,
+      "loc": 203,
       "owner": "@ak125",
       "path": "frontend/tests/unit/diagnostic-hub-wiki-content.test.tsx",
       "risk": "medium",
@@ -95071,7 +95091,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 316,
+      "loc": 319,
       "owner": "@ak125",
       "path": "frontend/tests/unit/diagnostic-wizard-recovery.test.tsx",
       "risk": "medium",
@@ -105448,11 +105468,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "90163175840e44796908f793612d86b090e6efec04ed7053e3966b0e0c211728",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "7c4eb80693e770858a3705672d64ba2b12eda5f9e5c7f7883183c7ee34328df0",
-      "audit/registry/rpc.json": "d4ffa515e8de19cd581cb00086f570b98e3eb7acae8ba3aa70df3e367b1294ba",
+      "audit/registry/files.json": "f0656b52c545bf3d7341e1dcf3ca4bf9e4939efa5fa779f0c73de30dd04582dc",
+      "audit/registry/rpc.json": "623f3a5150e1cc71cd79946d7a4128fd078d6493626b20f4b6c4c4ac64f06f6d",
       "audit/registry/runtime.json": "121d868fa45952069f14d1a9b717212a5f50b51ac7fd0edc9546ae56d1c41bc2"
     },
-    "sotFingerprint": "729b8d58b3d5"
+    "sotFingerprint": "7238e8b6fe33"
   },
   "runtime": [
     {
