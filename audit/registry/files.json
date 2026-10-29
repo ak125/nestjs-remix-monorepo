@@ -45507,7 +45507,7 @@
         "~/utils/funnel-beacon"
       ],
       "kind": "config",
-      "loc": 886,
+      "loc": 958,
       "owner": "__unassigned__",
       "path": "frontend/app/components/diagnostic-wizard/DiagnosticWizard.tsx",
       "risk": "low",
@@ -45939,7 +45939,7 @@
         "~/components/ui/card"
       ],
       "kind": "config",
-      "loc": 430,
+      "loc": 460,
       "owner": "__unassigned__",
       "path": "frontend/app/components/diagnostic-wizard/steps/StepSymptom.tsx",
       "risk": "low",
@@ -58672,7 +58672,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 1032,
+      "loc": 1003,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/diagnostic-auto._index.tsx",
       "risk": "low",
@@ -64187,6 +64187,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/diagnostic-entry-params.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 181,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/diagnostic-entry-params.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/tests/unit/diagnostic-funnel-events.test.tsx",
       "importedBy": [],
       "imports": [],
@@ -64210,7 +64229,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 188,
+      "loc": 203,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/diagnostic-hub-wiki-content.test.tsx",
       "risk": "low",
@@ -64419,7 +64438,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 316,
+      "loc": 319,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/diagnostic-wizard-recovery.test.tsx",
       "risk": "low",
