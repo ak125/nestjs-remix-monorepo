@@ -14250,7 +14250,6 @@
         "status": "LIVE",
         "usedBy": [
           "backend/src/modules/admin/services/command-center-kpi.service.ts",
-          "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
           "backend/src/modules/admin/services/seo-control.service.ts",
           "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts",
           "backend/src/modules/diagnostic-engine/services/outcome-emitter.service.ts",
@@ -19859,7 +19858,6 @@
         "sourceConfidence": "high",
         "status": "LIVE",
         "usedBy": [
-          "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
           "backend/src/modules/vehicles/services/vehicle-rpc.service.ts"
         ]
       },
@@ -33391,7 +33389,6 @@
       "id": "backend/src/config/r8-keyword-plan.constants.ts",
       "importedBy": [
         "backend/src/config/page-contract-r8.schema.ts",
-        "backend/src/modules/admin/services/r8-vehicle-enricher.gate.test.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.tech-specs.test.ts"
       ],
@@ -38470,51 +38467,6 @@
         "manual"
       ],
       "domain": "D8",
-      "id": "backend/src/modules/admin/services/r8-vehicle-enricher.balise-gate.test.ts",
-      "importedBy": [],
-      "imports": [
-        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
-      ],
-      "kind": "test",
-      "loc": 565,
-      "owner": "@ak125/admin-team",
-      "path": "backend/src/modules/admin/services/r8-vehicle-enricher.balise-gate.test.ts",
-      "risk": "medium",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D8",
-      "id": "backend/src/modules/admin/services/r8-vehicle-enricher.gate.test.ts",
-      "importedBy": [],
-      "imports": [
-        "backend/src/config/r8-keyword-plan.constants.ts",
-        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
-      ],
-      "kind": "test",
-      "loc": 355,
-      "owner": "@ak125/admin-team",
-      "path": "backend/src/modules/admin/services/r8-vehicle-enricher.gate.test.ts",
-      "risk": "medium",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D8",
       "id": "backend/src/modules/admin/services/r8-vehicle-enricher.service.test.ts",
       "importedBy": [],
       "imports": [
@@ -38543,8 +38495,6 @@
         "backend/src/modules/admin/admin.module.ts",
         "backend/src/modules/admin/controllers/admin-r8-vehicle.controller.ts",
         "backend/src/modules/admin/services/execution-router.service.ts",
-        "backend/src/modules/admin/services/r8-vehicle-enricher.balise-gate.test.ts",
-        "backend/src/modules/admin/services/r8-vehicle-enricher.gate.test.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.test.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.tech-specs.test.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.write-gate.test.ts"
@@ -38552,8 +38502,6 @@
       "imports": [
         "@common/exceptions",
         "@database/services/supabase-base.service",
-        "@repo/seo-role-contracts",
-        "@repo/seo-types",
         "backend/src/config/content-write-gate.service.ts",
         "backend/src/config/execution-registry.types.ts",
         "backend/src/config/feature-flags.service.ts",
@@ -38563,15 +38511,12 @@
         "backend/src/config/seo-variations.config.ts",
         "backend/src/modules/admin/services/enricher-text-utils.service.ts",
         "backend/src/modules/admin/services/r8-owned-editorial.composer.ts",
-        "backend/src/modules/seo/registries/seo-feature-flag.registry.ts",
         "backend/src/modules/seo/services/chain/seo-role-template-selector.service.ts",
-        "backend/src/modules/seo/utils/seo-balise-collision-gate.ts",
-        "backend/src/modules/seo/utils/seo-fingerprint-core.ts",
         "backend/src/security/rpc-gate/rpc-gate.errors.ts",
         "crypto"
       ],
       "kind": "service",
-      "loc": 1888,
+      "loc": 1519,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
       "risk": "medium",
@@ -38621,7 +38566,7 @@
         "backend/src/security/rpc-gate/rpc-gate.errors.ts"
       ],
       "kind": "test",
-      "loc": 592,
+      "loc": 514,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/services/r8-vehicle-enricher.write-gate.test.ts",
       "risk": "medium",
@@ -59563,7 +59508,6 @@
       "domain": "D3",
       "id": "backend/src/modules/seo/r2/queues/r8-enrichment.constants.ts",
       "importedBy": [
-        "backend/src/modules/seo/r2/queues/r8-enrichment.processor.test.ts",
         "backend/src/modules/seo/r2/queues/r8-enrichment.processor.ts",
         "backend/src/modules/seo/r2/r2-v2.module.ts",
         "backend/src/modules/seo/r2/services/outbox-relay.service.ts",
@@ -59587,33 +59531,8 @@
         "manual"
       ],
       "domain": "D3",
-      "id": "backend/src/modules/seo/r2/queues/r8-enrichment.processor.test.ts",
-      "importedBy": [],
-      "imports": [
-        "backend/src/modules/seo/r2/queues/r8-enrichment.constants.ts",
-        "backend/src/modules/seo/r2/queues/r8-enrichment.processor.ts",
-        "backend/src/modules/seo/r2/services/outbox-relay.service.ts"
-      ],
-      "kind": "test",
-      "loc": 69,
-      "owner": "@ak125/seo-team",
-      "path": "backend/src/modules/seo/r2/queues/r8-enrichment.processor.test.ts",
-      "risk": "high",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D3",
       "id": "backend/src/modules/seo/r2/queues/r8-enrichment.processor.ts",
       "importedBy": [
-        "backend/src/modules/seo/r2/queues/r8-enrichment.processor.test.ts",
         "backend/src/modules/seo/r2/r2-v2.module.ts"
       ],
       "imports": [
@@ -59623,7 +59542,7 @@
         "backend/src/modules/seo/r2/services/r8-parent-enrichment.service.ts"
       ],
       "kind": "service",
-      "loc": 219,
+      "loc": 211,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/r2/queues/r8-enrichment.processor.ts",
       "risk": "high",
@@ -60181,7 +60100,7 @@
         "backend/src/modules/seo/r2/services/r8-snapshot-seed.service.ts"
       ],
       "kind": "test",
-      "loc": 288,
+      "loc": 183,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/r2/services/__tests__/r8-snapshot-seed.test.ts",
       "risk": "high",
@@ -60199,7 +60118,6 @@
       "domain": "D3",
       "id": "backend/src/modules/seo/r2/services/outbox-relay.service.ts",
       "importedBy": [
-        "backend/src/modules/seo/r2/queues/r8-enrichment.processor.test.ts",
         "backend/src/modules/seo/r2/queues/r8-enrichment.processor.ts",
         "backend/src/modules/seo/r2/r2-v2.module.ts",
         "backend/src/modules/seo/r2/services/__tests__/outbox-relay.test.ts"
@@ -60603,7 +60521,7 @@
         "backend/src/modules/seo/r2/services/r8-parent-enrichment.service.ts"
       ],
       "kind": "service",
-      "loc": 167,
+      "loc": 158,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/r2/services/r8-snapshot-seed.service.ts",
       "risk": "high",
@@ -60712,7 +60630,6 @@
       "domain": "D3",
       "id": "backend/src/modules/seo/registries/seo-feature-flag.registry.ts",
       "importedBy": [
-        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
         "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-seo-shadow.test.ts",
         "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
         "backend/src/modules/seo/registries/__tests__/seo-feature-flag.registry.test.ts",
@@ -63112,13 +63029,11 @@
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
-        "manual",
-        "reachability"
+        "manual"
       ],
       "domain": "D3",
       "id": "backend/src/modules/seo/utils/seo-balise-collision-gate.ts",
       "importedBy": [
-        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
         "backend/src/modules/seo/__tests__/seo-balise-collision-gate.test.ts"
       ],
       "imports": [
@@ -63132,7 +63047,7 @@
       "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE"
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -63162,13 +63077,11 @@
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
-        "manual",
-        "reachability"
+        "manual"
       ],
       "domain": "D3",
       "id": "backend/src/modules/seo/utils/seo-fingerprint-core.ts",
       "importedBy": [
-        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
         "backend/src/modules/seo/__tests__/seo-balise-collision-gate.test.ts",
         "backend/src/modules/seo/__tests__/seo-fingerprint-core.test.ts",
         "backend/src/modules/seo/utils/seo-balise-collision-gate.ts"
@@ -63186,7 +63099,7 @@
       "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "LIVE"
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -75539,7 +75452,7 @@
         "~/utils/funnel-beacon"
       ],
       "kind": "config",
-      "loc": 886,
+      "loc": 958,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/DiagnosticWizard.tsx",
       "risk": "low",
@@ -75988,7 +75901,7 @@
         "~/components/ui/card"
       ],
       "kind": "config",
-      "loc": 430,
+      "loc": 460,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/steps/StepSymptom.tsx",
       "risk": "low",
@@ -89210,7 +89123,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 1032,
+      "loc": 1003,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/diagnostic-auto._index.tsx",
       "risk": "medium",
@@ -94738,7 +94651,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 160,
+      "loc": 87,
       "owner": "@ak125",
       "path": "frontend/tests/unit/conseils-loader-status.test.ts",
       "risk": "medium",
@@ -94914,6 +94827,26 @@
         "manual"
       ],
       "domain": "D2",
+      "id": "frontend/tests/unit/diagnostic-entry-params.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 181,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/diagnostic-entry-params.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
       "id": "frontend/tests/unit/diagnostic-funnel-events.test.tsx",
       "importedBy": [],
       "imports": [],
@@ -94938,7 +94871,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 188,
+      "loc": 203,
       "owner": "@ak125",
       "path": "frontend/tests/unit/diagnostic-hub-wiki-content.test.tsx",
       "risk": "medium",
@@ -95158,7 +95091,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 316,
+      "loc": 319,
       "owner": "@ak125",
       "path": "frontend/tests/unit/diagnostic-wizard-recovery.test.tsx",
       "risk": "medium",
@@ -99050,26 +98983,6 @@
         "manual"
       ],
       "domain": "D3",
-      "id": "packages/seo-role-contracts/src/__tests__/r8-tecdoc-release-gate.test.ts",
-      "importedBy": [],
-      "imports": [],
-      "kind": "test",
-      "loc": 30,
-      "owner": "@ak125/seo-team",
-      "path": "packages/seo-role-contracts/src/__tests__/r8-tecdoc-release-gate.test.ts",
-      "risk": "high",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D3",
       "id": "packages/seo-role-contracts/src/__tests__/surface-keys.test.ts",
       "importedBy": [],
       "imports": [],
@@ -99294,7 +99207,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 158,
+      "loc": 152,
       "owner": "@ak125/seo-team",
       "path": "packages/seo-role-contracts/src/index.ts",
       "risk": "high",
@@ -99337,26 +99250,6 @@
       "loc": 50,
       "owner": "@ak125/seo-team",
       "path": "packages/seo-role-contracts/src/r2-indexability-conditions.ts",
-      "risk": "high",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise",
-        "manual"
-      ],
-      "domain": "D3",
-      "id": "packages/seo-role-contracts/src/r8-tecdoc-release-gate.ts",
-      "importedBy": [],
-      "imports": [],
-      "kind": "service",
-      "loc": 24,
-      "owner": "@ak125/seo-team",
-      "path": "packages/seo-role-contracts/src/r8-tecdoc-release-gate.ts",
       "risk": "high",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -105573,13 +105466,13 @@
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
       ".spec/00-canon/repository-registry/ownership.yaml": "3533a17d0fff94133c05615f9d05e9b7f8c0a2e2aa545548c6c0594e5e0c49d1",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
-      "audit/registry/db.json": "6e3c8de1db154ef3bf7e4f600c683a61c15314e901b700dda2e7df95e27635ab",
+      "audit/registry/db.json": "90163175840e44796908f793612d86b090e6efec04ed7053e3966b0e0c211728",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "5943c9af4527c0071f6887b7e167f6851cc83248a04decddb60602c23bd40979",
+      "audit/registry/files.json": "f0656b52c545bf3d7341e1dcf3ca4bf9e4939efa5fa779f0c73de30dd04582dc",
       "audit/registry/rpc.json": "623f3a5150e1cc71cd79946d7a4128fd078d6493626b20f4b6c4c4ac64f06f6d",
-      "audit/registry/runtime.json": "ef81db8d0cbc0c753d3ec159a5a45ed293ed44842b1ba8e658199b8628daae83"
+      "audit/registry/runtime.json": "121d868fa45952069f14d1a9b717212a5f50b51ac7fd0edc9546ae56d1c41bc2"
     },
-    "sotFingerprint": "a84b5f2fea73"
+    "sotFingerprint": "7238e8b6fe33"
   },
   "runtime": [
     {
@@ -107231,7 +107124,6 @@
         "runtime:backend/src/config/content-write-gate.service.ts",
         "runtime:backend/src/config/feature-flags.service.ts",
         "runtime:backend/src/modules/admin/services/enricher-text-utils.service.ts",
-        "runtime:backend/src/modules/seo/registries/seo-feature-flag.registry.ts",
         "runtime:backend/src/modules/seo/services/chain/seo-role-template-selector.service.ts"
       ],
       "id": "runtime:backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",

@@ -70,17 +70,27 @@ const FALLBACK_LOADING_STEPS: string[] = [
   "Preparation du rapport...",
 ];
 
+// No system is preselected: an absent or unknown entry asks the visitor to
+// choose instead of opening an unrelated system.
 const initialState: WizardState = {
   step: 1,
   analysisMode: "diagnostic",
   maintenanceRecords: [],
   vehicle: { brand: "", model: "" },
-  systemScope: "freinage",
+  systemScope: "",
   symptomSlugs: [],
   result: null,
   loading: false,
   error: null,
 };
+
+// OBD reading is on standby: a `?dtc=` link only announces it. The code is
+// echoed when it has the DTC shape, never sent anywhere nor interpreted.
+const DTC_FORMAT = /^[PCBU][0-9A-F]{4}$/;
+
+type EntryNotice =
+  | { kind: "dtc_standby"; code: string | null }
+  | { kind: "symptom_not_linked" };
 
 // The local draft is a resumable input snapshot, never a stored diagnosis.
 const DraftSchema = z.object({
@@ -152,7 +162,7 @@ function saveDraft(state: WizardState) {
       vehicle: state.vehicle,
       usageProfile: state.usageProfile,
       lastServiceKm: state.lastServiceKm,
-      systemScope: state.systemScope,
+      systemScope: state.systemScope || undefined,
       symptomSlugs: state.symptomSlugs,
       savedAt: Date.now(),
     };
@@ -258,6 +268,7 @@ export function DiagnosticWizard() {
   const [symptomsAvailable, setSymptomsAvailable] = useState(false);
   const transitionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [maintenanceAvailable, setMaintenanceAvailable] = useState(false);
+  const [entryNotice, setEntryNotice] = useState<EntryNotice | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
   const wizardStartSent = useRef(false);
 
@@ -336,6 +347,21 @@ export function DiagnosticWizard() {
       }
       if (draft.step && draft.step === 2)
         dispatch({ type: "SET_STEP", payload: 2 });
+    }
+    // A category link names the system to open; StepSymptom checks it against
+    // the offered systems and asks for a choice when it names none of them.
+    const cluster = params.get("cluster")?.trim().toLowerCase();
+    if (cluster && cluster !== draft?.systemScope)
+      dispatch({ type: "SET_SYSTEM", payload: cluster });
+    const dtc = params.get("dtc");
+    if (dtc !== null) {
+      const code = dtc.trim().toUpperCase();
+      setEntryNotice({
+        kind: "dtc_standby",
+        code: DTC_FORMAT.test(code) ? code : null,
+      });
+    } else if (params.has("symptome")) {
+      setEntryNotice({ kind: "symptom_not_linked" });
     }
     setDraftReady(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -722,6 +748,52 @@ export function DiagnosticWizard() {
             réévaluation n’a été effectuée. Lancez un nouveau diagnostic si la
             situation a changé.
           </p>
+        </div>
+      )}
+
+      {entryNotice && state.step < 3 && (
+        <div
+          className="space-y-2 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 print:hidden"
+          role="status"
+        >
+          {entryNotice.kind === "dtc_standby" ? (
+            <>
+              <p className="font-medium">
+                La lecture des codes défaut (OBD) est en pause.
+              </p>
+              <p>
+                Nos données ne permettent pas encore d’interpréter un code de
+                façon fiable
+                {entryNotice.code && (
+                  <>
+                    {" "}
+                    : le code{" "}
+                    <span className="font-mono">{entryNotice.code}</span> n’a
+                    pas été analysé
+                  </>
+                )}
+                . Aucun diagnostic n’est déduit du code. Décrivez les symptômes
+                constatés pour être orienté.
+              </p>
+            </>
+          ) : (
+            <p>
+              Le symptôme indiqué par le lien n’est pas encore relié à l’outil.
+              Choisissez le système puis les symptômes constatés.
+            </p>
+          )}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              if (state.analysisMode !== "diagnostic")
+                dispatch({ type: "SET_MODE", payload: "diagnostic" });
+              setEntryNotice(null);
+            }}
+          >
+            Continuer avec les symptômes
+          </Button>
         </div>
       )}
 
