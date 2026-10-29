@@ -768,7 +768,7 @@
         "scripts/seo/lib"
       ],
       "files_count": 279,
-      "loc_total": 59544,
+      "loc_total": 59631,
       "has_barrel": true
     },
     "seo-control-plane": {

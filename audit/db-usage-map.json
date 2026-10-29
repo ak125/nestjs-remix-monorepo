@@ -21,7 +21,7 @@
     "dynamic_rpc_callsites": 1,
     "unresolved_callsites": 0,
     "dropped_call_sites": 8,
-    "migrations_scanned": 430,
+    "migrations_scanned": 432,
     "backend_files_scanned": 1493
   },
   "tables": {
@@ -3799,7 +3799,9 @@
       "called_by": [],
       "called_by_count": 0,
       "defined_in_migrations": [
-        "20260517_seo_r2_v2_outbox_relay_rpc.sql"
+        "20260517_seo_r2_v2_outbox_relay_rpc.sql",
+        "20261029_seo_r8_publish_snapshot_text_type_id.down.sql",
+        "20261029_seo_r8_publish_snapshot_text_type_id.sql"
       ],
       "is_trigger_function": false
     },
@@ -7711,7 +7713,9 @@
         "no-rpc-callsite"
       ],
       "defined_in_migrations": [
-        "20260517_seo_r2_v2_outbox_relay_rpc.sql"
+        "20260517_seo_r2_v2_outbox_relay_rpc.sql",
+        "20261029_seo_r8_publish_snapshot_text_type_id.down.sql",
+        "20261029_seo_r8_publish_snapshot_text_type_id.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
