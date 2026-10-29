@@ -28557,7 +28557,7 @@
         "path"
       ],
       "kind": "test",
-      "loc": 596,
+      "loc": 907,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-projection/seo-projection-writer-role-scope.test.ts",
       "risk": "low",
@@ -28593,7 +28593,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 869,
+      "loc": 983,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-projection/seo-projection-writer.service.ts",
       "risk": "low",
