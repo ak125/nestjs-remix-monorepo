@@ -31,7 +31,7 @@ Un smoke PROD vert ne prouve ni la source servie ni l'activation d'un flag : il 
 | **Intégré** | Non : PR en brouillon, aucune fusion sur `main` (ADR-102) |
 | **Vérifié** | Localement : jest backend, vitest frontend, tests du paquet `@repo/seo-role-contracts`, mutations de régression détectées, lectures DB bornées en lecture seule. CI de la PR à lire sur la PR |
 | **Opérationnel** | Aucune des corrections n'est servie. Le chemin projeté R3 n'est pas servi en PROD (observé). L'overlay R8 est servi sur 1 page ; la chaîne de snapshots R8 n'a jamais tourné |
-| **Bloqué** | Canary R3 filtre à huile : refusée par la règle D7 d'ADR-106 (contenu projeté inférieur au servi). Correctif R7, correctif de la RPC de snapshot, mise à jour du pin WIKI : hors mandat ou zone STOP, préparés §8 |
+| **Bloqué** | Canary R3 filtre à huile : refusée par la règle D7 d'ADR-106 (contenu projeté inférieur au servi). Correctif R7, mise à jour du pin WIKI : hors mandat ou zone STOP, préparés §8. RPC de snapshot R8 en échec à chaque appel (42883) : migration prête dans le brouillon #1918, non appliquée (§7.2) |
 
 La boucle publique **n'est pas opérationnelle** au sens du mandat : aucune page publique n'est observée servant un corps issu de la projection WIKI.
 
@@ -190,7 +190,7 @@ Aucune correction sur cette branche. Le brouillon #1493 touche ce writer et n'es
 
 ### 7.2 Snapshots R8 (ADR-072)
 
-Contrat : seed → `R8ParentEnrichmentService.enrichTypeId` → RPC `__seo_r8_publish_snapshot`. La RPC insère le snapshot (`ON CONFLICT (version_sha) DO NOTHING`), met à jour `__seo_r8_pages.current_snapshot_id` **seulement pour les lignes existantes**, et insère toujours un événement outbox.
+Contrat : seed → `R8ParentEnrichmentService.enrichTypeId` → RPC `__seo_r8_publish_snapshot`. Telle qu'écrite, la RPC insère le snapshot (`ON CONFLICT (version_sha) DO NOTHING`), met à jour `__seo_r8_pages.current_snapshot_id` **seulement pour les lignes existantes**, et insère toujours un événement outbox.
 
 Pourquoi la table est vide :
 
@@ -198,11 +198,12 @@ Pourquoi la table est vide :
 - le seed manuel `POST /api/admin/seo/r2/r8-seed/run` n'a jamais été appelé (`__seo_admin_job` = 0, outbox = 0) ;
 - PREPROD est en READ_ONLY : le processeur ignore le job.
 
-Reste après `0a019695a` :
+Reste après `0a019695a` (revu le 29/10) :
 
-- **RPC.** UPDATE sans INSERT : seuls ~154 `type_id` recevraient un pointeur. Correction = migration, zone STOP, non incluse.
-- **`maybeSingle`.** Un `type_id` en double dans `__seo_r8_pages` le fait échouer.
-- **Lecteur.** `R8SnapshotReaderService` n'a aucun appelant.
+- **RPC en échec à chaque appel.** `__seo_r8_pages.type_id` est TEXT et `p_type_id` BIGINT. `WHERE type_id = p_type_id` lève 42883 (« operator does not exist: text = bigint ») et annule tout l'appel, insert du snapshot et événement outbox compris. Constat en lecture read-only sur la base canonique, reproduit sur une base Postgres 17 jetable. Le seed, s'il était lancé, ne publierait aucun snapshot. Correctif : migration de la PR brouillon #1918, **non appliquée** (application par l'owner).
+- **Couverture du pointeur.** La RPC ne fait qu'un UPDATE : seuls les 154 `type_id` qui ont une page R8 reçoivent un pointeur. #1918 garde ce comportement. Créer la page manquante depuis la RPC créerait une page R8 servie, ce qui relève du SEO indexé. L'autre voie est un lecteur qui ne dépend pas de `__seo_r8_pages`. Les deux relèvent d'ADR-072 et ne sont pas tranchées ici.
+- **`maybeSingle`.** Un `type_id` en double dans `__seo_r8_pages` (`19053`) le faisait échouer. Corrigé dans #1918 : toutes les pages du véhicule sont lues, un désaccord de pointeurs donne `r8_snapshot_unavailable`.
+- **Lecteur.** `R8SnapshotReaderService` n'a toujours aucun appelant.
 
 Les brouillons #1530 et #1541 sont remplacés par #1587 ; #1537 l'est en partie.
 
@@ -293,7 +294,7 @@ Vider `SEO_PROJECTION_READ_CANARY`, ou passer `SEO_PROJECTION_READ_V1=false`, pu
 | HTML R3 PROD | legacy servi | aucune | en-têtes et HTML PROD du 28/10 | boucle publique non opérationnelle |
 | Gate R8 | corrigé sur branche | `19ba1bd7a` | jest 56/56 | non servi tant que non fusionné/déployé |
 | Anti-dup R8 | raccordé sur branche, défaut `off` | `77a4825ed` | 18 tests, M1-M3, paquet 143/143 | aucun environnement en `shadow` ; sœurs = overlays R8 seulement |
-| Seed / outbox R8 | corrigé sur branche, jamais exécuté | `0a019695a` | 74 tests r2, 4 échecs sur l'ancien code | RPC UPDATE-only (migration) ; lecteur sans appelant |
+| Seed / outbox R8 | corrigé sur branche, jamais exécuté | `0a019695a` | 74 tests r2, 4 échecs sur l'ancien code | RPC en échec 42883 (migration #1918 non appliquée) ; pointeur limité aux 154 pages ; lecteur sans appelant |
 | R2 rendu | 503 sur panne amont | déjà corrigé | code l. 255-322 | — |
 | R2 enrich-single | stub | aucune | — | pas de source gouvernée de volume |
 | Gate R7 | défectueux | préparée (§7.4) | requête d'impact | zone STOP |
@@ -306,8 +307,8 @@ Elles sont hors mandat ; chacune a son contenu préparé dans ce document.
 |---|---|---|
 | Fusion de la PR | PR brouillon, CI à lire | ADR-102 : l'agent ne fusionne pas |
 | Correctif R7 | §7.4 | balises servies d'une page indexée |
-| Migration de la RPC `__seo_r8_publish_snapshot` (INSERT de la page manquante) | constat §7.2 | migration DB |
-| Lancement du seed R8 | correctif `0a019695a` prérequis | écriture DB de production |
+| Application de la migration `__seo_r8_publish_snapshot` (comparaison en texte) | PR brouillon #1918, `.down.sql` testée | migration DB |
+| Lancement du seed R8 | correctifs `0a019695a` et #1918 (appliquée) prérequis | écriture DB de production |
 | Passage `SEO_CHAIN_DUPLICATE_GATE_MODE=shadow` sur PREPROD | §5.2 | changement de configuration effective |
 | Canary huile | §8 | flag PROD, et D7 refuse aujourd'hui |
 | Bump du pin WIKI | §7.5 | bloqué tant que les plaquettes n'ont pas de chemin de retrait |
@@ -393,12 +394,14 @@ corrections_proposed:
   - 94ae9d3b1 tests de cache canary R3
   - 0a019695a seed R8 et outbox
   - correctif R7 (§7.4, non appliqué)
+  - "#1918 (29/10) : migration de la RPC __seo_r8_publish_snapshot et lecteur R8, brouillon, migration non appliquée"
 corrections_applied: []   # aucune validation humaine ni fusion à ce stade
 validation_executed:
   - jest backend (gate R8 56/56, balises 18 tests, seo/r2 74/74), paquet 143/143, vitest 7/7
   - mutations : ancien code ou ciblage neutralisé ⇒ échecs détectés
   - tsc, eslint, prettier sur les fichiers touchés
   - lectures DB bornées en lecture seule ; observation HTTP PROD
+  - "#1918 : base Postgres 17 jetable (échec 42883 reproduit, migration et .down.sql appliquées), lecteur 16/16"
 remaining_unknowns:
   - valeurs effectives des flags PROD
   - comportement réel du gate balises en shadow (aucun environnement configuré)
