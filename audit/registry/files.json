@@ -30698,7 +30698,7 @@
         "backend/src/modules/seo/r2/services/r8-snapshot-reader.service.ts"
       ],
       "kind": "test",
-      "loc": 292,
+      "loc": 358,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/r2/services/__tests__/r8-snapshot-reader.test.ts",
       "risk": "low",
@@ -31099,7 +31099,7 @@
         "backend/src/modules/seo/r2/schemas/r8-snapshot.schema.ts"
       ],
       "kind": "service",
-      "loc": 228,
+      "loc": 249,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/r2/services/r8-snapshot-reader.service.ts",
       "risk": "low",
