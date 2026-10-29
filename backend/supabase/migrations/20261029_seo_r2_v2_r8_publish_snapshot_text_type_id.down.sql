@@ -1,4 +1,4 @@
--- Rollback: 20261029_seo_r8_publish_snapshot_text_type_id
+-- Rollback: 20261029_seo_r2_v2_r8_publish_snapshot_text_type_id
 -- Rend à __seo_r8_publish_snapshot sa définition de 20260517 (comparaison
 -- `type_id = p_type_id`, TEXT contre BIGINT). Ce retour rétablit le défaut :
 -- chaque appel échoue de nouveau (42883) et ne publie rien. À n'utiliser que si
