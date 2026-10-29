@@ -2,7 +2,7 @@
   "_generated_by": "scripts/audit/build-db-usage-map.js",
   "note": "Candidates only — never a \"dead\" verdict. A real DROP table/function goes through the RPC Gate + a vault ADR, never from this map.",
   "important_caveats": [
-    "780 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
+    "779 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
     "Migration parsing is regex-based and tracks last CREATE vs last DROP per object (date-prefixed filenames ≈ chronological); re-create-after-drop edge cases may slip through.",
     "RLS-only / dashboard / external-cron / RPC-internal usage is invisible here — see per-candidate caveats.",
     "8 call-site(s) écarté(s) : le récepteur n'est pas un client PostgREST (Buffer/Array, ou bucket Supabase Storage) — voir dropped_call_sites[].",
@@ -13,16 +13,16 @@
     "tables_with_callsites": 214,
     "candidate_orphan_tables": 75,
     "partitions": 27,
-    "rpc_seen": 253,
+    "rpc_seen": 257,
     "rpc_with_callsites": 14,
     "trigger_functions": 30,
-    "candidate_orphan_rpc": 209,
-    "dynamic_from_callsites": 780,
+    "candidate_orphan_rpc": 213,
+    "dynamic_from_callsites": 779,
     "dynamic_rpc_callsites": 1,
     "unresolved_callsites": 0,
     "dropped_call_sites": 8,
-    "migrations_scanned": 430,
-    "backend_files_scanned": 1496
+    "migrations_scanned": 432,
+    "backend_files_scanned": 1493
   },
   "tables": {
     "___config": {
@@ -1123,7 +1123,6 @@
     "__seo_event_log": {
       "used_by": [
         "backend/src/modules/admin/services/command-center-kpi.service.ts",
-        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
         "backend/src/modules/admin/services/seo-control.service.ts",
         "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts",
         "backend/src/modules/diagnostic-engine/services/outcome-emitter.service.ts",
@@ -1136,7 +1135,7 @@
         "backend/src/modules/seo/services/seo-placeholder-events.service.ts",
         "backend/src/modules/seo/services/sitemap-event-log.service.ts"
       ],
-      "used_by_count": 13,
+      "used_by_count": 12,
       "in_migrations": [
         "20260425_seo_event_log.sql"
       ],
@@ -2285,10 +2284,9 @@
     },
     "__vehicle_page_cache": {
       "used_by": [
-        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
         "backend/src/modules/vehicles/services/vehicle-rpc.service.ts"
       ],
-      "used_by_count": 2,
+      "used_by_count": 1,
       "in_migrations": [
         "20260420_vehicle_page_cache_schema.sql"
       ],
@@ -4562,6 +4560,38 @@
       "called_by_count": 0,
       "defined_in_migrations": [
         "20260128_dco_v2_tables.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "get_vehicle_api_brand_models": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20261026_vehicle_api_definer_reads.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "get_vehicle_api_brands": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20261026_vehicle_api_definer_reads.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "get_vehicle_api_model_types": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20261026_vehicle_api_definer_reads.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "get_vehicle_api_types_by_models": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20261026_vehicle_api_definer_reads.sql"
       ],
       "is_trigger_function": false
     },
@@ -8954,6 +8984,70 @@
       ]
     },
     {
+      "name": "get_vehicle_api_brand_models",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20261026_vehicle_api_definer_reads.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "get_vehicle_api_brands",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20261026_vehicle_api_definer_reads.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "get_vehicle_api_model_types",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20261026_vehicle_api_definer_reads.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "get_vehicle_api_types_by_models",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20261026_vehicle_api_definer_reads.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
       "name": "get_vehicle_page_data_cached",
       "confidence": "medium",
       "derived_from": [
@@ -11287,70 +11381,63 @@
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 759,
+      "line": 662,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_pages",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 991,
+      "line": 1294,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_pages",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1663,
+      "line": 1369,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_pages",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1738,
-      "form": "OBJ.KEY",
-      "resolved_table": "__seo_r8_pages",
-      "refusal": null
-    },
-    {
-      "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1775,
+      "line": 1406,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_page_versions",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1783,
+      "line": 1414,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_page_versions",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1808,
+      "line": 1439,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_fingerprints",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1850,
+      "line": 1481,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_similarity_index",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1870,
+      "line": 1501,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_regeneration_queue",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1881,
+      "line": 1512,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_qa_reviews",
       "refusal": null

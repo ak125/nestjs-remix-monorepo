@@ -14,8 +14,8 @@
 ## Input Fingerprint (sha256)
 
 - `deadCodeCandidates`: `cca71e3f67a446bacec5cf7436fb6946f637fa9338f7337a2f6c1ed84fbc60c6`
-- `canonical`: `526af59bce5f8ecc69f885bb6a07d8aa63383dd1cef28369c9bc266608b5d315`
-- `ownershipYaml`: `3533a17d0fff94133c05615f9d05e9b7f8c0a2e2aa545548c6c0594e5e0c49d1`
+- `canonical`: `7204192ebe689470fc4d9859164b8b66a4b1a656ebdb301cc552f706a345b7d3`
+- `ownershipYaml`: `f5b19a535b51e33439c9b24d20418ae8345dd9323cf361fb21d7931efeba66c5`
 - `contractHealth`: `<none>`
 - `validateScript`: `f89bd253b2e305831a01222da09bbef3b95fa51f461238886835fe4a0c2fa831`
 - `unreachableModules`: `75f4f5946d480ab8244e853aa25ffedb5d198bb4e7aee837cdb80e04e9e75e94`
