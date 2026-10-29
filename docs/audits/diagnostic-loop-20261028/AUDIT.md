@@ -124,9 +124,13 @@ kg_nodes ──kg_get_smart_maintenance_schedule──▶ calendrier (statut odo
 
 ## 5. Matrice de couverture par gamme éligible
 
-Gammes éligibles : les 53 gammes atteintes par `CAUSE_GAMME_MAP` (sur 241 gammes catalogue). Quatre causes
-n'ont pas de gamme : `parasitic_drain`, `ground_cable_corroded`, `fuite_gaz_refrigerant`,
-`boite_vitesses_usee`.
+Périmètre : les 232 gammes publiées (`__pg_gammes`) et les 62 symptômes actifs, fixés par ADR-113 D1 et
+D3. Leur liste complète et leur état au 2026-10-29 sont dans [COUVERTURE.md](COUVERTURE.md) : gammes
+couvertes 0 sur 232, symptômes reliés 0 sur 62.
+
+Le tableau ci-dessous détaille seulement les 53 gammes atteintes par `CAUSE_GAMME_MAP`. Sept d'entre elles
+ne sont pas publiées (marquées « non publiée ») et sortent du périmètre d'ADR-113. Quatre causes n'ont pas
+de gamme : `parasitic_drain`, `ground_cable_corroded`, `fuite_gaz_refrigerant`, `boite_vitesses_usee`.
 
 États : **validé** (sourcé et revu), **partiel**, **à valider** (présent sans source ni revue),
 **manquant**, **N/A justifié**. Aucune cellule n'est « validé » : aucune donnée diagnostic n'a de provenance
@@ -148,7 +152,7 @@ Colonnes uniformes, non répétées dans le tableau :
 | condenseur-de-climatisation | 448 | climatisation | 1 / 2 | à valider (2 liens, 0 sourcé) | manquant | manquant | manquant |
 | filtre-d-habitacle | 424 | climatisation + filtration | 2 / 4 | à valider (4 liens, 0 sourcé) | à valider : filtre_habitacle_clim, filtre_habitacle_replacement (intervalles contradictoires) | à valider (1) | à valider (non revue) |
 | alternateur | 4 | demarrage_charge | 1 / 3 | à valider (3 liens, 0 sourcé) | à valider : alternator_check | à valider (4) | manquant |
-| batterie | 1 | demarrage_charge | 2 / 7 | à valider (10 liens, 0 sourcé) | à valider : battery_replacement | à valider (4) | manquant |
+| batterie (non publiée) | 1 | demarrage_charge | 2 / 7 | à valider (10 liens, 0 sourcé) | à valider : battery_replacement | à valider (4) | manquant |
 | bougie-de-prechauffage | 243 | demarrage_charge | 1 / 2 | à valider (2 liens, 0 sourcé) | à valider : glow_plug_replacement | à valider (4) | manquant |
 | demarreur | 2 | demarrage_charge | 1 / 2 | à valider (2 liens, 0 sourcé) | manquant | à valider (4) | manquant |
 | barre-de-direction | 285 | direction | 1 / 2 | à valider (2 liens, 0 sourcé) | manquant | à valider (1) | manquant |
@@ -159,14 +163,14 @@ Colonnes uniformes, non répétées dans le tableau :
 | courroie-de-distribution | 306 | distribution | 1 / 3 | à valider (3 liens, 0 sourcé) | manquant | à valider (1) | manquant |
 | galet-tendeur-de-courroie-de-distribution | 308 | distribution | 1 / 3 | à valider (3 liens, 0 sourcé) | manquant | à valider (1) | manquant |
 | kit-de-distribution | 307 | distribution | 1 / 3 | à valider (3 liens, 0 sourcé) | à valider : kit_distribution_replacement | à valider (1) | manquant |
-| kit-de-distribution-avec-pompe-a-eau | 3096 | distribution | 1 / 3 | à valider (3 liens, 0 sourcé) | manquant | à valider (1) | manquant |
+| kit-de-distribution-avec-pompe-a-eau (non publiée) | 3096 | distribution | 1 / 3 | à valider (3 liens, 0 sourcé) | manquant | à valider (1) | manquant |
 | pompe-a-eau | 1260 | distribution + refroidissement | 2 / 5 | à valider (5 liens, 0 sourcé) | à valider : water_pump_replacement | à valider (4) | manquant |
 | catalyseur | 429 | echappement | 1 / 3 | à valider (3 liens, 0 sourcé) | à valider : controle_echappement | à valider (1) | manquant |
 | joint-de-collecteur | 40 | echappement | 1 / 2 | à valider (2 liens, 0 sourcé) | manquant | à valider (1) | manquant |
-| silencieux | 26 | echappement | 1 / 2 | à valider (2 liens, 0 sourcé) | manquant | à valider (1) | manquant |
+| silencieux (non publiée) | 26 | echappement | 1 / 2 | à valider (2 liens, 0 sourcé) | manquant | à valider (1) | manquant |
 | sonde-lambda | 3922 | echappement | 1 / 2 | à valider (2 liens, 0 sourcé) | manquant | à valider (1) | manquant |
-| tuyau-flexible-echappement | 3191 | echappement | 1 / 2 | à valider (2 liens, 0 sourcé) | manquant | à valider (1) | manquant |
-| ampoule | 1457 | eclairage | 1 / 4 | à valider (4 liens, 0 sourcé) | à valider : controle_eclairage | à valider (1) | manquant |
+| tuyau-flexible-echappement (non publiée) | 3191 | echappement | 1 / 2 | à valider (2 liens, 0 sourcé) | manquant | à valider (1) | manquant |
+| ampoule (non publiée) | 1457 | eclairage | 1 / 4 | à valider (4 liens, 0 sourcé) | à valider : controle_eclairage | à valider (1) | manquant |
 | feu-arriere | 290 | eclairage | 1 / 2 | à valider (2 liens, 0 sourcé) | manquant | à valider (1) | manquant |
 | feu-avant | 259 | eclairage | 1 / 4 | à valider (4 liens, 0 sourcé) | manquant | à valider (1) | manquant |
 | butee-d-embrayage | 48 | embrayage | 1 / 3 | à valider (3 liens, 0 sourcé) | manquant | à valider (1) | manquant |
@@ -179,7 +183,7 @@ Colonnes uniformes, non répétées dans le tableau :
 | filtre-a-carburant | 9 | filtration + injection | 2 / 4 | à valider (4 liens, 0 sourcé) | à valider : filtre_carburant_replacement | à valider (2) | à valider (non revue) |
 | disque-de-frein | 82 | freinage | 1 / 3 | à valider (3 liens, 0 sourcé) | à valider : brake_disc_replacement | à valider (4) | manquant |
 | etrier-de-frein | 78 | freinage | 2 / 5 | à valider (8 liens, 0 sourcé) | à valider : brake_caliper_overhaul | à valider (4) | manquant |
-| liquide-de-frein | 71 | freinage | 1 / 1 | à valider (1 lien, 0 sourcé) | défaut : `brake_fluid_change` porte le pg 479 | à valider (4) | manquant |
+| liquide-de-frein (non publiée) | 71 | freinage | 1 / 1 | à valider (1 lien, 0 sourcé) | défaut : `brake_fluid_change` porte le pg 479 | à valider (4) | manquant |
 | plaquette-de-frein | 402 | freinage | 1 / 5 | à valider (5 liens, 0 sourcé) | à valider : brake_pads_replacement | à valider (4) | à valider (non revue) |
 | bobine-d-allumage | 689 | injection | 1 / 2 | à valider (2 liens, 0 sourcé) | manquant | à valider (1) | manquant |
 | injecteur | 3902 | injection | 1 / 5 | à valider (5 liens, 0 sourcé) | à valider : injecteur_nettoyage | à valider (1) | manquant |
@@ -193,7 +197,7 @@ Colonnes uniformes, non répétées dans le tableau :
 | kit-de-butee-de-suspension | 1632 | suspension | 1 / 3 | à valider (3 liens, 0 sourcé) | manquant | à valider (2) | manquant |
 | ressort-de-suspension | 188 | suspension | 1 / 2 | à valider (2 liens, 0 sourcé) | manquant | à valider (2) | manquant |
 | rotule-de-suspension | 2462 | suspension | 1 / 3 | à valider (3 liens, 0 sourcé) | manquant | à valider (2) | manquant |
-| silentbloc-de-bras-de-suspension | 251 | suspension | 1 / 4 | à valider (4 liens, 0 sourcé) | à valider : silentbloc_replacement | à valider (2) | manquant |
+| silentbloc-de-bras-de-suspension (non publiée) | 251 | suspension | 1 / 4 | à valider (4 liens, 0 sourcé) | à valider : silentbloc_replacement | à valider (2) | manquant |
 | cardan | 13 | transmission | 1 / 3 | à valider (3 liens, 0 sourcé) | manquant | à valider (1) | manquant |
 | soufflet-de-cardan | 193 | transmission | 1 / 3 | à valider (3 liens, 0 sourcé) | à valider : soufflet_cardan_replacement | à valider (1) | manquant |
 
