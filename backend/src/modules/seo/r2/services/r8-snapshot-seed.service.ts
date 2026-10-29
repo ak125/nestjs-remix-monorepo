@@ -17,7 +17,7 @@ import { R8ParentEnrichmentService } from './r8-parent-enrichment.service';
 
 export interface SeedRunOptions {
   batchSize?: number;
-  sinceTypeId?: number; // inclusive lower bound for resume
+  sinceTypeId?: number; // inclusive lower bound for resume, in type_id text order
   maxBatches?: number; // safety cap (default unlimited)
   dryRun?: boolean; // count only, no writes
 }
@@ -51,7 +51,12 @@ export class R8SnapshotSeedService extends SupabaseBaseService {
     const batchSize = Math.max(1, options.batchSize ?? DEFAULT_BATCH_SIZE);
     const dryRun = options.dryRun === true;
 
-    let cursor = Math.max(0, options.sinceTypeId ?? 0);
+    // `auto_type.type_id` is TEXT : PostgREST compares and orders it as text,
+    // so the keyset cursor is the last type_id string read. A numeric
+    // successor (`String(n + 1)`) skips ids and restarts the walk at every
+    // digit-length boundary — an endless loop over the table.
+    const since = String(Math.max(0, options.sinceTypeId ?? 0));
+    let after: string | null = null;
     let totalScanned = 0;
     let totalSeeded = 0;
     let totalAlreadyPresent = 0;
@@ -61,7 +66,7 @@ export class R8SnapshotSeedService extends SupabaseBaseService {
     let batchesRun = 0;
 
     this.logger.log(
-      `R8 seed run start — batchSize=${batchSize}, sinceTypeId=${cursor}, dryRun=${dryRun}`,
+      `R8 seed run start — batchSize=${batchSize}, sinceTypeId=${since}, dryRun=${dryRun}`,
     );
 
     while (true) {
@@ -74,11 +79,12 @@ export class R8SnapshotSeedService extends SupabaseBaseService {
         );
         break;
       }
-      const batch = await this.fetchBatch(cursor, batchSize);
+      const batch = await this.fetchBatch(since, after, batchSize);
       if (batch.length === 0) {
         break;
       }
       batchesRun += 1;
+      after = batch[batch.length - 1];
 
       for (const typeIdStr of batch) {
         const typeId = Number.parseInt(typeIdStr, 10);
@@ -88,7 +94,6 @@ export class R8SnapshotSeedService extends SupabaseBaseService {
         }
         totalScanned += 1;
         lastTypeIdProcessed = typeId;
-        cursor = typeId + 1;
 
         if (dryRun) {
           continue;
@@ -138,17 +143,21 @@ export class R8SnapshotSeedService extends SupabaseBaseService {
     return report;
   }
 
-  private async fetchBatch(cursor: number, limit: number): Promise<string[]> {
-    const { data, error } = await this.supabase
-      .from('auto_type')
-      .select('type_id')
-      .gte('type_id', String(cursor))
+  private async fetchBatch(
+    since: string,
+    after: string | null,
+    limit: number,
+  ): Promise<string[]> {
+    const query = this.supabase.from('auto_type').select('type_id');
+    const { data, error } = await (
+      after === null ? query.gte('type_id', since) : query.gt('type_id', after)
+    )
       .order('type_id', { ascending: true })
       .limit(limit);
 
     if (error) {
       this.logger.error(
-        `fetchBatch(cursor=${cursor}) failed: ${error.message}`,
+        `fetchBatch(since=${since}, after=${after}) failed: ${error.message}`,
       );
       throw new Error(`seed_fetch_batch_failed: ${error.message}`);
     }
