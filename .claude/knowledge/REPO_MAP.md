@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 2061900e7bba18a5412d61ba3f6d9507d2ebab3e0d88c096e46aed5b6fc81562
+source_sha256: 2d50337b53ed3fba6d4faf2afd674a228e667f2a3e955b3bbb5811acc58a6790
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3086 |
+| Files (Layer 1) | 3091 |
 | DB tables (Layer 1) | 316 |
 | DB RPC (Layer 1) | 263 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1017 |
 
-Source sotFingerprint: `6bc9abea091d`.
+Source sotFingerprint: `f1a616be5293`.
 
 ## Comment l'utiliser
 
@@ -53,11 +53,11 @@ Source sotFingerprint: `6bc9abea091d`.
 
 ### D3 — SEO & Sitemap
 
-- **Files**: 427 (service=219, test=120, controller=34, config=28, script=26)
+- **Files**: 430 (service=220, test=122, controller=34, config=28, script=26)
 - **Runtime entrypoints**: 169
-- **Top owners**: @ak125/seo-team (427)
+- **Top owners**: @ak125/seo-team (430)
 - **Knowledge prose**: [`merchant-center`](modules/merchant-center.md), [`seo`](modules/seo.md), [`seo-control-plane`](modules/seo-control-plane.md), [`seo-logs`](modules/seo-logs.md), [`seo-monitoring`](modules/seo-monitoring.md), [`seo-shadow-observatory`](modules/seo-shadow-observatory.md)
-- **Status**: LIVE=220, UNKNOWN=207
+- **Status**: LIVE=222, UNKNOWN=208
 
 ### D4 — Vehicle / Compatibility
 
@@ -93,11 +93,11 @@ Source sotFingerprint: `6bc9abea091d`.
 
 ### D8 — Read Model / Serving (RM)
 
-- **Files**: 942 (config=454, route=246, service=182, controller=39, test=21)
+- **Files**: 944 (config=454, route=246, service=182, controller=39, test=23)
 - **Runtime entrypoints**: 349
-- **Top owners**: @ak125/frontend-team (675), @ak125/admin-team (267)
+- **Top owners**: @ak125/frontend-team (675), @ak125/admin-team (269)
 - **Knowledge prose**: [`admin`](modules/admin.md), [`staff`](modules/staff.md)
-- **Status**: LIVE=516, UNKNOWN=426
+- **Status**: LIVE=516, UNKNOWN=428
 
 ### D9 — Import / ETL / Normalisation
 

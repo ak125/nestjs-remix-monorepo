@@ -4902,6 +4902,7 @@
       "id": "backend/src/config/r8-keyword-plan.constants.ts",
       "importedBy": [
         "backend/src/config/page-contract-r8.schema.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.gate.test.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.tech-specs.test.ts"
       ],
@@ -9819,6 +9820,49 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/admin/services/r8-vehicle-enricher.balise-gate.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
+      ],
+      "kind": "test",
+      "loc": 565,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/admin/services/r8-vehicle-enricher.balise-gate.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/admin/services/r8-vehicle-enricher.gate.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/config/r8-keyword-plan.constants.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts"
+      ],
+      "kind": "test",
+      "loc": 355,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/admin/services/r8-vehicle-enricher.gate.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/admin/services/r8-vehicle-enricher.service.test.ts",
       "importedBy": [],
       "imports": [
@@ -9846,6 +9890,8 @@
         "backend/src/modules/admin/admin.module.ts",
         "backend/src/modules/admin/controllers/admin-r8-vehicle.controller.ts",
         "backend/src/modules/admin/services/execution-router.service.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.balise-gate.test.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.gate.test.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.service.test.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.tech-specs.test.ts",
         "backend/src/modules/admin/services/r8-vehicle-enricher.write-gate.test.ts"
@@ -9853,6 +9899,8 @@
       "imports": [
         "@common/exceptions",
         "@database/services/supabase-base.service",
+        "@repo/seo-role-contracts",
+        "@repo/seo-types",
         "backend/src/config/content-write-gate.service.ts",
         "backend/src/config/execution-registry.types.ts",
         "backend/src/config/feature-flags.service.ts",
@@ -9862,12 +9910,15 @@
         "backend/src/config/seo-variations.config.ts",
         "backend/src/modules/admin/services/enricher-text-utils.service.ts",
         "backend/src/modules/admin/services/r8-owned-editorial.composer.ts",
+        "backend/src/modules/seo/registries/seo-feature-flag.registry.ts",
         "backend/src/modules/seo/services/chain/seo-role-template-selector.service.ts",
+        "backend/src/modules/seo/utils/seo-balise-collision-gate.ts",
+        "backend/src/modules/seo/utils/seo-fingerprint-core.ts",
         "backend/src/security/rpc-gate/rpc-gate.errors.ts",
         "crypto"
       ],
       "kind": "service",
-      "loc": 1519,
+      "loc": 1888,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
       "risk": "low",
@@ -9915,7 +9966,7 @@
         "backend/src/security/rpc-gate/rpc-gate.errors.ts"
       ],
       "kind": "test",
-      "loc": 514,
+      "loc": 592,
       "owner": "__unassigned__",
       "path": "backend/src/modules/admin/services/r8-vehicle-enricher.write-gate.test.ts",
       "risk": "low",
@@ -30152,6 +30203,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/seo/r2/queues/r8-enrichment.constants.ts",
       "importedBy": [
+        "backend/src/modules/seo/r2/queues/r8-enrichment.processor.test.ts",
         "backend/src/modules/seo/r2/queues/r8-enrichment.processor.ts",
         "backend/src/modules/seo/r2/r2-v2.module.ts",
         "backend/src/modules/seo/r2/services/outbox-relay.service.ts",
@@ -30174,8 +30226,32 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/seo/r2/queues/r8-enrichment.processor.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/modules/seo/r2/queues/r8-enrichment.constants.ts",
+        "backend/src/modules/seo/r2/queues/r8-enrichment.processor.ts",
+        "backend/src/modules/seo/r2/services/outbox-relay.service.ts"
+      ],
+      "kind": "test",
+      "loc": 69,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/seo/r2/queues/r8-enrichment.processor.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/seo/r2/queues/r8-enrichment.processor.ts",
       "importedBy": [
+        "backend/src/modules/seo/r2/queues/r8-enrichment.processor.test.ts",
         "backend/src/modules/seo/r2/r2-v2.module.ts"
       ],
       "imports": [
@@ -30185,7 +30261,7 @@
         "backend/src/modules/seo/r2/services/r8-parent-enrichment.service.ts"
       ],
       "kind": "service",
-      "loc": 211,
+      "loc": 219,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/r2/queues/r8-enrichment.processor.ts",
       "risk": "low",
@@ -30720,7 +30796,7 @@
         "backend/src/modules/seo/r2/services/r8-snapshot-seed.service.ts"
       ],
       "kind": "test",
-      "loc": 183,
+      "loc": 288,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/r2/services/__tests__/r8-snapshot-seed.test.ts",
       "risk": "low",
@@ -30737,6 +30813,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/seo/r2/services/outbox-relay.service.ts",
       "importedBy": [
+        "backend/src/modules/seo/r2/queues/r8-enrichment.processor.test.ts",
         "backend/src/modules/seo/r2/queues/r8-enrichment.processor.ts",
         "backend/src/modules/seo/r2/r2-v2.module.ts",
         "backend/src/modules/seo/r2/services/__tests__/outbox-relay.test.ts"
@@ -31125,7 +31202,7 @@
         "backend/src/modules/seo/r2/services/r8-parent-enrichment.service.ts"
       ],
       "kind": "service",
-      "loc": 158,
+      "loc": 167,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/r2/services/r8-snapshot-seed.service.ts",
       "risk": "low",
@@ -31229,6 +31306,7 @@
       "domain": "UNKNOWN",
       "id": "backend/src/modules/seo/registries/seo-feature-flag.registry.ts",
       "importedBy": [
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
         "backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-seo-shadow.test.ts",
         "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
         "backend/src/modules/seo/registries/__tests__/seo-feature-flag.registry.test.ts",
@@ -33544,11 +33622,13 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "reachability"
       ],
       "domain": "UNKNOWN",
       "id": "backend/src/modules/seo/utils/seo-balise-collision-gate.ts",
       "importedBy": [
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
         "backend/src/modules/seo/__tests__/seo-balise-collision-gate.test.ts"
       ],
       "imports": [
@@ -33562,7 +33642,7 @@
       "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "UNKNOWN"
+      "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
@@ -33590,11 +33670,13 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "reachability"
       ],
       "domain": "UNKNOWN",
       "id": "backend/src/modules/seo/utils/seo-fingerprint-core.ts",
       "importedBy": [
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
         "backend/src/modules/seo/__tests__/seo-balise-collision-gate.test.ts",
         "backend/src/modules/seo/__tests__/seo-fingerprint-core.test.ts",
         "backend/src/modules/seo/utils/seo-balise-collision-gate.ts"
@@ -33612,7 +33694,7 @@
       "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "UNKNOWN"
+      "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
@@ -64043,7 +64125,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 87,
+      "loc": 160,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/conseils-loader-status.test.ts",
       "risk": "low",
@@ -68200,6 +68282,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "packages/seo-role-contracts/src/__tests__/r8-tecdoc-release-gate.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 30,
+      "owner": "__unassigned__",
+      "path": "packages/seo-role-contracts/src/__tests__/r8-tecdoc-release-gate.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "packages/seo-role-contracts/src/__tests__/surface-keys.test.ts",
       "importedBy": [],
       "imports": [],
@@ -68413,7 +68514,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 152,
+      "loc": 158,
       "owner": "__unassigned__",
       "path": "packages/seo-role-contracts/src/index.ts",
       "risk": "low",
@@ -68454,6 +68555,25 @@
       "loc": 50,
       "owner": "__unassigned__",
       "path": "packages/seo-role-contracts/src/r2-indexability-conditions.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "packages/seo-role-contracts/src/r8-tecdoc-release-gate.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 24,
+      "owner": "__unassigned__",
+      "path": "packages/seo-role-contracts/src/r8-tecdoc-release-gate.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
