@@ -13,16 +13,16 @@
     "tables_with_callsites": 214,
     "candidate_orphan_tables": 75,
     "partitions": 27,
-    "rpc_seen": 253,
+    "rpc_seen": 257,
     "rpc_with_callsites": 14,
     "trigger_functions": 30,
-    "candidate_orphan_rpc": 209,
+    "candidate_orphan_rpc": 213,
     "dynamic_from_callsites": 779,
     "dynamic_rpc_callsites": 1,
     "unresolved_callsites": 0,
     "dropped_call_sites": 8,
-    "migrations_scanned": 428,
-    "backend_files_scanned": 1491
+    "migrations_scanned": 432,
+    "backend_files_scanned": 1493
   },
   "tables": {
     "___config": {
@@ -4563,6 +4563,38 @@
       ],
       "is_trigger_function": false
     },
+    "get_vehicle_api_brand_models": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20261026_vehicle_api_definer_reads.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "get_vehicle_api_brands": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20261026_vehicle_api_definer_reads.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "get_vehicle_api_model_types": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20261026_vehicle_api_definer_reads.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "get_vehicle_api_types_by_models": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20261026_vehicle_api_definer_reads.sql"
+      ],
+      "is_trigger_function": false
+    },
     "get_vehicle_page_data_cached": {
       "called_by": [],
       "called_by_count": 0,
@@ -8944,6 +8976,70 @@
       ],
       "defined_in_migrations": [
         "20260128_dco_v2_tables.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "get_vehicle_api_brand_models",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20261026_vehicle_api_definer_reads.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "get_vehicle_api_brands",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20261026_vehicle_api_definer_reads.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "get_vehicle_api_model_types",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20261026_vehicle_api_definer_reads.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "get_vehicle_api_types_by_models",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20261026_vehicle_api_definer_reads.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",

@@ -92,7 +92,7 @@ export class LandingAttributionController {
   // src/config/throttler-tiers.config.ts). Un `@Throttle({ default: … })`
   // a vécu ici sans jamais s'appliquer : aucun tier ne s'appelle `default`,
   // et le guard lit l'override sous le NOM du tier configuré
-  // (throttler.guard.js:77). Prouvé le 2026-09-09 : 20 POST en rafale →
+  // (throttler.guard.js:86 en 6.7.1). Prouvé le 2026-09-09 : 20 POST en rafale →
   // 15× 202 puis 5× 429, soit le tier `short`, pas la limite annoncée.
   landing(
     @Body() body: unknown,

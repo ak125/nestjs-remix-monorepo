@@ -7,7 +7,7 @@ Probe manuelle mensuelle de présence/citation AutoMecanik dans les LLMs grand p
 
 Mesurer empiriquement la visibilité d'AutoMecanik dans les réponses des LLMs grand public, sans construire de plateforme. Cadence + volume calibrés pour rester soutenable (~1h/mois) et observable (CSV git-tracké).
 
-Cf. spec `docs/superpowers/specs/2026-05-23-ai-additive-layer-phase-0-and-1-design.md` §4.3.
+Cf. spec `docs/specs/2026-05-23-ai-additive-layer-phase-0-and-1-design.md` §4.3.
 Cf. mémoires `[[project_a_b_c_surfaces_distinction]]`, `[[feedback_more_seo_engineering_not_equal_more_business]]`.
 
 ## Protocole mensuel

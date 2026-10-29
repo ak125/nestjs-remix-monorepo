@@ -1,7 +1,7 @@
 /**
  * TrendSignalsService — middle-ground ingestion into `__trend_signals`.
  *
- * Cf. spec docs/superpowers/specs/2026-05-23-ai-additive-layer-phase-0-and-1-design.md §4.6
+ * Cf. spec docs/specs/2026-05-23-ai-additive-layer-phase-0-and-1-design.md §4.6
  * Task 1.10 — light ingestion from public sources, no auto content gen.
  *
  * Sources V1 :

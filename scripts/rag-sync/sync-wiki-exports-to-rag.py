@@ -11,11 +11,27 @@ ingestion never sees notes-internes / draft-fields / non-validated content.
 
 Idempotent: skips files where the target already has matching SHA-256 content.
 
+Mirror files absent from the exports block the sync, except those listed in the
+legacy baseline (corpus published before the #1587 guard). Only files the rag
+repository can publish count: tracked, or untracked and not ignored by git.
+The baseline only shrinks; --tighten-legacy-baseline drops the entries that are
+no longer unreconciled.
+
+Withdrawal (ADR-031 §D21): with --tombstones, a legacy file leaves the mirror
+only through a `rag-mirror` tombstone of automecanik-raw/manifests/tombstones.json
+whose SHA-256 matches its current content. A file whose content no longer matches
+is preserved and reported TOMBSTONE-MISMATCH. The registry authorises deletions
+only; it is never a content source.
+
 Usage:
   ./sync-from-wiki.py                                               # dry-run (default)
   ./sync-from-wiki.py --apply                                       # write changes
   ./sync-from-wiki.py --wiki-repo /opt/automecanik-wiki \\           # default
                       --rag-repo  /opt/automecanik/rag              # default
+  ./sync-from-wiki.py --list-unreconciled                           # list every unreconciled file
+  ./sync-from-wiki.py --tighten-legacy-baseline                     # shrink the legacy baseline
+  ./sync-from-wiki.py --tombstones tombstones.json \\                # withdraw tombstoned legacy files
+                      --tombstones-ref automecanik-raw@<commit>
 
 Env override:
   AUTOMECANIK_WIKI_PATH overrides --wiki-repo.
@@ -29,7 +45,9 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import shutil
+import subprocess
 import sys
 import tempfile
 from datetime import datetime, timezone
@@ -39,6 +57,18 @@ from pathlib import Path
 WIKI_EXPORTS_RAG_RELATIVE = Path("exports") / "rag"
 RAG_KNOWLEDGE_RELATIVE = Path("knowledge")
 SUPPORTED_EXTS = {".md", ".json"}
+# Unreconciled files named per refusal. The hourly cron repeats the same refusal
+# until reconciliation; the full list (4 590 paths, ~420 KB per run on 2026-10-24)
+# made its log grow by ~10 MB a day.
+UNRECONCILED_SAMPLE = 20
+# Mirror corpus published before the WIKI exports existed, preserved and counted
+# on every run. Nothing here adds entries: the cron never writes it and
+# --tighten-legacy-baseline only removes them.
+LEGACY_BASELINE = Path(__file__).resolve().parents[2] / "audit" / "baselines" / "rag-mirror-legacy-baseline.json"
+# automecanik-raw _schemas/tombstones.schema.json: entries without scope are RAW
+# removals (1.0.0); 1.1.0 adds the rag-mirror scope read here.
+TOMBSTONES_SCHEMA_MAJOR = "1"
+SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 
 
 def sha256_of(path: Path) -> str:
@@ -62,6 +92,63 @@ def assert_source_is_exports_rag(source: Path, wiki_repo: Path) -> None:
         raise SystemExit(
             f"D20 garde-fou: detected wiki/ inside exports/rag/: {source}"
         )
+
+
+def set_digest(paths) -> str:
+    return hashlib.sha256("\n".join(p.as_posix() for p in sorted(paths)).encode()).hexdigest()
+
+
+def load_legacy_baseline(path: Path) -> set[Path]:
+    data = json.loads(path.read_text())
+    files = data["files"]
+    if (not isinstance(files, list) or not all(isinstance(f, str) for f in files)
+            or files != sorted(set(files)) or data["total"] != len(files)
+            or any(Path(f).is_absolute() or ".." in Path(f).parts for f in files)):
+        raise ValueError(f"legacy baseline malformed: {path}")
+    return {Path(f) for f in files}
+
+
+def load_rag_mirror_tombstones(path: Path) -> dict[Path, dict[str, str]]:
+    """rag-mirror tombstones, as mirror path -> {pinned sha256: tombstone id}."""
+    data = json.loads(path.read_text())
+    version = data["_schema_version"]
+    if not isinstance(version, str) or version.split(".")[0] != TOMBSTONES_SCHEMA_MAJOR:
+        raise ValueError(f"tombstones schema {version!r} unsupported: {path}")
+    pinned: dict[Path, dict[str, str]] = {}
+    for entry in data["tombstones"]:
+        if entry.get("scope") != "rag-mirror":
+            continue
+        original, digest, tombstone_id = entry["original_path"], entry["sha256"], entry["id"]
+        prefix = f"{RAG_KNOWLEDGE_RELATIVE.as_posix()}/"
+        relative = Path(original[len(prefix):]) if isinstance(original, str) and original.startswith(prefix) else None
+        if (relative is None or relative.is_absolute() or ".." in relative.parts
+                or relative.suffix not in SUPPORTED_EXTS or relative.name == ".last-sync.json"
+                or not isinstance(digest, str) or not SHA256_RE.match(digest)
+                or not isinstance(tombstone_id, str)):
+            raise ValueError(f"tombstone malformed: {entry.get('id')!r} in {path}")
+        pinned.setdefault(relative, {})[digest] = tombstone_id
+    return pinned
+
+
+def prune_empty_parents(directory: Path, root: Path) -> None:
+    while directory != root and not any(directory.iterdir()):
+        directory.rmdir()
+        directory = directory.parent
+
+
+def publishable_mirror_files(target_root: Path) -> set[Path]:
+    """Files step 4 of the cron publishes (`git add`): tracked, or untracked and not ignored."""
+    listed = subprocess.run(
+        ["git", "-C", str(target_root), "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+        check=True, capture_output=True,
+    ).stdout
+    paths = set()
+    for raw in filter(None, listed.split(b"\0")):
+        relative = Path(os.fsdecode(raw))
+        if (relative.suffix in SUPPORTED_EXTS and relative.name != ".last-sync.json"
+                and (target_root / relative).is_file()):
+            paths.add(relative)
+    return paths
 
 
 def iter_export_files(source: Path, wiki_repo: Path) -> list[Path]:
@@ -91,6 +178,37 @@ def main() -> int:
         default=None,
         help="Override source. MUST resolve to the complete <wiki-repo>/exports/rag/ root. "
              "Reading from <wiki-repo>/wiki/<entity_type>/ is forbidden (D20).",
+    )
+    ap.add_argument(
+        "--list-unreconciled",
+        action="store_true",
+        help=f"List every mirror file absent from the WIKI exports (default: the first {UNRECONCILED_SAMPLE})",
+    )
+    ap.add_argument(
+        "--legacy-baseline",
+        default=str(LEGACY_BASELINE),
+        help="Unreconciled mirror files preserved as legacy corpus (default: audit/baselines/rag-mirror-legacy-baseline.json)",
+    )
+    ap.add_argument(
+        "--tighten-legacy-baseline",
+        action="store_true",
+        help="Drop baseline entries that are no longer unreconciled, then stop (never adds, never syncs)",
+    )
+    ap.add_argument(
+        "--source-ref",
+        default=None,
+        help="Provenance of the exports recorded in the manifest (e.g. the WIKI commit)",
+    )
+    ap.add_argument(
+        "--tombstones",
+        default=None,
+        help="automecanik-raw manifests/tombstones.json: withdraw the legacy files its rag-mirror "
+             "tombstones pin by SHA-256 (default: no withdrawal)",
+    )
+    ap.add_argument(
+        "--tombstones-ref",
+        default=None,
+        help="Provenance of --tombstones recorded in the manifest (e.g. the RAW commit)",
     )
     args = ap.parse_args()
 
@@ -126,30 +244,94 @@ def main() -> int:
 
     # Do not certify a mirror that still exposes exports absent upstream. Missing
     # files are NOT authority to delete: preserve evidence and require explicit
-    # reconciliation/tombstones through the governed withdrawal path.
+    # reconciliation/tombstones through the governed withdrawal path. Ignored files
+    # are never published and the legacy baseline is preserved and counted.
     expected_paths = {p.relative_to(source) for p in files}
+    baseline_path = Path(args.legacy_baseline)
     try:
+        legacy = load_legacy_baseline(baseline_path)
+        tombstones = load_rag_mirror_tombstones(Path(args.tombstones)) if args.tombstones else {}
         if target_root.is_symlink():
             raise ValueError("knowledge root is a symlink")
         for dst in target_root.rglob('*'):
             if dst.is_symlink():
                 raise ValueError(f"mirror symlink: {dst.relative_to(target_root)}")
-        actual_paths = {
-            p.relative_to(target_root) for p in target_root.rglob('*')
-            if p.is_file() and p.suffix in SUPPORTED_EXTS and p.name != '.last-sync.json'
-        }
-        unreconciled = sorted(actual_paths - expected_paths)
-        if unreconciled:
-            for relative in unreconciled:
-                print(f"UNRECONCILED {relative} (preserved; absent from WIKI exports)", file=sys.stderr)
-            return 1
-    except (OSError, ValueError) as e:
+        unreconciled = publishable_mirror_files(target_root) - expected_paths
+        # D21: only legacy files leave the mirror, and only with the bytes a tombstone
+        # pins. A WIKI export of the same path wins (expected paths are not unreconciled).
+        withdrawals, mismatched = [], []
+        for relative in sorted(unreconciled & legacy & set(tombstones)):
+            digest = sha256_of(target_root / relative)
+            if digest in tombstones[relative]:
+                withdrawals.append((relative, tombstones[relative][digest]))
+            else:
+                mismatched.append((relative, digest))
+    except subprocess.CalledProcessError as e:
+        print(f"sync-from-wiki: mirror preflight failed: git ls-files: {e.stderr.decode().strip()}", file=sys.stderr)
+        return 1
+    except (OSError, ValueError, KeyError, TypeError) as e:
         print(f"sync-from-wiki: mirror preflight failed: {e}", file=sys.stderr)
         return 1
 
+    if args.tighten_legacy_baseline:
+        kept = sorted(p.as_posix() for p in legacy & unreconciled)
+        data = json.loads(baseline_path.read_text())
+        data["total"], data["files"] = len(kept), kept
+        baseline_path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n")
+        print(f"sync-from-wiki: legacy baseline {len(legacy)} -> {len(kept)} entries: {baseline_path}", file=sys.stderr)
+        return 0
+
+    unlisted = sorted(unreconciled - legacy)
+    if unlisted:
+        shown = unlisted if args.list_unreconciled else unlisted[:UNRECONCILED_SAMPLE]
+        for relative in shown:
+            print(f"UNRECONCILED {relative} (preserved; absent from WIKI exports and legacy baseline)", file=sys.stderr)
+        # The fingerprint shows whether the set changed between two refusals.
+        print(
+            f"sync-from-wiki: {len(unlisted)} mirror files absent from WIKI exports and legacy baseline "
+            f"({len(shown)} listed, set sha256 {set_digest(unlisted)[:12]}); mirror not refreshed",
+            file=sys.stderr,
+        )
+        return 1
+
+    withdrawn = 0
+    failed = 0
+    for relative, digest in mismatched[:UNRECONCILED_SAMPLE]:
+        print(f"TOMBSTONE-MISMATCH {relative} (sha256 {digest[:12]} pinned by no tombstone; preserved)",
+              file=sys.stderr)
+    for relative, tombstone_id in withdrawals:
+        if not args.apply:
+            print(f"DRY-WITHDRAW {relative} (tombstone {tombstone_id})")
+            continue
+        path = target_root / relative
+        try:
+            path.unlink()
+            unreconciled.discard(relative)
+            withdrawn += 1
+            print(f"WITHDRAW {relative} (tombstone {tombstone_id})")
+            prune_empty_parents(path.parent, target_root)
+        except OSError as e:
+            print(f"FAIL  {relative}: withdrawal failed: {e}", file=sys.stderr)
+            failed += 1
+    if args.tombstones:
+        print(
+            f"sync-from-wiki: {len(withdrawals)} legacy mirror files pinned by a tombstone "
+            f"({args.tombstones_ref or args.tombstones}), withdrawn={withdrawn}, "
+            f"mismatched={len(mismatched)} (preserved)",
+            file=sys.stderr,
+        )
+
+    stale = sorted(legacy - unreconciled)
+    for relative in stale[:UNRECONCILED_SAMPLE]:
+        print(f"STALE-BASELINE {relative} (no longer an unreconciled mirror file)", file=sys.stderr)
+    print(
+        f"sync-from-wiki: {len(unreconciled)} legacy mirror files absent from WIKI exports, preserved "
+        f"(baseline {len(legacy)}, {len(stale)} entries to tighten)",
+        file=sys.stderr,
+    )
+
     written = 0
     skipped = 0
-    failed = 0
 
     for src in files:
         rel = src.relative_to(source)
@@ -199,9 +381,10 @@ def main() -> int:
                 1 for f in topic_dir.rglob("*") if f.is_file() and f.suffix in SUPPORTED_EXTS
             )
         manifest = {
-            "schema_version": "1.0.0",
+            "schema_version": "1.2.0",
             "synced_at": datetime.now(timezone.utc).isoformat(),
             "source": str(source),
+            "source_ref": args.source_ref,
             "stats": {
                 "exports_total": len(files),
                 "written": written,
@@ -209,6 +392,11 @@ def main() -> int:
                 "failed": failed,
             },
             "topic_counts": topic_counts,
+            # Unreconciled mirror files preserved under the legacy baseline.
+            "legacy_unreconciled": {"count": len(unreconciled), "baseline_total": len(legacy)},
+            # Legacy files withdrawn this run under a tombstone (null without --tombstones).
+            "tombstones": {"ref": args.tombstones_ref, "withdrawn": withdrawn, "mismatched": len(mismatched)}
+            if args.tombstones else None,
         }
         try:
             # Readers must see a complete old or new JSON document, never a

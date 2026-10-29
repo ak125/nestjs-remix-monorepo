@@ -2,32 +2,35 @@
 name: order-rupture-equivalence
 description: >
   Use when a paid customer order cannot be fulfilled because the ordered part is out of stock at
-  the supplier and an equivalent part has to be proposed to the customer, often at a higher price
-  with a supplement to pay. Triggers — "la pièce est en rupture", "rupture chez le fournisseur sur
-  la commande", "proposer un équivalent au client", "faire payer le supplément", "mail de
-  proposition au client".
+  the supplier — an equivalent part has to be proposed to the customer, often at a higher price
+  with a supplement to pay, or the order has to be cancelled and the customer told. Triggers —
+  "la pièce est en rupture", "rupture chez le fournisseur sur la commande", "proposer un
+  équivalent au client", "faire payer le supplément", "mail de proposition au client", "annuler
+  la commande pour rupture", "paiement annulé avant encaissement", "mettre la pièce en rupture".
 type: discipline
 status: experimental
 owners: ['@ak125']
 domain: D11
 runtime_class: privileged
 llm_safe: false
-last_verified: '2026-10-20'
+last_verified: '2026-10-21'
 license: Internal - Automecanik
 compatibility: Designed for Claude Code in the AutoMecanik monorepo. Stack — Supabase/PostgreSQL (___xtr_order*, pieces*, pieces_price), Paybox redirect, Gmail SMTP. Privileged — creates a customer order, takes parts off sale and prepares a customer e-mail; each write needs the owner's nominative GO.
-tags: [orders, rupture, equivalence, supplement, oem, tecdoc, quarantine, customer-mail, commerce]
+tags: [orders, rupture, equivalence, supplement, oem, tecdoc, quarantine, cancellation, customer-mail, commerce]
 argument-hint: "[order-id]"
 disable-model-invocation: true
 metadata:
-  version: "1.1"
+  version: "1.2"
   spec: agentskills.io/specification v1
 ---
 
 # Commande en rupture → équivalence
 
 Une commande payée dont la réf est en rupture chez le fournisseur se sauve en proposant au client
-l'équivalent disponible, même plus cher, au lieu de l'annuler « pas dispo ». Ce skill porte la
-procédure de l'owner (2026-10-18) et, pour chaque écriture, le seul outil sûr.
+l'équivalent disponible, même plus cher, au lieu de l'annuler « pas dispo ». Quand aucun
+équivalent n'est dispo, que le client refuse ou que l'owner décide d'annuler, la commande est
+annulée et le client prévenu (§8). Ce skill porte la procédure de l'owner (2026-10-18, complétée
+le 2026-10-21) et, pour chaque écriture, le seul outil sûr.
 
 > **Règle cardinale `[CRITICAL]`** : aucun mail au client avant que l'owner ait validé **le texte
 > final, affiché en entier** dans la conversation. Un « envoie directement », « gère tout » ou
@@ -48,7 +51,11 @@ procédure de l'owner (2026-10-18) et, pour chaque écriture, le seul outil sûr
 | « Un petit mail d'attente ce soir n'engage à rien » | C'est un mail client : texte affiché, GO, puis envoi. |
 | « L'owner a dit "envoie directement" » | Pas sur CE texte. Montrer le texte final. |
 | « Je ne sais pas faire le lien de paiement, l'owner s'en chargera » | Le lien vient d'une commande enfant (§6). Pas de commande enfant, pas de lien. |
-| « Je passe `pri_dispo` à 0 » / « Je mets la marque en quarantaine » | Retrait = migration FROZEN + `piece_display` par réf, avec garde SEO (§4). |
+| « Je passe `pri_dispo` à 0 par l'admin » / « Je mets la marque en quarantaine » | Retrait ou mise en rupture = migration par réf, FROZEN, avec garde SEO (§4). |
+| « Le retrait vide une page, tant pis : elle reviendra » | Une page à 0 pièce passe en noindex. Cette réf se met en rupture au lieu d'être retirée (§4). |
+| « Le texte a été validé, je l'envoie » | Si un fait du texte a changé depuis (commande annulée, supplément payé), il est caduc : nouveau texte, nouveau GO. |
+| « Le paiement est annulé dans Paybox, donc la commande est annulée en base » | Elle reste « payée » et l'admin la montre à expédier ; l'owner la retient (§8). |
+| « J'écris "remboursé" dans le mail d'annulation » | Seulement après un remboursement fait dans Paybox. Paiement annulé avant encaissement : « aucun montant ne sera prélevé » (§8). |
 | « L'admin a un flux d'équivalence (statuts 91–94), je l'utilise » | Inutilisable (§Trous de l'application). Le supplément passe par le formulaire « Supplément après rupture » ou par le script, selon la sonde de §6. |
 | « La route de supplément est sur `main`, donc en ligne » | `main` = PREPROD ; PROD ne change qu'au tag. Seule la sonde de §6 sur PROD décide. |
 | « La route d'annulation admin est corrigée, j'annule par le bouton » | Elle envoie au client le mail automatique « Commande annulée », jamais validé, avant le remboursement. Annuler avec `supplement-cancel.sql` (§8). |
@@ -114,24 +121,48 @@ vente, toutes ses lignes intactes. Toute autre réf, même de la même gamme, so
 Ce retrait n'attend pas la réponse du client. La demande de l'owner suffit pour préparer la PR ;
 l'écriture a lieu quand l'owner la fusionne puis lance le workflow.
 
-- **Mécanisme unique** : `pieces.piece_display = false` (sort la pièce de la grille R2) +
-  `pieces_price.pricing_state = 'FROZEN'`, `pricing_state_reason` lisible,
-  `pricing_updated_source` = le fichier de migration (l'import tarif et l'activation sautent les
-  lignes FROZEN, donc le retrait tient au prochain import).
+- **Deux mécanismes, choisis réf par réf.** Avant d'écrire, compter pour chaque type véhicule ×
+  gamme de la réf la grille servie (`get_listing_products_extended_filtered`) :
+
+  | Si la réf était retirée | Mécanisme | Effet servi |
+  |---|---|---|
+  | chaque page garderait au moins 1 pièce | **Retrait** : `pieces.piece_display = false` | La pièce sort de la grille R2. |
+  | au moins une page tomberait à 0 pièce, donc en noindex | **Mise en rupture** (choix owner 2026-10-21) : `pieces_price.pri_dispo = '0'`, `piece_display` inchangé | La pièce reste dans la grille, « Indisponible », sans prix ; panier, fiche produit et recherche la refusent (le site ne vend que `pri_dispo = '1'`). Chaque page garde son nombre de pièces. |
+
+  Dans les deux cas, les lignes `pieces_price` de la réf passent en `pricing_state = 'FROZEN'`,
+  avec `pricing_state_reason` lisible, `pricing_updated_by` et `pricing_updated_source` = le
+  fichier de migration. L'import tarif et l'activation sautent les lignes FROZEN : la mesure tient
+  au prochain import.
+- **Mise en rupture et indexation.** Règle servie tant que `SEO_R2_SELLABLE_NOINDEX_ENABLED` vaut
+  `false` (`frontend/app/utils/seo/r2-indexability.ts`) : une page reste indexable avec 2 pièces,
+  ou avec 1 pièce et une qualité ≥ 50. La qualité vient de `rm_get_page_complete_v2`
+  (`validation.dataQuality`) : 100 − 50 × part des pièces sans marque − 30 × part sans image
+  − 20 × part sans prix. La rupture retire le prix : une pièce seule sur sa page
+  garde 80 avec marque et image, 50 avec la marque seule, et passe en noindex sans marque. Dans ce
+  dernier cas : stop, owner. Si le réglage passe à `true`, une page sans pièce vendable passe en
+  noindex, et la rupture ne la protège plus.
 - **Par migration du dépôt**, appliquée par le workflow « Apply Supabase migrations (manual) » :
   `dry_run`, puis `confirm=APPLY` avec `only_ids`, puis `status_only`. **REQUIRED SUB-SKILL :**
-  `db-migration`.
-- **Modèle** : `backend/supabase/migrations/20261018_pricing_quarantine_rupture_sphere_c00282.sql`
-  et son `.down.sql` — liste figée, état mesuré de chaque pièce vérifié avant écriture,
-  idempotente, retour arrière réf par réf. Il exige une seule ligne `pieces_price` par pièce : pour
-  une réf à plusieurs fournisseurs, l'adapter pour geler chacune de ses lignes, jamais en omettre une.
-- **Garde SEO dans la migration** : pour chaque type véhicule × gamme touché, compter la grille
-  servie (`get_listing_products_extended_filtered`) avant et après. Aucune page ne doit tomber à
-  0 pièce : elle passerait en noindex. Si c'est le cas : stop, owner.
+  `db-migration`. En tête, un bloc `DO $precheck$` en lecture seule (état mesuré de chaque ligne,
+  grille de chaque page), rejoué tel quel avant la fusion et avant l'application.
+- **Modèles**, chacun avec son `.down.sql` (liste figée, état mesuré vérifié avant écriture,
+  idempotente, retour arrière réf par réf) :
+  - retrait : `backend/supabase/migrations/20261018_pricing_quarantine_rupture_sphere_c00282.sql` ;
+  - mise en rupture : `backend/supabase/migrations/20261021_pricing_rupture_emetteur_embrayage_luk_5130041.sql`.
+
+  Tous deux exigent une seule ligne `pieces_price` par pièce : pour une réf à plusieurs
+  fournisseurs, les adapter pour traiter chacune de ses lignes, jamais en omettre une.
+- **Garde SEO dans la migration**, pour chaque type véhicule × gamme touché, grille comptée avant
+  et après l'écriture : retrait, aucune page à 0 pièce ; mise en rupture, nombre de pièces
+  inchangé et la pièce listée `stock_status = 'OUT_OF_STOCK'`. Tout écart interrompt la migration
+  sans rien écrire.
+- **Après l'application**, sur PROD : chaque page touchée qui ne garde qu'une pièce sert
+  `<meta name="robots" content="index, follow">`. Une réponse `cf-cache-status: HIT` dont l'`age`
+  remonte avant l'application est encore l'ancienne page, pas une preuve.
 - Ne retirer ni l'équivalent proposé ni les autres réfs dispo.
 - **Interdits** :
-  - `PUT /api/admin/stock/:pieceId/availability` : `pri_dispo='0'` sur toutes les lignes tarif,
-    sans historique ni retour, et la pièce reste dans la grille R2 ;
+  - `PUT /api/admin/stock/:pieceId/availability` : `pri_dispo` posé sur toutes les lignes tarif,
+    sans FROZEN (le prochain import le défait), sans motif ni retour arrière ;
   - `POST /api/admin/pricing/display/quarantine` : agit sur une marque entière, et seulement sur
     des réfs déjà non vendables ;
   - tout UPDATE hors migration.
@@ -154,6 +185,8 @@ l'écriture a lieu quand l'owner la fusionne puis lance le workflow.
   3. reprendre ici avec le nouveau prix du site.
 
   Jamais de prix de vente fixé à la main ni d'UPDATE direct de `pieces_price`.
+- Aucune réf dispo et compatible, ou l'owner choisit d'annuler : ni §6 ni §7, directement §8
+  (Annulation). Le §4 s'applique quand même.
 
 ### 6. Commande de supplément et lien de paiement
 
@@ -264,33 +297,47 @@ non prouvé : compatibilité, délai, origine de la marque.
 
 - **Il paie** : commander l'équivalent chez le fournisseur retenu, au prix d'achat confirmé, livré à
   l'adresse de la commande d'origine.
-- **Il refuse, ou son véhicule n'est pas couvert**, dans cet ordre :
-  1. Annuler la commande de supplément avec `supplement-cancel.sql` (même déroulé que le script
-     de §6), qui passe par `cancel_order_atomic` : statut '2', ORDER_CANCELLED journalisé. Aucun
-     mail : le mail d'annulation part de l'application, jamais du journal. Si elle est déjà payée,
-     le script refuse : owner.
+- **Annulation** — il refuse, son véhicule n'est pas couvert, aucun équivalent n'est dispo
+  (§5), ou l'owner annule (pas de réponse, décision commerciale). Dans cet ordre :
+  1. S'il existe une commande de supplément, l'annuler avec `supplement-cancel.sql` (même déroulé
+     que le script de §6), avant tout mail qui annonce l'annulation. Le script passe par
+     `cancel_order_atomic` : statut '2', ORDER_CANCELLED journalisé. Aucun mail : le mail
+     d'annulation part de l'application, jamais du journal. Si elle est déjà payée, le script
+     refuse : owner.
      - Jamais de DELETE : `___xtr_order_history` la référence (clé RESTRICT), le journal reste.
      - Jamais le bouton « Annuler » de l'admin ni sa route `POST /api/admin/orders/:id/cancel`,
        même corrigés : mail automatique (§Trous).
-  2. L'owner rembourse <montant> (§7, point 8) depuis l'espace Paybox. Aucune route de
-     l'application ne rend l'argent (§Trous).
-  3. Mail de confirmation au client : règle cardinale, et envoi seulement une fois le
-     remboursement fait dans Paybox, confirmé par l'owner. Texte brut, dans cet ordre : objet
-     « Votre remboursement de <montant> » ; remboursement fait sur la carte utilisée, montant ;
-     commande annulée ; « ne réglez plus le lien de paiement du <date du mail de proposition> : la
-     commande qu'il règle est annulée » (phrase obligatoire : le lien reste actif, §Trous) ; excuses
-     courtes ; « Cordialement, L'équipe AutoMecanik ». Aucun délai bancaire annoncé.
-  4. La commande d'origine reste « payée » en base, et l'admin la montre comme à expédier : aucun
-     chemin gouverné ne la marque remboursée (§Trous). Elle ne part pas : c'est l'owner qui la
-     retient.
+  2. L'owner traite le paiement dans l'espace Paybox, seul endroit qui rend l'argent (§Trous) :
+     transaction pas encore encaissée, il l'annule ; encaissée, il rembourse <montant> (§7,
+     point 8). Le délai avant encaissement se règle dans le compte Paybox, pas dans le code : seul
+     l'espace Paybox dit où en est la transaction, l'agent ne le déduit pas des dates.
+  3. Mail au client : règle cardinale, et envoi seulement une fois l'opération faite dans Paybox,
+     confirmée par l'owner, en disant laquelle. Texte brut, dans cet ordre :
+     1. objet : « Votre commande <id> est annulée » (paiement annulé) ou « Votre remboursement
+        de <montant> » (remboursement) ;
+     2. rappel de la commande : date, numéro, quantité, marque, réf ;
+     3. rupture chez le fournisseur, livraison impossible, commande annulée ;
+     4. l'argent, sans délai bancaire :
+        - paiement annulé : « Votre paiement de <montant> a été annulé avant encaissement :
+          aucun montant ne sera prélevé sur votre carte. » ;
+        - remboursement : remboursement de <montant> fait sur la carte utilisée ;
+     5. si un lien de supplément a été envoyé : « Ne réglez plus le lien de paiement du <date du
+        mail de proposition> : la commande qu'il règle est annulée. » (obligatoire : le lien reste
+        actif, §Trous) ;
+     6. excuses courtes ; « Cordialement, L'équipe AutoMecanik ».
+  4. La commande d'origine reste « payée » en base (statut '3') : `cancel_order_atomic` refuse
+     une commande payée, et aucun chemin gouverné ne la marque annulée ou remboursée (§Trous).
+     L'admin la montre comme à expédier ; elle ne part pas : c'est l'owner qui la retient.
+  5. Un mail préparé pour ce client et pas encore envoyé (relance, attente) devient caduc :
+     le marquer comme tel en scratchpad, ne jamais l'envoyer.
 - **Surveiller le supplément annulé** : l'annulation ne coupe pas le lien, qui n'expire pas
   (`getOrderForPayment` ne lit pas le statut), et un paiement reçu remet la commande en « payée »
   (`mark_order_paid_atomic`). Le filet est la notification que le site envoie à l'admin pour toute
   commande payée. En plus, à chaque reprise du dossier, contrôle en lecture seule :
   `ord_ords_id`, `ord_is_pay`, `ord_date_pay` de l'enfant et ses lignes `ic_postback`
   (`orderid`). Payée : livrer ou rembourser, sur décision de l'owner.
-- **Il ne répond pas** : une relance est un nouveau mail, donc règle cardinale. Aucune tâche
-  planifiée ne touche les commandes impayées.
+- **Il ne répond pas** : une relance est un nouveau mail, donc règle cardinale ; ou l'owner
+  annule (Annulation). Aucune tâche planifiée ne touche les commandes impayées.
 
 ## Trous de l'application
 
@@ -311,8 +358,9 @@ et paiement ; le module `payments/` ne se modifie pas).
 - Route `POST /api/payments/:id/refund` : enregistre un remboursement `processed` et envoie au
   client « remboursement confirmé », sans aucun appel à Paybox. Le client est prévenu, pas
   remboursé.
-- Aucun statut « remboursée » ni marque « ne pas expédier » : une commande remboursée dans Paybox
-  reste « payée » en base et à expédier dans l'admin.
+- Aucun statut « remboursée » ou « paiement annulé », ni marque « ne pas expédier » : une commande
+  remboursée, ou dont le paiement est annulé dans Paybox, reste « payée » en base
+  (`cancel_order_atomic` refuse une commande payée) et à expédier dans l'admin.
 - Aucun gabarit de mail pour une équivalence ou un supplément.
 - Le lien de paiement d'une commande annulée non payée reste actif, et `mark_order_paid_atomic`
   remet une commande annulée en « payée » (statut '3') si elle est réglée.

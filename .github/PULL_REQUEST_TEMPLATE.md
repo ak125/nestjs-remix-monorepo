@@ -54,4 +54,24 @@
 
 ---
 
+## Definition of Done — auto-évaluation
+
+<!-- Règle vault rules-engineering-definition-of-done ; lue par scripts/ci/pr-dod-gate.mjs.
+     Une ligne par item, cochée [x] ou marquée N/A avec la raison. DoD2 est lu sur l'état GitHub
+     (assignee + ≥ 1 approbation humaine), jamais sur la case. DoD1 : cocher après lecture de la CI. -->
+
+- [ ] DoD1 — Tests verts: CI green, no flaky, no .only/.skip added
+- [ ] DoD2 — Ownership: assignee + ≥1 human approval
+- [ ] DoD3 — Rollback: <plan link>, reversibility=<instant/staged/forward-only>
+- [ ] DoD4 — Observabilité: <log/metric/event log added or N/A>
+- [ ] DoD5 — Drift zéro: registry-fresh green, migrations atomic
+- [ ] DoD6 — Docs: <files updated or "no doc needed">
+- [ ] DoD7 — Monitoring: watcher=@<user>, window=T+<duration>, abort=<criteria>
+- [ ] DoD8 — No TODO unresolved: <count, all linked>
+- [ ] DoD9 — No silent skip: confirmed
+
+Work type (per planning-worktype.yml): <runtime-critical | governance | seo-runtime | observability | cleanup | migration | debt | experiment | emergency>
+
+---
+
 🤖 Generated with [Claude Code](https://claude.com/claude-code)

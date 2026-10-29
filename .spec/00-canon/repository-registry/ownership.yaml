@@ -1247,12 +1247,12 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: medium
-  - glob: docs/superpowers/specs/**
+  - glob: docs/specs/**
     domain: D15
     owner: '@ak125'
     sourceConfidence: high
     risk: low
-  - glob: docs/superpowers/plans/**
+  - glob: docs/plans/**
     domain: D15
     owner: '@ak125'
     sourceConfidence: high
@@ -1658,5 +1658,15 @@ entries:
   - glob: backend/supabase/migrations/20261019_customer_marketing_consent*.sql
     domain: D11
     owner: '@ak125/auth-team'
+    sourceConfidence: high
+    risk: medium
+  # Lectures SECURITY DEFINER de l'API véhicules (marques, modèles, types) : le
+  # container PREPROD READ_ONLY (anon) ne peut pas lire en direct auto_marque,
+  # auto_modele et auto_type sous RLS ; consommateurs VehicleBrandsService,
+  # VehicleModelsService et VehicleTypesService (D4). Couvre .sql + .down.sql.
+  # Glob exact : les migrations ne sont pas auto-couvertes.
+  - glob: backend/supabase/migrations/20261026_vehicle_api_definer_reads*.sql
+    domain: D4
+    owner: '@ak125/vehicle-team'
     sourceConfidence: high
     risk: medium
