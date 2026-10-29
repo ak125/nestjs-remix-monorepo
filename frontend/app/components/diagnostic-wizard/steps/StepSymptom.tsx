@@ -82,6 +82,7 @@ export function StepSymptom({ state, dispatch, onAvailabilityChange }: Props) {
   const [symptomsError, setSymptomsError] = useState(false);
 
   const [symptomsSystem, setSymptomsSystem] = useState<string | null>(null);
+  const [scopeUnmatched, setScopeUnmatched] = useState(false);
   const systemsRequest = useRef<AbortController | null>(null);
   const symptomsRequest = useRef<AbortController | null>(null);
 
@@ -99,9 +100,16 @@ export function StepSymptom({ state, dispatch, onAvailabilityChange }: Props) {
       if (!res.ok) throw new Error("Systems unavailable");
       const data = SystemsResponseSchema.parse(await res.json());
       if (controller.signal.aborted) return;
+      if (data.systems.length === 0) throw new Error("No system offered");
       setSystems(data.systems);
-      if (!data.systems.some((item) => item.slug === state.systemScope)) {
-        dispatch({ type: "SET_SYSTEM", payload: data.systems[0].slug });
+      // A requested system the engine does not offer is cleared, never
+      // replaced by another one: the visitor chooses.
+      if (
+        state.systemScope &&
+        !data.systems.some((item) => item.slug === state.systemScope)
+      ) {
+        setScopeUnmatched(true);
+        dispatch({ type: "SET_SYSTEM", payload: "" });
       }
     } catch {
       if (!controller.signal.aborted) setSystemsError(true);
@@ -110,14 +118,21 @@ export function StepSymptom({ state, dispatch, onAvailabilityChange }: Props) {
     }
   }, [state.systemScope, dispatch]);
 
+  const scopeOffered = systems.some((s) => s.slug === state.systemScope);
+
   const fetchSymptoms = useCallback(async () => {
     symptomsRequest.current?.abort();
-    const controller = new AbortController();
-    symptomsRequest.current = controller;
-    setLoadingSymptoms(true);
     setSymptomsError(false);
     setSymptoms([]);
     setSymptomsSystem(null);
+    // Symptoms are only read for a system the engine offers.
+    if (!scopeOffered) {
+      setLoadingSymptoms(false);
+      return;
+    }
+    const controller = new AbortController();
+    symptomsRequest.current = controller;
+    setLoadingSymptoms(true);
     try {
       const res = await fetch(
         `/api/diagnostic-engine/symptoms?system=${encodeURIComponent(state.systemScope)}`,
@@ -133,7 +148,7 @@ export function StepSymptom({ state, dispatch, onAvailabilityChange }: Props) {
     } finally {
       if (!controller.signal.aborted) setLoadingSymptoms(false);
     }
-  }, [state.systemScope]);
+  }, [state.systemScope, scopeOffered]);
 
   useEffect(() => {
     void fetchSystems();
@@ -149,7 +164,7 @@ export function StepSymptom({ state, dispatch, onAvailabilityChange }: Props) {
     onAvailabilityChange?.(
       !loadingSystems &&
         !systemsError &&
-        systems.some((system) => system.slug === state.systemScope) &&
+        scopeOffered &&
         !loadingSymptoms &&
         !symptomsError &&
         symptomsSystem === state.systemScope &&
@@ -161,7 +176,7 @@ export function StepSymptom({ state, dispatch, onAvailabilityChange }: Props) {
   }, [
     loadingSystems,
     systemsError,
-    systems,
+    scopeOffered,
     loadingSymptoms,
     symptomsError,
     symptomsSystem,
@@ -187,6 +202,16 @@ export function StepSymptom({ state, dispatch, onAvailabilityChange }: Props) {
           Choisissez le système concerné, puis sélectionnez vos symptômes.
         </p>
       </div>
+
+      {scopeUnmatched && (
+        <p
+          className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900"
+          role="status"
+        >
+          Le système demandé ne correspond pas à un seul système de l’outil :
+          choisissez celui qui concerne votre problème.
+        </p>
+      )}
 
       {/* System selector */}
       {loadingSystems ? (
@@ -231,6 +256,7 @@ export function StepSymptom({ state, dispatch, onAvailabilityChange }: Props) {
                   if (!active) {
                     dispatch({ type: "SET_SYSTEM", payload: sys.slug });
                     dispatch({ type: "SET_SYMPTOMS", payload: [] });
+                    setScopeUnmatched(false);
                   }
                 }}
                 className={`flex items-start gap-3 p-4 rounded-lg border text-left transition-all min-h-[56px] ${
@@ -300,12 +326,16 @@ export function StepSymptom({ state, dispatch, onAvailabilityChange }: Props) {
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
             <Cog className="w-5 h-5 text-blue-600" />
-            {activeSystem?.label || state.systemScope} — Symptômes
+            {activeSystem?.label || "Système à choisir"} — Symptômes
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {loadingSymptoms ||
-          (!symptomsError && symptomsSystem !== state.systemScope) ? (
+          {systemsError || (!loadingSystems && !scopeOffered) ? (
+            <p className="text-sm text-gray-500 text-center py-4">
+              Choisissez d’abord le système concerné ci-dessus.
+            </p>
+          ) : loadingSymptoms ||
+            (!symptomsError && symptomsSystem !== state.systemScope) ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
                 <div
