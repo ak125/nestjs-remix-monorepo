@@ -396,6 +396,53 @@ sync_submodules() {
   return "$drift"
 }
 
+# Cache npm hors ligne des missions Hermes d'écriture. Leur préparation installe les
+# dépendances SANS réseau (`npm ci --offline`) depuis un cache que seul le script de
+# rechargement Hermes remplit. Rien ne le relançait quand le lockfile changeait : le
+# 2026-10-28, une mission d'écriture a échoué à la préparation (ENOTCACHED sur une
+# dépendance montée par #1871), et rien ne l'avait signalé avant.
+#
+# Rechargement seulement quand le lockfile de HEAD n'a pas encore été chargé (empreinte
+# dans le répertoire d'état des crons) ou que le cache a disparu. Pendant le rechargement
+# (~1 min), le contrôleur refuse une mission lancée au même moment (« à relancer », sans
+# effet de bord). Une mission en cours fait refuser le rechargement : nouvel essai au tick
+# suivant. Un échec est signalé à chaque tick, et retenté au plus une fois par heure.
+#
+# ALERT-ONLY, comme sync_submodules : appelée sur les deux chemins (no-op et resync).
+# Machine sans Hermes (ni script ni cache) : rien.
+HERMES_NPM_CACHE="${HERMES_NPM_CACHE:-$HOME/.local/share/hermes-codex/npm-cache}"
+HERMES_NPM_WARM="${HERMES_NPM_WARM:-$HOME/hermes-npm-cache-20261005/controller/warm-hermes-npm-cache.sh}"
+refresh_hermes_npm_cache() {
+  [ -f "$HERMES_NPM_WARM" ] || [ -d "$HERMES_NPM_CACHE" ] || return 0
+  git cat-file -e HEAD:package-lock.json 2>/dev/null || return 0
+  local state_dir stamp lock_sha out
+  state_dir="${CRON_STATE_DIR:-${XDG_STATE_HOME:-$HOME/.local/state}/automecanik/cron}"
+  stamp="$state_dir/hermes-npm-cache.lock-sha256"
+  lock_sha=$(git show HEAD:package-lock.json | sha256sum | cut -d' ' -f1)
+  [ "$(cat "$stamp" 2>/dev/null)" = "$lock_sha" ] && [ -d "$HERMES_NPM_CACHE/_cacache" ] && return 0
+  if [ ! -f "$HERMES_NPM_WARM" ]; then
+    alert "cache npm Hermes à recharger (lockfile ${lock_sha:0:12}) mais $HERMES_NPM_WARM introuvable — les missions d'écriture échoueront à la préparation"
+    return 1
+  fi
+  if [ "$(cat "$stamp.failed" 2>/dev/null)" = "$lock_sha" ] && [ -n "$(find "$stamp.failed" -mmin -60 2>/dev/null)" ]; then
+    alert "cache npm Hermes : rechargement échoué il y a moins d'1 h (lockfile ${lock_sha:0:12}) — les missions d'écriture échoueront à la préparation d'ici le prochain essai"
+    return 1
+  fi
+  mkdir -p "$state_dir"
+  if out=$(bash "$HERMES_NPM_WARM" "$(git rev-parse HEAD)" 2>&1); then
+    printf '%s\n' "$lock_sha" > "$stamp"
+    rm -f "$stamp.failed"
+    log "cache npm Hermes rechargé pour le lockfile ${lock_sha:0:12}"
+  elif printf '%s\n' "$out" | grep -qx 'refused: mission active'; then
+    log "cache npm Hermes : mission en cours, rechargement au prochain tick"
+  else
+    printf '%s\n' "$out" | tail -5 >&2
+    printf '%s\n' "$lock_sha" > "$stamp.failed"
+    alert "cache npm Hermes : rechargement échoué (lockfile ${lock_sha:0:12}) — les missions d'écriture échoueront à la préparation (nouvel essai dans 1 h)"
+    return 1
+  fi
+}
+
 # 0. Sonde de topologie runtime (6e axe) — AVANT les gardes git, alert-only.
 #    Voir l'en-tête de check_dev_runtime_topology pour le « pourquoi avant ».
 check_dev_runtime_topology || true
@@ -420,6 +467,8 @@ remote_sha=$(git rev-parse origin/main)
 if [ "$local_sha" = "$remote_sha" ]; then
   # Rattrape un sous-module resté en retard sur son pin (échec d'un tick précédent).
   sync_submodules || true
+  # Idem pour le cache npm Hermes (lockfile pas encore chargé, essai précédent refusé ou échoué).
+  refresh_hermes_npm_cache || true
   # Pas de sync git — mais on probe quand même l'intégrité workspaces. Un drift
   # ici (symlink supprimé, dist effacé entre 2 ticks cron, install manuel
   # interrompu) doit être visible AVANT que nodemon redémarre et crashe.
@@ -534,5 +583,7 @@ if [ "$healthy" != "1" ]; then
 fi
 
 log "✅ DEV:3000 sain sur $remote_sha"
+# 9. Cache npm Hermes sur le lockfile que le ff vient d'amener. Après la santé : DEV d'abord.
+refresh_hermes_npm_cache || true
 report_done "{\"action\":\"synced\",\"from\":\"$local_sha\",\"to\":\"$remote_sha\"}"
 exit 0

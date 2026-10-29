@@ -42,7 +42,8 @@ Cette garantie porte sur chaque fichier. Elle ne constitue pas une transaction
 sur le corpus entier : si un fichier ultérieur échoue, les fichiers précédents
 peuvent déjà avoir été remplacés. L’instantané cohérent du corpus et la concurrence
 avec les lecteurs restent à traiter séparément. Le script ne supprime pas les
-exports retirés ni les fichiers non réconciliés.
+exports retirés ni les fichiers non réconciliés, hormis les fichiers hérités
+qu’un tombstone épingle (section suivante).
 
 ## Fichiers du miroir absents des exports
 
@@ -67,6 +68,34 @@ ajouter ni synchroniser ; la baseline réduite passe ensuite en PR. Le lancer su
 un instantané de la WIKI à `origin/main`, comme le cron. Ne jamais purger le
 miroir pour le faire correspondre aux exports.
 
+## Retrait par tombstone (ADR-031 §D21)
+
+Un fichier hérité ne quitte le miroir que par un tombstone `rag-mirror` du
+registre `automecanik-raw/manifests/tombstones.json` (schéma et Gate L dans le
+dépôt RAW, entrées produites par `_scripts/tombstone-rag-mirror.py`, jamais à la
+main). Avec `--tombstones <registre>`, le sync retire un fichier seulement s’il
+est à la fois :
+
+- inscrit à la baseline héritée et absent des exports (un export WIKI du même
+  chemin l’emporte) ;
+- porteur, au moment du passage, d’un SHA-256 qu’un tombstone épingle pour ce chemin.
+
+Un fichier dont le contenu a changé depuis son tombstone est préservé et signalé
+`TOMBSTONE-MISMATCH` (cron en `warn`) ; il se résout par un nouveau tombstone ou
+par un export WIKI. `--apply` supprime le fichier et ses répertoires devenus
+vides (`WITHDRAW`) ; la simulation l’annonce (`DRY-WITHDRAW`). Rien n’est retiré
+quand le sync refuse un fichier hors baseline. Un registre illisible, d’une
+version majeure autre que 1 ou dont une entrée sort de `knowledge/` arrête le
+sync. Le manifeste (`schema_version` 1.2.0) enregistre
+`tombstones: {ref, withdrawn, mismatched}`, `null` sans `--tombstones`.
+
+Le registre n’est pas une source de contenu : il n’autorise que des retraits et
+laisse intacte la règle D20 (le contenu ne vient que de `exports/rag`). Le cron
+le lit à `origin/main` du clone RAW (`git show`), jamais dans son arbre de
+travail, et cite ce commit dans le message du commit rag. Un fichier retiré
+devient une entrée `STALE-BASELINE` : la baseline se resserre ensuite par
+`--tighten-legacy-baseline` et une PR.
+
 ## Source des exports
 
 Le cron lit `exports/rag` dans un instantané de `origin/main` (`git fetch` puis
@@ -84,4 +113,5 @@ bash scripts/cron/sync-rag-from-wiki.test.sh   # cron horaire, sur dépôts jeta
 ## Référence
 
 - ADR-031 §D20 — sync-from-wiki STRICT lit `wiki/exports/rag/` ONLY
+- ADR-031 §D21 — aucune suppression silencieuse, tombstone dans `automecanik-raw/manifests/tombstones.json`
 - Plan v3 §Étape 5 Groupe C + §Étape 7 (workflow CI)
