@@ -101707,7 +101707,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 211,
+      "loc": 251,
       "owner": "@ak125",
       "path": "scripts/audit/ts7-shadow-parity.test.ts",
       "risk": "medium",
@@ -101727,7 +101727,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 645,
+      "loc": 688,
       "owner": "@ak125",
       "path": "scripts/audit/ts7-shadow-parity.ts",
       "risk": "medium",
@@ -105468,11 +105468,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "90163175840e44796908f793612d86b090e6efec04ed7053e3966b0e0c211728",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "f0656b52c545bf3d7341e1dcf3ca4bf9e4939efa5fa779f0c73de30dd04582dc",
+      "audit/registry/files.json": "524c079eae40a860212f7e239f44d90d021b038ccc8d1ef82fae846f2e609ee5",
       "audit/registry/rpc.json": "623f3a5150e1cc71cd79946d7a4128fd078d6493626b20f4b6c4c4ac64f06f6d",
       "audit/registry/runtime.json": "121d868fa45952069f14d1a9b717212a5f50b51ac7fd0edc9546ae56d1c41bc2"
     },
-    "sotFingerprint": "7238e8b6fe33"
+    "sotFingerprint": "cda250ace466"
   },
   "runtime": [
     {
