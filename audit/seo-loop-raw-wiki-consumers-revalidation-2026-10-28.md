@@ -71,7 +71,7 @@ Classement : **confirmé** (reproduit sur la version courante), **déjà corrig�
 | RAW → WIKI | captures RAW | rédaction + validation humaine | fiche WIKI, quality-gates | dépôt WIKI | builder d'exports | revue + fusion WIKI | — | `quality-gates --all-local` 24/24 PASS | contrôle cross-repo ancre 0 fiche et n'est pas en CI |
 | WIKI → exports | fiches `approved` | `build_exports_seo.py` | schéma d'export SEO | `exports/` du WIKI | pin du monorepo | job `wiki-exports-seo-generate` | — | run 40620665577 | auto-promotion sans chemin de retrait (plaquettes) |
 | Exports → pin | exports au commit pin | sous-module | pin `88017732` | monorepo | feeder de projection | bump du pin (PR) | — | pin inchangé | bump suspendu (plaquettes, §8.4) |
-| Pin → projection | exports au pin | `SeoProjectionFeederService` + writer | ADR-059 | `__seo_content_blocks` / `_versions` | reader | cron | `SEO_PROJECTION_R1_FEED_ENABLED` (lu via `ConfigService`) | 24 runs, 0 échec ; `content_hash` huile `773367f7` identique export / pin / DB | writer non transactionnel, résultats non vérifiés, retrait de bloc absent (§7.1) |
+| Pin → projection | exports au pin | `SeoProjectionFeederService` + writer | ADR-059 | `__seo_content_blocks` / `_versions` | reader | cron | `SEO_PROJECTION_R1_FEED_ENABLED` (lu via `ConfigService`) | 24 runs, 0 échec ; `content_hash` huile `773367f7` identique export / pin / DB | writer non transactionnel, résultats non vérifiés (#1919), retrait de bloc absent (§7.1) |
 | Projection → RPC → mapper | `gamme:<alias>` | `SeoProjectionReaderService` + `mapR3Projection` | contrat de rendu ADR-106 `1.0.0` | — | `R3ProjectionDecisionService` | requête page | `SEO_PROJECTION_READ_V1` + `SEO_PROJECTION_READ_CANARY` | mapper huile `ready` sur enveloppes réelles | air `MAPPER_INCOMPLETE` |
 | Payload R3 → HTML | `projectionMeta` | `R3GuideService` | `R3ProjectionMeta` | Redis (legacy seulement) | loader conseils | requête page | idem | tests §5.3 | — |
 | R8 enricher → overlay | données véhicule | `R8VehicleEnricherService` | gate R8 + ADR-095 | `__seo_r8_pages` | `getR8Content` | admin, à la demande | `SEO_CHAIN_DUPLICATE_GATE_MODE` (nouveau raccordement) | 1 page INDEX servie | corrigé §5.1-5.2 |
@@ -188,6 +188,12 @@ Jeton canary revalidé : `toCanaryToken('gamme:filtre-a-huile')` = `R3_CONSEILS@
 
 Aucune correction sur cette branche. Le brouillon #1493 touche ce writer et n'est pas à fusionner tel quel. Le commentaire `seo-projection-reader.service.ts` l. 23-24 est périmé.
 
+**Revue du 29/10 : PR brouillon #1919.** Elle corrige deux de ces points sans migration :
+- **Résultats vérifiés.** Une erreur PostgREST sur l'upsert, la lecture de l'active, la dépréciation ou le flip lève une exception. Elle devient un conflit `write_error` et le run se ferme `failed`.
+- **No-op conditionné au pointeur.** Une active à jour mais non pointée est re-pointée et journalisée. Avant, un flip perdu retirait le bloc des vues servies sans réparation possible.
+
+Lecture read-only de la base canonique le 29/10 : 14 blocs, 4 entités, 0 active multiple, 0 pointeur incohérent, 0 conflit. Le défaut est latent. Restent non traités, et préparés seulement dans #1919 : la transactionnalité (RPC et migration) et le retrait de bloc (signal explicite à ajouter au contrat d'export WIKI).
+
 ### 7.2 Snapshots R8 (ADR-072)
 
 Contrat : seed → `R8ParentEnrichmentService.enrichTypeId` → RPC `__seo_r8_publish_snapshot`. Telle qu'écrite, la RPC insère le snapshot (`ON CONFLICT (version_sha) DO NOTHING`), met à jour `__seo_r8_pages.current_snapshot_id` **seulement pour les lignes existantes**, et insère toujours un événement outbox.
@@ -289,7 +295,7 @@ Vider `SEO_PROJECTION_READ_CANARY`, ou passer `SEO_PROJECTION_READ_V1=false`, pu
 | Capture RAW | présent, REPORT_ONLY, 36 entrées | aucune | empreintes 26/26 | licence `unknown` 36/36 ; lineage vide |
 | RAW → WIKI | 5 gammes approuvées sur `main`, 4 au pin | aucune | quality-gates 24/24 | contrôle cross-repo hors CI, 0 ancre |
 | Exports | huile 12 blocs (6 R3), air 2 (1 R3), plaquettes 11 sur `main` et absentes au pin, carburant et habitacle vides | aucune | run 40620665577 | plaquettes sans retrait ⇒ bump suspendu |
-| Projection | exécutée (24 runs) | aucune | `content_hash` cohérent | writer non transactionnel, pas de retrait de bloc |
+| Projection | exécutée (24 runs) | #1919 (brouillon) | `content_hash` cohérent ; 0 pointeur incohérent le 29/10 | writer non transactionnel, pas de retrait de bloc |
 | Lecture R3 | présente, non activée | tests de cache (`94ae9d3b1`) | vitest 7/7, mutation détectée | D7 refuse la canary huile |
 | HTML R3 PROD | legacy servi | aucune | en-têtes et HTML PROD du 28/10 | boucle publique non opérationnelle |
 | Gate R8 | corrigé sur branche | `19ba1bd7a` | jest 56/56 | non servi tant que non fusionné/déployé |
@@ -395,6 +401,7 @@ corrections_proposed:
   - 0a019695a seed R8 et outbox
   - correctif R7 (§7.4, non appliqué)
   - "#1918 (29/10) : migration de la RPC __seo_r8_publish_snapshot et lecteur R8, brouillon, migration non appliquée"
+  - "#1919 (29/10) : writer de projection, erreurs remontées et pointeur réparé, brouillon"
 corrections_applied: []   # aucune validation humaine ni fusion à ce stade
 validation_executed:
   - jest backend (gate R8 56/56, balises 18 tests, seo/r2 74/74), paquet 143/143, vitest 7/7
@@ -402,6 +409,7 @@ validation_executed:
   - tsc, eslint, prettier sur les fichiers touchés
   - lectures DB bornées en lecture seule ; observation HTTP PROD
   - "#1918 : base Postgres 17 jetable (échec 42883 reproduit, migration et .down.sql appliquées), lecteur 16/16"
+  - "#1919 : seo-projection 144/144, 14 tests d'intégrité qui échouent sur l'ancien writer"
 remaining_unknowns:
   - valeurs effectives des flags PROD
   - comportement réel du gate balises en shadow (aucun environnement configuré)
