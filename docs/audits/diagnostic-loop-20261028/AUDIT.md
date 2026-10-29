@@ -50,7 +50,7 @@ désactivée).
 | Calendrier KG (19 intervalles) | `kg_nodes` `MaintenanceInterval` | `pending` ×19, `sources` vides, `source_type=oem` déclaré | — | `MaintenanceCalculatorService` via `kg_get_smart_maintenance_schedule` | calendrier d'entretien | « oem » sans source ni véhicule ; le statut fondé sur l'odomètre est neutralisé côté service | données |
 | KG (89 nœuds, 72 arêtes) | `kg_nodes`, `kg_edges` | 70 `approved`, 19 `pending` | — | `KgShadowService` | aucun | `DIAGNOSTIC_KG_SHADOW_ENABLED` / `_PRIMARY_` OFF ; tables d'apprentissage vides | flag + données |
 | Sessions (203) | `__diag_session` | — | — | sauvegarde après analyse | brouillon local seulement | aucune issue (réparation faite, cause confirmée) | contrat |
-| Retours de cas → propositions | absent | — | — | — | — | aucun stockage ni flux | contrat |
+| Retours de cas → propositions | événement `diagnostic_resolution_outcome` (`__seo_event_log`) : analyse et clics seulement, derrière `DIAGNOSTIC_PIPELINE_V1_ENABLED` | — | — | `OutcomeEmitterService` | — | aucun retour après intervention : type `issue_resolved_approx` différé en V1.1 (ADR-080, §6) | gouvernance + contrat |
 | Codes OBD/DTC | aucune table ; `kg_nodes.dtc_code` = 0 ligne | — | — | aucun | hub (formulaire retiré ici) ; section DTC de `diagnostic-auto.$slug.tsx:455` | mis en veille (§3) | données |
 | Entrée par catégorie | liens `?cluster=` du hub (`diagnostic-auto._index.tsx:401,532,568,624,883,889`) | — | — | — | wizard | Freinage par défaut → corrigé | câblage (corrigé) |
 | Entrée par gamme (R1) | `GammeDiagnosticCTA` | — | — | — | lien générique | pas d'identité de gamme ; « 2 847 diagnostics ce mois » codé en dur (203 sessions au total) | câblage + données |
@@ -231,44 +231,65 @@ Le moteur d'entretien respecte déjà trois exigences du lot 5 :
 - les axes km et temps sont calculés séparément, et l'inconnu reste « historique de cette opération inconnu » ;
 - le calendrier KG ne déduit plus de statut à partir du seul odomètre (`maintenance-calendar-integrity.test.ts`).
 
-## 6. Blocages des lots 4 à 7 et extensions de contrat proposées
+## 6. Blocages des lots 4 à 7 et chemin prévu par le canon
 
-Toutes ces propositions sont des **propositions**, pas des normes. Le format des fiches diagnostic relève du
-WIKI et de l'ADR-117 ; une migration ne serait qu'un fichier, appliqué par le propriétaire.
+Les lots 4 à 7 ne demandent aucun contrat nouveau : les ADR acceptées fixent déjà la place de chaque objet et
+l'ordre des étapes. ADR-112, amendée par ADR-113 et ADR-116, régit la connaissance et le moteur ; ADR-080 régit
+les résultats. Cette section remplace la version du 2026-10-28, qui proposait des entités et des tables
+concurrentes de ce canon (`discriminating_questions[]`, `repair_actions[]`, `__diag_case_outcome`,
+`__diag_knowledge_proposal`). Aucune d'elles n'est à créer.
 
-**Lot 4 — questions → contrôles → réévaluation.** Bloqué par les données : aucune question ni aucun contrôle
-validé n'existe. Brancher `answers` sur les scores sans connaissance revue reviendrait à inventer des poids.
-Extension proposée :
+**Lot 4 — questions → contrôles → réévaluation.** Bloqué par les données : aucun lien symptôme → cause sourcé,
+aucune vérification rattachée à une cause.
 
-- fiche WIKI `discriminating_questions[]` : `id`, `texte`, `effet` par réponse sur une cause nommée, `source_ref` ;
-- fiche WIKI `checks[]` : `id`, `procédure`, `résultat attendu`, `effet` ;
-- API : `answers` à quatre valeurs `oui | non | ne_sait_pas | non_effectue`. Seules `oui` et `non` peuvent
-  devenir des preuves ; les deux autres restent listées comme inconnues ;
-- l'orchestrateur garde le message « non interprété » pour toute question sans effet validé.
+- Une question porte sur la présence d'un symptôme du vocabulaire, et une réponse négative compte (ADR-112 D4).
+  Il n'y a pas d'entité « question » distincte.
+- Une vérification est une affirmation cause → vérification : `diagnostic.quick_checks[]` de la fiche gamme,
+  rattachée à un `cause_slug` (ADR-112 D1, ADR-033 D2). Sa table naît par migration en phase 3.
+- Le moteur qui exploite les réponses (OU bruité, abstention, niveaux en mots) est la phase 4, derrière un
+  drapeau, après la porte de la phase 3 (ADR-112 D13).
+- D'ici là, `answers` reste signalé « non interprété » : le brancher sur les scores actuels reviendrait à
+  inventer des poids.
+- Avancement au 2026-10-29 : le système pilote est le filtre à air (perte de puissance). Une source est
+  archivée dans RAW (`automecanik-raw` #76, fusionnée) et le catalogage de quatre passages d'équipementiers
+  est en brouillon côté WIKI (`automecanik-wiki` #126).
 
 **Lot 5 — réparation et entretien.**
 
-- À faire, sur données : corriger les trois rattachements faux, ce qui demande une écriture DB (GO
-  propriétaire) ; ajouter à chaque opération une base d'intervalle `constructeur | générique | estimation` et une
-  `source_ref`.
-- « Usure observée » (les plages `normal_wear_km`) et « hypothèse de panne » (les causes) sont déjà des objets
-  distincts.
-- Actions conditionnelles : entité WIKI `repair_actions[]` (`condition` = preuves ou contrôles requis, `action`,
-  `gamme`), à projeter comme les liens.
+- Cause → pièce : fiche gamme de la pièce, `diagnostic_relations[].cause_slug` (ADR-112 D1), qui remplacera
+  `CAUSE_GAMME_MAP`. Les vérifications passent avant les pièces, et aucune pièce n'est proposée pour une
+  hypothèse « à vérifier » (D6).
+- Les causes qui ne sont pas une pièce (réglage, condition d'usage) sont différées : leur place dans le WIKI
+  attend un ADR qui n'est pas ouvert (ADR-112 D1). Aucune entité « action conditionnelle » n'est proposée ici.
+- Entretien : un seul canon, `__diag_maintenance_operation`, alimenté par la projection depuis
+  `entity_data.maintenance`, avec des intervalles en fourchette. Aucun intervalle n'est affiché
+  « constructeur » sans document capturé dans RAW (D8). Le calendrier y migre en phase 5 ; les 19 nœuds
+  `MaintenanceInterval` de `kg_*` ne reçoivent aucun nouveau writer.
+- Les trois rattachements faux (§9) restent une correction de données, soumise au GO propriétaire.
 
-**Lot 6 — retours → propositions → validation.** Bloqué par le contrat : aucun stockage d'issue. Proposition :
+**Lot 6 — retours → propositions.** Bloqué par l'ordre des versions d'ADR-080, pas seulement par l'absence de
+stockage.
 
-- table `__diag_case_outcome` : session, intervention effectuée, cause confirmée, pièce, km et date déclarés ;
-- table `__diag_knowledge_proposal` : agrégat **idempotent** (clé = règle visée + version de la connaissance),
-  statut `pending`, contradictions conservées. Aucune application automatique : la validation passe par une PR
-  WIKI, puis par la projection ;
-- les données personnelles restent dans la session et ne sont jamais copiées dans la proposition.
+- Le canal existe : l'événement unique `diagnostic_resolution_outcome`, écrit dans `__seo_event_log` par
+  `OutcomeEmitterService` (ADR-080 §4). Il enregistre l'analyse et les clics (`intent_resolved`,
+  `safety_rail_triggered`, `action_clicked`) quand `DIAGNOSTIC_PIPELINE_V1_ENABLED` est actif (défaut : éteint ;
+  état servi non vérifié ici). Un retour après intervention y serait un nouveau `outcome_type`, pas une nouvelle
+  table.
+- Ce type (`issue_resolved_approx`) appartient à la version V1.1. ADR-080 interdit d'en écrire le code tant
+  que chaque version précédente n'a pas franchi ses portes en PROD. Le coder plus tôt demande un amendement
+  d'ADR-080 dans le vault.
+- Les retours mesurent ; ils ne modifient jamais une force, un niveau ou une règle (ADR-112 D12, ADR-080).
+  Une proposition d'enrichissement est une affirmation candidate déposée dans `proposals/` du WIKI, avec des
+  citations ancrées, puis relue. Elle n'est pas stockée en base.
+- Les tables d'apprentissage `kg_*` (dont `kg_truth_labels`) sont vides et restent régies par ADR-086 §6
+  (ADR-112 D9) : aucune écriture directe.
 
 **Lot 2 bis — entrée par gamme.** Un lien `?gamme=` depuis R1 suppose deux choses : une connaissance
 gamme → symptômes validée, et une modification de liens sur des pages indexées (autorisation SEO). Rien n'a
 été ajouté.
 
-**Lot 7 — extension.** Sans objet tant que les lots 4 à 6 ne sont pas alimentés.
+**Lot 7 — extension.** Sans objet tant que les lots 4 à 6 ne sont pas alimentés. La cible de couverture est
+celle d'ADR-113.
 
 ## 7. Exemple de boucle complète (état réel)
 
@@ -332,3 +353,6 @@ Retour arrière : `git revert ce2734a2c`. Aucun changement DB, flag, URL ou mét
 Audits du 27 et 28 septembre 2026 (`docs/audits/diagnostic-*-2026092{7,8}/`), en particulier
 `diagnostic-coverage-20260928` (réponses non interprétées) et `diagnostic-calendar-20260927` (calendrier) ;
 `docs/plans/2026-09-26-diagnostic-integrity.md` ; `docs/specs/2026-09-30-diagnostic-wiki-provenance-design.md`.
+
+Canon (vault de gouvernance) : ADR-080 (§4 et versions séquencées), ADR-112 (D1, D4, D6, D8, D9, D12, D13),
+ADR-113, ADR-116, ADR-086 §6.
