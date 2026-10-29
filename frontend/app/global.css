@@ -7,10 +7,14 @@
 @import "@fafa/design-tokens/css";
 
 /* === PONT CONFIG v3→v4 ===
-   Charge couleurs/spacing/fontFamily/keyframes/plugins/darkMode/content depuis
+   Charge couleurs/spacing/fontFamily/keyframes/plugins/darkMode depuis
    tailwind.config.cjs (qui consomme la projection plate @fafa/design-tokens/tailwind-tokens).
    reserved-namespace-zero (DT-2) garantit zéro collision avec les namespaces @theme de v4. */
 @config "../tailwind.config.cjs";
+
+/* Same explicit app sources as the legacy config. Native sources let production
+   route exclusions take effect; legacy content was re-added after exclusions. */
+@source "./**/*.{js,jsx,ts,tsx}";
 
 /* === SELF-HOSTED FONTS === */
 /* Outfit (headings) + DM Sans (body) + Roboto Mono (data) */

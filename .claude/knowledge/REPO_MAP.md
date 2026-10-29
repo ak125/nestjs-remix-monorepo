@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: aaf3f98bf8b31b2106257fdd70d55631a3e6007db8f5bfb5758a8744a1be7fad
+source_sha256: 2d50337b53ed3fba6d4faf2afd674a228e667f2a3e955b3bbb5811acc58a6790
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3088 |
+| Files (Layer 1) | 3091 |
 | DB tables (Layer 1) | 316 |
 | DB RPC (Layer 1) | 263 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1017 |
 
-Source sotFingerprint: `28004ee9f65f`.
+Source sotFingerprint: `f1a616be5293`.
 
 ## Comment l'utiliser
 
@@ -45,11 +45,11 @@ Source sotFingerprint: `28004ee9f65f`.
 
 ### D2 — Legacy/XTR Migration
 
-- **Files**: 161 (test=147, service=10, config=3, controller=1)
+- **Files**: 162 (test=148, service=10, config=3, controller=1)
 - **Runtime entrypoints**: 5
-- **Top owners**: @ak125 (146), __unassigned__ (15)
+- **Top owners**: @ak125 (147), __unassigned__ (15)
 - **Knowledge prose**: [`rm`](modules/rm.md)
-- **Status**: LEGACY=7, LIVE=8, UNKNOWN=146
+- **Status**: LEGACY=7, LIVE=8, UNKNOWN=147
 
 ### D3 — SEO & Sitemap
 
@@ -93,11 +93,11 @@ Source sotFingerprint: `28004ee9f65f`.
 
 ### D8 — Read Model / Serving (RM)
 
-- **Files**: 943 (config=454, route=246, service=181, controller=39, test=23)
+- **Files**: 944 (config=454, route=246, service=182, controller=39, test=23)
 - **Runtime entrypoints**: 349
-- **Top owners**: @ak125/frontend-team (674), @ak125/admin-team (269)
+- **Top owners**: @ak125/frontend-team (675), @ak125/admin-team (269)
 - **Knowledge prose**: [`admin`](modules/admin.md), [`staff`](modules/staff.md)
-- **Status**: LIVE=515, UNKNOWN=428
+- **Status**: LIVE=516, UNKNOWN=428
 
 ### D9 — Import / ETL / Normalisation
 
@@ -132,10 +132,10 @@ Source sotFingerprint: `28004ee9f65f`.
 
 ### D13 — Config & System
 
-- **Files**: 232 (script=78, service=70, config=54, test=30)
+- **Files**: 233 (script=78, service=71, config=54, test=30)
 - **Runtime entrypoints**: 16
-- **Top owners**: @ak125 (232)
-- **Status**: LIVE=91, UNKNOWN=141
+- **Top owners**: @ak125 (233)
+- **Status**: LIVE=91, UNKNOWN=142
 
 ### D14 — Gamme Aggregates & V-Level
 

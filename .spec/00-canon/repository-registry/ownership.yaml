@@ -17,6 +17,28 @@
 
 schemaVersion: 1.0.0
 entries:
+  # CSS source filtering: inferred from frontend routing/build tooling and
+  # audit documentation ownership; medium pending explicit owner ratification.
+  - glob: frontend/route-files.ts
+    domain: D8
+    owner: '@ak125/frontend-team'
+    sourceConfidence: medium
+    risk: medium
+  - glob: frontend/vite.production-css.ts
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: medium
+    risk: medium
+  - glob: audit/catalog-css-sources-20261028.md
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: medium
+    risk: low
+  - glob: audit/catalog-css-sources-20261028-evidence.json
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: medium
+    risk: low
   # Command Center integration: inferred from the existing D15 documentation
   # and backend/tests ownership; medium until explicitly ratified by the owner.
   - glob: audit/command-center-l1-spec-2026-10-10.md
