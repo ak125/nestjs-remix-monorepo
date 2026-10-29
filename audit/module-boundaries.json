@@ -261,7 +261,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 114991,
+      "loc_total": 114962,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 585,
-      "loc_total": 110598,
+      "loc_total": 110700,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -701,7 +701,7 @@
         "scripts/wiki-generators/__tests__"
       ],
       "files_count": 211,
-      "loc_total": 49497,
+      "loc_total": 49580,
       "has_barrel": true
     },
     "search": {
@@ -957,8 +957,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 320,
-      "loc_total": 61580,
+      "files_count": 321,
+      "loc_total": 61779,
       "has_barrel": true
     },
     "upload": {

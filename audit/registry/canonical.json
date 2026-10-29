@@ -4116,6 +4116,128 @@
         "args": [
           {
             "mode": "IN",
+            "name": "p_marque_id",
+            "type": "public.auto_modele.modele_marque_id%TYPE"
+          }
+        ],
+        "definedInMigrations": [
+          "20261026_vehicle_api_definer_reads.sql"
+        ],
+        "domain": "UNKNOWN",
+        "id": "public.get_vehicle_api_brand_models",
+        "language": "sql",
+        "name": "get_vehicle_api_brand_models",
+        "owner": "__unassigned__",
+        "parseMode": "parsed",
+        "parseWarnings": [],
+        "returnType": "SETOF public.auto_modele",
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "searchPath": [
+          "public",
+          "pg_temp",
+          "public",
+          "pg_temp"
+        ],
+        "securityDefiner": true,
+        "sourceConfidence": "high",
+        "status": "UNKNOWN",
+        "usedBy": []
+      },
+      {
+        "args": [],
+        "definedInMigrations": [
+          "20261026_vehicle_api_definer_reads.sql"
+        ],
+        "domain": "UNKNOWN",
+        "id": "public.get_vehicle_api_brands",
+        "language": "sql",
+        "name": "get_vehicle_api_brands",
+        "owner": "__unassigned__",
+        "parseMode": "parsed",
+        "parseWarnings": [],
+        "returnType": "SETOF public.auto_marque",
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "searchPath": [
+          "public",
+          "pg_temp",
+          "public",
+          "pg_temp",
+          "public",
+          "pg_temp"
+        ],
+        "securityDefiner": true,
+        "sourceConfidence": "high",
+        "status": "UNKNOWN",
+        "usedBy": []
+      },
+      {
+        "args": [
+          {
+            "mode": "IN",
+            "name": "p_modele_id",
+            "type": "public.auto_type.type_modele_id%TYPE"
+          }
+        ],
+        "definedInMigrations": [
+          "20261026_vehicle_api_definer_reads.sql"
+        ],
+        "domain": "UNKNOWN",
+        "id": "public.get_vehicle_api_model_types",
+        "language": "sql",
+        "name": "get_vehicle_api_model_types",
+        "owner": "__unassigned__",
+        "parseMode": "parsed",
+        "parseWarnings": [],
+        "returnType": "SETOF public.auto_type",
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "searchPath": [
+          "public",
+          "pg_temp"
+        ],
+        "securityDefiner": true,
+        "sourceConfidence": "high",
+        "status": "UNKNOWN",
+        "usedBy": []
+      },
+      {
+        "args": [
+          {
+            "mode": "IN",
+            "name": "p_modele_ids",
+            "type": "text[]"
+          }
+        ],
+        "definedInMigrations": [
+          "20261026_vehicle_api_definer_reads.sql"
+        ],
+        "domain": "UNKNOWN",
+        "id": "public.get_vehicle_api_types_by_models",
+        "language": "sql",
+        "name": "get_vehicle_api_types_by_models",
+        "owner": "__unassigned__",
+        "parseMode": "parsed",
+        "parseWarnings": [],
+        "returnType": "SETOF public.auto_type",
+        "schema": "public",
+        "schemaVersion": "1.0.0",
+        "searchPath": [
+          "public",
+          "pg_temp",
+          "public",
+          "pg_temp"
+        ],
+        "securityDefiner": true,
+        "sourceConfidence": "high",
+        "status": "UNKNOWN",
+        "usedBy": []
+      },
+      {
+        "args": [
+          {
+            "mode": "IN",
             "name": "p_type_id",
             "type": "INTEGER"
           }
@@ -75452,7 +75574,7 @@
         "~/utils/funnel-beacon"
       ],
       "kind": "config",
-      "loc": 886,
+      "loc": 958,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/DiagnosticWizard.tsx",
       "risk": "low",
@@ -75901,7 +76023,7 @@
         "~/components/ui/card"
       ],
       "kind": "config",
-      "loc": 430,
+      "loc": 460,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/diagnostic-wizard/steps/StepSymptom.tsx",
       "risk": "low",
@@ -89124,7 +89246,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 1032,
+      "loc": 1003,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/diagnostic-auto._index.tsx",
       "risk": "medium",
@@ -94851,6 +94973,26 @@
         "manual"
       ],
       "domain": "D2",
+      "id": "frontend/tests/unit/diagnostic-entry-params.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 181,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/diagnostic-entry-params.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
       "id": "frontend/tests/unit/diagnostic-funnel-events.test.tsx",
       "importedBy": [],
       "imports": [],
@@ -94875,7 +95017,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 188,
+      "loc": 203,
       "owner": "@ak125",
       "path": "frontend/tests/unit/diagnostic-hub-wiki-content.test.tsx",
       "risk": "medium",
@@ -95095,7 +95237,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 316,
+      "loc": 319,
       "owner": "@ak125",
       "path": "frontend/tests/unit/diagnostic-wizard-recovery.test.tsx",
       "risk": "medium",
@@ -101751,7 +101893,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 211,
+      "loc": 251,
       "owner": "@ak125",
       "path": "scripts/audit/ts7-shadow-parity.test.ts",
       "risk": "medium",
@@ -101771,7 +101913,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 645,
+      "loc": 688,
       "owner": "@ak125",
       "path": "scripts/audit/ts7-shadow-parity.ts",
       "risk": "medium",
@@ -105508,15 +105650,15 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "5ca91094428cc956799c31406f2c730d22e7557eca4996e6945b0e0c6969aa47",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "e799122e399e1bcb43fa249f45b9ac8f5db553196272a0b69154929f774ed1d9",
+      ".spec/00-canon/repository-registry/ownership.yaml": "0a46b151341cbccf2485294dba1a1a48465cc1b2a28b38372657df4dc3c7b60b",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "90163175840e44796908f793612d86b090e6efec04ed7053e3966b0e0c211728",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "1769c2e630940924be4e54411f673aab2b8256b1c7340c205c696676fd8a0bb6",
-      "audit/registry/rpc.json": "623f3a5150e1cc71cd79946d7a4128fd078d6493626b20f4b6c4c4ac64f06f6d",
+      "audit/registry/files.json": "b78a399d47baf588ccfba94a8cfa7e0c1a71215afda2414be422c30f5d37cf4b",
+      "audit/registry/rpc.json": "8f55c94f138e77af87c9e5c062bff86358fd1cfce0d06d85724da39cc94e756c",
       "audit/registry/runtime.json": "121d868fa45952069f14d1a9b717212a5f50b51ac7fd0edc9546ae56d1c41bc2"
     },
-    "sotFingerprint": "426eaaea4963"
+    "sotFingerprint": "6bc9abea091d"
   },
   "runtime": [
     {
