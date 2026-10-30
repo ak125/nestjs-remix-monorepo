@@ -2850,6 +2850,10 @@
       "backend/supabase/migrations/20261021_pricing_rupture_emetteur_embrayage_luk_5130041.sql",
       "backend/supabase/migrations/20261022_pricing_quarantine_rupture_cremaillere_snra_sor1706375.down.sql",
       "backend/supabase/migrations/20261022_pricing_quarantine_rupture_cremaillere_snra_sor1706375.sql",
+      "backend/supabase/migrations/20261026_vehicle_api_definer_reads.down.sql",
+      "backend/supabase/migrations/20261026_vehicle_api_definer_reads.sql",
+      "backend/supabase/migrations/20261029_seo_r2_v2_r8_publish_snapshot_text_type_id.down.sql",
+      "backend/supabase/migrations/20261029_seo_r2_v2_r8_publish_snapshot_text_type_id.sql",
       "backend/supabase/migrations/README.md"
     ],
     "ci_workflows": [
@@ -3038,7 +3042,7 @@
       "tests/registry/sql-lex.test.ts"
     ]
   },
-  "runtime_files_count": 1628,
+  "runtime_files_count": 1632,
   "runtime_files": [
     ".claude/knowledge/REPO_MAP.md",
     ".dependency-cruiser.cjs",
@@ -4328,6 +4332,10 @@
     "backend/supabase/migrations/20261021_pricing_rupture_emetteur_embrayage_luk_5130041.sql",
     "backend/supabase/migrations/20261022_pricing_quarantine_rupture_cremaillere_snra_sor1706375.down.sql",
     "backend/supabase/migrations/20261022_pricing_quarantine_rupture_cremaillere_snra_sor1706375.sql",
+    "backend/supabase/migrations/20261026_vehicle_api_definer_reads.down.sql",
+    "backend/supabase/migrations/20261026_vehicle_api_definer_reads.sql",
+    "backend/supabase/migrations/20261029_seo_r2_v2_r8_publish_snapshot_text_type_id.down.sql",
+    "backend/supabase/migrations/20261029_seo_r2_v2_r8_publish_snapshot_text_type_id.sql",
     "backend/supabase/migrations/README.md",
     "docker/lighthouse/Dockerfile",
     "docker/lighthouse/crontab",

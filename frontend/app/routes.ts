@@ -5,6 +5,8 @@ import { type RouteConfig } from "@react-router/dev/routes";
 import { remixRoutesOptionAdapter } from "@react-router/remix-routes-option-adapter";
 import { flatRoutes } from "remix-flat-routes";
 
+import { productionIgnoredRouteFiles } from "../route-files";
+
 /**
  * Configuration des routes (React Router v7 framework mode, PR-9h Phase C).
  *
@@ -34,14 +36,7 @@ export default remixRoutesOptionAdapter((defineRoutes) =>
       "**/__*.*",
       // Garder uniquement Video Hub et le cockpit Command Center parmi admin.*.
       // Le mode runtime du Command Center et requireAdmin restent appliqués.
-      ...(isProduction
-        ? [
-            "**/admin.!(video-hub*|command-center.tsx)",
-            "**/ui-kit.*",
-            "**/ui-kit/**",
-            "**/design-system.*",
-          ]
-        : []),
+      ...(isProduction ? productionIgnoredRouteFiles : []),
     ],
   }),
 ) satisfies RouteConfig;
