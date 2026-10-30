@@ -2,7 +2,7 @@ import {
   FAMILY_REGISTRY,
   FAMILY_IDS_ORDERED,
   FAMILY_DOMAIN_GROUPS,
-} from "@repo/database-types";
+} from "@repo/database-types/family-registry";
 import { type LucideIcon, Car, Cog, Shield, Wrench, Zap } from "lucide-react";
 
 // ─── Image proxy paths ───────────────────────────────────

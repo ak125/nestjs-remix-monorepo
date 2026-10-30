@@ -1,10 +1,28 @@
 {
-  "compliantCount": 14,
-  "generatedAt": "2026-10-21T13:26:24.051Z",
+  "compliantCount": 17,
+  "generatedAt": "2026-10-26T08:22:07.927Z",
   "issues": [],
   "schemaPath": ".spec/00-canon/ai-registry/skill.schema.json",
   "schemaVersion": "1.0.0",
   "skills": [
+    {
+      "checksum": "sha256:3b17d01ff6673e0ac513a43e4874db2370affe55d15abecd94afcd5735438e44",
+      "domain": "D15",
+      "last_verified": "2026-10-26",
+      "llm_safe": true,
+      "metadata": {
+        "version": "1.1.0"
+      },
+      "name": "capability-acceptance",
+      "owners": [
+        "@ak125"
+      ],
+      "path": ".claude/skills/capability-acceptance/SKILL.md",
+      "runtime_class": "mutating",
+      "spec_compliant": true,
+      "status": "experimental",
+      "type": "technique"
+    },
     {
       "checksum": "sha256:11c9e4524c4991a64729c7e9b9eebd949c16cf9618693cbaa1af076e233b3a2a",
       "domain": "D15",
@@ -101,6 +119,24 @@
       "type": "discipline"
     },
     {
+      "checksum": "sha256:eb7e98769622c5435a45d2af0aa1d984eb48c46280f017e52199e778080e0cfa",
+      "domain": "D7",
+      "last_verified": "2026-10-21",
+      "llm_safe": true,
+      "metadata": {
+        "version": "1.0.0"
+      },
+      "name": "diagnostic-orientation",
+      "owners": [
+        "@ak125"
+      ],
+      "path": ".claude/skills/diagnostic-orientation/SKILL.md",
+      "runtime_class": "read-only",
+      "spec_compliant": true,
+      "status": "experimental",
+      "type": "technique"
+    },
+    {
       "checksum": "sha256:750b518adb6ab24a45c782cee6b8553065e1e2e733f27cbd8c62a9042a3666d3",
       "domain": "D15",
       "last_verified": "2026-05-18",
@@ -159,13 +195,13 @@
       "type": "discipline"
     },
     {
-      "checksum": "sha256:036224afaa3730927d6a3389f01a78c35abfe8cb06dca2698a8041434f1683fd",
+      "checksum": "sha256:6c3d50c41f625ef5b198c294c6eb67684d4bf7f9a03b56a07cbfb134b09db176",
       "domain": "D11",
-      "last_verified": "2026-10-20",
+      "last_verified": "2026-10-21",
       "llm_safe": false,
       "metadata": {
         "spec": "agentskills.io/specification v1",
-        "version": "1.1"
+        "version": "1.2"
       },
       "name": "order-rupture-equivalence",
       "owners": [
@@ -176,6 +212,7 @@
       "spec_compliant": true,
       "status": "experimental",
       "tags": [
+        "cancellation",
         "commerce",
         "customer-mail",
         "equivalence",
@@ -187,6 +224,24 @@
         "tecdoc"
       ],
       "type": "discipline"
+    },
+    {
+      "checksum": "sha256:7c8e68eeabcbe47d2eced20d25ea793b14b8f2c10ac48cdfa13ddafa3c630f2f",
+      "domain": "D10",
+      "last_verified": "2026-10-21",
+      "llm_safe": true,
+      "metadata": {
+        "version": "1.0.0"
+      },
+      "name": "project-state-report",
+      "owners": [
+        "@ak125"
+      ],
+      "path": ".claude/skills/project-state-report/SKILL.md",
+      "runtime_class": "read-only",
+      "spec_compliant": true,
+      "status": "experimental",
+      "type": "technique"
     },
     {
       "checksum": "sha256:2a73b361688f370178e1ee6557bf159ac32cc7cea9ccd8e389a8d6d8e45cca03",
@@ -379,5 +434,5 @@
       "type": "technique"
     }
   ],
-  "totalSkills": 14
+  "totalSkills": 17
 }

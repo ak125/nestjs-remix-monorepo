@@ -1,0 +1,33 @@
+# Unit systemd utilisateur du stack DEV:3000 (`npm run dev` du backend).
+# Installée, basculée et retirée par scripts/ops/install-dev-service.sh — ne pas
+# copier à la main : le script vérifie que le fichier installé est celui du dépôt.
+[Unit]
+Description=AutoMecanik DEV:3000 (stack dev du backend)
+Documentation=file:///opt/automecanik/app/scripts/ops/install-dev-service.sh
+
+[Service]
+Type=simple
+# backend/ et non la racine (`turbo dev` lancerait tous les workspaces) : l'app y
+# charge backend/.env, qui porte NODE_ENV. Ni NODE_ENV ni NODE_OPTIONS ici : le stack
+# lancé depuis un terminal n'en a pas, et dotenv ne remplace pas une variable déjà
+# définie — une valeur posée ici masquerait celle de .env.
+WorkingDirectory=/opt/automecanik/app/backend
+ExecStart=/usr/bin/npm run dev
+# Un crash de l'app est relancé dans le stack par wait-and-start.js (DEV_APP_CRASH).
+# Ici : la sortie du stack lui-même (tsc, run-p, nodemon introuvable, node_modules
+# purgé par le `npm ci` de sync-dev-runtime). Délai de 5 s porté progressivement à
+# 5 min : une panne durable ne fait pas tourner tsc en boucle.
+Restart=on-failure
+RestartSec=5s
+RestartSteps=6
+RestartMaxDelaySec=5min
+# Arrêt et redémarrage tuent tout le cgroup (npm, run-p, tsc, tsc-alias, nodemon,
+# l'app) : aucun watcher ne peut survivre au stack et réécrire dist/ à côté du
+# suivant. control-group est la valeur par défaut, explicite pour l'intention.
+KillMode=control-group
+KillSignal=SIGTERM
+TimeoutStopSec=20
+SyslogIdentifier=automecanik-dev
+
+[Install]
+WantedBy=default.target

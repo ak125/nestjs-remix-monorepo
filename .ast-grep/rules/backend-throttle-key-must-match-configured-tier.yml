@@ -9,10 +9,10 @@ message: |
 
   Mécanique : le guard résout l'override en lisant la métadonnée sous le NOM
   du tier configuré — `this.reflector.getAllAndOverride(THROTTLER_LIMIT +
-  namedThrottler.name, …)` (@nestjs/throttler 6.5.0, throttler.guard.js:77) —
+  namedThrottler.name, …)` (@nestjs/throttler 6.7.1, throttler.guard.js:86) —
   en bouclant sur `this.throttlers`. Une clé qui ne correspond à aucun tier
   n'est jamais lue. En particulier `default` : il n'est attribué qu'à un
-  throttler déclaré SANS `name` (throttler.guard.js:44), ce qui n'est le cas
+  throttler déclaré SANS `name` (throttler.guard.js:48), ce qui n'est le cas
   d'aucun des nôtres.
 
   Incident 2026-09-09 : trois endpoints de télémétrie portaient

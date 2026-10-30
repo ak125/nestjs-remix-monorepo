@@ -76,9 +76,10 @@ jobs:
           # into the script body) so no expression value can be executed.
           BREAK_GLASS: ${{ inputs.break_glass_no_rollback_point || vars.PROD_BREAK_GLASS_NO_ROLLBACK_POINT }}
         run: |
-          # ⚠️ Ordering is load-bearing. This step MUST stay before the safety gate.
+          # ⚠️ Ordering is load-bearing. This step MUST stay before any :production
+          # mutation (the Deploy step promotes it past its point of no return).
           #
-          # The previous rollback was a proven NO-OP: the safety gate below retags
+          # The previous rollback was a proven NO-OP: the safety gate used to retag
           # `:production` to the NEW image, and the deploy step then derived
           # `production-previous` FROM `:production` — so `production-previous`
           # WAS the new image, and "rolling back" re-deployed the broken build.
@@ -164,10 +165,14 @@ jobs:
           fi
           echo "Verified commit: $IMAGE_SHA; immutable image: $IMAGE_ID"
 
-          docker tag "$IMAGE_ID" "$IMAGE_REPO:production"
+          # :production is NOT moved here: the Deploy step still refuses a bad
+          # .env or flag before its point of no return, and those refusals do not
+          # roll back. It moves :production right after DEPLOY_STARTED=1.
           docker tag "$IMAGE_ID" "$IMAGE_REPO:$RELEASE_TAG"
-          docker push "$IMAGE_REPO:production"
           docker push "$IMAGE_REPO:$RELEASE_TAG"
+          # The Deploy and Validate steps check the running container against
+          # this ID, not against the :production name it was started from.
+          echo "PROMOTED_IMAGE_ID=$IMAGE_ID" >> "$GITHUB_ENV"
 
       - name: 🚀 Deploy to PROD
         env:
@@ -236,8 +241,6 @@ jobs:
           DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED_OVERRIDE: ${{ vars.PROD_DIAGNOSTIC_PROVENANCE_EXPOSE_ENABLED }}
           DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED_OVERRIDE: ${{ vars.PROD_DIAGNOSTIC_PROVENANCE_PRIMARY_ENABLED }}
         run: |
-          docker pull massdoc/nestjs-remix-monorepo:production
-
           PROD_DIR=~/production
           mkdir -p $PROD_DIR/config/caddy
 
@@ -345,17 +348,30 @@ jobs:
 
           # Rollback point already captured by the "💾 Capture rollback point"
           # step as $ROLLBACK_IMAGE_ID — the running container's IMMUTABLE image
-          # ID, read BEFORE the safety gate retagged :production.
-          # Do NOT re-derive production-previous from :production here: by this
-          # point :production already points at the NEW image, which is exactly
-          # what made the old rollback restore the broken build.
+          # ID, read BEFORE any :production mutation.
+          # Do NOT re-derive production-previous from :production: the old
+          # rollback did, after :production had moved to the NEW image, and
+          # restored the broken build.
           echo "🔒 Rollback point pinned: ${ROLLBACK_IMAGE_ID:-<none — auto-rollback disabled>}"
+
+          if [[ ! "${PROMOTED_IMAGE_ID:-}" =~ ^sha256:[a-f0-9]{64}$ ]]; then
+            echo "❌ FATAL: no verified image ID from the safety gate"
+            exit 1
+          fi
 
           # POINT OF NO RETURN. Past this line the running container is destroyed,
           # so ANY later failure — including in "Validate PROD" — must roll back.
           # The dedicated `if: failure()` rollback step keys off this flag, which
           # is why it is set BEFORE the stop/rm rather than after a successful up.
           echo "DEPLOY_STARTED=1" >> "$GITHUB_ENV"
+
+          # Promote :production only now. compose starts the container from this
+          # name, and every refusal above (missing .env, required variable, SEO
+          # env writers) must leave the registry and the local tag on the build
+          # PROD is running: the rollback step only runs past this point. A
+          # failed push therefore rolls back too, to the pinned ID.
+          docker tag "$PROMOTED_IMAGE_ID" massdoc/nestjs-remix-monorepo:production
+          docker push massdoc/nestjs-remix-monorepo:production
 
           docker stop nestjs-remix-caddy nestjs-remix-monorepo-prod 2>/dev/null || true
           docker rm nestjs-remix-caddy nestjs-remix-monorepo-prod 2>/dev/null || true
@@ -400,11 +416,11 @@ jobs:
             exit 1
           fi
 
-          # Image assertion: verify container runs the correct image
-          EXPECTED_IMAGE="massdoc/nestjs-remix-monorepo:production"
-          ACTUAL_IMAGE=$(docker inspect nestjs-remix-monorepo-prod --format='{{.Config.Image}}')
-          if [ "$ACTUAL_IMAGE" != "$EXPECTED_IMAGE" ]; then
-            echo "FATAL: Container running $ACTUAL_IMAGE instead of $EXPECTED_IMAGE"
+          # Image assertion: the container runs the image promoted by the safety
+          # gate. Its configured name is always :production, so compare IDs.
+          ACTUAL_IMAGE=$(docker inspect nestjs-remix-monorepo-prod --format='{{.Image}}')
+          if [ -z "${PROMOTED_IMAGE_ID:-}" ] || [ "$ACTUAL_IMAGE" != "$PROMOTED_IMAGE_ID" ]; then
+            echo "FATAL: Container running $ACTUAL_IMAGE instead of ${PROMOTED_IMAGE_ID:-<unset>}"
             exit 1
           fi
           echo "Image verified: $ACTUAL_IMAGE"
@@ -426,6 +442,11 @@ jobs:
           HEALTH_OK=0
           if echo "$HEALTH" | grep -q '"status":"ok"'; then HEALTH_OK=1; fi
 
+          # Served version: /health reports the commit baked into the image.
+          SERVED_SHA=$(echo "$HEALTH" | grep -oE '"revision":"[0-9a-f]{40}"' | cut -d'"' -f4 || true)
+          REVISION_OK=0
+          if [ "$SERVED_SHA" = "$GITHUB_SHA" ]; then REVISION_OK=1; fi
+
           # SSR gate (BLOCKING). Only meaningful once the process answers /health.
           # See scripts/ci/prod-ssr-probe.sh for why /health alone is not enough
           # and why `noindex` is the signal that catches the degraded fallback.
@@ -442,9 +463,11 @@ jobs:
             done
           fi
 
-          if [ "$HEALTH_OK" != "1" ] || [ "$SSR_OK" != "1" ]; then
+          if [ "$HEALTH_OK" != "1" ] || [ "$REVISION_OK" != "1" ] || [ "$SSR_OK" != "1" ]; then
             if [ "$HEALTH_OK" != "1" ]; then
               echo "❌ Health check failed after $RETRIES attempts"
+            elif [ "$REVISION_OK" != "1" ]; then
+              echo "❌ /health serves revision ${SERVED_SHA:-<none>}, expected $GITHUB_SHA"
             else
               echo "❌ SSR gate failed — GET / is not a healthy, indexable, server-rendered document"
             fi
@@ -454,7 +477,7 @@ jobs:
             exit 1
           fi
 
-          echo "✅ PROD deployment successful — /health OK and GET / is a healthy indexable SSR document"
+          echo "✅ PROD deployment successful — /health OK (revision $SERVED_SHA) and GET / is a healthy indexable SSR document"
 
           docker image prune -f
 
@@ -466,11 +489,10 @@ jobs:
           # All checks run INSIDE the container (host networking unreliable on self-hosted runner)
           EXEC="docker exec nestjs-remix-monorepo-prod"
 
-          # Image assertion (double-check)
-          EXPECTED_IMAGE="massdoc/nestjs-remix-monorepo:production"
-          ACTUAL_IMAGE=$(docker inspect nestjs-remix-monorepo-prod --format='{{.Config.Image}}')
-          if [ "$ACTUAL_IMAGE" != "$EXPECTED_IMAGE" ]; then
-            echo "FATAL: Container image mismatch: $ACTUAL_IMAGE (expected $EXPECTED_IMAGE)"
+          # Image assertion (double-check), by immutable ID as in the Deploy step
+          ACTUAL_IMAGE=$(docker inspect nestjs-remix-monorepo-prod --format='{{.Image}}')
+          if [ -z "${PROMOTED_IMAGE_ID:-}" ] || [ "$ACTUAL_IMAGE" != "$PROMOTED_IMAGE_ID" ]; then
+            echo "FATAL: Container image mismatch: $ACTUAL_IMAGE (expected ${PROMOTED_IMAGE_ID:-<unset>})"
             FAILED=1
           else
             echo "Image OK: $ACTUAL_IMAGE"
@@ -484,6 +506,13 @@ jobs:
           else
             echo "❌ /health -> FAILED: $HEALTH"
             docker logs nestjs-remix-monorepo-prod --tail 20
+            FAILED=1
+          fi
+          SERVED_SHA=$(echo "$HEALTH" | grep -oE '"revision":"[0-9a-f]{40}"' | cut -d'"' -f4 || true)
+          if [ "$SERVED_SHA" = "$GITHUB_SHA" ]; then
+            echo "✅ /health revision -> $SERVED_SHA"
+          else
+            echo "❌ /health revision -> ${SERVED_SHA:-<none>}, expected $GITHUB_SHA"
             FAILED=1
           fi
 

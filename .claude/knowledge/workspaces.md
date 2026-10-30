@@ -31,11 +31,9 @@ leur corps est chargé à l'invocation. Une surface spécialisée n'exclut donc 
 skills racine. Une liste de fichiers ne prouve pas leur invocation ni leurs droits.
 Les agents `.claude/agents/` et les miroirs restent à distinguer de leur chargement.
 
-Les settings de la racine et des trois workspaces désactivent localement
-`superpowers@claude-plugins-official`, en conservant les hooks et permissions existants.
-Le réglage racine seul ne désactive pas le plugin depuis ces workspaces dans cette installation :
+Chaque workspace porte son propre `.claude/settings.json` (hooks, permissions) ;
+le réglage racine seul ne s'y applique pas dans cette installation :
 la découverte des settings ne doit pas être déduite de celle des `CLAUDE.md`.
-Les trois workspaces ont été vérifiés dans de nouvelles sessions. Les paramètres globaux sont inchangés.
 Les hooks SessionStart/UserPromptSubmit ajoutent leurs propres extraits bornés ;
 ils ne rendent pas toute la documentation canonique automatiquement chargée.
 
@@ -45,6 +43,14 @@ Codex CLI 0.144.4 : chaîne `AGENTS.override.md` ou `AGENTS.md` de la racine au 
 le fichier racine demande de lire `CLAUDE.md`. Les liens Markdown ne sont pas des
 imports. `.agents/skills` est un symlink interne vers les skills racine ; les
 skills imbriqués sous `.claude/` ne sont pas une découverte Codex garantie.
+
+Missions Hermes de DEV, constaté le 2026-10-26 sur des missions réelles : avec
+l'exécutant Codex (runtime 0.153.2), la session liste les skills du dépôt ; avec
+l'exécutant Claude, le contrôleur lance Claude sans sources de réglages, sans
+commandes slash ni outils natifs (seul l'outil MCP de la mission) : ni `CLAUDE.md`
+ni aucun skill n'entrent dans le contexte ; seule la consigne du contrôleur
+demande de lire les `AGENTS.md` applicables. Une mission Claude qui doit suivre un skill le cite par son
+chemin dans l'objectif.
 
 Hermes s'exécute sur un autre VPS, sans accès local au checkout
 `/opt/automecanik/app`. Ses outils et sections de continuité existants ne prouvent

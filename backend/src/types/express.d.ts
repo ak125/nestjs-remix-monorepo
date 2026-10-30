@@ -3,7 +3,7 @@
  * Ajoute les propriétés Passport.js et session personnalisées
  *
  * Auth metadata fields (_authPath, _authClaims) added by sitemap OIDC auth
- * Phase 0 — cf. docs/superpowers/plans/2026-05-16-sitemap-regen-auth-impl.md.
+ * Phase 0 — cf. docs/plans/2026-05-16-sitemap-regen-auth-impl.md.
  * Each guard writes _authPath on success ; GithubOidcGuard also writes
  * _authClaims with the validated JWT payload.
  *
