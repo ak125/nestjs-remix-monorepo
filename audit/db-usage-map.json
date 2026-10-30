@@ -13,15 +13,15 @@
     "tables_with_callsites": 214,
     "candidate_orphan_tables": 75,
     "partitions": 27,
-    "rpc_seen": 257,
+    "rpc_seen": 258,
     "rpc_with_callsites": 14,
     "trigger_functions": 30,
-    "candidate_orphan_rpc": 213,
+    "candidate_orphan_rpc": 214,
     "dynamic_from_callsites": 773,
     "dynamic_rpc_callsites": 2,
     "unresolved_callsites": 0,
     "dropped_call_sites": 8,
-    "migrations_scanned": 434,
+    "migrations_scanned": 436,
     "backend_files_scanned": 1496
   },
   "tables": {
@@ -4535,6 +4535,14 @@
       ],
       "is_trigger_function": false
     },
+    "get_substitution_status": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20261030_get_substitution_status_definer_read.sql"
+      ],
+      "is_trigger_function": false
+    },
     "get_table_names": {
       "called_by": [
         "backend/src/modules/products/services/products-catalog.service.ts"
@@ -8934,6 +8942,22 @@
         "20260213_fix_get_substitution_data_group_by.sql",
         "20260315_unify_cross_gamme_car_new.sql",
         "20260625_fix_get_substitution_data_group_by_unknown_slug.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "get_substitution_status",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20261030_get_substitution_status_definer_read.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
