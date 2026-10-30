@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 951ffe95dbc0e9c501fdcbd2677da7bcf1e0a31e05f737a4e443e1fdb5430656
+source_sha256: 456f345693c350f26517227d4d21ba47757f706a4b246c7cee3b521178d544e4
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 3094 |
+| Files (Layer 1) | 3098 |
 | DB tables (Layer 1) | 316 |
 | DB RPC (Layer 1) | 263 |
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1017 |
 
-Source sotFingerprint: `08702791e80f`.
+Source sotFingerprint: `a48870bda400`.
 
 ## Comment l'utiliser
 
@@ -69,11 +69,11 @@ Source sotFingerprint: `08702791e80f`.
 
 ### D5 — Blog / Content
 
-- **Files**: 40 (service=27, test=7, controller=6)
+- **Files**: 44 (service=31, test=7, controller=6)
 - **Runtime entrypoints**: 26
-- **Top owners**: @ak125/content-team (40)
+- **Top owners**: @ak125/content-team (44)
 - **Knowledge prose**: [`blog`](modules/blog.md)
-- **Status**: LIVE=33, UNKNOWN=7
+- **Status**: LIVE=33, UNKNOWN=11
 
 ### D6 — RAG & AI Engine
 
