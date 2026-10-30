@@ -1357,7 +1357,12 @@ jobs:
 
       - name: Measure mobile product close on the qualified PREPROD SHA
         timeout-minutes: 15
-        run: node scripts/ci/catalog-mobile-performance.mjs
+        run: |
+          set -euo pipefail
+          C=nestjs-remix-monorepo-preprod
+          test "$(docker inspect "$C" --format '{{index .Config.Labels "org.opencontainers.image.revision"}}')" = "$GITHUB_SHA"
+          docker inspect "$C" --format '{{range .Config.Env}}{{println .}}{{end}}' | grep -qx 'READ_ONLY=true'
+          node scripts/ci/catalog-mobile-performance.mjs
 
       - name: Upload mobile performance evidence
         if: always()
