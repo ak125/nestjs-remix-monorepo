@@ -39,11 +39,17 @@ one. The descriptor is closed on both success and failure. Symlinks are rejected
 checksums are read through the same descriptor, and device/inode identity is
 checked before returning. The read-only open creates no file and changes no
 permissions; its explicit mode 0600 is only a defensive creation default.
-The existing audio merge uses `-shortest`; variant checks compare to its processed
-input. An original-duration requirement must also be checked against the manifest.
+External audio requires `audioMergeMode: replace | mix`. Mixing requires an
+existing audio track; replacement accepts a silent video. Both modes pad/trim the
+audio to the original video duration and inspect the output frames and timing.
+Normalization returns measured input and encoded-output LUFS, or
+`skipped_no_audio` with null measurements. Process/measurement failures reject the
+request before upload. Each variant transports `audioMergeMode` and
+`audioNormalization`; these observations are not a listening approval.
 
 The proposed manifest 1.1.0, content-addressed storage keys and D18/D19 approval
-workflow remain outside this change pending canonical contract/owner decisions.
+writer remain outside this change. The files-only/backend-off choice is recorded
+in draft #1839; authenticated human review and audio/SRT binding remain separate.
 No historical manifest is rewritten and no backend is activated.
 
 ## Execution result transport
@@ -53,7 +59,8 @@ returns the existing execution JSON as `postprocessVariants` (including each
 variant's `inspection`), alongside `postprocessDurationMs` and `srtS3Path`.
 Missing historical values remain `null`; no observation or approval is invented.
 These fields transport renderer observations without revalidating stored bytes.
-The separate `/variants` endpoint continues to return its historical summary.
+The separate `/variants` endpoint returns its historical summary; an unavailable
+query returns HTTP 503 rather than an invented empty list.
 
 `PostprocessService` refuses success when a variant write fails, when the execution
 JSON update fails, or when no execution row is updated. Its writes are sequential,
@@ -84,3 +91,13 @@ explicitly instead of inventing an empty or successful result.
 
 These are isolated candidate changes: the worker still does not invoke
 post-processing, and no renderer, backend, migration or publication is activated.
+
+## Production content and composition geometry
+
+Production `/render` requests must name a composition. The three Fafa compositions
+and `ShortBrakingFact` require their displayed content fields before bundling;
+missing or blank content returns `INVALID_REQUEST` with the prop name. Studio
+examples remain available. Optional cause details do not trigger demo content.
+Omitted resolution/fps use the registered composition values. Conflicting values
+are refused because the composition timeline is counted in frames; resizing is an
+explicit post-processing operation. These tests do not qualify a real pilot render.

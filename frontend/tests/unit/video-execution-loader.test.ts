@@ -53,3 +53,67 @@ describe("execution detail artifact loading", () => {
     expect(fetchMock.mock.calls[1][0]).toContain("/1/variants");
   });
 });
+
+describe("production gate simulation", () => {
+  afterEach(() => vi.unstubAllGlobals());
+  it.each([
+    ["short", "short"],
+    ["film_socle", "socle"],
+    ["film_gamme", "socle"],
+  ])(
+    "transmits actual %s production content and mode without invented measurements",
+    async (videoType, mode) => {
+      const { action } =
+        await import("../../app/routes/admin.video-hub.productions.$briefId");
+      const fetchMock = vi
+        .fn()
+        .mockResolvedValueOnce(
+          new Response(
+            JSON.stringify({
+              data: {
+                briefId: "brief-test",
+                videoType,
+                vertical: "freinage",
+                scriptText: "Texte réel enregistré",
+              },
+            }),
+          ),
+        )
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify({ canPublish: false, gates: [] })),
+        );
+      vi.stubGlobal("fetch", fetchMock);
+      const url = new URL(
+        "http://frontend/admin/video-hub/productions/brief-test",
+      );
+      await action({
+        request: new Request(url, {
+          method: "POST",
+          body: new URLSearchParams({ _intent: "dry-run" }),
+        }),
+        params: { briefId: "brief-test" },
+        context: new RouterContextProvider(),
+        url,
+        pattern: "/admin/video-hub/productions/:briefId",
+      });
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      const [target, init] = fetchMock.mock.calls[1];
+      expect(target).toContain("/validate-gates");
+      const body = JSON.parse(init.body);
+      expect(body.brief).toEqual({
+        briefId: "brief-test",
+        type: videoType,
+        mode,
+        vertical: "freinage",
+      });
+      expect(body.scriptText).toBe("Texte réel enregistré");
+      for (const key of [
+        "actualDurationSec",
+        "similarityScore",
+        "visualRoleViolations",
+      ]) {
+        expect(body).not.toHaveProperty(key);
+      }
+    },
+  );
+});

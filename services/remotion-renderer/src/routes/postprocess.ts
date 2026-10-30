@@ -5,12 +5,12 @@
  * Uploads each variant back to S3. Returns variant metadata.
  */
 
-import type { FastifyInstance } from 'fastify';
-import { z } from 'zod';
-import { createReadStream, statSync, existsSync } from 'fs';
-import { join } from 'path';
-import { execSync } from 'child_process';
-import pino from 'pino';
+import type { FastifyInstance } from "fastify";
+import { z } from "zod";
+import { createReadStream, statSync, existsSync } from "fs";
+import { join } from "path";
+import { execSync } from "child_process";
+import pino from "pino";
 import {
   resizeVideo,
   normalizeAudio,
@@ -20,13 +20,14 @@ import {
   writeSrtFile,
   cleanupPostprocessFiles,
   type PostprocessResult,
-} from '../lib/ffmpeg-postprocess';
-import { inspectVideo, type MediaInspection } from '../lib/media-inspection';
-import { uploadToS3Generic } from '../lib/s3-upload';
+  type AudioNormalizationResult,
+} from "../lib/ffmpeg-postprocess";
+import { inspectVideo, type MediaInspection } from "../lib/media-inspection";
+import { uploadToS3Generic } from "../lib/s3-upload";
 
-const logger = pino({ name: 'PostprocessRoute' });
+const logger = pino({ name: "PostprocessRoute" });
 
-const TIMEOUT_MS = parseInt(process.env.POSTPROCESS_TIMEOUT_MS ?? '300000', 10);
+const TIMEOUT_MS = parseInt(process.env.POSTPROCESS_TIMEOUT_MS ?? "300000", 10);
 
 // ── Request schema ──
 
@@ -34,7 +35,7 @@ const variantSpecSchema = z.object({
   name: z.string(),
   width: z.number().int().positive(),
   height: z.number().int().positive(),
-  codec: z.enum(['h264', 'h265']).default('h264'),
+  codec: z.enum(["h264", "h265"]).default("h264"),
 });
 
 const subtitleSegmentSchema = z.object({
@@ -43,22 +44,39 @@ const subtitleSegmentSchema = z.object({
   text: z.string(),
 });
 
-const postprocessRequestSchema = z.object({
-  briefId: z.string().min(1),
-  executionLogId: z.number().int().min(0),
-  inputS3Key: z.string().min(1),
-  audioS3Key: z.string().nullish(),
-  variants: z.array(variantSpecSchema).min(1),
-  normalizeLoudness: z.boolean().default(true),
-  loudnessTarget: z.number().default(-14),
-  subtitleSegments: z.array(subtitleSegmentSchema).superRefine((segments, ctx) => {
-    try {
-      validateSubtitleSegments(segments);
-    } catch (error) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: (error as Error).message });
+const postprocessRequestSchema = z
+  .object({
+    briefId: z.string().min(1),
+    executionLogId: z.number().int().min(0),
+    inputS3Key: z.string().min(1),
+    audioS3Key: z.string().min(1).nullish(),
+    audioMergeMode: z.enum(["replace", "mix"]).optional(),
+    variants: z.array(variantSpecSchema).min(1),
+    normalizeLoudness: z.boolean().default(true),
+    loudnessTarget: z.number().min(-70).max(-5).default(-14),
+    subtitleSegments: z
+      .array(subtitleSegmentSchema)
+      .superRefine((segments, ctx) => {
+        try {
+          validateSubtitleSegments(segments);
+        } catch (error) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: (error as Error).message,
+          });
+        }
+      })
+      .nullish(),
+  })
+  .superRefine((value, ctx) => {
+    if (!!value.audioS3Key !== !!value.audioMergeMode) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "Audio source and explicit audioMergeMode must be supplied together",
+      });
     }
-  }).nullish(),
-});
+  });
 
 type PostprocessRequest = z.infer<typeof postprocessRequestSchema>;
 
@@ -72,10 +90,14 @@ interface VariantResult {
   fileSizeBytes: number;
   durationSecs: number;
   inspection: MediaInspection;
+  audioMergeMode: "replace" | "mix" | null;
+  audioNormalization:
+    | Omit<AudioNormalizationResult, "localPath">
+    | { status: "not_requested" };
 }
 
 interface PostprocessResponse {
-  status: 'success' | 'failed';
+  status: "success" | "failed";
   variants: VariantResult[];
   srtS3Path: string | null;
   totalDurationMs: number;
@@ -83,18 +105,18 @@ interface PostprocessResponse {
 }
 
 export async function postprocessRoute(app: FastifyInstance): Promise<void> {
-  app.post('/postprocess', async (request, reply) => {
+  app.post("/postprocess", async (request, reply) => {
     const startMs = Date.now();
 
     // Validate
     const parsed = postprocessRequestSchema.safeParse(request.body);
     if (!parsed.success) {
       const response: PostprocessResponse = {
-        status: 'failed',
+        status: "failed",
         variants: [],
         srtS3Path: null,
         totalDurationMs: Date.now() - startMs,
-        errorMessage: `Validation error: ${parsed.error.errors.map((e) => e.message).join(', ')}`,
+        errorMessage: `Validation error: ${parsed.error.errors.map((e) => e.message).join(", ")}`,
       };
       return reply.status(400).send(response);
     }
@@ -104,24 +126,46 @@ export async function postprocessRoute(app: FastifyInstance): Promise<void> {
 
     try {
       // Download source video from S3
-      const inputLocalPath = await downloadFromS3(req.inputS3Key, `input-${req.executionLogId}`);
+      const inputLocalPath = await downloadFromS3(
+        req.inputS3Key,
+        `input-${req.executionLogId}`,
+      );
       filesToCleanup.push(inputLocalPath);
       const inputInspection = inspectVideo(inputLocalPath);
-      const audioRequired = !!req.audioS3Key || inputInspection.audio.length > 0;
+      const audioRequired =
+        !!req.audioS3Key || inputInspection.audio.length > 0;
 
       // Download audio if provided (for film_socle/film_gamme audio merge)
       let mergedPath = inputLocalPath;
       if (req.audioS3Key) {
-        const audioLocalPath = await downloadFromS3(req.audioS3Key, `audio-${req.executionLogId}`);
+        const audioLocalPath = await downloadFromS3(
+          req.audioS3Key,
+          `audio-${req.executionLogId}`,
+        );
         filesToCleanup.push(audioLocalPath);
-        mergedPath = mergeAudio(inputLocalPath, audioLocalPath, `exec-${req.executionLogId}`);
+        mergedPath = mergeAudio(
+          inputLocalPath,
+          audioLocalPath,
+          `exec-${req.executionLogId}`,
+          req.audioMergeMode!,
+        );
         filesToCleanup.push(mergedPath);
       }
 
       // Normalize loudness if requested
       let processedPath = mergedPath;
+      let audioNormalization: VariantResult["audioNormalization"] = {
+        status: "not_requested",
+      };
       if (req.normalizeLoudness) {
-        processedPath = normalizeAudio(mergedPath, req.loudnessTarget, `exec-${req.executionLogId}`);
+        const normalized = normalizeAudio(
+          mergedPath,
+          req.loudnessTarget,
+          `exec-${req.executionLogId}`,
+        );
+        const { localPath, ...observation } = normalized;
+        processedPath = localPath;
+        audioNormalization = observation;
         if (processedPath !== mergedPath) {
           filesToCleanup.push(processedPath);
         }
@@ -131,7 +175,12 @@ export async function postprocessRoute(app: FastifyInstance): Promise<void> {
       const results: PostprocessResult[] = [];
       const segments = req.subtitleSegments;
       for (const variantSpec of req.variants) {
-        const result = resizeVideo(processedPath, variantSpec, `exec-${req.executionLogId}`, audioRequired);
+        const result = resizeVideo(
+          processedPath,
+          variantSpec,
+          `exec-${req.executionLogId}`,
+          audioRequired,
+        );
         filesToCleanup.push(result.localPath);
         results.push(result);
         if (segments && segments.length > 0) {
@@ -141,7 +190,10 @@ export async function postprocessRoute(app: FastifyInstance): Promise<void> {
 
       let srtLocalPath: string | null = null;
       if (segments && segments.length > 0) {
-        srtLocalPath = writeSrtFile(generateSrt(segments), `exec-${req.executionLogId}`);
+        srtLocalPath = writeSrtFile(
+          generateSrt(segments),
+          `exec-${req.executionLogId}`,
+        );
         filesToCleanup.push(srtLocalPath);
       }
 
@@ -161,6 +213,8 @@ export async function postprocessRoute(app: FastifyInstance): Promise<void> {
           fileSizeBytes: result.fileSizeBytes,
           durationSecs: result.durationSecs,
           inspection: result.inspection,
+          audioMergeMode: req.audioMergeMode ?? null,
+          audioNormalization,
         });
       }
 
@@ -169,7 +223,7 @@ export async function postprocessRoute(app: FastifyInstance): Promise<void> {
         : null;
 
       const response: PostprocessResponse = {
-        status: 'success',
+        status: "success",
         variants,
         srtS3Path,
         totalDurationMs: Date.now() - startMs,
@@ -182,7 +236,7 @@ export async function postprocessRoute(app: FastifyInstance): Promise<void> {
           variantCount: variants.length,
           totalDurationMs: response.totalDurationMs,
         },
-        'Postprocess success',
+        "Postprocess success",
       );
 
       return reply.status(200).send(response);
@@ -191,15 +245,15 @@ export async function postprocessRoute(app: FastifyInstance): Promise<void> {
 
       logger.error(
         { briefId: req.briefId, error: error.message },
-        'Postprocess failed',
+        "Postprocess failed",
       );
 
       const response: PostprocessResponse = {
-        status: 'failed',
+        status: "failed",
         variants: [],
         srtS3Path: null,
         totalDurationMs: Date.now() - startMs,
-        errorMessage: error.message ?? 'Unknown postprocess error',
+        errorMessage: error.message ?? "Unknown postprocess error",
       };
 
       return reply.status(500).send(response);
@@ -220,19 +274,19 @@ async function downloadFromS3(s3Key: string, prefix: string): Promise<string> {
 
   const bucket = match[1];
   const key = match[2];
-  const ext = key.endsWith('.mp3') ? '.mp3' : '.mp4';
-  const localPath = join('/tmp/postprocess', `${prefix}${ext}`);
+  const ext = key.endsWith(".mp3") ? ".mp3" : ".mp4";
+  const localPath = join("/tmp/postprocess", `${prefix}${ext}`);
 
   execSync(`mkdir -p /tmp/postprocess`);
 
   // Use AWS CLI or MinIO client to download
   const endpoint = process.env.S3_ENDPOINT;
-  const endpointFlag = endpoint ? `--endpoint-url ${endpoint}` : '';
+  const endpointFlag = endpoint ? `--endpoint-url ${endpoint}` : "";
 
-  execSync(
-    `aws s3 cp "s3://${bucket}/${key}" "${localPath}" ${endpointFlag}`,
-    { timeout: 60_000, stdio: 'pipe' },
-  );
+  execSync(`aws s3 cp "s3://${bucket}/${key}" "${localPath}" ${endpointFlag}`, {
+    timeout: 60_000,
+    stdio: "pipe",
+  });
 
   if (!existsSync(localPath) || statSync(localPath).size === 0) {
     throw new Error(`Failed to download from S3: ${s3Key}`);
@@ -250,7 +304,7 @@ async function uploadVariant(
   return uploadToS3Generic(
     localPath,
     `renders/${briefId}/${executionLogId}/variants/${variantName}.mp4`,
-    'video/mp4',
+    "video/mp4",
   );
 }
 
@@ -262,6 +316,6 @@ async function uploadSrt(
   return uploadToS3Generic(
     localPath,
     `renders/${briefId}/${executionLogId}/subtitles.srt`,
-    'text/plain',
+    "text/plain",
   );
 }

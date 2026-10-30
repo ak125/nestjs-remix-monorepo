@@ -24,6 +24,13 @@ const variant = {
   fileSizeBytes: 1024,
   durationSecs: 2,
   inspection,
+  audioMergeMode: 'replace' as const,
+  audioNormalization: {
+    status: 'normalized',
+    targetLufs: -14,
+    measuredInputLufs: -22,
+    measuredOutputLufs: -14.1,
+  },
 };
 const input = {
   briefId: 'brief-1',
@@ -153,4 +160,28 @@ describe('Postprocess inspection persistence', () => {
     expect(from).not.toHaveBeenCalled();
     expect(fetchMock).not.toHaveBeenCalled();
   });
+});
+
+it('forwards an explicit audio mode without choosing one for the caller', async () => {
+  const { service, fetchMock } = setup();
+  await service.postprocess({
+    ...input,
+    audioS3Key: 's3://media/voice.mp3',
+    audioMergeMode: 'mix',
+  });
+  expect(JSON.parse(fetchMock.mock.calls[0][1]?.body as string)).toMatchObject({
+    audioS3Key: 's3://media/voice.mp3',
+    audioMergeMode: 'mix',
+  });
+});
+
+it('distinguishes an unavailable variants query from a true empty result', async () => {
+  const { service, chain } = setup();
+  const order = jest
+    .fn()
+    .mockResolvedValueOnce({ data: null, error: { message: 'unavailable' } })
+    .mockResolvedValueOnce({ data: [], error: null });
+  Object.assign(chain, { order });
+  await expect(service.listVariants(17)).rejects.toMatchObject({ status: 503 });
+  await expect(service.listVariants(17)).resolves.toEqual([]);
 });

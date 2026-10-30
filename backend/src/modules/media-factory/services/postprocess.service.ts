@@ -5,7 +5,11 @@
  * Stores variant metadata in __video_variants table.
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
@@ -14,6 +18,7 @@ export interface PostprocessInput {
   executionLogId: number;
   renderOutputPath: string;
   audioS3Key?: string;
+  audioMergeMode?: 'replace' | 'mix';
   videoType: string;
 }
 
@@ -26,6 +31,8 @@ export interface VariantRecord {
   durationSecs: number | null;
   /** Transported renderer observations; absent for historical variants. */
   inspection?: unknown;
+  audioMergeMode?: 'replace' | 'mix' | null;
+  audioNormalization?: unknown;
 }
 
 export interface PostprocessResult {
@@ -100,6 +107,7 @@ export class PostprocessService extends SupabaseBaseService {
       executionLogId: input.executionLogId,
       inputS3Key: input.renderOutputPath,
       audioS3Key: input.audioS3Key ?? null,
+      audioMergeMode: input.audioMergeMode,
       variants,
       normalizeLoudness: true,
       loudnessTarget: this.loudnessTarget,
@@ -223,7 +231,7 @@ export class PostprocessService extends SupabaseBaseService {
 
     if (error) {
       this.logger.error(`listVariants error: ${error.message}`);
-      return [];
+      throw new ServiceUnavailableException('Video variants unavailable');
     }
 
     return (data ?? []).map((row) => ({

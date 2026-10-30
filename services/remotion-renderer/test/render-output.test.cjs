@@ -49,11 +49,10 @@ beforeEach(() => {
     isRenderOutput(path) ? Buffer.from("fixture") : realReadFile(path, ...args),
   );
   removed = mock.method(fs, "unlinkSync", () => {});
-  probe = () =>
-    Buffer.from(JSON.stringify(probeFixture()));
+  probe = () => Buffer.from(JSON.stringify(probeFixture()));
   mock.method(childProcess, "execSync", (...args) => probe(...args));
   mock.method(childProcess, "execFileSync", (...args) => probe(...args));
-  require('./probe-fixture.cjs').mockMediaDescriptors(mock);
+  require("./probe-fixture.cjs").mockMediaDescriptors(mock);
 });
 afterEach(() => mock.restoreAll());
 
@@ -135,72 +134,292 @@ test("HTTP rejects an unprobed output before upload and releases the render slot
 });
 
 for (const [label, mutate] of [
-  ['missing video', (p) => { p.streams = []; }],
-  ['wrong codec', (p) => { p.streams[0].codec_name = 'mpeg4'; }],
-  ['wrong dimensions', (p) => { p.streams[0].width = 720; }],
-  ['wrong fps', (p) => { p.streams[0].avg_frame_rate = '25/1'; }],
-  ['invalid fps', (p) => { p.streams[0].avg_frame_rate = '0/0'; }],
-  ['cover art only', (p) => { p.streams[0].disposition.attached_pic = 1; }],
-  ['multiple video streams', (p) => { p.streams.push({...p.streams[0]}); }],
-  ['unexpected audio', (p) => { p.streams.push(probeFixture({audio: true}).streams[1]); }],
-  ['wrong container', (p) => { p.format.format_name = 'matroska,webm'; }],
-  ['short video stream', (p) => { p.streams[0].duration = '0.5'; }],
-  ['missing video duration', (p) => { delete p.streams[0].duration; }],
-  ['wrong frame count', (p) => { p.streams[0].nb_frames = '15'; }],
+  [
+    "missing video",
+    (p) => {
+      p.streams = [];
+    },
+  ],
+  [
+    "wrong codec",
+    (p) => {
+      p.streams[0].codec_name = "mpeg4";
+    },
+  ],
+  [
+    "wrong dimensions",
+    (p) => {
+      p.streams[0].width = 720;
+    },
+  ],
+  [
+    "wrong fps",
+    (p) => {
+      p.streams[0].avg_frame_rate = "25/1";
+    },
+  ],
+  [
+    "invalid fps",
+    (p) => {
+      p.streams[0].avg_frame_rate = "0/0";
+    },
+  ],
+  [
+    "cover art only",
+    (p) => {
+      p.streams[0].disposition.attached_pic = 1;
+    },
+  ],
+  [
+    "multiple video streams",
+    (p) => {
+      p.streams.push({ ...p.streams[0] });
+    },
+  ],
+  [
+    "unexpected audio",
+    (p) => {
+      p.streams.push(probeFixture({ audio: true }).streams[1]);
+    },
+  ],
+  [
+    "wrong container",
+    (p) => {
+      p.format.format_name = "matroska,webm";
+    },
+  ],
+  [
+    "short video stream",
+    (p) => {
+      p.streams[0].duration = "0.5";
+    },
+  ],
+  [
+    "missing video duration",
+    (p) => {
+      delete p.streams[0].duration;
+    },
+  ],
+  [
+    "wrong frame count",
+    (p) => {
+      p.streams[0].nb_frames = "15";
+    },
+  ],
 ]) {
   test(`rejects ${label} before returning render metadata`, async () => {
-    const data = probeFixture(); mutate(data);
+    const data = probeFixture();
+    mutate(data);
     probe = () => Buffer.from(JSON.stringify(data));
-    await assert.rejects(renderVideo(request), { code: 'OUTPUT_INVALID' });
+    await assert.rejects(renderVideo(request), { code: "OUTPUT_INVALID" });
     assert.equal(removed.mock.callCount(), 1);
   });
 }
-test('audioUrl requires an audio stream', async () => {
-  await assert.rejects(renderVideo({...request, compositionProps: {audioUrl: 'https://fixture.invalid/voice.wav'}}), {code: 'OUTPUT_INVALID'});
+test("audioUrl requires an audio stream", async () => {
+  await assert.rejects(
+    renderVideo({
+      ...request,
+      compositionProps: { audioUrl: "https://fixture.invalid/voice.wav" },
+    }),
+    { code: "OUTPUT_INVALID" },
+  );
 });
 for (const [label, change] of [
-  ['wrong audio codec', a => {a.codec_name='mp3';}],
-  ['invalid sample rate', a => {a.sample_rate='N/A';}],
-  ['no audio channels', a => {a.channels=0;}],
-  ['truncated audio', a => {a.duration='0.2';}],
-  ['delayed audio', a => {a.start_time='0.8';}],
+  [
+    "wrong audio codec",
+    (a) => {
+      a.codec_name = "mp3";
+    },
+  ],
+  [
+    "invalid sample rate",
+    (a) => {
+      a.sample_rate = "N/A";
+    },
+  ],
+  [
+    "no audio channels",
+    (a) => {
+      a.channels = 0;
+    },
+  ],
+  [
+    "truncated audio",
+    (a) => {
+      a.duration = "0.2";
+    },
+  ],
+  [
+    "delayed audio",
+    (a) => {
+      a.start_time = "0.8";
+    },
+  ],
 ]) {
   test(`rejects ${label}`, async () => {
-    const data=probeFixture({audio:true}); change(data.streams[1]);
-    probe=()=>Buffer.from(JSON.stringify(data));
-    await assert.rejects(renderVideo({...request,compositionProps:{audioUrl:'https://fixture.invalid/voice.wav'}}),{code:'OUTPUT_INVALID'});
+    const data = probeFixture({ audio: true });
+    change(data.streams[1]);
+    probe = () => Buffer.from(JSON.stringify(data));
+    await assert.rejects(
+      renderVideo({
+        ...request,
+        compositionProps: { audioUrl: "https://fixture.invalid/voice.wav" },
+      }),
+      { code: "OUTPUT_INVALID" },
+    );
   });
 }
-test('HTTP wrong resolution has no uploaded artifact or metadata', async () => {
-  const upload=mock.method(S3Client.prototype,'send',async()=>({}));
-  mock.method(fs,'createReadStream',()=>Readable.from(['fixture']));
-  const app=fastify(); await app.register(renderRoute);
-  probe=()=>Buffer.from(JSON.stringify(probeFixture({width:720})));
+test("HTTP wrong resolution has no uploaded artifact or metadata", async () => {
+  const upload = mock.method(S3Client.prototype, "send", async () => ({}));
+  mock.method(fs, "createReadStream", () => Readable.from(["fixture"]));
+  const app = fastify();
+  await app.register(renderRoute);
+  probe = () => Buffer.from(JSON.stringify(probeFixture({ width: 720 })));
   try {
-    const response=await app.inject({method:'POST',url:'/render',payload:request});
-    assert.equal(response.statusCode,500);
-    assert.equal(response.json().errorCode,'OUTPUT_INVALID');
-    assert.equal(response.json().metadata,null);
-    assert.equal(upload.mock.callCount(),0);
-  } finally {await app.close();}
+    const response = await app.inject({
+      method: "POST",
+      url: "/render",
+      payload: request,
+    });
+    assert.equal(response.statusCode, 500);
+    assert.equal(response.json().errorCode, "OUTPUT_INVALID");
+    assert.equal(response.json().metadata, null);
+    assert.equal(upload.mock.callCount(), 0);
+  } finally {
+    await app.close();
+  }
 });
 
-test('HTTP successful metadata carries the same file hash and measured streams',async()=>{
-  mock.method(S3Client.prototype,'send',async()=>({}));
-  mock.method(fs,'createReadStream',()=>Readable.from(['fixture']));
-  const app=fastify();await app.register(renderRoute);
-  try{
-    const response=await app.inject({method:'POST',url:'/render',payload:request});
-    assert.equal(response.statusCode,200);
-    const m=response.json().metadata;
-    assert.equal(m.inspection.checksumSha256,m.checksumSha256);
-    assert.equal(m.inspection.fileSizeBytes,m.fileSizeBytes);
-    assert.equal(m.inspection.video.fps,m.fps);
-  }finally{await app.close();}
+test("HTTP successful metadata carries the same file hash and measured streams", async () => {
+  mock.method(S3Client.prototype, "send", async () => ({}));
+  mock.method(fs, "createReadStream", () => Readable.from(["fixture"]));
+  const app = fastify();
+  await app.register(renderRoute);
+  try {
+    const response = await app.inject({
+      method: "POST",
+      url: "/render",
+      payload: request,
+    });
+    assert.equal(response.statusCode, 200);
+    const m = response.json().metadata;
+    assert.equal(m.inspection.checksumSha256, m.checksumSha256);
+    assert.equal(m.inspection.fileSizeBytes, m.fileSizeBytes);
+    assert.equal(m.inspection.video.fps, m.fps);
+  } finally {
+    await app.close();
+  }
 });
-test('HTTP refuses unsupported webm instead of silently rendering mp4',async()=>{
-  const app=fastify();await app.register(renderRoute);
-  try{const response=await app.inject({method:'POST',url:'/render',payload:{...request,outputFormat:'webm'}});
-    assert.equal(response.statusCode,400);assert.equal(response.json().errorCode,'INVALID_REQUEST');
-  }finally{await app.close();}
+test("HTTP refuses unsupported webm instead of silently rendering mp4", async () => {
+  const app = fastify();
+  await app.register(renderRoute);
+  try {
+    const response = await app.inject({
+      method: "POST",
+      url: "/render",
+      payload: { ...request, outputFormat: "webm" },
+    });
+    assert.equal(response.statusCode, 400);
+    assert.equal(response.json().errorCode, "INVALID_REQUEST");
+  } finally {
+    await app.close();
+  }
 });
+
+for (const composition of [
+  "NeChangePasTropVite",
+  "SymptomeTroisCauses",
+  "PieceExpliquee",
+  "ShortBrakingFact",
+]) {
+  test(`HTTP ${composition} rejects absent content before bundling or upload`, async () => {
+    const upload = mock.method(S3Client.prototype, "send", async () => ({}));
+    const app = fastify();
+    await app.register(renderRoute);
+    try {
+      const response = await app.inject({
+        method: "POST",
+        url: "/render",
+        payload: { ...request, composition, compositionProps: {} },
+      });
+      assert.equal(response.statusCode, 400);
+      assert.equal(response.json().errorCode, "INVALID_REQUEST");
+      assert.match(response.json().errorMessage, /compositionProps/);
+      assert.equal(upload.mock.callCount(), 0);
+    } finally {
+      await app.close();
+    }
+  });
+}
+test("resolution and fps omitted use the composition instead of landscape defaults", async () => {
+  const { renderRequestSchema } = require("../src/types/contract.ts");
+  const { resolution, fps, ...withoutDimensions } = request;
+  const result = await renderVideo(
+    renderRequestSchema.parse(withoutDimensions),
+  );
+  assert.equal(result.resolution, "1080x1920");
+  assert.equal(result.fps, 30);
+});
+for (const overrides of [
+  { fps: 25 },
+  { resolution: { width: 1920, height: 1080 } },
+]) {
+  test(`rejects timing or geometry override ${JSON.stringify(overrides)} before render`, async () => {
+    const render = mock.getter(renderer, "renderMedia", () => async () => {});
+    await assert.rejects(renderVideo({ ...request, ...overrides }), {
+      code: "INVALID_REQUEST",
+    });
+    assert.equal(render.mock.callCount(), 0);
+  });
+}
+
+const contentExamples = {
+  NeChangePasTropVite: {
+    hook: "Vérifier avant de changer",
+    symptom: "Vibration",
+    pieceWrong: "plaquette",
+    causes: [{ cause: "Usure" }, { cause: "Montage" }, { cause: "Disque" }],
+    advice: "Faire contrôler",
+    cta: "Sélectionner le véhicule",
+    disclaimer: "Information générale",
+  },
+  SymptomeTroisCauses: {
+    symptom: "Vibration",
+    causes: [{ cause: "Usure" }, { cause: "Montage" }, { cause: "Disque" }],
+    cta: "Sélectionner le véhicule",
+    disclaimer: "Information générale",
+  },
+  PieceExpliquee: {
+    piece: "Plaquette",
+    pieceFunction: "Friction",
+    location: "Étrier",
+    wearSigns: [{ sign: "Usure" }],
+    whenToChange: "Selon contrôle atelier",
+    cta: "Sélectionner le véhicule",
+    disclaimer: "Information générale",
+  },
+  ShortBrakingFact: {
+    factText: "Fait documenté",
+    factValue: "42",
+    factUnit: "mm",
+    sourceRef: "fixture-test",
+  },
+};
+for (const [composition, props] of Object.entries(contentExamples)) {
+  test(`explicit ${composition} content accepts optional omissions without demo substitution`, () => {
+    const { validateCompositionProps } = require("../src/types/contract.ts");
+    assert.doesNotThrow(() => validateCompositionProps(composition, props));
+  });
+  for (const key of Object.keys(props)) {
+    test(`${composition} refuses missing ${key} before rendering`, async () => {
+      const partial = { ...props };
+      delete partial[key];
+      await assert.rejects(
+        renderVideo({ ...request, composition, compositionProps: partial }),
+        (error) =>
+          error.code === "INVALID_REQUEST" &&
+          error.message.includes(`compositionProps.${key}`),
+      );
+    });
+  }
+}

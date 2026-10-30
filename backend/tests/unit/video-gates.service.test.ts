@@ -80,6 +80,10 @@ describe('VideoGatesService', () => {
       evidencePack: [],
       disclaimerPlan: { disclaimers: [] },
       approvalRecord: makeApproval(),
+      scriptText: 'Les plaquettes de frein assurent un freinage optimal',
+      actualDurationSec: 30,
+      similarityScore: 0,
+      visualRoleViolations: [],
       ...overrides,
     };
   }
@@ -179,13 +183,23 @@ describe('VideoGatesService', () => {
     it.each(['supported', 'unsupported', 'empty', 'safety'])(
       'preserves the full pipeline truth and safety verdicts for %s claims',
       (scenario) => {
-        const claims = scenario === 'empty' ? [] : [makeClaim({
-          ...(scenario === 'unsupported' ? { status: 'unverified' as const } : {}),
-          ...(scenario === 'safety' ? { kind: 'safety' as const, validatedBy: undefined } : {}),
-        })];
+        const claims =
+          scenario === 'empty'
+            ? []
+            : [
+                makeClaim({
+                  ...(scenario === 'unsupported'
+                    ? { status: 'unverified' as const }
+                    : {}),
+                  ...(scenario === 'safety'
+                    ? { kind: 'safety' as const, validatedBy: undefined }
+                    : {}),
+                }),
+              ];
         const input = makeInput({ claims });
-        expect(service.runClaimGates({ claims, evidencePack: input.evidencePack }))
-          .toEqual(service.runAllGates(input).gates.slice(0, 2));
+        expect(
+          service.runClaimGates({ claims, evidencePack: input.evidencePack }),
+        ).toEqual(service.runAllGates(input).gates.slice(0, 2));
       },
     );
   });
@@ -416,10 +430,14 @@ describe('VideoGatesService', () => {
   // ── G3: Brand Gate ──
 
   describe('G3 Brand', () => {
-    it('should PASS when no script text', () => {
-      const result = service.runAllGates(makeInput());
+    it('fails closed when script text is missing', () => {
+      const result = service.runAllGates(makeInput({ scriptText: undefined }));
       const g3 = result.gates.find((g) => g.gate === 'brand')!;
-      expect(g3.verdict).toBe('PASS');
+      expect(g3.verdict).toBe('FAIL');
+      expect(g3.measured).toBeNull();
+      expect(g3.details).toContain(
+        'Cannot evaluate brand gate: script text is missing',
+      );
     });
 
     it('should detect forbidden patterns in socle mode', () => {
@@ -450,16 +468,48 @@ describe('VideoGatesService', () => {
       const g3 = result.gates.find((g) => g.gate === 'brand')!;
       expect(g3.measured).toBeGreaterThan(0);
     });
+    it.each([
+      ['Comment éviter une erreur de commande', 0],
+      ['Avant de commander', 0],
+      ['Commande ta pièce', 1],
+    ])(
+      'classifies command wording without false positives: %s',
+      (scriptText, expectedViolations) => {
+        const result = service.runAllGates(makeInput({ scriptText }));
+        const g3 = result.gates.find((g) => g.gate === 'brand')!;
+        expect(g3.measured).toBe(expectedViolations);
+      },
+    );
+    it.each(['Dépêchez-vous', 'Dernière chance'])(
+      'detects accented short-mode urgency: %s',
+      (scriptText) => {
+        const result = service.runAllGates(makeInput({ scriptText }));
+        const g3 = result.gates.find((g) => g.gate === 'brand')!;
+        expect(g3.measured).toBe(1);
+      },
+    );
   });
 
   // ── G4: Platform Gate ──
 
   describe('G4 Platform', () => {
-    it('should PASS when no duration data', () => {
-      const result = service.runAllGates(makeInput());
+    it('fails closed when rendered duration is missing', () => {
+      const result = service.runAllGates(
+        makeInput({ actualDurationSec: undefined }),
+      );
       const g4 = result.gates.find((g) => g.gate === 'platform')!;
-      expect(g4.verdict).toBe('PASS');
+      expect(g4.verdict).toBe('FAIL');
+      expect(g4.measured).toBeNull();
     });
+    it.each([0, -1, Number.NaN, Number.POSITIVE_INFINITY])(
+      'fails closed for invalid rendered duration %s',
+      (actualDurationSec) => {
+        const result = service.runAllGates(makeInput({ actualDurationSec }));
+        const g4 = result.gates.find((g) => g.gate === 'platform')!;
+        expect(g4.verdict).toBe('FAIL');
+        expect(g4.measured).toBeNull();
+      },
+    );
 
     it('should PASS when duration is within range (short 30s)', () => {
       const input = makeInput({ actualDurationSec: 30 });
@@ -479,6 +529,23 @@ describe('VideoGatesService', () => {
   // ── G5: Reuse Risk ──
 
   describe('G5 Reuse Risk', () => {
+    it('fails closed when the similarity score is missing', () => {
+      const result = service.runAllGates(
+        makeInput({ similarityScore: undefined }),
+      );
+      const g5 = result.gates.find((g) => g.gate === 'reuse_risk')!;
+      expect(g5.verdict).toBe('FAIL');
+      expect(g5.measured).toBeNull();
+    });
+    it.each([-0.1, 1.1, Number.NaN, Number.POSITIVE_INFINITY])(
+      'fails closed for invalid similarity score %s',
+      (similarityScore) => {
+        const result = service.runAllGates(makeInput({ similarityScore }));
+        const g5 = result.gates.find((g) => g.gate === 'reuse_risk')!;
+        expect(g5.verdict).toBe('FAIL');
+        expect(g5.measured).toBeNull();
+      },
+    );
     it('should PASS with similarity 0', () => {
       const input = makeInput({ similarityScore: 0 });
       const result = service.runAllGates(input);
@@ -503,6 +570,14 @@ describe('VideoGatesService', () => {
       // visual_role_violations threshold: warn=0, fail=1 → 0 violations → WARN
       expect(g6.verdict).toBe('WARN');
       expect(g6.measured).toBe(0);
+    });
+    it('fails closed when visual-role inspection is missing', () => {
+      const result = service.runAllGates(
+        makeInput({ visualRoleViolations: undefined }),
+      );
+      const g6 = result.gates.find((g) => g.gate === 'visual_role')!;
+      expect(g6.verdict).toBe('FAIL');
+      expect(g6.measured).toBeNull();
     });
 
     it('should FAIL with 1 violation (strict)', () => {

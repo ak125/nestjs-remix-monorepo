@@ -85,6 +85,7 @@ function fakeProduction(overrides: Record<string, unknown> = {}) {
     qualityFlags: [],
     gateResults: null,
     createdBy: 'user-001',
+    scriptText: 'Les plaquettes de frein assurent un freinage optimal',
     createdAt: '2026-02-24T00:00:00Z',
     updatedAt: '2026-02-24T00:00:00Z',
     ...overrides,
@@ -410,6 +411,11 @@ describe('VideoExecutionProcessor', () => {
       expect(mocks.gatesService.checkArtefacts).toHaveBeenCalled();
       expect(mocks.gatesService.runAllGates).toHaveBeenCalled();
       expect(result.status).toBe('simulated');
+      expect(mocks.gatesService.runAllGates).toHaveBeenCalledWith(
+        expect.objectContaining({
+          scriptText: 'Les plaquettes de frein assurent un freinage optimal',
+        }),
+      );
       cleanup();
     });
   });

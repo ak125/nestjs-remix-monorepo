@@ -1,16 +1,19 @@
-import { bundle } from '@remotion/bundler';
+import { bundle } from "@remotion/bundler";
 import {
   renderMedia,
   getCompositions,
   makeCancelSignal,
-} from '@remotion/renderer';
-import { statSync, unlinkSync } from 'fs';
-import { inspectVideo, type MediaInspection } from './media-inspection';
-import { join } from 'path';
-import pino from 'pino';
-import type { RenderRequest } from '../types/contract';
+} from "@remotion/renderer";
+import { statSync, unlinkSync } from "fs";
+import { inspectVideo, type MediaInspection } from "./media-inspection";
+import { join } from "path";
+import pino from "pino";
+import {
+  validateCompositionProps,
+  type RenderRequest,
+} from "../types/contract";
 
-const logger = pino({ name: 'RenderVideo' });
+const logger = pino({ name: "RenderVideo" });
 
 let bundledEntry: string | null = null;
 
@@ -20,19 +23,19 @@ let bundledEntry: string | null = null;
 async function getBundledEntry(): Promise<string> {
   if (bundledEntry) return bundledEntry;
 
-  logger.info('Bundling Remotion compositions (first render is slow)...');
-  const entryPoint = join(__dirname, '..', 'compositions', 'index.tsx');
+  logger.info("Bundling Remotion compositions (first render is slow)...");
+  const entryPoint = join(__dirname, "..", "compositions", "index.tsx");
 
   bundledEntry = await bundle({
     entryPoint,
     onProgress: (progress: number) => {
       if (progress % 25 === 0) {
-        logger.info({ progress }, 'Bundle progress');
+        logger.info({ progress }, "Bundle progress");
       }
     },
   });
 
-  logger.info('Bundle complete');
+  logger.info("Bundle complete");
   return bundledEntry;
 }
 
@@ -57,6 +60,7 @@ export async function renderVideo(
   request: RenderRequest,
   timeoutMs?: number,
 ): Promise<RenderVideoResult> {
+  validateCompositionProps(request.composition, request.compositionProps);
   const serveUrl = await getBundledEntry();
 
   // P8: Merge base props with enriched compositionProps
@@ -75,22 +79,32 @@ export async function renderVideo(
 
   const composition = compositions.find((c) => c.id === request.composition);
   if (!composition) {
-    const available = compositions.map((c) => c.id).join(', ');
+    const available = compositions.map((c) => c.id).join(", ");
     throw Object.assign(
       new Error(
         `Composition '${request.composition}' not found. Available: ${available}`,
       ),
-      { code: 'COMPOSITION_NOT_FOUND' },
+      { code: "COMPOSITION_NOT_FOUND" },
     );
   }
 
-  // Override resolution/fps if requested
-  const width = request.resolution.width;
-  const height = request.resolution.height;
-  const fps = request.fps;
+  // Timelines are authored in frames. Resizing belongs to explicit postprocessing.
+  const width = request.resolution?.width ?? composition.width;
+  const height = request.resolution?.height ?? composition.height;
+  const fps = request.fps ?? composition.fps;
+  if (
+    width !== composition.width ||
+    height !== composition.height ||
+    fps !== composition.fps
+  ) {
+    throw Object.assign(
+      new Error("resolution and fps must match the selected composition"),
+      { code: "INVALID_REQUEST" },
+    );
+  }
 
   const outputLocation = join(
-    '/tmp/renders',
+    "/tmp/renders",
     `render-${request.executionLogId}-${Date.now()}.mp4`,
   );
 
@@ -103,7 +117,7 @@ export async function renderVideo(
       fps,
       outputLocation,
     },
-    'Starting Remotion render',
+    "Starting Remotion render",
   );
 
   // Setup Remotion cancel signal for timeout
@@ -125,21 +139,24 @@ export async function renderVideo(
         fps,
       },
       serveUrl,
-      codec: 'h264',
+      codec: "h264",
       outputLocation,
       browserExecutable: process.env.CHROMIUM_PATH || undefined,
       inputProps,
       onProgress: ({ progress }) => {
         if (Math.round(progress * 100) % 25 === 0) {
-          logger.info({ progress: Math.round(progress * 100) }, 'Render progress');
+          logger.info(
+            { progress: Math.round(progress * 100) },
+            "Render progress",
+          );
         }
       },
       cancelSignal,
     });
   } catch (err) {
-    if ((err as Error).message?.includes('cancel')) {
-      throw Object.assign(new Error('Render timed out'), {
-        code: 'RENDER_TIMEOUT',
+    if ((err as Error).message?.includes("cancel")) {
+      throw Object.assign(new Error("Render timed out"), {
+        code: "RENDER_TIMEOUT",
       });
     }
     throw err;
@@ -151,33 +168,37 @@ export async function renderVideo(
   const stats = statSync(outputLocation);
   if (stats.size === 0) {
     unlinkSync(outputLocation);
-    throw Object.assign(new Error('Render produced empty file (0 bytes)'), {
-      code: 'OUTPUT_EMPTY',
+    throw Object.assign(new Error("Render produced empty file (0 bytes)"), {
+      code: "OUTPUT_EMPTY",
     });
   }
 
   let inspection: MediaInspection;
   try {
     inspection = inspectVideo(outputLocation, {
-      codec: 'h264', width, height, fps,
+      codec: "h264",
+      width,
+      height,
+      fps,
       frames: composition.durationInFrames,
       durationSecs: request.durationSecs ?? composition.durationInFrames / fps,
-      audio: request.compositionProps?.audioUrl ? 'required' : 'forbidden',
-      audioCodec: 'aac',
+      audio: request.compositionProps?.audioUrl ? "required" : "forbidden",
+      audioCodec: "aac",
     });
   } catch (err) {
     cleanupRenderFile(outputLocation);
-    logger.error({ err }, 'Render output validation failed');
-    throw Object.assign(new Error('Render output could not be validated'), {
-      code: 'OUTPUT_INVALID', cause: err,
+    logger.error({ err }, "Render output validation failed");
+    throw Object.assign(new Error("Render output could not be validated"), {
+      code: "OUTPUT_INVALID",
+      cause: err,
     });
   }
 
   // Read remotion version from package.json
-  let remotionVersion = 'unknown';
+  let remotionVersion = "unknown";
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const pkg = require('remotion/package.json');
+    const pkg = require("remotion/package.json");
     remotionVersion = pkg.version;
   } catch {
     // ignore
@@ -204,6 +225,6 @@ export function cleanupRenderFile(localPath: string): void {
   try {
     unlinkSync(localPath);
   } catch {
-    logger.warn({ localPath }, 'Failed to cleanup render file');
+    logger.warn({ localPath }, "Failed to cleanup render file");
   }
 }

@@ -223,3 +223,148 @@ test("inspection rejects permanent replacement even with identical bytes", (t) =
     fs.renameSync(original, silent);
   }
 });
+
+test("normalization without an audio stream is explicitly skipped, never measured", () => {
+  const { normalizeAudio } = require("../src/lib/ffmpeg-postprocess.ts");
+  const result = normalizeAudio(silent, -14, `l10-no-audio-${process.pid}`);
+  assert.equal(result.status, "skipped_no_audio");
+  assert.equal(result.localPath, silent);
+  assert.equal(result.measuredInputLufs, null);
+  assert.equal(result.measuredOutputLufs, null);
+});
+test("normalization returns real input/output measurements and preserves video", () => {
+  const {
+    normalizeAudio,
+    cleanupPostprocessFiles,
+  } = require("../src/lib/ffmpeg-postprocess.ts");
+  const result = normalizeAudio(audible, -14, `l10-normalize-${process.pid}`);
+  try {
+    assert.equal(result.status, "normalized");
+    assert.ok(Number.isFinite(result.measuredInputLufs));
+    assert.ok(Number.isFinite(result.measuredOutputLufs));
+    inspectVideo(result.localPath, { ...expected, audio: "required" });
+  } finally {
+    if (result.localPath && result.localPath !== audible)
+      cleanupPostprocessFiles([result.localPath]);
+  }
+});
+test("external audio requires an explicit replace or mix decision", () => {
+  const { mergeAudio } = require("../src/lib/ffmpeg-postprocess.ts");
+  assert.throws(
+    () => mergeAudio(audible, audible, `l10-missing-mode-${process.pid}`),
+    /mode/i,
+  );
+});
+for (const mode of ["replace", "mix"]) {
+  test(`six-second video and three-second voice preserve video in ${mode} mode`, () => {
+    const {
+      mergeAudio,
+      cleanupPostprocessFiles,
+    } = require("../src/lib/ffmpeg-postprocess.ts");
+    const video = join(dir, `six-${mode}.mp4`),
+      voice = join(dir, `three-${mode}.wav`);
+    execFileSync(
+      "ffmpeg",
+      [
+        "-v",
+        "error",
+        "-f",
+        "lavfi",
+        "-i",
+        "color=c=blue:s=64x48:r=25",
+        "-f",
+        "lavfi",
+        "-i",
+        "sine=frequency=440:sample_rate=48000",
+        "-t",
+        "6",
+        "-c:v",
+        "libx264",
+        "-threads",
+        "1",
+        "-pix_fmt",
+        "yuv420p",
+        "-c:a",
+        "aac",
+        video,
+      ],
+      { timeout: 30000, stdio: "pipe" },
+    );
+    execFileSync(
+      "ffmpeg",
+      [
+        "-v",
+        "error",
+        "-f",
+        "lavfi",
+        "-i",
+        "sine=frequency=880:sample_rate=48000",
+        "-t",
+        "3",
+        voice,
+      ],
+      { timeout: 30000, stdio: "pipe" },
+    );
+    const output = mergeAudio(video, voice, `l10-${mode}-${process.pid}`, mode);
+    try {
+      const result = inspectVideo(output, {
+        ...expected,
+        frames: 150,
+        durationSecs: 6,
+        audio: "required",
+      });
+      assert.equal(result.video.frames, 150);
+      const pcm = execFileSync(
+        "ffmpeg",
+        [
+          "-v",
+          "error",
+          "-ss",
+          "0.5",
+          "-i",
+          output,
+          "-t",
+          "1",
+          "-map",
+          "0:a:0",
+          "-ar",
+          "8000",
+          "-ac",
+          "1",
+          "-f",
+          "s16le",
+          "-",
+        ],
+        { timeout: 30000 },
+      );
+      const amplitude = (frequency) => {
+        let re = 0,
+          im = 0;
+        for (let i = 0; i < pcm.length / 2; i++) {
+          const value = pcm.readInt16LE(i * 2),
+            angle = (2 * Math.PI * frequency * i) / 8000;
+          re += value * Math.cos(angle);
+          im += value * Math.sin(angle);
+        }
+        return Math.hypot(re, im) / (pcm.length / 2);
+      };
+      assert.ok(
+        amplitude(880) > 100,
+        "external audio must remain audible in the decoded output",
+      );
+      const originalToExternal = amplitude(440) / amplitude(880);
+      if (mode === "mix")
+        assert.ok(
+          originalToExternal > 0.3,
+          "mix must retain the original track",
+        );
+      else
+        assert.ok(
+          originalToExternal < 0.05,
+          "replace must remove the original track",
+        );
+    } finally {
+      cleanupPostprocessFiles([output]);
+    }
+  });
+}

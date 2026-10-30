@@ -211,6 +211,7 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
         evidencePack: production.evidencePack ?? [],
         disclaimerPlan: production.disclaimerPlan!,
         approvalRecord: production.approvalRecord!,
+        scriptText: production.scriptText ?? undefined,
       };
 
       // ── Step 5: Run all gates ──

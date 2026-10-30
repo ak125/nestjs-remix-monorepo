@@ -1,13 +1,4 @@
 import {
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  data,
-  redirect,
-  useLoaderData,
-  Link,
-  useFetcher,
-} from "react-router";
-import {
   ArrowLeft,
   CheckCircle,
   XCircle,
@@ -30,6 +21,15 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  data,
+  redirect,
+  useLoaderData,
+  Link,
+  useFetcher,
+} from "react-router";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 // ─── Types ───────────────────────────────────────────────────
@@ -38,7 +38,7 @@ interface GateResult {
   gate: string;
   verdict: "PASS" | "WARN" | "FAIL";
   details: string[];
-  measured: number;
+  measured: number | null;
   warnThreshold: number;
   failThreshold: number;
 }
@@ -252,13 +252,15 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const gateInput = {
         brief: {
           briefId: prod.briefId,
-          videoType: prod.videoType,
+          type: prod.videoType,
+          mode: prod.videoType === "short" ? "short" : "socle",
           vertical: prod.vertical,
         },
         claims: prod.claimTable ?? [],
         evidencePack: prod.evidencePack ?? [],
         disclaimerPlan: prod.disclaimerPlan ?? { disclaimers: [] },
         approvalRecord: prod.approvalRecord ?? { briefId, stages: [] },
+        scriptText: prod.scriptText ?? undefined,
       };
       const res = await fetch(`${backendUrl}/api/admin/video/validate-gates`, {
         method: "POST",

@@ -189,9 +189,9 @@ export class VideoGatesService {
     const { scriptText, brief } = input;
     const { warn, fail } = VIDEO_GATE_THRESHOLDS.brand_violations;
 
-    if (!scriptText) {
-      return this.makeResult('brand', 'PASS', 0, warn, fail, [
-        'No script text to check',
+    if (!scriptText?.trim()) {
+      return this.makeResult('brand', 'FAIL', null, warn, fail, [
+        'Cannot evaluate brand gate: script text is missing',
       ]);
     }
 
@@ -243,13 +243,23 @@ export class VideoGatesService {
     const { brief, actualDurationSec } = input;
     const tolerance = VIDEO_GATE_THRESHOLDS.platform_duration_tolerance;
 
-    if (!brief || actualDurationSec == null) {
-      return this.makeResult('platform', 'PASS', 0, 0, 1, [
-        'No duration data — skipping platform gate',
+    if (
+      !brief ||
+      typeof actualDurationSec !== 'number' ||
+      !Number.isFinite(actualDurationSec) ||
+      actualDurationSec <= 0
+    ) {
+      return this.makeResult('platform', 'FAIL', null, 0, tolerance, [
+        'Cannot evaluate platform gate: rendered duration is missing',
       ]);
     }
 
     const range = VIDEO_DURATION_RANGES[brief.type];
+    if (!range) {
+      return this.makeResult('platform', 'FAIL', null, 0, tolerance, [
+        `Cannot evaluate platform gate: unknown video type "${brief.type}"`,
+      ]);
+    }
     const minWithTolerance = range.min * (1 - tolerance);
     const maxWithTolerance = range.max * (1 + tolerance);
 
@@ -283,7 +293,18 @@ export class VideoGatesService {
     const { similarityScore } = input;
     const { warn, fail } = VIDEO_GATE_THRESHOLDS.reuse_similarity;
 
-    const score = similarityScore ?? 0;
+    if (
+      typeof similarityScore !== 'number' ||
+      !Number.isFinite(similarityScore) ||
+      similarityScore < 0 ||
+      similarityScore > 1
+    ) {
+      return this.makeResult('reuse_risk', 'FAIL', null, warn, fail, [
+        'Cannot evaluate reuse risk gate: similarity score is missing',
+      ]);
+    }
+
+    const score = similarityScore;
 
     return this.makeResult(
       'reuse_risk',
@@ -301,7 +322,13 @@ export class VideoGatesService {
     const { visualRoleViolations } = input;
     const { warn, fail } = VIDEO_GATE_THRESHOLDS.visual_role_violations;
 
-    const count = visualRoleViolations?.length ?? 0;
+    if (!Array.isArray(visualRoleViolations)) {
+      return this.makeResult('visual_role', 'FAIL', null, warn, fail, [
+        'Cannot evaluate visual role gate: visual-role inspection is missing',
+      ]);
+    }
+
+    const count = visualRoleViolations.length;
 
     return this.makeResult(
       'visual_role',
@@ -367,7 +394,7 @@ export class VideoGatesService {
   private makeResult(
     gate: VideoGateName,
     verdict: GateVerdict,
-    measured: number,
+    measured: number | null,
     warnThreshold: number,
     failThreshold: number,
     details: string[],

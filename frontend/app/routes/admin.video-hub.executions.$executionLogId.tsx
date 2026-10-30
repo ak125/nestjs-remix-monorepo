@@ -56,7 +56,7 @@ interface ExecutionLog {
     gate: string;
     verdict: "PASS" | "WARN" | "FAIL";
     details: string[];
-    measured: number;
+    measured: number | null;
     warnThreshold: number;
     failThreshold: number;
   }> | null;
