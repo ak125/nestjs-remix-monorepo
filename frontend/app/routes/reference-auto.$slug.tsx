@@ -195,7 +195,7 @@ interface Reference {
   composition: string[] | null;
   confusionsCourantes: string[] | null;
   symptomesAssocies: string[] | null;
-  /** Symptômes qui désignent un diagnostic publié : seuls liens rendus. */
+  /** Symptômes qui désignent un diagnostic publié : seuls rendus en lien. */
   diagnosticSlugs?: string[];
   reglesMetier: string[] | null; // NOUVEAU: Règles anti-erreur
   scopeLimites: string | null; // NOUVEAU: Variantes et limitations
@@ -566,6 +566,10 @@ export default function ReferenceDetailPage() {
 
   const shortTitle = reference.title.replace(/ :.*$/, "");
   const clusterId = getClusterIdFromSlug(reference.slug);
+  // Une valeur vide ne désigne aucun symptôme : ni ligne, ni lien.
+  const symptomes = (reference.symptomesAssocies ?? []).filter((s) =>
+    s?.trim(),
+  );
 
   return (
     <div
@@ -1159,42 +1163,48 @@ export default function ReferenceDetailPage() {
               </Card>
             )}
 
-            {/* Symptomes (lien vers R5 Diagnostic publié uniquement) */}
-            {reference.diagnosticSlugs &&
-              reference.diagnosticSlugs.length > 0 && (
-                <Card className="shadow-lg">
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <AlertTriangle className="w-5 h-5 text-orange-600" />
-                      Symptômes associés
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="space-y-2">
-                      {reference.diagnosticSlugs.map((symptome) => (
+            {/* Symptomes : lien vers R5 seulement si le diagnostic est publié, texte sinon */}
+            {symptomes.length > 0 && (
+              <Card className="shadow-lg">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <AlertTriangle className="w-5 h-5 text-orange-600" />
+                    Symptômes associés
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2">
+                    {symptomes.map((symptome) => {
+                      const label = symptome
+                        .replace(/-/g, " ")
+                        .replace(/^\w/, (c) => c.toUpperCase());
+                      return (
                         <li key={symptome}>
-                          <Link
-                            to={`/diagnostic-auto/${symptome}`}
-                            className="flex items-center gap-2 p-2 rounded hover:bg-orange-50 text-orange-900 hover:text-orange-700 transition-colors text-sm"
-                          >
-                            <Badge
-                              variant="outline"
-                              className="text-xs text-orange-600 border-orange-200 shrink-0"
+                          {reference.diagnosticSlugs?.includes(symptome) ? (
+                            <Link
+                              to={`/diagnostic-auto/${symptome}`}
+                              className="flex items-center gap-2 p-2 rounded hover:bg-orange-50 text-orange-900 hover:text-orange-700 transition-colors text-sm"
                             >
-                              Diagnostic
-                            </Badge>
-                            <span>
-                              {symptome
-                                .replace(/-/g, " ")
-                                .replace(/^\w/, (c) => c.toUpperCase())}
+                              <Badge
+                                variant="outline"
+                                className="text-xs text-orange-600 border-orange-200 shrink-0"
+                              >
+                                Diagnostic
+                              </Badge>
+                              <span>{label}</span>
+                            </Link>
+                          ) : (
+                            <span className="flex items-center gap-2 p-2 text-orange-900 text-sm">
+                              {label}
                             </span>
-                          </Link>
+                          )}
                         </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-              )}
+                      );
+                    })}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Références liées (maillage R4↔R4) */}
             {relatedRefs && relatedRefs.length > 0 && (
