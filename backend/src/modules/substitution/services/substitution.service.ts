@@ -72,7 +72,10 @@ export class SubstitutionService extends SupabaseBaseService {
     this.logger.debug(`Intent extracted: ${JSON.stringify(intent)}`);
 
     // 3. Appeler RPC Supabase pour résoudre la gamme
-    const rpcData = await this.fetchSubstitutionData(intent);
+    const rpcData = await this.fetchSubstitutionData(
+      intent,
+      includeVehicleOptions,
+    );
 
     // 4. Déterminer le type de substitution
     const result = this.determineSubstitution(
@@ -103,24 +106,43 @@ export class SubstitutionService extends SupabaseBaseService {
   }
 
   /**
-   * Appelle la RPC get_substitution_data
+   * Appelle la RPC de résolution de la gamme.
+   *
+   * ⚡ Mode léger (includeVehicleOptions:false) : get_substitution_status, qui ne
+   * rend que `_meta` et `gamme` — les seuls blocs dont dépendent httpStatus, type
+   * et lock.known (determineSubstitution, buildLock). get_substitution_data
+   * calcule en plus suggestions, substitut, pièces liées et gammes compatibles :
+   * jusqu'à 6,3 s à froid sur les gammes les plus vues, au-delà de l'abandon à
+   * 3 s du loader R1, qui rendait alors la page sans contrôle 404/410 (mesure du
+   * 2026-10-30, migration 20261030_get_substitution_status_definer_read).
+   * Mode plein : inchangé.
    */
   private async fetchSubstitutionData(
     intent: ExtractedIntent,
+    includeVehicleOptions: boolean,
   ): Promise<SubstitutionDataResponse> {
     try {
       // 🛡️ RPC Safety Gate
-      const { data, error } = await this.callRpc<SubstitutionDataResponse>(
-        'get_substitution_data',
-        {
-          p_gamme_alias: intent.gammeAlias || null,
-          p_gamme_id: intent.gammeId || null,
-          p_marque_alias: intent.marqueAlias || null,
-          p_modele_alias: intent.modeleAlias || null,
-          p_type_alias: intent.typeAlias || null,
-        },
-        { source: 'api' },
-      );
+      const { data, error } = includeVehicleOptions
+        ? await this.callRpc<SubstitutionDataResponse>(
+            'get_substitution_data',
+            {
+              p_gamme_alias: intent.gammeAlias || null,
+              p_gamme_id: intent.gammeId || null,
+              p_marque_alias: intent.marqueAlias || null,
+              p_modele_alias: intent.modeleAlias || null,
+              p_type_alias: intent.typeAlias || null,
+            },
+            { source: 'api' },
+          )
+        : await this.callRpc<SubstitutionDataResponse>(
+            'get_substitution_status',
+            {
+              p_gamme_alias: intent.gammeAlias || null,
+              p_gamme_id: intent.gammeId || null,
+            },
+            { source: 'api' },
+          );
 
       if (error) {
         // FAIL-OPEN observable (cf. determineSubstitution) : une erreur RPC est

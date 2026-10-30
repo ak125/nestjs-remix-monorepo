@@ -7,6 +7,10 @@ import { SubstitutionDataResponse } from '../types/substitution.types';
  * `lock.options` (jusqu'à ~5 300 motorisations ≈ 1,1 Mo) n'a aucun consommateur.
  * `checkSubstitution(url, ua, { includeVehicleOptions:false })` doit produire le
  * MÊME résultat, sans peupler `lock.options`.
+ *
+ * Mode léger servi par get_substitution_status (2026-10-30) : la RPC ne rend que
+ * `_meta` et `gamme` de get_substitution_data (STATUS_DATA ci-dessous), les seuls
+ * blocs lus pour httpStatus, type et lock.known.
  */
 
 const RPC_DATA: SubstitutionDataResponse = {
@@ -38,6 +42,12 @@ const RPC_DATA: SubstitutionDataResponse = {
   ],
 } as SubstitutionDataResponse;
 
+// Ce que rend get_substitution_status pour la même gamme : `_meta` + `gamme`.
+const STATUS_DATA: SubstitutionDataResponse = {
+  _meta: RPC_DATA._meta,
+  gamme: RPC_DATA.gamme,
+};
+
 function makeService(): SubstitutionService {
   // Bypass du constructeur SupabaseBaseService : on n'a besoin que des collaborateurs
   // touchés par checkSubstitution (intent, logger async, callRpc stubbé).
@@ -65,9 +75,13 @@ function makeService(): SubstitutionService {
     log: jest.fn(),
     warn: jest.fn(),
   };
-  (service as unknown as { callRpc: unknown }).callRpc = jest
-    .fn()
-    .mockResolvedValue({ data: RPC_DATA, error: null });
+  (service as unknown as { callRpc: unknown }).callRpc = jest.fn(
+    (name: string) =>
+      Promise.resolve({
+        data: name === 'get_substitution_status' ? STATUS_DATA : RPC_DATA,
+        error: null,
+      }),
+  );
 
   return service;
 }
@@ -123,5 +137,72 @@ describe('SubstitutionService — projection status-only (includeVehicleOptions)
     });
     expect(light.httpStatus).toBe(404);
     expect(light.type).toBe('unknown_slug');
+  });
+
+  it('mode léger appelle get_substitution_status (gamme seule), mode plein get_substitution_data', async () => {
+    const service = makeService();
+    const callRpc = (service as unknown as { callRpc: jest.Mock }).callRpc;
+
+    await service.checkSubstitution(URL, '', { includeVehicleOptions: false });
+    expect(callRpc).toHaveBeenCalledTimes(1);
+    expect(callRpc).toHaveBeenLastCalledWith(
+      'get_substitution_status',
+      { p_gamme_alias: 'filtre-a-huile', p_gamme_id: 7 },
+      { source: 'api' },
+    );
+
+    await service.checkSubstitution(URL, '');
+    expect(callRpc).toHaveBeenCalledTimes(2);
+    expect(callRpc).toHaveBeenLastCalledWith(
+      'get_substitution_data',
+      {
+        p_gamme_alias: 'filtre-a-huile',
+        p_gamme_id: 7,
+        p_marque_alias: null,
+        p_modele_alias: null,
+        p_type_alias: null,
+      },
+      { source: 'api' },
+    );
+  });
+
+  it('mode léger : gamme trouvée sans produit → 410', async () => {
+    const service = makeService();
+    (service as unknown as { callRpc: jest.Mock }).callRpc.mockResolvedValue({
+      data: {
+        _meta: { ...STATUS_DATA._meta, products_count: 0 },
+        gamme: STATUS_DATA.gamme,
+      },
+      error: null,
+    });
+
+    const light = await service.checkSubstitution(URL, '', {
+      includeVehicleOptions: false,
+    });
+    expect(light.httpStatus).toBe(410);
+    expect(light.type).toBe('gamme_empty');
+    expect(light.seo?.h1).toBe('Filtre à huile - Temporairement indisponible');
+  });
+
+  it('mode léger : erreur ou exception de la RPC → fail-open 200, jamais 404', async () => {
+    const service = makeService();
+    const callRpc = (service as unknown as { callRpc: jest.Mock }).callRpc;
+
+    callRpc.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'function get_substitution_status does not exist' },
+    });
+    const onError = await service.checkSubstitution(URL, '', {
+      includeVehicleOptions: false,
+    });
+    expect(onError.httpStatus).toBe(200);
+    expect(onError.type).toBe('none');
+
+    callRpc.mockRejectedValueOnce(new Error('timeout'));
+    const onThrow = await service.checkSubstitution(URL, '', {
+      includeVehicleOptions: false,
+    });
+    expect(onThrow.httpStatus).toBe(200);
+    expect(onThrow.type).toBe('none');
   });
 });
