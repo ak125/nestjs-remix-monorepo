@@ -25,6 +25,7 @@ Hors périmètre de Claude CLI sans accord nominatif : prix et stock (titres « 
 | FH-11 | `approvalRecord.stages` exigé par le code, absent du schéma | contrat | G7 de V1 |
 | FH-12 | Critères techniques non affichés sur la page véhicule | à vérifier | R1 S4 § 3-4, S6 « Dimensions » |
 | FH-13 | Pas de baseline GSC pour pg_id 7 | données | mesure avant/après |
+| FH-14 | Vignettes de la famille Filtres cassées (habitacle, boîte auto) | données ou code | R1 S8, R3 S7 |
 
 Hors Claude CLI (owner ou chaîne WIKI) : spot-check humain de la fiche WIKI (promue automatiquement) ; admission des
 faits F-C1 à F-C9 ; validation humaine des claims de V1 ; voix et visuels ; décision sur les champs SEO protégés.
@@ -224,3 +225,26 @@ select count(*) from __seo_gamme_gsc_baseline where pg_id::text = '7';
 
 → 0. Fini quand : une ligne datée existe pour R1, R3 et R4 avant toute mise en ligne des textes, avec la même méthode
 que les autres gammes.
+
+## FH-14 — Vignettes de la famille Filtres cassées
+
+`processCatalogueFamille` construit l'image depuis `pg_pic`
+(`backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts:162-170`). Pour 424 et 416, `pg_pic`
+désigne un objet absent du stockage ; `pg_img` désigne un objet présent.
+
+```sql
+select pg_id, pg_alias, pg_pic, pg_img from pieces_gamme where pg_id::text in ('8','9','416','424');
+```
+
+```bash
+B=https://www.automecanik.com/img/uploads/articles/gammes-produits/catalogue
+for s in filtre-habitacle filtre-boite-auto filtre-d-habitacle filtre-boite-automatique; do
+  printf '%s %s\n' "$(curl -s -o /dev/null -w '%{http_code}' "$B/$s.webp")" "$s"
+done
+```
+
+Résultat le 30/10 : `pg_pic` 424 = `filtre-habitacle.webp` (400, `NoSuchKey`), 416 = `filtre-boite-auto.webp` (400) ;
+`pg_img` 424 = `filtre-d-habitacle.webp` (200), 416 = `filtre-boite-automatique.webp` (200) ; 8 et 9 : `pg_pic` =
+`pg_img`, 200. Les deux URL cassées sont servies dans le HTML de R1. Fini quand : les vignettes servies en R1 pour
+l'habitacle et la boîte auto répondent 200 ; le choix entre corriger `pg_pic` et lire `pg_img` revient au propriétaire
+du catalogue, après recherche des autres lecteurs de `pg_pic`.

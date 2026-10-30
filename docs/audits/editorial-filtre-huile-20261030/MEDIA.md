@@ -194,8 +194,9 @@ Chacun répond à une question distincte de V1. Aucune composition de la fabriqu
 fiche WIKI n'en fournit pas trois pour le voyant d'huile. Leur forme visuelle reprend la grammaire de démonstration
 observée chez MANN-FILTER (AUDIT § 4, n° 8) : pièce isolée sur fond neutre, un geste par plan, pictogrammes.
 
-Débits de voix mesurés (révision 1) : C1 90 mots en 35 s, C2 61 en 30 s, C3 97 en 35 s, C4 90 en 30 s (le plus dense,
-à recaler sur la voix). G3 recalculée avec les 14 motifs `FORBIDDEN_PATTERNS_SHORT` sur 54 lignes (voix, écran et légendes des
+Débits de voix mesurés (révision 2) : C1 90 mots en 35 s, C2 61 en 30 s, C3 96 en 35 s, C4 90 en 30 s (le plus dense,
+à recaler sur la voix). Révision 2 : maxime du by-pass de C3 reformulée (AUDIT § 3) ; aucun nom de source dans les voix,
+textes à l'écran et légendes. G3 recalculée avec les 14 motifs `FORBIDDEN_PATTERNS_SHORT` sur 54 lignes (voix, écran et légendes des
 courts, légendes de V1) : 0 violation, aucun appel à l'action. Transcription de chaque court : concaténation de sa
 colonne Voix ; sous-titres : mêmes segments, 42 caractères par ligne au plus.
 
@@ -250,7 +251,7 @@ Destination : R3 (200). Sources : fiche WIKI, Fonctionnement (admis, Filtron).
 | 0-3 s | « Dans ton filtre à huile vissé, il peut y avoir trois clapets. » | « 3 clapets possibles » | filtre en coupe |
 | 3-8 s | « Moi c'est Fafa, le mécano IA d'AutoMecanik. Selon sa conception, ton filtre en a certains, pas forcément tous. » | « Selon la conception du filtre » | — |
 | 8-16 s | « L'anti-retour garde l'huile dans le filtre moteur arrêté, surtout s'il est monté couché ou tête en bas. » | « Anti-retour » | schéma animé, membrane |
-| 16-25 s | « Le by-pass s'ouvre si le filtre est colmaté ou l'huile froide et épaisse : mieux vaut une huile sale que pas d'huile du tout. » | « By-pass » | schéma animé, dérivation |
+| 16-25 s | « Le by-pass s'ouvre si le filtre est colmaté ou l'huile froide et épaisse : le moteur reste alimenté, même en huile non filtrée. » | « By-pass » | schéma animé, dérivation |
 | 25-31 s | « L'anti-siphon garde le filtre plein : au démarrage, l'huile arrive vite au moteur. » | « Anti-siphon » | schéma animé |
 | 31-35 s | « C'est pour ça qu'on le choisit par véhicule. Le détail est dans le guide AutoMecanik. » | « Le guide filtre à huile » | — |
 

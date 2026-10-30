@@ -43,7 +43,7 @@ Les badges servis « Livraison 24-48h », « Retours 30 jours » et « Paiement 
 non vérifiées dans ce lot ; ils ne sont pas repris.
 
 **S4_MICRO_SEO** — `sgpg_micro_seo_block` (contrat `r1.ts` : 1 500 à 3 000 caractères ; constantes : 700 au moins).
-1 741 caractères, 263 mots (mesurés hors marques de statut).
+1 667 caractères, 245 mots (mesurés hors marques de statut, révision 2).
 
 > Le bon filtre à huile se choisit à partir du véhicule, jamais à partir de l'apparence de l'ancien. Des filtres qui
 > se ressemblent peuvent être très différents à l'intérieur selon le moteur : clapet anti-retour présent ou non,
@@ -57,18 +57,17 @@ non vérifiées dans ce lot ; ils ne sont pas repris.
 > motorisation exacte. **[catalogue]**
 >
 > Chaque page véhicule liste les références rattachées à une motorisation précise, avec la référence d'origine quand
-> elle est connue. Comparez entre elles les références proposées pour votre motorisation, pas celles d'une version
-> voisine du même modèle. Certaines fiches précisent aussi la présence d'un clapet anti-retour ou d'un by-pass, ou
-> indiquent qu'une cartouche est livrée avec son joint torique. **[catalogue : critère Version, affichage à vérifier]**
+> elle est connue. Comparez entre elles les références proposées pour votre motorisation. Certaines fiches précisent
+> aussi la présence d'un clapet anti-retour ou d'un by-pass, ou indiquent qu'une cartouche est livrée avec son joint
+> torique. **[catalogue : critère Version, affichage à vérifier]**
 >
 > Pour comparer deux références proposées pour votre véhicule, regardez leurs caractéristiques techniques quand elles
 > sont publiées : forme, hauteur, diamètre extérieur, filetage pour un filtre vissé, pression d'ouverture du by-pass.
 > **[catalogue : critères présents en base, affichage à vérifier]** Plus l'intervalle de remplacement prévu est long,
 > plus la qualité du filtre compte. **[admis : Critères de choix 3]**
 >
-> Pour savoir quand le remplacer et comment le monter, consultez le guide du filtre à huile. Pour comprendre son rôle
-> et ses clapets, voyez sa fiche de référence. Avant d'acheter une pièce pour une panne, passez par le diagnostic.
-> **[éditorial]**
+> Le guide du filtre à huile traite de son remplacement ; sa fiche de référence explique son rôle et ses clapets. Pour
+> chercher l'origine d'un défaut avant d'acheter une pièce, commencez par le diagnostic. **[éditorial]**
 
 **S5_COMPAT** — `sgpg_compatibilities_intro` (min. 60) **[catalogue]**
 
@@ -102,7 +101,7 @@ Renault et PSA » et « alternative OES reconnue » n'ont aucune source admise :
 
 **S8_CROSS_SELL** — `sgpg_family_cross_sell_intro` (min. 50) **[admis : Définition]**
 
-> Les autres filtres de votre véhicule — à air, à carburant, d'habitacle — filtrent d'autres fluides et ont chacun
+> Les autres filtres de votre véhicule (à air, à carburant, d'habitacle) filtrent d'autres fluides et ont chacun
 > leur propre référence.
 
 **S9_FAQ** — `sgpg_faq` (min. 120 mots, 600 caractères) : 5 questions, 187 mots, 1 186 caractères.
@@ -129,7 +128,9 @@ Renault et PSA » et « alternative OES reconnue » n'ont aucune source admise :
 
 Rôle : conseil et procédure autorisés par le contrat R3 (R6 fusionné, ADR-103). Sections de
 `backend/src/config/page-contract-r3.json` ; leur correspondance avec la page servie est déduite de son ordre. H1 servi
-conservé (« Comment changer un filtre à huile »). Sources citées comme dans la fiche : MAHLE, Filtron, notice Renault.
+conservé (« Comment changer un filtre à huile »). Aucune source n'est nommée dans le texte proposé (garde `anti_source`,
+règle du propriétaire). Traçabilité interne : la fiche WIKI cite MAHLE Aftermarket (rôle, choix, intervalle, montage,
+qualité), Filtron (clapets) et la notice de la Renault Clio 5 (voyant).
 
 **En bref** (tête de page, réponse directe) **[admis]**
 
@@ -140,19 +141,19 @@ conservé (« Comment changer un filtre à huile »). Sources citées comme dans
 **S1 — À quoi sert le filtre à huile** **[admis : Rôle technique, Définition, Fonctionnement]**
 
 > Le filtre à huile empêche les impuretés d'entrer dans le circuit de lubrification du moteur. Il aide à préserver la
-> qualité de l'huile, les performances et le rendement du moteur (MAHLE). Il existe sous deux
-> formes. Le filtre vissé réunit le boîtier et l'élément filtrant en un seul bloc, qui se change en entier. La
-> cartouche s'utilise avec un boîtier démontable : seul l'élément filtrant sale est renouvelé. Ne le confondez pas
-> avec le filtre à air, le filtre à carburant ou le filtre d'habitacle, qui filtrent d'autres fluides.
+> qualité de l'huile, les performances et le rendement du moteur. Il existe sous deux formes. Le filtre vissé
+> réunit le boîtier et l'élément filtrant en un seul bloc, qui se change en entier. La cartouche s'utilise avec un
+> boîtier démontable : seul l'élément filtrant sale est renouvelé. Ne le confondez pas avec le filtre à air, le
+> filtre à carburant ou le filtre d'habitacle, qui filtrent d'autres fluides.
 >
 > *Les clapets d'un filtre vissé.* Selon sa conception, fixée par le constructeur du moteur ou du véhicule, un filtre
-> vissé peut comporter trois types de clapets (Filtron) :
+> vissé peut comporter trois types de clapets :
 >
 > - **anti-retour** : le plus souvent une membrane en caoutchouc ; il empêche l'huile de quitter le filtre moteur
 >   arrêté, surtout quand le filtre est monté horizontalement ou tête en bas ;
 > - **de dérivation (by-pass)** : quand le filtre est colmaté ou que l'huile est froide et épaisse, il s'ouvre pour
->   laisser passer l'huile ; une huile sale vaut mieux pour le moteur que pas d'huile du tout. Sa pression
->   d'ouverture diffère selon le moteur (MAHLE) ;
+>   laisser passer l'huile, afin que le moteur reste alimenté, même avec une huile non filtrée. Sa pression
+>   d'ouverture diffère selon le moteur ;
 > - **anti-siphon** : placé côté huile propre, il garde le filtre plein ; au démarrage, l'huile arrive vite au moteur,
 >   ce qui réduit fortement le frottement à sec.
 
@@ -160,8 +161,8 @@ conservé (« Comment changer un filtre à huile »). Sources citées comme dans
 
 > Aux échéances d'entretien fixées par le constructeur du véhicule : reportez-vous au carnet d'entretien ou à la
 > notice. Aucune durée ni aucun kilométrage ne vaut pour tous les véhicules. Un filtre gardé trop longtemps peut se
-> colmater : le by-pass s'ouvre alors pour continuer d'alimenter le moteur, avec une huile qui n'est plus filtrée
-> (Filtron, MAHLE). Plus l'intervalle prévu est long, plus la qualité du filtre compte (MAHLE).
+> colmater : le by-pass s'ouvre alors pour continuer d'alimenter le moteur, avec une huile qui n'est plus filtrée.
+> Plus l'intervalle prévu est long, plus la qualité du filtre compte.
 
 Non servi : « le filtre se change à chaque vidange » **[candidat F-C1]**.
 
@@ -171,7 +172,7 @@ Non servi : « le filtre se change à chaque vidange » **[candidat F-C1]**.
 > d'huile s'allume à la mise du contact, puis s'éteint après quelques secondes. S'il s'allume en roulant, avec le
 > témoin d'arrêt impératif et un signal sonore, il faut s'arrêter impérativement, couper le contact et vérifier le
 > niveau d'huile. Si le niveau est normal, l'alerte a une autre cause, et la notice demande de faire appel à un
-> représentant de la marque (notice Renault). Pour un autre véhicule, suivez sa propre notice.
+> représentant de la marque. Pour un autre véhicule, suivez sa propre notice.
 >
 > Pour orienter la recherche avant d'acheter une pièce : diagnostic AutoMecanik. **[éditorial]**
 
@@ -185,10 +186,9 @@ symptômes au filtre sans source : à retirer (§ 8.4).
 > 2. **Prenez la forme prévue** : filtre vissé ou cartouche, selon le moteur.
 > 3. **Ne vous fiez pas à l'apparence.** Beaucoup de filtres se ressemblent mais diffèrent à l'intérieur selon le
 >    moteur : clapet anti-retour, filetage de raccordement, pression d'ouverture du by-pass, média filtrant, finesse
->    de filtration, surpression admissible (MAHLE).
-> 4. **Regardez la qualité.** MAHLE cite le papier filtrant, le by-pass et le clapet anti-retour comme
->    caractéristiques importantes ; selon le même fabricant, la qualité du montage et de l'entretien compte autant que
->    celle du filtre.
+>    de filtration, surpression admissible.
+> 4. **Regardez la qualité.** Le papier filtrant, le by-pass et le clapet anti-retour font partie des
+>    caractéristiques de qualité d'un filtre. La qualité du montage et de l'entretien compte aussi.
 >
 > Deux versions d'un même modèle peuvent recevoir des références différentes : vérifiez la motorisation exacte dans
 > le sélecteur. **[catalogue]**
@@ -206,7 +206,7 @@ Prêt à servir après admission, non servi aujourd'hui **[candidat F-C2, F-C3, 
 
 **S4_REPOSE — Monter le filtre neuf**
 
-> Même un filtre de qualité ne fonctionne correctement que s'il a été bien monté (MAHLE). Suivez les instructions du
+> Même un filtre de qualité ne fonctionne correctement que s'il a été bien monté. Suivez les instructions du
 > constructeur du véhicule et du fabricant du filtre : ce guide ne donne pas de consigne de serrage valable pour tous
 > les filtres. **[admis : Entretien]** Certaines cartouches sont livrées avec leur joint torique : voyez la fiche de
 > la référence. **[catalogue : valeur « O'ring included » du critère Version]**
@@ -319,8 +319,23 @@ WIKI ; pour les scripts, MEDIA § 3.1) :
 | S1 | « Il aide ainsi à préserver la qualité de l'huile, ainsi que… » | « Il aide à préserver la qualité de l'huile, les performances… » | style, répétition ; sens inchangé |
 | META | « l'essentiel avant de remplacer » | « les points à vérifier avant de remplacer » | promesse d'exhaustivité retirée |
 
+Révision 2 (30/10) : aucune source nommée dans le texte servi (règle du propriétaire ; garde `anti_source` de
+`hard-gates.service.ts`), passe humanizer dans l'adaptation française d'`editorial-review.md` (§ 5, § 11), vocabulaire
+R1 de `.claude/prompts/R1_ROUTER/editorial.md`.
+
+| Section | Avant | Après | Règle |
+|---|---|---|---|
+| R3 S1, S2, S2_DIAG, S3, S4_REPOSE | « (MAHLE) », « (Filtron) », « (Filtron, MAHLE) », « (notice Renault) » | retirés ; traçabilité en annotation interne (§ 1.2) | aucune source nommée |
+| R3 S3, point 4 | « MAHLE cite le papier filtrant […] comme caractéristiques importantes ; selon le même fabricant, la qualité du montage et de l'entretien compte autant que celle du filtre » | « … font partie des caractéristiques de qualité d'un filtre. La qualité du montage et de l'entretien compte aussi. » | § 3 : avis d'un seul fabricant ; sans attribution, portée réduite (« importantes », « autant que » retirés), jamais élargie |
+| R3 S1, clapet by-pass ; C3 16-25 s | « une huile sale vaut mieux pour le moteur que pas d'huile du tout » | « afin que le moteur reste alimenté, même avec une huile non filtrée » | RE-03, maxime ; fait conservé |
+| R1 S4, dernier paragraphe | « Pour savoir… Pour comprendre… Avant d'acheter une pièce pour une panne… » | « Le guide… traite de son remplacement ; sa fiche de référence… Pour chercher l'origine d'un défaut… » | R1 : « panne » (R5) et « comment le monter » (R3) hors rôle ; RE-06 |
+| R1 S4, paragraphe 3 | « …, pas celles d'une version voisine du même modèle » | retiré | RE-23 : troisième reprise dans le même bloc |
+| R1 S8 | incise entre tirets | parenthèses | RE-08 |
+
 Contrôle de fidélité : statuts [admis]/[catalogue]/[candidat] inchangés ; aucun nombre, référence ni compatibilité
-modifié. Verdict : PROPOSITION. Signalement de fond : aucun texte ne peut être servi tant qu'aucun producteur
+modifié ; seule altération de portée, documentée : R3 S3 point 4 (réduite). Contrôle automatique du texte proposé
+(R1, R3, voix et légendes de MEDIA) : 0 nom de source, 0 terme interdit R1, 0 mot de remplissage de la liste RE-10,
+0 tiret. Verdict : PROPOSITION. Signalement de fond : aucun texte ne peut être servi tant qu'aucun producteur
 WIKI → R1/R3 n'existe (FH-3). Espaces insécables et guillemets (RE-T) : à poser à la projection.
 
 ## 4. Références réellement analysées
@@ -399,6 +414,24 @@ promotion. Ce dossier n'écrit ni dans RAW ni dans le WIKI.
 | Pictogrammes : huiler le joint, main, outil barré | C4 | à créer |
 | Composition pour C1, C2, C3, C4 | shorts | absente (§ 3) |
 
+Images servies le 30/10 (bucket `uploads/articles/gammes-produits/`, contrat `frontend/app/types/r1-images.types.ts`).
+Remplacer une image n'est pas fait ici ; PRICE et OG relèvent de la zone STOP.
+
+| Image | Emplacement | Constat | Proposition |
+|---|---|---|---|
+| `r1/filtre-a-huile.webp` | R1 HERO | marque fictive, texte tronqué sur la pièce | à remplacer : photo réelle d'un filtre neuf, sans marque lisible |
+| `r1/filtre-a-huile-2.webp` | R1 TYPES | vissé et cartouche, cotes et joint torique repérés ; libellé « (SPIN-ON) » | réutilisable en R1 S4 et R3 S1 après retrait de « (SPIN-ON) », anglicisme interdit en R1 |
+| `r1/filtre-a-huile-3.webp` | R1 PRICE | fourchettes de prix | non reprise ; zone STOP, signalée seulement |
+| `r1/filtre-a-huile-4.webp` | R1 LOCATION | « zone basse moteur » sans source ; personnage généré par IA | non reprise |
+| `r1/filtre-a-huile-og.webp` | R1 og:image | « Dès 5€ — Livraison 24h » | zone STOP, signalée seulement |
+| `catalogue/filtre-a-huile.webp` | R3 hero, og:image R3 | source de 225 × 165 px agrandie, floue | à remplacer |
+| logos `equipementiers-automobiles/*.webp` | R1 S7 | réels ; WIX FILTERS sans logo (`default.svg`) | réutilisés |
+| vignettes `catalogue/*.webp` de la famille Filtres | R1 S8, R3 S7 | habitacle et boîte auto cassées (FH-14) | réutilisées ; habitacle par `pg_img` |
+| — | R3 S1, C3 | schéma des clapets absent | WIKI `function_diagram` en DEFERRED |
+| — | R3 S2_DIAG, C1 | pictogramme du témoin de pression d'huile absent | à créer |
+
+Aperçu de relecture avant/après avec ces images : généré hors dépôt depuis le § 1 (non versionné, projection).
+
 Raccordements techniques : [HANDOFF.md](HANDOFF.md).
 
 ## 8. Annexes
@@ -461,6 +494,7 @@ classement ni de ventes n'est promis.
 | R1 | réduction de « 30 à 50 % » de la durée de vie ; « à chaque vidange, soit entre 15 000 et 30 000 km… ou au minimum une fois par an » | sans source ; retirés de la fiche WIKI |
 | R1 | ISO 4548-12 et 4548-1 pour « tous les filtres proposés » ; VW 502.00 et BMW LL-01 présentées comme une certification du filtre | sans source ; 502.00 et LL-01 sont des normes d'huile |
 | R1 | prix (« 5 € à 30 € », « 80 et 150 € »), expédition « le jour même avant 15h », « 2 847 diagnostics ce mois » | promesses non vérifiées ; prix hors rôle R1 |
+| R1 | vignettes « Filtre d'habitacle » et « Filtre de boîte auto » | objets absents du stockage (`NoSuchKey`), image cassée (FH-14) |
 | R3 | procédure de remplacement composée de texte WIX en anglais extrait brut | contenu RAW servi au public |
 | R3 | « 10 000 à 30 000 km », « Diesel moderne 15 000-20 000 km », « Longlife jusqu'à 30 000 km » | sans source |
 | R3 | liste de symptômes du filtre ; « couper le moteur et vérifier le serrage du filtre » si le voyant reste allumé | attribution non établie |

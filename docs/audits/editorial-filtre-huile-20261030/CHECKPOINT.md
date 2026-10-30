@@ -10,7 +10,7 @@ worktrees Codex non modifiés (lecture seule : `node_modules` du worktree Codex 
 
 Lot 1 : [AUDIT.md](AUDIT.md) (textes R1 et R3, scripts, choix, références, liens, faits candidats F-C1 à F-C9,
 assets, annexes GSC, catalogue et écarts servis) ; [MEDIA.md](MEDIA.md) (V1, C1 à C4, scènes, SRT, vignette,
-légendes, liens UTM) ; [HANDOFF.md](HANDOFF.md) (FH-1 à FH-13, reproductions) ; dossier vidéo
+légendes, liens UTM) ; [HANDOFF.md](HANDOFF.md) (FH-1 à FH-14, reproductions) ; dossier vidéo
 `workspaces/marketing/fafa-media-factory/scripts/draft/fafa-filtre-huile-001/` (6 fichiers).
 
 Preuves : fiche WIKI `wiki/gamme/filtre-a-huile.md`, commit WIKI `a4783348`, blob `c0f7a257`, sha256 `773367f7531a2c35…`
@@ -20,6 +20,9 @@ du fichier lu ; présente au même blob dans le sous-module `88017732`. Pages du
 `INVALID_claim-table: data/claims/0/human_validated must be equal to constant`. G3 recalculée avec les 14 motifs du
 code : V1 0 violation sur 17 lignes ; courts et légendes 0 sur 54. Relecture éditoriale (révision 1) : quatre
 altérations de condition ou de certitude corrigées (MEDIA § 3.1, AUDIT § 3) ; G3 et validateur relancés, inchangés.
+Révision 2 (AUDIT § 3) : noms de sources retirés du texte servi, passe humanizer, vocabulaire R1 contrôlé ; contrôle
+automatique 0 source, 0 terme interdit R1, 0 tiret ; G3 relancée sur les 54 lignes des courts, 0 violation ; dossier
+V1 inchangé, validateur non relancé. Images inventoriées (AUDIT § 7) ; vignettes cassées en FH-14.
 
 Limites : fiche promue automatiquement, sans relecture humaine ; aucun producteur WIKI → R1/R3 (FH-3) ; aucun format
 court vertical de référence réellement analysé ; Carter-Cash et Tomorrow's Technician non consultables (vérification
@@ -42,11 +45,11 @@ reporter telle quelle :
   "environment": "Claude Code Desktop, worktree nestjs-remix-monorepo-editorial, branche docs/editorial-filtre-huile-dossier-20261030, base 980b2f8a7 ; fiche WIKI a4783348 (blob c0f7a257, aussi dans le sous-module 88017732).",
   "state": "REVIEW_REQUIRED. Textes R1/R3 proposés avec statut par phrase ; V1 fafa-filtre-huile-001 script écrit, non validé, non rendu ; C1-C3 scripts écrits sans composition ; C4 bloqué par F-C2 à F-C4.",
   "changes": "docs/audits/editorial-filtre-huile-20261030/{AUDIT,MEDIA,HANDOFF,CHECKPOINT}.md ; workspaces/marketing/fafa-media-factory/scripts/draft/fafa-filtre-huile-001/ (6 fichiers).",
-  "checks": "Validateur Fafa sortie 1 (claims procedure/safety sans validation humaine) ; G3 0 violation (17 + 54 lignes) ; relecture éditoriale, révision 1 ; pages relues après le tag du 30/10 ; reproductions FH-1 à FH-13 exécutées.",
+  "checks": "Validateur Fafa sortie 1 (claims procedure/safety sans validation humaine) ; G3 0 violation (17 + 54 lignes) ; relecture éditoriale, révision 1 ; pages relues après le tag du 30/10 ; reproductions FH-1 à FH-14 exécutées ; révision 2 : aucune source nommée dans le texte servi, passe humanizer, vocabulaire R1 contrôlé (0 occurrence).",
   "decisions": "Aucun symptôme attribué au filtre ; aucune valeur universelle (km, couple, tours) ; procédures MAHLE/WIX gardées en candidates ; S0 et meta non modifiés ; 19052 et 19053 traités séparément.",
-  "next_action": "Owner : spot-check de la fiche WIKI, validation des 3 claims de V1, choix de l'accroche, décision sur les champs protégés. Chaîne WIKI : F-C2 à F-C7. Claude CLI : FH-1 à FH-13. Marwane : constater le déploiement du tag v2026.10.30."
+  "next_action": "Owner : spot-check de la fiche WIKI, validation des 3 claims de V1, choix de l'accroche, décision sur les champs protégés. Chaîne WIKI : F-C2 à F-C7. Claude CLI : FH-1 à FH-14. Marwane : constater le déploiement du tag v2026.10.30."
 }
 ```
 
-Prochaine action : relecture humaine de la fiche et des trois claims ; transmettre FH-1 à FH-13 à Claude CLI ;
+Prochaine action : relecture humaine de la fiche et des trois claims ; transmettre FH-1 à FH-14 à Claude CLI ;
 admettre ou écarter F-C1 à F-C9 ; puis lot suivant dans l'ordre du programme.
