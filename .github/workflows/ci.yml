@@ -1355,6 +1355,18 @@ jobs:
           PLAYWRIGHT_BASE_URL: http://localhost:3200
           E2E_RATE_BUDGET: "true"
 
+      - name: Measure mobile product close on the qualified PREPROD SHA
+        timeout-minutes: 15
+        run: node scripts/ci/catalog-mobile-performance.mjs
+
+      - name: Upload mobile performance evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: catalog-mobile-performance-${{ github.sha }}
+          path: output/catalog-mobile-performance/
+          retention-days: 14
+
       # Diagnostic root-cause sur échec E2E. Le runner self-hosted EST l'hôte
       # PREPROD (49.12.233.2) : on capture l'état exact du container + la mémoire
       # hôte au moment de l'échec. Sert à distinguer OOM-kill (capacité) vs crash
