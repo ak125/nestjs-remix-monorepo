@@ -19,7 +19,7 @@ recoupent parce que le filtre à huile en a besoin pour son compte).
 | État | Statut au 30/10 | Preuve ou motif |
 |---|---|---|
 | rédigé | oui | `integration/` (4 fichiers), `assets/` (8 visuels + sources SVG), `tools/`, `PROMPTS.md`, ce fichier |
-| accessible | voir § 6 | branche poussée et PR brouillon de revue (aucune fusion) |
+| accessible | oui | branche poussée sur `origin` ; PR brouillon de revue [ak125/nestjs-remix-monorepo#1935](https://github.com/ak125/nestjs-remix-monorepo/pull/1935), à ne pas fusionner. Glob `docs/audits/editorial-*/**` ajouté au registre L2 (D5, `@ak125/content-team`) pour la garde des nouveaux fichiers |
 | transmis | **non** | aucun canal vers une session Claude CLI : aucune session joignable depuis Claude Code Desktop, aucune cible SSH, Remote Control hors ligne ; Hermes (`automecanik_continuity`) indisponible dans la session. Transmission à effectuer : ouvrir Claude CLI sur le dépôt et coller la consigne ci-dessus |
 | pris en charge | non | — |
 | intégré et vérifié en DEV | non | — |

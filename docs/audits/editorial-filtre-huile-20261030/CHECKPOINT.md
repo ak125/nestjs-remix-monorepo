@@ -20,7 +20,12 @@ playwright).
 | Images et scènes manquantes, moyen réel pour chacune | `PROMPTS.md` | manques, pas des livrables |
 | Scripts | `tools/build-assets.cjs`, `build-pictos.cjs`, `build-preview.cjs`, `lint-integration.cjs` | exécutés le 30/10 |
 | Aperçu | `preview/` | simulation non intégrée, pas un rendu DEV |
-| Mission Claude CLI, FH-1 à FH-16 requalifiés | `HANDOFF.md` | rédigé ; transmission : voir HANDOFF § 1 |
+| Mission Claude CLI, FH-1 à FH-16 requalifiés | `HANDOFF.md` | rédigé, accessible ; transmis : non (HANDOFF § 1) |
+
+Partage : branche poussée, PR brouillon de revue
+[ak125/nestjs-remix-monorepo#1935](https://github.com/ak125/nestjs-remix-monorepo/pull/1935), sans fusion ni
+déploiement. Entrée de registre L2 `docs/audits/editorial-*/**` (D5, `@ak125/content-team`, confiance medium) ajoutée
+pour la garde des nouveaux fichiers, sur le modèle de `docs/audits/diagnostic-*/**`.
 
 Preuves de la révision 3 :
 
@@ -71,8 +76,8 @@ Hermes : checkpoint **non enregistré**, `automecanik_continuity` indisponible d
   "objective": "Lot 1 filtre à huile (pg_id 7) : pages R1/R3 existantes améliorées (textes, images, scripts) et intégration en DEV par Claude CLI.",
   "authorization": "Mandat utilisateur du 2026-10-30 : travail réversible ; push de la branche filtre à huile et PR brouillon de revue autorisés, sans fusion ni déploiement ; plaquettes en attente, sans push ni PR.",
   "environment": "Claude Code Desktop, worktree nestjs-remix-monorepo-editorial, branche docs/editorial-filtre-huile-dossier-20261030, base 980b2f8a7 ; fiche WIKI a4783348 (blob c0f7a257).",
-  "state": "REVIEW_REQUIRED. Textes R1/R3 intégrables (integration/), 8 visuels produits (assets/), aperçu simulé (preview/), mission Claude CLI rédigée (HANDOFF). Transmis à Claude CLI : non. Pris en charge : non. Vérifié en DEV : non.",
-  "changes": "docs/audits/editorial-filtre-huile-20261030/ : AUDIT, MEDIA, HANDOFF, CHECKPOINT, PROMPTS, integration/, assets/, tools/, preview/.",
+  "state": "REVIEW_REQUIRED. Textes R1/R3 intégrables (integration/), 8 visuels produits (assets/), aperçu simulé (preview/), mission Claude CLI rédigée (HANDOFF). Accessible : PR brouillon ak125/nestjs-remix-monorepo#1935. Transmis à Claude CLI : non. Pris en charge : non. Vérifié en DEV : non.",
+  "changes": "docs/audits/editorial-filtre-huile-20261030/ : AUDIT, MEDIA, HANDOFF, CHECKPOINT, PROMPTS, integration/, assets/, tools/, preview/ ; .spec/00-canon/repository-registry/ownership.yaml : glob docs/audits/editorial-*/** (D5).",
   "checks": "lint-integration PASS (70 unités) ; build-preview : routage sg_content 2/1/1/1, 0 image cassée en 375 et 1280 px ; build-assets reproductible ; reproductions FH-1 à FH-16 à 14:09:55Z.",
   "decisions": "Aucun symptôme attribué au filtre ; aucune valeur universelle ; F-C2 non universel ; LOCATION désélectionnée ; PRICE et OG remplacés sans prix ni délai ; title, meta et H1 non modifiés ; 19052 et 19053 séparés.",
   "next_action": "Claude CLI : HANDOFF.md (FH-1 à FH-16, intégration et rendu DEV). Owner : spot-check WIKI, admission F-C1 à F-C11, claims V1, décisions FH-15 et FH-16, prises de vue PROMPTS.md."
