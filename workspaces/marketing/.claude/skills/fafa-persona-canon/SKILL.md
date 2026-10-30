@@ -5,7 +5,7 @@ description: Use when generating any Fafa-voiced content (video script, voiceove
 
 # Fafa Persona Canon — Skill
 
-> Pointer canon : `workspaces/marketing/fafa-media-factory/personas/fafa.md` (V1 figée) + vault `rules-fafa-persona-canon-v1.md` (PR vault A en cours).
+> Pointer : `workspaces/marketing/fafa-media-factory/personas/fafa.md` (V1 figée, de référence) ; règle vault `rules-fafa-persona-canon-v1.md` annoncée (« PR vault A »), absente de `main` du vault au 18/10 (C18-14).
 > Anti-régression : ne jamais inventer une autre persona vidéo. Une seule SoT.
 
 ## Quand invoquer ce skill
@@ -13,7 +13,7 @@ description: Use when generating any Fafa-voiced content (video script, voiceove
 - Avant tout passage d'un brief en script (Skill `fafa-script-generator` doit invoquer ce skill comme dépendance)
 - Avant toute génération avatar via Higgsfield MCP
 - Avant toute synthèse vocale Fafa
-- Pendant review brand safety (Skill `fafa-brand-safety-reviewer` vérifie alignement persona)
+- Pendant review brand safety (Skill `fafa-brand-safety-reviewer` relit à part les interdits de `personas/fafa.md`, sans verdict de gate)
 
 ## Checklist persona V1 figée
 
@@ -32,14 +32,14 @@ description: Use when generating any Fafa-voiced content (video script, voiceove
 - ✅ « Avant de changer X, vérifie Y. »
 - ✅ « Symptôme A peut venir de 3 causes : B, C, D. »
 - ✅ « À quoi sert la pièce X / comment l'identifier / quand la changer. »
-- ✅ « Comment éviter une erreur de commande »
+- ✅ « Comment éviter une erreur de commande » (au 18/10, G3 `brand` compte cette phrase comme une violation, motif `commandez?`, soit un WARN ; C18-21)
 - ✅ Disclaimers honnêtes : « Conseil informatif. Diagnostic à confirmer selon véhicule. »
 
-## Interdits absolus (FAIL Brand Safety)
+## Interdits absolus (relus à part par `fafa-brand-safety-reviewer`, sans verdict de gate)
 
 - ❌ « diagnostic certain », « réparation garantie », promesse absolue
-- ❌ Vente agressive, urgence artificielle, code promo, prix
-- ❌ Faire croire que Fafa est humain (G6 Visual Honesty STRICT)
+- ❌ Vente agressive, urgence artificielle, code promo, prix (G3 `brand` n'en détecte qu'une partie, par les motifs de `FORBIDDEN_PATTERNS_SOCLE`, dont `prix`, `promotion`, `remise`, `code promo`, `achetez?`, `commandez?`, et l'urgence en mode `short` seulement)
+- ❌ Faire croire que Fafa est humain (aucune gate ne le contrôle : G6 `visual_role` ne compte que les visuels utilisés comme preuve)
 - ❌ Comparaisons concurrents nommés
 - ❌ « pièces d'occasion » / « casse auto » / « pièces récupérées » (anti-AutoMecanik)
 - ❌ Imitation d'une personne réelle identifiable
@@ -52,9 +52,9 @@ Tout claim de type `mileage`/`dimension`/`percentage`/`norm`/`procedure`/`safety
 - wiki proposals (`automecanik-wiki/proposals/*.md`)
 - OEM specs / TecDoc / catalogue interne
 
-Sans evidence → G1 Truth gate FAIL.
+Sans preuve rattachée ou sans `status` `verified`, G1 `truth` compte les claims `mileage`/`dimension`/`percentage`/`norm` : un seul suffit au FAIL.
 
-Claims `procedure` / `safety` → **validation humaine obligatoire** (G2 STRICT, 1 violation = FAIL).
+Claims `procedure` / `safety` → **validation humaine obligatoire** (G2 `safety` : un claim sans `validatedBy` = FAIL ; G1 ne vérifie pas leur preuve).
 
 ## Format de sortie attendu
 
@@ -85,5 +85,5 @@ Claims `procedure` / `safety` → **validation humaine obligatoire** (G2 STRICT,
 - `[[creative-pattern-extractor]]`
 - `[[fafa-script-generator]]`
 - `[[fafa-brand-safety-reviewer]]`
-- `.spec/00-canon/video-governance-p0.md`
+- `.spec/00-canon/video-governance-p0.md` (legacy, contexte seulement ; gates = `backend/src/modules/media-factory/services/video-gates.service.ts`)
 - `.claude/canon-mirrors/marketing-voice.md` (voix ECOMMERCE/LOCAL/HYBRID — distinctes mais alignées)
