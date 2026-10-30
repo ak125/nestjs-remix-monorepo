@@ -45611,7 +45611,7 @@
         "~/utils/funnel-beacon"
       ],
       "kind": "config",
-      "loc": 958,
+      "loc": 969,
       "owner": "__unassigned__",
       "path": "frontend/app/components/diagnostic-wizard/DiagnosticWizard.tsx",
       "risk": "low",
@@ -45632,11 +45632,12 @@
         "frontend/app/components/diagnostic-wizard/steps/StepVehicle.tsx"
       ],
       "imports": [
+        "@repo/database-types",
         "~/components/ui/combobox",
         "~/services/api/enhanced-vehicle.api"
       ],
       "kind": "config",
-      "loc": 89,
+      "loc": 154,
       "owner": "__unassigned__",
       "path": "frontend/app/components/diagnostic-wizard/hooks/use-diagnostic-vehicle-selector.ts",
       "risk": "low",
@@ -45694,7 +45695,7 @@
         "~/components/ui/button"
       ],
       "kind": "config",
-      "loc": 191,
+      "loc": 192,
       "owner": "__unassigned__",
       "path": "frontend/app/components/diagnostic-wizard/results/DiagnosticResults.tsx",
       "risk": "low",
@@ -45797,7 +45798,7 @@
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 137,
+      "loc": 158,
       "owner": "__unassigned__",
       "path": "frontend/app/components/diagnostic-wizard/results/ResultCatalog.tsx",
       "risk": "low",
@@ -45870,7 +45871,7 @@
         "~/utils/url-builder.utils"
       ],
       "kind": "config",
-      "loc": 195,
+      "loc": 213,
       "owner": "__unassigned__",
       "path": "frontend/app/components/diagnostic-wizard/results/ResultMaintenance.tsx",
       "risk": "low",
@@ -46071,7 +46072,7 @@
         "~/components/ui/label"
       ],
       "kind": "config",
-      "loc": 265,
+      "loc": 333,
       "owner": "__unassigned__",
       "path": "frontend/app/components/diagnostic-wizard/steps/StepVehicle.tsx",
       "risk": "low",
@@ -46101,7 +46102,7 @@
         "frontend/app/components/diagnostic-wizard/steps/StepMaintenance.tsx"
       ],
       "kind": "config",
-      "loc": 155,
+      "loc": 163,
       "owner": "__unassigned__",
       "path": "frontend/app/components/diagnostic-wizard/types.ts",
       "risk": "low",
@@ -62945,7 +62946,7 @@
         "@repo/seo-url-contract"
       ],
       "kind": "service",
-      "loc": 161,
+      "loc": 210,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/url-builder.utils.ts",
       "risk": "low",
@@ -64489,7 +64490,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 137,
+      "loc": 225,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/diagnostic-result-links.test.tsx",
       "risk": "low",
@@ -64549,6 +64550,25 @@
       "loc": 242,
       "owner": "__unassigned__",
       "path": "frontend/tests/unit/diagnostic-session-recovery.test.tsx",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "frontend/tests/unit/diagnostic-wizard-motorisation.test.tsx",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 232,
+      "owner": "__unassigned__",
+      "path": "frontend/tests/unit/diagnostic-wizard-motorisation.test.tsx",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
