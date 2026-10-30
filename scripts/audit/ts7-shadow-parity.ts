@@ -334,6 +334,27 @@ export function ensureTs7(): string {
   return bin;
 }
 
+type LockPackages = Record<string, { optional?: boolean }>;
+
+/**
+ * Nested installs the root lockfile pins under `<project>/node_modules` that are
+ * absent on disk. npm hoists into the root `node_modules`, so a workspace gets
+ * its own `node_modules` only for what the lockfile pins there: after a clean
+ * `npm ci` most workspaces have none, and the directory's absence proves
+ * nothing. Optional entries are skipped — npm omits the ones built for another
+ * platform (`@esbuild/darwin-*`, `fsevents`).
+ */
+export function missingNestedInstalls(
+  lockPackages: LockPackages,
+  project: string,
+  exists: (relPath: string) => boolean,
+): string[] {
+  const prefix = `${project}/node_modules/`;
+  return Object.keys(lockPackages)
+    .filter((key) => key.startsWith(prefix) && !lockPackages[key].optional && !exists(key))
+    .sort();
+}
+
 /**
  * Refuse to measure a half-installed tree.
  *
@@ -351,7 +372,29 @@ export function preflight(projects: string[]): void {
     problems.push("node_modules/typescript is missing (TS6 baseline unavailable)");
   }
 
+  const lockPath = path.join(REPO_ROOT, "package-lock.json");
+  let lockPackages: LockPackages = {};
+  if (fs.existsSync(lockPath)) {
+    lockPackages = JSON.parse(fs.readFileSync(lockPath, "utf8")).packages ?? {};
+  } else {
+    problems.push("package-lock.json is missing — nested installs cannot be checked");
+  }
+
   for (const project of projects) {
+    if (lockPackages[project]) {
+      // Workspace of the root lockfile: check what npm owes it, not the directory.
+      const missing = missingNestedInstalls(lockPackages, project, (rel) =>
+        fs.existsSync(path.join(REPO_ROOT, rel)),
+      );
+      if (missing.length) {
+        problems.push(
+          `${project}: ${missing.length} nested install(s) pinned by package-lock.json are missing (first: ${missing[0]})`,
+        );
+      }
+      continue;
+    }
+    // Not a workspace (e.g. services/remotion-renderer, own lockfile): its deps
+    // can only resolve from its own node_modules.
     const pkg = path.join(REPO_ROOT, project, "package.json");
     if (!fs.existsSync(pkg)) continue;
     const manifest = JSON.parse(fs.readFileSync(pkg, "utf8"));

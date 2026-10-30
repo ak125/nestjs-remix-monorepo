@@ -165,6 +165,14 @@ export class OutboxRelayProcessor implements OutboxRelayPublisher {
     row: OutboxRow,
   ): Promise<void> {
     if (queueName === R8_ENRICHMENT_QUEUE_NAME) {
+      // R8SnapshotUpdated announces a snapshot that is already published.
+      // Re-enriching its type_id calls __seo_r8_publish_snapshot again, which
+      // inserts a new R8SnapshotUpdated on every call (idempotent hit
+      // included) : an endless self-loop. No consumer ships yet
+      // (OUTBOX_EVENT_ROUTING) — the relay only marks the event published.
+      if (eventType === 'R8SnapshotUpdated') {
+        return;
+      }
       const typeId = this.extractTypeIdFromAggregateId(row.aggregate_id);
       if (typeId === null) {
         throw new Error(

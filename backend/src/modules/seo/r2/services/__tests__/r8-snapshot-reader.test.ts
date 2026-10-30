@@ -36,68 +36,72 @@ const validSnapshotRow = {
   created_at: '2026-05-15T10:00:00Z',
 };
 
-function makeFakeSupabaseFound(snapshotRow: typeof validSnapshotRow | null) {
+interface FakePageRow {
+  type_id: string;
+  current_snapshot_id: number | null;
+  snapshot: typeof validSnapshotRow | null;
+}
+
+/**
+ * `__seo_r8_pages` filtered on type_id. Awaiting the filter returns every row ;
+ * `maybeSingle()` fails on several rows, as PostgREST does.
+ */
+function makeFakeSupabase(
+  rows: FakePageRow[] | null,
+  error: { message: string } | null = null,
+  eqCalls: unknown[][] = [],
+) {
   return {
     from(_table: string) {
       return {
         select: (_cols: string) => ({
-          eq: (_col: string, _val: number) => ({
-            maybeSingle: () =>
-              Promise.resolve({
-                data: snapshotRow
-                  ? {
-                      type_id: snapshotRow.type_id,
-                      current_snapshot_id: snapshotRow.id,
-                      snapshot: snapshotRow,
-                    }
-                  : null,
-                error: null,
-              }),
-          }),
+          eq: (col: string, val: unknown) => {
+            eqCalls.push([col, val]);
+            const result = Promise.resolve({ data: rows, error });
+            return Object.assign(result, {
+              maybeSingle: () =>
+                Promise.resolve(
+                  error || !rows
+                    ? { data: null, error }
+                    : rows.length > 1
+                      ? {
+                          data: null,
+                          error: {
+                            message:
+                              'JSON object requested, multiple (or no) rows returned',
+                          },
+                        }
+                      : { data: rows[0] ?? null, error: null },
+                ),
+            });
+          },
         }),
       };
     },
   };
+}
+
+function pageRow(
+  snapshotRow: typeof validSnapshotRow | null,
+  pointer: number | null = snapshotRow ? snapshotRow.id : null,
+): FakePageRow {
+  return {
+    type_id: '12345',
+    current_snapshot_id: pointer,
+    snapshot: pointer === null ? null : snapshotRow,
+  };
+}
+
+function makeFakeSupabaseFound(snapshotRow: typeof validSnapshotRow | null) {
+  return makeFakeSupabase(snapshotRow ? [pageRow(snapshotRow)] : []);
 }
 
 function makeFakeSupabaseNoPointer() {
-  return {
-    from(_table: string) {
-      return {
-        select: (_cols: string) => ({
-          eq: (_col: string, _val: number) => ({
-            maybeSingle: () =>
-              Promise.resolve({
-                data: {
-                  type_id: 12345,
-                  current_snapshot_id: null,
-                  snapshot: null,
-                },
-                error: null,
-              }),
-          }),
-        }),
-      };
-    },
-  };
+  return makeFakeSupabase([pageRow(null)]);
 }
 
 function makeFakeSupabaseSqlError() {
-  return {
-    from(_table: string) {
-      return {
-        select: (_cols: string) => ({
-          eq: (_col: string, _val: number) => ({
-            maybeSingle: () =>
-              Promise.resolve({
-                data: null,
-                error: { message: 'connection refused' },
-              }),
-          }),
-        }),
-      };
-    },
-  };
+  return makeFakeSupabase(null, { message: 'connection refused' });
 }
 
 function createService(
@@ -196,6 +200,68 @@ describe('R8SnapshotReaderService', () => {
       if (result.found === false) {
         expect(result.reason).toBe('r8_snapshot_unavailable');
       }
+    });
+
+    it('filters __seo_r8_pages on the TEXT form of type_id', async () => {
+      const eqCalls: unknown[][] = [];
+      const svc = createService(
+        makeFakeSupabase([pageRow(validSnapshotRow)], null, eqCalls),
+      );
+      await svc.getLatestSnapshot(12345);
+      expect(eqCalls).toEqual([['type_id', '12345']]);
+    });
+
+    it('reads a type_id carried by several page rows (same pointer)', async () => {
+      // Observed 2026-10-29 : type_id 19053 has two rows (two page_key).
+      const svc = createService(
+        makeFakeSupabase([
+          pageRow(validSnapshotRow),
+          pageRow(validSnapshotRow),
+        ]),
+      );
+      const result = await svc.getLatestSnapshot(12345);
+      expect(result.found).toBe(true);
+      if (result.found) {
+        expect(result.snapshot.id).toBe(42);
+      }
+    });
+
+    it('reads the pointer when a sibling page row has none yet', async () => {
+      const svc = createService(
+        makeFakeSupabase([pageRow(null), pageRow(validSnapshotRow)]),
+      );
+      const result = await svc.getLatestSnapshot(12345);
+      expect(result.found).toBe(true);
+    });
+
+    it('refuses to pick a version when page rows disagree, and does not cache it', async () => {
+      const fakeCache: R8SnapshotCacheClient = {
+        get: jest.fn().mockResolvedValue(null),
+        setEx: jest.fn().mockResolvedValue(undefined),
+        del: jest.fn().mockResolvedValue(undefined),
+      };
+      const svc = createService(
+        makeFakeSupabase([
+          pageRow(validSnapshotRow),
+          pageRow({ ...validSnapshotRow, id: 43 }),
+        ]),
+        fakeCache,
+      );
+      const errors: string[] = [];
+      (
+        svc as unknown as { logger: { error: (m: string) => void } }
+      ).logger.error = (m: string) => {
+        errors.push(m);
+      };
+      const result = await svc.getLatestSnapshot(12345);
+      expect(result.found).toBe(false);
+      if (result.found === false) {
+        expect(result.reason).toBe('r8_snapshot_unavailable');
+      }
+      expect(errors.join('\n')).toMatch(
+        /disagree on current_snapshot_id: 42, 43/,
+      );
+      expect(fakeCache.setEx).not.toHaveBeenCalled();
     });
 
     it('throws on invalid typeId (0, negative, non-integer)', async () => {
