@@ -3,7 +3,7 @@
  * scripts/registry/check-new-files.js — Phase 2 gate logic.
  *
  * Used by CI (`.github/workflows/registry-new-file-gate.yml`) and by
- * pre-push hook. For each newly-added file (since the PR base or last push),
+ * pre-push hook. For each file the branch adds (since its merge-base with --base),
  * verifies BOTH conditions per ADR-058 §PR-G :
  *
  *   1. **Owner resolved** : file path matches ≥ 1 glob in ownership.yaml
@@ -28,7 +28,7 @@
  * Usage :
  *   node scripts/registry/check-new-files.js [--base <ref>] [--quiet] [--json]
  *
- *   --base <ref>  : git ref to diff against (default: origin/main)
+ *   --base <ref>  : diff from the merge-base of HEAD and <ref> (default: origin/main)
  *   --json        : emit JSON report on stdout instead of human summary
  *   --quiet       : suppress per-file log lines
  *
@@ -169,32 +169,22 @@ function getNewFiles(baseRef) {
 
   // execFileSync uses arg array (no shell), so even if validation slips,
   // the ref would be a literal argv not a shell-interpreted string.
+  //
+  // `base...HEAD` diffs from the merge-base : only what the branch added. The
+  // pre-push hook runs on the branch tip, and a two-dot `base..HEAD` there also
+  // lists every file the base deleted since the branch point. In CI, on the PR
+  // merge ref, the merge-base is the base itself : same result.
   try {
     const out = execFileSync(
       "git",
-      ["diff", "--diff-filter=A", "--name-only", `${safeRef}..HEAD`],
+      ["diff", "--diff-filter=A", "--name-only", `${safeRef}...HEAD`],
       { encoding: "utf8", cwd: MONOREPO_ROOT }
     );
     return out.split("\n").filter(Boolean);
   } catch (err) {
-    // Fallback : if baseRef inaccessible, try a merge-base
-    try {
-      const mb = execFileSync(
-        "git",
-        ["merge-base", "HEAD", safeRef],
-        { encoding: "utf8", cwd: MONOREPO_ROOT }
-      ).trim();
-      const out = execFileSync(
-        "git",
-        ["diff", "--diff-filter=A", "--name-only", `${mb}..HEAD`],
-        { encoding: "utf8", cwd: MONOREPO_ROOT }
-      );
-      return out.split("\n").filter(Boolean);
-    } catch (err2) {
-      throw new Error(
-        `Cannot compute new files diff vs ${safeRef}: ${err.message}`
-      );
-    }
+    throw new Error(
+      `Cannot compute new files diff vs ${safeRef}: ${err.message}`
+    );
   }
 }
 
