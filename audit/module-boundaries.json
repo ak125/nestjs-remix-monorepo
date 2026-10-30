@@ -814,7 +814,7 @@
         "backend/src/modules/seo-projection"
       ],
       "files_count": 22,
-      "loc_total": 5352,
+      "loc_total": 5777,
       "has_barrel": false
     },
     "seo-shadow-observatory": {
