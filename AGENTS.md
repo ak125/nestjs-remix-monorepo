@@ -37,7 +37,7 @@ imports ou le chargement des `.claude/rules/` de Claude Code.
 **CONTRAT DE SORTIE** : `.claude/canon-mirrors/agent-exit-contract.md`.
 Présenter les corrections autorisées, les preuves du périmètre et leurs limites.
 L'autorisation déjà donnée ne doit pas être redemandée pour chaque étape.
-Une relecture française n'est dite « relecture appliquée » que si la sortie
-contient les champs de « Sortie attendue » d'`editorial-review.md`, dont `lecture`.
-Sinon, écrire « relecture partielle » et nommer ce qui manque ; un résumé ne
-remplace pas ces champs.
+Une relecture française n'est dite « relecture appliquée », dans `lecture` ou
+ailleurs dans la sortie, qu'après le « Contrôle avant déclaration »
+d'`editorial-review.md`, rempli condition par condition sur la sortie écrite.
+Sinon, écrire « relecture partielle » et nommer les conditions non remplies.

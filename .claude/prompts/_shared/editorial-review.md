@@ -1,6 +1,6 @@
 # RELECTURE ÉDITORIALE (bloc partagé)
 
-> **Version 1.2.0 — 2026-10-30.** Référence opérationnelle commune à Claude, Codex et Hermes
+> **Version 1.3.0 — 2026-10-30.** Référence opérationnelle commune à Claude, Codex et Hermes
 > pour relire un brouillon français AutoMecanik. **Non canon** : en cas de conflit, le canon du
 > vault prime (`rules-marketing-voice`, miroir `.claude/canon-mirrors/marketing-voice.md` ;
 > ADR-031, ADR-046, ADR-086), puis l'état réel du dépôt. Ce fichier pointe vers le canon, il ne
@@ -14,6 +14,9 @@
 > Pilote 1.2.0 : contrat « Lecture, application et déclaration », après un essai où la
 > relecture était déclarée appliquée sur une lecture qui s'arrêtait avant « Sortie attendue ».
 > Les résultats d'un essai 1.1.0 ne qualifient pas cette version.
+> Pilote 1.3.0 : « Contrôle avant déclaration », jugé sur le contenu de chaque champ, après des
+> essais où les noms des champs de sortie étaient remplis d'un résumé. Les résultats d'un essai
+> 1.2.0 ne qualifient pas cette version.
 
 ## 1. Ce que fait la relecture
 
@@ -36,10 +39,11 @@ dans RAW ni dans WIKI, et ne remplace aucun contrôle existant.
 Lire ce fichier n'est pas appliquer sa méthode. La méthode est appliquée quand ses étapes ont
 produit leur trace dans la sortie.
 
-1. **Lire les sections opérantes, en entier, avant de relire** : « Ce que fait la relecture »,
-   « Ordre de priorité », « Faits protégés », « Champs modifiables et champs protégés » avec
-   « Sources et sortie publique », « Ce que la relecture corrige », « Typographie française »,
-   « Ton par format », « Sortie attendue » et « Règles de Humanizer écartées ou adaptées ».
+1. **Lire les sections opérantes, en entier, avant de relire** : « Ce que fait la relecture »
+   avec ce contrat et son « Contrôle avant déclaration », « Ordre de priorité », « Faits
+   protégés », « Champs modifiables et champs protégés » avec « Sources et sortie publique »,
+   « Ce que la relecture corrige », « Typographie française », « Ton par format », « Sortie
+   attendue » et « Règles de Humanizer écartées ou adaptées ».
    S'y ajoute « Fafa, vidéo et social : aucune invention » pour un script ou une copie sociale.
    Les « Exemples AutoMecanik » et l'« Attribution et licence » sont lus en cas de doute.
 2. **Lire les références que le périmètre exige** : les sources du brouillon ; le miroir
@@ -47,7 +51,10 @@ produit leur trace dans la sortie.
    `fafa-persona-canon` pour un script Fafa.
 3. **Consigner les lectures** : pour chaque fichier, les sections lues, désignées par leur titre.
    Si un fichier est lu par morceaux, noter aussi les plages réellement lues. Un fichier cité
-   dans une liste de lectures ne prouve ni sa lecture complète ni son application.
+   dans une liste de lectures ne prouve ni sa lecture complète ni son application. Une sortie
+   d'outil marquée tronquée (« truncated », « tokens truncated ») ne prouve pas la lecture du
+   passage coupé : relire ce passage par une lecture bornée (un fichier par commande, par plages
+   de lignes) avant de le compter comme lu.
 4. **Exécuter les étapes**, chacune avec sa trace dans la sortie :
    - identifier l'original et ses sources, sinon `BLOQUÉ_SOURCE` ;
    - délimiter les champs modifiables ;
@@ -55,12 +62,39 @@ produit leur trace dans la sortie.
    - relever les signalements de fond ;
    - faire le contrôle de fidélité, catégorie par catégorie ;
    - rendre le verdict.
-5. **Déclarer l'état** : écrire « relecture appliquée » seulement si les points 1 à 4 sont
-   remplis. Sinon, écrire « relecture partielle » et nommer les sections non lues, les
-   références manquantes et les étapes non exécutées.
+5. **Déclarer l'état** : écrire « relecture appliquée » seulement si le « Contrôle avant
+   déclaration » ci-dessous est rempli. Sinon, écrire « relecture partielle » et nommer les
+   sections non lues, les références manquantes, les étapes non exécutées et les conditions non
+   remplies. La règle vaut pour toute mention de la relecture dans la sortie, liste d'étapes et
+   résumé compris, et pas seulement pour le champ `lecture`.
 
 La sortie suit « Sortie attendue ». Un champ qui ne peut pas être produit est nommé, avec sa
 cause ; il n'est ni omis en silence ni remplacé par un résumé.
+
+### Contrôle avant déclaration
+
+Il se fait sur la sortie écrite, champ par champ, après sa rédaction. Le nom d'un champ ne
+remplit aucune condition : seul son contenu compte.
+
+- **C1 Lectures** : chaque section et chaque référence exigées (points 1 et 2) ont été rendues
+  en entier ; aucune plage tronquée n'est restée sans relecture bornée.
+- **C2 Original** : `original` désigne un texte existant (chemin ou table + identifiant, et plage
+  pour un extrait) ou le reproduit en entier ; son sha256 est calculé par un outil sur ce texte
+  exact.
+- **C3 Changements** : chaque entrée cite l'avant exact de l'original, l'après exact de la
+  proposition, un code RE-xx ou RE-Tx et sa raison. Sinon, la liste est vide, le verdict est
+  `AUCUN_CHANGEMENT_UTILE` avec sa raison et la proposition est identique à l'original.
+- **C4 Signalements** : chaque entrée a son extrait exact, son type F-x, sa source citée (ou
+  « aucune ») et sa formulation sourcée ou `null`. Sinon, la liste est `[]`.
+- **C5 Fidélité** : une ligne par catégorie du §3, soit cinq, avec `inchangé` ou l'écart exact.
+- **C6 Verdict** : l'une des quatre valeurs de « Sortie attendue ».
+- **C7 Étapes** : chaque étape du point 4 a sa trace ; une étape non exécutée est nommée.
+
+Avec `BLOQUÉ_SOURCE` ou `HORS_PÉRIMÈTRE`, C3 à C5 sont « sans objet », avec leur cause. Le
+résultat de chaque condition (remplie, ou ce qui manque) est écrit dans `lecture`. « Relecture
+appliquée » exige C1 à C7 remplies ; sinon, « relecture partielle » avec les conditions non
+remplies. Aucune condition ne se remplit par un contenu qui n'a pas eu lieu : changement, avant,
+empreinte ou lecture. Un manque nommé vaut mieux qu'un champ fabriqué.
 
 ## 2. Ordre de priorité
 
@@ -337,29 +371,35 @@ construites pour montrer le défaut.
 Pour chaque brouillon :
 
 - **`original`** : chemin ou table + identifiant, et sha256 du texte relu. Il n'est jamais
-  modifié.
+  modifié. Un brouillon rédigé dans la session, sans fichier, est reproduit ici en entier,
+  séparé de la proposition. Le sha256 est calculé par un outil sur ce texte exact, jamais
+  recopié ni estimé ; s'il ne peut pas l'être, le manque est nommé et la relecture est partielle.
 - **`proposition`** : le texte complet proposé, sans références de recherche ni annotations
   internes (§4.1). Son statut de brouillon et ses limites figurent dans la revue séparée.
 - **`changements`** : la liste `{avant, après, règle, raison}`, avec un code de règle RE-xx ou
-  RE-Tx.
+  RE-Tx. Une entrée par changement : `avant` cite l'original mot pour mot et `après` la
+  proposition. Une phrase de synthèse ou une liste de codes n'est pas une entrée. Liste vide
+  seulement avec `AUCUN_CHANGEMENT_UTILE`.
 - **`signalements_de_fond`** : la liste `{extrait, type, source citée, formulation sourcée
-  proposée ou null}`. Ces signalements ne sont jamais appliqués dans la proposition. Types :
+  proposée ou null}`, ou `[]` s'il n'y en a aucun. Ces signalements ne sont jamais appliqués
+  dans la proposition. Types :
   - F-1 contradiction avec la source ;
   - F-2 affirmation sans source ;
   - F-3 incohérence interne ;
   - F-4 promesse commerciale ou mention obligatoire ;
   - F-5 expérience ou témoignage inventé ;
   - F-6 conflit de ton non tranché.
-- **`controle_fidelite`** : pour chaque catégorie du §3, `inchangé` ou l'écart exact. Consigner
+- **`controle_fidelite`** : une ligne par catégorie du §3, `inchangé` ou l'écart exact. Consigner
   tout déplacement d'attribution prévu au §4.1 et son emplacement interne ; il ne permet
   aucun changement de fait, de portée ou de mention obligatoire. Tout autre écart non
   expliqué par une règle RE-Tx est une **altération critique**, et la proposition est alors
   **rejetée**. Une nouvelle génération ne l'efface pas du relevé.
 - **`verdict`** : `PROPOSITION`, `AUCUN_CHANGEMENT_UTILE`, `BLOQUÉ_SOURCE` ou `HORS_PÉRIMÈTRE`.
   Jamais « publié », « validé » ni « opérationnel ».
-- **`lecture`** : les sections et plages réellement lues, les références consultées, les
-  étapes exécutées et non exécutées, puis « relecture appliquée » ou « relecture partielle »
-  avec ce qui manque (« Lecture, application et déclaration »).
+- **`lecture`** : pour chaque fichier, son chemin, les sections lues par leur titre et les
+  plages réellement rendues ; les références consultées ; les étapes exécutées et non
+  exécutées ; le résultat de C1 à C7 ; puis « relecture appliquée » ou « relecture partielle »
+  avec ce qui manque (« Contrôle avant déclaration »).
 
 Une proposition sans altération critique n'est pas acceptée pour autant : elle va au validateur
 du circuit concerné (§1).
