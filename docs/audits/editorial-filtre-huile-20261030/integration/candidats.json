@@ -32,7 +32,7 @@
     {
       "section": "S4_REPOSE",
       "requiert": ["F-C2 (reformulé, voir sa portée)", "F-C3", "F-C4", "F-C6"],
-      "html": "<p>Même un filtre de qualité ne fonctionne correctement que s'il a été bien monté.</p>\n<ol>\n<li>Filtre vissé : huilez le joint neuf avec de l'huile moteur propre.</li>\n<li>Vissez jusqu'au contact du joint, puis serrez selon l'instruction du fabricant du filtre, souvent imprimée sur le filtre ou sur sa notice : le nombre de tours après contact et la façon de serrer sont propres à chaque filtre.</li>\n<li>Un serrage excessif ou un outil inadapté peut abîmer le revêtement du filtre, qui risque alors de rouiller jusqu'à fuir.</li>\n<li>Cartouche : après remplacement de l'élément, resserrez le couvercle avec le même outil. La fiche de la référence précise parfois si le joint torique est fourni.</li>\n</ol>"
+      "html": "<p>Même un filtre de qualité ne fonctionne correctement que s'il a été bien monté.</p>\n<ol>\n<li>Filtre vissé : huilez le joint neuf avec de l'huile moteur propre.</li>\n<li>Vissez jusqu'au contact du joint, puis serrez selon l'instruction du fabricant du filtre, souvent imprimée sur le filtre ou sur sa notice : le nombre de tours après contact et la façon de serrer sont propres à chaque filtre.</li>\n<li>Un serrage excessif ou un outil inadapté peut abîmer le revêtement du filtre, qui risque alors de rouiller jusqu'à fuir.</li>\n<li>Cartouche : après remplacement de l'élément, resserrez le couvercle avec le même outil.</li>\n</ol>"
     },
     {
       "section": "S5",

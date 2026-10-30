@@ -5,11 +5,12 @@
  * Construit preview/apercu-r1.html et preview/apercu-r3.html à partir de integration/*.json et assets/, dans l'ordre
  * des sections des routes pieces.$slug.tsx et blog-pieces-auto.conseils.$pg_alias.tsx. Les fonctions de découpage du
  * dépôt sont exécutées telles quelles (esbuild) : extractEditorialBlocks (R1, sanitisation comprise),
- * extractSummaryPoints, deriveHeroBadges, normalizeStepHtml (R3). Composants, styles, catalogue et base ne le sont pas :
- * ce n'est pas le rendu DEV.
+ * extractSummaryPoints, normalizeStepHtml (R3) et deriveDifficulty (backend, métadonnées des badges R3, présentées comme
+ * buildHeroBadges de la route conseils). Composants, styles, catalogue et base ne le sont pas : ce n'est pas le rendu DEV.
  *
  * Usage : NODE_PATH=<node_modules avec esbuild, isomorphic-dompurify, lucide-react[, playwright, sharp]>
- *         node tools/build-preview.cjs [--shots]
+ *         [FH_REPO=<checkout du dépôt>] node tools/build-preview.cjs [--shots]
+ *   FH_REPO : fonctions lues dans un autre checkout (par défaut celui du dossier), p. ex. la branche de correction.
  *   --shots : captures pleine page en 375 et 1280 px (playwright, chromium) ; --channel=chrome pour le Chrome installé.
  */
 const fs = require('fs');
@@ -17,7 +18,7 @@ const os = require('os');
 const path = require('path');
 
 const DOSSIER = path.join(__dirname, '..');
-const REPO = path.resolve(DOSSIER, '../../..');
+const REPO = path.resolve(process.env.FH_REPO || path.join(DOSSIER, '../../..'));
 const OUT = path.join(DOSSIER, 'preview');
 const readJson = (rel) => JSON.parse(fs.readFileSync(path.join(DOSSIER, rel), 'utf8'));
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -29,10 +30,12 @@ function loadRepoFunctions() {
   const outfile = path.join(os.tmpdir(), `fh-preview-${process.pid}.cjs`);
   const parser = path.join(REPO, 'frontend/app/utils/editorial-parser.ts').replace(/\\/g, '/');
   const config = path.join(REPO, 'frontend/app/components/blog/conseil/section-config.tsx').replace(/\\/g, '/');
+  const normalize = path.join(REPO, 'backend/src/modules/blog/utils/html-normalize.utils.ts').replace(/\\/g, '/');
   esbuild.buildSync({
     stdin: {
       contents: `export { extractEditorialBlocks } from "${parser}";
-export { extractSummaryPoints, deriveHeroBadges, normalizeStepHtml, SECTION_STYLES } from "${config}";`,
+export { extractSummaryPoints, normalizeStepHtml, SECTION_STYLES } from "${config}";
+export { deriveDifficulty } from "${normalize}";`,
       resolveDir: path.join(REPO, 'frontend'),
       loader: 'ts',
     },
@@ -70,7 +73,6 @@ table{border-collapse:collapse;width:100%;font-size:14px;margin:0 0 10px}th,td{b
 details{border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:0 0 8px}summary{cursor:pointer;font-weight:600}
 .card{border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--soft);margin:0 0 16px}
 .hole{border:2px dashed #fca5a5;border-radius:14px;padding:14px;color:var(--red);font-size:14px;background:#fff7f7}
-[data-condition]{outline:1px dashed var(--amber);outline-offset:2px}
 .note{font-size:13px;color:var(--muted)}.small{font-size:13px}
 `;
 const ACTION = { 'conservé': 't-conserve', 'amélioré': 't-ameliore', 'ajouté': 't-ajoute' };
@@ -98,8 +100,7 @@ function buildR1(fns, assets) {
   const n = 'filtre à huile';
 
   const badges = [1, 2, 3, 4].map((i) => `<div class="badge">${mapLine(`r1s_arg${i}_title / _content`, s[`r1s_arg${i}_title`].action, s[`r1s_arg${i}_title`].statut)}<b>${esc(s[`r1s_arg${i}_title`].texte)}</b>${esc(s[`r1s_arg${i}_content`].texte)}</div>`).join('');
-  const table = `<table><thead><tr><th>Élément</th><th>Comment vérifier</th></tr></thead><tbody>${s.r1s_safe_table_rows.texte.map((r) => `<tr><td>${esc(r.element)}</td><td>${esc(r.howToCheck)}</td></tr>`).join('')}</tbody></table>
-<p class="note">Ligne de repli si FH-12 n'établit pas l'affichage des dimensions : « ${esc(s.r1s_safe_table_rows.ligne_de_repli.element)} ».</p>`;
+  const table = `<table><thead><tr><th>Élément</th><th>Comment vérifier</th></tr></thead><tbody>${s.r1s_safe_table_rows.texte.map((r) => `<tr><td>${esc(r.element)}</td><td>${esc(r.howToCheck)}</td></tr>`).join('')}</tbody></table>`;
   const faq = s.r1s_faq.texte.map((f) => `<details open><summary>${esc(f.question)}</summary><p>${esc(f.answer)}</p></details>`).join('');
   const micro = s.r1s_micro_seo_block;
   const microLen = micro.texte.replace(/<[^>]+>/g, '').length;
@@ -155,20 +156,33 @@ function buildR1(fns, assets) {
 </section>
 <section>
   ${mapLine('r1s_micro_seo_block', micro.action, `${micro.statut} · ${microLen} caractères de texte`)}
-  <p class="note">${esc(micro.affichage)}. Le passage en pointillés dépend de FH-12.</p>
+  <p class="note">${esc(micro.affichage)}.</p>
   <div class="card">${micro.texte}</div>
 </section>`;
   return { html: page('Aperçu R1 filtre à huile', 'R1 /pieces/filtre-a-huile-7.html', body), routed };
 }
 
 // --- R3 ------------------------------------------------------------------------------------------------------------
+// Libellés de buildHeroBadges (route blog-pieces-auto.conseils.$pg_alias.tsx, non exportée) appliqués aux métadonnées
+// que le backend calcule (R3GuideService → deriveDifficulty).
+function heroBadges({ difficulty, durationMin, safetyLevel }) {
+  const badges = [];
+  const d = { facile: 'Facile', moyen: 'Intermédiaire', difficile: 'Avancé' }[difficulty];
+  if (d) badges.push({ label: 'Difficulté', value: d });
+  if (durationMin) badges.push({ label: 'Temps estimé', value: durationMin < 60 ? `~${durationMin} min` : `~${Math.round(durationMin / 60)}h` });
+  const sec = { faible: 'Standard', moyen: 'Précautions requises', élevé: 'Précautions requises' }[safetyLevel];
+  if (sec) badges.push({ label: 'Sécurité', value: sec });
+  return badges;
+}
+
 function buildR3(fns, assets) {
   const r3 = readJson('integration/r3.json');
   const V = (slot) => assets.visuels.find((v) => v.page === 'R3' && v.slot === slot);
   const secs = r3.sections.filter((x) => x.html);
   const conseil = secs.map((x) => ({ sectionType: x.sgc_section_type, content: x.html, title: x.titre_propose }));
   const points = fns.extractSummaryPoints(conseil);
-  const badges = fns.deriveHeroBadges(conseil);
+  const badges = heroBadges(fns.deriveDifficulty(conseil.map((c) => ({ sectionType: c.sectionType, html: c.content }))));
+  const calcules = badges.some((b) => b.label !== 'Sécurité');
   const provenance = 'Base de connaissances AutoMecanik';
   const IMG = { S2: V('S2'), S3: V('S3') };
   const card = (x) => {
@@ -184,7 +198,7 @@ function buildR3(fns, assets) {
   <div>
     ${mapLine('H1 (champ protégé)', 'conservé', 'non modifié')}
     <h1>Comment changer un filtre à huile</h1>
-    ${mapLine('badges', null, null, codeTag('FH-16 : calculés, non sourcés'))}
+    ${mapLine('badges', null, null, codeTag(calcules ? 'FH-16 : calculés, non sourcés' : 'FH-16 : sécurité seule, déduite des sections présentes'))}
     <div class="badges">${badges.map((b) => `<div class="badge"><b>${esc(b.label)}</b>${esc(b.value)}</div>`).join('')}</div>
   </div>
   ${figure(V('HERO'), '../')}

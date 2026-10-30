@@ -58,7 +58,6 @@ const values = (t) => (Array.isArray(t) ? t.flatMap((x) => (typeof x === 'object
   const r1 = readJson('integration/r1.json');
   for (const [key, f] of Object.entries(r1.r1s)) {
     values(f.texte).forEach((t) => add('R1', key, t));
-    if (f.ligne_de_repli) Object.values(f.ligne_de_repli).forEach((t) => add('R1', `${key}.ligne_de_repli`, t));
   }
   add('R1', 'sg_content', r1.sg_content.html);
   const r3 = readJson('integration/r3.json');
@@ -97,12 +96,8 @@ candidats.forEach((c) => findings.push({ page: c.slice(0, 2), champ: c, regle: '
 
 const bounds = repo.R1_ROUTER_CONTRACT.allowed_sections.find((s) => s.id === 'R1_S4_MICRO_SEO');
 const microHtml = r1.r1s.r1s_micro_seo_block.texte;
-const micro = {
-  avec_FH12: plain(microHtml).length,
-  sans_FH12: plain(microHtml.replace(/<span data-condition="FH-12">[\s\S]*?<\/span>/g, '')).length,
-  bornes: [bounds.min_chars, bounds.max_chars],
-};
-micro.ok = [micro.avec_FH12, micro.sans_FH12].every((n) => n >= bounds.min_chars && n <= bounds.max_chars);
+const micro = { caracteres: plain(microHtml).length, bornes: [bounds.min_chars, bounds.max_chars] };
+micro.ok = micro.caracteres >= bounds.min_chars && micro.caracteres <= bounds.max_chars;
 
 const faq = repo.parseFAQFromS8(r3.sections.filter((s) => s.sgc_section_type === 'S8').map((s) => ({ sectionType: 'S8', content: s.html })));
 const faqPairs = faq && Array.isArray(faq.mainEntity) ? faq.mainEntity.length : 0;

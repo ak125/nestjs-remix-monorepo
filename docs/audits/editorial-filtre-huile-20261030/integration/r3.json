@@ -33,7 +33,7 @@
         "renvois vers des sites tiers",
         "« Trouvez le type de filtre »"
       ],
-      "html": "<p>Le filtre à huile empêche les impuretés d'entrer dans le circuit de lubrification du moteur, et il se remplace aux échéances fixées par le constructeur du véhicule.</p>\n<p>Avant de commencer, réunissez :</p>\n<ul>\n<li><strong>la référence prévue pour votre motorisation</strong>, choisie à partir du véhicule et non d'après l'apparence de l'ancien filtre ;</li>\n<li><strong>les instructions du constructeur du véhicule et du fabricant du filtre</strong> : ce guide ne donne pas de consigne de serrage valable pour tous les filtres ;</li>\n<li><strong>la forme prévue</strong> : un filtre vissé se change en entier ; avec une cartouche, seul l'élément filtrant est renouvelé et le boîtier reste en place. Pour une cartouche, la fiche de la référence précise parfois si le joint torique est fourni.</li>\n</ul>\n<p>Sans ces instructions, confiez l'intervention à un professionnel.</p>"
+      "html": "<p>Le filtre à huile empêche les impuretés d'entrer dans le circuit de lubrification du moteur, et il se remplace aux échéances fixées par le constructeur du véhicule.</p>\n<p>Avant de commencer, réunissez :</p>\n<ul>\n<li><strong>la référence prévue pour votre motorisation</strong>, choisie à partir du véhicule et non d'après l'apparence de l'ancien filtre ;</li>\n<li><strong>les instructions du constructeur du véhicule et du fabricant du filtre</strong> : ce guide ne donne pas de consigne de serrage valable pour tous les filtres ;</li>\n<li><strong>la forme prévue</strong> : un filtre vissé se change en entier ; avec une cartouche, seul l'élément filtrant est renouvelé et le boîtier reste en place.</li>\n</ul>\n<p>Sans ces instructions, confiez l'intervention à un professionnel.</p>"
     },
     {
       "sgc_id": "20",
@@ -105,7 +105,7 @@
         "« identique à celui démonté »",
         "gestes et serrages non sourcés"
       ],
-      "html": "<p>Même un filtre de qualité ne fonctionne correctement que s'il a été bien monté.</p>\n<ol>\n<li>Montez le filtre neuf en suivant les instructions du constructeur du véhicule et du fabricant du filtre : ce guide ne donne pas de consigne de serrage valable pour tous les filtres.</li>\n<li>Pour une cartouche, vérifiez sur la fiche de la référence si le joint torique est fourni.</li>\n</ol>",
+      "html": "<p>Même un filtre de qualité ne fonctionne correctement que s'il a été bien monté.</p>\n<ol>\n<li>Montez le filtre neuf en suivant les instructions du constructeur du véhicule et du fabricant du filtre : ce guide ne donne pas de consigne de serrage valable pour tous les filtres.</li>\n</ol>",
       "apres_admission": "voir candidats.json, bloc S4_REPOSE"
     },
     {
