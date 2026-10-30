@@ -65990,7 +65990,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 198,
+      "loc": 206,
       "owner": "__unassigned__",
       "path": "frontend/vite.config.ts",
       "risk": "low",
@@ -71071,6 +71071,25 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/ci/catalog-mobile-performance.mjs",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 277,
+      "owner": "__unassigned__",
+      "path": "scripts/ci/catalog-mobile-performance.mjs",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
