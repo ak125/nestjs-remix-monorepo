@@ -112,6 +112,13 @@
       "type": "object",
       "additionalProperties": false,
       "required": ["gate", "verdict", "measured"],
+      "allOf": [{
+        "if": { "properties": { "measured": { "type": "null" } }, "required": ["measured"] },
+        "then": { "properties": {
+          "gate": { "enum": ["G3", "G4", "G5", "G6"] },
+          "verdict": { "const": "FAIL" }
+        } }
+      }],
       "properties": {
         "gate": {
           "type": "string",
@@ -122,8 +129,8 @@
           "enum": ["PASS", "WARN", "FAIL"]
         },
         "measured": {
-          "type": "number",
-          "description": "Valeur mesurée (ratio, count, score). Sémantique dépend du gate."
+          "type": ["number", "null"],
+          "description": "Valeur observée ; null uniquement pour G3-G6 en FAIL quand l'observation est absente. Jamais un zéro inventé ni un verdict de succès."
         },
         "warn_threshold": {
           "type": ["number", "null"]

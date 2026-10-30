@@ -701,7 +701,7 @@
         "scripts/wiki-generators/__tests__"
       ],
       "files_count": 213,
-      "loc_total": 50243,
+      "loc_total": 50276,
       "has_barrel": true
     },
     "search": {
@@ -1455,11 +1455,6 @@
       "from": "backend-core",
       "to": "trend-signals",
       "count": 1
-    },
-    {
-      "from": "backend-core",
-      "to": "uncategorized",
-      "count": 4
     },
     {
       "from": "backend-core",

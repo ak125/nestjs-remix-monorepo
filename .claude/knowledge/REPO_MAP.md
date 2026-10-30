@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 9d0189febb4db7c98640f745206dc83a507cc5f995f1499d813aad0116eceb13
+source_sha256: 849cef31707a10df0ef4f4b6702788c775f56ca471e05ac7304f2b7f55983c89
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -24,7 +24,7 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 1017 |
 
-Source sotFingerprint: `4adff83537ec`.
+Source sotFingerprint: `c44ae1a4a282`.
 
 ## Comment l'utiliser
 
@@ -169,7 +169,7 @@ Source sotFingerprint: `4adff83537ec`.
 - **Runtime entrypoints**: 83
 - **Top owners**: __unassigned__ (243)
 - **Knowledge prose**: [`config`](modules/config.md), [`layout`](modules/layout.md), [`mcp-validation`](modules/mcp-validation.md), [`metadata`](modules/metadata.md), [`navigation`](modules/navigation.md), [`search`](modules/search.md), [`shipping`](modules/shipping.md), [`suppliers`](modules/suppliers.md), [`system`](modules/system.md)
-- **Status**: LIVE=140, UNKNOWN=103
+- **Status**: LIVE=139, UNKNOWN=104
 
 ## Voir aussi
 
