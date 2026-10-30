@@ -51,27 +51,31 @@ l'aiguille de température dans le rouge en gravité « confort » et compte « 
 remplacement » parmi les symptômes. Elles servent de piste à la recherche de sources (ADR-096), jamais de
 contenu à projeter (ADR-031, ADR-046).
 
-**Le vocabulaire ne couvre pas toutes les familles de pièces.** Les 62 symptômes se répartissent sur
-13 systèmes. La catégorie que l'ancien corpus donne aux gammes, non sourcée, sert ici d'indice : 121 gammes
-publiées ont une catégorie sans système du même nom. Le détail : accessoires 26, moteur 24, alimentation 21,
-capteurs 18, allumage 7, turbo 5, électrique 4, support moteur 2, tableau de bord 1, sans catégorie 13.
-Certaines peuvent relever d'un système existant (allumage ou alimentation et injection, électrique et
-démarrage-charge). Pour les autres, un symptôme manque au vocabulaire. Un symptôme nouveau naît par migration
-relue, jamais par le writer (ADR-112 D1). Une gamme ne peut être déclarée « sans objet diagnostic » que
-si elle n'a aucune relation avec un symptôme du vocabulaire (ADR-113 D2). Un vocabulaire incomplet ne
-justifie donc pas ce constat.
+**Le vocabulaire ne couvre peut-être pas toutes les familles de pièces.** Les 62 symptômes se répartissent
+sur 13 systèmes. La catégorie que l'ancien corpus donne aux gammes, non sourcée, sert ici d'indice : 108
+gammes publiées ont une catégorie sans système du même nom, et 13 n'ont pas de fiche dans l'ancien corpus,
+donc pas de catégorie. Le détail des 108 : accessoires 26, moteur 24, alimentation 21, capteurs 18,
+allumage 7, turbo 5, électrique 4, support moteur 2, tableau de bord 1. Certaines peuvent relever d'un
+système existant (allumage ou alimentation et injection, électrique et démarrage-charge). Pour les autres,
+seule une fiche sourcée dira si un symptôme manque au vocabulaire. Un symptôme nouveau naît par migration
+relue, jamais par le writer (ADR-112 D1). Le constat « sans objet diagnostic » se juge par rapport à ce
+vocabulaire : la fiche porte, relu et motivé, le constat que la gamme n'a aucune relation avec un symptôme
+du vocabulaire (ADR-113 D2).
 
-**Sept causes de l'amorce visent une gamme non publiée.** `CAUSE_GAMME_MAP` rattache des causes à
+**Huit causes de l'amorce visent sept gammes non publiées.** `CAUSE_GAMME_MAP` rattache huit causes à
 `batterie` (pg 1), `silencieux` (26), `liquide-de-frein` (71), `silentbloc-de-bras-de-suspension` (251),
 `ampoule` (1457), `kit-de-distribution-avec-pompe-a-eau` (3096) et `tuyau-flexible-echappement` (3191).
-Ces gammes ont `pg_display = 0` : elles sont hors du périmètre d'ADR-113 D1 et n'apparaissent pas dans la
-liste ci-dessous. Les y faire entrer demande un amendement d'ADR-113. Cette correspondance est remplacée
-en phase 3 d'ADR-112 par la table cause → pièce issue du WIKI. Rien n'est modifié ici.
+Deux de ces causes ont aussi une gamme publiée : `courroie_distribution_usee` et `joint_collecteur_hs`.
+Ces gammes non publiées ont `pg_display = 0` : elles sont hors du périmètre d'ADR-113 D1 et
+n'apparaissent pas dans la liste ci-dessous. Les y faire entrer demande un amendement d'ADR-113. Cette
+correspondance est remplacée en phase 3 d'ADR-112 par la table cause → pièce issue du WIKI. Rien n'est
+modifié ici.
 
 ## 4. Chemin vers une couverture complète
 
-Le mécanisme est le même pour chaque gamme. Le filtre à air est la première gamme engagée dans toutes
-les étapes (RAW #76 fusionnée, WIKI #126 en brouillon) :
+Le mécanisme est le même pour chaque gamme. Le filtre à air est la gamme la plus avancée : sources
+capturées (RAW #76 fusionnée), fiche WIKI portant une relation non relue, catalogage de ses sources en
+cours (WIKI #126, brouillon). Ni la relecture ni la projection n'y sont commencées. Les étapes :
 
 1. capture de sources identifiables pour la gamme (ADR-096) ;
 2. fiche WIKI avec ses relations symptôme → cause, chacune citant ses sources ;
@@ -79,9 +83,10 @@ les étapes (RAW #76 fusionnée, WIKI #126 en brouillon) :
    relation de sécurité ;
 4. projection en base par la voie unique (ADR-112 D2), puis mesure ADR-113 D5.
 
-Après le pilote, ces étapes se répètent système par système jusqu'à la cible, sans date. Le rythme est
-celui de la capture de sources (ADR-113 D7). Aucune relation n'est écrite pour atteindre la cible
-(ADR-113 D2). Une gamme sans source reste « non couverte » et figure comme telle dans la liste.
+Après le système pilote d'ADR-112, ces étapes se répètent système par système jusqu'à la cible, sans
+date. Le rythme est celui de la capture de sources (ADR-113 D7). Aucune relation n'est écrite pour
+atteindre la cible (ADR-113 D2). Une gamme sans source reste « non couverte » et figure comme telle dans
+la liste.
 
 ## 5. Les 232 gammes publiées
 
