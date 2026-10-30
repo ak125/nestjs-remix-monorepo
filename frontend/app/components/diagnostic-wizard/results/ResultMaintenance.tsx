@@ -5,14 +5,23 @@ import { Calendar, Clock, ExternalLink, Wrench } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { emitFunnel, getFunnelSessionId } from "~/utils/funnel-beacon";
-import { buildGammeUrl, normalizeAlias } from "~/utils/url-builder.utils";
-import { type MaintenanceRecommendation, type SuggestedGamme } from "../types";
+import {
+  buildGammeUrl,
+  buildGammeVehicleUrl,
+  normalizeAlias,
+} from "~/utils/url-builder.utils";
+import {
+  type MaintenanceRecommendation,
+  type SuggestedGamme,
+  type WizardState,
+} from "../types";
 
 interface Props {
   recommendations: MaintenanceRecommendation[];
   maintenanceLinks: string[];
   allowedOutputMode: string;
   catalogGammes: SuggestedGamme[];
+  vehicle?: WizardState["vehicle"];
 }
 
 // Every relevance is assessed against the same generic, unverified intervals,
@@ -48,6 +57,7 @@ export function ResultMaintenance({
   allowedOutputMode,
   catalogGammes,
   maintenanceLinks: _maintenanceLinks,
+  vehicle,
 }: Props) {
   const allowedGammes = new Map(
     catalogGammes.map((gamme) => [
@@ -88,7 +98,15 @@ export function ResultMaintenance({
             allowedOutputMode !== "none" && candidateUrl
               ? allowedGammes.get(candidateUrl)
               : undefined;
-          const gammeUrl = catalogGamme ? candidateUrl : undefined;
+          const gammeUrl = catalogGamme
+            ? (vehicle &&
+                buildGammeVehicleUrl(
+                  catalogGamme.gamme_slug,
+                  catalogGamme.pg_id,
+                  vehicle,
+                )) ||
+              candidateUrl
+            : undefined;
 
           return (
             <div

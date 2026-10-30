@@ -26,6 +26,55 @@ export function buildGammeUrl(
   return `/pieces/${segment}.html`;
 }
 
+const isPositiveId = (id: unknown): id is number =>
+  typeof id === "number" && Number.isSafeInteger(id) && id > 0;
+
+/**
+ * Build the gamme destination for one motorisation, in the segment order of
+ * the canonical R2 path. Returns undefined unless brand, model and
+ * motorisation each carry a usable alias and ID: callers keep the gamme URL.
+ * A type alias is never derived from the engine name here, since that
+ * derivation differs from most catalogue aliases ("1.2 16V" → "12-16v").
+ */
+export function buildGammeVehicleUrl(
+  pgAlias: string | null | undefined,
+  pgId: number | null | undefined,
+  vehicle: {
+    brandAlias?: string;
+    brandId?: number;
+    modelAlias?: string;
+    modelId?: number;
+    typeAlias?: string;
+    typeName?: string;
+    typeId?: number;
+  },
+): string | undefined {
+  const gammeUrl = buildGammeUrl(pgAlias, pgId);
+  const { brandId, modelId, typeId } = vehicle;
+  if (
+    !gammeUrl ||
+    !vehicle.typeAlias?.trim() ||
+    !isPositiveId(brandId) ||
+    !isPositiveId(modelId) ||
+    !isPositiveId(typeId)
+  ) {
+    return undefined;
+  }
+  const segments = [
+    `${normalizeAlias(vehicle.brandAlias)}-${brandId}`,
+    `${normalizeAlias(vehicle.modelAlias)}-${modelId}`,
+    buildTypeSlug({
+      type_alias: vehicle.typeAlias,
+      type_name: vehicle.typeName,
+      type_id: typeId,
+    }),
+  ];
+  if (segments.some((segment) => detectMalformedSegment(segment))) {
+    return undefined;
+  }
+  return `${gammeUrl.slice(0, -".html".length)}/${segments.join("/")}.html`;
+}
+
 /**
  * Interface pour les liens "Voir aussi"
  */

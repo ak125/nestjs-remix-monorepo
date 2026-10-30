@@ -4,7 +4,7 @@
  */
 import { Car, Gauge, Route } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Combobox } from "~/components/ui/combobox";
+import { Combobox, type ComboboxItem } from "~/components/ui/combobox";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { type useDiagnosticVehicleSelector } from "../hooks/use-diagnostic-vehicle-selector";
@@ -18,6 +18,15 @@ const USAGE_PROFILES = [
   { value: "occasional", label: "Usage occasionnel", icon: "📅" },
 ];
 
+// A new brand or model makes the chosen motorisation and its fuel unknown.
+const NO_TYPE = {
+  typeId: undefined,
+  typeName: undefined,
+  typeAlias: undefined,
+  engine: undefined,
+  fuel: undefined,
+};
+
 interface Props {
   state: WizardState;
   dispatch: React.Dispatch<WizardAction>;
@@ -28,23 +37,31 @@ export function StepVehicle({ state, dispatch, vehicleSelector }: Props) {
   const {
     brands,
     models,
+    types,
     loadingBrands,
     loadingModels,
+    loadingTypes,
     fetchModels,
     clearModels,
+    fetchTypes,
+    clearTypes,
   } = vehicleSelector;
 
-  const handleBrandChange = (value: string, item?: { label: string }) => {
+  const handleBrandChange = (value: string, item?: ComboboxItem) => {
+    clearTypes();
     if (!value) {
       // Clear brand → reset model too
       dispatch({
         type: "SET_VEHICLE",
         payload: {
           ...state.vehicle,
+          ...NO_TYPE,
           brand: "",
           brandId: undefined,
+          brandAlias: undefined,
           model: "",
           modelId: undefined,
+          modelAlias: undefined,
         },
       });
       clearModels();
@@ -55,30 +72,60 @@ export function StepVehicle({ state, dispatch, vehicleSelector }: Props) {
       type: "SET_VEHICLE",
       payload: {
         ...state.vehicle,
+        ...NO_TYPE,
         brand: item?.label || "",
         brandId,
+        brandAlias: item?.alias,
         model: "",
         modelId: undefined,
+        modelAlias: undefined,
       },
     });
     fetchModels(brandId);
   };
 
-  const handleModelChange = (value: string, item?: { label: string }) => {
+  const handleModelChange = (value: string, item?: ComboboxItem) => {
     if (!value) {
       dispatch({
         type: "SET_VEHICLE",
-        payload: { ...state.vehicle, model: "", modelId: undefined },
+        payload: {
+          ...state.vehicle,
+          ...NO_TYPE,
+          model: "",
+          modelId: undefined,
+          modelAlias: undefined,
+        },
       });
+      clearTypes();
       return;
     }
+    const modelId = parseInt(value, 10);
     dispatch({
       type: "SET_VEHICLE",
       payload: {
         ...state.vehicle,
+        ...NO_TYPE,
         model: item?.label || "",
-        modelId: parseInt(value, 10),
+        modelId,
+        modelAlias: item?.alias,
       },
+    });
+    fetchTypes(modelId);
+  };
+
+  const handleTypeChange = (value: string, item?: ComboboxItem) => {
+    dispatch({
+      type: "SET_VEHICLE",
+      payload: value
+        ? {
+            ...state.vehicle,
+            typeId: parseInt(value, 10),
+            typeName: item?.typeName,
+            typeAlias: item?.typeAlias,
+            engine: item?.engine,
+            fuel: item?.fuel,
+          }
+        : { ...state.vehicle, ...NO_TYPE },
     });
   };
 
@@ -144,6 +191,27 @@ export function StepVehicle({ state, dispatch, vehicleSelector }: Props) {
                 allowClear
               />
             </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Motorisation</Label>
+            <Combobox
+              items={types}
+              value={
+                state.vehicle.typeId ? String(state.vehicle.typeId) : undefined
+              }
+              onValueChange={handleTypeChange}
+              placeholder="Sélectionner une motorisation"
+              searchPlaceholder="Rechercher..."
+              emptyMessage={
+                state.vehicle.modelId
+                  ? "Aucune motorisation trouvée"
+                  : "Sélectionnez d'abord un modèle"
+              }
+              loading={loadingTypes}
+              disabled={!state.vehicle.modelId}
+              allowClear
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
