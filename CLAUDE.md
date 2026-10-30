@@ -1,218 +1,115 @@
-# CLAUDE.md — Monorepo `nestjs-remix-monorepo`
+# CLAUDE.md — AutoMecanik / `nestjs-remix-monorepo`
 
-> **Contrat d'exécution + pointer.** Régit le **comportement de l'agent** (analyser,
-> décider, muter) et **pointe** vers le canon. Aucune règle de gouvernance canon
-> (ADRs / rules / policies) ici — elles vivent dans un **repo séparé** (le vault, §Gouvernance).
+Contrat commun du dépôt ; `AGENTS.md` guide les agents qui ne le chargent pas
+nativement. Les règles plus proches précisent leur seul périmètre. La gouvernance
+canonique reste dans le dépôt séparé `ak125/governance-vault`.
 
----
+## Contrat d'exécution — 9 invariants
 
-## Contrat d'exécution (noyau permanent — 9 invariants)
+1. **Inspecter avant de modifier.** Confirmer checkout, branche, HEAD, état Git et
+   périmètre autorisé. Préserver les changements et sessions existants. Pour une
+   tâche ciblée, commencer par les fichiers connus et `rg`/`rg --files` bornés.
+   Pour une exploration transverse, interroger `audit/registry/canonical.json`
+   avec un filtre `jq`, puis `.claude/knowledge/REPO_MAP.md` et l'index
+   `.claude/knowledge/README.md`. Ne jamais charger le registre en entier.
+   Vérifier le code du checkout concerné ; une référence distante ou une mémoire
+   peut être périmée. Voir `scripts/ops/check-repo-freshness.sh` si nécessaire.
+2. **Étendre l'existant avant de créer.** Chercher les équivalents, leur ownership
+   et leurs consommateurs. Pas de source de vérité concurrente, registry ad hoc,
+   schéma dupliqué ou abstraction spéculative. Une abstraction nouvelle exige un
+   besoin établi dans au moins trois fichiers. Recherche ciblée :
+   `.claude/knowledge/verify-before-invent.md`.
+3. **Corriger la cause.** Pas de cache caché, constante métier inventée, runtime
+   guessing ni feature flag non gouverné. Un fallback n'est admissible que s'il
+   est explicitement gouverné et observable ; ne pas masquer une indisponibilité
+   par un résultat vide ou un succès.
+4. **RAW → WIKI → projections/DB → consommateurs.** RAW est brut ; WIKI est sourcée,
+   lintée et validée par son décideur sur preuve, auto-review de sens comprise
+   (ADR-031 amendé par ADR-119). Aucun consommateur ne lit RAW directement.
+   RAG = consommateur chatbot, sans autorité de production de contenu (ADR-031/046).
+   Un producteur RAG→contenu doit être retiré et re-sourcé WIKI dans le mandat autorisé.
+5. **Ne pas inventer mots-clés ou URL.** Le top-kw brut de `__seo_keywords` mesure
+   la demande ; il ne définit pas un terme produit. Pas de filler SEO générique.
+6. **Préserver URL historiques et contrats SEO.** Aucune modification d'URL.
+   Référence des rôles : `.spec/00-canon/role-matrix.md` ; contrats exécutables :
+   `packages/seo-role-contracts/`. Préserver `catalog_signature` (ADR-066),
+   génération structural-first, composition vehicle-aware et relations canoniques.
+   Pas d'amplification de duplicate-content, de suppression automatique de page,
+   ni de modification des meta_title/description/H1 optimisés sans autorisation.
+7. **Vérifier selon le risque.** Relire le diff et apporter une preuve adaptée :
+   contrôle statique, test ciblé, API ou parcours réel. Ne pas relancer une preuve
+   verte si ses sources, dépendances, configuration et données sont inchangées.
+   **CONTRAT DE SORTIE** : `.claude/canon-mirrors/agent-exit-contract.md` (AEC).
+   Le mandat humain explicite autorise les corrections de son périmètre ; ne pas
+   redemander ce même accord pour chaque étape. Couverture, exclusions, preuves,
+   corrections autorisées et inconnues doivent être explicites, sans surpromesse.
+   Projections générées (`canonical.json`, `REPO_MAP.md`, blocs AUTO-GENERATED,
+   canon mirrors hash-lockés) : corriger leurs sources, jamais les éditer à la main.
+8. **Distinguer présent, branché, activé et réellement servi.** Code, tests locaux,
+   CI, PREPROD et PROD sont des preuves distinctes. Une mutation runtime évalue
+   observabilité, cache, queues, rollout, rollback et feature flags existants.
+   Lire `.claude/rules/deployment.md` avant toute action infra : merge `main` =
+   chaîne PREPROD ; tag `v*` = chaîne PROD. Aucun des deux ne prouve un déploiement réussi.
+9. **Zones STOP : accord nominatif requis.** Paiement (`payments/`, Paybox,
+   SystemPay/Cyberplus, `PAYBOX_*`/`SYSTEMPAY_*`), prix/stock runtime, panier/commande,
+   RLS, DB destructive et migrations irréversibles, SEO indexé, déploiement PROD.
+   Aucun bypass de permission, feature flag, guard, gate CI ou observabilité.
+   Les interventions applicatives PROD restent manuelles par Marwane.
 
-> Repo **gouverné** (ADRs, contracts, registries déterministes, ratchets CI). L'assistant
-> **ÉTEND** l'existant — **JAMAIS** de système parallèle, source de vérité dupliquée, ni
-> abstraction spéculative. Objectif permanent : cohérence archi · entropie minimale ·
-> changements déterministes & revue-ables · périmètre minimal.
+## Exécution, autonomie et fin
 
-**1. Analyser AVANT muter** `[CRITICAL]` — mode read-only par défaut ; cartographie avant mutation.
-Ordre de lecture **registry-first** (détail §"Mémoire codebase") : `audit/registry/canonical.json`
-(via `jq`, jamais `cat`) → `REPO_MAP.md` → `.claude/knowledge/` → **grep en dernier recours**.
-**NEVER** commencer par `Grep`/`Glob`, **NEVER** créer un fichier avant cartographie, **NEVER**
-proposer avant audit. L'état réel du repo (`git show origin/main:<chemin>`) **prime** sur toute
-doc/skill/ADR ; vérifier la fraîcheur d'un checkout externe
-(`scripts/ops/check-repo-freshness.sh`) avant de conclure (incident 2026-07-02).
+- Exécuter les tâches simples et réversibles déjà autorisées jusqu'à vérification.
+  Planifier les changements complexes ; demander une décision seulement si un choix
+  incertain ou une action sensible dépasse le mandat. Pas de refactor, cleanup,
+  upgrade ou reformatage opportuniste hors périmètre.
+- Un agent par défaut. Déléguer seulement une tâche autonome nécessaire, avec un
+  livrable, une borne et sans écritures concurrentes. Les 24 responsabilités du
+  Command Center ne sont pas 24 processus : consulter au besoin
+  `audit/automecanik-departments-map.md` et
+  `scripts/governance/build-command-center-snapshot.js`.
+- Hermes peut réaliser les opérations couvertes par ses outils, accès et mandat
+  actuels. Aucun transfert systématique à Codex pour ces opérations ; une limite
+  effective de profil ou de permissions reste opposable. Ce fichier ne lui accorde
+  aucun droit et ne raccorde aucun runtime distant.
+- Une opération lourde à la fois ; pas de build complet pour une correction de prose.
+  Arrêter sur résultat vérifié, blocage documenté ou budget atteint ; ne poursuivre
+  une boucle que pour un défaut ou un risque restant identifié.
 
-**2. Étendre AVANT créer** `[CRITICAL]` — **NEVER invent architecture already governed elsewhere** :
-si une convention/structure existe (vault, `.spec`, registry, `.claude/knowledge`), l'**étendre**,
-jamais en réinventer une locale (pattern de dérive #1 des agents). Pas de SoT dupliquée ni
-d'abstraction spéculative ; **rule-of-three** (pas de nouvelle abstraction tant que le pattern
-n'apparaît pas dans 3+ fichiers distincts). Avant toute création : équivalent inexistant ? capacité
-non déjà fournie ? ownership + bounded-context définis ?
+## Chargement ciblé et commandes
 
-**3. Corriger la CAUSE RACINE** `[CRITICAL]` — solution structurelle, **zéro bricolage** (canon vault
-`rules-engineering-quality` Q1-Q4 / `rules-ai-antipatterns` AP-*). Patterns interdits : registry
-ad-hoc, cache caché, schéma dupliqué, magic constant, runtime guessing, filler SEO générique,
-feature flag non gouverné. **No silent fallback** : tout repli (fail-open, cache/noindex/skip
-implicite) INTERDIT sauf explicitement gouverné **ET** observable (cause directe de plusieurs incidents).
+- Architecture et commandes : lire les `package.json` racine/backend/frontend et
+  `.nvmrc`. Monorepo npm : backend NestJS, frontend React Router SSR, `packages/*`.
+  Scripts racine existants : `npm run lint`, `npm run typecheck`, `npm test`,
+  `npm run build` ; préférer le workspace et le test concernés.
+- Règles `.claude/rules/` : `backend.md`, `frontend.md`, `payments.md`,
+  `deployment.md` ; `guardrails.md` avant modification d'une garde ;
+  `security-hooks.md` pour les avertissements du plugin advisory ;
+  `context7.md` pour une API externe incertaine ; `agent-doc-search.md` pour la recherche.
+  Les hooks de protection du dépôt restent distincts du plugin advisory.
+- Skills : lire le `SKILL.md` pertinent et ses références requises, pas un pack entier.
+  Les revues ne sont pas systématiques ; les validations imposées restent applicables.
+  `code-auto-review` sert une demande explicite de relecture/correction.
+- Reprise : lire `tail -n 80 log.md` si la tâche dépend de l'historique. Une timeline
+  ou une mémoire ne remplace pas l'état du checkout.
+- Workspaces et chargement Claude/Codex/Hermes :
+  `.claude/knowledge/workspaces.md`. Rôles Paperclip : `agents/*/AGENTS.md`,
+  à consulter seulement pour le rôle concerné ; UUID dans leur registre.
+- Relecture d'un brouillon français : `.claude/prompts/_shared/editorial-review.md`
+  avant intervention ; proposition motivée, sans publication ni écriture RAW/WIKI.
 
-**4. RAW → WIKI → DB = vérité ; RAG = chatbot only** `[HIGH]` — ADR-031. `raw` = brut, `wiki` =
-connaissance sourcée/lintée/validée humainement. **Aucun consommateur (RAG/SEO/blog/chatbot/diagnostic)
-ne lit `raw`.** RAG = couche **consommatrice**, **ZÉRO autorité d'écriture contenu** (ADR-046). Un
-producteur RAG→contenu = défaut à **retirer + re-sourcer WIKI**.
+## Gouvernance
 
-**5. Jamais inventer mots-clés ni URL** `[HIGH]` — pas d'invention LLM, pas de filler SEO générique ;
-le top-kw brut de `__seo_keywords` = signal de demande/comptage, **jamais** un terme produit (mapping
-contaminé).
-
-**6. Préserver URL legacy + contrats SEO** `[HIGH]` — **no URL change ever**. SoT des rôles =
-`.spec/00-canon/role-matrix.md` (v5 figée : R1 routage gamme/compat, R2 transactionnel produit, R8
-fiche véhicule) ; préserver `catalog_signature` (ADR-066, gate structurel avant diversité texte),
-génération structural-first, composition vehicle-aware, relations canoniques. **NEVER** : filler SEO,
-amplification de duplicate-content, modif meta_title/desc/H1 optimisés sans autorisation, suppression
-auto de page.
-
-**7. Vérification proportionnée au risque + format de sortie** `[HIGH]` — Evidence-before /
-Evidence-after ; honnêteté de couverture (Vérifié / Partiellement vérifié / Non-vérifiable) ; verdict
-par défaut **≠** « COMPLETE » / « DONE » ; **coverage manifest obligatoire**. Contrat de sortie =
-`.claude/canon-mirrors/agent-exit-contract.md` (hash-locké, hors-contexte volontaire — **ne pas
-recopier**). Artefacts générés = **projections, jamais éditées à la main** (`canonical.json`, blocs
-`<!-- AUTO-GENERATED -->`, `REPO_MAP.md`, canon mirrors hash-lockés) : corriger L1+L2 puis rebuild.
-
-**8. Distinguer présent / branché / activé / réellement servi** `[HIGH]` — ne jamais conclure « en
-prod » depuis du code présent ni depuis une vieille PR. **Runtime-awareness** : toute mutation runtime
-évalue observabilité · rollout · impact cache · queues (BullMQ) · rollback · feature flags (réutiliser
-l'observabilité interne existante — `rpc_*_alerts_v1`, `__seo_event_log`, stack CWV/RUM — avant tout
-canary externe). Vocabulaire déploiement strict : merge `main` → **PREPROD** container CI uniquement ;
-tag `v*` → **PROD** ; jamais annoncer « déployé en PROD » sur un merge `main` (détail §Vocabulaire
-déploiement + `.claude/rules/deployment.md`).
-
-**9. STOP owner** `[CRITICAL]` (accord **nominatif** requis, jamais d'auto-escalade) — **paiement**
-(module `payments/`, Paybox/SystemPay/Cyberplus, `PAYBOX_*`/`SYSTEMPAY_*`, `.claude/rules/payments.md`),
-**prix/stock** runtime, **panier/commande**, **RLS + DB destructive** (`DROP`/`TRUNCATE`, migration
-irréversible sans validation), **SEO indexé**, **déploiement PROD** (tag `v*`). Jamais de bypass de
-feature flag, suppression de guard/gate CI, ni désactivation d'observabilité.
-
-### Discipline de périmètre `[HIGH]`
-
-Rester strictement dans le scope demandé. **INTERDIT** : refactor opportuniste, cleanup hors
-bounded-context, upgrade de dépendance sans accord explicite, reformatage de fichiers non touchés,
-réécriture archi, changement de comportement silencieux. Un seul « fais-le » = le scope nommé
-uniquement, jamais d'auto-escalade. Chaque changement préserve la rétro-compat (sauf demande contraire)
-et minimise le blast radius. Tie-break en cas de doute : 1) étendre l'existant · 2) préserver le
-déterminisme · 3) réduire l'entropie · 4) minimiser le blast radius · 5) préférer l'observabilité.
-
-Gardes mécaniques : `.ast-grep/rules/*.yml`, `.husky/pre-commit`, `scripts/agents/validate-agents-md.sh`.
-
-### Repository Control Plane + règles domaine (pointers)
-
-- **Repository Control Plane** (ADR-058/062) : **L1** data auto (`audit/registry/*.json`) + **L2**
-  overlay manuel (`.spec/00-canon/repository-registry/*.yaml`) = **SoT (le couple)** ; **L3**
-  `audit/registry/canonical.json` = projection générée. Détail : `packages/registry/README.md`. AI
-  Operating Map (interop des surfaces IA, non-canon, non orchestrateur) :
-  `.spec/00-canon/ai-registry/agent-operating-map.yaml` — mutation autoritaire = vault ADR requis.
-- **Règles domaine** `.claude/rules/` (référencées par bounded-context) : `backend.md` (NestJS),
-  `frontend.md` (RR8), `payments.md` (zone STOP), `deployment.md` (infra — charger AVANT toute action
-  infra), `context7.md` (API/syntaxe lib externe), `security-hooks.md` (édition, advisory),
-  `agent-doc-search.md` (recherche registry-first — cf. invariant 1).
-- **Relecture éditoriale** (brouillon français sourcé, côté consommateur) : lire
-  `.claude/prompts/_shared/editorial-review.md` **avant** toute relecture ou réécriture de style ;
-  sortie = proposition motivée, jamais d'écriture RAW/WIKI ni de publication.
-
----
-
-## Vocabulaire déploiement — lire `.claude/rules/deployment.md` AVANT toute action infra
-
-Vocabulaire **DEV / PREPROD / PROD** strict (3 environnements, 2 machines physiques ; mapping
-IP × port × tag jamais hardcodé), formulations interdites (lint CI
-`scripts/lint/check-preprod-vocabulary.sh`), ADR-075 → **[`.claude/rules/deployment.md`](.claude/rules/deployment.md)**
-(glossary complet, à charger AVANT toute action infra).
-
----
-
-## Démarrage de session — lire `log.md` pour contexte récent
-
-Lire le contexte récent **via commande bornée** : `tail -n 80 log.md` (**jamais en entier** —
-append-only, gaspillage tokens ; historique dans `log-archive-<année>.md`, borné par
-`scripts/claude-hooks/rotate-log.sh` au-delà de 600 lignes). Délimitation : `log.md` = QUAND/QUOI
-(timeline) · `MEMORY.md` (auto-loaded) = QUOI APPRIS (règles, gotchas) · PR GitHub = POURQUOI
-(détails techniques) · `governance-vault/` = DÉCIDÉ CANON (ADRs, incidents, retros).
-
----
-
-## Workspaces Claude Code — séparation dev / SEO / marketing / wiki
-
-**Quatre racines de session** distinctes (dev `/opt/automecanik/app/`, `workspaces/seo-batch/`,
-`workspaces/marketing/`, `workspaces/wiki/`) — chacune charge une surface skills/agents différente.
-Table complète cwd × surface × usage + commandes `cd` →
-**[`.claude/knowledge/workspaces.md`](.claude/knowledge/workspaces.md)** (on-demand).
-
----
-
-## Agents Paperclip AI-COS
-
-Agents documentés dans **`agents/*/AGENTS.md`** (rôle / périmètre / protocole / format de sortie —
-CEO / CTO / CMO / CPO / RAG Lead / SEO Content / SEO QA) ; UUID dans le registre Paperclip (SoT
-mapping), pas ici. Tout commit sur `agents/*/AGENTS.md` ou `**/CLAUDE.md` passe par
-`scripts/agents/validate-agents-md.sh` (pre-commit + CI ; pas d'IP / URL / UUID / clé en dur —
-mémoire `feedback_no_hardcoded_infra_in_agentsmd.md`).
-
----
-
-## Mémoire codebase — lire le registry AVANT toute exploration
-
-**Avant** tout `Grep` / `Glob` / lecture en rafale sur le code applicatif (modules NestJS, tables
-DB, intégrations externes, routes React Router critiques), **lire dans cet ordre** :
-
-0. **[`audit/registry/canonical.json`](audit/registry/canonical.json)** — SoT machine-readable du
-   Repository Control Plane (ADR-058). Index files/db/rpc/runtime/deps par domaine D1..D15 +
-   ownership. **Query via `jq`** (ex. `jq '.files[] | select(.path | contains("payments"))'
-   audit/registry/canonical.json`) — jamais `cat` / `jq .` en entier (~770k tokens).
-1. **[`.claude/knowledge/REPO_MAP.md`](.claude/knowledge/REPO_MAP.md)** — projection humaine du
-   canonical (généré). Stats par domaine, owners, liens modules prose.
-2. [`.claude/knowledge/README.md`](.claude/knowledge/README.md) — index navigation prose détaillée.
-3. Fichiers pertinents sous `.claude/knowledge/{modules,db,integrations,routes}/`.
-
-Registry généré depuis L1 (AST : `build-deep-inventory.js` + `build-db-usage-map.js`) + L2 (overlay
-`.spec/00-canon/repository-registry/*.yaml`) ; SoT = le couple. Bloc `<!-- AUTO-GENERATED -->` des
-`modules/*.md` rafraîchi par `scripts/knowledge/refresh-knowledge.py` (pre-commit) ; prose éditée à
-la main. **Grep reste légitime** pour : debugging ciblé, strings, cas non couverts, cross-refs larges.
-`.claude/knowledge/` et `audit/registry/` **référencent** le canon vault, ne le dupliquent pas.
-
----
-
-## Vérifier l'existant AVANT d'inventer (règle non-négociable)
-
-> **Avant** de proposer une nouvelle convention (ENV var, domaine, table, service, path de
-> fichier), **GREP** systématiquement la racine du codebase. **Tout est déjà documenté à la racine.**
-
-Si grep retourne du code qui résout déjà le problème → **étendre l'existant**, jamais créer de
-nouveau ; gap réel → confirmer par 2-3 patterns différents avant de proposer. Table de commandes
-par type de proposition (ENV var / domaine / table DB / service / skill) + « Pourquoi » (incidents
-de conventions inventées) → **[`.claude/knowledge/verify-before-invent.md`](.claude/knowledge/verify-before-invent.md)** (on-demand).
-
----
-
-## Gouvernance — pointer vault uniquement
-
-Toute la gouvernance (ADRs, rules T/G/AI/V, policies, MOCs, incidents, evidence-packs, runbooks)
-vit dans un **repo séparé** : runtime DEV `/opt/automecanik/governance-vault/` · GitHub
-`https://github.com/ak125/governance-vault`. Détails MEMORY.md (`vault-sot-adr013.md`,
-`vault-flow-direction.md`, `feedback_branch_scope_discipline.md`).
-
-1. **Aucune ADR / rule / policy / evidence-pack ne naît dans ce monorepo** — ouvrir une PR dans
-   `ak125/governance-vault` (commit signé G3, ADR-015).
-2. **Ne jamais écrire dans `app/.local/governance-vault/`** (`.gitignored`, déprécié, refusé par
-   pre-commit) — régression G2 → déplacer vers le runtime DEV.
-3. **Ne jamais dupliquer une rule canon** (`.spec/`, `docs/governance/`, README) — **linker** le
-   vault, ne pas réécrire.
-4. **3-VPS** (ADR-012) : DEV = SoT canonique (write), PROD = mirror read-only, AI-COS = lit via
-   HTTPS GitHub. Écriture vault = PR signée ; un agent prépare, un humain fusionne (G4, ADR-102).
-5. **Normativité ADR** : normative seulement si `status: accepted` ET sans `superseded_by` actif.
-   `deprecated` / `superseded` = contexte historique (audit trail, chaînes `amends` / `supersedes`),
-   jamais justification d'implémentation courante. Statut via `ops/moc/MOC-Decisions.md` (vault,
-   auto-synchronisé), pas d'index parallèle. En cas de conflit ADR ↔ état réel du code / wiki (ou
-   skill dérivé ↔ repo), **l'état du repo prime**.
-
-Ce monorepo contient uniquement : `backend/`, `frontend/`, `shared/`, `scripts/`, `docker/`,
-`.github/workflows/`, `app/`. **Aucun** `governance/` ni `docs/adrs/` (la gouvernance canon —
-ADRs / rules / policies — vit au vault). Seul `.spec/00-canon/repository-registry/**` existe
-légitimement ici comme surface de contrats **Layer 2** du Repository Control Plane (ADR-058/062,
-référencé plus haut) — ce n'est PAS de la gouvernance canon dupliquée. La légitimité de cette
-surface L2 **ne confère aucune autorité courante** aux autres documents legacy `.spec/00-canon/**`
-voisins (ex. `architecture.md`, `rules.md`, `governance-policy.md`), dont le statut est traité
-séparément (fermeture gouvernée).
-
----
-
-## Contact
-
-- Owner : Fafa — automecanik.seo@gmail.com
-- Canon source : https://github.com/ak125/governance-vault
-- Ce monorepo : https://github.com/ak125/nestjs-remix-monorepo
-
----
-
-_Dernière mise à jour : 2026-07-19 (PR-A2 : contrat d'exécution consolidé 49 règles → 9 invariants ;
-duplication retirée, 0 non-négociable supprimé — validé par la suite d'éval
-`audit/agent-instructions-eval-suite-2026-07-18.md` 22/22 + coverage manifest MECE
-`audit/claude-md-kernel-candidate-2026-07-18.md`)._
-_Contrat d'exécution + pointer — pour toute règle canon, voir le vault._
+- Vault séparé : `/opt/automecanik/governance-vault/`. Aucune nouvelle ADR, rule,
+  policy ou evidence-pack canonique dans ce monorepo ; ne jamais écrire dans
+  `app/.local/governance-vault/`. Changement vault = PR signée, fusion humaine.
+- ADR normative seulement si `accepted` et non remplacée. Un écart avec le code
+  est à signaler ; le code observé n'accorde pas une dérogation de sécurité.
+- Repository Control Plane : L1 `audit/registry/*.json` + L2
+  `.spec/00-canon/repository-registry/*.yaml` = sources ; L3 canonical = projection.
+  Voir `packages/registry/README.md`. Les documents legacy voisins ne deviennent
+  pas normatifs par proximité. L'AI Operating Map
+  `.spec/00-canon/ai-registry/agent-operating-map.yaml` est une référence, pas un
+  orchestrateur ni une preuve de capacités actives.
+- Gardes existantes : `.ast-grep/rules/`, `.husky/pre-commit`,
+  `scripts/agents/validate-agents-md.sh`. Ne pas inscrire IP, identifiant sensible
+  ou clé dans les instructions d'agents.

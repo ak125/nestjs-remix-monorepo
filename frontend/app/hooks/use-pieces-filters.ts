@@ -4,11 +4,11 @@
  *
  * ⚡ OPTIMISÉ INP v2: Algorithme single-pass pour réduire l'INP de 50-100ms
  * - Une seule boucle calcule: filteredProducts + dynamicFilterCounts + brandAverageNotes
- * - Collator mis en cache avec useRef
+ * - Tri partagé avec la vue groupée, collator réutilisé
  * - Set pré-calculé pour lookups O(1)
  */
 
-import { useState, useMemo, useRef, useCallback, useTransition } from "react";
+import { useState, useMemo, useCallback, useTransition } from "react";
 import {
   type PieceData,
   type PiecesFilters,
@@ -16,7 +16,10 @@ import {
   type ViewMode,
 } from "../types/pieces-route.types";
 import { isValidImagePath } from "../utils/image-optimizer";
-import { convertStarsToNote } from "../utils/pieces-filters.utils";
+import {
+  convertStarsToNote,
+  sortPiecesInPlace,
+} from "../utils/pieces-filters.utils";
 
 // ⚡ Helper functions pré-définies (évite recréation à chaque render)
 const getPriceCategory = (price: number): "low" | "medium" | "high" => {
@@ -33,11 +36,6 @@ const matchesPriceFilter = (price: number, priceRange: string): boolean => {
 export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
   // ✅ Protection: S'assurer que pieces est toujours un tableau (stabilisé avec useMemo)
   const pieces = useMemo(() => inputPieces ?? [], [inputPieces]);
-
-  // ⚡ Collator mis en cache (évite recréation à chaque appel de sort)
-  const collatorRef = useRef(
-    new Intl.Collator("fr", { numeric: true, sensitivity: "base" }),
-  );
 
   // État des filtres
   const [activeFilters, setActiveFilters] = useState<PiecesFilters>({
@@ -201,22 +199,7 @@ export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
       }
     }
 
-    // ⚡ Tri avec collator mis en cache
-    const collator = collatorRef.current;
-    switch (sortBy) {
-      case "name":
-        filtered.sort((a, b) => collator.compare(a.name || "", b.name || ""));
-        break;
-      case "price-asc":
-        filtered.sort((a, b) => (a.price || 0) - (b.price || 0));
-        break;
-      case "price-desc":
-        filtered.sort((a, b) => (b.price || 0) - (a.price || 0));
-        break;
-      case "brand":
-        filtered.sort((a, b) => collator.compare(a.brand || "", b.brand || ""));
-        break;
-    }
+    sortPiecesInPlace(filtered, sortBy);
 
     // Calculer les moyennes de notes
     const averages = new Map<string, number>();

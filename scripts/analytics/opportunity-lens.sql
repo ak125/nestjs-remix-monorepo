@@ -1,7 +1,7 @@
 -- =====================================================
 -- Opportunity Lens — analytique manuelle
 -- =====================================================
--- V1 scope (cf. spec docs/superpowers/specs/2026-05-23-ai-additive-layer-phase-0-and-1-design.md §4.5) :
+-- V1 scope (cf. spec docs/specs/2026-05-23-ai-additive-layer-phase-0-and-1-design.md §4.5) :
 -- intersection des prompts probes-cibles (workspaces/ai-probe/prompts.yaml) avec :
 --   - GSC impressions 30j (__seo_gsc_daily, partitioned table existante)
 --   - Quality history faible AI-readiness (__seo_quality_history, EAV metric_name LIKE 'ai_has_%')

@@ -1,75 +1,35 @@
-# AGENTS.md — monorepo `nestjs-remix-monorepo`
+# AGENTS.md — AutoMecanik / `nestjs-remix-monorepo`
 
-> **Fichier d'amorçage. Il ne contient aucune règle.**
->
-> Il existe pour une seule raison : les agents qui découvrent leurs instructions via
-> `AGENTS.md` — Codex et assimilés — ne reçoivent **aucune** injection automatique de
-> `CLAUDE.md`, `.claude/rules/**` ou de la mémoire projet. Là où un autre harnais reçoit le
-> canon sans rien demander, toi tu dois aller le lire.
->
-> Ce fichier ne recopie donc **rien** : toute règle recopiée à la main ici dériverait en
-> silence de sa source. Il ne fait qu'indiquer **quoi lire, dans quel ordre, avant d'agir**.
+## Rôle et amorçage
 
-## Rôle
+Le contrat commun reste dans [CLAUDE.md](CLAUDE.md). Le lire une fois avant
+d'intervenir s'il n'est pas déjà chargé. Ce lien est une consigne de lecture,
+pas un import automatique Codex.
 
-Agent d'ingénierie sur un repo **gouverné**. Tu n'es **pas souverain** : mode lecture seule par
-défaut, cartographier avant de muter, et accord de l'owner sur les zones STOP.
+Depuis `workspaces/<workspace>/`, lire aussi le `CLAUDE.md` de ce workspace
+avant d’intervenir ; il précise les règles locales et leurs références pertinentes.
 
-Tu ne peux pas déduire les règles de ce repo en lisant son code. Elles sont écrites, elles sont
-ailleurs, et les lire est ta première action — pas une option.
+Les règles plus proches précisent leur seul périmètre. Codex préfère
+`AGENTS.override.md` à `AGENTS.md` dans un même répertoire, puis combine les
+instructions de la racine au répertoire de travail. Ne pas lui attribuer les
+imports ou le chargement des `.claude/rules/` de Claude Code.
 
-## Lecture obligatoire, dans cet ordre, avant toute action
+## Références à la demande
 
-1. **`./CLAUDE.md`** — le contrat d'exécution (9 invariants) et les **zones STOP**.
-   À lire **en entier**. C'est la source de vérité comportementale de ce repo.
-2. **`.claude/rules/<domaine>.md`** — la règle du bounded-context que tu touches :
-   `backend.md` · `frontend.md` · `payments.md` · `deployment.md` (**avant toute action
-   infra**) · `guardrails.md` · `security-hooks.md` · `context7.md` · `agent-doc-search.md`.
-3. **`audit/registry/canonical.json`** — source de vérité machine du Repository Control Plane,
-   à interroger **via `jq` avec un filtre**, jamais en lecture intégrale. Puis
-   `.claude/knowledge/REPO_MAP.md` pour la projection lisible.
-4. **`tail -n 80 log.md`** — contexte récent. Jamais le fichier entier.
-
-`Grep` et `Glob` viennent **après** cette cartographie, jamais avant.
-
-## Procédures (skills)
-
-Les procédures du repo sont écrites dans `.claude/skills/<nom>/SKILL.md` (et, par workspace,
-`workspaces/<ws>/.claude/skills/`). `.agents/skills` est un lien vers `.claude/skills` : Codex
-voit les skills racine, sans copie. Ceux qui touchent une zone STOP ne partent que sur invocation
-explicite (`agents/openai.yaml` du skill). Les skills de workspace ne sont pas exposés : quand ta
-tâche correspond à leur champ `description` (« Use when … »), lis ce `SKILL.md` en entier avant
-d'agir. Un skill décrit une procédure ; il ne lève aucune zone STOP.
-
-Relecture ou réécriture de style d'un brouillon français : lire
-`.claude/prompts/_shared/editorial-review.md` en entier avant d'agir. Elle rend une proposition
-motivée ; elle ne publie rien et n'écrit ni dans RAW ni dans WIKI.
-
-## Zones STOP
-
-Elles sont définies par l'**invariant 9 de `CLAUDE.md`**, et **volontairement pas recopiées
-ici** : une liste de sécurité maintenue à la main à deux endroits finit par diverger sans
-bruit, et ce repo a déjà payé ce défaut (d'où les copies vérifiées par hash sous
-`.claude/canon-mirrors/`).
-
-Conséquence directe : **tu ne peux pas savoir ce qui est interdit sans avoir lu `CLAUDE.md`.**
-C'est la raison pour laquelle cette lecture est la première action, et non une formalité.
-
-## Hiérarchie
-
-- **Reporte à** l'owner du repo, seul à pouvoir lever une zone STOP, par accord nominatif.
-- La gouvernance canon (décisions d'architecture, règles, politiques) vit dans un **dépôt
-  séparé**. Aucune ne naît dans ce monorepo. Voir `CLAUDE.md`.
-
-## Infrastructure
-
-Le vocabulaire de déploiement est strict et vérifié par un lint d'intégration continue :
-charger `.claude/rules/deployment.md` **avant** d'y toucher, et ne rien déduire du reste.
-
-Ne jamais inscrire ici une adresse IP, une URL d'infrastructure, un identifiant unique ou une
-clé : `scripts/agents/validate-agents-md.sh` bloque, et c'est voulu.
+- Lire la règle du domaine indiquée dans `CLAUDE.md` ; charger
+  `.claude/rules/deployment.md` avant toute action infra et
+  `.claude/rules/guardrails.md` avant modification d'une garde.
+- `.agents/skills` pointe vers `.claude/skills` dans ce dépôt. Vérifier la
+  destination réelle avant édition. Les skills de workspace se trouvent sous
+  `workspaces/<workspace>/.claude/skills/` ; leur présence ne prouve pas leur
+  découverte par Codex. Lire explicitement le skill pertinent si nécessaire.
+- Les politiques `agents/openai.yaml` des skills sensibles restent applicables.
+  Un skill ne lève ni une zone STOP ni une permission système.
+- Relecture française : `.claude/prompts/_shared/editorial-review.md`.
+- Chargement et limites par agent : `.claude/knowledge/workspaces.md`.
 
 ## Format de sortie
 
-**CONTRAT DE SORTIE** : défini par `.claude/canon-mirrors/agent-exit-contract.md`, dérivée
-verrouillée par hash. Le lire, ne pas le recopier, ne pas le résumer de mémoire.
+**CONTRAT DE SORTIE** : `.claude/canon-mirrors/agent-exit-contract.md`.
+Présenter les corrections autorisées, les preuves du périmètre et leurs limites.
+L'autorisation déjà donnée ne doit pas être redemandée pour chaque étape.

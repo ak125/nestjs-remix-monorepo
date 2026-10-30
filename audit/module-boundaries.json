@@ -17,8 +17,8 @@
         "backend/src/modules/admin/services/r1-image-prompt-builders",
         "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__"
       ],
-      "files_count": 157,
-      "loc_total": 43996,
+      "files_count": 159,
+      "loc_total": 45383,
       "has_barrel": true
     },
     "agentic-engine": {
@@ -74,8 +74,8 @@
         "backend/src/auth/guards",
         "backend/src/modules/auth/dto"
       ],
-      "files_count": 44,
-      "loc_total": 5878,
+      "files_count": 45,
+      "loc_total": 5966,
       "has_barrel": true
     },
     "backend-core": {
@@ -92,7 +92,7 @@
         "backend/src/utils"
       ],
       "files_count": 35,
-      "loc_total": 6176,
+      "loc_total": 6184,
       "has_barrel": true
     },
     "blog": {
@@ -132,7 +132,7 @@
         "backend/src/modules/cart/services"
       ],
       "files_count": 21,
-      "loc_total": 4009,
+      "loc_total": 4128,
       "has_barrel": false
     },
     "catalog": {
@@ -187,7 +187,7 @@
         "backend/src/modules/config/validators"
       ],
       "files_count": 103,
-      "loc_total": 25070,
+      "loc_total": 25071,
       "has_barrel": true
     },
     "customers": {
@@ -213,7 +213,7 @@
         "backend/src/database/types"
       ],
       "files_count": 15,
-      "loc_total": 21757,
+      "loc_total": 21794,
       "has_barrel": true
     },
     "dev-only": {
@@ -226,7 +226,7 @@
         "backend/src/modules/rm/utils"
       ],
       "files_count": 15,
-      "loc_total": 3532,
+      "loc_total": 3634,
       "has_barrel": false
     },
     "diagnostic-engine": {
@@ -261,7 +261,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 114862,
+      "loc_total": 114983,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -342,7 +342,7 @@
         "frontend/app/utils/seo"
       ],
       "files_count": 586,
-      "loc_total": 110531,
+      "loc_total": 110734,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -363,8 +363,8 @@
       "dirs": [
         "backend/src/modules/health"
       ],
-      "files_count": 1,
-      "loc_total": 114,
+      "files_count": 2,
+      "loc_total": 158,
       "has_barrel": false
     },
     "invoices": {
@@ -502,7 +502,7 @@
         "backend/src/modules/orders/types"
       ],
       "files_count": 21,
-      "loc_total": 6213,
+      "loc_total": 6572,
       "has_barrel": true
     },
     "payments": {
@@ -621,8 +621,8 @@
         "backend/src/modules/pricing/utils",
         "backend/src/modules/pricing/utils/__tests__"
       ],
-      "files_count": 37,
-      "loc_total": 9480,
+      "files_count": 39,
+      "loc_total": 10478,
       "has_barrel": false
     },
     "products": {
@@ -700,8 +700,8 @@
         "scripts/wiki-generators",
         "scripts/wiki-generators/__tests__"
       ],
-      "files_count": 209,
-      "loc_total": 48186,
+      "files_count": 213,
+      "loc_total": 50039,
       "has_barrel": true
     },
     "search": {
@@ -767,8 +767,8 @@
         "scripts/seo/__tests__/fixtures/r-seo-09/positive/05-loader-non-canonical",
         "scripts/seo/lib"
       ],
-      "files_count": 279,
-      "loc_total": 59406,
+      "files_count": 282,
+      "loc_total": 59882,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -814,7 +814,7 @@
         "backend/src/modules/seo-projection"
       ],
       "files_count": 22,
-      "loc_total": 5352,
+      "loc_total": 5777,
       "has_barrel": false
     },
     "seo-shadow-observatory": {
@@ -959,8 +959,8 @@
         "services/remotion-renderer/test",
         "tests/registry"
       ],
-      "files_count": 317,
-      "loc_total": 60023,
+      "files_count": 336,
+      "loc_total": 64177,
       "has_barrel": true
     },
     "upload": {
@@ -982,7 +982,7 @@
         "backend/src/modules/users/services"
       ],
       "files_count": 27,
-      "loc_total": 5216,
+      "loc_total": 5421,
       "has_barrel": true
     },
     "vehicle-context": {
@@ -1008,7 +1008,7 @@
         "backend/src/modules/vehicles/types"
       ],
       "files_count": 30,
-      "loc_total": 8914,
+      "loc_total": 8995,
       "has_barrel": false
     },
     "wiki": {
@@ -1028,7 +1028,7 @@
         "backend/src/workers/types"
       ],
       "files_count": 20,
-      "loc_total": 5098,
+      "loc_total": 5097,
       "has_barrel": false
     }
   },
@@ -1046,7 +1046,7 @@
     {
       "from": "admin",
       "to": "auth",
-      "count": 6
+      "count": 9
     },
     {
       "from": "admin",
@@ -1066,7 +1066,7 @@
     {
       "from": "admin",
       "to": "config",
-      "count": 73
+      "count": 74
     },
     {
       "from": "admin",
@@ -1096,7 +1096,7 @@
     {
       "from": "admin",
       "to": "seo",
-      "count": 11
+      "count": 14
     },
     {
       "from": "admin",
@@ -1739,6 +1739,11 @@
       "count": 353
     },
     {
+      "from": "frontend-shared",
+      "to": "uncategorized",
+      "count": 1
+    },
+    {
       "from": "gamme-rest",
       "to": "backend-core",
       "count": 2
@@ -2352,7 +2357,22 @@
     },
     {
       "from": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
+      "to": "backend/src/modules/seo/registries/seo-feature-flag.registry.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
       "to": "backend/src/modules/seo/services/chain/seo-role-template-selector.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
+      "to": "backend/src/modules/seo/utils/seo-balise-collision-gate.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
+      "to": "backend/src/modules/seo/utils/seo-fingerprint-core.ts",
       "rule": "no-deep-module-access"
     },
     {

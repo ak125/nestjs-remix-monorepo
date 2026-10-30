@@ -7,6 +7,7 @@
  * Temps d'exécution: ~30s
  */
 
+import { createHash } from 'node:crypto';
 import { test, expect } from './fixtures';
 
 // ============================================
@@ -73,6 +74,41 @@ test.describe('URL Validation - Critical Pages (200)', () => {
   }
 });
 
+// Lectures du sélecteur de véhicule de l'accueil. Sur PREPROD (clé anon,
+// ADR-028 option D), elles passent par les fonctions DEFINER de la migration
+// 20261026_vehicle_api_definer_reads : une lecture refusée (42501) ou une
+// fonction absente (PGRST202) remonte ici en 5xx. TOYOTA (164) a des modèles
+// en 2008 ; les motorisations du premier modèle peuvent être vides, seul leur
+// statut est vérifié. Statut, taille, empreinte du corps et durée de chaque
+// lecture sont écrits dans le journal du job, pour comparer PREPROD à PROD.
+const VEHICLE_BRAND_ID = 164;
+const VEHICLE_YEAR = 2008;
+
+test.describe('URL Validation - Vehicle selector API (200)', () => {
+  test('brands, years, models and types return 200', async ({ request }) => {
+    const read = async (url: string) => {
+      const startedAt = Date.now();
+      const response = await request.get(url);
+      const raw = await response.body();
+      const sha256 = createHash('sha256').update(raw).digest('hex');
+      console.log(
+        `vehicle-selector ${url} ${response.status()} ${raw.length}o sha256=${sha256} ${Date.now() - startedAt}ms`,
+      );
+      expect(response.status(), `${url} should return 200`).toBe(200);
+      const body = JSON.parse(raw.toString('utf8'));
+      expect(body.success, `${url}: success`).toBe(true);
+      expect(Array.isArray(body.data), `${url}: data array`).toBe(true);
+      return body.data as Array<{ modele_id?: number }>;
+    };
+
+    expect((await read('/api/vehicles/brands')).length).toBeGreaterThan(0);
+    expect((await read(`/api/vehicles/brands/${VEHICLE_BRAND_ID}/years`)).length).toBeGreaterThan(0);
+    const models = await read(`/api/vehicles/brands/${VEHICLE_BRAND_ID}/models?year=${VEHICLE_YEAR}`);
+    expect(models.length).toBeGreaterThan(0);
+    await read(`/api/vehicles/models/${models[0].modele_id}/types?year=${VEHICLE_YEAR}`);
+  });
+});
+
 test.describe('URL Validation - Expected Errors', () => {
   for (const { url, name, expectedStatus, description } of EXPECTED_ERROR_URLS) {
     test(`${name} - ${url} returns ${expectedStatus}`, async ({ request }) => {
@@ -134,34 +170,25 @@ test.describe('URL Navigation - Page Renders', () => {
     await expect(navbar).toBeVisible({ timeout: 10000 });
   });
 
+  // Le loader de /search rattrape une panne du backend et rend la page en 200
+  // avec la bannière « Erreur de recherche » : le statut seul ne la voit pas.
+  // Le nombre de résultats n'est pas exigé (catalogue illisible par la clé
+  // anon de PREPROD, cf. critical-path.spec.ts TEST 2).
   test('Search page renders with results', async ({ page }) => {
-    await page.goto('/search?q=plaquette');
+    const response = await page.goto('/search?q=plaquette');
+    expect(response?.status()).toBe(200);
 
-    // Attendre que la page charge (domcontentloaded plus rapide que networkidle)
-    await page.waitForLoadState('domcontentloaded');
-
-    // Vérifier que la recherche est exécutée - chercher un élément clé
-    // La page de recherche doit avoir un formulaire ou input
-    const pageContent = page.locator('body');
-    await expect(pageContent).toBeVisible({ timeout: 10000 });
-
-    // Vérifier que ce n'est pas une page d'erreur
-    const errorIndicator = page.getByText(/erreur|error|500/i);
-    await expect(errorIndicator).not.toBeVisible({ timeout: 5000 }).catch(() => {
-      // OK si pas visible
-    });
+    await expect(page).toHaveTitle(/^Recherche: plaquette \|/);
+    await expect(page.getByRole('heading', { name: 'Erreur de recherche' })).toHaveCount(0);
   });
 
-  test('Catalogue page renders categories', async ({ page }) => {
-    await page.goto('/pieces/catalogue');
-
-    await page.waitForLoadState('networkidle');
-
-    // La page doit avoir du contenu (pas 404)
-    const errorPage = page.getByText(/page non trouvée|404|not found/i);
-    await expect(errorPage).not.toBeVisible({ timeout: 5000 }).catch(() => {
-      // OK si pas visible
-    });
+  test('Catalogue page renders categories', () => {
+    test.skip(
+      true,
+      '/pieces/catalogue répond 301 vers / (routes/pieces.$slug.tsx) alors que ' +
+        'pieces-route-seo.spec.ts attend 410 : contrat SEO à trancher par l’owner ; ' +
+        'le test ne voyait que l’accueil, déjà couvert ci-dessus',
+    );
   });
 });
 

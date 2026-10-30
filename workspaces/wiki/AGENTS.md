@@ -5,7 +5,7 @@
 
 ## Règle d'ownership
 
-Le workspace `app/workspaces/wiki/` charge **uniquement** le skill `wiki-proposal-writer` (Phase 2 LIVE) + agents wiki orchestrateurs (Phase 4 future). Il **n'invoque** ni les 39 agents R0-R8 SEO (workspace `seo-batch/`), ni les 8 skills DEV daily (workspace `app/`), ni les 3 agents G1 marketing (workspace `marketing/`).
+Le workspace `app/workspaces/wiki/` est destiné au skill `wiki-proposal-writer` (Phase 2 LIVE) + agents wiki orchestrateurs (Phase 4 future). Il **n'invoque** ni les 39 agents R0-R8 SEO (workspace `seo-batch/`), ni les 8 skills DEV daily (workspace `app/`), ni les 3 agents G1 marketing (workspace `marketing/`).
 
 Tout agent / skill invoqué sous le scope de ce workspace **doit** figurer ci-dessous. Ajout/retrait = PR monorepo signée modifiant ce fichier (cf. ADR-061 §5).
 
@@ -17,7 +17,7 @@ Tout agent / skill invoqué sous le scope de ce workspace **doit** figurer ci-de
 
 | Skill | Rôle | Output canonique | Output interdit |
 |-------|------|------------------|-----------------|
-| **wiki-proposal-writer** | Production de fiches `automecanik-wiki/proposals/<slug>.md` au format frontmatter v1.0.0 (schema ADR-033 + ADR-039) | Fichiers `proposals/*.md` (FLAT, `_index.md` + `_manifest.json`) | `automecanik-wiki/wiki/<entity_type>/*` direct |
+| **wiki-proposal-writer** | Production de fiches `automecanik-wiki/proposals/<slug>.md` au format frontmatter v2.0.0 (schema ADR-033 + ADR-039) | Fichiers `proposals/*.md` (FLAT, `_index.md` + `_manifest.json`) | `automecanik-wiki/wiki/<entity_type>/*` direct |
 
 Fichier source : `.claude/skills/wiki-proposal-writer/`.
 
@@ -25,7 +25,7 @@ Fichier source : `.claude/skills/wiki-proposal-writer/`.
 
 | Destination | Autorisé ? | Justification |
 |-------------|-----------|---------------|
-| `automecanik-wiki/proposals/<slug>.md` (FLAT, schema v1.0.0) | ✅ Oui | ADR-033 + ADR-031 D19 (proposals FLAT obligatoire) |
+| `automecanik-wiki/proposals/<slug>.md` (FLAT, schema v2.0.0) | ✅ Oui | ADR-033 + ADR-031 D19 (proposals FLAT obligatoire) |
 | `automecanik-wiki/proposals/_index.md` + `_manifest.json` | ✅ Oui | ADR-031 D19 |
 | Documentation interne workspace (ce fichier, README, CLAUDE.md) | ✅ Oui | Standard workspace |
 | `automecanik-wiki/wiki/<entity_type>/*` direct (sans passer par proposals) | ❌ Non | ADR-031 D20 (sync-from-wiki lit `wiki/exports/rag/` uniquement, jamais `wiki/<entity_type>/`) |

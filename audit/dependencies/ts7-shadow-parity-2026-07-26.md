@@ -715,3 +715,519 @@ Three projects remain on `node-cjs-legacy.json`: `packages/seo-roles`, `packages
 and `backend`. `ts7-shadow-parity.json` is still not regenerated, for the reasons given in
 the pilot section; its `packages/seo-role-contracts` row describes the configuration
 before this change.
+
+## `nodenext` on `packages/seo-roles` — sixth project of the sequence
+
+Same scope rule as the pilot: one project. `node-cjs-legacy.json` is untouched, TS7 is
+still not a repo dependency (no `package.json` or lockfile change), and the PARKED
+decision above stands.
+
+`packages/seo-roles` belongs to D3, owned by seo-team. It is the source of truth for the
+canonical SEO page roles (R0..R8): normalization, display labels, badge colours, the
+branded `CanonicalRoleId` type and the zod schemas. Legacy values are accepted in input;
+output is always canonical. The change is compile configuration only, the emitted
+`dist/` is byte-identical, and the package's sources, tests and `package.json` do not
+change. It was applied by a delivery script that only the owner runs: that run is the
+owner's GO for this project.
+
+### What differs from the first five projects
+
+This is the package that the fifth project imports. Its `dist/` is gitignored and built
+by `tsc` with this `tsconfig.json`, so this file decides the bytes that every consumer
+reads: `packages/seo-role-contracts`, the backend, the frontend, five scripts, three CI
+workflows and a pre-commit hook. The emit check below is therefore the decisive one, and
+it is byte-identical.
+
+The package itself imports one bare specifier, `zod`, from 3 source files:
+`node_modules/zod/index.d.cts` before and after, as in the fourth and fifth projects. It
+imports no other workspace package. The package has no `"type"` field, so its files stay
+**CommonJS**.
+
+### Change
+
+`packages/seo-roles/tsconfig.json` becomes byte-identical to
+`packages/seo-url-contract/tsconfig.json`: it extends `base.json` and sets `module` and
+`moduleResolution` to `NodeNext`. The two files differed only in those lines before. The
+effective delta (`tsc --showConfig`, TS 6.0.3) is the pilot's:
+
+- `ignoreDeprecations: "6.0"` is removed;
+- `module` goes from commonjs to nodenext, and `moduleResolution` from node10 to nodenext;
+- `moduleDetection` becomes force;
+- `resolvePackageJsonExports` / `resolvePackageJsonImports` are no longer forced to false
+  (the NodeNext default is true).
+
+Nothing else changes.
+
+### Evidence — TS 6.0.3, the repo compiler
+
+| Check | Before | After |
+|---|---|---|
+| `tsc --noEmit` | exit 0, 0 diagnostics | exit 0, 0 diagnostics |
+| `tsc` build | exit 0 | exit 0 |
+| Emit (`.js`, `.d.ts` and their maps) | 56 files | the same 56, byte-identical (sha256) |
+| Relative specifiers (`--traceResolution`) | 13 outcomes → the 13 modules of `src/` other than `index.ts` | identical |
+| Bare specifiers | 1: `zod` → `node_modules/zod/index.d.cts` | identical |
+| Resolution outcomes, all files | 99 (13 in `src/`, 86 for zod with the 85 inside its declarations), 0 unresolved | the same 99 |
+| Program files (`--listFilesOnly`, `--explainFiles`) | 139 (45 lib + 14 src + 80 zod) | the same 139 |
+| Package tests (`tsx --test`) | 289 tests: 282 pass, 0 fail, 7 todo | identical |
+
+After the change, `--explainFiles` adds the line *"File is CommonJS module because
+'package.json' does not have field "type""* for each of the 14 source files.
+
+Consumers, all through the unchanged `package.json` (`exports` `"."` with `types`,
+`import` and `require`, plus `main` and `types`) to `dist/`:
+
+- `packages/seo-role-contracts`: 11 source files and 2 tests. Since the fifth project it
+  resolves with NodeNext to `dist/index.d.ts`. In the backend's Jest run, that package is
+  mapped to its `src/`, but its imports of `@repo/seo-roles` still reach `dist/`.
+- the backend: 6 files, one of them a Jest test (role identifiers, the V-level gamme
+  service, the SEO surface registry and its test, the internal-linking chain service and
+  the SEO fingerprint core). `tsc`, the backend build and the runtime read `dist/`. Jest
+  has no `moduleNameMapper` entry for this package, so it loads `dist/index.js` too.
+- the frontend: 1 admin route.
+- 5 scripts run with `tsx`, which load `dist/index.js`: 3 under `scripts/seo`,
+  `scripts/insert-missing-keywords.ts` and `scripts/governance/check-role-purity.ts`.
+  Three CI workflows (`contract-gate`, `governance-checks`, `seo-matrix-check`) build the
+  package with its `build` script before running them. The pre-commit role-purity
+  ratchet runs `check-role-purity.ts` when `.ts` or `.tsx` files are staged.
+- `Dockerfile.worker` copies the package directory from its installer stage.
+
+The emit is byte-identical, so the consumer delta is zero by construction. The CI of the
+change builds the workspace, then type-checks the affected projects, among them this
+package and its three dependents (`packages/seo-role-contracts`, the backend and the
+frontend), against a `dist/` rebuilt with the new configuration. Its `governance-checks` workflow also builds the package that
+way and runs the role-purity script and its tests on that `dist/`.
+
+### Evidence — TS 7.0.2, observation
+
+Same method as the pilot: this project alone, the harness's own functions, TS6 exit code
+checked. The delivery script commits only if the run before the change is
+`BLOCKED_CONFIG` with `TS5108` and the run after is `PARITY` with TS6 and TS7 at exit 0
+and 0 diagnostics.
+
+| Configuration | Classification | TS6 | TS7 |
+|---|---|---|---|
+| Before (`node-cjs-legacy.json`) | BLOCKED_CONFIG | exit 0, 0 diagnostics | `TS5108` |
+| After (`NodeNext`) | PARITY | exit 0, 0 diagnostics | exit 0, 0 diagnostics |
+
+### Still `BLOCKED_CONFIG` after the sixth project
+
+Two projects remain on `node-cjs-legacy.json`: `packages/registry` and `backend`.
+`ts7-shadow-parity.json` is still not regenerated, for the reasons given in the pilot
+section; its `packages/seo-roles` row describes the configuration before this change.
+
+## `nodenext` on `packages/registry` — seventh project of the sequence
+
+Same scope rule as the pilot: one project. `node-cjs-legacy.json` is untouched, TS7 is
+still not a repo dependency (no `package.json` or lockfile change), and the PARKED
+decision above stands.
+
+`packages/registry` is the typed library of the Repository Control Plane (ADR-058): the
+zod schemas and loaders of the canonical registry and its overlays, the command-center
+entries, the vehicle-context token helpers, and the five `build:*` generators of the
+contract artefacts. Its 57 files are in D15 (Security & Governance), except the 3 files
+of `src/vehicle-context/`, which are in D4. The change is compile configuration only, the
+emitted `dist/` is byte-identical, and the package's sources, tests and `package.json` do
+not change. It was applied by a delivery script that only the owner runs: that run is the
+owner's GO for this project.
+
+### What differs from the first six projects
+
+- The `tsconfig.json` is not a copy of the pilot's. It keeps its own options (`types`,
+  `lib`, `strict`, the declaration and source maps, the exclusion of test files). The
+  change applies the same transformation to it: `extends` moves from
+  `node-cjs-legacy.json` to `base.json`, and `module` / `moduleResolution` `NodeNext` are
+  added. The diff is +3 −1.
+- Four bare specifiers instead of one, each with the same target before and after.
+- The package's `test` script and its five `build:*` generators run with `tsx` from the
+  package directory, so `tsx` reads this `tsconfig.json`. Both were run under the two
+  configurations.
+
+Like the sixth project, this is the producer side: `dist/` is gitignored, built by `tsc`
+with this file, and read by the consumers listed below. The package has no `"type"`
+field, so its files stay **CommonJS**.
+
+### Change
+
+`packages/registry/tsconfig.json` extends `base.json` instead of `node-cjs-legacy.json` and
+sets `module` and `moduleResolution` to `NodeNext`. Its other lines do not change. The
+effective delta (`tsc --showConfig`, TS 6.0.3) is the pilot's:
+
+- `ignoreDeprecations: "6.0"` is removed;
+- `module` goes from commonjs to nodenext, and `moduleResolution` from node10 to nodenext;
+- `moduleDetection` becomes force;
+- `resolvePackageJsonExports` / `resolvePackageJsonImports` are no longer forced to false
+  (the NodeNext default is true).
+
+Nothing else changes; `target` stays `ES2020`.
+
+### Evidence — TS 6.0.3, the repo compiler
+
+| Check | Before | After |
+|---|---|---|
+| `tsc --noEmit` | exit 0, 0 diagnostics | exit 0, 0 diagnostics |
+| `tsc` build | exit 0 | exit 0 |
+| Emit (`.js`, `.d.ts` and their maps) | 164 files (41 modules) | the same 164, byte-identical (sha256) |
+| Imports from `src/` (importer, specifier, target) | 156: 96 relative, 44 bare, 16 Node builtins | identical |
+| Bare specifiers | `zod` (37) → `node_modules/zod/index.d.cts`; `js-yaml` (5) → `node_modules/@types/js-yaml/index.d.ts`; `jose` (1) → `node_modules/jose/dist/types/index.d.ts`; `micromatch` (1) → `node_modules/@types/micromatch/index.d.ts` | identical |
+| Resolution outcomes, all files | 327: 228 resolved, 99 not resolved, all Node builtins | the same 327 |
+| Importer, specifier, target, all files | 782 | identical |
+| Program files (`--listFilesOnly`) | 313 (47 lib, 41 src, 80 zod, 66 `@types/node`, 42 `undici-types`, 33 jose, 1 each for `@types/js-yaml`, `@types/micromatch`, `@types/braces` and `buffer`) | the same 313 |
+| Package tests (`tsx --test`, 16 files) | 220 tests: 220 pass, 0 fail | identical |
+| `build:*` generators (`tsx`) | 6 files written | the same 6, byte-identical |
+
+The 99 unresolved outcomes are Node builtin names (`node:fs`, `crypto`, …), imported by
+`src/` and by `@types/node` itself. `@types/node` declares them as ambient modules, so
+they type-check under both configurations; the trace reports them as not resolved because
+no file on disk matches the name.
+
+The generators read YAML from the repository and write five JSON Schemas under
+`.spec/00-canon/_schema/` (gitignored) and `.dependency-cruiser.generated.cjs` (tracked).
+The tracked file is unchanged from `main` under both configurations.
+
+Consumers, all through the unchanged `package.json` (`exports` `"."` with `types` and
+`default`, plus `main` and `types`) to `dist/`:
+
+- the backend: 20 source files and 9 tests (command center, diagnostic-engine ports, SEO
+  control-plane collectors, vehicle context). `tsc`, the backend build and the runtime
+  read `dist/`. One Jest configuration, `jest.command-center.config.cjs`, maps the
+  package to its `src/index.ts`; `ts-jest` compiles it there with the backend's
+  configuration, never with this file.
+- the frontend: 7 source files and 1 test (command-center components and route, the
+  vehicle-context server module). `vite.config.ts` pre-bundles the package in DEV, from
+  `dist/`.
+- CI: `audit` and `contract-gate` run the package's `test` script (covered above);
+  `automation-registry-validate` runs one of its tests from the repository root, so
+  `tsx` does not read this file there.
+
+The emit is byte-identical, so the consumer delta is zero by construction. The CI of the
+change builds the workspace, then type-checks the affected projects, among them this
+package and its dependents (the backend and the frontend), against a `dist/` rebuilt with
+the new configuration.
+
+### Evidence — TS 7.0.2, observation
+
+Same method as the pilot: this project alone, the harness's own functions, TS6 exit code
+checked. The delivery script commits only if the run before the change is
+`BLOCKED_CONFIG` with `TS5108` and the run after is `PARITY` with TS6 and TS7 at exit 0
+and 0 diagnostics.
+
+| Configuration | Classification | TS6 | TS7 |
+|---|---|---|---|
+| Before (`node-cjs-legacy.json`) | BLOCKED_CONFIG | exit 0, 0 diagnostics | `TS5108` |
+| After (`NodeNext`) | PARITY | exit 0, 0 diagnostics | exit 0, 0 diagnostics |
+
+### Still `BLOCKED_CONFIG` after the seventh project
+
+One project remains on `node-cjs-legacy.json`: `backend`. It is not a configuration-only
+change: with NodeNext, some of its specifiers resolve to a different target. It needs its
+own analysis before any change. `ts7-shadow-parity.json` is still not regenerated, for
+the reasons given in the pilot section; its `packages/registry` row describes the
+configuration before this change.
+
+## `nodenext` on `backend` — eighth project of the sequence
+
+Same scope rule as the pilot: one project. `node-cjs-legacy.json` is untouched, TS7 is
+still not a repo dependency (no `package.json` or lockfile change), and the PARKED
+decision above stands.
+
+`backend` is the NestJS application: the API, the BullMQ workers, and the scripts that
+run with its configuration. It was the last project on `node-cjs-legacy.json`. Its own
+analysis found one error under NodeNext: a relative `import()` without an extension in
+`src/workers/processors/agentic.processor.ts`, which Node also rejects at run time. A
+first change, already merged, removed that `import()`: the module was already imported
+statically at the top of the same file. This change switches `backend/tsconfig.json`. It
+was applied by a delivery script that only the owner runs: that run is the owner's GO for
+this project.
+
+### What differs from the first seven projects
+
+- **The emit is not byte-identical.** `backend/package.json` has no `"type"` field, so
+  the files stay **CommonJS**: static imports still compile to `require`. Two things
+  change in the emitted JavaScript:
+  - `import()` stays a native dynamic import instead of compiling to `require` (8 files);
+  - `moduleDetection` becomes `force`, so a file with no `import` or `export` is compiled
+    as a module and gets the `__esModule` marker (3 files).
+
+  The run-time delta is therefore not zero by construction. Every changed file is listed
+  below, and the delivery script stops unless the set of changed files is exactly that
+  list.
+- **Some packages resolve to other declaration files.** NodeNext reads package `exports`
+  with the `require` condition. Where a package ships separate declarations for
+  `require`, those are now used. Some imports that found no declaration file before now
+  find one, mainly in `react-router`. No type diagnostic appears or disappears, and
+  `skipLibCheck` stays on.
+- **More tools read this file than `tsc` alone**: the Nest build, two Jest
+  configurations through `ts-jest`, `ts-node`, ESLint, the DEV compile watcher, and the
+  marketing project, which extends it. Each one was checked under both configurations.
+
+### Change
+
+`backend/tsconfig.json` extends `base.json` instead of `node-cjs-legacy.json` and sets
+`module` and `moduleResolution` to `NodeNext`. Its other lines do not change. The diff is
++3 −1. The effective delta (`tsc --showConfig`, TS 6.0.3) is the pilot's:
+
+- `ignoreDeprecations: "6.0"` is removed;
+- `module` goes from commonjs to nodenext, and `moduleResolution` from node10 to nodenext;
+- `moduleDetection` becomes force;
+- `resolvePackageJsonExports` / `resolvePackageJsonImports` are no longer forced to false
+  (the NodeNext default is true).
+
+Nothing else changes: `target` stays `ES2022`, and the decorator options, `paths`,
+`outDir`, `rootDir`, `lib` and `types` are those of `main`.
+
+A second commit gives `ts-jest` two options in `backend/jest.config.js`: `module:
+commonjs` and `moduleResolution: bundler`. These are the options `ts-jest` compiles with
+anyway. Without them, the CI backend tests ran out of memory (see "Jest and `ts-jest`"
+below). The diff is +10 −1, a comment included. `tsc`, the build, `ts-node`, ESLint and
+the marketing project do not read that file, and `jest.command-center.config.cjs`
+replaces its `transform` entry.
+
+### Evidence — TS 6.0.3, the repo compiler
+
+The counts below come from the preparation run on `main` of 2026-10-18. The delivery
+script runs every check again before and after the change, on a `main` that contains the
+first change. It stops unless each result below holds and each changed set matches its
+expected list entry for entry. In the preparation run, the build after the change also
+reported the `agentic.processor.ts` error, which the first change removes. Its two
+`dist/` entries are not in the expected list.
+
+| Check | Before | After |
+|---|---|---|
+| `tsc --noEmit` | exit 0, 0 diagnostics | exit 0, 0 diagnostics |
+| Build (`npm run build`: `tsc --build`, then `tsc-alias`) | exit 0, 4,476 files in `dist/` | exit 0, the same 4,476 paths; 28 differ, listed below |
+| `ts-jest` options, `jest.config.js` (the CI configuration), one program: emit of `src/` and `tests/` | 1,605 roots, 3,234 outputs | the same 3,234, byte-identical (sha256) |
+| `ts-jest` options, `jest.config.js`, one program: type diagnostics | 0 | 0 |
+| `ts-jest` options, `jest.config.js`, one program: emit of the 74 package sources that tests map to | 148 outputs | identical |
+| `ts-jest`, `jest.command-center.config.cjs` (`isolatedModules`) | 1,679 files | the same 1,679; 29 differ, listed below |
+| The 4 command-center suites with that configuration | 143 tests pass | 143 tests pass |
+| `ts-node`: the 5 entries that load this file | compiled, 0 errors | the same 5 outputs, byte-identical |
+| Marketing project (`tsc -p scripts/marketing/tsconfig.json`) | exit 0, 271 files | exit 0, the same 271 files and 619 module resolutions |
+
+The 28 entries of `dist/` that differ fall into three groups:
+
+- **Native `import()`**, `.js` and `.js.map` of 8 files:
+  `modules/admin/services/execution-router.service`,
+  `modules/rag-proxy/rag-proxy.controller`,
+  `modules/rag-proxy/services/pdf-text-extractor.service`,
+  `modules/rag-proxy/services/rag-knowledge.service`,
+  `modules/supplier-truth/connectors/cal.connector`,
+  `modules/supplier-truth/connectors/inoshop.connector`,
+  `modules/system/services/health-check.service` and `workers/golda-tariff-fetch`.
+- **Compiled as modules**, 7 entries:
+  - `database/services/invoices.service` and `database/services/payment.service` (`.js`,
+    `.d.ts`): the `.js` gains the `__esModule` marker, and the `.d.ts` becomes
+    `export {}`. Both sources are a single comment line and no file imports them. The
+    payment module (`modules/payments/`) is a different directory, and none of its files
+    change.
+  - `instrument-init-count.test` (`.js`, `.js.map`, `.d.ts`): a test script; its
+    declarations become `export {}`.
+- **Declarations only**, 5 `.d.ts` files: `modules/search/services/meilisearch.service`,
+  `search-filter.service`, `search-suggestion.service`,
+  `modules/seo/controllers/seo-logs.controller` and
+  `modules/seo/services/log-ingestion.service`. The inferred types that point to
+  `meilisearch` gain `{ with: { "resolution-mode": "import" } }`, because that package's
+  declarations are an ES module. No workspace reads the backend's `.d.ts`: the backend's
+  `package.json` has `main` only, with no `types` or `exports`.
+
+The 12 native `import()` sites load Node builtins or packages; none is relative:
+
+- Node builtins in 5 files: `node:fs` and `node:path` (`execution-router.service`,
+  `rag-proxy.controller`), `fs`, `node:fs` and `node:path` (`rag-knowledge.service`),
+  and `dns/promises` (`health-check.service`).
+- `pdf-parse` 1.1.4 (`pdf-text-extractor.service`) is a CommonJS package: the code reads
+  `.default`, which is its `module.exports` in both cases.
+- `playwright` 1.61.1 (`cal.connector`, `inoshop.connector`, `golda-tariff-fetch`):
+  the code reads `chromium`. The package's ES module entry re-exports its CommonJS
+  instance.
+
+Under Node v24.21.0, each site yields the same value before and after. What changes is
+how Node loads the target (the asynchronous ES module loader) and the shape of the error
+when loading fails. None of these files tests an error code such as `MODULE_NOT_FOUND`.
+
+#### Jest and `ts-jest`
+
+`ts-jest` (29.4.11) does not compile with this file's `module`. With the CI
+configuration (`jest.config.js`, type-checked), outside ESM mode, it replaces NodeNext
+with CommonJS and NodeNext resolution with `Bundler` (`fixupCompilerOptionsForModuleKind`).
+That is why the emitted code is identical. The three "`ts-jest` options" rows of the table
+did not run `ts-jest`: a script applied these option rules to one TypeScript program. They
+show which options `ts-jest` compiles with, not how it behaves, and the first CI run of
+this change failed on how it behaves.
+
+Run as is, `ts-jest` ran out of memory. The CI Backend Tests job died on its first Jest
+command (`video-gates.service.test.ts`, 4 GB heap). `ts-jest` builds its language service
+with the options of `tsconfig.json`, then compiles each file with the corrected options.
+An instrumented run of that command, with a larger heap, showed:
+
+- the NodeNext program built at start-up is kept;
+- the first compile builds a second full program that shares none of the 5,064 source
+  files of the first. The heap goes from 2.3 to 4.3 GB: with a 4 GB heap, the process
+  dies here;
+- each later compile of a `src/` file builds a new program and a new type checker;
+- 57 declaration files read by the start-up program stay in every later program, 46 of
+  them from `@anthropic-ai/sdk`. They are CommonJS declarations of packages that the
+  corrected options resolve to their ES module declarations. They stay because `ts-jest`
+  adds each file it reads to its root files.
+
+With the two options in `backend/jest.config.js`, `ts-jest` starts with the options it
+computes itself. Its corrected options are the same with and without them, compared in
+full. The first compile reuses 5,069 source files, compiling a `src/` file no longer
+builds a program, and the 151002 warning (hybrid module kinds) is no longer logged.
+`tsc`, the build, `ts-node` and ESLint still read NodeNext from `tsconfig.json`.
+
+| `video-gates.service.test.ts`, CI command, 4 GB heap | Result | Time | Peak memory (RSS) |
+|---|---|---|---|
+| `main` | 45 of 45 pass | 15.5 s | 2.87 GB |
+| `tsconfig.json` change only | out of memory | 34 s | 4.5 GB |
+| With the Jest options | 45 of 45 pass | 14.7 s | 2.85 GB |
+
+The whole backend suite, run as CI runs it, gives the same result on `main` and with the
+Jest options, test by test: 346 suites, 5,638 tests, 5,614 pass, 23 skipped, and the same
+failure in both (`diag-canon.schema.test.ts`, which reads a local wiki export). Coverage
+is the same (29.31 % of statements).
+
+`ts-jest` itself was then run file by file, through its `process` function with the CI
+configuration, on 1,681 files: the 1,607 files of `src/` and `tests/` and the 74 package
+sources of the table. With the Jest options, each file compiles to the same code as on
+`main` (sha256, inline source map excluded). One file reports a type error, the same on
+both sides: `packages/registry/src/command-center/snapshot.ts` (TS2345). No suite of this
+configuration loads it, since `jest.config.js` does not map `@repo/registry` to its
+sources. The one-program diagnostics row covered `src/` and `tests/` only.
+
+The second configuration, `jest.command-center.config.cjs`, is called by no script and
+no workflow. It compiles with `isolatedModules`, where NodeNext applies. Its 29 changed
+files are:
+
+- the 11 `src/` files above;
+- 4 tests: 2 keep a relative `import()` as native (`readonly-guards`,
+  `vehicle-rpc.service`), and 2 gain the `__esModule` marker
+  (`diagnostic-engine.kg-extensions`, `seo/sitemap-v10.service`);
+- the 14 files of `packages/seo-types/src`. That package is `"type": "module"`, so its
+  sources compile as ES modules.
+
+Jest does not run native `import()` or ES modules without `--experimental-vm-modules`.
+The 4 command-center suites, the only ones this configuration is written for, pass
+before and after. A suite run with this configuration that reaches one of those files
+would now fail. With `jest.config.js`, which CI runs, the same files are unchanged.
+`tests/unit/command-center.controller.test.ts` was not run: it listens on a port.
+
+#### The other consumers
+
+The other consumers of this file:
+
+- **Build and start**: `tsconfig.build.json` extends this file and only adds exclusions.
+  `nest start` compiles with `tsconfig.build.json`, and `scripts/ops/dev-compile-watch.js`,
+  the DEV compile watcher, with this file. Both get the compiler options of the build row
+  above.
+- **ESLint**: `backend/.eslintrc.js` sets `parserOptions.project` to this file. The full
+  lint runs in the CI `lint` job.
+- **`ts-node`**: the package's `sitemap:generate` and `generate:schemas` scripts, and the
+  three cron entries that `scripts/deploy-phase1.sh` installs with
+  `-P backend/tsconfig.json`. Two of these cron scripts import the backend's
+  `app.module`, so `ts-node` compiles the whole backend graph with this file. The `ts-node`
+  row covers the five entries; their emitted code is identical. The backend files they
+  load get the build's delta: a spot check on `health-check.service.ts` shows the same
+  native `import('dns/promises')` in `ts-node`'s output.
+- **Marketing**: `scripts/marketing/tsconfig.json` extends this file. Its type check is
+  the row above. Its tests (`test:marketing`, through `tsx`) run in the CI `test` job.
+
+### Evidence — TS 7.0.2, observation
+
+Same method as the pilot: this project alone, the harness's own functions, TS6 exit code
+checked. The delivery script commits only if the run before the change is
+`BLOCKED_CONFIG` with `TS5108` and the run after is `PARITY` with TS6 and TS7 at exit 0
+and 0 diagnostics.
+
+| Configuration | Classification | TS6 | TS7 |
+|---|---|---|---|
+| Before (`node-cjs-legacy.json`) | BLOCKED_CONFIG | exit 0, 0 diagnostics | `TS5108` |
+| After (`NodeNext`) | PARITY | exit 0, 0 diagnostics | exit 0, 0 diagnostics |
+
+### No project left on `node-cjs-legacy.json`
+
+All eight projects of the sequence now use NodeNext. `node-cjs-legacy.json` stays in
+`packages/typescript-config`; no project extends it any more. `ts7-shadow-parity.json`
+is still not regenerated, for the reasons given in the pilot section; its `backend` row
+describes the configuration before this change. The TS7 decision above stands: it is
+still PARKED.
+
+## Artifact refreshed — the preflight reads the lockfile
+
+`ts7-shadow-parity.json` is regenerated, after a fix to the harness preflight. Before this
+change it still described the tree before the nodenext sequence:
+
+| `ts7-shadow-parity.json` | Before (`main` at `27a47a1d6`) | After |
+| --- | --- | --- |
+| PARITY | 4 | 12 |
+| BLOCKED_CONFIG | 8 — the eight projects of the sequence, each `TS5108` (`moduleResolution=node10`) | 0 |
+| DIVERGENT | 0 | 0 |
+| Source diagnostics, TS6 / TS7 | 0 / 0 | 0 / 0 |
+| Config diagnostics, TS7 | 8 | 0 |
+| `inputHash` | `sha256:f2c12262…` | `sha256:b68a001a…` |
+
+### The preflight defect
+
+The preflight refuses a half-installed tree (see "Two guards worth knowing"). It required a
+`<project>/node_modules` directory in every project whose `package.json` declares
+dependencies. npm hoists into the root `node_modules`: the root lockfile pins nested
+installs only under `frontend` (36 entries), `backend` (1), `packages/registry` (1),
+`packages/design-tokens` (41) and `packages/eslint-config` (2, not a type-check project).
+After a clean `npm ci`, the other 7 workspace projects have no `node_modules` directory and
+need none. The unmodified harness, run in a fresh `npm ci` worktree on `27a47a1d6`, exits 1
+before provisioning TS7:
+
+```text
+Preflight failed — refusing to publish numbers from an incomplete tree:
+  - packages/cwv-taxonomy/node_modules is missing — its own deps cannot resolve
+  - packages/database-types/node_modules is missing — its own deps cannot resolve
+  - packages/domain-commerce/node_modules is missing — its own deps cannot resolve
+  - packages/seo-role-contracts/node_modules is missing — its own deps cannot resolve
+  - packages/seo-roles/node_modules is missing — its own deps cannot resolve
+  - packages/seo-types/node_modules is missing — its own deps cannot resolve
+  - packages/seo-url-contract/node_modules is missing — its own deps cannot resolve
+```
+
+On the long-lived DEV checkout those 7 directories exist and are empty, so the check passed
+there without testing anything.
+
+### Change
+
+`missingNestedInstalls()` (`scripts/audit/ts7-shadow-parity.ts`): for a workspace of the
+root lockfile, every `<project>/node_modules/…` entry the lockfile pins must exist on disk.
+Optional entries are skipped: npm omits the builds for other platforms (`@esbuild/darwin-*`,
+`fsevents`). `services/remotion-renderer` is not a workspace (it has its own lockfile) and
+keeps the directory check. The `node_modules/typescript` check and the frontend typegen are
+unchanged; a missing root lockfile fails the preflight. Four unit tests are added; the
+harness tests go from 22 to 26, all passing.
+
+### Evidence
+
+Fresh worktree on `27a47a1d6`, `npm ci` of the root lockfile and of
+`services/remotion-renderer`, the 9 `packages/*` built first (see below):
+
+- Negative case: `packages/registry/node_modules/js-yaml` moved aside, then restored.
+
+  ```text
+  Preflight failed — refusing to publish numbers from an incomplete tree:
+    - packages/registry: 1 nested install(s) pinned by package-lock.json are missing (first: packages/registry/node_modules/js-yaml)
+  ```
+
+- `npm run audit:ts7-shadow:parity-only`: `PARITY 12 · BLOCKED_CONFIG 0 · DIVERGENT 0`, exit 0.
+- `npm run audit:ts7-shadow:check` right after: `Parity artifact up to date.`, exit 0.
+
+### Prerequisite the preflight does not check
+
+The 9 `packages/*` export their types from `dist/`, which is gitignored. `turbo typecheck`
+builds them first (`dependsOn: ["^build"]`); the harness calls `tsc` directly and does not.
+In a fresh worktree, build them first (`turbo run build --filter='./packages/*'`). Otherwise
+both compilers report the same phantom `TS2307`s and the run still reads PARITY. The sign
+is a non-zero `ts6SourceDiagnostics` in the summary. It is 0 here.
+
+### TS7 decision
+
+Unchanged: still PARKED. On 2026-10-20, `typescript-eslint` 8.72.0 still declares peer
+`typescript: >=4.8.4 <6.1.0`, and `ts-jest` 29.4.15 declares `<7`. Parity on 12 projects
+removes the configuration blocker this harness measures. It does not lift the peer-range
+blocker. The `stalenessFindings` text in the artifact cites `typescript-eslint@8.65.0` as
+of 2026-07-26. That text is fixed in the harness, and this change leaves it as it is.

@@ -2,7 +2,7 @@
   "_generated_by": "scripts/audit/build-db-usage-map.js",
   "note": "Candidates only — never a \"dead\" verdict. A real DROP table/function goes through the RPC Gate + a vault ADR, never from this map.",
   "important_caveats": [
-    "772 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
+    "773 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
     "Migration parsing is regex-based and tracks last CREATE vs last DROP per object (date-prefixed filenames ≈ chronological); re-create-after-drop edge cases may slip through.",
     "RLS-only / dashboard / external-cron / RPC-internal usage is invisible here — see per-candidate caveats.",
     "8 call-site(s) écarté(s) : le récepteur n'est pas un client PostgREST (Buffer/Array, ou bucket Supabase Storage) — voir dropped_call_sites[].",
@@ -13,16 +13,16 @@
     "tables_with_callsites": 214,
     "candidate_orphan_tables": 75,
     "partitions": 27,
-    "rpc_seen": 251,
+    "rpc_seen": 257,
     "rpc_with_callsites": 14,
     "trigger_functions": 30,
-    "candidate_orphan_rpc": 207,
-    "dynamic_from_callsites": 772,
-    "dynamic_rpc_callsites": 1,
+    "candidate_orphan_rpc": 213,
+    "dynamic_from_callsites": 773,
+    "dynamic_rpc_callsites": 2,
     "unresolved_callsites": 0,
     "dropped_call_sites": 8,
-    "migrations_scanned": 420,
-    "backend_files_scanned": 1490
+    "migrations_scanned": 434,
+    "backend_files_scanned": 1497
   },
   "tables": {
     "___config": {
@@ -1123,6 +1123,7 @@
     "__seo_event_log": {
       "used_by": [
         "backend/src/modules/admin/services/command-center-kpi.service.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
         "backend/src/modules/admin/services/seo-control.service.ts",
         "backend/src/modules/analytics/tracking-integrity/tracking-integrity.service.ts",
         "backend/src/modules/diagnostic-engine/services/outcome-emitter.service.ts",
@@ -1135,7 +1136,7 @@
         "backend/src/modules/seo/services/seo-placeholder-events.service.ts",
         "backend/src/modules/seo/services/sitemap-event-log.service.ts"
       ],
-      "used_by_count": 12,
+      "used_by_count": 13,
       "in_migrations": [
         "20260425_seo_event_log.sql"
       ],
@@ -2284,9 +2285,10 @@
     },
     "__vehicle_page_cache": {
       "used_by": [
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
         "backend/src/modules/vehicles/services/vehicle-rpc.service.ts"
       ],
-      "used_by_count": 1,
+      "used_by_count": 2,
       "in_migrations": [
         "20260420_vehicle_page_cache_schema.sql"
       ],
@@ -3799,7 +3801,9 @@
       "called_by": [],
       "called_by_count": 0,
       "defined_in_migrations": [
-        "20260517_seo_r2_v2_outbox_relay_rpc.sql"
+        "20260517_seo_r2_v2_outbox_relay_rpc.sql",
+        "20261029_seo_r2_v2_r8_publish_snapshot_text_type_id.down.sql",
+        "20261029_seo_r2_v2_r8_publish_snapshot_text_type_id.sql"
       ],
       "is_trigger_function": false
     },
@@ -4563,6 +4567,38 @@
       ],
       "is_trigger_function": false
     },
+    "get_vehicle_api_brand_models": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20261026_vehicle_api_definer_reads.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "get_vehicle_api_brands": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20261026_vehicle_api_definer_reads.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "get_vehicle_api_model_types": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20261026_vehicle_api_definer_reads.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "get_vehicle_api_types_by_models": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20261026_vehicle_api_definer_reads.sql"
+      ],
+      "is_trigger_function": false
+    },
     "get_vehicle_page_data_cached": {
       "called_by": [],
       "called_by_count": 0,
@@ -5255,6 +5291,22 @@
       "called_by_count": 0,
       "defined_in_migrations": [
         "20260522_pricing_cost_bucket_aggregates.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "pricing_deactivate_chunk": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20261019_pricing_deactivate_chunk.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "pricing_deactivate_rollback": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20261019_pricing_deactivate_chunk.sql"
       ],
       "is_trigger_function": false
     },
@@ -7695,7 +7747,9 @@
         "no-rpc-callsite"
       ],
       "defined_in_migrations": [
-        "20260517_seo_r2_v2_outbox_relay_rpc.sql"
+        "20260517_seo_r2_v2_outbox_relay_rpc.sql",
+        "20261029_seo_r2_v2_r8_publish_snapshot_text_type_id.down.sql",
+        "20261029_seo_r2_v2_r8_publish_snapshot_text_type_id.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
@@ -8936,6 +8990,70 @@
       ]
     },
     {
+      "name": "get_vehicle_api_brand_models",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20261026_vehicle_api_definer_reads.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "get_vehicle_api_brands",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20261026_vehicle_api_definer_reads.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "get_vehicle_api_model_types",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20261026_vehicle_api_definer_reads.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "get_vehicle_api_types_by_models",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20261026_vehicle_api_definer_reads.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
       "name": "get_vehicle_page_data_cached",
       "confidence": "medium",
       "derived_from": [
@@ -10147,6 +10265,38 @@
       ]
     },
     {
+      "name": "pricing_deactivate_chunk",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20261019_pricing_deactivate_chunk.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "pricing_deactivate_rollback",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20261019_pricing_deactivate_chunk.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
       "name": "pricing_rollback_batch",
       "confidence": "medium",
       "derived_from": [
@@ -11125,7 +11275,7 @@
     },
     {
       "file": "backend/src/database/services/piece-price-data.service.ts",
-      "line": 186,
+      "line": 188,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -11237,63 +11387,70 @@
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 662,
+      "line": 759,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_pages",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1294,
+      "line": 991,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_pages",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1369,
+      "line": 1663,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_pages",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1406,
+      "line": 1738,
+      "form": "OBJ.KEY",
+      "resolved_table": "__seo_r8_pages",
+      "refusal": null
+    },
+    {
+      "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
+      "line": 1775,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_page_versions",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1414,
+      "line": 1783,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_page_versions",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1439,
+      "line": 1808,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_fingerprints",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1481,
+      "line": 1850,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_similarity_index",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1501,
+      "line": 1870,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_regeneration_queue",
       "refusal": null
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1512,
+      "line": 1881,
       "form": "OBJ.KEY",
       "resolved_table": "__seo_r8_qa_reviews",
       "refusal": null
@@ -12168,28 +12325,28 @@
     },
     {
       "file": "backend/src/modules/cart/services/abandoned-cart-data.service.ts",
-      "line": 162,
+      "line": 163,
       "form": "IDENT",
       "resolved_table": "__abandoned_cart_emails",
       "refusal": null
     },
     {
       "file": "backend/src/modules/cart/services/abandoned-cart-data.service.ts",
-      "line": 181,
+      "line": 183,
       "form": "IDENT",
       "resolved_table": "__abandoned_cart_emails",
       "refusal": null
     },
     {
       "file": "backend/src/modules/cart/services/abandoned-cart-data.service.ts",
-      "line": 230,
+      "line": 255,
       "form": "IDENT",
       "resolved_table": "__abandoned_cart_emails",
       "refusal": null
     },
     {
       "file": "backend/src/modules/cart/services/abandoned-cart-data.service.ts",
-      "line": 257,
+      "line": 282,
       "form": "IDENT",
       "resolved_table": "__abandoned_cart_emails",
       "refusal": null
@@ -12973,105 +13130,98 @@
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 56,
+      "line": 61,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 84,
+      "line": 89,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 100,
+      "line": 105,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 153,
+      "line": 158,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 176,
+      "line": 181,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 217,
+      "line": 222,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 228,
+      "line": 233,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 234,
+      "line": 239,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 265,
+      "line": 270,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 289,
+      "line": 294,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 301,
+      "line": 306,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 310,
+      "line": 315,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 334,
+      "line": 339,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 340,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 364,
+      "line": 345,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -13085,49 +13235,49 @@
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 429,
+      "line": 374,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 446,
+      "line": 434,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 486,
+      "line": 451,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 547,
+      "line": 491,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 604,
+      "line": 552,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 652,
+      "line": 609,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/order-actions.service.ts",
-      "line": 694,
+      "line": 657,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -13246,63 +13396,105 @@
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 401,
+      "line": 445,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 411,
+      "line": 455,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 496,
+      "line": 540,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 545,
+      "line": 589,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 550,
+      "line": 594,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 566,
+      "line": 610,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 601,
+      "line": 645,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 720,
+      "line": 764,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 874,
+      "line": 961,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/orders/services/orders.service.ts",
+      "line": 982,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/orders/services/orders.service.ts",
+      "line": 1028,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/orders/services/orders.service.ts",
+      "line": 1048,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/orders/services/orders.service.ts",
+      "line": 1059,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/orders/services/orders.service.ts",
+      "line": 1109,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/orders/services/orders.service.ts",
+      "line": 1221,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -15472,133 +15664,147 @@
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 35,
+      "line": 65,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 56,
+      "line": 86,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 90,
+      "line": 120,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 153,
+      "line": 188,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 176,
+      "line": 214,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 198,
+      "line": 234,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 219,
+      "line": 260,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 238,
+      "line": 290,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 261,
+      "line": 311,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 280,
+      "line": 330,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 299,
+      "line": 353,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 332,
+      "line": 372,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 359,
+      "line": 391,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 396,
+      "line": 424,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 435,
+      "line": 451,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 463,
+      "line": 488,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 483,
+      "line": 527,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 505,
+      "line": 555,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
-      "line": 530,
+      "line": 575,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
+      "line": 597,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/users/services/user-data-consolidated.service.ts",
+      "line": 622,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -15640,308 +15846,259 @@
     },
     {
       "file": "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts",
-      "line": 60,
+      "line": 125,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts",
-      "line": 107,
+      "line": 159,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts",
-      "line": 141,
+      "line": 193,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts",
-      "line": 175,
+      "line": 361,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts",
-      "line": 220,
+      "line": 404,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts",
-      "line": 250,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts",
-      "line": 326,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts",
-      "line": 369,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts",
-      "line": 374,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts",
-      "line": 380,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts",
-      "line": 428,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts",
-      "line": 472,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts",
-      "line": 528,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts",
-      "line": 589,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts",
-      "line": 615,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
-      "line": 66,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
-      "line": 113,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
-      "line": 155,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
-      "line": 209,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
-      "line": 236,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
-      "line": 315,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
       "line": 409,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
-      "file": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
-      "line": 457,
+      "file": "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts",
+      "line": 415,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts",
+      "line": 463,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts",
+      "line": 507,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts",
+      "line": 563,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts",
+      "line": 624,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts",
+      "line": 650,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
-      "line": 462,
+      "line": 71,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
-      "line": 468,
+      "line": 118,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
-      "line": 516,
+      "line": 160,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
-      "line": 558,
+      "line": 440,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
-      "line": 622,
+      "line": 488,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
-      "line": 683,
+      "line": 493,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
-      "line": 727,
+      "line": 499,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
+      "line": 547,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
+      "line": 589,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
+      "line": 653,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
+      "line": 714,
+      "form": "OBJ.KEY",
+      "resolved_table": null,
+      "refusal": "import-outside-scanned-corpus"
+    },
+    {
+      "file": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
+      "line": 758,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/vehicles/services/data/vehicle-types.service.ts",
-      "line": 77,
+      "line": 80,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/vehicles/services/data/vehicle-types.service.ts",
-      "line": 163,
+      "line": 166,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/vehicles/services/data/vehicle-types.service.ts",
-      "line": 229,
+      "line": 308,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/vehicles/services/data/vehicle-types.service.ts",
-      "line": 293,
+      "line": 388,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/vehicles/services/data/vehicle-types.service.ts",
-      "line": 373,
+      "line": 393,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/vehicles/services/data/vehicle-types.service.ts",
-      "line": 378,
+      "line": 399,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/vehicles/services/data/vehicle-types.service.ts",
-      "line": 384,
+      "line": 406,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/vehicles/services/data/vehicle-types.service.ts",
-      "line": 391,
+      "line": 453,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/vehicles/services/data/vehicle-types.service.ts",
-      "line": 438,
+      "line": 496,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/vehicles/services/data/vehicle-types.service.ts",
-      "line": 481,
+      "line": 546,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/vehicles/services/data/vehicle-types.service.ts",
-      "line": 531,
+      "line": 585,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/vehicles/services/data/vehicle-types.service.ts",
-      "line": 570,
+      "line": 630,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
     },
     {
       "file": "backend/src/modules/vehicles/services/data/vehicle-types.service.ts",
-      "line": 615,
-      "form": "OBJ.KEY",
-      "resolved_table": null,
-      "refusal": "import-outside-scanned-corpus"
-    },
-    {
-      "file": "backend/src/modules/vehicles/services/data/vehicle-types.service.ts",
-      "line": 658,
+      "line": 673,
       "form": "OBJ.KEY",
       "resolved_table": null,
       "refusal": "import-outside-scanned-corpus"
@@ -16181,7 +16338,14 @@
   "dynamic_rpc_callsites": [
     {
       "file": "backend/src/database/services/supabase-base.service.ts",
-      "line": 509,
+      "line": 531,
+      "form": "IDENT",
+      "resolved_table": null,
+      "refusal": "binding-not-found"
+    },
+    {
+      "file": "backend/src/database/services/supabase-base.service.ts",
+      "line": 532,
       "form": "IDENT",
       "resolved_table": null,
       "refusal": "binding-not-found"
@@ -16209,7 +16373,7 @@
       "method": "from",
       "reason": "js-builtin-static-from",
       "file": "backend/src/modules/cart/controllers/cart-recovery.controller.ts",
-      "line": 8,
+      "line": 17,
       "receiver": "Buffer"
     },
     {

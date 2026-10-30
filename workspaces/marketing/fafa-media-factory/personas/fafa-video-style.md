@@ -28,7 +28,9 @@
 ## Mise en page de marque
 
 - **Badge disclosure IA** : mention « Fafa — mécano IA » visible (intro ou overlay continu) +
-  disclaimer `ai_generated_notice`. Non négociable (G6 + conformité plateformes 2026).
+  disclaimer `ai_generated_notice`. Non négociable (conformité plateformes 2026). Aucune gate ne le vérifie :
+  `checkArtefacts` exige seulement un tableau `disclaimers`, et `ai_generated_notice` n'est pas un `DisclaimerType`
+  du code (C18-22).
 - **Logo AutoMecanik** : asset officiel `frontend/public/` uniquement, **jamais redessiné**.
 - Couleurs : voir [`fafa-brand-palette.md`](fafa-brand-palette.md) (navy fond / bleu cartes /
   orange CTA, rouge interdit sauf danger).
@@ -41,4 +43,5 @@ vidéo « trop compliance » et oubliable.
 
 ## Voir aussi
 
-- [`../formats/`](../formats/) · `.spec/00-canon/video-governance-p0.md` · Skill `fafa-remotion-template-planner`
+- [`../formats/`](../formats/) · `.spec/00-canon/video-governance-p0.md` (legacy, contexte seulement) ·
+  Skill `fafa-remotion-template-planner`

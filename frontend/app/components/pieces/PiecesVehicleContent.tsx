@@ -88,6 +88,22 @@ export function PiecesVehicleContent() {
     isFilterPending,
   } = usePiecesFilters(data.pieces);
 
+  // Opening the mobile sidebar does not change counts. Stable callbacks let
+  // its memoized content skip a render on that visibility-only interaction.
+  const getBrandCount = useCallback(
+    (brand: string) => dynamicFilterCounts.brandCounts.get(brand) || 0,
+    [dynamicFilterCounts.brandCounts],
+  );
+  const getQualityCount = useCallback(
+    (quality: string) => dynamicFilterCounts.qualityCounts.get(quality) || 0,
+    [dynamicFilterCounts.qualityCounts],
+  );
+  const getPriceRangeCount = useCallback(
+    (range: string) =>
+      dynamicFilterCounts.priceCounts[range as "low" | "medium" | "high"] || 0,
+    [dynamicFilterCounts.priceCounts],
+  );
+
   // Track les impressions de la section "Voir aussi" au montage
   useEffect(() => {
     trackImpression("VoirAussi", 4); // 4 liens dans la section
@@ -243,8 +259,9 @@ export function PiecesVehicleContent() {
         />
       </div>
       {/* Fil d'ariane SEO optimise - Reutilisation composant Breadcrumbs */}
+      {/* Pas de z-index : la navbar collante et les barres fixes mobiles doivent rester au-dessus */}
       <div
-        className="bg-white border-b border-gray-200 relative z-[100]"
+        className="bg-white border-b border-gray-200 relative"
         style={{ pointerEvents: "auto", position: "relative" }}
       >
         <div
@@ -304,7 +321,7 @@ export function PiecesVehicleContent() {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar filtres et catalogue — hidden on mobile, toggle via MobileBottomBar */}
           <aside
-            className={`lg:w-80 shrink-0 space-y-6 animate-in fade-in slide-in-from-left duration-700 ${showFilters ? "block" : "hidden lg:block"}`}
+            className={`lg:w-80 shrink-0 space-y-6 lg:animate-in lg:fade-in lg:slide-in-from-left lg:duration-700 ${showFilters ? "block" : "hidden lg:block"}`}
           >
             {/* Filtres */}
             <div className="sticky top-24">
@@ -314,17 +331,9 @@ export function PiecesVehicleContent() {
                 uniqueBrands={uniqueBrands}
                 piecesCount={filteredProducts.length}
                 resetAllFilters={resetAllFilters}
-                getBrandCount={(brand) =>
-                  dynamicFilterCounts.brandCounts.get(brand) || 0
-                }
-                getQualityCount={(quality) =>
-                  dynamicFilterCounts.qualityCounts.get(quality) || 0
-                }
-                getPriceRangeCount={(range) =>
-                  dynamicFilterCounts.priceCounts[
-                    range as "low" | "medium" | "high"
-                  ] || 0
-                }
+                getBrandCount={getBrandCount}
+                getQualityCount={getQualityCount}
+                getPriceRangeCount={getPriceRangeCount}
                 filtersData={data.filtersData}
                 availablePositions={availablePositions}
                 positionLabel={positionLabel}
@@ -417,6 +426,7 @@ export function PiecesVehicleContent() {
                   <PiecesGroupedDisplay
                     groupedPieces={data.grouped_pieces}
                     activeFilters={activeFilters}
+                    sortBy={sortBy}
                     viewMode={viewMode}
                     vehicleModele={data.vehicle.modele}
                     vehicleMarque={data.vehicle.marque}

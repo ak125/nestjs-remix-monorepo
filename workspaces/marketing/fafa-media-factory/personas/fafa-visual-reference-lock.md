@@ -38,8 +38,8 @@
 
 Avant toute génération (avatar, b-roll avec Fafa, miniature) : **vérifier la sortie contre ces
 invariants**. Toute dérive (visage différent, logo redessiné, rouge dominant, orange envahissant,
-IA non assumée) = **rejet**, régénérer. En review, le skill `fafa-brand-safety-reviewer`
-applique G3 (Brand) + G6 (Visual Honesty STRICT).
+IA non assumée) = **rejet**, régénérer. Aucune gate ne contrôle ces invariants : G3 `brand` ne lit que le texte,
+G6 `visual_role` ne compte que les visuels utilisés comme preuve (`fafa-brand-safety-reviewer`, § G3 et G6).
 
 ## Voir aussi
 

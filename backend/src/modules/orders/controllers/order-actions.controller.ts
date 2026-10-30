@@ -16,6 +16,10 @@ import { AuthenticatedGuard } from '@auth/authenticated.guard';
 import { PermissionsGuard } from '@auth/guards/permissions.guard';
 import { RequirePermission } from '@auth/decorators/require-permission.decorator';
 import { OrderActionsService } from '../services/order-actions.service';
+import {
+  OrdersService,
+  type CreateSupplementOrderInput,
+} from '../services/orders.service';
 import { MailService } from '../../../services/mail.service';
 
 /**
@@ -23,7 +27,7 @@ import { MailService } from '../../../services/mail.service';
  *
  * Endpoints pour toutes les actions backoffice. Permissions per-action via
  * @RequirePermission(canX) consultant la matrice canonique PermissionsService.
- * Cf docs/superpowers/specs/2026-04-30-permissions-canonical-backend-design.md
+ * Cf docs/specs/2026-04-30-permissions-canonical-backend-design.md
  */
 @Controller('api/admin/orders')
 @UseGuards(AuthenticatedGuard, PermissionsGuard)
@@ -33,6 +37,7 @@ export class OrderActionsController {
   constructor(
     private readonly orderActionsService: OrderActionsService,
     private readonly mailService: MailService,
+    private readonly ordersService: OrdersService,
   ) {}
 
   /**
@@ -269,21 +274,9 @@ export class OrderActionsController {
         `❌ Annulation commande ${orderId} - Raison: ${body.reason}`,
       );
 
-      // 1. Annuler commande
+      // Le mail d'annulation part de l'écouteur de ORDER_EVENTS.CANCELLED
+      // (OrderEmailListener), émis par le service : un seul mail.
       await this.orderActionsService.cancelOrder(orderId, body.reason);
-
-      // 2. Récupérer données pour email
-      const order = await this.orderActionsService.getOrder(orderId);
-      const customer = await this.orderActionsService.getCustomer(
-        order.ord_cst_id,
-      );
-
-      // 3. Envoyer email annulation
-      await this.mailService.sendCancellationEmail(
-        order,
-        customer,
-        body.reason,
-      );
 
       this.logger.log(`✅ Commande ${orderId} annulée avec succès`);
 
@@ -296,6 +289,32 @@ export class OrderActionsController {
       this.logger.error(`❌ Échec annulation ${orderId}:`, message);
       throw error;
     }
+  }
+
+  /**
+   * POST /api/admin/orders/:orderId/supplements
+   * Supplément après une rupture fournisseur : l'équivalent disponible coûte
+   * plus cher, le client paie la différence par une commande enfant. Les règles
+   * sont dans OrdersService.createSupplementOrder. Aucun mail n'est envoyé : le
+   * texte proposé au client, avec `paymentUrl`, est validé par l'owner.
+   */
+  @Post(':orderId/supplements')
+  @RequirePermission('canCreateOrders')
+  async createSupplementOrder(
+    @Param('orderId') orderId: string,
+    @Body() body: CreateSupplementOrderInput,
+    @Req() req: Request,
+  ) {
+    const supplement = await this.ordersService.createSupplementOrder(
+      orderId,
+      body,
+      { userId: req.user?.id },
+    );
+    return {
+      success: true,
+      message: `Supplément ${supplement.orderId} créé : ${supplement.totalTtc.toFixed(2)} € TTC à payer par le client.`,
+      ...supplement,
+    };
   }
 
   /**

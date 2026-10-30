@@ -44,6 +44,7 @@ export default function BottomNav() {
   const isCartActive = location.pathname.startsWith("/cart");
 
   // Expose la hauteur réelle via CSS variable (même pattern que --navbar-height dans Navbar)
+  // Avant cette mesure : valeur par défaut de global.css, liée à data-bottom-nav.
   useEffect(() => {
     const nav = navRef.current;
     if (!nav) return;
@@ -62,6 +63,7 @@ export default function BottomNav() {
   return (
     <nav
       ref={navRef}
+      data-bottom-nav
       aria-label="Navigation mobile"
       className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200 shadow-lg shadow-black/5 flex lg:hidden"
       style={{ paddingBottom: "max(6px, env(safe-area-inset-bottom))" }}

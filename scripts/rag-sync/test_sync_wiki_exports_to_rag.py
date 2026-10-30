@@ -1,8 +1,12 @@
 """Offline D20 and freshness regressions; all writes stay in temporary fixtures."""
+from contextlib import redirect_stderr, redirect_stdout
+import hashlib
 import importlib.util
+import io
 import json
 import os
 from pathlib import Path
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -27,14 +31,32 @@ class SyncContractTests(unittest.TestCase):
         self.mirror.mkdir(parents=True)
         self.manifest = self.mirror / '.last-sync.json'
         self.manifest.write_text('{"synced_at":"previous-success"}\n')
+        self.git('init', '-q')
+        (self.rag / '.gitignore').write_text('knowledge/.last-sync.json\nknowledge/_raw/\n')
+        self.baseline = self.root / 'legacy-baseline.json'
+        self.write_baseline([])
 
-    def run_sync(self, source=None, apply=True):
-        args = ['sync', '--wiki-repo', str(self.wiki), '--rag-repo', str(self.rag)]
+    def git(self, *args):
+        subprocess.run(['git', '-C', str(self.rag), '-c', 'user.name=fixture',
+                        '-c', 'user.email=fixture@example.invalid', *args], check=True)
+
+    def write_baseline(self, files):
+        self.baseline.write_text(json.dumps({'rule': 'fixture', 'total': len(files), 'files': files}))
+
+    def add_mirror(self, relative, text='historical corpus'):
+        p = self.mirror / relative
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(text)
+        return p
+
+    def run_sync(self, source=None, apply=True, extra=()):
+        args = ['sync', '--wiki-repo', str(self.wiki), '--rag-repo', str(self.rag),
+                '--legacy-baseline', str(self.baseline)]
         if source is not None:
             args += ['--source', str(source)]
         if apply:
             args += ['--apply']
-        with patch.object(sys, 'argv', args):
+        with patch.object(sys, 'argv', args + list(extra)):
             return sync.main()
 
     def add_export(self, relative='gammes/oil.md'):
@@ -128,6 +150,251 @@ class SyncContractTests(unittest.TestCase):
         self.assertEqual(self.run_sync(), 1)
         self.assertEqual(old.read_text(), 'historical corpus')
         self.assertIn('previous-success', self.manifest.read_text())
+
+    def test_unreconciled_report_is_bounded_and_counts_the_whole_set(self):
+        self.add_export()
+        total = sync.UNRECONCILED_SAMPLE + 15
+        for i in range(total):
+            (self.mirror / f'legacy-{i:03}.md').write_text('historical corpus')
+        for extra, listed in (((), sync.UNRECONCILED_SAMPLE), (('--list-unreconciled',), total)):
+            err = io.StringIO()
+            with redirect_stderr(err):
+                self.assertEqual(self.run_sync(extra=extra), 1)
+            lines = err.getvalue().splitlines()
+            self.assertEqual(sum(l.startswith('UNRECONCILED ') for l in lines), listed)
+            self.assertIn(f'{total} mirror files absent from WIKI exports and legacy baseline '
+                          f'({listed} listed, set sha256 ', lines[-1])
+        self.assertEqual(len(list(self.mirror.glob('legacy-*.md'))), total)
+        self.assertIn('previous-success', self.manifest.read_text())
+
+    def test_ignored_mirror_files_are_never_published_nor_counted(self):
+        self.add_export()
+        ignored = self.add_mirror('_raw/web/page.md')
+        self.assertEqual(self.run_sync(), 0)
+        self.assertEqual(ignored.read_text(), 'historical corpus')
+        self.assertEqual(json.loads(self.manifest.read_text())['legacy_unreconciled'],
+                         {'count': 0, 'baseline_total': 0})
+
+    def test_tracked_mirror_file_outside_exports_is_refused(self):
+        self.add_export()
+        tracked = self.add_mirror('web/page.md')
+        self.git('add', '-A')
+        self.git('commit', '-qm', 'legacy corpus')
+        tracked.unlink()  # a tracked file deleted from disk is not served
+        self.assertEqual(self.run_sync(), 0)
+        self.git('checkout', '--', 'knowledge/web/page.md')
+        err = io.StringIO()
+        with redirect_stderr(err):
+            self.assertEqual(self.run_sync(), 1)
+        self.assertIn('UNRECONCILED web/page.md (preserved; absent from WIKI exports and legacy baseline)', err.getvalue())
+
+    def test_legacy_baseline_is_preserved_counted_and_recorded(self):
+        self.add_export()
+        legacy = self.add_mirror('web/page.md')
+        self.write_baseline(['web/page.md'])
+        err = io.StringIO()
+        with redirect_stderr(err):
+            self.assertEqual(self.run_sync(extra=('--source-ref', 'automecanik-wiki@abc')), 0)
+        self.assertEqual(legacy.read_text(), 'historical corpus')
+        self.assertIn('1 legacy mirror files absent from WIKI exports, preserved (baseline 1, 0 entries to tighten)',
+                      err.getvalue())
+        manifest = json.loads(self.manifest.read_text())
+        self.assertEqual(manifest['legacy_unreconciled'], {'count': 1, 'baseline_total': 1})
+        self.assertEqual(manifest['source_ref'], 'automecanik-wiki@abc')
+        self.assertEqual(manifest['schema_version'], '1.2.0')
+        self.assertIsNone(manifest['tombstones'])
+
+    def test_addition_outside_legacy_baseline_is_refused(self):
+        self.add_export()
+        self.add_mirror('web/page.md')
+        added = self.add_mirror('web/new.md')
+        self.write_baseline(['web/page.md'])
+        err = io.StringIO()
+        with redirect_stderr(err):
+            self.assertEqual(self.run_sync(), 1)
+        self.assertEqual([l for l in err.getvalue().splitlines() if l.startswith('UNRECONCILED ')],
+                         ['UNRECONCILED web/new.md (preserved; absent from WIKI exports and legacy baseline)'])
+        self.assertTrue(added.exists())
+        self.assertIn('previous-success', self.manifest.read_text())
+
+    def test_stale_baseline_entries_are_reported_and_only_tightened(self):
+        self.add_export()
+        self.add_mirror('web/page.md')
+        self.write_baseline(['gammes/oil.md', 'web/gone.md', 'web/page.md'])
+        err = io.StringIO()
+        with redirect_stderr(err):
+            self.assertEqual(self.run_sync(), 0)
+        self.assertEqual([l for l in err.getvalue().splitlines() if l.startswith('STALE-BASELINE ')],
+                         ['STALE-BASELINE gammes/oil.md (no longer an unreconciled mirror file)',
+                          'STALE-BASELINE web/gone.md (no longer an unreconciled mirror file)'])
+        self.assertEqual(json.loads(self.manifest.read_text())['legacy_unreconciled'],
+                         {'count': 1, 'baseline_total': 3})
+        self.add_mirror('web/new.md')
+        manifest_before = self.manifest.read_bytes()
+        self.assertEqual(self.run_sync(extra=('--tighten-legacy-baseline',)), 0)
+        baseline = json.loads(self.baseline.read_text())
+        self.assertEqual((baseline['total'], baseline['files'], baseline['rule']), (1, ['web/page.md'], 'fixture'))
+        self.assertEqual(self.manifest.read_bytes(), manifest_before)
+        self.assertEqual(self.run_sync(), 1)
+
+    def write_tombstones(self, entries, version='1.1.0'):
+        path = self.root / 'tombstones.json'
+        path.write_text(json.dumps({'_schema_version': version, 'tombstones': entries}))
+        return path
+
+    def tombstone(self, relative, text='historical corpus'):
+        digest = hashlib.sha256(text.encode()).hexdigest()
+        return {'id': f'rag-mirror:{relative}@{digest[:12]}', 'scope': 'rag-mirror',
+                'original_path': f'knowledge/{relative}', 'sha256': digest}
+
+    def run_with_tombstones(self, registry, apply=True):
+        out, err = io.StringIO(), io.StringIO()
+        with redirect_stdout(out), redirect_stderr(err):
+            code = self.run_sync(apply=apply, extra=('--tombstones', str(registry),
+                                                     '--tombstones-ref', 'automecanik-raw@abc'))
+        return code, out.getvalue(), err.getvalue()
+
+    def test_tombstoned_legacy_file_is_withdrawn_then_baseline_tightened(self):
+        self.add_export()
+        withdrawn = self.add_mirror('web/old/page.md')
+        kept = self.add_mirror('web/kept.md')
+        self.write_baseline(['web/kept.md', 'web/old/page.md'])
+        registry = self.write_tombstones([self.tombstone('web/old/page.md')])
+        code, out, err = self.run_with_tombstones(registry)
+        self.assertEqual(code, 0, err)
+        self.assertFalse(withdrawn.exists())
+        self.assertFalse((self.mirror / 'web/old').exists())
+        self.assertTrue(kept.exists())
+        self.assertIn('WITHDRAW web/old/page.md (tombstone rag-mirror:web/old/page.md@', out)
+        self.assertIn('STALE-BASELINE web/old/page.md (no longer an unreconciled mirror file)', err)
+        manifest = json.loads(self.manifest.read_text())
+        self.assertEqual(manifest['tombstones'], {'ref': 'automecanik-raw@abc', 'withdrawn': 1, 'mismatched': 0})
+        self.assertEqual(manifest['legacy_unreconciled'], {'count': 1, 'baseline_total': 2})
+        self.assertEqual(self.run_sync(extra=('--tighten-legacy-baseline',)), 0)
+        self.assertEqual(json.loads(self.baseline.read_text())['files'], ['web/kept.md'])
+        code, out, _ = self.run_with_tombstones(registry)
+        self.assertEqual((code, 'WITHDRAW' in out), (0, False))
+
+    def test_changed_content_is_preserved_on_tombstone_mismatch(self):
+        self.add_export()
+        changed = self.add_mirror('web/page.md', 'edited after its tombstone')
+        self.write_baseline(['web/page.md'])
+        code, out, err = self.run_with_tombstones(self.write_tombstones([self.tombstone('web/page.md')]))
+        self.assertEqual(code, 0, err)
+        self.assertEqual(changed.read_text(), 'edited after its tombstone')
+        self.assertNotIn('WITHDRAW', out)
+        self.assertIn('TOMBSTONE-MISMATCH web/page.md (sha256 ', err)
+        self.assertEqual(json.loads(self.manifest.read_text())['tombstones']['mismatched'], 1)
+
+    def test_any_pinned_digest_of_a_path_authorises_its_withdrawal(self):
+        self.add_export()
+        page = self.add_mirror('web/page.md', 'second version')
+        self.write_baseline(['web/page.md'])
+        registry = self.write_tombstones([self.tombstone('web/page.md'),
+                                          self.tombstone('web/page.md', 'second version')])
+        self.assertEqual(self.run_with_tombstones(registry)[0], 0)
+        self.assertFalse(page.exists())
+
+    def test_dry_run_reports_withdrawals_without_deleting(self):
+        self.add_export()
+        page = self.add_mirror('web/page.md')
+        self.write_baseline(['web/page.md'])
+        before = self.manifest.read_bytes()
+        code, out, _ = self.run_with_tombstones(self.write_tombstones([self.tombstone('web/page.md')]), apply=False)
+        self.assertEqual(code, 0)
+        self.assertIn('DRY-WITHDRAW web/page.md (tombstone ', out)
+        self.assertTrue(page.exists())
+        self.assertEqual(self.manifest.read_bytes(), before)
+
+    def test_wiki_export_wins_over_tombstone(self):
+        self.add_export('web/page.md')
+        self.add_mirror('web/page.md')
+        self.write_baseline([])
+        code, out, err = self.run_with_tombstones(self.write_tombstones([self.tombstone('web/page.md')]))
+        self.assertEqual(code, 0, err)
+        self.assertEqual((self.mirror / 'web/page.md').read_text(), 'fixture: validated export\n')
+        self.assertNotIn('WITHDRAW', out)
+
+    def test_tombstone_never_withdraws_outside_legacy_baseline(self):
+        self.add_export()
+        page = self.add_mirror('web/page.md')
+        legacy = self.add_mirror('web/legacy.md')
+        self.write_baseline(['web/legacy.md'])
+        registry = self.write_tombstones([self.tombstone('web/page.md'), self.tombstone('web/legacy.md')])
+        code, out, err = self.run_with_tombstones(registry)
+        self.assertEqual(code, 1)
+        self.assertIn('UNRECONCILED web/page.md', err)
+        self.assertTrue(page.exists() and legacy.exists())
+        self.assertNotIn('WITHDRAW', out)
+        self.assertIn('previous-success', self.manifest.read_text())
+
+    def test_raw_scope_tombstones_withdraw_nothing(self):
+        self.add_export()
+        page = self.add_mirror('web/page.md')
+        self.write_baseline(['web/page.md'])
+        raw_entry = {'id': 'old-source', 'original_path': 'knowledge/web/page.md'}
+        code, _, err = self.run_with_tombstones(self.write_tombstones([raw_entry], version='1.0.0'))
+        self.assertEqual(code, 0, err)
+        self.assertTrue(page.exists())
+        self.assertEqual(json.loads(self.manifest.read_text())['tombstones']['withdrawn'], 0)
+
+    def test_malformed_or_missing_tombstones_fail_closed(self):
+        self.add_export()
+        page = self.add_mirror('web/page.md')
+        self.write_baseline(['web/page.md'])
+        good = self.tombstone('web/page.md')
+        for version, entry in (('2.0.0', good), ('1.1.0', {**good, 'original_path': 'web/page.md'}),
+                               ('1.1.0', {**good, 'original_path': 'knowledge/../web/page.md'}),
+                               ('1.1.0', {**good, 'original_path': 'knowledge//etc/page.md'}),
+                               ('1.1.0', {**good, 'original_path': 'knowledge/.last-sync.json'}),
+                               ('1.1.0', {**good, 'original_path': 'knowledge/web/page.txt'}),
+                               ('1.1.0', {**good, 'sha256': good['sha256'][:12]}),
+                               ('1.1.0', {k: v for k, v in good.items() if k != 'sha256'})):
+            code, _, err = self.run_with_tombstones(self.write_tombstones([entry], version=version))
+            self.assertEqual(code, 1, (version, entry))
+            self.assertIn('mirror preflight failed', err)
+        registry = self.root / 'tombstones.json'
+        registry.write_text('not json')
+        self.assertEqual(self.run_with_tombstones(registry)[0], 1)
+        registry.unlink()
+        self.assertEqual(self.run_with_tombstones(registry)[0], 1)
+        self.assertTrue(page.exists())
+        self.assertIn('previous-success', self.manifest.read_text())
+
+    def test_failed_withdrawal_is_observable_and_keeps_previous_success(self):
+        self.add_export()
+        page = self.add_mirror('web/page.md')
+        self.write_baseline(['web/page.md'])
+        with patch.object(Path, 'unlink', side_effect=OSError('read-only mirror')):
+            code, _, err = self.run_with_tombstones(self.write_tombstones([self.tombstone('web/page.md')]))
+        self.assertEqual(code, 1)
+        self.assertIn('FAIL  web/page.md: withdrawal failed: read-only mirror', err)
+        self.assertTrue(page.exists())
+        self.assertIn('previous-success', self.manifest.read_text())
+
+    def test_malformed_or_missing_baseline_fails_closed(self):
+        self.add_export()
+        for content in ('{"total": 2, "files": ["b.md", "a.md"]}', '{"total": 3, "files": ["a.md"]}',
+                        '{"total": 1, "files": ["../escape.md"]}', '{"files": []}', 'not json'):
+            self.baseline.write_text(content)
+            self.assertEqual(self.run_sync(), 1, content)
+        self.baseline.unlink()
+        self.assertEqual(self.run_sync(), 1)
+        self.assertIn('previous-success', self.manifest.read_text())
+
+    def test_mirror_outside_git_fails_closed(self):
+        self.add_export()
+        subprocess.run(['rm', '-rf', str(self.rag / '.git')], check=True)
+        err = io.StringIO()
+        with redirect_stderr(err), patch.dict(os.environ, {'GIT_CEILING_DIRECTORIES': str(self.root)}):
+            self.assertEqual(self.run_sync(), 1)
+        self.assertIn('mirror preflight failed: git ls-files', err.getvalue())
+        self.assertIn('previous-success', self.manifest.read_text())
+
+    def test_repository_legacy_baseline_is_well_formed(self):
+        files = sync.load_legacy_baseline(sync.LEGACY_BASELINE)
+        self.assertTrue(files)
+        self.assertTrue(all(p.suffix in sync.SUPPORTED_EXTS and p.name != '.last-sync.json' for p in files))
 
     def test_partial_source_cannot_claim_global_mirror_freshness(self):
         self.add_export()
