@@ -39,10 +39,10 @@ Interdits : pas de texte overlay, pas d'avatar humain identifiable, pas de gros 
 
 ## Output attendu
 
-1 fichier `.mp4` court, 9:16, `truth_dependency` = `illustration` ou `ambiance` (jamais `proof`).
+1 fichier `.mp4` court, 9:16, `visual_type` = `ambiance`, `animation`, `schema` ou `macro`, `truth_dependency` = `illustration` (jamais `proof`).
 
 ## Voir aussi
 
 - `README.md` — règles Higgsfield V1
-- Skill `[[fafa-brand-safety-reviewer]]` (gate G6 Visual Honesty)
-- `.spec/00-canon/video-governance-p0.md` (matrice visuels autorisés/interdits)
+- Skill `[[fafa-brand-safety-reviewer]]` (G6 `visual_role`, sur le relevé des visuels après rendu)
+- `.spec/00-canon/video-governance-p0.md` (legacy, contexte seulement : matrice visuels autorisés/interdits)

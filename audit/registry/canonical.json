@@ -103743,9 +103743,29 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 258,
+      "loc": 248,
       "owner": "@ak125",
       "path": "scripts/registry/check-new-files.js",
+      "risk": "high",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
+      "id": "scripts/registry/check-new-files.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 126,
+      "owner": "@ak125",
+      "path": "scripts/registry/check-new-files.test.ts",
       "risk": "high",
       "runtime": true,
       "schemaVersion": "1.0.0",
@@ -105804,11 +105824,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "6e3c8de1db154ef3bf7e4f600c683a61c15314e901b700dda2e7df95e27635ab",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "100c19916c8a3fda3fe0b1994f0754bc59f9ac11b2b6856d57678b4142a237ee",
+      "audit/registry/files.json": "ddefffa8f27aa597a4f6bf556f4cdc258989e0124ab63defef2362eba7243a9e",
       "audit/registry/rpc.json": "7897ffc88fa007be0b96ee19cc110f99f71d0639c30747fa5c4df34d48f0af4a",
       "audit/registry/runtime.json": "ef81db8d0cbc0c753d3ec159a5a45ed293ed44842b1ba8e658199b8628daae83"
     },
-    "sotFingerprint": "4fb39a416e9a"
+    "sotFingerprint": "39e6afdd5116"
   },
   "runtime": [
     {

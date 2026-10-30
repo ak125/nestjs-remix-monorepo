@@ -61,14 +61,14 @@ description: Use when transforming a video brief (gamme, symptom, format, URL ci
 - ✅ Hook <80 chars, accroche émotionnelle non agressive
 - ✅ Trois accroches préparées : `hook` (A) et `hook_variants` (B, C), même `script_voice`, même CTA, même disclaimer (forme du pilote `scripts/draft/fafa-plaquettes-frein-001/script.json`)
 - ✅ Sélection humaine : l'owner choisit l'accroche rendue (copiée dans `compositionProps.hook`). Ce choix n'est pas un test et ne se présente jamais comme tel ; une comparaison de variantes exige une mesure certifiée (`experimentReport`, `backend/src/modules/marketing/services/marketing-measurement.ts`, au moins 30 observations par groupe), sinon résultat UNKNOWN
-- ✅ `script_voice` adapté à la durée cible du format (G4 Platform ±10%)
+- ✅ `script_voice` adapté à la durée cible du format (cible éditoriale : G4 ne mesure que la durée rendue, contre la plage de `brief.type` élargie de 10 %)
 - ✅ `screen_text` 3-5 items max (lisibilité 9:16 mobile)
 - ✅ CTA pédagogique avec verbe « vérifie » / « sélectionne » / « comprends »
-- ✅ Disclaimer présent (G2 Safety + G6 Visual Honesty)
+- ✅ Disclaimer présent (aucune gate n'en lit le contenu : `checkArtefacts` exige seulement un tableau `disclaimers`, que ni G2 ni G6 ne lisent)
 - ❌ Aucun prix, code promo, urgence artificielle
 - ❌ Aucune promesse absolue (« certain », « garanti »)
 - ❌ Aucun essai, client, atelier, témoignage ni expérience vécue inventés : Fafa est une IA assumée (cf. `.claude/prompts/_shared/editorial-review.md` §8 ; depuis ce workspace : `../../.claude/prompts/_shared/editorial-review.md`)
-- ❌ Si dérivé d'un pattern, cosine cible <0.5 vs script source (G5 Reuse Risk)
+- ❌ Si dérivé d'un pattern, aucune reprise de formulation de la source : G5 Reuse Risk ne compare rien en V1 (`creative-pattern-extractor`, § G5 Reuse Risk en V1), relecture de l'owner
 - ❌ Aucune référence à la source d'inspiration dans le script final (anonymisation)
 
 ## Workflow

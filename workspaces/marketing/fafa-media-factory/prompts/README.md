@@ -5,7 +5,7 @@
 | Dossier | Provider | Rôle |
 |---|---|---|
 | `higgsfield/` | Higgsfield MCP officiel | Provider externe prioritaire (multi-modèles : Soul, Cinema Studio, Flux, Seedream, Kling, Minimax Hailuo, Veo + Marketing Studio + brand kits + hooks + virality predictor). Limité à 2-3 pilotes V1. |
-| `remotion/` | Remotion compositions | Templates input pour `/render` HTTP du `services/remotion-renderer/` (3 compositions livrées en PR #2 Remotion) |
+| `remotion/` | Remotion compositions | Templates input pour `/render` HTTP du `services/remotion-renderer/` ; vide au 18/10 (`.gitkeep` seul) : les 3 compositions vivent dans `services/remotion-renderer/src/compositions/` (#794, « PR #2 » du plan Fafa) |
 
 C'est tout pour V1. Pas d'autres dossiers prévus.
 
@@ -24,7 +24,7 @@ Assets générés (Higgsfield, ou tout provider ajouté plus tard) :
 - ✅ Stockés en S3/MinIO uniquement (`s3://automecanik-renders/<provider>/`)
 - ✅ Référencés via manifest JSON dans `manifests/renders/`
 - ❌ JAMAIS committés dans le repo (`.gitignore` racine bloque `*.mp4`/`*.srt`/`*.wav`/`*.mov`/`*.webm`/`*.mkv`)
-- ❌ JAMAIS utilisés comme **preuve** mécanique (G6 Visual Honesty STRICT — `truth_dependency=illustration` ou `reference`, jamais `proof`)
+- ❌ JAMAIS utilisés comme **preuve** mécanique (`truth_dependency=illustration` ou `reference`, jamais `proof` ; après rendu, G6 `visual_role` compte chaque visuel relevé comme preuve, un seul = FAIL)
 - ❌ JAMAIS publiés automatiquement (`publish_approved=false` par défaut)
 - ❌ JAMAIS issus de transformation d'asset source concurrent (statut `INSPIRED_PATTERN_ONLY` obligatoire)
 

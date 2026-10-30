@@ -40,7 +40,7 @@ Interdits : pas de transformation morphologique (la pièce ne doit pas changer d
 ## Règles strictes
 
 - ❌ **Aucune photo réelle de pièce client présentée comme générée IA** (interdiction inverse aussi : ne pas générer une scène qui imite une vraie pièce client)
-- ❌ **Aucune comparaison avant/après IA** (interdit comme preuve diagnostic — G6)
+- ❌ **Aucune comparaison avant/après IA** (interdit comme preuve diagnostic — G6 `visual_role`, si relevée comme preuve après rendu)
 - ❌ **Aucun logo concurrent visible** sauf accord commercial explicite
 - ❌ **Aucune mise en scène trompeuse** (pièce qui s'use à vue d'œil, etc.)
 - ✅ Pièces neuves génériques OK (`truth_dependency=reference`)
@@ -55,4 +55,4 @@ Interdits : pas de transformation morphologique (la pièce ne doit pas changer d
 
 - `README.md` (règles Higgsfield V1)
 - `broll-prompt-template.md`
-- Skill `[[fafa-brand-safety-reviewer]]` gates G3 (Brand), G5 (Reuse), G6 (Visual Honesty)
+- Skill `[[fafa-brand-safety-reviewer]]` : G6 `visual_role` après rendu (G3 ne lit que le texte du script, G5 qu'un score de similarité du script)
