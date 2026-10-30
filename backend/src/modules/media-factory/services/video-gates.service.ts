@@ -16,9 +16,54 @@ import type {
   VideoEvidenceEntry,
   DisclaimerPlan,
   ApprovalRecord,
+  ApprovalDossierRecord,
+  ApprovalEntry,
   ArtefactCheckResult,
   VideoBrief,
 } from '../types/video.types';
+
+const DOSSIER_APPROVAL_STAGES = [
+  ['content', 'script_text'],
+  ['render', 'render_preview'],
+  ['publish', 'final_publish'],
+] as const;
+
+/**
+ * Étapes d'approbation lues par les gates. Le dossier
+ * (`governance/approval-record.schema.json`) porte trois approbations ; les
+ * étapes en sont dérivées : contenu → `script_text`, rendu → `render_preview`,
+ * publication → `final_publish`. Une approbation sans auteur reste `pending`,
+ * comme le schéma l'exige. La forme `stages` reste celle de
+ * `__video_productions.approval_record`. Un enregistrement qui porte les deux
+ * formes, ou aucune, n'a pas d'étapes : il compte comme manquant.
+ */
+export function approvalStagesOf(
+  record: ApprovalRecord | ApprovalDossierRecord | null | undefined,
+): ApprovalEntry[] | null {
+  if (!record || typeof record !== 'object') return null;
+  const { stages, approval } = record as Partial<
+    ApprovalRecord & ApprovalDossierRecord
+  >;
+  const hasStages = Array.isArray(stages);
+  const hasFlags = !!approval && typeof approval === 'object';
+  if (hasStages === hasFlags) return null;
+  if (hasStages) return stages;
+  const flags = approval as unknown as Record<string, unknown>;
+  return DOSSIER_APPROVAL_STAGES.map(([flag, stage]) => {
+    const by = flags[`${flag}_approved_by`];
+    const at = flags[`${flag}_approved_at`];
+    const approved =
+      flags[`${flag}_approved`] === true &&
+      typeof by === 'string' &&
+      by.length > 0;
+    return {
+      stage,
+      status: approved ? 'approved' : 'pending',
+      by: approved ? by : null,
+      at: approved && typeof at === 'string' ? at : null,
+    };
+  });
+}
 
 /**
  * VideoGatesService — 7 gates de gouvernance video (P0).
@@ -83,8 +128,7 @@ export class VideoGatesService {
       Array.isArray(input.evidencePack) && input.evidencePack.length >= 0;
     const hasDisclaimerPlan =
       !!input.disclaimerPlan && Array.isArray(input.disclaimerPlan.disclaimers);
-    const hasApprovalRecord =
-      !!input.approvalRecord && Array.isArray(input.approvalRecord.stages);
+    const hasApprovalRecord = approvalStagesOf(input.approvalRecord) !== null;
 
     if (!hasBrief) missing.push('video_brief');
     if (!hasClaimTable) missing.push('claim_table');
@@ -329,7 +373,7 @@ export class VideoGatesService {
 
     // Check approval: at least script_text must be approved
     const approvalOk =
-      input.approvalRecord?.stages.some(
+      approvalStagesOf(input.approvalRecord)?.some(
         (s) => s.stage === 'script_text' && s.status === 'approved',
       ) ?? false;
 
@@ -398,7 +442,7 @@ export interface VideoGateInput {
   claims: VideoClaimEntry[];
   evidencePack: VideoEvidenceEntry[];
   disclaimerPlan: DisclaimerPlan;
-  approvalRecord: ApprovalRecord;
+  approvalRecord: ApprovalRecord | ApprovalDossierRecord;
   /** Full script text (for brand gate) */
   scriptText?: string;
   /** Actual rendered duration in seconds (for platform gate) */

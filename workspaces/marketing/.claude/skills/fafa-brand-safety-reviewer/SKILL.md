@@ -52,7 +52,8 @@ Règle de lecture :
   le rendu ni les autres gates ; sortie 2 : `NOT_READY`, par une gate FAIL ou une preuve WIKI dont l'admission n'est pas résolue
   (`reason` recopié) ; sortie 1 : erreur recopiée, G1 et G2 UNKNOWN.
 - G3 à G7 : champs lus sous les noms du code (`backend/src/modules/media-factory/types/video.types.ts:38-116`). Un nom absent vaut
-  absent, comme dans le code : un `approval.json` sans `stages` n'a aucune étape, un `brief` sans `type` aucune plage de durée.
+  absent, comme dans le code : un `brief` sans `type` n'a aucune plage de durée. Les étapes d'approbation sont celles que le code
+  dérive des trois approbations du dossier (`approvalStagesOf`, `video-gates.service.ts`).
 - Seule correspondance de valeurs admise pour ces gates : `brief.mode` `SOCLE`, `SHORT` ou `GAMME` lu en minuscules, valeurs de
   `VideoMode` (`video-quality.constants.ts:18`). Le rapport la mentionne. Aucune autre traduction : les écarts de champs entre
   `fafa-media-factory/governance/*.schema.json` et les types du code sont relevés dans le dossier marketing (`README.md`, lot L11)
@@ -61,16 +62,17 @@ Règle de lecture :
 ## Étape 1 — Artefacts
 
 Comme `checkArtefacts` (`video-gates.service.ts:76-104`), avant toute gate : `brief` présent ; `claims` tableau non vide ;
-`evidencePack` tableau, vide accepté ; `disclaimerPlan.disclaimers` tableau ; `approvalRecord.stages` tableau.
+`evidencePack` tableau, vide accepté ; `disclaimerPlan.disclaimers` tableau ; `approvalRecord` lisible par `approvalStagesOf` :
+les trois approbations du schéma (`approval`) ou un tableau `stages` (forme de `__video_productions`), pas les deux. Le
+validateur rend ce contrôle dans `artefactCheck`, avec les noms du code.
 
 S'il manque un artefact, s'arrêter sur `MISSING_ARTEFACTS` avec la liste (`video_brief`, `claim_table`, `evidence_pack`,
 `disclaimer_plan`, `approval_record`), sans évaluer G3 à G7, comme les deux appelants du code
 (`backend/src/modules/media-factory/controllers/video-gate-check.controller.ts:36-48`,
-`backend/src/workers/processors/video-execution.processor.ts:163-198`). G1 et G2 restent ceux du validateur, qui n'appelle pas
-`checkArtefacts` : le rapport les donne avec l'arrêt. Au 22/10, le pilote `fafa-plaquettes-frein-001` s'arrête ici : son
-`approval.json` n'a pas de tableau `stages`, que `governance/approval-record.schema.json` ne prévoit pas ; le validateur y rend
-G1 FAIL (4 claims non soutenus) et G2 WARN, sortie 2 (`NOT_READY`). Les écarts de champs vus au passage se signalent à titre
-d'information, sans verdict de gate.
+`backend/src/workers/processors/video-execution.processor.ts:163-198`). G1 et G2 restent ceux du validateur : le rapport les
+donne avec l'arrêt. Le pilote `fafa-plaquettes-frein-001` passe cette étape (`artefactCheck.canProceed` vrai) ; le validateur
+y rend G1 FAIL (4 claims non soutenus) et G2 WARN, sortie 2 (`NOT_READY`). Les écarts de champs vus au passage se signalent à
+titre d'information, sans verdict de gate.
 
 ## Étape 2 — Les 7 gates
 
@@ -147,9 +149,9 @@ UNKNOWN n'est pas un PASS.
 
 ### G7 `final_qa` (l.326-353)
 
-- Reprend les manques de l'étape 1, plus `script_text_approval` si aucune étape `script_text` de `approvalRecord.stages` n'est
-  `approved`. PASS sans manque, FAIL sinon. Après une étape 1 réussie, seul `script_text_approval` peut manquer.
-- Approuver l'étape `script_text` est une décision humaine consignée : le skill ne la pose pas.
+- Reprend les manques de l'étape 1, plus `script_text_approval` si aucune étape `script_text` n'est `approved` ; pour un
+  dossier, `script_text` vient de `content_approved` avec son auteur. PASS sans manque, FAIL sinon. Après une étape 1 réussie, seul `script_text_approval` peut manquer.
+- Approuver le contenu (`content_approved`) est une décision humaine consignée : le skill ne la pose pas.
 
 ## Étape 3 — Verdict d'ensemble et rapport
 

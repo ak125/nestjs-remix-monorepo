@@ -10,11 +10,13 @@
 import {
   VideoGatesService,
   VideoGateInput,
+  approvalStagesOf,
 } from '../../src/modules/media-factory/services/video-gates.service';
 import {
   VideoClaimEntry,
   VideoBrief,
   ApprovalRecord,
+  ApprovalDossierRecord,
 } from '../../src/modules/media-factory/types/video.types';
 
 describe('VideoGatesService', () => {
@@ -538,6 +540,80 @@ describe('VideoGatesService', () => {
       const result = service.runAllGates(input);
       const g7 = result.gates.find((g) => g.gate === 'final_qa')!;
       expect(g7.verdict).toBe('FAIL');
+    });
+  });
+
+  // ── Dossier approval.json : trois approbations du schéma ──
+
+  describe('approval record du dossier (governance/approval-record.schema.json)', () => {
+    function makeDossierApproval(
+      overrides?: Partial<ApprovalDossierRecord['approval']>,
+    ): ApprovalDossierRecord {
+      return {
+        video_id: 'test-brief',
+        approval: {
+          content_approved: false,
+          content_approved_by: null,
+          content_approved_at: null,
+          render_approved: false,
+          render_approved_by: null,
+          render_approved_at: null,
+          publish_approved: false,
+          publish_approved_by: null,
+          publish_approved_at: null,
+          ...overrides,
+        },
+      };
+    }
+
+    it('compte un approval.json sans stages comme présent (étape 1)', () => {
+      const result = service.checkArtefacts(
+        makeInput({ approvalRecord: makeDossierApproval() }),
+      );
+      expect(result.hasApprovalRecord).toBe(true);
+      expect(result.canProceed).toBe(true);
+    });
+
+    it('dérive script_text de content_approved pour G7', () => {
+      const pending = service.runAllGates(
+        makeInput({ approvalRecord: makeDossierApproval() }),
+      );
+      expect(pending.gates.find((g) => g.gate === 'final_qa')!.verdict).toBe(
+        'FAIL',
+      );
+
+      const approved = service.runAllGates(
+        makeInput({
+          approvalRecord: makeDossierApproval({
+            content_approved: true,
+            content_approved_by: 'owner:test',
+            content_approved_at: '2026-01-01T00:00:00Z',
+          }),
+        }),
+      );
+      expect(approved.gates.find((g) => g.gate === 'final_qa')!.verdict).toBe(
+        'PASS',
+      );
+    });
+
+    it('laisse en attente une approbation sans auteur', () => {
+      expect(
+        approvalStagesOf(
+          makeDossierApproval({ content_approved: true }),
+        )?.find((s) => s.stage === 'script_text')?.status,
+      ).toBe('pending');
+    });
+
+    it('refuse un enregistrement qui porte les deux formes', () => {
+      const both = {
+        ...makeDossierApproval(),
+        ...makeApproval(),
+      };
+      expect(approvalStagesOf(both)).toBeNull();
+      expect(
+        service.checkArtefacts(makeInput({ approvalRecord: both }))
+          .missingArtefacts,
+      ).toContain('approval_record');
     });
   });
 });
