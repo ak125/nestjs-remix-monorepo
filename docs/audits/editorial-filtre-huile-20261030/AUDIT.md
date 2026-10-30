@@ -8,6 +8,11 @@ Statut : **REVIEW_REQUIRED**. Textes et scripts proposés ; rien n'est validé, 
 [MEDIA.md](MEDIA.md). Raccordements pour Claude CLI : [HANDOFF.md](HANDOFF.md). Reprise : [CHECKPOINT.md](CHECKPOINT.md).
 Le dossier plaquettes reste en attente (commit `2a63da58a`, branche non poussée, aucune PR).
 
+Révision 3 (30/10) : les textes à intégrer sont dans `integration/r1.json` et `integration/r3.json`, sous les noms des
+champs réellement servis ; les faits et blocs encore candidats dans `integration/candidats.json` ; les visuels produits
+dans `assets/` (`integration/assets.json`) ; les images et scènes manquantes dans [PROMPTS.md](PROMPTS.md). Les § 1.1
+et 1.2 restent la version relue phrase par phrase ; en cas d'écart, les fichiers `integration/` font foi.
+
 Statut de chaque phrase proposée :
 
 | Marque | Sens | Servable |
@@ -24,6 +29,12 @@ Statut de chaque phrase proposée :
 Rôle (`.spec/00-canon/role-matrix.md`) : orienter vers la gamme et la référence compatible. Zéro procédure, zéro
 symptôme, zéro prix ou stock détaillé. Colonnes de `R1_SECTION_CONFIG` (`backend/src/config/r1-keyword-plan.constants.ts`).
 S0 (title, meta, H1) n'est pas modifié ; ses promesses sont signalées au § 8.4.
+
+Correction de la révision 3 : les colonnes `sgpg_*` ci-dessous ne sont presque pas lues par la page. Le rendu lit
+`__seo_r1_gamme_slots` (champs `r1s_*`) et le contenu de `__seo_gamme.sg_content`, découpé en blocs H2. Les textes de
+ce paragraphe sont reportés sur ces champs dans `integration/r1.json`, avec l'ancien texte remplacé pour chaque bloc ;
+le bloc micro-SEO y passe à 1 850 caractères (1 663 sans la phrase conditionnée par FH-12) pour respecter le minimum
+du contrat. Défauts du rendu R1 relevés à cette occasion : HANDOFF FH-15.
 
 **S1_HERO** — `sgpg_hero_subtitle` (min. 60 caractères) **[catalogue]**
 
@@ -275,7 +286,7 @@ Détail, scènes, sous-titres, vignettes et légendes : [MEDIA.md](MEDIA.md).
 | C1 | Voyant d'huile allumé : faut-il changer le filtre ? | court 35 s, sans composition | script écrit ; dépendance : composition |
 | C2 | Deux filtres identiques sont-ils interchangeables ? | court 30 s, démonstration | script écrit ; dépendances : composition, prises de vue |
 | C3 | À quoi servent les clapets d'un filtre vissé ? | court 35 s, schéma animé | script écrit ; dépendance : schéma (WIKI `function_diagram` DEFERRED) |
-| C4 | Pourquoi serrer un filtre vissé à la main ? | court 30 s, démonstration | script écrit, **bloqué** : faits candidats F-C2 à F-C4 |
+| C4 | Comment serrer un filtre vissé ? | court 30 s, démonstration | script écrit, **bloqué** : faits candidats F-C2 à F-C4 |
 
 Aucun format long : la fabrique n'a pas de composition au-delà de 40 s. Non rédigé dans ce lot.
 
@@ -334,9 +345,9 @@ R1 de `.claude/prompts/R1_ROUTER/editorial.md`.
 
 Contrôle de fidélité : statuts [admis]/[catalogue]/[candidat] inchangés ; aucun nombre, référence ni compatibilité
 modifié ; seule altération de portée, documentée : R3 S3 point 4 (réduite). Contrôle automatique du texte proposé
-(R1, R3, voix et légendes de MEDIA) : 0 nom de source, 0 terme interdit R1, 0 mot de remplissage de la liste RE-10,
-0 tiret. Verdict : PROPOSITION. Signalement de fond : aucun texte ne peut être servi tant qu'aucun producteur
-WIKI → R1/R3 n'existe (FH-3). Espaces insécables et guillemets (RE-T) : à poser à la projection.
+(R1, R3, voix et légendes de MEDIA) : 0 nom de source, 0 terme interdit R1, 0 mot de remplissage de la liste RE-10. Le nombre de tirets n'est pas un critère de qualité et n'est plus compté.
+Verdict : PROPOSITION. Signalement de fond : aucun texte n'est servi avant d'avoir suivi le chemin d'écriture existant
+et gouverné, à identifier (FH-3, HANDOFF § 4). Espaces insécables et guillemets (RE-T) : à poser à la projection.
 
 ## 4. Références réellement analysées
 
@@ -393,7 +404,7 @@ promotion. Ce dossier n'écrit ni dans RAW ni dans le WIKI.
 | Id | Affirmation candidate | Source lue | Portée | Statut | Bloque |
 |---|---|---|---|---|---|
 | F-C1 | Le filtre se remplace à chaque vidange | aucune lue (Carter-Cash non consultable ; plans d'entretien constructeur à chercher) | par véhicule | à rechercher | rien : R3 S2 dit « échéances du constructeur » |
-| F-C2 | Un filtre vissé se serre à la main selon les spécifications du constructeur ; l'outil de dépose ne sert pas au serrage (risque de corrosion puis de fuite) | MAHLE 09/2022 | filtres vissés | sourcé, non admis | R3 S4, S5 ; C4 |
+| F-C2 | Un filtre vissé se serre à la main selon les spécifications du constructeur ; l'outil de dépose ne sert pas au serrage (risque de corrosion puis de fuite) | MAHLE 09/2022 | filtres vissés de ce fabricant ; **non universel** (contre-exemple : notice imprimée d'un autre filtre, 3/4 de tour à l'outil dédié, `integration/candidats.json`) | sourcé, non admis ; à reformuler « selon l'instruction du fabricant du filtre » | R3 S4, S5 ; C4 |
 | F-C3 | Retirer l'ancien joint s'il est resté, nettoyer la portée ; huiler le joint neuf | MAHLE 09/2022, WIX 02/2025 (concordants) | filtres vissés | sourcé, non admis | R3 S4 ; C4 |
 | F-C4 | Le nombre de tours après contact du joint est propre à chaque filtre (instruction imprimée) | WIX 02/2025 | règle générale ; valeurs WIX limitées aux références listées | sourcé, non admis | R3 S4 ; C4 |
 | F-C5 | Après montage : remplir, démarrer, contrôler le niveau, vérifier l'étanchéité | MAHLE 09/2022, WIX 02/2025 | tous filtres | sourcé, non admis ; claim `procedure` | R3 S6 |
@@ -401,6 +412,12 @@ promotion. Ce dossier n'écrit ni dans RAW ni dans le WIKI.
 | F-C7 | Certificat d'immatriculation : D.2 = type, variante, version ; D.2.1 = CNIT ; pas de champ code moteur | cerfa 13749*05 | France | sourcé sur le formulaire ; à confirmer sur le modèle du certificat | correction de R1 |
 | F-C8 | Forme du filtre de la Clio III 1.5 dCi | catalogue : 24 / 23 pièces affichées « Filtre vissé », 8 non affichées « Cartouche filtrante », 50 affichables sans critère | 19052 et 19053, séparément | données à vérifier par le propriétaire du catalogue | toute mention de la Clio III |
 | F-C9 | Remplacement du joint torique de cartouche à chaque échange | non lu dans ce lot | cartouches | à rechercher | R3 S4 |
+| F-C10 | L'huile usagée est un déchet dangereux : récipient fermé et étanche, sans mélange, dépôt en déchèterie ou point de collecte | ministère de la Transition écologique (filière REP depuis le 01/01/2022) ; ADEME | France | sourcé, non admis | R3 S6 (bloc prêt dans `integration/candidats.json`) |
+| F-C11 | Le filtre usagé ne va pas dans les ordures ménagères ; dépôt en déchèterie ou point de collecte | ADEME ; site de l'éco-organisme de la filière | France | sourcé, non admis ; consigne exacte de l'éco-organisme à vérifier | R3 S6 |
+
+Révision 3 : F-C2 est contredit par la notice imprimée d'un autre filtre (3/4 de tour à l'outil dédié). Il n'est plus
+proposé comme règle générale ; les blocs S4_REPOSE, S5 et le court C4 disent « selon l'instruction du fabricant du
+filtre ». Blocs prêts après admission : `integration/candidats.json`.
 
 ## 7. Assets et raccordements encore nécessaires
 
@@ -411,26 +428,30 @@ promotion. Ce dossier n'écrit ni dans RAW ni dans le WIKI.
 | Étape `script_text` approuvée et `stages` dans `approval.json` | V1 | décision de l'owner ; écart de schéma connu |
 | Schéma du circuit et des clapets | R3 S1, C3 | WIKI `function_diagram` en DEFERRED |
 | Prises de vue : filtre vissé et cartouche neufs, deux filtres semblables, filtre en coupe (membrane anti-retour), boîtier de cartouche, main qui serre | C2, C3, C4, R3 | aucune ; photo hero `filtre-a-huile.webp` disponible (licence `owned`) |
-| Pictogrammes : huiler le joint, main, outil barré | C4 | à créer |
+| Pictogrammes : huiler le joint, main | C4 | à créer (PROMPTS.md P-07, S-03) |
+| Pictogramme du témoin de pression d'huile | V1 14-24 s, C1 | livré : `assets/picto-temoin-pression-huile.{svg,webp}` (`tools/build-pictos.cjs`) |
 | Composition pour C1, C2, C3, C4 | shorts | absente (§ 3) |
 
 Images servies le 30/10 (bucket `uploads/articles/gammes-produits/`, contrat `frontend/app/types/r1-images.types.ts`).
-Remplacer une image n'est pas fait ici ; PRICE et OG relèvent de la zone STOP.
+Révision 3 : remplacements produits dans `assets/` et décrits slot par slot dans `integration/assets.json` (fichier,
+alt, légende, mécanisme existant, état de vérification). Leur mise en ligne n'est pas faite ici : Claude CLI les
+raccorde et vérifie le rendu en DEV sans écriture partagée avec la PROD (HANDOFF § 6).
 
 | Image | Emplacement | Constat | Proposition |
 |---|---|---|---|
-| `r1/filtre-a-huile.webp` | R1 HERO | marque fictive, texte tronqué sur la pièce | à remplacer : photo réelle d'un filtre neuf, sans marque lisible |
+| `r1/filtre-a-huile.webp` | R1 HERO | marque fictive, texte tronqué sur la pièce | remplacé : `assets/r1-hero-filtre-visse-usage.webp` (photo réelle, filtre usagé) ; filtre neuf : PROMPTS.md P-01 |
 | `r1/filtre-a-huile-2.webp` | R1 TYPES | vissé et cartouche, cotes et joint torique repérés ; libellé « (SPIN-ON) » | réutilisable en R1 S4 et R3 S1 après retrait de « (SPIN-ON) », anglicisme interdit en R1 |
-| `r1/filtre-a-huile-3.webp` | R1 PRICE | fourchettes de prix | non reprise ; zone STOP, signalée seulement |
-| `r1/filtre-a-huile-4.webp` | R1 LOCATION | « zone basse moteur » sans source ; personnage généré par IA | non reprise |
-| `r1/filtre-a-huile-og.webp` | R1 og:image | « Dès 5€ — Livraison 24h » | zone STOP, signalée seulement |
-| `catalogue/filtre-a-huile.webp` | R3 hero, og:image R3 | source de 225 × 165 px agrandie, floue | à remplacer |
+| `r1/filtre-a-huile-3.webp` | R1 PRICE | fourchettes de prix | remplacement neutre : `assets/r1-price-caracteristiques-qualite.webp` (aucun prix) |
+| `r1/filtre-a-huile-4.webp` | R1 LOCATION | « zone basse moteur » sans source ; personnage généré par IA | à désélectionner ; une photo par motorisation seulement (PROMPTS.md P-06) |
+| `r1/filtre-a-huile-og.webp` | R1 og:image | « Dès 5€ — Livraison 24h » | remplacement neutre : `assets/r1-og-filtre-a-huile.webp` (aucun prix ni délai) |
+| `catalogue/filtre-a-huile.webp` | R3 hero, og:image R3 | source de 225 × 165 px agrandie, floue | `assets/r3-hero-filtre-visse-usage.webp` (ligne d'image R3 12) |
 | logos `equipementiers-automobiles/*.webp` | R1 S7 | réels ; WIX FILTERS sans logo (`default.svg`) | réutilisés |
 | vignettes `catalogue/*.webp` de la famille Filtres | R1 S8, R3 S7 | habitacle et boîte auto cassées (FH-14) | réutilisées ; habitacle par `pg_img` |
-| — | R3 S1, C3 | schéma des clapets absent | WIKI `function_diagram` en DEFERRED |
-| — | R3 S2_DIAG, C1 | pictogramme du témoin de pression d'huile absent | à créer |
+| — | R3 S1, S2, S3, C3 | schéma des clapets absent | schémas de principe livrés : `assets/r3-s2-filtre-colmate-by-pass.webp`, `assets/r3-s3-coupe-filtre-visse.webp`, `assets/r1-types-visse-cartouche.webp` ; WIKI `function_diagram` toujours en DEFERRED |
+| — | R3 S2_DIAG, C1 | pictogramme du témoin de pression d'huile absent | livré : `assets/picto-temoin-pression-huile.webp` |
 
-Aperçu de relecture avant/après avec ces images : généré hors dépôt depuis le § 1 (non versionné, projection).
+Aperçu de relecture : `preview/`, simulation non intégrée, recette `tools/build-preview.cjs` (ce n'est pas un rendu
+DEV).
 
 Raccordements techniques : [HANDOFF.md](HANDOFF.md).
 

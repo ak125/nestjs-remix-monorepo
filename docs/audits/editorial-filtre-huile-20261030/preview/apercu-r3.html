@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aperçu R3 filtre à huile</title><style>
+:root{--ink:#0f172a;--muted:#475569;--line:#e2e8f0;--soft:#f8fafc;--blue:#2563eb;--amber:#b45309;--green:#047857;--red:#b91c1c}
+*{box-sizing:border-box}body{margin:0;background:#fff;color:var(--ink);font:15px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.sim{position:sticky;top:0;z-index:9;background:#7c2d12;color:#fff;padding:8px 16px;font-size:13px}
+.sim b{font-weight:700}
+main{max-width:1280px;margin:0 auto;padding:0 16px 48px}
+section{padding:28px 0;border-bottom:1px solid var(--line)}
+h1{font-size:28px;line-height:1.25;margin:8px 0}h2{font-size:22px;margin:0 0 14px}h3{font-size:17px;margin:16px 0 8px}
+p{margin:0 0 10px}ul,ol{padding-left:22px;margin:0 0 10px}a{color:var(--blue)}
+img{max-width:100%;height:auto;display:block;border-radius:14px;border:1px solid var(--line)}
+figure{margin:0}figcaption{font-size:13px;color:var(--muted);margin-top:6px}
+.grid{display:grid;gap:28px}@media(min-width:1024px){.grid.two{grid-template-columns:1fr 1fr}.hero{grid-template-columns:1.2fr 360px}}
+.map{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 8px;font:12px/1.4 ui-monospace,Consolas,monospace;color:var(--muted)}
+.tag{display:inline-block;padding:1px 7px;border-radius:999px;font:600 11px/1.6 system-ui,sans-serif;border:1px solid}
+.t-conserve{color:#334155;border-color:#94a3b8;background:#f1f5f9}.t-ameliore{color:#1d4ed8;border-color:#93c5fd;background:#eff6ff}
+.t-ajoute{color:var(--green);border-color:#6ee7b7;background:#ecfdf5}.t-code{color:var(--amber);border-color:#fcd34d;background:#fffbeb}
+.t-manque{color:var(--red);border-color:#fca5a5;background:#fef2f2}
+.block{border-left:3px solid var(--line);padding-left:12px;margin:0 0 16px}
+.badges{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin:14px 0}
+.badge{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--soft)}.badge b{display:block}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:0 0 10px}th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}th{background:var(--soft)}
+details{border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:0 0 8px}summary{cursor:pointer;font-weight:600}
+.card{border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--soft);margin:0 0 16px}
+.hole{border:2px dashed #fca5a5;border-radius:14px;padding:14px;color:var(--red);font-size:14px;background:#fff7f7}
+[data-condition]{outline:1px dashed var(--amber);outline-offset:2px}
+.note{font-size:13px;color:var(--muted)}.small{font-size:13px}
+</style></head><body>
+<div class="sim"><b>Simulation non intégrée</b> · R3 /blog-pieces-auto/conseils/filtre-a-huile · textes <code>integration/</code>, images <code>assets/</code> ·
+ce n'est pas le rendu DEV · chaque bloc porte son champ, son action et son statut</div>
+<main>
+<section class="grid hero">
+  <div>
+    <div class="map"><code>H1 (champ protégé)</code><span class="tag t-conserve">conservé</span><span>non modifié</span></div>
+    <h1>Comment changer un filtre à huile</h1>
+    <div class="map"><code>badges</code><span class="tag t-code">codé · FH-16 : calculés, non sourcés</span></div>
+    <div class="badges"><div class="badge"><b>Difficulté</b>Facile</div><div class="badge"><b>Temps estimé</b>~15 min</div><div class="badge"><b>Sécurité</b>Précautions requises</div></div>
+  </div>
+  <figure><div class="map"><code>R3 HERO · rip 12</code><span>renseigner l'image</span></div><img src="../assets/r3-hero-filtre-visse-usage.webp" alt="Filtre à huile vissé usagé retiré pendant une vidange"></figure>
+</section>
+<section>
+  <div class="map"><code>__seo_gamme_conseil 18 · S1 (carte « avant »)</code><span class="tag t-ameliore">amélioré</span><span>admis + catalogue</span></div>
+  <div class="card"><h2>Avant de remplacer le filtre à huile</h2><p>Le filtre à huile empêche les impuretés d'entrer dans le circuit de lubrification du moteur, et il se remplace aux échéances fixées par le constructeur du véhicule.</p>
+<p>Avant de commencer, réunissez :</p>
+<ul>
+<li><strong>la référence prévue pour votre motorisation</strong>, choisie à partir du véhicule et non d'après l'apparence de l'ancien filtre ;</li>
+<li><strong>les instructions du constructeur du véhicule et du fabricant du filtre</strong> : ce guide ne donne pas de consigne de serrage valable pour tous les filtres ;</li>
+<li><strong>la forme prévue</strong> : un filtre vissé se change en entier ; avec une cartouche, seul l'élément filtrant est renouvelé et le boîtier reste en place. Pour une cartouche, la fiche de la référence précise parfois si le joint torique est fourni.</li>
+</ul>
+<p>Sans ces instructions, confiez l'intervention à un professionnel.</p><p class="note">Sources : Base de connaissances AutoMecanik</p></div>
+</section>
+<section>
+  <div class="map"><code>L'essentiel (extractSummaryPoints)</code><span>7 points, calculés par le code à partir des sections</span><span class="tag t-code">codé · libellés FH-16</span></div>
+  <div class="card"><h2>L'essentiel en 7 points</h2><ol><li><b>Avant de commencer</b> : Le filtre à huile empêche les impuretés d'entrer dans le circuit de lubrification du moteur, et il se remplace aux échéances fixées par le constructeur du véhicule.</li><li><b>Signes d'usure</b> : Le filtre à huile se remplace aux échéances d'entretien fixées par le constructeur du véhicule : reportez-vous au carnet d'entretien ou à la notice.</li><li><b>Compatibilité</b> : Le filtre à huile se choisit à partir du véhicule, jamais d'après son aspect ou une dimension approchée.</li><li><b>Démontage</b> : La dépose dépend de la forme du filtre et du moteur : suivez les instructions du constructeur du véhicule et du fabricant du filtre.</li><li><b>Erreurs à éviter</b> : Choisir le filtre d'après son apparence ou une dimension approchée, au lieu de partir du véhicule.</li><li><b>Vérification finale</b> : Après le remplacement, si le témoin de pression d'huile s'allume, suivez la notice de votre véhicule.</li><li><b>Quand aller au garage</b> : Si vous n'avez pas les instructions de montage du constructeur et du fabricant du filtre, confiez l'intervention à un professionnel.</li></ol></div>
+</section>
+<section>
+  <div class="map"><code>encart</code><span class="tag t-code">codé · FH-16</span></div>
+  <div class="card"><b>Besoin de cette piece ?</b><p class="small">Comparez les prix et trouvez la piece compatible avec votre vehicule.</p></div>
+</section>
+<section><div class="map"><code>__seo_gamme_conseil 20 · S2</code><span class="tag t-ameliore">amélioré</span><span>admis</span></div>
+<h2>Quand remplacer le filtre à huile</h2><figure><div class="map"><code>R3 S2 · rip 13</code><span>renseigner l'image</span></div><img src="../assets/r3-s2-filtre-colmate-by-pass.webp" alt="Schéma : filtre en bon état, puis filtre colmaté dont le clapet de dérivation laisse passer une huile non filtrée"><figcaption>Schéma de principe. La pression d'ouverture du clapet de dérivation dépend du moteur.</figcaption></figure><div style="margin-top:12px"><p>Le filtre à huile se remplace aux échéances d'entretien fixées par le constructeur du véhicule : reportez-vous au carnet d'entretien ou à la notice. Aucune durée ni aucun kilométrage ne vaut pour tous les véhicules.</p>
+<p>Un filtre gardé trop longtemps peut se colmater. Son clapet de dérivation (by-pass) s'ouvre alors pour continuer d'alimenter le moteur, avec une huile qui n'est plus filtrée. Plus l'intervalle prévu par le constructeur est long, plus la qualité du filtre compte.</p></div>
+<p class="note">Sources : Base de connaissances AutoMecanik (provenance proposée, type wiki)</p></section>
+<section><div class="map"><code>__seo_gamme_conseil conseil-7-S2_DIAG-1774724299375 · S2_DIAG</code><span class="tag t-ameliore">amélioré</span><span>admis (Symptômes &amp; diagnostic, consigne propre au véhicule cité) + editorial</span></div>
+<h2>Voyant de pression d'huile : par où commencer</h2><div style="margin-top:12px"><p>Un symptôme seul ne désigne pas le filtre à huile. Le tableau ci-dessous donne la consigne d'un véhicule précis ; pour un autre véhicule, suivez sa propre notice.</p>
+<table><thead><tr><th>Situation</th><th>À faire</th></tr></thead><tbody>
+<tr><td>Renault Clio 5 phase 1 : le témoin de pression d'huile s'allume à la mise du contact, puis s'éteint après quelques secondes.</td><td>C'est le fonctionnement décrit par la notice de ce véhicule.</td></tr>
+<tr><td>Renault Clio 5 phase 1 : le témoin s'allume en roulant, avec le témoin d'arrêt impératif et un signal sonore.</td><td>S'arrêter impérativement, couper le contact et vérifier le niveau d'huile. Si le niveau est normal, l'alerte a une autre cause : la notice demande de faire appel à un représentant de la marque.</td></tr>
+<tr><td>Autre véhicule.</td><td>Suivre la notice du véhicule. Pour orienter la recherche avant d'acheter une pièce, commencer par le <a href="/diagnostic-auto">diagnostic</a>.</td></tr>
+</tbody></table></div>
+<p class="note">Sources : Base de connaissances AutoMecanik (provenance proposée, type wiki)</p></section>
+<section><div class="map"><code>__seo_gamme_conseil conseil-7-S3-1771371936696 · S3</code><span class="tag t-ameliore">amélioré</span><span>admis (Critères de choix, Fonctionnement, Marques &amp; qualité) + catalogue</span></div>
+<h2>Choisir le bon filtre à huile</h2><figure><div class="map"><code>R3 S3 · rip 14</code><span>renseigner l'image</span></div><img src="../assets/r3-s3-coupe-filtre-visse.webp" alt="Vue en coupe de principe d'un filtre à huile vissé : joint, plaque de base, clapet anti-retour, média filtrant, tube central, clapet anti-siphon, clapet de dérivation"><figcaption>Schéma de principe. La présence, le nombre et la position des clapets varient selon le filtre et le moteur.</figcaption></figure><div style="margin-top:12px"><p>Le filtre à huile se choisit à partir du véhicule, jamais d'après son aspect ou une dimension approchée.</p>
+<ol>
+<li><strong>Partez du véhicule.</strong> Dans le catalogue, sélectionnez la marque, le modèle, l'année et la motorisation exacte. Deux versions d'un même modèle peuvent recevoir des références différentes.</li>
+<li><strong>Prenez la forme prévue</strong> par le moteur : filtre vissé ou cartouche.</li>
+<li><strong>Ne vous fiez pas à l'apparence.</strong> Beaucoup de filtres se ressemblent mais diffèrent à l'intérieur selon le moteur : clapet anti-retour, filetage de raccordement, pression d'ouverture du by-pass, média filtrant, finesse de filtration, surpression admissible.</li>
+<li><strong>Regardez la qualité.</strong> Le papier filtrant, le by-pass et le clapet anti-retour font partie des caractéristiques de qualité d'un filtre.</li>
+</ol>
+<h3>Les clapets d'un filtre vissé</h3>
+<p>Selon sa conception, fixée par le constructeur du moteur ou du véhicule, un filtre vissé peut comporter trois types de clapets :</p>
+<ul>
+<li><strong>anti-retour</strong> : le plus souvent une membrane en caoutchouc, il empêche l'huile de quitter le filtre moteur arrêté, surtout quand le filtre est monté à l'horizontale ou tête en bas ;</li>
+<li><strong>de dérivation (by-pass)</strong> : quand le filtre est colmaté ou que l'huile froide est trop épaisse, il s'ouvre pour que le moteur reste alimenté, même avec une huile non filtrée. Sa pression d'ouverture diffère selon le moteur ;</li>
+<li><strong>anti-siphon</strong> : placé côté huile propre, il garde le filtre plein ; au démarrage, l'huile arrive vite au moteur, ce qui réduit fortement le frottement à sec.</li>
+</ul>
+<p>Ces différences ne se voient pas de l'extérieur. Les filtres rattachés à votre motorisation sont listés sur la page <a href="/pieces/filtre-a-huile-7.html">filtre à huile</a> du catalogue.</p></div>
+<p class="note">Sources : Base de connaissances AutoMecanik (provenance proposée, type wiki)</p></section>
+<section><div class="map"><code>__seo_gamme_conseil 21 · S4_DEPOSE</code><span class="tag t-ameliore">amélioré</span><span>admis + catalogue</span></div>
+<h2>Déposer l'ancien filtre</h2><div style="margin-top:12px"><p>La dépose dépend de la forme du filtre et du moteur : suivez les instructions du constructeur du véhicule et du fabricant du filtre.</p>
+<ol>
+<li>Vérifiez que le filtre neuf est la référence prévue pour votre motorisation.</li>
+<li>Repérez la forme : un filtre vissé se dépose en entier ; avec une cartouche, seul l'élément filtrant sort du boîtier, qui reste en place.</li>
+<li>Déposez l'ancien filtre ou l'ancien élément en suivant l'instruction du constructeur du véhicule.</li>
+</ol></div>
+<p class="note">Sources : Base de connaissances AutoMecanik (provenance proposée, type wiki)</p></section>
+<section><div class="map"><code>__seo_gamme_conseil 22 · S4_REPOSE</code><span class="tag t-ameliore">amélioré</span><span>admis + catalogue</span></div>
+<h2>Monter le filtre neuf</h2><div style="margin-top:12px"><p>Même un filtre de qualité ne fonctionne correctement que s'il a été bien monté.</p>
+<ol>
+<li>Montez le filtre neuf en suivant les instructions du constructeur du véhicule et du fabricant du filtre : ce guide ne donne pas de consigne de serrage valable pour tous les filtres.</li>
+<li>Pour une cartouche, vérifiez sur la fiche de la référence si le joint torique est fourni.</li>
+</ol></div>
+<p class="note">Sources : Base de connaissances AutoMecanik (provenance proposée, type wiki)</p></section>
+<section><div class="map"><code>__seo_gamme_conseil conseil-7-S5-1771371936739 · S5</code><span class="tag t-ameliore">amélioré</span><span>admis</span></div>
+<h2>Erreurs à éviter</h2><div style="margin-top:12px"><ul>
+<li>Choisir le filtre d'après son apparence ou une dimension approchée, au lieu de partir du véhicule.</li>
+<li>Dépasser l'échéance du constructeur : le filtre peut se colmater et laisser passer, par le by-pass, une huile non filtrée.</li>
+<li>Attribuer un voyant d'huile au filtre sans rechercher la cause.</li>
+</ul></div>
+<p class="note">Sources : Base de connaissances AutoMecanik (provenance proposée, type wiki)</p></section>
+<section><div class="map"><code>__seo_gamme_conseil conseil-7-S6-1771938637895 · S6</code><span class="tag t-ameliore">amélioré</span><span>admis</span></div>
+<h2>Après le remplacement</h2><div style="margin-top:12px"><p>Après le remplacement, si le témoin de pression d'huile s'allume, suivez la notice de votre véhicule.</p></div>
+<p class="note">Sources : Base de connaissances AutoMecanik (provenance proposée, type wiki)</p></section>
+<section><div class="map"><code>__seo_gamme_conseil conseil-7-S_GARAGE-1772504383540 · S_GARAGE</code><span class="tag t-ameliore">amélioré</span><span>editorial fondé sur admis</span></div>
+<h2>Quand confier l'intervention à un professionnel</h2><div style="margin-top:12px"><p>Si vous n'avez pas les instructions de montage du constructeur et du fabricant du filtre, confiez l'intervention à un professionnel.</p>
+<p>Si le témoin de pression d'huile s'allume en roulant, suivez la notice du véhicule. Celle de la Renault Clio 5 phase 1 demande, si le niveau d'huile est normal, de faire appel à un représentant de la marque.</p></div>
+<p class="note">Sources : Base de connaissances AutoMecanik (provenance proposée, type wiki)</p></section>
+<section><div class="map"><code>__seo_gamme_conseil conseil-7-S7-1771371936783 · S7</code><span class="tag t-ameliore">amélioré</span><span>admis (related_parts) + catalogue</span></div>
+<h2>Pièces liées au filtre à huile</h2><div style="margin-top:12px"><ul>
+<li><a href="/pieces/bouchon-de-vidange-593.html">Bouchon de vidange</a></li>
+<li><a href="/pieces/filtre-a-air-8.html">Filtre à air</a></li>
+<li><a href="/pieces/filtre-a-carburant-9.html">Filtre à carburant</a></li>
+<li><a href="/pieces/filtre-d-habitacle-424.html">Filtre d'habitacle</a></li>
+</ul>
+<p>Ces filtres traitent d'autres fluides que l'huile et ont chacun leur propre référence.</p></div>
+<p class="note">Sources : Base de connaissances AutoMecanik (provenance proposée, type wiki)</p></section>
+<section><div class="map"><code>__seo_gamme_conseil conseil-7-S8-1771509122681 · S8</code><span class="tag t-ameliore">amélioré</span><span>admis (FAQ) + catalogue</span></div>
+<h2>Questions fréquentes sur le filtre à huile</h2><div style="margin-top:12px"><details><summary><b>Que remplace-t-on lors de l'entretien ?</b></summary><p>Un filtre vissé se change en entier, car son boîtier et son élément filtrant forment un seul bloc. Avec une cartouche, seul l'élément filtrant est renouvelé.</p></details>
+<details><summary><b>Quand remplacer le filtre à huile ?</b></summary><p>Aux échéances d'entretien prévues par le constructeur du véhicule. Aucune durée ni aucun kilométrage ne vaut pour tous les véhicules.</p></details>
+<details><summary><b>Peut-on choisir un filtre à sa taille ou à son apparence ?</b></summary><p>Non. Des filtres qui se ressemblent peuvent être très différents à l'intérieur selon le moteur. Le choix se fait à partir du véhicule.</p></details>
+<details><summary><b>Le voyant de pression d'huile vient-il du filtre ?</b></summary><p>Ce voyant ne désigne pas à lui seul le filtre. Suivez la notice du véhicule, puis faites rechercher la cause.</p></details>
+<details><summary><b>À quoi sert le clapet anti-retour ?</b></summary><p>Il empêche l'huile de quitter le filtre quand le moteur est arrêté, surtout quand le filtre est monté à l'horizontale ou tête en bas. Tous les filtres vissés n'en ont pas : cela dépend du moteur.</p></details></div>
+<p class="note">Sources : Base de connaissances AutoMecanik (provenance proposée, type wiki)</p></section>
+<section>
+  <div class="map"><code>encart bas de page</code><span class="tag t-code">codé · FH-16</span></div>
+  <div class="card small">Trouvez votre filtre à huile au meilleur prix parmi nos fournisseurs.</div>
+</section></main></body></html>

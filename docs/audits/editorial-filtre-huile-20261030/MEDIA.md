@@ -13,7 +13,7 @@ Quatre états distincts : script écrit, média produit, rendu vérifié, public
 | C1 | Voyant d'huile allumé : faut-il changer le filtre ? | court 35 s | oui (§ 7.1), sans dossier | non | non | non |
 | C2 | Deux filtres identiques sont-ils interchangeables ? | court 30 s | oui (§ 7.2), sans dossier | non | non | non |
 | C3 | À quoi servent les clapets d'un filtre vissé ? | court 35 s | oui (§ 7.3), sans dossier | non | non | non |
-| C4 | Pourquoi serrer un filtre vissé à la main ? | court 30 s | oui (§ 7.4), **bloqué** par F-C2 à F-C4 | non | non | non |
+| C4 | Comment serrer un filtre vissé ? | court 30 s | oui (§ 7.4), **bloqué** par F-C2 à F-C4 | non | non | non |
 
 Plateformes du brief V1 : TikTok, Instagram Reels, YouTube Shorts, Facebook Reels, un même rendu 9:16 (1080 × 1920).
 Pas de format long : aucune composition de la fabrique ne dépasse 40 s.
@@ -56,10 +56,10 @@ C « Ton filtre à huile ne se choisit pas à l'œil. »
 
 | Fenêtre | Voix | Affiché par la composition | Consigne de montage (`screen_text`) | Démonstration |
 |---|---|---|---|---|
-| 0-4 s | accroche retenue (A : 7 mots) | « Filtre à huile » | — | photo hero `filtre-a-huile.webp` (disponible) |
+| 0-4 s | accroche retenue (A : 7 mots) | « Filtre à huile » | — | photo d'usage `assets/r1-hero-filtre-visse-usage.webp` (disponible, à recadrer en 9:16) ; P-01 préférable (PROMPTS.md) |
 | 4-14 s | « Moi c'est Fafa, le mécano IA d'AutoMecanik. Ton filtre à huile empêche les impuretés d'entrer dans le circuit de lubrification. Le vissé se change en entier ; la cartouche, juste son élément. » (31 mots) | `pieceFunction`, `location` ; claim-1 | « Vissé : on change tout » · « Cartouche : juste l'élément » | filtre vissé puis boîtier de cartouche (prises de vue à produire) |
-| 14-24 s | « Des signes d'usure ? Aucun symptôme ne désigne à lui seul le filtre. Même un voyant d'huile : suis d'abord ta notice. » (20 mots) | titre fixe « Signes d'usure » ; 2 cartes : « Aucun symptôme ne le désigne à lui seul » (`low`), « Voyant d'huile : suis d'abord ta notice » (`high`) ; claim-2 | « Un voyant ne désigne pas le filtre » | pictogramme du témoin de pression d'huile |
-| 24-32 s | « Change-le aux échéances de ton constructeur. Trop vieux, il peut se colmater, et l'huile passe alors sans être filtrée. » (19 mots) | `whenToChange` ; claim-3 | « Échéances du constructeur » | carnet d'entretien (pictogramme) |
+| 14-24 s | « Des signes d'usure ? Aucun symptôme ne désigne à lui seul le filtre. Même un voyant d'huile : suis d'abord ta notice. » (20 mots) | titre fixe « Signes d'usure » ; 2 cartes : « Aucun symptôme ne le désigne à lui seul » (`low`), « Voyant d'huile : suis d'abord ta notice » (`high`) ; claim-2 | « Un voyant ne désigne pas le filtre » | `assets/picto-temoin-pression-huile.webp` (livré) |
+| 24-32 s | « Change-le aux échéances de ton constructeur. Trop vieux, il peut se colmater, et l'huile passe alors sans être filtrée. » (19 mots) | `whenToChange` ; claim-3 | « Échéances du constructeur » | schéma `assets/r3-s2-filtre-colmate-by-pass.webp` (livré) |
 | 32-40 s | « Deux filtres pareils dehors peuvent différer dedans. Sélectionne ton véhicule sur AutoMecanik : avant d'acheter, vérifie la compatibilité. » (17 mots) | marque, `cta` | « Choisis par véhicule, pas à l'œil » | — |
 
 Débit : 87 mots de voix plus l'accroche (révision 1, § 3.1). La fenêtre 4-14 s porte 31 mots en 10 s, la plus dense (même niveau que la
@@ -194,10 +194,11 @@ Chacun répond à une question distincte de V1. Aucune composition de la fabriqu
 fiche WIKI n'en fournit pas trois pour le voyant d'huile. Leur forme visuelle reprend la grammaire de démonstration
 observée chez MANN-FILTER (AUDIT § 4, n° 8) : pièce isolée sur fond neutre, un geste par plan, pictogrammes.
 
-Débits de voix mesurés (révision 2) : C1 90 mots en 35 s, C2 61 en 30 s, C3 96 en 35 s, C4 90 en 30 s (le plus dense,
+Débits de voix mesurés (révision 2) : C1 90 mots en 35 s, C2 61 en 30 s, C3 96 en 35 s, C4 95 en 30 s après la révision 3 (le plus dense,
 à recaler sur la voix). Révision 2 : maxime du by-pass de C3 reformulée (AUDIT § 3) ; aucun nom de source dans les voix,
 textes à l'écran et légendes. G3 recalculée avec les 14 motifs `FORBIDDEN_PATTERNS_SHORT` sur 54 lignes (voix, écran et légendes des
-courts, légendes de V1) : 0 violation, aucun appel à l'action. Transcription de chaque court : concaténation de sa
+courts, légendes de V1) : 0 violation, aucun appel à l'action ; relancée en révision 3 après réécriture de C4 : 0
+violation sur 54 lignes. Transcription de chaque court : concaténation de sa
 colonne Voix ; sous-titres : mêmes segments, 42 caractères par ligne au plus.
 
 ### 7.1 C1 — « Voyant d'huile allumé : faut-il changer le filtre ? »
@@ -261,19 +262,24 @@ AutoMecanik. Conseil informatif ; Fafa est un mécano IA. » Mesure : sessions C
 
 Dépendances : schéma du circuit et des clapets (WIKI `function_diagram` en DEFERRED) ; composition.
 
-### 7.4 C4 — « Pourquoi serrer un filtre vissé à la main ? » (bloqué)
+### 7.4 C4 — « Comment serrer un filtre vissé ? » (bloqué)
 
 Destination : R3, après admission. Sources : MAHLE 09/2022 et WIX 02/2025, **non admises** (F-C2, F-C3, F-C4). Claims :
 3 `procedure`. Le validateur ne retient que des preuves admissibles : ce script ne peut pas entrer dans un dossier
 `scripts/draft/` avant admission.
 
+Révision 3 : l'interdiction générale de serrer à l'outil est retirée. La notice imprimée sur le filtre de la photo
+d'usage (en japonais) demande au contraire 3/4 de tour avec un outil dédié : la règle « à la main, jamais à l'outil »
+vaut pour le fabricant qui l'écrit, pas pour tous les filtres (F-C2, `integration/candidats.json`). Le court porte
+désormais sur l'instruction du fabricant du filtre.
+
 | Temps | Voix | À l'écran | Démonstration |
 |---|---|---|---|
-| 0-3 s | « L'outil de dépose sert à dévisser ton filtre, pas à le serrer. » | « Outil = dépose seulement » | outil barré (pictogramme) |
+| 0-3 s | « Ton filtre à huile vissé ne se serre pas au hasard. » | « Serrage : selon le filtre » | filtre neuf, joint visible (P-01) |
 | 3-8 s | « Moi c'est Fafa, le mécano IA d'AutoMecanik. » | — | — |
-| 8-15 s | « Avant de monter le neuf, vérifie que l'ancien joint n'est pas resté en place, et huile le joint neuf avec de l'huile moteur propre. » | « Ancien joint retiré » · « Joint neuf huilé » | doigt qui huile le joint |
-| 15-23 s | « Visse jusqu'au contact du joint, puis serre à la main comme l'indique le fabricant du filtre : le nombre de tours dépend du filtre. » | « Serrage : instruction du filtre » | main qui visse |
-| 23-27 s | « Serré à l'outil, son revêtement peut s'abîmer, rouiller, puis fuir. » | « Revêtement abîmé → fuite » | — |
+| 8-15 s | « Avant de monter le neuf, vérifie que l'ancien joint n'est pas resté en place, et huile le joint neuf avec de l'huile moteur propre. » | « Ancien joint retiré » · « Joint neuf huilé » | P-08, puis P-07 |
+| 15-23 s | « Visse jusqu'au contact du joint, puis serre comme l'indique le fabricant du filtre : le nombre de tours et la façon de serrer dépendent du filtre. » | « Serrage : instruction du filtre » | main qui visse (S-03) |
+| 23-27 s | « Trop serré ou avec un outil inadapté, son revêtement peut s'abîmer, rouiller, puis fuir. » | « Revêtement abîmé → fuite » | — |
 | 27-30 s | « Suis toujours les instructions de ton constructeur. Le détail est dans le guide AutoMecanik. » | « Le guide filtre à huile » | — |
 
 Vignette, légende et mesure : à rédiger après admission. Dépendances : admission de F-C2 à F-C4 ; validation humaine

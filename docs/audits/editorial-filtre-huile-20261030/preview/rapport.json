@@ -1,0 +1,51 @@
+{
+  "nature": "simulation non intégrée",
+  "r1_routage_sg_content": {
+    "chooseSection": 2,
+    "priceSection": 1,
+    "locationSection": 1,
+    "referenceSection": 1,
+    "faqSection": 0,
+    "unmatched": 0
+  },
+  "r3_essentiel": [
+    "Avant de commencer",
+    "Signes d'usure",
+    "Compatibilité",
+    "Démontage",
+    "Erreurs à éviter",
+    "Vérification finale",
+    "Quand aller au garage"
+  ],
+  "r3_badges": [
+    "Difficulté : Facile",
+    "Temps estimé : ~15 min",
+    "Sécurité : Précautions requises"
+  ],
+  "captures": [
+    {
+      "capture": "apercu-r1-375.webp",
+      "images_cassees": [],
+      "erreurs": [],
+      "debordement_horizontal_px": 0
+    },
+    {
+      "capture": "apercu-r1-1280.webp",
+      "images_cassees": [],
+      "erreurs": [],
+      "debordement_horizontal_px": 0
+    },
+    {
+      "capture": "apercu-r3-375.webp",
+      "images_cassees": [],
+      "erreurs": [],
+      "debordement_horizontal_px": 0
+    },
+    {
+      "capture": "apercu-r3-1280.webp",
+      "images_cassees": [],
+      "erreurs": [],
+      "debordement_horizontal_px": 0
+    }
+  ]
+}

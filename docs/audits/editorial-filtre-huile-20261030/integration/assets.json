@@ -1,0 +1,151 @@
+{
+  "objet": "Visuels du lot filtre à huile : fichier livré, emplacement servi, action attendue. Lignes lues en lecture seule le 30/10.",
+  "revision": "révision 3, 30/10/2026",
+  "production": "tools/build-assets.cjs (sharp, SVG → WebP), à partir des deux recadrages de la photo source versionnés dans assets/sources/. Commande : NODE_PATH=<node_modules avec sharp> node tools/build-assets.cjs assets/sources/photo-uhuTo7u8VXk-carree.jpg assets/sources/photo-uhuTo7u8VXk-large.jpg (sortie identique octet pour octet, vérifiée le 30/10)",
+  "photo_source": {
+    "id": "Unsplash uhuTo7u8VXk",
+    "url": "https://unsplash.com/photos/uhuTo7u8VXk",
+    "contenu": "filtre à huile vissé usagé tenu d'une main gantée, huile qui s'écoule ; texte d'instructions en japonais imprimé sur le filtre",
+    "licence": "Licence Unsplash : usage commercial permis, sans attribution obligatoire ; aucune marque lisible dans les recadrages livrés (texte japonais, sans logo identifiable à vérifier par le relecteur)",
+    "portee": "illustration d'un filtre vissé ; ne représente ni un véhicule, ni un emplacement, ni une référence vendue",
+    "texte_lisible": "la notice japonaise du filtre (« 取付要領 ») demande d'huiler le joint puis, après contact, 3/4 de tour avec un outil dédié ; « 3/4 » est lisible. Aucun texte servi ne s'appuie sur cette photo ; alt et légende n'en reprennent rien. À remplacer par la photo P-01 (filtre neuf, sans notice lisible) dès qu'elle existe."
+  },
+  "constats_servis": [
+    "Les cinq images R1 servies sont des PNG 1536×1024 (1365×1024 pour LOCATION) enregistrés avec l'extension .webp.",
+    "Le hero R1 s'affiche dans un cadre carré (GammeHero.tsx:78-111, 360×360) alors que rip_aspect_ratio indique 16:9 : le fichier livré est carré (720×720).",
+    "PRICE (« comparatif qualité par gamme ») et LOCATION (« Emplacement du filtre à huile sur le véhicule ») portent des promesses non vérifiées : niveaux de gamme et emplacement universel.",
+    "R3 : lignes 12, 13, 14 en pending, sans image (rip_image_url nul). Aucune ligne S4 ; le test de clôture B5 interdit d'en insérer."
+  ],
+  "visuels": [
+    {
+      "page": "R1",
+      "slot": "HERO",
+      "rip_id": 31,
+      "action": "remplacer",
+      "fichier": "assets/r1-hero-filtre-visse-usage.webp",
+      "dimensions": "720×720",
+      "poids_ko": 61,
+      "nature": "photo recadrée",
+      "alt": "Filtre à huile vissé usagé, tenu d'une main gantée pendant une vidange",
+      "caption": null,
+      "mecanisme": "POST /api/admin/r1-image-prompts/31/upload (multipart « file », forceSelect) puis PATCH /31/approve si nécessaire ; alt via la ligne (rip_alt_text)",
+      "verifie": "contenu vérifié à l'œil (recadrage de la photo vérifiée) ; affichage DEV non vérifié"
+    },
+    {
+      "page": "R1",
+      "slot": "TYPES",
+      "rip_id": 32,
+      "action": "remplacer",
+      "fichier": "assets/r1-types-visse-cartouche.webp",
+      "source": "assets/r1-types-visse-cartouche.svg",
+      "dimensions": "1200×900",
+      "poids_ko": 64,
+      "nature": "schéma de principe",
+      "alt": "Schéma comparant un filtre à huile vissé, changé en bloc, et une cartouche logée dans un boîtier démontable",
+      "caption": "Schéma de principe. La présence et la position des clapets varient selon le filtre et le moteur.",
+      "mecanisme": "POST /api/admin/r1-image-prompts/32/upload",
+      "verifie": "contenu et lisibilité vérifiés à l'œil après correction de mise en page ; affichage DEV non vérifié"
+    },
+    {
+      "page": "R1",
+      "slot": "PRICE",
+      "rip_id": 33,
+      "action": "remplacer (remplacement neutre)",
+      "fichier": "assets/r1-price-caracteristiques-qualite.webp",
+      "source": "assets/r1-price-caracteristiques-qualite.svg",
+      "dimensions": "1200×900",
+      "poids_ko": 37,
+      "nature": "schéma sans prix ni niveau de gamme",
+      "alt": "Schéma des caractéristiques de qualité d'un filtre à huile : clapet anti-retour, papier filtrant, clapet de dérivation",
+      "caption": "Un filtre ne fonctionne correctement que s'il a été bien monté.",
+      "remplace": "« comparatif qualité par gamme » (niveaux de prix non vérifiés)",
+      "mecanisme": "POST /api/admin/r1-image-prompts/33/upload",
+      "dependance": "le h3 codé « Niveaux de qualité » au-dessus de l'image reste servi : décision de libellé (HANDOFF FH-15)",
+      "verifie": "contenu vérifié à l'œil ; affichage DEV non vérifié"
+    },
+    {
+      "page": "R1",
+      "slot": "LOCATION",
+      "rip_id": 34,
+      "action": "désélectionner (rip_selected=false)",
+      "fichier": null,
+      "motif": "aucun emplacement universel : il dépend du moteur. Une photo par véhicule exige une prise de vue identifiée (PROMPTS.md, P-06).",
+      "mecanisme": "à trouver par Claude CLI : aucun endpoint de désélection constaté (approve, set-image-url, upload seulement) ; vérifier le comportement du rendu sans image LOCATION",
+      "verifie": "non"
+    },
+    {
+      "page": "R1",
+      "slot": "OG",
+      "rip_id": 35,
+      "action": "remplacer (remplacement neutre)",
+      "fichier": "assets/r1-og-filtre-a-huile.webp",
+      "source": "assets/r1-og-filtre-a-huile.svg",
+      "dimensions": "1200×630",
+      "poids_ko": 66,
+      "nature": "photo + texte",
+      "texte_image": "Filtre à huile / Vissé ou cartouche : la référence se choisit selon la motorisation. / automecanik.com",
+      "alt": "Filtre à huile : vissé ou cartouche, la référence se choisit selon la motorisation",
+      "mecanisme": "POST /api/admin/r1-image-prompts/35/upload",
+      "verifie": "contenu vérifié à l'œil (aucun prix, aucun délai) ; aperçu de partage non vérifié"
+    },
+    {
+      "page": "R3",
+      "slot": "HERO",
+      "rip_id": 12,
+      "action": "renseigner l'image",
+      "fichier": "assets/r3-hero-filtre-visse-usage.webp",
+      "dimensions": "1280×720",
+      "poids_ko": 80,
+      "nature": "photo recadrée",
+      "alt": "Filtre à huile vissé usagé retiré pendant une vidange",
+      "alt_actuel": "Filtre à huile : guide complet",
+      "mecanisme": "dépôt du fichier dans le stockage, puis PATCH /api/admin/r3-image-prompts/12/set-image-url et /12/approve ; aucun endpoint d'alt constaté : Claude CLI vérifie si le test B5 admet la mise à jour de rip_alt_text (curation)",
+      "verifie": "contenu vérifié à l'œil ; affichage DEV non vérifié"
+    },
+    {
+      "page": "R3",
+      "slot": "S2",
+      "rip_id": 13,
+      "action": "renseigner l'image",
+      "fichier": "assets/r3-s2-filtre-colmate-by-pass.webp",
+      "source": "assets/r3-s2-filtre-colmate-by-pass.svg",
+      "dimensions": "1280×720",
+      "poids_ko": 53,
+      "nature": "schéma de principe",
+      "alt": "Schéma : filtre en bon état, puis filtre colmaté dont le clapet de dérivation laisse passer une huile non filtrée",
+      "alt_actuel": "Symptomes usure Filtre à huile : usure visible",
+      "caption": "Schéma de principe. La pression d'ouverture du clapet de dérivation dépend du moteur.",
+      "mecanisme": "comme rip 12",
+      "verifie": "contenu vérifié à l'œil ; affichage DEV non vérifié"
+    },
+    {
+      "page": "R3",
+      "slot": "S3",
+      "rip_id": 14,
+      "action": "renseigner l'image",
+      "fichier": "assets/r3-s3-coupe-filtre-visse.webp",
+      "source": "assets/r3-s3-coupe-filtre-visse.svg",
+      "dimensions": "1200×900",
+      "poids_ko": 58,
+      "nature": "vue en coupe de principe, 8 éléments légendés",
+      "alt": "Vue en coupe de principe d'un filtre à huile vissé : joint, plaque de base, clapet anti-retour, média filtrant, tube central, clapet anti-siphon, clapet de dérivation",
+      "alt_actuel": "Schema comparatif Filtre à huile",
+      "caption": "Schéma de principe. La présence, le nombre et la position des clapets varient selon le filtre et le moteur.",
+      "mecanisme": "comme rip 12",
+      "verifie": "contenu vérifié à l'œil ; affichage DEV non vérifié"
+    }
+  ],
+  "video": [
+    {
+      "usage": "V1 14-24 s, C1 0-3 s",
+      "fichier": "assets/picto-temoin-pression-huile.webp",
+      "source": "assets/picto-temoin-pression-huile.svg",
+      "dimensions": "1080×1080, fond transparent",
+      "outil": "tools/build-pictos.cjs",
+      "nature": "pictogramme de principe du témoin de pression d'huile (burette et goutte), sans texte",
+      "portee": "la forme et la couleur exactes du témoin dépendent du véhicule",
+      "verifie": "contenu vérifié à l'œil sur fond #0F1E38 ; non composé dans une vidéo"
+    }
+  ],
+  "manques": "PROMPTS.md : photos et scènes à produire (aucun outil de génération d'image disponible dans cette session)"
+}

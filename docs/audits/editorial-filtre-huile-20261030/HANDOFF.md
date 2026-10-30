@@ -1,250 +1,128 @@
-# Raccordements pour Claude CLI — filtre à huile (pg_id 7)
+# Mission Claude CLI — intégration du lot filtre à huile (pg_id 7)
 
-Seuls les raccordements nécessaires au dossier filtre à huile. Les 13 besoins du dossier plaquettes ne sont pas des
-prérequis : deux points recoupent un besoin plaquettes (FH-5 compteur, FH-11 `stages`) parce que le filtre à huile en
-a besoin pour son propre compte. Reproductions faites le 30/10/2026 sur la base `980b2f8a7`, le site public et la base
-en lecture seule.
+Révision 3, 30/10/2026. Remplace la liste de raccordements de la révision 2. Seuls les raccordements du dossier
+filtre à huile : les 13 besoins du dossier plaquettes ne sont pas des prérequis (FH-5 compteur et FH-11 `stages` les
+recoupent parce que le filtre à huile en a besoin pour son compte).
 
-Hors périmètre de Claude CLI sans accord nominatif : prix et stock (titres « à partir de 5.00€ », meta « dès 5€ »,
-« En stock »), champs SEO protégés (title, meta, H1), déploiement PROD. Ces points sont signalés, pas confiés.
+## Consigne de démarrage
 
-## Synthèse
+> Lis `docs/audits/editorial-filtre-huile-20261030/HANDOFF.md` sur la branche
+> `docs/editorial-filtre-huile-dossier-20261030` et exécute la mission : vérifie le code et les contrats cités,
+> traite FH-1 à FH-16 dans l'ordre du § 3, raccorde les textes (`integration/r1.json`, `integration/r3.json`) et les
+> images (`integration/assets.json`) aux mécanismes existants, puis vérifie le rendu DEV en mobile et en bureau.
+> Aucune écriture en base partagée avec la PROD, aucun déploiement, aucune modification d'URL, de title, de meta ni de
+> H1. Consigne dans ce fichier, § 6, ce qui est fait avec sa preuve, et seulement les dépendances ou décisions qui
+> restent.
 
-| Id | Raccordement | Type | Bloque |
-|---|---|---|---|
-| FH-1 | R3 sert du texte WIX en anglais extrait brut | données | R3 S4_DEPOSE |
-| FH-2 | `restoreAccents` réécrit les URL des liens ; liens S7 sans id | code + données | R3 S7 |
-| FH-3 | Aucun producteur WIKI → R1/R3 ; contenus servis issus du RAG | producteur | tout texte R1/R3 du § 1 |
-| FH-4 | Bornes de S4_MICRO_SEO divergentes entre contrat et constantes | contrat | R1 S4 |
-| FH-5 | Affirmations R1 contredites (D.2, « cartouche » 1.5 dCi, compteur en dur) | données + code | R1 |
-| FH-6 | R4 : symptômes attribués au filtre, liens vers des 404 | code + données | R4, maillage R1 |
-| FH-7 | Page véhicule : marques de freinage ; position de montage encore servie | code ; état PROD | pages véhicule |
-| FH-8 | Catalogue Clio III : forme du filtre incohérente | données | toute mention Clio III |
-| FH-9 | `PieceExpliquee` : accroche absente, libellés fixes, un seul bandeau | code | rendu V1 |
-| FH-10 | Aucune composition pour C1, C2, C3 | code | rendu des courts |
-| FH-11 | `approvalRecord.stages` exigé par le code, absent du schéma | contrat | G7 de V1 |
-| FH-12 | Critères techniques non affichés sur la page véhicule | à vérifier | R1 S4 § 3-4, S6 « Dimensions » |
-| FH-13 | Pas de baseline GSC pour pg_id 7 | données | mesure avant/après |
-| FH-14 | Vignettes de la famille Filtres cassées (habitacle, boîte auto) | données ou code | R1 S8, R3 S7 |
+## 1. État de la transmission
 
-Hors Claude CLI (owner ou chaîne WIKI) : spot-check humain de la fiche WIKI (promue automatiquement) ; admission des
-faits F-C1 à F-C9 ; validation humaine des claims de V1 ; voix et visuels ; décision sur les champs SEO protégés.
-
-## FH-1 — Texte WIX brut servi en R3
-
-Reproduction :
-
-```bash
-curl -s https://www.automecanik.com/blog-pieces-auto/conseils/filtre-a-huile | grep -c "combustion chamber"
-```
-
-Résultat le 30/10 à 11:47Z : `3`. Source en base :
-
-```sql
-select sgc_id, sgc_section_type, sgc_enriched_by, sgc_enriched_at, sgc_sources
-from __seo_gamme_conseil where sgc_pg_id::text = '7' and sgc_content ilike '%combustion chamber%';
-```
-
-→ `sgc_id` 21, `S4_DEPOSE`, `content-gen-skill`, 2026-03-17, source `rag` `gammes/filtre-a-huile.md` champ
-`diagnostic.causes`. Fini quand : la section ne contient plus de texte source brut ; son contenu vient de la fiche
-WIKI (texte admis du § 1.2 S4_DEPOSE d'AUDIT.md après relecture). Écrire en base relève de FH-3 ou d'une écriture
-autorisée nommément.
-
-## FH-2 — Liens S7 de R3 en 410
-
-Deux défauts cumulés.
-
-1. Code : `restoreAccents` (`backend/src/config/fr-accent-map.ts:98`) applique `[/\bpieces\b/gi, 'pièces']`
-   (l.30) au HTML des sections, attributs compris (`backend/src/modules/blog/services/blog-seo.service.ts:251`).
-   `href="/pieces/x"` devient `href="/pièces/x"`.
-2. Données : la section S7 (`sgc_id` `conseil-7-S7-1771371936783`) stocke `/pieces/<slug>` sans id, qui répond 410
-   même sans accent.
-
-Reproduction :
-
-```bash
-curl -s https://www.automecanik.com/blog-pieces-auto/conseils/filtre-a-huile | grep -o 'href="/pièces/[^"]*"'
-curl -s -o /dev/null -w "%{http_code} %{redirect_url}\n" "https://www.automecanik.com/pi%C3%A8ces/filtre-a-air"
-curl -s -o /dev/null -w "%{http_code}\n" https://www.automecanik.com/pieces/filtre-a-air
-```
-
-Attendu le 30/10 : 6 liens ; 301 vers `/pieces/filtre-a-air` ; 410. Le défaut 1 touche toute section conseil qui
-contient un lien `/pieces/` : correction générique, test sur un attribut `href`.
-
-Fini quand : `restoreAccents` ne modifie ni URL ni attribut (test) ; S7 ne pointe que vers des gammes affichées
-(`/pieces/bouchon-de-vidange-593.html`, `/pieces/filtre-a-air-8.html`, `/pieces/filtre-a-carburant-9.html`,
-`/pieces/filtre-d-habitacle-424.html`, toutes en 200) ; huile moteur (`pg_id` 1862, `pg_display` 0) et « joint de
-vidange carter » (aucune gamme) retirés.
-
-## FH-3 — Producteur WIKI → R1 et R3
-
-Constat : R1 et R3 servent des lignes produites depuis le RAG, contre l'invariant RAW → WIKI → projections
-(ADR-031/046 : le RAG n'a pas d'autorité de production de contenu).
-
-```sql
-select sgpg_id, sgpg_source_type, sgpg_source_uri, sgpg_updated_at
-from __seo_gamme_purchase_guide where sgpg_pg_id::text = '7';
-select sgc_section_type, sgc_enriched_by, sgc_enriched_at, sgc_sources->0->>'type' src
-from __seo_gamme_conseil where sgc_pg_id::text = '7' order by sgc_order;
-```
-
-→ R1 : ligne 127, `rag`, `rag://gammes/filtre-a-huile.md+guides/choisir-filtre-huile.md`, 2026-04-21. R3 : 12
-sections, toutes `rag`, enrichies du 03/03 au 04/04/2026.
-
-```bash
-rg -l "__seo_gamme_purchase_guide" backend/src scripts -g '!*.test.*' | xargs rg -l -i "automecanik-wiki|wiki/gamme"
-rg -l "__seo_gamme_conseil" backend/src scripts -g '!*.test.*' | xargs rg -l -i "automecanik-wiki|wiki/gamme"
-```
-
-→ aucun fichier le 30/10. La fiche est déjà dans le sous-module : pointeur `88017732`, blob `c0f7a257` identique au
-commit WIKI `a4783348` lu ici ; aucune montée de sous-module requise pour elle.
-
-Fini quand : un producteur gouverné lit la fiche WIKI à un commit épinglé, n'écrit que des faits admis dans les
-colonnes R1 (`R1_SECTION_CONFIG`) et les sections R3, échoue fermé sur un fait non admis, et le RAG n'écrit plus ces
-tables. Chercher d'abord l'existant (`.claude/knowledge/verify-before-invent.md`) et la gouvernance applicable ; pas de
-producteur parallèle. Les textes du § 1 d'AUDIT.md servent d'attendu de relecture, pas d'écriture directe.
-
-## FH-4 — Bornes de S4_MICRO_SEO
-
-`packages/seo-role-contracts/src/contracts/r1.ts:25-26` : 1 500 à 3 000 caractères.
-`backend/src/config/r1-keyword-plan.constants.ts:112` : `min_chars: 700`.
-Le S4 proposé (1 741 caractères) passe les deux. Fini quand : une seule source de bornes, ou un test qui échoue si
-elles divergent.
-
-## FH-5 — Affirmations R1 contredites
-
-| Affirmation servie | Origine | Contredite par |
+| État | Statut au 30/10 | Preuve ou motif |
 |---|---|---|
-| « le code moteur figure sur votre carte grise (case D.2) » | `__seo_gamme_purchase_guide.sgpg_compatibility_axes`, ligne 127 | cerfa 13749*05 : D.2 = type, variante, version (F-C7) |
-| « Les moteurs diesel modernes (1.5 dCi, 1.6 HDI, 2.0 TDI) utilisent majoritairement des filtres cartouche » | `__seo_gamme.sg_content`, `sg_pg_id` 7 | catalogue : 19052 et 19053 affichent des filtres vissés (FH-8) |
-| « 2 847 diagnostics ce mois » | `frontend/app/components/gamme/GammeDiagnosticCTA.tsx:68`, en dur | aucune mesure |
+| rédigé | oui | `integration/` (4 fichiers), `assets/` (8 visuels + sources SVG), `tools/`, `PROMPTS.md`, ce fichier |
+| accessible | voir § 6 | branche poussée et PR brouillon de revue (aucune fusion) |
+| transmis | **non** | aucun canal vers une session Claude CLI : aucune session joignable depuis Claude Code Desktop, aucune cible SSH, Remote Control hors ligne ; Hermes (`automecanik_continuity`) indisponible dans la session. Transmission à effectuer : ouvrir Claude CLI sur le dépôt et coller la consigne ci-dessus |
+| pris en charge | non | — |
+| intégré et vérifié en DEV | non | — |
 
-Reproduction :
+## 2. Ce qui est livré
 
-```bash
-curl -s https://www.automecanik.com/pieces/filtre-a-huile-7.html | grep -o 'case D.2\|majoritairement des filtres cartouche\|2 847' | sort | uniq -c
-```
-
-Attendu le 30/10 : 6, 3, 1. Fini quand : les deux phrases sont retirées des données (ou remplacées par le § 1.1) et
-le compteur ne vient plus d'une constante. `sg_content` est un contenu historique : retrait, pas réécriture libre.
-
-## FH-6 — R4 : symptômes et liens
-
-`frontend/app/routes/reference-auto.$slug.tsx:1175` construit `/diagnostic-auto/${symptome}` avec le texte brut de
-`__seo_reference.symptomes_associes` (ligne `id` 118, 10 éléments, mise à jour 2026-04-04).
-
-```bash
-curl -s https://www.automecanik.com/reference-auto/filtre-a-huile | grep -o 'href="/diagnostic-auto/[^"]*"' | sort -u
-curl -s -o /dev/null -w "%{http_code}\n" "https://www.automecanik.com/diagnostic-auto/Huile%20tres%20noire%20avant%20echeance%20vidange" -L
-```
-
-Attendu : 5 liens de symptômes plus l'index ; 404. La fiche WIKI ne relie aucun symptôme au filtre
-(`diagnostic_safe: false`). Fini quand : le composant ne lie qu'un slug de diagnostic existant, et la liste de
-symptômes du filtre à huile est retirée.
-
-## FH-7 — Pages véhicule
-
-- `frontend/app/components/pieces/PiecesOemSection.tsx:137-138` : « (Bosch, TRW, Brembo...) » sur toutes les gammes.
-  Fini quand : exemples absents ou tirés des marques de la gamme affichée.
-- Position de montage : corrigée sur `main` par #1854 (`3f7771af2`, l.149-159 et 207-210), incluse dans le tag
-  `v2026.10.30-bundle-octobre-980b2f8` (créé 2026-10-30T11:12:21Z). À 11:47Z et 11:54Z, la page 19052 sert encore
-  « montées à l'arrière ». Aucun changement de code : état du déploiement PROD à constater par Marwane.
-
-```bash
-curl -s https://www.automecanik.com/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html | sed 's/<!-- -->//g' | grep -c "montées à l"
-```
-
-Attendu tant que la version corrigée n'est pas servie : 1 ou plus.
-
-## FH-8 — Catalogue Clio III 1.5 dCi
-
-```sql
-with rel as (select rtp_type_id, rtp_piece_id from pieces_relation_type
-             where rtp_pg_id = 7 and rtp_type_id in (19052, 19053))
-select rel.rtp_type_id, p.piece_display, coalesce(pc.pc_cri_value, '(sans valeur)') type_de_filtre,
-       count(distinct p.piece_id)
-from rel join pieces p on p.piece_id = rel.rtp_piece_id
-left join pieces_criteria pc on pc.pc_piece_id_i = p.piece_id and pc.pc_cri_id = '826'
-group by 1, 2, 3 order by 1, 2, 3;
-```
-
-Le 30/10 : affichables 74 (19052) et 73 (19053), dont 24 et 23 avec « Filtre vissé » et 50 sans critère ; non
-affichées : 8 « Cartouche filtrante » par type. La page 19052 montre 24 références. Fini quand : le propriétaire du
-catalogue confirme la forme pour chaque type, séparément, et explique le passage de 74 à 24. Aucune comparaison entre
-19052 et 19053 n'est établie.
-
-## FH-9 — `PieceExpliquee`
-
-`services/remotion-renderer/src/compositions/PieceExpliquee.tsx` :
-
-| Ligne | Constat | Effet sur V1 |
+| Fichier | Contenu | Statut |
 |---|---|---|
-| 32-44 | pas de prop `hook` | accroche seulement dite ; invisible sans voix |
-| 111 | « Quand la changer » en dur | accord au féminin pour « Filtre à huile » |
-| 259, 273 | 3 signes au plus sous « Signes d'usure » en dur | les deux cartes de V1 disent qu'aucun signe ne désigne le filtre |
-| 286 | gravité `low` par défaut | V1 fixe `low` et `high` |
-| props `disclaimer` | un seul bandeau continu | `disclaimer-3` (14-24 s) et `disclaimer-4` (fin) non affichables |
+| `integration/r1.json` | champs `r1s_*` (hero, sélecteur, 4 badges, intros, tableau de vérification, FAQ au format `{question, answer}`, bloc micro-SEO 1 850 caractères) ; `sg_content` en 5 blocs H2 routés vers choose, price, location, reference ; ancien → nouveau par bloc | REVIEW_REQUIRED |
+| `integration/r3.json` | 12 sections `__seo_gamme_conseil` par `sgc_id`, titres, HTML conforme aux composants de rendu, provenance proposée, image par section ; META conservée | REVIEW_REQUIRED |
+| `integration/candidats.json` | F-C1 à F-C11 et blocs prêts après admission (S4, S5, S6, huile et filtre usagés) | non servables avant admission |
+| `integration/assets.json` | 8 visuels : slot, `rip_id`, fichier, alt, légende, mécanisme, état de vérification ; LOCATION à désélectionner | fichiers produits |
+| `PROMPTS.md` | images et scènes manquantes, moyen réel pour chacune | manques |
+| `tools/build-assets.cjs`, `tools/build-pictos.cjs` | reproduction des visuels (sharp) depuis `assets/sources/` ; sortie identique octet pour octet, vérifiée le 30/10 | — |
+| `tools/lint-integration.cjs` | contrôle du texte public : gardes R1 du dépôt (`R1_FORBIDDEN_TERMS`, `isR3R5Content`), bornes du contrat R1, JSON-LD FAQPage, motifs `anti_source`, noms de sources, promesses commerciales, statut candidat servi | PASS le 30/10 (70 unités, 0 constat) |
+| `tools/build-preview.cjs`, `preview/` | simulation non intégrée : `extractEditorialBlocks`, `extractSummaryPoints`, `deriveHeroBadges` exécutés sur les textes du lot ; captures 375 et 1 280 px ; `preview/rapport.json` | pas un rendu DEV |
 
-Fini quand : accroche, titres de section et avertissements par fenêtre viennent des props, avec test de rendu.
+Règles de service : un statut `candidat` n'est jamais servi ; un champ protégé (title, meta, H1) n'est pas modifié ;
+aucune phrase ne nomme une source.
 
-## FH-10 — Compositions des courts
+## 3. Requalification FH-1 à FH-16
 
-`NeChangePasTropVite` exige trois causes ; `SymptomeTroisCauses` affiche « 3 causes possibles » en dur. Besoins :
-C1, une question puis une séquence d'étapes ; C2, une comparaison de deux pièces ; C3, un schéma animé en trois temps.
-Planification par `fafa-remotion-template-planner` ; une composition générique paramétrée plutôt que trois.
+Reproductions relancées le 30/10 à 14:09:55Z sur le site public et en lecture seule sur la base. Code lu sur la base de
+branche `980b2f8a7` ; aucun fichier cité n'a changé jusqu'à `origin/main` `a7f39fe71` (relevé le 30/10 après `git fetch`). « Servi » = HTML PROD public au
+moment de la reproduction.
 
-## FH-11 — `approvalRecord.stages`
+| Id | Défaut reproduit (14:09Z) | Étape | Révision | Correction attendue | Critère de vérification |
+|---|---|---|---|---|---|
+| FH-1 | R3 S4_DEPOSE sert du texte anglais brut d'un site tiers : `combustion chamber` × 3 | données (`sgc_id` 21) | servi | contenu `r3.json` S4_DEPOSE | 0 occurrence dans le rendu DEV |
+| FH-2 | 6 liens `href="/pièces/…"` en R3 | code (`restoreAccents` réécrit les attributs) + données (S7 sans id) | `main` et servi | `restoreAccents` n'altère ni URL ni attribut, avec test ; S7 de `r3.json` (4 liens vérifiés 200) | test unitaire sur un `href` ; 0 `/pièces/` dans le rendu DEV |
+| FH-3 | aucun producteur WIKI → R1 ; R3 en canari seulement | producteur, projection, activation (§ 4) | `main` | intégration du lot par le chemin d'écriture existant et gouverné, sans producteur parallèle | chemin identifié et consigné ; aucune écriture RAG |
+| FH-4 | bornes S4_MICRO_SEO : contrat 1 500-3 000, constante 700 | contrat | `main` | une seule source de bornes, ou test de divergence | test ; le bloc livré (1 850 / 1 663) passe les deux |
+| FH-5 | R1 : `case D.2` × 6, « majoritairement des filtres cartouche » × 3, « 2 847 » × 1 | données (`sg_content`, `sgpg_compatibility_axes`) + code (`GammeDiagnosticCTA.tsx:68`) | servi | `sg_content` de `r1.json` ; compteur retiré ou mesuré | 0, 0, 0 dans le rendu DEV |
+| FH-6 | R4 : 6 liens `/diagnostic-auto/<texte brut>` (404) | code (`reference-auto.$slug.tsx:1175`) + données (`__seo_reference` id 118) | servi | ne lier qu'un slug de diagnostic existant ; retirer les symptômes du filtre | 0 lien 404 sur R4 en DEV |
+| FH-7 | « (Bosch, TRW, Brembo...) » × 1 sur la page véhicule 19052 ; « montées à l'arrière » : 0 (≥ 1 à 13:39Z) | code (`PiecesOemSection.tsx:137-138`) ; position : déploiement | servi | exemples absents ou tirés de la gamme ; position : constater la version déployée (Marwane) | 0 « Brembo » sur une page filtre à huile en DEV |
+| FH-8 | Clio III 1.5 dCi : forme du filtre incohérente (24/23 vissés affichés, 8 cartouches non affichées par type) | données catalogue | base, 30/10 matin | confirmation par le propriétaire du catalogue, 19052 et 19053 séparément | réponse consignée ; aucune mention servie entre-temps |
+| FH-9 | `PieceExpliquee` : pas de prop `hook`, titres et gravité en dur, un seul bandeau | code (composition) | `main` | accroche, titres et avertissements par fenêtre en props, avec test de rendu | test de rendu |
+| FH-10 | aucune composition pour C1, C2, C3 | code | `main` | une composition générique paramétrée | rendu d'essai |
+| FH-11 | `approvalRecord.stages` exigé par le code, absent du schéma | contrat | `main` | schéma et code alignés | validateur passe l'étape 1 sur un dossier conforme |
+| FH-12 | critères techniques non affichés sur la page véhicule : 0 | à vérifier (fiche produit, comparateur) | servi | localiser la page qui les affiche ; sinon retirer les phrases conditionnées (`data-condition="FH-12"`, ligne Dimensions) | page localisée ou phrases retirées |
+| FH-13 | aucune baseline GSC pour `pg_id` 7 : 0 ligne | données | base | ligne datée R1, R3, R4 avant mise en ligne | 1 ligne par rôle |
+| FH-14 | vignettes habitacle et boîte auto : `catalogue/filtre-habitacle.webp` et `filtre-boite-auto.webp` servies × 2, réponse 400 | code ou données (§ 5) | servi | correction minimale testée après investigation | 200 pour les vignettes servies en R1 |
+| FH-15 | R1 : `r1s_faq` au format `{q, a}` → FAQ générique servie ; « au meilleur prix » × 1, « plus de 50 marques » × 2, « homologations constructeur » × 1 ; h3 codé « Niveaux de qualité » × 1 | données (`__seo_r1_gamme_slots`) + code (`pieces.$slug.tsx`) | servi | champs de `r1.json` ; libellés codés : proposition (la page n'a pas de niveaux de prix) | FAQ du lot servie en DEV (5 questions) ; 0 promesse non vérifiée |
+| FH-16 | R3 : « Source vérifiée » × 3 sous les cartes (provenance `web` humanisée) ; badges calculés « Difficulté Intermédiaire » et « Temps estimé ~45 min » (5 min par étape S4) ; CTA codé « Comparez les prix » | code commun à tous les guides (`source-provenance.util.ts`, `section-config.tsx:401-439`, route conseils l.602-607) + données (`sgc_sources`) ; encart bas de page codé « au meilleur prix parmi nos fournisseurs » × 1 (route conseils, encart après les sections) | servi | provenance du lot en `wiki` ; badges et encarts : correction minimale proposée et testée, sans déploiement. Avec le lot, les badges calculés deviennent « Facile » et « ~15 min » (3 étapes S4) : non sourcés | 0 « Source vérifiée » et 0 « meilleur prix » sur la page en DEV ; décision consignée pour les badges |
 
-`backend/src/modules/media-factory/services/video-gates.service.ts:87` exige un tableau `stages` (étape 1) et l.332
-une étape `script_text` approuvée (G7). `workspaces/marketing/fafa-media-factory/governance/approval-record.schema.json`
-ne le prévoit pas. Reproduction :
+Hors Claude CLI : prix et stock servis (« à partir de », « En stock ») ; champs protégés ; spot-check humain de la fiche
+WIKI ; admission de F-C1 à F-C11 ; validation humaine des claims de V1 ; prises de vue ; déploiement PROD.
 
-```bash
-node scripts/marketing/fafa-pilot-governance.cjs workspaces/marketing/fafa-media-factory/scripts/draft/fafa-filtre-huile-001
-```
+## 4. FH-3 par étape
 
-Sortie 1 aujourd'hui (`INVALID_claim-table`, validation humaine attendue) ; une fois les claims validés, G7 restera
-FAIL tant que schéma et code divergent. Fini quand : schéma et code alignés, un dossier conforme passe l'étape 1.
+| Étape | Constat (30/10) |
+|---|---|
+| Producteur | R1 : aucun (script neutralisé, enrichisseur retiré). R3 : lot conseil neutralisé |
+| Export | `wiki-exports-seo-generate.yml` ; export filtre-a-huile : 12 blocs (6 R3_CONSEILS, 3 R4, 3 R6), `content_hash` 773367f7, pointeur 88017732 ; aucun rôle R1 |
+| Admission | partielle : contrôle d'intégrité seulement ; ADR-119 non prouvée ; fiche promue automatiquement |
+| Projection | R3 : `seo-projection-feeder` → `__seo_content_blocks`, 6 blocs actifs pour pg 7. R1 : aucune (`feature-flags.service.ts:173-186`) |
+| Lecteur | R1 : historique (`__seo_r1_gamme_slots`, `__seo_gamme.sg_content`). R3 : historique `blog-seo.service.ts` sauf canari `READY_FOR_RENDER` (`r3-guide.service.ts:162-170`) |
+| Activation | `SEO_PROJECTION_READ_V1` à false ; canari vide ; refusé sous ADR-106 D7 (1 381 contre 9 128 caractères, −84,9 %, pas de FAQPage) |
+| Version déployée | non constatée |
 
-## FH-12 — Affichage des critères techniques
+Les textes servis R1 viennent d'une migration (`20260106_filtres_content_v2.sql`) et d'enrichissements ; leur
+provenance RAG n'est prouvée que pour R3 (`sgc_sources` de type `rag`). Le lot ne crée pas de producteur : il fournit
+des textes relus, issus de la fiche WIKI, à faire passer par le chemin d'écriture existant.
 
-```bash
-curl -s https://www.automecanik.com/pieces/filtre-a-huile-7/renault-140/clio-iii-140004/1-5-dci-19052.html \
-  | sed 's/<[^>]*>/ /g' | grep -c -i -E "hauteur|diamètre ext|filetage|by-pass|joint torique"
-```
+## 5. FH-14 — investigation `pg_pic` / `pg_img`
 
-Résultat le 30/10 : 0. En base : hauteur, diamètre extérieur, filetage, pression d'ouverture du by-pass (1 958
-pièces), Version (anti-retour, by-pass, joint torique inclus). Fini quand : on sait sur quelle page ces critères sont
-visibles (fiche produit, comparateur) ; sinon les phrases R1 qui y renvoient sont retirées.
+Ne pas renvoyer le choix au propriétaire du catalogue avant cette investigation.
 
-## FH-13 — Baseline GSC
+1. Sens : lire la définition et l'historique de `pieces_gamme.pg_pic` et `pg_img` (migrations, types partagés,
+   documentation du registre).
+2. Producteurs : qui écrit chacune des deux colonnes (scripts d'import, admin, migrations) et selon quelle convention de
+   nom.
+3. Consommateurs : `rg` des lectures de `pg_pic` et `pg_img` dans `backend/src` et `frontend/app`, dont
+   `processCatalogueFamille` (`gamme-data-transformer.service.ts:162-170`).
+4. Étendue : nombre de gammes affichées où `pg_pic` désigne un objet absent du stockage alors que `pg_img` existe
+   (lecture seule).
+5. Correction minimale : celle qui rend 200 sur R1 pour 424 et 416 sans changer le sens d'une colonne pour ses autres
+   consommateurs ; test ciblé.
 
-```sql
-select count(*) from __seo_gamme_gsc_baseline where pg_id::text = '7';
-```
+Reproduction : `select pg_id, pg_alias, pg_pic, pg_img from pieces_gamme where pg_id in (8, 9, 416, 424);` puis
+`curl -s -o /dev/null -w '%{http_code}' https://www.automecanik.com/img/uploads/articles/gammes-produits/catalogue/<nom>.webp`.
+Le 30/10 : `filtre-habitacle` et `filtre-boite-auto` (`pg_pic`) 400 ; `filtre-d-habitacle` et
+`filtre-boite-automatique` (`pg_img`) 200.
 
-→ 0. Fini quand : une ligne datée existe pour R1, R3 et R4 avant toute mise en ligne des textes, avec la même méthode
-que les autres gammes.
+## 6. Intégration et vérification DEV
 
-## FH-14 — Vignettes de la famille Filtres cassées
+1. **Base DEV.** Établir si la base lue par DEV est celle de la PROD (images R1 servies depuis le même projet
+   Supabase). Si oui, toute écriture des textes ou des images est une écriture PROD sur du SEO indexé : zone STOP. La
+   vérification se fait alors sans écriture partagée (copie locale des lignes de `pg_id` 7, ou branche de base de
+   développement), sans drapeau d'exécution ajouté au code.
+2. **Textes R1.** `__seo_r1_gamme_slots` (champs `r1s_*` de `r1.json`) et `__seo_gamme.sg_content` ; vérifier le
+   routage des 5 H2 par `extractEditorialBlocks` et l'affichage de la FAQ (`resolveR1Faq`, 3 questions au moins).
+3. **Textes R3.** `__seo_gamme_conseil` par `sgc_id` (`r3.json`) ; vérifier « L'essentiel en N points », le tableau
+   S2_DIAG, les étapes S4 et le JSON-LD FAQPage (5 paires).
+4. **Images.** R1 : `POST /api/admin/r1-image-prompts/:id/upload` (31, 32, 33, 35) ; désélection de 34 (mécanisme à
+   trouver). R3 : `set-image-url` et `approve` (12, 13, 14) ; mise à jour des alt selon ce que le test B5 admet.
+5. **Rendu.** Une page R1 et une page R3, en 375 px et en 1 280 px : captures, absence d'erreur console, images
+   chargées en 200, aucun texte `candidat`, aucune promesse de prix ou de délai dans les blocs du lot. Comparer avec
+   `preview/` (simulation) : routage des 5 blocs `sg_content` (choose 2, price 1, location 1, reference 1), 7 points
+   dans « L'essentiel », 5 paires FAQPage. Relancer `tools/lint-integration.cjs` sur les textes réellement intégrés.
+6. **Compte rendu.** Ajouter ci-dessous : commandes, captures, résultat de chaque critère du § 3, et seulement les
+   décisions ou dépendances restantes, chacune à son étape.
 
-`processCatalogueFamille` construit l'image depuis `pg_pic`
-(`backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts:162-170`). Pour 424 et 416, `pg_pic`
-désigne un objet absent du stockage ; `pg_img` désigne un objet présent.
+### Compte rendu de Claude CLI
 
-```sql
-select pg_id, pg_alias, pg_pic, pg_img from pieces_gamme where pg_id::text in ('8','9','416','424');
-```
-
-```bash
-B=https://www.automecanik.com/img/uploads/articles/gammes-produits/catalogue
-for s in filtre-habitacle filtre-boite-auto filtre-d-habitacle filtre-boite-automatique; do
-  printf '%s %s\n' "$(curl -s -o /dev/null -w '%{http_code}' "$B/$s.webp")" "$s"
-done
-```
-
-Résultat le 30/10 : `pg_pic` 424 = `filtre-habitacle.webp` (400, `NoSuchKey`), 416 = `filtre-boite-auto.webp` (400) ;
-`pg_img` 424 = `filtre-d-habitacle.webp` (200), 416 = `filtre-boite-automatique.webp` (200) ; 8 et 9 : `pg_pic` =
-`pg_img`, 200. Les deux URL cassées sont servies dans le HTML de R1. Fini quand : les vignettes servies en R1 pour
-l'habitacle et la boîte auto répondent 200 ; le choix entre corriger `pg_pic` et lire `pg_img` revient au propriétaire
-du catalogue, après recherche des autres lecteurs de `pg_pic`.
+(à remplir)
