@@ -11,10 +11,11 @@ function renderResults(
   slug = "Plaquette de frein",
   maintenancePgId = pgId,
   maintenanceSlug = slug,
+  vehicle: WizardState["vehicle"] = { brand: "Renault", model: "Clio" },
 ) {
   const state: WizardState = {
     step: 3,
-    vehicle: { brand: "Renault", model: "Clio" },
+    vehicle,
     systemScope: "freinage",
     symptomSlugs: ["bruit-freinage"],
     loading: false,
@@ -133,4 +134,91 @@ describe("Diagnostic results catalogue links", () => {
       expect(screen.queryAllByRole("link")).toHaveLength(0);
     },
   );
+});
+
+const clio19047: WizardState["vehicle"] = {
+  brand: "RENAULT",
+  brandId: 140,
+  brandAlias: "renault",
+  model: "CLIO III",
+  modelId: 140004,
+  modelAlias: "clio-iii",
+  typeId: 19047,
+  typeName: "1.2 16V",
+  typeAlias: "1-2-16v",
+  engine: "1.2 16V 65 ch",
+  fuel: "essence",
+};
+const r2Url =
+  "/pieces/plaquette-de-frein-402/renault-140/clio-iii-140004/1-2-16v-19047.html";
+
+function linkHrefs() {
+  return [
+    screen.getByRole("link", { name: /Plaquettes de frein/ }),
+    screen.getByRole("link", { name: "Voir les pièces" }),
+  ].map((link) => link.getAttribute("href"));
+}
+
+describe("Diagnostic results links for a chosen motorisation", () => {
+  it("keeps the motorisation in both catalogue and maintenance links", () => {
+    renderResults(
+      "catalog_family_with_caution",
+      402,
+      undefined,
+      402,
+      undefined,
+      clio19047,
+    );
+    expect(linkHrefs()).toEqual([r2Url, r2Url]);
+    expect(
+      screen.getByText(
+        /Pièces proposées pour : RENAULT CLIO III 1.2 16V 65 ch/,
+      ),
+    ).toBeTruthy();
+  });
+
+  it.each([
+    ["no motorisation", { typeId: undefined }],
+    ["no type alias", { typeAlias: undefined }],
+    ["no brand alias", { brandAlias: "" }],
+    ["a malformed model alias", { modelAlias: "null" }],
+    ["an invalid model ID", { modelId: 0 }],
+  ])("falls back to the gamme page with %s", (_case, change) => {
+    renderResults(
+      "catalog_family_with_caution",
+      402,
+      undefined,
+      402,
+      undefined,
+      {
+        ...clio19047,
+        ...change,
+      },
+    );
+    expect(linkHrefs()).toEqual([
+      "/pieces/plaquette-de-frein-402.html",
+      "/pieces/plaquette-de-frein-402.html",
+    ]);
+    expect(screen.queryByText(/Pièces proposées pour/)).toBeNull();
+  });
+
+  it("still withholds a maintenance destination the catalogue guard did not allow", () => {
+    renderResults(
+      "catalog_family_with_caution",
+      71,
+      "liquide-de-frein",
+      479,
+      "liquide-de-frein",
+      clio19047,
+    );
+    expect(screen.queryByRole("link", { name: "Voir les pièces" })).toBeNull();
+    expect(screen.getAllByRole("link")[0].getAttribute("href")).toBe(
+      "/pieces/liquide-de-frein-71/renault-140/clio-iii-140004/1-2-16v-19047.html",
+    );
+  });
+
+  it("honors none with a chosen motorisation", () => {
+    renderResults("none", 402, undefined, 402, undefined, clio19047);
+    expect(screen.queryAllByRole("link")).toHaveLength(0);
+  });
 });

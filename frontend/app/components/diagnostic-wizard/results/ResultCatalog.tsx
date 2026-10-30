@@ -7,11 +7,21 @@ import { ShoppingCart, ExternalLink, ShieldCheck, ShieldX } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { emitFunnel, getFunnelSessionId } from "~/utils/funnel-beacon";
-import { buildGammeUrl, normalizeAlias } from "~/utils/url-builder.utils";
-import { type EvidencePack } from "../types";
+import {
+  buildGammeUrl,
+  buildGammeVehicleUrl,
+  normalizeAlias,
+} from "~/utils/url-builder.utils";
+import {
+  type EvidencePack,
+  type SuggestedGamme,
+  type WizardState,
+} from "../types";
 
 interface Props {
   catalogGuard: EvidencePack["catalog_guard"];
+  /** Vehicle chosen in this visit; a shared session reopens without it. */
+  vehicle?: WizardState["vehicle"];
 }
 
 const CONFIDENCE_LABELS: Record<string, { label: string; color: string }> = {
@@ -39,12 +49,16 @@ export function hasSuggestedGammes(guard: EvidencePack["catalog_guard"]) {
   );
 }
 
-export function ResultCatalog({ catalogGuard }: Props) {
+export function ResultCatalog({ catalogGuard, vehicle }: Props) {
   const confidence =
     CONFIDENCE_LABELS[catalogGuard.confidence_before_purchase] ||
     CONFIDENCE_LABELS.low;
 
   const hasGammes = hasSuggestedGammes(catalogGuard);
+  const vehicleHref = (g: SuggestedGamme) =>
+    vehicle ? buildGammeVehicleUrl(g.gamme_slug, g.pg_id, vehicle) : undefined;
+  const linksCarryVehicle =
+    hasGammes && catalogGuard.suggested_gammes.some((g) => vehicleHref(g));
 
   return (
     <Card>
@@ -85,9 +99,16 @@ export function ResultCatalog({ catalogGuard }: Props) {
             <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
               Familles de pièces concernées
             </p>
+            {linksCarryVehicle && vehicle && (
+              <p className="text-xs text-gray-600">
+                Pièces proposées pour : {vehicle.brand} {vehicle.model}{" "}
+                {vehicle.engine ?? vehicle.typeName}
+              </p>
+            )}
             <div className="grid gap-2">
               {catalogGuard.suggested_gammes.map((g) => {
-                const href = buildGammeUrl(g.gamme_slug, g.pg_id);
+                const href =
+                  vehicleHref(g) ?? buildGammeUrl(g.gamme_slug, g.pg_id);
                 const Tag = href ? "a" : "div";
                 const gammeConfidence =
                   CONFIDENCE_LABELS[g.confidence] || CONFIDENCE_LABELS.low;

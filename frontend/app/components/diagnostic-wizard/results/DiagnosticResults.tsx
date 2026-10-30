@@ -168,11 +168,12 @@ export function DiagnosticResults({
             recommendations={ep.maintenance_recommendations}
             maintenanceLinks={ep.maintenance_links}
             allowedOutputMode={ep.catalog_guard.allowed_output_mode}
+            vehicle={state.vehicle}
           />
         )}
 
       {/* Block 5: Catalog orientation */}
-      <ResultCatalog catalogGuard={ep.catalog_guard} />
+      <ResultCatalog catalogGuard={ep.catalog_guard} vehicle={state.vehicle} />
 
       {/* Block 6: Missing data */}
       {ep.factual_inputs_missing.length > 0 && (
