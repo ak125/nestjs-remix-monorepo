@@ -12,8 +12,8 @@ Les chemins ci-dessous sont relatifs à la racine Git du checkout utilisé.
 
 ## Sélection et application des skills
 
-Ce protocole s'applique à Claude CLI, Codex et aux missions Hermes dans leurs
-accès effectifs. Utiliser les fichiers du checkout et de la révision de la mission,
+Ce protocole s'applique à Claude CLI, Claude Code Desktop (onglet Code), Codex et
+aux missions Hermes dans leurs accès effectifs. Utiliser les fichiers du checkout et de la révision de la mission,
 jamais une copie d'instructions d'une autre session supposée équivalente.
 
 1. Lire le contrat racine `CLAUDE.md` s'il n'est pas déjà chargé, puis les
@@ -85,6 +85,12 @@ la découverte des settings ne doit pas être déduite de celle des `CLAUDE.md`.
 Les hooks SessionStart/UserPromptSubmit ajoutent leurs propres extraits bornés ;
 ils ne rendent pas toute la documentation canonique automatiquement chargée.
 
+Dans Claude Code Desktop, vérifier l'onglet Code, la version intégrée et le
+checkout réellement ouvert, local ou distant. Ne pas déduire de la configuration
+du CLI, d'un worktree ou d'une autre conversation que les mêmes fichiers, skills
+et outils sont chargés. Qualifier cette surface dans sa propre session ; une
+mémoire locale de Claude ne prouve pas un partage avec Codex ou Hermes.
+
 ## Codex et Hermes
 
 Codex CLI 0.144.4 : chaîne `AGENTS.override.md` ou `AGENTS.md` de la racine au cwd ;
@@ -130,9 +136,12 @@ Ne pas extrapoler à une session déjà ouverte. Aucun chargement réel nouveau 
 de tokens/RAM n'est déduit d'un simple contrôle statique.
 Pour chaque exécutant effectivement utilisé, observer une tâche bornée sans effet
 externe : chemin et révision lus, procédure suivie, résultat attendu et observé.
+Tester séparément Claude CLI direct, Claude Code Desktop et Codex dans leur
+checkout réel et le workspace concerné.
 Pour Hermes, tester séparément le lecteur natif du profil et une mission déléguée ;
 une réussite Claude CLI directe ne valide pas le lanceur Hermes vers Claude.
 
 Sources officielles : [Claude memory](https://code.claude.com/docs/en/memory),
 [Claude skills](https://code.claude.com/docs/en/skills),
+[Claude Code Desktop](https://code.claude.com/docs/en/desktop),
 [Codex AGENTS.md](https://developers.openai.com/codex/guides/agents-md).
