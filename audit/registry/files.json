@@ -59660,7 +59660,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 1265,
+      "loc": 1275,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/reference-auto.$slug.tsx",
       "risk": "low",

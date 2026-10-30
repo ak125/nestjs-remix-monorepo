@@ -90273,7 +90273,7 @@
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 1265,
+      "loc": 1275,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/reference-auto.$slug.tsx",
       "risk": "medium",
@@ -106039,11 +106039,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "6e3c8de1db154ef3bf7e4f600c683a61c15314e901b700dda2e7df95e27635ab",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "e0dc3e515d3ece0894dad2a73226ec8e0c2b1633fc3ded49024fe96cfbef63c6",
+      "audit/registry/files.json": "2cbd96f1a1d33295954de3ed31042c390bd9866d5ab2665f84dd8556b3280859",
       "audit/registry/rpc.json": "7897ffc88fa007be0b96ee19cc110f99f71d0639c30747fa5c4df34d48f0af4a",
       "audit/registry/runtime.json": "a6b7bb34f935b3f73f8d20c118fcaa5040e50b33fabbb344943df0a202fa5d19"
     },
-    "sotFingerprint": "a4d7034f6dd1"
+    "sotFingerprint": "5abc7d5c4858"
   },
   "runtime": [
     {
