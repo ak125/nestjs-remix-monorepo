@@ -17,6 +17,7 @@ import { PriceDeactivationService } from './services/price-deactivation.service'
 import { CatalogDisplayActivationService } from './services/catalog-display-activation.service';
 import { CatalogDisplayQuarantineService } from './services/catalog-display-quarantine.service';
 import { PricingSimulationService } from './services/pricing-simulation.service';
+import { SellabilityTruthService } from './services/sellability-truth.service';
 import { PricingImportController } from './controllers/pricing-import.controller';
 
 @Module({
@@ -33,12 +34,14 @@ import { PricingImportController } from './controllers/pricing-import.controller
     CatalogDisplayActivationService,
     CatalogDisplayQuarantineService,
     PricingSimulationService,
+    SellabilityTruthService,
   ],
   exports: [
     PricingFormulaService,
     PricingInvariantsService,
     PricingStrategyService,
     SupplierProfileService,
+    SellabilityTruthService,
   ],
 })
 export class PricingModule {}
