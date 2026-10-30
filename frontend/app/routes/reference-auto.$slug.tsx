@@ -195,6 +195,8 @@ interface Reference {
   composition: string[] | null;
   confusionsCourantes: string[] | null;
   symptomesAssocies: string[] | null;
+  /** Symptômes qui désignent un diagnostic publié : seuls liens rendus. */
+  diagnosticSlugs?: string[];
   reglesMetier: string[] | null; // NOUVEAU: Règles anti-erreur
   scopeLimites: string | null; // NOUVEAU: Variantes et limitations
   contentHtml: string | null;
@@ -1157,9 +1159,9 @@ export default function ReferenceDetailPage() {
               </Card>
             )}
 
-            {/* Symptomes (lien vers R5 Diagnostic) */}
-            {reference.symptomesAssocies &&
-              reference.symptomesAssocies.length > 0 && (
+            {/* Symptomes (lien vers R5 Diagnostic publié uniquement) */}
+            {reference.diagnosticSlugs &&
+              reference.diagnosticSlugs.length > 0 && (
                 <Card className="shadow-lg">
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
@@ -1169,7 +1171,7 @@ export default function ReferenceDetailPage() {
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-2">
-                      {reference.symptomesAssocies.map((symptome) => (
+                      {reference.diagnosticSlugs.map((symptome) => (
                         <li key={symptome}>
                           <Link
                             to={`/diagnostic-auto/${symptome}`}
