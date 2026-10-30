@@ -1133,7 +1133,7 @@
           }
         ],
         "definedInMigrations": [
-          "20260517_seo_r2_v2_outbox_relay_rpc.sql"
+          "20261029_seo_r2_v2_r8_publish_snapshot_text_type_id.sql"
         ],
         "domain": "UNKNOWN",
         "id": "public.__seo_r8_publish_snapshot",
@@ -60280,7 +60280,7 @@
         "backend/src/modules/seo/r2/services/r8-snapshot-reader.service.ts"
       ],
       "kind": "test",
-      "loc": 292,
+      "loc": 358,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/r2/services/__tests__/r8-snapshot-reader.test.ts",
       "risk": "high",
@@ -60698,7 +60698,7 @@
         "backend/src/modules/seo/r2/schemas/r8-snapshot.schema.ts"
       ],
       "kind": "service",
-      "loc": 228,
+      "loc": 249,
       "owner": "@ak125/seo-team",
       "path": "backend/src/modules/seo/r2/services/r8-snapshot-reader.service.ts",
       "risk": "high",
@@ -105781,11 +105781,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "6e3c8de1db154ef3bf7e4f600c683a61c15314e901b700dda2e7df95e27635ab",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "cf502e2e78f6f7df8ed4b99c5ba05ffa38d4133a2b33bcb9951eee2b0b97a630",
-      "audit/registry/rpc.json": "8f55c94f138e77af87c9e5c062bff86358fd1cfce0d06d85724da39cc94e756c",
+      "audit/registry/files.json": "a3042b5c8b8859fda931a2aa4333dbacf79999849e2a3531d939fa41ec187ef3",
+      "audit/registry/rpc.json": "7897ffc88fa007be0b96ee19cc110f99f71d0639c30747fa5c4df34d48f0af4a",
       "audit/registry/runtime.json": "ef81db8d0cbc0c753d3ec159a5a45ed293ed44842b1ba8e658199b8628daae83"
     },
-    "sotFingerprint": "f1a616be5293"
+    "sotFingerprint": "6fbec94f1cbb"
   },
   "runtime": [
     {
