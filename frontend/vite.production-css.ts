@@ -5,9 +5,16 @@ import { normalizePath, type Plugin } from "vite";
 
 import { productionIgnoredRouteFiles } from "./route-files";
 
-/** Keep Tailwind's sources aligned with pages omitted from production routing.
- * Shared components and other automatic sources stay scanned. If a served module
- * imports an omitted page, fail the build rather than silently drop its styles.
+// These component families are absent from both production module graphs.
+// Keep their development styles; reject any future production import below
+// rather than serving a component whose utilities were not scanned.
+const unbundledComponentSources = [
+  "components/{ecommerce,expert,profile,shipping,forms,ai,navigation}/**/*.{ts,tsx}",
+];
+
+/** Omit routed-out pages and verified unbundled component families from Tailwind.
+ * Other automatic sources stay scanned. If a served module imports an excluded
+ * source, fail the build rather than silently drop its styles.
  */
 export function productionCssSources(appDir: string): Plugin {
   const globalCss = normalizePath(resolve(appDir, "global.css"));
@@ -21,16 +28,22 @@ export function productionCssSources(appDir: string): Plugin {
       command === "build" && process.env.NODE_ENV === "production",
     buildStart() {
       const routeDir = resolve(appDir, "routes");
-      const files = globSync(productionIgnoredRouteFiles, { cwd: routeDir })
+      const routeFiles = globSync(productionIgnoredRouteFiles, {
+        cwd: routeDir,
+      })
         .filter((file) => /\.[cm]?[jt]sx?$/.test(file))
-        .sort();
+        .map((file) => `routes/${normalizePath(file)}`);
+      const files = [
+        ...routeFiles,
+        ...globSync(unbundledComponentSources, { cwd: appDir }),
+      ].sort();
       excluded = new Set(
-        files.map((file) => normalizePath(resolve(routeDir, file))),
+        files.map((file) => normalizePath(resolve(appDir, file))),
       );
       directives = files
         .map(
           (file) =>
-            `@source not ${JSON.stringify(`./routes/${normalizePath(file)}`)};`,
+            `@source not ${JSON.stringify(`./${normalizePath(file)}`)};`,
         )
         .join("\n");
     },
@@ -50,7 +63,7 @@ export function productionCssSources(appDir: string): Plugin {
         for (const id of Object.keys(chunk.modules)) {
           if (excluded.has(normalizePath(id.split("?")[0]))) {
             this.error(
-              `Production CSS excluded a routed-out file that is still bundled: ${id}. ` +
+              `Production CSS excluded a source file that is still bundled: ${id}. ` +
                 "Move its shared UI into a scanned component before excluding it.",
             );
           }

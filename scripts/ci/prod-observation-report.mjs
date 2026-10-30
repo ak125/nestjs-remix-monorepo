@@ -15,6 +15,10 @@ import { createGunzip } from "node:zlib";
 //      (30 per sliding 60 s, 15 per sliding 1 s, per handler and per address) the
 //      highest count one address reached and the requests that came beyond it.
 //      Windows start at arrival (ts - duration), as in callbacks.py v2.
+//      Rotation leaves holes between the oldest and the newest line (C1.1,
+//      2026-10-25: 105 hours with lines over four months), so the report states
+//      the hours that hold lines and, to the hour, the run without a hole that
+//      ends with the last line; a window outside that run is "non vérifié".
 //   2. Rate-limit counters, PROD and PREPROD: the destination the backend logged
 //      at startup ("Compteurs sur host:port/db (source)", judged, never printed),
 //      the reserved Redis (state, policy, used_memory against the 16 MiB signal
@@ -58,6 +62,7 @@ export const THROTTLER_USED_MEMORY_SIGNAL = 16 * 1024 * 1024;
 export const DEFAULT_WINDOW_HOURS = 7;
 export const RUST_UPSTREAM = "vehicle_models_rs:3150";
 export const CADDY_LOG_DIR = "/var/log/caddy";
+const HOUR_MS = 3_600_000;
 // The current file, then the rotated ones, named by Caddy after the rotation
 // time and reason: automecanik-2026-10-24T00-08-00.384-size.log.gz.
 const LOG_FILE = /^automecanik(-[0-9T.-]+(-[a-z]+)?)?\.log(\.gz)?$/;
@@ -159,10 +164,19 @@ export function vehicleModelsEligible(method, uri) {
   );
 }
 
+/** Start of the run of consecutive hours with lines that ends with the last line. */
+export function continuousFrom(hours, lastMs) {
+  if (!Number.isFinite(lastMs)) return NaN;
+  let h = Math.floor(lastMs / HOUR_MS);
+  while (hours.has(h - 1)) h -= 1;
+  return h * HOUR_MS;
+}
+
 export function createAccessAccumulator(cutoffMs) {
   const payments = new Map();
   const route = { durations: [], s421: 0, s429: 0, s5xx: 0, upstreams: { rust: 0, other: 0, none: 0 } };
   const state = { firstMs: Infinity, lastMs: -Infinity, unreadable: 0 };
+  const hours = new Set();
   return {
     addLine(line) {
       if (!line) return;
@@ -173,6 +187,7 @@ export function createAccessAccumulator(cutoffMs) {
       }
       state.firstMs = Math.min(state.firstMs, e.tsMs);
       state.lastMs = Math.max(state.lastMs, e.tsMs);
+      hours.add(Math.floor(e.tsMs / HOUR_MS));
       const recent = e.tsMs >= cutoffMs;
       if (PAYMENT_ROUTES.includes(e.path)) {
         const key = `${e.method} ${e.path}`;
@@ -200,7 +215,7 @@ export function createAccessAccumulator(cutoffMs) {
         else route.upstreams.other += 1;
       }
     },
-    result: () => ({ payments, route, ...state }),
+    result: () => ({ payments, route, ...state, hours: hours.size, continuousFromMs: continuousFrom(hours, state.lastMs) }),
   };
 }
 
@@ -219,7 +234,10 @@ export function judgePayments(acc, windowHours) {
   if (!Number.isFinite(acc.firstMs)) {
     return { verdict: "non vérifié", lines: ["Paiement : non vérifié (aucune ligne lisible dans le journal de Caddy)"] };
   }
-  lines.push(`Paiement : période couverte ${minute(acc.firstMs)} → ${minute(acc.lastMs)} (UTC) ; lignes illisibles ${acc.unreadable}`);
+  lines.push(
+    `Paiement : journal lu du ${minute(acc.firstMs)} au ${minute(acc.lastMs)} (UTC), ${acc.hours} heure(s) avec des lignes, ` +
+      `sans trou depuis ${minute(acc.continuousFromMs)} ; lignes illisibles ${acc.unreadable}`,
+  );
   const shown = SHOWN.map(([path, method]) => `${method} ${path}`);
   const keys = [...shown, ...[...acc.payments.keys()].filter((k) => !shown.includes(k)).sort()];
   for (const key of keys) {
@@ -447,14 +465,23 @@ export async function runReport(config, io) {
     accessRead = false;
   }
   if (accessRead) {
-    const payments = judgePayments(acc.result(), config.windowHours);
-    const route = judgeRoute(acc.result().route, config.windowHours);
+    const read = acc.result();
+    const payments = judgePayments(read, config.windowHours);
+    const route = judgeRoute(read.route, config.windowHours);
     verdicts.push(payments.verdict, route.verdict);
     lines.push(...payments.lines, ...route.lines);
     // A rotation naming change must not shrink the period silently.
     if (unexpected) {
       verdicts.push("non vérifié");
       lines.push(`Paiement et route R2 : non vérifiés (${unexpected} fichier(s) de journal au nom inattendu, non lus)`);
+    }
+    // A hole inside the window, or a log that stopped, would read as "absent".
+    if (Number.isFinite(read.lastMs) && (read.continuousFromMs > cutoffMs || io.now() - read.lastMs > HOUR_MS)) {
+      verdicts.push("non vérifié");
+      lines.push(
+        `Paiement et route R2 : non vérifiés (journal sans trou depuis ${minute(read.continuousFromMs)} seulement, ` +
+          `dernière ligne ${minute(read.lastMs)}, fenêtre depuis ${minute(cutoffMs)})`,
+      );
     }
   } else {
     verdicts.push("non vérifié");
