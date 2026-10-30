@@ -214,3 +214,16 @@ renseigné et `gate_results` réduit à G1 et G2 du validateur.
 - `.spec/00-canon/video-governance-p0.md` (legacy, contexte)
 - Règles vault `rules-fafa-persona-canon-v1.md` et `rules-video-disclaimer-safety.md` : introuvables au 22/10 (`main` du vault,
   `684e734`).
+
+
+## D18/D19 — circuit humain en fichiers seuls
+
+Choix opérationnel confirmé le 19/10/2026, détaillé dans `fafa-media-factory/scripts/README.md` : backend éteint ; contenu exact
+approuvé humainement avant un rendu autorisé en `REVIEW_READY`. Après inspection technique et visionnage humain du MP4 exact,
+les approbations distinctes du contenu et du rendu permettent `APPROVED`. La publication nécessite encore son approbation propre.
+Les règles de lecture et de restitution des gates ci-dessus restent applicables ; aucun verdict du skill ne pose de drapeau.
+
+Le nom de l'auteur d'une PR et les champs `*_approved_by` ne prouvent pas cet acte. La preuve humaine doit être reliée au commit,
+à la révision et au SHA-256 du MP4 exacts ; le validateur local ne l'authentifie pas. Sans elle, conserver l'approbation manquante.
+Si une entrée déterminante change, préparer une nouvelle révision et invalider les approbations via le flux de correction existant,
+sans écraser l'historique. Ce choix ne transforme pas un contrôle technique en approbation humaine.

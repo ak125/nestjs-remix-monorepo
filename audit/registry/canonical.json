@@ -103223,7 +103223,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 266,
+      "loc": 287,
       "owner": "@ak125",
       "path": "scripts/marketing/fafa-pilot-governance.cjs",
       "risk": "low",
@@ -103243,7 +103243,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 699,
+      "loc": 882,
       "owner": "@ak125",
       "path": "scripts/marketing/fafa-pilot-governance.test.cjs",
       "risk": "low",
@@ -105844,11 +105844,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "6e3c8de1db154ef3bf7e4f600c683a61c15314e901b700dda2e7df95e27635ab",
       "audit/registry/deps.json": "48d776a34c3dc2f304126f3beb501cab154323e82064491e452c2c97eeb7d053",
-      "audit/registry/files.json": "01b23f19c2f49276cb4e409d4409ec56e5b77e16b0f463f2d6005497d11ecb2e",
+      "audit/registry/files.json": "15e144e5653bb0d294cdacb05d14eb97c9d769e2186742d00861c5eab1fcdb03",
       "audit/registry/rpc.json": "7897ffc88fa007be0b96ee19cc110f99f71d0639c30747fa5c4df34d48f0af4a",
       "audit/registry/runtime.json": "ef81db8d0cbc0c753d3ec159a5a45ed293ed44842b1ba8e658199b8628daae83"
     },
-    "sotFingerprint": "08702791e80f"
+    "sotFingerprint": "4adff83537ec"
   },
   "runtime": [
     {

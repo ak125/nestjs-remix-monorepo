@@ -13,18 +13,50 @@ Chaque vidéo Fafa traverse 8 statuts. Le dossier reflète le statut courant.
 | 7 | `PUBLISHED` | `scripts/published/<video_id>/` | Owner publie manuellement, met `publish_approved=true` + record `manifests/publishing/` |
 | 8 | `MEASURED` | (reste dans `published/`) | KPIs CSV J+7 dans `manifests/metrics/video-performance.csv` |
 
-Les documents de la zone ne décrivent pas tous ce flux de la même façon (relevé du 18/10) :
+## D18/D19 — choix opérationnel confirmé le 19/10/2026
 
-- **Qui pose `content_approved`** : l'owner, comme le dit cette table. La règle AI2 du vault (`ledger/rules/rules-ai-cos.md` :
-  « L'IA propose, analyse, recommande. L'humain valide, decide, engage. »), à laquelle renvoie ADR-036 (`accepted`), réserve la
-  validation à un humain ; le manifeste du pilote réserve de même `render_approved` à l'owner (« render_approved reste false tant
-  que l'owner n'a pas inspecté ce MP4 exact », `manifests/renders/fafa-plaquettes-frein-001.json:8`). Depuis son réalignement du
-  18/10, `fafa-brand-safety-reviewer` rend une proposition et ne pose aucun drapeau ; la description du schéma (l.45) le dit aussi.
-  Le schéma n'exige qu'une chaîne non vide dans `content_approved_by` (`governance/approval-record.schema.json:79-86`) : il ne
-  prouve pas qu'un humain a signé.
-- **Quand la vidéo est rendue** : non tranché. Le statut 6 exige déjà `render_approved=true`, et le pilote a été rendu en
-  `DRAFT_ONLY` (`manifests/renders/fafa-plaquettes-frein-001.json:4,8`) ; `fafa-remotion-template-planner` (« Quand invoquer »,
-  « Pré-requis ») et `../README.md` rendent la vidéo après `APPROVED`.
+Mode fichiers seuls ; backend media-factory éteint. Le rendu intervient en `REVIEW_READY`, après approbation humaine du
+contenu exact. Le verdict des gates ne pose aucun des trois flags. Après rendu autorisé, inspection technique et revue humaine
+du MP4 exact, `content_approved=true` et `render_approved=true` permettent `APPROVED`. `publish_approved` reste false ; une
+autorisation de publication distincte et une diffusion réelle sont nécessaires pour `PUBLISHED`.
+
+L'owner seul pose les approbations, conformément à la règle AI2 du vault (`ledger/rules/rules-ai-cos.md`, ADR-036).
+Une chaîne non vide dans `*_approved_by`, l'auteur d'une PR ou un commentaire JSON ne prouvent ni l'identité de l'owner ni son
+approbation. La preuve visée est un acte de revue humain autorisé, relu dans son contexte authentifié et lié au commit, à la
+révision et au MP4 exacts. Sa collecte et sa vérification restent à implémenter ; les validateurs locaux ne l'accordent jamais.
+Le commentaire `reviews/<render_sha256>/<requested_revision>.json` est une demande de correction, pas un verdict d'approbation.
+Le pilote historique rendu en `DRAFT_ONLY` ne bénéficie d'aucune approbation rétroactive. D17 (sources des claims) et D8 (droits
+image/voix si applicables) restent des prérequis distincts. Ce choix opérationnel n'est pas une nouvelle ADR du vault.
+
+### Contrôle local de liaison des sources
+
+Le lecteur de revue vérifie les octets du rendu contre le commentaire et le manifeste. Si le manifeste contient
+`approvalBinding`, son `boundSha256` doit désigner ce même fichier ; un bloc vide, nul, mal formé ou divergent est rejeté.
+L'absence du bloc reste compatible avec les anciens manifestes. Cette correspondance ne prouve aucune approbation.
+La durée déclarée doit être un nombre positif et fini, sans conversion implicite depuis du texte, un tableau ou un booléen.
+Les secondes décimales sont acceptées ; les bornes du commentaire restent vérifiées contre cette durée déclarée.
+
+`scripts/marketing/fafa-pilot-governance.cjs` (racine du dépôt) expose :
+
+```js
+validateRenderReview(review, relativePath, artifactPath, manifest, {
+  renderPayloadPath: '/chemin/absolu/render-payload.json',
+  propsUsedPath: '/chemin/absolu/props-used.json',
+});
+```
+
+Les chemins sont fournis explicitement par l'appelant, jamais résolus depuis un commentaire. Le contrôle recalcule les SHA-256
+sur les octets exacts des deux fichiers et les compare aux champs existants `manifest.source.renderPayloadSha256` et
+`propsUsedSha256`. Des chemins incomplets, empreintes absentes/malformées, sources illisibles ou divergentes font échouer ce
+contrôle. `sourceBinding.status: MATCH` signifie seulement que les octets correspondent aux empreintes déclarées ; cela ne
+prouve pas que le moteur les a utilisés, que le scénario est actuel ou que les assets audio/SRT sont liés.
+
+Sans cet argument optionnel, la vérification historique du fichier rendu et du commentaire reste disponible pour les corrections,
+avec `sourceBinding.status: NOT_ASSESSED`. Elle ne qualifie pas une approbation. Les deux modes renvoient
+`actorAuthenticated: false` et `humanReview: NOT_ASSESSED`. La durée utilisée reste celle du manifeste ; le contrôle codec/audio
+et la revue perceptive sont distincts. `prepareCorrection` accepte et transmet le même dernier argument ; en cas d'échec il ne
+prépare aucune nouvelle révision. En cas de succès, il retourne une copie aux trois approbations réinitialisées, sans écraser
+l'original. Aucun résultat de ces fonctions ne produit `rendered_checked`.
 
 ## Structure dossier par vidéo
 
