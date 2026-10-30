@@ -261,7 +261,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 114963,
+      "loc_total": 114973,
       "has_barrel": false
     },
     "frontend-shared": {
