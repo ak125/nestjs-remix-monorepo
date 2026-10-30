@@ -8,6 +8,9 @@ pas un import automatique Codex.
 
 Depuis `workspaces/<workspace>/`, lire aussi le `CLAUDE.md` de ce workspace
 avant d’intervenir ; il précise les règles locales et leurs références pertinentes.
+Pour toute tâche relevant d'un workspace, même lancée à la racine, appliquer
+**Sélection et application des skills** dans `.claude/knowledge/workspaces.md`.
+Cette lecture explicite s'applique aussi aux exécutants isolés lancés par Hermes.
 
 Les règles plus proches précisent leur seul périmètre. Codex préfère
 `AGENTS.override.md` à `AGENTS.md` dans un même répertoire, puis combine les
@@ -20,9 +23,10 @@ imports ou le chargement des `.claude/rules/` de Claude Code.
   `.claude/rules/deployment.md` avant toute action infra et
   `.claude/rules/guardrails.md` avant modification d'une garde.
 - `.agents/skills` pointe vers `.claude/skills` dans ce dépôt. Vérifier la
-  destination réelle avant édition. Les skills de workspace se trouvent sous
-  `workspaces/<workspace>/.claude/skills/` ; leur présence ne prouve pas leur
-  découverte par Codex. Lire explicitement le skill pertinent si nécessaire.
+  destination réelle avant édition. Chaque workspace expose ses skills par le
+  même lien relatif local ; les sources restent dans `.claude/skills/`.
+  Depuis la racine, lire explicitement le skill du workspace concerné : un lien
+  imbriqué ne prouve pas sa découverte dans cette session.
 - Les politiques `agents/openai.yaml` des skills sensibles restent applicables.
   Un skill ne lève ni une zone STOP ni une permission système.
 - Relecture française : `.claude/prompts/_shared/editorial-review.md`.

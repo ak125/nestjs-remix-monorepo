@@ -82,9 +82,14 @@ Les trois rapports ont été écrits puis relus avec une empreinte identique. Le
 - **Vocabulaire** : présent ≠ branché ≠ activé ≠ servi ; trouvée ≠ chargée ≠ exécutée ≠ réussie. Statut d'un lot : prêt pour revue →
   testé localement → vérifié sur environnement cible → activé. Fusion sur `main` = PREPROD ; tag `v*` = PROD, posé par l'owner.
   Les écrans `admin.marketing*` sont exclus du build de production (`frontend/app/routes.ts:39`) : DEV seulement.
-- **Rôles** : Claude = métier, contrats, critères, revue ; ne fusionne jamais (ADR-102). Codex = intégrateur unique, une branche par lot.
+- **Répartition historique du 13/10** : Claude = métier, contrats, critères, revue ; ne fusionne jamais (ADR-102). Codex = intégrateur unique, une branche par lot.
   Hermes = supervision opérationnelle, préparation, actions directes permises, routage et recette native ; son hôte n'est pas
   joignable depuis cette revue (D14).
+  **Choix utilisateur du 30/10** : Claude Code CLI est désormais principal pour le code ;
+  la répartition courante est portée par [le contrat racine](../../CLAUDE.md).
+  La répartition et la revue Codex décrites dans ce dossier restent les conditions
+  des lots historiques cités ; elles n'imposent pas un intégrateur Codex aux nouveaux lots.
+  Les règles de fusion, les accès et les preuves historiques restent inchangés.
 - **Revue du travail Codex** : diff réel et preuves relus au même SHA ; cas négatifs, concurrence, autorisation côté serveur, test
   rouge puis vert, build. Chaque défaut : fichier:ligne, reproduction, gravité, correction attendue. Claude ne réécrit pas le lot.
 - **Unité de diffusion** : révision × canal × compte. Un succès sur un canal ne vaut pour aucun autre. Limite proposée : un compte par

@@ -3,8 +3,14 @@ name: agents-md-validation
 on:
   pull_request:
     paths:
-      - 'agents/**/AGENTS.md'
+      - 'AGENTS.md'
+      - '**/AGENTS.md'
       - '**/CLAUDE.md'
+      - '.agents/skills'
+      - 'workspaces/*/.agents/skills'
+      - '.claude/knowledge/workspaces.md'
+      - '.claude/skills/**/SKILL.md'
+      - 'workspaces/*/.claude/skills/**/SKILL.md'
       - '.claude/rules/**'
       - 'scripts/agents/**'
       - '.github/workflows/agents-md-validation.yml'
@@ -12,8 +18,14 @@ on:
     branches:
       - main
     paths:
-      - 'agents/**/AGENTS.md'
+      - 'AGENTS.md'
+      - '**/AGENTS.md'
       - '**/CLAUDE.md'
+      - '.agents/skills'
+      - 'workspaces/*/.agents/skills'
+      - '.claude/knowledge/workspaces.md'
+      - '.claude/skills/**/SKILL.md'
+      - 'workspaces/*/.claude/skills/**/SKILL.md'
       - 'scripts/agents/**'
 
 # Minimum scope: read-only checkout + git diff (ADR-043 Sprint 1 ticket #7).
