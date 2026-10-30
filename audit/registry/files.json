@@ -72564,7 +72564,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 122,
+      "loc": 126,
       "owner": "__unassigned__",
       "path": "scripts/registry/check-new-files.test.ts",
       "risk": "low",
