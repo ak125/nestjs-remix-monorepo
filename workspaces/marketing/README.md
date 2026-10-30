@@ -164,7 +164,7 @@ Chaque lot livre : niveau d'effet atteint, commande de vérification, verdict Ro
 | L13 Preuve de publication | 4 | marketing-lead | Codex | L03, L07, L11, L12, D4, D6 | proposé |
 | L14 Attribution | 5 | data-lead, sales-lead | Codex | L12, L13, D6, D7 | proposé — commandes : préparation seulement |
 | L15 Recette Hermes | 6 | ia-agents-lead | Codex, Hermes | L11 (workflow) ; D14 (recette native) | proposé |
-| L16 Consignes des skills média | 3 | media-lead, content-lead | Claude | — ; L10a pour `fafa-brand-safety-reviewer` (#1818, fusionnée) | fusionné (#1816, `45b524a0e` ; compléments #1828, `42d36357f`) ; réalignement de `fafa-brand-safety-reviewer` prêt pour revue ; relecture de `personas/`, de `fafa-persona-canon`, des gates des formats et de `prompts/` prête pour revue |
+| L16 Consignes des skills média | 3 | media-lead, content-lead | Claude | — ; L10a pour `fafa-brand-safety-reviewer` (#1818, fusionnée) | fusionné (#1816, `45b524a0e` ; compléments #1828, `42d36357f`) ; réalignement de `fafa-brand-safety-reviewer` fusionné (#1831, `4bd189299`) ; relecture de `personas/`, de `fafa-persona-canon`, des gates des formats et de `prompts/` fusionnée (#1832, `dcaf71759`) |
 
 - **L00** · Livré par cette PR documentaire (prêt pour revue) : `workspaces/marketing/README.md` (cette section) ; `audit/automecanik-departments-map.md` (24 identifiants depuis #1761, note datée, historique et ancre conservés). Proposé, non fait : `marketing-lead-agent.md` (table au pluriel et H17 = modification d'agent, effet > E0, non activée ; sortie = proposition en lecture seule ; aucune écriture en base sans acte owner) ; brouillon d'ADR des handoffs dans le vault (D6). Tests : `scripts/lint/check-preprod-vocabulary.sh`, diff limité à deux fichiers. Limites : ni YAML ni vault ; `local-business-agent` hors activation.
 - **L01** · Défaut de sécurité — détail hors dépôt public. Contrat « sécurité-correctifs v1 » (proposé) ; preuve hors dépôt, citée par empreinte ; GO owner nominatif avant toute PR ; PR à prose neutre. Retour : revert.
@@ -696,7 +696,7 @@ Aucun circuit à trois agents n'est obligatoire ; un seul écrivain par périmè
 | Blocages | D19 (média M1) ; D17 (pilote plaquette) ; D12 (L05) ; D2 (L12, L13) ; D14 (instance Hermes) ; #1796–#1798 en conflit |
 
 **Premier lot réellement prêt : L10a** (Codex, E0, aucune décision owner, commande ci-dessus), fusionné (#1818). L16 est fusionné (#1816, 17/10) ;
-ses compléments du 17/10 et du 18/10 aussi (#1828, 18/10) ; le réalignement de `fafa-brand-safety-reviewer` est prêt pour revue. **Décision minimale manquante : D19**, confirmer « fichiers seuls, backend éteint ». Elle ouvre le chemin média de M1 sans passer
+ses compléments du 17/10 et du 18/10 aussi (#1828, 18/10), le réalignement de `fafa-brand-safety-reviewer` (#1831, 29/10) et la relecture de `personas/`, de `fafa-persona-canon`, des gates des formats et de `prompts/` (#1832, 30/10). **Décision minimale manquante : D19**, confirmer « fichiers seuls, backend éteint ». Elle ouvre le chemin média de M1 sans passer
 par le script du backend, qui lit le contenu legacy contredit par le WIKI. D2 ne devient nécessaire qu'à la première preuve de
 publication (W45).
 
