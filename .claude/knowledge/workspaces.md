@@ -82,6 +82,10 @@ les URL et les contrats existants ; aucune page parallèle ni nouveau producteur
 par défaut. Préférer un aperçu dans le rendu existant en DEV. Si seul un HTML
 autonome est possible, le nommer **simulation non intégrée**, avec correspondance
 explicite vers les sections cibles ; il ne prouve pas une modification du site.
+Cette simulation, l'audit et la relecture sont des étapes intermédiaires. L'objectif
+du lot attribué à l'équipe reste l'amélioration des pages existantes avec un rendu
+DEV vérifié, dans les limites d'admission et d'approbation applicables. Une étape
+inaccessible laisse le lot ouvert ; elle ne transforme pas le dossier en résultat final.
 
 Les images font partie du livrable : examiner celles déjà servies, réutiliser les
 assets admissibles et les slots/composants d'images existants, puis intégrer les
@@ -133,11 +137,39 @@ besoins confiés à Claude CLI visent le défaut localisé et réutilisent les c
 Rattacher chaque contenu à une action utile et disponible : identifier une référence
 compatible, préparer l'entretien ou utiliser l'orientation diagnostique selon le besoin.
 Une impression, un score interne ou un script livré ne prouve ni classement ni vente.
+De même, zéro source affichée, zéro terme interdit, un minimum de caractères ou
+des URL en HTTP 200 ne démontrent pas l'utilité éditoriale ni la pertinence des images.
+Humanizer n'impose pas zéro tiret : appliquer les règles de style, sans inventer
+d'interdiction ni ajouter du texte pour atteindre un compte.
 Consigner les livrables, dépendances et prochaines actions dans les dossiers et la
 mémoire existants ; ne pas créer un second registre ou un skill par gamme.
 Recommander une accroche principale motivée et les variantes utiles sans suspendre
 la préparation sur ce choix ; conserver les approbations humaines effectivement
 requises pour le texte, la sécurité, le rendu et la publication.
+
+### Poursuite et réception du lot
+
+Desktop poursuit les textes, scripts et fichiers visuels du lot avec les capacités
+réellement disponibles ; un préparateur de prompts ne prouve pas la production
+d'une image. Claude CLI porte les corrections techniques et l'intégration dans
+le rendu existant. Préparer un visuel neutre sans promesse de prix ou de délai peut
+avancer dans le mandat de préparation ; cela ne change ni prix/stock runtime ni PROD.
+
+Rendre les livrables accessibles à l'intégrateur par les moyens existants : checkout
+partagé ou branche/révision disponible, références d'assets et source ou recette de
+l'aperçu. Respecter le stockage prévu pour chaque type d'asset.
+Dans le dossier de suivi existant, distinguer **handoff rédigé**, **accessible**,
+**transmis**, **pris en charge** et **intégré/vérifié en DEV**. Ne revendiquer chaque
+étape qu'avec une preuve observable ; un commit uniquement local sur un autre hôte
+ou un appel de transmission sans réception ne prouve pas la reprise.
+
+Poursuivre les opérations autorisées jusqu'à cette réception et à la vérification
+du périmètre attribué. Si un outil, un accès ou une approbation manque, nommer la
+capacité ou la décision exacte, fournir un paquet de reprise exploitable et terminer
+les travaux indépendants. Ne pas demander à l'utilisateur de redistribuer chaque
+ticket. Avant de lui soumettre un choix technique, l'exécutant inspecte les contrats,
+producteurs et consommateurs, puis propose une correction motivée ; ne faire
+arbitrer au métier qu'une ambiguïté persistante qui relève réellement de lui.
 
 ## Mémoire et reprise
 
