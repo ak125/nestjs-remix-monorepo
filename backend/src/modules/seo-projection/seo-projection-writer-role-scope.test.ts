@@ -15,14 +15,23 @@ import { SeoProjectionWriterService } from './seo-projection-writer.service';
 import type { SeoProjectionExport } from './seo-projection.types';
 
 // ── Client Supabase chaînable mocké ───────────────────────────────────────────
+type Op = 'select' | 'upsert' | 'insert' | 'update';
 interface MockState {
-  factsActive: Map<string, { content_hash: string }>;
+  factsActive: Map<string, { content_hash: string; version_id?: string }>;
   blocksActive: Map<
     string,
-    { content_hash: string; confidence_base: number | null }
+    {
+      content_hash: string;
+      confidence_base: number | null;
+      version_id?: string;
+    }
   >;
   /** Drafts existants keyés `${block_id}::${content_hash}` (test d'idempotence de régression). */
   draftsByHash?: Set<string>;
+  /** `active_version_id` keyé entity_id / block_id ; défaut = la version active (pointeur cohérent). */
+  pointers?: Map<string, string | null>;
+  /** Erreur PostgREST injectée sur l'opération qui correspond (filtres complets au terminal). */
+  failOn?: (table: string, op: Op, filters: Record<string, unknown>) => boolean;
 }
 interface RecordedOp {
   table: string;
@@ -30,25 +39,34 @@ interface RecordedOp {
   payload: Record<string, unknown>;
 }
 
+/** Identifiant de la version active d'un état mocké (défaut `active:<clé>`). */
+const activeVersionId = (key: string, active: { version_id?: string }) =>
+  active.version_id ?? `active:${key}`;
+
 function makeSupabase(state: MockState) {
   const ops: RecordedOp[] = [];
   let insertSeq = 0;
 
   class Q {
-    private op: 'select' | 'upsert' | 'insert' | 'update' = 'select';
+    private op: Op = 'select';
+    private payload: Record<string, unknown> = {};
     private filters: Record<string, unknown> = {};
     constructor(private readonly table: string) {}
     upsert(payload: Record<string, unknown>) {
+      this.op = 'upsert';
+      this.payload = payload;
       ops.push({ table: this.table, op: 'upsert', payload });
-      return Promise.resolve({ data: null, error: null });
+      return this;
     }
     insert(payload: Record<string, unknown>) {
       this.op = 'insert';
+      this.payload = payload;
       ops.push({ table: this.table, op: 'insert', payload });
       return this;
     }
     update(payload: Record<string, unknown>) {
       this.op = 'update';
+      this.payload = payload;
       ops.push({ table: this.table, op: 'update', payload });
       return this;
     }
@@ -67,22 +85,47 @@ function makeSupabase(state: MockState) {
       return this;
     }
     maybeSingle() {
-      return Promise.resolve({ data: this.resolve(), error: null });
+      return this.result(() => this.resolve());
     }
     single() {
       if (this.op === 'insert') {
-        insertSeq += 1;
-        // run_id sert à openRun (`.select('run_id')`) ; version_id aux inserts de versions.
-        return Promise.resolve({
-          data: { version_id: `v-${insertSeq}`, run_id: `run-${insertSeq}` },
-          error: null,
+        return this.result(() => {
+          insertSeq += 1;
+          // run_id sert à openRun (`.select('run_id')`) ; version_id aux inserts de versions.
+          return { version_id: `v-${insertSeq}`, run_id: `run-${insertSeq}` };
         });
       }
-      return Promise.resolve({ data: this.resolve(), error: null });
+      // Upsert de la ligne entity/bloc : le writer relit son pointeur.
+      if (this.op === 'upsert') {
+        return this.result(() => ({ active_version_id: this.pointer() }));
+      }
+      return this.result(() => this.resolve());
     }
-    // Rend Q awaitable pour les chaînes update/insert-conflict sans terminal explicite.
-    then(onF: (v: { data: null; error: null }) => unknown) {
-      return Promise.resolve({ data: null, error: null }).then(onF);
+    // Rend Q awaitable pour les chaînes update/insert/upsert sans terminal explicite.
+    then(onF: (v: { data: unknown; error: unknown }) => unknown) {
+      return this.result(() => null).then(onF);
+    }
+    private result<T>(
+      data: () => T,
+    ): Promise<{ data: T | null; error: { message: string } | null }> {
+      if (state.failOn?.(this.table, this.op, this.filters)) {
+        return Promise.resolve({
+          data: null,
+          error: { message: `injected ${this.op} ${this.table}` },
+        });
+      }
+      return Promise.resolve({ data: data(), error: null });
+    }
+    private pointer(): string | null {
+      const isFacts = this.table === '__seo_entity_facts';
+      const key = String(
+        isFacts ? this.payload.entity_id : this.payload.block_id,
+      );
+      if (state.pointers?.has(key)) return state.pointers.get(key) ?? null;
+      const active = isFacts
+        ? state.factsActive.get(key)
+        : state.blocksActive.get(key);
+      return active ? activeVersionId(key, active) : null;
     }
     private resolve(): {
       content_hash?: string;
@@ -101,13 +144,20 @@ function makeSupabase(state: MockState) {
           : null;
       }
       if (this.filters.status !== 'active') return null;
-      if (this.table === '__seo_entity_fact_versions') {
-        return state.factsActive.get(this.filters.entity_id as string) ?? null;
-      }
-      if (this.table === '__seo_content_block_versions') {
-        return state.blocksActive.get(this.filters.block_id as string) ?? null;
-      }
-      return null;
+      const key = String(
+        this.table === '__seo_entity_fact_versions'
+          ? this.filters.entity_id
+          : this.filters.block_id,
+      );
+      const active =
+        this.table === '__seo_entity_fact_versions'
+          ? state.factsActive.get(key)
+          : this.table === '__seo_content_block_versions'
+            ? state.blocksActive.get(key)
+            : undefined;
+      return active
+        ? { ...active, version_id: activeVersionId(key, active) }
+        : null;
     }
   }
   return { client: { from: (t: string) => new Q(t) }, ops };
@@ -167,7 +217,7 @@ function makeWriter(
   // Bypass du constructeur SupabaseBaseService (I/O lourde) : on greffe supabase + log sur le proto.
   const writer = Object.create(SeoProjectionWriterService.prototype);
   writer.supabase = client;
-  writer.log = { warn() {}, error() {}, log() {} };
+  writer.log = { warn: jest.fn(), error: jest.fn(), log: jest.fn() };
   writer.readOnly = false;
   writer.featureFlags = makeFeatureFlags(opts.gammeRoles);
   return writer as TestWriter;
@@ -214,6 +264,25 @@ const blockVersionInserts = (ops: RecordedOp[]) =>
   inserts(ops, '__seo_content_block_versions');
 const factVersionInserts = (ops: RecordedOp[]) =>
   inserts(ops, '__seo_entity_fact_versions');
+const conflictInserts = (ops: RecordedOp[]) =>
+  inserts(ops, '__seo_projection_conflicts');
+
+// Bloc régressant : contenu différent MAIS confiance strictement inférieure à l'active.
+const regressExport = (): SeoProjectionExport => ({
+  ...exportFixture(),
+  roles_allowed: ['R3_CONSEILS'],
+  blocks: [
+    {
+      role: 'R3_CONSEILS',
+      content_md: 'r3 moins fiable',
+      source_ids: [],
+      truth_level: 'sourced',
+      section: 'Diagnostic',
+      content_hash: 'NEW_H',
+      confidence_base: 0.5,
+    },
+  ],
+});
 
 describe('writeEntity — facts/role decouple + role-scoping (non-negotiable)', () => {
   it('trigger R3 (entité neuve) → facts written + SEULS blocs R3 écrits (jamais R4)', async () => {
@@ -322,25 +391,6 @@ describe('writeEntity — facts/role decouple + role-scoping (non-negotiable)', 
     expect(factVersionInserts(ops)).toHaveLength(0);
     expect(blockVersionInserts(ops)).toHaveLength(0);
   });
-
-  // Bloc régressant : contenu différent MAIS confiance strictement inférieure à l'active.
-  const regressExport = (): SeoProjectionExport => ({
-    ...exportFixture(),
-    roles_allowed: ['R3_CONSEILS'],
-    blocks: [
-      {
-        role: 'R3_CONSEILS',
-        content_md: 'r3 moins fiable',
-        source_ids: [],
-        truth_level: 'sourced',
-        section: 'Diagnostic',
-        content_hash: 'NEW_H',
-        confidence_base: 0.5,
-      },
-    ],
-  });
-  const conflictInserts = (ops: RecordedOp[]) =>
-    inserts(ops, '__seo_projection_conflicts');
 
   it('régression : 1er run insère 1 draft + 1 conflit (active plus fiable préservée)', async () => {
     const state: MockState = {
@@ -591,5 +641,266 @@ describe('allowlist d’écriture — appliquée au seul point d’écriture (wr
     );
     expect(out.roleOutcome).toBe('written');
     expect(inserts(ops, '__seo_projection_conflicts')).toHaveLength(0);
+  });
+});
+
+// Intégrité des écritures : une erreur PostgREST sur l'upsert, la lecture de l'active, la dépréciation
+// ou le flip du pointeur remonte (conflit `write_error`, rôle bloqué, run `failed`). Régression
+// corrigée : ces résultats n'étaient pas lus, et un flip perdu après dépréciation retirait le bloc des
+// vues servies (qui joignent `active_version_id` ET `status='active'`) sans aucun signal.
+describe('intégrité des écritures — erreur remontée, pointeur réparé', () => {
+  const noFailure = (): MockState => ({
+    factsActive: new Map(),
+    blocksActive: new Map(),
+  });
+  const regressState = (): MockState => ({
+    factsActive: new Map([
+      ['gamme:filtre-a-huile', { content_hash: 'FACTS_H1' }],
+    ]),
+    blocksActive: new Map([
+      [R3_BLOCK_ID, { content_hash: 'ACTIVE_H', confidence_base: 0.9 }],
+    ]),
+    draftsByHash: new Set(),
+  });
+  const writes = (ops: RecordedOp[], table: string, op: RecordedOp['op']) =>
+    ops.filter((o) => o.table === table && o.op === op);
+
+  it.each<{
+    name: string;
+    failOn: NonNullable<MockState['failOn']>;
+    regress?: boolean;
+    untouched?: [string, RecordedOp['op']];
+  }>([
+    {
+      name: 'upsert entity_facts',
+      failOn: (t, op) => t === '__seo_entity_facts' && op === 'upsert',
+      untouched: ['__seo_entity_fact_versions', 'insert'],
+    },
+    {
+      name: 'lecture fact_version active',
+      failOn: (t, op, f) =>
+        t === '__seo_entity_fact_versions' &&
+        op === 'select' &&
+        f.status === 'active',
+      untouched: ['__seo_entity_fact_versions', 'insert'],
+    },
+    {
+      name: 'dépréciation fact_version',
+      failOn: (t, op) => t === '__seo_entity_fact_versions' && op === 'update',
+      untouched: ['__seo_entity_facts', 'update'],
+    },
+    {
+      name: 'flip pointeur entity_facts',
+      failOn: (t, op) => t === '__seo_entity_facts' && op === 'update',
+      untouched: ['__seo_content_blocks', 'upsert'],
+    },
+    {
+      name: 'upsert content_blocks',
+      failOn: (t, op) => t === '__seo_content_blocks' && op === 'upsert',
+      untouched: ['__seo_content_block_versions', 'insert'],
+    },
+    {
+      // Plusieurs actives = erreur PGRST116 : `active` nul contournerait la no-rétro-régression.
+      name: 'lecture block_version active (garde de régression)',
+      failOn: (t, op, f) =>
+        t === '__seo_content_block_versions' &&
+        op === 'select' &&
+        f.status === 'active',
+      regress: true,
+      untouched: ['__seo_content_block_versions', 'insert'],
+    },
+    {
+      name: 'dédup draft régressant',
+      failOn: (t, op, f) =>
+        t === '__seo_content_block_versions' &&
+        op === 'select' &&
+        f.status === 'draft',
+      regress: true,
+      untouched: ['__seo_content_block_versions', 'insert'],
+    },
+    {
+      name: 'dépréciation block_version',
+      failOn: (t, op) =>
+        t === '__seo_content_block_versions' && op === 'update',
+      untouched: ['__seo_content_blocks', 'update'],
+    },
+    {
+      name: 'flip pointeur content_blocks',
+      failOn: (t, op) => t === '__seo_content_blocks' && op === 'update',
+    },
+  ])(
+    'erreur sur $name → writeEntity rejette, écriture suivante non tentée',
+    async ({ failOn, regress, untouched }) => {
+      const { client, ops } = makeSupabase({
+        ...(regress ? regressState() : noFailure()),
+        failOn,
+      });
+      await expect(
+        makeWriter(client).writeEntity(
+          regress ? regressExport() : exportFixture(),
+          'run-err',
+          'R3_CONSEILS',
+        ),
+      ).rejects.toThrow(/injected/);
+      if (untouched) expect(writes(ops, ...untouched)).toHaveLength(0);
+    },
+  );
+
+  it('flip perdu en cours de run → conflit write_error, rôle bloqué, run fermé failed', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'seo-proj-integrity-'));
+    const exportPath = join(dir, 'filtre-a-huile.json');
+    writeFileSync(exportPath, JSON.stringify(exportFixture()), 'utf-8');
+    try {
+      const { client, ops } = makeSupabase({
+        ...noFailure(),
+        failOn: (t, op) => t === '__seo_content_blocks' && op === 'update',
+      });
+      const writer = makeWriter(client) as unknown as TestWriter & {
+        gate: { evaluate: () => { ok: boolean; verdicts: [] } };
+        buildSnapshotForRun: () => Promise<{ hash: string; uri: string }>;
+      };
+      writer.gate = { evaluate: () => ({ ok: true, verdicts: [] }) };
+      writer.buildSnapshotForRun = () =>
+        Promise.resolve({ hash: 'snap-h', uri: 'file:///snap' });
+
+      const res = await writer.projectExports(
+        [exportPath],
+        'manual',
+        {},
+        'R3_CONSEILS',
+      );
+
+      expect(res.rolesWritten).toBe(0);
+      const conflicts = conflictInserts(ops);
+      expect(conflicts).toHaveLength(1);
+      expect(conflicts[0].payload.conflict_kind).toBe('write_error');
+      const runUpdates = writes(ops, '__seo_projection_runs', 'update');
+      expect(runUpdates).toHaveLength(1);
+      expect(runUpdates[0].payload.status).toBe('failed');
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('facts : active à jour mais non pointée → pointeur réparé, 0 nouvelle version', async () => {
+    const { client, ops } = makeSupabase({
+      factsActive: new Map([
+        [
+          'gamme:filtre-a-huile',
+          { content_hash: 'FACTS_H1', version_id: 'fv-2' },
+        ],
+      ]),
+      blocksActive: new Map(),
+      pointers: new Map([['gamme:filtre-a-huile', 'fv-1']]),
+    });
+    const writer = makeWriter(client);
+    const out = await writer.writeEntity(
+      exportFixture(),
+      'run-r1',
+      'R3_CONSEILS',
+    );
+
+    expect(out.factsOutcome).toBe('written');
+    expect(factVersionInserts(ops)).toHaveLength(0);
+    const flips = writes(ops, '__seo_entity_facts', 'update');
+    expect(flips).toHaveLength(1);
+    expect(flips[0].payload.active_version_id).toBe('fv-2');
+    expect(
+      (writer as unknown as { log: { warn: jest.Mock } }).log.warn,
+    ).toHaveBeenCalledWith(expect.stringContaining('pointeur réparé'));
+  });
+
+  it('bloc : active à jour mais non pointée → pointeur réparé, 0 nouvelle version, rôle written', async () => {
+    const { client, ops } = makeSupabase({
+      factsActive: new Map([
+        ['gamme:filtre-a-huile', { content_hash: 'FACTS_H1' }],
+      ]),
+      blocksActive: new Map([
+        [
+          R3_BLOCK_ID,
+          { content_hash: 'R3_H1', confidence_base: null, version_id: 'bv-2' },
+        ],
+      ]),
+      pointers: new Map([[R3_BLOCK_ID, null]]),
+    });
+    const out = await makeWriter(client).writeEntity(
+      exportFixture(),
+      'run-r2',
+      'R3_CONSEILS',
+    );
+
+    expect(out.factsOutcome).toBe('noop');
+    // `written` déclenche le refresh des vues : le bloc y réapparaît.
+    expect(out.roleOutcome).toBe('written');
+    expect(blockVersionInserts(ops)).toHaveLength(0);
+    const deprecations = writes(ops, '__seo_content_block_versions', 'update');
+    expect(deprecations).toHaveLength(1);
+    expect(deprecations[0].payload.status).toBe('deprecated');
+    const flips = writes(ops, '__seo_content_blocks', 'update');
+    expect(flips).toHaveLength(1);
+    expect(flips[0].payload.active_version_id).toBe('bv-2');
+  });
+
+  it('bloc régressant dont l’active conservée est non pointée → pointeur réparé + draft', async () => {
+    const state = regressState();
+    state.pointers = new Map([[R3_BLOCK_ID, 'bv-old']]);
+    const { client, ops } = makeSupabase(state);
+    const out = await makeWriter(client).writeEntity(
+      regressExport(),
+      'run-r3',
+      'R3_CONSEILS',
+    );
+
+    expect(out.roleOutcome).toBe('written');
+    const flips = writes(ops, '__seo_content_blocks', 'update');
+    expect(flips).toHaveLength(1);
+    expect(flips[0].payload.active_version_id).toBe(`active:${R3_BLOCK_ID}`);
+    const bvi = blockVersionInserts(ops);
+    expect(bvi).toHaveLength(1);
+    expect(bvi[0].payload.status).toBe('draft');
+    expect(conflictInserts(ops)).toHaveLength(1);
+  });
+
+  it('pointeurs cohérents → no-op strict (0 dépréciation, 0 flip)', async () => {
+    const { client, ops } = makeSupabase({
+      factsActive: new Map([
+        ['gamme:filtre-a-huile', { content_hash: 'FACTS_H1' }],
+      ]),
+      blocksActive: new Map([
+        [R3_BLOCK_ID, { content_hash: 'R3_H1', confidence_base: null }],
+      ]),
+    });
+    const out = await makeWriter(client).writeEntity(
+      exportFixture(),
+      'run-r4',
+      'R3_CONSEILS',
+    );
+    expect(out.factsOutcome).toBe('noop');
+    expect(out.roleOutcome).toBe('noop');
+    expect(ops.filter((o) => o.op === 'update')).toHaveLength(0);
+  });
+
+  it('insert de conflit ou fermeture de run en échec → journalisé, sans exception', async () => {
+    const { client } = makeSupabase({
+      ...noFailure(),
+      failOn: (t) =>
+        t === '__seo_projection_conflicts' || t === '__seo_projection_runs',
+    });
+    const writer = makeWriter(client) as unknown as {
+      log: { error: jest.Mock };
+      recordConflict: (...a: unknown[]) => Promise<void>;
+      closeRun: (...a: unknown[]) => Promise<void>;
+    };
+    await expect(
+      writer.recordConflict('gamme:x', null, 'gate_blocked', {}, 'run-1'),
+    ).resolves.toBeUndefined();
+    await expect(
+      writer.closeRun('run-1', {
+        entitiesWritten: 0,
+        failed: true,
+        snapshot: null,
+      }),
+    ).resolves.toBeUndefined();
+    expect(writer.log.error).toHaveBeenCalledTimes(2);
   });
 });
