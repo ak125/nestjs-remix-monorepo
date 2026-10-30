@@ -44,6 +44,9 @@ export const PiecesOemSection = memo(function PiecesOemSection({
     return null;
   }
 
+  const exampleOemRef = groupedPieces.find((group) => group.oemRefs?.length)
+    ?.oemRefs?.[0];
+
   return (
     <section className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       {/* En-tête de section */}
@@ -125,7 +128,7 @@ export const PiecesOemSection = memo(function PiecesOemSection({
               par le constructeur automobile (ici {vehicle.marque}) pour
               identifier une pièce spécifique. Par exemple, la référence
               <code className="bg-white px-1.5 py-0.5 rounded text-xs mx-1">
-                {groupedPieces?.[0]?.oemRefs?.[0] || "41 06 003 79R"}
+                {exampleOemRef}
               </code>
               désigne une pièce d'origine {vehicle.marque}.
             </p>
@@ -143,10 +146,17 @@ export const PiecesOemSection = memo(function PiecesOemSection({
           {groupedPieces
             .filter((g) => g.oemRefs && g.oemRefs.length > 0)
             .map((group, idx) => {
-              const isAvant =
-                (group.filtre_side || "").toLowerCase().includes("avant") ||
-                (group.title_h2 || "").toLowerCase().includes("avant");
-              const positionText = isAvant ? "à l'avant" : "à l'arrière";
+              const positionSource = `${group.filtre_side || ""} ${group.title_h2 || ""}`;
+              const hasAvant = /\bavant\b/i.test(positionSource);
+              const hasArriere = /\barri[eè]re\b/i.test(positionSource);
+              // Absence or conflicting labels do not establish a mounting position.
+              const isAvant = hasAvant && !hasArriere;
+              const positionText =
+                hasAvant === hasArriere
+                  ? null
+                  : isAvant
+                    ? "à l'avant"
+                    : "à l'arrière";
 
               return (
                 <div
@@ -194,8 +204,11 @@ export const PiecesOemSection = memo(function PiecesOemSection({
 
                   {/* Texte explicatif dynamique */}
                   <p className="text-sm text-gray-600 mb-3">
-                    Ces références {vehicle.marque} correspondent aux{" "}
-                    {gamme.name} montées {positionText} de votre{" "}
+                    Ces références {vehicle.marque} correspondent aux pièces de
+                    la gamme {gamme.name}
+                    {positionText
+                      ? ` pour un montage ${positionText} de votre `
+                      : " pour votre "}
                     {vehicle.modele}. Utilisez-les pour trouver des équivalences
                     chez nos marques partenaires.
                   </p>

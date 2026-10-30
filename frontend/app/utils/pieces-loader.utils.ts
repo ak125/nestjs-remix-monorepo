@@ -8,6 +8,7 @@ import { type CatalogueMameFamille } from "../components/pieces/PiecesCatalogueF
 import { type GammeData, type VehicleData } from "../types/pieces-route.types";
 import { getOptimizedPartImageUrl } from "./image-optimizer";
 import { toTitleCaseFromSlug } from "./pieces-route.utils";
+import { type HomepageFamiliesResult } from "./remix-application-port";
 
 /**
  * Paramètres pour construire les données véhicule
@@ -124,19 +125,7 @@ export function buildCompatibilityInfo(vehicle: VehicleData) {
 /**
  * Interface pour la hiérarchie des gammes
  */
-export interface HierarchyData {
-  families?: Array<{
-    id?: number;
-    name?: string;
-    image?: string | null;
-    gammes?: Array<{
-      id: string | number;
-      name: string;
-      alias: string;
-      image?: string | null;
-    }>;
-  }>;
-}
+export type HierarchyData = HomepageFamiliesResult;
 
 /**
  * Construit la promesse pour le catalogue de la même famille
@@ -152,37 +141,33 @@ export function buildCataloguePromise(
 ): Promise<CatalogueMameFamille | null> {
   return hierarchyPromise
     .then((hierarchyData) => {
-      if (!hierarchyData?.families) return null;
+      if (!hierarchyData?.catalog?.families) return null;
 
       // Trouver la famille contenant la gamme actuelle
-      const family = hierarchyData.families.find((f) =>
-        f.gammes?.some(
-          (g) => (typeof g.id === "string" ? parseInt(g.id) : g.id) === gammeId,
-        ),
+      const family = hierarchyData.catalog.families.find((f) =>
+        f.gammes?.some((g) => g.pg_id === gammeId),
       );
 
       if (!family || !family.gammes) return null;
 
       // Filtrer les autres gammes (exclure la gamme actuelle)
-      const otherGammes = family.gammes.filter(
-        (g) => (typeof g.id === "string" ? parseInt(g.id) : g.id) !== gammeId,
-      );
+      const otherGammes = family.gammes.filter((g) => g.pg_id !== gammeId);
 
       return {
-        title: `Catalogue ${family.name}`,
+        title: `Catalogue ${family.mf_name}`,
         family: {
-          mf_id: family.id || 0,
-          mf_name: family.name || "",
-          mf_pic: family.image || null,
+          mf_id: Number(family.mf_id) || 0,
+          mf_name: family.mf_name || "",
+          mf_pic: family.mf_pic || null,
         },
         items: otherGammes.map((g) => ({
-          name: g.name,
-          link: `/pieces/${g.alias}-${g.id}.html`,
+          name: g.pg_name,
+          link: `/pieces/${g.pg_alias}-${g.pg_id}.html`,
           // ✅ Migration imgproxy : Transformation WebP automatique (gratuit, self-hosted)
-          image: getOptimizedPartImageUrl(g.image || `${g.alias}.webp`, {
+          image: getOptimizedPartImageUrl(g.pg_img || `${g.pg_alias}.webp`, {
             width: 400,
           }),
-          description: `Automecanik vous conseille de contrôler l'état du ${g.name.toLowerCase()} de votre véhicule`,
+          description: `Automecanik vous conseille de contrôler l'état du ${g.pg_name.toLowerCase()} de votre véhicule`,
         })),
       };
     })

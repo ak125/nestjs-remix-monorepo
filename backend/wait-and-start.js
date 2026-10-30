@@ -1,11 +1,56 @@
 const fs = require('fs');
 const path = require('path');
-const { spawn, execSync } = require('child_process');
+const { spawn, execSync, execFileSync } = require('child_process');
 
 const mainJsPath = path.join(__dirname, 'dist', 'main.js');
 const maxWaitTime = 120000; // 2 minutes
 const checkIntervalMs = 500; // Check every 500ms
 let elapsed = 0;
+
+// 🛑 Stack DEV:3000 tenu par le service systemd
+// Lancé depuis un terminal alors que automecanik-dev.service tient ce backend/, le
+// nettoyage ci-dessous tuait (kill -9) les watchers et le serveur du service : son stack
+// sortait en code 0, que Restart=on-failure ne relance pas, et DEV:3000 passait sans
+// bruit sous le terminal (constaté le 2026-10-25). Refus avant tout kill. Le stack du
+// service lui-même est dans le cgroup de l'unit et passe ; sans systemd utilisateur
+// (CI, conteneur) il n'y a pas de service à protéger.
+const DEV_UNIT = 'automecanik-dev.service';
+
+function refuseIfServiceHoldsBackend() {
+  let show;
+  try {
+    show = execFileSync('systemctl', ['--user', 'show', DEV_UNIT, '-p', 'ActiveState', '-p', 'WorkingDirectory', '-p', 'ControlGroup'], {
+      encoding: 'utf-8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+      // cron et turbo ne transmettent pas toujours XDG_RUNTIME_DIR (même repli que sync-dev-runtime.sh).
+      env: { ...process.env, XDG_RUNTIME_DIR: process.env.XDG_RUNTIME_DIR || `/run/user/${process.getuid()}` },
+    });
+  } catch (e) {
+    return;
+  }
+  const unit = {};
+  show.split('\n').forEach(line => {
+    const eq = line.indexOf('=');
+    if (eq > 0) unit[line.slice(0, eq)] = line.slice(eq + 1);
+  });
+  if (!['active', 'activating', 'reloading'].includes(unit.ActiveState)) return;
+  try {
+    if (fs.realpathSync(unit.WorkingDirectory) !== fs.realpathSync(__dirname)) return;
+  } catch (e) {
+    return;
+  }
+  let ownCgroup = null;
+  try {
+    ownCgroup = (fs.readFileSync('/proc/self/cgroup', 'utf-8').match(/^0::(.*)$/m) || [])[1];
+  } catch (e) {
+    // cgroup illisible : traité comme hors du service
+  }
+  if (ownCgroup && ownCgroup === unit.ControlGroup) return;
+  console.error(`❌ DEV:3000 tourne sous ${DEV_UNIT} (${unit.ActiveState}) : ce lancement tuerait son stack, que systemd ne relancerait pas.`);
+  console.error(`   Journal du service : journalctl --user -u ${DEV_UNIT} -f`);
+  console.error(`   Lancer à la main : systemctl --user stop ${DEV_UNIT}, puis npm run dev`);
+  process.exit(1);
+}
 
 // 🧹 Auto-cleanup old processes to prevent port conflicts and memory leaks
 function cleanupOldProcesses() {
@@ -14,27 +59,52 @@ function cleanupOldProcesses() {
   const currentPid = process.pid;
   const parentPid = process.ppid;
 
+  // Seuls les processus de CE backend/ sont visés : cwd du processus = ce répertoire.
+  // Sans ce filtre, le démarrage d'un stack dans n'importe quel worktree de la machine
+  // tuait (kill -9) les watchers et le serveur du stack DEV:3000, et inversement.
+  // Un cwd illisible (processus disparu, autre utilisateur) n'est jamais tué.
+  const ownDir = fs.realpathSync(__dirname);
+  const cwdOf = (pid) => {
+    try {
+      return fs.readlinkSync(`/proc/${pid}/cwd`);
+    } catch (e) {
+      return null;
+    }
+  };
+
   // Helper: kill OLD processes matching a pattern (older than minAgeSec seconds)
   // This avoids killing sibling processes from the same turbo run
   function killOldByPattern(pattern, minAgeSec = 30) {
     try {
       // Get PIDs with their elapsed time (seconds since start)
-      const lines = execSync(
-        `ps -eo pid,etimes,args | grep -F "${pattern}" | grep -v grep || true`,
-        { encoding: 'utf-8' }
-      ).trim().split('\n').filter(Boolean);
+      const lines = execSync('ps -eo pid=,etimes=,args=', { encoding: 'utf-8' })
+        .split('\n')
+        .filter(Boolean);
 
       let killed = 0;
+      let foreign = 0;
       lines.forEach(line => {
         const parts = line.trim().split(/\s+/);
         const pid = parseInt(parts[0]);
         const ageSec = parseInt(parts[1]);
+        if (!new RegExp(pattern).test(parts.slice(2).join(' '))) return;
         if (!pid || pid === currentPid || pid === parentPid) return;
         if (ageSec < minAgeSec) return; // Skip fresh processes (sibling turbo tasks)
+        if (cwdOf(pid) !== ownDir) {
+          foreign++;
+          return;
+        }
         console.log(`   Killing old process PID ${pid} (${pattern}, age ${ageSec}s)`);
-        execSync(`kill -9 ${pid} 2>/dev/null || true`);
-        killed++;
+        try {
+          process.kill(pid, 'SIGKILL');
+          killed++;
+        } catch (e) {
+          // déjà terminé entre ps et kill
+        }
       });
+      if (foreign > 0) {
+        console.log(`   ${foreign} process(es) ${pattern} hors de ${ownDir} laissé(s) en place`);
+      }
       return killed;
     } catch (e) {
       return 0;
@@ -59,6 +129,8 @@ function cleanupOldProcesses() {
   }
 
   // Phase 2: Kill server processes only if port 3000 is occupied
+  // Motifs lus comme expressions régulières : sous `grep -F`, « nodemon.*dist » était
+  // cherché en texte littéral et ne trouvait jamais de nodemon.
   const serverPatterns = [
     'node dist/main',
     'nodemon.*dist',
@@ -200,8 +272,55 @@ function watchEnvFile() {
   });
 }
 
+/**
+ * 🔁 RELANCE APRÈS CRASH
+ *
+ * Sans --exitcrash, nodemon attend une modification de fichier après un crash de
+ * l'app : le backend DEV restait arrêté jusqu'au prochain changement de code ou à
+ * une intervention manuelle. Avec --exitcrash, nodemon sort en code 1 ; il est
+ * relancé ici avec un délai croissant, remis au minimum après une exécution stable.
+ * Chaque relance écrit une ligne DEV_APP_CRASH : sous le service systemd elle
+ * arrive dans le journal, où scripts/ops/sync-dev-runtime.sh compte les crashs.
+ */
+const RESPAWN_MIN_MS = 2000;
+const RESPAWN_MAX_MS = 30000;
+const STABLE_RUN_MS = 60000;
+let respawnDelayMs = RESPAWN_MIN_MS;
+let crashCount = 0;
+
+function startNodemon() {
+  const startedAt = Date.now();
+  const nodemon = spawn('nodemon', ['--exitcrash', '--delay', '2000ms', '--watch', 'dist', 'dist/main.js'], {
+    stdio: 'inherit',
+    shell: true
+  });
+
+  nodemon.on('error', (error) => {
+    console.error('Failed to start nodemon:', error);
+    process.exit(1);
+  });
+
+  nodemon.on('exit', (code) => {
+    // Code 1 = crash de l'app (--exitcrash). Tout autre code reprend l'ancien
+    // comportement : 0, nodemon tué par un signal (le shell intermédiaire rend
+    // 128 + n), 127 nodemon introuvable — relancer ne changerait rien.
+    if (code !== 1) {
+      process.exit(code || 0);
+    }
+    if (Date.now() - startedAt >= STABLE_RUN_MS) {
+      respawnDelayMs = RESPAWN_MIN_MS;
+    }
+    crashCount++;
+    console.error(`DEV_APP_CRASH count=${crashCount} exit=${code} restart_in=${respawnDelayMs / 1000}s`);
+    setTimeout(startNodemon, respawnDelayMs);
+    respawnDelayMs = Math.min(respawnDelayMs * 2, RESPAWN_MAX_MS);
+  });
+}
+
 // Main startup
 (async () => {
+  refuseIfServiceHoldsBackend();
+
   // First, cleanup any old processes blocking port 3000
   cleanupOldProcesses();
 
@@ -248,22 +367,8 @@ function watchEnvFile() {
       }
       clearInterval(intervalId);
       console.log('✅ Compilation complete! Starting nodemon...\n');
-      
-      // Start nodemon
-      const nodemon = spawn('nodemon', ['--delay', '2000ms', '--watch', 'dist', 'dist/main.js'], {
-        stdio: 'inherit',
-        shell: true
-      });
-      
-      nodemon.on('error', (error) => {
-        console.error('Failed to start nodemon:', error);
-        process.exit(1);
-      });
-      
-      nodemon.on('exit', (code) => {
-        process.exit(code || 0);
-      });
-      
+      startNodemon();
+
     } else if (elapsed >= maxWaitTime) {
       clearInterval(intervalId);
       console.error('❌ Timeout: dist/main.js was not created after 2 minutes');

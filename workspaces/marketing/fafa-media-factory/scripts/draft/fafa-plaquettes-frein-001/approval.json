@@ -9,27 +9,33 @@
     "render_approved_at": null,
     "publish_approved": false,
     "publish_approved_by": null,
-    "publish_approved_at": null
+    "publish_approved_at": null,
+    "render_sha256": null
   },
   "gate_results": [
     {
       "gate": "G1",
-      "verdict": "PASS",
-      "measured": 0.0,
-      "warn_threshold": 0.15,
-      "fail_threshold": 0.30,
-      "strict": false,
-      "details": "4/4 claims sourcés (catalogue_interne pg_id 402). Ratio unsourced = 0.",
-      "trigger_items": []
+      "verdict": "FAIL",
+      "measured": 4,
+      "warn_threshold": 1,
+      "fail_threshold": 1,
+      "strict": true,
+      "details": "4 unsupported factual claim(s) — evaluated individually, not by ratio",
+      "trigger_items": [
+        "claim:claim-1",
+        "claim:claim-2",
+        "claim:claim-3",
+        "claim:claim-4"
+      ]
     },
     {
       "gate": "G2",
-      "verdict": "PASS",
+      "verdict": "WARN",
       "measured": 0,
       "warn_threshold": 0,
       "fail_threshold": 1,
       "strict": true,
-      "details": "Aucun claim kind=safety|procedure. Cadrage compatibilité (kind=dimension uniquement) -> G2 STRICT honnêtement à 0 malgré vertical FREINAGE.",
+      "details": "0 procedure/safety claims without human validation",
       "trigger_items": []
     },
     {
@@ -47,7 +53,7 @@
       "verdict": "PASS",
       "measured": 0.013,
       "warn_threshold": 0.0,
-      "fail_threshold": 0.10,
+      "fail_threshold": 0.1,
       "strict": false,
       "details": "duration_estimate 38s dans la fenêtre 30-45s du format ne-change-pas-trop-vite (déviation ~1.3% vs milieu). NB: seuil warn 0% => WARN technique possible si mesure stricte au point cible; ici dans fenêtre canon, traité PASS.",
       "trigger_items": []
@@ -107,6 +113,25 @@
       "actor": "skill:fafa-brand-safety-reviewer",
       "action": "gates_evaluated",
       "comment": "7/7 gates PASS (G2 & G6 STRICT à 0). verdict_overall=PASS. En attente content_approved owner."
+    },
+    {
+      "timestamp": "2026-10-14T22:13:52Z",
+      "actor": "codex:local-validator",
+      "action": "gates_evaluated",
+      "comment": "L11/D17: G1/G2 recalculés par VideoGatesService. Quatre claims non vérifiés; anciennes reprises déplacées en traces. NOT_READY. G3-G7 restent historiques, non revalidés. Aucune approbation humaine."
+    },
+    {
+      "timestamp": "2026-10-14T22:52:30Z",
+      "actor": "codex:local-editor",
+      "action": "script_drafted",
+      "comment": "Révision 1 : relevé utilisateur du 15/10 vers 00:45, pas un extrait D17. Claims/script/payload resserrés : variation entre références, retrait finition/année, type de disque et jeu de 4. Payload sans audio. Quatre claims unverified, NOT_READY ; toutes approbations invalidées. Ancien manifeste historique, aucun rendu de cette révision."
+    },
+    {
+      "timestamp": "2026-10-14T23:08:05Z",
+      "actor": "codex:local-editor",
+      "action": "script_drafted",
+      "comment": "Révision 2 : intégration des cinq formulations exactes demandées pour les claims 3/4, le script et le payload. Quatre claims restent unverified, sans extrait D17. Approbations false, liaison de rendu null. Manifeste historique inchangé ; empreinte à recalculer avec le nouveau rendu, étape 3 de L1."
     }
-  ]
+  ],
+  "revision": 2
 }

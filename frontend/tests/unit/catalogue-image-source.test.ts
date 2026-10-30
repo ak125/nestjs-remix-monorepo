@@ -51,21 +51,28 @@ describe("catalogue image sources", () => {
       const result = await buildCataloguePromise(
         82,
         Promise.resolve({
-          families: [
-            {
-              id: 1,
-              name: "Freinage",
-              gammes: [
-                {
-                  id: 82,
-                  name: "Courante",
-                  alias: "courante",
-                  image: "current.webp",
-                },
-                { id: 83, name: "Voisine", alias: "voisine", image: input },
-              ],
-            },
-          ],
+          catalog: {
+            families: [
+              {
+                mf_id: 1,
+                mf_name: "Freinage",
+                gammes: [
+                  {
+                    pg_id: 82,
+                    pg_name: "Courante",
+                    pg_alias: "courante",
+                    pg_img: "current.webp",
+                  },
+                  {
+                    pg_id: 83,
+                    pg_name: "Voisine",
+                    pg_alias: "voisine",
+                    pg_img: input,
+                  },
+                ],
+              },
+            ],
+          },
         }),
       );
       expect(result?.items).toHaveLength(1);
@@ -80,14 +87,18 @@ describe("catalogue image sources", () => {
     const result = await buildCataloguePromise(
       82,
       Promise.resolve({
-        families: [
-          {
-            gammes: [
-              { id: 82, name: "Courante", alias: "courante" },
-              { id: 83, name: "Voisine", alias: "voisine" },
-            ],
-          },
-        ],
+        catalog: {
+          families: [
+            {
+              mf_id: 2,
+              mf_name: "Freinage",
+              gammes: [
+                { pg_id: 82, pg_name: "Courante", pg_alias: "courante" },
+                { pg_id: 83, pg_name: "Voisine", pg_alias: "voisine" },
+              ],
+            },
+          ],
+        },
       }),
     );
     expect(source(result!.items[0].image)).toBe(

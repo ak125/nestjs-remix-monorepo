@@ -1,8 +1,12 @@
+import { fileURLToPath } from "node:url";
+
 import { reactRouter } from "@react-router/dev/vite";
 import tailwindcss from "@tailwindcss/vite";
 import { visualizer } from "rollup-plugin-visualizer";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
+
+import { productionCssSources } from "./vite.production-css";
 
 const MODE = process.env.NODE_ENV;
 const isAnalyze = process.env.ANALYZE === "true";
@@ -101,6 +105,14 @@ export default defineConfig({
         // Vendor chunking — only pure third-party node_modules (never react-router)
         // Previous race condition was caused by splitting Remix internals; this config avoids that
         manualChunks(id) {
+          // Keep tooltip-only code with its consumers instead of forcing it
+          // into the UI chunk fetched by every catalogue page.
+          if (
+            id.includes("/@radix-ui/react-tooltip/") ||
+            id.endsWith("/app/components/ui/tooltip.tsx")
+          ) {
+            return;
+          }
           // ─── Vendor chunks (node_modules) ────────────────────
           if (id.includes("node_modules")) {
             // Sentry SDK — loaded asynchronously post-hydration via dynamic
@@ -166,6 +178,7 @@ export default defineConfig({
     chunkSizeWarningLimit: 500,
   },
   plugins: [
+    productionCssSources(fileURLToPath(new URL("./app", import.meta.url))),
     // Tailwind v4 — plugin Vite officiel (intercepte `@import "tailwindcss"` AVANT
     // l'inlining @import natif de Vite ; remplace @tailwindcss/postcss qui entrait en
     // conflit avec postcss-import). La config legacy reste chargée via @config dans global.css.

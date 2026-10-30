@@ -7,10 +7,14 @@
 @import "@fafa/design-tokens/css";
 
 /* === PONT CONFIG v3→v4 ===
-   Charge couleurs/spacing/fontFamily/keyframes/plugins/darkMode/content depuis
+   Charge couleurs/spacing/fontFamily/keyframes/plugins/darkMode depuis
    tailwind.config.cjs (qui consomme la projection plate @fafa/design-tokens/tailwind-tokens).
    reserved-namespace-zero (DT-2) garantit zéro collision avec les namespaces @theme de v4. */
 @config "../tailwind.config.cjs";
+
+/* Same explicit app sources as the legacy config. Native sources let production
+   route exclusions take effect; legacy content was re-added after exclusions. */
+@source "./**/*.{js,jsx,ts,tsx}";
 
 /* === SELF-HOSTED FONTS === */
 /* Outfit (headings) + DM Sans (body) + Roboto Mono (data) */
@@ -114,6 +118,16 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+  }
+
+  /* --bottom-nav-height avant que BottomNav ne la mesure (hydratation) : sans
+     elle, MobileBottomBar se place sous BottomNav, et l'appui sur ses boutons
+     tombe sur la navigation. Même valeur que la mesure, qui la remplace (style
+     inline). Sous lg, comme BottomNav. */
+  @media (width < 64rem) {
+    :root:has([data-bottom-nav]) {
+      --bottom-nav-height: 56px;
+    }
   }
 
   * {
@@ -390,6 +404,15 @@
     contain-intrinsic-size: auto 700px;
   }
 
+  /* Keep every product in SSR/DOM while skipping layout and paint for cards
+     outside the viewport. Individual cards (rather than the whole long grid)
+     bound the style/layout work when a native product dialog opens. Once seen,
+     `auto` remembers the actual height, including longer references/names. */
+  .pieces-product-card {
+    content-visibility: auto;
+    contain-intrinsic-block-size: auto 360px;
+  }
+
   /* Native <dialog> drawer (menu mobile + panier) : slide + backdrop fade.
      Contenu rendu en permanence (display:none fermé) → showModal() instantané,
      INP -54% vs Radix Sheet (pas de react-remove-scroll / FocusScope reflow).
@@ -474,6 +497,16 @@
   @starting-style {
     .modal-pop[open]::backdrop {
       opacity: 0;
+    }
+  }
+
+  /* On mobile, remove the closed product dialog from the top layer immediately.
+     Its exit transition otherwise keeps the full-screen surface alive while
+     focus and page scrolling have already been restored. Keep the entry motion. */
+  @media (width < 48rem) {
+    .modal-pop:not([open]),
+    .modal-pop:not([open])::backdrop {
+      transition: none;
     }
   }
 

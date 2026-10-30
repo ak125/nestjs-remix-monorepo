@@ -105,7 +105,16 @@ export class VideoGatesService {
 
   // ── G1: Truth Gate ──
 
-  private g1Truth(input: VideoGateInput): VideoGateResult {
+  /** Evaluate source support and human safety review without approving a render. */
+  runClaimGates(
+    input: Pick<VideoGateInput, 'claims' | 'evidencePack'>,
+  ): VideoGateResult[] {
+    return [this.g1Truth(input), this.g2Safety(input)];
+  }
+
+  private g1Truth(
+    input: Pick<VideoGateInput, 'claims' | 'evidencePack'>,
+  ): VideoGateResult {
     const { claims } = input;
     const { warn, fail } = VIDEO_GATE_THRESHOLDS.truth_attribution;
 
@@ -146,7 +155,7 @@ export class VideoGatesService {
 
   // ── G2: Safety Gate (STRICT) ──
 
-  private g2Safety(input: VideoGateInput): VideoGateResult {
+  private g2Safety(input: Pick<VideoGateInput, 'claims'>): VideoGateResult {
     const { claims } = input;
     const { warn, fail } = VIDEO_GATE_THRESHOLDS.safety_unvalidated;
 

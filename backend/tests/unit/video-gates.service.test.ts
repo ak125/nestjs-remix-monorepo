@@ -175,6 +175,21 @@ describe('VideoGatesService', () => {
     });
   });
 
+  describe('file-only claim gates', () => {
+    it.each(['supported', 'unsupported', 'empty', 'safety'])(
+      'preserves the full pipeline truth and safety verdicts for %s claims',
+      (scenario) => {
+        const claims = scenario === 'empty' ? [] : [makeClaim({
+          ...(scenario === 'unsupported' ? { status: 'unverified' as const } : {}),
+          ...(scenario === 'safety' ? { kind: 'safety' as const, validatedBy: undefined } : {}),
+        })];
+        const input = makeInput({ claims });
+        expect(service.runClaimGates({ claims, evidencePack: input.evidencePack }))
+          .toEqual(service.runAllGates(input).gates.slice(0, 2));
+      },
+    );
+  });
+
   describe('G1 Truth — support each fact', () => {
     it('rejects an empty claim table with a reason', () => {
       const result = service.runAllGates(makeInput({ claims: [] }));

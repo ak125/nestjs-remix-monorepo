@@ -3,16 +3,18 @@ scope: Ops / Cleanup safety
 audience: human + Claude
 sources:
   - scripts/cleanup/validate-before-delete.sh
-  - audit-reports/phase0-baseline.json
-last_scan: 2026-04-24
+  - audit/README.md
+  - audit/cleanup/README.md
+  - scripts/cleanup/audit-compare-baseline.js
+last_scan: 2026-10-21
 ---
 
 # Safe Delete Procedure
 
-> **Règle cardinale** : `knip` dit "unused" ≠ "safe to delete". 15-20 % des
-> flags sont des faux positifs (chargement dynamique, DI NestJS, ZodSchema
-> invoqué par nom, convention flat-routes React Router). Cette procédure transforme
-> un signal knip en décision vérifiée.
+> **Règle cardinale** : `knip` dit "unused" ≠ "safe to delete". Le chargement
+> dynamique, la DI NestJS et les conventions de routes peuvent expliquer un signal.
+> Les [conditions de suppression #0–#8](../../../audit/README.md) portent le contrat ;
+> cette procédure guide son application sans remplacer les preuves requises.
 
 ## Procédure en 4 étapes
 
@@ -31,37 +33,27 @@ Ou consulter directement `.claude/knowledge/ops/cleanup-targets.md` → section 
 ./scripts/cleanup/validate-before-delete.sh <path>
 ```
 
-Exemple :
-```bash
-./scripts/cleanup/validate-before-delete.sh backend/analyze-options.js
-# VERDICT: SAFE TO DELETE
-
-./scripts/cleanup/validate-before-delete.sh backend/src/modules/payments/services/paybox.service.ts
-# VERDICT: BLOCKED (6 references found)
-```
-
-Le script vérifie **6 canaux** :
-1. Imports statiques / dynamiques (stem de fichier)
-2. `@Module({ providers | imports | exports | controllers: [...] })` (classe DI NestJS)
-3. Strings `"path/to/file"` ou `"basename.ts"` dans le code / configs / YAML
-4. Routes React Router (`frontend/app/routes/` = auto-loaded, DO NOT DELETE)
-5. Références dans `.claude/knowledge/` et `.claude/rules/`
-6. Migrations Supabase `.sql`
+Le probe est une dernière garde locale, pas une réexécution de l'audit.
+Pour un lot PR-8b, appliquer aussi le [protocole de consommation](../../../audit/cleanup/README.md) :
+candidat éligible, contrôle d'invariance ciblé avant suppression et preuves dans la PR.
+Respecter son périmètre ; ne pas y faire entrer du code runtime ou des modules NestJS
+par un assouplissement des gardes.
 
 ### 3. Agir selon le verdict
 
-**SAFE** → procéder :
-```bash
-git rm <path>
-npm run typecheck      # MUST PASS
-npm run build          # MUST PASS
-npm test               # MUST PASS (au moins backend + frontend suites)
-git commit -m "chore(cleanup): remove <path>"
-```
-
-**BLOCKED** → triage :
-- **Cas A — reference elle-même dead** : supprimer la référence d'abord (cleanup bottom-up), puis re-tenter. Exemple : `X.ts` est importé par `Y.ts` qui est flaggé unused → supprimer `Y` d'abord.
-- **Cas B — reference légitime** : `validate-before-delete.sh` a raison, garder `X.ts`. Documenter dans `.claude/knowledge/ops/cleanup-targets.md` avec status `wontfix (<raison>)`.
+- **SAFE (exit 0)** : aucun usage détecté dans la surface du probe. Vérifier les
+  conditions #0–#6 et les limites ci-dessous avant `git rm <path>` ; après suppression,
+  exécuter la validation de la condition #7 et soumettre la revue humaine #8.
+  SAFE seul ne suffit pas à autoriser la suppression ou la fusion.
+- **BLOCKED (exit 1)** : examiner chaque hit. Un blocage portant sur un sous-arbre
+  ne prouve pas que chaque fichier est vivant (voir [guardrails](../../rules/guardrails.md)).
+  Si une référence semble elle-même morte, lui appliquer les mêmes conditions avant
+  toute suppression bottom-up, puis relancer le probe. Un simple signal `unused`
+  ne suffit pas. Si l'usage est confirmé, conserver le fichier et documenter la raison
+  dans le backlog ; ne pas classer automatiquement tout BLOCKED en `wontfix`.
+- **Refus / INCONCLUSIVE (exit 2)** : ne pas supprimer. Diagnostiquer la cause et
+  rétablir les preuves ou outils requis avant de relancer. Une cible hors périmètre
+  reste hors périmètre ; ne pas contourner le refus.
 
 ### 4. Batch + regression gate
 
@@ -70,15 +62,24 @@ Les PRs de cleanup doivent :
 - **Regrouper par cohérence** (ex : tout `frontend/app/components/admin/` dans 1 PR, pas mélanger avec `/cart/`)
 - **Ne pas régresser la baseline** : le CI `audit.yml` lance `audit:baseline` qui bloque si les counts régressent au-delà des seuils.
 
-Après merge d'une PR cleanup, le mainteneur refresh la baseline en une commande (PR #267) :
+Le renouvellement de la baseline est une décision de maintenance distincte, pas une
+étape automatique après chaque fusion. Comparer d'abord les résultats à la baseline
+existante avec `npm run audit:baseline` et expliquer les deltas ; ne pas régénérer la
+référence pour faire passer une régression.
+
+Si sa mise à jour est décidée après une fusion mainteneur :
 ```bash
 npm run audit:baseline:refresh
-git commit -am "chore(baseline): refresh after #XXX cleanup"
+git diff -- audit-reports/phase0-baseline.json
 ```
 
-Le refresh ré-exécute les quatre audits, écrit atomiquement la baseline, et préserve `thresholds` / `notes` / `version` plus les sous-champs que les parsers n'extraient pas. Garde `ensureDepsInstalled()` : refuse de tourner si `node_modules/{knip,madge,dependency-cruiser,@ast-grep/cli}` manque — lance `npm ci` d'abord.
-
-Depuis PR #449, le refresh affiche aussi un **warning stderr** listant toute métrique dont le `+delta` dépasse son seuil avant d'écrire — `Ctrl-C` si la régression est accidentelle, sinon le maintainer "banque" volontairement les nouveaux counts.
+Le générateur existant réexécute les quatre audits et préserve `thresholds`, `notes`,
+`version` et les sous-champs non extraits. Il écrit directement le JSON ; son warning
+n'est ni une confirmation interactive ni un arrêt avant écriture. Examiner les deltas
+**avant** le refresh, puis vérifier le diff produit et ne sélectionner que les changements
+approuvés pour le commit. Éviter `git commit -am`, qui embarquerait les autres travaux.
+Les dépendances requises sont contrôlées par `ensureDepsInstalled()` ; en cas d'absence,
+préparer l'environnement de validation prévu par le dépôt avant de relancer.
 
 ## Limites honnêtes de `validate-before-delete.sh`
 
@@ -120,8 +121,9 @@ applique `.gitignore` aux fichiers suivis aussi — d'où deux passes disjointes
 
 Un hit l'emporte toujours (exit 1), même si un autre contrôle n'a pas pu tourner.
 
-**Toujours** confirmer avec `npm run build` + `npm test` avant push. Le gate
-finale est le runtime, pas le grep.
+Pour une suppression, conserver la validation build/tests exigée par la condition #7.
+Un succès de compilation ou de tests ne prouve pas une validation runtime en PREPROD
+ou en PROD ; restituer séparément ces niveaux de preuve.
 
 ## Anti-patterns
 
@@ -137,4 +139,4 @@ finale est le runtime, pas le grep.
 - Baseline numérique : `audit-reports/phase0-baseline.json`
 - Backlog : `.claude/knowledge/ops/cleanup-targets.md`
 - Cycles : `.claude/knowledge/ops/cycle-resolution-playbook.md`
-- Rule similaire (vault) : `feedback_internal_ids.md` — principe "toujours passer par la couche de mapping canonique"
+- Comparaison / refresh : `scripts/cleanup/audit-compare-baseline.js`

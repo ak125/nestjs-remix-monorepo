@@ -1,3 +1,15 @@
+---
+paths:
+  - ".github/workflows/**"
+  - ".ast-grep/**"
+  - ".husky/**"
+  - "scripts/audit/**"
+  - "scripts/registry/**"
+  - "scripts/governance/**"
+  - "scripts/claude-hooks/**"
+  - "audit/baselines/**"
+---
+
 # Gardes de gouvernance — diagnostiquer avant de corriger
 
 > Règle de conduite née de deux erreurs commises le même jour (2026-08-13), sur I6 puis

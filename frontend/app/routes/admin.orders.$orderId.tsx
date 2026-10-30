@@ -11,6 +11,7 @@ import {
   ExternalLink,
   Mail,
   MapPin,
+  PackagePlus,
   Phone,
   ShoppingCart,
   Truck,
@@ -137,6 +138,13 @@ interface LoaderData {
   error?: string;
 }
 
+/** Supplément créé par POST /api/admin/orders/:orderId/supplements. */
+interface SupplementCreated {
+  orderId: string;
+  totalTtc: number;
+  paymentUrl: string;
+}
+
 // ========================================
 // LOADER
 // ========================================
@@ -221,6 +229,17 @@ export const action = async ({
       case "deliver":
         apiUrl = `http://127.0.0.1:3000/api/admin/orders/${orderId}/deliver`;
         break;
+      case "createSupplement":
+        // Les règles (commande payée, équivalent vendable, jamais à perte) sont
+        // celles du backend : les valeurs lui sont transmises telles quelles.
+        apiUrl = `http://127.0.0.1:3000/api/admin/orders/${orderId}/supplements`;
+        body = JSON.stringify({
+          lineId: formData.get("lineId"),
+          pieceId: Number(formData.get("pieceId")),
+          quantity: Number(formData.get("quantity")),
+          confirmedPurchaseHt: Number(formData.get("confirmedPurchaseHt")),
+        });
+        break;
       case "updateStatus":
         apiUrl = `http://127.0.0.1:3000/api/orders/admin/${orderId}/status`;
         method = "PATCH";
@@ -237,6 +256,15 @@ export const action = async ({
     if (!res.ok) {
       const err = await res.json().catch(() => ({ message: "Erreur" }));
       return data({ error: err.message || "Erreur" }, { status: 500 });
+    }
+
+    if (intent === "createSupplement") {
+      const supplement: SupplementCreated = await res.json();
+      return {
+        success: true,
+        message: "Supplément créé : aucun mail n'a été envoyé au client.",
+        supplement,
+      };
     }
 
     return { success: true, message: `Action "${intent}" executee` };
@@ -290,11 +318,19 @@ export default function OrderDetailPage() {
     success?: boolean;
     message?: string;
     error?: string;
+    supplement?: SupplementCreated;
   }>();
   const [trackingInput, setTrackingInput] = useState("");
   const [cancelReason, setCancelReason] = useState("");
   const [showShipForm, setShowShipForm] = useState(false);
   const [showCancelForm, setShowCancelForm] = useState(false);
+  const [showSupplementForm, setShowSupplementForm] = useState(false);
+  const [supplementInput, setSupplementInput] = useState({
+    lineId: "",
+    pieceId: "",
+    quantity: "",
+    confirmedPurchaseHt: "",
+  });
 
   const isSubmitting = fetcher.state !== "idle";
   const customer = order.customer;
@@ -305,6 +341,19 @@ export default function OrderDetailPage() {
   const postback = order.postback;
   const isPaid = order.ord_is_pay === "1";
   const isCancelled = order.ord_ords_id === "2";
+  const lines = order.orderLines ?? [];
+  const canCreateSupplement = isPaid && !isCancelled && lines.length > 0;
+  const supplement = fetcher.data?.supplement;
+
+  // Ligne en rupture : la quantité proposée par défaut est celle de la ligne.
+  const selectSupplementLine = (lineId: string) => {
+    const line = lines.find((l) => l.orl_id === lineId);
+    setSupplementInput((input) => ({
+      ...input,
+      lineId,
+      quantity: line?.orl_art_quantity || "1",
+    }));
+  };
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -628,6 +677,168 @@ export default function OrderDetailPage() {
                   <CheckCircle className="w-4 h-4 mr-2" />
                   Marquer livree
                 </Button>
+
+                {canCreateSupplement &&
+                  (!showSupplementForm ? (
+                    <Button
+                      className="w-full justify-start"
+                      variant="outline"
+                      onClick={() => {
+                        selectSupplementLine(lines[0].orl_id);
+                        setShowSupplementForm(true);
+                      }}
+                      disabled={isSubmitting}
+                    >
+                      <PackagePlus className="w-4 h-4 mr-2" />
+                      Supplément après rupture
+                    </Button>
+                  ) : (
+                    <div className="space-y-2 p-3 bg-muted/50 rounded-lg">
+                      <p className="text-xs text-muted-foreground">
+                        Pièce payée en rupture, remplacée par un équivalent plus
+                        cher : crée une commande de supplément non payée, sans
+                        mail au client. Remise et disponibilité sont à confirmer
+                        d&apos;abord chez le fournisseur.
+                      </p>
+                      <label
+                        htmlFor="supplement-line"
+                        className="block text-xs font-medium"
+                      >
+                        Ligne en rupture
+                      </label>
+                      <select
+                        id="supplement-line"
+                        value={supplementInput.lineId}
+                        onChange={(e) => selectSupplementLine(e.target.value)}
+                        className="w-full px-3 py-2 border rounded-md text-sm"
+                      >
+                        {lines.map((line) => (
+                          <option key={line.orl_id} value={line.orl_id}>
+                            {[line.orl_pm_name, line.orl_art_ref]
+                              .filter(Boolean)
+                              .join(" ") || line.orl_id}{" "}
+                            × {line.orl_art_quantity || 1}
+                          </option>
+                        ))}
+                      </select>
+                      <label
+                        htmlFor="supplement-piece"
+                        className="block text-xs font-medium"
+                      >
+                        Pièce équivalente (piece_id)
+                      </label>
+                      <input
+                        id="supplement-piece"
+                        type="number"
+                        min="1"
+                        step="1"
+                        value={supplementInput.pieceId}
+                        onChange={(e) =>
+                          setSupplementInput((input) => ({
+                            ...input,
+                            pieceId: e.target.value,
+                          }))
+                        }
+                        className="w-full px-3 py-2 border rounded-md text-sm"
+                      />
+                      <label
+                        htmlFor="supplement-quantity"
+                        className="block text-xs font-medium"
+                      >
+                        Quantité
+                      </label>
+                      <input
+                        id="supplement-quantity"
+                        type="number"
+                        min="1"
+                        step="1"
+                        value={supplementInput.quantity}
+                        onChange={(e) =>
+                          setSupplementInput((input) => ({
+                            ...input,
+                            quantity: e.target.value,
+                          }))
+                        }
+                        className="w-full px-3 py-2 border rounded-md text-sm"
+                      />
+                      <label
+                        htmlFor="supplement-purchase"
+                        className="block text-xs font-medium"
+                      >
+                        Achat HT unitaire confirmé chez le fournisseur (€)
+                      </label>
+                      <input
+                        id="supplement-purchase"
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        value={supplementInput.confirmedPurchaseHt}
+                        onChange={(e) =>
+                          setSupplementInput((input) => ({
+                            ...input,
+                            confirmedPurchaseHt: e.target.value,
+                          }))
+                        }
+                        className="w-full px-3 py-2 border rounded-md text-sm"
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            handleAction("createSupplement", supplementInput);
+                            setShowSupplementForm(false);
+                          }}
+                          disabled={isSubmitting}
+                        >
+                          Créer le supplément
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setShowSupplementForm(false)}
+                        >
+                          Annuler
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+
+                {supplement && (
+                  <div className="space-y-2 p-3 bg-green-50 rounded-lg text-sm">
+                    <p className="text-green-800">
+                      Supplément{" "}
+                      <Link
+                        to={`/admin/orders/${supplement.orderId}`}
+                        className="font-medium underline"
+                      >
+                        {supplement.orderId}
+                      </Link>{" "}
+                      : {formatPrice(supplement.totalTtc)} à payer
+                    </p>
+                    <label
+                      htmlFor="supplement-payment-url"
+                      className="block text-xs text-muted-foreground"
+                    >
+                      Lien de paiement à transmettre au client
+                    </label>
+                    <div className="flex items-center gap-1">
+                      <input
+                        id="supplement-payment-url"
+                        readOnly
+                        value={supplement.paymentUrl}
+                        className="w-full px-2 py-1 border rounded-md text-xs"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleCopy(supplement.paymentUrl)}
+                        className="p-1 rounded hover:bg-muted"
+                        title="Copier le lien"
+                      >
+                        <Copy className="w-3.5 h-3.5 text-muted-foreground" />
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 <Separator />
 

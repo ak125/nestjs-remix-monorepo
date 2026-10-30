@@ -1,7 +1,7 @@
 # Fafa — Character Bible (identité VISUELLE)
 
-> **Statut : working-spec (de référence), PAS canon.** Le figement canonique = vault PR A
-> (`rules-fafa-persona-canon-v1.md`). Ce fichier est le complément **visuel** de
+> **Statut : working-spec (de référence), PAS canon.** Figement canonique annoncé : règle vault
+> `rules-fafa-persona-canon-v1.md` (« PR vault A »), absente du vault au 18/10 (C18-14). Ce fichier est le complément **visuel** de
 > [`fafa.md`](fafa.md) (qui ne couvre que la **voix**). Voir aussi
 > [`fafa-visual-reference-lock.md`](fafa-visual-reference-lock.md) (verrou anti-dérive),
 > [`fafa-brand-palette.md`](fafa-brand-palette.md) (usage couleurs),
@@ -40,17 +40,19 @@ compatible et éviter l'erreur de commande**. Tout le design sert cette mission,
 > (cf. [`../prompts/higgsfield/avatar-prompt-template.md`](../prompts/higgsfield/avatar-prompt-template.md)).
 > Les pilotes tournent en **motion-graphics Remotion + voix off** (option 2A).
 
-## Interdits visuels (FAIL Brand Safety — G3/G6)
+## Interdits visuels (hors gates, sauf le dernier : G6 `visual_role`)
 
-- ❌ Faire croire que Fafa est humain (G6 Visual Honesty STRICT)
+- ❌ Faire croire que Fafa est humain (aucune gate ne le contrôle)
 - ❌ Imitation d'une personne réelle identifiable / voix imitant une personne réelle
 - ❌ Logo AutoMecanik **redessiné** par l'IA (utiliser l'asset officiel `frontend/public/`)
 - ❌ Rouge dominant (réservé danger/voyant/alerte — voir [`fafa-brand-palette.md`](fafa-brand-palette.md))
 - ❌ Plaque d'immatriculation lisible (RGPD), logo concurrent visible
-- ❌ Visuel présenté comme **preuve** mécanique (`truth_dependency` ≠ `proof`)
+- ❌ Visuel présenté comme **preuve** mécanique (`truth_dependency` ≠ `proof`) : G6 compte chaque visuel relevé comme
+  preuve (`visualRoleViolations`), un seul = FAIL
 
 ## Voir aussi
 
 - [`fafa.md`](fafa.md) — voix / ton (canon V1)
-- `.spec/00-canon/video-governance-p0.md` — 7 gates, matrice visuels
+- `.spec/00-canon/video-governance-p0.md` — legacy, contexte seulement (matrice visuels) ; gates =
+  `backend/src/modules/media-factory/services/video-gates.service.ts`
 - Skill `fafa-persona-canon` · Skill `fafa-brand-safety-reviewer`

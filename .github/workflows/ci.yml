@@ -225,6 +225,8 @@ jobs:
         run: |
           npm run typecheck:marketing
           npm run test:marketing
+          node --test scripts/marketing/fafa-pilot-governance.test.cjs
+          node node_modules/jest/bin/jest.js --config backend/jest.config.js --runInBand backend/tests/unit/video-gates.service.test.ts
 
       - name: Test deployment probes
         run: node --test scripts/ci/prod-client-ip-probe.test.mjs scripts/ci/prod-admin-guard-probe.test.mjs
@@ -847,7 +849,21 @@ jobs:
           CRUX_API_KEY: ${{ secrets.CRUX_API_KEY }}
           READ_ONLY: "true"
         run: |
-          docker pull massdoc/nestjs-remix-monorepo:preprod
+          # The image of THIS run's commit, not the shared :preprod alias: a later
+          # re-run of this job would otherwise deploy a newer commit's image under
+          # this commit's name, and deploy-prod.yml's PREPROD evidence would lie.
+          EXPECTED_SHA="${{ github.sha }}"
+          COMMIT_IMAGE="massdoc/nestjs-remix-monorepo:sha-$EXPECTED_SHA"
+          docker pull "$COMMIT_IMAGE"
+          read -r IMAGE_ID IMAGE_SHA <<< "$(docker inspect "$COMMIT_IMAGE" \
+            --format '{{.Id}} {{ index .Config.Labels "org.opencontainers.image.revision" }}')"
+          if [[ ! "$IMAGE_ID" =~ ^sha256:[a-f0-9]{64}$ ]] || [ "$IMAGE_SHA" != "$EXPECTED_SHA" ]; then
+            echo "::error::$COMMIT_IMAGE: invalid image ID or revision ${IMAGE_SHA:-<unset>} != $EXPECTED_SHA"
+            exit 1
+          fi
+          # docker-compose.preprod.yml runs :preprod; compose does not pull an image
+          # already present, so point the local alias at the verified image.
+          docker tag "$IMAGE_ID" massdoc/nestjs-remix-monorepo:preprod
 
           PREPROD_DIR=~/preprod
           mkdir -p $PREPROD_DIR
@@ -886,7 +902,7 @@ jobs:
           # ADR-063 — CrUX API key (optional, blank-allowed = graceful degrade)
           CRUX_API_KEY=${CRUX_API_KEY}
           # (Phase 0.6) Sitemap OIDC validation invariants are hardcoded in
-          # GithubOidcService (cf. docs/superpowers/specs/2026-05-16-sitemap-regen-auth-design.md
+          # GithubOidcService (cf. docs/specs/2026-05-16-sitemap-regen-auth-design.md
           # Components > GithubOidcService — class static readonly constants).
           # Preprod heredoc has no OIDC config to propagate — preprod is an
           # ephemeral CI container with no automatic Bearer-token caller.
@@ -984,6 +1000,16 @@ jobs:
             docker logs nestjs-remix-monorepo-preprod --tail 50
             exit 1
           fi
+
+          # Served version: the container runs the verified image and /health
+          # reports this run's commit (GIT_SHA baked in by build.yml).
+          RUNNING_ID=$(docker inspect nestjs-remix-monorepo-preprod --format '{{.Image}}')
+          SERVED_SHA=$(curl -sf http://localhost:3200/health | grep -oE '"revision":"[0-9a-f]{40}"' | cut -d'"' -f4 || true)
+          if [ "$RUNNING_ID" != "$IMAGE_ID" ] || [ "$SERVED_SHA" != "$EXPECTED_SHA" ]; then
+            echo "::error::PREPROD serves ${SERVED_SHA:-<no revision>} from image $RUNNING_ID; expected $EXPECTED_SHA from $IMAGE_ID"
+            exit 1
+          fi
+          echo "✅ PREPROD serves $SERVED_SHA (image $IMAGE_ID)"
 
           echo "✅ PREPROD deployed successfully on port 3200"
           echo "🔗 Test URL: http://$(hostname -I | awk '{print $1}'):3200"
@@ -1328,6 +1354,23 @@ jobs:
           CI: true
           PLAYWRIGHT_BASE_URL: http://localhost:3200
           E2E_RATE_BUDGET: "true"
+
+      - name: Measure mobile product close on the qualified PREPROD SHA
+        timeout-minutes: 15
+        run: |
+          set -euo pipefail
+          C=nestjs-remix-monorepo-preprod
+          test "$(docker inspect "$C" --format '{{index .Config.Labels "org.opencontainers.image.revision"}}')" = "$GITHUB_SHA"
+          docker inspect "$C" --format '{{range .Config.Env}}{{println .}}{{end}}' | grep -qx 'READ_ONLY=true'
+          node scripts/ci/catalog-mobile-performance.mjs
+
+      - name: Upload mobile performance evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: catalog-mobile-performance-${{ github.sha }}
+          path: output/catalog-mobile-performance/
+          retention-days: 14
 
       # Diagnostic root-cause sur échec E2E. Le runner self-hosted EST l'hôte
       # PREPROD (49.12.233.2) : on capture l'état exact du container + la mémoire

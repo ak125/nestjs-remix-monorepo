@@ -3,7 +3,6 @@ name: Deploy Documentation
 on:
   push:
     branches:
-      - feature/spec-kit-integration
       - docs
     paths:
       - '.spec/docs/**'

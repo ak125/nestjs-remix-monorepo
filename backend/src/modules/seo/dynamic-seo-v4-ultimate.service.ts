@@ -25,6 +25,7 @@
  */
 
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { CacheableMemory } from 'cacheable';
 
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { SeoChainOrchestratorService } from './services/chain/seo-chain-orchestrator.service';
@@ -38,6 +39,9 @@ import {
   SeoMetrics,
   SeoAbTestVariant,
   InternalLinkMetrics,
+  SeoMetricsStats,
+  SEO_V4_RECENT_UNKNOWN_PAGES,
+  SEO_V4_RESULT_CACHE_MAX_ENTRIES,
 } from './seo-v4.types';
 
 // Re-export types for backward compatibility
@@ -55,23 +59,24 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
   protected readonly logger = new Logger(DynamicSeoV4UltimateService.name);
 
   // Cache for complete SEO results (clé = pgId+typeId+vars sérialisés).
-  private seoCache = new Map<
-    string,
-    { data: CompleteSeoResult; expires: number }
-  >();
+  // LRU borné + TTL par entrée : sans borne, chaque combinaison de variables
+  // distincte ajoutait une entrée. `useClone: false` garde la sémantique du
+  // Map d'origine (même référence, pas de copie).
+  private readonly seoCache = new CacheableMemory({
+    lruSize: SEO_V4_RESULT_CACHE_MAX_ENTRIES,
+    useClone: false,
+  });
   private readonly CACHE_TTL_SHORT = 300_000; // 5 min
   private readonly CACHE_TTL_MEDIUM = 900_000; // 15 min
   private readonly CACHE_TTL_LONG = 3_600_000; // 1 h
 
-  // Metrics tracking state (proxy `SeoV4MonitoringService`).
+  // Metrics tracking state (proxy `SeoV4MonitoringService`), en mémoire constante.
   private cacheHits = 0;
   private cacheMisses = 0;
-  private processingTimes: number[] = [];
-  private unknownPagesDetected: Array<{
-    pgId: number;
-    typeId: number;
-    timestamp: Date;
-  }> = [];
+  private processingTimeTotalMs = 0;
+  private processingTimeCount = 0;
+  private unknownPagesCount = 0;
+  private recentUnknownPages: SeoMetricsStats['recentUnknownPages'] = [];
 
   constructor(
     private readonly chain: SeoChainOrchestratorService,
@@ -150,7 +155,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
       const result = this.adaptChainOutput(chainOutput, startTime);
       this.setCachedData(cacheKey, result, this.getCacheTTL(validatedVars));
 
-      this.processingTimes.push(result.metadata.processingTime);
+      this.recordProcessingTime(result.metadata.processingTime);
       this.logger.log(
         `✅ [SEO V4→chain] Succès en ${result.metadata.processingTime}ms`,
       );
@@ -265,7 +270,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
     typeId?: number,
   ): CompleteSeoResult {
     const processingTime = Date.now() - startTime;
-    this.processingTimes.push(processingTime);
+    this.recordProcessingTime(processingTime);
 
     const hasVehicleContext =
       variables.marque && variables.modele && variables.type;
@@ -285,11 +290,15 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
       .catch(() => {});
 
     if (!hasVehicleContext && !hasGammeOnly) {
-      this.unknownPagesDetected.push({
+      this.unknownPagesCount++;
+      this.recentUnknownPages.push({
         pgId: 0,
         typeId: 0,
         timestamp: new Date(),
       });
+      if (this.recentUnknownPages.length > SEO_V4_RECENT_UNKNOWN_PAGES) {
+        this.recentUnknownPages.shift();
+      }
       this.logger.warn(
         '⚠️ [SEO V4] Page type "unknown" détectée — Contexte incomplet',
         {
@@ -380,10 +389,11 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
   }
 
   private getCachedData(key: string): CompleteSeoResult | null {
-    const cached = this.seoCache.get(key);
-    if (cached && cached.expires > Date.now()) {
+    // Une entrée expirée est retirée à la lecture et renvoie undefined.
+    const cached = this.seoCache.get<CompleteSeoResult>(key);
+    if (cached) {
       this.cacheHits++;
-      return cached.data;
+      return cached;
     }
     this.cacheMisses++;
     return null;
@@ -394,17 +404,11 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
     data: CompleteSeoResult,
     ttl: number,
   ): void {
-    this.seoCache.set(key, {
-      data,
-      expires: Date.now() + ttl,
-    });
+    this.seoCache.set(key, data, ttl);
   }
 
   public clearExpiredCache(): void {
-    const now = Date.now();
-    for (const [key, cached] of this.seoCache.entries()) {
-      if (cached.expires <= now) this.seoCache.delete(key);
-    }
+    this.seoCache.checkExpiration();
   }
 
   public invalidateCache(): void {
@@ -416,12 +420,19 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
   // 📊 MONITORING PROXY (delegates to SeoV4MonitoringService)
   // ====================================
 
-  private getMetricsStats() {
+  private recordProcessingTime(ms: number): void {
+    this.processingTimeTotalMs += ms;
+    this.processingTimeCount++;
+  }
+
+  private getMetricsStats(): SeoMetricsStats {
     return {
       cacheHits: this.cacheHits,
       cacheMisses: this.cacheMisses,
-      processingTimes: this.processingTimes,
-      unknownPagesDetected: this.unknownPagesDetected,
+      processingTimeTotalMs: this.processingTimeTotalMs,
+      processingTimeCount: this.processingTimeCount,
+      unknownPagesCount: this.unknownPagesCount,
+      recentUnknownPages: [...this.recentUnknownPages],
     };
   }
 

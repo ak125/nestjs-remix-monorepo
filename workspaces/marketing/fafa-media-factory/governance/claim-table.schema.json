@@ -40,8 +40,8 @@
         },
         "source_status": {
           "type": "string",
-          "enum": ["sourced", "unsourced"],
-          "description": "G1 Truth gate utilise le ratio unsourced/total."
+          "enum": ["verified", "unverified", "blocked"],
+          "description": "Vocabulaire backend. G1 évalue chaque claim; le soutien est contrôlé par VideoGatesService avec les preuves admissibles D17."
         },
         "evidence_refs": {
           "type": "array",
@@ -100,7 +100,7 @@
           "if": {
             "properties": {
               "source_status": {
-                "const": "sourced"
+                "const": "verified"
               }
             }
           },

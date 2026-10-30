@@ -266,19 +266,35 @@ git clone -q "$SB/origin.git" "$SB/app" 2>/dev/null
   cp "$REPO_ROOT/scripts/ops/sync-dev-runtime.sh" scripts/ops/
   # build : note les arguments que la synchro lui passe (lus après le cas 1).
   printf '{"name":"sandbox","private":true,"scripts":{"build":"echo >\\"$TMPDIR/build-args\\""}}\n' > package.json
+  # Lockfile fixe : aucun cas ne le modifie, la synchro ne lance donc jamais `npm ci` (cas 16+).
+  printf '{"name":"sandbox","lockfileVersion":3,"packages":{}}\n' > package-lock.json
   git add -A && commit_sb init && git push -q origin main
 )
 mkdir -p "$SB/app/backend/dist"
 git clone -q -b main "$SB/origin.git" "$SB/up" 2>/dev/null
-mkdir -p "$SB/tmp" "$SB/crash"
+mkdir -p "$SB/tmp" "$SB/crash" "$SB/fake"
+# systemctl et journalctl factices : le faux systemctl rend $SB/unit-state (défaut : unit
+# non installée) ou échoue si $SB/unit-fail existe ; le faux journalctl rend $SB/unit-journal.
+cat > "$SB/fake/systemctl" <<EOF
+#!/bin/sh
+[ -e "$SB/unit-fail" ] && { echo "Failed to connect to bus" >&2; exit 1; }
+[ -f "$SB/unit-state" ] && exec cat "$SB/unit-state"
+printf 'LoadState=not-found\nActiveState=inactive\nSubState=dead\nControlGroup=\n'
+EOF
+printf '#!/bin/sh\ncat "%s/unit-journal" 2>/dev/null\nexit 0\n' "$SB" > "$SB/fake/journalctl"
+chmod +x "$SB/fake/"*
 # TMPDIR : logs de build et sauvegardes untracked restent dans le bac à sable, jamais
-# mêlés à ceux des vrais ticks cron dans /tmp. CRASH_DIR : les dumps de la machine
-# n'influencent pas l'issue. SB_HEALTH_URL : santé simulée à terre (cas 4).
+# mêlés à ceux des vrais ticks cron dans /tmp. CRASH_DIR, SYSTEMCTL, JOURNALCTL : les dumps
+# et le service DEV de la machine n'influencent pas l'issue. SB_HEALTH_URL : santé simulée
+# à terre (cas 4).
 # GIT_CONFIG_* : le sous-module du bac à sable (cas 10+) est un dépôt local, que git refuse
 # de cloner par défaut (protocol.file) — autorisé pour ces seuls ticks, jamais en config globale.
+# HERMES_NPM_* : jamais le cache ni le script Hermes de la machine ; absents jusqu'au cas 16.
 run_sync() {
   APP_DIR="$SB/app" HEALTH_URL="${SB_HEALTH_URL:-file://$SB/app/package.json}" CRASH_DIR="$SB/crash" \
     CRON_STATE_DIR="$SB/state" TMPDIR="$SB/tmp" \
+    HERMES_NPM_WARM="${SB_WARM:-$SB/absent-warm}" HERMES_NPM_CACHE="${SB_HCACHE:-$SB/absent-cache}" \
+    SYSTEMCTL="$SB/fake/systemctl" JOURNALCTL="$SB/fake/journalctl" \
     GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=protocol.file.allow GIT_CONFIG_VALUE_0=always \
     bash "$SB/app/scripts/ops/sync-dev-runtime.sh" >"$SB/out" 2>"$SB/err"
 }
@@ -384,6 +400,59 @@ touch -d '25 hours ago' "$SB/crash/_usr_bin_node.1000.crash"
 run_sync
 assert_contains "sonde : dump de plus de 24 h → ok" '"ok"' "$(sync_state '.status')"
 
+# 9b. Imputation par ProcCwd : le nom « _usr_bin_node » ne dit pas quel node a crashé. Un
+#     jest de worktree (2026-10-24, 57 ticks en alerte) ne doit plus passer pour le stack.
+dump() { printf 'ProblemType: Crash\nProcCmdline: node x\nProcCwd: %s\nSignal: 6\n' "$2" > "$SB/crash/$1"; }
+dump _usr_bin_node.1001.crash "$SB/app/.claude/worktrees/wt/backend"
+dump _usr_bin_node.1002.crash "/home/ailleurs/worktree/backend"
+run_sync
+assert_contains "sonde : dumps d'un worktree imbriqué et d'un autre checkout → ok" '"ok"' "$(sync_state '.status')"
+assert_contains "sonde : dumps hors checkout journalisés, pas tus" "non imputés au stack.*1001.*1002" "$(cat "$SB/out")"
+dump _usr_bin_node.1003.crash "$SB/app/backend"
+run_sync
+assert_contains "sonde : dump dont ProcCwd est le backend du checkout → warn" '"warn".*1003' "$(sync_state '[.status,.summary]')"
+assert_not_contains "sonde : seul le dump du checkout est imputé" "1001\|1002" "$(sync_state '.summary')"
+rm -f "$SB/crash/"*
+
+# 9c. Stack dev d'un worktree imbriqué (.claude/worktrees) : autre checkout, autre dist
+mkdir -p "$SB/app/.claude/worktrees/wt/backend"
+spawn_titled "$SB/app/backend" "npm run dev" "$SB/root4.pid" &
+ROOT4=$(wait_pid "$SB/root4.pid")
+spawn_titled "$SB/app/.claude/worktrees/wt/backend" "npm run dev" "$SB/root5.pid" &
+ROOT5=$(wait_pid "$SB/root5.pid")
+run_sync
+assert_contains "sonde : stack d'un worktree imbriqué à côté du stack servi → ok (pas CONCURRENTS)" '"ok"' "$(sync_state '.status')"
+kill_tree "$ROOT5"
+
+# 9d–9h. Supervision systemd (unit automecanik-dev.service), stack servi = ROOT4.
+OWN_CG=$(sed -n 's/^0:://p' "/proc/$ROOT4/cgroup")
+unit_state() { printf 'LoadState=loaded\nActiveState=%s\nSubState=%s\nControlGroup=%s\n' "$1" "$2" "$3" > "$SB/unit-state"; }
+unit_state active running "$OWN_CG"
+run_sync
+assert_contains "sonde : stack dans le cgroup du service actif → ok" '"ok"' "$(sync_state '.status')"
+unit_state active running "/user.slice/autre.service"
+run_sync
+assert_contains "sonde : unit installée, stack lancé hors du service → warn" '"warn".*stack DEV hors du service.*'"$ROOT4" "$(sync_state '[.status,.summary]')"
+unit_state failed failed "$OWN_CG"
+run_sync
+assert_contains "sonde : service en échec → warn" '"warn".*en échec' "$(sync_state '[.status,.summary]')"
+unit_state activating auto-restart "$OWN_CG"
+run_sync
+assert_contains "sonde : service en attente de redémarrage → warn" '"warn".*attente de redémarrage' "$(sync_state '[.status,.summary]')"
+unit_state active running "$OWN_CG"
+printf 'DEV_APP_CRASH count=1 exit=1 restart_in=2s\nautomecanik-dev.service: Scheduled restart job, restart counter is at 1.\n' > "$SB/unit-journal"
+run_sync
+assert_contains "sonde : crashs récupérés dans le journal → warn (relancés mais pas tus)" \
+  "1 crash(s) de l'app relancé(s).*1 redémarrage(s) du stack" "$(sync_state '.summary')"
+rm -f "$SB/unit-journal"
+touch "$SB/unit-fail"
+run_sync
+assert_contains "sonde : état du service illisible → warn, pas un ok" '"warn".*illisible' "$(sync_state '[.status,.summary]')"
+rm -f "$SB/unit-fail" "$SB/unit-state"
+kill_tree "$ROOT4"
+run_sync
+assert_contains "sonde : unit non installée, rien qui tourne → ok" '"ok"' "$(sync_state '.status')"
+
 # Sous-modules (axe git). Le writer seo-projection et le moteur de diagnostic lisent le wiki
 # DEPUIS le sous-module de ce checkout ; le pin committé sur main en est l'unique autorité.
 # `git merge --ff-only` déplace le pin sans toucher au sous-module : sans alignement, le
@@ -465,19 +534,98 @@ run_sync
 assert_contains "dépôt wiki de retour → aligné au tick suivant" "^$(pin_sha)$" "$(head_sha)"
 assert_contains "dépôt wiki de retour → ok" '"ok"' "$(sync_state '.status')"
 
+# Cache npm hors ligne des missions Hermes d'écriture : rechargé quand le lockfile de HEAD
+# n'a pas encore été chargé (2026-10-28 : mission en échec ENOTCACHED après un bump de
+# dépendance). Faux script de rechargement : note ses appels ; $SB/warm-mode le fait
+# échouer (fail) ou refuser comme pendant une mission (busy).
+HSTAMP="$SB/state/hermes-npm-cache.lock-sha256"
+assert_contains "cache Hermes : machine sans Hermes (cas 1 à 15) → aucune empreinte" "^absente$" \
+  "$([ -e "$HSTAMP" ] && echo présente || echo absente)"
+cat > "$SB/fake/warm" <<EOF
+#!/bin/sh
+echo "\$1" >> "$SB/warm-calls"
+case "\$(cat "$SB/warm-mode" 2>/dev/null)" in
+  fail) echo "NOT OK: online install failed" >&2; exit 1 ;;
+  busy) echo "refused: mission active" >&2; exit 1 ;;
+esac
+mkdir -p "$SB/hcache/_cacache"
+echo "OK npm cache warm for \$1"
+EOF
+SB_WARM="$SB/fake/warm" SB_HCACHE="$SB/hcache"
+LOCK_SHA=$(git -C "$SB/app" show HEAD:package-lock.json | sha256sum | cut -d' ' -f1)
+warm_calls() { cat "$SB/warm-calls" 2>/dev/null | wc -l | tr -d ' '; }
+
+# 16. Lockfile jamais chargé, tick no-op → rechargé sur le commit de HEAD, empreinte posée
+run_sync; EXIT=$?
+assert_exit "cache Hermes : premier tick → tick au bout (exit 0)" "0" "$EXIT"
+assert_contains "cache Hermes : rechargé sur le commit exact de HEAD" "^$(git -C "$SB/app" rev-parse HEAD)$" "$(cat "$SB/warm-calls" 2>/dev/null)"
+assert_contains "cache Hermes : empreinte du lockfile posée" "^$LOCK_SHA$" "$(cat "$HSTAMP" 2>/dev/null)"
+assert_contains "cache Hermes : rechargement réussi → ok" '"ok"' "$(sync_state '.status')"
+
+# 17. Même lockfile → pas de nouveau rechargement
+run_sync
+assert_contains "cache Hermes : lockfile déjà chargé → pas de rechargement" "^1$" "$(warm_calls)"
+
+# 18. Lockfile non chargé sur le chemin de synchro → rechargé après la santé, même tick
+echo stale > "$HSTAMP"
+( cd "$SB/up" && echo x > hermes-trigger.txt && git add -A && commit_sb "commit amont" && git push -q origin main )
+run_sync
+assert_contains "cache Hermes : chemin de synchro → rechargé sur le nouveau HEAD" \
+  "^$(git -C "$SB/up" rev-parse HEAD)$" "$(tail -n 1 "$SB/warm-calls" 2>/dev/null)"
+assert_contains "cache Hermes : chemin de synchro → rechargé après la santé de DEV" \
+  "DEV:3000 sain.*cache npm Hermes rechargé" "$(tr '\n' ' ' < "$SB/out")"
+
+# 19. Rechargement en échec → warn, puis pas de nouvel essai avant 1 h, toujours signalé
+echo stale > "$HSTAMP"
+echo fail > "$SB/warm-mode"
+run_sync; EXIT=$?
+assert_exit "cache Hermes : rechargement en échec → tick au bout (alert-only, exit 0)" "0" "$EXIT"
+assert_contains "cache Hermes : rechargement en échec → warn" '"warn".*cache npm Hermes : rechargement échoué' "$(sync_state '[.status,.summary]')"
+assert_contains "cache Hermes : sortie du script remontée dans le log" "NOT OK: online install failed" "$(cat "$SB/err")"
+run_sync
+assert_contains "cache Hermes : échec il y a moins d'1 h → pas de nouvel essai" "^3$" "$(warm_calls)"
+assert_contains "cache Hermes : échec il y a moins d'1 h → toujours signalé" '"warn".*moins d.1 h' "$(sync_state '[.status,.summary]')"
+
+# 20. Mission en cours (verrou du contrôleur pris) → pas d'alerte, nouvel essai au tick suivant
+touch -d '2 hours ago' "$HSTAMP.failed"
+echo busy > "$SB/warm-mode"
+run_sync
+assert_contains "cache Hermes : mission en cours → ok, pas d'alerte" '"ok"' "$(sync_state '.status')"
+assert_contains "cache Hermes : mission en cours → rechargement reporté" "mission en cours" "$(cat "$SB/out")"
+rm -f "$SB/warm-mode"
+run_sync
+assert_contains "cache Hermes : mission terminée → rechargé au tick suivant" "^$LOCK_SHA$" "$(cat "$HSTAMP" 2>/dev/null)"
+assert_contains "cache Hermes : succès → marque d'échec effacée" "^absente$" \
+  "$([ -e "$HSTAMP.failed" ] && echo présente || echo absente)"
+
+# 21. Cache effacé → rechargé même si le lockfile est déjà chargé
+rm -rf "$SB/hcache/_cacache"
+run_sync
+assert_contains "cache Hermes : cache effacé → rechargé" "^6$" "$(warm_calls)"
+
+# 22. Script de rechargement introuvable alors que le cache est à recharger → warn
+echo stale > "$HSTAMP"
+SB_WARM="$SB/absent-warm"
+run_sync
+assert_contains "cache Hermes : script introuvable → warn" '"warn".*introuvable' "$(sync_state '[.status,.summary]')"
+unset SB_WARM SB_HCACHE
+
 rm -rf "$SB"
 
 # backend/wait-and-start.js (dev:watch du stack DEV) : une modification de backend/.env relance
 # l'app sans tuer le script — sa mort fait arrêter par run-p toute la chaîne (tsc, tsc-alias,
-# nodemon). Vrai script, lancé dans un bac à sable : `ps`, `ss` et `docker` y sont factices,
-# sinon son nettoyage de démarrage tuerait les watchers tsc du stack dev de la machine.
+# nodemon). Vrai script, lancé dans un bac à sable : `ps`, `ss`, `systemctl` et `docker` y sont factices,
+# sinon son nettoyage de démarrage verrait les processus de la machine. Le faux `ps` ne
+# liste que $WS/ps-list : deux vrais processus du bac à sable, présentés comme des watchers.
 WS=$(mktemp -d)
-mkdir -p "$WS/backend/dist" "$WS/bin"
+mkdir -p "$WS/backend/dist" "$WS/bin" "$WS/ailleurs"
 cp "$REPO_ROOT/backend/wait-and-start.js" "$WS/backend/"
 echo "SANDBOX=1" > "$WS/backend/.env"
-echo 'require("fs").appendFileSync(__dirname + "/../../boots.log", "boot\n"); setInterval(() => {}, 1e9);' > "$WS/backend/dist/main.js"
-printf '#!/bin/sh\nexit 0\n' > "$WS/bin/ps"
-cp "$WS/bin/ps" "$WS/bin/ss"
+printf '#!/bin/sh\ncat "%s/ps-list" 2>/dev/null\nexit 0\n' "$WS" > "$WS/bin/ps"
+# Faux systemctl : état de l'unit lu dans $WS/unit-state, @SELF@ = cgroup de l'appelant
+# (hérité de wait-and-start.js, comme le stack lancé par le service).
+printf '#!/bin/sh\ncg=$(sed -n "s/^0:://p" /proc/self/cgroup)\nsed "s|@SELF@|$cg|" "%s/unit-state"\n' "$WS" > "$WS/bin/systemctl"
+printf '#!/bin/sh\nexit 0\n' > "$WS/bin/ss"
 printf '#!/bin/sh\necho "Up 1 hour"\n' > "$WS/bin/docker"
 printf '#!/bin/sh\nexec node %s "$@"\n' "$(cd "$REPO_ROOT" && node -p 'require.resolve("nodemon/bin/nodemon.js")')" > "$WS/bin/nodemon"
 chmod +x "$WS/bin/"*
@@ -487,18 +635,65 @@ wait_boots() { local i; for i in $(seq $(( $2 * 10 ))); do [ "$(boots)" -ge "$1"
 alive() { [ -n "$(ps -o stat= -p "$1" 2>/dev/null | grep -v Z)" ] && echo vivant || echo mort; }
 # stdin ouvert comme dans le terminal ; setsid : un groupe de processus à tuer d'un bloc.
 mkfifo "$WS/stdin" && exec 7<>"$WS/stdin"
+# Watcher « dev-compile-watch.js » de 100 s dans ce backend/ et dans un autre checkout : le
+# nettoyage de démarrage ne tue que le premier (avant : kill -9 de toute la machine).
+(cd "$WS/backend" && exec node -e 'setTimeout(() => {}, 120000)') &
+OWN_W=$!
+(cd "$WS/ailleurs" && exec node -e 'setTimeout(() => {}, 120000)') &
+FOREIGN_W=$!
+printf '%s 100 node scripts/ops/dev-compile-watch.js -p tsconfig.json\n' "$OWN_W" "$FOREIGN_W" > "$WS/ps-list"
+# Lancé hors du service qui tient ce backend/ (terminal) : refus avant tout kill. Avant, le
+# nettoyage tuait le stack du service, qui sortait en code 0 sans être relancé (2026-10-25).
+# dist/main.js est encore absent : sans le refus, le script attendrait la compilation.
+printf 'ActiveState=active\nWorkingDirectory=%s\nControlGroup=/user.slice/app.slice/automecanik-dev.service\n' "$WS/backend" > "$WS/unit-state"
+(cd "$WS/backend" && PATH="$WS/bin:$PATH" timeout 10 node wait-and-start.js </dev/null >"$WS/out" 2>&1)
+assert_exit "wait-and-start hors du service actif sur ce backend/ → refus" 1 "$?"
+assert_contains "wait-and-start : motif du refus" "tourne sous automecanik-dev.service" "$(cat "$WS/out")"
+assert_contains "wait-and-start : refus sans tuer le stack du service" "vivant" "$(alive "$OWN_W")"
+# Stack du service : l'appelant est dans le cgroup de l'unit, le démarrage continue.
+printf 'ActiveState=active\nWorkingDirectory=%s\nControlGroup=@SELF@\n' "$WS/backend" > "$WS/unit-state"
+echo 'const fs = require("fs"); fs.appendFileSync(__dirname + "/../../boots.log", "boot\n"); fs.writeFileSync(__dirname + "/../../app.pid", String(process.pid)); setInterval(() => {}, 1e9);' > "$WS/backend/dist/main.js"
 (cd "$WS/backend" && PATH="$WS/bin:$PATH" exec setsid node wait-and-start.js <&7 >"$WS/out" 2>&1) &
 WPID=$!
 wait_boots 1 30
 assert_contains "wait-and-start : l'app démarre sous nodemon (bac à sable)" "^1$" "$(boots)"
+assert_contains "wait-and-start : vieux watcher de CE backend/ tué au démarrage" "mort" "$(alive "$OWN_W")"
+assert_contains "wait-and-start : watcher d'un autre checkout laissé en place" "vivant" "$(alive "$FOREIGN_W")"
+assert_contains "wait-and-start : watcher épargné journalisé" "1 process(es) dev-compile-watch.js hors de" "$(cat "$WS/out")"
+: > "$WS/ps-list"
+kill "$FOREIGN_W" 2>/dev/null
+wait "$OWN_W" "$FOREIGN_W" 2>/dev/null
 echo "SANDBOX=2" >> "$WS/backend/.env"
 wait_boots 2 15
 assert_contains "wait-and-start : backend/.env modifié → l'app redémarre" "^2$" "$(boots)"
 assert_contains "wait-and-start : backend/.env modifié → le script reste vivant (la chaîne dev survit)" "vivant" "$(alive "$WPID")"
+# Crash contrôlé (kill -9 de l'app) : avant, nodemon attendait une modification de fichier et
+# DEV:3000 restait à terre. Avec --exitcrash, wait-and-start.js relance nodemon après 2 s.
+kill -9 "$(cat "$WS/app.pid")"
+wait_boots 3 20
+assert_contains "wait-and-start : app tuée (kill -9) → relancée sans intervention" "^3$" "$(boots)"
+assert_contains "wait-and-start : crash journalisé DEV_APP_CRASH (compté par sync-dev-runtime)" "DEV_APP_CRASH count=1 exit=1" "$(cat "$WS/out")"
+assert_contains "wait-and-start : après le crash, le script reste vivant" "vivant" "$(alive "$WPID")"
 kill -- -"$WPID" 2>/dev/null
 wait "$WPID" 2>/dev/null
 exec 7>&-
 rm -rf "$WS"
+
+# scripts/ops/install-dev-service.sh : install et switch copient l'unit du checkout lancé ;
+# depuis une copie (worktree), refus avant toute écriture. Copie dans un bac à sable :
+# lancé depuis le checkout servi, `install` installerait réellement l'unit.
+IS=$(mktemp -d)
+mkdir -p "$IS/scripts/ops"
+cp "$REPO_ROOT/scripts/ops/install-dev-service.sh" "$REPO_ROOT/scripts/ops/automecanik-dev.service" "$IS/scripts/ops/"
+for sub in install switch; do
+  XDG_CONFIG_HOME="$IS/config" bash "$IS/scripts/ops/install-dev-service.sh" "$sub" >"$IS/out" 2>&1
+  assert_exit "install-dev-service $sub hors du checkout servi → refus" 1 "$?"
+  assert_contains "install-dev-service $sub : motif du refus" "lancer depuis le checkout servi" "$(cat "$IS/out")"
+done
+assert_contains "install-dev-service : refus sans écriture d'unit" "absente" "$([ -e "$IS/config" ] && echo présente || echo absente)"
+XDG_CONFIG_HOME="$IS/config" bash "$IS/scripts/ops/install-dev-service.sh" status >"$IS/out" 2>&1
+assert_exit "install-dev-service status : lecture seule, exit 0" 0 "$?"
+rm -rf "$IS"
 
 # scripts/ops/dev-compile-watch.js (dev:compile du stack DEV) : UN seul processus compile et
 # réécrit les @alias en chemins relatifs. Bac à sable : mini-projet TypeScript avec un alias,
@@ -685,6 +880,21 @@ assert_contains "bash-guard: motif de refus explicite" "enveloppe PreToolUse ill
   "$(printf 'not json' | bash scripts/claude-hooks/pretool-bash-guard.sh 2>&1)"
 assert_exit "bash-guard: enveloppe complète documentée → allow"     "0" "$(run_bash_guard_raw '{"session_id":"s","cwd":"/tmp","hook_event_name":"PreToolUse","tool_name":"Bash","tool_input":{"command":"git status","description":"d"}}')"
 
+# Entrée longue sur plusieurs lignes : motif en ligne 1, ~1 Mo de lignes ensuite.
+# Avant : `echo "$X" | grep -q` sous pipefail — grep sort au premier match, echo
+# reçoit SIGPIPE, le test vaut faux et la garde laisse passer (exit 0).
+LONG_PAD=$(awk 'BEGIN { for (i = 0; i < 100000; i++) print "# padding" }')
+run_bash_guard_long() {
+  jq -Rsc '{tool_name:"Bash",tool_input:{command:.}}' <<<"$1"$'\n'"$LONG_PAD" \
+    | bash scripts/claude-hooks/pretool-bash-guard.sh >/dev/null 2>&1
+  echo $?
+}
+assert_exit "bash-guard: git push origin main + 1 Mo → BLOCK"  "2" "$(run_bash_guard_long 'git push origin main')"
+assert_exit "bash-guard: git push --force + 1 Mo → BLOCK"      "2" "$(run_bash_guard_long 'git push --force origin feat/x')"
+assert_exit "bash-guard: git reset --hard + 1 Mo → BLOCK"      "2" "$(run_bash_guard_long 'git reset --hard')"
+assert_exit "bash-guard: git tag v1.2.3 + 1 Mo → BLOCK"        "2" "$(run_bash_guard_long 'git tag v1.2.3')"
+assert_exit "bash-guard: git status + 1 Mo → allow"            "0" "$(run_bash_guard_long 'git status')"
+
 # ============================================================
 # Guard : pretool-supabase-guard.sh — Guard 6 (DML direct sur tables gouvernées)
 # ============================================================
@@ -727,6 +937,21 @@ assert_contains "sql-guard: motif de refus explicite" "enveloppe PreToolUse illi
   "$(printf 'not json' | bash scripts/claude-hooks/pretool-supabase-guard.sh 2>&1)"
 assert_exit "sql-guard: enveloppe execute_sql complète → allow"      "0" "$(run_sql_guard_raw '{"session_id":"s","cwd":"/tmp","hook_event_name":"PreToolUse","tool_name":"mcp__supabase__execute_sql","tool_input":{"project_id":"p","query":"SELECT 1"}}')"
 assert_exit "sql-guard: enveloppe apply_migration complète → allow"  "0" "$(run_sql_guard_raw '{"session_id":"s","cwd":"/tmp","hook_event_name":"PreToolUse","tool_name":"mcp__supabase__apply_migration","tool_input":{"project_id":"p","name":"add_idx","query":"CREATE INDEX IF NOT EXISTS i ON t (c)"}}')"
+
+# Migration longue : instruction en ligne 1, ~1 Mo de lignes ensuite (même défaut
+# SIGPIPE que bash-guard). Les cas allow vérifient que la correction ne bloque pas à tort.
+LONG_SQL_PAD=$(awk 'BEGIN { for (i = 0; i < 100000; i++) print "-- padding" }')
+run_sql_guard_long() {
+  jq -Rsc '{tool_name:"mcp__supabase__apply_migration",tool_input:{name:"m",query:.}}' <<<"$1"$'\n'"$LONG_SQL_PAD" \
+    | bash scripts/claude-hooks/pretool-supabase-guard.sh >/dev/null 2>&1
+  echo $?
+}
+assert_exit "sql-guard: DROP TABLE foo + 1 Mo → BLOCK"         "2" "$(run_sql_guard_long 'DROP TABLE foo;')"
+assert_exit "sql-guard: TRUNCATE foo + 1 Mo → BLOCK"           "2" "$(run_sql_guard_long 'TRUNCATE foo;')"
+assert_exit "sql-guard: DISABLE RLS + 1 Mo → BLOCK"            "2" "$(run_sql_guard_long 'ALTER TABLE foo DISABLE ROW LEVEL SECURITY;')"
+assert_exit "sql-guard: UPDATE pieces_price + 1 Mo → BLOCK"    "2" "$(run_sql_guard_long 'UPDATE pieces_price SET pri_dispo=1;')"
+assert_exit "sql-guard: DROP TABLE IF EXISTS + 1 Mo → allow"   "0" "$(run_sql_guard_long 'DROP TABLE IF EXISTS foo;')"
+assert_exit "sql-guard: SELECT 1 + 1 Mo → allow"               "0" "$(run_sql_guard_long 'SELECT 1;')"
 
 # ============================================================
 # Guard : pretool-file-guard.sh — chemins protégés (format réel : tool_input.file_path)

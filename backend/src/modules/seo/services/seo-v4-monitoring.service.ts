@@ -146,9 +146,8 @@ export class SeoV4MonitoringService extends SupabaseBaseService {
       totalRequests > 0 ? (stats.cacheHits / totalRequests) * 100 : 0;
 
     const avgProcessingTime =
-      stats.processingTimes.length > 0
-        ? stats.processingTimes.reduce((a, b) => a + b, 0) /
-          stats.processingTimes.length
+      stats.processingTimeCount > 0
+        ? stats.processingTimeTotalMs / stats.processingTimeCount
         : 0;
 
     const topTemplates = [
@@ -157,9 +156,9 @@ export class SeoV4MonitoringService extends SupabaseBaseService {
       { templateId: 'blog_article', usageCount: 450, avgPerformance: 78 },
     ];
 
-    const recentUnknown = stats.unknownPagesDetected
-      .slice(-10)
-      .map((p) => `pgId=${p.pgId}, typeId=${p.typeId}`);
+    const recentUnknown = stats.recentUnknownPages.map(
+      (p) => `pgId=${p.pgId}, typeId=${p.typeId}`,
+    );
 
     return {
       timestamp: new Date(),
@@ -183,7 +182,7 @@ export class SeoV4MonitoringService extends SupabaseBaseService {
       },
       topTemplates,
       unknownPages: {
-        count: stats.unknownPagesDetected.length,
+        count: stats.unknownPagesCount,
         lastDetected: recentUnknown,
       },
       abTestResults: [],
